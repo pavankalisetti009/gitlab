@@ -89,6 +89,7 @@ describe('AiCatalogFormSidePanel', () => {
   };
   const findSaveButton = () => wrapper.findComponent(GlButton);
   const findAgentListbox = () => wrapper.findByTestId('agent-select-listbox');
+  const findAgentListboxLabel = () => wrapper.findByTestId('agent-select-listbox-label');
   const findVersionListbox = () => wrapper.findByTestId('version-select-listbox');
   const findCancelButton = () => wrapper.findByTestId('agent-select-cancel-button');
   const findDeleteNodeButton = () => wrapper.findByTestId('agent-node-delete-button');
@@ -107,6 +108,12 @@ describe('AiCatalogFormSidePanel', () => {
     it('renders the listbox with loading state', () => {
       expect(findAgentListbox().exists()).toBe(true);
       expect(findAgentListbox().props('loading')).toBe(true);
+    });
+
+    it('does not render help text when flow is private', () => {
+      expect(findAgentListboxLabel().text()).not.toContain(
+        'Only public agents can be used in public flows.',
+      );
     });
 
     it('version listbox is disabled when no agent is selected', () => {
@@ -149,11 +156,19 @@ describe('AiCatalogFormSidePanel', () => {
   });
 
   describe('when the flow being edited is public', () => {
-    it('does not render private agents as options', async () => {
+    beforeEach(async () => {
       createComponent({ isFlowPublic: true });
       await waitForPromises();
+    });
 
+    it('does not render private agents as options', () => {
       expect(findAgentListbox().props('items')).toEqual([agents[0], agents[1]]);
+    });
+
+    it('renders help text', () => {
+      expect(findAgentListboxLabel().text()).toContain(
+        'Only public agents can be used in public flows.',
+      );
     });
   });
 
