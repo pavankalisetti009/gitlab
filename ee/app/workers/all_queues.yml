@@ -1443,6 +1443,16 @@
   :idempotent: true
   :tags: []
   :queue_namespace:
+- :name: ai_duo_workflows_update_workflow_status_event
+  :worker_name: Ai::DuoWorkflows::UpdateWorkflowStatusEventWorker
+  :feature_category: :agent_foundations
+  :has_external_dependencies: false
+  :urgency: :low
+  :resource_boundary: :unknown
+  :weight: 1
+  :idempotent: true
+  :tags: []
+  :queue_namespace:
 - :name: ai_knowledge_graph_indexing_task
   :worker_name: Ai::KnowledgeGraph::IndexingTaskWorker
   :feature_category: :knowledge_graph

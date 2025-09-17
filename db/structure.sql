@@ -5136,6 +5136,7 @@ CREATE TABLE p_ci_workloads (
     created_at timestamp with time zone NOT NULL,
     updated_at timestamp with time zone NOT NULL,
     branch_name text,
+    status smallint DEFAULT 0 NOT NULL,
     CONSTRAINT check_f2fe503728 CHECK ((char_length(branch_name) <= 255))
 )
 PARTITION BY LIST (partition_id);
