@@ -144,46 +144,18 @@ module Ai
       end
 
       def get_unit_primitive_model(unit_primitive_name)
-        if Feature.enabled?(:use_unit_primitives_in_user_authorizable, self, type: :gitlab_com_derisk)
-          fetch_from_catalog(unit_primitive_name)
-        else
-          fetch_from_available_services(unit_primitive_name)
-        end
-      end
-
-      def fetch_from_catalog(unit_primitive_name)
+        # Override unit_primitive_name for self-hosted models.
         unit_primitive_name = :self_hosted_models if unit_primitive_is_self_hosted?(unit_primitive_name)
 
         Gitlab::CloudConnector::DataModel::UnitPrimitive.find_by_name(unit_primitive_name)
-      end
-
-      # DEPRECATED: Remove after feature flag rollout
-      # https://gitlab.com/gitlab-org/gitlab/-/issues/562380
-      def fetch_from_available_services(name)
-        service = CloudConnector::AvailableServices.find_by_name(name)
-
-        return if service.name == :missing_service
-
-        service
       end
 
       def unit_primitive_free_access?(unit_primitive)
         unit_primitive.cut_off_date.nil? || unit_primitive.cut_off_date&.future?
       end
 
-      # Remove after feature flag rollout
-      # https://gitlab.com/gitlab-org/gitlab/-/issues/562380
-      def get_add_ons(unit_primitive)
-        # Handle both [:add_ons] (unit_primitive) and .add_on_names (service)
-        if unit_primitive.respond_to?(:add_on_names)
-          unit_primitive.add_on_names
-        else
-          unit_primitive[:add_ons] || []
-        end
-      end
-
       def check_add_on_purchases(unit_primitive)
-        add_ons = get_add_ons(unit_primitive)
+        add_ons = unit_primitive[:add_ons] || []
 
         # NOTE: We are passing `nil` as the resource to avoid filtering by namespace.
         # This is _not_ a good use of this API, and we should separate filtering by namespace
@@ -204,7 +176,7 @@ module Ai
       def check_duo_core_features(unit_primitive)
         return unless active? && !bot?
 
-        add_ons = get_add_ons(unit_primitive)
+        add_ons = unit_primitive[:add_ons] || []
 
         return unless add_ons.include?("duo_core") && duo_core_add_on?
 

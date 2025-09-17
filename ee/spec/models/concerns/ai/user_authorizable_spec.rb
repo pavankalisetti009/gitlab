@@ -136,238 +136,207 @@ RSpec.describe Ai::UserAuthorizable, feature_category: :ai_abstraction_layer do
       end
     end
 
-    shared_examples_for 'allowed to use' do
-      let(:ai_feature) { :my_feature }
-      let(:duo_core_features_enabled) { true }
-      let(:unit_primitive_name) { ai_feature }
-      let(:maturity) { :ga }
-      let(:free_access) { true }
-      let(:unit_primitive_add_ons) { %w[duo_pro] }
-      let(:licensed_feature) { :ai_features }
+    let(:ai_feature) { :my_feature }
+    let(:duo_core_features_enabled) { true }
+    let(:unit_primitive_name) { ai_feature }
+    let(:maturity) { :ga }
+    let(:free_access) { true }
+    let(:unit_primitive_add_ons) { %w[duo_pro] }
+    let(:licensed_feature) { :ai_features }
+    let(:unit_primitive) do
+      build(:cloud_connector_unit_primitive, name: unit_primitive_name, add_ons: unit_primitive_add_ons)
+    end
 
-      let_it_be(:gitlab_add_on) { create(:gitlab_subscription_add_on) }
-      let_it_be(:expired_gitlab_purchase) do
-        create(:gitlab_subscription_add_on_purchase, expires_on: 1.day.ago, add_on: gitlab_add_on)
-      end
+    let_it_be(:gitlab_add_on) { create(:gitlab_subscription_add_on) }
+    let_it_be(:expired_gitlab_purchase) do
+      create(:gitlab_subscription_add_on_purchase, expires_on: 1.day.ago, add_on: gitlab_add_on)
+    end
 
-      let_it_be_with_reload(:active_gitlab_purchase) do
-        create(:gitlab_subscription_add_on_purchase, add_on: gitlab_add_on)
-      end
+    let_it_be_with_reload(:active_gitlab_purchase) do
+      create(:gitlab_subscription_add_on_purchase, add_on: gitlab_add_on)
+    end
+
+    before do
+      stub_const("Gitlab::Llm::Utils::AiFeaturesCatalogue::LIST", { ai_feature => { maturity: maturity } })
+
+      allow(unit_primitive).to receive(:cut_off_date).and_return(free_access ? nil : (Time.current - 1.month))
+
+      allow(Gitlab::CloudConnector::DataModel::UnitPrimitive).to receive(:find_by_name).with(unit_primitive_name)
+        .and_return(unit_primitive)
+    end
+
+    subject { user.allowed_to_use(ai_feature) }
+
+    context 'when on Gitlab.com instance', :saas do
+      let(:namespace) { active_gitlab_purchase.namespace }
+      let(:allowed_by_namespace_ids) { [namespace.id] }
 
       before do
-        stub_const("Gitlab::Llm::Utils::AiFeaturesCatalogue::LIST", { ai_feature => { maturity: maturity } })
-
-        allow(unit_primitive).to receive(:cut_off_date).and_return(free_access ? nil : (Time.current - 1.month))
+        namespace.add_owner(user)
       end
 
-      subject { user.allowed_to_use(ai_feature) }
-
-      context 'when on Gitlab.com instance', :saas do
-        let(:namespace) { active_gitlab_purchase.namespace }
-        let(:allowed_by_namespace_ids) { [namespace.id] }
-
+      include_examples 'checking assigned seats' do
         before do
-          namespace.add_owner(user)
+          namespace.namespace_settings.update!(
+            duo_core_features_enabled: duo_core_features_enabled
+          )
+        end
+      end
+
+      context "when the user doesn't have a seat but the unit primitive has free access" do
+        context "when the user doesn't belong to any namespaces with eligible plans" do
+          let(:expected_allowed) { false }
+
+          it { is_expected.to eq expected_response }
         end
 
-        include_examples 'checking assigned seats' do
-          before do
-            namespace.namespace_settings.update!(
-              duo_core_features_enabled: duo_core_features_enabled
-            )
+        context "when the user belongs to groups with eligible plans" do
+          let_it_be_with_reload(:group) do
+            create(:group_with_plan, plan: :ultimate_plan)
           end
-        end
 
-        context "when the user doesn't have a seat but the unit primitive has free access" do
-          context "when the user doesn't belong to any namespaces with eligible plans" do
-            let(:expected_allowed) { false }
+          let_it_be_with_reload(:group_without_experiment_features_enabled) do
+            create(:group_with_plan, plan: :ultimate_plan)
+          end
+
+          before_all do
+            group.add_guest(user)
+            group_without_experiment_features_enabled.add_guest(user)
+          end
+
+          # TODO: Change to use context 'with ai features enabled for group'
+          # Issue: https://gitlab.com/gitlab-org/gitlab/-/issues/497781
+          before do
+            allow(Gitlab).to receive(:org_or_com?).and_return(true)
+            stub_ee_application_setting(should_check_namespace_plan: true)
+            stub_licensed_features(
+              ai_features: true,
+              glab_ask_git_command: true,
+              generate_description: true
+            )
+            group.namespace_settings.reload.update!(experiment_features_enabled: true)
+          end
+
+          shared_examples 'checking available groups' do
+            let(:expected_namespace_ids) { [group.id, group_without_experiment_features_enabled.id] }
+            let(:expected_enablement_type) { 'tier' }
 
             it { is_expected.to eq expected_response }
-          end
 
-          context "when the user belongs to groups with eligible plans" do
-            let_it_be_with_reload(:group) do
-              create(:group_with_plan, plan: :ultimate_plan)
-            end
-
-            let_it_be_with_reload(:group_without_experiment_features_enabled) do
-              create(:group_with_plan, plan: :ultimate_plan)
-            end
-
-            before_all do
-              group.add_guest(user)
-              group_without_experiment_features_enabled.add_guest(user)
-            end
-
-            # TODO: Change to use context 'with ai features enabled for group'
-            # Issue: https://gitlab.com/gitlab-org/gitlab/-/issues/497781
-            before do
-              allow(Gitlab).to receive(:org_or_com?).and_return(true)
-              stub_ee_application_setting(should_check_namespace_plan: true)
-              stub_licensed_features(
-                ai_features: true,
-                glab_ask_git_command: true,
-                generate_description: true
-              )
-              group.namespace_settings.reload.update!(experiment_features_enabled: true)
-            end
-
-            shared_examples 'checking available groups' do
-              let(:expected_namespace_ids) { [group.id, group_without_experiment_features_enabled.id] }
-              let(:expected_enablement_type) { 'tier' }
+            context 'when the feature is not GA' do
+              let(:expected_namespace_ids) { [group.id] }
+              let(:maturity) { :beta }
 
               it { is_expected.to eq expected_response }
 
-              context 'when the feature is not GA' do
-                let(:expected_namespace_ids) { [group.id] }
-                let(:maturity) { :beta }
+              context "when none of the user groups have experiment features enabled" do
+                let(:expected_allowed) { false }
+                let(:expected_namespace_ids) { [] }
+                let(:expected_enablement_type) { nil }
 
-                it { is_expected.to eq expected_response }
-
-                context "when none of the user groups have experiment features enabled" do
-                  let(:expected_allowed) { false }
-                  let(:expected_namespace_ids) { [] }
-                  let(:expected_enablement_type) { nil }
-
-                  before do
-                    group.namespace_settings.update!(experiment_features_enabled: false)
-                  end
-
-                  it { is_expected.to eq expected_response }
+                before do
+                  group.namespace_settings.update!(experiment_features_enabled: false)
                 end
-              end
-            end
-
-            it_behaves_like 'checking available groups'
-
-            describe 'returning namespace ids that allow using a feature' do
-              let(:expected_enablement_type) { 'tier' }
-              let(:expected_namespace_ids) { [group.id, group_without_experiment_features_enabled.id] }
-
-              it { is_expected.to eq expected_response }
-
-              context 'when the feature is not GA' do
-                let(:maturity) { :beta }
-                let(:expected_namespace_ids) { [group.id] }
 
                 it { is_expected.to eq expected_response }
               end
             end
-
-            context 'when specifying a unit_primitive name' do
-              let(:unit_primitive_name) { :my_unit_primitive }
-
-              subject { user.allowed_to_use(ai_feature, unit_primitive_name: unit_primitive_name) }
-
-              it_behaves_like 'checking available groups'
-            end
           end
-        end
-      end
 
-      context 'when on Self managed instance' do
-        using RSpec::Parameterized::TableSyntax
+          it_behaves_like 'checking available groups'
 
-        let(:namespace) { nil }
+          describe 'returning namespace ids that allow using a feature' do
+            let(:expected_enablement_type) { 'tier' }
+            let(:expected_namespace_ids) { [group.id, group_without_experiment_features_enabled.id] }
 
-        let_it_be_with_reload(:active_gitlab_purchase) do
-          create(:gitlab_subscription_add_on_purchase, :self_managed, add_on: gitlab_add_on)
-        end
+            it { is_expected.to eq expected_response }
 
-        include_examples 'checking assigned seats' do
-          let(:allowed_by_namespace_ids) { [] }
-
-          before do
-            # AddOnPurchase.for_user scope (used for Duo Core)
-            # returns nil in SM instances if add-on
-            # purchases are associated with namespaces
-            active_gitlab_purchase.update!(namespace: nil)
-            ::Ai::Setting.instance.update!(duo_core_features_enabled: duo_core_features_enabled)
-          end
-        end
-
-        context "when the user doesn't have a seat but the unit_primitive has free access" do
-          shared_examples 'when checking licensed features' do
-            where(:licensed_feature_available, :free_access, :expected_allowed) do
-              true  | true  | true
-              true  | false | false
-              false | true  | false
-            end
-
-            with_them do
-              before do
-                stub_licensed_features(licensed_feature => licensed_feature_available)
-              end
+            context 'when the feature is not GA' do
+              let(:maturity) { :beta }
+              let(:expected_namespace_ids) { [group.id] }
 
               it { is_expected.to eq expected_response }
             end
           end
 
-          it_behaves_like 'when checking licensed features'
-
-          context 'when specifying a unit primitive name' do
-            let(:unit_primitive_name) { :my_unit_primitive_name }
-
-            before do
-              stub_licensed_features(licensed_feature => true)
-            end
+          context 'when specifying a unit_primitive name' do
+            let(:unit_primitive_name) { :my_unit_primitive }
 
             subject { user.allowed_to_use(ai_feature, unit_primitive_name: unit_primitive_name) }
 
-            it { is_expected.to eq expected_response }
-          end
-
-          context 'when specifying a licensed feature name' do
-            it_behaves_like 'when checking licensed features' do
-              let(:licensed_feature) { :generate_commit_message }
-
-              subject(:allowed_to_use) { user.allowed_to_use(ai_feature, licensed_feature: licensed_feature) }
-            end
+            it_behaves_like 'checking available groups'
           end
         end
       end
     end
 
-    context 'when use_unit_primitives_in_user_authorizable is disabled' do
-      let(:unit_primitive) do
-        CloudConnector::BaseAvailableServiceData.new(unit_primitive_name, nil, unit_primitive_add_ons)
+    context 'when on Self managed instance' do
+      using RSpec::Parameterized::TableSyntax
+
+      let(:namespace) { nil }
+
+      let_it_be_with_reload(:active_gitlab_purchase) do
+        create(:gitlab_subscription_add_on_purchase, :self_managed, add_on: gitlab_add_on)
       end
 
-      before do
-        stub_feature_flags(use_unit_primitives_in_user_authorizable: false)
-        allow(CloudConnector::AvailableServices).to receive(:find_by_name).with(unit_primitive_name)
-          .and_return(unit_primitive)
+      include_examples 'checking assigned seats' do
+        let(:allowed_by_namespace_ids) { [] }
+
+        before do
+          # AddOnPurchase.for_user scope (used for Duo Core)
+          # returns nil in SM instances if add-on
+          # purchases are associated with namespaces
+          active_gitlab_purchase.update!(namespace: nil)
+          ::Ai::Setting.instance.update!(duo_core_features_enabled: duo_core_features_enabled)
+        end
       end
 
-      include_examples 'allowed to use'
+      context "when the user doesn't have a seat but the unit_primitive has free access" do
+        shared_examples 'when checking licensed features' do
+          where(:licensed_feature_available, :free_access, :expected_allowed) do
+            true  | true  | true
+            true  | false | false
+            false | true  | false
+          end
 
-      context 'when unit_primitive data is missing' do
-        let(:expected_allowed) { false }
-        let(:unit_primitive) { CloudConnector::MissingServiceData.new }
+          with_them do
+            before do
+              stub_licensed_features(licensed_feature => licensed_feature_available)
+            end
 
-        it { is_expected.to eq expected_response }
+            it { is_expected.to eq expected_response }
+          end
+        end
+
+        it_behaves_like 'when checking licensed features'
+
+        context 'when specifying a unit primitive name' do
+          let(:unit_primitive_name) { :my_unit_primitive_name }
+
+          before do
+            stub_licensed_features(licensed_feature => true)
+          end
+
+          subject { user.allowed_to_use(ai_feature, unit_primitive_name: unit_primitive_name) }
+
+          it { is_expected.to eq expected_response }
+        end
+
+        context 'when specifying a licensed feature name' do
+          it_behaves_like 'when checking licensed features' do
+            let(:licensed_feature) { :generate_commit_message }
+
+            subject(:allowed_to_use) { user.allowed_to_use(ai_feature, licensed_feature: licensed_feature) }
+          end
+        end
       end
     end
 
-    context 'when use_unit_primitives_in_user_authorizable is enabled' do
-      let(:unit_primitive) do
-        build(:cloud_connector_unit_primitive, name: unit_primitive_name, add_ons: unit_primitive_add_ons)
-      end
+    context 'when unit_primitive data is missing' do
+      let(:expected_allowed) { false }
+      let(:unit_primitive) { nil }
 
-      before do
-        stub_feature_flags(use_unit_primitives_in_user_authorizable: true)
-        allow(Gitlab::CloudConnector::DataModel::UnitPrimitive).to receive(:find_by_name).with(unit_primitive_name)
-          .and_return(unit_primitive)
-      end
-
-      include_examples 'allowed to use'
-
-      context 'when unit_primitive data is missing' do
-        let(:expected_allowed) { false }
-        let(:unit_primitive) { nil }
-
-        it { is_expected.to eq expected_response }
-      end
+      it { is_expected.to eq expected_response }
     end
   end
 
@@ -424,9 +393,6 @@ RSpec.describe Ai::UserAuthorizable, feature_category: :ai_abstraction_layer do
       })
     end
 
-    # We need to stub both the service and the UP because:
-    # - We are not done migrating away from AvailableServices
-    # - The actual UP as defined in the library YAML does not specify a cut-off date
     let_it_be(:amazon_q_unit_primitive) do
       build(:cloud_connector_unit_primitive,
         name: 'amazon_q_integration',
