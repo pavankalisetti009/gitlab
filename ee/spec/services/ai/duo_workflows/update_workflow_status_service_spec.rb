@@ -126,7 +126,7 @@ RSpec.describe ::Ai::DuoWorkflows::UpdateWorkflowStatusService, feature_category
         result = described_class.new(workflow: workflow, current_user: user, status_event: "retry").execute
 
         expect(result[:status]).to eq(:success)
-        expect(result[:message]).to eq("Workflow status updated")
+        expect(result[:message]).to eq("Workflow already in status running")
         expect(workflow.reload.human_status_name).to eq("running")
       end
 
@@ -268,6 +268,16 @@ RSpec.describe ::Ai::DuoWorkflows::UpdateWorkflowStatusService, feature_category
         expect(result[:message]).to eq("Can not update workflow")
         expect(result[:reason]).to eq(:unauthorized)
         expect(workflow.reload.human_status_name).to eq("running")
+      end
+
+      it "allows updating to current status", :aggregate_failures do
+        workflow.finish
+
+        result = described_class.new(workflow: workflow, current_user: user, status_event: "finish").execute
+
+        expect(result[:status]).to eq(:success)
+        expect(result[:message]).to eq("Workflow already in status finished")
+        expect(workflow.reload.human_status_name).to eq("finished")
       end
 
       context "when duo_features_enabled settings is turned off" do
