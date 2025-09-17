@@ -5,22 +5,37 @@ describe('MR Widget Security Reports Utils', () => {
     it('should compute the highlights properly', () => {
       expect(
         highlightsFromReport({
-          added: [
-            { severity: 'high' },
-            { severity: 'high' },
-            { severity: 'critical' },
-            { severity: 'critical' },
-            { severity: 'critical' },
-            { severity: 'medium' },
-            { severity: 'low' },
-            { severity: 'info' },
-            { severity: 'unknown' },
-          ],
+          full: {
+            added: [
+              { severity: 'high' },
+              { severity: 'high' },
+              { severity: 'critical' },
+              { severity: 'critical' },
+              { severity: 'critical' },
+              { severity: 'medium' },
+              { severity: 'low' },
+              { severity: 'info' },
+              { severity: 'unknown' },
+            ],
+          },
         }),
       ).toEqual({
         critical: 3,
         high: 2,
         other: 4,
+      });
+    });
+
+    it('should sum full and partial results', () => {
+      expect(
+        highlightsFromReport({
+          full: { added: [{ severity: 'high' }, { severity: 'critical' }, { severity: 'medium' }] },
+          partial: { added: [{ severity: 'high' }, { severity: 'critical' }] },
+        }),
+      ).toEqual({
+        critical: 2,
+        high: 2,
+        other: 1,
       });
     });
 
@@ -33,7 +48,7 @@ describe('MR Widget Security Reports Utils', () => {
 
       expect(
         highlightsFromReport(
-          { added: [{ severity: 'high' }, { severity: 'critical' }] },
+          { full: { added: [{ severity: 'high' }, { severity: 'critical' }] } },
           highlights,
         ),
       ).toEqual({

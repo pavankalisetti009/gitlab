@@ -1,5 +1,15 @@
 <script>
-import { GlBadge, GlButton, GlIcon, GlLink, GlPopover } from '@gitlab/ui';
+import {
+  GlBadge,
+  GlButton,
+  GlIcon,
+  GlLink,
+  GlPopover,
+  GlTabs,
+  GlTab,
+  GlAlert,
+  GlSprintf,
+} from '@gitlab/ui';
 import { SEVERITY_LEVELS } from 'ee/security_dashboard/constants';
 import SummaryHighlights from 'ee/vue_shared/security_reports/components/summary_highlights.vue';
 import { s__ } from '~/locale';
@@ -13,16 +23,23 @@ import SummaryText from './summary_text.vue';
 import { i18n, popovers } from './i18n';
 import { highlightsFromReport } from './utils';
 
+const DIFF_BASED_TAB_INDEX = 0;
+const FULL_SCAN_TAB_INDEX = 1;
+
 export default {
   SEVERITY_LEVELS,
   i18n,
   components: {
     MrWidgetRow,
+    GlAlert,
     GlBadge,
     GlButton,
     GlIcon,
     GlLink,
     GlPopover,
+    GlTabs,
+    GlTab,
+    GlSprintf,
     DynamicScroller,
     DynamicScrollerItem,
     SummaryText,
@@ -43,7 +60,67 @@ export default {
       required: true,
     },
   },
+  data() {
+    return {
+      tabIndex: this.isScanEnabled('partial') ? DIFF_BASED_TAB_INDEX : FULL_SCAN_TAB_INDEX,
+    };
+  },
   computed: {
+    shouldShowDiffBasedHelperText() {
+      return this.tabIndex === DIFF_BASED_TAB_INDEX;
+    },
+    shouldShowEmptyState() {
+      if (this.tabIndex === FULL_SCAN_TAB_INDEX && !this.isScanEnabled('full')) {
+        return true;
+      }
+
+      if (this.tabIndex === FULL_SCAN_TAB_INDEX) {
+        return this.report.full?.numberOfNewFindings === 0;
+      }
+
+      return this.report.partial?.numberOfNewFindings === 0;
+    },
+    emptyStateMessage() {
+      const fullScanEmpty =
+        this.tabIndex === FULL_SCAN_TAB_INDEX && this.report.full?.numberOfNewFindings === 0;
+      const diffScanEmpty =
+        this.tabIndex === DIFF_BASED_TAB_INDEX && this.report.partial?.numberOfNewFindings === 0;
+
+      if (fullScanEmpty || diffScanEmpty) {
+        return s__('ciReport|No new vulnerabilities were found.');
+      }
+
+      if (this.tabIndex === FULL_SCAN_TAB_INDEX) {
+        return s__('ciReport|Full scan is not enabled for this project.');
+      }
+
+      return '';
+    },
+    summaryTextError() {
+      return this.report.full?.error || this.report.partial?.error;
+    },
+    summaryTextDesc() {
+      return this.report.full?.reportTypeDescription || this.report.partial?.reportTypeDescription;
+    },
+    summaryTextTestId() {
+      return this.report.full?.testId || this.report.partial?.testId;
+    },
+    displayPartialScans() {
+      return this.isScanEnabled('partial');
+    },
+    totalNewFindings() {
+      return (
+        (this.report.partial?.numberOfNewFindings || 0) +
+        (this.report.full?.numberOfNewFindings || 0)
+      );
+    },
+    statusIconNameReportType() {
+      if (this.totalNewFindings > 0 || this.summaryTextError) {
+        return EXTENSION_ICONS.warning;
+      }
+
+      return EXTENSION_ICONS.success;
+    },
     helpPopovers() {
       return {
         SAST: {
@@ -91,34 +168,32 @@ export default {
     },
   },
   methods: {
-    statusIconNameReportType(report) {
-      if (report.numberOfNewFindings > 0 || report.error) {
-        return EXTENSION_ICONS.warning;
-      }
-
-      return EXTENSION_ICONS.success;
+    isScanEnabled(key) {
+      return Object.keys(this.report?.[key] || {}).length > 0;
     },
-
     statusIconNameVulnerability(vuln) {
       return EXTENSION_ICONS[`severity${capitalizeFirstCharacter(vuln.severity)}`];
     },
-
     isDismissed(vuln) {
       return vuln.state === 'dismissed';
     },
-
     setModalData(finding) {
       this.$emit('modal-data', finding);
     },
-
     isAiResolvable(vuln) {
       return vuln.ai_resolution_enabled && this.glAbilities.resolveVulnerabilityWithAi;
     },
-
     getAiResolvableBadgeId(uuid) {
       return `ai-resolvable-badge-${uuid}`;
     },
-
+    tabTitle(scanType) {
+      return this.report[scanType]?.numberOfNewFindings ?? '-';
+    },
+    hasScanTypeAnyNewOrFixedFindings(scanType) {
+      return (
+        this.report[scanType]?.numberOfNewFindings || this.report[scanType]?.numberOfFixedFindings
+      );
+    },
     highlightsFromReport,
   },
   aiResolutionHelpPopOver: {
@@ -129,6 +204,13 @@ export default {
       anchor: 'vulnerability-resolution-in-a-merge-request',
     }),
   },
+  diffBasedScansLearnMorePath: helpPagePath('user/application_security/sast/gitlab_advanced_sast', {
+    anchore: 'use-diff-based-scanning-to-improve-performance',
+  }),
+  tabs: [
+    { title: i18n.partialScan, scanType: 'partial' },
+    { title: i18n.fullScan, scanType: 'full' },
+  ],
 };
 </script>
 
@@ -136,99 +218,141 @@ export default {
   <mr-widget-row
     :widget-name="widgetName"
     :level="2"
-    :status-icon-name="statusIconNameReportType(report)"
+    :status-icon-name="statusIconNameReportType"
     :help-popover="helpPopovers[report.reportType]"
     :data-testid="`report-${report.reportType}`"
   >
     <template #header>
       <div>
         <summary-text
-          :total-new-vulnerabilities="report.numberOfNewFindings"
+          :total-new-vulnerabilities="totalNewFindings"
           :is-loading="false"
-          :error="report.error"
-          :scanner="report.reportTypeDescription"
-          :data-testid="`${report.testId}`"
+          :error="summaryTextError"
+          :scanner="summaryTextDesc"
+          :data-testid="summaryTextTestId"
           show-at-least-hint
         />
         <summary-highlights
-          v-if="report.numberOfNewFindings > 0"
+          v-if="totalNewFindings > 0"
           :highlights="highlightsFromReport(report)"
         />
       </div>
     </template>
     <template #body>
-      <div
-        v-if="report.numberOfNewFindings || report.numberOfFixedFindings"
-        class="gl-mt-2 gl-w-full"
+      <gl-tabs
+        v-model="tabIndex"
+        content-class="gl-pt-0"
+        class="gl-mt-1 gl-w-full"
+        :class="{
+          '[&_.gl-tabs-wrapper]:gl-hidden': !displayPartialScans,
+        }"
       >
-        <dynamic-scroller
-          :items="report.findings"
-          :min-item-size="32"
-          :style="{ maxHeight: '170px' }"
-          data-testid="dynamic-content-scroller"
-          key-field="uuid"
-          class="gl-pr-5"
-        >
-          <template #default="{ item: vuln, active, index }">
-            <dynamic-scroller-item :item="vuln" :active="active">
-              <strong
-                v-if="report.numberOfNewFindings > 0 && index === 0"
-                data-testid="new-findings-title"
-                class="gl-mt-2 gl-block"
-                >{{ $options.i18n.new }}</strong
-              >
-              <strong
-                v-if="report.numberOfFixedFindings > 0 && report.numberOfNewFindings === index"
-                data-testid="fixed-findings-title"
-                class="gl-mt-2 gl-block"
-                >{{ $options.i18n.fixed }}</strong
-              >
-              <mr-widget-row
-                :key="vuln.uuid"
-                :level="3"
-                :widget-name="widgetName"
-                :status-icon-name="statusIconNameVulnerability(vuln)"
-                class="gl-mt-2"
-              >
-                <template #body>
-                  {{ $options.SEVERITY_LEVELS[vuln.severity] }}
-                  <gl-button
-                    variant="link"
-                    class="gl-ml-2 gl-overflow-hidden gl-text-ellipsis gl-whitespace-nowrap"
-                    @click="setModalData(vuln)"
-                    >{{ vuln.name }}
-                  </gl-button>
-                  <gl-badge v-if="isDismissed(vuln)" class="gl-ml-3"
-                    >{{ $options.i18n.dismissed }}
-                  </gl-badge>
-                  <template v-if="isAiResolvable(vuln)">
-                    <gl-badge
-                      :id="getAiResolvableBadgeId(vuln.uuid)"
-                      variant="info"
-                      class="gl-ml-3"
-                      data-testid="ai-resolvable-badge"
-                    >
-                      <gl-icon :size="12" name="tanuki-ai" />
-                    </gl-badge>
-                    <gl-popover
-                      trigger="hover focus"
-                      placement="top"
-                      boundary="viewport"
-                      :target="getAiResolvableBadgeId(vuln.uuid)"
-                      :data-testid="`ai-resolvable-badge-popover-${vuln.uuid}`"
-                    >
-                      {{ $options.aiResolutionHelpPopOver.text }}
-                      <gl-link :href="$options.aiResolutionHelpPopOver.learnMorePath"
-                        >{{ __('Learn more') }}
-                      </gl-link>
-                    </gl-popover>
-                  </template>
-                </template>
-              </mr-widget-row>
-            </dynamic-scroller-item>
+        <gl-tab v-for="tab in $options.tabs" :key="tab.title">
+          <template v-if="displayPartialScans" #title>
+            <span>{{ tab.title }}</span>
+            <gl-badge class="gl-ml-2">{{ tabTitle(tab.scanType) }}</gl-badge>
           </template>
-        </dynamic-scroller>
-      </div>
+
+          <slot>
+            <gl-alert
+              v-if="shouldShowDiffBasedHelperText"
+              variant="info"
+              class="gl-mb-5"
+              :dismissible="false"
+            >
+              <gl-sprintf :message="$options.i18n.usingDiffBasedScans">
+                <template #link="{ content }">
+                  <gl-link :href="$options.diffBasedScansLearnMorePath">{{ content }}</gl-link>
+                </template>
+              </gl-sprintf>
+            </gl-alert>
+
+            <p
+              v-if="shouldShowEmptyState"
+              class="gl-mb-0 gl-mt-4 gl-text-subtle"
+              data-testid="empty-state"
+            >
+              {{ emptyStateMessage }}
+            </p>
+
+            <div v-if="hasScanTypeAnyNewOrFixedFindings(tab.scanType)" class="gl-mt-2 gl-w-full">
+              <dynamic-scroller
+                :items="report[tab.scanType].findings"
+                :min-item-size="32"
+                :style="{ maxHeight: '170px' }"
+                data-testid="dynamic-content-scroller"
+                key-field="uuid"
+                class="gl-pr-5"
+              >
+                <template #default="{ item: vuln, active, index }">
+                  <dynamic-scroller-item :item="vuln" :active="active">
+                    <strong
+                      v-if="report[tab.scanType].numberOfNewFindings > 0 && index === 0"
+                      data-testid="new-findings-title"
+                      class="gl-mt-2 gl-block"
+                      >{{ $options.i18n.new }}</strong
+                    >
+                    <strong
+                      v-if="
+                        report[tab.scanType].numberOfFixedFindings > 0 &&
+                        report[tab.scanType].numberOfNewFindings === index
+                      "
+                      data-testid="fixed-findings-title"
+                      class="gl-mt-2 gl-block"
+                      >{{ $options.i18n.fixed }}</strong
+                    >
+                    <mr-widget-row
+                      :key="vuln.uuid"
+                      :level="3"
+                      :widget-name="widgetName"
+                      :status-icon-name="statusIconNameVulnerability(vuln)"
+                      class="gl-mt-2"
+                    >
+                      <template #body>
+                        {{ $options.SEVERITY_LEVELS[vuln.severity] }}
+                        <gl-button
+                          variant="link"
+                          class="gl-ml-2 gl-overflow-hidden gl-text-ellipsis gl-whitespace-nowrap"
+                          @click="setModalData(vuln)"
+                          >{{ vuln.name }}
+                        </gl-button>
+                        <gl-badge
+                          v-if="isDismissed(vuln)"
+                          class="gl-ml-3"
+                          data-testid="dismissed-badge"
+                          >{{ $options.i18n.dismissed }}
+                        </gl-badge>
+                        <template v-if="isAiResolvable(vuln)">
+                          <gl-badge
+                            :id="getAiResolvableBadgeId(vuln.uuid)"
+                            variant="info"
+                            class="gl-ml-3"
+                            data-testid="ai-resolvable-badge"
+                          >
+                            <gl-icon :size="12" name="tanuki-ai" />
+                          </gl-badge>
+                          <gl-popover
+                            trigger="hover focus"
+                            placement="top"
+                            boundary="viewport"
+                            :target="getAiResolvableBadgeId(vuln.uuid)"
+                            :data-testid="`ai-resolvable-badge-popover-${vuln.uuid}`"
+                          >
+                            {{ $options.aiResolutionHelpPopOver.text }}
+                            <gl-link :href="$options.aiResolutionHelpPopOver.learnMorePath"
+                              >{{ __('Learn more') }}
+                            </gl-link>
+                          </gl-popover>
+                        </template>
+                      </template>
+                    </mr-widget-row>
+                  </dynamic-scroller-item>
+                </template>
+              </dynamic-scroller>
+            </div>
+          </slot>
+        </gl-tab>
+      </gl-tabs>
     </template>
   </mr-widget-row>
 </template>

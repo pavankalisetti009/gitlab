@@ -7,7 +7,7 @@ export function highlightsFromReport(report, highlights = { [HIGH]: 0, [CRITICAL
   //  { scanner: "DAST", added: [{ id: 15, severity: 'high' }] },
   //  ...
   // ]
-  return (report.added || []).reduce((acc, vuln) => {
+  return [...(report.full?.added || []), ...(report.partial?.added || [])].reduce((acc, vuln) => {
     if (vuln.severity === HIGH) {
       acc[HIGH] += 1;
     } else if (vuln.severity === CRITICAL) {
