@@ -87,7 +87,9 @@ RSpec.describe Elastic::Latest::NoteClassProxy, feature_category: :global_search
             expect(hits.first['_source'].keys).to contain_exactly('noteable_id')
             expect(hits.map(&:_source).map(&:noteable_id)).to contain_exactly(note.noteable_id)
             assert_named_queries('note:multi_match:and:search_terms', 'note:multi_match_phrase:search_terms',
-              'note:archived:non_archived', 'filters:related:issue')
+              'note:archived:non_archived', 'filters:related:issue',
+              issues_context_name,
+              without: %W[#{merge_requests_context_name} #{repository_context_name} #{snippets_context_name}])
           end
         end
       end
@@ -126,7 +128,9 @@ RSpec.describe Elastic::Latest::NoteClassProxy, feature_category: :global_search
             expect(result.response['hits']['hits'].map(&:_source).map(&:noteable_id))
               .to contain_exactly(note.noteable_id)
             assert_named_queries('note:multi_match:and:search_terms', 'note:multi_match_phrase:search_terms',
-              'note:archived:non_archived', 'filters:related:issue')
+              'note:archived:non_archived', 'filters:related:issue',
+              issues_context_name,
+              without: %W[#{merge_requests_context_name} #{repository_context_name} #{snippets_context_name}])
           end
         end
       end
@@ -162,7 +166,9 @@ RSpec.describe Elastic::Latest::NoteClassProxy, feature_category: :global_search
             expect(result.response['hits']['hits'].map(&:_source).map(&:noteable_id))
               .to contain_exactly(note.noteable_id)
             assert_named_queries('note:multi_match:and:search_terms', 'note:multi_match_phrase:search_terms',
-              'note:archived:non_archived', 'filters:related:issue')
+              'note:archived:non_archived', 'filters:related:issue',
+              issues_context_name,
+              without: %W[#{merge_requests_context_name} #{repository_context_name} #{snippets_context_name}])
           end
         end
       end
@@ -173,7 +179,12 @@ RSpec.describe Elastic::Latest::NoteClassProxy, feature_category: :global_search
         stub_feature_flags(search_notes_use_membership_filter: true)
       end
 
-      it_behaves_like 'search at all levels'
+      it_behaves_like 'search at all levels' do
+        let(:issues_context_name) { "filters:permissions:#{search_level}:issues_access_level:enabled" }
+        let(:merge_requests_context_name) { "filters:permissions:#{search_level}:merge_requests_access_level:enabled" }
+        let(:repository_context_name) { "filters:permissions:#{search_level}:repository_level:enabled" }
+        let(:snippets_context_name) { "filters:permissions:#{search_level}:snippets_access_level:enabled" }
+      end
     end
 
     context 'when search_notes_use_membership_filter is false' do
@@ -181,7 +192,12 @@ RSpec.describe Elastic::Latest::NoteClassProxy, feature_category: :global_search
         stub_feature_flags(search_notes_use_membership_filter: false)
       end
 
-      it_behaves_like 'search at all levels'
+      it_behaves_like 'search at all levels' do
+        let(:issues_context_name) { 'note:authorized:project:issues' }
+        let(:merge_requests_context_name) { 'note:authorized:project:merge_requests' }
+        let(:repository_context_name) { 'note:authorized:project:repository' }
+        let(:snippets_context_name) { 'note:authorized:project:snippets' }
+      end
     end
   end
 end

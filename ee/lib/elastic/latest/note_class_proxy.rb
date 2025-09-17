@@ -20,6 +20,7 @@ module Elastic
         options[:in] = ['note']
         options[:no_join_project] = true
         options[:project_id_field] = :project_id
+        @noteable_type_to_feature = filtered_noteable_types(options)
 
         query_hash = basic_query_hash(%w[note], query, options)
 
@@ -30,7 +31,7 @@ module Elastic
           query_hash = ::Search::Elastic::Filters.by_noteable_type(query_hash:, options:)
         end
 
-        query_hash[:highlight] = highlight_options(options[:in]) unless options[:count_only]
+        query_hash[:highlight] = highlight_options(options[:in]) if include_highlight?(options)
 
         search(query_hash, options)
       end
@@ -55,9 +56,17 @@ module Elastic
 
       private
 
+      attr_reader :noteable_type_to_feature
+
+      def include_highlight?(options)
+        return false if options[:count_only] || options[:noteable_type]
+
+        true
+      end
+
       def get_authorization_filter(query_hash, options)
         if use_new_auth?(options[:current_user])
-          options[:features] = NOTEABLE_TYPE_TO_FEATURE.values
+          options[:features] = noteable_type_to_feature.values
           ::Search::Elastic::Filters.by_search_level_and_membership(query_hash: query_hash, options: options)
         else
           context.name(:authorized) { project_ids_filter(query_hash, options) }
@@ -232,7 +241,7 @@ module Elastic
       # for base model filtering.
       override :pick_projects_by_membership
       def pick_projects_by_membership(project_ids, user, no_join_project, features: nil, project_id_field: nil)
-        NOTEABLE_TYPE_TO_FEATURE.map do |noteable_type, feature|
+        noteable_type_to_feature.map do |noteable_type, feature|
           context.name(feature) do
             condition =
               if project_ids == :any
@@ -254,7 +263,7 @@ module Elastic
       # for base model filtering.
       override :limit_by_feature
       def limit_by_feature(condition, _ = nil, include_members_only:)
-        NOTEABLE_TYPE_TO_FEATURE.map do |noteable_type, feature|
+        noteable_type_to_feature.map do |noteable_type, feature|
           context.name(feature) do
             limit =
               if include_members_only
@@ -266,6 +275,15 @@ module Elastic
             { bool: { _name: context.name, filter: [condition, limit] }, noteable_type: noteable_type }
           end
         end
+      end
+
+      def filtered_noteable_types(options = {})
+        return NOTEABLE_TYPE_TO_FEATURE unless options[:noteable_type]
+
+        noteable_type_symbol = options[:noteable_type].to_sym
+        return {} unless NOTEABLE_TYPE_TO_FEATURE.key?(noteable_type_symbol)
+
+        NOTEABLE_TYPE_TO_FEATURE.slice(noteable_type_symbol)
       end
     end
   end
