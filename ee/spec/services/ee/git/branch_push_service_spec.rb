@@ -311,11 +311,27 @@ RSpec.describe Git::BranchPushService, feature_category: :source_code_management
 
     describe 'trigger enqueue_code_embedding_indexing', feature_category: :code_suggestions do
       shared_examples 'does not trigger enqueue_code_embedding_indexing' do
-        it 'does not schedule a IncrementalRepositoryIndexWorker' do
+        it 'does not schedule a RepositoryIndexWorker' do
           expect(::Ai::ActiveContext::Code::RepositoryIndexWorker).not_to receive(:perform_async)
 
           branch_push_service.execute
         end
+      end
+
+      shared_examples 'does trigger enqueue_code_embedding_indexing' do
+        it 'does schedule a RepositoryIndexWorker' do
+          expect(::Ai::ActiveContext::Code::RepositoryIndexWorker).to receive(:perform_async).with(repository.id)
+
+          branch_push_service.execute
+        end
+      end
+
+      context 'when ff active_context_code_incremental_index_project is disabled' do
+        before do
+          stub_feature_flags(active_context_code_incremental_index_project: false)
+        end
+
+        it_behaves_like 'does not trigger enqueue_code_embedding_indexing'
       end
 
       context 'when pushing to a non-default branch' do
@@ -328,20 +344,17 @@ RSpec.describe Git::BranchPushService, feature_category: :source_code_management
         it_behaves_like 'does not trigger enqueue_code_embedding_indexing'
       end
 
-      context 'when the Ai::ActiveContext::Code::Repository is not ready' do
-        let_it_be(:repository) { create(:ai_active_context_code_repository, state: :pending, project: project) }
+      context 'with a code repository' do
+        let_it_be(:repository) { create(:ai_active_context_code_repository, state: :ready, project: project) }
 
-        it_behaves_like 'does not trigger enqueue_code_embedding_indexing'
+        it_behaves_like 'does trigger enqueue_code_embedding_indexing'
 
-        context 'when the Ai::ActiveContext::Code::Repository is ready' do
+        context 'when the Ai::ActiveContext::Code::Repository is not ready' do
           before do
-            repository.update!(state: :ready)
+            repository.update!(state: :pending)
           end
 
-          it 'triggers perform_async on RepositoryIndexWorker' do
-            expect(::Ai::ActiveContext::Code::RepositoryIndexWorker).to receive(:perform_async).with(repository.id)
-            branch_push_service.execute
-          end
+          it_behaves_like 'does not trigger enqueue_code_embedding_indexing'
         end
       end
     end
