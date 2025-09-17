@@ -5,7 +5,13 @@ export const APPROVAL_STATUSES = {
   REJECTED: 'REJECTED',
 };
 
-export const ACCESS_LEVEL_DISPLAY = {
-  MAINTAINER: s__('DeploymentApprovals|Maintainers'),
-  DEVELOPER: s__('DeploymentApprovals|Developers + Maintainers'),
+export const ACCESS_LEVEL = {
+  MAINTAINER: {
+    value: 'Maintainers' /* eslint-disable-line @gitlab/require-i18n-strings */,
+    display: s__('DeploymentApprovals|Maintainers'),
+  },
+  DEVELOPER: {
+    value: 'Developers + Maintainers' /* eslint-disable-line @gitlab/require-i18n-strings */,
+    display: s__('DeploymentApprovals|Developers + Maintainers'),
+  },
 };

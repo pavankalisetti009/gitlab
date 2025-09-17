@@ -4,7 +4,7 @@ import { s__, sprintf } from '~/locale';
 import TimeAgoTooltip from '~/vue_shared/components/time_ago_tooltip.vue';
 import TimelineEntryItem from '~/vue_shared/components/notes/timeline_entry_item.vue';
 import { getIdFromGraphQLId } from '~/graphql_shared/utils';
-import { APPROVAL_STATUSES, ACCESS_LEVEL_DISPLAY } from '../constants';
+import { APPROVAL_STATUSES, ACCESS_LEVEL } from '../constants';
 
 export default {
   components: {
@@ -61,7 +61,7 @@ export default {
       const role =
         relatedRule.user?.name ||
         relatedRule.group?.name ||
-        ACCESS_LEVEL_DISPLAY[relatedRule.accessLevel?.stringValue];
+        ACCESS_LEVEL[relatedRule.accessLevel?.stringValue]?.display;
 
       return approval.status === APPROVAL_STATUSES.APPROVED
         ? sprintf(this.$options.i18n.approvedAs, { role })
