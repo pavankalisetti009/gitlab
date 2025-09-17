@@ -3642,8 +3642,23 @@ RSpec.describe ::Search::Elastic::Filters, :elastic_helpers, feature_category: :
       end
     end
 
-    context 'when noteable_type is provided' do
+    context 'when invalid noteable_type is provided' do
+      let(:options) { { search_level: 'project', noteable_type: 'Hello' } }
+
+      it 'raises an error' do
+        expect { described_class.by_noteable_type(query_hash: query_hash, options: options) }
+          .to raise_error(ArgumentError)
+      end
+    end
+
+    context 'when valid noteable_type is provided' do
       let(:options) { { search_level: 'project', noteable_type: 'Issue' } }
+
+      it 'does not provide highlight' do
+        described_class.by_noteable_type(query_hash: query_hash, options: options)
+
+        expect(query_hash).not_to have_key(:highlight)
+      end
 
       it 'sets _source to only include noteable_id' do
         described_class.by_noteable_type(query_hash: query_hash, options: options)

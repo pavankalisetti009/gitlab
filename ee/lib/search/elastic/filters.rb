@@ -11,6 +11,8 @@ module Search
       PROJECT_VISIBILITY_FIELD = :visibility_level
       TRAVERSAL_IDS_FIELD = :traversal_ids
 
+      ALLOWED_NOTEABLE_TYPES = ::Elastic::Latest::NoteClassProxy::NOTEABLE_TYPE_TO_FEATURE.keys.map(&:to_s).freeze
+
       class << self
         include ::Elastic::Latest::QueryContext::Aware
         include Search::Elastic::Concerns::FilterUtils
@@ -1022,6 +1024,11 @@ module Search
         def by_noteable_type(query_hash:, options:)
           noteable_type = options[:noteable_type]
           return query_hash unless noteable_type
+
+          unless ALLOWED_NOTEABLE_TYPES.include?(noteable_type)
+            raise ArgumentError,
+              "Invalid noteable_type: #{noteable_type}. Must be one of: #{ALLOWED_NOTEABLE_TYPES.join(', ')}"
+          end
 
           context.name(:filters) do
             query_hash[:_source] = ['noteable_id']
