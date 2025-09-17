@@ -195,6 +195,14 @@ RSpec.shared_examples 'diff scan passed' do
     )
   end
 
+  let(:update_payload) do
+    ::Gitlab::SecretDetection::GRPC::ScanRequest::Payload.new(
+      id: "ed426f4235de33f1e5b539100c53e0002e143e3f",
+      data: "VAR=new",
+      offset: 1
+    )
+  end
+
   let(:diff_blob) do
     ::Gitlab::GitalyClient::DiffBlob.new(
       left_blob_id: ::Gitlab::Git::SHA1_BLANK_SHA,
@@ -216,6 +224,16 @@ RSpec.shared_examples 'diff scan passed' do
       over_patch_bytes_limit: false)
   end
 
+  let(:update_diff_blob) do
+    ::Gitlab::GitalyClient::DiffBlob.new(
+      left_blob_id: "0d8457bf235000469845078c31d3371cb86209e7",
+      right_blob_id: "ed426f4235de33f1e5b539100c53e0002e143e3f",
+      patch: "@@ -1 +1 @@\n-VAR=initial\n\\ No newline at end of file\n+VAR=new\n\\ No newline at end of file\n",
+      status: :STATUS_END_OF_PATCH,
+      binary: false,
+      over_patch_bytes_limit: false)
+  end
+
   it 'gets and parses diffs' do
     expect_next_instance_of(Gitlab::Checks::SecretPushProtection::PayloadProcessor) do |instance|
       expect(instance).to receive(:get_diffs)
@@ -229,6 +247,11 @@ RSpec.shared_examples 'diff scan passed' do
 
       expect(instance).to receive(:parse_diffs)
         .with(move_diff_blob)
+        .at_least(:once)
+        .and_call_original
+
+      expect(instance).to receive(:parse_diffs)
+        .with(update_diff_blob)
         .at_least(:once)
         .and_call_original
     end
@@ -247,12 +270,11 @@ RSpec.shared_examples 'diff scan passed' do
     expect_next_instance_of(::Gitlab::SecretDetection::Core::Scanner) do |instance|
       expect(instance).to receive(:secrets_scan)
         .with(
-          [new_payload],
+          [new_payload, update_payload],
           timeout: kind_of(Float),
           exclusions: kind_of(Hash)
         )
         .once
-        .and_return(passed_scan_response)
         .and_call_original
     end
 

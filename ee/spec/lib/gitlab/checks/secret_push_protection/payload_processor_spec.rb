@@ -20,7 +20,7 @@ RSpec.describe Gitlab::Checks::SecretPushProtection::PayloadProcessor, feature_c
         expect(project.repository).to receive(:diff_blobs_with_raw_info)
           .and_wrap_original do |method, raw_info, **kwargs|
           expect(raw_info).to be_an(Array)
-          expect(raw_info.size).to eq(2)
+          expect(raw_info.size).to eq(3)
 
           changed_path = raw_info.first
           expect(changed_path).to be_a(Gitaly::ChangedPaths)
@@ -49,7 +49,7 @@ RSpec.describe Gitlab::Checks::SecretPushProtection::PayloadProcessor, feature_c
 
         payloads = payload_processor.standardize_payloads
         expect(payloads).to be_an(Array)
-        expect(payloads.size).to eq(1)
+        expect(payloads.size).to eq(2)
 
         payload = payloads.first
         expect(payload).to be_a(::Gitlab::SecretDetection::GRPC::ScanRequest::Payload)
@@ -83,23 +83,34 @@ RSpec.describe Gitlab::Checks::SecretPushProtection::PayloadProcessor, feature_c
         it 'returns a single GRPC payload built from the diff blob' do
           expect(project.repository).to receive(:diff_blobs).and_wrap_original do |method, blob_pairs, **kwargs|
             expect(blob_pairs).to be_an(Array)
-            expect(blob_pairs.size).to eq(1)
+            expect(blob_pairs.size).to eq(2)
 
             blob_pair = blob_pairs.first
             expect(blob_pair).to be_a(Gitaly::DiffBlobsRequest::BlobPair)
             expect(blob_pair.left_blob).to eq("0000000000000000000000000000000000000000")
             expect(blob_pair.right_blob).to eq("da66bef46dbf0ad7fdcbeec97c9eaa24c2846dda")
+
+            blob_pair = blob_pairs[1]
+            expect(blob_pair).to be_a(Gitaly::DiffBlobsRequest::BlobPair)
+            expect(blob_pair.left_blob).to eq("0d8457bf235000469845078c31d3371cb86209e7")
+            expect(blob_pair.right_blob).to eq("ed426f4235de33f1e5b539100c53e0002e143e3f")
+
             method.call(blob_pairs, **kwargs)
           end
 
           payloads = payload_processor.standardize_payloads
           expect(payloads).to be_an(Array)
-          expect(payloads.size).to eq(1)
+          expect(payloads.size).to eq(2)
 
           payload = payloads.first
           expect(payload).to be_a(::Gitlab::SecretDetection::GRPC::ScanRequest::Payload)
           expect(payload.id).to eq(new_blob_reference)
           expect(payload.data).to include("BASE_URL=https://foo.bar")
+
+          payload = payloads[1]
+          expect(payload).to be_a(::Gitlab::SecretDetection::GRPC::ScanRequest::Payload)
+          expect(payload.id).to eq('ed426f4235de33f1e5b539100c53e0002e143e3f')
+          expect(payload.data).to include("VAR=new")
           expect(payload.offset).to eq(1)
         end
       end
