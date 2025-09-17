@@ -7,6 +7,7 @@ import axios from '~/lib/utils/axios_utils';
 import { captureException } from '~/sentry/sentry_browser_wrapper';
 import { SHORT_DATE_FORMAT_WITH_TIME } from '~/vue_shared/constants';
 import HumanTimeframe from '~/vue_shared/components/datetime/human_timeframe.vue';
+import EventsTable from './events_table.vue';
 
 export default {
   name: 'UsageBillingUserDashboardApp',
@@ -18,6 +19,7 @@ export default {
     GlButton,
     UserDate,
     HumanTimeframe,
+    EventsTable,
   },
   inject: ['userId'],
   data() {
@@ -156,6 +158,8 @@ export default {
           </dt>
         </gl-card>
       </dl>
+
+      <events-table :events="userUsage.events" />
     </template>
   </section>
 </template>

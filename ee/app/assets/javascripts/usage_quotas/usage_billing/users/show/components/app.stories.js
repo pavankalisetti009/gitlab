@@ -1,6 +1,6 @@
 // eslint-disable-next-line import/no-extraneous-dependencies
 import MockAdapter from 'axios-mock-adapter';
-import { mockData } from 'ee_jest/usage_quotas/usage_billing/users/show/mock_data';
+import { mockData, mockEmptyData } from 'ee_jest/usage_quotas/usage_billing/users/show/mock_data';
 import axios from '~/lib/utils/axios_utils';
 import UsageBillingUserDashboardApp from './app.vue';
 
@@ -44,6 +44,16 @@ const createTemplate = (config = {}) => {
 
 export const Default = {
   render: createTemplate(),
+};
+
+export const EmptyState = {
+  render: (...args) => {
+    const mockHandler = () => Promise.resolve([200, mockEmptyData]);
+
+    return createTemplate({
+      mockHandler,
+    })(...args);
+  },
 };
 
 export const LoadingState = {

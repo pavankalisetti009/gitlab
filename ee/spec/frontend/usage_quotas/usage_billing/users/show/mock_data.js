@@ -14,11 +14,12 @@ export const mockData = {
           avatar_url: 'https://www.gravatar.com/avatar/1?s=80&d=identicon',
         },
 
-        totalUnitsUsed: 500,
+        totalUnitsUsed: 1500,
         firstConsumptionDate: '2025-01-01',
-        allocationUsed: 500,
-        allocationTotal: 8452,
-        poolUsed: 5140,
+        allocationUsed: 1000,
+        allocationTotal: 1000,
+        poolUsed: 500,
+
         events: [
           {
             timestamp: '2025-01-21T16:42:38Z',
@@ -27,8 +28,7 @@ export const mockData = {
               name: 'frontend-app',
               web_url: 'http://localhost:3000/frontend-app',
             },
-            gitlabUnits: 44,
-            status: 'Normal usage',
+            unitsUsed: 44,
           },
           {
             timestamp: '2025-01-21T16:41:15Z',
@@ -37,8 +37,7 @@ export const mockData = {
               name: 'group-app',
               web_url: 'http://localhost:3000/group-app',
             },
-            gitlabUnits: 62,
-            status: 'Normal usage',
+            unitsUsed: 62,
           },
           {
             timestamp: '2025-01-21T16:40:22Z',
@@ -47,8 +46,7 @@ export const mockData = {
               name: 'frontend-app',
               web_url: 'http://localhost:3000/frontend-app',
             },
-            gitlabUnits: 30,
-            status: 'Normal usage',
+            unitsUsed: 30,
           },
           {
             timestamp: '2025-01-21T16:39:45Z',
@@ -57,8 +55,7 @@ export const mockData = {
               name: 'group-app',
               web_url: 'http://localhost:3000/group-app',
             },
-            gitlabUnits: 45,
-            status: 'Normal usage',
+            unitsUsed: 45,
           },
           {
             timestamp: '2025-01-21T16:38:12Z',
@@ -67,15 +64,13 @@ export const mockData = {
               name: 'frontend-app',
               web_url: 'http://localhost:3000/frontend-app',
             },
-            gitlabUnits: 82,
-            status: 'Normal usage',
+            unitsUsed: 82,
           },
           {
             timestamp: '2025-01-21T16:37:33Z',
             eventType: 'Duo Chat',
             location: null,
-            gitlabUnits: 55,
-            status: 'Normal usage',
+            unitsUsed: 55,
           },
           {
             timestamp: '2025-01-21T16:36:58Z',
@@ -84,8 +79,7 @@ export const mockData = {
               name: 'frontend-app',
               web_url: 'http://localhost:3000/frontend-app',
             },
-            gitlabUnits: 26,
-            status: 'Normal usage',
+            unitsUsed: 26,
           },
           {
             timestamp: '2025-01-21T16:35:41Z',
@@ -94,8 +88,7 @@ export const mockData = {
               name: 'group-app',
               web_url: 'http://localhost:3000/group-app',
             },
-            gitlabUnits: 74,
-            status: 'Normal usage',
+            unitsUsed: 74,
           },
           {
             timestamp: '2025-01-21T16:34:27Z',
@@ -104,8 +97,7 @@ export const mockData = {
               name: 'frontend-app',
               web_url: 'http://localhost:3000/frontend-app',
             },
-            gitlabUnits: 51,
-            status: 'Normal usage',
+            unitsUsed: 51,
           },
           {
             timestamp: '2025-01-21T16:33:05Z',
@@ -114,8 +106,7 @@ export const mockData = {
               name: 'frontend-app',
               web_url: 'http://localhost:3000/frontend-app',
             },
-            gitlabUnits: 70,
-            status: 'Normal usage',
+            unitsUsed: 70,
           },
           {
             timestamp: '2025-01-21T16:31:52Z',
@@ -124,10 +115,37 @@ export const mockData = {
               name: 'frontend-app',
               web_url: 'http://localhost:3000/frontend-app',
             },
-            gitlabUnits: 15,
-            status: 'Normal usage',
+            unitsUsed: 15,
           },
         ],
+      },
+    },
+  },
+};
+
+export const mockEmptyData = {
+  subscription: {
+    gitlabUnitsUsage: {
+      lastUpdated: '2025-02-02T18:45:32Z',
+
+      startDate: '2025-08-01',
+      endDate: '2025-08-31',
+
+      userUsage: {
+        user: {
+          id: 42,
+          username: 'alice_johnson',
+          name: 'Alice Johnson',
+          avatar_url: 'https://www.gravatar.com/avatar/1?s=80&d=identicon',
+        },
+
+        totalUnitsUsed: 0,
+        firstConsumptionDate: '2025-01-01',
+        allocationUsed: 0,
+        allocationTotal: 10000,
+        poolUsed: 0,
+
+        events: [],
       },
     },
   },

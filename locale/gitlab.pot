@@ -69212,6 +69212,9 @@ msgstr ""
 msgid "Usage trends"
 msgstr ""
 
+msgid "UsageBilling|Action"
+msgstr ""
+
 msgid "UsageBilling|Allocation used"
 msgstr ""
 
@@ -69236,6 +69239,9 @@ msgstr ""
 msgid "UsageBilling|Daily usage"
 msgstr ""
 
+msgid "UsageBilling|Date and time"
+msgstr ""
+
 msgid "UsageBilling|Export usage data"
 msgstr ""
 
@@ -69249,6 +69255,9 @@ msgid "UsageBilling|Last month"
 msgstr ""
 
 msgid "UsageBilling|Last updated:"
+msgstr ""
+
+msgid "UsageBilling|Location"
 msgstr ""
 
 msgid "UsageBilling|No user data available"
@@ -69276,6 +69285,9 @@ msgid "UsageBilling|Total units used"
 msgstr ""
 
 msgid "UsageBilling|Total users (active users)"
+msgstr ""
+
+msgid "UsageBilling|Unit amount"
 msgstr ""
 
 msgid "UsageBilling|Units used from pool this month"
