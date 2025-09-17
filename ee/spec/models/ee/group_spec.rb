@@ -4388,7 +4388,7 @@ RSpec.describe Group, feature_category: :groups_and_projects do
   describe '#virtual_registry_policy_subject' do
     subject { group.virtual_registry_policy_subject }
 
-    it { is_expected.to be_a(::VirtualRegistries::Packages::Policies::Group).and have_attributes(group:) }
+    it { is_expected.to be_a(::VirtualRegistries::Policies::Group).and have_attributes(group:) }
   end
 
   describe '#lifecycles' do

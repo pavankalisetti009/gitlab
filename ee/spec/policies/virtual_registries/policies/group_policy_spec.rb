@@ -2,12 +2,12 @@
 
 require 'spec_helper'
 
-RSpec.describe VirtualRegistries::Packages::Policies::GroupPolicy, feature_category: :virtual_registry do
+RSpec.describe VirtualRegistries::Policies::GroupPolicy, feature_category: :virtual_registry do
   include_context 'GroupPolicy context'
   using RSpec::Parameterized::TableSyntax
 
   let_it_be(:subgroup) { create(:group, parent: group, visibility_level: group.visibility_level) }
-  let(:policy_subject) { ::VirtualRegistries::Packages::Policies::Group.new(group) }
+  let(:policy_subject) { ::VirtualRegistries::Policies::Group.new(group) }
 
   subject { described_class.new(current_user, policy_subject) }
 
@@ -214,7 +214,7 @@ RSpec.describe VirtualRegistries::Packages::Policies::GroupPolicy, feature_categ
     end
 
     context 'when group is a subgroup' do
-      let_it_be(:policy_subject) { ::VirtualRegistries::Packages::Policies::Group.new(subgroup) }
+      let_it_be(:policy_subject) { ::VirtualRegistries::Policies::Group.new(subgroup) }
       let(:current_user) { build_stubbed(:user, owner_of: subgroup) }
 
       it { expect_disallowed(:admin_virtual_registry) }

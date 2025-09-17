@@ -12,6 +12,6 @@ RSpec.describe VirtualRegistries::Packages::Maven::UpstreamPolicy, feature_categ
   describe 'delegation' do
     subject { policy.delegated_policies.values }
 
-    it { is_expected.to have_attributes(size: 1).and be_all(::VirtualRegistries::Packages::Policies::GroupPolicy) }
+    it { is_expected.to have_attributes(size: 1).and be_all(::VirtualRegistries::Policies::GroupPolicy) }
   end
 end

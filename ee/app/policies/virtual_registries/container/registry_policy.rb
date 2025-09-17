@@ -3,7 +3,7 @@
 module VirtualRegistries
   module Container
     class RegistryPolicy < ::BasePolicy
-      delegate { ::VirtualRegistries::Packages::Policies::Group.new(@subject.group) }
+      delegate { ::VirtualRegistries::Policies::Group.new(@subject.group) }
     end
   end
 end
