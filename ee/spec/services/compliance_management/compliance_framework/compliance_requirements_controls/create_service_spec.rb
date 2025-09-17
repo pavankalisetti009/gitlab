@@ -97,6 +97,40 @@ RSpec.describe ComplianceManagement::ComplianceFramework::ComplianceRequirements
         )
       end
 
+      it 'defaults ping_enabled to true when not specified' do
+        control = control_creator.execute.payload[:control]
+
+        expect(control.ping_enabled).to be(true)
+      end
+
+      context 'when ping_enabled is explicitly set to true' do
+        let(:params_with_ping_enabled) { params.merge(ping_enabled: true) }
+
+        subject(:control_creator) do
+          described_class.new(requirement: requirement, params: params_with_ping_enabled, current_user: current_user)
+        end
+
+        it 'sets ping_enabled to true' do
+          control = control_creator.execute.payload[:control]
+
+          expect(control.ping_enabled).to be(true)
+        end
+      end
+
+      context 'when ping_enabled is explicitly set to false' do
+        let(:params_with_ping_disabled) { params.merge(ping_enabled: false) }
+
+        subject(:control_creator) do
+          described_class.new(requirement: requirement, params: params_with_ping_disabled, current_user: current_user)
+        end
+
+        it 'sets ping_enabled to false' do
+          control = control_creator.execute.payload[:control]
+
+          expect(control.ping_enabled).to be(false)
+        end
+      end
+
       context 'when using parameters for a valid external compliance control' do
         let(:external_params) do
           {
@@ -122,6 +156,30 @@ RSpec.describe ComplianceManagement::ComplianceFramework::ComplianceRequirements
             "expression" => control_expression,
             "control_type" => "internal"
           )
+        end
+
+        it 'defaults ping_enabled to true for external controls' do
+          control = control_creator.execute.payload[:control]
+
+          expect(control.ping_enabled).to be(true)
+        end
+
+        context 'when ping_enabled is set to false for external control' do
+          let(:external_params_ping_disabled) { external_params.merge(ping_enabled: false) }
+
+          subject(:control_creator) do
+            described_class.new(
+              requirement: requirement,
+              params: external_params_ping_disabled,
+              current_user: current_user
+            )
+          end
+
+          it 'sets ping_enabled to false' do
+            control = control_creator.execute.payload[:control]
+
+            expect(control.ping_enabled).to be(false)
+          end
         end
       end
     end

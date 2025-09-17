@@ -32,8 +32,11 @@ module ComplianceManagement
         framework.compliance_requirements.each do |requirement|
           requirement.compliance_requirements_controls.each do |control|
             if control.external?
-              ::ComplianceManagement::ComplianceFramework::ComplianceRequirements::TriggerExternalControlService
-                .new(project, control).execute
+              # Only trigger external control service for ping-enabled controls
+              if control.ping_enabled?
+                ::ComplianceManagement::ComplianceFramework::ComplianceRequirements::TriggerExternalControlService
+                  .new(project, control).execute
+              end
             else
               status = ::ComplianceManagement::ComplianceRequirements::ExpressionEvaluator.new(control,
                 project, approval_settings).evaluate

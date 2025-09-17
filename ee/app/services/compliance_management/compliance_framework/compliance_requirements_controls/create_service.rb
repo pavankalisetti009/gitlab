@@ -24,7 +24,8 @@ module ComplianceManagement
             control_type: params[:control_type] || DEFAULT_CONTROL_TYPE,
             external_control_name: params[:external_control_name],
             external_url: params[:external_url],
-            secret_token: params[:secret_token]
+            secret_token: params[:secret_token],
+            ping_enabled: params.fetch(:ping_enabled, true)
           )
 
           return ServiceResponse.error(message: _('Not permitted to create compliance control')) unless permitted?

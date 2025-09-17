@@ -32,6 +32,10 @@ module Types
         null: true,
         description: 'URL of the external control.'
 
+      field :ping_enabled, GraphQL::Types::Boolean,
+        null: false,
+        description: 'Whether ping is enabled for external controls.'
+
       field :compliance_requirement, ::Types::ComplianceManagement::ComplianceRequirementType,
         null: true,
         description: 'Compliance requirement associated with the control.'
