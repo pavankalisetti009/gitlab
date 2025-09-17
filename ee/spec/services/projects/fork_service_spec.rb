@@ -4,7 +4,10 @@ require 'spec_helper'
 
 RSpec.describe Projects::ForkService, feature_category: :source_code_management do
   describe 'fork by user' do
-    subject(:response) { described_class.new(project, user).execute }
+    subject(:response) { described_class.new(project, user, params).execute }
+
+    let(:params) { { namespace: namespace } }
+    let(:namespace) { user.namespace }
 
     let_it_be(:user) { create(:user) }
     let_it_be(:group) { create(:group) }
@@ -125,6 +128,88 @@ RSpec.describe Projects::ForkService, feature_category: :source_code_management 
 
           expect(response).to be_success
           expect(protected_project.reload.forked_from_project).to eq(inside_project)
+        end
+      end
+    end
+
+    context 'for duo_features_enabled setting of the forked project' do
+      let(:namespace) { create(:group) }
+
+      before do
+        namespace.add_owner(user)
+      end
+
+      context 'when project is forked into a group with duo_features_enabled set to false' do
+        before do
+          namespace.namespace_settings.update!(duo_features_enabled: false)
+        end
+
+        it 'sets the project duo_features_enabled to false' do
+          is_expected.to be_success
+
+          expect(fork_of_project.errors).to be_empty
+          expect(fork_of_project.import_state.last_error).to be_nil
+          expect(fork_of_project.project_setting.duo_features_enabled).to be(false)
+        end
+      end
+
+      context 'when project is forked into a group with duo_features_enabled set to true' do
+        before do
+          namespace.namespace_settings.update!(duo_features_enabled: true)
+        end
+
+        it 'sets the project duo_features_enabled to true' do
+          is_expected.to be_success
+
+          expect(fork_of_project.errors).to be_empty
+          expect(fork_of_project.import_state.last_error).to be_nil
+          expect(fork_of_project.project_setting.duo_features_enabled).to be(true)
+        end
+      end
+
+      context 'when project is forked into a group with duo_features_enabled set to nil' do
+        before do
+          namespace.namespace_settings.update!(duo_features_enabled: nil)
+          ::Gitlab::CurrentSettings.current_application_settings.update!(duo_features_enabled: false)
+        end
+
+        it 'sets the project duo_features_enabled to the group inherited value from application settings' do
+          is_expected.to be_success
+
+          expect(fork_of_project.errors).to be_empty
+          expect(fork_of_project.import_state.last_error).to be_nil
+          expect(fork_of_project.project_setting.duo_features_enabled).to be(false)
+        end
+      end
+
+      context 'when project is forked into a group with duo_features_enabled locked by ancestor' do
+        before do
+          namespace.namespace_settings.update!(duo_features_enabled: false, lock_duo_features_enabled: true)
+        end
+
+        it 'sets the project duo_features_enabled to the group inherited value from application settings' do
+          is_expected.to be_success
+
+          expect(fork_of_project.errors).to be_empty
+          expect(fork_of_project.import_state.last_error).to be_nil
+          expect(fork_of_project.project_setting.duo_features_enabled).to be(false)
+        end
+      end
+
+      context 'when project is forked into a group in an instance with duo_features_enabled ' \
+        'locked by application_settings' do
+        before do
+          namespace.namespace_settings.update!(duo_features_enabled: false, lock_duo_features_enabled: false)
+          ::Gitlab::CurrentSettings.current_application_settings.update!(duo_features_enabled: false,
+            lock_duo_features_enabled: true)
+        end
+
+        it 'sets the project duo_features_enabled to the group inherited value from the inheritance chain' do
+          is_expected.to be_success
+
+          expect(fork_of_project.errors).to be_empty
+          expect(fork_of_project.import_state.last_error).to be_nil
+          expect(fork_of_project.project_setting.duo_features_enabled).to be(false)
         end
       end
     end
