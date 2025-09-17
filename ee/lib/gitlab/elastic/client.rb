@@ -7,9 +7,10 @@ module Gitlab
     module Client
       extend Gitlab::Utils::StrongMemoize
 
+      AWS_ROLE_SESSION_NAME = 'gitlab_advanced_search'
+      DEFAULT_ADAPTER = :typhoeus
       OPEN_TIMEOUT = 5
       NO_RETRY = 0
-      AWS_ROLE_SESSION_NAME = 'gitlab_advanced_search'
 
       # Takes a hash as returned by `ApplicationSetting#elasticsearch_config`,
       # and configures itself based on those parameters
@@ -17,7 +18,7 @@ module Gitlab
         return unless config
 
         base_config = {
-          adapter: :typhoeus,
+          adapter: config[:client_adapter]&.to_sym || DEFAULT_ADAPTER,
           urls: config[:url],
           transport_options: {
             request: {
