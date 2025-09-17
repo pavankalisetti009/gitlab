@@ -37,6 +37,7 @@ describe('DuoAgentPlatformWidget component', () => {
       featurePreviewAttribute: 'instance_level_ai_beta_features_enabled',
       requestText: 'Request has been sent to the instance Admin',
       requestCount: 1,
+      confirmModalFirstParagraphText: 'Access GitLab Duo features first line.',
     },
   };
 
@@ -192,7 +193,7 @@ describe('DuoAgentPlatformWidget component', () => {
         await findActionButton().vm.$emit('click');
 
         const modalHtml = findConfirmModal().html();
-        expect(modalHtml).toContain('Access GitLab Duo features throughout this instance');
+        expect(modalHtml).toContain('Access GitLab Duo features first line');
         expect(modalHtml).toContain('/handbook/legal/ai-functionality-terms/');
         expect(modalHtml).toContain('GitLab AI Functionality Terms');
         expect(modalHtml).toContain('eligibility requirements');

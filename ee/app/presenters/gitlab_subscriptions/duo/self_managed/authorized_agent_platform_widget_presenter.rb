@@ -15,6 +15,9 @@ module GitlabSubscriptions
             requestCount: ::Ai::Setting.instance.duo_agent_platform_request_count,
             requestText: s_(
               'DuoAgentPlatform|The number of users in your instance who have requested access to GitLab Duo Core.'
+            ),
+            confirmModalFirstParagraphText: s_(
+              'DuoAgentPlatform|Access GitLab Duo features throughout this instance by turning on GitLab Duo Core.'
             )
           }
         end

@@ -71,7 +71,10 @@ RSpec.describe GitlabSubscriptions::Duo::GitlabCom::AuthorizedAgentPlatformWidge
               requestText:
                 s_(
                   'DuoAgentPlatform|The number of users in your group who have requested access to GitLab Duo Core.'
-                )
+                ),
+              confirmModalFirstParagraphText: s_(
+                'DuoAgentPlatform|Access GitLab Duo features throughout this group by turning on GitLab Duo Core.'
+              )
             }
         }
         expect(presenter.attributes[:duoAgentWidgetProvide]).to eq(results)

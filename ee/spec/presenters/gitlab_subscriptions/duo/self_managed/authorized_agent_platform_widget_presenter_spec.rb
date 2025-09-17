@@ -58,7 +58,10 @@ RSpec.describe GitlabSubscriptions::Duo::SelfManaged::AuthorizedAgentPlatformWid
               requestText:
                 s_(
                   'DuoAgentPlatform|The number of users in your instance who have requested access to GitLab Duo Core.'
-                )
+                ),
+              confirmModalFirstParagraphText: s_(
+                'DuoAgentPlatform|Access GitLab Duo features throughout this instance by turning on GitLab Duo Core.'
+              )
             }
         }
         expect(presenter.attributes[:duoAgentWidgetProvide]).to eq(results)

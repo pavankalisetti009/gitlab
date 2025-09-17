@@ -29,6 +29,9 @@ module GitlabSubscriptions
             requestCount: namespace.duo_agent_platform_request_count,
             requestText: s_(
               'DuoAgentPlatform|The number of users in your group who have requested access to GitLab Duo Core.'
+            ),
+            confirmModalFirstParagraphText: s_(
+              'DuoAgentPlatform|Access GitLab Duo features throughout this group by turning on GitLab Duo Core.'
             )
           }
         end
