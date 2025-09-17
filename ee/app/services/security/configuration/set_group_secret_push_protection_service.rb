@@ -54,7 +54,7 @@ all of its inherited groups/projects"
       def post_update(project_ids)
         return unless project_ids.present?
 
-        Security::AnalyzersStatus::ScheduleSettingChangedUpdateWorker.perform_async(project_ids, :secret_detection)
+        Security::AnalyzersStatus::ScheduleSettingChangedUpdateWorker.perform_async(project_ids, "secret_detection")
       end
     end
   end

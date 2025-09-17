@@ -52,7 +52,7 @@ RSpec.describe Security::Configuration::SetGroupSecretPushProtectionService, fea
       expect(Security::AnalyzersStatus::ScheduleSettingChangedUpdateWorker)
         .to receive(:perform_async) do |project_ids, detection_type|
         expect(project_ids.sort).to eq(expected_project_ids.sort)
-        expect(detection_type).to eq(:secret_detection)
+        expect(detection_type).to eq('secret_detection')
       end
 
       execute_service(subject: top_level_group, excluded_projects_ids: [])
@@ -68,7 +68,7 @@ RSpec.describe Security::Configuration::SetGroupSecretPushProtectionService, fea
       expect(Security::AnalyzersStatus::ScheduleSettingChangedUpdateWorker)
         .to receive(:perform_async) do |project_ids, detection_type|
         expect(project_ids).to match_array(expected_updated_project_ids)
-        expect(detection_type).to eq(:secret_detection)
+        expect(detection_type).to eq('secret_detection')
       end
 
       execute_service(subject: top_level_group, enable: true, excluded_projects_ids: [excluded_project.id])
@@ -87,7 +87,7 @@ RSpec.describe Security::Configuration::SetGroupSecretPushProtectionService, fea
 
     it 'schedules worker with correct project ids when excluded projects are provided' do
       expect(Security::AnalyzersStatus::ScheduleSettingChangedUpdateWorker)
-        .to receive(:perform_async).with(projects_to_change.map(&:id), :secret_detection)
+        .to receive(:perform_async).with(projects_to_change.map(&:id), 'secret_detection')
 
       execute_service(subject: top_level_group)
     end
