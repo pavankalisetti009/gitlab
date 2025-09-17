@@ -19,6 +19,7 @@ module Ai
       belongs_to :organization, class_name: 'Organizations::Organization', optional: false
       belongs_to :project
       belongs_to :latest_version, class_name: 'Ai::Catalog::ItemVersion', optional: false, autosave: true
+      belongs_to :latest_released_version, class_name: 'Ai::Catalog::ItemVersion', optional: true
 
       validate :organization_match
 

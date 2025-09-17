@@ -7,6 +7,7 @@ RSpec.describe Ai::Catalog::Item, feature_category: :workflow_catalog do
     it { is_expected.to belong_to(:organization).required }
     it { is_expected.to belong_to(:project).optional }
     it { is_expected.to belong_to(:latest_version).required }
+    it { is_expected.to belong_to(:latest_released_version) }
 
     it { is_expected.to have_many(:versions) }
     it { is_expected.to have_many(:consumers) }

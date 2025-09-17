@@ -65,9 +65,10 @@ RSpec.describe Ai::Catalog::Agents::CreateService, feature_category: :workflow_c
           user_prompt: params[:user_prompt]
         }.stringify_keys
       )
+      expect(item.latest_released_version).to eq(item.latest_version)
     end
 
-    it 'trigger track_ai_item_events', :clean_gitlab_redis_shared_state do
+    it 'triggers create_ai_catalog_item', :clean_gitlab_redis_shared_state do
       expect { response }
        .to trigger_internal_events('create_ai_catalog_item')
        .with(user: user, project: project, additional_properties: { label: 'agent' })
@@ -87,6 +88,7 @@ RSpec.describe Ai::Catalog::Agents::CreateService, feature_category: :workflow_c
         item = Ai::Catalog::Item.last
 
         expect(item.latest_version).to be_draft
+        expect(item.latest_released_version).to be_nil
       end
     end
 

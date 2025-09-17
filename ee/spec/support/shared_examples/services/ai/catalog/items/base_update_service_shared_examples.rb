@@ -55,13 +55,13 @@ RSpec.shared_examples Ai::Catalog::Items::BaseUpdateService do
           description: 'New description',
           public: true
         )
-
         expect(latest_version.reload).to have_attributes(
           schema_version: item_schema_version,
           version: '1.1.0',
           release_date: Time.zone.now,
           definition: expected_updated_definition.stringify_keys
         )
+        expect(item.latest_released_version).to eq(item.latest_version)
       end
 
       it 'triggers update_ai_catalog_item', :clean_gitlab_redis_shared_state do
@@ -87,12 +87,14 @@ RSpec.shared_examples Ai::Catalog::Items::BaseUpdateService do
 
         context 'when there is no previous released version' do
           before do
+            item.update!(latest_released_version: nil)
             latest_released_version.destroy!
           end
 
           it 'sets the version to the default version' do
             execute_service
 
+            expect(item.reload.latest_released_version).to eq(latest_version)
             expect(latest_version.reload).to have_attributes(
               schema_version: item_schema_version,
               version: '1.0.0',
@@ -106,11 +108,13 @@ RSpec.shared_examples Ai::Catalog::Items::BaseUpdateService do
       context 'when the latest version has been released' do
         before do
           latest_version.update!(release_date: 1.day.ago)
+          item.update!(latest_released_version: latest_version)
         end
 
         it 'creates a new released version', :aggregate_failures do
           expect { execute_service }.to change { item.reload.versions.count }.by(1)
           expect(item.latest_version).not_to eq(latest_version)
+          expect(item.latest_released_version).to eq(item.latest_version)
           expect(item.latest_version).to have_attributes(
             schema_version: item_schema_version,
             version: '2.0.0',
@@ -146,6 +150,7 @@ RSpec.shared_examples Ai::Catalog::Items::BaseUpdateService do
           it 'does not create a new version, and updates the existing version instead', :aggregate_failures do
             expect { execute_service }.not_to change { item.reload.versions.count }
             expect(item.latest_version).to eq(latest_version)
+            expect(item.latest_released_version).to eq(latest_version)
             expect(item.latest_version).to have_attributes(
               schema_version: item_schema_version,
               version: '1.1.0',
@@ -161,6 +166,10 @@ RSpec.shared_examples Ai::Catalog::Items::BaseUpdateService do
               expect { execute_service }.not_to change { item.reload.versions.count }
               expect(item.latest_version).to be_released
             end
+
+            it 'does not change latest_released_version' do
+              expect { execute_service }.not_to change { item.reload.latest_released_version }
+            end
           end
         end
 
@@ -171,6 +180,10 @@ RSpec.shared_examples Ai::Catalog::Items::BaseUpdateService do
             expect { execute_service }.to change { item.reload.versions.count }.by(1)
             expect(item.latest_version).not_to eq(latest_version)
             expect(item.latest_version.release_date).to be_nil
+          end
+
+          it 'does not change latest_released_version' do
+            expect { execute_service }.not_to change { item.reload.latest_released_version }
           end
         end
 

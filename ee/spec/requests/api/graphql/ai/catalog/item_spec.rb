@@ -179,6 +179,43 @@ RSpec.describe 'getting an AI catalog item', :with_current_organization, feature
     )
   end
 
+  context 'when requesting latestVersion(released: true)' do
+    let(:latest_version_data) { graphql_data_at(:ai_catalog_item, :latest_version) }
+
+    let(:query) do
+      <<~GRAPHQL
+        query {
+          aiCatalogItem(id: "#{params[:id]}") {
+            latestVersion(released: true) {
+              id
+            }
+          }
+        }
+      GRAPHQL
+    end
+
+    it 'returns nil when there is no latest released version' do
+      post_graphql(query, current_user: nil)
+
+      expect(response).to have_gitlab_http_status(:success)
+      expect(latest_version_data).to be_nil
+    end
+
+    context 'when there is a latest released version' do
+      before do
+        latest_version.update!(release_date: 1.day.ago)
+        catalog_item.update!(latest_released_version: latest_version)
+      end
+
+      it 'returns the latest released version' do
+        post_graphql(query, current_user: nil)
+
+        expect(response).to have_gitlab_http_status(:success)
+        expect(latest_version_data).to match(a_graphql_entity_for(latest_version))
+      end
+    end
+  end
+
   context 'when item is a flow' do
     let_it_be(:flow) { create(:ai_catalog_flow, project: project, public: true) }
     let(:params) { { id: flow.to_global_id } }
