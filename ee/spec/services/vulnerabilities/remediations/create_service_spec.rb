@@ -42,6 +42,17 @@ RSpec.describe Vulnerabilities::Remediations::CreateService, '#execute',
         expect(result.payload[:remediation].summary).to eq "Vulnerability Remediation"
       end
     end
+
+    context 'when remediation already exists' do
+      let_it_be(:existing_remediation) do
+        create(:vulnerabilities_remediation, project: project, checksum: Digest::SHA256.hexdigest(diff))
+      end
+
+      it 'returns the existing remediation' do
+        expect(result[:status]).to eq :success
+        expect(result.payload[:remediation]).to eq(existing_remediation)
+      end
+    end
   end
 
   context 'when creation fails' do
