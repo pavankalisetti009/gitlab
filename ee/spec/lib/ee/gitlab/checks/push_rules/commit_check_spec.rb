@@ -25,16 +25,6 @@ RSpec.describe EE::Gitlab::Checks::PushRules::CommitCheck, feature_category: :so
         it 'does not raise an error' do
           expect { subject.validate! }.not_to raise_error
         end
-
-        context 'when skip_committer_email_check is disabled' do
-          before do
-            stub_feature_flags(skip_committer_email_check: false)
-          end
-
-          it 'raises an error' do
-            expect { subject.validate! }.to raise_error(Gitlab::GitAccess::ForbiddenError, error_message)
-          end
-        end
       end
     end
   end
