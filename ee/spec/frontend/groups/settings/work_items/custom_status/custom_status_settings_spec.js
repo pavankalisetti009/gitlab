@@ -1,6 +1,6 @@
 import Vue, { nextTick } from 'vue';
 import VueApollo from 'vue-apollo';
-import { GlAlert, GlButton, GlIcon } from '@gitlab/ui';
+import { GlAlert, GlButton, GlIcon, GlLoadingIcon } from '@gitlab/ui';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import createMockApollo from 'helpers/mock_apollo_helper';
 import waitForPromises from 'helpers/wait_for_promises';
@@ -125,6 +125,7 @@ describe('CustomStatusSettings', () => {
   const findCreateLifecycleButton = () => wrapper.findByTestId('create-lifecycle');
   const findLifecyclesDetails = () => wrapper.findAllComponents(LifecycleDetail);
   const findCreateLifecycleModal = () => wrapper.findComponent(CreateLifecycleModal);
+  const findLoadingIcon = () => wrapper.findComponent(GlLoadingIcon);
 
   const createComponent = ({
     props = {},
@@ -263,6 +264,35 @@ describe('CustomStatusSettings', () => {
 
     it('renders lifecycle detail components', () => {
       expect(findLifecyclesDetails()).toHaveLength(2);
+    });
+  });
+
+  describe('initial loading state', () => {
+    it('shows loading icon while loading initial lifecycles', () => {
+      createComponent();
+
+      expect(findLoadingIcon().exists()).toBe(true);
+      expect(findLoadingIcon().props('size')).toBe('lg');
+    });
+
+    it('hides loading icon after initial lifecycles are loaded', async () => {
+      createComponent();
+      await waitForPromises();
+
+      expect(findLoadingIcon().exists()).toBe(false);
+    });
+
+    it('hides loading icon on subsequent refetches', async () => {
+      createComponent();
+      await waitForPromises();
+
+      expect(findLoadingIcon().exists()).toBe(false);
+
+      // Trigger a refetch by emitting the deleted event from LifecycleDetail
+      const firstLifecycleDetail = findLifecyclesDetails().at(0);
+      await firstLifecycleDetail.vm.$emit('deleted');
+
+      expect(findLoadingIcon().exists()).toBe(false);
     });
   });
 });

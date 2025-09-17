@@ -1,5 +1,5 @@
 <script>
-import { GlAlert, GlButton, GlIcon } from '@gitlab/ui';
+import { GlAlert, GlButton, GlIcon, GlLoadingIcon } from '@gitlab/ui';
 import { s__ } from '~/locale';
 import * as Sentry from '~/sentry/sentry_browser_wrapper';
 import glFeatureFlagMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
@@ -20,6 +20,7 @@ export default {
     HelpPageLink,
     CreateLifecycleModal,
     LifecycleDetail,
+    GlLoadingIcon,
   },
   mixins: [glFeatureFlagMixin()],
   props: {
@@ -35,6 +36,7 @@ export default {
       errorDetail: '',
       selectedLifecycleId: null,
       showCreateLifecycleModal: false,
+      initialLifecyclesLoaded: false,
     };
   },
   apollo: {
@@ -47,6 +49,9 @@ export default {
       },
       update(data) {
         return data.namespace?.lifecycles?.nodes || [];
+      },
+      result() {
+        this.initialLifecyclesLoaded = true;
       },
       error(error) {
         this.errorText = s__('WorkItem|Failed to load lifecycles.');
@@ -61,6 +66,9 @@ export default {
     },
     workItemStatusMvc2Enabled() {
       return this.glFeatures.workItemStatusMvc2;
+    },
+    loadingInitialLifecycles() {
+      return !this.initialLifecyclesLoaded && this.$apollo.queries.lifecycles.loading;
     },
   },
   methods: {
@@ -107,6 +115,8 @@ export default {
         {{ s__('WorkItems|How do I use statuses?') }}
       </help-page-link>
     </p>
+
+    <gl-loading-icon v-if="loadingInitialLifecycles" size="lg" class="gl-mt-5" />
 
     <gl-alert
       v-if="errorText"
