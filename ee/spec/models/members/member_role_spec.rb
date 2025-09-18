@@ -313,22 +313,6 @@ RSpec.describe ::MemberRole, feature_category: :system_access do
         end
       end
     end
-
-    context 'for ensure_at_least_one_permission_is_enabled' do
-      context 'with at least one permission enabled' do
-        it { is_expected.to be_valid }
-      end
-
-      context 'with no permissions enabled' do
-        it 'is invalid' do
-          member_role = build(:member_role, without_any_permissions: true)
-
-          expect(member_role).not_to be_valid
-          expect(member_role.errors[:base].first)
-            .to include(s_('MemberRole|Cannot create a member role with no enabled permissions'))
-        end
-      end
-    end
   end
 
   describe 'callbacks' do
@@ -559,10 +543,9 @@ RSpec.describe ::MemberRole, feature_category: :system_access do
   end
 
   describe '.permission_enabled?' do
-    let(:user) { build(:user) }
     let(:ability) { :read_code }
 
-    subject(:permission_enabled) { described_class.permission_enabled?(ability, user) }
+    subject(:permission_enabled) { described_class.permission_enabled?(ability) }
 
     where(:flag_exists, :flag_enabled, :expected_result) do
       true  | false | false
@@ -574,7 +557,7 @@ RSpec.describe ::MemberRole, feature_category: :system_access do
       before do
         if flag_exists
           stub_feature_flag_definition("custom_ability_read_code")
-          stub_feature_flags("custom_ability_read_code" => flag_enabled ? user : false)
+          stub_feature_flags("custom_ability_read_code" => flag_enabled)
         end
       end
 
@@ -681,10 +664,9 @@ RSpec.describe ::MemberRole, feature_category: :system_access do
   end
 
   describe '#enabled_permissions' do
-    let_it_be(:user) { build(:user) }
     let_it_be(:member_role) { build(:member_role, read_code: true, read_vulnerability: true, read_dependency: false) }
 
-    subject(:enabled_permissions) { member_role.enabled_permissions(user) }
+    subject(:enabled_permissions) { member_role.enabled_permissions }
 
     it 'returns the list of enabled permissions' do
       expect(enabled_permissions.keys).to match_array([:read_code, :read_vulnerability])

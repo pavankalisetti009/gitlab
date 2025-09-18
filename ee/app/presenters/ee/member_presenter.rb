@@ -47,7 +47,7 @@ module EE
           name: member_role.name,
           description: member_role.description,
           occupies_seat: member_role.occupies_seat,
-          permissions: member_role.enabled_permissions(current_user).values.map do |permission|
+          permissions: member_role.enabled_permissions.values.map do |permission|
             {
               name: permission[:title],
               description: permission[:description]

@@ -1,7 +1,7 @@
 import Vue, { nextTick } from 'vue';
 import VueApollo from 'vue-apollo';
 import { shallowMount } from '@vue/test-utils';
-import { GlCollapsibleListbox } from '@gitlab/ui';
+import { GlCollapsibleListbox, GlButton } from '@gitlab/ui';
 import createMockApollo from 'helpers/mock_apollo_helper';
 import AttributesCategoryDropdown from 'ee/security_configuration/security_attributes/components/attributes_category_dropdown.vue';
 import waitForPromises from 'helpers/wait_for_promises';
@@ -32,6 +32,7 @@ describe('AttributesCategoryDropdown', () => {
   let wrapper;
 
   const findListbox = () => wrapper.findComponent(GlCollapsibleListbox);
+  const findButton = () => wrapper.findComponent(GlButton);
 
   const groupAttributesQueryHandler = jest.fn().mockImplementation(({ categoryId }) => ({
     data: {
@@ -48,10 +49,16 @@ describe('AttributesCategoryDropdown', () => {
     category = {},
     selectedAttributesInCategory = [],
     requestHandlers = [[getSecurityAttributesByCategoryQuery, groupAttributesQueryHandler]],
+    canManageAttributes = false,
+    groupManageAttributesPath = 'path/to/group/-/security/configuration',
   } = {}) => {
     const apolloProvider = createMockApollo(requestHandlers);
     wrapper = shallowMount(AttributesCategoryDropdown, {
-      provide: { groupFullPath: 'path/to/group' },
+      provide: {
+        groupFullPath: 'path/to/group',
+        canManageAttributes,
+        groupManageAttributesPath,
+      },
       apolloProvider,
       propsData: {
         category,
@@ -165,6 +172,24 @@ describe('AttributesCategoryDropdown', () => {
 
       expect(findListbox().props('selected')).toStrictEqual(null);
       expect(findListbox().props('toggleText')).toBe('None');
+    });
+  });
+
+  describe('footer', () => {
+    it('shows a link to manage attributes when user has permission', () => {
+      createComponent({
+        canManageAttributes: true,
+      });
+
+      expect(findButton().text()).toBe('Manage security attributes');
+    });
+
+    it('does not show a link when user does not have permission', () => {
+      createComponent({
+        canManageAttributes: false,
+      });
+
+      expect(findButton().exists()).toBe(false);
     });
   });
 });

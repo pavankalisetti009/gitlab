@@ -30,22 +30,6 @@ RSpec.describe Authz::AdminRole, feature_category: :permissions do
       end
     end
 
-    context 'for ensure_at_least_one_permission_is_enabled' do
-      context 'with at least one permission enabled' do
-        it { is_expected.to be_valid }
-      end
-
-      context 'with no permissions enabled' do
-        subject(:admin_role) { build(:admin_role, without_any_permissions: true) }
-
-        it 'is invalid' do
-          expect(admin_role).not_to be_valid
-          expect(admin_role.errors[:base].first)
-            .to include(s_('MemberRole|Cannot create a member role with no enabled permissions'))
-        end
-      end
-    end
-
     context 'for permissions' do
       it 'removes disabled permissions' do
         admin_role = build(:admin_role)
