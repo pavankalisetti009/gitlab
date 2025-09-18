@@ -140,7 +140,7 @@ module Preloaders
 
     def enabled_group_permissions
       MemberRole.all_customizable_group_permissions
-        .filter { |permission| ::MemberRole.permission_enabled?(permission, user) }
+        .filter { |permission| ::MemberRole.permission_enabled?(permission) }
     end
     strong_memoize_attr :enabled_group_permissions
 

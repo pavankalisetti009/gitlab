@@ -49,7 +49,7 @@ module Authz
     def permission_enabled?(ability)
       return ::MemberRole.admin_permission_enabled?(ability.name) if ability.admin_ability_enabled?
 
-      ::MemberRole.permission_enabled?(ability.name, user)
+      ::MemberRole.permission_enabled?(ability.name)
     end
 
     def abilities_for_projects(projects)

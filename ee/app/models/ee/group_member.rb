@@ -112,10 +112,10 @@ module EE
       current_member = group.highest_group_member(current_user)
 
       current_member_role = current_member.member_role
-      current_member_role_abilities = member_role_abilities(current_member_role, current_user)
+      current_member_role_abilities = member_role_abilities(current_member_role)
 
       new_member_role = MemberRole.find_by_id(member_role_id)
-      new_member_role_abilities = member_role_abilities(new_member_role, current_user)
+      new_member_role_abilities = member_role_abilities(new_member_role)
 
       (new_member_role_abilities - current_member_role_abilities).present?
     end
@@ -162,10 +162,10 @@ module EE
       errors.add(:member_user_type, _("Security policy bot cannot be added as a group member"))
     end
 
-    def member_role_abilities(member_role, current_user)
+    def member_role_abilities(member_role)
       return [] unless member_role
 
-      member_role.enabled_permissions(current_user).keys
+      member_role.enabled_permissions.keys
     end
   end
 end

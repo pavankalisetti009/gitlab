@@ -26,7 +26,7 @@ module Authz
           target_details: {
             name: role.name,
             description: role.description,
-            abilities: role.enabled_permissions(current_user).keys.sort.join(', ')
+            abilities: role.enabled_permissions.keys.sort.join(', ')
           },
           **audit_event_attributes(action)
         }

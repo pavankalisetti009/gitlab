@@ -110,7 +110,7 @@ RSpec.describe Preloaders::UserMemberRolesInProjectsPreloader, feature_category:
           context 'when ability is disabled' do
             before do
               allow(::MemberRole).to receive(:permission_enabled?).and_call_original
-              allow(::MemberRole).to receive(:permission_enabled?).with(ability, user).and_return(false)
+              allow(::MemberRole).to receive(:permission_enabled?).with(ability).and_return(false)
             end
 
             it 'returns all requested project IDs without the disabled ability' do
