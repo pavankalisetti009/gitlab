@@ -41,7 +41,24 @@ module EE
             dependency_scanning_sbom_scan_api_download: { threshold: 400, interval: 1.hour },
             virtual_registries_endpoints_api_limit: { threshold: -> {
               application_settings.virtual_registries_endpoints_api_limit
-            }, interval: 15.seconds }
+            }, interval: 15.seconds },
+
+            # Secret Detection Partner API rate limits
+            # Scoped to a project
+            # More details:
+            # https://gitlab.com/gitlab-org/gitlab/-/issues/567304#partner-api-rate-limit-scoping
+            partner_aws_api: {
+              threshold: 400,
+              interval: 1.second
+            },
+            partner_gcp_api: {
+              threshold: 500,
+              interval: 1.second
+            },
+            partner_postman_api: {
+              threshold: 4,
+              interval: 1.second
+            }
           }).freeze
         end
       end
