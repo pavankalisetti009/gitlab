@@ -18,7 +18,7 @@ RSpec.describe Authz::AdminRoles::DeleteService, feature_category: :permissions 
   describe '#execute', :enable_admin_mode do
     let(:role) { create(:admin_role) }
 
-    let(:enabled_permissions) { role.enabled_permissions(user).keys }
+    let(:enabled_permissions) { role.enabled_permissions.keys }
 
     subject(:result) { service.execute(role) }
 

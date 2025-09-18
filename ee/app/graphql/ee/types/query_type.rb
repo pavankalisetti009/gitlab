@@ -490,7 +490,7 @@ module EE
       private
 
       def get_enabled_permissions(permission_keys)
-        permission_keys.select { |key| ::MemberRole.permission_enabled?(key, current_user) }
+        permission_keys.select { |key| ::MemberRole.permission_enabled?(key) }
       end
 
       def find_root_namespace(namespace_id)

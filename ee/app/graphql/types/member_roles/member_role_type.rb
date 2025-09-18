@@ -33,7 +33,7 @@ module Types
         resolver: ::Resolvers::Members::ApprovalPolicyResolver
 
       def enabled_permissions
-        object.enabled_permissions(current_user).keys
+        object.enabled_permissions.keys
       end
 
       def details_path

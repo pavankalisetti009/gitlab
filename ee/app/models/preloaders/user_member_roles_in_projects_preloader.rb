@@ -169,7 +169,7 @@ module Preloaders
     def enabled_project_permissions
       MemberRole
         .all_customizable_project_permissions
-        .filter { |permission| ::MemberRole.permission_enabled?(permission, user) }
+        .filter { |permission| ::MemberRole.permission_enabled?(permission) }
     end
     strong_memoize_attr :enabled_project_permissions
 
