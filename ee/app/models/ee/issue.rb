@@ -307,6 +307,8 @@ module EE
         when 'sla_due_at_desc'      then with_feature(:sla).order_sla_due_at_desc
         when 'health_status_asc'    then order_health_status_asc
         when 'health_status_desc'   then order_health_status_desc
+        when 'status_asc'           then order_status_asc
+        when 'status_desc'          then order_status_desc
         else
           super
         end

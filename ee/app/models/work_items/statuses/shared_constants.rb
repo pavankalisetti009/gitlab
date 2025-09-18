@@ -3,6 +3,8 @@
 module WorkItems
   module Statuses
     module SharedConstants
+      # Note: We rely on categories for ordering work items by status.
+      # If new categories are added, their placement will affect sort order.
       CATEGORIES = {
         triage: 1,
         to_do: 2,

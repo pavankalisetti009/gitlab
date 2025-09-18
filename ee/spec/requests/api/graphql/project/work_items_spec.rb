@@ -606,6 +606,39 @@ RSpec.describe 'getting a work item list for a project', feature_category: :team
     end
   end
 
+  describe 'sorting' do
+    let_it_be(:status_1) { build(:work_item_system_defined_status, :to_do) }
+    let_it_be(:status_2) { build(:work_item_system_defined_status, :in_progress) }
+    let_it_be(:work_item_1) { create(:work_item, project: project, system_defined_status_id: status_1.id) }
+    let_it_be(:work_item_2) { create(:work_item, :closed, project: project, system_defined_status_id: status_2.id) }
+
+    let(:data_path) { [:project, :work_items] }
+
+    def pagination_query(params)
+      graphql_query_for(
+        'project',
+        { 'fullPath' => project.full_path },
+        query_graphql_field('workItems', params, "#{page_info} nodes { id }")
+      )
+    end
+
+    context 'when sorting by STATUS_ASC' do
+      it_behaves_like 'sorted paginated query' do
+        let(:sort_param) { :STATUS_ASC }
+        let(:first_param) { 2 }
+        let(:all_records) { [work_item_1, work_item_2].map { |item| item.to_global_id.to_s } }
+      end
+    end
+
+    context 'when sorting by STATUS_DESC' do
+      it_behaves_like 'sorted paginated query' do
+        let(:sort_param) { :STATUS_DESC }
+        let(:first_param) { 2 }
+        let(:all_records) { [work_item_2, work_item_1].map { |item| item.to_global_id.to_s } }
+      end
+    end
+  end
+
   context 'when work item epics are present' do
     let_it_be(:epic1) { create(:work_item, :epic, project: project) }
     let_it_be(:epic2) { create(:work_item, :epic, project: project) }

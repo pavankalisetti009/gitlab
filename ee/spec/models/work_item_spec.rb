@@ -510,8 +510,13 @@ RSpec.describe WorkItem, :elastic_helpers, feature_category: :team_planning do
     it { is_expected.to contain_exactly(work_item_without_progress, work_item_with_stale_reminder) }
   end
 
+  # rubocop:disable RSpec/MultipleMemoizedHelpers -- Extra helpers are required for checking all scenarios
   describe 'status scopes' do
+    let_it_be(:reusable_group_2) { create(:group) }
     let_it_be(:project) { create(:project, group: reusable_group) }
+    let_it_be(:project_2) { create(:project, group: reusable_group_2) }
+
+    let_it_be(:issue_work_item_type) { create(:work_item_type, :issue) }
 
     let_it_be(:wi_no_status) { create(:work_item, :incident, project: project) }
     let_it_be(:wi_default_open) { create(:work_item, project: project) }
@@ -521,12 +526,17 @@ RSpec.describe WorkItem, :elastic_helpers, feature_category: :team_planning do
     end
 
     let_it_be(:system_defined_todo_status) { build(:work_item_system_defined_status, :to_do) }
+    let_it_be(:system_defined_in_progress_status) { build(:work_item_system_defined_status, :in_progress) }
     let_it_be(:system_defined_done_status) { build(:work_item_system_defined_status, :done) }
     let_it_be(:system_defined_duplicate_status) { build(:work_item_system_defined_status, :duplicate) }
     let_it_be(:system_defined_wont_do_status) { build(:work_item_system_defined_status, :wont_do) }
 
     let_it_be(:wi_system_defined_todo) do
       create(:work_item, project: project, system_defined_status_id: system_defined_todo_status.id)
+    end
+
+    let_it_be(:wi_system_defined_in_progress) do
+      create(:work_item, project: project, system_defined_status_id: system_defined_in_progress_status.id)
     end
 
     let_it_be(:wi_system_defined_done) do
@@ -547,7 +557,17 @@ RSpec.describe WorkItem, :elastic_helpers, feature_category: :team_planning do
         # We can't stub licensed features for let_it_be blocks.
         build(:work_item_type_custom_lifecycle,
           namespace: reusable_group,
-          work_item_type: create(:work_item_type, :issue),
+          work_item_type: issue_work_item_type,
+          lifecycle: lifecycle
+        ).save!(validate: false)
+      end
+    end
+
+    let(:lifecycle_2) do
+      create(:work_item_custom_lifecycle, namespace: reusable_group_2).tap do |lifecycle|
+        build(:work_item_type_custom_lifecycle,
+          namespace: reusable_group_2,
+          work_item_type: issue_work_item_type,
           lifecycle: lifecycle
         ).save!(validate: false)
       end
@@ -559,6 +579,10 @@ RSpec.describe WorkItem, :elastic_helpers, feature_category: :team_planning do
         lifecycles: [lifecycle],
         converted_from_system_defined_status_identifier: nil
       )
+    end
+
+    let_it_be(:converted_in_progress_status) do
+      create(:work_item_custom_status, :in_progress, namespace: reusable_group, lifecycles: [lifecycle])
     end
 
     let_it_be(:wi_custom_todo) do
@@ -574,6 +598,33 @@ RSpec.describe WorkItem, :elastic_helpers, feature_category: :team_planning do
     end
 
     let_it_be(:wi_custom) { create(:work_item, project: project, custom_status_id: custom_status.id) }
+
+    let_it_be(:wi_converted_in_progress) { create(:work_item, project: project) }
+
+    let_it_be(:wi_converted_in_progress_current_status) do
+      # Skip validations since we are simulating an old record
+      # when the namespace still used the system defined lifecycle
+      build(:work_item_current_status,
+        work_item: wi_converted_in_progress,
+        system_defined_status_id: system_defined_in_progress_status.id
+      ).save!(validate: false)
+    end
+
+    let(:wi_system_defined_todo_2) do
+      create(:work_item, project: project_2, system_defined_status_id: system_defined_todo_status.id)
+    end
+
+    let(:wi_system_defined_done_2) do
+      create(:work_item, :closed, project: project_2, system_defined_status_id: system_defined_done_status.id)
+    end
+
+    let(:wi_custom_todo_2) do
+      create(:work_item, project: project_2, custom_status_id: lifecycle_2.default_open_status_id)
+    end
+
+    let(:wi_custom_done_2) do
+      create(:work_item, project: project_2, custom_status_id: lifecycle_2.default_closed_status_id)
+    end
 
     describe '.with_status' do
       subject { described_class.with_status(status) }
@@ -680,8 +731,9 @@ RSpec.describe WorkItem, :elastic_helpers, feature_category: :team_planning do
         it 'returns all work items' do
           is_expected.to contain_exactly(
             wi_default_open, wi_default_closed, wi_default_duplicated,
-            wi_system_defined_todo, wi_system_defined_done, wi_system_defined_duplicated, wi_system_defined_wont_do,
-            wi_custom_todo, wi_custom_done, wi_custom_duplicated, wi_custom, wi_no_status
+            wi_system_defined_todo, wi_system_defined_in_progress, wi_system_defined_done, wi_system_defined_duplicated,
+            wi_system_defined_wont_do, wi_custom_todo, wi_custom_done, wi_custom_duplicated, wi_custom, wi_no_status,
+            wi_converted_in_progress
           )
         end
       end
@@ -696,7 +748,8 @@ RSpec.describe WorkItem, :elastic_helpers, feature_category: :team_planning do
 
         it 'excludes items with matching current_status or its equivalent fallback status' do
           is_expected.to contain_exactly(
-            wi_custom_todo, wi_custom_done, wi_custom_duplicated, wi_custom, wi_no_status
+            wi_custom_todo, wi_custom_done, wi_custom_duplicated, wi_custom, wi_no_status,
+            wi_system_defined_in_progress, wi_converted_in_progress
           )
         end
       end
@@ -704,7 +757,10 @@ RSpec.describe WorkItem, :elastic_helpers, feature_category: :team_planning do
       context 'with custom statuses' do
         context 'with statuses that has system-defined mapping' do
           let(:statuses) do
-            [lifecycle.default_open_status, lifecycle.default_closed_status, lifecycle.default_duplicate_status]
+            [
+              lifecycle.default_open_status, lifecycle.default_closed_status,
+              lifecycle.default_duplicate_status, converted_in_progress_status
+            ]
           end
 
           it 'excludes items with custom status and mapped system-defined items' do
@@ -723,7 +779,272 @@ RSpec.describe WorkItem, :elastic_helpers, feature_category: :team_planning do
         end
       end
     end
+
+    describe '.order_status_asc' do
+      let(:result) { described_class.where(id: work_items.map(&:id)).order_status_asc }
+
+      context 'with system-defined statuses' do
+        before do
+          lifecycle.destroy!
+        end
+
+        context 'with explicitly set statuses' do
+          let_it_be(:work_items) do
+            [
+              wi_system_defined_todo, wi_system_defined_in_progress, wi_system_defined_done,
+              wi_system_defined_wont_do, wi_system_defined_duplicated
+            ]
+          end
+
+          it 'sorts work items by status asc' do
+            expect(result).to eq([
+              wi_system_defined_todo,
+              wi_system_defined_in_progress,
+              wi_system_defined_done,
+              wi_system_defined_wont_do,
+              wi_system_defined_duplicated
+            ])
+          end
+        end
+
+        context 'with explicitly and implicitly set statuses' do
+          let_it_be(:work_items) do
+            [
+              wi_default_open, wi_system_defined_todo, wi_system_defined_in_progress, wi_default_closed,
+              wi_system_defined_done, wi_system_defined_wont_do, wi_default_duplicated, wi_system_defined_duplicated
+            ]
+          end
+
+          it 'sorts work items by status asc' do
+            expect(result).to eq([
+              wi_system_defined_todo,
+              wi_default_open,
+              wi_system_defined_in_progress,
+              wi_system_defined_done,
+              wi_default_closed,
+              wi_system_defined_wont_do,
+              wi_system_defined_duplicated,
+              wi_default_duplicated
+            ])
+          end
+        end
+      end
+
+      context 'with custom statuses' do
+        context 'with explicitly set statuses' do
+          let_it_be(:work_items) do
+            [wi_custom, wi_custom_todo, wi_converted_in_progress, wi_custom_done, wi_custom_duplicated]
+          end
+
+          it 'sorts work items by status asc' do
+            expect(result).to eq([
+              wi_custom,
+              wi_custom_todo,
+              wi_converted_in_progress,
+              wi_custom_done,
+              wi_custom_duplicated
+            ])
+          end
+        end
+
+        context 'with explicitly and implicitly set statuses' do
+          let(:work_items) do
+            [
+              wi_custom, wi_custom_todo, wi_converted_in_progress, wi_custom_done, wi_custom_duplicated,
+              wi_default_open, wi_default_closed, wi_default_duplicated
+            ]
+          end
+
+          it 'sorts work items by status asc' do
+            expect(result).to eq([
+              wi_custom,
+              wi_custom_todo,
+              wi_default_open,
+              wi_converted_in_progress,
+              wi_custom_done,
+              wi_default_closed,
+              wi_custom_duplicated,
+              wi_default_duplicated
+            ])
+          end
+        end
+
+        context 'with work items from multiple namespaces' do
+          let(:work_items) do
+            [wi_custom_todo, wi_custom_done, wi_custom_duplicated, wi_custom_todo_2, wi_custom_done_2]
+          end
+
+          it 'sorts work items by status asc' do
+            expect(result).to eq([
+              wi_custom_todo_2,
+              wi_custom_todo,
+              wi_custom_done_2,
+              wi_custom_done,
+              wi_custom_duplicated
+            ])
+          end
+        end
+      end
+
+      context 'with system-defined and custom statuses from multiple namespaces' do
+        let(:work_items) do
+          [
+            wi_custom_todo, wi_converted_in_progress, wi_custom_done,
+            wi_system_defined_todo_2, wi_system_defined_done_2
+          ]
+        end
+
+        it 'sorts work items by status asc' do
+          expect(result).to eq([
+            wi_system_defined_todo_2,
+            wi_custom_todo,
+            wi_converted_in_progress,
+            wi_system_defined_done_2,
+            wi_custom_done
+          ])
+        end
+      end
+    end
+
+    describe '.order_status_desc' do
+      let(:result) { described_class.where(id: work_items.map(&:id)).order_status_desc }
+
+      context 'with system-defined statuses' do
+        before do
+          lifecycle.destroy!
+        end
+
+        context 'with explicitly set statuses' do
+          let(:work_items) do
+            [
+              wi_system_defined_todo, wi_system_defined_in_progress, wi_system_defined_done,
+              wi_system_defined_wont_do, wi_system_defined_duplicated
+            ]
+          end
+
+          it 'sorts work items by status desc' do
+            expect(result).to eq([
+              wi_system_defined_wont_do,
+              wi_system_defined_duplicated,
+              wi_system_defined_done,
+              wi_system_defined_in_progress,
+              wi_system_defined_todo
+            ])
+          end
+        end
+
+        context 'with explicitly and implicitly set statuses' do
+          let(:work_items) do
+            [
+              wi_default_open, wi_system_defined_todo, wi_system_defined_in_progress, wi_default_closed,
+              wi_system_defined_done, wi_system_defined_wont_do, wi_default_duplicated, wi_system_defined_duplicated
+            ]
+          end
+
+          it 'sorts work items by status desc' do
+            expect(result).to eq([
+              wi_system_defined_wont_do,
+              wi_system_defined_duplicated,
+              wi_default_duplicated,
+              wi_system_defined_done,
+              wi_default_closed,
+              wi_system_defined_in_progress,
+              wi_system_defined_todo,
+              wi_default_open
+            ])
+          end
+        end
+
+        context 'with work items from multiple namespaces' do
+          let(:work_items) do
+            [wi_custom_todo, wi_custom_done, wi_custom_duplicated, wi_custom_todo_2, wi_custom_done_2]
+          end
+
+          it 'sorts work items by status desc' do
+            expect(result).to eq([
+              wi_custom_duplicated,
+              wi_custom_done_2,
+              wi_custom_done,
+              wi_custom_todo_2,
+              wi_custom_todo
+            ])
+          end
+        end
+      end
+
+      context 'with custom statuses' do
+        context 'with explicitly set statuses' do
+          let(:work_items) do
+            [wi_custom, wi_custom_todo, wi_converted_in_progress, wi_custom_done, wi_custom_duplicated]
+          end
+
+          it 'sorts work items by status desc' do
+            expect(result).to eq([
+              wi_custom_duplicated,
+              wi_custom_done,
+              wi_converted_in_progress,
+              wi_custom,
+              wi_custom_todo
+            ])
+          end
+        end
+
+        context 'with explicitly and implicitly set statuses' do
+          let(:work_items) do
+            [
+              wi_custom, wi_custom_todo, wi_custom_done, wi_custom_duplicated, wi_default_open,
+              wi_default_closed, wi_default_duplicated, wi_converted_in_progress
+            ]
+          end
+
+          it 'sorts work items by status desc' do
+            expect(result).to eq([
+              wi_custom_duplicated,
+              wi_default_duplicated,
+              wi_custom_done,
+              wi_default_closed,
+              wi_converted_in_progress,
+              wi_custom,
+              wi_custom_todo,
+              wi_default_open
+            ])
+          end
+        end
+
+        context 'with work items from multiple namespaces' do
+          let(:work_items) do
+            [wi_custom_todo, wi_custom_done, wi_custom_duplicated, wi_custom_todo_2, wi_custom_done_2]
+          end
+
+          it 'sorts work items by status desc' do
+            expect(result).to eq([
+              wi_custom_duplicated,
+              wi_custom_done_2,
+              wi_custom_done,
+              wi_custom_todo_2,
+              wi_custom_todo
+            ])
+          end
+        end
+      end
+
+      context 'with system-defined and custom statuses from multiple namespaces' do
+        let(:work_items) do
+          [wi_custom_todo, wi_custom_done, wi_system_defined_todo_2, wi_system_defined_done_2]
+        end
+
+        it 'sorts work items by status asc' do
+          expect(result).to eq([
+            wi_system_defined_done_2,
+            wi_custom_done,
+            wi_system_defined_todo_2,
+            wi_custom_todo
+          ])
+        end
+      end
+    end
   end
+  # rubocop:enable RSpec/MultipleMemoizedHelpers
 
   describe 'versioned descriptions' do
     it_behaves_like 'versioned description'

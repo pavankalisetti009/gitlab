@@ -75,6 +75,20 @@ RSpec.describe WorkItems::Statuses::SystemDefined::Status, feature_category: :te
     end
   end
 
+  describe '.sort_order_by_id' do
+    it 'returns a hash mapping status IDs to their category values' do
+      expected_mapping = {
+        1 => 2,
+        2 => 3,
+        3 => 4,
+        4 => 5,
+        5 => 5
+      }
+
+      expect(described_class.sort_order_by_id).to eq(expected_mapping)
+    end
+  end
+
   describe '#allowed_for_work_item?' do
     let(:work_item) { build_stubbed(:work_item, :task) }
 
