@@ -26598,7 +26598,6 @@ CREATE TABLE user_preferences (
     enabled_zoekt boolean DEFAULT true NOT NULL,
     keyboard_shortcuts_enabled boolean DEFAULT true NOT NULL,
     time_display_format smallint DEFAULT 0 NOT NULL,
-    home_organization_id bigint,
     early_access_program_participant boolean DEFAULT false NOT NULL,
     early_access_program_tracking boolean DEFAULT false NOT NULL,
     extensions_marketplace_opt_in_status smallint DEFAULT 0 NOT NULL,
@@ -41275,8 +41274,6 @@ CREATE INDEX index_user_phone_validations_on_dial_code_phone_number ON user_phon
 
 CREATE INDEX index_user_preferences_on_gitpod_enabled ON user_preferences USING btree (gitpod_enabled);
 
-CREATE INDEX index_user_preferences_on_home_organization_id ON user_preferences USING btree (home_organization_id);
-
 CREATE UNIQUE INDEX index_user_preferences_on_user_id ON user_preferences USING btree (user_id);
 
 CREATE INDEX index_user_project_callouts_on_project_id ON user_project_callouts USING btree (project_id);
@@ -47822,9 +47819,6 @@ ALTER TABLE ONLY packages_debian_project_component_files
 
 ALTER TABLE ONLY abuse_events
     ADD CONSTRAINT fk_e5ce49c215 FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE SET NULL;
-
-ALTER TABLE ONLY user_preferences
-    ADD CONSTRAINT fk_e5e029c10b FOREIGN KEY (home_organization_id) REFERENCES organizations(id) ON DELETE SET NULL;
 
 ALTER TABLE ONLY duo_workflows_workloads
     ADD CONSTRAINT fk_e62ee9a85e FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE CASCADE;
