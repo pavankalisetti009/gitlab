@@ -92,10 +92,10 @@ export default {
         },
       });
     },
-    confirmDeletion() {
+    confirmRemoval() {
       this.showConfirmationModal = true;
     },
-    discardDelete() {
+    discardRemoval() {
       this.showConfirmationModal = false;
     },
     async removeLifecycle() {
@@ -214,7 +214,7 @@ export default {
         v-if="showRemoveLifecycleButton"
         :data-testid="`remove-lifecycle-${lifecycleId}`"
         size="small"
-        @click="confirmDeletion"
+        @click="confirmRemoval"
         >{{ s__('WorkItem|Remove lifecycle') }}</gl-button
       >
     </div>
@@ -222,7 +222,7 @@ export default {
       :is-visible="showConfirmationModal"
       :lifecycle-name="lifecycle.name"
       @continue="removeLifecycle"
-      @cancel="discardDelete"
+      @cancel="discardRemoval"
     />
   </div>
 </template>

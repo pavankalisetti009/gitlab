@@ -1,6 +1,5 @@
 <script>
 import { GlButton } from '@gitlab/ui';
-import { __ } from '~/locale';
 
 export default {
   name: 'ChangeLifecycleStepper',
@@ -19,16 +18,6 @@ export default {
       type: Number,
       required: false,
       default: 0,
-    },
-    allowSkip: {
-      type: Boolean,
-      required: false,
-      default: false,
-    },
-    showActions: {
-      type: Boolean,
-      required: false,
-      default: true,
     },
     showBackButton: {
       type: Boolean,
@@ -50,30 +39,16 @@ export default {
       required: false,
       default: true,
     },
-    backButtonText: {
-      type: String,
+    isValidStep: {
+      type: Boolean,
       required: false,
-      default: __('Back'),
-    },
-    nextButtonText: {
-      type: String,
-      required: false,
-      default: __('Next'),
-    },
-    finishButtonText: {
-      type: String,
-      required: false,
-      default: __('Finish'),
-    },
-    transitionName: {
-      type: String,
-      required: false,
-      default: 'fade',
+      default: true,
     },
   },
   data() {
     return {
       currentStep: this.initialStep,
+      canProceed: true,
     };
   },
   watch: {
@@ -83,12 +58,19 @@ export default {
         this.currentStep = newVal;
       },
     },
+    isValidStep: {
+      immediate: true,
+      handler(newVal) {
+        this.canProceed = newVal;
+      },
+    },
   },
   methods: {
-    nextStep() {
+    async nextStep() {
       if (this.currentStep < this.steps.length - 1) {
-        const canProceed = this.validateStep(this.currentStep);
-        if (canProceed) {
+        this.validateStep(this.currentStep);
+        await this.$nextTick();
+        if (this.canProceed) {
           this.currentStep += 1;
           this.$emit('step-change', {
             currentStep: this.currentStep,
@@ -109,16 +91,15 @@ export default {
       }
     },
     validateStep(stepIndex) {
-      // Emit validation event - parent can prevent progression by returning false
-      const result = this.$emit('validate-step', {
+      this.$emit('validate-step', {
         stepIndex,
         step: this.steps[stepIndex],
       });
-      return result !== false;
     },
-    finish() {
-      const canFinish = this.validateStep(this.currentStep);
-      if (canFinish) {
+    async finish() {
+      this.validateStep(this.currentStep);
+      await this.$nextTick();
+      if (this.canProceed) {
         this.$emit('finish', {
           completedSteps: this.steps,
           currentStep: this.currentStep,
@@ -147,7 +128,7 @@ export default {
       :class="{
         active: index === currentStep,
         completed: index < currentStep,
-        disabled: index > currentStep && !allowSkip,
+        disabled: index > currentStep,
       }"
     >
       <div
@@ -160,26 +141,26 @@ export default {
         {{ step.label }}
       </div>
 
-      <div v-if="index === currentStep" class="stepper-content">
-        <transition :name="transitionName" mode="out-in">
-          <div :key="currentStep" data-testid="step-content">
-            <slot :name="`step-${currentStep}`" :step="steps[currentStep]">
-              <div class="default-content">
-                <h2>{{ steps[currentStep].label }}</h2>
-                <p>{{ steps[currentStep].description }}</p>
-              </div>
-            </slot>
-          </div>
-        </transition>
+      <div v-if="index === currentStep" data-testid="stepper-content">
+        <div :key="currentStep" data-testid="step-content">
+          <slot :name="`step-${currentStep}`" :step="steps[currentStep]">
+            <div data-testid="default-content">
+              <h2>{{ steps[currentStep].label }}</h2>
+              <p>{{ steps[currentStep].description }}</p>
+            </div>
+          </slot>
+        </div>
       </div>
 
-      <div v-if="showActions && index === currentStep" class="gl-mt-5">
+      <slot v-if="index < currentStep" :name="`complete-step-${index}`"></slot>
+
+      <div v-if="index === currentStep" class="gl-mt-5">
         <gl-button
           v-if="showBackButton && currentStep > 0"
           data-testid="stepper-back"
           @click="previousStep"
         >
-          {{ backButtonText }}
+          {{ __('Back') }}
         </gl-button>
 
         <gl-button
@@ -189,15 +170,17 @@ export default {
           :disabled="currentStep === steps.length - 1"
           @click="nextStep"
         >
-          {{ nextButtonText }}
+          {{ __('Next') }}
         </gl-button>
 
         <gl-button
           v-if="showFinishButton && currentStep === steps.length - 1"
+          class="gl-mr-2"
+          variant="confirm"
           data-testid="stepper-finish"
           @click="finish"
         >
-          {{ finishButtonText }}
+          {{ __('Save') }}
         </gl-button>
 
         <gl-button v-if="showCancelButton" data-testid="stepper-cancel" @click="cancel">
