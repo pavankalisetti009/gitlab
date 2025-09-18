@@ -97,7 +97,7 @@ export default {
     data-testid="container"
     :class="cssClass"
   >
-    <div v-if="loading" class="lg:gl-w-1/2">
+    <div v-if="loading" class="@lg/panel:gl-w-1/2">
       <gl-skeleton-loader :height="50">
         <rect width="140" height="30" x="5" y="0" rx="4" />
         <rect width="240" height="10" x="5" y="40" rx="4" />
