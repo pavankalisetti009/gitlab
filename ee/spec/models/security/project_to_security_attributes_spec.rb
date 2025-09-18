@@ -17,7 +17,7 @@ RSpec.describe Security::ProjectToSecurityAttribute, feature_category: :security
   describe 'validations' do
     it { is_expected.to validate_presence_of(:traversal_ids) }
 
-    context 'when validating uniqueness of name scoped to project' do
+    context 'when validating uniqueness of security attribute scoped to project' do
       subject { build(:project_to_security_attribute, project: project, security_attribute: attribute) }
 
       it { is_expected.to validate_uniqueness_of(:security_attribute_id).scoped_to(:project_id) }
@@ -64,6 +64,44 @@ RSpec.describe Security::ProjectToSecurityAttribute, feature_category: :security
         expect(result).to include(association)
         expect(result).not_to include(excluded)
         expect(result.count).to eq(1)
+      end
+    end
+
+    describe '.by_project_id' do
+      let_it_be(:other_project) { create(:project, namespace: root_group) }
+      let!(:association) { create(:project_to_security_attribute, project: project, security_attribute: attribute) }
+      let!(:excluded) { create(:project_to_security_attribute, project: other_project, security_attribute: attribute) }
+
+      it 'returns only associations with the specified project_id' do
+        result = described_class.by_project_id(project.id)
+
+        expect(result).to contain_exactly(association)
+      end
+    end
+
+    describe '.excluding_root_namespace' do
+      let_it_be(:other_root_namespace) { create(:group) }
+      let_it_be(:other_project) { create(:project, namespace: other_root_namespace) }
+
+      let(:other_category) { create(:security_category, namespace: other_root_namespace, name: 'Other Category') }
+      let(:other_attribute) do
+        create(:security_attribute, security_category: other_category, namespace: other_root_namespace)
+      end
+
+      let!(:association) do
+        create(:project_to_security_attribute, project: project, security_attribute: attribute,
+          traversal_ids: [root_group.id])
+      end
+
+      let!(:excluded) do
+        create(:project_to_security_attribute, project: other_project, security_attribute: other_attribute,
+          traversal_ids: [other_root_namespace.id])
+      end
+
+      it 'excludes records with matching namespace id' do
+        result = described_class.excluding_root_namespace(other_root_namespace.id)
+
+        expect(result).to contain_exactly(association)
       end
     end
   end
