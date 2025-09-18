@@ -6,6 +6,10 @@ module Mutations
       graphql_name 'VulnerabilityLinkMergeRequest'
       description 'Link a merge request to a vulnerability'
 
+      def self.authorization_scopes
+        [:api, :ai_workflows]
+      end
+
       authorize :admin_vulnerability_merge_request_link
 
       argument :vulnerability_id, ::Types::GlobalIDType[::Vulnerability],
@@ -15,7 +19,8 @@ module Mutations
         required: true, description: 'ID of the merge request.'
 
       field :vulnerability, Types::VulnerabilityType,
-        null: true, description: 'Updated vulnerability.'
+        null: true, description: 'Updated vulnerability.',
+        scopes: [:api, :ai_workflows]
 
       def resolve(vulnerability_id:, merge_request_id:)
         vulnerability = authorized_find!(id: vulnerability_id)
