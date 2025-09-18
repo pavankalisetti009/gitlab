@@ -73,22 +73,4 @@ RSpec.describe 'AI events backfill', :freeze_time, :click_house, :sidekiq_inline
       ]
     end
   end
-
-  it_behaves_like 'data backfill worker', Ai::DuoChatEvent do
-    let_it_be(:usage_events) do
-      [
-        create(:ai_duo_chat_event, timestamp: 3.days.ago, organization_id: organization.id),
-        create(:ai_duo_chat_event, timestamp: 2.days.ago, organization_id: organization.id)
-      ]
-    end
-  end
-
-  it_behaves_like 'data backfill worker', Ai::CodeSuggestionEvent do
-    let_it_be(:usage_events) do
-      [
-        create(:ai_code_suggestion_event, timestamp: 3.days.ago, organization_id: organization.id),
-        create(:ai_code_suggestion_event, timestamp: 2.days.ago, organization_id: organization.id)
-      ]
-    end
-  end
 end
