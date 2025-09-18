@@ -42,14 +42,14 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::WorkspaceUrlHelper, featu
     let(:gitlab_workspaces_proxy_http_enabled) { false }
 
     before do
-      allow(Gitlab).to receive(:config).and_return(gitlab_config)
+      stub_config(workspaces: gitlab_config_workspaces)
     end
 
     context "when gitlab config is set correctly" do
-      let(:gitlab_config_workspace_host) { "config.workspaces.host:1234" }
+      let(:gitlab_config_workspaces_host) { "config.workspaces.host:1234" }
       let(:expected_url_template) { "${PORT}-name.config.workspaces.host:1234" }
       let(:expected_url) { "https://1234-name.config.workspaces.host:1234/?example=%2Fvalue" }
-      let(:gitlab_config) { { "workspaces" => { "enabled" => true, "host" => gitlab_config_workspace_host } } }
+      let(:gitlab_config_workspaces) { { enabled: true, host: gitlab_config_workspaces_host } }
 
       it "uses gitlab config workspace host for workspace_url" do
         expect(returned_value).to eq(
@@ -57,29 +57,14 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::WorkspaceUrlHelper, featu
             url_template: expected_url_template,
             url: expected_url,
             common_workspace_host_suffix: true,
-            workspace_host_suffix: gitlab_config_workspace_host
+            workspace_host_suffix: gitlab_config_workspaces_host
           }
         )
       end
     end
 
     context "when gitlab config is set incorrectly" do
-      let(:gitlab_config) { { "workspaces" => { "enabled" => false } } }
-
-      it "uses dns_zone for workspace_url" do
-        expect(returned_value).to eq(
-          {
-            url_template: expected_url_template,
-            url: expected_url,
-            common_workspace_host_suffix: false,
-            workspace_host_suffix: dns_zone
-          }
-        )
-      end
-    end
-
-    context "when gitlab config is not set" do
-      let(:gitlab_config) { {} }
+      let(:gitlab_config_workspaces) { { enabled: false } }
 
       it "uses dns_zone for workspace_url" do
         expect(returned_value).to eq(

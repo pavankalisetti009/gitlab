@@ -2,6 +2,8 @@
 
 require "fast_spec_helper"
 
+# rubocop:disable RSpec/MultipleMemoizedHelpers -- Needed in specs
+
 RSpec.describe RemoteDevelopment::WorkspaceOperations::Create::DesiredConfig::DevfileResourceAppender, :freeze_time, feature_category: :workspaces do
   include_context "with remote development shared fixtures"
   include_context "with constant modules"
@@ -60,7 +62,9 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Create::DesiredConfig::De
   let(:secrets_inventory_annotations) { { "config.k8s.io/owning-inventory" => secrets_inventory_name } }
   let(:scripts_configmap_name) { "#{workspace.name}-scripts" }
   let(:processed_devfile_yaml) { example_processed_devfile_yaml }
+  let(:gitlab_workspaces_proxy_http_enabled) { true }
   let(:gitlab_workspaces_proxy_namespace) { "gitlab-workspaces" }
+  let(:gitlab_workspaces_proxy_ssh_enabled) { true }
   let(:network_policy_enabled) { true }
   let(:network_policy_egress) { [{ allow: "0.0.0.0/0", except: %w[10.0.0.0/8 172.16.0.0/12 192.168.0.0/16] }] }
   let(:image_pull_secrets) { [] }
@@ -114,7 +118,9 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Create::DesiredConfig::De
       secrets_inventory_annotations: secrets_inventory_annotations,
       scripts_configmap_name: scripts_configmap_name,
       processed_devfile_yaml: processed_devfile_yaml,
+      gitlab_workspaces_proxy_http_enabled: gitlab_workspaces_proxy_http_enabled,
       gitlab_workspaces_proxy_namespace: gitlab_workspaces_proxy_namespace,
+      gitlab_workspaces_proxy_ssh_enabled: gitlab_workspaces_proxy_ssh_enabled,
       network_policy_enabled: network_policy_enabled,
       network_policy_egress: network_policy_egress,
       image_pull_secrets: image_pull_secrets,
@@ -182,6 +188,40 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Create::DesiredConfig::De
     end
   end
 
+  context "when gitlab_workspaces_proxy_http_enabled and gitlab_workspaces_proxy_http_enabled are set to false" do
+    let(:gitlab_workspaces_proxy_http_enabled) { false }
+    let(:gitlab_workspaces_proxy_ssh_enabled) { false }
+
+    it "contains empty ingress attributes of the NetworkPolicy resource" do
+      result = appended_context[:desired_config_array]
+      np = result.find { |r| r[:kind] == "NetworkPolicy" }
+      expect(np[:spec][:ingress]).to eq([])
+      expect(np[:spec][:policyTypes]).not_to include("Ingress")
+    end
+  end
+
+  context "when gitlab_workspaces_proxy_http_enabled is true and gitlab_workspaces_proxy_ssh_enabled is false" do
+    let(:gitlab_workspaces_proxy_ssh_enabled) { false }
+
+    it "contains empty ingress attributes of the NetworkPolicy resource" do
+      result = appended_context[:desired_config_array]
+      np = result.find { |r| r[:kind] == "NetworkPolicy" }
+      expect(np[:spec][:ingress]).not_to eq([])
+      expect(np[:spec][:policyTypes]).to include("Ingress")
+    end
+  end
+
+  context "when gitlab_workspaces_proxy_http_enabled is false and gitlab_workspaces_proxy_ssh_enabled is true" do
+    let(:gitlab_workspaces_proxy_http_enabled) { false }
+
+    it "contains empty ingress attributes of the NetworkPolicy resource" do
+      result = appended_context[:desired_config_array]
+      np = result.find { |r| r[:kind] == "NetworkPolicy" }
+      expect(np[:spec][:ingress]).not_to eq([])
+      expect(np[:spec][:policyTypes]).to include("Ingress")
+    end
+  end
+
   context "when max_resources_per_workspace is set" do
     let(:max_resources_per_workspace) do
       { limits: { cpu: "1.5", memory: "786Mi" }, requests: { cpu: "0.6", memory: "512Mi" } }
@@ -214,3 +254,5 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Create::DesiredConfig::De
     end
   end
 end
+
+# rubocop:enable RSpec/MultipleMemoizedHelpers

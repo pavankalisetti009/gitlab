@@ -76,6 +76,24 @@ module RemoteDevelopment
 
     scope :by_cluster_agent_ids, ->(ids) { where(cluster_agent_id: ids) }
 
+    # The papertrail versioned records before the column gitlab_workspaces_proxy_http_enabled was introduced would not
+    # have the field gitlab_workspaces_proxy_http_enabled present. Hence, we override the attribute reader to
+    # consolidate/handle this in the model itself.
+    def gitlab_workspaces_proxy_http_enabled
+      return true if read_attribute(:gitlab_workspaces_proxy_http_enabled).nil?
+
+      super
+    end
+
+    # The papertrail versioned records before the column gitlab_workspaces_proxy_ssh_enabled was introduced would not
+    # have the field gitlab_workspaces_proxy_ssh_enabled present. Hence, we override the attribute reader to
+    # consolidate/handle this in the model itself.
+    def gitlab_workspaces_proxy_ssh_enabled
+      return true if read_attribute(:gitlab_workspaces_proxy_ssh_enabled).nil?
+
+      super
+    end
+
     private
 
     # @return [void]

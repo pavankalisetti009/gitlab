@@ -7,6 +7,9 @@ module RemoteDevelopment
         include Messages
         extend Gitlab::Fp::MessageSupport
 
+        # NOTE: If any changes are made to the URL parsing, ensure the same is reflected in
+        #       `ee/lib/remote_development/workspace_operations/workspace_url_helper.rb`.
+
         # Parse the workspace host to extract port and workspace name
         # @param [Hash] context
         # @return [Gitlab::Fp::Result]

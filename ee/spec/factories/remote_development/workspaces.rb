@@ -119,7 +119,7 @@ FactoryBot.define do
           workspace_token = ""
           # The model's before_save and after_save ensures that the token is only associated for workspaces who are
           # in the running state.
-          if common_host_prefix && desired_state == RemoteDevelopment::WorkspaceOperations::States::RUNNING
+          if common_host_prefix && workspace.desired_state == RemoteDevelopment::WorkspaceOperations::States::RUNNING
             workspace_token = workspace.workspace_token.token
           end
 

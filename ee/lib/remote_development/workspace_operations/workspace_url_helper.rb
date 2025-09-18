@@ -2,6 +2,8 @@
 
 module RemoteDevelopment
   module WorkspaceOperations
+    # NOTE: If any changes are made to the URL structure, ensure the same is reflected in
+    #       `ee/lib/remote_development/workspaces_server_operations/authorize_user_access/workspace_host_parser.rb`.
     class WorkspaceUrlHelper
       # @return [String]
       def self.url_template(name, dns_zone, gitlab_workspaces_proxy_http_enabled)
@@ -29,14 +31,16 @@ module RemoteDevelopment
       # @return [String]
       def self.workspace_host_suffix(dns_zone, gitlab_workspaces_proxy_http_enabled)
         if common_workspace_host_suffix?(gitlab_workspaces_proxy_http_enabled)
-          Gitlab.config["workspaces"]["host"]
+          # We can safely assume these values are set properly because we do that in the initalizers.
+          Gitlab.config.workspaces.host
         else
           dns_zone
         end
       end
 
       def self.gitlab_config_workspaces_enabled?
-        !!Gitlab.config["workspaces"]&.fetch("enabled", false)
+        # We can safely assume these values are set properly because we do that in the initalizers.
+        Gitlab.config.workspaces.enabled
       end
 
       private_class_method :gitlab_config_workspaces_enabled?

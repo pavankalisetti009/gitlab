@@ -339,6 +339,7 @@ RSpec.shared_context 'with remote development shared fixtures' do
   # @param [Boolean] include_all_resources
   # @param [String] dns_zone
   # param [Boolean] gitlab_workspaces_proxy_http_enabled
+  # param [Boolean] gitlab_workspaces_proxy_ssh_enabled
   # @param [Array<Hash>] egress_ip_rules
   # @param [Hash] max_resources_per_workspace
   # @param [Hash] default_resources_per_workspace_container
@@ -369,6 +370,7 @@ RSpec.shared_context 'with remote development shared fixtures' do
     include_all_resources: false,
     dns_zone: 'workspaces.localdev.me',
     gitlab_workspaces_proxy_http_enabled: true,
+    gitlab_workspaces_proxy_ssh_enabled: true,
     egress_ip_rules: [{
       allow: "0.0.0.0/0",
       except: %w[10.0.0.0/8 172.16.0.0/12 192.168.0.0/16]
@@ -492,7 +494,9 @@ RSpec.shared_context 'with remote development shared fixtures' do
       workspace_namespace: workspace.namespace,
       labels: labels,
       annotations: workspace_inventory_annotations_for_partial_reconciliation,
-      egress_ip_rules: egress_ip_rules
+      egress_ip_rules: egress_ip_rules,
+      gitlab_workspaces_proxy_http_enabled: gitlab_workspaces_proxy_http_enabled,
+      gitlab_workspaces_proxy_ssh_enabled: gitlab_workspaces_proxy_ssh_enabled
     )
 
     # noinspection RubyMismatchedArgumentType -- RubyMine thinks annotation could be Array | Hash and it expects Hash
@@ -1174,28 +1178,50 @@ RSpec.shared_context 'with remote development shared fixtures' do
   # @param [Hash] labels
   # @param [Hash] annotations
   # @param [Array<Hash>] egress_ip_rules
+  # @param [Boolean] gitlab_workspaces_proxy_http_enabled
+  # @param [Boolean] gitlab_workspaces_proxy_ssh_enabled
   # @return [Hash]
   def workspace_network_policy(
     workspace_name:,
     workspace_namespace:,
     labels:,
     annotations:,
-    egress_ip_rules:
+    egress_ip_rules:,
+    gitlab_workspaces_proxy_http_enabled:,
+    gitlab_workspaces_proxy_ssh_enabled:
   )
+    policy_types = []
+    ingress = []
+    if gitlab_workspaces_proxy_http_enabled || gitlab_workspaces_proxy_ssh_enabled
+      policy_types.append("Ingress")
+      proxy_namespace_selector = {
+        matchLabels: {
+          "kubernetes.io/metadata.name": "gitlab-workspaces"
+        }
+      }
+      proxy_pod_selector = {
+        matchLabels: {
+          "app.kubernetes.io/name": "gitlab-workspaces-proxy"
+        }
+      }
+      ingress.append(
+        { from: [{ namespaceSelector: proxy_namespace_selector, podSelector: proxy_pod_selector }] }
+      )
+    end
+
+    policy_types.append("Egress")
+    kube_system_namespace_selector = {
+      matchLabels: {
+        "kubernetes.io/metadata.name": "kube-system"
+      }
+    }
     egress = [
       {
         ports: [{ port: 53, protocol: "TCP" }, { port: 53, protocol: "UDP" }],
-        to: [
-          {
-            namespaceSelector: {
-              matchLabels: {
-                "kubernetes.io/metadata.name": "kube-system"
-              }
-            }
-          }
-        ]
+        to: [{ namespaceSelector: kube_system_namespace_selector }]
       }
     ]
+
     egress_ip_rules.each do |egress_rule|
       symbolized_egress_rule = egress_rule.deep_symbolize_keys
       egress.append(
@@ -1223,26 +1249,9 @@ RSpec.shared_context 'with remote development shared fixtures' do
       },
       spec: {
         egress: egress,
-        ingress: [
-          {
-            from: [
-              {
-                namespaceSelector: {
-                  matchLabels: {
-                    "kubernetes.io/metadata.name": "gitlab-workspaces"
-                  }
-                },
-                podSelector: {
-                  matchLabels: {
-                    "app.kubernetes.io/name": "gitlab-workspaces-proxy"
-                  }
-                }
-              }
-            ]
-          }
-        ],
+        ingress: ingress,
         podSelector: pod_selector,
-        policyTypes: %w[Ingress Egress]
+        policyTypes: policy_types
       }
     }
   end

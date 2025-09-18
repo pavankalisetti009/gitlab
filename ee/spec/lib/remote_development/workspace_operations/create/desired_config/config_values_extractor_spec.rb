@@ -10,7 +10,9 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Create::DesiredConfig::Co
   let(:dns_zone) { "my.dns-zone.me" }
   let(:labels) { { "some-label": "value", "other-label": "other-value" } }
   let(:network_policy_enabled) { true }
+  let(:gitlab_workspaces_proxy_http_enabled) { nil }
   let(:gitlab_workspaces_proxy_namespace) { "gitlab-workspaces" }
+  let(:gitlab_workspaces_proxy_ssh_enabled) { nil }
   let(:image_pull_secrets) { [{ namespace: "default", name: "secret-name" }] }
   let(:agent_annotations) { { "some/annotation": "value" } }
   let(:shared_namespace) { "" }
@@ -53,7 +55,7 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Create::DesiredConfig::Co
   end
 
   let(:workspaces_agent_config) do
-    instance_double("RemoteDevelopment::WorkspacesAgentConfig", # rubocop:disable RSpec/VerifiedDoubleReference -- We're using the quoted version so we can use fast_spec_helper
+    record = instance_double("RemoteDevelopment::WorkspacesAgentConfig", # rubocop:disable RSpec/VerifiedDoubleReference -- We're using the quoted version so we can use fast_spec_helper
       dns_zone: dns_zone,
       image_pull_secrets: image_pull_secrets,
       network_policy_enabled: network_policy_enabled,
@@ -69,6 +71,16 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Create::DesiredConfig::Co
       gitlab_workspaces_proxy_namespace: gitlab_workspaces_proxy_namespace,
       use_kubernetes_user_namespaces: use_kubernetes_user_namespaces
     )
+
+    # Stub the methods separately since they are custom attribute readers on the model.
+    allow(record).to receive_messages(
+      gitlab_workspaces_proxy_http_enabled:
+        gitlab_workspaces_proxy_http_enabled.nil? ? true : gitlab_workspaces_proxy_http_enabled,
+      gitlab_workspaces_proxy_ssh_enabled:
+        gitlab_workspaces_proxy_ssh_enabled.nil? ? true : gitlab_workspaces_proxy_ssh_enabled
+    )
+
+    record
   end
 
   let(:workspace_id) { 1 }
@@ -100,7 +112,9 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Create::DesiredConfig::Co
           domain_template
           env_secret_name
           file_secret_name
+          gitlab_workspaces_proxy_http_enabled
           gitlab_workspaces_proxy_namespace
+          gitlab_workspaces_proxy_ssh_enabled
           image_pull_secrets
           labels
           max_resources_per_workspace
@@ -150,7 +164,9 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Create::DesiredConfig::Co
     expect(extracted_values[:env_secret_name]).to eq("#{workspace_name}-env-var")
     expect(extracted_values[:file_secret_name]).to eq("#{workspace_name}-file")
     expect(extracted_values[:image_pull_secrets]).to eq([{ name: "secret-name", namespace: "default" }])
+    expect(extracted_values[:gitlab_workspaces_proxy_http_enabled]).to be(true)
     expect(extracted_values[:gitlab_workspaces_proxy_namespace]).to eq("gitlab-workspaces")
+    expect(extracted_values[:gitlab_workspaces_proxy_ssh_enabled]).to be(true)
     expect(extracted_values[:labels]).to eq(
       {
         "agent.gitlab.com/id": workspaces_agent_id.to_s,
@@ -196,6 +212,46 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Create::DesiredConfig::Co
       }
     )
     expect(extracted_values[:workspace_inventory_name]).to eq("#{workspace_name}-workspace-inventory")
+  end
+
+  context "when gitlab_workspaces_proxy_http_enabled is set to true" do
+    let(:gitlab_workspaces_proxy_http_enabled) { true }
+
+    it "sets the value correctly" do
+      extracted_values = extractor.extract(context)
+      expect(extracted_values).to be_a(Hash)
+      expect(extracted_values[:gitlab_workspaces_proxy_http_enabled]).to be(true)
+    end
+  end
+
+  context "when gitlab_workspaces_proxy_http_enabled is set to false" do
+    let(:gitlab_workspaces_proxy_http_enabled) { false }
+
+    it "sets the value correctly" do
+      extracted_values = extractor.extract(context)
+      expect(extracted_values).to be_a(Hash)
+      expect(extracted_values[:gitlab_workspaces_proxy_http_enabled]).to be(false)
+    end
+  end
+
+  context "when gitlab_workspaces_proxy_ssh_enabled is set to true" do
+    let(:gitlab_workspaces_proxy_ssh_enabled) { true }
+
+    it "sets the value correctly" do
+      extracted_values = extractor.extract(context)
+      expect(extracted_values).to be_a(Hash)
+      expect(extracted_values[:gitlab_workspaces_proxy_ssh_enabled]).to be(true)
+    end
+  end
+
+  context "when gitlab_workspaces_proxy_ssh_enabled is set to false" do
+    let(:gitlab_workspaces_proxy_ssh_enabled) { false }
+
+    it "sets the value correctly" do
+      extracted_values = extractor.extract(context)
+      expect(extracted_values).to be_a(Hash)
+      expect(extracted_values[:gitlab_workspaces_proxy_ssh_enabled]).to be(false)
+    end
   end
 
   describe "devfile_parser_params[:replicas]" do
