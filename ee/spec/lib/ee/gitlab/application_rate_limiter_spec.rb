@@ -31,6 +31,9 @@ RSpec.describe EE::Gitlab::ApplicationRateLimiter, feature_category: :system_acc
         :dependency_scanning_sbom_scan_api_upload | 200 | 1.hour
         :dependency_scanning_sbom_scan_api_download | 400 | 1.hour
         :virtual_registries_endpoints_api_limit | 1000 | 15.seconds
+        :partner_aws_api | 400 | 1.second
+        :partner_gcp_api | 500 | 1.second
+        :partner_postman_api | 4 | 1.second
       end
 
       with_them do
@@ -47,6 +50,21 @@ RSpec.describe EE::Gitlab::ApplicationRateLimiter, feature_category: :system_acc
           value.call
         end
       end
+    end
+
+    context 'with partner API rate limits' do
+      shared_examples 'partner rate limit configuration' do |key, expected_threshold, expected_interval|
+        it "configures #{key} correctly" do
+          values = rate_limits[key]
+
+          expect(values[:threshold]).to eq(expected_threshold)
+          expect(values[:interval]).to eq(expected_interval)
+        end
+      end
+
+      it_behaves_like 'partner rate limit configuration', :partner_aws_api, 400, 1.second
+      it_behaves_like 'partner rate limit configuration', :partner_gcp_api, 500, 1.second
+      it_behaves_like 'partner rate limit configuration', :partner_postman_api, 4, 1.second
     end
 
     context 'when namespace-level rate limits are configured' do
