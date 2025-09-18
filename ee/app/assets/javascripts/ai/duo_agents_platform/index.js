@@ -21,12 +21,7 @@ export const initDuoAgentsPlatformPage = ({ namespaceDatasetProperties = [], nam
 
   const { dataset } = el;
 
-  const {
-    agentsPlatformBaseRoute,
-    emptyStateIllustrationPath,
-    exploreAiCatalogPath,
-    flowTriggersEventTypeOptions,
-  } = dataset;
+  const { agentsPlatformBaseRoute, exploreAiCatalogPath, flowTriggersEventTypeOptions } = dataset;
   const namespaceProvideData = getNamespaceDatasetProperties(dataset, namespaceDatasetProperties);
 
   if (namespaceDatasetProperties.length !== Object.keys(namespaceProvideData).length) {
@@ -55,7 +50,6 @@ export const initDuoAgentsPlatformPage = ({ namespaceDatasetProperties = [], nam
     router,
     apolloProvider,
     provide: {
-      emptyStateIllustrationPath,
       exploreAiCatalogPath,
       flowTriggersEventTypeOptions: JSON.parse(flowTriggersEventTypeOptions),
       ...namespaceProvideData,

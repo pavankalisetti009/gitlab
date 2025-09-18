@@ -34,6 +34,10 @@ export default {
       type: String,
       required: true,
     },
+    project: {
+      type: Object,
+      required: true,
+    },
   },
   computed: {
     executorId() {
@@ -48,6 +52,14 @@ export default {
         {
           key: __('Status'),
           value: this.status,
+        },
+        {
+          key: __('Project'),
+          value: this.project?.name,
+        },
+        {
+          key: __('Group'),
+          value: this.project?.namespace?.name,
         },
         {
           key: __('Started'),

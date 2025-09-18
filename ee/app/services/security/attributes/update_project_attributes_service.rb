@@ -5,7 +5,8 @@ module Security
     class UpdateProjectAttributesService < BaseService
       include Gitlab::Utils::StrongMemoize
 
-      MAX_ATTRIBUTES = 50
+      MAX_PROJECT_ATTRIBUTES = 20
+      MAX_ATTRIBUTES = MAX_PROJECT_ATTRIBUTES * 2
 
       def initialize(project:, current_user:, params:)
         @project = project
@@ -19,7 +20,9 @@ module Security
         end
 
         return UnauthorizedError unless permitted?
-        return attribute_limit_error if exceeds_attribute_limit?
+
+        limits_errors = validate_limits
+        return error_response('Too many attributes', errors: limits_errors) if limits_errors.present?
 
         validate_attributes
         return error_response('Invalid attributes', errors: validation_errors) if validation_errors.present?
@@ -93,12 +96,27 @@ module Security
       end
       strong_memoize_attr :associations_to_destroy
 
+      def validate_limits
+        errors = []
+        errors << "Cannot process more than #{MAX_ATTRIBUTES} attributes at once" if exceeds_attribute_limit?
+        errors << "Cannot exceed #{MAX_PROJECT_ATTRIBUTES} attributes per project" if exceeds_project_attribute_limit?
+        errors
+      end
+
       def exceeds_attribute_limit?
         add_attribute_ids.size + remove_attribute_ids.size > MAX_ATTRIBUTES
       end
 
-      def attribute_limit_error
-        error_response("Cannot process more than #{MAX_ATTRIBUTES} attributes at once")
+      def exceeds_project_attribute_limit?
+        expected_attribute_count > MAX_PROJECT_ATTRIBUTES
+      end
+
+      def expected_attribute_count
+        current_count = existing_attributes.size
+        attributes_to_add = associations_to_create.size
+        attributes_to_remove = associations_to_destroy.size
+
+        current_count + attributes_to_add - attributes_to_remove
       end
 
       def error_response(message, **payload)

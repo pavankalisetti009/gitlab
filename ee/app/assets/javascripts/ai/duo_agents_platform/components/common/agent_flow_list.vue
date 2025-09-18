@@ -1,5 +1,6 @@
 <script>
 import { GlEmptyState, GlKeysetPagination } from '@gitlab/ui';
+import emptyStateIllustrationPath from '@gitlab/svgs/dist/illustrations/empty-state/empty-pipeline-md.svg';
 import { AGENTS_PLATFORM_SHOW_ROUTE } from '../../router/constants';
 import AgentFlowListItem from './agent_flow_list_item.vue';
 
@@ -11,9 +12,10 @@ export default {
     AgentFlowListItem,
   },
   props: {
-    emptyStateIllustrationPath: {
-      required: true,
-      type: String,
+    showProjectInfo: {
+      required: false,
+      type: Boolean,
+      default: false,
     },
     workflows: {
       required: true,
@@ -30,6 +32,7 @@ export default {
     },
   },
   showRoute: AGENTS_PLATFORM_SHOW_ROUTE,
+  emptyStateIllustrationPath,
 };
 </script>
 <template>
@@ -38,11 +41,16 @@ export default {
       v-if="!hasWorkflows"
       :title="s__('DuoAgentsPlatform|No agent sessions yet')"
       :description="s__('DuoAgentsPlatform|New agent sessions will appear here.')"
-      :svg-path="emptyStateIllustrationPath"
+      :svg-path="$options.emptyStateIllustrationPath"
     />
     <template v-else>
       <ul class="gl-divide-x-0 gl-divide-y-1 gl-divide-solid gl-divide-gray-100 gl-px-0 gl-pt-4">
-        <agent-flow-list-item v-for="item in workflows" :key="item.id" :item="item" />
+        <agent-flow-list-item
+          v-for="item in workflows"
+          :key="item.id"
+          :item="item"
+          :show-project-info="showProjectInfo"
+        />
       </ul>
       <gl-keyset-pagination
         v-bind="workflowsPageInfo"

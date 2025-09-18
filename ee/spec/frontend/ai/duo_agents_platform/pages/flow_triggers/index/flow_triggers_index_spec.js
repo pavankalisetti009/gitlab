@@ -50,7 +50,6 @@ describe('FlowTriggersIndex', () => {
       apolloProvider: mockApollo,
       provide: {
         projectPath: 'myProject',
-        emptyStateIllustrationPath: 'illustrations/empty-state/empty-pipeline-md.svg',
         flowTriggersEventTypeOptions: eventTypeOptions,
       },
     });
@@ -143,6 +142,7 @@ describe('FlowTriggersIndex', () => {
 
         it('shows an empty state', () => {
           expect(findEmptyState().exists()).toBe(true);
+          expect(findEmptyState().props().svgPath).toBeDefined();
         });
 
         it('does not show a loading state', () => {

@@ -17,6 +17,15 @@ describe('AgentFlowDetails', () => {
     executorUrl: 'https://gitlab.com/gitlab-org/gitlab/-/pipelines/123',
     createdAt: '2023-01-01T00:54:00Z',
     updatedAt: '2024-01-02T00:34:00Z',
+    project: {
+      id: 'gid://gitlab/Project/1',
+      name: 'Test Project',
+      fullPath: 'gitlab-org/test-project',
+      namespace: {
+        id: 'gid://gitlab/Group/1',
+        name: 'gitlab-org',
+      },
+    },
   };
 
   const createComponent = ({ props = {}, provide = {} } = {}) => {
@@ -91,6 +100,7 @@ describe('AgentFlowDetails', () => {
         executorUrl: defaultProps.executorUrl,
         createdAt: '2023-01-01T00:54:00Z',
         updatedAt: '2024-01-02T00:34:00Z',
+        project: defaultProps.project,
       });
     });
 

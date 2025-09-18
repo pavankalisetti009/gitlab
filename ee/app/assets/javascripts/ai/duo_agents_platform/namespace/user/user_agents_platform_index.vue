@@ -15,6 +15,7 @@ export default {
   apollo: {
     workflows: {
       query: getUserAgentFlows,
+      pollInterval: 10000,
       variables() {
         return {
           first: 20,

@@ -24,7 +24,6 @@ export function initDuoPanel() {
     apolloProvider,
     provide: {
       duoAgentsInvokePath: '',
-      emptyStateIllustrationPath: '',
       isSidePanelView: true,
     },
     render(createElement) {

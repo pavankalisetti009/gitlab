@@ -36,7 +36,6 @@ describe('UserAgentsPlatformIndex', () => {
     wrapper = shallowMount(UserAgentsPlatformIndex, {
       apolloProvider: createMockApollo(handlers),
       provide: {
-        emptyStateIllustrationPath: '/path/to/illustration.svg',
         isSidePanelView: true,
       },
     });
@@ -238,6 +237,31 @@ describe('UserAgentsPlatformIndex', () => {
         it('returns false', () => {
           expect(wrapper.vm.isLoadingWorkflows).toBe(false);
         });
+      });
+    });
+
+    describe('polling', () => {
+      beforeEach(async () => {
+        await createWrapper();
+      });
+
+      it('polls every 10 seconds', async () => {
+        expect(getUserAgentFlowsHandler).toHaveBeenCalledTimes(1);
+
+        jest.advanceTimersByTime(5000);
+        await waitForPromises();
+
+        expect(getUserAgentFlowsHandler).toHaveBeenCalledTimes(1);
+
+        jest.advanceTimersByTime(10000);
+        await waitForPromises();
+
+        expect(getUserAgentFlowsHandler).toHaveBeenCalledTimes(2);
+
+        jest.advanceTimersByTime(10000);
+        await waitForPromises();
+
+        expect(getUserAgentFlowsHandler).toHaveBeenCalledTimes(3);
       });
     });
   });

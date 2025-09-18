@@ -59,6 +59,9 @@ export default {
     updatedAt() {
       return this.agentFlow?.updatedAt || '';
     },
+    project() {
+      return this.agentFlow?.project || {};
+    },
   },
 };
 </script>
@@ -70,6 +73,7 @@ export default {
     :agent-flow-checkpoint="agentFlowCheckpoint"
     :executor-url="executorUrl"
     :created-at="createdAt"
+    :project="project"
     :updated-at="updatedAt"
   />
 </template>
