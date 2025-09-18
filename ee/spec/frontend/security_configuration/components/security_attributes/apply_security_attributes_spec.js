@@ -65,7 +65,12 @@ describe('ApplySecurityAttributes', () => {
   ) => {
     const apolloProvider = createMockApollo(requestHandlers);
     wrapper = mountFn(ApplySecurityAttributes, {
-      provide: { groupFullPath: 'path/to/group', projectFullPath: 'path/to/project' },
+      provide: {
+        groupFullPath: 'path/to/group',
+        projectFullPath: 'path/to/project',
+        canManageAttributes: false,
+        groupManageAttributesPath: 'path/to/group/-/security/configuration',
+      },
       apolloProvider,
       stubs: {
         GlTableLite,
