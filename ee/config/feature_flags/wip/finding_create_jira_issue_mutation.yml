@@ -1,0 +1,10 @@
+---
+name: finding_create_jira_issue_mutation
+description:
+feature_issue_url: https://gitlab.com/gitlab-org/gitlab/-/issues/441954
+introduced_by_url: https://gitlab.com/gitlab-org/gitlab/-/merge_requests/204889
+rollout_issue_url:
+milestone: '18.4'
+group: group::security insights
+type: wip
+default_enabled: false

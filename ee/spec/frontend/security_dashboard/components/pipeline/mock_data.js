@@ -700,9 +700,23 @@ export const securityFindingCreateIssueMutationResponse = {
   },
 };
 
-export const securityFindingCreateExternalIssueMutationResponse = {
+export const vulnerabilityCreateExternalIssueMutationResponse = {
   data: {
     vulnerabilityExternalIssueLinkCreate: {
+      errors: [],
+      externalIssueLink: {
+        id: '1',
+        externalIssue: {
+          webUrl: 'https://jira.com/issue/1',
+        },
+      },
+    },
+  },
+};
+
+export const securityFindingCreateExternalIssueMutationResponse = {
+  data: {
+    securityFindingExternalIssueLinkCreate: {
       errors: [],
       externalIssueLink: {
         id: '1',
