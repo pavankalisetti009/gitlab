@@ -3,91 +3,87 @@
 require 'spec_helper'
 
 RSpec.describe Ci::CleanupBuildNameWorker, feature_category: :continuous_integration do
-  let_it_be(:very_old_build) { create(:ci_build, :failed, :with_build_name, created_at: 1.year.ago) }
-
-  let_it_be(:slightly_old_build) do
-    create(:ci_build, :success, :with_build_name, created_at: described_class::RETENTION_PERIOD.ago + 1.day)
-  end
-
-  let_it_be(:build_right_before_cut_off) do
-    create(:ci_build, :success, :with_build_name, created_at: described_class::RETENTION_PERIOD.ago - 1.day)
-  end
-
-  let_it_be(:new_build) { create(:ci_build, :with_build_name, created_at: 1.day.ago) }
+  let(:worker) { described_class.new }
 
   describe '#perform' do
-    subject(:worker) { described_class.new }
-
-    it 'deletes build name records outside retention period' do
-      expect(Ci::Build.count).to eq(4)
-      expect(Ci::BuildName.count).to eq(4)
-
-      worker.perform
-
-      expect(Ci::Build.count).to eq(4)
-      expect(Ci::BuildName.ids).to match_array([new_build.id])
+    let_it_be(:current_partition) { create(:ci_partition, :current, id: 205) }
+    let_it_be(:previous_partition) { create(:ci_partition, :active, id: 204) }
+    let_it_be(:old_partition_1) { create(:ci_partition, :active, id: 203) }
+    let_it_be(:old_partition_2) { create(:ci_partition, :active, id: 202) }
+    let(:table_name) { "ci_build_names" }
+    let(:build_name_partitions) do
+      [
+        Gitlab::Database::Partitioning::MultipleNumericListPartition.new(
+          table_name, 205, partition_name: "#{table_name}_205"
+        ),
+        Gitlab::Database::Partitioning::MultipleNumericListPartition.new(
+          table_name, 204, partition_name: "#{table_name}_204"
+        ),
+        Gitlab::Database::Partitioning::MultipleNumericListPartition.new(
+          table_name, 203, partition_name: "#{table_name}_203"
+        ),
+        Gitlab::Database::Partitioning::MultipleNumericListPartition.new(
+          table_name, 202, partition_name: "#{table_name}_202"
+        )
+      ]
     end
 
-    context 'with no records found' do
+    context 'when partitioned tables exist' do
       before do
-        stub_const("#{described_class}::RETENTION_PERIOD", 2.years)
+        allow(Ci::BuildName).to receive_message_chain(:partitioning_strategy, :current_partitions)
+          .and_return(build_name_partitions)
+        allow(Ci::BuildName).to receive_message_chain(:in_partition, :any?).and_return(true)
       end
 
-      it 'returns if there are no records to be deleted' do
+      it 'truncates old partition tables' do
+        expect(Ci::ApplicationRecord.connection).not_to receive(:execute)
+          .with('TRUNCATE TABLE "gitlab_partitions_dynamic"."ci_build_names_205"')
+        expect(Ci::ApplicationRecord.connection).not_to receive(:execute)
+          .with('TRUNCATE TABLE "gitlab_partitions_dynamic"."ci_build_names_204"')
+        expect(Ci::ApplicationRecord.connection).to receive(:execute)
+          .with('TRUNCATE TABLE "gitlab_partitions_dynamic"."ci_build_names_203"')
+        expect(Ci::ApplicationRecord.connection).to receive(:execute)
+          .with('TRUNCATE TABLE "gitlab_partitions_dynamic"."ci_build_names_202"')
+
         worker.perform
-
-        expect(Ci::Build.count).to eq(4)
-        expect(Ci::BuildName.count).to eq(4)
-      end
-    end
-
-    context 'with batches' do
-      before do
-        stub_const("#{described_class}::BATCH_SIZE", 2)
       end
 
-      it 'performs deletes in multiple batches' do
-        sql_queries = ActiveRecord::QueryRecorder.new { worker.perform }.log
-        delete_count = sql_queries.count { |query| query.start_with?('DELETE') }
+      context 'when feature flag is disabled' do
+        before do
+          stub_feature_flags(truncate_build_names: false)
+        end
 
-        expect(delete_count).to eq(2)
+        it 'does not perform any truncation' do
+          expect(Ci::ApplicationRecord.connection).not_to receive(:execute)
 
-        expect(Ci::BuildName.ids).to match_array([new_build.id])
-      end
-    end
-
-    context 'when runtime limit is reached' do
-      before do
-        stub_const("#{described_class}::BATCH_SIZE", 2)
-
-        allow_next_instance_of(Gitlab::Metrics::RuntimeLimiter) do |runtime_limiter|
-          allow(runtime_limiter).to receive(:over_time?).and_return(true)
+          worker.perform
         end
       end
 
-      it 'reschedules the worker' do
-        expect(described_class).to receive(:perform_in).with(2.minutes)
+      context 'when no old partitions exist' do
+        before do
+          old_partition_1.destroy!
+          old_partition_2.destroy!
+        end
 
-        worker.perform
-      end
+        it 'does not truncate any tables' do
+          expect(Ci::ApplicationRecord.connection).not_to receive(:execute)
 
-      it 'does not finish deleting all the records' do
-        worker.perform
-
-        expect(Ci::BuildName.count).to eq(2)
+          worker.perform
+        end
       end
     end
 
-    context 'with FF disabled' do
+    context 'when partitioned table does not exist' do
       before do
-        stub_feature_flags(truncate_build_names: false)
+        allow(worker).to receive(:partitioned_table_exists?).and_return(false)
+        allow(Ci::ApplicationRecord.connection).to receive(:execute)
       end
 
-      it 'no-ops' do
+      it 'skips truncation for non-existent tables' do
         worker.perform
 
-        expect(Ci::Build.count).to eq(4)
-        expect(Ci::BuildName.count).to eq(4)
+        expect(Ci::ApplicationRecord.connection).not_to have_received(:execute)
       end
     end
   end
