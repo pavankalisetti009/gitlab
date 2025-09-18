@@ -8,12 +8,15 @@ function initAdminUsageDashboard() {
     return null;
   }
 
+  const { userUsagePath } = el.dataset;
+
   return new Vue({
     el,
     name: 'AdminUsageBillingDashboardApp',
     provide: {
       // TODO: this property should be replaced with a value provided from the backend
       purchaseCommitmentUrl: '/admin/gitlab_duo/usage',
+      userUsagePath,
     },
     render(createElement) {
       return createElement(AdminUsageDashboard);
