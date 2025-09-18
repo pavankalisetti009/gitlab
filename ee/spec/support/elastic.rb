@@ -26,6 +26,8 @@ module Elastic
     end
 
     def setup
+      ensure_service_running!
+
       clear_tracking!
       benchmark(:delete_indices!) { delete_indices! }
 
@@ -44,8 +46,19 @@ module Elastic
     end
 
     def teardown
-      delete_indices!
+      delete_indices! if service_reachable?
       clear_tracking!
+    end
+
+    def service_reachable?
+      helper.ping?
+    end
+
+    def ensure_service_running!
+      return if service_reachable?
+
+      RSpec::Expectations.fail_with("Ensure the Elasticsearch service is running. \
+        See: https://gitlab.com/gitlab-org/gitlab-development-kit/-/blob/main/doc/howto/elasticsearch.md")
     end
 
     def clear_tracking!
