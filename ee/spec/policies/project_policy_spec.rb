@@ -5359,33 +5359,54 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
   end
 
   describe 'AI catalog abilities' do
-    let(:current_user) { maintainer }
+    let(:stage_check_available) { true }
 
-    context 'with global_ai_catalog feature flag enabled' do
-      context 'when maintainer' do
-        it { is_expected.to be_allowed(:admin_ai_catalog_item) }
-        it { is_expected.to be_allowed(:admin_ai_catalog_item_consumer) }
-      end
+    shared_examples 'no permissions when StageCheck is not available' do
+      let(:stage_check_available) { false }
 
-      context 'when developer' do
-        let(:current_user) { developer }
-
-        it { is_expected.to be_disallowed(:admin_ai_catalog_item) }
-        it { is_expected.to be_disallowed(:admin_ai_catalog_item_consumer) }
-        it { is_expected.to be_allowed(:read_ai_catalog_item_consumer) }
-      end
-
-      context 'when reporter' do
-        let(:current_user) { reporter }
-
-        it { is_expected.to be_disallowed(:read_ai_catalog_item_consumer) }
-      end
+      it { is_expected.to be_disallowed(:admin_ai_catalog_item) }
+      it { is_expected.to be_disallowed(:admin_ai_catalog_item_consumer) }
+      it { is_expected.to be_disallowed(:read_ai_catalog_item_consumer) }
     end
 
-    context 'when global_ai_catalog feature flag is disabled' do
+    shared_examples 'no permissions when global_ai_catalog feature flag is disabled' do
       before do
         stub_feature_flags(global_ai_catalog: false)
       end
+
+      it { is_expected.to be_disallowed(:admin_ai_catalog_item) }
+      it { is_expected.to be_disallowed(:admin_ai_catalog_item_consumer) }
+      it { is_expected.to be_disallowed(:read_ai_catalog_item_consumer) }
+    end
+
+    before do
+      allow(::Gitlab::Llm::StageCheck).to receive(:available?).with(project, :ai_catalog).and_return(stage_check_available)
+    end
+
+    context 'when maintainer' do
+      let(:current_user) { maintainer }
+
+      it { is_expected.to be_allowed(:admin_ai_catalog_item) }
+      it { is_expected.to be_allowed(:admin_ai_catalog_item_consumer) }
+      it { is_expected.to be_allowed(:read_ai_catalog_item_consumer) }
+
+      it_behaves_like 'no permissions when StageCheck is not available'
+      it_behaves_like 'no permissions when global_ai_catalog feature flag is disabled'
+    end
+
+    context 'when developer' do
+      let(:current_user) { developer }
+
+      it { is_expected.to be_disallowed(:admin_ai_catalog_item) }
+      it { is_expected.to be_disallowed(:admin_ai_catalog_item_consumer) }
+      it { is_expected.to be_allowed(:read_ai_catalog_item_consumer) }
+
+      it_behaves_like 'no permissions when StageCheck is not available'
+      it_behaves_like 'no permissions when global_ai_catalog feature flag is disabled'
+    end
+
+    context 'when reporter' do
+      let(:current_user) { reporter }
 
       it { is_expected.to be_disallowed(:admin_ai_catalog_item) }
       it { is_expected.to be_disallowed(:admin_ai_catalog_item_consumer) }

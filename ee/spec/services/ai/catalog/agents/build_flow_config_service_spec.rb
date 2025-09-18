@@ -3,6 +3,8 @@
 require 'spec_helper'
 
 RSpec.describe Ai::Catalog::Agents::BuildFlowConfigService, :aggregate_failures, feature_category: :workflow_catalog do
+  include Ai::Catalog::TestHelpers
+
   let_it_be(:developer) { create(:user) }
   let_it_be(:organization) { create(:organization) }
   let_it_be(:project) { create(:project, :repository, organization: organization, developers: developer) }
@@ -36,6 +38,10 @@ RSpec.describe Ai::Catalog::Agents::BuildFlowConfigService, :aggregate_failures,
       'prompts' => be_an(Array),
       'params' => be_a(Hash)
     }
+  end
+
+  before do
+    enable_ai_catalog
   end
 
   describe 'constants' do

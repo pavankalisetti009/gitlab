@@ -3,6 +3,8 @@
 require 'spec_helper'
 
 RSpec.describe Ai::Catalog::ExecuteWorkflowService, :aggregate_failures, feature_category: :workflow_catalog do
+  include Ai::Catalog::TestHelpers
+
   let_it_be(:organization) { create(:organization) }
   let_it_be(:user) { create(:user) }
   let_it_be(:project) { create(:project, :repository, organization: organization, maintainers: user) }
@@ -28,6 +30,10 @@ RSpec.describe Ai::Catalog::ExecuteWorkflowService, :aggregate_failures, feature
   end
 
   let(:service) { described_class.new(user, params) }
+
+  before do
+    enable_ai_catalog
+  end
 
   shared_examples "returns error response" do |expected_message|
     it "returns an error service response" do

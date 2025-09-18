@@ -3,6 +3,7 @@
 require 'spec_helper'
 
 RSpec.describe Mutations::Ai::Catalog::Flow::Create, feature_category: :workflow_catalog do
+  include Ai::Catalog::TestHelpers
   include GraphqlHelpers
 
   let_it_be(:maintainer) { create(:user) }
@@ -24,6 +25,10 @@ RSpec.describe Mutations::Ai::Catalog::Flow::Create, feature_category: :workflow
   end
 
   subject(:execute) { post_graphql_mutation(mutation, current_user: current_user) }
+
+  before do
+    enable_ai_catalog
+  end
 
   shared_examples 'an authorization failure' do
     it_behaves_like 'a mutation that returns a top-level access error'

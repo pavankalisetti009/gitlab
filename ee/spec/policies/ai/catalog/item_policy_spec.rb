@@ -17,20 +17,24 @@ RSpec.describe Ai::Catalog::ItemPolicy, :with_current_organization, feature_cate
   let_it_be_with_reload(:private_item) { create(:ai_catalog_item, project: private_project, public: false) }
   let_it_be_with_reload(:public_item) { create(:ai_catalog_item, project: private_project, public: true) }
 
+  let(:stage_check) { true }
+
   before do
     Current.organization = current_organization
+    allow(::Gitlab::Llm::StageCheck).to receive(:available?).with(private_project, :ai_catalog).and_return(stage_check)
   end
 
   shared_examples 'no permissions' do
-    it { is_expected.not_to be_allowed(:admin_ai_catalog_item) }
-    it { is_expected.not_to be_allowed(:read_ai_catalog_item) }
+    it { is_expected.to be_disallowed(:admin_ai_catalog_item) }
+    it { is_expected.to be_disallowed(:read_ai_catalog_item) }
   end
 
   shared_examples 'read-only permissions' do
-    it { is_expected.not_to be_allowed(:admin_ai_catalog_item) }
+    it { is_expected.to be_disallowed(:admin_ai_catalog_item) }
     it { is_expected.to be_allowed(:read_ai_catalog_item) }
 
     it_behaves_like 'no permissions with global_ai_catalog feature flag disabled'
+    it_behaves_like 'no permissions with project stage check false, unless item is public'
     it_behaves_like 'no permissions with deleted item'
   end
 
@@ -39,6 +43,7 @@ RSpec.describe Ai::Catalog::ItemPolicy, :with_current_organization, feature_cate
     it { is_expected.to be_allowed(:read_ai_catalog_item) }
 
     it_behaves_like 'no permissions with global_ai_catalog feature flag disabled'
+    it_behaves_like 'no permissions with project stage check false, unless item is public'
     it_behaves_like 'no permissions with deleted item'
   end
 
@@ -56,6 +61,18 @@ RSpec.describe Ai::Catalog::ItemPolicy, :with_current_organization, feature_cate
     end
 
     include_examples 'no permissions'
+  end
+
+  shared_examples 'no permissions with project stage check false, unless item is public' do
+    let(:stage_check) { false }
+
+    it { is_expected.to be_disallowed(:admin_ai_catalog_item) }
+
+    it 'is expected not to allow read_ai_catalog_item, unless item is public' do
+      allowed = item.public?
+
+      expect(policy.allowed?(:read_ai_catalog_item)).to eq(allowed)
+    end
   end
 
   context 'when maintainer' do

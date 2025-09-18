@@ -3,6 +3,8 @@
 require 'spec_helper'
 
 RSpec.describe Ai::Catalog::ItemsFinder, feature_category: :workflow_catalog do
+  include Ai::Catalog::TestHelpers
+
   let_it_be(:user) { create(:user) }
 
   let_it_be(:project_reporter_acceess) { create(:project, reporters: user) }
@@ -29,6 +31,10 @@ RSpec.describe Ai::Catalog::ItemsFinder, feature_category: :workflow_catalog do
   let(:params) { {} }
 
   subject(:results) { described_class.new(user, params: params).execute }
+
+  before do
+    enable_ai_catalog
+  end
 
   it 'returns items visible to user' do
     is_expected.to contain_exactly(

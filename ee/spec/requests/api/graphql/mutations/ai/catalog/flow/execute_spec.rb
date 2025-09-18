@@ -3,6 +3,7 @@
 require 'spec_helper'
 
 RSpec.describe Mutations::Ai::Catalog::Flow::Execute, :aggregate_failures, feature_category: :workflow_catalog do
+  include Ai::Catalog::TestHelpers
   include GraphqlHelpers
 
   let_it_be(:current_user) { create(:user) }
@@ -83,8 +84,8 @@ RSpec.describe Mutations::Ai::Catalog::Flow::Execute, :aggregate_failures, featu
   end
 
   before do
+    enable_ai_catalog
     stub_feature_flags(ci_validate_config_options: false)
-    allow(::Gitlab::Llm::StageCheck).to receive(:available?).with(project, :duo_workflow).and_return(true)
     allow(Ability).to receive(:allowed?).and_call_original
     allow(Ability).to receive(:allowed?).with(current_user, :duo_workflow, project).and_return(true)
     allow(Ability).to receive(:allowed?).with(current_user, :execute_duo_workflow_in_ci, anything).and_return(true)

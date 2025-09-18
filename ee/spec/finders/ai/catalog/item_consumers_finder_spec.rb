@@ -3,6 +3,8 @@
 require 'spec_helper'
 
 RSpec.describe Ai::Catalog::ItemConsumersFinder, feature_category: :workflow_catalog do
+  include Ai::Catalog::TestHelpers
+
   let_it_be(:user) { create(:user) }
   let_it_be(:parent_group) { create(:group, developers: user) }
   let_it_be(:parent_group_consumers) { create_list(:ai_catalog_item_consumer, 2, group: parent_group) }
@@ -17,6 +19,10 @@ RSpec.describe Ai::Catalog::ItemConsumersFinder, feature_category: :workflow_cat
   let(:params) { { include_inherited: include_inherited } }
 
   subject(:results) { described_class.new(user, params: params).execute }
+
+  before do
+    enable_ai_catalog
+  end
 
   context 'when project_id is provided' do
     let(:params) { super().merge(project_id: project.id) }

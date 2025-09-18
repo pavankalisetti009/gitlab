@@ -3,6 +3,7 @@
 require 'spec_helper'
 
 RSpec.describe 'getting AI catalog agent flow configuration', :with_current_organization, :aggregate_failures, feature_category: :workflow_catalog do
+  include Ai::Catalog::TestHelpers
   include GraphqlHelpers
 
   let_it_be(:user) { create(:user) }
@@ -29,6 +30,10 @@ RSpec.describe 'getting AI catalog agent flow configuration', :with_current_orga
       'prompts' => be_an(Array),
       'params' => be_a(Hash)
     }
+  end
+
+  before do
+    enable_ai_catalog
   end
 
   shared_examples 'returns valid flow configuration' do

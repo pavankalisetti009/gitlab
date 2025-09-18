@@ -7,12 +7,8 @@ module Ai
         ::Feature.enabled?(:global_ai_catalog, @user)
       end
 
-      condition(:public_item, scope: :subject) do
-        @subject.public?
-      end
-
-      condition(:deleted_item, scope: :subject) do
-        @subject.deleted?
+      condition(:project_ai_catalog_available, scope: :subject) do
+        @subject.project && @subject.project.ai_catalog_available?
       end
 
       condition(:developer_access) do
@@ -23,6 +19,14 @@ module Ai
         can?(:maintainer_access, @subject.project)
       end
 
+      condition(:public_item, scope: :subject, score: 0) do
+        @subject.public?
+      end
+
+      condition(:deleted_item, scope: :subject, score: 0) do
+        @subject.deleted?
+      end
+
       rule { public_item | developer_access }.policy do
         enable :read_ai_catalog_item
       end
@@ -31,8 +35,16 @@ module Ai
         enable :admin_ai_catalog_item
       end
 
-      rule { ~ai_catalog_enabled | deleted_item }.policy do
+      rule { deleted_item | ~ai_catalog_enabled }.policy do
         prevent :read_ai_catalog_item
+        prevent :admin_ai_catalog_item
+      end
+
+      rule { ~public_item & ~project_ai_catalog_available }.policy do
+        prevent :read_ai_catalog_item
+      end
+
+      rule { ~project_ai_catalog_available }.policy do
         prevent :admin_ai_catalog_item
       end
     end

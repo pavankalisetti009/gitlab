@@ -3,6 +3,8 @@
 require 'spec_helper'
 
 RSpec.describe Ai::Catalog::Flows::ExecuteService, :aggregate_failures, feature_category: :workflow_catalog do
+  include Ai::Catalog::TestHelpers
+
   let_it_be(:maintainer) { create(:user) }
   let_it_be(:project) { create(:project, :repository, maintainers: maintainer) }
   let_it_be(:flow) { create(:ai_catalog_flow, project: project) }
@@ -69,6 +71,10 @@ RSpec.describe Ai::Catalog::Flows::ExecuteService, :aggregate_failures, feature_
       current_user: current_user,
       params: service_params
     )
+  end
+
+  before do
+    enable_ai_catalog
   end
 
   describe '#execute' do

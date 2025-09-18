@@ -2294,6 +2294,26 @@ RSpec.describe Project, feature_category: :groups_and_projects do
     end
   end
 
+  describe '#ai_catalog_available?' do
+    subject(:ai_catalog_available) { project.ai_catalog_available? }
+
+    before do
+      allow(::Gitlab::Llm::StageCheck).to receive(:available?).with(project, :ai_catalog).and_return(stage_check_available)
+    end
+
+    context 'when stage check availability passes' do
+      let(:stage_check_available) { true }
+
+      it { is_expected.to be true }
+    end
+
+    context 'when stage check availability fails' do
+      let(:stage_check_available) { false }
+
+      it { is_expected.to be false }
+    end
+  end
+
   describe '#root_namespace' do
     let(:project) { build(:project, namespace: parent) }
 

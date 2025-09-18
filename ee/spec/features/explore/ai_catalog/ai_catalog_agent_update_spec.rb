@@ -3,10 +3,16 @@
 require 'spec_helper'
 
 RSpec.describe 'AI Catalog', :js, feature_category: :workflow_catalog do
+  include Ai::Catalog::TestHelpers
+
   let_it_be(:project) { create(:project, :public) }
   let_it_be(:user) { create(:user, maintainer_of: project) }
   let!(:agent1) do
     create(:ai_catalog_agent, project_id: project.id, name: 'Agent 1', description: 'Agent Description', public: true)
+  end
+
+  before do
+    enable_ai_catalog
   end
 
   describe 'Update existing agent' do
