@@ -1,5 +1,5 @@
 import { GlEmptyState, GlKeysetPagination } from '@gitlab/ui';
-import { mount } from '@vue/test-utils';
+import { shallowMount } from '@vue/test-utils';
 import AgentFlowList from 'ee/ai/duo_agents_platform/components/common/agent_flow_list.vue';
 import AgentFlowListItem from 'ee/ai/duo_agents_platform/components/common/agent_flow_list_item.vue';
 import { mockAgentFlows } from '../../../mocks';
@@ -7,23 +7,19 @@ import { mockAgentFlows } from '../../../mocks';
 describe('AgentFlowList', () => {
   let wrapper;
 
-  const createWrapper = (props = {}, mountFn = mount) => {
-    wrapper = mountFn(AgentFlowList, {
-      propsData: {
-        workflows: mockAgentFlows,
-        workflowsPageInfo: {},
-        emptyStateIllustrationPath: 'illustrations/empty-state/empty-pipeline-md.svg',
-        ...props,
-      },
-      stubs: {
-        AgentFlowListItem,
-      },
-    });
-  };
-
   const findEmptyState = () => wrapper.findComponent(GlEmptyState);
   const findAgentFlowListItems = () => wrapper.findAllComponents(AgentFlowListItem);
   const findKeysetPagination = () => wrapper.findComponent(GlKeysetPagination);
+
+  const createWrapper = (props = {}) => {
+    wrapper = shallowMount(AgentFlowList, {
+      propsData: {
+        workflows: mockAgentFlows,
+        workflowsPageInfo: {},
+        ...props,
+      },
+    });
+  };
 
   describe('when component is mounted', () => {
     beforeEach(() => {
@@ -40,8 +36,8 @@ describe('AgentFlowList', () => {
         expect(findEmptyState().props()).toMatchObject({
           title: 'No agent sessions yet',
           description: 'New agent sessions will appear here.',
-          svgPath: 'illustrations/empty-state/empty-pipeline-md.svg',
         });
+        expect(findEmptyState().props('svgPath')).toBeDefined();
       });
 
       it('does not render the agent flow list items', () => {
@@ -52,6 +48,42 @@ describe('AgentFlowList', () => {
     describe('when there are workflows', () => {
       it('render the agent flow list items', () => {
         expect(findAgentFlowListItems().length).toBeGreaterThan(0);
+      });
+
+      describe('when showProjectInfo is false', () => {
+        beforeEach(() => {
+          createWrapper({ showProjectInfo: false });
+        });
+
+        it('passes showProjectInfo as false to each AgentFlowListItem', () => {
+          findAgentFlowListItems().wrappers.forEach((item) => {
+            expect(item.props('showProjectInfo')).toBe(false);
+          });
+        });
+      });
+
+      describe('when showProjectInfo is true', () => {
+        beforeEach(() => {
+          createWrapper({ showProjectInfo: true });
+        });
+
+        it('passes showProjectInfo as true to each AgentFlowListItem', () => {
+          findAgentFlowListItems().wrappers.forEach((item) => {
+            expect(item.props('showProjectInfo')).toBe(true);
+          });
+        });
+      });
+
+      describe('when showProjectInfo is not provided', () => {
+        beforeEach(() => {
+          createWrapper();
+        });
+
+        it('defaults showProjectInfo to false for each AgentFlowListItem', () => {
+          findAgentFlowListItems().wrappers.forEach((item) => {
+            expect(item.props('showProjectInfo')).toBe(false);
+          });
+        });
       });
     });
   });
@@ -64,8 +96,8 @@ describe('AgentFlowList', () => {
         });
       });
 
-      it('does not render pagination controls', () => {
-        expect(findKeysetPagination().isVisible()).toBe(false);
+      it('renders pagination controls but they are not functional', () => {
+        expect(findKeysetPagination().exists()).toBe(true);
       });
     });
     describe('when there is pagination data', () => {

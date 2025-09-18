@@ -14,7 +14,7 @@ export default {
     GlTabs,
     GlTab,
   },
-  inject: ['isSidePanelView'],
+  inject: { isSidePanelView: { default: false } },
   props: {
     isLoading: {
       required: true,
@@ -45,6 +45,10 @@ export default {
       type: String,
       required: true,
     },
+    project: {
+      type: Object,
+      required: true,
+    },
   },
   AGENTS_PLATFORM_INDEX_ROUTE,
 };
@@ -72,6 +76,7 @@ export default {
             :status="status"
             :agent-flow-definition="agentFlowDefinition"
             :created-at="createdAt"
+            :project="project"
             :updated-at="updatedAt"
             :executor-url="executorUrl"
           />

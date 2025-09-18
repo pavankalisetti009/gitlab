@@ -32,7 +32,6 @@ describe('AgentsPlatformIndex', () => {
     wrapper = shallowMount(AgentsPlatformIndex, {
       propsData: { ...defaultProps, ...props },
       provide: {
-        emptyStateIllustrationPath: 'illustrations/empty-state/empty-pipeline-md.svg',
         isSidePanelView: false,
         ...provide,
       },

@@ -14,6 +14,15 @@ describe('AgentFlowInfo', () => {
         executorUrl: 'https://gitlab.com/gitlab-org/gitlab/-/pipelines/123',
         createdAt: '2023-01-01T00:00:00Z',
         updatedAt: '2024-01-01T00:00:00Z',
+        project: {
+          id: 'gid://gitlab/Project/1',
+          name: 'Test Project',
+          fullPath: 'gitlab-org/test-project',
+          namespace: {
+            id: 'gid://gitlab/Group/1',
+            name: 'gitlab-org',
+          },
+        },
         ...props,
       },
       mocks: {
@@ -37,11 +46,11 @@ describe('AgentFlowInfo', () => {
     });
 
     it('renders UI copy as usual', () => {
-      expect(findListItems()).toHaveLength(7);
+      expect(findListItems()).toHaveLength(9);
     });
 
     it('displays the skeleton loaders', () => {
-      expect(findSkeletonLoaders()).toHaveLength(7);
+      expect(findSkeletonLoaders()).toHaveLength(9);
     });
 
     it('does not display placeholder N/A values', () => {
@@ -56,11 +65,43 @@ describe('AgentFlowInfo', () => {
 
     it('renders all expected data', () => {
       expect(findListItems().at(0).text()).toContain('RUNNING');
-      expect(findListItems().at(1).text()).toContain('Jan 01, 2023 - 00:00:00');
-      expect(findListItems().at(2).text()).toContain('Jan 01, 2024 - 00:00:00');
-      expect(findListItems().at(3).text()).toContain('Flow');
-      expect(findListItems().at(4).text()).toContain('software_development');
-      expect(findListItems().at(5).text()).toContain('4545');
+      expect(findListItems().at(1).text()).toContain('Test Project');
+      expect(findListItems().at(2).text()).toContain('gitlab-org');
+      expect(findListItems().at(3).text()).toContain('Jan 01, 2023 - 00:00:00');
+      expect(findListItems().at(4).text()).toContain('Jan 01, 2024 - 00:00:00');
+      expect(findListItems().at(5).text()).toContain('Flow');
+      expect(findListItems().at(6).text()).toContain('software_development');
+      expect(findListItems().at(7).text()).toContain('4545');
+    });
+
+    describe('when project information is missing', () => {
+      beforeEach(() => {
+        createComponent({
+          project: {},
+        });
+      });
+
+      it('displays N/A for missing project information', () => {
+        expect(findListItems().at(1).text()).toContain('N/A'); // Project name
+        expect(findListItems().at(2).text()).toContain('N/A'); // Group name
+      });
+    });
+
+    describe('when project namespace is missing', () => {
+      beforeEach(() => {
+        createComponent({
+          project: {
+            id: 'gid://gitlab/Project/1',
+            name: 'Test Project',
+            fullPath: 'gitlab-org/test-project',
+          },
+        });
+      });
+
+      it('displays N/A for missing namespace information', () => {
+        expect(findListItems().at(1).text()).toContain('Test Project'); // Project name should still show
+        expect(findListItems().at(2).text()).toContain('N/A'); // Group name should be N/A
+      });
     });
   });
 });

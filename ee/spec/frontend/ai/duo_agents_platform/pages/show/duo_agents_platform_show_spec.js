@@ -76,6 +76,7 @@ describe('DuoAgentsPlatformShow', () => {
         agentFlowCheckpoint:
           mockGetAgentFlowResponse.data.duoWorkflowWorkflows.edges[0].node.latestCheckpoint
             .checkpoint,
+        project: mockGetAgentFlowResponse.data.duoWorkflowWorkflows.edges[0].node.project,
       });
     });
   });

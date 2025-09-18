@@ -14,7 +14,11 @@ export default {
     GlLoadingIcon,
     PageHeading,
   },
-  inject: ['emptyStateIllustrationPath', 'isSidePanelView'],
+  inject: {
+    isSidePanelView: {
+      default: false,
+    },
+  },
   props: {
     workflowQuery: {
       required: true,
@@ -83,7 +87,7 @@ export default {
     <gl-loading-icon v-if="isLoadingWorkflows" size="lg" />
     <agent-flow-list
       v-else
-      :empty-state-illustration-path="emptyStateIllustrationPath"
+      :show-project-info="isSidePanelView"
       :workflows="workflows"
       :workflows-page-info="workflowsPageInfo"
       @next-page="handleNextPage"
