@@ -3534,6 +3534,26 @@
   :idempotent: true
   :tags: []
   :queue_namespace:
+- :name: security_attributes_cleanup_batch
+  :worker_name: Security::Attributes::CleanupBatchWorker
+  :feature_category: :security_asset_inventories
+  :has_external_dependencies: false
+  :urgency: :low
+  :resource_boundary: :unknown
+  :weight: 1
+  :idempotent: true
+  :tags: []
+  :queue_namespace:
+- :name: security_attributes_cleanup_schedule
+  :worker_name: Security::Attributes::CleanupScheduleWorker
+  :feature_category: :security_asset_inventories
+  :has_external_dependencies: false
+  :urgency: :low
+  :resource_boundary: :unknown
+  :weight: 1
+  :idempotent: true
+  :tags: []
+  :queue_namespace:
 - :name: security_collect_policies_limit_audit_events
   :worker_name: Security::CollectPoliciesLimitAuditEventsWorker
   :feature_category: :security_policy_management

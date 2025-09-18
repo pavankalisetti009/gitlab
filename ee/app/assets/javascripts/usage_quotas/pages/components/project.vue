@@ -130,7 +130,7 @@ export default {
             shape="rect"
             :entity-name="project.name"
             fallback-on-error
-            class="mr-2"
+            class="!gl-mr-3"
           />
           <span class="gl-font-bold gl-text-default">{{ project.name }}</span>
         </gl-link>
@@ -166,7 +166,7 @@ export default {
           </gl-badge>
         </template>
         <template #cell(environment)="{ item }">
-          <gl-icon name="environment" class="mr-1" variant="subtle" />
+          <gl-icon name="environment" class="!gl-mr-2" variant="subtle" />
           <span data-testid="path-prefix">{{ item.pathPrefix }}</span>
         </template>
         <template #cell(url)="{ item }">
@@ -178,20 +178,20 @@ export default {
           </span>
         </template>
         <template #cell(createdAt)="{ item }">
-          <gl-icon name="play" class="mr-1" variant="subtle" />
+          <gl-icon name="play" class="!gl-mr-2" variant="subtle" />
           <user-date
             :date="item.createdAt"
             :date-format="$options.static.SHORT_DATE_FORMAT_WITH_TIME"
           />
         </template>
         <template #cell(ciBuildId)="{ item }">
-          <gl-icon name="deployments" class="mr-1" variant="subtle" />
+          <gl-icon name="deployments" class="!gl-mr-2" variant="subtle" />
           <gl-link :href="getBuildUrl(item.ciBuildId)" data-testid="ci-build">
             {{ item.ciBuildId }}
           </gl-link>
         </template>
         <template #cell(size)="{ item }">
-          <gl-icon name="disk" class="mr-1" variant="subtle" />
+          <gl-icon name="disk" class="!gl-mr-2" variant="subtle" />
           <number-to-human-size :value="item.size" />
         </template>
         <template #cell(delete)="{ item }">
