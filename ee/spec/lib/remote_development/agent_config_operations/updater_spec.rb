@@ -9,6 +9,7 @@ RSpec.describe ::RemoteDevelopment::AgentConfigOperations::Updater, feature_cate
 
   let(:enabled) { true }
   let(:enabled_present) { true }
+  let(:dns_zone_present) { true }
   let_it_be(:dns_zone) { 'my-awesome-domain.me' }
   let(:unlimited_quota) { -1 }
   let(:saved_quota) { 5 }
@@ -75,9 +76,8 @@ RSpec.describe ::RemoteDevelopment::AgentConfigOperations::Updater, feature_cate
   let(:dns_zone_in_config) { dns_zone }
 
   let(:config) do
-    remote_development_config = {
-      'dns_zone' => dns_zone_in_config
-    }
+    remote_development_config = {}
+    remote_development_config['dns_zone'] = dns_zone_in_config if dns_zone_present
     # noinspection RubyMismatchedArgumentType - RubyMine is misinterpreting types for Hash values
     remote_development_config['enabled'] = enabled if enabled_present
     # noinspection RubyMismatchedArgumentType - RubyMine is misinterpreting types for Hash values
@@ -261,6 +261,19 @@ RSpec.describe ::RemoteDevelopment::AgentConfigOperations::Updater, feature_cate
             let(:gitlab_workspaces_proxy_http_enabled) { false }
 
             it_behaves_like 'successful update'
+
+            context 'when dns_zone is not set' do
+              let(:dns_zone_present) { false }
+              let(:expected_dns_zone) { "" }
+
+              it_behaves_like 'successful update'
+            end
+
+            context 'when dns_zone is empty' do
+              let(:dns_zone) { "" }
+
+              it_behaves_like 'successful update'
+            end
           end
 
           context 'when gitlab_workspaces_proxy.ssh_enabled is explicitly specified in the config passed' do
@@ -418,6 +431,13 @@ RSpec.describe ::RemoteDevelopment::AgentConfigOperations::Updater, feature_cate
 
       context 'when dns_zone is invalid' do
         let(:dns_zone) { "invalid dns zone" }
+        let(:error_pattern) { /dns zone/i }
+
+        it_behaves_like 'failed agent config update'
+      end
+
+      context 'when dns_zone is empty' do
+        let(:dns_zone) { "" }
         let(:error_pattern) { /dns zone/i }
 
         it_behaves_like 'failed agent config update'

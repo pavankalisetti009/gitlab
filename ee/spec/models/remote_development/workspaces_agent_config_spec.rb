@@ -79,15 +79,27 @@ RSpec.describe RemoteDevelopment::WorkspacesAgentConfig, feature_category: :work
     context 'for dns_zone' do
       using RSpec::Parameterized::TableSyntax
 
-      where(:dns_zone, :validity, :errors) do
-        "1.domain.com"          | be_valid   | []
-        "example.1.domain.com"  | be_valid   | []
+      where(:dns_zone, :gitlab_workspaces_proxy_http_enabled, :validity, :errors) do
+        # rubocop:disable Layout/LineLength -- we want single lines for RSpec::Parameterized::TableSyntax
+        "1.domain.com"          | true  | be_valid   | []
+        "example.1.domain.com"  | true  | be_valid   | []
+        ""                      | false | be_valid   | []
+        nil                     | false | be_valid   | []
         # noinspection RubyResolve -- RubyMine cannot find matchers that works general predicate matcher system
-        "invalid dns"           | be_invalid | ["contains invalid characters (valid characters: [a-z0-9\\-])"]
+        "invalid dns"           | true  | be_invalid | ["contains invalid characters (valid characters: [a-z0-9\\-])"]
+        ""                      | true  | be_invalid | ["must be between 1 and 255 characters long", "can't be blank when gitlab_workspaces_proxy_http_enabled is true"]
+        nil                     | true  | be_invalid | ["must be between 1 and 255 characters long", "can't be blank when gitlab_workspaces_proxy_http_enabled is true"]
+        # rubocop:enable Layout/LineLength
       end
 
       with_them do
-        subject(:config) { build(:workspaces_agent_config, dns_zone: dns_zone) }
+        subject(:config) do
+          build(
+            :workspaces_agent_config,
+            dns_zone: dns_zone,
+            gitlab_workspaces_proxy_http_enabled: gitlab_workspaces_proxy_http_enabled
+          )
+        end
 
         it 'validates' do
           expect(config).to validity

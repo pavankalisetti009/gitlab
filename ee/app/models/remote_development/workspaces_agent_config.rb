@@ -25,7 +25,7 @@ module RemoteDevelopment
     has_many :workspaces, through: :agent, source: :workspaces
 
     validates :agent, presence: true
-    validates :dns_zone, hostname: { allow_numeric_hostname: true }
+    validates :dns_zone, hostname: { allow_numeric_hostname: true }, if: :dns_zone_required?
     validates :enabled, inclusion: { in: [true, false] }
 
     validates :network_policy_egress,
@@ -66,6 +66,8 @@ module RemoteDevelopment
         less_than_or_equal_to: WorkspaceOperations::MaxHoursBeforeTermination::MAX_HOURS_BEFORE_TERMINATION
       }
 
+    validate :validate_dns_zone_presence
+
     validate :validate_sum_of_delayed_termination_fields_does_not_exceed_max_hours_before_termination_limit
 
     validate :validate_allow_privilege_escalation
@@ -95,6 +97,19 @@ module RemoteDevelopment
     end
 
     private
+
+    # @return [Boolean]
+    def dns_zone_required?
+      gitlab_workspaces_proxy_http_enabled
+    end
+
+    # @return [void]
+    def validate_dns_zone_presence
+      return unless dns_zone_required?
+      return if dns_zone.present?
+
+      errors.add(:dns_zone, "can't be blank when gitlab_workspaces_proxy_http_enabled is true")
+    end
 
     # @return [void]
     def validate_sum_of_delayed_termination_fields_does_not_exceed_max_hours_before_termination_limit
