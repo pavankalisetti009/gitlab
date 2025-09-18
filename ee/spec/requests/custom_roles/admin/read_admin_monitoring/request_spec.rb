@@ -19,7 +19,7 @@ RSpec.describe 'User with read_admin_monitoring', :enable_admin_mode, feature_ca
       expect(response).to have_gitlab_http_status(:ok)
     end
 
-    it "GET #show" do
+    it "GET #show", quarantine: 'https://gitlab.com/gitlab-org/gitlab/-/issues/570212' do
       migration = create(:batched_background_migration_job)
       get admin_background_migration_path(migration)
 
