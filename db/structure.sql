@@ -26614,6 +26614,7 @@ CREATE TABLE user_preferences (
     markdown_maintain_indentation boolean DEFAULT false NOT NULL,
     project_studio_enabled boolean DEFAULT false NOT NULL,
     merge_request_dashboard_show_drafts boolean DEFAULT true NOT NULL,
+    duo_default_namespace_id bigint,
     CONSTRAINT check_1d670edc68 CHECK ((time_display_relative IS NOT NULL)),
     CONSTRAINT check_89bf269f41 CHECK ((char_length(diffs_deletion_color) <= 7)),
     CONSTRAINT check_9b50d9f942 CHECK ((char_length(extensions_marketplace_opt_in_url) <= 512)),
@@ -41272,6 +41273,8 @@ CREATE INDEX index_user_phone_number_validations_on_telesign_reference_xid ON us
 
 CREATE INDEX index_user_phone_validations_on_dial_code_phone_number ON user_phone_number_validations USING btree (international_dial_code, phone_number);
 
+CREATE INDEX index_user_preferences_on_duo_default_namespace_id ON user_preferences USING btree (duo_default_namespace_id);
+
 CREATE INDEX index_user_preferences_on_gitpod_enabled ON user_preferences USING btree (gitpod_enabled);
 
 CREATE UNIQUE INDEX index_user_preferences_on_user_id ON user_preferences USING btree (user_id);
@@ -46640,6 +46643,9 @@ ALTER TABLE ONLY deployment_approvals
 
 ALTER TABLE ONLY dast_profile_schedules
     ADD CONSTRAINT fk_61d52aa0e7 FOREIGN KEY (dast_profile_id) REFERENCES dast_profiles(id) ON DELETE CASCADE;
+
+ALTER TABLE ONLY user_preferences
+    ADD CONSTRAINT fk_61f4fd80d1 FOREIGN KEY (duo_default_namespace_id) REFERENCES namespaces(id) ON DELETE SET NULL;
 
 ALTER TABLE ONLY vulnerability_reads
     ADD CONSTRAINT fk_62736f638f FOREIGN KEY (vulnerability_id) REFERENCES vulnerabilities(id) ON DELETE CASCADE;
