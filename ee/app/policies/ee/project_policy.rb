@@ -338,10 +338,6 @@ module EE
           (merge_requests_is_a_private_feature? && custom_role_enables_admin_merge_request?))
       end
 
-      condition(:ai_catalog_enabled, scope: :user) do
-        ::Feature.enabled?(:global_ai_catalog, @user)
-      end
-
       rule { custom_role_enables_admin_cicd_variables }.policy do
         enable :admin_cicd_variables
       end
@@ -1331,7 +1327,15 @@ module EE
         description_composer_enabled & can?(:read_merge_request)
       end.enable :access_description_composer
 
-      rule { ~ai_catalog_enabled }.policy do
+      condition(:ai_catalog_enabled, scope: :user) do
+        ::Feature.enabled?(:global_ai_catalog, @user)
+      end
+
+      condition(:ai_catalog_available, scope: :subject) do
+        @subject.ai_catalog_available?
+      end
+
+      rule { ~ai_catalog_enabled | ~ai_catalog_available }.policy do
         prevent :admin_ai_catalog_item
         prevent :admin_ai_catalog_item_consumer
         prevent :read_ai_catalog_item_consumer

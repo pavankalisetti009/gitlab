@@ -81,4 +81,20 @@ RSpec.describe Gitlab::Llm::Utils::AiFeaturesCatalogue, feature_category: :ai_ab
       expect(described_class.search_by_name(nil)).to be_nil
     end
   end
+
+  describe 'LIST' do
+    subject(:list) { described_class::LIST }
+
+    it 'has correct definition for :ai_catalog' do
+      expect(list[:ai_catalog]).to eq({
+        service_class: nil,
+        prompt_class: nil,
+        feature_category: :workflow_catalog,
+        execute_method: nil,
+        maturity: :beta,
+        self_managed: true,
+        internal: true
+      })
+    end
+  end
 end

@@ -3,6 +3,8 @@
 require 'spec_helper'
 
 RSpec.describe Ai::Catalog::Agents::UpdateService, feature_category: :workflow_catalog do
+  include Ai::Catalog::TestHelpers
+
   let_it_be(:project) { create(:project) }
   let_it_be(:user) { create(:user) }
   let_it_be_with_reload(:item) { create(:ai_catalog_item, public: false, project: project) }
@@ -26,6 +28,10 @@ RSpec.describe Ai::Catalog::Agents::UpdateService, feature_category: :workflow_c
   end
 
   let(:service) { described_class.new(project: project, current_user: user, params: params) }
+
+  before do
+    enable_ai_catalog
+  end
 
   it_behaves_like Ai::Catalog::Items::BaseUpdateService do
     let(:item_schema_version) { Ai::Catalog::ItemVersion::AGENT_SCHEMA_VERSION }

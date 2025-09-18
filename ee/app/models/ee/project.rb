@@ -615,6 +615,11 @@ module EE
         end
       end
 
+      def ai_catalog_available?
+        ::Gitlab::Llm::StageCheck.available?(self, :ai_catalog)
+      end
+      strong_memoize_attr :ai_catalog_available?
+
       def member_usernames_among(users)
         members_among(users).pluck(:username)
       end

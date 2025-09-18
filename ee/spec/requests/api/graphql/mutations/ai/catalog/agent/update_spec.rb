@@ -3,6 +3,7 @@
 require 'spec_helper'
 
 RSpec.describe Mutations::Ai::Catalog::Agent::Update, feature_category: :workflow_catalog do
+  include Ai::Catalog::TestHelpers
   include GraphqlHelpers
 
   let_it_be(:maintainer) { create(:user) }
@@ -56,6 +57,10 @@ RSpec.describe Mutations::Ai::Catalog::Agent::Update, feature_category: :workflo
       user_prompt: 'New user prompt',
       version_bump: 'PATCH'
     }
+  end
+
+  before do
+    enable_ai_catalog
   end
 
   subject(:execute) { post_graphql_mutation(mutation, current_user: current_user) }

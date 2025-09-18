@@ -3,6 +3,7 @@
 require 'spec_helper'
 
 RSpec.describe 'getting a single AI catalog item consumer', feature_category: :workflow_catalog do
+  include Ai::Catalog::TestHelpers
   include GraphqlHelpers
 
   let_it_be(:developer) { create(:user) }
@@ -34,6 +35,10 @@ RSpec.describe 'getting a single AI catalog item consumer', feature_category: :w
   end
 
   let(:variables) { { id: item_consumer_gid } }
+
+  before do
+    enable_ai_catalog
+  end
 
   it 'returns the AI catalog item consumer' do
     post_graphql(query, current_user:, variables:)

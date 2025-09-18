@@ -3,6 +3,7 @@
 require 'spec_helper'
 
 RSpec.describe 'getting an AI catalog item', :with_current_organization, feature_category: :workflow_catalog do
+  include Ai::Catalog::TestHelpers
   include GraphqlHelpers
 
   let_it_be(:project) { create(:project) }
@@ -63,6 +64,10 @@ RSpec.describe 'getting an AI catalog item', :with_current_organization, feature
         }
       }
     GRAPHQL
+  end
+
+  before do
+    enable_ai_catalog
   end
 
   shared_examples 'a successful query' do

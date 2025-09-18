@@ -83,6 +83,7 @@ module GitlabSubscriptions
 
     PREMIUM_FEATURES = %i[
       ai_chat
+      ai_catalog
       ai_workflows
       admin_audit_log
       agent_managed_resources

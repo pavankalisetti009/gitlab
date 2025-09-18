@@ -3,6 +3,8 @@
 require 'spec_helper'
 
 RSpec.describe Ai::Catalog::Flows::CreateService, feature_category: :workflow_catalog do
+  include Ai::Catalog::TestHelpers
+
   let_it_be(:maintainer) { create(:user) }
   let_it_be(:project) { create(:project, maintainers: maintainer) }
   let_it_be(:agent) { create(:ai_catalog_agent, project: project) }
@@ -22,6 +24,10 @@ RSpec.describe Ai::Catalog::Flows::CreateService, feature_category: :workflow_ca
   end
 
   subject(:response) { described_class.new(project: project, current_user: user, params: params).execute }
+
+  before do
+    enable_ai_catalog
+  end
 
   describe '#execute' do
     shared_examples 'an error response' do |errors|

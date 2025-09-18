@@ -3,6 +3,7 @@
 require 'spec_helper'
 
 RSpec.describe 'getting consumed AI catalog items', feature_category: :workflow_catalog do
+  include Ai::Catalog::TestHelpers
   include GraphqlHelpers
 
   let_it_be(:developer) { create(:user) }
@@ -29,6 +30,10 @@ RSpec.describe 'getting consumed AI catalog items', feature_category: :workflow_
 
   let(:query) do
     "{ #{query_nodes('aiCatalogConfiguredItems', of: 'AiCatalogItemConsumer', max_depth: 3, args: args)} }"
+  end
+
+  before do
+    enable_ai_catalog
   end
 
   it 'returns configured AI catalog items' do

@@ -4,8 +4,14 @@ require 'spec_helper'
 require_relative './shared_examples/internal_events_tracking'
 
 RSpec.describe Ai::Catalog::ItemConsumers::DestroyService, feature_category: :workflow_catalog do
+  include Ai::Catalog::TestHelpers
+
   it_behaves_like 'ItemConsumers::InternalEventsTracking' do
     subject { described_class.new(build(:ai_catalog_item_consumer), build(:user)) }
+  end
+
+  before do
+    enable_ai_catalog
   end
 
   describe '#execute' do

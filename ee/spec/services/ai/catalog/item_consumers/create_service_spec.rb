@@ -4,6 +4,8 @@ require 'spec_helper'
 require_relative './shared_examples/internal_events_tracking'
 
 RSpec.describe Ai::Catalog::ItemConsumers::CreateService, feature_category: :workflow_catalog do
+  include Ai::Catalog::TestHelpers
+
   let_it_be(:user) { create(:user) }
   let_it_be(:consumer_group) { create(:group, maintainers: user) }
   let_it_be(:consumer_project) { create(:project, group: consumer_group) }
@@ -15,6 +17,10 @@ RSpec.describe Ai::Catalog::ItemConsumers::CreateService, feature_category: :wor
   let(:params) { { item: item } }
 
   subject(:execute) { described_class.new(container: container, current_user: user, params: params).execute }
+
+  before do
+    enable_ai_catalog
+  end
 
   it_behaves_like 'ItemConsumers::InternalEventsTracking' do
     subject { described_class.new(container: container, current_user: user, params: params) }

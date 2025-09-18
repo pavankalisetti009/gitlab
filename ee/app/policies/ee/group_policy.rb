@@ -338,6 +338,10 @@ module EE
         ::Feature.enabled?(:global_ai_catalog, @user)
       end
 
+      condition(:ai_catalog_available, scope: :subject) do
+        ::Gitlab::Llm::StageCheck.available?(@subject, :ai_catalog)
+      end
+
       rule { user_banned_from_namespace }.prevent_all
 
       rule { public_group | logged_in_viewable }.policy do
@@ -1070,7 +1074,7 @@ module EE
         subject.namespace_settings&.duo_features_enabled?
       end
 
-      rule { ~ai_catalog_enabled }.policy do
+      rule { ~ai_catalog_enabled | ~ai_catalog_available }.policy do
         prevent :admin_ai_catalog_item_consumer
         prevent :read_ai_catalog_item_consumer
       end

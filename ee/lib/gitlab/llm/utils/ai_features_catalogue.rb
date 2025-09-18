@@ -88,7 +88,6 @@ module Gitlab
             self_managed: true,
             internal: false
           },
-
           categorize_question: {
             service_class: ::Gitlab::Llm::AiGateway::Completions::CategorizeQuestion,
             prompt_class: ::Gitlab::Llm::Templates::CategorizeQuestion,
@@ -232,6 +231,15 @@ module Gitlab
             feature_category: :duo_chat,
             execute_method: nil,
             maturity: :ga,
+            self_managed: true,
+            internal: true
+          },
+          ai_catalog: {
+            service_class: nil,
+            prompt_class: nil,
+            feature_category: :workflow_catalog,
+            execute_method: nil,
+            maturity: :beta,
             self_managed: true,
             internal: true
           }

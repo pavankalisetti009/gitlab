@@ -41,6 +41,7 @@ RSpec.describe Gitlab::Llm::StageCheck, feature_category: :ai_abstraction_layer 
       context 'with specific license features' do
         where(:specific_feature, :license_feature) do
           :chat                     | :ai_chat
+          :ai_catalog               | :ai_catalog
           :duo_workflow             | :ai_workflows
           :glab_ask_git_command     | :glab_ask_git_command
           :generate_commit_message  | :generate_commit_message
