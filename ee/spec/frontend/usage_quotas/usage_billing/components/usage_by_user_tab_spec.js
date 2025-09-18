@@ -1,6 +1,7 @@
 import { GlTable, GlCard } from '@gitlab/ui';
-import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
+import { mountExtended, shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import UsageByUserTab from 'ee/usage_quotas/usage_billing/components/usage_by_user_tab.vue';
+import UserAvatarLink from '~/vue_shared/components/user_avatar/user_avatar_link.vue';
 import { mockUsageDataWithPool } from '../mock_data';
 
 describe('UsageByUserTab', () => {
@@ -8,9 +9,12 @@ describe('UsageByUserTab', () => {
   let wrapper;
   const usersData = mockUsageDataWithPool.subscription.gitlabUnitsUsage.usersUsage;
 
-  const createComponent = () => {
-    wrapper = shallowMountExtended(UsageByUserTab, {
+  const createComponent = (mountFn = shallowMountExtended) => {
+    wrapper = mountFn(UsageByUserTab, {
       propsData: { usersData },
+      provide: {
+        userUsagePath: '/path/to/user/:id',
+      },
     });
   };
 
@@ -33,7 +37,7 @@ describe('UsageByUserTab', () => {
 
   describe('rendering table', () => {
     beforeEach(() => {
-      createComponent();
+      createComponent(mountExtended);
     });
 
     it('renders the table with correct props', () => {
@@ -64,6 +68,16 @@ describe('UsageByUserTab', () => {
           sortable: true,
         },
       ]);
+    });
+
+    it('renders the table with user avatar pointing to the correct path', () => {
+      const userAvatars = findTable().findAllComponents(UserAvatarLink);
+
+      expect(userAvatars).toHaveLength(8);
+
+      // testing the first two instances
+      expect(userAvatars.at(0).props('linkHref')).toBe('/path/to/user/1');
+      expect(userAvatars.at(1).props('linkHref')).toBe('/path/to/user/2');
     });
   });
 });

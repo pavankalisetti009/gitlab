@@ -12,6 +12,7 @@ export default {
     GlBadge,
     GlProgressBar,
   },
+  inject: ['userUsagePath'],
   props: {
     usersData: {
       type: Object,
@@ -67,6 +68,9 @@ export default {
     formatAllocationUsed(allocationUsed, allocationTotal) {
       return `${allocationUsed} / ${allocationTotal}`;
     },
+    getUserUsagePath(userId) {
+      return this.userUsagePath.replace(':id', userId);
+    },
   },
 };
 </script>
@@ -112,7 +116,7 @@ export default {
         <div class="gl-display-flex gl-align-items-center">
           <user-avatar-link
             :username="user.name"
-            :link-href="`/admin/gitlab_duo/usage/users/${user.id}`"
+            :link-href="getUserUsagePath(user.id)"
             :img-alt="user.name"
             :img-src="user.avatarUrl"
             :img-size="32"

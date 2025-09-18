@@ -8,13 +8,14 @@ function initGroupUsageDashboard() {
     return null;
   }
 
-  const { purchaseCommitmentUrl } = el.dataset;
+  const { purchaseCommitmentUrl, userUsagePath } = el.dataset;
 
   return new Vue({
     el,
     name: 'GroupUsageBillingDashboardApp',
     provide: {
       purchaseCommitmentUrl,
+      userUsagePath,
     },
     render(createElement) {
       return createElement(GroupUsageDashboard);
