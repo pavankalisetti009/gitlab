@@ -283,6 +283,8 @@ module RemoteDevelopment
 
       # rubocop:enable Metrics/CyclomaticComplexity
 
+      # If we support endpoints in `components` other than `container`, make changes accordingly in
+      # ee/lib/remote_development/workspaces_server_operations/authorize_user_access/authorizer.rb
       # @param [Hash] context
       # @return [Hash]
       def self.validate_endpoints(context)

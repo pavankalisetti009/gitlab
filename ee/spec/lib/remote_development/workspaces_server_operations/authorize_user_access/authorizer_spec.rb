@@ -3,13 +3,25 @@
 require "fast_spec_helper"
 
 RSpec.describe RemoteDevelopment::WorkspacesServerOperations::AuthorizeUserAccess::Authorizer, feature_category: :workspaces do
+  include_context 'with remote development shared fixtures'
   include ResultMatchers
 
   let(:user_id) { 123 }
   let(:workspace_id) { 456 }
-  let(:port) { "60001" }
+  let(:editor_port) { RemoteDevelopment::WorkspaceOperations::Create::CreateConstants::WORKSPACE_EDITOR_PORT.to_s }
+  let(:ssh_port) { RemoteDevelopment::WorkspaceOperations::Create::CreateConstants::WORKSPACE_SSH_PORT.to_s }
+  let(:port) { editor_port }
   let(:workspace_name) { "workspace-abc123" }
-  let(:workspace) { instance_double("RemoteDevelopment::Workspace", id: workspace_id, name: workspace_name, user_id: workspace_owner_id) } # rubocop:disable RSpec/VerifiedDoubleReference -- We're using the quoted version so we can use fast_spec_helper
+  let(:processed_devfile) { example_processed_devfile_yaml }
+  let(:workspace) do
+    instance_double(
+      "RemoteDevelopment::Workspace",  # rubocop:disable RSpec/VerifiedDoubleReference -- We're using the quoted version so we can use fast_spec_helper
+      id: workspace_id,
+      name: workspace_name,
+      user_id: workspace_owner_id,
+      processed_devfile: processed_devfile
+    )
+  end
 
   let(:context) do
     {
@@ -44,6 +56,17 @@ RSpec.describe RemoteDevelopment::WorkspacesServerOperations::AuthorizeUserAcces
           )
         end
       end
+
+      context "when port is not exposed for the workspace" do
+        let(:port) { "10" }
+
+        it "returns an err Result with PORT_NOT_FOUND status" do
+          expect(result).to be_err_result do |message|
+            expect(message).to be_a RemoteDevelopment::Messages::WorkspaceAuthorizeUserAccessFailed
+            expect(message.content).to eq({ status: "PORT_NOT_FOUND" })
+          end
+        end
+      end
     end
 
     context "when user is not authorized (does not own the workspace)" do
@@ -76,12 +99,12 @@ RSpec.describe RemoteDevelopment::WorkspacesServerOperations::AuthorizeUserAcces
     end
 
     context "with different port values" do
-      let(:port) { "8080" }
+      let(:port) { ssh_port }
       let(:workspace_owner_id) { user_id }
 
       it "includes the correct port in the response" do
         expect(result).to be_ok_result do |returned_context|
-          expect(returned_context[:response_payload][:info][:port]).to eq("8080")
+          expect(returned_context[:response_payload][:info][:port]).to eq(ssh_port)
         end
       end
     end
