@@ -262,7 +262,9 @@ module EE
     end
 
     def sync_purl_types_checkboxes(form)
-      ::Enums::Sbom.purl_types.keys.map do |name|
+      ::Enums::Sbom.purl_types.keys.sort.filter_map do |name|
+        next if ::Enums::Sbom::INTERNAL_PURL_TYPES.include?(name)
+
         checked = @application_setting.package_metadata_purl_types_names.include?(name)
         numeric = ::Enums::Sbom.purl_types[name]
 

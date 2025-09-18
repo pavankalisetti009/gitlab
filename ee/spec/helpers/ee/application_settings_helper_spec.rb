@@ -241,7 +241,9 @@ RSpec.describe EE::ApplicationSettingsHelper, feature_category: :shared do
         url: '/admin/application_settings/security_and_compliance') do |form|
         result = helper.sync_purl_types_checkboxes(form)
 
-        expected = ::Enums::Sbom.purl_types.map do |name, num|
+        expected = ::Enums::Sbom.purl_types.filter_map do |name, num|
+          next if ::Enums::Sbom::INTERNAL_PURL_TYPES.include?(name)
+
           if enabled_purl_types.include?(num)
             have_checked_field(name, with: num)
           else
