@@ -97,7 +97,7 @@ As part of publishing a package, semantic-release increases the version number i
 <!-- markdownlint-disable MD044 -->
 
 1. Open the left sidebar.
-1. Select **Settings > Access tokens**.
+1. Select **Settings** > **Access tokens**.
 1. In your project, select **Add new token**.
 1. In the **Token name** box, enter a token name.
 1. Under **Select scopes**, select the **api** checkbox.
