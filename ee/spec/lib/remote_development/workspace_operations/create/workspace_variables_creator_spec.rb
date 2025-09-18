@@ -12,8 +12,11 @@ RSpec.describe ::RemoteDevelopment::WorkspaceOperations::Create::WorkspaceVariab
   let_it_be(:user) { create(:user) }
   let_it_be(:personal_access_token) { create(:personal_access_token, user: user) }
   # The desired state of the workspace is set to running so that a workspace token gets associated to it.
-  let_it_be(:workspace) do
-    create(:workspace, user: user, personal_access_token: personal_access_token, desired_state: states_module::RUNNING)
+  let_it_be(:workspace, refind: true) do
+    create(
+      :workspace, :without_workspace_variables,
+      user: user, personal_access_token: personal_access_token, desired_state: states_module::RUNNING
+    )
   end
 
   let(:vscode_extension_marketplace) do
@@ -53,6 +56,12 @@ RSpec.describe ::RemoteDevelopment::WorkspaceOperations::Create::WorkspaceVariab
     described_class.create(context) # rubocop:disable Rails/SaveBang -- this is not an ActiveRecord method
   end
 
+  it "has fixture sanity check" do
+    # We must ensure the workspace fixture, which simulates a workspace in the ROP create chain in the process of being
+    # created, does not contain any pre-existing associated workspace_variable records
+    expect(workspace.workspace_variables.count).to eq(0)
+  end
+
   context "when workspace variables create is successful" do
     let(:valid_variable_type) { RemoteDevelopment::Enums::WorkspaceVariable::ENVIRONMENT_TYPE }
     let(:variable_type) { valid_variable_type }
@@ -61,10 +70,33 @@ RSpec.describe ::RemoteDevelopment::WorkspaceOperations::Create::WorkspaceVariab
     it "creates the workspace variable records and returns ok result containing original context" do
       expect { result }.to change { workspace.workspace_variables.count }.by(expected_number_of_records_saved)
 
-      expect(RemoteDevelopment::WorkspaceVariable.find_by_key("key1").value).to eq("value 1")
-      expect(RemoteDevelopment::WorkspaceVariable.find_by_key("key2").value).to eq("value 2")
+      expect(workspace.workspace_variables.find_by_key("key1").value).to eq("value 1")
+      expect(workspace.workspace_variables.find_by_key("key2").value).to eq("value 2")
 
       expect(result).to be_ok_result(context)
+    end
+
+    context "when workspace url helper's common_workspace_host_suffix? returns true" do
+      let(:workspace_host_suffix) { "workspaces.host.suffix" }
+      let(:agentw_token_file_name) do
+        RemoteDevelopment::WorkspaceOperations::Create::CreateConstants::AGENTW_TOKEN_FILE_NAME
+      end
+
+      before do
+        stub_config(workspaces: { host: workspace_host_suffix })
+
+        allow(RemoteDevelopment::WorkspaceOperations::WorkspaceUrlHelper)
+          .to receive(:common_workspace_host_suffix?)
+            .and_return(true)
+      end
+
+      it "creates the workspace variable records and returns ok result containing original context" do
+        expect { result }.to change { workspace.workspace_variables.count }.by(expected_number_of_records_saved)
+
+        expect(workspace.workspace_variables.find_by_key(agentw_token_file_name).value).to match(/glwt-.*/)
+
+        expect(result).to be_ok_result(context)
+      end
     end
   end
 

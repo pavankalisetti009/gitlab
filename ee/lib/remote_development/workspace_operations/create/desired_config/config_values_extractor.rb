@@ -76,7 +76,9 @@ module RemoteDevelopment
               # Update this when a new desired config generator is created for some other reason.
               env_secret_name: "#{workspace_name}#{ENV_VAR_SECRET_SUFFIX}",
               file_secret_name: "#{workspace_name}#{FILE_SECRET_SUFFIX}",
+              gitlab_workspaces_proxy_http_enabled: workspaces_agent_config.gitlab_workspaces_proxy_http_enabled,
               gitlab_workspaces_proxy_namespace: workspaces_agent_config.gitlab_workspaces_proxy_namespace,
+              gitlab_workspaces_proxy_ssh_enabled: workspaces_agent_config.gitlab_workspaces_proxy_ssh_enabled,
               image_pull_secrets: deep_sort_and_symbolize_hashes(workspaces_agent_config.image_pull_secrets),
               labels: deep_sort_and_symbolize_hashes(labels),
               max_resources_per_workspace: max_resources_per_workspace,

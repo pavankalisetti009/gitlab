@@ -70,7 +70,9 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Create::DesiredConfig::Ma
           except: %w[10.0.0.0/8 172.16.0.0/12 192.168.0.0/16]
         }
       ],
+      gitlab_workspaces_proxy_http_enabled: true,
       gitlab_workspaces_proxy_namespace: "gitlab-workspaces",
+      gitlab_workspaces_proxy_ssh_enabled: true,
       dns_zone: "workspaces.localdev.me",
       shared_namespace: shared_namespace
     )

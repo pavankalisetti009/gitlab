@@ -16,7 +16,9 @@ module RemoteDevelopment
               desired_config_array: desired_config_array,
               env_secret_name: env_secret_name,
               file_secret_name: file_secret_name,
+              gitlab_workspaces_proxy_http_enabled: gitlab_workspaces_proxy_http_enabled,
               gitlab_workspaces_proxy_namespace: gitlab_workspaces_proxy_namespace,
+              gitlab_workspaces_proxy_ssh_enabled: gitlab_workspaces_proxy_ssh_enabled,
               image_pull_secrets: image_pull_secrets,
               labels: labels,
               max_resources_per_workspace: max_resources_per_workspace,
@@ -58,7 +60,9 @@ module RemoteDevelopment
               desired_config_array: desired_config_array,
               name: workspace_name,
               namespace: workspace_namespace,
+              gitlab_workspaces_proxy_http_enabled: gitlab_workspaces_proxy_http_enabled,
               gitlab_workspaces_proxy_namespace: gitlab_workspaces_proxy_namespace,
+              gitlab_workspaces_proxy_ssh_enabled: gitlab_workspaces_proxy_ssh_enabled,
               network_policy_enabled: network_policy_enabled,
               network_policy_egress: network_policy_egress,
               labels: labels,
@@ -173,8 +177,11 @@ module RemoteDevelopment
             nil
           end
 
+          # rubocop:disable Metrics/ParameterLists -- Abstracting this further will not help.
           # @param [Array] desired_config_array
+          # @param [Boolean] gitlab_workspaces_proxy_http_enabled
           # @param [String] gitlab_workspaces_proxy_namespace
+          # @param [Boolean] gitlab_workspaces_proxy_ssh_enabled
           # @param [String] name
           # @param [String] namespace
           # @param [Boolean] network_policy_enabled
@@ -186,7 +193,9 @@ module RemoteDevelopment
             desired_config_array:,
             name:,
             namespace:,
+            gitlab_workspaces_proxy_http_enabled:,
             gitlab_workspaces_proxy_namespace:,
+            gitlab_workspaces_proxy_ssh_enabled:,
             network_policy_enabled:,
             network_policy_egress:,
             labels:,
@@ -194,22 +203,26 @@ module RemoteDevelopment
           )
             return unless network_policy_enabled
 
-            egress_ip_rules = network_policy_egress
-
-            policy_types = %w[Ingress Egress]
-
-            proxy_namespace_selector = {
-              matchLabels: {
-                "kubernetes.io/metadata.name": gitlab_workspaces_proxy_namespace
+            policy_types = []
+            ingress = []
+            if gitlab_workspaces_proxy_http_enabled || gitlab_workspaces_proxy_ssh_enabled
+              policy_types.append("Ingress")
+              proxy_namespace_selector = {
+                matchLabels: {
+                  "kubernetes.io/metadata.name": gitlab_workspaces_proxy_namespace
+                }
               }
-            }
-            proxy_pod_selector = {
-              matchLabels: {
-                "app.kubernetes.io/name": "gitlab-workspaces-proxy"
+              proxy_pod_selector = {
+                matchLabels: {
+                  "app.kubernetes.io/name": "gitlab-workspaces-proxy"
+                }
               }
-            }
-            ingress = [{ from: [{ namespaceSelector: proxy_namespace_selector, podSelector: proxy_pod_selector }] }]
+              ingress.append(
+                { from: [{ namespaceSelector: proxy_namespace_selector, podSelector: proxy_pod_selector }] }
+              )
+            end
 
+            policy_types.append("Egress")
             kube_system_namespace_selector = {
               matchLabels: {
                 "kubernetes.io/metadata.name": "kube-system"
@@ -221,7 +234,7 @@ module RemoteDevelopment
                 to: [{ namespaceSelector: kube_system_namespace_selector }]
               }
             ]
-            egress_ip_rules.each do |egress_rule|
+            network_policy_egress.each do |egress_rule|
               egress.append(
                 { to: [{ ipBlock: { cidr: egress_rule[:allow], except: egress_rule[:except] } }] }
               )
@@ -258,6 +271,7 @@ module RemoteDevelopment
 
             nil
           end
+          # rubocop:enable Metrics/ParameterLists
 
           # @param [Array] desired_config_array
           # @param [String] processed_devfile_yaml
