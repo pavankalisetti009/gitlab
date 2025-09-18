@@ -858,7 +858,7 @@ describe('AnalyticsDashboard', () => {
         config: {
           ...getFirstParsedDashboard(TEST_DASHBOARD_GRAPHQL_SUCCESS_RESPONSE),
           title: 'GitLab Duo and SDLC trends',
-          slug: 'ai_impact',
+          slug: 'duo_and_sdlc_trends',
         },
       });
     });

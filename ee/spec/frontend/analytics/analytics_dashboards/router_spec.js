@@ -70,6 +70,11 @@ describe('Dashboards list router', () => {
 
       expect(router.currentRoute.meta.root).toBe(true);
     });
+
+    it('redirects the legacy AI impact dashboard route', async () => {
+      await router.push('/ai_impact');
+      expect(router.currentRoute.path).toBe('/duo_and_sdlc_trends');
+    });
   });
 
   describe('when user does not have permission to configure project settings', () => {

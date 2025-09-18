@@ -12,7 +12,7 @@ module Analytics
 
       PRODUCT_ANALYTICS_DASHBOARDS_LIST = %w[audience behavior].freeze
       VALUE_STREAMS_DASHBOARD_NAME = 'value_streams_dashboard'
-      AI_IMPACT_DASHBOARD_NAME = 'ai_impact'
+      AI_IMPACT_DASHBOARD_NAME = 'duo_and_sdlc_trends'
       CONTRIBUTION_DASHBOARD_NAME = 'contributions_dashboard'
       PROJECT_VALUE_STREAMS_DASHBOARD_NAME = 'project_value_streams_dashboard'
       SCHEMA_PATH = 'ee/app/validators/json_schemas/analytics_dashboard.json'
