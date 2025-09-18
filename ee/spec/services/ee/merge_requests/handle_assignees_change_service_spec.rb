@@ -35,5 +35,25 @@ RSpec.describe MergeRequests::HandleAssigneesChangeService, feature_category: :c
         execute
       end
     end
+
+    context 'when AI flow triggers are available' do
+      let_it_be(:service_account) { create(:service_account, username: 'flow-trigger-1') }
+      let_it_be(:flow_trigger) { create(:ai_flow_trigger, project: project, event_types: [1], user: service_account) }
+
+      it 'runs the service' do
+        allow(user).to receive(:can?).with(:trigger_ai_flow, project).and_return(true)
+
+        merge_request.assignees = [service_account]
+
+        run_service = instance_double(::Ai::FlowTriggers::RunService)
+
+        expect(run_service).to receive(:execute).with({ input: '', event: :assign })
+        expect(::Ai::FlowTriggers::RunService).to receive(:new)
+          .with(project: project, current_user: user, resource: merge_request, flow_trigger: flow_trigger)
+          .and_return(run_service)
+
+        execute
+      end
+    end
   end
 end

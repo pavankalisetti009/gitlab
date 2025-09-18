@@ -16,11 +16,15 @@ module RemoteDevelopment
             port: String => port
           }
 
-          # TODO: check if port is available in processed_devfile
-
           unless workspace.user_id == user_id
             return Gitlab::Fp::Result.err(
               WorkspaceAuthorizeUserAccessFailed.new({ status: Status::NOT_AUTHORIZED })
+            )
+          end
+
+          unless port_exposed_for_workspace?(workspace, port)
+            return Gitlab::Fp::Result.err(
+              WorkspaceAuthorizeUserAccessFailed.new({ status: Status::PORT_NOT_FOUND })
             )
           end
 
@@ -36,6 +40,26 @@ module RemoteDevelopment
             )
           )
         end
+
+        # @param [RemoteDevelopment::Workspace] workspace
+        # @param [String] port
+        # @return [Boolean]
+        def self.port_exposed_for_workspace?(workspace, port)
+          components = YAML.safe_load(workspace.processed_devfile).to_h.deep_symbolize_keys.fetch(:components, [])
+          components.each do |component|
+            # The endpoints can be available in either container, kubernetes and openshift components of the devfile.
+            # We only support container component so far.
+            container = component.fetch(:container, {})
+            endpoints = container.fetch(:endpoints, [])
+            endpoints.each do |endpoint|
+              return true if endpoint.fetch(:targetPort, -1).to_s == port
+            end
+          end
+
+          false
+        end
+
+        private_class_method :port_exposed_for_workspace?
       end
     end
   end

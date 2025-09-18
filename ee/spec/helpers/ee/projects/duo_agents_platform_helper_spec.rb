@@ -30,7 +30,8 @@ RSpec.describe EE::Projects::DuoAgentsPlatformHelper, feature_category: :agent_f
         project_id: project.id,
         duo_agents_invoke_path: api_v4_ai_duo_workflows_workflows_path,
         explore_ai_catalog_path: '/explore/ai-catalog',
-        flow_triggers_event_type_options: [{ 'text' => 'Mention', 'value' => 0 }].to_json
+        flow_triggers_event_type_options: [{ 'text' => 'Mention', 'value' => 0 },
+          { 'text' => 'Assign', 'value' => 1 }].to_json
       }
 
       expect(helper_data).to eq(expected_data)
