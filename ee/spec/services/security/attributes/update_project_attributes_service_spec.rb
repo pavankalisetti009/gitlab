@@ -93,14 +93,76 @@ RSpec.describe Security::Attributes::UpdateProjectAttributesService, feature_cat
       root_namespace.add_owner(user)
     end
 
-    context 'when exceeding attribute limit' do
-      let(:add_attribute_ids) { (1..30).to_a }
-      let(:remove_attribute_ids) { (31..described_class::MAX_ATTRIBUTES + 5).to_a }
+    context 'when exceeding processing attribute limit' do
+      let(:add_attribute_ids) { (1..described_class::MAX_ATTRIBUTES).to_a }
+      let(:remove_attribute_ids) { (described_class::MAX_ATTRIBUTES..described_class::MAX_ATTRIBUTES + 5).to_a }
 
       it 'returns error' do
         expect(execute).to be_error
-        expect(execute.message).to eq("Cannot process more than #{described_class::MAX_ATTRIBUTES} attributes at once")
+        expect(execute.message).to eq('Too many attributes')
+        expect(execute.payload[:errors])
+          .to include("Cannot process more than #{described_class::MAX_ATTRIBUTES} attributes at once")
       end
+
+      it_behaves_like 'does not change project security attributes count'
+    end
+
+    context 'when exceeding project attribute limit' do
+      let(:add_attribute_ids) { [attribute1.id] }
+      let(:remove_attribute_ids) { [] }
+
+      before do
+        stub_const("#{described_class}::MAX_PROJECT_ATTRIBUTES", 1)
+        create(:project_to_security_attribute, project: project, security_attribute: attribute2)
+      end
+
+      it 'returns error' do
+        expect(execute).to be_error
+        expect(execute.message).to eq('Too many attributes')
+        expect(execute.payload[:errors])
+          .to include("Cannot exceed #{described_class::MAX_PROJECT_ATTRIBUTES} attributes per project")
+      end
+
+      it_behaves_like 'does not change project security attributes count'
+    end
+
+    context 'when exceeding both processing and project limits' do
+      let(:add_attribute_ids) { [attribute1.id, other_attribute.id] }
+      let(:remove_attribute_ids) { [attribute1.id + 1] }
+
+      before do
+        stub_const("#{described_class}::MAX_PROJECT_ATTRIBUTES", 1)
+        stub_const("#{described_class}::MAX_ATTRIBUTES", 2)
+        create(:project_to_security_attribute, project: project, security_attribute: attribute2)
+      end
+
+      it 'returns error with both limit violations' do
+        expect(execute).to be_error
+        expect(execute.message).to eq('Too many attributes')
+        expect(execute.payload[:errors]).to include(
+          "Cannot process more than 2 attributes at once",
+          "Cannot exceed 1 attributes per project"
+        )
+      end
+
+      it_behaves_like 'does not change project security attributes count'
+    end
+
+    context 'when trying to add multiple attributes that would exceed project limit' do
+      let(:add_attribute_ids) { [attribute1.id, other_attribute.id] }
+      let(:remove_attribute_ids) { [] }
+
+      before do
+        stub_const("#{described_class}::MAX_PROJECT_ATTRIBUTES", 1)
+      end
+
+      it 'returns error before processing attributes' do
+        expect(execute).to be_error
+        expect(execute.message).to eq('Too many attributes')
+        expect(execute.payload[:errors]).to include("Cannot exceed 1 attributes per project")
+      end
+
+      it_behaves_like 'does not change project security attributes count'
     end
 
     context 'when adding valid attributes' do
