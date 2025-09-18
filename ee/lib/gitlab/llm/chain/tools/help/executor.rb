@@ -12,7 +12,7 @@ module Gitlab
 
             NAME = 'Help'
             HUMAN_NAME = 'Help'
-            DESCRIPTION = s_('AI|Learn what Duo Chat can do')
+            DESCRIPTION = 'Learn what Duo Chat can do'
             RESOURCE_NAME = nil
             ACTION = 'help'
             PROVIDER_PROMPT_CLASSES = {}.freeze

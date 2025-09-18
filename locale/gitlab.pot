@@ -2907,9 +2907,6 @@ msgstr ""
 msgid "AI|I'm sorry, I couldn't respond in time. Please try a more specific request or enter /clear to start a new chat."
 msgstr ""
 
-msgid "AI|Learn what Duo Chat can do"
-msgstr ""
-
 msgid "AI|Populate issue description"
 msgstr ""
 
