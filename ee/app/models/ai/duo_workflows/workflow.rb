@@ -37,6 +37,20 @@ module Ai
       scope :with_workflow_definition, ->(definition) { where(workflow_definition: definition) }
       scope :with_environment, ->(environment) { where(environment: environment) }
       scope :from_pipeline, -> { where.not(workflow_definition: :chat).with_environment(:web) }
+
+      TARGET_STATUSES = {
+        start: :running,
+        pause: :paused,
+        require_input: :input_required,
+        require_plan_approval: :plan_approval_required,
+        require_tool_call_approval: :tool_call_approval_required,
+        resume: :running,
+        retry: :running,
+        finish: :finished,
+        drop: :failed,
+        stop: :stopped
+      }.freeze
+
       class AgentPrivileges
         READ_WRITE_FILES  = 1
         READ_ONLY_GITLAB  = 2
@@ -76,6 +90,10 @@ module Ai
           READ_WRITE_FILES,
           READ_ONLY_GITLAB
         ].freeze
+      end
+
+      def self.target_status_for_event(status_event)
+        TARGET_STATUSES[status_event]
       end
 
       def only_known_agent_priviliges
@@ -157,23 +175,23 @@ module Ai
 
       state_machine :status, initial: :created do
         event :start do
-          transition created: :running
+          transition created: ::Ai::DuoWorkflows::Workflow.target_status_for_event(:start)
         end
 
         event :pause do
-          transition running: :paused
+          transition running: ::Ai::DuoWorkflows::Workflow.target_status_for_event(:pause)
         end
 
         event :require_input do
-          transition running: :input_required
+          transition running: ::Ai::DuoWorkflows::Workflow.target_status_for_event(:require_input)
         end
 
         event :require_plan_approval do
-          transition running: :plan_approval_required
+          transition running: ::Ai::DuoWorkflows::Workflow.target_status_for_event(:require_plan_approval)
         end
 
         event :require_tool_call_approval do
-          transition running: :tool_call_approval_required
+          transition running: ::Ai::DuoWorkflows::Workflow.target_status_for_event(:require_tool_call_approval)
         end
 
         event :resume do
@@ -182,15 +200,15 @@ module Ai
             :input_required,
             :plan_approval_required,
             :tool_call_approval_required
-          ] => :running
+          ] => ::Ai::DuoWorkflows::Workflow.target_status_for_event(:resume)
         end
 
         event :retry do
-          transition [:running, :stopped, :failed] => :running
+          transition [:running, :stopped, :failed] => ::Ai::DuoWorkflows::Workflow.target_status_for_event(:retry)
         end
 
         event :finish do
-          transition running: :finished
+          transition running: ::Ai::DuoWorkflows::Workflow.target_status_for_event(:finish)
         end
 
         event :drop do
@@ -201,7 +219,7 @@ module Ai
             :input_required,
             :plan_approval_required,
             :tool_call_approval_required
-          ] => :failed
+          ] => ::Ai::DuoWorkflows::Workflow.target_status_for_event(:drop)
         end
 
         event :stop do
@@ -212,7 +230,7 @@ module Ai
             :input_required,
             :plan_approval_required,
             :tool_call_approval_required
-          ] => :stopped
+          ] => ::Ai::DuoWorkflows::Workflow.target_status_for_event(:stop)
         end
 
         state :created, value: 0

@@ -29,6 +29,11 @@ module Ai
           return error_response("Can not update workflow status, unsupported event: #{@status_event}")
         end
 
+        if ::Ai::DuoWorkflows::Workflow.target_status_for_event(@status_event.to_sym) == @workflow.status_name
+          return ServiceResponse.success(payload: { workflow: @workflow },
+            message: "Workflow already in status #{@workflow.human_status_name}")
+        end
+
         unless @workflow.status_events.include?(@status_event.to_sym)
           return error_response("Can not #{@status_event} workflow that has status #{@workflow.human_status_name}")
         end
