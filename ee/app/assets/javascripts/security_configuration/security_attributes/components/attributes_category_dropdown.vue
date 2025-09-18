@@ -1,5 +1,5 @@
 <script>
-import { GlCollapsibleListbox } from '@gitlab/ui';
+import { GlCollapsibleListbox, GlButton } from '@gitlab/ui';
 import { debounce } from 'lodash';
 import { __ } from '~/locale';
 import { DEFAULT_DEBOUNCE_AND_THROTTLE_MS } from '~/lib/utils/constants';
@@ -8,8 +8,9 @@ import getSecurityAttributesByCategoryQuery from '../../graphql/client/security_
 export default {
   components: {
     GlCollapsibleListbox,
+    GlButton,
   },
-  inject: ['groupFullPath'],
+  inject: ['groupFullPath', 'canManageAttributes', 'groupManageAttributesPath'],
   props: {
     category: {
       type: Object,
@@ -166,6 +167,18 @@ export default {
           class="gl-border gl-h-3 gl-w-5 gl-shrink-0 gl-rounded-base gl-border-white"
         ></span>
         {{ item.text }}
+      </div>
+    </template>
+    <template v-if="canManageAttributes" #footer>
+      <div class="gl-border-t gl-p-2">
+        <gl-button
+          block
+          class="!gl-justify-start"
+          category="tertiary"
+          :href="groupManageAttributesPath"
+        >
+          {{ s__('SecurityAttributes|Manage security attributes') }}
+        </gl-button>
       </div>
     </template>
   </gl-collapsible-listbox>
