@@ -7,6 +7,7 @@ import SecurityPolicyViolations from 'ee/vue_merge_request_widget/components/che
 import SecurityPolicyViolationsModal from 'ee/vue_merge_request_widget/components/checks/security_policy_violations_modal.vue';
 import ActionButtons from '~/vue_merge_request_widget/components/action_buttons.vue';
 import getPolicyViolations from 'ee/merge_requests/reports/queries/policy_violations.query.graphql';
+import { WARN_MODE, EXCEPTION_MODE } from 'ee/vue_merge_request_widget/components/checks/constants';
 
 Vue.use(VueApollo);
 
@@ -75,15 +76,18 @@ describe('SecurityPolicyViolations merge checks component', () => {
   const findModal = () => wrapper.findComponent(SecurityPolicyViolationsModal);
 
   function createComponent({
+    allowBypass = false,
     status = 'SUCCESS',
     securityPoliciesPath = null,
     warnModeEnabled = false,
+    securityPoliciesBypassOptionsMrWidget = false,
     policies = mockPolicies,
   } = {}) {
     wrapper = mountExtended(SecurityPolicyViolations, {
       apolloProvider: getApolloProvider(policies),
       propsData: {
         mr: {
+          allowBypass,
           securityPoliciesPath,
           iid: 123,
           targetProjectFullPath: 'group/project',
@@ -93,7 +97,12 @@ describe('SecurityPolicyViolations merge checks component', () => {
           status,
         },
       },
-      provide: { glFeatures: { securityPolicyApprovalWarnMode: warnModeEnabled } },
+      provide: {
+        glFeatures: {
+          securityPolicyApprovalWarnMode: warnModeEnabled,
+          securityPoliciesBypassOptionsMrWidget,
+        },
+      },
       stubs: { ActionButtons },
     });
   }
@@ -183,6 +192,7 @@ describe('SecurityPolicyViolations merge checks component', () => {
       await findBypassButton().vm.$emit('click');
 
       expect(findModal().exists()).toBe(true);
+      expect(findModal().props('mode')).toBe(WARN_MODE);
     });
 
     it('closes modal when close event is emitted', async () => {
@@ -198,6 +208,34 @@ describe('SecurityPolicyViolations merge checks component', () => {
       await findModal().vm.$emit('close');
 
       expect(findModal().exists()).toBe(false);
+    });
+
+    it('selects the mode for bypass options', async () => {
+      createComponent({
+        warnModeEnabled: true,
+        securityPoliciesPath: '/security-path',
+      });
+      await waitForPromises();
+
+      await findBypassButton().vm.$emit('click');
+
+      await findModal().vm.$emit('select-mode', EXCEPTION_MODE);
+
+      expect(findModal().props('mode')).toBe(EXCEPTION_MODE);
+    });
+
+    it('enables mode selector when there is a conflict', async () => {
+      createComponent({
+        securityPoliciesBypassOptionsMrWidget: true,
+        allowBypass: true,
+        securityPoliciesPath: '/security-path',
+        warnModeEnabled: true,
+      });
+      await waitForPromises();
+
+      await findBypassButton().vm.$emit('click');
+
+      expect(findModal().props('mode')).toBe('');
     });
   });
 });

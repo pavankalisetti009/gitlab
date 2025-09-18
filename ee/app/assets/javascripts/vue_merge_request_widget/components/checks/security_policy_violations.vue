@@ -1,11 +1,12 @@
 <script>
-import { get } from 'lodash';
+import { get, uniqBy } from 'lodash';
 import { s__ } from '~/locale';
 import glFeatureFlagsMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
 import MergeChecksMessage from '~/vue_merge_request_widget/components/checks/message.vue';
 import ActionButtons from '~/vue_merge_request_widget/components/action_buttons.vue';
 import getPolicyViolations from 'ee/merge_requests/reports/queries/policy_violations.query.graphql';
 import SecurityPolicyViolationsModal from 'ee/vue_merge_request_widget/components/checks/security_policy_violations_modal.vue';
+import { getSelectedModeOption } from './utils';
 
 export default {
   name: 'MergeChecksSecurityPolicyViolations',
@@ -22,7 +23,8 @@ export default {
       },
       update(data) {
         const policies = get(data, 'project.mergeRequest.policyViolations.policies', []);
-        return policies.map((policy) => ({
+        const uniquePolicies = uniqBy(policies, 'name');
+        return uniquePolicies.map((policy) => ({
           ...policy,
           text: policy.name,
           value: policy.name,
@@ -46,11 +48,17 @@ export default {
     return {
       policies: [],
       showModal: false,
+      selectedModeOption: getSelectedModeOption(this.mr),
     };
   },
   computed: {
+    enableBypassButton() {
+      return this.warnModeEnabled || this.bypassOptionsEnabled;
+    },
     showBypassButton() {
-      return this.warnModeEnabled && this.mr.securityPoliciesPath && Boolean(this.policies.length);
+      return (
+        this.enableBypassButton && this.mr.securityPoliciesPath && Boolean(this.policies.length)
+      );
     },
     tertiaryActionsButtons() {
       return [
@@ -69,10 +77,16 @@ export default {
     warnModeEnabled() {
       return this.glFeatures.securityPolicyApprovalWarnMode;
     },
+    bypassOptionsEnabled() {
+      return this.glFeatures.securityPoliciesBypassOptionsMrWidget && this.mr.allowBypass;
+    },
   },
   methods: {
     toggleModal(value) {
       this.showModal = value;
+    },
+    selectMode(mode) {
+      this.selectedModeOption = mode;
     },
   },
 };
@@ -86,7 +100,9 @@ export default {
         v-if="showModal"
         v-model="showModal"
         :policies="policies"
+        :mode="selectedModeOption"
         @close="toggleModal(false)"
+        @select-mode="selectMode"
       />
     </template>
   </merge-checks-message>

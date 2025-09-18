@@ -1,6 +1,8 @@
 import { GlAlert, GlModal, GlFormTextarea } from '@gitlab/ui';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import SecurityPolicyViolationsModal from 'ee/vue_merge_request_widget/components/checks/security_policy_violations_modal.vue';
+import SecurityPolicyViolationsSelector from 'ee/vue_merge_request_widget/components/checks/security_policy_violations_selector.vue';
+import { WARN_MODE, EXCEPTION_MODE } from 'ee/vue_merge_request_widget/components/checks/constants';
 
 describe('SecurityPolicyViolationsModal', () => {
   let wrapper;
@@ -13,16 +15,20 @@ describe('SecurityPolicyViolationsModal', () => {
 
   const findModal = () => wrapper.findComponent(GlModal);
   const findAlert = () => wrapper.findComponent(GlAlert);
+  const findSecurityPolicyViolationsSelector = () =>
+    wrapper.findComponent(SecurityPolicyViolationsSelector);
   const findPolicySelector = () => wrapper.findByTestId('policy-selector');
   const findReasonSelector = () => wrapper.findByTestId('reason-selector');
   const findBypassTextarea = () => wrapper.findComponent(GlFormTextarea);
   const findBypassButton = () => wrapper.findByTestId('bypass-policy-violations-button');
+  const findModalContent = () => wrapper.findByTestId('modal-content');
 
   const createComponent = (props = {}) => {
     wrapper = shallowMountExtended(SecurityPolicyViolationsModal, {
       propsData: {
         policies: mockPolicies,
         visible: true,
+        mode: WARN_MODE,
         ...props,
       },
       stubs: {
@@ -44,6 +50,8 @@ describe('SecurityPolicyViolationsModal', () => {
 
     it('renders the alert', () => {
       expect(findAlert().exists()).toBe(true);
+      expect(findSecurityPolicyViolationsSelector().exists()).toBe(false);
+      expect(findModalContent().exists()).toBe(true);
     });
 
     it('renders policy selector with correct props', () => {
@@ -166,6 +174,32 @@ describe('SecurityPolicyViolationsModal', () => {
       wrapper.destroy();
       createComponent({ visible: false });
       expect(findModal().props('visible')).toBe(false);
+    });
+  });
+
+  describe('mode selection', () => {
+    beforeEach(() => {
+      createComponent({
+        mode: '',
+      });
+    });
+
+    it('renders mode selector', () => {
+      expect(findAlert().text()).toContain(
+        'You have permissions to bypass all checks in this merge request or selectively only bypass Warn Mode policies.',
+      );
+      expect(findAlert().text()).toContain(
+        'Choose from the options below based on how you would like to proceed.',
+      );
+
+      expect(findSecurityPolicyViolationsSelector().exists()).toBe(true);
+      expect(findModalContent().exists()).toBe(false);
+    });
+
+    it.each([WARN_MODE, EXCEPTION_MODE])('emits select mode events', (mode) => {
+      findSecurityPolicyViolationsSelector().vm.$emit('select', mode);
+
+      expect(wrapper.emitted('select-mode')).toEqual([[mode]]);
     });
   });
 });
