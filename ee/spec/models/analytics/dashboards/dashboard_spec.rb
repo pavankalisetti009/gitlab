@@ -423,7 +423,7 @@ description: with missing properties
 
       it 'returns the dashboard' do
         expect(dashboard.title).to eq('GitLab Duo and SDLC trends')
-        expect(dashboard.slug).to eq('ai_impact')
+        expect(dashboard.slug).to eq('duo_and_sdlc_trends')
         expect(dashboard.schema_version).to eq('2')
         expect(dashboard.filters).to be_nil
       end
@@ -442,7 +442,7 @@ description: with missing properties
 
       it 'returns the dashboard' do
         expect(dashboard.title).to eq('GitLab Duo and SDLC trends')
-        expect(dashboard.slug).to eq('ai_impact')
+        expect(dashboard.slug).to eq('duo_and_sdlc_trends')
         expect(dashboard.schema_version).to eq('2')
         expect(dashboard.filters).to be_nil
       end

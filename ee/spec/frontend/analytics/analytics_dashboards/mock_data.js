@@ -185,7 +185,7 @@ export const TEST_AI_IMPACT_DASHBOARD_GRAPHQL_SUCCESS_RESPONSE = {
       customizableDashboards: {
         nodes: [
           getGraphQLDashboardWithPanels({
-            slug: 'ai_impact',
+            slug: 'duo_and_sdlc_trends',
             title: 'GitLab Duo and SDLC trends',
             userDefined: false,
           }),

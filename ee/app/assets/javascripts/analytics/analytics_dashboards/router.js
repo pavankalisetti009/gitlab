@@ -1,11 +1,11 @@
 import Vue from 'vue';
 import VueRouter from 'vue-router';
-import { convertToSentenceCase } from '~/lib/utils/text_utility';
 import { s__ } from '~/locale';
 import ProductAnalyticsOnboardingView from 'ee/product_analytics/onboarding/onboarding_view.vue';
 import ProductAnalyticsOnboardingSetup from 'ee/product_analytics/onboarding/onboarding_setup.vue';
 import DashboardsList from './components/dashboards_list.vue';
 import AnalyticsDashboard from './components/analytics_dashboard.vue';
+import { AI_IMPACT_DASHBOARD, AI_IMPACT_DASHBOARD_LEGACY } from './constants';
 
 Vue.use(VueRouter);
 
@@ -44,11 +44,16 @@ export default (base, breadcrumbState, permissions = {}) => {
           ]
         : []),
       {
+        name: 'ai-impact-legacy-redirect',
+        path: `/${AI_IMPACT_DASHBOARD_LEGACY}`,
+        redirect: `/${AI_IMPACT_DASHBOARD}`,
+      },
+      {
         name: 'dashboard-detail',
         path: '/:slug',
         component: AnalyticsDashboard,
         meta: {
-          getName: () => convertToSentenceCase(breadcrumbState.name),
+          getName: () => breadcrumbState.name,
         },
       },
     ],
