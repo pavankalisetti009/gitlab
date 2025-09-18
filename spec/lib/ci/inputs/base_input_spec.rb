@@ -1,9 +1,9 @@
 # frozen_string_literal: true
 
 require 'fast_spec_helper'
-require_relative Rails.root.join('lib/ci/pipeline_creation/inputs/base_input.rb')
+require_relative Rails.root.join('lib/ci/inputs/base_input.rb')
 
-RSpec.describe Ci::PipelineCreation::Inputs::BaseInput, feature_category: :pipeline_composition do
+RSpec.describe Ci::Inputs::BaseInput, feature_category: :pipeline_composition do
   describe '.matches?' do
     context 'when given is a hash' do
       before do
