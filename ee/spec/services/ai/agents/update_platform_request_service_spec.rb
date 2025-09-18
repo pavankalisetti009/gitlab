@@ -50,9 +50,14 @@ RSpec.describe Ai::Agents::UpdatePlatformRequestService, :aggregate_failures, fe
       end
 
       it 'returns error response' do
-        result = execute
+        expect(execute).to be_error
+        expect(execute.message).to eq('Failed to request Duo Agent Platform')
+      end
 
-        expect(result).to be_error
+      it 'logs error' do
+        expect(::Gitlab::ErrorTracking).to receive(:track_exception)
+
+        execute
       end
 
       it 'does not increment request count when save fails' do
