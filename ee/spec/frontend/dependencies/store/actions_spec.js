@@ -619,6 +619,22 @@ describe('Dependencies actions', () => {
       );
     });
 
+    it('converts reactive Vue arrays to plain arrays to prevent Apollo cache issues', () => {
+      const reactiveArray = ['item1', 'item2'];
+      const filters = [{ type: 'test_filter', value: { data: reactiveArray } }];
+
+      const mockCommit = jest.fn();
+      const mockState = getInitialState();
+
+      actions.setSearchFilterParameters({ state: mockState, commit: mockCommit }, filters);
+
+      const committedPayload = mockCommit.mock.calls[0][1];
+      const storedPlainArray = committedPayload.test_filter;
+
+      expect(storedPlainArray).not.toBe(reactiveArray);
+      expect(storedPlainArray).toEqual(['item1', 'item2']);
+    });
+
     describe('with a license filter', () => {
       it('maps the given license names to their corresponding SPDX identifiers', () => {
         const initialStateWithLicenses = {
@@ -900,7 +916,6 @@ describe('Dependencies actions', () => {
             expect(graphQLClient.query).toHaveBeenCalledWith({
               query: projectDependencies,
               variables: expectedVariables,
-              fetchPolicy: 'network-only',
             });
           },
         );
@@ -939,7 +954,6 @@ describe('Dependencies actions', () => {
             expect(graphQLClient.query).toHaveBeenCalledWith({
               query: projectDependencies,
               variables: expectedVariables,
-              fetchPolicy: 'network-only',
             });
           },
         );
@@ -986,7 +1000,6 @@ describe('Dependencies actions', () => {
 
             expect(graphQLClient.query).toHaveBeenCalledWith({
               ...expectedVariables,
-              fetchPolicy: 'network-only',
             });
           },
         );
@@ -1016,7 +1029,6 @@ describe('Dependencies actions', () => {
               first: 20,
               fullPath: state.fullPath,
             },
-            fetchPolicy: 'network-only',
           });
         });
 
@@ -1045,7 +1057,6 @@ describe('Dependencies actions', () => {
               first: 20,
               fullPath: state.fullPath,
             },
-            fetchPolicy: 'network-only',
           });
         });
 
@@ -1075,7 +1086,6 @@ describe('Dependencies actions', () => {
               after: forwardCursor,
               fullPath: state.fullPath,
             },
-            fetchPolicy: 'network-only',
           });
         });
 
@@ -1112,7 +1122,6 @@ describe('Dependencies actions', () => {
               before: backwardCursor,
               fullPath: state.fullPath,
             },
-            fetchPolicy: 'network-only',
           });
         });
 
@@ -1141,7 +1150,6 @@ describe('Dependencies actions', () => {
               first: customPageSize,
               fullPath: state.fullPath,
             },
-            fetchPolicy: 'network-only',
           });
         });
       });
