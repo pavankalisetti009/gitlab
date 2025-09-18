@@ -5,7 +5,8 @@ module Ai
     self.table_name = :ai_flow_triggers
 
     EVENT_TYPES = {
-      mention: 0
+      mention: 0,
+      assign: 1
     }.freeze
 
     belongs_to :project

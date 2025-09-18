@@ -56,8 +56,9 @@ module EE
     end
 
     override :execute_triggers
-    def execute_triggers
+    def execute_triggers(issuable, old_associations = {})
       execute_amazon_q_trigger if amazon_q_params
+      process_ai_flow_triggers(issuable, old_associations)
     end
 
     def execute_amazon_q_trigger
@@ -66,6 +67,24 @@ module EE
         command: amazon_q_params[:command],
         source: amazon_q_params[:source]
       ).execute
+    end
+
+    def process_ai_flow_triggers(issuable, old_associations)
+      old_assignees = old_associations.fetch(:assignees, [])
+      new_assignees = issuable.assignees - old_assignees
+      return unless new_assignees.present? && current_user&.can?(:trigger_ai_flow, project)
+
+      flow_triggers = project.ai_flow_triggers.triggered_on(:assign).by_users(new_assignees)
+      return unless flow_triggers.exists?
+
+      flow_triggers.find_each do |flow_trigger|
+        ::Ai::FlowTriggers::RunService.new(
+          project: project,
+          current_user: current_user,
+          resource: issuable,
+          flow_trigger: flow_trigger
+        ).execute({ input: "", event: :assign })
+      end
     end
   end
 end

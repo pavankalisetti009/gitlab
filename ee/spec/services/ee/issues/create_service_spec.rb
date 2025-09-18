@@ -608,4 +608,120 @@ RSpec.describe Issues::CreateService, feature_category: :team_planning do
       end
     end
   end
+
+  describe 'AI flow triggers on assignment' do
+    let_it_be(:service_account_1) { create(:service_account, username: 'flow-trigger-1') }
+    let_it_be(:service_account_2) { create(:service_account, username: 'flow-trigger-2') }
+    let_it_be(:service_account_3) { create(:service_account, username: 'flow-trigger-3') }
+    let_it_be(:regular_user) { create(:user) }
+    let_it_be(:flow_trigger_1) { create(:ai_flow_trigger, project: project, event_types: [1], user: service_account_1) }
+    let_it_be(:flow_trigger_2) { create(:ai_flow_trigger, project: project, event_types: [1], user: service_account_2) }
+    let_it_be(:flow_trigger_3) { create(:ai_flow_trigger, project: project, event_types: [0], user: service_account_3) }
+
+    let(:run_service_1) { instance_double(::Ai::FlowTriggers::RunService) }
+    let(:run_service_2) { instance_double(::Ai::FlowTriggers::RunService) }
+
+    before do
+      project.add_developer(user)
+      project.add_developer(service_account_1)
+      project.add_developer(service_account_2)
+      project.add_developer(service_account_3)
+      project.add_developer(regular_user)
+
+      allow(GitlabSubscriptions::AddOnPurchase).to receive_message_chain(
+        :for_duo_enterprise,
+        :active,
+        :by_namespace,
+        :assigned_to_user,
+        :exists?
+      ).and_return(true)
+    end
+
+    context 'when creating issue with multiple assignees with flow triggers' do
+      let(:params) { { title: 'New issue', assignee_ids: [service_account_1.id, service_account_2.id] } }
+
+      it 'triggers all matching flow trigger services' do
+        expect(run_service_1).to receive(:execute).with({ input: "", event: :assign })
+        expect(run_service_2).to receive(:execute).with({ input: "", event: :assign })
+
+        expect(::Ai::FlowTriggers::RunService).to receive(:new)
+          .with(project: project, current_user: user, resource: an_instance_of(Issue), flow_trigger: flow_trigger_1)
+          .and_return(run_service_1)
+        expect(::Ai::FlowTriggers::RunService).to receive(:new)
+          .with(project: project, current_user: user, resource: an_instance_of(Issue), flow_trigger: flow_trigger_2)
+          .and_return(run_service_2)
+
+        expect(created_issue).to be_persisted
+      end
+    end
+
+    context 'when creating issue with assignees with mixed trigger types' do
+      let(:params) { { title: 'New issue', assignee_ids: [service_account_1.id, service_account_3.id] } }
+
+      it 'only triggers assign event flow triggers' do
+        expect(run_service_1).to receive(:execute).with({ input: "", event: :assign })
+        expect(::Ai::FlowTriggers::RunService).to receive(:new)
+          .with(project: project, current_user: user, resource: an_instance_of(Issue), flow_trigger: flow_trigger_1)
+          .and_return(run_service_1)
+
+        expect(::Ai::FlowTriggers::RunService).not_to receive(:new)
+          .with(project: project, current_user: user, resource: an_instance_of(Issue), flow_trigger: flow_trigger_3)
+
+        expect(created_issue).to be_persisted
+      end
+    end
+
+    context 'when creating issue with assignees without flow triggers' do
+      let(:params) { { title: 'New issue', assignee_ids: [regular_user.id] } }
+
+      it 'does not trigger any flow trigger services' do
+        expect(::Ai::FlowTriggers::RunService).not_to receive(:new)
+
+        expect(created_issue).to be_persisted
+      end
+    end
+
+    context 'when creating issue without assignees' do
+      let(:params) { { title: 'New issue' } }
+
+      it 'does not trigger any flow trigger services' do
+        expect(::Ai::FlowTriggers::RunService).not_to receive(:new)
+
+        expect(created_issue).to be_persisted
+      end
+    end
+
+    context 'when user cannot trigger AI flow' do
+      let(:params) { { title: 'New issue', assignee_ids: [service_account_1.id, service_account_2.id] } }
+
+      before do
+        allow(Ability).to receive(:allowed?).and_call_original
+        allow(Ability).to receive(:allowed?).with(user, :trigger_ai_flow, project).and_return(false)
+      end
+
+      it 'does not trigger any flow trigger services' do
+        expect(::Ai::FlowTriggers::RunService).not_to receive(:new)
+
+        expect(created_issue).to be_persisted
+      end
+    end
+
+    context 'when assigning via quick actions' do
+      let(:params) { { title: 'New issue', description: "/assign @#{service_account_1.username} @#{service_account_2.username}" } }
+
+      it 'triggers flow trigger services for assigned users' do
+        expect(run_service_1).to receive(:execute).with({ input: "", event: :assign })
+        expect(run_service_2).to receive(:execute).with({ input: "", event: :assign })
+
+        expect(::Ai::FlowTriggers::RunService).to receive(:new)
+          .with(project: project, current_user: user, resource: an_instance_of(Issue), flow_trigger: flow_trigger_1)
+          .and_return(run_service_1)
+        expect(::Ai::FlowTriggers::RunService).to receive(:new)
+          .with(project: project, current_user: user, resource: an_instance_of(Issue), flow_trigger: flow_trigger_2)
+          .and_return(run_service_2)
+
+        expect(created_issue).to be_persisted
+      end
+    end
+  end
 end

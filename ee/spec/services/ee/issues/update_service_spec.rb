@@ -1069,5 +1069,113 @@ RSpec.describe Issues::UpdateService, feature_category: :team_planning do
         it_behaves_like 'does not call the move service'
       end
     end
+
+    context 'AI flow triggers on assignment' do
+      let_it_be(:service_account_1) { create(:service_account, username: 'flow-trigger-1') }
+      let_it_be(:service_account_2) { create(:service_account, username: 'flow-trigger-2') }
+      let_it_be(:service_account_3) { create(:service_account, username: 'flow-trigger-3') }
+      let_it_be(:regular_user) { create(:user) }
+      let_it_be(:flow_trigger_1) { create(:ai_flow_trigger, project: project, event_types: [1], user: service_account_1) }
+      let_it_be(:flow_trigger_2) { create(:ai_flow_trigger, project: project, event_types: [1], user: service_account_2) }
+      let_it_be(:flow_trigger_3) { create(:ai_flow_trigger, project: project, event_types: [0], user: service_account_3) }
+
+      let(:run_service_1) { instance_double(::Ai::FlowTriggers::RunService) }
+      let(:run_service_2) { instance_double(::Ai::FlowTriggers::RunService) }
+
+      before do
+        project.add_developer(user)
+        project.add_developer(service_account_1)
+        project.add_developer(service_account_2)
+        project.add_developer(service_account_3)
+        project.add_developer(regular_user)
+
+        allow(GitlabSubscriptions::AddOnPurchase).to receive_message_chain(
+          :for_duo_enterprise,
+          :active,
+          :by_namespace,
+          :assigned_to_user,
+          :exists?
+        ).and_return(true)
+      end
+
+      context 'when assigning multiple users with flow triggers' do
+        it 'triggers all matching flow trigger services' do
+          expect(run_service_1).to receive(:execute).with({ input: '', event: :assign })
+          expect(run_service_2).to receive(:execute).with({ input: '', event: :assign })
+
+          expect(::Ai::FlowTriggers::RunService).to receive(:new)
+            .with(project: project, current_user: user, resource: issue, flow_trigger: flow_trigger_1)
+            .and_return(run_service_1)
+          expect(::Ai::FlowTriggers::RunService).to receive(:new)
+            .with(project: project, current_user: user, resource: issue, flow_trigger: flow_trigger_2)
+            .and_return(run_service_2)
+
+          update_issue(assignee_ids: [service_account_1.id, service_account_2.id])
+        end
+      end
+
+      context 'when assigning users with mixed trigger types' do
+        it 'only triggers assign event flow triggers' do
+          expect(run_service_1).to receive(:execute).with({ input: '', event: :assign })
+          expect(::Ai::FlowTriggers::RunService).to receive(:new)
+            .with(project: project, current_user: user, resource: issue, flow_trigger: flow_trigger_1)
+            .and_return(run_service_1)
+
+          expect(::Ai::FlowTriggers::RunService).not_to receive(:new)
+            .with(project: project, current_user: user, resource: issue, flow_trigger: flow_trigger_3)
+
+          update_issue(assignee_ids: [service_account_1.id, service_account_3.id])
+        end
+      end
+
+      context 'when assigning users without flow triggers' do
+        it 'does not trigger any flow trigger services' do
+          expect(::Ai::FlowTriggers::RunService).not_to receive(:new)
+
+          update_issue(assignee_ids: [regular_user.id])
+        end
+      end
+
+      context 'when no new assignees are added' do
+        before do
+          issue.update!(assignee_ids: [service_account_1.id])
+        end
+
+        it 'does not trigger any flow trigger services' do
+          expect(::Ai::FlowTriggers::RunService).not_to receive(:new)
+
+          update_issue(assignee_ids: [service_account_1.id])
+        end
+      end
+
+      context 'when user cannot trigger AI flow' do
+        before do
+          allow(user).to receive(:can?).and_return(false)
+        end
+
+        it 'does not trigger any flow trigger services' do
+          expect(::Ai::FlowTriggers::RunService).not_to receive(:new)
+
+          update_issue(assignee_ids: [service_account_1.id, service_account_2.id])
+        end
+      end
+
+      context 'for merge requests' do
+        let(:merge_request) { create(:merge_request, source_project: project, target_project: project, author: user) }
+
+        def update_merge_request(opts)
+          MergeRequests::UpdateService.new(project: project, current_user: user, params: opts).execute(merge_request)
+        end
+
+        it 'uses merge request specific input message' do
+          expect(run_service_1).to receive(:execute).with({ input: '', event: :assign })
+          expect(::Ai::FlowTriggers::RunService).to receive(:new)
+            .with(project: project, current_user: user, resource: merge_request, flow_trigger: flow_trigger_1)
+            .and_return(run_service_1)
+
+          update_merge_request(assignee_ids: [service_account_1.id])
+        end
+      end
+    end
   end
 end
