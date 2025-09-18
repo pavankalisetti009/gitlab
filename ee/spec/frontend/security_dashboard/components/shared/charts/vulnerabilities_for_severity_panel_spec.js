@@ -66,6 +66,12 @@ describe('VulnerabilitiesForSeverityPanel', () => {
             `${securityVulnerabilitiesPath}?activity=ALL&state=CONFIRMED%2CDETECTED&severity=${severity.toUpperCase()}&reportType=SAST`,
           );
         });
+
+        it('shows the correct info popover', () => {
+          expect(findDashboardPanel().text()).toContain(
+            `Total count of ${expectedTitle} vulnerabilities. Click View to see these vulnerabilities in the vulnerability report.`,
+          );
+        });
       },
     );
   });

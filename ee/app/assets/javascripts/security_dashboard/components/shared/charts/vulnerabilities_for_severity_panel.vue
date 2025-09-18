@@ -1,6 +1,7 @@
 <script>
 import { GlDashboardPanel, GlLink } from '@gitlab/ui';
 import { GlSingleStat } from '@gitlab/ui/src/charts';
+import { s__, sprintf } from '~/locale';
 import { SEVERITY_CLASS_NAME_MAP } from 'ee/vue_shared/security_reports/components/constants';
 import { SEVERITY_LEVELS_KEYS, SEVERITY_LEVELS } from 'ee/security_dashboard/constants';
 import { constructVulnerabilitiesReportWithFiltersPath } from 'ee/security_dashboard/utils/chart_utils';
@@ -63,6 +64,14 @@ export default {
         additionalFilters: this.filters,
       });
     },
+    infoPopover() {
+      return sprintf(
+        s__(
+          'SecurityReports|Total count of %{severity} vulnerabilities. Click View to see these vulnerabilities in the vulnerability report.',
+        ),
+        { severity: this.title },
+      );
+    },
   },
 };
 </script>
@@ -82,6 +91,9 @@ export default {
         <gl-link :href="link" target="_blank" class="gl-ml-2">{{ __('View') }}</gl-link>
       </div>
       <p v-else>{{ __('Something went wrong. Please try again.') }}</p>
+    </template>
+    <template #info-popover-content>
+      {{ infoPopover }}
     </template>
   </gl-dashboard-panel>
 </template>
