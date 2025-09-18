@@ -21864,7 +21864,11 @@ CREATE TABLE packages_protection_rules (
     package_name_pattern text NOT NULL,
     minimum_access_level_for_push smallint,
     minimum_access_level_for_delete smallint,
+    pattern text,
+    pattern_type smallint DEFAULT 0 NOT NULL,
+    target_field smallint DEFAULT 0 NOT NULL,
     CONSTRAINT check_520a0596a3 CHECK ((num_nonnulls(minimum_access_level_for_delete, minimum_access_level_for_push) > 0)),
+    CONSTRAINT check_96c7dcb821 CHECK ((char_length(pattern) <= 255)),
     CONSTRAINT check_d2d75d206d CHECK ((char_length(package_name_pattern) <= 255))
 );
 
