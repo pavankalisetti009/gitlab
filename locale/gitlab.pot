@@ -58052,7 +58052,7 @@ msgstr ""
 msgid "Secrets|An error occurred while enabling the Secrets Manager."
 msgstr ""
 
-msgid "Secrets|An error occurred while fetching secrets. Please try again."
+msgid "Secrets|An error occurred while fetching secrets. Please make sure you have the proper permissions, or try again."
 msgstr ""
 
 msgid "Secrets|An error occurred while fetching the Secret manager status."

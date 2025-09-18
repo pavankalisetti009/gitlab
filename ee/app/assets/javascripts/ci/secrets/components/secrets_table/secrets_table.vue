@@ -91,9 +91,13 @@ export default {
         this.startCursor = pageInfo?.hasPreviousPage ? pageInfo.startCursor : null;
         return edges.map((e) => e.node) || [];
       },
-      error() {
+      error(e) {
         createAlert({
-          message: s__('Secrets|An error occurred while fetching secrets. Please try again.'),
+          message: s__(
+            'Secrets|An error occurred while fetching secrets. Please make sure you have the proper permissions, or try again.',
+          ),
+          captureError: true,
+          error: e,
         });
       },
       fetchPolicy: fetchPolicies.NETWORK_ONLY,

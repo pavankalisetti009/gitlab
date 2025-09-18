@@ -185,6 +185,7 @@ RSpec.describe 'Project navbar', :js, feature_category: :navigation do
 
     context 'when secrets manager is available' do
       let_it_be(:secrets_manager) { build(:project_secrets_manager, project: project) }
+
       let(:secure_nav_item) do
         {
           nav_item: _('Secure'),
@@ -197,13 +198,52 @@ RSpec.describe 'Project navbar', :js, feature_category: :navigation do
       end
 
       before do
+        stub_licensed_features(native_secrets_management: true)
         stub_feature_flags(secrets_manager: true)
-        secrets_manager.save!
+        secrets_manager.activate!
 
         visit project_path(project)
       end
 
       it_behaves_like 'verified navigation bar'
+    end
+
+    context 'when secrets manager is not available' do
+      let_it_be(:secrets_manager) { build(:project_secrets_manager, project: project) }
+
+      before_all do
+        stub_feature_flags(secrets_manager: true)
+        secrets_manager.activate!
+      end
+
+      context 'when feature flag is disabled' do
+        before do
+          stub_feature_flags(secrets_manager: false)
+          stub_licensed_features(native_secrets_management: true)
+          visit project_path(project)
+        end
+
+        it_behaves_like 'verified navigation bar'
+      end
+
+      context 'when feature license is disabled' do
+        before do
+          stub_licensed_features(native_secrets_management: false)
+          visit project_path(project)
+        end
+
+        it_behaves_like 'verified navigation bar'
+      end
+
+      context 'when secrets manager is not active' do
+        before do
+          stub_licensed_features(native_secrets_management: true)
+          secrets_manager.update!(status: SecretsManagement::ProjectSecretsManager::STATUSES[:deprovisioning])
+          visit project_path(project)
+        end
+
+        it_behaves_like 'verified navigation bar'
+      end
     end
 
     context 'when packages are available' do

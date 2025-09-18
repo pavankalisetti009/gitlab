@@ -159,8 +159,14 @@ module EE
           end
 
           def secrets_manager_menu_item
+            secrets_manager = SecretsManagement::ProjectSecretsManager.find_by_project_id(context.project)
+            is_secrets_manager_active = secrets_manager &&
+              secrets_manager.status == SecretsManagement::ProjectSecretsManager::STATUSES[:active]
+
             unless ::Feature.enabled?(:secrets_manager, context.project) &&
-                SecretsManagement::ProjectSecretsManager.find_by_project_id(context.project)
+                context.project.licensed_feature_available?(:native_secrets_management) &&
+                is_secrets_manager_active &&
+                can?(context.current_user, :reporter_access, context.project)
               return ::Sidebars::NilMenuItem.new(item_id: :secrets_manager)
             end
 
