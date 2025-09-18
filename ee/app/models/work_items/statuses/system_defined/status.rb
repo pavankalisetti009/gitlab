@@ -66,6 +66,12 @@ module WorkItems
               all.find { |status| status.matches_name?(status_name) }
             end
           end
+
+          def sort_order_by_id
+            all.each_with_object({}) do |status, hash|
+              hash[status.id] = WorkItems::Statuses::SharedConstants::CATEGORIES[status.category]
+            end
+          end
         end
 
         def allowed_for_work_item?(work_item)

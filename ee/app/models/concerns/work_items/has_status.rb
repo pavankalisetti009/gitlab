@@ -67,6 +67,66 @@ module WorkItems
         merge(items_to_exclude.invert_where)
       }
 
+      scope :with_status_joins, -> {
+        converted_statuses_join = <<-SQL.squish
+          LEFT JOIN namespaces ON namespaces.id = #{table_name}.namespace_id
+          LEFT JOIN work_item_custom_statuses converted_statuses ON
+            converted_statuses.converted_from_system_defined_status_identifier =
+              work_item_current_statuses.system_defined_status_id
+            AND converted_statuses.namespace_id = namespaces.traversal_ids[1]
+        SQL
+
+        left_joins(current_status: :custom_status).joins(converted_statuses_join)
+      }
+
+      scope :order_status_asc, -> {
+        with_status_joins.order(Arel.sql("#{generate_status_order_sql} ASC NULLS LAST, id DESC"))
+      }
+
+      scope :order_status_desc, -> {
+        with_status_joins.order(Arel.sql("#{generate_status_order_sql} DESC NULLS FIRST, id DESC"))
+      }
+
+      def self.generate_status_order_sql
+        system_defined_sort_orders = WorkItems::Statuses::SystemDefined::Status.sort_order_by_id
+        system_defined_status_cases = system_defined_sort_orders.map do |id, category|
+          "WHEN #{id} THEN #{category}"
+        end.join(' ')
+
+        lifecycle = WorkItems::Statuses::SystemDefined::Lifecycle.all.first
+        default_open_status = lifecycle.default_open_status
+        default_duplicate_status = lifecycle.default_duplicate_status
+        default_closed_status = lifecycle.default_closed_status
+
+        default_open_sort_order = system_defined_sort_orders[default_open_status.id]
+        default_duplicate_sort_order = system_defined_sort_orders[default_duplicate_status.id]
+        default_closed_sort_order = system_defined_sort_orders[default_closed_status.id]
+
+        opened_state_value = Issue.available_states[:opened]
+        closed_state_value = Issue.available_states[:closed]
+
+        <<-SQL.squish
+          CASE
+            WHEN work_item_current_statuses.custom_status_id IS NOT NULL THEN
+              work_item_custom_statuses.category
+            WHEN work_item_current_statuses.system_defined_status_id IS NOT NULL THEN
+              COALESCE(
+                converted_statuses.category,
+                CASE work_item_current_statuses.system_defined_status_id #{system_defined_status_cases} END
+              )
+            ELSE
+              CASE
+                WHEN #{table_name}.state_id = #{opened_state_value} THEN #{default_open_sort_order}
+                WHEN #{table_name}.state_id = #{closed_state_value} AND #{table_name}.duplicated_to_id IS NOT NULL
+                  THEN #{default_duplicate_sort_order}
+                WHEN #{table_name}.state_id = #{closed_state_value} AND #{table_name}.duplicated_to_id IS NULL
+                  THEN #{default_closed_sort_order}
+                ELSE #{default_open_sort_order}
+              END
+          END
+        SQL
+      end
+
       def status_with_fallback
         current_status_with_fallback&.status
       end
