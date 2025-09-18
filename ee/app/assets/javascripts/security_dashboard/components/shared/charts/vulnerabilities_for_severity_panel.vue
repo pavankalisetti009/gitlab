@@ -55,6 +55,14 @@ export default {
 
       return `gl-mr-3 ${SEVERITY_CLASS_NAME_MAP[this.severity]}`;
     },
+
+    borderColorClass() {
+      if (this.error) {
+        return 'gl-border-t-red-500';
+      }
+      return '';
+    },
+
     link() {
       return constructVulnerabilitiesReportWithFiltersPath({
         securityVulnerabilitiesPath: this.securityVulnerabilitiesPath,
@@ -74,7 +82,7 @@ export default {
     :title-icon-class="iconClass"
     :loading="loading"
     :show-alert-state="error"
-    :border-color-class="error ? 'gl-border-t-red-500' : ''"
+    :border-color-class="borderColorClass"
   >
     <template #body>
       <div v-if="!error" class="-gl-mt-3">
