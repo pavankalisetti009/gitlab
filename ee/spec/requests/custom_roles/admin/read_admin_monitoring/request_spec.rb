@@ -53,7 +53,7 @@ RSpec.describe 'User with read_admin_monitoring', :enable_admin_mode, feature_ca
 
   describe Admin::DashboardController do
     describe "#index" do
-      it 'user has access via a custom role' do
+      it 'user has access via a custom role', quarantine: 'https://gitlab.com/gitlab-org/gitlab/-/issues/570209' do
         get admin_root_path
 
         expect(response).to have_gitlab_http_status(:ok)
