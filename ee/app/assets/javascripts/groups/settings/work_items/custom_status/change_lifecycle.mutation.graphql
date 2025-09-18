@@ -1,0 +1,9 @@
+mutation changeLifecycle($input: LifecycleAttachWorkItemTypeInput!) {
+  lifecycleAttachWorkItemType(input: $input) {
+    lifecycle {
+      id
+      name
+    }
+    errors
+  }
+}

@@ -26,13 +26,22 @@ export default {
       type: String,
       required: true,
     },
+    stepError: {
+      type: String,
+      required: false,
+      default: '',
+    },
+    selectedLifecycle: {
+      type: String,
+      required: false,
+      default: null,
+    },
   },
   data() {
     return {
       lifecycles: [],
-      selectedLifecycleId: null,
+      selectedLifecycleId: this.selectedLifecycle,
       showModal: false,
-      errorText: '',
     };
   },
   apollo: {
@@ -44,7 +53,7 @@ export default {
         };
       },
       update(data) {
-        return data.namespace?.lifecycles?.nodes || [];
+        return data?.namespace?.lifecycles?.nodes || [];
       },
       error(error) {
         this.errorText = s__('WorkItem|Failed to load lifecycles.');
@@ -93,14 +102,19 @@ export default {
 <template>
   <div>
     <gl-loading-icon v-if="loadingLifecycles" size="lg" class="gl-mt-3" />
-    <gl-alert v-else-if="errorText" class="gl-my-3" variant="danger" @dismiss="errorText = ''">
-      {{ errorText }}
-    </gl-alert>
 
     <template v-else>
       <p class="gl-text-subtle">
         {{ selectedLifecycleIntro }}
       </p>
+      <gl-alert
+        v-if="stepError"
+        class="gl-my-3"
+        variant="danger"
+        @dismiss="$emit('error-dismissed')"
+      >
+        {{ stepError }}
+      </gl-alert>
       <div>
         <div data-testid="current-lifecycle-container">
           <div class="gl-mb-4 gl-font-semibold gl-text-subtle">
@@ -128,6 +142,7 @@ export default {
             v-if="filteredLifecyclesOfCurrentLifecycle.length"
             v-model="selectedLifecycleId"
             name="select-lifecycle-radio"
+            @change="$emit('lifecycle-selected', selectedLifecycleId)"
           >
             <div v-if="lifecycles" class="gl-flex gl-flex-col gl-gap-4">
               <lifecycle-detail

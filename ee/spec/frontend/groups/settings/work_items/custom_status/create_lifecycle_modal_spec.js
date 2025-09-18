@@ -44,7 +44,7 @@ const mockNamespaceStatusesResponse = {
   },
 };
 
-describe('CreateLifecycle', () => {
+describe('CreateLifecycleModal', () => {
   let wrapper;
   let mockApollo;
 

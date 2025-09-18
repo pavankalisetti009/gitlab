@@ -91,6 +91,7 @@ export const mockLifecycles = [
         iconName: 'status-waiting',
         color: '#737278',
         description: null,
+        category: 'to_do',
         __typename: 'WorkItemStatus',
       },
       {
@@ -99,6 +100,7 @@ export const mockLifecycles = [
         iconName: 'status-success',
         color: '#108548',
         description: null,
+        category: 'done',
         __typename: 'WorkItemStatus',
       },
       {
@@ -107,6 +109,7 @@ export const mockLifecycles = [
         iconName: 'status-cancelled',
         color: '#DD2B0E',
         description: null,
+        category: 'canceled',
         __typename: 'WorkItemStatus',
       },
     ],
@@ -139,6 +142,7 @@ export const mockLifecycles = [
         iconName: 'status-waiting',
         color: '#737278',
         description: null,
+        category: 'to_do',
         __typename: 'WorkItemStatus',
       },
       {
@@ -147,6 +151,7 @@ export const mockLifecycles = [
         iconName: 'status-success',
         color: '#108548',
         description: null,
+        category: 'done',
         __typename: 'WorkItemStatus',
       },
       {
@@ -155,6 +160,7 @@ export const mockLifecycles = [
         iconName: 'status-cancelled',
         color: '#DD2B0E',
         description: null,
+        category: 'canceled',
         __typename: 'WorkItemStatus',
       },
     ],
@@ -187,6 +193,7 @@ export const mockLifecycles = [
         iconName: 'status-waiting',
         color: '#737278',
         description: null,
+        category: 'to_do',
         __typename: 'WorkItemStatus',
       },
       {
@@ -195,6 +202,7 @@ export const mockLifecycles = [
         iconName: 'status-success',
         color: '#108548',
         description: null,
+        category: 'done',
         __typename: 'WorkItemStatus',
       },
       {
@@ -203,6 +211,7 @@ export const mockLifecycles = [
         iconName: 'status-cancelled',
         color: '#DD2B0E',
         description: null,
+        category: 'canceled',
         __typename: 'WorkItemStatus',
       },
     ],
@@ -235,6 +244,7 @@ export const mockLifecycles = [
         iconName: 'status-waiting',
         color: '#737278',
         description: null,
+        category: 'to_do',
         __typename: 'WorkItemStatus',
       },
       {
@@ -243,6 +253,7 @@ export const mockLifecycles = [
         iconName: 'status-success',
         color: '#108548',
         description: null,
+        category: 'done',
         __typename: 'WorkItemStatus',
       },
       {
@@ -251,6 +262,7 @@ export const mockLifecycles = [
         iconName: 'status-cancelled',
         color: '#DD2B0E',
         description: null,
+        category: 'cancelled',
         __typename: 'WorkItemStatus',
       },
     ],
@@ -283,6 +295,7 @@ export const mockLifecycles = [
         iconName: 'status-waiting',
         color: '#737278',
         description: null,
+        category: 'to_do',
         __typename: 'WorkItemStatus',
       },
       {
@@ -291,6 +304,7 @@ export const mockLifecycles = [
         iconName: 'status-success',
         color: '#108548',
         description: null,
+        category: 'done',
         __typename: 'WorkItemStatus',
       },
       {
@@ -299,6 +313,7 @@ export const mockLifecycles = [
         iconName: 'status-cancelled',
         color: '#DD2B0E',
         description: null,
+        category: 'canceled',
         __typename: 'WorkItemStatus',
       },
     ],
@@ -331,6 +346,7 @@ export const mockLifecycles = [
         iconName: 'status-waiting',
         color: '#737278',
         description: null,
+        category: 'to_do',
         __typename: 'WorkItemStatus',
       },
       {
@@ -339,6 +355,7 @@ export const mockLifecycles = [
         iconName: 'status-success',
         color: '#108548',
         description: null,
+        category: 'done',
         __typename: 'WorkItemStatus',
       },
       {
@@ -347,6 +364,7 @@ export const mockLifecycles = [
         iconName: 'status-cancelled',
         color: '#DD2B0E',
         description: null,
+        category: 'canceled',
         __typename: 'WorkItemStatus',
       },
     ],

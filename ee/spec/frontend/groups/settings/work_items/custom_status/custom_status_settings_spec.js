@@ -44,6 +44,7 @@ const mockLifecycles = [
         iconName: 'issue-open',
         color: 'green',
         description: '',
+        category: 'to_do',
         __typename: 'WorkItemStatus',
       },
       {
@@ -53,6 +54,7 @@ const mockLifecycles = [
         color: 'blue',
         description: '',
         __typename: 'WorkItemStatus',
+        category: 'in_progress',
       },
       {
         id: '3',
@@ -61,6 +63,7 @@ const mockLifecycles = [
         color: 'gray',
         description: '',
         __typename: 'WorkItemStatus',
+        category: 'done',
       },
     ],
     statusCounts,
@@ -86,6 +89,7 @@ const mockLifecycles = [
         iconName: 'issue-new',
         color: 'red',
         description: '',
+        category: 'to_do',
         __typename: 'WorkItemStatus',
       },
       {
@@ -94,6 +98,7 @@ const mockLifecycles = [
         iconName: 'check',
         color: 'green',
         description: '',
+        category: 'done',
         __typename: 'WorkItemStatus',
       },
     ],

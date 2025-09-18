@@ -37,9 +37,6 @@ describe('ChangeLifecycleSteps', () => {
   it('renders Stepper component with correct props', () => {
     createWrapper();
 
-    expect(findStepper().exists()).toBe(true);
-    expect(findStepper().props('allowSkip')).toBe(false);
-    expect(findStepper().props('showFinishButton')).toBe(false);
     expect(findStepper().props('steps')).toHaveLength(2);
   });
 

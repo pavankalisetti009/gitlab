@@ -28,6 +28,7 @@ query getNamespaceLifecycles($fullPath: ID!) {
           iconName
           color
           description
+          category
         }
         statusCounts {
           status {
