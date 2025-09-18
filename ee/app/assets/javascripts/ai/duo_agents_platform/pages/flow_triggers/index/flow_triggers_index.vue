@@ -1,5 +1,6 @@
 <script>
 import { GlExperimentBadge } from '@gitlab/ui';
+import emptyStateIllustrationPath from '@gitlab/svgs/dist/illustrations/empty-state/empty-pipeline-md.svg?url';
 import { s__ } from '~/locale';
 import { createAlert } from '~/alert';
 import { fetchPolicies } from '~/lib/graphql';
@@ -23,7 +24,7 @@ export default {
     ResourceListsEmptyState,
     ResourceListsLoadingStateList,
   },
-  inject: ['emptyStateIllustrationPath', 'projectPath', 'flowTriggersEventTypeOptions'],
+  inject: ['projectPath', 'flowTriggersEventTypeOptions'],
   data() {
     return {
       aiFlowTriggers: [],
@@ -80,6 +81,7 @@ export default {
       this.idToBeDeleted = null;
     },
   },
+  emptyStateIllustrationPath,
 };
 </script>
 
@@ -112,7 +114,7 @@ export default {
           'DuoAgentsPlatform|Create flow triggers to automatically run pipelines when specified events occur in your project.',
         )
       "
-      :svg-path="emptyStateIllustrationPath"
+      :svg-path="$options.emptyStateIllustrationPath"
     >
       <template #actions>
         <slot name="actions">

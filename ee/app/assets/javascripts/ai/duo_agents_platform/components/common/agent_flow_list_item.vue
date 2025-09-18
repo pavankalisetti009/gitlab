@@ -13,6 +13,11 @@ export default {
     AgentStatusIcon,
   },
   props: {
+    showProjectInfo: {
+      required: false,
+      type: Boolean,
+      default: false,
+    },
     item: {
       required: true,
       type: Object,
@@ -57,14 +62,20 @@ export default {
       class="gl-flex gl-flex-col gl-p-4"
       :class="linkHoverStyles"
     >
-      <div>
-        <agent-status-icon :status="item.status" :human-status="formatStatus(item.humanStatus)" />
-        <strong class="gl-pl-1 gl-text-strong">{{ formatName(item) }}</strong>
+      <div class="gl-flex gl-items-center gl-justify-between">
+        <div class="gl-flex gl-items-center">
+          <agent-status-icon :status="item.status" :human-status="formatStatus(item.humanStatus)" />
+          <strong class="gl-pl-3 gl-text-strong">{{ formatName(item) }}</strong>
+        </div>
+        <div v-if="showProjectInfo && item.project" class="gl-text-subtle">
+          {{ item.project.name }}
+        </div>
       </div>
 
-      <div class="gl-ml-7 gl-mt-1 gl-space-y-1 gl-text-subtle">
-        <div>{{ formatUpdatedAt(item.updatedAt) }}</div>
-        <div>{{ formatStatus(item.humanStatus) }}</div>
+      <div class="gl-ml-7 gl-mt-0 gl-flex gl-items-center gl-gap-2 gl-text-subtle">
+        <span>{{ formatStatus(item.humanStatus) }}</span>
+        <span class="gl-text-subtle" aria-hidden="true">·</span>
+        <span>{{ formatUpdatedAt(item.updatedAt) }}</span>
       </div>
     </gl-link>
   </li>
