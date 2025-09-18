@@ -135,7 +135,7 @@ export default {
 <template>
   <div class="gl-mt-5">
     <template v-if="loading">
-      <div class="lg:gl-w-1/2">
+      <div class="@lg/panel:gl-w-1/2">
         <gl-skeleton-loader :height="50">
           <rect width="140" height="30" x="0" y="0" rx="4" />
           <rect width="240" height="10" x="0" y="40" rx="4" />

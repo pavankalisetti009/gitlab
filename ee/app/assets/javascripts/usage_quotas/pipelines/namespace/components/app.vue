@@ -295,7 +295,7 @@ export default {
           :limited-access-reason="subscriptionPermissions.reason"
         />
       </div>
-      <div class="gl-grid gl-gap-5 gl-py-4 md:gl-grid-cols-2">
+      <div class="gl-grid gl-gap-5 gl-py-4 @md/panel:gl-grid-cols-2">
         <monthly-units-usage-summary
           :monthly-units-used="ciMinutesMonthlyMinutesUsed"
           :monthly-units-limit="ciMinutesMonthlyMinutesLimit"
