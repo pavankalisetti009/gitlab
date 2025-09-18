@@ -21,6 +21,7 @@ RSpec.describe Mutations::Ai::Catalog::Flow::Update, feature_category: :workflow
       :public,
       :release,
       :steps,
+      :version_bump,
       :client_mutation_id
     )
   end
