@@ -94,6 +94,8 @@ module Vulnerabilities
     has_many :finding_remediations, class_name: 'Vulnerabilities::FindingRemediation', inverse_of: :finding, foreign_key: 'vulnerability_occurrence_id'
     has_many :remediations, through: :finding_remediations
 
+    has_one :finding_risk_score, class_name: 'Vulnerabilities::FindingRiskScore', inverse_of: :finding
+
     # rubocop: disable Rails/InverseOf -- these relations are not present on Ci::Pipeline
     belongs_to :initial_finding_pipeline, class_name: '::Ci::Pipeline', foreign_key: 'initial_pipeline_id'
     belongs_to :latest_finding_pipeline, class_name: '::Ci::Pipeline', foreign_key: 'latest_pipeline_id'
