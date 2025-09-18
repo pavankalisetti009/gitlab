@@ -27276,6 +27276,14 @@ CREATE SEQUENCE vulnerability_finding_links_id_seq
 
 ALTER SEQUENCE vulnerability_finding_links_id_seq OWNED BY vulnerability_finding_links.id;
 
+CREATE TABLE vulnerability_finding_risk_scores (
+    finding_id bigint NOT NULL,
+    created_at timestamp with time zone NOT NULL,
+    updated_at timestamp with time zone NOT NULL,
+    project_id bigint NOT NULL,
+    risk_score double precision DEFAULT 0.0 NOT NULL
+);
+
 CREATE TABLE vulnerability_finding_signatures (
     id bigint NOT NULL,
     finding_id bigint NOT NULL,
@@ -34292,6 +34300,9 @@ ALTER TABLE ONLY vulnerability_finding_evidences
 
 ALTER TABLE ONLY vulnerability_finding_links
     ADD CONSTRAINT vulnerability_finding_links_pkey PRIMARY KEY (id);
+
+ALTER TABLE ONLY vulnerability_finding_risk_scores
+    ADD CONSTRAINT vulnerability_finding_risk_scores_pkey PRIMARY KEY (finding_id);
 
 ALTER TABLE ONLY vulnerability_finding_signatures
     ADD CONSTRAINT vulnerability_finding_signatures_pkey PRIMARY KEY (id);
@@ -41551,6 +41562,10 @@ CREATE UNIQUE INDEX index_vulnerability_reads_on_vulnerability_id ON vulnerabili
 
 CREATE UNIQUE INDEX index_vulnerability_remediations_on_project_id_and_checksum ON vulnerability_remediations USING btree (project_id, checksum);
 
+CREATE UNIQUE INDEX index_vulnerability_risk_scores_on_vulnerability_finding ON vulnerability_finding_risk_scores USING btree (finding_id);
+
+CREATE INDEX index_vulnerability_risk_scores_on_vulnerability_project ON vulnerability_finding_risk_scores USING btree (project_id);
+
 CREATE UNIQUE INDEX index_vulnerability_scanners_on_project_id_and_external_id ON vulnerability_scanners USING btree (project_id, external_id);
 
 CREATE INDEX index_vulnerability_severity_overrides_on_author_id ON vulnerability_severity_overrides USING btree (author_id);
@@ -46724,6 +46739,9 @@ ALTER TABLE ONLY compliance_framework_security_policies
 
 ALTER TABLE ONLY organization_cluster_agent_mappings
     ADD CONSTRAINT fk_6d8bfa275e FOREIGN KEY (organization_id) REFERENCES organizations(id) ON DELETE CASCADE;
+
+ALTER TABLE ONLY vulnerability_finding_risk_scores
+    ADD CONSTRAINT fk_6d90dbcfdc FOREIGN KEY (finding_id) REFERENCES vulnerability_occurrences(id) ON DELETE CASCADE;
 
 ALTER TABLE ONLY audit_events_streaming_instance_namespace_filters
     ADD CONSTRAINT fk_6e0be28087 FOREIGN KEY (external_streaming_destination_id) REFERENCES audit_events_instance_external_streaming_destinations(id) ON DELETE CASCADE;
