@@ -8978,7 +8978,8 @@ CREATE TABLE abuse_report_user_mentions (
     mentioned_users_ids bigint[],
     mentioned_projects_ids bigint[],
     mentioned_groups_ids bigint[],
-    organization_id bigint
+    organization_id bigint,
+    CONSTRAINT check_f0d6e86b14 CHECK ((organization_id IS NOT NULL))
 );
 
 CREATE SEQUENCE abuse_report_user_mentions_id_seq
