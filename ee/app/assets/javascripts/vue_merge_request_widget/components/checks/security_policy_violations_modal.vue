@@ -2,21 +2,15 @@
 import { GlAlert, GlModal, GlFormGroup, GlFormTextarea, GlCollapsibleListbox } from '@gitlab/ui';
 import { getSelectedOptionsText } from '~/lib/utils/listbox_helpers';
 import { __, s__ } from '~/locale';
+import {
+  INITIAL_STATE_NEXT_STEPS,
+  WARN_MODE_BYPASS_REASONS,
+  WARN_MODE_NEXT_STEPS,
+} from 'ee/vue_merge_request_widget/components/checks/constants';
+import SecurityPolicyViolationsSelector from './security_policy_violations_selector.vue';
 
 export default {
   ACTION_CANCEL: { text: __('Cancel') },
-  WARN_MODE_BYPASS_REASONS: [
-    {
-      value: 'policy_false_positive',
-      text: s__('SecurityOrchestration|Policy false positive'),
-    },
-    {
-      value: 'scanner_false_positive',
-      text: s__('SecurityOrchestration|Scanner false positive'),
-    },
-    { value: 'emergency_hotfix', text: s__('SecurityOrchestration|Emergency hotfix') },
-    { value: 'other', text: s__('SecurityOrchestration|Other') },
-  ],
   name: 'SecurityPolicyViolationsModal',
   components: {
     GlAlert,
@@ -24,6 +18,7 @@ export default {
     GlFormGroup,
     GlFormTextarea,
     GlCollapsibleListbox,
+    SecurityPolicyViolationsSelector,
   },
   model: {
     prop: 'visible',
@@ -39,6 +34,11 @@ export default {
       required: false,
       default: false,
     },
+    mode: {
+      type: String,
+      required: false,
+      default: '',
+    },
   },
   data() {
     return {
@@ -48,6 +48,9 @@ export default {
     };
   },
   computed: {
+    showModeSelection() {
+      return this.mode === '';
+    },
     actionPrimary() {
       return {
         text: __('Bypass'),
@@ -59,7 +62,7 @@ export default {
       };
     },
     bypassReasonItems() {
-      return this.$options.WARN_MODE_BYPASS_REASONS;
+      return WARN_MODE_BYPASS_REASONS;
     },
     isValid() {
       return (
@@ -67,6 +70,9 @@ export default {
         this.selectedReasons.length > 0 &&
         this.bypassReason.trim().length > 0
       );
+    },
+    nextSteps() {
+      return this.showModeSelection ? INITIAL_STATE_NEXT_STEPS : WARN_MODE_NEXT_STEPS;
     },
     selectedPolicyText() {
       return getSelectedOptionsText({
@@ -78,7 +84,7 @@ export default {
     },
     selectedReasonText() {
       return getSelectedOptionsText({
-        options: this.$options.WARN_MODE_BYPASS_REASONS,
+        options: WARN_MODE_BYPASS_REASONS,
         selected: this.selectedReasons,
         placeholder: s__('SecurityOrchestration|Select bypass reasons'),
         maxOptionsShown: 4,
@@ -101,6 +107,9 @@ export default {
     handleSelect(property, value) {
       this[property] = value;
     },
+    selectMode(mode) {
+      this.$emit('select-mode', mode);
+    },
   },
 };
 </script>
@@ -118,61 +127,67 @@ export default {
     @change="handleClose"
   >
     <gl-alert variant="info" :dismissible="false" class="gl-mb-4" :title="__('What happens next?')">
-      <ul class="gl-pl-5">
-        <li>
-          {{ s__('SecurityOrchestration|All selected policy requirements will be bypassed') }}
+      <ul class="gl-mb-0 gl-pl-5">
+        <li v-for="step in nextSteps" :key="step">
+          {{ step }}
         </li>
-        <li>{{ s__('SecurityOrchestration|The action will be logged in the audit log') }}</li>
       </ul>
     </gl-alert>
 
-    <gl-form-group
-      :label="s__('SecurityOrchestration|Select policies to bypass')"
-      label-for="policy-selector"
-      class="gl-mb-4"
-    >
-      <gl-collapsible-listbox
-        :selected="selectedPolicies"
-        block
-        multiple
-        :items="policies"
-        :toggle-text="selectedPolicyText"
-        data-testid="policy-selector"
-        @select="handleSelect('selectedPolicies', $event)"
-      />
-    </gl-form-group>
+    <security-policy-violations-selector
+      v-if="showModeSelection"
+      class="gl-mb-7"
+      @select="selectMode"
+    />
+    <div v-else data-testid="modal-content">
+      <gl-form-group
+        :label="s__('SecurityOrchestration|Select policies to bypass')"
+        label-for="policy-selector"
+        class="gl-mb-4"
+      >
+        <gl-collapsible-listbox
+          :selected="selectedPolicies"
+          block
+          multiple
+          :items="policies"
+          :toggle-text="selectedPolicyText"
+          data-testid="policy-selector"
+          @select="handleSelect('selectedPolicies', $event)"
+        />
+      </gl-form-group>
 
-    <gl-form-group
-      :label="s__('SecurityOrchestration|Bypassed as')"
-      label-for="reason-selector"
-      class="gl-mb-4"
-    >
-      <gl-collapsible-listbox
-        :selected="selectedReasons"
-        block
-        multiple
-        :items="bypassReasonItems"
-        :toggle-text="selectedReasonText"
-        data-testid="reason-selector"
-        @select="handleSelect('selectedReasons', $event)"
-      />
-    </gl-form-group>
+      <gl-form-group
+        :label="s__('SecurityOrchestration|Bypassed as')"
+        label-for="reason-selector"
+        class="gl-mb-4"
+      >
+        <gl-collapsible-listbox
+          :selected="selectedReasons"
+          block
+          multiple
+          :items="bypassReasonItems"
+          :toggle-text="selectedReasonText"
+          data-testid="reason-selector"
+          @select="handleSelect('selectedReasons', $event)"
+        />
+      </gl-form-group>
 
-    <gl-form-group
-      :label="s__('SecurityOrchestration|Reason for policy bypass')"
-      label-for="bypass-reason-textarea"
-      class="gl-mb-0"
-    >
-      <gl-form-textarea
-        v-model="bypassReason"
-        rows="4"
-        :placeholder="
-          s__('SecurityOrchestration|Provide a detailed justification for policy bypass.')
-        "
-      />
-    </gl-form-group>
-    <p class="gl-text-gray-300">
-      {{ s__('SecurityOrchestration|Comments are required when bypassing policies.') }}
-    </p>
+      <gl-form-group
+        :label="s__('SecurityOrchestration|Reason for policy bypass')"
+        label-for="bypass-reason-textarea"
+        class="gl-mb-0"
+      >
+        <gl-form-textarea
+          v-model="bypassReason"
+          rows="4"
+          :placeholder="
+            s__('SecurityOrchestration|Provide a detailed justification for policy bypass.')
+          "
+        />
+      </gl-form-group>
+      <p class="gl-text-gray-300">
+        {{ s__('SecurityOrchestration|Comments are required when bypassing policies.') }}
+      </p>
+    </div>
   </gl-modal>
 </template>

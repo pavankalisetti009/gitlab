@@ -36,6 +36,10 @@ module Mutations
             required: false,
             description: 'Steps for the flow.'
 
+          argument :version_bump, Types::Ai::Catalog::VersionBumpEnum,
+            required: false,
+            description: 'Bump version, calculated from the last released version name.'
+
           authorize :admin_ai_catalog_item
 
           def resolve(args)

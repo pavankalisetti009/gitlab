@@ -2700,6 +2700,7 @@ Input type: `AiCatalogFlowUpdateInput`
 | <a id="mutationaicatalogflowupdatepublic"></a>`public` | [`Boolean`](#boolean) | Whether the flow is publicly visible in the catalog. |
 | <a id="mutationaicatalogflowupdaterelease"></a>`release` | [`Boolean`](#boolean) | Whether to release the latest version of the flow. |
 | <a id="mutationaicatalogflowupdatesteps"></a>`steps` | [`[AiCatalogFlowStepsInput!]`](#aicatalogflowstepsinput) | Steps for the flow. |
+| <a id="mutationaicatalogflowupdateversionbump"></a>`versionBump` | [`AiCatalogVersionBump`](#aicatalogversionbump) | Bump version, calculated from the last released version name. |
 
 #### Fields
 
