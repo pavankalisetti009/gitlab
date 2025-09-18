@@ -31,7 +31,8 @@ export const PANEL_TROUBLESHOOTING_URL = helpPagePath(
   '/user/analytics/analytics_dashboards#troubleshooting',
 );
 
-export const AI_IMPACT_DASHBOARD = 'ai_impact';
+export const AI_IMPACT_DASHBOARD_LEGACY = 'ai_impact';
+export const AI_IMPACT_DASHBOARD = 'duo_and_sdlc_trends';
 
 // The URL name already in use is `value_streams_dashboard`,
 // the slug name for a dashboard must match the URL path that is used
