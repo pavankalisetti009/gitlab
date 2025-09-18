@@ -103,21 +103,13 @@ export default {
     },
 
     isCollapsible() {
-      for (let i = 0; i < this.reports.length; i += 1) {
-        const fullReport = this.reports[i].full;
-        const partialReport = this.reports[i].partial;
-
-        if (
-          fullReport?.numberOfNewFindings ||
-          fullReport?.numberOfFixedFindings ||
-          partialReport?.numberOfNewFindings ||
-          partialReport?.numberOfFixedFindings
-        ) {
-          return true;
-        }
-      }
-
-      return false;
+      return this.reports.some(
+        ({ full, partial }) =>
+          full?.numberOfNewFindings ||
+          full?.numberOfFixedFindings ||
+          partial?.numberOfNewFindings ||
+          partial?.numberOfFixedFindings,
+      );
     },
 
     highlights() {
