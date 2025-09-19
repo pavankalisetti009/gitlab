@@ -15,21 +15,26 @@ module Ai
       end
 
       def execute(force_api_call: false)
-        return unless model_selection_enabled?
+        return ServiceResponse.success(payload: nil) unless duo_features_enabled?
         return ServiceResponse.success(payload: nil) if ::License.current&.offline_cloud_license?
 
         return cached_response if Rails.cache.exist?(RESPONSE_CACHE_NAME) && !force_api_call
 
         fetch_model_definitions
+      rescue StandardError => e
+        Gitlab::AppLogger.error(
+          message: "Error fetching model definitions: #{e.message}",
+          exception: e.class.name,
+          ai_component: 'model_selection'
+        )
+        ServiceResponse.error(message: "Failed to fetch model definitions")
       end
 
       private
 
       attr_reader :user, :model_selection_scope
 
-      def model_selection_enabled?
-        return false unless ::Feature.enabled?(:ai_model_switching, model_selection_scope)
-
+      def duo_features_enabled?
         return false unless ::Gitlab::CurrentSettings.current_application_settings.duo_features_enabled
 
         true

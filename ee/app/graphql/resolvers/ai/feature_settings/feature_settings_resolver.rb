@@ -37,12 +37,13 @@ module Resolvers
         def gitlab_model_definitions
           return unless Feature.enabled?(:instance_level_model_selection, :instance)
 
-          payload = ::Ai::ModelSelection::FetchModelDefinitionsService
+          result = ::Ai::ModelSelection::FetchModelDefinitionsService
             .new(current_user, model_selection_scope: nil)
             .execute
-            .payload
 
-          ::Gitlab::Ai::ModelSelection::ModelDefinitionResponseParser.new(payload)
+          return unless result&.success? && result.payload
+
+          ::Gitlab::Ai::ModelSelection::ModelDefinitionResponseParser.new(result.payload)
         end
       end
     end
