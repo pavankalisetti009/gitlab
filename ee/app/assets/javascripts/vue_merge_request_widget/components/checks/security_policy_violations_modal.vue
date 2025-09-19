@@ -5,7 +5,9 @@ import { __, s__ } from '~/locale';
 import {
   INITIAL_STATE_NEXT_STEPS,
   WARN_MODE_BYPASS_REASONS,
+  POLICY_EXCEPTIONS_BYPASS_REASONS,
   WARN_MODE_NEXT_STEPS,
+  WARN_MODE,
 } from 'ee/vue_merge_request_widget/components/checks/constants';
 import SecurityPolicyViolationsSelector from './security_policy_violations_selector.vue';
 
@@ -51,6 +53,9 @@ export default {
     showModeSelection() {
       return this.mode === '';
     },
+    isWarnMode() {
+      return this.mode === WARN_MODE;
+    },
     actionPrimary() {
       return {
         text: __('Bypass'),
@@ -62,7 +67,7 @@ export default {
       };
     },
     bypassReasonItems() {
-      return WARN_MODE_BYPASS_REASONS;
+      return this.isWarnMode ? WARN_MODE_BYPASS_REASONS : POLICY_EXCEPTIONS_BYPASS_REASONS;
     },
     isValid() {
       return (
@@ -84,7 +89,7 @@ export default {
     },
     selectedReasonText() {
       return getSelectedOptionsText({
-        options: WARN_MODE_BYPASS_REASONS,
+        options: this.bypassReasonItems,
         selected: this.selectedReasons,
         placeholder: s__('SecurityOrchestration|Select bypass reasons'),
         maxOptionsShown: 4,
