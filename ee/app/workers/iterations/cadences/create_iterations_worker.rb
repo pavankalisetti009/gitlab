@@ -17,6 +17,9 @@ module Iterations
         cadence = ::Iterations::Cadence.find_by_id(cadence_id)
         return unless cadence
 
+        organization_id = cadence.group.organization_id
+        automation_bot = Users::Internal.for_organization(organization_id).automation_bot
+
         response = Iterations::Cadences::CreateIterationsInAdvanceService.new(automation_bot, cadence).execute
         log_error(cadence, response) if response.error?
       end
@@ -30,10 +33,6 @@ module Iterations
           group_id: cadence&.group&.id,
           message: response.message
         )
-      end
-
-      def automation_bot
-        @automation_bot_id ||= Users::Internal.automation_bot
       end
     end
   end

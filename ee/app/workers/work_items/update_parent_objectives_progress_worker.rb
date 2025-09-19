@@ -16,7 +16,7 @@ module WorkItems
       parent = work_item&.work_item_parent
       return unless parent && parent.has_widget?(:progress)
 
-      automation_bot = Users::Internal.automation_bot
+      automation_bot = Users::Internal.for_organization(parent.namespace.organization_id).automation_bot
 
       ApplicationRecord.transaction do
         update_parent_progress(parent, automation_bot)
