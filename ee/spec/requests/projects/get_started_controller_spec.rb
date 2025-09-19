@@ -94,8 +94,19 @@ RSpec.describe Projects::GetStartedController, :saas, feature_category: :onboard
         end
 
         context 'when update is successful' do
-          it 'sets onboarding progress ended value' do
-            get_end_tutorial
+          it 'sets onboarding progress ended value and triggers tracking' do
+            expect { get_end_tutorial }
+              .to trigger_internal_events('click_end_tutorial_button')
+              .with(
+                user: user,
+                project: project,
+                namespace: namespace,
+                additional_properties: {
+                  label: 'get_started',
+                  property: 'progress_percentage_on_end',
+                  value: 0
+                }
+              )
 
             is_expected.to redirect_to(project_path(project))
             expect(flash[:success]).to eql("You've ended the tutorial.")
@@ -116,6 +127,10 @@ RSpec.describe Projects::GetStartedController, :saas, feature_category: :onboard
               expect(response).not_to redirect_to(project_path(project))
               expect(flash[:danger])
                 .to eql("There was a problem trying to end the tutorial. Please try again.")
+            end
+
+            it 'does not trigger tracking' do
+              expect { get_end_tutorial }.not_to trigger_internal_events('click_end_tutorial_button')
             end
           end
         end

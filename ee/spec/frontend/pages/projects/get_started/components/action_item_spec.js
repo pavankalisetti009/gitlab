@@ -17,7 +17,6 @@ describe('ActionItem', () => {
           title: 'Test Action',
           url: 'https://example.com',
           trackLabel: 'test_action',
-          completed: false,
           ...actionProps,
         },
       },

@@ -27,17 +27,11 @@ module Projects
     private
 
     def onboarding_actions_data(project)
-      onboarding_completion = ::Onboarding::Completion.new(project)
-
-      data = action_urls(project).to_h do |action, url|
-        [
-          action,
-          {
-            url: url,
-            completed: onboarding_completion.completed?(::Onboarding::Progress.column_name(action)),
-            enabled: true
-          }
-        ]
+      data = action_urls(project).transform_values do |url|
+        {
+          url: url,
+          enabled: true
+        }
       end
 
       unless can_start_trial?(project)

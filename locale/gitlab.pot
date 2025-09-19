@@ -38226,9 +38226,6 @@ msgstr ""
 msgid "Learn what Duo Chat can do."
 msgstr ""
 
-msgid "LearnGitLab|%{percentage}%{percentSymbol} completed"
-msgstr ""
-
 msgid "LearnGitLab|10 best practices for using GitLab Duo"
 msgstr ""
 

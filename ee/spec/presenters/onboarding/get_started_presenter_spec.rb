@@ -45,31 +45,12 @@ RSpec.describe Onboarding::GetStartedPresenter, :aggregate_failures, feature_cat
       actions_structure = ->(action) do
         action['title'].is_a?(String) &&
           action['trackLabel'].is_a?(String) &&
-          action['url'].is_a?(String) &&
-          (action['completed'].is_a?(TrueClass) || action['completed'].is_a?(FalseClass))
+          action['url'].is_a?(String)
       end
 
       expect(sections.flat_map { |section| section['actions'] }).to all(satisfy(&actions_structure))
       expect(sections.find { |section| section['trialActions'] }&.fetch('trialActions'))
         .to all(satisfy(&actions_structure))
-    end
-
-    context 'for code section' do
-      subject(:actions) { sections.first['actions'] }
-
-      it 'marks all actions initially as uncompleted' do
-        expect(actions).to all(include('completed' => false))
-      end
-
-      context 'when actions are completed' do
-        before do
-          onboarding_progress.code_added_at = Time.current
-        end
-
-        it 'marks actions as completed' do
-          expect(actions).to all(include('completed' => true))
-        end
-      end
     end
 
     context 'for project section' do
@@ -91,27 +72,6 @@ RSpec.describe Onboarding::GetStartedPresenter, :aggregate_failures, feature_cat
 
       it 'includes the correct number of trial actions' do
         expect(trial_actions.size).to eq(3)
-      end
-
-      it 'marks all actions initially as uncompleted' do
-        expect(actions).to all(include('completed' => false))
-        expect(trial_actions).to all(include('completed' => false))
-      end
-
-      context 'when actions are completed' do
-        before do
-          onboarding_progress.user_added_at = Time.current
-          onboarding_progress.pipeline_created_at = Time.current
-          onboarding_progress.trial_started_at = Time.current
-          onboarding_progress.duo_seat_assigned_at = Time.current
-          onboarding_progress.code_owners_enabled_at = Time.current
-          onboarding_progress.required_mr_approvals_enabled_at = Time.current
-        end
-
-        it 'marks actions as completed' do
-          expect(actions).to all(include('completed' => true))
-          expect(trial_actions).to all(include('completed' => true))
-        end
       end
 
       context 'when invite is enabled' do
@@ -172,21 +132,6 @@ RSpec.describe Onboarding::GetStartedPresenter, :aggregate_failures, feature_cat
       it 'includes the correct number of actions' do
         expect(actions.size).to eq(2)
       end
-
-      it 'marks all actions initially as uncompleted' do
-        expect(actions).to all(include('completed' => false))
-      end
-
-      context 'when actions are completed' do
-        before do
-          onboarding_progress.issue_created_at = Time.current
-          onboarding_progress.merge_request_created_at = Time.current
-        end
-
-        it 'marks actions as completed' do
-          expect(actions).to all(include('completed' => true))
-        end
-      end
     end
 
     context 'for secure deployment section' do
@@ -198,22 +143,6 @@ RSpec.describe Onboarding::GetStartedPresenter, :aggregate_failures, feature_cat
 
       it 'includes the correct number of actions' do
         expect(actions.size).to eq(3)
-      end
-
-      it 'marks all actions initially as uncompleted' do
-        expect(actions).to all(include('completed' => false))
-      end
-
-      context 'when actions are completed' do
-        before do
-          onboarding_progress.license_scanning_run_at = Time.current
-          onboarding_progress.secure_dependency_scanning_run_at = Time.current
-          onboarding_progress.secure_dast_run_at = Time.current
-        end
-
-        it 'marks actions as completed' do
-          expect(actions).to all(include('completed' => true))
-        end
       end
 
       context 'when user can read_project_security_dashboard' do

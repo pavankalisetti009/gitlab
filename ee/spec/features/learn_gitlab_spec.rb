@@ -218,7 +218,7 @@ RSpec.describe 'Learn Gitlab concerns', :feature, :js, :saas, feature_category: 
 
     def expect_correct_candidate_link(link, path)
       expect(link['href']).to include(path)
-      expect(link['data-testid']).to eq('uncompleted-learn-gitlab-link')
+      expect(link['data-testid']).to eq('learn-gitlab-link')
     end
   end
 end

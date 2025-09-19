@@ -8,7 +8,6 @@ import LearnGitlab from 'ee/pages/projects/learn_gitlab/components/learn_gitlab.
 import eventHub from '~/invite_members/event_hub';
 import { INVITE_MODAL_OPEN_COOKIE } from 'ee/pages/projects/learn_gitlab/constants';
 import { ON_CELEBRATION_TRACK_LABEL } from '~/invite_members/constants';
-import { useMockInternalEventsTracking } from 'helpers/tracking_internal_events_helper';
 import { testActions, testSections, testProject } from './mock_data';
 
 jest.mock('~/lib/utils/url_utility', () => ({
@@ -19,7 +18,6 @@ jest.mock('~/lib/utils/url_utility', () => ({
 describe('Learn GitLab', () => {
   let wrapper;
 
-  const completionPercentage = 23;
   const findEndTutorialButton = () => wrapper.findByTestId('end-tutorial-button');
 
   const createWrapper = () => {
@@ -62,23 +60,6 @@ describe('Learn GitLab', () => {
       findEndTutorialButton().vm.$emit('click');
 
       expect(visitUrl).toHaveBeenCalledWith('/group/project/-/learn-gitlab/end');
-    });
-
-    const { bindInternalEventDocument } = useMockInternalEventsTracking();
-    it('should call trackEvent when clicked', () => {
-      const { trackEventSpy } = bindInternalEventDocument(wrapper.element);
-
-      findEndTutorialButton().vm.$emit('click');
-
-      expect(trackEventSpy).toHaveBeenCalledWith(
-        'click_end_tutorial_button',
-        {
-          label: 'learn_gitlab',
-          property: 'progress_percentage_on_end',
-          value: completionPercentage,
-        },
-        undefined,
-      );
     });
   });
 

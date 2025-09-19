@@ -19,7 +19,7 @@ describe('Learn GitLab Section Card', () => {
   };
 
   it('renders correctly', () => {
-    createWrapper({ completed: false });
+    createWrapper();
 
     expect(wrapper.element).toMatchSnapshot();
   });
