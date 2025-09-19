@@ -1,6 +1,7 @@
 <script>
-import { s__ } from '~/locale';
+import { s__, sprintf } from '~/locale';
 import { getIdFromGraphQLId, convertToGraphQLId } from '~/graphql_shared/utils';
+import { helpPagePath } from '~/helpers/help_page_helper';
 import PageHeading from '~/vue_shared/components/page_heading.vue';
 import * as Sentry from '~/sentry/sentry_browser_wrapper';
 import { TYPENAME_AI_CATALOG_ITEM } from 'ee/graphql_shared/constants';
@@ -84,7 +85,20 @@ export default {
           });
         }
       } catch (error) {
-        this.errorMessages = [s__('AICatalog|The agent could not be added. Try again.')];
+        this.errorMessages = [
+          sprintf(
+            s__(
+              'AICatalog|The agent could not be added to the project. Check that the project meets the %{link_start}prerequisites%{link_end} and try again.',
+            ),
+            {
+              link_start: `<a href="${helpPagePath('user/ai_catalog', {
+                anchor: 'prerequisites',
+              })}" target="_blank">`,
+              link_end: '</a>',
+            },
+            false,
+          ),
+        ];
         Sentry.captureException(error);
       } finally {
         this.isSubmitting = false;
