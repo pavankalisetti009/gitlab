@@ -5,7 +5,6 @@ import GetStarted from 'ee/pages/projects/get_started/components/get_started.vue
 import SectionHeader from 'ee/pages/projects/get_started/components/section_header.vue';
 import SectionBody from 'ee/pages/projects/get_started/components/section_body.vue';
 import eventHub from '~/invite_members/event_hub';
-import eventHubNav from '~/super_sidebar/event_hub';
 import DuoExtensions from 'ee/pages/projects/get_started/components/duo_extensions.vue';
 import RightSidebar from 'ee/pages/projects/get_started/components/right_sidebar.vue';
 import { visitUrl } from '~/lib/utils/url_utility';
@@ -155,7 +154,6 @@ describe('GetStarted', () => {
     beforeEach(() => {
       jest.spyOn(eventHub, '$on');
       jest.spyOn(eventHub, '$off');
-      jest.spyOn(eventHubNav, '$emit');
       sections = createSections();
       sections[0].actions[1].urlType = 'invite';
       createComponent({ sections });
