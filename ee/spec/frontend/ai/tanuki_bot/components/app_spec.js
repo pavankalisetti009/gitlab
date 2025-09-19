@@ -6,7 +6,7 @@ import Vuex from 'vuex';
 import VueApollo from 'vue-apollo';
 import { GlToggle } from '@gitlab/ui';
 import { sendDuoChatCommand, setAgenticMode } from 'ee/ai/utils';
-import TanukiBotChatApp from 'ee/ai/tanuki_bot/components/duo_chat.vue';
+import TanukiBotChatApp from 'ee/ai/tanuki_bot/components/app.vue';
 import DuoChatCallout from 'ee/ai/components/global_callout/duo_chat_callout.vue';
 import TanukiBotSubscriptions from 'ee/ai/tanuki_bot/components/tanuki_bot_subscriptions.vue';
 import {
