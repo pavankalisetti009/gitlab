@@ -1,7 +1,7 @@
 require './spec/support/sidekiq_middleware'
 
 Gitlab::Seeder.quiet do
-  Issue.find_each do |issue|
+  Parallel.each(Issue.preload(:project).all, in_processes: Parallel.processor_count) do |issue|
     project = issue.project
 
     project.team.users.each do |user|
@@ -18,7 +18,7 @@ Gitlab::Seeder.quiet do
     end
   end
 
-  MergeRequest.find_each do |mr|
+  Parallel.each(MergeRequest.all, in_processes: Parallel.processor_count) do |mr|
     project = mr.project
 
     project.team.users.each do |user|
