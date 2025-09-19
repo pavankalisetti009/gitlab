@@ -25992,6 +25992,12 @@ msgstr ""
 msgid "Enter a name for your comment template"
 msgstr ""
 
+msgid "Enter a name for your group."
+msgstr ""
+
+msgid "Enter a name for your project."
+msgstr ""
+
 msgid "Enter a number"
 msgstr ""
 

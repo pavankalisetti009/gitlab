@@ -153,7 +153,9 @@ export default {
   },
   i18n: {
     groupNameLabel: s__('ProjectsNew|Group name'),
+    groupNameRequired: __('Enter a name for your group.'),
     projectNameLabel: s__('ProjectsNew|Project name'),
+    projectNameRequired: __('Enter a name for your project.'),
     tooltipTitle: s__('ProjectsNew|Projects are organized into groups'),
     urlHeader: s__('ProjectsNew|Your project will be created at:'),
     urlFooter: s__('ProjectsNew|You can always change your URL later'),
@@ -199,6 +201,7 @@ export default {
           data-testid="group-name"
           data-placement="right"
           data-show="true"
+          :title="$options.i18n.groupNameRequired"
           :data-track-action-for-errors="trackActionForErrors"
           :value="groupName || storeGroupName"
           @update="onGroupUpdate"
@@ -231,6 +234,7 @@ export default {
           data-track-action="activate_form_input"
           data-track-property="project_name"
           data-track-value=""
+          :title="$options.i18n.projectNameRequired"
           :data-track-action-for-errors="trackActionForErrors"
           :value="projectName"
           @update="onProjectUpdate"

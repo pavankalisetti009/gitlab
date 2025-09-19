@@ -83,7 +83,7 @@ RSpec.describe 'Registration group and project creation flow', :with_current_org
     click_on 'GitHub'
 
     page.within('.gl-field-error') do
-      expect(page).to have_content('This field is required.')
+      expect(page).to have_content('Enter a name for your group.')
     end
 
     fill_in 'import_group_name', with: 'test group'
