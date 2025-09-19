@@ -102,7 +102,7 @@ This method automatically prepares a merge request to add a `.gitlab-ci.yml` fil
 To enable pipeline secret detection:
 
 1. On the left sidebar, select **Search or go to** and find your project.
-1. Select **Secure > Security configuration**.
+1. Select **Secure** > **Security configuration**.
 1. In the **Pipeline secret detection** row, select **Configure with a merge request**.
 1. Optional. Complete the fields.
 1. Select **Create merge request**.

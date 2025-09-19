@@ -128,7 +128,7 @@ might occur. In that case, use the [manual](#edit-the-gitlab-ciyml-file-manually
 To enable Dependency Scanning:
 
 1. On the left sidebar, select **Search or go to** and find your project.
-1. Select **Secure > Security configuration**.
+1. Select **Secure** > **Security configuration**.
 1. In the **Dependency Scanning** row, select **Configure with a merge request**.
 1. Select **Create merge request**.
 1. Review the merge request, then select **Merge**.
