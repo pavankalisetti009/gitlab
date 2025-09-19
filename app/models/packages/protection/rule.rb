@@ -29,10 +29,10 @@ module Packages
       validates :package_type, presence: true
       validates :pattern, allow_blank: true, length: { maximum: 255 }
       validates :pattern, format: NPM_PACKAGE_NAME_FORMAT, allow_blank: true, if: -> {
-        :npm? && package_name? && wildcard?
+        npm? && package_name? && wildcard?
       }
       validates :pattern, format: PYPI_PACKAGE_NAME_FORMAT, allow_blank: true, if: -> {
-        :pypi? && package_name? && wildcard?
+        pypi? && package_name? && wildcard?
       }
 
       validate :at_least_one_minimum_access_level_must_be_present

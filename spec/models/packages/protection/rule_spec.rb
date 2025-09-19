@@ -117,7 +117,7 @@ RSpec.describe Packages::Protection::Rule, type: :model, feature_category: :pack
       it { is_expected.to validate_presence_of(:pattern).allow_blank }
       it { is_expected.to validate_length_of(:pattern).is_at_most(255) }
 
-      it_behaves_like 'validates package_name formats', :package_name_pattern
+      it_behaves_like 'validates package_name formats', :pattern
     end
 
     describe '#package_type' do
