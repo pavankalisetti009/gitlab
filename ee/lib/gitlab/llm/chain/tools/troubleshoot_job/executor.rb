@@ -194,8 +194,12 @@ module Gitlab
             end
 
             def track_troubleshoot_event
-              Gitlab::Tracking::AiTracking.track_event('troubleshoot_job', user: context.current_user, job: job,
-                project: job.project)
+              Gitlab::InternalEvents.track_event(
+                'troubleshoot_job',
+                user: context.current_user,
+                job: job,
+                project: job.project
+              )
             end
           end
         end

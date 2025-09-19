@@ -118,7 +118,7 @@ module API
 
                     bad_request!(result[:message]) if result[:status] == :error
 
-                    present result[:checkpoint], with: ::API::Entities::Ai::DuoWorkflows::Checkpoint
+                    present result[:checkpoint], with: ::API::Entities::Ai::DuoWorkflows::BasicCheckpoint
                   end
 
                   get do

@@ -1,5 +1,10 @@
 <script>
+import Markdown from '~/vue_shared/components/markdown/markdown_content.vue';
+
 export default {
+  components: {
+    Markdown,
+  },
   props: {
     item: {
       type: Object,
@@ -24,11 +29,15 @@ export default {
   <div>
     <template v-if="systemPrompt">
       <dt>{{ s__('AICatalog|System prompt') }}</dt>
-      <dd>{{ systemPrompt }}</dd>
+      <dd>
+        <markdown :value="systemPrompt" />
+      </dd>
     </template>
     <template v-if="userPrompt">
       <dt>{{ s__('AICatalog|User prompt') }}</dt>
-      <dd>{{ userPrompt }}</dd>
+      <dd>
+        <markdown :value="userPrompt" />
+      </dd>
     </template>
     <template v-if="tools">
       <dt>{{ s__('AICatalog|Tools') }}</dt>
