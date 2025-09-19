@@ -1,5 +1,5 @@
 <script>
-import { GlAlert, GlCard, GlTab, GlTabs } from '@gitlab/ui';
+import { GlAlert, GlTab, GlTabs } from '@gitlab/ui';
 import { mockUsageDataWithPool } from 'ee_jest/usage_quotas/usage_billing/mock_data';
 import { logError } from '~/lib/logger';
 import axios from '~/lib/utils/axios_utils';
@@ -8,18 +8,19 @@ import PageHeading from '~/vue_shared/components/page_heading.vue';
 import PurchaseCommitmentCard from './purchase_commitment_card.vue';
 import UsageTrendsChart from './usage_trends_chart.vue';
 import UsageByUserTab from './usage_by_user_tab.vue';
+import CurrentUsageCard from './current_usage_card.vue';
 
 export default {
   name: 'UsageBillingApp',
   components: {
     GlAlert,
-    GlCard,
     GlTabs,
     GlTab,
     PageHeading,
     PurchaseCommitmentCard,
     UsageTrendsChart,
     UsageByUserTab,
+    CurrentUsageCard,
   },
   data() {
     return {
@@ -119,11 +120,13 @@ export default {
     </div>
     <template v-else>
       <section class="gl-flex gl-flex-col gl-gap-5 md:gl-flex-row">
-        <gl-card class="gl-flex-1 gl-bg-transparent">
-          <h2 class="gl-font-heading gl-heading-scale-400 gl-mb-3">
-            {{ s__('UsageBilling|Current month usage') }}
-          </h2>
-        </gl-card>
+        <current-usage-card
+          :total-units="gitlabUnitsUsage.totalUnits"
+          :total-units-used="gitlabUnitsUsage.totalUnitsUsed"
+          :current-overage="gitlabUnitsUsage.overageUnits"
+          :month-start-date="gitlabUnitsUsage.startDate"
+          :month-end-date="gitlabUnitsUsage.endDate"
+        />
 
         <purchase-commitment-card />
       </section>

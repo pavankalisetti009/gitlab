@@ -871,6 +871,11 @@ msgid_plural "%{count} vulnerabilities set to %{severity} severity"
 msgstr[0] ""
 msgstr[1] ""
 
+msgid "%{days} day remaining"
+msgid_plural "%{days} days remaining"
+msgstr[0] ""
+msgstr[1] ""
+
 msgid "%{days} days until tags are automatically removed"
 msgstr ""
 
@@ -69320,6 +69325,14 @@ msgstr ""
 msgid "Usage trends"
 msgstr ""
 
+msgid "UsageBilling|%{percentage}%{percentSymbol} utilized"
+msgstr ""
+
+msgid "UsageBilling|%{poolTokensRemaining} pool unit remaining"
+msgid_plural "UsageBilling|%{poolTokensRemaining} pool units remaining"
+msgstr[0] ""
+msgstr[1] ""
+
 msgid "UsageBilling|Action"
 msgstr ""
 
@@ -69336,6 +69349,9 @@ msgid "UsageBilling|Current month"
 msgstr ""
 
 msgid "UsageBilling|Current month usage"
+msgstr ""
+
+msgid "UsageBilling|Current overage"
 msgstr ""
 
 msgid "UsageBilling|Custom dates"

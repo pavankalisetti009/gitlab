@@ -3,6 +3,7 @@ import MockAdapter from 'axios-mock-adapter';
 import {
   mockUsageDataWithPool,
   mockUsageDataWithoutPool,
+  mockUsageDataWithOverage,
 } from 'ee_jest/usage_quotas/usage_billing/mock_data';
 import axios from '~/lib/utils/axios_utils';
 import UsageBillingApp from './app.vue';
@@ -55,6 +56,16 @@ export const Default = {
 export const NoCommitment = {
   render: (...args) => {
     const mockHandler = () => Promise.resolve([200, mockUsageDataWithoutPool]);
+
+    return createTemplate({
+      mockHandler,
+    })(...args);
+  },
+};
+
+export const WithOverage = {
+  render: (...args) => {
+    const mockHandler = () => Promise.resolve([200, mockUsageDataWithOverage]);
 
     return createTemplate({
       mockHandler,
