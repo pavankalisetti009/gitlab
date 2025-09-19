@@ -30313,7 +30313,7 @@ msgstr ""
 msgid "GitLabPages|Pages"
 msgstr ""
 
-msgid "GitLabPages|Pages access control"
+msgid "GitLabPages|Pages public access"
 msgstr ""
 
 msgid "GitLabPages|Primary domain"
@@ -30331,7 +30331,7 @@ msgstr ""
 msgid "GitLabPages|Remove pages"
 msgstr ""
 
-msgid "GitLabPages|Restrict access to only project members on all group projects"
+msgid "GitLabPages|Remove public access"
 msgstr ""
 
 msgid "GitLabPages|Save changes"
@@ -30367,7 +30367,7 @@ msgstr ""
 msgid "GitLabPages|When enabled, all access to domains will use HTTPS with %{redirect_code} redirects. Requires valid certificates for all domains. %{docs_link_start}How does HTTPS redirection work?%{link_end}"
 msgstr ""
 
-msgid "GitLabPages|When enabled, all projects in the group and its subgroups become visible only to members."
+msgid "GitLabPages|When enabled, public access is removed for all projects in the group and its subgroups. Pages still follow each project's visibility settings."
 msgstr ""
 
 msgid "GitLabPages|When using Pages under the general domain of a GitLab instance (%{pages_host}), you cannot use HTTPS with subdomains of subdomains. If your namespace or groupname contains a dot, it does not work. This is a limitation of the HTTP Over TLS protocol. HTTP pages work if you don't redirect HTTP to HTTPS. %{docs_link_start}Learn more.%{link_end}"
