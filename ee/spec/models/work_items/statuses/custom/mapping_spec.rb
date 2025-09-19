@@ -351,26 +351,26 @@ RSpec.describe WorkItems::Statuses::Custom::Mapping, feature_category: :team_pla
   end
 
   describe 'scopes' do
+    let_it_be(:mapping_in_namespace) do
+      create(:work_item_custom_status_mapping,
+        namespace: namespace,
+        work_item_type: work_item_type,
+        old_status: old_status,
+        new_status: new_status
+      )
+    end
+
+    let_it_be(:mapping_in_other_namespace) do
+      create(:work_item_custom_status_mapping,
+        namespace: other_namespace,
+        work_item_type: work_item_type,
+        old_status: create(:work_item_custom_status, namespace: other_namespace),
+        new_status: create(:work_item_custom_status, namespace: other_namespace)
+      )
+    end
+
     describe '.with_namespace_id' do
-      let!(:mapping_in_namespace) do
-        create(:work_item_custom_status_mapping,
-          namespace: namespace,
-          work_item_type: work_item_type,
-          old_status: old_status,
-          new_status: new_status
-        )
-      end
-
-      let!(:mapping_in_other_namespace) do
-        create(:work_item_custom_status_mapping,
-          namespace: other_namespace,
-          work_item_type: work_item_type,
-          old_status: create(:work_item_custom_status, namespace: other_namespace),
-          new_status: create(:work_item_custom_status, namespace: other_namespace)
-        )
-      end
-
-      it 'returns mappings only for the specified namespace_id' do
+      it 'returns mappings only for the specified namespace' do
         result = described_class.with_namespace_id(namespace.id)
 
         expect(result).to contain_exactly(mapping_in_namespace)
@@ -382,6 +382,16 @@ RSpec.describe WorkItems::Statuses::Custom::Mapping, feature_category: :team_pla
         result = described_class.with_namespace_id(empty_namespace.id)
 
         expect(result).to be_empty
+      end
+    end
+
+    describe '.originating_from_status' do
+      it 'returns mappings originating from the specified status' do
+        result = described_class.originating_from_status(
+          namespace: namespace, status: old_status, work_item_type: work_item_type
+        )
+
+        expect(result).to contain_exactly(mapping_in_namespace)
       end
     end
   end

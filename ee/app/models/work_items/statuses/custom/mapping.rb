@@ -20,6 +20,9 @@ module WorkItems
         validate :no_overlapping_date_ranges
 
         scope :with_namespace_id, ->(namespace_id) { where(namespace_id: namespace_id) }
+        scope :originating_from_status, ->(namespace:, status:, work_item_type:) {
+          where(namespace: namespace, old_status: status, work_item_type: work_item_type)
+        }
 
         def applicable_for?(date)
           (valid_from.nil? || valid_from <= date) && (valid_until.nil? || valid_until > date)

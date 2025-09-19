@@ -80,6 +80,9 @@ module WorkItems
             default_duplicate_status: default_statuses[:default_duplicate_status],
             created_by: current_user
           ).tap do
+            # Handle mappings also when lifecycle was created from system-defined lifecycle
+            # with removed statuses and mappings
+            handle_deferred_status_removal if status_mvc2_enabled?
             remove_system_defined_board_lists
           end
         end

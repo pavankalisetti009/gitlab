@@ -127,6 +127,8 @@ module WorkItems
       end
 
       def update_custom_status!(status, status_params)
+        expire_mappings_from_status(status) if lifecycle.present? && status_mvc2_enabled?
+
         update_attributes = status_params.to_h.slice(:name, :description, :color)
 
         status.assign_attributes(update_attributes)
@@ -137,6 +139,14 @@ module WorkItems
 
         status.updated_by = current_user
         status.save!
+      end
+
+      def expire_mappings_from_status(status)
+        Statuses::Custom::Mapping.originating_from_status(
+          namespace: group,
+          status: status,
+          work_item_type: lifecycle.work_item_types
+        ).where(valid_until: nil).update_all(valid_until: Time.current) # rubocop:disable CodeReuse/ActiveRecord -- query only used here
       end
 
       def prepare_custom_status_params(status_params, system_defined_status = nil, converted_from_id = nil)
@@ -185,10 +195,130 @@ module WorkItems
       end
 
       def handle_deferred_status_removal
+        unless status_mvc2_enabled?
+          status_ids = @statuses_to_remove.map(&:id)
+          ::WorkItems::Statuses::Custom::Status.id_in(status_ids).delete_all
+          return
+        end
+
         return unless @statuses_to_remove&.any?
 
-        status_ids = @statuses_to_remove.map(&:id)
-        ::WorkItems::Statuses::Custom::Status.id_in(status_ids).delete_all
+        statuses_with_mappings, statuses_without_mappings = @statuses_to_remove.partition do |status|
+          find_mapping_for_status(status).present?
+        end
+
+        process_statuses_with_mappings(statuses_with_mappings)
+        destroy_eligible_statuses(statuses_without_mappings)
+      end
+
+      def find_mapping_for_status(status)
+        status_mappings.find do |mapping|
+          mapping[:old_status_id].model_id.to_i == status.id
+        end
+      end
+
+      def process_statuses_with_mappings(statuses)
+        statuses.each do |status_to_remove|
+          mapping_input = find_mapping_for_status(status_to_remove)
+          process_status_with_mapping(status_to_remove, mapping_input)
+        end
+      end
+
+      def process_status_with_mapping(status_to_remove, mapping_input)
+        target_status = resolve_target_status(mapping_input[:new_status_id])
+        source_status = maybe_convert_from_system_defined_status(status_to_remove)
+
+        lifecycle.work_item_types.each do |work_item_type|
+          create_or_update_mapping(source_status, target_status, work_item_type)
+        end
+      end
+
+      def resolve_target_status(target_status_id)
+        target_status = find_status_by_id(target_status_id)
+
+        if system_defined_status?(target_status)
+          # Conversion happened in a step before so we can lookup the corresponding custom status
+          WorkItems::Statuses::Custom::Status.in_namespace(group)
+            .find_by_converted_status(target_status) || target_status
+        else
+          target_status
+        end
+      end
+
+      def maybe_convert_from_system_defined_status(status_to_remove)
+        return status_to_remove unless system_defined_status?(status_to_remove)
+
+        # We cannot map from a system-defined status right now
+        # so we need to create a custom status although that is not in use.
+        # The conversion mapping resolves the chain:
+        # system-defined status --> custom status --> mapped status
+        prepared_params = prepare_custom_status_params({}, status_to_remove, status_to_remove.id)
+        create_custom_status!(prepared_params)
+      end
+
+      def destroy_eligible_statuses(statuses)
+        eligible_statuses = statuses.select { |status| can_destroy_status?(status) }
+        eligible_statuses.each(&:destroy!)
+      end
+
+      def can_destroy_status?(status)
+        # rubocop:disable CodeReuse/ActiveRecord -- queries only used here
+        status.is_a?(WorkItems::Statuses::Custom::Status) &&
+          !Statuses::Custom::LifecycleStatus.exists?(namespace: group, status: status) &&
+          !Statuses::Custom::Mapping.exists?(namespace: group, new_status: status)
+        # rubocop:enable CodeReuse/ActiveRecord
+      end
+
+      def create_or_update_mapping(old_status, new_status, work_item_type)
+        prevent_mapping_chains(old_status, new_status, work_item_type)
+
+        existing_mappings = Statuses::Custom::Mapping.originating_from_status(
+          namespace: group,
+          status: old_status,
+          work_item_type: work_item_type
+        )
+
+        expire_conflicting_mappings(existing_mappings, new_status)
+
+        # We can't use upsert here because there is no uniqueness constraint.
+        # Multiple mappings with this combination can exist
+        # with different valid_from/valid_until dates without overlaps
+        Statuses::Custom::Mapping.where( # rubocop:disable CodeReuse/ActiveRecord -- reason above
+          namespace_id: group.id,
+          old_status_id: old_status.id,
+          new_status_id: new_status.id,
+          work_item_type_id: work_item_type.id,
+          # Time-bound the new mapping if other mappings exist to avoid overlapping validity periods
+          valid_from: calculate_valid_from_date(existing_mappings)
+        ).first_or_create!
+      end
+
+      # Avoid creating mapping chains like A->B->C by updating existing mappings
+      # that point to the status being removed to point directly to the final target
+      def prevent_mapping_chains(old_status, new_status, work_item_type)
+        # rubocop: disable CodeReuse/ActiveRecord -- these query is only used here
+        Statuses::Custom::Mapping.where(
+          namespace: group,
+          new_status: old_status,
+          work_item_type: work_item_type
+        ).update_all(new_status_id: new_status.id)
+        # rubocop: enable CodeReuse/ActiveRecord
+      end
+
+      # Fix invalid combinations: Another mapping might already exist from the old status.
+      def expire_conflicting_mappings(existing_mappings, new_status)
+        existing_mappings.each do |mapping|
+          next if mapping.valid_until.present? || mapping.new_status_id == new_status.id
+
+          mapping.update!(valid_until: Time.current)
+        end
+      end
+
+      def calculate_valid_from_date(existing_mappings)
+        return if existing_mappings.empty?
+
+        # Latest valid_until is the desired new valid_from
+        existing_mappings.filter_map(&:valid_until).max
       end
 
       # We need to remove associated system-defined board lists because these cannot have a
@@ -197,11 +327,7 @@ module WorkItems
         return unless @statuses_to_remove&.any?
 
         system_defined_identifiers = @statuses_to_remove.filter_map do |status|
-          if status.is_a?(WorkItems::Statuses::SystemDefined::Status)
-            status.id
-          else
-            status.converted_from_system_defined_status_identifier
-          end
+          system_defined_status?(status) ? status.id : status.converted_from_system_defined_status_identifier
         end
 
         return if system_defined_identifiers.blank?
@@ -234,7 +360,13 @@ module WorkItems
                      status.in_use?
                    end
 
-          raise StandardError, "Cannot delete status '#{status.name}' because it is in use" if in_use
+          next unless in_use
+
+          raise StandardError, "Cannot delete status '#{status.name}' because it is in use" unless status_mvc2_enabled?
+
+          unless find_mapping_for_status(status)
+            raise StandardError, "Cannot delete status '#{status.name}' because it is in use and no mapping is provided"
+          end
         end
       end
 
@@ -327,6 +459,10 @@ module WorkItems
         end
       end
 
+      def system_defined_status?(status)
+        status.is_a?(::WorkItems::Statuses::SystemDefined::Status)
+      end
+
       def system_defined_lifecycle?
         lifecycle.is_a?(::WorkItems::Statuses::SystemDefined::Lifecycle)
       end
@@ -342,6 +478,14 @@ module WorkItems
         global_id.model_class.find(global_id.model_id.to_i)
       end
       strong_memoize_attr :lifecycle
+
+      def status_mappings
+        params[:status_mappings] || []
+      end
+
+      def status_mvc2_enabled?
+        group.work_item_status_mvc2_feature_flag_enabled?
+      end
     end
   end
 end
