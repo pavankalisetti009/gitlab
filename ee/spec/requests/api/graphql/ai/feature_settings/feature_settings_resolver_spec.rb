@@ -192,6 +192,24 @@ RSpec.describe 'List of configurable AI feature with metadata.', feature_categor
         end
       end
     end
+
+    context 'when FetchModelDefinitionsService returns error ServiceResponse' do
+      before do
+        error_service = instance_double(::Ai::ModelSelection::FetchModelDefinitionsService)
+        allow(::Ai::ModelSelection::FetchModelDefinitionsService).to receive(:new).and_return(error_service)
+        allow(error_service).to receive(:execute).and_return(
+          ServiceResponse.success(payload: nil)
+        )
+
+        stub_feature_flags(instance_level_model_selection: true)
+        stub_application_setting(duo_features_enabled: false)
+      end
+
+      it 'handles ServiceResponse gracefully without crashing' do
+        expect { post_graphql(query, current_user: current_user) }.not_to raise_error
+        expect(graphql_errors).to be_nil
+      end
+    end
   end
 
   context 'when the user is not authorized' do
