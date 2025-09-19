@@ -7,8 +7,6 @@ describe('SectionHeader', () => {
 
   const defaultSection = {
     title: 'Test Section',
-    actions: [{ completed: true }, { completed: false }],
-    trialActions: [{ completed: true }, { completed: false }],
   };
 
   const createSection = (overrides = {}) => ({

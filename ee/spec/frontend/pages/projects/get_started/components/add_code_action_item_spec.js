@@ -25,7 +25,6 @@ describe('AddCodeActionItem', () => {
           title: 'Add Code',
           url: '/web_ide',
           trackLabel: 'add_code',
-          completed: false,
           ...actionProps,
         },
       },
@@ -77,14 +76,14 @@ describe('AddCodeActionItem', () => {
     });
 
     it('does not render upload files button when user cannot push code', () => {
-      createComponent({ completed: false }, { canPushCode: false });
+      createComponent({}, { canPushCode: false });
 
       expect(findUploadFilesButton().exists()).toBe(false);
       expect(findCommandLineButton().text()).toBe('Use the command line');
     });
 
     it('does not render upload files button when user cannot push to branch', () => {
-      createComponent({ completed: false }, { canPushToBranch: false });
+      createComponent({}, { canPushToBranch: false });
 
       expect(findUploadFilesButton().exists()).toBe(false);
       expect(findCommandLineButton().text()).toBe('Use the command line');
@@ -105,13 +104,13 @@ describe('AddCodeActionItem', () => {
     });
 
     it('does not render WebIDE link when user cannot push code', () => {
-      createComponent({ completed: false }, { canPushCode: false });
+      createComponent({}, { canPushCode: false });
 
       expect(findWebIdeLink().exists()).toBe(false);
     });
 
     it('does not render WebIDE link when user cannot push to branch', () => {
-      createComponent({ completed: false }, { canPushToBranch: false });
+      createComponent({}, { canPushToBranch: false });
 
       expect(findWebIdeLink().exists()).toBe(false);
     });
@@ -119,7 +118,7 @@ describe('AddCodeActionItem', () => {
 
   describe('modals', () => {
     beforeEach(() => {
-      createComponent({ completed: false });
+      createComponent({});
     });
 
     it('renders command line modal with correct props', () => {
@@ -141,13 +140,13 @@ describe('AddCodeActionItem', () => {
     });
 
     it('does not render upload blob modal when user cannot push code', () => {
-      createComponent({ completed: false }, { canPushCode: false });
+      createComponent({}, { canPushCode: false });
 
       expect(findUploadBlobModal().exists()).toBe(false);
     });
 
     it('does not render upload blob modal when user cannot push to branch', () => {
-      createComponent({ completed: false }, { canPushToBranch: false });
+      createComponent({}, { canPushToBranch: false });
 
       expect(findUploadBlobModal().exists()).toBe(false);
     });
@@ -157,7 +156,7 @@ describe('AddCodeActionItem', () => {
     const { bindInternalEventDocument } = useMockInternalEventsTracking();
 
     beforeEach(() => {
-      createComponent({ completed: false });
+      createComponent({});
     });
 
     it('should call trackEvent method when command line button is clicked', async () => {
@@ -205,14 +204,14 @@ describe('AddCodeActionItem', () => {
     });
 
     it('correctly determines canShowUploadButton when user has permissions', () => {
-      createComponent({ completed: false }, { canPushCode: true, canPushToBranch: true });
+      createComponent({}, { canPushCode: true, canPushToBranch: true });
 
       expect(findUploadFilesButton().exists()).toBe(true);
       expect(findUploadBlobModal().exists()).toBe(true);
     });
 
     it('correctly determines canShowUploadButton when user lacks permissions', () => {
-      createComponent({ completed: false }, { canPushCode: false, canPushToBranch: false });
+      createComponent({}, { canPushCode: false, canPushToBranch: false });
 
       expect(findUploadFilesButton().exists()).toBe(false);
       expect(findUploadBlobModal().exists()).toBe(false);

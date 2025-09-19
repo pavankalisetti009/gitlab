@@ -13,7 +13,6 @@ const defaultProps = {
   title: 'Create Repository',
   description: 'Some description',
   url: 'https://example.com',
-  completed: false,
   enabled: true,
 };
 
@@ -34,7 +33,7 @@ describe('Learn GitLab Section Link', () => {
   };
 
   const findTrialOnly = () => wrapper.findByTestId('trial-only');
-  const findUncompletedLink = () => wrapper.findByTestId('uncompleted-learn-gitlab-link');
+  const findActionLink = () => wrapper.findByTestId('learn-gitlab-link');
   const findDisabledLink = () => wrapper.findByTestId('disabled-learn-gitlab-link');
   const findPopoverTrigger = () => wrapper.findByTestId('contact-admin-popover-trigger');
   const findPopover = () => wrapper.findComponent(GlPopover);
@@ -100,7 +99,7 @@ describe('Learn GitLab Section Link', () => {
     });
 
     it('renders links with blank target', () => {
-      const linkElement = findUncompletedLink();
+      const linkElement = findActionLink();
 
       expect(linkElement.exists()).toBe(true);
       expect(linkElement.attributes('target')).toEqual('_blank');
@@ -109,7 +108,7 @@ describe('Learn GitLab Section Link', () => {
     it('tracks the click', () => {
       const trackingSpy = mockTracking('_category_', wrapper.element, jest.spyOn);
 
-      findUncompletedLink().trigger('click');
+      findActionLink().trigger('click');
 
       expect(trackingSpy).toHaveBeenCalledWith('_category_', 'click_link', {
         label: 'scan_dependencies_for_licenses',
@@ -127,7 +126,7 @@ describe('Learn GitLab Section Link', () => {
     });
 
     it('calls the eventHub', () => {
-      findUncompletedLink().vm.$emit('click');
+      findActionLink().vm.$emit('click');
 
       expect(eventHub.$emit).toHaveBeenCalledWith('openModal', { source: LEARN_GITLAB });
     });
@@ -135,7 +134,7 @@ describe('Learn GitLab Section Link', () => {
     it('tracks the click', () => {
       const trackingSpy = mockTracking('_category_', wrapper.element, jest.spyOn);
 
-      findUncompletedLink().trigger('click');
+      findActionLink().trigger('click');
 
       expect(trackingSpy).toHaveBeenCalledWith('_category_', 'click_link', {
         label: 'invite_your_colleagues',

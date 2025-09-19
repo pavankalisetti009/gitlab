@@ -62,8 +62,19 @@ RSpec.describe Projects::LearnGitlabController, :saas, feature_category: :onboar
       end
 
       context 'when update is successful' do
-        it 'updates the onboarding progress ended value to be set' do
-          get_end_tutorial
+        it 'updates the onboarding progress ended value to be set and triggers tracking' do
+          expect { get_end_tutorial }
+            .to trigger_internal_events('click_end_tutorial_button')
+            .with(
+              user: user,
+              project: project,
+              namespace: namespace,
+              additional_properties: {
+                label: 'learn_gitlab',
+                property: 'progress_percentage_on_end',
+                value: 8
+              }
+            )
 
           expect(response).to redirect_to(project_path(project))
           expect(flash[:success]).to eql("You've ended the Learn GitLab tutorial.")
@@ -83,6 +94,10 @@ RSpec.describe Projects::LearnGitlabController, :saas, feature_category: :onboar
           expect(response).not_to redirect_to(project_path(project))
           expect(flash[:danger])
             .to eql("There was a problem trying to end the Learn GitLab tutorial. Please try again.")
+        end
+
+        it 'does not trigger tracking' do
+          expect { get_end_tutorial }.to not_trigger_internal_events('click_end_tutorial_button')
         end
       end
     end

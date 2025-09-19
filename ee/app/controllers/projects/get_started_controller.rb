@@ -3,6 +3,7 @@
 module Projects
   class GetStartedController < Projects::ApplicationController
     include ::Onboarding::SetRedirect
+    include Gitlab::InternalEventsTracking
 
     before_action :verify_onboarding_enabled!
     before_action :authenticate_user!
@@ -21,6 +22,20 @@ module Projects
 
     def end_tutorial
       if onboarding_progress.update(ended_at: Time.current)
+        percentage = ::Onboarding::Completion.new(project, current_user).get_started_percentage
+
+        track_internal_event(
+          "click_end_tutorial_button",
+          user: current_user,
+          project: project,
+          namespace: project.namespace,
+          additional_properties: {
+            label: 'get_started',
+            property: 'progress_percentage_on_end',
+            value: percentage
+          }
+        )
+
         redirect_to project_path(project)
         flash[:success] = s_("GetStarted|You've ended the tutorial.")
       else
@@ -35,7 +50,7 @@ module Projects
       # We only want to observe first level projects.
       # We do not care about any of their subgroup projects.
       # See https://gitlab.com/gitlab-org/gitlab/-/issues/537653#note_2478488770
-      @onboarding_progress ||= ::Onboarding::Progress.find_by_namespace_id!(@project.namespace)
+      @onboarding_progress ||= ::Onboarding::Progress.find_by_namespace_id!(project.namespace)
     end
 
     def verify_available!

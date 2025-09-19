@@ -1,8 +1,6 @@
 <script>
 import { GlButton, GlCard, GlSprintf, GlAlert } from '@gitlab/ui';
 import eventHub from '~/invite_members/event_hub';
-import { INVITE_URL_TYPE } from 'ee/pages/projects/get_started/constants';
-import { InternalEvents } from '~/tracking';
 import { visitUrl } from '~/lib/utils/url_utility';
 import SectionHeader from './section_header.vue';
 import SectionBody from './section_body.vue';
@@ -10,7 +8,6 @@ import DuoExtensions from './duo_extensions.vue';
 import RightSidebar from './right_sidebar.vue';
 import GetFamiliar from './get_familiar.vue';
 
-const trackingMixin = InternalEvents.mixin();
 export default {
   name: 'GetStarted',
   components: {
@@ -24,7 +21,6 @@ export default {
     RightSidebar,
     GetFamiliar,
   },
-  mixins: [trackingMixin],
   inject: ['projectName'],
   props: {
     sections: {
@@ -41,8 +37,6 @@ export default {
       localSections: this.sections,
       showSuccessfulInvitationsAlert: false,
       expandedIndex: 0,
-      totalActions: 0,
-      completedActions: 0,
       disableEndTutorialButton: false,
     };
   },
@@ -50,12 +44,6 @@ export default {
     isExpanded() {
       return (index) => this.expandedIndex === index;
     },
-    completionPercentage() {
-      return Math.round((this.completedActions / this.totalActions) * 100);
-    },
-  },
-  created() {
-    this.calculateActionCounts();
   },
   mounted() {
     eventHub.$on('showSuccessfulInvitationsAlert', this.handleShowSuccessfulInvitationsAlert);
@@ -66,24 +54,9 @@ export default {
   methods: {
     handleShowSuccessfulInvitationsAlert() {
       this.showSuccessfulInvitationsAlert = true;
-      this.markInviteAsCompleted();
     },
     dismissAlert() {
       this.showSuccessfulInvitationsAlert = false;
-    },
-    markInviteAsCompleted() {
-      this.localSections.some((section) => {
-        if (!section.actions) return false;
-
-        const actionToUpdate = section.actions.find((action) => action.urlType === INVITE_URL_TYPE);
-
-        if (!actionToUpdate) return false;
-
-        actionToUpdate.completed = true;
-        return true; // This will break the loop
-      });
-
-      this.calculateActionCounts();
     },
     toggleExpand(index) {
       this.expandedIndex = this.expandedIndex === index ? null : index;
@@ -91,31 +64,7 @@ export default {
     handleEndTutorialClick() {
       this.disableEndTutorialButton = true;
 
-      this.trackEvent('click_end_tutorial_button', {
-        label: 'get_started',
-        property: 'progress_percentage_on_end',
-        value: this.completionPercentage,
-      });
-
       visitUrl(this.tutorialEndPath);
-    },
-    calculateActionCounts() {
-      this.totalActions = 0;
-      this.completedActions = 0;
-
-      this.localSections.forEach((section) => {
-        // Count regular actions
-        if (section.actions) {
-          this.totalActions += section.actions.length;
-          this.completedActions += section.actions.filter((action) => action.completed).length;
-        }
-
-        // Count trial actions
-        if (section.trialActions) {
-          this.totalActions += section.trialActions.length;
-          this.completedActions += section.trialActions.filter((action) => action.completed).length;
-        }
-      });
     },
   },
 };
