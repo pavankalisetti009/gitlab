@@ -55,7 +55,6 @@ RSpec.describe Ai::FlowTriggers::RunService, feature_category: :agent_foundation
 
   before do
     # Enable necessary feature flags and settings
-    stub_feature_flags(ci_validate_config_options: false)
     stub_feature_flags(duo_workflow: true, duo_workflow_in_ci: true)
 
     # Enable duo features on project

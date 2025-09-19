@@ -132,7 +132,6 @@ RSpec.describe Ai::Catalog::Agents::ExecuteService, :aggregate_failures, feature
       end
 
       before do
-        stub_feature_flags(ci_validate_config_options: false)
         allow(::Gitlab::Llm::StageCheck).to receive(:available?).with(project, :duo_workflow).and_return(true)
         allow(current_user).to receive(:allowed_to_use?).and_return(true)
         project.project_setting.update!(duo_features_enabled: true, duo_remote_flows_enabled: true)
