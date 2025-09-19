@@ -24874,6 +24874,9 @@ msgstr ""
 msgid "DuoCoreTrialDiscover|Eliminate bottlenecks while meeting security requirements with scalable repositories, advanced branching, granular access controls, and built-in compliance."
 msgstr ""
 
+msgid "DuoCoreTrialDiscover|Enterprise-grade AI-native capabilities to help you move faster while maintaining security and IP protection"
+msgstr ""
+
 msgid "DuoCoreTrialDiscover|Free up time to focus on building great software with streamlined code reviews, automated security checks, and compliance requirements."
 msgstr ""
 
@@ -24883,7 +24886,7 @@ msgstr ""
 msgid "DuoCoreTrialDiscover|Get real-time guidance across the entire software development lifecycle. Generate tests, explain code, refactor efficiently, and chat directly in your IDE or web interface."
 msgstr ""
 
-msgid "DuoCoreTrialDiscover|GitLab Premium, now with Duo – native AI Code Suggestions and Chat"
+msgid "DuoCoreTrialDiscover|GitLab Premium, now with native AI"
 msgstr ""
 
 msgid "DuoCoreTrialDiscover|Greater developer productivity, collaboration, and quality"
@@ -24892,7 +24895,7 @@ msgstr ""
 msgid "DuoCoreTrialDiscover|Native AI Benefits in Premium"
 msgstr ""
 
-msgid "DuoCoreTrialDiscover|New customers can now get access to GitLab Premium with Duo at a discount. Contact Sales to get started."
+msgid "DuoCoreTrialDiscover|Now featuring GitLab Duo"
 msgstr ""
 
 msgid "DuoCoreTrialDiscover|Prevent pipeline conflicts with merge trains and push rules, store build outputs with Artifact Registry, and reuse working templates across teams."
@@ -78601,9 +78604,6 @@ msgid "past due"
 msgstr ""
 
 msgid "pending comment"
-msgstr ""
-
-msgid "per user/month"
 msgstr ""
 
 msgid "personal access token"
