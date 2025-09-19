@@ -19,7 +19,14 @@ export default () => {
 
   if (!el) return false;
 
-  const { type, fullPath, milestonePath, labelsPath } = el.dataset;
+  const {
+    type,
+    fullPath,
+    milestonePath,
+    labelsPath,
+    analyticsDashboardsPath,
+    mrAnalyticsDashboardPath,
+  } = el.dataset;
   const store = createStore();
 
   store.dispatch('filters/setEndpoints', {
@@ -58,6 +65,8 @@ export default () => {
     store,
     name: 'MergeRequestAnalyticsApp',
     provide: {
+      analyticsDashboardsPath,
+      mrAnalyticsDashboardPath,
       fullPath,
       type,
     },

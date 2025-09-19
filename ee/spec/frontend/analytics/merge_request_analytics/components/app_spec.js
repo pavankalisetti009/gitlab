@@ -3,6 +3,7 @@ import MergeRequestAnalyticsApp from 'ee/analytics/merge_request_analytics/compo
 import FilterBar from 'ee/analytics/merge_request_analytics/components/filter_bar.vue';
 import ThroughputChart from 'ee/analytics/merge_request_analytics/components/throughput_chart.vue';
 import ThroughputTableProvider from 'ee/analytics/merge_request_analytics/components/throughput_table_provider.vue';
+import MigrationAlert from 'ee/analytics/merge_request_analytics/components/migration_alert.vue';
 import DateRange from '~/analytics/shared/components/daterange.vue';
 import UrlSync from '~/vue_shared/components/url_sync.vue';
 import PageHeading from '~/vue_shared/components/page_heading.vue';
@@ -10,8 +11,12 @@ import PageHeading from '~/vue_shared/components/page_heading.vue';
 describe('MergeRequestAnalyticsApp', () => {
   let wrapper;
 
-  function createComponent() {
+  function createComponent(consolidateMrAnalyticsInSharedDashboards = false) {
     wrapper = shallowMount(MergeRequestAnalyticsApp, {
+      provide: {
+        fullPath: 'group/project',
+        glFeatures: { consolidateMrAnalyticsInSharedDashboards },
+      },
       propsData: {
         startDate: new Date('2020-05-01'),
         endDate: new Date('2020-10-01'),
@@ -43,6 +48,15 @@ describe('MergeRequestAnalyticsApp', () => {
 
   it('displays the throughput table component', () => {
     expect(wrapper.findComponent(ThroughputTableProvider).exists()).toBe(true);
+  });
+
+  it('does not show the migration alert when `consolidateMrAnalyticsInSharedDashboards` is off', () => {
+    expect(wrapper.findComponent(MigrationAlert).exists()).toBe(false);
+  });
+
+  it('shows the migration alert when `consolidateMrAnalyticsInSharedDashboards` is on', () => {
+    createComponent(true);
+    expect(wrapper.findComponent(MigrationAlert).exists()).toBe(true);
   });
 
   describe('url sync', () => {
