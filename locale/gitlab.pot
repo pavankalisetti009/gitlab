@@ -18007,7 +18007,7 @@ msgstr ""
 msgid "Configure repository storage."
 msgstr ""
 
-msgid "Configure runner version management and registration settings."
+msgid "Configure runner management and registration settings."
 msgstr ""
 
 msgid "Configure search access and visibility settings for search scopes."
@@ -38638,6 +38638,12 @@ msgstr ""
 msgid "Limiting mode"
 msgstr ""
 
+msgid "Limits how many API requests a runner can make to jobs endpoints within a 1-minute window, per job token."
+msgstr ""
+
+msgid "Limits how many API requests a runner can make to request jobs within a 1-minute window."
+msgstr ""
+
 msgid "Limits how many API requests an IP address can make to artifact manager endpoints within a 15-second window."
 msgstr ""
 
@@ -55412,6 +55418,12 @@ msgstr ""
 msgid "Runners|Learn more in the %{linkStart}Google Cloud documentation%{linkEnd}."
 msgstr ""
 
+msgid "Runners|Limits how many API requests a runner can make to jobs endpoints within a 1-minute window, per job token."
+msgstr ""
+
+msgid "Runners|Limits how many API requests a runner can make to request jobs within a 1-minute window."
+msgstr ""
+
 msgid "Runners|Loading"
 msgstr ""
 
@@ -55443,6 +55455,12 @@ msgid "Runners|Maximum amount of time the runner can run before it terminates. I
 msgstr ""
 
 msgid "Runners|Maximum job timeout"
+msgstr ""
+
+msgid "Runners|Maximum requests per minute to /jobs/request endpoint"
+msgstr ""
+
+msgid "Runners|Maximum requests per minute to other Runner Jobs API endpoints"
 msgstr ""
 
 msgid "Runners|Median"
