@@ -96,51 +96,78 @@ describe('AgentFlowList', () => {
         });
       });
 
-      it('renders pagination controls but they are not functional', () => {
-        expect(findKeysetPagination().exists()).toBe(true);
+      it('does not render pagination controls', () => {
+        expect(findKeysetPagination().exists()).toBe(false);
       });
     });
+
     describe('when there is pagination data', () => {
-      const paginationData = {
+      const createPaginationData = (hasNextPage, hasPreviousPage) => ({
         startCursor: 'start',
         endCursor: 'end',
-        hasNextPage: true,
-        hasPreviousPage: false,
-      };
-
-      beforeEach(() => {
-        createWrapper({
-          workflowsPageInfo: paginationData,
-        });
+        hasNextPage,
+        hasPreviousPage,
       });
 
-      it('renders pagination controls', () => {
-        expect(findKeysetPagination().isVisible()).toBe(true);
-      });
-
-      it('binds the correct page info to pagination controls', () => {
-        expect(findKeysetPagination().props()).toMatchObject(paginationData);
-      });
-
-      describe('when clicking on the next page', () => {
+      describe('when hasNextPage is false and hasPreviousPage is false', () => {
         beforeEach(() => {
-          findKeysetPagination().vm.$emit('next');
+          createWrapper({
+            workflowsPageInfo: createPaginationData(false, false),
+          });
         });
 
-        it('emit next-page', () => {
-          expect(wrapper.emitted('next-page')).toHaveLength(1);
+        it('does not render keyset pagination', () => {
+          expect(findKeysetPagination().exists()).toBe(false);
         });
       });
 
-      describe('when clicking on the previous page', () => {
-        beforeEach(() => {
-          findKeysetPagination().vm.$emit('prev');
-        });
+      describe.each([
+        { hasNextPage: true, hasPreviousPage: false },
+        { hasNextPage: false, hasPreviousPage: true },
+        { hasNextPage: true, hasPreviousPage: true },
+      ])(
+        'when hasNextPage is $hasNextPage and hasPreviousPage is $hasPreviousPage',
+        ({ hasNextPage, hasPreviousPage }) => {
+          beforeEach(() => {
+            createWrapper({
+              workflowsPageInfo: createPaginationData(hasNextPage, hasPreviousPage),
+            });
+          });
 
-        it('emit prev-page', () => {
-          expect(wrapper.emitted('prev-page')).toHaveLength(1);
-        });
-      });
+          it('renders keyset pagination', () => {
+            expect(findKeysetPagination().exists()).toBe(true);
+          });
+
+          it('binds the correct page info to pagination controls', () => {
+            expect(findKeysetPagination().props()).toMatchObject({
+              startCursor: 'start',
+              endCursor: 'end',
+              hasNextPage,
+              hasPreviousPage,
+            });
+          });
+
+          describe('when clicking on the next page', () => {
+            beforeEach(() => {
+              findKeysetPagination().vm.$emit('next');
+            });
+
+            it('emit next-page', () => {
+              expect(wrapper.emitted('next-page')).toHaveLength(1);
+            });
+          });
+
+          describe('when clicking on the previous page', () => {
+            beforeEach(() => {
+              findKeysetPagination().vm.$emit('prev');
+            });
+
+            it('emit prev-page', () => {
+              expect(wrapper.emitted('prev-page')).toHaveLength(1);
+            });
+          });
+        },
+      );
     });
   });
 });

@@ -30,6 +30,9 @@ export default {
     hasWorkflows() {
       return this.workflows?.length > 0;
     },
+    displayPagination() {
+      return this.workflowsPageInfo?.hasNextPage || this.workflowsPageInfo?.hasPreviousPage;
+    },
   },
   showRoute: AGENTS_PLATFORM_SHOW_ROUTE,
   emptyStateIllustrationPath,
@@ -53,6 +56,7 @@ export default {
         />
       </ul>
       <gl-keyset-pagination
+        v-if="displayPagination"
         v-bind="workflowsPageInfo"
         class="gl-mt-5 gl-flex gl-justify-center"
         @prev="$emit('prev-page')"
