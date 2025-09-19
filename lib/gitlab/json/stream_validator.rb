@@ -104,7 +104,7 @@ module Gitlab
       private
 
       def check_depth!
-        return unless options[:max_depth] > 0
+        return unless options[:max_depth].to_i > 0
         return unless @depth >= options[:max_depth]
 
         raise DepthLimitError,
@@ -112,7 +112,7 @@ module Gitlab
       end
 
       def check_array_size!(current_size)
-        return unless options[:max_array_size] > 0
+        return unless options[:max_array_size].to_i > 0
 
         return unless current_size >= options[:max_array_size]
 
@@ -121,7 +121,7 @@ module Gitlab
       end
 
       def check_hash_size!(current_size)
-        return unless options[:max_hash_size] > 0
+        return unless options[:max_hash_size].to_i > 0
 
         return unless current_size >= options[:max_hash_size]
 
@@ -130,7 +130,7 @@ module Gitlab
       end
 
       def check_element_size!
-        return unless options[:max_total_elements] > 0
+        return unless options[:max_total_elements].to_i > 0
         return unless @total_elements >= options[:max_total_elements]
 
         raise ElementCountLimitError,
