@@ -1,4 +1,5 @@
 import { shallowMount } from '@vue/test-utils';
+import Markdown from '~/vue_shared/components/markdown/markdown_content.vue';
 import AiCatalogAgentDetails from 'ee/ai/catalog/components/ai_catalog_agent_details.vue';
 import { mockAgent, mockAgentVersion } from '../mock_data';
 
@@ -34,8 +35,12 @@ describe('AiCatalogAgentDetails', () => {
   });
 
   it('renders system and user prompts and tools', () => {
-    expect(findAllDetails().at(0).text()).toBe(mockAgent.latestVersion.systemPrompt);
-    expect(findAllDetails().at(1).text()).toBe(mockAgent.latestVersion.userPrompt);
+    expect(findAllDetails().at(0).findComponent(Markdown).props('value')).toBe(
+      mockAgent.latestVersion.systemPrompt,
+    );
+    expect(findAllDetails().at(1).findComponent(Markdown).props('value')).toBe(
+      mockAgent.latestVersion.userPrompt,
+    );
     expect(findAllDetails().at(2).text()).toBe(TOOLS.join(', '));
   });
 });
