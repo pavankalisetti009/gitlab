@@ -171,7 +171,6 @@ describe('SecurityPolicyViolationsModal', () => {
       createComponent();
       expect(findModal().props('visible')).toBe(true);
 
-      wrapper.destroy();
       createComponent({ visible: false });
       expect(findModal().props('visible')).toBe(false);
     });
@@ -200,6 +199,28 @@ describe('SecurityPolicyViolationsModal', () => {
       findSecurityPolicyViolationsSelector().vm.$emit('select', mode);
 
       expect(wrapper.emitted('select-mode')).toEqual([[mode]]);
+    });
+  });
+
+  describe('exception mode', () => {
+    it('renders correct alert message and reasons for exception mode', () => {
+      createComponent({
+        mode: EXCEPTION_MODE,
+      });
+
+      expect(findAlert().text()).toContain('All selected policy requirements will be bypassed.');
+      expect(findAlert().text()).toContain('The action will be logged in the audit log.');
+
+      expect(findReasonSelector().props('items')).toEqual([
+        { text: 'Emergency production issue', value: 'emergency' },
+        { text: 'Critical business deadline', value: 'critical' },
+        { text: 'Technical limitation', value: 'technical' },
+        {
+          text: 'Authorized business risk acceptance',
+          value: 'authorized_risk',
+        },
+        { text: 'Other', value: 'other' },
+      ]);
     });
   });
 });
