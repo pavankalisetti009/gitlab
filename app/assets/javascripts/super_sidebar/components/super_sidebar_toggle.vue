@@ -20,6 +20,11 @@ export default {
       required: false,
       default: 'expand',
     },
+    icon: {
+      type: String,
+      required: false,
+      default: 'sidebar',
+    },
   },
   i18n: {
     primaryNavigationSidebar: __('Primary navigation sidebar'),
@@ -100,7 +105,7 @@ export default {
     aria-controls="super-sidebar"
     :aria-expanded="ariaExpanded"
     :aria-label="$options.i18n.primaryNavigationSidebar"
-    icon="sidebar"
+    :icon="icon"
     category="tertiary"
     @click="toggle"
   />
