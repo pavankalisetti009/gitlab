@@ -151,18 +151,18 @@ RSpec.describe Gitlab::Llm::Chain::Tools::TroubleshootJob::Executor, feature_cat
           end
         end
 
-        context 'when ai tracking' do
+        context 'for internal events tracking' do
           before do
             allow(tool).to receive(:request).and_return('Troubleshooting response')
           end
 
           it 'tracks troubleshoot_job event when executed on a failed CI job' do
-            expect(Gitlab::Tracking::AiTracking).to receive(:track_event).with(
+            expect(Gitlab::InternalEvents).to receive(:track_event).with(
               'troubleshoot_job',
               user: user,
               job: build,
               project: build.project
-            )
+            ).and_call_original
 
             tool.execute
           end
@@ -171,7 +171,7 @@ RSpec.describe Gitlab::Llm::Chain::Tools::TroubleshootJob::Executor, feature_cat
             let(:build) { create(:ci_build, :running, project: project) }
 
             it 'does not track event' do
-              expect(Gitlab::Tracking::AiTracking).not_to receive(:track_event)
+              expect(Gitlab::InternalEvents).not_to receive(:track_event).with('troubleshoot_job', anything)
 
               tool.execute
             end
