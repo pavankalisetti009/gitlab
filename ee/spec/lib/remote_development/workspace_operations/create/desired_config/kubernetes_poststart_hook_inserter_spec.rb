@@ -48,7 +48,8 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Create::DesiredConfig::Ku
       # pass input containers without resources for scripts added, then assert they get added by the described_class
       containers: input_containers,
       devfile_commands: devfile_commands,
-      devfile_events: devfile_events
+      devfile_events: devfile_events,
+      processed_devfile: processed_devfile
     )
   end
 
@@ -86,7 +87,8 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Create::DesiredConfig::Ku
     let(:legacy_poststart_container_command) { true }
     let(:processed_devfile) do
       yaml_safe_load_symbolized(
-        read_devfile_yaml("example.legacy-poststart-in-container-command-processed-devfile.yaml.erb")
+        read_devfile_yaml("example.legacy-poststart-in-container-command-processed-devfile.yaml.erb",
+          is_legacy_poststart: true)
       )
     end
 
