@@ -75,7 +75,6 @@ module EE
         elasticsearch_aws_region: [:string, { default: 'us-east-1' }],
         elasticsearch_aws_role_arn: [:string],
         elasticsearch_aws_access_key: [:string],
-        elasticsearch_client_adapter: [:text, { default: 'typhoeus' }],
         elasticsearch_limit_indexing: [:boolean, { default: false }],
         elasticsearch_pause_indexing: [:boolean, { default: false }],
         elasticsearch_requeue_workers: [:boolean, { default: false }],
@@ -183,8 +182,6 @@ module EE
           message: 'must contain only lowercase alphanumeric characters, hyphens, ' \
             'and underscores, and cannot start or end with a hyphen or underscore'
         }
-
-      validates :elasticsearch_client_adapter, inclusion: { in: %w[typhoeus net_http] }
 
       validate :elasticsearch_prefix_no_whitespace
 
@@ -603,7 +600,6 @@ module EE
         aws_secret_access_key: elasticsearch_aws_secret_access_key,
         aws_region: elasticsearch_aws_region,
         aws_role_arn: elasticsearch_aws_role_arn,
-        client_adapter: elasticsearch_client_adapter,
         max_bulk_size_bytes: elasticsearch_max_bulk_size_mb.megabytes,
         max_bulk_concurrency: elasticsearch_max_bulk_concurrency,
         client_request_timeout: (client_request_timeout if client_request_timeout > 0)

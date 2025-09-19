@@ -114,14 +114,6 @@
       "default": "gitlab",
       "minLength": 1,
       "maxLength": 100
-    },
-    "elasticsearch_client_adapter": {
-      "type": "string",
-      "default": "typhoeus",
-      "enum": [
-        "typhoeus",
-        "net_http"
-      ]
     }
   },
   "additionalProperties": false
