@@ -8,35 +8,21 @@ RSpec.describe Security::AnalyzerNamespaceStatuses::AdjustmentWorker, feature_ca
   describe '#perform' do
     let(:namespace_ids) { [1, 2, 3] }
 
-    context 'when vulnerability_namespace_adjustment_worker feature is disabled' do
-      before do
-        stub_feature_flags(vulnerability_namespace_adjustment_worker: false)
-        allow(Security::AnalyzerNamespaceStatuses::AdjustmentService).to receive(:execute)
-      end
+    before do
+      allow(Security::AnalyzerNamespaceStatuses::AdjustmentService).to receive(:execute)
+    end
+
+    it 'calls Security::AnalyzerNamespaceStatuses::AdjustmentService with given namespace_ids' do
+      worker.perform(namespace_ids)
+      expect(Security::AnalyzerNamespaceStatuses::AdjustmentService).to have_received(:execute).with(namespace_ids)
+    end
+
+    context 'when namespace_ids is empty' do
+      let(:namespace_ids) { [] }
 
       it 'doesnt call Security::AnalyzerNamespaceStatuses::AdjustmentService' do
         worker.perform(namespace_ids)
         expect(Security::AnalyzerNamespaceStatuses::AdjustmentService).not_to have_received(:execute)
-      end
-    end
-
-    context 'when vulnerability_namespace_adjustment_worker is enabled' do
-      before do
-        allow(Security::AnalyzerNamespaceStatuses::AdjustmentService).to receive(:execute)
-      end
-
-      it 'calls Security::AnalyzerNamespaceStatuses::AdjustmentService with given namespace_ids' do
-        worker.perform(namespace_ids)
-        expect(Security::AnalyzerNamespaceStatuses::AdjustmentService).to have_received(:execute).with(namespace_ids)
-      end
-
-      context 'when namespace_ids is empty' do
-        let(:namespace_ids) { [] }
-
-        it 'doesnt call Security::AnalyzerNamespaceStatuses::AdjustmentService' do
-          worker.perform(namespace_ids)
-          expect(Security::AnalyzerNamespaceStatuses::AdjustmentService).not_to have_received(:execute)
-        end
       end
     end
   end
