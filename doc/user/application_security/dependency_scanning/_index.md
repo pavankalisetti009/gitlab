@@ -143,7 +143,7 @@ your GitLab CI/CD configuration file is complex.
 To enable Dependency Scanning:
 
 1. On the left sidebar, select **Search or go to** and find your project.
-1. Select **Build > Pipeline editor**.
+1. Select **Build** > **Pipeline editor**.
 1. If no `.gitlab-ci.yml` file exists, select **Configure pipeline**, then delete the example
    content.
 1. Copy and paste the following to the bottom of the `.gitlab-ci.yml` file. If an `include` line
@@ -193,7 +193,7 @@ After completing these steps, you can:
 You can review vulnerabilities in a pipeline:
 
 1. On the left sidebar, select **Search or go to** and find your project.
-1. On the left sidebar, select **Build > Pipelines**.
+1. On the left sidebar, select **Build** > **Pipelines**.
 1. Select the pipeline.
 1. Select the **Security** tab.
 1. Select a vulnerability to view its details, including:

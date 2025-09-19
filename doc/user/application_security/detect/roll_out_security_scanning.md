@@ -172,7 +172,7 @@ Introduce developers to the tools that provide visibility into security findings
 Developers can view security findings directly in pipeline results:
 
 1. On the left sidebar, select **Search or go to** and find your project.
-1. Select **Build > Pipelines**.
+1. Select **Build** > **Pipelines**.
 1. Select the pipeline to review.
 1. In the pipeline details, select the **Security** tab to view detected vulnerabilities.
 
