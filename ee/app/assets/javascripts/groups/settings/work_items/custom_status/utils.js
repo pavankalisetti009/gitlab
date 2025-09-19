@@ -106,6 +106,10 @@ export const getNewStatusOptionsFromTheSameState = (currentStatus, newStatusOpti
   });
 };
 
+export const excludeSelfReferencingIds = (statusMapping) => {
+  return [...statusMapping].filter(({ oldStatusId, newStatusId }) => oldStatusId !== newStatusId);
+};
+
 export const getDefaultStatusMapping = (currentLifecycleStatuses, newLifecycleStatuses) => {
   const statusMappings = [];
 

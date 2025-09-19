@@ -7,6 +7,7 @@ import { NAME_TO_TEXT_MAP } from '~/work_items/constants';
 import LifecycleDetail from 'ee/groups/settings/work_items/custom_status/lifecycle_detail.vue';
 import changeLifecycleMutation from 'ee/groups/settings/work_items/custom_status/change_lifecycle.mutation.graphql';
 import namespaceLifecyclesQuery from 'ee/groups/settings/work_items/custom_status/namespace_lifecycles.query.graphql';
+import { excludeSelfReferencingIds } from '../utils';
 import SelectLifecycle from './select_lifecycle.vue';
 import StatusMapping from './status_mapping.vue';
 import ChangeLifecycleStepper from './change_lifecycle_stepper.vue';
@@ -121,6 +122,8 @@ export default {
     },
     async mapStatuses() {
       try {
+        const leanMapping = excludeSelfReferencingIds(this.statusMappings);
+
         const { data } = await this.$apollo.mutate({
           mutation: changeLifecycleMutation,
           variables: {
@@ -128,7 +131,7 @@ export default {
               namespacePath: this.fullPath,
               workItemTypeId: 'gid://gitlab/WorkItems::Type/1',
               lifecycleId: this.selectedLifecycle.id,
-              statusMappings: this.statusMappings,
+              statusMappings: leanMapping,
             },
           },
         });
