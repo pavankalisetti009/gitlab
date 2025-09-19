@@ -56,8 +56,15 @@ RSpec.describe API::Ai::DuoWorkflows::WorkflowsInternal, feature_category: :agen
         expect(response).to have_gitlab_http_status(:created)
       end.to change { workflow.reload.checkpoints.count }.by(2)
 
-      expect(json_response['id']).to eq(Ai::DuoWorkflows::Checkpoint.last.id.first)
       expect(Ai::DuoWorkflows::Checkpoint.distinct.pluck('project_id')).to eq([project.id])
+
+      checkpoint = Ai::DuoWorkflows::Checkpoint.last
+      expect(json_response).to eq({
+        'id' => checkpoint.id.first,
+        'metadata' => checkpoint.metadata,
+        'parent_ts' => checkpoint.parent_ts,
+        'thread_ts' => checkpoint.thread_ts
+      })
     end
 
     context 'with namespace-level chat workflow' do
