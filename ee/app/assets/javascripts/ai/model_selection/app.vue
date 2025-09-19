@@ -1,5 +1,4 @@
 <script>
-import { GlExperimentBadge } from '@gitlab/ui';
 import PageHeading from '~/vue_shared/components/page_heading.vue';
 import { createAlert } from '~/alert';
 import { s__ } from '~/locale';
@@ -10,7 +9,6 @@ import aiNamespaceFeatureSettingsQuery from './graphql/get_ai_namepace_feature_s
 export default {
   name: 'ModelSelectionApp',
   components: {
-    GlExperimentBadge,
     FeatureSettings,
     PageHeading,
   },
@@ -55,7 +53,6 @@ export default {
           <span data-testid="model-selection-title">
             {{ s__('ModelSelection|Model Selection') }}
           </span>
-          <gl-experiment-badge type="beta" />
         </span>
       </template>
       <template #description>{{
