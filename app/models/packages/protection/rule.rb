@@ -7,7 +7,7 @@ module Packages
         with: Gitlab::Regex::Packages::Protection::Rules.protection_rules_npm_package_name_pattern_regex,
         message: ->(_object, _data) { _('should be a valid NPM package name with optional wildcard characters.') }
       }.freeze
-      PIPY_PACKAGE_NAME_FORMAT = {
+      PYPI_PACKAGE_NAME_FORMAT = {
         with: Gitlab::Regex::Packages::Protection::Rules.protection_rules_pypi_package_name_pattern_regex,
         message: ->(_object, _data) { _('should be a valid PyPI package name with optional wildcard characters.') }
       }.freeze
@@ -25,13 +25,13 @@ module Packages
       validates :package_name_pattern, presence: true, uniqueness: { scope: [:project_id, :package_type] },
         length: { maximum: 255 }
       validates :package_name_pattern, format: NPM_PACKAGE_NAME_FORMAT, if: :npm?
-      validates :package_name_pattern, format: PIPY_PACKAGE_NAME_FORMAT, if: :pypi?
+      validates :package_name_pattern, format: PYPI_PACKAGE_NAME_FORMAT, if: :pypi?
       validates :package_type, presence: true
       validates :pattern, allow_blank: true, length: { maximum: 255 }
       validates :pattern, format: NPM_PACKAGE_NAME_FORMAT, allow_blank: true, if: -> {
         :npm? && package_name? && wildcard?
       }
-      validates :pattern, format: PIPY_PACKAGE_NAME_FORMAT, allow_blank: true, if: -> {
+      validates :pattern, format: PYPI_PACKAGE_NAME_FORMAT, allow_blank: true, if: -> {
         :pypi? && package_name? && wildcard?
       }
 
