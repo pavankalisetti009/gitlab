@@ -9,6 +9,7 @@ import axios from '~/lib/utils/axios_utils';
 import { captureException } from '~/sentry/sentry_browser_wrapper';
 import PurchaseCommitmentCard from 'ee/usage_quotas/usage_billing/components/purchase_commitment_card.vue';
 import UsageTrendsChart from 'ee/usage_quotas/usage_billing/components/usage_trends_chart.vue';
+import CurrentUsageCard from 'ee/usage_quotas/usage_billing/components/current_usage_card.vue';
 import { mockUsageDataWithPool } from '../mock_data';
 
 jest.mock('~/lib/logger');
@@ -67,6 +68,16 @@ describe('UsageBillingApp', () => {
 
     it('renders purchase-commitment-card', () => {
       expect(wrapper.findComponent(PurchaseCommitmentCard).exists()).toBe(true);
+    });
+
+    it('renders current-usage-card', () => {
+      expect(wrapper.findComponent(CurrentUsageCard).props()).toMatchObject({
+        currentOverage: 0,
+        totalUnits: 300,
+        totalUnitsUsed: 50,
+        monthStartDate: '2024-01-01',
+        monthEndDate: '2024-01-31',
+      });
     });
 
     it('renders the correct tabs', () => {
