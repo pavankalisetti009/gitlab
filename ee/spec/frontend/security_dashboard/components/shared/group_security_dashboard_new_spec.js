@@ -3,7 +3,12 @@ import { GlDashboardLayout } from '@gitlab/ui';
 import { markRaw } from '~/lib/utils/vue3compat/mark_raw';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import { OPERATORS_OR } from '~/vue_shared/components/filtered_search_bar/constants';
-import { SEVERITY_LEVELS_KEYS } from 'ee/security_dashboard/constants';
+import {
+  SEVERITY_LEVELS_KEYS,
+  REPORT_TYPES_WITH_MANUALLY_ADDED,
+  REPORT_TYPES_CONTAINER_SCANNING_FOR_REGISTRY,
+  REPORT_TYPES_WITH_CLUSTER_IMAGE,
+} from 'ee/security_dashboard/constants';
 import FilteredSearch from 'ee/security_dashboard/components/shared/security_dashboard_filtered_search/filtered_search.vue';
 import GroupSecurityDashboardNew from 'ee/security_dashboard/components/shared/group_security_dashboard_new.vue';
 import ProjectToken from 'ee/security_dashboard/components/shared/filtered_search/tokens/project_token.vue';
@@ -113,6 +118,20 @@ describe('Group Security Dashboard (new version) - Component', () => {
           }),
         ]),
       );
+    });
+
+    it('passes the correct reportTypes configuration to the ReportTypeToken', () => {
+      const reportTypeToken = findFilteredSearch()
+        .props('tokens')
+        .find((token) => token.type === 'reportType');
+
+      const expectedReportTypes = {
+        ...REPORT_TYPES_WITH_MANUALLY_ADDED,
+        ...REPORT_TYPES_WITH_CLUSTER_IMAGE,
+        ...REPORT_TYPES_CONTAINER_SCANNING_FOR_REGISTRY,
+      };
+
+      expect(reportTypeToken.reportTypes).toEqual(expectedReportTypes);
     });
 
     it('updates filters when filters-changed event is emitted', async () => {

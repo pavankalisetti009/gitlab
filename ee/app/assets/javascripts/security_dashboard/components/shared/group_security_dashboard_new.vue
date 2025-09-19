@@ -11,6 +11,11 @@ import GroupRiskScorePanel from 'ee/security_dashboard/components/shared/group_r
 import GroupVulnerabilitiesForSeverityPanel from 'ee/security_dashboard/components/shared/group_vulnerabilities_for_severity_panel.vue';
 import { OPERATORS_OR } from '~/vue_shared/components/filtered_search_bar/constants';
 import { generateVulnerabilitiesForSeverityPanels } from 'ee/security_dashboard/utils/chart_generators';
+import {
+  REPORT_TYPES_WITH_MANUALLY_ADDED,
+  REPORT_TYPES_CONTAINER_SCANNING_FOR_REGISTRY,
+  REPORT_TYPES_WITH_CLUSTER_IMAGE,
+} from 'ee/security_dashboard/constants';
 
 const PROJECT_TOKEN_DEFINITION = {
   type: 'projectId',
@@ -28,6 +33,11 @@ const REPORT_TYPE_TOKEN_DEFINITION = {
   unique: true,
   token: markRaw(ReportTypeToken),
   operators: OPERATORS_OR,
+  reportTypes: {
+    ...REPORT_TYPES_WITH_MANUALLY_ADDED,
+    ...REPORT_TYPES_WITH_CLUSTER_IMAGE,
+    ...REPORT_TYPES_CONTAINER_SCANNING_FOR_REGISTRY,
+  },
 };
 
 export default {
