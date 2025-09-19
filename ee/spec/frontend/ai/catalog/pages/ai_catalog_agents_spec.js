@@ -394,7 +394,7 @@ describe('AiCatalogAgents', () => {
             await waitForPromises();
 
             expect(findErrorsAlert().props('errors')).toEqual([
-              'The agent could not be added to the project. Try again. Error: Request failed',
+              'The agent could not be added to the project. Check that the project meets the <a href="/help/user/ai_catalog#prerequisites" target="_blank">prerequisites</a> and try again.',
             ]);
             expect(Sentry.captureException).toHaveBeenCalledWith(expect.any(Error));
           });
