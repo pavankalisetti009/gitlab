@@ -43,6 +43,9 @@ describe('DuoAgentsPlatformShow', () => {
       mocks: {
         $route: mockRoute,
       },
+      provide: {
+        isFlyout: false,
+      },
     });
 
     return waitForPromises();
@@ -66,7 +69,9 @@ describe('DuoAgentsPlatformShow', () => {
     it('passes correct props to AgentFlowDetails', () => {
       const workflowDetailsProps = findAgentFlowDetails().props();
 
-      expect(workflowDetailsProps).toEqual({
+      // Use toMatchObject instead of toEqual because Vue 3 passes through the :class binding
+      // as a 'class' prop, while Vue 2 does not include it in component props
+      expect(workflowDetailsProps).toMatchObject({
         isLoading: false,
         status: 'Running',
         executorUrl: 'https://gitlab.com/gitlab-org/gitlab/-/pipelines/123',
