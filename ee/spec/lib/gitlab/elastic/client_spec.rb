@@ -41,31 +41,11 @@ RSpec.describe Gitlab::Elastic::Client, feature_category: :global_search do
         expect(client.transport.transport.options).to include(debug: true, log: true)
       end
 
-      describe 'client adapter' do
-        it 'uses typhoeus as the adapter by default' do
+      context 'with typhoeus adapter for keep-alive connections' do
+        it 'sets typhoeus as the adapter' do
           options = client.transport.transport.options
 
           expect(options).to include(adapter: :typhoeus)
-        end
-
-        context 'when adapter in config' do
-          let(:params) { { client_adapter: 'net_http' } }
-
-          it 'uses the adapter from application settings' do
-            options = client.transport.transport.options
-
-            expect(options).to include(adapter: :net_http)
-          end
-        end
-
-        context 'when client_adapter in config is null' do
-          let(:params) { { client_adapter: nil } }
-
-          it 'falls back to the DEFAULT_ADAPTER' do
-            options = client.transport.transport.options
-
-            expect(options).to include(adapter: described_class::DEFAULT_ADAPTER)
-          end
         end
       end
 

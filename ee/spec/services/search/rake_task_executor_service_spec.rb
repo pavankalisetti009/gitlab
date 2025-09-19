@@ -1018,18 +1018,6 @@ RSpec.describe ::Search::RakeTaskExecutorService, :elastic_helpers, :silence_std
       info
     end
 
-    it 'outputs prefix' do
-      expect(logger).to receive(:info).with(/Prefix:\s+gitlab/)
-
-      info
-    end
-
-    it 'outputs client adapter' do
-      expect(logger).to receive(:info).with(/Client adapter:\s+typhoeus/)
-
-      info
-    end
-
     it 'outputs file size limit' do
       expect(logger).to receive(:info).with(/File size limit:\s+\d+ KiB/)
 
