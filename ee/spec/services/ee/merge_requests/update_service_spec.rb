@@ -923,5 +923,57 @@ RSpec.describe MergeRequests::UpdateService, :mailer, feature_category: :code_re
         end
       end
     end
+
+    context 'when a service account linked to a flow trigger' do
+      let(:service_account) { create(:service_account, username: 'flow-trigger-1') }
+
+      let(:review_flow_trigger) do
+        create(:ai_flow_trigger, project: project, event_types: [2], user: service_account)
+      end
+
+      let(:assign_flow_trigger) do
+        create(:ai_flow_trigger, project: project, event_types: [1], user: service_account)
+      end
+
+      let(:run_service) { instance_double(::Ai::FlowTriggers::RunService) }
+
+      before do
+        project.add_developer(service_account)
+
+        allow(GitlabSubscriptions::AddOnPurchase).to receive_message_chain(
+          :for_duo_enterprise,
+          :active,
+          :by_namespace,
+          :assigned_to_user,
+          :exists?
+        ).and_return(true)
+      end
+
+      context 'when requesting review from this account', :sidekiq_inline do
+        it 'triggers the AI flow' do
+          expect(run_service).to receive(:execute).with({ input: "", event: :assign })
+          expect(::Ai::FlowTriggers::RunService).to receive(:new)
+            .with(
+              project: project, current_user: current_user,
+              resource: merge_request, flow_trigger: assign_flow_trigger
+            ).and_return(run_service)
+
+          update_merge_request({ assignee_ids: [service_account.id] })
+        end
+      end
+
+      context 'when this account is assigned' do
+        it 'triggers the AI flow' do
+          expect(run_service).to receive(:execute).with({ input: "", event: :assign_reviewer })
+          expect(::Ai::FlowTriggers::RunService).to receive(:new)
+            .with(
+              project: project, current_user: current_user,
+              resource: merge_request, flow_trigger: review_flow_trigger
+            ).and_return(run_service)
+
+          update_merge_request({ reviewer_ids: [service_account.id] })
+        end
+      end
+    end
   end
 end

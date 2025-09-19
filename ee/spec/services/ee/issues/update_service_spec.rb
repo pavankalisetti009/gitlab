@@ -1159,23 +1159,6 @@ RSpec.describe Issues::UpdateService, feature_category: :team_planning do
           update_issue(assignee_ids: [service_account_1.id, service_account_2.id])
         end
       end
-
-      context 'for merge requests' do
-        let(:merge_request) { create(:merge_request, source_project: project, target_project: project, author: user) }
-
-        def update_merge_request(opts)
-          MergeRequests::UpdateService.new(project: project, current_user: user, params: opts).execute(merge_request)
-        end
-
-        it 'uses merge request specific input message' do
-          expect(run_service_1).to receive(:execute).with({ input: '', event: :assign })
-          expect(::Ai::FlowTriggers::RunService).to receive(:new)
-            .with(project: project, current_user: user, resource: merge_request, flow_trigger: flow_trigger_1)
-            .and_return(run_service_1)
-
-          update_merge_request(assignee_ids: [service_account_1.id])
-        end
-      end
     end
   end
 end

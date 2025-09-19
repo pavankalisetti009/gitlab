@@ -29,6 +29,7 @@ module EE
         new_reviewers = merge_request.reviewers - old_reviewers
         set_requested_changes(merge_request, new_reviewers) if new_reviewers.any?
         request_duo_code_review(merge_request) if new_reviewers.any?(&:duo_code_review_bot?)
+        execute_flow_triggers(merge_request, new_reviewers, :assign_reviewer)
       end
 
       override :execute_external_hooks
