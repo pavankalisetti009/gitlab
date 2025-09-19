@@ -126,7 +126,10 @@ export default {
 </script>
 <template>
   <div class="gl-mb-4">
-    <div class="gl-mb-4 gl-grid gl-gap-6 md:gl-grid-cols-2" data-testid="policy-selection-wizard">
+    <div
+      class="gl-mb-4 gl-grid gl-gap-6 @md/panel:gl-grid-cols-2"
+      data-testid="policy-selection-wizard"
+    >
       <gl-card
         v-for="option in policies"
         :key="option.title"

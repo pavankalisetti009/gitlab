@@ -494,7 +494,7 @@ export default {
       @row-selected="presentPolicyDrawer"
     >
       <template #cell(status)="{ item: { enabled, name, deprecatedProperties, policyType, yaml } }">
-        <div class="gl-flex gl-justify-end gl-gap-4 md:gl-justify-start">
+        <div class="gl-flex gl-justify-end gl-gap-4 @md/panel:gl-justify-start">
           <status-icon :enabled="enabled" />
 
           <breaking-changes-icon
