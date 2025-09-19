@@ -233,6 +233,10 @@ RSpec.describe Security::SecretDetection::UpdateTokenStatusService, feature_cate
                 identifier: 'gitlab_personal_access_token_routable'
               },
               {
+                factory: [:personal_access_token],
+                identifier: 'gitlab_personal_access_token_routable_versioned'
+              },
+              {
                 factory: [:deploy_token],
                 identifier: 'gitlab_deploy_token'
               },
