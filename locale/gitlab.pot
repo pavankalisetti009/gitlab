@@ -78352,6 +78352,9 @@ msgstr ""
 msgid "must be unique. This CA has already been configured for another namespace."
 msgstr ""
 
+msgid "must belong to either a project or an organization"
+msgstr ""
+
 msgid "must belong to same project of its requirement object."
 msgstr ""
 
