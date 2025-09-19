@@ -13,13 +13,19 @@ module RemoteDevelopment
     # @param [String] project_name
     # @param [String] namespace_path
     # @return [String]
-    def read_devfile_yaml(filename, project_name: "test-project", namespace_path: "test-group")
+    def read_devfile_yaml(
+      filename, project_name: "test-project",
+      namespace_path: "test-group",
+      main_component_name: "tooling-container",
+      is_legacy_poststart: false
+    )
       erb_devfile_contents = read_fixture_file(filename)
       fixture_file_binding = FixtureFileErbBinding.new.get_fixture_file_binding
       devfile_contents = ERB.new(erb_devfile_contents).result(fixture_file_binding)
       devfile_contents.gsub!('http://localhost/', root_url)
       devfile_contents.gsub!('test-project', project_name)
       devfile_contents.gsub!('test-group', namespace_path)
+      devfile_contents.gsub!('%<main_component_name>s', main_component_name) unless is_legacy_poststart
 
       format_clone_project_script!(devfile_contents, project_name: project_name, namespace_path: namespace_path)
 

@@ -332,13 +332,17 @@ module RemoteDevelopment
             ScriptsVolumeInserter.insert(
               configmap_name: name,
               containers: containers,
-              volumes: volumes
+              volumes: volumes,
+              devfile_commands: devfile_commands,
+              devfile_events: devfile_events,
+              processed_devfile: processed_devfile
             )
 
             KubernetesPoststartHookInserter.insert(
               containers: containers,
               devfile_commands: devfile_commands,
-              devfile_events: devfile_events
+              devfile_events: devfile_events,
+              processed_devfile: processed_devfile
             )
 
             nil

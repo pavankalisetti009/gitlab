@@ -19,7 +19,8 @@ if [ "$(git rev-parse --is-shallow-repository)" != "true" ]; then
 fi
 
 echo "$(date -Iseconds): Repository is shallow, proceeding with unshallow"
-UNSHALLOW_LOG_FILE="${GL_WORKSPACE_LOGS_DIR}/clone-unshallow.log"
+main_component_name="%<main_component_name>s"
+UNSHALLOW_LOG_FILE="${GL_WORKSPACE_LOGS_DIR}/%<main_component_name>s/clone-unshallow.log"
 
 echo "$(date -Iseconds): Starting unshallow in background, with output written to ${UNSHALLOW_LOG_FILE}"
 {

@@ -1,10 +1,11 @@
 #!/bin/sh
-
-echo "$(date -Iseconds): ----------------------------------------"
-echo "$(date -Iseconds): Starting GitLab Fork of VS Code server in background with output written to ${GL_WORKSPACE_LOGS_DIR}/start-vscode.log..."
+main_component_name="%<main_component_name>s"
 
 # Define log file path
-LOG_FILE="${GL_WORKSPACE_LOGS_DIR}/start-vscode.log"
+LOG_FILE="${GL_WORKSPACE_LOGS_DIR}/${main_component_name}/start-vscode.log"
+
+echo "$(date -Iseconds): ----------------------------------------"
+echo "$(date -Iseconds): Starting GitLab Fork of VS Code server in background with output written to ${LOG_FILE}..."
 
 mkdir -p "$(dirname "${LOG_FILE}")"
 
@@ -28,52 +29,52 @@ exec 1>>"${LOG_FILE}" 2>&1
 # # $GITLAB_WORKFLOW_TOKEN_FILE - the contents of this file populate GITLAB_WORKFLOW_TOKEN if it is not set.
 
 if [ -z "${GL_TOOLS_DIR}" ]; then
-	echo "$(date -Iseconds): \$GL_TOOLS_DIR is not set"
-	exit 1
+  echo "$(date -Iseconds): \$GL_TOOLS_DIR is not set"
+  exit 1
 fi
 
 if [ -z "${GL_VSCODE_LOG_LEVEL}" ]; then
-	GL_VSCODE_LOG_LEVEL="info"
-	echo "$(date -Iseconds): Setting default GL_VSCODE_LOG_LEVEL=${GL_VSCODE_LOG_LEVEL}"
+  GL_VSCODE_LOG_LEVEL="info"
+  echo "$(date -Iseconds): Setting default GL_VSCODE_LOG_LEVEL=${GL_VSCODE_LOG_LEVEL}"
 fi
 
 if [ -z "${GL_VSCODE_PORT}" ]; then
-	GL_VSCODE_PORT="60001"
-	echo "$(date -Iseconds): Setting default GL_VSCODE_PORT=${GL_VSCODE_PORT}"
+  GL_VSCODE_PORT="60001"
+  echo "$(date -Iseconds): Setting default GL_VSCODE_PORT=${GL_VSCODE_PORT}"
 fi
 
 if [ -z "${GL_VSCODE_EXTENSION_MARKETPLACE_SERVICE_URL}" ]; then
-	GL_VSCODE_EXTENSION_MARKETPLACE_SERVICE_URL="https://open-vsx.org/vscode/gallery"
-	echo "$(date -Iseconds): Setting default GL_VSCODE_EXTENSION_MARKETPLACE_SERVICE_URL=${GL_VSCODE_EXTENSION_MARKETPLACE_SERVICE_URL}"
+  GL_VSCODE_EXTENSION_MARKETPLACE_SERVICE_URL="https://open-vsx.org/vscode/gallery"
+  echo "$(date -Iseconds): Setting default GL_VSCODE_EXTENSION_MARKETPLACE_SERVICE_URL=${GL_VSCODE_EXTENSION_MARKETPLACE_SERVICE_URL}"
 fi
 
 if [ -z "${GL_VSCODE_EXTENSION_MARKETPLACE_ITEM_URL}" ]; then
-	GL_VSCODE_EXTENSION_MARKETPLACE_ITEM_URL="https://open-vsx.org/vscode/item"
-	echo "$(date -Iseconds): Setting default GL_VSCODE_EXTENSION_MARKETPLACE_ITEM_URL=${GL_VSCODE_EXTENSION_MARKETPLACE_ITEM_URL}"
+  GL_VSCODE_EXTENSION_MARKETPLACE_ITEM_URL="https://open-vsx.org/vscode/item"
+  echo "$(date -Iseconds): Setting default GL_VSCODE_EXTENSION_MARKETPLACE_ITEM_URL=${GL_VSCODE_EXTENSION_MARKETPLACE_ITEM_URL}"
 fi
 
 if [ -z "${GL_VSCODE_EXTENSION_MARKETPLACE_RESOURCE_URL_TEMPLATE}" ]; then
-	GL_VSCODE_EXTENSION_MARKETPLACE_RESOURCE_URL_TEMPLATE="https://open-vsx.org/api/{publisher}/{name}/{version}/file/{path}"
-	echo "$(date -Iseconds): Setting default GL_VSCODE_EXTENSION_MARKETPLACE_RESOURCE_URL_TEMPLATE=${GL_VSCODE_EXTENSION_MARKETPLACE_RESOURCE_URL_TEMPLATE}"
+  GL_VSCODE_EXTENSION_MARKETPLACE_RESOURCE_URL_TEMPLATE="https://open-vsx.org/api/{publisher}/{name}/{version}/file/{path}"
+  echo "$(date -Iseconds): Setting default GL_VSCODE_EXTENSION_MARKETPLACE_RESOURCE_URL_TEMPLATE=${GL_VSCODE_EXTENSION_MARKETPLACE_RESOURCE_URL_TEMPLATE}"
 fi
 
 PRODUCT_JSON_FILE="${GL_TOOLS_DIR}/vscode-reh-web/product.json"
 
 if [ "$GL_VSCODE_IGNORE_VERSION_MISMATCH" = true ]; then
-	# TODO: remove this section once issue is fixed - https://gitlab.com/gitlab-org/gitlab/-/issues/373669
-	# remove "commit" key from product.json to avoid client-server mismatch
-	# TODO: remove this once we are not worried about version mismatch
-	# https://gitlab.com/gitlab-org/gitlab/-/issues/373669
-	echo "$(date -Iseconds): Ignoring VS Code client-server version mismatch"
-	sed -i.bak '/"commit"/d' "${PRODUCT_JSON_FILE}" && rm "${PRODUCT_JSON_FILE}.bak"
-	echo "$(date -Iseconds): Removed 'commit' key from ${PRODUCT_JSON_FILE}"
+  # TODO: remove this section once issue is fixed - https://gitlab.com/gitlab-org/gitlab/-/issues/373669
+  # remove "commit" key from product.json to avoid client-server mismatch
+  # TODO: remove this once we are not worried about version mismatch
+  # https://gitlab.com/gitlab-org/gitlab/-/issues/373669
+  echo "$(date -Iseconds): Ignoring VS Code client-server version mismatch"
+  sed -i.bak '/"commit"/d' "${PRODUCT_JSON_FILE}" && rm "${PRODUCT_JSON_FILE}.bak"
+  echo "$(date -Iseconds): Removed 'commit' key from ${PRODUCT_JSON_FILE}"
 fi
 
 if [ "$GL_VSCODE_ENABLE_MARKETPLACE" = true ]; then
-	EXTENSIONS_GALLERY_KEY="{\\n\\t\"extensionsGallery\": {\\n\\t\\t\"serviceUrl\": \"${GL_VSCODE_EXTENSION_MARKETPLACE_SERVICE_URL}\",\\n\\t\\t\"itemUrl\": \"${GL_VSCODE_EXTENSION_MARKETPLACE_ITEM_URL}\",\\n\\t\\t\"resourceUrlTemplate\": \"${GL_VSCODE_EXTENSION_MARKETPLACE_RESOURCE_URL_TEMPLATE}\"\\n\\t},"
-	echo "$(date -Iseconds): '${EXTENSIONS_GALLERY_KEY}' in '${PRODUCT_JSON_FILE}' at the beginning of the file"
-	sed -i.bak "1s|.*|$EXTENSIONS_GALLERY_KEY|" "${PRODUCT_JSON_FILE}" && rm "${PRODUCT_JSON_FILE}.bak"
-	echo "$(date -Iseconds): Extensions gallery configuration added"
+  EXTENSIONS_GALLERY_KEY="{\\n\\t\"extensionsGallery\": {\\n\\t\\t\"serviceUrl\": \"${GL_VSCODE_EXTENSION_MARKETPLACE_SERVICE_URL}\",\\n\\t\\t\"itemUrl\": \"${GL_VSCODE_EXTENSION_MARKETPLACE_ITEM_URL}\",\\n\\t\\t\"resourceUrlTemplate\": \"${GL_VSCODE_EXTENSION_MARKETPLACE_RESOURCE_URL_TEMPLATE}\"\\n\\t},"
+  echo "$(date -Iseconds): '${EXTENSIONS_GALLERY_KEY}' in '${PRODUCT_JSON_FILE}' at the beginning of the file"
+  sed -i.bak "1s|.*|$EXTENSIONS_GALLERY_KEY|" "${PRODUCT_JSON_FILE}" && rm "${PRODUCT_JSON_FILE}.bak"
+  echo "$(date -Iseconds): Extensions gallery configuration added"
 fi
 
 echo "$(date -Iseconds): Contents of ${PRODUCT_JSON_FILE} are: "
@@ -91,11 +92,11 @@ echo "$(date -Iseconds): - Workspace trust disabled: yes"
 
 # The server execution is backgrounded to allow for the rest of the internal init scripts to execute.
 "${GL_TOOLS_DIR}/vscode-reh-web/bin/gitlab-webide-server" \
-	--host "${GL_VSCODE_HOST}" \
-	--port "${GL_VSCODE_PORT}" \
-	--log "${GL_VSCODE_LOG_LEVEL}" \
-	--without-connection-token \
-	--disable-workspace-trust &
+  --host "${GL_VSCODE_HOST}" \
+  --port "${GL_VSCODE_PORT}" \
+  --log "${GL_VSCODE_LOG_LEVEL}" \
+  --without-connection-token \
+  --disable-workspace-trust &
 
 echo "$(date -Iseconds): Finished starting GitLab Fork of VS Code server in background"
 echo "$(date -Iseconds): ----------------------------------------"

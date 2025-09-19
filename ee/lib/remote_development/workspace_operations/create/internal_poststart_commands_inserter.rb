@@ -100,7 +100,8 @@ module RemoteDevelopment
             format(
               INTERNAL_POSTSTART_COMMAND_CLONE_UNSHALLOW_SCRIPT,
               project_cloning_successful_file: Shellwords.shellescape(project_cloning_successful_file),
-              clone_dir: Shellwords.shellescape(clone_dir)
+              clone_dir: Shellwords.shellescape(clone_dir),
+              main_component_name: Shellwords.shellescape(main_component_name)
             )
 
           commands << {
@@ -115,10 +116,15 @@ module RemoteDevelopment
 
           # Add the start_sshd event
           start_sshd_command_id = "gl-start-sshd-command"
+          start_sshd_script =
+            format(
+              INTERNAL_POSTSTART_COMMAND_START_SSHD_SCRIPT,
+              main_component_name: Shellwords.shellescape(main_component_name)
+            )
           commands << {
             id: start_sshd_command_id,
             exec: {
-              commandLine: INTERNAL_POSTSTART_COMMAND_START_SSHD_SCRIPT,
+              commandLine: start_sshd_script,
               component: main_component_name,
               label: INTERNAL_BLOCKING_COMMAND_LABEL,
               workingDir: WORKSPACE_DATA_VOLUME_PATH
@@ -127,10 +133,15 @@ module RemoteDevelopment
 
           # Add the start_vscode event
           start_vscode_command_id = "gl-init-tools-command"
+          start_vscode_script =
+            format(
+              INTERNAL_POSTSTART_COMMAND_START_VSCODE_SCRIPT,
+              main_component_name: Shellwords.shellescape(main_component_name)
+            )
           commands << {
             id: start_vscode_command_id,
             exec: {
-              commandLine: INTERNAL_POSTSTART_COMMAND_START_VSCODE_SCRIPT,
+              commandLine: start_vscode_script,
               component: main_component_name,
               label: INTERNAL_BLOCKING_COMMAND_LABEL,
               workingDir: WORKSPACE_DATA_VOLUME_PATH
