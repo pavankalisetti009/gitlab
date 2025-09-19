@@ -94,7 +94,9 @@ module EE
       has_many :users_security_dashboard_projects
       has_many :security_dashboard_projects, through: :users_security_dashboard_projects, source: :project
 
-      has_many :group_saml_identities, -> { where.not(saml_provider_id: nil) }, class_name: "::Identity"
+      has_many :group_saml_identities, -> { where.not(saml_provider_id: nil) },
+        class_name: "::Identity"
+
       has_many :group_saml_providers, through: :group_saml_identities, source: :saml_provider
 
       # Protected Branch Access
@@ -112,8 +114,11 @@ module EE
 
       has_many :smartcard_identities
 
-      has_many :group_scim_identities, class_name: 'GroupScimIdentity'
-      has_many :instance_scim_identities, -> { where(group_id: nil) }, class_name: 'ScimIdentity'
+      has_many :group_scim_identities, class_name: 'GroupScimIdentity',
+        dependent: :destroy # rubocop:disable Cop/ActiveRecordDependent -- legacy usage
+
+      has_many :instance_scim_identities, -> { where(group_id: nil) }, class_name: 'ScimIdentity',
+        dependent: :destroy # rubocop:disable Cop/ActiveRecordDependent -- legacy usage
       has_many :scim_group_memberships, -> { where(group_id: nil) }, class_name: 'Authn::ScimGroupMembership'
 
       has_many :board_preferences, class_name: 'BoardUserPreference', inverse_of: :user
