@@ -22,7 +22,7 @@ query groupTotalRiskScore(
               project {
                 id
                 name
-                path
+                webUrl
               }
             }
           }

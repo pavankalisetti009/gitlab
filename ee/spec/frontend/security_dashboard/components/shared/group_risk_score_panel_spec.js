@@ -28,7 +28,7 @@ describe('GroupRiskScorePanel', () => {
       project: {
         id: 1,
         name: 'Project A',
-        path: 'project-a',
+        webUrl: 'project-a',
       },
     },
     {
@@ -37,7 +37,7 @@ describe('GroupRiskScorePanel', () => {
       project: {
         id: 2,
         name: 'Project B',
-        path: 'project-b',
+        webUrl: 'project-b',
       },
     },
   ];
