@@ -79,7 +79,7 @@ export default {
         if (!this.isTypeExpand) {
           document.querySelector(`.${JS_TOGGLE_EXPAND_CLASS}`).focus();
         } else {
-          document.querySelector(`.${JS_TOGGLE_COLLAPSE_CLASS}`).focus();
+          document.querySelector(`.${JS_TOGGLE_COLLAPSE_CLASS}`)?.focus();
         }
       });
     },
