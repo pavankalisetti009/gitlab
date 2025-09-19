@@ -3,11 +3,13 @@ import DateRange from '~/analytics/shared/components/daterange.vue';
 import { dateFormats } from '~/analytics/shared/constants';
 import dateFormat from '~/lib/dateformat';
 import UrlSync from '~/vue_shared/components/url_sync.vue';
+import glFeatureFlagsMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
 import PageHeading from '~/vue_shared/components/page_heading.vue';
 import { DEFAULT_NUMBER_OF_DAYS } from '../constants';
 import FilterBar from './filter_bar.vue';
 import ThroughputChart from './throughput_chart.vue';
 import ThroughputTableProvider from './throughput_table_provider.vue';
+import MigrationAlert from './migration_alert.vue';
 
 export default {
   name: 'MergeRequestAnalyticsApp',
@@ -18,7 +20,9 @@ export default {
     ThroughputChart,
     ThroughputTableProvider,
     UrlSync,
+    MigrationAlert,
   },
+  mixins: [glFeatureFlagsMixin()],
   props: {
     startDate: {
       type: Date,
@@ -51,6 +55,7 @@ export default {
 <template>
   <div class="merge-request-analytics-wrapper">
     <page-heading :heading="__('Merge request analytics')" />
+    <migration-alert v-if="glFeatures.consolidateMrAnalyticsInSharedDashboards" />
     <div
       class="gl-flex gl-flex-col gl-justify-between gl-gap-4 gl-border-b-1 gl-border-t-1 gl-border-b-default gl-border-t-default gl-bg-subtle gl-p-5 gl-border-b-solid gl-border-t-solid lg:gl-flex-row"
     >

@@ -14,6 +14,7 @@ module Analytics
       VALUE_STREAMS_DASHBOARD_NAME = 'value_streams_dashboard'
       AI_IMPACT_DASHBOARD_NAME = 'duo_and_sdlc_trends'
       CONTRIBUTION_DASHBOARD_NAME = 'contributions_dashboard'
+      MERGE_REQUEST_ANALYTICS_DASHBOARD_NAME = 'merge_request_analytics'
       PROJECT_VALUE_STREAMS_DASHBOARD_NAME = 'project_value_streams_dashboard'
       SCHEMA_PATH = 'ee/app/validators/json_schemas/analytics_dashboard.json'
 
@@ -168,7 +169,7 @@ module Analytics
         config = load_yaml_dashboard_config('dashboard', 'ee/lib/gitlab/analytics/merge_requests/dashboards')
 
         new(
-          slug: 'merge_request_analytics',
+          slug: MERGE_REQUEST_ANALYTICS_DASHBOARD_NAME,
           container: container,
           config: config,
           config_project: config_project,
