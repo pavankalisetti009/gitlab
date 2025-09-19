@@ -64,9 +64,10 @@ module Resolvers
                    end
 
           project_name = "#{project_types.sample}-#{project_suffixes.sample}"
+          namespace = Namespace.new(path: "group-#{i}")
 
           {
-            project: Project.new(id: i, name: project_name, path: "project-#{i}"),
+            project: Project.new(id: i, name: project_name, path: "project-#{i}", namespace: namespace),
             score: score,
             rating: rating
           }

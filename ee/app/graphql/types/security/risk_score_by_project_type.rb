@@ -9,6 +9,7 @@ module Types
       field :project, Types::ProjectType,
         null: true,
         experiment: { milestone: '18.4' },
+        skip_type_authorization: [:read_project], # Need to remove this when we will have real data
         description: 'Risk score belongs to the project.'
 
       field :score, GraphQL::Types::Float,
