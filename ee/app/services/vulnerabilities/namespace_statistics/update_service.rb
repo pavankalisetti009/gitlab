@@ -120,15 +120,7 @@ module Vulnerabilities
 
       def filter_diffs(diffs)
         diffs = diffs.reject { |item| item.nil? || (item.is_a?(Hash) && item.empty?) }
-        diffs = diffs.reject { |item| item['namespace_id'].nil? || item['traversal_ids'].nil? }
-
-        diffs.reject do |item|
-          # Parse the '{int, int, ..., int}' traversal_ids format to extract the first integer
-          root_ancestor_id = item['traversal_ids'].gsub(/[{}]/, '').split(',').first&.strip&.to_i
-
-          Feature.disabled?(:vulnerability_namespace_statistics_diff_aggregation,
-            Group.actor_from_id(root_ancestor_id))
-        end
+        diffs.reject { |item| item['namespace_id'].nil? || item['traversal_ids'].nil? }
       end
 
       def update_statistics_based_on_diff
