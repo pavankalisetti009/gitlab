@@ -21,6 +21,9 @@ module VirtualRegistries
         inverse_of: :upstream,
         autosave: true
       has_many :registries, class_name: '::VirtualRegistries::Container::Registry', through: :registry_upstreams
+      has_many :cache_entries,
+        class_name: '::VirtualRegistries::Container::Cache::Entry',
+        inverse_of: :upstream
 
       encrypts :username, :password
 
