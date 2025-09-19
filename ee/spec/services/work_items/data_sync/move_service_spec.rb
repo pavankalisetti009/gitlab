@@ -27,13 +27,6 @@ RSpec.describe WorkItems::DataSync::MoveService, feature_category: :team_plannin
     original_work_item.work_item_type.widget_classes(original_work_item.resource_parent.root_ancestor)
   end
 
-  before_all do
-    # Ensure support bot user is created so creation doesn't count towards query limit
-    # and we don't try to obtain an exclusive lease within a transaction.
-    # See https://gitlab.com/gitlab-org/gitlab/-/issues/509629
-    Users::Internal.support_bot_id
-  end
-
   before do
     stub_licensed_features(epics: true, work_item_status: true)
   end
