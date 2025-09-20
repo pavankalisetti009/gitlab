@@ -11,7 +11,6 @@ import AgentFlowDetails from './components/agent_flow_details.vue';
 export default {
   name: 'DuoAgentsPlatformShow',
   components: { AgentFlowDetails },
-  inject: ['isFlyout'],
   data() {
     return {
       agentFlow: null,
@@ -68,7 +67,6 @@ export default {
 </script>
 <template>
   <agent-flow-details
-    :class="isFlyout ? 'gl-mx-3' : ''"
     :is-loading="isLoading"
     :status="status"
     :agent-flow-definition="agentFlowDefinition"

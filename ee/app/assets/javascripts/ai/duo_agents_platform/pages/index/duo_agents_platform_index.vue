@@ -1,6 +1,5 @@
 <script>
 import { GlButton, GlExperimentBadge, GlLoadingIcon } from '@gitlab/ui';
-import emptyStateIllustrationPath from '@gitlab/svgs/dist/illustrations/empty-state/empty-pipeline-md.svg?url';
 import PageHeading from '~/vue_shared/components/page_heading.vue';
 import AgentFlowList from '../../components/common/agent_flow_list.vue';
 import { AGENTS_PLATFORM_NEW_ROUTE } from '../../router/constants';
@@ -64,7 +63,6 @@ export default {
     },
   },
   newPage: AGENTS_PLATFORM_NEW_ROUTE,
-  emptyStateIllustrationPath,
 };
 </script>
 <template>
