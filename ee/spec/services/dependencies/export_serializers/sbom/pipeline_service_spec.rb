@@ -26,6 +26,11 @@ RSpec.describe Dependencies::ExportSerializers::Sbom::PipelineService, feature_c
       it 'returns all the components' do
         expect(components.count).to be 441
       end
+
+      it 'reports no validation errors during export' do
+        expect(::Gitlab::AppLogger).not_to receive(:warn)
+        service_class.generate
+      end
     end
 
     context 'when the merged report is not valid' do
@@ -41,10 +46,37 @@ RSpec.describe Dependencies::ExportSerializers::Sbom::PipelineService, feature_c
         end
       end
 
-      it 'raises a SchemaValidationError' do
-        expect { service_class.generate }.to raise_error(
-          described_class::SchemaValidationError
-        ).with_message(/Invalid CycloneDX report: /)
+      it 'logs a warning for invalid CycloneDX report' do
+        expect(::Gitlab::AppLogger).to receive(:warn).with(
+          hash_including(
+            message: "SBoM report failed schema validation during export",
+            errors: anything,
+            pipeline_id: pipeline.id
+          )
+        )
+        service_class.generate
+      end
+
+      it 'increments metric for invalid CycloneDX report' do
+        counter = instance_double(Prometheus::Client::Counter)
+        allow(Gitlab::Metrics).to receive(:counter).and_call_original
+
+        expect(Gitlab::Metrics).to receive(:counter)
+                                     .with(
+                                       :sbom_schema_report_export_validation_failures_total,
+                                       'Count of SBoM schema validation failures during report export'
+                                     ).and_return(counter)
+
+        expect(counter).to receive(:increment).with(
+          project_id: pipeline.project_id,
+          pipeline_id: pipeline.id
+        )
+
+        service_class.generate
+      end
+
+      it 'still returns the report' do
+        expect(Gitlab::Json.parse(service_class.generate)).to include("components")
       end
     end
   end
