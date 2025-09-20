@@ -68,14 +68,16 @@ RSpec.describe Sbom::ExportSerializers::JsonService, feature_category: :dependen
   end
 
   describe '#execute' do
-    subject(:sbom_json) { service.execute }
+    let(:response) { service.execute }
+
+    subject(:sbom_json) { response.payload }
 
     context 'with valid report' do
       it 'generates a valid cyclonedx json file' do
         expect(sbom_json).not_to be_nil
         expect(sbom_json.as_json.with_indifferent_access).to eq json_file
-        expect(service.errors).to be_empty
-        expect(service.valid?).to be_truthy
+        expect(response.errors).to be_empty
+        expect(response.success?).to be_truthy
       end
     end
 
@@ -86,10 +88,10 @@ RSpec.describe Sbom::ExportSerializers::JsonService, feature_category: :dependen
         report
       end
 
-      it 'returns nil and sets errors' do
-        expect(sbom_json).to be_nil
-        expect(service.errors).not_to be_empty
-        expect(service.valid?).to be_falsey
+      it 'sets errors' do
+        sbom_json
+        expect(response.errors).not_to be_empty
+        expect(response.error?).to be_truthy
       end
     end
   end

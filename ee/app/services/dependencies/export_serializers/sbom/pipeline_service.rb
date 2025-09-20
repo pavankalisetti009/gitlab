@@ -22,10 +22,10 @@ module Dependencies
         private
 
         def sbom_data
-          entity = serializer_service.execute
-          return entity if serializer_service.valid?
+          response = serializer_service.execute
+          record_failed_status(response.errors) if response.error?
 
-          raise SchemaValidationError, "Invalid CycloneDX report: #{serializer_service.errors.join(', ')}"
+          response.payload
         end
 
         def serializer_service
@@ -34,6 +34,22 @@ module Dependencies
 
         def merged_report
           ::Sbom::MergeReportsService.new(pipeline.sbom_reports.reports).execute
+        end
+
+        def record_failed_status(errors)
+          ::Gitlab::AppLogger.warn(
+            message: "SBoM report failed schema validation during export",
+            errors: errors.join(', '),
+            pipeline_id: pipeline.id
+          )
+
+          ::Gitlab::Metrics.counter(
+            :sbom_schema_report_export_validation_failures_total,
+            'Count of SBoM schema validation failures during report export'
+          ).increment(
+            project_id: pipeline.project_id,
+            pipeline_id: pipeline.id
+          )
         end
 
         attr_reader :dependency_list_export, :scanner, :pipeline, :project
