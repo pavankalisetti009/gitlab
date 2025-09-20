@@ -114,6 +114,7 @@ export default {
       <security-policy-violations-modal
         v-if="showModal"
         v-model="showModal"
+        :mr="mr"
         :policies="policies"
         :mode="selectedModeOption"
         @close="toggleModal(false)"
