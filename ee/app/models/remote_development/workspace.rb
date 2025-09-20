@@ -15,9 +15,6 @@ module RemoteDevelopment
     belongs_to :agent, class_name: "Clusters::Agent", foreign_key: "cluster_agent_id", inverse_of: :workspaces
     belongs_to :personal_access_token, inverse_of: :workspace
 
-    attribute :desired_config_generator_version,
-      default: ::RemoteDevelopment::WorkspaceOperations::DesiredConfigGeneratorVersion::LATEST_VERSION
-
     has_many :workspace_variables, class_name: "RemoteDevelopment::WorkspaceVariable", inverse_of: :workspace
     # Currently we only support :environment type for user provided variables
     has_many :user_provided_workspace_variables, -> {
@@ -26,10 +23,12 @@ module RemoteDevelopment
     has_one :workspace_agentk_state, inverse_of: :workspace, class_name: "RemoteDevelopment::WorkspaceAgentkState"
     has_one :workspace_token, inverse_of: :workspace, class_name: "RemoteDevelopment::WorkspaceToken"
 
+    ignore_column :desired_config_generator_version, remove_with: '18.7', remove_after: '2025-11-15'
+
     validates :user, presence: true
     validates :agent, presence: true
     validates :personal_access_token, presence: true
-    validates :desired_config_generator_version, presence: true
+
     validates :workspaces_agent_config_version, presence: true, if: -> do
       agent&.unversioned_latest_workspaces_agent_config
     end

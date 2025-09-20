@@ -713,9 +713,7 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Main, "Integra
       let(:nonexistent_workspace) do
         instance_double(
           "RemoteDevelopment::Workspace", # rubocop:disable RSpec/VerifiedDoubleReference -- We're using the quoted version so we can use fast_spec_helper
-          id: 1, name: 'x', namespace: 'x', agent: agent,
-          desired_config_generator_version:
-            ::RemoteDevelopment::WorkspaceOperations::DesiredConfigGeneratorVersion::LATEST_VERSION
+          id: 1, name: 'x', namespace: 'x', agent: agent
         )
       end
 
