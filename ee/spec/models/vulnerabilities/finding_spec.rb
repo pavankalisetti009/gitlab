@@ -809,6 +809,29 @@ RSpec.describe Vulnerabilities::Finding, feature_category: :vulnerability_manage
       end
     end
 
+    describe '.with_token_status' do
+      let_it_be(:finding_with_status) { create(:vulnerabilities_finding) }
+      let_it_be(:token_status) do
+        create(:finding_token_status, finding: finding_with_status, status: ::Security::TokenStatus::ACTIVE)
+      end
+
+      let_it_be(:finding_without_status) { create(:vulnerabilities_finding) }
+
+      subject(:scope) { described_class.with_token_status }
+
+      context 'when a token status exists' do
+        it 'returns the finding with its status' do
+          expect(scope.first.token_status).to eq(::Security::TokenStatus::ACTIVE)
+        end
+      end
+
+      context 'when a token status does not exist' do
+        it 'returns UNKNOWN by default' do
+          expect(scope.last.token_status).to eq(::Security::TokenStatus::UNKNOWN)
+        end
+      end
+    end
+
     describe '#false_positive?' do
       let_it_be(:finding) { create(:vulnerabilities_finding) }
       let_it_be(:finding_with_fp) { create(:vulnerabilities_finding, vulnerability_flags: [create(:vulnerabilities_flag)]) }
@@ -1580,6 +1603,27 @@ RSpec.describe Vulnerabilities::Finding, feature_category: :vulnerability_manage
             create_signatures
             expect(finding1.eql?(finding2)).to be(should_match)
           end
+        end
+      end
+    end
+
+    describe '#token_status' do
+      context 'when a token status exists' do
+        let(:finding) { create(:vulnerabilities_finding) }
+        let!(:status) do
+          create(:finding_token_status, finding: finding, status: ::Security::TokenStatus::INACTIVE)
+        end
+
+        it 'returns the stored status' do
+          expect(finding.token_status).to eq(::Security::TokenStatus::INACTIVE)
+        end
+      end
+
+      context 'when no token status exists' do
+        let(:finding) { create(:vulnerabilities_finding) }
+
+        it 'returns UNKNOWN by default' do
+          expect(finding.token_status).to eq(::Security::TokenStatus::UNKNOWN)
         end
       end
     end
