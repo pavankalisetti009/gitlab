@@ -29,6 +29,11 @@ module Mutations
           required: false,
           description: 'Path to the configuration file for the AI flow trigger.'
 
+        argument :ai_catalog_item_consumer_id, ::Types::GlobalIDType[::Ai::Catalog::ItemConsumer],
+          prepare: ->(global_id, _ctx) { global_id&.model_id&.to_i },
+          required: false,
+          description: 'AI catalog item consumer to use instead of config_path.'
+
         field :ai_flow_trigger,
           Types::Ai::FlowTriggerType,
           description: 'Updated AI flow trigger.'

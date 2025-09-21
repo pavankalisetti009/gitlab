@@ -6,9 +6,10 @@ RSpec.describe Ai::FlowTriggers::CreateService, feature_category: :agent_foundat
   let_it_be(:project) { create(:project, :in_group) }
   let_it_be(:different_group) { create(:group) }
   let_it_be(:human_user) { create(:user, owner_of: [project.group, different_group]) }
+  let_it_be(:composite_identity_enforced) { false }
   let_it_be(:service_account_provisioned_by_group) do
     create(:service_account, developer_of: project, provisioned_by_group: project.group,
-      composite_identity_enforced: false)
+      composite_identity_enforced: composite_identity_enforced)
   end
 
   let(:current_user) { human_user }
@@ -41,6 +42,8 @@ RSpec.describe Ai::FlowTriggers::CreateService, feature_category: :agent_foundat
     end
 
     context 'when duo_workflow_use_composite_identity is disabled' do
+      let_it_be(:composite_identity_enforced) { false }
+
       before do
         stub_feature_flags(duo_workflow_use_composite_identity: false)
       end
@@ -53,7 +56,7 @@ RSpec.describe Ai::FlowTriggers::CreateService, feature_category: :agent_foundat
       end
     end
 
-    context 'with invalid params' do
+    context 'when using invalid params' do
       let(:event_types) { [99] }
 
       it 'returns the error' do
@@ -78,6 +81,48 @@ RSpec.describe Ai::FlowTriggers::CreateService, feature_category: :agent_foundat
       it 'returns an error and does not create the flow trigger' do
         response = service.execute(params)
         expect(response).not_to be_success
+      end
+    end
+
+    context 'when using catalog item configuration' do
+      let_it_be(:item_consumer) { create(:ai_catalog_item_consumer, project: project) }
+
+      let(:catalog_params) do
+        {
+          user_id: service_account.id,
+          event_types: event_types,
+          description: "catalog flow trigger",
+          ai_catalog_item_consumer_id: item_consumer.id
+        }
+      end
+
+      it 'creates a flow trigger with catalog item' do
+        response = service.execute(catalog_params)
+        expect(response).to be_success
+        flow_trigger = response.payload
+
+        expect(flow_trigger).to be_persisted
+        expect(flow_trigger.ai_catalog_item_consumer).to eq(item_consumer)
+        expect(flow_trigger.config_path).to be_nil
+      end
+    end
+
+    context 'with invalid catalog item parameters' do
+      let_it_be(:item_consumer) { create(:ai_catalog_item_consumer, project: create(:project)) }
+
+      let(:catalog_params) do
+        {
+          user_id: service_account.id,
+          event_types: event_types,
+          description: "catalog flow trigger",
+          ai_catalog_item_consumer_id: item_consumer.id
+        }
+      end
+
+      it 'returns an error' do
+        response = service.execute(catalog_params)
+        expect(response).to be_error
+        expect(response.message).to include('ai_catalog_item_consumer project does not match project')
       end
     end
   end

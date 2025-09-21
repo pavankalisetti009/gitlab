@@ -10109,6 +10109,7 @@ CREATE TABLE ai_flow_triggers (
     event_types smallint[] DEFAULT '{}'::smallint[] NOT NULL,
     created_at timestamp with time zone NOT NULL,
     updated_at timestamp with time zone NOT NULL,
+    ai_catalog_item_consumer_id bigint,
     CONSTRAINT check_87b77d9d54 CHECK ((char_length(description) <= 255)),
     CONSTRAINT check_f3a5b0bd6e CHECK ((char_length(config_path) <= 255))
 );
@@ -38112,6 +38113,8 @@ CREATE INDEX index_ai_feature_settings_on_ai_self_hosted_model_id ON ai_feature_
 
 CREATE UNIQUE INDEX index_ai_feature_settings_on_feature ON ai_feature_settings USING btree (feature);
 
+CREATE INDEX index_ai_flow_triggers_on_ai_catalog_item_consumer_id ON ai_flow_triggers USING btree (ai_catalog_item_consumer_id);
+
 CREATE INDEX index_ai_flow_triggers_on_project_id ON ai_flow_triggers USING btree (project_id);
 
 CREATE INDEX index_ai_flow_triggers_on_user_id ON ai_flow_triggers USING btree (user_id);
@@ -47979,6 +47982,9 @@ ALTER TABLE ONLY zentao_tracker_data
 
 ALTER TABLE ONLY work_item_number_field_values
     ADD CONSTRAINT fk_72d475d3cd FOREIGN KEY (namespace_id) REFERENCES namespaces(id) ON DELETE CASCADE;
+
+ALTER TABLE ONLY ai_flow_triggers
+    ADD CONSTRAINT fk_72f713947b FOREIGN KEY (ai_catalog_item_consumer_id) REFERENCES ai_catalog_item_consumers(id) ON DELETE CASCADE;
 
 ALTER TABLE ONLY packages_conan_metadata
     ADD CONSTRAINT fk_7302a29cd9 FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE CASCADE;

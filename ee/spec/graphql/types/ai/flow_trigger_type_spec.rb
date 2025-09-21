@@ -16,6 +16,7 @@ RSpec.describe Types::Ai::FlowTriggerType, feature_category: :agent_foundations 
       config_url
       project
       user
+      ai_catalog_item_consumer
       created_at
       updated_at
     ]
