@@ -30,9 +30,9 @@ RSpec.describe Gitlab::Middleware::JsonValidation, feature_category: :shared do
 
       expect(middleware.instance_variable_get(:@default_limits)).to include(
         max_depth: 10,
-        max_array_size: 2000,
-        max_hash_size: 2000,
-        max_total_elements: 10000,
+        max_array_size: 50000,
+        max_hash_size: 50000,
+        max_total_elements: 100000,
         max_json_size_bytes: 30.megabytes,
         mode: :logging
       )
