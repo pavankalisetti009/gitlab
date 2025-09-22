@@ -40403,6 +40403,8 @@ CREATE INDEX index_notes_on_noteable_id_and_noteable_type_and_system ON notes US
 
 CREATE INDEX index_notes_on_noteable_id_noteable_type_and_id ON notes USING btree (noteable_id, noteable_type, id);
 
+CREATE INDEX index_notes_on_organization_id ON notes USING btree (organization_id);
+
 CREATE INDEX index_notes_on_project_id_and_id_and_system_false ON notes USING btree (project_id, id) WHERE (NOT system);
 
 CREATE INDEX index_notes_on_project_id_and_noteable_type ON notes USING btree (project_id, noteable_type);
@@ -48898,6 +48900,9 @@ ALTER TABLE ONLY events
 
 ALTER TABLE ONLY workspace_agentk_states
     ADD CONSTRAINT fk_eeddb6a618 FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE CASCADE;
+
+ALTER TABLE ONLY notes
+    ADD CONSTRAINT fk_eef74d5cc8 FOREIGN KEY (organization_id) REFERENCES organizations(id) ON DELETE CASCADE;
 
 ALTER TABLE ONLY coverage_fuzzing_corpuses
     ADD CONSTRAINT fk_ef5ebf339f FOREIGN KEY (package_id) REFERENCES packages_packages(id) ON DELETE CASCADE;
