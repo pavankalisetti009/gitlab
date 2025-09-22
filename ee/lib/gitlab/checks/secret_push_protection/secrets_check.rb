@@ -59,6 +59,16 @@ module Gitlab
               exclusions: exclusions_manager.active_exclusions,
               extra_headers: extra_headers)
           end
+        rescue StandardError => e
+          ::Gitlab::ErrorTracking.track_exception(e)
+          # Log the error but don't re-raise to prevent blocking pushes
+          secret_detection_logger.error(
+            build_structured_payload(
+              message: "Secret push protection failed: #{e.message}",
+              class: self.class.name,
+              error_class: e.class.name
+            )
+          )
         end
 
         def run_validation!
