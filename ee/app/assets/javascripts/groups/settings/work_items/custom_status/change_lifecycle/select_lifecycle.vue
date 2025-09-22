@@ -1,6 +1,7 @@
 <script>
 import { GlFormRadio, GlFormRadioGroup, GlButton, GlLoadingIcon, GlAlert } from '@gitlab/ui';
 import { s__, sprintf } from '~/locale';
+import { NAME_TO_TEXT_MAP } from '~/work_items/constants';
 import * as Sentry from '~/sentry/sentry_browser_wrapper';
 import namespaceLifecyclesQuery from 'ee/groups/settings/work_items/custom_status/namespace_lifecycles.query.graphql';
 import LifecycleDetail from 'ee/groups/settings/work_items/custom_status/lifecycle_detail.vue';
@@ -67,7 +68,7 @@ export default {
         s__(
           "WorkItem|Select the lifecycle you'd like to use for items with type: %{workItemType}. Next, you'll define how to map existing work items to the new lifecycle.",
         ),
-        { workItemType: this.workItemType },
+        { workItemType: NAME_TO_TEXT_MAP[this.workItemType] },
       );
     },
     currentLifecycle() {
