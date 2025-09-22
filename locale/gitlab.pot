@@ -28642,6 +28642,9 @@ msgstr ""
 msgid "Follow"
 msgstr ""
 
+msgid "Follow the latest updates"
+msgstr ""
+
 msgid "Followed Users' Activity"
 msgstr ""
 
@@ -33184,9 +33187,6 @@ msgstr ""
 msgid "HomepageActivityWidget|Activity in projects you have starred."
 msgstr ""
 
-msgid "HomepageActivityWidget|Filter your activity feed to see different types of events."
-msgstr ""
-
 msgid "HomepageActivityWidget|Followed users"
 msgstr ""
 
@@ -36064,6 +36064,9 @@ msgid "Items are already linked"
 msgstr ""
 
 msgid "Items below are excluded from the active count"
+msgstr ""
+
+msgid "Items that need your attention"
 msgstr ""
 
 msgid "Iteration"
@@ -67523,9 +67526,6 @@ msgstr ""
 msgid "To-Do List"
 msgstr ""
 
-msgid "To-do items"
-msgstr ""
-
 msgid "Today"
 msgstr ""
 
@@ -67567,6 +67567,9 @@ msgstr ""
 msgid "Todos|Assigned"
 msgstr ""
 
+msgid "Todos|Assignments"
+msgstr ""
+
 msgid "Todos|At"
 msgstr ""
 
@@ -67594,7 +67597,13 @@ msgstr ""
 msgid "Todos|Due today"
 msgstr ""
 
+msgid "Todos|Everything"
+msgstr ""
+
 msgid "Todos|Failed adding todo. Try again later."
+msgstr ""
+
+msgid "Todos|Failed builds"
 msgstr ""
 
 msgid "Todos|Failed to snooze todo. Try again later."
@@ -67604,9 +67613,6 @@ msgid "Todos|Failed to un-snooze todo. Try again later."
 msgstr ""
 
 msgid "Todos|Filter to-do items"
-msgstr ""
-
-msgid "Todos|Filter your to-do items to focus on what needs your attention."
 msgstr ""
 
 msgid "Todos|For one hour"
@@ -67674,6 +67680,9 @@ msgstr ""
 msgid "Todos|Mentioned"
 msgstr ""
 
+msgid "Todos|Mentions"
+msgstr ""
+
 msgid "Todos|Merge request"
 msgstr ""
 
@@ -67726,6 +67735,9 @@ msgid "Todos|Removed snooze from 1 to-do"
 msgid_plural "Todos|Removed snooze from %d to-dos"
 msgstr[0] ""
 msgstr[1] ""
+
+msgid "Todos|Requested reviews"
+msgstr ""
 
 msgid "Todos|Restored 1 to-do"
 msgid_plural "Todos|Restored %d to-dos"
@@ -67822,6 +67834,9 @@ msgid "Todos|Undo"
 msgstr ""
 
 msgid "Todos|Unmergeable"
+msgstr ""
+
+msgid "Todos|Unmergeable changes"
 msgstr ""
 
 msgid "Todos|Until a specific time and date"
