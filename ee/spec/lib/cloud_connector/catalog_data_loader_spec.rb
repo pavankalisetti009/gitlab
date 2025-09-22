@@ -41,14 +41,6 @@ RSpec.describe CloudConnector::CatalogDataLoader, feature_category: :plan_provis
       include_examples 'returns expected loader class', Gitlab::CloudConnector::DataModel::YamlDataLoader
     end
 
-    context 'when Duo self-hosted is used' do
-      before do
-        allow(Ai::Setting).to receive(:self_hosted?).and_return(true)
-      end
-
-      include_examples 'returns expected loader class', Gitlab::CloudConnector::DataModel::YamlDataLoader
-    end
-
     context 'when ENV var is set to true' do
       before do
         stub_env('CLOUD_CONNECTOR_SELF_SIGN_TOKENS', '1')

@@ -63,8 +63,6 @@ RSpec.describe Gitlab::Llm::AiGateway::Client, feature_category: :ai_abstraction
         headers: response_headers
       )
 
-    allow(CloudConnector::AvailableServices).to receive(:find_by_name).and_return(service)
-    allow(service).to receive(:access_token).and_return(expected_access_token)
     allow(user).to receive(:allowed_to_use).and_return(auth_response)
   end
 
