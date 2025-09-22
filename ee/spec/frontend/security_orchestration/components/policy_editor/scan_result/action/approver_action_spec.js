@@ -160,6 +160,7 @@ describe('ApproverAction', () => {
       expect(findSectionLayout().text()).toContain(
         'Warn users with a bot comment and select users as security consultants that developers may contact for support in addressing violations.',
       );
+      expect(findSectionLayout().text()).toContain('Require  approval from:');
     });
 
     it('renders the popover', () => {

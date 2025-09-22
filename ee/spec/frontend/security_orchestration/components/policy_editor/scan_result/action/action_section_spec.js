@@ -40,6 +40,11 @@ describe('ActionSection', () => {
       factory({ props: { actionIndex: 1 } });
       expect(findActionSeperator().exists()).toBe(true);
     });
+
+    it('does not render the remove button when the action type is warn', () => {
+      factory({ props: { isWarnType: true } });
+      expect(findRemoveButton().exists()).toBe(false);
+    });
   });
 
   describe('events', () => {

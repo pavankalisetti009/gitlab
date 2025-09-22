@@ -15,7 +15,9 @@ import { mapYamlApproversActionsToSelectedApproverTypes } from 'ee/security_orch
 import ApproverSelect from './approver_select.vue';
 
 export default {
+  WARN_ID: 'warn-help-text',
   i18n: {
+    WARN_TEMPLATE,
     WARN_TEMPLATE_HELP_TITLE,
     WARN_TEMPLATE_HELP_DESCRIPTION,
     ADD_APPROVER_LABEL,
@@ -91,7 +93,7 @@ export default {
       return this.approvalsRequiredValid && this.isApproverFieldValid;
     },
     humanizedTemplate() {
-      return this.isWarnType ? WARN_TEMPLATE : getDefaultHumanizedTemplate(this.approvalsRequired);
+      return getDefaultHumanizedTemplate(this.approvalsRequired);
     },
     isApproverFieldValid() {
       return this.errors
@@ -190,15 +192,25 @@ export default {
 
 <template>
   <section-layout
-    class="gl-pr-0"
+    :class="{ 'gl-pr-7': isWarnType, 'gl-pr-0': !isWarnType }"
     content-classes="gl-py-5 gl-pr-2 gl-bg-default"
     :show-remove-button="false"
   >
     <template #content>
-      <div
-        class="gl-mb-3 gl-ml-5"
-        :class="{ 'gl-flex': !isWarnType, 'gl-items-center': !isWarnType }"
-      >
+      <div v-if="isWarnType" class="gl-mb-3 gl-ml-5">
+        <gl-sprintf :message="$options.i18n.WARN_TEMPLATE">
+          <template #require="{ content }">
+            <strong>{{ content }}</strong>
+          </template>
+        </gl-sprintf>
+        <gl-icon :id="$options.WARN_ID" name="information-o" variant="info" class="gl-ml-3" />
+        <gl-popover :target="$options.WARN_ID" placement="bottom">
+          <template #title>{{ $options.i18n.WARN_TEMPLATE_HELP_TITLE }}</template>
+          {{ $options.i18n.WARN_TEMPLATE_HELP_DESCRIPTION }}
+        </gl-popover>
+      </div>
+
+      <div class="gl-mb-3 gl-ml-5 gl-flex gl-items-center">
         <gl-sprintf :message="humanizedTemplate">
           <template #require="{ content }">
             <strong>{{ content }}</strong>
@@ -221,13 +233,6 @@ export default {
             <strong class="gl-mr-3">{{ content }}</strong>
           </template>
         </gl-sprintf>
-        <template v-if="isWarnType">
-          <gl-icon :id="$options.warnId" name="information-o" variant="info" class="gl-ml-3" />
-          <gl-popover :target="$options.warnId" placement="bottom">
-            <template #title>{{ $options.i18n.WARN_TEMPLATE_HELP_TITLE }}</template>
-            {{ $options.i18n.WARN_TEMPLATE_HELP_DESCRIPTION }}
-          </gl-popover>
-        </template>
       </div>
 
       <approver-select

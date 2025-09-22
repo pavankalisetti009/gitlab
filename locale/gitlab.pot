@@ -59058,6 +59058,9 @@ msgstr ""
 msgid "SecurityOrchestration|No linked groups"
 msgstr ""
 
+msgid "SecurityOrchestration|No other actions are allowed in warn mode"
+msgstr ""
+
 msgid "SecurityOrchestration|No policies found"
 msgstr ""
 
@@ -59679,9 +59682,6 @@ msgid "SecurityOrchestration|Vulnerability management"
 msgstr ""
 
 msgid "SecurityOrchestration|Vulnerability management policy"
-msgstr ""
-
-msgid "SecurityOrchestration|Warn in merge request"
 msgstr ""
 
 msgid "SecurityOrchestration|Warn mode"

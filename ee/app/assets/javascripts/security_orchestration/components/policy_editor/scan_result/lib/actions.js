@@ -82,8 +82,6 @@ export const REQUIRE_APPROVAL_TYPE = 'require_approval';
 
 export const BOT_MESSAGE_TYPE = 'send_bot_message';
 
-export const WARN_TYPE = 'warn';
-
 export const buildApprovalAction = (approvalsRequired = 1) => {
   return {
     type: REQUIRE_APPROVAL_TYPE,
@@ -104,15 +102,11 @@ export const buildAction = (type) => {
   switch (type) {
     case REQUIRE_APPROVAL_TYPE:
       return buildApprovalAction();
-    case WARN_TYPE:
-      return buildWarnAction();
     case BOT_MESSAGE_TYPE:
     default:
       return buildBotMessageAction();
   }
 };
-
-export const WARN_TYPE_TEXT = s__('SecurityOrchestration|Warn in merge request');
 
 export const ACTION_OPTIONS = {
   [REQUIRE_APPROVAL_TYPE]: s__('SecurityOrchestration|Require Approvers'),
@@ -120,10 +114,7 @@ export const ACTION_OPTIONS = {
 };
 
 export const ACTION_LISTBOX_ITEMS = () => {
-  const options = {
-    ...ACTION_OPTIONS,
-    ...(gon.features?.securityPolicyApprovalWarnMode && { [WARN_TYPE]: WARN_TYPE_TEXT }),
-  };
+  const options = { ...ACTION_OPTIONS };
 
   return mapToListboxItems(options);
 };

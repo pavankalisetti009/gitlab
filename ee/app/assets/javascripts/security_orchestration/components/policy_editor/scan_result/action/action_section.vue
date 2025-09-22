@@ -90,6 +90,7 @@ export default {
       </div>
       <div class="security-policies-bg-subtle">
         <gl-button
+          v-if="!isWarnType"
           icon="remove"
           category="tertiary"
           :aria-label="__('Remove')"
