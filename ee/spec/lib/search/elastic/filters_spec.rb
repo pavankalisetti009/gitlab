@@ -3618,7 +3618,26 @@ RSpec.describe ::Search::Elastic::Filters, :elastic_helpers, feature_category: :
   end
 
   describe '.by_noteable_type' do
-    let(:query_hash) { { query: { bool: { filter: [] } } } }
+    # use a query (including highlight) like what NoteClassProxy uses
+    let(:query_hash) do
+      {
+        query: {
+          bool: {
+            must: [],
+            should: [],
+            filter: []
+          }
+        },
+        highlight: {
+          fields: {
+            note: {}
+          },
+          number_of_fragments: 0,
+          pre_tags: [Elastic::Latest::GitClassProxy::HIGHLIGHT_START_TAG],
+          post_tags: [Elastic::Latest::GitClassProxy::HIGHLIGHT_END_TAG]
+        }
+      }
+    end
 
     context 'when search_level is global' do
       it 'returns the original query_hash without modifications' do
@@ -3651,8 +3670,30 @@ RSpec.describe ::Search::Elastic::Filters, :elastic_helpers, feature_category: :
       end
     end
 
-    context 'when valid noteable_type is provided' do
+    context 'when only valid noteable_type is provided' do
       let(:options) { { search_level: 'project', noteable_type: 'Issue' } }
+
+      it 'keeps the highlight if set' do
+        described_class.by_noteable_type(query_hash: query_hash, options: options)
+
+        expect(query_hash).to have_key(:highlight)
+      end
+
+      it 'does not set _source to only include noteable_id' do
+        described_class.by_noteable_type(query_hash: query_hash, options: options)
+
+        expect(query_hash).not_to have_key(:_source)
+      end
+
+      it 'does not sets size' do
+        described_class.by_noteable_type(query_hash: query_hash, options: options)
+
+        expect(query_hash).not_to have_key(:size)
+      end
+    end
+
+    context 'when valid noteable_type and related_ids_only is provided' do
+      let(:options) { { search_level: 'project', noteable_type: 'Issue', related_ids_only: true } }
 
       it 'does not provide highlight' do
         described_class.by_noteable_type(query_hash: query_hash, options: options)

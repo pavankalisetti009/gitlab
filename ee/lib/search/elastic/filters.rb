@@ -1031,8 +1031,12 @@ module Search
           end
 
           context.name(:filters) do
-            query_hash[:_source] = ['noteable_id']
-            query_hash[:size] = options.fetch(:related_size, DEFAULT_RELATED_SIZE)
+            if options[:related_ids_only]
+              query_hash[:_source] = ['noteable_id']
+              # basic_query_hash automatically adds highlight
+              query_hash.delete(:highlight)
+              query_hash[:size] = options.fetch(:related_size, DEFAULT_RELATED_SIZE)
+            end
 
             add_filter(query_hash, :query, :bool, :filter) do
               {
