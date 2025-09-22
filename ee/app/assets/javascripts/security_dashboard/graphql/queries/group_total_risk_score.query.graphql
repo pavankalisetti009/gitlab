@@ -3,6 +3,7 @@ query groupTotalRiskScore(
   $projectId: [ID!]
   $includeByDefault: Boolean!
   $includeByProject: Boolean!
+  $projectCount: Int!
 ) {
   group(fullPath: $fullPath) {
     id
@@ -15,7 +16,7 @@ query groupTotalRiskScore(
         }
         score @include(if: $includeByDefault)
         ... @include(if: $includeByProject) {
-          byProject {
+          byProject(first: $projectCount) {
             nodes {
               rating
               score
@@ -24,6 +25,9 @@ query groupTotalRiskScore(
                 name
                 webUrl
               }
+            }
+            pageInfo {
+              hasNextPage
             }
           }
         }
