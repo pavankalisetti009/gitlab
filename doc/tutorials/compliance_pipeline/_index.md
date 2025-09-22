@@ -73,7 +73,7 @@ To create the compliance pipeline project:
 To add compliance pipeline configuration to `Tutorial compliance project`:
 
 1. On the left sidebar, select **Search or go to** and find the `Tutorial compliance project` project.
-1. Select **Build > Pipeline editor**.
+1. Select **Build** > **Pipeline editor**.
 1. Select **Configure pipeline**.
 1. In the pipeline editor, replace the default configuration with:
 
@@ -134,7 +134,7 @@ pipeline configuration in `Tutorial compliance project`.
 To run the compliance pipeline configuration in `Tutorial project`:
 
 1. On the left sidebar, select **Search or go to** and find the `Tutorial project` project.
-1. Select **Build > Pipelines**.
+1. Select **Build** > **Pipelines**.
 1. Select **New pipeline**.
 1. On the **New pipeline** page, select **Run pipeline**.
 
@@ -152,7 +152,7 @@ compliance pipeline configuration to refer to it.
 To create the regular pipeline configuration:
 
 1. On the left sidebar, select **Search or go to** and find the `Tutorial project` project.
-1. Select **Build > Pipeline editor**.
+1. Select **Build** > **Pipeline editor**.
 1. Select **Configure pipeline**.
 1. In the pipeline editor, replace the default configuration with:
 
@@ -168,7 +168,7 @@ To create the regular pipeline configuration:
 To combine the new project pipeline configuration with the compliance pipeline configuration:
 
 1. On the left sidebar, select **Search or go to** and find the `Tutorial compliance project` project.
-1. Select **Build > Pipeline editor**.
+1. Select **Build** > **Pipeline editor**.
 1. In the existing configuration, add:
 
    ```yaml
@@ -182,7 +182,7 @@ To combine the new project pipeline configuration with the compliance pipeline c
 To confirm the regular pipeline configuration is combined with the compliance pipeline configuration:
 
 1. On the left sidebar, select **Search or go to** and find the `Tutorial project` project.
-1. Select **Build > Pipelines**.
+1. Select **Build** > **Pipelines**.
 1. Select **New pipeline**.
 1. On the **New pipeline** page, select **Run pipeline**.
 

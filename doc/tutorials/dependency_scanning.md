@@ -111,7 +111,7 @@ scanned for vulnerabilities.
 
    Use the content shown in the [Yarn lockfile](#yarn-lock-file-content) section.
 
-1. Go to **Build > Pipelines** and confirm that the latest pipeline completed successfully.
+1. Go to **Build** > **Pipelines** and confirm that the latest pipeline completed successfully.
 
 In the pipeline, dependency scanning runs and the vulnerabilities are detected automatically.
 
@@ -146,7 +146,7 @@ need to upgrade the `fastify` package.
 To fix the vulnerability:
 
 1. On the left sidebar, select **Search or go to** and find your project.
-1. In the upper right, select **Code > Gitpod** and open
+1. In the upper right, select **Code** > **Gitpod** and open
    Gitpod in a new tab.
 1. If you are prompted to, select **Continue with GitLab**, then select **Authorize**.
 1. On the **New Workspace** page, select **Continue**.
@@ -168,7 +168,7 @@ To fix the vulnerability:
    ```
 
 1. Switch to the GitLab browser tab.
-1. Go to **Code > Merge requests**, then select **Create merge request**.
+1. Go to **Code** > **Merge requests**, then select **Create merge request**.
 1. On the **New merge request** page, scroll to the bottom and select **Create merge request**.
    Wait for the merge request pipeline to complete.
 1. Refresh the page, then select **Merge**.
@@ -231,7 +231,7 @@ To add a new vulnerability:
    ```
 
 1. Switch to the GitLab browser tab.
-1. Go to **Code > Merge requests**, then select **Create merge request**.
+1. Go to **Code** > **Merge requests**, then select **Create merge request**.
 1. On the **New merge request** page, scroll to the bottom and select **Create merge request**.
 
 Wait for the merge request pipeline to complete, then refresh the page. The merge
