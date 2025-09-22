@@ -5,16 +5,24 @@ require 'spec_helper'
 RSpec.describe Gitlab::CodeOwners, feature_category: :source_code_management do
   include FakeBlobHelpers
 
-  let_it_be(:code_owner) { create(:user, username: 'owner-1') }
+  let_it_be(:code_owner_1) { create(:user, username: 'owner-1') }
+  let_it_be(:code_owner_2) { create(:user, username: 'owner-2') }
 
   describe 'mocked' do
     let(:project) { create(:project, :repository) }
-    let(:codeowner_content) { 'docs/CODEOWNERS @owner-1' }
     let(:codeowner_blob) { fake_blob(path: 'CODEOWNERS', data: codeowner_content) }
     let(:codeowner_blob_ref) { fake_blob(path: 'CODEOWNERS', data: codeowner_content) }
+    let(:codeowner_content) do
+      <<~CODEOWNERS
+
+        docs/ @owner-2
+        docs/CODEOWNERS @owner-1
+      CODEOWNERS
+    end
 
     before do
-      project.add_developer(code_owner)
+      project.add_developer(code_owner_1)
+      project.add_developer(code_owner_2)
       allow(project.repository).to receive(:code_owners_blob)
         .with(ref: codeowner_lookup_ref)
         .and_return(codeowner_blob)
@@ -24,20 +32,34 @@ RSpec.describe Gitlab::CodeOwners, feature_category: :source_code_management do
       subject { described_class.for_blob(project, blob) }
 
       let(:branch) { TestEnv::BRANCH_SHA['with-codeowners'] }
-      let(:blob) { project.repository.blob_at(branch, 'docs/CODEOWNERS') }
       let(:codeowner_lookup_ref) { branch }
 
       context 'when the feature is available' do
         before do
           stub_licensed_features(code_owners: true)
+          allow(Gitlab::CodeOwners::Loader).to receive(:new).and_call_original
         end
 
-        it 'returns users for a blob' do
-          is_expected.to include(code_owner)
+        context 'when the blob is a tree' do
+          let(:blob) { project.repository.blobs_at([[branch, 'docs']]).first }
+
+          it 'returns users for a blob' do
+            is_expected.to contain_exactly(code_owner_2)
+          end
+        end
+
+        context 'when the blob is not a tree' do
+          let(:blob) { project.repository.blob_at(branch, 'docs/CODEOWNERS') }
+
+          it 'returns users for a blob' do
+            is_expected.to contain_exactly(code_owner_1)
+          end
         end
       end
 
       context 'when the feature is not available' do
+        let(:blob) { project.repository.blob_at(branch, 'docs/CODEOWNERS') }
+
         before do
           stub_licensed_features(code_owners: false)
         end
@@ -137,7 +159,7 @@ RSpec.describe Gitlab::CodeOwners, feature_category: :source_code_management do
               let(:modified_paths) { ['docs/CODEOWNERS'] }
 
               it 'returns owners for merge request' do
-                expect(entries.first).to have_attributes(pattern: 'docs/CODEOWNERS', users: [code_owner])
+                expect(entries.first).to have_attributes(pattern: 'docs/CODEOWNERS', users: [code_owner_1])
               end
             end
 
@@ -184,7 +206,7 @@ RSpec.describe Gitlab::CodeOwners, feature_category: :source_code_management do
 
           it 'returns owners at the specified ref' do
             expect(merge_request).not_to receive(:merge_head_diff)
-            expect(entries.first).to have_attributes(pattern: 'docs/CODEOWNERS', users: [code_owner])
+            expect(entries.first).to have_attributes(pattern: 'docs/CODEOWNERS', users: [code_owner_1])
           end
         end
       end
@@ -205,9 +227,9 @@ RSpec.describe Gitlab::CodeOwners, feature_category: :source_code_management do
 
   describe '.entries_since_merge_request_commit' do
     let_it_be(:project) { create(:project, :custom_repo, files: { 'CODEOWNERS' => "*.rb @co1\n*.js @co2", 'file.rb' => '1' }) }
-    let_it_be(:feature_sha1) { project.repository.create_file(code_owner, "another.rb", "2", message: "2", branch_name: 'feature') }
-    let_it_be(:feature_sha2) { project.repository.create_file(code_owner, "some.js", "3", message: "3", branch_name: 'feature') }
-    let_it_be(:feature_sha3) { project.repository.create_file(code_owner, "last.rb", "4", message: "4", branch_name: 'feature') }
+    let_it_be(:feature_sha1) { project.repository.create_file(code_owner_1, "another.rb", "2", message: "2", branch_name: 'feature') }
+    let_it_be(:feature_sha2) { project.repository.create_file(code_owner_1, "some.js", "3", message: "3", branch_name: 'feature') }
+    let_it_be(:feature_sha3) { project.repository.create_file(code_owner_1, "last.rb", "4", message: "4", branch_name: 'feature') }
 
     let_it_be(:merge_request) do
       create(
