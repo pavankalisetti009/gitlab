@@ -8,6 +8,7 @@ import DuoSeatUtilizationInfoCard from '../components/duo_seat_utilization_info_
 import DuoConfigurationSettingsInfoCard from '../components/duo_configuration_settings_info_card.vue';
 import DuoModelsConfigurationInfoCard from '../components/duo_models_configuration_info_card.vue';
 import DuoWorkflowSettings from '../components/duo_workflow_settings.vue';
+import DuoUsageAnalyticsCard from '../components/duo_usage_analytics_card.vue';
 
 export default {
   name: 'GitlabDuoHome',
@@ -19,6 +20,7 @@ export default {
     DuoSeatUtilizationInfoCard,
     DuoModelsConfigurationInfoCard,
     DuoWorkflowSettings,
+    DuoUsageAnalyticsCard,
   },
   inject: {
     canManageSelfHostedModels: { default: false },
@@ -28,6 +30,7 @@ export default {
     isAdminInstanceDuoHome: { default: false },
     modelSwitchingEnabled: { default: false },
     modelSwitchingPath: { default: '' },
+    usageDashboardPath: { default: '' },
   },
   i18n: {
     gitlabDuoHomeTitle: __('GitLab Duo'),
@@ -133,10 +136,16 @@ export default {
             :active-duo-tier="activeDuoTier"
           />
         </section>
-        <duo-models-configuration-info-card
-          v-if="isModelSwitchingEnabled || isSelfHostedModelsEnabled"
-          :duo-models-configuration-props="duoModelsConfigurationProps"
-        />
+        <section class="gl-flex gl-flex-col gl-gap-5">
+          <duo-models-configuration-info-card
+            v-if="isModelSwitchingEnabled || isSelfHostedModelsEnabled"
+            :duo-models-configuration-props="duoModelsConfigurationProps"
+          />
+          <duo-usage-analytics-card
+            v-if="usageDashboardPath"
+            :dashboard-path="usageDashboardPath"
+          />
+        </section>
       </template>
     </code-suggestions-usage>
     <duo-workflow-settings

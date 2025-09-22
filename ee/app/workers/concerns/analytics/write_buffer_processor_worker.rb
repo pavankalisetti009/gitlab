@@ -6,7 +6,7 @@ module Analytics
     include LoopWithRuntimeLimit
 
     included do
-      attr_reader :current_model
+      attr_reader :model, :upsert_options
     end
 
     def perform
@@ -36,17 +36,17 @@ module Analytics
       grouped_attributes = prepare_attributes(valid_objects).group_by(&:keys).values
 
       grouped_attributes.sum do |attributes|
-        res = current_model.upsert_all(attributes, **upsert_options(current_model))
+        res = model.upsert_all(attributes, **upsert_options)
 
         res ? res.rows.size : 0
       end
     rescue StandardError => e
-      current_model.write_buffer.add(batch)
+      model.write_buffer.add(batch)
       raise e
     end
 
     def next_batch
-      current_model.write_buffer.pop(self.class::BATCH_SIZE)
+      model.write_buffer.pop(self.class::BATCH_SIZE)
     end
 
     def prepare_attributes(valid_objects)
@@ -55,7 +55,7 @@ module Analytics
 
     def prepare_batch_objects(batch)
       batch.map do |attrs|
-        current_model.new(compatible_attributes(attrs.slice(*current_model.attribute_names)))
+        model.new(compatible_attributes(attrs.slice(*model.attribute_names)))
       end.select(&:valid?)
     end
 

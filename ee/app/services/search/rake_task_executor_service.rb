@@ -532,6 +532,7 @@ module Search
       logger.info("Max code indexing concurrency:\t" \
         "#{setting.elasticsearch_max_code_indexing_concurrency}")
       logger.info("Prefix:\t\t\t\t#{setting.elasticsearch_prefix}")
+      logger.info("Client adapter:\t\t\t\t#{setting.elasticsearch_client_adapter}")
     end
 
     def display_search_server_info

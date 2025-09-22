@@ -305,6 +305,30 @@ RSpec.describe Gitlab::Checks::SecretPushProtection::ResponseHandler, feature_ca
       end
     end
 
+    context 'when Gitaly responded with IndexError' do
+      let(:response) do
+        ::Gitlab::SecretDetection::Core::Response.new(
+          status: ::Gitlab::SecretDetection::Core::Status::FOUND,
+          results: []
+        )
+      end
+
+      before do
+        allow(::Gitlab::Git::Tree).to receive(:tree_entries).and_raise(Gitlab::Git::Index::IndexError)
+      end
+
+      it 'logs index error and does not raise an exception' do
+        expect { response_handler.format_response(response) }.not_to raise_error
+
+        expect(logged_messages[:error]).to include(
+          hash_including(
+            "message" => error_messages[:gitaly_index_error],
+            "class" => "Gitlab::Checks::SecretPushProtection::ResponseHandler"
+          )
+        )
+      end
+    end
+
     context 'when too many tree entries exist' do
       let(:finding) do
         ::Gitlab::SecretDetection::Core::Finding.new(

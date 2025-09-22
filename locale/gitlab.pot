@@ -6443,6 +6443,9 @@ msgstr ""
 msgid "AiPowered|Explore GitLab Duo Core"
 msgstr ""
 
+msgid "AiPowered|Explore usage metrics and performance insights for GitLab Duo AI assistant features across your organization."
+msgstr ""
+
 msgid "AiPowered|Failed to disable GitLab Duo Agent Platform."
 msgstr ""
 
@@ -6546,6 +6549,12 @@ msgid "AiPowered|Participate in the Early Access Program and help make GitLab be
 msgstr ""
 
 msgid "AiPowered|Purchase Duo Pro seats"
+msgstr ""
+
+msgid "AiPowered|See GitLab usage analytics"
+msgstr ""
+
+msgid "AiPowered|See dashboard"
 msgstr ""
 
 msgid "AiPowered|Self-hosted beta models and features"

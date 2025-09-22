@@ -4,6 +4,7 @@ require 'spec_helper'
 
 RSpec.describe Admin::AiPresenter, feature_category: :ai_abstraction_layer do
   include SubscriptionPortalHelper
+  using RSpec::Parameterized::TableSyntax
 
   describe '#settings' do
     subject(:settings) { described_class.new(user).settings }
@@ -63,9 +64,13 @@ RSpec.describe Admin::AiPresenter, feature_category: :ai_abstraction_layer do
     let(:subscription_end_date) { 1.year.from_now.to_date }
     let(:subscription_start_date) { 1.year.ago.to_date }
     let(:subscription_name) { 'A-S0000001' }
+    let(:usage_billing_dev_enabled) { true }
+    let(:usage_billing_license_available) { true }
     let(:active_duo_add_ons_exist?) { true }
 
     before do
+      stub_feature_flags(usage_billing_dev: usage_billing_dev_enabled)
+
       allow(GitlabSubscriptions::AddOnPurchase)
       .to receive(:active_duo_add_ons_exist?)
       .with(:instance)
@@ -79,6 +84,7 @@ RSpec.describe Admin::AiPresenter, feature_category: :ai_abstraction_layer do
 
       allow(License).to receive(:feature_available?).and_call_original
       allow(License).to receive(:feature_available?).with(:self_hosted_models).and_return self_hosted_models
+      allow(License).to receive(:feature_available?).with(:usage_billing).and_return(usage_billing_license_available)
 
       allow(License).to receive(:current).and_return license
 
@@ -149,7 +155,8 @@ RSpec.describe Admin::AiPresenter, feature_category: :ai_abstraction_layer do
         redirect_path: '/admin/gitlab_duo',
         subscription_end_date: subscription_end_date,
         subscription_name: 'A-S0000001',
-        subscription_start_date: subscription_start_date
+        subscription_start_date: subscription_start_date,
+        usage_dashboard_path: ''
       )
     end
 
@@ -261,12 +268,6 @@ RSpec.describe Admin::AiPresenter, feature_category: :ai_abstraction_layer do
       it { expect(settings).to include(enabled_expanded_logging: 'false') }
     end
 
-    context 'with Self-Managed' do
-      let(:is_saas) { false }
-
-      it { expect(settings).to include(is_saas: 'false') }
-    end
-
     context 'without prompt cache' do
       let(:application_setting_attributes) { super().merge(model_prompt_cache_enabled?: false) }
 
@@ -283,6 +284,51 @@ RSpec.describe Admin::AiPresenter, feature_category: :ai_abstraction_layer do
       let(:subscription_start_date) { 1.day.from_now }
 
       it { expect(settings).to include(subscription_start_date: 1.day.from_now.to_date) }
+    end
+
+    context 'for usage billing' do
+      where(:feature_enabled, :setting_enabled, :usage_dashboard_path) do
+        true | true | ''
+        false | true  | ''
+        true  | false | ''
+        false | false | ''
+      end
+
+      with_them do
+        let(:usage_billing_dev_enabled) { feature_enabled }
+        let(:usage_billing_license_available) { setting_enabled }
+        before do
+          stub_saas_features(gitlab_com_subscriptions: true)
+        end
+
+        it { expect(settings).to include(usage_dashboard_path: usage_dashboard_path) }
+      end
+    end
+
+    context 'when on Self-Managed' do
+      let(:is_saas) { false }
+
+      it { expect(settings).to include(is_saas: 'false') }
+
+      context 'for usage billing' do
+        where(:feature_enabled, :setting_enabled, :usage_dashboard_path) do
+          true | true | '/admin/gitlab_duo/usage'
+          false | true  | ''
+          true  | false | ''
+          false | false | ''
+        end
+
+        with_them do
+          let(:usage_billing_dev_enabled) { feature_enabled }
+          let(:usage_billing_license_available) { setting_enabled }
+
+          before do
+            stub_saas_features(gitlab_com_subscriptions: false)
+          end
+
+          it { expect(settings).to include(usage_dashboard_path: usage_dashboard_path) }
+        end
+      end
     end
   end
 end

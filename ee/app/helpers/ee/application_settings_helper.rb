@@ -20,6 +20,7 @@ module EE
         :elasticsearch_aws_role_arn,
         :elasticsearch_aws_secret_access_key,
         :elasticsearch_aws,
+        :elasticsearch_client_adapter,
         :elasticsearch_client_request_timeout,
         :elasticsearch_indexed_field_length_limit,
         :elasticsearch_indexed_file_size_limit_kb,

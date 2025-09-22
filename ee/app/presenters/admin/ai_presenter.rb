@@ -48,7 +48,8 @@ module Admin
         is_bulk_add_on_assignment_enabled: true,
         is_saas: saas?,
         prompt_cache_enabled: model_prompt_cache_enabled?,
-        subscription_name: subscription_name
+        subscription_name: subscription_name,
+        usage_dashboard_path: (url_helpers.admin_gitlab_duo_usage_path if usage_billing_feature_available?)
       }.merge(duo_amazon_q_add_on_data, duo_paths)
         .transform_values(&:to_s)
         .merge(
@@ -155,5 +156,13 @@ module Admin
       ::GitlabSubscriptions::Duo.active_self_managed_duo_pro_or_enterprise
     end
     strong_memoize_attr :duo_pro_or_duo_enterprise_add_on_purchase
+
+    def usage_billing_feature_available?
+      return false unless Feature.enabled?(:usage_billing_dev, :instance)
+      return false unless License.feature_available?(:usage_billing)
+      return false if Gitlab::Saas.feature_available?(:gitlab_com_subscriptions)
+
+      true
+    end
   end
 end

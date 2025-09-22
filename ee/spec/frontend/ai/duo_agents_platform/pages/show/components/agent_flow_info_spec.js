@@ -1,4 +1,4 @@
-import { GlSkeletonLoader } from '@gitlab/ui';
+import { GlLink, GlSkeletonLoader } from '@gitlab/ui';
 import { shallowMount } from '@vue/test-utils';
 import AgentFlowInfo from 'ee/ai/duo_agents_platform/pages/show/components/agent_flow_info.vue';
 import { localeDateFormat } from '~/lib/utils/datetime/locale_dateformat';
@@ -56,7 +56,8 @@ describe('AgentFlowInfo', () => {
     });
   };
 
-  const findListItems = () => wrapper.findAll('li');
+  const findListItems = () => wrapper.findAll('dd');
+  const findListItemTitles = () => wrapper.findAll('dt');
   const findSkeletonLoaders = () => wrapper.findAllComponents(GlSkeletonLoader);
 
   describe('when loading', () => {
@@ -84,15 +85,52 @@ describe('AgentFlowInfo', () => {
       createComponent();
     });
 
-    it('renders all expected data', () => {
-      expect(findListItems().at(0).text()).toContain('RUNNING');
-      expect(findListItems().at(1).text()).toContain('Test Project');
-      expect(findListItems().at(2).text()).toContain('gitlab-org');
-      expect(findListItems().at(3).text()).toContain('Jan 1, 2023, 12:00 AM');
-      expect(findListItems().at(4).text()).toContain('Jan 1, 2024, 12:00 AM');
-      expect(findListItems().at(5).text()).toContain('Flow');
-      expect(findListItems().at(6).text()).toContain('software_development');
-      expect(findListItems().at(7).text()).toContain('4545');
+    it('renders all expected list data', () => {
+      const listItems = findListItems();
+      const expectedData = [
+        'RUNNING',
+        'Test Project',
+        'gitlab-org',
+        'Jan 1, 2023, 12:00 AM',
+        'Jan 1, 2024, 12:00 AM',
+        'Flow',
+        'software_development',
+        '4545',
+      ];
+
+      expectedData.forEach((expectedText, index) => {
+        expect(listItems.at(index).text()).toContain(expectedText);
+      });
+    });
+
+    it('renders all the expected titles', () => {
+      const listItemTitles = findListItemTitles();
+      const expectedTitles = [
+        'Status',
+        'Project',
+        'Group',
+        'Started',
+        'Last updated',
+        'Type',
+        'Flow',
+        'ID',
+        'Executor ID',
+      ];
+
+      expectedTitles.forEach((expectedTitle, index) => {
+        expect(listItemTitles.at(index).text()).toContain(expectedTitle);
+      });
+    });
+
+    it('renders the executor Id as a link', () => {
+      const listItems = findListItems();
+      const executorIdLink = listItems.at(8).findComponent(GlLink);
+
+      expect(executorIdLink.exists()).toBe(true);
+      expect(executorIdLink.attributes('href')).toBe(
+        'https://gitlab.com/gitlab-org/gitlab/-/pipelines/123',
+      );
+      expect(executorIdLink.text()).toBe('123');
     });
 
     describe('when project information is missing', () => {

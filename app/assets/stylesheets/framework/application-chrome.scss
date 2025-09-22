@@ -160,6 +160,10 @@
   &:not(.gl-dark) .super-topbar .organization-switcher-button.gl-button:not(:hover):not(:focus):not(:active) {
     @apply gl-bg-alpha-dark-6 gl-border-default;
   }
+
+  .panel-content-inner:has(.issue-boards-content) {
+    @apply gl-mx-0;
+  }
 }
 
 /*

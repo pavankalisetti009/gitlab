@@ -1,5 +1,6 @@
 <script>
 import { GlAlert, GlButton, GlIcon, GlLoadingIcon } from '@gitlab/ui';
+import { uniqBy } from 'lodash';
 import { s__ } from '~/locale';
 import * as Sentry from '~/sentry/sentry_browser_wrapper';
 import glFeatureFlagMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
@@ -69,6 +70,10 @@ export default {
     },
     loadingInitialLifecycles() {
       return !this.initialLifecyclesLoaded && this.$apollo.queries.lifecycles.loading;
+    },
+    allNamespaceStatuses() {
+      const allStatuses = this.lifecycles.flatMap((lifecycle) => lifecycle.statuses);
+      return uniqBy(allStatuses, 'id');
     },
   },
   methods: {
@@ -205,6 +210,7 @@ export default {
       :visible="Boolean(selectedLifecycleId)"
       :lifecycle="selectedLifecycle"
       :full-path="fullPath"
+      :statuses="allNamespaceStatuses"
       @close="closeModal"
       @lifecycle-updated="handleLifecycleUpdate"
     />

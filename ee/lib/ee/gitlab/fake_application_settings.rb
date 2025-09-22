@@ -26,6 +26,7 @@ module EE
 
         {
           url: elasticsearch_url,
+          client_adapter: elasticsearch_client_adapter,
           max_bulk_size_bytes: elasticsearch_max_bulk_size_mb.megabytes,
           max_bulk_concurrency: elasticsearch_max_bulk_concurrency,
           client_request_timeout: (client_request_timeout if client_request_timeout > 0)

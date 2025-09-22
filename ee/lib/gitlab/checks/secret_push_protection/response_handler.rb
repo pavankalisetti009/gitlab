@@ -10,7 +10,8 @@ module Gitlab
           scan_timeout_error: 'Secret detection scan timed out.',
           invalid_input_error: 'Secret detection scan failed due to invalid input.',
           invalid_scan_status_code_error: 'Invalid secret detection scan status, check passed.',
-          too_many_tree_entries_error: 'Too many tree entries exist for commit(sha: %{sha}).'
+          too_many_tree_entries_error: 'Too many tree entries exist for commit(sha: %{sha}).',
+          gitaly_index_error: 'Gitaly: invalid revision or path'
         }.freeze
 
         LOG_MESSAGES = {
@@ -104,7 +105,6 @@ module Gitlab
           @commit ||= changes_access.commits.map(&:valid_full_sha)
         end
 
-        # rubocop:disable Metrics/CyclomaticComplexity -- Not easy to move complexity away into other methods,
         def transform_findings(response)
           # Let's group the findings by the blob id.
           findings_by_blobs = response.results.group_by(&:payload_id)
@@ -120,23 +120,7 @@ module Gitlab
           commits.each do |revision|
             # We could try to handle pagination, but it is likely to timeout way earlier given the
             # huge default limit (100000) of entries, so we log an error if we get too many results.
-            entries, cursor = ::Gitlab::Git::Tree.tree_entries(
-              repository: project.repository,
-              sha: revision,
-              recursive: true,
-              rescue_not_found: false
-            )
-
-            # TODO: Handle pagination in the upcoming iterations
-            # We don't raise because we could still provide a hint to the user
-            # about the detected secrets even without a commit sha/file path information.
-            unless cursor.next_cursor.empty?
-              secret_detection_logger.error(
-                build_structured_payload(
-                  message: format(ERROR_MESSAGES[:too_many_tree_entries_error], { sha: revision })
-                )
-              )
-            end
+            entries = fetch_tree_entries(revision)
 
             # Let's grab the `commit_id` and the `path` for that entry, we use the blob id as key.
             entries.each do |entry|
@@ -184,7 +168,33 @@ module Gitlab
             blobs: findings_by_blobs
           }
         end
-        # rubocop:enable Metrics/CyclomaticComplexity
+
+        def fetch_tree_entries(revision)
+          entries, cursor = ::Gitlab::Git::Tree.tree_entries(
+            repository: project.repository,
+            sha: revision,
+            recursive: true,
+            rescue_not_found: false
+          )
+
+          # TODO: Handle pagination in the upcoming iterations
+          # We don't raise because we could still provide a hint to the user
+          # about the detected secrets even without a commit sha/file path information.
+          unless cursor.next_cursor.empty?
+            secret_detection_logger.error(
+              build_structured_payload(
+                message: format(ERROR_MESSAGES[:too_many_tree_entries_error], { sha: revision })
+              )
+            )
+          end
+
+          entries
+        rescue Gitlab::Git::Index::IndexError
+          secret_detection_logger.error(
+            build_structured_payload(message: ERROR_MESSAGES[:gitaly_index_error])
+          )
+          []
+        end
 
         def build_secrets_found_message(results, with_errors: false)
           message = with_errors ? LOG_MESSAGES[:found_secrets_with_errors] : LOG_MESSAGES[:found_secrets]

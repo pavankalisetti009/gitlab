@@ -27,11 +27,9 @@ import WorkItemStateBadge from '~/work_items/components/work_item_state_badge.vu
 import glFeatureFlagMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
 import * as Sentry from '~/sentry/sentry_browser_wrapper';
 import HelpPageLink from '~/vue_shared/components/help_page_link/help_page_link.vue';
-import { updateNamespaceStatuses } from './utils';
 import lifecycleUpdateMutation from './lifecycle_update.mutation.graphql';
 import StatusForm from './status_form.vue';
 import namespaceMetadataQuery from './namespace_metadata.query.graphql';
-import namespaceStatusesQuery from './namespace_statuses.query.graphql';
 
 const CATEGORY_ORDER = Object.keys(STATUS_CATEGORIES_MAP);
 
@@ -73,6 +71,10 @@ export default {
       type: String,
       required: true,
     },
+    statuses: {
+      type: Array,
+      required: true,
+    },
   },
   data() {
     return {
@@ -93,7 +95,6 @@ export default {
         color: null,
       },
       namespaceMetadata: null,
-      statuses: [],
     };
   },
   apollo: {
@@ -109,26 +110,6 @@ export default {
       },
       error(error) {
         this.errorText = s__('WorkItem|Failed to fetch namespace metadata.');
-        this.errorDetail = error.message;
-        Sentry.captureException(error);
-      },
-    },
-    statuses: {
-      query: namespaceStatusesQuery,
-      variables() {
-        return {
-          fullPath: this.fullPath,
-        };
-      },
-      update(data) {
-        return data.namespace?.statuses?.nodes || [];
-      },
-      skip() {
-        // do not call the query if mvc2 is disabled since autosuggest only works when FF is on
-        return !this.glFeatures.workItemStatusMvc2;
-      },
-      error(error) {
-        this.errorText = s__('WorkItem|Failed to load statuses.');
         this.errorDetail = error.message;
         Sentry.captureException(error);
       },
@@ -368,14 +349,6 @@ export default {
               defaultDuplicateStatusIndex: Math.max(0, defaultDuplicateStatusIndex),
             },
           },
-          update: (store) => {
-            updateNamespaceStatuses({
-              store,
-              query: namespaceStatusesQuery,
-              variables: { fullPath: this.fullPath },
-              statuses,
-            });
-          },
           optimisticResponse: {
             lifecycleUpdate: {
               lifecycle: {
@@ -455,6 +428,13 @@ export default {
         description: status.description,
       }));
 
+      // while adding we may also add an existing status , so we need to find
+      // if that exists in allStatuses of namespace
+
+      const addingExistingStatus = this.statuses.find(
+        (status) => status.name === this.formData.name.trim(),
+      );
+
       if (currentStatuses.length >= STATUS_MAX_LIMIT) {
         this.errorMessage = sprintf(
           s__('WorkItem|Maximum %{maxLimit} statuses reached. Remove a status to add more.'),
@@ -465,7 +445,17 @@ export default {
         return;
       }
 
-      if (this.isEditing) {
+      if (addingExistingStatus) {
+        // adding an existing status from other lifecycle/namespace
+        currentStatuses.push({
+          id: addingExistingStatus.id,
+          name: this.formData.name.trim(),
+          color: this.formData.color,
+          description: this.formData.description.trim(),
+          category: addingExistingStatus.category.toUpperCase(),
+        });
+      } else if (this.isEditing) {
+        // editing an already added status
         const statusIndex = currentStatuses.findIndex((s) => s.id === this.editingStatusId);
         if (statusIndex !== -1) {
           currentStatuses[statusIndex] = {
@@ -476,6 +466,7 @@ export default {
           };
         }
       } else {
+        // completely new status
         currentStatuses.push({
           name: this.formData.name.trim(),
           color: this.formData.color,

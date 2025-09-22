@@ -9,10 +9,13 @@ import { createAlert } from '~/alert';
 import TokenValidityBadge from 'ee/vue_shared/security_reports/components/token_validity_badge.vue';
 import TimeAgoTooltip from '~/vue_shared/components/time_ago_tooltip.vue';
 import refreshFindingTokenStatusMutation from 'ee/vulnerabilities/graphql/mutations/refresh_finding_token_status.mutation.graphql';
+import refreshSecurityFindingTokenStatusMutation from 'ee/security_dashboard/graphql/mutations/refresh_security_finding_token_status.mutation.graphql';
 
 Vue.use(VueApollo);
 
 jest.mock('~/alert');
+
+const securityFindingUuid = '01ca10fa-6168-55b8-a4b5-941686401930';
 
 const defaultProps = {
   findingTokenStatus: {
@@ -39,6 +42,15 @@ const successResponse = {
 const errorResponse = {
   data: {
     refreshFindingTokenStatus: {
+      errors: ['Validation failed', 'Token expired'],
+      findingTokenStatus: null,
+    },
+  },
+};
+
+const securityFindingErrorResponse = {
+  data: {
+    refreshSecurityFindingTokenStatus: {
       errors: ['Validation failed', 'Token expired'],
       findingTokenStatus: null,
     },
@@ -72,8 +84,12 @@ describe('ValidityCheck', () => {
   const findTooltip = () => wrapper.findComponent(GlTooltip);
   const findTokenValidityBadge = () => wrapper.findComponent(TokenValidityBadge);
 
-  const createWrapperWithApollo = ({ props = {}, mutationHandler } = {}) => {
-    const apolloProvider = createMockApollo([[refreshFindingTokenStatusMutation, mutationHandler]]);
+  const createWrapperWithApollo = ({
+    props = {},
+    mutationQuery = refreshFindingTokenStatusMutation,
+    mutationResolver,
+  } = {}) => {
+    const apolloProvider = createMockApollo([[mutationQuery, mutationResolver]]);
 
     createWrapper(props, { apolloProvider });
   };
@@ -130,12 +146,12 @@ describe('ValidityCheck', () => {
   describe('when user clicks retry button', () => {
     describe('loading', () => {
       it.each`
-        scenario            | mutationHandler
+        scenario            | mutationResolver
         ${'success'}        | ${() => jest.fn().mockResolvedValue(successResponse)}
         ${'GraphQL errors'} | ${() => jest.fn().mockResolvedValue(errorResponse)}
         ${'exceptions'}     | ${() => jest.fn().mockRejectedValue(new Error('Network error'))}
-      `('shows and clears loading state for "$scenario"', async ({ mutationHandler }) => {
-        createWrapperWithApollo({ mutationHandler: mutationHandler() });
+      `('shows and clears loading state for "$scenario"', async ({ mutationResolver }) => {
+        createWrapperWithApollo({ mutationResolver: mutationResolver() });
 
         await findRetryButton().vm.$emit('click');
         expect(findRetryButton().props('loading')).toBe(true);
@@ -148,7 +164,7 @@ describe('ValidityCheck', () => {
     describe('with successful response', () => {
       beforeEach(() => {
         createWrapperWithApollo({
-          mutationHandler: jest.fn().mockResolvedValue(successResponse),
+          mutationResolver: jest.fn().mockResolvedValue(successResponse),
         });
       });
 
@@ -184,7 +200,7 @@ describe('ValidityCheck', () => {
 
     describe('with errors', () => {
       it('shows error alert with the error message when GraphQL errors occur', async () => {
-        createWrapperWithApollo({ mutationHandler: jest.fn().mockResolvedValue(errorResponse) });
+        createWrapperWithApollo({ mutationResolver: jest.fn().mockResolvedValue(errorResponse) });
 
         await findRetryButton().vm.$emit('click');
         await waitForPromises();
@@ -198,7 +214,7 @@ describe('ValidityCheck', () => {
 
       it('shows error alert with the error message when mutation exception occurs', async () => {
         createWrapperWithApollo({
-          mutationHandler: jest.fn().mockRejectedValue(new Error('Network error')),
+          mutationResolver: jest.fn().mockRejectedValue(new Error('Network error')),
         });
 
         await findRetryButton().vm.$emit('click');
@@ -210,14 +226,35 @@ describe('ValidityCheck', () => {
           error: expect.any(Error),
         });
       });
+
+      it('calls createAlert with containerSelector when used in MR security widget', async () => {
+        createWrapperWithApollo({
+          props: {
+            vulnerabilityId: null,
+            securityFindingUuid,
+          },
+          mutationQuery: refreshSecurityFindingTokenStatusMutation,
+          mutationResolver: jest.fn().mockResolvedValue(securityFindingErrorResponse),
+        });
+
+        await findRetryButton().vm.$emit('click');
+        await waitForPromises();
+
+        expect(createAlert).toHaveBeenCalledWith({
+          message: 'Validation failed. Token expired',
+          captureError: true,
+          error: expect.any(Error),
+          containerSelector: '#finding-modal-error-container',
+        });
+      });
     });
   });
 
   describe('mutation selection', () => {
     it('calls the correct mutation when vulnerabilityId is provided (vulnerability details page)', async () => {
-      const mutationHandler = jest.fn().mockResolvedValue(successResponse);
+      const mutationResolver = jest.fn().mockResolvedValue(successResponse);
       const apolloProvider = createMockApollo([
-        [refreshFindingTokenStatusMutation, mutationHandler],
+        [refreshFindingTokenStatusMutation, mutationResolver],
       ]);
       const vulnerabilityId = 123;
 
@@ -225,9 +262,28 @@ describe('ValidityCheck', () => {
 
       await findRetryButton().vm.$emit('click');
 
-      expect(mutationHandler).toHaveBeenCalledWith({
+      expect(mutationResolver).toHaveBeenCalledWith({
         vulnerabilityId: `gid://gitlab/Vulnerability/${vulnerabilityId}`,
       });
+    });
+
+    it('calls the correct mutation when securityFindingUuid is provided (MR security widget)', async () => {
+      const mutationResolver = jest.fn().mockResolvedValue(successResponse);
+      const apolloProvider = createMockApollo([
+        [refreshSecurityFindingTokenStatusMutation, mutationResolver],
+      ]);
+
+      createWrapper(
+        {
+          vulnerabilityId: null,
+          securityFindingUuid,
+        },
+        { apolloProvider },
+      );
+
+      await findRetryButton().vm.$emit('click');
+
+      expect(mutationResolver).toHaveBeenCalledWith({ securityFindingUuid });
     });
   });
 
@@ -260,7 +316,7 @@ describe('ValidityCheck', () => {
 
     it('does not render when loading', async () => {
       createWrapperWithApollo({
-        mutationHandler: jest.fn().mockResolvedValue(successResponse),
+        mutationResolver: jest.fn().mockResolvedValue(successResponse),
       });
 
       await findRetryButton().vm.$emit('click');

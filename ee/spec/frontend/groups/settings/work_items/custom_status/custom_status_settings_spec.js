@@ -7,6 +7,7 @@ import waitForPromises from 'helpers/wait_for_promises';
 import * as Sentry from '~/sentry/sentry_browser_wrapper';
 import WorkItemStatusBadge from 'ee/work_items/components/shared/work_item_status_badge.vue';
 import NamespaceLifecycles from 'ee/groups/settings/work_items/custom_status/custom_status_settings.vue';
+import StatusModal from 'ee/groups/settings/work_items/custom_status/status_modal.vue';
 import LifecycleDetail from 'ee/groups/settings/work_items/custom_status/lifecycle_detail.vue';
 import CreateLifecycleModal from 'ee/groups/settings/work_items/custom_status/create_lifecycle_modal.vue';
 import namespaceStatusesQuery from 'ee/groups/settings/work_items/custom_status/namespace_lifecycles.query.graphql';
@@ -131,6 +132,7 @@ describe('CustomStatusSettings', () => {
   const findLifecyclesDetails = () => wrapper.findAllComponents(LifecycleDetail);
   const findCreateLifecycleModal = () => wrapper.findComponent(CreateLifecycleModal);
   const findLoadingIcon = () => wrapper.findComponent(GlLoadingIcon);
+  const findStatusModal = () => wrapper.findComponent(StatusModal);
 
   const createComponent = ({
     props = {},
@@ -298,6 +300,145 @@ describe('CustomStatusSettings', () => {
       await firstLifecycleDetail.vm.$emit('deleted');
 
       expect(findLoadingIcon().exists()).toBe(false);
+    });
+  });
+
+  describe('Edit Button and Modal Functionality', () => {
+    beforeEach(() => {
+      createComponent({ workItemStatusMvc2Enabled: true });
+      return waitForPromises();
+    });
+
+    describe('Edit Button Interactions', () => {
+      it('opens status modal when edit button is clicked', async () => {
+        const lifecycleDetails = findLifecyclesDetails();
+        const firstLifecycleDetail = lifecycleDetails.at(0);
+        const editButton = firstLifecycleDetail.findComponent(GlButton);
+
+        // Modal should not be visible initially
+        expect(findStatusModal().exists()).toBe(false);
+
+        // Click the edit button
+        await editButton.vm.$emit('click');
+        await nextTick();
+
+        // Modal should now exist and be visible
+        const statusModal = findStatusModal();
+        expect(statusModal.exists()).toBe(true);
+        expect(statusModal.props('visible')).toBe(true);
+      });
+
+      it('renders edit button with correct text in lifecycle detail footer', () => {
+        const lifecycleDetails = findLifecyclesDetails();
+
+        lifecycleDetails.wrappers.forEach((lifecycleDetail) => {
+          const editButton = lifecycleDetail.findComponent(GlButton);
+          expect(editButton.exists()).toBe(true);
+          expect(editButton.text()).toBe('Edit statuses');
+        });
+      });
+    });
+
+    describe('Status Modal Props and Visibility', () => {
+      it('passes allNamespaceStatuses as statuses prop', async () => {
+        const lifecycleDetails = findLifecyclesDetails();
+        const editButton = lifecycleDetails.at(0).findComponent(GlButton);
+
+        await editButton.vm.$emit('click');
+        await nextTick();
+
+        const statusModal = findStatusModal();
+        const allStatuses = statusModal.props('statuses');
+
+        // Should contain all unique statuses from all lifecycles
+        expect(allStatuses).toHaveLength(5); // 3 from first lifecycle + 2 from second (all unique)
+
+        // Verify it contains expected status names
+        const statusNames = allStatuses.map((status) => status.name);
+        expect(statusNames).toContain('Open');
+        expect(statusNames).toContain('In Progress');
+        expect(statusNames).toContain('Closed');
+        expect(statusNames).toContain('New');
+        expect(statusNames).toContain('Resolved');
+      });
+
+      it('passes correct fullPath prop to modal', async () => {
+        const lifecycleDetails = findLifecyclesDetails();
+        const editButton = lifecycleDetails.at(0).findComponent(GlButton);
+
+        await editButton.vm.$emit('click');
+        await nextTick();
+
+        expect(findStatusModal().props('fullPath')).toBe('gitlab-org');
+      });
+
+      it('does not render modal when no lifecycle is selected', () => {
+        // Initially, no lifecycle should be selected
+        expect(findStatusModal().exists()).toBe(false);
+      });
+    });
+
+    describe('Modal Event Handling', () => {
+      it('closes modal when close event is emitted', async () => {
+        const lifecycleDetails = findLifecyclesDetails();
+        const editButton = lifecycleDetails.at(0).findComponent(GlButton);
+
+        // Open modal
+        await editButton.vm.$emit('click');
+        await nextTick();
+
+        expect(findStatusModal().exists()).toBe(true);
+        expect(findStatusModal().props('visible')).toBe(true);
+
+        // Close modal
+        await findStatusModal().vm.$emit('close');
+        await nextTick();
+
+        // Modal should no longer exist
+        expect(findStatusModal().exists()).toBe(false);
+      });
+
+      it('refetches lifecycles when lifecycle-updated event is emitted', async () => {
+        const mockQueryHandler = jest.fn().mockResolvedValue(createQueryResponse());
+        createComponent({
+          queryHandler: mockQueryHandler,
+        });
+        await waitForPromises();
+
+        const lifecycleDetails = findLifecyclesDetails();
+        const editButton = lifecycleDetails.at(0).findComponent(GlButton);
+
+        // Open modal
+        await editButton.vm.$emit('click');
+        await nextTick();
+
+        // Emit lifecycle-updated event
+        await findStatusModal().vm.$emit('lifecycle-updated');
+        await nextTick();
+
+        // Should trigger a refetch
+        expect(mockQueryHandler).toHaveBeenCalled();
+      });
+    });
+
+    describe('Lifecycle Detail Integration', () => {
+      it('handles lifecycle deleted event', async () => {
+        const mockQueryHandler = jest.fn().mockResolvedValue(createQueryResponse());
+        createComponent({
+          queryHandler: mockQueryHandler,
+        });
+        await waitForPromises();
+
+        const lifecycleDetails = findLifecyclesDetails();
+        const firstLifecycleDetail = lifecycleDetails.at(0);
+
+        // Emit deleted event
+        await firstLifecycleDetail.vm.$emit('deleted');
+        await nextTick();
+
+        // Should trigger a refetch
+        expect(mockQueryHandler).toHaveBeenCalled();
+      });
     });
   });
 });
