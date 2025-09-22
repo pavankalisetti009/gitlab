@@ -297,21 +297,11 @@ RSpec.describe ::SidebarsHelper, feature_category: :navigation do
         expect(super_sidebar_context).to match(hash_including({
           sign_out_link: '/users/sign_out',
           issues_dashboard_path: "/dashboard/issues?assignee_username=#{user.username}",
-          merge_request_dashboard_path: nil,
+          merge_request_dashboard_path: '/dashboard/merge_requests',
           todos_dashboard_path: '/dashboard/todos',
           projects_path: '/dashboard/projects',
           groups_path: '/dashboard/groups'
         }))
-      end
-
-      context 'with merge_request_dashboard feature flag enabled' do
-        before do
-          stub_feature_flags(merge_request_dashboard: user)
-        end
-
-        it 'has merge_request_dashboard_path' do
-          expect(super_sidebar_context[:merge_request_dashboard_path]).to eq('/dashboard/merge_requests')
-        end
       end
     end
 

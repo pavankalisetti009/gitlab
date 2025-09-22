@@ -13,12 +13,10 @@ module MergeRequests
         trigger_merge_request_reviewers_updated(merge_request)
         trigger_merge_request_merge_status_updated(merge_request)
 
-        if current_user.merge_request_dashboard_enabled?
-          invalidate_cache_counts(merge_request, users: merge_request.assignees)
-          invalidate_cache_counts(merge_request, users: merge_request.reviewers)
+        invalidate_cache_counts(merge_request, users: merge_request.assignees)
+        invalidate_cache_counts(merge_request, users: merge_request.reviewers)
 
-          current_user.invalidate_merge_request_cache_counts
-        end
+        current_user.invalidate_merge_request_cache_counts
 
         success
       else
