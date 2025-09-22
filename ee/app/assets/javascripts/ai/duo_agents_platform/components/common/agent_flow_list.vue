@@ -39,7 +39,7 @@ export default {
 };
 </script>
 <template>
-  <div>
+  <div :class="{ 'gl-self-center': !hasWorkflows }">
     <gl-empty-state
       v-if="!hasWorkflows"
       :title="s__('DuoAgentsPlatform|No agent sessions yet')"
