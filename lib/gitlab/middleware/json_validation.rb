@@ -53,13 +53,13 @@ module Gitlab
       DEFAULT_LIMITS = {
         # Rack::Utils uses a depth of 32 by default
         max_depth: ENV.fetch('GITLAB_JSON_MAX_DEPTH', 32).to_i,
-        max_array_size: ENV.fetch('GITLAB_JSON_MAX_ARRAY_SIZE', 2000).to_i,
-        max_hash_size: ENV.fetch('GITLAB_JSON_MAX_HASH_SIZE', 2000).to_i,
-        max_total_elements: ENV.fetch('GITLAB_JSON_MAX_TOTAL_ELEMENTS', 10000).to_i,
+        max_array_size: ENV.fetch('GITLAB_JSON_MAX_ARRAY_SIZE', 50000).to_i,
+        max_hash_size: ENV.fetch('GITLAB_JSON_MAX_HASH_SIZE', 50000).to_i,
+        max_total_elements: ENV.fetch('GITLAB_JSON_MAX_TOTAL_ELEMENTS', 100000).to_i,
         # Disabled by default because some endpoints upload large payloads
         max_json_size_bytes: ENV.fetch('GITLAB_JSON_MAX_JSON_SIZE_BYTES', 0).to_i,
         # Supported modes: enforced, disabled, logging
-        mode: ENV.fetch('GITLAB_JSON_VALIDATION_MODE', 'logging').downcase.to_sym
+        mode: ENV.fetch('GITLAB_JSON_VALIDATION_MODE', 'enforced').downcase.to_sym
       }.freeze
 
       ROUTE_CONFIGS = [
@@ -110,7 +110,7 @@ module Gitlab
             max_hash_size: 50000,
             max_total_elements: 250000,
             max_json_size_bytes: 1.megabyte,
-            mode: :logging
+            mode: :enforced
           }
         },
         # Internal APIs
@@ -119,11 +119,11 @@ module Gitlab
           methods: %i[post],
           limits: {
             max_depth: 32,
-            max_array_size: 5000,
-            max_hash_size: 5000,
+            max_array_size: 50000,
+            max_hash_size: 50000,
             max_total_elements: 0, # Regularly exceeds 10,000, disable for now
             max_json_size_bytes: 10.megabytes,
-            mode: :logging
+            mode: :enforced
           }
         },
         # Duo Workflow API
@@ -136,7 +136,7 @@ module Gitlab
             max_hash_size: 5000,
             max_total_elements: 0, # Regularly exceeds 10,000, disable for now
             max_json_size_bytes: 25.megabytes,
-            mode: :logging
+            mode: :enforced
           }
         }
       ].freeze
