@@ -349,9 +349,10 @@ RSpec.describe Ci::CompareSecurityReportsService, :clean_gitlab_redis_shared_sta
           let_it_be(:base_pipeline) { test_pipelines[:with_sast_report] }
           let_it_be(:head_pipeline) { test_pipelines[:sast_differential_scan] }
 
-          # Since the sast report on the base pipeline is a full scan and not a partial,
-          # it should not be considered in the comparison. Partial scans should only run
-          # on feature branches.
+          # For partial scan comparisons, we compare full scan results from the base pipeline
+          # against partial scan results from the head pipeline. This prevents existing
+          # vulnerabilities from appearing as "new" when detected by partial scans.
+          # We also hide the fixed findings since we don't have full coverage.
           let(:num_fixed_findings) { 0 }
           let(:num_added_findings) { 6 }
         end
