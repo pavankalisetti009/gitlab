@@ -31,7 +31,7 @@ RSpec.describe WebIde::Config::Entry::Schemas, feature_category: :web_ide do
       describe '#errors' do
         it 'reports error about a config type' do
           expect(entry.errors)
-            .to include 'schemas config should be a array'
+            .to include 'schemas config should be an array'
         end
       end
     end
