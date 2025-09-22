@@ -43,11 +43,7 @@ module Sbom
         end
 
         def new_links
-          if show_active_vulnerabilities?
-            ingested_links - existing_links
-          else
-            ingested_links
-          end
+          ingested_links - existing_links
         end
         alias_method :attributes, :new_links
         strong_memoize_attr :new_links
@@ -62,7 +58,7 @@ module Sbom
         end
 
         def after_ingest
-          delete_old_links if show_active_vulnerabilities?
+          delete_old_links
           sync_elasticsearch
         end
 
@@ -78,15 +74,11 @@ module Sbom
         end
 
         def sync_elasticsearch
-          ids_to_sync = if show_active_vulnerabilities?
-                          # rubocop:disable CodeReuse/ActiveRecord -- This is Hash#pluck
-                          # rubocop:disable Database/AvoidUsingPluckWithoutLimit -- This is Hash#pluck
-                          all_links.pluck(:vulnerability_id).uniq
-                          # rubocop:enable CodeReuse/ActiveRecord
-                          # rubocop:enable Database/AvoidUsingPluckWithoutLimit
-                        else
-                          return_data.flatten
-                        end
+          # rubocop:disable CodeReuse/ActiveRecord -- This is Hash#pluck
+          # rubocop:disable Database/AvoidUsingPluckWithoutLimit -- This is Hash#pluck
+          ids_to_sync = all_links.pluck(:vulnerability_id).uniq
+          # rubocop:enable CodeReuse/ActiveRecord
+          # rubocop:enable Database/AvoidUsingPluckWithoutLimit
 
           return unless ids_to_sync.present?
 
@@ -94,11 +86,6 @@ module Sbom
 
           ::Vulnerabilities::BulkEsOperationService.new(vulnerabilities).execute(&:itself)
         end
-
-        def show_active_vulnerabilities?
-          ::Feature.enabled?(:show_only_active_vulnerabilities_on_the_dependency_list, project)
-        end
-        strong_memoize_attr :show_active_vulnerabilities?
       end
     end
   end
