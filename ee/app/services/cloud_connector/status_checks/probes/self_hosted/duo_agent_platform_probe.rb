@@ -21,7 +21,7 @@ module CloudConnector
               duo_workflow_service_url: @host,
               current_user: @user,
               secure: Gitlab::DuoWorkflow::Client.secure?
-            ).generate_token
+            ).list_tools
           end
 
           def verify_request_success

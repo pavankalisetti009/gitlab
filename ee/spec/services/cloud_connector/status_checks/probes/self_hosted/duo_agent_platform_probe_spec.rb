@@ -17,11 +17,11 @@ RSpec.describe CloudConnector::StatusChecks::Probes::SelfHosted::DuoAgentPlatfor
       allow(Ai::DuoWorkflow::DuoWorkflowService::Client).to receive(:new).and_return(duo_workflow_client)
     end
 
-    context 'when generate_token succeeds' do
-      let(:success_response) { { status: :success, message: 'JWT Generated', payload: { token: 'test-token' } } }
+    context 'when list_tools succeeds' do
+      let(:success_response) { { status: :success, message: 'Tools listed successfully', payload: { tools: [] } } }
 
       before do
-        allow(duo_workflow_client).to receive(:generate_token).and_return(success_response)
+        allow(duo_workflow_client).to receive(:list_tools).and_return(success_response)
       end
 
       it 'returns a successful result' do
@@ -40,15 +40,15 @@ RSpec.describe CloudConnector::StatusChecks::Probes::SelfHosted::DuoAgentPlatfor
           current_user: user,
           secure: true
         )
-        expect(duo_workflow_client).to have_received(:generate_token)
+        expect(duo_workflow_client).to have_received(:list_tools)
       end
     end
 
-    context 'when generate_token fails' do
+    context 'when list_tools fails' do
       let(:error_response) { { status: :error, message: 'Connection failed' } }
 
       before do
-        allow(duo_workflow_client).to receive(:generate_token).and_return(error_response)
+        allow(duo_workflow_client).to receive(:list_tools).and_return(error_response)
       end
 
       it 'returns a failed result' do
