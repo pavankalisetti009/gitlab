@@ -14,6 +14,12 @@ module EE
         include ::Gitlab::SQL::Pattern
 
         with_replicator ::Geo::PackageFileReplicator
+
+        has_one :package_file_state,
+          autosave: false,
+          inverse_of: :package_file,
+          foreign_key: :package_file_id,
+          class_name: '::Geo::PackageFileState'
       end
 
       class_methods do

@@ -200,7 +200,6 @@ RSpec.describe 'Create a namespace filter for group level external audit event d
         context 'when legacy destination has corresponding streaming destination' do
           before do
             destination.update_column(:stream_destination_id, stream_destination.id)
-            stub_feature_flags(audit_events_external_destination_streamer_consolidation_refactor: true)
           end
 
           it 'calls sync method after successful operation' do

@@ -54,7 +54,6 @@ RSpec.describe 'Update group level external audit event streaming destination', 
   context 'when feature is licensed' do
     before do
       stub_licensed_features(external_audit_events: true)
-      stub_feature_flags(audit_events_external_destination_streamer_consolidation_refactor: false)
     end
 
     context 'when current user is a group owner' do

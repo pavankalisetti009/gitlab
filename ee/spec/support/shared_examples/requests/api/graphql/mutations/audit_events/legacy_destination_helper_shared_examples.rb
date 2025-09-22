@@ -1,10 +1,6 @@
 # frozen_string_literal: true
 
 RSpec.shared_examples 'creates a streaming destination' do |legacy_model_class, attributes_proc|
-  before do
-    stub_feature_flags(audit_events_external_destination_streamer_consolidation_refactor: true)
-  end
-
   let(:attributes) { instance_exec(&attributes_proc) }
   it 'creates a streaming destination with correct attributes' do
     expect { mutate }
@@ -20,18 +16,6 @@ RSpec.shared_examples 'creates a streaming destination' do |legacy_model_class, 
       attributes[:streaming].each do |key, value|
         expect(stream_destination.config[key]).to eq(value)
       end
-    end
-  end
-
-  context 'when feature flag is disabled' do
-    before do
-      stub_feature_flags(audit_events_external_destination_streamer_consolidation_refactor: false)
-    end
-
-    it 'does not create a streaming destination' do
-      expect { mutate }
-        .to not_change(AuditEvents::Group::ExternalStreamingDestination, :count)
-        .and not_change(AuditEvents::Instance::ExternalStreamingDestination, :count)
     end
   end
 end
@@ -52,8 +36,6 @@ RSpec.shared_examples 'updates a streaming destination' do |destination, attribu
     let(:paired_stream_destination) { send(:stream_destination) }
 
     before do
-      stub_feature_flags(audit_events_external_destination_streamer_consolidation_refactor: true)
-
       legacy_destination.update!(stream_destination_id: paired_stream_destination.id)
       paired_stream_destination.update!(legacy_destination_ref: legacy_destination.id)
     end
@@ -82,28 +64,6 @@ RSpec.shared_examples 'updates a streaming destination' do |destination, attribu
           expect(legacy_destination[key]).to eq(value)
         end
       end
-    end
-  end
-
-  context 'when feature flag is disabled' do
-    let(:legacy_destination) { send(destination) }
-    let(:paired_stream_destination) { send(:stream_destination) }
-
-    before do
-      stub_feature_flags(audit_events_external_destination_streamer_consolidation_refactor: false)
-      legacy_destination.update!(stream_destination_id: paired_stream_destination.id)
-      paired_stream_destination.update!(legacy_destination_ref: legacy_destination.id)
-    end
-
-    it 'does not update streaming destination' do
-      original_config = paired_stream_destination.config.dup
-      original_name = paired_stream_destination.name
-
-      mutate
-
-      paired_stream_destination.reload
-      expect(paired_stream_destination.config).to eq(original_config)
-      expect(paired_stream_destination.name).to eq(original_name)
     end
   end
 end

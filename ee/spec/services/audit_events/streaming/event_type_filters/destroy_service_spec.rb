@@ -132,7 +132,6 @@ RSpec.describe AuditEvents::Streaming::EventTypeFilters::DestroyService, feature
 
           before do
             allow(destination).to receive(:stream_destination_id).and_return(stream_destination.id)
-            allow(service_instance).to receive(:legacy_destination_sync_enabled?).and_return(true)
           end
 
           it 'syncs deleted filters to streaming destination' do
@@ -148,21 +147,6 @@ RSpec.describe AuditEvents::Streaming::EventTypeFilters::DestroyService, feature
         context 'when stream destination id is not present' do
           before do
             allow(destination).to receive(:stream_destination_id).and_return(nil)
-          end
-
-          it 'does not sync to streaming destination' do
-            expect(service_instance).not_to receive(:sync_delete_stream_event_type_filter)
-
-            service_instance.execute
-          end
-        end
-
-        context 'when legacy destination sync is disabled' do
-          let(:stream_destination) { create(:audit_events_group_external_streaming_destination) }
-
-          before do
-            allow(destination).to receive(:stream_destination_id).and_return(stream_destination.id)
-            allow(service_instance).to receive(:legacy_destination_sync_enabled?).and_return(false)
           end
 
           it 'does not sync to streaming destination' do
@@ -190,7 +174,6 @@ RSpec.describe AuditEvents::Streaming::EventTypeFilters::DestroyService, feature
 
           before do
             allow(destination).to receive(:legacy_destination_ref).and_return(legacy_destination)
-            allow(service_instance).to receive(:stream_destination_sync_enabled?).and_return(true)
           end
 
           it 'syncs deleted filters to legacy destination' do
@@ -206,21 +189,6 @@ RSpec.describe AuditEvents::Streaming::EventTypeFilters::DestroyService, feature
         context 'when legacy destination ref is not present' do
           before do
             allow(destination).to receive(:legacy_destination_ref).and_return(nil)
-          end
-
-          it 'does not sync to legacy destination' do
-            expect(service_instance).not_to receive(:sync_delete_legacy_event_type_filter)
-
-            service_instance.execute
-          end
-        end
-
-        context 'when stream destination sync is disabled' do
-          let(:legacy_destination) { create(:external_audit_event_destination) }
-
-          before do
-            allow(destination).to receive(:legacy_destination_ref).and_return(legacy_destination)
-            allow(service_instance).to receive(:stream_destination_sync_enabled?).and_return(false)
           end
 
           it 'does not sync to legacy destination' do
@@ -250,17 +218,6 @@ RSpec.describe AuditEvents::Streaming::EventTypeFilters::DestroyService, feature
 
         it 'does not attempt to sync to legacy destination' do
           expect(service_instance).not_to receive(:sync_delete_legacy_event_type_filter)
-
-          service_instance.execute
-        end
-
-        it 'passes correct instance flag to legacy_destination_sync_enabled?' do
-          stream_destination = create(:audit_events_instance_external_streaming_destination)
-          allow(destination).to receive(:stream_destination_id).and_return(stream_destination.id)
-
-          expect(service_instance).to receive(:legacy_destination_sync_enabled?)
-            .with(destination, true)
-            .and_return(false)
 
           service_instance.execute
         end
@@ -297,7 +254,6 @@ RSpec.describe AuditEvents::Streaming::EventTypeFilters::DestroyService, feature
 
         before do
           allow(destination).to receive(:stream_destination_id).and_return(stream_destination.id)
-          allow(service_instance).to receive(:legacy_destination_sync_enabled?).and_return(true)
         end
 
         it 'syncs all deleted filters at once' do
@@ -315,7 +271,6 @@ RSpec.describe AuditEvents::Streaming::EventTypeFilters::DestroyService, feature
 
         before do
           allow(destination).to receive(:stream_destination_id).and_return(stream_destination.id)
-          allow(service_instance).to receive(:legacy_destination_sync_enabled?).and_return(true)
           allow(service_instance).to receive(:sync_delete_stream_event_type_filter)
             .and_raise(StandardError, 'Sync failed')
         end
@@ -344,30 +299,14 @@ RSpec.describe AuditEvents::Streaming::EventTypeFilters::DestroyService, feature
       end
 
       context 'when legacy destination sync is enabled' do
-        before do
-          allow(service_instance).to receive(:legacy_destination_sync_enabled?).and_return(true)
-        end
-
         it 'returns true' do
           expect(service_instance.send(:should_sync_to_streaming?)).to be true
-        end
-      end
-
-      context 'when legacy destination sync is disabled' do
-        before do
-          allow(service_instance).to receive(:legacy_destination_sync_enabled?).and_return(false)
-        end
-
-        it 'returns false' do
-          expect(service_instance.send(:should_sync_to_streaming?)).to be false
         end
       end
 
       context 'when destination is not instance level' do
         before do
           allow(destination).to receive(:instance_level?).and_return(false)
-          allow(service_instance).to receive(:legacy_destination_sync_enabled?).with(destination,
-            false).and_return(true)
         end
 
         it 'passes false as instance flag' do
@@ -378,7 +317,6 @@ RSpec.describe AuditEvents::Streaming::EventTypeFilters::DestroyService, feature
       context 'when destination is instance level' do
         before do
           allow(destination).to receive(:instance_level?).and_return(true)
-          allow(service_instance).to receive(:legacy_destination_sync_enabled?).with(destination, true).and_return(true)
         end
 
         it 'passes true as instance flag' do
@@ -417,22 +355,8 @@ RSpec.describe AuditEvents::Streaming::EventTypeFilters::DestroyService, feature
       end
 
       context 'when stream destination sync is enabled' do
-        before do
-          allow(service_instance).to receive(:stream_destination_sync_enabled?).and_return(true)
-        end
-
         it 'returns true' do
           expect(service_instance.send(:should_sync_to_legacy?)).to be true
-        end
-      end
-
-      context 'when stream destination sync is disabled' do
-        before do
-          allow(service_instance).to receive(:stream_destination_sync_enabled?).and_return(false)
-        end
-
-        it 'returns false' do
-          expect(service_instance.send(:should_sync_to_legacy?)).to be false
         end
       end
     end

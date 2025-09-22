@@ -7,8 +7,6 @@ module AuditEvents
     STREAMING_TOKEN_HEADER_KEY = 'X-Gitlab-Event-Streaming-Token'
 
     def create_stream_destination(legacy_destination_model:, category:, is_instance:)
-      return unless legacy_destination_sync_enabled?(legacy_destination_model, is_instance)
-
       model_class = if is_instance
                       AuditEvents::Instance::ExternalStreamingDestination
                     else
@@ -39,9 +37,6 @@ module AuditEvents
     end
 
     def update_stream_destination(legacy_destination_model:)
-      is_instance = !legacy_destination_model.respond_to?(:group)
-      return unless legacy_destination_sync_enabled?(legacy_destination_model, is_instance)
-
       stream_destination = legacy_destination_model.stream_destination
 
       return if stream_destination.nil? || stream_destination.legacy_destination_ref != legacy_destination_model.id

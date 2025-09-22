@@ -35,7 +35,6 @@ module AuditEvents
     end
 
     def sync_legacy_event_type_filter(stream_destination_model, audit_event_type)
-      return unless stream_destination_sync_enabled?(stream_destination_model)
       return unless stream_destination_model.legacy_destination_ref.present?
 
       legacy_destination = stream_destination_model.legacy_destination
@@ -73,7 +72,6 @@ module AuditEvents
     end
 
     def sync_delete_legacy_event_type_filter(stream_destination_model, audit_event_types = nil)
-      return unless stream_destination_sync_enabled?(stream_destination_model)
       return unless stream_destination_model.legacy_destination_ref.present?
 
       legacy_destination = stream_destination_model.legacy_destination

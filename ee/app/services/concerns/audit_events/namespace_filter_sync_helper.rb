@@ -30,7 +30,6 @@ module AuditEvents
     end
 
     def sync_legacy_namespace_filter(stream_destination_model, namespace)
-      return unless stream_destination_sync_enabled?(stream_destination_model)
       return unless stream_destination_model.legacy_destination_ref.present?
       return unless stream_destination_model.http?
 
@@ -85,7 +84,6 @@ module AuditEvents
     end
 
     def sync_delete_legacy_namespace_filter(stream_destination_model)
-      return unless stream_destination_sync_enabled?(stream_destination_model)
       return unless stream_destination_model.legacy_destination_ref.present?
       return unless stream_destination_model.http?
 
