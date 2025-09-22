@@ -114,15 +114,21 @@ export default {
 </script>
 <template>
   <div>
-    <ul class="gl-list-none gl-pl-4">
-      <li v-for="entry in payload" :key="entry.key" class="gl-mb-6 gl-flex gl-flex-col">
-        <strong class="gl-mb-2">{{ entry.key }}</strong>
-        <template v-if="isLoading"><gl-skeleton-loader :lines="1" /></template>
-        <template v-else>
-          <gl-link v-if="entry.link" :href="entry.link">{{ entry.value }}</gl-link>
-          <span v-else>{{ entry.value }}</span>
+    <dl class="gl-pl-4">
+      <div v-for="entry in payload" :key="entry.key" class="gl-mb-6">
+        <dt class="gl-mb-2">{{ entry.key }}</dt>
+        <template v-if="isLoading">
+          <dd>
+            <gl-skeleton-loader :lines="1" />
+          </dd>
         </template>
-      </li>
-    </ul>
+        <template v-else>
+          <dd>
+            <gl-link v-if="entry.link" :href="entry.link">{{ entry.value }}</gl-link>
+            <template v-else>{{ entry.value }}</template>
+          </dd>
+        </template>
+      </div>
+    </dl>
   </div>
 </template>
