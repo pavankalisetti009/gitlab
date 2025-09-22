@@ -783,6 +783,13 @@ RSpec.describe GeoNode, :request_store, :geo, type: :model, feature_category: :g
 
       expect { selective_sync? }.to raise_error(Geo::Errors::UnknownSelectiveSyncType, /Selective sync type is not known: invalid_type/)
     end
+
+    it 'returns false when the feature flag is disabled for organizations' do
+      stub_feature_flags(geo_selective_sync_by_organizations: false)
+      node.update!(selective_sync_type: 'organizations')
+
+      is_expected.to be_falsy
+    end
   end
 
   describe '#selective_sync_by_organizations?' do
