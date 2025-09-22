@@ -16869,7 +16869,7 @@ msgstr ""
 msgid "ComplianceStandardsAdherence|Checks"
 msgstr ""
 
-msgid "ComplianceStandardsAdherence|Code changes requires code owners"
+msgid "ComplianceStandardsAdherence|Code changes require code owners"
 msgstr ""
 
 msgid "ComplianceStandardsAdherence|Code owner approval required"
@@ -17388,7 +17388,7 @@ msgstr ""
 msgid "ComplianceStandardsAdherence|Merge request approval rules"
 msgstr ""
 
-msgid "ComplianceStandardsAdherence|Merge request commit reset approvals"
+msgid "ComplianceStandardsAdherence|Merge request commit resets approvals"
 msgstr ""
 
 msgid "ComplianceStandardsAdherence|Merge requests approval rules prevent editing"

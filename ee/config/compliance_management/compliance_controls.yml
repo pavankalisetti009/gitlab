@@ -126,7 +126,7 @@ controls:
     field_method: scanner_iac_running?
     enum_value: 15
   code_changes_requires_code_owners:
-    name: Code changes requires code owners
+    name: Code changes require code owners
     type: boolean
     compliant_value: true
     compliant_operator: '='
@@ -369,7 +369,7 @@ controls:
     field_method: default_branch_users_can_merge?
     enum_value: 47
   merge_request_commit_reset_approvals:
-    name: Merge request commit reset approvals
+    name: Merge request commit resets approvals
     type: boolean
     compliant_value: true
     compliant_operator: '='
