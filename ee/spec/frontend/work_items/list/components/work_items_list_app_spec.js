@@ -81,11 +81,11 @@ describeSkipVue3(skipReason, () => {
     hasIssuableHealthStatusFeature = false,
     hasCustomFieldsFeature = true,
     hasIterationsFeature = false,
+    hasStatusFeature = true,
     showNewWorkItem = true,
     isGroup = true,
     workItemType = WORK_ITEM_TYPE_NAME_EPIC,
     props = {},
-    hasStatusFeature = true,
     customFieldsQueryHandler = baseCustomFieldsQueryHandler,
   } = {}) => {
     wrapper = shallowMountExtended(EEWorkItemsListApp, {
