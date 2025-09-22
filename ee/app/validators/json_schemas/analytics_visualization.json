@@ -239,6 +239,7 @@
         "valueUnit": {
           "type": {
             "enum": [
+              "COUNT",
               "DAYS",
               "PER_DAY",
               "PERCENT",
