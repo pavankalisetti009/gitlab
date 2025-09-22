@@ -118,6 +118,38 @@ RSpec.describe Gitlab::Checks::SecretPushProtection::SecretsCheck, feature_categ
 
           it_behaves_like 'calls SDS'
           it_behaves_like 'skips the push check'
+
+          context 'when unexpected exceptions are raised' do
+            where(:method_name, :target_class, :exception, :exception_msg) do
+              [
+                [:send_request_to_sds, Gitlab::Checks::SecretPushProtection::SecretDetectionServiceClient,
+                  StandardError, 'Unexpected error'],
+                [:standardize_payloads, Gitlab::Checks::SecretPushProtection::PayloadProcessor, GRPC::Internal,
+                  'waiting for git-diff-pairs: exit status 128']
+              ]
+            end
+
+            with_them do
+              it "logs the error" do
+                allow_next_instance_of(target_class) do |instance|
+                  allow(instance).to receive(method_name).and_raise(exception, exception_msg)
+                end
+
+                expect(::Gitlab::ErrorTracking).to receive(:track_exception)
+                  .with(instance_of(exception))
+                expect(secret_detection_logger).to receive(:error)
+                    .once
+                    .with(
+                      hash_including(
+                        "message" => include('Secret push protection failed:'),
+                        'class' => 'Gitlab::Checks::SecretPushProtection::SecretsCheck',
+                        'error_class' => exception.to_s
+                      )
+                    )
+                expect { secrets_check.validate! }.not_to raise_error
+              end
+            end
+          end
         end
 
         context 'when project does have feature license' do
