@@ -1,6 +1,7 @@
 import Vue, { nextTick } from 'vue';
 import VueApollo from 'vue-apollo';
-import { GlDashboardPanel } from '@gitlab/ui';
+import { merge } from 'lodash';
+import { GlDashboardPanel, GlBadge } from '@gitlab/ui';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import createMockApollo from 'helpers/mock_apollo_helper';
 import waitForPromises from 'helpers/wait_for_promises';
@@ -28,7 +29,7 @@ describe('GroupRiskScorePanel', () => {
       project: {
         id: 1,
         name: 'Project A',
-        path: 'project-a',
+        webUrl: 'project-a',
       },
     },
     {
@@ -37,7 +38,7 @@ describe('GroupRiskScorePanel', () => {
       project: {
         id: 2,
         name: 'Project B',
-        path: 'project-b',
+        webUrl: 'project-b',
       },
     },
   ];
@@ -55,6 +56,9 @@ describe('GroupRiskScorePanel', () => {
             },
             byProject: {
               nodes: defaultByProjectMockData,
+              pageInfo: {
+                hasNextPage: false,
+              },
             },
           },
         },
@@ -62,9 +66,11 @@ describe('GroupRiskScorePanel', () => {
     },
   };
 
+  const createMockData = ({ overrides = {} } = {}) =>
+    merge({}, defaultMockRiskScoreData, overrides);
+
   const createComponent = ({ props = {}, mockRiskScoreHandler = null } = {}) => {
-    riskScoreHandler =
-      mockRiskScoreHandler || jest.fn().mockResolvedValue(defaultMockRiskScoreData);
+    riskScoreHandler = mockRiskScoreHandler || jest.fn().mockResolvedValue(createMockData());
 
     const apolloProvider = createMockApollo([[groupTotalRiskScore, riskScoreHandler]]);
 
@@ -85,6 +91,7 @@ describe('GroupRiskScorePanel', () => {
   const findRiskScoreByProject = () => wrapper.findComponent(RiskScoreByProject);
   const findRiskScoreGroupBy = () => wrapper.findComponent(RiskScoreGroupBy);
   const findRiskScoreTooltip = () => wrapper.findComponent(RiskScoreTooltip);
+  const findMaxProjectsBadge = () => wrapper.findComponent(GlBadge);
 
   beforeEach(() => {
     createComponent();
@@ -175,6 +182,7 @@ describe('GroupRiskScorePanel', () => {
         projectId: mockFilters.projectId,
         includeByDefault: true,
         includeByProject: false,
+        projectCount: 96,
       });
     });
 
@@ -189,6 +197,7 @@ describe('GroupRiskScorePanel', () => {
         expect.objectContaining({
           fullPath: mockGroupFullPath,
           projectId: ['gid://gitlab/Project/99'],
+          projectCount: 96,
         }),
       );
     });
@@ -217,8 +226,93 @@ describe('GroupRiskScorePanel', () => {
         expect.objectContaining({
           includeByDefault: false,
           includeByProject: true,
+          projectCount: 96,
         }),
       );
+    });
+  });
+
+  describe('max projects badge', () => {
+    const createMockDataWithPageInfo = ({ hasNextPage } = {}) =>
+      createMockData({
+        overrides: {
+          data: {
+            group: {
+              securityMetrics: {
+                riskScore: {
+                  byProject: {
+                    pageInfo: {
+                      hasNextPage,
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      });
+
+    describe('when groupedBy is "default"', () => {
+      it('does not show the badge', async () => {
+        createComponent({
+          mockRiskScoreHandler: jest
+            .fn()
+            .mockResolvedValue(createMockDataWithPageInfo({ hasNextPage: false })),
+        });
+
+        await waitForPromises();
+
+        expect(findMaxProjectsBadge().exists()).toBe(false);
+      });
+    });
+
+    describe('when groupedBy is "project"', () => {
+      it.each`
+        hasNextPage | shouldShow
+        ${false}    | ${false}
+        ${true}     | ${true}
+      `(
+        'when hasNextPage is "$hasNextPage", it should show the badge: "$shouldShow"',
+        async ({ hasNextPage, shouldShow }) => {
+          createComponent({
+            mockRiskScoreHandler: jest
+              .fn()
+              .mockResolvedValue(createMockDataWithPageInfo({ hasNextPage })),
+          });
+
+          await findRiskScoreGroupBy().vm.$emit('input', 'project');
+          await waitForPromises();
+
+          expect(findMaxProjectsBadge().exists()).toBe(shouldShow);
+        },
+      );
+    });
+
+    describe('badge properties', () => {
+      beforeEach(async () => {
+        createComponent({
+          mockRiskScoreHandler: jest
+            .fn()
+            .mockResolvedValue(createMockDataWithPageInfo({ hasNextPage: true })),
+        });
+
+        await findRiskScoreGroupBy().vm.$emit('input', 'project');
+        await waitForPromises();
+      });
+
+      it('has the correct variant', () => {
+        expect(findMaxProjectsBadge().props('variant')).toBe('neutral');
+      });
+
+      it('has the correct text', () => {
+        expect(findMaxProjectsBadge().text()).toBe('Max project limit reached');
+      });
+
+      it('has the correct tooltip with dynamic threshold', () => {
+        const expectedTooltip =
+          'Only 96 projects with the highest risk scores are shown. Use the filter at the top of the dashboard to narrow down your results.';
+        expect(findMaxProjectsBadge().attributes('title')).toBe(expectedTooltip);
+      });
     });
   });
 

@@ -92,7 +92,7 @@ RSpec.describe PersonalAccessTokens::RotateService, feature_category: :system_ac
   context "for enterprise_user's token" do
     let_it_be(:current_user) { create(:enterprise_user) }
     let_it_be(:token, reload: true) do
-      create(:personal_access_token, user: current_user, group: current_user.enterprise_group)
+      create(:personal_access_token, user: current_user)
     end
 
     it "rotates user's own token" do
@@ -114,7 +114,7 @@ RSpec.describe PersonalAccessTokens::RotateService, feature_category: :system_ac
     let_it_be(:group) { create(:group) }
     let_it_be(:current_user) { create(:user, :service_account, provisioned_by_group: group) }
     let_it_be(:token, reload: true) do
-      create(:personal_access_token, user: current_user, group: group)
+      create(:personal_access_token, user: current_user)
     end
 
     it "rotates user's own token" do

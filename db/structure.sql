@@ -192,6 +192,21 @@ RETURN NEW;
 END
 $$;
 
+CREATE FUNCTION bulk_import_trackers_sharding_key() RETURNS trigger
+    LANGUAGE plpgsql
+    AS $$
+BEGIN
+  IF num_nonnulls(NEW.namespace_id, NEW.organization_id, NEW.project_id) != 1 THEN
+    SELECT "organization_id", "namespace_id", "project_id"
+    INTO NEW."organization_id", NEW."namespace_id", NEW."project_id"
+    FROM "bulk_import_entities"
+    WHERE "bulk_import_entities"."id" = NEW."bulk_import_entity_id";
+  END IF;
+
+  RETURN NEW;
+END
+$$;
+
 CREATE FUNCTION delete_associated_project_namespace() RETURNS trigger
     LANGUAGE plpgsql
     AS $$
@@ -14857,8 +14872,8 @@ CREATE TABLE conversational_development_index_metrics (
     instance_environments double precision NOT NULL,
     leader_deployments double precision NOT NULL,
     instance_deployments double precision NOT NULL,
-    leader_projects_prometheus_active double precision NOT NULL,
-    instance_projects_prometheus_active double precision NOT NULL,
+    leader_projects_prometheus_active double precision,
+    instance_projects_prometheus_active double precision,
     leader_service_desk_issues double precision NOT NULL,
     instance_service_desk_issues double precision NOT NULL,
     created_at timestamp without time zone NOT NULL,
@@ -20403,6 +20418,50 @@ CREATE SEQUENCE notes_id_seq
 
 ALTER SEQUENCE notes_id_seq OWNED BY notes.id;
 
+CREATE TABLE notes_archived (
+    note text,
+    noteable_type character varying,
+    author_id bigint,
+    created_at timestamp without time zone,
+    updated_at timestamp without time zone,
+    project_id bigint,
+    line_code character varying,
+    commit_id character varying,
+    noteable_id bigint,
+    system boolean DEFAULT false NOT NULL,
+    st_diff text,
+    updated_by_id bigint,
+    type character varying,
+    "position" text,
+    original_position text,
+    resolved_at timestamp without time zone,
+    resolved_by_id bigint,
+    discussion_id character varying,
+    note_html text,
+    cached_markdown_version integer,
+    change_position text,
+    resolved_by_push boolean,
+    review_id bigint,
+    confidential boolean,
+    last_edited_at timestamp with time zone,
+    internal boolean DEFAULT false NOT NULL,
+    id bigint DEFAULT nextval('notes_id_seq'::regclass) NOT NULL,
+    namespace_id bigint,
+    imported_from smallint DEFAULT 0 NOT NULL,
+    organization_id bigint,
+    archived_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT check_1244cbd7d0 CHECK ((noteable_type IS NOT NULL)),
+    CONSTRAINT check_3cd1f25f0d CHECK ((char_length(note_html) <= 1000000)),
+    CONSTRAINT check_438623dd0e CHECK ((char_length(change_position) <= 50000)),
+    CONSTRAINT check_82f260979e CHECK ((num_nonnulls(namespace_id, organization_id, project_id) >= 1)),
+    CONSTRAINT check_88582b41f4 CHECK ((char_length(st_diff) <= 1000000)),
+    CONSTRAINT check_c73ba3a9d6 CHECK ((char_length(note) <= 1000000)),
+    CONSTRAINT check_ef82c93395 CHECK ((char_length(original_position) <= 50000)),
+    CONSTRAINT check_f13cf06433 CHECK ((char_length("position") <= 50000))
+);
+
+COMMENT ON TABLE notes_archived IS 'Temporary table for storing orphaned notes during namespace_id backfill. To be dropped after migration completion.';
+
 CREATE TABLE notification_settings (
     id bigint NOT NULL,
     user_id bigint NOT NULL,
@@ -20446,6 +20505,24 @@ CREATE SEQUENCE notification_settings_id_seq
     CACHE 1;
 
 ALTER SEQUENCE notification_settings_id_seq OWNED BY notification_settings.id;
+
+CREATE TABLE oauth_access_grant_archived_records (
+    id bigint NOT NULL,
+    resource_owner_id bigint NOT NULL,
+    application_id bigint NOT NULL,
+    token character varying NOT NULL,
+    expires_in integer NOT NULL,
+    redirect_uri text NOT NULL,
+    created_at timestamp without time zone NOT NULL,
+    revoked_at timestamp without time zone,
+    scopes character varying,
+    code_challenge text,
+    code_challenge_method text,
+    organization_id bigint NOT NULL,
+    archived_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    CONSTRAINT check_bc69cc7ce0 CHECK ((char_length(code_challenge) <= 128)),
+    CONSTRAINT check_ce125f5bae CHECK ((char_length(code_challenge_method) <= 5))
+);
 
 CREATE TABLE oauth_access_grants (
     id bigint NOT NULL,
@@ -28892,7 +28969,6 @@ CREATE TABLE workspaces (
     CONSTRAINT check_15543fb0fa CHECK ((char_length(name) <= 64)),
     CONSTRAINT check_157d5f955c CHECK ((char_length(namespace) <= 64)),
     CONSTRAINT check_2b401b0034 CHECK ((char_length(deployment_resource_version) <= 64)),
-    CONSTRAINT check_35e31ca320 CHECK ((desired_config_generator_version IS NOT NULL)),
     CONSTRAINT check_72fee08424 CHECK ((char_length(project_ref) <= 256)),
     CONSTRAINT check_77d1a2ff50 CHECK ((char_length(processed_devfile) <= 65535)),
     CONSTRAINT check_8a0ab61b6b CHECK ((char_length(url_query_string) <= 256)),
@@ -32638,6 +32714,9 @@ ALTER TABLE push_event_payloads
 ALTER TABLE ONLY instance_type_ci_runners
     ADD CONSTRAINT check_5c34a3c1db UNIQUE (id);
 
+ALTER TABLE bulk_import_trackers
+    ADD CONSTRAINT check_5f034e7cad CHECK ((num_nonnulls(namespace_id, organization_id, project_id) = 1)) NOT VALID;
+
 ALTER TABLE ONLY project_type_ci_runners
     ADD CONSTRAINT check_619c71f3a2 UNIQUE (id);
 
@@ -32676,6 +32755,9 @@ ALTER TABLE sprints
 
 ALTER TABLE redirect_routes
     ADD CONSTRAINT check_e82ff70482 CHECK ((namespace_id IS NOT NULL)) NOT VALID;
+
+ALTER TABLE notes_archived
+    ADD CONSTRAINT check_notes_archived_has_parent CHECK ((num_nonnulls(namespace_id, organization_id, project_id) >= 1)) NOT VALID;
 
 ALTER TABLE ci_runner_taggings_group_type
     ADD CONSTRAINT check_organization_id_nullness CHECK ((organization_id IS NOT NULL)) NOT VALID;
@@ -33757,11 +33839,17 @@ ALTER TABLE ONLY note_metadata
 ALTER TABLE ONLY note_uploads
     ADD CONSTRAINT note_uploads_pkey PRIMARY KEY (id, model_type);
 
+ALTER TABLE ONLY notes_archived
+    ADD CONSTRAINT notes_archived_pkey PRIMARY KEY (id);
+
 ALTER TABLE ONLY notes
     ADD CONSTRAINT notes_pkey PRIMARY KEY (id);
 
 ALTER TABLE ONLY notification_settings
     ADD CONSTRAINT notification_settings_pkey PRIMARY KEY (id);
+
+ALTER TABLE ONLY oauth_access_grant_archived_records
+    ADD CONSTRAINT oauth_access_grant_archived_records_pkey PRIMARY KEY (id);
 
 ALTER TABLE ONLY oauth_access_grants
     ADD CONSTRAINT oauth_access_grants_pkey PRIMARY KEY (id);
@@ -38567,6 +38655,8 @@ CREATE INDEX index_ci_subscriptions_projects_on_upstream_project_id ON ci_subscr
 
 CREATE UNIQUE INDEX index_ci_subscriptions_projects_unique_subscription ON ci_subscriptions_projects USING btree (downstream_project_id, upstream_project_id);
 
+CREATE INDEX index_ci_triggers_on_expires_at ON ci_triggers USING btree (expires_at);
+
 CREATE INDEX index_ci_triggers_on_owner_id ON ci_triggers USING btree (owner_id);
 
 CREATE INDEX index_ci_triggers_on_project_id_and_id ON ci_triggers USING btree (project_id, id);
@@ -40283,6 +40373,12 @@ CREATE UNIQUE INDEX index_note_diff_files_on_diff_note_id ON note_diff_files USI
 
 CREATE INDEX index_note_metadata_on_note_id ON note_metadata USING btree (note_id);
 
+CREATE INDEX index_notes_archived_on_namespace_id ON notes_archived USING btree (namespace_id);
+
+CREATE INDEX index_notes_archived_on_project_id ON notes_archived USING btree (project_id);
+
+CREATE INDEX index_notes_archived_on_review_id ON notes_archived USING btree (review_id);
+
 CREATE INDEX index_notes_for_cherry_picked_merge_requests ON notes USING btree (project_id, commit_id) WHERE ((noteable_type)::text = 'MergeRequest'::text);
 
 CREATE INDEX index_notes_on_author_id_and_created_at_and_id ON notes USING btree (author_id, created_at, id);
@@ -40320,6 +40416,8 @@ CREATE UNIQUE INDEX index_npm_metadata_caches_on_package_name_project_id_unique 
 CREATE INDEX index_ns_root_stor_stats_on_registry_size_estimated ON namespace_root_storage_statistics USING btree (registry_size_estimated);
 
 CREATE UNIQUE INDEX index_ns_user_callouts_feature ON user_namespace_callouts USING btree (user_id, feature_name, namespace_id);
+
+CREATE INDEX index_oauth_access_grant_archived_records_on_organization_id ON oauth_access_grant_archived_records USING btree (organization_id);
 
 CREATE INDEX index_oauth_access_grants_on_application_id ON oauth_access_grants USING btree (application_id);
 
@@ -46371,6 +46469,8 @@ CREATE TRIGGER trigger_b83b7e51e2f5 BEFORE INSERT OR UPDATE ON scan_result_polic
 
 CREATE TRIGGER trigger_b8eecea7f351 BEFORE INSERT OR UPDATE ON dependency_proxy_manifest_states FOR EACH ROW EXECUTE FUNCTION trigger_b8eecea7f351();
 
+CREATE TRIGGER trigger_bulk_import_trackers_sharding_key BEFORE INSERT OR UPDATE ON bulk_import_trackers FOR EACH ROW EXECUTE FUNCTION bulk_import_trackers_sharding_key();
+
 CREATE TRIGGER trigger_c17a166692a2 BEFORE INSERT OR UPDATE ON audit_events_streaming_headers FOR EACH ROW EXECUTE FUNCTION trigger_c17a166692a2();
 
 CREATE TRIGGER trigger_c52d215d50a1 BEFORE INSERT OR UPDATE ON incident_management_pending_issue_escalations FOR EACH ROW EXECUTE FUNCTION trigger_c52d215d50a1();
@@ -47837,6 +47937,9 @@ ALTER TABLE ONLY scan_result_policies
 ALTER TABLE ONLY requirements
     ADD CONSTRAINT fk_85044baef0 FOREIGN KEY (issue_id) REFERENCES issues(id) ON DELETE CASCADE;
 
+ALTER TABLE ONLY notes_archived
+    ADD CONSTRAINT fk_85a7a7742f FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE CASCADE;
+
 ALTER TABLE ONLY catalog_resource_components
     ADD CONSTRAINT fk_85bb1d1e79 FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE CASCADE;
 
@@ -48275,6 +48378,9 @@ ALTER TABLE ONLY protected_tag_create_access_levels
 ALTER TABLE ONLY status_check_responses
     ADD CONSTRAINT fk_b53bf31a72 FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE CASCADE;
 
+ALTER TABLE ONLY notes_archived
+    ADD CONSTRAINT fk_b59ff7568a FOREIGN KEY (review_id) REFERENCES reviews(id) ON DELETE SET NULL;
+
 ALTER TABLE ONLY packages_dependency_links
     ADD CONSTRAINT fk_b5c56b6ede FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE CASCADE;
 
@@ -48484,6 +48590,9 @@ ALTER TABLE ONLY duo_workflows_workflows
 
 ALTER TABLE ONLY user_member_roles
     ADD CONSTRAINT fk_cb5a805cd4 FOREIGN KEY (member_role_id) REFERENCES member_roles(id) ON DELETE CASCADE;
+
+ALTER TABLE ONLY notes_archived
+    ADD CONSTRAINT fk_cb6db52106 FOREIGN KEY (namespace_id) REFERENCES namespaces(id) ON DELETE CASCADE;
 
 ALTER TABLE ONLY boards_epic_board_labels
     ADD CONSTRAINT fk_cb8ded70e2 FOREIGN KEY (group_id) REFERENCES namespaces(id) ON DELETE CASCADE;
@@ -49237,6 +49346,9 @@ ALTER TABLE ONLY incident_management_oncall_schedules
 
 ALTER TABLE ONLY vulnerability_user_mentions
     ADD CONSTRAINT fk_rails_1a41c485cd FOREIGN KEY (vulnerability_id) REFERENCES vulnerabilities(id) ON DELETE CASCADE;
+
+ALTER TABLE ONLY oauth_access_grant_archived_records
+    ADD CONSTRAINT fk_rails_1a50d006fe FOREIGN KEY (organization_id) REFERENCES organizations(id) ON DELETE CASCADE;
 
 ALTER TABLE ai_usage_events
     ADD CONSTRAINT fk_rails_1a85bb845c FOREIGN KEY (namespace_id) REFERENCES namespaces(id) ON DELETE SET NULL;

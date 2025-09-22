@@ -17,14 +17,15 @@ module GitlabSubscriptions
     end
 
     def execute
-      duration = find_trial_types[trial_type] || default_duration
+      duration = find_trial_types[trial_type] || DEFAULT_DURATIONS[trial_type]
+      return duration_days(duration) if duration
 
-      return duration[:duration_days] unless duration[:next_active_time]
-      return duration[:duration_days] if Time.zone.parse(duration[:next_active_time]).future?
+      Gitlab::AppLogger.warn(
+        class: self.class.name,
+        message: "The #{trial_type} trial type is not defined"
+      )
 
-      duration[:next_duration_days]
-    rescue ArgumentError, TypeError
-      duration[:duration_days]
+      nil # This is a signal we do not have the trial_type defined in the DEFAULT_DURATIONS
     end
 
     private
@@ -35,8 +36,13 @@ module GitlabSubscriptions
       end || {}
     end
 
-    def default_duration
-      DEFAULT_DURATIONS[trial_type] || DEFAULT_DURATIONS[GitlabSubscriptions::Trials::FREE_TRIAL_TYPE]
+    def duration_days(duration)
+      return duration[:duration_days] unless duration[:next_active_time]
+      return duration[:duration_days] if Time.zone.parse(duration[:next_active_time]).future?
+
+      duration[:next_duration_days]
+    rescue ArgumentError, TypeError
+      duration[:duration_days]
     end
 
     def client

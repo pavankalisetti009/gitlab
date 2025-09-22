@@ -1,6 +1,7 @@
 query EEgetWorkItemStateCounts(
   $iid: String
   $excludeProjects: Boolean = false
+  $excludeGroupWorkItems: Boolean = false
   $includeDescendants: Boolean = true
   $isGroup: Boolean = true
   $fullPath: ID!
@@ -47,6 +48,7 @@ query EEgetWorkItemStateCounts(
     workItemStateCounts(
       iid: $iid
       excludeProjects: $excludeProjects
+      excludeGroupWorkItems: $excludeGroupWorkItems
       includeDescendants: $includeDescendants
       search: $search
       sort: $sort

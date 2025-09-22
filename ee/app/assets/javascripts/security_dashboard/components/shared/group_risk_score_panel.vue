@@ -1,5 +1,6 @@
 <script>
-import { GlDashboardPanel } from '@gitlab/ui';
+import { GlDashboardPanel, GlBadge, GlTooltipDirective } from '@gitlab/ui';
+import { sprintf, s__ } from '~/locale';
 import groupTotalRiskScore from 'ee/security_dashboard/graphql/queries/group_total_risk_score.query.graphql';
 import TotalRiskScore from './charts/total_risk_score.vue';
 import RiskScoreByProject from './charts/risk_score_by_project.vue';
@@ -10,10 +11,14 @@ export default {
   name: 'GroupRiskScorePanel',
   components: {
     GlDashboardPanel,
+    GlBadge,
     TotalRiskScore,
     RiskScoreByProject,
     RiskScoreGroupBy,
     RiskScoreTooltip,
+  },
+  directives: {
+    GlTooltip: GlTooltipDirective,
   },
   inject: ['groupFullPath'],
   props: {
@@ -29,6 +34,7 @@ export default {
       projects: [],
       hasFetchError: false,
       groupedBy: 'default',
+      isOverProjectCountThreshold: false,
     };
   },
   apollo: {
@@ -40,6 +46,7 @@ export default {
           projectId: this.filters.projectId,
           includeByDefault: this.groupedBy === 'default',
           includeByProject: this.groupedBy === 'project',
+          projectCount: this.$options.projectCountThreshold,
         };
       },
       update(data) {
@@ -53,12 +60,28 @@ export default {
         const projectNodes = [...(byProject?.nodes || [])];
         projectNodes.sort((a, b) => b.score - a.score);
         this.projects = projectNodes;
+
+        this.isOverProjectCountThreshold = byProject?.pageInfo?.hasNextPage || false;
       },
       error() {
         this.hasFetchError = true;
       },
     },
   },
+  computed: {
+    shouldShowMaxProjectsBadge() {
+      return this.groupedBy === 'project' && this.isOverProjectCountThreshold;
+    },
+    maxProjectsTooltipTitle() {
+      return sprintf(
+        s__(
+          'SecurityReports|Only %{count} projects with the highest risk scores are shown. Use the filter at the top of the dashboard to narrow down your results.',
+        ),
+        { count: this.$options.projectCountThreshold },
+      );
+    },
+  },
+  projectCountThreshold: 96,
 };
 </script>
 
@@ -78,6 +101,15 @@ export default {
       />
     </template>
     <template #filters>
+      <gl-badge
+        v-if="shouldShowMaxProjectsBadge"
+        v-gl-tooltip
+        variant="neutral"
+        class="gl-mr-3"
+        :title="maxProjectsTooltipTitle"
+      >
+        {{ s__('SecurityReports|Max project limit reached') }}
+      </gl-badge>
       <risk-score-group-by v-model="groupedBy" />
     </template>
     <template v-if="!hasFetchError" #body>

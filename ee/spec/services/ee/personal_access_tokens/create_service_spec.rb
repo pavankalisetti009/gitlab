@@ -129,6 +129,8 @@ RSpec.describe PersonalAccessTokens::CreateService, feature_category: :system_ac
 
               it 'creates a token successfully' do
                 expect(create_token.success?).to be true
+                expect(token.user_type).to eq('service_account')
+                expect(token.group).to be_nil
               end
 
               context 'when expires_at is nil' do
@@ -192,6 +194,8 @@ RSpec.describe PersonalAccessTokens::CreateService, feature_category: :system_ac
 
               it 'creates a token successfully' do
                 expect(create_token.success?).to be true
+                expect(token.user_type).to eq('service_account')
+                expect(token.group).to eq(group)
               end
 
               context 'when expires_at is nil' do
@@ -232,6 +236,16 @@ RSpec.describe PersonalAccessTokens::CreateService, feature_category: :system_ac
                     expect(create_token.payload[:personal_access_token].expires_at)
                     .to eq max_personal_access_token_lifetime
                   end
+                end
+              end
+
+              context 'when provisioned by sub-group (legacy data)' do
+                let(:parent_group) { create(:group, owners: [current_user]) }
+                let(:group) { create(:group, parent: parent_group) }
+
+                it 'creates token with root group id' do
+                  expect(create_token.success?).to be true
+                  expect(token.group).to eq(parent_group)
                 end
               end
             end

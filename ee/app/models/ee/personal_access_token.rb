@@ -101,5 +101,13 @@ module EE
       EE::Gitlab::PersonalAccessTokens::ExpiryDateCalculator.new(user)
     end
     strong_memoize_attr :expiry_date_calculator
+
+    override :set_group_id
+    def set_group_id
+      self.group_id = user.enterprise_group_id if user.enterprise_user?
+      self.group_id = user.provisioned_by_group.root_ancestor.id if user.service_account? && user.provisioned_by_group
+
+      super
+    end
   end
 end

@@ -12,7 +12,8 @@ RSpec.describe 'new tables missing sharding_key', feature_category: :organizatio
       'web_hook_logs_daily', # temporary copy of web_hook_logs
       'ci_gitlab_hosted_runner_monthly_usages', # https://gitlab.com/gitlab-org/gitlab/-/issues/553104
       'uploads_9ba88c4165', # https://gitlab.com/gitlab-org/gitlab/-/issues/398199
-      'merge_request_diff_files_99208b8fac' # has a desired sharding key instead
+      'merge_request_diff_files_99208b8fac', # has a desired sharding key instead
+      'notes_archived' # temp table: https://gitlab.com/gitlab-org/gitlab/-/merge_requests/191155
     ]
   end
 
@@ -23,6 +24,11 @@ RSpec.describe 'new tables missing sharding_key', feature_category: :organizatio
       *['badges.project_id', 'badges.group_id'], # https://gitlab.com/gitlab-org/gitlab/-/issues/562439
       'member_roles.namespace_id', # https://gitlab.com/gitlab-org/gitlab/-/issues/444161
       *['todos.project_id', 'todos.group_id'], # https://gitlab.com/gitlab-org/gitlab/-/issues/562437
+      *[
+        'bulk_import_trackers.organization_id',
+        'bulk_import_trackers.project_id',
+        'bulk_import_trackers.namespace_id'
+      ], # https://gitlab.com/gitlab-org/gitlab/-/issues/560846
       *uploads_and_partitions
     ]
   end
@@ -250,7 +256,6 @@ RSpec.describe 'new tables missing sharding_key', feature_category: :organizatio
       "oauth_access_grants" => "https://gitlab.com/gitlab-org/gitlab/-/issues/496717",
       "oauth_openid_requests" => "https://gitlab.com/gitlab-org/gitlab/-/issues/496717",
       "oauth_device_grants" => "https://gitlab.com/gitlab-org/gitlab/-/issues/496717",
-      "bulk_import_trackers" => "https://gitlab.com/gitlab-org/gitlab/-/issues/517823",
       "ai_duo_chat_events" => "https://gitlab.com/gitlab-org/gitlab/-/issues/516140",
       "fork_networks" => "https://gitlab.com/gitlab-org/gitlab/-/issues/522958",
       "bulk_import_configurations" => "https://gitlab.com/gitlab-org/gitlab/-/issues/536521",
@@ -305,7 +310,8 @@ RSpec.describe 'new tables missing sharding_key', feature_category: :organizatio
       "abuse_report_events" => "https://gitlab.com/gitlab-org/gitlab/-/issues/553429",
       "abuse_events" => "https://gitlab.com/gitlab-org/gitlab/-/issues/553427",
       "abuse_report_assignees" => "https://gitlab.com/gitlab-org/gitlab/-/issues/553428",
-      "notes" => "https://gitlab.com/gitlab-org/gitlab/-/issues/569521"
+      "notes" => "https://gitlab.com/gitlab-org/gitlab/-/issues/569521",
+      "notes_archived" => "https://gitlab.com/gitlab-org/gitlab/-/issues/569521"
     }
     has_lfk = ->(lfks) { lfks.any? { |k| k.options[:column] == 'organization_id' && k.to_table == 'organizations' } }
 

@@ -53,22 +53,28 @@ module WorkItems
         # because you won't be able to change the namespace through the API.
         validate :validate_statuses_per_namespace_limit, on: :create
 
-        def self.find_by_namespace_and_name(namespace, name)
-          in_namespace(namespace).find_by('TRIM(BOTH FROM LOWER(name)) = TRIM(BOTH FROM LOWER(?))', name)
-        end
-
-        def self.find_by_namespaces_with_partial_name(namespace_ids, name = nil, limit = 100)
-          query = where(namespace_id: namespace_ids)
-
-          if name.present?
-            sanitized_name = sanitize_sql_like(name.to_s.downcase.strip)
-            query = query.where(['TRIM(BOTH FROM LOWER(name)) LIKE ?', "%#{sanitized_name}%"])
+        class << self
+          def find_by_namespace_and_name(namespace, name)
+            in_namespace(namespace).find_by('TRIM(BOTH FROM LOWER(name)) = TRIM(BOTH FROM LOWER(?))', name)
           end
 
-          query
-            .select(Arel.sql("DISTINCT ON (TRIM(BOTH FROM LOWER(name))) *"))
-            .order(Arel.sql("TRIM(BOTH FROM LOWER(name)), id DESC"))
-            .limit(limit)
+          def find_by_namespaces_with_partial_name(namespace_ids, name = nil, limit = 100)
+            query = where(namespace_id: namespace_ids)
+
+            if name.present?
+              sanitized_name = sanitize_sql_like(name.to_s.downcase.strip)
+              query = query.where(['TRIM(BOTH FROM LOWER(name)) LIKE ?', "%#{sanitized_name}%"])
+            end
+
+            query
+              .select(Arel.sql("DISTINCT ON (TRIM(BOTH FROM LOWER(name))) *"))
+              .order(Arel.sql("TRIM(BOTH FROM LOWER(name)), id DESC"))
+              .limit(limit)
+          end
+
+          def find_by_converted_status(status)
+            find_by(converted_from_system_defined_status_identifier: status)
+          end
         end
 
         def position

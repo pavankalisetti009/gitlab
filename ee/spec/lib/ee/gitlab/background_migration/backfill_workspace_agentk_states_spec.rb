@@ -27,8 +27,7 @@ RSpec.describe Gitlab::BackgroundMigration::BackfillWorkspaceAgentkStates, featu
       url: "workspace-url",
       deployment_resource_version: "v1",
       personal_access_token_id: personal_access_token.id,
-      workspaces_agent_config_version: agent_config_version.id,
-      desired_config_generator_version: 3
+      workspaces_agent_config_version: agent_config_version.id
     )
   end
 
@@ -51,8 +50,7 @@ RSpec.describe Gitlab::BackgroundMigration::BackfillWorkspaceAgentkStates, featu
       url: "workspace-url",
       deployment_resource_version: "v1",
       personal_access_token_id: personal_access_token.id,
-      workspaces_agent_config_version: agent_config_version.id,
-      desired_config_generator_version: 3
+      workspaces_agent_config_version: agent_config_version.id
     )
   end
 

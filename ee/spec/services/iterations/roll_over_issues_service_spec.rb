@@ -80,7 +80,7 @@ RSpec.describe Iterations::RollOverIssuesService, feature_category: :team_planni
       end
 
       context 'when user is the automation bot' do
-        let(:user) { Users::Internal.automation_bot }
+        let(:user) { Users::Internal.for_organization(group.organization_id).automation_bot }
 
         it { is_expected.not_to be_error }
 

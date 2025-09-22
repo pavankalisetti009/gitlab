@@ -10,6 +10,7 @@ RSpec.describe Gitlab::Duo::Developments::Setup, :gitlab_duo, :silence_stdout, f
   let!(:user) { create(:user, maintainer_of: project, username: 'root') }
 
   let(:task) { described_class.new(args) }
+  let(:namespace) { 'gitlab-duo' }
 
   let(:feature_flags) do
     [
@@ -187,26 +188,32 @@ RSpec.describe Gitlab::Duo::Developments::Setup, :gitlab_duo, :silence_stdout, f
     before do
       allow(Rake::Task).to receive(:[]).with(any_args).and_return(rake_task)
       allow(rake_task).to receive(:invoke)
+      allow(rake_task).to receive(:reenable)
       allow($stdout).to receive(:puts)
     end
 
     context 'when Gitlab Duo data is not seeded' do
+      before do
+        allow(Group).to receive(:find_by_full_path).with(namespace).and_return(nil)
+      end
+
       it 'prints a message indicating seeding is happening' do
         expect($stdout).to receive(:puts).with('Seeding GitLab Duo data...')
 
-        ::Gitlab::Duo::Developments.seed_data(nil)
+        ::Gitlab::Duo::Developments.seed_data(namespace)
       end
 
-      it 'invokes the db:seed_fu rake task' do
-        ::Gitlab::Duo::Developments.seed_data(nil)
+      it 'reenables and invokes the db:seed_fu rake task' do
+        ::Gitlab::Duo::Developments.seed_data(namespace)
 
+        expect(rake_task).to have_received(:reenable)
         expect(rake_task).to have_received(:invoke)
       end
     end
 
     context 'when Gitlab Duo data is already seeded' do
       before do
-        allow(Group).to receive(:find_by_full_path).with(nil).and_return(group)
+        allow(Group).to receive(:find_by_full_path).with(namespace).and_return(group)
       end
 
       let(:expected_already_seeded_message) do
@@ -215,21 +222,29 @@ RSpec.describe Gitlab::Duo::Developments::Setup, :gitlab_duo, :silence_stdout, f
           ## Gitlab Duo test group and project already seeded
           ## If you want to destroy and re-create them, you can re-run the seed task
           ## SEED_GITLAB_DUO=1 FILTER=gitlab_duo bundle exec rake db:seed_fu
+          ## Or set GITLAB_DUO_RESEED=1 to force reseeding via this setup task
           ## See https://docs.gitlab.com/development/development_seed_files/#seed-project-and-group-resources-for-gitlab-duo
           ================================================================================
         TXT
       end
 
-      it 'prints a message indicating data is already seeded' do
+      it 'prints a message indicating data is already seeded and does not run seeds' do
         expect($stdout).to receive(:puts).with(expected_already_seeded_message)
 
-        ::Gitlab::Duo::Developments.seed_data(nil)
-      end
-
-      it 'does not invoke the db:seed_fu rake task' do
-        ::Gitlab::Duo::Developments.seed_data(nil)
+        ::Gitlab::Duo::Developments.seed_data(namespace)
 
         expect(rake_task).not_to have_received(:invoke)
+      end
+
+      context 'when GITLAB_DUO_RESEED=1 is set' do
+        it 'forces reseeding' do
+          stub_env('GITLAB_DUO_RESEED', '1')
+
+          ::Gitlab::Duo::Developments.seed_data(namespace)
+
+          expect(rake_task).to have_received(:reenable)
+          expect(rake_task).to have_received(:invoke)
+        end
       end
     end
   end

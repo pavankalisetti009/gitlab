@@ -21,6 +21,7 @@ module Iterations
           next unless cadence.can_roll_over?
 
           new_iteration = cadence.next_open_iteration(iteration.due_date)
+          automation_bot = automation_bot(iteration.group.organization_id)
 
           # proactively generate some iterations in advance if no upcoming iteration found
           # this should help prevent the case where issues roll-over is triggered but
@@ -52,8 +53,9 @@ module Iterations
       )
     end
 
-    def automation_bot
-      @automation_bot_id ||= Users::Internal.automation_bot
+    def automation_bot(organization_id)
+      @automation_bot ||= {}
+      @automation_bot[organization_id] ||= Users::Internal.for_organization(organization_id).automation_bot
     end
   end
 end

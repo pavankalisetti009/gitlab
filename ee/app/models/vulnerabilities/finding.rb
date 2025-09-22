@@ -170,6 +170,7 @@ module Vulnerabilities
     scope :by_primary_identifiers, ->(identifier_ids) { where(primary_identifier: identifier_ids) }
     scope :by_latest_pipeline, ->(pipeline_id) { where(latest_pipeline_id: pipeline_id) }
     scope :with_project, -> { includes(:project) }
+    scope :with_token_status, -> { preload(:finding_token_status) }
 
     scope :all_preloaded, -> do
       preload(:scanner, :identifiers, :feedbacks, project: [:namespace, :project_feature])
@@ -247,6 +248,10 @@ module Vulnerabilities
       else
         'confirmed'
       end
+    end
+
+    def token_status
+      finding_token_status&.status_before_type_cast || ::Security::TokenStatus::UNKNOWN
     end
 
     def source_code?

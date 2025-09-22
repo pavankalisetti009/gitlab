@@ -91,7 +91,7 @@ RSpec.describe 'Updating a custom lifecycle', feature_category: :team_planning d
     end
 
     context 'when custom lifecycle is provided' do
-      let(:existing_in_progress_status) do
+      let!(:existing_in_progress_status) do
         create(:work_item_custom_status, name: 'In Progress', category: :in_progress, namespace: group)
       end
 
@@ -175,7 +175,7 @@ RSpec.describe 'Updating a custom lifecycle', feature_category: :team_planning d
         end
       end
 
-      context 'when mapping is provided' do
+      context 'when mapping is provided although not needed' do
         let(:params) do
           super().merge({
             statuses: nil,
@@ -193,8 +193,94 @@ RSpec.describe 'Updating a custom lifecycle', feature_category: :team_planning d
 
           expect(response).to have_gitlab_http_status(:success)
           expect_graphql_errors_to_be_empty
+        end
+      end
 
-          expect(::WorkItems::Statuses::Custom::Mapping.count).to eq(0)
+      context 'when status should be removed from lifecycle' do
+        let(:params) do
+          {
+            namespace_path: group.full_path,
+            id: custom_lifecycle.to_gid,
+            name: lifecycle_name,
+            statuses: [
+              status_params_for(custom_lifecycle.default_open_status),
+              status_params_for(custom_lifecycle.default_closed_status),
+              status_params_for(custom_lifecycle.default_duplicate_status)
+            ],
+            default_open_status_index: 0,
+            default_closed_status_index: 1,
+            default_duplicate_status_index: 2
+          }
+        end
+
+        shared_examples 'updates the lifecycle' do
+          it 'updates the lifecycle' do
+            post_graphql_mutation(mutation, current_user: user)
+
+            expect(response).to have_gitlab_http_status(:success)
+            expect_graphql_errors_to_be_empty
+
+            expect(mutation_response['lifecycle']).to match(
+              a_hash_including(
+                'name' => lifecycle_name,
+                'statuses' => include(
+                  a_hash_including('name' => custom_lifecycle.default_open_status.name),
+                  a_hash_including('name' => custom_lifecycle.default_closed_status.name),
+                  a_hash_including('name' => custom_lifecycle.default_duplicate_status.name)
+                )
+              )
+            )
+          end
+        end
+
+        it_behaves_like 'updates the lifecycle'
+
+        context 'when status to remove is in use' do
+          let!(:work_item) { create(:work_item, namespace: group) }
+          let!(:current_status) do
+            create(:work_item_current_status, work_item: work_item, custom_status: existing_in_progress_status)
+          end
+
+          it 'returns an error' do
+            post_graphql_mutation(mutation, current_user: user)
+
+            expect(response).to have_gitlab_http_status(:success)
+            expect(mutation_response['errors']).to include(
+              "Cannot delete status '#{existing_in_progress_status.name}' " \
+                "because it is in use and no mapping is provided"
+            )
+          end
+
+          context 'and mapping is provided' do
+            let(:params) do
+              super().merge(
+                status_mappings: [
+                  {
+                    old_status_id: existing_in_progress_status.to_gid,
+                    new_status_id: custom_lifecycle.default_open_status.to_gid
+                  }
+                ]
+              )
+            end
+
+            it_behaves_like 'updates the lifecycle'
+
+            context 'when work_item_status_mvc2 feature flag is disabled' do
+              before do
+                stub_feature_flags(work_item_status_mvc2: false)
+              end
+
+              it 'returns an error' do
+                post_graphql_mutation(mutation, current_user: user)
+
+                expect(response).to have_gitlab_http_status(:success)
+                expect(mutation_response['errors']).to include(
+                  "Cannot delete status '#{existing_in_progress_status.name}' " \
+                    "because it is in use"
+                )
+              end
+            end
+          end
         end
       end
     end

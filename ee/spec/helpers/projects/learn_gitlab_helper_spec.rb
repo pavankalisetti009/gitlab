@@ -61,25 +61,6 @@ RSpec.describe Projects::LearnGitlabHelper, feature_category: :onboarding do
 
     it_behaves_like 'has all data'
 
-    it 'sets correct completion statuses' do
-      result = {
-        issue_created: a_hash_including(completed: false),
-        created: a_hash_including(completed: true),
-        pipeline_created: a_hash_including(completed: false),
-        merge_request_created: a_hash_including(completed: false),
-        user_added: a_hash_including(completed: true),
-        trial_started: a_hash_including(completed: false),
-        required_mr_approvals_enabled: a_hash_including(completed: false),
-        code_owners_enabled: a_hash_including(completed: false),
-        license_scanning_run: a_hash_including(completed: false),
-        secure_dependency_scanning_run: a_hash_including(completed: false),
-        secure_dast_run: a_hash_including(completed: false),
-        code_added: a_hash_including(completed: false)
-      }
-
-      expect(onboarding_actions_data).to match(result)
-    end
-
     it 'sets correct paths' do
       result = {
         trial_started: a_hash_including(url: %r{/#{project.path}/-/project_members\z}),

@@ -752,11 +752,13 @@ RSpec.shared_context 'with remote development shared fixtures' do
                         format(
                           files_module::KUBERNETES_POSTSTART_HOOK_COMMAND,
                           run_internal_blocking_poststart_commands_script_file_path:
-                            "#{create_constants_module::WORKSPACE_SCRIPTS_VOLUME_PATH}/" \
+                            "#{create_constants_module::WORKSPACE_SCRIPTS_VOLUME_PATH}/tooling-container/" \
                               "#{create_constants_module::RUN_INTERNAL_BLOCKING_POSTSTART_COMMANDS_SCRIPT_NAME}", # rubocop:disable Layout/LineEndStringConcatenationIndentation -- Match default RubyMine formatting
                           run_non_blocking_poststart_commands_script_file_path:
-                            "#{create_constants_module::WORKSPACE_SCRIPTS_VOLUME_PATH}/" \
-                              "#{create_constants_module::RUN_NON_BLOCKING_POSTSTART_COMMANDS_SCRIPT_NAME}" # rubocop:disable Layout/LineEndStringConcatenationIndentation -- Match default RubyMine formatting
+                            "#{create_constants_module::WORKSPACE_SCRIPTS_VOLUME_PATH}/tooling-container/" \
+                              "#{create_constants_module::RUN_NON_BLOCKING_POSTSTART_COMMANDS_SCRIPT_NAME}", # rubocop:disable Layout/LineEndStringConcatenationIndentation -- Match default RubyMine formatting
+                          component_name: "tooling-container",
+                          main_component_name: "tooling-container"
                         )
                       ]
                     }
@@ -813,11 +815,13 @@ RSpec.shared_context 'with remote development shared fixtures' do
                         format(
                           files_module::KUBERNETES_POSTSTART_HOOK_COMMAND,
                           run_internal_blocking_poststart_commands_script_file_path:
-                            "#{create_constants_module::WORKSPACE_SCRIPTS_VOLUME_PATH}/" \
+                            "#{create_constants_module::WORKSPACE_SCRIPTS_VOLUME_PATH}/database-container/" \
                               "#{create_constants_module::RUN_INTERNAL_BLOCKING_POSTSTART_COMMANDS_SCRIPT_NAME}", # rubocop:disable Layout/LineEndStringConcatenationIndentation -- Match default RubyMine formatting
                           run_non_blocking_poststart_commands_script_file_path:
-                            "#{create_constants_module::WORKSPACE_SCRIPTS_VOLUME_PATH}/" \
-                              "#{create_constants_module::RUN_NON_BLOCKING_POSTSTART_COMMANDS_SCRIPT_NAME}" # rubocop:disable Layout/LineEndStringConcatenationIndentation -- Match default RubyMine formatting
+                            "#{create_constants_module::WORKSPACE_SCRIPTS_VOLUME_PATH}/database-container/" \
+                              "#{create_constants_module::RUN_NON_BLOCKING_POSTSTART_COMMANDS_SCRIPT_NAME}", # rubocop:disable Layout/LineEndStringConcatenationIndentation -- Match default RubyMine formatting
+                          component_name: "database-container",
+                          main_component_name: "tooling-container"
                         )
                       ]
                     }
@@ -943,7 +947,57 @@ RSpec.shared_context 'with remote development shared fixtures' do
                   sources: [
                     {
                       configMap: {
-                        name: "#{workspace_name}-scripts-configmap"
+                        name: "#{workspace_name}-scripts-configmap",
+                        items: [
+                          {
+                            key: "gl-clone-project-command",
+                            path: "tooling-container/gl-clone-project-command"
+                          },
+                          {
+                            key: "gl-clone-unshallow-command",
+                            path: "tooling-container/gl-clone-unshallow-command"
+                          },
+                          {
+                            key: "gl-start-sshd-command",
+                            path: "tooling-container/gl-start-sshd-command"
+                          },
+                          {
+                            key: "gl-init-tools-command",
+                            path: "tooling-container/gl-init-tools-command"
+                          },
+                          {
+                            key: "gl-sleep-until-container-is-running-command",
+                            path: "tooling-container/gl-sleep-until-container-is-running-command"
+                          },
+                          {
+                            key: "db-component-command-with-working-dir",
+                            path: "database-container/db-component-command-with-working-dir"
+                          },
+                          {
+                            key: "db-component-command-without-working-dir",
+                            path: "database-container/db-component-command-without-working-dir"
+                          },
+                          {
+                            key: "main-component-command-without-working-dir",
+                            path: "tooling-container/main-component-command-without-working-dir"
+                          },
+                          {
+                            key: "user-defined-command",
+                            path: "tooling-container/user-defined-command"
+                          },
+                          {
+                            key: "tooling-container-gl-run-internal-blocking-poststart-commands.sh",
+                            path: "tooling-container/gl-run-internal-blocking-poststart-commands.sh"
+                          },
+                          {
+                            key: "tooling-container-gl-run-non-blocking-poststart-commands.sh",
+                            path: "tooling-container/gl-run-non-blocking-poststart-commands.sh"
+                          },
+                          {
+                            key: "database-container-gl-run-non-blocking-poststart-commands.sh",
+                            path: "database-container/gl-run-non-blocking-poststart-commands.sh"
+                          }
+                        ]
                       }
                     }
                   ]
@@ -996,6 +1050,12 @@ RSpec.shared_context 'with remote development shared fixtures' do
         }
       }
       deployment[:spec][:template][:spec][:containers][1][:lifecycle]
+
+      scripts_volume = deployment[:spec][:template][:spec][:volumes].find do |volume|
+        volume[:name] == create_constants_module::WORKSPACE_SCRIPTS_VOLUME_NAME
+      end
+
+      scripts_volume[:projected][:sources][0][:configMap].delete(:items) if scripts_volume
     end
 
     if legacy_no_poststart_container_command
@@ -1256,27 +1316,44 @@ RSpec.shared_context 'with remote development shared fixtures' do
     }
   end
 
+  # @param [Array<Hash>] devfile_commands
+  # @param [Hash] devfile_events
+  # @return [Array<Hash>]
+  def extract_user_defined_poststart_commands(devfile_commands:, devfile_events:)
+    poststart_command_ids = devfile_events.fetch(:postStart)
+
+    poststart_commands = poststart_command_ids.filter_map do |id|
+      devfile_commands.find { |cmd| cmd[:id] == id }
+    end
+
+    _, non_blocking_commands = poststart_commands.partition do |poststart_cmd|
+      poststart_cmd&.dig(:exec, :label)&.starts_with?(workspace_operations_constants_module::INTERNAL_COMMAND_LABEL)
+    end
+
+    non_blocking_commands
+  end
+
   # @return [String]
   def internal_blocking_poststart_commands_script
     data_volume_path = workspace_operations_constants_module::WORKSPACE_DATA_VOLUME_PATH
     <<~SCRIPT
       #!/bin/sh
       echo "$(date -Iseconds): ----------------------------------------"
-      echo "$(date -Iseconds): Running #{create_constants_module::WORKSPACE_SCRIPTS_VOLUME_PATH}/gl-clone-project-command..."
-      (cd #{data_volume_path} && #{create_constants_module::WORKSPACE_SCRIPTS_VOLUME_PATH}/gl-clone-project-command) || true
-      echo "$(date -Iseconds): Finished running #{create_constants_module::WORKSPACE_SCRIPTS_VOLUME_PATH}/gl-clone-project-command."
+      echo "$(date -Iseconds): Running #{create_constants_module::WORKSPACE_SCRIPTS_VOLUME_PATH}/tooling-container/gl-clone-project-command..."
+      (cd #{data_volume_path} && #{create_constants_module::WORKSPACE_SCRIPTS_VOLUME_PATH}/tooling-container/gl-clone-project-command) || true
+      echo "$(date -Iseconds): Finished running #{create_constants_module::WORKSPACE_SCRIPTS_VOLUME_PATH}/tooling-container/gl-clone-project-command."
       echo "$(date -Iseconds): ----------------------------------------"
-      echo "$(date -Iseconds): Running #{create_constants_module::WORKSPACE_SCRIPTS_VOLUME_PATH}/gl-clone-unshallow-command..."
-      (cd #{data_volume_path} && #{create_constants_module::WORKSPACE_SCRIPTS_VOLUME_PATH}/gl-clone-unshallow-command) || true
-      echo "$(date -Iseconds): Finished running #{create_constants_module::WORKSPACE_SCRIPTS_VOLUME_PATH}/gl-clone-unshallow-command."
+      echo "$(date -Iseconds): Running #{create_constants_module::WORKSPACE_SCRIPTS_VOLUME_PATH}/tooling-container/gl-clone-unshallow-command..."
+      (cd #{data_volume_path} && #{create_constants_module::WORKSPACE_SCRIPTS_VOLUME_PATH}/tooling-container/gl-clone-unshallow-command) || true
+      echo "$(date -Iseconds): Finished running #{create_constants_module::WORKSPACE_SCRIPTS_VOLUME_PATH}/tooling-container/gl-clone-unshallow-command."
       echo "$(date -Iseconds): ----------------------------------------"
-      echo "$(date -Iseconds): Running #{create_constants_module::WORKSPACE_SCRIPTS_VOLUME_PATH}/gl-start-sshd-command..."
-      (cd #{data_volume_path} && #{create_constants_module::WORKSPACE_SCRIPTS_VOLUME_PATH}/gl-start-sshd-command) || true
-      echo "$(date -Iseconds): Finished running #{create_constants_module::WORKSPACE_SCRIPTS_VOLUME_PATH}/gl-start-sshd-command."
+      echo "$(date -Iseconds): Running #{create_constants_module::WORKSPACE_SCRIPTS_VOLUME_PATH}/tooling-container/gl-start-sshd-command..."
+      (cd #{data_volume_path} && #{create_constants_module::WORKSPACE_SCRIPTS_VOLUME_PATH}/tooling-container/gl-start-sshd-command) || true
+      echo "$(date -Iseconds): Finished running #{create_constants_module::WORKSPACE_SCRIPTS_VOLUME_PATH}/tooling-container/gl-start-sshd-command."
       echo "$(date -Iseconds): ----------------------------------------"
-      echo "$(date -Iseconds): Running #{create_constants_module::WORKSPACE_SCRIPTS_VOLUME_PATH}/gl-init-tools-command..."
-      (cd #{data_volume_path} && #{create_constants_module::WORKSPACE_SCRIPTS_VOLUME_PATH}/gl-init-tools-command) || true
-      echo "$(date -Iseconds): Finished running #{create_constants_module::WORKSPACE_SCRIPTS_VOLUME_PATH}/gl-init-tools-command."
+      echo "$(date -Iseconds): Running #{create_constants_module::WORKSPACE_SCRIPTS_VOLUME_PATH}/tooling-container/gl-init-tools-command..."
+      (cd #{data_volume_path} && #{create_constants_module::WORKSPACE_SCRIPTS_VOLUME_PATH}/tooling-container/gl-init-tools-command) || true
+      echo "$(date -Iseconds): Finished running #{create_constants_module::WORKSPACE_SCRIPTS_VOLUME_PATH}/tooling-container/gl-init-tools-command."
     SCRIPT
   end
 
@@ -1286,27 +1363,36 @@ RSpec.shared_context 'with remote development shared fixtures' do
   # @param [String] main_component_name
   # @return [String]
   def non_blocking_poststart_commands_script(
-    user_command_ids:,
-    devfile_commands:,
+    poststart_commands:,
     project_path: "test-project",
+    component_name: "tooling-container",
     main_component_name: "tooling-container"
   )
     data_volume_path = workspace_operations_constants_module::WORKSPACE_DATA_VOLUME_PATH
+
     script = <<~SCRIPT
-      #!/bin/sh
-      echo "$(date -Iseconds): ----------------------------------------"
-      echo "$(date -Iseconds): Running #{create_constants_module::WORKSPACE_SCRIPTS_VOLUME_PATH}/gl-sleep-until-container-is-running-command..."
-      (cd #{data_volume_path} && #{create_constants_module::WORKSPACE_SCRIPTS_VOLUME_PATH}/gl-sleep-until-container-is-running-command) || true
-      echo "$(date -Iseconds): Finished running #{create_constants_module::WORKSPACE_SCRIPTS_VOLUME_PATH}/gl-sleep-until-container-is-running-command."
+          #!/bin/sh
     SCRIPT
 
-    # Add user-defined commands if any
-    user_command_ids.each do |command_id|
-      command = devfile_commands.find { |cmd| cmd[:id] == command_id }
-      script_execution = "#{create_constants_module::WORKSPACE_SCRIPTS_VOLUME_PATH}/#{command_id}"
+    if component_name == main_component_name
+      script += <<~SCRIPT
+          echo "$(date -Iseconds): ----------------------------------------"
+          echo "$(date -Iseconds): Running #{create_constants_module::WORKSPACE_SCRIPTS_VOLUME_PATH}/tooling-container/gl-sleep-until-container-is-running-command..."
+          (cd #{data_volume_path} && #{create_constants_module::WORKSPACE_SCRIPTS_VOLUME_PATH}/tooling-container/gl-sleep-until-container-is-running-command) || true
+          echo "$(date -Iseconds): Finished running #{create_constants_module::WORKSPACE_SCRIPTS_VOLUME_PATH}/tooling-container/gl-sleep-until-container-is-running-command."
+      SCRIPT
+    end
 
+    # Add user-defined commands if any
+    poststart_commands.each do |command|
       working_dir = command.dig(:exec, :workingDir)
-      component_name = command.dig(:exec, :component)
+      command_component_name = command.dig(:exec, :component)
+
+      next unless command_component_name == component_name
+
+      poststart_command_path = "#{create_constants_module::WORKSPACE_SCRIPTS_VOLUME_PATH}/" \
+        "#{component_name}/#{command[:id]}"
+      script_execution = poststart_command_path
 
       effective_working_dir = if working_dir.present?
                                 working_dir
@@ -1314,13 +1400,13 @@ RSpec.shared_context 'with remote development shared fixtures' do
                                 "${PROJECT_SOURCE}/#{Shellwords.shellescape(project_path)}"
                               end
 
-      script_execution = "(cd #{effective_working_dir} && #{script_execution})" if effective_working_dir.present?
+      script_execution = "(cd #{effective_working_dir} && #{poststart_command_path})" if effective_working_dir.present?
 
       script += <<~SCRIPT
         echo "$(date -Iseconds): ----------------------------------------"
-        echo "$(date -Iseconds): Running #{create_constants_module::WORKSPACE_SCRIPTS_VOLUME_PATH}/#{command_id}..."
+        echo "$(date -Iseconds): Running #{poststart_command_path}..."
         #{script_execution} || true
-        echo "$(date -Iseconds): Finished running #{create_constants_module::WORKSPACE_SCRIPTS_VOLUME_PATH}/#{command_id}."
+        echo "$(date -Iseconds): Finished running #{poststart_command_path}."
       SCRIPT
     end
 
@@ -1375,7 +1461,8 @@ RSpec.shared_context 'with remote development shared fixtures' do
     format(
       RemoteDevelopment::Files::INTERNAL_POSTSTART_COMMAND_CLONE_UNSHALLOW_SCRIPT,
       project_cloning_successful_file: Shellwords.shellescape(project_cloning_successful_file),
-      clone_dir: Shellwords.shellescape(clone_dir)
+      clone_dir: Shellwords.shellescape(clone_dir),
+      main_component_name: Shellwords.shellescape("tooling-container")
     )
   end
 
@@ -1405,30 +1492,43 @@ RSpec.shared_context 'with remote development shared fixtures' do
     gitlab_workspaces_proxy_http_enabled:,
     user_defined_commands:
   )
-    user_command_ids = user_defined_commands.pluck(:id)
-
     data = {
       "gl-start-agentw-command": files_module::INTERNAL_POSTSTART_COMMAND_START_AGENTW_SCRIPT,
       "gl-clone-project-command": clone_project_script,
       "gl-clone-unshallow-command": clone_unshallow_script,
-      "gl-init-tools-command": files_module::INTERNAL_POSTSTART_COMMAND_START_VSCODE_SCRIPT,
-      create_constants_module::RUN_INTERNAL_BLOCKING_POSTSTART_COMMANDS_SCRIPT_NAME.to_sym =>
+      "gl-init-tools-command": format(files_module::INTERNAL_POSTSTART_COMMAND_START_VSCODE_SCRIPT,
+        main_component_name: Shellwords.shellescape("tooling-container")),
+      "gl-start-sshd-command": format(files_module::INTERNAL_POSTSTART_COMMAND_START_SSHD_SCRIPT,
+        main_component_name: Shellwords.shellescape("tooling-container")),
+      "tooling-container-#{create_constants_module::RUN_INTERNAL_BLOCKING_POSTSTART_COMMANDS_SCRIPT_NAME}":
         internal_blocking_poststart_commands_script,
-      create_constants_module::RUN_NON_BLOCKING_POSTSTART_COMMANDS_SCRIPT_NAME.to_sym =>
+      "tooling-container-#{create_constants_module::RUN_NON_BLOCKING_POSTSTART_COMMANDS_SCRIPT_NAME}":
         non_blocking_poststart_commands_script(
-          user_command_ids: user_command_ids,
-          devfile_commands: user_defined_commands
+          poststart_commands: user_defined_commands
         ),
-      "gl-sleep-until-container-is-running-command": sleep_until_container_is_running_script,
-      "gl-start-sshd-command": files_module::INTERNAL_POSTSTART_COMMAND_START_SSHD_SCRIPT
+      "gl-sleep-until-container-is-running-command": sleep_until_container_is_running_script
     }
 
     if legacy_poststart_container_command
-      data.delete(create_constants_module::RUN_INTERNAL_BLOCKING_POSTSTART_COMMANDS_SCRIPT_NAME.to_sym)
-      data.delete(create_constants_module::RUN_NON_BLOCKING_POSTSTART_COMMANDS_SCRIPT_NAME.to_sym)
+      data.delete(:"tooling-container-#{create_constants_module::RUN_INTERNAL_BLOCKING_POSTSTART_COMMANDS_SCRIPT_NAME}")
+      data.delete(:"tooling-container-#{create_constants_module::RUN_NON_BLOCKING_POSTSTART_COMMANDS_SCRIPT_NAME}")
       data.delete(:"gl-clone-unshallow-command")
       data[create_constants_module::LEGACY_RUN_POSTSTART_COMMANDS_SCRIPT_NAME.to_sym] =
         legacy_poststart_commands_script
+      data[:"gl-init-tools-command"] = files_module::INTERNAL_POSTSTART_COMMAND_START_VSCODE_SCRIPT
+      data[:"gl-start-sshd-command"] = files_module::INTERNAL_POSTSTART_COMMAND_START_SSHD_SCRIPT
+    end
+
+    container_names_with_poststart_commands = user_defined_commands.map { |cmd| cmd[:exec][:component] }.uniq
+
+    container_names_with_poststart_commands.each do |container|
+      next if container == "tooling-container"
+
+      data[:"#{container}-#{create_constants_module::RUN_NON_BLOCKING_POSTSTART_COMMANDS_SCRIPT_NAME}"] =
+        non_blocking_poststart_commands_script(
+          poststart_commands: user_defined_commands,
+          component_name: container
+        )
     end
 
     data.delete(:"gl-start-agentw-command") if gitlab_workspaces_proxy_http_enabled

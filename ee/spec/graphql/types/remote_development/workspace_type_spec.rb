@@ -10,7 +10,7 @@ RSpec.describe GitlabSchema.types['Workspace'], feature_category: :workspaces do
       cluster_agent
       created_at
       deployment_resource_version
-      desired_config_generator_version
+
       desired_state
       desired_state_updated_at
       devfile

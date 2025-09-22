@@ -871,6 +871,11 @@ msgid_plural "%{count} vulnerabilities set to %{severity} severity"
 msgstr[0] ""
 msgstr[1] ""
 
+msgid "%{days} day remaining"
+msgid_plural "%{days} days remaining"
+msgstr[0] ""
+msgstr[1] ""
+
 msgid "%{days} days until tags are automatically removed"
 msgstr ""
 
@@ -4779,15 +4784,6 @@ msgstr ""
 msgid "AdminMode|Step-up authentication failed."
 msgstr ""
 
-msgid "AdminProjects| You’re about to permanently delete the project %{projectName}, its repository, and all related resources, including issues and merge requests. After you confirm and press %{strong_start}Delete project%{strong_end}, it cannot be undone or recovered."
-msgstr ""
-
-msgid "AdminProjects|Delete"
-msgstr ""
-
-msgid "AdminProjects|Delete Project %{projectName}?"
-msgstr ""
-
 msgid "AdminSelfHostedModels|A unique and descriptive name for your deployment."
 msgstr ""
 
@@ -5905,9 +5901,6 @@ msgid "AdminUsers|This user's access level is managed with LDAP. Remove user's m
 msgstr ""
 
 msgid "AdminUsers|To confirm, type %{name}"
-msgstr ""
-
-msgid "AdminUsers|To confirm, type %{projectName}"
 msgstr ""
 
 msgid "AdminUsers|To confirm, type %{username}."
@@ -16876,7 +16869,7 @@ msgstr ""
 msgid "ComplianceStandardsAdherence|Checks"
 msgstr ""
 
-msgid "ComplianceStandardsAdherence|Code changes requires code owners"
+msgid "ComplianceStandardsAdherence|Code changes require code owners"
 msgstr ""
 
 msgid "ComplianceStandardsAdherence|Code owner approval required"
@@ -17395,7 +17388,7 @@ msgstr ""
 msgid "ComplianceStandardsAdherence|Merge request approval rules"
 msgstr ""
 
-msgid "ComplianceStandardsAdherence|Merge request commit reset approvals"
+msgid "ComplianceStandardsAdherence|Merge request commit resets approvals"
 msgstr ""
 
 msgid "ComplianceStandardsAdherence|Merge requests approval rules prevent editing"
@@ -18007,7 +18000,7 @@ msgstr ""
 msgid "Configure repository storage."
 msgstr ""
 
-msgid "Configure runner version management and registration settings."
+msgid "Configure runner management and registration settings."
 msgstr ""
 
 msgid "Configure search access and visibility settings for search scopes."
@@ -20245,9 +20238,6 @@ msgstr ""
 msgid "Current"
 msgstr ""
 
-msgid "Current Chat"
-msgstr ""
-
 msgid "Current Project"
 msgstr ""
 
@@ -20934,6 +20924,9 @@ msgstr ""
 msgid "DastProfiles|%{linkStart}Headers may appear in vulnerability reports%{linkEnd}."
 msgstr ""
 
+msgid "DastProfiles|(Experimental) Set to a comma-separated list of wildcard URL patterns with at least one `*`. To reduce scan time, the scanner groups and analyzes only one matched URL per pattern."
+msgstr ""
+
 msgid "DastProfiles|/graphql"
 msgstr ""
 
@@ -21442,9 +21435,6 @@ msgid "DastProfiles|Set to a comma-separated list of cookie names to specify whi
 msgstr ""
 
 msgid "DastProfiles|Set to a comma-separated list of request header names and values. The following headers are not supported: `content-length`, `cookie2`, `keep-alive`, `hosts`, `trailer`, `transfer-encoding`, and all headers with a `proxy-` prefix."
-msgstr ""
-
-msgid "DastProfiles|Set to a comma-separated list of wildcard URL patterns with at least one `*`. To reduce scan time, the scanner groups and analyzes only one matched URL per pattern."
 msgstr ""
 
 msgid "DastProfiles|Set to log protocol messages between DAST and the Chromium browser."
@@ -24881,6 +24871,9 @@ msgstr ""
 msgid "DuoCoreTrialDiscover|Eliminate bottlenecks while meeting security requirements with scalable repositories, advanced branching, granular access controls, and built-in compliance."
 msgstr ""
 
+msgid "DuoCoreTrialDiscover|Enterprise-grade AI-native capabilities to help you move faster while maintaining security and IP protection"
+msgstr ""
+
 msgid "DuoCoreTrialDiscover|Free up time to focus on building great software with streamlined code reviews, automated security checks, and compliance requirements."
 msgstr ""
 
@@ -24890,7 +24883,7 @@ msgstr ""
 msgid "DuoCoreTrialDiscover|Get real-time guidance across the entire software development lifecycle. Generate tests, explain code, refactor efficiently, and chat directly in your IDE or web interface."
 msgstr ""
 
-msgid "DuoCoreTrialDiscover|GitLab Premium, now with Duo – native AI Code Suggestions and Chat"
+msgid "DuoCoreTrialDiscover|GitLab Premium, now with native AI"
 msgstr ""
 
 msgid "DuoCoreTrialDiscover|Greater developer productivity, collaboration, and quality"
@@ -24899,7 +24892,7 @@ msgstr ""
 msgid "DuoCoreTrialDiscover|Native AI Benefits in Premium"
 msgstr ""
 
-msgid "DuoCoreTrialDiscover|New customers can now get access to GitLab Premium with Duo at a discount. Contact Sales to get started."
+msgid "DuoCoreTrialDiscover|Now featuring GitLab Duo"
 msgstr ""
 
 msgid "DuoCoreTrialDiscover|Prevent pipeline conflicts with merge trains and push rules, store build outputs with Artifact Registry, and reuse working templates across teams."
@@ -25997,6 +25990,12 @@ msgid "Enter a name"
 msgstr ""
 
 msgid "Enter a name for your comment template"
+msgstr ""
+
+msgid "Enter a name for your group."
+msgstr ""
+
+msgid "Enter a name for your project."
 msgstr ""
 
 msgid "Enter a number"
@@ -28643,6 +28642,9 @@ msgstr ""
 msgid "Follow"
 msgstr ""
 
+msgid "Follow the latest updates"
+msgstr ""
+
 msgid "Followed Users' Activity"
 msgstr ""
 
@@ -30313,7 +30315,7 @@ msgstr ""
 msgid "GitLabPages|Pages"
 msgstr ""
 
-msgid "GitLabPages|Pages access control"
+msgid "GitLabPages|Pages public access"
 msgstr ""
 
 msgid "GitLabPages|Primary domain"
@@ -30331,7 +30333,7 @@ msgstr ""
 msgid "GitLabPages|Remove pages"
 msgstr ""
 
-msgid "GitLabPages|Restrict access to only project members on all group projects"
+msgid "GitLabPages|Remove public access"
 msgstr ""
 
 msgid "GitLabPages|Save changes"
@@ -30367,7 +30369,7 @@ msgstr ""
 msgid "GitLabPages|When enabled, all access to domains will use HTTPS with %{redirect_code} redirects. Requires valid certificates for all domains. %{docs_link_start}How does HTTPS redirection work?%{link_end}"
 msgstr ""
 
-msgid "GitLabPages|When enabled, all projects in the group and its subgroups become visible only to members."
+msgid "GitLabPages|When enabled, public access is removed for all projects in the group and its subgroups. Pages still follow each project's visibility settings."
 msgstr ""
 
 msgid "GitLabPages|When using Pages under the general domain of a GitLab instance (%{pages_host}), you cannot use HTTPS with subdomains of subdomains. If your namespace or groupname contains a dot, it does not work. This is a limitation of the HTTP Over TLS protocol. HTTP pages work if you don't redirect HTTP to HTTPS. %{docs_link_start}Learn more.%{link_end}"
@@ -33183,9 +33185,6 @@ msgid "HomepageActivityWidget|Activity from users you follow."
 msgstr ""
 
 msgid "HomepageActivityWidget|Activity in projects you have starred."
-msgstr ""
-
-msgid "HomepageActivityWidget|Filter your activity feed to see different types of events."
 msgstr ""
 
 msgid "HomepageActivityWidget|Followed users"
@@ -36067,6 +36066,9 @@ msgstr ""
 msgid "Items below are excluded from the active count"
 msgstr ""
 
+msgid "Items that need your attention"
+msgstr ""
+
 msgid "Iteration"
 msgstr ""
 
@@ -38233,9 +38235,6 @@ msgstr ""
 msgid "Learn what Duo Chat can do."
 msgstr ""
 
-msgid "LearnGitLab|%{percentage}%{percentSymbol} completed"
-msgstr ""
-
 msgid "LearnGitLab|10 best practices for using GitLab Duo"
 msgstr ""
 
@@ -38636,6 +38635,12 @@ msgid "Limit the size of Sidekiq jobs stored in Redis."
 msgstr ""
 
 msgid "Limiting mode"
+msgstr ""
+
+msgid "Limits how many API requests a runner can make to jobs endpoints within a 1-minute window, per job token."
+msgstr ""
+
+msgid "Limits how many API requests a runner can make to request jobs within a 1-minute window."
 msgstr ""
 
 msgid "Limits how many API requests an IP address can make to artifact manager endpoints within a 15-second window."
@@ -40655,10 +40660,16 @@ msgstr ""
 msgid "MergeRequestAnalytics|Merge Request"
 msgstr ""
 
+msgid "MergeRequestAnalytics|Merge request analytics is moving"
+msgstr ""
+
 msgid "MergeRequestAnalytics|Milestone"
 msgstr ""
 
 msgid "MergeRequestAnalytics|Pipelines"
+msgstr ""
+
+msgid "MergeRequestAnalytics|This page will move to %{dashboardsListLinkStart}Analytics dashboards%{dashboardsListLinkEnd} &gt; %{mrDashboardLinkStart}Merge request analytics%{mrDashboardLinkEnd} in GitLab 18.6."
 msgstr ""
 
 msgid "MergeRequestAnalytics|Time to merge"
@@ -42634,9 +42645,6 @@ msgid "New"
 msgstr ""
 
 msgid "New %{type} in %{project}"
-msgstr ""
-
-msgid "New Chat"
 msgstr ""
 
 msgid "New File"
@@ -55412,6 +55420,12 @@ msgstr ""
 msgid "Runners|Learn more in the %{linkStart}Google Cloud documentation%{linkEnd}."
 msgstr ""
 
+msgid "Runners|Limits how many API requests a runner can make to jobs endpoints within a 1-minute window, per job token."
+msgstr ""
+
+msgid "Runners|Limits how many API requests a runner can make to request jobs within a 1-minute window."
+msgstr ""
+
 msgid "Runners|Loading"
 msgstr ""
 
@@ -55443,6 +55457,12 @@ msgid "Runners|Maximum amount of time the runner can run before it terminates. I
 msgstr ""
 
 msgid "Runners|Maximum job timeout"
+msgstr ""
+
+msgid "Runners|Maximum requests per minute to /jobs/request endpoint"
+msgstr ""
+
+msgid "Runners|Maximum requests per minute to other Runner Jobs API endpoints"
 msgstr ""
 
 msgid "Runners|Median"
@@ -58441,6 +58461,9 @@ msgstr ""
 msgid "SecurityOrchestration|A consultant will show up in the bot comment and developers should ask them for help if needed."
 msgstr ""
 
+msgid "SecurityOrchestration|A formal exception record will be created and linked to this merge requests"
+msgstr ""
+
 msgid "SecurityOrchestration|A new project will be created to be used to store security policies. If a project already exists with security policies, link it via the policy list page."
 msgstr ""
 
@@ -58519,7 +58542,7 @@ msgstr ""
 msgid "SecurityOrchestration|All scanners"
 msgstr ""
 
-msgid "SecurityOrchestration|All selected policy requirements will be bypassed"
+msgid "SecurityOrchestration|All selected policy requirements will be bypassed."
 msgstr ""
 
 msgid "SecurityOrchestration|All sources"
@@ -58570,6 +58593,9 @@ msgstr ""
 msgid "SecurityOrchestration|At least one framework label should be selected"
 msgstr ""
 
+msgid "SecurityOrchestration|Authorized business risk acceptance"
+msgstr ""
+
 msgid "SecurityOrchestration|Automate %{strongStart}vulnerability management%{strongEnd} workflows."
 msgstr ""
 
@@ -58589,6 +58615,9 @@ msgid "SecurityOrchestration|Branch: %{boldStart}%{branchName}%{boldEnd} was not
 msgstr ""
 
 msgid "SecurityOrchestration|Bypass Policy Violation"
+msgstr ""
+
+msgid "SecurityOrchestration|Bypass policy violations"
 msgstr ""
 
 msgid "SecurityOrchestration|Bypassed as"
@@ -58681,6 +58710,9 @@ msgstr ""
 msgid "SecurityOrchestration|Create security policy"
 msgstr ""
 
+msgid "SecurityOrchestration|Critical business deadline"
+msgstr ""
+
 msgid "SecurityOrchestration|Custom"
 msgstr ""
 
@@ -58769,6 +58801,9 @@ msgid "SecurityOrchestration|Edit vulnerability management policy"
 msgstr ""
 
 msgid "SecurityOrchestration|Emergency hotfix"
+msgstr ""
+
+msgid "SecurityOrchestration|Emergency production issue"
 msgstr ""
 
 msgid "SecurityOrchestration|Empty policy name"
@@ -59079,6 +59114,9 @@ msgstr ""
 msgid "SecurityOrchestration|Override the following project settings:"
 msgstr ""
 
+msgid "SecurityOrchestration|Override this specific policy violation with documented justification. Only available to eligible users. This bypass impacts all policy gates on this MR."
+msgstr ""
+
 msgid "SecurityOrchestration|Pipeline execution"
 msgstr ""
 
@@ -59155,6 +59193,9 @@ msgid "SecurityOrchestration|Policy status"
 msgstr ""
 
 msgid "SecurityOrchestration|Policy type"
+msgstr ""
+
+msgid "SecurityOrchestration|Policy violations have been bypassed"
 msgstr ""
 
 msgid "SecurityOrchestration|Prevent users from skipping pipelines"
@@ -59304,6 +59345,9 @@ msgstr ""
 msgid "SecurityOrchestration|Security scans to execute"
 msgstr ""
 
+msgid "SecurityOrchestration|Security teams will be notified of this exception"
+msgstr ""
+
 msgid "SecurityOrchestration|Select a cadence"
 msgstr ""
 
@@ -59421,10 +59465,16 @@ msgstr ""
 msgid "SecurityOrchestration|Summary of syntax changes:"
 msgstr ""
 
+msgid "SecurityOrchestration|Technical limitation"
+msgstr ""
+
 msgid "SecurityOrchestration|Template"
 msgstr ""
 
-msgid "SecurityOrchestration|The action will be logged in the audit log"
+msgid "SecurityOrchestration|The action will be logged in the audit log with your justification"
+msgstr ""
+
+msgid "SecurityOrchestration|The action will be logged in the audit log."
 msgstr ""
 
 msgid "SecurityOrchestration|The compliance pipeline will continue to override the new pipeline execution policy until it is removed from the compliance framework configuration."
@@ -60234,6 +60284,9 @@ msgstr ""
 msgid "SecurityReports|Manage and track vulnerabilities identified in your selected projects. Vulnerabilities for selected projects are shown here when security testing is configured and a pipeline has been run on the default branch."
 msgstr ""
 
+msgid "SecurityReports|Max project limit reached"
+msgstr ""
+
 msgid "SecurityReports|Maximum selected projects limit reached"
 msgstr ""
 
@@ -60289,6 +60342,9 @@ msgid "SecurityReports|OWASP Top 10 2017"
 msgstr ""
 
 msgid "SecurityReports|OWASP Top 10 2021"
+msgstr ""
+
+msgid "SecurityReports|Only %{count} projects with the highest risk scores are shown. Use the filter at the top of the dashboard to narrow down your results."
 msgstr ""
 
 msgid "SecurityReports|Oops, something doesn't seem right."
@@ -67476,9 +67532,6 @@ msgstr ""
 msgid "To-Do List"
 msgstr ""
 
-msgid "To-do items"
-msgstr ""
-
 msgid "Today"
 msgstr ""
 
@@ -67520,6 +67573,9 @@ msgstr ""
 msgid "Todos|Assigned"
 msgstr ""
 
+msgid "Todos|Assignments"
+msgstr ""
+
 msgid "Todos|At"
 msgstr ""
 
@@ -67547,7 +67603,13 @@ msgstr ""
 msgid "Todos|Due today"
 msgstr ""
 
+msgid "Todos|Everything"
+msgstr ""
+
 msgid "Todos|Failed adding todo. Try again later."
+msgstr ""
+
+msgid "Todos|Failed builds"
 msgstr ""
 
 msgid "Todos|Failed to snooze todo. Try again later."
@@ -67557,9 +67619,6 @@ msgid "Todos|Failed to un-snooze todo. Try again later."
 msgstr ""
 
 msgid "Todos|Filter to-do items"
-msgstr ""
-
-msgid "Todos|Filter your to-do items to focus on what needs your attention."
 msgstr ""
 
 msgid "Todos|For one hour"
@@ -67627,6 +67686,9 @@ msgstr ""
 msgid "Todos|Mentioned"
 msgstr ""
 
+msgid "Todos|Mentions"
+msgstr ""
+
 msgid "Todos|Merge request"
 msgstr ""
 
@@ -67679,6 +67741,9 @@ msgid "Todos|Removed snooze from 1 to-do"
 msgid_plural "Todos|Removed snooze from %d to-dos"
 msgstr[0] ""
 msgstr[1] ""
+
+msgid "Todos|Requested reviews"
+msgstr ""
 
 msgid "Todos|Restored 1 to-do"
 msgid_plural "Todos|Restored %d to-dos"
@@ -67775,6 +67840,9 @@ msgid "Todos|Undo"
 msgstr ""
 
 msgid "Todos|Unmergeable"
+msgstr ""
+
+msgid "Todos|Unmergeable changes"
 msgstr ""
 
 msgid "Todos|Until a specific time and date"
@@ -69326,6 +69394,14 @@ msgstr ""
 msgid "Usage trends"
 msgstr ""
 
+msgid "UsageBilling|%{percentage}%{percentSymbol} utilized"
+msgstr ""
+
+msgid "UsageBilling|%{poolTokensRemaining} pool unit remaining"
+msgid_plural "UsageBilling|%{poolTokensRemaining} pool units remaining"
+msgstr[0] ""
+msgstr[1] ""
+
 msgid "UsageBilling|Action"
 msgstr ""
 
@@ -69342,6 +69418,9 @@ msgid "UsageBilling|Current month"
 msgstr ""
 
 msgid "UsageBilling|Current month usage"
+msgstr ""
+
+msgid "UsageBilling|Current overage"
 msgstr ""
 
 msgid "UsageBilling|Custom dates"
@@ -78327,6 +78406,9 @@ msgstr ""
 msgid "must be unique. This CA has already been configured for another namespace."
 msgstr ""
 
+msgid "must belong to either a project or an organization"
+msgstr ""
+
 msgid "must belong to same project of its requirement object."
 msgstr ""
 
@@ -78537,9 +78619,6 @@ msgid "past due"
 msgstr ""
 
 msgid "pending comment"
-msgstr ""
-
-msgid "per user/month"
 msgstr ""
 
 msgid "personal access token"

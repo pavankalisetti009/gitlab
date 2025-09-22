@@ -73,7 +73,11 @@ External status checks have an **asynchronous** workflow. Merge requests emit a 
 - Code is pushed to the source branch of the merge request.
 
 ```mermaid
+%%{init: { "fontFamily": "GitLab Sans" }}%%
 sequenceDiagram
+    accTitle: Workflow for external status checks
+    accDescr: Merge request sends payload to external service and receives status check response
+
     Merge request->>+External service: Merge request payload
     External service-->>-Merge request: Status check response
     Note over External service,Merge request: Response includes SHA at HEAD
@@ -206,7 +210,7 @@ When there are pending status checks, the widget polls for updates every few sec
 To retry a failed status check:
 
 1. On the left sidebar, select **Search or go to** and find your project.
-1. Select **Code > Merge requests** and find your merge request.
+1. Select **Code** > **Merge requests** and find your merge request.
 1. Scroll to the merge request reports section, and expand the dropdown list to show the list of external status checks.
 1. Select **Retry** ({{< icon name="retry" >}}) on the failed external status check row. The status check is put back into a pending state.
 

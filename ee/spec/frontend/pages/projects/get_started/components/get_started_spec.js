@@ -5,10 +5,8 @@ import GetStarted from 'ee/pages/projects/get_started/components/get_started.vue
 import SectionHeader from 'ee/pages/projects/get_started/components/section_header.vue';
 import SectionBody from 'ee/pages/projects/get_started/components/section_body.vue';
 import eventHub from '~/invite_members/event_hub';
-import eventHubNav from '~/super_sidebar/event_hub';
 import DuoExtensions from 'ee/pages/projects/get_started/components/duo_extensions.vue';
 import RightSidebar from 'ee/pages/projects/get_started/components/right_sidebar.vue';
-import { useMockInternalEventsTracking } from 'helpers/tracking_internal_events_helper';
 import { visitUrl } from '~/lib/utils/url_utility';
 
 jest.mock('~/lib/utils/url_utility', () => ({
@@ -28,16 +26,16 @@ describe('GetStarted', () => {
       title: 'Section 1',
       description: 'Description 1',
       actions: [
-        { id: 1, title: 'Action 1', completed: true },
-        { id: 2, title: 'Action 2', completed: false },
+        { id: 1, title: 'Action 1' },
+        { id: 2, title: 'Action 2' },
       ],
     },
     {
       title: 'Section 2',
       description: 'Description 2',
       trialActions: [
-        { id: 3, title: 'Trial Action 1', completed: true },
-        { id: 4, title: 'Trial Action 2', completed: false },
+        { id: 3, title: 'Trial Action 1' },
+        { id: 4, title: 'Trial Action 2' },
       ],
     },
   ];
@@ -96,31 +94,6 @@ describe('GetStarted', () => {
     });
   });
 
-  describe('action counting', () => {
-    it('correctly calculates total actions', () => {
-      createComponent();
-      expect(wrapper.vm.totalActions).toBe(4);
-    });
-
-    it('correctly calculates completed actions', () => {
-      createComponent();
-      expect(wrapper.vm.completedActions).toBe(2);
-    });
-
-    it('correctly calculates completion percentage', () => {
-      createComponent();
-      expect(wrapper.vm.completionPercentage).toBe(50);
-    });
-
-    it('handles sections without actions or trialActions', () => {
-      createComponent({
-        sections: [{ title: 'Empty Section', description: 'No actions' }],
-      });
-      expect(wrapper.vm.totalActions).toBe(0);
-      expect(wrapper.vm.completedActions).toBe(0);
-    });
-  });
-
   describe('section expansion', () => {
     beforeEach(() => {
       createComponent();
@@ -173,32 +146,14 @@ describe('GetStarted', () => {
 
       expect(visitUrl).toHaveBeenCalledWith('/group/project/-/get-started/end');
     });
-
-    const { bindInternalEventDocument } = useMockInternalEventsTracking();
-    it('should call trackEvent when clicked', () => {
-      const { trackEventSpy } = bindInternalEventDocument(wrapper.element);
-
-      findEndTutorialButton().vm.$emit('click');
-
-      expect(trackEventSpy).toHaveBeenCalledWith(
-        'click_end_tutorial_button',
-        {
-          label: 'get_started',
-          property: 'progress_percentage_on_end',
-          value: 50,
-        },
-        undefined,
-      );
-    });
   });
 
-  describe('event handling and action completion', () => {
+  describe('event handling', () => {
     let sections;
 
     beforeEach(() => {
       jest.spyOn(eventHub, '$on');
       jest.spyOn(eventHub, '$off');
-      jest.spyOn(eventHubNav, '$emit');
       sections = createSections();
       sections[0].actions[1].urlType = 'invite';
       createComponent({ sections });

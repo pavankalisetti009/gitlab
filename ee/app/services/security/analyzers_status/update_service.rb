@@ -36,9 +36,7 @@ module Security
       attr_reader :pipeline, :project
 
       def executable?
-        return unless pipeline.present? && project.present?
-
-        Feature.enabled?(:post_pipeline_analyzer_status_updates, project.root_ancestor)
+        pipeline.present? && project.present?
       end
 
       def pipeline_builds

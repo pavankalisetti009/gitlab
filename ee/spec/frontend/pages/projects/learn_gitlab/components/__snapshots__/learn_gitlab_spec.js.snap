@@ -85,7 +85,7 @@ exports[`Learn GitLab Initial rendering concerns renders correctly 1`] = `
               <div>
                 <a
                   class="gl-link"
-                  data-testid="uncompleted-learn-gitlab-link"
+                  data-testid="learn-gitlab-link"
                   data-track-action="click_link"
                   data-track-label="create_a_repository"
                   href="http://example.com/"
@@ -105,7 +105,7 @@ exports[`Learn GitLab Initial rendering concerns renders correctly 1`] = `
               <div>
                 <a
                   class="gl-link"
-                  data-testid="uncompleted-learn-gitlab-link"
+                  data-testid="learn-gitlab-link"
                   data-track-action="click_link"
                   data-track-label="add_code"
                   href="http://example.com/"
@@ -169,7 +169,7 @@ exports[`Learn GitLab Initial rendering concerns renders correctly 1`] = `
               <div>
                 <a
                   class="gl-link"
-                  data-testid="uncompleted-learn-gitlab-link"
+                  data-testid="learn-gitlab-link"
                   data-track-action="click_link"
                   data-track-label="invite_your_colleagues"
                   href="http://example.com/"
@@ -189,7 +189,7 @@ exports[`Learn GitLab Initial rendering concerns renders correctly 1`] = `
               <div>
                 <a
                   class="gl-link"
-                  data-testid="uncompleted-learn-gitlab-link"
+                  data-testid="learn-gitlab-link"
                   data-track-action="click_link"
                   data-track-label="duo_seat_assigned"
                   href="http://example.com/"
@@ -209,7 +209,7 @@ exports[`Learn GitLab Initial rendering concerns renders correctly 1`] = `
               <div>
                 <a
                   class="gl-link"
-                  data-testid="uncompleted-learn-gitlab-link"
+                  data-testid="learn-gitlab-link"
                   data-track-action="click_link"
                   data-track-label="set_up_your_first_project_s_ci_cd"
                   href="http://example.com/"
@@ -229,7 +229,7 @@ exports[`Learn GitLab Initial rendering concerns renders correctly 1`] = `
               <div>
                 <a
                   class="gl-link"
-                  data-testid="uncompleted-learn-gitlab-link"
+                  data-testid="learn-gitlab-link"
                   data-track-action="click_link"
                   data-track-label="start_a_free_trial_of_gitlab_ultimate"
                   href="http://example.com/"
@@ -250,7 +250,7 @@ exports[`Learn GitLab Initial rendering concerns renders correctly 1`] = `
               <div>
                 <a
                   class="gl-link"
-                  data-testid="uncompleted-learn-gitlab-link"
+                  data-testid="learn-gitlab-link"
                   data-track-action="click_link"
                   data-track-label="add_code_owners"
                   href="http://example.com/"
@@ -277,7 +277,7 @@ exports[`Learn GitLab Initial rendering concerns renders correctly 1`] = `
               <div>
                 <a
                   class="gl-link"
-                  data-testid="uncompleted-learn-gitlab-link"
+                  data-testid="learn-gitlab-link"
                   data-track-action="click_link"
                   data-track-label="enable_require_merge_approvals"
                   href="http://example.com/"
@@ -334,7 +334,7 @@ exports[`Learn GitLab Initial rendering concerns renders correctly 1`] = `
               <div>
                 <a
                   class="gl-link"
-                  data-testid="uncompleted-learn-gitlab-link"
+                  data-testid="learn-gitlab-link"
                   data-track-action="click_link"
                   data-track-label="scan_dependencies_for_licenses"
                   href="https://docs.gitlab.com/ee/foobar/"
@@ -361,7 +361,7 @@ exports[`Learn GitLab Initial rendering concerns renders correctly 1`] = `
               <div>
                 <a
                   class="gl-link"
-                  data-testid="uncompleted-learn-gitlab-link"
+                  data-testid="learn-gitlab-link"
                   data-track-action="click_link"
                   data-track-label="scan_dependencies_for_vulnerabilities"
                   href="https://docs.gitlab.com/ee/foobar/"
@@ -388,7 +388,7 @@ exports[`Learn GitLab Initial rendering concerns renders correctly 1`] = `
               <div>
                 <a
                   class="gl-link"
-                  data-testid="uncompleted-learn-gitlab-link"
+                  data-testid="learn-gitlab-link"
                   data-track-action="click_link"
                   data-track-label="analyze_your_application_for_vulnerabilities_with_dast"
                   href="https://docs.gitlab.com/ee/foobar/"
@@ -445,7 +445,7 @@ exports[`Learn GitLab Initial rendering concerns renders correctly 1`] = `
               <div>
                 <a
                   class="gl-link"
-                  data-testid="uncompleted-learn-gitlab-link"
+                  data-testid="learn-gitlab-link"
                   data-track-action="click_link"
                   data-track-label="create_an_issue"
                   href="http://example.com/"
@@ -465,7 +465,7 @@ exports[`Learn GitLab Initial rendering concerns renders correctly 1`] = `
               <div>
                 <a
                   class="gl-link"
-                  data-testid="uncompleted-learn-gitlab-link"
+                  data-testid="learn-gitlab-link"
                   data-track-action="click_link"
                   data-track-label="submit_a_merge_request_mr"
                   href="http://example.com/"

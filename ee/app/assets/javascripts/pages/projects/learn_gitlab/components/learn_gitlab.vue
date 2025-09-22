@@ -5,11 +5,8 @@ import { s__ } from '~/locale';
 import { getCookie, removeCookie, parseBoolean } from '~/lib/utils/common_utils';
 import { visitUrl } from '~/lib/utils/url_utility';
 import { ON_CELEBRATION_TRACK_LABEL } from '~/invite_members/constants';
-import { InternalEvents } from '~/tracking';
 import { ACTION_LABELS, INVITE_MODAL_OPEN_COOKIE } from '../constants';
 import LearnGitlabSectionCard from './learn_gitlab_section_card.vue';
-
-const trackingMixin = InternalEvents.mixin();
 
 export default {
   components: {
@@ -18,11 +15,9 @@ export default {
     GlButton,
     LearnGitlabSectionCard,
   },
-  mixins: [trackingMixin],
   i18n: {
     title: s__('LearnGitLab|Learn GitLab'),
     description: s__('LearnGitLab|Follow these steps to get familiar with the GitLab workflow.'),
-    percentageCompleted: s__(`LearnGitLab|%{percentage}%{percentSymbol} completed`),
     successfulInvitations: s__(
       "LearnGitLab|Your team is growing! You've successfully invited new team members to the %{projectName} project.",
     ),
@@ -61,15 +56,6 @@ export default {
     },
     secondBlockSections() {
       return Object.keys(this.sections[1]);
-    },
-    maxValue() {
-      return Object.keys(this.actionsData).length;
-    },
-    progressValue() {
-      return Object.values(this.actionsData).filter((a) => a.completed).length;
-    },
-    progressPercentage() {
-      return Math.round((this.progressValue / this.maxValue) * 100);
     },
   },
   mounted() {
@@ -118,7 +104,6 @@ export default {
     },
     handleShowSuccessfulInvitationsAlert() {
       this.showSuccessfulInvitationsAlert = true;
-      this.markActionAsCompleted('userAdded');
     },
     actionsFor(section) {
       const actions = Object.fromEntries(
@@ -131,21 +116,8 @@ export default {
     svgFor(index, section) {
       return this.sections[index][section].svg;
     },
-    markActionAsCompleted(completedAction) {
-      Object.keys(this.actionsData).forEach((action) => {
-        if (action === completedAction) {
-          this.actionsData[action].completed = true;
-        }
-      });
-    },
     handleEndTutorialClick() {
       this.disableEndTutorialButton = true;
-
-      this.trackEvent('click_end_tutorial_button', {
-        label: 'learn_gitlab',
-        property: 'progress_percentage_on_end',
-        value: this.progressPercentage,
-      });
 
       visitUrl(this.learnGitlabEndPath);
     },

@@ -5,6 +5,68 @@ require 'spec_helper'
 RSpec.describe PersonalAccessToken, feature_category: :system_access do
   using RSpec::Parameterized::TableSyntax
 
+  describe 'before_save' do
+    context 'for set_group_id' do
+      context 'for enterprise user' do
+        let_it_be(:enterprise_user) { create(:enterprise_user) }
+        let(:personal_access_token) { build(:personal_access_token, user: enterprise_user) }
+
+        it 'sets group_id to the user enterprise group' do
+          expect(personal_access_token.group_id).to be_nil
+
+          personal_access_token.save!
+
+          expect(personal_access_token.group_id).to eq(enterprise_user.enterprise_group_id)
+        end
+      end
+
+      context 'for service_account user' do
+        let(:personal_access_token) { build(:personal_access_token, user: service_account) }
+
+        context 'for instance service_account user' do
+          let(:service_account) { create(:user, :service_account) }
+
+          it 'does not set group_id' do
+            expect(personal_access_token.group_id).to be_nil
+
+            personal_access_token.save!
+
+            expect(personal_access_token.group_id).to be_nil
+          end
+        end
+
+        context 'for group service_account user' do
+          let_it_be(:top_level_group) { create(:group) }
+
+          let(:service_account) { create(:user, :service_account, provisioned_by_group: top_level_group) }
+
+          it 'sets group_id to top-level group' do
+            expect(personal_access_token.group_id).to be_nil
+
+            personal_access_token.save!
+
+            expect(personal_access_token.group_id).to eq(top_level_group.id)
+          end
+        end
+
+        context 'for legacy group service_account user' do
+          let_it_be(:top_level_group) { create(:group) }
+          let_it_be(:subgroup) { create(:group, parent: top_level_group) }
+
+          let(:service_account) { create(:user, :service_account, provisioned_by_group: subgroup) }
+
+          it 'sets group_id to top-level group' do
+            expect(personal_access_token.group_id).to be_nil
+
+            personal_access_token.save!
+
+            expect(personal_access_token.group_id).to eq(top_level_group.id)
+          end
+        end
+      end
+    end
+  end
+
   describe 'associations' do
     subject { create(:personal_access_token) }
 

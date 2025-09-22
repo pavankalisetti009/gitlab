@@ -181,9 +181,10 @@ describe('SecurityPolicyViolations merge checks component', () => {
     });
 
     it('opens modal when bypass button is clicked', async () => {
+      const securityPoliciesPath = '/security-path';
       createComponent({
         warnModeEnabled: true,
-        securityPoliciesPath: '/security-path',
+        securityPoliciesPath,
       });
       await waitForPromises();
 
@@ -192,7 +193,17 @@ describe('SecurityPolicyViolations merge checks component', () => {
       await findBypassButton().vm.$emit('click');
 
       expect(findModal().exists()).toBe(true);
-      expect(findModal().props('mode')).toBe(WARN_MODE);
+      expect(findModal().props()).toEqual(
+        expect.objectContaining({
+          mode: WARN_MODE,
+          mr: {
+            allowBypass: false,
+            securityPoliciesPath,
+            iid: 123,
+            targetProjectFullPath: 'group/project',
+          },
+        }),
+      );
     });
 
     it('closes modal when close event is emitted', async () => {

@@ -47,7 +47,7 @@ export default {
     },
     items() {
       const allOption = { value: ALL_REPORT_TYPES_ID, text: this.$options.i18n.allItemsText };
-      const reportTypes = REPORT_TYPES_WITH_MANUALLY_ADDED;
+      const reportTypes = this.config.reportTypes || REPORT_TYPES_WITH_MANUALLY_ADDED;
 
       const options = Object.entries(reportTypes).map(([id, text]) => ({
         value: id.toUpperCase(),

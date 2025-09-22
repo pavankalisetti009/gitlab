@@ -3,16 +3,24 @@
 require "fast_spec_helper"
 require "tempfile"
 require "fileutils"
+require "shellwords"
 
 RSpec.describe "Remote Development VSCode Startup Script", feature_category: :workspaces do
   include_context "with constant modules"
 
-  let(:script_content) { RemoteDevelopment::Files::INTERNAL_POSTSTART_COMMAND_START_VSCODE_SCRIPT }
+  let(:main_component_name) { "tooling-container" }
+  let(:script_content) do
+    format(
+      RemoteDevelopment::Files::INTERNAL_POSTSTART_COMMAND_START_VSCODE_SCRIPT,
+      main_component_name: Shellwords.shellescape(main_component_name)
+    )
+  end
+
   let(:script_file) { Tempfile.new(%w[start_vscode .sh]) }
   let(:log_dir) { Dir.mktmpdir }
   let(:tools_dir) { Dir.mktmpdir }
   let(:product_json_path) { File.join(tools_dir, "vscode-reh-web/product.json") }
-  let(:log_file_path) { File.join(log_dir, "start-vscode.log") }
+  let(:log_file_path) { File.join(log_dir, main_component_name, "start-vscode.log") }
   let(:extension_marketplace_service_url) { "https://marketplace.example.com" }
   let(:extension_marketplace_item_url) { "https://item.example.com" }
   let(:extension_marketplace_resource_url_template) { "https://resource.example.com/{path}" }
@@ -52,6 +60,7 @@ RSpec.describe "Remote Development VSCode Startup Script", feature_category: :wo
   before do
     # Create the directory structure
     FileUtils.mkdir_p(File.join(tools_dir, "vscode-reh-web"))
+    FileUtils.mkdir_p(File.join(log_dir, main_component_name))
 
     # Create a mock product.json file
     FileUtils.mkdir_p(File.dirname(product_json_path))

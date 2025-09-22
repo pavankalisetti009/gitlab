@@ -10,31 +10,35 @@ module RemoteDevelopment
         class KubernetesPoststartHookInserter
           include Files
           include CreateConstants
+          extend PoststartCommandsHelper
 
           # @param [Array] containers
           # @param [Array<Hash>] devfile_commands
           # @param [Hash] devfile_events
+          # @param [Hash] processed_devfile
           # @return [void]
-          def self.insert(containers:, devfile_commands:, devfile_events:)
-            internal_blocking_command_label_present = devfile_commands.any? do |command|
-              command.dig(:exec, :label) == INTERNAL_BLOCKING_COMMAND_LABEL
-            end
+          def self.insert(containers:, devfile_commands:, devfile_events:, processed_devfile:)
+            poststart_commands = extract_poststart_commands(
+              devfile_commands: devfile_commands,
+              devfile_events: devfile_events
+            )
 
-            devfile_events => { postStart: Array => poststart_command_ids }
+            main_component_name = extract_main_component_name(
+              processed_devfile: processed_devfile
+            )
 
-            containers_with_devfile_poststart_commands =
-              poststart_command_ids.each_with_object([]) do |poststart_command_id, accumulator|
-                command = devfile_commands.find { |command| command.fetch(:id) == poststart_command_id }
-                command => {
-                  exec: {
-                    component: String => container_name
-                  }
-                }
-                accumulator << container_name
-              end.uniq
+            internal_blocking_command_label_present = internal_blocking_command_label_present?(
+              poststart_commands: poststart_commands
+            )
+
+            containers_with_devfile_poststart_commands = get_container_names_with_poststart_commands(
+              poststart_commands: poststart_commands
+            )
 
             containers.each do |container|
               container_name = container.fetch(:name)
+
+              container_script_path = "#{WORKSPACE_SCRIPTS_VOLUME_PATH}/#{container_name}/"
 
               next unless containers_with_devfile_poststart_commands.include?(container_name)
 
@@ -47,9 +51,11 @@ module RemoteDevelopment
                   format(
                     KUBERNETES_POSTSTART_HOOK_COMMAND,
                     run_internal_blocking_poststart_commands_script_file_path:
-                      "#{WORKSPACE_SCRIPTS_VOLUME_PATH}/#{RUN_INTERNAL_BLOCKING_POSTSTART_COMMANDS_SCRIPT_NAME}",
+                      container_script_path + RUN_INTERNAL_BLOCKING_POSTSTART_COMMANDS_SCRIPT_NAME,
                     run_non_blocking_poststart_commands_script_file_path:
-                      "#{WORKSPACE_SCRIPTS_VOLUME_PATH}/#{RUN_NON_BLOCKING_POSTSTART_COMMANDS_SCRIPT_NAME}"
+                      container_script_path + RUN_NON_BLOCKING_POSTSTART_COMMANDS_SCRIPT_NAME,
+                    component_name: container_name,
+                    main_component_name: main_component_name
                   )
               else
                 # SECURITY REVIEWED: Shell interpolation using format() with system-controlled path

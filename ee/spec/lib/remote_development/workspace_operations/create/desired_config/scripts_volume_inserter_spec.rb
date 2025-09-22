@@ -7,6 +7,8 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Create::DesiredConfig::Sc
 
   let(:name) { "workspacename-scripts-configmap" }
   let(:processed_devfile) { example_processed_devfile }
+  let(:devfile_commands) { processed_devfile.fetch(:commands) }
+  let(:devfile_events) { processed_devfile.fetch(:events) }
   let(:input_containers) do
     [
       { volumeMounts: [{}] },
@@ -20,7 +22,10 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Create::DesiredConfig::Sc
     described_class.insert(
       configmap_name: name,
       containers: input_containers,
-      volumes: input_volumes
+      volumes: input_volumes,
+      devfile_commands: devfile_commands,
+      devfile_events: devfile_events,
+      processed_devfile: processed_devfile
     )
   end
 

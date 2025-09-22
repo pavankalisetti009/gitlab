@@ -326,9 +326,9 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Main, "Integra
 
         # Verify the poststart script includes the user-defined command
         poststart_script = scripts_configmap[:data][
-          create_constants_module::RUN_NON_BLOCKING_POSTSTART_COMMANDS_SCRIPT_NAME.to_sym
+          :"tooling-container-#{create_constants_module::RUN_NON_BLOCKING_POSTSTART_COMMANDS_SCRIPT_NAME}"
         ]
-        expect(poststart_script).to include("Running /workspace-scripts/user-defined-command")
+        expect(poststart_script).to include("Running /workspace-scripts/tooling-container/user-defined-command")
       end
     end
   end
@@ -713,9 +713,7 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Main, "Integra
       let(:nonexistent_workspace) do
         instance_double(
           "RemoteDevelopment::Workspace", # rubocop:disable RSpec/VerifiedDoubleReference -- We're using the quoted version so we can use fast_spec_helper
-          id: 1, name: 'x', namespace: 'x', agent: agent,
-          desired_config_generator_version:
-            ::RemoteDevelopment::WorkspaceOperations::DesiredConfigGeneratorVersion::LATEST_VERSION
+          id: 1, name: 'x', namespace: 'x', agent: agent
         )
       end
 

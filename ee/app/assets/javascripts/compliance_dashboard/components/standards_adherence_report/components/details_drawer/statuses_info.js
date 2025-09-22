@@ -299,7 +299,7 @@ export const statusesInfo = {
     ],
   },
   code_changes_requires_code_owners: {
-    title: s__('ComplianceStandardsAdherence|Code changes requires code owners'),
+    title: s__('ComplianceStandardsAdherence|Code changes require code owners'),
     description: s__(
       'ComplianceStandardsAdherence|Ensures code changes require approval from code owners.',
     ),
@@ -841,7 +841,7 @@ export const statusesInfo = {
     ],
   },
   merge_request_commit_reset_approvals: {
-    title: s__('ComplianceStandardsAdherence|Merge request commit reset approvals'),
+    title: s__('ComplianceStandardsAdherence|Merge request commit resets approvals'),
     description: s__(
       'ComplianceStandardsAdherence|Ensures new commits to merge requests reset approvals.',
     ),

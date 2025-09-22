@@ -108,7 +108,7 @@ RSpec.describe GitlabSubscriptions::TrialDurationService, feature_category: :acq
       context 'when trial type is missing from response' do
         let(:trial_type) { '__trial_type__' }
 
-        it { expect(service.execute).to eq(default_free_duration) }
+        it { expect(service.execute).to be_nil }
       end
     end
 
@@ -129,7 +129,7 @@ RSpec.describe GitlabSubscriptions::TrialDurationService, feature_category: :acq
         context 'when trial type is missing from defaults' do
           let(:trial_type) { '__trial_type__' }
 
-          it { expect(service.execute).to eq(default_free_duration) }
+          it { expect(service.execute).to be_nil }
         end
       end
     end

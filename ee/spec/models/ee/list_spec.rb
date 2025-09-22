@@ -241,7 +241,7 @@ RSpec.describe List do
     let_it_be(:system_defined_done_status) { build(:work_item_system_defined_status, :done) }
     let_it_be(:custom_todo_status) { create(:work_item_custom_status, :open, namespace: group) }
     let_it_be(:custom_todo_status_without_mapping) do
-      create(:work_item_custom_status, :without_mapping, namespace: group)
+      create(:work_item_custom_status, :without_conversion_mapping, namespace: group)
     end
 
     let_it_be(:custom_done_status) { create(:work_item_custom_status, :closed, namespace: group) }

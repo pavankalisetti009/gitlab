@@ -141,8 +141,60 @@ RSpec.describe WorkItems::Lifecycles::UpdateService, feature_category: :team_pla
           }
         end
 
+        shared_examples 'adds mapping when provided' do
+          let(:params) do
+            super().merge(
+              status_mappings: [
+                {
+                  old_status_id: system_defined_in_progress_status.to_gid,
+                  new_status_id: system_defined_lifecycle.default_open_status.to_gid
+                }
+              ]
+            )
+          end
+
+          let(:mappings) { WorkItems::Statuses::Custom::Mapping.last(2) }
+          let(:old_status_id) do
+            ::WorkItems::Statuses::Custom::Status.find_by_namespace_and_name(
+              group, system_defined_in_progress_status.name
+            ).id
+          end
+
+          let(:new_status_id) do
+            ::WorkItems::Statuses::Custom::Status.find_by_namespace_and_name(
+              group, system_defined_lifecycle.default_open_status.name
+            ).id
+          end
+
+          it 'adds mapping record' do
+            expect { result }.to change { WorkItems::Statuses::Custom::Mapping.count }.by(2)
+
+            expect(mappings.pluck(:work_item_type_id)).to match_array(lifecycle.work_item_types.pluck(:id))
+            expect(mappings).to all(
+              have_attributes(
+                old_status_id: old_status_id,
+                new_status_id: new_status_id,
+                namespace_id: group.id,
+                valid_from: nil,
+                valid_until: nil
+              )
+            )
+          end
+
+          context 'when work_item_status_mvc2 feature flag is disabled' do
+            before do
+              stub_feature_flags(work_item_status_mvc2: false)
+            end
+
+            it 'does not add mapping' do
+              expect { result }.not_to change { WorkItems::Statuses::Custom::Mapping.count }
+            end
+          end
+        end
+
         it_behaves_like 'lifecycle service creates custom lifecycle'
         it_behaves_like 'sets default statuses correctly'
+        it_behaves_like 'adds mapping when provided'
 
         it 'creates custom statuses from system-defined statuses' do
           expect { result }.to change { WorkItems::Statuses::Custom::Status.count }.by(3)
@@ -155,7 +207,7 @@ RSpec.describe WorkItems::Lifecycles::UpdateService, feature_category: :team_pla
           expect(lifecycle.statuses.count).to eq(3)
         end
 
-        it 'preserves the status mapping' do
+        it 'preserves the status conversion mapping' do
           expect(lifecycle.statuses.pluck(:converted_from_system_defined_status_identifier))
             .to contain_exactly(1, 3, 5)
         end
@@ -280,11 +332,13 @@ RSpec.describe WorkItems::Lifecycles::UpdateService, feature_category: :team_pla
           end
 
           let(:expected_error_message) do
-            "Cannot delete status '#{system_defined_in_progress_status.name}' because it is in use"
+            "Cannot delete status '#{system_defined_in_progress_status.name}' " \
+              "because it is in use and no mapping is provided"
           end
 
           it_behaves_like 'lifecycle service does not create custom lifecycle'
           it_behaves_like 'lifecycle service returns validation error'
+          it_behaves_like 'adds mapping when provided'
         end
 
         context 'when trying to exclude a default status' do
@@ -360,7 +414,7 @@ RSpec.describe WorkItems::Lifecycles::UpdateService, feature_category: :team_pla
 
     context 'when custom lifecycle exists' do
       let!(:custom_lifecycle) do
-        create(:work_item_custom_lifecycle, name: system_defined_lifecycle.name, namespace: group)
+        create(:work_item_custom_lifecycle, :for_issues, name: system_defined_lifecycle.name, namespace: group)
       end
 
       context 'when system-defined lifecycle is provided' do
@@ -437,6 +491,99 @@ RSpec.describe WorkItems::Lifecycles::UpdateService, feature_category: :team_pla
               'Complete',
               custom_lifecycle.default_duplicate_status.name
             ])
+          end
+
+          context 'when status to be added already exists' do
+            let!(:custom_status) do
+              create(:work_item_custom_status, :without_conversion_mapping,
+                name: 'Ready for development', category: :to_do, namespace: group)
+            end
+
+            let(:params) do
+              super().merge(statuses: [
+                status_params_for(custom_lifecycle.default_open_status),
+                status_params_for(custom_lifecycle.default_closed_status),
+                status_params_for(custom_lifecycle.default_duplicate_status),
+                {
+                  name: 'Ready for development',
+                  color: '#737278',
+                  description: nil,
+                  category: 'to_do'
+                }
+              ])
+            end
+
+            shared_examples 'adds custom statuses to lifecycle' do
+              it 'adds custom statuses to lifecycle' do
+                expect { result }.not_to change { WorkItems::Statuses::Custom::Status.count }
+
+                expect(lifecycle.statuses.pluck(:name)).to include('Ready for development')
+
+                expect(lifecycle.statuses.count).to eq(4)
+              end
+            end
+
+            it_behaves_like 'adds custom statuses to lifecycle'
+
+            context 'and mapping exists for the existing status' do
+              let!(:existing_mapping) do
+                create(
+                  :work_item_custom_status_mapping,
+                  namespace_id: group.id,
+                  work_item_type_id: custom_lifecycle.work_item_types.first.id,
+                  old_status_id: custom_status.id,
+                  new_status_id: custom_lifecycle.default_open_status.id
+                )
+              end
+
+              it_behaves_like 'adds custom statuses to lifecycle'
+
+              it 'sets valid_until for existing mapping', :freeze_time do
+                expect { result }.to change { existing_mapping.reset.valid_until }
+                  .from(nil).to(Time.current)
+              end
+
+              context 'when work_item_status_mvc2 feature flag is disabled' do
+                before do
+                  stub_feature_flags(work_item_status_mvc2: false)
+                end
+
+                it 'does not touch mappings' do
+                  expect { result }.not_to change { existing_mapping.reset.valid_until }
+                end
+              end
+            end
+
+            context 'and two mappings exist for the existing status' do
+              let!(:first_mapping) do
+                create(
+                  :work_item_custom_status_mapping,
+                  namespace_id: group.id,
+                  work_item_type_id: custom_lifecycle.work_item_types.first.id,
+                  old_status_id: custom_status.id,
+                  new_status_id: custom_lifecycle.default_open_status.id,
+                  valid_until: 5.days.ago
+                )
+              end
+
+              let!(:second_mapping) do
+                create(
+                  :work_item_custom_status_mapping,
+                  namespace_id: group.id,
+                  work_item_type_id: custom_lifecycle.work_item_types.first.id,
+                  old_status_id: custom_status.id,
+                  new_status_id: custom_lifecycle.default_open_status.id,
+                  valid_from: 3.days.ago
+                )
+              end
+
+              it_behaves_like 'adds custom statuses to lifecycle'
+
+              it 'sets valid_until for second mapping', :freeze_time do
+                expect { result }.to change { second_mapping.reset.valid_until }
+                  .from(nil).to(Time.current)
+              end
+            end
           end
 
           context 'when other root namespace exists' do
@@ -605,13 +752,34 @@ RSpec.describe WorkItems::Lifecycles::UpdateService, feature_category: :team_pla
             }
           end
 
-          context 'when removing status without mapping' do
+          context 'when removing status without conversion mapping' do
             let(:custom_status) do
-              create(:work_item_custom_status, :without_mapping, name: 'Ready for development', namespace: group)
+              create(:work_item_custom_status, :without_conversion_mapping,
+                name: 'Ready for development', namespace: group)
             end
 
             it_behaves_like 'removes custom statuses'
             it_behaves_like 'reorders custom statuses'
+
+            context 'when trying to remove a status also attached to another lifecycle' do
+              let!(:other_lifecycle) do
+                create(:work_item_custom_lifecycle, :for_tasks, namespace: group)
+              end
+
+              before do
+                create(:work_item_custom_lifecycle_status, lifecycle: other_lifecycle, status: custom_status,
+                  namespace: group)
+              end
+
+              it 'removes status from lifecycle but not from namespace' do
+                expect { result }.not_to change { WorkItems::Statuses::Custom::Status.count }
+
+                expect(other_lifecycle.reset.statuses.pluck(:name)).to include(custom_status.name)
+
+                expect(lifecycle.statuses.pluck(:name)).not_to include(custom_status.name)
+                expect(lifecycle.statuses.count).to eq(3)
+              end
+            end
 
             context 'when trying to remove a status in use' do
               let(:work_item) { create(:work_item, namespace: group) }
@@ -620,10 +788,273 @@ RSpec.describe WorkItems::Lifecycles::UpdateService, feature_category: :team_pla
               end
 
               let(:expected_error_message) do
-                "Cannot delete status '#{custom_status.name}' because it is in use"
+                "Cannot delete status '#{custom_status.name}' because it is in use and no mapping is provided"
               end
 
               it_behaves_like 'lifecycle service returns validation error'
+
+              context 'when mapping is provided' do
+                let(:params) do
+                  super().merge(
+                    status_mappings: [
+                      {
+                        old_status_id: custom_status.to_gid,
+                        new_status_id: custom_lifecycle.default_open_status.to_gid
+                      }
+                    ]
+                  )
+                end
+
+                let(:other_mapping_status) do
+                  create(:work_item_custom_status, :without_conversion_mapping, namespace: group)
+                end
+
+                let(:mapping) { WorkItems::Statuses::Custom::Mapping.last }
+
+                let(:expected_valid_from) { initial_mapping.reset.valid_until }
+
+                shared_examples 'adds new mapping with valid_from' do
+                  it 'adds new mapping with valid_from' do
+                    expect { result }.to change { WorkItems::Statuses::Custom::Mapping.count }.by(1)
+
+                    expect(mapping).to have_attributes(
+                      namespace_id: group.id,
+                      work_item_type_id: custom_lifecycle.work_item_types.first.id,
+                      old_status_id: custom_status.id,
+                      new_status_id: custom_lifecycle.default_open_status.id,
+                      valid_from: expected_valid_from,
+                      valid_until: nil
+                    )
+                  end
+                end
+
+                it 'adds mapping record' do
+                  expect { result }.to change { WorkItems::Statuses::Custom::Mapping.count }.by(1)
+
+                  expect([mapping.work_item_type_id]).to eq(custom_lifecycle.work_item_types.pluck(:id))
+                  expect(mapping).to have_attributes(
+                    old_status_id: custom_status.id,
+                    new_status_id: custom_lifecycle.default_open_status.id,
+                    namespace_id: group.id,
+                    valid_from: nil,
+                    valid_until: nil
+                  )
+                end
+
+                context 'when multiple mappings are provided' do
+                  let(:params) do
+                    super().merge(
+                      status_mappings: [
+                        {
+                          old_status_id: custom_status.to_gid,
+                          new_status_id: custom_lifecycle.default_open_status.to_gid
+                        },
+                        {
+                          old_status_id: other_mapping_status.to_gid,
+                          new_status_id: custom_lifecycle.default_open_status.to_gid
+                        }
+                      ]
+                    )
+                  end
+
+                  before do
+                    create(:work_item_custom_lifecycle_status, lifecycle: custom_lifecycle,
+                      status: other_mapping_status, namespace: group)
+                  end
+
+                  it 'adds mapping record' do
+                    expect { result }.to change { WorkItems::Statuses::Custom::Mapping.count }.by(2)
+
+                    first_mapping, second_mapping = WorkItems::Statuses::Custom::Mapping.last(2)
+
+                    expect([first_mapping.work_item_type_id]).to eq(custom_lifecycle.work_item_types.pluck(:id))
+                    expect(first_mapping).to have_attributes(
+                      old_status_id: custom_status.id,
+                      new_status_id: custom_lifecycle.default_open_status.id,
+                      namespace_id: group.id,
+                      valid_from: nil,
+                      valid_until: nil
+                    )
+
+                    expect([second_mapping.work_item_type_id]).to eq(custom_lifecycle.work_item_types.pluck(:id))
+                    expect(second_mapping).to have_attributes(
+                      old_status_id: other_mapping_status.id,
+                      new_status_id: custom_lifecycle.default_open_status.id,
+                      namespace_id: group.id,
+                      valid_from: nil,
+                      valid_until: nil
+                    )
+                  end
+                end
+
+                context 'when mapping to old status already exists' do
+                  let!(:old_mapping) do
+                    create(
+                      :work_item_custom_status_mapping,
+                      namespace_id: group.id,
+                      work_item_type_id: custom_lifecycle.work_item_types.first.id,
+                      old_status_id: other_mapping_status.id,
+                      new_status_id: custom_status.id
+                    )
+                  end
+
+                  it 'prevents chained mappings by updating existing mapping to point to the new target status' do
+                    expect { result }.to change { WorkItems::Statuses::Custom::Mapping.count }.by(1)
+
+                    expect(mapping).to have_attributes(
+                      namespace_id: group.id,
+                      work_item_type_id: custom_lifecycle.work_item_types.first.id,
+                      old_status_id: custom_status.id,
+                      new_status_id: custom_lifecycle.default_open_status.id,
+                      valid_from: nil,
+                      valid_until: nil
+                    )
+
+                    expect(old_mapping.reset).to have_attributes(
+                      namespace_id: group.id,
+                      work_item_type_id: custom_lifecycle.work_item_types.first.id,
+                      old_status_id: other_mapping_status.id,
+                      new_status_id: custom_lifecycle.default_open_status.id,
+                      valid_from: nil,
+                      valid_until: nil
+                    )
+                  end
+                end
+
+                context 'when the same mapping already exists' do
+                  let!(:initial_mapping) do
+                    create(
+                      :work_item_custom_status_mapping,
+                      namespace_id: group.id,
+                      work_item_type_id: custom_lifecycle.work_item_types.first.id,
+                      old_status_id: custom_status.id,
+                      new_status_id: custom_lifecycle.default_open_status.id
+                    )
+                  end
+
+                  it 'does not add a new mapping' do
+                    expect { result }.not_to change { WorkItems::Statuses::Custom::Mapping.count }
+
+                    expect(mapping).to eq(initial_mapping)
+                  end
+                end
+
+                context 'when mapping from old status exists with different new status' do
+                  let!(:initial_mapping) do
+                    create(
+                      :work_item_custom_status_mapping,
+                      namespace_id: group.id,
+                      work_item_type_id: custom_lifecycle.work_item_types.first.id,
+                      old_status_id: custom_status.id,
+                      new_status_id: other_mapping_status.id,
+                      valid_until: 5.days.ago
+                    )
+                  end
+
+                  it_behaves_like 'adds new mapping with valid_from'
+
+                  # This is an invalid case because normally the status would need to be added to the lifecycle
+                  # before it can be removed again and this would set the valid_until on any existing mapping.
+                  # But we should also take care of this to ensure data integrity.
+                  context 'and initial mapping is invalid' do
+                    let!(:initial_mapping) do
+                      create(
+                        :work_item_custom_status_mapping,
+                        namespace_id: group.id,
+                        work_item_type_id: custom_lifecycle.work_item_types.first.id,
+                        old_status_id: custom_status.id,
+                        new_status_id: other_mapping_status.id
+                      )
+                    end
+
+                    it 'updates existing mapping with valid_until to keep data valid', :freeze_time do
+                      expect { result }.to change { initial_mapping.reset.valid_until }
+                        .from(nil).to(Time.current)
+                    end
+
+                    it_behaves_like 'adds new mapping with valid_from'
+                  end
+                end
+
+                context 'when mapping from old status exists with valid_until' do
+                  let!(:initial_mapping) do
+                    create(
+                      :work_item_custom_status_mapping,
+                      namespace_id: group.id,
+                      work_item_type_id: custom_lifecycle.work_item_types.first.id,
+                      old_status_id: custom_status.id,
+                      new_status_id: custom_lifecycle.default_open_status.id,
+                      valid_until: 5.days.ago
+                    )
+                  end
+
+                  it_behaves_like 'adds new mapping with valid_from'
+
+                  context 'and another mapping exists with valid_until and valid_from' do
+                    let!(:second_mapping) do
+                      create(
+                        :work_item_custom_status_mapping,
+                        namespace_id: group.id,
+                        work_item_type_id: custom_lifecycle.work_item_types.first.id,
+                        old_status_id: custom_status.id,
+                        new_status_id: custom_lifecycle.default_open_status.id,
+                        valid_from: 3.days.ago,
+                        valid_until: 1.day.ago
+                      )
+                    end
+
+                    let(:expected_valid_from) { second_mapping.reset.valid_until }
+
+                    it_behaves_like 'adds new mapping with valid_from'
+                  end
+
+                  context 'and another mapping to different status exists without valid_until' do
+                    let!(:second_mapping) do
+                      create(
+                        :work_item_custom_status_mapping,
+                        namespace_id: group.id,
+                        work_item_type_id: custom_lifecycle.work_item_types.first.id,
+                        old_status_id: custom_status.id,
+                        new_status_id: other_mapping_status.id,
+                        valid_from: 3.days.ago
+                      )
+                    end
+
+                    let(:expected_valid_from) { second_mapping.reset.valid_until }
+
+                    it 'updates existing mapping with valid_until to keep data valid', :freeze_time do
+                      expect { result }.to change { second_mapping.reset.valid_until }
+                        .from(nil).to(Time.current)
+                    end
+
+                    it_behaves_like 'adds new mapping with valid_from'
+                  end
+                end
+
+                context 'when work_item_status_mvc2 feature flag is disabled' do
+                  before do
+                    stub_feature_flags(work_item_status_mvc2: false)
+                  end
+
+                  let(:expected_error_message) do
+                    "Cannot delete status '#{custom_status.name}' because it is in use"
+                  end
+
+                  it_behaves_like 'lifecycle service returns validation error'
+                end
+              end
+
+              context 'when work_item_status_mvc2 feature flag is disabled' do
+                before do
+                  stub_feature_flags(work_item_status_mvc2: false)
+                end
+
+                let(:expected_error_message) do
+                  "Cannot delete status '#{custom_status.name}' because it is in use"
+                end
+
+                it_behaves_like 'lifecycle service returns validation error'
+              end
             end
 
             context 'when trying to remove a default status' do
@@ -650,7 +1081,7 @@ RSpec.describe WorkItems::Lifecycles::UpdateService, feature_category: :team_pla
             end
           end
 
-          context 'when removing status with mapping' do
+          context 'when removing status with conversion mapping' do
             let(:custom_status) do
               create(:work_item_custom_status, :in_progress, name: 'Ready for dev', namespace: group)
             end
@@ -658,7 +1089,7 @@ RSpec.describe WorkItems::Lifecycles::UpdateService, feature_category: :team_pla
             it_behaves_like 'removes custom statuses'
             it_behaves_like 'reorders custom statuses'
 
-            context 'when there are board lists using the mapped status' do
+            context 'when there are board lists using the converted status' do
               let_it_be(:subgroup) { create(:group, parent: group) }
               let_it_be(:project) { create(:project, group: group) }
 
@@ -703,7 +1134,7 @@ RSpec.describe WorkItems::Lifecycles::UpdateService, feature_category: :team_pla
                 )
               end
 
-              it 'removes the mapped board lists' do
+              it 'removes the board lists with converted status' do
                 expect { result }.to change { List.count }.by(-3)
 
                 expect { group_list.reload }.to raise_error(ActiveRecord::RecordNotFound)
@@ -722,7 +1153,7 @@ RSpec.describe WorkItems::Lifecycles::UpdateService, feature_category: :team_pla
               end
 
               let(:expected_error_message) do
-                "Cannot delete status '#{custom_status.name}' because it is in use"
+                "Cannot delete status '#{custom_status.name}' because it is in use and no mapping is provided"
               end
 
               it_behaves_like 'lifecycle service returns validation error'
@@ -732,7 +1163,7 @@ RSpec.describe WorkItems::Lifecycles::UpdateService, feature_category: :team_pla
               let!(:work_item) { create(:work_item, namespace: group) }
               let(:new_default_status) { create(:work_item_custom_status, :triage, namespace: group) }
               let(:expected_error_message) do
-                "Cannot delete status 'To do' because it is in use"
+                "Cannot delete status 'To do' because it is in use and no mapping is provided"
               end
 
               before do

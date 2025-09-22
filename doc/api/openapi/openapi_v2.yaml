@@ -40660,6 +40660,8 @@ paths:
           description: Conflict
         '422':
           description: Runner is orphaned
+        '429':
+          description: Too Many Requests
       tags:
       - jobs
       operationId: postApiV4JobsRequest
@@ -40691,6 +40693,10 @@ paths:
           description: Unknown parameters
         '403':
           description: Forbidden
+        '409':
+          description: Conflict
+        '429':
+          description: Too Many Requests
       tags:
       - jobs
       operationId: putApiV4JobsId
@@ -40722,6 +40728,8 @@ paths:
           description: Forbidden
         '416':
           description: Range not satisfiable
+        '429':
+          description: Too Many Requests
       tags:
       - jobs
       operationId: patchApiV4JobsIdTrace
@@ -40753,6 +40761,8 @@ paths:
           description: Artifacts support not enabled
         '413':
           description: File too large
+        '429':
+          description: Too Many Requests
       tags:
       - jobs
       operationId: postApiV4JobsIdArtifactsAuthorize
@@ -40786,6 +40796,8 @@ paths:
           description: Artifacts support not enabled
         '413':
           description: File too large
+        '429':
+          description: Too Many Requests
       tags:
       - jobs
       operationId: postApiV4JobsIdArtifacts
@@ -40823,6 +40835,8 @@ paths:
           description: Forbidden
         '404':
           description: Artifact not found
+        '429':
+          description: Too Many Requests
       tags:
       - jobs
       operationId: getApiV4JobsIdArtifacts
@@ -67487,7 +67501,7 @@ definitions:
         description: Job token
       state:
         type: string
-        description: 'Job''s status: success, failed'
+        description: 'Job''s status: pending, running, success, failed'
       checksum:
         type: string
         description: Job's trace CRC32 checksum

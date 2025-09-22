@@ -10,11 +10,11 @@ RSpec.describe Groups::EnterpriseUsers::DisassociateService, :saas, feature_cate
   end
 
   let(:user_personal_access_token2) do
-    create(:personal_access_token, :expired, user: user, group_id: user.enterprise_group_id)
+    create(:personal_access_token, :expired, user: user)
   end
 
   let(:user_personal_access_token3) do
-    create(:personal_access_token, :revoked, user: user, group_id: user.enterprise_group_id)
+    create(:personal_access_token, :revoked, user: user)
   end
 
   let(:another_user_personal_access_token) do

@@ -13,7 +13,18 @@ RSpec.describe GitlabSubscriptions::DiscoverDuoCoreTrialComponent, :aggregate_fa
 
     it 'has the hero heading' do
       is_expected.to have_content(
-        s_('DuoCoreTrialDiscover|GitLab Premium, now with Duo – native AI Code Suggestions and Chat')
+        s_('DuoCoreTrialDiscover|GitLab Premium, now with native AI')
+      )
+    end
+
+    it 'has the hero text' do
+      is_expected.to have_content(s_('DuoCoreTrialDiscover|Now featuring GitLab Duo'))
+
+      is_expected.to have_content(
+        s_(
+          'DuoCoreTrialDiscover|Enterprise-grade AI-native capabilities to help ' \
+            'you move faster while maintaining security and IP protection'
+        )
       )
     end
 

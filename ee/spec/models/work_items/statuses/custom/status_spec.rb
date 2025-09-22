@@ -265,6 +265,22 @@ RSpec.describe WorkItems::Statuses::Custom::Status, feature_category: :team_plan
     end
   end
 
+  describe '.find_by_converted_status' do
+    let_it_be(:converted_status) do
+      create(:work_item_custom_status, namespace: group, converted_from_system_defined_status_identifier: 1)
+    end
+
+    let_it_be(:other_custom_status) { create(:work_item_custom_status, :without_conversion_mapping, namespace: group) }
+
+    let(:system_defined_status) { build(:work_item_system_defined_status, :to_do) }
+
+    it 'finds status by the provided system-defined status' do
+      result = described_class.find_by_converted_status(system_defined_status)
+
+      expect(result).to eq(converted_status)
+    end
+  end
+
   describe '#icon_name' do
     it 'returns the icon name based on the category' do
       expect(custom_status.icon_name).to eq('status-waiting')

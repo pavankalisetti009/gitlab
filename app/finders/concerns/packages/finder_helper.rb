@@ -4,28 +4,16 @@ module Packages
   module FinderHelper
     extend ActiveSupport::Concern
 
+    # TODO: Remove with the rollout of the FF packages_refactor_group_packages_finder
+    # https://gitlab.com/gitlab-org/gitlab/-/issues/568923
     InvalidPackageTypeError = Class.new(StandardError)
+
     InvalidStatusError = Class.new(StandardError)
 
     private
 
     def packages_for_project(project)
       packages_class.for_projects(project).installable
-    end
-
-    # /!\ This function doesn't check user permissions
-    # at the package level.
-    def packages_for(user, within_group:)
-      return packages_class.none unless within_group
-      return packages_class.none unless Ability.allowed?(user, :read_group, within_group)
-
-      projects = if user.is_a?(DeployToken)
-                   user.accessible_projects
-                 else
-                   within_group.all_projects
-                 end
-
-      packages_class.for_projects(projects).installable
     end
 
     def packages_visible_to_user(user, within_group:, with_package_registry_enabled: false)
@@ -81,6 +69,8 @@ module Packages
       params[:package_type].presence
     end
 
+    # TODO: Remove with the rollout of the FF packages_refactor_group_packages_finder
+    # https://gitlab.com/gitlab-org/gitlab/-/issues/568923
     def filter_by_package_type(packages)
       # Only filter by package_type when using the base `Packages::Package` class
       # Format-specific classes like `Packages::TerraformModule::Package` don't need this filter

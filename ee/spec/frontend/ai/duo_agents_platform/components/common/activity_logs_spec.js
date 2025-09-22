@@ -4,6 +4,7 @@ import { GlIcon } from '@gitlab/ui';
 import ActivityLogs from 'ee/ai/duo_agents_platform/components/common/activity_logs.vue';
 import ActivityConnectorSvg from 'ee/ai/duo_agents_platform/components/common/activity_connector_svg.vue';
 import { getTimeago } from '~/lib/utils/datetime_utility';
+import MarkdownContent from '~/vue_shared/components/markdown/markdown_content.vue';
 
 jest.mock('~/lib/utils/datetime_utility');
 
@@ -16,6 +17,7 @@ describe('ActivityLogs', () => {
   const findAllIcons = () => wrapper.findAllComponents(GlIcon);
   const findAllTimestamps = () => wrapper.findAll('.gl-text-subtle');
   const findFirstTitle = () => wrapper.find('strong');
+  const findAllMarkdownRenderComponent = () => wrapper.findAllComponents(MarkdownContent);
 
   const mockTimeago = {
     format: jest.fn(),
@@ -62,11 +64,12 @@ describe('ActivityLogs', () => {
     });
 
     it('renders the expected content', () => {
+      const markdownContent = findAllMarkdownRenderComponent();
       expect(findAllListItems()).toHaveLength(3);
       // Content
-      expect(wrapper.text()).toContain('Starting workflow');
-      expect(wrapper.text()).toContain('Processing data');
-      expect(wrapper.text()).toContain('Workflow completed');
+      expect(markdownContent.at(0).props().value).toContain('Starting workflow');
+      expect(markdownContent.at(1).props().value).toContain('Processing data');
+      expect(markdownContent.at(2).props().value).toContain('Workflow completed');
     });
 
     it('renders the updated session triggered title', () => {
@@ -174,8 +177,7 @@ describe('ActivityLogs', () => {
 
     it('updates the rendered content', async () => {
       expect(findAllListItems()).toHaveLength(3);
-      expect(wrapper.text()).toContain('Starting workflow');
-      expect(wrapper.text()).not.toContain('New workflow item');
+      expect(findAllMarkdownRenderComponent().at(0).props().value).toBe('Starting workflow');
 
       const newItems = [
         {
@@ -190,8 +192,7 @@ describe('ActivityLogs', () => {
       await wrapper.setProps({ items: newItems });
 
       expect(findAllListItems()).toHaveLength(1);
-      expect(wrapper.text()).toContain('New workflow item');
-      expect(wrapper.text()).not.toContain('Starting workflow');
+      expect(findAllMarkdownRenderComponent().at(0).props().value).toBe('New workflow item');
     });
 
     describe('when items change', () => {

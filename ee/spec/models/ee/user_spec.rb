@@ -107,8 +107,8 @@ RSpec.describe User, feature_category: :system_access do
     it { is_expected.to have_many(:requested_member_approvals).class_name('::GitlabSubscriptions::MemberManagement::MemberApproval').with_foreign_key(:requested_by_id) }
     it { is_expected.to have_many(:reviewed_member_approvals).class_name('::GitlabSubscriptions::MemberManagement::MemberApproval').with_foreign_key(:reviewed_by_id) }
     it { is_expected.to have_one(:pipl_user).class_name('ComplianceManagement::PiplUser') }
-    it { is_expected.to have_many(:group_scim_identities).class_name('GroupScimIdentity') }
-    it { is_expected.to have_many(:instance_scim_identities).class_name('ScimIdentity') }
+    it { is_expected.to have_many(:group_scim_identities).class_name('GroupScimIdentity').dependent(:destroy) }
+    it { is_expected.to have_many(:instance_scim_identities).class_name('ScimIdentity').dependent(:destroy) }
     it { is_expected.to have_many(:scim_group_memberships).class_name('Authn::ScimGroupMembership') }
     it { is_expected.to have_many(:user_group_member_roles).class_name('Authz::UserGroupMemberRole') }
     it { is_expected.to have_many(:subscription_seat_assignments).class_name('GitlabSubscriptions::SeatAssignment') }

@@ -1,16 +1,42 @@
+import Vue from 'vue';
+import VueApollo from 'vue-apollo';
 import { GlAlert, GlModal, GlFormTextarea } from '@gitlab/ui';
+import createMockApollo from 'helpers/mock_apollo_helper';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
+import waitForPromises from 'helpers/wait_for_promises';
 import SecurityPolicyViolationsModal from 'ee/vue_merge_request_widget/components/checks/security_policy_violations_modal.vue';
 import SecurityPolicyViolationsSelector from 'ee/vue_merge_request_widget/components/checks/security_policy_violations_selector.vue';
+import bypassSecurityPolicyViolations from 'ee/vue_merge_request_widget/components/checks/queries/bypass_security_policy_violations.mutation.graphql';
 import { WARN_MODE, EXCEPTION_MODE } from 'ee/vue_merge_request_widget/components/checks/constants';
+
+Vue.use(VueApollo);
+const mockBypassSecurityPolicyViolationsResponses = {
+  success: jest.fn().mockResolvedValue({
+    data: {
+      dismissPolicyViolations: {
+        errors: [],
+        typename: '__DismissPolicyViolationsPayload',
+      },
+    },
+  }),
+  successWithErrors: jest.fn().mockResolvedValue({
+    data: {
+      dismissPolicyViolations: {
+        errors: ['no policies'],
+        typename: '__DismissPolicyViolationsPayload',
+      },
+    },
+  }),
+  failure: jest.fn().mockRejectedValue(),
+};
 
 describe('SecurityPolicyViolationsModal', () => {
   let wrapper;
 
   const mockPolicies = [
-    { value: 'policy-1', text: 'Security Policy 1' },
-    { value: 'policy-2', text: 'Security Policy 2' },
-    { value: 'policy-3', text: 'Security Policy 3' },
+    { value: 'policy-1', text: 'Security Policy 1', id: 1 },
+    { value: 'policy-2', text: 'Security Policy 2', id: 2 },
+    { value: 'policy-3', text: 'Security Policy 3', id: 3 },
   ];
 
   const findModal = () => wrapper.findComponent(GlModal);
@@ -23,12 +49,21 @@ describe('SecurityPolicyViolationsModal', () => {
   const findBypassButton = () => wrapper.findByTestId('bypass-policy-violations-button');
   const findModalContent = () => wrapper.findByTestId('modal-content');
 
-  const createComponent = (props = {}) => {
+  const createComponent = ({
+    mutationQuery = bypassSecurityPolicyViolations,
+    mutationResult = mockBypassSecurityPolicyViolationsResponses.success,
+    props = {},
+  } = {}) => {
     wrapper = shallowMountExtended(SecurityPolicyViolationsModal, {
+      apolloProvider: createMockApollo([[mutationQuery, mutationResult]]),
       propsData: {
         policies: mockPolicies,
         visible: true,
         mode: WARN_MODE,
+        mr: {
+          iid: 123,
+          targetProjectFullPath: 'test/project',
+        },
         ...props,
       },
       stubs: {
@@ -38,14 +73,14 @@ describe('SecurityPolicyViolationsModal', () => {
   };
 
   const fillFormWithData = async () => {
-    await findPolicySelector().vm.$emit('select', ['policy-1']);
-    await findReasonSelector().vm.$emit('select', ['policy_false_positive']);
+    await findPolicySelector().vm.$emit('select', [1]);
+    await findReasonSelector().vm.$emit('select', ['POLICY_FALSE_POSITIVE']);
     await findBypassTextarea().vm.$emit('input', 'Valid bypass reason');
   };
 
   describe('modal structure', () => {
     beforeEach(() => {
-      createComponent();
+      createComponent({});
     });
 
     it('renders the alert', () => {
@@ -62,17 +97,17 @@ describe('SecurityPolicyViolationsModal', () => {
 
     it('renders reason selector with bypass reasons', () => {
       expect(findReasonSelector().props('items')).toEqual([
-        { value: 'policy_false_positive', text: 'Policy false positive' },
-        { value: 'scanner_false_positive', text: 'Scanner false positive' },
-        { value: 'emergency_hotfix', text: 'Emergency hotfix' },
-        { value: 'other', text: 'Other' },
+        { value: 'POLICY_FALSE_POSITIVE', text: 'Policy false positive' },
+        { value: 'SCANNER_FALSE_POSITIVE', text: 'Scanner false positive' },
+        { value: 'EMERGENCY_HOT_FIX', text: 'Emergency hotfix' },
+        { value: 'OTHER', text: 'Other' },
       ]);
     });
   });
 
   describe('form validation', () => {
     beforeEach(() => {
-      createComponent();
+      createComponent({});
     });
 
     it('disables bypass button when form is invalid', () => {
@@ -86,29 +121,29 @@ describe('SecurityPolicyViolationsModal', () => {
     });
 
     it('disables bypass button when policies are not selected', async () => {
-      await findReasonSelector().vm.$emit('input', ['policy_false_positive']);
+      await findReasonSelector().vm.$emit('select', ['POLICY_FALSE_POSITIVE']);
       await findBypassTextarea().vm.$emit('input', 'Valid bypass reason');
 
       expect(findBypassButton().attributes().disabled).toBe('true');
     });
 
     it('disables bypass button when reasons are not selected', async () => {
-      await findPolicySelector().vm.$emit('input', ['policy-1']);
+      await findPolicySelector().vm.$emit('select', [1]);
       await findBypassTextarea().vm.$emit('input', 'Valid bypass reason');
 
       expect(findBypassButton().attributes().disabled).toBe('true');
     });
 
     it('disables bypass button when bypass reason is empty', async () => {
-      await findPolicySelector().vm.$emit('input', ['policy-1']);
-      await findReasonSelector().vm.$emit('input', ['policy_false_positive']);
+      await findPolicySelector().vm.$emit('select', [1]);
+      await findReasonSelector().vm.$emit('select', ['POLICY_FALSE_POSITIVE']);
 
       expect(findBypassButton().attributes().disabled).toBe('true');
     });
 
     it('disables bypass button when bypass reason is only whitespace', async () => {
-      await findPolicySelector().vm.$emit('input', ['policy-1']);
-      await findReasonSelector().vm.$emit('input', ['policy_false_positive']);
+      await findPolicySelector().vm.$emit('select', [1]);
+      await findReasonSelector().vm.$emit('select', ['POLICY_FALSE_POSITIVE']);
       await findBypassTextarea().vm.$emit('input', '   ');
 
       expect(findBypassButton().attributes().disabled).toBe('true');
@@ -117,7 +152,7 @@ describe('SecurityPolicyViolationsModal', () => {
 
   describe('toggle text computation', () => {
     beforeEach(() => {
-      createComponent();
+      createComponent({});
     });
 
     it('shows placeholder text when no policies are selected', () => {
@@ -129,59 +164,69 @@ describe('SecurityPolicyViolationsModal', () => {
     });
 
     it('updates toggle text when policies are selected', async () => {
-      await findPolicySelector().vm.$emit('select', ['policy-1']);
-
-      expect(findPolicySelector().props('toggleText')).toContain('Security Policy 1');
+      await findPolicySelector().vm.$emit('select', [1]);
+      expect(findPolicySelector().props('toggleText')).toBe('Security Policy 1');
     });
 
     it('updates toggle text when reasons are selected', async () => {
-      await findReasonSelector().vm.$emit('select', ['policy_false_positive']);
+      await findReasonSelector().vm.$emit('select', ['POLICY_FALSE_POSITIVE']);
 
       expect(findReasonSelector().props('toggleText')).toContain('Policy false positive');
     });
   });
 
-  describe('modal actions', () => {
-    beforeEach(() => {
-      createComponent();
+  describe('modal events', () => {
+    describe('close', () => {
+      it('emits close event when cancel button is clicked', async () => {
+        createComponent({});
+        await findModal().vm.$emit('cancel');
+
+        expect(wrapper.emitted('close')).toHaveLength(1);
+      });
     });
 
-    it('emits close event when cancel button is clicked', async () => {
-      await findModal().vm.$emit('cancel');
+    describe('primary', () => {
+      it('closes the modal when `bypassSecurityPolicyViolations` query is successful', async () => {
+        createComponent({});
+        await fillFormWithData();
+        await findModal().vm.$emit('primary', { preventDefault: jest.fn() });
+        expect(mockBypassSecurityPolicyViolationsResponses.success).toHaveBeenCalled();
+        await waitForPromises();
+        expect(wrapper.emitted('close')).toEqual([[]]);
+      });
 
-      expect(wrapper.emitted('close')).toHaveLength(1);
-    });
+      it('does not close the modal when `bypassSecurityPolicyViolations` query fails with errors', async () => {
+        createComponent({
+          mutationResult: mockBypassSecurityPolicyViolationsResponses.successWithErrors,
+        });
+        await fillFormWithData();
+        await findModal().vm.$emit('primary', { preventDefault: jest.fn() });
+        expect(mockBypassSecurityPolicyViolationsResponses.successWithErrors).toHaveBeenCalled();
+        await waitForPromises();
+        expect(wrapper.emitted('close')).toBe(undefined);
+      });
 
-    it('emits close event when modal is closed via change event', async () => {
-      await findModal().vm.$emit('change');
-
-      expect(wrapper.emitted('close')).toHaveLength(1);
-    });
-
-    it('calls handleBypass and emits close when primary button is clicked', async () => {
-      await fillFormWithData();
-      await findModal().vm.$emit('primary');
-
-      expect(wrapper.emitted('close')).toHaveLength(1);
+      it('does not close the modal when `bypassSecurityPolicyViolations` query fails', async () => {
+        createComponent({ mutationResult: mockBypassSecurityPolicyViolationsResponses.failure });
+        await fillFormWithData();
+        await findModal().vm.$emit('primary', { preventDefault: jest.fn() });
+        expect(mockBypassSecurityPolicyViolationsResponses.failure).toHaveBeenCalled();
+        await waitForPromises();
+        expect(wrapper.emitted('close')).toBe(undefined);
+      });
     });
   });
 
   describe('visibility prop', () => {
     it('passes visible prop to modal', () => {
-      createComponent();
+      createComponent({ props: { visible: true } });
       expect(findModal().props('visible')).toBe(true);
-
-      wrapper.destroy();
-      createComponent({ visible: false });
-      expect(findModal().props('visible')).toBe(false);
     });
   });
 
   describe('mode selection', () => {
     beforeEach(() => {
-      createComponent({
-        mode: '',
-      });
+      createComponent({ props: { mode: '' } });
     });
 
     it('renders mode selector', () => {
@@ -200,6 +245,26 @@ describe('SecurityPolicyViolationsModal', () => {
       findSecurityPolicyViolationsSelector().vm.$emit('select', mode);
 
       expect(wrapper.emitted('select-mode')).toEqual([[mode]]);
+    });
+  });
+
+  describe('exception mode', () => {
+    it('renders correct alert message and reasons for exception mode', () => {
+      createComponent({ props: { mode: EXCEPTION_MODE } });
+
+      expect(findAlert().text()).toContain('All selected policy requirements will be bypassed.');
+      expect(findAlert().text()).toContain('The action will be logged in the audit log.');
+
+      expect(findReasonSelector().props('items')).toEqual([
+        { text: 'Emergency production issue', value: 'emergency' },
+        { text: 'Critical business deadline', value: 'critical' },
+        { text: 'Technical limitation', value: 'technical' },
+        {
+          text: 'Authorized business risk acceptance',
+          value: 'authorized_risk',
+        },
+        { text: 'Other', value: 'other' },
+      ]);
     });
   });
 });

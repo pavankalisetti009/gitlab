@@ -5,9 +5,12 @@ import { __, s__ } from '~/locale';
 import {
   INITIAL_STATE_NEXT_STEPS,
   WARN_MODE_BYPASS_REASONS,
+  POLICY_EXCEPTIONS_BYPASS_REASONS,
   WARN_MODE_NEXT_STEPS,
+  WARN_MODE,
 } from 'ee/vue_merge_request_widget/components/checks/constants';
 import SecurityPolicyViolationsSelector from './security_policy_violations_selector.vue';
+import bypassSecurityPolicyViolations from './queries/bypass_security_policy_violations.mutation.graphql';
 
 export default {
   ACTION_CANCEL: { text: __('Cancel') },
@@ -25,6 +28,11 @@ export default {
     event: 'change',
   },
   props: {
+    mr: {
+      type: Object,
+      required: false,
+      default: () => ({}),
+    },
     policies: {
       type: Array,
       required: true,
@@ -51,6 +59,9 @@ export default {
     showModeSelection() {
       return this.mode === '';
     },
+    isWarnMode() {
+      return this.mode === WARN_MODE;
+    },
     actionPrimary() {
       return {
         text: __('Bypass'),
@@ -62,7 +73,7 @@ export default {
       };
     },
     bypassReasonItems() {
-      return WARN_MODE_BYPASS_REASONS;
+      return this.isWarnMode ? WARN_MODE_BYPASS_REASONS : POLICY_EXCEPTIONS_BYPASS_REASONS;
     },
     isValid() {
       return (
@@ -84,7 +95,7 @@ export default {
     },
     selectedReasonText() {
       return getSelectedOptionsText({
-        options: WARN_MODE_BYPASS_REASONS,
+        options: this.bypassReasonItems,
         selected: this.selectedReasons,
         placeholder: s__('SecurityOrchestration|Select bypass reasons'),
         maxOptionsShown: 4,
@@ -92,14 +103,31 @@ export default {
     },
   },
   methods: {
-    handleBypass() {
-      // TODO send data to backend to bypass and close modal after save
-      // const bypassData = {
-      //   policies: this.selectedPolicies,
-      //   reasons: this.selectedReasons,
-      //   bypassReason: this.bypassReason.trim(),
-      // };
-      this.handleClose();
+    async handleBypass() {
+      try {
+        const {
+          data: {
+            dismissPolicyViolations: { errors },
+          },
+        } = await this.$apollo.mutate({
+          mutation: bypassSecurityPolicyViolations,
+          variables: {
+            comment: this.bypassReason,
+            dismissalTypes: this.selectedReasons,
+            iid: this.mr.iid.toString(),
+            projectPath: this.mr.targetProjectFullPath,
+            securityPolicyIds: this.selectedPolicies,
+          },
+        });
+
+        if (errors?.length) {
+          throw Error();
+        }
+
+        this.handleClose();
+      } catch (e) {
+        // TODO do something
+      }
     },
     handleClose() {
       this.$emit('close');
@@ -122,9 +150,8 @@ export default {
     :action-primary="actionPrimary"
     :action-cancel="$options.ACTION_CANCEL"
     size="md"
-    @primary="handleBypass"
+    @primary.prevent="handleBypass"
     @cancel="handleClose"
-    @change="handleClose"
   >
     <gl-alert variant="info" :dismissible="false" class="gl-mb-4" :title="__('What happens next?')">
       <ul class="gl-mb-0 gl-pl-5">
@@ -146,12 +173,12 @@ export default {
         class="gl-mb-4"
       >
         <gl-collapsible-listbox
-          :selected="selectedPolicies"
+          data-testid="policy-selector"
           block
           multiple
           :items="policies"
+          :selected="selectedPolicies"
           :toggle-text="selectedPolicyText"
-          data-testid="policy-selector"
           @select="handleSelect('selectedPolicies', $event)"
         />
       </gl-form-group>

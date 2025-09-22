@@ -9,7 +9,6 @@ RSpec.describe API::Ci::Runner, :clean_gitlab_redis_shared_state, feature_catego
 
   before do
     stub_application_setting(ci_job_live_trace_enabled: true)
-    stub_feature_flags(ci_validate_config_options: false)
     stub_gitlab_calls
     allow_any_instance_of(::Ci::Runner).to receive(:cache_attributes)
     allow(Ci::Build).to receive(:find_by!).and_call_original
@@ -106,6 +105,12 @@ RSpec.describe API::Ci::Runner, :clean_gitlab_redis_shared_state, feature_catego
 
       it_behaves_like 'runner migrations backoff' do
         let(:request) { post api('/jobs/request') }
+      end
+
+      it_behaves_like 'rate limited endpoint', rate_limit_key: :runner_jobs_request_api do
+        def request
+          request_job
+        end
       end
 
       context 'when no token is provided' do
@@ -1436,10 +1441,10 @@ RSpec.describe API::Ci::Runner, :clean_gitlab_redis_shared_state, feature_catego
             expect(response).to have_gitlab_http_status(:no_content)
           end
         end
+      end
 
-        def request_job(token = runner.token, **params)
-          post api('/jobs/request'), params: params.merge(token: token)
-        end
+      def request_job(token = runner.token, **params)
+        post api('/jobs/request'), params: params.merge(token: token)
       end
     end
   end

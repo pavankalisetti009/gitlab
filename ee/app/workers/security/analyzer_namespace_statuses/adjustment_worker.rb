@@ -11,7 +11,6 @@ module Security
 
       def perform(namespaces_ids)
         return unless namespaces_ids.present?
-        return unless Feature.enabled?(:vulnerability_namespace_adjustment_worker, :instance)
 
         AnalyzerNamespaceStatuses::AdjustmentService.execute(namespaces_ids)
       end

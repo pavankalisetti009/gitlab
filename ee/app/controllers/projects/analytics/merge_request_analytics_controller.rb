@@ -4,6 +4,9 @@ class Projects::Analytics::MergeRequestAnalyticsController < Projects::Applicati
   include ProductAnalyticsTracking
 
   before_action :authorize_read_project_merge_request_analytics!
+  before_action do
+    push_frontend_feature_flag(:consolidate_mr_analytics_in_shared_dashboards, project)
+  end
 
   track_event :show,
     name: 'p_analytics_merge_request',

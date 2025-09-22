@@ -2,6 +2,8 @@
 import { GlIcon } from '@gitlab/ui';
 import { s__ } from '~/locale';
 import { getTimeago } from '~/lib/utils/datetime_utility';
+import MarkdownContent from '~/vue_shared/components/markdown/markdown_content.vue';
+
 import { getMessageData } from '../../utils';
 import ActivityConnectorSvg from './activity_connector_svg.vue';
 
@@ -9,6 +11,7 @@ export default {
   components: {
     ActivityConnectorSvg,
     GlIcon,
+    MarkdownContent,
   },
   props: {
     items: {
@@ -93,9 +96,7 @@ export default {
           <strong class="gl-mb-1 gl-text-strong">{{ title(item, index) }}</strong>
           <span class="gl-text-subtle">{{ timeAgo(item) }}</span>
         </div>
-        <p class="gl-m-0 gl-flex-1 gl-py-2">
-          {{ item.content }}
-        </p>
+        <markdown-content :value="item.content" class="gl-m-0 gl-flex-1 gl-py-2" />
       </div>
     </li>
   </ul>

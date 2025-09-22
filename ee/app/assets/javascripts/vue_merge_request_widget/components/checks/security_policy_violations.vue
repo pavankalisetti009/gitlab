@@ -9,6 +9,18 @@ import SecurityPolicyViolationsModal from 'ee/vue_merge_request_widget/component
 import { getSelectedModeOption } from './utils';
 
 export default {
+  bypassInfoButton: {
+    icon: 'information-o',
+    tooltipText: s__(
+      'SecurityOrchestration|Override this specific policy violation with documented justification. Only available to eligible users. This bypass impacts all policy gates on this MR.',
+    ),
+    href: '',
+    text: ' ', // Empty space to avoid items validation fail in actions-buttons
+  },
+  i18n: {
+    bypassTooltipText: s__('SecurityOrchestration|Bypass policy violations'),
+    bypassedTooltipText: s__('SecurityOrchestration|Policy violations have been bypassed'),
+  },
   name: 'MergeChecksSecurityPolicyViolations',
   components: {
     ActionButtons,
@@ -52,6 +64,9 @@ export default {
     };
   },
   computed: {
+    allowBypass() {
+      return Boolean(this.mr.allowBypass);
+    },
     enableBypassButton() {
       return this.warnModeEnabled || this.bypassOptionsEnabled;
     },
@@ -78,7 +93,7 @@ export default {
       return this.glFeatures.securityPolicyApprovalWarnMode;
     },
     bypassOptionsEnabled() {
-      return this.glFeatures.securityPoliciesBypassOptionsMrWidget && this.mr.allowBypass;
+      return this.glFeatures.securityPoliciesBypassOptionsMrWidget && this.allowBypass;
     },
   },
   methods: {
@@ -99,6 +114,7 @@ export default {
       <security-policy-violations-modal
         v-if="showModal"
         v-model="showModal"
+        :mr="mr"
         :policies="policies"
         :mode="selectedModeOption"
         @close="toggleModal(false)"

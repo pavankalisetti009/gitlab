@@ -155,8 +155,10 @@ RSpec.describe 'Database schema',
       notes: %w[
         author_id commit_id noteable_id updated_by_id resolved_by_id confirmed_by_id discussion_id organization_id
       ],
+      notes_archived: %w[author_id commit_id noteable_id updated_by_id resolved_by_id discussion_id organization_id],
       notification_settings: %w[source_id],
       oauth_access_grants: %w[resource_owner_id application_id],
+      oauth_access_grant_archived_records: %w[resource_owner_id application_id],
       oauth_access_tokens: %w[resource_owner_id application_id],
       oauth_access_token_archived_records: %w[resource_owner_id application_id],
       oauth_applications: %w[owner_id],

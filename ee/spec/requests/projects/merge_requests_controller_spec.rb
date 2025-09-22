@@ -57,9 +57,6 @@ RSpec.describe Projects::MergeRequestsController, feature_category: :code_review
           authorizer = instance_double(::Gitlab::Llm::FeatureAuthorizer)
           allow(::Gitlab::Llm::FeatureAuthorizer).to receive(:new).and_return(authorizer)
           allow(authorizer).to receive(:allowed?).and_return(true)
-
-          service = instance_double(CloudConnector::BaseAvailableServiceData)
-          allow(::CloudConnector::AvailableServices).to receive(:find_by_name).and_return(service)
           allow(::Gitlab::Saas).to receive(:feature_available?).and_return(true)
         end
 

@@ -285,10 +285,6 @@ RSpec.describe Ci::CreatePipelineService, feature_category: :pipeline_compositio
         EOY
       end
 
-      before do
-        stub_feature_flags(ci_validate_config_options: false)
-      end
-
       it 'creates a pipeline' do
         expect(pipeline).to be_persisted
         expect(build_names).to contain_exactly(
@@ -636,6 +632,32 @@ RSpec.describe Ci::CreatePipelineService, feature_category: :pipeline_compositio
             expect(job3.needs).to contain_exactly(an_object_having_attributes(name: 'job2'))
             expect(job4.needs).to contain_exactly(an_object_having_attributes(name: 'job3'))
           end
+        end
+      end
+
+      context 'with nested variables' do
+        let(:config) do
+          <<-EOY
+          variables:
+            NESTED_VAR: ${CI_DEFAULT_BRANCH}
+
+          stages:
+            - test
+
+          is-default:
+            stage: 'test'
+            script:
+              - "echo '$CI_COMMIT_BRANCH == $NESTED_VAR'"
+            rules:
+              - if: '$CI_COMMIT_BRANCH == $NESTED_VAR'
+                when: 'always'
+              - when: 'never'
+          EOY
+        end
+
+        it 'matches the rule' do
+          expect(pipeline).to be_persisted
+          expect(build_names).to contain_exactly('is-default')
         end
       end
     end

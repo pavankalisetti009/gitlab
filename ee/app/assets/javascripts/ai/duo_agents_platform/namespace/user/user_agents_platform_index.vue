@@ -47,9 +47,9 @@ export default {
 <template>
   <duo-agents-platform-index
     :is-loading-workflows="isLoadingWorkflows"
+    :in-sidebar="true"
     :workflows="workflows"
     :workflows-page-info="workflowsPageInfo"
     :workflow-query="$apollo.queries.workflows"
-    class="gl-min-w-full"
   />
 </template>

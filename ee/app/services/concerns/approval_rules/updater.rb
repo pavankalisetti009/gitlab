@@ -145,7 +145,7 @@ module ApprovalRules
       recently_added_branch = new_protected_branches_names - old_protected_branches_names
       enabled_all_protected_branches = rule.previous_changes["applies_to_all_protected_branches"] == [false, true]
       disabled_all_protected_branches = rule.previous_changes["applies_to_all_protected_branches"] == [true, false]
-      from_protected_branch_to_empty = (rule.protected_branches.empty? && old_protected_branches_names.present?)
+      from_protected_branch_to_empty = rule.protected_branches.empty? && old_protected_branches_names.present?
 
       if enabled_all_protected_branches
         "Changed target branch to all protected branches"

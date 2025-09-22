@@ -43,14 +43,6 @@ RSpec.describe RemoteDevelopment::Workspace, :freeze_time, feature_category: :wo
       body: "", headers: {})
   end
 
-  describe "default values" do
-    it "has correct default values" do
-      expect(workspace.desired_config_generator_version).to eq(
-        RemoteDevelopment::WorkspaceOperations::DesiredConfigGeneratorVersion::LATEST_VERSION
-      )
-    end
-  end
-
   describe "associations" do
     context "for has_many" do
       it { is_expected.to have_many(:workspace_variables) }
@@ -68,9 +60,9 @@ RSpec.describe RemoteDevelopment::Workspace, :freeze_time, feature_category: :wo
       it "has correct relation setup" do
         is_expected
           .to belong_to(:agent)
-                .class_name("Clusters::Agent")
-                .with_foreign_key(:cluster_agent_id)
-                .inverse_of(:workspaces)
+            .class_name("Clusters::Agent")
+            .with_foreign_key(:cluster_agent_id)
+            .inverse_of(:workspaces)
       end
     end
 
@@ -179,20 +171,20 @@ RSpec.describe RemoteDevelopment::Workspace, :freeze_time, feature_category: :wo
           it "triggers internal event with new label on new record" do
             expect { workspace.update!(desired_state: states_module::RUNNING) }
               .to trigger_internal_events("track_started_workspaces")
-                    .with(user: user, project: project, additional_properties: {
-                      label: "new"
-                    })
-                    .and increment_usage_metrics("counts.count_total_workspaces_started")
+                .with(user: user, project: project, additional_properties: {
+                  label: "new"
+                })
+                .and increment_usage_metrics("counts.count_total_workspaces_started")
           end
 
           it "triggers internal event with existing label on existing record" do
             workspace.save!(desired_state: "Stopped")
             expect { workspace.update!(desired_state: states_module::RUNNING) }
               .to trigger_internal_events("track_started_workspaces")
-                    .with(user: user, project: project, additional_properties: {
-                      label: "existing"
-                    })
-                    .and increment_usage_metrics("counts.count_total_workspaces_started")
+                .with(user: user, project: project, additional_properties: {
+                  label: "existing"
+                })
+                .and increment_usage_metrics("counts.count_total_workspaces_started")
           end
         end
 
@@ -202,7 +194,7 @@ RSpec.describe RemoteDevelopment::Workspace, :freeze_time, feature_category: :wo
           it "does not trigger the event and metric" do
             expect { workspace.update!(desired_state: states_module::STOPPED) }
               .to not_trigger_internal_events("track_started_workspaces")
-                    .and not_increment_usage_metrics('counts.count_total_workspaces_started')
+                .and not_increment_usage_metrics('counts.count_total_workspaces_started')
           end
         end
 
@@ -214,7 +206,7 @@ RSpec.describe RemoteDevelopment::Workspace, :freeze_time, feature_category: :wo
           it "does not trigger the event" do
             expect { workspace.update!(name: "workspace_new_name") }
               .to not_trigger_internal_events("track_started_workspaces")
-                    .and not_increment_usage_metrics('counts.count_total_workspaces_started')
+                .and not_increment_usage_metrics('counts.count_total_workspaces_started')
           end
         end
       end
@@ -412,7 +404,7 @@ RSpec.describe RemoteDevelopment::Workspace, :freeze_time, feature_category: :wo
       before do
         allow(workspace)
           .to receive(:workspaces_count_for_current_user_and_agent)
-                .and_return(workspaces_count_for_current_user_and_agent)
+            .and_return(workspaces_count_for_current_user_and_agent)
       end
 
       describe "when quotas are not exceeded" do

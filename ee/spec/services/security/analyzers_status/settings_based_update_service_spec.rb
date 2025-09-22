@@ -78,340 +78,338 @@ RSpec.describe Security::AnalyzersStatus::SettingsBasedUpdateService, feature_ca
       end
     end
 
-    context 'when post_pipeline_analyzer_status_updates feature flag is enabled' do
-      context 'when analyzer_type is not supported' do
-        let(:analyzer_type) { :unsupported_analyzer }
+    context 'when analyzer_type is not supported' do
+      let(:analyzer_type) { :unsupported_analyzer }
 
-        it 'does not call upsert_analyzers_statuses' do
-          expect(service).not_to receive(:upsert_analyzers_statuses)
-          execute
-        end
-
-        it 'does not call InventoryFilters service' do
-          expect(inventory_filters_update_service).not_to receive(:execute)
-          execute
-        end
+      it 'does not call upsert_analyzers_statuses' do
+        expect(service).not_to receive(:upsert_analyzers_statuses)
+        execute
       end
 
-      context 'when project_ids is empty' do
-        let(:project_ids) { [] }
+      it 'does not call InventoryFilters service' do
+        expect(inventory_filters_update_service).not_to receive(:execute)
+        execute
+      end
+    end
 
-        it 'does not call upsert_analyzers_statuses' do
-          expect(service).not_to receive(:upsert_analyzers_statuses)
-          execute
-        end
+    context 'when project_ids is empty' do
+      let(:project_ids) { [] }
 
-        it 'does not call InventoryFilters service' do
-          expect(inventory_filters_update_service).not_to receive(:execute)
-          execute
-        end
+      it 'does not call upsert_analyzers_statuses' do
+        expect(service).not_to receive(:upsert_analyzers_statuses)
+        execute
       end
 
-      context 'when project_ids is nil' do
-        let(:project_ids) { nil }
+      it 'does not call InventoryFilters service' do
+        expect(inventory_filters_update_service).not_to receive(:execute)
+        execute
+      end
+    end
 
-        it 'does not call upsert_analyzers_statuses' do
-          expect(service).not_to receive(:upsert_analyzers_statuses)
-          execute
-        end
+    context 'when project_ids is nil' do
+      let(:project_ids) { nil }
 
-        it 'does not call InventoryFilters service' do
-          expect(inventory_filters_update_service).not_to receive(:execute)
-          execute
-        end
+      it 'does not call upsert_analyzers_statuses' do
+        expect(service).not_to receive(:upsert_analyzers_statuses)
+        execute
       end
 
-      shared_examples 'analyzer behavior' do |analyzer_type_sym, setting_field, expected_analyzer_type|
-        let(:analyzer_type) { analyzer_type_sym }
+      it 'does not call InventoryFilters service' do
+        expect(inventory_filters_update_service).not_to receive(:execute)
+        execute
+      end
+    end
 
-        context 'when projects have security settings' do
-          context 'when both settings are enabled (true)' do
-            before do
-              project1.security_setting.update!(setting_field => true)
-              project2.security_setting.update!(setting_field => true)
-            end
+    shared_examples 'analyzer behavior' do |analyzer_type_sym, setting_field, expected_analyzer_type|
+      let(:analyzer_type) { analyzer_type_sym }
 
-            it 'creates analyzer status records with success status' do
-              expect { execute }.to change { Security::AnalyzerProjectStatus.count }.by(4) # 2 setting + 2 aggregated
-              project1_status = Security::AnalyzerProjectStatus
-                                  .find_by(project: project1, analyzer_type: expected_analyzer_type)
-              project2_status = Security::AnalyzerProjectStatus
-                                  .find_by(project: project2, analyzer_type: expected_analyzer_type)
-
-              expect(project1_status).to have_attributes(status: 'success', archived: false, build_id: nil)
-              expect(project2_status).to have_attributes(status: 'success', archived: false, build_id: nil)
-            end
-
-            include_examples 'calls inventory filters service once'
-          end
-
-          context 'when settings are mixed (true and false)' do
-            before do
-              project1.security_setting.update!(setting_field => true)
-              project2.security_setting.update!(setting_field => false)
-            end
-
-            it 'creates analyzer status records with different statuses' do
-              expect { execute }.to change { Security::AnalyzerProjectStatus.count }.by(4) # 2 setting + 2 aggregated
-              project1_status = Security::AnalyzerProjectStatus
-                                  .find_by(project: project1, analyzer_type: expected_analyzer_type)
-              project2_status = Security::AnalyzerProjectStatus
-                                  .find_by(project: project2, analyzer_type: expected_analyzer_type)
-
-              expect(project1_status).to have_attributes(status: 'success', archived: false, build_id: nil)
-              expect(project2_status).to have_attributes(status: 'not_configured', archived: false, build_id: nil)
-            end
-
-            include_examples 'calls inventory filters service once'
-          end
-
-          context 'when both settings are disabled (false)' do
-            before do
-              project1.security_setting.update!(setting_field => false)
-              project2.security_setting.update!(setting_field => false)
-            end
-
-            it 'creates analyzer status records with not_configured status' do
-              expect { execute }.to change { Security::AnalyzerProjectStatus.count }.by(4) # 2 setting + 2 aggregated
-              project1_status = Security::AnalyzerProjectStatus
-                                  .find_by(project: project1, analyzer_type: expected_analyzer_type)
-              project2_status = Security::AnalyzerProjectStatus
-                                  .find_by(project: project2, analyzer_type: expected_analyzer_type)
-
-              expect(project1_status).to have_attributes(status: 'not_configured', archived: false, build_id: nil)
-              expect(project2_status).to have_attributes(status: 'not_configured', archived: false, build_id: nil)
-            end
-
-            include_examples 'calls inventory filters service once'
-          end
-
-          context 'when project is archived' do
-            before do
-              project1.update!(archived: true)
-              project1.security_setting.update!(setting_field => true)
-              project2.security_setting.update!(setting_field => false)
-            end
-
-            it 'includes archived status in the analyzer status' do
-              execute
-
-              project1_status = Security::AnalyzerProjectStatus
-                                  .find_by(project: project1, analyzer_type: expected_analyzer_type)
-              project2_status = Security::AnalyzerProjectStatus
-                                  .find_by(project: project2, analyzer_type: expected_analyzer_type)
-
-              expect(project1_status).to have_attributes(status: 'success', archived: true)
-              expect(project2_status).to have_attributes(status: 'not_configured', archived: false)
-            end
-
-            include_examples 'calls inventory filters service once'
-          end
-        end
-
-        context 'when updating existing analyzer status records' do
-          let!(:existing_record1) do
-            create(:analyzer_project_status, project: project1, analyzer_type: expected_analyzer_type, status: :failed)
-          end
-
-          let!(:existing_record2) do
-            create(:analyzer_project_status, project: project2, analyzer_type: expected_analyzer_type, status: :success)
-          end
-
+      context 'when projects have security settings' do
+        context 'when both settings are enabled (true)' do
           before do
             project1.security_setting.update!(setting_field => true)
-            project2.security_setting.update!(setting_field => false)
+            project2.security_setting.update!(setting_field => true)
           end
 
-          it 'updates existing records without creating new ones' do
-            expect { execute }.to change { Security::AnalyzerProjectStatus.count }.by(2) # only aggregated types created
+          it 'creates analyzer status records with success status' do
+            expect { execute }.to change { Security::AnalyzerProjectStatus.count }.by(4) # 2 setting + 2 aggregated
+            project1_status = Security::AnalyzerProjectStatus
+                                .find_by(project: project1, analyzer_type: expected_analyzer_type)
+            project2_status = Security::AnalyzerProjectStatus
+                                .find_by(project: project2, analyzer_type: expected_analyzer_type)
 
-            expect(existing_record1.reload).to have_attributes(status: 'success', archived: false, build_id: nil)
-            expect(existing_record2.reload).to have_attributes(status: 'not_configured', archived: false, build_id: nil)
+            expect(project1_status).to have_attributes(status: 'success', archived: false, build_id: nil)
+            expect(project2_status).to have_attributes(status: 'success', archived: false, build_id: nil)
           end
 
           include_examples 'calls inventory filters service once'
         end
 
-        context 'when some projects have existing records and others do not' do
-          let!(:existing_record) do
-            create(:analyzer_project_status, project: project1, analyzer_type: expected_analyzer_type, status: :failed)
-          end
-
+        context 'when settings are mixed (true and false)' do
           before do
             project1.security_setting.update!(setting_field => true)
             project2.security_setting.update!(setting_field => false)
           end
 
-          it 'updates existing record and creates new record' do
-            expect { execute }.to change { Security::AnalyzerProjectStatus.count }.by(3) # 1 setting + 2 aggregated
+          it 'creates analyzer status records with different statuses' do
+            expect { execute }.to change { Security::AnalyzerProjectStatus.count }.by(4) # 2 setting + 2 aggregated
+            project1_status = Security::AnalyzerProjectStatus
+                                .find_by(project: project1, analyzer_type: expected_analyzer_type)
+            project2_status = Security::AnalyzerProjectStatus
+                                .find_by(project: project2, analyzer_type: expected_analyzer_type)
 
-            expect(existing_record.reload).to have_attributes(status: 'success')
-
-            new_record = Security::AnalyzerProjectStatus
-              .find_by(project: project2, analyzer_type: expected_analyzer_type)
-            expect(new_record).to have_attributes(status: 'not_configured', archived: false, build_id: nil)
+            expect(project1_status).to have_attributes(status: 'success', archived: false, build_id: nil)
+            expect(project2_status).to have_attributes(status: 'not_configured', archived: false, build_id: nil)
           end
 
           include_examples 'calls inventory filters service once'
         end
 
-        context 'when aggregated type already exists with matching status' do
-          let!(:existing_setting_record) do
-            create(:analyzer_project_status, project: project1, analyzer_type: expected_analyzer_type, status: :success)
-          end
-
-          let!(:existing_aggregated_record) do
-            aggregated_type =
-              case expected_analyzer_type
-              when :secret_detection_secret_push_protection
-                :secret_detection
-              when :container_scanning_for_registry
-                :container_scanning
-              end
-
-            create(:analyzer_project_status, project: project1, analyzer_type: aggregated_type, status: :success)
-          end
-
+        context 'when both settings are disabled (false)' do
           before do
-            project1.security_setting.update!(setting_field => true)
+            project1.security_setting.update!(setting_field => false)
             project2.security_setting.update!(setting_field => false)
           end
 
-          it 'updates the aggregated record when status matches' do
-            travel_to(1.minute.from_now) do
-              expect { execute }.to change { existing_aggregated_record.reload.updated_at }
-            end
-          end
+          it 'creates analyzer status records with not_configured status' do
+            expect { execute }.to change { Security::AnalyzerProjectStatus.count }.by(4) # 2 setting + 2 aggregated
+            project1_status = Security::AnalyzerProjectStatus
+                                .find_by(project: project1, analyzer_type: expected_analyzer_type)
+            project2_status = Security::AnalyzerProjectStatus
+                                .find_by(project: project2, analyzer_type: expected_analyzer_type)
 
-          it 'creates status records for non-existing type' do
-            expect { execute }.to change { Security::AnalyzerProjectStatus.count }.by(2) # 1 setting + 1 aggregated
+            expect(project1_status).to have_attributes(status: 'not_configured', archived: false, build_id: nil)
+            expect(project2_status).to have_attributes(status: 'not_configured', archived: false, build_id: nil)
           end
 
           include_examples 'calls inventory filters service once'
         end
 
-        context 'when aggregated type exists with different status' do
-          let!(:existing_setting_record) do
-            create(:analyzer_project_status,
-              project: project1, analyzer_type: expected_analyzer_type, status: :not_configured)
-          end
-
-          let!(:existing_aggregated_record) do
-            aggregated_type =
-              case expected_analyzer_type
-              when :secret_detection_secret_push_protection
-                :secret_detection
-              when :container_scanning_for_registry
-                :container_scanning
-              end
-
-            create(:analyzer_project_status, project: project1, analyzer_type: aggregated_type, status: :not_configured)
-          end
-
+        context 'when project is archived' do
           before do
+            project1.update!(archived: true)
             project1.security_setting.update!(setting_field => true)
             project2.security_setting.update!(setting_field => false)
           end
 
-          it 'updates the aggregated record when status differs' do
+          it 'includes archived status in the analyzer status' do
             execute
 
-            expect(existing_aggregated_record.reload)
-              .to have_attributes(status: 'success', archived: false, build_id: nil)
-          end
+            project1_status = Security::AnalyzerProjectStatus
+                                .find_by(project: project1, analyzer_type: expected_analyzer_type)
+            project2_status = Security::AnalyzerProjectStatus
+                                .find_by(project: project2, analyzer_type: expected_analyzer_type)
 
-          it 'creates the correct number of records' do
-            expect { execute }.to change { Security::AnalyzerProjectStatus.count }.by(2) # 1 setting + 1 aggregated
-          end
-
-          include_examples 'calls inventory filters service once'
-        end
-
-        context 'when aggregated type exists but other type has higher priority' do
-          let!(:existing_setting_record) do
-            create(:analyzer_project_status,
-              project: project1, analyzer_type: expected_analyzer_type, status: :not_configured)
-          end
-
-          let!(:existing_pipeline_record) do
-            other_type =
-              case expected_analyzer_type
-              when :secret_detection_secret_push_protection
-                :secret_detection_pipeline_based
-              when :container_scanning_for_registry
-                :container_scanning_pipeline_based
-              end
-
-            create(:analyzer_project_status, project: project1, analyzer_type: other_type, status: :failed)
-          end
-
-          let!(:existing_aggregated_record) do
-            aggregated_type =
-              case expected_analyzer_type
-              when :secret_detection_secret_push_protection
-                :secret_detection
-              when :container_scanning_for_registry
-                :container_scanning
-              end
-
-            create(:analyzer_project_status, project: project1, analyzer_type: aggregated_type, status: :failed)
-          end
-
-          before do
-            project1.security_setting.update!(setting_field => true)
-            project2.security_setting.update!(setting_field => false)
-          end
-
-          it 'does not update aggregated record when other type has higher priority' do
-            original_updated_at = existing_aggregated_record.updated_at
-
-            travel_to(1.minute.from_now) do
-              execute
-
-              expect(existing_aggregated_record.reload.updated_at.to_i).to eq(original_updated_at.to_i)
-              expect(existing_aggregated_record.reload.status).to eq('failed')
-            end
+            expect(project1_status).to have_attributes(status: 'success', archived: true)
+            expect(project2_status).to have_attributes(status: 'not_configured', archived: false)
           end
 
           include_examples 'calls inventory filters service once'
         end
       end
 
-      describe 'secret_detection analyzer' do
-        include_examples 'analyzer behavior',
-          :secret_detection,
-          :secret_push_protection_enabled,
-          :secret_detection_secret_push_protection
-      end
+      context 'when updating existing analyzer status records' do
+        let!(:existing_record1) do
+          create(:analyzer_project_status, project: project1, analyzer_type: expected_analyzer_type, status: :failed)
+        end
 
-      describe 'container_scanning analyzer' do
-        include_examples 'analyzer behavior',
-          :container_scanning, :container_scanning_for_registry_enabled, :container_scanning_for_registry
-      end
-
-      context 'when projects do not have security settings' do
-        let_it_be_with_reload(:project_without_settings) { create(:project, group: group) }
-        let_it_be(:project_ids) { [project_without_settings.id] }
+        let!(:existing_record2) do
+          create(:analyzer_project_status, project: project2, analyzer_type: expected_analyzer_type, status: :success)
+        end
 
         before do
-          project_without_settings.security_setting&.delete
+          project1.security_setting.update!(setting_field => true)
+          project2.security_setting.update!(setting_field => false)
         end
 
-        it 'creates records with not_configured status' do
-          expect { execute }.to change { Security::AnalyzerProjectStatus.count }.by(2) # 1 setting + 1 aggregated
+        it 'updates existing records without creating new ones' do
+          expect { execute }.to change { Security::AnalyzerProjectStatus.count }.by(2) # only aggregated types created
 
-          setting_record = Security::AnalyzerProjectStatus.find_by(
-            project: project_without_settings, analyzer_type: :secret_detection_secret_push_protection
-          )
-          aggregated_record = Security::AnalyzerProjectStatus.find_by(
-            project: project_without_settings, analyzer_type: :secret_detection)
-
-          expect(setting_record).to have_attributes(status: 'not_configured')
-          expect(aggregated_record).to have_attributes(status: 'not_configured')
+          expect(existing_record1.reload).to have_attributes(status: 'success', archived: false, build_id: nil)
+          expect(existing_record2.reload).to have_attributes(status: 'not_configured', archived: false, build_id: nil)
         end
 
         include_examples 'calls inventory filters service once'
       end
+
+      context 'when some projects have existing records and others do not' do
+        let!(:existing_record) do
+          create(:analyzer_project_status, project: project1, analyzer_type: expected_analyzer_type, status: :failed)
+        end
+
+        before do
+          project1.security_setting.update!(setting_field => true)
+          project2.security_setting.update!(setting_field => false)
+        end
+
+        it 'updates existing record and creates new record' do
+          expect { execute }.to change { Security::AnalyzerProjectStatus.count }.by(3) # 1 setting + 2 aggregated
+
+          expect(existing_record.reload).to have_attributes(status: 'success')
+
+          new_record = Security::AnalyzerProjectStatus
+            .find_by(project: project2, analyzer_type: expected_analyzer_type)
+          expect(new_record).to have_attributes(status: 'not_configured', archived: false, build_id: nil)
+        end
+
+        include_examples 'calls inventory filters service once'
+      end
+
+      context 'when aggregated type already exists with matching status' do
+        let!(:existing_setting_record) do
+          create(:analyzer_project_status, project: project1, analyzer_type: expected_analyzer_type, status: :success)
+        end
+
+        let!(:existing_aggregated_record) do
+          aggregated_type =
+            case expected_analyzer_type
+            when :secret_detection_secret_push_protection
+              :secret_detection
+            when :container_scanning_for_registry
+              :container_scanning
+            end
+
+          create(:analyzer_project_status, project: project1, analyzer_type: aggregated_type, status: :success)
+        end
+
+        before do
+          project1.security_setting.update!(setting_field => true)
+          project2.security_setting.update!(setting_field => false)
+        end
+
+        it 'updates the aggregated record when status matches' do
+          travel_to(1.minute.from_now) do
+            expect { execute }.to change { existing_aggregated_record.reload.updated_at }
+          end
+        end
+
+        it 'creates status records for non-existing type' do
+          expect { execute }.to change { Security::AnalyzerProjectStatus.count }.by(2) # 1 setting + 1 aggregated
+        end
+
+        include_examples 'calls inventory filters service once'
+      end
+
+      context 'when aggregated type exists with different status' do
+        let!(:existing_setting_record) do
+          create(:analyzer_project_status,
+            project: project1, analyzer_type: expected_analyzer_type, status: :not_configured)
+        end
+
+        let!(:existing_aggregated_record) do
+          aggregated_type =
+            case expected_analyzer_type
+            when :secret_detection_secret_push_protection
+              :secret_detection
+            when :container_scanning_for_registry
+              :container_scanning
+            end
+
+          create(:analyzer_project_status, project: project1, analyzer_type: aggregated_type, status: :not_configured)
+        end
+
+        before do
+          project1.security_setting.update!(setting_field => true)
+          project2.security_setting.update!(setting_field => false)
+        end
+
+        it 'updates the aggregated record when status differs' do
+          execute
+
+          expect(existing_aggregated_record.reload)
+            .to have_attributes(status: 'success', archived: false, build_id: nil)
+        end
+
+        it 'creates the correct number of records' do
+          expect { execute }.to change { Security::AnalyzerProjectStatus.count }.by(2) # 1 setting + 1 aggregated
+        end
+
+        include_examples 'calls inventory filters service once'
+      end
+
+      context 'when aggregated type exists but other type has higher priority' do
+        let!(:existing_setting_record) do
+          create(:analyzer_project_status,
+            project: project1, analyzer_type: expected_analyzer_type, status: :not_configured)
+        end
+
+        let!(:existing_pipeline_record) do
+          other_type =
+            case expected_analyzer_type
+            when :secret_detection_secret_push_protection
+              :secret_detection_pipeline_based
+            when :container_scanning_for_registry
+              :container_scanning_pipeline_based
+            end
+
+          create(:analyzer_project_status, project: project1, analyzer_type: other_type, status: :failed)
+        end
+
+        let!(:existing_aggregated_record) do
+          aggregated_type =
+            case expected_analyzer_type
+            when :secret_detection_secret_push_protection
+              :secret_detection
+            when :container_scanning_for_registry
+              :container_scanning
+            end
+
+          create(:analyzer_project_status, project: project1, analyzer_type: aggregated_type, status: :failed)
+        end
+
+        before do
+          project1.security_setting.update!(setting_field => true)
+          project2.security_setting.update!(setting_field => false)
+        end
+
+        it 'does not update aggregated record when other type has higher priority' do
+          original_updated_at = existing_aggregated_record.updated_at
+
+          travel_to(1.minute.from_now) do
+            execute
+
+            expect(existing_aggregated_record.reload.updated_at.to_i).to eq(original_updated_at.to_i)
+            expect(existing_aggregated_record.reload.status).to eq('failed')
+          end
+        end
+
+        include_examples 'calls inventory filters service once'
+      end
+    end
+
+    describe 'secret_detection analyzer' do
+      include_examples 'analyzer behavior',
+        :secret_detection,
+        :secret_push_protection_enabled,
+        :secret_detection_secret_push_protection
+    end
+
+    describe 'container_scanning analyzer' do
+      include_examples 'analyzer behavior',
+        :container_scanning, :container_scanning_for_registry_enabled, :container_scanning_for_registry
+    end
+
+    context 'when projects do not have security settings' do
+      let_it_be_with_reload(:project_without_settings) { create(:project, group: group) }
+      let_it_be(:project_ids) { [project_without_settings.id] }
+
+      before do
+        project_without_settings.security_setting&.delete
+      end
+
+      it 'creates records with not_configured status' do
+        expect { execute }.to change { Security::AnalyzerProjectStatus.count }.by(2) # 1 setting + 1 aggregated
+
+        setting_record = Security::AnalyzerProjectStatus.find_by(
+          project: project_without_settings, analyzer_type: :secret_detection_secret_push_protection
+        )
+        aggregated_record = Security::AnalyzerProjectStatus.find_by(
+          project: project_without_settings, analyzer_type: :secret_detection)
+
+        expect(setting_record).to have_attributes(status: 'not_configured')
+        expect(aggregated_record).to have_attributes(status: 'not_configured')
+      end
+
+      include_examples 'calls inventory filters service once'
     end
 
     context 'when projects have status changes' do
@@ -514,7 +512,6 @@ RSpec.describe Security::AnalyzersStatus::SettingsBasedUpdateService, feature_ca
       let(:project_ids) { [project1.id, project_in_another_namespace.id] }
 
       before do
-        stub_feature_flags(post_pipeline_analyzer_status_updates: [root_group, another_root_group])
         project1.security_setting.update!(secret_push_protection_enabled: true)
         project_in_another_namespace.security_setting.update!(secret_push_protection_enabled: false)
       end

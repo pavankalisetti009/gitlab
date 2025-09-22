@@ -500,7 +500,7 @@ module Gitlab
       allow do
         origins '*'
         resource '/oauth/token/info',
-          headers: %w[Authorization],
+          headers: %w[Authorization x-gitlab-language-server-version],
           credentials: false,
           methods: %i[get head options]
       end
