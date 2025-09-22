@@ -2639,11 +2639,11 @@ job2:
 - [Runnerがイメージをプルする方法を設定する](https://docs.gitlab.com/runner/executors/docker.html#configure-how-runners-pull-images)。
 - [複数のプルポリシーを設定する](https://docs.gitlab.com/runner/executors/docker.html#set-multiple-pull-policies)。
 
-### `inherit`
+### `inherit` {#inherit}
 
 `inherit`を使用して、[デフォルトのキーワードと変数の継承を制御します](../jobs/_index.md#control-the-inheritance-of-default-keywords-and-variables)。
 
-#### `inherit:default`
+#### `inherit:default` {#inheritdefault}
 
 `inherit:default`を使用して、[デフォルトのキーワード](#default)の継承を制御します。
 
@@ -2651,7 +2651,7 @@ job2:
 
 **サポートされている値**: 
 
-- `true`（デフォルト）または`false`（すべてのデフォルトキーワードの継承を有効または無効にする場合）。
+- `true`（デフォルト）、または`false`（すべてのデフォルトキーワードの継承を有効または無効にする場合）。
 - 継承する特定のデフォルトキーワードのリスト。
 
 **`inherit:default`の例**
@@ -2677,9 +2677,9 @@ job2:
 
 **追加の詳細情報**
 
-- 継承するデフォルトキーワードを1行でリストすることもできます: `default: [keyword1, keyword2]`
+- 継承するデフォルトキーワードを1行で記述することもできます: `default: [keyword1, keyword2]`
 
-#### `inherit:variables`
+#### `inherit:variables` {#inheritvariables}
 
 `inherit:variables`を使用して、[デフォルト変数](#default-variables)のキーワードの継承を制御します。
 
@@ -2687,7 +2687,7 @@ job2:
 
 **サポートされている値**: 
 
-- `true`（デフォルト）または`false`。すべてのデフォルト変数の継承を有効または無効にします。
+- `true`（デフォルト）、または`false`。すべてのデフォルト変数の継承を有効または無効にします。
 - 継承する特定の変数のリスト。
 
 **`inherit:variables`の例**
@@ -2713,19 +2713,19 @@ job2:
 
 **追加の詳細情報**
 
-- 継承するデフォルト変数を1行にリストすることもできます: `variables: [VARIABLE1, VARIABLE2]`
+- 継承するデフォルト変数を1行で記述することもできます: `variables: [VARIABLE1, VARIABLE2]`
 
-### `interruptible`
+### `interruptible` {#interruptible}
 
 {{< history >}}
 
-- `trigger`ジョブのサポートがGitLab 16.8で[導入されました](https://gitlab.com/gitlab-org/gitlab/-/merge_requests/138508)。
+- `trigger`ジョブのサポートは、GitLab 16.8で[導入](https://gitlab.com/gitlab-org/gitlab/-/merge_requests/138508)されました。
 
 {{< /history >}}
 
-新しいコミットに対して同じrefの新しいパイプラインが開始された場合に、ジョブが完了する前にそのジョブをキャンセルするように、[冗長なパイプラインの自動キャンセル](../pipelines/settings.md#auto-cancel-redundant-pipelines)機能を設定するには、`interruptible`を使用します。この機能が無効になっている場合、このキーワードは効果がありません。新しいパイプラインは、新しい変更を含むコミット用である必要があります。たとえば、UIで**パイプラインを新規作成**を選択して同じコミットに対してパイプラインを実行する場合、**冗長なパイプラインの自動キャンセル**機能には効果がありません。
+新しいコミットに対して同じrefの新しいパイプラインが開始された場合に、ジョブが完了する前にそのジョブをキャンセルするように、[冗長なパイプラインを自動キャンセル](../pipelines/settings.md#auto-cancel-redundant-pipelines)機能を設定するには、`interruptible`を使用します。この機能が無効になっている場合、このキーワードは効果がありません。新しいパイプラインは、新しい変更を含むコミット用である必要があります。たとえば、UIで**パイプラインを新規作成**を選択して同じコミットに対してパイプラインを実行する場合、**冗長なパイプラインを自動キャンセル**機能には効果がありません。
 
-**冗長なパイプラインの自動キャンセル**機能の動作は[`workflow:auto_cancel:on_new_commit`](#workflowauto_cancelon_new_commit)設定で制御できます。
+**冗長なパイプラインを自動キャンセル**機能の動作は[`workflow:auto_cancel:on_new_commit`](#workflowauto_cancelon_new_commit)設定で制御できます。
 
 **キーワードのタイプ**: ジョブキーワード。ジョブの一部としてのみ使用するか、または[`default`セクション](#default)で使用することができます。
 
@@ -2807,13 +2807,13 @@ step-3:
   - まだ開始されていないジョブは、ジョブの設定に関係なく常に`interruptible: true`と見なされます。`interruptible`設定は、ジョブの開始後にのみ考慮されます。
   - **実行中**のパイプラインがキャンセルされるのは、実行中のすべてのジョブで`interruptible: true`が設定されているか、`interruptible: false`が設定されたジョブが一度も開始されていない場合のみです。`interruptible: false`が設定されたジョブが開始されると、パイプライン全体が割り込み可能と見なされなくなります。
   - パイプラインがダウンストリームパイプラインをトリガーした場合でも、ダウンストリームパイプラインの`interruptible: false`が設定されたジョブがまだ開始されていない場合、ダウンストリームパイプラインもキャンセルされます。
-- `interruptible: false`が設定されたオプションのマニュアルジョブをパイプラインの最初のステージに追加して、ユーザーがパイプラインの自動キャンセルを手動で防止できるようにすることができます。ユーザーがジョブを開始した後では、**冗長なパイプラインの自動キャンセル**機能でパイプラインをキャンセルできなくなります。
+- `interruptible: false`が設定されたオプションのマニュアルジョブをパイプラインの最初のステージに追加して、ユーザーがパイプラインの自動キャンセルを手動で防止できるようにすることができます。ユーザーがジョブを開始した後では、**冗長なパイプラインを自動キャンセル**機能でパイプラインをキャンセルできなくなります。
 - [トリガージョブ](#trigger)で`interruptible`を使用する場合
   - トリガーされたダウンストリームパイプラインは、トリガージョブの`interruptible`設定の影響を受けません。
   - [`workflow:auto_cancel`](#workflowauto_cancelon_new_commit)が`conservative`に設定されている場合、トリガージョブの`interruptible`設定は無効です。
   - [`workflow:auto_cancel`](#workflowauto_cancelon_new_commit)が`interruptible`に設定されている場合、`interruptible: true`が設定されたトリガージョブは自動キャンセルできます。
 
-### `needs`
+### `needs` {#needs}
 
 `needs`を使用して、ジョブを順不同で実行します。`needs`を使用するジョブ間の関係は、[有向非巡回グラフ](needs.md)として視覚化できます。
 
@@ -2861,7 +2861,7 @@ production:
 この例では、4つの実行パスを作成します。
 
 - Linter: `lint`ジョブは、ニーズがないため（`needs: []`）、`build`ステージの完了を待たずにすぐ実行されます。
-- Linuxパス: `linux:rspec`ジョブは、`mac:build`の完了を待たずに、`linux:build`ジョブの完了後すぐに実行されます。
+- Linuxパス: `linux:rspec`ジョブは、`mac:build`の完了を待たずに、`linux:build`ジョブが完了するとすぐに実行されます。
 - macOSパス: `mac:rspec`ジョブは、`linux:build`の完了を待たずに、`mac:build`ジョブの完了後すぐに実行されます。
 - `production`ジョブは、それ以前のすべてのジョブ（`lint`、`linux:build`、`linux:rspec`、`mac:build`、`mac:rspec`）の完了後すぐに実行されます。
 
@@ -2870,13 +2870,13 @@ production:
 - 単一のジョブが`needs`配列に含めることのできるジョブの最大数は、次のように制限されています。
   - GitLab.comの場合、制限は50です。詳細については、[イシュー350398](https://gitlab.com/gitlab-org/gitlab/-/issues/350398)を参照してください。
   - GitLab Self-Managedの場合、デフォルトの制限は50です。この制限は[変更可能です](../../administration/cicd/_index.md#set-the-needs-job-limit)。
-- `needs`が[`parallel`](#parallel)キーワードを使用するジョブを参照している場合、それは、1つのジョブだけでなく、並列作成されるすべてのジョブに依存します。また、デフォルトでは、すべての並列ジョブからアーティファクトをダウンロードします。同じ名前のアーティファクトがある場合、それらは互いに上書きすることになり、最後にダウンロードしたアーティファクトだけが保存されます。
-  - `needs`が（並列ジョブのすべてではなく）並列ジョブのサブセットを参照するようにするには、[`needs:parallel:matrix`](#needsparallelmatrix)キーワードを使用します。
+- `needs`が[`parallel`キーワードを使用するジョブを参照している場合、それは、1つのジョブだけでなく、並列作成されるすべてのジョブに依存します。](#parallel)また、デフォルトでは、すべての並列ジョブからアーティファクトをダウンロードします。同じ名前のアーティファクトがある場合、それらは互いに上書きすることになり、最後にダウンロードしたアーティファクトだけが保存されます。
+  - `needs`が（並列ジョブのすべてではなく）並列ジョブのサブセットを参照するようにするには、[`needs:parallel:matrix`キーワードを使用します。](#needsparallelmatrix)
 - 設定対象のジョブと同じステージのジョブを参照できます。
 - `needs`が`only`、`except`、または`rules`が原因でパイプラインに追加されない可能性があるジョブを参照する場合、パイプラインの作成に失敗する可能性があります。パイプライン作成の失敗を解決するには、[`needs:optional`](#needsoptional)キーワードを使用します。
-- パイプラインに`needs: []`を使用したジョブと[`.pre`](#stage-pre)ステージのジョブがある場合、パイプラインの作成直後にすべてのジョブが開始されます。`needs: []`を使用するジョブはすぐに開始され、`.pre`ステージのジョブもすぐに開始されます。
+- パイプラインに`needs: []`を使用したジョブと[`.pre`](#stage-pre)ステージのジョブがある場合、すべてのジョブはパイプラインの作成直後に開始されます。`needs: []`を使用するジョブはすぐに開始され、`.pre`ステージのジョブもすぐに開始されます。
 
-#### `needs:artifacts`
+#### `needs:artifacts` {#needsartifacts}
 
 `needs`を使用するジョブはそれ以前のステージの完了前に開始できるため、ジョブで`needs`を使用すると、デフォルトでは、それ以前のステージからアーティファクトすべてをダウンロードすることはなくなります。`needs`を使用する場合、アーティファクトをダウンロードできるのは、`needs`の設定に含まれているジョブからだけになります。
 
@@ -2911,7 +2911,7 @@ test-job3:
     - build_job3
 ```
 
-この例では次のようになります。
+この例では:
 
 - `test-job1`ジョブは`build_job1`アーティファクトをダウンロードします。
 - `test-job2`ジョブは`build_job2`アーティファクトをダウンロードしません。
@@ -2921,12 +2921,12 @@ test-job3:
 
 - 同じジョブの中で`needs`を[`dependencies`](#dependencies)と組み合わせて使用しないでください。
 
-#### `needs:project`
+#### `needs:project` {#needsproject}
 
 {{< details >}}
 
 - プラン: Premium、Ultimate
-- 製品: GitLab.com、GitLab Self-Managed、GitLab Dedicated
+- 提供形態: GitLab.com、GitLab Self-Managed、GitLab Dedicated
 
 {{< /details >}}
 
@@ -2945,7 +2945,7 @@ refについて実行中のパイプラインがある場合、`needs:project`�
 - `ref`: アーティファクトのダウンロード元のref。
 - `artifacts`: アーティファクトをダウンロードするには、`true`にする必要があります。
 
-**`needs:project`の例**
+**`needs:project`の例**:
 
 ```yaml
 build_job:
@@ -2982,25 +2982,25 @@ build_job:
 **追加の詳細情報**
 
 - 現在のプロジェクト内の別のパイプラインからアーティファクトをダウンロードするには、`project`を現在のプロジェクトと同じになるように設定しますが、現在のパイプラインとは異なるrefを使用します。同じrefで複数の並列パイプラインが同時実行されていると、アーティファクトが上書きされる可能性があります。
-- パイプラインを実行しているユーザーは、グループまたはプロジェクトに対して少なくともReporterロールを付与されているか、またはグループ／プロジェクトの表示レベルがパブリックでなければなりません。
+- パイプラインを実行しているユーザーは、グループまたはプロジェクトに対して少なくともレポーターロールを付与されているか、またはグループ/プロジェクトの表示レベルが公開でなければなりません。
 - `needs:project`を[`trigger`](#trigger)と同じジョブで使用することはできません。
 - `needs:project`を使用して別のパイプラインからアーティファクトをダウンロードする場合、ジョブは必要なジョブが完了するのを待機しません。[`needs`を使用してジョブ完了を待つ](needs.md)機能は、同じパイプライン内のジョブに限定されます。アーティファクトを必要とするジョブがダウンロードを試みる前に、他のパイプライン内の必要なジョブが完了していることを確認してください。
-- [`parallel`](#parallel)で実行されるジョブからアーティファクトをダウンロードすることはできません。
+- [`parallel`で実行されるジョブからアーティファクトをダウンロードすることはできません。](#parallel)
 - `project`、`job`、および`ref`で[CI/CD変数](../variables/_index.md)をサポートします。
 
 **関連トピック**
 
 - [親子パイプライン](../pipelines/downstream_pipelines.md#parent-child-pipelines)間でアーティファクトをダウンロードするには、[`needs:pipeline:job`](#needspipelinejob)を使用します。
 
-#### `needs:pipeline:job`
+#### `needs:pipeline:job` {#needspipelinejob}
 
-[子パイプライン](../pipelines/downstream_pipelines.md#parent-child-pipelines)は、同じ親子パイプライン階層内の親パイプラインまたは別の子パイプラインのジョブからアーティファクトをダウンロードできます。
+[子パイプライン](../pipelines/downstream_pipelines.md#parent-child-pipelines)は、同じ親子パイプライン階層内の親パイプライン、または別の子パイプラインの正常に完了したジョブからアーティファクトをダウンロードできます。
 
 **キーワードのタイプ**: ジョブキーワード。ジョブの一部としてのみ使用できます。
 
 **サポートされている値**: 
 
-- `needs:pipeline`: パイプラインID。同じ親子パイプライン階層に存在するパイプラインでなければなりません。
+- `needs:pipeline`: パイプラインID。同じ親子パイプライン階層に存在するパイプラインである必要があります。
 - `job`: アーティファクトのダウンロード元のジョブ。
 
 **`needs:pipeline:job`の例**
@@ -3008,6 +3008,10 @@ build_job:
 - 親パイプライン（`.gitlab-ci.yml`）
 
   ```yaml
+  stages:
+    - build
+    - test
+
   create-artifact:
     stage: build
     script: echo "sample artifact" > artifact.txt
@@ -3018,7 +3022,7 @@ build_job:
     stage: test
     trigger:
       include: child.yml
-      strategy: depend
+      strategy: mirror
     variables:
       PARENT_PIPELINE_ID: $CI_PIPELINE_ID
   ```
@@ -3033,18 +3037,19 @@ build_job:
         job: create-artifact
   ```
 
-この例では、親パイプライン内の`create-artifact`ジョブがいくつかのアーティファクトを作成します。`child-pipeline`ジョブは子パイプラインをトリガーし、`CI_PIPELINE_ID`変数を新しい`PARENT_PIPELINE_ID`変数として子パイプラインに渡します。子パイプラインは、`needs:pipeline`の中の変数を使用することにより、親パイプラインからアーティファクトをダウンロードできます。
+この例では、親パイプライン内の`create-artifact`ジョブがいくつかのアーティファクトを作成します。`child-pipeline`ジョブは子パイプラインをトリガーし、`CI_PIPELINE_ID`変数を新しい`PARENT_PIPELINE_ID`変数として子パイプラインに渡します。子パイプラインは、`needs:pipeline`内の変数を使用することにより、親パイプラインからアーティファクトをダウンロードできます。後続のステージに`create-artifact`ジョブと`child-pipeline`ジョブがあると、`create-artifact`が正常に完了した場合にのみ`use-artifact`ジョブが実行されるようになります。
 
 **追加の詳細情報**
 
 - `pipeline`属性は、現在のパイプラインID（`$CI_PIPELINE_ID`）を受け付けません。現在のパイプライン内のジョブからアーティファクトをダウンロードするには、[`needs:artifacts`](#needsartifacts)を使用します。
 - `needs:pipeline:job`を[トリガージョブ](#trigger)で使用することはできず、[マルチプロジェクトパイプライン](../pipelines/downstream_pipelines.md#multi-project-pipelines)からアーティファクトをフェッチするために使用することもできません。マルチプロジェクトパイプラインからアーティファクトをフェッチするには、[`needs:project`](#needsproject)を使用します。
+- `needs:pipeline:job`にリストされているジョブは、`success`で完了する必要があります。そうなっていない場合、アーティファクトをフェッチできません。[イシュー367229](https://gitlab.com/gitlab-org/gitlab/-/issues/367229)では、アーティファクトを含むジョブからアーティファクトをフェッチできるようにすることを提案しています。
 
-#### `needs:optional`
+#### `needs:optional` {#needsoptional}
 
 パイプライン中に存在しないことのあるジョブを必須とするには、`needs`の設定に`optional: true`を追加します。定義されていない場合、`optional: false`がデフォルトです。
 
-[`rules`](#rules)、[`only`、または`except`](#only--except)を使用するジョブを、[`include`](#include)で追加した場合、それらのジョブは、常にパイプラインに追加されるとは限りません。GitLabは、パイプラインを開始する前に`needs`の関係をチェックします。
+[`rules`](#rules)、[`only`](deprecated_keywords.md#only--except)、または`except`を使用するジョブを、[`include`](#include)で追加した場合、それらのジョブは常にパイプラインに追加されるとは限りません。GitLabは、パイプラインを開始する前に`needs`の関係をチェックします。
 
 - `needs`エントリに`optional: true`がある場合、必要なジョブがパイプラインに存在するなら、ジョブはその完了を待機してから開始します。
 - 必要なジョブが存在しない場合、ジョブは他のすべてのneeds要件が満たされた時点で開始できます。
@@ -3083,7 +3088,7 @@ review-job:
   environment: review
 ```
 
-この例では次のようになります。
+この例では:
 
 - `build-job`、`test-job1`、および`test-job2`は、ステージの順に開始します。
 - ブランチがデフォルトブランチの場合、`test-job2`がパイプラインに追加されるため
@@ -3093,9 +3098,9 @@ review-job:
   - `deploy-job`は`test-job1`の完了のみを待機し、存在しない`test-job2`は待機しません。
   - `review-job`には他の必要なジョブがなく、`needs: []`のように、（`build-job`と同時に）すぐに開始されます。
 
-#### `needs:pipeline`
+#### `needs:pipeline` {#needspipeline}
 
-`needs:pipeline`キーワードを使用すると、アップストリームパイプラインからジョブにパイプライン状態をミラーリングできます。デフォルトブランチからの最新のパイプライン状態が、ジョブにレプリケートされます。
+`needs:pipeline`キーワードを使用すると、アップストリームパイプラインからジョブにパイプラインのステータスをミラーリングできます。デフォルトブランチからの最新のパイプラインステータスが、ジョブにレプリケートされます。
 
 **キーワードのタイプ**: ジョブキーワード。ジョブの一部としてのみ使用できます。
 
@@ -3114,13 +3119,13 @@ upstream_status:
 
 **追加の詳細情報**
 
-- `job`キーワードを`needs:pipeline`に追加すると、ジョブはパイプラインの状態をミラーリングしなくなります。動作は[`needs:pipeline:job`](#needspipelinejob)に変わります。
+- `job`キーワードを`needs:pipeline`に追加すると、ジョブはパイプラインステータスをミラーリングしなくなります。動作は[`needs:pipeline:job`](#needspipelinejob)に変わります。
 
-#### `needs:parallel:matrix`
+#### `needs:parallel:matrix` {#needsparallelmatrix}
 
 {{< history >}}
 
-- GitLab 16.3で[導入されました](https://gitlab.com/gitlab-org/gitlab/-/issues/254821)。
+- GitLab 16.3で[導入](https://gitlab.com/gitlab-org/gitlab/-/issues/254821)されました。
 
 {{< /history >}}
 
@@ -3159,7 +3164,7 @@ linux:rspec:
   script: echo "Running rspec on linux..."
 ```
 
-上記の例では、次のジョブが生成されます。
+前述の例では、次のジョブが生成されます。
 
 ```plaintext
 linux:build: [aws, monitoring]
@@ -3176,7 +3181,7 @@ linux:rspec
 
 **追加の詳細情報**
 
-- `needs:parallel:matrix`のマトリックス変数の順序は、必要なジョブのマトリックス変数の順序と一致する必要があります。たとえば、上記の前の例で`linux:rspec`ジョブの変数の順序を逆にするのは無効です。
+- `needs:parallel:matrix`のマトリックス変数の順序は、必要なジョブのマトリックス変数の順序と一致する必要があります。たとえば、前述の例で`linux:rspec`ジョブの変数の順序を逆にするのは無効です。
 
   ```yaml
   linux:rspec:
@@ -3190,7 +3195,7 @@ linux:rspec
     script: echo "Running rspec on linux..."
   ```
 
-### `pages`
+### `pages` {#pages}
 
 `pages`は、静的コンテンツをGitLabにアップロードする[GitLab Pages](../../user/project/pages/_index.md)ジョブを定義するために使用します。コンテンツはウェブサイトとして公開されます。
 
@@ -3198,10 +3203,11 @@ linux:rspec
 
 - `pages: true`を定義し、`public`という名前のディレクトリを公開します。
 - 別のコンテンツディレクトリを使用する場合は、代わりに[`pages.publish`](#pagespublish)を定義します。
+- コンテンツディレクトリのルートに空ではない`index.html`ファイルを配置します。
 
 **キーワードのタイプ**: ジョブキーワードまたはジョブ名（非推奨）。ジョブの一部としてのみ使用できます。
 
-**サポートされている値**: 
+**サポートされている値**:
 
 - ブール値。`true`に設定すると、デフォルトの設定を使用します。
 - 設定オプションのハッシュ。詳細については、この後のセクションを参照してください。
@@ -3238,34 +3244,10 @@ create-pages:
 
 この例では、ディレクトリの移動はせず、`publish`プロパティを直接使用します。また、ページデプロイが1週間後に公開されなくなるように設定します。
 
-**非推奨: ジョブ名として`pages`を使用する**
+**追加の詳細情報**
 
-`pages`をジョブ名として使用した場合、Pagesプロパティ`pages: true`を指定するのと同じ動作になります。この方法は下位互換性のために使用できますが、Pagesジョブ設定に対して今後加えられる改善内容の一部を活用できなくなる可能性があります。
-
-**`pages`をジョブ名として使用した例**
-
-```yaml
-pages:  # specifies that this is a Pages job and publishes the default public directory
-  stage: deploy
-  script:
-    - mv my-html-content public
-  rules:
-    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
-  environment: production
-```
-
-Pagesデプロイをトリガーせずに`pages`をジョブ名として使用するには、`pages`プロパティをfalseに設定します。
-
-```yaml
-pages:
-  stage: deploy
-  script:
-    - mv my-html-content public
-  pages: false # this job will not trigger a Pages deployment
-  rules:
-    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
-  environment: production
-```
+- `pages`をジョブ名として使用することは[非推奨](deprecated_keywords.md#publish-keyword-and-pages-job-name-for-gitlab-pages)です。
+- Pagesのデプロイをトリガーせずに`pages`をジョブ名として使用するには、`pages`プロパティをfalseに設定します。
 
 #### `pages.publish`
 
