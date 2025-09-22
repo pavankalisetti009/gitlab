@@ -22,10 +22,9 @@ module Ci
       end
 
       override :validate_type
-      def validate_type(value, default)
-        return if value.is_a?(String)
-
-        error("#{default ? 'default' : 'provided'} value is not a string")
+      def validate_type(value, _default)
+        # Since coerced_value always converts to string via value.to_s,
+        # this validation will always pass for StringInput
       end
 
       override :validate_options

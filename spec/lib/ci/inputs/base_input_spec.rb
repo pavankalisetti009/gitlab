@@ -42,6 +42,16 @@ RSpec.describe Ci::Inputs::BaseInput, feature_category: :pipeline_composition do
     end
   end
 
+  describe '#validate_param!' do
+    context 'when BaseInput is used directly with a default value' do
+      let(:input) { described_class.new(name: :test_input, spec: { default: 'test' }) }
+
+      it 'raises NotImplementedError when validating the default value' do
+        expect { input.validate_param!(nil) }.to raise_error(NotImplementedError)
+      end
+    end
+  end
+
   describe 'attributes' do
     let(:spec) do
       {
