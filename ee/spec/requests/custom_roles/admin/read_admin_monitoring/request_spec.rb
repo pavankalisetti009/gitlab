@@ -13,7 +13,7 @@ RSpec.describe 'User with read_admin_monitoring', :enable_admin_mode, feature_ca
   end
 
   describe Admin::BackgroundMigrationsController do
-    it "GET #index" do
+    it "GET #index", quarantine: 'https://gitlab.com/gitlab-org/gitlab/-/issues/570211' do
       get admin_background_migrations_path
 
       expect(response).to have_gitlab_http_status(:ok)
