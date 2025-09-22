@@ -20,12 +20,16 @@ module Gitlab
         @total_elements = 0
         @stack = []
         @result = nil
+        @max_depth_reached = 0
+        @max_array_count = 0
+        @max_hash_count = 0
       end
 
       # Called when a hash starts
       def hash_start
         check_depth!
         @depth += 1
+        @max_depth_reached = [@max_depth_reached, @depth].max
 
         hash = {}
         @hash_counts[hash.object_id] = 0 # rubocop:disable Lint/HashCompareByIdentity -- We want to track by object ID
@@ -59,13 +63,16 @@ module Gitlab
         check_hash_size!(current_size)
 
         hash[key] = value
-        @hash_counts[hash.object_id] = current_size + 1 # rubocop:disable Lint/HashCompareByIdentity -- We want to track by object ID
+        new_size = current_size + 1
+        @hash_counts[hash.object_id] = new_size # rubocop:disable Lint/HashCompareByIdentity -- We want to track by object ID
+        @max_hash_count = [@max_hash_count, new_size].max
       end
 
       # Called when an array starts
       def array_start
         check_depth!
         @depth += 1
+        @max_depth_reached = [@max_depth_reached, @depth].max
 
         array = []
         @array_counts[array.object_id] = 0 # rubocop:disable Lint/HashCompareByIdentity -- We want to track by object ID
@@ -92,13 +99,25 @@ module Gitlab
         check_array_size!(current_size)
 
         array << value
-        @array_counts[array.object_id] = current_size + 1 # rubocop:disable Lint/HashCompareByIdentity -- We want to track by object ID
+        new_size = current_size + 1
+        @array_counts[array.object_id] = new_size # rubocop:disable Lint/HashCompareByIdentity -- We want to track by object ID
+        @max_array_count = [@max_array_count, new_size].max
       end
 
       # Called for root values (when not in a hash or array)
       def add_value(value)
         increment_element_count!
         @result = value
+      end
+
+      # Returns metadata about the parsed JSON structure
+      def metadata
+        {
+          total_elements: @total_elements,
+          max_array_count: @max_array_count,
+          max_hash_count: @max_hash_count,
+          max_depth: @max_depth_reached
+        }
       end
 
       private

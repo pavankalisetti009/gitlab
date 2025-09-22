@@ -11,18 +11,8 @@ module Gitlab
     # - Configurable limits for depth, array size, hash size, total elements, and body size
     class JsonValidation
       BodySizeExceededError = Class.new(StandardError)
-      class Limits
-        attr_accessor :max_depth, :max_array_size, :max_hash_size, :max_total_elements, :max_json_size_bytes, :mode
 
-        def initialize(options)
-          @max_depth = options[:max_depth]
-          @max_array_size = options[:max_array_size]
-          @max_hash_size = options[:max_hash_size]
-          @max_total_elements = options[:max_total_elements]
-          @max_json_size_bytes = options[:max_json_size_bytes]
-          @mode = options[:mode]
-        end
-      end
+      RACK_ENV_METADATA_KEY = "gitlab.json.validation.metadata"
 
       TERRAFORM_STATE_PATH = %r{
         \A/api/v4/projects/
@@ -232,12 +222,14 @@ module Gitlab
           message: ex.to_s,
           method: request.request_method,
           path: request.path,
-          # Manually add the status code here because the original requests are not
-          # logged in production_json.log or api_json.log.
-          status: 400,
           ua: request.env["HTTP_USER_AGENT"],
           remote_ip: request.ip
         })
+
+        # Manually add the status code here because the original requests are not
+        # logged in production_json.log or api_json.log.
+        payload[:status] = 400 unless logging_mode?(limits)
+
         ::Gitlab::InstrumentationHelper.add_instrumentation_data(payload)
         Gitlab::AppLogger.warn(payload)
       end
@@ -256,7 +248,7 @@ module Gitlab
       end
 
       # JSON Validation using Oj streaming
-      def validate_json_request!(_env, request, limits)
+      def validate_json_request!(env, request, limits)
         body = request.body.read
         request.body.rewind
 
@@ -272,6 +264,17 @@ module Gitlab
       # whether mimic_JSON has been called.
       rescue Oj::ParseError, EncodingError
         # If this string isn't valid JSON, let it go
+        nil
+      ensure
+        store_metadata(env, handler)
+      end
+
+      def store_metadata(env, handler)
+        metadata = handler&.metadata
+
+        return unless metadata
+
+        env[RACK_ENV_METADATA_KEY] = metadata
       end
 
       def error_response(error, status)
