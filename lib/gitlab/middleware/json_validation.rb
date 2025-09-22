@@ -148,7 +148,7 @@ module Gitlab
       end
 
       def call(env)
-        return @app.call(env) if default_disabled?
+        return @app.call(env) if global_disabled?
 
         request = Rack::Request.new(env)
 
@@ -162,8 +162,16 @@ module Gitlab
 
       private
 
-      def default_disabled?
-        @default_limits[:mode] == :disabled
+      def global_logging?
+        global_validation_mode == :logging
+      end
+
+      def global_disabled?
+        global_validation_mode == :disabled
+      end
+
+      def global_validation_mode
+        ENV['GITLAB_JSON_GLOBAL_VALIDATION_MODE']&.to_sym
       end
 
       def allow_if_validated(env, request, limits)
@@ -172,7 +180,7 @@ module Gitlab
       rescue BodySizeExceededError, ::Gitlab::Json::StreamValidator::LimitExceededError => ex
         log_exceeded(ex, request, limits)
 
-        return error_response(ex, 400) unless logging_mode?(limits)
+        return error_response(ex, 400) unless logging_mode?(limits) || global_logging?
 
         @app.call(env)
       end
