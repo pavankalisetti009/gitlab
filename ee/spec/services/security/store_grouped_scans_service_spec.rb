@@ -40,14 +40,14 @@ RSpec.describe Security::StoreGroupedScansService, feature_category: :vulnerabil
   end
 
   before do
-    allow(Ci::CompareSecurityReportsService).to receive(:set_security_report_type_to_ready)
+    allow(Vulnerabilities::CompareSecurityReportsService).to receive(:set_security_report_type_to_ready)
   end
 
   shared_examples_for 'handling the security MR widget caching' do
     it 'sets the expected redis cache value' do
       store_scan_group
 
-      expect(Ci::CompareSecurityReportsService).to have_received(:set_security_report_type_to_ready).with(pipeline_id: pipeline_id, report_type: report_type.to_s)
+      expect(Vulnerabilities::CompareSecurityReportsService).to have_received(:set_security_report_type_to_ready).with(pipeline_id: pipeline_id, report_type: report_type.to_s)
     end
   end
 

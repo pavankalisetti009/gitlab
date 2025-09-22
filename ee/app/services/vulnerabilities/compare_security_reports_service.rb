@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-module Ci
+module Vulnerabilities
   class CompareSecurityReportsService < ::Ci::CompareReportsBaseService
     SECURITY_MR_WIDGET_POLLING_CACHE_TTL = 2.hours.in_seconds
 

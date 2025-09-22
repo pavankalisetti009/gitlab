@@ -117,7 +117,7 @@ RSpec.describe Security::StoreScansService, feature_category: :vulnerability_man
             end
 
             it 'marks dependency_scanning sbom reports as ready' do
-              expect(::Ci::CompareSecurityReportsService).to receive(:set_security_report_type_to_ready)
+              expect(::Vulnerabilities::CompareSecurityReportsService).to receive(:set_security_report_type_to_ready)
                 .with(
                   pipeline_id: pipeline.id,
                   report_type: 'dependency_scanning'

@@ -14,10 +14,11 @@ RSpec.describe Security::MergeRequestSecurityReportGenerationService, :use_clean
     subject(:report) { report_generation_service.execute }
 
     def stub_report(data)
-      allow_next_instance_of(Ci::CompareSecurityReportsService, merge_request.project, nil, params) do |instance|
+      allow_next_instance_of(Vulnerabilities::CompareSecurityReportsService, merge_request.project, nil,
+        params) do |instance|
         expect(instance).to receive(:latest?)
           .with(
-            merge_request.comparison_base_pipeline(Ci::CompareSecurityReportsService),
+            merge_request.comparison_base_pipeline(Vulnerabilities::CompareSecurityReportsService),
             merge_request.diff_head_pipeline,
             data
           )
@@ -240,7 +241,7 @@ RSpec.describe Security::MergeRequestSecurityReportGenerationService, :use_clean
             context 'when cached results is not latest' do
               before do
                 allow(ReactiveCachingWorker).to receive(:perform_async).and_call_original
-                allow_next_instance_of(Ci::CompareSecurityReportsService) do |instance|
+                allow_next_instance_of(Vulnerabilities::CompareSecurityReportsService) do |instance|
                   allow(instance).to receive(:latest?).and_return(false)
                 end
               end

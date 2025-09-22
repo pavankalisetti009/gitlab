@@ -712,7 +712,7 @@ RSpec.describe MergeRequest, feature_category: :code_review_workflow do
     end
 
     before do
-      allow_any_instance_of(Ci::CompareSecurityReportsService)
+      allow_any_instance_of(Vulnerabilities::CompareSecurityReportsService)
         .to receive(:execute).with(base_pipeline, head_pipeline).and_call_original
     end
 
@@ -1224,7 +1224,7 @@ RSpec.describe MergeRequest, feature_category: :code_review_workflow do
         end
 
         it 'returns status and data' do
-          expect_any_instance_of(Ci::CompareSecurityReportsService)
+          expect_any_instance_of(Vulnerabilities::CompareSecurityReportsService)
               .to receive(:execute).with(base_pipeline, head_pipeline).and_call_original
 
           subject
@@ -1232,7 +1232,7 @@ RSpec.describe MergeRequest, feature_category: :code_review_workflow do
 
         context 'when cached results is not latest' do
           before do
-            allow_any_instance_of(Ci::CompareSecurityReportsService)
+            allow_any_instance_of(Vulnerabilities::CompareSecurityReportsService)
                 .to receive(:latest?).and_return(false)
           end
 
@@ -1287,7 +1287,7 @@ RSpec.describe MergeRequest, feature_category: :code_review_workflow do
         end
 
         it 'returns status and data' do
-          expect_any_instance_of(Ci::CompareSecurityReportsService)
+          expect_any_instance_of(Vulnerabilities::CompareSecurityReportsService)
               .to receive(:execute).with(base_pipeline, head_pipeline).and_call_original
 
           subject
@@ -1295,7 +1295,7 @@ RSpec.describe MergeRequest, feature_category: :code_review_workflow do
 
         context 'when cached results is not latest' do
           before do
-            allow_any_instance_of(Ci::CompareSecurityReportsService)
+            allow_any_instance_of(Vulnerabilities::CompareSecurityReportsService)
                 .to receive(:latest?).and_return(false)
           end
 
@@ -1350,7 +1350,7 @@ RSpec.describe MergeRequest, feature_category: :code_review_workflow do
         end
 
         it 'returns status and data' do
-          expect_any_instance_of(Ci::CompareSecurityReportsService)
+          expect_any_instance_of(Vulnerabilities::CompareSecurityReportsService)
               .to receive(:execute).with(base_pipeline, head_pipeline).and_call_original
 
           subject
@@ -1358,7 +1358,7 @@ RSpec.describe MergeRequest, feature_category: :code_review_workflow do
 
         context 'when cached results is not latest' do
           before do
-            allow_any_instance_of(Ci::CompareSecurityReportsService)
+            allow_any_instance_of(Vulnerabilities::CompareSecurityReportsService)
                 .to receive(:latest?).and_return(false)
           end
 
@@ -1662,7 +1662,7 @@ RSpec.describe MergeRequest, feature_category: :code_review_workflow do
         end
 
         it 'returns status and data' do
-          expect_any_instance_of(Ci::CompareSecurityReportsService)
+          expect_any_instance_of(Vulnerabilities::CompareSecurityReportsService)
             .to receive(:execute).with(base_pipeline, head_pipeline).and_call_original
 
           subject
@@ -1670,7 +1670,7 @@ RSpec.describe MergeRequest, feature_category: :code_review_workflow do
 
         context 'when cached results is not latest' do
           before do
-            allow_any_instance_of(Ci::CompareSecurityReportsService)
+            allow_any_instance_of(Vulnerabilities::CompareSecurityReportsService)
                 .to receive(:latest?).and_return(false)
           end
 
@@ -1725,7 +1725,7 @@ RSpec.describe MergeRequest, feature_category: :code_review_workflow do
         end
 
         it 'returns status and data' do
-          expect_any_instance_of(Ci::CompareSecurityReportsService)
+          expect_any_instance_of(Vulnerabilities::CompareSecurityReportsService)
             .to receive(:execute).with(base_pipeline, head_pipeline).and_call_original
 
           subject
@@ -1733,7 +1733,7 @@ RSpec.describe MergeRequest, feature_category: :code_review_workflow do
 
         context 'when cached results is not latest' do
           before do
-            allow_any_instance_of(Ci::CompareSecurityReportsService)
+            allow_any_instance_of(Vulnerabilities::CompareSecurityReportsService)
                 .to receive(:latest?).and_return(false)
           end
 
@@ -2590,8 +2590,8 @@ RSpec.describe MergeRequest, feature_category: :code_review_workflow do
 
     subject(:pipeline) { merge_request.comparison_base_pipeline(service_class) }
 
-    context 'when the service class is `Ci::CompareSecurityReportsService`' do
-      let(:service_class) { ::Ci::CompareSecurityReportsService }
+    context 'when the service class is `Vulnerabilities::CompareSecurityReportsService`' do
+      let(:service_class) { ::Vulnerabilities::CompareSecurityReportsService }
 
       before do
         merge_request.update_head_pipeline

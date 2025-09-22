@@ -24,7 +24,7 @@ module Security
           ::Security::StoreScansWorker.perform_async(pipeline.id)
           ::Security::ProcessScanEventsWorker.perform_async(pipeline.id)
         else
-          ::Ci::CompareSecurityReportsService.set_security_mr_widget_to_ready(pipeline_id: pipeline.id)
+          ::Vulnerabilities::CompareSecurityReportsService.set_security_mr_widget_to_ready(pipeline_id: pipeline.id)
         end
       end
 
