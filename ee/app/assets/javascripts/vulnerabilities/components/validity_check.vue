@@ -7,6 +7,7 @@ import { s__ } from '~/locale';
 import { TYPENAME_VULNERABILITY } from '~/graphql_shared/constants';
 import TokenValidityBadge from 'ee/vue_shared/security_reports/components/token_validity_badge.vue';
 import glFeatureFlagMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
+import refreshSecurityFindingTokenStatusMutation from 'ee/security_dashboard/graphql/mutations/refresh_security_finding_token_status.mutation.graphql';
 import refreshFindingTokenStatusMutation from '../graphql/mutations/refresh_finding_token_status.mutation.graphql';
 
 export default {
@@ -57,9 +58,7 @@ export default {
         return refreshFindingTokenStatusMutation;
       }
 
-      // Replace with actual GraphQL mutation in %18.5
-      // https://gitlab.com/gitlab-org/gitlab/-/issues/556929
-      return null;
+      return refreshSecurityFindingTokenStatusMutation;
     },
     mutationVariables() {
       if (this.isVulnerabilityDetailsPage) {
@@ -68,6 +67,11 @@ export default {
         };
       }
       return { securityFindingUuid: this.securityFindingUuid };
+    },
+    responseKey() {
+      return this.isVulnerabilityDetailsPage
+        ? 'refreshFindingTokenStatus'
+        : 'refreshSecurityFindingTokenStatus';
     },
   },
   methods: {
@@ -80,7 +84,7 @@ export default {
           variables: this.mutationVariables,
         });
 
-        const { errors, findingTokenStatus } = data?.refreshFindingTokenStatus || {};
+        const { errors, findingTokenStatus } = data?.[this.responseKey] || {};
 
         if (errors?.length) {
           throw new Error(errors.join('. '));
@@ -98,14 +102,21 @@ export default {
     },
     createErrorAlert(error) {
       const message = error.message || error.response?.data?.message;
+      const defaultMessage = s__(
+        'VulnerabilityManagement|Could not refresh the validity check. Please try again.',
+      );
 
-      createAlert({
-        message:
-          message ||
-          s__('VulnerabilityManagement|Could not refresh the validity check. Please try again.'),
+      const alertOptions = {
+        message: message || defaultMessage,
         captureError: true,
         error,
-      });
+      };
+
+      if (!this.isVulnerabilityDetailsPage) {
+        alertOptions.containerSelector = '#finding-modal-error-container';
+      }
+
+      createAlert(alertOptions);
     },
   },
 };
