@@ -33,8 +33,9 @@ RSpec.describe Mutations::Security::Attributes::ProjectUpdate, feature_category:
 
   describe '#resolve' do
     context 'when user does not have permission' do
-      before do
+      before_all do
         stub_feature_flags(security_categories_and_attributes: true)
+        project.add_developer(current_user)
       end
 
       it_behaves_like 'a mutation that returns a top-level access error'
@@ -42,7 +43,7 @@ RSpec.describe Mutations::Security::Attributes::ProjectUpdate, feature_category:
 
     context 'when feature flag is disabled' do
       before_all do
-        project.add_owner(current_user)
+        project.add_maintainer(current_user)
         stub_feature_flags(security_categories_and_attributes: false)
       end
 
@@ -51,7 +52,7 @@ RSpec.describe Mutations::Security::Attributes::ProjectUpdate, feature_category:
 
     context 'when user has permission' do
       before_all do
-        namespace.add_owner(current_user)
+        namespace.add_maintainer(current_user)
         stub_feature_flags(security_categories_and_attributes: true)
       end
 
