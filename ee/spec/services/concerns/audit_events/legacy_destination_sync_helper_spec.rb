@@ -8,10 +8,6 @@ RSpec.describe AuditEvents::LegacyDestinationSyncHelper, feature_category: :audi
 
   describe '#create_stream_destination' do
     context 'when feature flag is enabled' do
-      before do
-        stub_feature_flags(audit_events_external_destination_streamer_consolidation_refactor: true)
-      end
-
       describe 'http destinations' do
         context 'when instance level' do
           let!(:header) do
@@ -284,29 +280,10 @@ RSpec.describe AuditEvents::LegacyDestinationSyncHelper, feature_category: :audi
         end
       end
     end
-
-    context 'when feature flag is disabled' do
-      before do
-        stub_feature_flags(audit_events_external_destination_streamer_consolidation_refactor: false)
-      end
-
-      let!(:source) do
-        create(:instance_external_audit_event_destination)
-      end
-
-      it 'returns nil' do
-        expect(helper.create_stream_destination(legacy_destination_model: nil, category: :http,
-          is_instance: false)).to be_nil
-      end
-    end
   end
 
   describe '#update_stream_destination' do
     context 'when feature flag is enabled' do
-      before do
-        stub_feature_flags(audit_events_external_destination_streamer_consolidation_refactor: true)
-      end
-
       describe 'http destinations' do
         context 'when instance level' do
           let!(:header) do
@@ -579,20 +556,6 @@ RSpec.describe AuditEvents::LegacyDestinationSyncHelper, feature_category: :audi
 
           expect(helper.update_stream_destination(legacy_destination_model: source)).to be_nil
         end
-      end
-    end
-
-    context 'when feature flag is disabled' do
-      before do
-        stub_feature_flags(audit_events_external_destination_streamer_consolidation_refactor: false)
-      end
-
-      let!(:legacy_destination) do
-        create(:instance_external_audit_event_destination)
-      end
-
-      it 'returns nil' do
-        expect(helper.update_stream_destination(legacy_destination_model: legacy_destination)).to be_nil
       end
     end
   end

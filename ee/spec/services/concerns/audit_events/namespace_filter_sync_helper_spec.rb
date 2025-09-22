@@ -98,7 +98,6 @@ RSpec.describe AuditEvents::NamespaceFilterSyncHelper, feature_category: :audit_
 
       before do
         stream_destination.update_column(:legacy_destination_ref, legacy_destination.id)
-        allow(helper).to receive(:stream_destination_sync_enabled?).and_return(true)
         allow(stream_destination).to receive_messages(
           legacy_destination: legacy_destination,
           http?: true
@@ -132,18 +131,6 @@ RSpec.describe AuditEvents::NamespaceFilterSyncHelper, feature_category: :audit_
 
           existing_filter.reload
           expect(existing_filter.namespace_id).to eq(subgroup.id)
-        end
-      end
-
-      context 'when stream_destination_sync_enabled? returns false' do
-        before do
-          allow(helper).to receive(:stream_destination_sync_enabled?).and_return(false)
-        end
-
-        it 'does not create namespace filter' do
-          expect do
-            helper.sync_legacy_namespace_filter(stream_destination, group)
-          end.not_to change { AuditEvents::Streaming::HTTP::NamespaceFilter.count }
         end
       end
 
@@ -209,7 +196,6 @@ RSpec.describe AuditEvents::NamespaceFilterSyncHelper, feature_category: :audit_
       let(:legacy_destination) { instance_double(AuditEvents::InstanceExternalAuditEventDestination) }
 
       before do
-        allow(helper).to receive(:stream_destination_sync_enabled?).and_return(true)
         allow(stream_destination).to receive_messages(
           legacy_destination_ref: 123,
           http?: true,
@@ -350,7 +336,6 @@ RSpec.describe AuditEvents::NamespaceFilterSyncHelper, feature_category: :audit_
 
     before do
       stream_destination.update_column(:legacy_destination_ref, legacy_destination.id)
-      allow(helper).to receive(:stream_destination_sync_enabled?).and_return(true)
       allow(stream_destination).to receive_messages(
         legacy_destination: legacy_destination,
         http?: true
@@ -365,18 +350,6 @@ RSpec.describe AuditEvents::NamespaceFilterSyncHelper, feature_category: :audit_
           .with('external_audit_event_destination_id' => legacy_destination.id)
           .and_return(filter_relation)
         expect(filter_relation).to receive(:delete_all).and_return(1)
-
-        helper.sync_delete_legacy_namespace_filter(stream_destination)
-      end
-    end
-
-    context 'when stream_destination_sync_enabled? returns false' do
-      before do
-        allow(helper).to receive(:stream_destination_sync_enabled?).and_return(false)
-      end
-
-      it 'does not delete namespace filters' do
-        expect(AuditEvents::Streaming::HTTP::NamespaceFilter).not_to receive(:where)
 
         helper.sync_delete_legacy_namespace_filter(stream_destination)
       end
@@ -423,7 +396,6 @@ RSpec.describe AuditEvents::NamespaceFilterSyncHelper, feature_category: :audit_
       let(:instance_legacy_destination) { instance_double(AuditEvents::InstanceExternalAuditEventDestination) }
 
       before do
-        allow(helper).to receive(:stream_destination_sync_enabled?).and_return(true)
         allow(instance_stream_destination).to receive_messages(
           legacy_destination_ref: 123,
           legacy_destination: instance_legacy_destination,

@@ -11,7 +11,6 @@ RSpec.describe AuditEvents::ExternalDestinationStreamer, feature_category: :audi
 
   before do
     stub_licensed_features(external_audit_events: true)
-    stub_feature_flags(audit_events_external_destination_streamer_consolidation_refactor: true)
     freeze_time
 
     allow_next_instance_of(::AuditEvents::GoogleCloud::Authentication) do |instance|
@@ -50,21 +49,6 @@ RSpec.describe AuditEvents::ExternalDestinationStreamer, feature_category: :audi
         expect(streamer).not_to receive(:streamable_strategies)
 
         stream_to_destinations
-      end
-
-      context 'with feature flag disabled' do
-        before do
-          stub_feature_flags(audit_events_external_destination_streamer_consolidation_refactor: false)
-        end
-
-        it_behaves_like 'external destination streamer'
-
-        it 'only uses the streamable_strategies with feature flag disabled' do
-          expect(streamer).not_to receive(:streamers)
-          expect(streamer).to receive(:streamable_strategies).at_least(:once).and_call_original
-
-          stream_to_destinations
-        end
       end
     end
 
@@ -116,34 +100,6 @@ RSpec.describe AuditEvents::ExternalDestinationStreamer, feature_category: :audi
 
         stream_to_destinations
       end
-
-      context 'with feature flag disabled' do
-        before do
-          stub_feature_flags(audit_events_external_destination_streamer_consolidation_refactor: false)
-
-          create(:external_audit_event_destination, group: group)
-          create_list(:instance_external_audit_event_destination, 2)
-          create(:instance_google_cloud_logging_configuration)
-          create(:amazon_s3_configuration, group: group)
-        end
-
-        it 'makes correct number of external calls', :aggregate_failures do
-          expect(Gitlab::HTTP).to receive(:post).exactly(3).times
-          expect_next_instance_of(Aws::S3::Client) do |instance|
-            expected_body = event.to_json.merge({ event_type: "audit_operation" })
-            expect(instance).to receive(:put_object).with(hash_including(body: expected_body))
-          end
-
-          stream_to_destinations
-        end
-
-        it 'only uses the streamable_strategies with feature flag disabled' do
-          expect(streamer).not_to receive(:streamers)
-          expect(streamer).to receive(:streamable_strategies).at_least(:once).and_call_original
-
-          stream_to_destinations
-        end
-      end
     end
   end
 
@@ -158,21 +114,6 @@ RSpec.describe AuditEvents::ExternalDestinationStreamer, feature_category: :audi
         expect(streamer).to receive(:streamable_strategies).at_least(:once).and_call_original
 
         streamable
-      end
-
-      context 'with feature flag disabled' do
-        before do
-          stub_feature_flags(audit_events_external_destination_streamer_consolidation_refactor: false)
-        end
-
-        it { is_expected.to be_falsey }
-
-        it 'only checks streamable_strategies with feature flag disabled' do
-          expect(streamer).not_to receive(:streamers)
-          expect(streamer).to receive(:streamable_strategies).at_least(:once).and_call_original
-
-          streamable
-        end
       end
     end
 
@@ -194,27 +135,6 @@ RSpec.describe AuditEvents::ExternalDestinationStreamer, feature_category: :audi
         allow(streamer).to receive(:streamable_strategies).and_return([])
 
         streamable
-      end
-
-      context 'with feature flag disabled' do
-        before do
-          stub_feature_flags(audit_events_external_destination_streamer_consolidation_refactor: false)
-          create(:external_audit_event_destination, group: group)
-          create(:instance_external_audit_event_destination)
-          create(:google_cloud_logging_configuration, group: group)
-          create(:instance_google_cloud_logging_configuration)
-          create(:amazon_s3_configuration, group: group)
-          create(:instance_amazon_s3_configuration)
-        end
-
-        it { is_expected.to be_truthy }
-
-        it 'only checks streamable_strategies with feature flag disabled' do
-          expect(streamer).not_to receive(:streamers)
-          expect(streamer).to receive(:streamable_strategies).at_least(:once).and_call_original
-
-          streamable
-        end
       end
     end
 

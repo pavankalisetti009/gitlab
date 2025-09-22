@@ -15,8 +15,6 @@ module AuditEvents
     }.freeze
 
     def create_legacy_destination(stream_destination_model)
-      return unless stream_destination_sync_enabled?(stream_destination_model)
-
       model_class = legacy_class_for(stream_destination_model)
 
       ApplicationRecord.transaction do
@@ -41,8 +39,6 @@ module AuditEvents
     end
 
     def update_legacy_destination(stream_destination_model)
-      return unless stream_destination_sync_enabled?(stream_destination_model)
-
       destination = stream_destination_model.legacy_destination
 
       return if destination.nil? || destination.stream_destination_id != stream_destination_model.id

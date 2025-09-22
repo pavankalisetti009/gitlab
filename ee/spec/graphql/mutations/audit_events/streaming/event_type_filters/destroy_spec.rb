@@ -132,21 +132,6 @@ RSpec.describe Mutations::AuditEvents::Streaming::EventTypeFilters::Destroy, fea
               expect(subject).to eq({ errors: [] })
             end
           end
-
-          context 'when sync is disabled' do
-            before do
-              stub_feature_flags(
-                audit_events_external_destination_streamer_consolidation_refactor: false
-              )
-            end
-
-            it 'only deletes from legacy destination', :aggregate_failures do
-              expect { subject }.to change { destination.event_type_filters.count }.by(-1)
-                                .and not_change { stream_destination.event_type_filters.count }
-
-              expect(subject).to eq({ errors: [] })
-            end
-          end
         end
       end
     end

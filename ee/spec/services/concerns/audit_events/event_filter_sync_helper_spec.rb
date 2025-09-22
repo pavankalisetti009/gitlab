@@ -95,7 +95,6 @@ RSpec.describe AuditEvents::EventFilterSyncHelper, feature_category: :audit_even
 
     before do
       stream_destination.update_column(:legacy_destination_ref, legacy_destination.id)
-      allow(helper).to receive(:stream_destination_sync_enabled?).and_return(true)
       allow(stream_destination).to receive(:legacy_destination).and_return(legacy_destination)
     end
 
@@ -115,7 +114,6 @@ RSpec.describe AuditEvents::EventFilterSyncHelper, feature_category: :audit_even
 
       before do
         instance_stream_destination.update_column(:legacy_destination_ref, instance_legacy_destination.id)
-        allow(helper).to receive(:stream_destination_sync_enabled?).and_return(true)
         allow(stream_destination).to receive(:legacy_destination).and_return(instance_legacy_destination)
         allow(instance_legacy_destination).to receive(:instance_level?).and_return(true)
       end
@@ -249,7 +247,6 @@ RSpec.describe AuditEvents::EventFilterSyncHelper, feature_category: :audit_even
 
     before do
       stream_destination.update_column(:legacy_destination_ref, legacy_destination.id)
-      allow(helper).to receive(:stream_destination_sync_enabled?).and_return(true)
       allow(stream_destination).to receive(:legacy_destination).and_return(legacy_destination)
     end
 
@@ -320,7 +317,6 @@ RSpec.describe AuditEvents::EventFilterSyncHelper, feature_category: :audit_even
 
       before do
         instance_stream_destination.update_column(:legacy_destination_ref, instance_legacy_destination.id)
-        allow(helper).to receive(:stream_destination_sync_enabled?).and_return(true)
         allow(stream_destination).to receive(:legacy_destination).and_return(instance_legacy_destination)
         allow(instance_legacy_destination).to receive(:instance_level?).and_return(true)
 

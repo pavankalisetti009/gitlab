@@ -3,10 +3,6 @@
 RSpec.shared_examples 'creates a legacy destination' do |model_class, attributes_proc|
   let(:attributes_map) { instance_exec(&attributes_proc) }
 
-  before do
-    stub_feature_flags(audit_events_external_destination_streamer_consolidation_refactor: true)
-  end
-
   def get_secret_token(model, category)
     case category
     when :http then model.verification_token
@@ -60,7 +56,6 @@ RSpec.shared_examples 'updates a legacy destination' do |destination, attributes
     let(:paired_legacy_destination) { send(:legacy_destination) }
 
     before do
-      stub_feature_flags(audit_events_external_destination_streamer_consolidation_refactor: true)
       stream_destination.update!(legacy_destination_ref: paired_legacy_destination.id)
       paired_legacy_destination.update!(stream_destination_id: stream_destination.id)
     end

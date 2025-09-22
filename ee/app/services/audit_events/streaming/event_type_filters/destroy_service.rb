@@ -50,15 +50,11 @@ module AuditEvents
         end
 
         def should_sync_to_streaming?
-          is_instance = destination.instance_level?
-
-          destination.stream_destination_id.present? &&
-            legacy_destination_sync_enabled?(destination, is_instance)
+          destination.stream_destination_id.present?
         end
 
         def should_sync_to_legacy?
-          destination.legacy_destination_ref.present? &&
-            stream_destination_sync_enabled?(destination)
+          destination.legacy_destination_ref.present?
         end
       end
     end
