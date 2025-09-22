@@ -65,8 +65,8 @@ module Geo
           .or(with_verification_state(:verification_failed).verification_retry_due))
       }
       scope :needs_reverification, -> {
-        verification_succeeded
-          .where(verified_at: ...::Gitlab::Geo.current_node.minimum_reverification_interval.days.ago)
+        min_interval = ::Gitlab::Geo.current_node.minimum_reverification_interval.days.ago
+        verification_succeeded.where(verification_arel_table[:verified_at].lt(min_interval))
       }
 
       private_class_method :start_verification_batch
