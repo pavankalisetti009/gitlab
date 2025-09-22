@@ -45,6 +45,7 @@ export function mountGitlabDuoHomeApp() {
     duoWorkflowSettingsPath,
     redirectPath,
     duoWorkflowDisablePath,
+    usageDashboardPath,
   } = el.dataset;
 
   return new Vue({
@@ -89,6 +90,7 @@ export function mountGitlabDuoHomeApp() {
       duoWorkflowSettingsPath,
       redirectPath,
       duoWorkflowDisablePath,
+      usageDashboardPath,
     },
     render: (h) => h(GitlabDuoHome),
   });
