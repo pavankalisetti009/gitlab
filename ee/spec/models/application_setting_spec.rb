@@ -1585,7 +1585,8 @@ RSpec.describe ApplicationSetting, feature_category: :shared, type: :model do
         elasticsearch_aws_secret_access_key: 'test-secret-access-key',
         elasticsearch_max_bulk_size_mb: 67,
         elasticsearch_max_bulk_concurrency: 8,
-        elasticsearch_client_request_timeout: 30
+        elasticsearch_client_request_timeout: 30,
+        elasticsearch_client_adapter: :net_http
       )
 
       expect(setting.elasticsearch_config).to eq(
@@ -1594,9 +1595,10 @@ RSpec.describe ApplicationSetting, feature_category: :shared, type: :model do
         aws_region: 'test-region',
         aws_access_key: 'test-access-key',
         aws_secret_access_key: 'test-secret-access-key',
+        client_adapter: 'net_http',
+        client_request_timeout: 30,
         max_bulk_size_bytes: 67.megabytes,
-        max_bulk_concurrency: 8,
-        client_request_timeout: 30
+        max_bulk_concurrency: 8
       )
 
       setting.update!(
