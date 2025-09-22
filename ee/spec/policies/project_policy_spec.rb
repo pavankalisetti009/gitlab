@@ -1032,6 +1032,26 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
       end
     end
 
+    describe 'security attributes' do
+      context 'when security attributes are available' do
+        before do
+          stub_licensed_features(security_attributes: true)
+        end
+
+        context 'when user is maintainer' do
+          let(:current_user) { maintainer }
+
+          it { is_expected.to be_allowed(:admin_security_attributes) }
+        end
+
+        context 'when user is developer' do
+          let(:current_user) { developer }
+
+          it { is_expected.to be_disallowed(:admin_security_attributes) }
+        end
+      end
+    end
+
     describe 'remove_project when default_project_deletion_protection is set to true' do
       before do
         stub_application_setting(default_project_deletion_protection: true)

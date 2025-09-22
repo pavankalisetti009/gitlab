@@ -25,6 +25,8 @@ module Security
 
     scope :include_category, -> { includes(:security_category) }
     scope :by_category, ->(category) { where(security_category: category) }
+    scope :by_namespace, ->(namespace) { where(namespace: namespace) }
+    scope :by_template_type, ->(template_type) { where(template_type: template_type) }
     scope :pluck_id, -> { limit(MAX_PLUCK).pluck(:id) }
 
     def editable?

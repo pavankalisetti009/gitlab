@@ -576,6 +576,10 @@ module EE
         enable :read_project_security_exclusions
       end
 
+      rule { can?(:maintainer_access) }.policy do
+        enable :admin_security_attributes
+      end
+
       rule { ~validity_checks_available }.policy do
         prevent :configure_secret_detection_validity_checks
       end

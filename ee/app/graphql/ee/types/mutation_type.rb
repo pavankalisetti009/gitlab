@@ -198,6 +198,7 @@ module EE
         mount_mutation ::Mutations::Security::ProjectSecurityExclusionDelete
         mount_mutation ::Mutations::Security::Attributes::Create
         mount_mutation ::Mutations::Security::Attributes::Update
+        mount_mutation ::Mutations::Security::Attributes::ProjectUpdate
         mount_mutation ::Mutations::Security::Categories::Create
         mount_mutation ::Mutations::Security::Categories::Update
         mount_mutation ::Mutations::Users::Abuse::NamespaceBans::Destroy
