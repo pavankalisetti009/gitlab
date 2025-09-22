@@ -1,6 +1,6 @@
 <script>
 import { isEmpty } from 'lodash';
-import { GlAlert, GlCollapse, GlTooltipDirective, GlEmptyState, GlButton } from '@gitlab/ui';
+import { GlAlert, GlButton, GlCollapse, GlEmptyState, GlTooltipDirective } from '@gitlab/ui';
 import glFeatureFlagsMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
 import { setUrlFragment } from '~/lib/utils/url_utility';
 import { __, s__, n__, sprintf } from '~/locale';
@@ -40,6 +40,7 @@ import BotCommentAction from './action/bot_message_action.vue';
 import RuleSection from './rule/rule_section.vue';
 import FallbackAndEdgeCasesSection from './advanced_settings/fallback_and_edge_cases_section.vue';
 import PolicyExceptions from './advanced_settings/policy_exceptions/policy_exceptions.vue';
+import EnforcementType from './enforcement/enforcement_type.vue';
 import {
   ACTION_LISTBOX_ITEMS,
   BLOCK_GROUP_BRANCH_MODIFICATION,
@@ -53,8 +54,8 @@ import {
   BOT_MESSAGE_TYPE,
   PERMITTED_INVALID_SETTINGS_KEY,
   REQUIRE_APPROVAL_TYPE,
-  WARN_TYPE,
 } from './lib';
+import { ENFORCE_VALUE, WARN_VALUE } from './enforcement/constants';
 
 export default {
   ACTION_LISTBOX_ITEMS: ACTION_LISTBOX_ITEMS(),
@@ -63,6 +64,7 @@ export default {
   SECURITY_POLICY_ACTIONS,
   EDITOR_MODE_YAML,
   EDITOR_MODE_RULE,
+
   i18n: {
     ACTION_SECTION_DISABLE_ERROR,
     ADD_ACTION_LABEL,
@@ -88,12 +90,6 @@ export default {
     settingErrorDescription: s__(
       "SecurityOrchestration|This policy doesn't contain any actions or override project approval settings. You cannot create an empty policy.",
     ),
-    approverActionTooltip: s__(
-      'SecurityOrchestration|Merge request approval policies allow a maximum of 5 approver actions.',
-    ),
-    botActionTooltip: s__(
-      'SecurityOrchestration|Merge request approval policies allow a maximum 1 bot message action.',
-    ),
     exceedingRulesMessage: s__(
       'SecurityOrchestration|You can add a maximum of %{rulesCount} %{rules}.',
     ),
@@ -102,6 +98,7 @@ export default {
     ActionSection,
     BotCommentAction,
     DisabledSection,
+    EnforcementType,
     FallbackAndEdgeCasesSection,
     GlAlert,
     GlButton,
@@ -239,9 +236,27 @@ export default {
       const botActions = this.actions.filter(({ type }) => type === BOT_MESSAGE_TYPE);
       return botActions.filter(({ enabled }) => enabled);
     },
-    hasWarnAction() {
+    explicitBotActions() {
+      const botActions = this.policy.actions.filter(({ type }) => type === BOT_MESSAGE_TYPE);
+      return botActions.filter(({ enabled }) => enabled);
+    },
+    enforcement() {
+      return this.policy.enforcement_type || ENFORCE_VALUE;
+    },
+    hasBotActions() {
+      return this.botActions.length > 0;
+    },
+    hasExplicitBotActions() {
+      return this.explicitBotActions.length > 0;
+    },
+    isWarnMode() {
+      return this.hasWarnModeFeatureFlag && this.enforcement === WARN_VALUE;
+    },
+    hasWarnModeFeatureFlag() {
+      return Boolean(this.glFeatures.securityPolicyApprovalWarnMode);
+    },
+    hasLegacyWarnAction() {
       return (
-        this.glFeatures.securityPolicyApprovalWarnMode &&
         this.botActions.length === 1 &&
         this.approversActions.length === 1 &&
         this.approversActions[0].approvals_required === 0
@@ -357,17 +372,7 @@ export default {
         this.policy = { ...this.policy, actions: [] };
       }
 
-      if (
-        (this.hasWarnAction && type !== WARN_TYPE) ||
-        (!this.hasWarnAction && type === WARN_TYPE)
-      ) {
-        this.policy.actions = [];
-      }
-
       switch (type) {
-        case WARN_TYPE:
-          this.addWarnAction();
-          break;
         case REQUIRE_APPROVAL_TYPE:
           this.addApproverAction();
           break;
@@ -395,15 +400,8 @@ export default {
         this.policy.actions.push(action);
       }
     },
-    addWarnAction() {
-      this.policy.actions = buildAction(WARN_TYPE);
-    },
     removeApproverAction(index) {
       this.policy.actions?.splice(index, 1);
-      this.updateYamlEditorValue(this.policy);
-    },
-    removeWarnAction() {
-      this.policy.actions = [];
       this.updateYamlEditorValue(this.policy);
     },
     updateAction(values, index) {
@@ -474,6 +472,15 @@ export default {
       this.policy = updatedPolicy;
       this.updateYamlEditorValue(this.policy);
     },
+    handleUpdateEnforcement(value) {
+      // if bot comment is disabled or non-existent, add it when going to warn mode
+      if (value === WARN_VALUE && !this.hasExplicitBotActions) {
+        this.addBotAction();
+      }
+
+      this.policy = { ...this.policy, enforcement_type: value };
+      this.updateYamlEditorValue(this.policy);
+    },
     handleUpdateProperty(property, value) {
       this.policy[property] = value;
       this.updateYamlEditorValue(this.policy);
@@ -503,27 +510,33 @@ export default {
       }
     },
     shouldDisableActionSelector(filter) {
-      if (filter === WARN_TYPE) {
-        return this.hasWarnAction;
+      if (this.isWarnMode) {
+        return true;
       }
 
       if (filter === BOT_MESSAGE_TYPE) {
-        return !this.hasWarnAction && this.botActions.length > 0;
+        return this.hasBotActions;
       }
 
-      return (
-        !this.hasWarnAction && this.approversActions.length >= MAX_ALLOWED_APPROVER_ACTION_LENGTH
-      );
+      return this.approversActions.length >= MAX_ALLOWED_APPROVER_ACTION_LENGTH;
     },
     toggleCollapse() {
       this.isExpanded = !this.isExpanded;
     },
     customFilterSelectorTooltip(filter) {
-      if (filter.value === BOT_MESSAGE_TYPE) {
-        return this.$options.i18n.botActionTooltip;
+      if (this.isWarnMode) {
+        return s__('SecurityOrchestration|No other actions are allowed in warn mode');
       }
 
-      return this.$options.i18n.approverActionTooltip;
+      if (filter.value === BOT_MESSAGE_TYPE) {
+        return s__(
+          'SecurityOrchestration|Merge request approval policies allow a maximum 1 bot message action.',
+        );
+      }
+
+      return s__(
+        'SecurityOrchestration|Merge request approval policies allow a maximum of 5 approver actions.',
+      );
     },
   },
 };
@@ -545,6 +558,16 @@ export default {
     @update-yaml="updateYaml"
     @update-editor-mode="changeEditorMode"
   >
+    <template #additional-status>
+      <enforcement-type
+        v-if="hasWarnModeFeatureFlag"
+        :enforcement="enforcement"
+        :has-legacy-warn-action="hasLegacyWarnAction"
+        :is-warn-mode="isWarnMode"
+        @change="handleUpdateEnforcement"
+      />
+    </template>
+
     <template #rules>
       <disabled-section
         :disabled="parsingError.rules"
@@ -605,20 +628,21 @@ export default {
           <div class="gl-rounded-base gl-bg-subtle gl-p-6"></div>
         </template>
 
-        <div v-if="!hasWarnAction">
-          <action-section
-            v-for="(action, index) in approversActions"
-            :key="action.id"
-            :data-testid="`action-${index}`"
-            class="gl-mb-4"
-            :action-index="index"
-            :init-action="action"
-            :errors="actionError.action"
-            @error="handleParsingError"
-            @changed="updateAction($event, index)"
-            @remove="removeApproverAction(index)"
-          />
+        <action-section
+          v-for="(action, index) in approversActions"
+          :key="action.id"
+          :data-testid="`action-${index}`"
+          class="gl-mb-4"
+          :action-index="index"
+          :init-action="action"
+          :is-warn-type="isWarnMode"
+          :errors="actionError.action"
+          @error="handleParsingError"
+          @changed="updateAction($event, index)"
+          @remove="removeApproverAction(index)"
+        />
 
+        <template v-if="!isWarnMode">
           <bot-comment-action
             v-for="action in botActions"
             :key="action.id"
@@ -626,23 +650,7 @@ export default {
             :init-action="action"
             @changed="updateBotAction($event)"
           />
-        </div>
-
-        <div v-else>
-          <action-section
-            v-for="(action, index) in approversActions"
-            :key="action.id"
-            :data-testid="`warn-action`"
-            class="gl-mb-4"
-            :action-index="index"
-            :init-action="action"
-            :is-warn-type="true"
-            :errors="actionError.action"
-            @error="handleParsingError"
-            @changed="updateAction($event, index)"
-            @remove="removeWarnAction"
-          />
-        </div>
+        </template>
 
         <scan-filter-selector
           class="gl-w-full"
