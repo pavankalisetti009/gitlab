@@ -99,18 +99,6 @@ RSpec.describe Sbom::Ingestion::Tasks::IngestOccurrencesVulnerabilities, feature
           }.from(true).to(false)
         end
 
-        context 'when show_only_active_vulnerabilities_on_the_dependency_list is disabled' do
-          before do
-            stub_feature_flags(show_only_active_vulnerabilities_on_the_dependency_list: false)
-          end
-
-          it 'does not delete the record' do
-            expect { ingest_occurrences_vulnerabilities }.not_to change {
-              Sbom::OccurrencesVulnerability.exists?(existing_record.id)
-            }.from(true)
-          end
-        end
-
         context 'when there is another record with the same vulnerability_id' do
           let!(:other_record) do
             create(:sbom_occurrences_vulnerability,
@@ -169,20 +157,6 @@ RSpec.describe Sbom::Ingestion::Tasks::IngestOccurrencesVulnerabilities, feature
         let(:expected_vulnerability_ids) { [vulnerability_1.id, vulnerability_2.id] }
 
         it_behaves_like 'it syncs vulnerabilities with elasticsearch'
-
-        context 'when show_only_active_vulnerabilities_on_the_dependency_list is disabled' do
-          before do
-            stub_feature_flags(show_only_active_vulnerabilities_on_the_dependency_list: false)
-          end
-
-          it_behaves_like 'it syncs vulnerabilities with elasticsearch'
-
-          it 'does not use new implementation' do
-            task = described_class.new(pipeline, occurrence_maps)
-            expect(task).not_to receive(:existing_records)
-            task.execute
-          end
-        end
       end
 
       context 'when no vulnerabilities are returned' do
