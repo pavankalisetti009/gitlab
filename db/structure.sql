@@ -21356,6 +21356,28 @@ CREATE SEQUENCE packages_package_file_build_infos_id_seq
 
 ALTER SEQUENCE packages_package_file_build_infos_id_seq OWNED BY packages_package_file_build_infos.id;
 
+CREATE TABLE packages_package_file_states (
+    id bigint NOT NULL,
+    verification_started_at timestamp with time zone,
+    verification_retry_at timestamp with time zone,
+    verified_at timestamp with time zone,
+    package_file_id bigint NOT NULL,
+    verification_state smallint DEFAULT 0 NOT NULL,
+    verification_retry_count smallint DEFAULT 0,
+    verification_checksum bytea,
+    verification_failure text,
+    CONSTRAINT check_975cbbb43b CHECK ((char_length(verification_failure) <= 255))
+);
+
+CREATE SEQUENCE packages_package_file_states_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+ALTER SEQUENCE packages_package_file_states_id_seq OWNED BY packages_package_file_states.id;
+
 CREATE TABLE packages_package_files (
     id bigint NOT NULL,
     package_id bigint NOT NULL,
@@ -30266,6 +30288,8 @@ ALTER TABLE ONLY packages_nuget_symbols ALTER COLUMN id SET DEFAULT nextval('pac
 
 ALTER TABLE ONLY packages_package_file_build_infos ALTER COLUMN id SET DEFAULT nextval('packages_package_file_build_infos_id_seq'::regclass);
 
+ALTER TABLE ONLY packages_package_file_states ALTER COLUMN id SET DEFAULT nextval('packages_package_file_states_id_seq'::regclass);
+
 ALTER TABLE ONLY packages_package_files ALTER COLUMN id SET DEFAULT nextval('packages_package_files_id_seq'::regclass);
 
 ALTER TABLE ONLY packages_packages ALTER COLUMN id SET DEFAULT nextval('packages_packages_id_seq'::regclass);
@@ -33481,6 +33505,9 @@ ALTER TABLE ONLY packages_nuget_symbols
 
 ALTER TABLE ONLY packages_package_file_build_infos
     ADD CONSTRAINT packages_package_file_build_infos_pkey PRIMARY KEY (id);
+
+ALTER TABLE ONLY packages_package_file_states
+    ADD CONSTRAINT packages_package_file_states_pkey PRIMARY KEY (id);
 
 ALTER TABLE ONLY packages_package_files
     ADD CONSTRAINT packages_package_files_pkey PRIMARY KEY (id);
@@ -40005,6 +40032,14 @@ CREATE INDEX index_packages_package_file_build_infos_on_pipeline_id ON packages_
 
 CREATE INDEX index_packages_package_file_build_infos_on_project_id ON packages_package_file_build_infos USING btree (project_id);
 
+CREATE INDEX index_packages_package_file_states_failed_verification ON packages_package_file_states USING btree (verification_retry_at NULLS FIRST) WHERE (verification_state = 3);
+
+CREATE UNIQUE INDEX index_packages_package_file_states_on_package_file_id ON packages_package_file_states USING btree (package_file_id);
+
+CREATE INDEX index_packages_package_file_states_on_verification_state ON packages_package_file_states USING btree (verification_state);
+
+CREATE INDEX index_packages_package_file_states_pending_verification ON packages_package_file_states USING btree (verified_at NULLS FIRST) WHERE (verification_state = 0);
+
 CREATE INDEX index_packages_package_files_on_file_name ON packages_package_files USING gin (file_name gin_trgm_ops);
 
 CREATE INDEX index_packages_package_files_on_file_name_file_sha256 ON packages_package_files USING btree (file_name, file_sha256);
@@ -45180,6 +45215,8 @@ CREATE TRIGGER p_ci_workloads_loose_fk_trigger AFTER DELETE ON p_ci_workloads RE
 CREATE TRIGGER p_knowledge_graph_enabled_namespaces_loose_fk_trigger AFTER DELETE ON p_knowledge_graph_enabled_namespaces REFERENCING OLD TABLE AS old_table FOR EACH STATEMENT EXECUTE FUNCTION insert_into_loose_foreign_keys_deleted_records_override_table('p_knowledge_graph_enabled_namespaces');
 
 CREATE TRIGGER packages_nuget_symbols_loose_fk_trigger AFTER DELETE ON packages_nuget_symbols REFERENCING OLD TABLE AS old_table FOR EACH STATEMENT EXECUTE FUNCTION insert_into_loose_foreign_keys_deleted_records();
+
+CREATE TRIGGER packages_package_files_loose_fk_trigger AFTER DELETE ON packages_package_files REFERENCING OLD TABLE AS old_table FOR EACH STATEMENT EXECUTE FUNCTION insert_into_loose_foreign_keys_deleted_records();
 
 CREATE TRIGGER plans_loose_fk_trigger AFTER DELETE ON plans REFERENCING OLD TABLE AS old_table FOR EACH STATEMENT EXECUTE FUNCTION insert_into_loose_foreign_keys_deleted_records();
 
