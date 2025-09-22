@@ -3,11 +3,9 @@ import { GlPopover, GlButton, GlSprintf, GlLink } from '@gitlab/ui';
 import { s__, __ } from '~/locale';
 import UserCalloutDismisser from '~/vue_shared/components/user_callout_dismisser.vue';
 import { helpPagePath } from '~/helpers/help_page_helper';
-import Tracking, { InternalEvents } from '~/tracking';
-import { isExperimentVariant } from '~/experimentation/utils';
+import { InternalEvents } from '~/tracking';
 import DUO_CHAT_ILLUSTRATION from './popover-gradient.svg?url';
 
-export const ASK_DUO_HOTSPOT_CSS_CLASS = 'js-ask-duo-hotspot';
 export const DUO_CHAT_GLOBAL_BUTTON_CSS_CLASS = 'js-tanuki-bot-chat-toggle';
 const trackingMixin = InternalEvents.mixin();
 
@@ -32,15 +30,8 @@ export default {
     GlLink,
     UserCalloutDismisser,
   },
-  mixins: [trackingMixin, Tracking.mixin({ experiment: 'hotspot_duo_chat_during_trial' })],
-  computed: {
-    isCandidate() {
-      return isExperimentVariant('hotspot_duo_chat_during_trial');
-    },
-  },
+  mixins: [trackingMixin],
   beforeMount() {
-    this.hotspot = document.querySelector(`.${ASK_DUO_HOTSPOT_CSS_CLASS}`);
-
     const allButtons = Array.from(
       document.querySelectorAll(`.${DUO_CHAT_GLOBAL_BUTTON_CSS_CLASS}`),
     );
@@ -51,16 +42,7 @@ export default {
     });
   },
   mounted() {
-    if (this.hotspot) {
-      this.track('render_ask_gitlab_duo_hotspot');
-    }
-
-    if (this.isCandidate) {
-      this.hotspot?.addEventListener('click', this.handleHotspotClick);
-      this.popoverTarget?.addEventListener('click', this.handleCandidateButtonClick);
-    } else {
-      this.popoverTarget?.addEventListener('click', this.handleButtonClick);
-    }
+    this.popoverTarget?.addEventListener('click', this.handleButtonClick);
   },
   beforeDestroy() {
     this.stopListeningToPopover();
@@ -70,40 +52,21 @@ export default {
       if (this.$refs.popoverLink) {
         this.$refs.popoverLink.$emit('click');
       }
-
-      this.handleCandidateButtonClick();
-    },
-    handleCandidateButtonClick() {
-      this.track('click_button', { label: 'tanuki_bot_breadcrumbs_button' });
-    },
-    handleHotspotClick() {
-      this.track('click_ask_gitlab_duo_hotspot');
     },
     stopListeningToPopover() {
-      this.hotspot?.removeEventListener('click', this.handleHotspotClick);
-      this.popoverTarget?.removeEventListener('click', this.handleCandidateButtonClick);
       this.popoverTarget?.removeEventListener('click', this.handleButtonClick);
     },
-    dismissCallout(dismissFn, directClick = true) {
+    dismissCallout(dismissFn) {
       this.stopListeningToPopover();
       dismissFn();
-
-      if (directClick) {
-        this.track('dismiss_duo_chat_callout');
-      }
-
-      if (this.isCandidate) {
-        this.hotspot?.remove();
-        this.hotspot = null;
-      }
+      this.trackEvent('dismiss_duo_chat_callout');
     },
     notifyAboutDismiss() {
       this.$emit('callout-dismissed');
     },
     dismissAndNotify(dismissFn) {
-      this.dismissCallout(dismissFn, false);
+      this.dismissCallout(dismissFn);
       this.notifyAboutDismiss();
-      this.track('click_ask_gitlab_duo');
     },
   },
   DUO_CHAT_ILLUSTRATION,
@@ -116,9 +79,8 @@ export default {
     <template #default="{ dismiss, shouldShowCallout }">
       <gl-popover
         v-if="shouldShowCallout"
-        :target="isCandidate ? hotspot : popoverTarget"
-        :show="shouldShowCallout && !isCandidate"
-        :placement="isCandidate ? 'bottomleft' : 'bottom'"
+        :target="popoverTarget"
+        :show="shouldShowCallout"
         show-close-button
         :css-classes="[
           'js-duo-chat-callout-popover',
@@ -127,10 +89,10 @@ export default {
           'gl-shadow-lg',
           'gl-p-2',
         ]"
-        :triggers="isCandidate ? 'hover focus' : 'manual'"
+        triggers="manual"
         data-testid="duo-chat-promo-callout-popover"
         @close-button-clicked="dismissCallout(dismiss)"
-        @shown="track('render_duo_chat_callout')"
+        @shown="trackEvent('render_duo_chat_callout')"
       >
         <img
           :src="$options.DUO_CHAT_ILLUSTRATION"
