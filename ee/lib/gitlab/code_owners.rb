@@ -7,7 +7,8 @@ module Gitlab
 
     def self.for_blob(project, blob)
       if project.feature_available?(:code_owners)
-        Loader.new(project, blob.commit_id, blob.path).members
+        path = blob.tree? ? "/#{blob.path}/" : blob.path
+        Loader.new(project, blob.commit_id, path).members
       else
         []
       end

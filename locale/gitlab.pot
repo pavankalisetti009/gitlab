@@ -54744,9 +54744,6 @@ msgstr ""
 msgid "Review requested from %{reviewerName}"
 msgstr ""
 
-msgid "Review requests"
-msgstr ""
-
 msgid "Review started"
 msgstr ""
 
