@@ -74,7 +74,7 @@ RSpec.describe 'Trial Sign Up', :with_trial_types, :with_current_organization, :
       end
     end
 
-    context 'when experiment `lightweight_trial_registration_redesign` is candidate', :js do
+    context 'when experiment `lightweight_trial_registration_redesign` is candidate', :experiment_tracking, :js do
       include IdentityVerificationHelpers
 
       let_it_be(:user) { create(:user) }
