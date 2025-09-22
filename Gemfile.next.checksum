@@ -27,7 +27,7 @@
 {"name":"asciidoctor-kroki","version":"0.10.0","platform":"ruby","checksum":"8e4225d88f120e2e7b5d3f5ddb67c5e69496d7344a16c57db5036ac900123062"},
 {"name":"asciidoctor-plantuml","version":"0.0.16","platform":"ruby","checksum":"407e47cd1186ded5ccc75f0c812e5524c26c571d542247c5132abb8f47bd1793"},
 {"name":"ast","version":"2.4.2","platform":"ruby","checksum":"1e280232e6a33754cde542bc5ef85520b74db2aac73ec14acef453784447cc12"},
-{"name":"async","version":"2.28.0","platform":"ruby","checksum":"966c5d1291e00950e6776b0351ff2180a3e761415badb6f6dc348a648fad156e"},
+{"name":"async","version":"2.32.0","platform":"ruby","checksum":"79ffbc8a5a99a8e7e5e65c7622ecf1e38e2193f0b920c5fec2316f09ff184787"},
 {"name":"atlassian-jwt","version":"0.2.1","platform":"ruby","checksum":"2fd2d87418773f2e140c038cb22e049069708aff2bd0a423a7e1740574e97823"},
 {"name":"attr_encrypted","version":"4.2.0","platform":"ruby","checksum":"7e5c80159e6e38ed40dc4e2e65c4f57234fe1f376bddc40c8b773bfb9b81ad51"},
 {"name":"attr_required","version":"1.0.2","platform":"ruby","checksum":"f0ebfc56b35e874f4d0ae799066dbc1f81efefe2364ca3803dc9ea6a4de6cb99"},
