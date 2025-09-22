@@ -73,7 +73,8 @@ RSpec.describe 'Virtual registry', feature_category: :virtual_registry do
 
           expect(page).to have_selector('h1', text: 'Virtual registry')
           expect(page).to have_text('Maven')
-          expect(page).to have_link('View 1 registry', href: group_virtual_registries_maven_registries_path(group))
+          expect(page).to have_link('View 1 registry',
+            href: group_virtual_registries_maven_registries_and_upstreams_path(group))
           expect(page).to have_link('Create registry', href: new_group_virtual_registries_maven_registry_path(group))
         end
 

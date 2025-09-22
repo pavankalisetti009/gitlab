@@ -4,20 +4,16 @@ module Groups
   module VirtualRegistries
     module Maven
       class RegistriesController < Groups::VirtualRegistries::BaseController
-        before_action :verify_read_virtual_registry!, only: [:index, :show]
+        before_action :verify_read_virtual_registry!, only: [:show]
         before_action :verify_create_virtual_registry!, only: [:new, :create]
         before_action :verify_update_virtual_registry!, only: [:edit, :update]
         before_action :verify_destroy_virtual_registry!, only: [:destroy]
         before_action :set_registry, only: [:show, :edit, :update, :destroy]
 
-        before_action :push_update_ability, only: [:index, :show]
-        before_action :push_create_ability, only: [:show]
-        before_action :push_destroy_ability, only: [:show]
+        before_action :push_abilities, only: [:show]
 
         feature_category :virtual_registry
         urgency :low
-
-        def index; end
 
         def new
           @maven_registry = ::VirtualRegistries::Packages::Maven::Registry.new
@@ -52,7 +48,7 @@ module Groups
         def destroy
           if @maven_registry.destroy
             flash[:notice] = s_('VirtualRegistry|Maven virtual registry was deleted')
-            redirect_to group_virtual_registries_maven_registries_path(group)
+            redirect_to group_virtual_registries_maven_registries_and_upstreams_path(group)
           else
             flash[:alert] = @maven_registry.errors.full_messages.to_sentence
             render :edit
@@ -61,17 +57,11 @@ module Groups
 
         private
 
-        def push_update_ability
+        def push_abilities
           push_frontend_ability(ability: :update_virtual_registry,
             resource: group.virtual_registry_policy_subject, user: current_user)
-        end
-
-        def push_create_ability
           push_frontend_ability(ability: :create_virtual_registry,
             resource: group.virtual_registry_policy_subject, user: current_user)
-        end
-
-        def push_destroy_ability
           push_frontend_ability(ability: :destroy_virtual_registry,
             resource: group.virtual_registry_policy_subject, user: current_user)
         end

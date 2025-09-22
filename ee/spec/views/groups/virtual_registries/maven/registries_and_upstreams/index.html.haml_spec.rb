@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe 'groups/virtual_registries/maven/registries/index', feature_category: :virtual_registry do
+RSpec.describe 'groups/virtual_registries/maven/registries_and_upstreams/index', feature_category: :virtual_registry do
   let_it_be(:group) { build_stubbed(:group) }
   let_it_be(:user) { build_stubbed(:user) }
 
@@ -29,7 +29,7 @@ RSpec.describe 'groups/virtual_registries/maven/registries/index', feature_categ
 
     render
 
-    expect(rendered).to have_selector("#js-vue-maven-virtual-registries-list[data-provide='#{expected_data}']")
+    expect(rendered).to have_selector("#js-vue-maven-virtual-registries-and-upstreams[data-provide='#{expected_data}']")
   end
 
   context 'when user can create virtual registry' do
