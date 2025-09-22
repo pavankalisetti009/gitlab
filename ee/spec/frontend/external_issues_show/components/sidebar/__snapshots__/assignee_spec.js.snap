@@ -14,11 +14,12 @@ exports[`ExternalIssuesSidebarAssignee with assignee template renders avatar com
       title="Justin Ho"
     >
       <gl-avatar-labeled-stub
-        alt="Justin Ho"
-        entity-name="Justin Ho"
+        entityid="0"
+        entityname="Justin Ho"
         label="Justin Ho"
         labellink=""
         labellinkattrs="[object Object]"
+        shape="circle"
         size="32"
         src="http://127.0.0.1:3000/uploads/-/system/user/avatar/1/avatar.png?width=90"
         sublabellink=""

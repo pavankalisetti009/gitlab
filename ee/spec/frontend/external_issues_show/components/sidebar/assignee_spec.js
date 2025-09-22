@@ -54,12 +54,11 @@ describe('ExternalIssuesSidebarAssignee', () => {
         const avatarLabeled = findAvatarLabeled();
 
         expect(avatarLabeled.exists()).toBe(true);
-        expect(avatarLabeled.attributes()).toMatchObject({
+        expect(avatarLabeled.props()).toMatchObject({
           src: mockAssignee.avatarUrl,
-          alt: mockAssignee.name,
-          'entity-name': mockAssignee.name,
+          entityName: mockAssignee.name,
+          label: mockAssignee.name,
         });
-        expect(avatarLabeled.props('label')).toBe(mockAssignee.name);
       });
 
       it('renders GlAvatar with correct props', () => {

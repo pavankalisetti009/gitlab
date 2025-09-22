@@ -191,7 +191,7 @@ describe('Vulnerability status description component', () => {
         'data-username': user.username,
       });
       expect(avatarLink().classes('js-user-link')).toBe(true);
-      expect(avatarLabeled().attributes('src')).toBe(user.avatar_url);
+      expect(avatarLabeled().props('src')).toBe(user.avatar_url);
       expect(avatarLabeled().props('label')).toBe(user.name);
     });
 
