@@ -2,12 +2,16 @@
 import { GlAlert, GlFormGroup, GlFormRadioGroup, GlLink, GlSprintf } from '@gitlab/ui';
 import { s__ } from '~/locale';
 import { helpPagePath } from '~/helpers/help_page_helper';
+import { ENFORCEMENT_OPTIONS } from './constants';
 
 export default {
-  ENFORCEMENT_OPTIONS: [
-    { value: 'warn', text: s__('SecurityOrchestration|Warn mode') },
-    { value: 'enforce', text: s__('SecurityOrchestration|Strictly enforced') },
-  ],
+  ENFORCEMENT_OPTIONS,
+  WARN_MODE_HELP_PATH: helpPagePath(
+    'user/application_security/policies/merge_request_approval_policies',
+    {
+      anchor: 'warn-mode',
+    },
+  ),
   components: {
     GlAlert,
     GlFormGroup,
@@ -45,11 +49,6 @@ export default {
     showAlert() {
       return this.isWarnMode || this.hasLegacyWarnAction;
     },
-    warnModeHelpPath() {
-      return helpPagePath('user/application_security/policies/merge_request_approval_policies', {
-        anchor: 'warn-mode',
-      });
-    },
   },
   methods: {
     handleEnforcementChange(value) {
@@ -70,7 +69,7 @@ export default {
     <gl-alert v-if="showAlert" variant="info" class="gl-mt-3" :dismissible="false">
       <gl-sprintf :message="alertText">
         <template #link="{ content }">
-          <gl-link :href="warnModeHelpPath" target="_blank">{{ content }}</gl-link>
+          <gl-link :href="$options.WARN_MODE_HELP_PATH" target="_blank">{{ content }}</gl-link>
         </template>
       </gl-sprintf>
     </gl-alert>

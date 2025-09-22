@@ -8,5 +8,13 @@ FactoryBot.define do
     multiple_selection { false }
     name { 'Test Category' }
     description { 'This is a test category' }
+
+    trait :single_selection do
+      multiple_selection { false }
+    end
+
+    trait :multi_selection do
+      multiple_selection { true }
+    end
   end
 end

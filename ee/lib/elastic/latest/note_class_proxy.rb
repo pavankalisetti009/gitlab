@@ -31,8 +31,6 @@ module Elastic
           query_hash = ::Search::Elastic::Filters.by_noteable_type(query_hash:, options:)
         end
 
-        query_hash[:highlight] = highlight_options(options[:in]) if include_highlight?(options)
-
         search(query_hash, options)
       end
 
@@ -57,12 +55,6 @@ module Elastic
       private
 
       attr_reader :noteable_type_to_feature
-
-      def include_highlight?(options)
-        return false if options[:count_only] || options[:noteable_type]
-
-        true
-      end
 
       def get_authorization_filter(query_hash, options)
         if use_new_auth?(options[:current_user])

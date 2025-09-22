@@ -407,6 +407,8 @@ export default {
               />
             </gl-form-group>
 
+            <slot name="additional-status"></slot>
+
             <dim-disable-container :disabled="hasParsingError">
               <template #title>
                 <h4>{{ $options.i18n.SCOPE_LABEL }}</h4>

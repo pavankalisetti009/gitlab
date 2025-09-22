@@ -53,8 +53,8 @@ export default {
               'AICatalog|The agent could not be added to the project. Check that the project meets the %{link_start}prerequisites%{link_end} and try again.',
             ),
             {
-              link_start: `<a href="${helpPagePath('user/ai_catalog', {
-                anchor: 'prerequisites',
+              link_start: `<a href="${helpPagePath('user/duo_agent_platform/ai_catalog', {
+                anchor: 'view-the-ai-catalog',
               })}" target="_blank">`,
               link_end: '</a>',
             },

@@ -10,7 +10,6 @@ module API
           end
           expose :thread_ts
           expose :parent_ts
-          expose :metadata
         end
       end
     end

@@ -24,6 +24,14 @@ module Vulnerabilities
           remediation.findings = @findings
         end
 
+        # Resetting the `remediations` association for the findings is important because while creating the `finding`
+        # record, the validation on the `solution` attributes already loads the remediations into memory.
+        # As the association between the `findings` and `remediations` is "Has Many Though", later setting the findings
+        # of remediations while creating them does not automatically set the remediations of findings.
+        # This is a limitation of the "Has Many Through" association.
+        # Therefore, we need to clear the association cache to hit the database again when remediations are needed.
+        @findings.each { |finding| finding.association(:remediations).reset }
+
         remediation.save ? success_response(remediation) : error_response("Remediation creation failed")
       end
 

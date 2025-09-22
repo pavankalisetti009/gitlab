@@ -453,7 +453,7 @@ module Gitlab
 
       def related_ids_for_notes(noteable_type)
         strong_memoize_with(:related_ids_for_notes, noteable_type) do
-          options = scope_options(:notes).merge(count_only: false, noteable_type: noteable_type)
+          options = scope_options(:notes).merge(count_only: false, noteable_type: noteable_type, related_ids_only: true)
 
           notes_response = Note.elastic_search(query, options: options).response
           notes_response['hits']['hits'].filter_map { |hit| hit['_source']['noteable_id'] }.uniq

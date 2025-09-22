@@ -79,8 +79,8 @@ RSpec.describe Elastic::Latest::NoteClassProxy, feature_category: :global_search
           end
         end
 
-        context 'when options[:noteable_type] is set' do
-          let(:options) { base_options.merge(noteable_type: 'Issue') }
+        context 'when options[:noteable_type] and options[:related_ids_only] are set' do
+          let(:options) { base_options.merge(noteable_type: 'Issue', related_ids_only: true) }
 
           it 'filters by noteable_type and returns noteable_id only in the _source array' do
             hits = result.response['hits']['hits']
@@ -120,8 +120,8 @@ RSpec.describe Elastic::Latest::NoteClassProxy, feature_category: :global_search
           end
         end
 
-        context 'when options[:noteable_type] is set' do
-          let(:options) { base_options.merge(noteable_type: 'Issue') }
+        context 'when options[:noteable_type] and options[:related_ids_only] are set' do
+          let(:options) { base_options.merge(noteable_type: 'Issue', related_ids_only: true) }
 
           it 'filters by noteable_type and returns noteable_id only in the _source array' do
             expect(result.response['hits']['hits'].first['_source'].keys).to contain_exactly('noteable_id')
@@ -158,8 +158,8 @@ RSpec.describe Elastic::Latest::NoteClassProxy, feature_category: :global_search
           end
         end
 
-        context 'when options[:noteable_type] is set' do
-          let(:options) { base_options.merge(noteable_type: 'Issue') }
+        context 'when options[:noteable_type] and options[:related_ids_only] are set' do
+          let(:options) { base_options.merge(noteable_type: 'Issue', related_ids_only: true) }
 
           it 'filters by noteable_type and returns noteable_id only in the _source array' do
             expect(result.response['hits']['hits'].first['_source'].keys).to contain_exactly('noteable_id')
