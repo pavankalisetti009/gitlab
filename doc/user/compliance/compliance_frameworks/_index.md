@@ -387,7 +387,11 @@ To add an external control when creating or editing a framework:
 External controls have an **asynchronous** workflow. [Compliance scans](../compliance_center/compliance_status_report.md#scan-timing-and-triggers) emit a payload to an external service whenever.
 
 ```mermaid
+%%{init: { "fontFamily": "GitLab Sans" }}%%
 sequenceDiagram
+    accTitle: Workflow for external compliance controls
+    accDescr: GitLab sends a requirement payload to an external service and receives a control response for compliance validation.
+
     GitLab->>+External service: Requirement payload
     External service-->>-GitLab: Control response
     Note over External service,GitLab: Response includes SHA at HEAD
