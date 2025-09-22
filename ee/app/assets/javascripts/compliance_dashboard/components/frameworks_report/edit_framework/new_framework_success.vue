@@ -87,7 +87,7 @@ export default {
     <h2 class="gl-heading-2 gl-mt-6">{{ $options.i18n.subTitle }}</h2>
     <gl-card
       data-testid="policies-card"
-      class="gl-mb-6 md:gl-w-3/5"
+      class="gl-mb-6 @md/panel:gl-w-3/5"
       header-class="gl-bg-strong"
       body-class="gl-shadow-x0-y2-b4-s0"
     >
@@ -105,7 +105,7 @@ export default {
     </gl-card>
     <gl-card
       data-testid="projects-card"
-      class="md:gl-w-3/5"
+      class="@md/panel:gl-w-3/5"
       header-class="gl-bg-strong"
       body-class="gl-shadow-x0-y2-b4-s0"
     >

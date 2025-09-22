@@ -144,7 +144,7 @@ export default {
 <template>
   <gl-card
     class="gl-mb-5"
-    header-class="gl-flex gl-flex-col sm:gl-flex-row gl-items-center gl-gap-3 gl-px-5"
+    header-class="gl-flex gl-flex-col @sm/panel:gl-flex-row gl-items-center gl-gap-3 gl-px-5"
     body-class="gl-p-0"
   >
     <template #header>
@@ -162,7 +162,7 @@ export default {
       </h2>
 
       <gl-button
-        class="gl-ml-auto gl-w-full sm:-gl-my-2 sm:gl-w-auto"
+        class="gl-ml-auto gl-w-full @sm/panel:gl-w-auto sm:-gl-my-2"
         :loading="isLoading"
         :disabled="isLoading"
         data-testid="run-health-check-button"
@@ -171,7 +171,7 @@ export default {
       >
 
       <gl-button
-        class="has-tooltip gl-w-full sm:gl-w-auto"
+        class="has-tooltip gl-w-full @sm/panel:gl-w-auto"
         :disabled="isLoading"
         category="secondary"
         icon="download"

@@ -5,7 +5,7 @@ import { isCustomRole, isAdminRole } from '../../utils';
 import RoleActions from './role_actions.vue';
 
 export const TABLE_FIELDS = [
-  { key: 'name', label: s__('MemberRole|Name'), tdClass: 'md:gl-w-3/10' },
+  { key: 'name', label: s__('MemberRole|Name'), tdClass: '@md/panel:gl-w-3/10' },
   { key: 'description', label: s__('MemberRole|Description') },
   {
     key: 'usersCount',
@@ -45,7 +45,9 @@ export default {
     </template>
 
     <template #cell(name)="{ item }">
-      <div class="gl-flex gl-flex-wrap gl-items-center gl-justify-end gl-gap-3 md:gl-justify-start">
+      <div
+        class="gl-flex gl-flex-wrap gl-items-center gl-justify-end gl-gap-3 @md/panel:gl-justify-start"
+      >
         <gl-link :href="item.detailsPath">{{ item.name }}</gl-link>
         <gl-badge v-if="isCustomRole(item)">
           {{ s__('MemberRole|Custom member role') }}

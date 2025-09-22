@@ -47,7 +47,7 @@ export default {
       return { [borderClasses]: this.isActive, [defaultClasses]: true };
     },
     titleClassesLWRExperiment() {
-      const defaultClasses = 'gl-bg-subtle gl-p-0 gl-pt-6 border-bottom-0';
+      const defaultClasses = 'gl-bg-subtle gl-p-0 gl-pt-6 !gl-border-b-0';
       const borderClasses = 'gl-border-strong gl-border-1 gl-border-t';
 
       const applyBorder = this.stepIndex !== 0;

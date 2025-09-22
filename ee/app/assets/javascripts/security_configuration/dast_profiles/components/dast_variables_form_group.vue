@@ -120,7 +120,7 @@ export default {
 <template>
   <div class="row">
     <gl-form-group
-      class="col-md-12 gl-mb-0"
+      class="gl-col-md-12 gl-mb-0"
       :optional="true"
       :optional-text="$options.i18n.optionalText"
       :label="$options.i18n.label"

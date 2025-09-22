@@ -42,7 +42,7 @@ export default {
       </template>
       <template v-else> &ndash; </template>
     </span>
-    <span v-if="label" class="gl-flex gl-whitespace-pre-wrap gl-text-subtle md:gl-hidden">{{
+    <span v-if="label" class="gl-flex gl-whitespace-pre-wrap gl-text-subtle @md/panel:gl-hidden">{{
       label
     }}</span>
   </div>

@@ -141,7 +141,7 @@ export default {
 </script>
 
 <template>
-  <div class="lg:gl-w-2/3">
+  <div class="@lg/panel:gl-w-2/3">
     <gl-alert
       v-if="errorMessages.length"
       class="gl-mb-3 gl-mt-5"
@@ -227,14 +227,14 @@ export default {
           type="submit"
           variant="confirm"
           data-testid="trigger-submit-button"
-          class="js-no-auto-disable gl-w-full sm:gl-w-auto"
+          class="js-no-auto-disable gl-w-full @sm/panel:gl-w-auto"
         >
           {{ submitButtonText }}
         </gl-button>
         <gl-button
           :to="{ name: $options.indexRoute }"
           :disabled="isLoading"
-          class="gl-w-full sm:gl-w-auto"
+          class="gl-w-full @sm/panel:gl-w-auto"
         >
           {{ __('Cancel') }}
         </gl-button>

@@ -112,8 +112,10 @@ export default {
 </script>
 
 <template>
-  <div class="gl-flex gl-w-full gl-flex-col gl-gap-5 md:gl-flex-row md:gl-items-center">
-    <div class="gl-flex gl-w-full gl-flex-col gl-items-center gl-gap-3 md:gl-flex-row">
+  <div
+    class="gl-flex gl-w-full gl-flex-col gl-gap-5 @md/panel:gl-flex-row @md/panel:gl-items-center"
+  >
+    <div class="gl-flex gl-w-full gl-flex-col gl-items-center gl-gap-3 @md/panel:gl-flex-row">
       <gl-collapsible-listbox
         block
         searchable

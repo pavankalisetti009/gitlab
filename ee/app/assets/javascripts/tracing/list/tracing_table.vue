@@ -94,7 +94,7 @@ export default {
 
 <template>
   <div>
-    <h4 class="gl-my-5 gl-block md:!gl-hidden">{{ $options.i18n.title }}</h4>
+    <h4 class="gl-my-5 gl-block @md/panel:!gl-hidden">{{ $options.i18n.title }}</h4>
 
     <gl-table
       :items="formattedTraces"

@@ -38,8 +38,8 @@ export default {
 </script>
 
 <template>
-  <div class="geo-site-core-details-grid-columns gl-grid lg:!gl-block">
-    <div class="gl-flex gl-flex-col lg:gl-mb-5">
+  <div class="geo-site-core-details-grid-columns gl-grid @lg/panel:!gl-block">
+    <div class="gl-flex gl-flex-col @lg/panel:gl-mb-5">
       <span>{{ $options.i18n.url }}</span>
       <gl-link
         class="gl-font-bold gl-text-default gl-underline"
@@ -51,11 +51,11 @@ export default {
         <gl-icon name="external-link" class="gl-ml-1" />
       </gl-link>
     </div>
-    <div class="gl-flex gl-flex-col lg:gl-my-5">
+    <div class="gl-flex gl-flex-col @lg/panel:gl-my-5">
       <span>{{ $options.i18n.internalUrl }}</span>
       <span class="gl-font-bold" data-testid="site-internal-url">{{ site.internalUrl }}</span>
     </div>
-    <div class="gl-flex gl-flex-col lg:gl-mt-5">
+    <div class="gl-flex gl-flex-col @lg/panel:gl-mt-5">
       <span>{{ $options.i18n.gitlabVersion }}</span>
       <span
         :class="{ 'gl-text-danger': hasMismatchVersion }"

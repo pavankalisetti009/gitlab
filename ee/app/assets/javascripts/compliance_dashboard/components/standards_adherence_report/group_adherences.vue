@@ -55,7 +55,7 @@ export default {
         <div
           v-for="(value, key) in $options.checkLabels"
           :key="value.id"
-          class="gl-border-b gl-flex gl-items-start md:gl-flex-row"
+          class="gl-border-b gl-flex gl-items-start @md/panel:gl-flex-row"
           data-testid="grouped-check"
         >
           <gl-accordion-item class="!gl-my-4" :title="value">
@@ -73,7 +73,7 @@ export default {
         <div
           v-for="value in projects"
           :key="value.id"
-          class="gl-border-b gl-flex gl-items-start md:gl-flex-row"
+          class="gl-border-b gl-flex gl-items-start @md/panel:gl-flex-row"
           data-testid="grouped-project"
         >
           <gl-accordion-item class="!gl-my-4" :title="value.name">
@@ -90,7 +90,7 @@ export default {
         <div
           v-for="(value, key) in $options.standardLabels"
           :key="value.id"
-          class="gl-border-b gl-flex gl-items-start md:gl-flex-row"
+          class="gl-border-b gl-flex gl-items-start @md/panel:gl-flex-row"
           data-testid="grouped-standard"
         >
           <gl-accordion-item class="!gl-my-4" :title="value">

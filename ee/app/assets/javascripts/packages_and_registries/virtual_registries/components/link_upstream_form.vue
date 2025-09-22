@@ -92,7 +92,7 @@ export default {
       this.$emit('cancel');
     },
   },
-  rowClass: 'md:gl-text-right md:gl-basis-26',
+  rowClass: '@md/panel:gl-text-right @md/panel:gl-basis-26',
 };
 </script>
 
@@ -102,7 +102,7 @@ export default {
       id="upstream-select-group"
       :label="s__('VirtualRegistry|Select an upstream')"
       label-for="upstream-select"
-      class="md:gl-w-3/10"
+      class="@md/panel:gl-w-3/10"
     >
       <upstream-selector
         :selected-upstream-name="selectedUpstreamName"
@@ -118,20 +118,24 @@ export default {
       </template>
       <template #default>
         <div v-if="selectedUpstreamDetails">
-          <div class="gl-border-b gl-flex gl-flex-col gl-px-5 gl-py-4 md:gl-flex-row md:gl-gap-5">
+          <div
+            class="gl-border-b gl-flex gl-flex-col gl-px-5 gl-py-4 @md/panel:gl-flex-row @md/panel:gl-gap-5"
+          >
             <span :class="$options.rowClass"> {{ s__('VirtualRegistry|URL') }}</span>
             <span> {{ selectedUpstreamDetails.url }}</span>
           </div>
           <div
             v-if="selectedUpstreamDetails.description"
-            class="gl-border-b gl-flex gl-flex-col gl-px-5 gl-py-4 md:gl-flex-row md:gl-gap-5"
+            class="gl-border-b gl-flex gl-flex-col gl-px-5 gl-py-4 @md/panel:gl-flex-row @md/panel:gl-gap-5"
           >
             <span :class="$options.rowClass">
               {{ s__('VirtualRegistry|Description') }}
             </span>
             <span> {{ selectedUpstreamDetails.description }} </span>
           </div>
-          <div class="gl-border-b gl-flex gl-flex-col gl-px-5 gl-py-4 md:gl-flex-row md:gl-gap-5">
+          <div
+            class="gl-border-b gl-flex gl-flex-col gl-px-5 gl-py-4 @md/panel:gl-flex-row @md/panel:gl-gap-5"
+          >
             <span :class="$options.rowClass">
               {{ s__('VirtualRegistry|Artifact caching period') }}
             </span>
@@ -139,7 +143,7 @@ export default {
               {{ getCacheValidityHoursLabel(selectedUpstreamDetails.cache_validity_hours) }}
             </span>
           </div>
-          <div class="gl-flex gl-flex-col gl-px-5 gl-py-4 md:gl-flex-row md:gl-gap-5">
+          <div class="gl-flex gl-flex-col gl-px-5 gl-py-4 @md/panel:gl-flex-row @md/panel:gl-gap-5">
             <span :class="$options.rowClass">
               {{ s__('VirtualRegistry|Metadata caching period') }}
             </span>

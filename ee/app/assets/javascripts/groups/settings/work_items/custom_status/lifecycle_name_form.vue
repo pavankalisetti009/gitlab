@@ -159,7 +159,7 @@ export default {
       category="tertiary"
       icon="pencil"
       size="small"
-      class="gl-ml-3 gl-opacity-10 focus:gl-opacity-10 sm:gl-opacity-0"
+      class="gl-ml-3 gl-opacity-10 focus:gl-opacity-10 @sm/panel:gl-opacity-0"
       :class="{ '!gl-opacity-10': cardHover }"
       @click="isEditing = true"
       >{{ __('Rename') }}</gl-button

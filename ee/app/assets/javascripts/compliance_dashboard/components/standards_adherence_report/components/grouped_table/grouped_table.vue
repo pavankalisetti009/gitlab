@@ -16,21 +16,21 @@ const BANNED_FIELD = {
 
 const FIELD_WIDTHS = {
   null: {
-    requirement: 'md:gl-w-3/20',
-    framework: 'md:gl-w-3/20',
-    project: 'md:gl-w-4/20',
+    requirement: '@md/panel:gl-w-3/20',
+    framework: '@md/panel:gl-w-3/20',
+    project: '@md/panel:gl-w-4/20',
   },
   [GROUP_BY.REQUIREMENTS]: {
-    framework: 'md:gl-w-5/20',
-    project: 'md:gl-w-5/20',
+    framework: '@md/panel:gl-w-5/20',
+    project: '@md/panel:gl-w-5/20',
   },
   [GROUP_BY.FRAMEWORKS]: {
-    requirement: 'md:gl-w-5/20',
-    project: 'md:gl-w-5/20',
+    requirement: '@md/panel:gl-w-5/20',
+    project: '@md/panel:gl-w-5/20',
   },
   [GROUP_BY.PROJECTS]: {
-    requirement: 'md:gl-w-5/20',
-    framework: 'md:gl-w-5/20',
+    requirement: '@md/panel:gl-w-5/20',
+    framework: '@md/panel:gl-w-5/20',
   },
 };
 
@@ -77,13 +77,13 @@ export default {
       const basicColumns = [
         column({
           key: 'status',
-          tdClass: 'md:gl-w-4/20',
+          tdClass: '@md/panel:gl-w-4/20',
         }),
         column({ key: 'requirement', tdClass: widths.requirement }),
         column({ key: 'framework', tdClass: widths.framework }),
         column({ key: 'project', tdClass: widths.project }),
-        column({ key: 'lastScanned', tdClass: 'md:gl-w-3/20' }),
-        column({ key: 'fixSuggestions', tdClass: 'md:gl-w-3/20' }),
+        column({ key: 'lastScanned', tdClass: '@md/panel:gl-w-3/20' }),
+        column({ key: 'fixSuggestions', tdClass: '@md/panel:gl-w-3/20' }),
       ].filter((field) => field.key !== bannedField);
 
       return basicColumns;

@@ -106,7 +106,7 @@ export default {
         })),
         {
           key: 'actions',
-          tdClass: 'actions-cell text-right',
+          tdClass: 'actions-cell !gl-text-right',
           ...fieldOptions,
           sortable: false,
           label: I18N_TABLE_ACTIONS_LABEL,
@@ -202,7 +202,7 @@ export default {
           v-if="item.group.latestSnapshot"
           :key="col.key"
           :data-testid="col.testId"
-          class="gl-flex gl-flex-col gl-items-end gl-gap-3 md:gl-items-start"
+          class="gl-flex gl-flex-col gl-items-end gl-gap-3 @md/panel:gl-items-start"
         >
           {{ item.adoption[col.key].adopted }}/{{ item.adoption[col.key].total }}
           {{ __('features adopted') }}

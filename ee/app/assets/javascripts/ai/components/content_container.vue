@@ -64,7 +64,7 @@ export default {
       <div class="gl-flex gl-items-center gl-justify-start gl-gap-2">
         <gl-button
           v-gl-tooltip
-          class="lg:gl-flex"
+          class="@lg/panel:gl-flex"
           :class="{ '!gl-hidden': !showBackButton }"
           icon="go-back"
           category="tertiary"
@@ -85,7 +85,7 @@ export default {
       <div class="ai-panel-header-actions gl-flex">
         <gl-button
           v-gl-tooltip
-          class="gl-hidden lg:gl-flex"
+          class="gl-hidden @lg/panel:gl-flex"
           :icon="isMaximized ? 'minimize' : 'maximize'"
           category="tertiary"
           :aria-label="maximizeButtonLabel"

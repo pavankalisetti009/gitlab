@@ -77,7 +77,7 @@ exports[`Status Page settings form default state should match the default snapsh
       </p>
       <form>
         <gl-form-group-stub
-          class="gl-pl-0 mb-3"
+          class="!gl-mb-5 gl-pl-0"
           labeldescription=""
           optionaltext="(optional)"
         >
@@ -92,7 +92,7 @@ exports[`Status Page settings form default state should match the default snapsh
           </gl-form-checkbox-stub>
         </gl-form-group-stub>
         <gl-form-group-stub
-          class="col-8 col-md-9 gl-pl-0 mb-3"
+          class="!gl-mb-5 gl-col-8 gl-col-md-9 gl-pl-0"
           label="Status page URL"
           label-for="status-page-url"
           label-size="sm"
@@ -116,7 +116,7 @@ exports[`Status Page settings form default state should match the default snapsh
           </p>
         </gl-form-group-stub>
         <gl-form-group-stub
-          class="col-8 col-md-9 gl-pl-0 mb-3"
+          class="!gl-mb-5 gl-col-8 gl-col-md-9 gl-pl-0"
           label="S3 Bucket name"
           label-for="status-page-s3-bucket-name"
           label-size="sm"
@@ -137,7 +137,7 @@ exports[`Status Page settings form default state should match the default snapsh
           </p>
         </gl-form-group-stub>
         <gl-form-group-stub
-          class="col-8 col-md-9 gl-pl-0 mb-3"
+          class="!gl-mb-5 gl-col-8 gl-col-md-9 gl-pl-0"
           label="AWS region"
           label-for="status-page-aws-region"
           label-size="sm"
@@ -159,7 +159,7 @@ exports[`Status Page settings form default state should match the default snapsh
           </p>
         </gl-form-group-stub>
         <gl-form-group-stub
-          class="col-8 col-md-9 gl-pl-0 mb-3"
+          class="!gl-mb-5 gl-col-8 gl-col-md-9 gl-pl-0"
           label="AWS access key ID"
           label-for="status-page-aws-access-key"
           label-size="sm"
@@ -173,7 +173,7 @@ exports[`Status Page settings form default state should match the default snapsh
           />
         </gl-form-group-stub>
         <gl-form-group-stub
-          class="col-8 col-md-9 gl-pl-0 mb-3"
+          class="!gl-mb-5 gl-col-8 gl-col-md-9 gl-pl-0"
           label="AWS Secret access key"
           label-for="status-page-aws-secret-access-key"
           label-size="sm"

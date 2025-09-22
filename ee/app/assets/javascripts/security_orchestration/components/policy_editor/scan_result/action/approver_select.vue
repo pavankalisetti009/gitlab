@@ -137,18 +137,18 @@ export default {
 
 <template>
   <section-layout
-    class="gl-w-full gl-items-end gl-rounded-none gl-bg-default gl-py-0 gl-pr-0 md:gl-items-start"
+    class="gl-w-full gl-items-end gl-rounded-none gl-bg-default gl-py-0 gl-pr-0 @md/panel:gl-items-start"
     content-classes="gl-flex gl-w-full "
     :show-remove-button="showRemoveButton"
     @remove="removeApprover"
   >
     <template #content>
       <gl-form
-        class="gl-w-full gl-flex-wrap gl-items-center md:gl-flex md:gl-gap-y-3"
+        class="gl-w-full gl-flex-wrap gl-items-center @md/panel:gl-flex @md/panel:gl-gap-y-3"
         @submit.prevent
       >
         <gl-collapsible-listbox
-          class="gl-mx-0 gl-mb-3 gl-block md:gl-mb-0 md:gl-mr-3"
+          class="gl-mx-0 gl-mb-3 gl-block @md/panel:gl-mb-0 @md/panel:gl-mr-3"
           data-testid="available-types"
           :disabled="disabled"
           :items="listBoxItems"
@@ -201,7 +201,7 @@ export default {
         <p
           v-if="showAdditionalText"
           data-testid="additional-text"
-          class="gl-mb-0 gl-ml-0 gl-mt-2 md:gl-ml-3 md:gl-mt-0"
+          class="gl-mb-0 gl-ml-0 gl-mt-2 @md/panel:gl-ml-3 @md/panel:gl-mt-0"
         >
           {{ $options.i18n.multipleApproverTypesHumanizedTemplate }}
         </p>

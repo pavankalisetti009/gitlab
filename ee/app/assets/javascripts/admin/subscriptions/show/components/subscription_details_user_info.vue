@@ -62,7 +62,7 @@ export default {
 </script>
 
 <template>
-  <div class="gl-mb-6 gl-grid gl-gap-5 sm:gl-grid-cols-2">
+  <div class="gl-mb-6 gl-grid gl-gap-5 @sm/panel:gl-grid-cols-2">
     <gl-card>
       <header>
         <h5 role="presentation" class="gl-mt-0 gl-font-normal gl-text-subtle">

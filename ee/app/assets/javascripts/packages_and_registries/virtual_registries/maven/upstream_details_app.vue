@@ -173,7 +173,7 @@ export default {
       :cache-entries-count="cacheEntriesCount"
     />
 
-    <div class="row-content-block gl-flex gl-flex-col gl-gap-3 md:gl-flex-row">
+    <div class="row-content-block gl-flex gl-flex-col gl-gap-3 @md/panel:gl-flex-row">
       <gl-filtered-search
         class="gl-min-w-0 gl-grow"
         :placeholder="__('Filter results')"

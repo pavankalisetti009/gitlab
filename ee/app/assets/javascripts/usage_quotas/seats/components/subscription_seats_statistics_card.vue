@@ -151,7 +151,10 @@ export default {
               <help-icon />
             </gl-link>
           </p>
-          <p v-if="shouldDisplayLimitedSeatText" class="border-top pt-3 gl-mt-5">
+          <p
+            v-if="shouldDisplayLimitedSeatText"
+            class="!gl-border-t gl-mt-5 !gl-border-t-gray-300 !gl-pt-5"
+          >
             {{ additionalInfo }}
           </p>
         </template>

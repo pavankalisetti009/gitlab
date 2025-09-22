@@ -54,7 +54,7 @@ export default {
         'dashboard-card-body-warning': !this.hasPipelineFailed && this.hasPipelineErrors,
         'dashboard-card-body-failed': this.hasPipelineFailed,
         'bg-secondary': !this.hasPipelineFailed && !this.hasPipelineErrors,
-        'gl-flex flex-column justify-content-center gl-items-center': !this.lastDeployment,
+        'gl-flex !gl-flex-col !gl-justify-center gl-items-center': !this.lastDeployment,
       };
     },
     user() {
@@ -112,7 +112,7 @@ export default {
 };
 </script>
 <template>
-  <div class="dashboard-card card border-0">
+  <div class="dashboard-card card !gl-border-0">
     <environment-header
       :environment="environment"
       :has-pipeline-failed="hasPipelineFailed"
@@ -121,7 +121,7 @@ export default {
 
     <div :class="cardClasses" class="dashboard-card-body card-body">
       <div v-if="lastDeployment" class="row">
-        <div class="col-1 align-self-center px-3">
+        <div class="gl-col-1 !gl-self-center !gl-px-5">
           <gl-avatar-link v-if="user" :href="user.path">
             <gl-avatar
               :src="user.avatar_url"
@@ -132,7 +132,9 @@ export default {
           </gl-avatar-link>
         </div>
 
-        <div class="col-10 col-sm-7 pr-0 pl-5 align-self-center align-middle ci-table">
+        <div
+          class="gl-col-10 gl-col-sm-7 ci-table !gl-self-center !gl-pl-7 !gl-pr-0 !gl-align-middle"
+        >
           <div class="branch-commit">
             <gl-icon name="work" :size="14" />
             <gl-link
@@ -157,7 +159,7 @@ export default {
         </div>
 
         <div
-          class="col-sm-3 mt-0 pl-6 pr-0 pl-sm-0 offset-1 offset-sm-0 text-sm-right align-self-center col-12 d-sm-block"
+          class="gl-col-sm-3 pl-6 gl-offset-1 gl-offset-sm-0 gl-col-12 !gl-mt-0 !gl-self-center !gl-pr-0 @sm/panel:!gl-block @sm/panel:!gl-pl-0 @sm/panel:!gl-text-right"
         >
           <time-ago
             v-if="shouldShowTimeAgo"
@@ -167,12 +169,12 @@ export default {
           <alerts v-if="environment.alert_count > 0" :count="environment.alert_count" />
         </div>
 
-        <div v-if="lastPipeline" class="col-12">
+        <div v-if="lastPipeline" class="gl-col-12">
           <project-pipeline :last-pipeline="lastPipeline" />
         </div>
       </div>
 
-      <div v-else class="justify-content-center gl-flex gl-h-full gl-items-center">
+      <div v-else class="gl-flex gl-h-full gl-items-center !gl-justify-center">
         <div class="gl-text-center gl-text-sm gl-font-bold gl-text-default">
           {{ $options.noDeploymentMessage }}
         </div>

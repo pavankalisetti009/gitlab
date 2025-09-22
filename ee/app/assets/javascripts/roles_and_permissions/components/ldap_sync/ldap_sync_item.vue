@@ -84,7 +84,7 @@ export default {
 </script>
 
 <template>
-  <li class="gl-flex-row-reverse gl-items-center sm:!gl-flex">
+  <li class="gl-flex-row-reverse gl-items-center @sm/panel:!gl-flex">
     <gl-button
       variant="danger"
       category="secondary"
@@ -94,7 +94,7 @@ export default {
       @click="$emit('delete')"
     />
 
-    <dl class="gl-mb-0 gl-flex-1 gl-grid-cols-[auto_1fr] gl-gap-x-5 sm:gl-grid">
+    <dl class="gl-mb-0 gl-flex-1 gl-grid-cols-[auto_1fr] gl-gap-x-5 @sm/panel:gl-grid">
       <dt :class="$options.dtClass">{{ s__('MemberRole|Server:') }}</dt>
       <dd :class="{ ...$options.ddClass, 'gl-text-warning': isUnknownLdapServer }">
         {{ roleLink.provider.label || roleLink.provider.id }}
@@ -124,7 +124,9 @@ export default {
         {{ roleLink.adminMemberRole.name }}
       </dd>
 
-      <dt :class="$options.dtClass" class="md:gl-mt-1">{{ s__('MemberRole|Sync status:') }}</dt>
+      <dt :class="$options.dtClass" class="@md/panel:gl-mt-1">
+        {{ s__('MemberRole|Sync status:') }}
+      </dt>
       <dd :class="$options.ddClass">
         <gl-badge :icon="badgeProps.icon" :variant="badgeProps.variant" class="gl-align-middle">
           {{ badgeProps.text }}

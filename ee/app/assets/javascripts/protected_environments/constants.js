@@ -21,7 +21,7 @@ export const DEPLOYER_FIELDS = [
   {
     key: 'deployers',
     label: s__('ProtectedEnvironments|Allowed to deploy'),
-    tdClass: 'md:gl-w-3/10',
+    tdClass: '@md/panel:gl-w-3/10',
   },
   {
     key: 'users',
@@ -38,7 +38,7 @@ export const APPROVER_FIELDS = [
   {
     key: 'approvers',
     label: s__('ProtectedEnvironments|Approvers'),
-    tdClass: 'md:gl-w-3/10',
+    tdClass: '@md/panel:gl-w-3/10',
   },
   {
     key: 'users',

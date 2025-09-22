@@ -88,12 +88,12 @@ export default {
 };
 </script>
 <template>
-  <gl-card class="bg-transparent gl-flex-1">
-    <header class="gl-my-3 gl-flex gl-flex-col gl-justify-between gl-gap-3 sm:gl-flex-row">
+  <gl-card class="gl-flex-1 !gl-bg-transparent">
+    <header class="gl-my-3 gl-flex gl-flex-col gl-justify-between gl-gap-3 @sm/panel:gl-flex-row">
       <h2 class="gl-font-heading gl-heading-scale-400" data-testid="chart-heading">
         {{ formattedRange }}
       </h2>
-      <div class="gl-flex gl-flex-col gl-justify-between gl-gap-3 sm:gl-flex-row">
+      <div class="gl-flex gl-flex-col gl-justify-between gl-gap-3 @sm/panel:gl-flex-row">
         <gl-button size="small">{{ s__('UsageBilling|Last 3 months') }}</gl-button>
         <gl-button size="small">{{ s__('UsageBilling|Last month') }}</gl-button>
         <gl-button size="small">{{ s__('UsageBilling|Current month') }}</gl-button>
@@ -103,21 +103,21 @@ export default {
 
     <gl-area-chart :data="chartData" :option="$options.chartOptions" width="auto" />
     <div class="gl-mb-2 gl-mt-5 gl-flex gl-flex-row gl-gap-5">
-      <gl-card class="bg-transparent gl-flex-1">
+      <gl-card class="gl-flex-1 !gl-bg-transparent">
         <p class="gl-font-heading gl-heading-scale-400">
           {{ numberToMetricPrefix(dailyAverage) }}
         </p>
         <p class="gl-mb-2">{{ s__('UsageBilling|Daily average use') }}</p>
       </gl-card>
 
-      <gl-card class="bg-transparent gl-flex-1">
+      <gl-card class="gl-flex-1 !gl-bg-transparent">
         <p class="gl-font-heading gl-heading-scale-400">
           {{ numberToMetricPrefix(dailyPeak) }}
         </p>
         <p class="gl-mb-2">{{ s__('UsageBilling|Peak daily use') }}</p>
       </gl-card>
 
-      <gl-card class="bg-transparent gl-flex-1">
+      <gl-card class="gl-flex-1 !gl-bg-transparent">
         <p
           :class="`gl-font-heading gl-heading-scale-400 ${usageTrendVariant.textClass}`"
           data-testid="usage-trend-title"

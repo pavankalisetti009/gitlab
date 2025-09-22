@@ -69,11 +69,11 @@ export default {
     :z-index="$options.DRAWER_Z_INDEX"
     :header-height="getDrawerHeight"
     header-sticky
-    class="gl-w-full gl-leading-reset lg:gl-w-[480px] xl:gl-w-[768px] min-[1440px]:gl-w-[912px]"
+    class="gl-w-full gl-leading-reset @lg/panel:gl-w-[480px] @xl/panel:gl-w-[768px] min-[1440px]:gl-w-[912px]"
     @close="$emit('close')"
   >
     <template #title>
-      <div class="gl-flex gl-w-full gl-items-center gl-gap-x-4 xl:gl-px-4">
+      <div class="gl-flex gl-w-full gl-items-center gl-gap-x-4 @xl/panel:gl-px-4">
         <h2 class="gl-m-0">
           {{ activeItem.name }}
         </h2>
@@ -90,7 +90,7 @@ export default {
       </div>
     </template>
     <template #default>
-      <div class="xl:!gl-px-6" data-testid="ai-catalog-item-drawer-content">
+      <div class="@xl/panel:!gl-px-6" data-testid="ai-catalog-item-drawer-content">
         <dl>
           <template v-if="projectName">
             <dt>{{ s__('AICatalog|Project') }}</dt>

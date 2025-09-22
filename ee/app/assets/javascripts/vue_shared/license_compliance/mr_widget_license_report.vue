@@ -167,16 +167,16 @@ export default {
           :remain="$options.maxShownReportItems"
           class="report-block-container"
           wtag="ul"
-          wclass="report-block-list my-1"
+          wclass="report-block-list !gl-my-2"
         >
           <template v-for="(licenseReportGroup, index) in licenseReportGroups">
             <li
               :key="licenseReportGroup.name"
-              :class="['mx-1', 'mb-1', index > 0 ? 'mt-3' : '']"
+              :class="['!gl-mx-2', '!gl-mb-2', index > 0 ? '!gl-mt-5' : '']"
               data-testid="report-heading"
             >
-              <h2 class="h5 m-0">{{ licenseReportGroup.name }}</h2>
-              <p class="m-0">{{ licenseReportGroup.description }}</p>
+              <h2 class="h5 !gl-m-0">{{ licenseReportGroup.name }}</h2>
+              <p class="!gl-m-0">{{ licenseReportGroup.description }}</p>
             </li>
             <report-item
               v-for="license in licenseReportGroup.licenses"
@@ -193,7 +193,7 @@ export default {
         </smart-virtual-list>
       </template>
       <template #success>
-        <div class="pr-3">
+        <div class="!gl-pr-5">
           {{ licenseSummaryText }}
           <gl-link
             v-if="reportContainsDeniedLicense && licenseComplianceDocsPath"

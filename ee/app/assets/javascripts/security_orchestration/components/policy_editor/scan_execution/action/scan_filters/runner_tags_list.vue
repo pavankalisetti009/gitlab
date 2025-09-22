@@ -100,7 +100,7 @@ export default {
       <template #trigger>
         <gl-collapsible-listbox
           id="runner-tags-switcher-id"
-          class="gl-mb-3 gl-mr-2 sm:gl-mb-0"
+          class="gl-mb-3 gl-mr-2 @sm/panel:gl-mb-0"
           :disabled="!areRunnersTagged"
           :items="$options.TAGS_MODES"
           :selected="selectedTagsMode"

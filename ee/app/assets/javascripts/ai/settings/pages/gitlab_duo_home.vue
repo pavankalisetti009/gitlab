@@ -121,7 +121,7 @@ export default {
         <health-check-list v-if="!isSaaS" />
       </template>
       <template #duo-card="{ totalValue, usageValue, activeDuoTier, addOnPurchases }">
-        <section class="gl-grid gl-gap-5 gl-pb-5 md:gl-grid-cols-2">
+        <section class="gl-grid gl-gap-5 gl-pb-5 @md/panel:gl-grid-cols-2">
           <duo-core-upgrade-card v-if="shouldShowDuoCoreUpgradeCard(activeDuoTier)" />
           <duo-seat-utilization-info-card
             v-if="shouldShowSeatUtilizationInfoCard(activeDuoTier)"

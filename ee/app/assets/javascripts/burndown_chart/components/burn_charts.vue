@@ -363,7 +363,7 @@ export default {
       </open-timebox-summary>
     </template>
     <div class="row">
-      <gl-alert v-if="error" variant="danger" class="col-12" @dismiss="error = null">
+      <gl-alert v-if="error" variant="danger" class="gl-col-12" @dismiss="error = null">
         {{ error }}
       </gl-alert>
       <burndown-chart
@@ -373,7 +373,7 @@ export default {
         :open-issues-weight="issuesWeight"
         :issues-selected="issuesSelected"
         :loading="loading"
-        class="col-md-6"
+        class="gl-col-md-6"
       />
       <burnup-chart
         :start-date="startDate"
@@ -381,7 +381,7 @@ export default {
         :burnup-data="burnupData"
         :issues-selected="issuesSelected"
         :loading="loading"
-        class="col-md-6"
+        class="gl-col-md-6"
       />
     </div>
   </div>

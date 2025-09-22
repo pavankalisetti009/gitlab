@@ -101,7 +101,7 @@ export default {
       </header>
     </template>
 
-    <div class="gl-flex gl-flex-col gl-gap-4 sm:gl-flex-row" data-testid="stats-container">
+    <div class="gl-flex gl-flex-col gl-gap-4 @sm/panel:gl-flex-row" data-testid="stats-container">
       <div
         v-for="stat of formattedStats"
         :key="stat.id"

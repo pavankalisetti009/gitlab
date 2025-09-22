@@ -117,7 +117,7 @@ export const containerScanningForRegistryVulnerability = {
   id: 'id_0',
   detectedAt: '2020-07-29T15:36:54Z',
   mergeRequest: {
-    id: 'mr-1',
+    id: '!gl-mr-2',
     webUrl: 'www.testmr.com/1',
     state: 'status_warning',
     iid: 1,
@@ -189,7 +189,7 @@ export const generateVulnerabilities = () => [
     id: 'id_0',
     detectedAt: '2020-07-29T15:36:54Z',
     mergeRequest: {
-      id: 'mr-1',
+      id: '!gl-mr-2',
       webUrl: 'www.testmr.com/1',
       state: 'status_warning',
       iid: 1,

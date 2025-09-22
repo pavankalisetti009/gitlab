@@ -108,7 +108,7 @@ export default {
 </script>
 
 <template>
-  <div :class="rowClasses" class="gl-flex gl-grow gl-flex-col lg:gl-flex-row">
+  <div :class="rowClasses" class="gl-flex gl-grow gl-flex-col @lg/panel:gl-flex-row">
     <div class="grid-cell header-cell" data-testid="header-cell">
       <h3 class="icon-wrapper gl-my-0 gl-inline gl-text-base gl-leading-normal gl-text-default">
         <gl-icon v-if="header.icon" class="gl-mr-3" :name="header.icon" />

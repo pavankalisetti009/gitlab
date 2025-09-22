@@ -30,18 +30,20 @@ export default {
     <geo-site-core-details :site="site" />
     <div
       v-if="site.primary"
-      class="gl-flex gl-h-full gl-w-full gl-flex-col gl-items-start md:gl-flex-row"
+      class="gl-flex gl-h-full gl-w-full gl-flex-col gl-items-start @md/panel:gl-flex-row"
     >
       <geo-site-verification-info
-        class="gl-mb-5 gl-h-full gl-w-full gl-grow md:gl-mb-0 md:gl-mr-5"
+        class="gl-mb-5 gl-h-full gl-w-full gl-grow @md/panel:gl-mb-0 @md/panel:gl-mr-5"
         :site="site"
       />
       <geo-site-primary-other-info class="gl-h-full gl-w-full gl-grow" :site="site" />
     </div>
     <div v-else class="gl-flex gl-h-full gl-w-full gl-flex-col">
-      <div class="gl-mb-5 gl-flex gl-h-full gl-w-full gl-flex-col gl-items-start md:gl-flex-row">
+      <div
+        class="gl-mb-5 gl-flex gl-h-full gl-w-full gl-flex-col gl-items-start @md/panel:gl-flex-row"
+      >
         <geo-site-replication-summary
-          class="gl-mb-5 gl-h-full gl-w-full gl-grow md:gl-mb-0 md:gl-mr-5"
+          class="gl-mb-5 gl-h-full gl-w-full gl-grow @md/panel:gl-mb-0 @md/panel:gl-mr-5"
           :site="site"
         />
         <geo-site-secondary-other-info class="gl-h-full gl-w-full gl-grow" :site="site" />

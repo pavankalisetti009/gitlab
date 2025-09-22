@@ -164,9 +164,9 @@ export default {
       <gl-loading-icon v-if="isLoading" size="md" class="gl-m-5" />
       <template v-else-if="hasItems">
         <grouped-table :items="items.data" :group-by="groupBy" @row-selected="onRowSelected" />
-        <div v-if="items.pageInfo" class="gl-justify-between md:gl-flex">
-          <div class="gl-hidden gl-grow gl-basis-0 md:gl-flex"></div>
-          <div class="gl-float-leftmd:gl-flex gl-grow gl-basis-0 gl-justify-center">
+        <div v-if="items.pageInfo" class="gl-justify-between @md/panel:gl-flex">
+          <div class="gl-hidden gl-grow gl-basis-0 @md/panel:gl-flex"></div>
+          <div class="gl-float-left@md/panel:gl-flex gl-grow gl-basis-0 gl-justify-center">
             <gl-keyset-pagination
               v-bind="items.pageInfo"
               :disabled="isLoading"
@@ -174,7 +174,10 @@ export default {
               @next="loadNextPage"
             />
           </div>
-          <div v-if="!groupBy" class="gl-float-right gl-grow gl-basis-0 gl-justify-end md:gl-flex">
+          <div
+            v-if="!groupBy"
+            class="gl-float-right gl-grow gl-basis-0 gl-justify-end @md/panel:gl-flex"
+          >
             <page-size-selector :value="perPage" @input="onPageSizeChange" />
           </div>
         </div>

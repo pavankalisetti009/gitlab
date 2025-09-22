@@ -138,7 +138,7 @@ export default {
         </template>
       </gl-sprintf>
     </gl-alert>
-    <div class="gl-flex gl-flex-col gl-items-center gl-justify-between sm:gl-flex-row">
+    <div class="gl-flex gl-flex-col gl-items-center gl-justify-between @sm/panel:gl-flex-row">
       <div class="gl-self-start">
         <h1 class="gl-text-size-h1">{{ $options.i18n.title }}</h1>
         <p class="gl-mb-0 gl-text-subtle">{{ $options.i18n.description }}</p>
@@ -165,7 +165,7 @@ export default {
       <div
         v-for="section in firstBlockSections"
         :key="section"
-        class="col-sm-12 col-mb-6 col-lg-4 gl-mt-5"
+        class="gl-col-sm-12 col-mb-6 gl-col-lg-4 gl-mt-5"
       >
         <learn-gitlab-section-card
           :section="section"
@@ -185,7 +185,7 @@ export default {
       <div
         v-for="section in secondBlockSections"
         :key="section"
-        class="col-sm-12 col-mb-6 col-lg-4 gl-mt-5"
+        class="gl-col-sm-12 col-mb-6 gl-col-lg-4 gl-mt-5"
       >
         <learn-gitlab-section-card
           :section="section"

@@ -137,7 +137,7 @@ export default {
       :title="unidentifiedLicensesText"
       href="#"
       variant="neutral"
-      class="align-baseline"
+      class="!gl-align-baseline"
       data-testid="license-badge"
     >
       {{ modalBadgeText }}

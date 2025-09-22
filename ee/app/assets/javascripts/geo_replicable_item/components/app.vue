@@ -112,7 +112,7 @@ export default {
     <div v-else-if="replicableItem" data-testid="replicable-item-details">
       <page-heading :heading="registryId" />
 
-      <div class="gl-flex gl-flex-col-reverse gl-gap-4 md:gl-grid md:gl-grid-cols-2">
+      <div class="gl-flex gl-flex-col-reverse gl-gap-4 @md/panel:gl-grid @md/panel:gl-grid-cols-2">
         <div>
           <geo-replicable-item-replication-info
             :replicable-item="replicableItem"

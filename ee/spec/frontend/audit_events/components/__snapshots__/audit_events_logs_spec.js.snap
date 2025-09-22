@@ -6,7 +6,7 @@ exports[`AuditEventsLog when initialized matches the snapshot 1`] = `
     class="gl-border-t-0 row-content-block"
   >
     <div
-      class="gl-flex gl-flex-col gl-gap-3 gl-mb-3 md:gl-flex-row"
+      class="@md/panel:gl-flex-row gl-flex gl-flex-col gl-gap-3 gl-mb-3"
     >
       <audit-events-filter-stub
         filtertokenoptions="[object Object],[object Object],[object Object],[object Object]"

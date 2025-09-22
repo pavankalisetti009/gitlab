@@ -67,7 +67,7 @@ export default {
 </script>
 <template>
   <div class="gl-flex gl-w-full gl-gap-6 gl-rounded-base gl-border-solid gl-border-default gl-p-6">
-    <div class="gl-hidden gl-shrink-0 md:gl-block">
+    <div class="gl-hidden gl-shrink-0 @md/panel:gl-block">
       <img class="gl-dark-invert-keep-hue" :src="$options.CloudTanukiIllustrationPath" :alt="''" />
     </div>
     <div class="gl-flex gl-w-full gl-grow gl-flex-col">

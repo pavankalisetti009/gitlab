@@ -100,7 +100,7 @@ export default {
     <gl-alert v-if="error" :dismissible="false" class="gl-mb-3" variant="danger">
       <gl-sprintf :message="error">
         <template #bold="{ content }">
-          <span class="font-weight-bold">{{ content }}</span>
+          <span class="!gl-font-bold">{{ content }}</span>
         </template>
       </gl-sprintf>
     </gl-alert>

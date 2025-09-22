@@ -121,13 +121,13 @@ export default {
   >
     <template #toggle>
       <gl-button variant="link" category="tertiary" icon="doc-text" data-testid="toggle-text">
-        <span class="md:gl-hidden">{{ locationCount }}</span>
-        <span class="gl-hidden md:gl-inline-flex">{{ locationText }}</span>
+        <span class="@md/panel:gl-hidden">{{ locationCount }}</span>
+        <span class="gl-hidden @md/panel:gl-inline-flex">{{ locationText }}</span>
       </gl-button>
     </template>
     <template #list-item="{ item }">
       <div v-if="item">
-        <div class="gl-text-blue-500 md:gl-whitespace-nowrap">
+        <div class="gl-text-blue-500 @md/panel:gl-whitespace-nowrap">
           <gl-link
             v-if="hasLocationPath(item)"
             :href="item.location.blob_path"

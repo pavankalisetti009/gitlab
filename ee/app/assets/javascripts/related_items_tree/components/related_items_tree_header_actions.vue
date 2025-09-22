@@ -59,9 +59,9 @@ export default {
 <template>
   <div
     v-if="parentIsEpic"
-    class="gl-sm-pl-7 gl-mt-3 gl-flex gl-pl-0 gl-align-middle gl-leading-1 sm:gl-ml-auto sm:gl-mt-0 sm:gl-inline-flex"
+    class="gl-sm-pl-7 gl-mt-3 gl-flex gl-pl-0 gl-align-middle gl-leading-1 @sm/panel:gl-ml-auto @sm/panel:gl-mt-0 @sm/panel:gl-inline-flex"
   >
-    <div class="js-button-container gl-grow gl-flex-col sm:gl-flex-row">
+    <div class="js-button-container gl-grow gl-flex-col @sm/panel:gl-flex-row">
       <epic-actions-split-button
         :allow-sub-epics="allowSubEpics"
         class="js-add-epics-issues-button gl-w-full"

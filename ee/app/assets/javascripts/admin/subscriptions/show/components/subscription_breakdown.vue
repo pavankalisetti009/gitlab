@@ -138,7 +138,7 @@ export default {
       v-on="$listeners"
     />
     <subscription-sync-notifications v-if="shouldShowNotifications" class="gl-mb-4" />
-    <div class="gl-mb-5 gl-grid gl-gap-5 sm:gl-grid-cols-2">
+    <div class="gl-mb-5 gl-grid gl-gap-5 @sm/panel:gl-grid-cols-2">
       <subscription-details-card
         :details-fields="subscriptionDetailsFields"
         :header-text="$options.i18n.subscriptionDetailsHeaderText"

@@ -176,7 +176,7 @@ export default {
         v-if="projects.length"
         v-model="projects"
         group="dashboard-projects"
-        class="gl-grid gl-items-start gl-gap-5 md:gl-grid-cols-3"
+        class="gl-grid gl-items-start gl-gap-5 @md/panel:gl-grid-cols-3"
       >
         <dashboard-project v-for="project in projects" :key="project.id" :project="project" />
       </vue-draggable>

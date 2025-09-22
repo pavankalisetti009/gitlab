@@ -26,7 +26,9 @@ export default {
 
 <template>
   <crud-component :title="s__('PackageRegistry|Configure external Maven registry')" class="gl-mt-4">
-    <div class="gl-mt-4 gl-flex gl-flex-col gl-gap-5 md:gl-flex-row md:gl-justify-between">
+    <div
+      class="gl-mt-4 gl-flex gl-flex-col gl-gap-5 @md/panel:gl-flex-row @md/panel:gl-justify-between"
+    >
       <gl-form-group :label="__('URL')" label-for="maven-url" class="gl-grow gl-basis-0">
         <template #description>
           <span data-testid="url-field-description">

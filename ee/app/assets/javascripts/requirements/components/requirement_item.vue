@@ -91,7 +91,7 @@ export default {
 
 <template>
   <li
-    class="issue requirement gl-cursor-pointer sm:!gl-flex"
+    class="issue requirement gl-cursor-pointer @sm/panel:!gl-flex"
     :class="{ 'disabled-content': stateChangeRequestActive, 'gl-bg-blue-50': active }"
     @click="$emit('show-click', requirement)"
   >
@@ -107,7 +107,7 @@ export default {
       <div class="">
         <span class="issuable-reference gl-inline gl-text-sm gl-text-subtle">{{ reference }}</span>
 
-        <div class="issuable-info gl-hidden sm:!gl-inline-block">
+        <div class="issuable-info gl-hidden @sm/panel:!gl-inline-block">
           <span class="issuable-authored">
             <span v-gl-tooltip:tooltipcontainer.bottom :title="tooltipTitle(requirement.createdAt)"
               >&middot; {{ createdAtFormatted }}</span
@@ -128,7 +128,7 @@ export default {
           v-if="testReport"
           :test-report="testReport"
           :last-test-report-manually-created="requirement.lastTestReportManuallyCreated"
-          class="gl-block sm:!gl-hidden"
+          class="gl-block @sm/panel:!gl-hidden"
         />
       </div>
     </div>
@@ -141,7 +141,7 @@ export default {
         :test-report="testReport"
         :last-test-report-manually-created="requirement.lastTestReportManuallyCreated"
         element-type="li"
-        class="gl-hidden sm:!gl-block"
+        class="gl-hidden @sm/panel:!gl-block"
       />
       <li v-if="canUpdate && !isArchived" class="requirement-edit">
         <gl-button

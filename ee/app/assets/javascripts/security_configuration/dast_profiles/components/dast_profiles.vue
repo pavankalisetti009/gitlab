@@ -225,7 +225,7 @@ export default {
     <dast-failed-site-validations :full-path="projectFullPath" />
     <header>
       <div class="gl-flex gl-items-center gl-pb-4 gl-pt-6">
-        <h2 class="my-0">
+        <h2 class="!gl-my-0">
           {{ $options.i18n.heading }}
         </h2>
         <gl-disclosure-dropdown

@@ -110,7 +110,7 @@ export default {
 </script>
 
 <template>
-  <gl-loading-icon v-if="!initialized" size="lg" class="mt-4" />
+  <gl-loading-icon v-if="!initialized" size="lg" class="!gl-mt-6" />
 
   <gl-empty-state
     v-else-if="!hasDependencies"
@@ -134,7 +134,7 @@ export default {
       class="gl-my-5"
     />
 
-    <header class="gl-my-5 gl-items-start md:gl-flex">
+    <header class="gl-my-5 gl-items-start @md/panel:gl-flex">
       <div class="gl-mr-auto">
         <h2 class="h4 gl-mb-2 gl-mt-0 gl-flex gl-items-center">
           {{ __('Dependencies') }}

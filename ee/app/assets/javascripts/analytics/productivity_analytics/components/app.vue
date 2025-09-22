@@ -190,7 +190,7 @@ export default {
       "
     />
     <template v-if="showAppContent">
-      <div class="justify-content-between gl-flex">
+      <div class="gl-flex !gl-justify-between">
         <h4>{{ s__('ProductivityAnalytics|Merge Requests') }}</h4>
         <gl-button
           v-if="isFilteringByDaysToMerge"
@@ -204,7 +204,7 @@ export default {
       </div>
       <metric-chart
         ref="mainChart"
-        class="mb-4"
+        class="!gl-mb-6"
         :title="s__('ProductivityAnalytics|Time to merge')"
         :description="
           __('You can filter by \'days to merge\' by clicking on the columns in the chart.')
@@ -230,7 +230,7 @@ export default {
           <metric-chart
             v-if="isChartEnabled(chartKeys.scatterplot)"
             ref="scatterplot"
-            class="mb-4"
+            class="!gl-mb-6"
             :title="s__('ProductivityAnalytics|Trendline')"
             :is-loading="chartLoading(chartKeys.scatterplot)"
             :metric-types="getMetricTypes(chartKeys.scatterplot)"
@@ -251,7 +251,7 @@ export default {
           <div class="row">
             <metric-chart
               ref="timeBasedChart"
-              class="col-lg-6 col-sm-12 mb-4"
+              class="gl-col-lg-6 gl-col-sm-12 !gl-mb-6"
               :description="
                 __(
                   'Not all data has been processed yet, the accuracy of the chart for the selected timeframe is limited.',
@@ -279,7 +279,7 @@ export default {
 
             <metric-chart
               ref="commitBasedChart"
-              class="col-lg-6 col-sm-12 mb-4"
+              class="gl-col-lg-6 gl-col-sm-12 !gl-mb-6"
               :description="
                 __(
                   'Not all data has been processed yet, the accuracy of the chart for the selected timeframe is limited.',
@@ -307,12 +307,12 @@ export default {
           </div>
 
           <div
-            class="js-mr-table-sort flex-column flex-md-row align-items-md-center justify-content-between mb-2 gl-flex"
+            class="js-mr-table-sort !gl-mb-3 gl-flex !gl-flex-col !gl-justify-between @md/panel:!gl-flex-row @md/panel:!gl-items-center"
           >
             <h5>{{ s__('ProductivityAnalytics|List') }}</h5>
             <div
               v-if="showMergeRequestTable"
-              class="flex-column flex-md-row align-items-md-center gl-flex"
+              class="gl-flex !gl-flex-col @md/panel:!gl-flex-row @md/panel:!gl-items-center"
             >
               <strong class="gl-mr-3">{{ __('Sort by') }}</strong>
               <div class="gl-flex">
@@ -342,7 +342,7 @@ export default {
         </div>
 
         <div class="js-mr-table">
-          <gl-loading-icon v-if="isLoadingTable" size="lg" class="my-4 py-4" />
+          <gl-loading-icon v-if="isLoadingTable" size="lg" class="!gl-my-6 !gl-py-6" />
           <merge-request-table
             v-if="showMergeRequestTable"
             :merge-requests="mergeRequests"

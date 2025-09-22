@@ -82,7 +82,7 @@ export default {
     {
       key: 'actions',
       label: __('Actions'),
-      thClass: 'gl-w-2/20 md:gl-invisible',
+      thClass: 'gl-w-2/20 @md/panel:gl-invisible',
       tdClass: 'gl-content-center gl-text-right',
     },
   ],

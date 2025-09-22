@@ -195,7 +195,7 @@ export default {
       <div class="row">
         <gl-form-group
           class="gl-mb-0"
-          :class="{ 'col-md-6': !stacked, 'col-md-12': stacked, 'gl-mb-4': stacked }"
+          :class="{ 'gl-col-md-6': !stacked, 'gl-col-md-12': stacked, 'gl-mb-4': stacked }"
           :description="
             s__('DastProfiles|Minimum = 0 (no timeout enabled), Maximum = 2880 minutes')
           "
@@ -227,7 +227,7 @@ export default {
 
         <gl-form-group
           class="gl-mb-0"
-          :class="{ 'col-md-6': !stacked, 'col-md-12': stacked }"
+          :class="{ 'gl-col-md-6': !stacked, 'gl-col-md-12': stacked }"
           :description="s__('DastProfiles|Minimum = 1 second, Maximum = 3600 seconds')"
           :invalid-feedback="form.fields.targetTimeout.feedback"
           :state="form.fields.targetTimeout.state"
@@ -257,7 +257,10 @@ export default {
       </div>
 
       <div class="row gl-mt-5">
-        <gl-form-group class="gl-mb-0" :class="{ 'col-md-6': !stacked, 'col-md-12': stacked }">
+        <gl-form-group
+          class="gl-mb-0"
+          :class="{ 'gl-col-md-6': !stacked, 'gl-col-md-12': stacked }"
+        >
           <template #label>
             {{ s__('DastProfiles|Debug messages') }}
             <tooltip-icon :title="i18n.tooltips.debugMessage" />

@@ -2,13 +2,13 @@
 
 exports[`MergeRequestTableRow component on creation matches the snapshot 1`] = `
 <div
-  class="gl-border-b gl-border-b-solid gl-border-none gl-responsive-table-row gl-responsive-table-row-layout md:gl-border-b-0"
+  class="@md/panel:gl-border-b-0 gl-border-b gl-border-b-solid gl-border-none gl-responsive-table-row gl-responsive-table-row-layout"
 >
   <div
-    class="flex-md-row flex-row-reverse gl-border-none gl-flex js-mr-details justify-content-between justify-content-md-start section-50 table-section"
+    class="!gl-flex-row-reverse !gl-justify-between @md/panel:!gl-flex-row @md/panel:!gl-justify-start gl-border-none gl-flex js-mr-details section-50 table-section"
   >
     <div
-      class="gl-flex mr-md-2"
+      class="@md/panel:!gl-mr-3 gl-flex"
     >
       <gl-avatar-stub
         alt="avatar"
@@ -20,10 +20,10 @@ exports[`MergeRequestTableRow component on creation matches the snapshot 1`] = `
       />
     </div>
     <div
-      class="flex-column gl-flex gl-grow gl-mr-1 overflow-auto"
+      class="!gl-flex-col !gl-overflow-auto gl-flex gl-grow gl-mr-1"
     >
       <h5
-        class="gl-block gl-max-w-34 item-title my-0 str-truncated"
+        class="!gl-my-0 gl-block gl-max-w-34 item-title str-truncated"
       >
         <gl-link-stub
           href="http://gitlab.example.com/gitlab-org/gitlab-test/merge_requests/10"
@@ -33,7 +33,7 @@ exports[`MergeRequestTableRow component on creation matches the snapshot 1`] = `
         </gl-link-stub>
       </h5>
       <ul
-        class="gl-text-subtle horizontal-list list-items-separated mb-0"
+        class="!gl-mb-0 gl-text-subtle horizontal-list list-items-separated"
       >
         <li>
           !10
@@ -51,7 +51,7 @@ exports[`MergeRequestTableRow component on creation matches the snapshot 1`] = `
     </div>
   </div>
   <div
-    class="align-items-start flex-row gl-border-none gl-flex js-mr-metrics section-50 table-section"
+    class="!gl-flex-row !gl-items-start gl-border-none gl-flex js-mr-metrics section-50 table-section"
   >
     <metric-column-stub
       label="Time to merge"

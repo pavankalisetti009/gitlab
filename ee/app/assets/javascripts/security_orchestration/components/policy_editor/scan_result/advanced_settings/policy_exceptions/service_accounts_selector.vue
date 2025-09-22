@@ -95,7 +95,7 @@ export default {
 
 <template>
   <div class="gl-w-full gl-px-3 gl-py-4">
-    <div class="gl-mb-3 gl-hidden gl-w-full md:gl-flex">
+    <div class="gl-mb-3 gl-hidden gl-w-full @md/panel:gl-flex">
       <p class="gl-mb-0 gl-flex-1 gl-font-bold">
         {{ s__('ScanResultPolicy|Select service account') }}
       </p>

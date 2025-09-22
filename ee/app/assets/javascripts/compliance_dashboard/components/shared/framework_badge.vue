@@ -161,7 +161,7 @@ export default {
         :background-color="framework.color"
         :title="frameworkName"
         :show-close-button="closeable"
-        class="md:gl-max-w-26"
+        class="@md/panel:gl-max-w-26"
         @close="$emit('close')"
       />
     </span>

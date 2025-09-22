@@ -69,7 +69,7 @@ export default {
       </p>
 
       <devops-adoption-add-dropdown
-        class="gl-mb-3 md:gl-hidden"
+        class="gl-mb-3 @md/panel:gl-hidden"
         :groups="groups"
         :enabled-namespaces="enabledNamespaces"
         :is-loading-groups="isLoadingGroups"

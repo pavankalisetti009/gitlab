@@ -219,7 +219,7 @@ export default {
           :key="index"
           class="gl-border-b gl-py-5 first:!gl-pt-0"
         >
-          <gl-badge v-if="dependencyPath.isCyclic" variant="warning" class="mb-2">{{
+          <gl-badge v-if="dependencyPath.isCyclic" variant="warning" class="!gl-mb-3">{{
             $options.i18n.circularDependencyBadgeText
           }}</gl-badge>
           <gl-truncate-text

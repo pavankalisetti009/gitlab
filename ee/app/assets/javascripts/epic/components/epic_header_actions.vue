@@ -190,7 +190,7 @@ export default {
   <div class="gl-contents">
     <gl-disclosure-dropdown
       ref="epicActionsDropdownMobile"
-      class="gl-mt-3 gl-block gl-w-full md:!gl-hidden"
+      class="gl-mt-3 gl-block gl-w-full @md/panel:!gl-hidden"
       category="secondary"
       :auto-close="false"
       toggle-class="gl-w-full"
@@ -236,7 +236,7 @@ export default {
       :aria-label="$options.i18n.editTitleAndDescription"
       :aria-keyshortcuts="editShortcutKey"
       category="secondary"
-      class="js-issuable-edit gl-hidden md:gl-block"
+      class="js-issuable-edit gl-hidden @md/panel:gl-block"
       @click="editEpic"
     >
       {{ $options.i18n.edit }}
@@ -245,7 +245,7 @@ export default {
     <gl-disclosure-dropdown
       ref="epicActionsDropdownDesktop"
       v-gl-tooltip="showDropdownTooltip"
-      class="gl-hidden md:gl-block"
+      class="gl-hidden @md/panel:gl-block"
       placement="bottom-end"
       :auto-close="false"
       data-testid="desktop-dropdown"

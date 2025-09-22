@@ -193,7 +193,7 @@ export default {
                 :class="{ 'gl-mb-5': ruleIndex !== policy.rules.length - 1 }"
                 class="escalation-rule-row gl-flex gl-items-center"
               >
-                <span class="rule-condition md:gl-w-full">
+                <span class="rule-condition @md/panel:gl-w-full">
                   <gl-sprintf :message="$options.i18n.escalationRuleCondition">
                     <template #clockIcon>
                       <gl-icon name="clock" class="gl-mr-3" />
@@ -210,7 +210,7 @@ export default {
                 </span>
 
                 <span
-                  class="right-arrow gl-relative gl-mx-5 gl-hidden gl-min-w-7 gl-shrink-0 gl-bg-gray-900 lg:gl-block"
+                  class="right-arrow gl-relative gl-mx-5 gl-hidden gl-min-w-7 gl-shrink-0 gl-bg-gray-900 @lg/panel:gl-block"
                   :style="{ width: getArrowLength(ruleIndex) }"
                 >
                   <i class="right-arrow-head gl-absolute gl-border-solid gl-p-1"></i>
