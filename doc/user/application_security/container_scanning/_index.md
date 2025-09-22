@@ -106,7 +106,7 @@ might occur. In that case, use the manual method instead.
 To enable container scanning:
 
 1. On the left sidebar, select **Search or go to** and find your project.
-1. Select **Secure > Security configuration**.
+1. Select **Secure** > **Security configuration**.
 1. In the **Container Scanning** row, select **Configure with a merge request**.
 1. Select **Create merge request**.
 1. Review the merge request, then select **Merge**.
@@ -931,7 +931,7 @@ Container Scanning for Registry populates the vulnerability report only when a n
 To enable container scanning for the GitLab Container Registry:
 
 1. On the left sidebar, select **Search or go to** and find your project.
-1. Select **Secure > Security configuration**.
+1. Select **Secure** > **Security configuration**.
 1. Scroll down to the **Container Scanning For Registry** section and turn on the toggle.
 
 ### Use with offline or air-gapped environments
