@@ -1,6 +1,6 @@
 <script>
 import EMPTY_SVG_URL from '@gitlab/svgs/dist/illustrations/empty-state/empty-ai-catalog-md.svg?url';
-import { GlButton } from '@gitlab/ui';
+import { GlButton, GlExperimentBadge } from '@gitlab/ui';
 import { __, s__, sprintf } from '~/locale';
 import { convertToGraphQLId, getIdFromGraphQLId } from '~/graphql_shared/utils';
 import { fetchPolicies } from '~/lib/graphql';
@@ -27,6 +27,7 @@ export default {
   name: 'AiFlows',
   components: {
     GlButton,
+    GlExperimentBadge,
     PageHeading,
     ResourceListsEmptyState,
     ErrorsAlert,
@@ -212,7 +213,14 @@ export default {
 
 <template>
   <div>
-    <page-heading :heading="s__('AICatalog|Flows')" />
+    <page-heading>
+      <template #heading>
+        <div class="gl-flex">
+          <span>{{ s__('AICatalog|Flows') }}</span>
+          <gl-experiment-badge type="beta" class="gl-self-center" />
+        </div>
+      </template>
+    </page-heading>
 
     <errors-alert class="gl-mt-5" :errors="errors" @dismiss="errors = []" />
     <ai-catalog-list
