@@ -707,6 +707,13 @@ module EE
          project.team.member?(user, ::Gitlab::Access::MAINTAINER)))
     end
 
+    override :duo_code_review_progress_note
+    def duo_code_review_progress_note
+      notes
+        .joins(:system_note_metadata)
+        .find_by(system_note_metadata: { action: 'duo_code_review_started' })
+    end
+
     private
 
     def assigned_or_authored_by_with_access?(user)
