@@ -90,6 +90,36 @@ RSpec.describe Gitlab::Middleware::JsonValidation, feature_category: :shared do
   end
 
   describe '#call' do
+    context 'when global validation mode is disabled' do
+      before do
+        stub_env('GITLAB_JSON_GLOBAL_VALIDATION_MODE', 'disabled')
+      end
+
+      it 'passes through without validation regardless of default limits' do
+        expect(app).to receive(:call).with(env)
+        expect(::Gitlab::Json::StreamValidator).not_to receive(:new)
+
+        middleware.call(env)
+      end
+    end
+
+    context 'when global validation mode is logging' do
+      before do
+        stub_env('GITLAB_JSON_GLOBAL_VALIDATION_MODE', 'logging')
+      end
+
+      let(:options) { { default_limits: { max_depth: 1, mode: :enforced } } }
+      let(:body) { '{"a": {"b": "nested"}}' }
+
+      it 'forces logging mode even when route is configured for enforced mode' do
+        expect(Gitlab::AppLogger).to receive(:warn)
+        expect(app).to receive(:call).with(env)
+
+        result = middleware.call(env)
+        expect(result).to eq([200, {}, ['OK']])
+      end
+    end
+
     context 'when mode is disabled' do
       let(:options) { { default_limits: { mode: :disabled } } }
 
