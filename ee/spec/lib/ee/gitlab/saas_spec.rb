@@ -50,4 +50,18 @@ RSpec.describe Gitlab::Saas, feature_category: :shared do
       end
     end
   end
+
+  describe '.feature_file_path' do
+    subject(:feature_file_path) { described_class.feature_file_path(feature) }
+
+    let(:feature) { described_class::FEATURES.first }
+
+    it { is_expected.to eq(Rails.root.join(described_class::CONFIG_FILE_ROOT, "#{feature}.yml")) }
+
+    context 'when feature is nil' do
+      let(:feature) { nil }
+
+      it { is_expected.to be_nil }
+    end
+  end
 end
