@@ -343,17 +343,6 @@ RSpec.describe Ai::UserAuthorizable, feature_category: :ai_abstraction_layer do
   context 'when amazon q integration is connected with duo_enterprise addon' do
     subject { user.allowed_to_use(ai_feature) }
 
-    let_it_be(:access_data) do
-      create(:cloud_connector_access, data: {
-        available_services: [
-          { name: "duo_chat", serviceStartTime: 2.days.ago, bundledWith: %w[duo_enterprise] },
-          { name: "review_merge_request", serviceStartTime: 2.days.ago, bundledWith: %w[duo_enterprise] },
-          { name: "generate_description", serviceStartTime: 2.days.ago, bundledWith: %w[duo_enterprise] },
-          { name: "summarize_review", serviceStartTime: 2.days.ago, bundledWith: %w[duo_enterprise] }
-        ]
-      })
-    end
-
     let_it_be(:gitlab_subscription_user_add_on_assignment) do
       duo_pro_purchase = create(:gitlab_subscription_add_on_purchase, :self_managed, :duo_enterprise)
       create(:gitlab_subscription_user_add_on_assignment, user: user, add_on_purchase: duo_pro_purchase)
@@ -381,17 +370,6 @@ RSpec.describe Ai::UserAuthorizable, feature_category: :ai_abstraction_layer do
 
   context 'when amazon q integration is connected with amazon_q addon' do
     subject { user.allowed_to_use(ai_feature) }
-
-    let_it_be(:access_data) do
-      create(:cloud_connector_access, data: {
-        available_services: [
-          { name: "amazon_q_integration", serviceStartTime: 2.days.ago, bundledWith: %w[duo_amazon_q] },
-          { name: "glab_ask_git_command", serviceStartTime: 2.days.ago, bundledWith: %w[duo_amazon_q] },
-          { name: "review_merge_request", serviceStartTime: 2.days.ago, bundledWith: %w[duo_amazon_q] },
-          { name: "summarize_review", serviceStartTime: 2.days.ago, bundledWith: %w[duo_amazon_q] }
-        ]
-      })
-    end
 
     let_it_be(:amazon_q_unit_primitive) do
       build(:cloud_connector_unit_primitive,

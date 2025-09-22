@@ -29,8 +29,10 @@ RSpec.describe API::CodeSuggestions, feature_category: :code_suggestions do
   let(:global_user_id) { 'user-ABC' }
   let(:gitlab_realm) { 'saas' }
   let(:unit_primitive_name) { :complete_code }
-  let(:service) { instance_double('::CloudConnector::SelfSigned::AvailableServiceData') }
   let(:expected_prompt_version) { "2.0.0" }
+  let(:unit_primitive) do
+    build(:cloud_connector_unit_primitive, name: unit_primitive_name, add_ons: %w[code_suggestions])
+  end
 
   subject(:default_namespace_example_state) do
     # rubocop:disable RSpec/AnyInstanceOf -- It's a parent and all the children are tested here...
@@ -53,10 +55,6 @@ RSpec.describe API::CodeSuggestions, feature_category: :code_suggestions do
     allow(Gitlab::GlobalAnonymousId).to receive(:user_id).and_return(global_user_id)
     allow(Gitlab::GlobalAnonymousId).to receive(:instance_id).and_return(global_instance_id)
 
-    allow(::CloudConnector::AvailableServices).to receive(:find_by_name).with(unit_primitive_name).and_return(service)
-    allow(service).to receive_messages(
-      access_token: token, name: unit_primitive_name, add_on_names: ['code_suggestions']
-    )
     allow(::CloudConnector::Tokens).to receive(:get)
       .with(unit_primitive: unit_primitive_name, resource: authorized_user)
       .and_return(token)

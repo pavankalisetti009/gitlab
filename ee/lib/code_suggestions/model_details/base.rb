@@ -28,7 +28,7 @@ module CodeSuggestions
 
       def unit_primitive_name
         # We don't need to override this for SHM because this already happens
-        # in AvailableServices.find_by_name.
+        # in UserAuthorizable.allowed_to_use.
         return :amazon_q_integration if ::Ai::AmazonQ.connected?
 
         @unit_primitive_name
