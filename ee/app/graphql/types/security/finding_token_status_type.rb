@@ -19,6 +19,9 @@ module Types
 
       field :updated_at, Types::TimeType, null: false,
         description: 'When the token status was last updated.'
+
+      field :last_verified_at, Types::TimeType, null: true,
+        description: 'When the token was last verified with the issuing service.'
     end
   end
 end

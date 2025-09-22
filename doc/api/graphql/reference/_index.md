@@ -42591,6 +42591,7 @@ Represents the status of a secret token found in a security finding.
 | ---- | ---- | ----------- |
 | <a id="securityfindingtokenstatuscreatedat"></a>`createdAt` | [`Time!`](#time) | When the token status was created. |
 | <a id="securityfindingtokenstatusid"></a>`id` | [`ID!`](#id) | ID of the finding token status. |
+| <a id="securityfindingtokenstatuslastverifiedat"></a>`lastVerifiedAt` | [`Time`](#time) | When the token was last verified with the issuing service. |
 | <a id="securityfindingtokenstatusstatus"></a>`status` | [`VulnerabilityFindingTokenStatusState!`](#vulnerabilityfindingtokenstatusstate) | Status of the token (unknown, active, inactive). |
 | <a id="securityfindingtokenstatusupdatedat"></a>`updatedAt` | [`Time!`](#time) | When the token status was last updated. |
 
@@ -45043,6 +45044,7 @@ Represents the status of a secret token found in a vulnerability.
 | ---- | ---- | ----------- |
 | <a id="vulnerabilityfindingtokenstatuscreatedat"></a>`createdAt` | [`Time!`](#time) | When the token status was created. |
 | <a id="vulnerabilityfindingtokenstatusid"></a>`id` | [`ID!`](#id) | ID of the finding token status. |
+| <a id="vulnerabilityfindingtokenstatuslastverifiedat"></a>`lastVerifiedAt` | [`Time`](#time) | When the token was last verified with the issuing service. |
 | <a id="vulnerabilityfindingtokenstatusstatus"></a>`status` | [`VulnerabilityFindingTokenStatusState!`](#vulnerabilityfindingtokenstatusstate) | Status of the token (unknown, active, inactive). |
 | <a id="vulnerabilityfindingtokenstatusupdatedat"></a>`updatedAt` | [`Time!`](#time) | When the token status was last updated. |
 

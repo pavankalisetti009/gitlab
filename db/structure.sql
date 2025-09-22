@@ -25195,7 +25195,8 @@ CREATE TABLE secret_detection_token_statuses (
     project_id bigint NOT NULL,
     created_at timestamp with time zone NOT NULL,
     updated_at timestamp with time zone NOT NULL,
-    status smallint DEFAULT 0 NOT NULL
+    status smallint DEFAULT 0 NOT NULL,
+    last_verified_at timestamp with time zone
 );
 
 CREATE TABLE secret_rotation_infos (
@@ -25273,6 +25274,7 @@ CREATE TABLE security_finding_token_statuses (
     updated_at timestamp with time zone NOT NULL,
     status smallint DEFAULT 0 NOT NULL,
     raw_source_code_extract text,
+    last_verified_at timestamp with time zone,
     CONSTRAINT raw_source_code_extract_not_longer_than_2048 CHECK ((char_length(raw_source_code_extract) <= 2048))
 );
 
