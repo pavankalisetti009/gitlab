@@ -244,26 +244,18 @@ export default {
 </script>
 
 <template>
-  <div id="duo-agent-platform-sidebar-widget" class="gl-m-2 gl-bg-default gl-p-4">
-    <div
-      data-testid="duo-agent-platform-widget-menu"
-      class="gl-flex gl-w-full gl-flex-col gl-items-stretch"
-    >
-      <div data-testid="widget-title" class="gl-text-md gl-flex gl-items-center">
-        <gl-icon
-          class="gl-mr-2 gl-block"
-          :variant="iconVariant"
-          name="status_created_borderless"
-          :size="24"
-        />
+  <div id="duo-agent-platform-sidebar-widget" class="duo-agent-platform-sidebar-widget">
+    <div data-testid="duo-agent-platform-widget-menu">
+      <div data-testid="widget-title" class="gl-text-md -gl-ml-2 gl-flex gl-items-center gl-gap-2">
+        <gl-icon :variant="iconVariant" name="status_created_borderless" :size="24" />
         <span class="gl-font-monospace">{{ title }}</span>
       </div>
-      <p v-if="shouldShowBody" data-testid="widget-body" class="gl-my-3 gl-font-bold">
+      <p v-if="shouldShowBody" data-testid="widget-body" class="gl-my-2 gl-font-bold">
         {{ bodyText }}
       </p>
       <div
         v-if="showRequestCounter"
-        class="gl-my-3 gl-flex gl-items-center gl-justify-between gl-gap-3"
+        class="gl-my-2 gl-flex gl-items-center gl-justify-between gl-gap-3"
         data-testid="request-counter"
       >
         <span class="gl-text-secondary">
@@ -295,7 +287,7 @@ export default {
         <gl-button
           v-if="shouldShowSecondaryAction"
           :href="$options.learnMoreHref"
-          class="gl-text-sm gl-no-underline hover:gl-no-underline"
+          class="-gl-ml-3 gl-text-sm gl-no-underline hover:gl-no-underline"
           size="small"
           category="tertiary"
           variant="confirm"
