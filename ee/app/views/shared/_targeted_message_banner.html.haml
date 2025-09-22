@@ -1,8 +1,11 @@
 - targeted_message_id = targeted_message_id_for(group)
 - if targeted_message_id.present?
-  = render Pajamas::BannerComponent.new(banner_options: { class: 'gl-mt-6 gl-text-left js-targeted-message', data: { namespace_id: group.id, targeted_message_id: targeted_message_id, dismiss_endpoint: targeted_message_dismissals_path } }, close_options: { class: 'js-close', data: { testid: 'targeted_message_close_button' } },
+  = render Pajamas::BannerComponent.new(banner_options: { class: 'gl-mt-6 gl-text-left js-targeted-message',
+      data: { namespace_id: group.id, targeted_message_id: targeted_message_id, dismiss_endpoint: targeted_message_dismissals_path } },
+      close_options: { class: 'js-close', data: { testid: 'targeted_message_close_button', track_action: 'dismiss_banner', track_label: 'targeted_message_banner' } },
       button_text: s_('TargettedMessages|Contact us'),
-      button_link: promo_pricing_url(path: '/premium-promo', query: { glm_source: "#{request.host}#{CGI.escape(request.path)}", glm_content: 'in-product-banner'})) do |c|
+      button_link: promo_pricing_url(path: '/premium-promo', query: { glm_source: "#{request.host}#{CGI.escape(request.path)}", glm_content: 'in-product-banner'}),
+      button_options: { data: { track_action: 'click_button', track_label: 'targeted_message_banner' } }) do |c|
     - c.with_title do
       = s_('TargettedMessages|Get access to Premium + GitLab Duo for %{strike}$29%{end_strike} $19 per user/month').html_safe % { strike: '<s>'.html_safe, end_strike: '</s>'.html_safe }
     %p
