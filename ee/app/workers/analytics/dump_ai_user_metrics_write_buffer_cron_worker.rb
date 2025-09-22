@@ -13,15 +13,10 @@ module Analytics
     MAX_RUNTIME = 200.seconds
     BATCH_SIZE = 1000
 
-    def perform
-      @current_model = Ai::UserMetrics
+    def initialize(*)
       super
-    end
-
-    private
-
-    def upsert_options(_)
-      {
+      @model = Ai::UserMetrics
+      @upsert_options = {
         unique_by: %i[user_id],
         on_duplicate: Arel.sql(<<~SQL.squish)
           last_duo_activity_on = GREATEST(excluded.last_duo_activity_on, ai_user_metrics.last_duo_activity_on)

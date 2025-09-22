@@ -9,7 +9,7 @@ RSpec.describe UsageEvents::DumpWriteBufferCronWorker, :clean_gitlab_redis_share
   let_it_be(:personal_namespace) { create(:user_namespace) }
 
   let(:inserted_records) do
-    UsageEvents::DumpWriteBufferCronWorker::MODELS.flat_map { |model| model.order(:id).all.map(&:attributes) }
+    Ai::UsageEvent.all.map(&:attributes)
   end
 
   it 'does not insert anything' do
@@ -18,18 +18,15 @@ RSpec.describe UsageEvents::DumpWriteBufferCronWorker, :clean_gitlab_redis_share
     expect(inserted_records).to be_empty
   end
 
-  def add_to_buffer(attributes, model = Ai::CodeSuggestionEvent, timestamp = Time.current)
-    data = { 'timestamp' => timestamp }.merge(attributes.stringify_keys)
-    model.write_buffer.add(data)
+  def add_to_buffer(attributes)
+    data = { 'timestamp' => Time.current }.merge(attributes.stringify_keys)
+    data['event'] = Ai::UsageEvent.events[data['event']] if data['event'].is_a?(String)
+    Ai::UsageEvent.write_buffer.add(data)
   end
 
   context 'when data is present' do
     before do
-      add_to_buffer({ user_id: 3,
-                    event: 'request_duo_chat_response',
-                    organization_id: organization.id,
-                    personal_namespace_id: personal_namespace.id },
-        Ai::DuoChatEvent)
+      add_to_buffer(user_id: 3, event: 'request_duo_chat_response', organization_id: organization.id)
       add_to_buffer(user_id: 1, event: 'code_suggestion_shown_in_ide', organization_id: organization.id)
 
       # Duplicates for Ai::CodeSuggestionEvent
@@ -46,7 +43,6 @@ RSpec.describe UsageEvents::DumpWriteBufferCronWorker, :clean_gitlab_redis_share
         organization_id: organization.id,
         timestamp: timestamp
       )
-
       # Already existing record for Ai::UsageEvent
       Ai::UsageEvent.create!(
         user_id: 2,
@@ -54,61 +50,39 @@ RSpec.describe UsageEvents::DumpWriteBufferCronWorker, :clean_gitlab_redis_share
         organization_id: organization.id,
         timestamp: timestamp
       )
-      add_to_buffer({
-        user_id: 2,
-        event: 'code_suggestion_shown_in_ide',
-        organization_id: organization.id,
-        timestamp: timestamp
-      }, Ai::UsageEvent)
 
-      add_to_buffer(
-        user_id: 3,
-        event: 'code_suggestion_shown_in_ide',
+      add_to_buffer(user_id: 3,
+        event: 'troubleshoot_job',
         organization_id: organization.id,
-        payload: { language: 'ruby' })
-      add_to_buffer({ user_id: 3,
-                      event: 'troubleshoot_job',
-                      organization_id: organization.id,
-                      namespace_id: personal_namespace.id,
-                      extras: { foo: 'bar' } },
-        Ai::UsageEvent)
+        namespace_id: personal_namespace.id,
+        extras: { foo: 'bar' })
     end
 
     it 'inserts all rows' do
       status = perform
 
-      expect(status).to eq({ status: :processed, inserted_rows: 7 })
+      expect(status).to eq({ status: :processed, inserted_rows: 4 })
       expect(inserted_records).to match([
         hash_including('user_id' => 3, 'event' => 'request_duo_chat_response'),
         hash_including('user_id' => 1, 'event' => 'code_suggestion_shown_in_ide'),
-        hash_including('user_id' => 2, 'event' => 'code_suggestion_shown_in_ide'),
-        hash_including('user_id' => 2, 'event' => 'code_suggestion_shown_in_ide'),
-        hash_including('user_id' => 3, 'event' => 'code_suggestion_shown_in_ide',
-          'payload' => { 'language' => 'ruby' }),
         hash_including('user_id' => 2, 'event' => 'code_suggestion_shown_in_ide'),
         hash_including('user_id' => 3, 'event' => 'troubleshoot_job')
       ])
     end
 
-    it 'deduplicates the code suggestion events in Ai::UsageEvent' do
+    it 'deduplicates identical events' do
       status = perform
 
-      expect(status).to eq({ status: :processed, inserted_rows: 7 })
+      expect(status).to eq({ status: :processed, inserted_rows: 4 })
 
-      # Ai::CodeSuggestionEvent is not deduplicated
-      events = Ai::CodeSuggestionEvent.where(user_id: 2).to_a
-      expect(events.count).to eq(2)
-
-      # Ai::UsageEvent is deduplicated
-      events = Ai::UsageEvent.where(user_id: 2).to_a
-      expect(events.count).to eq(1)
+      expect(Ai::UsageEvent.where(user_id: 2).count).to eq(1)
     end
 
     context 'when looping twice' do
       it 'inserts all rows' do
         stub_const("#{described_class.name}::BATCH_SIZE", 2)
 
-        expect(perform).to eq({ status: :processed, inserted_rows: 7 })
+        expect(perform).to eq({ status: :processed, inserted_rows: 4 })
       end
     end
 
@@ -122,7 +96,7 @@ RSpec.describe UsageEvents::DumpWriteBufferCronWorker, :clean_gitlab_redis_share
 
         status = perform
 
-        expect(status).to eq({ status: :over_time, inserted_rows: 2 })
+        expect(status).to eq({ status: :over_time, inserted_rows: 3 })
         expect(inserted_records).to match([
           hash_including('user_id' => 3),
           hash_including('user_id' => 1),
@@ -134,47 +108,37 @@ RSpec.describe UsageEvents::DumpWriteBufferCronWorker, :clean_gitlab_redis_share
 
   context 'when data contains different sets of attributes' do
     before do
-      add_to_buffer({ user_id: 1,
-                      event: 'request_duo_chat_response',
-                      organization_id: organization.id,
-                      personal_namespace_id: personal_namespace.id },
-        Ai::DuoChatEvent)
-      add_to_buffer({ user_id: 2,
-                      event: 'request_duo_chat_response',
-                      organization_id: organization.id,
-                      personal_namespace_id: personal_namespace.id },
-        Ai::DuoChatEvent)
-      add_to_buffer({ user_id: 3,
-                      event: 'request_duo_chat_response',
-                      organization_id: organization.id,
-                      personal_namespace_id: personal_namespace.id,
-                      namespace_path: '1/2/3/' },
-        Ai::DuoChatEvent)
+      add_to_buffer(user_id: 1,
+        event: 'request_duo_chat_response',
+        organization_id: organization.id)
+      add_to_buffer(user_id: 2,
+        event: 'request_duo_chat_response',
+        organization_id: organization.id)
+      add_to_buffer(user_id: 3,
+        event: 'request_duo_chat_response',
+        organization_id: organization.id,
+        namespace_id: personal_namespace.id)
     end
 
     it 'inserts all rows by attribute groups' do
-      expect(Ai::DuoChatEvent).to receive(:upsert_all).twice.and_call_original
+      expect(Ai::UsageEvent).to receive(:upsert_all).twice.and_call_original
       expect(perform).to eq({ status: :processed, inserted_rows: 3 })
     end
   end
 
   context 'when data contains obsolete attributes' do
     before do
-      add_to_buffer({ user_id: 1,
-                      event: 'request_duo_chat_response',
-                      organization_id: organization.id,
-                      personal_namespace_id: personal_namespace.id },
-        Ai::DuoChatEvent)
-      add_to_buffer({ user_id: 2,
-                      event: 'request_duo_chat_response',
-                      organization_id: organization.id,
-                      personal_namespace_id: personal_namespace.id,
-                      foo: 'bar' },
-        Ai::DuoChatEvent)
+      add_to_buffer(user_id: 1,
+        event: 'request_duo_chat_response',
+        organization_id: organization.id)
+      add_to_buffer(user_id: 2,
+        event: 'request_duo_chat_response',
+        organization_id: organization.id,
+        foo: 'bar')
     end
 
     it 'ignores extra attributes and inserts all rows' do
-      expect(Ai::DuoChatEvent).to receive(:upsert_all).once.and_call_original
+      expect(Ai::UsageEvent).to receive(:upsert_all).once.and_call_original
       expect(perform).to eq({ status: :processed, inserted_rows: 2 })
     end
   end
@@ -182,21 +146,18 @@ RSpec.describe UsageEvents::DumpWriteBufferCronWorker, :clean_gitlab_redis_share
   context 'when data contains multiple duplicates' do
     before do
       timestamp = Time.current
-      add_to_buffer({ user_id: 1,
-                      event: 'request_duo_chat_response',
-                      organization_id: organization.id,
-                      timestamp: timestamp, extras: { foo: '1' } },
-        Ai::UsageEvent)
-      add_to_buffer({ user_id: 1,
-                      event: 'request_duo_chat_response',
-                      organization_id: organization.id,
-                      timestamp: timestamp, extras: { foo: '2' } },
-        Ai::UsageEvent)
-      add_to_buffer({ user_id: 1,
-                      event: 'request_duo_chat_response',
-                      organization_id: organization.id,
-                      timestamp: timestamp, extras: { foo: '3' } },
-        Ai::UsageEvent)
+      add_to_buffer(user_id: 1,
+        event: 'request_duo_chat_response',
+        organization_id: organization.id,
+        timestamp: timestamp, extras: { foo: '1' })
+      add_to_buffer(user_id: 1,
+        event: 'request_duo_chat_response',
+        organization_id: organization.id,
+        timestamp: timestamp, extras: { foo: '2' })
+      add_to_buffer(user_id: 1,
+        event: 'request_duo_chat_response',
+        organization_id: organization.id,
+        timestamp: timestamp, extras: { foo: '3' })
     end
 
     it 'inserts only 1 row' do
@@ -208,11 +169,10 @@ RSpec.describe UsageEvents::DumpWriteBufferCronWorker, :clean_gitlab_redis_share
   context 'when processing fails with exception' do
     before do
       timestamp = Time.current
-      add_to_buffer({ user_id: 1,
-                      event: 'request_duo_chat_response',
-                      organization_id: organization.id,
-                      timestamp: timestamp, extras: { foo: '1' } },
-        Ai::UsageEvent)
+      add_to_buffer(user_id: 1,
+        event: 'request_duo_chat_response',
+        organization_id: organization.id,
+        timestamp: timestamp, extras: { foo: '1' })
     end
 
     it 'pushes back values for reprocessing and reraises' do
@@ -224,38 +184,19 @@ RSpec.describe UsageEvents::DumpWriteBufferCronWorker, :clean_gitlab_redis_share
     end
   end
 
-  context 'when data contains old event names' do
-    it 'updates event name for `start_agent_platform_session`' do
-      add_to_buffer({ user_id: 1,
-                      event: 'start_agent_platform_session',
-                      organization_id: organization.id },
-        Ai::UsageEvent)
-
-      expect(perform).to eq({ status: :processed, inserted_rows: 1 })
-      expect(inserted_records).to match([hash_including('event' => 'agent_platform_session_started')])
-    end
-
-    it 'updates event name for `create_agent_platform_session`' do
-      add_to_buffer({ user_id: 1,
-                      event: 'create_agent_platform_session',
-                      organization_id: organization.id },
-        Ai::UsageEvent)
-
-      expect(perform).to eq({ status: :processed, inserted_rows: 1 })
-      expect(inserted_records).to match([hash_including('event' => 'agent_platform_session_created')])
-    end
-  end
-
   context 'when data contains data before typecast and after typecast' do
     it 'saves both events properly' do
-      add_to_buffer({ user_id: 1,
-                      event: 'request_duo_chat_response',
-                      organization_id: organization.id },
-        Ai::UsageEvent)
-      add_to_buffer({ user_id: 2,
-                      event: Ai::UsageEvent.events['request_duo_chat_response'],
-                      organization_id: organization.id },
-        Ai::UsageEvent)
+      # event is string
+      Ai::UsageEvent.write_buffer.add({
+        user_id: 1,
+        event: 'request_duo_chat_response',
+        organization_id: organization.id,
+        timestamp: Time.current
+      }.stringify_keys)
+      # event is integer
+      add_to_buffer(user_id: 2,
+        event: 'request_duo_chat_response',
+        organization_id: organization.id)
 
       expect(perform).to eq({ status: :processed, inserted_rows: 2 })
       expect(inserted_records)
@@ -266,15 +207,13 @@ RSpec.describe UsageEvents::DumpWriteBufferCronWorker, :clean_gitlab_redis_share
 
   context 'when data contains invalid namespace id' do
     it 'filters out events with incorrect namespace_id' do
-      add_to_buffer({ user_id: 1,
-                      event: Ai::UsageEvent.events['request_duo_chat_response'],
-                      organization_id: organization.id,
-                      namespace_id: non_existing_record_id },
-        Ai::UsageEvent)
-      add_to_buffer({ user_id: 2,
-                      event: Ai::UsageEvent.events['request_duo_chat_response'],
-                      organization_id: organization.id },
-        Ai::UsageEvent)
+      add_to_buffer(user_id: 1,
+        event: 'request_duo_chat_response',
+        organization_id: organization.id,
+        namespace_id: non_existing_record_id)
+      add_to_buffer(user_id: 2,
+        event: 'request_duo_chat_response',
+        organization_id: organization.id)
 
       expect(perform).to eq({ status: :processed, inserted_rows: 1 })
       expect(inserted_records).to match([hash_including('user_id' => 2)])
