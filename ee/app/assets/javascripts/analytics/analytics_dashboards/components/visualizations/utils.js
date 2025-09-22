@@ -67,6 +67,8 @@ export const humanizeChartTooltipValue = ({ unit, value } = {}) => {
   if (isNil(value)) return __('No data');
 
   switch (unit) {
+    case UNITS.COUNT:
+      return formatNumber(value);
     case UNITS.DAYS:
       return n__('%d day', '%d days', value);
     case UNITS.PER_DAY:

@@ -1,4 +1,5 @@
 import { stackedPresentationOptions } from '@gitlab/ui/src/utils/constants';
+import { UNITS } from '~/analytics/shared/constants';
 import DashboardLayout from 'storybook_helpers/dashboards/dashboard_layout.vue';
 import BarChart from './bar_chart.vue';
 
@@ -82,6 +83,18 @@ Tiled.args = {
   options: {
     ...defaultArgs.options,
     presentation: stackedPresentationOptions.tiled,
+  },
+};
+
+export const WithCustomTooltip = Template.bind({});
+WithCustomTooltip.args = {
+  data: defaultArgs.data,
+  options: {
+    ...defaultArgs.options,
+    chartTooltip: {
+      titleFormatter: (title) => title.toUpperCase(),
+      valueUnit: UNITS.COUNT,
+    },
   },
 };
 
