@@ -3611,4 +3611,29 @@ RSpec.describe MergeRequest, feature_category: :code_review_workflow do
       it_behaves_like 'not editable by user'
     end
   end
+
+  describe '#duo_code_review_progress_note' do
+    subject(:progress_note) { merge_request.duo_code_review_progress_note }
+
+    context 'when merge request does not have a progress note' do
+      it 'returns nil' do
+        expect(progress_note).to be_nil
+      end
+    end
+
+    context 'when merge request has a progress note' do
+      let(:review_bot) { create(:user, user_type: :duo_code_review_bot) }
+      let!(:note) do
+        ::SystemNotes::MergeRequestsService.new(
+          noteable: merge_request,
+          container: merge_request.project,
+          author: review_bot
+        ).duo_code_review_started
+      end
+
+      it 'returns the progress note' do
+        expect(progress_note.id).to eq(note.id)
+      end
+    end
+  end
 end

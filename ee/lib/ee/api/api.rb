@@ -80,6 +80,7 @@ module EE
         mount ::API::Ai::Llm::GitCommand
         mount ::API::Ai::DuoWorkflows::Workflows
         mount ::API::Ai::DuoWorkflows::WorkflowsInternal
+        mount ::API::Ai::DuoWorkflows::CodeReview
         mount ::API::Ai::ThirdPartyAgents
         mount ::API::CodeSuggestions
         mount ::API::Chat
