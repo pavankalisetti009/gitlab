@@ -1,5 +1,6 @@
 import Vue from 'vue';
 import VueApollo from 'vue-apollo';
+import VueRouter from 'vue-router';
 
 import { fullEpicBoardId } from 'ee_component/boards/boards_util';
 
@@ -14,8 +15,22 @@ import {
 import { defaultClient } from '~/graphql_shared/issuable_client';
 import { TYPE_EPIC, WORKSPACE_GROUP, WORKSPACE_PROJECT } from '~/issues/constants';
 import { queryToObject } from '~/lib/utils/url_utility';
+import { BOARDS_ROUTE_NAME } from '~/boards/constants';
 
 Vue.use(VueApollo);
+Vue.use(VueRouter);
+
+export const createRouter = () => {
+  const routes = [{ name: BOARDS_ROUTE_NAME, path: '/boards' }];
+
+  const router = new VueRouter({
+    routes,
+    mode: 'history',
+    base: gon.relative_url_root || '/',
+  });
+
+  return router;
+};
 
 defaultClient.cache.policies.addTypePolicies({
   EpicList: {
@@ -52,6 +67,7 @@ defaultClient.cache.policies.addTypePolicies({
 const apolloProvider = new VueApollo({
   defaultClient,
 });
+const router = createRouter();
 
 function mountBoardApp(el) {
   const {
@@ -78,6 +94,7 @@ function mountBoardApp(el) {
     el,
     name: 'BoardRoot',
     apolloProvider,
+    router,
     provide: {
       initialBoardId: fullEpicBoardId(boardId),
       disabled: parseBoolean(el.dataset.disabled),
