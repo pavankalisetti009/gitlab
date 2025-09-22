@@ -31,6 +31,7 @@ RSpec.describe IssuablesHelper, feature_category: :team_planning do
           groupPath: @group.path,
           hasIssueWeightsFeature: nil,
           hasIterationsFeature: nil,
+          hasStatusFeature: false,
           initialDescriptionHtml: '<p data-sourcepos="1:1-1:9" dir="auto">epic text</p>',
           initialDescriptionText: 'epic text',
           initialTaskCompletionStatus: { completed_count: 0, count: 0 },
@@ -66,7 +67,7 @@ RSpec.describe IssuablesHelper, feature_category: :team_planning do
     end
 
     context 'for an issue' do
-      let_it_be(:issue) { create(:issue, author: user, description: 'issue text') }
+      let(:issue) { create(:issue, author: user, description: 'issue text') }
 
       before do
         allow(issue.project).to receive(:licensed_feature_available?).and_return(true)
@@ -80,9 +81,29 @@ RSpec.describe IssuablesHelper, feature_category: :team_planning do
           canAdminRelation: true,
           hasIssueWeightsFeature: true,
           hasIterationsFeature: true,
+          hasStatusFeature: false,
           publishedIncidentUrl: nil
         }
         expect(helper.issuable_initial_data(issue)).to include(expected_data)
+      end
+
+      context 'when custom status is available' do
+        let_it_be(:group) { create(:group) }
+        let_it_be(:project) { create(:project, group: group) }
+        let(:issue) { create(:issue, author: user, project: project) }
+
+        before do
+          stub_licensed_features(work_item_status: true)
+          stub_feature_flags(work_item_status_mvc2: true)
+        end
+
+        it 'returns the correct data' do
+          @project = issue.project
+
+          expect(helper.issuable_initial_data(issue)).to include({
+            hasStatusFeature: true
+          })
+        end
       end
 
       context 'when published to a configured status page' do

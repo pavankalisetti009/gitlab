@@ -19,6 +19,9 @@ module EE
         canAdmin: can?(current_user, :"admin_#{issuable.to_ability_name}", issuable),
         hasIssueWeightsFeature: issuable.project&.licensed_feature_available?(:issue_weights),
         hasIterationsFeature: issuable.project&.licensed_feature_available?(:iterations),
+        hasStatusFeature: issuable.resource_parent.root_ancestor.licensed_feature_available?(:work_item_status) &&
+                          issuable.resource_parent.root_ancestor.try(:work_item_status_mvc2_feature_flag_enabled?) &&
+                          issuable.respond_to?(:status_with_fallback),
         canAdminRelation: can?(current_user, :"admin_#{issuable.to_ability_name}_relation", issuable)
       )
 
