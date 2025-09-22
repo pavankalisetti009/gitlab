@@ -44,8 +44,13 @@ RSpec.describe Packages::Protection::Rule, type: :model, feature_category: :pack
       )
     }
 
-    it { is_expected.to define_enum_for(:pattern_type).with_values(wildcard: 0) }
-    it { is_expected.to define_enum_for(:target_field).with_values(package_name: 0) }
+    it {
+      is_expected.to define_enum_for(:pattern_type).with_values(wildcard: 0).with_prefix(:pattern_type)
+    }
+
+    it {
+      is_expected.to define_enum_for(:target_field).with_values(package_name: 0).with_prefix(:target_field)
+    }
   end
 
   describe 'validations' do

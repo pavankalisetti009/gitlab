@@ -17,8 +17,8 @@ module Packages
         prefix: :minimum_access_level_for_delete
       enum :minimum_access_level_for_push, Gitlab::Access.sym_options_with_admin.slice(:maintainer, :owner, :admin),
         prefix: :minimum_access_level_for_push
-      enum :pattern_type, { wildcard: 0 }
-      enum :target_field, { package_name: 0 }
+      enum :pattern_type, { wildcard: 0 }, prefix: :pattern_type
+      enum :target_field, { package_name: 0 }, prefix: :target_field
 
       belongs_to :project, inverse_of: :package_protection_rules
 
@@ -29,10 +29,10 @@ module Packages
       validates :package_type, presence: true
       validates :pattern, allow_blank: true, length: { maximum: 255 }
       validates :pattern, format: NPM_PACKAGE_NAME_FORMAT, allow_blank: true, if: -> {
-        npm? && package_name? && wildcard?
+        npm? && target_field_package_name? && pattern_type_wildcard?
       }
       validates :pattern, format: PYPI_PACKAGE_NAME_FORMAT, allow_blank: true, if: -> {
-        pypi? && package_name? && wildcard?
+        pypi? && target_field_package_name? && pattern_type_wildcard?
       }
 
       validate :at_least_one_minimum_access_level_must_be_present
