@@ -18,7 +18,7 @@ RSpec.describe VirtualRegistryHelper, feature_category: :virtual_registry do
         expect(registry_types.keys).to contain_exactly(:maven)
 
         expect(registry_types[:maven]).to include(
-          new_page_path: a_string_matching(%r{virtual_registries/maven/new}),
+          new_page_path: a_string_matching(%r{virtual_registries/maven/registries/new}),
           landing_page_path: a_string_matching(%r{virtual_registries/maven}),
           image_path: 'illustrations/logos/maven.svg',
           count: 3,

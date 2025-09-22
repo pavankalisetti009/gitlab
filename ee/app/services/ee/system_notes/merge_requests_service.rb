@@ -29,7 +29,9 @@ module EE
       def duo_code_review_started
         create_note(
           NoteSummary.new(noteable, project, author,
-            s_("DuoCodeReview|is reviewing your merge request and will let you know when it's finished"))
+            s_("DuoCodeReview|is reviewing your merge request and will let you know when it's finished"),
+            action: "duo_code_review_started"
+          )
         )
       end
 

@@ -139,6 +139,7 @@ describe('visualization utils', () => {
   describe('humanizeChartTooltipValue', () => {
     it.each`
       unit                   | value        | result
+      ${UNITS.COUNT}         | ${1234}      | ${'1,234'}
       ${UNITS.DAYS}          | ${3}         | ${'3 days'}
       ${UNITS.DAYS}          | ${1}         | ${'1 day'}
       ${UNITS.PER_DAY}       | ${10}        | ${'10 /day'}

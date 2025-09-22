@@ -5,7 +5,7 @@ module VirtualRegistryHelper
     {
       maven: {
         new_page_path: new_group_virtual_registries_maven_registry_path(group),
-        landing_page_path: group_virtual_registries_maven_registries_path(group),
+        landing_page_path: group_virtual_registries_maven_registries_and_upstreams_path(group),
         image_path: 'illustrations/logos/maven.svg',
         count: registry_types_with_counts[:maven],
         type_name: s_('VirtualRegistry|Maven')

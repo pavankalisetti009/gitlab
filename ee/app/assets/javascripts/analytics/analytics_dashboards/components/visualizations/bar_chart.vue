@@ -1,5 +1,7 @@
 <script>
 import { GlBarChart } from '@gitlab/ui/src/charts';
+import { isNil } from 'lodash';
+import { humanizeChartTooltipValue } from './utils';
 
 export default {
   name: 'BarChart',
@@ -18,6 +20,23 @@ export default {
       default: () => ({}),
     },
   },
+  methods: {
+    formatTooltipTitle(title, params) {
+      const { chartTooltip: { titleFormatter } = {} } = this.options;
+      const yAxisValue = params?.seriesData?.at(0)?.value?.at(1);
+
+      if (isNil(yAxisValue)) return '';
+
+      if (titleFormatter) return titleFormatter(yAxisValue);
+
+      return title;
+    },
+    formatTooltipValue(value) {
+      const { chartTooltip: { valueUnit: unit } = {} } = this.options;
+
+      return humanizeChartTooltipValue({ unit, value });
+    },
+  },
 };
 </script>
 
@@ -32,5 +51,8 @@ export default {
     height="auto"
     responsive
     tabindex="0"
-  />
+  >
+    <template #tooltip-title="{ title, params }">{{ formatTooltipTitle(title, params) }}</template>
+    <template #tooltip-value="{ value }">{{ formatTooltipValue(value) }}</template>
+  </gl-bar-chart>
 </template>
