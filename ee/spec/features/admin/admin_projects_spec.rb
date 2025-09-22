@@ -19,43 +19,21 @@ RSpec.describe 'Admin Projects', feature_category: :permissions do
     end
 
     describe 'list' do
-      context 'when admin_projects_vue feature flag is disabled' do
-        before do
-          stub_feature_flags(admin_projects_vue: false)
-        end
+      it 'does not render admin-only action buttons' do
+        visit admin_projects_path
 
-        it 'does not render admin-only action buttons' do
-          visit admin_projects_path
+        expect(page).not_to have_content("New Project")
+        expect(page).to have_content(authorized_project.name)
 
-          expect(page).to have_content(authorized_project.name)
-          expect(page).not_to have_content("New Project")
-          expect(page).not_to have_content("Edit")
-          expect(page).not_to have_content("Delete")
-        end
-
-        it 'displays projects the user is not a member of' do
-          visit admin_projects_path
-
-          expect(page).to have_content(unauthorized_project.name)
+        within_testid("projects-list-item-#{authorized_project.id}") do
+          expect(has_testid?('groups-projects-more-actions-dropdown')).to be false
         end
       end
 
-      context 'when admin_projects_vue feature flag is enabled' do
-        it 'does not render admin-only action buttons' do
-          visit admin_projects_path
+      it 'displays projects the user is not a member of' do
+        visit admin_projects_path
 
-          expect(page).not_to have_content("New Project")
-          expect(page).to have_content(authorized_project.name)
-          within_testid("projects-list-item-#{authorized_project.id}") do
-            expect(has_testid?('groups-projects-more-actions-dropdown')).to be false
-          end
-        end
-
-        it 'displays projects the user is not a member of' do
-          visit admin_projects_path
-
-          expect(page).to have_content(unauthorized_project.name)
-        end
+        expect(page).to have_content(unauthorized_project.name)
       end
     end
 
