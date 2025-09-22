@@ -115,7 +115,7 @@ RSpec.describe Gitlab::Middleware::JsonValidation, feature_category: :shared do
     context 'with different JSON content types' do
       shared_examples 'validates JSON content type' do
         it 'validates the request' do
-          validator = instance_double(::Gitlab::Json::StreamValidator)
+          validator = instance_double(::Gitlab::Json::StreamValidator, metadata: {})
           expect(::Gitlab::Json::StreamValidator).to receive(:new).and_return(validator)
           expect(::Oj).to receive(:sc_parse).with(validator, body)
           expect(app).to receive(:call).with(env)
@@ -556,6 +556,7 @@ RSpec.describe Gitlab::Middleware::JsonValidation, feature_category: :shared do
             expect(result[0]).to eq(400)
             response_body = Gitlab::Json.parse(result[2].first)
             expect(response_body['error']).to eq('Parameters nested too deeply')
+            expect(env[described_class::RACK_ENV_METADATA_KEY]).to be_present
           end
 
           it 'logs with route-specific limits' do

@@ -249,4 +249,80 @@ RSpec.describe Gitlab::Json::StreamValidator, feature_category: :shared do
       end
     end
   end
+
+  describe '#metadata' do
+    let(:options) do
+      {
+        max_depth: 10,
+        max_array_size: 100,
+        max_hash_size: 100,
+        max_total_elements: 1000
+      }
+    end
+
+    subject(:metadata) do
+      validator = described_class.new(options)
+      Oj.sc_parse(validator, json)
+      validator.metadata
+    end
+
+    context 'with simple structures' do
+      # rubocop:disable Layout/LineLength -- This is more readable
+      where(:description, :json, :expected_metadata) do
+        'empty object'        | '{}'                       | { total_elements: 1, max_array_count: 0, max_hash_count: 0, max_depth: 1 }
+        'empty array'         | '[]'                       | { total_elements: 1, max_array_count: 0, max_hash_count: 0, max_depth: 1 }
+        'simple object'       | '{"name":"test","age":30}' | { total_elements: 5, max_array_count: 0, max_hash_count: 2, max_depth: 1 }
+        'simple array'        | '[1,2,3,4,5]'              | { total_elements: 6, max_array_count: 5, max_hash_count: 0, max_depth: 1 }
+        'array of strings'    | '["a","b","c"]'            | { total_elements: 4, max_array_count: 3, max_hash_count: 0, max_depth: 1 }
+      end
+      # rubocop:enable Layout/LineLength
+
+      with_them do
+        it { is_expected.to eq(expected_metadata) }
+      end
+    end
+
+    context 'with nested structures' do
+      # rubocop:disable Layout/LineLength -- This is more readable
+      where(:description, :json, :expected_metadata) do
+        'nested object'       | '{"user":{"id":1,"name":"John"}}' | { total_elements: 7, max_array_count: 0, max_hash_count: 2, max_depth: 2 }
+        'nested array'        | '[[1,2],[3,4]]'                   | { total_elements: 7, max_array_count: 2, max_hash_count: 0, max_depth: 2 }
+        'mixed nesting'       | '{"items":[{"id":1},{"id":2}]}'   | { total_elements: 9, max_array_count: 2, max_hash_count: 1, max_depth: 3 }
+        'deep nesting'        | '{"a":{"b":{"c":{"d":1}}}}'       | { total_elements: 9, max_array_count: 0, max_hash_count: 1, max_depth: 4 }
+      end
+      # rubocop:enable Layout/LineLength
+
+      with_them do
+        it { is_expected.to eq(expected_metadata) }
+      end
+    end
+
+    context 'with complex structures' do
+      let(:json) { '{"users":[{"name":"Alice","tags":["admin","user"]},{"name":"Bob","tags":["user"]}]}' }
+      let(:expected_metadata) do
+        {
+          total_elements: 16,
+          max_array_count: 2,
+          max_hash_count: 2,
+          max_depth: 4
+        }
+      end
+
+      it { is_expected.to eq(expected_metadata) }
+    end
+
+    context 'with varying array and hash sizes' do
+      let(:json) { '{"small":[1],"medium":[1,2,3],"large":[1,2,3,4,5],"hash":{"a":1,"b":2,"c":3,"d":4}}' }
+      let(:expected_metadata) do
+        {
+          total_elements: 26,
+          max_array_count: 5,
+          max_hash_count: 4,
+          max_depth: 2
+        }
+      end
+
+      it { is_expected.to eq(expected_metadata) }
+    end
+  end
 end
