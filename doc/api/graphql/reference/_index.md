@@ -11725,6 +11725,30 @@ Input type: `SecurityAttributeCreateInput`
 | <a id="mutationsecurityattributecreateerrors"></a>`errors` | [`[String!]!`](#string) | Errors encountered during the mutation. |
 | <a id="mutationsecurityattributecreatesecurityattributes"></a>`securityAttributes` | [`[SecurityAttribute!]`](#securityattribute) | Created security attributes. |
 
+### `Mutation.securityAttributeProjectUpdate`
+
+Input type: `SecurityAttributeProjectUpdateInput`
+
+#### Arguments
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="mutationsecurityattributeprojectupdateaddattributeids"></a>`addAttributeIds` | [`[SecurityAttributeID!]`](#securityattributeid) | Global IDs of the security attributes to add to the project. |
+| <a id="mutationsecurityattributeprojectupdateattributetemplatetypes"></a>`attributeTemplateTypes` | [`[SecurityAttributeTemplateType!]`](#securityattributetemplatetype) | Types of predefined security attributes to add to the project. Will be used only if no addAttributeIds are provided. |
+| <a id="mutationsecurityattributeprojectupdateclientmutationid"></a>`clientMutationId` | [`String`](#string) | A unique identifier for the client performing the mutation. |
+| <a id="mutationsecurityattributeprojectupdateprojectid"></a>`projectId` | [`ProjectID!`](#projectid) | Global ID of the project. |
+| <a id="mutationsecurityattributeprojectupdateremoveattributeids"></a>`removeAttributeIds` | [`[SecurityAttributeID!]`](#securityattributeid) | Global IDs of the security attributes to remove from the project. |
+
+#### Fields
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="mutationsecurityattributeprojectupdateaddedcount"></a>`addedCount` | [`Int`](#int) | Number of attributes added. |
+| <a id="mutationsecurityattributeprojectupdateclientmutationid"></a>`clientMutationId` | [`String`](#string) | A unique identifier for the client performing the mutation. |
+| <a id="mutationsecurityattributeprojectupdateerrors"></a>`errors` | [`[String!]!`](#string) | Errors encountered during the mutation. |
+| <a id="mutationsecurityattributeprojectupdateproject"></a>`project` | [`Project`](#project) | Updated project. |
+| <a id="mutationsecurityattributeprojectupdateremovedcount"></a>`removedCount` | [`Int`](#int) | Number of attributes removed. |
+
 ### `Mutation.securityAttributeUpdate`
 
 Input type: `SecurityAttributeUpdateInput`
@@ -49791,6 +49815,18 @@ Status of secret rotation.
 | <a id="secretrotationstatusapproaching"></a>`APPROACHING` | Rotation is due within 7 days. |
 | <a id="secretrotationstatusok"></a>`OK` | Rotation is not due soon. |
 | <a id="secretrotationstatusoverdue"></a>`OVERDUE` | Rotation is overdue (reminder was sent). |
+
+### `SecurityAttributeTemplateType`
+
+Template type for predefined security attributes.
+
+| Value | Description |
+| ----- | ----------- |
+| <a id="securityattributetemplatetypebusiness_administrative"></a>`BUSINESS_ADMINISTRATIVE` | Business administrative attribute. |
+| <a id="securityattributetemplatetypebusiness_critical"></a>`BUSINESS_CRITICAL` | Business critical attribute. |
+| <a id="securityattributetemplatetypebusiness_operational"></a>`BUSINESS_OPERATIONAL` | Business operational attribute. |
+| <a id="securityattributetemplatetypemission_critical"></a>`MISSION_CRITICAL` | Mission critical attribute. |
+| <a id="securityattributetemplatetypenon_essential"></a>`NON_ESSENTIAL` | Non essential attribute. |
 
 ### `SecurityCategoryEditableState`
 

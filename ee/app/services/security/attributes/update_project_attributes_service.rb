@@ -132,8 +132,13 @@ module Security
       end
 
       def existing_single_select_categories
-        existing_attributes.filter_map do |attribute|
+        categories_being_removed = associations_to_destroy.map(&:security_attribute).filter_map do |attribute|
           attribute.security_category_id unless attribute.security_category.multiple_selection
+        end.to_set
+
+        existing_attributes.filter_map do |attribute|
+          category_id = attribute.security_category_id unless attribute.security_category.multiple_selection
+          category_id unless categories_being_removed.include?(category_id)
         end.to_set
       end
       strong_memoize_attr :existing_single_select_categories
