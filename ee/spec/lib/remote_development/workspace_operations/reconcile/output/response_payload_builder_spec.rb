@@ -103,9 +103,8 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Output::Respon
         settings: settings
       },
       observability_for_rails_infos: {
-        workspace.name => {
-          config_to_apply_resources_included: expected_workspace_resources_included_type
-        }
+        name: workspace.name,
+        config_to_apply_resources_include_type: expected_workspace_resources_included_type
       }
     )
   end
