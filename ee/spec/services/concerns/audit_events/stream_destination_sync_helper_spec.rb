@@ -8,10 +8,6 @@ RSpec.describe AuditEvents::StreamDestinationSyncHelper, feature_category: :audi
 
   describe '#create_legacy_destination' do
     context 'when feature flag is enabled' do
-      before do
-        stub_feature_flags(audit_events_external_destination_streamer_consolidation_refactor: true)
-      end
-
       describe 'http destinations' do
         context 'when instance level' do
           let!(:source) do
@@ -206,28 +202,10 @@ RSpec.describe AuditEvents::StreamDestinationSyncHelper, feature_category: :audi
         end
       end
     end
-
-    context 'when feature flag is disabled' do
-      before do
-        stub_feature_flags(audit_events_external_destination_streamer_consolidation_refactor: false)
-      end
-
-      let!(:source) do
-        create(:audit_events_instance_external_streaming_destination)
-      end
-
-      it 'returns nil' do
-        expect(helper.create_legacy_destination(source)).to be_nil
-      end
-    end
   end
 
   describe '#update_legacy_destination' do
     context 'when feature flag is enabled' do
-      before do
-        stub_feature_flags(audit_events_external_destination_streamer_consolidation_refactor: true)
-      end
-
       describe 'http destinations' do
         context 'when instance level' do
           let!(:source) do
@@ -499,20 +477,6 @@ RSpec.describe AuditEvents::StreamDestinationSyncHelper, feature_category: :audi
 
           expect(helper.update_legacy_destination(source)).to be_nil
         end
-      end
-    end
-
-    context 'when feature flag is disabled' do
-      before do
-        stub_feature_flags(audit_events_external_destination_streamer_consolidation_refactor: false)
-      end
-
-      let!(:source) do
-        create(:audit_events_instance_external_streaming_destination)
-      end
-
-      it 'returns nil' do
-        expect(helper.update_legacy_destination(source)).to be_nil
       end
     end
   end

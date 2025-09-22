@@ -19,7 +19,7 @@ module AuditEvents
     end
 
     def stream_to_destinations
-      if feature_flag_enabled? && streamers.any?(&:streamable?)
+      if streamers.any?(&:streamable?)
         streamers.each(&:execute)
       else
         streamable_strategies.each(&:execute)
@@ -27,11 +27,7 @@ module AuditEvents
     end
 
     def streamable?
-      if feature_flag_enabled?
-        streamers.any?(&:streamable?) || streamable_strategies.any?
-      else
-        streamable_strategies.any?
-      end
+      streamers.any?(&:streamable?) || streamable_strategies.any?
     end
 
     private
@@ -48,10 +44,6 @@ module AuditEvents
         strategy_instance = strategy.new(event_name, audit_event)
         strategy_instance if strategy_instance.streamable?
       end
-    end
-
-    def feature_flag_enabled?
-      Feature.enabled?(:audit_events_external_destination_streamer_consolidation_refactor, :instance)
     end
   end
 end

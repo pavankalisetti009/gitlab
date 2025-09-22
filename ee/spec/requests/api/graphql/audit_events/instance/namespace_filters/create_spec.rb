@@ -105,7 +105,6 @@ RSpec.describe 'Create a namespace filter for instance level external audit even
             before do
               destination.update_column(:legacy_destination_ref, legacy_destination.id)
               legacy_destination.update_column(:stream_destination_id, destination.id)
-              stub_feature_flags(audit_events_external_destination_streamer_consolidation_refactor: true)
             end
 
             it 'calls sync method after successful operation' do

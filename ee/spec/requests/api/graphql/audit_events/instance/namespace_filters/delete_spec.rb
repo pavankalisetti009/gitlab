@@ -54,7 +54,6 @@ RSpec.describe 'Delete a namespace filter for instance level external audit even
           context 'when streaming destination has corresponding legacy destination' do
             before do
               destination.update_column(:legacy_destination_ref, legacy_destination.id)
-              stub_feature_flags(audit_events_external_destination_streamer_consolidation_refactor: true)
             end
 
             it 'calls sync method after successful deletion' do
@@ -72,26 +71,6 @@ RSpec.describe 'Delete a namespace filter for instance level external audit even
 
           context 'when streaming destination has no legacy destination' do
             it 'calls sync method but it does nothing internally' do
-              expect_next_instance_of(Mutations::AuditEvents::Instance::NamespaceFilters::Delete) do |instance|
-                expect(instance).to receive(:sync_delete_legacy_namespace_filter)
-                              .with(destination)
-                              .and_call_original
-              end
-
-              mutate
-
-              expect_graphql_errors_to_be_empty
-              expect(mutation_response['errors']).to be_empty
-            end
-          end
-
-          context 'when sync functionality is disabled' do
-            before do
-              destination.update_column(:legacy_destination_ref, legacy_destination.id)
-              stub_feature_flags(audit_events_external_destination_streamer_consolidation_refactor: false)
-            end
-
-            it 'calls sync method but it does nothing internally due to disabled feature flag' do
               expect_next_instance_of(Mutations::AuditEvents::Instance::NamespaceFilters::Delete) do |instance|
                 expect(instance).to receive(:sync_delete_legacy_namespace_filter)
                               .with(destination)

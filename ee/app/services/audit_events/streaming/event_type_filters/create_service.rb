@@ -42,15 +42,11 @@ module AuditEvents
         end
 
         def should_sync_to_streaming?
-          is_instance = destination.is_a?(AuditEvents::InstanceExternalAuditEventDestination)
-
-          destination.stream_destination.present? &&
-            legacy_destination_sync_enabled?(destination, is_instance)
+          destination.stream_destination.present?
         end
 
         def should_sync_to_legacy?
-          destination.legacy_destination_ref.present? &&
-            stream_destination_sync_enabled?(destination)
+          destination.legacy_destination_ref.present?
         end
 
         def sync_to_streaming_destination
