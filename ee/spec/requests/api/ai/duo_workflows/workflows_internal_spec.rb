@@ -61,7 +61,6 @@ RSpec.describe API::Ai::DuoWorkflows::WorkflowsInternal, feature_category: :agen
       checkpoint = Ai::DuoWorkflows::Checkpoint.last
       expect(json_response).to eq({
         'id' => checkpoint.id.first,
-        'metadata' => checkpoint.metadata,
         'parent_ts' => checkpoint.parent_ts,
         'thread_ts' => checkpoint.thread_ts
       })

@@ -7,6 +7,7 @@ module API
         class Checkpoint < BasicCheckpoint
           expose :checkpoint
           expose :checkpoint_writes, using: 'API::Entities::Ai::DuoWorkflows::CheckpointWrite'
+          expose :metadata
         end
       end
     end
