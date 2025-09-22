@@ -1,12 +1,14 @@
 # frozen_string_literal: true
 
-RSpec.shared_examples 'calls SDS' do |extra_headers|
+RSpec.shared_examples 'calls SDS' do
   include_context 'secrets check context'
   it 'calls SDS' do
     expect_next_instance_of(Gitlab::Checks::SecretPushProtection::SecretDetectionServiceClient) do |instance|
       expectation = expect(instance).to receive(:send_request_to_sds)
 
-      expectation.with(anything, hash_including(extra_headers: hash_including(extra_headers))) if extra_headers
+      if defined?(expected_extra_headers) && expected_extra_headers
+        expectation.with(anything, hash_including(extra_headers: hash_including(expected_extra_headers)))
+      end
     end
 
     secrets_check.validate!
