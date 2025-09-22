@@ -258,6 +258,7 @@ module EE
         mount_mutation ::Mutations::Security::CiConfiguration::SetSecretPushProtection
         mount_mutation ::Mutations::Security::CiConfiguration::SetPreReceiveSecretDetection
         mount_mutation ::Mutations::Security::CiConfiguration::SetGroupSecretPushProtection
+        mount_mutation ::Mutations::Security::CiConfiguration::SetGroupValidityChecks
         mount_mutation ::Mutations::Security::CiConfiguration::SetValidityChecks
         mount_mutation ::Mutations::Security::CiConfiguration::SetContainerScanningForRegistry
         mount_mutation ::Mutations::Security::CiConfiguration::SetLicenseConfigurationSource
