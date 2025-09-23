@@ -26,6 +26,7 @@ describe('UsageBillingUserDashboardApp', () => {
     wrapper = shallowMountExtended(UsageBillingUserDashboardApp, {
       provide: {
         userId: USER_ID,
+        fetchUserUsageDataApiUrl: API_ENDPOINT,
       },
     });
   };

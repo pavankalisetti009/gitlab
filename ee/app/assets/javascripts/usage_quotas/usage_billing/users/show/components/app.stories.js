@@ -28,6 +28,7 @@ const createTemplate = (config = {}) => {
     },
     provide: {
       userId: '42',
+      fetchUserUsageDataApiUrl: '/gitlab_duo/users/:id',
     },
     props: Object.keys(argTypes),
     template: `<usage-billing-user-dashboard-app />`,
