@@ -18,6 +18,7 @@ module Projects
       experiment(:lightweight_trial_registration_redesign, actor: current_user).track(:render_get_started)
 
       @get_started_presenter = ::Onboarding::GetStartedPresenter.new(current_user, project, onboarding_progress)
+      @hide_importing_alert = true
     end
 
     def end_tutorial
