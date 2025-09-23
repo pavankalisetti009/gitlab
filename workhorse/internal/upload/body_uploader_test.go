@@ -95,6 +95,23 @@ func TestRequestBodyErrors(t *testing.T) {
 	}
 }
 
+func TestRequestBodySizeError(t *testing.T) {
+	testhelper.ConfigureSecret()
+
+	// Create a body that's larger than what the destination will accept
+	body := strings.NewReader(fileContent)
+
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	// Use a preparer that will cause a size error
+	preparer := &sizeErrorPreparer{}
+
+	resp := testUpload(ctx, &rails{}, preparer, echoProxy(t, fileLen), body)
+	defer resp.Body.Close()
+	require.Equal(t, http.StatusRequestEntityTooLarge, resp.StatusCode)
+}
+
 func testNoProxyInvocation(t *testing.T, expectedStatus int, auth api.PreAuthorizer, preparer Preparer) {
 	proxy := http.HandlerFunc(func(_ http.ResponseWriter, _ *http.Request) {
 		assert.Fail(t, "request proxied upstream")
@@ -201,4 +218,17 @@ func (a *alwaysLocalPreparer) Prepare(_ *api.Response) (*destination.UploadOpts,
 	}
 
 	return opts, a.prepareError
+}
+
+type sizeErrorPreparer struct{}
+
+func (s *sizeErrorPreparer) Prepare(_ *api.Response) (*destination.UploadOpts, error) {
+	opts, err := destination.GetOpts(&api.Response{TempPath: os.TempDir()})
+	if err != nil {
+		return nil, err
+	}
+
+	// Set a very small size limit to trigger a size error
+	opts.MaximumSize = 1
+	return opts, nil
 }
