@@ -3,7 +3,7 @@ import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import LineChart from 'ee/analytics/analytics_dashboards/components/visualizations/line_chart.vue';
 import { stubComponent } from 'helpers/stub_component';
 import { NULL_SERIES_ID } from 'ee/analytics/shared/constants';
-import { UNITS } from '~/analytics/shared/constants';
+import { CHART_TOOLTIP_TITLE_FORMATTERS, UNITS } from '~/analytics/shared/constants';
 
 describe('LineChart Visualization', () => {
   /** @type {import('helpers/vue_test_utils_helper').ExtendedWrapper} */
@@ -162,18 +162,19 @@ describe('LineChart Visualization', () => {
 
       describe('titleFormatter', () => {
         it('should render formatted tooltip title', () => {
-          const mockFormatter = (value) => value.toUpperCase();
-
           createWrapper({
             props: {
               options: {
-                chartTooltip: { titleFormatter: mockFormatter },
+                chartTooltip: { titleFormatter: CHART_TOOLTIP_TITLE_FORMATTERS.DATE },
               },
             },
             stubs: {
               GlLineChart: stubComponent(GlLineChart, {
                 data() {
-                  return { title: 'May (xAxisName)', params: { seriesData: [mockSeries1] } };
+                  return {
+                    title: '2023-11-12T17:43:11.987 (xAxisName)',
+                    params: { seriesData: [mockSeries2] },
+                  };
                 },
                 template: `<div>
                           <slot name="tooltip-title" :title="title" :params="params"></slot>
@@ -182,7 +183,7 @@ describe('LineChart Visualization', () => {
             },
           });
 
-          expect(wrapper.findByText('MAY').exists()).toBe(true);
+          expect(wrapper.findByText('Nov 12, 2023').exists()).toBe(true);
         });
       });
     });

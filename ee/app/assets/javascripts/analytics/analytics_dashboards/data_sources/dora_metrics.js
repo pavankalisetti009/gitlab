@@ -1,4 +1,4 @@
-import { getDayDifference, localeDateFormat, newDate } from '~/lib/utils/datetime_utility';
+import { getDayDifference, newDate } from '~/lib/utils/datetime_utility';
 import { __, sprintf } from '~/locale';
 import {
   BUCKETING_INTERVAL_ALL,
@@ -140,7 +140,6 @@ export default async function fetch({
     setVisualizationOverrides({
       visualizationOptionOverrides: {
         ...DORA_METRICS_CHARTS_ADDITIONAL_OPTS[metric],
-        chartTooltip: { titleFormatter: localeDateFormat.asDate.format },
       },
     });
   }

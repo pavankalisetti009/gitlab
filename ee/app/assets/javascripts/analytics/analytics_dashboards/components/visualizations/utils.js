@@ -4,7 +4,9 @@ import { formatNumber, n__, __, sprintf } from '~/locale';
 import { formatDate, humanizeTimeInterval } from '~/lib/utils/datetime/date_format_utility';
 import { formatAsPercentage } from 'ee/analytics/dora/components/util';
 import { NULL_SERIES_ID } from 'ee/analytics/shared/constants';
-import { UNITS } from '~/analytics/shared/constants';
+import { CHART_TOOLTIP_TITLE_FORMATTERS, UNITS } from '~/analytics/shared/constants';
+import { convertToTitleCase, humanize } from '~/lib/utils/text_utility';
+import { localeDateFormat } from '~/lib/utils/datetime/locale_dateformat';
 
 function isIsoDateString(dateString) {
   // Matches an ISO date string in the format `2024-03-14T00:00:00.000`
@@ -35,12 +37,30 @@ export function formatVisualizationTooltipTitle(title, params) {
   return title;
 }
 
-export function customFormatVisualizationTooltipTitle(params, formatter) {
-  const xAxisValue = params?.seriesData?.at(0)?.value?.at(0);
+/**
+ * Formats chart tooltip titles based on the specified formatter type.
+ *
+ * @param {Object} options - The formatting options
+ * @param {string} options.title - The full title including axis name (e.g., "2024-01-15 (Date)")
+ * @param {string|Date|null} options.value - The raw value to format (e.g., "2024-01-15")
+ * @param {string} options.formatter - The formatter type to apply
+ * @returns {string} The formatted title string, or empty string if value is null/undefined
+ */
+export function formatChartTooltipTitle({ title, value, formatter } = {}) {
+  const { DATE, TITLE_CASE, VALUE_ONLY } = CHART_TOOLTIP_TITLE_FORMATTERS;
 
-  if (isNil(xAxisValue)) return '';
+  if (isNil(value)) return '';
 
-  return formatter(xAxisValue);
+  switch (formatter) {
+    case DATE:
+      return localeDateFormat.asDate.format(value);
+    case TITLE_CASE:
+      return convertToTitleCase(humanize(value, '[-_]'));
+    case VALUE_ONLY:
+      return value;
+    default:
+      return title;
+  }
 }
 
 export const humanizeDisplayUnit = ({ unit, data = 0 }) => {
