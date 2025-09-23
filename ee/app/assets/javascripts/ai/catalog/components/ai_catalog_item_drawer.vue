@@ -99,7 +99,7 @@ export default {
           <dt>{{ s__('AICatalog|Description') }}</dt>
           <dd>{{ activeItem.description }}</dd>
           <gl-loading-icon v-if="isItemDetailsLoading" size="lg" class="gl-my-5" />
-          <component :is="detailsComponent" :item="activeItem" />
+          <component :is="detailsComponent" :key="activeItem.id" :item="activeItem" />
         </dl>
       </div>
     </template>

@@ -16,9 +16,9 @@ import { s__ } from '~/locale';
 import * as Sentry from '~/sentry/sentry_browser_wrapper';
 import ScrollScrim from '~/super_sidebar/components/scroll_scrim.vue';
 import LifecycleDetail from './lifecycle_detail.vue';
-import namespaceStatusesQuery from './namespace_lifecycles.query.graphql';
-import namespaceDefaultLifecycleTemplatesQuery from './namespace_default_lifecycle_template.query.graphql';
-import createLifecycleMutation from './create_lifecycle.mutation.graphql';
+import namespaceStatusesQuery from './graphql/namespace_lifecycles.query.graphql';
+import namespaceDefaultLifecycleTemplatesQuery from './graphql/namespace_default_lifecycle_template.query.graphql';
+import createLifecycleMutation from './graphql/create_lifecycle.mutation.graphql';
 
 export default {
   name: 'CreateLifecycle',
@@ -238,6 +238,7 @@ export default {
     :title="$options.i18n.createLifecycle"
     scrollable
     modal-id="create-lifecycle-modal"
+    @close="closeModal"
     @hide="closeModal"
   >
     <gl-alert
@@ -271,7 +272,7 @@ export default {
           class="gl-w-34"
           data-testid="new-lifecycle-name-field"
           :state="!formError"
-          @blur="validate"
+          @input="validate"
         />
       </gl-form-group>
 

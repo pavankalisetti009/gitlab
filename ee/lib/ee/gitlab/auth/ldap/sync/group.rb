@@ -7,6 +7,7 @@ module EE
         module Sync
           class Group < ::Gitlab::Auth::Ldap::Sync::Base
             include ::GitlabSubscriptions::MemberManagement::PromotionManagementUtils
+            include GitlabSubscriptions::MemberManagement::SeatAwareProvisioning
 
             attr_reader :provider, :group, :proxy
 
@@ -261,9 +262,11 @@ module EE
               else
                 # If you pass the user object, instead of just user ID,
                 # it saves an extra user database query.
+                adjusted_access_level = calculate_adjusted_access_level(group, user, access[:base_access_level])
+
                 member = group.add_member(
                   user,
-                  access[:base_access_level],
+                  adjusted_access_level,
                   member_role_id: access[:member_role_id],
                   current_user: current_user,
                   ldap: true
@@ -271,6 +274,26 @@ module EE
 
                 trigger_event_to_promote_pending_members!(member)
               end
+            end
+
+            def calculate_adjusted_access_level(group, user, requested_access_level)
+              adjusted_access_level = adjust_access_level_for_seat_availability(group, user, requested_access_level)
+
+              if adjusted_access_level != requested_access_level
+                info_adjusted_access_level(group, user, adjusted_access_level, requested_access_level)
+              end
+
+              adjusted_access_level
+            end
+
+            def info_adjusted_access_level(group, user, adjusted_access_level, requested_access_level)
+              logger.info(
+                message: 'LDAP user given different access level due to seat overage',
+                adjusted_access_level: adjusted_access_level,
+                requested_access_level: requested_access_level,
+                group_id: group.id,
+                user_id: user.id
+              )
             end
 
             def warn_cannot_remove_last_owner(user, group)

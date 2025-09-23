@@ -9,7 +9,7 @@ import LifecycleDetail from 'ee/groups/settings/work_items/custom_status/lifecyc
 import WorkItemStatusBadge from 'ee/work_items/components/shared/work_item_status_badge.vue';
 import LifecycleNameForm from 'ee/groups/settings/work_items/custom_status/lifecycle_name_form.vue';
 import RemoveLifecycleConfirmationModal from 'ee/groups/settings/work_items/custom_status/remove_lifecycle_confirmation_modal.vue';
-import removeLifecycleMutation from 'ee/groups/settings/work_items/custom_status/remove_lifecycle.mutation.graphql';
+import removeLifecycleMutation from 'ee/groups/settings/work_items/custom_status/graphql/remove_lifecycle.mutation.graphql';
 import { mockLifecycles, removeLifecycleSuccessResponse } from '../mock_data';
 
 Vue.use(VueApollo);

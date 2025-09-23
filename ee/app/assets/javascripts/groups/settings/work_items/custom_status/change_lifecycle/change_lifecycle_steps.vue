@@ -5,8 +5,8 @@ import { s__, sprintf } from '~/locale';
 import { convertTypeEnumToName } from '~/work_items/utils';
 import { NAME_TO_TEXT_MAP } from '~/work_items/constants';
 import LifecycleDetail from 'ee/groups/settings/work_items/custom_status/lifecycle_detail.vue';
-import changeLifecycleMutation from 'ee/groups/settings/work_items/custom_status/change_lifecycle.mutation.graphql';
-import namespaceLifecyclesQuery from 'ee/groups/settings/work_items/custom_status/namespace_lifecycles.query.graphql';
+import changeLifecycleMutation from 'ee/groups/settings/work_items/custom_status/graphql/change_lifecycle.mutation.graphql';
+import namespaceLifecyclesQuery from 'ee/groups/settings/work_items/custom_status/graphql/namespace_lifecycles.query.graphql';
 import { excludeSelfReferencingIds } from '../utils';
 import SelectLifecycle from './select_lifecycle.vue';
 import StatusMapping from './status_mapping.vue';
@@ -149,6 +149,10 @@ export default {
         }
 
         this.$toast.show(s__('WorkItem|Type lifecycle updated.'));
+
+        // Refetch the lifecycles query here since it will update the cache here and
+        // show the correct results when the home page is shown
+        this.$apollo.queries.lifecycles.refetch();
 
         this.$router.push({
           name: 'workItemSettingsHome',

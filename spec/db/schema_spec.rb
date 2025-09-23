@@ -151,10 +151,7 @@ RSpec.describe 'Database schema',
       merge_requests_merge_data: %w[merge_request_id project_id merge_user_id],
       namespaces: %w[owner_id parent_id],
       namespace_descendants: %w[namespace_id],
-      # adding FK for organization_id after the index is created
-      notes: %w[
-        author_id commit_id noteable_id updated_by_id resolved_by_id confirmed_by_id discussion_id organization_id
-      ],
+      notes: %w[author_id commit_id noteable_id updated_by_id resolved_by_id confirmed_by_id discussion_id],
       notes_archived: %w[author_id commit_id noteable_id updated_by_id resolved_by_id discussion_id organization_id],
       notification_settings: %w[source_id],
       oauth_access_grants: %w[resource_owner_id application_id],
@@ -311,7 +308,7 @@ RSpec.describe 'Database schema',
       members: 21, # Decrement by 2 after the removal of temporary indexes https://gitlab.com/gitlab-org/gitlab/-/work_items/520189
       merge_requests: 29,
       namespaces: 26,
-      notes: 16,
+      notes: 17,
       p_ci_builds: 26,
       p_ci_pipelines: 24,
       packages_package_files: 16,

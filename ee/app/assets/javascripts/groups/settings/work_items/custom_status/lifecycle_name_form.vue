@@ -3,7 +3,7 @@ import { GlFormInput, GlFormGroup, GlButton } from '@gitlab/ui';
 import * as Sentry from '~/sentry/sentry_browser_wrapper';
 import { getIdFromGraphQLId } from '~/graphql_shared/utils';
 import { s__, __ } from '~/locale';
-import lifecycleUpdateMutation from './lifecycle_update.mutation.graphql';
+import lifecycleUpdateMutation from './graphql/lifecycle_update.mutation.graphql';
 
 export default {
   components: {

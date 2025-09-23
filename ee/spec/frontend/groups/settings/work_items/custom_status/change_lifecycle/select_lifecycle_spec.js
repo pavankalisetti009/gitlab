@@ -7,7 +7,7 @@ import createMockApollo from 'helpers/mock_apollo_helper';
 import SelectLifecycle from 'ee/groups/settings/work_items/custom_status/change_lifecycle/select_lifecycle.vue';
 import LifecycleDetail from 'ee/groups/settings/work_items/custom_status/lifecycle_detail.vue';
 import CreateLifecycleModal from 'ee/groups/settings/work_items/custom_status/create_lifecycle_modal.vue';
-import namespaceLifecyclesQuery from 'ee/groups/settings/work_items/custom_status/namespace_lifecycles.query.graphql';
+import namespaceLifecyclesQuery from 'ee/groups/settings/work_items/custom_status/graphql/namespace_lifecycles.query.graphql';
 import { mockLifecycles } from '../../mock_data';
 
 Vue.use(VueApollo);

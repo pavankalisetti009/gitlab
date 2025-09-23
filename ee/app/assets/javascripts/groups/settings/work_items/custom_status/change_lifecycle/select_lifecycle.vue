@@ -2,7 +2,7 @@
 import { GlFormRadio, GlFormRadioGroup, GlButton, GlLoadingIcon, GlAlert } from '@gitlab/ui';
 import { s__, sprintf } from '~/locale';
 import * as Sentry from '~/sentry/sentry_browser_wrapper';
-import namespaceLifecyclesQuery from 'ee/groups/settings/work_items/custom_status/namespace_lifecycles.query.graphql';
+import namespaceLifecyclesQuery from 'ee/groups/settings/work_items/custom_status/graphql/namespace_lifecycles.query.graphql';
 import LifecycleDetail from 'ee/groups/settings/work_items/custom_status/lifecycle_detail.vue';
 import CreateLifecycleModal from 'ee/groups/settings/work_items/custom_status/create_lifecycle_modal.vue';
 
@@ -42,6 +42,7 @@ export default {
       lifecycles: [],
       selectedLifecycleId: this.selectedLifecycle,
       showModal: false,
+      initialLifecyclesLoaded: false,
     };
   },
   apollo: {
@@ -54,6 +55,9 @@ export default {
       },
       update(data) {
         return data?.namespace?.lifecycles?.nodes || [];
+      },
+      result() {
+        this.initialLifecyclesLoaded = true;
       },
       error(error) {
         this.errorText = s__('WorkItem|Failed to load lifecycles.');
@@ -81,7 +85,7 @@ export default {
       });
     },
     loadingLifecycles() {
-      return this.$apollo.queries.lifecycles.loading;
+      return !this.initialLifecyclesLoaded && this.$apollo.queries.lifecycles.loading;
     },
   },
   methods: {
