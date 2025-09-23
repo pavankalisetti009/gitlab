@@ -104,7 +104,7 @@
     margin-top: $gl-spacing-scale-11;
   }
 
-  @media (max-width: $breakpoint-sm) {
+  @include gl-container-width-down(sm, panel) {
     .modal-dialog {
       margin-top: $gl-spacing-scale-11;
     }

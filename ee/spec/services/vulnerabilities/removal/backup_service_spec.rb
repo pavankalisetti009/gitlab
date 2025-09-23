@@ -23,7 +23,7 @@ RSpec.describe Vulnerabilities::Removal::BackupService, feature_category: :vulne
     shared_examples_for 'creating backup for' do |backup_model, factory:|
       let(:backup_date) { Time.zone.today }
       let(:original_record) { create(*factory).reload } # rubocop:disable Rails/SaveBang -- This is factory bot `create`.
-      let(:deleted_rows) { original_record.class.where(id: original_record).delete_all_returning }
+      let(:deleted_rows) { original_record.class.primary_key_in(original_record).delete_all_returning }
       let(:service_object) { described_class.new(backup_model, backup_date, deleted_rows) }
 
       subject(:backup!) { service_object.execute }
@@ -42,7 +42,7 @@ RSpec.describe Vulnerabilities::Removal::BackupService, feature_category: :vulne
         end
 
         expect(backup_model.last).to have_attributes(
-          original_record_identifier: original_record.id,
+          original_record_identifier: original_record.attributes['id'],
           date: backup_date,
           **mapped_columns(backup_model, original_record),
           project_id: original_record.project_id
@@ -126,6 +126,10 @@ RSpec.describe Vulnerabilities::Removal::BackupService, feature_category: :vulne
     it_behaves_like 'creating backup for',
       Vulnerabilities::Backups::VulnerabilityMergeRequestLink,
       factory: :vulnerabilities_merge_request_link
+
+    it_behaves_like 'creating backup for',
+      Vulnerabilities::Backups::VulnerabilityRead,
+      factory: :vulnerability_read
 
     it_behaves_like 'creating backup for',
       Vulnerabilities::Backups::VulnerabilitySeverityOverride,

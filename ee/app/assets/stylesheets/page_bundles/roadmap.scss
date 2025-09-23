@@ -55,7 +55,7 @@ html.group-epics-roadmap-html {
       border-bottom-right-radius: 0;
     }
 
-    @include media-breakpoint-down(xs) {
+    @include gl-container-width-down(sm, panel) {
       display: flex;
 
       .dropdown-menu-sort {

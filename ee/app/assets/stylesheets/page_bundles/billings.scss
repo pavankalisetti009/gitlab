@@ -70,7 +70,7 @@ $badge-height: $gl-spacing-scale-7;
   }
 }
 
-@media (min-width: $breakpoint-md) {
+@include gl-container-width-up(md, panel) {
   .billing-plans {
     display: flex;
     flex-wrap: wrap;
@@ -99,7 +99,7 @@ $badge-height: $gl-spacing-scale-7;
   }
 }
 
-@media (min-width: $breakpoint-lg) {
+@include gl-container-width-up(lg, panel) {
   .billing-plans {
     flex-wrap: nowrap;
 
@@ -149,13 +149,13 @@ $badge-height: $gl-spacing-scale-7;
           display: none;
         }
 
-        @include media-breakpoint-down(sm) {
+        @include gl-container-width-down(md, panel) {
           display: none;
         }
       }
     }
 
-    @include media-breakpoint-up(lg) {
+    @include gl-container-width-up(lg, panel) {
       .header-cell {
         width: 144px;
         flex: none;
@@ -199,7 +199,7 @@ $badge-height: $gl-spacing-scale-7;
       border-bottom: 0;
     }
 
-    @include media-breakpoint-down(md) {
+    @include gl-container-width-down(lg, panel) {
       border-bottom: 0;
       border-right: 1px solid var(--gl-border-color-default);
 
@@ -208,7 +208,7 @@ $badge-height: $gl-spacing-scale-7;
       }
     }
 
-    @include media-breakpoint-down(xs) {
+    @include gl-container-width-down(sm, panel) {
       border-right: 0;
       border-bottom: 1px solid var(--gl-border-color-default);
 
@@ -226,11 +226,11 @@ $badge-height: $gl-spacing-scale-7;
       border-right: 0;
     }
 
-    @include media-breakpoint-up(md) {
+    @include gl-container-width-up(md, panel) {
       flex: 1;
     }
 
-    @include media-breakpoint-down(md) {
+    @include gl-container-width-down(lg, panel) {
       border-right: 0;
       flex: none;
     }
