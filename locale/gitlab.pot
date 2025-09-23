@@ -70113,6 +70113,9 @@ msgstr ""
 msgid "UserList|created %{timeago}"
 msgstr ""
 
+msgid "UserMappingKeepAsPlaceholder|Status could not be changed."
+msgstr ""
+
 msgid "UserMapping|%{count} placeholder user was kept as a placeholder."
 msgid_plural "UserMapping|%{count} placeholder users were kept as placeholders."
 msgstr[0] ""
