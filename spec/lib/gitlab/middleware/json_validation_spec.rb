@@ -112,7 +112,7 @@ RSpec.describe Gitlab::Middleware::JsonValidation, feature_category: :shared do
       let(:body) { '{"a": {"b": "nested"}}' }
 
       it 'forces logging mode even when route is configured for enforced mode' do
-        expect(Gitlab::AppLogger).to receive(:warn)
+        expect(Gitlab::AppLogger).to receive(:warn).with(hash_excluding(:status))
         expect(app).to receive(:call).with(env)
 
         result = middleware.call(env)
@@ -257,7 +257,9 @@ RSpec.describe Gitlab::Middleware::JsonValidation, feature_category: :shared do
         let(:options) { { default_limits: { max_json_size_bytes: 10, mode: :logging } } }
 
         it 'logs error but allows request to continue' do
-          expect(Gitlab::AppLogger).to receive(:warn)
+          expect(Gitlab::AppLogger).to receive(:warn).with(
+            hash_excluding(:status)
+          )
           expect(app).to receive(:call).with(env)
 
           result = middleware.call(env)
