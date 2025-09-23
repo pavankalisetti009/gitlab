@@ -8,7 +8,7 @@ module VirtualRegistries
       delegate_missing_to :group
 
       def initialize(group)
-        @group = group.root_ancestor
+        @group = group
       end
     end
   end

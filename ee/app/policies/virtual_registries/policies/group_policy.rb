@@ -11,7 +11,7 @@ module VirtualRegistries
         @user.read_virtual_registry && @user.has_access_to_group?(@subject.group)
       end
 
-      rule { anonymous }.policy do
+      rule { anonymous | group.has_parent }.policy do
         prevent :read_virtual_registry
         prevent :create_virtual_registry
         prevent :update_virtual_registry

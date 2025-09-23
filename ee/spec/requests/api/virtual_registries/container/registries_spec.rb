@@ -173,11 +173,11 @@ RSpec.describe API::VirtualRegistries::Container::Registries, :aggregate_failure
         group.add_maintainer(user)
       end
 
-      it 'returns a bad request because it is not a top level group' do
+      it 'returns a forbidden because it is not a top level group' do
         api_request
 
-        expect(response).to have_gitlab_http_status(:bad_request)
-        expect(json_response).to eq({ 'message' => { 'group' => ['must be a top level Group'] } })
+        expect(response).to have_gitlab_http_status(:forbidden)
+        expect(json_response).to eq({ 'message' => '403 Forbidden' })
       end
     end
   end

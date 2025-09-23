@@ -212,12 +212,15 @@ RSpec.describe VirtualRegistries::Policies::GroupPolicy, feature_category: :virt
         it { expect_disallowed(:admin_virtual_registry) }
       end
     end
+  end
 
-    context 'when group is a subgroup' do
-      let_it_be(:policy_subject) { ::VirtualRegistries::Policies::Group.new(subgroup) }
-      let(:current_user) { build_stubbed(:user, owner_of: subgroup) }
+  describe 'subgroups', :aggregate_failures do
+    let_it_be(:policy_subject) { ::VirtualRegistries::Policies::Group.new(subgroup) }
+    let_it_be(:current_user) { create(:user, owner_of: [group, subgroup]) }
 
-      it { expect_disallowed(:admin_virtual_registry) }
+    %i[read_virtual_registry create_virtual_registry update_virtual_registry admin_virtual_registry
+      destroy_virtual_registry].each do |permission|
+      it { expect_disallowed(permission) }
     end
   end
 end
