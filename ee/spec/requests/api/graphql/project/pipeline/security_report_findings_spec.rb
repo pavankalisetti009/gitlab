@@ -17,6 +17,7 @@ RSpec.describe 'Query.project(fullPath).pipeline(iid).securityReportFindings',
             securityReportFindings(reportType: ["sast", "dast"]) {
               nodes {
                 severity
+                originalSeverity
                 reportType
                 name: title
                 scanner {
@@ -87,6 +88,7 @@ RSpec.describe 'Query.project(fullPath).pipeline(iid).securityReportFindings',
         expect(security_report_finding.dig('project', 'visibility')).to eq(project.visibility)
         expect(security_report_finding['identifiers'].length).to eq(3)
         expect(security_report_finding['severity']).not_to be_nil
+        expect(security_report_finding['originalSeverity']).not_to be_nil
         expect(security_report_finding['reportType']).not_to be_nil
         expect(security_report_finding['name']).not_to be_nil
         expect(security_report_finding['uuid']).not_to be_nil

@@ -29,6 +29,7 @@ RSpec.describe GitlabSchema.types['PipelineSecurityReportFinding'], feature_cate
       title
       severity
       severity_overrides
+      original_severity
       scanner
       identifiers
       links
@@ -619,6 +620,36 @@ RSpec.describe GitlabSchema.types['PipelineSecurityReportFinding'], feature_cate
         expect(severity_override['newSeverity'].capitalize).to eq("Medium")
         expect(severity_override['originalSeverity'].capitalize).to eq(vulnerability.severity.capitalize)
         expect(severity_override['createdAt']).to eq(vulnerability.severity_overrides[0].created_at.utc.iso8601)
+      end
+    end
+  end
+
+  describe 'original_severity' do
+    let(:query_for_test) do
+      %(
+      uuid
+      originalSeverity
+      severity
+    )
+    end
+
+    context 'when the security finding has no overrides' do
+      it 'returns the original severity from the security finding' do
+        original_severity = get_findings_from_response(subject).first['originalSeverity']
+        expect(original_severity).to eq('CRITICAL')
+      end
+    end
+
+    context 'when the security finding has a vulnerability with severity override' do
+      let_it_be(:vulnerability) { create(:vulnerability, :with_severity_override, project: project) }
+      let_it_be(:vulnerability_finding) do
+        create(:vulnerabilities_finding, project: project, vulnerability: vulnerability, uuid: sast_findings.first.uuid)
+      end
+
+      it 'returns the original severity from security finding, not the overridden severity' do
+        finding = get_findings_from_response(subject).find { |f| f['uuid'] == sast_findings.first.uuid }
+        expect(finding['severity'].capitalize).to eq(vulnerability.severity.capitalize)
+        expect(finding['originalSeverity'].capitalize).to eq('Critical')
       end
     end
   end
