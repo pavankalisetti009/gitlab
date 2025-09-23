@@ -701,6 +701,110 @@ RSpec.describe EE::Gitlab::Auth::Ldap::Sync::Group, feature_category: :system_ac
         end
       end
     end
+
+    context 'with block seat overages' do
+      let(:ldap_group1) { ldap_group_entry(user_dn(user.username)) }
+      let(:license) do
+        create(
+          :license,
+          restrictions: {
+            active_user_count: active_user_count,
+            plan: plan
+          }
+        )
+      end
+
+      let(:plan) { License::ULTIMATE_PLAN }
+      let(:active_user_count) { 1 }
+      let(:access_level) { GroupMember.find_by(user_id: user.id, namespace_id: group.id).access_level }
+
+      before do
+        stub_saas_features(gitlab_com_subscriptions: false)
+        stub_feature_flags(bso_minimal_access_fallback: true)
+
+        allow(License).to receive(:current).and_return(license)
+        stub_licensed_features(
+          minimal_access_role: true, ldap_group_sync: true, seat_control: true,
+          custom_roles: false, group_allowed_email_domains: false, group_webhooks: false
+        )
+      end
+
+      context 'with block seat overage' do
+        before do
+          stub_application_setting(seat_control: ApplicationSetting::SEAT_CONTROL_BLOCK_OVERAGES)
+        end
+
+        context 'with available seats' do
+          it 'adds the user with the requested access level' do
+            sync_group.update_permissions
+
+            expect(access_level).to eq(::Gitlab::Access::DEVELOPER)
+          end
+        end
+
+        context 'without available seats' do
+          let(:active_user_count) { 0 }
+
+          context 'with Premium and users without role being billable' do
+            let(:plan) { License::PREMIUM_PLAN }
+
+            it 'allows the requested access level of existing users' do
+              sync_group.update_permissions
+
+              expect(access_level).to eq(::Gitlab::Access::DEVELOPER)
+            end
+          end
+
+          context 'with Ultimate and users without a role being non-billable' do
+            it 'limits the requested access level of existing users' do
+              sync_group.update_permissions
+
+              expect(access_level).to eq(::Gitlab::Access::MINIMAL_ACCESS)
+            end
+          end
+
+          context 'with FF bso_minimal_access_fallback disabled' do
+            before do
+              stub_feature_flags(bso_minimal_access_fallback: false)
+            end
+
+            it 'allows the request access level of existing users' do
+              sync_group.update_permissions
+
+              expect(access_level).to eq(::Gitlab::Access::DEVELOPER)
+            end
+          end
+
+          it 'prioritizes synchronized access level for existing billable user' do
+            group.add_maintainer(user)
+
+            sync_group.update_permissions
+
+            expect(access_level).to eq(::Gitlab::Access::DEVELOPER)
+          end
+
+          it 'limits the requested access level for existing non-billable user' do
+            group.add_guest(user)
+
+            sync_group.update_permissions
+
+            expect(access_level).to eq(::Gitlab::Access::MINIMAL_ACCESS)
+          end
+        end
+      end
+
+      context 'without block seat overage' do
+        before do
+          stub_application_setting(seat_control: ApplicationSetting::SEAT_CONTROL_OFF)
+        end
+
+        it 'adds the user with the requested access level regardless of seat availability' do
+          sync_group.update_permissions
+
+          expect(access_level).to eq(::Gitlab::Access::DEVELOPER)
+        end
+      end
+    end
   end
 
   context 'filter' do
