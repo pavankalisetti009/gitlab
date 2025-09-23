@@ -239,7 +239,7 @@ module Gitlab
             prompt_class: nil,
             feature_category: :workflow_catalog,
             execute_method: nil,
-            maturity: :beta,
+            maturity: :experimental,
             self_managed: true,
             internal: true
           }
