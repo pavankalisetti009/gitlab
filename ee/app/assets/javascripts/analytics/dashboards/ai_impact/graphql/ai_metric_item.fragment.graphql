@@ -2,11 +2,13 @@
 
 fragment AiMetricItem on AiMetrics {
   codeContributorsCount
-  codeSuggestionsContributorsCount
-  codeSuggestionsShownCount
-  codeSuggestionsAcceptedCount
   duoChatContributorsCount
   duoAssignedUsersCount
   duoUsedCount
   rootCauseAnalysisUsersCount
+  codeSuggestions {
+    contributorsCount
+    shownCount
+    acceptedCount
+  }
 }

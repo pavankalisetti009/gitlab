@@ -149,9 +149,9 @@ export const mockAiMetricsResponse = (values = []) =>
       acc,
       {
         codeContributorsCount,
-        codeSuggestionsContributorsCount,
-        codeSuggestionsAcceptedCount,
-        codeSuggestionsShownCount,
+        contributorsCount,
+        acceptedCount,
+        shownCount,
         duoChatContributorsCount,
         rootCauseAnalysisUsersCount,
         duoAssignedUsersCount,
@@ -164,10 +164,12 @@ export const mockAiMetricsResponse = (values = []) =>
           group: {
             id: 'fake-ai-metrics-request',
             aiMetrics: {
+              codeSuggestions: {
+                contributorsCount,
+                acceptedCount,
+                shownCount,
+              },
               codeContributorsCount,
-              codeSuggestionsContributorsCount,
-              codeSuggestionsAcceptedCount,
-              codeSuggestionsShownCount,
               duoChatContributorsCount,
               rootCauseAnalysisUsersCount,
               duoAssignedUsersCount,
