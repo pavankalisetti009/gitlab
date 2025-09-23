@@ -7,7 +7,7 @@ import * as Sentry from '~/sentry/sentry_browser_wrapper';
 import WorkItemStatusBadge from 'ee/work_items/components/shared/work_item_status_badge.vue';
 import RemoveLifecycleConfirmationModal from './remove_lifecycle_confirmation_modal.vue';
 import LifecycleNameForm from './lifecycle_name_form.vue';
-import removeLifecycleMutation from './remove_lifecycle.mutation.graphql';
+import removeLifecycleMutation from './graphql/remove_lifecycle.mutation.graphql';
 
 export default {
   components: {

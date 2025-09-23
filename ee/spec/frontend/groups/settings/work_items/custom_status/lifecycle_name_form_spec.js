@@ -8,7 +8,7 @@ import { stubComponent } from 'helpers/stub_component';
 import createMockApollo from 'helpers/mock_apollo_helper';
 import waitForPromises from 'helpers/wait_for_promises';
 import LifecycleNameForm from 'ee/groups/settings/work_items/custom_status/lifecycle_name_form.vue';
-import lifecycleUpdateMutation from 'ee/groups/settings/work_items/custom_status/lifecycle_update.mutation.graphql';
+import lifecycleUpdateMutation from 'ee/groups/settings/work_items/custom_status/graphql/lifecycle_update.mutation.graphql';
 import { mockLifecycles } from '../mock_data';
 
 Vue.use(VueApollo);

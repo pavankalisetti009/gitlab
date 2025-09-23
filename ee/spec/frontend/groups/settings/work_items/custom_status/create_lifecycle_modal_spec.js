@@ -14,9 +14,9 @@ import createMockApollo from 'helpers/mock_apollo_helper';
 import { stubComponent } from 'helpers/stub_component';
 import CreateLifecycle from 'ee/groups/settings/work_items/custom_status/create_lifecycle_modal.vue';
 import LifecycleDetail from 'ee/groups/settings/work_items/custom_status/lifecycle_detail.vue';
-import namespaceStatusesQuery from 'ee/groups/settings/work_items/custom_status/namespace_lifecycles.query.graphql';
-import namespaceDefaultLifecycleTemplatesQuery from 'ee/groups/settings/work_items/custom_status/namespace_default_lifecycle_template.query.graphql';
-import createLifecycleMutation from 'ee/groups/settings/work_items/custom_status/create_lifecycle.mutation.graphql';
+import namespaceStatusesQuery from 'ee/groups/settings/work_items/custom_status/graphql/namespace_lifecycles.query.graphql';
+import namespaceDefaultLifecycleTemplatesQuery from 'ee/groups/settings/work_items/custom_status/graphql/namespace_default_lifecycle_template.query.graphql';
+import createLifecycleMutation from 'ee/groups/settings/work_items/custom_status/graphql/create_lifecycle.mutation.graphql';
 import ScrollScrim from '~/super_sidebar/components/scroll_scrim.vue';
 import {
   mockLifecycles,
@@ -260,9 +260,9 @@ describe('CreateLifecycleModal', () => {
         expect(findNameInput().props('state')).toBe(false);
       });
 
-      it('shows validation error when name is empty and input loses focus', async () => {
+      it('shows validation error when name is empty', async () => {
         await findNameInput().vm.$emit('focus');
-        await findNameInput().vm.$emit('blur');
+        await findCreateLifecycleButton().vm.$emit('click');
         await nextTick();
 
         expect(findFormGroup().props('invalidFeedback')).toBe(
