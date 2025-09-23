@@ -106,6 +106,12 @@ describe('ProjectVulnerabilitiesOverTimePanel', () => {
       expect(findExtendedDashboardPanel().props('title')).toBe('Vulnerabilities over time');
     });
 
+    it('passes the correct tooltip to the panels base', () => {
+      expect(findExtendedDashboardPanel().props('tooltip')).toEqual({
+        description: 'Vulnerability trends over time',
+      });
+    });
+
     it('renders the vulnerabilities over time chart', async () => {
       await waitForPromises();
       expect(findVulnerabilitiesOverTimeChart().exists()).toBe(true);

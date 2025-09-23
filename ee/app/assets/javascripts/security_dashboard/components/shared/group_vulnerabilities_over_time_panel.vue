@@ -1,5 +1,6 @@
 <script>
 import ExtendedDashboardPanel from '~/vue_shared/components/customizable_dashboard/extended_dashboard_panel.vue';
+import { s__ } from '~/locale';
 import { fetchPolicies } from '~/lib/graphql';
 import { formatDate, getDateInPast } from '~/lib/utils/datetime_utility';
 import VulnerabilitiesOverTimeChart from 'ee/security_dashboard/components/shared/charts/open_vulnerabilities_over_time.vue';
@@ -75,6 +76,9 @@ export default {
       return this.vulnerabilitiesOverTime.length > 0;
     },
   },
+  tooltip: {
+    description: s__('SecurityReports|Vulnerability trends over time'),
+  },
 };
 </script>
 
@@ -83,6 +87,7 @@ export default {
     :title="s__('SecurityReports|Vulnerabilities over time')"
     :loading="$apollo.queries.vulnerabilitiesOverTime.loading"
     :show-alert-state="fetchError"
+    :tooltip="$options.tooltip"
   >
     <template #filters>
       <over-time-severity-filter v-model="panelLevelFilters.severity" />

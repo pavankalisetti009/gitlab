@@ -68,6 +68,9 @@ module Authz
             group_group_links[:shared_group_id].as('group_id'),
             member_role_id_in_shared_group.as('member_role_id'),
             group_group_links[:shared_with_group_id])
+          # distinct_on and order can be removed when https://gitlab.com/groups/gitlab-org/-/epics/19048 is completed
+          .distinct_on(members[:user_id])
+          .order(members[:user_id], members[:updated_at].desc) # rubocop:disable CodeReuse/ActiveRecord -- Very specific use-case
           .to_sql
 
         results = ::Authz::UserGroupMemberRole.connection.select_all query
