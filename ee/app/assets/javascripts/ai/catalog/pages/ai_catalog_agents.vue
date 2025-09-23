@@ -1,4 +1,5 @@
 <script>
+import { GlFilteredSearch } from '@gitlab/ui';
 import * as Sentry from '~/sentry/sentry_browser_wrapper';
 import { s__, sprintf } from '~/locale';
 import { getIdFromGraphQLId, convertToGraphQLId } from '~/graphql_shared/utils';
@@ -11,6 +12,7 @@ import {
   VISIBILITY_LEVEL_PRIVATE_STRING,
 } from '~/visibility_level/constants';
 import ErrorsAlert from '~/vue_shared/components/errors_alert.vue';
+import { FILTERED_SEARCH_TERM } from '~/vue_shared/components/filtered_search_bar/constants';
 import { TYPENAME_AI_CATALOG_ITEM } from 'ee/graphql_shared/constants';
 import aiCatalogAgentsQuery from '../graphql/queries/ai_catalog_agents.query.graphql';
 import aiCatalogAgentQuery from '../graphql/queries/ai_catalog_agent.query.graphql';
@@ -44,8 +46,20 @@ export default {
     AiCatalogItemDrawer,
     AiCatalogItemConsumerModal,
     ErrorsAlert,
+    GlFilteredSearch,
   },
   mixins: [InternalEvents.mixin()],
+  data() {
+    return {
+      aiCatalogAgents: [],
+      aiCatalogAgent: null,
+      aiCatalogAgentToBeAdded: null,
+      errors: [],
+      pageInfo: {},
+      hasTrackedPageView: false,
+      searchTerm: '',
+    };
+  },
   apollo: {
     aiCatalogAgents: {
       query: aiCatalogAgentsQuery,
@@ -55,6 +69,7 @@ export default {
           after: null,
           first: PAGE_SIZE,
           last: null,
+          search: this.searchTerm,
         };
       },
       fetchPolicy: fetchPolicies.CACHE_AND_NETWORK,
@@ -92,16 +107,6 @@ export default {
         Sentry.captureException(error);
       },
     },
-  },
-  data() {
-    return {
-      aiCatalogAgents: [],
-      aiCatalogAgent: null,
-      aiCatalogAgentToBeAdded: null,
-      errors: [],
-      pageInfo: {},
-      hasTrackedPageView: false,
-    };
   },
   computed: {
     isLoading() {
@@ -198,6 +203,14 @@ export default {
             AGENT_VISIBILITY_LEVEL_DESCRIPTIONS[VISIBILITY_LEVEL_PRIVATE_STRING],
         },
       };
+    },
+    filteredSearchValue() {
+      return [
+        {
+          type: FILTERED_SEARCH_TERM,
+          value: { data: this.searchTerm },
+        },
+      ];
     },
   },
   watch: {
@@ -363,6 +376,12 @@ export default {
         last: PAGE_SIZE,
       });
     },
+    handleSearch(filters) {
+      [this.searchTerm] = filters;
+    },
+    handleClearSearch() {
+      this.searchTerm = '';
+    },
   },
   editRoute: AI_CATALOG_AGENTS_EDIT_ROUTE,
 };
@@ -372,6 +391,15 @@ export default {
   <div>
     <ai-catalog-list-header />
     <errors-alert class="gl-mt-5" :errors="errors" @dismiss="errors = []" />
+
+    <div class="gl-border-b gl-bg-subtle gl-p-5">
+      <gl-filtered-search
+        :value="filteredSearchValue"
+        @submit="handleSearch"
+        @clear="handleClearSearch"
+      />
+    </div>
+
     <ai-catalog-list
       :is-loading="isLoading"
       :items="aiCatalogAgents"
@@ -380,6 +408,7 @@ export default {
       :delete-confirm-message="s__('AICatalog|Are you sure you want to delete agent %{name}?')"
       :delete-fn="deleteAgent"
       :page-info="pageInfo"
+      :search="searchTerm"
       @next-page="handleNextPage"
       @prev-page="handlePrevPage"
     />

@@ -46,6 +46,11 @@ export default {
       type: Object,
       required: true,
     },
+    search: {
+      type: String,
+      required: false,
+      default: '',
+    },
   },
   data() {
     return {
@@ -115,6 +120,7 @@ export default {
             s__('AICatalog|Build AI agents and flows to automate repetitive tasks and processes.')
           "
           :svg-path="$options.EMPTY_SVG_URL"
+          :search="search"
         />
       </slot>
     </template>
