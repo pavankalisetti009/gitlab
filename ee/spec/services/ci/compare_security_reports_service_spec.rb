@@ -344,29 +344,72 @@ RSpec.describe Ci::CompareSecurityReportsService, :clean_gitlab_redis_shared_sta
 
         it_behaves_like 'when only the head pipeline has a report' do
           let_it_be(:head_pipeline) { test_pipelines[:sast_differential_scan] }
-          let(:num_findings_in_fixture) { 6 }
+          let(:num_findings_in_fixture) { 7 }
         end
 
         it_behaves_like 'when base and head pipelines have scanning reports' do
-          let_it_be(:base_pipeline) { test_pipelines[:with_sast_report] }
+          let_it_be(:base_pipeline) { test_pipelines[:advanced_sast] }
           let_it_be(:head_pipeline) { test_pipelines[:sast_differential_scan] }
 
-          # For partial scan comparisons, we compare full scan results from the base pipeline
-          # against partial scan results from the head pipeline. This prevents existing
-          # vulnerabilities from appearing as "new" when detected by partial scans.
-          # We also hide the fixed findings since we don't have full coverage.
+          # For partial scans we hide the fixed findings since we don't have full coverage.
           let(:num_fixed_findings) { 0 }
           let(:num_added_findings) { 7 }
         end
 
         context 'when base pipeline contains the same findings' do
-          let_it_be(:base_pipeline) { test_pipelines[:advanced_sast] }
-          let_it_be(:head_pipeline) { test_pipelines[:sast_differential_scan] }
+          let_it_be(:base_pipeline) { create(:ee_ci_pipeline, :advanced_sast, project: project) }
+          let_it_be(:head_pipeline) { create(:ee_ci_pipeline, :sast_differential_scan, project: project) }
+          # We need to set explict uuids on the findings to test this
+          let_it_be(:base_pipeline_uuids) { Array.new(3).map { SecureRandom.uuid } }
+          let_it_be(:new_finding_uuid) { SecureRandom.uuid }
+          let_it_be(:head_pipeline_uuids) { base_pipeline_uuids + [new_finding_uuid] }
+          let_it_be(:base_scan) do
+            create(
+              :security_scan,
+              :latest_successful,
+              project: project,
+              pipeline: base_pipeline,
+              scan_type: scan_type
+            )
+          end
 
-          it_behaves_like 'when base and head pipelines have scanning reports' do
-            # It doesn't report the existing findings as new.
-            let(:num_fixed_findings) { 0 }
-            let(:num_added_findings) { 1 }
+          let_it_be(:head_scan) do
+            create(
+              :security_scan,
+              :latest_successful,
+              project: project,
+              pipeline: head_pipeline,
+              scan_type: scan_type
+            ).tap { |scan| create(:vulnerabilities_partial_scan, scan: scan) }
+          end
+
+          before_all do
+            base_pipeline_uuids.each do |uuid|
+              create(
+                :security_finding,
+                :with_finding_data,
+                uuid: uuid,
+                deduplicated: true,
+                scan: base_scan
+              )
+            end
+
+            head_pipeline_uuids.each do |uuid|
+              create(
+                :security_finding,
+                :with_finding_data,
+                uuid: uuid,
+                deduplicated: true,
+                scan: head_scan
+              )
+            end
+          end
+
+          it 'adds only the new finding' do
+            added = subject.dig(:data, 'added')
+
+            expect(added.size).to eq(1)
+            expect(added.first['uuid']).to eq(new_finding_uuid)
           end
         end
       end
