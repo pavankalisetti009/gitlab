@@ -52,17 +52,17 @@ module Security
         log_update_approval_rule('Evaluating license_scanning rules from approval policies', **validation_context)
         license_approval_rules.each do |approval_rule|
           # We only error for fail-open. Fail closed policy is evaluated as "failing"
-          if !target_branch_pipeline && fail_open?(approval_rule)
-            evaluation.error!(approval_rule, :target_pipeline_missing, context: validation_context)
+          if !target_branch_pipeline(approval_rule) && fail_open?(approval_rule)
+            evaluation.error!(approval_rule, :target_pipeline_missing, context: validation_context(approval_rule))
             next
           end
 
           rule_violated, violation_data = rule_violated?(approval_rule)
 
           if rule_violated
-            evaluation.fail!(approval_rule, data: violation_data, context: validation_context)
+            evaluation.fail!(approval_rule, data: violation_data, context: validation_context(approval_rule))
             log_update_approval_rule('Updating MR approval rule', reason: 'license_finding rule violated',
-              approval_rule_id: approval_rule.id, approval_rule_name: approval_rule.name)
+              approval_rule_id: approval_rule.id, approval_rule_name: approval_rule.name, approval_rule: approval_rule)
           else
             evaluation.pass!(approval_rule)
           end
@@ -81,20 +81,18 @@ module Security
 
       def denied_licenses_with_dependency(rule)
         if licenses_with_package_exclusions?(rule)
-          Security::MergeRequestApprovalPolicies::DeniedLicensesChecker.new(
-            project, report, target_branch_report, rule.scan_result_policy_read,
-            rule.approval_policy_rule).denied_licenses_with_dependencies
+          Security::MergeRequestApprovalPolicies::DeniedLicensesChecker
+          .new(project, report, target_branch_report(rule), rule.scan_result_policy_read, rule.approval_policy_rule)
+          .denied_licenses_with_dependencies
         else
-          violation_checker.execute(rule.scan_result_policy_read)
+          Security::ScanResultPolicies::LicenseViolationChecker
+            .new(project, report, target_branch_report(rule))
+            .execute(rule.scan_result_policy_read)
         end
       end
 
       def licenses_with_package_exclusions?(rule)
         rule.scan_result_policy_read.licenses.present? || rule&.approval_policy_rule&.licenses.present?
-      end
-
-      def violation_checker
-        Security::ScanResultPolicies::LicenseViolationChecker.new(project, report, target_branch_report)
       end
 
       def scanner
@@ -106,8 +104,8 @@ module Security
         scanner.report
       end
 
-      def target_branch_report
-        ::Gitlab::LicenseScanning.scanner_for_pipeline(project, target_branch_pipeline).report
+      def target_branch_report(approval_rule)
+        ::Gitlab::LicenseScanning.scanner_for_pipeline(project, target_branch_pipeline(approval_rule)).report
       end
 
       def evaluation
@@ -124,14 +122,13 @@ module Security
       end
       strong_memoize_attr :source_pipeline
 
-      def target_branch_pipeline
-        target_pipeline = merge_request.latest_comparison_pipeline_with_sbom_reports
+      def target_branch_pipeline(approval_rule)
+        strong_memoize_with(:target_branch_pipeline, approval_rule) do
+          target_pipeline = target_pipeline_for_merge_request(merge_request, :license_scanning, approval_rule)
 
-        return target_pipeline if target_pipeline.present?
-
-        related_target_pipeline
+          target_pipeline || related_target_pipeline
+        end
       end
-      strong_memoize_attr :target_branch_pipeline
 
       def related_target_pipeline
         target_pipeline_without_report = merge_request.merge_base_pipeline || merge_request.base_pipeline
@@ -150,14 +147,19 @@ module Security
         pipelines.find { |pipeline| pipeline.self_and_project_descendants.any?(&:has_dependency_scanning_reports?) }
       end
 
-      def validation_context
-        { pipeline_ids: [source_pipeline&.id].compact, target_pipeline_ids: [target_branch_pipeline&.id].compact }
+      def validation_context(approval_rule = nil)
+        if approval_rule
+          { pipeline_ids: [source_pipeline&.id].compact,
+            target_pipeline_ids: [target_branch_pipeline(approval_rule)&.id].compact }
+        else
+          { pipeline_ids: [source_pipeline&.id].compact }
+        end
       end
 
       def log_update_approval_rule(message, **attributes)
         log_policy_evaluation('update_approvals', message,
           project: project, merge_request_id: merge_request.id,
-          merge_request_iid: merge_request.iid, **attributes.merge(validation_context))
+          merge_request_iid: merge_request.iid, **attributes.merge(validation_context(attributes[:approval_rule])))
       end
 
       def build_violation_data(denied_licenses_with_dependencies)

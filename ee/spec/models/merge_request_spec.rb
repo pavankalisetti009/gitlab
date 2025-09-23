@@ -3636,4 +3636,64 @@ RSpec.describe MergeRequest, feature_category: :code_review_workflow do
       end
     end
   end
+
+  describe '#all_target_branch_pipelines' do
+    let_it_be(:project) { create(:project, :public, :repository) }
+    let_it_be_with_refind(:merge_request) do
+      create(:merge_request, source_project: project, target_project: project)
+    end
+
+    let_it_be(:diff_base_pipeline) do
+      create(:ci_pipeline, :success, project: project, ref: merge_request.target_branch, sha: merge_request.diff_base_sha)
+    end
+
+    let_it_be(:target_branch_sha_pipeline) do
+      create(:ci_pipeline, :success, project: project, ref: merge_request.target_branch, sha: merge_request.target_branch_sha)
+    end
+
+    let_it_be(:other_ref_pipeline) do
+      create(:ci_pipeline, :success, project: project, ref: merge_request.source_branch)
+    end
+
+    it 'returns only pipelines on the target branch' do
+      expect(merge_request.all_target_branch_pipelines).to contain_exactly(diff_base_pipeline, target_branch_sha_pipeline)
+    end
+  end
+
+  describe '#approval_policy_comparison_pipelines' do
+    let_it_be(:project) { create(:project, :public, :repository) }
+    let_it_be_with_refind(:merge_request) do
+      create(:merge_request, source_project: project, target_project: project)
+    end
+
+    let_it_be(:base_old) do
+      create(:ci_pipeline, :success, project: project, ref: merge_request.target_branch, sha: merge_request.diff_base_sha)
+    end
+
+    let_it_be(:base_new) do
+      create(:ci_pipeline, :success, project: project, ref: merge_request.target_branch, sha: merge_request.diff_base_sha)
+    end
+
+    let_it_be(:start_old) do
+      create(:ci_pipeline, :success, project: project, ref: merge_request.target_branch, sha: merge_request.diff_start_sha)
+    end
+
+    let_it_be(:start_new) do
+      create(:ci_pipeline, :success, project: project, ref: merge_request.target_branch, sha: merge_request.diff_start_sha)
+    end
+
+    it 'returns pipelines matching shas' do
+      list = merge_request.approval_policy_comparison_pipelines.to_a
+
+      expect(list).to contain_exactly(base_new, base_old, start_new, start_old)
+    end
+
+    it 'only includes pipelines for the target branch shas' do
+      unrelated = create(:ci_pipeline, :success, project: project, ref: merge_request.target_branch, sha: project.commit.id)
+
+      list = merge_request.approval_policy_comparison_pipelines.to_a
+
+      expect(list).not_to include(unrelated)
+    end
+  end
 end
