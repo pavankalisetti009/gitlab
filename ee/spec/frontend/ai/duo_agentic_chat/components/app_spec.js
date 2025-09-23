@@ -1,1018 +1,163 @@
-import { AgenticDuoChat } from '@gitlab/duo-ui';
+import { DuoLayout, SideRail } from '@gitlab/duo-ui';
 import Vue, { nextTick } from 'vue';
-// eslint-disable-next-line no-restricted-imports
-import Vuex from 'vuex';
-import VueApollo from 'vue-apollo';
-import { GlToggle } from '@gitlab/ui';
-import { parseDocument } from 'yaml';
-import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
-import { useLocalStorageSpy } from 'helpers/local_storage_helper';
-import { setAgenticMode } from 'ee/ai/utils';
-import createMockApollo from 'helpers/mock_apollo_helper';
 import waitForPromises from 'helpers/wait_for_promises';
+import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import { duoChatGlobalState } from '~/super_sidebar/constants';
-import getUserWorkflows from 'ee/ai/graphql/get_user_workflow.query.graphql';
-import getAiChatContextPresets from 'ee/ai/graphql/get_ai_chat_context_presets.query.graphql';
-import getAiChatAvailableModels from 'ee/ai/graphql/get_ai_chat_available_models.query.graphql';
-import getConfiguredAgents from 'ee/ai/graphql/get_configured_agents.query.graphql';
-import DuoAgenticChatApp from 'ee/ai/duo_agentic_chat/components/app.vue';
-import { ApolloUtils } from 'ee/ai/duo_agentic_chat/utils/apollo_utils';
-import { WorkflowUtils } from 'ee/ai/duo_agentic_chat/utils/workflow_utils';
-import ModelSelectDropdown from 'ee/ai/shared/feature_settings/model_select_dropdown.vue';
-import {
-  GENIE_CHAT_RESET_MESSAGE,
-  GENIE_CHAT_CLEAR_MESSAGE,
-  GENIE_CHAT_NEW_MESSAGE,
-  DUO_WORKFLOW_STATUS_TOOL_CALL_APPROVAL_REQUIRED,
-  DUO_WORKFLOW_STATUS_INPUT_REQUIRED,
-  DUO_WORKFLOW_ADDITIONAL_CONTEXT_REPOSITORY,
-  DUO_CURRENT_WORKFLOW_STORAGE_KEY,
-  DUO_CHAT_VIEWS,
-  DUO_WORKFLOW_STATUS_RUNNING,
-  DUO_AGENTIC_CHAT_SELECTED_MODEL_KEY,
-} from 'ee/ai/constants';
+import DuoAgenticLayoutApp from 'ee/ai/duo_agentic_chat/components/app.vue';
 import { WIDTH_OFFSET } from 'ee/ai/tanuki_bot/constants';
-import { createWebSocket, closeSocket } from '~/lib/utils/websocket_utils';
-import { getStorageValue, saveStorageValue } from '~/lib/utils/local_storage';
-import { getCookie } from '~/lib/utils/common_utils';
-import {
-  MOCK_AI_CHAT_AVAILABLE_MODELS_RESPONSE,
-  MOCK_MODEL_LIST_ITEMS,
-  MOCK_GITLAB_DEFAULT_MODEL_ITEM,
-} from './mock_data';
 
-const mockSocketManager = {
-  connect: jest.fn(),
-  send: jest.fn(),
-  close: jest.fn(),
-  isConnected: jest.fn().mockReturnValue(true),
-  getState: jest.fn().mockReturnValue('OPEN'),
-};
-
-jest.mock('yaml');
-
-jest.mock('~/lib/utils/websocket_utils', () => ({
-  createWebSocket: jest.fn(() => mockSocketManager),
-  parseMessage: jest.fn(async (event) => {
-    const data = typeof event.data === 'string' ? event.data : await event.data.text();
-    return JSON.parse(data);
-  }),
-  closeSocket: jest.fn(),
-}));
-
-jest.mock('ee/ai/duo_agentic_chat/utils/apollo_utils', () => ({
-  ApolloUtils: {
-    createWorkflow: jest.fn(),
-    deleteWorkflow: jest.fn(),
-    fetchWorkflowEvents: jest.fn(),
-    getAgentFlowConfig: jest.fn(),
-  },
-}));
-
-jest.mock('ee/ai/duo_agentic_chat/utils/workflow_utils', () => ({
-  WorkflowUtils: {
-    transformChatMessages: jest.fn(),
-    parseWorkflowData: jest.fn(),
-  },
-}));
-
-const MOCK_PROJECT_ID = 'gid://gitlab/Project/123';
-const MOCK_NAMESPACE_ID = 'gid://gitlab/Group/456';
-const MOCK_RESOURCE_ID = 'gid://gitlab/Resource/789';
-const MOCK_WORKFLOW_ID = 'gid://gitlab/Ai::DuoWorkflows::Workflow/456';
-const MOCK_USER_MESSAGE = {
-  content: 'How can I optimize my CI pipeline?',
-  role: 'user',
-  requestId: `${MOCK_WORKFLOW_ID}-0`,
-};
-const MOCK_AI_RESOURCE_DATA = JSON.stringify({ type: 'issue', id: 789, title: 'Test Issue' });
-const MOCK_CONTEXT_PRESETS_RESPONSE = {
-  data: {
-    aiChatContextPresets: {
-      questions: [
-        'How can I optimize my CI pipeline?',
-        'What are best practices for merge requests?',
-        'How do I set up a workflow for my project?',
-        'What are the advantages of using GitLab CI/CD?',
-      ],
-      aiResourceData: MOCK_AI_RESOURCE_DATA,
-    },
-  },
-};
-const MOCK_APOLLO_UTILS_CREATE_WORKFLOW_RESPONSE = {
-  workflowId: '456',
-  threadId: null,
-};
-
-const MOCK_USER_WORKFLOWS_RESPONSE = {
-  data: {
-    duoWorkflowWorkflows: {
-      edges: [
-        {
-          node: {
-            id: MOCK_WORKFLOW_ID,
-            title: 'Test workflow goal',
-            lastUpdatedAt: '2024-01-01T00:00:00Z',
-            aiCatalogItemVersionId: null,
-          },
-        },
-      ],
-    },
-  },
-};
-
-const MOCK_CONFIGURED_AGENTS_RESPONSE = {
-  data: {
-    aiCatalogConfiguredItems: {
-      nodes: [
-        {
-          id: 'Configured Item 5',
-          item: {
-            id: 'Agent 5',
-            name: 'My Custom Agent',
-            description: 'This is my custom agent',
-            versions: {
-              nodes: [
-                {
-                  id: 'AgentVersion 6',
-                  released: false,
-                },
-                {
-                  id: 'AgentVersion 5',
-                  released: true,
-                },
-              ],
-            },
-          },
-        },
-      ],
-    },
-  },
-};
-
-const MOCK_WORKFLOW_EVENTS_RESPONSE = {
-  duoWorkflowEvents: {
-    nodes: [
-      {
-        id: 'event-1',
-        checkpoint: '{"channel_values": {"ui_chat_log": []}}',
-      },
-    ],
-  },
-  duoWorkflowWorkflows: {
-    nodes: [{ id: 'workflow-1', aiCatalogVersionId: '' }],
-  },
-};
-
-const MOCK_TRANSFORMED_MESSAGES = [
-  {
-    content: 'Hello, how can I help?',
-    role: 'assistant',
-    requestId: '456-0',
-    message_type: 'agent',
-  },
-];
-
-const MOCK_FLOW_CONFIG = { yaml: 'string' };
-
-const MOCK_UTILS_SETUP = () => {
-  ApolloUtils.createWorkflow.mockResolvedValue(MOCK_APOLLO_UTILS_CREATE_WORKFLOW_RESPONSE);
-  ApolloUtils.deleteWorkflow.mockResolvedValue(true);
-  ApolloUtils.fetchWorkflowEvents.mockResolvedValue(MOCK_WORKFLOW_EVENTS_RESPONSE);
-  WorkflowUtils.transformChatMessages.mockReturnValue(MOCK_TRANSFORMED_MESSAGES);
-  WorkflowUtils.parseWorkflowData.mockReturnValue({
-    checkpoint: { channel_values: { ui_chat_log: [] } },
-  });
-  parseDocument.mockReturnValue(MOCK_FLOW_CONFIG);
-};
-
-const expectedAdditionalContext = [
-  {
-    content: MOCK_AI_RESOURCE_DATA,
-    category: DUO_WORKFLOW_ADDITIONAL_CONTEXT_REPOSITORY,
-    metadata: JSON.stringify({}),
-  },
-];
-
-Vue.use(Vuex);
-Vue.use(VueApollo);
-
-jest.mock('~/lib/utils/common_utils', () => ({
-  getCookie: jest.fn(),
-}));
-
-jest.mock('~/lib/utils/local_storage', () => ({
-  getStorageValue: jest.fn(),
-  saveStorageValue: jest.fn(),
-}));
-
-jest.mock('ee/ai/utils', () => {
-  const actualUtils = jest.requireActual('ee/ai/utils');
-
-  return {
-    __esModule: true,
-    ...actualUtils,
-    setAgenticMode: jest.fn(),
-  };
-});
-
-describe('Duo Agentic Chat', () => {
+describe('DuoAgenticLayoutApp', () => {
   let wrapper;
 
-  const actionSpies = {
-    addDuoChatMessage: jest.fn(),
-    setMessages: jest.fn(),
-    setLoading: jest.fn(),
-  };
-
-  const mockRefetch = jest.fn().mockResolvedValue({});
-
-  const userWorkflowsQueryHandlerMock = jest.fn().mockResolvedValue(MOCK_USER_WORKFLOWS_RESPONSE);
-  const contextPresetsQueryHandlerMock = jest.fn().mockResolvedValue(MOCK_CONTEXT_PRESETS_RESPONSE);
-  const availableModelsQueryHandlerMock = jest
-    .fn()
-    .mockResolvedValue(MOCK_AI_CHAT_AVAILABLE_MODELS_RESPONSE);
-  const configuredAgentsQueryMock = jest.fn().mockResolvedValue(MOCK_CONFIGURED_AGENTS_RESPONSE);
-
-  const findDuoChat = () => wrapper.findComponent(AgenticDuoChat);
-  const getLastSocketCall = () => {
-    const { calls } = createWebSocket.mock;
-    if (calls.length === 0) {
-      throw new Error('No WebSocket calls made yet');
-    }
-    const [, socketCallbacks] = calls[calls.length - 1];
-    return socketCallbacks;
-  };
-
-  const createComponent = ({
-    initialState = {},
-    propsData = { projectId: MOCK_PROJECT_ID, resourceId: MOCK_RESOURCE_ID },
-    data = {},
-  } = {}) => {
-    const store = new Vuex.Store({
-      actions: actionSpies,
-      state: {
-        loading: false,
-        messages: [],
-        ...initialState,
-      },
-    });
-
-    const apolloProvider = createMockApollo([
-      [getUserWorkflows, userWorkflowsQueryHandlerMock],
-      [getAiChatContextPresets, contextPresetsQueryHandlerMock],
-      [getAiChatAvailableModels, availableModelsQueryHandlerMock],
-      [getConfiguredAgents, configuredAgentsQueryMock],
-    ]);
-
-    if (duoChatGlobalState.isAgenticChatShown !== false) {
-      duoChatGlobalState.isAgenticChatShown = true;
-    }
-
-    wrapper = shallowMountExtended(DuoAgenticChatApp, {
-      store,
-      apolloProvider,
-      propsData,
-      data() {
-        return data;
-      },
-    });
-
-    if (wrapper.vm.$apollo?.queries?.agenticWorkflows) {
-      wrapper.vm.$apollo.queries.agenticWorkflows.refetch = mockRefetch;
-    }
-  };
-
-  beforeEach(() => {
-    jest.clearAllMocks();
-    mockRefetch.mockClear();
-    MOCK_UTILS_SETUP();
+  const RouterViewStub = Vue.extend({
+    name: 'RouterViewStub',
+    template: '<div />',
   });
 
+  const findDuoLayout = () => wrapper.findComponent(DuoLayout);
+  const findSideRail = () => wrapper.findComponent(SideRail);
+
+  const mockRouter = {
+    push: jest.fn(),
+  };
+
+  const mockRoute = {
+    path: '/test',
+  };
+
+  const createWrapper = (propsData = {}, provideOptions = {}) => {
+    return shallowMountExtended(DuoAgenticLayoutApp, {
+      propsData: {
+        projectId: 'gid://gitlab/Project/123',
+        namespaceId: 'gid://gitlab/Group/456',
+        resourceId: 'gid://gitlab/Resource/789',
+        ...propsData,
+      },
+      provide: {
+        glFeatures: { duoSideRail: false },
+        ...provideOptions,
+      },
+      mocks: {
+        $route: mockRoute,
+        $router: {
+          ...mockRouter,
+        },
+      },
+      slots: {
+        siderail: SideRail,
+      },
+      stubs: {
+        DuoLayout,
+        'router-view': RouterViewStub,
+      },
+    });
+  };
+
   beforeEach(() => {
-    // In the default state, there isn't activeThread registered in local storage
-    getStorageValue.mockReturnValue({ exists: false, value: null });
+    duoChatGlobalState.isAgenticChatShown = true;
   });
 
   afterEach(() => {
     duoChatGlobalState.isAgenticChatShown = false;
   });
 
-  describe('rendering', () => {
-    describe('when Duo Chat is shown', () => {
-      beforeEach(() => {
-        createComponent();
-        duoChatGlobalState.isAgenticChatShown = true;
-      });
+  describe('when Duo Chat is shown', () => {
+    beforeEach(async () => {
+      wrapper = await createWrapper();
+    });
 
-      it('renders the AgenticDuoChat component', () => {
-        expect(findDuoChat().exists()).toBe(true);
-      });
+    it('renders the DuoLayout component', () => {
+      expect(findDuoLayout().exists()).toBe(true);
+    });
 
-      it('passes isToolApprovalProcessing prop to AgenticDuoChat component', () => {
-        expect(findDuoChat().props('isToolApprovalProcessing')).toBe(false);
-      });
+    it('passes correct dimensions to DuoLayout', () => {
+      const expectedDimensions = {
+        width: 550,
+        height: window.innerHeight,
+        top: 0, // This is calculated as window.innerHeight - height, but height equals window.innerHeight
+        maxHeight: window.innerHeight,
+        maxWidth: window.innerWidth - WIDTH_OFFSET,
+        minWidth: 550,
+        minHeight: 400,
+        left: window.innerWidth - 550,
+      };
 
-      it('passes multithreading props to AgenticDuoChat component', async () => {
-        await waitForPromises();
+      expect(findDuoLayout().props('dimensions')).toEqual(expectedDimensions);
+    });
 
-        expect(findDuoChat().props('isMultithreaded')).toBe(true);
-        expect(findDuoChat().props('multiThreadedView')).toBe(DUO_CHAT_VIEWS.CHAT);
-        expect(findDuoChat().props('activeThreadId')).toBe('');
-        expect(findDuoChat().props('threadList')).toEqual([
-          {
-            id: 'gid://gitlab/Ai::DuoWorkflows::Workflow/456',
-            lastUpdatedAt: '2024-01-01T00:00:00Z',
-            title: 'Test workflow goal',
-            aiCatalogItemVersionId: null,
-          },
-        ]);
-      });
+    it('passes shouldRenderResizable prop to DuoLayout', () => {
+      expect(findDuoLayout().props('shouldRenderResizable')).toBe(true);
+    });
 
-      it('passes sessionId to AgenticDuoChat component', async () => {
-        await findDuoChat().vm.$emit('thread-selected', { id: MOCK_WORKFLOW_ID });
+    it('passes baseProps to router-view', () => {
+      const routerView = wrapper.findComponent(RouterViewStub);
 
-        expect(findDuoChat().props('sessionId')).toBe('456');
-      });
-
-      it('calls the user workflows GraphQL query when component loads', () => {
-        expect(userWorkflowsQueryHandlerMock).toHaveBeenCalledWith({
-          type: 'chat',
-          first: 99999,
-        });
-      });
-
-      it('calls the context presets GraphQL query when component loads', () => {
-        expect(contextPresetsQueryHandlerMock).toHaveBeenCalledWith({
-          projectId: MOCK_PROJECT_ID,
-          resourceId: MOCK_RESOURCE_ID,
-          url: 'http://test.host/',
-          questionCount: 4,
-        });
-      });
-
-      it('passes context presets to AgenticDuoChat component as predefinedPrompts', async () => {
-        await waitForPromises();
-        expect(findDuoChat().props('predefinedPrompts')).toEqual(
-          MOCK_CONTEXT_PRESETS_RESPONSE.data.aiChatContextPresets.questions,
-        );
+      expect(routerView.exists()).toBe(true);
+      expect(routerView.attributes()).toMatchObject({
+        projectid: 'gid://gitlab/Project/123',
+        namespaceid: 'gid://gitlab/Group/456',
+        resourceid: 'gid://gitlab/Resource/789',
       });
     });
 
-    describe('when Duo Chat is not shown', () => {
-      beforeEach(() => {
-        createComponent();
-        duoChatGlobalState.isAgenticChatShown = false;
-      });
-
-      it('does not render the AgenticDuoChat component', () => {
-        expect(findDuoChat().exists()).toBe(false);
-      });
-
-      it('does not call the GraphQL queries', () => {
-        expect(userWorkflowsQueryHandlerMock).not.toHaveBeenCalled();
-        expect(contextPresetsQueryHandlerMock).not.toHaveBeenCalled();
-      });
+    it('navigates to /current route on mount', () => {
+      expect(mockRouter.push).toHaveBeenCalledWith('/current');
     });
   });
 
-  describe('events handling', () => {
-    beforeEach(() => {
-      createComponent();
-      duoChatGlobalState.isAgenticChatShown = true;
+  describe('when Duo Chat is not shown', () => {
+    beforeEach(async () => {
+      duoChatGlobalState.isAgenticChatShown = false;
+      wrapper = await createWrapper();
     });
 
-    describe('@chat-hidden', () => {
-      beforeEach(async () => {
-        findDuoChat().vm.$emit('chat-hidden');
-        await nextTick();
-      });
+    it('does not render the DuoLayout component', () => {
+      expect(findDuoLayout().exists()).toBe(false);
+    });
+  });
 
-      it('closes the chat on @chat-hidden', () => {
-        expect(duoChatGlobalState.isAgenticChatShown).toBe(false);
-        expect(findDuoChat().exists()).toBe(false);
-      });
+  describe('when duoSideRail feature flag is enabled', () => {
+    beforeEach(async () => {
+      wrapper = await createWrapper({}, { glFeatures: { duoSideRail: true } });
     });
 
-    describe('@send-chat-prompt', () => {
-      it.each([GENIE_CHAT_NEW_MESSAGE, GENIE_CHAT_RESET_MESSAGE, GENIE_CHAT_CLEAR_MESSAGE])(
-        'resets chat state when "%s" command is sent',
-        async (command) => {
-          createComponent();
-          wrapper.vm.workflowId = MOCK_WORKFLOW_ID;
+    it('renders the SideRail component', () => {
+      expect(findSideRail().exists()).toBe(true);
+    });
 
-          findDuoChat().vm.$emit('send-chat-prompt', command);
-          await nextTick();
-
-          expect(actionSpies.setMessages).toHaveBeenCalledWith(expect.anything(), []);
-          expect(actionSpies.setLoading).toHaveBeenCalledWith(expect.anything(), false);
+    it('passes correct buttons configuration to SideRail', async () => {
+      await nextTick();
+      const expectedButtons = {
+        current: { render: true, avatar: 'GitLab Duo Agentic Chat', title: 'Current Chat' },
+        new: { render: true, icon: 'plus', title: 'New Chat' },
+        history: { render: true, icon: 'history', title: 'History' },
+        sessions: {
+          render: true,
+          icon: 'session-ai',
+          dividerBefore: true,
+          title: 'Sessions',
+          classes: 'gl-p-3',
         },
-      );
+      };
 
-      it('creates a new workflow when sending a prompt for the first time with projectId', async () => {
-        findDuoChat().vm.$emit('send-chat-prompt', MOCK_USER_MESSAGE.content);
-        await waitForPromises();
-
-        expect(ApolloUtils.createWorkflow).toHaveBeenCalledWith(expect.anything(), {
-          projectId: MOCK_PROJECT_ID,
-          namespaceId: null,
-          goal: MOCK_USER_MESSAGE.content,
-          activeThread: undefined,
-          aiCatalogItemVersionId: '',
-        });
-
-        expect(createWebSocket).toHaveBeenCalledWith('/api/v4/ai/duo_workflows/ws', {
-          onMessage: expect.any(Function),
-          onError: expect.any(Function),
-          onClose: expect.any(Function),
-        });
-
-        expect(actionSpies.addDuoChatMessage).toHaveBeenCalledWith(
-          expect.anything(),
-          expect.objectContaining({
-            content: MOCK_USER_MESSAGE.content,
-            role: 'user',
-            requestId: `456-0`,
-          }),
-        );
-      });
-
-      it('creates a new workflow when sending a prompt for the first time with namespaceId', async () => {
-        createComponent({
-          propsData: { namespaceId: MOCK_NAMESPACE_ID, resourceId: MOCK_RESOURCE_ID },
-        });
-        duoChatGlobalState.isAgenticChatShown = true;
-
-        findDuoChat().vm.$emit('send-chat-prompt', MOCK_USER_MESSAGE.content);
-        await waitForPromises();
-
-        expect(ApolloUtils.createWorkflow).toHaveBeenCalledWith(expect.anything(), {
-          projectId: null,
-          namespaceId: MOCK_NAMESPACE_ID,
-          goal: MOCK_USER_MESSAGE.content,
-          activeThread: undefined,
-          aiCatalogItemVersionId: '',
-        });
-
-        expect(createWebSocket).toHaveBeenCalledWith('/api/v4/ai/duo_workflows/ws', {
-          onMessage: expect.any(Function),
-          onError: expect.any(Function),
-          onClose: expect.any(Function),
-        });
-
-        expect(actionSpies.addDuoChatMessage).toHaveBeenCalledWith(
-          expect.anything(),
-          expect.objectContaining({
-            content: MOCK_USER_MESSAGE.content,
-            role: 'user',
-            requestId: `456-0`,
-          }),
-        );
-      });
-
-      it('creates a new workflow when sending a prompt for the first time with both projectId and namespaceId', async () => {
-        createComponent({
-          propsData: {
-            projectId: MOCK_PROJECT_ID,
-            namespaceId: MOCK_NAMESPACE_ID,
-            resourceId: MOCK_RESOURCE_ID,
-          },
-        });
-        duoChatGlobalState.isAgenticChatShown = true;
-
-        findDuoChat().vm.$emit('send-chat-prompt', MOCK_USER_MESSAGE.content);
-        await waitForPromises();
-
-        expect(ApolloUtils.createWorkflow).toHaveBeenCalledWith(expect.anything(), {
-          projectId: MOCK_PROJECT_ID,
-          namespaceId: MOCK_NAMESPACE_ID,
-          goal: MOCK_USER_MESSAGE.content,
-          activeThread: undefined,
-          aiCatalogItemVersionId: '',
-        });
-      });
-
-      it('creates a new workflow when sending a prompt for the first time without projectId or namespaceId', async () => {
-        createComponent({
-          propsData: { resourceId: MOCK_RESOURCE_ID },
-        });
-        duoChatGlobalState.isAgenticChatShown = true;
-
-        findDuoChat().vm.$emit('send-chat-prompt', MOCK_USER_MESSAGE.content);
-        await waitForPromises();
-
-        expect(ApolloUtils.createWorkflow).toHaveBeenCalledWith(expect.anything(), {
-          projectId: null,
-          namespaceId: null,
-          goal: MOCK_USER_MESSAGE.content,
-          activeThread: undefined,
-          aiCatalogItemVersionId: '',
-        });
-      });
-
-      it('sets loading to true when sending a prompt', async () => {
-        findDuoChat().vm.$emit('send-chat-prompt', MOCK_USER_MESSAGE.content);
-        await nextTick();
-
-        expect(actionSpies.setLoading).toHaveBeenCalledWith(expect.anything(), true);
-      });
-
-      it('does not create a new workflow if one already exists', async () => {
-        wrapper.vm.workflowId = '456';
-
-        findDuoChat().vm.$emit('send-chat-prompt', MOCK_USER_MESSAGE.content);
-        await waitForPromises();
-
-        expect(ApolloUtils.createWorkflow).not.toHaveBeenCalled();
-        expect(createWebSocket).toHaveBeenCalledWith(
-          '/api/v4/ai/duo_workflows/ws',
-          expect.any(Object),
-        );
-      });
-
-      it('sends the correct start request to WebSocket when connected', async () => {
-        findDuoChat().vm.$emit('send-chat-prompt', MOCK_USER_MESSAGE.content);
-        await waitForPromises();
-
-        const expectedStartRequest = {
-          startRequest: {
-            workflowID: '456',
-            clientVersion: '1.0',
-            workflowDefinition: 'chat',
-            goal: MOCK_USER_MESSAGE.content,
-            approval: {},
-            workflowMetadata: null,
-            additionalContext: expectedAdditionalContext,
-          },
-        };
-
-        expect(mockSocketManager.connect).toHaveBeenCalledWith(expectedStartRequest);
-      });
-    });
-
-    describe('WebSocket message handling', () => {
-      let socketCall;
-
-      beforeEach(async () => {
-        findDuoChat().vm.$emit('send-chat-prompt', MOCK_USER_MESSAGE.content);
-        await waitForPromises();
-        wrapper.vm.workflowId = '456';
-        socketCall = getLastSocketCall();
-      });
-
-      it('processes messages from the WebSocket and updates the UI', async () => {
-        const mockCheckpointData = {
-          requestID: 'request-id-1',
-          newCheckpoint: {
-            checkpoint: JSON.stringify({
-              channel_values: {
-                ui_chat_log: [
-                  { content: 'Hello, how can I help?', message_type: 'agent' },
-                  {
-                    content: 'I can assist with optimizing your CI pipeline.',
-                    message_type: 'agent',
-                  },
-                ],
-              },
-            }),
-            status: 'completed',
-            goal: 'Test goal for activeThread',
-          },
-        };
-
-        await socketCall.onMessage({
-          data: {
-            text: () => Promise.resolve(JSON.stringify(mockCheckpointData)),
-          },
-        });
-
-        expect(WorkflowUtils.transformChatMessages).toHaveBeenCalledWith(
-          [
-            { content: 'Hello, how can I help?', message_type: 'agent' },
-            {
-              content: 'I can assist with optimizing your CI pipeline.',
-              message_type: 'agent',
-            },
-          ],
-          '456',
-        );
-
-        expect(actionSpies.setMessages).toHaveBeenCalledWith(
-          expect.anything(),
-          MOCK_TRANSFORMED_MESSAGES,
-        );
-        expect(findDuoChat().props('activeThreadId')).toBe('Test goal for activeThread');
-      });
-
-      it('handles tool approval flow', async () => {
-        const mockCheckpointData = {
-          requestID: 'request-id-1',
-          newCheckpoint: {
-            checkpoint: JSON.stringify({
-              channel_values: {
-                ui_chat_log: [
-                  {
-                    content: 'I need to run a command.',
-                    message_type: 'assistant',
-                    tool_info: {
-                      name: 'run_command',
-                      args: { command: 'ls -la' },
-                    },
-                  },
-                ],
-              },
-            }),
-            status: DUO_WORKFLOW_STATUS_TOOL_CALL_APPROVAL_REQUIRED,
-          },
-        };
-
-        await socketCall.onMessage({
-          data: {
-            text: () => Promise.resolve(JSON.stringify(mockCheckpointData)),
-          },
-        });
-        await nextTick();
-
-        expect(findDuoChat().props('isToolApprovalProcessing')).toBe(false);
-      });
-
-      it('sets loading to false when workflow status is INPUT_REQUIRED', async () => {
-        const mockCheckpointData = {
-          requestID: 'request-id-4',
-          newCheckpoint: {
-            checkpoint: JSON.stringify({
-              channel_values: {
-                ui_chat_log: [
-                  {
-                    content: 'Please provide more information',
-                    message_type: 'agent',
-                  },
-                ],
-              },
-            }),
-            status: DUO_WORKFLOW_STATUS_INPUT_REQUIRED,
-          },
-        };
-
-        await socketCall.onMessage({
-          data: {
-            text: () => Promise.resolve(JSON.stringify(mockCheckpointData)),
-          },
-        });
-
-        expect(actionSpies.setLoading).toHaveBeenCalledWith(expect.anything(), false);
-      });
-
-      it('handles errors from WebSocket', () => {
-        socketCall.onError();
-
-        expect(actionSpies.addDuoChatMessage).toHaveBeenCalledWith(
-          expect.anything(),
-          expect.objectContaining({
-            errors: ['Error: Unable to connect to workflow service. Please try again.'],
-          }),
-        );
-      });
-    });
-
-    describe('@chat-cancel', () => {
-      it('cancels the active connection, does not reset the workflowID', async () => {
-        wrapper.vm.workflowId = MOCK_WORKFLOW_ID;
-        wrapper.vm.socketManager = mockSocketManager;
-
-        findDuoChat().vm.$emit('chat-cancel');
-        await nextTick();
-
-        expect(closeSocket).toHaveBeenCalledWith(mockSocketManager);
-        expect(actionSpies.setLoading).toHaveBeenCalledWith(expect.anything(), false);
-        expect(wrapper.vm.workflowId).toBe(MOCK_WORKFLOW_ID);
-        expect(wrapper.vm.socketManager).toBe(null);
-      });
-    });
-
-    describe('@new-chat', () => {
-      it('resets chat state for new conversation', async () => {
-        wrapper.vm.workflowId = '456';
-        wrapper.vm.socketManager = mockSocketManager;
-
-        findDuoChat().vm.$emit('new-chat');
-        await nextTick();
-
-        expect(wrapper.vm.workflowId).toBe(null);
-        expect(actionSpies.setMessages).toHaveBeenCalledWith(expect.anything(), []);
-        expect(actionSpies.setLoading).toHaveBeenCalledWith(expect.anything(), false);
-        expect(closeSocket).toHaveBeenCalledWith(mockSocketManager);
-      });
-    });
-
-    describe('@approve-tool', () => {
-      beforeEach(() => {
-        createComponent();
-      });
-
-      it('handles tool approval via chat component event and updates processing state through workflow', async () => {
-        duoChatGlobalState.isAgenticChatShown = true;
-        await waitForPromises();
-        wrapper.vm.workflowId = '456';
-
-        expect(findDuoChat().props('isToolApprovalProcessing')).toBe(false);
-
-        findDuoChat().vm.$emit('approve-tool');
-        await nextTick();
-
-        expect(findDuoChat().props('isToolApprovalProcessing')).toBe(true);
-
-        const expectedStartRequest = {
-          startRequest: {
-            workflowID: '456',
-            clientVersion: '1.0',
-            workflowDefinition: 'chat',
-            goal: '',
-            approval: { approval: {} },
-            workflowMetadata: null,
-            additionalContext: expectedAdditionalContext,
-          },
-        };
-
-        expect(mockSocketManager.connect).toHaveBeenCalledWith(expectedStartRequest);
-
-        const socketCall = getLastSocketCall();
-        const mockApprovalRequiredData = {
-          requestID: 'request-id-approval-1',
-          newCheckpoint: {
-            checkpoint: JSON.stringify({
-              channel_values: {
-                ui_chat_log: [
-                  {
-                    content: 'I need approval to execute this tool',
-                    message_type: 'assistant',
-                    tool_info: {
-                      name: 'some_tool',
-                      args: { param: 'value' },
-                    },
-                  },
-                ],
-              },
-            }),
-            status: DUO_WORKFLOW_STATUS_TOOL_CALL_APPROVAL_REQUIRED,
-          },
-        };
-
-        await socketCall.onMessage({
-          data: {
-            text: () => Promise.resolve(JSON.stringify(mockApprovalRequiredData)),
-          },
-        });
-        await nextTick();
-
-        expect(findDuoChat().props('isToolApprovalProcessing')).toBe(true);
-
-        const mockCompletedData = {
-          requestID: 'request-id-approval-2',
-          newCheckpoint: {
-            checkpoint: JSON.stringify({
-              channel_values: {
-                ui_chat_log: [
-                  {
-                    content: 'Tool execution completed',
-                    message_type: 'agent',
-                  },
-                ],
-              },
-            }),
-            status: 'completed',
-          },
-        };
-
-        await socketCall.onMessage({
-          data: {
-            text: () => Promise.resolve(JSON.stringify(mockCompletedData)),
-          },
-        });
-        await nextTick();
-
-        expect(findDuoChat().props('isToolApprovalProcessing')).toBe(false);
-      });
-    });
-
-    describe('@deny-tool', () => {
-      beforeEach(() => {
-        createComponent();
-      });
-
-      it('handles tool denial via chat component event with message and updates processing state', async () => {
-        duoChatGlobalState.isAgenticChatShown = true;
-        await waitForPromises();
-        wrapper.vm.workflowId = '456';
-        const denyMessage = 'I do not approve this action';
-
-        expect(findDuoChat().props('isToolApprovalProcessing')).toBe(false);
-
-        findDuoChat().vm.$emit('deny-tool', denyMessage);
-        await nextTick();
-
-        expect(findDuoChat().props('isToolApprovalProcessing')).toBe(true);
-
-        const expectedStartRequest = {
-          startRequest: {
-            workflowID: '456',
-            clientVersion: '1.0',
-            workflowDefinition: 'chat',
-            goal: '',
-            approval: {
-              approval: undefined,
-              rejection: { message: denyMessage },
-            },
-            workflowMetadata: null,
-            additionalContext: expectedAdditionalContext,
-          },
-        };
-
-        expect(mockSocketManager.connect).toHaveBeenCalledWith(expectedStartRequest);
-
-        const socketCall = getLastSocketCall();
-        const mockApprovalRequiredData = {
-          requestID: 'request-id-denial-1',
-          newCheckpoint: {
-            checkpoint: JSON.stringify({
-              channel_values: {
-                ui_chat_log: [
-                  {
-                    content: 'Tool approval was required',
-                    message_type: 'assistant',
-                    tool_info: {
-                      name: 'some_tool',
-                      args: { param: 'value' },
-                    },
-                  },
-                ],
-              },
-            }),
-            status: DUO_WORKFLOW_STATUS_TOOL_CALL_APPROVAL_REQUIRED,
-          },
-        };
-
-        await socketCall.onMessage({
-          data: {
-            text: () => Promise.resolve(JSON.stringify(mockApprovalRequiredData)),
-          },
-        });
-        await nextTick();
-
-        expect(findDuoChat().props('isToolApprovalProcessing')).toBe(true);
-
-        const mockDenialProcessedData = {
-          requestID: 'request-id-denial-2',
-          newCheckpoint: {
-            checkpoint: JSON.stringify({
-              channel_values: {
-                ui_chat_log: [
-                  {
-                    content: 'Tool execution denied, proceeding with alternative approach',
-                    message_type: 'agent',
-                  },
-                ],
-              },
-            }),
-            status: 'processing',
-          },
-        };
-
-        await socketCall.onMessage({
-          data: {
-            text: () => Promise.resolve(JSON.stringify(mockDenialProcessedData)),
-          },
-        });
-        await nextTick();
-
-        expect(findDuoChat().props('isToolApprovalProcessing')).toBe(false);
-      });
-
-      it('handles tool denial via chat component event with event object and updates processing state', async () => {
-        duoChatGlobalState.isAgenticChatShown = true;
-        await waitForPromises();
-        wrapper.vm.workflowId = '456';
-        const eventObject = { message: 'I do not approve this action' };
-
-        expect(findDuoChat().props('isToolApprovalProcessing')).toBe(false);
-
-        findDuoChat().vm.$emit('deny-tool', eventObject);
-        await nextTick();
-
-        expect(findDuoChat().props('isToolApprovalProcessing')).toBe(true);
-
-        const expectedStartRequest = {
-          startRequest: {
-            workflowID: '456',
-            clientVersion: '1.0',
-            workflowDefinition: 'chat',
-            goal: '',
-            approval: {
-              approval: undefined,
-              rejection: { message: 'I do not approve this action' },
-            },
-            workflowMetadata: null,
-            additionalContext: expectedAdditionalContext,
-          },
-        };
-
-        expect(mockSocketManager.connect).toHaveBeenCalledWith(expectedStartRequest);
-      });
+      expect(findSideRail().props('buttons')).toEqual(expectedButtons);
     });
   });
 
-  describe('workflowStatus watcher', () => {
+  describe('when duoSideRail feature flag is disabled', () => {
     beforeEach(async () => {
-      createComponent();
-      duoChatGlobalState.isAgenticChatShown = true;
-      await waitForPromises();
+      wrapper = await createWrapper();
     });
 
-    it('sets isProcessingToolApproval to false when workflow status changes from TOOL_CALL_APPROVAL_REQUIRED', () => {
-      wrapper.vm.isProcessingToolApproval = true;
-
-      const watcherFunction = wrapper.vm.$options.watch.workflowStatus;
-      watcherFunction.call(wrapper.vm, 'completed', 'TOOL_CALL_APPROVAL_REQUIRED');
-
-      expect(findDuoChat().props('isToolApprovalProcessing')).toBe(false);
-    });
-
-    it('does not change isProcessingToolApproval when workflow status changes from other states', async () => {
-      wrapper.vm.isProcessingToolApproval = true;
+    it('does not render the SideRail component', async () => {
       await nextTick();
-
-      const watcherFunction = wrapper.vm.$options.watch.workflowStatus;
-      watcherFunction.call(wrapper.vm, 'completed', 'processing');
-
-      expect(findDuoChat().props('isToolApprovalProcessing')).toBe(true);
-    });
-
-    it('does not change isProcessingToolApproval when workflow status changes to TOOL_CALL_APPROVAL_REQUIRED', async () => {
-      wrapper.vm.isProcessingToolApproval = false;
-      await nextTick();
-
-      const watcherFunction = wrapper.vm.$options.watch.workflowStatus;
-      watcherFunction.call(wrapper.vm, 'TOOL_CALL_APPROVAL_REQUIRED', 'processing');
-
-      expect(findDuoChat().props('isToolApprovalProcessing')).toBe(false);
+      expect(findSideRail().exists()).toBe(false);
     });
   });
 
-  describe('workflowId watcher', () => {
+  describe('dimensions management', () => {
     beforeEach(async () => {
-      createComponent();
-      duoChatGlobalState.isAgenticChatShown = true;
-
-      await waitForPromises();
-    });
-
-    it('stores workflowId and active thread when workflowId changes', async () => {
-      await findDuoChat().vm.$emit('thread-selected', { id: MOCK_WORKFLOW_ID });
-
-      await nextTick();
-
-      expect(saveStorageValue).toHaveBeenCalledWith(DUO_CURRENT_WORKFLOW_STORAGE_KEY, {
-        workflowId: '456',
-        activeThread: MOCK_WORKFLOW_ID,
-      });
-    });
-  });
-
-  describe('Error conditions', () => {
-    const errorText = 'Failed to fetch resources';
-
-    it('handles errors from the context presets query', async () => {
-      contextPresetsQueryHandlerMock.mockRejectedValue(new Error(errorText));
-      duoChatGlobalState.isAgenticChatShown = true;
-      createComponent();
-      await waitForPromises();
-
-      expect(findDuoChat().exists()).toBe(true);
-      expect(findDuoChat().props('predefinedPrompts')).toEqual([]);
-    });
-
-    it('handles workflow creation errors', async () => {
-      ApolloUtils.createWorkflow.mockRejectedValue(new Error(errorText));
-      duoChatGlobalState.isAgenticChatShown = true;
-      createComponent();
-      await waitForPromises();
-
-      findDuoChat().vm.$emit('send-chat-prompt', MOCK_USER_MESSAGE.content);
-      await waitForPromises();
-
-      expect(actionSpies.addDuoChatMessage).toHaveBeenCalledWith(
-        expect.anything(),
-        expect.objectContaining({
-          errors: [`Error: ${errorText}`],
-        }),
-      );
-    });
-  });
-
-  describe('Resizable Dimensions', () => {
-    beforeEach(() => {
-      duoChatGlobalState.isAgenticChatShown = true;
-      createComponent();
+      wrapper = await createWrapper();
     });
 
     it('initializes dimensions correctly on mount', () => {
@@ -1022,11 +167,11 @@ describe('Duo Agentic Chat', () => {
       expect(wrapper.vm.maxHeight).toBe(window.innerHeight);
     });
 
-    it('updates dimensions correctly when `chat-resize` event is emitted', async () => {
+    it('updates dimensions when chat-resize event is emitted', async () => {
       const newWidth = 600;
       const newHeight = 500;
-      const chat = findDuoChat();
-      chat.vm.$emit('chat-resize', { width: newWidth, height: newHeight });
+
+      wrapper.vm.onChatResize({ width: newWidth, height: newHeight });
       await nextTick();
 
       expect(wrapper.vm.width).toBe(newWidth);
@@ -1036,16 +181,15 @@ describe('Duo Agentic Chat', () => {
     it('ensures dimensions do not exceed maxWidth or maxHeight', async () => {
       const newWidth = window.innerWidth + 100;
       const newHeight = window.innerHeight + 100;
-      const chat = findDuoChat();
 
-      chat.vm.$emit('chat-resize', { width: newWidth, height: newHeight });
+      wrapper.vm.onChatResize({ width: newWidth, height: newHeight });
       await nextTick();
 
       expect(wrapper.vm.width).toBe(window.innerWidth - WIDTH_OFFSET);
       expect(wrapper.vm.height).toBe(window.innerHeight);
     });
 
-    it('updates dimensions when the window is resized', async () => {
+    it('updates dimensions when window is resized', async () => {
       const originalInnerWidth = window.innerWidth;
       const originalInnerHeight = window.innerHeight;
 
@@ -1065,641 +209,89 @@ describe('Duo Agentic Chat', () => {
     });
   });
 
-  describe('Global state watchers', () => {
-    describe('duoChatGlobalState.isAgenticChatShown', () => {
-      describe('when there is an workflowId registered in localStorage', () => {
-        beforeEach(() => {
-          getStorageValue.mockReset();
-          getStorageValue.mockReturnValueOnce({
-            exists: true,
-            value: { workflowId: '456', activeThread: MOCK_WORKFLOW_ID },
-          });
-          duoChatGlobalState.isAgenticChatShown = false;
-
-          createComponent();
-        });
-
-        it('loads workflow message thread', async () => {
-          expect(findDuoChat().exists()).toBe(false);
-
-          duoChatGlobalState.isAgenticChatShown = true;
-          await waitForPromises();
-
-          expect(findDuoChat().props().messages).toHaveLength(1);
-        });
-
-        describe(`when workflow status is "${DUO_WORKFLOW_STATUS_RUNNING}"`, () => {
-          beforeEach(async () => {
-            const mockParsedData = {
-              workflowStatus: DUO_WORKFLOW_STATUS_RUNNING,
-              checkpoint: { channel_values: { ui_chat_log: [] } },
-            };
-
-            WorkflowUtils.parseWorkflowData.mockReturnValue(mockParsedData);
-
-            duoChatGlobalState.isAgenticChatShown = true;
-            await waitForPromises();
-          });
-
-          it('starts the workflow', () => {
-            expect(mockSocketManager.connect).toHaveBeenCalled();
-          });
-        });
-
-        describe(`when workflow status is not "${DUO_WORKFLOW_STATUS_RUNNING}"`, () => {
-          beforeEach(async () => {
-            const mockParsedData = {
-              workflowStatus: DUO_WORKFLOW_STATUS_INPUT_REQUIRED,
-              checkpoint: { channel_values: { ui_chat_log: [] } },
-            };
-
-            WorkflowUtils.parseWorkflowData.mockReturnValue(mockParsedData);
-
-            duoChatGlobalState.isAgenticChatShown = true;
-            await waitForPromises();
-          });
-
-          it('starts the workflow', () => {
-            expect(mockSocketManager.connect).not.toHaveBeenCalled();
-          });
-        });
-      });
-
-      describe('when there is no activeThread registered in localStorage', () => {
-        beforeEach(() => {
-          getStorageValue.mockReset();
-          getStorageValue.mockReturnValueOnce({
-            exists: false,
-            value: null,
-          });
-          duoChatGlobalState.isAgenticChatShown = false;
-
-          createComponent();
-        });
-
-        it('does not load messages for active thread', async () => {
-          expect(findDuoChat().exists()).toBe(false);
-
-          duoChatGlobalState.isAgenticChatShown = true;
-          await waitForPromises();
-
-          expect(findDuoChat().props().messages).toHaveLength(0);
-        });
-      });
-    });
-  });
-
-  describe('Socket cleanup', () => {
-    beforeEach(() => {
-      jest.clearAllMocks();
-    });
-
-    it('cleans up socket on component destroy', () => {
-      duoChatGlobalState.isAgenticChatShown = true;
-      createComponent();
-      wrapper.vm.socketManager = mockSocketManager;
-
-      wrapper.destroy();
-
-      expect(closeSocket).toHaveBeenCalledWith(mockSocketManager);
-    });
-
-    it('sets isProcessingToolApproval to false on socket close when not waiting for approval', async () => {
-      duoChatGlobalState.isAgenticChatShown = true;
-      createComponent();
-      await waitForPromises();
-
-      wrapper.vm.isProcessingToolApproval = true;
-      wrapper.vm.workflowStatus = 'completed';
-      wrapper.vm.workflowId = '456';
-
-      wrapper.vm.startWorkflow('test question', {}, wrapper.vm.additionalContext);
-
-      expect(createWebSocket).toHaveBeenCalled();
-
-      const socketCall = getLastSocketCall();
-      socketCall.onClose();
-
-      expect(findDuoChat().props('isToolApprovalProcessing')).toBe(false);
-      expect(actionSpies.setLoading).toHaveBeenCalledWith(expect.anything(), false);
-    });
-
-    it('does not set isProcessingToolApproval to false on socket close when waiting for approval', async () => {
-      duoChatGlobalState.isAgenticChatShown = true;
-      createComponent();
-      await waitForPromises();
-
-      wrapper.vm.isProcessingToolApproval = true;
-      wrapper.vm.workflowStatus = 'TOOL_CALL_APPROVAL_REQUIRED';
-      wrapper.vm.workflowId = '456';
-
-      wrapper.vm.startWorkflow('test question', {}, wrapper.vm.additionalContext);
-
-      expect(createWebSocket).toHaveBeenCalled();
-
-      const socketCall = getLastSocketCall();
-      socketCall.onClose();
-
-      expect(findDuoChat().props('isToolApprovalProcessing')).toBe(false);
-      expect(actionSpies.setLoading).not.toHaveBeenCalledWith(expect.anything(), false);
-    });
-  });
-
-  describe('duoAgenticModePreference toggle', () => {
-    const findGlToggle = () => wrapper.findComponent(GlToggle);
-
-    beforeEach(() => {
-      duoChatGlobalState.isAgenticChatShown = true;
-      jest.clearAllMocks();
-    });
-
-    describe('getter', () => {
-      it.each`
-        cookieValue | expected
-        ${'true'}   | ${true}
-        ${'false'}  | ${false}
-        ${null}     | ${false}
-        ${''}       | ${false}
-      `('returns $expected when cookie value is $cookieValue', ({ cookieValue, expected }) => {
-        getCookie.mockReturnValue(cookieValue);
-        createComponent();
-
-        expect(findGlToggle().props('value')).toBe(expected);
-
-        expect(getCookie).toHaveBeenCalledWith('duo_agentic_mode_on');
-      });
-    });
-
-    describe('setter', () => {
-      beforeEach(() => {
-        getCookie.mockReturnValue('false');
-        createComponent();
-      });
-
-      it.each`
-        value    | description
-        ${true}  | ${'true'}
-        ${false} | ${'false'}
-      `('calls setAgenticMode with $description and saveCookie=true', ({ value }) => {
-        wrapper.vm.duoAgenticModePreference = value;
-
-        expect(setAgenticMode).toHaveBeenCalledWith(value, true);
-      });
-    });
-  });
-
-  describe('Multithreading features', () => {
-    beforeEach(() => {
-      duoChatGlobalState.isAgenticChatShown = true;
-      createComponent();
-    });
-
-    describe('@thread-selected', () => {
-      it('switches to selected thread and fetches workflow events', async () => {
-        const mockThread = { id: MOCK_WORKFLOW_ID, aiCatalogItemVersionId: null };
-        const mockParsedData = { checkpoint: { channel_values: { ui_chat_log: [] } } };
-
-        WorkflowUtils.parseWorkflowData.mockReturnValue(mockParsedData);
-        WorkflowUtils.transformChatMessages.mockReturnValue(MOCK_TRANSFORMED_MESSAGES);
-
-        findDuoChat().vm.$emit('thread-selected', mockThread);
-        await waitForPromises();
-
-        expect(ApolloUtils.fetchWorkflowEvents).toHaveBeenCalledWith(
-          expect.anything(),
-          MOCK_WORKFLOW_ID,
-        );
-
-        expect(WorkflowUtils.parseWorkflowData).toHaveBeenCalledWith(MOCK_WORKFLOW_EVENTS_RESPONSE);
-        expect(WorkflowUtils.transformChatMessages).toHaveBeenCalledWith([], '456');
-
-        expect(findDuoChat().props('multiThreadedView')).toBe(DUO_CHAT_VIEWS.CHAT);
-        expect(findDuoChat().props('activeThreadId')).toBe(MOCK_WORKFLOW_ID);
-        expect(findDuoChat().props('messages')).toEqual(MOCK_TRANSFORMED_MESSAGES);
-      });
-
-      it('handles errors when fetching workflow events', async () => {
-        const mockThread = { id: MOCK_WORKFLOW_ID };
-        const errorText = 'Failed to fetch workflow events';
-
-        ApolloUtils.fetchWorkflowEvents.mockRejectedValue(new Error(errorText));
-
-        findDuoChat().vm.$emit('thread-selected', mockThread);
-        await waitForPromises();
-
-        expect(actionSpies.addDuoChatMessage).toHaveBeenCalledWith(
-          expect.anything(),
-          expect.objectContaining({
-            errors: [`Error: ${errorText}`],
-          }),
-        );
-        expect(actionSpies.setLoading).toHaveBeenCalledWith(expect.anything(), false);
-      });
-    });
-
-    describe('@back-to-list', () => {
-      it('switches back to list view and refetches workflows', async () => {
-        await waitForPromises();
-
-        findDuoChat().vm.$emit('back-to-list');
-        await nextTick();
-
-        expect(findDuoChat().props('multiThreadedView')).toBe(DUO_CHAT_VIEWS.LIST);
-        expect(findDuoChat().props('activeThreadId')).toBe('');
-        expect(wrapper.vm.chatMessageHistory).toEqual([]);
-        expect(mockRefetch).toHaveBeenCalled();
-      });
-    });
-
-    describe('@delete-thread', () => {
-      beforeEach(async () => {
-        jest.clearAllMocks();
-        ApolloUtils.deleteWorkflow.mockResolvedValue(true);
-        await waitForPromises();
-      });
-
-      it('calls deleteWorkflow and refetches workflows when deleting a thread', async () => {
-        const mockThreadId = MOCK_WORKFLOW_ID;
-        findDuoChat().vm.$emit('delete-thread', mockThreadId);
-        await waitForPromises();
-
-        expect(ApolloUtils.deleteWorkflow).toHaveBeenCalledWith(expect.anything(), mockThreadId);
-        expect(mockRefetch).toHaveBeenCalled();
-      });
-    });
-  });
-
-  describe('Agentic Mode Toggle', () => {
-    const findGlToggle = () => wrapper.findComponent(GlToggle);
-
-    beforeEach(() => {
-      duoChatGlobalState.isAgenticChatShown = true;
-      getCookie.mockReturnValue('false');
-      createComponent();
-    });
-
-    it('renders the GlToggle component in subheader', () => {
-      expect(findGlToggle().exists()).toBe(true);
-    });
-
-    it('passes correct props to GlToggle', () => {
-      expect(findGlToggle().props('label')).toBe('Agentic mode (Beta)');
-      expect(findGlToggle().props('labelPosition')).toBe('left');
-      expect(findGlToggle().props('value')).toBe(false);
-    });
-
-    it('binds duoAgenticModePreference to v-model', async () => {
-      getCookie.mockReturnValue('true');
-      createComponent();
-      await nextTick();
-
-      expect(findGlToggle().props('value')).toBe(true);
-    });
-
-    it('calls setAgenticMode when toggle value changes', async () => {
-      findGlToggle().vm.$emit('change', true);
-      await nextTick();
-
-      expect(setAgenticMode).toHaveBeenCalledWith(true, true);
-    });
-
-    it('updates the toggle value when duoAgenticModePreference changes', async () => {
-      getCookie.mockReturnValue('false');
-      createComponent();
-      await nextTick();
-
-      expect(findGlToggle().props('value')).toBe(false);
-
-      getCookie.mockReturnValue('true');
-      createComponent();
-      await nextTick();
-
-      expect(findGlToggle().props('value')).toBe(true);
-    });
-
-    describe('when Duo Chat is not shown', () => {
-      beforeEach(() => {
-        duoChatGlobalState.isAgenticChatShown = false;
-        createComponent();
-      });
-
-      it('does not render the GlToggle component', () => {
-        expect(findGlToggle().exists()).toBe(false);
-      });
-    });
-  });
-
-  describe('.websocketUrl', () => {
-    const mockRootNamespaceId = 'gid://gitlab/Group/123';
-
-    beforeEach(() => {
-      duoChatGlobalState.isAgenticChatShown = true;
-    });
-
-    describe('when rootNamespaceId does not exist', () => {
-      it('does not append any query params to the base URL', () => {
-        createComponent({
-          propsData: {
-            rootNamespaceId: null,
-            userModelSelectionEnabled: true,
-          },
-        });
-
-        expect(wrapper.vm.websocketUrl).toBe('/api/v4/ai/duo_workflows/ws');
-      });
-
-      describe('when rootNamespaceId exists', () => {
-        it('appends root_namespace_id query param to the base URL', () => {
-          createComponent({ propsData: { rootNamespaceId: mockRootNamespaceId } });
-
-          expect(wrapper.vm.websocketUrl).toBe('/api/v4/ai/duo_workflows/ws?root_namespace_id=123');
-        });
-
-        describe('when userModelSelectionEnabled is true', () => {
-          useLocalStorageSpy();
-
-          describe('when selected model is not the default', () => {
-            it('appends user_selected_model_identifier query param to the base URL', async () => {
-              const selectedModel = MOCK_MODEL_LIST_ITEMS[1];
-
-              localStorage.setItem(
-                DUO_AGENTIC_CHAT_SELECTED_MODEL_KEY,
-                JSON.stringify(selectedModel),
-              );
-
-              createComponent({
-                propsData: {
-                  rootNamespaceId: mockRootNamespaceId,
-                  userModelSelectionEnabled: true,
-                },
-              });
-
-              await waitForPromises();
-
-              expect(wrapper.vm.websocketUrl).toBe(
-                `/api/v4/ai/duo_workflows/ws?root_namespace_id=123&user_selected_model_identifier=${selectedModel.value}`,
-              );
-            });
-          });
-
-          describe('when selected model is the default', () => {
-            it('does not append user_selected_model_identifier query param to the base URL', async () => {
-              localStorage.setItem(
-                DUO_AGENTIC_CHAT_SELECTED_MODEL_KEY,
-                JSON.stringify(MOCK_GITLAB_DEFAULT_MODEL_ITEM),
-              );
-
-              createComponent({
-                propsData: {
-                  rootNamespaceId: mockRootNamespaceId,
-                  userModelSelectionEnabled: true,
-                },
-              });
-
-              await waitForPromises();
-
-              expect(wrapper.vm.websocketUrl).toBe(
-                `/api/v4/ai/duo_workflows/ws?root_namespace_id=123`,
-              );
-            });
-          });
-        });
-
-        describe('when userModelSelectionEnabled is false', () => {
-          it('does not append user_selected_model_identifier query param to the base URL', () => {
-            createComponent({
-              propsData: {
-                rootNamespaceId: mockRootNamespaceId,
-                userModelSelectionEnabled: false,
-              },
-            });
-
-            expect(wrapper.vm.websocketUrl).toBe(
-              `/api/v4/ai/duo_workflows/ws?root_namespace_id=123`,
-            );
-          });
-        });
-      });
-    });
-  });
-
-  describe('Agentic chat user model selection', () => {
-    useLocalStorageSpy();
-
-    const findModelSelectDropdown = () => wrapper.findComponent(ModelSelectDropdown);
-
-    describe('when user model selection is enabled', () => {
-      beforeEach(() => {
-        duoChatGlobalState.isAgenticChatShown = true;
-        createComponent({
-          propsData: { userModelSelectionEnabled: true, rootNamespaceId: MOCK_NAMESPACE_ID },
-        });
-      });
-
-      it('renders `ModelSelectDropdown`', () => {
-        expect(findModelSelectDropdown().exists()).toBe(true);
-      });
-
-      it('passes the correct props to `ModelSelectDropdown`', async () => {
-        await waitForPromises();
-
-        expect(findModelSelectDropdown().props('placeholderDropdownText')).toBe('Select a model');
-        expect(findModelSelectDropdown().props('items')).toMatchObject(MOCK_MODEL_LIST_ITEMS);
-        expect(findModelSelectDropdown().props('selectedOption')).toMatchObject(
-          MOCK_GITLAB_DEFAULT_MODEL_ITEM,
-        );
-      });
-
-      describe('when there is a selected model set in `localStorage`', () => {
-        it('returns the selected model', async () => {
-          const selectedModel = MOCK_MODEL_LIST_ITEMS[0];
-          localStorage.setItem(DUO_AGENTIC_CHAT_SELECTED_MODEL_KEY, JSON.stringify(selectedModel));
-
-          createComponent({
-            propsData: { userModelSelectionEnabled: true, rootNamespaceId: MOCK_NAMESPACE_ID },
-          });
-          await nextTick();
-
-          expect(localStorage.getItem).toHaveBeenCalledWith(DUO_AGENTIC_CHAT_SELECTED_MODEL_KEY);
-          expect(findModelSelectDropdown().props('selectedOption')).toEqual(selectedModel);
-        });
-      });
-
-      describe('when there is no selected model set in `localStorage`', () => {
-        it('returns the default model', async () => {
-          localStorage.getItem.mockReturnValue(null);
-
-          createComponent({
-            propsData: { userModelSelectionEnabled: true, rootNamespaceId: MOCK_NAMESPACE_ID },
-          });
-          await waitForPromises();
-
-          expect(localStorage.getItem).toHaveBeenCalledWith(DUO_AGENTIC_CHAT_SELECTED_MODEL_KEY);
-          expect(findModelSelectDropdown().props('selectedOption')).toMatchObject(
-            MOCK_GITLAB_DEFAULT_MODEL_ITEM,
-          );
-        });
-      });
-
-      describe('updating the model selection', () => {
-        it('persists the selected model in a `localStorage` item and updates dropdown', async () => {
-          createComponent({
-            propsData: { userModelSelectionEnabled: true, rootNamespaceId: MOCK_NAMESPACE_ID },
-          });
-          await waitForPromises();
-
-          const selectedModel = MOCK_MODEL_LIST_ITEMS[1];
-
-          await findModelSelectDropdown().vm.$emit('select', selectedModel.value);
-
-          expect(findModelSelectDropdown().props('selectedOption')).toStrictEqual(selectedModel);
-          expect(localStorage.setItem).toHaveBeenCalledWith(
-            DUO_AGENTIC_CHAT_SELECTED_MODEL_KEY,
-            JSON.stringify(selectedModel),
-          );
-        });
-
-        it('starts a new chat', async () => {
-          const onNewChatSpy = jest.spyOn(wrapper.vm, 'onNewChat');
-          const selectedModel = MOCK_MODEL_LIST_ITEMS[0];
-
-          await findModelSelectDropdown().vm.$emit('select', selectedModel.value);
-
-          expect(onNewChatSpy).toHaveBeenCalledWith(null, true);
-        });
-      });
-    });
-
-    it.each`
-      case                                       | isAgenticChatShown | userModelSelectionEnabled | hasRootNamespaceId
-      ${'when user model selection is disabled'} | ${true}            | ${false}                  | ${true}
-      ${'when isAgenticChatShown is false'}      | ${false}           | ${true}                   | ${true}
-      ${'when no root namespace ID is passed'}   | ${true}            | ${true}                   | ${false}
-    `(
-      'when $case: query is skipped',
-      ({ isAgenticChatShown, userModelSelectionEnabled, hasRootNamespaceId }) => {
-        beforeEach(() => {
-          duoChatGlobalState.isAgenticChatShown = isAgenticChatShown;
-          createComponent({
-            propsData: {
-              userModelSelectionEnabled,
-              rootNamespaceId: hasRootNamespaceId ? MOCK_NAMESPACE_ID : undefined,
-            },
-          });
-        });
-
-        expect(availableModelsQueryHandlerMock).not.toHaveBeenCalled();
-      },
-    );
-
-    describe('when user model selection is disabled', () => {
-      beforeEach(() => {
-        duoChatGlobalState.isAgenticChatShown = true;
-        createComponent({ propsData: { userModelSelectionEnabled: false } });
-      });
-
-      it('does not render `ModelSelectDropdown`', () => {
-        expect(findModelSelectDropdown().exists()).toBe(false);
-      });
-    });
-  });
-
-  describe('agent selection', () => {
-    let agent;
-    let flowConfig;
-
+  describe('navigation', () => {
     beforeEach(async () => {
-      duoChatGlobalState.isAgenticChatShown = true;
-      createComponent();
-      const agentResponse =
-        MOCK_CONFIGURED_AGENTS_RESPONSE.data.aiCatalogConfiguredItems.nodes[0].item;
-      agent = { ...agentResponse, text: agentResponse.name };
-      flowConfig = 'YAML string';
-      ApolloUtils.getAgentFlowConfig.mockResolvedValue(flowConfig);
-
-      await waitForPromises();
+      wrapper = await createWrapper({}, { glFeatures: { duoSideRail: true } });
     });
 
-    it('shows a default option', () => {
-      expect(findDuoChat().props('agents')).toContainEqual({
-        name: 'GitLab Duo Agent',
-        text: 'GitLab Duo Agent',
-        description: 'Duo is your general development assistant',
+    it('navigates to correct route when onClick is called', async () => {
+      await wrapper.vm.onClick('new');
+      await waitForPromises();
+      expect(mockRouter.push).toHaveBeenCalledWith('/new');
+
+      await wrapper.vm.onClick('history');
+      await waitForPromises();
+      expect(mockRouter.push).toHaveBeenCalledWith('/history');
+
+      await wrapper.vm.onClick('current');
+      await waitForPromises();
+      expect(mockRouter.push).toHaveBeenCalledWith('/current');
+    });
+
+    it('emits tooltip hide event when onClick is called', async () => {
+      await wrapper.vm.onClick('new');
+      await waitForPromises();
+
+      expect(mockRouter.push).toHaveBeenCalledWith('/new');
+    });
+
+    it('handles SideRail click events', async () => {
+      await findSideRail().vm.$emit('click', 'history');
+      await waitForPromises();
+
+      expect(mockRouter.push).toHaveBeenCalledWith('/history');
+    });
+  });
+
+  describe('props handling', () => {
+    it('passes all props correctly to baseProps computed property', async () => {
+      const propsData = {
+        projectId: 'project-123',
+        namespaceId: 'namespace-456',
+        resourceId: 'resource-789',
+        metadata: '{"test": true}',
+        rootNamespaceId: 'root-namespace-999',
+        userModelSelectionEnabled: true,
+      };
+
+      wrapper = await createWrapper(propsData);
+
+      expect(wrapper.vm.baseProps).toEqual(propsData);
+    });
+
+    it('handles null/undefined props correctly', async () => {
+      wrapper = await createWrapper({
+        projectId: null,
+        namespaceId: null,
+      });
+
+      expect(wrapper.vm.baseProps).toMatchObject({
+        projectId: null,
+        namespaceId: null,
+        resourceId: 'gid://gitlab/Resource/789',
+        metadata: null,
+        rootNamespaceId: null,
+        userModelSelectionEnabled: false,
       });
     });
+  });
 
-    it('passes the configured agents to duo chat', () => {
-      expect(findDuoChat().props('agents')).toContainEqual(agent);
+  describe('cleanup', () => {
+    beforeEach(async () => {
+      wrapper = await createWrapper();
     });
 
-    it('uses the selected flow config when start workflow is called', async () => {
-      await findDuoChat().vm.$emit('new-chat', agent);
+    it('removes window resize event listener on destroy', () => {
+      const removeEventListenerSpy = jest.spyOn(window, 'removeEventListener');
 
-      findDuoChat().vm.$emit('send-chat-prompt', MOCK_USER_MESSAGE.content);
-      await waitForPromises();
+      // Handle both Vue 2 (destroy) and Vue 3 (unmount) methods
+      if (wrapper.unmount) {
+        wrapper.unmount();
+      } else {
+        wrapper.destroy();
+      }
 
-      expect(ApolloUtils.getAgentFlowConfig).toHaveBeenCalledWith(
-        expect.anything(),
-        agent.versions.nodes[1].id,
-      );
-
-      const expectedStartRequest = {
-        startRequest: {
-          workflowID: '456',
-          clientVersion: '1.0',
-          workflowDefinition: 'chat',
-          goal: MOCK_USER_MESSAGE.content,
-          flowConfig: MOCK_FLOW_CONFIG,
-          flowConfigSchemaVersion: 'experimental',
-          approval: {},
-          workflowMetadata: null,
-        },
-      };
-
-      expect(mockSocketManager.connect).toHaveBeenCalledWith(expectedStartRequest);
-    });
-
-    it('re-uses the selected flow config when /new is used to start a new thread', async () => {
-      await findDuoChat().vm.$emit('new-chat', agent);
-
-      findDuoChat().vm.$emit('send-chat-prompt', '/new');
-      findDuoChat().vm.$emit('send-chat-prompt', MOCK_USER_MESSAGE.content);
-      await waitForPromises();
-
-      const expectedStartRequest = {
-        startRequest: {
-          workflowID: '456',
-          clientVersion: '1.0',
-          workflowDefinition: 'chat',
-          goal: MOCK_USER_MESSAGE.content,
-          flowConfig: MOCK_FLOW_CONFIG,
-          flowConfigSchemaVersion: 'experimental',
-          approval: {},
-          workflowMetadata: null,
-        },
-      };
-
-      expect(mockSocketManager.connect).toHaveBeenCalledWith(expectedStartRequest);
-    });
-
-    it('sends no config when the default agent is selected (no id on selection)', async () => {
-      await findDuoChat().vm.$emit('new-chat', { name: 'default duo' });
-
-      findDuoChat().vm.$emit('send-chat-prompt', MOCK_USER_MESSAGE.content);
-      await waitForPromises();
-
-      const expectedStartRequest = {
-        startRequest: {
-          workflowID: '456',
-          clientVersion: '1.0',
-          workflowDefinition: 'chat',
-          goal: MOCK_USER_MESSAGE.content,
-          approval: {},
-          workflowMetadata: null,
-        },
-      };
-
-      expect(mockSocketManager.connect).toHaveBeenCalledWith(expectedStartRequest);
+      expect(removeEventListenerSpy).toHaveBeenCalledWith('resize', wrapper.vm.onWindowResize);
     });
   });
 });
