@@ -1,7 +1,7 @@
 @import 'page_bundles/mixins_and_variables_and_functions';
 
 .issues-analytics-wrapper {
-  @include media-breakpoint-up(sm) {
+  @include gl-container-width-up(sm, panel) {
     padding-left: $gl-sidebar-padding;
   }
 
