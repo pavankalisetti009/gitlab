@@ -1,0 +1,10 @@
+---
+name: duo_code_review_on_agent_platform
+description: Control whether or not to execute Duo Code Review via Duo Agent Platform
+feature_issue_url: https://gitlab.com/gitlab-org/gitlab/-/issues/565930
+introduced_by_url: https://gitlab.com/gitlab-org/gitlab/-/merge_requests/203807
+rollout_issue_url: https://gitlab.com/gitlab-org/gitlab/-/issues/570797
+milestone: '18.5'
+group: group::code creation
+type: beta
+default_enabled: false

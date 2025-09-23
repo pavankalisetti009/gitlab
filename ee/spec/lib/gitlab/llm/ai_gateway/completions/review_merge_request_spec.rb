@@ -123,6 +123,7 @@ RSpec.describe Gitlab::Llm::AiGateway::Completions::ReviewMergeRequest, feature_
     before do
       stub_feature_flags(ai_model_switching: false)
       stub_feature_flags(use_duo_context_exclusion: false)
+      stub_feature_flags(duo_code_review_on_agent_platform: false)
 
       allow_next_instance_of(
         review_prompt_class,
@@ -157,6 +158,10 @@ RSpec.describe Gitlab::Llm::AiGateway::Completions::ReviewMergeRequest, feature_
       allow_next_instance_of(summarize_review_class) do |completions|
         allow(completions).to receive(:execute).and_return(summary_response_modifier)
       end
+    end
+
+    after do
+      RSpec::Mocks.space.reset_all
     end
 
     shared_examples_for 'review merge request with prompt version' do
@@ -1860,6 +1865,60 @@ RSpec.describe Gitlab::Llm::AiGateway::Completions::ReviewMergeRequest, feature_
           expect { completion.execute }
             .not_to trigger_internal_events('excluded_files_from_duo_code_review')
         end
+      end
+    end
+
+    context 'when duo_code_review_on_agent_platform is enabled' do
+      let(:create_and_start_service) do
+        instance_double(::Ai::DuoWorkflows::CreateAndStartWorkflowService, execute: true)
+      end
+
+      let(:required_privileges) do
+        [
+          ::Ai::DuoWorkflows::Workflow::AgentPrivileges::READ_WRITE_GITLAB,
+          ::Ai::DuoWorkflows::Workflow::AgentPrivileges::RUN_COMMANDS,
+          ::Ai::DuoWorkflows::Workflow::AgentPrivileges::USE_GIT
+        ]
+      end
+
+      before do
+        stub_feature_flags(duo_code_review_on_agent_platform: true)
+
+        allow(::Ai::DuoWorkflows::CreateAndStartWorkflowService)
+          .to receive(:new)
+          .with(
+            container: merge_request.project,
+            current_user: user,
+            workflow_definition: 'code_review/experimental',
+            goal: merge_request.iid,
+            source_branch: source_branch,
+            workflow_params: {
+              agent_privileges: required_privileges,
+              pre_approved_agent_privileges: required_privileges,
+              allow_agent_to_request_user: false,
+              environment: 'web'
+            }
+          ).and_return(create_and_start_service)
+
+        merge_request.merge_request_reviewers.create!(reviewer: duo_code_review_bot)
+      end
+
+      it 'delegates to Duo Agent Platform workflow', :aggregate_failures do
+        completion.execute
+
+        expect(create_and_start_service).to have_received(:execute)
+      end
+
+      it 'calls UpdateReviewerStateService with review states' do
+        expect_next_instance_of(
+          MergeRequests::UpdateReviewerStateService,
+          project: project,
+          current_user: duo_code_review_bot
+        ) do |service|
+          expect(service).to receive(:execute).with(merge_request, 'review_started')
+        end
+
+        completion.execute
       end
     end
   end
