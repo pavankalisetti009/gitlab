@@ -3574,6 +3574,16 @@
   :idempotent: true
   :tags: []
   :queue_namespace:
+- :name: security_configuration_set_group_validity_checks
+  :worker_name: Security::Configuration::SetGroupValidityChecksWorker
+  :feature_category: :security_testing_configuration
+  :has_external_dependencies: false
+  :urgency: :high
+  :resource_boundary: :unknown
+  :weight: 1
+  :idempotent: true
+  :tags: []
+  :queue_namespace:
 - :name: security_create_security_policy_project
   :worker_name: Security::CreateSecurityPolicyProjectWorker
   :feature_category: :security_policy_management

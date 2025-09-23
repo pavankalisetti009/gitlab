@@ -162,7 +162,7 @@ export default {
           >
             <template #toggle>
               <gl-button>
-                <gl-icon :size="12" :name="categoryIcon" :style="{ color: formData.color }" />
+                <gl-icon :size="12" :name="categoryIcon" :style="colorStyle(formData.color)" />
                 <gl-icon name="chevron-down" />
               </gl-button>
             </template>
