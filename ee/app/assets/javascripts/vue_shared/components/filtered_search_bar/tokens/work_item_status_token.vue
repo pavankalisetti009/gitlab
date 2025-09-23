@@ -6,7 +6,8 @@ import { s__, sprintf } from '~/locale';
 import BaseToken from '~/vue_shared/components/filtered_search_bar/tokens/base_token.vue';
 import { TOKEN_TITLE_STATUS } from '~/vue_shared/components/filtered_search_bar/constants';
 import namespaceWorkItemTypesQuery from '~/work_items/graphql/namespace_work_item_types.query.graphql';
-import { getStatuses } from 'ee/work_items/utils';
+import getAllStatusesQuery from 'ee/issues/dashboard/queries/get_all_statuses.query.graphql';
+import { getStatuses, sortStatuses } from 'ee/work_items/utils';
 
 export default {
   components: {
@@ -32,7 +33,6 @@ export default {
     return {
       options: [],
       loading: true,
-      hasStartedQuery: false,
     };
   },
   computed: {},
@@ -40,24 +40,36 @@ export default {
     getActiveOption(options, data) {
       return options.find((option) => option.name === data);
     },
-    async fetchStatusesForNamespace() {
-      if (!this.config.fullPath) {
-        return;
-      }
-
-      this.hasStartedQuery = true;
-
-      this.loading = true;
-
-      await this.$apollo
+    fetchAllStatuses(search) {
+      return this.$apollo
+        .query({
+          query: getAllStatusesQuery,
+          variables: {
+            name: search,
+          },
+        })
+        .then(({ data }) => sortStatuses(data.workItemAllowedStatuses.nodes));
+    },
+    fetchStatusesForNamespace() {
+      return this.$apollo
         .query({
           query: namespaceWorkItemTypesQuery,
           variables: {
             fullPath: this.config.fullPath,
           },
         })
-        .then(({ data }) => {
-          this.options = getStatuses(data?.workspace?.workItemTypes?.nodes).map((status) => ({
+        .then(({ data }) => getStatuses(data?.workspace?.workItemTypes?.nodes));
+    },
+    fetchStatuses(search) {
+      this.loading = true;
+
+      const query = this.config.fetchAllStatuses
+        ? this.fetchAllStatuses
+        : this.fetchStatusesForNamespace;
+
+      query(search)
+        .then((statuses) => {
+          this.options = statuses.map((status) => ({
             ...status,
             value: getIdFromGraphQLId(status.id),
           }));
@@ -98,7 +110,7 @@ export default {
     :suggestions-loading="loading"
     :get-active-token-value="getActiveOption"
     :value-identifier="getOptionText"
-    @fetch-suggestions="fetchStatusesForNamespace"
+    @fetch-suggestions="fetchStatuses"
     v-on="$listeners"
   >
     <template #view="{ viewTokenProps: { inputValue, activeTokenValue } }">
