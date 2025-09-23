@@ -6,6 +6,10 @@ module Ai
       include ActiveRecord::Sanitization::ClassMethods
       include Gitlab::SQL::Pattern
 
+      # Items owned by https://gitlab.com/gitlab-org/modelops/applied-ml/code-suggestions/ai-assist
+      # TODO: https://gitlab.com/gitlab-org/gitlab/-/issues/557843
+      GITLAB_ITEM_IDS = [104, 105, 107].freeze
+
       self.table_name = "ai_catalog_items"
 
       validates :organization, :latest_version, :item_type, :description, :name, presence: true
@@ -36,6 +40,29 @@ module Ai
       scope :search, ->(query) { fuzzy_search(query, [:name, :description]) }
       scope :with_ids, ->(ids) { where(id: ids) }
       scope :with_item_type, ->(item_type) { where(item_type: item_type) }
+
+      scope :order_by_id_desc, -> do
+        return reorder(id: :desc) unless ::Gitlab::Saas.feature_available?(:gitlab_duo_saas_only)
+
+        gitlab_items = GITLAB_ITEM_IDS.map(&:to_i).join(',')
+
+        order = Gitlab::Pagination::Keyset::Order.build([
+          Gitlab::Pagination::Keyset::ColumnOrderDefinition.new(
+            attribute_name: 'hard_coded_ids',
+            order_expression: Arel.sql("array_position(ARRAY[#{gitlab_items}]::bigint[], id)").asc,
+            nullable: :nulls_last,
+            order_direction: :asc,
+            add_to_projections: true
+          ),
+          Gitlab::Pagination::Keyset::ColumnOrderDefinition.new(
+            attribute_name: 'id',
+            order_expression: Item.arel_table[:id].desc,
+            nullable: :not_nullable
+          )
+        ])
+
+        reorder(order)
+      end
 
       before_destroy :prevent_deletion_if_consumers_exist
 

@@ -97,4 +97,47 @@ RSpec.describe Ai::Catalog::ItemsFinder, feature_category: :workflow_catalog do
       end
     end
   end
+
+  describe 'ordering' do
+    let_it_be(:gitlab_item_1) { create(:ai_catalog_agent, public: true) }
+    let_it_be(:regular_item_1) { create(:ai_catalog_agent, public: true) }
+    let_it_be(:gitlab_item_2) { create(:ai_catalog_agent, public: true) }
+    let_it_be(:regular_item_2) { create(:ai_catalog_agent, public: true) }
+
+    before do
+      stub_const('Ai::Catalog::Item::GITLAB_ITEM_IDS', [gitlab_item_1.id, gitlab_item_2.id])
+    end
+
+    it 'orders by id desc when not SaaS' do
+      is_expected.to eq(
+        [
+          regular_item_2,
+          gitlab_item_2,
+          regular_item_1,
+          gitlab_item_1,
+          private_agent_developer_access,
+          private_flow_developer_access,
+          public_agent,
+          public_flow
+        ]
+      )
+    end
+
+    context 'when SaaS', :saas do
+      it 'sorts GitLab items first, then id desc' do
+        is_expected.to eq(
+          [
+            gitlab_item_1,
+            gitlab_item_2,
+            regular_item_2,
+            regular_item_1,
+            private_agent_developer_access,
+            private_flow_developer_access,
+            public_agent,
+            public_flow
+          ]
+        )
+      end
+    end
+  end
 end
