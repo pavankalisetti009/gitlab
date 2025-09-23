@@ -43,6 +43,15 @@ module Gitlab
           end
 
           def execute
+            if ::Feature.enabled?(:duo_code_review_on_agent_platform, user)
+              update_review_state('review_started') if merge_request
+              execute_duo_agent_platform_flow
+            else
+              execute_legacy_flow
+            end
+          end
+
+          def execute_legacy_flow
             # Progress note may not exist for existing jobs so we create one if we can
             @progress_note = find_progress_note || create_progress_note
 
@@ -80,6 +89,28 @@ module Gitlab
             update_review_state('reviewed') if merge_request.present?
 
             @progress_note&.destroy
+          end
+
+          def execute_duo_agent_platform_flow
+            required_privileges = [
+              ::Ai::DuoWorkflows::Workflow::AgentPrivileges::READ_WRITE_GITLAB,
+              ::Ai::DuoWorkflows::Workflow::AgentPrivileges::RUN_COMMANDS,
+              ::Ai::DuoWorkflows::Workflow::AgentPrivileges::USE_GIT
+            ]
+
+            ::Ai::DuoWorkflows::CreateAndStartWorkflowService.new(
+              container: merge_request.project,
+              current_user: user,
+              workflow_definition: 'code_review/experimental',
+              goal: merge_request.iid,
+              source_branch: merge_request.source_branch,
+              workflow_params: {
+                agent_privileges: required_privileges,
+                pre_approved_agent_privileges: required_privileges,
+                allow_agent_to_request_user: false,
+                environment: 'web'
+              }
+            ).execute
           end
 
           override :inputs
