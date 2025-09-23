@@ -28,7 +28,7 @@ module GitlabSubscriptions
 
         upsert_data = eligible_user_ids.map { |user_id| { user_id: user_id } }
 
-        add_on_purchase.with_lock do
+        add_on_assignment_upsert_result = add_on_purchase.with_lock do
           ensure_seat_availability
 
           add_on_purchase.assigned_users.upsert_all(
@@ -36,6 +36,8 @@ module GitlabSubscriptions
             unique_by: %i[add_on_purchase_id user_id]
           )
         end
+
+        create_papertrail_versions(add_on_assignment_upsert_result&.pluck('id'))
 
         if gitlab_com_subscription?
           ::Onboarding::AddOnSeatAssignmentIterableTriggerWorker
@@ -131,6 +133,10 @@ module GitlabSubscriptions
           response_type: type,
           payload: payload
         }
+      end
+
+      def create_papertrail_versions(assigned_users_ids)
+        add_on_purchase.assigned_users.id_in(assigned_users_ids).find_each { |a| a.paper_trail.record_create }
       end
     end
   end

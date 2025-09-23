@@ -1,133 +1,129 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`AI impact dashboard api extractGraphqlAiData extracts data correctly when response is {
-  codeSuggestionsContributorsCount: 0,
-  codeContributorsCount: 10,
-  codeSuggestionsAcceptedCount: 0,
-  codeSuggestionsShownCount: 20,
-  duoChatContributorsCount: 0,
-  duoAssignedUsersCount: 50,
-  rootCauseAnalysisUsersCount: 0
-} 1`] = `
+exports[`AI impact dashboard api extractGraphqlAiData returns code_suggestions_acceptance_rate given {"codeSuggestions": [Object]} 1`] = `
 {
-  "code_suggestions_acceptance_rate": {
-    "identifier": "code_suggestions_acceptance_rate",
-    "tooltip": "0/20",
-    "value": 0,
-  },
-  "code_suggestions_usage_rate": {
-    "identifier": "code_suggestions_usage_rate",
-    "tooltip": "0/10",
-    "value": 0,
-  },
-  "duo_chat_usage_rate": {
-    "identifier": "duo_chat_usage_rate",
-    "tooltip": "0/50",
-    "value": 0,
-  },
-  "duo_rca_usage_rate": {
-    "identifier": "duo_rca_usage_rate",
-    "tooltip": "0/50",
-    "value": 0,
-  },
+  "identifier": "code_suggestions_acceptance_rate",
+  "tooltip": "No data",
+  "value": "-",
 }
 `;
 
-exports[`AI impact dashboard api extractGraphqlAiData extracts data correctly when response is {
-  codeSuggestionsContributorsCount: 2,
-  codeContributorsCount: undefined,
-  codeSuggestionsAcceptedCount: 3,
-  codeSuggestionsShownCount: undefined,
-  duoChatContributorsCount: 4,
-  duoAssignedUsersCount: undefined,
-  rootCauseAnalysisUsersCount: 10
-} 1`] = `
+exports[`AI impact dashboard api extractGraphqlAiData returns code_suggestions_acceptance_rate given {"codeSuggestions": [Object]} 2`] = `
 {
-  "code_suggestions_acceptance_rate": {
-    "identifier": "code_suggestions_acceptance_rate",
-    "tooltip": "No data",
-    "value": "-",
-  },
-  "code_suggestions_usage_rate": {
-    "identifier": "code_suggestions_usage_rate",
-    "tooltip": "No data",
-    "value": "-",
-  },
-  "duo_chat_usage_rate": {
-    "identifier": "duo_chat_usage_rate",
-    "tooltip": "No data",
-    "value": "-",
-  },
-  "duo_rca_usage_rate": {
-    "identifier": "duo_rca_usage_rate",
-    "tooltip": "No data",
-    "value": "-",
-  },
+  "identifier": "code_suggestions_acceptance_rate",
+  "tooltip": "No data",
+  "value": "-",
 }
 `;
 
-exports[`AI impact dashboard api extractGraphqlAiData extracts data correctly when response is {
-  codeSuggestionsContributorsCount: 5,
-  codeContributorsCount: 10,
-  codeSuggestionsAcceptedCount: 3,
-  codeSuggestionsShownCount: 4,
-  duoChatContributorsCount: 7,
-  duoAssignedUsersCount: 8,
-  rootCauseAnalysisUsersCount: 5
-} 1`] = `
+exports[`AI impact dashboard api extractGraphqlAiData returns code_suggestions_acceptance_rate given {"codeSuggestions": [Object]} 3`] = `
 {
-  "code_suggestions_acceptance_rate": {
-    "identifier": "code_suggestions_acceptance_rate",
-    "tooltip": "3/4",
-    "value": 75,
-  },
-  "code_suggestions_usage_rate": {
-    "identifier": "code_suggestions_usage_rate",
-    "tooltip": "5/10",
-    "value": 50,
-  },
-  "duo_chat_usage_rate": {
-    "identifier": "duo_chat_usage_rate",
-    "tooltip": "7/8",
-    "value": 87.5,
-  },
-  "duo_rca_usage_rate": {
-    "identifier": "duo_rca_usage_rate",
-    "tooltip": "5/8",
-    "value": 62.5,
-  },
+  "identifier": "code_suggestions_acceptance_rate",
+  "tooltip": "3/4",
+  "value": 75,
 }
 `;
 
-exports[`AI impact dashboard api extractGraphqlAiData extracts data correctly when response is {
-  codeSuggestionsContributorsCount: undefined,
-  codeContributorsCount: 5,
-  codeSuggestionsAcceptedCount: undefined,
-  codeSuggestionsShownCount: 4,
-  duoChatContributorsCount: undefined,
-  duoAssignedUsersCount: 3,
-  rootCauseAnalysisUsersCount: undefined
-} 1`] = `
+exports[`AI impact dashboard api extractGraphqlAiData returns code_suggestions_acceptance_rate given {"codeSuggestions": [Object]} 4`] = `
 {
-  "code_suggestions_acceptance_rate": {
-    "identifier": "code_suggestions_acceptance_rate",
-    "tooltip": "No data",
-    "value": "-",
-  },
-  "code_suggestions_usage_rate": {
-    "identifier": "code_suggestions_usage_rate",
-    "tooltip": "No data",
-    "value": "-",
-  },
-  "duo_chat_usage_rate": {
-    "identifier": "duo_chat_usage_rate",
-    "tooltip": "No data",
-    "value": "-",
-  },
-  "duo_rca_usage_rate": {
-    "identifier": "duo_rca_usage_rate",
-    "tooltip": "No data",
-    "value": "-",
-  },
+  "identifier": "code_suggestions_acceptance_rate",
+  "tooltip": "0/20",
+  "value": 0,
+}
+`;
+
+exports[`AI impact dashboard api extractGraphqlAiData returns code_suggestions_usage_rate given {"codeContributorsCount": 5} 1`] = `
+{
+  "identifier": "code_suggestions_usage_rate",
+  "tooltip": "No data",
+  "value": "-",
+}
+`;
+
+exports[`AI impact dashboard api extractGraphqlAiData returns code_suggestions_usage_rate given {"codeContributorsCount": 10, "codeSuggestions": [Object]} 1`] = `
+{
+  "identifier": "code_suggestions_usage_rate",
+  "tooltip": "5/10",
+  "value": 50,
+}
+`;
+
+exports[`AI impact dashboard api extractGraphqlAiData returns code_suggestions_usage_rate given {"codeContributorsCount": 10, "codeSuggestions": [Object]} 2`] = `
+{
+  "identifier": "code_suggestions_usage_rate",
+  "tooltip": "0/10",
+  "value": 0,
+}
+`;
+
+exports[`AI impact dashboard api extractGraphqlAiData returns code_suggestions_usage_rate given {"codeSuggestions": [Object]} 1`] = `
+{
+  "identifier": "code_suggestions_usage_rate",
+  "tooltip": "No data",
+  "value": "-",
+}
+`;
+
+exports[`AI impact dashboard api extractGraphqlAiData returns duo_chat_usage_rate given {"duoAssignedUsersCount": 3} 1`] = `
+{
+  "identifier": "duo_chat_usage_rate",
+  "tooltip": "No data",
+  "value": "-",
+}
+`;
+
+exports[`AI impact dashboard api extractGraphqlAiData returns duo_chat_usage_rate given {"duoAssignedUsersCount": 8, "duoChatContributorsCount": 7} 1`] = `
+{
+  "identifier": "duo_chat_usage_rate",
+  "tooltip": "7/8",
+  "value": 87.5,
+}
+`;
+
+exports[`AI impact dashboard api extractGraphqlAiData returns duo_chat_usage_rate given {"duoAssignedUsersCount": 50, "duoChatContributorsCount": 0} 1`] = `
+{
+  "identifier": "duo_chat_usage_rate",
+  "tooltip": "0/50",
+  "value": 0,
+}
+`;
+
+exports[`AI impact dashboard api extractGraphqlAiData returns duo_chat_usage_rate given {"duoChatContributorsCount": 4} 1`] = `
+{
+  "identifier": "duo_chat_usage_rate",
+  "tooltip": "No data",
+  "value": "-",
+}
+`;
+
+exports[`AI impact dashboard api extractGraphqlAiData returns duo_rca_usage_rate given {"duoAssignedUsersCount": 3} 1`] = `
+{
+  "identifier": "duo_rca_usage_rate",
+  "tooltip": "No data",
+  "value": "-",
+}
+`;
+
+exports[`AI impact dashboard api extractGraphqlAiData returns duo_rca_usage_rate given {"duoAssignedUsersCount": 8, "rootCauseAnalysisUsersCount": 5} 1`] = `
+{
+  "identifier": "duo_rca_usage_rate",
+  "tooltip": "5/8",
+  "value": 62.5,
+}
+`;
+
+exports[`AI impact dashboard api extractGraphqlAiData returns duo_rca_usage_rate given {"duoAssignedUsersCount": 50, "rootCauseAnalysisUsersCount": 0} 1`] = `
+{
+  "identifier": "duo_rca_usage_rate",
+  "tooltip": "0/50",
+  "value": 0,
+}
+`;
+
+exports[`AI impact dashboard api extractGraphqlAiData returns duo_rca_usage_rate given {"rootCauseAnalysisUsersCount": 10} 1`] = `
+{
+  "identifier": "duo_rca_usage_rate",
+  "tooltip": "No data",
+  "value": "-",
 }
 `;

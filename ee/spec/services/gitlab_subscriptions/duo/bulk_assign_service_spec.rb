@@ -47,6 +47,13 @@ RSpec.describe GitlabSubscriptions::Duo::BulkAssignService, feature_category: :s
             expect(response.success?).to be_truthy
             expect(response[:users].map(&:id)).to match_array(user_ids)
           end
+
+          context 'when creating papertrail records' do
+            it 'creates papertrail records for addon assignments' do
+              expect { bulk_assign }.to change { GitlabSubscriptions::UserAddOnAssignmentVersion.count }
+                .by(expected_assigned_users.count)
+            end
+          end
         end
 
         context 'when users are not members' do
@@ -127,7 +134,7 @@ RSpec.describe GitlabSubscriptions::Duo::BulkAssignService, feature_category: :s
 
           it 'executes a limited number of queries', :use_clean_rails_redis_caching do
             control = ActiveRecord::QueryRecorder.new { bulk_assign }
-            expect(control.count).to be <= 12
+            expect(control.count).to be <= 23
           end
 
           it 'returns assigned and not eligible users' do
