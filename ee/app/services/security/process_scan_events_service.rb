@@ -17,6 +17,15 @@ module Security
       collect_dast_scan_runner_metrics_from_pipeline
       collect_dast_scan_vulnerability_metrics_from_pipeline
       collect_dast_scan_w3c_metrics_from_pipeline
+      collect_gemnasium_scan_metrics_from_pipeline
+      collect_gemnasium_scan_sbom_metrics_from_pipeline
+      collect_gemnasium_scan_performance_metrics_from_pipeline
+      collect_gemnasium_maven_scan_metrics_from_pipeline
+      collect_gemnasium_maven_scan_sbom_metrics_from_pipeline
+      collect_gemnasium_maven_scan_performance_metrics_from_pipeline
+      collect_gemnasium_python_scan_metrics_from_pipeline
+      collect_gemnasium_python_scan_sbom_metrics_from_pipeline
+      collect_gemnasium_python_scan_performance_metrics_from_pipeline
     ].freeze
 
     def self.execute(pipeline)
