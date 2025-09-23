@@ -14,7 +14,7 @@ module Geo
       # If someone enables the FF, tries selective sync by org, and finally disables the FF:
       # 1. We won't raise unknown selective sync type error
       # 2. But we will assume that they want selective sync to be disabled (sync everything).
-      types -= 'organizations' unless ::Gitlab::Geo.geo_selective_sync_by_organizations_enabled?
+      types -= ['organizations'] unless ::Gitlab::Geo.geo_selective_sync_by_organizations_enabled?
 
       types.include?(selective_sync_type)
     end
