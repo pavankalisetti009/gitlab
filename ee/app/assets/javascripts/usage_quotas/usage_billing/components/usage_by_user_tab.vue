@@ -132,7 +132,11 @@ export default {
             {{ formatAllocationUsed(item.allocationUsed, item.allocationTotal) }}
           </span>
           <gl-progress-bar
-            :value="Math.min(100, (item.allocationUsed / item.allocationTotal) * 100)"
+            :value="
+              item.allocationTotal > 0
+                ? Math.min(100, (item.allocationUsed / item.allocationTotal) * 100)
+                : 0
+            "
             class="gl-mt-1"
           />
         </div>
