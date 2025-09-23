@@ -27,10 +27,10 @@ import WorkItemStateBadge from '~/work_items/components/work_item_state_badge.vu
 import glFeatureFlagMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
 import * as Sentry from '~/sentry/sentry_browser_wrapper';
 import HelpPageLink from '~/vue_shared/components/help_page_link/help_page_link.vue';
-import lifecycleUpdateMutation from './lifecycle_update.mutation.graphql';
+import lifecycleUpdateMutation from './graphql/lifecycle_update.mutation.graphql';
 import StatusForm from './status_form.vue';
 import RemoveStatusModal from './remove_status_modal.vue';
-import namespaceMetadataQuery from './namespace_metadata.query.graphql';
+import namespaceMetadataQuery from './graphql/namespace_metadata.query.graphql';
 
 const CATEGORY_ORDER = Object.keys(STATUS_CATEGORIES_MAP);
 

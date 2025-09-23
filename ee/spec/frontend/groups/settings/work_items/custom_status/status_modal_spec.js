@@ -10,8 +10,8 @@ import StatusLifecycleModal from 'ee/groups/settings/work_items/custom_status/st
 import RemoveStatusModal from 'ee/groups/settings/work_items/custom_status/remove_status_modal.vue';
 import StatusForm from 'ee/groups/settings/work_items/custom_status/status_form.vue';
 import WorkItemStateBadge from '~/work_items/components/work_item_state_badge.vue';
-import lifecycleUpdateMutation from 'ee/groups/settings/work_items/custom_status/lifecycle_update.mutation.graphql';
-import namespaceMetadataQuery from 'ee/groups/settings/work_items/custom_status/namespace_metadata.query.graphql';
+import lifecycleUpdateMutation from 'ee/groups/settings/work_items/custom_status/graphql/lifecycle_update.mutation.graphql';
+import namespaceMetadataQuery from 'ee/groups/settings/work_items/custom_status/graphql/namespace_metadata.query.graphql';
 import {
   mockNamespaceMetadata,
   deleteStatusErrorResponse,
