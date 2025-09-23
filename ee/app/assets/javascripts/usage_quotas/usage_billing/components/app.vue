@@ -22,6 +22,7 @@ export default {
     UsageByUserTab,
     CurrentUsageCard,
   },
+  inject: ['fetchUsageDataApiUrl'],
   data() {
     return {
       isLoading: true,
@@ -62,8 +63,7 @@ export default {
     async fetchUsageData() {
       try {
         this.isLoading = true;
-        // TODO: this URL should be configurable
-        const response = await axios.get('/admin/gitlab_duo/usage/data');
+        const response = await axios.get(this.fetchUsageDataApiUrl);
         this.subscriptionData = response?.data?.subscription;
       } catch (error) {
         this.isError = true;

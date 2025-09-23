@@ -9,12 +9,12 @@ export function initUsageBillingUserDashboard(el) {
     return null;
   }
 
-  const { userId } = el.dataset;
+  const { userId, fetchUserUsageDataApiUrl } = el.dataset;
 
   return new Vue({
     el,
     name: 'UsageBillingUserDashboardRoot',
-    provide: { userId },
+    provide: { userId, fetchUserUsageDataApiUrl },
     render(createElement) {
       return createElement(UsageBillingUserDashboardApp);
     },

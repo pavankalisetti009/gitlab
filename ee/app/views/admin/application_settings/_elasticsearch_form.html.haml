@@ -347,7 +347,7 @@
                           - if project.description.present?
                             .gl-text-sm.gl-text-subtle.-gl-mb-5
                               = markdown_field(project, :description)
-                        .stats.gl-self-end.gl-text-sm.gl-text-subtle.gl-w-full.md:gl-w-auto
+                        .stats.gl-self-end.gl-text-sm.gl-text-subtle.gl-w-full{ class: "@md/panel:gl-w-auto" }
                           = _('Created %{date} ago') % { date: time_ago_in_words(project.created_at) }
                   - if @projects_not_indexed_count > projects_not_indexed_max_shown
                     %li.project-row.gl-items-center.gl-flex-wrap{ class: '!gl-flex', data: { testid: 'projects_not_indexed_max_shown'} }
