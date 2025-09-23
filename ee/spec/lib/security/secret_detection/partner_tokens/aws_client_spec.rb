@@ -95,7 +95,7 @@ RSpec.describe Security::SecretDetection::PartnerTokens::AwsClient, feature_cate
         it 'returns active status' do
           result = client.verify_token(valid_access_key)
 
-          expect(result).to be_active
+          expect(result.active?).to be true
           expect(result.metadata[:partner]).to eq('AWS')
         end
       end
@@ -106,10 +106,10 @@ RSpec.describe Security::SecretDetection::PartnerTokens::AwsClient, feature_cate
           allow(Integrations::Clients::HTTP).to receive(:post).and_return(response)
         end
 
-        it 'returns failure response for unexpected status code through public interface' do
+        it 'returns unknown response for unexpected status code' do
           result = client.verify_token(valid_access_key)
 
-          expect(result).to be_inactive
+          expect(result.unknown?).to be true
           expect(result.metadata[:partner]).to eq('AWS')
         end
       end
@@ -120,10 +120,10 @@ RSpec.describe Security::SecretDetection::PartnerTokens::AwsClient, feature_cate
           allow(Integrations::Clients::HTTP).to receive(:post).and_return(response)
         end
 
-        it 'handles blank XML response gracefully through public interface' do
+        it 'handles blank XML response gracefully' do
           result = client.verify_token(valid_access_key)
 
-          expect(result).to be_inactive
+          expect(result.inactive?).to be true
           expect(result.metadata[:partner]).to eq('AWS')
           expect(result.metadata[:verified_at]).to be_present
         end
@@ -135,10 +135,10 @@ RSpec.describe Security::SecretDetection::PartnerTokens::AwsClient, feature_cate
           allow(Integrations::Clients::HTTP).to receive(:post).and_return(response)
         end
 
-        it 'handles nil XML response gracefully through public interface' do
+        it 'handles nil XML response gracefully' do
           result = client.verify_token(valid_access_key)
 
-          expect(result).to be_inactive
+          expect(result.inactive?).to be true
           expect(result.metadata[:partner]).to eq('AWS')
         end
       end
@@ -149,10 +149,10 @@ RSpec.describe Security::SecretDetection::PartnerTokens::AwsClient, feature_cate
           allow(Integrations::Clients::HTTP).to receive(:post).and_return(response)
         end
 
-        it 'returns inactive response' do
+        it 'returns unknown response' do
           result = client.verify_token(valid_access_key)
 
-          expect(result).to be_inactive
+          expect(result.unknown?).to be true
           expect(result.metadata[:partner]).to eq('AWS')
         end
       end
@@ -179,7 +179,7 @@ RSpec.describe Security::SecretDetection::PartnerTokens::AwsClient, feature_cate
         it "rejects #{description}" do
           result = client.verify_token(key)
 
-          expect(result).to be_inactive
+          expect(result.unknown?).to be true
           expect(result.metadata[:partner]).to eq('AWS')
         end
 
