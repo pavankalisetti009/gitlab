@@ -9,14 +9,20 @@ query getDashboardIssuesEE(
   $sort: IssueSort
   $state: IssuableState
   $assigneeId: String
-  $assigneeWildcardId: AssigneeWildcardId
   $assigneeUsernames: [String!]
+  $assigneeWildcardId: AssigneeWildcardId
   $authorUsername: String
+  $closedAfter: Time
+  $closedBefore: Time
   $confidential: Boolean
+  $createdAfter: Time
+  $createdBefore: Time
   $labelName: [String]
   $milestoneTitle: [String]
   $milestoneWildcardId: MilestoneWildcardId
   $myReactionEmoji: String
+  $status: WorkItemWidgetStatusFilterInput
+  $subscribed: SubscriptionStatus
   $types: [IssueType!]
   $in: [IssuableSearchableField!]
   $not: NegatedIssueFilterInput
@@ -25,25 +31,26 @@ query getDashboardIssuesEE(
   $beforeCursor: String
   $firstPageSize: Int
   $lastPageSize: Int
-  $createdAfter: Time
-  $createdBefore: Time
-  $closedAfter: Time
-  $closedBefore: Time
-  $subscribed: SubscriptionStatus
 ) {
   issues(
     search: $search
     sort: $sort
     state: $state
     assigneeId: $assigneeId
-    assigneeWildcardId: $assigneeWildcardId
     assigneeUsernames: $assigneeUsernames
+    assigneeWildcardId: $assigneeWildcardId
     authorUsername: $authorUsername
+    closedAfter: $closedAfter
+    closedBefore: $closedBefore
     confidential: $confidential
+    createdAfter: $createdAfter
+    createdBefore: $createdBefore
     labelName: $labelName
     milestoneTitle: $milestoneTitle
     milestoneWildcardId: $milestoneWildcardId
     myReactionEmoji: $myReactionEmoji
+    status: $status
+    subscribed: $subscribed
     types: $types
     in: $in
     not: $not
@@ -52,11 +59,6 @@ query getDashboardIssuesEE(
     before: $beforeCursor
     first: $firstPageSize
     last: $lastPageSize
-    createdAfter: $createdAfter
-    createdBefore: $createdBefore
-    closedAfter: $closedAfter
-    closedBefore: $closedBefore
-    subscribed: $subscribed
   ) @persist {
     nodes {
       __persist
@@ -64,10 +66,10 @@ query getDashboardIssuesEE(
       blockingCount
       healthStatus
       reference(full: true)
-      weight
       status {
         ...WorkItemStatusFragment
       }
+      weight
     }
     pageInfo {
       ...PageInfo

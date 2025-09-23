@@ -6,9 +6,13 @@ import waitForPromises from 'helpers/wait_for_promises';
 import createMockApollo from 'helpers/mock_apollo_helper';
 import { createAlert } from '~/alert';
 import BaseToken from '~/vue_shared/components/filtered_search_bar/tokens/base_token.vue';
+import getAllStatusesQuery from 'ee/issues/dashboard/queries/get_all_statuses.query.graphql';
 import WorkItemStatusToken from 'ee/vue_shared/components/filtered_search_bar/tokens/work_item_status_token.vue';
 import namespaceWorkItemTypesQuery from '~/work_items/graphql/namespace_work_item_types.query.graphql';
-import { namespaceWorkItemTypesQueryResponse } from 'jest/work_items/mock_data';
+import {
+  getAllStatusesQueryResponse,
+  namespaceWorkItemTypesQueryResponse,
+} from 'jest/work_items/mock_data';
 import { mockStatusToken } from '../mock_data';
 
 Vue.use(VueApollo);
@@ -20,6 +24,7 @@ describe('WorkItemStatusToken', () => {
   let wrapper;
 
   const namespaceQueryHandler = jest.fn().mockResolvedValue(namespaceWorkItemTypesQueryResponse);
+  const getAllStatusesQueryHandler = jest.fn().mockResolvedValue(getAllStatusesQueryResponse);
   const findBaseToken = () => wrapper.findComponent(BaseToken);
 
   const createComponent = ({
@@ -30,9 +35,11 @@ describe('WorkItemStatusToken', () => {
     provide = {},
     queryHandler = namespaceQueryHandler,
   } = {}) => {
-    const mockApollo = createMockApollo([[namespaceWorkItemTypesQuery, queryHandler]]);
     wrapper = mount(WorkItemStatusToken, {
-      apolloProvider: mockApollo,
+      apolloProvider: createMockApollo([
+        [namespaceWorkItemTypesQuery, queryHandler],
+        [getAllStatusesQuery, getAllStatusesQueryHandler],
+      ]),
       propsData: {
         active,
         config,
@@ -61,7 +68,7 @@ describe('WorkItemStatusToken', () => {
     expect(tokenSegments.at(2).text()).toBe(id.toString());
   });
 
-  it('fetches work item types', () => {
+  it('fetches statuses for namespace', () => {
     const search = 'Current&1';
 
     createComponent();
@@ -71,6 +78,16 @@ describe('WorkItemStatusToken', () => {
     expect(namespaceQueryHandler).toHaveBeenCalledWith({
       fullPath: mockStatusToken.fullPath,
     });
+    expect(getAllStatusesQueryHandler).not.toHaveBeenCalled();
+  });
+
+  it('fetches all statuses when "fetchAllStatuses: true" for config', () => {
+    createComponent({ config: { ...mockStatusToken, fetchAllStatuses: true } });
+
+    wrapper.findComponent(GlFilteredSearchToken).vm.$emit('input', { data: 'search' });
+
+    expect(getAllStatusesQueryHandler).toHaveBeenCalledWith({ name: 'search' });
+    expect(namespaceQueryHandler).not.toHaveBeenCalledWith();
   });
 
   describe('when request fails', () => {
@@ -93,17 +110,6 @@ describe('WorkItemStatusToken', () => {
     it('sets `loading` to false when request completes', () => {
       expect(findBaseToken().props('suggestionsLoading')).toBe(false);
     });
-  });
-
-  it('does not make a query request when `fullPath` is undefined', async () => {
-    createComponent({
-      config: { fullPath: '' },
-    });
-
-    findBaseToken().vm.$emit('fetch-suggestions');
-    await waitForPromises();
-
-    expect(namespaceQueryHandler).not.toHaveBeenCalled();
   });
 
   it('renders token item when value is selected', async () => {

@@ -1,4 +1,4 @@
-query getDashboardIssuesCount(
+query getDashboardIssuesCountEE(
   $search: String
   $assigneeId: String
   $assigneeUsernames: [String!]
@@ -13,6 +13,7 @@ query getDashboardIssuesCount(
   $milestoneTitle: [String]
   $milestoneWildcardId: MilestoneWildcardId
   $myReactionEmoji: String
+  $status: WorkItemWidgetStatusFilterInput
   $subscribed: SubscriptionStatus
   $types: [IssueType!]
   $in: [IssuableSearchableField!]
@@ -35,6 +36,7 @@ query getDashboardIssuesCount(
     milestoneTitle: $milestoneTitle
     milestoneWildcardId: $milestoneWildcardId
     myReactionEmoji: $myReactionEmoji
+    status: $status
     subscribed: $subscribed
     types: $types
     in: $in
@@ -59,6 +61,7 @@ query getDashboardIssuesCount(
     milestoneTitle: $milestoneTitle
     milestoneWildcardId: $milestoneWildcardId
     myReactionEmoji: $myReactionEmoji
+    status: $status
     subscribed: $subscribed
     types: $types
     in: $in
@@ -83,6 +86,7 @@ query getDashboardIssuesCount(
     milestoneTitle: $milestoneTitle
     milestoneWildcardId: $milestoneWildcardId
     myReactionEmoji: $myReactionEmoji
+    status: $status
     subscribed: $subscribed
     types: $types
     in: $in
