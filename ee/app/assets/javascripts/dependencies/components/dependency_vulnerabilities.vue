@@ -25,15 +25,19 @@ export default {
 </script>
 
 <template>
-  <ul class="list-unstyled mb-0">
+  <ul class="list-unstyled !gl-mb-0">
     <li
       v-for="(vulnerability, i) in renderableVulnerabilities"
       :key="vulnerability.id"
-      :class="{ 'mt-3': i > 0 }"
+      :class="{ '!gl-mt-5': i > 0 }"
     >
       <dependency-vulnerability :vulnerability="vulnerability" />
     </li>
-    <li v-if="vulnerabilitiesNotShown" ref="excessMessage" class="text-center mt-3 gl-text-subtle">
+    <li
+      v-if="vulnerabilitiesNotShown"
+      ref="excessMessage"
+      class="!gl-mt-5 !gl-text-center gl-text-subtle"
+    >
       {{
         n__(
           'Dependencies|%d additional vulnerability not shown',

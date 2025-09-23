@@ -201,7 +201,7 @@ export default {
           :href="duoProTrialHref"
           variant="confirm"
           category="primary"
-          class="gl-w-full sm:gl-w-auto"
+          class="gl-w-full @sm/panel:gl-w-auto"
           data-testid="duo-pro-start-trial-btn"
           @click="trackTrialClick"
         >
@@ -213,7 +213,7 @@ export default {
           v-gl-modal-directive="$options.activateSubscriptionModal.id"
           variant="confirm"
           category="primary"
-          class="gl-mt-3 gl-w-full sm:gl-ml-3 sm:gl-mt-0 sm:gl-w-auto"
+          class="gl-mt-3 gl-w-full @sm/panel:gl-ml-3 @sm/panel:gl-mt-0 @sm/panel:gl-w-auto"
           data-testid="code-suggestions-activate-subscription-action"
         >
           {{ $options.i18n.addActivationCode }}
@@ -223,7 +223,7 @@ export default {
           v-else-if="showPostTrialForFreeNamespace"
           :href="buySubscriptionPath"
           variant="confirm"
-          class="gl-w-full sm:gl-w-auto"
+          class="gl-w-full @sm/panel:gl-w-auto"
           data-testid="duo-pro-buy-subscription-btn"
           @click="trackBuySubscription"
         >
@@ -235,7 +235,7 @@ export default {
           :href="addDuoProHref"
           variant="confirm"
           :category="purchaseSeatsBtnCategory"
-          class="gl-mt-3 gl-w-full sm:gl-ml-3 sm:gl-mt-0 sm:gl-w-auto"
+          class="gl-mt-3 gl-w-full @sm/panel:gl-ml-3 @sm/panel:gl-mt-0 @sm/panel:gl-w-auto"
           data-testid="duo-pro-purchase-seats-btn"
           @click="trackPurchaseSeatsClick"
         >

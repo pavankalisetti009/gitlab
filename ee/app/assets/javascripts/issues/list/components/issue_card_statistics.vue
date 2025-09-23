@@ -19,7 +19,7 @@ export default {
 <template>
   <issue-card-statistics :issue="issue">
     <blocking-issues-count
-      class="gl-hidden sm:gl-inline-block"
+      class="gl-hidden @sm/panel:gl-inline-block"
       :blocking-issues-count="issue.blockingCount"
       is-list-item
       data-testid="blocking-issues"

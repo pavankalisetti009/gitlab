@@ -234,7 +234,7 @@ export default {
       key: 'viewDetails',
       label: '',
       thClass: 'gl-hidden',
-      tdClass: 'md:gl-hidden view-details',
+      tdClass: '@md/panel:gl-hidden view-details',
     },
   ],
   i18n: {

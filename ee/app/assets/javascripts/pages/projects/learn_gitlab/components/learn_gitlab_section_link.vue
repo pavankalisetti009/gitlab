@@ -79,7 +79,7 @@ export default {
           :id="popoverId"
           category="tertiary"
           icon="question-o"
-          class="ml-auto"
+          class="!gl-ml-auto"
           :aria-label="popoverText"
           size="small"
           data-testid="contact-admin-popover-trigger"

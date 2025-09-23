@@ -73,7 +73,7 @@ export default {
 <template>
   <div class="row" data-testid="get-started-page">
     <div
-      class="col-md-9 gl-flex gl-flex-col gl-gap-4 md:gl-pr-9"
+      class="gl-col-md-9 gl-flex gl-flex-col gl-gap-4 @md/panel:gl-pr-9"
       data-testid="get-started-sections"
     >
       <gl-alert
@@ -132,7 +132,7 @@ export default {
       <get-familiar />
     </div>
 
-    <div class="col-md-3 gl-w-full md:gl-pl-0">
+    <div class="gl-col-md-3 gl-w-full @md/panel:gl-pl-0">
       <right-sidebar />
     </div>
   </div>

@@ -224,7 +224,7 @@ export default {
     <template v-else>
       <page-heading :heading="__('Value stream analytics')" />
       <div
-        class="gl-mb-6 gl-flex gl-flex-col gl-justify-between gl-gap-3 sm:gl-flex-row sm:gl-items-center"
+        class="gl-mb-6 gl-flex gl-flex-col gl-justify-between gl-gap-3 @sm/panel:gl-flex-row @sm/panel:gl-items-center"
       >
         <value-stream-select v-if="enableCustomizableStages" :can-edit="canEdit" />
         <value-stream-aggregation-status v-if="isAggregationStatusAvailable" :data="aggregation" />

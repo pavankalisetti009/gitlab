@@ -382,7 +382,7 @@ export default {
       <div class="row">
         <gl-form-group
           :invalid-feedback="form.fields.excludedUrls.feedback"
-          :class="{ 'col-md-6': !stacked, 'col-md-12': stacked }"
+          :class="{ 'gl-col-md-6': !stacked, 'gl-col-md-12': stacked }"
         >
           <template #label>
             {{ i18n.excludedUrls.label }}
@@ -408,7 +408,7 @@ export default {
 
         <gl-form-group
           :invalid-feedback="form.fields.requestHeaders.feedback"
-          :class="{ 'col-md-6': !stacked, 'col-md-12': stacked }"
+          :class="{ 'gl-col-md-6': !stacked, 'gl-col-md-12': stacked }"
         >
           <template #label>
             {{ $options.i18n.requestHeaders.label }}

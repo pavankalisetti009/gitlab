@@ -74,9 +74,11 @@ export default {
     class="item-body -gl-mx-2 gl-flex gl-items-center gl-px-3"
   >
     <div
-      class="item-contents flex-xl-nowrap gl-flex gl-min-h-7 gl-grow gl-flex-wrap gl-items-center"
+      class="item-contents gl-flex gl-min-h-7 gl-grow gl-flex-wrap gl-items-center @xl/panel:!gl-flex-nowrap"
     >
-      <div class="item-title align-items-xl-center mb-xl-0 gl-min-w-0 sm:gl-flex">
+      <div
+        class="item-title gl-min-w-0 @sm/panel:gl-flex @xl/panel:!gl-mb-0 @xl/panel:!gl-items-center"
+      >
         <gl-icon
           class="gl-mr-3"
           :name="getLinkIcon(iconName)"

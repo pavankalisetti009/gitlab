@@ -273,7 +273,7 @@ export default {
     </div>
 
     <div v-if="isLoading" class="loading gl-text-center">
-      <gl-loading-icon class="mt-5" size="lg" />
+      <gl-loading-icon class="!gl-mt-7" size="lg" />
     </div>
     <template v-else>
       <div>

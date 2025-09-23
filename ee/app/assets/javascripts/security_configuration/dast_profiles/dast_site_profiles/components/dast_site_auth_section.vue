@@ -136,8 +136,8 @@ export default {
           <div
             v-for="option in formFields"
             :key="option.fieldName"
-            class="col-md-6"
-            :class="{ 'col-md-12': stacked, 'lg:gl-mr-10': option.newLine && !stacked }"
+            class="gl-col-md-6"
+            :class="{ 'gl-col-md-12': stacked, '@lg/panel:gl-mr-10': option.newLine && !stacked }"
           >
             <gl-form-group
               v-if="!option.showBasicAuthOption"

@@ -15,7 +15,7 @@ import { getIdFromGraphQLId } from '~/graphql_shared/utils';
 import { FLOW_TRIGGERS_EDIT_ROUTE } from '../../../../router/constants';
 
 const thClass = 'gl-whitespace-nowrap';
-const truncateClasses = 'md:gl-truncate md:gl-max-w-0 md:gl-whitespace-nowrap';
+const truncateClasses = '@md/panel:gl-truncate @md/panel:gl-max-w-0 @md/panel:gl-whitespace-nowrap';
 
 export default {
   name: 'FlowTriggersTable',

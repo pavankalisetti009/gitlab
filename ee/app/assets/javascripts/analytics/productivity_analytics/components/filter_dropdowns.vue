@@ -62,11 +62,13 @@ export default {
 </script>
 
 <template>
-  <div class="dropdown-container flex-column flex-lg-row gl-w-100 gl-my-3 gl-flex lg:gl-my-0">
+  <div
+    class="dropdown-container gl-w-100 gl-my-3 gl-flex !gl-flex-col @lg/panel:gl-my-0 @lg/panel:!gl-flex-row"
+  >
     <projects-dropdown-filter
       v-if="showProjectsDropdownFilter"
       :key="groupId"
-      class="project-select lg:gl-mr-5"
+      class="project-select @lg/panel:gl-mr-5"
       toggle-classes="gl-max-w-26"
       :default-projects="projects"
       :query-params="projectsQueryParams"

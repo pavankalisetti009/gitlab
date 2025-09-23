@@ -5,7 +5,7 @@ exports[`Learn GitLab Initial rendering concerns renders correctly 1`] = `
   data-testid="learn-gitlab-page"
 >
   <div
-    class="gl-flex gl-flex-col gl-items-center gl-justify-between sm:gl-flex-row"
+    class="@sm/panel:gl-flex-row gl-flex gl-flex-col gl-items-center gl-justify-between"
   >
     <div
       class="gl-self-start"
@@ -50,7 +50,7 @@ exports[`Learn GitLab Initial rendering concerns renders correctly 1`] = `
     class="row"
   >
     <div
-      class="col-lg-4 col-mb-6 col-sm-12 gl-mt-5"
+      class="col-mb-6 gl-col-lg-4 gl-col-sm-12 gl-mt-5"
     >
       <div
         class="gl-card gl-h-full gl-pt-0"
@@ -134,7 +134,7 @@ exports[`Learn GitLab Initial rendering concerns renders correctly 1`] = `
     class="row"
   >
     <div
-      class="col-lg-4 col-mb-6 col-sm-12 gl-mt-5"
+      class="col-mb-6 gl-col-lg-4 gl-col-sm-12 gl-mt-5"
     >
       <div
         class="gl-card gl-h-full gl-pt-0"
@@ -299,7 +299,7 @@ exports[`Learn GitLab Initial rendering concerns renders correctly 1`] = `
       </div>
     </div>
     <div
-      class="col-lg-4 col-mb-6 col-sm-12 gl-mt-5"
+      class="col-mb-6 gl-col-lg-4 gl-col-sm-12 gl-mt-5"
     >
       <div
         class="gl-card gl-h-full gl-pt-0"
@@ -410,7 +410,7 @@ exports[`Learn GitLab Initial rendering concerns renders correctly 1`] = `
       </div>
     </div>
     <div
-      class="col-lg-4 col-mb-6 col-sm-12 gl-mt-5"
+      class="col-mb-6 gl-col-lg-4 gl-col-sm-12 gl-mt-5"
     >
       <div
         class="gl-card gl-h-full gl-pt-0"

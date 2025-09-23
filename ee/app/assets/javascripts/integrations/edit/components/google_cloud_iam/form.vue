@@ -72,7 +72,7 @@ export default {
     <configuration
       :fields="gcProjectFields"
       field-class="gl-grow gl-basis-0"
-      class="gl-mb-4 gl-flex-row gl-gap-5 md:gl-flex"
+      class="gl-mb-4 gl-flex-row gl-gap-5 @md/panel:gl-flex"
       v-on="$listeners"
     />
 
@@ -88,7 +88,7 @@ export default {
     <configuration
       :fields="workloadIdentityFields"
       field-class="gl-grow gl-basis-0"
-      class="gl-mb-6 gl-flex-row gl-gap-5 md:gl-flex"
+      class="gl-mb-6 gl-flex-row gl-gap-5 @md/panel:gl-flex"
       v-on="$listeners"
     />
   </div>

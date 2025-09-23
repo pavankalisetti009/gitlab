@@ -83,7 +83,7 @@ export default {
       key: 'actions',
       label: i18n.actionsHeader,
       thAlignRight: true,
-      tdClass: 'text-nowrap md:!gl-pl-0 md:!gl-pr-0',
+      tdClass: '!gl-whitespace-nowrap @md/panel:!gl-pl-0 @md/panel:!gl-pr-0',
     },
   ],
   helpUrl: helpPagePath('/user/project/merge_requests/status_checks'),

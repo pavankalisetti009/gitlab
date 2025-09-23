@@ -54,7 +54,7 @@ export default {
 
 <template>
   <div v-if="pageInfo" class="gl-flex gl-items-center gl-justify-between">
-    <div class="gl-hidden gl-grow gl-basis-0 md:gl-block"></div>
+    <div class="gl-hidden gl-grow gl-basis-0 @md/panel:gl-block"></div>
     <div class="gl-flex gl-grow gl-basis-0 gl-justify-center">
       <gl-keyset-pagination
         v-bind="pageInfo"

@@ -105,7 +105,7 @@ export default {
         :options="selectiveSyncTypes"
         value-field="value"
         text-field="label"
-        class="col-sm-3"
+        class="gl-col-sm-3"
       />
       <!-- eslint-enable vue/no-mutating-props -->
     </gl-form-group>

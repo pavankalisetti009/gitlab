@@ -57,7 +57,7 @@ export default {
         :aria-label="chevronLabel"
         @click="$emit('collapse')"
       />
-      <div class="gl-flex gl-grow gl-flex-col md:gl-flex-row md:gl-items-center">
+      <div class="gl-flex gl-grow gl-flex-col @md/panel:gl-flex-row @md/panel:gl-items-center">
         <div class="gl-flex gl-grow gl-basis-0 gl-items-center">
           <h4 class="gl-text-lg">{{ site.name }}</h4>
         </div>

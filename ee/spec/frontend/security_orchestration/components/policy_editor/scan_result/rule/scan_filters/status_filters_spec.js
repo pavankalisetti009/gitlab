@@ -135,7 +135,7 @@ describe('StatusFilters', () => {
       expect(findStatusFilters().at(1).classes()).toContain('gl-pt-2');
 
       expect(findStatusFilters().at(0).props('labelClasses')).toContain(
-        '!gl-text-base !gl-w-10 md:!gl-w-12 !gl-pl-0 !gl-font-bold',
+        '!gl-text-base !gl-w-10 @md/panel:!gl-w-12 !gl-pl-0 !gl-font-bold',
       );
       expect(findStatusFilters().at(1).props('labelClasses')).toContain('!gl-w-12 !gl-pl-0');
 

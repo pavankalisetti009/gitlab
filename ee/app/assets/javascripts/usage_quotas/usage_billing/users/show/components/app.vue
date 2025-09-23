@@ -74,7 +74,7 @@ export default {
     <template v-else>
       <header class="gl-my-5 gl-flex gl-flex-col gl-gap-3">
         <div
-          class="gl-mb-2 gl-flex gl-flex-col gl-items-start gl-justify-between gl-gap-3 md:gl-flex-row"
+          class="gl-mb-2 gl-flex gl-flex-col gl-items-start gl-justify-between gl-gap-3 @md/panel:gl-flex-row"
         >
           <div class="gl-flex gl-items-center">
             <gl-avatar
@@ -111,7 +111,7 @@ export default {
         </div>
       </header>
 
-      <dl class="gl-my-5 gl-flex gl-flex-col gl-gap-5 md:gl-flex-row">
+      <dl class="gl-my-5 gl-flex gl-flex-col gl-gap-5 @md/panel:gl-flex-row">
         <gl-card data-testid="month-summary-card" class="gl-flex-1 gl-bg-transparent">
           <dd class="gl-font-heading gl-heading-scale-400 gl-mb-3">
             {{ userUsage.allocationUsed }} / {{ userUsage.allocationTotal }}

@@ -107,8 +107,8 @@ export default {
     </template>
     <template #tooltip-content>
       <div class="gl-flex">
-        <div class="flex-grow-1">{{ yAxisTitle }}:&nbsp;</div>
-        <div class="font-weight-bold">{{ tooltipContent }}</div>
+        <div class="!gl-grow">{{ yAxisTitle }}:&nbsp;</div>
+        <div class="!gl-font-bold">{{ tooltipContent }}</div>
       </div>
     </template>
   </gl-discrete-scatter-chart>

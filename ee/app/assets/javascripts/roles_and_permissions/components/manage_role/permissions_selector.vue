@@ -268,7 +268,7 @@ export default {
       </template>
 
       <template #cell(name)="{ item }">
-        <span :class="{ 'gl-text-danger': !isValid }" class="md:gl-whitespace-nowrap">
+        <span :class="{ 'gl-text-danger': !isValid }" class="@md/panel:gl-whitespace-nowrap">
           {{ item.name }}
 
           <gl-badge v-if="item.disabled" variant="info" class="gl-ml-2">

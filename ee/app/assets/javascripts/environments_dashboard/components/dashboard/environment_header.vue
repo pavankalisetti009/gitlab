@@ -49,8 +49,8 @@ export default {
 </script>
 
 <template>
-  <div :class="headerClasses" class="card-header border-0 gl-flex gl-items-center gl-py-3">
-    <div class="flex-grow-1 gl-truncate">
+  <div :class="headerClasses" class="card-header gl-flex gl-items-center !gl-border-0 gl-py-3">
+    <div class="!gl-grow gl-truncate">
       <gl-link
         v-gl-tooltip
         class="js-environment-link gl-text-default"

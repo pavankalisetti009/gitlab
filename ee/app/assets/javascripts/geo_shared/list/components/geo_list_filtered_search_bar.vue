@@ -89,7 +89,9 @@ export default {
 
 <template>
   <div class="row-content-block">
-    <div class="gl-flex gl-grow gl-flex-col gl-border-t-0 sm:gl-flex sm:gl-flex-row sm:gl-gap-3">
+    <div
+      class="gl-flex gl-grow gl-flex-col gl-border-t-0 @sm/panel:gl-flex @sm/panel:gl-flex-row @sm/panel:gl-gap-3"
+    >
       <label id="listbox-select-label" class="gl-sr-only">{{ listboxHeaderText }}</label>
       <gl-collapsible-listbox
         v-model="listboxItem"
@@ -97,10 +99,10 @@ export default {
         :header-text="listboxHeaderText"
         searchable
         toggle-aria-labelled-by="listbox-select-label"
-        class="gl-mb-4 sm:gl-mb-0"
+        class="gl-mb-4 @sm/panel:gl-mb-0"
         @search="handleListboxSearch"
       />
-      <div class="flex-grow-1 gl-flex gl-grow gl-flex-col sm:gl-flex-row sm:gl-gap-3">
+      <div class="gl-flex !gl-grow gl-grow gl-flex-col @sm/panel:gl-flex-row @sm/panel:gl-gap-3">
         <geo-list-filtered-search
           :active-filters="activeFilteredSearchFilters"
           :filtered-search-option-label="filteredSearchOptionLabel"

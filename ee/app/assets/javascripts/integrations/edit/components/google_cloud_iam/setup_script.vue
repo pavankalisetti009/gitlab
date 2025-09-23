@@ -122,7 +122,7 @@ gcloud iam workload-identity-pools providers create-oidc "${this.identityProvide
           }}
         </p>
 
-        <div class="position-relative">
+        <div class="!gl-relative">
           <code-block-highlighted
             class="gl-border gl-p-4"
             language="powershell"
@@ -132,7 +132,7 @@ gcloud iam workload-identity-pools providers create-oidc "${this.identityProvide
             :text="gCloudCommands"
             :title="__('Copy command')"
             category="tertiary"
-            class="position-absolute position-top-0 position-right-0 gl-m-3 gl-hidden md:gl-flex"
+            class="position-top-0 position-right-0 !gl-absolute gl-m-3 gl-hidden @md/panel:gl-flex"
           />
         </div>
       </li>

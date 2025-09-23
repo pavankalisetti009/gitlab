@@ -96,7 +96,7 @@ export default {
           </span>
           <span
             :title="flag.reference"
-            class="gl-mt-3 gl-whitespace-nowrap gl-text-subtle lg:gl-ml-3 lg:gl-mt-0"
+            class="gl-mt-3 gl-whitespace-nowrap gl-text-subtle @lg/panel:gl-ml-3 @lg/panel:gl-mt-0"
             data-testid="feature-flag-details-reference"
           >
             <gl-truncate :text="flag.reference" />

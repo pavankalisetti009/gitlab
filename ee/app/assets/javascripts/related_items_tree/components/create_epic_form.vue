@@ -117,7 +117,7 @@ export default {
 
 <template>
   <form @submit.prevent="onFormSubmit">
-    <div class="row mb-3">
+    <div class="row !gl-mb-5">
       <div class="col-sm">
         <label class="label-bold">{{ s__('Issue|Title') }}</label>
         <gl-form-input

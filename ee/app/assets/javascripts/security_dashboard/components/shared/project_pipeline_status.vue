@@ -54,7 +54,7 @@ export default {
 </script>
 
 <template>
-  <div class="gl-border-b gl-bg-subtle gl-p-5 lg:gl-flex">
+  <div class="gl-border-b gl-bg-subtle gl-p-5 @lg/panel:gl-flex">
     <div class="gl-flex gl-items-center" data-testid="pipeline">
       <span class="gl-mr-3 gl-font-bold">{{ $options.i18n.lastUpdated }}</span
       ><span class="gl-whitespace-nowrap">
@@ -74,9 +74,12 @@ export default {
     </div>
 
     <template v-if="showSbomPipelineStatus">
-      <div class="gl-mx-3 gl-hidden lg:gl-block" data-testid="pipeline-divider">•</div>
+      <div class="gl-mx-3 gl-hidden @lg/panel:gl-block" data-testid="pipeline-divider">•</div>
 
-      <div class="gl-mt-5 gl-items-center md:gl-flex lg:gl-mt-0" data-testid="sbom-pipeline">
+      <div
+        class="gl-mt-5 gl-items-center @md/panel:gl-flex @lg/panel:gl-mt-0"
+        data-testid="sbom-pipeline"
+      >
         <div>
           <span class="gl-mr-3 gl-font-bold">{{ $options.i18n.sbomLastUpdated }}</span
           ><span class="gl-whitespace-nowrap">
@@ -89,7 +92,7 @@ export default {
         </div>
         <div
           v-if="sbomParsingStatusMessage"
-          class="gl-ml-2 gl-mr-3 gl-mt-5 gl-font-bold gl-text-orange-400 md:gl-mt-0"
+          class="gl-ml-2 gl-mr-3 gl-mt-5 gl-font-bold gl-text-orange-400 @md/panel:gl-mt-0"
           data-testid="parsing-status-notice"
         >
           <gl-icon name="warning" class="gl-mr-3" />{{ sbomParsingStatusMessage }}

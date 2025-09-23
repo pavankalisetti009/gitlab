@@ -187,7 +187,7 @@ export default {
 
       <stage-field-actions
         v-if="hasMultipleStages"
-        class="gl-mt-3 sm:!gl-mt-7"
+        class="gl-mt-3 @sm/panel:!gl-mt-7"
         :index="index"
         :can-remove="true"
         @remove="$emit('remove', $event)"

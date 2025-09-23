@@ -56,18 +56,18 @@ export default {
 </script>
 
 <template>
-  <div class="gl-mb-3 gl-flex gl-flex-col gl-gap-3 md:gl-flex-row">
+  <div class="gl-mb-3 gl-flex gl-flex-col gl-gap-3 @md/panel:gl-flex-row">
     <date-range-buttons :date-range="defaultDateRange" @input="onInput" />
     <gl-daterange-picker
-      class="daterange-picker md:gl-flex"
+      class="daterange-picker @md/panel:gl-flex"
       :default-start-date="defaultStartDate"
       :default-end-date="defaultEndDate"
       :default-max-date="$options.CURRENT_DATE"
       :max-date-range="$options.MAX_DATE_RANGE"
       :same-day-selection="true"
       :tooltip="$options.i18n.dateRangeTooltip"
-      start-picker-class="md:gl-flex lg:gl-items-end"
-      end-picker-class="md:gl-flex lg:gl-items-end"
+      start-picker-class="@md/panel:gl-flex @lg/panel:gl-items-end"
+      end-picker-class="@md/panel:gl-flex @lg/panel:gl-items-end"
       date-range-indicator-class="gl-whitespace-nowrap"
       @input="onInput"
     >

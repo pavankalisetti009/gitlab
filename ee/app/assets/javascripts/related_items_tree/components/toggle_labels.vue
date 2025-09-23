@@ -46,7 +46,7 @@ export default {
 </script>
 
 <template>
-  <div class="board-labels-toggle-wrapper gl-flex gl-h-7 gl-items-center md:gl-ml-3">
+  <div class="board-labels-toggle-wrapper gl-flex gl-h-7 gl-items-center @md/panel:gl-ml-3">
     <local-storage-sync :value="isShowingLabels" :storage-key="storageKey" @input="setShowLabels" />
     <gl-toggle
       :value="isShowingLabels"

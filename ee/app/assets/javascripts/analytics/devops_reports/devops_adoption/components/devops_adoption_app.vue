@@ -315,7 +315,7 @@ export default {
       </gl-tab>
 
       <template #toolbar-end>
-        <span class="nav-item gl-hidden gl-grow gl-self-center md:gl-block" align="right">
+        <span class="nav-item gl-hidden gl-grow gl-self-center @md/panel:gl-block" align="right">
           <devops-adoption-add-dropdown
             :groups="availableGroups"
             :enabled-namespaces="devopsAdoptionEnabledNamespaces"

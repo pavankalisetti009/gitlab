@@ -56,7 +56,7 @@ export default {
 };
 </script>
 <template>
-  <div class="devops-overview-card gl-mb-4 gl-flex gl-grow gl-flex-col md:gl-mr-5">
+  <div class="devops-overview-card gl-mb-4 gl-flex gl-grow gl-flex-col @md/panel:gl-mr-5">
     <div class="gl-mb-3 gl-flex gl-items-center" data-testid="card-title">
       <gl-icon :name="icon" class="gl-mr-3" variant="subtle" />
       <gl-button
@@ -72,7 +72,7 @@ export default {
     <gl-progress-bar
       :value="adoptedCount"
       :max="featuresCount"
-      class="gl-mb-2 md:gl-mr-5"
+      class="gl-mb-2 @md/panel:gl-mr-5"
       :height="$options.progressBarHeight"
     />
     <div class="gl-mb-1 gl-text-subtle" data-testid="card-description">{{ description }}</div>

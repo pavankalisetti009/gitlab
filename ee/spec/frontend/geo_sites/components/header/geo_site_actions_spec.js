@@ -47,12 +47,12 @@ describe('GeoSiteActions', () => {
 
     it('renders mobile actions with correct visibility class always', () => {
       expect(findGeoMobileActions().exists()).toBe(true);
-      expect(findGeoMobileActions().classes()).toStrictEqual(['lg:gl-hidden']);
+      expect(findGeoMobileActions().classes()).toStrictEqual(['@lg/panel:gl-hidden']);
     });
 
     it('renders desktop actions with correct visibility class always', () => {
       expect(findGeoDesktopActions().exists()).toBe(true);
-      expect(findGeoDesktopActions().classes()).toStrictEqual(['gl-hidden', 'lg:gl-flex']);
+      expect(findGeoDesktopActions().classes()).toStrictEqual(['gl-hidden', '@lg/panel:gl-flex']);
     });
   });
 

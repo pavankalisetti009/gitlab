@@ -298,7 +298,7 @@ export default {
         :items="approverInfo"
         data-testid="approval-rules"
         stacked="md"
-        class="-gl-mb-5 md:gl-mb-0"
+        class="-gl-mb-5 @md/panel:gl-mb-0"
       >
         <template #cell(approvers)="{ item: approver, index }">
           <gl-avatar

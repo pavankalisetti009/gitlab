@@ -56,22 +56,23 @@ export default {
 <template>
   <div class="mr-table">
     <div class="card">
-      <div role="table" class="card-header border-bottom-0 gl-bg-transparent gl-font-bold">
+      <div role="table" class="card-header !gl-border-b-0 gl-bg-transparent gl-font-bold">
         <div
           role="row"
-          class="gl-responsive-table-row table-row-header gl-border-b gl-flex gl-border-1 gl-border-none gl-py-0 gl-border-b-solid md:gl-border-b-0"
+          class="gl-responsive-table-row table-row-header gl-border-b gl-flex gl-border-1 gl-border-none gl-py-0 gl-border-b-solid @md/panel:gl-border-b-0"
         >
           <div
             role="rowheader"
-            class="table-section section-50 gl-hidden gl-border-none gl-px-0 md:gl-flex"
+            class="table-section section-50 gl-hidden gl-border-none gl-px-0 @md/panel:gl-flex"
           >
             {{ __('Title') }}
           </div>
           <div role="rowheader" class="table-section section-50 !gl-border-none gl-px-0">
             <div class="gl-flex">
-              <span class="gl-hidden gl-max-w-1/2 gl-shrink-0 gl-grow-0 gl-basis-1/2 md:gl-flex">{{
-                __('Time to merge')
-              }}</span>
+              <span
+                class="gl-hidden gl-max-w-1/2 gl-shrink-0 gl-grow-0 gl-basis-1/2 @md/panel:gl-flex"
+                >{{ __('Time to merge') }}</span
+              >
 
               <gl-collapsible-listbox
                 block
@@ -89,7 +90,7 @@ export default {
           </div>
         </div>
       </div>
-      <div class="card-body py-0">
+      <div class="card-body !gl-py-0">
         <merge-request-table-row
           v-for="model in mergeRequests"
           :key="model.id"
@@ -104,7 +105,7 @@ export default {
       v-if="showPagination"
       :change="onPageChange"
       :page-info="pageInfo"
-      class="justify-content-center gl-mt-3"
+      class="gl-mt-3 !gl-justify-center"
     />
   </div>
 </template>

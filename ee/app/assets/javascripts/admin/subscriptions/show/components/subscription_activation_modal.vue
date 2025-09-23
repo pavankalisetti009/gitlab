@@ -99,7 +99,7 @@ export default {
     @hidden="removeError"
     @change="handleChange"
   >
-    <subscription-activation-errors v-if="error" class="mb-4" :error="error" />
+    <subscription-activation-errors v-if="error" class="!gl-mb-6" :error="error" />
     <subscription-activation-form
       ref="form"
       :hide-submit-button="true"

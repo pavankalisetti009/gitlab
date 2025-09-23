@@ -48,7 +48,7 @@ export default {
 
 <template>
   <div class="row">
-    <div class="col-12">
+    <div class="gl-col-12">
       <h3 class="gl-mb-7 gl-mt-6 gl-text-center" data-testid="subscription-activation-title">
         {{ $options.i18n.noActiveSubscription }}
       </h3>
@@ -65,20 +65,20 @@ export default {
           <template #date>{{ nextFutureDatedLicenseDate }}</template>
         </gl-sprintf>
       </gl-alert>
-      <div v-if="hasItems && hasFutureDatedLicense" class="col-12 gl-mt-5">
+      <div v-if="hasItems && hasFutureDatedLicense" class="gl-col-12 gl-mt-5">
         <subscription-details-history :subscription-list="subscriptionList" />
       </div>
 
       <div class="row gl-mt-7">
-        <div class="col-lg-6 sm:gl-mb-7">
+        <div class="gl-col-lg-6 @sm/panel:gl-mb-7">
           <subscription-trial-card />
         </div>
-        <div class="col-lg-6">
+        <div class="gl-col-lg-6">
           <subscription-purchase-card />
         </div>
       </div>
 
-      <div v-if="hasItems && !hasFutureDatedLicense" class="col-12 gl-mt-5">
+      <div v-if="hasItems && !hasFutureDatedLicense" class="gl-col-12 gl-mt-5">
         <subscription-details-history :subscription-list="subscriptionList" />
       </div>
     </div>

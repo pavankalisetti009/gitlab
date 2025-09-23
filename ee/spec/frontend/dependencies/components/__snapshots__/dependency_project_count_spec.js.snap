@@ -12,12 +12,12 @@ exports[`Dependency Project Count component renders toggle text 1`] = `
   variant="link"
 >
   <span
-    class="md:gl-hidden"
+    class="@md/panel:gl-hidden"
   >
     1
   </span>
   <span
-    class="gl-hidden md:gl-inline-flex"
+    class="@md/panel:gl-inline-flex gl-hidden"
   >
     1 project
   </span>

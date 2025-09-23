@@ -64,7 +64,7 @@ export default {
       <gl-form-input
         id="settings-timeout-field"
         v-model="timeout"
-        class="col-sm-2"
+        class="gl-col-sm-2"
         type="number"
         number
         :class="{ 'is-invalid': Boolean(formErrors.timeout) }"
@@ -81,7 +81,7 @@ export default {
       <gl-form-input
         id="settings-allowed-ip-field"
         v-model="allowedIp"
-        class="col-sm-6"
+        class="gl-col-sm-6"
         type="text"
         :class="{ 'is-invalid': Boolean(formErrors.allowedIp) }"
         @blur="checkAllowedIp"

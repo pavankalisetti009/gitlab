@@ -113,7 +113,7 @@ export default {
         :disabled="loading"
         :label="availabilityText"
         label-position="hidden"
-        class="flex-row"
+        class="!gl-flex-row"
         @change="toggleAvailability"
       />
       <p data-test-id="availability-text" class="gl-mb-0">{{ availabilityText }}</p>

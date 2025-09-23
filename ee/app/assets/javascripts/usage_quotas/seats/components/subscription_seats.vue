@@ -116,7 +116,7 @@ export default {
     <div class="gl-bg-subtle gl-p-5">
       <div
         v-if="isLoaderShown"
-        class="gl-grid gl-gap-5 md:gl-grid-cols-2"
+        class="gl-grid gl-gap-5 @md/panel:gl-grid-cols-2"
         data-testid="skeleton-loader-cards"
       >
         <div class="gl-border gl-rounded-base gl-bg-default gl-p-5">
@@ -135,7 +135,7 @@ export default {
           </gl-skeleton-loader>
         </div>
       </div>
-      <div v-else class="gl-grid gl-gap-5 md:gl-grid-cols-2">
+      <div v-else class="gl-grid gl-gap-5 @md/panel:gl-grid-cols-2">
         <subscription-seats-statistics-card
           :billable-members-count="billableMembersCount"
           :has-free-plan="hasFreePlan"

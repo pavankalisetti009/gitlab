@@ -104,7 +104,7 @@ export default {
       />
     </div>
     <div v-if="selectedGroupId" data-testid="plan-sections-container">
-      <div class="gl-flex gl-flex-col md:gl-flex-row">
+      <div class="gl-flex gl-flex-col @md/panel:gl-flex-row">
         <free-plan-section v-if="!trialActive" data-testid="free-plan-section" />
         <trial-plan-section v-if="trialActive" data-testid="trial-plan-section" />
         <premium-plan-section

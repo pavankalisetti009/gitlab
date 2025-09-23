@@ -27,7 +27,7 @@ const tdClass =
     // Don't draw a border between a row and its `row-details` slot
     // eslint-disable-next-line no-underscore-dangle
     if (item._showDetails) {
-      classes.push('border-bottom-0');
+      classes.push('!gl-border-b-0');
     }
 
     return classes;
@@ -39,7 +39,7 @@ const sharedFields = [
   {
     key: 'location',
     label: DEPENDENCIES_TABLE_I18N.location,
-    tdClass: tdClass(['md:gl-max-w-26']),
+    tdClass: tdClass(['@md/panel:gl-max-w-26']),
   },
   { key: 'license', label: DEPENDENCIES_TABLE_I18N.license, tdClass: tdClass() },
 ];
@@ -194,7 +194,7 @@ export default {
       :items="localDependencies"
       :busy="isLoading"
       data-testid="dependencies-table-content"
-      details-td-class="pt-0"
+      details-td-class="!gl-pt-0"
       stacked="md"
       show-empty
     >
@@ -221,7 +221,7 @@ export default {
       <template #cell(component)="{ item, toggleDetails, detailsShowing }">
         <gl-button
           v-if="anyDependencyHasVulnerabilities"
-          class="gl-hidden md:gl-inline"
+          class="gl-hidden @md/panel:gl-inline"
           :class="{ invisible: !item.vulnerabilityCount }"
           category="tertiary"
           size="small"
@@ -272,7 +272,7 @@ export default {
           href="#"
           @click="rowExpanded(toggleDetails, item)"
         >
-          <gl-icon name="warning" class="mr-1" variant="warning" />
+          <gl-icon name="warning" class="!gl-mr-2" variant="warning" />
           {{
             n__(
               'Dependencies|%d vulnerability detected',
@@ -285,11 +285,15 @@ export default {
 
       <template #row-details="{ item }">
         <gl-loading-icon v-if="vulnerabilityItemsLoading.includes(item)" size="md" />
-        <dependency-vulnerabilities v-else class="ml-4" :vulnerabilities="vulnerabilities(item)" />
+        <dependency-vulnerabilities
+          v-else
+          class="!gl-ml-6"
+          :vulnerabilities="vulnerabilities(item)"
+        />
       </template>
 
       <template #table-busy>
-        <div class="mt-2">
+        <div class="!gl-mt-3">
           <gl-skeleton-loader v-for="n in $options.DEPENDENCIES_PER_PAGE" :key="n" :lines="1" />
         </div>
       </template>

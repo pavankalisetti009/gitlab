@@ -118,12 +118,12 @@ export default {
       <h2 class="gl-my-7 gl-text-center gl-text-size-h1" data-testid="new-framework-page-title">
         {{ s__('ComplianceFramework|Create new framework') }}
       </h2>
-      <section class="gl-flex gl-flex-col gl-gap-5 md:gl-flex-row">
+      <section class="gl-flex gl-flex-col gl-gap-5 @md/panel:gl-flex-row">
         <a
           v-for="panel in panels"
           :key="panel.name"
           :data-testid="`new-framework-${panel.name}`"
-          class="gl-flex gl-cursor-pointer gl-flex-col gl-items-center gl-rounded-base gl-border-1 gl-border-solid gl-border-default gl-px-3 gl-py-6 hover:!gl-no-underline md:gl-w-1/2 lg:gl-flex-row"
+          class="gl-flex gl-cursor-pointer gl-flex-col gl-items-center gl-rounded-base gl-border-1 gl-border-solid gl-border-default gl-px-3 gl-py-6 hover:!gl-no-underline @md/panel:gl-w-1/2 @lg/panel:gl-flex-row"
           @click="panel.onClick"
         >
           <div class="gl-flex gl-shrink-0 gl-justify-center">

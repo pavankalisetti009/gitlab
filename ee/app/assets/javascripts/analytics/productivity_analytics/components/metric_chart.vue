@@ -87,13 +87,13 @@ export default {
 <template>
   <div>
     <h5 v-if="title">{{ title }}</h5>
-    <gl-loading-icon v-if="isLoading" size="lg" class="my-4 py-4" />
+    <gl-loading-icon v-if="isLoading" size="lg" class="!gl-my-6 !gl-py-6" />
     <template v-else>
       <gl-alert v-if="infoMessage" :dismissible="false">{{ infoMessage }}</gl-alert>
       <template v-else>
         <gl-collapsible-listbox
           v-if="hasMetricTypes"
-          class="metric-dropdown gl-mb-4 gl-w-full sm:gl-w-auto"
+          class="metric-dropdown gl-mb-4 gl-w-full @sm/panel:gl-w-auto"
           fluid-width
           is-check-centered
           toggle-class="dropdown-menu-toggle !gl-w-full"

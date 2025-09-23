@@ -181,7 +181,7 @@ export default {
 
     <div
       v-if="selectedTab"
-      class="security-policies-exceptions-modal-height gl-border-t gl-flex gl-w-full gl-flex-col md:gl-flex-row"
+      class="security-policies-exceptions-modal-height gl-border-t gl-flex gl-w-full gl-flex-col @md/panel:gl-flex-row"
     >
       <roles-selector
         v-if="tabSelected($options.ROLES)"

@@ -8,15 +8,15 @@ exports[`MergeRequestTable component matches the snapshot 1`] = `
     class="card"
   >
     <div
-      class="border-bottom-0 card-header gl-bg-transparent gl-font-bold"
+      class="!gl-border-b-0 card-header gl-bg-transparent gl-font-bold"
       role="table"
     >
       <div
-        class="gl-border-1 gl-border-b gl-border-b-solid gl-border-none gl-flex gl-py-0 gl-responsive-table-row md:gl-border-b-0 table-row-header"
+        class="@md/panel:gl-border-b-0 gl-border-1 gl-border-b gl-border-b-solid gl-border-none gl-flex gl-py-0 gl-responsive-table-row table-row-header"
         role="row"
       >
         <div
-          class="gl-border-none gl-hidden gl-px-0 md:gl-flex section-50 table-section"
+          class="@md/panel:gl-flex gl-border-none gl-hidden gl-px-0 section-50 table-section"
           role="rowheader"
         >
           Title
@@ -29,7 +29,7 @@ exports[`MergeRequestTable component matches the snapshot 1`] = `
             class="gl-flex"
           >
             <span
-              class="gl-basis-1/2 gl-grow-0 gl-hidden gl-max-w-1/2 gl-shrink-0 md:gl-flex"
+              class="@md/panel:gl-flex gl-basis-1/2 gl-grow-0 gl-hidden gl-max-w-1/2 gl-shrink-0"
             >
               Time to merge
             </span>
@@ -60,7 +60,7 @@ exports[`MergeRequestTable component matches the snapshot 1`] = `
       </div>
     </div>
     <div
-      class="card-body py-0"
+      class="!gl-py-0 card-body"
     >
       <merge-request-table-row-stub
         mergerequest="[object Object]"

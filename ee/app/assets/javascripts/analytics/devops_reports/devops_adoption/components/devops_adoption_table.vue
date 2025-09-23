@@ -114,7 +114,7 @@ export default {
         })),
         {
           key: 'actions',
-          tdClass: 'actions-cell text-right',
+          tdClass: 'actions-cell !gl-text-right',
           ...fieldOptions,
           sortable: false,
           label: I18N_TABLE_ACTIONS_LABEL,

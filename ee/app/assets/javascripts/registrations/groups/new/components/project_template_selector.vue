@@ -118,7 +118,7 @@ export default {
 </script>
 <template>
   <gl-form-group
-    class="col-sm-12"
+    class="gl-col-sm-12"
     optional
     :label="$options.i18n.templateNameLabel"
     :optional-text="$options.i18n.templateNameOptional"

@@ -30,7 +30,7 @@ export default {
 <template>
   <section class="gl-mb-6 gl-flex gl-flex-wrap">
     <analytics-clipboard-input
-      class="gl-mb-6 gl-mr-6 md:gl-mb-0"
+      class="gl-mb-6 gl-mr-6 @md/panel:gl-mb-0"
       data-testid="sdk-host-container"
       :label="$options.i18n.sdkHost"
       :description="$options.i18n.sdkHostDescription"

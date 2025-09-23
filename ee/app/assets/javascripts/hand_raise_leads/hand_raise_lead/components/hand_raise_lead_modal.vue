@@ -84,7 +84,7 @@ export default {
         attributes: {
           variant: 'confirm',
           disabled: !this.canSubmit,
-          class: 'gl-w-full sm:gl-w-auto',
+          class: 'gl-w-full @sm/panel:gl-w-auto',
         },
       };
     },
@@ -92,7 +92,7 @@ export default {
       return {
         text: this.$options.i18n.modalCancel,
         attributes: {
-          class: 'gl-w-full sm:gl-w-auto',
+          class: 'gl-w-full @sm/panel:gl-w-auto',
         },
       };
     },
@@ -206,7 +206,7 @@ export default {
         :label="$options.i18n.firstNameLabel"
         label-size="sm"
         label-for="first-name"
-        class="mr-3 w-50"
+        class="!gl-mr-5 !gl-w-1/2"
       >
         <gl-form-input
           id="first-name"
@@ -220,7 +220,7 @@ export default {
         :label="$options.i18n.lastNameLabel"
         label-size="sm"
         label-for="last-name"
-        class="w-50"
+        class="!gl-w-1/2"
       >
         <gl-form-input
           id="last-name"
@@ -236,7 +236,7 @@ export default {
         :label="$options.i18n.companyNameLabel"
         label-size="sm"
         label-for="company-name"
-        class="mr-3 w-50"
+        class="!gl-mr-5 !gl-w-1/2"
       >
         <gl-form-input
           id="company-name"

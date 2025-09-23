@@ -190,7 +190,10 @@ export default {
     :title="subscriptionHeader"
     :is-loading="isLoading && !hasErrorSubscription"
     class="subscription-table js-subscription-table gl-mt-5"
-    :body-class="['gl-flex-col sm:gl-flex-row lg:gl-flex-col flex-grid', { '!gl-m-0': !isLoading }]"
+    :body-class="[
+      'gl-flex-col @sm/panel:gl-flex-row @lg/panel:gl-flex-col flex-grid',
+      { '!gl-m-0': !isLoading },
+    ]"
   >
     <template v-if="!readOnly" #actions>
       <gl-button

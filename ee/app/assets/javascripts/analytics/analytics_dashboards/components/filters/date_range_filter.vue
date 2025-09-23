@@ -110,11 +110,11 @@ export default {
 <template>
   <div
     data-testid="dashboard-filters-date-range"
-    class="gl-flex gl-w-full gl-gap-3 sm:gl-w-auto sm:gl-flex-row"
+    class="gl-flex gl-w-full gl-gap-3 @sm/panel:gl-w-auto @sm/panel:gl-flex-row"
     :class="{ 'gl-flex-col': selectedItem.showDateRangePicker }"
   >
     <gl-collapsible-listbox
-      class="gl-w-full sm:gl-w-auto"
+      class="gl-w-full @sm/panel:gl-w-auto"
       :items="dropdownItems"
       :selected="selectedItem.key"
       @select="selectItem($event)"

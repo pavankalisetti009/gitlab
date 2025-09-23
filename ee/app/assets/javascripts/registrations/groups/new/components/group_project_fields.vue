@@ -169,7 +169,7 @@ export default {
   <div>
     <div class="row">
       <gl-form-group
-        class="group-name-holder col-sm-12"
+        class="group-name-holder gl-col-sm-12"
         :label="$options.i18n.groupNameLabel"
         :label-for="groupInputAttr('group_name')"
       >
@@ -220,7 +220,7 @@ export default {
 
     <div v-if="!importGroup" id="blank-project-name" class="row">
       <gl-form-group
-        class="project-name col-sm-12"
+        class="project-name gl-col-sm-12"
         :label="$options.i18n.projectNameLabel"
         label-for="blank_project_name"
       >

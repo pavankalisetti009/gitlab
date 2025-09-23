@@ -284,7 +284,7 @@ export default {
       <section v-else-if="hasAddOnPurchase">
         <slot name="duo-card" v-bind="{ totalValue, usageValue, activeDuoTier, addOnPurchases }">
           <template v-if="areSeatsAssignable">
-            <section class="gl-grid gl-gap-5 md:gl-grid-cols-2">
+            <section class="gl-grid gl-gap-5 @md/panel:gl-grid-cols-2">
               <code-suggestions-statistics-card
                 :total-value="totalValue"
                 :usage-value="usageValue"

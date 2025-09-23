@@ -2,7 +2,7 @@
 
 exports[`DependencVulnerabilities component given a huge number vulnerabilities renders the excess message 1`] = `
 <li
-  class="gl-text-subtle mt-3 text-center"
+  class="!gl-mt-5 !gl-text-center gl-text-subtle"
 >
   1 additional vulnerability not shown
 </li>
@@ -10,6 +10,6 @@ exports[`DependencVulnerabilities component given a huge number vulnerabilities 
 
 exports[`DependencVulnerabilities component given no vulnerabilities renders an empty list 1`] = `
 <ul
-  class="list-unstyled mb-0"
+  class="!gl-mb-0 list-unstyled"
 />
 `;

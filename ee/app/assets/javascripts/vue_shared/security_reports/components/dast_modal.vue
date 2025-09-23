@@ -40,15 +40,15 @@ export default {
   <gl-modal :title="title" title-tag="h5" v-bind="$options.modal">
     <!-- heading -->
     <div class="row gl-text-subtle">
-      <div class="col-1">{{ __('Method') }}</div>
-      <div class="col-11">{{ __('URL') }}</div>
+      <div class="gl-col-1">{{ __('Method') }}</div>
+      <div class="gl-col-11">{{ __('URL') }}</div>
     </div>
     <hr class="gl-my-3" />
 
     <!-- rows -->
     <div v-for="(url, index) in limitedScannedUrls" :key="index" class="row gl-my-2">
-      <div class="col-1">{{ url.requestMethod.toUpperCase() }}</div>
-      <div class="col-11" data-testid="dast-scanned-url">
+      <div class="gl-col-1">{{ url.requestMethod.toUpperCase() }}</div>
+      <div class="gl-col-11" data-testid="dast-scanned-url">
         <gl-truncate :text="url.url" position="middle" />
       </div>
     </div>

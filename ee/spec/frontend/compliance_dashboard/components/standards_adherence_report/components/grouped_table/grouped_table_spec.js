@@ -107,9 +107,9 @@ describe('GroupedTable', () => {
       const frameworkField = fields.find((f) => f.key === 'framework');
       const projectField = fields.find((f) => f.key === 'project');
 
-      expect(requirementField.tdClass).toBe('md:gl-w-3/20');
-      expect(frameworkField.tdClass).toBe('md:gl-w-3/20');
-      expect(projectField.tdClass).toBe('md:gl-w-4/20');
+      expect(requirementField.tdClass).toBe('@md/panel:gl-w-3/20');
+      expect(frameworkField.tdClass).toBe('@md/panel:gl-w-3/20');
+      expect(projectField.tdClass).toBe('@md/panel:gl-w-4/20');
     });
   });
 
@@ -153,8 +153,8 @@ describe('GroupedTable', () => {
       const requirementField = fields.find((f) => f.key === 'requirement');
       const projectField = fields.find((f) => f.key === 'project');
 
-      expect(requirementField.tdClass).toBe('md:gl-w-5/20');
-      expect(projectField.tdClass).toBe('md:gl-w-5/20');
+      expect(requirementField.tdClass).toBe('@md/panel:gl-w-5/20');
+      expect(projectField.tdClass).toBe('@md/panel:gl-w-5/20');
     });
 
     it('renders FrameworkBadge in group headers', () => {
@@ -207,8 +207,8 @@ describe('GroupedTable', () => {
       const requirementField = fields.find((f) => f.key === 'requirement');
       const frameworkField = fields.find((f) => f.key === 'framework');
 
-      expect(requirementField.tdClass).toBe('md:gl-w-5/20');
-      expect(frameworkField.tdClass).toBe('md:gl-w-5/20');
+      expect(requirementField.tdClass).toBe('@md/panel:gl-w-5/20');
+      expect(frameworkField.tdClass).toBe('@md/panel:gl-w-5/20');
     });
 
     it('renders group name in headers', () => {
@@ -246,8 +246,8 @@ describe('GroupedTable', () => {
       const frameworkField = fields.find((f) => f.key === 'framework');
       const projectField = fields.find((f) => f.key === 'project');
 
-      expect(frameworkField.tdClass).toBe('md:gl-w-5/20');
-      expect(projectField.tdClass).toBe('md:gl-w-5/20');
+      expect(frameworkField.tdClass).toBe('@md/panel:gl-w-5/20');
+      expect(projectField.tdClass).toBe('@md/panel:gl-w-5/20');
     });
 
     it('renders group name in header', () => {

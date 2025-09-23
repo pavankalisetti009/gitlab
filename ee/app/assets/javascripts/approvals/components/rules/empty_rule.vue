@@ -84,7 +84,7 @@ export default {
     <td class="!gl-py-5" :data-label="$options.TABLE_HEADERS.approvalsRequired">
       <rule-input :rule="rule" :is-branch-rules-edit="isBranchRulesEdit" />
     </td>
-    <td class="md:!gl-pl-0 md:!gl-pr-0" :data-label="$options.TABLE_HEADERS.actions">
+    <td class="@md/panel:!gl-pl-0 @md/panel:!gl-pr-0" :data-label="$options.TABLE_HEADERS.actions">
       <div class="!-gl-my-3 gl-px-5 gl-text-right">
         <gl-button
           v-if="!allowMultiRule && canEdit"

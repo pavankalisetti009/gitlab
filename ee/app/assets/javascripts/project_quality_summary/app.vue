@@ -140,7 +140,7 @@ export default {
         <gl-skeleton-loader v-if="$apollo.queries.projectQuality.loading" />
         <div v-else class="row gl-ml-2">
           <gl-single-stat
-            class="col-sm-6 col-md-4"
+            class="gl-col-sm-6 gl-col-md-4"
             data-testid="test-runs-stat"
             :title="$options.i18n.testRuns.successLabel"
             :value="testSuccessPercentage"
@@ -149,7 +149,7 @@ export default {
             meta-icon="status_success"
           />
           <gl-single-stat
-            class="col-sm-6 col-md-4"
+            class="gl-col-sm-6 gl-col-md-4"
             data-testid="test-runs-stat"
             :title="$options.i18n.testRuns.failureLabel"
             :value="testFailurePercentage"
@@ -158,7 +158,7 @@ export default {
             meta-icon="status_failed"
           />
           <gl-single-stat
-            class="col-sm-6 col-md-4"
+            class="gl-col-sm-6 gl-col-md-4"
             data-testid="test-runs-stat"
             :title="$options.i18n.testRuns.skippedLabel"
             :value="testSkippedPercentage"
@@ -205,13 +205,13 @@ export default {
         <gl-skeleton-loader v-if="$apollo.queries.projectQuality.loading" />
         <div v-else class="row gl-ml-2">
           <gl-single-stat
-            class="col-sm-6 col-md-4"
+            class="gl-col-sm-6 gl-col-md-4"
             data-testid="code-quality-stat"
             :title="$options.i18n.codeQuality.foundLabel"
             :value="projectQuality.codeQualityReportSummary.count"
           />
           <gl-single-stat
-            class="col-sm-6 col-md-4"
+            class="gl-col-sm-6 gl-col-md-4"
             title-icon-class="gl-text-red-800"
             data-testid="code-quality-stat"
             title-icon="severity-critical"
@@ -220,7 +220,7 @@ export default {
             :unit="$options.i18n.codeQuality.unit"
           />
           <gl-single-stat
-            class="col-sm-6 col-md-4"
+            class="gl-col-sm-6 gl-col-md-4"
             title-icon-class="gl-text-red-600"
             data-testid="code-quality-stat"
             title-icon="severity-high"

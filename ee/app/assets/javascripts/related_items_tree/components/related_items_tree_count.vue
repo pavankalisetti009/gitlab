@@ -45,7 +45,7 @@ export default {
       </div>
     </div>
     <div
-      class="gl-sm-ml-2 gl-ml-0 gl-mt-2 gl-flex gl-flex-wrap gl-align-middle gl-leading-1 sm:gl-mt-0 sm:gl-inline-flex"
+      class="gl-sm-ml-2 gl-ml-0 gl-mt-2 gl-flex gl-flex-wrap gl-align-middle gl-leading-1 @sm/panel:gl-mt-0 @sm/panel:gl-inline-flex"
     >
       <epic-health-status v-if="showHealthStatus" :health-status="healthStatus" />
     </div>

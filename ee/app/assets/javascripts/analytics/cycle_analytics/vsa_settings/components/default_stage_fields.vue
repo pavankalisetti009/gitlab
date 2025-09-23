@@ -102,7 +102,7 @@ export default {
       </div>
 
       <stage-field-actions
-        class="gl-mt-3 sm:!gl-mt-7"
+        class="gl-mt-3 @sm/panel:!gl-mt-7"
         :index="index"
         @hide="$emit('hide', $event)"
       />

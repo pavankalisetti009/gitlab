@@ -56,41 +56,41 @@ export default {
       key: 'mr_details',
       label: __('Merge Request'),
       thClass: 'w-30p',
-      tdClass: 'table-col gl-flex gl-items-center sm:gl-table-cell',
+      tdClass: 'table-col gl-flex gl-items-center @sm/panel:gl-table-cell',
     },
     {
       key: 'review_time',
       label: __('Review time'),
-      class: 'text-right',
-      tdClass: 'table-col gl-flex gl-items-center sm:gl-table-cell',
+      class: '!gl-text-right',
+      tdClass: 'table-col gl-flex gl-items-center @sm/panel:gl-table-cell',
     },
     {
       key: 'author',
       label: __('Author'),
-      tdClass: 'table-col gl-flex gl-items-center sm:gl-table-cell',
+      tdClass: 'table-col gl-flex gl-items-center @sm/panel:gl-table-cell',
     },
     {
       key: 'approved_by',
       label: __('Approvers'),
-      tdClass: 'table-col gl-flex gl-items-center sm:gl-table-cell',
+      tdClass: 'table-col gl-flex gl-items-center @sm/panel:gl-table-cell',
     },
     {
       key: 'notes_count',
       label: __('Comments'),
-      class: 'text-right',
-      tdClass: 'table-col gl-flex gl-items-center sm:gl-table-cell',
+      class: '!gl-text-right',
+      tdClass: 'table-col gl-flex gl-items-center @sm/panel:gl-table-cell',
     },
     {
       key: 'diff_stats',
       label: __('Commits'),
-      class: 'text-right',
-      tdClass: 'table-col gl-flex gl-items-center sm:gl-table-cell',
+      class: '!gl-text-right',
+      tdClass: 'table-col gl-flex gl-items-center @sm/panel:gl-table-cell',
     },
     {
       key: 'line_changes',
       label: __('Line changes'),
-      class: 'text-right',
-      tdClass: 'table-col gl-flex gl-items-center sm:gl-table-cell',
+      class: '!gl-text-right',
+      tdClass: 'table-col gl-flex gl-items-center @sm/panel:gl-table-cell',
     },
   ],
 };
@@ -98,14 +98,14 @@ export default {
 
 <template>
   <gl-table-lite
-    class="my-3"
+    class="!gl-my-5"
     :fields="$options.tableHeaderFields"
     :items="mergeRequests"
     stacked="sm"
   >
     <template #cell(mr_details)="items">
-      <div class="flex-column align-items-end align-items-sm-start gl-flex gl-grow">
-        <div class="str-truncated my-2 gl-max-w-34">
+      <div class="gl-flex gl-grow !gl-flex-col !gl-items-end @sm/panel:!gl-items-start">
+        <div class="str-truncated !gl-my-3 gl-max-w-34">
           <gl-link
             :href="items.item.web_url"
             target="_blank"
@@ -113,7 +113,7 @@ export default {
             >{{ items.item.title }}</gl-link
           >
         </div>
-        <ul class="horizontal-list list-items-separated mb-0 gl-text-subtle">
+        <ul class="horizontal-list list-items-separated !gl-mb-0 gl-text-subtle">
           <li>!{{ items.item.iid }}</li>
           <li>{{ getTimeAgoString(items.item.created_at) }}</li>
           <li v-if="items.item.milestone">
@@ -154,8 +154,8 @@ export default {
     </template>
 
     <template #cell(line_changes)="items">
-      <span class="font-weight-bold gl-text-success"> +{{ items.item.diff_stats.additions }} </span>
-      <span class="font-weight-bold gl-text-danger"> -{{ items.item.diff_stats.deletions }} </span>
+      <span class="!gl-font-bold gl-text-success"> +{{ items.item.diff_stats.additions }} </span>
+      <span class="!gl-font-bold gl-text-danger"> -{{ items.item.diff_stats.deletions }} </span>
     </template>
   </gl-table-lite>
 </template>

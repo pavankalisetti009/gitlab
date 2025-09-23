@@ -92,7 +92,7 @@ export default {
     </gl-alert>
 
     <div v-if="isLoading" data-testid="skeleton-loaders">
-      <section class="gl-my-5 gl-flex gl-flex-col gl-gap-5 md:gl-flex-row">
+      <section class="gl-my-5 gl-flex gl-flex-col gl-gap-5 @md/panel:gl-flex-row">
         <div class="gl-flex-1">
           <div class="gl-animate-skeleton-loader gl-mb-3 gl-h-12 gl-w-1/2 gl-rounded-base"></div>
           <div class="gl-w-24 gl-animate-skeleton-loader gl-h-5 gl-rounded-base"></div>
@@ -119,7 +119,7 @@ export default {
       </div>
     </div>
     <template v-else>
-      <section class="gl-flex gl-flex-col gl-gap-5 md:gl-flex-row">
+      <section class="gl-flex gl-flex-col gl-gap-5 @md/panel:gl-flex-row">
         <current-usage-card
           :total-units="gitlabUnitsUsage.totalUnits"
           :total-units-used="gitlabUnitsUsage.totalUnitsUsed"

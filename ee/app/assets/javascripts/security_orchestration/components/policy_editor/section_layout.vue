@@ -57,7 +57,7 @@ export default {
 
 <template>
   <div class="security-policies-bg-subtle gl-flex gl-gap-3 gl-rounded-base gl-p-5">
-    <div v-if="showLabel" class="gl-min-w-10 md:gl-min-w-7">
+    <div v-if="showLabel" class="gl-min-w-10 @md/panel:gl-min-w-7">
       <label data-testid="base-label" for="content" :class="labelClass">
         {{ ruleLabel }}
       </label>
