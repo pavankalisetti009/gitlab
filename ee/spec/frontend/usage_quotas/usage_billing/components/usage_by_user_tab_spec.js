@@ -1,17 +1,17 @@
-import { GlTable, GlCard } from '@gitlab/ui';
+import { GlTable, GlCard, GlProgressBar } from '@gitlab/ui';
 import { mountExtended, shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import UsageByUserTab from 'ee/usage_quotas/usage_billing/components/usage_by_user_tab.vue';
 import UserAvatarLink from '~/vue_shared/components/user_avatar/user_avatar_link.vue';
-import { mockUsageDataWithPool } from '../mock_data';
+import { mockUsageDataWithPool, mockUsageDataWithZeroAllocation } from '../mock_data';
 
 describe('UsageByUserTab', () => {
   /** @type {import('helpers/vue_test_utils_helper').ExtendedWrapper} */
   let wrapper;
   const usersData = mockUsageDataWithPool.subscription.gitlabUnitsUsage.usersUsage;
 
-  const createComponent = (mountFn = shallowMountExtended) => {
+  const createComponent = (mountFn = shallowMountExtended, data = usersData) => {
     wrapper = mountFn(UsageByUserTab, {
-      propsData: { usersData },
+      propsData: { usersData: data },
       provide: {
         userUsagePath: '/path/to/user/:id',
       },
@@ -20,6 +20,7 @@ describe('UsageByUserTab', () => {
 
   const findTable = () => wrapper.findComponent(GlTable);
   const findCards = () => wrapper.findAllComponents(GlCard);
+  const findProgressBars = () => wrapper.findAllComponents(GlProgressBar);
 
   describe('rendering cards', () => {
     beforeEach(() => {
@@ -78,6 +79,31 @@ describe('UsageByUserTab', () => {
       // testing the first two instances
       expect(userAvatars.at(0).props('linkHref')).toBe('/path/to/user/1');
       expect(userAvatars.at(1).props('linkHref')).toBe('/path/to/user/2');
+    });
+
+    it('renders the progress bars for allocation', () => {
+      const progressBars = findProgressBars();
+
+      expect(progressBars).toHaveLength(8);
+      // testing the first two instances
+      expect(progressBars.at(0).props('value')).toBe(90);
+      expect(progressBars.at(1).props('value')).toBe(100);
+    });
+
+    describe('with zero allocation', () => {
+      beforeEach(() => {
+        const usageData = mockUsageDataWithZeroAllocation.subscription.gitlabUnitsUsage.usersUsage;
+        createComponent(mountExtended, usageData);
+      });
+
+      it('renders the progress bar with 0 value when allocationTotal is 0', () => {
+        const progressBars = findProgressBars();
+
+        expect(progressBars).toHaveLength(5);
+        // testing the first two instances
+        expect(progressBars.at(0).props('value')).toBe(0);
+        expect(progressBars.at(1).props('value')).toBe(0);
+      });
     });
   });
 });

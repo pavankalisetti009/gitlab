@@ -448,3 +448,81 @@ export const mockUsageDataWithOverage = {
     },
   },
 };
+
+// Mock data with zero allocation totals for testing edge cases
+export const mockUsageDataWithZeroAllocation = {
+  subscription: {
+    gitlabUnitsUsage: {
+      lastUpdated: '2024-01-15T10:30:00Z',
+      startDate: '2024-01-01',
+      endDate: '2024-01-31',
+
+      overageUnits: 0,
+      totalUnits: 100,
+      totalUnitsUsed: 100,
+
+      poolUsage: null,
+      seatUsage: null,
+
+      usersUsage: {
+        totalUsers: 5,
+        totalUsersUsingAllocation: 2,
+        totalUsersUsingPool: 0,
+        totalUsersBlocked: 1,
+
+        users: [
+          {
+            id: '1',
+            name: 'User with zero allocation and zero usage',
+            avatarUrl: 'https://www.gravatar.com/avatar/1?s=80&d=identicon',
+            allocationUsed: 0,
+            allocationTotal: 0,
+            poolUsed: 0,
+            totalUnitsUsed: 0,
+            status: 'seat',
+          },
+          {
+            id: '2',
+            name: 'User with zero allocation but has usage',
+            avatarUrl: 'https://www.gravatar.com/avatar/2?s=80&d=identicon',
+            allocationUsed: 100,
+            allocationTotal: 0,
+            poolUsed: 50,
+            totalUnitsUsed: 150,
+            status: 'pool',
+          },
+          {
+            id: '3',
+            name: 'User with normal allocation',
+            avatarUrl: 'https://www.gravatar.com/avatar/3?s=80&d=identicon',
+            allocationUsed: 250,
+            allocationTotal: 500,
+            poolUsed: 0,
+            totalUnitsUsed: 250,
+            status: 'seat',
+          },
+          {
+            id: '4',
+            name: 'User with over-allocation and zero total',
+            avatarUrl: 'https://www.gravatar.com/avatar/4?s=80&d=identicon',
+            allocationUsed: 200,
+            allocationTotal: 0,
+            poolUsed: 100,
+            totalUnitsUsed: 300,
+            status: 'overage',
+          },
+          {
+            id: '5',
+            name: 'Blocked user with zero allocation',
+            avatarUrl: 'https://www.gravatar.com/avatar/5?s=80&d=identicon',
+            allocationUsed: 0,
+            allocationTotal: 0,
+            poolUsed: 0,
+            totalUnitsUsed: 0,
+            status: 'blocked',
+          },
+        ],
+      },
+    },
+  },
+};
