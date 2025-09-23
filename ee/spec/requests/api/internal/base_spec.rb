@@ -822,8 +822,7 @@ RSpec.describe API::Internal::Base, feature_category: :source_code_management do
           'action' => 'geo_proxy_to_primary',
           'data' => {
             'api_endpoints' => ['/api/v4/geo/proxy_git_ssh/info_refs_upload_pack', '/api/v4/geo/proxy_git_ssh/upload_pack'],
-            'primary_repo' => "http://primary.example.com/#{project.full_path}.git",
-            'geo_proxy_direct_to_primary' => true
+            'primary_repo' => "http://primary.example.com/#{project.full_path}.git"
           }
         }
       end
