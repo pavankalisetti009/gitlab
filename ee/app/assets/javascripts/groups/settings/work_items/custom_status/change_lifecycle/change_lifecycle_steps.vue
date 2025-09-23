@@ -77,6 +77,14 @@ export default {
         return lifecycle.id === this.selectedLifecycleId;
       });
     },
+    currentLifecycleWorkItemTypes() {
+      return this.currentLifecycle?.workItemTypes || [];
+    },
+    currentWorkItemTypeId() {
+      return this.currentLifecycleWorkItemTypes?.find(
+        (workItemType) => workItemType.name === this.selectedWorkItemType,
+      )?.id;
+    },
     currentLifecycle() {
       return this.lifecycles?.find((lifecycle) => {
         return lifecycle.workItemTypes.map((type) => type.name).includes(this.selectedWorkItemType);
@@ -129,7 +137,7 @@ export default {
           variables: {
             input: {
               namespacePath: this.fullPath,
-              workItemTypeId: 'gid://gitlab/WorkItems::Type/1',
+              workItemTypeId: this.currentWorkItemTypeId,
               lifecycleId: this.selectedLifecycle.id,
               statusMappings: leanMapping,
             },
