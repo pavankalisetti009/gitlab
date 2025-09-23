@@ -97,7 +97,6 @@ module EE
 
         mount ::API::Internal::AppSec::Dast::SiteValidations
         mount ::API::Internal::Search::Zoekt
-        mount ::API::Internal::SuggestedReviewers
         mount ::API::Internal::Ai::XRay::Scan
         mount ::API::Internal::Observability
 

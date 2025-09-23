@@ -1080,11 +1080,6 @@ module EE
         enable :create_key_result
       end
 
-      rule { suggested_reviewers_bot & suggested_reviewers_available & resource_access_token_feature_available & resource_access_token_creation_allowed }.policy do
-        enable :admin_project_member
-        enable :create_resource_access_tokens
-      end
-
       rule { custom_role_enables_manage_project_access_tokens & resource_access_token_feature_available & resource_access_token_creation_allowed }.policy do
         enable :read_resource_access_tokens
         enable :create_resource_access_tokens
