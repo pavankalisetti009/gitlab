@@ -16,9 +16,9 @@
           %li.gl-items-center{ class: '!gl-flex' }
             .gl-flex.gl-items-center.gl-grow
               = image_tag data[:image_path], size: '48', class: 'gl-bg-transparent dark:gl-bg-gray-900 gl-border-solid gl-border-1 gl-border-default gl-rounded-base', aria: { hidden: true }
-              .sm:gl-flex.gl-ml-4
+              .gl-ml-4{ class: "@sm/panel:gl-flex" }
                 .gl-font-bold= data[:type_name]
-                .gl-mx-3.gl-hidden.sm:gl-inline ·
+                .gl-mx-3.gl-hidden{ class: "@sm/panel:gl-inline" } ·
                 = render Pajamas::ButtonComponent.new(variant: :link, href: data[:landing_page_path]) do
                   = n_('View %d registry', 'View %d registries', data[:count]) % data[:count]
             - if can_create_virtual_registry?(@group)

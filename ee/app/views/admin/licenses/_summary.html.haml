@@ -1,8 +1,8 @@
 %h2.gl-heading-2= _('License overview')
 = render Pajamas::CardComponent.new(card_options: { class: 'gl-mb-5 gl-overflow-hidden' },
-                                    body_options: { class: 'sm:gl-flex gl-justify-between gl-items-center gl-bg-section' }) do |c|
+                                    body_options: { class: '@sm/panel:gl-flex gl-justify-between gl-items-center gl-bg-section' }) do |c|
   - c.with_body do
-    .gl-mb-0.md:gl-flex.gl-flex-wrap.gl-items-center
+    .gl-mb-0.gl-flex-wrap.gl-items-center{ class: "@md/panel:gl-flex" }
       .gl-mr-5
         = sprite_icon('license', css_class: 'gl-fill-gray-700')
         = _('Plan:')
@@ -24,4 +24,4 @@
           %strong= _('Legacy license')
     %div
       - if current_user.can_admin_all_resources?
-        = link_button_to _('View details'), admin_subscription_path, class: 'gl-w-full gl-mt-3 sm:gl-mt-0'
+        = link_button_to _('View details'), admin_subscription_path, class: 'gl-w-full gl-mt-3 @sm/panel:gl-mt-0'
