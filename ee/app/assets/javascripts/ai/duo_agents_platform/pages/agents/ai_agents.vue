@@ -199,7 +199,7 @@ export default {
       <template #heading>
         <div class="gl-flex">
           <span>{{ s__('AICatalog|Agents') }}</span>
-          <gl-experiment-badge type="beta" class="gl-self-center" />
+          <gl-experiment-badge class="gl-self-center" />
         </div>
       </template>
     </page-heading>
