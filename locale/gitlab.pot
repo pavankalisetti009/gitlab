@@ -70986,6 +70986,9 @@ msgstr ""
 msgid "Value field is required."
 msgstr ""
 
+msgid "Value rendered as plain text."
+msgstr ""
+
 msgid "Value stream"
 msgstr ""
 

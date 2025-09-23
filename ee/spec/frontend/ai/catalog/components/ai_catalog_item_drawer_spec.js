@@ -7,7 +7,7 @@ import { AI_CATALOG_AGENTS_EDIT_ROUTE } from 'ee/ai/catalog/router/constants';
 
 import { mockAgent, mockFlow } from '../mock_data';
 
-describe('CatalogItemDrawer', () => {
+describe('AiCatalogItemDrawer', () => {
   let wrapper;
 
   const defaultProps = {
