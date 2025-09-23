@@ -107,6 +107,12 @@ FactoryBot.define do
       end
     end
 
+    trait :advanced_sast do
+      after(:build) do |build|
+        build.job_artifacts << build(:ee_ci_job_artifact, :advanced_sast, job: build)
+      end
+    end
+
     trait :sast_differential_scan do
       after(:build) do |build|
         build.job_artifacts << build(:ee_ci_job_artifact, :sast_differential_scan, job: build)

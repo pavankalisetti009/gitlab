@@ -65,6 +65,16 @@ FactoryBot.define do
       end
     end
 
+    trait :advanced_sast do
+      file_format { :raw }
+      file_type { :sast }
+
+      after(:stub, :build) do |artifact, _|
+        artifact.file = fixture_file_upload(
+          Rails.root.join('ee/spec/fixtures/security_reports/master/gl-sast-report-advanced-sast-full.json'), 'application/json')
+      end
+    end
+
     trait :sast_differential_scan do
       file_format { :raw }
       file_type { :sast }

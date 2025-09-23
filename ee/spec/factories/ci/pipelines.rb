@@ -71,6 +71,14 @@ FactoryBot.define do
       end
     end
 
+    trait :advanced_sast do
+      status { :success }
+
+      after(:build) do |pipeline, evaluator|
+        pipeline.builds << build(:ee_ci_build, :advanced_sast, pipeline: pipeline, project: pipeline.project)
+      end
+    end
+
     trait :sast_differential_scan do
       status { :success }
 

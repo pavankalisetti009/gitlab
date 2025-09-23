@@ -22,6 +22,7 @@ RSpec.describe Ci::CompareSecurityReportsService, :clean_gitlab_redis_shared_sta
       with_secret_detection_feature_branch: create(:ee_ci_pipeline, :with_secret_detection_feature_branch, project: project),
       with_corrupted_dependency_scanning_report: create(:ee_ci_pipeline, :with_corrupted_dependency_scanning_report, project: project),
       with_corrupted_container_scanning_report: create(:ee_ci_pipeline, :with_corrupted_container_scanning_report, project: project),
+      advanced_sast: create(:ee_ci_pipeline, :advanced_sast, project: project),
       sast_differential_scan: create(:ee_ci_pipeline, :sast_differential_scan, project: project)
     }
   end
@@ -59,7 +60,8 @@ RSpec.describe Ci::CompareSecurityReportsService, :clean_gitlab_redis_shared_sta
     create_scan_with_findings('container_scanning', test_pipelines[:with_container_scanning_feature_branch], 8)
     create_scan_with_findings('dast', test_pipelines[:with_dast_feature_branch], 20)
     create_scan_with_findings('sast', test_pipelines[:with_sast_feature_branch], 5)
-    create_scan_with_findings('sast', test_pipelines[:sast_differential_scan], 6, partial: true)
+    create_scan_with_findings('sast', test_pipelines[:advanced_sast], 7)
+    create_scan_with_findings('sast', test_pipelines[:sast_differential_scan], 7, partial: true)
     create_scan_with_findings('secret_detection', test_pipelines[:with_secret_detection_feature_branch])
   end
 
@@ -354,7 +356,18 @@ RSpec.describe Ci::CompareSecurityReportsService, :clean_gitlab_redis_shared_sta
           # vulnerabilities from appearing as "new" when detected by partial scans.
           # We also hide the fixed findings since we don't have full coverage.
           let(:num_fixed_findings) { 0 }
-          let(:num_added_findings) { 6 }
+          let(:num_added_findings) { 7 }
+        end
+
+        context 'when base pipeline contains the same findings' do
+          let_it_be(:base_pipeline) { test_pipelines[:advanced_sast] }
+          let_it_be(:head_pipeline) { test_pipelines[:sast_differential_scan] }
+
+          it_behaves_like 'when base and head pipelines have scanning reports' do
+            # It doesn't report the existing findings as new.
+            let(:num_fixed_findings) { 0 }
+            let(:num_added_findings) { 1 }
+          end
         end
       end
     end

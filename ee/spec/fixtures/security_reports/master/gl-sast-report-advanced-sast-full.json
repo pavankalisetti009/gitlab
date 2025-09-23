@@ -2,10 +2,10 @@
   "version": "15.1.4",
   "vulnerabilities": [
     {
-      "id": "f664e59f7877a7a508cb3e935cc03c805346b8d2b4c0f795da744009e650862f",
+      "id": "f664e59f7877a7a508cb3e935cc03c805346b8d2b4c0f795da744009e650862e",
       "category": "sast",
-      "name": "An additional finding not present in the full scan",
-      "description": "This should be displayed on the new vulnerabilities list",
+      "name": "An additional finding not present in the partial scan",
+      "description": "This should not be displayed in the fixed vulnerabilities list.",
       "cve": "CVE-2025-123456",
       "severity": "Low",
       "scanner": {
@@ -252,9 +252,6 @@
     },
     "start_time": "2025-03-25T11:33:17",
     "end_time": "2025-03-25T11:34:14",
-    "status": "success",
-    "partial_scan": {
-      "mode": "differential"
-    }
+    "status": "success"
   }
 }
