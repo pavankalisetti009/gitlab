@@ -24,6 +24,14 @@ module Gitlab
           model_definition_per_feature[feature.to_s]
         end
 
+        def selectable_models_for_feature(feature)
+          feature_definition = definition_for_feature(feature)
+
+          return [] if feature_definition.blank?
+
+          feature_definition['selectable_models']
+        end
+
         def gitlab_models_by_ref
           return unless definitions && definitions['models']
 

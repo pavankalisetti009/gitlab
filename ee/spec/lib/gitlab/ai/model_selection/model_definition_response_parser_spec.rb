@@ -58,6 +58,28 @@ RSpec.describe ::Gitlab::Ai::ModelSelection::ModelDefinitionResponseParser, feat
     end
   end
 
+  describe '#selectable_models_for_feature' do
+    context 'when the feature exists' do
+      it 'returns the selectable models for the given feature' do
+        expect(parser.selectable_models_for_feature(:duo_chat)).to eq(%w[claude-sonnet gpt-4])
+      end
+    end
+
+    context 'when the feature does not exist' do
+      it 'returns an empty array' do
+        expect(parser.selectable_models_for_feature(:non_existent_feature)).to eq([])
+      end
+    end
+
+    context 'if definitions is nil' do
+      let(:model_definitions_response) { nil }
+
+      it 'returns an empty array' do
+        expect(parser.selectable_models_for_feature(:duo_chat)).to eq([])
+      end
+    end
+  end
+
   describe '#gitlab_models_by_ref' do
     it 'returns a hash of models indexed by their ref' do
       expect(parser.gitlab_models_by_ref).to eq({

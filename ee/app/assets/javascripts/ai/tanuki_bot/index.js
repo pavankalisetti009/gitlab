@@ -1,11 +1,13 @@
 import Vue from 'vue';
 import VueApollo from 'vue-apollo';
+import VueRouter from 'vue-router';
 import createDefaultClient from '~/lib/graphql';
 import { duoChatGlobalState } from '~/super_sidebar/constants';
 import { getCookie } from '~/lib/utils/common_utils';
 import { DUO_AGENTIC_MODE_COOKIE } from 'ee/ai/tanuki_bot/constants';
-import TanukiBotChatApp from './components/app.vue';
+import DuoChatLayoutApp from './components/app.vue';
 import store from './store';
+import routes from './routes';
 
 Vue.use(VueApollo);
 
@@ -13,12 +15,23 @@ const apolloProvider = new VueApollo({
   defaultClient: createDefaultClient(),
 });
 
+export const createRouter = () => {
+  const router = new VueRouter({
+    routes,
+    mode: 'abstract',
+  });
+
+  return router;
+};
+
 export const initTanukiBotChatDrawer = () => {
   const el = document.getElementById('js-tanuki-bot-chat-app');
 
   if (!el) {
     return false;
   }
+
+  Vue.use(VueRouter);
 
   const { userId, resourceId, projectId, chatTitle, rootNamespaceId, agenticAvailable } =
     el.dataset;
@@ -41,9 +54,10 @@ export const initTanukiBotChatDrawer = () => {
   return new Vue({
     el,
     store: store(),
+    router: createRouter(),
     apolloProvider,
     render(createElement) {
-      return createElement(TanukiBotChatApp, {
+      return createElement(DuoChatLayoutApp, {
         props: {
           userId,
           resourceId,

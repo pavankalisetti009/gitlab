@@ -4,13 +4,13 @@ require 'spec_helper'
 
 RSpec.describe Ai::DuoWorkflows::DuoAgentPlatformModelMetadataService, feature_category: :agent_foundations do
   let_it_be(:group) { create(:group) }
-  let_it_be(:current_user) { create(:user) }
+  let_it_be(:user) { create(:user) }
   let_it_be(:user_selected_model_identifier) { nil }
 
   subject(:service) do
     described_class.new(
       root_namespace: root_namespace,
-      current_user: current_user,
+      current_user: user,
       user_selected_model_identifier: user_selected_model_identifier
     )
   end
@@ -238,8 +238,17 @@ RSpec.describe Ai::DuoWorkflows::DuoAgentPlatformModelMetadataService, feature_c
           it_behaves_like 'uses the gitlab default model'
 
           context 'when user-level model selection is enabled' do
+            include_context 'with model selections fetch definition service side-effect context'
+
             before do
               stub_feature_flags(ai_user_model_switching: true)
+
+              stub_request(:get, fetch_service_endpoint_url)
+                .to_return(
+                  status: 200,
+                  body: model_definitions_response,
+                  headers: { 'Content-Type' => 'application/json' }
+                )
             end
 
             context 'when a valid user_selected_model_identifier is provided' do
@@ -255,6 +264,15 @@ RSpec.describe Ai::DuoWorkflows::DuoAgentPlatformModelMetadataService, feature_c
                     'identifier' => user_selected_model_identifier
                   }.to_json
                 )
+              end
+
+              context 'when the response from AI Gateway is not successful' do
+                before do
+                  stub_request(:get, fetch_service_endpoint_url)
+                  .to_return(status: 400)
+                end
+
+                it_behaves_like 'uses the gitlab default model'
               end
             end
 
