@@ -7,6 +7,7 @@ import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import waitForPromises from 'helpers/wait_for_promises';
 import createMockApollo from 'helpers/mock_apollo_helper';
 import StatusLifecycleModal from 'ee/groups/settings/work_items/custom_status/status_modal.vue';
+import RemoveStatusModal from 'ee/groups/settings/work_items/custom_status/remove_status_modal.vue';
 import StatusForm from 'ee/groups/settings/work_items/custom_status/status_form.vue';
 import WorkItemStateBadge from '~/work_items/components/work_item_state_badge.vue';
 import lifecycleUpdateMutation from 'ee/groups/settings/work_items/custom_status/lifecycle_update.mutation.graphql';
@@ -142,17 +143,18 @@ describe('StatusLifecycleModal', () => {
   const findHelpPageLink = () => wrapper.findByTestId('help-page-link');
   const findDefaultStatusBadges = () => wrapper.findAllByTestId('default-status-badge');
   const findStatusForm = () => wrapper.findComponent(StatusForm);
+  const findRemoveStatusModal = () => wrapper.findComponent(RemoveStatusModal);
   const findEditStatusButton = (statusId) => wrapper.findByTestId(`edit-status-${statusId}`);
   const findErrorMessage = () => wrapper.findByTestId('error-alert');
   const findDraggable = () => wrapper.findComponent(Draggable);
   const findAllDropdowns = () => wrapper.findAllComponents(GlDisclosureDropdown);
   const defaultOpenStatus = mockLifecycle.statuses[0]; // Open (default)
   const findDefaultOpenDropdownItem = () =>
-    wrapper.find(`[data-testid="make-default-${defaultOpenStatus.id}"]`);
+    wrapper.findByTestId(`make-default-${defaultOpenStatus.id}`);
 
   const nonDefaultStatus = mockLifecycle.statuses[1]; // In progress
   const findNonDefaultDropdownItem = () =>
-    wrapper.find(`[data-testid="make-default-${nonDefaultStatus.id}"]`);
+    wrapper.findByTestId(`make-default-${nonDefaultStatus.id}`);
 
   const updateLifecycleHandler = jest.fn().mockResolvedValue(mockUpdateResponse);
   const metadataQueryHandler = jest.fn().mockResolvedValue(mockNamespaceMetadata);
@@ -171,7 +173,7 @@ describe('StatusLifecycleModal', () => {
   };
 
   const findStatusAndDelete = async (status) => {
-    const findFirstStatus = wrapper.find(`[data-testid="remove-status-${status.id}"]`);
+    const findFirstStatus = wrapper.findByTestId(`remove-status-${status.id}`);
 
     findFirstStatus.vm.$emit('action', status);
     await nextTick();
@@ -245,11 +247,9 @@ describe('StatusLifecycleModal', () => {
   });
 
   describe('initial rendering', () => {
-    beforeEach(() => {
-      createComponent();
-    });
-
     it('displays modal when visible prop is true', () => {
+      createComponent();
+
       expect(findModal().props('visible')).toBe(true);
     });
 
@@ -270,6 +270,8 @@ describe('StatusLifecycleModal', () => {
     });
 
     it('displays statuses grouped by category', () => {
+      createComponent();
+
       expect(findCategorySection('to_do')).toBeDefined();
       expect(findCategorySection('in_progress')).toBeDefined();
       expect(findCategorySection('done')).toBeDefined();
@@ -277,20 +279,28 @@ describe('StatusLifecycleModal', () => {
     });
 
     it('shows description of each category', () => {
+      createComponent();
+
       expect(
         findCategorySection('to_do').find('[data-testid="category-description"]').exists(),
       ).toBe(true);
     });
 
     it('shows state of category when `workItemState` is CLOSED', () => {
+      createComponent();
+
       expect(findCategorySection('done').findComponent(WorkItemStateBadge).exists()).toBe(true);
     });
 
     it('does not show state of category when `workItemState` is OPEN', () => {
+      createComponent();
+
       expect(findCategorySection('to_do').findComponent(WorkItemStateBadge).exists()).toBe(false);
     });
 
     it('shows default status badges for default statuses', () => {
+      createComponent();
+
       const badges = findDefaultStatusBadges();
       expect(badges).toHaveLength(2);
       expect(badges.at(0).text()).toBe('Open default');
@@ -298,6 +308,8 @@ describe('StatusLifecycleModal', () => {
     });
 
     it('shows add status buttons for each category', () => {
+      createComponent();
+
       const categories = ['triage', 'to_do', 'in_progress', 'done', 'canceled'];
       categories.forEach((category) => {
         const section = findCategorySection(category);
@@ -306,6 +318,8 @@ describe('StatusLifecycleModal', () => {
     });
 
     it('shows the status help page link', () => {
+      createComponent();
+
       expect(findHelpPageLink().exists()).toBe(true);
       expect(findHelpPageLink().props('href')).toBe('user/work_items/status');
     });
@@ -421,17 +435,17 @@ describe('StatusLifecycleModal', () => {
   });
 
   describe('form handling', () => {
-    beforeEach(() => {
-      createComponent();
-    });
-
     it('updates form data when inline form emits update event', async () => {
+      createComponent();
+
       await addStatus(false);
 
       expect(findStatusForm().props().formData).toEqual(newFormData);
     });
 
     it('calls the update handler when adding status', async () => {
+      createComponent();
+
       await addStatus();
       expect(updateLifecycleHandler).toHaveBeenCalled();
     });
@@ -823,56 +837,82 @@ describe('StatusLifecycleModal', () => {
   });
 
   describe('Status dropdown options', () => {
-    beforeEach(() => {
-      createComponent();
-    });
-
     it('all statuses of the lifecycle have the three dot options', () => {
+      createComponent();
+
       expect(findAllDropdowns()).toHaveLength(mockLifecycle.statuses.length);
     });
 
     describe('Delete action', () => {
-      let lifecycleUpdateHandler;
-      beforeEach(async () => {
-        lifecycleUpdateHandler = jest.fn().mockResolvedValue(deleteStatusErrorResponse);
-        createComponent({ updateHandler: lifecycleUpdateHandler });
-        const status = mockLifecycle.statuses[0];
-        await findStatusAndDelete(status);
+      describe('when work_item_status_mvc2 is disabled', () => {
+        let lifecycleUpdateHandler;
+        beforeEach(async () => {
+          lifecycleUpdateHandler = jest.fn().mockResolvedValue(deleteStatusErrorResponse);
+          createComponent({
+            updateHandler: lifecycleUpdateHandler,
+            workItemStatusMvc2Enabled: false,
+          });
+          const status = mockLifecycle.statuses[0];
+          await findStatusAndDelete(status);
+        });
+
+        it('should show remove confirmation modal when `Remove status` is clicked', async () => {
+          expect(lifecycleUpdateHandler).toHaveBeenCalled();
+          await nextTick();
+          expect(findErrorMessage().exists()).toBe(true);
+        });
+
+        it('should have sticky class for error message', () => {
+          expect(findErrorMessage().text()).toContain(
+            deleteStatusErrorResponse.data.lifecycleUpdate.errors[0],
+          );
+          expect(findErrorMessage().attributes('class')).toContain('gl-sticky gl-top-0');
+        });
+
+        it('should show the link for the group issues path when showing the error', () => {
+          expect(findIssuesPathLink().exists()).toBe(true);
+
+          expect(findIssuesPathLink().text()).toContain('View items using status.');
+          expect(findIssuesPathLink().attributes('href')).toContain(
+            mockNamespaceMetadata.data.namespace.linkPaths.groupIssues,
+          );
+        });
       });
 
-      it('should show remove confirmation modal when `Remove status` is clicked', async () => {
-        expect(lifecycleUpdateHandler).toHaveBeenCalled();
-        await nextTick();
-        expect(findErrorMessage().exists()).toBe(true);
-      });
+      describe('when work_item_status_mvc2 is enabled', () => {
+        it('shows "Remove status" modal', async () => {
+          createComponent({ workItemStatusMvc2Enabled: true });
+          const statusToRemove = mockLifecycle.statuses[0];
+          const findFirstStatus = wrapper.findByTestId(`remove-status-${statusToRemove.id}`);
 
-      it('should have sticky class for error message', () => {
-        expect(findErrorMessage().text()).toContain(
-          deleteStatusErrorResponse.data.lifecycleUpdate.errors[0],
-        );
-        expect(findErrorMessage().attributes('class')).toContain('gl-sticky gl-top-0');
-      });
+          findFirstStatus.vm.$emit('action', statusToRemove);
+          await nextTick();
 
-      it('should show the link for the group issues path when showing the error', () => {
-        expect(findIssuesPathLink().exists()).toBe(true);
-
-        expect(findIssuesPathLink().text()).toContain('View items using status.');
-        expect(findIssuesPathLink().attributes('href')).toContain(
-          mockNamespaceMetadata.data.namespace.linkPaths.groupIssues,
-        );
+          expect(findRemoveStatusModal().props()).toMatchObject({
+            statusCounts: mockLifecycle.statusCounts,
+            statusToRemove,
+            statuses: mockLifecycle.statuses,
+          });
+        });
       });
     });
 
     describe('Default action', () => {
       it('shows make default option for non-default statuses', () => {
+        createComponent();
+
         expect(findNonDefaultDropdownItem().exists()).toBe(true);
       });
 
       it('does not show make default option for default statuses', () => {
+        createComponent();
+
         expect(findDefaultOpenDropdownItem().exists()).toBe(false);
       });
 
       it('calls `updateLifecycle` with correct default status', async () => {
+        createComponent();
+
         findNonDefaultDropdownItem().vm.$emit('action', nonDefaultStatus, 'open');
         await waitForPromises();
 

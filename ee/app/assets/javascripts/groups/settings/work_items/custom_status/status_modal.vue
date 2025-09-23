@@ -16,7 +16,7 @@ import {
 } from '@gitlab/ui';
 import VueDraggable from 'vuedraggable';
 import { __, createListFormat, n__, s__, sprintf } from '~/locale';
-import { validateHexColor } from '~/lib/utils/color_utils';
+import { getAdaptiveStatusColor, validateHexColor } from '~/lib/utils/color_utils';
 import {
   STATUS_CATEGORIES,
   STATUS_CATEGORIES_MAP,
@@ -29,6 +29,7 @@ import * as Sentry from '~/sentry/sentry_browser_wrapper';
 import HelpPageLink from '~/vue_shared/components/help_page_link/help_page_link.vue';
 import lifecycleUpdateMutation from './lifecycle_update.mutation.graphql';
 import StatusForm from './status_form.vue';
+import RemoveStatusModal from './remove_status_modal.vue';
 import namespaceMetadataQuery from './namespace_metadata.query.graphql';
 
 const CATEGORY_ORDER = Object.keys(STATUS_CATEGORIES_MAP);
@@ -48,6 +49,7 @@ export default {
     GlLoadingIcon,
     GlSprintf,
     GlTooltip,
+    RemoveStatusModal,
     StatusForm,
     VueDraggable,
     GlLink,
@@ -95,6 +97,7 @@ export default {
         color: null,
       },
       namespaceMetadata: null,
+      statusToRemove: null,
     };
   },
   apollo: {
@@ -133,6 +136,11 @@ export default {
       });
 
       return grouped;
+    },
+    statusesOrderedByCategory() {
+      return Object.values(this.statusesByCategory).reduce((acc, cur) => {
+        return acc.concat(cur);
+      }, []);
     },
     isEditing() {
       return Boolean(this.editingStatusId);
@@ -196,6 +204,9 @@ export default {
     getCategoryWorkItemState(category) {
       return STATUS_CATEGORIES_MAP[category].workItemState || '';
     },
+    getColorStyle({ color }) {
+      return { color: getAdaptiveStatusColor(color) };
+    },
     showWorkItemStateBadge(category) {
       return this.getCategoryWorkItemState(category) === STATE_CLOSED;
     },
@@ -216,6 +227,10 @@ export default {
       };
     },
     startRemovingStatus(status) {
+      if (this.workItemStatusMvc2Enabled) {
+        this.statusToRemove = status;
+        return;
+      }
       this.removingStatusId = status.id;
       this.removingStatusName = status.name;
       this.showRemoveConfirmation = true;
@@ -700,7 +715,7 @@ export default {
                   <gl-icon
                     :size="12"
                     :name="status.iconName"
-                    :style="{ color: status.color }"
+                    :style="getColorStyle(status)"
                     class="gl-mr-1 gl-mt-2 gl-flex-none"
                   />
                   <div>
@@ -765,6 +780,7 @@ export default {
 
                     <gl-disclosure-dropdown-item
                       :data-testid="`remove-status-${status.id}`"
+                      variant="danger"
                       @action="startRemovingStatus(status)"
                     >
                       <template #list-item>
@@ -849,5 +865,12 @@ export default {
         {{ s__('WorkItem|This action cannot be undone.') }}
       </p>
     </gl-modal>
+    <remove-status-modal
+      v-if="Boolean(statusToRemove)"
+      :status-counts="lifecycle.statusCounts"
+      :status-to-remove="statusToRemove"
+      :statuses="statusesOrderedByCategory"
+      @hidden="statusToRemove = null"
+    />
   </div>
 </template>
