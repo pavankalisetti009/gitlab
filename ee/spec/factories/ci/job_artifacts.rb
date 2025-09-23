@@ -309,6 +309,18 @@ FactoryBot.define do
       end
     end
 
+    ['', 'python', 'maven'].each do |analyzer|
+      trait :"dependency_scanning_gemnasium#{analyzer.present? ? "_#{analyzer}" : ''}_observability" do
+        file_format { :raw }
+        file_type { :dependency_scanning }
+
+        after(:build) do |artifact, _|
+          artifact.file = fixture_file_upload(
+            Rails.root.join("ee/spec/fixtures/security_reports/master/gl-dependency-scanning-report-gemnasium#{analyzer.present? ? "-#{analyzer}" : ''}-observability.json"), 'application/json')
+        end
+      end
+    end
+
     trait :container_scanning do
       file_format { :raw }
       file_type { :container_scanning }
