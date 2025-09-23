@@ -4,10 +4,6 @@ module Ai
   module DuoWorkflows
     class DuoAgentPlatformModelMetadataService
       FEATURE_NAME = :duo_agent_platform
-      SELECTABLE_MODELS = %w[
-        claude_sonnet_3_7_20250219
-        claude_sonnet_4_20250514
-      ].freeze
 
       def initialize(root_namespace: nil, current_user: nil, user_selected_model_identifier: nil)
         @root_namespace = root_namespace
@@ -109,7 +105,22 @@ module Ai
       end
 
       def invalid_user_selected_model_identifier?
-        SELECTABLE_MODELS.exclude?(user_selected_model_identifier)
+        return true if user_selected_model_identifier.blank?
+
+        selectable_models.exclude?(user_selected_model_identifier)
+      end
+
+      def selectable_models
+        result = ::Ai::ModelSelection::FetchModelDefinitionsService
+                    .new(current_user, model_selection_scope: root_namespace)
+                    .execute
+
+        return [] unless result&.success?
+
+        parsed_response =
+          ::Gitlab::Ai::ModelSelection::ModelDefinitionResponseParser.new(result.payload)
+
+        parsed_response.selectable_models_for_feature(FEATURE_NAME)
       end
 
       def user_selected_model_metadata

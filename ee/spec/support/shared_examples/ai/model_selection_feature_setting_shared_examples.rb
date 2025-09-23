@@ -33,7 +33,8 @@ RSpec.shared_context 'with model selections fetch definition service side-effect
       'models' => [
         { 'name' => 'Claude Sonnet 3.5', 'identifier' => 'claude_sonnet_3_5' },
         { 'name' => 'Claude Sonnet 3.7', 'identifier' => 'claude_sonnet_3_7' },
-        { 'name' => 'OpenAI Chat GPT 4o', 'identifier' => 'openai_chatgpt_4o' }
+        { 'name' => 'OpenAI Chat GPT 4o', 'identifier' => 'openai_chatgpt_4o' },
+        { 'name' => 'Claude Sonnet 4.0', 'identifier' => 'claude_sonnet_4_20250514' }
       ],
       'unit_primitives' => [
         {
@@ -52,6 +53,12 @@ RSpec.shared_context 'with model selections fetch definition service side-effect
           'feature_setting' => 'duo_chat',
           'default_model' => 'claude_sonnet_3_5',
           'selectable_models' => %w[claude_sonnet_3_5 claude_sonnet_3_7 openai_chatgpt_4o],
+          'beta_models' => []
+        },
+        {
+          'feature_setting' => 'duo_agent_platform',
+          'default_model' => 'claude_sonnet_4_20250514',
+          'selectable_models' => %w[claude_sonnet_4_20250514 claude_sonnet_3_7],
           'beta_models' => []
         }
       ]
