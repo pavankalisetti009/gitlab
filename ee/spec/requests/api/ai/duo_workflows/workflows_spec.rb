@@ -1005,11 +1005,20 @@ expires_at: duo_workflow_service_token_expires_at })
       end
 
       context 'for model selection at namespace level', :saas do
+        include_context 'with model selections fetch definition service side-effect context'
+
         before do
           stub_feature_flags(instance_level_model_selection: false)
           stub_feature_flags(duo_agent_platform_model_selection: true)
           stub_feature_flags(ai_model_switching: true)
           stub_feature_flags(self_hosted_agent_platform: false)
+
+          stub_request(:get, fetch_service_endpoint_url)
+            .to_return(
+              status: 200,
+              body: model_definitions_response,
+              headers: { 'Content-Type' => 'application/json' }
+            )
         end
 
         it 'does not include model metadata headers' do
