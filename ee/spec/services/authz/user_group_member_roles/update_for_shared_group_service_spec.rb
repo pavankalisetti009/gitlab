@@ -54,6 +54,20 @@ RSpec.describe Authz::UserGroupMemberRoles::UpdateForSharedGroupService, feature
     expect(Authz::UserGroupMemberRole.count).to eq(2)
   end
 
+  # Can be removed when https://gitlab.com/groups/gitlab-org/-/epics/19048 is completed
+  context 'with duplicate member records' do
+    before do
+      member = GroupMember.where(user_id: user.id).first
+      GroupMember.build(member.attributes.except("id")).save!(validate: false)
+    end
+
+    it 'does not raise an ActiveRecord::StatementInvalid "PG::CardinalityViolation ..." error' do
+      expect(user.user_group_member_roles.length).to eq 0
+      expect { execute }.not_to raise_error
+      expect(user.user_group_member_roles.length).to eq 1
+    end
+  end
+
   context 'with minimal access role', :saas do
     let_it_be(:shared_with_group) { create(:group_with_plan, plan: :ultimate_plan) }
     let_it_be(:minimal_access_role) { create(:member_role, :minimal_access) }
