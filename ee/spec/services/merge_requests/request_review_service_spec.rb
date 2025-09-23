@@ -75,4 +75,41 @@ RSpec.describe ::MergeRequests::RequestReviewService, feature_category: :code_re
       end
     end
   end
+
+  context 'when a service account linked to a flow trigger' do
+    let_it_be(:service_account) { create(:service_account, username: 'flow-trigger-1') }
+
+    let_it_be(:flow_trigger) do
+      create(:ai_flow_trigger, project: merge_request.project, event_types: [2], user: service_account)
+    end
+
+    let(:run_service) { instance_double(::Ai::FlowTriggers::RunService) }
+
+    before do
+      merge_request.project.add_developer(service_account)
+
+      allow(GitlabSubscriptions::AddOnPurchase).to receive_message_chain(
+        :for_duo_enterprise,
+        :active,
+        :by_namespace,
+        :assigned_to_user,
+        :exists?
+      ).and_return(true)
+    end
+
+    context 'when requesting review from this account' do
+      it 'triggers the AI flow' do
+        merge_request.reviewers << service_account
+
+        expect(run_service).to receive(:execute).with({ input: "", event: :assign_reviewer })
+        expect(::Ai::FlowTriggers::RunService).to receive(:new)
+          .with(
+            project: merge_request.project, current_user: current_user,
+            resource: merge_request, flow_trigger: flow_trigger
+          ).and_return(run_service)
+
+        service.execute(merge_request, service_account)
+      end
+    end
+  end
 end
