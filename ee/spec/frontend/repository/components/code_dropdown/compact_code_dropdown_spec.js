@@ -32,13 +32,11 @@ describe('EE Compact Code Dropdown component', () => {
     gitRef,
   };
 
-  // Helper functions to find components
   const findCeCompactCodeDropdown = () => wrapper.findComponent(CeCompactCodeDropdown);
   const findGetProjectDetailsQuery = () => wrapper.findComponent(GetProjectDetailsQuery);
   const findWorkspacesDropdownGroup = () => wrapper.findComponent(WorkspacesDropdownGroup);
   const findLoadingIcon = () => wrapper.findComponent(GlLoadingIcon);
 
-  // Create component with feature flags
   const createComponent = ({ propsData = defaultPropsData, remoteDevelopmentFlag = true } = {}) => {
     wrapper = shallowMount(CompactCodeDropdown, {
       propsData,
@@ -54,6 +52,10 @@ describe('EE Compact Code Dropdown component', () => {
       },
     });
   };
+
+  afterEach(() => {
+    wrapper?.destroy();
+  });
 
   describe('base dropdown', () => {
     beforeEach(() => {
@@ -71,9 +73,18 @@ describe('EE Compact Code Dropdown component', () => {
         directoryDownloadLinks,
       });
     });
+
+    it('passes through all required props to CE dropdown', () => {
+      expect(findCeCompactCodeDropdown().props()).toMatchObject({
+        sshUrl,
+        httpUrl,
+        xcodeUrl,
+        currentPath,
+        directoryDownloadLinks,
+      });
+    });
   });
 
-  // Tests for workspaces dropdown group
   describe('workspaces dropdown group', () => {
     it('renders workspaces section when feature flag is enabled', async () => {
       createComponent();
@@ -126,6 +137,26 @@ describe('EE Compact Code Dropdown component', () => {
       await findGetProjectDetailsQuery().vm.$emit('result', { clusterAgents: [] });
 
       expect(findWorkspacesDropdownGroup().props('supportsWorkspaces')).toBe(false);
+    });
+
+    it('sets supportsWorkspaces to true when cluster agents exist', async () => {
+      createComponent();
+
+      await findGetProjectDetailsQuery().vm.$emit('result', {
+        clusterAgents: [{ id: 1 }, { id: 2 }],
+      });
+
+      expect(findWorkspacesDropdownGroup().props('supportsWorkspaces')).toBe(true);
+    });
+  });
+
+  describe('slot content', () => {
+    it('provides slot for EE content', async () => {
+      createComponent();
+
+      await findGetProjectDetailsQuery().vm.$emit('result', { clusterAgents: [{ id: 1 }] });
+
+      expect(findWorkspacesDropdownGroup().exists()).toBe(true);
     });
   });
 });
