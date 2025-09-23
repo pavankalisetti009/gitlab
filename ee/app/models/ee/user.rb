@@ -152,7 +152,10 @@ module EE
         foreign_key: 'creator_id',
         inverse_of: :user
 
-      has_many :country_access_logs, class_name: 'Users::CountryAccessLog', inverse_of: :user
+      has_many :country_access_logs,
+        class_name: 'Users::CountryAccessLog',
+        inverse_of: :user,
+        dependent: :destroy # rubocop:disable Cop/ActiveRecordDependent -- required by https://gitlab.com/groups/gitlab-org/-/epics/19085
 
       has_one :pipl_user, class_name: 'ComplianceManagement::PiplUser'
 
