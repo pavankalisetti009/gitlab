@@ -8,7 +8,7 @@ module Security
         DUMMY_SECRET = 'DUMMY_SECRET_FOR_AWS_AUTH_PROBING_NOT_REAL'
 
         def verify_token(token_value)
-          return failure_response unless valid_aws_access_key_format?(token_value)
+          return token_response(:unknown) unless valid_aws_access_key_format?(token_value)
 
           # Use dummy secret to probe AWS error responses for access key status
           #
@@ -33,7 +33,7 @@ module Security
           raise e
         rescue ResponseError, StandardError
           # Response parsing errors typically don't benefit from retry
-          failure_response
+          token_response(:unknown)
         end
 
         private
@@ -93,7 +93,7 @@ module Security
           case response.code.to_i
           when 200
             # Shouldn't happen with dummy credentials, but handle gracefully
-            success_response
+            token_response(:active)
 
           when 403
             # Parse AWS error response to determine access key status
@@ -110,7 +110,7 @@ module Security
 
           else
             # Other unexpected responses
-            failure_response
+            token_response(:unknown)
           end
         end
 
@@ -130,10 +130,10 @@ module Security
           case error_details[:code]
           when 'SignatureDoesNotMatch', 'InvalidSignature'
             # Access key exists and is active (wrong signature is expected with dummy credentials)
-            success_response
+            token_response(:active)
           else
             # Access key is inactive (doesn't exist, deactivated, revoked, etc.)
-            failure_response
+            token_response(:inactive)
           end
         end
 

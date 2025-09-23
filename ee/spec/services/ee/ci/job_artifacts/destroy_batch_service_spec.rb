@@ -27,7 +27,7 @@ RSpec.describe Ci::JobArtifacts::DestroyBatchService, feature_category: :job_art
 
       before do
         stub_current_geo_node(primary)
-        create(:ee_ci_job_artifact, :archive)
+        Gitlab::ExclusiveLease.skipping_transaction_check { create(:ee_ci_job_artifact, :archive) }
       end
 
       it 'creates an Geo::EventLog', :sidekiq_inline do
