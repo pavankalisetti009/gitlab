@@ -101,7 +101,7 @@ RSpec.describe User, feature_category: :system_access do
     it { is_expected.to have_many(:dependency_list_exports).class_name('Dependencies::DependencyListExport') }
     it { is_expected.to have_many(:elevated_members).class_name('Member') }
     it { is_expected.to have_many(:assigned_add_ons).class_name('GitlabSubscriptions::UserAddOnAssignment').inverse_of(:user).dependent(:destroy) }
-    it { is_expected.to have_many(:country_access_logs).class_name('Users::CountryAccessLog').inverse_of(:user) }
+    it { is_expected.to have_many(:country_access_logs).class_name('Users::CountryAccessLog').inverse_of(:user).dependent(:destroy) }
     it { is_expected.to have_many(:group_saml_identities).class_name('::Identity') }
     it { is_expected.to have_many(:group_saml_providers).through(:group_saml_identities).source(:saml_provider) }
     it { is_expected.to have_many(:requested_member_approvals).class_name('::GitlabSubscriptions::MemberManagement::MemberApproval').with_foreign_key(:requested_by_id) }
