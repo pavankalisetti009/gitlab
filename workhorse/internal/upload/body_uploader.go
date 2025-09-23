@@ -2,6 +2,7 @@
 package upload
 
 import (
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -53,12 +54,11 @@ func processRequestBody(h http.Handler, p Preparer, w http.ResponseWriter, r *ht
 
 	fh, err := destination.Upload(r.Context(), r.Body, r.ContentLength, "upload", opts)
 	if err != nil {
-		switch err.(type) {
-		case destination.SizeError:
-			http.Error(w, err.Error(), http.StatusRequestEntityTooLarge)
-		default:
-			fail.Request(w, r, fmt.Errorf("RequestBody: upload failed: %v", err))
+		status := http.StatusInternalServerError
+		if errors.Is(err, destination.ErrEntityTooLarge) {
+			status = http.StatusRequestEntityTooLarge
 		}
+		fail.Request(w, r, fmt.Errorf("RequestBody: upload failed: %w", err), fail.WithStatus(status))
 		return
 	}
 
