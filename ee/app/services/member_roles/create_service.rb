@@ -20,7 +20,9 @@ module MemberRoles
     private
 
     def build_role
-      MemberRole.new(params.merge(namespace: namespace))
+      organization_id = namespace ? nil : current_user.organization_id
+
+      MemberRole.new(params.merge(namespace: namespace, organization_id: organization_id))
     end
 
     def allowed?

@@ -18,6 +18,7 @@ class MemberRole < Authz::BaseRole # rubocop:disable Gitlab/NamespacedClass
   has_many :users, -> { distinct }, through: :members
   has_many :user_member_roles, class_name: 'Users::UserMemberRole'
   belongs_to :namespace
+  belongs_to :organization, class_name: 'Organizations::Organization'
 
   validates :name, presence: true
   validates :name, uniqueness: { scope: :namespace_id }

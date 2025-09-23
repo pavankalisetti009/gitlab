@@ -53,6 +53,7 @@ RSpec.describe MemberRoles::CreateService, feature_category: :system_access do
         context 'with root group' do
           context 'when on SaaS', :saas do
             let(:namespace) { group }
+            let(:expected_organization) { nil }
 
             it_behaves_like 'custom role creation', 'member_role_created', 'Member role was created' do
               let(:audit_entity_id) { group.id }
@@ -124,6 +125,8 @@ RSpec.describe MemberRoles::CreateService, feature_category: :system_access do
         end
 
         context 'when on self-managed' do
+          let(:expected_organization) { user.organization }
+
           it_behaves_like 'custom role creation', 'member_role_created', 'Member role was created'
 
           it_behaves_like 'tracking custom role action', 'create'
@@ -155,6 +158,7 @@ RSpec.describe MemberRoles::CreateService, feature_category: :system_access do
           end
 
           it_behaves_like 'custom role creation' do
+            let(:expected_organization) { user.organization }
             let(:fail_condition!) do
               allow(Ability).to receive(:allowed?).and_return(false)
             end

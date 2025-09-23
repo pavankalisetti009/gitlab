@@ -77,6 +77,9 @@ RSpec.shared_examples 'custom role creation' do
 
       role = role_class.last
       expect(role.name).to eq(role_name)
+      # TODO: remove the condition as part of https://gitlab.com/gitlab-org/gitlab/-/issues/553437
+      # as the shared_examples are used by admin_roles but they do not have organization yet
+      expect(role.organization).to eq(expected_organization) if role.respond_to?(:organization)
       expect(role.permissions.select { |_k, v| v }.symbolize_keys).to eq(abilities)
     end
 
