@@ -4786,6 +4786,17 @@ CREATE TABLE backup_vulnerability_merge_request_links (
 )
 PARTITION BY RANGE (date);
 
+CREATE TABLE backup_vulnerability_reads (
+    created_at timestamp with time zone NOT NULL,
+    updated_at timestamp with time zone NOT NULL,
+    original_record_identifier bigint NOT NULL,
+    vulnerability_id bigint NOT NULL,
+    project_id bigint NOT NULL,
+    date date NOT NULL,
+    data jsonb NOT NULL
+)
+PARTITION BY RANGE (date);
+
 CREATE TABLE backup_vulnerability_severity_overrides (
     created_at timestamp with time zone NOT NULL,
     updated_at timestamp with time zone NOT NULL,
@@ -32596,6 +32607,9 @@ ALTER TABLE ONLY backup_vulnerability_issue_links
 ALTER TABLE ONLY backup_vulnerability_merge_request_links
     ADD CONSTRAINT backup_vulnerability_merge_request_links_pkey PRIMARY KEY (original_record_identifier, date);
 
+ALTER TABLE ONLY backup_vulnerability_reads
+    ADD CONSTRAINT backup_vulnerability_reads_pkey PRIMARY KEY (original_record_identifier, date);
+
 ALTER TABLE ONLY backup_vulnerability_severity_overrides
     ADD CONSTRAINT backup_vulnerability_severity_overrides_pkey PRIMARY KEY (original_record_identifier, date);
 
@@ -38242,6 +38256,10 @@ CREATE INDEX index_backup_vulnerability_issue_links_on_project_id ON ONLY backup
 CREATE INDEX index_backup_vulnerability_merge_request_links_on_fk ON ONLY backup_vulnerability_merge_request_links USING btree (vulnerability_id);
 
 CREATE INDEX index_backup_vulnerability_merge_request_links_on_project_id ON ONLY backup_vulnerability_merge_request_links USING btree (project_id);
+
+CREATE INDEX index_backup_vulnerability_reads_on_fk ON ONLY backup_vulnerability_reads USING btree (vulnerability_id);
+
+CREATE INDEX index_backup_vulnerability_reads_on_project_id ON ONLY backup_vulnerability_reads USING btree (project_id);
 
 CREATE INDEX index_backup_vulnerability_severity_overrides_on_fk ON ONLY backup_vulnerability_severity_overrides USING btree (vulnerability_id);
 

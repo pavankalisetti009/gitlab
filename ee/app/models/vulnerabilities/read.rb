@@ -181,6 +181,10 @@ module Vulnerabilities
       by_vulnerability(ids).order_id_desc
     end
 
+    def self.es_type
+      ::Search::Elastic::References::Vulnerability::DOC_TYPE
+    end
+
     def self.arel_grouping_by_traversal_ids_and_vulnerability_id
       arel_table.grouping([arel_table['traversal_ids'], arel_table['vulnerability_id']])
     end

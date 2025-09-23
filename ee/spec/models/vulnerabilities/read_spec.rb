@@ -280,6 +280,12 @@ RSpec.describe Vulnerabilities::Read, type: :model, feature_category: :vulnerabi
     end
   end
 
+  describe '.es_type' do
+    subject { described_class.es_type }
+
+    it { is_expected.to eq('vulnerability') }
+  end
+
   describe '.by_scanner_ids' do
     it 'returns matching vulnerabilities' do
       vulnerability1 = create(:vulnerability, :with_finding, project: project)
