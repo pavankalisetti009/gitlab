@@ -76,7 +76,7 @@ RSpec.describe Security::ScanResultPolicies::PolicyViolationDetails, feature_cat
       scan_result_policy_read: policy, violation_data: data)
   end
 
-  describe '#violations' do
+  describe '#violations' do # rubocop:disable RSpec/MultipleMemoizedHelpers -- the total number increased because of the inherited memoized helpers which are required for the tests
     subject(:violations) { details.violations }
 
     let(:scan_finding_violation_data) do
@@ -96,10 +96,24 @@ RSpec.describe Security::ScanResultPolicies::PolicyViolationDetails, feature_cat
         security_orchestration_policy_configuration: security_orchestration_policy_configuration)
     end
 
+    let_it_be(:enforcement_type_warn_db_policy) do
+      create(:security_policy, :enforcement_type_warn, policy_index: 2, name: 'Warn DB Policy',
+        security_orchestration_policy_configuration: security_orchestration_policy_configuration)
+    end
+
     let(:warn_mode_policy_rule) { create(:approval_policy_rule, security_policy: warn_mode_db_policy) }
     let(:normal_policy_rule) { create(:approval_policy_rule, security_policy: normal_db_policy) }
+    let(:enforcement_type_warn_policy_rule) do
+      create(:approval_policy_rule, security_policy: enforcement_type_warn_db_policy)
+    end
 
-    where(:policy, :name, :report_type, :data, :status, :is_warning, :policy_rule, :is_warn_mode) do
+    let_it_be(:policy_dismissal) do
+      create(:policy_dismissal, merge_request: merge_request, security_policy: enforcement_type_warn_db_policy,
+        security_findings_uuids: ['uuid'])
+    end
+
+    where(:policy, :name, :report_type, :data, :status, :is_warning, :policy_rule, :is_warn_mode, :security_policy,
+      :enforcement_type, :dismissed) do
       [
         [
           ref(:policy1),
@@ -109,6 +123,9 @@ RSpec.describe Security::ScanResultPolicies::PolicyViolationDetails, feature_cat
           :failed,
           false,
           ref(:normal_policy_rule),
+          false,
+          ref(:normal_db_policy),
+          :enforce,
           false
         ],
         [
@@ -119,6 +136,9 @@ RSpec.describe Security::ScanResultPolicies::PolicyViolationDetails, feature_cat
           :failed,
           false,
           ref(:normal_policy_rule),
+          false,
+          ref(:normal_db_policy),
+          :enforce,
           false
         ],
         [
@@ -129,6 +149,9 @@ RSpec.describe Security::ScanResultPolicies::PolicyViolationDetails, feature_cat
           :failed,
           false,
           ref(:normal_policy_rule),
+          false,
+          ref(:normal_db_policy),
+          :enforce,
           false
         ],
         [
@@ -139,6 +162,22 @@ RSpec.describe Security::ScanResultPolicies::PolicyViolationDetails, feature_cat
           :warn,
           true,
           ref(:warn_mode_policy_rule),
+          true,
+          ref(:warn_mode_db_policy),
+          :enforce,
+          false
+        ],
+        [
+          ref(:policy1),
+          'Policy 1',
+          'scan_finding',
+          ref(:scan_finding_violation_data),
+          :warn,
+          true,
+          ref(:enforcement_type_warn_policy_rule),
+          true,
+          ref(:enforcement_type_warn_db_policy),
+          :warn,
           true
         ]
       ]
@@ -161,10 +200,13 @@ RSpec.describe Security::ScanResultPolicies::PolicyViolationDetails, feature_cat
         expect(violation.warning).to eq is_warning
         expect(violation.status).to eq status.to_s
         expect(violation.warn_mode).to eq is_warn_mode
+        expect(violation.security_policy_id).to eq security_policy.id
+        expect(violation.enforcement_type).to eq enforcement_type.to_s
+        expect(violation.dismissed).to eq dismissed
       end
     end
 
-    context 'when there is a violation that has no approval rules associated with it' do
+    context 'when there is a violation that has no approval rules associated with it' do # rubocop:disable RSpec/MultipleMemoizedHelpers -- the total number increased because of the inherited memoized helpers which are required for the tests
       let_it_be(:policy_without_rules) do
         create(:scan_result_policy_read, project: project,
           security_orchestration_policy_configuration: security_orchestration_policy_configuration)

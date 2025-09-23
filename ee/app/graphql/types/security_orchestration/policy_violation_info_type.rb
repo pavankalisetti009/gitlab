@@ -21,6 +21,20 @@ module Types
       field :status,
         type: PolicyViolationStatusEnum,
         description: 'Represents the status of the violated policy.'
+
+      field :enforcement_type,
+        type: PolicyEnforcementTypeEnum,
+        null: false,
+        description: 'Represents the enforcement type of the violated policy.'
+
+      field :security_policy_id,
+        type: GraphQL::Types::ID,
+        description: 'Represents the violated security policy id.'
+
+      field :dismissed,
+        type: GraphQL::Types::Boolean,
+        null: false,
+        description: 'Represents if a warn mode policy violation was dismissed.'
     end
   end
 end
