@@ -18,8 +18,7 @@ class ApprovalWrappedRule
   extend Forwardable
   include Gitlab::Utils::StrongMemoize
 
-  attr_reader :merge_request
-  attr_reader :approval_rule
+  attr_reader :merge_request, :approval_rule
 
   def_delegators(
     :@approval_rule,
