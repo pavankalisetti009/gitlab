@@ -23,7 +23,6 @@ export function initDuoPanel() {
     router,
     apolloProvider,
     provide: {
-      duoAgentsInvokePath: '',
       isSidePanelView: true,
     },
     render(createElement) {

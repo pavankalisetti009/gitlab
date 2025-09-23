@@ -10,7 +10,6 @@ query getBlobDuoWorkflowInfo($projectPath: ID!, $filePath: [String!]!, $ref: Str
         nodes {
           id
           showDuoWorkflowAction
-          duoWorkflowInvokePath
         }
       }
     }
