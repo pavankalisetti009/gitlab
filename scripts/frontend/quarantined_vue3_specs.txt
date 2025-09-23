@@ -34,7 +34,6 @@ spec/frontend/projects/settings_service_desk/components/service_desk_root_spec.j
 spec/frontend/ref/init_ambiguous_ref_modal_spec.js
 spec/frontend/releases/components/asset_links_form_spec.js
 spec/frontend/sidebar/components/confidential/sidebar_confidentiality_widget_spec.js
-spec/frontend/tooltips/index_spec.js
 spec/frontend/vue_alerts_spec.js
 spec/frontend/vue_popovers_spec.js
 spec/frontend/vue_shared/components/upload_dropzone/upload_dropzone_spec.js
