@@ -22,8 +22,7 @@ module Gitlab
           public_and_internal_projects: opts.fetch(:public_and_internal_projects, false),
           order_by: opts.fetch(:order_by, nil),
           sort: opts.fetch(:sort, nil),
-          filters: filters,
-          source: opts.fetch(:source, nil)
+          filters: filters
         )
       end
 
@@ -43,7 +42,7 @@ module Gitlab
         when :work_items
           options = super.merge(root_ancestor_ids: [group.root_ancestor.id])
 
-          if !glql_query?(source) && Feature.enabled?(:search_work_item_queries_notes, current_user)
+          if Feature.enabled?(:search_work_item_queries_notes, current_user)
             options[:related_ids] = related_ids_for_notes(Issue.name)
           end
 

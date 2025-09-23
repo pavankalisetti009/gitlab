@@ -5,15 +5,13 @@ module Gitlab
     class SearchResults
       include ActionView::Helpers::NumberHelper
       include Gitlab::Utils::StrongMemoize
-      include ::Search::Elastic::Concerns::SourceType
 
       ELASTIC_COUNT_LIMIT = 10000
       DEFAULT_PER_PAGE = Gitlab::SearchResults::DEFAULT_PER_PAGE
       DEFAULT_NUM_CONTEXT_LINES = 2
       MAX_NUM_CONTEXT_LINES = 20
 
-      attr_reader :current_user, :query, :public_and_internal_projects, :order_by, :sort, :filters, :root_ancestor_ids,
-        :source
+      attr_reader :current_user, :query, :public_and_internal_projects, :order_by, :sort, :filters, :root_ancestor_ids
 
       # Limit search results by passed projects
       # It allows us to search only for projects user has access to
@@ -114,7 +112,6 @@ module Gitlab
         @order_by = opts.fetch(:order_by, nil)
         @sort = opts.fetch(:sort, nil)
         @filters = opts.fetch(:filters, {})
-        @source = opts.fetch(:source, nil)
       end
 
       def failed?(scope)
@@ -336,8 +333,7 @@ module Gitlab
           public_and_internal_projects: public_and_internal_projects,
           order_by: order_by,
           sort: sort,
-          search_level: 'global',
-          source: source
+          search_level: 'global'
         }
       end
 
@@ -347,8 +343,7 @@ module Gitlab
           base_options.merge(filters.slice(:include_archived))
         when :work_items # issues
           options = work_item_scope_options
-          if !glql_query?(source) &&
-              !::Gitlab::Saas.feature_available?(:advanced_search) &&
+          if !::Gitlab::Saas.feature_available?(:advanced_search) &&
               Feature.enabled?(:search_work_item_queries_notes, current_user)
             options[:related_ids] = related_ids_for_notes(Issue.name)
           end
