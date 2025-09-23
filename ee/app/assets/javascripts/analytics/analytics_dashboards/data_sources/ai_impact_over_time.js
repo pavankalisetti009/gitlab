@@ -27,7 +27,10 @@ const extractMetricData = ({ metric, rawQueryResult: result }) => {
 
   switch (metric) {
     case AI_METRICS.CODE_SUGGESTIONS_USAGE_RATE: {
-      const { codeSuggestionsContributorsCount, codeContributorsCount } = resp;
+      const {
+        codeSuggestions: { contributorsCount: codeSuggestionsContributorsCount },
+        codeContributorsCount,
+      } = resp;
       return {
         rate: calculateRate({
           numerator: codeSuggestionsContributorsCount,
@@ -38,11 +41,13 @@ const extractMetricData = ({ metric, rawQueryResult: result }) => {
     }
 
     case AI_METRICS.CODE_SUGGESTIONS_ACCEPTANCE_RATE: {
-      const { codeSuggestionsAcceptedCount, codeSuggestionsShownCount } = resp;
+      const {
+        codeSuggestions: { acceptedCount, shownCount },
+      } = resp;
       return {
         rate: calculateRate({
-          numerator: codeSuggestionsAcceptedCount,
-          denominator: codeSuggestionsShownCount,
+          numerator: acceptedCount,
+          denominator: shownCount,
         }),
         tooltip,
       };

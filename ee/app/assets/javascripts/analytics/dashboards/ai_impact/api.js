@@ -9,11 +9,16 @@ import { calculateRate, generateMetricTableTooltip } from './utils';
  */
 
 /**
+ * @typedef {Object} CodeSuggestionsItem
+ * @property {Integer} contributorsCount - Number of code contributors who used GitLab Duo Code Suggestions features
+ * @property {Integer} acceptedCount - Number of code suggestions accepted by code contributors
+ * @property {Integer} shownCount - Number of code suggestions shown to code contributors
+ */
+
+/**
  * @typedef {Object} AiMetricItem
  * @property {Integer} codeContributorsCount - Number of code contributors
- * @property {Integer} codeSuggestionsContributorsCount - Number of code contributors who used GitLab Duo Code Suggestions features
- * @property {Integer} codeSuggestionsAcceptedCount - Number of code suggestions accepted by code contributors
- * @property {Integer} codeSuggestionsShownCount - Number of code suggestions shown to code contributors
+ * @property {CodeSuggestionsItem} codeSuggestions - Code suggestions response
  */
 
 /**
@@ -31,9 +36,11 @@ import { calculateRate, generateMetricTableTooltip } from './utils';
  */
 export const extractGraphqlAiData = ({
   codeContributorsCount = null,
-  codeSuggestionsContributorsCount = null,
-  codeSuggestionsAcceptedCount = null,
-  codeSuggestionsShownCount = null,
+  codeSuggestions: {
+    contributorsCount: codeSuggestionsContributorsCount = null,
+    acceptedCount = null,
+    shownCount = null,
+  } = {},
   duoChatContributorsCount = null,
   rootCauseAnalysisUsersCount = null,
   duoAssignedUsersCount = null,
@@ -44,8 +51,8 @@ export const extractGraphqlAiData = ({
   });
 
   const codeSuggestionsAcceptanceRate = calculateRate({
-    numerator: codeSuggestionsAcceptedCount,
-    denominator: codeSuggestionsShownCount,
+    numerator: acceptedCount,
+    denominator: shownCount,
   });
 
   const duoChatUsageRate = calculateRate({
@@ -71,8 +78,8 @@ export const extractGraphqlAiData = ({
       identifier: AI_METRICS.CODE_SUGGESTIONS_ACCEPTANCE_RATE,
       value: codeSuggestionsAcceptanceRate ?? '-',
       tooltip: generateMetricTableTooltip({
-        numerator: codeSuggestionsAcceptedCount,
-        denominator: codeSuggestionsShownCount,
+        numerator: acceptedCount,
+        denominator: shownCount,
       }),
     },
     [AI_METRICS.DUO_CHAT_USAGE_RATE]: {
