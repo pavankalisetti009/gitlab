@@ -30,13 +30,17 @@ export default {
     <template v-if="systemPrompt">
       <dt>{{ s__('AICatalog|System prompt') }}</dt>
       <dd>
-        <markdown :value="systemPrompt" />
+        <div class="gl-border gl-mb-5 gl-mt-3 gl-rounded-base gl-bg-subtle gl-p-5">
+          <markdown fallback-on-error :value="systemPrompt" />
+        </div>
       </dd>
     </template>
     <template v-if="userPrompt">
       <dt>{{ s__('AICatalog|User prompt') }}</dt>
       <dd>
-        <markdown :value="userPrompt" />
+        <div class="gl-border gl-mb-5 gl-mt-3 gl-rounded-base gl-bg-subtle gl-p-5">
+          <markdown fallback-on-error :value="userPrompt" />
+        </div>
       </dd>
     </template>
     <template v-if="tools">
