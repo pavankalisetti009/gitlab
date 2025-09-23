@@ -24,13 +24,34 @@ RSpec.describe 'Deleting a custom lifecycle', feature_category: :team_planning d
     stub_licensed_features(work_item_status: true)
   end
 
-  it 'accepts arguments and does nothing' do
+  it 'deletes the lifecycle and its statuses' do
     post_graphql_mutation(mutation, current_user: user)
 
     expect(response).to have_gitlab_http_status(:success)
     expect_graphql_errors_to_be_empty
 
-    expect(mutation_response['lifecycle']).to be_nil
+    expect(mutation_response['lifecycle']['id']).to eq(custom_lifecycle.to_gid.to_s)
+
+    expect(::WorkItems::Statuses::Custom::Lifecycle.count).to eq(0)
+    expect(::WorkItems::Statuses::Custom::Status.count).to eq(0)
+  end
+
+  context 'when lifecycle is in use' do
+    let!(:type_custom_lifecycle) do
+      create(:work_item_type_custom_lifecycle,
+        work_item_type: create(:work_item_type, :issue),
+        lifecycle: custom_lifecycle
+      )
+    end
+
+    it 'returns an error' do
+      post_graphql_mutation(mutation, current_user: user)
+
+      expect(response).to have_gitlab_http_status(:success)
+      expect(mutation_response['errors']).to include(
+        'Cannot delete lifecycle because it is currently in use.'
+      )
+    end
   end
 
   context 'when invalid input is provided' do
@@ -57,6 +78,21 @@ RSpec.describe 'Deleting a custom lifecycle', feature_category: :team_planning d
       expect_graphql_errors_to_include(
         "The resource that you are attempting to access does not exist " \
           "or you don't have permission to perform this action"
+      )
+    end
+  end
+
+  context 'when work_item_status_mvc2 feature flag is disabled' do
+    before do
+      stub_feature_flags(work_item_status_mvc2: false)
+    end
+
+    it 'returns an error' do
+      post_graphql_mutation(mutation, current_user: user)
+
+      expect(response).to have_gitlab_http_status(:success)
+      expect(mutation_response['errors']).to include(
+        'This feature is currently behind a feature flag, and it is not available.'
       )
     end
   end

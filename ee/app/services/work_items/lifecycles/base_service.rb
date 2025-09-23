@@ -484,7 +484,7 @@ module WorkItems
       end
 
       def status_mvc2_enabled?
-        group.work_item_status_mvc2_feature_flag_enabled?
+        group.try(:work_item_status_mvc2_feature_flag_enabled?)
       end
     end
   end

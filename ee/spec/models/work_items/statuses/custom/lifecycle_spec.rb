@@ -275,4 +275,30 @@ RSpec.describe WorkItems::Statuses::Custom::Lifecycle, feature_category: :team_p
       )
     end
   end
+
+  describe '#in_use?' do
+    before do
+      stub_licensed_features(work_item_status: true)
+    end
+
+    context 'when lifecycle is associated with a work item type in the namespace' do
+      before do
+        create(:work_item_type_custom_lifecycle,
+          work_item_type: create(:work_item_type, :issue),
+          lifecycle: custom_lifecycle,
+          namespace: namespace
+        )
+      end
+
+      it 'returns true' do
+        expect(custom_lifecycle.in_use?(namespace.id)).to be true
+      end
+    end
+
+    context 'when lifecycle is not associated with any work item type in the namespace' do
+      it 'returns false' do
+        expect(custom_lifecycle.in_use?(namespace.id)).to be false
+      end
+    end
+  end
 end

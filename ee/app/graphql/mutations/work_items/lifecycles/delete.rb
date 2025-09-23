@@ -22,12 +22,21 @@ module Mutations
           required: true,
           description: 'Global ID of the lifecycle to delete.'
 
-        def resolve(namespace_path:, **args) # rubocop:disable Lint/UnusedMethodArgument -- mock implementation
-          authorized_find!(namespace_path: namespace_path)
+        def resolve(namespace_path:, **args)
+          group = authorized_find!(namespace_path: namespace_path)
+
+          response = ::WorkItems::Lifecycles::DeleteService.new(
+            container: group,
+            current_user: current_user,
+            params: args
+          ).execute
+
+          response_object = response.payload[:lifecycle] if response.success?
+          response_errors = response.error? ? Array(response.errors) : []
 
           {
-            lifecycle: nil,
-            errors: []
+            lifecycle: response_object,
+            errors: response_errors
           }
         end
 

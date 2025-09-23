@@ -303,7 +303,7 @@ RSpec.describe WorkItems::Statuses::Custom::Status, feature_category: :team_plan
       end
 
       it 'returns true' do
-        expect(custom_status.in_use?).to be_truthy
+        expect(custom_status.in_use?).to be true
       end
     end
 
@@ -311,6 +311,55 @@ RSpec.describe WorkItems::Statuses::Custom::Status, feature_category: :team_plan
       it 'returns false' do
         expect(custom_status.in_use?).to be_falsy
       end
+    end
+  end
+
+  describe '#can_be_deleted_from_namespace?' do
+    let_it_be(:issue_work_item_type) { create(:work_item_type, :issue) }
+
+    let_it_be(:to_do_status) { create(:work_item_custom_status, :to_do, namespace: group) }
+
+    let_it_be(:lifecycle) do
+      create(:work_item_custom_lifecycle, namespace: group, default_open_status: to_do_status)
+    end
+
+    subject { to_do_status.can_be_deleted_from_namespace?(lifecycle) }
+
+    before do
+      stub_licensed_features(work_item_status: true)
+    end
+
+    context 'when status is not used outside of lifecycle' do
+      it { is_expected.to be true }
+    end
+
+    context 'when status is also used in another lifecycle' do
+      let_it_be(:lifecycle_2) do
+        create(:work_item_custom_lifecycle, namespace: group, default_open_status: to_do_status)
+      end
+
+      it { is_expected.to be false }
+    end
+
+    context 'when status is in use by work items' do
+      let_it_be(:work_item) { create(:work_item, :issue, custom_status_id: to_do_status, namespace: group) }
+
+      it { is_expected.to be false }
+    end
+
+    context 'when status is used in a mapping' do
+      let_it_be(:to_do_status_2) { create(:work_item_custom_status, :to_do, namespace: group) }
+
+      let_it_be(:custom_status_mapping) do
+        create(:work_item_custom_status_mapping,
+          namespace: group,
+          work_item_type: issue_work_item_type,
+          old_status: to_do_status,
+          new_status: to_do_status_2
+        )
+      end
+
+      it { is_expected.to be false }
     end
   end
 end

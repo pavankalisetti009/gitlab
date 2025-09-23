@@ -89,6 +89,13 @@ module WorkItems
           system_defined_usage_exists?
         end
 
+        def can_be_deleted_from_namespace?(current_lifecycle)
+          namespace = current_lifecycle.namespace
+          !used_in_other_lifecycle?(current_lifecycle, namespace) &&
+            !in_use? &&
+            !used_in_mapping?(namespace)
+        end
+
         private
 
         def validate_statuses_per_namespace_limit
@@ -114,6 +121,17 @@ module WorkItems
           )
 
           system_defined_status.in_use_in_namespace?(namespace)
+        end
+
+        def used_in_other_lifecycle?(lifecycle, namespace)
+          lifecycle_statuses
+            .where(namespace: namespace)
+            .where.not(lifecycle: lifecycle)
+            .exists?
+        end
+
+        def used_in_mapping?(namespace)
+          Statuses::Custom::Mapping.exists?(namespace: namespace, old_status: self)
         end
       end
     end
