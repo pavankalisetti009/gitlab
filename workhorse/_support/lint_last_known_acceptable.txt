@@ -113,5 +113,4 @@ internal/upload/destination/objectstore/gocloud_object_test.go:42:2: empty: use 
 internal/upload/destination/objectstore/test/gocloud_stub.go:46:2: empty: use require.Empty (testifylint)
 internal/upload/uploads_test.go:527:3: formatter: using msgAndArgs with non-string first element (msg) causes panic (testifylint)
 internal/upload/uploads_test.go:545:3: formatter: using msgAndArgs with non-string first element (msg) causes panic (testifylint)
-internal/upload/body_uploader_test.go:146:30: echoProxy - expectedBodyLength always receives fileLen (19) (unparam)
 internal/upstream/routes.go:221:74: (*upstream).wsRoute - matchers always receives nil (unparam)

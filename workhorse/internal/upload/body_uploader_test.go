@@ -95,21 +95,50 @@ func TestRequestBodyErrors(t *testing.T) {
 	}
 }
 
-func TestRequestBodySizeError(t *testing.T) {
+func TestRequestBodyUploadFailedErrorMessage(t *testing.T) {
 	testhelper.ConfigureSecret()
 
-	// Create a body that's larger than what the destination will accept
-	body := strings.NewReader(fileContent)
+	tests := []struct {
+		name           string
+		preparer       Preparer
+		expectedStatus int
+		description    string
+	}{
+		{
+			name:           "Size limit exceeded triggers RequestBody upload failed error",
+			preparer:       &sizeErrorPreparer{},
+			expectedStatus: http.StatusRequestEntityTooLarge,
+			description:    "Should return 413 status when upload size exceeds limit",
+		},
+		{
+			name:           "Invalid temp path triggers RequestBody upload failed error",
+			preparer:       &uploadErrorPreparer{},
+			expectedStatus: http.StatusInternalServerError,
+			description:    "Should return 500 status when upload destination is invalid",
+		},
+	}
 
-	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			body := strings.NewReader(fileContent)
 
-	// Use a preparer that will cause a size error
-	preparer := &sizeErrorPreparer{}
+			ctx, cancel := context.WithCancel(context.Background())
+			defer cancel()
 
-	resp := testUpload(ctx, &rails{}, preparer, echoProxy(t, fileLen), body)
-	defer resp.Body.Close()
-	require.Equal(t, http.StatusRequestEntityTooLarge, resp.StatusCode)
+			proxy := http.HandlerFunc(func(_ http.ResponseWriter, _ *http.Request) {
+				assert.Fail(t, "request should not be proxied when upload fails")
+			})
+
+			resp := testUpload(ctx, &rails{}, test.preparer, proxy, body)
+			defer resp.Body.Close()
+
+			require.Equal(t, test.expectedStatus, resp.StatusCode, test.description)
+
+			responseBody, err := io.ReadAll(resp.Body)
+			require.NoError(t, err)
+			require.NotEmpty(t, responseBody, "Error response should have a body")
+		})
+	}
 }
 
 func testNoProxyInvocation(t *testing.T, expectedStatus int, auth api.PreAuthorizer, preparer Preparer) {
@@ -231,4 +260,16 @@ func (s *sizeErrorPreparer) Prepare(_ *api.Response) (*destination.UploadOpts, e
 	// Set a very small size limit to trigger a size error
 	opts.MaximumSize = 1
 	return opts, nil
+}
+
+type uploadErrorPreparer struct{}
+
+func (u *uploadErrorPreparer) Prepare(_ *api.Response) (*destination.UploadOpts, error) {
+	// Create opts that will cause upload to fail by using a device file as temp path
+	// Device files like /dev/null cannot be used as directories, so mkdir will fail
+	// This is more reliable than depending on filesystem permissions
+	return &destination.UploadOpts{
+		LocalTempPath: "/dev/null", // This will cause mkdir to fail reliably
+		MaximumSize:   1024 * 1024, // 1MB
+	}, nil
 }
