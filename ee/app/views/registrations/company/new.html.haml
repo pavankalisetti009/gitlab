@@ -6,8 +6,8 @@
   = render "layouts/bizible"
 = render "layouts/google_tag_manager_body"
 
-.gl-max-w-4xl.gl-mx-auto.gl-grid.md:gl-grid-cols-9.gl-gap-8
-  .gl-col-span-6{ class: onboarding_status_presenter.show_company_form_side_column? ? '' : 'md:gl-col-start-3' }
+.gl-max-w-4xl.gl-mx-auto.gl-grid.gl-gap-8{ class: "@md/panel:gl-grid-cols-9" }
+  .gl-col-span-6{ class: onboarding_status_presenter.show_company_form_side_column? ? '' : '@md/panel:gl-col-start-3' }
     %h2.gl-mt-0.gl-text-center
       = _("Tell us about your company")
 

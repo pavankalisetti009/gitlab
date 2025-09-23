@@ -1,7 +1,7 @@
 - namespace = local_assigns.fetch(:namespace)
 - return unless ::Gitlab::Saas.feature_available?(:gitlab_com_subscriptions) && namespace
 
-- list_item_classes = '!gl-grid md:gl-grid-cols-3 gl-gap-x-3'
+- list_item_classes = '!gl-grid @md/panel:gl-grid-cols-3 gl-gap-x-3'
 
 %li{ class: list_item_classes }
   %span.gl-text-subtle Plan:
