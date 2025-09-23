@@ -16,10 +16,6 @@ module EE
       with_scope :user
       condition(:visual_review_bot, score: 0) { @user&.visual_review_bot? }
 
-      desc "User is suggested reviewers bot"
-      with_scope :user
-      condition(:suggested_reviewers_bot, score: 0) { @user&.suggested_reviewers_bot? }
-
       with_scope :global
       condition(:license_block) { License.block_changes? }
 

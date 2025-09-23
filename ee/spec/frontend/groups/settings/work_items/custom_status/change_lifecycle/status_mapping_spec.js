@@ -1,3 +1,4 @@
+import { nextTick } from 'vue';
 import { GlCollapsibleListbox, GlTruncate, GlIcon, GlButton } from '@gitlab/ui';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import StatusMapping from 'ee/groups/settings/work_items/custom_status/change_lifecycle/status_mapping.vue';
@@ -48,6 +49,7 @@ describe('StatusMapping', () => {
       propsData: { ...defaultProps, ...props },
       stubs: {
         GlCollapsibleListbox,
+        GlIcon,
       },
     });
   };
@@ -216,6 +218,86 @@ describe('StatusMapping', () => {
       expect(firstToggleButton.props('buttonTextClasses')).toBe(
         'gl-w-full gl-flex gl-justify-between',
       );
+    });
+  });
+
+  describe('Listbox Search Functionality', () => {
+    beforeEach(() => {
+      createComponent();
+    });
+
+    it('handles search input and updates listbox items', async () => {
+      const secondListBox = findListboxByIndex(1);
+      const searchTerm = 'Ester';
+
+      // Get initial items
+      const initialItems = secondListBox.props('items');
+
+      secondListBox.vm.$emit('search', searchTerm);
+      await nextTick();
+
+      const updatedItems = secondListBox.props('items');
+      expect(initialItems).not.toHaveLength(updatedItems.length);
+
+      // Items should be filtered based on search term
+      updatedItems.forEach((item) => {
+        expect(item.text.toLowerCase()).toContain(searchTerm.toLowerCase());
+      });
+    });
+
+    it('shows all items when search term is empty', async () => {
+      const secondListBox = findListboxByIndex(1);
+
+      // First apply a search filter
+      secondListBox.vm.$emit('search', 'specific-term');
+      await nextTick();
+
+      const filteredItems = secondListBox.props('items');
+
+      expect(filteredItems).toHaveLength(0);
+
+      // Then clear the search
+      await secondListBox.vm.$emit('search', '');
+      await nextTick();
+
+      const items = secondListBox.props('items');
+
+      expect(items).toHaveLength(2);
+    });
+
+    it('triggers search event when user searches', async () => {
+      const firstListbox = findListboxByIndex(0);
+      const searchTerm = 'test search';
+
+      firstListbox.vm.$emit('search', searchTerm);
+      await nextTick();
+
+      expect(firstListbox.emitted('search')).toEqual([[searchTerm]]);
+    });
+
+    it('maintains independent search for each listbox', async () => {
+      const firstListbox = findListboxByIndex(0);
+      const secondListbox = findListboxByIndex(1);
+      const firstSearchTerm = 'first';
+      const secondSearchTerm = 'Ester';
+
+      // Search in first listbox
+      await firstListbox.vm.$emit('search', firstSearchTerm);
+      await nextTick();
+
+      // Search in second listbox
+      await secondListbox.vm.$emit('search', secondSearchTerm);
+      await nextTick();
+
+      const firstItems = firstListbox.props('items');
+      const secondItems = secondListbox.props('items');
+
+      // Each listbox should have its own filtered results
+      expect(firstItems).toHaveLength(0);
+      expect(secondItems).toHaveLength(1);
+
+      // Verify they can have different results
+      expect(firstItems).not.toEqual(secondItems);
     });
   });
 });

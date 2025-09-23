@@ -1,0 +1,11 @@
+query getAllStatuses($name: String) {
+  workItemAllowedStatuses(name: $name) {
+    nodes {
+      id
+      name
+      iconName
+      color
+      category
+    }
+  }
+}

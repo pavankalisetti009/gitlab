@@ -195,6 +195,43 @@ RSpec.describe Ai::Catalog::Item, feature_category: :workflow_catalog do
         expect(result).to contain_exactly(agent_type_item)
       end
     end
+
+    describe '.order_by_id_desc' do
+      subject { described_class.order_by_id_desc }
+
+      let_it_be(:gitlab_item_1) { create(:ai_catalog_agent, public: true) }
+      let_it_be(:regular_item_1) { create(:ai_catalog_agent, public: true) }
+      let_it_be(:gitlab_item_2) { create(:ai_catalog_agent, public: true) }
+      let_it_be(:regular_item_2) { create(:ai_catalog_agent, public: true) }
+
+      before do
+        stub_const('Ai::Catalog::Item::GITLAB_ITEM_IDS', [gitlab_item_1.id, gitlab_item_2.id])
+      end
+
+      it 'orders by id desc when not SaaS' do
+        is_expected.to eq(
+          [
+            regular_item_2,
+            gitlab_item_2,
+            regular_item_1,
+            gitlab_item_1
+          ]
+        )
+      end
+
+      context 'when SaaS', :saas do
+        it 'sorts GitLab items first, then id desc' do
+          is_expected.to eq(
+            [
+              gitlab_item_1,
+              gitlab_item_2,
+              regular_item_2,
+              regular_item_1
+            ]
+          )
+        end
+      end
+    end
   end
 
   describe 'callbacks' do
