@@ -44508,6 +44508,9 @@ msgstr ""
 msgid "Observability|Create issues from this page to view them as related items here."
 msgstr ""
 
+msgid "Observability|Created at"
+msgstr ""
+
 msgid "Observability|Creates alerts automatically for Observability-related errors."
 msgstr ""
 
@@ -44655,6 +44658,9 @@ msgstr ""
 msgid "Observability|Loading metrics..."
 msgstr ""
 
+msgid "Observability|Manage your o11y service connection settings."
+msgstr ""
+
 msgid "Observability|Message validation failed"
 msgstr ""
 
@@ -44664,6 +44670,9 @@ msgstr ""
 msgid "Observability|Native Kubernetes monitoring with pod-level metrics and cluster health insights"
 msgstr ""
 
+msgid "Observability|New O11y service setting"
+msgstr ""
+
 msgid "Observability|No Cost"
 msgstr ""
 
@@ -44671,6 +44680,9 @@ msgid "Observability|O11y Service Settings"
 msgstr ""
 
 msgid "Observability|O11y service configuration"
+msgstr ""
+
+msgid "Observability|O11y service configurations"
 msgstr ""
 
 msgid "Observability|O11y service settings"
