@@ -26,6 +26,4 @@ RSpec.describe Users::Internal, feature_category: :user_profile do
       end.not_to change { User.count }
     end
   end
-
-  it_behaves_like 'bot users', :suggested_reviewers_bot
 end
