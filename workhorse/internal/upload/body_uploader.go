@@ -53,7 +53,12 @@ func processRequestBody(h http.Handler, p Preparer, w http.ResponseWriter, r *ht
 
 	fh, err := destination.Upload(r.Context(), r.Body, r.ContentLength, "upload", opts)
 	if err != nil {
-		fail.Request(w, r, fmt.Errorf("RequestBody: upload failed: %v", err))
+		switch err.(type) {
+		case destination.SizeError:
+			http.Error(w, err.Error(), http.StatusRequestEntityTooLarge)
+		default:
+			fail.Request(w, r, fmt.Errorf("RequestBody: upload failed: %v", err))
+		}
 		return
 	}
 
