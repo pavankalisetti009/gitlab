@@ -1,5 +1,6 @@
 <script>
 import { GlCollapsibleListbox, GlTruncate, GlIcon, GlButton } from '@gitlab/ui';
+import fuzzaldrinPlus from 'fuzzaldrin-plus';
 import { getAdaptiveStatusColor } from '~/lib/utils/color_utils';
 import { getNewStatusOptionsFromTheSameState, getDefaultStatusMapping } from '../utils';
 
@@ -27,6 +28,7 @@ export default {
         this.currentLifecycle.statuses,
         this.selectedLifecycle.statuses,
       ),
+      searchTerm: '',
     };
   },
   computed: {
@@ -72,7 +74,16 @@ export default {
       return newStatus || {};
     },
     getItemsForCurrentStatus({ currentStatus }) {
-      return getNewStatusOptionsFromTheSameState(currentStatus, this.newLifecycleStatuses) || [];
+      const availableStatuses =
+        getNewStatusOptionsFromTheSameState(currentStatus, this.newLifecycleStatuses) || [];
+
+      if (this.searchTerm.trim()) {
+        return fuzzaldrinPlus.filter(availableStatuses, this.searchTerm.trim(), {
+          key: 'name',
+        });
+      }
+
+      return availableStatuses;
     },
     getEligibleItemsForCurrentStatus({ currentStatus }) {
       return this.getItemsForCurrentStatus({ currentStatus }).map(
@@ -104,6 +115,13 @@ export default {
     },
     getEligibleItemsForStatus(status) {
       return this.statusConfigs[status.id]?.eligibleItems || [];
+    },
+    clearSearchTerm(index) {
+      this.searchTerm = '';
+      const listBox = this.$refs[`listbox-${index}`];
+      if (listBox && listBox[0]) {
+        listBox[0]?.$refs?.searchBox?.clearInput();
+      }
     },
   },
 };
@@ -141,7 +159,7 @@ export default {
       <div class="gl-divide-y gl-divide-gray-200">
         <!-- Dynamic Rows -->
         <div
-          v-for="status in currentLifecycle.statuses"
+          v-for="(status, index) in currentLifecycle.statuses"
           :key="status.id"
           class="status-row gl-grid gl-grid-cols-2"
         >
@@ -164,6 +182,7 @@ export default {
           <!-- New Status Column -->
           <div class="gl-border-b gl-px-4 gl-py-3">
             <gl-collapsible-listbox
+              :ref="`listbox-${index}`"
               block
               searchable
               is-check-centered
@@ -172,6 +191,8 @@ export default {
               :items="getEligibleItemsForStatus(status)"
               :header-text="s__('WorkItem|Select new status')"
               @select="changeSelectedStatus(status.id, $event)"
+              @search="searchTerm = $event"
+              @hidden="clearSearchTerm(index)"
             >
               <template #toggle>
                 <gl-button
