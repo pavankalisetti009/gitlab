@@ -86,7 +86,7 @@ module Gitlab
             max_hash_size: 50000,
             max_total_elements: 250000,
             max_json_size_bytes: 1.megabyte,
-            mode: :logging
+            mode: :enforced
           }
         },
         {
@@ -98,7 +98,7 @@ module Gitlab
             max_hash_size: 50000,
             max_total_elements: 250000,
             max_json_size_bytes: 1.megabyte,
-            mode: :logging
+            mode: :enforced
           }
         },
         {
@@ -180,7 +180,7 @@ module Gitlab
       rescue BodySizeExceededError, ::Gitlab::Json::StreamValidator::LimitExceededError => ex
         log_exceeded(ex, request, limits)
 
-        return error_response(ex, 400) unless logging_mode?(limits) || global_logging?
+        return error_response(ex, 400) unless logging_mode?(limits)
 
         @app.call(env)
       end
@@ -247,7 +247,7 @@ module Gitlab
       end
 
       def logging_mode?(limits)
-        limits[:mode] == :logging
+        limits[:mode] == :logging || global_logging?
       end
 
       def json_request?(request)
