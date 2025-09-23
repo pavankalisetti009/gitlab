@@ -17,17 +17,19 @@ RSpec.describe Security::SecretDetection::PartnerTokens::BaseClient, feature_cat
   describe 'TokenStatus' do
     using RSpec::Parameterized::TableSyntax
 
-    where(:active_value, :is_active, :is_inactive) do
-      true  | true  | false
-      false | false | true
+    where(:status_value, :is_active, :is_inactive, :is_unknown) do
+      :active   | true  | false | false
+      :inactive | false | true  | false
+      :unknown  | false | false | true
     end
 
     with_them do
-      let(:status) { described_class::TokenStatus.new(active: active_value) }
+      let(:status) { described_class::TokenStatus.new(status: status_value) }
 
       it 'returns expected activity status' do
         expect(status.active?).to eq(is_active)
         expect(status.inactive?).to eq(is_inactive)
+        expect(status.unknown?).to eq(is_unknown)
       end
     end
   end
@@ -173,21 +175,19 @@ RSpec.describe Security::SecretDetection::PartnerTokens::BaseClient, feature_cat
   end
 
   describe 'response helpers' do
-    describe '#success_response' do
-      it 'creates active TokenStatus with basic metadata' do
-        result = client.send(:success_response)
+    using RSpec::Parameterized::TableSyntax
 
-        expect(result).to be_active
-        expect(result.metadata[:partner]).to eq('BASE')
-        expect(result.metadata[:verified_at]).to match(/\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z/)
-      end
+    where(:status, :expected_method) do
+      :active   | :active?
+      :inactive | :inactive?
+      :unknown  | :unknown?
     end
 
-    describe '#failure_response' do
-      it 'creates inactive TokenStatus with basic metadata' do
-        result = client.send(:failure_response)
+    with_them do
+      it "creates #{params[:status]} TokenStatus with basic metadata" do
+        result = client.send(:token_response, status)
 
-        expect(result).to be_inactive
+        expect(result.send(expected_method)).to be true
         expect(result.metadata[:partner]).to eq('BASE')
         expect(result.metadata[:verified_at]).to match(/\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z/)
       end

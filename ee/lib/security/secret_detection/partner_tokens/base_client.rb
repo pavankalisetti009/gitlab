@@ -10,13 +10,11 @@ module Security
         ResponseError = Class.new(StandardError)
         RateLimitError = Class.new(ResponseError)
 
-        TokenStatus = Struct.new(:active, :metadata, keyword_init: true) do
-          def active?
-            active
-          end
-
-          def inactive?
-            !active?
+        TokenStatus = Struct.new(:status, :metadata, keyword_init: true) do
+          Security::TokenStatus::STATUSES.each_key do |state|
+            define_method(:"#{state}?") do
+              status == state
+            end
           end
         end
 
@@ -59,16 +57,9 @@ module Security
           raise ResponseError, "Invalid XML response: #{e.message}"
         end
 
-        def success_response
+        def token_response(status)
           TokenStatus.new(
-            active: true,
-            metadata: build_metadata
-          )
-        end
-
-        def failure_response
-          TokenStatus.new(
-            active: false,
+            status: status,
             metadata: build_metadata
           )
         end
