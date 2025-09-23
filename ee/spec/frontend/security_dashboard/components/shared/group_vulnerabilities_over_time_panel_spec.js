@@ -16,7 +16,7 @@ jest.mock('~/alert');
 
 describe('GroupVulnerabilitiesOverTimePanel', () => {
   const todayInIsoFormat = '2022-07-06';
-  const ninetyDaysAgoInIsoFormat = '2022-04-07';
+  const thirtyDaysAgoInIsoFormat = '2022-06-06';
   useFakeDate(todayInIsoFormat);
 
   let wrapper;
@@ -239,7 +239,7 @@ describe('GroupVulnerabilitiesOverTimePanel', () => {
       expect(vulnerabilitiesOverTimeHandler).toHaveBeenCalledWith({
         fullPath: mockGroupFullPath,
         projectId: mockFilters.projectId,
-        startDate: ninetyDaysAgoInIsoFormat,
+        startDate: thirtyDaysAgoInIsoFormat,
         endDate: todayInIsoFormat,
         includeBySeverity: true,
         includeByReportType: false,
