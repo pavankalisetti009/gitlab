@@ -1,12 +1,12 @@
 @import 'page_bundles/mixins_and_variables_and_functions';
 
-@include media-breakpoint-up(md) {
+@include gl-container-width-up(md, panel) {
   .actions-cell {
     width: $gl-spacing-scale-6;
   }
 }
 
-@include media-breakpoint-down(md) {
+@include gl-container-width-down(lg, panel) {
   .actions-cell {
     div {
       width: 100% !important;
