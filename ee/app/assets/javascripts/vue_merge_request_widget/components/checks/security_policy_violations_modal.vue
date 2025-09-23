@@ -85,9 +85,16 @@ export default {
     nextSteps() {
       return this.showModeSelection ? INITIAL_STATE_NEXT_STEPS : WARN_MODE_NEXT_STEPS;
     },
+    policyItems() {
+      return this.policies.map((policy) => ({
+        ...policy,
+        text: policy.name,
+        value: policy.securityPolicyId,
+      }));
+    },
     selectedPolicyText() {
       return getSelectedOptionsText({
-        options: this.policies,
+        options: this.policyItems,
         selected: this.selectedPolicies,
         placeholder: s__('SecurityOrchestration|Select policies'),
         maxOptionsShown: 2,
@@ -176,7 +183,7 @@ export default {
           data-testid="policy-selector"
           block
           multiple
-          :items="policies"
+          :items="policyItems"
           :selected="selectedPolicies"
           :toggle-text="selectedPolicyText"
           @select="handleSelect('selectedPolicies', $event)"

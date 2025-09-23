@@ -36,6 +36,15 @@ const createMockApprovalPolicy = (data = {}) => {
   };
 };
 
+const mockAnyMergeRequestPolicyViolation = {
+  dismissed: false,
+  enforcementType: 'ENFORCE',
+  name: 'policy',
+  reportType: 'ANY_MERGE_REQUEST',
+  securityPolicyId: 1,
+  status: 'failed',
+};
+
 describe('Merge request reports blockers page component', () => {
   let wrapper;
 
@@ -126,7 +135,7 @@ describe('Merge request reports blockers page component', () => {
                 severity: 'secerity',
               },
             ],
-            policies: [{ name: 'policy', reportType: 'SCAN_FINDING', status: 'failed' }],
+            policies: [{ ...mockAnyMergeRequestPolicyViolation, reportType: 'SCAN_FINDING' }],
             previousScanFinding: [],
           },
         });
@@ -152,7 +161,7 @@ describe('Merge request reports blockers page component', () => {
             anyMergeRequest: [{ commits: 'commits', name: 'name' }],
             licenseScanning: [],
             newScanFinding: [],
-            policies: [{ name: 'policy', reportType: 'ANY_MERGE_REQUEST', status: 'failed' }],
+            policies: [mockAnyMergeRequestPolicyViolation],
             previousScanFinding: [],
             comparisonPipelines: [],
           },
@@ -175,7 +184,7 @@ describe('Merge request reports blockers page component', () => {
           anyMergeRequest: [{ commits: 'commits', name: 'name' }],
           licenseScanning: [],
           newScanFinding: [],
-          policies: [{ name: 'policy', reportType: 'ANY_MERGE_REQUEST', status: 'failed' }],
+          policies: [mockAnyMergeRequestPolicyViolation],
           previousScanFinding: [],
           comparisonPipelines: [],
         },
@@ -205,7 +214,7 @@ describe('Merge request reports blockers page component', () => {
           anyMergeRequest: [{ commits: 'commits', name: 'name' }],
           licenseScanning: [],
           newScanFinding: [],
-          policies: [{ name: 'policy', reportType: 'ANY_MERGE_REQUEST', status: 'failed' }],
+          policies: [mockAnyMergeRequestPolicyViolation],
           previousScanFinding: [],
           comparisonPipelines: [],
         },
@@ -229,7 +238,7 @@ describe('Merge request reports blockers page component', () => {
           anyMergeRequest: [{ commits: 'commits', name: 'name' }],
           licenseScanning: [],
           newScanFinding: [],
-          policies: [{ name: 'policy', reportType: 'ANY_MERGE_REQUEST', status: 'failed' }],
+          policies: [mockAnyMergeRequestPolicyViolation],
           previousScanFinding: [],
           comparisonPipelines: [],
         },
@@ -255,7 +264,7 @@ describe('Merge request reports blockers page component', () => {
           anyMergeRequest: [{ commits: 'commits', name: 'name' }],
           licenseScanning: [],
           newScanFinding: [],
-          policies: [{ name: 'policy', reportType: 'ANY_MERGE_REQUEST', status: 'failed' }],
+          policies: [mockAnyMergeRequestPolicyViolation],
           previousScanFinding: [],
           comparisonPipelines: [],
         },
