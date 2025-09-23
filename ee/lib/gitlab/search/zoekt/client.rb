@@ -44,11 +44,6 @@ module Gitlab
         def search_zoekt_proxy(query, num:, search_mode:, current_user: nil, **options)
           start = Time.current
           targets = options[:targets]
-          if search_level(options) != :project && !Ability.allowed?(current_user, :read_cross_project)
-            log_debug('User does not have permission to search across projects, returning empty response') if debug?
-            return Gitlab::Search::Zoekt::Response.empty
-          end
-
           project_id = options[:project_id]
           group_id = options[:group_id]
 
@@ -58,7 +53,7 @@ module Gitlab
           end
 
           params = ::Search::Zoekt::Params.new(current_user, limit: num, **options)
-          payload = ::Search::Zoekt::SearchRequest.new(
+          req = ::Search::Zoekt::SearchRequest.new(
             current_user: current_user,
             query: format_query(query, source: options[:source], search_mode: search_mode),
             num_context_lines: CONTEXT_LINES_COUNT,
@@ -69,7 +64,14 @@ module Gitlab
             max_line_match_results_per_file: params.max_line_match_results_per_file,
             search_mode: search_mode,
             **options
-          ).as_json
+          )
+
+          if !req.project_level? && !Ability.allowed?(current_user, :read_cross_project)
+            log_debug('User does not have permission to search across projects, returning empty response') if debug?
+            return Gitlab::Search::Zoekt::Response.empty
+          end
+
+          payload = req.as_json
 
           with_load_balanced_node(**options) do |zkt_node|
             response = post_request(join_url(zkt_node.search_base_url, PROXY_SEARCH_PATH), payload)
@@ -118,9 +120,12 @@ module Gitlab
         end
 
         def determine_query_weight(options)
-          case search_level(options)
-          when :project then 1
-          when :group then 3
+          search_level = ::Search::Level.new(options)
+
+          if search_level.project?
+            1
+          elsif search_level.group?
+            3
           else
             5
           end
@@ -243,16 +248,6 @@ module Gitlab
 
         def format_query(query, source:, search_mode:)
           ::Search::Zoekt::Query.new(query, source: source).formatted_query(search_mode)
-        end
-
-        def search_level(options)
-          @search_level ||= if options[:group_id].present?
-                              :group
-                            elsif options[:project_id].present?
-                              :project
-                            else
-                              :global
-                            end
         end
 
         def use_traversal_id_query?(current_user, project_id:, group_id:)

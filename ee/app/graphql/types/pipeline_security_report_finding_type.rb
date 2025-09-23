@@ -56,6 +56,12 @@ module Types
       null: true,
       description: 'Severity of the vulnerability finding.'
 
+    field :original_severity,
+      type: VulnerabilitySeverityEnum,
+      hash_key: :severity,
+      null: true,
+      description: 'Severity of the vulnerability finding before any overrides.'
+
     field :severity_overrides,
       ::Types::Vulnerabilities::SeverityOverrideType.connection_type,
       resolver: Resolvers::SecurityReport::SeverityOverridesResolver,

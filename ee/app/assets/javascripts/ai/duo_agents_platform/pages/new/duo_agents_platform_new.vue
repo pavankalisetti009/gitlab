@@ -14,7 +14,6 @@ export default {
   inject: {
     projectId: { default: '' },
     projectPath: { default: '' },
-    duoAgentsInvokePath: { default: '' },
   },
   methods: {
     handleAgentFlowStarted(data) {

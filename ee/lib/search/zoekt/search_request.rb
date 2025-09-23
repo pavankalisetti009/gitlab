@@ -23,14 +23,16 @@ module Search
         }
       end
 
-      def search_level
-        @search_level ||= if options[:project_id].present?
-                            :project
-                          elsif options[:group_id].present?
-                            :group
-                          else
-                            :global
-                          end
+      def project_level?
+        search_level.project?
+      end
+
+      def group_level?
+        search_level.group?
+      end
+
+      def global_level?
+        search_level.global?
       end
 
       private
@@ -38,7 +40,7 @@ module Search
       def build_node_queries
         builder_options = {
           current_user: current_user,
-          search_level: search_level,
+          search_level: search_level.as_sym,
           group_id: options[:group_id],
           project_id: options[:project_id],
           filters: options[:filters]
@@ -65,27 +67,31 @@ module Search
       end
 
       def nodes
-        @nodes ||= if search_level == :global
-                     ::Search::Zoekt::Node.for_search.online
+        @nodes ||= if search_level.project?
+                     ::Search::Zoekt::Node.for_search.online.searchable_for_project(options[:project_id])
+                   elsif search_level.group?
+                     fetch_searchable_nodes_for_namespace
                    else
-                     enabled_namespace = root_ancestor&.zoekt_enabled_namespace
-
-                     if enabled_namespace.blank?
-                       raise ArgumentError, "No enabled namespace found for root ancestor: #{root_ancestor.inspect}"
-                     end
-
-                     enabled_namespace.nodes.online.tap do |n|
-                       if n.empty?
-                         raise ArgumentError, "No online nodes found for namespace: #{enabled_namespace.inspect}"
-                       end
-                     end
+                     ::Search::Zoekt::Node.for_search.online
                    end
       end
 
+      def fetch_searchable_nodes_for_namespace
+        enabled_namespace = root_ancestor&.zoekt_enabled_namespace
+
+        if enabled_namespace.blank?
+          raise ArgumentError, "No enabled namespace found for root ancestor: #{root_ancestor.inspect}"
+        end
+
+        enabled_namespace.nodes.for_search.online.tap do |n|
+          raise ArgumentError, "No online nodes found for namespace: #{enabled_namespace.inspect}" if n.empty?
+        end
+      end
+
       def root_ancestor
-        @root_ancestor ||= if search_level == :group
+        @root_ancestor ||= if search_level.group?
                              ::Group.find(options[:group_id]).root_ancestor
-                           elsif search_level == :project
+                           elsif search_level.project?
                              ::Project.find(options[:project_id]).root_ancestor
                            end
       end
@@ -94,6 +100,10 @@ module Search
         ::Search::Zoekt.feature_available?(
           :traversal_id_search, current_user, group_id: options[:group_id], project_id: options[:project_id]
         )
+      end
+
+      def search_level
+        @search_level ||= ::Search::Level.new(options)
       end
 
       attr_reader :query, :current_user, :options

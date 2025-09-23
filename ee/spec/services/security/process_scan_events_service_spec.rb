@@ -248,5 +248,81 @@ RSpec.describe Security::ProcessScanEventsService, feature_category: :vulnerabil
         end
       end
     end
+
+    context 'with DS Gemnasium scan events' do
+      using RSpec::Parameterized::TableSyntax
+
+      let(:ds_artifact) { create(:ee_ci_job_artifact, artifact) }
+      let(:ds_pipeline) { ds_artifact.job.pipeline }
+      let(:ds_service_object) { described_class.new(ds_pipeline) }
+
+      where(:artifact, :event_name, :expected_properties) do
+        [
+          [:dependency_scanning_gemnasium_observability,
+            'collect_gemnasium_scan_metrics_from_pipeline', {
+              property: 'e1552d18-eb8b-4e3e-bd15-a286ad1bc0f4',
+              label: '6.1.9',
+              value: 100
+            }],
+          [:dependency_scanning_gemnasium_observability,
+            'collect_gemnasium_scan_sbom_metrics_from_pipeline', {
+              property: 'e1552d18-eb8b-4e3e-bd15-a286ad1bc0f4',
+              label: 'npm',
+              value: 352,
+              input_file_path: "package-lock.json"
+            }],
+          [:dependency_scanning_gemnasium_observability,
+            'collect_gemnasium_scan_performance_metrics_from_pipeline', {
+              property: 'e1552d18-eb8b-4e3e-bd15-a286ad1bc0f4',
+              value: 40
+            }],
+          [:dependency_scanning_gemnasium_python_observability,
+            'collect_gemnasium_python_scan_metrics_from_pipeline', {
+              property: 'eb0e47db-9d04-4557-ae8e-c3b9dffc601e',
+              label: '6.2.0',
+              value: 15
+            }],
+          [:dependency_scanning_gemnasium_python_observability,
+            'collect_gemnasium_python_scan_sbom_metrics_from_pipeline', {
+              property: 'eb0e47db-9d04-4557-ae8e-c3b9dffc601e',
+              label: 'pypi',
+              value: 12,
+              input_file_path: "requirements.txt"
+            }],
+          [:dependency_scanning_gemnasium_python_observability,
+            'collect_gemnasium_python_scan_performance_metrics_from_pipeline', {
+              property: 'eb0e47db-9d04-4557-ae8e-c3b9dffc601e',
+              value: 28
+            }],
+          [:dependency_scanning_gemnasium_maven_observability,
+            'collect_gemnasium_maven_scan_metrics_from_pipeline', {
+              property: '077e707f-175c-4eed-a998-1be56780666d',
+              label: '6.2.0',
+              value: 59
+            }],
+          [:dependency_scanning_gemnasium_maven_observability,
+            'collect_gemnasium_maven_scan_sbom_metrics_from_pipeline', {
+              property: '077e707f-175c-4eed-a998-1be56780666d',
+              label: 'maven',
+              value: 36,
+              input_file_path: "pom.xml"
+            }],
+          [:dependency_scanning_gemnasium_maven_observability,
+            'collect_gemnasium_maven_scan_performance_metrics_from_pipeline', {
+              property: '077e707f-175c-4eed-a998-1be56780666d',
+              value: 13
+            }]
+        ]
+      end
+
+      with_them do
+        it "triggers event data from '#{params[:event_name]}'" do
+          expect { ds_service_object.execute }.to trigger_internal_events(event_name).with(
+            project: ds_pipeline.project,
+            additional_properties: expected_properties
+          )
+        end
+      end
+    end
   end
 end
