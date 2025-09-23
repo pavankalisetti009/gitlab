@@ -10,7 +10,7 @@ module WorkItems
       end
 
       def execute
-        return FeatureNotAvailableError unless feature_flag_enabled?
+        return FeatureNotAvailableError unless status_mvc2_enabled?
 
         result = create_custom_lifecycle!
 
@@ -52,10 +52,6 @@ module WorkItems
           namespace: group,
           user: current_user
         )
-      end
-
-      def feature_flag_enabled?
-        group.try(:work_item_status_mvc2_feature_flag_enabled?)
       end
     end
   end
