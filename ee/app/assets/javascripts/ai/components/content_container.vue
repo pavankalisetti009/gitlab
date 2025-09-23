@@ -105,8 +105,10 @@ export default {
         />
       </div>
     </div>
-    <div class="ai-panel-body gl-overflow-auto gl-p-5 gl-text-sm gl-text-secondary">
-      <div v-if="typeof activeTab.component === 'string'">
+    <div
+      class="ai-panel-body gl-flex gl-min-h-full gl-flex-wrap gl-justify-center gl-overflow-auto gl-p-5 gl-text-sm gl-text-secondary"
+    >
+      <div v-if="typeof activeTab.component === 'string'" class="gl-self-center">
         {{ activeTab.component }}
       </div>
       <component :is="activeTab.component" v-else />

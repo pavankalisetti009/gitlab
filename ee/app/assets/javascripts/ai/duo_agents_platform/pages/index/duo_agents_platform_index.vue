@@ -68,7 +68,7 @@ export default {
 };
 </script>
 <template>
-  <div class="gl-flex gl-flex-col">
+  <div class="gl-flex gl-min-h-full gl-flex-wrap gl-justify-center">
     <page-heading v-if="!isSidePanelView" :class="headerClass">
       <template #heading>
         <div class="gl-flex">
