@@ -23,19 +23,19 @@ export default {
           key: 'namespace',
           label: s__('UsageQuota|Namespace'),
           thClass: 'gl-w-1/3',
-          tdClass: 'table-col gl-flex gl-items-center sm:gl-table-cell',
+          tdClass: 'table-col gl-flex gl-items-center @sm/panel:gl-table-cell',
         },
         {
           key: 'hostedRunnerDuration',
           label: s__('UsageQuota|Hosted runner duration'),
           thClass: 'gl-w-1/3',
-          tdClass: 'table-col gl-flex gl-items-center gl-content-center sm:gl-table-cell',
+          tdClass: 'table-col gl-flex gl-items-center gl-content-center @sm/panel:gl-table-cell',
         },
         {
           key: 'computeUsage',
           label: s__('UsageQuota|Compute usage'),
           thClass: 'gl-w-1/3',
-          tdClass: 'table-col gl-flex gl-items-center gl-content-center sm:gl-table-cell',
+          tdClass: 'table-col gl-flex gl-items-center gl-content-center @sm/panel:gl-table-cell',
         },
       ];
     },

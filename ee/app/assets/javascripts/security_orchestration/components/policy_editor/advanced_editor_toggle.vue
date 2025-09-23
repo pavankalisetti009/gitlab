@@ -47,7 +47,7 @@ export default {
     />
     <gl-link
       v-if="advancedEditorEnabled"
-      class="md:gl-ml-auto"
+      class="@md/panel:gl-ml-auto"
       :href="$options.FEEDBACK_ISSUE_LINK"
       target="_blank"
     >

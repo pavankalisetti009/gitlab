@@ -114,8 +114,8 @@ export default {
   >
     <template #toggle>
       <gl-button variant="link" category="tertiary" icon="project" data-testid="toggle-text">
-        <span class="md:gl-hidden">{{ projectCount }}</span>
-        <span class="gl-hidden md:gl-inline-flex">{{ headerText }}</span>
+        <span class="@md/panel:gl-hidden">{{ projectCount }}</span>
+        <span class="gl-hidden @md/panel:gl-inline-flex">{{ headerText }}</span>
       </gl-button>
     </template>
     <template #list-item="{ item }">

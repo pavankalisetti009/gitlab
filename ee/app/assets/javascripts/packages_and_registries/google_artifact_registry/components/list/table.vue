@@ -132,7 +132,7 @@ export default {
         <gl-loading-icon size="sm" class="gl-my-5" />
       </template>
       <template #cell(image)="{ item }">
-        <div class="gl-flex gl-items-center gl-justify-end md:gl-justify-start">
+        <div class="gl-flex gl-items-center gl-justify-end @md/panel:gl-justify-start">
           <router-link class="gl-min-w-0 gl-text-default" :to="item.name">
             <gl-truncate
               class="gl-font-bold"
@@ -149,7 +149,7 @@ export default {
         </div>
       </template>
       <template #cell(tags)="{ item }">
-        <div class="gl-flex gl-flex-wrap gl-justify-end gl-gap-2 md:gl-justify-start">
+        <div class="gl-flex gl-flex-wrap gl-justify-end gl-gap-2 @md/panel:gl-justify-start">
           <gl-badge v-for="tag in getTagsToShow(item)" :key="tag" class="gl-max-w-12">
             <gl-truncate class="gl-max-w-80p" :text="tag" :with-tooltip="true" /> </gl-badge
           ><gl-badge

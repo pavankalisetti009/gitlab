@@ -115,7 +115,7 @@ export default {
 </script>
 
 <template>
-  <div class="gl-mb-4 gl-mt-6 gl-flex gl-flex-col gl-items-start md:gl-flex-row">
+  <div class="gl-mb-4 gl-mt-6 gl-flex gl-flex-col gl-items-start @md/panel:gl-flex-row">
     <div class="gl-flex gl-shrink-0 gl-flex-col gl-pr-9">
       <gl-single-stat
         :value="$options.activityTimeSpan"
@@ -149,7 +149,7 @@ export default {
     <div
       v-for="{ key, value, label, link, trackingLabel } in metricsArray"
       :key="key"
-      class="gl-my-4 gl-pr-9 md:gl-mb-0 md:gl-mt-0"
+      class="gl-my-4 gl-pr-9 @md/panel:gl-mb-0 @md/panel:gl-mt-0"
     >
       <gl-skeleton-loader v-if="isLoading" />
       <a

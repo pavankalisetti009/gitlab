@@ -81,7 +81,9 @@ export default {
         </template>
       </gl-sprintf>
     </p>
-    <div class="gl-flex gl-flex-wrap gl-items-center gl-gap-3 lg:gl-flex-nowrap lg:gl-gap-0">
+    <div
+      class="gl-flex gl-flex-wrap gl-items-center gl-gap-3 @lg/panel:gl-flex-nowrap @lg/panel:gl-gap-0"
+    >
       <gl-toggle
         :value="!enabled"
         :label="$options.i18n.skipCiConfigurationLabel"

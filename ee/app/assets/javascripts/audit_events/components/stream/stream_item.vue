@@ -289,7 +289,7 @@ export default {
 </script>
 
 <template>
-  <li class="list-item py-0">
+  <li class="list-item !gl-py-0">
     <div class="gl-flex gl-items-center gl-justify-between gl-py-6">
       <gl-button
         variant="link"

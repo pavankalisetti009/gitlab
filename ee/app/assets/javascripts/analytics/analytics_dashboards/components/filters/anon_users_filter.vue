@@ -20,7 +20,7 @@ export default {
 </script>
 
 <template>
-  <div class="gl-flex gl-w-full gl-flex-row gl-gap-3 sm:gl-w-auto">
+  <div class="gl-flex gl-w-full gl-flex-row gl-gap-3 @sm/panel:gl-w-auto">
     <gl-toggle
       :value="value"
       :label="s__('Analytics|Exclude anonymous users')"

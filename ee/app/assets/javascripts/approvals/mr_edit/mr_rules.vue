@@ -164,7 +164,7 @@ export default {
             <rule-input :rule="rule" />
           </td>
           <td
-            class="md:!gl-pl-0 md:!gl-pr-0"
+            class="@md/panel:!gl-pl-0 @md/panel:!gl-pr-0"
             data-testid="approvals-table-controls"
             :data-label="actions"
           >

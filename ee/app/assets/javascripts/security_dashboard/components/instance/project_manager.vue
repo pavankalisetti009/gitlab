@@ -243,7 +243,7 @@ export default {
 <template>
   <section class="container">
     <div class="row gl-mt-6 gl-justify-center">
-      <div class="col col-lg-7">
+      <div class="col gl-col-lg-7">
         <h3 class="gl-mt-0 gl-text-lg gl-font-bold">
           {{ s__('SecurityReports|Monitored projects') }}
         </h3>
@@ -254,9 +254,9 @@ export default {
             )
           }}
         </p>
-        <div class="gl-flex gl-flex-col md:gl-flex-row">
+        <div class="gl-flex gl-flex-col @md/panel:gl-flex-row">
           <project-selector
-            class="gl-grow md:gl-mr-3"
+            class="gl-grow @md/panel:gl-mr-3"
             :project-search-results="projectSearchResults"
             :selected-projects="selectedProjects"
             :show-no-results-message="messages.noResults"
@@ -280,8 +280,8 @@ export default {
         </div>
       </div>
     </div>
-    <div class="row gl-justify-center md:gl-mt-6">
-      <project-list class="col col-lg-7" @projectRemoved="removeProject" />
+    <div class="row gl-justify-center @md/panel:gl-mt-6">
+      <project-list class="col gl-col-lg-7" @projectRemoved="removeProject" />
     </div>
   </section>
 </template>

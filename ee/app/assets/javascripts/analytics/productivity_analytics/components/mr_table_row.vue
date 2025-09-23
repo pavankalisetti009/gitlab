@@ -49,21 +49,21 @@ export default {
 </script>
 <template>
   <div
-    class="gl-responsive-table-row-layout gl-responsive-table-row gl-border-b gl-border-none gl-border-b-solid md:gl-border-b-0"
+    class="gl-responsive-table-row-layout gl-responsive-table-row gl-border-b gl-border-none gl-border-b-solid @md/panel:gl-border-b-0"
   >
     <div
-      class="table-section section-50 flex-row-reverse flex-md-row justify-content-between justify-content-md-start js-mr-details gl-flex gl-border-none"
+      class="table-section section-50 js-mr-details gl-flex !gl-flex-row-reverse !gl-justify-between gl-border-none @md/panel:!gl-flex-row @md/panel:!gl-justify-start"
     >
-      <div class="mr-md-2 gl-flex">
+      <div class="gl-flex @md/panel:!gl-mr-3">
         <gl-avatar :src="mergeRequest.author_avatar_url" class="!gl-mr-0" :size="16" />
       </div>
-      <div class="flex-column overflow-auto gl-mr-1 gl-flex gl-grow">
-        <h5 class="item-title my-0 str-truncated gl-block gl-max-w-34">
+      <div class="gl-mr-1 gl-flex gl-grow !gl-flex-col !gl-overflow-auto">
+        <h5 class="item-title str-truncated !gl-my-0 gl-block gl-max-w-34">
           <gl-link :href="mergeRequest.merge_request_url" target="_blank">{{
             mergeRequest.title
           }}</gl-link>
         </h5>
-        <ul class="horizontal-list list-items-separated mb-0 gl-text-subtle">
+        <ul class="horizontal-list list-items-separated !gl-mb-0 gl-text-subtle">
           <li>{{ mrId }}</li>
           <li v-if="isNumber(mergeRequest.commits_count)" ref="commitCount">{{ commitCount }}</li>
           <li v-if="isNumber(mergeRequest.loc_per_commit)" ref="locPerCommitCount">
@@ -76,7 +76,7 @@ export default {
       </div>
     </div>
     <div
-      class="table-section section-50 flex-row align-items-start js-mr-metrics gl-flex gl-border-none"
+      class="table-section section-50 js-mr-metrics gl-flex !gl-flex-row !gl-items-start gl-border-none"
     >
       <metric-column
         type="days_to_merge"

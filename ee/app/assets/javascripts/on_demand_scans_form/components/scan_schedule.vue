@@ -101,7 +101,7 @@ export default {
 
 <template>
   <div class="row">
-    <div class="col-12 col-md-6">
+    <div class="gl-col-12 gl-col-md-6">
       <gl-toggle
         :value="form.isScheduledScan"
         class="gl-mb-3"

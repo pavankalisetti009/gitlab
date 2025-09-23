@@ -5,10 +5,10 @@ exports[`ResourceLinkItem template matches the snapshot 1`] = `
   class="-gl-mx-2 gl-flex gl-items-center gl-pr-2 gl-px-3 item-body"
 >
   <div
-    class="flex-xl-nowrap gl-flex gl-flex-wrap gl-grow gl-items-center gl-min-h-7 item-contents"
+    class="@xl/panel:!gl-flex-nowrap gl-flex gl-flex-wrap gl-grow gl-items-center gl-min-h-7 item-contents"
   >
     <div
-      class="align-items-xl-center gl-min-w-0 item-title mb-xl-0 sm:gl-flex"
+      class="@sm/panel:gl-flex @xl/panel:!gl-items-center @xl/panel:!gl-mb-0 gl-min-w-0 item-title"
     >
       <svg
         aria-hidden="true"

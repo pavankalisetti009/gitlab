@@ -111,13 +111,13 @@ export default {
     <template #actions="{ showForm }">
       <div
         v-if="!isRoleLinksLoading"
-        class="gl-flex gl-flex-wrap gl-gap-2 gl-whitespace-nowrap md:gl-justify-end lg:gl-flex-nowrap"
+        class="gl-flex gl-flex-wrap gl-gap-2 gl-whitespace-nowrap @md/panel:gl-justify-end @lg/panel:gl-flex-nowrap"
       >
         <gl-link v-if="roleLinksCount" :href="ldapUsersPath" class="gl-my-3 gl-mr-3">
           {{ s__('MemberRole|View LDAP synced users') }}
         </gl-link>
 
-        <div class="gl-flex gl-flex-wrap gl-gap-3 md:gl-flex-nowrap">
+        <div class="gl-flex gl-flex-wrap gl-gap-3 @md/panel:gl-flex-nowrap">
           <sync-all-button v-if="roleLinksCount" />
           <gl-button variant="confirm" @click="showForm">
             {{ s__('LDAP|Add synchronization') }}

@@ -191,13 +191,13 @@ export default {
         </gl-sprintf>
       </strong>
     </div>
-    <div class="gl-my-6 gl-flex gl-flex-col gl-items-start md:gl-flex-row">
+    <div class="gl-my-6 gl-flex gl-flex-col gl-items-start @md/panel:gl-flex-row">
       <gl-skeleton-loader v-if="isLoading" />
       <template v-for="metric in metrics" v-else>
         <gl-single-stat
           :id="metric.key"
           :key="metric.key"
-          class="gl-my-4 gl-pr-9 md:gl-mb-0 md:gl-mt-0"
+          class="gl-my-4 gl-pr-9 @md/panel:gl-mb-0 @md/panel:gl-mt-0"
           :value="`${metric.value || '-'}`"
           :unit="metric.value ? metric.unit : null"
           :title="metric.label"

@@ -242,7 +242,7 @@ export default {
               :title="__('Confidential')"
               :aria-label="__('Confidential')"
               name="eye-slash"
-              class="align-self-baseline align-self-md-auto mt-xl-0 gl-mr-2"
+              class="gl-mr-2 !gl-self-baseline @md/panel:!gl-self-auto @xl/panel:!gl-mt-0"
               variant="warning"
             />
             <gl-link
@@ -255,7 +255,9 @@ export default {
             >
           </div>
 
-          <div class="item-meta mt-xl-0 gl-ml-6 gl-flex gl-flex-wrap gl-items-center gl-text-sm">
+          <div
+            class="item-meta gl-ml-6 gl-flex gl-flex-wrap gl-items-center gl-text-sm @xl/panel:!gl-mt-0"
+          >
             <span class="gl-mb-1 gl-mr-4">{{ itemHierarchy }}</span>
             <gl-tooltip v-if="isEpic" :target="() => $refs.countBadge">
               <p v-if="allowSubEpics" class="gl-m-0 gl-font-bold">
@@ -285,7 +287,7 @@ export default {
             <div
               v-if="isEpic"
               ref="countBadge"
-              class="p-lg-0 gl-inline-flex gl-py-0 gl-text-subtle"
+              class="gl-inline-flex gl-py-0 gl-text-subtle @lg/panel:!gl-p-0"
             >
               <span v-if="allowSubEpics" class="gl-mb-1 gl-mr-4 gl-inline-flex gl-items-center">
                 <gl-icon name="epic" class="gl-mr-2" />
@@ -320,7 +322,7 @@ export default {
             <item-assignees
               v-if="hasAssignees"
               :assignees="item.assignees"
-              class="item-assignees flex-xl-grow-0 gl-mb-1 gl-mr-4 gl-inline-flex gl-items-center"
+              class="item-assignees gl-mb-1 gl-mr-4 gl-inline-flex gl-items-center @xl/panel:!gl-grow-0"
             />
 
             <epic-health-status

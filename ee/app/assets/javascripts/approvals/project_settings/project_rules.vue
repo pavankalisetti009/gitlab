@@ -91,11 +91,11 @@ export default {
   <div>
     <rules :rules="rules">
       <template #thead="{ name, members, approvalsRequired, branches, actions }">
-        <tr class="gl-hidden sm:gl-table-row">
+        <tr class="gl-hidden @sm/panel:gl-table-row">
           <th :colspan="firstColumnSpan" :class="firstColumnWidth">
             {{ hasNamedRule ? name : members }}
           </th>
-          <th v-if="hasNamedRule" class="gl-hidden gl-w-1/2 sm:gl-table-cell">
+          <th v-if="hasNamedRule" class="gl-hidden gl-w-1/2 @sm/panel:gl-table-cell">
             <span>{{ members }}</span>
           </th>
           <th v-if="settings.allowMultiRule && !isBranchRulesEdit">{{ branches }}</th>
@@ -148,7 +148,7 @@ export default {
               <rule-input :rule="rule" :is-branch-rules-edit="isBranchRulesEdit" />
             </td>
             <td
-              class="text-nowrap md:!gl-pl-0 md:!gl-pr-0"
+              class="!gl-whitespace-nowrap @md/panel:!gl-pl-0 @md/panel:!gl-pr-0"
               data-testid="approvals-table-controls"
               :data-label="actions"
             >

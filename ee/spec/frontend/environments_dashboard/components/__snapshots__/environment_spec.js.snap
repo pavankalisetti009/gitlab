@@ -2,7 +2,7 @@
 
 exports[`Environment matchs the snapshot 1`] = `
 <div
-  class="border-0 card dashboard-card"
+  class="!gl-border-0 card dashboard-card"
 >
   <environment-header-stub
     environment="[object Object]"
@@ -15,7 +15,7 @@ exports[`Environment matchs the snapshot 1`] = `
       class="row"
     >
       <div
-        class="align-self-center col-1 px-3"
+        class="!gl-px-5 !gl-self-center gl-col-1"
       >
         <gl-avatar-link-stub
           href="/root"
@@ -32,7 +32,7 @@ exports[`Environment matchs the snapshot 1`] = `
         </gl-avatar-link-stub>
       </div>
       <div
-        class="align-middle align-self-center ci-table col-10 col-sm-7 pl-5 pr-0"
+        class="!gl-align-middle !gl-pl-7 !gl-pr-0 !gl-self-center ci-table gl-col-10 gl-col-sm-7"
       >
         <div
           class="branch-commit"
@@ -60,7 +60,7 @@ exports[`Environment matchs the snapshot 1`] = `
         />
       </div>
       <div
-        class="align-self-center col-12 col-sm-3 d-sm-block mt-0 offset-1 offset-sm-0 pl-6 pl-sm-0 pr-0 text-sm-right"
+        class="!gl-mt-0 !gl-pr-0 !gl-self-center @sm/panel:!gl-block @sm/panel:!gl-pl-0 @sm/panel:!gl-text-right gl-col-12 gl-col-sm-3 gl-offset-1 gl-offset-sm-0 pl-6"
       >
         <time-ago-stub
           time="2019-02-20T16:15:40.122Z"

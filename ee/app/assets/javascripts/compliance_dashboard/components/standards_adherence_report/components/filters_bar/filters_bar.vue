@@ -161,13 +161,13 @@ export default {
 };
 </script>
 <template>
-  <div v-if="frameworks.length" class="row-content-block gl-flex gl-border-0 md:gl-flex-row">
+  <div v-if="frameworks.length" class="row-content-block gl-flex gl-border-0 @md/panel:gl-flex-row">
     <div v-if="withGroupBy" class="gl-flex gl-flex-col">
       <label data-testid="dropdown-label" class="gl-leading-normal">
         {{ $options.i18n.groupByText }}
       </label>
       <gl-disclosure-dropdown
-        class="gl-mr-6 lg:gl-mb-0"
+        class="gl-mr-6 @lg/panel:gl-mb-0"
         :items="dropdownItems"
         :toggle-text="dropdownText"
         @action="onGroupSelected"

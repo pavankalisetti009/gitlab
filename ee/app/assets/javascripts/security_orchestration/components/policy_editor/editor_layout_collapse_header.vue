@@ -48,7 +48,7 @@ export default {
     <div class="gl-flex gl-flex-grow-2 gl-items-center gl-bg-strong gl-px-4 gl-py-3">
       <gl-button
         v-if="isRight"
-        class="gl-mr-3 gl-hidden lg:gl-block"
+        class="gl-mr-3 gl-hidden @lg/panel:gl-block"
         category="tertiary"
         size="small"
         :icon="iconNameRightName"
@@ -60,7 +60,7 @@ export default {
       </div>
       <gl-button
         v-if="!isRight"
-        class="gl-hidden lg:gl-block"
+        class="gl-hidden @lg/panel:gl-block"
         :class="{ 'gl-ml-auto': !collapsed }"
         category="tertiary"
         size="small"

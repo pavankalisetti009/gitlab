@@ -460,16 +460,16 @@ export default {
   <div>
     <div class="gl-bg-subtle gl-px-5 gl-pt-5">
       <div class="row gl-items-center gl-justify-between">
-        <div class="col-12 col-sm-8 col-md-6 col-lg-5 row">
+        <div class="gl-col-12 gl-col-sm-8 gl-col-md-6 gl-col-lg-5 row">
           <type-filter
             :value="selectedPolicyType"
-            class="col-6"
+            class="gl-col-6"
             data-testid="policy-type-filter"
             @input="setTypeFilter"
           />
           <source-filter
             :value="selectedPolicySource"
-            class="col-6"
+            class="gl-col-6"
             data-testid="policy-source-filter"
             @input="setSourceFilter"
           />

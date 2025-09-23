@@ -21,7 +21,7 @@ export default {
       </div>
     </div>
 
-    <div class="gl-mt-5 gl-grid gl-gap-5 md:gl-grid-cols-2">
+    <div class="gl-mt-5 gl-grid gl-gap-5 @md/panel:gl-grid-cols-2">
       <div class="gl-border gl-rounded-base gl-bg-default gl-p-5">
         <gl-skeleton-loader :height="64">
           <rect width="140" height="30" x="5" y="0" rx="4" />

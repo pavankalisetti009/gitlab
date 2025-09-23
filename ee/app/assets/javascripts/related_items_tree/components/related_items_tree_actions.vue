@@ -26,7 +26,7 @@ export default {
 </script>
 
 <template>
-  <div class="gl-flex gl-flex-col gl-border-b-0 gl-px-5 gl-py-3 sm:gl-flex-row">
+  <div class="gl-flex gl-flex-col gl-border-b-0 gl-px-5 gl-py-3 @sm/panel:gl-flex-row">
     <div>
       <gl-button-group v-if="allowSubEpics" data-testid="buttons" class="gl-flex gl-grow">
         <gl-button
@@ -49,9 +49,9 @@ export default {
     </div>
     <div
       v-if="activeTab === $options.ITEM_TABS.TREE"
-      class="gl-mt-3 gl-flex sm:gl-ml-auto sm:gl-mt-0 sm:gl-inline-flex"
+      class="gl-mt-3 gl-flex @sm/panel:gl-ml-auto @sm/panel:gl-mt-0 @sm/panel:gl-inline-flex"
     >
-      <toggle-labels class="!gl-ml-0 sm:!gl-ml-3" />
+      <toggle-labels class="!gl-ml-0 @sm/panel:!gl-ml-3" />
     </div>
   </div>
 </template>

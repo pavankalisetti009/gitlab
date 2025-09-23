@@ -235,7 +235,7 @@ export default {
       <template #exceptSelection>
         <gl-collapsible-listbox
           data-testid="has-exceptions-selector"
-          class="gl-my-3 gl-mr-2 md:gl-my-0"
+          class="gl-my-3 gl-mr-2 @md/panel:gl-my-0"
           :disabled="!enabled"
           :items="$options.EXCEPTION_GROUPS_LISTBOX_ITEMS"
           :selected="selectedExceptionType"

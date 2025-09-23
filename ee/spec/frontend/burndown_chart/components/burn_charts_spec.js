@@ -132,7 +132,7 @@ describe('burndown_chart', () => {
   it('reduces width of burndown chart', () => {
     createComponent();
 
-    expect(findBurndownChart().classes()).toContain('col-md-6');
+    expect(findBurndownChart().classes()).toContain('gl-col-md-6');
   });
 
   it('sets section title and chart title correctly', () => {

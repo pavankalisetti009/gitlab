@@ -328,7 +328,7 @@ export default {
 </script>
 
 <template>
-  <section :class="layoutClass" class="gl-mt-6 gl-flex gl-flex-col lg:gl-grid">
+  <section :class="layoutClass" class="gl-mt-6 gl-flex gl-flex-col @lg/panel:gl-grid">
     <div class="gl-mb-5">
       <div
         v-if="!hasNewSplitView"
@@ -336,16 +336,16 @@ export default {
       >
         <gl-segmented-control v-model="selectedEditorMode" :options="editorModes" />
       </div>
-      <div class="gl-flex gl-flex-col lg:gl-flex-row">
+      <div class="gl-flex gl-flex-col @lg/panel:gl-flex-row">
         <section
           class="gl-w-full"
           data-testid="rule-section"
-          :class="{ 'gl-relative lg:gl-pr-6': hasNewSplitView }"
+          :class="{ 'gl-relative @lg/panel:gl-pr-6': hasNewSplitView }"
           :style="computedRuleWidth"
         >
           <editor-layout-collapse-header
             v-if="hasNewSplitView"
-            class="gl-mb-4 gl-hidden lg:gl-flex"
+            class="gl-mb-4 gl-hidden @lg/panel:gl-flex"
             :has-reset-button="hasResetButton"
             :header="$options.i18n.rulesHeader"
             :collapsed="ruleCollapsed"
@@ -442,7 +442,7 @@ export default {
           <panel-resizer
             v-if="!yamlCollapsed && !ruleCollapsed"
             custom-class="security-policies-drag-handle"
-            class="gl-hidden lg:gl-block"
+            class="gl-hidden @lg/panel:gl-block"
             :size.sync="ruleWidth"
             :start-size="ruleWidth"
             :min-size="$options.SPLIT_VIEW_MIN_WIDTH"
@@ -509,7 +509,7 @@ export default {
           <gl-button
             v-if="isEditing"
             v-gl-modal="'delete-modal'"
-            class="gl-self-end md:gl-ml-auto"
+            class="gl-self-end @md/panel:gl-ml-auto"
             category="secondary"
             variant="danger"
             data-testid="delete-policy"
@@ -522,9 +522,9 @@ export default {
     </div>
 
     <aside
-      class="security-policies-sidebar gl-pl-0 lg:gl-pl-3"
+      class="security-policies-sidebar gl-pl-0 @lg/panel:gl-pl-3"
       data-testid="yaml-section"
-      :class="{ '!gl-pl-0': ruleCollapsed, 'gl-mb-4 lg:gl-mb-0': hasNewSplitView }"
+      :class="{ '!gl-pl-0': ruleCollapsed, 'gl-mb-4 @lg/panel:gl-mb-0': hasNewSplitView }"
       :style="computedYamlWidth"
     >
       <section

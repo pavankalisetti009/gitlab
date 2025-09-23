@@ -193,7 +193,6 @@ RSpec.describe Security::ScanResultPolicies::UpdateApprovalsService, feature_cat
               merge_request_iid: merge_request.iid,
               message: 'Evaluating scan_finding rules from approval policies',
               pipeline_ids: [pipeline.id],
-              target_pipeline_ids: [target_pipeline.id],
               project_path: project.full_path
             ).and_call_original
 
@@ -632,7 +631,6 @@ RSpec.describe Security::ScanResultPolicies::UpdateApprovalsService, feature_cat
               merge_request_iid: merge_request.iid,
               message: 'Evaluating scan_finding rules from approval policies',
               pipeline_ids: [pipeline.id],
-              target_pipeline_ids: [target_pipeline.id],
               project_path: project.full_path
             ).and_call_original
 

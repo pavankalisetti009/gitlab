@@ -216,7 +216,7 @@ export default {
       <template #content>
         <status-filter
           :show-remove-button="false"
-          class="!gl-bg-default md:gl-items-center"
+          class="!gl-bg-default @md/panel:gl-items-center"
           label-classes="!gl-text-base !gl-w-12 !gl-pl-0 !gl-font-bold"
         >
           <rule-multi-select

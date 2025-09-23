@@ -105,10 +105,10 @@ export default {
       class="gl-border-t-1 gl-border-t-default !gl-pt-3 gl-pl-3 gl-pr-4 gl-border-t-solid"
       :class="{}"
     />
-    <li v-if="hasMoreChildren" class="tree-item list-item justify-content-center gl-flex gl-py-0">
+    <li v-if="hasMoreChildren" class="tree-item list-item gl-flex !gl-justify-center gl-py-0">
       <gl-button
         v-if="!fetchInProgress"
-        class="mb-2 gl-inline-block"
+        class="!gl-mb-3 gl-inline-block"
         category="tertiary"
         variant="confirm"
         @click="handleShowMoreClick($event)"

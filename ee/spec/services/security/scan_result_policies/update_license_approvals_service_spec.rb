@@ -243,7 +243,7 @@ RSpec.describe Security::ScanResultPolicies::UpdateLicenseApprovalsService, feat
 
     context 'when target branch pipeline is nil' do
       before do
-        target_pipeline.update!(ref: merge_request.source_branch)
+        allow(service).to receive(:target_branch_pipeline).and_return(nil)
       end
 
       context 'when fail_open is true' do
@@ -254,6 +254,25 @@ RSpec.describe Security::ScanResultPolicies::UpdateLicenseApprovalsService, feat
         it_behaves_like 'does not require approvals'
         it_behaves_like 'triggers policy bot comment', true
         it_behaves_like 'persists a violation as warning'
+      end
+
+      context 'when fail_open is false' do
+        before do
+          license_finding_rule.scan_result_policy_read.update!(fallback_behavior: { fail: 'closed' })
+        end
+
+        it 'continues evaluation and logs rule violation' do
+          expect(Gitlab::AppJsonLogger).to receive(:info).with(hash_including(
+            message: 'Evaluating license_scanning rules from approval policies'))
+          expect(Gitlab::AppJsonLogger).to receive(:info).with(hash_including(
+            message: 'Updating MR approval rule', reason: 'license_finding rule violated'))
+
+          execute
+        end
+
+        it 'requires approval due to fail closed behavior' do
+          expect { execute }.not_to change { license_finding_rule.reload.approvals_required }
+        end
       end
     end
   end
@@ -328,26 +347,7 @@ RSpec.describe Security::ScanResultPolicies::UpdateLicenseApprovalsService, feat
 
     context 'when target branch pipeline is nil' do
       before do
-        target_pipeline.update!(ref: merge_request.source_branch)
-      end
-
-      context 'when there are multiple pipelines without reports and one related pipeline' do
-        before do
-          create_list(:ee_ci_pipeline, 10, :success, project: project, ref: merge_request.target_branch,
-            sha: merge_request.diff_base_sha, source: :schedule)
-        end
-
-        let_it_be(:related_target_pipeline) do
-          create(
-            :ee_ci_pipeline,
-            :success,
-            :with_dependency_scanning_feature_branch,
-            project: project,
-            ref: merge_request.target_branch,
-            sha: merge_request.diff_base_sha)
-        end
-
-        it_behaves_like 'requires approval'
+        allow(service).to receive(:target_branch_pipeline).and_return(nil)
       end
 
       context 'when fail_open is true' do
@@ -359,6 +359,44 @@ RSpec.describe Security::ScanResultPolicies::UpdateLicenseApprovalsService, feat
         it_behaves_like 'triggers policy bot comment', true
         it_behaves_like 'persists a violation as warning'
       end
+
+      context 'when fail_open is false' do
+        before do
+          license_finding_rule.scan_result_policy_read.update!(fallback_behavior: { fail: 'closed' })
+        end
+
+        it 'continues evaluation and logs rule violation' do
+          expect(Gitlab::AppJsonLogger).to receive(:info).with(hash_including(
+            message: 'Evaluating license_scanning rules from approval policies'))
+          expect(Gitlab::AppJsonLogger).to receive(:info).with(hash_including(
+            message: 'Updating MR approval rule', reason: 'license_finding rule violated'))
+
+          execute
+        end
+
+        it 'requires approval due to fail closed behavior' do
+          expect { execute }.not_to change { license_finding_rule.reload.approvals_required }
+        end
+      end
+    end
+
+    context 'when there are multiple pipelines without reports and one related pipeline' do
+      before do
+        create_list(:ee_ci_pipeline, 10, :success, project: project, ref: merge_request.target_branch,
+          sha: merge_request.diff_base_sha, source: :schedule)
+      end
+
+      let_it_be(:related_target_pipeline) do
+        create(
+          :ee_ci_pipeline,
+          :success,
+          :with_dependency_scanning_feature_branch,
+          project: project,
+          ref: merge_request.target_branch,
+          sha: merge_request.diff_base_sha)
+      end
+
+      it_behaves_like 'requires approval'
     end
   end
 end

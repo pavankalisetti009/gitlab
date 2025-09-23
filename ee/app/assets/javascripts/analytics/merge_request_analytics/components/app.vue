@@ -57,14 +57,14 @@ export default {
     <page-heading :heading="__('Merge request analytics')" />
     <migration-alert v-if="glFeatures.consolidateMrAnalyticsInSharedDashboards" />
     <div
-      class="gl-flex gl-flex-col gl-justify-between gl-gap-4 gl-border-b-1 gl-border-t-1 gl-border-b-default gl-border-t-default gl-bg-subtle gl-p-5 gl-border-b-solid gl-border-t-solid lg:gl-flex-row"
+      class="gl-flex gl-flex-col gl-justify-between gl-gap-4 gl-border-b-1 gl-border-t-1 gl-border-b-default gl-border-t-default gl-bg-subtle gl-p-5 gl-border-b-solid gl-border-t-solid @lg/panel:gl-flex-row"
     >
       <filter-bar class="gl-grow" />
       <date-range
         :start-date="startDate"
         :end-date="endDate"
         :max-date-range="$options.dateRangeLimit"
-        class="lg:gl-mx-3"
+        class="@lg/panel:gl-mx-3"
         @change="setDateRange"
       />
     </div>

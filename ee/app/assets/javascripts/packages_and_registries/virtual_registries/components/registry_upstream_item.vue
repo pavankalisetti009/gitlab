@@ -196,10 +196,10 @@ export default {
         />
       </gl-button-group>
     </div>
-    <div class="gl-flex gl-min-w-0 gl-flex-col gl-gap-3 sm:gl-flex-row">
+    <div class="gl-flex gl-min-w-0 gl-flex-col gl-gap-3 @sm/panel:gl-flex-row">
       <div class="gl-flex gl-min-w-0 gl-flex-1 gl-flex-col gl-gap-2">
         <div
-          class="gl-flex gl-min-w-0 gl-flex-col gl-flex-wrap gl-items-start gl-gap-x-2 sm:gl-flex-row sm:gl-items-center"
+          class="gl-flex gl-min-w-0 gl-flex-col gl-flex-wrap gl-items-start gl-gap-x-2 @sm/panel:gl-flex-row @sm/panel:gl-items-center"
         >
           <gl-link
             :href="showPath"
@@ -239,7 +239,7 @@ export default {
       </div>
       <template v-if="showButtons">
         <div
-          class="gl-flex gl-flex-wrap gl-items-start gl-gap-2 sm:gl-flex-nowrap sm:gl-justify-end"
+          class="gl-flex gl-flex-wrap gl-items-start gl-gap-2 @sm/panel:gl-flex-nowrap @sm/panel:gl-justify-end"
         >
           <div v-if="hasWarning" data-testid="warning-badge">
             <button

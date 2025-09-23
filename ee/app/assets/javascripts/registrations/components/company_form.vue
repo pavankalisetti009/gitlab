@@ -86,7 +86,7 @@ export default {
           first_name: {
             label: LEADS_FIRST_NAME_LABEL,
             groupAttrs: {
-              class: 'gl-col-span-12 md:gl-col-span-6',
+              class: 'gl-col-span-12 @md/panel:gl-col-span-6',
             },
             inputAttrs: {
               name: 'first_name',
@@ -97,7 +97,7 @@ export default {
           last_name: {
             label: LEADS_LAST_NAME_LABEL,
             groupAttrs: {
-              class: 'gl-col-span-12 md:gl-col-span-6',
+              class: 'gl-col-span-12 @md/panel:gl-col-span-6',
             },
             inputAttrs: {
               name: 'last_name',
@@ -254,7 +254,7 @@ export default {
       v-model="formValues"
       :form-id="$options.formId"
       :fields="fields"
-      class="gl-grid md:gl-gap-x-4"
+      class="gl-grid @md/panel:gl-gap-x-4"
       @field-validation="onFieldValidation"
       @submit="onSubmit"
     >

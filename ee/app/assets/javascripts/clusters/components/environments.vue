@@ -65,14 +65,27 @@ export default {
   },
   created() {
     this.$options.fields = [
-      { key: 'project', label: __('Project'), class: 'pl-md-0 pr-md-5 text-nowrap' },
-      { key: 'name', label: __('Environment'), class: 'pl-md-0 pr-md-5' },
-      { key: 'lastDeployment', label: __('Job'), class: 'pl-md-0 pr-md-5 text-nowrap' },
-      { key: 'rolloutStatus', label: __('Pods in use'), class: 'pl-md-0 pr-md-5' },
+      {
+        key: 'project',
+        label: __('Project'),
+        class: '@md/panel:!gl-pl-0 @md/panel:!gl-pr-7 !gl-whitespace-nowrap',
+      },
+      { key: 'name', label: __('Environment'), class: '@md/panel:!gl-pl-0 @md/panel:!gl-pr-7' },
+      {
+        key: 'lastDeployment',
+        label: __('Job'),
+        class: '@md/panel:!gl-pl-0 @md/panel:!gl-pr-7 !gl-whitespace-nowrap',
+      },
+      {
+        key: 'rolloutStatus',
+        label: __('Pods in use'),
+        class: '@md/panel:!gl-pl-0 @md/panel:!gl-pr-7',
+      },
       {
         key: 'updatedAt',
         label: __('Last updated'),
-        class: 'pl-md-0 pr-md-0 text-md-right text-nowrap',
+        class:
+          '@md/panel:!gl-pl-0 @md/panel:!gl-pr-0 @md/panel:!gl-text-right !gl-whitespace-nowrap',
       },
     ];
   },
@@ -138,13 +151,13 @@ export default {
         <gl-loading-icon
           v-if="isLoadingRollout(row.item.rolloutStatus)"
           size="sm"
-          class="mt-1 gl-inline-flex"
+          class="!gl-mt-2 gl-inline-flex"
         />
 
         <!-- Rollout Instances -->
         <div
           v-else-if="hasInstances(row.item.rolloutStatus)"
-          class="flex-row justify-content-end justify-content-md-start gl-flex gl-flex-wrap"
+          class="gl-flex !gl-flex-row gl-flex-wrap !gl-justify-end @md/panel:!gl-justify-start"
         >
           <template v-for="(instance, i) in row.item.rolloutStatus.instances">
             <deployment-instance
@@ -159,7 +172,7 @@ export default {
 
         <!-- Empty state -->
         <div v-else class="deployments-empty gl-flex">
-          <gl-icon name="warning" class="mr-2 align-self-center flex-shrink-0" variant="warning" />
+          <gl-icon name="warning" class="!gl-mr-3 !gl-shrink-0 !gl-self-center" variant="warning" />
           <span>
             <gl-sprintf
               :message="
@@ -182,6 +195,6 @@ export default {
       </template>
     </gl-table>
 
-    <gl-loading-icon v-if="isFetching" size="lg" class="mt-3" />
+    <gl-loading-icon v-if="isFetching" size="lg" class="!gl-mt-5" />
   </div>
 </template>

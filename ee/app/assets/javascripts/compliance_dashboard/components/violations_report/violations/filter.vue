@@ -94,19 +94,21 @@ export default {
     first: 50,
     includeSubgroups: true,
   },
-  dateRangePickerClass: 'gl-flex gl-flex-col gl-w-full md:gl-w-auto',
+  dateRangePickerClass: 'gl-flex gl-flex-col gl-w-full @md/panel:gl-w-auto',
 };
 </script>
 
 <template>
-  <div class="row-content-block gl-flex gl-flex-col gl-gap-5 gl-border-0 gl-pb-0 md:gl-flex-row">
-    <div v-if="showProjectFilter" class="gl-mb-5 gl-flex gl-flex-col sm:gl-gap-3">
+  <div
+    class="row-content-block gl-flex gl-flex-col gl-gap-5 gl-border-0 gl-pb-0 @md/panel:gl-flex-row"
+  >
+    <div v-if="showProjectFilter" class="gl-mb-5 gl-flex gl-flex-col @sm/panel:gl-gap-3">
       <label data-testid="dropdown-label" class="gl-leading-normal">{{
         $options.i18n.projectFilterLabel
       }}</label>
       <projects-dropdown-filter
         data-testid="violations-project-dropdown"
-        class="gl-mb-2 lg:gl-mb-0"
+        class="gl-mb-2 @lg/panel:gl-mb-0"
         toggle-classes="compliance-filter-dropdown-input"
         :group-namespace="groupPath"
         :query-params="$options.projectsFilterParams"
@@ -130,7 +132,7 @@ export default {
       @input="dateRangeChanged"
     />
 
-    <div class="gl-mb-5 gl-flex gl-flex-col sm:gl-gap-3 md:gl-pr-5">
+    <div class="gl-mb-5 gl-flex gl-flex-col @sm/panel:gl-gap-3 @md/panel:gl-pr-5">
       <label for="target-branch-input" class="gl-leading-normal">
         {{ $options.i18n.branchFilterLabel }}
       </label>
@@ -138,7 +140,7 @@ export default {
         id="target-branch-input"
         :value="filterQuery.targetBranch"
         data-testid="violations-target-branch-input"
-        class="gl-mb-2 lg:gl-mb-0"
+        class="gl-mb-2 @lg/panel:gl-mb-0"
         :placeholder="$options.i18n.branchFilterPlaceholder"
         @submit="updateFilter({ targetBranch: $event })"
         @clear="updateFilter({ targetBranch: '' })"

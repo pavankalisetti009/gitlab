@@ -36,8 +36,8 @@ export default {
 
 <template>
   <div class="gl-rounded-base gl-border-1 gl-border-solid gl-border-blue-300 gl-bg-default gl-p-6">
-    <div class="gl-flex gl-flex-col md:gl-flex-row">
-      <div class="gl-mb-3 sm:gl-mr-0 md:gl-mb-0 md:gl-mr-5">
+    <div class="gl-flex gl-flex-col @md/panel:gl-flex-row">
+      <div class="gl-mb-3 @sm/panel:gl-mr-0 @md/panel:gl-mb-0 @md/panel:gl-mr-5">
         <p class="gl-mb-3 gl-font-bold" data-testid="title">
           {{ $options.i18n.title }}
         </p>

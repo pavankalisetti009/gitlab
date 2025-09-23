@@ -116,7 +116,7 @@ export default {
     <gl-loading-icon v-if="!hasLoaded" size="sm" class="gl-m-5" />
     <template v-else>
       <slot name="rules"></slot>
-      <div v-if="checkShowResetButton" class="border-bottom py-3 px-3">
+      <div v-if="checkShowResetButton" class="!gl-border-b !gl-border-b-gray-300 !gl-px-5 !gl-py-5">
         <div class="gl-flex">
           <gl-button
             v-if="targetBranch"

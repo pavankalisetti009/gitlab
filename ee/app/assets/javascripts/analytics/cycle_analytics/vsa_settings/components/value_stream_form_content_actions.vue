@@ -36,7 +36,7 @@ export default {
 </script>
 
 <template>
-  <div class="gl-flex gl-w-full gl-flex-col gl-gap-3 sm:gl-w-auto sm:gl-flex-row">
+  <div class="gl-flex gl-w-full gl-flex-col gl-gap-3 @sm/panel:gl-w-auto @sm/panel:gl-flex-row">
     <gl-button
       data-testid="primary-button"
       variant="confirm"

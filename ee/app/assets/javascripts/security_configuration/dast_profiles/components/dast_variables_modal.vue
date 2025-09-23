@@ -273,7 +273,7 @@ export default {
     </gl-form-group>
 
     <template #modal-footer>
-      <div :class="{ 'flex-fill gl-flex gl-justify-between': isEdit }">
+      <div :class="{ 'gl-flex !gl-flex-auto gl-justify-between': isEdit }">
         <gl-button
           v-if="isEdit"
           category="secondary"

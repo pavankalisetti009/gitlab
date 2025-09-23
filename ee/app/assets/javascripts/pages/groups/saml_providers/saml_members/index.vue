@@ -48,8 +48,8 @@ export default {
       <template #cell(name)="{ item }">
         <span class="gl-flex">
           <gl-avatar :src="item.avatar_url" :size="48" />
-          <div class="ml-2">
-            <div class="font-weight-bold">
+          <div class="!gl-ml-3">
+            <div class="!gl-font-bold">
               <a
                 class="js-user-link"
                 :href="item.web_url"
@@ -64,10 +64,10 @@ export default {
         </span>
       </template>
       <template #cell(identity)="{ value }">
-        <span class="font-weight-bold">{{ value }}</span>
+        <span class="!gl-font-bold">{{ value }}</span>
       </template>
       <template #cell(scim_identity)="{ value }">
-        <span class="font-weight-bold">{{ value }}</span>
+        <span class="!gl-font-bold">{{ value }}</span>
       </template>
     </gl-table>
     <table-pagination :page-info="pageInfo" :change="change" />

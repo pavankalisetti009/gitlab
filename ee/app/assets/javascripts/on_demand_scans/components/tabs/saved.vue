@@ -213,7 +213,7 @@ export default {
       <div
         v-if="canEditOnDemandScans"
         data-testid="saved-scanners-actions"
-        class="gl-text-right md:gl-w-full"
+        class="gl-text-right @md/panel:gl-w-full"
       >
         <gl-button
           size="small"
@@ -234,7 +234,7 @@ export default {
           category="tertiary"
           size="small"
           icon="ellipsis_v"
-          class="gl-hidden md:!gl-inline-flex"
+          class="gl-hidden @md/panel:!gl-inline-flex"
           toggle-class="!gl-border-0 !gl-shadow-none"
           :toggle-text="$options.i18n.moreActions"
           :title="$options.i18n.moreActions"
@@ -251,7 +251,7 @@ export default {
           :href="item.editPath"
           :aria-label="$options.i18n.editProfile"
           category="tertiary"
-          class="md:gl-hidden"
+          class="@md/panel:gl-hidden"
           size="small"
           data-testid="edit-scan-button-mobile"
         >
@@ -261,7 +261,7 @@ export default {
           v-if="glFeatures.dastPreScanVerification"
           :aria-label="$options.i18n.verifyConfigurationLabel"
           category="tertiary"
-          class="md:gl-hidden"
+          class="@md/panel:gl-hidden"
           icon="review-checkmark"
           data-testid="verify-scan-button-mobile"
           size="small"
@@ -272,7 +272,7 @@ export default {
           icon="remove"
           variant="danger"
           size="small"
-          class="md:gl-hidden"
+          class="@md/panel:gl-hidden"
           data-testid="delete-scan-button-mobile"
           :aria-label="$options.i18n.deleteProfile"
           @click="prepareProfileDeletion(item.id)"

@@ -81,7 +81,7 @@ export default {
 <template>
   <div class="insights-page" data-testid="insights-page">
     <div v-if="hasChartsConfigured" class="js-insights-page-container">
-      <h4 class="text-center">{{ pageConfig.title }}</h4>
+      <h4 class="!gl-text-center">{{ pageConfig.title }}</h4>
       <div class="insights-charts" data-testid="insights-charts">
         <insights-chart
           v-for="(

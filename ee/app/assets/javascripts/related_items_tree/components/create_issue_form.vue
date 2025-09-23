@@ -201,8 +201,8 @@ export default {
 
 <template>
   <form data-testid="form" @submit.prevent="createIssue">
-    <div class="row mb-3">
-      <div class="col-sm-6 gl-mb-3 sm:gl-mb-0">
+    <div class="row !gl-mb-5">
+      <div class="gl-col-sm-6 gl-mb-3 @sm/panel:gl-mb-0">
         <label class="label-bold">{{ s__('Issue|Title') }}</label>
         <gl-form-input
           ref="titleInput"
@@ -214,7 +214,7 @@ export default {
           autofocus
         />
       </div>
-      <div class="col-sm-6">
+      <div class="gl-col-sm-6">
         <label class="label-bold">{{ __('Project') }}</label>
         <gl-dropdown
           ref="dropdownButton"
@@ -258,7 +258,7 @@ export default {
 
             <gl-dropdown-divider v-if="frequentProjects.length > 0" />
             <template v-if="!projectsFetchInProgress">
-              <span v-if="!projects.length" class="text-center gl-block gl-p-3">{{
+              <span v-if="!projects.length" class="gl-block gl-p-3 !gl-text-center">{{
                 __('No matches found')
               }}</span>
               <gl-dropdown-item

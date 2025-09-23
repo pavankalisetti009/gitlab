@@ -42,7 +42,7 @@ export const FIELDS = [
     key: 'actions',
     label: '',
     thClass: 'gl-w-2/20',
-    tdClass: '!gl-align-middle text-right',
+    tdClass: '!gl-align-middle gl-text-right',
   },
 ];
 

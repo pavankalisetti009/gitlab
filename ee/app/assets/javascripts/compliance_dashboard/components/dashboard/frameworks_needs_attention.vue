@@ -43,8 +43,8 @@ export default {
         {
           key: 'requirementsCount',
           label: s__('Compliance report|Requirements'),
-          thClass: 'md:gl-max-w-12 gl-text-right',
-          tdClass: 'md:gl-max-w-12 gl-text-right',
+          thClass: '@md/panel:gl-max-w-12 gl-text-right',
+          tdClass: '@md/panel:gl-max-w-12 gl-text-right',
         },
         {
           key: 'requirementsWithoutControls',
@@ -58,7 +58,7 @@ export default {
           ? {
               key: 'actions',
               label: s__('Compliance report|Actions'),
-              tdClass: 'md:gl-w-12',
+              tdClass: '@md/panel:gl-w-12',
             }
           : null,
       ].filter(Boolean);

@@ -41,7 +41,7 @@ export default {
 </script>
 
 <template>
-  <div class="gl-flex gl-grow lg:gl-items-center">
+  <div class="gl-flex gl-grow @lg/panel:gl-items-center">
     <gl-tabs content-class="gl-py-0">
       <gl-tab
         v-for="tab in tabs"

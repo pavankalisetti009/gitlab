@@ -52,7 +52,7 @@ export default {
 
 <template>
   <div
-    class="security-policies-bg-subtle gl-flex gl-flex-col gl-gap-3 gl-rounded-base gl-p-5 lg:gl-flex-row"
+    class="security-policies-bg-subtle gl-flex gl-flex-col gl-gap-3 gl-rounded-base gl-p-5 @lg/panel:gl-flex-row"
   >
     <gl-sprintf v-if="showTriggeredMessage" :message="$options.i18n.conditionText">
       <template #link="{ content }">

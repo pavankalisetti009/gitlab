@@ -77,7 +77,7 @@ export default {
 
 <template>
   <section>
-    <dl class="gl-my-3 gl-grid gl-grid-cols-1 gl-gap-5 gl-py-5 lg:gl-grid-cols-3">
+    <dl class="gl-my-3 gl-grid gl-grid-cols-1 gl-gap-5 gl-py-5 @lg/panel:gl-grid-cols-3">
       <gl-card class="gl-bg-transparent gl-p-3">
         <div class="gl-flex gl-flex-col">
           <dd class="gl-font-weight-bold gl-heading-scale-500">{{ usersData.totalUsers }}</dd>

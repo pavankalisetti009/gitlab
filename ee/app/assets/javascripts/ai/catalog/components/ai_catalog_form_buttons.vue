@@ -28,7 +28,7 @@ export default {
       :to="{ name: indexRoute }"
       type="button"
       category="secondary"
-      class="gl-w-full sm:gl-w-auto"
+      class="gl-w-full @sm/panel:gl-w-auto"
     >
       {{ __('Cancel') }}
     </gl-button>

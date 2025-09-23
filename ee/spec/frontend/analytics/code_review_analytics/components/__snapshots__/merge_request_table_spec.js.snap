@@ -4,7 +4,7 @@ exports[`MergeRequestTable component template matches the snapshot 1`] = `
 <table
   aria-busy=""
   aria-colcount="7"
-  class="b-table b-table-stacked-sm gl-table my-3 table"
+  class="!gl-my-5 b-table b-table-stacked-sm gl-table table"
   id="reference-0"
   role="table"
 >
@@ -26,7 +26,7 @@ exports[`MergeRequestTable component template matches the snapshot 1`] = `
       </th>
       <th
         aria-colindex="2"
-        class="text-right"
+        class="!gl-text-right"
         role="columnheader"
         scope="col"
       >
@@ -54,7 +54,7 @@ exports[`MergeRequestTable component template matches the snapshot 1`] = `
       </th>
       <th
         aria-colindex="5"
-        class="text-right"
+        class="!gl-text-right"
         role="columnheader"
         scope="col"
       >
@@ -64,7 +64,7 @@ exports[`MergeRequestTable component template matches the snapshot 1`] = `
       </th>
       <th
         aria-colindex="6"
-        class="text-right"
+        class="!gl-text-right"
         role="columnheader"
         scope="col"
       >
@@ -74,7 +74,7 @@ exports[`MergeRequestTable component template matches the snapshot 1`] = `
       </th>
       <th
         aria-colindex="7"
-        class="text-right"
+        class="!gl-text-right"
         role="columnheader"
         scope="col"
       >
@@ -92,16 +92,16 @@ exports[`MergeRequestTable component template matches the snapshot 1`] = `
     >
       <td
         aria-colindex="1"
-        class="gl-flex gl-items-center sm:gl-table-cell table-col"
+        class="@sm/panel:gl-table-cell gl-flex gl-items-center table-col"
         data-label="Merge Request"
         role="cell"
       >
         <div>
           <div
-            class="align-items-end align-items-sm-start flex-column gl-flex gl-grow"
+            class="!gl-flex-col !gl-items-end @sm/panel:!gl-items-start gl-flex gl-grow"
           >
             <div
-              class="gl-max-w-34 my-2 str-truncated"
+              class="!gl-my-3 gl-max-w-34 str-truncated"
             >
               <a
                 class="gl-font-bold gl-link gl-text-default hover:gl-text-default"
@@ -113,7 +113,7 @@ exports[`MergeRequestTable component template matches the snapshot 1`] = `
               </a>
             </div>
             <ul
-              class="gl-text-subtle horizontal-list list-items-separated mb-0"
+              class="!gl-mb-0 gl-text-subtle horizontal-list list-items-separated"
             >
               <li>
                 !12345
@@ -144,7 +144,7 @@ exports[`MergeRequestTable component template matches the snapshot 1`] = `
       </td>
       <td
         aria-colindex="2"
-        class="gl-flex gl-items-center sm:gl-table-cell table-col text-right"
+        class="!gl-text-right @sm/panel:gl-table-cell gl-flex gl-items-center table-col"
         data-label="Review time"
         role="cell"
       >
@@ -156,7 +156,7 @@ exports[`MergeRequestTable component template matches the snapshot 1`] = `
       </td>
       <td
         aria-colindex="3"
-        class="gl-flex gl-items-center sm:gl-table-cell table-col"
+        class="@sm/panel:gl-table-cell gl-flex gl-items-center table-col"
         data-label="Author"
         role="cell"
       >
@@ -179,7 +179,7 @@ exports[`MergeRequestTable component template matches the snapshot 1`] = `
       </td>
       <td
         aria-colindex="4"
-        class="gl-flex gl-items-center sm:gl-table-cell table-col"
+        class="@sm/panel:gl-table-cell gl-flex gl-items-center table-col"
         data-label="Approvers"
         role="cell"
       >
@@ -202,7 +202,7 @@ exports[`MergeRequestTable component template matches the snapshot 1`] = `
       </td>
       <td
         aria-colindex="5"
-        class="gl-flex gl-items-center sm:gl-table-cell table-col text-right"
+        class="!gl-text-right @sm/panel:gl-table-cell gl-flex gl-items-center table-col"
         data-label="Comments"
         role="cell"
       >
@@ -212,7 +212,7 @@ exports[`MergeRequestTable component template matches the snapshot 1`] = `
       </td>
       <td
         aria-colindex="6"
-        class="gl-flex gl-items-center sm:gl-table-cell table-col text-right"
+        class="!gl-text-right @sm/panel:gl-table-cell gl-flex gl-items-center table-col"
         data-label="Commits"
         role="cell"
       >
@@ -224,18 +224,18 @@ exports[`MergeRequestTable component template matches the snapshot 1`] = `
       </td>
       <td
         aria-colindex="7"
-        class="gl-flex gl-items-center sm:gl-table-cell table-col text-right"
+        class="!gl-text-right @sm/panel:gl-table-cell gl-flex gl-items-center table-col"
         data-label="Line changes"
         role="cell"
       >
         <div>
           <span
-            class="font-weight-bold gl-text-success"
+            class="!gl-font-bold gl-text-success"
           >
             +504
           </span>
           <span
-            class="font-weight-bold gl-text-danger"
+            class="!gl-font-bold gl-text-danger"
           >
             -10
           </span>
