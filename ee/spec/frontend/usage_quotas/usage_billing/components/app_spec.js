@@ -24,7 +24,11 @@ describe('UsageBillingApp', () => {
   const API_ENDPOINT = '/admin/gitlab_duo/usage/data';
 
   const createComponent = () => {
-    wrapper = shallowMountExtended(UsageBillingApp);
+    wrapper = shallowMountExtended(UsageBillingApp, {
+      provide: {
+        fetchUsageDataApiUrl: '/admin/gitlab_duo/usage/data',
+      },
+    });
   };
 
   const findAlert = () => wrapper.findComponent(GlAlert);

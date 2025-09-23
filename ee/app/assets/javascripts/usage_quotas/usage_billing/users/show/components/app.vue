@@ -21,7 +21,7 @@ export default {
     HumanTimeframe,
     EventsTable,
   },
-  inject: ['userId'],
+  inject: ['userId', 'fetchUserUsageDataApiUrl'],
   data() {
     return {
       isError: false,
@@ -44,8 +44,7 @@ export default {
     async fetchUsageData() {
       try {
         this.isLoading = true;
-        // TODO: this URL should be configurable
-        const response = await axios.get(`/admin/gitlab_duo/usage/users/${this.userId}/data`);
+        const response = await axios.get(this.fetchUserUsageDataApiUrl);
         this.gitlabUnitsUsage = response?.data?.subscription?.gitlabUnitsUsage;
       } catch (error) {
         this.isError = true;

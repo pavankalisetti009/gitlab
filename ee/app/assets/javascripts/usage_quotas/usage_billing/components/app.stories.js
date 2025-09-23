@@ -35,6 +35,7 @@ const createTemplate = (config = {}) => {
     provide: {
       purchaseCommitmentUrl: '/url-to-purchase-monthly/commitment',
       userUsagePath: '/gitlab_duo/users/:id',
+      fetchUsageDataApiUrl: '/admin/gitlab_duo/usage/data',
     },
     props: Object.keys(argTypes),
     template: `<usage-billing-app />`,

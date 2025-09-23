@@ -8,7 +8,7 @@ function initGroupUsageDashboard() {
     return null;
   }
 
-  const { purchaseCommitmentUrl, userUsagePath } = el.dataset;
+  const { purchaseCommitmentUrl, userUsagePath, fetchUsageDataApiUrl } = el.dataset;
 
   return new Vue({
     el,
@@ -16,6 +16,7 @@ function initGroupUsageDashboard() {
     provide: {
       purchaseCommitmentUrl,
       userUsagePath,
+      fetchUsageDataApiUrl,
     },
     render(createElement) {
       return createElement(GroupUsageDashboard);
