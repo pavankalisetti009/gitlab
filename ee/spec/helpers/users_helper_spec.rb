@@ -12,7 +12,7 @@ RSpec.describe UsersHelper, feature_category: :user_profile do
       where(
         belongs_to_paid_namespace?: [true, false],
         user?: [true, false],
-        check_namespace_plan?: [true, false],
+        subscriptions_trials_enabled: [true, false],
         group_without_trial?: [true, false]
       )
 
@@ -20,12 +20,14 @@ RSpec.describe UsersHelper, feature_category: :user_profile do
         let(:local_user) { user? ? user : nil }
 
         before do
-          stub_ee_application_setting(should_check_namespace_plan: check_namespace_plan?)
+          stub_saas_features(subscriptions_trials: subscriptions_trials_enabled)
           allow(user).to receive(:owns_group_without_trial?) { group_without_trial? }
           allow(user).to receive(:belongs_to_paid_namespace?) { belongs_to_paid_namespace? }
         end
 
-        let(:expected_result) { !belongs_to_paid_namespace? && user? && check_namespace_plan? && group_without_trial? }
+        let(:expected_result) do
+          !belongs_to_paid_namespace? && user? && subscriptions_trials_enabled && group_without_trial?
+        end
 
         subject { helper.trials_allowed?(local_user) }
 
@@ -35,7 +37,7 @@ RSpec.describe UsersHelper, feature_category: :user_profile do
 
     context 'with cache concerns', :use_clean_rails_redis_caching do
       before do
-        stub_ee_application_setting(should_check_namespace_plan: true)
+        stub_saas_features(subscriptions_trials: true)
         allow(user).to receive(:owns_group_without_trial?).and_return(true)
         allow(user).to receive(:belongs_to_paid_namespace?).and_return(false)
       end

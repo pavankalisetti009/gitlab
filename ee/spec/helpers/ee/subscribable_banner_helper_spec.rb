@@ -39,9 +39,9 @@ RSpec.describe EE::SubscribableBannerHelper, :saas do
         assign(:display_subscription_banner, true)
       end
 
-      context 'when should_check_namespace_plan is true' do
+      context 'when gitlab_com_subscriptions saas feature available' do
         before do
-          allow(::Gitlab::CurrentSettings).to receive(:should_check_namespace_plan?).and_return(true)
+          stub_saas_features(gitlab_com_subscriptions: true)
         end
 
         context 'when a project exists' do
@@ -65,9 +65,9 @@ RSpec.describe EE::SubscribableBannerHelper, :saas do
         end
       end
 
-      context 'when should_check_namespace_plan is false' do
+      context 'when gitlab_com_subscriptions saas feature is not available' do
         before do
-          allow(::Gitlab::CurrentSettings).to receive(:should_check_namespace_plan?).and_return(false)
+          stub_saas_features(gitlab_com_subscriptions: false)
         end
 
         it 'returns the current license' do
@@ -80,7 +80,7 @@ RSpec.describe EE::SubscribableBannerHelper, :saas do
     context 'when instance variable false' do
       before do
         assign(:display_subscription_banner, false)
-        allow(::Gitlab::CurrentSettings).to receive(:should_check_namespace_plan?).and_return(true)
+        stub_saas_features(gitlab_com_subscriptions: true)
       end
 
       it 'returns the current license' do
@@ -93,7 +93,7 @@ RSpec.describe EE::SubscribableBannerHelper, :saas do
       let(:gl_license) { build(:gitlab_license, starts_at: Date.current + 1.month) }
 
       before do
-        allow(::Gitlab::CurrentSettings).to receive(:should_check_namespace_plan?).and_return(true)
+        stub_saas_features(gitlab_com_subscriptions: true)
       end
 
       it 'returns the current license' do
@@ -113,9 +113,9 @@ RSpec.describe EE::SubscribableBannerHelper, :saas do
         assign(:display_subscription_banner, true)
       end
 
-      context 'when should_check_namespace_plan is true' do
+      context 'when gitlab_com_subscriptions saas feature available' do
         before do
-          allow(::Gitlab::CurrentSettings).to receive(:should_check_namespace_plan?).and_return(true)
+          stub_saas_features(gitlab_com_subscriptions: true)
         end
 
         let(:gitlab_subscription) { entity.root_ancestor.gitlab_subscription }
@@ -166,13 +166,13 @@ RSpec.describe EE::SubscribableBannerHelper, :saas do
         end
       end
 
-      context 'when should_check_namespace_plan is false' do
+      context 'when gitlab_com_subscriptions saas feature is not available' do
         let(:license) { double(:license) }
         let(:message_mock) { double(:message_mock) }
         let(:user) { double(:user) }
 
         before do
-          allow(::Gitlab::CurrentSettings).to receive(:should_check_namespace_plan?).and_return(false)
+          stub_saas_features(gitlab_com_subscriptions: false)
           allow(License).to receive(:current).and_return(license)
           allow(helper).to receive(:current_user).and_return(user)
           allow(helper).to receive(:signed_in?).and_return(true)
@@ -197,7 +197,7 @@ RSpec.describe EE::SubscribableBannerHelper, :saas do
     context 'when instance variable false' do
       before do
         assign(:display_subscription_banner, false)
-        allow(::Gitlab::CurrentSettings).to receive(:should_check_namespace_plan?).and_return(true)
+        stub_saas_features(gitlab_com_subscriptions: true)
       end
 
       it 'returns the license message' do

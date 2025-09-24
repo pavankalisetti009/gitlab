@@ -167,19 +167,15 @@ RSpec.describe LicenseHelper, feature_category: :subscription_management do
 
       subject { helper.show_promotions?(selected_user) }
 
-      context 'on saas' do
+      context 'when gitlab_com_subscriptions saas feature available' do
         before do
-          stub_ee_application_setting(should_check_namespace_plan: true)
+          stub_saas_features(gitlab_com_subscriptions: true)
         end
 
         it { is_expected.to be(true) }
       end
 
-      context 'when gitlabdotcom returns false' do
-        before do
-          allow(Gitlab).to receive(:com?).and_return(false)
-        end
-
+      context 'when gitlab_com_subscriptions saas feature is not available' do
         it { is_expected.to be(false) }
       end
 

@@ -24,8 +24,7 @@ module EE
     def show_promotions?(selected_user = current_user, hide_on_self_managed: false)
       return false unless selected_user
 
-      if ::Gitlab::CurrentSettings.current_application_settings
-        .should_check_namespace_plan? # that checks Gitlab.com? too
+      if ::Gitlab::Saas.feature_available?(:gitlab_com_subscriptions)
         true
       elsif hide_on_self_managed
         false
@@ -36,7 +35,7 @@ module EE
     end
 
     def show_advanced_search_promotion?
-      !::Gitlab::CurrentSettings.should_check_namespace_plan? &&
+      !::Gitlab::Saas.feature_available?(:gitlab_com_subscriptions) &&
         show_promotions? &&
         show_callout?('promote_advanced_search_dismissed') &&
         !License.feature_available?(:elastic_search)

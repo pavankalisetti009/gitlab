@@ -39,7 +39,10 @@ module EE
     end
 
     def link_to_button_style(path:, track_property:)
-      link_button_to _('Renew subscription'), path, class: 'gl-mr-3 gl-mb-2', variant: :confirm, data: { track_event: 'click_text', track_label: 'subscribable_action', track_property: track_property }
+      link_button_to(
+        _('Renew subscription'), path, class: 'gl-mr-3 gl-mb-2', variant: :confirm,
+        data: { track_event: 'click_text', track_label: 'subscribable_action', track_property: track_property }
+      )
     end
 
     private
@@ -48,7 +51,10 @@ module EE
       @project&.namespace || @group
     end
 
-    def license_message(signed_in: signed_in?, is_admin: current_user&.can_admin_all_resources?, license: License.current, force_notification: false)
+    def license_message(
+      signed_in: signed_in?, is_admin: current_user&.can_admin_all_resources?, license: License.current,
+      force_notification: false
+    )
       ::Gitlab::ExpiringSubscriptionMessage.new(
         subscribable: license,
         signed_in: signed_in,
@@ -57,7 +63,10 @@ module EE
       ).message
     end
 
-    def license_subject(signed_in: signed_in?, is_admin: current_user&.can_admin_all_resources?, license: License.current, force_notification: false)
+    def license_subject(
+      signed_in: signed_in?, is_admin: current_user&.can_admin_all_resources?, license: License.current,
+      force_notification: false
+    )
       ::Gitlab::ExpiringSubscriptionMessage.new(
         subscribable: license,
         signed_in: signed_in,
@@ -100,7 +109,7 @@ module EE
     end
 
     def display_subscription_banner?
-      @display_subscription_banner && ::Gitlab::CurrentSettings.should_check_namespace_plan?
+      @display_subscription_banner && ::Gitlab::Saas.feature_available?(:gitlab_com_subscriptions)
     end
   end
 end
