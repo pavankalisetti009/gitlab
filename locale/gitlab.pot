@@ -28525,9 +28525,6 @@ msgstr ""
 msgid "Finalizing"
 msgstr ""
 
-msgid "Find"
-msgstr ""
-
 msgid "Find File"
 msgstr ""
 
@@ -39284,10 +39281,22 @@ msgstr ""
 msgid "MarkdownEditor|%{currentHighlight} of %{totalHighlights}"
 msgstr ""
 
+msgid "MarkdownEditor|Add a bullet list"
+msgstr ""
+
+msgid "MarkdownEditor|Add a checklist"
+msgstr ""
+
 msgid "MarkdownEditor|Add a link (%{modifierKey}K)"
 msgstr ""
 
 msgid "MarkdownEditor|Add a link (%{modifier_key}K)"
+msgstr ""
+
+msgid "MarkdownEditor|Add a numbered list"
+msgstr ""
+
+msgid "MarkdownEditor|Add a quick action"
 msgstr ""
 
 msgid "MarkdownEditor|Add bold text (%{modifierKey}B)"
@@ -39311,10 +39320,16 @@ msgstr ""
 msgid "MarkdownEditor|Add strikethrough text (%{modifier_key}⇧X)"
 msgstr ""
 
+msgid "MarkdownEditor|Attach a file or image"
+msgstr ""
+
 msgid "MarkdownEditor|Close find and replace bar"
 msgstr ""
 
 msgid "MarkdownEditor|Continue editing (%{shiftKey}%{modifierKey}P)"
+msgstr ""
+
+msgid "MarkdownEditor|Find"
 msgstr ""
 
 msgid "MarkdownEditor|Find and replace"
@@ -39326,10 +39341,25 @@ msgstr ""
 msgid "MarkdownEditor|Find previous"
 msgstr ""
 
+msgid "MarkdownEditor|Go full screen"
+msgstr ""
+
 msgid "MarkdownEditor|Indent line (%{modifierKey}])"
 msgstr ""
 
 msgid "MarkdownEditor|Indent line (%{modifier_key}])"
+msgstr ""
+
+msgid "MarkdownEditor|Insert a quote"
+msgstr ""
+
+msgid "MarkdownEditor|Insert code"
+msgstr ""
+
+msgid "MarkdownEditor|Insert suggestion"
+msgstr ""
+
+msgid "MarkdownEditor|New! Suggest changes directly"
 msgstr ""
 
 msgid "MarkdownEditor|No records"
@@ -39342,6 +39372,9 @@ msgid "MarkdownEditor|Outdent line (%{modifier_key}[)"
 msgstr ""
 
 msgid "MarkdownEditor|Preview (%{shiftKey}%{modifierKey}P)"
+msgstr ""
+
+msgid "MarkdownEditor|Suggest code changes which can be immediately applied in one click. Try it out!"
 msgstr ""
 
 msgid "MarkdownEditor|header"
@@ -42842,9 +42875,6 @@ msgid "New topic"
 msgstr ""
 
 msgid "New work item"
-msgstr ""
-
-msgid "New! Suggest changes directly"
 msgstr ""
 
 msgid "New, streamlined merge request homepage!"
@@ -63908,9 +63938,6 @@ msgid "Successfully untrusted"
 msgstr ""
 
 msgid "Successfully updated %{last_updated_timeago}."
-msgstr ""
-
-msgid "Suggest code changes which can be immediately applied in one click. Try it out!"
 msgstr ""
 
 msgid "Suggested change"
