@@ -437,12 +437,6 @@ RSpec.describe 'admin/application_settings/_elasticsearch_form', feature_categor
 
           expect(rendered).to have_selector('[data-testid="initial_queue_size"]', text: '20')
         end
-
-        it 'has a button leading to documentation' do
-          render
-
-          expect(rendered).to have_selector('[data-testid="initial_indexing_documentation"]', text: 'Documentation')
-        end
       end
 
       context 'when there are projects in incremental queue' do
@@ -453,12 +447,6 @@ RSpec.describe 'admin/application_settings/_elasticsearch_form', feature_categor
           render
 
           expect(rendered).to have_selector('[data-testid="incremental_queue_size"]', text: '30')
-        end
-
-        it 'has a button leading to documentation' do
-          render
-
-          expect(rendered).to have_selector('[data-testid="incremental_indexing_documentation"]', text: 'Documentation')
         end
       end
     end

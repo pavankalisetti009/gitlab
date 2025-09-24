@@ -310,45 +310,47 @@
   - c.with_description do
     = _('Show current status of indexing')
   - c.with_body do
-    - component_params = { header_options: { class: 'gl-flex gl-flex-wrap gl-gap-3 gl-justify-between gl-items-baseline gl-rounded-base gl-border-b-0' }, body_options: { class: 'gl-hidden' }}
-    - component_params_projects = { header_options: { class: 'gl-flex gl-flex-wrap gl-gap-3 gl-justify-between gl-items-baseline' }, body_options: { class: 'gl-p-0' }}
-    .gl-flex.gl-flex-wrap.gl-gap-5.gl-w-full
-      .gl-grow{ class: 'gl-min-w-[1px]' }
-        = render Pajamas::CardComponent.new(**component_params) do |c|
+    - component_params = { header_options: { class: 'gl-flex gl-flex-wrap gl-gap-3 gl-justify-between gl-items-baseline gl-rounded-base' }, footer_options: { class: 'gl-hidden' } }
+    - component_params_projects = { header_options: { class: 'gl-flex gl-flex-wrap gl-gap-3 gl-justify-between gl-items-baseline' }, footer_options: { class: 'gl-p-0' } }
+    .gl-grid.gl-gap-5.gl-mb-3.sm:gl-grid-cols-2
+      = render Pajamas::CardComponent.new(**component_params) do |c|
+        - c.with_header do
+          .-gl-mb-3
+            = render Pajamas::SingleStatComponent.new(title: s_('GlobalSearch|Initial indexing queue length'), stat_value: @initial_queue_size, stat_value_testid: 'initial_queue_size', title_tag: 'h3')
+        - c.with_body do
+          = _('The number of documents waiting for full indexing. This includes new content, project imports, transfers, and search migrations that require complete reindexing.')
+      = render Pajamas::CardComponent.new(**component_params) do |c|
+        - c.with_header do
+          .-gl-mb-3
+            = render Pajamas::SingleStatComponent.new(title: s_('GlobalSearch|Incremental indexing queue length'), stat_value: @incremental_queue_size, stat_value_testid: 'incremental_queue_size', title_tag: 'h3')
+        - c.with_body do
+          = _('The number of documents waiting for updates to existing indexed content. These represent changes to previously indexed files, commits, or metadata.')
+      - if !::Gitlab::Saas.feature_available?(:advanced_search)
+        = render Pajamas::CardComponent.new(**component_params_projects) do |c|
           - c.with_header do
-            .-gl-mb-3= render Pajamas::SingleStatComponent.new(title: s_('GlobalSearch|Initial indexing queue length'), stat_value: @initial_queue_size, stat_value_testid: 'initial_queue_size', title_tag: 'h3')
-            = render Pajamas::ButtonComponent.new(href: help_page_path('integration/elasticsearch/troubleshooting/_index.md'), button_options: { data: { testid: 'initial_indexing_documentation' } }) do
-              = s_('AdminArea|Documentation')
-      .gl-grow{ class: 'gl-min-w-[1px]' }
-        = render Pajamas::CardComponent.new(**component_params) do |c|
-          - c.with_header do
-            .-gl-mb-3= render Pajamas::SingleStatComponent.new(title: s_('GlobalSearch|Incremental indexing queue length'), stat_value: @incremental_queue_size, stat_value_testid: 'incremental_queue_size', title_tag: 'h3')
-            = render Pajamas::ButtonComponent.new(href: help_page_path('integration/elasticsearch/troubleshooting/_index.md'), button_options: { data: { testid: 'incremental_indexing_documentation' } }) do
-              = s_('AdminArea|Documentation')
-      - unless ::Gitlab::Saas.feature_available?(:search_indexing_status)
-        .gl-grow{ class: 'gl-min-w-[1px]' }
-          = render Pajamas::CardComponent.new(**component_params_projects) do |c|
-            - c.with_header do
-              .-gl-mb-3= render Pajamas::SingleStatComponent.new(title: s_('GlobalSearch|Projects not indexed'), stat_value: @projects_not_indexed_count, stat_value_testid: 'projects_not_indexed_size', title_tag: 'h3')
-            - if @projects_not_indexed_count > 0
-              - c.with_body do
-                .indexing-projects-list
-                  %ul.content-list
-                    - @projects_not_indexed.each do |project|
-                      %li.project-row.gl-items-start.gl-flex-wrap.gl-gap-3{ class: '!gl-flex !gl-pl-5 !gl-pr-3', data: { testid: 'not_indexed_project_row'} }
-                        = render Pajamas::AvatarComponent.new(project, size: 32, alt: '')
-                        .gl-min-w-0.gl-grow
-                          %h4.gl-heading-5.gl-mb-0
-                            = link_to(admin_project_path(project)) do
-                              - if project.namespace
-                                = project.namespace.human_name
-                                \/
-                              = project.name
-                          - if project.description.present?
-                            .gl-text-sm.gl-text-subtle.-gl-mb-5
-                              = markdown_field(project, :description)
-                        .stats.gl-self-end.gl-text-sm.gl-text-subtle.gl-w-full{ class: "@md/panel:gl-w-auto" }
-                          = _('Created %{date} ago') % { date: time_ago_in_words(project.created_at) }
-                  - if @projects_not_indexed_count > projects_not_indexed_max_shown
-                    %li.project-row.gl-items-center.gl-flex-wrap{ class: '!gl-flex', data: { testid: 'projects_not_indexed_max_shown'} }
-                      = s_('GlobalSearch|Only first %{max_shown} of not indexed projects is shown') % { max_shown: projects_not_indexed_max_shown }
+            .-gl-mb-3
+              = render Pajamas::SingleStatComponent.new(title: s_('GlobalSearch|Project repository data not indexed'), stat_value: @projects_not_indexed_count, stat_value_testid: 'projects_not_indexed_size', title_tag: 'h3')
+          - c.with_body do
+            = _('The number of projects that have no repository data indexed. A value of 0 means all projects have had repository data indexed at least once, though some may need updates. This metric tracks only projects completely missing repository data from the index, not those needing incremental updates.')
+          - if @projects_not_indexed_count > 0
+            - c.with_footer do
+              .indexing-projects-list
+                %ul.content-list
+                  - @projects_not_indexed.each do |project|
+                    %li.project-row.gl-items-start.gl-flex-wrap.gl-gap-3{ class: '!gl-flex !gl-pl-5 !gl-pr-3', data: { testid: 'not_indexed_project_row'} }
+                      = render Pajamas::AvatarComponent.new(project, size: 32, alt: '')
+                      .gl-min-w-0.gl-grow
+                        %h4.gl-heading-5.gl-mb-0
+                          = link_to(admin_project_path(project)) do
+                            - if project.namespace
+                              = project.namespace.human_name
+                              \/
+                            = project.name
+                        - if project.description.present?
+                          .gl-text-sm.gl-text-subtle.-gl-mb-5
+                            = markdown_field(project, :description)
+                      .stats.gl-self-end.gl-text-sm.gl-text-subtle.gl-w-full{ class: "@md/panel:gl-w-auto" }
+                        = _('Created %{date} ago') % { date: time_ago_in_words(project.created_at) }
+                - if @projects_not_indexed_count > projects_not_indexed_max_shown
+                  %li.project-row.gl-items-center.gl-flex-wrap{ class: '!gl-flex', data: { testid: 'projects_not_indexed_max_shown'} }
+                    = s_('GlobalSearch|Only first %{max_shown} of not indexed projects is shown') % { max_shown: projects_not_indexed_max_shown }
