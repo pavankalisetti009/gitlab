@@ -49,7 +49,7 @@ RSpec.describe Geo::SystemCheck::AuthorizedKeysCheck, :silence_stdout, feature_c
       it 'fails when config file does not contain the AuthorizedKeysCommand' do
         override_sshd_config('system_check/sshd_config_no_command')
 
-        expect_failure('OpenSSH configuration file does not contain a AuthorizedKeysCommand')
+        expect_failure('OpenSSH configuration file does not contain an AuthorizedKeysCommand')
 
         authorized_keys_check.multi_check
       end
@@ -77,7 +77,7 @@ RSpec.describe Geo::SystemCheck::AuthorizedKeysCheck, :silence_stdout, feature_c
       it 'fails when config file does not contain the AuthorizedKeysCommandUser' do
         override_sshd_config('system_check/sshd_config_no_user')
 
-        expect_failure('OpenSSH configuration file does not contain a AuthorizedKeysCommandUser')
+        expect_failure('OpenSSH configuration file does not contain an AuthorizedKeysCommandUser')
 
         authorized_keys_check.multi_check
       end

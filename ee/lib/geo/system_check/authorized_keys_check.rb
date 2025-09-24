@@ -63,7 +63,7 @@ module Geo
 
         authorized_keys_command = extract_authorized_keys_command
         unless authorized_keys_command
-          print_failure('OpenSSH configuration file does not contain a AuthorizedKeysCommand')
+          print_failure('OpenSSH configuration file does not contain an AuthorizedKeysCommand')
 
           try_fixing_it(
             'Change your OpenSSH configuration file pointing to the correct command'
@@ -100,7 +100,7 @@ module Geo
 
         authorized_keys_command_user = extract_authorized_keys_command_user
         unless authorized_keys_command_user
-          print_failure('OpenSSH configuration file does not contain a AuthorizedKeysCommandUser')
+          print_failure('OpenSSH configuration file does not contain an AuthorizedKeysCommandUser')
 
           try_fixing_it(
             'Change your OpenSSH configuration file pointing to the correct user'
