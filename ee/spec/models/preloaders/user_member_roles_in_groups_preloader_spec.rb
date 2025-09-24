@@ -244,7 +244,8 @@ RSpec.describe Preloaders::UserMemberRolesInGroupsPreloader, feature_category: :
       {
         class: described_class.name,
         event: 'Inaccurate user_group_member_roles data',
-        user_id: user.id
+        user_id: user.id,
+        use_user_group_member_roles: false
       }
     end
 
@@ -270,6 +271,7 @@ RSpec.describe Preloaders::UserMemberRolesInGroupsPreloader, feature_category: :
     # user's member record for sub_group_1.
     context 'when result of query using user_group_member_roles table is different' do
       it 'logs' do
+        expect(Gitlab::AppLogger).to receive(:info) # earlier call in #log_statistics
         expect(Gitlab::AppLogger).to receive(:info).with({
           **log_payload,
           permissions: expected_abilities.join(', '),
@@ -277,6 +279,24 @@ RSpec.describe Preloaders::UserMemberRolesInGroupsPreloader, feature_category: :
         })
 
         result
+      end
+
+      context 'when use_user_group_member_roles feature flag is enabled' do
+        before do
+          stub_feature_flags(use_user_group_member_roles: true)
+        end
+
+        it 'logs' do
+          expect(Gitlab::AppLogger).to receive(:info) # earlier call in #log_statistics
+          expect(Gitlab::AppLogger).to receive(:info).with({
+            **log_payload,
+            permissions: expected_abilities.join(', '),
+            user_group_member_roles_permissions: '',
+            use_user_group_member_roles: true
+          })
+
+          result
+        end
       end
 
       context 'when there are multiple groups with different results' do

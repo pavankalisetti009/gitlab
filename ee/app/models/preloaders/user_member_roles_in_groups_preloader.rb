@@ -32,8 +32,8 @@ module Preloaders
 
       log_statistics(group_ids)
 
-      get_results(query).tap do |existing_query_results|
-        track_diff(existing_query_results)
+      get_results(query).tap do |results|
+        track_diff(results)
       end
     end
 
@@ -113,7 +113,7 @@ module Preloaders
     end
 
     def query
-      if ::Feature.enabled?(:use_user_group_member_roles, Feature.current_request)
+      if use_user_group_member_roles?
         user_group_member_roles_query
       else
         union_query
@@ -163,7 +163,7 @@ module Preloaders
       )
     end
 
-    def track_diff(existing_query_results)
+    def track_diff(results)
       return unless ::Gitlab::Saas.feature_available?(:gitlab_com_subscriptions)
       return if ::Feature.disabled?(:track_user_group_member_roles_accuracy, Feature.current_request)
 
@@ -178,11 +178,17 @@ module Preloaders
       cached_permissions = []
       uncached_permissions = []
 
-      cached_results = get_results(user_group_member_roles_query)
+      if use_user_group_member_roles?
+        cached_results = results
+        union_query_results = get_results(union_query)
+      else
+        cached_results = get_results(user_group_member_roles_query)
+        union_query_results = results
+      end
 
       group_ids.each do |id|
         cached_permissions = extract_permissions(cached_results, id)
-        uncached_permissions = extract_permissions(existing_query_results, id)
+        uncached_permissions = extract_permissions(union_query_results, id)
 
         next if cached_permissions == uncached_permissions
 
@@ -191,7 +197,9 @@ module Preloaders
 
       return if group_ids_with_diff.empty?
 
-      log_info = { class: self.class.name, event: 'Inaccurate user_group_member_roles data', user_id: user.id }
+      log_info = { class: self.class.name, event: 'Inaccurate user_group_member_roles data', user_id: user.id,
+                   use_user_group_member_roles: use_user_group_member_roles? }
+
       log_info = if group_ids_with_diff.length > 1
                    log_info.merge(group_ids: group_ids_with_diff)
                  else
@@ -208,5 +216,10 @@ module Preloaders
     def extract_permissions(result, group_id)
       result.fetch(group_id, []).sort.join(', ')
     end
+
+    def use_user_group_member_roles?
+      ::Feature.enabled?(:use_user_group_member_roles, Feature.current_request)
+    end
+    strong_memoize_attr :use_user_group_member_roles?
   end
 end
