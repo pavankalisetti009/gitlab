@@ -102,7 +102,7 @@ export default {
         @select="onFilterChange"
       />
     </div>
-    <div class="gl-relative gl-flex gl-flex-col gl-pt-6">
+    <div class="gl-relative gl-flex gl-flex-col gl-overflow-x-hidden gl-px-4 gl-pt-6">
       <div class="gl-overflow-auto-y gl-h-[calc(100vh-22rem)]">
         <template v-if="isLoading">
           <gl-skeleton-loader class="gl-ml-4" />

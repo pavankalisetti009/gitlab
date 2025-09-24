@@ -2,6 +2,7 @@ import { helpPagePath } from '~/helpers/help_page_helper';
 
 export const SELECTIVE_SYNC_SHARDS = 'selectiveSyncShards';
 export const SELECTIVE_SYNC_NAMESPACES = 'selectiveSyncNamespaceIds';
+export const SELECTIVE_SYNC_ORGANIZATIONS = 'selectiveSyncOrganizationIds';
 export const VALIDATION_FIELD_KEYS = {
   NAME: 'name',
   URL: 'url',

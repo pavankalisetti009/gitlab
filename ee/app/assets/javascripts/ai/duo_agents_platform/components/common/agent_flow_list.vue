@@ -47,7 +47,7 @@ export default {
       :svg-path="$options.emptyStateIllustrationPath"
     />
     <template v-else>
-      <ul class="gl-divide-x-0 gl-divide-y-1 gl-divide-solid gl-divide-gray-100 gl-px-0 gl-pt-4">
+      <ul class="gl-divide-x-0 gl-divide-y-1 gl-divide-solid gl-divide-subtle gl-px-0">
         <agent-flow-list-item
           v-for="item in workflows"
           :key="item.id"

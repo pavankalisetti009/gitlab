@@ -47,6 +47,7 @@ export default {
         selectiveSyncType: '',
         selectiveSyncNamespaceIds: [],
         selectiveSyncShards: [],
+        selectiveSyncOrganizationIds: [],
         reposMaxCapacity: 25,
         filesMaxCapacity: 10,
         verificationMaxCapacity: 100,
@@ -67,7 +68,8 @@ export default {
   },
   created() {
     if (this.site) {
-      this.siteData = { ...this.site };
+      const selectiveSyncType = this.site.selectiveSyncType ?? '';
+      this.siteData = { ...this.site, selectiveSyncType };
     }
   },
   methods: {

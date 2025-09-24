@@ -24,17 +24,17 @@ export default {
     borderStyle() {
       switch (this.itemStatus.color) {
         case 'green':
-          return 'gl-border-green-100 gl-bg-green-100';
+          return 'gl-border-green-100 dark:gl-border-green-700 gl-bg-status-success';
         case 'red':
-          return 'gl-border-red-100 gl-bg-red-100';
+          return 'gl-border-red-100 dark:gl-border-red-700 gl-bg-status-danger';
         case 'blue':
-          return 'gl-border-blue-100 gl-bg-blue-100';
+          return 'gl-border-blue-100 dark:gl-border-blue-700 gl-bg-status-info';
         case 'orange':
-          return 'gl-border-orange-100 gl-bg-orange-100';
+          return 'gl-border-orange-100 dark:gl-border-orange-700 gl-bg-status-warning';
         case 'neutral':
-          return 'gl-border-neutral-100 gl-bg-neutral-100';
+          return 'gl-border-neutral-100 dark:gl-border-neutral-100 gl-bg-status-neutral';
         default:
-          return 'gl-border-neutral-100 gl-bg-neutral-100';
+          return 'gl-border-neutral-100 dark:gl-border-neutral-700 gl-bg-status-neutral';
       }
     },
     iconStyle() {
@@ -58,11 +58,14 @@ export default {
 </script>
 
 <template>
-  <span class="gl-rounded-full gl-border-4 gl-border-solid gl-px-[0.5px]" :class="borderStyle">
+  <span
+    class="gl-inline-flex gl-h-6 gl-w-6 gl-items-center gl-justify-center gl-rounded-full gl-border-4 gl-border-solid"
+    :class="borderStyle"
+  >
     <gl-icon
       :name="itemStatus.icon"
       :aria-label="humanStatus"
-      class="gl-rounded-full gl-fill-neutral-0 gl-p-1"
+      class="gl-rounded-full !gl-fill-neutral-0 gl-p-1"
       :class="iconStyle"
     />
   </span>
