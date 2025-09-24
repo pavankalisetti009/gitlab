@@ -3,14 +3,30 @@
 require 'spec_helper'
 
 RSpec.describe 'config/initializers/covered_experiences.rb', feature_category: :scalability do
-  it 'retrieves each valid covered experience in the registry' do
-    path = Pathname.new(Labkit::CoveredExperience.configuration.registry_path)
-    experiences = path.glob('*.yml')
+  let(:valid_feature_categories) do
+    YAML.load_file(Rails.root.join('config/feature_categories.yml'))
+  end
 
+  let(:experiences) do
+    Pathname.new(Labkit::CoveredExperience.configuration.registry_path).glob('*.yml')
+  end
+
+  it 'retrieves each valid covered experience from the registry' do
     experiences.each do |filepath|
       xp_name = filepath.basename('.yml').to_s
 
       expect { Labkit::CoveredExperience.get(xp_name) }.not_to raise_error
+    end
+  end
+
+  it 'validates that each covered experience has a valid feature category' do
+    experiences.each do |filepath|
+      experience_data = YAML.load_file(filepath)
+      feature_category = experience_data['feature_category']
+
+      expect(valid_feature_categories).to include(feature_category),
+        "Feature category '#{feature_category}' in #{filepath} is not valid. " \
+          "Valid categories are defined in config/feature_categories.yml"
     end
   end
 
