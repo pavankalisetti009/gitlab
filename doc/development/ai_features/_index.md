@@ -29,6 +29,8 @@ to install the AI gateway with GDK.
 
 **How**:
 
+Be sure to run the Rake task from the GitLab Rails root directory (typically `/path/to/gdk/gitlab`), not from the GDK root directory.
+
 1. GitLab.com (SaaS) mode
 
    ```shell
