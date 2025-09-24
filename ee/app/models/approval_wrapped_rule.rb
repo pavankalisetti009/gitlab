@@ -87,7 +87,8 @@ class ApprovalWrappedRule
 
   def approved?
     strong_memoize(:approved) do
-      approvals_left <= 0 || (invalid_rule? && allow_merge_when_invalid?) || approval_rule_dismissed?
+      approvals_left <= 0 || (invalid_rule? && allow_merge_when_invalid?) ||
+        approval_rule_dismissed? || approval_rule_bypassed?
     end
   end
 
@@ -166,6 +167,15 @@ class ApprovalWrappedRule
     return false unless violation
 
     violation.dismissed?
+  end
+
+  def approval_rule_bypassed?
+    return false unless from_scan_result_policy?
+
+    security_policy = approval_rule&.approval_policy_rule&.security_policy
+    return false unless security_policy
+
+    security_policy.merge_request_bypassed?(merge_request)
   end
 
   def filter_approvers(approvers)

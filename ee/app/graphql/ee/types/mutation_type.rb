@@ -228,6 +228,7 @@ module EE
         mount_mutation ::Mutations::MergeRequests::UpdateApprovalRule
         mount_mutation ::Mutations::MergeRequests::DestroyRequestedChanges
         mount_mutation ::Mutations::MergeRequests::DismissPolicyViolations, experiment: { milestone: '18.4' }
+        mount_mutation ::Mutations::MergeRequests::BypassSecurityPolicy, experiment: { milestone: '18.5' }
         mount_mutation ::Mutations::Ai::Action, experiment: { milestone: '15.11' }, scopes: [:api, :ai_features]
         mount_mutation ::Mutations::Ai::DuoUserFeedback, experiment: {
           milestone: '16.10'

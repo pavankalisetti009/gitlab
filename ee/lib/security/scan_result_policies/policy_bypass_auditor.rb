@@ -25,15 +25,21 @@ module Security
         log_bypass_event(:user, user.id, audit_details, reason)
       end
 
+      def log_merge_request_bypass(merge_request, security_policy, reason)
+        audit_details = build_merge_request_audit_details(merge_request, security_policy, reason)
+        log_bypass_event(:merge_request, security_policy, audit_details, reason, merge_request)
+      end
+
       private
 
       attr_reader :security_policy, :project, :user, :branch_name
 
-      def log_bypass_event(bypass_type, identifier, additional_details, reason = nil)
-        message = bypass_audit_message(bypass_type, identifier, reason)
+      def log_bypass_event(bypass_type, identifier, additional_details, reason = nil, merge_request = nil)
+        message = build_audit_message(bypass_type, identifier, reason, merge_request)
+        audit_name = audit_name_for_bypass_type(bypass_type)
 
         Gitlab::Audit::Auditor.audit(
-          name: "security_policy_#{bypass_type}_push_bypass",
+          name: audit_name,
           author: user,
           scope: security_policy.security_policy_management_project,
           target: security_policy,
@@ -69,6 +75,17 @@ module Security
         }.merge(bypass_scope_details(user_bypass_scope))
       end
 
+      def build_merge_request_audit_details(merge_request, security_policy, reason)
+        {
+          bypass_type: :merge_request,
+          security_policy_id: security_policy.id,
+          merge_request_id: merge_request.id,
+          merge_request_iid: merge_request.iid,
+          security_policy_name: security_policy.name,
+          reason: reason
+        }
+      end
+
       def bypass_scope_details(user_bypass_scope)
         case user_bypass_scope
         when :group
@@ -83,14 +100,38 @@ module Security
         end
       end
 
-      def bypass_audit_message(type, identifier, reason = nil)
-        message = <<~MSG.squish
+      def audit_name_for_bypass_type(bypass_type)
+        case bypass_type
+        when :merge_request
+          'security_policy_merge_request_bypass'
+        else
+          "security_policy_#{bypass_type}_push_bypass"
+        end
+      end
+
+      def build_audit_message(bypass_type, identifier, reason, merge_request)
+        message = case bypass_type
+                  when :merge_request
+                    merge_request_audit_message(identifier, merge_request)
+                  else
+                    bypass_audit_message(bypass_type, identifier)
+                  end
+        message += " with reason: #{reason}" if reason.present?
+        message
+      end
+
+      def merge_request_audit_message(security_policy, merge_request)
+        <<~MSG.squish
+          Security policy #{security_policy.name} in merge request
+          (#{project.full_path}!#{merge_request.iid}) has been bypassed by #{user.name}
+        MSG
+      end
+
+      def bypass_audit_message(type, identifier)
+        <<~MSG.squish
           Branch push restriction on '#{branch_name}' for project '#{project.full_path}'
           has been bypassed by #{type} with ID: #{identifier}
         MSG
-
-        message += " with reason: #{reason}" if reason.present?
-        message
       end
     end
   end
