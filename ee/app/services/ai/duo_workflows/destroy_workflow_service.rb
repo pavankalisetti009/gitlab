@@ -11,7 +11,7 @@ module Ai
       end
 
       def execute
-        unless can?(current_user, :destroy_duo_workflow, workflow)
+        unless can?(current_user, :delete_duo_workflow, workflow)
           return ::ServiceResponse.error(message: 'User not authorized to delete workflow')
         end
 
