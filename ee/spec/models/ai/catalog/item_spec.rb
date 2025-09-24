@@ -105,6 +105,62 @@ RSpec.describe Ai::Catalog::Item, feature_category: :workflow_catalog do
           end
         end
       end
+
+      context 'when the agent is used by other flows' do
+        let(:flow_item) { create(:ai_catalog_flow, project: project) }
+        let(:agent) { create(:ai_catalog_agent, public: true, project: project) }
+        let(:agent_definition) do
+          {
+            'system_prompt' => 'Talk like a pirate!',
+            'user_prompt' => 'What is a leap year?',
+            'tools' => []
+          }
+        end
+
+        let(:agent_v) do
+          create(:ai_catalog_agent_version, item: agent, definition: agent_definition, version: '1.0.0')
+        end
+
+        let(:flow_definition) do
+          {
+            'triggers' => [1],
+            'steps' => [
+              { 'agent_id' => agent.id, 'current_version_id' => agent_v.id, 'pinned_version_prefix' => nil }
+            ]
+          }
+        end
+
+        let(:flow_version) do
+          create(:ai_catalog_flow_version, item: flow_item, definition: flow_definition, version: '1.0.0')
+        end
+
+        before do
+          create(:ai_catalog_item_version_dependency, ai_catalog_item_version: flow_version, dependency: agent)
+        end
+
+        it 'cannot be changed from public to private' do
+          agent.public = false
+          expect(agent).not_to be_valid
+          expect(agent.errors[:public]).to include(
+            'cannot be changed from public to private as it is used by other flows'
+          )
+        end
+
+        context 'when item enabled for other projects' do
+          before do
+            create(:ai_catalog_item_consumer, item: agent, project: create(:project))
+          end
+
+          it 'cannot be changed from public to private' do
+            agent.public = false
+            expect(agent).not_to be_valid
+            expect(agent.errors[:public]).to include(
+              'cannot be changed from public to private as it is used by other flows',
+              'cannot be changed from public to private as it has catalog consumers'
+            )
+          end
+        end
+      end
     end
   end
 

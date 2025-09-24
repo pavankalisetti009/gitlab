@@ -122,15 +122,33 @@ module Ai
       end
 
       def validate_public_item_cannot_become_private
-        return unless public_changed? && public == false && public_was == true
+        return unless becoming_private?
 
         # TODO add support for group-level in future https://gitlab.com/gitlab-org/gitlab/-/issues/553912
         # where we would check for any consumers that are not the group, or its descendant groups or projects.
-        return unless project_id.present? && consumers.not_for_projects(project_id).any?
+        if has_external_consumers?
+          errors.add(:public,
+            s_('AICatalog|cannot be changed from public to private as it has catalog consumers')
+          )
+        end
+
+        return unless used_by_other_flows?
 
         errors.add(:public,
-          s_('AICatalog|cannot be changed from public to private as it has catalog consumers')
+          s_('AICatalog|cannot be changed from public to private as it is used by other flows')
         )
+      end
+
+      def becoming_private?
+        public_changed? && public == false && public_was == true
+      end
+
+      def has_external_consumers?
+        project_id.present? && consumers.not_for_projects(project_id).any?
+      end
+
+      def used_by_other_flows?
+        dependents.any?
       end
     end
   end
