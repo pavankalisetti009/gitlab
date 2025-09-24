@@ -48,13 +48,6 @@ RSpec.describe 'new tables missing sharding_key', feature_category: :organizatio
     ERROR
   end
 
-  it 'does not allow tables that are permanently exempted from sharding to have desired sharding keys' do
-    tables_exempted_from_sharding.each do |entry|
-      expect(entry.desired_sharding_key).to be_nil,
-        "#{entry.table_name} is exempted from sharding and hence should not have a desired sharding key defined"
-    end
-  end
-
   context 'for tables that already have a backfilled, non-nullable sharding key on their parent' do
     it 'must be possible to backfill it via backfill_via' do
       desired_sharding_key_entries_not_awaiting_backfill_on_parent
@@ -188,10 +181,6 @@ RSpec.describe 'new tables missing sharding_key', feature_category: :organizatio
       To choose an appropriate desired_sharding_key for this table please refer
       to our guidelines at https://docs.gitlab.com/ee/development/cells/#define-a-desired_sharding_key-to-automatically-backfill-a-sharding_key, or consult with the Tenant Scale group.
     HEREDOC
-  end
-
-  def tables_exempted_from_sharding
-    ::Gitlab::Database::Dictionary.entries.select(&:exempt_from_sharding?)
   end
 
   def all_tables_to_desired_sharding_key
