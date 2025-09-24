@@ -294,6 +294,8 @@ RSpec.describe GroupsHelper, feature_category: :source_code_management do
 
     before do
       allow(helper).to receive(:code_suggestions_usage_app_data).and_return({ code_suggestions: 'data' })
+      stub_saas_features(gitlab_com_subscriptions: true)
+      stub_feature_flags(usage_billing_dev: true)
     end
 
     it 'returns a hash with expected values and merges the result of code_suggestions_usage_app_data' do
@@ -315,7 +317,8 @@ RSpec.describe GroupsHelper, feature_category: :source_code_management do
         are_prompt_cache_settings_allowed: 'true',
         are_duo_core_features_enabled: 'true',
         model_switching_enabled: 'true',
-        model_switching_path: '/groups/test_group/-/settings/gitlab_duo/model_selection'
+        model_switching_path: '/groups/test_group/-/settings/gitlab_duo/model_selection',
+        usage_dashboard_path: '/groups/test_group/-/settings/gitlab_duo/usage'
       })
     end
 
@@ -326,6 +329,16 @@ RSpec.describe GroupsHelper, feature_category: :source_code_management do
 
       it 'sets Duo Core flag to false' do
         expect(helper.duo_home_app_data(group)).to include(are_duo_core_features_enabled: 'false')
+      end
+    end
+
+    context 'with disabled usage_billing_dev' do
+      before do
+        stub_feature_flags(usage_billing_dev: false)
+      end
+
+      it 'sets duo_page_path to nil' do
+        expect(helper.duo_home_app_data(group)).to include(usage_dashboard_path: nil)
       end
     end
 

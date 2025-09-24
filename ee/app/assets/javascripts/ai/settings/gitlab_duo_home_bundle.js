@@ -11,7 +11,7 @@ export function initGitLabDuoHome() {
 
   return new Vue({
     el,
-    name: 'GitlabDuoHome',
+    name: 'GitlabDuoHomePage',
     apolloProvider,
     provide() {
       const data = el.dataset;
@@ -29,6 +29,7 @@ export function initGitLabDuoHome() {
         arePromptCacheSettingsAllowed: parseBoolean(data.arePromptCacheSettingsAllowed),
         areDuoCoreFeaturesEnabled: parseBoolean(data.areDuoCoreFeaturesEnabled),
         initialDuoRemoteFlowsAvailability: parseBoolean(data.duoRemoteFlowsAvailability),
+        usageDashboardPath: data.usageDashboardPath,
       };
     },
     render(createElement) {

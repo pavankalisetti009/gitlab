@@ -1,5 +1,6 @@
 import VueApollo from 'vue-apollo';
 import Vue, { nextTick } from 'vue';
+import { GlFilteredSearch } from '@gitlab/ui';
 import ErrorsAlert from '~/vue_shared/components/errors_alert.vue';
 import * as Sentry from '~/sentry/sentry_browser_wrapper';
 import { convertToGraphQLId, getIdFromGraphQLId } from '~/graphql_shared/utils';
@@ -86,6 +87,7 @@ describe('AiCatalogAgents', () => {
   };
 
   const findErrorsAlert = () => wrapper.findComponent(ErrorsAlert);
+  const findFilteredSearch = () => wrapper.findComponent(GlFilteredSearch);
   const findAiCatalogList = () => wrapper.findComponent(AiCatalogList);
   const findAiCatalogItemDrawer = () => wrapper.findComponent(AiCatalogItemDrawer);
   const findAiCatalogItemConsumerModal = () => wrapper.findComponent(AiCatalogItemConsumerModal);
@@ -102,6 +104,10 @@ describe('AiCatalogAgents', () => {
 
     it('renders AiCatalogListHeader component', () => {
       expect(wrapper.findComponent(AiCatalogListHeader).exists()).toBe(true);
+    });
+
+    it('renders filter search', () => {
+      expect(findFilteredSearch().exists()).toBe(true);
     });
 
     it('renders AiCatalogList component', () => {
@@ -152,6 +158,19 @@ describe('AiCatalogAgents', () => {
       const catalogList = findAiCatalogList();
 
       expect(catalogList.props('isLoading')).toBe(false);
+    });
+
+    it('passes search param to agents query on search', async () => {
+      findFilteredSearch().vm.$emit('submit', ['foo']);
+      await waitForPromises();
+
+      expect(mockCatalogItemsQueryHandler).toHaveBeenCalledWith({
+        after: null,
+        before: null,
+        first: 20,
+        last: null,
+        search: 'foo',
+      });
     });
   });
 
@@ -468,6 +487,7 @@ describe('AiCatalogAgents', () => {
         before: 'eyJpZCI6IjUxIn0',
         first: null,
         last: 20,
+        search: '',
       });
     });
 
@@ -481,6 +501,7 @@ describe('AiCatalogAgents', () => {
         before: null,
         first: 20,
         last: null,
+        search: '',
       });
     });
   });
