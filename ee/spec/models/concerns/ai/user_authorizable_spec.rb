@@ -343,6 +343,18 @@ RSpec.describe Ai::UserAuthorizable, feature_category: :ai_abstraction_layer do
   context 'when amazon q integration is connected with duo_enterprise addon' do
     subject { user.allowed_to_use(ai_feature) }
 
+    let_it_be(:access_data) do
+      create(:cloud_connector_access, data: {
+        available_services: [
+          { name: "duo_chat", serviceStartTime: 2.days.ago, bundledWith: %w[duo_enterprise] },
+          { name: "review_merge_request", serviceStartTime: 2.days.ago, bundledWith: %w[duo_enterprise] },
+          { name: "generate_description", serviceStartTime: 2.days.ago, bundledWith: %w[duo_enterprise] },
+          { name: "summarize_review", serviceStartTime: 2.days.ago, bundledWith: %w[duo_enterprise] },
+          { name: "summarize_new_merge_request", serviceStartTime: 2.days.ago, bundledWith: %w[duo_enterprise] }
+        ]
+      })
+    end
+
     let_it_be(:gitlab_subscription_user_add_on_assignment) do
       duo_pro_purchase = create(:gitlab_subscription_add_on_purchase, :self_managed, :duo_enterprise)
       create(:gitlab_subscription_user_add_on_assignment, user: user, add_on_purchase: duo_pro_purchase)
@@ -352,8 +364,9 @@ RSpec.describe Ai::UserAuthorizable, feature_category: :ai_abstraction_layer do
 
     where(:amazon_q_connected, :ai_feature, :expected_enablement_type) do
       false | :duo_chat | 'duo_enterprise'
-      true  | :review_merge_request | 'duo_enterprise'
-      true  | :generate_description | 'duo_enterprise'
+      true | :review_merge_request | 'duo_enterprise'
+      true | :summarize_new_merge_request | 'duo_enterprise'
+      true | :generate_description | 'duo_enterprise'
     end
 
     with_them do
@@ -396,6 +409,7 @@ RSpec.describe Ai::UserAuthorizable, feature_category: :ai_abstraction_layer do
       true  | :generate_commit_message | 'duo_amazon_q'
       true  | :generate_description | 'duo_amazon_q'
       true  | :summarize_review | 'duo_amazon_q'
+      true  | :summarize_new_merge_request | 'duo_amazon_q'
     end
 
     with_them do
