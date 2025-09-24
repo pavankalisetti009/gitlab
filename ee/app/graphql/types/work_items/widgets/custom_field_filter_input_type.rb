@@ -17,12 +17,16 @@ module Types
 
         argument :selected_option_ids, [::Types::GlobalIDType[::Issuables::CustomFieldSelectOption]],
           required: false,
-          description: 'Global IDs of the selected options for custom fields with select type.',
+          validates: { length: { maximum: ::WorkItems::SharedFilterArguments::MAX_FIELD_LIMIT } },
+          description: "Global IDs of the selected options for custom fields with select type " \
+            "(maximum is #{::WorkItems::SharedFilterArguments::MAX_FIELD_LIMIT} IDs).",
           prepare: ->(ids, _ctx) { ids.map(&:model_id) }
 
         argument :selected_option_values, [GraphQL::Types::String],
           required: false,
-          description: 'Values of the selected options for custom fields with select type.'
+          validates: { length: { maximum: ::WorkItems::SharedFilterArguments::MAX_FIELD_LIMIT } },
+          description: "Values of the selected options for custom fields with select type " \
+            "(maximum is #{::WorkItems::SharedFilterArguments::MAX_FIELD_LIMIT} values)."
 
         validates exactly_one_of: [:custom_field_id, :custom_field_name]
         validates exactly_one_of: [:selected_option_ids, :selected_option_values]
