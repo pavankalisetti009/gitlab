@@ -8,6 +8,7 @@ import SecurityPolicyViolationsModal from 'ee/vue_merge_request_widget/component
 import SecurityPolicyViolationsSelector from 'ee/vue_merge_request_widget/components/checks/security_policy_violations_selector.vue';
 import bypassSecurityPolicyViolations from 'ee/vue_merge_request_widget/components/checks/queries/bypass_security_policy_violations.mutation.graphql';
 import { WARN_MODE, EXCEPTION_MODE } from 'ee/vue_merge_request_widget/components/checks/constants';
+import { mockSecurityPolicyViolations } from '../../mock_data';
 
 Vue.use(VueApollo);
 const mockBypassSecurityPolicyViolationsResponses = {
@@ -33,12 +34,6 @@ const mockBypassSecurityPolicyViolationsResponses = {
 describe('SecurityPolicyViolationsModal', () => {
   let wrapper;
 
-  const mockPolicies = [
-    { value: 'policy-1', text: 'Security Policy 1', id: 1 },
-    { value: 'policy-2', text: 'Security Policy 2', id: 2 },
-    { value: 'policy-3', text: 'Security Policy 3', id: 3 },
-  ];
-
   const findModal = () => wrapper.findComponent(GlModal);
   const findAlert = () => wrapper.findComponent(GlAlert);
   const findSecurityPolicyViolationsSelector = () =>
@@ -57,7 +52,7 @@ describe('SecurityPolicyViolationsModal', () => {
     wrapper = shallowMountExtended(SecurityPolicyViolationsModal, {
       apolloProvider: createMockApollo([[mutationQuery, mutationResult]]),
       propsData: {
-        policies: mockPolicies,
+        policies: [mockSecurityPolicyViolations[0]],
         visible: true,
         mode: WARN_MODE,
         mr: {
@@ -91,7 +86,12 @@ describe('SecurityPolicyViolationsModal', () => {
 
     it('renders policy selector with correct props', () => {
       const selector = findPolicySelector();
-      expect(selector.props('items')).toEqual(mockPolicies);
+      expect(selector.props('items')).toEqual([
+        expect.objectContaining({
+          value: mockSecurityPolicyViolations[0].securityPolicyId,
+          text: mockSecurityPolicyViolations[0].name,
+        }),
+      ]);
       expect(selector.props('multiple')).toBe(true);
     });
 
@@ -164,8 +164,8 @@ describe('SecurityPolicyViolationsModal', () => {
     });
 
     it('updates toggle text when policies are selected', async () => {
-      await findPolicySelector().vm.$emit('select', [1]);
-      expect(findPolicySelector().props('toggleText')).toBe('Security Policy 1');
+      await findPolicySelector().vm.$emit('select', ['8']);
+      expect(findPolicySelector().props('toggleText')).toBe(mockSecurityPolicyViolations[0].name);
     });
 
     it('updates toggle text when reasons are selected', async () => {

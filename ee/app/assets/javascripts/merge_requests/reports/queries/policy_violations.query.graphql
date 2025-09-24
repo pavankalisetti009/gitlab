@@ -34,8 +34,11 @@ query getPolicyViolations($projectPath: ID!, $iid: String!) {
           severity
         }
         policies {
+          dismissed
+          enforcementType
           name
           reportType
+          securityPolicyId
           status
         }
         previousScanFinding {
