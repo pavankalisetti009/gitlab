@@ -1,12 +1,10 @@
 <script>
 import { s__, sprintf } from '~/locale';
-import { getIdFromGraphQLId, convertToGraphQLId } from '~/graphql_shared/utils';
+import { getIdFromGraphQLId } from '~/graphql_shared/utils';
 import { helpPagePath } from '~/helpers/help_page_helper';
 import PageHeading from '~/vue_shared/components/page_heading.vue';
 import * as Sentry from '~/sentry/sentry_browser_wrapper';
-import { TYPENAME_AI_CATALOG_ITEM } from 'ee/graphql_shared/constants';
 import createAiCatalogAgent from '../graphql/mutations/create_ai_catalog_agent.mutation.graphql';
-import aiCatalogAgentQuery from '../graphql/queries/ai_catalog_agent.query.graphql';
 import { AI_CATALOG_AGENTS_ROUTE, AI_CATALOG_SHOW_QUERY_PARAM } from '../router/constants';
 import AiCatalogAgentForm from '../components/ai_catalog_agent_form.vue';
 
@@ -16,46 +14,31 @@ export default {
     AiCatalogAgentForm,
     PageHeading,
   },
+  props: {
+    aiCatalogAgent: {
+      type: Object,
+      required: true,
+    },
+  },
   data() {
     return {
       errorMessages: [],
       isSubmitting: false,
-      originalAgent: {},
-      isLoading: true,
     };
   },
   computed: {
-    agentId() {
-      return this.$route.params.id;
+    agentName() {
+      return this.aiCatalogAgent.name;
     },
     initialValues() {
-      if (!this.originalAgent || !this.originalAgent.id) {
-        return {};
-      }
-
       return {
-        name: `${s__('AICatalog|Copy of')} ${this.originalAgent.name}`,
-        description: this.originalAgent.description,
-        systemPrompt: this.originalAgent.latestVersion?.systemPrompt || '',
-        userPrompt: this.originalAgent.latestVersion?.userPrompt || '',
-        tools: this.originalAgent.latestVersion?.tools?.nodes.map((t) => t.id) || [],
+        name: `${s__('AICatalog|Copy of')} ${this.agentName}`,
+        description: this.aiCatalogAgent.description,
+        systemPrompt: this.aiCatalogAgent.latestVersion?.systemPrompt,
+        userPrompt: this.aiCatalogAgent.latestVersion?.userPrompt,
+        tools: this.aiCatalogAgent.latestVersion?.tools?.nodes.map((t) => t.id) || [],
+        public: false,
       };
-    },
-  },
-  apollo: {
-    originalAgent: {
-      query: aiCatalogAgentQuery,
-      variables() {
-        return { id: convertToGraphQLId(TYPENAME_AI_CATALOG_ITEM, this.agentId) };
-      },
-      update(data) {
-        this.isLoading = false;
-        return data?.aiCatalogItem || {};
-      },
-      error(error) {
-        this.isLoading = false;
-        Sentry.captureException(error);
-      },
     },
   },
   methods: {
@@ -123,7 +106,7 @@ export default {
 
     <ai-catalog-agent-form
       mode="create"
-      :is-loading="isLoading || isSubmitting"
+      :is-loading="isSubmitting"
       :errors="errorMessages"
       :initial-values="initialValues"
       @dismiss-errors="resetErrorMessages"

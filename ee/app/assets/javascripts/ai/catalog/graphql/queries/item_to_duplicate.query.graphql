@@ -1,7 +1,0 @@
-query catalogItemToDuplicate {
-  itemToDuplicate @client {
-    id
-    type
-    data
-  }
-}
