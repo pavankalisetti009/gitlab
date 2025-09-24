@@ -48,6 +48,10 @@ module VirtualRegistries
         { 'Authorization' => "Bearer #{bearer_token}" }.merge(REGISTRY_ACCEPT_HEADERS)
       end
 
+      def default_cache_entries
+        cache_entries.default
+      end
+
       private
 
       def get_bearer_token(path)
