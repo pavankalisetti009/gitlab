@@ -174,9 +174,9 @@ describe('GeoSiteForm', () => {
       });
 
       it('sets siteData to the correct site', () => {
-        expect(findGeoSiteFormCoreField().props('siteData').id).toBe(MOCK_SITE.id);
-        expect(findGeoSiteFormSelectiveSyncField().props('siteData').id).toBe(MOCK_SITE.id);
-        expect(findGeoSiteFormCapacitiesField().props('siteData').id).toBe(MOCK_SITE.id);
+        expect(findGeoSiteFormCoreField().props('siteData')).toMatchObject(MOCK_SITE);
+        expect(findGeoSiteFormSelectiveSyncField().props('siteData')).toMatchObject(MOCK_SITE);
+        expect(findGeoSiteFormCapacitiesField().props('siteData')).toMatchObject(MOCK_SITE);
       });
     });
 
@@ -186,9 +186,23 @@ describe('GeoSiteForm', () => {
       });
 
       it('sets siteData to the default site data', () => {
-        expect(findGeoSiteFormCoreField().props('siteData').id).not.toBe(MOCK_SITE.id);
-        expect(findGeoSiteFormSelectiveSyncField().props('siteData').id).not.toBe(MOCK_SITE.id);
-        expect(findGeoSiteFormCapacitiesField().props('siteData').id).not.toBe(MOCK_SITE.id);
+        expect(findGeoSiteFormCoreField().props('siteData')).not.toMatchObject(MOCK_SITE);
+        expect(findGeoSiteFormSelectiveSyncField().props('siteData')).not.toMatchObject(MOCK_SITE);
+        expect(findGeoSiteFormCapacitiesField().props('siteData')).not.toMatchObject(MOCK_SITE);
+      });
+    });
+
+    describe('when site.selectiveSyncType is nullish', () => {
+      beforeEach(() => {
+        createComponent({ site: { ...MOCK_SITE, selectiveSyncType: null } });
+      });
+
+      it('sets siteData.selectiveSyncType to empty string', () => {
+        const siteData = { ...MOCK_SITE, selectiveSyncType: '' };
+
+        expect(findGeoSiteFormCoreField().props('siteData')).toMatchObject(siteData);
+        expect(findGeoSiteFormSelectiveSyncField().props('siteData')).toMatchObject(siteData);
+        expect(findGeoSiteFormCapacitiesField().props('siteData')).toMatchObject(siteData);
       });
     });
   });

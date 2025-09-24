@@ -11,6 +11,10 @@ export const MOCK_SELECTIVE_SYNC_TYPES = {
     label: 'Projects in certain storage shards',
     value: 'shards',
   },
+  ORGANIZATIONS: {
+    label: 'Projects in certain organizations',
+    value: 'organizations',
+  },
 };
 
 export const MOCK_SYNC_SHARDS = [
@@ -61,6 +65,7 @@ export const MOCK_SITE = {
   internalUrl: '',
   selectiveSyncType: '',
   selectiveSyncNamespaceIds: [],
+  selectiveSyncOrganizationIds: [],
   selectiveSyncShards: [],
   reposMaxCapacity: 25,
   filesMaxCapacity: 10,
