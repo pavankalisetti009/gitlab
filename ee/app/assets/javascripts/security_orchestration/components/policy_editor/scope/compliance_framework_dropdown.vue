@@ -2,14 +2,14 @@
 import { debounce, uniqBy } from 'lodash';
 import { GlButton, GlCollapsibleListbox, GlLabel, GlFormGroup, GlPopover } from '@gitlab/ui';
 import produce from 'immer';
-import { n__, s__, __, sprintf } from '~/locale';
+import { s__, __ } from '~/locale';
 import { convertToGraphQLId, getIdFromGraphQLId } from '~/graphql_shared/utils';
 import { TYPE_COMPLIANCE_FRAMEWORK } from '~/graphql_shared/constants';
-import getComplianceFrameworkQuery from 'ee/graphql_shared/queries/get_compliance_framework.query.graphql';
 import { renderMultiSelectText } from 'ee/security_orchestration/components/policy_editor/utils';
 import { DEFAULT_DEBOUNCE_AND_THROTTLE_MS } from '~/lib/utils/constants';
 import ComplianceFrameworkFormModal from 'ee/groups/settings/compliance_frameworks/components/form_modal.vue';
 import { searchInItemsProperties } from '~/lib/utils/search_utils';
+import getComplianceFrameworksForDropdownQuery from './graphql/get_compliance_frameworks_for_dropdown.query.graphql';
 
 export default {
   i18n: {
@@ -36,7 +36,7 @@ export default {
   },
   apollo: {
     complianceFrameworks: {
-      query: getComplianceFrameworkQuery,
+      query: getComplianceFrameworksForDropdownQuery,
       variables() {
         return {
           search: this.searchTerm,
@@ -189,7 +189,7 @@ export default {
     async fetchComplianceFrameworksByIds() {
       try {
         const { data } = await this.$apollo.query({
-          query: getComplianceFrameworkQuery,
+          query: getComplianceFrameworksForDropdownQuery,
           variables: {
             fullPath: this.fullPath,
             ids: this.selectedButNotLoadedComplianceIds,
@@ -249,9 +249,6 @@ export default {
       this.$refs.listbox.open();
       this.$apollo.queries.complianceFrameworks.refetch();
     },
-    extractProjects(framework) {
-      return framework?.projects?.nodes || [];
-    },
     getUniqueFrameworks(items = []) {
       return uniqBy([...this.complianceFrameworks, ...items], 'id');
     },
@@ -261,24 +258,6 @@ export default {
       }
 
       return getIdFromGraphQLId(framework.namespaceId) !== getIdFromGraphQLId(this.namespaceId);
-    },
-    renderPopoverContent(framework) {
-      return (
-        this.extractProjects(framework)
-          .map(({ name }) => name)
-          .join(', ') || this.$options.i18n.complianceFrameworkPopoverPlaceholder
-      );
-    },
-    renderPopoverTitle(frameworkName, projectLength) {
-      const projects = n__('project', 'projects', projectLength);
-      return sprintf(
-        s__('SecurityOrchestration|%{frameworkName} has %{projectLength} %{projects}'),
-        {
-          frameworkName,
-          projectLength,
-          projects,
-        },
-      );
     },
   },
 };
@@ -331,10 +310,10 @@ export default {
               placement="right"
               triggers="hover"
               :target="item.value"
-              :title="renderPopoverTitle(item.text, extractProjects(item).length)"
+              :title="item.text"
             >
               <div>
-                <span>{{ renderPopoverContent(item) }}</span>
+                <span>{{ item.description }}</span>
                 <span
                   v-if="isCSPFramework(item)"
                   class="gl-border-t gl-mb-2 gl-block gl-pt-2 gl-text-sm gl-text-secondary"
