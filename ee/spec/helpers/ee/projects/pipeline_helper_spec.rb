@@ -55,6 +55,16 @@ RSpec.describe Projects::PipelineHelper, feature_category: :pipeline_composition
       })
     end
 
+    context 'when project security_setting is nil' do
+      before do
+        allow(project).to receive(:security_setting).and_return(nil)
+      end
+
+      it 'returns pipeline tabs data with validity_checks_enabled as false' do
+        expect(pipeline_tabs_data[:validity_checks_enabled]).to eq('false')
+      end
+    end
+
     describe 'dismissal descriptions' do
       let(:dismissal_descriptions_json) do
         # Use dynamic translations via N_(...)
