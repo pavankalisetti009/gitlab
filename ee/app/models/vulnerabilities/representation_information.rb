@@ -11,6 +11,7 @@ module Vulnerabilities
 
     belongs_to :vulnerability
     belongs_to :project
+    belongs_to :vulnerability_occurrence, optional: true, class_name: 'Vulnerabilities::Finding'
 
     validates :vulnerability, presence: true
     validates :project, presence: true
