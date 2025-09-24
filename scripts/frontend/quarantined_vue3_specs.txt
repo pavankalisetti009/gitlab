@@ -32,5 +32,4 @@ spec/frontend/pipeline_wizard/components/step_spec.js
 spec/frontend/ref/init_ambiguous_ref_modal_spec.js
 spec/frontend/vue_alerts_spec.js
 spec/frontend/vue_popovers_spec.js
-spec/frontend/vue_shared/components/upload_dropzone/upload_dropzone_spec.js
 spec/frontend/work_items/components/work_item_description_rendered_spec.js
