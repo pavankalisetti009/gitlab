@@ -184,6 +184,9 @@ export default {
 
           return [...items, ...adminItems];
         },
+        deleteActionItem: {
+          showActionItem: (item) => item.userPermissions?.adminAiCatalogItem || false,
+        },
         visibilityTooltip: {
           [VISIBILITY_LEVEL_PUBLIC_STRING]:
             FLOW_VISIBILITY_LEVEL_DESCRIPTIONS[VISIBILITY_LEVEL_PUBLIC_STRING],

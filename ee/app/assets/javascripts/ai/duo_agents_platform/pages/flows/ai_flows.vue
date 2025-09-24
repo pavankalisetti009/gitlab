@@ -6,12 +6,12 @@ import { convertToGraphQLId, getIdFromGraphQLId } from '~/graphql_shared/utils';
 import { fetchPolicies } from '~/lib/graphql';
 import * as Sentry from '~/sentry/sentry_browser_wrapper';
 import ErrorsAlert from '~/vue_shared/components/errors_alert.vue';
-
 import PageHeading from '~/vue_shared/components/page_heading.vue';
 import ResourceListsEmptyState from '~/vue_shared/components/resource_lists/empty_state.vue';
 import AiCatalogList from 'ee/ai/catalog/components/ai_catalog_list.vue';
 import AiCatalogItemDrawer from 'ee/ai/catalog/components/ai_catalog_item_drawer.vue';
 import aiCatalogConfiguredItemsQuery from 'ee/ai/catalog/graphql/queries/ai_catalog_configured_items.query.graphql';
+import aiCatalogProjectUserPermissionsQuery from 'ee/ai/catalog/graphql/queries/ai_catalog_project_user_permissions.query.graphql';
 import aiCatalogFlowQuery from 'ee/ai/catalog/graphql/queries/ai_catalog_flow.query.graphql';
 import deleteAiCatalogItemConsumer from 'ee/ai/catalog/graphql/mutations/delete_ai_catalog_item_consumer.mutation.graphql';
 import { AI_CATALOG_TYPE_FLOW, PAGE_SIZE } from 'ee/ai/catalog/constants';
@@ -38,6 +38,9 @@ export default {
     projectId: {
       default: null,
     },
+    projectPath: {
+      default: null,
+    },
     exploreAiCatalogPath: {
       default: '',
     },
@@ -60,6 +63,16 @@ export default {
       result({ data }) {
         this.pageInfo = data.aiCatalogConfiguredItems.pageInfo;
       },
+    },
+    userPermissions: {
+      query: aiCatalogProjectUserPermissionsQuery,
+      variables() {
+        return {
+          fullPath: this.projectPath,
+        };
+      },
+      fetchPolicy: fetchPolicies.CACHE_AND_NETWORK,
+      update: (data) => data.project?.userPermissions || {},
     },
     aiCatalogFlow: {
       query: aiCatalogFlowQuery,
@@ -86,6 +99,7 @@ export default {
     return {
       aiFlows: [],
       aiCatalogFlow: {},
+      userPermissions: {},
       errors: [],
       pageInfo: {},
     };
@@ -131,6 +145,7 @@ export default {
           ];
         },
         deleteActionItem: {
+          showActionItem: () => this.userPermissions?.adminAiCatalogItemConsumer || false,
           text: __('Remove'),
         },
       };
