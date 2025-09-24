@@ -16,7 +16,6 @@ import aiCatalogAgentsQuery from '../graphql/queries/ai_catalog_agents.query.gra
 import aiCatalogAgentQuery from '../graphql/queries/ai_catalog_agent.query.graphql';
 import createAiCatalogItemConsumer from '../graphql/mutations/create_ai_catalog_item_consumer.mutation.graphql';
 import deleteAiCatalogAgentMutation from '../graphql/mutations/delete_ai_catalog_agent.mutation.graphql';
-import setItemToDuplicateMutation from '../graphql/mutations/set_item_to_duplicate.mutation.graphql';
 import AiCatalogListHeader from '../components/ai_catalog_list_header.vue';
 import AiCatalogList from '../components/ai_catalog_list.vue';
 import AiCatalogItemDrawer from '../components/ai_catalog_item_drawer.vue';
@@ -29,7 +28,6 @@ import {
 } from '../router/constants';
 import {
   AGENT_VISIBILITY_LEVEL_DESCRIPTIONS,
-  AI_CATALOG_TYPE_AGENT,
   PAGE_SIZE,
   TRACK_EVENT_VIEW_AI_CATALOG_ITEM_INDEX,
   TRACK_EVENT_VIEW_AI_CATALOG_ITEM,
@@ -153,6 +151,8 @@ export default {
             return [];
           }
 
+          const id = getIdFromGraphQLId(item.id);
+
           const items = [
             {
               text: s__('AICatalog|Add to project'),
@@ -161,7 +161,10 @@ export default {
             },
             {
               text: s__('AICatalog|Duplicate'),
-              action: () => this.handleDuplicate(item),
+              to: {
+                name: AI_CATALOG_AGENTS_DUPLICATE_ROUTE,
+                params: { id },
+              },
               icon: 'duplicate',
             },
           ];
@@ -175,7 +178,7 @@ export default {
               text: s__('AICatalog|Test run'),
               to: {
                 name: AI_CATALOG_AGENTS_RUN_ROUTE,
-                params: { id: getIdFromGraphQLId(item.id) },
+                params: { id },
               },
               icon: 'rocket-launch',
             },
@@ -183,7 +186,7 @@ export default {
               text: s__('AICatalog|Edit'),
               to: {
                 name: AI_CATALOG_AGENTS_EDIT_ROUTE,
-                params: { id: getIdFromGraphQLId(item.id) },
+                params: { id },
               },
               icon: 'pencil',
             },
@@ -325,34 +328,6 @@ export default {
         first: PAGE_SIZE,
         last: null,
       });
-    },
-    async handleDuplicate(agent) {
-      try {
-        if (!agent) {
-          throw new Error(s__('AICatalog|Agent not found.'));
-        }
-
-        const iid = getIdFromGraphQLId(agent.id);
-
-        await this.$apollo.mutate({
-          mutation: setItemToDuplicateMutation,
-          variables: {
-            item: {
-              id: iid,
-              type: AI_CATALOG_TYPE_AGENT,
-              data: agent,
-            },
-          },
-        });
-
-        this.$router.push({
-          name: AI_CATALOG_AGENTS_DUPLICATE_ROUTE,
-          params: { id: iid },
-        });
-      } catch (error) {
-        this.errors = [error.message];
-        Sentry.captureException(error);
-      }
     },
     handlePrevPage() {
       this.$apollo.queries.aiCatalogAgents.refetch({
