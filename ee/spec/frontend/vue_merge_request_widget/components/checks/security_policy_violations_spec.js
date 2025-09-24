@@ -8,23 +8,9 @@ import SecurityPolicyViolationsModal from 'ee/vue_merge_request_widget/component
 import ActionButtons from '~/vue_merge_request_widget/components/action_buttons.vue';
 import getPolicyViolations from 'ee/merge_requests/reports/queries/policy_violations.query.graphql';
 import { WARN_MODE, EXCEPTION_MODE } from 'ee/vue_merge_request_widget/components/checks/constants';
+import { mockSecurityPolicyViolations } from '../../mock_data';
 
 Vue.use(VueApollo);
-
-const mockPolicies = [
-  {
-    name: 'Warn mode - 01',
-    reportType: 'ANY_MERGE_REQUEST',
-    status: 'FAILED',
-    __typename: 'PolicyViolationInfo',
-  },
-  {
-    name: 'Prevent Critical Vulnerabilities',
-    reportType: 'SCAN_FINDING',
-    status: 'FAILED',
-    __typename: 'PolicyViolationInfo',
-  },
-];
 
 const getApolloProvider = (policies) =>
   createMockApollo(
@@ -81,7 +67,7 @@ describe('SecurityPolicyViolations merge checks component', () => {
     securityPoliciesPath = null,
     warnModeEnabled = false,
     securityPoliciesBypassOptionsMrWidget = false,
-    policies = mockPolicies,
+    policies = mockSecurityPolicyViolations,
   } = {}) {
     wrapper = mountExtended(SecurityPolicyViolations, {
       apolloProvider: getApolloProvider(policies),
@@ -142,7 +128,7 @@ describe('SecurityPolicyViolations merge checks component', () => {
   });
 
   describe('bypass functionality', () => {
-    it('shows bypass button when warn mode is enabled, has policies path, and has policies', async () => {
+    it('shows bypass button when warn mode is enabled, has policies path, and has warn policies', async () => {
       createComponent({
         warnModeEnabled: true,
         securityPoliciesPath: '/security-path',
@@ -170,11 +156,21 @@ describe('SecurityPolicyViolations merge checks component', () => {
       expect(findBypassButton().exists()).toBe(false);
     });
 
-    it('does not show bypass button when no policies', () => {
+    it('does not show bypass button when there are no warn policies', () => {
       createComponent({
         warnModeEnabled: true,
         securityPoliciesPath: '/security-path',
         policies: [],
+      });
+
+      expect(findBypassButton().exists()).toBe(false);
+    });
+
+    it('does not show bypass button when there are no warn policies that have not been dismissed', () => {
+      createComponent({
+        warnModeEnabled: true,
+        securityPoliciesPath: '/security-path',
+        policies: [{ ...mockSecurityPolicyViolations[0], dismissed: true }],
       });
 
       expect(findBypassButton().exists()).toBe(false);
@@ -202,6 +198,7 @@ describe('SecurityPolicyViolations merge checks component', () => {
             iid: 123,
             targetProjectFullPath: 'group/project',
           },
+          policies: [mockSecurityPolicyViolations[0]],
         }),
       );
     });

@@ -9,6 +9,7 @@ import SecurityPolicyViolationsModal from 'ee/vue_merge_request_widget/component
 import { getSelectedModeOption } from './utils';
 
 export default {
+  BYPASS_POLICY_ENFORCEMENT_TYPES: ['WARN'],
   bypassInfoButton: {
     icon: 'information-o',
     tooltipText: s__(
@@ -35,12 +36,7 @@ export default {
       },
       update(data) {
         const policies = get(data, 'project.mergeRequest.policyViolations.policies', []);
-        const uniquePolicies = uniqBy(policies, 'name');
-        return uniquePolicies.map((policy) => ({
-          ...policy,
-          text: policy.name,
-          value: policy.name,
-        }));
+        return uniqBy(policies, 'securityPolicyId');
       },
     },
   },
@@ -67,12 +63,21 @@ export default {
     allowBypass() {
       return Boolean(this.mr.allowBypass);
     },
+    bypassPolicies() {
+      return this.policies.filter(
+        (policy) =>
+          this.$options.BYPASS_POLICY_ENFORCEMENT_TYPES.includes(policy.enforcementType) &&
+          !policy.dismissed,
+      );
+    },
     enableBypassButton() {
       return this.warnModeEnabled || this.bypassOptionsEnabled;
     },
     showBypassButton() {
       return (
-        this.enableBypassButton && this.mr.securityPoliciesPath && Boolean(this.policies.length)
+        this.enableBypassButton &&
+        this.mr.securityPoliciesPath &&
+        Boolean(this.bypassPolicies.length)
       );
     },
     tertiaryActionsButtons() {
@@ -115,7 +120,7 @@ export default {
         v-if="showModal"
         v-model="showModal"
         :mr="mr"
-        :policies="policies"
+        :policies="bypassPolicies"
         :mode="selectedModeOption"
         @close="toggleModal(false)"
         @select-mode="selectMode"
