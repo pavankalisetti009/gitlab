@@ -13,6 +13,7 @@ import AiCatalogFlow from '../pages/ai_catalog_flow.vue';
 import AiCatalogFlows from '../pages/ai_catalog_flows.vue';
 import AiCatalogFlowsEdit from '../pages/ai_catalog_flows_edit.vue';
 import AiCatalogFlowsNew from '../pages/ai_catalog_flows_new.vue';
+import AiCatalogFlowsDuplicate from '../pages/ai_catalog_flows_duplicate.vue';
 import {
   AI_CATALOG_INDEX_ROUTE,
   AI_CATALOG_AGENTS_ROUTE,
@@ -23,6 +24,7 @@ import {
   AI_CATALOG_FLOWS_ROUTE,
   AI_CATALOG_FLOWS_NEW_ROUTE,
   AI_CATALOG_FLOWS_EDIT_ROUTE,
+  AI_CATALOG_FLOWS_DUPLICATE_ROUTE,
   AI_CATALOG_SHOW_QUERY_PARAM,
 } from './constants';
 
@@ -154,6 +156,15 @@ export const createRouter = (base) => {
                       beforeEnter: requireAuth,
                       meta: {
                         text: s__('AICatalog|Edit flow'),
+                      },
+                    },
+                    {
+                      name: AI_CATALOG_FLOWS_DUPLICATE_ROUTE,
+                      path: 'duplicate',
+                      component: AiCatalogFlowsDuplicate,
+                      beforeEnter: requireAuth,
+                      meta: {
+                        text: s__('AICatalog|Duplicate flow'),
                       },
                     },
                   ],

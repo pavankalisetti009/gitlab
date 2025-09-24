@@ -9,6 +9,7 @@ import {
   AI_CATALOG_FLOWS_ROUTE,
   AI_CATALOG_FLOWS_EDIT_ROUTE,
   AI_CATALOG_FLOWS_NEW_ROUTE,
+  AI_CATALOG_FLOWS_DUPLICATE_ROUTE,
   AI_CATALOG_SHOW_QUERY_PARAM,
 } from 'ee/ai/catalog/router/constants';
 import { isLoggedIn } from '~/lib/utils/common_utils';
@@ -44,6 +45,7 @@ describe('AI Catalog Router', () => {
       ${'flows index'}      | ${'/flows'}                       | ${AI_CATALOG_FLOWS_ROUTE}
       ${'flows new'}        | ${'/flows/new'}                   | ${AI_CATALOG_FLOWS_NEW_ROUTE}
       ${'flows edit'}       | ${`/flows/${flowId}/edit`}        | ${AI_CATALOG_FLOWS_EDIT_ROUTE}
+      ${'flows duplicate'}  | ${`/flows/${flowId}/duplicate`}   | ${AI_CATALOG_FLOWS_DUPLICATE_ROUTE}
     `('renders $testName child route', async ({ path, expectedRouteName }) => {
       await router.push(path);
 
@@ -69,6 +71,7 @@ describe('AI Catalog Router', () => {
       ${'flows index'}      | ${'/flows'}                       | ${AI_CATALOG_INDEX_ROUTE}
       ${'flows new'}        | ${'/flows/new'}                   | ${AI_CATALOG_INDEX_ROUTE}
       ${'flows edit'}       | ${`/flows/${flowId}/edit`}        | ${AI_CATALOG_INDEX_ROUTE}
+      ${'flows duplicate'}  | ${`/flows/${flowId}/duplicate`}   | ${AI_CATALOG_INDEX_ROUTE}
     `('renders $testName child route', async ({ path, expectedRouteName }) => {
       await router.push(path);
 
@@ -117,6 +120,7 @@ describe('AI Catalog Router', () => {
       ${'agents duplicate'} | ${`/agents/${agentId}/duplicate`}
       ${'flows new'}        | ${'/flows/new'}
       ${'flows edit'}       | ${`/flows/${flowId}/edit`}
+      ${'flows duplicate'}  | ${`/flows/${flowId}/duplicate`}
     `('redirects $testName route to index when not logged in', async ({ path }) => {
       try {
         await router.push(path);

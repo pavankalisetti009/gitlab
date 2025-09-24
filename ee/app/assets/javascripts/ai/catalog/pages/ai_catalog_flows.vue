@@ -19,7 +19,11 @@ import AiCatalogListHeader from '../components/ai_catalog_list_header.vue';
 import AiCatalogList from '../components/ai_catalog_list.vue';
 import AiCatalogItemDrawer from '../components/ai_catalog_item_drawer.vue';
 import AiCatalogItemConsumerModal from '../components/ai_catalog_item_consumer_modal.vue';
-import { AI_CATALOG_SHOW_QUERY_PARAM, AI_CATALOG_FLOWS_EDIT_ROUTE } from '../router/constants';
+import {
+  AI_CATALOG_SHOW_QUERY_PARAM,
+  AI_CATALOG_FLOWS_EDIT_ROUTE,
+  AI_CATALOG_FLOWS_DUPLICATE_ROUTE,
+} from '../router/constants';
 import {
   FLOW_VISIBILITY_LEVEL_DESCRIPTIONS,
   PAGE_SIZE,
@@ -145,11 +149,21 @@ export default {
             return [];
           }
 
+          const id = getIdFromGraphQLId(item.id);
+
           const items = [
             {
               text: s__('AICatalog|Add to project'),
               action: () => this.setAiCatalogFlowToBeAdded(item),
               icon: 'plus',
+            },
+            {
+              text: s__('AICatalog|Duplicate'),
+              to: {
+                name: AI_CATALOG_FLOWS_DUPLICATE_ROUTE,
+                params: { id },
+              },
+              icon: 'duplicate',
             },
           ];
 
@@ -162,7 +176,7 @@ export default {
               text: s__('AICatalog|Edit'),
               to: {
                 name: AI_CATALOG_FLOWS_EDIT_ROUTE,
-                params: { id: getIdFromGraphQLId(item.id) },
+                params: { id },
               },
               icon: 'pencil',
             },
