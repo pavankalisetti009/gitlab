@@ -28753,23 +28753,6 @@ CREATE TABLE work_item_dates_sources (
     due_date_fixed date
 );
 
-CREATE TABLE work_item_hierarchy_restrictions (
-    id bigint NOT NULL,
-    parent_type_id bigint NOT NULL,
-    child_type_id bigint NOT NULL,
-    maximum_depth smallint,
-    cross_hierarchy_enabled boolean DEFAULT false NOT NULL
-);
-
-CREATE SEQUENCE work_item_hierarchy_restrictions_id_seq
-    START WITH 1
-    INCREMENT BY 1
-    NO MINVALUE
-    NO MAXVALUE
-    CACHE 1;
-
-ALTER SEQUENCE work_item_hierarchy_restrictions_id_seq OWNED BY work_item_hierarchy_restrictions.id;
-
 CREATE TABLE work_item_number_field_values (
     id bigint NOT NULL,
     namespace_id bigint NOT NULL,
@@ -31447,8 +31430,6 @@ ALTER TABLE ONLY work_item_custom_status_mappings ALTER COLUMN id SET DEFAULT ne
 ALTER TABLE ONLY work_item_custom_statuses ALTER COLUMN id SET DEFAULT nextval('work_item_custom_statuses_id_seq'::regclass);
 
 ALTER TABLE ONLY work_item_date_field_values ALTER COLUMN id SET DEFAULT nextval('work_item_date_field_values_id_seq'::regclass);
-
-ALTER TABLE ONLY work_item_hierarchy_restrictions ALTER COLUMN id SET DEFAULT nextval('work_item_hierarchy_restrictions_id_seq'::regclass);
 
 ALTER TABLE ONLY work_item_number_field_values ALTER COLUMN id SET DEFAULT nextval('work_item_number_field_values_id_seq'::regclass);
 
@@ -35165,9 +35146,6 @@ ALTER TABLE ONLY work_item_date_field_values
 
 ALTER TABLE ONLY work_item_dates_sources
     ADD CONSTRAINT work_item_dates_sources_pkey PRIMARY KEY (issue_id);
-
-ALTER TABLE ONLY work_item_hierarchy_restrictions
-    ADD CONSTRAINT work_item_hierarchy_restrictions_pkey PRIMARY KEY (id);
 
 ALTER TABLE ONLY work_item_number_field_values
     ADD CONSTRAINT work_item_number_field_values_pkey PRIMARY KEY (id);
@@ -42626,12 +42604,6 @@ CREATE INDEX index_work_item_custom_statuses_on_updated_by_id ON work_item_custo
 CREATE INDEX index_work_item_date_field_values_on_custom_field_id ON work_item_date_field_values USING btree (custom_field_id);
 
 CREATE INDEX index_work_item_date_field_values_on_namespace_id ON work_item_date_field_values USING btree (namespace_id);
-
-CREATE INDEX index_work_item_hierarchy_restrictions_on_child_type_id ON work_item_hierarchy_restrictions USING btree (child_type_id);
-
-CREATE UNIQUE INDEX index_work_item_hierarchy_restrictions_on_parent_and_child ON work_item_hierarchy_restrictions USING btree (parent_type_id, child_type_id);
-
-CREATE INDEX index_work_item_hierarchy_restrictions_on_parent_type_id ON work_item_hierarchy_restrictions USING btree (parent_type_id);
 
 CREATE INDEX index_work_item_number_field_values_on_custom_field_id ON work_item_number_field_values USING btree (custom_field_id);
 
@@ -51467,12 +51439,6 @@ ALTER TABLE ONLY work_item_colors
 
 ALTER TABLE ONLY work_item_dates_sources
     ADD CONSTRAINT fk_work_item_dates_sources_on_namespace_id FOREIGN KEY (namespace_id) REFERENCES namespaces(id) ON DELETE CASCADE;
-
-ALTER TABLE ONLY work_item_hierarchy_restrictions
-    ADD CONSTRAINT fk_work_item_hierarchy_restrictions_child_type_id FOREIGN KEY (child_type_id) REFERENCES work_item_types(id) ON UPDATE CASCADE ON DELETE CASCADE;
-
-ALTER TABLE ONLY work_item_hierarchy_restrictions
-    ADD CONSTRAINT fk_work_item_hierarchy_restrictions_parent_type_id FOREIGN KEY (parent_type_id) REFERENCES work_item_types(id) ON UPDATE CASCADE ON DELETE CASCADE;
 
 ALTER TABLE ONLY work_item_type_custom_fields
     ADD CONSTRAINT fk_work_item_type_custom_fields_on_work_item_type_id FOREIGN KEY (work_item_type_id) REFERENCES work_item_types(id) ON DELETE CASCADE;

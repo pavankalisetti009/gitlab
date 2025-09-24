@@ -5,7 +5,6 @@ class DataSeeder
   EXCLUDED_FACTORIES = %w[
     work_item_type
     widget_definition
-    hierarchy_restriction
     cycle_analytics_value_stream_setting
   ].freeze
 
