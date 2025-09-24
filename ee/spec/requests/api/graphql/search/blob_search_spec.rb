@@ -26,6 +26,8 @@ RSpec.describe 'Getting a collection of blobs', :zoekt_settings_enabled, :zoekt_
       end
     end
 
+    it_behaves_like 'search rate is limitable'
+
     describe 'validation for verify_repository_ref!' do
       let(:existing_project_id) { "gid://gitlab/Project/#{project.id}" }
       let(:non_existing_project_id) { "gid://gitlab/Project/#{non_existing_record_id}" }

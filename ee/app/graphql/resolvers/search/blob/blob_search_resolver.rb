@@ -6,6 +6,7 @@ module Resolvers
       class BlobSearchResolver < BaseResolver
         calls_gitaly!
         include Gitlab::Graphql::Authorize::AuthorizeResource
+        include ::Search::SearchRateLimitable
 
         type Types::Search::Blob::BlobSearchType, null: true
         argument :chunk_count, type: GraphQL::Types::Int, required: false, experiment: { milestone: '17.2' },
@@ -33,22 +34,9 @@ module Resolvers
         argument :search, GraphQL::Types::String, required: true, description: 'Searched term.'
 
         def ready?(**args)
+          verify_search_rate_limit!(**args)
           verify_repository_ref!(args[:project_id]&.model_id, args[:repository_ref])
-
-          @search_service = SearchService.new(current_user, {
-            group_id: args[:group_id]&.model_id,
-            project_id: args[:project_id]&.model_id,
-            search: args[:search],
-            page: args[:page],
-            per_page: args[:per_page],
-            multi_match_enabled: true,
-            chunk_count: args[:chunk_count],
-            scope: 'blobs',
-            regex: args[:regex],
-            include_archived: args[:include_archived],
-            exclude_forks: args[:exclude_forks]
-          })
-
+          @search_service = SearchService.new(current_user, search_params(**args))
           verify_global_search_is_allowed!
           verify_search_is_zoekt!
           super
@@ -125,6 +113,26 @@ module Resolvers
             per_page: args[:per_page],
             files: @results
           }
+        end
+
+        def search_params(**args)
+          {
+            group_id: args[:group_id]&.model_id,
+            project_id: args[:project_id]&.model_id,
+            search: args[:search],
+            page: args[:page],
+            per_page: args[:per_page],
+            multi_match_enabled: true,
+            chunk_count: args[:chunk_count],
+            scope: scope,
+            regex: args[:regex],
+            include_archived: args[:include_archived],
+            exclude_forks: args[:exclude_forks]
+          }
+        end
+
+        def scope
+          'blobs'
         end
       end
     end
