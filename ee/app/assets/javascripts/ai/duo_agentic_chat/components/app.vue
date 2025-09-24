@@ -137,7 +137,11 @@ export default {
 <template>
   <div>
     <div v-if="duoChatGlobalState.isAgenticChatShown">
-      <duo-layout :dimensions="dimensions" :should-render-resizable="true" class="duo-chat">
+      <duo-layout
+        :dimensions="dimensions"
+        :should-render-resizable="true"
+        class="duo-chat duo-chat-layout"
+      >
         <template v-if="glFeatures.duoSideRail" #siderail>
           <side-rail :buttons="siderail" @click="onClick" />
         </template>
