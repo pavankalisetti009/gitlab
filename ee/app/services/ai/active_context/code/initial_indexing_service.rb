@@ -5,6 +5,11 @@ module Ai
     module Code
       class InitialIndexingService < IndexingServiceBase
         def execute
+          if repository.empty?
+            update_repository_state!(:ready)
+            return
+          end
+
           update_repository_state!(:code_indexing_in_progress)
 
           run_indexer_and_enqueue_ref
