@@ -4,14 +4,14 @@ require 'spec_helper'
 
 RSpec.describe Ai::ActiveContext::Code::InitialIndexingService, feature_category: :global_search do
   let_it_be(:collection) { create(:ai_active_context_collection) }
-  let_it_be(:project) { create(:project) }
-  let_it_be_with_reload(:repository) { create(:ai_active_context_code_repository, state: :pending, project: project) }
+  let_it_be(:project) { create(:project, :repository) }
+  let_it_be(:repository) { create(:ai_active_context_code_repository, state: :pending, project: project) }
 
   let(:logger) { instance_double(::Gitlab::ActiveContext::Logger, info: nil, error: nil) }
 
   before do
     allow(ActiveContext::CollectionCache).to receive(:fetch).and_return(collection)
-    allow(::ActiveContext::Config).to receive(:logger).and_return(logger)
+    allow(ActiveContext::Config).to receive(:logger).and_return(logger)
   end
 
   def build_log_payload(message, extra_params = {})
@@ -52,6 +52,21 @@ RSpec.describe Ai::ActiveContext::Code::InitialIndexingService, feature_category
       expect(repository.initial_indexing_last_queued_item).to eq('hash2')
     end
 
+    context 'when repository is empty' do
+      let(:project) { create(:project, :empty_repo) }
+      let(:repository) { create(:ai_active_context_code_repository, state: :pending, project: project) }
+
+      it 'sets the repository to ready without running indexer' do
+        expect(Ai::ActiveContext::Code::Indexer).not_to receive(:run!)
+        expect(::Ai::ActiveContext::Collections::Code).not_to receive(:track_refs!)
+        expect(logger).to receive(:info).with(build_log_payload('ready'))
+
+        execute
+
+        expect(repository.state).to eq('ready')
+      end
+    end
+
     context 'when indexing fails' do
       let(:error) { StandardError.new('Indexing failed') }
 
@@ -60,9 +75,7 @@ RSpec.describe Ai::ActiveContext::Code::InitialIndexingService, feature_category
       end
 
       it 'sets the repository to failed and passes the error on' do
-        expect(logger).to receive(:error).with(
-          build_log_payload('failed', last_error: error.message)
-        )
+        expect(logger).to receive(:error).with(build_log_payload('failed', last_error: error.message))
 
         expect { execute }.to raise_error(error)
 
