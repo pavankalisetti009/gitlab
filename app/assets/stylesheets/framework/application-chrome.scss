@@ -179,7 +179,7 @@
 
   // Layout
   &.page-with-panels .layout-page {
-    @apply gl-flex gl-gap-0 lg:gl-gap-3 gl-items-stretch gl-justify-start lg:gl-justify-center gl-flex-col lg:gl-flex-row gl-pl-3 lg:gl-pl-0 gl-pt-3 lg:gl-pb-3 gl-pr-3 gl-h-full;
+    @apply gl-flex gl-gap-0 lg:gl-gap-3 gl-items-stretch gl-justify-start lg:gl-justify-center gl-flex-col lg:gl-flex-row lg:gl-pl-0 gl-pt-3 lg:gl-pb-3 gl-pr-3 gl-h-full;
 
     @include media-breakpoint-up(lg) {
       height: calc(100% - var(--system-header-height) - var(--performance-bar-height) - var(--header-height) - var(--ai-panel-height));
@@ -249,6 +249,18 @@
       }
     }
   }
+
+
+  // Add some left margin on pages with no left sidebar (like /search)
+  .panels-container { margin-left: 0.5rem; }
+
+  .page-with-super-sidebar:not(.page-with-super-sidebar-collapsed) {
+    .super-sidebar-loading ~ .panels-container,
+    .super-sidebar-wrapper ~ .panels-container {
+      margin-left: 0;
+    }
+  }
+
 
   // Static panel
   .paneled-view.static-panel {
