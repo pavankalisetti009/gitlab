@@ -213,6 +213,44 @@ RSpec.describe Member, type: :model, feature_category: :groups_and_projects do
     end
   end
 
+  describe '.highest_role' do
+    let_it_be(:user) { create(:user) }
+    let_it_be(:user_with_no_membership) { create(:user) }
+    let_it_be(:top_level_group) { create(:group) }
+    let_it_be(:subgroup) { create(:group, parent: top_level_group) }
+    let_it_be(:project) { create(:project, group: subgroup) }
+
+    context 'when user has higher access in subgroup than top level group' do
+      let_it_be(:guest_membership_in_top_level_group) { create(:group_member, :guest, group: top_level_group, user: user) }
+      let_it_be(:maintainer_membership_in_subgroup) { create(:group_member, :maintainer, group: subgroup, user: user) }
+
+      subject(:highest_role) { described_class.highest_role(user, project) }
+
+      it 'returns the member with the highest access level in the hierarchy' do
+        expect(highest_role).to eq(maintainer_membership_in_subgroup)
+        expect(highest_role.access_level).to eq(Gitlab::Access::MAINTAINER)
+      end
+    end
+
+    context 'when user has higher access in top level group than a project' do
+      let_it_be(:guest_membership_in_project) { create(:project_member, :guest, project: project, user: user) }
+      let_it_be(:maintainer_membership_in_top_level_group) { create(:group_member, :maintainer, group: top_level_group, user: user) }
+
+      subject(:highest_role) { described_class.highest_role(user, project) }
+
+      it 'returns the member with the highest access level in the hierarchy' do
+        expect(highest_role).to eq(maintainer_membership_in_top_level_group)
+        expect(highest_role.access_level).to eq(Gitlab::Access::MAINTAINER)
+      end
+    end
+
+    context 'when user has no membership in hierarchy' do
+      subject { described_class.highest_role(user_with_no_membership, project) }
+
+      it { is_expected.to be_nil }
+    end
+  end
+
   describe '#notification_service' do
     it 'returns a NullNotificationService instance for LDAP users' do
       member = described_class.new

@@ -102,6 +102,14 @@ module EE
 
         ::Authz::UserGroupMemberRole.arel_table[:member_role_id]
       end
+
+      def highest_role(user, source)
+        includes(:member_role)
+          .where(source_id: source.self_and_ancestors_ids, user_id: user.id)
+          .non_request
+          .order(access_level: :desc)
+          .first
+      end
     end
 
     override :notification_service
@@ -211,16 +219,71 @@ module EE
       end
     end
 
-    def prevent_role_assignement?(_current_user, _params)
-      false
-    end
-
     def update_user_group_member_roles(old_values_map: nil)
       ::Authz::UserGroupMemberRoles::UpdateForGroupMemberService
         .new(self, old_values_map: old_values_map).execute
     end
 
+    override :prevent_role_assignement?
+    def prevent_role_assignement?(current_user, params)
+      return false if current_user.can_admin_all_resources?
+
+      assigning_access_level ||= params[:access_level] || access_level
+      member_role_id = params[:member_role_id]
+      current_access_level = params[:current_access_level]
+
+      # first we need to check if there are possibly more custom abilities than current user has
+      return true if custom_role_abilities_too_high?(current_user, member_role_id)
+
+      # check if it's a valid downgrade, if the member's current access level encompasses the target level
+      return false if Authz::Role.access_level_encompasses?(
+        current_access_level: current_access_level,
+        level_to_assign: assigning_access_level
+      )
+
+      # prevent assignement in case the role access level is higher than current user's role
+      source.assigning_role_too_high?(current_user, assigning_access_level)
+    end
+
     private
+
+    def custom_role_abilities_too_high?(current_user, member_role_id)
+      return false unless member_role_id
+
+      current_user_access_level = source.max_member_access_for_user(current_user)
+      return false if ::Gitlab::Access::OWNER == current_user_access_level
+
+      current_member_role = ::Member.highest_role(current_user, source)&.member_role
+      current_member_role_abilities = member_role_abilities(
+        current_member_role) + custom_abilities_included_with_base_access_level(current_user_access_level)
+
+      new_member_role = MemberRole.find_by_id(member_role_id)
+      new_member_role_abilities = member_role_abilities(new_member_role)
+
+      (new_member_role_abilities - current_member_role_abilities).present?
+    end
+
+    def custom_abilities_included_with_base_access_level(current_access_level)
+      abilities = []
+
+      customizable_permissions = MemberRole.all_customizable_permissions
+
+      enabled_for_key = :"enabled_for_#{source.class.name.demodulize.downcase}_access_levels"
+
+      customizable_permissions.each do |name, definition|
+        next unless definition.fetch(enabled_for_key, []).include?(current_access_level)
+
+        abilities << name
+      end
+
+      abilities
+    end
+
+    def member_role_abilities(member_role)
+      return [] unless member_role
+
+      member_role.enabled_permissions.keys
+    end
 
     def group_allowed_email_domains
       return [] unless group

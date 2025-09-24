@@ -56,14 +56,6 @@ module EE
         def member_role_id
           args[:member_role_id]
         end
-
-        override :member_role_too_high?
-        def member_role_too_high?
-          return false if skip_authorization?
-          return false if member_attributes[:access_level].blank?
-
-          member.prevent_role_assignement?(current_user, member_attributes)
-        end
       end
     end
   end
