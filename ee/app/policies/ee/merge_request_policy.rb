@@ -82,26 +82,15 @@ module EE
         ).exists?
       end
 
-      def new_editing_rules?
-        ::Feature.enabled?(:ensure_consistent_editing_rule, @subject.project)
-      end
-
       def approval_rules_editable?
         can?(:update_merge_request) && @subject.approval_rules_editable_by?(@user)
       end
 
-      # Note: Handled in the approval_rules_editable_by method
-      rule { ~new_editing_rules & ~can_override_approvers }.prevent :update_approvers
-
-      rule { new_editing_rules & approval_rules_editable }.policy do
+      rule { approval_rules_editable }.policy do
         enable :update_approvers
       end
 
-      rule { ~new_editing_rules & can?(:update_merge_request) }.policy do
-        enable :update_approvers
-      end
-
-      rule { new_editing_rules & ~approval_rules_editable }.policy do
+      rule { ~approval_rules_editable }.policy do
         prevent :update_approvers
       end
 

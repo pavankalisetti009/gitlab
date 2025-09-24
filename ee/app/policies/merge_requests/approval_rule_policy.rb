@@ -11,10 +11,8 @@ module MergeRequests
     condition(:approval_rules_editable) do
       if !@subject.user_defined?
         false
-      elsif ::Feature.enabled?(:ensure_consistent_editing_rule, @subject.merge_request.project)
-        can?(:update_approvers, @subject.merge_request)
       else
-        can?(:update_merge_request, @subject.merge_request)
+        can?(:update_approvers, @subject.merge_request)
       end
     end
 
