@@ -133,7 +133,7 @@ module EE
           @incremental_queue_size = ::Elastic::ProcessBookkeepingService.queue_size
 
           # This code cannot be run on GitLab.com due to performance issues
-          return if ::Gitlab::Saas.feature_available?(:search_indexing_status)
+          return if ::Gitlab::Saas.feature_available?(:advanced_search)
 
           @projects_not_indexed_count = ::Search::ElasticProjectsNotIndexedFinder.execute.count
           @projects_not_indexed = ::Search::ElasticProjectsNotIndexedFinder
