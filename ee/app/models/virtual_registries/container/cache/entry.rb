@@ -44,6 +44,8 @@ module VirtualRegistries
         before_validation :set_object_storage_key, if: -> { object_storage_key.blank? && upstream }
         attr_readonly :object_storage_key
 
+        scope :requiring_cleanup, ->(n_days_to_keep) { where(downloaded_at: ...(Time.current - n_days_to_keep.days)) }
+
         private
 
         def set_object_storage_key

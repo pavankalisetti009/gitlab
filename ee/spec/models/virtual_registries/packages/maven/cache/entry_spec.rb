@@ -95,6 +95,25 @@ RSpec.describe VirtualRegistries::Packages::Maven::Cache::Entry, type: :model, f
 
       it { is_expected.to contain_exactly(cache_entry1, cache_entry2) }
     end
+
+    describe '.requiring_cleanup' do
+      let(:n_days_to_keep) { 30 }
+      let_it_be(:old_downloaded_entry) do
+        create(:virtual_registries_packages_maven_cache_entry).tap do |entry|
+          entry.update_column(:downloaded_at, 35.days.ago)
+        end
+      end
+
+      let_it_be(:recent_downloaded_entry) do
+        create(:virtual_registries_packages_maven_cache_entry).tap do |entry|
+          entry.update_column(:downloaded_at, 25.days.ago)
+        end
+      end
+
+      subject { described_class.requiring_cleanup(n_days_to_keep) }
+
+      it { is_expected.to include(old_downloaded_entry).and not_include(recent_downloaded_entry) }
+    end
   end
 
   describe '.next_pending_destruction' do

@@ -67,6 +67,27 @@ RSpec.describe VirtualRegistries::Container::Cache::Entry, feature_category: :vi
     end
   end
 
+  describe 'scopes' do
+    describe '.requiring_cleanup' do
+      let(:n_days_to_keep) { 30 }
+      let_it_be(:old_downloaded_entry) do
+        create(:virtual_registries_container_cache_entry).tap do |entry|
+          entry.update_column(:downloaded_at, 35.days.ago)
+        end
+      end
+
+      let_it_be(:recent_downloaded_entry) do
+        create(:virtual_registries_container_cache_entry).tap do |entry|
+          entry.update_column(:downloaded_at, 25.days.ago)
+        end
+      end
+
+      subject { described_class.requiring_cleanup(n_days_to_keep) }
+
+      it { is_expected.to include(old_downloaded_entry).and not_include(recent_downloaded_entry) }
+    end
+  end
+
   describe 'object storage key' do
     it 'can not be null' do
       cache_entry.object_storage_key = nil
