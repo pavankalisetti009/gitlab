@@ -7,7 +7,7 @@ RSpec.describe WorkItems::DataSync::CloneService, feature_category: :team_planni
   let_it_be(:group) { create(:group) }
   let_it_be(:target_group) { create(:group, parent: parent_group) }
   let_it_be(:project) { create(:project, group: target_group) }
-  let_it_be(:original_work_item) { create(:work_item, :group_level, namespace: group) }
+  let_it_be(:original_work_item) { create(:work_item, :group_level, namespace: group, health_status: :at_risk) }
   let_it_be(:source_namespace_member) { create(:user, reporter_of: group) }
   let_it_be(:target_namespace_member) { create(:user, reporter_of: target_group) }
   let_it_be(:namespaces_member) { create(:user, developer_of: [group, target_group]) }
