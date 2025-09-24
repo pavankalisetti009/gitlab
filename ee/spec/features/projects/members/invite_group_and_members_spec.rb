@@ -6,13 +6,13 @@ RSpec.describe 'Project > Members > Invite group and members', feature_category:
   include ActionView::Helpers::DateHelper
   include Features::MembersHelpers
 
-  let(:maintainer) { create(:user) }
+  let_it_be(:owner) { create(:user) }
 
   it 'displays the invite modal button triggers' do
     project = create(:project, namespace: create(:group))
 
-    project.add_maintainer(maintainer)
-    sign_in(maintainer)
+    project.add_owner(owner)
+    sign_in(owner)
 
     visit project_project_members_path(project)
 
@@ -63,9 +63,9 @@ RSpec.describe 'Project > Members > Invite group and members', feature_category:
       let(:project) { create(:project, namespace: create(:group)) }
 
       before do
-        project.add_maintainer(maintainer)
-        group_to_share_with.add_developer(maintainer)
-        sign_in(maintainer)
+        project.add_owner(owner)
+        group_to_share_with.add_developer(owner)
+        sign_in(owner)
       end
 
       context 'when the group has "Share with group lock" and "Member lock" disabled' do
@@ -103,8 +103,8 @@ RSpec.describe 'Project > Members > Invite group and members', feature_category:
       let(:project) { create(:project, namespace: subgroup) }
 
       before do
-        project.add_maintainer(maintainer)
-        sign_in(maintainer)
+        project.add_owner(owner)
+        sign_in(owner)
       end
 
       context 'when the root_group has "Share with group lock" and membership lock disabled' do

@@ -7,11 +7,6 @@ module EE
         extend ::Gitlab::Utils::Override
         include GroupLinksHelper
 
-        override :valid_to_create?
-        def valid_to_create?
-          super && can?(current_user, :invite_group_members, group) && !member_role_too_high?
-        end
-
         override :after_successful_save
         def after_successful_save
           super
@@ -49,10 +44,6 @@ module EE
           return unless ::Gitlab::Saas.feature_available?(:gitlab_com_subscriptions)
 
           ::GitlabSubscriptions::SeatAssignments::GroupLinks::CreateOrUpdateSeatsWorker.perform_async(link.id)
-        end
-
-        def member_role_too_high?
-          group.assigning_role_too_high?(current_user, params[:shared_group_access])
         end
 
         def update_user_group_member_roles
