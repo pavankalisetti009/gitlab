@@ -63,6 +63,26 @@ RSpec.describe 'Create an instance level  external audit event destination', fea
     end
 
     context 'when current user is instance admin' do
+      context 'when destination fails to save' do
+        before do
+          allow_next_instance_of(AuditEvents::Instance::ExternalStreamingDestination) do |instance|
+            allow(instance).to receive_message_chain(:errors, :any?).and_return(true)
+            allow(instance).to receive_messages(save: false, persisted?: false, errors: ['Name is required'])
+          end
+        end
+
+        it 'does not create audit event or legacy destination' do
+          expect(AuditEvents::InstanceExternalAuditEventDestination).not_to receive(:new)
+
+          expect { mutate }
+            .to not_change { AuditEvent.count }
+            .and not_change { AuditEvents::InstanceExternalAuditEventDestination.count }
+
+          expect(mutation_response['externalAuditEventDestination']).to be_nil
+          expect(mutation_response['errors'].join).to include('Name is required')
+        end
+      end
+
       it 'creates the destination' do
         expect { mutate }
           .to change { AuditEvents::Instance::ExternalStreamingDestination.count }.by(1)

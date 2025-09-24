@@ -41,9 +41,10 @@ module Mutations
               category: category
             )
 
-            audit(destination, action: :created) if destination.save
-
-            create_legacy_destination(destination)
+            if destination.save
+              audit(destination, action: :created)
+              create_legacy_destination(destination)
+            end
 
             {
               external_audit_event_destination: (destination if destination.persisted?),
