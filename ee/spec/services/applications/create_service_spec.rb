@@ -115,21 +115,23 @@ RSpec.describe ::Applications::CreateService, feature_category: :system_access d
   end
 
   context 'for ROPC' do
-    where(:saas_feature_available, :feature_enabled, :ropc_enabled) do
-      false | false | true
-      false | true | true
-      true | false | true
-      true | true | false
-    end
-
-    with_them do
+    context 'when SaaS feature is available' do
       before do
-        stub_saas_features(disable_ropc_for_new_applications: saas_feature_available)
-        stub_feature_flags(disable_ropc_for_new_applications: feature_enabled)
+        stub_saas_features(disable_ropc_for_new_applications: true)
       end
 
-      it 'sets ropc_enabled? correctly' do
-        expect(service.execute.ropc_enabled?).to eq(ropc_enabled)
+      it 'sets ropc_enabled to false' do
+        expect(service.execute.ropc_enabled?).to be_falsy
+      end
+    end
+
+    context 'when SaaS feature is not available' do
+      before do
+        stub_saas_features(disable_ropc_for_new_applications: false)
+      end
+
+      it 'sets ropc_enabled to true' do
+        expect(service.execute.ropc_enabled?).to be_truthy
       end
     end
   end
