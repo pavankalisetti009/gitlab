@@ -18,7 +18,6 @@ import aiCatalogAgentsQuery from 'ee/ai/catalog/graphql/queries/ai_catalog_agent
 import createAiCatalogItemConsumer from 'ee/ai/catalog/graphql/mutations/create_ai_catalog_item_consumer.mutation.graphql';
 import deleteAiCatalogAgentMutation from 'ee/ai/catalog/graphql/mutations/delete_ai_catalog_agent.mutation.graphql';
 import { TYPENAME_AI_CATALOG_ITEM } from 'ee/graphql_shared/constants';
-import { AI_CATALOG_AGENTS_DUPLICATE_ROUTE } from 'ee/ai/catalog/router/constants';
 import {
   TRACK_EVENT_VIEW_AI_CATALOG_ITEM_INDEX,
   TRACK_EVENT_VIEW_AI_CATALOG_ITEM,
@@ -54,7 +53,6 @@ describe('AiCatalogAgents', () => {
   const mockToast = {
     show: jest.fn(),
   };
-  const mockSetItemToDuplicateMutation = jest.fn();
 
   const mockAgentQueryHandler = jest.fn().mockResolvedValue(mockAiCatalogAgentResponse);
   const mockCatalogItemsQueryHandler = jest.fn().mockResolvedValue(mockCatalogItemsResponse);
@@ -70,19 +68,12 @@ describe('AiCatalogAgents', () => {
       query: $route.query,
     });
 
-    mockApollo = createMockApollo(
-      [
-        [aiCatalogAgentQuery, mockAgentQueryHandler],
-        [aiCatalogAgentsQuery, mockCatalogItemsQueryHandler],
-        [createAiCatalogItemConsumer, createAiCatalogItemConsumerHandler],
-        [deleteAiCatalogAgentMutation, deleteCatalogItemMutationHandler],
-      ],
-      {
-        Mutation: {
-          setItemToDuplicate: mockSetItemToDuplicateMutation,
-        },
-      },
-    );
+    mockApollo = createMockApollo([
+      [aiCatalogAgentQuery, mockAgentQueryHandler],
+      [aiCatalogAgentsQuery, mockCatalogItemsQueryHandler],
+      [createAiCatalogItemConsumer, createAiCatalogItemConsumerHandler],
+      [deleteAiCatalogAgentMutation, deleteCatalogItemMutationHandler],
+    ]);
 
     wrapper = shallowMountExtended(AiCatalogAgents, {
       apolloProvider: mockApollo,
@@ -454,58 +445,6 @@ describe('AiCatalogAgents', () => {
         expect(findErrorsAlert().props('errors')).toStrictEqual([
           'Failed to delete agent. Error: Request failed',
         ]);
-        expect(Sentry.captureException).toHaveBeenCalledWith(expect.any(Error));
-      });
-    });
-  });
-
-  describe('on duplicating an agent', () => {
-    const duplicateAgent = async (index = 1) => {
-      await waitForPromises();
-      await wrapper.vm.handleDuplicate(mockAgents[index]);
-    };
-
-    beforeEach(() => {
-      createComponent();
-    });
-
-    it('calls setItemToDuplicate mutation with correct variables', async () => {
-      mockSetItemToDuplicateMutation.mockResolvedValue({ data: {} });
-
-      await duplicateAgent();
-
-      expect(mockSetItemToDuplicateMutation).toHaveBeenCalledWith(
-        {},
-        {
-          item: {
-            id: getIdFromGraphQLId(mockAgents[1].id),
-            type: 'AGENT',
-            data: mockAgents[1],
-          },
-        },
-        expect.anything(),
-        expect.anything(),
-      );
-    });
-
-    describe('when request succeeds', () => {
-      it('navigates to duplicate route', async () => {
-        mockSetItemToDuplicateMutation.mockResolvedValue({ data: {} });
-
-        await duplicateAgent();
-
-        expect(mockRouter.push).toHaveBeenCalledWith({
-          name: AI_CATALOG_AGENTS_DUPLICATE_ROUTE,
-          params: { id: getIdFromGraphQLId(mockAgents[1].id) },
-        });
-      });
-    });
-
-    describe('when agent is not found', () => {
-      it('shows error message and logs to Sentry', async () => {
-        await duplicateAgent(3);
-
-        expect(findErrorsAlert().props('errors')).toStrictEqual([agentNotFoundErrorMessage]);
         expect(Sentry.captureException).toHaveBeenCalledWith(expect.any(Error));
       });
     });

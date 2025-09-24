@@ -5,7 +5,6 @@ import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import waitForPromises from 'helpers/wait_for_promises';
 import createMockApollo from 'helpers/mock_apollo_helper';
 import createAiCatalogAgent from 'ee/ai/catalog/graphql/mutations/create_ai_catalog_agent.mutation.graphql';
-import aiCatalogAgentQuery from 'ee/ai/catalog/graphql/queries/ai_catalog_agent.query.graphql';
 import AiCatalogAgentsDuplicate from 'ee/ai/catalog/pages/ai_catalog_agents_duplicate.vue';
 import AiCatalogAgentForm from 'ee/ai/catalog/components/ai_catalog_agent_form.vue';
 import {
@@ -16,8 +15,6 @@ import {
   mockAgent,
   mockCreateAiCatalogAgentSuccessMutation,
   mockCreateAiCatalogAgentErrorMutation,
-  mockAiCatalogAgentResponse,
-  mockAiCatalogAgentNullResponse,
 } from '../mock_data';
 
 Vue.use(VueApollo);
@@ -26,7 +23,6 @@ jest.mock('~/sentry/sentry_browser_wrapper');
 describe('AiCatalogAgentsDuplicate', () => {
   let wrapper;
   let createAiCatalogAgentMock;
-  let aiCatalogAgentQueryMock;
 
   const mockToast = {
     show: jest.fn(),
@@ -39,15 +35,14 @@ describe('AiCatalogAgentsDuplicate', () => {
 
   const createComponent = () => {
     createAiCatalogAgentMock = jest.fn().mockResolvedValue(mockCreateAiCatalogAgentSuccessMutation);
-    aiCatalogAgentQueryMock = jest.fn().mockResolvedValue(mockAiCatalogAgentResponse);
 
-    const apolloProvider = createMockApollo([
-      [createAiCatalogAgent, createAiCatalogAgentMock],
-      [aiCatalogAgentQuery, aiCatalogAgentQueryMock],
-    ]);
+    const apolloProvider = createMockApollo([[createAiCatalogAgent, createAiCatalogAgentMock]]);
 
     wrapper = shallowMountExtended(AiCatalogAgentsDuplicate, {
       apolloProvider,
+      propsData: {
+        aiCatalogAgent: mockAgent,
+      },
       mocks: {
         $route: {
           params: routeParams,
@@ -64,35 +59,19 @@ describe('AiCatalogAgentsDuplicate', () => {
     createComponent();
   });
 
-  afterEach(() => {
-    jest.clearAllMocks();
-  });
-
-  describe('Initial Load', () => {
-    it('fetches the original agent data', () => {
-      expect(aiCatalogAgentQueryMock).toHaveBeenCalledWith({
-        id: mockAgent.id,
-      });
-    });
-
-    it('renders the form with loading state initially', () => {
-      expect(findForm().exists()).toBe(true);
-      expect(findForm().props('isLoading')).toBe(true);
-    });
-  });
-
   describe('Form Initial Values', () => {
     beforeEach(async () => {
       await waitForPromises();
     });
 
-    it('sets initial values based on the original agent', () => {
+    it('sets initial values based on the original agent, but always private and without a project', () => {
       const expectedInitialValues = {
         name: `Copy of ${mockAgent.name}`,
         description: mockAgent.description,
         systemPrompt: mockAgent.latestVersion.systemPrompt,
         userPrompt: mockAgent.latestVersion.userPrompt,
         tools: mockAgent.latestVersion.tools.nodes.map((t) => t.id),
+        public: false,
       };
 
       expect(findForm().props('initialValues')).toEqual(expectedInitialValues);
@@ -102,12 +81,12 @@ describe('AiCatalogAgentsDuplicate', () => {
   describe('Form Submit', () => {
     const { name, description, project } = mockAgent;
     const formValues = {
-      name: `${name} (Copy)`,
+      name: `${name} 2`,
       description,
       projectId: project.id,
       systemPrompt: 'A new system prompt',
       userPrompt: 'A new user prompt',
-      public: false,
+      public: true,
       release: true,
     };
 
@@ -187,58 +166,6 @@ describe('AiCatalogAgentsDuplicate', () => {
           name: AI_CATALOG_AGENTS_ROUTE,
           query: { [AI_CATALOG_SHOW_QUERY_PARAM]: 1 },
         });
-      });
-    });
-  });
-
-  describe('Error Handling', () => {
-    describe('when agent query fails', () => {
-      it('captures the exception', async () => {
-        const error = new Error('Agent not found.');
-
-        const apolloProvider = createMockApollo([
-          [createAiCatalogAgent, createAiCatalogAgentMock],
-          [aiCatalogAgentQuery, jest.fn().mockRejectedValue(error)],
-        ]);
-
-        wrapper = shallowMountExtended(AiCatalogAgentsDuplicate, {
-          apolloProvider,
-          mocks: {
-            $route: {
-              params: routeParams,
-            },
-            $router: mockRouter,
-            $toast: mockToast,
-          },
-        });
-
-        await waitForPromises();
-
-        expect(Sentry.captureException).toHaveBeenCalledWith(error);
-      });
-    });
-
-    describe('when agent query returns null', () => {
-      it('handles null response gracefully', async () => {
-        const apolloProvider = createMockApollo([
-          [createAiCatalogAgent, createAiCatalogAgentMock],
-          [aiCatalogAgentQuery, jest.fn().mockResolvedValue(mockAiCatalogAgentNullResponse)],
-        ]);
-
-        wrapper = shallowMountExtended(AiCatalogAgentsDuplicate, {
-          apolloProvider,
-          mocks: {
-            $route: {
-              params: routeParams,
-            },
-            $router: mockRouter,
-            $toast: mockToast,
-          },
-        });
-
-        await waitForPromises();
-
-        expect(findForm().props('initialValues')).toEqual({});
       });
     });
   });
