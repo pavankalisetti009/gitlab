@@ -408,6 +408,18 @@ RSpec.describe VirtualRegistries::Container::Upstream, feature_category: :virtua
     end
   end
 
+  describe '#default_cache_entries' do
+    let_it_be(:upstream) { create(:virtual_registries_container_upstream) }
+    let_it_be(:default_cache_entry) { create(:virtual_registries_container_cache_entry, upstream:) }
+    let_it_be(:pending_destruction_cache_entry) do
+      create(:virtual_registries_container_cache_entry, :pending_destruction, upstream:)
+    end
+
+    subject { upstream.default_cache_entries }
+
+    it { is_expected.to contain_exactly(default_cache_entry) }
+  end
+
   def with_accept_headers(headers)
     headers.merge(described_class::REGISTRY_ACCEPT_HEADERS)
   end
