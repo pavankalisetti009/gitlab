@@ -90,6 +90,7 @@ describe('UserAgentsPlatformIndex', () => {
             first: 20,
             before: null,
             last: null,
+            excludeTypes: ['chat'],
           });
         });
 
