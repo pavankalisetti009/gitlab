@@ -291,4 +291,159 @@ RSpec.describe ProjectMember, feature_category: :groups_and_projects do
       expect(member).not_to receive(:after_accept_invite)
     end
   end
+
+  describe '#prevent_role_assignement?' do
+    let_it_be(:project) { create(:project) }
+    let_it_be_with_reload(:current_user) { create(:user) }
+    let_it_be_with_reload(:member) do
+      create(:project_member, access_level: Gitlab::Access::GUEST, project: project)
+    end
+
+    let(:member_role_id) { nil }
+    let(:access_level) { Gitlab::Access::GUEST }
+    let(:params) { { member_role_id: member_role_id, access_level: access_level } }
+
+    subject(:prevent_assignement?) { member.prevent_role_assignement?(current_user, params) }
+
+    context 'for custom roles assignement' do
+      let_it_be(:member_role_current_user) do
+        create(:member_role, :maintainer, admin_merge_request: true, namespace: project.namespace)
+      end
+
+      let_it_be(:member_role_less_abilities) do
+        create(:member_role, :guest, admin_merge_request: true, namespace: project.namespace)
+      end
+
+      let_it_be(:member_role_more_abilities) do
+        create(:member_role, :guest, admin_merge_request: true, admin_push_rules: true, remove_project: true, namespace: project.namespace)
+      end
+
+      before_all do
+        current_member = project.add_maintainer(current_user)
+        current_member.update!(member_role: member_role_current_user)
+      end
+
+      before do
+        stub_licensed_features(custom_roles: true)
+      end
+
+      context 'with the same custom role as current user has' do
+        let(:member_role_id) { member_role_current_user.id }
+
+        it 'allows role assignement' do
+          expect(prevent_assignement?).to eq(false)
+        end
+      end
+
+      context "with custom role abilities included in the current user's base access" do
+        let_it_be(:member_role_included_abilities) do
+          create(:member_role, :guest, admin_merge_request: true, admin_push_rules: true, namespace: project.namespace)
+        end
+
+        let(:member_role_id) { member_role_included_abilities.id }
+
+        it 'allows role assignement' do
+          expect(prevent_assignement?).to eq(false)
+        end
+      end
+
+      context 'with the custom role having less abilities than current user has' do
+        let(:member_role_id) { member_role_less_abilities.id }
+
+        it 'returns false' do
+          expect(prevent_assignement?).to eq(false)
+        end
+      end
+
+      context 'with the custom role having more abilities than current user has' do
+        let(:member_role_id) { member_role_more_abilities.id }
+
+        it 'returns true' do
+          expect(prevent_assignement?).to eq(true)
+        end
+
+        context 'when current user is an admin', :enable_admin_mode do
+          before do
+            current_user.members.delete_all
+
+            current_user.update!(admin: true)
+          end
+
+          it 'returns false' do
+            expect(prevent_assignement?).to eq(false)
+          end
+        end
+      end
+    end
+
+    context 'for default access roles' do
+      let(:member_role_id) { nil }
+
+      context 'when current user is a DEVELOPER' do
+        before_all do
+          project.add_developer(current_user)
+        end
+
+        context 'without assigning_access_level param' do
+          let(:access_level) { nil }
+
+          it 'returns false' do
+            expect(prevent_assignement?).to eq(false)
+          end
+        end
+
+        context 'with MAINTAINER as access_role param' do
+          let(:access_level) { Gitlab::Access::MAINTAINER }
+
+          it 'returns true' do
+            expect(prevent_assignement?).to eq(true)
+          end
+        end
+      end
+
+      context 'when current user is a MAINTAINER' do
+        before_all do
+          project.add_maintainer(current_user)
+        end
+
+        context 'without assigning_access_level param' do
+          let(:access_level) { nil }
+
+          it 'returns false' do
+            expect(prevent_assignement?).to eq(false)
+          end
+        end
+
+        context 'with OWNER as access_role param' do
+          let(:access_level) { Gitlab::Access::OWNER }
+
+          it 'returns true' do
+            expect(prevent_assignement?).to eq(true)
+          end
+        end
+      end
+
+      context 'when current user is an admin', :enable_admin_mode do
+        before do
+          current_user.update!(admin: true)
+        end
+
+        context 'without assigning_access_level param' do
+          let(:access_level) { nil }
+
+          it 'returns false' do
+            expect(prevent_assignement?).to eq(false)
+          end
+        end
+
+        context 'with OWNER as access_role param' do
+          let(:access_level) { Gitlab::Access::OWNER }
+
+          it 'returns false' do
+            expect(prevent_assignement?).to eq(false)
+          end
+        end
+      end
+    end
+  end
 end
