@@ -35,7 +35,7 @@ RSpec.describe Ai::Catalog::ItemPolicy, :with_current_organization, feature_cate
 
     it_behaves_like 'no permissions with global_ai_catalog feature flag disabled'
     it_behaves_like 'no permissions with project stage check false, unless item is public'
-    it_behaves_like 'no permissions with deleted item'
+    it_behaves_like 'read-only permissions with deleted item'
   end
 
   shared_examples 'read-write permissions' do
@@ -44,7 +44,7 @@ RSpec.describe Ai::Catalog::ItemPolicy, :with_current_organization, feature_cate
 
     it_behaves_like 'no permissions with global_ai_catalog feature flag disabled'
     it_behaves_like 'no permissions with project stage check false, unless item is public'
-    it_behaves_like 'no permissions with deleted item'
+    it_behaves_like 'read-only permissions with deleted item'
   end
 
   shared_examples 'no permissions with global_ai_catalog feature flag disabled' do
@@ -55,12 +55,13 @@ RSpec.describe Ai::Catalog::ItemPolicy, :with_current_organization, feature_cate
     include_examples 'no permissions'
   end
 
-  shared_examples 'no permissions with deleted item' do
+  shared_examples 'read-only permissions with deleted item' do
     before do
       item.deleted_at = 1.day.ago
     end
 
-    include_examples 'no permissions'
+    it { is_expected.to be_disallowed(:admin_ai_catalog_item) }
+    it { is_expected.to be_allowed(:read_ai_catalog_item) }
   end
 
   shared_examples 'no permissions with project stage check false, unless item is public' do
