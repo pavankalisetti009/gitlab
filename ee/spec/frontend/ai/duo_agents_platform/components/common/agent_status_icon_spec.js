@@ -39,23 +39,50 @@ describe('AgentStatusIcon', () => {
 
   describe('with different item statuses', () => {
     const statusTestCases = [
-      { status: 'CREATED', expectedStatusIcon: 'dash-circle', expectedStatusColor: 'neutral' },
-      { status: 'FINISHED', expectedStatusIcon: 'check', expectedStatusColor: 'green' },
-      { status: 'FAILED', expectedStatusIcon: 'error', expectedStatusColor: 'red' },
-      { status: 'PAUSED', expectedStatusIcon: 'pause', expectedStatusColor: 'neutral' },
+      {
+        status: 'CREATED',
+        expectedStatusIcon: 'dash-circle',
+        expectedStatusBorderColor: 'neutral',
+        expectedStatusBackgroundColor: 'neutral',
+      },
+      {
+        status: 'FINISHED',
+        expectedStatusIcon: 'check',
+        expectedStatusBorderColor: 'green',
+        expectedStatusBackgroundColor: 'success',
+      },
+      {
+        status: 'FAILED',
+        expectedStatusIcon: 'error',
+        expectedStatusBorderColor: 'red',
+        expectedStatusBackgroundColor: 'danger',
+      },
+      {
+        status: 'PAUSED',
+        expectedStatusIcon: 'pause',
+        expectedStatusBorderColor: 'neutral',
+        expectedStatusBackgroundColor: 'neutral',
+      },
     ];
 
-    statusTestCases.forEach(({ status, expectedStatusIcon, expectedStatusColor }) => {
-      it(`renders correct status for ${status}`, () => {
-        createWrapper({ status });
+    statusTestCases.forEach(
+      ({
+        status,
+        expectedStatusIcon,
+        expectedStatusBorderColor,
+        expectedStatusBackgroundColor,
+      }) => {
+        it(`renders correct status for ${status}`, () => {
+          createWrapper({ status });
 
-        const icon = findStatusIcon();
-        expect(icon.props('name')).toBe(expectedStatusIcon);
+          const icon = findStatusIcon();
+          expect(icon.props('name')).toBe(expectedStatusIcon);
 
-        const containerClasses = findStatusIconContainer().classes();
-        expect(containerClasses).toContain(`gl-border-${expectedStatusColor}-100`);
-        expect(containerClasses).toContain(`gl-bg-${expectedStatusColor}-100`);
-      });
-    });
+          const containerClasses = findStatusIconContainer().classes();
+          expect(containerClasses).toContain(`gl-border-${expectedStatusBorderColor}-100`);
+          expect(containerClasses).toContain(`gl-bg-status-${expectedStatusBackgroundColor}`);
+        });
+      },
+    );
   });
 });
