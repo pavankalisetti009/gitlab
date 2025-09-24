@@ -13,6 +13,7 @@ const TYPENAME_AI_CATALOG_FLOW_CREATE = 'AiCatalogFlowCreatePayload';
 const TYPENAME_AI_CATALOG_FLOW_UPDATE = 'AiCatalogFlowUpdatePayload';
 const TYPENAME_AI_CATALOG_FLOW_DELETE = 'AiCatalogFlowDeletePayload';
 const TYPENAME_PROJECT = 'Project';
+const TYPENAME_PROJECT_PERMISSIONS = 'ProjectPermissions';
 const TYPENAME_PROJECTS_CONNECTION = 'ProjectsConnection';
 
 export const mockBaseLatestVersion = {
@@ -535,6 +536,19 @@ export const mockAiCatalogItemConsumerDeleteErrorResponse = {
       errors: ['You do not have permission to delete this item.'],
       success: false,
       __typename: TYPENAME_AI_CATALOG_ITEM_CONSUMER_DELETE,
+    },
+  },
+};
+
+export const mockUserPermissionsResponse = {
+  data: {
+    project: {
+      id: 'gid://gitlab/Project/1000000',
+      userPermissions: {
+        adminAiCatalogItemConsumer: true,
+        __typename: TYPENAME_PROJECT_PERMISSIONS,
+      },
+      __typename: TYPENAME_PROJECT,
     },
   },
 };

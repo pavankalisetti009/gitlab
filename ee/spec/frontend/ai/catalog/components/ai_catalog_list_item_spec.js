@@ -68,6 +68,9 @@ describe('AiCatalogListItem', () => {
         icon: 'pencil',
       },
     ],
+    deleteActionItem: {
+      showActionItem: () => true,
+    },
     visibilityTooltip: {
       public: publicTooltip,
       private: privateTooltip,
@@ -131,6 +134,7 @@ describe('AiCatalogListItem', () => {
         itemTypeConfig: {
           ...defaultItemTypeConfig,
           deleteActionItem: {
+            ...defaultItemTypeConfig.deleteActionItem,
             text: 'Remove',
           },
         },
@@ -158,12 +162,13 @@ describe('AiCatalogListItem', () => {
     describe('when the action items are empty and the user does not have permission to admin the item', () => {
       beforeEach(() => {
         createComponent({
-          item: {
-            ...mockItem,
-            userPermissions: { adminAiCatalogItem: false },
-            public: true,
+          itemTypeConfig: {
+            ...defaultItemTypeConfig,
+            actionItems: [],
+            deleteActionItem: {
+              showActionItem: () => false,
+            },
           },
-          itemTypeConfig: { ...defaultItemTypeConfig, actionItems: [] },
         });
       });
 
