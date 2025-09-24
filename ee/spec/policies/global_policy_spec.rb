@@ -656,12 +656,12 @@ RSpec.describe GlobalPolicy, :aggregate_failures, feature_category: :shared do
         :duo_agentic_chat_is_available_otherwise,
         :duo_agent_platform_feature_setting_set_to_self_hosted,
         :policy_result) do
-        true  | true  | true  | true  | be_disallowed(policy)
-        true  | true  | true  | false | be_disallowed(policy)
+        true  | true  | true  | true  | be_allowed(policy)
+        true  | true  | true  | false | be_allowed(policy)
         true  | true  | false | true  | be_disallowed(policy)
         true  | true  | false | false | be_disallowed(policy)
         true  | false | true  | true  | be_allowed(policy)
-        true  | false | true  | false | be_disallowed(policy)
+        true  | false | true  | false | be_allowed(policy)
         true  | false | false | true  | be_disallowed(policy)
         true  | false | false | false | be_disallowed(policy)
         false | true  | true  | true  | be_allowed(policy)

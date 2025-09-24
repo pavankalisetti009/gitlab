@@ -1,5 +1,6 @@
 <script>
 import { GlButton, GlTooltipDirective } from '@gitlab/ui';
+import { BV_HIDE_TOOLTIP } from '~/lib/utils/constants';
 import { __ } from '~/locale';
 
 export default {
@@ -31,6 +32,9 @@ export default {
     toggleTab(tab) {
       this.$emit('handleTabToggle', tab);
     },
+    hideTooltips() {
+      this.$root.$emit(BV_HIDE_TOOLTIP);
+    },
   },
 };
 </script>
@@ -51,6 +55,7 @@ export default {
       :aria-label="$options.i18n.duoChatLabel"
       :title="$options.i18n.duoChatLabel"
       data-testid="ai-chat-toggle"
+      @mouseout="hideTooltips"
       @click="toggleTab('chat')"
     />
     <gl-button
@@ -64,6 +69,7 @@ export default {
       :aria-label="$options.i18n.sessionsLabel"
       :title="$options.i18n.sessionsLabel"
       data-testid="ai-sessions-toggle"
+      @mouseout="hideTooltips"
       @click="toggleTab('sessions')"
     />
     <gl-button
@@ -77,6 +83,7 @@ export default {
       :aria-label="$options.i18n.suggestionsLabel"
       :title="$options.i18n.suggestionsLabel"
       data-testid="ai-suggestions-toggle"
+      @mouseout="hideTooltips"
       @click="toggleTab('suggestions')"
     />
   </div>

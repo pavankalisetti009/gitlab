@@ -12,13 +12,10 @@ module EE
       module ClassMethods
         extend ::Gitlab::Utils::Override
 
-        # rubocop:disable Gitlab/FeatureFlagWithoutActor -- Must be instance-level
         override :disable_ropc_available?
         def disable_ropc_available?
-          ::Gitlab::Saas.feature_available?(:disable_ropc_for_new_applications) &&
-            ::Feature.enabled?(:disable_ropc_for_new_applications)
+          ::Gitlab::Saas.feature_available?(:disable_ropc_for_new_applications)
         end
-        # rubocop:enable Gitlab/FeatureFlagWithoutActor
       end
 
       override :execute

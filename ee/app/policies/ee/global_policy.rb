@@ -231,20 +231,6 @@ module EE
 
       rule { duo_chat_enabled_for_user & ~ai_features_banned }.enable :access_duo_chat
       rule { can?(:access_duo_chat) & duo_agentic_chat_enabled }.enable :access_duo_agentic_chat
-      # We do not want to expose the "Agentic mode (Beta)" toggle to self-hosted Duo customers
-      # until we build the ability to configure self-hosted models for Agentic chat.
-      # Until then, Agentic chat won't work for Self Hosted Duo customers, and they can only
-      # use Classic Duo Chat.
-      rule do
-        instance_with_self_hosted_duo &
-          agentic_chat_on_self_hosted_duo_feature_flag_disabled
-      end.prevent :access_duo_agentic_chat
-
-      rule do
-        instance_with_self_hosted_duo &
-          agentic_chat_on_self_hosted_duo_not_configured_via_feature_setting
-      end.prevent :access_duo_agentic_chat
-
       rule { runner_upgrade_management_available | user_belongs_to_paid_namespace }.enable :read_runner_upgrade_status
 
       rule { security_policy_bot }.policy do
