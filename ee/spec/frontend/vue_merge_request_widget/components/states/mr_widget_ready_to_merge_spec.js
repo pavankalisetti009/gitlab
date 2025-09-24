@@ -49,7 +49,6 @@ describe('ReadyToMerge', () => {
     mergeImmediatelyDocsPath: 'path/to/merge/immediately/docs',
     mergeTrainsCount: 0,
     userPermissions: { canMerge: true },
-    mergeable: true,
     transitionStateMachine: jest.fn(),
     state: 'readyToMerge',
     mergeTrainsSkipAllowed: false,
@@ -125,7 +124,7 @@ describe('ReadyToMerge', () => {
     it('should return false if the MR is not mergeable', () => {
       createComponent({
         headPipeline: { id: 'gid://gitlab/Pipeline/1', path: 'path/to/pipeline', active: true },
-        mergeable: false,
+        isMergeAllowed: false,
       });
 
       expect(findMergeImmediatelyDropdown().exists()).toBe(false);
