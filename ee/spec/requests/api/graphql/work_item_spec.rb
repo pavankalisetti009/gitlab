@@ -1999,4 +1999,205 @@ RSpec.describe 'Query.work_item(id)', feature_category: :team_planning do
       end
     end
   end
+
+  context 'with array field limit validation' do
+    let(:limit) { WorkItems::SharedFilterArguments::MAX_FIELD_LIMIT }
+    let(:too_many_values) { (1..(limit + 1)).map { |i| "value#{i}" } }
+    let(:query) do
+      %(
+        query {
+          group(fullPath: "#{group.full_path}") {
+            workItems#{field_args} {
+              edges {
+                node {
+                  title
+                  id
+                }
+              }
+            }
+          }
+        }
+      )
+    end
+
+    shared_examples 'validates field limit' do
+      it 'throws an error when filtering by too many items' do
+        result = GitlabSchema.execute(query, context: { current_user: current_user })
+
+        expect(result['errors']).to be_present
+        expect(result['errors'].first['message']).to eq("#{field_name} is too long (maximum is #{limit})")
+      end
+    end
+
+    context 'when using direct filters' do
+      let(:field_args) { "(first: 10, #{field_name}: #{too_many_values})" }
+
+      context "when filtering by milestone_title" do
+        let(:field_name) { 'milestoneTitle' }
+
+        include_examples 'validates field limit'
+      end
+
+      context "when filtering by assignee_usernames" do
+        let(:field_name) { 'assigneeUsernames' }
+
+        include_examples 'validates field limit'
+      end
+
+      context "when filtering by iids" do
+        let(:field_name) { 'iids' }
+        let(:too_many_values) { (1..(limit + 1)).map(&:to_s) }
+
+        include_examples 'validates field limit'
+      end
+
+      context "when filtering by parent_ids" do
+        let(:field_name) { 'parentIds' }
+        let(:too_many_values) { (1..(limit + 1)).map { |i| "gid://gitlab/WorkItem/#{i}" } }
+
+        include_examples 'validates field limit'
+      end
+
+      context "when filtering by release_tag" do
+        let(:field_name) { 'releaseTag' }
+
+        include_examples 'validates field limit'
+      end
+
+      context "when filtering by iteration_id" do
+        let(:field_name) { 'iterationId' }
+        let(:too_many_values) { (1..(limit + 1)).map { |i| "gid://gitlab/Iteration/#{i}" } }
+
+        include_examples 'validates field limit'
+      end
+
+      context "when filtering by iteration_cadence_id" do
+        let(:field_name) { 'iterationCadenceId' }
+        let(:too_many_values) { (1..(limit + 1)).map { |i| "gid://gitlab/Iterations::Cadence/#{i}" } }
+
+        include_examples 'validates field limit'
+      end
+
+      context "when filtering by label_name" do
+        let(:field_name) { 'labelName' }
+
+        include_examples 'validates field limit'
+      end
+
+      context "when filtering by custom_field" do
+        let(:field_name) { 'customField' }
+        let(:too_many_values) do
+          items = (1..(limit + 1)).map do |i|
+            gid = "gid://gitlab/Issuables::CustomFieldSelectOption/#{i}"
+
+            "{selectedOptionIds: \"#{gid}\", customFieldName: \"Name #{i}\"}"
+          end
+
+          "[#{items.join(', ')}]"
+        end
+
+        include_examples 'validates field limit'
+      end
+
+      context "when filtering by selectedOptionIds in custom_field" do
+        let(:field_name) { 'selectedOptionIds' }
+        let(:too_many_values) do
+          option_ids = (1..(limit + 1)).map do |i|
+            "\"gid://gitlab/Issuables::CustomFieldSelectOption/#{i}\""
+          end
+
+          "[{customFieldName: \"Name\", selectedOptionIds: [#{option_ids.join(', ')}]}]"
+        end
+
+        let(:field_args) { "(first: 10, customField: #{too_many_values})" }
+
+        include_examples 'validates field limit'
+      end
+
+      context "when filtering by selectedOptionValues in custom_field" do
+        let(:field_name) { 'selectedOptionValues' }
+        let(:too_many_values) do
+          option_values = (1..(limit + 1)).map do |i|
+            "\"Value #{i}\""
+          end
+
+          "[{customFieldName: \"Name\", selectedOptionValues: [#{option_values.join(', ')}]}]"
+        end
+
+        let(:field_args) { "(first: 10, customField: #{too_many_values})" }
+
+        include_examples 'validates field limit'
+      end
+    end
+
+    context 'when using OR filters' do
+      let(:field_args) { "(first: 10, or: { #{field_name}: #{too_many_values} })" }
+
+      context "when filtering by OR assignee_usernames" do
+        let(:field_name) { 'assigneeUsernames' }
+
+        include_examples 'validates field limit'
+      end
+
+      context "when filtering by OR author_usernames" do
+        let(:field_name) { 'authorUsernames' }
+
+        include_examples 'validates field limit'
+      end
+
+      context "when filtering by OR label_names" do
+        let(:field_name) { 'labelNames' }
+
+        include_examples 'validates field limit'
+      end
+    end
+
+    context 'when using NOT filters' do
+      let(:field_args) { "(first: 10, not: { #{field_name}: #{too_many_values} })" }
+
+      context "when filtering by NOT assignee_usernames" do
+        let(:field_name) { 'assigneeUsernames' }
+
+        include_examples 'validates field limit'
+      end
+
+      context "when filtering by NOT author_username" do
+        let(:field_name) { 'authorUsername' }
+
+        include_examples 'validates field limit'
+      end
+
+      context "when filtering by NOT label_name" do
+        let(:field_name) { 'labelName' }
+
+        include_examples 'validates field limit'
+      end
+
+      context "when filtering by NOT milestone_title" do
+        let(:field_name) { 'milestoneTitle' }
+
+        include_examples 'validates field limit'
+      end
+
+      context "when filtering by NOT release_tag" do
+        let(:field_name) { 'releaseTag' }
+
+        include_examples 'validates field limit'
+      end
+
+      context "when filtering by NOT iteration_id" do
+        let(:field_name) { 'iterationId' }
+        let(:too_many_values) { (1..(limit + 1)).map { |i| "gid://gitlab/Iteration/#{i}" } }
+
+        include_examples 'validates field limit'
+      end
+
+      context "when filtering by NOT parent_ids" do
+        let(:field_name) { 'parentIds' }
+        let(:too_many_values) { (1..(limit + 1)).map { |i| "gid://gitlab/WorkItem/#{i}" } }
+
+        include_examples 'validates field limit'
+      end
+    end
+  end
 end
