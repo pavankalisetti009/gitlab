@@ -139,3 +139,5 @@ export const EXPORT_ERROR_MESSAGE_CHART_FAILURE = s__(
 );
 
 export const DASHBOARD_LOOKBACK_DAYS = 90;
+
+export const FINDING_MODAL_ERROR_CONTAINER_ID = 'finding-modal-error-container';
