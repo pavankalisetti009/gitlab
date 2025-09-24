@@ -33,46 +33,30 @@ RSpec.describe 'GitLab OAuth2 Resource Owner Password Credentials Flow', feature
   end
 
   describe 'Token Request with Resource Owner Password' do
-    context 'for different combinations of the disable_all and disable_new flags and the application-level setting' do
-      where(:disable_all_ff, :disable_all_feature, :disable_new_ff, :disable_new_feature, :app_ropc_enabled,
+    context 'for different combinations of the disable_all flag and the application-level setting' do
+      where(:disable_all_ff, :disable_all_feature, :disable_new_feature, :app_ropc_enabled,
         :expected_status) do
         # Disable all is active, and ROPC flow is globally disabled, regardless of other settings
-        true | true | true | true | true | :unauthorized
-        true | true | true | true | false | :unauthorized
-        true | true | true | false | true | :unauthorized
-        true | true | true | false | false | :unauthorized
-        true | true | false | true | true | :unauthorized
-        true | true | false | true | false | :unauthorized
-        true | true | false | false | true | :unauthorized
-        true | true | false | false | false | :unauthorized
+        true | true | true | true | :unauthorized
+        true | true | true | false | :unauthorized
+        true | true | false | true | :unauthorized
+        true | true | false | false | :unauthorized
 
         # Disable all is inactive, and OAuth application-level settings takes precedence
-        true | false | true | true | true | :ok
-        true | false | true | true | false | :unauthorized
-        true | false | true | false | true | :ok
-        true | false | true | false | false | :ok
-        true | false | false | true | true | :ok
-        true | false | false | true | false | :ok
-        true | false | false | false | true | :ok
-        true | false | false | false | false | :ok
+        true | false | true | true | :ok
+        true | false | true | false | :unauthorized
+        true | false | false | true | :ok
+        true | false | false | false | :ok
 
-        false | true | true | true | true | :ok
-        false | true | true | true | false | :unauthorized
-        false | true | true | false | true | :ok
-        false | true | true | false | false | :ok
-        false | true | false | true | true | :ok
-        false | true | false | true | false | :ok
-        false | true | false | false | true | :ok
-        false | true | false | false | false | :ok
+        false | true | true | true | :ok
+        false | true | true | false | :unauthorized
+        false | true | false | true | :ok
+        false | true | false | false | :ok
 
-        false | false | true | true | true | :ok
-        false | false | true | true | false | :unauthorized
-        false | false | true | false | true | :ok
-        false | false | true | false | false | :ok
-        false | false | false | true | true | :ok
-        false | false | false | true | false | :ok
-        false | false | false | false | true | :ok
-        false | false | false | false | false | :ok
+        false | false | true | true | :ok
+        false | false | true | false | :unauthorized
+        false | false | false | true | :ok
+        false | false | false | false | :ok
       end
 
       with_them do
@@ -80,7 +64,6 @@ RSpec.describe 'GitLab OAuth2 Resource Owner Password Credentials Flow', feature
           stub_saas_features(disable_ropc_for_all_applications: disable_all_feature)
           stub_saas_features(disable_ropc_for_new_applications: disable_new_feature)
           stub_feature_flags(disable_ropc_for_all_applications: disable_all_ff)
-          stub_feature_flags(disable_ropc_for_new_applications: disable_new_ff)
           application.update!(ropc_enabled: app_ropc_enabled)
         end
 
@@ -97,7 +80,6 @@ RSpec.describe 'GitLab OAuth2 Resource Owner Password Credentials Flow', feature
         stub_saas_features(disable_ropc_for_all_applications: false)
         stub_feature_flags(disable_ropc_for_all_applications: false)
         stub_saas_features(disable_ropc_for_new_applications: true)
-        stub_feature_flags(disable_ropc_for_new_applications: true)
         application.update!(ropc_enabled: false)
       end
 
@@ -108,9 +90,9 @@ RSpec.describe 'GitLab OAuth2 Resource Owner Password Credentials Flow', feature
         expect(token_response['error']).to eq('unauthorized_client')
       end
 
-      context 'when the feature is disabled' do
+      context 'when the SaaS feature is disabled' do
         before do
-          stub_feature_flags(disable_ropc_for_new_applications: false)
+          stub_saas_features(disable_ropc_for_new_applications: false)
         end
 
         it 'returns an access token' do
