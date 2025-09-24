@@ -25020,6 +25020,7 @@ CREATE TABLE sbom_occurrences_vulnerabilities (
     created_at timestamp with time zone NOT NULL,
     updated_at timestamp with time zone NOT NULL,
     project_id bigint,
+    vulnerability_occurrence_id bigint,
     CONSTRAINT check_a02e48df9c CHECK ((project_id IS NOT NULL))
 );
 
@@ -27789,6 +27790,7 @@ CREATE TABLE vulnerability_external_issue_links (
     external_project_key text NOT NULL,
     external_issue_key text NOT NULL,
     project_id bigint,
+    vulnerability_occurrence_id bigint,
     CONSTRAINT check_3200604f5e CHECK ((char_length(external_issue_key) <= 255)),
     CONSTRAINT check_68cffd19b0 CHECK ((char_length(external_project_key) <= 255)),
     CONSTRAINT check_9bbcf5afdd CHECK ((project_id IS NOT NULL))
@@ -28001,6 +28003,7 @@ CREATE TABLE vulnerability_issue_links (
     created_at timestamp with time zone NOT NULL,
     updated_at timestamp with time zone NOT NULL,
     project_id bigint,
+    vulnerability_occurrence_id bigint,
     CONSTRAINT check_55acc7b923 CHECK ((project_id IS NOT NULL))
 );
 
@@ -28040,6 +28043,7 @@ CREATE TABLE vulnerability_merge_request_links (
     created_at timestamp with time zone NOT NULL,
     updated_at timestamp with time zone NOT NULL,
     project_id bigint,
+    vulnerability_occurrence_id bigint,
     CONSTRAINT check_341035683b CHECK ((project_id IS NOT NULL))
 );
 
@@ -28197,6 +28201,7 @@ CREATE TABLE vulnerability_reads (
     has_vulnerability_resolution boolean DEFAULT false,
     auto_resolved boolean DEFAULT false NOT NULL,
     security_project_tracked_context_id bigint,
+    vulnerability_occurrence_id bigint,
     CONSTRAINT check_380451bdbe CHECK ((char_length(location_image) <= 2048)),
     CONSTRAINT check_4b1a1bf5ea CHECK ((has_merge_request IS NOT NULL)),
     CONSTRAINT check_a105eb825a CHECK ((char_length(cluster_agent_id) <= 10)),
@@ -28262,7 +28267,8 @@ CREATE TABLE vulnerability_representation_information (
     updated_at timestamp with time zone NOT NULL,
     vulnerability_id bigint NOT NULL,
     project_id bigint NOT NULL,
-    resolved_in_commit_sha bytea
+    resolved_in_commit_sha bytea,
+    vulnerability_occurrence_id bigint
 );
 
 CREATE TABLE vulnerability_scanners (
@@ -28292,7 +28298,8 @@ CREATE TABLE vulnerability_severity_overrides (
     updated_at timestamp with time zone NOT NULL,
     project_id bigint NOT NULL,
     original_severity smallint NOT NULL,
-    new_severity smallint NOT NULL
+    new_severity smallint NOT NULL,
+    vulnerability_occurrence_id bigint
 );
 
 CREATE SEQUENCE vulnerability_severity_overrides_id_seq
@@ -28315,6 +28322,7 @@ CREATE TABLE vulnerability_state_transitions (
     comment text,
     dismissal_reason smallint,
     project_id bigint,
+    vulnerability_occurrence_id bigint,
     CONSTRAINT check_b6338547d4 CHECK ((project_id IS NOT NULL)),
     CONSTRAINT check_fe2eb6a0f3 CHECK ((char_length(comment) <= 50000))
 );
@@ -28367,6 +28375,7 @@ CREATE TABLE vulnerability_user_mentions (
     mentioned_groups_ids bigint[],
     note_id bigint,
     project_id bigint,
+    vulnerability_occurrence_id bigint,
     CONSTRAINT check_0105942303 CHECK ((project_id IS NOT NULL))
 );
 

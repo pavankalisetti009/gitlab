@@ -7,6 +7,7 @@ module Vulnerabilities
     belongs_to :vulnerability, class_name: 'Vulnerability', inverse_of: :severity_overrides
     belongs_to :author, class_name: 'User', inverse_of: :vulnerability_severity_overrides
     belongs_to :project, optional: false
+    belongs_to :vulnerability_occurrence, optional: true, class_name: 'Vulnerabilities::Finding'
     validates :vulnerability, :project, :original_severity, :new_severity, presence: true
     validates :author, presence: true, on: :create
     validates :original_severity, presence: true,
