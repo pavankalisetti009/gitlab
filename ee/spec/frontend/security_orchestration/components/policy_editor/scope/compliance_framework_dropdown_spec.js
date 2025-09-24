@@ -13,10 +13,8 @@ import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import { convertToGraphQLId, getIdFromGraphQLId } from '~/graphql_shared/utils';
 import { TYPE_COMPLIANCE_FRAMEWORK } from '~/graphql_shared/constants';
 import ComplianceFrameworkDropdown from 'ee/security_orchestration/components/policy_editor/scope/compliance_framework_dropdown.vue';
+import getComplianceFrameworksForDropdownQuery from 'ee/security_orchestration/components/policy_editor/scope/graphql/get_compliance_frameworks_for_dropdown.query.graphql';
 import ComplianceFrameworkFormModal from 'ee/groups/settings/compliance_frameworks/components/form_modal.vue';
-import CreateForm from 'ee/groups/settings/compliance_frameworks/components/create_form.vue';
-import SharedForm from 'ee/groups/settings/compliance_frameworks/components/shared_form.vue';
-import getComplianceFrameworkQuery from 'ee/graphql_shared/queries/get_compliance_framework.query.graphql';
 import createComplianceFrameworkMutation from 'ee/groups/settings/compliance_frameworks/graphql/queries/create_compliance_framework.mutation.graphql';
 import {
   validCreateResponse,
@@ -40,9 +38,7 @@ describe('ComplianceFrameworkDropdown', () => {
       default: true,
       description: 'description 1',
       color: '#cd5b45',
-      pipelineConfigurationFullPath: 'path 1',
       namespaceId: 'gid://gitlab/Group/1',
-      projects: { nodes: [] },
     },
     {
       id: convertToGraphQLId(TYPE_COMPLIANCE_FRAMEWORK, 2),
@@ -50,17 +46,7 @@ describe('ComplianceFrameworkDropdown', () => {
       default: false,
       description: 'description 2',
       color: '#cd5b45',
-      pipelineConfigurationFullPath: 'path 2',
       namespaceId: 'gid://gitlab/Group/1',
-      projects: {
-        nodes: [
-          {
-            id: '1',
-            name: 'project-1',
-            webUrl: 'gid://gitlab/Project/1',
-          },
-        ],
-      },
     },
     {
       id: convertToGraphQLId(TYPE_COMPLIANCE_FRAMEWORK, 3),
@@ -68,22 +54,7 @@ describe('ComplianceFrameworkDropdown', () => {
       default: true,
       description: 'description 3',
       color: '#cd5b45',
-      pipelineConfigurationFullPath: 'path 3',
       namespaceId: 'gid://gitlab/Group/1',
-      projects: {
-        nodes: [
-          {
-            id: '1',
-            name: 'project-1',
-            webUrl: 'gid://gitlab/Project/1',
-          },
-          {
-            id: '2',
-            name: 'project-2',
-            webUrl: 'gid://gitlab/Project/2',
-          },
-        ],
-      },
     },
   ];
 
@@ -95,9 +66,7 @@ describe('ComplianceFrameworkDropdown', () => {
       default: true,
       description: 'description 4',
       color: '#cd5b45',
-      pipelineConfigurationFullPath: 'path 4',
       namespaceId: 'gid://gitlab/Group/1',
-      projects: { nodes: [] },
     },
   ];
 
@@ -129,7 +98,7 @@ describe('ComplianceFrameworkDropdown', () => {
 
     requestHandlers = handlers;
     return createMockApollo([
-      [getComplianceFrameworkQuery, requestHandlers.complianceFrameworks],
+      [getComplianceFrameworksForDropdownQuery, requestHandlers.complianceFrameworks],
       [createComplianceFrameworkMutation, requestHandlers.createFrameworkHandler],
     ]);
   };
@@ -169,7 +138,6 @@ describe('ComplianceFrameworkDropdown', () => {
   const findGlFormGroup = () => wrapper.findComponent(GlFormGroup);
   const findComplianceFrameworkFormModal = () =>
     wrapper.findComponent(ComplianceFrameworkFormModal);
-  const findSharedForm = () => wrapper.findComponent(SharedForm);
   const selectAll = () => findDropdown().vm.$emit('select-all');
   const resetAll = () => findDropdown().vm.$emit('reset');
   const findAllPopovers = () => wrapper.findAllComponents(GlPopover);
@@ -240,37 +208,21 @@ describe('ComplianceFrameworkDropdown', () => {
 
       await waitForPromises();
 
-      expect(findAllPopovers().at(0).props('title')).toBe('A1 has 0 projects');
-      expect(findAllPopovers().at(0).text()).toBe('Compliance framework has no projects');
-
-      expect(findAllPopovers().at(1).props('title')).toBe('B2 has 1 project');
-      expect(findAllPopovers().at(1).text()).toBe('project-1');
-
-      expect(findAllPopovers().at(2).props('title')).toBe('a3 has 2 projects');
-      expect(findAllPopovers().at(2).text()).toBe('project-1, project-2');
+      expect(findAllPopovers().at(0).props('title')).toBe('A1');
+      expect(findAllPopovers().at(1).props('title')).toBe('B2');
+      expect(findAllPopovers().at(2).props('title')).toBe('a3');
     });
   });
 
   describe('create new framework', () => {
     it('re-fetches compliance frameworks when a new one is created', async () => {
-      createComponent({
-        stubs: {
-          CreateForm,
-        },
-      });
+      createComponent({});
       expect(requestHandlers.complianceFrameworks).toHaveBeenCalledTimes(1);
 
-      findCreateFrameworkButton().vm.$emit('click');
-      findSharedForm().vm.$emit('submit');
-
+      jest.spyOn(wrapper.vm.$apollo.queries.complianceFrameworks, 'refetch');
+      findComplianceFrameworkFormModal().vm.$emit('change');
       await waitForPromises();
-
-      expect(showMock).toHaveBeenCalled();
-      expect(requestHandlers.complianceFrameworks).toHaveBeenCalledTimes(3);
-      expect(requestHandlers.complianceFrameworks).toHaveBeenNthCalledWith(2, {
-        fullPath: 'gitlab-org',
-        ids: null,
-      });
+      expect(wrapper.vm.$apollo.queries.complianceFrameworks.refetch).toHaveBeenCalled();
     });
   });
 
