@@ -147,20 +147,25 @@ module EE
     def default_autocomplete_ai_catalog
       return [] unless ::Feature.enabled?(:global_ai_catalog, current_user)
 
-      [
+      ai_catalog_results = [
         {
           category: "Jump to",
           id: "ai_catalog_agents",
           label: _("Explore / AI Catalog (Agents)"),
           url: File.join(explore_ai_catalog_path, "/agents")
-        },
-        {
+        }
+      ]
+
+      if ::Feature.enabled?(:ai_catalog_flows, current_user)
+        ai_catalog_results.push({
           category: "Jump to",
           id: "ai_catalog_flows",
           label: _("Explore / AI Catalog (Flows)"),
           url: File.join(explore_ai_catalog_path, "/flows")
-        }
-      ]
+        })
+      end
+
+      ai_catalog_results
     end
 
     def recent_epics_autocomplete(term)
