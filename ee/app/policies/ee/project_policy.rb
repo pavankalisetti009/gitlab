@@ -429,10 +429,12 @@ module EE
 
       rule { ~admin & (~is_gitlab_com & disable_invite_members) }.policy do
         prevent :invite_project_members
+        prevent :create_group_link
       end
 
       rule { ~admin & disable_invite_members_for_group }.policy do
         prevent :invite_project_members
+        prevent :create_group_link
       end
 
       rule { feature_flags_related_issues_disabled | repository_disabled }.policy do

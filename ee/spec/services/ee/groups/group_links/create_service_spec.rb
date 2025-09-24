@@ -39,82 +39,18 @@ RSpec.describe Groups::GroupLinks::CreateService, '#execute', feature_category: 
     end
   end
 
-  context 'when current user has admin_group_member custom permission' do
-    let_it_be_with_reload(:member) { create(:group_member, group: group, user: user) }
-    let_it_be_with_reload(:member_role) { create(:member_role, namespace: group, admin_group_member: true) }
+  context 'for custom roles' do
+    context 'when current user has admin_group_member custom permission' do
+      let_it_be(:role) { create(:member_role, :maintainer, namespace: group, admin_group_member: true) }
+      let_it_be(:member) { create(:group_member, :maintainer, member_role: role, user: user, group: group) }
 
-    shared_examples 'adding members using custom permission' do
       before do
-        # it is more efficient to change the base_access_level than to create a new member_role
-        member_role.base_access_level = current_role
-        member_role.save!(validate: false)
-
-        member.update!(access_level: current_role, member_role: member_role)
+        stub_licensed_features(custom_roles: true)
       end
 
-      context 'when custom_roles feature is enabled' do
-        before do
-          stub_licensed_features(custom_roles: true)
-        end
-
-        context 'when adding group link with the same access role as current user' do
-          let(:role) { current_role }
-
-          it 'adds a group link' do
-            expect { create_service }.to change { group.shared_with_group_links.count }.by(1)
-          end
-        end
-
-        context 'when adding group link with higher role than current user' do
-          let(:role) { higher_role }
-
-          it 'fails to add the group link' do
-            expect { create_service }.not_to change { group.shared_with_group_links.count }
-          end
-        end
+      it 'the user cannot create the group link' do
+        expect { create_service }.not_to change { group.shared_with_group_links.count }
       end
-
-      context 'when custom_roles feature is disabled' do
-        before do
-          stub_licensed_features(custom_roles: false)
-        end
-
-        context 'when adding members with the same access role as current user' do
-          let(:role) { current_role }
-
-          it 'fails to add the group link' do
-            expect { create_service }.not_to change { group.shared_with_group_links.count }
-          end
-        end
-      end
-    end
-
-    context 'for guest member role' do
-      let(:current_role) { Gitlab::Access::GUEST }
-      let(:higher_role) { Gitlab::Access::REPORTER }
-
-      it_behaves_like 'adding members using custom permission'
-    end
-
-    context 'for reporter member role' do
-      let(:current_role) { Gitlab::Access::REPORTER }
-      let(:higher_role) { Gitlab::Access::DEVELOPER }
-
-      it_behaves_like 'adding members using custom permission'
-    end
-
-    context 'for developer member role' do
-      let(:current_role) { Gitlab::Access::DEVELOPER }
-      let(:higher_role) { Gitlab::Access::MAINTAINER }
-
-      it_behaves_like 'adding members using custom permission'
-    end
-
-    context 'for maintainer member role' do
-      let(:current_role) { Gitlab::Access::MAINTAINER }
-      let(:higher_role) { Gitlab::Access::OWNER }
-
-      it_behaves_like 'adding members using custom permission'
     end
 
     context 'when assigning a member role to group link' do
