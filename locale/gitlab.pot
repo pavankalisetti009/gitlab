@@ -2576,7 +2576,13 @@ msgstr ""
 msgid "AICatalog|Duplicate agent"
 msgstr ""
 
+msgid "AICatalog|Duplicate flow"
+msgstr ""
+
 msgid "AICatalog|Duplicate this agent with all its settings and configuration."
+msgstr ""
+
+msgid "AICatalog|Duplicate this flow with all its settings and configuration."
 msgstr ""
 
 msgid "AICatalog|Edit"
@@ -2751,6 +2757,9 @@ msgid "AICatalog|The flow could not be added to the project. Try again. %{error}
 msgstr ""
 
 msgid "AICatalog|The flow could not be added. Try again."
+msgstr ""
+
+msgid "AICatalog|The flow could not be created. Try again."
 msgstr ""
 
 msgid "AICatalog|The flow could not be updated. Try again."
