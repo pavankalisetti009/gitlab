@@ -13279,6 +13279,9 @@ msgstr ""
 msgid "Choose an option"
 msgstr ""
 
+msgid "Choose emoji"
+msgstr ""
+
 msgid "Choose file…"
 msgstr ""
 

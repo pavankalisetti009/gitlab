@@ -20,6 +20,8 @@ module Resolvers
             # https://gitlab.com/gitlab-org/gitlab/-/merge_requests/196700
             next unless item&.organization == current_organization
 
+            next if item&.deleted?
+
             item
           end
         end

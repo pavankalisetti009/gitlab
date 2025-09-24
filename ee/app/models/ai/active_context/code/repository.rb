@@ -57,6 +57,10 @@ module Ai
 
         scope :ready_with_active_connection, -> { ready.with_active_connection }
 
+        def empty?
+          project.empty_repo?
+        end
+
         private
 
         def set_last_commit
