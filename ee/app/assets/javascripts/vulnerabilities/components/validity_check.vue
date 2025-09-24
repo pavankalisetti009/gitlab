@@ -8,6 +8,7 @@ import { TYPENAME_VULNERABILITY } from '~/graphql_shared/constants';
 import TokenValidityBadge from 'ee/vue_shared/security_reports/components/token_validity_badge.vue';
 import glFeatureFlagMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
 import refreshSecurityFindingTokenStatusMutation from 'ee/security_dashboard/graphql/mutations/refresh_security_finding_token_status.mutation.graphql';
+import { FINDING_MODAL_ERROR_CONTAINER_ID } from 'ee/security_dashboard/constants';
 import refreshFindingTokenStatusMutation from '../graphql/mutations/refresh_finding_token_status.mutation.graphql';
 
 export default {
@@ -113,7 +114,7 @@ export default {
       };
 
       if (!this.isVulnerabilityDetailsPage) {
-        alertOptions.containerSelector = '#finding-modal-error-container';
+        alertOptions.containerSelector = `#${FINDING_MODAL_ERROR_CONTAINER_ID}`;
       }
 
       createAlert(alertOptions);

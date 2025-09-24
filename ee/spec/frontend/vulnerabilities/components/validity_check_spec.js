@@ -8,6 +8,7 @@ import waitForPromises from 'helpers/wait_for_promises';
 import { createAlert } from '~/alert';
 import TokenValidityBadge from 'ee/vue_shared/security_reports/components/token_validity_badge.vue';
 import TimeAgoTooltip from '~/vue_shared/components/time_ago_tooltip.vue';
+import { FINDING_MODAL_ERROR_CONTAINER_ID } from 'ee/security_dashboard/constants';
 import refreshFindingTokenStatusMutation from 'ee/vulnerabilities/graphql/mutations/refresh_finding_token_status.mutation.graphql';
 import refreshSecurityFindingTokenStatusMutation from 'ee/security_dashboard/graphql/mutations/refresh_security_finding_token_status.mutation.graphql';
 
@@ -244,7 +245,7 @@ describe('ValidityCheck', () => {
           message: 'Validation failed. Token expired',
           captureError: true,
           error: expect.any(Error),
-          containerSelector: '#finding-modal-error-container',
+          containerSelector: `#${FINDING_MODAL_ERROR_CONTAINER_ID}`,
         });
       });
     });
