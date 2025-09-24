@@ -89,6 +89,16 @@ describe('EE Blob Header', () => {
         goal: 'test/Jenkinsfile',
         workflowDefinition: 'convert_to_gitlab_ci',
         agentPrivileges: [1, 2, 5],
+        sourceBranch: 'main',
+        additionalContext: [
+          {
+            Category: 'agent_user_environment',
+            Content: JSON.stringify({
+              source_branch: 'main',
+            }),
+            Metadata: '{}',
+          },
+        ],
       });
     });
 

@@ -131,6 +131,17 @@ export default {
     showDuoWorkflowAction() {
       return this.duoWorkflowData?.showDuoWorkflowAction;
     },
+    getAdditionalContext() {
+      return [
+        {
+          Category: 'agent_user_environment',
+          Content: JSON.stringify({
+            source_branch: this.currentRef,
+          }),
+          Metadata: '{}',
+        },
+      ];
+    },
   },
 };
 </script>
@@ -143,8 +154,10 @@ export default {
         :title="__('Convert to GitLab CI/CD')"
         :hover-message="__('Convert Jenkins to GitLab CI/CD using Duo')"
         :goal="blob.path"
+        :source-branch="currentRef"
         workflow-definition="convert_to_gitlab_ci"
         :agent-privileges="agentPrivileges"
+        :additional-context="getAdditionalContext"
       />
     </template>
 
