@@ -3,8 +3,6 @@
 module WorkItems
   module Lifecycles
     class CreateService < BaseService
-      include Gitlab::InternalEventsTracking
-
       def initialize(container:, current_user: nil, params: {})
         super
       end

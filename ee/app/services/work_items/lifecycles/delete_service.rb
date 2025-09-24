@@ -3,8 +3,6 @@
 module WorkItems
   module Lifecycles
     class DeleteService < BaseService
-      include Gitlab::InternalEventsTracking
-
       InvalidLifecycleTypeError = ServiceResponse.error(
         message: 'Invalid lifecycle type. Only custom lifecycles can be deleted.'
       )
