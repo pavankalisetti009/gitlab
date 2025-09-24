@@ -31,4 +31,3 @@ spec/frontend/performance_bar/index_spec.js
 spec/frontend/pipeline_wizard/components/step_spec.js
 spec/frontend/vue_alerts_spec.js
 spec/frontend/vue_popovers_spec.js
-spec/frontend/work_items/components/work_item_description_rendered_spec.js
