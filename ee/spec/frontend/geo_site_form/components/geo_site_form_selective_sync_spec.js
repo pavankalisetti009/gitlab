@@ -1,5 +1,6 @@
-import { GlFormGroup, GlSprintf, GlPopover, GlLink } from '@gitlab/ui';
+import { GlFormGroup, GlSprintf, GlPopover, GlLink, GlFormSelect } from '@gitlab/ui';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
+import GeoSiteFormOrganizations from 'ee/geo_site_form/components/geo_site_form_organizations.vue';
 import GeoSiteFormNamespaces from 'ee/geo_site_form/components/geo_site_form_namespaces.vue';
 import GeoSiteFormSelectiveSync from 'ee/geo_site_form/components/geo_site_form_selective_sync.vue';
 import GeoSiteFormShards from 'ee/geo_site_form/components/geo_site_form_shards.vue';
@@ -23,7 +24,7 @@ describe('GeoSiteFormSelectiveSync', () => {
 
   const createComponent = (props = {}) => {
     wrapper = shallowMountExtended(GeoSiteFormSelectiveSync, {
-      stubs: { GlFormGroup, GlSprintf, HelpIcon },
+      stubs: { GlFormGroup, GlSprintf, HelpIcon, GlFormSelect },
       propsData: {
         ...defaultProps,
         ...props,
@@ -53,6 +54,7 @@ describe('GeoSiteFormSelectiveSync', () => {
   const findGeoSiteFormSyncTypeField = () => wrapper.find('#site-selective-synchronization-field');
   const findGeoSiteFormNamespacesField = () => wrapper.findComponent(GeoSiteFormNamespaces);
   const findGeoSiteFormShardsField = () => wrapper.findComponent(GeoSiteFormShards);
+  const findGeoSiteFormOrganizationsField = () => wrapper.findComponent(GeoSiteFormOrganizations);
   const findGeoSiteObjectStorageField = () => wrapper.find('#site-object-storage-field');
 
   describe('template', () => {
@@ -64,12 +66,23 @@ describe('GeoSiteFormSelectiveSync', () => {
       expect(findGeoSiteFormSyncContainer().exists()).toBe(true);
     });
 
-    it('renders Geo Site Sync Type Field', () => {
-      expect(findGeoSiteFormSyncTypeField().exists()).toBe(true);
+    it('renders Geo Site Sync Type Field with correct props', () => {
+      expect(findGeoSiteFormSyncTypeField().props()).toMatchObject({
+        value: MOCK_SITE.selectiveSyncType,
+        options: MOCK_SELECTIVE_SYNC_TYPES,
+      });
     });
 
     it('renders Geo Site Object Storage Field', () => {
       expect(findGeoSiteObjectStorageField().exists()).toBe(true);
+    });
+
+    describe('selective sync form group', () => {
+      it('renders with correct text', () => {
+        expect(findGeoSiteFormSyncTypeFormGroup().attributes('description')).toBe(
+          'Choose specific groups, storage shards, or organizations.',
+        );
+      });
     });
 
     describe('selective sync type popover', () => {
@@ -78,17 +91,16 @@ describe('GeoSiteFormSelectiveSync', () => {
         expect(findGeoSiteFormSyncTypePopoverIcon().attributes('name')).toBe('question-o');
       });
 
-      it('renders the GlPopover', () => {
-        expect(findGeoSiteFormSyncTypePopover().exists()).toBe(true);
-        expect(findGeoSiteFormSyncTypePopover().text()).toContain(
-          GeoSiteFormSelectiveSync.i18n.selectiveSyncPopoverText,
-        );
-      });
-
       it('renders the popover link correctly', () => {
         expect(findGeoSiteFormSyncTypePopoverLink().exists()).toBe(true);
         expect(findGeoSiteFormSyncTypePopoverLink().attributes('href')).toBe(
           SELECTIVE_SYNC_MORE_INFO,
+        );
+      });
+
+      it('renders the GlPopover with correct text', () => {
+        expect(findGeoSiteFormSyncTypePopover().text()).toContain(
+          'Geo allows you to choose specific groups, storage shards, or organizations to replicate.',
         );
       });
     });
@@ -115,11 +127,12 @@ describe('GeoSiteFormSelectiveSync', () => {
     });
 
     describe.each`
-      syncType                                | showNamespaces | showShards
-      ${MOCK_SELECTIVE_SYNC_TYPES.ALL}        | ${false}       | ${false}
-      ${MOCK_SELECTIVE_SYNC_TYPES.NAMESPACES} | ${true}        | ${false}
-      ${MOCK_SELECTIVE_SYNC_TYPES.SHARDS}     | ${false}       | ${true}
-    `(`sync type`, ({ syncType, showNamespaces, showShards }) => {
+      syncType                                   | showNamespaces | showShards | showOrganizations
+      ${MOCK_SELECTIVE_SYNC_TYPES.ALL}           | ${false}       | ${false}   | ${false}
+      ${MOCK_SELECTIVE_SYNC_TYPES.NAMESPACES}    | ${true}        | ${false}   | ${false}
+      ${MOCK_SELECTIVE_SYNC_TYPES.SHARDS}        | ${false}       | ${true}    | ${false}
+      ${MOCK_SELECTIVE_SYNC_TYPES.ORGANIZATIONS} | ${false}       | ${false}   | ${true}
+    `(`sync type`, ({ syncType, showNamespaces, showShards, showOrganizations }) => {
       beforeEach(() => {
         createComponent({
           siteData: { ...defaultProps.siteData, selectiveSyncType: syncType.value },
@@ -132,6 +145,10 @@ describe('GeoSiteFormSelectiveSync', () => {
 
       it(`${showShards ? 'show' : 'hide'} Shards Field`, () => {
         expect(findGeoSiteFormShardsField().exists()).toBe(showShards);
+      });
+
+      it(`${showOrganizations ? 'show' : 'hide'} Organizations Field`, () => {
+        expect(findGeoSiteFormOrganizationsField().exists()).toBe(showOrganizations);
       });
     });
   });
@@ -147,18 +164,64 @@ describe('GeoSiteFormSelectiveSync', () => {
         });
       });
 
-      it('emits `updateSyncOptions`', () => {
-        findGeoSiteFormNamespacesField().vm.$emit('updateSyncOptions', MOCK_SYNC_NAMESPACE_IDS);
+      describe('when form fields emits `updateSyncOptions` event', () => {
+        it('emits `updateSyncOptions`', () => {
+          findGeoSiteFormNamespacesField().vm.$emit('updateSyncOptions', MOCK_SYNC_NAMESPACE_IDS);
 
-        expect(wrapper.emitted('updateSyncOptions')).toStrictEqual([[MOCK_SYNC_NAMESPACE_IDS]]);
+          expect(wrapper.emitted('updateSyncOptions')).toStrictEqual([[MOCK_SYNC_NAMESPACE_IDS]]);
+        });
+      });
+
+      describe('when selectiveSyncType field emits `input` event', () => {
+        it('emits `updateSyncOptions`', () => {
+          findGeoSiteFormSyncTypeField().vm.$emit('input', MOCK_SELECTIVE_SYNC_TYPES.NAMESPACES);
+
+          expect(wrapper.emitted('updateSyncOptions')).toStrictEqual([
+            [{ key: 'selectiveSyncType', value: MOCK_SELECTIVE_SYNC_TYPES.NAMESPACES }],
+          ]);
+        });
       });
     });
   });
 
   describe('computed', () => {
-    const factory = (selectiveSyncType = MOCK_SELECTIVE_SYNC_TYPES.ALL.value) => {
-      createComponent({ siteData: { ...defaultProps.siteData, selectiveSyncType } });
+    const factory = (
+      selectiveSyncType = MOCK_SELECTIVE_SYNC_TYPES.ALL.value,
+      selectiveSyncTypes = MOCK_SELECTIVE_SYNC_TYPES,
+    ) => {
+      createComponent({
+        siteData: { ...defaultProps.siteData, selectiveSyncType },
+        selectiveSyncTypes,
+      });
     };
+
+    describe('selectiveSyncOrganizationsAvailable', () => {
+      it('returns true when ORGANIZATIONS is defined in selectiveSyncTypes', () => {
+        factory();
+
+        expect(wrapper.vm.selectiveSyncOrganizationsAvailable).toBe(true);
+      });
+    });
+
+    describe('selectiveSyncFieldDescription', () => {
+      it('returns description with organizations when organizations are available', () => {
+        factory();
+
+        expect(wrapper.vm.selectiveSyncFieldDescription).toBe(
+          'Choose specific groups, storage shards, or organizations.',
+        );
+      });
+    });
+
+    describe('selectiveSyncPopoverText', () => {
+      it('returns popover text with organizations when organizations are available', () => {
+        factory();
+
+        expect(wrapper.vm.selectiveSyncPopoverText).toBe(
+          'Geo allows you to choose specific groups, storage shards, or organizations to replicate.',
+        );
+      });
+    });
 
     describe('selectiveSyncNamespaces', () => {
       describe('when selectiveSyncType is not `NAMESPACES`', () => {
@@ -201,6 +264,36 @@ describe('GeoSiteFormSelectiveSync', () => {
         it('returns `true`', () => {
           expect(wrapper.vm.selectiveSyncShards).toBe(true);
         });
+      });
+    });
+  });
+
+  describe('when sync by organization is unavailable', () => {
+    const { ORGANIZATIONS, ...selectiveSyncTypesNoOrganization } = MOCK_SELECTIVE_SYNC_TYPES;
+    it('renders with correct text', () => {
+      createComponent({ selectiveSyncTypes: selectiveSyncTypesNoOrganization });
+
+      expect(findGeoSiteFormSyncTypeFormGroup().attributes('description')).toBe(
+        'Choose specific groups or storage shards.',
+      );
+    });
+
+    it('renders the GlPopover with correct text', () => {
+      createComponent({ selectiveSyncTypes: selectiveSyncTypesNoOrganization });
+
+      expect(findGeoSiteFormSyncTypePopover().text()).toContain(
+        'Geo allows you to choose specific groups or storage shards to replicate.',
+      );
+    });
+
+    describe('when current sync type is organizations', () => {
+      it('does not render Organizations Field', () => {
+        createComponent({
+          selectiveSyncTypes: selectiveSyncTypesNoOrganization,
+          siteData: { ...MOCK_SITE, selectiveSyncType: MOCK_SELECTIVE_SYNC_TYPES.ORGANIZATIONS },
+        });
+
+        expect(findGeoSiteFormOrganizationsField().exists()).toBe(false);
       });
     });
   });

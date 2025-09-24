@@ -125,7 +125,7 @@ export default {
         :id="formGroup.id"
         v-model="siteData[formGroup.key]"
         :class="{ 'is-invalid': Boolean(formErrors[formGroup.key]) }"
-        class="gl-col-sm-3"
+        class="sm:gl-max-w-xs"
         type="number"
         @update="checkCapacity(formGroup)"
       />
