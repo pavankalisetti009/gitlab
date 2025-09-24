@@ -233,10 +233,15 @@
       scrollbar-color: var(--gl-color-neutral-400) transparent;
       scrollbar-width: thin;
 
+      // This prevents the scrollbar transparency rule above from breaking scrollbars in dropdown menus
+      .dropdown-menu {
+        background: var(--gl-background-color-overlap);
+      }
+      
       .container-fluid {
         @apply gl-px-4 gl-pb-3;
       }
-
+      
       // Hide alert wrapper if it's empty
       > .alert-wrapper:not(:has(*)),
       > .alert-wrapper:not(:has(.container-fluid *)) {
