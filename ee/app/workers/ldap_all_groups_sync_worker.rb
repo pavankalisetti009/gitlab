@@ -11,6 +11,7 @@ class LdapAllGroupsSyncWorker # rubocop:disable Scalability/IdempotentWorker
   # rubocop:enable Scalability/CronWorkerContext
 
   feature_category :user_management
+  worker_resource_boundary :memory
   worker_has_external_dependencies!
 
   def perform

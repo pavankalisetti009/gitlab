@@ -1,7 +1,9 @@
 <script>
 import { GlAlert, GlModal, GlFormGroup, GlFormTextarea, GlCollapsibleListbox } from '@gitlab/ui';
+import { DEFAULT_DEBOUNCE_AND_THROTTLE_MS } from '~/lib/utils/constants';
 import { getSelectedOptionsText } from '~/lib/utils/listbox_helpers';
 import { __, s__ } from '~/locale';
+import * as Sentry from '~/sentry/sentry_browser_wrapper';
 import {
   INITIAL_STATE_NEXT_STEPS,
   WARN_MODE_BYPASS_REASONS,
@@ -14,6 +16,7 @@ import bypassSecurityPolicyViolations from './queries/bypass_security_policy_vio
 
 export default {
   ACTION_CANCEL: { text: __('Cancel') },
+  DEFAULT_DEBOUNCE_AND_THROTTLE_MS,
   name: 'SecurityPolicyViolationsModal',
   components: {
     GlAlert,
@@ -50,12 +53,18 @@ export default {
   },
   data() {
     return {
+      bypassReasonTextAreaDirty: false,
       bypassReason: '',
+      loading: false,
       selectedPolicies: [],
       selectedReasons: [],
+      showErrorAlert: false,
     };
   },
   computed: {
+    isBypassReasonEmpty() {
+      return this.bypassReason.trim().length === 0;
+    },
     showModeSelection() {
       return this.mode === '';
     },
@@ -68,6 +77,7 @@ export default {
         attributes: {
           variant: 'danger',
           disabled: !this.isValid,
+          loading: this.loading,
           'data-testid': 'bypass-policy-violations-button',
         },
       };
@@ -79,7 +89,7 @@ export default {
       return (
         this.selectedPolicies.length > 0 &&
         this.selectedReasons.length > 0 &&
-        this.bypassReason.trim().length > 0
+        !this.isBypassReasonEmpty
       );
     },
     nextSteps() {
@@ -108,9 +118,14 @@ export default {
         maxOptionsShown: 4,
       });
     },
+    bypassReasonState() {
+      return !(this.bypassReasonTextAreaDirty && this.isBypassReasonEmpty);
+    },
   },
   methods: {
     async handleBypass() {
+      this.loading = true;
+
       try {
         const {
           data: {
@@ -128,12 +143,15 @@ export default {
         });
 
         if (errors?.length) {
-          throw Error();
+          throw Error(errors.join(','));
         }
 
         this.handleClose();
       } catch (e) {
-        // TODO do something
+        this.showErrorAlert = true;
+        Sentry.captureException(e);
+      } finally {
+        this.loading = false;
       }
     },
     handleClose() {
@@ -144,6 +162,10 @@ export default {
     },
     selectMode(mode) {
       this.$emit('select-mode', mode);
+    },
+    updateBypassReason(value) {
+      this.bypassReasonTextAreaDirty = true;
+      this.bypassReason = value;
     },
   },
 };
@@ -166,6 +188,20 @@ export default {
           {{ step }}
         </li>
       </ul>
+    </gl-alert>
+
+    <gl-alert
+      v-if="showErrorAlert"
+      class="gl-mb-5"
+      variant="danger"
+      :dismissible="false"
+      :title="s__('SecurityOrchestration|Policy bypass failed')"
+    >
+      {{
+        s__(
+          'SecurityOrchestration|An error occurred while attempting to bypass policies. Please refresh the page and try again.',
+        )
+      }}
     </gl-alert>
 
     <security-policy-violations-selector
@@ -212,11 +248,14 @@ export default {
         class="gl-mb-0"
       >
         <gl-form-textarea
-          v-model="bypassReason"
           rows="4"
+          :debounce="$options.DEFAULT_DEBOUNCE_AND_THROTTLE_MS"
           :placeholder="
             s__('SecurityOrchestration|Provide a detailed justification for policy bypass.')
           "
+          :state="bypassReasonState"
+          :value="bypassReason"
+          @input="updateBypassReason"
         />
       </gl-form-group>
       <p class="gl-text-gray-300">

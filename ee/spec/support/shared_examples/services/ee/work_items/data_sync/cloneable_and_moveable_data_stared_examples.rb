@@ -34,6 +34,10 @@ RSpec.shared_examples 'cloneable and moveable for ee widget data' do
     work_item.reload.current_status&.slice(:system_defined_status_id, :custom_status_id)
   end
 
+  def wi_health_status(work_item)
+    work_item.reload.health_status
+  end
+
   def work_item_status_present?
     work_item_widgets.include?(::WorkItems::Widgets::Status) &&
       original_work_item.current_status.present?
@@ -98,6 +102,10 @@ RSpec.shared_examples 'cloneable and moveable for ee widget data' do
     end
   end
 
+  let_it_be(:health_status) do
+    original_work_item.health_status
+  end
+
   let_it_be(:move) { WorkItems::DataSync::MoveService }
   let_it_be(:clone) { WorkItems::DataSync::CloneService }
   let_it_be(:always_cleaned_up_widgets) { [:work_item_parent, :epic] }
@@ -110,6 +118,7 @@ RSpec.shared_examples 'cloneable and moveable for ee widget data' do
       { widget: :weight,          assoc_name: :weights_source,          eval_value: :wi_weights_source,      expected: weights_source,          operations: [move, clone] },
       { widget: :linked_items,    assoc_name: :linked_work_items,       eval_value: :wi_linked_items,        expected: related_items,           operations: [move] },
       { widget: :status,          assoc_name: :current_status,          eval_value: :wi_status,              expected: status,                  operations: [move, clone] },
+      { widget: :health_status,   assoc_name: :health_status,           eval_value: :wi_health_status,       expected: health_status,           operations: [move, clone] },
       # these are non widget associations, but we can test these the same way
       { widget: :vulnerabilities, assoc_name: :related_vulnerabilities, eval_value: :wi_vulnerabilities,     expected: related_vulnerabilities, operations: [move] },
       {                           assoc_name: :pending_escalations,     eval_value: :wi_pending_escalations, expected: pending_escalations,     operations: [move] }
