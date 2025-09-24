@@ -68,6 +68,7 @@ RSpec.describe '1_settings', feature_category: :shared do
         deactivated_pages_deployments_delete_cron_worker
         deactivate_expired_deployments_cron_worker
         delete_expired_dependency_exports_worker
+        delete_expired_trigger_token_worker
         delete_expired_vulnerability_exports_worker
         deploy_tokens_expiring_worker
         elastic_cluster_reindexing_cron_worker
