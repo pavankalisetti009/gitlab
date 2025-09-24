@@ -1407,4 +1407,202 @@ RSpec.describe Security::Policy, feature_category: :security_policy_management d
       end
     end
   end
+
+  describe '#create_merge_request_bypass_event!' do
+    let_it_be(:project) { create(:project) }
+    let_it_be(:user) { create(:user) }
+    let_it_be(:merge_request) { create(:merge_request, source_project: project) }
+    let_it_be(:policy) { create(:security_policy, :approval_policy) }
+    let_it_be(:reason) { 'Security policy bypassed due to emergency' }
+
+    subject(:create_bypass_event!) do
+      policy.create_merge_request_bypass_event!(
+        project: project,
+        user: user,
+        reason: reason,
+        merge_request: merge_request
+      )
+    end
+
+    it 'creates the bypass event with correct attributes' do
+      bypass_event = create_bypass_event!
+
+      expect(bypass_event).to have_attributes(
+        project: project,
+        user: user,
+        reason: reason,
+        merge_request: merge_request,
+        security_policy: policy
+      )
+    end
+
+    context 'when creating multiple bypass events for the same merge request and policy' do
+      before do
+        create(:approval_policy_merge_request_bypass_event,
+          security_policy: policy,
+          project: project,
+          merge_request: merge_request
+        )
+      end
+
+      it 'raises a validation error due to uniqueness constraint' do
+        expect { create_bypass_event! }.to raise_error(ActiveRecord::RecordInvalid)
+      end
+    end
+
+    context 'when creating bypass events for different policies on the same merge request' do
+      let_it_be(:other_policy) { create(:security_policy, :approval_policy) }
+
+      before do
+        create(:approval_policy_merge_request_bypass_event,
+          security_policy: policy,
+          project: project,
+          merge_request: merge_request
+        )
+      end
+
+      it 'allows creating bypass events for different policies' do
+        expect do
+          other_policy.create_merge_request_bypass_event!(
+            project: project,
+            user: user,
+            reason: reason,
+            merge_request: merge_request
+          )
+        end.to change { Security::ApprovalPolicyMergeRequestBypassEvent.count }.by(1)
+      end
+    end
+  end
+
+  describe '#merge_request_bypassed?' do
+    let_it_be(:project) { create(:project) }
+    let_it_be(:merge_request) { create(:merge_request, source_project: project) }
+    let_it_be(:policy) { create(:security_policy, :approval_policy) }
+
+    subject(:merge_request_bypassed?) { policy.merge_request_bypassed?(merge_request) }
+
+    context 'when feature flag is disabled' do
+      before do
+        stub_feature_flags(security_policies_bypass_options_mr_widget: false)
+      end
+
+      it { is_expected.to be false }
+    end
+
+    context 'when policy is not an approval policy' do
+      let(:policy) { create(:security_policy, :scan_execution_policy) }
+
+      it { is_expected.to be false }
+    end
+
+    context 'when policy is approval policy' do
+      context 'when no bypass events exist for the merge request' do
+        it { is_expected.to be false }
+      end
+
+      context 'when bypass events exist for the merge request' do
+        before do
+          create(:approval_policy_merge_request_bypass_event,
+            security_policy: policy,
+            project: project,
+            merge_request: merge_request
+          )
+        end
+
+        it { is_expected.to be true }
+      end
+
+      context 'when bypass events exist for other merge requests' do
+        let_it_be(:other_project) { create(:project) }
+        let_it_be(:other_merge_request) { create(:merge_request, source_project: other_project) }
+
+        before do
+          create(:approval_policy_merge_request_bypass_event,
+            security_policy: policy,
+            project: other_project,
+            merge_request: other_merge_request
+          )
+        end
+
+        it { is_expected.to be false }
+      end
+
+      context 'when bypass events exist for other policies' do
+        let_it_be(:other_policy) { create(:security_policy, :approval_policy) }
+
+        before do
+          create(:approval_policy_merge_request_bypass_event,
+            security_policy: other_policy,
+            project: project,
+            merge_request: merge_request
+          )
+        end
+
+        it { is_expected.to be false }
+      end
+    end
+  end
+
+  describe '#merge_request_bypass_allowed?' do
+    let_it_be(:project) { create(:project) }
+    let_it_be(:user) { create(:user) }
+    let_it_be(:merge_request) { create(:merge_request, source_project: project) }
+    let_it_be(:policy) { create(:security_policy, :approval_policy) }
+
+    subject(:merge_request_bypass_allowed?) { policy.merge_request_bypass_allowed?(merge_request, user) }
+
+    context 'when feature flag is disabled' do
+      before do
+        stub_feature_flags(security_policies_bypass_options_mr_widget: false)
+      end
+
+      it { is_expected.to be false }
+    end
+
+    context 'when bypass_settings is empty' do
+      let(:policy) do
+        create(:security_policy, :approval_policy, content: {
+          bypass_settings: {}
+        })
+      end
+
+      it { is_expected.to be false }
+    end
+
+    context 'when policy is not an approval policy' do
+      let(:policy) { create(:security_policy, :scan_execution_policy) }
+
+      it { is_expected.to be false }
+    end
+
+    context 'when bypass_settings has users configured' do
+      let(:policy) do
+        create(:security_policy, :approval_policy, content: {
+          bypass_settings: {
+            users: [{ id: user.id }]
+          }
+        })
+      end
+
+      context 'when user has bypass scope via user bypass checker' do
+        before do
+          allow_next_instance_of(Security::ScanResultPolicies::UserBypassChecker) do |instance|
+            allow(instance).to receive(:bypass_scope).and_return(:user)
+          end
+        end
+
+        it { is_expected.to be true }
+      end
+
+      context 'when user does not have bypass scope via user bypass checker' do
+        before do
+          allow_next_instance_of(Security::ScanResultPolicies::UserBypassChecker) do |instance|
+            allow(instance).to receive(:bypass_scope).and_return(nil)
+          end
+        end
+
+        it { is_expected.to be false }
+      end
+    end
+  end
 end

@@ -141,4 +141,84 @@ RSpec.describe Security::ScanResultPolicies::BypassSettings, feature_category: :
       end
     end
   end
+
+  describe '#users_and_groups_empty?' do
+    context 'when all collections are empty' do
+      let(:bypass_settings) { {} }
+
+      it 'returns true' do
+        expect(bypass_settings_instance.users_and_groups_empty?).to be true
+      end
+    end
+
+    context 'when user_ids is not empty' do
+      let(:bypass_settings) { { users: [{ id: 100 }] } }
+
+      it 'returns false' do
+        expect(bypass_settings_instance.users_and_groups_empty?).to be false
+      end
+    end
+
+    context 'when group_ids is not empty' do
+      let(:bypass_settings) { { groups: [{ id: 200 }] } }
+
+      it 'returns false' do
+        expect(bypass_settings_instance.users_and_groups_empty?).to be false
+      end
+    end
+
+    context 'when default_roles is not empty' do
+      let(:bypass_settings) { { roles: ['maintainer'] } }
+
+      it 'returns false' do
+        expect(bypass_settings_instance.users_and_groups_empty?).to be false
+      end
+    end
+
+    context 'when custom_role_ids is not empty' do
+      let(:bypass_settings) { { custom_roles: [{ id: 300 }] } }
+
+      it 'returns false' do
+        expect(bypass_settings_instance.users_and_groups_empty?).to be false
+      end
+    end
+
+    context 'when multiple collections have data' do
+      let(:bypass_settings) do
+        {
+          users: [{ id: 100 }],
+          groups: [{ id: 200 }],
+          roles: ['maintainer'],
+          custom_roles: [{ id: 300 }]
+        }
+      end
+
+      it 'returns false' do
+        expect(bypass_settings_instance.users_and_groups_empty?).to be false
+      end
+    end
+
+    context 'when some collections are empty and others have data' do
+      let(:bypass_settings) do
+        {
+          users: [],
+          groups: [{ id: 200 }],
+          roles: [],
+          custom_roles: []
+        }
+      end
+
+      it 'returns false' do
+        expect(bypass_settings_instance.users_and_groups_empty?).to be false
+      end
+    end
+
+    context 'when bypass_settings is nil' do
+      subject(:bypass_settings_instance) { described_class.new(nil) }
+
+      it 'returns true' do
+        expect(bypass_settings_instance.users_and_groups_empty?).to be true
+      end
+    end
+  end
 end

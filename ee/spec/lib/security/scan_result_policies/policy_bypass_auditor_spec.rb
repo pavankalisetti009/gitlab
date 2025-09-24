@@ -239,4 +239,108 @@ RSpec.describe Security::ScanResultPolicies::PolicyBypassAuditor, feature_catego
       end
     end
   end
+
+  describe '#log_merge_request_bypass' do
+    let_it_be(:merge_request) { create(:merge_request) }
+    let_it_be(:target_security_policy) { create(:security_policy, linked_projects: [project]) }
+    let(:reason) { 'Emergency security fix' }
+
+    it 'logs the bypass event with correct details' do
+      auditor.log_merge_request_bypass(merge_request, target_security_policy, reason)
+
+      expect(Gitlab::Audit::Auditor).to have_received(:audit).with(
+        name: 'security_policy_merge_request_bypass',
+        author: user,
+        scope: security_policy.security_policy_management_project,
+        target: security_policy,
+        message: "Security policy #{target_security_policy.name} in merge request " \
+          "(#{project.full_path}!#{merge_request.iid}) has been bypassed by #{user.name} with reason: #{reason}",
+        additional_details: {
+          project_id: project.id,
+          security_policy_name: target_security_policy.name,
+          security_policy_id: target_security_policy.id,
+          branch_name: branch_name,
+          bypass_type: :merge_request,
+          merge_request_id: merge_request.id,
+          merge_request_iid: merge_request.iid,
+          reason: reason
+        }
+      )
+    end
+
+    context 'without reason' do
+      let(:reason) { nil }
+
+      it 'logs the bypass event without reason in message' do
+        auditor.log_merge_request_bypass(merge_request, target_security_policy, reason)
+
+        expect(Gitlab::Audit::Auditor).to have_received(:audit).with(
+          hash_including(
+            message: "Security policy #{target_security_policy.name} in merge request " \
+              "(#{project.full_path}!#{merge_request.iid}) has been bypassed by #{user.name}",
+            additional_details: hash_including(
+              reason: nil
+            )
+          )
+        )
+      end
+    end
+
+    context 'with empty reason' do
+      let(:reason) { '' }
+
+      it 'logs the bypass event without reason in message' do
+        auditor.log_merge_request_bypass(merge_request, target_security_policy, reason)
+
+        expect(Gitlab::Audit::Auditor).to have_received(:audit).with(
+          hash_including(
+            message: "Security policy #{target_security_policy.name} in merge request " \
+              "(#{project.full_path}!#{merge_request.iid}) has been bypassed by #{user.name}",
+            additional_details: hash_including(
+              reason: ''
+            )
+          )
+        )
+      end
+    end
+
+    context 'with different merge request' do
+      let_it_be(:another_merge_request) { create(:merge_request) }
+
+      it 'logs the bypass event with different merge request details' do
+        auditor.log_merge_request_bypass(another_merge_request, target_security_policy, reason)
+
+        expect(Gitlab::Audit::Auditor).to have_received(:audit).with(
+          hash_including(
+            message: "Security policy #{target_security_policy.name} in merge request " \
+              "(#{project.full_path}!#{another_merge_request.iid}) has been bypassed by #{user.name} " \
+              "with reason: #{reason}",
+            additional_details: hash_including(
+              merge_request_id: another_merge_request.id,
+              merge_request_iid: another_merge_request.iid
+            )
+          )
+        )
+      end
+    end
+
+    context 'with different security policy' do
+      let_it_be(:another_security_policy) { create(:security_policy, linked_projects: [project]) }
+
+      it 'logs the bypass event with different security policy details' do
+        auditor.log_merge_request_bypass(merge_request, another_security_policy, reason)
+
+        expect(Gitlab::Audit::Auditor).to have_received(:audit).with(
+          hash_including(
+            message: "Security policy #{another_security_policy.name} in merge request " \
+              "(#{project.full_path}!#{merge_request.iid}) has been bypassed by #{user.name} with reason: #{reason}",
+            additional_details: hash_including(
+              security_policy_id: another_security_policy.id,
+              security_policy_name: another_security_policy.name
+            )
+          )
+        )
+      end
+    end
+  end
 end

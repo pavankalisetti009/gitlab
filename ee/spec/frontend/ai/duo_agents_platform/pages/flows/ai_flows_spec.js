@@ -12,6 +12,7 @@ import PageHeading from '~/vue_shared/components/page_heading.vue';
 import ResourceListsEmptyState from '~/vue_shared/components/resource_lists/empty_state.vue';
 import aiCatalogConfiguredItemsQuery from 'ee/ai/catalog/graphql/queries/ai_catalog_configured_items.query.graphql';
 import aiCatalogFlowQuery from 'ee/ai/catalog/graphql/queries/ai_catalog_flow.query.graphql';
+import aiCatalogProjectUserPermissionsQuery from 'ee/ai/catalog/graphql/queries/ai_catalog_project_user_permissions.query.graphql';
 import deleteAiCatalogItemConsumer from 'ee/ai/catalog/graphql/mutations/delete_ai_catalog_item_consumer.mutation.graphql';
 import {
   mockAiCatalogFlowResponse,
@@ -22,6 +23,7 @@ import {
   mockAiCatalogItemConsumerDeleteResponse,
   mockAiCatalogItemConsumerDeleteErrorResponse,
   mockPageInfo,
+  mockUserPermissionsResponse,
 } from 'ee_jest/ai/catalog/mock_data';
 
 jest.mock('~/sentry/sentry_browser_wrapper');
@@ -40,6 +42,7 @@ describe('AiFlows', () => {
   };
   const mockProjectId = 1;
   const mockConfiguredFlowsQueryHandler = jest.fn().mockResolvedValue(mockConfiguredFlowsResponse);
+  const mockUserPermissionsQueryHandler = jest.fn().mockResolvedValue(mockUserPermissionsResponse);
   const mockFlowQueryHandler = jest.fn().mockResolvedValue(mockAiCatalogFlowResponse);
   const deleteItemConsumerMutationHandler = jest
     .fn()
@@ -48,6 +51,7 @@ describe('AiFlows', () => {
   const createComponent = ({ $route = { query: {} } } = {}) => {
     mockApollo = createMockApollo([
       [aiCatalogConfiguredItemsQuery, mockConfiguredFlowsQueryHandler],
+      [aiCatalogProjectUserPermissionsQuery, mockUserPermissionsQueryHandler],
       [aiCatalogFlowQuery, mockFlowQueryHandler],
       [deleteAiCatalogItemConsumer, deleteItemConsumerMutationHandler],
     ]);

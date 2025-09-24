@@ -4,7 +4,6 @@ import * as Sentry from '~/sentry/sentry_browser_wrapper';
 import createMockApollo from 'helpers/mock_apollo_helper';
 import waitForPromises from 'helpers/wait_for_promises';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
-
 import AiAgents from 'ee/ai/duo_agents_platform/pages/agents/ai_agents.vue';
 import AiCatalogList from 'ee/ai/catalog/components/ai_catalog_list.vue';
 import ErrorsAlert from '~/vue_shared/components/errors_alert.vue';
@@ -12,6 +11,7 @@ import PageHeading from '~/vue_shared/components/page_heading.vue';
 import ResourceListsEmptyState from '~/vue_shared/components/resource_lists/empty_state.vue';
 import aiCatalogConfiguredItemsQuery from 'ee/ai/catalog/graphql/queries/ai_catalog_configured_items.query.graphql';
 import aiCatalogAgentQuery from 'ee/ai/catalog/graphql/queries/ai_catalog_agent.query.graphql';
+import aiCatalogProjectUserPermissionsQuery from 'ee/ai/catalog/graphql/queries/ai_catalog_project_user_permissions.query.graphql';
 import deleteAiCatalogItemConsumer from 'ee/ai/catalog/graphql/mutations/delete_ai_catalog_item_consumer.mutation.graphql';
 import {
   mockAiCatalogAgentResponse,
@@ -22,6 +22,7 @@ import {
   mockAiCatalogItemConsumerDeleteResponse,
   mockAiCatalogItemConsumerDeleteErrorResponse,
   mockPageInfo,
+  mockUserPermissionsResponse,
 } from 'ee_jest/ai/catalog/mock_data';
 
 jest.mock('~/sentry/sentry_browser_wrapper');
@@ -43,6 +44,7 @@ describe('AiAgents', () => {
     .fn()
     .mockResolvedValue(mockConfiguredAgentsResponse);
   const mockAgentQueryHandler = jest.fn().mockResolvedValue(mockAiCatalogAgentResponse);
+  const mockUserPermissionsQueryHandler = jest.fn().mockResolvedValue(mockUserPermissionsResponse);
   const deleteItemConsumerMutationHandler = jest
     .fn()
     .mockResolvedValue(mockAiCatalogItemConsumerDeleteResponse);
@@ -50,6 +52,7 @@ describe('AiAgents', () => {
   const createComponent = ({ $route = { query: {} } } = {}) => {
     mockApollo = createMockApollo([
       [aiCatalogConfiguredItemsQuery, mockConfiguredAgentsQueryHandler],
+      [aiCatalogProjectUserPermissionsQuery, mockUserPermissionsQueryHandler],
       [aiCatalogAgentQuery, mockAgentQueryHandler],
       [deleteAiCatalogItemConsumer, deleteItemConsumerMutationHandler],
     ]);

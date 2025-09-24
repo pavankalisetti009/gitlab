@@ -40,12 +40,8 @@ module AuditEvents
       end
 
       if audit_event.entity_type == 'Project'
-        return false unless ::Feature.enabled?(:enable_project_compliance_violations, audit_event.project)
-
         audit_event.project.licensed_feature_available?(:project_level_compliance_violations_report)
       elsif audit_event.entity_type == 'Group'
-        return false unless ::Feature.enabled?(:enable_project_compliance_violations, audit_event.group)
-
         audit_event.group.licensed_feature_available?(:group_level_compliance_violations_report)
       end
     end

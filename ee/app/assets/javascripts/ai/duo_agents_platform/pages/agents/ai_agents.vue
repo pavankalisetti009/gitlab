@@ -11,6 +11,7 @@ import ResourceListsEmptyState from '~/vue_shared/components/resource_lists/empt
 import AiCatalogList from 'ee/ai/catalog/components/ai_catalog_list.vue';
 import AiCatalogItemDrawer from 'ee/ai/catalog/components/ai_catalog_item_drawer.vue';
 import aiCatalogConfiguredItemsQuery from 'ee/ai/catalog/graphql/queries/ai_catalog_configured_items.query.graphql';
+import aiCatalogProjectUserPermissionsQuery from 'ee/ai/catalog/graphql/queries/ai_catalog_project_user_permissions.query.graphql';
 import aiCatalogAgentQuery from 'ee/ai/catalog/graphql/queries/ai_catalog_agent.query.graphql';
 import deleteAiCatalogItemConsumer from 'ee/ai/catalog/graphql/mutations/delete_ai_catalog_item_consumer.mutation.graphql';
 import { AI_CATALOG_TYPE_AGENT, PAGE_SIZE } from 'ee/ai/catalog/constants';
@@ -36,6 +37,9 @@ export default {
     projectId: {
       default: null,
     },
+    projectPath: {
+      default: null,
+    },
     exploreAiCatalogPath: {
       default: '',
     },
@@ -58,6 +62,16 @@ export default {
       result({ data }) {
         this.pageInfo = data.aiCatalogConfiguredItems.pageInfo;
       },
+    },
+    userPermissions: {
+      query: aiCatalogProjectUserPermissionsQuery,
+      variables() {
+        return {
+          fullPath: this.projectPath,
+        };
+      },
+      fetchPolicy: fetchPolicies.CACHE_AND_NETWORK,
+      update: (data) => data.project?.userPermissions || {},
     },
     aiCatalogAgent: {
       query: aiCatalogAgentQuery,
@@ -84,6 +98,7 @@ export default {
     return {
       aiAgents: [],
       aiCatalogAgent: {},
+      userPermissions: {},
       errors: [],
       pageInfo: {},
     };
@@ -114,6 +129,7 @@ export default {
       return {
         actionItems: () => [],
         deleteActionItem: {
+          showActionItem: () => this.userPermissions?.adminAiCatalogItemConsumer || false,
           text: __('Remove'),
         },
       };

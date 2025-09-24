@@ -43,9 +43,6 @@ export default {
     },
   },
   computed: {
-    canAdmin() {
-      return this.item.userPermissions?.adminAiCatalogItem;
-    },
     actionItems() {
       return this.itemTypeConfig.actionItems(this.item);
     },
@@ -53,7 +50,7 @@ export default {
       return this.actionItems.length > 0;
     },
     showActions() {
-      return this.canAdmin || this.hasActionItems;
+      return this.showDeleteAction || this.hasActionItems;
     },
     formattedItemId() {
       return getIdFromGraphQLId(this.item.id);
@@ -81,8 +78,11 @@ export default {
         updatedAt,
       };
     },
+    showDeleteAction() {
+      return this.itemTypeConfig.deleteActionItem.showActionItem(this.item);
+    },
     deleteActionText() {
-      return this.itemTypeConfig.deleteActionItem?.text || __('Delete');
+      return this.itemTypeConfig.deleteActionItem.text || __('Delete');
     },
     timestampType() {
       return this.formattedItem.updatedAt > this.formattedItem.createdAt
@@ -161,7 +161,7 @@ export default {
             </template>
           </gl-disclosure-dropdown-item>
         </gl-disclosure-dropdown-group>
-        <gl-disclosure-dropdown-group v-if="canAdmin" :bordered="hasActionItems">
+        <gl-disclosure-dropdown-group v-if="showDeleteAction" :bordered="hasActionItems">
           <gl-disclosure-dropdown-item variant="danger" @action="$emit('delete')">
             <template #list-item>
               <span>
