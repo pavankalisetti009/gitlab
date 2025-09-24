@@ -5,16 +5,19 @@ require 'spec_helper'
 RSpec.describe Vulnerabilities::Flag, feature_category: :vulnerability_management do
   describe 'associations' do
     it { is_expected.to belong_to(:finding).class_name('Vulnerabilities::Finding').with_foreign_key('vulnerability_occurrence_id').required }
+    it { is_expected.to belong_to(:workflow).class_name('::Ai::DuoWorkflows::Workflow').optional }
   end
 
   describe 'validations' do
     subject { build(:vulnerabilities_flag) }
 
     it { is_expected.to validate_length_of(:origin).is_at_most(255) }
-    it { is_expected.to validate_length_of(:description).is_at_most(1024) }
+    it { is_expected.to validate_length_of(:description).is_at_most(10000) }
     it { is_expected.to validate_presence_of(:flag_type) }
     it { is_expected.to validate_uniqueness_of(:flag_type).scoped_to(:vulnerability_occurrence_id, :origin).ignoring_case_sensitivity }
+    it { is_expected.to validate_inclusion_of(:confidence_score).in_range(0.0..1.0) }
     it { is_expected.to define_enum_for(:flag_type).with_values(false_positive: 0) }
+    it { is_expected.to define_enum_for(:status).with_values(described_class::FALSE_POSITIVE_DETECTION_STATUSES) }
   end
 
   describe '#initialize' do
