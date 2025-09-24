@@ -536,7 +536,9 @@ export default {
       this.workflowId = parseGid(thread.id).id;
 
       await this.hydrateActiveThread();
-      this.$router.push(`/chat`);
+      if (this.$route?.path !== '/chat') {
+        this.$router.push(`/chat`);
+      }
     },
     async hydrateActiveThread() {
       if (this.workflowId && !this.messages?.length) {

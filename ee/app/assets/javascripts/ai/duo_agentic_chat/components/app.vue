@@ -101,7 +101,9 @@ export default {
     this.setDimensions();
     window.addEventListener('resize', this.onWindowResize);
 
-    this.$router.push('/current');
+    if (this.$route?.path !== '/current') {
+      this.$router.push('/current');
+    }
   },
   beforeDestroy() {
     // Remove the event listener when the component is destroyed
@@ -127,7 +129,10 @@ export default {
       this.updateDimensions();
     },
     onClick(route) {
-      this.$router.push(`/${route}`);
+      const targetPath = `/${route}`;
+      if (this.$route?.path !== targetPath) {
+        this.$router.push(targetPath);
+      }
       this.$root.$emit('bv::hide::tooltip');
     },
   },
