@@ -1,6 +1,10 @@
 // eslint-disable-next-line import/no-extraneous-dependencies
 import MockAdapter from 'axios-mock-adapter';
-import { mockData, mockEmptyData } from 'ee_jest/usage_quotas/usage_billing/users/show/mock_data';
+import {
+  mockDataWithPool,
+  mockDataWithoutPool,
+  mockEmptyData,
+} from 'ee_jest/usage_quotas/usage_billing/users/show/mock_data';
 import axios from '~/lib/utils/axios_utils';
 import UsageBillingUserDashboardApp from './app.vue';
 
@@ -28,14 +32,14 @@ const createTemplate = (config = {}) => {
     },
     provide: {
       userId: '42',
-      fetchUserUsageDataApiUrl: '/gitlab_duo/users/:id',
+      fetchUserUsageDataApiUrl: '/gitlab_duo/users/42/data',
     },
     props: Object.keys(argTypes),
     template: `<usage-billing-user-dashboard-app />`,
     mounted() {
       mockAdapter = new MockAdapter(axios);
-      mockHandler ??= () => Promise.resolve([200, mockData]);
-      mockAdapter.onGet('/admin/gitlab_duo/usage/users/42/data').replyOnce(mockHandler);
+      mockHandler ??= () => Promise.resolve([200, mockDataWithPool]);
+      mockAdapter.onGet('/gitlab_duo/users/42/data').replyOnce(mockHandler);
     },
     destroyed() {
       mockAdapter.restore();
@@ -45,6 +49,16 @@ const createTemplate = (config = {}) => {
 
 export const Default = {
   render: createTemplate(),
+};
+
+export const NoCommitment = {
+  render: (...args) => {
+    const mockHandler = () => Promise.resolve([200, mockDataWithoutPool]);
+
+    return createTemplate({
+      mockHandler,
+    })(...args);
+  },
 };
 
 export const EmptyState = {

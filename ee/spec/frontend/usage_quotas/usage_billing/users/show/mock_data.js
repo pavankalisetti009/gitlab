@@ -1,10 +1,12 @@
-export const mockData = {
+export const mockDataWithPool = {
   subscription: {
     gitlabUnitsUsage: {
       lastUpdated: '2025-02-02T18:45:32Z',
 
       startDate: '2025-08-01',
       endDate: '2025-08-31',
+
+      totalUnits: 1000,
 
       userUsage: {
         user: {
@@ -118,6 +120,21 @@ export const mockData = {
             unitsUsed: 15,
           },
         ],
+      },
+    },
+  },
+};
+
+export const mockDataWithoutPool = {
+  subscription: {
+    gitlabUnitsUsage: {
+      ...mockDataWithPool.subscription.gitlabUnitsUsage,
+
+      totalUnits: 0,
+
+      userUsage: {
+        ...mockDataWithPool.subscription.gitlabUnitsUsage.userUsage,
+        poolUsed: 0,
       },
     },
   },

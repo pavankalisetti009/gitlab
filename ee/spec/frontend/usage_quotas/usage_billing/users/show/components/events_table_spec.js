@@ -1,4 +1,4 @@
-import { GlTable, GlLink } from '@gitlab/ui';
+import { GlTableLite, GlLink } from '@gitlab/ui';
 import { mountExtended } from 'helpers/vue_test_utils_helper';
 import EventsTable from 'ee/usage_quotas/usage_billing/users/show/components/events_table.vue';
 import UserDate from '~/vue_shared/components/user_date.vue';
@@ -43,7 +43,7 @@ describe('EventsTable', () => {
     });
   };
 
-  const findTable = () => wrapper.findComponent(GlTable);
+  const findTable = () => wrapper.findComponent(GlTableLite);
   const findTableRows = () => findTable().find('tbody').findAll('tr');
   const findFirstRowCells = () => findTableRows().at(0).findAll('td');
 
