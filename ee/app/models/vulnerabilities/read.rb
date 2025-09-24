@@ -34,6 +34,7 @@ module Vulnerabilities
     belongs_to :vulnerability, inverse_of: :vulnerability_read
     belongs_to :project
     belongs_to :scanner, class_name: 'Vulnerabilities::Scanner'
+    belongs_to :vulnerability_occurrence, optional: true, class_name: 'Vulnerabilities::Finding'
 
     validates :vulnerability_id, uniqueness: true, presence: true
     validates :project_id, presence: true
