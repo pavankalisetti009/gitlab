@@ -44,6 +44,10 @@ module Security
       end
       strong_memoize_attr :custom_role_ids
 
+      def users_and_groups_empty?
+        user_ids.empty? && group_ids.empty? && default_roles.empty? && custom_role_ids.empty?
+      end
+
       private
 
       attr_reader :bypass_settings
