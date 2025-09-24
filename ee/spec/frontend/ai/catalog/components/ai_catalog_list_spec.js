@@ -118,6 +118,18 @@ describe('AiCatalogList', () => {
         });
       });
 
+      it('renders default empty state with search prop', () => {
+        createComponent({
+          props: { items: [], search: '' },
+        });
+
+        expect(findEmptyState().props()).toMatchObject({
+          title: 'Get started with the AI Catalog',
+          description: 'Build AI agents and flows to automate repetitive tasks and processes.',
+          search: '',
+        });
+      });
+
       it('renders custom empty state', () => {
         createComponent({
           props: { items: [] },
