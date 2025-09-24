@@ -71,6 +71,13 @@ export default {
     getUserUsagePath(userId) {
       return this.userUsagePath.replace(':id', userId);
     },
+    getProgressBarValue(item) {
+      if (item.allocationTotal > 0) {
+        return Math.min(100, (item.allocationUsed / item.allocationTotal) * 100);
+      }
+
+      return 0;
+    },
   },
 };
 </script>
@@ -131,14 +138,7 @@ export default {
           <span class="gl-font-weight-semibold gl-text-gray-900">
             {{ formatAllocationUsed(item.allocationUsed, item.allocationTotal) }}
           </span>
-          <gl-progress-bar
-            :value="
-              item.allocationTotal > 0
-                ? Math.min(100, (item.allocationUsed / item.allocationTotal) * 100)
-                : 0
-            "
-            class="gl-mt-1"
-          />
+          <gl-progress-bar :value="getProgressBarValue(item)" class="gl-mt-1" />
         </div>
       </template>
 
