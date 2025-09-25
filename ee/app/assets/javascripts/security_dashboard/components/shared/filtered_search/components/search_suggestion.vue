@@ -53,7 +53,7 @@ export default {
       <template v-else>{{ text }}</template>
       <gl-icon
         v-if="tooltipText"
-        v-gl-tooltip
+        v-gl-tooltip="{ boundary: 'viewport' }"
         data-testid="tooltip-icon"
         name="question-o"
         variant="subtle"

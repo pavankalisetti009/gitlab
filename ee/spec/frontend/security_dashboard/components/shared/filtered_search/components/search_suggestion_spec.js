@@ -70,5 +70,13 @@ describe('Search Suggestion', () => {
       createWrapper();
       expect(findTooltipIcon().exists()).toBe(false);
     });
+
+    it('configures tooltip with viewport boundary', () => {
+      const tooltipText = 'Help text';
+      createWrapper({ tooltipText });
+
+      const tooltip = getBinding(findTooltipIcon().element, 'gl-tooltip');
+      expect(tooltip.value).toEqual({ boundary: 'viewport' });
+    });
   });
 });
