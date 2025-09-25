@@ -37,7 +37,7 @@ describe('MavenEditUpstreamApp', () => {
       username: null,
       cacheValidityHours: 24,
     },
-    registriesPath: '/groups/package-group/-/virtual_registries',
+    upstreamsPath: '/groups/package-group/-/virtual_registries/maven?tab=upstreams',
     upstreamPath: '/groups/package-group/-/virtual_registries/maven/upstreams/3',
     glAbilities: {
       destroyVirtualRegistry: true,
@@ -206,7 +206,7 @@ describe('MavenEditUpstreamApp', () => {
       findModal().vm.$emit('success');
 
       expect(visitUrlWithAlerts).toHaveBeenCalledWith(
-        '/groups/package-group/-/virtual_registries',
+        '/groups/package-group/-/virtual_registries/maven?tab=upstreams',
         [{ message: 'Maven upstream has been deleted.' }],
       );
     });

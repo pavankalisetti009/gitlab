@@ -1,7 +1,11 @@
 import { initSimpleApp } from '~/helpers/init_simple_app_helper';
-import MavenRegistriesListApp from 'ee/packages_and_registries/virtual_registries/maven/registries_list_app.vue';
+import MavenVirtualRegistriesAndUpstreamsApp from 'ee_else_ce/packages_and_registries/virtual_registries/pages/maven/registries_and_upstreams/index.vue';
 
-initSimpleApp('#js-vue-maven-virtual-registries-and-upstreams', MavenRegistriesListApp, {
-  withApolloProvider: true,
-  name: 'MavenVirtualRegistryList',
-});
+initSimpleApp(
+  '#js-vue-maven-virtual-registries-and-upstreams',
+  MavenVirtualRegistriesAndUpstreamsApp,
+  {
+    withApolloProvider: true,
+    name: 'MavenVirtualRegistriesAndUpstreamsRoot',
+  },
+);

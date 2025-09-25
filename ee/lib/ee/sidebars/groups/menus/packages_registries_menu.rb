@@ -25,8 +25,10 @@ module EE
               title: _('Virtual registry'),
               link: group_virtual_registries_path(context.group),
               super_sidebar_parent: ::Sidebars::Groups::SuperSidebarMenus::DeployMenu,
-              active_routes: { controller: %w[groups/virtual_registries groups/virtual_registries/maven/upstreams
-                groups/virtual_registries/maven/registries] },
+              active_routes: { controller: %w[groups/virtual_registries
+                groups/virtual_registries/maven/registries_and_upstreams
+                groups/virtual_registries/maven/registries
+                groups/virtual_registries/maven/upstreams] },
               item_id: :virtual_registry
             )
           end
