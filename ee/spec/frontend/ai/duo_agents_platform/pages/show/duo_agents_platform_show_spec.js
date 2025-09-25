@@ -43,9 +43,6 @@ describe('DuoAgentsPlatformShow', () => {
       mocks: {
         $route: mockRoute,
       },
-      provide: {
-        isFlyout: false,
-      },
     });
 
     return waitForPromises();

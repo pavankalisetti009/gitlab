@@ -50,7 +50,7 @@ module Sidebars
           ::Sidebars::MenuItem.new(
             title: s_('DuoAgentsPlatform|Agent sessions'),
             link: project_automate_agent_sessions_path(context.project),
-            active_routes: { controller: :duo_agents_platform },
+            active_routes: nil,
             item_id: :agents_runs
           )
         end
@@ -59,7 +59,7 @@ module Sidebars
           ::Sidebars::MenuItem.new(
             title: s_('DuoAgentsPlatform|Flow triggers'),
             link: project_automate_flow_triggers_path(context.project),
-            active_routes: { controller: :duo_agents_platform },
+            active_routes: nil,
             item_id: :ai_flow_triggers
           )
         end
@@ -68,7 +68,7 @@ module Sidebars
           ::Sidebars::MenuItem.new(
             title: s_('AICatalog|Agents'),
             link: project_automate_agents_path(context.project),
-            active_routes: { controller: :duo_agents_platform },
+            active_routes: nil,
             item_id: :ai_catalog_agents
           )
         end
@@ -77,7 +77,7 @@ module Sidebars
           ::Sidebars::MenuItem.new(
             title: s_('AICatalog|Flows'),
             link: project_automate_flows_path(context.project),
-            active_routes: { controller: :duo_agents_platform },
+            active_routes: nil,
             item_id: :ai_flows
           )
         end

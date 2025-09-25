@@ -1,14 +1,12 @@
 <script>
 import { GlBreadcrumb } from '@gitlab/ui';
-import { s__ } from '~/locale';
-import { AGENTS_PLATFORM_INDEX_ROUTE } from './constants';
 
 export default {
   components: {
     GlBreadcrumb,
   },
   props: {
-    staticBreadcrumbs: {
+    allStaticBreadcrumbs: {
       required: true,
       type: Array,
     },
@@ -30,16 +28,7 @@ export default {
         })
         .filter((r) => r.text);
 
-      return [...this.staticCrumbs, ...matchedRoutes];
-    },
-    staticCrumbs() {
-      return [
-        ...this.staticBreadcrumbs,
-        {
-          text: s__('DuoAgentsPlatform|Automate'),
-          to: { name: AGENTS_PLATFORM_INDEX_ROUTE },
-        },
-      ];
+      return [...this.allStaticBreadcrumbs, ...matchedRoutes];
     },
   },
 };

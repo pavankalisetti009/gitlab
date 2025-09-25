@@ -11,7 +11,7 @@ import AgentFlowDetails from './components/agent_flow_details.vue';
 export default {
   name: 'DuoAgentsPlatformShow',
   components: { AgentFlowDetails },
-  inject: ['isFlyout'],
+  inject: { isFlyout: { default: false } },
   data() {
     return {
       agentFlow: null,
