@@ -1,10 +1,12 @@
 <script>
 import { GlCollapsibleListbox } from '@gitlab/ui';
+import { debounce } from 'lodash';
 import { n__, s__ } from '~/locale';
 import organizationsQuery from '~/organizations/shared/graphql/queries/organizations.query.graphql';
 import { SELECTIVE_SYNC_ORGANIZATIONS } from 'ee/geo_site_form/constants';
 import { getIdFromGraphQLId } from '~/graphql_shared/utils';
 import { createAlert } from '~/alert';
+import { DEFAULT_DEBOUNCE_AND_THROTTLE_MS } from '~/lib/utils/constants';
 
 export default {
   name: 'GeoSiteFormOrganizations',
@@ -21,6 +23,9 @@ export default {
   apollo: {
     organizations: {
       query: organizationsQuery,
+      variables() {
+        return { search: this.searchTerm };
+      },
       update(data) {
         if (!data?.organizations?.nodes) return [];
 
@@ -45,13 +50,15 @@ export default {
   },
   data() {
     return {
+      searchTerm: '',
       organizations: [],
       pageInfo: {},
+      isLoadingMore: false,
     };
   },
   computed: {
-    isLoading() {
-      return this.$apollo.queries.organizations.loading;
+    isSearching() {
+      return this.$apollo.queries.organizations.loading && !this.isLoadingMore;
     },
     dropdownTitle() {
       const selectedCount = this.selectedOrganizationIds.length;
@@ -61,28 +68,44 @@ export default {
     },
   },
   methods: {
+    handleSearch: debounce(function debouncedSearch(searchTerm) {
+      this.searchTerm = searchTerm;
+      this.$apollo.queries.organizations.refetch();
+    }, DEFAULT_DEBOUNCE_AND_THROTTLE_MS),
     handleSelect(items) {
       this.$emit('updateSyncOptions', { key: SELECTIVE_SYNC_ORGANIZATIONS, value: items });
     },
-    loadMoreOrganizations() {
-      if (!this.pageInfo?.hasNextPage) return;
+    handleReset() {
+      this.$emit('updateSyncOptions', { key: SELECTIVE_SYNC_ORGANIZATIONS, value: [] });
+    },
+    async loadMoreOrganizations() {
+      if (!this.pageInfo.hasNextPage) return;
 
-      this.$apollo.queries.organizations.fetchMore({
-        variables: { after: this.pageInfo.endCursor },
-        updateQuery: (previousResult, { fetchMoreResult }) => {
-          if (!fetchMoreResult?.organizations?.nodes?.length) return previousResult;
+      this.isLoadingMore = true;
 
-          return {
-            organizations: {
-              ...fetchMoreResult.organizations,
-              nodes: [
-                ...previousResult.organizations.nodes,
-                ...fetchMoreResult.organizations.nodes,
-              ],
-            },
-          };
-        },
-      });
+      try {
+        await this.$apollo.queries.organizations.fetchMore({
+          variables: {
+            ...this.$apollo.queries.organizations.variables,
+            after: this.pageInfo.endCursor,
+          },
+          updateQuery: (previousResult, { fetchMoreResult }) => {
+            if (!fetchMoreResult?.organizations?.nodes?.length) return previousResult;
+
+            return {
+              organizations: {
+                ...fetchMoreResult.organizations,
+                nodes: [
+                  ...previousResult.organizations.nodes,
+                  ...fetchMoreResult.organizations.nodes,
+                ],
+              },
+            };
+          },
+        });
+      } finally {
+        this.isLoadingMore = false;
+      }
     },
   },
 };
@@ -90,14 +113,20 @@ export default {
 
 <template>
   <gl-collapsible-listbox
+    :header-text="__('Select organizations')"
+    :reset-button-label="__('Clear all')"
     :items="organizations"
     :selected="selectedOrganizationIds"
     :toggle-text="dropdownTitle"
-    :searching="isLoading"
+    :searching="isSearching"
+    :infinite-scroll-loading="isLoadingMore"
     :no-results-text="s__('Geo|Nothing found…')"
+    searchable
     multiple
     infinite-scroll
+    @search="handleSearch"
     @select="handleSelect"
+    @reset="handleReset"
     @bottom-reached="loadMoreOrganizations"
   />
 </template>
