@@ -424,6 +424,12 @@ module EE
           description: 'Allowed work item statuses from the root groups the current user belongs to.',
           experiment: { milestone: '18.4' },
           resolver: ::Resolvers::WorkItems::AllowedStatusesResolver
+
+        field :security_policies_sync_status, ::Types::GitlabSubscriptions::Security::PoliciesSyncUpdated,
+          null: true,
+          resolver: ::Resolvers::SecurityOrchestration::PoliciesSyncStatusResolver,
+          description: 'Get the current security policy synchronization status.',
+          experiment: { milestone: '18.4' }
       end
 
       def vulnerability(id:)

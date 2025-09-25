@@ -3,6 +3,8 @@
 require 'spec_helper'
 
 RSpec.describe Security::SecurityOrchestrationPolicies::PolicySyncState::State, :clean_gitlab_redis_shared_state, feature_category: :security_policy_management do
+  let(:redis) { Gitlab::Redis::SharedState.pool.checkout }
+
   let(:merge_request_id) { 1 }
   let(:project_id) { 1 }
   let(:other_project_id) { 2 }
@@ -31,6 +33,32 @@ RSpec.describe Security::SecurityOrchestrationPolicies::PolicySyncState::State, 
       let(:context_value) { nil }
 
       it { is_expected.to be_nil }
+    end
+  end
+
+  describe '#start_sync' do
+    it 'marks pending' do
+      expect { state.start_sync }.to change { state.sync_in_progress?(redis) }.from(false).to(true)
+    end
+
+    context 'with feature disabled' do
+      before do
+        stub_feature_flags(security_policy_sync_propagation_tracking: false)
+      end
+
+      it 'does not mark pending' do
+        expect { state.start_sync }.not_to change { state.sync_in_progress?(redis) }.from(false)
+      end
+    end
+  end
+
+  describe '#finish_sync' do
+    before do
+      state.start_sync
+    end
+
+    it 'removes pending' do
+      expect { state.finish_sync }.to change { state.sync_in_progress?(redis) }.from(true).to(false)
     end
   end
 
@@ -352,7 +380,7 @@ RSpec.describe Security::SecurityOrchestrationPolicies::PolicySyncState::State, 
   end
 
   describe '#sync_in_progress?' do
-    subject(:sync_in_progress?) { state.sync_in_progress? }
+    subject(:sync_in_progress?) { state.sync_in_progress?(redis) }
 
     it { is_expected.to be(false) }
 
@@ -459,17 +487,19 @@ RSpec.describe Security::SecurityOrchestrationPolicies::PolicySyncState::State, 
         10,  # projects total
         [],  # no failed projects yet
         0,   # merge request progress: (10 total - 10 pending) / 10 * 100 = 0%
-        10   # merge requests total
+        10,  # merge requests total,
+        true # in progress
       ).ordered
       state.finish_project(1)
 
       expect(GraphqlTriggers).to receive(:security_policies_sync_updated).with(
         policy_configuration,
-        10, # project progress: still 10%
-        10, # projects total
-        [], # no failed projects yet
-        10, # merge request progress: (10 total - 9 pending) / 10 * 100 = 10%
-        10  # merge requests total
+        10,  # project progress: still 10%
+        10,  # projects total
+        [],  # no failed projects yet
+        10,  # merge request progress: (10 total - 9 pending) / 10 * 100 = 10%
+        10,  # merge requests total,
+        true # in progress
       ).ordered
       state.finish_merge_request_worker(1)
 
@@ -479,7 +509,8 @@ RSpec.describe Security::SecurityOrchestrationPolicies::PolicySyncState::State, 
         10,    # projects total
         ["2"], # failed project 2
         10,    # merge request progress: still 10%
-        10     # merge requests total
+        10,    # merge requests total,
+        true   # in progress
       ).ordered
       state.fail_project(2)
     end
@@ -492,11 +523,12 @@ RSpec.describe Security::SecurityOrchestrationPolicies::PolicySyncState::State, 
 
       expect(GraphqlTriggers).to have_received(:security_policies_sync_updated).with(
         policy_configuration,
-        50, # project progress: (10 - 5) / 10 * 100 = 50%
-        10, # projects total
-        [], # no failed projects
-        0,  # merge request progress: still 0%
-        10  # merge requests total
+        50,  # project progress: (10 - 5) / 10 * 100 = 50%
+        10,  # projects total
+        [],  # no failed projects
+        0,   # merge request progress: still 0%
+        10,  # merge requests total,
+        true # in progress
       )
     end
 
