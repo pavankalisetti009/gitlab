@@ -53,6 +53,8 @@ RSpec.describe SecretsManagement::ProjectSecrets::CreateService, :gitlab_secrets
         expect(rotation_info).not_to be_nil
         expect(rotation_info.rotation_interval_days).to eq(rotation_interval_days)
         expect(rotation_info.secret_metadata_version).to eq(1)
+        expect(rotation_info.next_reminder_at).to be_present
+        expect(rotation_info.last_reminder_at).to be_nil
 
         expect(secret.rotation_info).to eq(rotation_info)
 

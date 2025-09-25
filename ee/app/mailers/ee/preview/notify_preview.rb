@@ -87,6 +87,10 @@ module EE
         def no_more_seats
           ::Notify.no_more_seats(user.id, member.user_id, project, ['Patrick Jane', 'Thomas McAllister']).message
         end
+
+        def secret_rotation_reminder_email
+          ::Notify.secret_rotation_reminder_email(user.id, project.id, 'DUMMY_PASSWORD').message
+        end
       end
 
       private

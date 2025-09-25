@@ -3,6 +3,8 @@
 require 'spec_helper'
 
 RSpec.describe SecretsManagement::SecretRotationInfo, feature_category: :secrets_management do
+  let_it_be(:project) { create(:project) }
+
   describe 'associations' do
     it { is_expected.to belong_to(:project) }
   end
@@ -13,12 +15,84 @@ RSpec.describe SecretsManagement::SecretRotationInfo, feature_category: :secrets
     it { is_expected.to validate_presence_of(:secret_name) }
     it { is_expected.to validate_presence_of(:rotation_interval_days) }
     it { is_expected.to validate_presence_of(:secret_metadata_version) }
+    it { is_expected.to validate_presence_of(:next_reminder_at) }
+    it { is_expected.to validate_length_of(:secret_name).is_at_most(255) }
     it { is_expected.to validate_numericality_of(:rotation_interval_days).is_greater_than_or_equal_to(7) }
   end
 
-  describe '#upsert', :freeze_time do
-    let_it_be(:project) { create(:project) }
+  describe 'scopes' do
+    describe '.pending_reminders', :freeze_time do
+      let!(:pending_reminder) do
+        create(:secret_rotation_info,
+          project: project,
+          next_reminder_at: 1.hour.ago
+        )
+      end
 
+      let!(:older_reminder) do
+        create(:secret_rotation_info,
+          project: project,
+          next_reminder_at: 2.hours.ago
+        )
+      end
+
+      let!(:future_reminder) do
+        create(:secret_rotation_info,
+          project: project,
+          next_reminder_at: 1.day.from_now
+        )
+      end
+
+      let!(:due_now_reminder) do
+        create(:secret_rotation_info,
+          project: project,
+          next_reminder_at: Time.current
+        )
+      end
+
+      it 'returns records with next_reminder_at in the past or present' do
+        result = described_class.pending_reminders
+
+        # Ordered by next_reminder_at ascending
+        expect(result).to eq([older_reminder, pending_reminder, due_now_reminder])
+      end
+    end
+  end
+
+  describe '.for_project_secret' do
+    let_it_be(:other_project) { create(:project) }
+
+    let!(:rotation_info) do
+      create(:secret_rotation_info,
+        project: project,
+        secret_name: 'TEST_SECRET',
+        secret_metadata_version: 1
+      )
+    end
+
+    let!(:other_rotation_info) do
+      create(:secret_rotation_info,
+        project: other_project,
+        secret_name: 'TEST_SECRET',
+        secret_metadata_version: 1
+      )
+    end
+
+    it 'returns the correct rotation info for the project and secret' do
+      result = described_class.for_project_secret(project, 'TEST_SECRET', 1)
+
+      expect(result).to eq(rotation_info)
+      expect(result).not_to eq(other_rotation_info)
+    end
+
+    it 'returns nil when no matching record exists' do
+      result = described_class.for_project_secret(project, 'NONEXISTENT', 1)
+
+      expect(result).to be_nil
+    end
+  end
+
+  describe '#upsert', :aggregate_failures do
     let(:secret_name) { 'TEST_SECRET' }
     let(:rotation_interval_days) { 30 }
     let(:secret_metadata_version) { 1 }
@@ -36,19 +110,24 @@ RSpec.describe SecretsManagement::SecretRotationInfo, feature_category: :secrets
 
     context 'when the record is valid' do
       context 'and no existing record exists' do
-        it 'creates a new record' do
-          expect { result }.to change { described_class.count }.by(1)
-          expect(result).to be_truthy
+        it 'creates a new record and sets the correct attributes' do
+          # Freeze time at Sept 3rd 10pm
+          travel_to(Time.zone.parse('2025-09-03 22:00:00 UTC')) do
+            expect { result }.to change { described_class.count }.by(1)
+            expect(result).to be_truthy
+            expect(rotation_info.id).to be_present
 
-          saved_record = described_class.find_by(
-            project: project,
-            secret_name: secret_name,
-            secret_metadata_version: secret_metadata_version
-          )
+            saved_record = described_class.find(rotation_info.id)
+            expect(saved_record.project).to eq(project)
+            expect(saved_record.secret_name).to eq(secret_name)
+            expect(saved_record.secret_metadata_version).to eq(secret_metadata_version)
+            expect(saved_record.rotation_interval_days).to eq(rotation_interval_days)
+            expect(saved_record.last_reminder_at).to be_nil
 
-          expect(rotation_info.id).to eq(saved_record.id)
-          expect(saved_record).to be_present
-          expect(saved_record.rotation_interval_days).to eq(rotation_interval_days)
+            # Should be Sept 11th 00:00 UTC (Sept 4th 00:00 + 7 days for default 30 day interval)
+            expected_time = Time.zone.parse('2025-10-04 00:00:00 UTC')
+            expect(saved_record.next_reminder_at).to eq(expected_time)
+          end
         end
       end
 
@@ -63,26 +142,111 @@ RSpec.describe SecretsManagement::SecretRotationInfo, feature_category: :secrets
         end
 
         it 'updates the existing record' do
-          expect { result }.not_to change { described_class.count }
-          expect(result).to be_truthy
+          # Freeze time at Sept 3rd 10pm
+          travel_to(Time.parse('2025-09-03 22:00:00 UTC')) do
+            expect { result }.not_to change { described_class.count }
+            expect(result).to be_truthy
+            expect(rotation_info.id).to be_present
 
-          existing_record.reload
-          expect(rotation_info.id).to eq(existing_record.id)
-          expect(existing_record.rotation_interval_days).to eq(rotation_interval_days)
+            saved_record = described_class.find(rotation_info.id)
+            expect(saved_record).to eq(existing_record)
+
+            expect(saved_record.project).to eq(project)
+            expect(saved_record.secret_name).to eq(secret_name)
+            expect(saved_record.secret_metadata_version).to eq(secret_metadata_version)
+            expect(saved_record.rotation_interval_days).to eq(rotation_interval_days)
+            expect(saved_record.last_reminder_at).to be_nil
+
+            # Should be Sept 11th 00:00 UTC (Sept 4th 00:00 + 7 days for default 30 day interval)
+            expected_time = Time.parse('2025-10-04 00:00:00 UTC')
+            expect(saved_record.next_reminder_at).to eq(expected_time)
+          end
         end
       end
     end
 
     context 'when the record is invalid' do
-      context 'with invalid rotation_interval_days' do
-        let(:rotation_interval_days) { 3 } # Less than minimum
+      let(:rotation_interval_days) { 3 } # Less than minimum
 
-        it 'returns false and sets errors' do
-          expect { result }.not_to change { described_class.count }
-          expect(result).to be_falsey
-          expect(rotation_info.errors[:rotation_interval_days]).to include('must be greater than or equal to 7')
-        end
+      it 'returns false and does not create a record' do
+        expect { result }.not_to change { described_class.count }
+        expect(result).to be_falsey
+
+        expect(rotation_info.errors[:rotation_interval_days]).to include('must be greater than or equal to 7')
       end
+    end
+  end
+
+  describe '#notification_sent!', :aggregate_failures do
+    it 'updates last_reminder_at to current time and updates next_reminder_at' do
+      travel_to(Time.parse('2025-09-03 15:30:00 UTC')) do
+        rotation_info = create(:secret_rotation_info,
+          project: project,
+          rotation_interval_days: 7,
+          next_reminder_at: 1.hour.ago,
+          last_reminder_at: nil
+        )
+
+        expect { rotation_info.notification_sent! }.to change { rotation_info.reload.last_reminder_at }
+          .from(nil)
+          .to(Time.current)
+
+        # Should be Sept 11th 00:00 UTC (Sept 4th 00:00 + 7 days)
+        expected_time = Time.parse('2025-09-11 00:00:00 UTC')
+        expect(rotation_info.reload.next_reminder_at).to eq(expected_time)
+      end
+    end
+  end
+
+  describe '#status', :freeze_time do
+    subject { rotation_info.status }
+
+    context 'when secret is overdue (last_reminder_at is present)' do
+      let(:rotation_info) do
+        build(:secret_rotation_info,
+          project: project,
+          last_reminder_at: 1.day.ago,
+          next_reminder_at: 1.hour.from_now
+        )
+      end
+
+      it { is_expected.to eq('OVERDUE') }
+    end
+
+    context 'when secret is approaching rotation' do
+      let(:rotation_info) do
+        build(:secret_rotation_info,
+          project: project,
+          last_reminder_at: nil,
+          next_reminder_at: 3.days.from_now
+        )
+      end
+
+      it { is_expected.to eq('APPROACHING') }
+    end
+
+    context 'when secret rotation is OK' do
+      let(:rotation_info) do
+        build(:secret_rotation_info,
+          project: project,
+          last_reminder_at: nil,
+          next_reminder_at: 10.days.from_now
+        )
+      end
+
+      it { is_expected.to eq('OK') }
+    end
+
+    context 'when next_reminder_at is exactly at the threshold' do
+      let(:rotation_info) do
+        build(:secret_rotation_info,
+          project: project,
+          last_reminder_at: nil,
+          next_reminder_at: 7.days.from_now
+        )
+      end
+
+      it { is_expected.to eq('APPROACHING') }
     end
   end
 end

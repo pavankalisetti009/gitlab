@@ -13,6 +13,12 @@ module Types
       field :status, SecretRotationStatusEnum, null: false,
         description: 'Current rotation status.'
 
+      field :next_reminder_at, Types::TimeType, null: false,
+        description: 'When the next rotation reminder will be sent.'
+
+      field :last_reminder_at, Types::TimeType, null: true,
+        description: 'When the last rotation reminder was sent.'
+
       field :updated_at, Types::TimeType, null: false,
         description: 'When the rotation configuration was last updated.'
 
