@@ -40911,7 +40911,7 @@ CREATE INDEX index_packages_nuget_symbol_states_on_verification_state ON package
 
 CREATE INDEX index_packages_nuget_symbol_states_pending_verification ON packages_nuget_symbol_states USING btree (verified_at NULLS FIRST) WHERE (verification_state = 0);
 
-CREATE UNIQUE INDEX index_packages_nuget_symbols_on_object_storage_key ON packages_nuget_symbols USING btree (object_storage_key);
+CREATE UNIQUE INDEX index_packages_nuget_symbols_on_object_storage_key_project_id ON packages_nuget_symbols USING btree (object_storage_key, project_id);
 
 CREATE INDEX index_packages_nuget_symbols_on_package_id ON packages_nuget_symbols USING btree (package_id);
 
