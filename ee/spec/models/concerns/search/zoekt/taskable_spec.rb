@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe ::Search::Zoekt::Taskable, :zoekt, feature_category: :global_search do
+RSpec.describe ::Search::Zoekt::Taskable, feature_category: :global_search do
   let(:taskable_class) do
     Class.new(ApplicationRecord) do
       include ::Search::Zoekt::Taskable
