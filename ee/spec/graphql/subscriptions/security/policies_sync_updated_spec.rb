@@ -15,6 +15,7 @@ RSpec.describe Subscriptions::Security::PoliciesSyncUpdated, feature_category: :
   let(:failed_projects) { ["123"] }
   let(:merge_requests_progress) { 50 }
   let(:merge_requests_total) { 200 }
+  let(:in_progress) { true }
 
   let(:subscribe) { security_policies_sync_updated_subscription(policy_configuration, current_user) }
 
@@ -33,7 +34,8 @@ RSpec.describe Subscriptions::Security::PoliciesSyncUpdated, feature_category: :
         projects_total,
         failed_projects,
         merge_requests_progress,
-        merge_requests_total)
+        merge_requests_total,
+        in_progress)
     end
   end
 
@@ -48,7 +50,8 @@ RSpec.describe Subscriptions::Security::PoliciesSyncUpdated, feature_category: :
         "projectsTotal" => projects_total,
         "failedProjects" => failed_projects,
         "mergeRequestsProgress" => merge_requests_progress,
-        "mergeRequestsTotal" => merge_requests_total
+        "mergeRequestsTotal" => merge_requests_total,
+        "inProgress" => in_progress
       })
     end
   end

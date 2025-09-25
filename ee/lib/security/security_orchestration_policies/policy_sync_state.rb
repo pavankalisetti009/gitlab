@@ -5,6 +5,7 @@ module Security
     module PolicySyncState
       POLICY_SYNC_TTL = 24.hours.to_i
       POLICY_SYNC_CONTEXT_KEY = :policy_sync_config_id
+      PROGRESS_MARKER = ""
 
       class State
         include Gitlab::Utils::StrongMemoize
@@ -21,12 +22,51 @@ module Security
           @config_id = config_id
         end
 
+        def to_h
+          with_redis do |redis|
+            projects_pending = redis.scard(projects_sync_key)
+            projects_total = redis.get(total_projects_key).to_i
+
+            merge_requests_pending = redis.scard(merge_requests_sync_key)
+            merge_requests_total = redis.get(total_merge_requests_key).to_i
+
+            {
+              projects_progress: get_progress(projects_pending, projects_total),
+              projects_total: projects_total,
+              failed_projects: redis.smembers(failed_projects_sync_key),
+              merge_requests_progress: get_progress(merge_requests_pending, merge_requests_total),
+              merge_requests_total: merge_requests_total,
+              in_progress: sync_in_progress?(redis)
+            }
+          end
+        end
+
+        # Mark as in progress
+        def start_sync
+          return if feature_disabled?
+
+          with_redis do |redis|
+            redis.set(sync_in_progress_key, PROGRESS_MARKER, ex: POLICY_SYNC_TTL)
+          end
+        end
+
+        # Mark sync as completed
+        def finish_sync
+          return if feature_disabled?
+
+          with_redis do |redis|
+            redis.del(sync_in_progress_key)
+          end
+        end
+
         # Appends project IDs, adding to the pending set and incrementing the total counter
         def append_projects(project_ids)
           return if feature_disabled? || project_ids.empty?
 
           with_redis do |redis|
             redis.multi do |multi|
+              multi.set(sync_in_progress_key, PROGRESS_MARKER, ex: POLICY_SYNC_TTL)
+
               multi.sadd(projects_sync_key, project_ids)
               multi.incrby(total_projects_key, project_ids.size)
 
@@ -70,6 +110,8 @@ module Security
 
           with_redis do |redis|
             redis.multi do |multi|
+              multi.set(sync_in_progress_key, PROGRESS_MARKER, ex: POLICY_SYNC_TTL)
+
               multi.sadd(merge_requests_sync_key, merge_request_id)
               multi.incr(total_merge_requests_key)
               multi.set(merge_request_workers_sync_key(merge_request_id), 0)
@@ -77,6 +119,7 @@ module Security
               multi.expire(merge_requests_sync_key, POLICY_SYNC_TTL)
               multi.expire(total_merge_requests_key, POLICY_SYNC_TTL)
               multi.expire(merge_request_workers_sync_key(merge_request_id), POLICY_SYNC_TTL)
+              multi.expire(sync_in_progress_key, POLICY_SYNC_TTL)
             end
           end
         end
@@ -106,38 +149,27 @@ module Security
           end
         end
 
-        def sync_in_progress?
+        def sync_in_progress?(redis)
           return false if feature_disabled?
 
-          with_redis do |redis|
+          with_redis(redis) do |redis|
             conditions = redis.multi do |multi|
-              # rubocop:disable CodeReuse/ActiveRecord -- false positive
-              multi.exists?(total_projects_key)
-              multi.exists?(total_merge_requests_key)
-              # rubocop:enable CodeReuse/ActiveRecord
-
+              multi.exists?(sync_in_progress_key) # rubocop:disable CodeReuse/ActiveRecord -- false positive
               multi.scard(projects_sync_key)
               multi.scard(merge_requests_sync_key)
             end
 
-            # rubocop:disable Layout/LineLength -- TODO
-            conditions.then do |total_projects, total_merge_requests, project_pending_count, merge_request_pending_count|
-              total_projects && total_merge_requests && (project_pending_count > 0 || merge_request_pending_count > 0)
+            conditions.then do |sync_in_progress, project_pending_count, merge_request_pending_count|
+              sync_in_progress || project_pending_count > 0 || merge_request_pending_count > 0
             end
-            # rubocop:enable Layout/LineLength
           end
         end
 
         def clear
           return if feature_disabled?
 
-          with_redis do |redis|
-            redis.del(projects_sync_key)
-            redis.del(total_projects_key)
-            redis.del(failed_projects_sync_key)
-            redis.del(merge_requests_sync_key)
-            redis.del(total_merge_requests_key)
-          end
+          finish_sync
+          clear_pending_items
         end
 
         # Pending project IDs.
@@ -182,6 +214,11 @@ module Security
           "{security_policy_sync:#{config_id}}"
         end
 
+        # String: is sync currently in progress
+        def sync_in_progress_key
+          "#{redis_key_tag}:in_progress"
+        end
+
         # Set: project IDs pending synchronization
         def projects_sync_key
           "#{redis_key_tag}:projects"
@@ -212,25 +249,45 @@ module Security
           "#{redis_key_tag}:failed_projects"
         end
 
+        # Clear only pending items while keeping totals for historical data
+        def clear_pending_items
+          with_redis do |redis|
+            redis.multi do |multi|
+              multi.del(projects_sync_key)
+              multi.del(merge_requests_sync_key)
+            end
+          end
+        end
+
         def get_progress(pending, total)
-          return if total == 0
+          return 0.0 if total == 0
 
           ((total - pending).to_f / total * 100).round
         end
 
         def trigger_subscription
-          projects_pending, projects_total, all_failed_projects, merge_requests_pending, merge_requests_total =
+          projects_pending,
+          projects_total,
+          all_failed_projects,
+          merge_requests_pending,
+          merge_requests_total,
+          in_progress =
             with_redis do |redis|
               [
                 redis.scard(projects_sync_key),
                 redis.get(total_projects_key).to_i,
                 redis.smembers(failed_projects_sync_key),
                 redis.scard(merge_requests_sync_key),
-                redis.get(total_merge_requests_key).to_i
+                redis.get(total_merge_requests_key).to_i,
+                sync_in_progress?(redis)
               ]
             end
 
-          return unless sync_in_progress?
+          if projects_pending == 0 && merge_requests_pending == 0 && in_progress
+            finish_sync
+
+            in_progress = false
+          end
 
           GraphqlTriggers.security_policies_sync_updated(
             policy_configuration,
@@ -238,7 +295,8 @@ module Security
             projects_total,
             all_failed_projects,
             get_progress(merge_requests_pending, merge_requests_total),
-            merge_requests_total
+            merge_requests_total,
+            in_progress
           )
         end
 
@@ -264,8 +322,12 @@ module Security
           end
         end
 
-        def with_redis(&block)
-          Gitlab::Redis::SharedState.with(&block) # rubocop:disable CodeReuse/ActiveRecord -- false positive
+        def with_redis(conn = nil, &block)
+          if conn
+            yield(conn)
+          else
+            Gitlab::Redis::SharedState.with(&block) # rubocop:disable CodeReuse/ActiveRecord -- false positive
+          end
         end
       end
 
@@ -275,7 +337,8 @@ module Security
         end
 
         def append_projects_to_sync(config_id, project_ids)
-          State.new(config_id).append_projects(project_ids)
+          state = State.new(config_id)
+          state.append_projects(project_ids)
         end
 
         def finish_project_policy_sync(project_id)

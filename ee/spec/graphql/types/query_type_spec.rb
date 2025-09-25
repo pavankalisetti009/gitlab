@@ -65,6 +65,7 @@ RSpec.describe GitlabSchema.types['Query'], feature_category: :shared do
       :project_secrets_manager,
       :project_secrets,
       :secret_permissions,
+      :security_policies_sync_status,
       :project_secret,
       :ai_feature_settings,
       :ai_slash_commands,

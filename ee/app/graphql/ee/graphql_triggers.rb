@@ -75,13 +75,15 @@ module EE
         projects_total,
         failed_projects,
         merge_requests_progress,
-        merge_requests_total
+        merge_requests_total,
+        in_progress
       )
         ::GitlabSchema.subscriptions.trigger(
           :security_policies_sync_updated,
           { policy_configuration_id: policy_configuration.to_global_id },
           { projects_progress: projects_progress, projects_total: projects_total, failed_projects: failed_projects,
-            merge_requests_progress: merge_requests_progress, merge_requests_total: merge_requests_total }
+            merge_requests_progress: merge_requests_progress, merge_requests_total: merge_requests_total,
+            in_progress: in_progress }
         )
       end
     end

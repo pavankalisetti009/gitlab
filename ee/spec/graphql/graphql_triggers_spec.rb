@@ -197,7 +197,8 @@ RSpec.describe GraphqlTriggers, feature_category: :shared do
         projects_total,
         failed_projects,
         merge_requests,
-        merge_requests_total
+        merge_requests_total,
+        in_progress
       )
     end
 
@@ -207,6 +208,7 @@ RSpec.describe GraphqlTriggers, feature_category: :shared do
     let(:failed_projects) { [non_existing_record_id.to_s] }
     let(:merge_requests) { 50.0 }
     let(:merge_requests_total) { 200 }
+    let(:in_progress) { true }
 
     specify do
       expect(GitlabSchema.subscriptions).to receive(:trigger).with(
@@ -217,7 +219,8 @@ RSpec.describe GraphqlTriggers, feature_category: :shared do
           projects_total: projects_total,
           failed_projects: failed_projects,
           merge_requests_progress: merge_requests,
-          merge_requests_total: merge_requests_total
+          merge_requests_total: merge_requests_total,
+          in_progress: in_progress
         }
       ).and_call_original
 
