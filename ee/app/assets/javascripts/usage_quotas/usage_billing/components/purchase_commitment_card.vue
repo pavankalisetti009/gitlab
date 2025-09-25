@@ -8,6 +8,12 @@ export default {
     GlButton,
   },
   inject: ['purchaseCommitmentUrl'],
+  props: {
+    hasCommitment: {
+      required: true,
+      type: Boolean,
+    },
+  },
 };
 </script>
 <template>
@@ -15,18 +21,36 @@ export default {
     <h2 class="gl-font-heading gl-heading-scale-400 gl-mb-3">
       {{ s__('UsageBilling|Purchase a monthly commitment') }}
     </h2>
-    <p>
-      {{
-        s__(
-          'UsageBilling|You can increase your commitment amount to extend your monthly allocation of tokens.',
-        )
-      }}
-    </p>
 
-    <div class="gl-mt-auto">
-      <gl-button variant="confirm" :href="purchaseCommitmentUrl">
-        {{ s__('UsageBilling|Increase monthly commitment') }}
-      </gl-button>
-    </div>
+    <template v-if="hasCommitment">
+      <p>
+        {{
+          s__(
+            'UsageBilling|You can increase your commitment amount to extend your monthly allocation of tokens.',
+          )
+        }}
+      </p>
+      <div class="gl-mt-auto">
+        <gl-button variant="confirm" :href="purchaseCommitmentUrl">
+          {{ s__('UsageBilling|Increase monthly commitment') }}
+        </gl-button>
+      </div>
+    </template>
+
+    <template v-else>
+      <p>
+        {{
+          s__(
+            'UsageBilling|You can purchase a monthly allocation of GitLab Units to be shared across users.',
+          )
+        }}
+      </p>
+
+      <div class="gl-mt-auto">
+        <gl-button variant="confirm" :href="purchaseCommitmentUrl">
+          {{ s__('UsageBilling|Purchase monthly commitment') }}
+        </gl-button>
+      </div>
+    </template>
   </gl-card>
 </template>

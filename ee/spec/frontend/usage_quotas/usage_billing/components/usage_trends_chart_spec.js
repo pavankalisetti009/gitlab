@@ -4,6 +4,7 @@ import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import UsageTrendsChart from 'ee/usage_quotas/usage_billing/components/usage_trends_chart.vue';
 
 describe('UsageTrendsChart', () => {
+  /** @type {import('helpers/vue_test_utils_helper').ExtendedWrapper} */
   let wrapper;
 
   const defaultProps = {
@@ -13,6 +14,9 @@ describe('UsageTrendsChart', () => {
     ],
     monthStartDate: '2025-07-01',
     monthEndDate: '2025-07-31',
+    trend: 12,
+    dailyPeak: 42,
+    dailyAverage: 20,
   };
 
   const createComponent = (props = {}) => {

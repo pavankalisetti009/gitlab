@@ -9,9 +9,9 @@ describe('UsageByUserTab', () => {
   let wrapper;
   const usersData = mockUsageDataWithPool.subscription.gitlabUnitsUsage.usersUsage;
 
-  const createComponent = (mountFn = shallowMountExtended, data = usersData) => {
+  const createComponent = ({ mountFn = shallowMountExtended, propsData } = {}) => {
     wrapper = mountFn(UsageByUserTab, {
-      propsData: { usersData: data },
+      propsData: { usersData, hasCommitment: true, ...propsData },
       provide: {
         userUsagePath: '/path/to/user/:id',
       },
@@ -38,7 +38,7 @@ describe('UsageByUserTab', () => {
 
   describe('rendering table', () => {
     beforeEach(() => {
-      createComponent(mountExtended);
+      createComponent({ mountFn: mountExtended });
     });
 
     it('renders the table with correct props', () => {
@@ -46,27 +46,22 @@ describe('UsageByUserTab', () => {
         {
           key: 'user',
           label: 'User',
-          sortable: true,
         },
         {
           key: 'allocationUsed',
           label: 'Allocation used',
-          sortable: true,
         },
         {
           key: 'poolUsed',
           label: 'Pool used',
-          sortable: true,
         },
         {
           key: 'totalUnitsUsed',
           label: 'Total units used',
-          sortable: true,
         },
         {
           key: 'status',
           label: 'Status',
-          sortable: true,
         },
       ]);
     });
@@ -92,8 +87,13 @@ describe('UsageByUserTab', () => {
 
     describe('with zero allocation', () => {
       beforeEach(() => {
-        const usageData = mockUsageDataWithZeroAllocation.subscription.gitlabUnitsUsage.usersUsage;
-        createComponent(mountExtended, usageData);
+        const usersDataWithZeroAllocation =
+          mockUsageDataWithZeroAllocation.subscription.gitlabUnitsUsage.usersUsage;
+
+        createComponent({
+          mountFn: mountExtended,
+          propsData: { usersData: usersDataWithZeroAllocation },
+        });
       });
 
       it('renders the progress bar with 0 value when allocationTotal is 0', () => {
@@ -104,6 +104,33 @@ describe('UsageByUserTab', () => {
         expect(progressBars.at(0).props('value')).toBe(0);
         expect(progressBars.at(1).props('value')).toBe(0);
       });
+    });
+  });
+
+  describe('no commitment state', () => {
+    beforeEach(() => {
+      createComponent({ propsData: { hasCommitment: false } });
+    });
+
+    it('renders the table with correct props', () => {
+      expect(findTable().props('fields')).toEqual([
+        {
+          key: 'user',
+          label: 'User',
+        },
+        {
+          key: 'allocationUsed',
+          label: 'Allocation used',
+        },
+        {
+          key: 'totalUnitsUsed',
+          label: 'Total units used',
+        },
+        {
+          key: 'status',
+          label: 'Status',
+        },
+      ]);
     });
   });
 });
