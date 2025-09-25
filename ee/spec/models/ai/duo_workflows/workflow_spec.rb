@@ -118,6 +118,23 @@ RSpec.describe Ai::DuoWorkflows::Workflow, feature_category: :agent_foundations 
       end
     end
 
+    describe '.without_workflow_definition' do
+      let!(:chat_workflow) { create(:duo_workflows_workflow, workflow_definition: 'chat') }
+      let!(:dev_workflow) { create(:duo_workflows_workflow, workflow_definition: 'software_development') }
+      let!(:ci_workflow) { create(:duo_workflows_workflow, workflow_definition: 'convert_to_gitlab_ci') }
+
+      it 'excludes workflows with the given workflow definition' do
+        expect(described_class.without_workflow_definition('chat')).to contain_exactly(dev_workflow, ci_workflow)
+        expect(described_class.without_workflow_definition('software_development'))
+          .to contain_exactly(chat_workflow, ci_workflow)
+      end
+
+      it 'returns all workflows when excluding nonexistent definition' do
+        expect(described_class.without_workflow_definition('nonexistent'))
+          .to contain_exactly(chat_workflow, dev_workflow, ci_workflow)
+      end
+    end
+
     describe '#only_known_pre_approved_agent_priviliges' do
       let(:agent_privileges) { [] }
       let(:pre_approved_agent_privileges) { [] }
