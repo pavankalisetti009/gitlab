@@ -156,7 +156,8 @@ RSpec.describe ::Search::Zoekt::InfoService, :silence_stdout, feature_category: 
         end
       end
 
-      it 'displays detailed information for each node' do
+      it 'displays detailed information for each node',
+        quarantine: 'https://gitlab.com/gitlab-org/gitlab/-/issues/570675' do
         travel_to(current_time) do
           # Create nodes with different watermark levels using traits
           node1 = create(:zoekt_node, :for_search, :watermark_critical,
