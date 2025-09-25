@@ -23,6 +23,14 @@ RSpec.describe 'project secrets', :gitlab_secrets_manager, :freeze_time, feature
     )
   end
 
+  let(:list_query_via_edges) do
+    graphql_query_for(
+      'projectSecrets',
+      { project_path: project.full_path },
+      "edges { node { #{all_graphql_fields_for('ProjectSecret', max_depth: 2)} } }"
+    )
+  end
+
   let(:read_query) do
     graphql_query_for(
       'projectSecret',
@@ -144,7 +152,7 @@ RSpec.describe 'project secrets', :gitlab_secrets_manager, :freeze_time, feature
     end
 
     context 'and the project secrets manager is active' do
-      it 'returns the list of project secrets' do
+      it 'returns the list of project secrets via nodes' do
         post_graphql(list_query, current_user: current_user)
 
         rotation_info_1 = secret_rotation_info_for_project_secret(project, secret_1.name)
@@ -178,6 +186,49 @@ RSpec.describe 'project secrets', :gitlab_secrets_manager, :freeze_time, feature
                 status: SecretsManagement::SecretRotationInfo::STATUSES[:ok],
                 updated_at: rotation_info_2.updated_at.iso8601,
                 created_at: rotation_info_2.created_at.iso8601
+              )
+            )
+          )
+      end
+
+      it 'returns the list of project secrets via edges' do
+        post_graphql(list_query_via_edges, current_user: current_user)
+
+        rotation_info_1 = secret_rotation_info_for_project_secret(project, secret_1.name)
+        rotation_info_2 = secret_rotation_info_for_project_secret(project, secret_2.name)
+
+        expect(graphql_data_at(:project_secrets, :edges))
+          .to contain_exactly(
+            a_graphql_entity_for(
+              node: a_graphql_entity_for(
+                project: a_graphql_entity_for(project),
+                name: secret_1.name,
+                description: secret_1.description,
+                branch: secret_1.branch,
+                environment: secret_1.environment,
+                metadata_version: 1,
+                rotation_info: a_graphql_entity_for(
+                  rotation_interval_days: rotation_info_1.rotation_interval_days,
+                  status: SecretsManagement::SecretRotationInfo::STATUSES[:ok],
+                  updated_at: rotation_info_1.updated_at.iso8601,
+                  created_at: rotation_info_1.created_at.iso8601
+                )
+              )
+            ),
+            a_graphql_entity_for(
+              node: a_graphql_entity_for(
+                project: a_graphql_entity_for(project),
+                name: secret_2.name,
+                description: secret_2.description,
+                branch: secret_2.branch,
+                environment: secret_2.environment,
+                metadata_version: 1,
+                rotation_info: a_graphql_entity_for(
+                  rotation_interval_days: rotation_info_2.rotation_interval_days,
+                  status: SecretsManagement::SecretRotationInfo::STATUSES[:ok],
+                  updated_at: rotation_info_2.updated_at.iso8601,
+                  created_at: rotation_info_2.created_at.iso8601
+                )
               )
             )
           )
