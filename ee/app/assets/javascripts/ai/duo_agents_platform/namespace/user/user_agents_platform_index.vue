@@ -21,6 +21,7 @@ export default {
           first: 20,
           before: null,
           last: null,
+          excludeTypes: ['chat'],
         };
       },
       update(data) {
