@@ -30,7 +30,7 @@ module EE
         badges << { text: s_('AdminUsers|Auditor'), variant: 'neutral' } if user.auditor?
         badges << { text: user.member_role.name, variant: 'info', icon: 'admin' } if has_admin_role?(user)
 
-        if !::Gitlab.com? && user.using_license_seat?
+        if !::Gitlab::Saas.feature_available?(:gitlab_com_subscriptions) && user.using_license_seat?
           it_s_you_index = badges.index { |badge| badge[:text] == "It's you!" } || -1
 
           badges.insert(it_s_you_index, { text: s_('AdminUsers|Is using seat'), variant: 'neutral' })
@@ -40,7 +40,7 @@ module EE
 
     def trials_allowed?(user)
       return false unless user
-      return false unless ::Gitlab::CurrentSettings.should_check_namespace_plan?
+      return false unless ::Gitlab::Saas.feature_available?(:subscriptions_trials)
 
       Rails.cache.fetch(['users', user.id, 'trials_allowed?'], expires_in: 10.minutes) do
         !user.belongs_to_paid_namespace? && user.owns_group_without_trial?
