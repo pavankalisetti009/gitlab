@@ -11,9 +11,14 @@ title: Agents
 - Add-on: GitLab Duo Core, Pro, or Enterprise
 - Offering: GitLab.com
 - Status: Experiment
-- LLM: Anthropic [Claude Sonnet 4](https://www.anthropic.com/claude/sonnet)
 
 {{< /details >}}
+
+{{< collapsible title="Model information" >}}
+
+- LLM: Anthropic [Claude Sonnet 4](https://www.anthropic.com/claude/sonnet)
+
+{{< /collapsible >}}
 
 {{< history >}}
 
