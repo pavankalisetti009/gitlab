@@ -50,7 +50,7 @@ export default {
   computed: {
     ...mapState(['pageInfo', 'initialized']),
     shouldFetchDependenciesViaGraphQL() {
-      return this.glFeatures.projectDependenciesGraphql || this.glFeatures.groupDependenciesGraphql;
+      return this.isProjectNamespace || this.glFeatures.groupDependenciesGraphql;
     },
     showSbomReportsErrors() {
       return this.sbomReportsErrors.length > 0;

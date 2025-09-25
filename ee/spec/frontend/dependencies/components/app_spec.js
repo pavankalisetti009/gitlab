@@ -36,11 +36,7 @@ describe('DependenciesApp component', () => {
     sbomReportsErrors: [],
   };
 
-  const factory = ({
-    provide,
-    props,
-    glFeatures = { projectDependenciesGraphql: true, groupDependenciesGraphQL: true },
-  } = {}) => {
+  const factory = ({ provide, props, glFeatures = { groupDependenciesGraphQL: true } } = {}) => {
     store = createStore();
     jest.spyOn(store, 'dispatch').mockImplementation();
 
@@ -282,12 +278,15 @@ describe('DependenciesApp component', () => {
     });
   });
 
-  describe.each(['projectDependenciesGraphQL', 'groupDependenciesGraphQL'])(
+  describe.each(['groupDependenciesGraphQL'])(
     'with "%s" feature flag disabled',
     (featureFlagName) => {
       beforeEach(() => {
         mock = new MockAdapter(axios);
-        factory({ glFeatures: { [featureFlagName]: false } });
+        factory({
+          provide: { namespaceType: 'group' },
+          glFeatures: { [featureFlagName]: false },
+        });
       });
 
       it('dispatches the correct initial actions', () => {
@@ -295,7 +294,7 @@ describe('DependenciesApp component', () => {
           ['setFullPath', basicAppProvides.fullPath],
           ['setDependenciesEndpoint', basicAppProvides.endpoint],
           ['setExportDependenciesEndpoint', basicAppProvides.exportEndpoint],
-          ['setNamespaceType', basicAppProvides.namespaceType],
+          ['setNamespaceType', 'group'],
           ['setPageInfo', expect.anything()],
           ['setSortField', 'severity'],
           ['fetchDependencies', { page: 1 }],

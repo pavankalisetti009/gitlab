@@ -4,12 +4,14 @@ import { GlFilteredSearch } from '@gitlab/ui';
 import { mapActions } from 'vuex';
 import { s__ } from '~/locale';
 import glFeatureFlagsMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
+import { NAMESPACE_PROJECT } from '../../constants';
 
 export default {
   components: {
     GlFilteredSearch,
   },
   mixins: [glFeatureFlagsMixin()],
+  inject: ['namespaceType'],
   props: {
     filteredSearchId: {
       type: String,
@@ -27,7 +29,7 @@ export default {
       'fetchDependenciesViaGraphQL',
     ]),
     fetchDependenciesWithFeatureFlag() {
-      if (this.glFeatures.projectDependenciesGraphql) {
+      if (this.namespaceType === NAMESPACE_PROJECT) {
         this.fetchDependenciesViaGraphQL();
       } else {
         this.fetchDependencies({ page: 1 });
