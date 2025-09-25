@@ -77060,6 +77060,9 @@ msgstr ""
 msgid "cannot be enabled because parent group has shared Runners disabled"
 msgstr ""
 
+msgid "cannot be enabled on Dedicated"
+msgstr ""
+
 msgid "cannot be enabled unless all domains have TLS certificates"
 msgstr ""
 
