@@ -11,9 +11,14 @@ title: GitLab MCP clients
 - Tier: Premium, Ultimate
 - Offering: GitLab.com, GitLab Self-Managed, GitLab Dedicated
 - Status: Beta
-- Available on GitLab Duo with self-hosted models: Not supported
 
 {{< /details >}}
+
+{{< collapsible title="Model information" >}}
+
+- Available on GitLab Duo with self-hosted models: Not supported
+
+{{< /collapsible >}}
 
 {{< history >}}
 
