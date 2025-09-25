@@ -320,6 +320,7 @@ RSpec.describe 'new tables missing sharding_key', feature_category: :organizatio
       "abuse_events" => "https://gitlab.com/gitlab-org/gitlab/-/issues/553427",
       "abuse_report_assignees" => "https://gitlab.com/gitlab-org/gitlab/-/issues/553428",
       "labels" => "https://gitlab.com/gitlab-org/gitlab/-/issues/563889",
+      "member_roles" => "https://gitlab.com/gitlab-org/gitlab/-/issues/567738",
       "notes" => "https://gitlab.com/gitlab-org/gitlab/-/issues/569521",
       "notes_archived" => "https://gitlab.com/gitlab-org/gitlab/-/issues/569521",
       "jira_connect_installations" => "https://gitlab.com/gitlab-org/gitlab/-/issues/524682",

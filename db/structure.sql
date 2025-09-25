@@ -19023,6 +19023,7 @@ CREATE TABLE member_roles (
     description text,
     occupies_seat boolean DEFAULT false NOT NULL,
     permissions jsonb DEFAULT '{}'::jsonb NOT NULL,
+    organization_id bigint,
     CONSTRAINT check_4364846f58 CHECK ((char_length(description) <= 255)),
     CONSTRAINT check_9907916995 CHECK ((char_length(name) <= 255))
 );
@@ -40083,6 +40084,8 @@ CREATE UNIQUE INDEX index_member_roles_on_namespace_id_name_unique ON member_rol
 
 CREATE INDEX index_member_roles_on_occupies_seat ON member_roles USING btree (occupies_seat);
 
+CREATE INDEX index_member_roles_on_organization_id ON member_roles USING btree (organization_id);
+
 CREATE INDEX index_member_roles_on_permissions ON member_roles USING gin (permissions);
 
 CREATE INDEX index_members_deletion_schedules_on_scheduled_by_id ON members_deletion_schedules USING btree (scheduled_by_id);
@@ -49223,6 +49226,9 @@ ALTER TABLE ONLY compliance_requirements_controls
 
 ALTER TABLE ONLY system_note_metadata
     ADD CONSTRAINT fk_fbd87415c9 FOREIGN KEY (description_version_id) REFERENCES description_versions(id) ON DELETE SET NULL;
+
+ALTER TABLE ONLY member_roles
+    ADD CONSTRAINT fk_fc154c5d30 FOREIGN KEY (organization_id) REFERENCES organizations(id) ON DELETE CASCADE;
 
 ALTER TABLE ONLY project_compliance_violations_issues
     ADD CONSTRAINT fk_fc4630d30b FOREIGN KEY (issue_id) REFERENCES issues(id) ON DELETE CASCADE;
