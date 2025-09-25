@@ -24,13 +24,18 @@ module Packages
 
       validates :package_name_pattern, presence: true, uniqueness: { scope: [:project_id, :package_type] },
         length: { maximum: 255 }
-      validates :package_name_pattern, format: NPM_PACKAGE_NAME_FORMAT, if: :npm?
-      validates :package_name_pattern, format: PYPI_PACKAGE_NAME_FORMAT, if: :pypi?
+
       validates :package_type, presence: true
       validates :pattern, allow_blank: true, length: { maximum: 255 }
+
+      # npm specific validations
+      validates :package_name_pattern, format: NPM_PACKAGE_NAME_FORMAT, if: :npm?
       validates :pattern, format: NPM_PACKAGE_NAME_FORMAT, allow_blank: true, if: -> {
         npm? && target_field_package_name? && pattern_type_wildcard?
       }
+
+      # pypi specific validations
+      validates :package_name_pattern, format: PYPI_PACKAGE_NAME_FORMAT, if: :pypi?
       validates :pattern, format: PYPI_PACKAGE_NAME_FORMAT, allow_blank: true, if: -> {
         pypi? && target_field_package_name? && pattern_type_wildcard?
       }
