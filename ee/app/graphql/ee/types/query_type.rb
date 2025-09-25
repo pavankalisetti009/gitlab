@@ -312,6 +312,12 @@ module EE
           description: 'List project secrets.',
           resolver: ::Resolvers::SecretsManagement::ProjectSecretsResolver
 
+        field :project_secrets_needing_rotation, ::Types::SecretsManagement::ProjectSecretType.connection_type,
+          null: true,
+          experiment: { milestone: '18.5' },
+          description: 'List project secrets that need to be rotated.',
+          resolver: ::Resolvers::SecretsManagement::ProjectSecrets::ListNeedingRotationResolver
+
         field :project_secret, ::Types::SecretsManagement::ProjectSecretType,
           null: true,
           experiment: { milestone: '17.9' },

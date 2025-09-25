@@ -1,7 +1,7 @@
 <script>
 import { __ } from '~/locale';
 import LocalStorageSync from '~/vue_shared/components/local_storage_sync.vue';
-import AgentSessions from 'ee/ai/duo_agents_platform/duo_agents_platform_app.vue';
+import AgentSessionsRoot from '~/vue_shared/spa/components/spa_root.vue';
 import { AGENTS_PLATFORM_SHOW_ROUTE } from 'ee/ai/duo_agents_platform/router/constants';
 import { formatAgentFlowName } from 'ee/ai/duo_agents_platform/utils';
 import AiContentContainer from './content_container.vue';
@@ -38,7 +38,7 @@ export default {
         case 'sessions':
           return {
             title: this.sessionTitle,
-            component: AgentSessions,
+            component: AgentSessionsRoot,
             initialRoute: '/agent-sessions',
           };
         default:

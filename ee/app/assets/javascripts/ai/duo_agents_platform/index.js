@@ -1,11 +1,5 @@
-import Vue from 'vue';
-import VueApollo from 'vue-apollo';
-import createDefaultClient from '~/lib/graphql';
-import { injectVueAppBreadcrumbs } from '~/lib/utils/breadcrumbs';
-import DuoAgentsPlatformBreadcrumbs from './router/duo_agents_platform_breadcrumbs.vue';
-import { activeNavigationWatcher } from './router/utils';
+import { initSinglePageApplication } from '~/vue_shared/spa';
 import { createRouter } from './router';
-import DuoAgentsPlatformApp from './duo_agents_platform_app.vue';
 import { getNamespaceDatasetProperties } from './utils';
 
 export const initDuoAgentsPlatformPage = ({ namespaceDatasetProperties = [], namespace }) => {
@@ -34,28 +28,14 @@ export const initDuoAgentsPlatformPage = ({ namespaceDatasetProperties = [], nam
   }
 
   const router = createRouter(agentsPlatformBaseRoute, namespace);
-  router.beforeEach(activeNavigationWatcher);
 
-  Vue.use(VueApollo);
-
-  const apolloProvider = new VueApollo({
-    defaultClient: createDefaultClient(),
-  });
-
-  injectVueAppBreadcrumbs(router, DuoAgentsPlatformBreadcrumbs);
-
-  return new Vue({
-    el,
-    name: 'DuoAgentsPlatformApp',
+  return initSinglePageApplication({
     router,
-    apolloProvider,
+    el,
     provide: {
       exploreAiCatalogPath,
       flowTriggersEventTypeOptions: JSON.parse(flowTriggersEventTypeOptions),
       ...namespaceProvideData,
-    },
-    render(h) {
-      return h(DuoAgentsPlatformApp);
     },
   });
 };

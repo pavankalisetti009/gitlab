@@ -221,7 +221,7 @@ the feature can use that tool:
 
    - If you approve the tool, the feature connects to the tool and generates an answer.
 
-   - Optional: For Chat, if you deny the tool, the **Provide Rejection Reason**
+   - Optional. For Chat, if you deny the tool, the **Provide Rejection Reason**
      dialog appears. Enter a rejection reason into the text box, and select
      **Submit Rejection**.
 

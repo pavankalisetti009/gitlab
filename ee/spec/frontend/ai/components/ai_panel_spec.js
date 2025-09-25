@@ -5,7 +5,7 @@ import AIPanel from 'ee/ai/components/ai_panel.vue';
 import AiContentContainer from 'ee/ai/components/content_container.vue';
 import NavigationRail from 'ee/ai/components/navigation_rail.vue';
 import LocalStorageSync from '~/vue_shared/components/local_storage_sync.vue';
-import AgentSessions from 'ee/ai/duo_agents_platform/duo_agents_platform_app.vue';
+import AgentSessionsRoot from '~/vue_shared/spa/components/spa_root.vue';
 import { AGENTS_PLATFORM_SHOW_ROUTE } from 'ee/ai/duo_agents_platform/router/constants';
 
 describe('AIPanel', () => {
@@ -92,7 +92,7 @@ describe('AIPanel', () => {
 
       expect(findContentContainer().props('activeTab')).toEqual({
         title: 'Sessions',
-        component: AgentSessions,
+        component: AgentSessionsRoot,
         initialRoute: '/agent-sessions',
       });
     });
