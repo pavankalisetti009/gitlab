@@ -94,14 +94,6 @@ RSpec.describe 'Admin Groups', feature_category: :groups_and_projects do
 
       it_behaves_like 'does not render admin-only action buttons'
 
-      context 'when read_admin_groups feature flag is disabled' do
-        before do
-          stub_feature_flags(read_admin_groups: false)
-        end
-
-        it_behaves_like 'does not render admin-only action buttons'
-      end
-
       it 'displays groups the user is not a member of' do
         visit admin_groups_path
 

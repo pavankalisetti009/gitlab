@@ -35,6 +35,7 @@ module Ai
       scope :stale_since, ->(time) { where(updated_at: ...time).order(updated_at: :asc, id: :asc) }
 
       scope :with_workflow_definition, ->(definition) { where(workflow_definition: definition) }
+      scope :without_workflow_definition, ->(definition) { where.not(workflow_definition: definition) }
       scope :with_environment, ->(environment) { where(environment: environment) }
       scope :from_pipeline, -> { where.not(workflow_definition: :chat).with_environment(:web) }
 

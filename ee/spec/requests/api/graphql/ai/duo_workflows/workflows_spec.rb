@@ -438,6 +438,107 @@ RSpec.describe 'Querying Duo Workflows Workflows', feature_category: :agent_foun
         end
       end
 
+      context 'with the type argument' do
+        let(:variables) { { type: 'software_development' } }
+
+        it 'returns only workflows with the specified type', :aggregate_failures do
+          post_graphql(query, current_user: current_user)
+
+          expect(response).to have_gitlab_http_status(:success)
+          expect(graphql_errors).to be_nil
+
+          expect(returned_workflows).not_to be_empty
+
+          returned_workflows.each do |returned_workflow|
+            expect(returned_workflow['workflowDefinition']).to eq('software_development')
+          end
+        end
+      end
+
+      context 'with the exclude_types argument' do
+        let(:variables) { { exclude_types: %w[chat] } }
+
+        it 'excludes workflows with the specified types', :aggregate_failures do
+          post_graphql(query, current_user: current_user)
+
+          expect(response).to have_gitlab_http_status(:success)
+          expect(graphql_errors).to be_nil
+
+          expect(returned_workflows).not_to be_empty
+
+          returned_workflows.each do |returned_workflow|
+            expect(returned_workflow['workflowDefinition']).not_to eq('chat')
+          end
+        end
+      end
+
+      context 'with multiple exclude_types' do
+        let(:variables) { { exclude_types: %w[chat convert_to_gitlab_ci] } }
+
+        it 'excludes workflows with any of the specified types', :aggregate_failures do
+          post_graphql(query, current_user: current_user)
+
+          expect(response).to have_gitlab_http_status(:success)
+          expect(graphql_errors).to be_nil
+
+          expect(returned_workflows).not_to be_empty
+
+          returned_workflows.each do |returned_workflow|
+            expect(returned_workflow['workflowDefinition']).not_to be_in(%w[chat convert_to_gitlab_ci])
+          end
+        end
+      end
+
+      context 'with both type and exclude_types arguments' do
+        context 'when type and exclude_types are different' do
+          let(:variables) { { type: 'software_development', exclude_types: %w[chat] } }
+
+          it 'applies both filters correctly', :aggregate_failures do
+            post_graphql(query, current_user: current_user)
+
+            expect(response).to have_gitlab_http_status(:success)
+            expect(graphql_errors).to be_nil
+
+            expect(returned_workflows).not_to be_empty
+
+            returned_workflows.each do |returned_workflow|
+              expect(returned_workflow['workflowDefinition']).to eq('software_development')
+              expect(returned_workflow['workflowDefinition']).not_to eq('chat')
+            end
+          end
+        end
+
+        context 'when type matches one of exclude_types' do
+          let(:variables) { { type: 'software_development', exclude_types: %w[chat software_development] } }
+
+          it 'returns an empty array', :aggregate_failures do
+            post_graphql(query, current_user: current_user)
+
+            expect(response).to have_gitlab_http_status(:success)
+            expect(graphql_errors).to be_nil
+            expect(returned_workflows).to be_empty
+          end
+        end
+
+        context 'when type is different from all exclude_types' do
+          let(:variables) { { type: 'software_development', exclude_types: %w[chat convert_to_gitlab_ci] } }
+
+          it 'applies all filters correctly', :aggregate_failures do
+            post_graphql(query, current_user: current_user)
+
+            expect(response).to have_gitlab_http_status(:success)
+            expect(graphql_errors).to be_nil
+
+            expect(returned_workflows).not_to be_empty
+
+            returned_workflows.each do |returned_workflow|
+              expect(returned_workflow['workflowDefinition']).to eq('software_development')
+              expect(returned_workflow['workflowDefinition']).not_to be_in(%w[chat convert_to_gitlab_ci])
+            end
+          end
+        end
+      end
+
       context 'with archived and stalled fields' do
         it 'returns the correct archived and stalled values', :aggregate_failures do
           post_graphql(query, current_user: current_user)
