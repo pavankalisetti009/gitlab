@@ -3,9 +3,9 @@ import { GlAlert, GlEmptyState, GlKeysetPagination, GlSkeletonLoader } from '@gi
 import { s__ } from '~/locale';
 import { setUrlParams, updateHistory, queryToObject } from '~/lib/utils/url_utility';
 import { getPageParams } from '~/packages_and_registries/shared/utils';
-import MavenRegistryItem from 'ee/packages_and_registries/virtual_registries/components/maven_registry_item.vue';
-import getMavenVirtualRegistries from '../graphql/queries/get_maven_virtual_registries.query.graphql';
-import { captureException } from '../sentry_utils';
+import MavenRegistryItem from 'ee/packages_and_registries/virtual_registries/components/maven/registries_and_upstreams/registry_item.vue';
+import getMavenVirtualRegistries from '../../../graphql/queries/get_maven_virtual_registries.query.graphql';
+import { captureException } from '../../../sentry_utils';
 
 const PAGE_SIZE = 20;
 const INITIAL_VALUE = {
@@ -14,7 +14,7 @@ const INITIAL_VALUE = {
 };
 
 export default {
-  name: 'MavenRegistriesListApp',
+  name: 'MavenRegistriesList',
   components: {
     GlAlert,
     GlEmptyState,
@@ -60,6 +60,9 @@ export default {
         return this.queryVariables;
       },
       update: (data) => data.group?.mavenVirtualRegistries ?? INITIAL_VALUE,
+      result() {
+        this.$emit('updateCount', this.registries.length);
+      },
       error(error) {
         this.alertMessage =
           error.message || s__('VirtualRegistry|Failed to fetch list of maven virtual registries.');

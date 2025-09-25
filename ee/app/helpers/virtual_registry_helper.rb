@@ -21,12 +21,12 @@ module VirtualRegistryHelper
     can?(current_user, :destroy_virtual_registry, group.virtual_registry_policy_subject)
   end
 
-  def maven_registries_data(group)
-    {
+  def maven_registries_and_upstreams_data(group)
+    maven_upstream_template_links(group).merge({
       fullPath: group.full_path,
-      editPathTemplate: edit_group_virtual_registries_maven_registry_path(group, ':id'),
-      showPathTemplate: group_virtual_registries_maven_registry_path(group, ':id')
-    }.to_json
+      editRegistryPathTemplate: edit_group_virtual_registries_maven_registry_path(group, ':id'),
+      showRegistryPathTemplate: group_virtual_registries_maven_registry_path(group, ':id')
+    }).to_json
   end
 
   def delete_registry_modal_data(group, maven_registry)
@@ -52,7 +52,8 @@ module VirtualRegistryHelper
     {
       mavenCentralUrl: maven_central_url,
       upstream: maven_upstream_attributes(maven_upstream),
-      registriesPath: group_virtual_registries_path(maven_upstream.group),
+      upstreamsPath: group_virtual_registries_maven_registries_and_upstreams_path(maven_upstream.group,
+        { tab: 'upstreams' }),
       upstreamPath: group_virtual_registries_maven_upstream_path(maven_upstream.group, maven_upstream)
     }.to_json
   end
@@ -70,7 +71,7 @@ module VirtualRegistryHelper
   end
 
   def maven_registry_data(group, maven_registry)
-    {
+    maven_upstream_template_links(group).merge({
       groupPath: group.full_path,
       registry: {
         id: maven_registry.id,
@@ -78,10 +79,8 @@ module VirtualRegistryHelper
         description: maven_registry.description
       },
       registryEditPath: edit_group_virtual_registries_maven_registry_path(group, maven_registry),
-      mavenCentralUrl: maven_central_url,
-      showUpstreamPathTemplate: group_virtual_registries_maven_upstream_path(group, ':id'),
-      editUpstreamPathTemplate: edit_group_virtual_registries_maven_upstream_path(group, ':id')
-    }.to_json
+      mavenCentralUrl: maven_central_url
+    }).to_json
   end
 
   private
@@ -100,5 +99,12 @@ module VirtualRegistryHelper
 
   def maven_central_url
     ::VirtualRegistries::Packages::Maven::Upstream::MAVEN_CENTRAL_URL
+  end
+
+  def maven_upstream_template_links(group)
+    {
+      editUpstreamPathTemplate: edit_group_virtual_registries_maven_upstream_path(group, ':id'),
+      showUpstreamPathTemplate: group_virtual_registries_maven_upstream_path(group, ':id')
+    }
   end
 end

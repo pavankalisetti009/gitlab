@@ -12,7 +12,7 @@ RSpec.describe 'groups/virtual_registries/maven/registries_and_upstreams/index',
       current_user: user,
       can?: false,
       can_create_virtual_registry?: false,
-      maven_registries_data: '{}'
+      maven_registries_and_upstreams_data: '{}'
     )
     allow(::VirtualRegistries).to receive(:registries_count_for).and_return(0)
   end
@@ -25,7 +25,7 @@ RSpec.describe 'groups/virtual_registries/maven/registries_and_upstreams/index',
 
   it 'passes correct data to Vue component' do
     expected_data = { fullPath: group.full_path }.to_json
-    allow(view).to receive(:maven_registries_data).with(group).and_return(expected_data)
+    allow(view).to receive(:maven_registries_and_upstreams_data).with(group).and_return(expected_data)
 
     render
 
