@@ -1,6 +1,6 @@
 import { GlButton, GlLink, GlSprintf } from '@gitlab/ui';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
-import MavenRegistryItem from 'ee/packages_and_registries/virtual_registries/components/maven_registry_item.vue';
+import MavenRegistryItem from 'ee/packages_and_registries/virtual_registries/components/maven/registries_and_upstreams/registry_item.vue';
 import TimeAgoTooltip from '~/vue_shared/components/time_ago_tooltip.vue';
 
 describe('MavenRegistryItem', () => {
@@ -15,8 +15,8 @@ describe('MavenRegistryItem', () => {
   };
 
   const defaultProvide = {
-    editPathTemplate: '/groups/gitlab-org/-/virtual_registries/maven/:id/edit',
-    showPathTemplate: '/groups/gitlab-org/-/virtual_registries/maven/:id',
+    editRegistryPathTemplate: '/groups/gitlab-org/-/virtual_registries/maven/registries/:id/edit',
+    showRegistryPathTemplate: '/groups/gitlab-org/-/virtual_registries/maven/registries/:id',
     glAbilities: {
       updateVirtualRegistry: true,
     },
@@ -51,7 +51,7 @@ describe('MavenRegistryItem', () => {
     });
 
     it('renders the link to the show page with correct href', () => {
-      const expectedHref = `/groups/gitlab-org/-/virtual_registries/maven/2`;
+      const expectedHref = `/groups/gitlab-org/-/virtual_registries/maven/registries/2`;
       expect(findShowLink().attributes('href')).toBe(expectedHref);
     });
 
@@ -60,7 +60,7 @@ describe('MavenRegistryItem', () => {
     });
 
     it('renders the edit button with correct href when user has permissions', () => {
-      const expectedHref = `/groups/gitlab-org/-/virtual_registries/maven/2/edit`;
+      const expectedHref = `/groups/gitlab-org/-/virtual_registries/maven/registries/2/edit`;
       expect(findEditButton().exists()).toBe(true);
       expect(findEditButton().attributes('href')).toBe(expectedHref);
     });

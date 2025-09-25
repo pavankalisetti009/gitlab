@@ -6,12 +6,12 @@ import createMockApollo from 'helpers/mock_apollo_helper';
 import setWindowLocation from 'helpers/set_window_location_helper';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import waitForPromises from 'helpers/wait_for_promises';
-import MavenRegistriesListApp from 'ee/packages_and_registries/virtual_registries/maven/registries_list_app.vue';
-import MavenRegistryItem from 'ee/packages_and_registries/virtual_registries/components/maven_registry_item.vue';
+import MavenRegistriesList from 'ee/packages_and_registries/virtual_registries/components/maven/registries_and_upstreams/registries_list.vue';
+import MavenRegistryItem from 'ee/packages_and_registries/virtual_registries/components/maven/registries_and_upstreams/registry_item.vue';
 import * as urlUtils from '~/lib/utils/url_utility';
 import { TEST_HOST } from 'spec/test_constants';
 import { captureException } from 'ee/packages_and_registries/virtual_registries/sentry_utils';
-import { groupVirtualRegistries } from '../mock_data';
+import { groupVirtualRegistries } from '../../../mock_data';
 
 jest.mock('ee/packages_and_registries/virtual_registries/sentry_utils');
 
@@ -19,7 +19,7 @@ Vue.use(VueApollo);
 
 const PAGE_SIZE = 20;
 
-describe('MavenRegistriesListApp', () => {
+describe('MavenRegistriesList', () => {
   let wrapper;
 
   const defaultProvide = {
@@ -53,7 +53,7 @@ describe('MavenRegistriesListApp', () => {
   const errorHandler = jest.fn().mockRejectedValue(mockError);
 
   const createComponent = ({ handlers = [] } = {}) => {
-    wrapper = shallowMountExtended(MavenRegistriesListApp, {
+    wrapper = shallowMountExtended(MavenRegistriesList, {
       apolloProvider: createMockApollo(handlers),
       provide: {
         ...defaultProvide,
@@ -97,6 +97,12 @@ describe('MavenRegistriesListApp', () => {
 
         expect(findPagination().props()).toMatchObject(pageInfo);
       });
+
+      it('emits `updateCount` event', async () => {
+        await waitForPromises();
+
+        expect(wrapper.emitted('updateCount')[0][0]).toBe(1);
+      });
     });
   });
 
@@ -128,7 +134,7 @@ describe('MavenRegistriesListApp', () => {
 
       expect(findAlert().text()).toBe('GraphQL error');
       expect(captureException).toHaveBeenCalledWith({
-        component: 'MavenRegistriesListApp',
+        component: 'MavenRegistriesList',
         error: mockError,
       });
     });

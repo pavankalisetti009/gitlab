@@ -25,7 +25,7 @@ export default {
     upstream: {
       default: {},
     },
-    registriesPath: {
+    upstreamsPath: {
       default: '',
     },
     upstreamPath: {
@@ -99,7 +99,7 @@ export default {
       return error.response?.data?.error || error.message;
     },
     handleSuccess() {
-      visitUrlWithAlerts(this.registriesPath, [
+      visitUrlWithAlerts(this.upstreamsPath, [
         {
           message: s__('VirtualRegistry|Maven upstream has been deleted.'),
         },

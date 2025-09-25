@@ -76,16 +76,18 @@ RSpec.describe VirtualRegistryHelper, feature_category: :virtual_registry do
     end
   end
 
-  describe '#maven_registries_data' do
+  describe '#maven_registries_and_upstreams_data' do
     let(:group) { build_stubbed(:group) }
 
-    subject { ::Gitlab::Json.parse(helper.maven_registries_data(group)) }
+    subject { ::Gitlab::Json.parse(helper.maven_registries_and_upstreams_data(group)) }
 
     it 'returns maven registries JSON data' do
       is_expected.to include(
         'fullPath' => group.full_path,
-        'editPathTemplate' => edit_group_virtual_registries_maven_registry_path(group, ':id'),
-        'showPathTemplate' => group_virtual_registries_maven_registry_path(group, ':id')
+        'editRegistryPathTemplate' => edit_group_virtual_registries_maven_registry_path(group, ':id'),
+        'showRegistryPathTemplate' => group_virtual_registries_maven_registry_path(group, ':id'),
+        'editUpstreamPathTemplate' => edit_group_virtual_registries_maven_upstream_path(group, ':id'),
+        'showUpstreamPathTemplate' => group_virtual_registries_maven_upstream_path(group, ':id')
       )
     end
   end
@@ -138,8 +140,8 @@ RSpec.describe VirtualRegistryHelper, feature_category: :virtual_registry do
       is_expected.to include(
         'mavenCentralUrl' => ::VirtualRegistries::Packages::Maven::Upstream::MAVEN_CENTRAL_URL,
         'upstream' => maven_upstream_attributes,
-        'registriesPath' =>
-          group_virtual_registries_path(maven_upstream.group),
+        'upstreamsPath' =>
+          group_virtual_registries_maven_registries_and_upstreams_path(maven_upstream.group, { tab: 'upstreams' }),
         'upstreamPath' =>
           group_virtual_registries_maven_upstream_path(maven_upstream.group, maven_upstream)
       )

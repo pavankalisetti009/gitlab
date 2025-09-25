@@ -18,7 +18,7 @@ export default {
     GlTooltip: GlTooltipDirective,
   },
   mixins: [glAbilitiesMixin()],
-  inject: ['editPathTemplate', 'showPathTemplate'],
+  inject: ['editRegistryPathTemplate', 'showRegistryPathTemplate'],
   props: {
     registry: {
       type: Object,
@@ -33,10 +33,10 @@ export default {
       return getIdFromGraphQLId(this.registry.id);
     },
     editUrl() {
-      return this.editPathTemplate.replace(':id', this.registryId);
+      return this.editRegistryPathTemplate.replace(':id', this.registryId);
     },
     showUrl() {
-      return this.showPathTemplate.replace(':id', this.registryId);
+      return this.showRegistryPathTemplate.replace(':id', this.registryId);
     },
   },
 };
