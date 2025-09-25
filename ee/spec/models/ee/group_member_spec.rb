@@ -493,18 +493,20 @@ RSpec.describe GroupMember, feature_category: :groups_and_projects do
 
     context 'for custom roles assignement' do
       let_it_be(:member_role_current_user) do
-        create(:member_role, :maintainer, admin_group_member: true, admin_merge_request: true)
+        create(:member_role, :maintainer, admin_group_member: true, admin_merge_request: true, namespace: group)
       end
 
       let_it_be(:member_role_less_abilities) do
-        create(:member_role, :guest, admin_merge_request: true)
+        create(:member_role, :guest, admin_merge_request: true, namespace: group)
       end
 
       let_it_be(:member_role_more_abilities) do
-        create(:member_role, :guest, admin_merge_request: true, read_code: true)
+        create(:member_role, :guest, admin_merge_request: true, remove_group: true, namespace: group)
       end
 
       before do
+        stub_licensed_features(custom_roles: true)
+
         current_member = group.add_maintainer(current_user)
         current_member.update!(member_role: member_role_current_user)
       end
@@ -512,7 +514,19 @@ RSpec.describe GroupMember, feature_category: :groups_and_projects do
       context 'with the same custom role as current user has' do
         let(:member_role_id) { member_role_current_user.id }
 
-        it 'returns false' do
+        it 'allows role assignement' do
+          expect(prevent_assignement?).to eq(false)
+        end
+      end
+
+      context "with custom role abilities included in the current user's base access" do
+        let_it_be(:member_role_included_abilities) do
+          create(:member_role, :guest, admin_merge_request: true, admin_push_rules: true, namespace: group)
+        end
+
+        let(:member_role_id) { member_role_included_abilities.id }
+
+        it 'allows role assignement' do
           expect(prevent_assignement?).to eq(false)
         end
       end
@@ -528,10 +542,8 @@ RSpec.describe GroupMember, feature_category: :groups_and_projects do
       context 'with the custom role having more abilities than current user has' do
         let(:member_role_id) { member_role_more_abilities.id }
 
-        context 'when current user is a MAINTAINER' do
-          it 'returns true' do
-            expect(prevent_assignement?).to eq(true)
-          end
+        it 'returns true' do
+          expect(prevent_assignement?).to eq(true)
         end
 
         context 'when current user is an admin', :enable_admin_mode do

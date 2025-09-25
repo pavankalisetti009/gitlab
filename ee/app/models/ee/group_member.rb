@@ -84,42 +84,6 @@ module EE
       user&.user_detail&.enterprise_group_id == source_id
     end
 
-    override :prevent_role_assignement?
-    def prevent_role_assignement?(current_user, params)
-      return false if current_user.can_admin_all_resources?
-
-      assigning_access_level ||= params[:access_level] || access_level
-      member_role_id = params[:member_role_id]
-      current_access_level = params[:current_access_level]
-
-      # first we need to check if there are possibly more custom abilities than current user has
-      return true if custom_role_abilities_too_high?(current_user, member_role_id)
-
-      # check if it's a valid downgrade, if the member's current access level encompasses the target level
-      return false if Authz::Role.access_level_encompasses?(
-        current_access_level: current_access_level,
-        level_to_assign: assigning_access_level
-      )
-
-      # prevent assignement in case the role access level is higher than current user's role
-      group.assigning_role_too_high?(current_user, assigning_access_level)
-    end
-
-    def custom_role_abilities_too_high?(current_user, member_role_id)
-      return false unless member_role_id
-      return false if ::Gitlab::Access::OWNER == group.max_member_access_for_user(current_user)
-
-      current_member = group.highest_group_member(current_user)
-
-      current_member_role = current_member.member_role
-      current_member_role_abilities = member_role_abilities(current_member_role)
-
-      new_member_role = MemberRole.find_by_id(member_role_id)
-      new_member_role_abilities = member_role_abilities(new_member_role)
-
-      (new_member_role_abilities - current_member_role_abilities).present?
-    end
-
     private
 
     override :access_level_inclusion
@@ -160,12 +124,6 @@ module EE
       return unless user&.security_policy_bot?
 
       errors.add(:member_user_type, _("Security policy bot cannot be added as a group member"))
-    end
-
-    def member_role_abilities(member_role)
-      return [] unless member_role
-
-      member_role.enabled_permissions.keys
     end
   end
 end

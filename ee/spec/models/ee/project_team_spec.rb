@@ -30,6 +30,44 @@ RSpec.describe ProjectTeam, feature_category: :groups_and_projects do
         expect(target_project.members.find_by(user: source_project_security_policy_bot)).to eq(nil)
       end
     end
+
+    context 'when a maintainer tries to import a project team with custom roles that have higher privileges' do
+      let_it_be(:member_role_with_high_privileges) do
+        create(:member_role, :developer, admin_merge_request: true, admin_push_rules: true, remove_project: true,
+          namespace: source_project.namespace)
+      end
+
+      let_it_be(:source_member_with_custom_role) do
+        create(:user).tap do |user|
+          member = source_project.add_developer(user)
+          member.update!(member_role: member_role_with_high_privileges)
+        end
+      end
+
+      let_it_be(:current_user_maintainer) do
+        create(:user).tap { |user| target_project.add_maintainer(user) }
+      end
+
+      before do
+        stub_licensed_features(custom_roles: true)
+      end
+
+      subject(:import) { target_project.team.import(source_project, current_user_maintainer) }
+
+      it 'adds error to members with custom roles that cannot be assigned' do
+        imported_members = import
+
+        prevented_member = imported_members.find { |m| m.user == source_member_with_custom_role }
+
+        expect(prevented_member.errors[:base]).to include("Insufficient permissions to assign this member")
+      end
+
+      it 'does not save members with prevented custom role assignments' do
+        expect { import }.not_to change {
+          target_project.project_members.where(user: source_member_with_custom_role).count
+        }
+      end
+    end
   end
 
   describe '#add_member' do

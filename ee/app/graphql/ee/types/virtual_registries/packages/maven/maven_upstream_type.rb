@@ -32,10 +32,6 @@ module EE
               description: 'Username to sign in to the upstream registry.',
               experiment: { milestone: '18.1' }
 
-            field :password, GraphQL::Types::String, null: true,
-              description: 'Password to sign in to the upstream registry.',
-              experiment: { milestone: '18.1' }
-
             field :name, GraphQL::Types::String, null: false,
               description: 'Name of the upstream registry.',
               experiment: { milestone: '18.1' }

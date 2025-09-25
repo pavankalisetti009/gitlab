@@ -27,21 +27,27 @@ module EE
           description: 'Filter by weight ID wildcard. Incompatible with weight.'
         argument :custom_field, [::Types::WorkItems::Widgets::CustomFieldFilterInputType],
           required: false,
+          validates: { length: { maximum: ::WorkItems::SharedFilterArguments::MAX_FIELD_LIMIT } },
           experiment: { milestone: '17.10' },
-          description: 'Filter by custom fields.'
+          description: "Filter by custom fields " \
+            "(maximum is #{::WorkItems::SharedFilterArguments::MAX_FIELD_LIMIT} fields)."
         argument :status, ::Types::WorkItems::Widgets::StatusFilterInputType,
           required: false,
           description: 'Filter by status.',
           experiment: { milestone: '18.0' }
         argument :iteration_id, [::GraphQL::Types::ID, { null: true }],
           required: false,
-          description: 'List of iteration Global IDs applied to the issue.'
+          validates: { length: { maximum: ::WorkItems::SharedFilterArguments::MAX_FIELD_LIMIT } },
+          description: "List of iteration Global IDs applied to the issue " \
+            "(maximum is #{::WorkItems::SharedFilterArguments::MAX_FIELD_LIMIT} IDs)."
         argument :iteration_wildcard_id, ::Types::IterationWildcardIdEnum,
           required: false,
           description: 'Filter by iteration ID wildcard.'
         argument :iteration_cadence_id, [::Types::GlobalIDType[::Iterations::Cadence]],
           required: false,
-          description: 'Filter by a list of iteration cadence IDs.'
+          validates: { length: { maximum: ::WorkItems::SharedFilterArguments::MAX_FIELD_LIMIT } },
+          description: "Filter by a list of iteration cadence IDs " \
+            "(maximum is #{::WorkItems::SharedFilterArguments::MAX_FIELD_LIMIT} IDs)."
 
         validates mutually_exclusive: [:weight, :weight_wildcard_id]
         validates mutually_exclusive: [:iteration_id, :iteration_wildcard_id]
