@@ -6,7 +6,7 @@ module Mutations
       class DeleteWorkflow < BaseMutation
         graphql_name 'DeleteDuoWorkflowsWorkflow'
 
-        authorize :destroy_duo_workflow
+        authorize :delete_duo_workflow
 
         argument :workflow_id, ::Types::GlobalIDType[::Ai::DuoWorkflows::Workflow],
           required: true,
