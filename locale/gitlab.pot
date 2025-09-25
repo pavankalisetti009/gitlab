@@ -58458,9 +58458,6 @@ msgstr ""
 msgid "SecurityOrchestration|%{cadence} on %{branches}%{timeWindowInfo}%{branchExceptionsString}"
 msgstr ""
 
-msgid "SecurityOrchestration|%{frameworkName} has %{projectLength} %{projects}"
-msgstr ""
-
 msgid "SecurityOrchestration|%{hours}"
 msgstr ""
 
