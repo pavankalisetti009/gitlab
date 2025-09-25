@@ -75,6 +75,10 @@ module SecretsManagement
       STATUSES[:ok]
     end
 
+    def needs_attention?
+      overdue? || approaching?
+    end
+
     private
 
     # To avoid unintentional bumping of `next_reminder_at`, we only call this
