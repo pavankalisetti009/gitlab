@@ -49,7 +49,7 @@ module ProductAnalyticsHelpers
   end
 
   def dora_metrics_dashboard_enabled?(user)
-    Feature.enabled?(:dora_metrics_dashboard, self) &&
+    Feature.enabled?(:dora_metrics_dashboard, root_ancestor) &&
       Ability.allowed?(user, :read_dora4_analytics, self)
   end
 
