@@ -1,4 +1,4 @@
-import { updateActiveNavigation } from 'ee/ai/duo_agents_platform/router/dom_utils';
+import { updateActiveNavigation } from '~/vue_shared/spa/utils/dom_utils';
 
 // Test constants
 const CSS_CLASSES = {

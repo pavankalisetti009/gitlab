@@ -93,7 +93,7 @@ RSpec.describe Sidebars::Projects::SuperSidebarMenus::DuoAgentsMenu, feature_cat
     end
 
     it 'has correct active routes' do
-      expect(menu_item.active_routes).to eq({ controller: :duo_agents_platform })
+      expect(menu_item.active_routes).to be_nil
     end
 
     it 'has correct item id' do
@@ -119,7 +119,7 @@ RSpec.describe Sidebars::Projects::SuperSidebarMenus::DuoAgentsMenu, feature_cat
     end
 
     it 'has correct active routes' do
-      expect(flow_triggers_menu_item.active_routes).to eq({ controller: :duo_agents_platform })
+      expect(flow_triggers_menu_item.active_routes).to be_nil
     end
 
     it 'has correct item id' do
@@ -144,7 +144,7 @@ RSpec.describe Sidebars::Projects::SuperSidebarMenus::DuoAgentsMenu, feature_cat
     end
 
     it 'has correct active routes' do
-      expect(flows_menu_item.active_routes).to eq({ controller: :duo_agents_platform })
+      expect(flows_menu_item.active_routes).to be_nil
     end
 
     it 'has correct item id' do
