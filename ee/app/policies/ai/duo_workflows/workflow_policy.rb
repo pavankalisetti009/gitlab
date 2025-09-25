@@ -53,7 +53,7 @@ module Ai
         enable :execute_duo_workflow_in_ci
       end
 
-      rule { is_workflow_owner }.enable :destroy_duo_workflow
+      rule { is_workflow_owner }.enable :delete_duo_workflow
     end
   end
 end

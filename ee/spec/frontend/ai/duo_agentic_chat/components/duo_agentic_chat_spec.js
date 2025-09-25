@@ -1596,4 +1596,38 @@ describe('Duo Agentic Chat', () => {
       expect(mockSocketManager.connect).toHaveBeenCalledWith(expectedStartRequest);
     });
   });
+
+  describe('Agent deletion handling', () => {
+    beforeEach(async () => {
+      duoChatGlobalState.isAgenticChatShown = true;
+      createComponent();
+      await waitForPromises();
+    });
+
+    it('disables chat when agent is deleted', async () => {
+      // Mock thread with deleted agent
+      ApolloUtils.fetchWorkflowEvents.mockResolvedValue({
+        ...MOCK_WORKFLOW_EVENTS_RESPONSE,
+        duoWorkflowWorkflows: {
+          nodes: [{ id: 'workflow-1', aiCatalogItemVersionId: 'AgentVersion 999' }],
+        },
+      });
+
+      findDuoChat().vm.$emit('thread-selected', { id: MOCK_WORKFLOW_ID });
+      await waitForPromises();
+
+      expect(findDuoChat().props('isChatAvailable')).toBe(false);
+      expect(findDuoChat().props('error')).toBe(
+        'The agent associated with this conversation is no longer available. You can view the conversation history but cannot send new messages.',
+      );
+    });
+
+    it('hides error in history view', () => {
+      createComponent({
+        data: { multithreadedView: DUO_CHAT_VIEWS.LIST, agentDeletedError: 'Error' },
+      });
+
+      expect(findDuoChat().props('error')).toBe('');
+    });
+  });
 });
