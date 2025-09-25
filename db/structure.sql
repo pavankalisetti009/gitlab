@@ -28476,6 +28476,7 @@ CREATE TABLE web_hooks (
     vulnerability_events boolean DEFAULT false NOT NULL,
     member_approval_events boolean DEFAULT false NOT NULL,
     milestone_events boolean DEFAULT false NOT NULL,
+    organization_id bigint,
     CONSTRAINT check_1e4d5cbdc5 CHECK ((char_length(name) <= 255)),
     CONSTRAINT check_23a96ad211 CHECK ((char_length(description) <= 2048)),
     CONSTRAINT check_69ef76ee0c CHECK ((char_length(custom_webhook_template) <= 4096))
@@ -42536,6 +42537,8 @@ CREATE INDEX index_web_hooks_on_group_id ON web_hooks USING btree (group_id) WHE
 
 CREATE INDEX index_web_hooks_on_integration_id ON web_hooks USING btree (integration_id);
 
+CREATE INDEX index_web_hooks_on_organization_id ON web_hooks USING btree (organization_id);
+
 CREATE INDEX index_web_hooks_on_project_id_and_id ON web_hooks USING btree (project_id, id) WHERE ((type)::text = 'ProjectHook'::text);
 
 CREATE INDEX index_web_hooks_on_project_id_recent_failures ON web_hooks USING btree (project_id, recent_failures);
@@ -48971,6 +48974,9 @@ ALTER TABLE ONLY gitlab_subscriptions
 
 ALTER TABLE ONLY ml_candidate_metrics
     ADD CONSTRAINT fk_e2684c8ffc FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE CASCADE;
+
+ALTER TABLE ONLY web_hooks
+    ADD CONSTRAINT fk_e295b26646 FOREIGN KEY (organization_id) REFERENCES organizations(id) ON DELETE CASCADE NOT VALID;
 
 ALTER TABLE ONLY approval_merge_request_rules
     ADD CONSTRAINT fk_e33a9aaf67 FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE CASCADE;
