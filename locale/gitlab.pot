@@ -66676,7 +66676,7 @@ msgstr ""
 msgid "This job is an out-of-date deployment to %{environmentLink}. View the %{deploymentLink}."
 msgstr ""
 
-msgid "This job is archived. Only the complete pipeline can be retried."
+msgid "This job is archived."
 msgstr ""
 
 msgid "This job is creating a deployment to %{environmentLink} using cluster %{clusterNameOrLink} and namespace %{kubernetesNamespace}."
