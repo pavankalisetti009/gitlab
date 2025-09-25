@@ -15,6 +15,10 @@ module Types
         field :selectable_models, [Types::Ai::ModelSelection::OfferedModelType],
           null: true,
           description: "LLMs compatible with Duo Agentic Chat."
+
+        field :pinned_model, ::Types::Ai::ModelSelection::OfferedModelType,
+          null: true,
+          description: 'Pinned model for Duo Agentic Chat if set via feature settings.'
       end
       # rubocop: enable Graphql/AuthorizeTypes
     end
