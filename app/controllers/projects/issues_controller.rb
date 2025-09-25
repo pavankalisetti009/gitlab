@@ -248,7 +248,7 @@ class Projects::IssuesController < Projects::ApplicationController
   end
 
   def create_merge_request
-    start_covered_experience_create_mr
+    Gitlab::CoveredExperience.start_covered_experience_create_merge_request(project)
 
     create_params = params.slice(:branch_name, :ref).merge(issue_iid: issue.iid)
     create_params[:target_project_id] = params[:target_project_id]
@@ -502,12 +502,6 @@ class Projects::IssuesController < Projects::ApplicationController
 
   # Overridden in EE
   def redirect_if_epic_params; end
-
-  def start_covered_experience_create_mr
-    return unless Feature.enabled?(:covered_experience_create_merge_request, Feature.current_request)
-
-    Labkit::CoveredExperience.start(:create_merge_request)
-  end
 end
 
 Projects::IssuesController.prepend_mod_with('Projects::IssuesController')

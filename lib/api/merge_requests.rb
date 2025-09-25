@@ -178,12 +178,6 @@ module API
         ::MergeRequests::MergeabilityCheckBatchService.new(merge_requests, current_user).execute
       end
 
-      def start_covered_experience_create_mr
-        return unless Feature.enabled?(:covered_experience_create_merge_request, Feature.current_request)
-
-        Labkit::CoveredExperience.start(:create_merge_request, user_id: current_user.id, project_id: user_project.id)
-      end
-
       params :merge_requests_params do
         use :merge_requests_base_params
         use :optional_merge_requests_search_params
@@ -361,7 +355,7 @@ module API
 
         authorize! :create_merge_request_from, user_project
 
-        start_covered_experience_create_mr
+        Gitlab::CoveredExperience.start_covered_experience_create_merge_request(user_project)
 
         mr_params = declared_params(include_missing: false)
         mr_params[:force_remove_source_branch] = mr_params.delete(:remove_source_branch)
