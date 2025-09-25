@@ -21,7 +21,7 @@ module Resolvers
         result = ::SecretsManagement::ProjectSecrets::ListService.new(
           project,
           current_user
-        ).execute(include_rotation_info: lookahead.selection(:nodes).selects?(:rotation_info))
+        ).execute(include_rotation_info: include_rotation_info?(lookahead))
 
         if result.success?
           result.payload[:project_secrets]
@@ -31,6 +31,11 @@ module Resolvers
       end
 
       private
+
+      def include_rotation_info?(lookahead)
+        lookahead.selection(:nodes).selects?(:rotation_info) ||
+          lookahead.selection(:edges).selection(:node).selects?(:rotation_info)
+      end
 
       def find_object(project_path:)
         resolve_project(full_path: project_path)
