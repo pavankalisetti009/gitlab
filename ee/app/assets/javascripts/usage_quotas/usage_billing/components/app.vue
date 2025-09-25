@@ -34,6 +34,9 @@ export default {
     gitlabUnitsUsage() {
       return this.subscriptionData.gitlabUnitsUsage;
     },
+    hasCommitment() {
+      return Boolean(this.gitlabUnitsUsage.totalUnits);
+    },
     trend() {
       return (
         this.gitlabUnitsUsage.poolUsage?.usageTrend || this.gitlabUnitsUsage.seatUsage?.usageTrend
@@ -121,6 +124,7 @@ export default {
     <template v-else>
       <section class="gl-flex gl-flex-col gl-gap-5 @md/panel:gl-flex-row">
         <current-usage-card
+          v-if="hasCommitment"
           :total-units="gitlabUnitsUsage.totalUnits"
           :total-units-used="gitlabUnitsUsage.totalUnitsUsed"
           :current-overage="gitlabUnitsUsage.overageUnits"
@@ -128,7 +132,7 @@ export default {
           :month-end-date="gitlabUnitsUsage.endDate"
         />
 
-        <purchase-commitment-card />
+        <purchase-commitment-card :has-commitment="hasCommitment" />
       </section>
       <gl-tabs class="gl-mt-5">
         <gl-tab :title="s__('UsageBilling|Usage trends')">
@@ -142,11 +146,12 @@ export default {
           />
         </gl-tab>
         <gl-tab :title="s__('UsageBilling|Usage by user')">
-          <usage-by-user-tab :users-data="gitlabUnitsUsage.usersUsage" />
+          <usage-by-user-tab
+            :users-data="gitlabUnitsUsage.usersUsage"
+            :has-commitment="hasCommitment"
+          />
         </gl-tab>
       </gl-tabs>
-
-      <pre>{{ JSON.stringify(subscriptionData, null, 2) }}</pre>
     </template>
   </section>
 </template>

@@ -10,7 +10,7 @@ import { captureException } from '~/sentry/sentry_browser_wrapper';
 import PurchaseCommitmentCard from 'ee/usage_quotas/usage_billing/components/purchase_commitment_card.vue';
 import UsageTrendsChart from 'ee/usage_quotas/usage_billing/components/usage_trends_chart.vue';
 import CurrentUsageCard from 'ee/usage_quotas/usage_billing/components/current_usage_card.vue';
-import { mockUsageDataWithPool } from '../mock_data';
+import { mockUsageDataWithoutPool, mockUsageDataWithPool } from '../mock_data';
 
 jest.mock('~/lib/logger');
 jest.mock('~/sentry/sentry_browser_wrapper');
@@ -62,18 +62,6 @@ describe('UsageBillingApp', () => {
       await waitForPromises();
     });
 
-    // NOTE: this is a temporary placeholder until we start using fetched data
-    it('shows debug information', () => {
-      const debugPre = wrapper.find('pre');
-      expect(debugPre.text()).toContain(
-        JSON.stringify(mockUsageDataWithPool.subscription, null, 2),
-      );
-    });
-
-    it('renders purchase-commitment-card', () => {
-      expect(wrapper.findComponent(PurchaseCommitmentCard).exists()).toBe(true);
-    });
-
     it('renders current-usage-card', () => {
       expect(wrapper.findComponent(CurrentUsageCard).props()).toMatchObject({
         currentOverage: 0,
@@ -84,6 +72,13 @@ describe('UsageBillingApp', () => {
       });
     });
 
+    it('renders purchase-commitment-card', () => {
+      const purchaseCommitmentCard = wrapper.findComponent(PurchaseCommitmentCard);
+
+      expect(purchaseCommitmentCard.exists()).toBe(true);
+      expect(purchaseCommitmentCard.props('hasCommitment')).toBe(true);
+    });
+
     it('renders the correct tabs', () => {
       const tabs = findTabs();
 
@@ -92,14 +87,52 @@ describe('UsageBillingApp', () => {
     });
 
     it('renders usage trends chart with correct props', () => {
-      expect(wrapper.findComponent(UsageTrendsChart).props()).toMatchObject({
+      const usageTrendsChart = wrapper.findComponent(UsageTrendsChart);
+
+      expect(usageTrendsChart.props()).toMatchObject({
         monthStartDate: '2024-01-01',
         monthEndDate: '2024-01-31',
         trend: 0.12,
       });
-      expect(wrapper.findComponent(UsageTrendsChart).props('usageData')).toHaveLength(30);
+      expect(usageTrendsChart.props('usageData')).toHaveLength(30);
+    });
+
+    it('renders users table tab with correct props', () => {
+      const usageByUserTab = wrapper.findComponent(UsageByUserTab);
+
+      expect(usageByUserTab.props()).toMatchObject({
+        usersData: mockUsageDataWithPool.subscription.gitlabUnitsUsage.usersUsage,
+        hasCommitment: true,
+      });
     });
   });
+
+  describe('no commitment state', () => {
+    beforeEach(async () => {
+      mockAxios.onGet(API_ENDPOINT).reply(200, mockUsageDataWithoutPool);
+      createComponent();
+      await waitForPromises();
+    });
+
+    it('will not render current-usage-card', () => {
+      const currentUsageCard = wrapper.findComponent(CurrentUsageCard);
+
+      expect(currentUsageCard.exists()).toBe(false);
+    });
+
+    it('will pass hasComitment to purchase-commitment-card', () => {
+      const purchaseCommitmentCard = wrapper.findComponent(PurchaseCommitmentCard);
+
+      expect(purchaseCommitmentCard.props('hasCommitment')).toBe(false);
+    });
+
+    it('will pass hasComitment to usage-by-user-tab', () => {
+      const usageByUserTab = wrapper.findComponent(UsageByUserTab);
+
+      expect(usageByUserTab.props('hasCommitment')).toBe(false);
+    });
+  });
+
   describe('error state', () => {
     const errorMessage = 'Network Error';
 

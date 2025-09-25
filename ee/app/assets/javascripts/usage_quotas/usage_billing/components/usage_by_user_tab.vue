@@ -18,6 +18,10 @@ export default {
       type: Object,
       required: true,
     },
+    hasCommitment: {
+      required: true,
+      type: Boolean,
+    },
   },
   computed: {
     tableFields() {
@@ -25,29 +29,24 @@ export default {
         {
           key: 'user',
           label: __('User'),
-          sortable: true,
         },
         {
           key: 'allocationUsed',
           label: s__('UsageBilling|Allocation used'),
-          sortable: true,
         },
-        {
+        this.hasCommitment && {
           key: 'poolUsed',
           label: s__('UsageBilling|Pool used'),
-          sortable: true,
         },
         {
           key: 'totalUnitsUsed',
           label: s__('UsageBilling|Total units used'),
-          sortable: true,
         },
         {
           key: 'status',
           label: s__('UsageBilling|Status'),
-          sortable: true,
         },
-      ];
+      ].filter(Boolean);
     },
   },
   methods: {

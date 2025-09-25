@@ -69605,6 +69605,9 @@ msgstr ""
 msgid "UsageBilling|Purchase a monthly commitment"
 msgstr ""
 
+msgid "UsageBilling|Purchase monthly commitment"
+msgstr ""
+
 msgid "UsageBilling|Status"
 msgstr ""
 
@@ -69654,6 +69657,9 @@ msgid "UsageBilling|Using pool"
 msgstr ""
 
 msgid "UsageBilling|You can increase your commitment amount to extend your monthly allocation of tokens."
+msgstr ""
+
+msgid "UsageBilling|You can purchase a monthly allocation of GitLab Units to be shared across users."
 msgstr ""
 
 msgid "UsageQuotas|(of %{totalStorageSize})"
