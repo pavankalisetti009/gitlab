@@ -1,3 +1,4 @@
+import { GlBreakpointInstance } from '@gitlab/ui/src/utils';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import waitForPromises from 'helpers/wait_for_promises';
 import { useLocalStorageSpy } from 'helpers/local_storage_helper';
@@ -182,6 +183,48 @@ describe('AIPanel', () => {
 
         expect(mockRouter.push).not.toHaveBeenCalled();
       });
+    });
+  });
+
+  describe('on window resize', () => {
+    const triggerResize = () => {
+      window.dispatchEvent(new Event('resize'));
+    };
+
+    it('collapses panel and clears the tab when resizing from desktop to non-desktop', async () => {
+      jest.spyOn(GlBreakpointInstance, 'isDesktop').mockReturnValue(true);
+      createComponent();
+
+      GlBreakpointInstance.isDesktop.mockReturnValue(false);
+      triggerResize();
+      await waitForPromises();
+
+      expect(findNavigationRail().props('isExpanded')).toBe(false);
+      expect(findContentContainer().exists()).toBe(false);
+    });
+
+    it('does not change panel state when resizing from non-desktop to desktop', async () => {
+      jest.spyOn(GlBreakpointInstance, 'isDesktop').mockReturnValue(false);
+      createComponent({ activeTab: null, isExpanded: false });
+
+      triggerResize();
+      GlBreakpointInstance.isDesktop.mockReturnValue(true);
+      await waitForPromises();
+
+      expect(findNavigationRail().props('isExpanded')).toBe(false);
+      expect(findContentContainer().exists()).toBe(false);
+    });
+
+    it('does not change panel state when breakpoint size does not change', async () => {
+      jest.spyOn(GlBreakpointInstance, 'isDesktop').mockReturnValue(true);
+      createComponent();
+
+      triggerResize();
+      await waitForPromises();
+
+      expect(findNavigationRail().props('isExpanded')).toBe(true);
+      expect(findContentContainer().exists()).toBe(true);
+      expect(findContentContainer().props('activeTab').title).toBe('GitLab Duo Chat');
     });
   });
 });
