@@ -206,6 +206,8 @@ export default {
       catalogAgents: [],
       flowConfig: '',
       aiCatalogItemVersionId: '',
+      agentDeletedError: '',
+      isChatAvailable: true,
     };
   },
   computed: {
@@ -536,6 +538,10 @@ export default {
       this.workflowId = parseGid(thread.id).id;
 
       await this.hydrateActiveThread();
+
+      // Check if the thread's agent still exists after hydration
+      this.validateAgentExists();
+
       if (this.$route?.path !== '/chat') {
         this.$router.push(`/chat`);
       }
@@ -543,6 +549,9 @@ export default {
     async hydrateActiveThread() {
       if (this.workflowId && !this.messages?.length) {
         await this.loadActiveThread();
+
+        // Check if the thread's agent still exists after loading (for page load scenarios)
+        this.validateAgentExists();
 
         if (this.workflowStatus === DUO_WORKFLOW_STATUS_RUNNING) {
           this.startWorkflow('');
@@ -621,6 +630,32 @@ export default {
       localStorage.setItem(DUO_AGENTIC_CHAT_SELECTED_MODEL_KEY, JSON.stringify(model));
       this.onNewChat(null, true);
     },
+    validateAgentExists() {
+      if (!this.aiCatalogItemVersionId) {
+        // No specific agent selected, using default - chat should be available
+        this.isChatAvailable = true;
+        this.agentDeletedError = '';
+        return true;
+      }
+
+      const agentExists = this.catalogAgents.some((agent) =>
+        agent.versions?.nodes?.some((version) => version.id === this.aiCatalogItemVersionId),
+      );
+
+      if (!agentExists) {
+        // Disable chat and show error when agent is deleted
+        this.isChatAvailable = false;
+        this.agentDeletedError = s__(
+          'DuoAgenticChat|The agent associated with this conversation is no longer available. You can view the conversation history but cannot send new messages.',
+        );
+      } else {
+        // Agent exists - ensure chat is available and clear any error
+        this.isChatAvailable = true;
+        this.agentDeletedError = '';
+      }
+
+      return agentExists;
+    },
   },
 };
 </script>
@@ -645,6 +680,8 @@ export default {
     :dimensions="dimensions"
     :is-tool-approval-processing="isProcessingToolApproval"
     :agents="agents"
+    :is-chat-available="isChatAvailable"
+    :error="multithreadedView === 'chat' ? agentDeletedError : ''"
     class="gl-h-full gl-w-full"
     @new-chat="onNewChat"
     @send-chat-prompt="onSendChatPrompt"
