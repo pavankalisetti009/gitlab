@@ -14,7 +14,9 @@ class Gitlab::Seeder::GitLabDuo # rubocop:disable Style/ClassAndModuleChildren -
     puts "Seeding resources to #{GROUP_PATH} group..."
 
     ApplicationRecord.transaction do
-      group = FactoryBot.create(:group, :public, id: ID_BASE, name: 'GitLab Duo', path: GROUP_PATH)
+      group = FactoryBot.create(
+        :group, :public, id: ID_BASE, name: 'GitLab Duo', path: GROUP_PATH, organization_id: user.organization_id
+      )
       group.add_owner(user)
 
       epic = FactoryBot.create(:epic,
