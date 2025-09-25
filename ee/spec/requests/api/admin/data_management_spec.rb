@@ -59,19 +59,21 @@ RSpec.describe API::Admin::DataManagement, :aggregate_failures, :request_store, 
             end
 
             context 'with composite IDs' do
-              let(:list) { create_list(:virtual_registries_packages_maven_cache_entry, 9) }
-              let(:klass) { list.first.class }
-              let(:model_primary_key) { klass.primary_key }
-              let(:sorted_records) do
-                klass.where(model_primary_key => list.pluck(*model_primary_key)).order(*model_primary_key)
+              let_it_be(:list) { create_list(:virtual_registries_packages_maven_cache_entry, 9) }
+              # We're using this Entry model because it will be the first model with composite PKs supported by Geo.
+              # The model isn't Geo-ready yet, so we need to mock its interface in this test to simulate its future
+              # implementation.
+              let_it_be(:orderable_klass) do
+                Class.new(list.first.class) do
+                  include Orderable
+                end
               end
 
               before do
-                # The VirtualRegistries::Packages::Maven::Cache::Entry model is not in the allowed list.
-                # This is why the url matches`project` but I force the ModelMapper to return
-                # the MavenCacheEntry double instead of the normally expected `Project`.
-                allow(Gitlab::Geo::ModelMapper).to receive(:find_from_name).with('project').and_return(klass)
-                allow(klass).to receive(:order_by_primary_key).and_return(sorted_records)
+                # The VirtualRegistries::Packages::Maven::Cache::Entry model is not in the allowed list yet.
+                # This is why we need to force the ModelMapper to return the stubbed class instead of the model
+                # passed as parameters.
+                allow(Gitlab::Geo::ModelMapper).to receive(:find_from_name).with('project').and_return(orderable_klass)
               end
 
               it 'paginates results' do
@@ -89,6 +91,132 @@ RSpec.describe API::Admin::DataManagement, :aggregate_failures, :request_store, 
                 expect(json_response.size).to eq(4) # Remaining 4 records
                 expect(response.headers['X-Page']).to eq('2')
                 expect(response.headers['X-Next-Page']).to be_empty
+              end
+            end
+          end
+
+          context 'with filtering based on ids' do
+            context 'with integer ids' do
+              let_it_be(:list) { create_list(:project, 3) }
+
+              it 'filters passed ids' do
+                get api("/admin/data_management/project?identifiers[]=#{list.first.id}&identifiers[]=#{list.last.id}",
+                  admin,
+                  admin_mode: true)
+
+                expect(response).to have_gitlab_http_status(:ok)
+                expect(json_response.pluck('record_identifier')).to eq([list.first.id, list.last.id])
+                expect(json_response.size).to eq(2)
+              end
+            end
+
+            context 'with composite ids' do
+              let_it_be(:list) { create_list(:virtual_registries_packages_maven_cache_entry, 3) }
+              # We're using this Entry model because it will be the first model with composite PKs supported by Geo.
+              # The model isn't Geo-ready yet, so we need to mock its interface in this test to simulate its future
+              # implementation.
+              let_it_be(:orderable_klass) do
+                Class.new(list.first.class) do
+                  include Orderable
+                end
+              end
+
+              let_it_be(:ids_list) do
+                list.map do |model|
+                  Base64.urlsafe_encode64(orderable_klass
+                                            .primary_key
+                                            .map { |field| model.read_attribute_before_type_cast(field) }
+                                            .join(' '))
+                end
+              end
+
+              before do
+                # The VirtualRegistries::Packages::Maven::Cache::Entry model is not in the allowed list yet.
+                # This is why we need to force the ModelMapper to return the stubbed class instead of the model
+                # passed as parameters.
+                allow(Gitlab::Geo::ModelMapper).to receive(:find_from_name).with('project').and_return(orderable_klass)
+              end
+
+              it 'filters passed ids' do
+                get api("/admin/data_management/project?identifiers[]=#{ids_list.first}&identifiers[]=#{ids_list.last}",
+                  admin,
+                  admin_mode: true)
+
+                expect(response).to have_gitlab_http_status(:ok)
+                expect(json_response.pluck('record_identifier')).to eq([ids_list.first, ids_list.last])
+                expect(json_response.size).to eq(2)
+              end
+            end
+
+            context 'with invalid ids' do
+              it 'returns 400 with mixed ids' do
+                fake_b64 = Base64.urlsafe_encode64('1 2 3')
+
+                get api("/admin/data_management/project?identifiers[]=1&identifiers[]=#{fake_b64}",
+                  admin,
+                  admin_mode: true)
+
+                expect(response).to have_gitlab_http_status(:bad_request)
+                expect(json_response['message']).to include('invalid base64')
+              end
+
+              it 'returns 400 with invalid composite keys' do
+                fake_ids = [Base64.urlsafe_encode64('1 2 3'), Base64.urlsafe_encode64('4-5-6')]
+                url = "/admin/data_management/project?identifiers[]=#{fake_ids.first}&identifiers[]=#{fake_ids.last}"
+
+                get api(url, admin, admin_mode: true)
+
+                expect(response).to have_gitlab_http_status(:bad_request)
+                expect(json_response['message']).to include('Invalid composite key format')
+              end
+
+              it 'does not filter with empty ids' do
+                list = create_list(:project, 3)
+
+                get api("/admin/data_management/project?identifiers[]=", admin, admin_mode: true)
+
+                expect(response).to have_gitlab_http_status(:ok)
+                expect(json_response.pluck('record_identifier')).to match_array(list.map(&:id))
+                expect(json_response.size).to eq(3)
+              end
+            end
+          end
+
+          context 'with filtering based on status' do
+            context 'with valid status' do
+              let_it_be(:node) { create(:geo_node) }
+              let_it_be(:succeeded_record) { create(:snippet_repository, :verification_succeeded) }
+              let_it_be(:failed_record) { create(:snippet_repository, :verification_failed) }
+              let_it_be(:pending_record) { create_record_for_given_state(:verification_pending) }
+              let_it_be(:started_record) { create_record_for_given_state(:verification_started) }
+              let_it_be(:disabled_record) { create_record_for_given_state(:verification_disabled) }
+
+              def create_record_for_given_state(state)
+                create(:snippet_repository, verification_state: SnippetRepository.verification_state_value(state))
+              end
+
+              before do
+                stub_current_geo_node(node)
+                stub_primary_site
+              end
+
+              where(status: %w[pending started succeeded failed disabled])
+              with_them do
+                it 'returns matching object data' do
+                  get api("/admin/data_management/snippet_repository?checksum_state=#{status}", admin, admin_mode: true)
+
+                  expect(response).to have_gitlab_http_status(:ok)
+                  expect(json_response.first).to include('record_identifier' => send(:"#{status}_record").id)
+                  expect(json_response.size).to eq(1)
+                end
+              end
+            end
+
+            context 'with invalid status' do
+              it 'returns 400' do
+                get api('/admin/data_management/project?checksum_state=invalid', admin, admin_mode: true)
+
+                expect(response).to have_gitlab_http_status(:bad_request)
               end
             end
           end
@@ -263,33 +391,33 @@ RSpec.describe API::Admin::DataManagement, :aggregate_failures, :request_store, 
         end
 
         context 'with valid base64 id' do
-          let(:model) { create(:virtual_registries_packages_maven_cache_entry) }
-          let(:double) { class_double(model.class) }
-          let(:model_primary_key) { model.class.primary_key }
-          let(:expected_id) { model_primary_key.map { |field| model.read_attribute_before_type_cast(field).to_s } }
-          let(:base64_id) { Base64.urlsafe_encode64(expected_id.join(' ')) }
+          let_it_be(:model) { create(:virtual_registries_packages_maven_cache_entry) }
+          # We're using this Entry model because it will be the first model with composite PKs supported by Geo.
+          # The model isn't Geo-ready yet, so we need to mock its interface in this test to simulate its future
+          # implementation.
+          let_it_be(:stubbed_class) do
+            Class.new(model.class) do
+              include Geo::HasReplicator
+            end
+          end
+
+          let_it_be(:base64_id) do
+            pks = model.class.primary_key
+            ids = pks.map { |field| model.read_attribute_before_type_cast(field).to_s }
+            Base64.urlsafe_encode64(ids.join(' '))
+          end
 
           before do
             # The VirtualRegistries::Packages::Maven::Cache::Entry model is not in the allowed list.
-            # This is why the url matches`project` but I force the ModelMapper to return
-            # the MavenCacheEntry double instead of the normally expected `Project`.
-            allow(Gitlab::Geo::ModelMapper).to receive(:find_from_name).with('project').and_return(double)
-            # The VirtualRegistries::Packages::Maven::Cache::Entry model is not yet added to Geo, so it doesn't
-            # include the replicator module which would give it access to the `find_by_primary_key` method.
-            # I add this module to the double returned by the ModelMapper and stub the needed methods.
-            double.send(:include, Geo::HasReplicator)
-            allow(double).to receive(:primary_key).and_return(model_primary_key)
-            allow(double).to receive(:primary_key_in)
-                               .with([expected_id])
-                               .and_return(model.class.primary_key_in([expected_id]))
+            # This is why the url matches`project` but I force the ModelMapper to return the stubbed class instead.
+            allow(Gitlab::Geo::ModelMapper).to receive(:find_from_name).with('project').and_return(stubbed_class)
           end
 
           it 'returns matching object data' do
             get api("/admin/data_management/project/#{base64_id}", admin, admin_mode: true)
 
             expect(response).to have_gitlab_http_status(:ok)
-            expect(json_response).to include('record_identifier' => base64_id,
-              'model_class' => model.class.name)
+            expect(json_response).to include('record_identifier' => base64_id)
           end
         end
 

@@ -10,6 +10,7 @@ module API
       urgency :low
 
       AVAILABLE_MODEL_NAMES = Gitlab::Geo::ModelMapper.available_model_names.freeze
+      VERIFICATION_STATES = %w[pending started succeeded failed disabled].freeze
 
       before do
         authenticated_as_admin!
@@ -35,6 +36,25 @@ module API
                               end
 
           model_class.find_by_primary_key(primary_key_value)
+        rescue ArgumentError, TypeError => e
+          bad_request!(e)
+        end
+
+        def find_models_from_record_identifier_array(identifier_array, relation)
+          primary_key_values = if identifier_array.all?(Integer)
+                                 identifier_array
+                               else
+                                 identifier_array.map do |identifier|
+                                   decoded_string = Base64.urlsafe_decode64(identifier)
+                                   bad_request!('Invalid composite key format') unless decoded_string.include?(' ')
+
+                                   decoded_string.split(' ')
+                                 end
+                               end
+
+          relation.primary_key_in(primary_key_values)
+        rescue ArgumentError, TypeError => e
+          bad_request!(e)
         end
       end
 
@@ -59,13 +79,26 @@ module API
             params do
               use :pagination
               requires :model_name, type: String, values: AVAILABLE_MODEL_NAMES
+              optional :identifiers, types: [Array[Integer], Array[String]], desc: 'The record identifiers to filter by'
+              optional :checksum_state,
+                type: String,
+                desc: 'The checksum status of the records to filter by',
+                values: VERIFICATION_STATES
             end
-
             get do
               model_class = Gitlab::Geo::ModelMapper.find_from_name(params[:model_name])
               not_found!(params[:model_name]) unless model_class
 
               relation = model_class.respond_to?(:with_state_details) ? model_class.with_state_details : model_class
+              if params[:identifiers]&.compact.present?
+                relation = find_models_from_record_identifier_array(params[:identifiers], relation)
+              end
+
+              if params[:checksum_state].present?
+                bad_request!("#{model_class} is not a verifiable model.") unless verifiable?(model_class)
+                relation = relation.with_verification_state("verification_#{params[:checksum_state]}")
+              end
+
               relation = relation.order_by_primary_key
 
               present paginate(relation.all, without_count: true), with: Entities::Admin::Model
@@ -101,8 +134,6 @@ module API
                 not_found!(params[:record_identifier]) unless model
 
                 present model, with: Entities::Admin::Model
-              rescue ArgumentError, TypeError => e
-                bad_request!(e)
               end
 
               # Example request:
