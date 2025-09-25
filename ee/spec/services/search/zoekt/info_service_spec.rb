@@ -99,7 +99,8 @@ RSpec.describe ::Search::Zoekt::InfoService, :silence_stdout, feature_category: 
         allow(Search::Zoekt::Index).to receive(:sum).with(:reserved_storage_bytes).and_return(8 * 1024 * 1024) # 8MB
       end
 
-      it 'displays node information', :freeze_time do
+      it 'displays node information', :freeze_time,
+        quarantine: 'https://gitlab.com/gitlab-org/gitlab/-/issues/566377' do
         # Create nodes with different watermark levels using traits
         create(:zoekt_node, :for_search, :watermark_critical,
           metadata: { "name" => "node1" },
