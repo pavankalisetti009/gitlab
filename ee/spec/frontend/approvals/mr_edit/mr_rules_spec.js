@@ -1,7 +1,7 @@
-import { mount } from '@vue/test-utils';
 import Vue, { nextTick } from 'vue';
 // eslint-disable-next-line no-restricted-imports
 import Vuex from 'vuex';
+import { mountExtended } from 'helpers/vue_test_utils_helper';
 import MRRules from 'ee/approvals/mr_edit/mr_rules.vue';
 import RuleControls from 'ee/approvals/components/rules/rule_controls.vue';
 import Rules from 'ee/approvals/components/rules/rules.vue';
@@ -17,6 +17,7 @@ Vue.use(Vuex);
 describe('EE Approvals MRRules', () => {
   let wrapper;
   let store;
+  let vuexStore;
   let approvalRules;
   let OriginalMutationObserver;
 
@@ -25,18 +26,20 @@ describe('EE Approvals MRRules', () => {
       store.modules.approvals.state.rules = approvalRules;
     }
 
-    wrapper = mount(MRRules, {
-      store: new Vuex.Store(store),
+    vuexStore = new Vuex.Store(store);
+
+    wrapper = mountExtended(MRRules, {
+      store: vuexStore,
       attachTo: document.body,
     });
   };
 
   const findHeaders = () => wrapper.findAll('thead th').wrappers.map((x) => x.text());
-  const findRuleName = () => wrapper.find('[data-testid="approvals-table-name"');
-  const findRuleIndicator = () => wrapper.findComponent({ ref: 'indicator' });
+  const findRuleName = () => wrapper.findByTestId('approvals-table-name');
+  const findRuleIndicator = () => wrapper.findByTestId('indicator');
   const findAvatarList = () => wrapper.findComponent(UserAvatarList);
   const findRuleControls = () =>
-    wrapper.find('[data-testid="approvals-table-controls"').findComponent(RuleControls);
+    wrapper.findByTestId('approvals-table-controls').findComponent(RuleControls);
   const callTargetBranchHandler = (MutationObserverSpy) => {
     const onTargetBranchMutationHandler = MutationObserverSpy.mock.calls[0][0];
     return onTargetBranchMutationHandler();
@@ -96,9 +99,10 @@ describe('EE Approvals MRRules', () => {
 
     it('re-fetches rules when target branch has changed', async () => {
       factory();
-      store.modules.approvals.state.targetBranch = 'main123';
 
+      vuexStore.commit('SET_TARGET_BRANCH', 'main123');
       await nextTick();
+
       expect(store.modules.approvals.actions.fetchRules).toHaveBeenCalled();
     });
 
