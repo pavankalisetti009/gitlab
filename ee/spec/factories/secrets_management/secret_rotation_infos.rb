@@ -5,6 +5,7 @@ FactoryBot.define do
     project
     sequence(:secret_name) { |n| "SECRET_#{n}" }
     rotation_interval_days { 30 }
+    next_reminder_at { 30.days.from_now }
     secret_metadata_version { 1 }
   end
 end

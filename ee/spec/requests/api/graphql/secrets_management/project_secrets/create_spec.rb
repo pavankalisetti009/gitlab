@@ -87,7 +87,9 @@ RSpec.describe 'Create project secret', :gitlab_secrets_manager, :freeze_time, f
             rotation_interval_days: rotation_info.rotation_interval_days,
             status: SecretsManagement::SecretRotationInfo::STATUSES[:ok],
             updated_at: rotation_info.updated_at.iso8601,
-            created_at: rotation_info.created_at.iso8601
+            created_at: rotation_info.created_at.iso8601,
+            next_reminder_at: rotation_info.next_reminder_at.iso8601,
+            last_reminder_at: nil
           )
         ))
     end

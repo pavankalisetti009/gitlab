@@ -119,6 +119,21 @@ module EE
       end
     end
 
+    def secret_rotation_reminder(rotation_info)
+      project = rotation_info.project
+      recipients = owners_without_invites(project)
+
+      recipients.each do |recipient|
+        next unless recipient.can?(:receive_notifications)
+
+        mailer.secret_rotation_reminder_email(
+          recipient.id,
+          project.id,
+          rotation_info.secret_name
+        ).deliver_later
+      end
+    end
+
     private
 
     def oncall_user_removed_recipients(rotation, removed_user)
