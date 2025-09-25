@@ -38,9 +38,7 @@ module Types
         end
 
         def user
-          return unless type == 'User'
-
-          user_record
+          user_record if type == 'User'
         end
 
         def user_role_id
@@ -54,29 +52,17 @@ module Types
         end
 
         def group
-          return unless type == 'Group'
-
-          group_record
+          group_record if type == 'Group'
         end
 
         private
 
         def user_record
-          @user_record ||= if type == 'User'
-                             BatchLoader::GraphQL.for(id.to_i).batch do |user_ids, loader|
-                               users = ::UsersFinder.new(current_user, ids: user_ids).execute
-                               users.each { |user| loader.call(user.id, user) }
-                             end
-                           end
+          Gitlab::Graphql::Loaders::BatchModelLoader.new(User, id).find
         end
 
         def group_record
-          @group_record ||= if type == 'Group'
-                              BatchLoader::GraphQL.for(id.to_i).batch do |group_ids, loader|
-                                groups = GroupsFinder.new(current_user, ids: group_ids).execute
-                                groups.each { |group| loader.call(group.id, group) }
-                              end
-                            end
+          Gitlab::Graphql::Loaders::BatchModelLoader.new(Group, id).find
         end
 
         def project_id
