@@ -290,6 +290,7 @@ export default {
                 'AICatalog|You are an expert in [domain]. Your communication style is [style]. When helping users, you should always... Your key strengths include... You approach problems by...',
               )
             "
+            :rows="20"
             :state="validation.state"
             :value="value"
             data-testid="agent-form-textarea-system-prompt"
