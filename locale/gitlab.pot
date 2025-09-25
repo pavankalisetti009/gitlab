@@ -6182,7 +6182,7 @@ msgstr ""
 msgid "Advanced search"
 msgstr ""
 
-msgid "Advanced search indexing in progress. It might take a few minutes to create indices and initiate indexing.Please use gitlab:elastic:info rake task to check progress."
+msgid "Advanced search indexing in progress. It might take a few minutes to create indices and initiate indexing. Please use gitlab:elastic:info rake task to check progress."
 msgstr ""
 
 msgid "Advanced search indexing restrictions"
