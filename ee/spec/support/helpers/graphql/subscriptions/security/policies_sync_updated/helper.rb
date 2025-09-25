@@ -31,6 +31,7 @@ module Graphql
                   failedProjects
                   mergeRequestsProgress
                   mergeRequestsTotal
+                  inProgress
                 }
               }
             SUBSCRIPTION

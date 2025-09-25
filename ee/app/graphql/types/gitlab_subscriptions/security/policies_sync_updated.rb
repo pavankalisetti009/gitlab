@@ -30,6 +30,10 @@ module Types
         field :merge_requests_total, GraphQL::Types::Int,
           null: true,
           description: 'Total number of merge requests synced.'
+
+        field :in_progress, GraphQL::Types::Boolean,
+          null: true,
+          description: 'Whether security policies are currently being synchronized.'
       end
       # rubocop:enable GraphQL/ExtractType
       # rubocop:enable Graphql/AuthorizeTypes

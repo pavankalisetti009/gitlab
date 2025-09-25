@@ -28,7 +28,8 @@ module Subscriptions
           projects_total: object[:projects_total],
           failed_projects: object[:failed_projects],
           merge_requests_progress: object[:merge_requests_progress],
-          merge_requests_total: object[:merge_requests_total]
+          merge_requests_total: object[:merge_requests_total],
+          in_progress: object[:in_progress]
         }
       end
 
