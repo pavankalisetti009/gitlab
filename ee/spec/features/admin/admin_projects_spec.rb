@@ -26,7 +26,7 @@ RSpec.describe 'Admin Projects', feature_category: :permissions do
         expect(page).to have_content(authorized_project.name)
 
         within_testid("projects-list-item-#{authorized_project.id}") do
-          expect(has_testid?('groups-projects-more-actions-dropdown')).to be false
+          expect(has_testid?('projects-list-item-actions')).to be false
         end
       end
 
@@ -79,9 +79,9 @@ RSpec.describe 'Admin Projects', feature_category: :permissions do
 
         expect(page).to have_content(project.name)
 
-        find_by_testid('groups-projects-more-actions-dropdown').click
+        find_by_testid('projects-list-item-actions').click
 
-        within_testid('groups-projects-more-actions-dropdown') do
+        within_testid('projects-list-item-actions') do
           expect(page).to have_content('Edit')
           expect(page).to have_content('Delete')
         end

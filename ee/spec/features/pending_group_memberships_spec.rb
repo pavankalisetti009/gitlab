@@ -34,13 +34,28 @@ RSpec.describe 'Pending group memberships', :js, feature_category: :groups_and_p
       expect(page).not_to have_content "Recent activity"
     end
 
+    context 'when groups_overview_shared_vue_components feature flag is disabled' do
+      before do
+        stub_feature_flags(groups_overview_shared_vue_components: false)
+      end
+
+      it 'a pending member sees a public group with a private project as if not a member' do
+        create(:project, :private, namespace: group)
+        create(:group_member, :awaiting, :developer, source: group, user: developer)
+
+        visit group_path(group)
+
+        expect(page).to have_content "Group ID: #{group.id}"
+        expect(page).to have_content s_('GroupsEmptyState|You do not have necessary permissions to create a subgroup or ' \
+          'project in this group. Please contact an owner of this group to create a new subgroup or project.')
+        expect(page).not_to have_content _('New project')
+        expect(page).not_to have_content s_('GroupActivityMetrics|Recent activity')
+      end
+    end
+
     it 'a pending member sees a public group with a private project as if not a member' do
       create(:project, :private, namespace: group)
       create(:group_member, :awaiting, :developer, source: group, user: developer)
-
-      # Disable feature flag while it is a WIP.
-      # Feature specs for enabled feature flag will be added in https://gitlab.com/gitlab-org/gitlab/-/issues/519658
-      stub_feature_flags(groups_overview_shared_vue_components: false)
 
       visit group_path(group)
 
