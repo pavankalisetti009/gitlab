@@ -146,7 +146,7 @@ RSpec.describe SecretsManagement::ProjectSecrets::UpdateService, :gitlab_secrets
         it_behaves_like 'handling empty rotation_interval_days parameter'
       end
 
-      context 'when adding rotation to a secret without rotation' do
+      context 'when adding rotation to a secret without existing rotation' do
         let(:rotation_interval_days) { new_rotation_interval_days }
 
         it 'creates a new rotation info record' do
@@ -158,6 +158,8 @@ RSpec.describe SecretsManagement::ProjectSecrets::UpdateService, :gitlab_secrets
 
           expect(rotation_info).not_to be_nil
           expect(rotation_info.rotation_interval_days).to eq(new_rotation_interval_days)
+          expect(rotation_info.next_reminder_at).to be_present
+          expect(rotation_info.last_reminder_at).to be_nil
           expect(secret.rotation_info).to eq(rotation_info)
 
           expect_kv_secret_to_have_metadata_version(
@@ -194,6 +196,8 @@ RSpec.describe SecretsManagement::ProjectSecrets::UpdateService, :gitlab_secrets
           expect(new_rotation_info).not_to be_nil
           expect(new_rotation_info.id).not_to eq(old_rotation_info.id)
           expect(new_rotation_info.rotation_interval_days).to eq(new_rotation_interval_days)
+          expect(new_rotation_info.next_reminder_at).to be_present
+          expect(new_rotation_info.last_reminder_at).to be_nil
           expect(secret.rotation_info).to eq(new_rotation_info)
 
           expect_kv_secret_to_have_metadata_version(
@@ -230,6 +234,8 @@ RSpec.describe SecretsManagement::ProjectSecrets::UpdateService, :gitlab_secrets
           expect(new_rotation_info).not_to be_nil
           expect(new_rotation_info.id).not_to eq(old_rotation_info.id)
           expect(new_rotation_info.rotation_interval_days).to eq(new_rotation_interval_days)
+          expect(new_rotation_info.next_reminder_at).to be_present
+          expect(new_rotation_info.last_reminder_at).to be_nil
           expect(secret.rotation_info).to eq(new_rotation_info)
 
           expect_kv_secret_to_have_metadata_version(

@@ -1132,4 +1132,67 @@ RSpec.describe EE::NotificationService, :mailer, feature_category: :team_plannin
       end
     end
   end
+
+  describe '#secret_rotation_reminder' do
+    let_it_be(:group) { create(:group) }
+    let_it_be(:project) { create(:project, group: group) }
+    let_it_be(:rotation_info) do
+      create(:secret_rotation_info, project: project)
+    end
+
+    let(:group_owner) { create(:user) }
+    let(:project_owner1) { create(:user) }
+    let(:project_owner2) { create(:user) }
+    let(:maintainer) { create(:user) }
+
+    before do
+      group.add_owner(group_owner)
+      project.add_owner(project_owner1)
+      project.add_owner(project_owner2)
+      project.add_maintainer(maintainer)
+      reset_delivered_emails!
+    end
+
+    subject(:execute) { NotificationService.new.secret_rotation_reminder(rotation_info) }
+
+    it 'sends email to direct project owners only' do
+      execute
+
+      expect_delivery_jobs_count(2)
+      expect_enqueud_email(project_owner1.id, project.id, rotation_info.secret_name,
+        mail: "secret_rotation_reminder_email")
+      expect_enqueud_email(project_owner2.id, project.id, rotation_info.secret_name,
+        mail: "secret_rotation_reminder_email")
+    end
+
+    context 'when owner cannot receive notifications' do
+      before do
+        project_owner1.block!
+      end
+
+      it 'skips blocked users' do
+        execute
+
+        expect_delivery_jobs_count(1)
+        expect_enqueud_email(project_owner2.id, project.id, rotation_info.secret_name,
+          mail: "secret_rotation_reminder_email")
+      end
+    end
+
+    context 'when project emails are disabled' do
+      before do
+        project.project_setting.update!(emails_enabled: false)
+      end
+
+      it 'still sends rotation reminder emails as security-critical notification' do
+        execute
+
+        expect_delivery_jobs_count(2)
+        expect_enqueud_email(project_owner1.id, project.id, rotation_info.secret_name,
+          mail: "secret_rotation_reminder_email")
+        expect_enqueud_email(project_owner2.id, project.id, rotation_info.secret_name,
+          mail: "secret_rotation_reminder_email")
+      end
+    end
+  end
 end

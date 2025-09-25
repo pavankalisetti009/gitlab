@@ -23,6 +23,7 @@ module EE
       include ::Emails::Okr
       include ::Emails::CiRunnerUsageByProject
       include ::Emails::BlockSeatOverages
+      include ::Emails::SecretsManagement
     end
 
     attr_reader :group

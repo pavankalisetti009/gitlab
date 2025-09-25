@@ -41,11 +41,6 @@ module SecretsManagement
 
       def store_secret(project_secret, value, secret_rotation_info)
         return error_response(project_secret) unless project_secret.valid?
-
-        if secret_rotation_info&.invalid?
-          return secret_rotation_info_invalid_error(project_secret, secret_rotation_info)
-        end
-
         return secret_exists_error(project_secret) if secret_exists?(project_secret)
 
         # Before removing value from the above and sending value directly
@@ -58,7 +53,9 @@ module SecretsManagement
 
         # Based on https://handbook.gitlab.com/handbook/engineering/architecture/design-documents/secret_manager/decisions/010_secret_rotation_metadata_storage/
         # we want to create the secret rotation info record first.
-        secret_rotation_info&.upsert
+        if !secret_rotation_info&.upsert && secret_rotation_info&.invalid?
+          return secret_rotation_info_invalid_error(project_secret, secret_rotation_info)
+        end
 
         # The follow API calls are ordered such that they fail closed: first we
         # create the secret and its metadata and then attach policy to it. If we

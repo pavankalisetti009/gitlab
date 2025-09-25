@@ -803,6 +803,16 @@
   :idempotent: true
   :tags: []
   :queue_namespace: :cronjob
+- :name: cronjob:secrets_management_secret_rotation_reminder_batch
+  :worker_name: SecretsManagement::SecretRotationReminderBatchWorker
+  :feature_category: :secrets_management
+  :has_external_dependencies: false
+  :urgency: :low
+  :resource_boundary: :unknown
+  :weight: 1
+  :idempotent: true
+  :tags: []
+  :queue_namespace: :cronjob
 - :name: cronjob:security_analyzer_namespace_statuses_schedule
   :worker_name: Security::AnalyzerNamespaceStatuses::ScheduleWorker
   :feature_category: :security_asset_inventories

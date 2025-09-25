@@ -25254,6 +25254,8 @@ CREATE TABLE secret_rotation_infos (
     rotation_interval_days integer NOT NULL,
     created_at timestamp with time zone NOT NULL,
     updated_at timestamp with time zone NOT NULL,
+    next_reminder_at timestamp with time zone NOT NULL,
+    last_reminder_at timestamp with time zone,
     CONSTRAINT check_c0fb39dc52 CHECK ((char_length(secret_name) <= 255))
 );
 
@@ -41654,6 +41656,8 @@ CREATE UNIQUE INDEX index_scim_identities_on_lower_extern_uid_and_group_id ON sc
 CREATE UNIQUE INDEX index_scim_identities_on_user_id_and_group_id ON scim_identities USING btree (user_id, group_id);
 
 CREATE UNIQUE INDEX index_scim_oauth_access_tokens_on_group_id_and_token_encrypted ON scim_oauth_access_tokens USING btree (group_id, token_encrypted);
+
+CREATE INDEX index_secret_rotation_infos_on_next_reminder_at ON secret_rotation_infos USING btree (next_reminder_at);
 
 CREATE INDEX index_security_attributes_on_namespace_id ON security_attributes USING btree (namespace_id);
 

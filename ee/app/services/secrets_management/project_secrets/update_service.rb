@@ -54,13 +54,11 @@ module SecretsManagement
       def update_secret(project_secret, value, metadata_cas, secret_rotation_info)
         return error_response(project_secret) unless project_secret.valid?
 
-        if secret_rotation_info&.invalid?
-          return secret_rotation_info_invalid_error(project_secret, secret_rotation_info)
-        end
-
         # Based on https://handbook.gitlab.com/handbook/engineering/architecture/design-documents/secret_manager/decisions/010_secret_rotation_metadata_storage/
         # we want to create/update the secret rotation info record first.
-        secret_rotation_info&.upsert
+        if !secret_rotation_info&.upsert && secret_rotation_info&.invalid?
+          return secret_rotation_info_invalid_error(project_secret, secret_rotation_info)
+        end
 
         custom_metadata = {
           environment: project_secret.environment,

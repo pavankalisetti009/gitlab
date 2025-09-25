@@ -159,6 +159,7 @@ RSpec.describe '1_settings', feature_category: :shared do
         search_zoekt_metrics_update_cron_worker
         search_zoekt_rollout_worker
         search_zoekt_scheduling_worker
+        secret_rotation_reminder_batch_worker
         security_analyzer_namespace_statuses_schedule_worker
         security_create_orchestration_policy_worker
         security_destroy_expired_sbom_scans_worker

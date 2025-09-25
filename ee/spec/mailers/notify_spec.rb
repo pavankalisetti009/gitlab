@@ -445,4 +445,29 @@ RSpec.describe Notify, feature_category: :shared do
     expect(sender.display_name).to eq("#{user.name} (@#{user.username})")
     expect(sender.address).to eq(gitlab_sender)
   end
+
+  describe 'secret rotation reminder' do
+    let_it_be(:project) { create(:project) }
+    let_it_be(:user) { create(:user, email: 'user@example.com') }
+    let(:secret_name) { 'DATABASE_PASSWORD' }
+
+    subject { described_class.secret_rotation_reminder_email(user.id, project.id, secret_name) }
+
+    it_behaves_like 'an email sent from GitLab'
+    it_behaves_like 'it should not have Gmail Actions links'
+    it_behaves_like "a user cannot unsubscribe through footer link"
+    it_behaves_like 'appearance header and footer enabled'
+    it_behaves_like 'appearance header and footer not enabled'
+
+    it 'has the correct subject and body' do
+      is_expected.to have_subject("#{project.name} | Secret rotation reminder")
+      is_expected.to have_body_text(project.name)
+      is_expected.to have_body_text(secret_name)
+      is_expected.to have_body_text(project_secrets_url(project, anchor: "/DATABASE_PASSWORD/details"))
+    end
+
+    it 'contains a link to the project secrets' do
+      is_expected.to have_body_text(project_secrets_url(project))
+    end
+  end
 end
