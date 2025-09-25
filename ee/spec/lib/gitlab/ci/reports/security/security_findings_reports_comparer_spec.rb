@@ -13,8 +13,10 @@ RSpec.describe Gitlab::Ci::Reports::Security::SecurityFindingsReportsComparer, f
   end
 
   let(:head_report) { build(:ci_reports_security_aggregated_findings, findings: [head_vulnerability]) }
+  let(:base_params) { { base_report:, head_report: } }
+  let(:params) { base_params }
 
-  subject(:report_comparer) { described_class.new(project, base_report, head_report) }
+  subject(:report_comparer) { described_class.new(project, params) }
 
   describe '#base_report_out_of_date' do
     context 'with base pipeline older than one week' do
@@ -111,6 +113,14 @@ RSpec.describe Gitlab::Ci::Reports::Security::SecurityFindingsReportsComparer, f
       it 'returns the fixed vulnerability' do
         expect(report_comparer.fixed).to match_array([new_vuln])
       end
+
+      context 'when scan mode is partial' do
+        let(:params) { base_params.merge(scan_mode: 'partial') }
+
+        it 'does not return fixed findings' do
+          expect(report_comparer.fixed).to be_empty
+        end
+      end
     end
 
     context 'with a dismissed Vulnerability on the default branch' do
@@ -166,21 +176,21 @@ RSpec.describe Gitlab::Ci::Reports::Security::SecurityFindingsReportsComparer, f
     let(:empty_report) { build(:ci_reports_security_aggregated_findings, findings: []) }
 
     it 'returns empty array when reports are not present' do
-      comparer = described_class.new(project, empty_report, empty_report)
+      comparer = described_class.new(project, base_report: empty_report, head_report: empty_report)
 
       expect(comparer.fixed).to eq([])
       expect(comparer.added).to eq([])
     end
 
     it 'returns added vulnerability when base is empty and head is not empty' do
-      comparer = described_class.new(project, empty_report, head_report)
+      comparer = described_class.new(project, base_report: empty_report, head_report: head_report)
 
       expect(comparer.fixed).to eq([])
       expect(comparer.added).to eq([head_vulnerability])
     end
 
     it 'returns fixed vulnerability when head is empty and base is not empty' do
-      comparer = described_class.new(project, base_report, empty_report)
+      comparer = described_class.new(project, base_report: base_report, head_report: empty_report)
 
       expect(comparer.fixed).to eq([base_vulnerability])
       expect(comparer.added).to eq([])

@@ -7,20 +7,27 @@ module Gitlab
         class SecurityFindingsReportsComparer
           include Gitlab::Utils::StrongMemoize
 
-          attr_reader :base_report, :head_report, :project, :added_findings, :fixed_findings
+          attr_reader :project, :params, :added_findings, :fixed_findings
 
           ACCEPTABLE_REPORT_AGE = 1.week
           MAX_FINDINGS_COUNT = 25
           VULNERABILITY_FILTER_METRIC_KEY = :vulnerability_report_branch_comparison
 
-          def initialize(project, base_report, head_report)
-            @base_report = base_report
-            @head_report = head_report
+          def initialize(project, params)
             @project = project
+            @params = params
 
             @added_findings = []
             @fixed_findings = []
             calculate_changes
+          end
+
+          def base_report
+            params[:base_report]
+          end
+
+          def head_report
+            params[:head_report]
           end
 
           def base_report_created_at
@@ -96,6 +103,12 @@ module Gitlab
             head_findings_uuids_set = head_findings.map(&:uuid).to_set
 
             @added_findings = head_findings.reject { |f| base_findings_uuids_set.include?(f.uuid) }
+
+            # Partial scans only have coverage of changed files are
+            # unlikely to find all existing vulnerabilities.
+            # We hide the fixed results since they will often be wrong.
+            return if params[:scan_mode] == 'partial'
+
             @fixed_findings = base_findings.reject do |finding|
               finding.requires_manual_resolution? || head_findings_uuids_set.include?(finding.uuid)
             end

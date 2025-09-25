@@ -47,7 +47,11 @@ module Ci
     end
 
     def build_comparer(base_report, head_report)
-      comparer_class.new(project, base_report, head_report)
+      comparison_params = params.merge(
+        base_report: base_report,
+        head_report: head_report
+      )
+      comparer_class.new(project, comparison_params)
     end
 
     def comparer_class
@@ -68,14 +72,33 @@ module Ci
         params: {
           report_type: [params[:report_type]],
           scope: 'all',
-          scan_mode: params[:scan_mode],
+          scan_mode: scan_mode_for_pipeline(pipeline),
           limit: Gitlab::Ci::Reports::Security::SecurityFindingsReportsComparer::MAX_FINDINGS_COUNT
         }
       ).execute.with_api_scopes
       Gitlab::Ci::Reports::Security::AggregatedFinding.new(pipeline, findings)
     end
 
+    def execute(base_pipeline, head_pipeline)
+      @base_pipeline = base_pipeline
+      @head_pipeline = head_pipeline
+      super
+    end
+
     private
+
+    attr_reader :base_pipeline, :head_pipeline
+
+    def scan_mode_for_pipeline(pipeline)
+      # For partial scan comparisons, we want to compare full scan results from the base pipeline
+      # against partial scan results from the head pipeline. This prevents existing vulnerabilities
+      # from appearing as "new" when they're detected by partial scans on feature branches.
+      if params[:scan_mode] == 'partial' && pipeline == base_pipeline
+        'full'
+      else
+        params[:scan_mode]
+      end
+    end
 
     def ready_to_send_to_finder?(pipeline)
       return true if pipeline.nil? || report_type_ingested?(pipeline, params[:report_type])
