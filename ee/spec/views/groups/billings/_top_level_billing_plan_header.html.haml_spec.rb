@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe 'shared/billings/_trial_status.html.haml', :saas do
+RSpec.describe 'groups/billings/_top_level_billing_plan_header.html.haml', feature_category: :subscription_management do
   it 'offers to learn more about plans' do
     render 'groups/billings/top_level_billing_plan_header',
       namespace: build(:group),

@@ -50,8 +50,8 @@ module BillingPlansHelper
   end
 
   def free_trial_plan_billing_attributes(namespace, plans_data)
-    premium = plans_data.find { |plan| plan.code == ::Plan::PREMIUM }
-    ultimate = plans_data.find { |plan| plan.code == ::Plan::ULTIMATE }
+    premium_plan = find_plan(plans_data, ::Plan::PREMIUM)
+    ultimate_plan = find_plan(plans_data, ::Plan::ULTIMATE)
 
     total_seats =
       if ::Namespaces::FreeUserCap::Enforcement.new(namespace).enforce_cap?
@@ -68,15 +68,15 @@ module BillingPlansHelper
       trialEndsOn: namespace.trial_ends_on&.strftime('%B %-d, %Y'),
       manageSeatsPath: group_usage_quotas_path(namespace, anchor: 'seats-quota-tab'),
       startTrialPath: new_trial_path(namespace_id: namespace.id),
-      upgradeToPremiumUrl: plan_purchase_url(namespace, premium),
-      upgradeToUltimateUrl: plan_purchase_url(namespace, ultimate)
+      upgradeToPremiumUrl: plan_purchase_url(namespace, premium_plan),
+      upgradeToUltimateUrl: plan_purchase_url(namespace, ultimate_plan)
     }
   end
 
   def user_billing_data_attributes(plans_data)
     return { groups: [] } if plans_data.blank?
 
-    premium_plan = plans_data.find { |plan| plan.code == ::Plan::PREMIUM }
+    premium_plan = find_plan(plans_data, ::Plan::PREMIUM)
     return { groups: [] } unless premium_plan
 
     groups = current_user.owned_groups
@@ -270,6 +270,10 @@ module BillingPlansHelper
     })
   end
   strong_memoize_attr :plans_features
+
+  def find_plan(plans_data, plan_code)
+    plans_data.find { |plan| plan.code == plan_code }
+  end
 end
 
 BillingPlansHelper.prepend_mod
