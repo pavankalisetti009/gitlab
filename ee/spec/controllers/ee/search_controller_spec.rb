@@ -121,10 +121,10 @@ RSpec.describe SearchController, :elastic, feature_category: :global_search do
 
     it_behaves_like 'support for elasticsearch timeouts', :show, { search: 'hello' }, :search_objects, :html
 
-    describe 'when search_type is present in params' do
-      it 'verifies search type' do
+    describe 'when search_type is not present in params' do
+      it 'does not calls search_type_errors' do
         expect_next_instance_of(SearchService) do |service|
-          expect(service).to receive(:search_type_errors).once
+          expect(service).not_to receive(:search_type_errors)
         end
 
         get :show, params: { scope: 'blobs', search: 'test' }
