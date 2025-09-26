@@ -4,6 +4,7 @@ import { duoChatGlobalState } from '~/super_sidebar/constants';
 
 import glFeatureFlagsMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
 import { __ } from '~/locale';
+import { logError } from '~/lib/logger';
 import { WIDTH_OFFSET } from '../../tanuki_bot/constants';
 
 export default {
@@ -100,7 +101,7 @@ export default {
   mounted() {
     this.setDimensions();
     window.addEventListener('resize', this.onWindowResize);
-
+    this.loadDuoNextIfNeeded();
     if (this.$route?.path !== '/current') {
       this.$router.push('/current');
     }
@@ -110,6 +111,15 @@ export default {
     window.removeEventListener('resize', this.onWindowResize);
   },
   methods: {
+    async loadDuoNextIfNeeded() {
+      if (this.glFeatures.duoUiNext) {
+        try {
+          await import('fe_islands/duo_next/dist/duo_next');
+        } catch (err) {
+          logError('Failed to load frontend islands duo_next module', err);
+        }
+      }
+    },
     setDimensions() {
       this.updateDimensions();
     },
@@ -142,7 +152,22 @@ export default {
 <template>
   <div>
     <div v-if="duoChatGlobalState.isAgenticChatShown">
+      <div
+        v-if="glFeatures.duoUiNext"
+        class="gl-border-l gl-absolute gl-bg-white"
+        :style="{
+          position: 'fixed',
+          width: `${dimensions.width}px`,
+          height: `${dimensions.height}px`,
+          top: `${dimensions.top}px`,
+          left: `${dimensions.left}px`,
+          zIndex: 1071, // should be 1 higher than the tooltip's z-index, which is 1070 (https://gitlab.com/gitlab-org/gitlab-services/design.gitlab.com/-/blob/ea8ca5370dd45fda0a71906c3460ba2353d27c6e/packages/gitlab-ui/src/vendor/bootstrap/scss/_variables.scss#L695)
+        }"
+      >
+        <fe-island-duo-next />
+      </div>
       <duo-layout
+        v-else
         :dimensions="dimensions"
         :should-render-resizable="true"
         class="duo-chat duo-chat-layout"
