@@ -332,8 +332,8 @@ RSpec.describe WorkItems::Lifecycles::UpdateService, feature_category: :team_pla
           end
 
           let(:expected_error_message) do
-            "Cannot delete status '#{system_defined_in_progress_status.name}' " \
-              "because it is in use and no mapping is provided"
+            "Cannot remove status '#{system_defined_in_progress_status.name}' " \
+              "from lifecycle because it is in use and no mapping is provided"
           end
 
           it_behaves_like 'lifecycle service does not create custom lifecycle'
@@ -788,7 +788,8 @@ RSpec.describe WorkItems::Lifecycles::UpdateService, feature_category: :team_pla
               end
 
               let(:expected_error_message) do
-                "Cannot delete status '#{custom_status.name}' because it is in use and no mapping is provided"
+                "Cannot remove status '#{custom_status.name}' from lifecycle " \
+                  "because it is in use and no mapping is provided"
               end
 
               it_behaves_like 'lifecycle service returns validation error'
@@ -919,6 +920,40 @@ RSpec.describe WorkItems::Lifecycles::UpdateService, feature_category: :team_pla
                       valid_until: nil
                     )
                   end
+
+                  context 'and the mapping source is added to the lifecycle and is the target of the new mapping' do
+                    let(:params) do
+                      super().merge(
+                        statuses: [
+                          status_params_for(custom_lifecycle.default_open_status),
+                          status_params_for(custom_lifecycle.default_closed_status),
+                          status_params_for(custom_lifecycle.default_duplicate_status),
+                          {
+                            id: other_mapping_status.to_gid
+                          }
+                        ],
+                        status_mappings: [
+                          {
+                            old_status_id: custom_status.to_gid,
+                            new_status_id: other_mapping_status.to_gid
+                          }
+                        ]
+                      )
+                    end
+
+                    it 'removes old mapping because it would become a self-reference and adds new mapping' do
+                      expect { result }.not_to change { WorkItems::Statuses::Custom::Mapping.count }
+
+                      expect { old_mapping.reset }.to raise_error(ActiveRecord::RecordNotFound)
+
+                      expect(mapping).to have_attributes(
+                        namespace_id: group.id,
+                        work_item_type_id: custom_lifecycle.work_item_types.first.id,
+                        old_status_id: custom_status.id,
+                        new_status_id: other_mapping_status.id
+                      )
+                    end
+                  end
                 end
 
                 context 'when the same mapping already exists' do
@@ -1029,6 +1064,49 @@ RSpec.describe WorkItems::Lifecycles::UpdateService, feature_category: :team_pla
 
                     it_behaves_like 'adds new mapping with valid_from'
                   end
+                end
+
+                context 'when mapping statuses belong to different states' do
+                  let(:params) do
+                    super().merge(
+                      status_mappings: [
+                        {
+                          old_status_id: custom_status.to_gid,
+                          new_status_id: custom_lifecycle.default_closed_status.to_gid
+                        }
+                      ]
+                    )
+                  end
+
+                  let(:expected_error_message) do
+                    "Mapping statuses '#{custom_status.name}' and '#{custom_lifecycle.default_closed_status.name}' " \
+                      "must be of a category of the same state (open/closed)."
+                  end
+
+                  it_behaves_like 'lifecycle service returns validation error'
+                end
+
+                context 'when new status is not present in lifecycle' do
+                  let(:new_open_status) do
+                    create(:work_item_custom_status, :without_conversion_mapping, namespace: group)
+                  end
+
+                  let(:params) do
+                    super().merge(
+                      status_mappings: [
+                        {
+                          old_status_id: custom_status.to_gid,
+                          new_status_id: new_open_status.to_gid
+                        }
+                      ]
+                    )
+                  end
+
+                  let(:expected_error_message) do
+                    "Mapping target status '#{new_open_status.name}' does not belong to the target lifecycle"
+                  end
+
+                  it_behaves_like 'lifecycle service returns validation error'
                 end
 
                 context 'when work_item_status_mvc2 feature flag is disabled' do
@@ -1153,7 +1231,8 @@ RSpec.describe WorkItems::Lifecycles::UpdateService, feature_category: :team_pla
               end
 
               let(:expected_error_message) do
-                "Cannot delete status '#{custom_status.name}' because it is in use and no mapping is provided"
+                "Cannot remove status '#{custom_status.name}' from lifecycle " \
+                  "because it is in use and no mapping is provided"
               end
 
               it_behaves_like 'lifecycle service returns validation error'
@@ -1163,7 +1242,8 @@ RSpec.describe WorkItems::Lifecycles::UpdateService, feature_category: :team_pla
               let!(:work_item) { create(:work_item, namespace: group) }
               let(:new_default_status) { create(:work_item_custom_status, :triage, namespace: group) }
               let(:expected_error_message) do
-                "Cannot delete status 'To do' because it is in use and no mapping is provided"
+                "Cannot remove status 'To do' from lifecycle " \
+                  "because it is in use and no mapping is provided"
               end
 
               before do

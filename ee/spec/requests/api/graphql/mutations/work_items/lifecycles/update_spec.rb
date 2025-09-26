@@ -246,7 +246,7 @@ RSpec.describe 'Updating a custom lifecycle', feature_category: :team_planning d
 
             expect(response).to have_gitlab_http_status(:success)
             expect(mutation_response['errors']).to include(
-              "Cannot delete status '#{existing_in_progress_status.name}' " \
+              "Cannot remove status '#{existing_in_progress_status.name}' from lifecycle " \
                 "because it is in use and no mapping is provided"
             )
           end

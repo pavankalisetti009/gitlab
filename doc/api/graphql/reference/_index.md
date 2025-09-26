@@ -54886,8 +54886,8 @@ Input for mapping a removed status to a replacement status.
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
-| <a id="statusmappinginputnewstatusid"></a>`newStatusId` | [`GlobalID!`](#globalid) | Global ID of the replacement status. |
-| <a id="statusmappinginputoldstatusid"></a>`oldStatusId` | [`GlobalID!`](#globalid) | Global ID of the status being removed/replaced. |
+| <a id="statusmappinginputnewstatusid"></a>`newStatusId` | [`WorkItemsStatusesStatusID!`](#workitemsstatusesstatusid) | Global ID of the replacement status. |
+| <a id="statusmappinginputoldstatusid"></a>`oldStatusId` | [`WorkItemsStatusesStatusID!`](#workitemsstatusesstatusid) | Global ID of the status being removed/replaced. |
 
 ### `Timeframe`
 

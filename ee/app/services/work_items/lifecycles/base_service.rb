@@ -84,7 +84,7 @@ module WorkItems
       end
 
       def handle_status_with_id(status_params)
-        status = find_status_by_id(status_params[:id])
+        status = find_by_gid(status_params[:id])
 
         case status
         when ::WorkItems::Statuses::SystemDefined::Status
@@ -161,7 +161,7 @@ module WorkItems
         }
       end
 
-      def find_status_by_id(global_id)
+      def find_by_gid(global_id)
         global_id.model_class.find(global_id.model_id.to_i)
       end
 
@@ -191,7 +191,7 @@ module WorkItems
         return unless @statuses_to_remove&.any?
 
         validate_default_status_constraints
-        validate_status_usage
+        validate_status_usage(@statuses_to_remove)
       end
 
       def handle_deferred_status_removal
@@ -225,23 +225,30 @@ module WorkItems
       end
 
       def process_status_with_mapping(status_to_remove, mapping_input)
-        target_status = resolve_target_status(mapping_input[:new_status_id])
+        target_status = resolve_target_status(mapping_input[:new_status_id], lifecycle_status_ids)
         source_status = maybe_convert_from_system_defined_status(status_to_remove)
+
+        ensure_mapped_statuses_have_same_state(source_status, target_status)
 
         lifecycle.work_item_types.each do |work_item_type|
           create_or_update_mapping(source_status, target_status, work_item_type)
         end
       end
 
-      def resolve_target_status(target_status_id)
-        target_status = find_status_by_id(target_status_id)
+      def resolve_target_status(target_status_id, lifecycle_status_ids)
+        target_status = find_by_gid(target_status_id)
 
         if system_defined_status?(target_status)
           # Conversion happened in a step before so we can lookup the corresponding custom status
-          WorkItems::Statuses::Custom::Status.in_namespace(group)
+          return WorkItems::Statuses::Custom::Status.in_namespace(group)
             .find_by_converted_status(target_status) || target_status
-        else
+        end
+
+        if lifecycle_status_ids.include?(target_status.id)
           target_status
+        else
+          raise StandardError,
+            "Mapping target status '#{target_status.name}' does not belong to the target lifecycle"
         end
       end
 
@@ -254,6 +261,14 @@ module WorkItems
         # system-defined status --> custom status --> mapped status
         prepared_params = prepare_custom_status_params({}, status_to_remove, status_to_remove.id)
         create_custom_status!(prepared_params)
+      end
+
+      def ensure_mapped_statuses_have_same_state(source_status, target_status)
+        return if source_status.state == target_status.state
+
+        raise StandardError,
+          "Mapping statuses '#{source_status.name}' and '#{target_status.name}' " \
+            "must be of a category of the same state (open/closed)."
       end
 
       def destroy_eligible_statuses(statuses)
@@ -269,7 +284,7 @@ module WorkItems
         # rubocop:enable CodeReuse/ActiveRecord
       end
 
-      def create_or_update_mapping(old_status, new_status, work_item_type)
+      def create_or_update_mapping(old_status, new_status, work_item_type, valid_until: nil)
         prevent_mapping_chains(old_status, new_status, work_item_type)
 
         existing_mappings = Statuses::Custom::Mapping.originating_from_status(
@@ -278,7 +293,9 @@ module WorkItems
           work_item_type: work_item_type
         )
 
-        expire_conflicting_mappings(existing_mappings, new_status)
+        repair_unbounded_mappings_from_old_status(existing_mappings, new_status)
+
+        valid_from = calculate_valid_from_time(existing_mappings)
 
         # We can't use upsert here because there is no uniqueness constraint.
         # Multiple mappings with this combination can exist
@@ -288,15 +305,23 @@ module WorkItems
           old_status_id: old_status.id,
           new_status_id: new_status.id,
           work_item_type_id: work_item_type.id,
-          # Time-bound the new mapping if other mappings exist to avoid overlapping validity periods
-          valid_from: calculate_valid_from_date(existing_mappings)
+          valid_from: valid_from,
+          valid_until: valid_until
         ).first_or_create!
       end
 
       # Avoid creating mapping chains like A->B->C by updating existing mappings
       # that point to the status being removed to point directly to the final target
       def prevent_mapping_chains(old_status, new_status, work_item_type)
+        # Prevent self references. Update all below would set A --> A if old status is A already.
         # rubocop: disable CodeReuse/ActiveRecord -- these query is only used here
+        Statuses::Custom::Mapping.where(
+          namespace: group,
+          old_status: new_status,
+          new_status: old_status,
+          work_item_type: work_item_type
+        ).delete_all
+
         Statuses::Custom::Mapping.where(
           namespace: group,
           new_status: old_status,
@@ -306,7 +331,7 @@ module WorkItems
       end
 
       # Fix invalid combinations: Another mapping might already exist from the old status.
-      def expire_conflicting_mappings(existing_mappings, new_status)
+      def repair_unbounded_mappings_from_old_status(existing_mappings, new_status)
         existing_mappings.each do |mapping|
           next if mapping.valid_until.present? || mapping.new_status_id == new_status.id
 
@@ -314,7 +339,7 @@ module WorkItems
         end
       end
 
-      def calculate_valid_from_date(existing_mappings)
+      def calculate_valid_from_time(existing_mappings)
         return if existing_mappings.empty?
 
         # Latest valid_until is the desired new valid_from
@@ -351,8 +376,8 @@ module WorkItems
         # rubocop: enable CodeReuse/ActiveRecord
       end
 
-      def validate_status_usage
-        @statuses_to_remove.each do |status|
+      def validate_status_usage(statuses_to_check)
+        statuses_to_check.each do |status|
           in_use = case status
                    when ::WorkItems::Statuses::SystemDefined::Status
                      status.in_use_in_namespace?(group)
@@ -365,7 +390,8 @@ module WorkItems
           raise StandardError, "Cannot delete status '#{status.name}' because it is in use" unless status_mvc2_enabled?
 
           unless find_mapping_for_status(status)
-            raise StandardError, "Cannot delete status '#{status.name}' because it is in use and no mapping is provided"
+            raise StandardError, "Cannot remove status '#{status.name}' from lifecycle " \
+              "because it is in use and no mapping is provided"
           end
         end
       end
@@ -474,14 +500,18 @@ module WorkItems
       def lifecycle
         return unless params[:id].present?
 
-        global_id = GlobalID.parse(params[:id])
-        global_id.model_class.find(global_id.model_id.to_i)
+        find_by_gid(GlobalID.parse(params[:id]))
       end
       strong_memoize_attr :lifecycle
 
       def status_mappings
         params[:status_mappings] || []
       end
+
+      def lifecycle_status_ids
+        lifecycle.statuses.map(&:id)
+      end
+      strong_memoize_attr :lifecycle_status_ids
 
       def status_mvc2_enabled?
         group.try(:work_item_status_mvc2_feature_flag_enabled?)
