@@ -3,8 +3,6 @@
 module Sbom
   module Ingestion
     class DeleteNotPresentOccurrencesService
-      include Sbom::EsHelper
-
       DELETE_BATCH_SIZE = 100
 
       def self.execute(...)
@@ -20,7 +18,7 @@ module Sbom
         return if has_failed_sbom_jobs?
 
         vulnerability_ids = collect_vulnerability_ids_and_delete_occurrences
-        sync_elasticsearch(vulnerability_ids)
+        ::Vulnerabilities::EsHelper.sync_elasticsearch(vulnerability_ids)
       end
 
       private

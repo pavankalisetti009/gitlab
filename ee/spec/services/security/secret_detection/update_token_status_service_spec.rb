@@ -440,6 +440,22 @@ RSpec.describe Security::SecretDetection::UpdateTokenStatusService, feature_cate
         end
       end
     end
+
+    context 'when elasticsearch synchronization' do
+      before do
+        project.security_setting.update!(validity_checks_enabled: true)
+      end
+
+      it_behaves_like 'it syncs vulnerabilities with ES', -> { [finding.vulnerability_id] }
+
+      context 'when no findings exist' do
+        let(:empty_pipeline) { create(:ci_pipeline, project: project) }
+
+        subject(:execute) { described_class.new.execute_for_vulnerability_pipeline(empty_pipeline.id) }
+
+        it_behaves_like 'does not sync with ES when no vulnerabilities'
+      end
+    end
   end
 
   describe '#execute_for_vulnerability_finding' do

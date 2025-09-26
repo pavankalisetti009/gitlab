@@ -123,9 +123,18 @@ module Security
             update_only: [:status, :updated_at],
             record_timestamps: false
           )
+
+          sync_elasticsearch_for(findings, finding_type)
         rescue StandardError => e
           handle_upsert_error(e, attributes_to_upsert, error_message)
         end
+      end
+
+      def sync_elasticsearch_for(findings, finding_type)
+        return unless finding_type == :vulnerability
+
+        vulnerability_ids = Array(findings).map(&:vulnerability_id)
+        ::Vulnerabilities::EsHelper.sync_elasticsearch(vulnerability_ids)
       end
 
       def merge_token_status_into_attributes(tokens_by_raw, attrs_by_raw)

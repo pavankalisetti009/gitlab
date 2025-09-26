@@ -25,13 +25,6 @@ RSpec.describe Sbom::CreateOccurrencesVulnerabilitiesService, feature_category: 
     ]
   end
 
-  let(:bulk_es_service) { instance_double(::Vulnerabilities::BulkEsOperationService) }
-
-  before do
-    allow(::Vulnerabilities::BulkEsOperationService).to receive(:new).and_return(bulk_es_service)
-    allow(bulk_es_service).to receive(:execute)
-  end
-
   describe '.execute' do
     it 'calls execute on a instance level' do
       expect(described_class).to receive_message_chain(:new, :execute)
@@ -152,9 +145,7 @@ RSpec.describe Sbom::CreateOccurrencesVulnerabilitiesService, feature_category: 
     describe 'Elasticsearch synchronization' do
       context 'with single vulnerability' do
         # Uses the default findings from the outer scope
-        let(:expected_vulnerability_ids) { [vulnerability.id] }
-
-        it_behaves_like 'it syncs vulnerabilities with elasticsearch'
+        it_behaves_like 'it syncs vulnerabilities with ES', -> { [vulnerability.id] }, :service_execute
       end
 
       context 'with no related records' do
@@ -171,7 +162,7 @@ RSpec.describe Sbom::CreateOccurrencesVulnerabilitiesService, feature_category: 
           ]
         end
 
-        it_behaves_like 'does not sync with elasticsearch when no vulnerabilities'
+        it_behaves_like 'does not sync with ES when no vulnerabilities', :service_execute
       end
 
       context 'with multiple vulnerabilities' do
@@ -196,9 +187,8 @@ RSpec.describe Sbom::CreateOccurrencesVulnerabilitiesService, feature_category: 
           ]
         end
 
-        let(:expected_vulnerability_ids) { [vulnerability.id, vulnerability_2.id] }
-
-        it_behaves_like 'it syncs vulnerabilities with elasticsearch'
+        it_behaves_like 'it syncs vulnerabilities with ES',
+          -> { [vulnerability.id, vulnerability_2.id] }, :service_execute
       end
     end
   end
