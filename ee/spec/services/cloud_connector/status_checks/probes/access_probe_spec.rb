@@ -30,7 +30,7 @@ RSpec.describe CloudConnector::StatusChecks::Probes::AccessProbe, :freeze_time, 
         if details?
           expect(result.details).to include(
             updated_at: CloudConnector::Access.last.updated_at,
-            data: CloudConnector::Access.last.data
+            catalog: CloudConnector::Access.last.catalog
           )
         end
       end

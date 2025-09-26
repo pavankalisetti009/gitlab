@@ -37,11 +37,6 @@ RSpec.describe CloudConnector::DatabaseDataLoader, feature_category: :plan_provi
     end
 
     context 'with an empty catalog record' do
-      before do
-        # catalog: nil simulates no synced data
-        create(:cloud_connector_access, catalog: nil)
-      end
-
       it 'returns an empty Hash' do
         expect(unit_primitive_loader.load_with_index!).to eq({})
       end
@@ -87,7 +82,7 @@ RSpec.describe CloudConnector::DatabaseDataLoader, feature_category: :plan_provi
       it 'loads the raw catalog only once even across different model loaders' do
         add_on_loader = described_class.new(Gitlab::CloudConnector::DataModel::AddOn)
 
-        expect(CloudConnector::Access).to receive(:with_catalog).once.and_call_original
+        expect(CloudConnector::Access).to receive(:last).once.and_call_original
 
         unit_primitive_loader.load_with_index!
         add_on_loader.load_with_index!
@@ -99,7 +94,7 @@ RSpec.describe CloudConnector::DatabaseDataLoader, feature_category: :plan_provi
         unit_primitives_index = unit_primitive_loader.load_with_index!
         add_ons_index = add_on_loader.load_with_index!
 
-        allow(CloudConnector::Access).to receive(:with_catalog).and_return([])
+        allow(CloudConnector::Access).to receive(:last).and_return([])
 
         expect(unit_primitive_loader.load_with_index!).to be(unit_primitives_index)
         expect(add_on_loader.load_with_index!).to be(add_ons_index)
