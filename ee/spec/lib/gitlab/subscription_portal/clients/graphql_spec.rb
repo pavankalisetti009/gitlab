@@ -840,11 +840,6 @@ RSpec.describe Gitlab::SubscriptionPortal::Clients::Graphql, feature_category: :
                 token
                 expiresAt
               }
-              availableServices {
-                name
-                serviceStartTime
-                bundledWith
-              }
               catalog
             }
           }
@@ -855,21 +850,6 @@ RSpec.describe Gitlab::SubscriptionPortal::Clients::Graphql, feature_category: :
     subject { client.get_cloud_connector_access_data(license_key) }
 
     context 'when the request is successful' do
-      let_it_be(:available_services) do
-        [
-          {
-            "name" => "code_suggestions",
-            "serviceStartTime" => "2024-02-15T00:00:00Z",
-            "bundledWith" => ['duo_pro']
-          },
-          {
-            "name" => "duo_chat",
-            "serviceStartTime" => nil,
-            "bundledWith" => ['duo_pro']
-          }
-        ]
-      end
-
       let_it_be(:catalog) do
         {
           "backend_services" => [
@@ -911,7 +891,6 @@ RSpec.describe Gitlab::SubscriptionPortal::Clients::Graphql, feature_category: :
                   'token' => token,
                   'expiresAt' => expires_at
                 },
-                'availableServices' => available_services,
                 'catalog' => catalog
               }
             }
@@ -920,8 +899,7 @@ RSpec.describe Gitlab::SubscriptionPortal::Clients::Graphql, feature_category: :
 
         expect(client).to receive(:http_post).with('graphql', headers, params).and_return(response)
 
-        expect(subject).to eq(success: true, token: token, expires_at: expires_at,
-          available_services: available_services, catalog: catalog)
+        expect(subject).to eq(success: true, token: token, expires_at: expires_at, catalog: catalog)
       end
     end
 

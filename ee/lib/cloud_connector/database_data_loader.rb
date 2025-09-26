@@ -46,7 +46,7 @@ module CloudConnector
 
     def catalog_data
       Gitlab::SafeRequestStore.fetch(CATALOG_STORE_KEY) do
-        CloudConnector::Access.with_catalog.last&.catalog || {}
+        CloudConnector::Access.last&.catalog || {}
       end
     end
 

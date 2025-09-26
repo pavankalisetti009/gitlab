@@ -20,10 +20,9 @@ module CloudConnector
 
       token_storage_response = ServiceAccessTokensStorageService.new(response[:token], response[:expires_at]).execute
 
-      access_data = { available_services: response[:available_services] }
       catalog = response[:catalog]
       access_data_storage_response =
-        ::CloudConnector::AccessDataAndCatalogStorageService.new(data: access_data, catalog: catalog).execute
+        ::CloudConnector::AccessCatalogStorageService.new(catalog: catalog).execute
 
       error_responses = [token_storage_response, access_data_storage_response].filter(&:error?)
       error_message = error_responses.filter_map { |r| r[:message] }.join(", ")

@@ -294,11 +294,6 @@ module Gitlab
                   token
                   expiresAt
                 }
-                availableServices {
-                  name
-                  serviceStartTime
-                  bundledWith
-                }
                 catalog
               }
             }
@@ -318,13 +313,11 @@ module Gitlab
             if response['errors'].blank?
               token = response.dig('data', 'cloudConnectorAccess', 'serviceToken', 'token')
               expires_at = response.dig('data', 'cloudConnectorAccess', 'serviceToken', 'expiresAt')
-              available_services = response.dig('data', 'cloudConnectorAccess', 'availableServices')
               catalog = response.dig('data', 'cloudConnectorAccess', 'catalog')
               {
                 success: true,
                 token: token,
                 expires_at: expires_at,
-                available_services: available_services,
                 catalog: catalog
               }
             else

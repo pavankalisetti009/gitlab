@@ -35,19 +35,13 @@ RSpec.describe CloudConnector::SyncCloudConnectorAccessService, :freeze_time, fe
 
       context 'when graphql query response is successful' do
         let(:response) do
-          { success: true, token: token, expires_at: expires_at, available_services: service_data, catalog: catalog }
+          { success: true, token: token, expires_at: expires_at, catalog: catalog }
         end
 
         let(:token_storage_service_response) { ServiceResponse.success }
         let(:access_data_storage_service_response) { ServiceResponse.success }
         let(:token) { 'token' }
         let(:expires_at) { Time.current.iso8601.to_s }
-        let(:service_data) do
-          [
-            { "name" => "code_suggestions", "serviceStartTime" => "2024-02-15T00:00:00Z" },
-            { "name" => "duo_chat", "serviceStartTime" => nil }
-          ]
-        end
 
         let(:catalog) do
           {
@@ -85,8 +79,8 @@ RSpec.describe CloudConnector::SyncCloudConnectorAccessService, :freeze_time, fe
             allow(service).to receive(:execute).and_return(token_storage_service_response)
           end
 
-          allow_next_instance_of(CloudConnector::AccessDataAndCatalogStorageService,
-            { data: { available_services: service_data }, catalog: catalog }) do |service|
+          allow_next_instance_of(CloudConnector::AccessCatalogStorageService,
+            { catalog: catalog }) do |service|
             allow(service).to receive(:execute).and_return(access_data_storage_service_response)
           end
         end
