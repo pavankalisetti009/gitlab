@@ -600,6 +600,12 @@ export const pipelineSecurityReportFinding = {
     },
     presentOnDefaultBranch: true,
   },
+  findingTokenStatus: {
+    id: '123',
+    status: 'active',
+    createdAt: '2025-01-01T00:00:00Z',
+    updatedAt: '2025-01-02T00:00:00Z',
+  },
   userPermissions: {
     adminVulnerability: true,
     createIssue: true,
