@@ -56,7 +56,7 @@ module Ai
             total_count += records_to_insert.size
           end
 
-          log_extra_metadata_on_done(:repositories_created, total_count)
+          log_hash_metadata_on_done(repositories_created: total_count, enabled_namespace_id: enabled_namespace.id)
 
           all_successful
         end
