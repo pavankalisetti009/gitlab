@@ -183,6 +183,12 @@ query getSecurityReportFinding($projectFullPath: ID!, $pipelineIid: ID!, $findin
           }
           presentOnDefaultBranch
         }
+        findingTokenStatus {
+          id
+          status
+          createdAt
+          updatedAt
+        }
         userPermissions {
           adminVulnerability
           createIssue

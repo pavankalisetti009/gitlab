@@ -52,6 +52,12 @@ query pipelineFindings(
           state
           dismissalReason
           severity
+          findingTokenStatus {
+            id
+            status
+            createdAt
+            updatedAt
+          }
           solution
           location {
             ...VulnerabilityLocation
