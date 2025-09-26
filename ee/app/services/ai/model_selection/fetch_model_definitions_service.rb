@@ -18,7 +18,7 @@ module Ai
         return ServiceResponse.success(payload: nil) unless duo_features_enabled?
         return ServiceResponse.success(payload: nil) if ::License.current&.offline_cloud_license?
 
-        return cached_response if Rails.cache.exist?(RESPONSE_CACHE_NAME) && !force_api_call
+        return cached_response if use_cached_response? && !force_api_call
 
         fetch_model_definitions
       rescue StandardError => e
@@ -83,7 +83,7 @@ module Ai
 
       def endpoint
         # GitLab Model selection data should always come from cloud connected, never from local AIGW
-        base_url = if ENV['FETCH_MODEL_SELECTION_DATA_FROM_LOCAL'] == '1'
+        base_url = if local_development?
                      Gitlab::AiGateway.url
                    else
                      Gitlab::AiGateway.cloud_connector_url
@@ -92,6 +92,14 @@ module Ai
         endpoint_route = 'models%2Fdefinitions'
 
         "#{base_url}/v1/#{endpoint_route}"
+      end
+
+      def local_development?
+        ::Gitlab::Utils.to_boolean(ENV['FETCH_MODEL_SELECTION_DATA_FROM_LOCAL'], default: false)
+      end
+
+      def use_cached_response?
+        Rails.cache.exist?(RESPONSE_CACHE_NAME) && !local_development?
       end
     end
   end
