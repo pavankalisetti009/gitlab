@@ -631,6 +631,7 @@ export default {
 
       if (agent?.id) {
         this.aiCatalogItemVersionId = agent.versions.nodes.find(({ released }) => released)?.id;
+        this.flowConfig = ''; // Clear cached flow config when switching agents
       } else {
         this.flowConfig = '';
         this.aiCatalogItemVersionId = '';
