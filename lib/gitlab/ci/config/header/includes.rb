@@ -3,15 +3,12 @@
 module Gitlab
   module Ci
     class Config
-      module Entry
-        ##
-        # Entry that represents a list of include.
-        #
+      module Header
         class Includes < ::Gitlab::Config::Entry::ComposableArray
           include ::Gitlab::Ci::Config::Entry::Concerns::BaseIncludes
 
           def composable_class
-            Entry::Include
+            Header::Include
           end
         end
       end
