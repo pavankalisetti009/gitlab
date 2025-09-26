@@ -49871,7 +49871,31 @@ msgstr ""
 msgid "ProfilesAuthentication|Add passkey"
 msgstr ""
 
+msgid "ProfilesAuthentication|Default 2FA method:"
+msgstr ""
+
+msgid "ProfilesAuthentication|One-time password authenticator"
+msgstr ""
+
+msgid "ProfilesAuthentication|Passkey"
+msgstr ""
+
+msgid "ProfilesAuthentication|Passkeys"
+msgstr ""
+
+msgid "ProfilesAuthentication|Register another 2FA method above to automatically use passkeys as default 2FA."
+msgstr ""
+
 msgid "ProfilesAuthentication|Sign in faster with passkeys"
+msgstr ""
+
+msgid "ProfilesAuthentication|Use passkey as 2FA"
+msgstr ""
+
+msgid "ProfilesAuthentication|Use your passkey as a 2FA method after entering your password. Note that passkeys can’t be used as your only 2FA method."
+msgstr ""
+
+msgid "ProfilesAuthentication|WebAuthn device"
 msgstr ""
 
 msgid "ProfilesAuthentication|You currently use passkeys for secure and faster sign in. %{link_start}Manage passkeys%{link_end}."
