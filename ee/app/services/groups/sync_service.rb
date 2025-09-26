@@ -23,6 +23,7 @@ module Groups
   class SyncService < Groups::BaseService
     include Gitlab::Utils::StrongMemoize
     include ::GitlabSubscriptions::MemberManagement::PromotionManagementUtils
+    include GitlabSubscriptions::MemberManagement::SeatAwareProvisioning
     extend Gitlab::Utils::Override
 
     attr_reader :updated_membership
@@ -69,7 +70,8 @@ module Groups
     def update_current_memberships
       group_links_by_group.each do |group, group_links|
         group_link = max_access_level_group_link(group_links)
-        access_level = group_link.access_level
+        requested_access_level = group_link.access_level
+        access_level = calculate_adjusted_access_level(group, current_user, requested_access_level)
         member_role_id = group_link.member_role_id if group.custom_roles_enabled?
         existing_member = existing_member_by_group(group)
 
@@ -135,6 +137,28 @@ module Groups
     def max_access_level_group_link(group_links)
       # Return link with highest access level and for tie-breakers, return link with most recent member_role.
       group_links.max_by { |group_link| [group_link.access_level, group_link.member_role_id.to_i] }
+    end
+
+    def calculate_adjusted_access_level(group, user, requested_access_level)
+      adjusted_access_level = adjust_access_level_for_seat_availability(group, user, requested_access_level)
+
+      if adjusted_access_level != requested_access_level
+        log_access_level_adjustment(group, user, requested_access_level, adjusted_access_level)
+      end
+
+      adjusted_access_level
+    end
+
+    def log_access_level_adjustment(group, user, requested_access_level, adjusted_access_level)
+      Gitlab::AppLogger.info(
+        message: 'SAML group membership access level adjusted due to BSO seat limits',
+        group_id: group.id,
+        group_path: group.full_path,
+        user_id: user.id,
+        requested_access_level: requested_access_level,
+        adjusted_access_level: adjusted_access_level,
+        feature_flag: 'bso_minimal_access_fallback'
+      )
     end
 
     def log_membership_update(group_id:, action:, prior_access_level:, access_level:, prior_member_role_id:, member_role_id:)
