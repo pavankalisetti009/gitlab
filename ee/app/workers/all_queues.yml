@@ -1393,16 +1393,6 @@
   :idempotent: false
   :tags: []
   :queue_namespace: :security_scans
-- :name: todos_destroyer:todos_destroyer_confidential_epic
-  :worker_name: TodosDestroyer::ConfidentialEpicWorker
-  :feature_category: :portfolio_management
-  :has_external_dependencies: false
-  :urgency: :low
-  :resource_boundary: :unknown
-  :weight: 1
-  :idempotent: false
-  :tags: []
-  :queue_namespace: :todos_destroyer
 - :name: admin_emails
   :worker_name: AdminEmailsWorker
   :feature_category: :team_planning
