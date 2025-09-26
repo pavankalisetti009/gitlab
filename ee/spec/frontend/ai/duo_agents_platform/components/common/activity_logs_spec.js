@@ -4,7 +4,8 @@ import { GlIcon } from '@gitlab/ui';
 import ActivityLogs from 'ee/ai/duo_agents_platform/components/common/activity_logs.vue';
 import ActivityConnectorSvg from 'ee/ai/duo_agents_platform/components/common/activity_connector_svg.vue';
 import { getTimeago } from '~/lib/utils/datetime_utility';
-import MarkdownContent from '~/vue_shared/components/markdown/markdown_content.vue';
+import NonGfmMarkdown from '~/vue_shared/components/markdown/non_gfm_markdown.vue';
+import { mockItems, mockItemsWithFilepath } from './mock';
 
 jest.mock('~/lib/utils/datetime_utility');
 
@@ -17,35 +18,12 @@ describe('ActivityLogs', () => {
   const findAllIcons = () => wrapper.findAllComponents(GlIcon);
   const findAllTimestamps = () => wrapper.findAll('.gl-text-subtle');
   const findFirstTitle = () => wrapper.find('strong');
-  const findAllMarkdownRenderComponent = () => wrapper.findAllComponents(MarkdownContent);
+  const findAllMarkdownRenderComponent = () => wrapper.findAllComponents(NonGfmMarkdown);
+  const findAllCodeElements = () => wrapper.findAll('code');
 
   const mockTimeago = {
     format: jest.fn(),
   };
-
-  const mockItems = [
-    {
-      id: 1,
-      content: 'Starting workflow',
-      message_type: 'tool',
-      status: 'success',
-      timestamp: '2023-01-01T10:00:00Z',
-    },
-    {
-      id: 2,
-      content: 'Processing data',
-      message_type: 'assistant',
-      status: 'success',
-      timestamp: '2023-01-01T10:05:00Z',
-    },
-    {
-      id: 3,
-      content: 'Workflow completed',
-      message_type: 'tool',
-      status: 'success',
-      timestamp: '2023-01-01T10:10:00Z',
-    },
-  ];
 
   const createWrapper = (props = {}) => {
     return shallowMount(ActivityLogs, {
@@ -67,9 +45,9 @@ describe('ActivityLogs', () => {
       const markdownContent = findAllMarkdownRenderComponent();
       expect(findAllListItems()).toHaveLength(3);
       // Content
-      expect(markdownContent.at(0).props().value).toContain('Starting workflow');
-      expect(markdownContent.at(1).props().value).toContain('Processing data');
-      expect(markdownContent.at(2).props().value).toContain('Workflow completed');
+      expect(markdownContent.at(0).props().markdown).toContain('Starting workflow');
+      expect(markdownContent.at(1).props().markdown).toContain('Processing data');
+      expect(markdownContent.at(2).props().markdown).toContain('Workflow completed');
     });
 
     it('renders the updated session triggered title', () => {
@@ -101,6 +79,33 @@ describe('ActivityLogs', () => {
           expect(timestampWrapper.text()).toBe('2 minutes ago');
         });
       });
+    });
+
+    describe('when filepath is not present', () => {
+      it('does not render code elements', () => {
+        expect(findAllCodeElements()).toHaveLength(0);
+      });
+    });
+  });
+
+  describe('when items have filepath', () => {
+    beforeEach(() => {
+      getTimeago.mockReturnValue(mockTimeago);
+      mockTimeago.format.mockReturnValue('2 minutes ago');
+      wrapper = createWrapper({ items: mockItemsWithFilepath });
+    });
+
+    it('renders code elements for items with filepath', () => {
+      const codeElements = findAllCodeElements();
+      expect(codeElements).toHaveLength(2);
+      expect(codeElements.at(0).text()).toBe('src/components/example.vue');
+      expect(codeElements.at(1).text()).toBe('src/utils/helper.js');
+    });
+
+    it('does not render code element for items without filepath', () => {
+      const codeElements = findAllCodeElements();
+      // Should only have 2 code elements (first and third items have filepath, second doesn't)
+      expect(codeElements).toHaveLength(2);
     });
   });
 
@@ -177,7 +182,7 @@ describe('ActivityLogs', () => {
 
     it('updates the rendered content', async () => {
       expect(findAllListItems()).toHaveLength(3);
-      expect(findAllMarkdownRenderComponent().at(0).props().value).toBe('Starting workflow');
+      expect(findAllMarkdownRenderComponent().at(0).props().markdown).toBe('Starting workflow');
 
       const newItems = [
         {
@@ -192,7 +197,7 @@ describe('ActivityLogs', () => {
       await wrapper.setProps({ items: newItems });
 
       expect(findAllListItems()).toHaveLength(1);
-      expect(findAllMarkdownRenderComponent().at(0).props().value).toBe('New workflow item');
+      expect(findAllMarkdownRenderComponent().at(0).props().markdown).toBe('New workflow item');
     });
 
     describe('when items change', () => {

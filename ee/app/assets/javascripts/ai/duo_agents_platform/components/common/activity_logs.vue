@@ -2,7 +2,7 @@
 import { GlIcon } from '@gitlab/ui';
 import { s__ } from '~/locale';
 import { getTimeago } from '~/lib/utils/datetime_utility';
-import MarkdownContent from '~/vue_shared/components/markdown/markdown_content.vue';
+import NonGfmMarkdown from '~/vue_shared/components/markdown/non_gfm_markdown.vue';
 
 import { getMessageData } from '../../utils';
 import ActivityConnectorSvg from './activity_connector_svg.vue';
@@ -11,7 +11,7 @@ export default {
   components: {
     ActivityConnectorSvg,
     GlIcon,
-    MarkdownContent,
+    NonGfmMarkdown,
   },
   props: {
     items: {
@@ -56,6 +56,9 @@ export default {
 
       return getMessageData(message)?.icon;
     },
+    filePath(item) {
+      return item.tool_info?.args?.file_path;
+    },
     title(message, index) {
       if (index === 0) {
         return this.$options.startMessage.title;
@@ -96,7 +99,8 @@ export default {
           <strong class="gl-mb-1 gl-text-strong">{{ title(item, index) }}</strong>
           <span class="gl-text-subtle">{{ timeAgo(item) }}</span>
         </div>
-        <markdown-content :value="item.content" class="gl-m-0 gl-flex-1 gl-py-2" />
+        <non-gfm-markdown :markdown="item.content" class="gl-m-0 gl-flex-1 gl-py-2" />
+        <code v-if="filePath(item)">{{ filePath(item) }}</code>
       </div>
     </li>
   </ul>
