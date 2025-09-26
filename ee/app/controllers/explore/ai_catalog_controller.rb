@@ -8,6 +8,7 @@ module Explore
       push_frontend_feature_flag(:ai_catalog_enforce_readonly_versions)
       push_frontend_feature_flag(:ai_catalog_agent_tools, current_user)
       push_frontend_feature_flag(:ai_catalog_flows, current_user)
+      push_frontend_feature_flag(:ai_catalog_show_page, current_user)
     end
 
     private
