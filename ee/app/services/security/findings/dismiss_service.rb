@@ -26,6 +26,7 @@ module Security
 
       def dismiss_finding
         @error_message = nil
+        @vulnerability = nil
 
         SecApplicationRecord.transaction do
           create_or_update_feedback
@@ -36,6 +37,7 @@ module Security
           error_string = format(_("failed to dismiss security finding: %{message}"), message: @error_message)
           ServiceResponse.error(message: error_string, http_status: :unprocessable_entity)
         else
+          trigger_webhook_event
           ServiceResponse.success(payload: { security_finding: @security_finding })
         end
       end
@@ -72,13 +74,21 @@ module Security
           dismissal_reason: @dismissal_reason
         }
 
-        ::Vulnerabilities::FindOrCreateFromSecurityFindingService.new(
+        result = ::Vulnerabilities::FindOrCreateFromSecurityFindingService.new(
           project: @project,
           current_user: @current_user,
           params: security_finding_params,
           state: :dismissed,
           present_on_default_branch: false
         ).execute
+
+        return unless result.success?
+
+        @vulnerability = result.payload[:vulnerability]
+      end
+
+      def trigger_webhook_event
+        @vulnerability&.trigger_webhook_event
       end
 
       def feedback_params

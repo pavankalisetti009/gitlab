@@ -161,6 +161,12 @@ RSpec.describe Security::Findings::DismissService, feature_category: :vulnerabil
           expect(response).to be_success
           expect(response.payload[:security_finding]).to eq(finding)
         end
+
+        it 'triggers webhook event when vulnerability state is changed' do
+          expect(vulnerability).to receive(:trigger_webhook_event)
+
+          dismiss_finding
+        end
       end
     end
 
