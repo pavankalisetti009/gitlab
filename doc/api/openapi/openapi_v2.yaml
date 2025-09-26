@@ -47826,6 +47826,10 @@ definitions:
         type: boolean
         description: Prevent sharing groups within this namespace with any groups
           outside the namespace. Only available on top-level groups.
+      step_up_auth_required_oauth_provider:
+        type: string
+        description: OAuth provider required for step-up authentication. Pass empty
+          string to disable.
       lock_math_rendering_limits_enabled:
         type: boolean
         description: Indicates if math rendering limits are locked for all descendent
@@ -48026,6 +48030,9 @@ definitions:
         type: string
       prevent_sharing_groups_outside_hierarchy:
         type: string
+      step_up_auth_required_oauth_provider:
+        type: string
+        description: OAuth provider required for step-up authentication.
       projects:
         "$ref": "#/definitions/API_Entities_Project"
       shared_projects:
