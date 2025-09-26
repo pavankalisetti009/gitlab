@@ -1,0 +1,10 @@
+---
+name: check_inherited_groups_for_codeowners
+description: Check if inherited groups have been added as code owners
+feature_issue_url: https://gitlab.com/gitlab-org/gitlab/-/issues/288851
+introduced_by_url: https://gitlab.com/gitlab-org/gitlab/-/merge_requests/203298
+rollout_issue_url: https://gitlab.com/gitlab-org/gitlab/-/issues/566627
+milestone: '18.5'
+group: group::source code
+type: beta
+default_enabled: false
