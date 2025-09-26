@@ -269,7 +269,8 @@ RSpec.describe Gitlab::BackgroundMigration::BackfillDuoCoreForExistingSubscripti
         end
       end
 
-      it 'skips the duo_core creation for expired subscription' do
+      it 'skips the duo_core creation for expired subscription',
+        quarantine: 'https://gitlab.com/gitlab-org/gitlab/-/issues/539075' do
         gs_1_paid_ultimate.update!(end_date: Date.yesterday)
 
         migration.perform
