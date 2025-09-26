@@ -39,78 +39,23 @@ RSpec.describe VirtualRegistries::Packages::Maven::Registry, type: :model, featu
     it { is_expected.to eq([registry]) }
   end
 
-  describe 'upstreams ordering' do
-    let_it_be(:registry) { create(:virtual_registries_packages_maven_registry) }
+  it_behaves_like 'virtual registries: upstreams ordering',
+    registry_factory: :virtual_registries_packages_maven_registry,
+    upstream_factory: :virtual_registries_packages_maven_upstream
 
-    let_it_be(:upstream1) do
-      create(:virtual_registries_packages_maven_upstream, group: registry.group, registries: [registry])
-    end
+  it_behaves_like 'virtual registries: group registry limit',
+    registry_factory: :virtual_registries_packages_maven_registry
 
-    let_it_be(:upstream2) do
-      create(:virtual_registries_packages_maven_upstream, group: registry.group, registries: [registry])
-    end
+  it_behaves_like 'virtual registries: has exclusive upstreams',
+    registry_factory: :virtual_registries_packages_maven_registry,
+    upstream_factory: :virtual_registries_packages_maven_upstream
 
-    let_it_be(:upstream3) do
-      create(:virtual_registries_packages_maven_upstream, group: registry.group, registries: [registry])
-    end
-
-    subject { registry.reload.upstreams.to_a }
-
-    it { is_expected.to eq([upstream1, upstream2, upstream3]) }
-  end
-
-  describe 'registry destruction' do
-    let_it_be_with_reload(:upstream) { create(:virtual_registries_packages_maven_upstream) }
-
-    let(:registry) { upstream.registries.first }
-
-    subject(:destroy_registry) { registry.destroy! }
-
-    it 'deletes the upstream and the registry_upstream' do
-      expect { destroy_registry }.to change { described_class.count }.by(-1)
-        .and change { VirtualRegistries::Packages::Maven::Upstream.count }.by(-1)
-        .and change { VirtualRegistries::Packages::Maven::RegistryUpstream.count }.by(-1)
-    end
-
-    context 'when the upstream is shared with another registry' do
-      before_all do
-        create(:virtual_registries_packages_maven_registry, group: upstream.group, name: 'other').tap do |registry|
-          create(:virtual_registries_packages_maven_registry_upstream, registry:, upstream:)
-        end
-      end
-
-      it 'does not delete the upstream' do
-        expect { destroy_registry }.to change { described_class.count }.by(-1)
-          .and change { VirtualRegistries::Packages::Maven::RegistryUpstream.count }.by(-1)
-          .and not_change { VirtualRegistries::Packages::Maven::Upstream.count }
-      end
-    end
-  end
-
-  describe '#max_per_group' do
-    let(:registry_2) { build(:virtual_registries_packages_maven_registry, group: registry.group) }
-
-    before do
-      registry.save!
-      stub_const("#{described_class}::MAX_REGISTRY_COUNT", 1)
-    end
-
-    it 'does not allow more than one registry per group' do
-      expect(registry_2).to be_invalid
-        .and have_attributes(errors: hash_including(group: ['1 registries is the maximum allowed per group.']))
-    end
-  end
-
-  describe '#exclusive_upstreams' do
-    let_it_be(:registry1) { create(:virtual_registries_packages_maven_registry) }
-    let_it_be(:registry2) { create(:virtual_registries_packages_maven_registry) }
-    let_it_be(:upstream1) { create(:virtual_registries_packages_maven_upstream, registries: [registry1, registry2]) }
-    let_it_be(:upstream2) { create(:virtual_registries_packages_maven_upstream, registries: [registry1]) }
-
-    subject { registry1.exclusive_upstreams }
-
-    it { is_expected.to eq([upstream2]) }
-  end
+  it_behaves_like 'virtual registries: registry destruction',
+    registry_factory: :virtual_registries_packages_maven_registry,
+    upstream_factory: :virtual_registries_packages_maven_upstream,
+    registry_upstream_factory: :virtual_registries_packages_maven_registry_upstream,
+    upstream_class: VirtualRegistries::Packages::Maven::Upstream,
+    registry_upstream_class: VirtualRegistries::Packages::Maven::RegistryUpstream
 
   describe '#purge_cache!' do
     let_it_be(:registry1) { create(:virtual_registries_packages_maven_registry) }
