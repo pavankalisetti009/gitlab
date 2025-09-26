@@ -285,6 +285,14 @@ RSpec.describe Resolvers::Security::NamespaceSecurityProjectsResolver, feature_c
         it 'does not include subgroup projects by default' do
           expect(resolved.nodes).not_to include(subgroup_project)
         end
+
+        context 'when include_subgroups is true' do
+          let(:params) { { include_subgroups: true } }
+
+          it 'include subgroup projects' do
+            expect(resolved.nodes).to include(subgroup_project)
+          end
+        end
       end
     end
   end
