@@ -21,19 +21,24 @@ module Resolvers
         required: false,
         description: 'Filter projects by analyzer type and status.'
 
+      argument :include_subgroups, GraphQL::Types::Boolean,
+        required: false,
+        default_value: false,
+        description: 'Include also subgroup projects.'
+
       type Types::ProjectType.connection_type, null: true
       authorize :read_security_inventory
 
       alias_method :group, :object
 
       def resolve(**args)
-        # This resolver filters projects-related records from the sec_db, than loads the projects based on the
+        # This resolver filters projects-related records from the sec_db, then loads the projects based on the
         # project_ids returned from that paginated list of ids.
         namespace = authorized_find!(id: args[:namespace_id])
         security_result = fetch_paginated_security_data(args, namespace)
         return Project.none if security_result[:ids].empty?
 
-        projects = fetch_projects_by_ids(security_result[:ids], namespace)
+        projects = fetch_projects_by_ids(security_result[:ids], namespace, args)
         create_cross_db_connection(projects, security_result)
       end
 
@@ -46,8 +51,8 @@ module Resolvers
         ).execute
       end
 
-      def fetch_projects_by_ids(ids, namespace)
-        finder_params = { include_subgroups: false, include_archived: false, ids: ids }
+      def fetch_projects_by_ids(ids, namespace, args)
+        finder_params = { include_subgroups: args[:include_subgroups], include_archived: false, ids: ids }
 
         ::Namespaces::ProjectsFinder.new(
           namespace: namespace,
