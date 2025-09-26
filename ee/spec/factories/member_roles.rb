@@ -3,6 +3,7 @@
 FactoryBot.define do
   factory :member_role do
     namespace { association(:group) }
+    organization
     base_access_level { Gitlab::Access::DEVELOPER }
     name { generate(:title) }
 
