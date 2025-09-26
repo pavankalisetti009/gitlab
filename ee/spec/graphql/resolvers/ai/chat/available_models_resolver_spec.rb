@@ -2,7 +2,7 @@
 
 require "spec_helper"
 
-RSpec.describe Resolvers::Ai::Chat::AvailableModelsResolver, feature_category: :duo_chat do
+RSpec.describe Resolvers::Ai::Chat::AvailableModelsResolver, :saas, feature_category: :duo_chat do
   include GraphqlHelpers
 
   let_it_be(:group) { create(:group) }
@@ -32,12 +32,6 @@ RSpec.describe Resolvers::Ai::Chat::AvailableModelsResolver, feature_category: :
           ],
           "unit_primitives" => [
             {
-              "feature_setting" => "duo_chat",
-              "default_model" => "claude_sonnet_4_20250514_vertex",
-              "selectable_models" => %w[claude_sonnet_4_20250514 claude_sonnet_4_20250514_vertex],
-              "beta_models" => []
-            },
-            {
               "feature_setting" => "duo_agent_platform",
               "default_model" => "claude_sonnet_4_20250514",
               "selectable_models" => %w[claude_sonnet_4_20250514 claude_sonnet_3_7_20250219],
@@ -59,11 +53,84 @@ RSpec.describe Resolvers::Ai::Chat::AvailableModelsResolver, feature_category: :
           selectable_models: [
             { name: "Claude Sonnet 4.0 - Anthropic", ref: "claude_sonnet_4_20250514" },
             { name: "Claude Sonnet 3.7 - Anthropic", ref: "claude_sonnet_3_7_20250219" }
-          ]
+          ],
+          pinned_model: nil
         })
       end
 
-      context "when duo_chat feature setting is not found" do
+      context "when there is a pinned model" do
+        let!(:pinned_feature_setting) do
+          create(:ai_namespace_feature_setting,
+            namespace: group,
+            feature: :duo_agent_platform,
+            offered_model_ref: "claude_sonnet_3_7_20250219")
+        end
+
+        it "returns the pinned model information" do
+          expect(resolver).to eq({
+            default_model: { name: "Claude Sonnet 4.0 - Anthropic", ref: "claude_sonnet_4_20250514" },
+            selectable_models: [
+              { name: "Claude Sonnet 4.0 - Anthropic", ref: "claude_sonnet_4_20250514" },
+              { name: "Claude Sonnet 3.7 - Anthropic", ref: "claude_sonnet_3_7_20250219" }
+            ],
+            pinned_model: { name: "Claude Sonnet 3.7 - Anthropic", ref: "claude_sonnet_3_7_20250219" }
+          })
+        end
+      end
+
+      context "when no feature setting exists" do
+        it "returns nil for pinned model when no feature setting exists" do
+          expect(resolver).to eq({
+            default_model: { name: "Claude Sonnet 4.0 - Anthropic", ref: "claude_sonnet_4_20250514" },
+            selectable_models: [
+              { name: "Claude Sonnet 4.0 - Anthropic", ref: "claude_sonnet_4_20250514" },
+              { name: "Claude Sonnet 3.7 - Anthropic", ref: "claude_sonnet_3_7_20250219" }
+            ],
+            pinned_model: nil
+          })
+        end
+      end
+
+      context "when feature setting is not pinned" do
+        let!(:unpinned_feature_setting) do
+          create(:ai_namespace_feature_setting,
+            namespace: group,
+            feature: :duo_agent_platform,
+            offered_model_ref: nil)
+        end
+
+        it "returns nil for pinned model when not pinned" do
+          expect(resolver).to eq({
+            default_model: { name: "Claude Sonnet 4.0 - Anthropic", ref: "claude_sonnet_4_20250514" },
+            selectable_models: [
+              { name: "Claude Sonnet 4.0 - Anthropic", ref: "claude_sonnet_4_20250514" },
+              { name: "Claude Sonnet 3.7 - Anthropic", ref: "claude_sonnet_3_7_20250219" }
+            ],
+            pinned_model: nil
+          })
+        end
+      end
+
+      context "when feature setting service fails" do
+        before do
+          allow_next_instance_of(::Ai::FeatureSettingSelectionService) do |service|
+            allow(service).to receive(:execute).and_return(ServiceResponse.error(message: "Service failed"))
+          end
+        end
+
+        it "returns nil for pinned model when service fails" do
+          expect(resolver).to eq({
+            default_model: { name: "Claude Sonnet 4.0 - Anthropic", ref: "claude_sonnet_4_20250514" },
+            selectable_models: [
+              { name: "Claude Sonnet 4.0 - Anthropic", ref: "claude_sonnet_4_20250514" },
+              { name: "Claude Sonnet 3.7 - Anthropic", ref: "claude_sonnet_3_7_20250219" }
+            ],
+            pinned_model: nil
+          })
+        end
+      end
+
+      context "when duo_agent_platform feature setting is not found" do
         let(:service_result) do
           ServiceResponse.success(payload: {
             "models" => [
@@ -81,7 +148,7 @@ RSpec.describe Resolvers::Ai::Chat::AvailableModelsResolver, feature_category: :
         end
 
         it "returns an empty list" do
-          expect(resolver).to eq({ default_model: nil, selectable_models: [] })
+          expect(resolver).to eq({ default_model: nil, selectable_models: [], pinned_model: nil })
         end
       end
     end
@@ -100,7 +167,8 @@ RSpec.describe Resolvers::Ai::Chat::AvailableModelsResolver, feature_category: :
       it "returns empty result when service fails" do
         expect(resolver).to eq({
           default_model: nil,
-          selectable_models: []
+          selectable_models: [],
+          pinned_model: nil
         })
       end
     end
@@ -113,7 +181,7 @@ RSpec.describe Resolvers::Ai::Chat::AvailableModelsResolver, feature_category: :
       end
 
       it "returns empty result when service returns nil" do
-        expect(resolver).to eq({ default_model: nil, selectable_models: [] })
+        expect(resolver).to eq({ default_model: nil, selectable_models: [], pinned_model: nil })
       end
     end
   end

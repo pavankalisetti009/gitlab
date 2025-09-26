@@ -24617,6 +24617,7 @@ Available models for Duo Agentic Chat.
 | Name | Type | Description |
 | ---- | ---- | ----------- |
 | <a id="availablemodelsdefaultmodel"></a>`defaultModel` | [`AiModelSelectionOfferedModel`](#aimodelselectionofferedmodel) | Default LLM for Duo Agentic Chat. |
+| <a id="availablemodelspinnedmodel"></a>`pinnedModel` | [`AiModelSelectionOfferedModel`](#aimodelselectionofferedmodel) | Pinned model for Duo Agentic Chat if set via feature settings. |
 | <a id="availablemodelsselectablemodels"></a>`selectableModels` | [`[AiModelSelectionOfferedModel!]`](#aimodelselectionofferedmodel) | LLMs compatible with Duo Agentic Chat. |
 
 ### `AwardEmoji`
