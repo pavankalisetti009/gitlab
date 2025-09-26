@@ -1,0 +1,73 @@
+import { shallowMount } from '@vue/test-utils';
+import { GlButton } from '@gitlab/ui';
+import { useMockInternalEventsTracking } from 'helpers/tracking_internal_events_helper';
+import PageHeading from '~/vue_shared/components/page_heading.vue';
+import AiCatalogAgentsShow from 'ee/ai/catalog/pages/ai_catalog_agents_show.vue';
+import AiCatalogAgentDetails from 'ee/ai/catalog/components/ai_catalog_agent_details.vue';
+import { AI_CATALOG_AGENTS_EDIT_ROUTE } from 'ee/ai/catalog/router/constants';
+import { TRACK_EVENT_TYPE_AGENT, TRACK_EVENT_VIEW_AI_CATALOG_ITEM } from 'ee/ai/catalog/constants';
+import { mockAgent } from '../mock_data';
+
+describe('AiCatalogAgentsShow', () => {
+  let wrapper;
+
+  const defaultProps = {
+    aiCatalogAgent: mockAgent,
+  };
+
+  const routeParams = { id: '1' };
+  const { bindInternalEventDocument } = useMockInternalEventsTracking();
+
+  const createComponent = () => {
+    wrapper = shallowMount(AiCatalogAgentsShow, {
+      propsData: {
+        ...defaultProps,
+      },
+      mocks: {
+        $route: {
+          params: routeParams,
+        },
+      },
+    });
+  };
+
+  const findPageHeading = () => wrapper.findComponent(PageHeading);
+  const findEditButton = () => wrapper.findComponent(GlButton);
+  const findAgentDetails = () => wrapper.findComponent(AiCatalogAgentDetails);
+
+  beforeEach(() => {
+    createComponent();
+  });
+
+  it('renders page heading', () => {
+    expect(findPageHeading().props('heading')).toBe(mockAgent.name);
+  });
+
+  it('renders edit button', () => {
+    expect(findEditButton().text()).toBe('Edit');
+    expect(findEditButton().props('to')).toEqual({
+      name: AI_CATALOG_AGENTS_EDIT_ROUTE,
+      params: { id: routeParams.id },
+    });
+  });
+
+  it('renders project name and description', () => {
+    expect(wrapper.text()).toContain(mockAgent.project.name);
+    expect(wrapper.text()).toContain(mockAgent.description);
+  });
+
+  it('renders agent details', () => {
+    expect(findAgentDetails().props('item')).toBe(mockAgent);
+  });
+
+  describe('tracking events', () => {
+    it(`tracks ${TRACK_EVENT_VIEW_AI_CATALOG_ITEM} event on mount`, () => {
+      const { trackEventSpy } = bindInternalEventDocument(wrapper.element);
+      expect(trackEventSpy).toHaveBeenCalledWith(
+        TRACK_EVENT_VIEW_AI_CATALOG_ITEM,
+        { label: TRACK_EVENT_TYPE_AGENT },
+        undefined,
+      );
+    });
+  });
+});

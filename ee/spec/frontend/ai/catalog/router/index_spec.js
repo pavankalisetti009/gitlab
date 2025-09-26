@@ -2,11 +2,13 @@ import { createRouter } from 'ee/ai/catalog/router';
 import {
   AI_CATALOG_INDEX_ROUTE,
   AI_CATALOG_AGENTS_ROUTE,
+  AI_CATALOG_AGENTS_SHOW_ROUTE,
   AI_CATALOG_AGENTS_EDIT_ROUTE,
   AI_CATALOG_AGENTS_NEW_ROUTE,
   AI_CATALOG_AGENTS_RUN_ROUTE,
   AI_CATALOG_AGENTS_DUPLICATE_ROUTE,
   AI_CATALOG_FLOWS_ROUTE,
+  AI_CATALOG_FLOWS_SHOW_ROUTE,
   AI_CATALOG_FLOWS_EDIT_ROUTE,
   AI_CATALOG_FLOWS_NEW_ROUTE,
   AI_CATALOG_FLOWS_DUPLICATE_ROUTE,
@@ -25,6 +27,7 @@ describe('AI Catalog Router', () => {
   beforeEach(() => {
     gon.features = {
       aiCatalogFlows: true,
+      aiCatalogShowPage: true,
     };
     isLoggedIn.mockReturnValue(true);
     router = createRouter();
@@ -39,10 +42,12 @@ describe('AI Catalog Router', () => {
       testName              | path                              | expectedRouteName
       ${'agents index'}     | ${'/agents'}                      | ${AI_CATALOG_AGENTS_ROUTE}
       ${'agents new'}       | ${'/agents/new'}                  | ${AI_CATALOG_AGENTS_NEW_ROUTE}
+      ${'agents show'}      | ${`/agents/${agentId}`}           | ${AI_CATALOG_AGENTS_SHOW_ROUTE}
       ${'agents edit'}      | ${`/agents/${agentId}/edit`}      | ${AI_CATALOG_AGENTS_EDIT_ROUTE}
       ${'agents run'}       | ${`/agents/${agentId}/run`}       | ${AI_CATALOG_AGENTS_RUN_ROUTE}
       ${'agents duplicate'} | ${`/agents/${agentId}/duplicate`} | ${AI_CATALOG_AGENTS_DUPLICATE_ROUTE}
       ${'flows index'}      | ${'/flows'}                       | ${AI_CATALOG_FLOWS_ROUTE}
+      ${'flows show'}       | ${`/flows/${agentId}`}            | ${AI_CATALOG_FLOWS_SHOW_ROUTE}
       ${'flows new'}        | ${'/flows/new'}                   | ${AI_CATALOG_FLOWS_NEW_ROUTE}
       ${'flows edit'}       | ${`/flows/${flowId}/edit`}        | ${AI_CATALOG_FLOWS_EDIT_ROUTE}
       ${'flows duplicate'}  | ${`/flows/${flowId}/duplicate`}   | ${AI_CATALOG_FLOWS_DUPLICATE_ROUTE}
@@ -53,10 +58,11 @@ describe('AI Catalog Router', () => {
     });
   });
 
-  describe('When aiCatalogFlows FF is off', () => {
+  describe('When aiCatalogFlows and aiCatalogShowPage feature flags are off', () => {
     beforeEach(() => {
       gon.features = {
         aiCatalogFlows: false,
+        aiCatalogShowPage: false,
       };
       router = createRouter();
     });
@@ -65,10 +71,12 @@ describe('AI Catalog Router', () => {
       testName              | path                              | expectedRouteName
       ${'agents index'}     | ${'/agents'}                      | ${AI_CATALOG_AGENTS_ROUTE}
       ${'agents new'}       | ${'/agents/new'}                  | ${AI_CATALOG_AGENTS_NEW_ROUTE}
+      ${'agents show'}      | ${`/agents/${agentId}`}           | ${AI_CATALOG_AGENTS_ROUTE}
       ${'agents edit'}      | ${`/agents/${agentId}/edit`}      | ${AI_CATALOG_AGENTS_EDIT_ROUTE}
       ${'agents run'}       | ${`/agents/${agentId}/run`}       | ${AI_CATALOG_AGENTS_RUN_ROUTE}
       ${'agents duplicate'} | ${`/agents/${agentId}/duplicate`} | ${AI_CATALOG_AGENTS_DUPLICATE_ROUTE}
       ${'flows index'}      | ${'/flows'}                       | ${AI_CATALOG_INDEX_ROUTE}
+      ${'flows show'}       | ${`/flows/${agentId}`}            | ${AI_CATALOG_INDEX_ROUTE}
       ${'flows new'}        | ${'/flows/new'}                   | ${AI_CATALOG_INDEX_ROUTE}
       ${'flows edit'}       | ${`/flows/${flowId}/edit`}        | ${AI_CATALOG_INDEX_ROUTE}
       ${'flows duplicate'}  | ${`/flows/${flowId}/duplicate`}   | ${AI_CATALOG_INDEX_ROUTE}
@@ -80,6 +88,14 @@ describe('AI Catalog Router', () => {
   });
 
   describe('Show query param routes', () => {
+    beforeEach(() => {
+      gon.features = {
+        aiCatalogFlows: true,
+        aiCatalogShowPage: false,
+      };
+      router = createRouter();
+    });
+
     it.each`
       type        | inputPath               | expectedPath | expectedId
       ${'agents'} | ${`/agents/${agentId}`} | ${'/agents'} | ${agentId}
