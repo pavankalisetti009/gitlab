@@ -1630,4 +1630,28 @@ describe('Duo Agentic Chat', () => {
       expect(findDuoChat().props('error')).toBe('');
     });
   });
+
+  describe('dynamicTitle', () => {
+    beforeEach(() => {
+      duoChatGlobalState.isAgenticChatShown = true;
+    });
+
+    it('passes the base title when no custom agent is selected', async () => {
+      createComponent();
+      await waitForPromises();
+
+      expect(findDuoChat().props('title')).toBe('GitLab Duo Agentic Chat');
+    });
+
+    it('passes the agent name as title when a custom agent is selected', async () => {
+      createComponent({
+        data: {
+          aiCatalogItemVersionId: 'AgentVersion 5',
+        },
+      });
+      await waitForPromises();
+
+      expect(findDuoChat().props('title')).toBe('My Custom Agent');
+    });
+  });
 });

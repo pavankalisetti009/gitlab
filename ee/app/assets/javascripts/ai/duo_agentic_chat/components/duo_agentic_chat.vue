@@ -293,6 +293,19 @@ export default {
 
       return params.toString() ? `${baseUrl}?${params}` : baseUrl;
     },
+    dynamicTitle() {
+      const baseTitle = s__('DuoAgenticChat|GitLab Duo Agentic Chat');
+
+      if (!this.aiCatalogItemVersionId) {
+        return baseTitle;
+      }
+
+      const activeAgent = this.catalogAgents.find((agent) =>
+        agent.versions.nodes.some((version) => version.id === this.aiCatalogItemVersionId),
+      );
+
+      return activeAgent ? activeAgent.name : baseTitle;
+    },
   },
   watch: {
     'duoChatGlobalState.isAgenticChatShown': {
@@ -663,7 +676,7 @@ export default {
 <template>
   <web-agentic-duo-chat
     id="duo-chat"
-    :title="s__('DuoAgenticChat|GitLab Duo Agentic Chat')"
+    :title="dynamicTitle"
     :messages="messages.length > 0 ? messages : chatMessageHistory"
     :is-loading="loading"
     :predefined-prompts="predefinedPrompts"
