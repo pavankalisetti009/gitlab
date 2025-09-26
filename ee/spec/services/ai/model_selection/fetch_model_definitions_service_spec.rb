@@ -187,19 +187,101 @@ RSpec.describe ::Ai::ModelSelection::FetchModelDefinitionsService, feature_categ
     end
   end
 
-  describe '#endpoint' do
-    it 'returns the cloud-connected endpoint URL' do
-      expect(initialized_class.send(:endpoint)).to eq("https://cloud.gitlab.com/ai/v1/models%2Fdefinitions")
-    end
+  describe 'local development behavior with respect to cache' do
+    context 'when FETCH_MODEL_SELECTION_DATA_FROM_LOCAL environment variable is set' do
+      let(:local_endpoint_url) { 'http://local-gateway.com/v1/models%2Fdefinitions' }
 
-    context 'if FETCH_MODEL_SELECTION_DATA_FROM_LOCAL is true' do
       before do
-        stub_env('FETCH_MODEL_SELECTION_DATA_FROM_LOCAL', '1')
-        allow(::Gitlab::AiGateway).to receive(:url).and_return('http://some-url.com')
+        stub_application_setting(duo_features_enabled: true)
+        allow(::Gitlab::AiGateway).to receive(:url).and_return('http://local-gateway.com')
       end
 
-      it 'returns the local endpoint URL' do
-        expect(initialized_class.send(:endpoint)).to eq('http://some-url.com/v1/models%2Fdefinitions')
+      %w[1 true True TRUE].each do |truthy_value|
+        context "with value set to '#{truthy_value}'" do
+          before do
+            stub_env('FETCH_MODEL_SELECTION_DATA_FROM_LOCAL', truthy_value)
+            stub_request(:get, local_endpoint_url)
+              .to_return(
+                status: 200,
+                body: model_definitions_response,
+                headers: { 'Content-Type' => 'application/json' }
+              )
+          end
+
+          it 'uses local endpoint and skips cache even when cache exists' do
+            allow(Rails.cache).to receive(:exist?).with(cache_key).and_return(true)
+            expect(Rails.cache).to receive(:fetch).with(cache_key, expires_in: 1.hour).and_return(model_definitions)
+
+            expect(Gitlab::HTTP).to receive(:get).with(
+              local_endpoint_url,
+              hash_including(allow_local_requests: true)
+            ).and_call_original
+
+            expect(service).to be_success
+          end
+        end
+      end
+
+      ['0', 'false', 'False', 'FALSE', '', nil].each do |falsy_value|
+        context "with value set to '#{falsy_value}'" do
+          before do
+            stub_env('FETCH_MODEL_SELECTION_DATA_FROM_LOCAL', falsy_value)
+          end
+
+          it 'uses and respects cache' do
+            allow(Rails.cache).to receive(:exist?).with(cache_key).and_return(true)
+            allow(Rails.cache).to receive(:fetch).with(cache_key).and_return(model_definitions)
+
+            # Should not make HTTP request when cache exists
+            expect(Gitlab::HTTP).not_to receive(:get)
+
+            expect(service).to be_success
+            expect(service.payload).to eq(model_definitions)
+          end
+        end
+      end
+    end
+  end
+
+  describe 'endpoint behavior' do
+    before do
+      stub_application_setting(duo_features_enabled: true)
+    end
+
+    context 'when not in local development' do
+      before do
+        stub_env('FETCH_MODEL_SELECTION_DATA_FROM_LOCAL', nil)
+        allow(Rails.cache).to receive(:exist?).with(cache_key).and_return(false)
+      end
+
+      it 'uses the cloud-connected endpoint URL' do
+        stub_request(:get, "https://cloud.gitlab.com/ai/v1/models%2Fdefinitions")
+          .to_return(
+            status: 200,
+            body: model_definitions_response,
+            headers: { 'Content-Type' => 'application/json' }
+          )
+
+        expect(service).to be_success
+      end
+    end
+
+    context 'when in local development' do
+      before do
+        stub_env('FETCH_MODEL_SELECTION_DATA_FROM_LOCAL', '1')
+        allow(::Gitlab::AiGateway).to receive(:url).and_return('http://local-gateway.com')
+        allow(Rails.cache).to receive(:exist?).with(cache_key).and_return(false)
+      end
+
+      it 'uses the local endpoint URL' do
+        stub_request(:get, 'http://local-gateway.com/v1/models%2Fdefinitions')
+          .to_return(
+            status: 200,
+            body: model_definitions_response,
+            headers: { 'Content-Type' => 'application/json' }
+          )
+
+        expect(service).to be_success
       end
     end
   end
