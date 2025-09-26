@@ -29,7 +29,6 @@ RSpec.describe UsageEvents::DumpWriteBufferCronWorker, :clean_gitlab_redis_share
       add_to_buffer(user_id: 3, event: 'request_duo_chat_response', organization_id: organization.id)
       add_to_buffer(user_id: 1, event: 'code_suggestion_shown_in_ide', organization_id: organization.id)
 
-      # Duplicates for Ai::CodeSuggestionEvent
       timestamp = Time.current
       add_to_buffer(
         user_id: 2,

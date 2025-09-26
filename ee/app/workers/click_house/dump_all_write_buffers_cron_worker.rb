@@ -9,12 +9,7 @@ module ClickHouse
     data_consistency :delayed
     feature_category :value_stream_management
 
-    TABLES = [
-      Ai::CodeSuggestionEvent,
-      Ai::DuoChatEvent,
-      Ai::TroubleshootJobEvent,
-      Ai::UsageEvent
-    ].map(&:clickhouse_table_name).freeze
+    TABLES = [Ai::UsageEvent.clickhouse_table_name].freeze
 
     def perform
       return unless enabled?

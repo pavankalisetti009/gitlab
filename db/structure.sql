@@ -4651,51 +4651,6 @@ RETURN NULL;
 END
 $$;
 
-CREATE TABLE ai_code_suggestion_events (
-    id bigint NOT NULL,
-    "timestamp" timestamp with time zone NOT NULL,
-    user_id bigint NOT NULL,
-    organization_id bigint NOT NULL,
-    created_at timestamp with time zone NOT NULL,
-    updated_at timestamp with time zone NOT NULL,
-    event smallint NOT NULL,
-    namespace_path text,
-    payload jsonb,
-    CONSTRAINT check_ba9ae3f258 CHECK ((char_length(namespace_path) <= 255))
-)
-PARTITION BY RANGE ("timestamp");
-
-CREATE TABLE ai_duo_chat_events (
-    id bigint NOT NULL,
-    "timestamp" timestamp with time zone NOT NULL,
-    user_id bigint NOT NULL,
-    personal_namespace_id bigint,
-    created_at timestamp with time zone NOT NULL,
-    updated_at timestamp with time zone NOT NULL,
-    event smallint NOT NULL,
-    namespace_path text,
-    payload jsonb,
-    organization_id bigint,
-    CONSTRAINT check_628cdfbf3f CHECK ((char_length(namespace_path) <= 255)),
-    CONSTRAINT check_f759f45177 CHECK ((organization_id IS NOT NULL))
-)
-PARTITION BY RANGE ("timestamp");
-
-CREATE TABLE ai_troubleshoot_job_events (
-    id bigint NOT NULL,
-    "timestamp" timestamp with time zone NOT NULL,
-    user_id bigint NOT NULL,
-    job_id bigint NOT NULL,
-    project_id bigint NOT NULL,
-    created_at timestamp with time zone NOT NULL,
-    updated_at timestamp with time zone NOT NULL,
-    event smallint NOT NULL,
-    namespace_path text,
-    payload jsonb,
-    CONSTRAINT check_29d6dbc329 CHECK ((char_length(namespace_path) <= 255))
-)
-PARTITION BY RANGE ("timestamp");
-
 CREATE TABLE ai_usage_events (
     id bigint NOT NULL,
     "timestamp" timestamp with time zone NOT NULL,
@@ -10015,6 +9970,20 @@ CREATE SEQUENCE ai_catalog_items_id_seq
 
 ALTER SEQUENCE ai_catalog_items_id_seq OWNED BY ai_catalog_items.id;
 
+CREATE TABLE ai_code_suggestion_events (
+    id bigint NOT NULL,
+    "timestamp" timestamp with time zone NOT NULL,
+    user_id bigint NOT NULL,
+    organization_id bigint NOT NULL,
+    created_at timestamp with time zone NOT NULL,
+    updated_at timestamp with time zone NOT NULL,
+    event smallint NOT NULL,
+    namespace_path text,
+    payload jsonb,
+    CONSTRAINT check_ba9ae3f258 CHECK ((char_length(namespace_path) <= 255))
+)
+PARTITION BY RANGE ("timestamp");
+
 CREATE SEQUENCE ai_code_suggestion_events_id_seq
     START WITH 1
     INCREMENT BY 1
@@ -10072,6 +10041,22 @@ CREATE SEQUENCE ai_conversation_threads_id_seq
     CACHE 1;
 
 ALTER SEQUENCE ai_conversation_threads_id_seq OWNED BY ai_conversation_threads.id;
+
+CREATE TABLE ai_duo_chat_events (
+    id bigint NOT NULL,
+    "timestamp" timestamp with time zone NOT NULL,
+    user_id bigint NOT NULL,
+    personal_namespace_id bigint,
+    created_at timestamp with time zone NOT NULL,
+    updated_at timestamp with time zone NOT NULL,
+    event smallint NOT NULL,
+    namespace_path text,
+    payload jsonb,
+    organization_id bigint,
+    CONSTRAINT check_628cdfbf3f CHECK ((char_length(namespace_path) <= 255)),
+    CONSTRAINT check_f759f45177 CHECK ((organization_id IS NOT NULL))
+)
+PARTITION BY RANGE ("timestamp");
 
 CREATE SEQUENCE ai_duo_chat_events_id_seq
     START WITH 1
@@ -10206,6 +10191,21 @@ CREATE TABLE ai_testing_terms_acceptances (
     user_email text NOT NULL,
     CONSTRAINT check_5efe98894e CHECK ((char_length(user_email) <= 255))
 );
+
+CREATE TABLE ai_troubleshoot_job_events (
+    id bigint NOT NULL,
+    "timestamp" timestamp with time zone NOT NULL,
+    user_id bigint NOT NULL,
+    job_id bigint NOT NULL,
+    project_id bigint NOT NULL,
+    created_at timestamp with time zone NOT NULL,
+    updated_at timestamp with time zone NOT NULL,
+    event smallint NOT NULL,
+    namespace_path text,
+    payload jsonb,
+    CONSTRAINT check_29d6dbc329 CHECK ((char_length(namespace_path) <= 255))
+)
+PARTITION BY RANGE ("timestamp");
 
 CREATE SEQUENCE ai_troubleshoot_job_events_id_seq
     START WITH 1
