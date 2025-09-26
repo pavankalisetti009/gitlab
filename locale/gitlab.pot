@@ -73753,6 +73753,9 @@ msgstr ""
 msgid "WorkItems|Options applied to all views"
 msgstr ""
 
+msgid "WorkItems|Sort order rebalancing in progress. Reordering is temporarily disabled."
+msgstr ""
+
 msgid "WorkItems|Your preferences"
 msgstr ""
 
