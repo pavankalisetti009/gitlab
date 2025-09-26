@@ -3,6 +3,7 @@
 module EE
   module SearchService
     extend ::Gitlab::Utils::Override
+    SUPPORTED_SEARCH_TYPES = %w[advanced basic zoekt].freeze
 
     # This is a proper method instead of a `delegate` in order to
     # avoid adding unnecessary methods to Search::SnippetService
@@ -45,14 +46,17 @@ module EE
 
     override :search_type_errors
     def search_type_errors
-      errors = []
+      return if params[:search_type].nil? || params[:search_type] == 'basic'
 
+      errors = []
       case params[:search_type]
       when 'advanced'
         errors << 'Elasticsearch is not available' unless use_elasticsearch?
       when 'zoekt'
         errors << 'Zoekt is not available' unless use_zoekt?
         errors << 'Zoekt can only be used for blobs' unless scope == 'blobs'
+      else
+        errors << "Search type should be one of these: #{SUPPORTED_SEARCH_TYPES.join(', ')}"
       end
 
       return if errors.empty?

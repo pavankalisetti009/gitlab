@@ -56,6 +56,7 @@ module EE
       override :allowed_scopes
       def allowed_scopes
         scopes = super
+        return scopes if params[:search_type] == 'basic'
 
         if use_elasticsearch?
           scopes -= %w[epics] unless group.licensed_feature_available?(:epics)

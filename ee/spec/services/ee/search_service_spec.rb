@@ -143,6 +143,14 @@ RSpec.describe SearchService, feature_category: :global_search do
       end
     end
 
+    context 'when search_type is nil' do
+      let(:search_type) { nil }
+
+      it 'is nil' do
+        expect(search_service.search_type_errors).to be_nil
+      end
+    end
+
     context 'when search_type is advanced' do
       let(:search_type) { 'advanced' }
 
@@ -178,6 +186,15 @@ RSpec.describe SearchService, feature_category: :global_search do
         allow(search_service).to receive_messages(use_zoekt?: true, scope: 'issues')
 
         expect(search_service.search_type_errors).to eq('Zoekt can only be used for blobs')
+      end
+    end
+
+    context 'when search_type is random' do
+      let(:search_type) { 'foobar' }
+
+      it 'returns an error' do
+        message = "Search type should be one of these: #{described_class::SUPPORTED_SEARCH_TYPES.join(', ')}"
+        expect(search_service.search_type_errors).to eq(message)
       end
     end
   end

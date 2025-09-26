@@ -75,6 +75,7 @@ module EE
       override :allowed_scopes
       def allowed_scopes
         scopes = super
+        return scopes if params[:search_type] == 'basic'
 
         scopes += %w[blobs commits epics notes wiki_blobs] if use_elasticsearch?
         scopes += %w[blobs] if use_zoekt?
