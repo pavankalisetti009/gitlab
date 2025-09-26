@@ -50,7 +50,7 @@ RSpec.describe Groups::SyncService, feature_category: :system_access do
     end
 
     it 'returns a success response' do
-      expect(sync.success?).to eq(true)
+      expect(sync).to be_success
     end
 
     it 'returns sync stats as payload' do
@@ -421,6 +421,113 @@ RSpec.describe Groups::SyncService, feature_category: :system_access do
       it 'does not log an info message' do
         expect(Gitlab::AppLogger).not_to receive(:info)
       end
+    end
+  end
+
+  shared_examples 'adds users with the configured access level' do
+    it 'adds users with the configured access level' do
+      expect(sync).to be_success
+      expect(sync.payload[:added]).to eq(1)
+
+      expect(group.all_group_members.find_by(user_id: user.id).access_level)
+        .to eq(Gitlab::Access::GUEST)
+    end
+  end
+
+  context 'with BSO (Block Seat Overages) enabled' do
+    let(:group) { create(:group) }
+    let(:group_links) do
+      [
+        create(:saml_group_link, group: group, access_level: Gitlab::Access::GUEST)
+      ]
+    end
+
+    let(:manage_group_ids) { [group.id] }
+
+    subject(:sync) do
+      described_class.new(
+        group, user,
+        group_links: group_links, manage_group_ids: manage_group_ids
+      ).execute
+    end
+
+    before do
+      stub_saas_features(gitlab_com_subscriptions: false)
+      stub_feature_flags(bso_minimal_access_fallback: true)
+      stub_licensed_features(minimal_access_role: true)
+    end
+
+    context 'without available seats' do
+      before do
+        allow(GitlabSubscriptions::MemberManagement::BlockSeatOverages)
+          .to receive_messages(
+            block_seat_overages?: true,
+            seats_available_for?: false
+          )
+      end
+
+      it 'adds the user with MINIMAL_ACCESS instead of the configured access level' do
+        expect(sync).to be_success
+        expect(sync.payload[:added]).to eq(1)
+
+        group_member = group.all_group_members.find_by(user_id: user.id)
+
+        expect(group_member).not_to be_nil, "User should be added to group"
+        expect(group_member.access_level).to eq(Gitlab::Access::MINIMAL_ACCESS)
+      end
+
+      it 'logs BSO adjustment when access level is downgraded' do
+        allow(Gitlab::AppLogger).to receive(:info).and_call_original
+
+        expect(Gitlab::AppLogger).to receive(:info).with(
+          hash_including(
+            message: 'SAML group membership access level adjusted due to BSO seat limits',
+            group_id: group.id,
+            user_id: user.id,
+            requested_access_level: Gitlab::Access::GUEST,
+            adjusted_access_level: Gitlab::Access::MINIMAL_ACCESS
+          )
+        )
+
+        sync
+      end
+    end
+
+    context 'with available seats' do
+      before do
+        allow(GitlabSubscriptions::MemberManagement::BlockSeatOverages)
+          .to receive_messages(
+            block_seat_overages?: true,
+            seats_available_for?: true
+          )
+      end
+
+      it_behaves_like 'adds users with the configured access level'
+
+      it 'does not log BSO adjustment' do
+        expect(Gitlab::AppLogger).not_to receive(:info).with(
+          hash_including(message: 'SAML group membership access level adjusted due to BSO seat limits')
+        )
+
+        sync
+      end
+    end
+
+    context 'when feature flag is disabled' do
+      before do
+        stub_feature_flags(bso_minimal_access_fallback: false)
+      end
+
+      it_behaves_like 'adds users with the configured access level'
+    end
+
+    context 'when BSO is not enabled' do
+      before do
+        allow(GitlabSubscriptions::MemberManagement::BlockSeatOverages)
+          .to receive(:block_seat_overages?).and_return(false)
+      end
+
+      it_behaves_like 'adds users with the configured access level'
     end
   end
 end
