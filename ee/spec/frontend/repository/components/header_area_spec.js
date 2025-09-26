@@ -12,7 +12,7 @@ import CodeDropdown from '~/vue_shared/components/code_dropdown/code_dropdown.vu
 import CloneCodeDropdown from '~/vue_shared/components/code_dropdown/clone_code_dropdown.vue';
 import { headerAppInjected } from 'ee_else_ce_jest/repository/mock_data';
 import { useFileTreeBrowserVisibility } from '~/repository/stores/file_tree_browser_visibility';
-import { useViewport } from '~/pinia/global_stores/viewport';
+import { useMainContainer } from '~/pinia/global_stores/main_container';
 
 const defaultMockRoute = {
   params: {
@@ -75,7 +75,7 @@ describe('HeaderArea', () => {
 
   beforeEach(() => {
     pinia = createTestingPinia({ stubActions: false });
-    useViewport();
+    useMainContainer();
     useFileTreeBrowserVisibility();
     wrapper = createComponent();
   });
