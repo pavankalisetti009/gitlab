@@ -112,12 +112,16 @@ export default {
       </gl-badge>
       <risk-score-group-by v-model="groupedBy" />
     </template>
-    <template v-if="!hasFetchError" #body>
-      <total-risk-score v-if="groupedBy === 'default'" :score="riskScore" />
-      <risk-score-by-project v-else :risk-scores="projects" class="gl-pt-3" />
-    </template>
-    <template v-else #alert-message>
-      <p>{{ __('Something went wrong. Please try again.') }}</p>
+    <template #body>
+      <template v-if="!hasFetchError">
+        <total-risk-score v-if="groupedBy === 'default'" :score="riskScore" />
+        <risk-score-by-project v-else :risk-scores="projects" class="gl-pt-3" />
+      </template>
+      <template v-else>
+        <p class="gl-m-0 gl-flex gl-h-full gl-w-full gl-items-center gl-justify-center gl-p-0">
+          {{ __('Something went wrong. Please try again.') }}
+        </p>
+      </template>
     </template>
   </gl-dashboard-panel>
 </template>
