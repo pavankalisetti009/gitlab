@@ -33,5 +33,13 @@ RSpec.describe Sbom::ComponentVersionsFinder, feature_category: :vulnerability_m
 
       it_behaves_like 'when the component has multiple versions'
     end
+
+    context 'when object is not supported' do
+      let(:object) { Issue.new }
+
+      it 'raises an error' do
+        expect { find }.to raise_error(ArgumentError, "can't find components for Issue")
+      end
+    end
   end
 end
