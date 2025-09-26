@@ -136,32 +136,22 @@ export const codequalityParsedIssues = [
 
 export { mockStore };
 
-export const mockSecurityPolicyViolations = [
-  {
-    dismissed: false,
-    enforcementType: 'WARN',
-    name: 'Warn mode - 01',
-    reportType: 'ANY_MERGE_REQUEST',
-    securityPolicyId: '8',
-    status: 'FAILED',
-    __typename: 'PolicyViolationInfo',
-  },
-  {
-    dismissed: false,
-    enforcementType: 'WARN',
-    name: 'Warn mode - 01',
-    reportType: 'ANY_MERGE_REQUEST',
-    securityPolicyId: '8',
-    status: 'FAILED',
-    __typename: 'PolicyViolationInfo',
-  },
-  {
-    dismissed: false,
-    enforcementType: 'ENFORCE',
-    name: 'Prevent Critical Vulnerabilities',
-    reportType: 'SCAN_FINDING',
-    securityPolicyId: '2',
-    status: 'FAILED',
-    __typename: 'PolicyViolationInfo',
-  },
-];
+export const mockEnforcedSecurityPolicyViolation = {
+  dismissed: false,
+  enforcementType: 'ENFORCE',
+  name: 'Prevent Critical Vulnerabilities',
+  reportType: 'SCAN_FINDING',
+  securityPolicyId: '2',
+  status: 'FAILED',
+  __typename: 'PolicyViolationInfo',
+};
+
+export const mockWarnSecurityPolicyViolation = {
+  dismissed: false,
+  enforcementType: 'WARN',
+  name: 'Warn mode - 01',
+  reportType: 'ANY_MERGE_REQUEST',
+  securityPolicyId: '8',
+  status: 'FAILED',
+  __typename: 'PolicyViolationInfo',
+};

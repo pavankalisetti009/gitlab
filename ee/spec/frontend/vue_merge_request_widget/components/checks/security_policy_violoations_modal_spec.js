@@ -9,7 +9,7 @@ import SecurityPolicyViolationsModal from 'ee/vue_merge_request_widget/component
 import SecurityPolicyViolationsSelector from 'ee/vue_merge_request_widget/components/checks/security_policy_violations_selector.vue';
 import bypassSecurityPolicyViolations from 'ee/vue_merge_request_widget/components/checks/queries/bypass_security_policy_violations.mutation.graphql';
 import { WARN_MODE, EXCEPTION_MODE } from 'ee/vue_merge_request_widget/components/checks/constants';
-import { mockSecurityPolicyViolations } from '../../mock_data';
+import { mockWarnSecurityPolicyViolation } from '../../mock_data';
 
 jest.mock('~/sentry/sentry_browser_wrapper');
 
@@ -55,7 +55,7 @@ describe('SecurityPolicyViolationsModal', () => {
     wrapper = shallowMountExtended(SecurityPolicyViolationsModal, {
       apolloProvider: createMockApollo([[mutationQuery, mutationResult]]),
       propsData: {
-        policies: [mockSecurityPolicyViolations[0]],
+        policies: [mockWarnSecurityPolicyViolation],
         visible: true,
         mode: WARN_MODE,
         mr: {
@@ -91,8 +91,8 @@ describe('SecurityPolicyViolationsModal', () => {
       const selector = findPolicySelector();
       expect(selector.props('items')).toEqual([
         expect.objectContaining({
-          value: mockSecurityPolicyViolations[0].securityPolicyId,
-          text: mockSecurityPolicyViolations[0].name,
+          value: mockWarnSecurityPolicyViolation.securityPolicyId,
+          text: mockWarnSecurityPolicyViolation.name,
         }),
       ]);
       expect(selector.props('multiple')).toBe(true);
@@ -179,7 +179,7 @@ describe('SecurityPolicyViolationsModal', () => {
 
     it('updates toggle text when policies are selected', async () => {
       await findPolicySelector().vm.$emit('select', ['8']);
-      expect(findPolicySelector().props('toggleText')).toBe(mockSecurityPolicyViolations[0].name);
+      expect(findPolicySelector().props('toggleText')).toBe(mockWarnSecurityPolicyViolation.name);
     });
 
     it('updates toggle text when reasons are selected', async () => {
