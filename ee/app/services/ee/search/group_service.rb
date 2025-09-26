@@ -58,13 +58,11 @@ module EE
         scopes = super
         return scopes if params[:search_type] == 'basic'
 
-        if use_elasticsearch?
-          scopes -= %w[epics] unless group.licensed_feature_available?(:epics)
+        if group.licensed_feature_available?(:epics)
+          scopes + %w[epics]
         else
-          scopes += %w[epics] # In basic search we have epics enabled for groups
-        end
-
-        scopes.uniq
+          scopes - %w[epics]
+        end.uniq
       end
       strong_memoize_attr :allowed_scopes
     end
