@@ -58,6 +58,7 @@ const createMergeRequest = async ({
     targetBranch,
     title,
     description,
+    removeSourceBranch: true,
   };
 
   const {
