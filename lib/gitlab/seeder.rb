@@ -45,6 +45,15 @@ module Gitlab
       end
     end
 
+    def self.parallel_each(array)
+      raise 'Nested Gitlab::Seeder.parallel_each calls are not allowed.' if @parallel
+
+      @parallel = true
+      Parallel.each(array, in_processes: Parallel.processor_count) { |record| yield(record) }
+    ensure
+      @parallel = false
+    end
+
     def self.log_message(message)
       puts "#{Time.current}: #{message}"
     end
