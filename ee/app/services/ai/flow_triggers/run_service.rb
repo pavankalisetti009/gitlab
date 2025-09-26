@@ -14,36 +14,49 @@ module Ai
       end
 
       def execute(params)
-        # Create Duo Workflow Header
-        wf_create_result = ::Ai::DuoWorkflows::CreateWorkflowService.new(
-          container: project,
-          current_user: current_user,
-          params: {
-            workflow_definition: "Trigger - #{flow_trigger.description}",
-            status: :running,
-            goal: params[:input],
-            environment: :web
-          }
-        ).execute
-
-        return ServiceResponse.error(message: wf_create_result[:message]) if wf_create_result.error?
-
-        workflow = wf_create_result[:workflow]
-        params[:flow_id] = workflow.id
         note_service = ::Ai::FlowTriggers::CreateNoteService.new(
           project: project, resource: resource, author: flow_trigger_user, discussion: params[:discussion]
         )
 
-        note_service.execute(params) do |updated_params|
-          run_workload(updated_params, workflow)
+        response, workflow = note_service.execute(params) do |updated_params|
+          if flow_trigger.ai_catalog_item_consumer.present?
+            start_catalog_workflow(params)
+          else
+            run_workload(updated_params)
+          end
         end
+
+        return response unless workflow
+
+        status_event = response.success? ? "start" : "drop"
+        ::Ai::DuoWorkflows::UpdateWorkflowStatusService.new(
+          workflow: workflow, status_event: status_event, current_user: current_user
+        ).execute
+
+        response
       end
 
       private
 
       attr_reader :project, :current_user, :resource, :flow_trigger, :flow_trigger_user
 
-      def run_workload(params, workflow)
+      def run_workload(params)
+        workflow_params = {
+          workflow_definition: "Trigger - #{flow_trigger.description}",
+          status: :running,
+          goal: params[:input],
+          environment: :web
+        }
+
+        wf_create_result = ::Ai::DuoWorkflows::CreateWorkflowService.new(
+          container: project,
+          current_user: current_user,
+          params: workflow_params
+        ).execute
+
+        return ServiceResponse.error(message: wf_create_result[:message]) if wf_create_result.error?
+
+        workflow = wf_create_result[:workflow]
         flow_definition = fetch_flow_definition
         return ServiceResponse.error(message: 'invalid or missing flow definition') unless flow_definition
 
@@ -60,7 +73,7 @@ module Ai
           d.variables = build_variables(params)
         end
 
-        result = ::Ci::Workloads::RunWorkloadService.new(
+        response = ::Ci::Workloads::RunWorkloadService.new(
           project: project,
           current_user: flow_trigger_user,
           source: :duo_workflow,
@@ -69,15 +82,32 @@ module Ai
           **branch_args
         ).execute
 
-        status_event = result.success? ? "start" : "drop"
+        if response.success?
+          workflow.workflows_workloads.create(project_id: project.id,
+            workload_id: response.payload.id)
+        end
 
-        ::Ai::DuoWorkflows::UpdateWorkflowStatusService.new(
-          workflow: workflow, status_event: status_event, current_user: current_user
+        [response, workflow]
+      end
+
+      def start_catalog_workflow(params)
+        item_consumer = flow_trigger.ai_catalog_item_consumer
+        catalog_item = item_consumer.item
+        version = item_consumer.pinned_version_prefix
+        response = ::Ai::Catalog::Flows::ExecuteService.new(
+          project: project,
+          current_user: current_user,
+          params: {
+            flow: catalog_item,
+            flow_version: catalog_item.resolve_version(version),
+            event_type: params[:event],
+            execute_workflow: true
+          }
         ).execute
 
-        workflow.workflows_workloads.create(project_id: project.id, workload_id: result.payload.id)
+        workflow = response.payload[:workflow]
 
-        result
+        [response, workflow]
       end
 
       def fetch_flow_definition
@@ -100,7 +130,6 @@ module Ai
           AI_FLOW_DISCUSSION_ID: params[:discussion_id],
           AI_FLOW_EVENT: params[:event].to_s,
           AI_FLOW_GITLAB_TOKEN: composite_identity_token,
-          AI_FLOW_ID: params[:flow_id],
           AI_FLOW_INPUT: params[:input]
         }
 
@@ -137,6 +166,7 @@ module Ai
           scopes: ['api'],
           service_account: flow_trigger_user
         ).execute
+
         return if composite_oauth_token_result.error?
 
         composite_oauth_token_result[:oauth_access_token].plaintext_token

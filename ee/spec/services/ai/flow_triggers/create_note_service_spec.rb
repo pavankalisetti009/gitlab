@@ -21,9 +21,10 @@ RSpec.describe Ai::FlowTriggers::CreateNoteService, feature_category: :agent_fou
   end
 
   describe '#execute' do
-    let_it_be(:workload) { create(:ci_workload, project: project) }
+    let_it_be(:workflow_workload) { create(:duo_workflows_workload, project: project) }
+    let_it_be(:workflow) { workflow_workload.workflow }
 
-    let(:mock_response) { ServiceResponse.success(payload: workload) }
+    let(:mock_response) { ServiceResponse.success(payload: workflow_workload.workload) }
 
     context 'when block yields successful response' do
       it 'creates initial note, yields with discussion_id, and updates note with success message' do
@@ -37,10 +38,11 @@ RSpec.describe Ai::FlowTriggers::CreateNoteService, feature_category: :agent_fou
 
         initial_note_count = Note.count
 
-        response = service.execute(params) do |yielded_params|
+        response, _ = service.execute(params) do |yielded_params|
           expect(yielded_params).to eq(params.merge(discussion_id: discussion.id))
           expect(yielded_params[:discussion_id]).to be_present
-          mock_response
+
+          [mock_response, workflow]
         end
 
         expect(response).to eq(mock_response)
@@ -48,7 +50,7 @@ RSpec.describe Ai::FlowTriggers::CreateNoteService, feature_category: :agent_fou
 
         created_note = Note.last
         expect(created_note.note).to include('✅ Agent has started. You can view the progress')
-        expect(created_note.note).to include(workload.logs_url)
+        expect(created_note.note).to match(/automate.agent.sessions.#{workflow.id}/)
         expect(created_note.note).to include('target="_blank" rel="noopener noreferrer"')
       end
     end
@@ -59,9 +61,10 @@ RSpec.describe Ai::FlowTriggers::CreateNoteService, feature_category: :agent_fou
       it 'creates initial note and updates with error message' do
         initial_note_count = Note.count
 
-        response = service.execute(params) { error_response }
+        response, response_workflow = service.execute(params) { [error_response, workflow] }
 
         expect(response).to eq(error_response)
+        expect(response_workflow).to eq(workflow)
         expect(Note.count).to eq(initial_note_count + 1)
 
         created_note = Note.last
@@ -88,7 +91,7 @@ RSpec.describe Ai::FlowTriggers::CreateNoteService, feature_category: :agent_fou
           in_reply_to_discussion_id: nil
         ).and_call_original
 
-        service.execute(params) { mock_response }
+        service.execute(params) { [mock_response, workflow] }
       end
     end
 
@@ -113,7 +116,7 @@ RSpec.describe Ai::FlowTriggers::CreateNoteService, feature_category: :agent_fou
           in_reply_to_discussion_id: discussion.id
         ).and_call_original
 
-        service.execute(params) { mock_response }
+        service.execute(params) { [mock_response, workflow] }
       end
     end
   end
