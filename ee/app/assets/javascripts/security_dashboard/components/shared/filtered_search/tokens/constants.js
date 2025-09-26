@@ -102,7 +102,7 @@ export const REACHABILITY_TOKEN_DEFINITION = {
 };
 
 export const VALIDITY_CHECK_TOKEN_DEFINITION = {
-  type: 'validity',
+  type: 'validityCheck',
   title: ValidityCheckToken.i18n.label,
   multiSelect: false,
   unique: true,

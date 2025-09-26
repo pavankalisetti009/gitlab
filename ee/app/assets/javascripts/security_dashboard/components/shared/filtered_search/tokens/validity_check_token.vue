@@ -7,7 +7,7 @@ import SearchSuggestion from '../components/search_suggestion.vue';
 export default {
   validValues: ['ACTIVE', 'INACTIVE', 'UNKNOWN'],
   transformFilters: (filters) => {
-    return { validity: Array.isArray(filters) ? filters[0] : filters };
+    return { validityCheck: Array.isArray(filters) ? filters[0] : filters };
   },
   transformQueryParams: (params) => {
     return Array.isArray(params) ? params[0] : params;
@@ -62,7 +62,7 @@ export default {
     },
   },
   i18n: {
-    label: s__('SecurityReports|Validity Check'),
+    label: s__('SecurityReports|Validity check'),
   },
   items: [
     {
