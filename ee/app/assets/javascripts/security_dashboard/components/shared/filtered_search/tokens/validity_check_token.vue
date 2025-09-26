@@ -4,8 +4,14 @@ import { getSelectedOptionsText } from '~/lib/utils/listbox_helpers';
 import { s__ } from '~/locale';
 import SearchSuggestion from '../components/search_suggestion.vue';
 
+const VALUES = {
+  unknown: 'UNKNOWN',
+  active: 'ACTIVE',
+  inactive: 'INACTIVE',
+};
+
 export default {
-  validValues: ['ACTIVE', 'INACTIVE', 'UNKNOWN'],
+  validValues: Object.values(VALUES),
   transformFilters: (filters) => {
     return { validityCheck: Array.isArray(filters) ? filters[0] : filters };
   },
@@ -32,7 +38,7 @@ export default {
   },
   data() {
     return {
-      selectedValidityCheck: this.value.data?.[0] || 'UNKNOWN',
+      selectedValidityCheck: this.value.data?.[0] || VALUES.unknown,
     };
   },
   computed: {
@@ -60,22 +66,30 @@ export default {
     toggleSelected(selectedValue) {
       this.selectedValidityCheck = selectedValue;
     },
+    getTooltipText(item) {
+      if (item.value === VALUES.unknown) {
+        return s__(
+          "SecurityReports|Validity check couldn't confirm whether the secret is active or inactive.",
+        );
+      }
+      return undefined;
+    },
   },
   i18n: {
     label: s__('SecurityReports|Validity check'),
   },
   items: [
     {
-      value: 'ACTIVE',
+      value: VALUES.active,
       text: s__('SecurityReports|Active secret'),
     },
     {
-      value: 'INACTIVE',
-      text: s__('SecurityReports|Inactive secret'),
+      value: VALUES.unknown,
+      text: s__('SecurityReports|Possibly active secret'),
     },
     {
-      value: 'UNKNOWN',
-      text: s__('SecurityReports|Possibly active secret'),
+      value: VALUES.inactive,
+      text: s__('SecurityReports|Inactive secret'),
     },
   ],
 };
@@ -100,6 +114,7 @@ export default {
         :text="item.text"
         :selected="item.value === selectedValidityCheck"
         :data-testid="`suggestion-${item.value}`"
+        :tooltip-text="getTooltipText(item)"
       />
     </template>
   </gl-filtered-search-token>

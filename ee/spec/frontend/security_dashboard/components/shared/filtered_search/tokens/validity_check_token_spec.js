@@ -74,8 +74,8 @@ describe('ValidityCheckToken', () => {
 
       expect(findDropdownOptions()).toEqual([
         'Active secret',
-        'Inactive secret',
         'Possibly active secret',
+        'Inactive secret',
       ]);
     });
   });
@@ -100,6 +100,22 @@ describe('ValidityCheckToken', () => {
       const displayText = wrapper.findByTestId('validity-check-token-placeholder').text();
       expect(displayText).toBe('Inactive secret');
       expect(displayText).not.toContain('+1 more');
+    });
+  });
+
+  describe('tooltip', () => {
+    beforeEach(() => {
+      createWrapper();
+    });
+
+    it('shows tooltip for UNKNOWN value', () => {
+      expect(wrapper.findByTestId('suggestion-UNKNOWN').props('tooltipText')).toBe(
+        "Validity check couldn't confirm whether the secret is active or inactive.",
+      );
+    });
+
+    it.each(['ACTIVE', 'INACTIVE'])('does not show tooltip for %s', (value) => {
+      expect(wrapper.findByTestId(`suggestion-${value}`).props('tooltipText')).toBe('');
     });
   });
 });
