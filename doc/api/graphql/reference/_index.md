@@ -23828,7 +23828,6 @@ four standard [pagination arguments](#pagination-arguments):
 | Name | Type | Description |
 | ---- | ---- | ----------- |
 | <a id="aiusageeventevent"></a>`event` | [`AiUsageEventType!`](#aiusageeventtype) | Type of the event. |
-| <a id="aiusageeventid"></a>`id` | [`ID!`](#id) | ID of the usage event. |
 | <a id="aiusageeventtimestamp"></a>`timestamp` | [`Time!`](#time) | When the event happened. |
 | <a id="aiusageeventuser"></a>`user` | [`UserCore!`](#usercore) | User associated with the event. |
 
@@ -26460,7 +26459,6 @@ Code Quality report for a pipeline.
 | Name | Type | Description |
 | ---- | ---- | ----------- |
 | <a id="codesuggestioneventevent"></a>`event` | [`AiUsageEventType!`](#aiusageeventtype) | Type of the event. |
-| <a id="codesuggestioneventid"></a>`id` | [`ID!`](#id) | ID of the usage event. |
 | <a id="codesuggestioneventlanguage"></a>`language` | [`String`](#string) | Programming language in the context of the suggestion. |
 | <a id="codesuggestioneventsuggestionsize"></a>`suggestionSize` | [`String`](#string) | Size of the code suggestion measured in lines of code. |
 | <a id="codesuggestioneventtimestamp"></a>`timestamp` | [`Time!`](#time) | When the event happened. |
