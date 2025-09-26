@@ -5,11 +5,11 @@ import { s__ } from '~/locale';
 import { visitUrlWithAlerts } from '~/lib/utils/url_utility';
 import PageHeading from '~/vue_shared/components/page_heading.vue';
 import { updateMavenUpstream } from 'ee/api/virtual_registries_api';
-import DeleteUpstreamWithModal from '../components/delete_upstream_with_modal.vue';
-import RegistryUpstreamForm from '../components/registry_upstream_form.vue';
-import { captureException } from '../sentry_utils';
-import getMavenUpstreamRegistriesQuery from '../graphql/queries/get_maven_upstream_registries.query.graphql';
-import { convertToMavenUpstreamGraphQLId } from '../utils';
+import DeleteUpstreamWithModal from '../../../components/maven/shared/delete_upstream_with_modal.vue';
+import RegistryUpstreamForm from '../../../components/maven/shared/registry_upstream_form.vue';
+import { captureException } from '../../../sentry_utils';
+import getMavenUpstreamRegistriesQuery from '../../../graphql/queries/get_maven_upstream_registries.query.graphql';
+import { convertToMavenUpstreamGraphQLId } from '../../../utils';
 
 export default {
   name: 'MavenEditUpstreamApp',

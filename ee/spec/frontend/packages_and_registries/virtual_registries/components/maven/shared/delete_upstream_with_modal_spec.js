@@ -2,7 +2,7 @@ import { GlModal, GlTruncateText } from '@gitlab/ui';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import waitForPromises from 'helpers/wait_for_promises';
 import { deleteMavenUpstream } from 'ee/api/virtual_registries_api';
-import DeleteUpstreamWithModal from 'ee/packages_and_registries/virtual_registries/components/delete_upstream_with_modal.vue';
+import DeleteUpstreamWithModal from 'ee/packages_and_registries/virtual_registries/components/maven/shared/delete_upstream_with_modal.vue';
 
 jest.mock('ee/api/virtual_registries_api', () => ({
   deleteMavenUpstream: jest.fn(),

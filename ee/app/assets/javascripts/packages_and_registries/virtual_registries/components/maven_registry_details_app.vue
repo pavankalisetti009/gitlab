@@ -18,7 +18,7 @@ import { captureException } from '../sentry_utils';
 import AddUpstream from './add_upstream.vue';
 import LinkUpstreamForm from './link_upstream_form.vue';
 import RegistryUpstreamItem from './registry_upstream_item.vue';
-import RegistryUpstreamForm from './registry_upstream_form.vue';
+import RegistryUpstreamForm from './maven/shared/registry_upstream_form.vue';
 
 const FORM_TYPES = {
   CREATE: 'create',
