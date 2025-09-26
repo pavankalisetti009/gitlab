@@ -126,10 +126,6 @@ module Sbom
       where(source_id: source_id)
     end
 
-    scope :filter_by_component_names, ->(component_names) do
-      where(component_name: component_names)
-    end
-
     scope :filter_by_component_ids, ->(component_ids) do
       where(component_id: component_ids)
     end
