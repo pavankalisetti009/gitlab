@@ -14,7 +14,7 @@ RSpec.describe API::ComposerPackages, feature_category: :package_registry do
       group: group)
   end
 
-  let_it_be(:package) { create(:composer_package, :with_metadatum, name: package_name, project: project) }
+  let_it_be(:package) { create(:composer_package, name: package_name, project: project) }
 
   let(:headers) { basic_auth_header(user.username, personal_access_token.token) }
   let(:params) { {} }

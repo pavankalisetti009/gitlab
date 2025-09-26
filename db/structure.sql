@@ -37650,6 +37650,8 @@ CREATE INDEX idx_pipeline_execution_schedules_security_policy_id_and_id ON secur
 
 CREATE INDEX idx_pkgs_composer_pkgs_on_creator_id ON packages_composer_packages USING btree (creator_id);
 
+CREATE INDEX idx_pkgs_composer_pkgs_on_name_target_sha_status_project_id ON packages_composer_packages USING btree (name, target_sha, status, project_id);
+
 CREATE INDEX idx_pkgs_composer_pkgs_on_project_id ON packages_composer_packages USING btree (project_id);
 
 CREATE INDEX idx_pkgs_conan_file_metadata_on_pkg_file_id_when_recipe_file ON packages_conan_file_metadata USING btree (package_file_id) WHERE (conan_file_type = 1);
