@@ -33,6 +33,10 @@ module Types
         calls_gitaly: true
       # rubocop:enable GraphQL/ExtractType
 
+      field :ai_catalog_item_consumer, Types::Ai::Catalog::ItemConsumerType,
+        null: true,
+        description: 'AI catalog item consumer associated with the trigger.'
+
       field :project, ::Types::ProjectType,
         null: false,
         description: 'Project of the flow trigger.'

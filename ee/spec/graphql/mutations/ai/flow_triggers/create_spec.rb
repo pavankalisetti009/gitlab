@@ -20,6 +20,7 @@ RSpec.describe Mutations::Ai::FlowTriggers::Create, feature_category: :agent_fou
       :description,
       :event_types,
       :config_path,
+      :ai_catalog_item_consumer_id,
       :client_mutation_id
     )
   end

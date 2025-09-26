@@ -114,4 +114,169 @@ RSpec.describe Mutations::Ai::FlowTriggers::Update, feature_category: :agent_fou
       'user' => a_hash_including('id' => service_account.to_global_id.to_s)
     )
   end
+
+  context 'when updating catalog item configuration' do
+    let_it_be(:item_consumer1) { create(:ai_catalog_item_consumer, project: project) }
+    let_it_be(:item_consumer2) { create(:ai_catalog_item_consumer, project: project) }
+
+    before do
+      allow(::Gitlab::Llm::StageCheck).to receive(:available?).with(project, :ai_catalog).and_return(true)
+    end
+
+    context 'when switching from config_path to catalog item' do
+      let_it_be_with_reload(:config_trigger) do
+        create(:ai_flow_trigger, project: project, user: service_account, config_path: 'original/config.yml')
+      end
+
+      let(:params) do
+        {
+          id: config_trigger.to_global_id,
+          user_id: service_account.to_global_id,
+          description: description,
+          event_types: event_types,
+          config_path: nil,
+          ai_catalog_item_consumer_id: item_consumer1.to_global_id
+        }
+      end
+
+      it 'updates to use catalog item' do
+        execute
+
+        config_trigger.reload
+        expect(config_trigger).to have_attributes(
+          description: description,
+          user_id: service_account.id,
+          event_types: event_types,
+          config_path: nil,
+          ai_catalog_item_consumer_id: item_consumer1.id
+        )
+      end
+
+      it 'returns the updated trigger with catalog item data' do
+        execute
+
+        expect(graphql_data_at(:ai_flow_trigger_update, :ai_flow_trigger)).to match a_hash_including(
+          'description' => description,
+          'eventTypes' => event_types,
+          'configPath' => nil,
+          'configUrl' => nil,
+          'aiCatalogItemConsumer' => a_hash_including('id' => item_consumer1.to_global_id.to_s),
+          'project' => a_hash_including('id' => project.to_global_id.to_s),
+          'user' => a_hash_including('id' => service_account.to_global_id.to_s)
+        )
+      end
+    end
+
+    context 'when switching from catalog item to config_path' do
+      let_it_be_with_reload(:catalog_trigger) do
+        create(:ai_flow_trigger,
+          project: project,
+          user: service_account,
+          config_path: nil,
+          ai_catalog_item_consumer: item_consumer1
+        )
+      end
+
+      let(:params) do
+        {
+          id: catalog_trigger.to_global_id,
+          user_id: service_account.to_global_id,
+          description: description,
+          event_types: event_types,
+          config_path: 'new/config/path.yml',
+          ai_catalog_item_consumer_id: nil
+        }
+      end
+
+      it 'updates to use config_path' do
+        execute
+
+        catalog_trigger.reload
+        expect(catalog_trigger).to have_attributes(
+          description: description,
+          user_id: service_account.id,
+          event_types: event_types,
+          config_path: 'new/config/path.yml',
+          ai_catalog_item_consumer_id: nil
+        )
+      end
+
+      it 'returns the updated trigger with config path data' do
+        execute
+
+        expect(graphql_data_at(:ai_flow_trigger_update, :ai_flow_trigger)).to match a_hash_including(
+          'description' => description,
+          'eventTypes' => event_types,
+          'configPath' => 'new/config/path.yml',
+          'configUrl' => "/#{project.full_path}/-/blob/#{project.default_branch}/new/config/path.yml",
+          'aiCatalogItemConsumer' => nil,
+          'project' => a_hash_including('id' => project.to_global_id.to_s),
+          'user' => a_hash_including('id' => service_account.to_global_id.to_s)
+        )
+      end
+    end
+
+    context 'when updating catalog item' do
+      let_it_be_with_reload(:catalog_trigger) do
+        create(:ai_flow_trigger,
+          project: project,
+          user: service_account,
+          config_path: nil,
+          ai_catalog_item_consumer: item_consumer1)
+      end
+
+      let(:params) do
+        {
+          id: catalog_trigger.to_global_id,
+          user_id: service_account.to_global_id,
+          description: description,
+          event_types: event_types,
+          ai_catalog_item_consumer_id: item_consumer2.to_global_id
+        }
+      end
+
+      it 'updates to different catalog item' do
+        execute
+
+        catalog_trigger.reload
+        expect(catalog_trigger).to have_attributes(
+          description: description,
+          user_id: service_account.id,
+          event_types: event_types,
+          ai_catalog_item_consumer_id: item_consumer2.id
+        )
+      end
+
+      it 'returns the updated trigger with new catalog item data' do
+        execute
+
+        expect(graphql_data_at(:ai_flow_trigger_update, :ai_flow_trigger)).to match a_hash_including(
+          'description' => description,
+          'eventTypes' => event_types,
+          'aiCatalogItemConsumer' => a_hash_including('id' => item_consumer2.to_global_id.to_s)
+        )
+      end
+    end
+
+    context 'with invalid catalog item parameters' do
+      let(:params) do
+        {
+          id: trigger.to_global_id,
+          user_id: service_account.to_global_id,
+          description: description,
+          event_types: event_types,
+          config_path: nil,
+          ai_catalog_item_consumer_id: nil
+        }
+      end
+
+      it 'returns an error' do
+        execute
+
+        expect(graphql_data_at(:ai_flow_trigger_update, :errors).first).to include(
+          'must have only one config_path or ai_catalog_item_consumer'
+        )
+      end
+    end
+  end
 end

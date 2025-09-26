@@ -10,8 +10,9 @@ module Ai
       assign_reviewer: 2
     }.freeze
 
-    belongs_to :project
+    belongs_to :project, optional: false
     belongs_to :user
+    belongs_to :ai_catalog_item_consumer, class_name: 'Ai::Catalog::ItemConsumer'
 
     scope :triggered_on, ->(event_type) { where("event_types @> ('{?}')", EVENT_TYPES[event_type]) }
     scope :by_users, ->(users) { where(user: users) }
@@ -21,10 +22,13 @@ module Ai
     validates :event_types, presence: true
 
     validates :description, length: { maximum: 255 }, presence: true
-    validates :config_path, length: { maximum: 255 }, presence: true
+    validates :config_path, length: { maximum: 255 }, presence: true, unless: :ai_catalog_item_consumer_id?
+    validates :ai_catalog_item_consumer, presence: true, unless: :config_path?
 
     validate :event_types_are_valid
     validate :user_is_service_account, if: :user
+    validate :exactly_one_config_source
+    validate :catalog_item_project_matches, if: :ai_catalog_item_consumer_id?
 
     scope :with_ids, ->(ids) { where(id: ids) }
 
@@ -43,6 +47,18 @@ module Ai
       return if user.service_account?
 
       errors.add(:user, 'user must be a service account')
+    end
+
+    def exactly_one_config_source
+      return if [config_path.presence, ai_catalog_item_consumer_id].compact.one?
+
+      errors.add(:base, 'must have only one config_path or ai_catalog_item_consumer')
+    end
+
+    def catalog_item_project_matches
+      return if ai_catalog_item_consumer.project == project
+
+      errors.add(:base, 'ai_catalog_item_consumer project does not match project')
     end
   end
 end

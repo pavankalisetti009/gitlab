@@ -108,4 +108,73 @@ RSpec.describe Mutations::Ai::FlowTriggers::Create, feature_category: :agent_fou
       'user' => a_hash_including('id' => service_account.to_global_id.to_s)
     )
   end
+
+  context 'when using catalog item configuration' do
+    let_it_be(:item_consumer) { create(:ai_catalog_item_consumer, project: project) }
+
+    before do
+      allow(::Gitlab::Llm::StageCheck).to receive(:available?).with(project, :ai_catalog).and_return(true)
+    end
+
+    context 'with valid catalog item parameters' do
+      let(:params) do
+        {
+          project_path: project.full_path,
+          user_id: service_account.to_global_id,
+          description: description,
+          event_types: event_types,
+          ai_catalog_item_consumer_id: item_consumer.to_global_id
+        }
+      end
+
+      it 'creates a flow trigger with catalog item' do
+        execute
+
+        trigger = Ai::FlowTrigger.last
+        expect(trigger).to have_attributes(
+          description: description,
+          user_id: service_account.id,
+          project_id: project.id,
+          event_types: event_types,
+          ai_catalog_item_consumer_id: item_consumer.id,
+          config_path: nil
+        )
+      end
+
+      it 'returns the new trigger with catalog item data' do
+        execute
+
+        expect(graphql_data_at(:ai_flow_trigger_create, :ai_flow_trigger)).to match a_hash_including(
+          'description' => description,
+          'eventTypes' => event_types,
+          'configPath' => nil,
+          'configUrl' => nil,
+          'aiCatalogItemConsumer' => a_hash_including('id' => item_consumer.to_global_id.to_s),
+          'project' => a_hash_including('id' => project.to_global_id.to_s),
+          'user' => a_hash_including('id' => service_account.to_global_id.to_s)
+        )
+      end
+    end
+
+    context 'with invalid catalog item parameters' do
+      let(:params) do
+        {
+          project_path: project.full_path,
+          user_id: service_account.to_global_id,
+          description: description,
+          event_types: event_types,
+          config_path: '.gitlab/duo/agents.yml',
+          ai_catalog_item_consumer_id: item_consumer.to_global_id
+        }
+      end
+
+      it 'returns an error' do
+        execute
+
+        expect(graphql_data_at(:ai_flow_trigger_create, :errors).first).to include(
+          'must have only one config_path or ai_catalog_item_consumer'
+        )
+      end
+    end
+  end
 end
