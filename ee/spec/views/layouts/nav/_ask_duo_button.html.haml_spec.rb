@@ -38,61 +38,6 @@ RSpec.describe 'layouts/nav/_ask_duo_button', feature_category: :duo_chat do
         expect(rendered).to have_selector('.js-tanuki-bot-chat-toggle[aria-label="GitLab Duo Chat"]')
       end
     end
-
-    context 'with hotspot_duo_chat_during_trial experiment' do
-      context 'with tracking' do
-        let(:experiment) { instance_double(ApplicationExperiment) }
-
-        before do
-          allow(view)
-            .to receive(:experiment)
-            .with(:hotspot_duo_chat_during_trial, actor: user)
-            .and_return(experiment)
-        end
-
-        it 'creates assignment event' do
-          expect(experiment).to receive(:track).with(:assignment, namespace: group)
-
-          render
-        end
-      end
-
-      context 'when control' do
-        before do
-          stub_experiments(hotspot_duo_chat_during_trial: :control)
-        end
-
-        it 'does not render the hotspot' do
-          render
-
-          expect(rendered).not_to have_selector('.js-ask-duo-hotspot')
-        end
-      end
-
-      context 'when candidate' do
-        before do
-          stub_experiments(hotspot_duo_chat_during_trial: :candidate)
-        end
-
-        it 'renders the hotspot' do
-          render
-
-          expect(rendered).to have_selector('.js-ask-duo-hotspot')
-        end
-
-        context 'when hotspot is dismissed' do
-          before do
-            allow(user).to receive(:dismissed_callout?).with(feature_name: 'duo_chat_callout').and_return(true)
-          end
-
-          it 'does not render the hotspot' do
-            render
-
-            expect(rendered).not_to have_selector('.js-ask-duo-hotspot')
-          end
-        end
-      end
-    end
   end
 
   context 'when Amazon Q is enabled' do
