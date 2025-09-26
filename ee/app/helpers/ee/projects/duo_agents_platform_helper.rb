@@ -6,7 +6,6 @@ module EE
       def duo_agents_platform_data(project)
         {
           agents_platform_base_route: project_automate_path(project),
-          duo_agents_invoke_path: api_v4_ai_duo_workflows_workflows_path,
           project_id: project.id,
           project_path: project.full_path,
           explore_ai_catalog_path: explore_ai_catalog_path,

@@ -60,8 +60,7 @@ RSpec.describe 'getting a repository in a project', feature_category: :source_co
             :blobs, { ref: ref, paths: [path] }, query_graphql_field(
               :nodes, {}, [
                 :id,
-                :show_duo_workflow_action,
-                :duo_workflow_invoke_path
+                :show_duo_workflow_action
               ]
             )
           )
@@ -75,7 +74,6 @@ RSpec.describe 'getting a repository in a project', feature_category: :source_co
       post_graphql(query, current_user: current_user)
 
       expect(blob_data['showDuoWorkflowAction']).to be(false)
-      expect(blob_data['duoWorkflowInvokePath']).to eq('/api/v4/ai/duo_workflows/workflows')
     end
   end
 end
