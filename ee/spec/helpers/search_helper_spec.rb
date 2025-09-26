@@ -685,6 +685,20 @@ RSpec.describe SearchHelper, feature_category: :global_search do
         expect(search_autocomplete_opts('CATALOG').size).to eq(2)
         expect(search_autocomplete_opts('explore').size).to eq(2)
       end
+
+      context 'when ai_catalog_flows feature is disabled' do
+        before do
+          stub_feature_flags(ai_catalog_flows: false)
+        end
+
+        it 'includes AI catalog agents section' do
+          expect(search_autocomplete_opts('agents').size).to eq(1)
+        end
+
+        it 'does not include AI catalog flows section' do
+          expect(search_autocomplete_opts('flows').size).to eq(0)
+        end
+      end
     end
 
     context 'when global_ai_catalog feature is disabled' do
