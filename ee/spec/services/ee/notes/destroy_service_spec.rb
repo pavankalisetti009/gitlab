@@ -65,5 +65,22 @@ RSpec.describe Notes::DestroyService, feature_category: :team_planning do
         subject(:track_event) { described_class.new(nil, user).execute(note) }
       end
     end
+
+    describe 'audit events' do
+      it 'audits with comment_deleted event' do
+        expect(::Gitlab::Audit::Auditor).to receive(:audit).with(
+          hash_including(
+            name: 'comment_deleted',
+            target: note,
+            additional_details: {
+              body: note.note
+            },
+            stream_only: true
+          )
+        ).and_call_original
+
+        service.execute(note)
+      end
+    end
   end
 end
