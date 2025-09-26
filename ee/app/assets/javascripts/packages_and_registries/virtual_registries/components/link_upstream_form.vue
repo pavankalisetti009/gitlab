@@ -3,7 +3,7 @@ import { GlAlert, GlButton, GlCard, GlForm, GlFormGroup, GlSkeletonLoader } from
 import { sprintf, n__ } from '~/locale';
 import { getMavenUpstream } from 'ee/api/virtual_registries_api';
 import { captureException } from '../sentry_utils';
-import TestMavenUpstreamButton from './test_maven_upstream_button.vue';
+import TestMavenUpstreamButton from './maven/shared/test_maven_upstream_button.vue';
 import UpstreamSelector from './upstream_selector.vue';
 
 export default {

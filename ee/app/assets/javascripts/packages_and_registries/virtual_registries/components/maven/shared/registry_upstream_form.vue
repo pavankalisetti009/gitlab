@@ -41,9 +41,15 @@ export default {
   i18n: {
     nameLabel: s__('VirtualRegistry|Name'),
     upstreamUrlLabel: s__('VirtualRegistry|Upstream URL'),
+    upstreamUrlDescription: s__(
+      'VirtualRegistry|You can add GitLab-hosted repositories as upstreams. Use your GitLab username and a personal access token as the password.',
+    ),
     descriptionLabel: s__('VirtualRegistry|Description (optional)'),
     usernameLabel: s__('VirtualRegistry|Username (optional)'),
     passwordLabel: s__('VirtualRegistry|Password (optional)'),
+    passwordDescription: s__(
+      'VirtualRegistry|Enter a personal access token for GitLab-hosted upstreams.',
+    ),
     passwordPlaceholder: s__('VirtualRegistry|Enter password'),
     cacheValidityHoursLabel: s__('VirtualRegistry|Artifact caching period'),
     cacheValidityHoursHelpText: s__('VirtualRegistry|Time in hours'),
@@ -152,6 +158,7 @@ export default {
     </gl-form-group>
     <gl-form-group
       :label="$options.i18n.upstreamUrlLabel"
+      :description="$options.i18n.upstreamUrlDescription"
       :label-for="$options.ids.upstreamUrlInputId"
       :invalid-feedback="$options.i18n.invalidUrl"
       :state="isValidUrlState"
@@ -181,7 +188,11 @@ export default {
         data-testid="username-input"
       />
     </gl-form-group>
-    <gl-form-group :label="$options.i18n.passwordLabel" :label-for="$options.ids.passwordInputId">
+    <gl-form-group
+      :label="$options.i18n.passwordLabel"
+      :label-for="$options.ids.passwordInputId"
+      :description="$options.i18n.passwordDescription"
+    >
       <gl-form-input
         :id="$options.ids.passwordInputId"
         v-model="form.password"

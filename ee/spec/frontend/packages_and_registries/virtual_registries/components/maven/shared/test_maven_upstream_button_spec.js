@@ -1,6 +1,6 @@
 import { GlButton } from '@gitlab/ui';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
-import TestMavenUpstreamButton from 'ee/packages_and_registries/virtual_registries/components/test_maven_upstream_button.vue';
+import TestMavenUpstreamButton from 'ee/packages_and_registries/virtual_registries/components/maven/shared/test_maven_upstream_button.vue';
 import { testMavenUpstream, testExistingMavenUpstream } from 'ee/api/virtual_registries_api';
 import waitForPromises from 'helpers/wait_for_promises';
 import { captureException } from 'ee/packages_and_registries/virtual_registries/sentry_utils';

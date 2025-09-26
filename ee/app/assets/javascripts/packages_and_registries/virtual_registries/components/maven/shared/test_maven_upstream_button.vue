@@ -2,7 +2,7 @@
 import { GlButton } from '@gitlab/ui';
 import { s__, sprintf } from '~/locale';
 import { testExistingMavenUpstream, testMavenUpstream } from 'ee/api/virtual_registries_api';
-import { captureException } from '../sentry_utils';
+import { captureException } from 'ee/packages_and_registries/virtual_registries/sentry_utils';
 
 export default {
   name: 'TestMavenUpstreamButton',

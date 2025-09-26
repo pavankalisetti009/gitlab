@@ -6,12 +6,12 @@ import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import waitForPromises from 'helpers/wait_for_promises';
 import { visitUrlWithAlerts } from '~/lib/utils/url_utility';
 import { updateMavenUpstream } from 'ee/api/virtual_registries_api';
-import RegistryUpstreamForm from 'ee/packages_and_registries/virtual_registries/components/registry_upstream_form.vue';
-import MavenEditUpstreamApp from 'ee/packages_and_registries/virtual_registries/maven/edit_upstream_app.vue';
-import DeleteUpstreamWithModal from 'ee/packages_and_registries/virtual_registries/components/delete_upstream_with_modal.vue';
+import RegistryUpstreamForm from 'ee/packages_and_registries/virtual_registries/components/maven/shared/registry_upstream_form.vue';
+import MavenEditUpstreamApp from 'ee/packages_and_registries/virtual_registries/pages/maven/upstreams/edit.vue';
+import DeleteUpstreamWithModal from 'ee/packages_and_registries/virtual_registries/components/maven/shared/delete_upstream_with_modal.vue';
 import { captureException } from 'ee/packages_and_registries/virtual_registries/sentry_utils';
 import getMavenUpstreamRegistriesQuery from 'ee/packages_and_registries/virtual_registries/graphql/queries/get_maven_upstream_registries.query.graphql';
-import { mavenUpstreamRegistry } from '../mock_data';
+import { mavenUpstreamRegistry } from '../../../mock_data';
 
 Vue.use(VueApollo);
 
