@@ -1,33 +1,76 @@
 # frozen_string_literal: true
 
-RSpec.shared_examples 'sync vulnerabilities changes to ES' do
+#
+# Shared context + shared examples for ES vulnerability sync specs.
+#
+# NOTE: For retro-compatibility, we keep *two* positive shared examples:
+#
+#   1. `sync vulnerabilities changes to ES` (original style)
+#      - uses a `let(:expected_vulnerabilities)` defined in the spec
+#      - compares captured `received_vulnerabilities` against it
+#
+#   2. `it syncs vulnerabilities with ES` (newer explicit-IDs style)
+#      - takes a proc returning vulnerability IDs
+#      - asserts `track!` was called with objects matching those IDs
+#
+# Both include `with ES stubs` to share the same setup.
+#
+# TODO: Migrate all specs to `it syncs vulnerabilities with ES`
+# and remove `sync vulnerabilities changes to ES` once no longer used.
+# Issue: https://gitlab.com/gitlab-org/gitlab/-/issues/572489
+#
+
+RSpec.shared_context 'with ES stubs' do
   let(:received_vulnerabilities) { [] }
 
   before do
-    allow(::Search::Elastic::VulnerabilityIndexingHelper).to receive(:vulnerability_indexing_allowed?).and_return(true)
+    allow(::Search::Elastic::VulnerabilityIndexingHelper)
+      .to receive(:vulnerability_indexing_allowed?).and_return(true)
 
-    allow(Elastic::ProcessBookkeepingService).to receive(:track!) do |*vulnerabilities|
+    allow(::Elastic::ProcessBookkeepingService).to receive(:track!) do |*vulnerabilities|
       received_vulnerabilities.concat(vulnerabilities)
     end
+
+    # rubocop:disable RSpec/AnyInstanceOf -- Needed to stub instance method globally in ES sync tests
+    allow_any_instance_of(::Vulnerability)
+      .to receive(:maintaining_elasticsearch?).and_return(true)
+    allow_any_instance_of(::Vulnerabilities::Read)
+      .to receive(:maintaining_elasticsearch?).and_return(true)
+    # rubocop:enable RSpec/AnyInstanceOf
   end
+end
 
-  context 'for vulnerability es ingestion' do
-    before do
-      allow_next_found_instance_of(Vulnerability) do |instance|
-        allow(instance).to receive(:maintaining_elasticsearch?).and_return(true)
-      end
+RSpec.shared_examples 'sync vulnerabilities changes to ES' do
+  include_context 'with ES stubs'
 
-      allow_next_found_instance_of(Vulnerabilities::Read) do |instance|
-        allow(instance).to receive(:maintaining_elasticsearch?).and_return(true)
-      end
-    end
+  it 'calls the ProcessBookkeepingService with vulnerabilities' do
+    subject
 
-    it 'calls the ProcessBookkeepingService with vulnerabilities' do
-      subject
+    expect(::Elastic::ProcessBookkeepingService).to have_received(:track!).at_least(:once)
+    expect(received_vulnerabilities.uniq).to match_array(Array(expected_vulnerabilities))
+  end
+end
 
-      expect(Elastic::ProcessBookkeepingService).to have_received(:track!).at_least(:once)
+RSpec.shared_examples 'it syncs vulnerabilities with ES' do |expected_vulnerabilities_proc, subject_name = :subject|
+  include_context 'with ES stubs'
 
-      expect(received_vulnerabilities.uniq).to match_array(expected_vulnerabilities)
-    end
+  it 'triggers ES sync' do
+    public_send(subject_name)
+
+    expected_vulnerabilities = instance_exec(&expected_vulnerabilities_proc)
+
+    expect(::Elastic::ProcessBookkeepingService)
+      .to have_received(:track!)
+      .with(*expected_vulnerabilities.map { |id| an_object_having_attributes(id: id) })
+  end
+end
+
+RSpec.shared_examples 'does not sync with ES when no vulnerabilities' do |subject_name = :subject|
+  include_context 'with ES stubs'
+
+  it 'does not trigger ES sync' do
+    public_send(subject_name)
+
+    expect(::Elastic::ProcessBookkeepingService).not_to have_received(:track!)
   end
 end

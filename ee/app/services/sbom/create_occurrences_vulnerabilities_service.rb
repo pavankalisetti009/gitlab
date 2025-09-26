@@ -2,8 +2,6 @@
 
 module Sbom
   class CreateOccurrencesVulnerabilitiesService
-    include Sbom::EsHelper
-
     def self.execute(finding_data)
       new(finding_data).execute
     end
@@ -22,7 +20,7 @@ module Sbom
 
       Sbom::OccurrencesVulnerability.upsert_all(attributes, unique_by: [:sbom_occurrence_id, :vulnerability_id])
 
-      sync_elasticsearch(vuln_ids)
+      ::Vulnerabilities::EsHelper.sync_elasticsearch(vuln_ids)
     end
 
     private

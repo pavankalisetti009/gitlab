@@ -22,7 +22,7 @@ RSpec.describe Sbom::Ingestion::DeleteNotPresentOccurrencesService, feature_cate
           expect { execute }.not_to change { Sbom::Occurrence.count }
         end
 
-        it_behaves_like 'does not sync with elasticsearch when no vulnerabilities'
+        it_behaves_like 'does not sync with ES when no vulnerabilities'
       end
     end
 
@@ -46,7 +46,7 @@ RSpec.describe Sbom::Ingestion::DeleteNotPresentOccurrencesService, feature_cate
             expect { execute }.to change { project.sbom_occurrences.reload.count }.from(4).to(0)
           end
 
-          it_behaves_like 'it syncs vulnerabilities with elasticsearch'
+          it_behaves_like 'it syncs vulnerabilities with ES', -> { vulnerabilities.map(&:id) }
         end
 
         it_behaves_like 'it no-ops with failed sbom jobs'
@@ -83,7 +83,8 @@ RSpec.describe Sbom::Ingestion::DeleteNotPresentOccurrencesService, feature_cate
             expect(project.sbom_occurrences.reload.map(&:id)).to match_array(ingested_ids)
           end
 
-          it_behaves_like 'it syncs vulnerabilities with elasticsearch'
+          it_behaves_like 'it syncs vulnerabilities with ES',
+            -> { deleted_occurrence_vulnerabilities.map(&:vulnerability_id) }
         end
 
         context 'when deleted occurrences have no associated vulnerabilities' do
@@ -93,7 +94,7 @@ RSpec.describe Sbom::Ingestion::DeleteNotPresentOccurrencesService, feature_cate
             expect(project.sbom_occurrences.reload.map(&:id)).to match_array(ingested_ids)
           end
 
-          it_behaves_like 'does not sync with elasticsearch when no vulnerabilities'
+          it_behaves_like 'does not sync with ES when no vulnerabilities'
         end
 
         it_behaves_like 'it no-ops with failed sbom jobs'
@@ -111,7 +112,7 @@ RSpec.describe Sbom::Ingestion::DeleteNotPresentOccurrencesService, feature_cate
         expect { execute }.not_to change { project.sbom_occurrences.reload.count }
       end
 
-      it_behaves_like 'does not sync with elasticsearch when no vulnerabilities'
+      it_behaves_like 'does not sync with ES when no vulnerabilities'
 
       it_behaves_like 'it no-ops with failed sbom jobs'
     end

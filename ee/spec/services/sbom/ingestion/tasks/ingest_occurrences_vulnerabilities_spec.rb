@@ -80,13 +80,14 @@ RSpec.describe Sbom::Ingestion::Tasks::IngestOccurrencesVulnerabilities, feature
           vulnerability_id: finding_1.vulnerability_id)
       end
 
+      let(:expected_vulnerability_ids) { [finding_1.vulnerability_id, finding_2.vulnerability_id] }
+
       it 'does not create a new record for the existing occurrence' do
         expect { ingest_occurrences_vulnerabilities }.to change { Sbom::OccurrencesVulnerability.count }.by(1)
       end
 
-      it_behaves_like 'it syncs vulnerabilities with elasticsearch' do
-        let(:expected_vulnerability_ids) { [finding_1.vulnerability_id, finding_2.vulnerability_id] }
-      end
+      it_behaves_like 'it syncs vulnerabilities with ES',
+        -> { expected_vulnerability_ids }, :ingest_occurrences_vulnerabilities
 
       context 'when the vulnerability_id was not ingested' do
         before do
@@ -144,25 +145,20 @@ RSpec.describe Sbom::Ingestion::Tasks::IngestOccurrencesVulnerabilities, feature
     end
 
     describe 'elasticsearch synchronization' do
-      let(:bulk_es_service) { instance_double(Vulnerabilities::BulkEsOperationService) }
       let(:vulnerability_1) { finding_1.vulnerability }
       let(:vulnerability_2) { finding_2.vulnerability }
-
-      before do
-        allow(Vulnerabilities::BulkEsOperationService).to receive(:new).and_return(bulk_es_service)
-        allow(bulk_es_service).to receive(:execute)
-      end
 
       context 'when there are associated vulnerabilities' do
         let(:expected_vulnerability_ids) { [vulnerability_1.id, vulnerability_2.id] }
 
-        it_behaves_like 'it syncs vulnerabilities with elasticsearch'
+        it_behaves_like 'it syncs vulnerabilities with ES',
+          -> { expected_vulnerability_ids }, :ingest_occurrences_vulnerabilities
       end
 
       context 'when no vulnerabilities are returned' do
         let(:occurrence_maps) { [] }
 
-        it_behaves_like 'does not sync with elasticsearch when no vulnerabilities'
+        it_behaves_like 'does not sync with ES when no vulnerabilities', :ingest_occurrences_vulnerabilities
       end
     end
   end
