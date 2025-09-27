@@ -2204,6 +2204,9 @@ msgstr ""
 msgid "A Let's Encrypt SSL certificate can not be obtained until your domain is verified."
 msgstr ""
 
+msgid "A WebAuthn device has been deleted from your GitLab account."
+msgstr ""
+
 msgid "A WebAuthn device has been registered to your GitLab account."
 msgstr ""
 
@@ -2289,6 +2292,9 @@ msgid "A non-confidential issue cannot have a confidential parent."
 msgstr ""
 
 msgid "A non-confidential work item cannot have a confidential parent."
+msgstr ""
+
+msgid "A one-time password (OTP) authenticator has been deleted from your GitLab account."
 msgstr ""
 
 msgid "A one-time password (OTP) authenticator has been registered to your GitLab account."
@@ -45423,6 +45429,9 @@ msgstr ""
 msgid "One-time password authenticator (OTP)"
 msgstr ""
 
+msgid "One-time password authenticator deleted"
+msgstr ""
+
 msgid "One-time password authenticator has been deleted!"
 msgstr ""
 
@@ -72823,6 +72832,9 @@ msgid "Web IDE"
 msgstr ""
 
 msgid "Web terminal"
+msgstr ""
+
+msgid "WebAuthn device deleted"
 msgstr ""
 
 msgid "WebAuthn devices"
