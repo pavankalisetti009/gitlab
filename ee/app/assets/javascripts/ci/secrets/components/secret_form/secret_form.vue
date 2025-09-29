@@ -1,14 +1,11 @@
 <script>
 import {
   GlButton,
-  GlCollapsibleListbox,
   GlDatepicker,
-  GlDropdownDivider,
   GlForm,
   GlFormGroup,
   GlFormInput,
   GlFormTextarea,
-  GlLink,
   GlModal,
   GlSprintf,
 } from '@gitlab/ui';
@@ -19,10 +16,8 @@ import CiEnvironmentsDropdown from '~/ci/common/private/ci_environments_dropdown
 import {
   DETAILS_ROUTE_NAME,
   INDEX_ROUTE_NAME,
-  ROTATION_PERIOD_OPTIONS,
   SECRET_DESCRIPTION_MAX_LENGTH,
 } from '../../constants';
-import { convertRotationPeriod } from '../../utils';
 import createSecretMutation from '../../graphql/mutations/create_secret.mutation.graphql';
 import updateSecretMutation from '../../graphql/mutations/update_secret.mutation.graphql';
 import SecretBranchesField from './secret_branches_field.vue';
@@ -32,14 +27,11 @@ export default {
   components: {
     CiEnvironmentsDropdown,
     GlButton,
-    GlCollapsibleListbox,
-    GlDropdownDivider,
     GlDatepicker,
     GlForm,
     GlFormGroup,
     GlFormInput,
     GlFormTextarea,
-    GlLink,
     GlModal,
     GlSprintf,
     SecretBranchesField,
@@ -70,7 +62,6 @@ export default {
   },
   data() {
     return {
-      customRotationPeriod: '',
       isSubmitting: false,
       secret: {
         branch: '',
@@ -78,7 +69,7 @@ export default {
         environment: '',
         expiration: undefined,
         name: undefined,
-        rotationPeriod: '',
+        rotationIntervalDays: this.secretData?.rotationInfo?.rotationIntervalDays || null,
         secret: undefined, // shown as "value" in the UI
         ...this.secretData,
       },
@@ -122,16 +113,6 @@ export default {
       const today = new Date();
       return getDateInFuture(today, 1);
     },
-    rotationPeriodText() {
-      return convertRotationPeriod(this.secret.rotationPeriod);
-    },
-    rotationPeriodToggleText() {
-      if (this.secret.rotationPeriod.length) {
-        return this.rotationPeriodText;
-      }
-
-      return s__('Secrets|Select a reminder interval');
-    },
     submitButtonText() {
       return this.isEditing ? __('Save changes') : s__('Secrets|Add secret');
     },
@@ -152,6 +133,7 @@ export default {
           mutation: createSecretMutation,
           variables: {
             projectPath: this.fullPath,
+            rotationIntervalDays: this.secret.rotationIntervalDays,
             ...this.secret,
           },
         });
@@ -181,6 +163,7 @@ export default {
           mutation: updateSecretMutation,
           variables: {
             projectPath: this.fullPath,
+            rotationIntervalDays: this.secret.rotationIntervalDays,
             ...this.secret,
           },
         });
@@ -208,9 +191,6 @@ export default {
     setBranch(branch) {
       this.secret.branch = branch;
     },
-    setCustomRotationPeriod() {
-      this.secret.rotationPeriod = this.customRotationPeriod;
-    },
     setEnvironment(environment) {
       this.secret.environment = environment;
     },
@@ -229,7 +209,6 @@ export default {
       }
     },
   },
-  cronPlaceholder: '0 6 * * *',
   datePlaceholder: 'YYYY-MM-DD',
   i18n: {
     fieldRequired: __('This field is required.'),
@@ -242,7 +221,6 @@ export default {
       text: __('Cancel'),
     },
   },
-  rotationPeriodOptions: ROTATION_PERIOD_OPTIONS,
   secretsIndexRoute: INDEX_ROUTE_NAME,
 };
 </script>
@@ -342,50 +320,17 @@ export default {
         </gl-form-group>
         <gl-form-group
           class="gl-w-full"
-          :label="s__('Secrets|Rotation period')"
+          :label="s__('SecretRotation|Rotation reminder period')"
+          data-testid="secret-rotation-field-group"
+          :description="
+            s__(
+              'SecretRotation|After a set number of days, send a reminder to rotate the secret. Minimum 7 days.',
+            )
+          "
           label-for="secret-rotation-period"
           optional
         >
-          <gl-collapsible-listbox
-            id="secret-rotation-period"
-            v-model.trim="secret.rotationPeriod"
-            block
-            :label-text="s__('Secrets|Rotation reminder')"
-            :header-text="s__('Secrets|Intervals')"
-            :toggle-text="rotationPeriodToggleText"
-            :items="$options.rotationPeriodOptions"
-            optional
-          >
-            <template #footer>
-              <gl-dropdown-divider />
-              <div class="gl-mx-3 gl-mb-4 gl-mt-3">
-                <p class="gl-my-0 gl-py-0">{{ s__('Secrets|Add custom interval.') }}</p>
-                <p class="gl-my-0 gl-py-0 gl-text-sm gl-text-subtle">
-                  <gl-sprintf :message="__('Use CRON syntax. %{linkStart}Learn more.%{linkEnd}')">
-                    <template #link="{ content }">
-                      <gl-link href="https://crontab.guru/" target="_blank">{{ content }}</gl-link>
-                    </template>
-                  </gl-sprintf>
-                </p>
-                <gl-form-input
-                  v-model="customRotationPeriod"
-                  data-testid="secret-cron"
-                  :placeholder="$options.cronPlaceholder"
-                  class="gl-my-3"
-                />
-                <gl-button
-                  class="gl-float-right"
-                  data-testid="add-custom-rotation-button"
-                  size="small"
-                  variant="confirm"
-                  :aria-label="__('Add interval')"
-                  @click="setCustomRotationPeriod"
-                >
-                  {{ __('Add interval') }}
-                </gl-button>
-              </div>
-            </template>
-          </gl-collapsible-listbox>
+          <gl-form-input v-model.number="secret.rotationIntervalDays" type="number" :min="7" />
         </gl-form-group>
       </div>
       <div class="gl-my-3">

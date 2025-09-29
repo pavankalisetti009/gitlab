@@ -21,22 +21,6 @@ export const SECRET_MANAGER_STATUS_ACTIVE = 'ACTIVE';
 export const SECRET_MANAGER_STATUS_INACTIVE = 'INACTIVE';
 export const SECRET_MANAGER_STATUS_PROVISIONING = 'PROVISIONING';
 
-// Dummy values for now. They may change when API is available
-export const ROTATION_PERIOD_TWO_WEEKS = {
-  value: '14',
-  text: __('Every 2 weeks'),
-};
-
-export const ROTATION_PERIOD_MONTH = {
-  value: '60',
-  text: __('Every month'),
-};
-
-export const ROTATION_PERIOD_THREE_MONTHS = {
-  value: '180',
-  text: __('Every three months'),
-};
-
 export const SECRET_STATUS = {
   disabled: {
     icon: 'status-failed',
@@ -59,12 +43,6 @@ export const SECRET_STATUS = {
     variant: 'danger',
   },
 };
-
-export const ROTATION_PERIOD_OPTIONS = [
-  ROTATION_PERIOD_TWO_WEEKS,
-  ROTATION_PERIOD_MONTH,
-  ROTATION_PERIOD_THREE_MONTHS,
-];
 
 export const POLL_INTERVAL = 2000;
 
