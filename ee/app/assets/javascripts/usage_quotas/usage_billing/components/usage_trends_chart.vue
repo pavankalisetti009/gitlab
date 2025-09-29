@@ -38,6 +38,11 @@ export default {
       type: Number,
       required: true,
     },
+    threshold: {
+      type: Number,
+      required: false,
+      default: 0,
+    },
   },
   data() {
     return {
@@ -77,6 +82,11 @@ export default {
         new Date(this.monthEndDate),
       );
     },
+    thresholds() {
+      if (!this.threshold) return undefined;
+
+      return [{ threshold: this.threshold, operator: '>' }];
+    },
   },
   chartOptions: {
     xAxis: { name: __('Date'), type: 'category' },
@@ -101,7 +111,12 @@ export default {
       </div>
     </header>
 
-    <gl-area-chart :data="chartData" :option="$options.chartOptions" width="auto" />
+    <gl-area-chart
+      :data="chartData"
+      :option="$options.chartOptions"
+      :thresholds="thresholds"
+      width="auto"
+    />
     <div class="gl-mb-2 gl-mt-5 gl-flex gl-flex-row gl-gap-5">
       <gl-card class="gl-flex-1 !gl-bg-transparent">
         <p class="gl-font-heading gl-heading-scale-400">

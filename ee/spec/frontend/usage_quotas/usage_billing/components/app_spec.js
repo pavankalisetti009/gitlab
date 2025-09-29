@@ -93,6 +93,7 @@ describe('UsageBillingApp', () => {
         monthStartDate: '2024-01-01',
         monthEndDate: '2024-01-31',
         trend: 0.12,
+        threshold: 300,
       });
       expect(usageTrendsChart.props('usageData')).toHaveLength(30);
     });
