@@ -24,7 +24,6 @@ module EE
         mount_mutation ::Mutations::Ai::FlowTriggers::Create, experiment: { milestone: '18.3' }
         mount_mutation ::Mutations::Ai::FlowTriggers::Update, experiment: { milestone: '18.3' }
         mount_mutation ::Mutations::Ai::FlowTriggers::Delete, experiment: { milestone: '18.3' }
-        mount_mutation ::Mutations::Ci::Catalog::VerifiedNamespace::Create
         mount_mutation ::Mutations::Ci::ProjectSubscriptions::Create
         mount_mutation ::Mutations::Ci::ProjectSubscriptions::Delete
         mount_mutation ::Mutations::Clusters::AgentUrlConfigurations::Create
@@ -90,6 +89,7 @@ module EE
         mount_mutation ::Mutations::MemberRoles::Admin::Update, experiment: { milestone: '17.10' }
         mount_mutation ::Mutations::MemberRoles::Admin::Delete, experiment: { milestone: '17.10' }
         mount_mutation ::Mutations::MemberRoles::Delete, experiment: { milestone: '16.7' }
+        mount_mutation ::Mutations::Namespaces::VerifiedNamespace::Create
         mount_mutation ::Mutations::RequirementsManagement::CreateRequirement
         mount_mutation ::Mutations::RequirementsManagement::ExportRequirements
         mount_mutation ::Mutations::RequirementsManagement::UpdateRequirement
