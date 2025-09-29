@@ -12,6 +12,9 @@ RSpec.describe 'Status filters', feature_category: :team_planning do
   let(:board) { create(:board, resource_parent: resource_parent) }
   let(:label_list) { create(:list, board: board, label: group_label) }
 
+  let_it_be(:issue_work_item_type) { create(:work_item_type, :issue) }
+  let_it_be(:task_work_item_type) { create(:work_item_type, :task) }
+
   let_it_be(:work_item_1) { create(:work_item, :issue, project: project, labels: [group_label]) }
   let_it_be(:work_item_2) { create(:work_item, :task, project: project, labels: [group_label]) }
   let_it_be(:work_item_3) { create(:work_item, :task, project: project, labels: [group_label]) }
@@ -19,18 +22,21 @@ RSpec.describe 'Status filters', feature_category: :team_planning do
 
   let(:current_user) { create(:user, guest_of: group) }
 
+  let(:expected_work_items) { [work_item_1, work_item_2, work_item_3] }
+  let(:expected_unfiltered_work_items) { [work_item_1, work_item_2, work_item_3, work_item_4] }
+
   before do
     stub_licensed_features(work_item_status: true)
   end
 
   shared_examples 'a filtered list' do
-    it 'filters by status argument' do
+    it 'filters by status argument', :aggregate_failures do
       post_graphql(query, current_user: current_user)
 
       model_ids = items.map { |item| GlobalID.parse(item['id']).model_id.to_i }
 
-      expect(model_ids.size).to eq(3)
-      expect(model_ids).to contain_exactly(work_item_1.id, work_item_2.id, work_item_3.id)
+      expect(model_ids.size).to eq(expected_work_items.size)
+      expect(model_ids).to match_array(expected_work_items.map(&:id))
     end
   end
 
@@ -40,8 +46,8 @@ RSpec.describe 'Status filters', feature_category: :team_planning do
 
       model_ids = items.map { |item| GlobalID.parse(item['id']).model_id.to_i }
 
-      expect(model_ids.size).to eq(4)
-      expect(model_ids).to contain_exactly(work_item_1.id, work_item_2.id, work_item_3.id, work_item_4.id)
+      expect(model_ids.size).to eq(expected_unfiltered_work_items.size)
+      expect(model_ids).to match_array(expected_unfiltered_work_items.map(&:id))
     end
   end
 
@@ -230,13 +236,13 @@ RSpec.describe 'Status filters', feature_category: :team_planning do
         # We can't stub licensed features for let_it_be blocks.
         build(:work_item_type_custom_lifecycle,
           namespace: group,
-          work_item_type: create(:work_item_type, :issue),
+          work_item_type: issue_work_item_type,
           lifecycle: lifecycle
         ).save!(validate: false)
 
         build(:work_item_type_custom_lifecycle,
           namespace: group,
-          work_item_type: create(:work_item_type, :task),
+          work_item_type: task_work_item_type,
           lifecycle: lifecycle
         ).save!(validate: false)
       end
@@ -253,5 +259,209 @@ RSpec.describe 'Status filters', feature_category: :team_planning do
     end
 
     it_behaves_like 'filtering by status'
+
+    # rubocop:disable RSpec/MultipleMemoizedHelpers -- we need additional memoization to fully test all paths
+    context 'with status mappings' do
+      let_it_be(:old_status) do
+        create(:work_item_custom_status, :without_conversion_mapping, namespace: group).tap do |status|
+          create(:work_item_custom_lifecycle_status, lifecycle: lifecycle, status: status)
+        end
+      end
+
+      let_it_be(:new_status) do
+        create(:work_item_custom_status, :without_conversion_mapping, namespace: group).tap do |status|
+          create(:work_item_custom_lifecycle_status, lifecycle: lifecycle, status: status)
+        end
+      end
+
+      let_it_be(:another_status) do
+        create(:work_item_custom_status, :without_conversion_mapping, namespace: group).tap do |status|
+          create(:work_item_custom_lifecycle_status, lifecycle: lifecycle, status: status)
+        end
+      end
+
+      let_it_be(:converted_custom_status) do
+        create(:work_item_custom_status, :in_progress, namespace: group).tap do |status|
+          create(:work_item_custom_lifecycle_status, lifecycle: lifecycle, status: status)
+        end
+      end
+
+      let_it_be(:work_item_issue_with_new_status) do
+        create(:work_item, :issue, project: project, labels: [group_label]).tap do |wi|
+          create(:work_item_current_status, :custom, work_item: wi, custom_status: new_status, updated_at: 1.day.ago)
+        end
+      end
+
+      let_it_be(:work_item_issue_old) do
+        create(:work_item, :issue, project: project, labels: [group_label]).tap do |wi|
+          create(:work_item_current_status, :custom, work_item: wi, custom_status: old_status, updated_at: 1.day.ago)
+        end
+      end
+
+      let_it_be(:work_item_issue_older) do
+        create(:work_item, :issue, project: project, labels: [group_label]).tap do |wi|
+          create(:work_item_current_status, :custom, work_item: wi, custom_status: old_status, updated_at: 5.days.ago)
+        end
+      end
+
+      let_it_be(:work_item_task_recent) do
+        create(:work_item, :task, project: project, labels: [group_label]).tap do |wi|
+          create(:work_item_current_status, :custom, work_item: wi, custom_status: old_status, updated_at: 2.hours.ago)
+        end
+      end
+
+      let_it_be(:work_item_issue_with_another_status) do
+        create(:work_item, :issue, project: project, labels: [group_label]).tap do |wi|
+          create(:work_item_current_status, :custom, work_item: wi, custom_status: another_status,
+            updated_at: 1.day.ago)
+        end
+      end
+
+      let_it_be(:work_item_issue_with_system_status) do
+        create(:work_item, :issue, project: project, labels: [group_label]).tap do |wi|
+          # Skip validations since we are simulating an old record
+          # when the namespace still used the system defined lifecycle
+          build(:work_item_current_status,
+            work_item: wi,
+            system_defined_status_id: converted_custom_status.converted_from_system_defined_status_identifier,
+            updated_at: 2.days.ago
+          ).save!(validate: false)
+        end
+      end
+
+      let(:status) { new_status }
+
+      let(:expected_unfiltered_work_items) do
+        [work_item_1, work_item_2, work_item_3, work_item_4, work_item_issue_with_new_status,
+          work_item_issue_old, work_item_issue_older, work_item_task_recent,
+          work_item_issue_with_another_status, work_item_issue_with_system_status]
+      end
+
+      context 'when unbounded mapping for both work item types is present' do
+        before_all do
+          [issue_work_item_type, task_work_item_type].each do |wit|
+            create(:work_item_custom_status_mapping,
+              namespace: group,
+              work_item_type: wit,
+              old_status: old_status,
+              new_status: new_status,
+              valid_from: nil,
+              valid_until: nil
+            )
+          end
+        end
+
+        let(:expected_work_items) do
+          [work_item_issue_with_new_status, work_item_issue_old, work_item_issue_older,
+            work_item_task_recent]
+        end
+
+        it_behaves_like 'filtering by status'
+      end
+
+      context 'when valid_until mapping for issues is present' do
+        before_all do
+          create(:work_item_custom_status_mapping,
+            namespace: group,
+            work_item_type: issue_work_item_type,
+            old_status: old_status,
+            new_status: new_status,
+            valid_from: nil,
+            valid_until: 3.days.ago
+          )
+        end
+
+        let(:expected_work_items) { [work_item_issue_with_new_status, work_item_issue_older] }
+
+        it_behaves_like 'filtering by status'
+      end
+
+      context 'when two mappings for issues are present with different time constraints' do
+        before_all do
+          create(:work_item_custom_status_mapping,
+            namespace: group,
+            work_item_type: issue_work_item_type,
+            old_status: old_status,
+            new_status: new_status,
+            valid_from: nil,
+            valid_until: 3.days.ago
+          )
+          create(:work_item_custom_status_mapping,
+            namespace: group,
+            work_item_type: issue_work_item_type,
+            old_status: old_status,
+            new_status: new_status,
+            valid_from: 2.days.ago,
+            valid_until: nil
+          )
+        end
+
+        let(:expected_work_items) { [work_item_issue_with_new_status, work_item_issue_old, work_item_issue_older] }
+
+        it_behaves_like 'filtering by status'
+      end
+
+      context 'when two mappings for issues are present to different statuses' do
+        before_all do
+          create(:work_item_custom_status_mapping,
+            namespace: group,
+            work_item_type: issue_work_item_type,
+            old_status: old_status,
+            new_status: new_status,
+            valid_from: nil,
+            valid_until: nil
+          )
+          create(:work_item_custom_status_mapping,
+            namespace: group,
+            work_item_type: issue_work_item_type,
+            old_status: another_status,
+            new_status: new_status,
+            valid_from: nil,
+            valid_until: nil
+          )
+        end
+
+        let(:expected_work_items) do
+          [work_item_issue_with_new_status, work_item_issue_old, work_item_issue_older,
+            work_item_issue_with_another_status]
+        end
+
+        it_behaves_like 'filtering by status'
+      end
+
+      context 'when mapping for issues exists for converted system-defined status' do
+        let(:valid_from) { nil }
+        let(:valid_until) { nil }
+        let!(:mapping) do
+          create(:work_item_custom_status_mapping,
+            namespace: group,
+            work_item_type: issue_work_item_type,
+            old_status: converted_custom_status,
+            new_status: new_status,
+            valid_from: valid_from,
+            valid_until: valid_until
+          )
+        end
+
+        let(:expected_work_items) { [work_item_issue_with_new_status, work_item_issue_with_system_status] }
+
+        it_behaves_like 'filtering by status'
+
+        context 'with time constraints that include the item with system-defined current status' do
+          let(:valid_from) { 3.days.ago }
+          let(:valid_until) { 1.day.ago }
+
+          it_behaves_like 'filtering by status'
+        end
+
+        context 'with time constraints that exclude the item with system-defined current status' do
+          let(:valid_until) { 3.days.ago }
+          let(:expected_work_items) { [work_item_issue_with_new_status] }
+
+          it_behaves_like 'filtering by status'
+        end
+      end
+    end
+    # rubocop:enable RSpec/MultipleMemoizedHelpers
   end
 end

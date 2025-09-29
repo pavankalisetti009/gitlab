@@ -3,6 +3,8 @@
 require 'spec_helper'
 
 RSpec.describe WorkItems::Statuses::Custom::Mapping, feature_category: :team_planning do
+  using RSpec::Parameterized::TableSyntax
+
   let_it_be_with_refind(:namespace) { create(:namespace) }
   let_it_be_with_refind(:other_namespace) { create(:namespace) }
   let_it_be_with_refind(:work_item_type) { create(:work_item_type) }
@@ -487,6 +489,52 @@ RSpec.describe WorkItems::Statuses::Custom::Mapping, feature_category: :team_pla
 
         expect(mapping.applicable_for?(exact_date)).to be true
       end
+    end
+  end
+
+  describe '#time_range' do
+    let(:mapping) { build(:work_item_custom_status_mapping, valid_from: valid_from, valid_until: valid_until) }
+    let(:from_time) { 5.days.ago }
+    let(:until_time) { 2.days.ago }
+
+    subject(:time_range) { mapping.time_range }
+
+    where(:valid_from, :valid_until, :expected_type, :expected_begin, :expected_end) do
+      ref(:from_time) | ref(:until_time) | Range     | ref(:from_time) | ref(:until_time)
+      ref(:from_time) | nil              | Range     | ref(:from_time) | nil
+      nil             | ref(:until_time) | Range     | nil             | ref(:until_time)
+      nil             | nil              | NilClass  | nil             | nil
+    end
+
+    with_them do
+      it 'returns the expected range type and boundaries' do
+        if expected_type == NilClass
+          is_expected.to be_nil
+        else
+          is_expected.to be_a(Range)
+          expect(time_range.begin).to eq(expected_begin)
+          expect(time_range.end).to eq(expected_end)
+        end
+      end
+    end
+  end
+
+  describe '#time_constrained?' do
+    let(:mapping) { build(:work_item_custom_status_mapping, valid_from: valid_from, valid_until: valid_until) }
+
+    subject { mapping.time_constrained? }
+
+    where(:valid_from, :valid_until, :expected_result) do
+      nil         | nil              | false
+      3.days.ago  | nil              | true
+      nil         | 1.day.from_now   | true
+      5.days.ago  | 2.days.ago       | true
+      1.year.ago  | nil              | true
+      nil         | 1.year.from_now  | true
+    end
+
+    with_them do
+      it { is_expected.to eq(expected_result) }
     end
   end
 
