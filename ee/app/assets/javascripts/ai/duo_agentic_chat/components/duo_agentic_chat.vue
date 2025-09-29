@@ -771,6 +771,7 @@ export default {
         >
           <model-select-dropdown
             class="gl-max-w-31"
+            with-default-model-tooltip
             :disabled="isModelSelectionDisabled"
             :is-loading="$apollo.queries.availableModels.loading"
             :items="availableModels"

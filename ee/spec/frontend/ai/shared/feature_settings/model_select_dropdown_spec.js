@@ -156,6 +156,10 @@ describe('ModelSelectDropdown', () => {
   });
 
   describe('default model items', () => {
+    const mockDefaultModel = {
+      value: GITLAB_DEFAULT_MODEL,
+      text: 'GitLab default model (Claude Sonnet 3.7 - Anthropic)',
+    };
     it('displays the default model badge with dropdown option', () => {
       createComponent({ props: { items: mockModelSelectionItems } });
 
@@ -163,21 +167,36 @@ describe('ModelSelectDropdown', () => {
 
       expect(defaultModel.text()).toMatch('GitLab default model (Claude Sonnet 3.7 - Anthropic)');
       expect(findDefaultModelDropdownBadge().exists()).toBe(true);
+      expect(findDefaultModelDropdownBadge().attributes('title')).toBe('');
     });
 
     it('displays the default model badge when option is selected', () => {
-      const defaultModel = {
-        value: GITLAB_DEFAULT_MODEL,
-        text: 'GitLab default model (Claude Sonnet 3.7 - Anthropic)',
-      };
-
       createComponent({
         props: {
-          selectedOption: defaultModel,
+          selectedOption: mockDefaultModel,
         },
       });
 
       expect(findDefaultModelSelectedBadge().exists()).toBe(true);
+      expect(findDefaultModelSelectedBadge().attributes('title')).toBe('');
+    });
+
+    describe('when `withDefaultModelTooltip` is passed', () => {
+      it('displays a tooltip for the default model badge in dropdown option', () => {
+        createComponent({
+          props: { items: mockModelSelectionItems, withDefaultModelTooltip: true },
+        });
+
+        expect(findDefaultModelDropdownBadge().attributes('title')).toBe('GitLab default model');
+      });
+
+      it('displays a tooltip for the default model badge as selected option', () => {
+        createComponent({
+          props: { selectedOption: mockDefaultModel, withDefaultModelTooltip: true },
+        });
+
+        expect(findDefaultModelSelectedBadge().attributes('title')).toBe('GitLab default model');
+      });
     });
   });
 });
