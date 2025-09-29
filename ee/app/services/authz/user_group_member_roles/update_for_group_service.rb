@@ -3,7 +3,7 @@
 module Authz
   module UserGroupMemberRoles
     class UpdateForGroupService < BaseService
-      include ::Authz::MemberRoleInSharedGroup
+      include ::Authz::MemberRoleInSharedResource
 
       attr_reader :user, :group, :member
 
@@ -74,7 +74,7 @@ module Authz
             user_group_member_roles[:id],
             members[:user_id],
             group_group_links[:shared_group_id].as('group_id'),
-            member_role_id_in_shared_group,
+            member_role_id_in_shared_resource(::GroupGroupLink),
             group_group_links[:shared_with_group_id])
           .to_sql
 
@@ -93,6 +93,10 @@ module Authz
 
       def user_group_member_roles
         ::Authz::UserGroupMemberRole.arel_table
+      end
+
+      def group_group_links
+        ::GroupGroupLink.arel_table
       end
 
       def log

@@ -1044,7 +1044,7 @@ RSpec.describe Member, type: :model, feature_category: :groups_and_projects do
         end
       end
 
-      # more specs for group-sharing with custom roles are in Authz::MemberRoleInSharedGroup
+      # more specs for group-sharing with custom roles are in Authz::MemberRoleInSharedResource
       context 'when custom roles are enabled' do
         before do
           allow(shared_group).to receive(:can_assign_custom_roles_to_group_links?).and_return(true)
