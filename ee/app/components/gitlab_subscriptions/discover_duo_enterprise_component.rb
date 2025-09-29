@@ -118,12 +118,12 @@ module GitlabSubscriptions
 
     override :core_feature_one_grid_class
     def core_feature_one_grid_class
-      'md:gl-grid-cols-3'
+      '@md/panel:gl-grid-cols-3'
     end
 
     override :core_feature_two_grid_class
     def core_feature_two_grid_class
-      'md:gl-grid-cols-2'
+      '@md/panel:gl-grid-cols-2'
     end
   end
 end

@@ -38,7 +38,7 @@ module GitlabSubscriptions
           variant: 'confirm',
           button_text_classes: '!gl-whitespace-normal',
           button_options: {
-            class: 'gl-w-full sm:gl-w-auto',
+            class: 'gl-w-full @sm/panel:gl-w-auto',
             data: {
               event_tracking: 'click_duo_enterprise_trial_billing_page',
               event_label: primary_tracking_label
@@ -69,7 +69,7 @@ module GitlabSubscriptions
           button_attributes: {
             variant: 'confirm',
             category: 'secondary',
-            class: 'gl-w-full sm:gl-w-auto'
+            class: 'gl-w-full @sm/panel:gl-w-auto'
           }.to_json
         }
       end

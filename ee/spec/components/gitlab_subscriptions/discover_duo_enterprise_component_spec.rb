@@ -71,7 +71,7 @@ RSpec.describe GitlabSubscriptions::DiscoverDuoEnterpriseComponent, :aggregate_f
         button_attributes: {
           category: 'primary',
           variant: 'confirm',
-          class: 'gl-w-full sm:gl-w-auto',
+          class: 'gl-w-full @sm/panel:gl-w-auto',
           'data-testid': 'trial-discover-hand-raise-lead-button'
         }.to_json
       }

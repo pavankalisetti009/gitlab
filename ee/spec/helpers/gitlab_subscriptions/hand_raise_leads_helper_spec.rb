@@ -35,7 +35,7 @@ RSpec.describe GitlabSubscriptions::HandRaiseLeadsHelper, feature_category: :acq
           variant: 'confirm',
           category: 'secondary',
           'data-testid': 'trial-discover-hand-raise-lead-button',
-          class: 'gl-w-full sm:gl-w-auto'
+          class: 'gl-w-full @sm/panel:gl-w-auto'
         }.to_json
       }
 
@@ -72,7 +72,7 @@ RSpec.describe GitlabSubscriptions::HandRaiseLeadsHelper, feature_category: :acq
           'data-testid': 'code-suggestions-hand-raise-lead-button',
           category: 'secondary',
           variant: 'confirm',
-          class: 'sm:gl-w-auto gl-w-full sm:gl-ml-3 sm:gl-mt-0 gl-mt-3'
+          class: '@sm/panel:gl-w-auto gl-w-full @sm/panel:gl-ml-3 @sm/panel:gl-mt-0 gl-mt-3'
         }.to_json
       }
 
@@ -111,7 +111,7 @@ RSpec.describe GitlabSubscriptions::HandRaiseLeadsHelper, feature_category: :acq
           button_attributes: {
             category: 'secondary',
             variant: 'confirm',
-            class: 'gl-w-full sm:gl-w-auto'
+            class: 'gl-w-full @sm/panel:gl-w-auto'
           }.to_json
         }
 
