@@ -82,17 +82,17 @@ RSpec.describe Notify, feature_category: :shared do
 
   context 'for a project' do
     context 'for merge requests' do
-      describe "that are new with approver" do
+      describe "that are new with approval rules" do
         before do
-          create(:approver, target: merge_request)
+          create(:approval_merge_request_rule, merge_request: merge_request, name: 'zoo', users: [current_user])
         end
 
         subject do
           described_class.new_merge_request_email(assignee.id, merge_request.id)
         end
 
-        it "contains the approvers list" do
-          is_expected.to have_body_text %r{#{merge_request.approvers.first.user.name}}
+        it "contains the approval rules user list" do
+          is_expected.to have_body_text %r{#{current_user.name}}
         end
       end
 

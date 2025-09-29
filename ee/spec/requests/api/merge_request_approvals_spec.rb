@@ -117,15 +117,6 @@ RSpec.describe API::MergeRequestApprovals, :aggregate_failures, feature_category
         expect(response).to have_gitlab_http_status(:ok)
         expect(json_response['approver_groups'].size).to eq(0)
       end
-
-      context 'when admin' do
-        it 'shows all approver groups' do
-          get api(path, admin, admin_mode: true)
-
-          expect(response).to have_gitlab_http_status(:ok)
-          expect(json_response['approver_groups'].size).to eq(1)
-        end
-      end
     end
 
     context 'when approvers are set to zero' do

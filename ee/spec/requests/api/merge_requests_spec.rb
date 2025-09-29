@@ -608,9 +608,12 @@ RSpec.describe API::MergeRequests, feature_category: :code_review_workflow do
       end
     end
 
-    context 'filter merge requests by approver IDs' do
-      let!(:merge_request_with_approver) do
-        create(:merge_request_with_approver, :simple, author: user, source_project: project, target_project: project, source_branch: 'other-branch')
+    context 'filter merge requests by approval_user IDs' do
+      let(:approval_user) { create(:user) }
+      let!(:merge_request_with_approval_user) do
+        mr = create(:merge_request, :simple, author: user, source_project: project, target_project: project, source_branch: 'other-branch')
+        create(:approval_merge_request_rule, merge_request: mr, users: [approval_user])
+        mr
       end
 
       before do
@@ -618,10 +621,10 @@ RSpec.describe API::MergeRequests, feature_category: :code_review_workflow do
       end
 
       context 'with specified approver id' do
-        let(:approvers_param) { [merge_request_with_approver.approvers.first.user_id] }
+        let(:approvers_param) { [approval_user.id] }
 
         it 'returns an array of merge requests which have specified the user as an approver' do
-          expect_response_contain_exactly(merge_request_with_approver.id)
+          expect_response_contain_exactly(merge_request_with_approval_user.id)
         end
       end
 
@@ -637,7 +640,7 @@ RSpec.describe API::MergeRequests, feature_category: :code_review_workflow do
         let(:approvers_param) { 'Any' }
 
         it 'returns an array of merge requests with any approver' do
-          expect_response_contain_exactly(merge_request_with_approver.id)
+          expect_response_contain_exactly(merge_request_with_approval_user.id)
         end
       end
 
