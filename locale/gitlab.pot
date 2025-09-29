@@ -59488,6 +59488,9 @@ msgstr ""
 msgid "SecurityOrchestration|Security job template"
 msgstr ""
 
+msgid "SecurityOrchestration|Security policies cannot be enforced due to invalid YAML syntax in the linked security policy project's %{linkStart}policy.yml%{linkEnd}."
+msgstr ""
+
 msgid "SecurityOrchestration|Security policy overwrites this setting"
 msgstr ""
 
@@ -60062,6 +60065,9 @@ msgid "SecurityOrchestration|on every"
 msgstr ""
 
 msgid "SecurityOrchestration|pipeline sources"
+msgstr ""
+
+msgid "SecurityOrchestration|policy.yml file has syntax errors"
 msgstr ""
 
 msgid "SecurityOrchestration|projects with compliance frameworks"

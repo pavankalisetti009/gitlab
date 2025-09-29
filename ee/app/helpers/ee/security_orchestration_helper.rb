@@ -16,12 +16,19 @@ module EE::SecurityOrchestrationHelper
 
     orchestration_policy_configuration = container.security_orchestration_policy_configuration
     security_policy_management_project = orchestration_policy_configuration.security_policy_management_project
+    branch = security_policy_management_project.default_branch_or_main
+    policy_file_path = project_blob_path(
+      security_policy_management_project,
+      tree_join(branch, ::Security::OrchestrationPolicyConfiguration::POLICY_PATH)
+    )
 
     {
       id: security_policy_management_project.to_global_id.to_s,
       name: security_policy_management_project.name,
       full_path: security_policy_management_project.full_path,
-      branch: security_policy_management_project.default_branch_or_main
+      branch: branch,
+      policy_yaml_has_syntax_errors: (!orchestration_policy_configuration.policy_configuration_valid?).to_s,
+      policy_yaml_path: policy_file_path
     }
   end
 
