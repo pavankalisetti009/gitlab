@@ -80,7 +80,7 @@ export default {
       );
     },
     shouldShowMergeImmediatelyDropdown() {
-      if (!this.isAutoMergeAvailable || !this.isMergeAllowed) {
+      if (!this.isAutoMergeAvailable || !this.mr.isMergeAllowed) {
         return false;
       }
 
