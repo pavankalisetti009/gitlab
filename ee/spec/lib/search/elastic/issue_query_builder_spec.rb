@@ -4,18 +4,22 @@ require 'spec_helper'
 
 RSpec.describe ::Search::Elastic::IssueQueryBuilder, :elastic_helpers, feature_category: :global_search do
   let_it_be(:user) { create(:user) }
+  let_it_be(:project) { create(:project, developers: user) }
+
   let(:base_options) do
     {
       current_user: user,
       search_level: 'global',
       project_ids: project_ids,
       group_ids: [],
-      public_and_internal_projects: false
+      public_and_internal_projects: false,
+      min_access_level_non_confidential: ::Gitlab::Access::GUEST,
+      min_access_level_confidential: ::Gitlab::Access::PLANNER
     }
   end
 
   let(:query) { 'foo' }
-  let(:project_ids) { [] }
+  let(:project_ids) { [project.id] }
   let(:options) { base_options }
 
   subject(:build) { described_class.build(query: query, options: options) }
@@ -30,7 +34,7 @@ RSpec.describe ::Search::Elastic::IssueQueryBuilder, :elastic_helpers, feature_c
       filters:confidentiality:projects:confidential
       filters:confidentiality:projects:confidential:as_author
       filters:confidentiality:projects:confidential:as_assignee
-      filters:confidentiality:projects:confidential:project:membership:id
+      filters:confidentiality:projects:project:member
     ])
   end
 
@@ -77,7 +81,10 @@ RSpec.describe ::Search::Elastic::IssueQueryBuilder, :elastic_helpers, feature_c
     it_behaves_like 'a query filtered by archived'
     it_behaves_like 'a query filtered by hidden'
     it_behaves_like 'a query filtered by state'
-    it_behaves_like 'a query filtered by confidentiality'
+    it_behaves_like 'a query filtered by confidentiality' do
+      let(:query_name_project_membership) { 'filters:confidentiality:projects:project:member' }
+    end
+
     it_behaves_like 'a query filtered by labels'
 
     describe 'authorization' do

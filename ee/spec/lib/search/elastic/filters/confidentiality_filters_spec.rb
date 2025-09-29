@@ -198,15 +198,25 @@ RSpec.describe ::Search::Elastic::Filters::ConfidentialityFilters, :elastic_help
   describe '.by_project_confidentiality' do
     let(:fixtures_path) { 'ee/spec/fixtures/search/elastic/filters/by_project_level_confidentiality' }
 
-    let_it_be(:authorized_project) { create(:project, developers: [user]) }
-    let_it_be(:private_project) { create(:project, :private) }
+    let_it_be(:authorized_group) { create(:group, developers: [user]) }
+    let_it_be(:authorized_project) { create(:project, group: authorized_group, developers: [user]) }
+    let_it_be(:private_group) { create(:group, :private) }
+    let_it_be(:private_project) { create(:project, :private, group: private_group) }
 
     subject(:by_project_confidentiality) do
       test_klass.by_project_confidentiality(query_hash: query_hash, options: options)
     end
 
     context 'when options[:confidential] is not passed or not true/false' do
-      let(:base_options) { { current_user: user } }
+      let(:base_options) do
+        {
+          min_access_level_non_confidential: ::Gitlab::Access::GUEST,
+          min_access_level_confidential: ::Gitlab::Access::PLANNER,
+          current_user: user,
+          search_level: 'global'
+        }
+      end
+
       let(:options) { base_options }
 
       context 'when user.can_read_all_resources? is true' do
@@ -217,38 +227,118 @@ RSpec.describe ::Search::Elastic::Filters::ConfidentialityFilters, :elastic_help
         it_behaves_like 'does not modify the query_hash'
       end
 
-      context 'when user is authorized for all projects which the query is scoped to' do
-        let(:fixture_file) { 'global_search_user_access_to_project_with_confidential_access_non_confidential.json' }
-        let(:options) { base_options.merge(project_ids: [authorized_project.id]) }
+      context 'for global search' do
+        let(:fixture_file) { 'user_with_access.json' }
         let(:project_id) { authorized_project.id }
+        let(:namespace_ancestry) { authorized_group.elastic_namespace_ancestry }
         let(:user_id) { user.id }
 
         it { is_expected.to eq(expected_query) }
+
+        context 'when user does not have access' do
+          let(:user) { create(:user) }
+          let(:fixture_file) { 'user_no_access.json' }
+          let(:user_id) { user.id }
+          let(:options) { base_options.merge(search_level: 'global') }
+
+          it { is_expected.to eq(expected_query) }
+        end
       end
 
-      context 'when user is not authorized for all projects which the query is scoped to' do
-        let(:fixture_file) { 'global_search_user_access_to_project_with_confidential_access_non_confidential.json' }
-        let(:options) { base_options.merge(project_ids: [authorized_project.id, private_project.id]) }
-        let(:project_id) { authorized_project.id }
-        let(:user_id) { user.id }
+      context 'for group search' do
+        context 'when user has access' do
+          let(:fixture_file) { 'user_with_access.json' }
+          let(:options) { base_options.merge(search_level: 'group', group_ids: [authorized_group.id]) }
+          let(:user_id) { user.id }
+          let(:project_id) { authorized_project.id }
+          let(:namespace_ancestry) { authorized_group.elastic_namespace_ancestry }
 
-        it { is_expected.to eq(expected_query) }
+          it { is_expected.to eq(expected_query) }
+        end
+
+        context 'when user does not have access' do
+          let(:fixture_file) { 'user_no_access.json' }
+          let(:user_id) { user.id }
+          let(:options) { base_options.merge(search_level: 'group', group_ids: [private_group.id]) }
+
+          it { is_expected.to eq(expected_query) }
+        end
+      end
+
+      context 'for project search' do
+        context 'when user has access' do
+          let(:fixture_file) { 'user_with_access.json' }
+          let(:options) do
+            base_options.merge(search_level: 'project',
+              project_ids: [authorized_project.id], group_ids: [authorized_group.id])
+          end
+
+          let(:user_id) { user.id }
+          let(:project_id) { authorized_project.id }
+          let(:namespace_ancestry) { authorized_group.elastic_namespace_ancestry }
+
+          it { is_expected.to eq(expected_query) }
+        end
+
+        context 'when user does not have access' do
+          let(:fixture_file) { 'user_no_access.json' }
+          let(:user_id) { user.id }
+          let(:options) do
+            base_options.merge(search_level: 'project',
+              project_ids: [private_project.id], group_ids: [private_group.id])
+          end
+
+          it { is_expected.to eq(expected_query) }
+        end
+      end
+
+      context 'when search_project_confidentiality_use_traversal_ids is false' do
+        before do
+          stub_feature_flags(search_project_confidentiality_use_traversal_ids: false)
+        end
+
+        context 'when user is authorized for all projects which the query is scoped to' do
+          let(:fixture_file) { 'global_search_user_access_to_project_with_confidential_access_non_confidential.json' }
+          let(:options) { base_options.merge(project_ids: [authorized_project.id]) }
+          let(:project_id) { authorized_project.id }
+          let(:user_id) { user.id }
+
+          it { is_expected.to eq(expected_query) }
+        end
+
+        context 'when user is not authorized for all projects which the query is scoped to' do
+          let(:fixture_file) { 'global_search_user_access_to_project_with_confidential_access_non_confidential.json' }
+          let(:options) { base_options.merge(project_ids: [authorized_project.id, private_project.id]) }
+          let(:project_id) { authorized_project.id }
+          let(:user_id) { user.id }
+
+          it { is_expected.to eq(expected_query) }
+        end
       end
 
       context 'when options[:current_user] is empty' do
-        let(:fixture_file) { 'global_search_anonymous_user.json' }
-        let(:options) { { project_ids: [authorized_project.id, private_project.id] } }
+        let(:fixture_file) { 'anonymous_user.json' }
+        let(:options) { base_options.merge(current_user: nil) }
 
         it { is_expected.to eq(expected_query) }
       end
     end
 
     context 'when options[:confidential] is passed' do
-      let(:base_options) { { current_user: user, confidential: true } }
+      let(:base_options) do
+        {
+          current_user: user,
+          confidential: true,
+          search_level: 'global',
+          min_access_level_non_confidential: ::Gitlab::Access::GUEST,
+          min_access_level_confidential: ::Gitlab::Access::PLANNER
+        }
+      end
+
       let(:options) { base_options }
 
       context 'when user.can_read_all_resources? is true' do
-        let(:fixture_file) { 'global_search_admin_user.json' }
+        let(:fixture_file) { 'admin_user.json' }
 
         before do
           allow(user).to receive(:can_read_all_resources?).and_return(true)
@@ -257,28 +347,99 @@ RSpec.describe ::Search::Elastic::Filters::ConfidentialityFilters, :elastic_help
         it { is_expected.to eq(expected_query) }
       end
 
-      context 'when user is authorized for all projects which the query is scoped to' do
-        let(:fixture_file) { 'global_search_user_access_to_project_with_confidential_access_confidential.json' }
+      context 'when search_project_confidentiality_use_traversal_ids is false' do
+        before do
+          stub_feature_flags(search_project_confidentiality_use_traversal_ids: false)
+        end
 
-        let(:options) { base_options.merge(project_ids: [authorized_project.id]) }
-        let(:project_id) { authorized_project.id }
-        let(:user_id) { user.id }
+        context 'when user is authorized for all projects which the query is scoped to' do
+          let(:fixture_file) { 'global_search_user_access_to_project_with_confidential_access_confidential.json' }
 
-        it { is_expected.to eq(expected_query) }
+          let(:options) { base_options.merge(project_ids: [authorized_project.id], group_ids: [authorized_group.id]) }
+          let(:project_id) { authorized_project.id }
+          let(:user_id) { user.id }
+
+          it { is_expected.to eq(expected_query) }
+        end
+
+        context 'when user is not authorized for all projects which the query is scoped to' do
+          let(:fixture_file) { 'global_search_user_access_to_project_with_confidential_access_confidential.json' }
+          let(:options) { base_options.merge(project_ids: [authorized_project.id, private_project.id]) }
+          let(:project_id) { authorized_project.id }
+          let(:user_id) { user.id }
+
+          it { is_expected.to eq(expected_query) }
+        end
       end
 
-      context 'when user is not authorized for all projects which the query is scoped to' do
-        let(:fixture_file) { 'global_search_user_access_to_project_with_confidential_access_confidential.json' }
-        let(:options) { base_options.merge(project_ids: [authorized_project.id, private_project.id]) }
+      context 'for global search' do
+        let(:fixture_file) { 'user_with_access_with_confidential_selected.json' }
         let(:project_id) { authorized_project.id }
+        let(:namespace_ancestry) { authorized_group.elastic_namespace_ancestry }
         let(:user_id) { user.id }
 
         it { is_expected.to eq(expected_query) }
+
+        context 'when user does not have access' do
+          let(:user) { create(:user) }
+          let(:fixture_file) { 'user_no_access_with_confidential_selected.json' }
+          let(:user_id) { user.id }
+          let(:options) { base_options.merge(search_level: 'global') }
+
+          it { is_expected.to eq(expected_query) }
+        end
+      end
+
+      context 'for group search' do
+        context 'when user has access' do
+          let(:fixture_file) { 'user_with_access_with_confidential_selected.json' }
+          let(:options) { base_options.merge(search_level: 'group', group_ids: [authorized_group.id]) }
+          let(:user_id) { user.id }
+          let(:project_id) { authorized_project.id }
+          let(:namespace_ancestry) { authorized_group.elastic_namespace_ancestry }
+
+          it { is_expected.to eq(expected_query) }
+        end
+
+        context 'when user does not have access' do
+          let(:fixture_file) { 'user_no_access_with_confidential_selected.json' }
+          let(:user_id) { user.id }
+          let(:options) { base_options.merge(search_level: 'group', group_ids: [private_group.id]) }
+
+          it { is_expected.to eq(expected_query) }
+        end
+      end
+
+      context 'for project search' do
+        context 'when user has access' do
+          let(:fixture_file) { 'user_with_access_with_confidential_selected.json' }
+          let(:options) do
+            base_options.merge(search_level: 'project',
+              project_ids: [authorized_project.id], group_ids: [authorized_group.id])
+          end
+
+          let(:user_id) { user.id }
+          let(:project_id) { authorized_project.id }
+          let(:namespace_ancestry) { authorized_group.elastic_namespace_ancestry }
+
+          it { is_expected.to eq(expected_query) }
+        end
+
+        context 'when user does not have access' do
+          let(:fixture_file) { 'user_no_access_with_confidential_selected.json' }
+          let(:user_id) { user.id }
+          let(:options) do
+            base_options.merge(search_level: 'project',
+              project_ids: [private_project.id], group_ids: [private_group.id])
+          end
+
+          it { is_expected.to eq(expected_query) }
+        end
       end
 
       context 'when options[:current_user] is empty' do
-        let(:fixture_file) { 'global_search_anonymous_user.json' }
-        let(:options) { { project_ids: [authorized_project.id, private_project.id] } }
+        let(:fixture_file) { 'anonymous_user_with_confidentiality_selected.json' }
+        let(:options) { base_options.merge(current_user: nil) }
 
         it { is_expected.to eq(expected_query) }
       end
@@ -286,7 +447,16 @@ RSpec.describe ::Search::Elastic::Filters::ConfidentialityFilters, :elastic_help
   end
 
   describe '.by_combined_confidentiality' do
-    let(:options) { { search_level: :global, current_user: user } }
+    let(:options) do
+      {
+        min_access_level_non_confidential: ::Gitlab::Access::GUEST,
+        min_access_level_confidential: ::Gitlab::Access::PLANNER,
+        search_level: :global,
+        current_user: user
+      }
+    end
+
+    let_it_be(:authorized_project) { create(:project, developers: user) }
 
     subject(:by_combined_confidentiality) do
       test_klass.by_combined_confidentiality(query_hash: query_hash, options: options)
@@ -317,7 +487,7 @@ RSpec.describe ::Search::Elastic::Filters::ConfidentialityFilters, :elastic_help
             filters:confidentiality:projects:non_confidential
             filters:confidentiality:projects:confidential
             filters:confidentiality:projects:confidential:as_author
-            filters:confidentiality:projects:confidential:project:membership:id
+            filters:confidentiality:projects:project:member
             filters:confidentiality:projects:confidential:as_assignee
           ],
           without: %w[
@@ -365,7 +535,7 @@ RSpec.describe ::Search::Elastic::Filters::ConfidentialityFilters, :elastic_help
             filters:confidentiality:projects:non_confidential
             filters:confidentiality:projects:confidential
             filters:confidentiality:projects:confidential:as_author
-            filters:confidentiality:projects:confidential:project:membership:id
+            filters:confidentiality:projects:project:member
             filters:confidentiality:projects:confidential:as_assignee
           ]
         )
@@ -404,7 +574,7 @@ RSpec.describe ::Search::Elastic::Filters::ConfidentialityFilters, :elastic_help
           filters:confidentiality:projects:non_confidential
           filters:confidentiality:projects:confidential
           filters:confidentiality:projects:confidential:as_author
-          filters:confidentiality:projects:confidential:project:membership:id
+          filters:confidentiality:projects:project:member
           filters:confidentiality:projects:confidential:as_assignee
           filters:confidentiality:groups:non_confidential:public
           filters:confidentiality:groups:non_confidential:internal

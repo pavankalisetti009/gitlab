@@ -1,0 +1,59 @@
+{
+  "query": {
+    "bool": {
+      "filter": [
+        {
+          "bool": {
+            "should": [
+              {
+                "term": {
+                  "confidential": {
+                    "_name": "filters:confidentiality:projects:non_confidential",
+                    "value": false
+                  }
+                }
+              },
+              {
+                "bool": {
+                  "filter": [
+                    {
+                      "term": {
+                        "confidential": {
+                          "_name": "filters:confidentiality:projects:confidential",
+                          "value": true
+                        }
+                      }
+                    }
+                  ],
+                  "should": [
+                    {
+                      "term": {
+                        "author_id": {
+                          "_name": "filters:confidentiality:projects:confidential:as_author",
+                          "value": __USER_ID__
+                        }
+                      }
+                    },
+                    {
+                      "term": {
+                        "assignee_id": {
+                          "_name": "filters:confidentiality:projects:confidential:as_assignee",
+                          "value": __USER_ID__
+                        }
+                      }
+                    }
+                  ],
+                  "minimum_should_match": 1
+                }
+              }
+            ],
+            "minimum_should_match": 1
+          }
+        }
+      ],
+      "must_not": [],
+      "must": [],
+      "should": []
+    }
+  }
+}
