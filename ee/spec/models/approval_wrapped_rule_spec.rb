@@ -456,8 +456,167 @@ RSpec.describe ApprovalWrappedRule, feature_category: :code_review_workflow do
   describe '#approvals_required' do
     let(:rule) { create(:approval_merge_request_rule, approvals_required: 19) }
 
-    it 'returns the attribute saved on the model' do
-      expect(approval_wrapped_rule.approvals_required).to eq(19)
+    context 'when rule is not dismissed' do
+      it 'returns the attribute saved on the model' do
+        expect(approval_wrapped_rule.approvals_required).to eq(19)
+      end
+
+      context 'when rule is not a warn mode policy' do
+        before do
+          allow(rule).to receive(:warn_mode_policy?).and_return(false)
+        end
+
+        it 'returns the original approvals required' do
+          expect(approval_wrapped_rule.approvals_required).to eq(19)
+        end
+      end
+
+      context 'when rule is a warn mode policy but has no violations' do
+        let_it_be(:policy_configuration) { create(:security_orchestration_policy_configuration, project: merge_request.project) }
+        let_it_be(:scan_result_policy_read) { create(:scan_result_policy_read, security_orchestration_policy_configuration: policy_configuration) }
+
+        let(:rule) do
+          create(
+            :approval_merge_request_rule,
+            merge_request: merge_request,
+            approvals_required: 19,
+            scan_result_policy_read: scan_result_policy_read
+          )
+        end
+
+        before do
+          allow(rule).to receive(:warn_mode_policy?).and_return(true)
+        end
+
+        it 'returns the original approvals required' do
+          expect(approval_wrapped_rule.approvals_required).to eq(19)
+        end
+      end
+    end
+
+    context 'when rule is dismissed' do
+      let_it_be(:policy_configuration) { create(:security_orchestration_policy_configuration, project: merge_request.project) }
+      let_it_be(:security_policy) { create(:security_policy, security_orchestration_policy_configuration: policy_configuration) }
+      let_it_be(:scan_result_policy_read) { create(:scan_result_policy_read, security_orchestration_policy_configuration: policy_configuration) }
+      let_it_be(:approval_policy_rule) { create(:approval_policy_rule, security_policy: security_policy) }
+
+      let(:rule) do
+        create(
+          :approval_merge_request_rule,
+          merge_request: merge_request,
+          approvals_required: 19,
+          scan_result_policy_read: scan_result_policy_read
+        )
+      end
+
+      before do
+        allow(rule).to receive(:warn_mode_policy?).and_return(true)
+      end
+
+      context 'when violation exists and is fully dismissed' do
+        let(:finding_uuids) { [SecureRandom.uuid, SecureRandom.uuid] }
+        let!(:violation) do
+          create(:scan_result_policy_violation, :new_scan_finding,
+            merge_request: merge_request,
+            scan_result_policy_read: scan_result_policy_read,
+            approval_policy_rule: approval_policy_rule,
+            uuids: finding_uuids
+          )
+        end
+
+        let!(:policy_dismissal) do
+          create(:policy_dismissal,
+            project: merge_request.project,
+            merge_request: merge_request,
+            security_policy: security_policy,
+            security_findings_uuids: finding_uuids
+          )
+        end
+
+        it 'returns 0 when the rule is dismissed' do
+          expect(approval_wrapped_rule.approvals_required).to eq(0)
+        end
+      end
+
+      context 'when violation exists but is not dismissed' do
+        let(:finding_uuids) { [SecureRandom.uuid, SecureRandom.uuid] }
+        let!(:violation) do
+          create(:scan_result_policy_violation, :new_scan_finding,
+            merge_request: merge_request,
+            scan_result_policy_read: scan_result_policy_read,
+            approval_policy_rule: approval_policy_rule,
+            uuids: finding_uuids
+          )
+        end
+
+        it 'returns the original approvals required' do
+          expect(approval_wrapped_rule.approvals_required).to eq(19)
+        end
+      end
+
+      context 'when violation exists but is only partially dismissed' do
+        let(:finding_uuids) { [SecureRandom.uuid, SecureRandom.uuid] }
+        let!(:violation) do
+          create(:scan_result_policy_violation, :new_scan_finding,
+            merge_request: merge_request,
+            scan_result_policy_read: scan_result_policy_read,
+            approval_policy_rule: approval_policy_rule,
+            uuids: finding_uuids
+          )
+        end
+
+        let!(:policy_dismissal) do
+          create(:policy_dismissal,
+            project: merge_request.project,
+            merge_request: merge_request,
+            security_policy: security_policy,
+            security_findings_uuids: [finding_uuids.first] # Only dismiss one UUID
+          )
+        end
+
+        it 'returns the original approvals required' do
+          expect(approval_wrapped_rule.approvals_required).to eq(19)
+        end
+      end
+
+      context 'when there are multiple violations for different rules' do
+        let_it_be(:other_scan_result_policy_read) { create(:scan_result_policy_read, security_orchestration_policy_configuration: policy_configuration) }
+        let_it_be(:other_approval_policy_rule) { create(:approval_policy_rule, security_policy: security_policy) }
+
+        let(:finding_uuids_for_rule) { [SecureRandom.uuid, SecureRandom.uuid] }
+        let(:finding_uuids_for_other_rule) { [SecureRandom.uuid, SecureRandom.uuid] }
+
+        let!(:violation_for_rule) do
+          create(:scan_result_policy_violation, :new_scan_finding,
+            merge_request: merge_request,
+            scan_result_policy_read: scan_result_policy_read,
+            approval_policy_rule: approval_policy_rule,
+            uuids: finding_uuids_for_rule
+          )
+        end
+
+        let!(:violation_for_other_rule) do
+          create(:scan_result_policy_violation, :new_scan_finding,
+            merge_request: merge_request,
+            scan_result_policy_read: other_scan_result_policy_read,
+            approval_policy_rule: other_approval_policy_rule,
+            uuids: finding_uuids_for_other_rule
+          )
+        end
+
+        let!(:policy_dismissal) do
+          create(:policy_dismissal,
+            project: merge_request.project,
+            merge_request: merge_request,
+            security_policy: security_policy,
+            security_findings_uuids: finding_uuids_for_rule # Only dismiss the first rule's findings
+          )
+        end
+
+        it 'returns 0 for the dismissed rule' do
+          expect(approval_wrapped_rule.approvals_required).to eq(0)
+        end
+      end
     end
   end
 

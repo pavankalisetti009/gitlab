@@ -24,7 +24,7 @@ class ApprovalWrappedRule
     :@approval_rule,
     :regular?, :any_approver?, :code_owner?, :report_approver?,
     :overridden?, :id, :users, :groups, :code_owner, :from_scan_result_policy?, :warn_mode_policy?,
-    :source_rule, :rule_type, :report_type, :approvals_required, :section, :to_global_id, :rule_project
+    :source_rule, :rule_type, :report_type, :section, :to_global_id, :rule_project
   )
 
   def self.wrap(merge_request, rule)
@@ -150,6 +150,12 @@ class ApprovalWrappedRule
     else
       approval_rule.policy_name
     end
+  end
+
+  def approvals_required
+    return 0 if approval_rule_dismissed?
+
+    @approval_rule.approvals_required
   end
 
   def fail_open?
