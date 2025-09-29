@@ -68,6 +68,9 @@ module EE
       delegate :enabled_zoekt?, :enabled_zoekt, :enabled_zoekt=,
         to: :user_preference
 
+      delegate :policy_advanced_editor?, :policy_advanced_editor, :policy_advanced_editor=,
+        to: :user_preference
+
       has_many :epics,                    foreign_key: :author_id
       has_many :test_reports,             foreign_key: :author_id, inverse_of: :author, class_name: 'RequirementsManagement::TestReport'
       has_many :assigned_epics,           foreign_key: :assignee_id, class_name: "Epic"

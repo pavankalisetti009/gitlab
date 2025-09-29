@@ -69,7 +69,8 @@ module EE::SecurityOrchestrationHelper
       max_scan_execution_policy_schedules: max_scan_execution_policy_schedules,
       enabled_experiments: enabled_policy_experiments(container),
       designated_as_csp: container.designated_as_csp?.to_s,
-      access_tokens: access_tokens_for_container(container).to_json
+      access_tokens: access_tokens_for_container(container).to_json,
+      policy_editor_enabled: policy_editor_enabled?(container).to_s
     }
 
     if container.is_a?(::Project)
@@ -79,6 +80,13 @@ module EE::SecurityOrchestrationHelper
     else
       policy_data
     end
+  end
+
+  def policy_editor_enabled?(container)
+    return false unless Feature.enabled?(:security_policies_split_view, container)
+    return false unless current_user&.user_preference
+
+    current_user.user_preference.policy_advanced_editor
   end
 
   def security_policies_path(container)
