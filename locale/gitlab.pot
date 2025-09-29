@@ -4171,9 +4171,6 @@ msgstr ""
 msgid "Add internal note"
 msgstr ""
 
-msgid "Add interval"
-msgstr ""
-
 msgid "Add key"
 msgstr ""
 
@@ -27154,9 +27151,6 @@ msgid "Event|updated"
 msgstr ""
 
 msgid "Every %{action} attempt has failed: %{job_error_message}. Please try again."
-msgstr ""
-
-msgid "Every 2 weeks"
 msgstr ""
 
 msgid "Every 3 months"
@@ -57702,10 +57696,16 @@ msgstr[1] ""
 msgid "SecretDetection|What are validity checks?"
 msgstr ""
 
+msgid "SecretRotation|After a set number of days, send a reminder to rotate the secret. Minimum 7 days."
+msgstr ""
+
 msgid "SecretRotation|Hi %{name}!"
 msgstr ""
 
 msgid "SecretRotation|Please change the secret value to maintain security."
+msgstr ""
+
+msgid "SecretRotation|Rotation reminder period"
 msgstr ""
 
 msgid "SecretRotation|Secret rotation reminder"
@@ -57733,9 +57733,6 @@ msgid "Secrets|Add a new secret to the group by following the instructions in th
 msgstr ""
 
 msgid "Secrets|Add a new secret to the project by following the instructions in the form below."
-msgstr ""
-
-msgid "Secrets|Add custom interval."
 msgstr ""
 
 msgid "Secrets|Add secret"
@@ -57813,9 +57810,6 @@ msgstr ""
 msgid "Secrets|Failed to load secret. Please try again later."
 msgstr ""
 
-msgid "Secrets|Intervals"
-msgstr ""
-
 msgid "Secrets|Last used"
 msgstr ""
 
@@ -57838,12 +57832,6 @@ msgid "Secrets|Provisioning in progress"
 msgstr ""
 
 msgid "Secrets|Remove secrets manager permission?"
-msgstr ""
-
-msgid "Secrets|Rotation period"
-msgstr ""
-
-msgid "Secrets|Rotation reminder"
 msgstr ""
 
 msgid "Secrets|Secret %{secretName} has been deleted."
@@ -57871,9 +57859,6 @@ msgid "Secrets|Secrets manager user permissions"
 msgstr ""
 
 msgid "Secrets|Secure your sensitive information"
-msgstr ""
-
-msgid "Secrets|Select a reminder interval"
 msgstr ""
 
 msgid "Secrets|Select the access scopes to grant to this user for the Secret Manager and related API endpoints."
@@ -70128,9 +70113,6 @@ msgid "Use .gitlab-ci.yml"
 msgstr ""
 
 msgid "Use Amazon Q to streamline development workflow and project upgrades"
-msgstr ""
-
-msgid "Use CRON syntax. %{linkStart}Learn more.%{linkEnd}"
 msgstr ""
 
 msgid "Use Regular Expression"

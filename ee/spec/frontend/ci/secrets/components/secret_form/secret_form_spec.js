@@ -1,14 +1,7 @@
 import Vue, { nextTick } from 'vue';
 import VueApollo from 'vue-apollo';
 import VueRouter from 'vue-router';
-import {
-  GlCollapsibleListbox,
-  GlDatepicker,
-  GlFormInput,
-  GlFormTextarea,
-  GlModal,
-  GlSprintf,
-} from '@gitlab/ui';
+import { GlDatepicker, GlFormInput, GlFormTextarea, GlModal, GlSprintf } from '@gitlab/ui';
 import { createAlert } from '~/alert';
 import createMockApollo from 'helpers/mock_apollo_helper';
 import waitForPromises from 'helpers/wait_for_promises';
@@ -44,8 +37,6 @@ describe('SecretForm component', () => {
     submitButtonText: 'Add secret',
   };
 
-  const findAddCronButton = () => wrapper.findByTestId('add-custom-rotation-button');
-  const findCronField = () => wrapper.findByTestId('secret-cron');
   const findConfirmEditModal = () => wrapper.findComponent(GlModal);
   const findBranchField = () => wrapper.findComponent(SecretBranchesField);
   const findDescriptionField = () => wrapper.findByTestId('secret-description');
@@ -54,7 +45,8 @@ describe('SecretForm component', () => {
   const findEnvironmentsDropdown = () => wrapper.findComponent(CiEnvironmentsDropdown);
   const findNameFieldGroup = () => wrapper.findByTestId('secret-name-field-group');
   const findNameField = () => findNameFieldGroup().findComponent(GlFormInput);
-  const findRotationPeriodField = () => wrapper.findComponent(GlCollapsibleListbox);
+  const findRotationFieldGroup = () => wrapper.findByTestId('secret-rotation-field-group');
+  const findRotationField = () => findRotationFieldGroup().findComponent(GlFormInput);
   const findValueFieldGroup = () => wrapper.findByTestId('secret-value-field-group');
   const findValueField = () => findValueFieldGroup().findComponent(GlFormTextarea);
   const findSubmitButton = () => wrapper.findByTestId('submit-form-button');
@@ -118,7 +110,7 @@ describe('SecretForm component', () => {
       expect(findExpirationField().exists()).toBe(true);
       expect(findEnvironmentsDropdown().exists()).toBe(true);
       expect(findNameField().exists()).toBe(true);
-      expect(findRotationPeriodField().exists()).toBe(true);
+      expect(findRotationField().exists()).toBe(true);
 
       expect(findValueField().exists()).toBe(true);
       expect(findValueField().attributes('placeholder')).toBe('Enter a value for the secret');
@@ -169,35 +161,6 @@ describe('SecretForm component', () => {
       await nextTick();
 
       expect(findBranchField().props('selectedBranch')).toBe('main');
-    });
-  });
-
-  describe('rotation period field', () => {
-    beforeEach(() => {
-      createComponent();
-    });
-
-    it('shows default toggle text', () => {
-      expect(findRotationPeriodField().props('toggleText')).toBe('Select a reminder interval');
-    });
-
-    it('can select predefined rotation periods and renders the correct toggle text', async () => {
-      findRotationPeriodField().vm.$emit('click');
-      findRotationPeriodField().vm.$emit('select', '14');
-
-      await nextTick();
-
-      expect(findRotationPeriodField().props('toggleText')).toBe('Every 2 weeks');
-    });
-
-    it('can set custom cron', async () => {
-      findRotationPeriodField().vm.$emit('click');
-      findCronField().vm.$emit('input', '0 6 * * *');
-      findAddCronButton().vm.$emit('click');
-
-      await nextTick();
-
-      expect(findRotationPeriodField().props('toggleText')).toBe('0 6 * * *');
     });
   });
 
@@ -314,9 +277,35 @@ describe('SecretForm component', () => {
           environment: '*',
           name: 'SECRET_KEY',
           projectPath: 'path/to/project',
-          rotationPeriod: '',
+          rotationIntervalDays: null,
           secret: 'SECRET_VALUE',
         });
+      });
+
+      it('calls the create mutation with null rotation when no rotation period is set', async () => {
+        await createSecret();
+        await waitForPromises();
+
+        expect(mockCreateSecretResponse).toHaveBeenCalledWith(
+          expect.objectContaining({
+            rotationIntervalDays: null,
+          }),
+        );
+      });
+
+      it('calls the create mutation with correct rotation period when set to typical value', async () => {
+        await inputRequiredFields();
+        findRotationField().vm.$emit('input', 30);
+        await nextTick();
+
+        findSubmitButton().vm.$emit('click');
+        await waitForPromises();
+
+        expect(mockCreateSecretResponse).toHaveBeenCalledWith(
+          expect.objectContaining({
+            rotationIntervalDays: 30,
+          }),
+        );
       });
 
       it('redirects to the secret details page', async () => {
@@ -506,7 +495,7 @@ describe('SecretForm component', () => {
           expiration: undefined,
           name: 'PROD_PWD',
           projectPath: 'path/to/project',
-          rotationPeriod: '',
+          rotationIntervalDays: null,
           secret: 'EDITED_SECRET_VALUE',
         });
       });
@@ -517,6 +506,29 @@ describe('SecretForm component', () => {
         expect(mockUpdateSecretResponse).toHaveBeenCalledTimes(1);
         expect(mockUpdateSecretResponse).toHaveBeenCalledWith(
           expect.objectContaining({ secret: undefined }),
+        );
+      });
+
+      it('calls the update mutation with rotation period when set', async () => {
+        findRotationField().vm.$emit('input', 14);
+        await nextTick();
+
+        await editSecret();
+
+        expect(mockUpdateSecretResponse).toHaveBeenCalledWith(
+          expect.objectContaining({
+            rotationIntervalDays: 14,
+          }),
+        );
+      });
+
+      it('calls the update mutation with null rotation when no rotation period is set', async () => {
+        await editSecret();
+
+        expect(mockUpdateSecretResponse).toHaveBeenCalledWith(
+          expect.objectContaining({
+            rotationIntervalDays: null,
+          }),
         );
       });
 
