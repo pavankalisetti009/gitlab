@@ -4,6 +4,7 @@ import * as Sentry from '~/sentry/sentry_browser_wrapper';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import waitForPromises from 'helpers/wait_for_promises';
 import createMockApollo from 'helpers/mock_apollo_helper';
+import PageHeading from '~/vue_shared/components/page_heading.vue';
 import createAiCatalogAgent from 'ee/ai/catalog/graphql/mutations/create_ai_catalog_agent.mutation.graphql';
 import AiCatalogAgentsNew from 'ee/ai/catalog/pages/ai_catalog_agents_new.vue';
 import AiCatalogAgentForm from 'ee/ai/catalog/components/ai_catalog_agent_form.vue';
@@ -31,7 +32,7 @@ describe('AiCatalogAgentsNew', () => {
     push: jest.fn(),
   };
 
-  const createComponent = () => {
+  const createComponent = ({ aiCatalogFlows = false } = {}) => {
     createAiCatalogAgentMock = jest.fn().mockResolvedValue(mockCreateAiCatalogAgentSuccessMutation);
     const apolloProvider = createMockApollo([[createAiCatalogAgent, createAiCatalogAgentMock]]);
 
@@ -41,17 +42,35 @@ describe('AiCatalogAgentsNew', () => {
         $router: mockRouter,
         $toast: mockToast,
       },
+      provide: {
+        glFeatures: {
+          aiCatalogFlows,
+        },
+      },
     });
   };
 
   const findForm = () => wrapper.findComponent(AiCatalogAgentForm);
+  const findPageHeading = () => wrapper.findComponent(PageHeading);
 
   beforeEach(() => {
     createComponent();
   });
 
-  afterEach(() => {
-    jest.clearAllMocks();
+  describe('Rendering', () => {
+    it('renders the correct description text when aiCatalogFlows feature flag is enabled', () => {
+      createComponent({ aiCatalogFlows: true });
+
+      expect(findPageHeading().text()).toContain('Use agents in flows and with GitLab Duo Chat.');
+    });
+
+    it('renders the correct description text when aiCatalogFlows feature flag is disabled', () => {
+      createComponent({ aiCatalogFlows: false });
+
+      expect(findPageHeading().text()).toContain(
+        'Use agents with GitLab Duo Chat to complete tasks and answer complex questions.',
+      );
+    });
   });
 
   describe('Form Submit', () => {
