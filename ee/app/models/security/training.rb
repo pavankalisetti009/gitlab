@@ -2,10 +2,13 @@
 
 module Security
   class Training < ApplicationRecord
+    include ActiveRecord::FixedItemsModel::HasOne
+
     self.table_name = 'security_trainings'
 
     belongs_to :project, optional: false
     belongs_to :provider, optional: false, inverse_of: :trainings, class_name: 'Security::TrainingProvider'
+    belongs_to_fixed_items :training_provider, fixed_items_class: Security::StaticTrainingProvider
 
     # There can be only one primary training per project
     validates :is_primary, uniqueness: { scope: :project_id }, if: :is_primary?

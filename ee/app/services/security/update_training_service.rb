@@ -1,5 +1,6 @@
 # frozen_string_literal: true
 
+# rubocop: disable CodeReuse/ActiveRecord -- this is a static model so we don't have scopes on it
 module Security
   class UpdateTrainingService < BaseService
     def initialize(project, params)
@@ -33,12 +34,12 @@ module Security
       training.transaction do
         project.security_trainings.update_all(is_primary: false) if primary?
 
-        training.update(is_primary: primary?)
+        training.update(is_primary: primary?, training_provider_id: static_provider.id)
       end
     end
 
     def training
-      @training ||= project.security_trainings.find_or_initialize_by(provider: provider) # rubocop: disable CodeReuse/ActiveRecord
+      @training ||= project.security_trainings.find_or_initialize_by(provider: provider)
     end
 
     def provider
@@ -46,6 +47,10 @@ module Security
         GlobalID::Locator.locate(params[:provider_id])
       rescue ActiveRecord::RecordNotFound
       end
+    end
+
+    def static_provider
+      Security::StaticTrainingProvider.find_by(name: provider.name)
     end
 
     def service_response
@@ -57,3 +62,4 @@ module Security
     end
   end
 end
+# rubocop: enable CodeReuse/ActiveRecord
