@@ -16,6 +16,7 @@ RSpec.describe 'trial_registrations/new', feature_category: :acquisition do
     allow(view).to receive(:resource_name).and_return(:user)
     allow(view).to receive(:preregistration_tracking_label).and_return('trial_registration')
     view.lookup_context.prefixes << 'devise/registrations'
+    assign(:trial_duration, 30)
   end
 
   subject { render && rendered }

@@ -24,4 +24,8 @@ RSpec.describe Onboarding::AutomaticTrialRegistration, type: :undefined, feature
   describe '.new_registration_design?' do
     it { is_expected.not_to be_new_registration_design }
   end
+
+  describe '.exclude_from_positioning_experiment?' do
+    it { is_expected.to be_exclude_from_positioning_experiment }
+  end
 end

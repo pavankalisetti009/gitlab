@@ -21,6 +21,11 @@ module Registrations
 
       experiment(:lightweight_trial_registration_redesign, actor: user).track(:assignment, namespace: group)
 
+      experiment(:premium_trial_positioning, actor: user) do |e| # rubocop:disable Cop/ExperimentsTestCoverage -- test incl in standard_namespace_create_service_spec.rb
+        e.exclude! if onboarding_user_status.exclude_from_positioning_experiment?
+        e.track(:assignment, namespace: group)
+      end
+
       return unless onboarding_user_status.apply_trial?
 
       apply_trial

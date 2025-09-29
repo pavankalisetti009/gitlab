@@ -289,6 +289,8 @@ RSpec.describe TrialRegistrationsController, :with_trial_types, :with_current_or
           # post login
           allow(controller).to receive(:experiment).with(:lightweight_trial_registration_redesign,
             actor: instance_of(User)).and_return(experiment)
+          allow(controller).to receive(:experiment).with(:premium_trial_positioning,
+            actor: instance_of(User)).and_call_original
         end
         allow(experiment).to receive(:run)
       end
@@ -297,6 +299,26 @@ RSpec.describe TrialRegistrationsController, :with_trial_types, :with_current_or
         expect(experiment).to receive(:track).with(:completed_trial_registration_form)
 
         post_create
+      end
+    end
+
+    context 'with premium_trial_positioning experiment' do
+      before do
+        stub_experiments(premium_trial_positioning: :control)
+      end
+
+      it 'calls the premium trial positioning experiment with the created user' do
+        expect_next_instance_of(described_class) do |instance|
+          allow(instance).to receive(:experiment)
+            .with(:lightweight_trial_registration_redesign, anything)
+            .and_call_original
+
+          expect(instance).to receive(:experiment)
+            .with(:premium_trial_positioning, actor: instance_of(User))
+            .and_call_original
+        end
+
+        expect_successful_post_create
       end
     end
   end
