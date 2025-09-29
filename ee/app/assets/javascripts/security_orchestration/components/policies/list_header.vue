@@ -1,5 +1,6 @@
 <script>
 import { GlAlert, GlBadge, GlButton, GlIcon, GlSprintf } from '@gitlab/ui';
+import { parseBoolean } from '~/lib/utils/common_utils';
 import { joinPaths } from '~/lib/utils/url_utility';
 import { s__ } from '~/locale';
 import PageHeading from '~/vue_shared/components/page_heading.vue';
@@ -11,6 +12,7 @@ import DeprecatedCustomScanBanner from './banners/deprecated_custom_scan_banner.
 import ExceedingActionsBanner from './banners/exceeding_actions_banner.vue';
 import ExceedingScheduledRulesBanner from './banners/exceeding_scheduled_rules_banner.vue';
 import InvalidPoliciesBanner from './banners/invalid_policies_banner.vue';
+import InvalidPolicyYamlBanner from './banners/invalid_policy_yaml_banner.vue';
 import WarnModeBanner from './banners/warn_mode_banner.vue';
 import ProjectModal from './project_modal.vue';
 
@@ -27,6 +29,7 @@ export default {
     GlIcon,
     GlSprintf,
     InvalidPoliciesBanner,
+    InvalidPolicyYamlBanner,
     PageHeading,
     ProjectModal,
     WarnModeBanner,
@@ -74,6 +77,9 @@ export default {
   computed: {
     hasAssignedPolicyProject() {
       return Boolean(this.assignedPolicyProject?.id);
+    },
+    hasInvalidPolicyYaml() {
+      return parseBoolean(this.assignedPolicyProject?.policyYamlHasSyntaxErrors);
     },
     securityPolicyProjectPath() {
       return joinPaths(gon.relative_url_root || '/', this.assignedPolicyProject?.fullPath);
@@ -206,6 +212,8 @@ export default {
     <warn-mode-banner v-if="showWarnModeBanner" class="gl-mb-6 gl-mt-3" />
 
     <invalid-policies-banner v-if="hasInvalidPolicies" />
+
+    <invalid-policy-yaml-banner v-if="hasInvalidPolicyYaml" />
 
     <exceeding-actions-banner v-if="hasExceedingActionLimitPolicies" class="gl-mb-6" />
 

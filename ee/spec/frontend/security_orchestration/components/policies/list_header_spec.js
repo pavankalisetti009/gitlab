@@ -6,6 +6,7 @@ import DeprecatedCustomScanBanner from 'ee/security_orchestration/components/pol
 import ExceedingActionsBanner from 'ee/security_orchestration/components/policies/banners/exceeding_actions_banner.vue';
 import ExceedingScheduledRulesBanner from 'ee/security_orchestration/components/policies/banners/exceeding_scheduled_rules_banner.vue';
 import InvalidPoliciesBanner from 'ee/security_orchestration/components/policies/banners/invalid_policies_banner.vue';
+import InvalidPolicyYamlBanner from 'ee/security_orchestration/components/policies/banners/invalid_policy_yaml_banner.vue';
 import WarnModeBanner from 'ee/security_orchestration/components/policies/banners/warn_mode_banner.vue';
 import ListHeader from 'ee/security_orchestration/components/policies/list_header.vue';
 import ProjectModal from 'ee/security_orchestration/components/policies/project_modal.vue';
@@ -35,6 +36,7 @@ describe('List Header Component', () => {
   const findDeprecatedCustomScanBanner = () => wrapper.findComponent(DeprecatedCustomScanBanner);
   const findExceedingScheduledRulesBanner = () =>
     wrapper.findComponent(ExceedingScheduledRulesBanner);
+  const findInvalidPolicyYamlBanner = () => wrapper.findComponent(InvalidPolicyYamlBanner);
   const findWarnModeBanner = () => wrapper.findComponent(WarnModeBanner);
 
   const linkSecurityPoliciesProject = async () => {
@@ -91,6 +93,7 @@ describe('List Header Component', () => {
       ${'does not'} | ${'alert component'}            | ${findErrorAlert}              | ${false}
       ${'does'}     | ${'header'}                     | ${findHeader}                  | ${true}
       ${'does not'} | ${'invalid policies banner'}    | ${findInvalidPoliciesBanner}   | ${false}
+      ${'does not'} | ${'invalid policy yaml banner'} | ${findInvalidPolicyYamlBanner} | ${false}
       ${'does not'} | ${'csp banner'}                 | ${findCspBanner}               | ${false}
       ${'does not'} | ${'csp badge'}                  | ${findCspBadge}                | ${false}
       ${'does not'} | ${'warn mode banner'}           | ${findWarnModeBanner}          | ${false}
@@ -158,6 +161,53 @@ describe('List Header Component', () => {
     it('displays the invalid policies banner when there are invalid policies', () => {
       createWrapper({ props: { hasInvalidPolicies: true } });
       expect(findInvalidPoliciesBanner().exists()).toBe(true);
+    });
+  });
+
+  describe('invalid policy yaml banner', () => {
+    const policyYamlPath = '/path/to/policy.yml';
+
+    it('does not display the banner when assignedPolicyProject is null', () => {
+      createWrapper({ provide: { assignedPolicyProject: null } });
+      expect(findInvalidPolicyYamlBanner().exists()).toBe(false);
+    });
+
+    it('does not display the banner when policyYamlHasSyntaxErrors is false', () => {
+      createWrapper({
+        provide: {
+          assignedPolicyProject: {
+            id: '1',
+            policyYamlHasSyntaxErrors: false,
+            policyYamlPath,
+          },
+        },
+      });
+      expect(findInvalidPolicyYamlBanner().exists()).toBe(false);
+    });
+
+    it('does not display the banner when policyYamlHasSyntaxErrors is undefined', () => {
+      createWrapper({
+        provide: {
+          assignedPolicyProject: {
+            id: '1',
+            policyYamlPath,
+          },
+        },
+      });
+      expect(findInvalidPolicyYamlBanner().exists()).toBe(false);
+    });
+
+    it('displays the banner when policyYamlHasSyntaxErrors is true', () => {
+      createWrapper({
+        provide: {
+          assignedPolicyProject: {
+            id: '1',
+            policyYamlHasSyntaxErrors: true,
+            policyYamlPath,
+          },
+        },
+      });
+      expect(findInvalidPolicyYamlBanner().exists()).toBe(true);
     });
   });
 

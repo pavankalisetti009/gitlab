@@ -7,6 +7,8 @@ RSpec.describe EE::SecurityOrchestrationHelper, feature_category: :security_poli
   let_it_be_with_refind(:namespace) { create(:group, :public, owners: [create(:user)]) }
   let_it_be(:timezones) { [{ identifier: "Europe/Paris" }] }
 
+  let(:policy_file_path) { '.gitlab/security-policies/policy.yml' }
+
   describe '#can_update_security_orchestration_policy_project?' do
     let(:owner) { project.first_owner }
 
@@ -56,13 +58,38 @@ RSpec.describe EE::SecurityOrchestrationHelper, feature_category: :security_poli
           )
         end
 
-        it 'include information about policy management project' do
-          is_expected.to include(
-            id: policy_management_project.to_global_id.to_s,
-            name: policy_management_project.name,
-            full_path: policy_management_project.full_path,
-            branch: policy_management_project.default_branch_or_main
-          )
+        context 'when policy.yml file is invalid' do
+          before do
+            allow(Security::OrchestrationPolicyConfiguration::POLICY_SCHEMA).to receive(:valid?).and_return(false)
+          end
+
+          it 'include information about policy management project and validity' do
+            is_expected.to include(
+              id: policy_management_project.to_global_id.to_s,
+              name: policy_management_project.name,
+              full_path: policy_management_project.full_path,
+              branch: policy_management_project.default_branch_or_main,
+              policy_yaml_has_syntax_errors: 'true',
+              policy_yaml_path: "/#{policy_management_project.full_path}/-/blob/master/#{policy_file_path}"
+            )
+          end
+        end
+
+        context 'when policy.yml file is valid' do
+          before do
+            allow(Security::OrchestrationPolicyConfiguration::POLICY_SCHEMA).to receive(:valid?).and_return(true)
+          end
+
+          it 'include information about policy management project and validity' do
+            is_expected.to include(
+              id: policy_management_project.to_global_id.to_s,
+              name: policy_management_project.name,
+              full_path: policy_management_project.full_path,
+              branch: policy_management_project.default_branch_or_main,
+              policy_yaml_has_syntax_errors: 'false',
+              policy_yaml_path: "/#{policy_management_project.full_path}/-/blob/master/#{policy_file_path}"
+            )
+          end
         end
       end
 
@@ -92,7 +119,9 @@ RSpec.describe EE::SecurityOrchestrationHelper, feature_category: :security_poli
             id: policy_management_project.to_global_id.to_s,
             name: policy_management_project.name,
             full_path: policy_management_project.full_path,
-            branch: policy_management_project.default_branch_or_main
+            branch: policy_management_project.default_branch_or_main,
+            policy_yaml_has_syntax_errors: 'true',
+            policy_yaml_path: "/#{policy_management_project.full_path}/-/blob/master/#{policy_file_path}"
           })
         end
       end
@@ -236,7 +265,9 @@ RSpec.describe EE::SecurityOrchestrationHelper, feature_category: :security_poli
             id: policy_management_project.to_global_id.to_s,
             name: policy_management_project.name,
             full_path: policy_management_project.full_path,
-            branch: policy_management_project.default_branch_or_main
+            branch: policy_management_project.default_branch_or_main,
+            policy_yaml_has_syntax_errors: 'true',
+            policy_yaml_path: "/#{policy_management_project.full_path}/-/blob/master/#{policy_file_path}"
           }.to_json))
         end
       end
@@ -346,7 +377,9 @@ RSpec.describe EE::SecurityOrchestrationHelper, feature_category: :security_poli
             id: policy_management_project.to_global_id.to_s,
             name: policy_management_project.name,
             full_path: policy_management_project.full_path,
-            branch: policy_management_project.default_branch_or_main
+            branch: policy_management_project.default_branch_or_main,
+            policy_yaml_has_syntax_errors: 'true',
+            policy_yaml_path: "/#{policy_management_project.full_path}/-/blob/master/#{policy_file_path}"
           }.to_json))
         end
       end

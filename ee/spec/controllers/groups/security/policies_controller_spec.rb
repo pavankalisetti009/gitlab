@@ -101,6 +101,7 @@ RSpec.describe Groups::Security::PoliciesController, type: :request, feature_cat
           expect(response).to render_template(:edit)
 
           app = Nokogiri::HTML.parse(response.body).at_css('div#js-group-policy-builder-app')
+          yaml_path = "/#{policy_management_project.full_path}/-/blob/master/.gitlab/security-policies/policy.yml"
 
           expect(app.attributes['data-policy'].value).to eq(policy.to_json)
           expect(app.attributes['data-policy-type'].value).to eq('scan_execution_policy')
@@ -108,7 +109,9 @@ RSpec.describe Groups::Security::PoliciesController, type: :request, feature_cat
             id: policy_management_project.to_gid.to_s,
             name: policy_management_project.name,
             full_path: policy_management_project.full_path,
-            branch: policy_management_project.default_branch_or_main
+            branch: policy_management_project.default_branch_or_main,
+            policy_yaml_has_syntax_errors: 'false',
+            policy_yaml_path: yaml_path
           }.to_json)
           expect(app.attributes['data-disable-scan-policy-update'].value).to eq('false')
           expect(app.attributes['data-policies-path'].value).to eq(
