@@ -27,7 +27,7 @@ $subscriptions-full-width-lg: 541px;
     width: 100%;
     max-width: $subscriptions-full-width-md;
 
-    @media(min-width: map.get($grid-breakpoints, lg)) {
+    @include gl-container-width-up(lg, panel) {
       max-width: $subscriptions-full-width-lg;
     }
   }
@@ -37,7 +37,7 @@ $subscriptions-full-width-lg: 541px;
     flex-grow: 1;
     max-width: $subscriptions-full-width-md;
 
-    @media(min-width: map.get($grid-breakpoints, lg)) {
+    @include gl-container-width-up(lg, panel) {
       justify-content: inherit !important;
       max-width: none;
     }
@@ -49,7 +49,7 @@ $subscriptions-full-width-lg: 541px;
   }
 
   .bar {
-    @media(min-width: map.get($grid-breakpoints, lg)) {
+    @include gl-container-width-up(lg, panel) {
       width: 400px;
     }
 
@@ -81,7 +81,7 @@ $subscriptions-full-width-lg: 541px;
     padding: $gl-padding;
     max-width: $subscriptions-full-width-lg;
 
-    @media(min-width: map.get($grid-breakpoints, lg)) {
+    @include gl-container-width-up(lg, panel) {
       width: $subscriptions-full-width-lg;
     }
 
@@ -114,7 +114,7 @@ $subscriptions-full-width-lg: 541px;
   }
 
   .number {
-    @media(min-width: map.get($grid-breakpoints, lg)) {
+    @include gl-container-width-up(lg, panel) {
       max-width: 202px;
     }
   }
@@ -131,7 +131,7 @@ $subscriptions-full-width-lg: 541px;
       padding: 1px 8px;
       width: 48px;
 
-      @media(min-width: map.get($grid-breakpoints, lg)) {
+      @include gl-container-width-up(lg, panel) {
         width: initial;
       }
     }
@@ -140,7 +140,7 @@ $subscriptions-full-width-lg: 541px;
   #zuora_payment {
     margin-right: -8px;
 
-    @media(min-width: map.get($grid-breakpoints, lg)) {
+    @include gl-container-width-up(lg, panel) {
       margin-right: 0;
     }
 
@@ -156,7 +156,7 @@ $subscriptions-full-width-lg: 541px;
   .order-summary {
     max-width: $subscriptions-full-width-md;
 
-    @media(min-width: map.get($grid-breakpoints, lg)) {
+    @include gl-container-width-up(lg, panel) {
       max-width: none;
     }
   }
