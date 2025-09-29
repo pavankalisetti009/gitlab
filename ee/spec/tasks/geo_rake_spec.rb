@@ -198,6 +198,7 @@ RSpec.describe 'geo rake tasks', :geo, :silence_stdout, feature_category: :geo_r
           expect { run_rake_task('geo:status') }.not_to output(/Health Status Summary/).to_stdout
         end
 
+        # rubocop:disable RSpec/ExpectOutput -- makes this much more efficient
         it 'prints messages for all the checks' do
           checks = [
             /Name: /,
@@ -211,10 +212,19 @@ RSpec.describe 'geo rake tasks', :geo, :silence_stdout, feature_category: :geo_r
             /Last status report was: /
           ] + self_service_framework_checks
 
+          begin
+            original_stdout = $stdout
+            stringio = $stdout = StringIO.new
+            run_rake_task('geo:status')
+          ensure
+            $stdout = original_stdout
+          end
+
           checks.each do |text|
-            expect { run_rake_task('geo:status') }.to output(text).to_stdout
+            expect(stringio.string).to match(text)
           end
         end
+        # rubocop:enable RSpec/ExpectOutput
 
         context 'for database replication lag' do
           let(:health_check) { instance_double(Gitlab::Geo::HealthCheck) }
