@@ -57,59 +57,54 @@ module API
           end
 
           def start_workflow_params(workflow_id)
-            if Feature.enabled?(:duo_workflow_use_composite_identity, current_user)
-              use_service_account = true
-              oauth_token = composite_identity_token
-            else
-              use_service_account = false
-              oauth_token = gitlab_oauth_token
+            token_service = token_generation_service
+
+            oauth_token_result = token_service.generate_oauth_token_with_composite_identity_support
+            if oauth_token_result.error?
+              render_api_error!(oauth_token_result[:message], oauth_token_result[:http_status] || :forbidden)
             end
+
+            workflow_token_result = token_service.generate_workflow_token
+            bad_request!(workflow_token_result[:message]) if workflow_token_result.error?
 
             {
               goal: params[:goal],
               workflow_definition: params[:workflow_definition],
               workflow_id: workflow_id,
-              workflow_oauth_token: oauth_token.plaintext_token,
-              workflow_service_token: duo_workflow_token[:token],
-              use_service_account: use_service_account,
+              workflow_oauth_token: oauth_token_result[:oauth_access_token].plaintext_token,
+              workflow_service_token: workflow_token_result[:token],
+              use_service_account: token_service.use_service_account?,
               source_branch: params[:source_branch],
               additional_context: params[:additional_context],
               workflow_metadata: Gitlab::DuoWorkflow::Client.metadata(current_user).to_json
             }
           end
 
-          def gitlab_oauth_token
-            gitlab_oauth_token_result = ::Ai::DuoWorkflows::CreateOauthAccessTokenService.new(
+          def token_generation_service
+            ::Ai::DuoWorkflows::TokenGenerationService.new(
               current_user: current_user,
               organization: ::Current.organization,
               workflow_definition: params[:workflow_definition]
-            ).execute
-
-            if gitlab_oauth_token_result[:status] == :error
-              render_api_error!(gitlab_oauth_token_result[:message], gitlab_oauth_token_result[:http_status])
-            end
-
-            gitlab_oauth_token_result[:oauth_access_token]
+            )
           end
 
-          def composite_identity_token
-            composite_oauth_token_result = ::Ai::DuoWorkflows::CreateCompositeOauthAccessTokenService.new(
-              current_user: current_user,
-              organization: ::Current.organization
-            ).execute
+          def gitlab_oauth_token
+            token_service = token_generation_service
+            oauth_token_result = token_service.generate_oauth_token
 
-            composite_oauth_token_result[:oauth_access_token]
+            if oauth_token_result.error?
+              render_api_error!(oauth_token_result[:message], oauth_token_result[:http_status] || :forbidden)
+            end
+
+            oauth_token_result[:oauth_access_token]
           end
 
           def duo_workflow_token
-            duo_workflow_token_result = ::Ai::DuoWorkflow::DuoWorkflowService::Client.new(
-              duo_workflow_service_url: Gitlab::DuoWorkflow::Client.url(user: current_user),
-              current_user: current_user,
-              secure: Gitlab::DuoWorkflow::Client.secure?
-            ).generate_token
-            bad_request!(duo_workflow_token_result[:message]) if duo_workflow_token_result[:status] == :error
+            token_service = token_generation_service
+            workflow_token_result = token_service.generate_workflow_token
+            bad_request!(workflow_token_result[:message]) if workflow_token_result.error?
 
-            duo_workflow_token_result
+            workflow_token_result
           end
 
           def duo_workflow_list_tools

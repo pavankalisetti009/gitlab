@@ -24,16 +24,18 @@ RSpec.describe API::Ai::DuoWorkflows::Workflows, :with_current_organization, fea
   before do
     stub_feature_flags(duo_agent_platform_enable_direct_http: false)
     allow(::Gitlab::Llm::StageCheck).to receive(:available?).with(project, :duo_workflow).and_return(true)
-    # rubocop:disable RSpec/AnyInstanceOf -- not the next instance
-    allow_any_instance_of(User).to receive(:allowed_to_use?).and_return(true)
+
+    allow_any_instance_of(User).to receive(:allowed_to_use?).and_return(true) # rubocop:disable RSpec/AnyInstanceOf -- not the next instance
+
     allow_next_instance_of(::Ai::DuoWorkflows::CreateCompositeOauthAccessTokenService) do |service|
-      allow(service).to receive(:execute).and_return({
-        status: :success,
-        oauth_access_token: instance_double('Doorkeeper::AccessToken',
-          plaintext_token: 'oauth_token')
-      })
+      allow(service).to receive(:execute).and_return(
+        ServiceResponse.success(
+          payload: {
+            oauth_access_token: instance_double('Doorkeeper::AccessToken', plaintext_token: 'token-12345')
+          }
+        )
+      )
     end
-    # rubocop:enable RSpec/AnyInstanceOf
 
     ::Ai::Setting.instance.update!(
       duo_workflow_service_account_user_id: service_account.id
@@ -346,11 +348,18 @@ RSpec.describe API::Ai::DuoWorkflows::Workflows, :with_current_organization, fea
 
       before do
         allow_next_instance_of(::Ai::DuoWorkflow::DuoWorkflowService::Client) do |client|
-          allow(client).to receive(:generate_token).and_return({ status: "success", token: "an-encrypted-token" })
+          allow(client).to receive(:generate_token).and_return(
+            ServiceResponse.success(payload: { token: "an-encrypted-token" })
+          )
         end
         allow_next_instance_of(::Ai::DuoWorkflows::CreateOauthAccessTokenService) do |service|
-          allow(service).to receive(:execute).and_return({ status: :success,
-oauth_access_token: instance_double('Doorkeeper::AccessToken', plaintext_token: 'oauth_token') })
+          allow(service).to receive(:execute).and_return(
+            ServiceResponse.success(
+              payload: {
+                oauth_access_token: instance_double('Doorkeeper::AccessToken', plaintext_token: 'oauth_token')
+              }
+            )
+          )
         end
       end
 
@@ -534,6 +543,36 @@ oauth_access_token: instance_double('Doorkeeper::AccessToken', plaintext_token: 
           end
         end
       end
+
+      context 'when OAuth token creation fails' do
+        before do
+          allow_next_instance_of(::Ai::DuoWorkflows::TokenGenerationService) do |service|
+            allow(service).to receive(:generate_oauth_token_with_composite_identity_support)
+              .and_return(ServiceResponse.error(message: 'OAuth token creation failed', http_status: :forbidden)) # rubocop:disable Gitlab/ServiceResponse -- Preserve the actual behavior of the service response.
+          end
+        end
+
+        it 'returns api error' do
+          post api(path, user), params: params
+
+          expect(response).to have_gitlab_http_status(:forbidden)
+        end
+      end
+
+      context 'when workflow token creation fails' do
+        before do
+          allow_next_instance_of(::Ai::DuoWorkflows::TokenGenerationService) do |service|
+            allow(service).to receive(:generate_workflow_token)
+              .and_return(ServiceResponse.error(message: 'workflow token creation failed'))
+          end
+        end
+
+        it 'returns api error' do
+          post api(path, user), params: params
+
+          expect(response).to have_gitlab_http_status(:bad_request)
+        end
+      end
     end
   end
 
@@ -643,8 +682,9 @@ oauth_access_token: instance_double('Doorkeeper::AccessToken', plaintext_token: 
     context 'when CreateOauthAccessTokenService returns error' do
       it 'returns api error' do
         expect_next_instance_of(::Ai::DuoWorkflows::CreateOauthAccessTokenService) do |service|
-          expect(service).to receive(:execute).and_return({ status: :error, http_status: :forbidden,
-message: 'Duo workflow is not enabled for user' })
+          expect(service).to receive(:execute).and_return(
+            ServiceResponse.error(message: 'Duo workflow is not enabled for user', http_status: :forbidden) # rubocop:disable Gitlab/ServiceResponse -- Preserve the actual behavior of the service response.
+          )
         end
 
         post_without_params
@@ -656,8 +696,9 @@ message: 'Duo workflow is not enabled for user' })
     context 'when DuoWorkflowService returns error' do
       it 'returns api error' do
         expect_next_instance_of(::Ai::DuoWorkflow::DuoWorkflowService::Client) do |client|
-          expect(client).to receive(:generate_token).and_return({ status: :error,
-message: "could not generate token" })
+          expect(client).to receive(:generate_token).and_return(
+            ServiceResponse.error(message: "could not generate token")
+          )
         end
 
         post_without_params
@@ -677,13 +718,18 @@ message: "could not generate token" })
           allow(context).to receive(:gitlab_team_member?).with(user.id).and_return(true)
         end
         allow_next_instance_of(::Ai::DuoWorkflows::CreateOauthAccessTokenService) do |service|
-          allow(service).to receive(:execute).and_return({ status: :success,
-oauth_access_token: instance_double('Doorkeeper::AccessToken', plaintext_token: 'oauth_token',
-  expires_at: gitlab_rails_token_expires_at) })
+          allow(service).to receive(:execute).and_return(
+            ServiceResponse.success(payload: {
+              oauth_access_token: instance_double('Doorkeeper::AccessToken', plaintext_token: 'oauth_token',
+                expires_at: gitlab_rails_token_expires_at)
+            })
+          )
         end
         allow_next_instance_of(::Ai::DuoWorkflow::DuoWorkflowService::Client) do |client|
-          allow(client).to receive(:generate_token).and_return({ status: :success, token: 'duo_workflow_token',
-expires_at: duo_workflow_service_token_expires_at })
+          allow(client).to receive(:generate_token).and_return(
+            ServiceResponse.success(payload: { token: 'duo_workflow_token',
+                                               expires_at: duo_workflow_service_token_expires_at })
+          )
         end
       end
 
@@ -739,10 +785,11 @@ expires_at: duo_workflow_service_token_expires_at })
 
     before do
       allow_next_instance_of(::Ai::DuoWorkflows::CreateOauthAccessTokenService) do |service|
-        allow(service).to receive(:execute).and_return({
-          status: :success,
-          oauth_access_token: instance_double('Doorkeeper::AccessToken', plaintext_token: 'oauth_token')
-        })
+        allow(service).to receive(:execute).and_return(
+          ServiceResponse.success(payload: {
+            oauth_access_token: instance_double('Doorkeeper::AccessToken', plaintext_token: 'oauth_token')
+          })
+        )
       end
 
       allow(Gitlab::DuoWorkflow::Client).to receive_messages(
@@ -1232,11 +1279,9 @@ expires_at: duo_workflow_service_token_expires_at })
     context 'when CreateOauthAccessTokenService returns an error' do
       before do
         allow_next_instance_of(::Ai::DuoWorkflows::CreateOauthAccessTokenService) do |service|
-          allow(service).to receive(:execute).and_return({
-            status: :error,
-            http_status: :unauthorized,
-            message: 'Failed to generate OAuth token'
-          })
+          allow(service).to receive(:execute).and_return(
+            ServiceResponse.error(message: 'Failed to generate OAuth token', http_status: :unauthorized) # rubocop:disable Gitlab/ServiceResponse -- Preserve the actual behavior of the service response.
+          )
         end
       end
 
