@@ -7,7 +7,8 @@ RSpec.describe 'SecurityTrainingUpdate', feature_category: :vulnerability_manage
 
   let_it_be(:current_user) { create(:user) }
   let_it_be(:project) { create(:project) }
-  let_it_be(:training, refind: true) { create(:security_training) }
+  let_it_be(:training_provider) { create(:security_training_provider, name: "Kontra") }
+  let_it_be(:training, refind: true) { create(:security_training, provider: training_provider) }
 
   let(:mutation_name) { :security_training_update }
   let(:mutation) do

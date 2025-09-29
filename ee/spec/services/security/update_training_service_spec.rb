@@ -5,7 +5,7 @@ require 'spec_helper'
 RSpec.describe Security::UpdateTrainingService, feature_category: :security_policy_management do
   describe '#execute' do
     let_it_be(:project) { create(:project) }
-    let_it_be(:training_provider) { create(:security_training_provider) }
+    let_it_be(:training_provider) { create(:security_training_provider, name: "Kontra") }
 
     let(:is_primary) { false }
     let(:is_enabled) { false }
