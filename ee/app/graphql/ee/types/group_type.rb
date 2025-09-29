@@ -407,6 +407,13 @@ module EE
             'Returns null if the `maven_virtual_registry` feature flag is disabled.',
           experiment: { milestone: '18.1' }
 
+        field :virtual_registries_setting,
+          Types::VirtualRegistries::SettingType,
+          null: true,
+          description: 'Virtual registries settings for the group. ' \
+            'Returns null if the `maven_virtual_registry` feature flag is disabled.',
+          experiment: { milestone: '18.5' }
+
         field :compliance_framework_coverage_summary,
           ::Types::ComplianceManagement::ComplianceFramework::FrameworkCoverageSummaryType,
           null: true,
@@ -492,9 +499,20 @@ module EE
         end
 
         def maven_virtual_registries
-          ::VirtualRegistries::Packages::Maven::Registry.for_group(object) if ::Feature.enabled?(
-            :maven_virtual_registry, object)
+          ::VirtualRegistries::Packages::Maven::Registry.for_group(object) if maven_virtual_registries_enabled?(object)
         end
+
+        def virtual_registries_setting
+          ::VirtualRegistries::Setting.find_for_group(object) if ::Feature.enabled?(:maven_virtual_registry, object) &&
+            object.licensed_feature_available?(:packages_virtual_registry)
+        end
+      end
+
+      private
+
+      def maven_virtual_registries_enabled?(object)
+        ::Gitlab.config.dependency_proxy.enabled && ::Feature.enabled?(:maven_virtual_registry, object) &&
+          object.licensed_feature_available?(:packages_virtual_registry)
       end
     end
   end

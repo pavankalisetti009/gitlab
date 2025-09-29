@@ -536,5 +536,105 @@ RSpec.describe GitlabSchema.types['Group'], feature_category: :groups_and_projec
         expect(maven_registries).to be_nil
       end
     end
+
+    context 'with dependency proxy config disabled' do
+      before do
+        stub_config(dependency_proxy: { enabled: false })
+      end
+
+      it 'returns null for the maven registries field' do
+        maven_registries = query_result.dig(*%w[data group mavenVirtualRegistries])
+
+        expect(maven_registries).to be_nil
+      end
+    end
+
+    context 'when package license is not available' do
+      before do
+        stub_licensed_features(packages_virtual_registry: false)
+      end
+
+      it 'returns null for the maven registries field' do
+        maven_registries = query_result.dig(*%w[data group mavenVirtualRegistries])
+
+        expect(maven_registries).to be_nil
+      end
+    end
+  end
+
+  describe 'virtual registries setting' do
+    before do
+      stub_licensed_features(packages_virtual_registry: true)
+    end
+
+    let_it_be(:current_user) { create(:user) }
+    let_it_be(:group) { create(:group) }
+    let(:query) do
+      %(
+        query {
+          group(fullPath: "#{group.full_path}") {
+            virtualRegistriesSetting {
+              enabled
+            }
+          }
+        }
+      )
+    end
+
+    let(:query_result) { GitlabSchema.execute(query, context: { current_user: current_user }).as_json }
+
+    subject(:virtual_registries_setting) { query_result.dig(*%w[data group virtualRegistriesSetting]) }
+
+    context 'with authorization' do
+      context 'when user is a maintainer' do
+        before do
+          group.add_maintainer(current_user)
+        end
+
+        it 'returns null' do
+          expect(virtual_registries_setting).to be_nil
+        end
+      end
+
+      context 'when user is an owner' do
+        before do
+          group.add_owner(current_user)
+        end
+
+        it 'returns the virtual registry setting' do
+          expect(virtual_registries_setting['enabled']).to be(true)
+        end
+      end
+    end
+
+    context 'with the maven virtual registry feature flag turned off' do
+      before do
+        stub_feature_flags(maven_virtual_registry: false)
+      end
+
+      it 'returns null for the virtual registries setting' do
+        expect(virtual_registries_setting).to be_nil
+      end
+    end
+
+    context 'when package license is not available' do
+      before do
+        stub_licensed_features(packages_virtual_registry: false)
+      end
+
+      it 'returns null for the virtual registries setting' do
+        expect(virtual_registries_setting).to be_nil
+      end
+    end
+
+    context 'with a subgroup' do
+      let_it_be(:parent_group) { group }
+      let_it_be(:group) { create(:group, parent: parent_group) }
+      let_it_be(:current_user) { create(:user, owner_of: [group, parent_group]) }
+
+      it 'returns null for the virtual registries setting' do
+        expect(virtual_registries_setting).to be_nil
+      end
+    end
   end
 end
