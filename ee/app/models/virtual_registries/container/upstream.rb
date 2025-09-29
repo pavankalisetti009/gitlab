@@ -3,6 +3,8 @@
 module VirtualRegistries
   module Container
     class Upstream < ::VirtualRegistries::Upstream
+      include Gitlab::SQL::Pattern
+
       TOKEN_REQUEST_TIMEOUT = 10.seconds
       BEARER_TOKEN_CACHE_DURATION = 3.minutes
       AUTH_CHALLENGE_REGEX = /(\w+)="([^"]+)"/
@@ -30,8 +32,11 @@ module VirtualRegistries
       validates :username, presence: true, if: :password?
       validates :password, presence: true, if: :username?
       validates :username, :password, length: { maximum: 510 }
+      validate :credentials_uniqueness_for_group, if: -> { %i[url username password].any? { |f| changes.key?(f) } }
 
       prevent_from_serialization(:password)
+
+      scope :search_by_name, ->(query) { fuzzy_search(query, [:name], use_minimum_char_limit: false) }
 
       def url_for(path)
         base_url = url.chomp('/').delete_suffix('/v2')
@@ -142,6 +147,18 @@ module VirtualRegistries
         cache_key_data = [id, username, path, Digest::SHA256.hexdigest(password.to_s)].join(':')
 
         "container:virtual_registry:bearer_token:#{cache_key_data}"
+      end
+
+      def credentials_uniqueness_for_group
+        return unless group
+
+        return if self.class.for_group(group)
+          .select(:username, :password)
+          .then { |q| new_record? ? q : q.where.not(id:) }
+          .where(url:)
+          .none? { |u| u.username == username && Rack::Utils.secure_compare(u.password.to_s, password.to_s) }
+
+        errors.add(:group, 'already has an upstream with the same credentials')
       end
     end
   end

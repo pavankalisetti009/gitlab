@@ -94,6 +94,91 @@ RSpec.describe VirtualRegistries::Container::Upstream, feature_category: :virtua
         end
       end
     end
+
+    describe '#credentials_uniqueness_for_group' do
+      let_it_be(:group) { create(:group) }
+      let_it_be(:group2) { create(:group) }
+      let_it_be(:existing_upstream) do
+        create(
+          :virtual_registries_container_upstream,
+          group: group,
+          url: 'https://example.com',
+          username: 'user',
+          password: 'pass'
+        )
+      end
+
+      where(:test_group, :url, :username, :password, :valid, :description) do
+        ref(:group)  | 'https://example.com'   | 'user'      | 'pass'      | false | 'same group, same credentials'
+        ref(:group)  | 'https://example.com'   | 'user'      | 'different' | true  | 'same group, different password'
+        ref(:group)  | 'https://example.com'   | 'different' | 'pass'      | true  | 'same group, different username'
+        ref(:group)  | 'https://different.com' | 'user'      | 'pass'      | true  | 'same group, different URL'
+        ref(:group2) | 'https://example.com'   | 'user'      | 'pass'      | true  | 'different group, same credentials'
+      end
+
+      with_them do
+        context 'when creating new upstream' do
+          subject do
+            build(
+              :virtual_registries_container_upstream,
+              group: test_group,
+              url: url,
+              username: username,
+              password: password
+            )
+          end
+
+          it "is #{params[:valid] ? 'valid' : 'invalid'} when #{params[:description]}" do
+            if valid
+              is_expected.to be_valid
+            else
+              is_expected.to be_invalid
+                .and have_attributes(errors: match_array(['Group already has an upstream with the same credentials']))
+            end
+          end
+        end
+
+        context 'when updating existing upstream' do
+          let_it_be(:updated_upstream) do
+            create(
+              :virtual_registries_container_upstream,
+              group: group,
+              url: 'https://example2.com',
+              username: 'user',
+              password: 'pass'
+            )
+          end
+
+          subject { updated_upstream }
+
+          before do
+            updated_upstream.assign_attributes(group: test_group, url: url, username: username, password: password)
+          end
+
+          it "is #{params[:valid] ? 'valid' : 'invalid'} when updating to #{params[:description]}" do
+            if valid
+              is_expected.to be_valid
+            else
+              is_expected.to be_invalid
+                .and have_attributes(errors: match_array(['Group already has an upstream with the same credentials']))
+            end
+          end
+        end
+      end
+    end
+  end
+
+  describe 'scopes' do
+    describe '.search_by_name' do
+      let(:query) { 'abc' }
+      let_it_be(:name) { 'name-abc' }
+      let_it_be(:upstream) { create(:virtual_registries_container_upstream, name: name) }
+      let_it_be(:other_upstream) { create(:virtual_registries_container_upstream) }
+
+      subject { described_class.search_by_name(query) }
+
+      it { is_expected.to eq([upstream]) }
+    end
   end
 
   it_behaves_like 'virtual registry upstream scopes',
