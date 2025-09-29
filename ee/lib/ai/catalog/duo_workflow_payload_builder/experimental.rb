@@ -12,7 +12,7 @@ module Ai
           { 'from' => 'context:project_id', 'as' => 'project_id' }
         ].freeze
         LLM_MODEL_CLASS_PROVIDER = 'anthropic'
-        LLM_MODEL_CLASS_NAME = 'claude-opus-4-20250514'
+        LLM_MODEL_CLASS_NAME = 'claude-sonnet-4-5-20250929'
         MAX_TOKEN_SIZE = 8_192
         DUO_FLOW_TIMEOUT = 30
         PLACEHOLDER_VALUE = 'history'
