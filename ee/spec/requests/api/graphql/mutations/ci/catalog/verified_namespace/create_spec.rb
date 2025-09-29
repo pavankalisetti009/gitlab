@@ -39,20 +39,20 @@ RSpec.describe 'VerifiedNamespaceCreate', feature_category: :pipeline_compositio
           post_graphql_mutation(mutation, current_user: current_user)
 
           expect(group_project_resource.reload.verification_level).to eq('gitlab_maintained')
-          expect(Ci::Catalog::VerifiedNamespace.all.count).to eq(1)
+          expect(Namespaces::VerifiedNamespace.all.count).to eq(1)
         end
       end
 
       context 'when the verified namespace exists' do
         it 'updates the verified namespace with the new verification level' do
-          ::Ci::Catalog::VerifyNamespaceService.new(root_namespace, 'verified_creator_maintained').execute
-          expect(Ci::Catalog::VerifiedNamespace.all.count).to eq(1)
+          ::Namespaces::VerifyNamespaceService.new(root_namespace, 'verified_creator_maintained').execute
+          expect(Namespaces::VerifiedNamespace.all.count).to eq(1)
           expect(group_project_resource.reload.verification_level).to eq('verified_creator_maintained')
 
           post_graphql_mutation(mutation, current_user: current_user)
 
-          expect(Ci::Catalog::VerifiedNamespace.all.count).to eq(1)
-          expect(Ci::Catalog::VerifiedNamespace.first.verification_level).to eq('gitlab_maintained')
+          expect(Namespaces::VerifiedNamespace.all.count).to eq(1)
+          expect(Namespaces::VerifiedNamespace.first.verification_level).to eq('gitlab_maintained')
           expect(group_project_resource.reload.verification_level).to eq('gitlab_maintained')
         end
       end
@@ -63,7 +63,7 @@ RSpec.describe 'VerifiedNamespaceCreate', feature_category: :pipeline_compositio
         it 'returns an error' do
           expect do
             post_graphql_mutation(mutation, current_user: current_user)
-          end.not_to change { Ci::Catalog::VerifiedNamespace.all.count }
+          end.not_to change { Namespaces::VerifiedNamespace.all.count }
 
           expect { mutation_response }.to raise_error(GraphqlHelpers::NoData)
           expect(group_project_resource.reload.verification_level).to eq('unverified')
@@ -77,7 +77,7 @@ RSpec.describe 'VerifiedNamespaceCreate', feature_category: :pipeline_compositio
         it 'returns an error' do
           expect do
             post_graphql_mutation(mutation, current_user: current_user)
-          end.not_to change { Ci::Catalog::VerifiedNamespace.all.count }
+          end.not_to change { Namespaces::VerifiedNamespace.all.count }
 
           expect(mutation_response['errors']).to eq(['Input the root namespace.'])
           expect(group_project_resource.reload.verification_level).to eq('unverified')
@@ -95,7 +95,7 @@ RSpec.describe 'VerifiedNamespaceCreate', feature_category: :pipeline_compositio
 
           expect do
             post_graphql_mutation(mutation, current_user: current_user)
-          end.not_to change { Ci::Catalog::VerifiedNamespace.all.count }
+          end.not_to change { Namespaces::VerifiedNamespace.all.count }
 
           expect do
             mutation_response
@@ -138,20 +138,20 @@ RSpec.describe 'VerifiedNamespaceCreate', feature_category: :pipeline_compositio
             post_graphql_mutation(mutation, current_user: current_user)
 
             expect(group_project_resource.reload.verification_level).to eq('verified_creator_self_managed')
-            expect(Ci::Catalog::VerifiedNamespace.all.count).to eq(1)
+            expect(Namespaces::VerifiedNamespace.all.count).to eq(1)
           end
         end
 
         context 'when the verified namespace given exists' do
           it 'updates the verified namespace' do
-            ::Ci::Catalog::VerifyNamespaceService.new(root_namespace, 'verified_creator_self_managed').execute
-            expect(Ci::Catalog::VerifiedNamespace.all.count).to eq(1)
+            ::Namespaces::VerifyNamespaceService.new(root_namespace, 'verified_creator_self_managed').execute
+            expect(Namespaces::VerifiedNamespace.all.count).to eq(1)
             expect(group_project_resource.reload.verification_level).to eq('verified_creator_self_managed')
 
             post_graphql_mutation(mutation, current_user: current_user)
 
-            expect(Ci::Catalog::VerifiedNamespace.all.count).to eq(1)
-            expect(Ci::Catalog::VerifiedNamespace.first.verification_level).to eq('verified_creator_self_managed')
+            expect(Namespaces::VerifiedNamespace.all.count).to eq(1)
+            expect(Namespaces::VerifiedNamespace.first.verification_level).to eq('verified_creator_self_managed')
             expect(group_project_resource.reload.verification_level).to eq('verified_creator_self_managed')
           end
         end

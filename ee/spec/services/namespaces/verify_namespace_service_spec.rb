@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe Ci::Catalog::VerifyNamespaceService, feature_category: :pipeline_composition do
+RSpec.describe Namespaces::VerifyNamespaceService, feature_category: :pipeline_composition do
   let_it_be(:user) { create(:user) }
 
   let_it_be(:group) { create(:group) }
@@ -103,14 +103,14 @@ RSpec.describe Ci::Catalog::VerifyNamespaceService, feature_category: :pipeline_
         end
       end
 
-      ::Ci::Catalog::VerifiedNamespace::VERIFICATION_LEVELS.each_key do |level|
+      ::Namespaces::VerifiedNamespace::VERIFICATION_LEVELS.each_key do |level|
         context "when #{level} verification level is being set" do
           let(:verification_level) { level.to_s }
 
-          it 'creates an instance of ::Ci::Catalog::VerifiedNamespace' do
+          it 'creates an instance of ::Namespaces::VerifiedNamespace' do
             expect do
               described_class.new(group, verification_level).execute
-            end.to change { ::Ci::Catalog::VerifiedNamespace.count }.by(1)
+            end.to change { ::Namespaces::VerifiedNamespace.count }.by(1)
           end
 
           it 'updates the verification level for all catalog resources under the given namespace' do
@@ -137,16 +137,16 @@ RSpec.describe Ci::Catalog::VerifyNamespaceService, feature_category: :pipeline_
         let(:verification_level) { 'verified_creator_self_managed' }
 
         it 'does not change the verified namespace' do
-          ::Ci::Catalog::VerifiedNamespace.find_or_create_by!(namespace: group,
+          ::Namespaces::VerifiedNamespace.find_or_create_by!(namespace: group,
             verification_level: 'verified_creator_self_managed')
 
           expect do
             described_class.new(group, verification_level).execute
-          end.not_to change { ::Ci::Catalog::VerifiedNamespace.count }
+          end.not_to change { ::Namespaces::VerifiedNamespace.count }
         end
 
         it 'cascades the verification level to the catalog resources' do
-          ::Ci::Catalog::VerifiedNamespace.find_or_create_by!(namespace: group,
+          ::Namespaces::VerifiedNamespace.find_or_create_by!(namespace: group,
             verification_level: 'verified_creator_self_managed')
 
           response = described_class.new(group, verification_level).execute
@@ -169,17 +169,17 @@ RSpec.describe Ci::Catalog::VerifyNamespaceService, feature_category: :pipeline_
         let(:new_verification_level) { 'gitlab_partner_maintained' }
 
         it 'does not change the verified namespace' do
-          ::Ci::Catalog::VerifiedNamespace.find_or_create_by!(namespace: group,
+          ::Namespaces::VerifiedNamespace.find_or_create_by!(namespace: group,
             verification_level: 'gitlab_maintained')
 
           expect do
             described_class.new(group, new_verification_level).execute
-          end.not_to change { ::Ci::Catalog::VerifiedNamespace.count }
+          end.not_to change { ::Namespaces::VerifiedNamespace.count }
         end
 
         it 'updates verification level on the existing verified namespace' do
           verified_namespace =
-            ::Ci::Catalog::VerifiedNamespace.find_or_create_by!(namespace: group,
+            ::Namespaces::VerifiedNamespace.find_or_create_by!(namespace: group,
               verification_level: 'gitlab_maintained')
 
           described_class.new(group, new_verification_level).execute
@@ -188,7 +188,7 @@ RSpec.describe Ci::Catalog::VerifyNamespaceService, feature_category: :pipeline_
         end
 
         it 'cascades the verification level to the catalog resources' do
-          ::Ci::Catalog::VerifiedNamespace.find_or_create_by!(namespace: group,
+          ::Namespaces::VerifiedNamespace.find_or_create_by!(namespace: group,
             verification_level: 'gitlab_maintained')
 
           response = described_class.new(group, new_verification_level).execute
