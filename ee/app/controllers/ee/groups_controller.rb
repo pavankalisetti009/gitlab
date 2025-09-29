@@ -9,6 +9,7 @@ module EE
     prepended do
       include GeoInstrumentation
       include GitlabSubscriptions::SeatCountAlert
+      include EpicParamActions
 
       before_action :check_subscription!, only: [:destroy]
 
@@ -87,6 +88,16 @@ module EE
       update_user_setup_for_company
 
       invite_members(group, invite_source: 'group-creation-page')
+    end
+
+    override :redirect_if_epic_params
+    def redirect_if_epic_params
+      # To handle legacy urls with epic filters, translate these to the parent filter equivalents and redirect
+      return unless group&.work_items_group_issues_list_feature_flag_enabled? && has_epic_filter?
+
+      redirect_to issues_group_path(group, params: convert_epic_params)
+
+      true
     end
   end
 end
