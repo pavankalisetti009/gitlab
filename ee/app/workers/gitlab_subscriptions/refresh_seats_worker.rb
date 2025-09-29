@@ -15,7 +15,7 @@ module GitlabSubscriptions
 
     def perform_work
       return if ::Gitlab::Database.read_only?
-      return unless ::Gitlab::CurrentSettings.should_check_namespace_plan?
+      return unless ::Gitlab::Saas.feature_available?(:gitlab_com_subscriptions)
 
       subscription = find_next_subscription
       return unless subscription

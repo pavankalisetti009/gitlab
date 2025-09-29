@@ -14,14 +14,14 @@ module GitlabSubscriptions
     # Validate presence of namespace_id if this is running on a GitLab instance
     # that has paid namespaces.
     validates :namespace,
-      uniqueness: { unless: proc { ::Gitlab::CurrentSettings.should_check_namespace_plan? } },
-      presence: { if: proc { ::Gitlab::CurrentSettings.should_check_namespace_plan? } }
+      uniqueness: { unless: proc { ::Gitlab::Saas.feature_available?(:gitlab_com_subscriptions) } },
+      presence: { if: proc { ::Gitlab::Saas.feature_available?(:gitlab_com_subscriptions) } }
     validates :next_reconciliation_date, :display_alert_from, presence: true
 
     scope :by_namespace_ids, ->(namespace_ids) { where(namespace_id: namespace_ids) }
 
     def self.next(namespace_id = nil)
-      if ::Gitlab::CurrentSettings.should_check_namespace_plan?
+      if ::Gitlab::Saas.feature_available?(:gitlab_com_subscriptions)
         return unless namespace_id
 
         self.find_by(namespace_id: namespace_id)

@@ -55,7 +55,7 @@ RSpec.describe GitlabSubscriptions::UpcomingReconciliationEntity do
       let(:namespace) { build(:namespace, owner: user) }
 
       before do
-        stub_ee_application_setting(should_check_namespace_plan: true)
+        stub_saas_features(gitlab_com_subscriptions: true)
 
         allow(namespace).to receive(:id).and_return(2)
         allow(GitlabSubscriptions::UpcomingReconciliation).to receive(:next).with(namespace.id).and_return(upcoming_reconciliation)

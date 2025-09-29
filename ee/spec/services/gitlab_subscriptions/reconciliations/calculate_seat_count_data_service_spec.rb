@@ -9,14 +9,14 @@ RSpec.describe GitlabSubscriptions::Reconciliations::CalculateSeatCountDataServi
   describe '#execute' do
     let_it_be(:user) { create(:user) }
 
-    let(:should_check_namespace_plan) { true }
+    let(:gitlab_com_subscriptions) { true }
 
     before do
       allow_next_instance_of(GitlabSubscriptions::Reconciliations::CheckSeatUsageAlertsEligibilityService) do |service|
         expect(service).to receive(:execute).and_return(alert_user_overage)
       end
 
-      allow(::Gitlab::CurrentSettings).to receive(:should_check_namespace_plan?).and_return(should_check_namespace_plan)
+      stub_saas_features(gitlab_com_subscriptions: gitlab_com_subscriptions)
     end
 
     subject(:execute_service) { described_class.new(namespace: root_ancestor, user: user).execute }
@@ -99,7 +99,7 @@ RSpec.describe GitlabSubscriptions::Reconciliations::CalculateSeatCountDataServi
       context 'when it is not SaaS' do
         let(:alert_user_overage) { true }
         let(:root_ancestor) { create(:group) }
-        let(:should_check_namespace_plan) { false }
+        let(:gitlab_com_subscriptions) { false }
 
         before do
           root_ancestor.add_owner(user)

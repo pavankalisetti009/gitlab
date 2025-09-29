@@ -650,9 +650,9 @@ RSpec.describe API::Namespaces, :aggregate_failures, feature_category: :groups_a
       }
     end
 
-    context 'when on GitLab.com', :saas do
+    context 'when namespaces_storage_limit saas feature is available' do
       before do
-        stub_ee_application_setting(should_check_namespace_plan: true)
+        stub_saas_features(namespaces_storage_limit: true)
       end
 
       context 'when authenticated as an admin' do
@@ -724,9 +724,9 @@ RSpec.describe API::Namespaces, :aggregate_failures, feature_category: :groups_a
       end
     end
 
-    context 'when not on GitLab.com' do
+    context 'when namespaces_storage_limit saas feature is not available' do
       before do
-        stub_ee_application_setting(should_check_namespace_plan: false)
+        stub_saas_features(namespaces_storage_limit: false)
       end
 
       it 'returns 403 error' do
@@ -745,9 +745,9 @@ RSpec.describe API::Namespaces, :aggregate_failures, feature_category: :groups_a
 
     let_it_be(:namespace) { create(:group) }
 
-    context 'when on GitLab.com', :saas do
+    context 'when namespaces_storage_limit saas feature is available' do
       before do
-        stub_ee_application_setting(should_check_namespace_plan: true)
+        stub_saas_features(namespaces_storage_limit: true)
       end
 
       context 'when authenticated as an admin' do
@@ -823,9 +823,9 @@ RSpec.describe API::Namespaces, :aggregate_failures, feature_category: :groups_a
       end
     end
 
-    context 'when not on GitLab.com' do
+    context 'when namespaces_storage_limit saas feature is not available' do
       before do
-        stub_ee_application_setting(should_check_namespace_plan: false)
+        stub_saas_features(namespaces_storage_limit: false)
       end
 
       it 'returns 403 error' do
@@ -842,9 +842,9 @@ RSpec.describe API::Namespaces, :aggregate_failures, feature_category: :groups_a
       get api("/namespaces/storage/limit_exclusions", current_user, admin_mode: admin_mode)
     end
 
-    context 'when on GitLab.com', :saas do
+    context 'when namespaces_storage_limit saas feature is available' do
       before do
-        stub_ee_application_setting(should_check_namespace_plan: true)
+        stub_saas_features(namespaces_storage_limit: true)
       end
 
       context 'when authenticated as an admin' do
@@ -879,9 +879,9 @@ RSpec.describe API::Namespaces, :aggregate_failures, feature_category: :groups_a
       end
     end
 
-    context 'when not on GitLab.com' do
+    context 'when namespaces_storage_limit saas feature is not available' do
       before do
-        stub_ee_application_setting(should_check_namespace_plan: false)
+        stub_saas_features(namespaces_storage_limit: false)
       end
 
       it 'returns 403 error' do
