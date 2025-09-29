@@ -1,0 +1,39 @@
+# frozen_string_literal: true
+
+module Mutations
+  module Security
+    module Attributes
+      class Destroy < BaseMutation
+        graphql_name 'SecurityAttributeDestroy'
+
+        authorize :admin_security_attributes
+
+        argument :id, ::Types::GlobalIDType[::Security::Attribute],
+          required: true,
+          description: 'Global ID of the security attribute to destroy.'
+
+        field :deleted_attribute_gid, ::Types::GlobalIDType[::Security::Attribute],
+          null: true,
+          description: 'Global ID of the destroyed security attribute.'
+
+        def resolve(id:)
+          attribute = authorized_find!(id: id)
+          namespace = attribute&.namespace
+          unless Feature.enabled?(:security_categories_and_attributes, namespace&.root_ancestor)
+            raise_resource_not_available_error!
+          end
+
+          result = ::Security::Attributes::DestroyService.new(
+            attribute: attribute,
+            current_user: current_user
+          ).execute
+
+          {
+            deleted_attribute_gid: result.success? ? result.payload[:deleted_attribute_gid] : nil,
+            errors: result.errors
+          }
+        end
+      end
+    end
+  end
+end
