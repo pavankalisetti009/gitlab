@@ -28,6 +28,16 @@ module WorkItems
           (valid_from.nil? || valid_from <= date) && (valid_until.nil? || valid_until > date)
         end
 
+        def time_range
+          return unless time_constrained?
+
+          Range.new(valid_from, valid_until)
+        end
+
+        def time_constrained?
+          valid_from.present? || valid_until.present?
+        end
+
         private
 
         def statuses_in_same_namespace

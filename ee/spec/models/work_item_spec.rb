@@ -606,7 +606,8 @@ RSpec.describe WorkItem, :elastic_helpers, feature_category: :team_planning do
       # when the namespace still used the system defined lifecycle
       build(:work_item_current_status,
         work_item: wi_converted_in_progress,
-        system_defined_status_id: system_defined_in_progress_status.id
+        system_defined_status_id: system_defined_in_progress_status.id,
+        updated_at: 2.days.ago
       ).save!(validate: false)
     end
 
@@ -627,7 +628,9 @@ RSpec.describe WorkItem, :elastic_helpers, feature_category: :team_planning do
     end
 
     describe '.with_status' do
-      subject { described_class.with_status(status) }
+      let(:mapping) { nil }
+
+      subject { described_class.with_status(status, mapping) }
 
       context 'with a system defined status' do
         let(:status) { system_defined_todo_status }
@@ -668,10 +671,129 @@ RSpec.describe WorkItem, :elastic_helpers, feature_category: :team_planning do
           is_expected.to contain_exactly(wi_custom)
         end
       end
+
+      context 'with mapping' do
+        let_it_be(:wi_other_custom) { create(:work_item, project: project) }
+
+        let(:status) { custom_status }
+        let(:valid_from) { nil }
+        let(:valid_until) { nil }
+        let(:mapping) { custom_mapping }
+        let(:custom_mapping) do
+          create(:work_item_custom_status_mapping,
+            namespace: reusable_group, work_item_type: issue_work_item_type,
+            old_status: custom_status, new_status: lifecycle.default_open_status,
+            valid_from: valid_from, valid_until: valid_until)
+        end
+
+        let(:converted_mapping) do
+          create(:work_item_custom_status_mapping,
+            namespace: reusable_group, work_item_type: issue_work_item_type,
+            old_status: converted_in_progress_status, new_status: custom_status,
+            valid_from: valid_from, valid_until: valid_until)
+        end
+
+        before_all do
+          create(:work_item_current_status,
+            work_item: wi_other_custom, custom_status: custom_status, updated_at: 2.days.ago)
+        end
+
+        it 'returns items with matching current_status' do
+          is_expected.to contain_exactly(wi_custom, wi_other_custom)
+        end
+
+        context 'when mapping for converted status is provided' do
+          let(:mapping) { converted_mapping }
+          let(:status) { converted_in_progress_status }
+
+          it 'returns items with matching current_status' do
+            is_expected.to contain_exactly(wi_system_defined_in_progress, wi_converted_in_progress)
+          end
+        end
+
+        context 'with valid_from' do
+          let(:valid_from) { 1.day.ago }
+
+          it 'returns items with matching current_status' do
+            is_expected.to contain_exactly(wi_custom)
+          end
+
+          context 'and it covers both items' do
+            let(:valid_from) { 3.days.ago }
+
+            it 'returns items with matching current_status' do
+              is_expected.to contain_exactly(wi_custom, wi_other_custom)
+            end
+          end
+
+          context 'when mapping for converted status is provided' do
+            let(:mapping) { converted_mapping }
+            let(:status) { converted_in_progress_status }
+
+            it 'returns items with matching current_status' do
+              is_expected.to contain_exactly(wi_system_defined_in_progress)
+            end
+          end
+        end
+
+        context 'with valid_until' do
+          let(:valid_until) { 1.day.ago }
+
+          it 'returns items with matching current_status' do
+            is_expected.to contain_exactly(wi_other_custom)
+          end
+
+          context 'and it covers no item' do
+            let(:valid_until) { 3.days.ago }
+
+            it 'returns no items' do
+              is_expected.to be_empty
+            end
+          end
+
+          context 'when mapping for converted status is provided' do
+            let(:mapping) { converted_mapping }
+            let(:status) { converted_in_progress_status }
+
+            it 'returns items with matching current_status' do
+              is_expected.to contain_exactly(wi_converted_in_progress)
+            end
+          end
+        end
+
+        context 'with both valid_from and valid_until' do
+          let(:valid_from) { 1.day.ago }
+          let(:valid_until) { 1.day.from_now }
+
+          it 'returns items with matching current_status' do
+            is_expected.to contain_exactly(wi_custom)
+          end
+
+          context 'and it covers only the item with older status update' do
+            let(:valid_from) { 3.days.ago }
+            let(:valid_until) { 1.day.ago }
+
+            it 'returns items with matching current_status' do
+              is_expected.to contain_exactly(wi_other_custom)
+            end
+
+            context 'when mapping for converted status is provided' do
+              let(:mapping) { converted_mapping }
+              let(:status) { converted_in_progress_status }
+
+              it 'returns items with matching current_status' do
+                is_expected.to contain_exactly(wi_converted_in_progress)
+              end
+            end
+          end
+        end
+      end
     end
 
     describe '.with_system_defined_status' do
-      subject { described_class.with_system_defined_status(status) }
+      let(:mapping) { nil }
+
+      subject { described_class.with_system_defined_status(status, mapping) }
 
       context 'with todo status' do
         let(:status) { system_defined_todo_status }
@@ -710,6 +832,46 @@ RSpec.describe WorkItem, :elastic_helpers, feature_category: :team_planning do
 
         it 'returns no items' do
           is_expected.to be_empty
+        end
+      end
+
+      context 'when mapping for converted status is provided' do
+        let(:valid_from) { nil }
+        let(:valid_until) { nil }
+        let(:status) { system_defined_in_progress_status }
+        let(:mapping) do
+          create(:work_item_custom_status_mapping,
+            namespace: reusable_group, work_item_type: issue_work_item_type,
+            old_status: converted_in_progress_status, new_status: custom_status,
+            valid_from: valid_from, valid_until: valid_until)
+        end
+
+        it 'returns items with matching current_status' do
+          is_expected.to contain_exactly(wi_system_defined_in_progress, wi_converted_in_progress)
+        end
+
+        context 'when valid_until excludes item' do
+          let(:valid_until) { 1.day.ago }
+
+          it 'returns items with matching current_status' do
+            is_expected.to contain_exactly(wi_converted_in_progress)
+          end
+
+          context 'and valid_from is provided' do
+            let(:valid_from) { 3.days.ago }
+
+            it 'returns items with matching current_status' do
+              is_expected.to contain_exactly(wi_converted_in_progress)
+            end
+          end
+        end
+
+        context 'when valid_from excludes item' do
+          let(:valid_from) { 1.day.ago }
+
+          it 'returns items with matching current_status' do
+            is_expected.to contain_exactly(wi_system_defined_in_progress)
+          end
         end
       end
     end

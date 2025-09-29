@@ -8,34 +8,56 @@ module WorkItems
       has_one :current_status, class_name: 'WorkItems::Statuses::CurrentStatus',
         foreign_key: 'work_item_id', inverse_of: :work_item
 
-      scope :with_status, ->(status) {
+      scope :with_status, ->(status, mapping = nil) {
         relation = left_joins(:current_status)
 
         if status.is_a?(::WorkItems::Statuses::SystemDefined::Status)
           relation = with_system_defined_status(status)
         else
+          matching_condition = { work_item_current_statuses: { custom_status_id: status.id } }
+
+          if mapping.present?
+            matching_condition[:work_item_type_id] = mapping.work_item_type_id
+
+            if mapping.time_constrained?
+              matching_condition[:work_item_current_statuses][:updated_at] = mapping.time_range
+            end
+          end
+
           relation = relation
             .where.not(work_item_current_statuses: { custom_status_id: nil })
-            .where(work_item_current_statuses: { custom_status_id: status.id })
+            .where(matching_condition)
 
           if status.converted_from_system_defined_status_identifier.present?
             system_defined_status = WorkItems::Statuses::SystemDefined::Status.find(
               status.converted_from_system_defined_status_identifier
             )
 
-            relation = relation.or(with_system_defined_status(system_defined_status))
+            relation = relation.or(with_system_defined_status(system_defined_status, mapping))
           end
         end
 
         relation
       }
 
-      scope :with_system_defined_status, ->(status) {
+      scope :with_system_defined_status, ->(status, mapping = nil) {
         next none unless status.is_a?(::WorkItems::Statuses::SystemDefined::Status)
+
+        matching_condition = { work_item_current_statuses: { system_defined_status_id: status.id } }
+
+        if mapping.present?
+          matching_condition[:work_item_type_id] = mapping.work_item_type_id
+          matching_condition[:work_item_current_statuses][:updated_at] = mapping.time_range if mapping.time_constrained?
+        end
 
         relation = left_joins(:current_status)
                     .where.not(work_item_current_statuses: { system_defined_status_id: nil })
-                    .where(work_item_current_statuses: { system_defined_status_id: status.id })
+                    .where(matching_condition)
+
+        # Right now the mapping doesn't know whether the old_status was a default
+        # status, so we skip the default matching logic.
+        # See https://gitlab.com/gitlab-org/gitlab/-/issues/572551
+        return relation if mapping.present?
 
         lifecycle = WorkItems::Statuses::SystemDefined::Lifecycle.all.first
 
