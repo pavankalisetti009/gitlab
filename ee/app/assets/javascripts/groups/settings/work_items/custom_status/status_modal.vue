@@ -22,6 +22,7 @@ import {
   STATUS_CATEGORIES_MAP,
   NAME_TO_TEXT_MAP,
 } from 'ee/work_items/constants';
+import { getDefaultStateType } from 'ee/work_items/utils';
 import { STATE_CLOSED } from '~/work_items/constants';
 import WorkItemStateBadge from '~/work_items/components/work_item_state_badge.vue';
 import glFeatureFlagMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
@@ -136,11 +137,6 @@ export default {
       });
 
       return grouped;
-    },
-    statusesOrderedByCategory() {
-      return Object.values(this.statusesByCategory).reduce((acc, cur) => {
-        return acc.concat(cur);
-      }, []);
     },
     isEditing() {
       return Boolean(this.editingStatusId);
@@ -520,11 +516,7 @@ export default {
       return STATUS_CATEGORIES.TO_DO;
     },
     isDefaultStatus(status) {
-      return (
-        status.id === this.lifecycle.defaultOpenStatus?.id ||
-        status.id === this.lifecycle.defaultClosedStatus?.id ||
-        status.id === this.lifecycle.defaultDuplicateStatus?.id
-      );
+      return Boolean(getDefaultStateType(this.lifecycle, status));
     },
     getDefaultStatusType(status) {
       if (status.id === this.lifecycle.defaultOpenStatus?.id) {
@@ -867,9 +859,9 @@ export default {
     </gl-modal>
     <remove-status-modal
       v-if="Boolean(statusToRemove)"
-      :status-counts="lifecycle.statusCounts"
+      :full-path="fullPath"
+      :lifecycle="lifecycle"
       :status-to-remove="statusToRemove"
-      :statuses="statusesOrderedByCategory"
       @hidden="statusToRemove = null"
     />
   </div>

@@ -889,9 +889,8 @@ describe('StatusLifecycleModal', () => {
           await nextTick();
 
           expect(findRemoveStatusModal().props()).toMatchObject({
-            statusCounts: mockLifecycle.statusCounts,
+            lifecycle: mockLifecycle,
             statusToRemove,
-            statuses: mockLifecycle.statuses,
           });
         });
       });

@@ -1,6 +1,24 @@
 import { uniqBy } from 'lodash';
 import { isStatusWidget } from '~/work_items/utils';
-import { STATUS_CATEGORIES } from 'ee/work_items/constants';
+import {
+  DEFAULT_STATE_CLOSED,
+  DEFAULT_STATE_DUPLICATE,
+  DEFAULT_STATE_OPEN,
+  STATUS_CATEGORIES,
+} from 'ee/work_items/constants';
+
+export const getDefaultStateType = (lifecycle, status) => {
+  if (lifecycle.defaultClosedStatus?.id === status.id) {
+    return DEFAULT_STATE_CLOSED;
+  }
+  if (lifecycle.defaultDuplicateStatus?.id === status.id) {
+    return DEFAULT_STATE_DUPLICATE;
+  }
+  if (lifecycle.defaultOpenStatus?.id === status.id) {
+    return DEFAULT_STATE_OPEN;
+  }
+  return null;
+};
 
 /**
  * Takes a list of statuses and returns a unique list of statuses sorted by category.
