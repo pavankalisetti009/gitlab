@@ -12,6 +12,9 @@ module EE
         include OneTrustCSP
         include GoogleAnalyticsCSP
 
+        feature_category :consumables_cost_management, [:subscription_history]
+        feature_category :seat_cost_management, [:pending_members]
+
         before_action only: [:root] do
           push_frontend_feature_flag(:data_transfer_monitoring, group)
           push_frontend_feature_flag(:product_analytics_usage_quota_annual_data, group)

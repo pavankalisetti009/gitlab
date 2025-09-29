@@ -116,7 +116,7 @@ constraints(::Constraints::GroupUrlConstrainer.new) do
     resources :ldap_group_links, only: [:index, :create, :destroy]
     resources :saml_group_links, only: [:index, :create, :destroy]
     resources :audit_events, only: [:index]
-    resource :usage_quotas do
+    resource :usage_quotas, only: [] do
       get '/', to: 'usage_quotas#root'
       get :pending_members
       get :subscription_history, defaults: { format: 'csv' }
