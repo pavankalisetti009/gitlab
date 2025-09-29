@@ -1,5 +1,33 @@
-import { getStatuses, sortStatuses } from 'ee/work_items/utils';
+import { getDefaultStateType, getStatuses, sortStatuses } from 'ee/work_items/utils';
 import { namespaceWorkItemTypesQueryResponse } from 'jest/work_items/mock_data';
+
+describe('getDefaultStateType', () => {
+  const mockLifecycle = {
+    defaultClosedStatus: { id: 'closed-id' },
+    defaultDuplicateStatus: { id: 'duplicate-id' },
+    defaultOpenStatus: { id: 'open-id' },
+  };
+
+  it('returns DEFAULT_STATE_CLOSED if status matches defaultClosedStatus', () => {
+    const status = { id: 'closed-id' };
+    expect(getDefaultStateType(mockLifecycle, status)).toBe('closed');
+  });
+
+  it('returns DEFAULT_STATE_DUPLICATE if status matches defaultDuplicateStatus', () => {
+    const status = { id: 'duplicate-id' };
+    expect(getDefaultStateType(mockLifecycle, status)).toBe('duplicate');
+  });
+
+  it('returns DEFAULT_STATE_OPEN if status matches defaultOpenStatus', () => {
+    const status = { id: 'open-id' };
+    expect(getDefaultStateType(mockLifecycle, status)).toBe('open');
+  });
+
+  it('returns null if status does not match any default status', () => {
+    const status = { id: 'some-other-id' };
+    expect(getDefaultStateType(mockLifecycle, status)).toBeNull();
+  });
+});
 
 describe('sortStatuses', () => {
   it('sorts, and deduplicates statuses', () => {

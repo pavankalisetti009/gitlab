@@ -10,20 +10,18 @@ Vue.use(VueApollo);
 Vue.use(Translate);
 Vue.use(VueRouter);
 
-const apolloProvider = new VueApollo({
-  defaultClient: createDefaultClient(),
-});
-
 export function initWorkItemSettingsApp() {
   const el = document.querySelector('#js-work-items-settings-form');
-  if (!el) return;
+  if (!el) return null;
 
   const { fullPath, basePath } = el.dataset;
 
-  // eslint-disable-next-line no-new
-  new Vue({
+  return new Vue({
     el,
-    apolloProvider,
+    name: 'WorkItemSettingsRoot',
+    apolloProvider: new VueApollo({
+      defaultClient: createDefaultClient(),
+    }),
     router: new VueRouter({
       mode: 'history',
       base: basePath,
