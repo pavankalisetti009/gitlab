@@ -11,8 +11,9 @@ module Authz
         @user = member.user
         @group = member.source
         @member = member
-        @upserted_count = 0
-        @deleted_count = 0
+
+        @upserted_for_group_count = 0
+        @deleted_for_group_count = 0
       end
 
       def execute
@@ -23,31 +24,33 @@ module Authz
         return if member.pending?
         return unless member.active?
 
+        update_user_group_member_roles
+      end
+
+      private
+
+      def update_user_group_member_roles
         attrs = [user_group_member_role_in_group] + user_group_member_roles_in_shared_groups
-        attrs = attrs.map { |a| HashWithIndifferentAccess.new(a) }
+        to_delete_ids, attrs_to_upsert = get_ids_to_delete_and_attrs_to_upsert(attrs)
 
-        to_delete, to_add = attrs.partition { |a| a[:member_role_id].nil? }
-        to_delete = to_delete.pluck(:id).compact # rubocop:disable Database/AvoidUsingPluckWithoutLimit, CodeReuse/ActiveRecord -- Array#pluck
+        unless to_delete_ids.empty?
+          @deleted_for_group_count += ::Authz::UserGroupMemberRole.delete_all_with_id(to_delete_ids)
+        end
 
-        @deleted_count += ::Authz::UserGroupMemberRole.delete_all_with_id(to_delete) unless to_delete.empty?
-
-        to_add = to_add.map { |a| a.except(:id) }
-        in_group, in_shared_groups = to_add.partition { |a| a[:shared_with_group_id].nil? }
+        in_group, in_shared_groups = attrs_to_upsert.partition { |a| a[:shared_with_group_id].nil? }
 
         unless in_group.empty?
           ::Authz::UserGroupMemberRole
             .upsert_all(in_group, unique_by: %i[user_id group_id])
-            .tap { |result| @upserted_count += result.count }
+            .tap { |result| @upserted_for_group_count += result.count }
         end
 
         ::Authz::UserGroupMemberRole
           .upsert_all(in_shared_groups, unique_by: %i[user_id group_id shared_with_group_id])
-          .tap { |result| @upserted_count += result.count } unless in_shared_groups.empty?
+          .tap { |result| @upserted_for_group_count += result.count } unless in_shared_groups.empty?
 
         log
       end
-
-      private
 
       def user_group_member_role_in_group
         existing = Authz::UserGroupMemberRole.for_user_in_group(user, group)
@@ -62,7 +65,7 @@ module Authz
         # invited group or member role assigned to the invited group) should
         # take effect for the user.
         query = group_group_links
-          .join(members).on(user_is_member_of_shared_with_group(user, group))
+          .join(members).on(user_is_member_of_invited_group(group_group_links[:shared_with_group_id]))
           # Left join with user_group_member_roles to retrieve ids of existing
           # records to delete
           .join(user_group_member_roles, Arel::Nodes::OuterJoin).on(
@@ -82,13 +85,23 @@ module Authz
         results.to_a
       end
 
-      def user_is_member_of_shared_with_group(user, group)
-        group_group_links[:shared_with_group_id].eq(group.id)
+      def user_is_member_of_invited_group(link_column)
+        link_column.eq(group.id)
           .and(members[:user_id].eq(user.id))
-          .and(members[:source_id].eq(group_group_links[:shared_with_group_id]))
+          .and(members[:source_id].eq(link_column))
           .and(members[:source_type].eq('Namespace'))
           .and(members[:requested_at].eq(nil))
           .and(members[:state].eq(::Member::STATE_ACTIVE))
+      end
+
+      def get_ids_to_delete_and_attrs_to_upsert(attrs)
+        attrs = attrs.map { |a| HashWithIndifferentAccess.new(a) }
+
+        to_delete, to_upsert = attrs.partition { |a| a[:member_role_id].nil? }
+        to_upsert = to_upsert.map { |a| a.except(:id) }
+        to_delete_ids = to_delete.pluck(:id).compact # rubocop:disable Database/AvoidUsingPluckWithoutLimit, CodeReuse/ActiveRecord -- Array#pluck
+
+        [to_delete_ids, to_upsert]
       end
 
       def user_group_member_roles
@@ -100,8 +113,8 @@ module Authz
           user_id: @user.id,
           group_id: @group.id,
           'update_user_group_member_roles.event': 'member created/updated',
-          'update_user_group_member_roles.upserted_count': @upserted_count,
-          'update_user_group_member_roles.deleted_count': @deleted_count
+          'update_user_group_member_roles.upserted_count': @upserted_for_group_count,
+          'update_user_group_member_roles.deleted_count': @deleted_for_group_count
         )
       end
     end
