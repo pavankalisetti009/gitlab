@@ -616,4 +616,54 @@ RSpec.describe GroupsController, :with_current_organization, feature_category: :
       end.to change { group.reload.experiment_features_enabled }.from(false).to(true)
     end
   end
+
+  describe '#issues' do
+    context 'with epic params' do
+      let_it_be(:group) { create(:group) }
+      let_it_be(:epic) { create(:epic, :with_synced_work_item, group: group) }
+
+      before do
+        sign_in user
+        group.add_developer(user)
+      end
+
+      context 'when work_items_group_issues_list is enabled' do
+        before do
+          stub_feature_flags(work_items_group_issues_list: true)
+        end
+
+        it 'rewrites the epic_id param' do
+          get :issues, params: { id: group.to_param, epic_id: epic.id }
+          expect(response).to redirect_to issues_group_path(group, params: { parent_id: epic.work_item.id })
+
+          get :issues, params: { id: group.to_param, epic_id: 'NONE' }
+          expect(response).to redirect_to issues_group_path(group, params: { parent_id: 'NONE' })
+        end
+
+        it 'rewrites the not epic_id param' do
+          get :issues, params: { id: group.to_param, not: { epic_id: epic.id } }
+          expect(response).to redirect_to issues_group_path(group, params: { not: { parent_id: epic.work_item.id } })
+        end
+
+        it 'rewrites the epic_wildcard_id param' do
+          get :issues, params: { id: group.to_param, epic_wildcard_id: 'ANY' }
+          expect(response).to redirect_to issues_group_path(group, params: { parent_wildcard_id: 'ANY' })
+        end
+      end
+
+      context 'when work_items_group_issues_list is disabled' do
+        let_it_be(:epic_params) { { epic_id: epic.id, epic_wildcard_id: 'ANY', not: { epic_id: epic.id } } }
+
+        before do
+          stub_feature_flags(work_items_group_issues_list: false)
+        end
+
+        it 'does not rewrite the epic_id params' do
+          get :issues, params: { id: group.to_param, **epic_params }
+
+          expect(response).to have_gitlab_http_status(:ok)
+        end
+      end
+    end
+  end
 end
