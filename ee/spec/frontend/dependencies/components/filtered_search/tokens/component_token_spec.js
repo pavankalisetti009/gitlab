@@ -155,7 +155,7 @@ describe('ee/dependencies/components/filtered_search/tokens/component_token.vue'
 
   describe('when the component is initially rendered', () => {
     it('shows a loading indicator while fetching the list of licenses', async () => {
-      createComponent({ mountFn: mountExtended });
+      createComponent();
 
       // Initially is false because we're not searching
       expect(isLoadingSuggestions()).toBe(false);
@@ -206,6 +206,10 @@ describe('ee/dependencies/components/filtered_search/tokens/component_token.vue'
 
     describe('when a user selects components to be filtered', () => {
       it('displays a check-icon next to the selected component', async () => {
+        createComponent();
+        await searchForComponent('web');
+        await nextTick();
+
         expect(findFirstSearchSuggestionIcon().classes()).toContain('gl-invisible');
 
         await selectComponent(TEST_COMPONENTS[0]);
@@ -226,7 +230,7 @@ describe('ee/dependencies/components/filtered_search/tokens/component_token.vue'
 
   describe('when a user enters a search term', () => {
     beforeEach(() => {
-      createComponent({ mountFn: mountExtended });
+      createComponent({ mountFn: shallowMountExtended });
     });
 
     it('shows the filtered list of components', async () => {
@@ -279,7 +283,7 @@ describe('ee/dependencies/components/filtered_search/tokens/component_token.vue'
 
   describe('where there is a suggestion dropdown', () => {
     it('displays when user types less than 2 characters', async () => {
-      createComponent({ mountFn: mountExtended });
+      createComponent();
 
       const suggestionText = 'Enter at least 2 characters to view available components.';
 
