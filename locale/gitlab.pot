@@ -11399,6 +11399,9 @@ msgstr ""
 msgid "BranchRules|Merge requests"
 msgstr ""
 
+msgid "BranchRules|No branch rules found"
+msgstr ""
+
 msgid "BranchRules|No data to display"
 msgstr ""
 
@@ -11453,7 +11456,10 @@ msgstr ""
 msgid "BranchRules|Rule target"
 msgstr ""
 
-msgid "BranchRules|Select Branch or create wildcard"
+msgid "BranchRules|Select an existing branch, create a branch rule, or use wildcards such as %{stable} or %{production}. Branch names are case-sensitive. %{linkStart}Learn more.%{linkEnd}"
+msgstr ""
+
+msgid "BranchRules|Select branch or create rule"
 msgstr ""
 
 msgid "BranchRules|Set the default behavior of this option in merge requests. Changes to this are also applied to existing merge requests. %{linkStart}What is squashing?%{linkEnd}"
@@ -11517,9 +11523,6 @@ msgid "BranchRules|Users & groups"
 msgstr ""
 
 msgid "BranchRules|View details"
-msgstr ""
-
-msgid "BranchRules|Wildcards such as %{stable} or %{production} are supported. Branch names are case-sensitive. %{linkStart}Learn more.%{linkEnd}"
 msgstr ""
 
 msgid "BranchRules|You are about to delete the %{name} status check."
