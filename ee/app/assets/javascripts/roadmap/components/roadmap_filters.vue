@@ -67,6 +67,7 @@ export default {
   },
   data() {
     return {
+      // eslint-disable-next-line vue/no-unused-properties -- localRoadmapSettings() is used by apollo query
       localRoadmapSettings: {},
     };
   },
