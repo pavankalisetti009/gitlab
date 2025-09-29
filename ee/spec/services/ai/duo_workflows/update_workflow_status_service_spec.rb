@@ -92,9 +92,21 @@ RSpec.describe ::Ai::DuoWorkflows::UpdateWorkflowStatusService, feature_category
         ts = time.change(nsec: (time.nsec / 1000) * 1000)
         checkpoint = create(:duo_workflows_checkpoint, workflow: workflow, created_at: ts, project: workflow.project)
         expect(GraphqlTriggers).to receive(:workflow_events_updated).with(checkpoint).and_return(1)
-        result = described_class.new(workflow: workflow, current_user: user, status_event: "finish").execute
-        expect(result[:status]).to eq(:success)
-        expect(result[:message]).to eq("Workflow status updated")
+
+        expect do
+          result = described_class.new(workflow: workflow, current_user: user, status_event: "finish").execute
+          expect(result[:status]).to eq(:success)
+          expect(result[:message]).to eq("Workflow status updated")
+        end.to trigger_internal_events("agent_platform_session_finished")
+                           .with(category: "Ai::DuoWorkflows::UpdateWorkflowStatusService",
+                             user: workflow.user,
+                             project: workflow.project,
+                             additional_properties: {
+                               label: workflow.workflow_definition,
+                               value: workflow.id,
+                               property: "ide"
+                             })
+
         expect(workflow.reload.human_status_name).to eq("finished")
       end
 

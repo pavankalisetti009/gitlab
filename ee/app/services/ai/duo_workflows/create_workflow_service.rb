@@ -4,7 +4,7 @@ module Ai
   module DuoWorkflows
     class CreateWorkflowService
       include ::Services::ReturnServiceResponses
-      include ::Gitlab::InternalEventsTracking
+      include Concerns::WorkflowEventTracking
 
       def initialize(container:, current_user:, params:)
         @container = container
@@ -24,16 +24,7 @@ module Ai
 
         return error(workflow.errors.full_messages, :bad_request) unless workflow.save
 
-        track_internal_event(
-          "agent_platform_session_created",
-          user: workflow.user,
-          project: workflow.project,
-          additional_properties: {
-            label: workflow.workflow_definition,
-            value: workflow.id,
-            property: workflow.environment
-          }
-        )
+        track_workflow_event("agent_platform_session_created", workflow)
 
         success(workflow: workflow)
       end
