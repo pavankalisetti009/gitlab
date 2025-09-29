@@ -1,5 +1,6 @@
 <script>
 import { GlBadge, GlIcon, GlTooltipDirective } from '@gitlab/ui';
+import { __, sprintf } from '~/locale';
 import {
   healthStatusTextMap,
   healthStatusVariantMap,
@@ -60,6 +61,13 @@ export default {
       }
     },
   },
+  methods: {
+    createAriaLabel() {
+      return sprintf(__(`Health status: %{statusText}`), {
+        statusText: this.statusText.toLowerCase(),
+      });
+    },
+  },
 };
 </script>
 
@@ -71,6 +79,7 @@ export default {
       '!gl-cursor-default gl-border-none gl-bg-transparent gl-p-0',
       displayAsText ? 'gl-relative gl-top-1' : 'gl-rounded-pill',
     ]"
+    :aria-label="createAriaLabel()"
   >
     <span
       v-if="displayAsText"

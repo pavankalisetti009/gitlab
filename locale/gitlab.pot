@@ -1020,6 +1020,9 @@ msgstr ""
 msgid "%{italic_start}What's new%{italic_end} is inactive and cannot be viewed."
 msgstr ""
 
+msgid "%{itemType} number %{itemIid}"
+msgstr ""
+
 msgid "%{item_ids} could not be removed due to insufficient permissions"
 msgstr ""
 
@@ -24276,6 +24279,9 @@ msgstr ""
 msgid "Due date"
 msgstr ""
 
+msgid "Due date: %{date}"
+msgstr ""
+
 msgid "Due to inactivity, the %{project_link} project is scheduled to be deleted on %{b_open}%{deletion_date}%{b_close}. To unschedule the deletion of %{project_link}, perform some activity on it. For example:"
 msgstr ""
 
@@ -32667,6 +32673,9 @@ msgstr ""
 msgid "Health status"
 msgstr ""
 
+msgid "Health status: %{statusText}"
+msgstr ""
+
 msgid "HealthCheck|Access token"
 msgstr ""
 
@@ -35548,6 +35557,9 @@ msgstr ""
 msgid "Issue label"
 msgstr ""
 
+msgid "Issue number %{itemIid}: %{title}"
+msgstr ""
+
 msgid "Issue or merge request ID is required"
 msgstr ""
 
@@ -35826,6 +35838,9 @@ msgid "Iteration removed"
 msgstr ""
 
 msgid "Iteration updated"
+msgstr ""
+
+msgid "Iteration: %{iterationDate}"
 msgstr ""
 
 msgid "Iterations"
@@ -40781,6 +40796,9 @@ msgid "Milestone lists not available with your current license"
 msgstr ""
 
 msgid "Milestone(s) not found: %{milestones}"
+msgstr ""
+
+msgid "Milestone: %{milestoneTitle}"
 msgstr ""
 
 msgid "MilestoneCombobox|Group milestones"
@@ -66455,6 +66473,9 @@ msgstr ""
 msgid "Time estimate"
 msgstr ""
 
+msgid "Time estimate: %{estimate}"
+msgstr ""
+
 msgid "Time from first comment to last commit"
 msgstr ""
 
@@ -72349,6 +72370,9 @@ msgid "Weight - %{maxIssueWeight}"
 msgstr ""
 
 msgid "Weight conflict warning"
+msgstr ""
+
+msgid "Weight: %{weighted}"
 msgstr ""
 
 msgid "Welcome back! Your account had been deactivated due to inactivity but is now reactivated."
