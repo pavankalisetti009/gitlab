@@ -612,4 +612,22 @@ RSpec.describe API::Users, :with_current_organization, :aggregate_failures, feat
       end
     end
   end
+
+  context 'setting policy_advanced_editor' do
+    context 'policy advanced editor preference' do
+      it 'saves advanced policy editor preference' do
+        put api("/user/preferences", admin, admin_mode: true), params: { policy_advanced_editor: true }
+
+        expect(response).to have_gitlab_http_status(:ok)
+        expect(json_response['policy_advanced_editor']).to be true
+      end
+
+      it 'returns advanced policy editor preference' do
+        get api("/user/preferences", admin, admin_mode: true)
+
+        expect(response).to have_gitlab_http_status(:ok)
+        expect(json_response['policy_advanced_editor']).to be false
+      end
+    end
+  end
 end

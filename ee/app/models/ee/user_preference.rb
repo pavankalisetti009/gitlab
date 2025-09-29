@@ -15,6 +15,10 @@ module EE
 
       validate :check_seat_for_default_duo_assigment, if: :default_duo_add_on_assignment_id_changed?
 
+      validates :policy_advanced_editor, allow_nil: false, inclusion: { in: [true, false] }
+
+      attribute :policy_advanced_editor, default: false
+
       def eligible_duo_add_on_assignments
         assignable_enum_value = ::GitlabSubscriptions::AddOn.names.values_at(
           *::GitlabSubscriptions::AddOn::SEAT_ASSIGNABLE_DUO_ADD_ONS

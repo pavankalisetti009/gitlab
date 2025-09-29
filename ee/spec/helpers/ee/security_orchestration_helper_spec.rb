@@ -4,7 +4,7 @@ require 'spec_helper'
 
 RSpec.describe EE::SecurityOrchestrationHelper, feature_category: :security_policy_management do
   let_it_be_with_reload(:project) { create(:project, group: create(:group)) }
-  let_it_be_with_refind(:namespace) { create(:group, :public) }
+  let_it_be_with_refind(:namespace) { create(:group, :public, owners: [create(:user)]) }
   let_it_be(:timezones) { [{ identifier: "Europe/Paris" }] }
 
   describe '#can_update_security_orchestration_policy_project?' do
@@ -187,7 +187,8 @@ RSpec.describe EE::SecurityOrchestrationHelper, feature_category: :security_poli
           max_scan_execution_policy_actions: Gitlab::CurrentSettings.scan_execution_policies_action_limit,
           max_scan_execution_policy_schedules: Gitlab::CurrentSettings.scan_execution_policies_schedule_limit,
           enabled_experiments: [],
-          access_tokens: [].to_json
+          access_tokens: [].to_json,
+          policy_editor_enabled: 'false'
         }
       end
 
@@ -279,7 +280,8 @@ RSpec.describe EE::SecurityOrchestrationHelper, feature_category: :security_poli
           max_scan_execution_policy_actions: Gitlab::CurrentSettings.scan_execution_policies_action_limit,
           max_scan_execution_policy_schedules: Gitlab::CurrentSettings.scan_execution_policies_schedule_limit,
           enabled_experiments: [],
-          access_tokens: [].to_json
+          access_tokens: [].to_json,
+          policy_editor_enabled: 'false'
         }
       end
 
@@ -298,6 +300,15 @@ RSpec.describe EE::SecurityOrchestrationHelper, feature_category: :security_poli
         let(:policy_type) { nil }
 
         it { is_expected.to match(base_data) }
+      end
+
+      context 'when policy editor is enabled' do
+        before do
+          stub_feature_flags(security_policies_split_view: true)
+          create(:user_preference, user: owner, policy_advanced_editor: true)
+        end
+
+        it { is_expected.to match(base_data.merge(policy_editor_enabled: 'true')) }
       end
 
       context 'when an existing policy is being edited' do
