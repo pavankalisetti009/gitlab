@@ -8,7 +8,7 @@ RSpec.describe Gitlab::Llm::AiGateway::Completions::SummarizeReview, feature_cat
   let_it_be(:merge_request) { create(:merge_request, source_project: project, target_project: project) }
   let_it_be(:draft_note_by_random_user) { create(:draft_note, merge_request: merge_request) }
 
-  let(:prompt_class) { Gitlab::Llm::Templates::SummarizeReview }
+  let(:prompt_class) { nil }
   let(:options) { {} }
 
   let(:prompt_message) do
