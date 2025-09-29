@@ -65,7 +65,6 @@ module WorkItems
           .from(children_work_items.table)
           .join(milestone_table)
           .on(milestone_table[:id].eq(children_work_items.table[:milestone_id]))
-          .where(children_work_items.table[:work_item_type_name].in(Type::TYPE_NAMES.values_at(:issue)))
       end
 
       def query_dates_sources(field)
@@ -80,7 +79,6 @@ module WorkItems
           .from(children_work_items.table)
           .join(dates_source)
           .on(dates_source[:issue_id].eq(children_work_items.table[:id]))
-          .where(children_work_items.table[:work_item_type_name].in(Type::TYPE_NAMES.values_at(:epic)))
       end
 
       # Once we migrate all the issues.start/due dates to work_item_dates_source
@@ -92,14 +90,17 @@ module WorkItems
           "NULL AS #{field}_sourcing_milestone_id",
           children_work_items.table[:id].as("#{field}_sourcing_work_item_id")
         )
-          .where(children_work_items.table[:work_item_type_name].in(Type::TYPE_NAMES.values_at(:epic)))
       end
 
       def children_work_items
         @children_work_items ||= Gitlab::SQL::CTE.new(
           :children_work_items,
-          WorkItem
-            .with_issue_type(%w[issue epic])
+          # TODO: allow any types here, but for that we need to allow inherited dates on any types as well, event on
+          # leaf node work items, e.g. Task. In which case a leaf node work item(as Task) can inherit dates from
+          # the milestone it is assigned and perhaps also add iteration along side milestone from which leaf work item
+          # can inherit from. So a given work item would inherit from its direct children, milestone and iteration under
+          # min(start date), max(due date) formula.
+          WorkItem.with_issue_type(%w[issue epic])
             .joins(:parent_link, :work_item_type)
             .where(WorkItems::ParentLink.arel_table[:work_item_parent_id].in(@work_items_ids))
             .select(
