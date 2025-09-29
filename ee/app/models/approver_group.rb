@@ -4,8 +4,6 @@ class ApproverGroup < ApplicationRecord
   belongs_to :target, polymorphic: true
   belongs_to :group
 
-  include ApproverMigrateHook
-
   validates :group, presence: true
 
   delegate :users, to: :group

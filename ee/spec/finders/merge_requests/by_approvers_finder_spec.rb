@@ -13,10 +13,8 @@ RSpec.describe MergeRequests::ByApproversFinder, feature_category: :code_review_
   end
 
   let_it_be(:merge_request) { create(:merge_request) }
-  let_it_be(:merge_request_with_approver) { create(:merge_request_with_approver) }
-
   let_it_be(:project_user) { create(:user) }
-  let_it_be(:first_user) { merge_request_with_approver.approvers.first.user }
+  let_it_be(:first_user) { create(:user) }
   let_it_be(:second_user) { create(:user) }
   let_it_be(:second_project_user) { create(:user) }
 
@@ -25,7 +23,18 @@ RSpec.describe MergeRequests::ByApproversFinder, feature_category: :code_review_
     create(:merge_request, source_project: create(:project, approval_rules: [rule]))
   end
 
-  let_it_be(:merge_request_with_two_approvers) { create(:merge_request, approval_users: [first_user, second_user]) }
+  let_it_be(:merge_request_with_approver) do
+    mr = create(:merge_request)
+    create(:approval_merge_request_rule, merge_request: mr, users: [first_user])
+    mr
+  end
+
+  let_it_be(:merge_request_with_two_approvers) do
+    mr = create(:merge_request)
+    create(:approval_merge_request_rule, merge_request: mr, users: [first_user, second_user])
+    mr
+  end
+
   let_it_be(:merge_request_with_group_approver) do
     create(:merge_request).tap do |merge_request|
       rule = create(:approval_merge_request_rule, merge_request: merge_request, groups: [group])

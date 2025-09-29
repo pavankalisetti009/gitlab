@@ -27,7 +27,7 @@ RSpec.describe "querying merge requests", feature_category: :code_review_workflo
     before_all do
       project.add_developer(current_user)
       project.add_developer(other_user)
-      merge_request.approvers.create!(user: other_user)
+      create(:approval_merge_request_rule, merge_request: merge_request, name: 'zoo', users: [other_user])
     end
 
     context 'with valid approver argument' do
@@ -42,7 +42,7 @@ RSpec.describe "querying merge requests", feature_category: :code_review_workflo
       it 'handles n+1 situations' do
         control = ActiveRecord::QueryRecorder.new { results }
 
-        merge_request.approvers.create!(user: other_user)
+        create(:approval_merge_request_rule, merge_request: merge_request, name: 'another zoo', users: [other_user])
 
         expectation = expect { results }
 
