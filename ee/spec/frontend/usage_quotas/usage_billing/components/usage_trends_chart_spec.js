@@ -52,6 +52,13 @@ describe('UsageTrendsChart', () => {
         },
       ]);
     });
+
+    it('passes the correct thresholds to the gl-area-chart when threshold prop is defined', () => {
+      createComponent({ threshold: 1000 });
+      expect(wrapper.findComponent(GlAreaChart).props('thresholds')).toEqual([
+        { threshold: 1000, operator: '>' },
+      ]);
+    });
   });
 
   describe('trend changes', () => {

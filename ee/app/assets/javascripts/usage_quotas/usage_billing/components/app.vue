@@ -143,6 +143,7 @@ export default {
             :trend="trend"
             :daily-peak="dailyPeak"
             :daily-average="dailyAverage"
+            :threshold="gitlabUnitsUsage.totalUnits"
           />
         </gl-tab>
         <gl-tab :title="s__('UsageBilling|Usage by user')">
