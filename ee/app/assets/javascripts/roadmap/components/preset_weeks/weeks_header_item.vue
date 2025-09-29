@@ -16,10 +16,6 @@ export default {
       type: Date,
       required: true,
     },
-    timeframe: {
-      type: Array,
-      required: true,
-    },
   },
   data() {
     const currentDate = new Date();

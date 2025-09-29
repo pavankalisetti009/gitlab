@@ -39,18 +39,6 @@ export default {
   },
   computed: {
     ...mapLocalSettings(['presetType']),
-    daterangeDropdownText() {
-      switch (this.selectedDaterange) {
-        case DATE_RANGES.CURRENT_QUARTER:
-          return s__('GroupRoadmap|This quarter');
-        case DATE_RANGES.CURRENT_YEAR:
-          return s__('GroupRoadmap|This year');
-        case DATE_RANGES.THREE_YEARS:
-          return s__('GroupRoadmap|Within 3 years');
-        default:
-          return '';
-      }
-    },
     availablePresets() {
       const quarters = { text: __('By quarter'), value: PRESET_TYPES.QUARTERS };
       const months = { text: __('By month'), value: PRESET_TYPES.MONTHS };
@@ -66,9 +54,6 @@ export default {
     },
   },
   methods: {
-    handleDaterangeSelect(value) {
-      this.selectedDaterange = value;
-    },
     handleDaterangeDropdownOpen() {
       this.initialSelectedDaterange = this.selectedDaterange;
     },

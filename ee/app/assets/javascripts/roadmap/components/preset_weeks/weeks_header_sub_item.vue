@@ -16,6 +16,7 @@ export default {
   },
   data() {
     return {
+      // eslint-disable-next-line vue/no-unused-properties -- presetType() used by the `CommonMixin()` mixin
       presetType: PRESET_TYPES.WEEKS,
       indicatorStyle: {},
     };
