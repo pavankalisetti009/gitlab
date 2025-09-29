@@ -84,6 +84,7 @@ RSpec.describe Gitlab::Elastic::ProjectSearchResults, :elastic, feature_category
       context 'for issues' do
         let(:scope) { 'issues' }
 
+        let_it_be(:project) { create(:project, :public, developers: [user]) }
         let_it_be(:closed_result) { create(:issue, :closed, project: project, title: 'foo closed') }
         let_it_be(:opened_result) { create(:issue, :opened, project: project, title: 'foo opened') }
         let_it_be(:confidential_result) { create(:issue, :confidential, project: project, title: 'foo confidential') }

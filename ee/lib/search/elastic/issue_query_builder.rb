@@ -1,5 +1,10 @@
 # frozen_string_literal: true
 
+# @deprecated This class is deprecated and will be removed in a future release.
+#   See https://gitlab.com/gitlab-org/gitlab/-/issues/551335 and
+#   https://gitlab.com/gitlab-org/gitlab/-/issues/498261
+#
+#   This class is replaced by Search::Elastic::WorkItemQueryBuilder.
 module Search
   module Elastic
     class IssueQueryBuilder < QueryBuilder
@@ -36,7 +41,9 @@ module Search
           doc_type: DOC_TYPE,
           features: 'issues',
           traversal_ids_prefix: :namespace_ancestry_ids,
-          authorization_use_traversal_ids: true
+          authorization_use_traversal_ids: true,
+          min_access_level_non_confidential: ::Gitlab::Access::GUEST,
+          min_access_level_confidential: ::Gitlab::Access::PLANNER
         }
       end
 
