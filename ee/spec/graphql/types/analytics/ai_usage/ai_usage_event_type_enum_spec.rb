@@ -41,7 +41,8 @@ RSpec.describe Types::Analytics::AiUsage::AiUsageEventTypeEnum, feature_category
         value: 'excluded_files_from_duo_code_review'
       ),
       'AGENT_PLATFORM_SESSION_CREATED' => have_attributes(value: 'agent_platform_session_created'),
-      'AGENT_PLATFORM_SESSION_STARTED' => have_attributes(value: 'agent_platform_session_started')
+      'AGENT_PLATFORM_SESSION_STARTED' => have_attributes(value: 'agent_platform_session_started'),
+      'AGENT_PLATFORM_SESSION_FINISHED' => have_attributes(value: 'agent_platform_session_finished')
     )
   end
 end
