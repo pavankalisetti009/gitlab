@@ -93,6 +93,9 @@ RSpec.shared_context 'for container virtual registry api setup' do
 
   let_it_be_with_reload(:registry) { create(:virtual_registries_container_registry, group: group) }
   let_it_be(:upstream) { create(:virtual_registries_container_upstream, registries: [registry]) }
+  let_it_be_with_reload(:cache_entry) do
+    create(:virtual_registries_container_cache_entry, :with_download_metrics, upstream: upstream)
+  end
 
   before do
     stub_licensed_features(container_virtual_registry: true)

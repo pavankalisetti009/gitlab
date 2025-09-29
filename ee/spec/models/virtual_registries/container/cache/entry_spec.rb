@@ -86,6 +86,42 @@ RSpec.describe VirtualRegistries::Container::Cache::Entry, feature_category: :vi
 
       it { is_expected.to include(old_downloaded_entry).and not_include(recent_downloaded_entry) }
     end
+
+    describe '.order_created_desc' do
+      let_it_be(:oldest_entry) { create(:virtual_registries_container_cache_entry, created_at: 3.days.ago) }
+      let_it_be(:newest_entry) { create(:virtual_registries_container_cache_entry, created_at: 1.day.ago) }
+      let_it_be(:middle_entry) { create(:virtual_registries_container_cache_entry, created_at: 2.days.ago) }
+
+      subject { described_class.order_created_desc }
+
+      it { is_expected.to eq([newest_entry, middle_entry, oldest_entry]).and be_a(ActiveRecord::Relation) }
+
+      context 'when no records exist' do
+        before do
+          described_class.delete_all
+        end
+
+        it { is_expected.to be_empty.and be_a(ActiveRecord::Relation) }
+      end
+    end
+
+    describe '.search_by_relative_path' do
+      let_it_be(:cache_entry) do
+        create(:virtual_registries_container_cache_entry, relative_path: 'path/to/resource')
+      end
+
+      let_it_be(:other_cache_entry) do
+        create(:virtual_registries_container_cache_entry, relative_path: 'other/path')
+      end
+
+      subject { described_class.search_by_relative_path(relative_path) }
+
+      context 'with a matching relative path' do
+        let(:relative_path) { 'resource' }
+
+        it { is_expected.to contain_exactly(cache_entry) }
+      end
+    end
   end
 
   describe 'object storage key' do
@@ -239,5 +275,36 @@ RSpec.describe VirtualRegistries::Container::Cache::Entry, feature_category: :vi
 
     wait_for_it = false
     threads.each(&:join)
+  end
+  describe '#mark_as_pending_destruction' do
+    let(:cache_entry) { create(:virtual_registries_container_cache_entry) }
+
+    subject(:execute) { cache_entry.mark_as_pending_destruction }
+
+    shared_examples 'updating the status and relative_path properly' do
+      it 'updates the status and relative_path' do
+        previous_path = cache_entry.relative_path
+
+        expect { execute }.to change { cache_entry.status }.from('default').to('pending_destruction')
+          .and not_change { cache_entry.object_storage_key }
+
+        expect(cache_entry.relative_path).to start_with("#{previous_path}/deleted/")
+      end
+    end
+
+    it_behaves_like 'updating the status and relative_path properly'
+
+    context 'with an existing pending destruction record with same relative_path and upstream_id' do
+      before do
+        create(
+          :virtual_registries_container_cache_entry,
+          :pending_destruction,
+          upstream: cache_entry.upstream,
+          relative_path: cache_entry.relative_path
+        )
+      end
+
+      it_behaves_like 'updating the status and relative_path properly'
+    end
   end
 end

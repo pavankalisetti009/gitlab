@@ -26,5 +26,10 @@ FactoryBot.define do
       upstream_checked_at { 30.minutes.ago }
       upstream_etag { 'test' }
     end
+
+    trait :with_download_metrics do
+      downloads_count { 15 }
+      downloaded_at { 30.minutes.ago }
+    end
   end
 end
