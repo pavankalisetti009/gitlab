@@ -8,13 +8,14 @@ import {
   REQUIRE_PASSWORD_TO_APPROVE,
 } from './settings';
 
-export * from './from_yaml';
-export { policyToYaml } from './to_yaml';
-export * from './rules';
 export * from './actions';
-export * from './settings';
-export * from './vulnerability_states';
+export * from './enforcement';
 export * from './filters';
+export * from './from_yaml';
+export * from './rules';
+export * from './settings';
+export { policyToYaml } from './to_yaml';
+export * from './vulnerability_states';
 
 export const DEFAULT_SCAN_RESULT_POLICY = `approval_policy:
   - name: ''

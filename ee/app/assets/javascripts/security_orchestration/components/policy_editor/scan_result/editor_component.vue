@@ -53,8 +53,9 @@ import {
   BOT_MESSAGE_TYPE,
   PERMITTED_INVALID_SETTINGS_KEY,
   REQUIRE_APPROVAL_TYPE,
+  LICENSE_FINDING,
 } from './lib';
-import { ENFORCE_VALUE, WARN_VALUE } from './enforcement/constants';
+import { ENFORCE_VALUE, WARN_VALUE } from './lib/enforcement';
 
 export default {
   ACTION_LISTBOX_ITEMS: ACTION_LISTBOX_ITEMS(),
@@ -229,6 +230,12 @@ export default {
     botActions() {
       const botActions = this.actions.filter(({ type }) => type === BOT_MESSAGE_TYPE);
       return botActions.filter(({ enabled }) => enabled);
+    },
+    disabledRuleTypes() {
+      return this.enforcement === WARN_VALUE ? [LICENSE_FINDING] : [];
+    },
+    disabledEnforcementOptions() {
+      return this.policy.rules.some(({ type }) => type === LICENSE_FINDING) ? [WARN_VALUE] : [];
     },
     explicitBotActions() {
       const botActions = this.policy.actions.filter(({ type }) => type === BOT_MESSAGE_TYPE);
@@ -554,6 +561,7 @@ export default {
     <template #additional-status>
       <enforcement-type
         v-if="hasWarnModeFeatureFlag"
+        :disabled-enforcement-options="disabledEnforcementOptions"
         :enforcement="enforcement"
         :has-legacy-warn-action="hasLegacyWarnAction"
         :is-warn-mode="isWarnMode"
@@ -578,8 +586,9 @@ export default {
         <rule-section
           v-for="(rule, index) in policy.rules"
           :key="rule.id"
-          :data-testid="`rule-${index}`"
           class="gl-mb-4"
+          :data-testid="`rule-${index}`"
+          :disabled-rule-types="disabledRuleTypes"
           :error-sources="errorSources"
           :index="index"
           :init-rule="rule"

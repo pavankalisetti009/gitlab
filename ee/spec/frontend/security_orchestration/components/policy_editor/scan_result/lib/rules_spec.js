@@ -4,6 +4,7 @@ import axios from '~/lib/utils/axios_utils';
 import {
   getInvalidBranches,
   hasInvalidRules,
+  humanizeInvalidBranchesError,
   invalidScanners,
   invalidSeverities,
   invalidVulnerabilitiesAllowed,
@@ -11,10 +12,15 @@ import {
   invalidBranchType,
   invalidVulnerabilityAge,
   invalidVulnerabilityAttributes,
-  VULNERABILITY_STATE_KEYS,
-  humanizeInvalidBranchesError,
+  invalidWarnModeRules,
   licenseScanBuildRule,
+  LICENSE_FINDING,
+  VULNERABILITY_STATE_KEYS,
 } from 'ee/security_orchestration/components/policy_editor/scan_result/lib/rules';
+import {
+  ENFORCE_VALUE,
+  WARN_VALUE,
+} from 'ee/security_orchestration/components/policy_editor/scan_result/lib';
 import {
   APPROVAL_VULNERABILITY_STATES,
   NEWLY_DETECTED,
@@ -311,5 +317,17 @@ describe('invalidVulnerabilityAttributes', () => {
         expect.objectContaining({ licenses: { [ALLOWED]: [] } }),
       );
     });
+  });
+});
+
+describe('invalidWarnModeRules', () => {
+  it.each`
+    title                                                         | rules                          | enforcementType  | expected
+    ${'returns false for license scan rule and enforce type'}     | ${[{ type: LICENSE_FINDING }]} | ${ENFORCE_VALUE} | ${false}
+    ${'returns false for non-license scan rule and enforce type'} | ${[{ type: 'other' }]}         | ${ENFORCE_VALUE} | ${false}
+    ${'returns true for license scan rule and warn type'}         | ${[{ type: LICENSE_FINDING }]} | ${WARN_VALUE}    | ${true}
+    ${'returns false for non-license scan rule and warn type'}    | ${[{ type: 'other' }]}         | ${WARN_VALUE}    | ${false}
+  `('$title', ({ rules, enforcementType, expected }) => {
+    expect(invalidWarnModeRules(rules, enforcementType)).toBe(expected);
   });
 });

@@ -36,12 +36,14 @@ import {
   NAMESPACE_TYPES,
 } from 'ee/security_orchestration/constants';
 import {
+  allowDenyScanResultLicenseObject,
   mockDefaultBranchesScanResultManifest,
   mockDefaultBranchesScanResultObject,
   mockDefaultBranchesScanResultObjectWithoutBotAction,
   mockDeprecatedScanResultManifest,
   mockDeprecatedScanResultObject,
   mockWarnActionScanResultObject,
+  mockWarnTypeScanResultObject,
   mockFallbackInvalidScanResultManifest,
   mockDefaultBranchesScanResultManifestNewFormat,
   mockDefaultBranchesScanResultManifestWithWrapper,
@@ -265,10 +267,19 @@ describe('EditorComponent', () => {
             factory({ provide: { glFeatures: { securityPolicyApprovalWarnMode: true } } });
             expect(findEnforcementSection().exists()).toBe(true);
             expect(findEnforcementSection().props()).toEqual({
+              disabledEnforcementOptions: [],
               enforcement: 'enforce',
               hasLegacyWarnAction: false,
               isWarnMode: false,
             });
+          });
+
+          it('disables warn option when license scanning exists', () => {
+            factoryWithExistingPolicy({
+              provide: { glFeatures: { securityPolicyApprovalWarnMode: true } },
+              policy: allowDenyScanResultLicenseObject,
+            });
+            expect(findEnforcementSection().props('disabledEnforcementOptions')).toEqual(['warn']);
           });
         });
 
@@ -514,6 +525,11 @@ describe('EditorComponent', () => {
         await findAllRuleSections().at(0).vm.$emit('remove', 0);
 
         expect(findAllRuleSections()).toHaveLength(initialRuleCount - 1);
+      });
+
+      it('disables rules for warn mode', () => {
+        factoryWithExistingPolicy({ policy: mockWarnTypeScanResultObject });
+        expect(findAllRuleSections().at(0).props('disabledRuleTypes')).toEqual(['license_finding']);
       });
     });
 

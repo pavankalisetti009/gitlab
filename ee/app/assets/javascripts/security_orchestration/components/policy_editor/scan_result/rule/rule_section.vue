@@ -19,6 +19,11 @@ export default {
     LicenseScanRuleBuilder,
   },
   props: {
+    disabledRuleTypes: {
+      type: Array,
+      required: false,
+      default: () => [],
+    },
     errorSources: {
       type: Array,
       required: false,
@@ -113,6 +118,7 @@ export default {
       <div>
         <default-rule-builder
           v-if="isEmptyRule"
+          :disabled-rule-types="disabledRuleTypes"
           :error-sources="errorSources"
           :index="index"
           :init-rule="initRule"
@@ -124,6 +130,7 @@ export default {
 
         <any-merge-request-rule-builder
           v-else-if="isAnyMergeRequestRule"
+          :disabled-rule-types="disabledRuleTypes"
           :init-rule="initRule"
           @changed="updateRule"
           @remove="removeRule"
@@ -132,6 +139,7 @@ export default {
 
         <security-scan-rule-builder
           v-else-if="isSecurityRule"
+          :disabled-rule-types="disabledRuleTypes"
           :init-rule="initRule"
           @error="handleError"
           @changed="updateRule"
@@ -141,6 +149,7 @@ export default {
 
         <license-scan-rule-builder
           v-else-if="isLicenseRule"
+          :disabled-rule-types="disabledRuleTypes"
           :init-rule="initRule"
           @error="handleError"
           @changed="updateRule"
