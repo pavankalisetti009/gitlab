@@ -143,7 +143,7 @@ export default {
           <td :data-label="name">
             <div>
               <div data-testid="approvals-table-name">{{ rule.name }}</div>
-              <div ref="indicator" class="gl-text-subtle">
+              <div ref="indicator" data-testid="indicator" class="gl-text-subtle">
                 {{ indicatorText(rule) }}
               </div>
             </div>
