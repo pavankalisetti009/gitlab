@@ -275,7 +275,7 @@ RSpec.describe IssuePolicy, feature_category: :team_planning do
           expect(permissions(owner, group_issue)).to be_disallowed(
             :create_requirement_test_report,
             :reposition_note, :create_design, :update_design, :destroy_design, :move_design,
-            :upload_issuable_metric_image, :update_issuable_metric_image, :destroy_issuable_metric_image,
+            :upload_issuable_metric_image, :update_issuable_metric_image, :delete_issuable_metric_image,
             :admin_issuable_resource_link, :admin_timelog, :admin_issue_metrics, :admin_issue_metrics_list
           )
         end
@@ -313,7 +313,7 @@ RSpec.describe IssuePolicy, feature_category: :team_planning do
 
         it 'does not allow' do
           expect(permissions(owner, group_issue)).to be_allowed(
-            :upload_issuable_metric_image, :update_issuable_metric_image, :destroy_issuable_metric_image
+            :upload_issuable_metric_image, :update_issuable_metric_image, :delete_issuable_metric_image
           )
 
           # these read permissions are not yet defined for group level issues
