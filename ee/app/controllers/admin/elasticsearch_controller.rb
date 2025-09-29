@@ -10,7 +10,7 @@ class Admin::ElasticsearchController < Admin::ApplicationController
     ::Search::Elastic::ReindexingService.execute
 
     flash[:notice] =
-      _('Advanced search indexing in progress. It might take a few minutes to create indices and initiate indexing.' \
+      _('Advanced search indexing in progress. It might take a few minutes to create indices and initiate indexing. ' \
         'Please use gitlab:elastic:info rake task to check progress.')
 
     redirect_to redirect_path
