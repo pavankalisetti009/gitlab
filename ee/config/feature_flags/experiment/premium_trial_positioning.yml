@@ -1,0 +1,9 @@
+---
+name: premium_trial_positioning
+feature_issue_url: https://gitlab.com/gitlab-org/gitlab/-/issues/562183
+introduced_by_url: https://gitlab.com/gitlab-org/gitlab/-/merge_requests/205504
+rollout_issue_url: https://gitlab.com/gitlab-org/gitlab/-/issues/570711
+milestone: '18.5'
+group: group::acquisition
+type: experiment
+default_enabled: false

@@ -27,5 +27,9 @@ module Onboarding
     def self.new_registration_design?
       false
     end
+
+    def self.exclude_from_positioning_experiment?
+      true
+    end
   end
 end

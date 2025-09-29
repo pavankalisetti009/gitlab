@@ -8,7 +8,12 @@
     %h1.gl-mt-0.gl-max-w-75
       = s_('InProductMarketing|Get Started with GitLab')
     %p.gl-text-lg.gl-max-w-75
-      = format(s_("InProductMarketing|Enjoy %{duration} days of full access to our best plan, after which you'll have access to our free tier forever. Upgrade to the best plan that suits you at any point - Premium or Ultimate."), duration: @trial_duration)
+
+      - experiment(:premium_trial_positioning, actor: current_user) do |e|
+        - e.control do
+          = format(s_("InProductMarketing|Enjoy %{duration} days of full access to our best plan, after which you'll have access to our free tier forever. Upgrade to the best plan that suits you at any point - Premium or Ultimate."), duration: @trial_duration)
+        - e.candidate do
+          = format(s_("InProductMarketing|Enjoy %{duration} days of full access to Premium, after which you'll have access to our free tier forever."), duration: @trial_duration)
     %p.gl-text-subtle
       = sprite_icon('question-o', css_class: 'gl-mr-1')
       = s_('InProductMarketing|Want to host GitLab on your servers?')
@@ -44,19 +49,35 @@
 
   .col-md-4.gl-flex-col.gl-mb-6.gl-items-center.gl-pr-8{ class: "@lg/panel:gl-flex" }
     %div
-      - ultimate_trial_value_props = [s_('InProductMarketing|One platform for Dev, Sec, and Ops teams'),
-      s_('InProductMarketing|End-to-end security and compliance'),
-      s_('InProductMarketing|Boost efficiency and collaboration'),
-      s_('InProductMarketing|Ship secure software faster'),
-      s_('InProductMarketing|GitLab Duo Enterprise: AI across the software development lifecycle')]
+      - experiment(:premium_trial_positioning, actor: current_user) do |e|
+        - e.control do
+          - ultimate_trial_value_props = [s_('InProductMarketing|One platform for Dev, Sec, and Ops teams'),
+          s_('InProductMarketing|End-to-end security and compliance'),
+          s_('InProductMarketing|Boost efficiency and collaboration'),
+          s_('InProductMarketing|Ship secure software faster'),
+          s_('InProductMarketing|GitLab Duo Enterprise: AI across the software development lifecycle')]
 
-      %h2.gl-text-size-h2-xl.gl-font-normal.gl-mb-6= s_('InProductMarketing|No credit card required.')
+          %h2.gl-text-size-h2-xl.gl-font-normal.gl-mb-6= s_('InProductMarketing|No credit card required.')
 
-      %ul.gl-pl-0.gl-mb-7.gl-pl-0.gl-text-default.check-mark-text
-        - ultimate_trial_value_props.each do |value_prop|
-          %li.gl-flex.gl-mb-3
-            %span.gl-mr-3.text-brand-purple-02= sprite_icon 'check', css_class: 'gl-icon check-marks'
-            = value_prop
+          %ul.gl-pl-0.gl-mb-7.gl-pl-0.gl-text-default.check-mark-text
+            - ultimate_trial_value_props.each do |value_prop|
+              %li.gl-flex.gl-mb-3
+                %span.gl-mr-3.text-brand-purple-02= sprite_icon 'check', css_class: 'gl-icon check-marks'
+                = value_prop
+        - e.candidate do
+          - premium_trial_value_props = [s_('InProductMarketing|AI Chat in the IDE'),
+          s_('InProductMarketing|AI Code Suggestions in the IDE'),
+          s_('InProductMarketing|Release Controls'),
+          s_('InProductMarketing|Team Project Management'),
+          s_('InProductMarketing|Unlimited Licensed Users')]
+
+          %h2.gl-text-size-h2-xl.gl-font-normal.gl-mb-6= s_('InProductMarketing|No credit card required.')
+
+          %ul.gl-pl-0.gl-mb-7.gl-pl-0.gl-text-default.check-mark-text
+            - premium_trial_value_props.each do |value_prop|
+              %li.gl-flex.gl-mb-3
+                %span.gl-mr-3.text-brand-purple-02= sprite_icon 'check', css_class: 'gl-icon check-marks'
+                = value_prop
 
       .gl-text-default.gl-text-sm
         = s_('InProductMarketing|Trusted by')

@@ -87,6 +87,8 @@ class TrialRegistrationsController < RegistrationsController
     super
 
     experiment(:lightweight_trial_registration_redesign, actor: user).track(:completed_trial_registration_form)
+
+    experiment(:premium_trial_positioning, actor: user).run
   end
 end
 
