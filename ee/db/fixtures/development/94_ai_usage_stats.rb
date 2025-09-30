@@ -2,7 +2,7 @@
 
 # Usage:
 #
-# Seeds all groups:
+# Seeds first project:
 #
 # FILTER=ai_usage_stats bundle exec rake db:seed_fu
 #
@@ -136,9 +136,10 @@ class Gitlab::Seeder::AiUsageStats # rubocop:disable Style/ClassAndModuleChildre
 end
 
 Gitlab::Seeder.quiet do
-  feature_available = ::Gitlab::ClickHouse.globally_enabled_for_analytics?
+  # Environment variable used on CI to to allow requests to ClickHouse docker container
+  WebMock.allow_net_connect! if Rails.env.test? && ENV['DISABLE_WEBMOCK']
 
-  unless feature_available
+  unless ::Gitlab::ClickHouse.configured?
     puts "
     WARNING:
     To use this seed file, you need to make sure that ClickHouse is configured and enabled with your GDK.
@@ -151,17 +152,19 @@ Gitlab::Seeder.quiet do
 
     Gitlab::CurrentSettings.current_application_settings.update(use_clickhouse_for_analytics: true)
     "
-    break
+
+    raise "ClickHouse is not configured"
   end
 
-  projects = Project.all
-  projects = projects.id_in(ENV['PROJECT_ID']) if ENV['PROJECT_ID']
+  project = Project.find_by(id: ENV['PROJECT_ID'])
+  project ||= Project.first
 
-  projects.find_each do |project|
-    Gitlab::Seeder::AiUsageStats.new(project).seed!
-  end
+  Gitlab::Seeder::AiUsageStats.new(project).seed!
 
   Gitlab::Seeder::AiUsageStats.sync_to_postgres
   Gitlab::Seeder::AiUsageStats.sync_to_click_house
+
+  puts "Successfully seeded '#{project.full_path}' for Ai Analytics!"
+  puts "URL: #{Rails.application.routes.url_helpers.project_url(project)}"
 end
 # rubocop:enable Rails/Output
