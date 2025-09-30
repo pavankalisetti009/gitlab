@@ -56,7 +56,8 @@ Usage: rake "gitlab:secrets_management:openbao:clone[/installation/dir]")
             version: version,
             repo: args.repo,
             target_dir: args.dir,
-            clone_opts: %w[--depth 1 --recurse-submodules]
+            clone_opts: %w[--depth 1 --recurse-submodules],
+            checkout_opts: %w[--recurse-submodules]
           )
         end
       end
