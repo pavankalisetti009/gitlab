@@ -123,45 +123,49 @@ exports[`License Compliance extension expanded data with new licenses displays a
                             </span>
                           </button>
                           <div
-                            class="!gl-w-31 gl-new-dropdown-panel"
-                            data-testid="base-dropdown-menu"
-                            id="reference-1"
+                            class="gl-new-dropdown-container"
                           >
                             <div
-                              class="gl-new-dropdown-arrow"
-                            />
-                            <div
-                              class="gl-new-dropdown-inner"
+                              class="!gl-w-31 gl-new-dropdown-panel"
+                              data-testid="base-dropdown-menu"
+                              id="reference-1"
                             >
-                              <ul
-                                aria-labelledby="reference-0"
-                                class="gl-new-dropdown-contents"
-                                data-testid="disclosure-content"
-                                id="reference-2"
-                                tabindex="-1"
+                              <div
+                                class="gl-new-dropdown-arrow"
+                              />
+                              <div
+                                class="gl-new-dropdown-inner"
                               >
-                                <li
-                                  class="gl-new-dropdown-item"
-                                  data-testid="disclosure-dropdown-item"
-                                  tabindex="0"
+                                <ul
+                                  aria-labelledby="reference-0"
+                                  class="gl-new-dropdown-contents"
+                                  data-testid="disclosure-content"
+                                  id="reference-2"
+                                  tabindex="-1"
                                 >
-                                  <a
-                                    class="gl-new-dropdown-item-content"
-                                    href="/group-name/project-name/-/merge_requests/78/full_report"
-                                    tabindex="-1"
+                                  <li
+                                    class="gl-new-dropdown-item"
+                                    data-testid="disclosure-dropdown-item"
+                                    tabindex="0"
                                   >
-                                    <span
-                                      class="gl-new-dropdown-item-text-wrapper"
+                                    <a
+                                      class="gl-new-dropdown-item-content"
+                                      href="/group-name/project-name/-/merge_requests/78/full_report"
+                                      tabindex="-1"
                                     >
                                       <span
-                                        class="gl-flex gl-items-center gl-justify-between"
+                                        class="gl-new-dropdown-item-text-wrapper"
                                       >
-                                        Used by 2 packages
+                                        <span
+                                          class="gl-flex gl-items-center gl-justify-between"
+                                        >
+                                          Used by 2 packages
+                                        </span>
                                       </span>
-                                    </span>
-                                  </a>
-                                </li>
-                              </ul>
+                                    </a>
+                                  </li>
+                                </ul>
+                              </div>
                             </div>
                           </div>
                         </div>
@@ -421,45 +425,49 @@ exports[`License Compliance extension expanded data with new licenses displays u
                             </span>
                           </button>
                           <div
-                            class="!gl-w-31 gl-new-dropdown-panel"
-                            data-testid="base-dropdown-menu"
-                            id="reference-1"
+                            class="gl-new-dropdown-container"
                           >
                             <div
-                              class="gl-new-dropdown-arrow"
-                            />
-                            <div
-                              class="gl-new-dropdown-inner"
+                              class="!gl-w-31 gl-new-dropdown-panel"
+                              data-testid="base-dropdown-menu"
+                              id="reference-1"
                             >
-                              <ul
-                                aria-labelledby="reference-0"
-                                class="gl-new-dropdown-contents"
-                                data-testid="disclosure-content"
-                                id="reference-2"
-                                tabindex="-1"
+                              <div
+                                class="gl-new-dropdown-arrow"
+                              />
+                              <div
+                                class="gl-new-dropdown-inner"
                               >
-                                <li
-                                  class="gl-new-dropdown-item"
-                                  data-testid="disclosure-dropdown-item"
-                                  tabindex="0"
+                                <ul
+                                  aria-labelledby="reference-0"
+                                  class="gl-new-dropdown-contents"
+                                  data-testid="disclosure-content"
+                                  id="reference-2"
+                                  tabindex="-1"
                                 >
-                                  <a
-                                    class="gl-new-dropdown-item-content"
-                                    href="/group-name/project-name/-/merge_requests/78/full_report"
-                                    tabindex="-1"
+                                  <li
+                                    class="gl-new-dropdown-item"
+                                    data-testid="disclosure-dropdown-item"
+                                    tabindex="0"
                                   >
-                                    <span
-                                      class="gl-new-dropdown-item-text-wrapper"
+                                    <a
+                                      class="gl-new-dropdown-item-content"
+                                      href="/group-name/project-name/-/merge_requests/78/full_report"
+                                      tabindex="-1"
                                     >
                                       <span
-                                        class="gl-flex gl-items-center gl-justify-between"
+                                        class="gl-new-dropdown-item-text-wrapper"
                                       >
-                                        Used by 1 package
+                                        <span
+                                          class="gl-flex gl-items-center gl-justify-between"
+                                        >
+                                          Used by 1 package
+                                        </span>
                                       </span>
-                                    </span>
-                                  </a>
-                                </li>
-                              </ul>
+                                    </a>
+                                  </li>
+                                </ul>
+                              </div>
                             </div>
                           </div>
                         </div>
