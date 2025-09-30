@@ -202,9 +202,7 @@ module API
               post do
                 authorize_feature_flag!
 
-                check_rate_limit!(:duo_workflow_direct_access, scope: current_user) do
-                  render_api_error!(_('This endpoint has been requested too many times. Try again later.'), 429)
-                end
+                check_rate_limit!(:duo_workflow_direct_access, scope: current_user)
 
                 oauth_token = gitlab_oauth_token
                 workflow_token = duo_workflow_token
@@ -253,9 +251,7 @@ module API
               get do
                 authorize_feature_flag!
 
-                check_rate_limit!(:duo_workflow_direct_access, scope: current_user) do
-                  render_api_error!(_('This endpoint has been requested too many times. Try again later.'), 429)
-                end
+                check_rate_limit!(:duo_workflow_direct_access, scope: current_user)
 
                 result = duo_workflow_list_tools
 

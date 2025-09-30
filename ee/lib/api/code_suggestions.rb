@@ -3,6 +3,7 @@
 module API
   class CodeSuggestions < ::API::Base
     include APIGuard
+    include Helpers
 
     feature_category :code_suggestions
 
@@ -160,7 +161,10 @@ module API
             )
 
             header('X-GitLab-Error-Origin', 'monolith')
-            render_api_error!({ error: _('This endpoint has been requested too many times. Try again later.') }, 429)
+            too_many_requests!(
+              { error: _('This endpoint has been requested too many times. Try again later.') },
+              retry_after: Gitlab::ApplicationRateLimiter.interval(:code_suggestions_api_endpoint) || 1.minute
+            )
           end
 
           task = ::CodeSuggestions::TaskFactory.new(
@@ -235,7 +239,10 @@ module API
               user: current_user
             )
 
-            render_api_error!({ error: _('This endpoint has been requested too many times. Try again later.') }, 429)
+            too_many_requests!(
+              { error: _('This endpoint has been requested too many times. Try again later.') },
+              retry_after: Gitlab::ApplicationRateLimiter.interval(:code_suggestions_direct_access) || 1.minute
+            )
           end
 
           token = Gitlab::Llm::AiGateway::CodeSuggestionsClient.new(current_user).direct_access_token
@@ -312,7 +319,10 @@ module API
               user: current_user
             )
 
-            render_api_error!({ error: _('This endpoint has been requested too many times. Try again later.') }, 429)
+            too_many_requests!(
+              { error: _('This endpoint has been requested too many times. Try again later.') },
+              retry_after: Gitlab::ApplicationRateLimiter.interval(:code_suggestions_connection_details) || 1.minute
+            )
           end
 
           aigw_headers = Gitlab::AiGateway.public_headers(
