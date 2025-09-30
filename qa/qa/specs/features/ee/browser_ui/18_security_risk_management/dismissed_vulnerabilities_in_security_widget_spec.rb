@@ -59,7 +59,11 @@ module QA
       end
 
       it 'checks that dismissed vulnerabilities do not show up',
-        testcase: 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/415291' do
+        testcase: 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/415291',
+        quarantine: {
+          issue: 'https://gitlab.com/gitlab-org/quality/e2e-test-issues/-/issues/1413',
+          type: :stale
+        } do
         Flow::Pipeline.wait_for_pipeline_creation_via_api(project: project)
         Flow::Pipeline.wait_for_latest_pipeline_to_have_status(project: project, status: 'success')
 
