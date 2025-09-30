@@ -102,6 +102,8 @@ RSpec.describe 'User adds milestone/iterations/status lists', :js, :aggregate_fa
       it 'creates status column for custom status' do
         type_custom_lifecycle
 
+        page.refresh
+
         add_list('Status', custom_status.name)
 
         expect(page).to have_selector('.board', text: custom_status.name)
