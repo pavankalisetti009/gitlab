@@ -77,7 +77,11 @@ module QA
       end
 
       it 'displays security reports in the pipeline',
-        testcase: 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/348036' do
+        testcase: 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/348036',
+        quarantine: {
+          issue: 'https://gitlab.com/gitlab-org/quality/e2e-test-issues/-/issues/1682',
+          type: :stale
+        } do
         push_security_reports
         project.visit!
         wait_for_pipeline_success
@@ -148,7 +152,11 @@ module QA
       end
 
       it 'displays security reports in the group security dashboard',
-        testcase: 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/348038' do
+        testcase: 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/348038',
+        quarantine: {
+          issue: 'https://gitlab.com/gitlab-org/quality/e2e-test-issues/-/issues/1683',
+          type: :stale
+        } do
         push_security_reports
         project.visit!
         wait_for_pipeline_success
@@ -257,7 +265,11 @@ module QA
       context 'for dependency scanning' do
         it(
           'displays the Dependency List',
-          testcase: 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/348035'
+          testcase: 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/348035',
+          quarantine: {
+            issue: 'https://gitlab.com/gitlab-org/quality/e2e-test-issues/-/issues/1684',
+            type: :stale
+          }
         ) do
           commit_scan_files(fixture_json: cyclonedx_json, ci_yaml_content: dependency_scan_yaml)
           project.visit!
