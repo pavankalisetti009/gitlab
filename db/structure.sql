@@ -18562,7 +18562,8 @@ CREATE TABLE jira_connect_installations (
     base_url character varying,
     instance_url text,
     organization_id bigint,
-    CONSTRAINT check_4c6abed669 CHECK ((char_length(instance_url) <= 255))
+    CONSTRAINT check_4c6abed669 CHECK ((char_length(instance_url) <= 255)),
+    CONSTRAINT check_dc0d039821 CHECK ((organization_id IS NOT NULL))
 );
 
 CREATE SEQUENCE jira_connect_installations_id_seq
@@ -32824,9 +32825,6 @@ ALTER TABLE work_item_custom_statuses
 
 ALTER TABLE packages_packages
     ADD CONSTRAINT check_d6301aedeb CHECK ((char_length(status_message) <= 255)) NOT VALID;
-
-ALTER TABLE jira_connect_installations
-    ADD CONSTRAINT check_dc0d039821 CHECK ((organization_id IS NOT NULL)) NOT VALID;
 
 ALTER TABLE sprints
     ADD CONSTRAINT check_df3816aed7 CHECK ((due_date IS NOT NULL)) NOT VALID;
