@@ -12,7 +12,12 @@ describe('Merge request dashboard collapsible section', () => {
   const emptyState = () => wrapper.findByTestId('crud-empty');
   const findLocalStorageSync = () => wrapper.findComponent(LocalStorageSync);
 
-  function createComponent({ count = 3, hasMergeRequests = count > 0, loading = false } = {}) {
+  function createComponent({
+    count = 3,
+    hasMergeRequests = count > 0,
+    loading = false,
+    error = false,
+  } = {}) {
     wrapper = shallowMountExtended(CollapsibleSection, {
       slots: {
         default: 'content',
@@ -23,6 +28,7 @@ describe('Merge request dashboard collapsible section', () => {
         count,
         hasMergeRequests,
         loading,
+        error,
       },
       stubs: {
         CrudComponent,
@@ -76,6 +82,12 @@ describe('Merge request dashboard collapsible section', () => {
     createComponent({ hasMergeRequests: false, loading: true, count: null });
 
     expect(sectionContent().exists()).toBe(true);
+  });
+
+  it('hides empty state when there are no merge requests, not loading and an error', () => {
+    createComponent({ count: 0, loading: false, error: true });
+
+    expect(emptyState().exists()).toBe(false);
   });
 
   describe('collapsed state sync', () => {

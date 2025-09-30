@@ -34,6 +34,7 @@ export default {
           this.$apollo.queries.mergeRequests.refetch();
         } else {
           this.error = true;
+          this.loading = false;
         }
       },
       result({ data, error }) {
