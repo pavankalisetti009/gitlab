@@ -19656,6 +19656,9 @@ msgstr ""
 msgid "Create a merge request for this change"
 msgstr ""
 
+msgid "Create a merge request to suggest changes to the repository."
+msgstr ""
+
 msgid "Create a merge request, or edit your criteria and try again."
 msgstr ""
 
@@ -39094,9 +39097,6 @@ msgstr ""
 msgid "MaintenanceMode|There was an error updating the Maintenance Mode Settings"
 msgstr ""
 
-msgid "Make a merge request to propose changes to this project."
-msgstr ""
-
 msgid "Make adjustments to how your GitLab instance is set up."
 msgstr ""
 
@@ -45940,9 +45940,6 @@ msgid "Other versions"
 msgstr ""
 
 msgid "Other visibility settings have been disabled by the administrator."
-msgstr ""
-
-msgid "Others can contribute by pushing commits to the same branch."
 msgstr ""
 
 msgid "Otherwise, click the link below to complete the process."
@@ -70131,6 +70128,9 @@ msgid "Use issue weight"
 msgstr ""
 
 msgid "Use issues to collaborate on ideas, solve problems, and plan work"
+msgstr ""
+
+msgid "Use merge requests to propose, collaborate, and review code changes with others."
 msgstr ""
 
 msgid "Use one line per URI"
