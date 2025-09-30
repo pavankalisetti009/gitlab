@@ -100,10 +100,10 @@ RSpec.describe Ai::ModelSelection::InstanceModelSelectionFeatureSetting, feature
         stub_feature_flags(instance_level_model_selection: true)
       end
 
-      it 'returns a record but validation will fail' do
+      it 'returns a valid record because instance model selection no longer depends on ai_model_switching' do
         result = described_class.find_or_initialize_by_feature(existing_feature)
         expect(result).to be_a(described_class)
-        expect(result).not_to be_valid
+        expect(result).to be_valid
       end
     end
   end
@@ -232,6 +232,40 @@ RSpec.describe Ai::ModelSelection::InstanceModelSelectionFeatureSetting, feature
 
         it 'returns correct model metadata params for default setting' do
           expect(feature_setting.model_metadata_params).to eq(expected_params_for_metadata)
+        end
+      end
+    end
+
+    describe 'when model_selection_enabled?' do
+      context 'when instance_level_model_selection feature flag is enabled' do
+        before do
+          stub_feature_flags(instance_level_model_selection: true)
+        end
+
+        it 'returns true' do
+          expect(instance_feature_setting.send(:model_selection_enabled?)).to be true
+        end
+      end
+
+      context 'when instance_level_model_selection feature flag is disabled' do
+        before do
+          stub_feature_flags(instance_level_model_selection: false)
+        end
+
+        it 'returns false' do
+          expect(instance_feature_setting.send(:model_selection_enabled?)).to be false
+        end
+      end
+
+      context 'when ai_model_switching feature flag is disabled' do
+        let(:ff_enabled) { false }
+
+        before do
+          stub_feature_flags(instance_level_model_selection: true)
+        end
+
+        it 'returns true because instance model selection does not depend on ai_model_switching' do
+          expect(instance_feature_setting.send(:model_selection_enabled?)).to be true
         end
       end
     end
