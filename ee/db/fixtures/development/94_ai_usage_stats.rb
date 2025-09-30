@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+require './spec/support/sidekiq_middleware'
+
 # Usage:
 #
 # Seeds first project:
@@ -33,7 +35,10 @@ class Gitlab::Seeder::AiUsageStats # rubocop:disable Style/ClassAndModuleChildre
   end
 
   def self.sync_to_postgres
-    ::UsageEvents::DumpWriteBufferCronWorker.new.perform
+    Sidekiq::Testing.inline! do
+      ::UsageEvents::DumpWriteBufferCronWorker.new.perform
+      ::Analytics::AiAnalytics::EventsCountAggregationWorker.new.perform
+    end
   end
 
   def initialize(project)

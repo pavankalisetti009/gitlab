@@ -73,6 +73,16 @@
   :idempotent: true
   :tags: []
   :queue_namespace: :cronjob
+- :name: cronjob:analytics_ai_analytics_events_count_aggregation
+  :worker_name: Analytics::AiAnalytics::EventsCountAggregationWorker
+  :feature_category: :value_stream_management
+  :has_external_dependencies: false
+  :urgency: :low
+  :resource_boundary: :unknown
+  :weight: 1
+  :idempotent: true
+  :tags: []
+  :queue_namespace: :cronjob
 - :name: cronjob:analytics_cycle_analytics_consistency
   :worker_name: Analytics::CycleAnalytics::ConsistencyWorker
   :feature_category: :value_stream_management
