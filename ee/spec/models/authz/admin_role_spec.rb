@@ -16,7 +16,7 @@ RSpec.describe Authz::AdminRole, feature_category: :permissions do
 
   describe 'validation' do
     it { is_expected.to validate_presence_of(:name) }
-    it { is_expected.to validate_uniqueness_of(:name) }
+    it { is_expected.to validate_uniqueness_of(:name).scoped_to(:organization_id) }
 
     context 'for json schema' do
       let(:permissions) { { read_admin_users: true } }

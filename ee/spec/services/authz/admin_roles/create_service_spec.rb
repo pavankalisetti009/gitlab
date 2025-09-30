@@ -4,6 +4,7 @@ require 'spec_helper'
 
 RSpec.describe Authz::AdminRoles::CreateService, feature_category: :permissions do
   let_it_be(:user) { create(:admin) }
+  let_it_be(:organization) { create(:organization) }
 
   # used in tracking custom role action shard examples
   let(:namespace) { nil }
@@ -13,7 +14,8 @@ RSpec.describe Authz::AdminRoles::CreateService, feature_category: :permissions 
 
     let(:params) do
       {
-        name: role_name
+        name: role_name,
+        organization_id: organization.id
       }.merge(abilities)
     end
 
@@ -33,6 +35,8 @@ RSpec.describe Authz::AdminRoles::CreateService, feature_category: :permissions 
     end
 
     context 'when admin_mode is enabled', :enable_admin_mode do
+      let(:expected_organization) { organization }
+
       context 'when creating an admin custom role' do
         it_behaves_like 'custom role creation' do
           let(:fail_condition!) do
