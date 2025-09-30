@@ -1,0 +1,10 @@
+---
+name: ai_catalog_item_project_curation
+description:
+feature_issue_url: https://gitlab.com/gitlab-org/gitlab/-/issues/572252
+introduced_by_url: https://gitlab.com/gitlab-org/gitlab/-/merge_requests/206548
+rollout_issue_url:
+milestone: '18.5'
+group: group::workflow catalog
+type: wip
+default_enabled: false

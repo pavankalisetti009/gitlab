@@ -23,7 +23,7 @@ import {
 } from 'ee/ai/catalog/router/constants';
 
 export default {
-  name: 'AiAgents',
+  name: 'AiAgentsIndex',
   components: {
     GlButton,
     GlExperimentBadge,
