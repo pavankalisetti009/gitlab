@@ -71,7 +71,7 @@ export const createRouter = (base) => {
             component: AiCatalogAgentsNew,
             beforeEnter: requireAuth,
             meta: {
-              text: s__('AICatalog|New agent'),
+              text: s__('AICatalog|New'),
             },
           },
           // Catch-all route for /agents/:id - redirect to /agents?show=:id
@@ -148,7 +148,7 @@ export const createRouter = (base) => {
                   component: AiCatalogFlowsNew,
                   beforeEnter: requireAuth,
                   meta: {
-                    text: s__('AICatalog|New flow'),
+                    text: s__('AICatalog|New'),
                   },
                 },
                 // Catch-all route for /flows/:id - redirect to /flows?show=:id
