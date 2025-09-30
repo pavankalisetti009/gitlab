@@ -24640,9 +24640,6 @@ msgstr ""
 msgid "DuoAgentsPlatform|Config path"
 msgstr ""
 
-msgid "DuoAgentsPlatform|Convert Jenkins to CI"
-msgstr ""
-
 msgid "DuoAgentsPlatform|Could not display logs. Please try again."
 msgstr ""
 
@@ -24695,9 +24692,6 @@ msgid "DuoAgentsPlatform|Edit trigger"
 msgstr ""
 
 msgid "DuoAgentsPlatform|Enter a description for this flow trigger"
-msgstr ""
-
-msgid "DuoAgentsPlatform|Enter the path to your Jenkinsfile."
 msgstr ""
 
 msgid "DuoAgentsPlatform|Event Type"
@@ -24760,9 +24754,6 @@ msgstr ""
 msgid "DuoAgentsPlatform|New flow trigger"
 msgstr ""
 
-msgid "DuoAgentsPlatform|New session"
-msgstr ""
-
 msgid "DuoAgentsPlatform|No agent sessions yet"
 msgstr ""
 
@@ -24773,9 +24764,6 @@ msgid "DuoAgentsPlatform|Once the service account is configured for use with flo
 msgstr ""
 
 msgid "DuoAgentsPlatform|Owner"
-msgstr ""
-
-msgid "DuoAgentsPlatform|Path must be a Jenkinsfile with the exact matching case."
 msgstr ""
 
 msgid "DuoAgentsPlatform|Path to configuration file"
@@ -24818,9 +24806,6 @@ msgid "DuoAgentsPlatform|Something went wrong while fetching Agent Flows"
 msgstr ""
 
 msgid "DuoAgentsPlatform|Start agent session"
-msgstr ""
-
-msgid "DuoAgentsPlatform|Start an agent session"
 msgstr ""
 
 msgid "DuoAgentsPlatform|The flow trigger could not be created. Try again."
