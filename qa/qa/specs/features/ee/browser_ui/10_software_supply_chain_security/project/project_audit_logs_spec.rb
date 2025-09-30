@@ -118,11 +118,7 @@ module QA
       end
 
       context "for project archive and unarchive",
-        testcase: 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/347903', quarantine: {
-          issue: 'https://gitlab.com/gitlab-org/gitlab/-/issues/567702',
-          type: :bug,
-          only: { job: "gdk-instance-project-studio" }
-        } do
+        testcase: 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/347903' do
         before do
           project.visit!
 
