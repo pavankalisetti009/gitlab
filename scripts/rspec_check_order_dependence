@@ -30,6 +30,22 @@ abort() {
   exit 1
 }
 
+require_spec_helper_if_needed() {
+  local spec_helpers
+
+  spec_helpers=$(grep -rhE "^require ['\"].*spec_helper" "$@" 2>/dev/null | \
+                 sed 's/require //; s/["'\'']//g' | \
+                 sort -u)
+
+  # If specs require "spec_helper" and also "fast_spec_helper" (or other variant)
+  # we must apply `-rspec_helper` to avoid early failure.
+  if echo "$spec_helpers" | grep -qx 'spec_helper' && echo "$spec_helpers" | grep -qxE '.+_spec_helper'
+  then
+    echo "NOTE: Specs are mixing fast spec helpers with other spec helpers. Adding -rspec_helper."
+    RSPEC_ARGS+=(-rspec_helper)
+  fi
+}
+
 for file in "$@"
 do
   # Drop potential file prefix `./`
@@ -40,6 +56,8 @@ do
   # entries starting with `./spec/rubocop`.
   grep -E -- "- './$file" "$TODO_YAML" > /dev/null || abort "Could not find '$file' in '$TODO_YAML'"
 done
+
+require_spec_helper_if_needed "$@"
 
 set -xe
 
