@@ -4,6 +4,7 @@ FactoryBot.define do
   factory :admin_role, class: 'Authz::AdminRole' do
     name { FFaker::Lorem.unique.word }
     description { FFaker::Lorem.sentence }
+    organization { association(:common_organization) }
 
     transient do
       without_any_permissions { false }
