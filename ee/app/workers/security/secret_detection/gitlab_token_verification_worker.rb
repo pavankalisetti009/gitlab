@@ -25,7 +25,7 @@ module Security
         pipeline = Ci::Pipeline.find_by_id(pipeline_id)
         return unless pipeline
 
-        service = Security::SecretDetection::UpdateTokenStatusService.new
+        service = ::Security::SecretDetection::UpdateTokenStatusService.new
 
         if pipeline.default_branch?
           service.execute_for_vulnerability_pipeline(pipeline_id)

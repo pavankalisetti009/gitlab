@@ -2,151 +2,163 @@
 
 require 'spec_helper'
 
-RSpec.describe Security::SecretDetection::PartnerTokenVerificationWorker, feature_category: :secret_detection do
-  let_it_be(:user) { create(:user) }
-  let_it_be(:project) { create(:project) }
-  let_it_be(:finding) { create(:vulnerabilities_finding, project: project) }
-
+RSpec.describe Security::SecretDetection::PartnerTokenVerificationWorker, :clean_gitlab_redis_rate_limiting, feature_category: :secret_detection do
   subject(:worker) { described_class.new }
 
-  describe '#perform' do
-    let(:service) { instance_double(Security::SecretDetection::TokenVerificationRequestService) }
-    let(:service_response) { ServiceResponse.success(payload: { finding_id: finding.id, request_id: 'abc-123' }) }
+  let_it_be(:project) { create(:project) }
+  let(:finding_type) { :security }
+  let(:rate_limit_retry_count) { 0 }
+  let(:client_instance) { instance_double(Security::SecretDetection::PartnerTokensClient) }
+  let(:token_type) { 'AWS' }
+  let(:token_value) { 'AKIAIOSFODNN7EXAMPLE' }
 
+  shared_examples 'verifies token and saves status' do |_status_model, service_class|
+    it 'verifies token and saves result', :freeze_time do
+      expect(client_instance).to receive(:verify_token).and_return(verification_result)
+      expect_next_instance_of(service_class) do |service_instance|
+        expect(service_instance).to receive(:save_result).with(finding, verification_result)
+      end
+
+      worker.perform(finding_id, finding_type, rate_limit_retry_count)
+    end
+  end
+
+  shared_examples 'handles rate limiting' do
+    it 'reschedules when rate limited' do
+      expect(described_class).to receive(:perform_in)
+        .with(described_class::BASE_DELAY, finding_id, finding_type, 1)
+
+      worker.perform(finding_id, finding_type, rate_limit_retry_count)
+    end
+  end
+
+  describe '#perform' do
     before do
-      allow(Security::SecretDetection::TokenVerificationRequestService)
-        .to receive(:new).with(user, finding).and_return(service)
-      allow(service).to receive(:execute).and_return(service_response)
+      allow(Security::SecretDetection::PartnerTokensClient)
+        .to receive(:new).and_return(client_instance)
+      allow(client_instance).to receive_messages(verify_token: verification_result, valid_config?: true)
     end
 
-    context 'when finding and user exist' do
-      it 'calls the service with correct parameters' do
-        worker.perform(finding.id, user.id)
+    let(:verification_result) do
+      Security::SecretDetection::PartnerTokens::BaseClient::TokenStatus.new(
+        status: :active,
+        metadata: { verified_at: Time.zone.now }
+      )
+    end
 
-        expect(Security::SecretDetection::TokenVerificationRequestService)
-          .to have_received(:new).with(user, finding)
-        expect(service).to have_received(:execute)
-      end
+    context 'with security finding' do
+      let_it_be(:security_finding) { create(:security_finding, :with_finding_data) }
+      let(:finding_id) { security_finding.id }
+      let(:finding) { security_finding }
 
-      context 'when service returns success' do
-        it 'logs success metadata' do
-          expect(worker).to receive(:log_extra_metadata_on_done).with(:status, 'success')
-          expect(worker).to receive(:log_extra_metadata_on_done).with(:finding_id, finding.id)
-          expect(worker).to receive(:log_extra_metadata_on_done).with(:request_id, 'abc-123')
+      before do
+        allow(client_instance).to receive(:rate_limited?).and_return(false)
 
-          worker.perform(finding.id, user.id)
+        allow_next_instance_of(Security::SecretDetection::Security::PartnerTokenService) do |service|
+          allow(service).to receive(:save_result).with(security_finding, verification_result)
         end
       end
 
-      context 'when service returns error' do
-        let(:service_response) do
-          ServiceResponse.error(
-            message: 'Configuration error',
-            payload: { error_type: :configuration_error }
-          )
-        end
+      it_behaves_like 'verifies token and saves status', ::Security::FindingTokenStatus,
+        Security::SecretDetection::Security::PartnerTokenService
+    end
 
-        it 'logs error metadata and does not retry' do
-          expect(worker).to receive(:log_extra_metadata_on_done).with(:status, 'error')
-          expect(worker).to receive(:log_extra_metadata_on_done).with(:error_message, 'Configuration error')
-          expect(worker).to receive(:log_extra_metadata_on_done).with(:error_type, :configuration_error)
-          expect(worker).to receive(:log_extra_metadata_on_done).with(:retry_decision, 'not_retryable')
+    context 'with vulnerability finding' do
+      let(:finding_type) { :vulnerability }
+      let_it_be(:vulnerability_finding) { create(:vulnerabilities_finding, :with_secret_detection) }
+      let(:finding_id) { vulnerability_finding.id }
+      let(:finding) { vulnerability_finding }
 
-          worker.perform(finding.id, user.id)
-        end
-      end
-
-      context 'when service returns retryable network error' do
-        let(:service_response) do
-          ServiceResponse.error(
-            message: 'Unexpected error during SDRS request: Connection timeout',
-            payload: { error_type: Net::OpenTimeout }
-          )
-        end
-
-        it 'raises exception to trigger retry' do
-          expect { worker.perform(finding.id, user.id) }
-            .to raise_error(StandardError, 'Unexpected error during SDRS request: Connection timeout')
+      before do
+        allow(client_instance).to receive(:rate_limited?).and_return(false)
+        allow_next_instance_of(Security::SecretDetection::Vulnerabilities::PartnerTokenService) do |service|
+          allow(service).to receive(:save_result).with(vulnerability_finding, verification_result)
         end
       end
 
-      context 'when service returns non-retryable error' do
-        let(:service_response) do
-          ServiceResponse.error(
-            message: 'Unauthorized',
-            payload: { error_type: :unauthorized }
-          )
-        end
-
-        it 'does not raise exception' do
-          expect { worker.perform(finding.id, user.id) }.not_to raise_error
-        end
-      end
+      it_behaves_like 'verifies token and saves status', ::Vulnerabilities::FindingTokenStatus,
+        Security::SecretDetection::Vulnerabilities::PartnerTokenService
     end
 
     context 'when finding does not exist' do
-      it 'logs and returns early' do
-        expect(Gitlab::AppLogger).to receive(:info).with(
-          message: 'Finding not found',
-          worker_class: described_class.name,
-          finding_id: non_existing_record_id,
-          user_id: user.id
-        )
-        expect(worker).to receive(:log_extra_metadata_on_done).with(:status, 'skipped')
-        expect(worker).to receive(:log_extra_metadata_on_done).with(:reason, 'Finding not found')
-
-        worker.perform(non_existing_record_id, user.id)
-
-        expect(service).not_to have_received(:execute)
+      it 'returns early without API calls' do
+        expect(Security::SecretDetection::PartnerTokensClient).not_to receive(:new)
+        worker.perform(non_existing_record_id, finding_type, rate_limit_retry_count)
       end
     end
 
-    context 'when user does not exist' do
-      it 'logs and returns early' do
-        expect(Gitlab::AppLogger).to receive(:info).with(
-          message: 'User not found',
-          worker_class: described_class.name,
-          finding_id: finding.id,
-          user_id: non_existing_record_id
-        )
-        expect(worker).to receive(:log_extra_metadata_on_done).with(:status, 'skipped')
-        expect(worker).to receive(:log_extra_metadata_on_done).with(:reason, 'User not found')
+    context 'when partner config invalid' do
+      let_it_be(:security_finding) { create(:security_finding) }
+      let(:finding_id) { security_finding.id }
 
-        worker.perform(finding.id, non_existing_record_id)
+      before do
+        allow(security_finding).to receive_messages(token_type: 'INVALID', token_value: 'invalid_token')
+        allow(client_instance).to receive(:valid_config?).and_return(false)
+      end
 
-        expect(service).not_to have_received(:execute)
+      it 'returns early without API calls' do
+        expect(client_instance).not_to receive(:verify_token)
+        worker.perform(finding_id, finding_type, rate_limit_retry_count)
+      end
+    end
+
+    context 'with rate limiting' do
+      let_it_be(:security_finding) { create(:security_finding, :with_finding_data) }
+      let(:finding_id) { security_finding.id }
+
+      before do
+        allow(security_finding).to receive_messages(token_type: token_type, token_value: token_value)
+        allow(client_instance).to receive(:valid_config?).and_return(true)
+      end
+
+      context 'when client rate limited' do
+        before do
+          allow(client_instance).to receive(:rate_limited?).and_return(true)
+        end
+
+        it_behaves_like 'handles rate limiting'
+      end
+
+      context 'when max retries exceeded' do
+        let(:rate_limit_retry_count) { described_class::MAX_RATE_LIMIT_RETRIES }
+
+        it 'returns without processing' do
+          expect(described_class).not_to receive(:perform_in)
+          worker.perform(finding_id, finding_type, rate_limit_retry_count)
+        end
+      end
+    end
+
+    context 'with error handling' do
+      let_it_be(:security_finding) { create(:security_finding, :with_finding_data) }
+      let(:finding_id) { security_finding.id }
+
+      before do
+        allow(security_finding).to receive_messages(token_type: token_type, token_value: token_value)
+        allow(client_instance).to receive_messages(valid_config?: true, rate_limited?: false)
+      end
+
+      context 'with RateLimitError' do
+        before do
+          allow(client_instance).to receive(:verify_token)
+            .and_raise(::Security::SecretDetection::PartnerTokens::BaseClient::RateLimitError)
+        end
+
+        it_behaves_like 'handles rate limiting'
+      end
+
+      it 'propagates NetworkError for Sidekiq retry' do
+        allow(client_instance).to receive(:verify_token)
+          .and_raise(::Security::SecretDetection::PartnerTokens::BaseClient::NetworkError, 'Network failed')
+
+        expect { worker.perform(finding_id, finding_type, rate_limit_retry_count) }
+          .to raise_error(::Security::SecretDetection::PartnerTokens::BaseClient::NetworkError)
       end
     end
   end
 
-  describe 'sidekiq_retry_in_block' do
-    it 'returns exponential backoff for retryable exceptions within retry limit' do
-      retryable_exception = Net::OpenTimeout.new
-
-      expect(described_class.sidekiq_retry_in_block.call(0, retryable_exception)).to eq(1)
-      expect(described_class.sidekiq_retry_in_block.call(1, retryable_exception)).to eq(4)
-      expect(described_class.sidekiq_retry_in_block.call(2, retryable_exception)).to eq(16)
-    end
-
-    it 'returns false after 3 retries or for non-retryable exceptions' do
-      retryable_exception = Net::OpenTimeout.new
-      non_retryable_exception = StandardError.new
-
-      expect(described_class.sidekiq_retry_in_block.call(3, retryable_exception)).to be(false)
-      expect(described_class.sidekiq_retry_in_block.call(0, non_retryable_exception)).to be(false)
-    end
-  end
-
-  describe 'retryable exceptions' do
-    it 'includes expected network exceptions' do
-      expect(described_class::RETRYABLE_EXCEPTIONS).to include(
-        Net::OpenTimeout,
-        EOFError,
-        SocketError,
-        OpenSSL::SSL::SSLError,
-        Errno::ECONNRESET,
-        Errno::ECONNREFUSED
-      )
-    end
+  describe 'worker configuration' do
+    it { expect(described_class.idempotent?).to be true }
+    it { expect(described_class.get_feature_category).to eq(:secret_detection) }
   end
 end
