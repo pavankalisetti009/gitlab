@@ -901,6 +901,7 @@ describe('StatusLifecycleModal', () => {
         createComponent();
 
         expect(findNonDefaultDropdownItem().exists()).toBe(true);
+        expect(findNonDefaultDropdownItem().text()).toBe('Make default for open items');
       });
 
       it('does not show make default option for default statuses', () => {

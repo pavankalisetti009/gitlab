@@ -531,7 +531,7 @@ export default {
       return null;
     },
     getDefaultDropdownTextForStatus(defaultState) {
-      return sprintf(s__('WorkItem|Make default for %{defaultState} issues'), {
+      return sprintf(s__('WorkItem|Make default for %{defaultState} items'), {
         defaultState,
       });
     },
