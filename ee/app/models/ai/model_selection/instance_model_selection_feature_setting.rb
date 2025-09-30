@@ -32,6 +32,12 @@ module Ai
       def vendored?
         true
       end
+
+      private
+
+      def model_selection_enabled?
+        ::Feature.enabled?(:instance_level_model_selection, model_selection_scope)
+      end
     end
   end
 end
