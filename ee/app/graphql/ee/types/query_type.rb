@@ -430,6 +430,12 @@ module EE
           resolver: ::Resolvers::SecurityOrchestration::PoliciesSyncStatusResolver,
           description: 'Get the current security policy synchronization status.',
           experiment: { milestone: '18.4' }
+
+        field :subscription_usage, ::Types::GitlabSubscriptions::SubscriptionUsageType,
+          null: true,
+          description: 'Usage data of consumables under the subscription.',
+          resolver: ::Resolvers::GitlabSubscriptions::SubscriptionUsageResolver,
+          experiment: { milestone: '18.5' }
       end
 
       def vulnerability(id:)
