@@ -99,7 +99,7 @@ module EE
       override :redirect_if_epic_params
       def redirect_if_epic_params
         # To handle legacy urls with epic filters, translate these to the parent filter equivalents and redirect
-        return unless project&.work_items_project_issues_list_feature_flag_enabled? && has_epic_filter?
+        return unless has_epic_filter?
 
         redirect_to project_issues_path(project, params: convert_epic_params)
 
