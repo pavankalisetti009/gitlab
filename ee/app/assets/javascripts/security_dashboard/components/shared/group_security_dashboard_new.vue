@@ -93,7 +93,8 @@ export default {
               width: 7,
               height: 4,
               yPos: 0,
-              xPos: 5,
+              // When the "Risk score" panel doesn't exist, this shifts "Vulnerabilities over time" to the left, removing the empty space.
+              xPos: this.glFeatures.newSecurityDashboardTotalRiskScore ? 5 : 0,
             },
           },
         ],

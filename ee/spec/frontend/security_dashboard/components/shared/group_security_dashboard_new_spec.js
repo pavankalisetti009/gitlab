@@ -183,5 +183,13 @@ describe('Group Security Dashboard (new version) - Component', () => {
     it('does not render the risk score panel', () => {
       expect(findPanelWithId('risk-score')).toBeUndefined();
     });
+
+    it('renders the vulnerabilities over time panel on the left side', () => {
+      const vulnerabilitiesOverTimePanel = getVulnerabilitiesOverTimePanel();
+
+      expect(vulnerabilitiesOverTimePanel.gridAttributes).toMatchObject({
+        xPos: 0,
+      });
+    });
   });
 });
