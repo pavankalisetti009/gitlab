@@ -74,12 +74,12 @@ RSpec.describe 'Admin updates EE-only settings', :with_current_organization, fea
       allow(::Search::Elastic::ReindexingTask).to receive(:last).and_return(task)
     end
 
-    it 'changes elasticsearch settings' do
+    it 'changes advanced search settings' do
       visit search_admin_application_settings_path
 
       within_testid('elasticsearch-settings') do
-        check 'Elasticsearch indexing'
-        check 'Search with Elasticsearch enabled'
+        check 'Turn on indexing for advanced search'
+        check 'Search with advanced search'
 
         fill_in 'application_setting_elasticsearch_shards[gitlab-test]', with: '120'
         fill_in 'application_setting_elasticsearch_replicas[gitlab-test]', with: '2'

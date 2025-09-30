@@ -100,7 +100,7 @@ RSpec.describe 'gitlab:elastic namespace rake tasks', :silence_stdout, feature_c
       end
 
       it 'outputs warning' do
-        expect(logger).to receive(:warn).once.with(/Setting `elasticsearch_indexing` is disabled/)
+        expect(logger).to receive(:warn).once.with(/Indexing for advanced search is turned off/)
 
         task
       end
@@ -169,7 +169,7 @@ RSpec.describe 'gitlab:elastic namespace rake tasks', :silence_stdout, feature_c
 
         expect(::Search::Elastic::TriggerIndexingWorker).to receive(:perform_in)
           .with(1.minute, Search::Elastic::TriggerIndexingWorker::INITIAL_TASK.to_s, { 'skip' => ['projects'] })
-        expect(logger).to receive(:warn).with(/WARNING: `elasticsearch_pause_indexing` is enabled/)
+        expect(logger).to receive(:warn).with(/WARNING: Indexing for advanced search is paused/)
 
         task
       end

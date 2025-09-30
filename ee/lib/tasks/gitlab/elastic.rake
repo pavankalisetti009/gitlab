@@ -9,13 +9,13 @@ namespace :gitlab do
       logger = Search::RakeTask::Elastic.stdout_logger
 
       if ::Gitlab::CurrentSettings.elasticsearch_pause_indexing?
-        logger.warn(Rainbow('WARNING: `elasticsearch_pause_indexing` is enabled. ' \
-          'This setting will be disabled to complete indexing').yellow)
+        logger.warn(Rainbow('WARNING: Indexing for advanced search is paused. ' \
+          'This setting will be turned off to complete indexing.').yellow)
       end
 
       unless Gitlab::CurrentSettings.elasticsearch_indexing?
-        logger.warn(Rainbow('Setting `elasticsearch_indexing` is disabled. ' \
-          'This setting will been enabled to complete indexing.').yellow)
+        logger.warn(Rainbow('Indexing for advanced search is turned off. ' \
+          'This setting will been turned on to complete indexing.').yellow)
       end
 
       logger.info('Scheduling indexing with TriggerIndexingWorker')
@@ -120,7 +120,7 @@ namespace :gitlab do
     desc 'GitLab | Elasticsearch | List pending migrations'
     task list_pending_migrations: :environment do
       unless Gitlab::CurrentSettings.elasticsearch_indexing?
-        Search::RakeTask::Elastic.stdout_logger.warn(Rainbow('Setting `elasticsearch_indexing` is disabled. ' \
+        Search::RakeTask::Elastic.stdout_logger.warn(Rainbow('Indexing for advanced search is turned off. ' \
           'Migrations may not be accurate.').yellow)
       end
 
