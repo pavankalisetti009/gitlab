@@ -91,6 +91,19 @@ FactoryBot.define do
       end
     end
 
+    trait :with_token_data do
+      transient do
+        token_type_value { 'AWS' }
+        token_value_data { 'AKIAIOSFODNN7EXAMPLE' }
+      end
+
+      identifiers do
+        [
+          { external_type: 'gitleaks_rule_id', external_id: token_type_value }
+        ]
+      end
+    end
+
     trait :with_finding_data do
       finding_data do
         {

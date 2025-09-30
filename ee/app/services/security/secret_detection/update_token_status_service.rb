@@ -15,7 +15,7 @@ module Security
       def execute_for_vulnerability_pipeline(pipeline_id)
         return unless setup_and_validate_pipeline(pipeline_id)
 
-        relation = Vulnerabilities::Finding
+        relation = ::Vulnerabilities::Finding
           .report_type('secret_detection')
           .by_latest_pipeline(pipeline_id)
 
@@ -24,7 +24,7 @@ module Security
         end
       end
 
-      # For Security::Finding (MR pipelines)
+      # For ::Security::Finding (MR pipelines)
       def execute_for_security_pipeline(pipeline_id)
         return unless setup_and_validate_pipeline(pipeline_id)
         return unless Feature.enabled?(:validity_checks_security_finding_status, @project)
@@ -38,7 +38,7 @@ module Security
 
       # Single Vulnerabilities::Finding
       def execute_for_vulnerability_finding(finding_id)
-        vulnerability_finding = Vulnerabilities::Finding.find_by_id(finding_id)
+        vulnerability_finding = ::Vulnerabilities::Finding.find_by_id(finding_id)
         return unless vulnerability_finding
 
         @project = vulnerability_finding.project
@@ -51,7 +51,7 @@ module Security
 
       # Single Security::Finding
       def execute_for_security_finding(security_finding_id)
-        security_finding = Security::Finding.find_by_id(security_finding_id)
+        security_finding = ::Security::Finding.find_by_id(security_finding_id)
         return unless security_finding
 
         @project = security_finding.project
@@ -65,7 +65,7 @@ module Security
 
         # Update all findings with matching UUID (same secret, same location across commits)
         # to maintain consistent token status across pipelines
-        all_security_findings = Security::Finding.by_project_id_and_uuid(@project.id, partition,
+        all_security_findings = ::Security::Finding.by_project_id_and_uuid(@project.id, partition,
           security_finding.uuid)
 
         process_findings_batch(all_security_findings, :security)
@@ -105,11 +105,11 @@ module Security
 
         case finding_type
         when :vulnerability
-          model_class = Vulnerabilities::FindingTokenStatus
+          model_class = ::Vulnerabilities::FindingTokenStatus
           unique_by = :vulnerability_occurrence_id
           error_message = "Failed to upsert vulnerability finding token statuses"
         when :security
-          model_class = Security::FindingTokenStatus
+          model_class = ::Security::FindingTokenStatus
           unique_by = :security_finding_id
           error_message = "Failed to upsert security finding token statuses"
         else
@@ -191,7 +191,7 @@ module Security
           end
 
           next unless raw_token.present? && token_type
-          next unless Security::SecretDetection::TokenLookupService.supported_token_type?(token_type)
+          next unless ::Security::SecretDetection::TokenLookupService.supported_token_type?(token_type)
 
           result[token_type] ||= []
           result[token_type] << raw_token
@@ -230,7 +230,7 @@ module Security
           end
 
           next unless token_value.present? && token_type
-          next unless Security::SecretDetection::TokenLookupService.supported_token_type?(token_type)
+          next unless ::Security::SecretDetection::TokenLookupService.supported_token_type?(token_type)
 
           attr_by_raw_token[token_value] ||= []
           attributes = {
@@ -249,7 +249,7 @@ module Security
       # @param [PersonalAccessToken, nil] token The token to check, or nil if not found
       # @return [Symbol] Status enum value from FindingTokenStatus
       def token_status(token)
-        statuses = Vulnerabilities::FindingTokenStatus.statuses
+        statuses = ::Vulnerabilities::FindingTokenStatus.statuses
 
         return statuses.key(statuses[:unknown]) unless token
 

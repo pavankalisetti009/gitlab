@@ -256,6 +256,14 @@ module Security
       super
     end
 
+    def token_type
+      identifiers&.find { |id| id[:external_type] == 'gitleaks_rule_id' }&.dig(:external_id)
+    end
+
+    def token_value
+      finding_data['raw_source_code_extract']
+    end
+
     # Symbolizing the hash keys is important as Grape entity
     # works with symbolized keys only.
     # See https://github.com/ruby-grape/grape-entity/issues/223

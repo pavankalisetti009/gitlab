@@ -6,100 +6,60 @@ module Security
       include ApplicationWorker
       include Gitlab::Utils::StrongMemoize
 
-      # Retryable exceptions - network and temporary errors that make sense to retry
-      RETRYABLE_EXCEPTIONS = [Gitlab::HTTP::HTTP_TIMEOUT_ERRORS, EOFError, SocketError, OpenSSL::SSL::SSLError,
-        OpenSSL::OpenSSLError, Errno::ECONNRESET, Errno::ECONNREFUSED, Errno::EHOSTUNREACH, Errno::ENETUNREACH,
-        Errno::ETIMEDOUT, Net::ReadTimeout, Net::OpenTimeout, Timeout::Error].flatten.freeze
-
       data_consistency :sticky
       feature_category :secret_detection
       urgency :low
-      defer_on_database_health_signal :gitlab_main
-      concurrency_limit -> { 250 }
       idempotent!
+      concurrency_limit -> { 250 }
+      defer_on_database_health_signal :gitlab_main
 
-      # Control retry behavior through sidekiq_retry_in
-      sidekiq_retry_in do |count, exception|
-        # Only retry up to 3 times for retryable exceptions
-        if count < 3 && retryable_exception_class?(exception.class)
-          # Exponential backoff: 4, 16, 64 seconds
-          4**count
-        else
-          # For non-retryable exceptions or after 3 retries, don't retry
-          false
-        end
-      end
+      MAX_RATE_LIMIT_RETRIES = 5
+      BASE_DELAY = 10.seconds
 
-      def self.retryable_exception_class?(exception_class)
-        return false unless exception_class
+      def perform(finding_id, finding_type, rate_limit_retry_count = 0)
+        return if rate_limit_retry_count >= MAX_RATE_LIMIT_RETRIES
 
-        RETRYABLE_EXCEPTIONS.include?(exception_class)
-      end
+        @finding_type = finding_type.to_sym
 
-      def perform(finding_id, user_id)
         @finding_id = finding_id
-        @user_id = user_id
+        return unless finding
 
-        return log_and_return('Finding not found') unless finding
-        return log_and_return('User not found') unless user
+        client = PartnerTokensClient.new(finding)
+        return unless client.valid_config?
 
-        result = ::Security::SecretDetection::TokenVerificationRequestService
-                   .new(user, finding)
-                   .execute
+        if client.rate_limited?
+          reschedule(finding_id, finding_type, rate_limit_retry_count + 1)
+          return
+        end
 
-        log_result(result)
-
-        # Re-raise retryable exceptions for Sidekiq to handle
-        handle_service_errors(result) unless result.success?
+        result = client.verify_token
+        partner_service.save_result(finding, result)
+      rescue ::Security::SecretDetection::PartnerTokens::BaseClient::RateLimitError
+        reschedule(finding_id, finding_type, rate_limit_retry_count + 1)
+        nil
       end
 
       private
 
-      attr_reader :finding_id, :user_id
+      attr_reader :finding_id, :finding_type
 
       def finding
-        Vulnerabilities::Finding.with_project.find_by_id(finding_id)
+        case finding_type
+        when :vulnerability then ::Vulnerabilities::Finding.find_by_id(finding_id)
+        when :security then ::Security::Finding.find_by_id(finding_id)
+        end
       end
       strong_memoize_attr :finding
 
-      def user
-        User.find_by_id(user_id)
-      end
-      strong_memoize_attr :user
-
-      def log_result(result)
-        if result.success?
-          log_extra_metadata_on_done(:status, 'success')
-          log_extra_metadata_on_done(:finding_id, result.payload[:finding_id])
-          log_extra_metadata_on_done(:request_id, result.payload[:request_id]) if result.payload[:request_id]
-        else
-          log_extra_metadata_on_done(:status, 'error')
-          log_extra_metadata_on_done(:error_message, result.message)
-          log_extra_metadata_on_done(:error_type, result.payload[:error_type])
+      def partner_service
+        case finding_type
+        when :vulnerability then Vulnerabilities::PartnerTokenService.new
+        when :security then Security::PartnerTokenService.new
         end
       end
 
-      def handle_service_errors(result)
-        error_type = result.payload[:error_type]
-
-        # Only retry when send_verification_request fails with retryable network exceptions
-        raise StandardError, result.message if self.class.retryable_exception_class?(error_type)
-
-        # For all other error types (configuration, authorization, validation, etc.)
-        # don't retry as they won't be resolved by retrying
-        log_extra_metadata_on_done(:retry_decision, 'not_retryable')
-      end
-
-      def log_and_return(message)
-        log_extra_metadata_on_done(:status, 'skipped')
-        log_extra_metadata_on_done(:reason, message)
-
-        Gitlab::AppLogger.info(
-          message: message,
-          worker_class: self.class.name,
-          finding_id: finding_id,
-          user_id: user_id
-        )
+      def reschedule(finding_id, finding_type, retry_count)
+        self.class.perform_in(BASE_DELAY, finding_id, finding_type, retry_count)
       end
     end
   end

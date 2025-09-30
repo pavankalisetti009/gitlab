@@ -761,6 +761,36 @@ RSpec.describe Security::Finding, feature_category: :vulnerability_management do
     end
   end
 
+  describe '#token_type' do
+    it 'returns gitleaks_rule_id external_id when present' do
+      finding = create(:security_finding, :with_finding_data,
+        identifiers: [{ external_type: 'gitleaks_rule_id', external_id: 'AWS' }])
+
+      expect(finding.token_type).to eq('AWS')
+    end
+
+    it 'returns nil when gitleaks_rule_id not present' do
+      finding = create(:security_finding, :with_finding_data)
+
+      expect(finding.token_type).to be_nil
+    end
+  end
+
+  describe '#token_value' do
+    it 'returns raw_source_code_extract from finding_data' do
+      finding = create(:security_finding, :with_finding_data)
+
+      expect(finding.token_value).to eq('AES/ECB/NoPadding')
+    end
+
+    it 'returns nil when raw_source_code_extract not present' do
+      finding = create(:security_finding, :with_finding_data,
+        finding_data: { name: 'Test' })
+
+      expect(finding.token_value).to be_nil
+    end
+  end
+
   describe '#cwe_name' do
     it 'returns true if finding has a CWE identifier' do
       finding = build(:security_finding, :with_finding_data)

@@ -11,7 +11,7 @@ module Security
         RateLimitError = Class.new(ResponseError)
 
         TokenStatus = Struct.new(:status, :metadata, keyword_init: true) do
-          Security::TokenStatus::STATUSES.each_key do |state|
+          ::Security::TokenStatus::STATUSES.each_key do |state|
             define_method(:"#{state}?") do
               status == state
             end
