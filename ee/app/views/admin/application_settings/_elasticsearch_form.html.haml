@@ -11,7 +11,7 @@
   expanded: expanded_by_default?,
   button_options: { data: { testid: 'expand-advanced-search-button' } }) do |c|
   - c.with_description do
-    = _('Configure settings for Advanced search with Elasticsearch or OpenSearch.')
+    = _('Configure settings for advanced search.')
   - c.with_body do
     = gitlab_ui_form_for @application_setting, url: search_admin_application_settings_path(anchor: 'js-elasticsearch-settings'), html: { class: 'fieldset-form' } do |f|
       = form_errors(@application_setting)
@@ -32,9 +32,9 @@
         %div
           .form-group
             - unless Gitlab::CurrentSettings.elasticsearch_indexing?
-              = f.gitlab_ui_checkbox_component :elasticsearch_indexing, s_('AdminSettings|Elasticsearch indexing'), checkbox_options: { data: { testid: 'indexing-checkbox' } }, help_text: s_('AdminSettings|If there isn\'t any existing index, GitLab creates one.')
+              = f.gitlab_ui_checkbox_component :elasticsearch_indexing, s_('AdminSettings|Turn on indexing for advanced search'), checkbox_options: { data: { testid: 'indexing-checkbox' } }, help_text: s_('AdminSettings|If there isn\'t any existing index, GitLab creates one.')
             - if Gitlab::CurrentSettings.elasticsearch_indexing?
-              = f.gitlab_ui_checkbox_component :elasticsearch_indexing, s_('AdminSettings|Elasticsearch indexing'), checkbox_options: { data: { testid: 'indexing-checkbox' } }
+              = f.gitlab_ui_checkbox_component :elasticsearch_indexing, s_('AdminSettings|Turn on indexing for advanced search'), checkbox_options: { data: { testid: 'indexing-checkbox' } }
               = render Pajamas::ButtonComponent.new(variant: :confirm, href: admin_elasticsearch_enqueue_index_path, method: :post) do
                 = _('Index the instance')
 
@@ -43,10 +43,10 @@
             - pending_migration_running_and_pauses_indexing = first_pending_migration&.running? && first_pending_migration&.pause_indexing?
             - disable_checkbox = !Gitlab::CurrentSettings.elasticsearch_indexing? || pending_migration_running_and_pauses_indexing || @last_elasticsearch_reindexing_task&.in_progress?
 
-            = f.gitlab_ui_checkbox_component :elasticsearch_pause_indexing, s_('AdminSettings|Pause Elasticsearch indexing'), checkbox_options: { disabled: disable_checkbox }, help_text: pending_migration_running_and_pauses_indexing ? s_('AdminSettings|There are Advanced Search migrations pending that require indexing to pause. Indexing must remain paused until GitLab completes the migrations.') : s_('AdminSettings|Use for cluster and index migrations. When indexing is paused, GitLab still tracks changes.')
+            = f.gitlab_ui_checkbox_component :elasticsearch_pause_indexing, s_('AdminSettings|Pause indexing for advanced search'), checkbox_options: { disabled: disable_checkbox }, help_text: pending_migration_running_and_pauses_indexing ? s_('AdminSettings|There are Advanced Search migrations pending that require indexing to pause. Indexing must remain paused until GitLab completes the migrations.') : s_('AdminSettings|Use for cluster and index migrations. When indexing is paused, GitLab still tracks changes.')
 
           .form-group
-            = f.gitlab_ui_checkbox_component :elasticsearch_search, s_('AdminSettings|Search with Elasticsearch enabled'), checkbox_options: { data: { testid: 'search-checkbox' } }, help_text: s_('AdminSettings|Disable Elasticsearch until indexing completes.')
+            = f.gitlab_ui_checkbox_component :elasticsearch_search, s_('AdminSettings|Search with advanced search'), checkbox_options: { data: { testid: 'search-checkbox' } }, help_text: s_('AdminSettings|Turn off advanced search until indexing is complete.')
 
           .form-group
             = f.gitlab_ui_checkbox_component :elasticsearch_requeue_workers, s_('AdminSettings|Requeue indexing workers'), help_text: s_('AdminSettings|Improve non-code indexing throughput by enqueuing Sidekiq jobs until all documents are processed.')
