@@ -30,24 +30,6 @@ RSpec.describe ApprovalMergeRequestRulePolicy, feature_category: :source_code_ma
 
         it { is_expected.not_to be_allowed(:edit_approval_rule) }
       end
-
-      context 'when ensure_consistent_editing_rule is off' do
-        before do
-          stub_feature_flags(ensure_consistent_editing_rule: false)
-        end
-
-        context 'when user can update merge request' do
-          let(:user) { developer }
-
-          it { is_expected.to be_allowed(:edit_approval_rule) }
-        end
-
-        context 'when user cannot update merge request' do
-          let(:user) { create(:user) }
-
-          it { is_expected.not_to be_allowed(:edit_approval_rule) }
-        end
-      end
     end
 
     context 'when approval rule is not user_defined' do
@@ -65,24 +47,6 @@ RSpec.describe ApprovalMergeRequestRulePolicy, feature_category: :source_code_ma
         let(:user) { developer }
 
         it { is_expected.not_to be_allowed(:edit_approval_rule) }
-      end
-
-      context 'when ensure_consistent_editing_rule is off' do
-        before do
-          stub_feature_flags(ensure_consistent_editing_rule: false)
-        end
-
-        context 'when user can update merge request' do
-          let(:user) { developer }
-
-          it { is_expected.not_to be_allowed(:edit_approval_rule) }
-        end
-
-        context 'when user cannot update merge request' do
-          let(:user) { create(:user) }
-
-          it { is_expected.not_to be_allowed(:edit_approval_rule) }
-        end
       end
     end
   end

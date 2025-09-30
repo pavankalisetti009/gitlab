@@ -97,23 +97,6 @@ RSpec.describe MergeRequestPolicy, :aggregate_failures, feature_category: :code_
           expect(policy_for(fork_maintainer)).to be_disallowed(:update_approvers)
         end
       end
-
-      context 'when ensure_consistent_editing_rule is off' do
-        before do
-          stub_feature_flags(ensure_consistent_editing_rule: false)
-        end
-
-        it 'allows only project developers and above to update the approvers' do
-          expect(policy_for(developer)).to be_allowed(:update_approvers)
-          expect(policy_for(maintainer)).to be_allowed(:update_approvers)
-          expect(policy_for(admin)).to be_allowed(:update_approvers)
-
-          expect(policy_for(guest)).to be_disallowed(:update_approvers)
-          expect(policy_for(fork_guest)).to be_disallowed(:update_approvers)
-          expect(policy_for(fork_developer)).to be_disallowed(:update_approvers)
-          expect(policy_for(fork_maintainer)).to be_disallowed(:update_approvers)
-        end
-      end
     end
   end
 
@@ -205,72 +188,6 @@ RSpec.describe MergeRequestPolicy, :aggregate_failures, feature_category: :code_
         expect(policy_for(fork_guest)).to be_disallowed(:update_approvers)
         expect(policy_for(fork_developer)).to be_disallowed(:update_approvers)
         expect(policy_for(fork_maintainer)).to be_disallowed(:update_approvers)
-      end
-    end
-
-    context 'when ensure_consistent_editing_rule is off' do
-      before do
-        stub_feature_flags(ensure_consistent_editing_rule: false)
-      end
-
-      context 'when overwriting approvers is disabled on the target project' do
-        before do
-          project.update!(disable_overriding_approvers_per_merge_request: true)
-        end
-
-        it 'does not allow anyone to update approvers' do
-          expect(policy_for(guest)).to be_disallowed(:update_approvers)
-          expect(policy_for(developer)).to be_disallowed(:update_approvers)
-          expect(policy_for(maintainer)).to be_disallowed(:update_approvers)
-          expect(policy_for(admin)).to be_disallowed(:update_approvers)
-
-          expect(policy_for(fork_guest)).to be_disallowed(:update_approvers)
-          expect(policy_for(fork_developer)).to be_disallowed(:update_approvers)
-          expect(policy_for(fork_maintainer)).to be_disallowed(:update_approvers)
-        end
-      end
-
-      context 'when overwriting approvers is disabled on the source project' do
-        before do
-          forked_project.update!(disable_overriding_approvers_per_merge_request: true)
-        end
-
-        it 'has no effect - project developers and above, as well as the author, can update the approvers' do
-          expect(policy_for(developer)).to be_allowed(:update_approvers)
-          expect(policy_for(maintainer)).to be_allowed(:update_approvers)
-          expect(policy_for(fork_developer)).to be_allowed(:update_approvers)
-          expect(policy_for(admin)).to be_allowed(:update_approvers)
-
-          expect(policy_for(guest)).to be_disallowed(:update_approvers)
-          expect(policy_for(fork_guest)).to be_disallowed(:update_approvers)
-          expect(policy_for(fork_maintainer)).to be_disallowed(:update_approvers)
-        end
-      end
-
-      context 'when overwriting approvers is enabled on the target project' do
-        it 'allows project developers and above, as well as the author, to update the approvers' do
-          expect(policy_for(developer)).to be_allowed(:update_approvers)
-          expect(policy_for(maintainer)).to be_allowed(:update_approvers)
-          expect(policy_for(fork_developer)).to be_allowed(:update_approvers)
-          expect(policy_for(admin)).to be_allowed(:update_approvers)
-
-          expect(policy_for(guest)).to be_disallowed(:update_approvers)
-          expect(policy_for(fork_guest)).to be_disallowed(:update_approvers)
-          expect(policy_for(fork_maintainer)).to be_disallowed(:update_approvers)
-        end
-      end
-
-      context 'allows project developers and above' do
-        it 'allows only project developers and above to update the approvers' do
-          expect(policy_for(developer)).to be_allowed(:update_approvers)
-          expect(policy_for(maintainer)).to be_allowed(:update_approvers)
-          expect(policy_for(fork_developer)).to be_allowed(:update_approvers)
-          expect(policy_for(admin)).to be_allowed(:update_approvers)
-
-          expect(policy_for(guest)).to be_disallowed(:update_approvers)
-          expect(policy_for(fork_guest)).to be_disallowed(:update_approvers)
-          expect(policy_for(fork_maintainer)).to be_disallowed(:update_approvers)
-        end
       end
     end
   end
