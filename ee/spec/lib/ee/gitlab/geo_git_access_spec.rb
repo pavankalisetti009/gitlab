@@ -60,8 +60,7 @@ RSpec.describe EE::Gitlab::GeoGitAccess, feature_category: :geo_replication do
         'action' => 'geo_proxy_to_primary',
         'data' => hash_including(
           'api_endpoints' => ['/api/endpoint1', '/api/endpoint2'],
-          'primary_repo' => 'http://primary.gitlab.com/repo.git',
-          'geo_proxy_direct_to_primary' => true
+          'primary_repo' => 'http://primary.gitlab.com/repo.git'
         )
       )
     end
@@ -193,9 +192,6 @@ RSpec.describe EE::Gitlab::GeoGitAccess, feature_category: :geo_replication do
                 "/api/v4/geo/proxy_git_ssh/upload_pack"
               ],
               "primary_repo" => "http://primary.gitlab.com/#{project_no_repo.full_path}.git",
-              "geo_proxy_direct_to_primary" => true,
-              "geo_proxy_fetch_direct_to_primary" => true,
-              "geo_proxy_fetch_direct_to_primary_with_options" => true,
               "geo_proxy_fetch_ssh_direct_to_primary" => true,
               "geo_proxy_push_ssh_direct_to_primary" => true,
               "request_headers" => include('Authorization')
@@ -290,9 +286,6 @@ RSpec.describe EE::Gitlab::GeoGitAccess, feature_category: :geo_replication do
                 "/api/v4/geo/proxy_git_ssh/receive_pack"
               ],
               "primary_repo" => "http://primary.gitlab.com/#{project.full_path}.git",
-              "geo_proxy_direct_to_primary" => true,
-              "geo_proxy_fetch_direct_to_primary" => true,
-              "geo_proxy_fetch_direct_to_primary_with_options" => true,
               "geo_proxy_fetch_ssh_direct_to_primary" => true,
               "geo_proxy_push_ssh_direct_to_primary" => true,
               "request_headers" => include('Authorization')
@@ -337,9 +330,6 @@ RSpec.describe EE::Gitlab::GeoGitAccess, feature_category: :geo_replication do
                 "/api/v4/geo/proxy_git_ssh/receive_pack"
               ],
               "primary_repo" => "http://primary.gitlab.com/#{project.full_path}.git",
-              "geo_proxy_direct_to_primary" => true,
-              "geo_proxy_fetch_direct_to_primary" => true,
-              "geo_proxy_fetch_direct_to_primary_with_options" => true,
               "geo_proxy_fetch_ssh_direct_to_primary" => true,
               "geo_proxy_push_ssh_direct_to_primary" => true,
               "request_headers" => include('Authorization')
