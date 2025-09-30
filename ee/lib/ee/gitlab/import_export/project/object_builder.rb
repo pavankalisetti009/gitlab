@@ -20,6 +20,7 @@ module EE
           override :where_clause_for_klass
           def where_clause_for_klass
             return attrs_to_arel(attributes.slice('iid', 'start_date', 'due_date')) if iteration?
+            return attrs_to_arel(attributes.slice('iid')) if epic?
 
             super
           end
