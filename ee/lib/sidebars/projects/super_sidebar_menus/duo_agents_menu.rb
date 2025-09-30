@@ -27,6 +27,11 @@ module Sidebars
           'tanuki-ai'
         end
 
+        override :active_routes
+        def active_routes
+          { controller: :duo_agents_platform }
+        end
+
         private
 
         def show_agents_runs_menu_items?
