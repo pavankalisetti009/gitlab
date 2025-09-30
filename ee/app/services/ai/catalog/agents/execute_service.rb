@@ -48,11 +48,9 @@ module Ai
 
           return error('Agent version must belong to the agent') unless agent_version.item == agent
 
-          if execute_workflow
-            return error('Agent must have a project') unless agent.project
+          return error('User prompt is required') unless user_prompt.present?
 
-            return error('Agent version must have user_prompt') unless agent_version.def_user_prompt.present?
-          end
+          return error('Agent must have a project') if execute_workflow && !agent.project
 
           ServiceResponse.success
         end
@@ -67,7 +65,7 @@ module Ai
           params = {
             json_config: flow_config,
             container: agent.project,
-            goal: agent_goal
+            goal: user_prompt
           }
 
           ::Ai::Catalog::ExecuteWorkflowService.new(current_user, params).execute
@@ -77,13 +75,9 @@ module Ai
           payload_builder = ::Ai::Catalog::DuoWorkflowPayloadBuilder::ExperimentalAgentWrapper.new(
             flow,
             flow.latest_version,
-            { user_prompt_input: agent_goal }
+            { user_prompt_input: user_prompt }
           )
           payload_builder.build
-        end
-
-        def agent_goal
-          user_prompt || agent_version.def_user_prompt
         end
       end
     end

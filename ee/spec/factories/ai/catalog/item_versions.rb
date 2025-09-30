@@ -20,7 +20,7 @@ FactoryBot.define do
         {
           'system_prompt' => 'Talk like a pirate!',
           'tools' => [1],
-          'user_prompt' => 'What is a leap year?'
+          'user_prompt' => ''
         }
       end
     end

@@ -35,6 +35,14 @@ RSpec.describe Ai::Catalog::ItemVersion, feature_category: :workflow_catalog do
 
           it { is_expected.not_to be_valid }
         end
+
+        context 'when user_prompt is an empty string' do
+          before do
+            version.definition['user_prompt'] = ''
+          end
+
+          it { is_expected.to be_valid }
+        end
       end
 
       context 'when item is a flow' do

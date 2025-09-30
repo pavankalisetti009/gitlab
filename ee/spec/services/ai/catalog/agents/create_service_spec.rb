@@ -117,5 +117,14 @@ RSpec.describe Ai::Catalog::Agents::CreateService, feature_category: :workflow_c
 
       it_behaves_like 'an error response', 'You have insufficient permissions'
     end
+
+    context 'when passing only required arguments (test that mutation handles absence of optional args)' do
+      let(:params) { super().except(:release, :tools, :user_prompt) }
+
+      it 'returns a success response with item in payload' do
+        expect(response).to be_success
+        expect(response.payload[:item]).to be_a(Ai::Catalog::Item)
+      end
+    end
   end
 end

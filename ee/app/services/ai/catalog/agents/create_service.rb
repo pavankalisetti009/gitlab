@@ -20,7 +20,7 @@ module Ai
             definition: {
               tools: Array(params[:tools]).map(&:id),
               system_prompt: params[:system_prompt],
-              user_prompt: params[:user_prompt]
+              user_prompt: params[:user_prompt] || ""
             }
           }
           version_params[:release_date] = Time.zone.now if params[:release] == true
