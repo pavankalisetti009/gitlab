@@ -104,7 +104,7 @@ module EE
             delete ':metric_image_id' do
               issue = find_project_issue(params[:issue_iid])
 
-              authorize!(:destroy_issuable_metric_image, issue)
+              authorize!(:delete_issuable_metric_image, issue)
 
               metric_image = issue.metric_images.find_by_id(params[:metric_image_id])
 

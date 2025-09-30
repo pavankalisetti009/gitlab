@@ -58,7 +58,7 @@ RSpec.describe WorkItemPolicy, feature_category: :team_planning do
 
     it 'does not allow' do
       expect(permissions(owner, work_item)).to be_allowed(
-        :upload_issuable_metric_image, :update_issuable_metric_image, :destroy_issuable_metric_image
+        :upload_issuable_metric_image, :update_issuable_metric_image, :delete_issuable_metric_image
       )
       # these permissions are either not yet defined for group level issues or not allowed
       expect(permissions(owner, work_item)).to be_disallowed(
