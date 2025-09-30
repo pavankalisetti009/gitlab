@@ -15,11 +15,6 @@ module Resolvers
 
         def resolve(id:)
           Gitlab::Graphql::Lazy.with_value(find_object(id: id)) do |item|
-            # TODO We can remove this line when organization checks apply to all policy checks
-            # as the type authorization will take care of this.
-            # https://gitlab.com/gitlab-org/gitlab/-/merge_requests/196700
-            next unless item&.organization == current_organization
-
             next if item&.deleted?
 
             item
