@@ -15,11 +15,7 @@ RSpec.describe API::Ai::Llm::GitCommand, :saas, feature_category: :code_review_w
   end
 
   describe 'POST /ai/llm/git_command', :saas, :use_clean_rails_redis_caching do
-    let_it_be(:group, refind: true) { create(:group_with_plan, plan: :ultimate_plan) }
-
-    before_all do
-      group.add_developer(current_user)
-    end
+    let_it_be(:group, refind: true) { create(:group_with_plan, plan: :ultimate_plan, developers: current_user) }
 
     include_context 'with ai features enabled for group'
 
@@ -32,6 +28,7 @@ RSpec.describe API::Ai::Llm::GitCommand, :saas, feature_category: :code_review_w
         make_request
 
         expect(response).to have_gitlab_http_status(:too_many_requests)
+        expect(response.headers).to include('Retry-After' => Gitlab::ApplicationRateLimiter.interval(:ai_action))
       end
     end
 

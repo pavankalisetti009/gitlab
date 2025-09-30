@@ -676,6 +676,8 @@ RSpec.describe API::Ai::DuoWorkflows::Workflows, :with_current_organization, fea
         post_without_params
 
         expect(response).to have_gitlab_http_status(:too_many_requests)
+        expect(response.headers)
+          .to include('Retry-After' => Gitlab::ApplicationRateLimiter.interval(:duo_workflow_direct_access))
       end
     end
 
@@ -1404,6 +1406,8 @@ RSpec.describe API::Ai::DuoWorkflows::Workflows, :with_current_organization, fea
         get_without_params
 
         expect(response).to have_gitlab_http_status(:too_many_requests)
+        expect(response.headers)
+          .to include('Retry-After' => Gitlab::ApplicationRateLimiter.interval(:duo_workflow_direct_access))
       end
     end
 
