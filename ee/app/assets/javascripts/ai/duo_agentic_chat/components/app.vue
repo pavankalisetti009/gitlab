@@ -161,7 +161,7 @@ export default {
           height: `${dimensions.height}px`,
           top: `${dimensions.top}px`,
           left: `${dimensions.left}px`,
-          zIndex: 1071, // should be 1 higher than the tooltip's z-index, which is 1070 (https://gitlab.com/gitlab-org/gitlab-services/design.gitlab.com/-/blob/ea8ca5370dd45fda0a71906c3460ba2353d27c6e/packages/gitlab-ui/src/vendor/bootstrap/scss/_variables.scss#L695)
+          zIndex: 1071, // should be 1px higher than the tooltip's z-index, which is 1070 (https://gitlab.com/gitlab-org/gitlab-services/design.gitlab.com/-/blob/ea8ca5370dd45fda0a71906c3460ba2353d27c6e/packages/gitlab-ui/src/vendor/bootstrap/scss/_variables.scss#L695)
         }"
       >
         <fe-island-duo-next />
