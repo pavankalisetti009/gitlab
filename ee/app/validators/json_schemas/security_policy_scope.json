@@ -41,6 +41,13 @@
               "id": {
                 "type": "integer",
                 "description": "Specifies the ID of the project."
+              },
+              "type": {
+                "type": "string",
+                "description": "Exclude projects of this type from the policy scope. Set to 'personal' to exclude personal projects from policy.",
+                "enum": [
+                  "personal"
+                ]
               }
             }
           }
