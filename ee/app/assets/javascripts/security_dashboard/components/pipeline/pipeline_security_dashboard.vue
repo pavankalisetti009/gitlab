@@ -29,7 +29,6 @@ export default {
     return {
       dismissalDescriptions: this.dismissalDescriptions,
       validityChecksEnabled: this.validityChecksEnabled,
-      allowValidityCheck: true,
     };
   },
   inject: ['pipeline', 'projectFullPath'],
