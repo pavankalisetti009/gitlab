@@ -182,6 +182,71 @@ RSpec.describe ::Gitlab::Scim::Group::ProvisioningService, :saas,
         end
       end
 
+      context 'with BSO (Block Seat Overages) enabled' do
+        before do
+          stub_feature_flags(bso_minimal_access_fallback: true)
+          stub_licensed_features(minimal_access_role: true)
+        end
+
+        context 'without available seats' do
+          before do
+            allow(GitlabSubscriptions::MemberManagement::BlockSeatOverages)
+              .to receive_messages(
+                block_seat_overages?: true,
+                seats_available_for?: false
+              )
+          end
+
+          it 'creates user with MINIMAL_ACCESS instead of the desired access level' do
+            service.execute
+
+            member = group.all_group_members.find_by(user: user)
+            expect(member.access_level).to eq(Gitlab::Access::MINIMAL_ACCESS)
+          end
+
+          it 'logs BSO adjustment when access level is downgraded' do
+            expect(Gitlab::AppLogger).to receive(:info).with(
+              hash_including(
+                message: 'Group membership access level adjusted due to BSO seat limits',
+                group_id: group.id,
+                group_path: group.full_path,
+                user_id: be_a(Integer),
+                requested_access_level: Gitlab::Access::DEVELOPER,
+                adjusted_access_level: Gitlab::Access::MINIMAL_ACCESS,
+                feature_flag: 'bso_minimal_access_fallback'
+              )
+            )
+
+            service.execute
+          end
+        end
+
+        context 'with available seats' do
+          before do
+            allow(GitlabSubscriptions::MemberManagement::BlockSeatOverages)
+              .to receive_messages(
+                block_seat_overages?: true,
+                seats_available_for?: true
+              )
+          end
+
+          it 'creates user with the original desired access level' do
+            service.execute
+
+            member = group.all_group_members.find_by(user: user)
+            expect(member.access_level).to eq(Gitlab::Access::DEVELOPER)
+          end
+
+          it 'does not log BSO adjustment' do
+            expect(Gitlab::AppLogger).not_to receive(:info).with(
+              hash_including(message: 'Group membership access level adjusted due to BSO seat limits')
+            )
+
+            service.execute
+          end
+        end
+      end
+
       context 'for audit' do
         let(:author) { ::Gitlab::Audit::UnauthenticatedAuthor.new(name: '(System)') }
 

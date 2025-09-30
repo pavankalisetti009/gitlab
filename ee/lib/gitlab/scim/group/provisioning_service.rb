@@ -4,6 +4,8 @@ module Gitlab
   module Scim
     module Group
       class ProvisioningService < ::Gitlab::Scim::BaseProvisioningService
+        include GitlabSubscriptions::MemberManagement::SeatAwareProvisioning
+
         def execute
           return error_response(errors: ["Missing params: #{missing_params}"]) unless missing_params.empty?
           return success_response if existing_identity_and_member?
@@ -54,7 +56,10 @@ module Gitlab
         def member
           return @group.member(user) if existing_member?(user)
 
-          @group.add_member(user, default_membership_role, member_role_id: member_role_id) if user.valid?
+          return unless user.valid?
+
+          adjusted_access_level = calculate_adjusted_access_level(@group, user, default_membership_role)
+          @group.add_member(user, adjusted_access_level, member_role_id: member_role_id)
         end
         strong_memoize_attr :member
 
