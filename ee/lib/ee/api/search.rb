@@ -3,6 +3,10 @@
 module EE
   module API
     module Search
+      ELASTICSEARCH_SCOPES = %w[blobs commits notes wiki_blobs].freeze
+      BLOB_SEARCH_TYPES = %w[advanced zoekt].freeze
+      ELASTICSEARCH_SEARCH_TYPE = 'advanced'
+
       extend ActiveSupport::Concern
 
       prepended do
@@ -20,18 +24,17 @@ module EE
           end
 
           override :verify_search_scope!
-          def verify_search_scope!(resource:)
-            return unless elasticsearch_scope.include?(params[:scope]) && !use_elasticsearch?(resource)
+          def verify_search_scope!(additional_params = {})
+            search_type = search_type(additional_params)
+            if search_scope == 'blobs'
+              return if BLOB_SEARCH_TYPES.include?(search_type)
 
-            render_api_error!({ error: 'Scope not supported without Elasticsearch!' }, 400)
-          end
+              return render_api_error!({ error: 'Scope supported only with Elasticsearch or Zoekt' }, 400)
+            end
 
-          def use_elasticsearch?(resource)
-            ::Gitlab::CurrentSettings.search_using_elasticsearch?(scope: resource)
-          end
+            return if ELASTICSEARCH_SCOPES.exclude?(search_scope) || search_type == ELASTICSEARCH_SEARCH_TYPE
 
-          def elasticsearch_scope
-            %w[wiki_blobs blobs commits notes].freeze
+            render_api_error!({ error: 'Scope supported only with Elasticsearch' }, 400)
           end
         end
       end
