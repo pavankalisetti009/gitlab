@@ -15,7 +15,6 @@ module EE
 
             group = ::Group.find_by_id(root_namespace_id)
             return super unless group
-            return super unless ::Feature.enabled?(:ff_oauth_redirect_to_sso_login, group.root_ancestor)
 
             sso_url = build_sso_redirect_url(group)
 
