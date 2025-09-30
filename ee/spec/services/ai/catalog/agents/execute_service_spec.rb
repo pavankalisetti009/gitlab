@@ -11,11 +11,14 @@ RSpec.describe Ai::Catalog::Agents::ExecuteService, :aggregate_failures, feature
   let_it_be(:agent) { create(:ai_catalog_agent, organization: organization, project: project) }
   let_it_be(:agent_version) { agent.versions.last }
 
+  let_it_be(:custom_user_prompt) { 'Custom user prompt for testing' }
+
   let_it_be(:service_params) do
     {
       agent: agent,
       agent_version: agent_version,
-      execute_workflow: true
+      execute_workflow: true,
+      user_prompt: custom_user_prompt
     }
   end
 
@@ -104,6 +107,12 @@ RSpec.describe Ai::Catalog::Agents::ExecuteService, :aggregate_failures, feature
       it_behaves_like 'returns error response', 'Agent version must belong to the agent'
     end
 
+    context 'when user_prompt is not provided' do
+      let(:service_params) { super().merge({ user_prompt: nil }) }
+
+      it_behaves_like 'returns error response', 'User prompt is required'
+    end
+
     context 'when execute_workflow is false' do
       let(:service_params) { super().merge({ execute_workflow: false }) }
 
@@ -183,9 +192,6 @@ RSpec.describe Ai::Catalog::Agents::ExecuteService, :aggregate_failures, feature
       end
 
       context 'when user_prompt is provided' do
-        let(:custom_user_prompt) { 'Custom user prompt for testing' }
-        let(:service_params) { super().merge({ user_prompt: custom_user_prompt }) }
-
         it 'passes the custom user_prompt as goal to ExecuteWorkflowService' do
           allow(::Ai::Catalog::ExecuteWorkflowService).to receive(:new).and_call_original
 
@@ -215,44 +221,6 @@ RSpec.describe Ai::Catalog::Agents::ExecuteService, :aggregate_failures, feature
               'prompt_template' => {
                 'system' => agent_version.def_system_prompt,
                 'user' => custom_user_prompt,
-                'placeholder' => be_a(String)
-              },
-              "params" => { "timeout" => be_a(Integer) }
-            }
-          ])
-        end
-      end
-
-      context 'when user_prompt is not provided' do
-        it 'passes the agent version user_prompt as goal to ExecuteWorkflowService' do
-          allow(::Ai::Catalog::ExecuteWorkflowService).to receive(:new).and_call_original
-
-          execute
-
-          expect(::Ai::Catalog::ExecuteWorkflowService)
-            .to have_received(:new).with(
-              current_user,
-              hash_including(goal: agent_version.def_user_prompt)
-            )
-        end
-
-        it 'configures prompt template with agent version user_prompt' do
-          result = execute
-
-          parsed_yaml = YAML.safe_load(result[:flow_config])
-          expect(parsed_yaml['prompts']).to match([
-            {
-              'prompt_id' => be_a(String),
-              'model' => {
-                'params' => {
-                  'max_tokens' => be_a(Integer),
-                  'model_class_provider' => be_a(String),
-                  'model' => be_a(String)
-                }
-              },
-              'prompt_template' => {
-                'system' => agent_version.def_system_prompt,
-                'user' => agent_version.def_user_prompt,
                 'placeholder' => be_a(String)
               },
               "params" => { "timeout" => be_a(Integer) }

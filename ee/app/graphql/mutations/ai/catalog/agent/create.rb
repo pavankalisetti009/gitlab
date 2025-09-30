@@ -42,7 +42,7 @@ module Mutations
             description: 'List of GitLab tools enabled for the agent.'
 
           argument :user_prompt, GraphQL::Types::String,
-            required: true,
+            required: false,
             description: 'User prompt for the agent.'
 
           authorize :admin_ai_catalog_item

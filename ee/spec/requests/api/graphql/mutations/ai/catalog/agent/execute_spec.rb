@@ -37,9 +37,12 @@ RSpec.describe Mutations::Ai::Catalog::Agent::Execute, :aggregate_failures, feat
   let(:params) do
     {
       agent_id: agent.to_global_id,
-      agent_version_id: agent_version.to_global_id
+      agent_version_id: agent_version.to_global_id,
+      user_prompt: user_prompt
     }
   end
+
+  let(:user_prompt) { 'user prompt' }
 
   let(:oauth_token) do
     { oauth_access_token: instance_double(Doorkeeper::AccessToken, plaintext_token: 'token-12345') }
@@ -120,9 +123,7 @@ RSpec.describe Mutations::Ai::Catalog::Agent::Execute, :aggregate_failures, feat
 
   context 'when the agent does not exist' do
     let(:params) do
-      {
-        agent_id: Gitlab::GlobalId.build(model_name: 'Ai::Catalog::Item', id: non_existing_record_id)
-      }
+      super().merge(agent_id: Gitlab::GlobalId.build(model_name: 'Ai::Catalog::Item', id: non_existing_record_id))
     end
 
     it_behaves_like 'an authorization failure'
@@ -130,10 +131,9 @@ RSpec.describe Mutations::Ai::Catalog::Agent::Execute, :aggregate_failures, feat
 
   context 'when the agent version does not exist' do
     let(:params) do
-      {
-        agent_id: agent.to_global_id,
+      super().merge(
         agent_version_id: Gitlab::GlobalId.build(model_name: 'Ai::Catalog::ItemVersion', id: non_existing_record_id)
-      }
+      )
     end
 
     it_behaves_like 'an authorization failure'
@@ -154,28 +154,16 @@ RSpec.describe Mutations::Ai::Catalog::Agent::Execute, :aggregate_failures, feat
         .to have_received(:new).with(
           project: agent.project,
           current_user: current_user,
-          params: { agent: agent, agent_version: latest_agent_version, execute_workflow: true, user_prompt: nil }
+          params: { agent: agent, agent_version: latest_agent_version, execute_workflow: true,
+                    user_prompt: user_prompt }
         )
     end
   end
 
-  context 'when both agent_id and agent_version_id are valid' do
-    it_behaves_like 'successful execution'
-  end
-
-  context 'when user_prompt is provided' do
-    let(:custom_user_prompt) { 'Custom user prompt for testing' }
-    let(:params) do
-      {
-        agent_id: agent.to_global_id,
-        agent_version_id: agent_version.to_global_id,
-        user_prompt: custom_user_prompt
-      }
-    end
-
+  context 'when all params are valid' do
     it_behaves_like 'successful execution'
 
-    it 'passes the custom user_prompt as goal to ExecuteWorkflowService' do
+    it 'passes the user prompt as goal to ExecuteWorkflowService' do
       allow(::Ai::Catalog::ExecuteWorkflowService).to receive(:new).and_call_original
 
       execute
@@ -183,11 +171,11 @@ RSpec.describe Mutations::Ai::Catalog::Agent::Execute, :aggregate_failures, feat
       expect(::Ai::Catalog::ExecuteWorkflowService)
         .to have_received(:new).with(
           current_user,
-          hash_including(goal: custom_user_prompt)
+          hash_including(goal: user_prompt)
         )
     end
 
-    it 'configures prompt template with custom user input' do
+    it 'configures prompt template with user_prompt' do
       execute
 
       flow_config = graphql_data_at(:ai_catalog_agent_execute, :flowConfig)
@@ -205,47 +193,7 @@ RSpec.describe Mutations::Ai::Catalog::Agent::Execute, :aggregate_failures, feat
           },
           'prompt_template' => {
             'system' => agent_version.def_system_prompt,
-            'user' => custom_user_prompt,
-            'placeholder' => be_a(String)
-          },
-          "params" => { "timeout" => be_a(Integer) }
-        }
-      ])
-    end
-  end
-
-  context 'when user_prompt is not provided' do
-    it 'passes the agent version user_prompt as goal to ExecuteWorkflowService' do
-      allow(::Ai::Catalog::ExecuteWorkflowService).to receive(:new).and_call_original
-
-      execute
-
-      expect(::Ai::Catalog::ExecuteWorkflowService)
-        .to have_received(:new).with(
-          current_user,
-          hash_including(goal: agent_version.def_user_prompt)
-        )
-    end
-
-    it 'configures prompt template with agent version user_prompt' do
-      execute
-
-      flow_config = graphql_data_at(:ai_catalog_agent_execute, :flowConfig)
-      parsed_yaml = YAML.safe_load(flow_config)
-
-      expect(parsed_yaml['prompts']).to match([
-        {
-          'prompt_id' => be_a(String),
-          'model' => {
-            'params' => {
-              'max_tokens' => be_a(Integer),
-              'model_class_provider' => be_a(String),
-              'model' => be_a(String)
-            }
-          },
-          'prompt_template' => {
-            'system' => agent_version.def_system_prompt,
-            'user' => agent_version.def_user_prompt,
+            'user' => user_prompt,
             'placeholder' => be_a(String)
           },
           "params" => { "timeout" => be_a(Integer) }
@@ -264,7 +212,7 @@ RSpec.describe Mutations::Ai::Catalog::Agent::Execute, :aggregate_failures, feat
         .with(
           project: agent.project,
           current_user: current_user,
-          params: { agent: agent, agent_version: agent_version, execute_workflow: true, user_prompt: nil }
+          params: { agent: agent, agent_version: agent_version, execute_workflow: true, user_prompt: user_prompt }
         )
         .and_return(mock_service)
       allow(mock_service).to receive(:execute).and_return(service_result)
@@ -290,7 +238,7 @@ RSpec.describe Mutations::Ai::Catalog::Agent::Execute, :aggregate_failures, feat
         .with(
           project: agent.project,
           current_user: current_user,
-          params: { agent: agent, agent_version: agent_version, execute_workflow: true, user_prompt: nil }
+          params: { agent: agent, agent_version: agent_version, execute_workflow: true, user_prompt: user_prompt }
         )
         .and_return(mock_service)
       allow(mock_service).to receive(:execute).and_return(service_result)
@@ -310,12 +258,7 @@ RSpec.describe Mutations::Ai::Catalog::Agent::Execute, :aggregate_failures, feat
     let_it_be(:flow_version) { flow.versions.last }
 
     context 'when a flow item is passed with an agent item version' do
-      let(:params) do
-        {
-          agent_id: flow.to_global_id,
-          agent_version_id: agent_version.to_global_id
-        }
-      end
+      let(:params) { super().merge(agent_id: flow.to_global_id) }
 
       it 'returns an error for mismatched item types' do
         execute
@@ -328,12 +271,7 @@ RSpec.describe Mutations::Ai::Catalog::Agent::Execute, :aggregate_failures, feat
     end
 
     context 'when an agent item is passed with a flow item version' do
-      let(:params) do
-        {
-          agent_id: agent.to_global_id,
-          agent_version_id: flow_version.to_global_id
-        }
-      end
+      let(:params) { super().merge(agent_version_id: flow_version.to_global_id) }
 
       it 'returns an error for mismatched item types' do
         execute
@@ -349,12 +287,7 @@ RSpec.describe Mutations::Ai::Catalog::Agent::Execute, :aggregate_failures, feat
       let_it_be(:other_agent) { create(:ai_catalog_agent, project: project) }
       let_it_be(:other_agent_version) { other_agent.versions.last }
 
-      let(:params) do
-        {
-          agent_id: agent.to_global_id,
-          agent_version_id: other_agent_version.to_global_id
-        }
-      end
+      let(:params) { super().merge(agent_version_id: other_agent_version.to_global_id) }
 
       it 'returns an error for mismatched agent and version' do
         execute
@@ -365,5 +298,11 @@ RSpec.describe Mutations::Ai::Catalog::Agent::Execute, :aggregate_failures, feat
         expect(graphql_data_at(:ai_catalog_agent_execute, :workflow)).to be_nil
       end
     end
+  end
+
+  context 'when passing only required arguments (test that mutation handles absence of optional args)' do
+    let(:params) { super().slice(:agent_id, :user_prompt) }
+
+    it_behaves_like 'successful execution'
   end
 end

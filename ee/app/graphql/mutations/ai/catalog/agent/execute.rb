@@ -17,9 +17,8 @@ module Mutations
                         the latest version will be used.'
 
           argument :user_prompt, GraphQL::Types::String,
-            required: false,
-            description: 'Optional user prompt. If provided, it will be used for agent execution; otherwise,
-                        the database-stored user_prompt will be used.'
+            required: true,
+            description: 'User prompt that will be used for agent execution.'
 
           field :flow_config, GraphQL::Types::String,
             null: true,

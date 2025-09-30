@@ -168,4 +168,31 @@ RSpec.describe Mutations::Ai::Catalog::Agent::Create, feature_category: :workflo
       expect(item.latest_version.definition['tools']).to eq([])
     end
   end
+
+  context 'when passing only required arguments (test that mutation handles absence of optional args)' do
+    let(:params) { super().except(:release, :tools, :user_prompt) }
+
+    it 'works without errors' do
+      execute
+
+      expect(graphql_data_at(:ai_catalog_agent_create, :errors)).to be_empty
+    end
+
+    it 'returns a new item with all required arguments' do
+      execute
+
+      expect(graphql_data_at(:ai_catalog_agent_create, :item)).to match a_hash_including(
+        'name' => name,
+        'description' => description,
+        'project' => a_graphql_entity_for(project),
+        'public' => true,
+        'latestVersion' => {
+          'released' => false,
+          'systemPrompt' => params[:system_prompt],
+          'tools' => { 'nodes' => [] },
+          'userPrompt' => ""
+        }
+      )
+    end
+  end
 end
