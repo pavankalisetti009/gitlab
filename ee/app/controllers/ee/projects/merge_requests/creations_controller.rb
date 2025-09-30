@@ -14,27 +14,6 @@ module EE
 
         private
 
-        def get_target_projects
-          return super unless params[:action] == "target_projects"
-
-          filter_out_saml_groups(super)
-        end
-
-        def filter_out_saml_groups(projects)
-          groups = target_groups(projects)
-          return projects unless groups.any?
-
-          filter_groups = saml_groups(groups, current_user)
-          return projects unless filter_groups.any?
-
-          projects.not_in_groups(filter_groups)
-        end
-
-        def saml_groups(groups, current_user)
-          @saml_groups ||= ::Gitlab::Auth::GroupSaml::SsoEnforcer.access_restricted_groups(groups,
-            user: current_user)
-        end
-
         def check_for_saml_authorization
           groups = target_groups(get_target_projects)
           return if groups.empty?
@@ -44,10 +23,6 @@ module EE
 
         def source_project
           @project
-        end
-
-        def target_groups(projects)
-          @target_groups ||= projects.filter_map(&:group)
         end
 
         def disable_query_limiting
