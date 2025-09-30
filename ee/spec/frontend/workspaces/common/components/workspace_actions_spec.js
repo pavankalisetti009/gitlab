@@ -11,6 +11,11 @@ describe('ee/workspaces/components/common/workspace_actions', () => {
       propsData: {
         ...props,
       },
+      stubs: {
+        MountingPortal: {
+          template: '<div><slot /></div>',
+        },
+      },
     });
   };
 

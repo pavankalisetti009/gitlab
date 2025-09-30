@@ -77,7 +77,6 @@ export default {
     text-sr-only
     category="tertiary"
     no-caret
-    positioning-strategy="fixed"
     data-testid="workspace-actions-dropdown"
   >
     <template #list-item="{ item }">
