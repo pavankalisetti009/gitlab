@@ -1654,4 +1654,46 @@ describe('Duo Agentic Chat', () => {
       expect(findDuoChat().props('title')).toBe('My Custom Agent');
     });
   });
+
+  describe('flowConfig cache management', () => {
+    beforeEach(() => {
+      duoChatGlobalState.isAgenticChatShown = true;
+      ApolloUtils.getAgentFlowConfig = jest.fn();
+      ApolloUtils.createWorkflow = jest
+        .fn()
+        .mockResolvedValue({ workflowId: '789', threadId: null });
+    });
+
+    it('fetches fresh agent config when switching agents instead of using cached config', async () => {
+      const agent2 = {
+        id: 'Agent 2',
+        name: 'Test Agent',
+        versions: {
+          nodes: [{ id: 'version-2', released: true }],
+        },
+      };
+
+      ApolloUtils.getAgentFlowConfig.mockResolvedValue({ test: 'config' });
+
+      // Create component with cached flowConfig
+      createComponent({
+        data: {
+          flowConfig: { old: 'cached-config' },
+          aiCatalogItemVersionId: 'version-1',
+        },
+      });
+      await waitForPromises();
+
+      // Switch to agent2
+      findDuoChat().vm.$emit('new-chat', agent2);
+      await nextTick();
+
+      // Send a message to trigger workflow
+      findDuoChat().vm.$emit('send-chat-prompt', 'test message');
+      await waitForPromises();
+
+      // Verify fresh config was fetched for the new agent
+      expect(ApolloUtils.getAgentFlowConfig).toHaveBeenCalledWith(expect.anything(), 'version-2');
+    });
+  });
 });
