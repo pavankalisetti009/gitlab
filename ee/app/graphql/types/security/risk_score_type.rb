@@ -6,7 +6,7 @@ module Types
       graphql_name 'RiskScore'
       description 'Total risk score information'
 
-      field :score, GraphQL::Types::Float,
+      field :score, GraphQL::Types::Int,
         null: false,
         experiment: { milestone: '18.4' },
         description: 'Overall risk score.'
@@ -20,6 +20,11 @@ module Types
         null: true,
         experiment: { milestone: '18.4' },
         description: 'Risk factors contributing to the score.'
+
+      field :project_count, GraphQL::Types::Int,
+        null: true,
+        experiment: { milestone: '18.5' },
+        description: 'Total number of projects with risk scores.'
 
       field :by_project,
         ::Types::Security::RiskScoreByProjectType.connection_type,

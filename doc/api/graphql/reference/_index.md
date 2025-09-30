@@ -42414,8 +42414,9 @@ Total risk score information.
 | ---- | ---- | ----------- |
 | <a id="riskscorebyproject"></a>`byProject` {{< icon name="warning-solid" >}} | [`RiskScoreByProjectConnection`](#riskscorebyprojectconnection) | **Introduced** in GitLab 18.4. **Status**: Experiment. Risk scores grouped by project. |
 | <a id="riskscorefactors"></a>`factors` {{< icon name="warning-solid" >}} | [`RiskFactors`](#riskfactors) | **Introduced** in GitLab 18.4. **Status**: Experiment. Risk factors contributing to the score. |
+| <a id="riskscoreprojectcount"></a>`projectCount` {{< icon name="warning-solid" >}} | [`Int`](#int) | **Introduced** in GitLab 18.5. **Status**: Experiment. Total number of projects with risk scores. |
 | <a id="riskscorerating"></a>`rating` {{< icon name="warning-solid" >}} | [`RiskRating!`](#riskrating) | **Introduced** in GitLab 18.4. **Status**: Experiment. Overall risk rating. |
-| <a id="riskscorescore"></a>`score` {{< icon name="warning-solid" >}} | [`Float!`](#float) | **Introduced** in GitLab 18.4. **Status**: Experiment. Overall risk score. |
+| <a id="riskscorescore"></a>`score` {{< icon name="warning-solid" >}} | [`Int!`](#int) | **Introduced** in GitLab 18.4. **Status**: Experiment. Overall risk score. |
 
 ### `RiskScoreByProject`
 
