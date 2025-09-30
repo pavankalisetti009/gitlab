@@ -45635,6 +45635,9 @@ msgid_plural "Open issues"
 msgstr[0] ""
 msgstr[1] ""
 
+msgid "Open navigation menu"
+msgstr ""
+
 msgid "Open new window"
 msgstr ""
 
