@@ -26,12 +26,6 @@ module Search
       end
       module_function :zoekt_node
 
-      def zoekt_truncate_index!
-        index_dir = Search::Zoekt::ZoektProcessManager::INDEX_DIR
-        Dir.glob(File.join(index_dir, '*')).each { |file_path| FileUtils.rm_rf(file_path) }
-      end
-      module_function :zoekt_truncate_index!
-
       def zoekt_ensure_namespace_indexed!(namespace)
         root_namespace = namespace.root_ancestor
         zoekt_enabled_namespace = ::Search::Zoekt::EnabledNamespace.find_or_create_by!(namespace: root_namespace)
@@ -125,21 +119,6 @@ module Search
       stub_feature_flags(disable_zoekt_search_for_saas: false)
       # This is to ensure that the traversal ID search feature is always enabled in tests
       stub_const('Search::Zoekt::MIN_SCHEMA_VERSION_FOR_TRAVERSAL_ID_SEARCH', 0)
-    end
-
-    # DEPRECATED: Do not use this tag.
-    config.around(:each, :zoekt) do |example|
-      zoekt_node
-      Search::Zoekt::TestHelpers.zoekt_truncate_index!
-
-      example.run
-
-      Search::Zoekt::TestHelpers.zoekt_truncate_index!
-    end
-
-    # DEPRECATED: Do not use this tag.
-    config.before(:each, :zoekt) do
-      stub_licensed_features(zoekt_code_search: true)
     end
 
     config.before(:each, :zoekt_settings_enabled) do
