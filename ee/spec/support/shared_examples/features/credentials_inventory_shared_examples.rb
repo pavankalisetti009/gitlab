@@ -12,6 +12,7 @@ RSpec.shared_examples_for 'credentials inventory personal access tokens' do
       create(
         :personal_access_token,
         user: user,
+        group: user.enterprise_group,
         created_at: '2019-12-10',
         updated_at: '2020-06-22',
         expires_at: expiry_date
@@ -50,6 +51,7 @@ RSpec.shared_examples_for 'credentials inventory personal access tokens' do
       create(:personal_access_token,
         :revoked,
         user: user,
+        group: user.enterprise_group,
         created_at: '2019-12-10',
         updated_at: '2020-06-22',
         expires_at: Time.zone.now)
@@ -151,6 +153,7 @@ RSpec.shared_examples_for 'credentials inventory resource access tokens' do
       create(
         :personal_access_token,
         user: user,
+        group: group,
         created_at: '2019-12-10',
         updated_at: '2020-06-22',
         expires_at: expiry_date
