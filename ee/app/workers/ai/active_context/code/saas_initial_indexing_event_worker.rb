@@ -17,8 +17,6 @@ module Ai
           [:p_ai_active_context_code_enabled_namespaces, :gitlab_subscriptions, :subscription_add_on_purchases],
           10.minutes
 
-        NAMESPACE_IDS = [9970].freeze # gitlab-org namespace
-
         def handle_event(_)
           return false unless ::Gitlab::Saas.feature_available?(:duo_chat_on_saas)
           return false unless ::Ai::ActiveContext::Collections::Code.indexing?
@@ -30,7 +28,6 @@ module Ai
 
         def process_in_batches!
           duo_licenses = GitlabSubscriptions::AddOnPurchase.active.non_trial.for_duo_core_pro_or_enterprise
-          duo_licenses = duo_licenses.by_namespace(NAMESPACE_IDS)
 
           total_count = 0
 
@@ -61,9 +58,10 @@ module Ai
           namespaces_with_valid_subscriptions(eligible_namespace_ids).find_each do |subscription|
             namespace = subscription.namespace
 
-            if namespace_has_duo_features_enabled?(namespace) && namespace.root?
-              records << { namespace_id: namespace.id, connection_id: active_connection.id }
-            end
+            next if Feature.disabled?(:active_context_saas_initial_indexing_namespace, namespace)
+            next unless namespace_has_duo_features_enabled?(namespace) && namespace.root?
+
+            records << { namespace_id: namespace.id, connection_id: active_connection.id }
           end
 
           records
