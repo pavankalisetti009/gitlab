@@ -24,9 +24,6 @@ export default {
     flowName() {
       return this.aiCatalogFlow.name;
     },
-    projectName() {
-      return this.aiCatalogFlow.project?.name;
-    },
   },
   mounted() {
     this.trackEvent(TRACK_EVENT_VIEW_AI_CATALOG_ITEM, {
@@ -40,6 +37,9 @@ export default {
 <template>
   <div>
     <page-heading :heading="flowName">
+      <template #description>
+        {{ aiCatalogFlow.description }}
+      </template>
       <template #actions>
         <gl-button
           :to="{ name: $options.editRoute, params: { id: $route.params.id } }"
@@ -50,14 +50,6 @@ export default {
         </gl-button>
       </template>
     </page-heading>
-    <dl>
-      <template v-if="projectName">
-        <dt>{{ s__('AICatalog|Project') }}</dt>
-        <dd>{{ projectName }}</dd>
-      </template>
-      <dt>{{ s__('AICatalog|Description') }}</dt>
-      <dd>{{ aiCatalogFlow.description }}</dd>
-      <ai-catalog-flow-details :item="aiCatalogFlow" />
-    </dl>
+    <ai-catalog-flow-details :item="aiCatalogFlow" />
   </div>
 </template>

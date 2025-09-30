@@ -1,5 +1,7 @@
 import { shallowMount } from '@vue/test-utils';
 import AiCatalogFlowDetails from 'ee/ai/catalog/components/ai_catalog_flow_details.vue';
+import AiCatalogItemField from 'ee/ai/catalog/components/ai_catalog_item_field.vue';
+import FormSection from 'ee/ai/catalog/components/form_section.vue';
 import { mockFlow, mockFlowVersion } from '../mock_data';
 
 describe('AiCatalogFlowDetails', () => {
@@ -17,11 +19,45 @@ describe('AiCatalogFlowDetails', () => {
     });
   };
 
+  const findAllSections = () => wrapper.findAllComponents(FormSection);
+  const findSection = (index) => findAllSections().at(index);
+  const findAllFieldsForSection = (index) =>
+    findSection(index).findAllComponents(AiCatalogItemField);
+
   beforeEach(() => {
     createComponent();
   });
 
-  it('renders item steps', () => {
-    expect(wrapper.text()).toContain(mockFlowVersion.steps.nodes[0].agent.name);
+  it('renders sections', () => {
+    expect(findAllSections()).toHaveLength(3);
+    expect(findSection(0).attributes('title')).toBe('Basic information');
+    expect(findSection(1).attributes('title')).toBe('Access rights');
+    expect(findSection(2).attributes('title')).toBe('Steps');
+  });
+
+  it('renders "Basic information" details', () => {
+    const basicInformationDetails = findAllFieldsForSection(0);
+    expect(basicInformationDetails.at(0).props()).toMatchObject({
+      title: 'Display name',
+      value: mockFlow.name,
+    });
+    expect(basicInformationDetails.at(1).props()).toMatchObject({
+      title: 'Description',
+      value: mockFlow.description,
+    });
+  });
+
+  it('renders "Access rights" details', () => {
+    const accessRightsDetails = findAllFieldsForSection(1);
+    expect(accessRightsDetails.at(0).props()).toMatchObject({
+      title: 'Source project',
+      value: mockFlow.project.nameWithNamespace,
+    });
+  });
+
+  it('renders "Steps" details', () => {
+    const stepsDetails = findAllFieldsForSection(2);
+    expect(stepsDetails.at(0).props('title')).toBe('Steps');
+    expect(stepsDetails.at(0).text()).toContain(mockFlowVersion.steps.nodes[0].agent.name);
   });
 });

@@ -25,7 +25,6 @@ describe('AiCatalogItemDrawer', () => {
   };
 
   const findDrawer = () => wrapper.findComponent(GlDrawer);
-  const findDrawerContent = () => wrapper.findByTestId('ai-catalog-item-drawer-content');
   const findLoadingIcon = () => wrapper.findComponent(GlLoadingIcon);
   const findEditButton = () => wrapper.findComponent(GlButton);
 
@@ -46,10 +45,6 @@ describe('AiCatalogItemDrawer', () => {
 
     it('renders drawer as open', () => {
       expect(findDrawer().props('open')).toBe(true);
-    });
-
-    it('renders project name', () => {
-      expect(findDrawerContent().html()).toContain(mockAgent.project.name);
     });
 
     it('displays the item name', () => {
@@ -91,14 +86,6 @@ describe('AiCatalogItemDrawer', () => {
           activeItem: mockFlow,
         },
       });
-    });
-
-    it('renders project name', () => {
-      expect(findDrawerContent().html()).toContain(mockFlow.project.name);
-    });
-
-    it('renders description', () => {
-      expect(findDrawerContent().html()).toContain(mockFlow.description);
     });
 
     it('does not render loading icon', () => {

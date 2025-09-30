@@ -51,11 +51,6 @@ describe('AiCatalogAgentsShow', () => {
     });
   });
 
-  it('renders project name and description', () => {
-    expect(wrapper.text()).toContain(mockAgent.project.name);
-    expect(wrapper.text()).toContain(mockAgent.description);
-  });
-
   it('renders agent details', () => {
     expect(findAgentDetails().props('item')).toBe(mockAgent);
   });

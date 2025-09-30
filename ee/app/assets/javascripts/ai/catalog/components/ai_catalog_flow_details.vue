@@ -1,7 +1,13 @@
 <script>
 import { getIdFromGraphQLId } from '~/graphql_shared/utils';
+import AiCatalogItemField from './ai_catalog_item_field.vue';
+import FormSection from './form_section.vue';
 
 export default {
+  components: {
+    AiCatalogItemField,
+    FormSection,
+  },
   props: {
     item: {
       type: Object,
@@ -9,6 +15,9 @@ export default {
     },
   },
   computed: {
+    projectName() {
+      return this.item.project?.nameWithNamespace;
+    },
     steps() {
       return (
         this.item.latestVersion?.steps?.nodes?.map(({ agent }) => ({
@@ -22,7 +31,28 @@ export default {
 
 <template>
   <div>
-    <dt>{{ s__('AICatalog|Steps') }}</dt>
-    <dd v-for="(step, index) in steps" :key="index">{{ step.agent.name }} ({{ step.agent.id }})</dd>
+    <h3 class="gl-heading-3 gl-mb-4 gl-mt-0 gl-font-semibold">
+      {{ s__('AICatalog|Flow configuration') }}
+    </h3>
+    <dl class="gl-flex gl-flex-col gl-gap-5">
+      <form-section :title="s__('AICatalog|Basic information')">
+        <ai-catalog-item-field :title="s__('AICatalog|Display name')" :value="item.name" />
+        <ai-catalog-item-field :title="s__('AICatalog|Description')" :value="item.description" />
+      </form-section>
+      <form-section :title="s__('AICatalog|Access rights')">
+        <ai-catalog-item-field
+          v-if="projectName"
+          :title="s__('AICatalog|Source project')"
+          :value="projectName"
+        />
+      </form-section>
+      <form-section :title="s__('AICatalog|Steps')">
+        <ai-catalog-item-field :title="s__('AICatalog|Steps')">
+          <div v-for="(step, index) in steps" :key="index">
+            {{ step.agent.name }} ({{ step.agent.id }})
+          </div>
+        </ai-catalog-item-field>
+      </form-section>
+    </dl>
   </div>
 </template>

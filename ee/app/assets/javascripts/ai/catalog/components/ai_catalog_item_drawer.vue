@@ -56,9 +56,6 @@ export default {
     detailsComponent() {
       return DETAILS_COMPONENT_MAP[this.activeItem.itemType];
     },
-    projectName() {
-      return this.activeItem?.project?.name;
-    },
   },
   DRAWER_Z_INDEX,
 };
@@ -90,17 +87,9 @@ export default {
       </div>
     </template>
     <template #default>
-      <div class="@xl/panel:!gl-px-6" data-testid="ai-catalog-item-drawer-content">
-        <dl>
-          <template v-if="projectName">
-            <dt>{{ s__('AICatalog|Project') }}</dt>
-            <dd>{{ projectName }}</dd>
-          </template>
-          <dt>{{ s__('AICatalog|Description') }}</dt>
-          <dd>{{ activeItem.description }}</dd>
-          <gl-loading-icon v-if="isItemDetailsLoading" size="lg" class="gl-my-5" />
-          <component :is="detailsComponent" :key="activeItem.id" :item="activeItem" />
-        </dl>
+      <div class="@xl/panel:!gl-px-6">
+        <gl-loading-icon v-if="isItemDetailsLoading" size="lg" class="gl-my-5" />
+        <component :is="detailsComponent" :key="activeItem.id" :item="activeItem" />
       </div>
     </template>
   </gl-drawer>

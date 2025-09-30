@@ -1,9 +1,13 @@
 <script>
 import Markdown from '~/vue_shared/components/markdown/markdown_content.vue';
+import AiCatalogItemField from './ai_catalog_item_field.vue';
+import FormSection from './form_section.vue';
 
 export default {
   components: {
     Markdown,
+    AiCatalogItemField,
+    FormSection,
   },
   props: {
     item: {
@@ -12,6 +16,9 @@ export default {
     },
   },
   computed: {
+    projectName() {
+      return this.item.project?.nameWithNamespace;
+    },
     systemPrompt() {
       return this.item.latestVersion?.systemPrompt;
     },
@@ -27,25 +34,36 @@ export default {
 
 <template>
   <div>
-    <template v-if="systemPrompt">
-      <dt>{{ s__('AICatalog|System prompt') }}</dt>
-      <dd>
-        <div class="gl-border gl-mb-5 gl-mt-3 gl-rounded-base gl-bg-subtle gl-p-5">
-          <markdown fallback-on-error :value="systemPrompt" />
-        </div>
-      </dd>
-    </template>
-    <template v-if="userPrompt">
-      <dt>{{ s__('AICatalog|User prompt') }}</dt>
-      <dd>
-        <div class="gl-border gl-mb-5 gl-mt-3 gl-rounded-base gl-bg-subtle gl-p-5">
-          <markdown fallback-on-error :value="userPrompt" />
-        </div>
-      </dd>
-    </template>
-    <template v-if="tools">
-      <dt>{{ s__('AICatalog|Tools') }}</dt>
-      <dd>{{ tools }}</dd>
-    </template>
+    <h3 class="gl-heading-3 gl-mb-4 gl-mt-0 gl-font-semibold">
+      {{ s__('AICatalog|Agent configuration') }}
+    </h3>
+    <dl class="gl-flex gl-flex-col gl-gap-5">
+      <form-section :title="s__('AICatalog|Basic information')">
+        <ai-catalog-item-field :title="s__('AICatalog|Display name')" :value="item.name" />
+        <ai-catalog-item-field :title="s__('AICatalog|Description')" :value="item.description" />
+      </form-section>
+      <form-section :title="s__('AICatalog|Access rights')">
+        <ai-catalog-item-field
+          v-if="projectName"
+          :title="s__('AICatalog|Source project')"
+          :value="projectName"
+        />
+      </form-section>
+      <form-section :title="s__('AICatalog|Prompts')">
+        <ai-catalog-item-field v-if="systemPrompt" :title="s__('AICatalog|System prompt')">
+          <div class="gl-border gl-mb-3 gl-mt-2 gl-rounded-default gl-bg-default gl-p-3">
+            <markdown fallback-on-error :value="systemPrompt" />
+          </div>
+        </ai-catalog-item-field>
+        <ai-catalog-item-field v-if="userPrompt" :title="s__('AICatalog|User prompt')">
+          <div class="gl-border gl-mb-3 gl-mt-2 gl-rounded-default gl-bg-default gl-p-3">
+            <markdown fallback-on-error :value="userPrompt" />
+          </div>
+        </ai-catalog-item-field>
+      </form-section>
+      <form-section v-if="tools" :title="s__('AICatalog|Available tools')">
+        <ai-catalog-item-field :title="s__('AICatalog|Tools')" :value="tools" />
+      </form-section>
+    </dl>
   </div>
 </template>
