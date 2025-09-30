@@ -461,25 +461,24 @@ RSpec.describe API::Search, :clean_gitlab_redis_rate_limiting, factory_default: 
       end
 
       where(:search_type, :scope, :use_elastic, :use_zoekt, :error_expected) do
-        'basic' | 'blobs' | false | false | false
-        'advanced' | 'blobs' | false | false | true
-        'advanced' | 'blobs' | true | false | false
-        'zoekt' | 'blobs' | false | false | true
-        'zoekt' | 'blobs' | false | true | false
-        'zoekt' | 'issue' | false | true | true
+        'basic'     | 'blobs' | false | false | false
+        'advanced'  | 'blobs' | false | false | true
+        'advanced'  | 'blobs' | true  | false | false
+        'zoekt'     | 'blobs' | false | false | true
+        'zoekt'     | 'blobs' | false | true  | false
+        'zoekt'     | 'issue' | false | true  | true
       end
 
       with_them do
         before do
           allow_next_instance_of(SearchService) do |search_service|
-            allow(search_service).to receive(:use_elasticsearch?).and_return(use_elastic)
-            allow(search_service).to receive(:use_zoekt?).and_return(use_zoekt)
-            allow(search_service).to receive(:scope).and_return(scope)
-            allow(search_service).to receive(:search_objects).and_return([])
+            allow(search_service).to receive_messages(
+              use_elasticsearch?: use_elastic, use_zoekt?: use_zoekt, scope: scope, search_objects: []
+            )
           end
         end
 
-        it do
+        it 'returns correct response' do
           search
 
           if error_expected
@@ -534,9 +533,8 @@ RSpec.describe API::Search, :clean_gitlab_redis_rate_limiting, factory_default: 
         end
       end
 
-      context 'when zoekt is enabled', :zoekt, :zoekt_settings_enabled do
+      context 'when zoekt is enabled', :zoekt_settings_enabled do
         before do
-          stub_ee_application_setting(elasticsearch_search: true, elasticsearch_indexing: true)
           zoekt_ensure_project_indexed!(project)
         end
 
