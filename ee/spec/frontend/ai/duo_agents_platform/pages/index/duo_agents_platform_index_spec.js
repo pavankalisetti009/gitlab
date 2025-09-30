@@ -42,7 +42,6 @@ describe('AgentsPlatformIndex', () => {
 
   const findWorkflowsList = () => wrapper.findComponent(AgentFlowList);
   const findLoadingIcon = () => wrapper.findComponent(GlLoadingIcon);
-  const findNewAgentFlowButton = () => wrapper.find('[data-testid="new-agent-flow-button"]');
   const findPageHeading = () => wrapper.findComponent(PageHeading);
   const findExperimentBadge = () => wrapper.findComponent(GlExperimentBadge);
 
@@ -59,10 +58,6 @@ describe('AgentsPlatformIndex', () => {
       expect(findExperimentBadge().props('type')).toBe('beta');
     });
 
-    it('renders the new agent flow button', () => {
-      expect(findNewAgentFlowButton().exists()).toBe(true);
-    });
-
     it('applies no margin top class to page heading', () => {
       expect(findPageHeading().classes()).not.toContain('gl-mt-0');
     });
@@ -75,10 +70,6 @@ describe('AgentsPlatformIndex', () => {
 
     it('does not render the page heading', () => {
       expect(findPageHeading().exists()).toBe(false);
-    });
-
-    it('does not render the new agent flow button', () => {
-      expect(findNewAgentFlowButton().exists()).toBe(false);
     });
   });
 

@@ -1,16 +1,14 @@
 <script>
-import { GlButton, GlExperimentBadge, GlLoadingIcon } from '@gitlab/ui';
+import { GlExperimentBadge, GlLoadingIcon } from '@gitlab/ui';
 import emptyStateIllustrationPath from '@gitlab/svgs/dist/illustrations/empty-state/empty-pipeline-md.svg?url';
 import PageHeading from '~/vue_shared/components/page_heading.vue';
 import AgentFlowList from '../../components/common/agent_flow_list.vue';
-import { AGENTS_PLATFORM_NEW_ROUTE } from '../../router/constants';
 import { AGENT_PLATFORM_INDEX_COMPONENT_NAME } from '../../constants';
 
 export default {
   name: AGENT_PLATFORM_INDEX_COMPONENT_NAME,
   components: {
     AgentFlowList,
-    GlButton,
     GlExperimentBadge,
     GlLoadingIcon,
     PageHeading,
@@ -63,7 +61,6 @@ export default {
       });
     },
   },
-  newPage: AGENTS_PLATFORM_NEW_ROUTE,
   emptyStateIllustrationPath,
 };
 </script>
@@ -75,15 +72,6 @@ export default {
           <span>{{ s__('DuoAgentsPlatform|Agent sessions') }}</span>
           <gl-experiment-badge type="beta" class="gl-self-center" />
         </div>
-      </template>
-      <template #actions>
-        <gl-button
-          v-if="!isSidePanelView"
-          variant="confirm"
-          :to="{ name: $options.newPage }"
-          data-testid="new-agent-flow-button"
-          >{{ s__('DuoAgentsPlatform|New session') }}</gl-button
-        >
       </template>
     </page-heading>
     <gl-loading-icon v-if="isLoadingWorkflows" size="lg" />
