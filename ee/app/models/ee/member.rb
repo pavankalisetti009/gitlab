@@ -81,7 +81,7 @@ module EE
 
     class_methods do
       extend ::Gitlab::Utils::Override
-      include ::Authz::MemberRoleInSharedGroup
+      include ::Authz::MemberRoleInSharedResource
 
       override :with_group_group_sharing_access
       def with_group_group_sharing_access(group)
@@ -97,7 +97,7 @@ module EE
         return super unless group.can_assign_custom_roles_to_group_links?
 
         unless ::Feature.enabled?(:use_user_group_member_roles, ::Feature.current_request)
-          return member_role_id_in_shared_group
+          return member_role_id_in_shared_resource(::GroupGroupLink)
         end
 
         ::Authz::UserGroupMemberRole.arel_table[:member_role_id]

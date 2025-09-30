@@ -3,7 +3,7 @@
 module Authz
   module UserGroupMemberRoles
     class UpdateForSharedGroupService < BaseService
-      include ::Authz::MemberRoleInSharedGroup
+      include ::Authz::MemberRoleInSharedResource
 
       attr_reader :shared_group, :shared_with_group
 
@@ -66,7 +66,7 @@ module Authz
           .project(
             user_group_member_roles[:id],
             group_group_links[:shared_group_id].as('group_id'),
-            member_role_id_in_shared_group.as('member_role_id'),
+            member_role_id_in_shared_resource(::GroupGroupLink).as('member_role_id'),
             group_group_links[:shared_with_group_id])
           # distinct_on and order can be removed when https://gitlab.com/groups/gitlab-org/-/epics/19048 is completed
           .distinct_on(members[:user_id])
@@ -87,6 +87,10 @@ module Authz
 
       def user_group_member_roles
         ::Authz::UserGroupMemberRole.arel_table
+      end
+
+      def group_group_links
+        ::GroupGroupLink.arel_table
       end
 
       def log
