@@ -2,7 +2,7 @@ import { GlBarChart } from '@gitlab/ui/src/charts';
 import { shallowMount } from '@vue/test-utils';
 import { stubComponent } from 'helpers/stub_component';
 import BarChart from 'ee/analytics/analytics_dashboards/components/visualizations/bar_chart.vue';
-import { UNITS } from '~/analytics/shared/constants';
+import { CHART_TOOLTIP_TITLE_FORMATTERS, UNITS } from '~/analytics/shared/constants';
 
 describe('BarChart Visualization', () => {
   /** @type {import('@vue/test-utils').Wrapper} */
@@ -63,14 +63,15 @@ describe('BarChart Visualization', () => {
       seriesIndex: 0,
       seriesId: 'pushes',
       seriesName: 'Pushes',
-      value: [3000, 'Dwight'],
+      value: [3000, 'dwight schrute'],
     };
-    const mockFormatter = (value) => value.toUpperCase();
+
+    const { TITLE_CASE } = CHART_TOOLTIP_TITLE_FORMATTERS;
 
     it.each`
-      description                       | tooltipOptions                                              | expectedTooltipText
-      ${'no options have been defined'} | ${undefined}                                                | ${'Dwight 3000'}
-      ${'options have been defined'}    | ${{ titleFormatter: mockFormatter, valueUnit: UNITS.DAYS }} | ${'DWIGHT 3000 days'}
+      description                       | tooltipOptions                                           | expectedTooltipText
+      ${'no options have been defined'} | ${undefined}                                             | ${'dwight schrute 3000'}
+      ${'options have been defined'}    | ${{ titleFormatter: TITLE_CASE, valueUnit: UNITS.DAYS }} | ${'Dwight Schrute 3000 days'}
     `(
       'formats the tooltip correctly when $description',
       ({ tooltipOptions, expectedTooltipText }) => {

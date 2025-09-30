@@ -236,16 +236,21 @@
       "type": "object",
       "additionalProperties": false,
       "properties": {
+        "titleFormatter": {
+          "enum": [
+            "DATE",
+            "TITLE_CASE",
+            "VALUE_ONLY"
+          ]
+        },
         "valueUnit": {
-          "type": {
-            "enum": [
-              "COUNT",
-              "DAYS",
-              "PER_DAY",
-              "PERCENT",
-              "TIME_INTERVAL"
-            ]
-          }
+          "enum": [
+            "COUNT",
+            "DAYS",
+            "PER_DAY",
+            "PERCENT",
+            "TIME_INTERVAL"
+          ]
         }
       },
       "title": "ChartTooltip"

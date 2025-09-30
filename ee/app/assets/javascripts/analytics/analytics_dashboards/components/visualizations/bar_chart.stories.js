@@ -1,5 +1,5 @@
 import { stackedPresentationOptions } from '@gitlab/ui/src/utils/constants';
-import { UNITS } from '~/analytics/shared/constants';
+import { CHART_TOOLTIP_TITLE_FORMATTERS, UNITS } from '~/analytics/shared/constants';
 import DashboardLayout from 'storybook_helpers/dashboards/dashboard_layout.vue';
 import BarChart from './bar_chart.vue';
 
@@ -92,7 +92,7 @@ WithCustomTooltip.args = {
   options: {
     ...defaultArgs.options,
     chartTooltip: {
-      titleFormatter: (title) => title.toUpperCase(),
+      titleFormatter: CHART_TOOLTIP_TITLE_FORMATTERS.VALUE_ONLY,
       valueUnit: UNITS.COUNT,
     },
   },

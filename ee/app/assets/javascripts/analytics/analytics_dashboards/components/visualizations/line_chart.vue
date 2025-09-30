@@ -3,7 +3,7 @@ import { GlLineChart, GlChartSeriesLabel } from '@gitlab/ui/src/charts';
 import merge from 'lodash/merge';
 
 import {
-  customFormatVisualizationTooltipTitle,
+  formatChartTooltipTitle,
   formatVisualizationTooltipTitle,
   formatVisualizationValue,
   humanizeChartTooltipValue,
@@ -38,10 +38,12 @@ export default {
   },
   methods: {
     formatTooltipTitle(title, params) {
-      const { chartTooltip: { titleFormatter } = {} } = this.options;
+      const { chartTooltip: { titleFormatter: formatter } = {} } = this.options;
 
-      if (titleFormatter) {
-        return customFormatVisualizationTooltipTitle(params, titleFormatter);
+      if (formatter) {
+        const xAxisValue = params?.seriesData?.at(0)?.value?.at(0);
+
+        return formatChartTooltipTitle({ title, value: xAxisValue, formatter });
       }
 
       return formatVisualizationTooltipTitle(title, params);

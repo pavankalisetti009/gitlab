@@ -16,4 +16,5 @@ options:
     type: value
   includeLegendAvgMax: false
   chartTooltip:
+    titleFormatter: DATE
     valueUnit: PERCENT

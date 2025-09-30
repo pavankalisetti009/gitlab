@@ -5,10 +5,10 @@ import {
   calculateDecimalPlaces,
   humanizeChartTooltipValue,
   removeNullSeries,
-  customFormatVisualizationTooltipTitle,
+  formatChartTooltipTitle,
 } from 'ee/analytics/analytics_dashboards/components/visualizations/utils';
 import { NULL_SERIES_ID } from 'ee/analytics/shared/constants';
-import { UNITS } from '~/analytics/shared/constants';
+import { CHART_TOOLTIP_TITLE_FORMATTERS, UNITS } from '~/analytics/shared/constants';
 
 describe('visualization utils', () => {
   describe('formatVisualizationValue', () => {
@@ -85,40 +85,23 @@ describe('visualization utils', () => {
     });
   });
 
-  describe('customFormatVisualizationTooltipTitle', () => {
-    it('applies the formatter as expected', () => {
-      const value = 50;
-      const params = {
-        seriesData: [
-          {
-            value: [value],
-          },
-        ],
-      };
-      const formatter = (num) => num.toFixed(2);
+  describe('formatChartTooltipTitle', () => {
+    const { DATE, TITLE_CASE, VALUE_ONLY } = CHART_TOOLTIP_TITLE_FORMATTERS;
 
-      expect(customFormatVisualizationTooltipTitle(params, formatter)).toBe('50.00');
-    });
+    it.each`
+      value                        | formatter     | expected
+      ${'2024-04-19T00:00:00.000'} | ${DATE}       | ${'Apr 19, 2024'}
+      ${'2023-11-12T17:43:11.987'} | ${DATE}       | ${'Nov 12, 2023'}
+      ${'Deployment frequency'}    | ${TITLE_CASE} | ${'Deployment Frequency'}
+      ${'deployment_frequency'}    | ${TITLE_CASE} | ${'Deployment Frequency'}
+      ${'deployment-frequency'}    | ${TITLE_CASE} | ${'Deployment Frequency'}
+      ${'Load Balancer East'}      | ${VALUE_ONLY} | ${'Load Balancer East'}
+      ${'Load Balancer East'}      | ${undefined}  | ${'Load Balancer East (AxisName)'}
+      ${null}                      | ${DATE}       | ${''}
+    `('returns formatted title as expected', ({ value, formatter, expected }) => {
+      const title = `${value} (AxisName)`;
 
-    describe('x-axis value is nullish', () => {
-      const params = {
-        seriesData: [
-          {
-            value: [null],
-          },
-        ],
-      };
-      const formatter = jest.fn();
-
-      it('does not apply formatter', () => {
-        customFormatVisualizationTooltipTitle(params, formatter);
-
-        expect(formatter).not.toHaveBeenCalled();
-      });
-
-      it('returns empty string', () => {
-        expect(customFormatVisualizationTooltipTitle(params, formatter)).toBe('');
-      });
+      expect(formatChartTooltipTitle({ title, value, formatter })).toEqual(expected);
     });
   });
 
