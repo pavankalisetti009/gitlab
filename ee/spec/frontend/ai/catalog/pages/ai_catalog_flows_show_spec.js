@@ -51,11 +51,6 @@ describe('AiCatalogFlowsShow', () => {
     });
   });
 
-  it('renders project name and description', () => {
-    expect(wrapper.text()).toContain(mockFlow.project.name);
-    expect(wrapper.text()).toContain(mockFlow.description);
-  });
-
   it('renders flow details', () => {
     expect(findFlowDetails().props('item')).toBe(mockFlow);
   });

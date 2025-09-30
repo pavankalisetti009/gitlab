@@ -24,9 +24,6 @@ export default {
     agentName() {
       return this.aiCatalogAgent.name;
     },
-    projectName() {
-      return this.aiCatalogAgent.project?.name;
-    },
   },
   mounted() {
     this.trackEvent(TRACK_EVENT_VIEW_AI_CATALOG_ITEM, {
@@ -40,6 +37,9 @@ export default {
 <template>
   <div>
     <page-heading :heading="agentName">
+      <template #description>
+        {{ aiCatalogAgent.description }}
+      </template>
       <template #actions>
         <gl-button
           :to="{ name: $options.editRoute, params: { id: $route.params.id } }"
@@ -50,14 +50,6 @@ export default {
         </gl-button>
       </template>
     </page-heading>
-    <dl>
-      <template v-if="projectName">
-        <dt>{{ s__('AICatalog|Project') }}</dt>
-        <dd>{{ projectName }}</dd>
-      </template>
-      <dt>{{ s__('AICatalog|Description') }}</dt>
-      <dd>{{ aiCatalogAgent.description }}</dd>
-      <ai-catalog-agent-details :item="aiCatalogAgent" />
-    </dl>
+    <ai-catalog-agent-details :item="aiCatalogAgent" />
   </div>
 </template>

@@ -27,8 +27,6 @@ const mockProjectFactory = (overrides = {}) => ({
   ...overrides,
 });
 
-const mockProject = mockProjectFactory();
-
 const mockProjectWithNamespace = mockProjectFactory({
   nameWithNamespace: 'Group / Project 1',
 });
@@ -144,7 +142,7 @@ export const mockAgentVersion = {
 export const mockBaseAgent = mockAgentFactory();
 
 export const mockAgent = mockAgentFactory({
-  project: { ...mockProject, name: 'Project name' },
+  project: mockProjectWithNamespace,
   latestVersion: mockAgentVersion,
   versions: mockAgentVersions,
 });
@@ -333,7 +331,7 @@ const mockFlowFactory = (overrides = {}) => ({
 });
 
 export const mockFlow = mockFlowFactory({
-  project: { ...mockProject, name: 'Project name' },
+  project: mockProjectWithNamespace,
   latestVersion: mockFlowVersion,
 });
 
