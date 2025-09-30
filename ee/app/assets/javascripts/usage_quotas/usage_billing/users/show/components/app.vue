@@ -1,7 +1,7 @@
 <script>
 import { GlAlert, GlAvatar, GlButton, GlCard, GlLoadingIcon } from '@gitlab/ui';
 import UserDate from '~/vue_shared/components/user_date.vue';
-import { mockData } from 'ee_jest/usage_quotas/usage_billing/users/show/mock_data';
+import { mockDataWithPool } from 'ee_jest/usage_quotas/usage_billing/users/show/mock_data';
 import { logError } from '~/lib/logger';
 import axios from '~/lib/utils/axios_utils';
 import { captureException } from '~/sentry/sentry_browser_wrapper';
@@ -36,6 +36,9 @@ export default {
     user() {
       return this.userUsage.user;
     },
+    hasCommitment() {
+      return Boolean(this.gitlabUnitsUsage.totalUnits);
+    },
   },
   async mounted() {
     await this.fetchUsageData();
@@ -52,7 +55,7 @@ export default {
         captureException(error);
 
         // TODO: this fallback will be removed once we integrate with actual BE
-        this.gitlabUnitsUsage = mockData.subscription.gitlabUnitsUsage;
+        this.gitlabUnitsUsage = mockDataWithPool.subscription.gitlabUnitsUsage;
       } finally {
         this.isLoading = false;
       }
@@ -129,7 +132,11 @@ export default {
           </dt>
         </gl-card>
 
-        <gl-card data-testid="month-pool-card" class="gl-flex-1 gl-bg-transparent">
+        <gl-card
+          v-if="hasCommitment"
+          data-testid="month-pool-card"
+          class="gl-flex-1 gl-bg-transparent"
+        >
           <dd class="gl-font-heading gl-heading-scale-400 gl-mb-3">{{ userUsage.poolUsed }}</dd>
           <dt>
             <p class="gl-my-0">{{ s__('UsageBilling|Credits used from pool this month') }}</p>

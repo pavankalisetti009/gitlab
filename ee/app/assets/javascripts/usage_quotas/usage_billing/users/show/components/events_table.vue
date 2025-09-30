@@ -1,5 +1,5 @@
 <script>
-import { GlLink, GlTable } from '@gitlab/ui';
+import { GlLink, GlTableLite } from '@gitlab/ui';
 import { s__ } from '~/locale';
 import UserDate from '~/vue_shared/components/user_date.vue';
 import { SHORT_DATE_FORMAT_WITH_TIME } from '~/vue_shared/constants';
@@ -8,7 +8,7 @@ export default {
   name: 'EventsTable',
   components: {
     GlLink,
-    GlTable,
+    GlTableLite,
     UserDate,
   },
   props: {
@@ -32,7 +32,7 @@ export default {
 </script>
 <template>
   <div>
-    <gl-table :fields="tableFields" :items="events">
+    <gl-table-lite :fields="tableFields" :items="events">
       <template #cell(timestamp)="{ item }">
         <user-date :date="item.timestamp" :date-format="$options.SHORT_DATE_FORMAT_WITH_TIME" />
       </template>
@@ -42,6 +42,6 @@ export default {
           {{ item.location.name }}
         </gl-link>
       </template>
-    </gl-table>
+    </gl-table-lite>
   </div>
 </template>

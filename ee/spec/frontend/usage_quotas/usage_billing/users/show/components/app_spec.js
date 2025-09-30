@@ -6,7 +6,7 @@ import waitForPromises from 'helpers/wait_for_promises';
 import { logError } from '~/lib/logger';
 import axios from '~/lib/utils/axios_utils';
 import { captureException } from '~/sentry/sentry_browser_wrapper';
-import { mockData } from '../mock_data';
+import { mockDataWithPool, mockDataWithoutPool } from '../mock_data';
 
 jest.mock('~/lib/logger');
 jest.mock('~/sentry/sentry_browser_wrapper');
@@ -17,7 +17,7 @@ describe('UsageBillingUserDashboardApp', () => {
   /** @type { MockAdapter } */
   let mockAxios;
 
-  const MOCK_USAGE = mockData.subscription.gitlabUnitsUsage.userUsage;
+  const MOCK_USAGE = mockDataWithPool.subscription.gitlabUnitsUsage.userUsage;
   const MOCK_USER = MOCK_USAGE.user;
   const USER_ID = MOCK_USER.id;
   const API_ENDPOINT = `/admin/gitlab_duo/usage/users/${USER_ID}/data`;
@@ -59,7 +59,7 @@ describe('UsageBillingUserDashboardApp', () => {
 
   describe('loaded state', () => {
     beforeEach(async () => {
-      mockAxios.onGet(API_ENDPOINT).reply(200, mockData);
+      mockAxios.onGet(API_ENDPOINT).reply(200, mockDataWithPool);
       createComponent();
       await waitForPromises();
     });
@@ -100,6 +100,19 @@ describe('UsageBillingUserDashboardApp', () => {
         expect(card.exists()).toBe(true);
         expect(card.text()).toContain(`${MOCK_USAGE.totalUnitsUsed}`);
       });
+    });
+  });
+
+  describe('no commitment state', () => {
+    beforeEach(async () => {
+      mockAxios.onGet(API_ENDPOINT).reply(200, mockDataWithoutPool);
+      createComponent();
+      await waitForPromises();
+    });
+
+    it('will not render the pool usage card', () => {
+      const card = findMonthPoolCard();
+      expect(card.exists()).toBe(false);
     });
   });
 
