@@ -11039,6 +11039,9 @@ msgstr ""
 msgid "Boards|An error occurred while fetching the board lists. Please reload the page."
 msgstr ""
 
+msgid "Boards|An error occurred while fetching the statuses. Please try again."
+msgstr ""
+
 msgid "Boards|An error occurred while fetching unassigned issues. Please try again."
 msgstr ""
 

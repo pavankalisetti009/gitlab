@@ -2,7 +2,7 @@ import { nextTick } from 'vue';
 import BoardNewEpic from 'ee/boards/components/board_new_epic.vue';
 import waitForPromises from 'helpers/wait_for_promises';
 
-import { DraggableItemTypes, WIP_WEIGHT } from 'ee_else_ce/boards/constants';
+import { DraggableItemTypes, WIP_WEIGHT, ListType } from 'ee_else_ce/boards/constants';
 import BoardCard from '~/boards/components/board_card.vue';
 import BoardCardInner from '~/boards/components/board_card_inner.vue';
 import BoardCardMoveToPosition from '~/boards/components/board_card_move_to_position.vue';
@@ -10,6 +10,7 @@ import BoardNewIssue from '~/boards/components/board_new_issue.vue';
 import BoardCutLine from '~/boards/components/board_cut_line.vue';
 import listIssuesQuery from '~/boards/graphql/lists_issues.query.graphql';
 import issueCreateMutation from '~/boards/graphql/issue_create.mutation.graphql';
+import namespaceWorkItemTypesQuery from '~/work_items/graphql/namespace_work_item_types.query.graphql';
 import * as cacheUpdates from '~/boards/graphql/cache_updates';
 import { TYPE_EPIC, TYPE_ISSUE, WORKSPACE_GROUP, WORKSPACE_PROJECT } from '~/issues/constants';
 import issueMoveListMutation from 'ee/boards/graphql/issue_move_list.mutation.graphql';
@@ -17,6 +18,7 @@ import epicMoveListMutation from 'ee/boards/graphql/epic_move_list.mutation.grap
 import epicCreateMutation from 'ee/boards/graphql/epic_create.mutation.graphql';
 import listEpicsQuery from 'ee/boards/graphql/lists_epics_with_color.query.graphql';
 import { mockList } from 'jest/boards/mock_data';
+import { namespaceWorkItemTypesQueryResponse } from 'ee_else_ce_jest/work_items/mock_data';
 import createComponent from '../board_list_helper';
 import {
   mockGroupIssuesResponse,
@@ -62,6 +64,19 @@ beforeEach(() => {
 
 describe('BoardList Component', () => {
   let wrapper;
+
+  const startDrag = (
+    params = {
+      item: {
+        dataset: {
+          draggableItemType: DraggableItemTypes.card,
+          itemId: mockIssues[0].id,
+        },
+      },
+    },
+  ) => {
+    wrapper.findByTestId('tree-root-wrapper').vm.$emit('start', params);
+  };
 
   const endDrag = (params) => {
     wrapper.findByTestId('tree-root-wrapper').vm.$emit('end', params);
@@ -198,6 +213,9 @@ describe('BoardList Component', () => {
       .fn()
       .mockResolvedValue(createEpicMutationResponse);
     const queryHandlerFailure = jest.fn().mockRejectedValue(new Error('error'));
+    const namespaceWorkItemTypesQueryHandler = jest
+      .fn()
+      .mockResolvedValue(namespaceWorkItemTypesQueryResponse);
 
     const apolloQueryHandlers = [
       [listIssuesQuery, groupIssuesQueryHandlerSuccess],
@@ -206,6 +224,7 @@ describe('BoardList Component', () => {
       [epicMoveListMutation, moveEpicMutationHandlerSuccess],
       [issueCreateMutation, createIssueMutationHandlerSuccess],
       [epicCreateMutation, createEpicMutationHandlerSuccess],
+      [namespaceWorkItemTypesQuery, namespaceWorkItemTypesQueryHandler],
     ];
 
     const endDragIssueVariables = {
@@ -528,5 +547,73 @@ describe('BoardList Component', () => {
         expect(cacheUpdates.setError).toHaveBeenCalled();
       },
     );
+
+    describe('when dragging between applicable status lists', () => {
+      beforeEach(async () => {
+        wrapper = createComponent({
+          listProps: {
+            id: 'gid://gitlab/List/5',
+          },
+          componentProps: {
+            draggedType: 'ISSUE',
+          },
+          provide: {
+            boardType: WORKSPACE_PROJECT,
+            isProjectBoard: true,
+            isGroupBoard: false,
+          },
+          apolloQueryHandlers,
+        });
+
+        await waitForPromises();
+      });
+
+      it('should not mark the list as inapplicable', () => {
+        expect(wrapper.classes()).not.toContain('board-column-not-applicable');
+        expect(wrapper.find('.board-column-not-applicable-content').exists()).toBe(false);
+      });
+
+      it('should not show inapplicable message', () => {
+        expect(wrapper.find('.board-column-not-applicable-content').exists()).toBe(false);
+      });
+    });
+
+    describe('when dragging between in applicable status lists', () => {
+      beforeEach(async () => {
+        wrapper = createComponent({
+          listProps: {
+            id: 'gid://gitlab/List/5',
+            status: {
+              id: 'gid://gitlab/status/1',
+              name: 'Open',
+            },
+            listType: ListType.status,
+          },
+          componentProps: {
+            draggedType: 'EPIC',
+          },
+          provide: {
+            boardType: WORKSPACE_PROJECT,
+            isProjectBoard: true,
+            isGroupBoard: false,
+          },
+          apolloQueryHandlers,
+        });
+
+        await waitForPromises();
+        startDrag();
+
+        await nextTick();
+      });
+
+      it('should mark the list as inapplicable', () => {
+        expect(wrapper.classes()).toContain('board-column-not-applicable');
+        expect(wrapper.find('.board-column-not-applicable-content').exists()).toBe(true);
+      });
+
+      it('should show inapplicable message', () => {
+        expect(wrapper.find('.board-column-not-applicable-content').exists()).toBe(true);
+      });
+    });
   });
 });
