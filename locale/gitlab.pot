@@ -14105,9 +14105,6 @@ msgstr ""
 msgid "Close design"
 msgstr ""
 
-msgid "Close epic"
-msgstr ""
-
 msgid "Close milestone"
 msgstr ""
 
@@ -22293,9 +22290,6 @@ msgstr ""
 msgid "Delete deployment"
 msgstr ""
 
-msgid "Delete epic"
-msgstr ""
-
 msgid "Delete group"
 msgstr ""
 
@@ -26595,9 +26589,6 @@ msgstr ""
 msgid "Epic Boards"
 msgstr ""
 
-msgid "Epic actions"
-msgstr ""
-
 msgid "Epic and its work item parent must be the same"
 msgstr ""
 
@@ -26689,9 +26680,6 @@ msgid "Error Tracking"
 msgstr ""
 
 msgid "Error code"
-msgstr ""
-
-msgid "Error creating epic"
 msgstr ""
 
 msgid "Error creating label."
@@ -54090,9 +54078,6 @@ msgstr ""
 msgid "Reopen %{noteable}"
 msgstr ""
 
-msgid "Reopen epic"
-msgstr ""
-
 msgid "Reopen milestone"
 msgstr ""
 
@@ -66232,9 +66217,6 @@ msgstr ""
 msgid "There was an error generating commit message."
 msgstr ""
 
-msgid "There was an error getting the epic participants."
-msgstr ""
-
 msgid "There was an error importing the Jira project."
 msgstr ""
 
@@ -69089,9 +69071,6 @@ msgid "Unable to update DPoP preference."
 msgstr ""
 
 msgid "Unable to update label prioritization at this time"
-msgstr ""
-
-msgid "Unable to update this epic at this time."
 msgstr ""
 
 msgid "Unable to update this issue at this time."
