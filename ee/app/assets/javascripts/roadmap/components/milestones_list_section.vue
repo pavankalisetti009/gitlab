@@ -38,10 +38,6 @@ export default {
       type: Array,
       required: true,
     },
-    bufferSize: {
-      type: Number,
-      required: true,
-    },
   },
   data() {
     return {

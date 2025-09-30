@@ -167,7 +167,6 @@ export default {
       v-if="displayMilestones"
       :milestones="milestonesToShow"
       :timeframe="timeframe"
-      :buffer-size="bufferSize"
       @milestonesMounted="toggleCanCalculateEpicsListHeight"
     />
     <epics-list-section

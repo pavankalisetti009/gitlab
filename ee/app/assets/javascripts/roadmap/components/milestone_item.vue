@@ -17,6 +17,7 @@ export default {
   },
   mixins: [CommonMixin, QuartersPresetMixin, MonthsPresetMixin, WeeksPresetMixin],
   props: {
+    // eslint-disable-next-line vue/no-unused-properties -- `timeFrameItem` used by the `CommonMixin` mixin
     timeframeItem: {
       type: [Date, Object],
       required: true,
@@ -39,11 +40,13 @@ export default {
   },
   computed: {
     ...mapLocalSettings(['presetType', 'timeframe']),
+    // eslint-disable-next-line vue/no-unused-properties -- `startDate` used by the `CommonMixin` mixin
     startDate() {
       return this.milestone.startDateOutOfRange
         ? this.milestone.originalStartDate
         : this.milestone.startDate;
     },
+    // eslint-disable-next-line vue/no-unused-properties -- `endDate` used by the `CommonMixin` mixin
     endDate() {
       return this.milestone.endDateOutOfRange
         ? this.milestone.originalEndDate
