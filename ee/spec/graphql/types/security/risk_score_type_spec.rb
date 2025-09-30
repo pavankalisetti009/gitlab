@@ -3,7 +3,7 @@
 require 'spec_helper'
 
 RSpec.describe GitlabSchema.types['RiskScore'], feature_category: :vulnerability_management do
-  let(:expected_fields) { %i[score rating factors by_project] }
+  let(:expected_fields) { %i[score rating factors by_project project_count] }
 
   subject { described_class }
 

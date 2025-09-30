@@ -45,11 +45,12 @@ RSpec.describe Resolvers::Security::RiskScoreResolver, feature_category: :vulner
         result = resolved_risk_score
 
         expect(result).to include(
-          score: be_a(Float),
+          score: be_an(Integer),
           rating: be_in(%w[low medium high critical unknown]),
           factors: include(
             vulnerabilities_average_score: include(factor: be_a(Float))
           ),
+          project_count: be_an(Integer),
           by_project: be_an(Array)
         )
       end

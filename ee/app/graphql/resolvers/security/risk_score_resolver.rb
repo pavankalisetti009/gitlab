@@ -26,13 +26,14 @@ module Resolvers
         projects_data = context[:project_id] ? filtered_projects_data(context[:project_id]) : all_projects_data
 
         {
-          score: 5.2,
+          score: 5,
           rating: 'low',
           factors: {
             vulnerabilities_average_score: {
               factor: 1.0
             }
           },
+          project_count: projects_data.length,
           by_project: projects_data
         }
       end
@@ -42,7 +43,7 @@ module Resolvers
         project_ids.map do |project_id|
           {
             project: Project.new(id: project_id, name: "Project #{project_id}", path: "Project #{project_id}"),
-            score: 5.2,
+            score: 5,
             rating: 'low'
           }
         end
@@ -54,11 +55,11 @@ module Resolvers
 
         # Generate mock data for multiple projects with randomized score and project name
         (1..rand(1..100)).map do |i|
-          score = rand(1.0..100.0).round(1)
+          score = rand(1..100)
           rating = case score
-                   when 0..25.9 then 'low'
-                   when 26..50.9 then 'medium'
-                   when 51..75.9 then 'high'
+                   when 0..25 then 'low'
+                   when 26..50 then 'medium'
+                   when 51..75 then 'high'
                    when 76..100 then 'critical'
                    else 'unknown'
                    end
