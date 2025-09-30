@@ -15,6 +15,7 @@ module Resolvers
       def resolve_with_lookahead
         return unless work_item_status_licensed_feature_available?
 
+        context[:namespace] = namespace
         lifecycles = namespace.lifecycles
 
         lifecycles.is_a?(ActiveRecord::Relation) ? apply_lookahead(lifecycles) : lifecycles

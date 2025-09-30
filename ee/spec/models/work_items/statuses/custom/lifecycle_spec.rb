@@ -255,27 +255,6 @@ RSpec.describe WorkItems::Statuses::Custom::Lifecycle, feature_category: :team_p
     end
   end
 
-  describe '#status_counts' do
-    before do
-      custom_lifecycle.save!
-    end
-
-    it 'returns status counts with nil values' do
-      status_counts = custom_lifecycle.status_counts
-
-      expect(status_counts.size).to eq(3)
-
-      status_counts.each do |status_count|
-        expect(status_count[:status]).to be_a(WorkItems::Statuses::Custom::Status)
-        expect(status_count[:count]).to be_nil
-      end
-
-      expect(status_counts.pluck(:status)).to contain_exactly(
-        open_status, closed_status, duplicate_status
-      )
-    end
-  end
-
   describe '#in_use?' do
     before do
       stub_licensed_features(work_item_status: true)

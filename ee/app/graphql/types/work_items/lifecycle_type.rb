@@ -39,7 +39,8 @@ module Types
 
       field :status_counts, [Types::WorkItems::StatusCountType],
         experiment: { milestone: '18.4' },
-        description: 'Work item counts by status for the lifecycle.'
+        description: 'Work item counts by status for the lifecycle.',
+        resolver: Resolvers::WorkItems::Lifecycles::StatusCountsResolver
     end
     # rubocop:enable Graphql/AuthorizeTypes, GraphQL/ExtractType
   end
