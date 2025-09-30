@@ -1,8 +1,8 @@
 <script>
 import { getSundays } from '~/lib/utils/datetime_utility';
 
-import { PRESET_TYPES } from '../../constants';
 import CommonMixin from '../../mixins/common_mixin';
+import { PRESET_TYPES } from '../../constants';
 
 export default {
   mixins: [CommonMixin],
@@ -18,6 +18,7 @@ export default {
   },
   data() {
     return {
+      // eslint-disable-next-line vue/no-unused-properties -- `presetType` used by the `CommonMixin` mixin
       presetType: PRESET_TYPES.MONTHS,
       indicatorStyle: {},
     };
