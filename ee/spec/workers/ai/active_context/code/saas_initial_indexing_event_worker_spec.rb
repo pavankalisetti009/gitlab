@@ -13,7 +13,6 @@ RSpec.describe Ai::ActiveContext::Code::SaasInitialIndexingEventWorker, feature_
   subject(:execute) { consume_event(subscriber: described_class, event: event) }
 
   before do
-    stub_const("#{described_class}::NAMESPACE_IDS", [namespace.id])
     allow(::Gitlab::Saas).to receive(:feature_available?).and_return(true)
   end
 
@@ -55,8 +54,7 @@ RSpec.describe Ai::ActiveContext::Code::SaasInitialIndexingEventWorker, feature_
         allow(::Ai::ActiveContext::Collections::Code).to receive(:indexing?).and_return(indexing_enabled)
         allow(::Gitlab::Saas).to receive(:feature_available?).with(:duo_chat_on_saas).and_return(duo_chat_available)
 
-        other_namespace_id = namespace.id + 1
-        stub_const("#{described_class}::NAMESPACE_IDS", [other_namespace_id]) unless namespace_in_allowlist
+        stub_feature_flags(active_context_saas_initial_indexing_namespace: false) unless namespace_in_allowlist
 
         subscription_namespace = subscription_namespace_match ? namespace : create(:group)
         case subscription_status
