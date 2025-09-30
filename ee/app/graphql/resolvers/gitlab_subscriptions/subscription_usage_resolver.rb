@@ -1,0 +1,50 @@
+# frozen_string_literal: true
+
+module Resolvers
+  module GitlabSubscriptions
+    class SubscriptionUsageResolver < BaseResolver
+      type Types::GitlabSubscriptions::SubscriptionUsageType, null: true
+
+      argument :namespace_path, GraphQL::Types::ID,
+        required: false,
+        description: "Path of the top-level namespace. Leave it blank if querying the instance subscription."
+
+      def resolve(**args)
+        subscription_target = args[:namespace_path] ? :namespace : :instance
+        namespace = find_namespace(args[:namespace_path])
+
+        authorize!(subscription_target, namespace)
+
+        ::GitlabSubscriptions::SubscriptionUsage.new(
+          subscription_target: subscription_target,
+          namespace: namespace
+        )
+      end
+
+      private
+
+      def authorize!(subscription_target, namespace)
+        return authorize_for_instance! if subscription_target == :instance
+
+        raise_resource_not_available_error! unless namespace
+        raise_resource_not_available_error! unless Feature.enabled?(:usage_billing_dev, namespace)
+        raise_resource_not_available_error! unless Ability.allowed?(current_user, :owner_access, namespace)
+
+        return if namespace.root? && namespace.group_namespace?
+
+        raise_resource_not_available_error!("Subscription usage can only be queried on a root namespace")
+      end
+
+      def authorize_for_instance!
+        raise_resource_not_available_error! unless Feature.enabled?(:usage_billing_dev, :instance)
+        raise_resource_not_available_error! unless Ability.allowed?(current_user, :admin_all_resources)
+      end
+
+      def find_namespace(namespace_path)
+        return unless namespace_path
+
+        Namespace.find_by_full_path(namespace_path)
+      end
+    end
+  end
+end

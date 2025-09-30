@@ -81,7 +81,8 @@ RSpec.describe GitlabSchema.types['Query'], feature_category: :shared do
       :maven_virtual_registry,
       :namespace_security_projects,
       :maven_upstream_registry,
-      :work_item_allowed_statuses
+      :work_item_allowed_statuses,
+      :subscription_usage
     ]
 
     all_expected_fields = expected_foss_fields + expected_ee_fields
