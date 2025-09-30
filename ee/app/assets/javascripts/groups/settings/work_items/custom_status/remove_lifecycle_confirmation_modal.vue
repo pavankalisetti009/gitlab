@@ -44,7 +44,7 @@ export default {
 
 <template>
   <gl-modal
-    modal-id="remove-lifecycle-confirmation gl-@container"
+    modal-id="remove-lifecycle-confirmation"
     :aria-label="s__('WorkItem|Delete Lifecycle Confirmation')"
     :visible="isVisible"
     :scrollable="false"
