@@ -14,6 +14,12 @@ RSpec.describe Namespaces::FreeUserCap::NotifyOverLimitService, :with_trial_type
   describe '#execute', :saas do
     subject(:execute) { described_class.new(group).execute }
 
+    before do
+      allow_next_instance_of(GitlabSubscriptions::TrialDurationService) do |service|
+        allow(service).to receive(:execute).and_return(30)
+      end
+    end
+
     it 'records the time of notification in free_user_cap_over_limit_notified_at' do
       group.each_member_user(access_level: Gitlab::Access::OWNER) do |owner|
         expect(::Namespaces::FreeUserCapMailer).to receive(:over_limit_email).with(owner, group).once.and_call_original
