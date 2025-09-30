@@ -6,6 +6,7 @@ module Projects
     before_action :check_access
     before_action do
       push_frontend_feature_flag(:ai_catalog_flows, current_user)
+      push_frontend_feature_flag(:ai_catalog_item_project_curation, current_user)
     end
 
     def show; end

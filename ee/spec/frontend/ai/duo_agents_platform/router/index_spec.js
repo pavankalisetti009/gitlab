@@ -5,6 +5,16 @@ describe('Agents Platform Router', () => {
   let router;
   const baseRoute = '/test-project/-/agents';
 
+  beforeEach(() => {
+    gon.features = {
+      aiCatalogFlows: false,
+    };
+
+    // this is needed to disable the warning thrown for incorrect path
+    // eslint-disable-next-line no-console
+    console.warn = jest.fn();
+  });
+
   describe('when router is created', () => {
     beforeEach(() => {
       router = createRouter(baseRoute, 'project');
@@ -46,6 +56,27 @@ describe('Agents Platform Router', () => {
       await router.push('/flow-triggers/invalid-id/edit');
 
       expect(router.currentRoute.path).toBe('/flow-triggers');
+    });
+  });
+
+  describe('agents', () => {
+    it('redirect to agents base route when path does not exist', async () => {
+      router = createRouter(baseRoute, 'project');
+      await router.push('/agents/invalid');
+
+      expect(router.currentRoute.path).toBe('/agents');
+    });
+  });
+
+  describe('flows', () => {
+    it('redirect to flows base route when path does not exist', async () => {
+      gon.features = {
+        aiCatalogFlows: true,
+      };
+      router = createRouter(baseRoute, 'project');
+      await router.push('/flows/invalid');
+
+      expect(router.currentRoute.path).toBe('/flows');
     });
   });
 

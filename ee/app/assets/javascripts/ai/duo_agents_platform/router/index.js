@@ -3,6 +3,7 @@ import VueRouter from 'vue-router';
 import { s__ } from '~/locale';
 import {
   AI_CATALOG_AGENTS_ROUTE,
+  AI_CATALOG_AGENTS_NEW_ROUTE,
   AI_CATALOG_FLOWS_ROUTE,
   AI_CATALOG_FLOWS_EDIT_ROUTE,
 } from 'ee/ai/catalog/router/constants';
@@ -12,7 +13,8 @@ import AgentsPlatformNew from '../pages/new/duo_agents_platform_new.vue';
 import FlowTriggersIndex from '../pages/flow_triggers/index/flow_triggers_index.vue';
 import FlowTriggersNew from '../pages/flow_triggers/flow_triggers_new.vue';
 import FlowTriggersEdit from '../pages/flow_triggers/flow_triggers_edit.vue';
-import AiAgents from '../pages/agents/ai_agents.vue';
+import AiAgentsIndex from '../pages/agents/ai_agents_index.vue';
+import AiCatalogAgentsNew from '../pages/agents/ai_agents_new.vue';
 import AiFlows from '../pages/flows/ai_flows.vue';
 import AiFlowsEdit from '../pages/flows/ai_flows_edit.vue';
 import {
@@ -116,8 +118,21 @@ export const createRouter = (base, namespace) => {
           {
             name: AI_CATALOG_AGENTS_ROUTE,
             path: '',
-            component: AiAgents,
+            component: AiAgentsIndex,
           },
+          ...(gon.features?.aiCatalogItemProjectCuration
+            ? [
+                {
+                  name: AI_CATALOG_AGENTS_NEW_ROUTE,
+                  path: 'new',
+                  component: AiCatalogAgentsNew,
+                  meta: {
+                    text: s__('AICatalog|New agent'),
+                  },
+                },
+              ]
+            : []),
+          { path: '*', redirect: '/agents' },
         ],
       },
       ...(gon.features?.aiCatalogFlows
@@ -142,6 +157,7 @@ export const createRouter = (base, namespace) => {
                     text: s__('AICatalog|Edit flow'),
                   },
                 },
+                { path: '*', redirect: '/flows' },
               ],
             },
           ]

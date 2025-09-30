@@ -4,7 +4,7 @@ import * as Sentry from '~/sentry/sentry_browser_wrapper';
 import createMockApollo from 'helpers/mock_apollo_helper';
 import waitForPromises from 'helpers/wait_for_promises';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
-import AiAgents from 'ee/ai/duo_agents_platform/pages/agents/ai_agents.vue';
+import AiAgentsIndex from 'ee/ai/duo_agents_platform/pages/agents/ai_agents_index.vue';
 import AiCatalogList from 'ee/ai/catalog/components/ai_catalog_list.vue';
 import ErrorsAlert from '~/vue_shared/components/errors_alert.vue';
 import PageHeading from '~/vue_shared/components/page_heading.vue';
@@ -29,7 +29,7 @@ jest.mock('~/sentry/sentry_browser_wrapper');
 
 Vue.use(VueApollo);
 
-describe('AiAgents', () => {
+describe('AiAgentsIndex', () => {
   let wrapper;
   let mockApollo;
 
@@ -57,7 +57,7 @@ describe('AiAgents', () => {
       [deleteAiCatalogItemConsumer, deleteItemConsumerMutationHandler],
     ]);
 
-    wrapper = shallowMountExtended(AiAgents, {
+    wrapper = shallowMountExtended(AiAgentsIndex, {
       apolloProvider: mockApollo,
       provide: {
         projectId: mockProjectId,

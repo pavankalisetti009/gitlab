@@ -2798,7 +2798,13 @@ msgstr ""
 msgid "AICatalog|Tools"
 msgstr ""
 
+msgid "AICatalog|Use agents in flows and with GitLab Duo Chat."
+msgstr ""
+
 msgid "AICatalog|Use agents in your project."
+msgstr ""
+
+msgid "AICatalog|Use agents with GitLab Duo Chat to complete tasks and answer complex questions."
 msgstr ""
 
 msgid "AICatalog|Use flows in your project."
