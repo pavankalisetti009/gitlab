@@ -5,6 +5,8 @@ module Security
     class PolicyScopeChecker
       include Gitlab::InternalEventsTracking
 
+      PERSONAL_PROJECT_TYPE = 'personal'
+
       def initialize(project:)
         @project = project
       end
@@ -53,6 +55,10 @@ module Security
         track_policy_scope_check(:project, [policy_scope_included_projects, policy_scope_excluded_projects])
 
         return false if policy_scope_excluded_projects.any? { |policy_project| policy_project[:id] == project.id }
+        return false if project.personal? && policy_scope_excluded_projects.any? do |policy_project|
+          policy_project[:type] == PERSONAL_PROJECT_TYPE
+        end
+
         return true if policy_scope_included_projects.blank?
 
         policy_scope_included_projects.any? { |policy_project| policy_project[:id] == project.id }

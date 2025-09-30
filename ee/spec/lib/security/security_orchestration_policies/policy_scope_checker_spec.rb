@@ -6,6 +6,7 @@ RSpec.describe Security::SecurityOrchestrationPolicies::PolicyScopeChecker, feat
   let_it_be_with_refind(:root_group) { create(:group) }
   let_it_be_with_refind(:group) { create(:group, parent: root_group) }
   let_it_be_with_refind(:project) { create(:project, group: group) }
+  let_it_be(:user) { create(:user) }
   let_it_be(:compliance_framework) { create(:compliance_framework, namespace: root_group) }
 
   let(:service) { described_class.new(project: project) }
@@ -156,6 +157,24 @@ RSpec.describe Security::SecurityOrchestrationPolicies::PolicyScopeChecker, feat
           end
 
           it { is_expected.to eq false }
+        end
+
+        context 'when excluding project scope is not personal' do
+          let(:policy_scope) do
+            {
+              projects: {
+                excluding: [{ type: 'personal' }]
+              }
+            }
+          end
+
+          it { is_expected.to eq true }
+
+          context 'and project is personal' do
+            let_it_be_with_refind(:project) { create(:project, namespace: user.namespace) }
+
+            it { is_expected.to eq false }
+          end
         end
       end
     end
