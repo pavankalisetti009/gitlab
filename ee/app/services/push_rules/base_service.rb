@@ -1,6 +1,5 @@
 # frozen_string_literal: true
 
-# rubocop:disable Gitlab/BoundedContexts -- Will be decided on after https://gitlab.com/groups/gitlab-org/-/epics/16894 is finalized
 module PushRules
   class BaseService < BaseContainerService
     attr_reader :organization
@@ -18,4 +17,3 @@ module PushRules
     end
   end
 end
-# rubocop:enable Gitlab/BoundedContexts -- Will be decided on after https://gitlab.com/groups/gitlab-org/-/epics/16894 is finalized
