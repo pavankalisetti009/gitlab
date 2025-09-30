@@ -109,7 +109,8 @@ module Security
       return old_report if Feature.disabled?(:vulnerability_partial_scans, project)
 
       with_reactive_cache(params.stringify_keys) do |data|
-        latest = Ci::CompareSecurityReportsService.new(project, nil, params).latest?(base_pipeline, head_pipeline, data)
+        latest = Vulnerabilities::CompareSecurityReportsService.new(project, nil, params).latest?(base_pipeline,
+          head_pipeline, data)
         raise InvalidateReactiveCache unless latest
 
         data
@@ -140,13 +141,13 @@ module Security
     end
 
     def calculate_reactive_cache(cache_params)
-      Ci::CompareSecurityReportsService
+      Vulnerabilities::CompareSecurityReportsService
         .new(project, nil, cache_params.symbolize_keys)
         .execute(base_pipeline, head_pipeline)
     end
 
     def base_pipeline
-      merge_request.comparison_base_pipeline(Ci::CompareSecurityReportsService)
+      merge_request.comparison_base_pipeline(Vulnerabilities::CompareSecurityReportsService)
     end
 
     def head_pipeline

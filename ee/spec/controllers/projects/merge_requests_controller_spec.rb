@@ -601,7 +601,7 @@ RSpec.describe Projects::MergeRequestsController, feature_category: :code_review
     before do
       allow_next_found_instance_of(::MergeRequest) do |instance|
         allow(instance).to receive(:compare_reports)
-              .with(::Ci::CompareSecurityReportsService, viewer, 'dependency_scanning').and_return(comparison_status)
+              .with(::Vulnerabilities::CompareSecurityReportsService, viewer, 'dependency_scanning').and_return(comparison_status)
       end
     end
 
@@ -626,7 +626,7 @@ RSpec.describe Projects::MergeRequestsController, feature_category: :code_review
     before do
       allow_next_found_instance_of(::MergeRequest) do |instance|
         allow(instance).to receive(:compare_reports)
-              .with(::Ci::CompareSecurityReportsService, viewer, 'container_scanning').and_return(comparison_status)
+              .with(::Vulnerabilities::CompareSecurityReportsService, viewer, 'container_scanning').and_return(comparison_status)
       end
     end
 
@@ -651,7 +651,7 @@ RSpec.describe Projects::MergeRequestsController, feature_category: :code_review
     before do
       allow_next_found_instance_of(::MergeRequest) do |instance|
         allow(instance).to receive(:compare_reports)
-              .with(::Ci::CompareSecurityReportsService, viewer, 'sast').and_return(comparison_status)
+              .with(::Vulnerabilities::CompareSecurityReportsService, viewer, 'sast').and_return(comparison_status)
       end
     end
 
@@ -676,7 +676,7 @@ RSpec.describe Projects::MergeRequestsController, feature_category: :code_review
     before do
       allow_next_found_instance_of(::MergeRequest) do |instance|
         allow(instance).to receive(:compare_reports)
-              .with(::Ci::CompareSecurityReportsService, viewer, 'coverage_fuzzing').and_return(comparison_status)
+              .with(::Vulnerabilities::CompareSecurityReportsService, viewer, 'coverage_fuzzing').and_return(comparison_status)
       end
     end
 
@@ -701,7 +701,7 @@ RSpec.describe Projects::MergeRequestsController, feature_category: :code_review
     before do
       allow_next_found_instance_of(::MergeRequest) do |instance|
         allow(instance).to receive(:compare_reports)
-              .with(::Ci::CompareSecurityReportsService, viewer, 'api_fuzzing').and_return(comparison_status)
+              .with(::Vulnerabilities::CompareSecurityReportsService, viewer, 'api_fuzzing').and_return(comparison_status)
       end
     end
 
@@ -727,7 +727,7 @@ RSpec.describe Projects::MergeRequestsController, feature_category: :code_review
     before do
       allow_next_found_instance_of(::MergeRequest) do |instance|
         allow(instance).to receive(:compare_reports)
-              .with(::Ci::CompareSecurityReportsService, viewer, 'secret_detection').and_return(comparison_status)
+              .with(::Vulnerabilities::CompareSecurityReportsService, viewer, 'secret_detection').and_return(comparison_status)
       end
     end
 
@@ -752,7 +752,7 @@ RSpec.describe Projects::MergeRequestsController, feature_category: :code_review
     before do
       allow_next_found_instance_of(::MergeRequest) do |instance|
         allow(instance).to receive(:compare_reports)
-              .with(::Ci::CompareSecurityReportsService, viewer, 'dast').and_return(comparison_status)
+              .with(::Vulnerabilities::CompareSecurityReportsService, viewer, 'dast').and_return(comparison_status)
       end
     end
 

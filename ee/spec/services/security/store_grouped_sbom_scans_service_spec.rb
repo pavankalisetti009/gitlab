@@ -18,7 +18,7 @@ RSpec.describe Security::StoreGroupedSbomScansService, feature_category: :depend
   let(:artifacts) { [artifact_1, artifact_2, artifact_3] }
 
   before do
-    allow(Ci::CompareSecurityReportsService).to receive(:set_security_report_type_to_ready)
+    allow(Vulnerabilities::CompareSecurityReportsService).to receive(:set_security_report_type_to_ready)
   end
 
   describe '.execute' do

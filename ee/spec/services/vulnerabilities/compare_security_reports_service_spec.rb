@@ -2,8 +2,8 @@
 
 require 'spec_helper'
 
-RSpec.describe Ci::CompareSecurityReportsService, :clean_gitlab_redis_shared_state, feature_category: :vulnerability_management do
-  subject { service.execute(base_pipeline, head_pipeline) }
+RSpec.describe Vulnerabilities::CompareSecurityReportsService, :clean_gitlab_redis_shared_state, feature_category: :vulnerability_management do
+  subject(:comparison) { service.execute(base_pipeline, head_pipeline) }
 
   let_it_be(:project) { create(:project, :repository) }
   let_it_be(:current_user) { project.owner.tap { |user| user.namespace.create_namespace_settings } }
@@ -15,13 +15,18 @@ RSpec.describe Ci::CompareSecurityReportsService, :clean_gitlab_redis_shared_sta
       with_dast_report: create(:ee_ci_pipeline, :with_dast_report, project: project),
       with_sast_report: create(:ee_ci_pipeline, :with_sast_report, project: project),
       with_secret_detection_report: create(:ee_ci_pipeline, :with_secret_detection_report, project: project),
-      with_dependency_scanning_feature_branch: create(:ee_ci_pipeline, :with_dependency_scanning_feature_branch, project: project),
-      with_container_scanning_feature_branch: create(:ee_ci_pipeline, :with_container_scanning_feature_branch, project: project),
+      with_dependency_scanning_feature_branch: create(:ee_ci_pipeline, :with_dependency_scanning_feature_branch,
+        project: project),
+      with_container_scanning_feature_branch: create(:ee_ci_pipeline, :with_container_scanning_feature_branch,
+        project: project),
       with_dast_feature_branch: create(:ee_ci_pipeline, :with_dast_feature_branch, project: project),
       with_sast_feature_branch: create(:ee_ci_pipeline, :with_sast_feature_branch, project: project),
-      with_secret_detection_feature_branch: create(:ee_ci_pipeline, :with_secret_detection_feature_branch, project: project),
-      with_corrupted_dependency_scanning_report: create(:ee_ci_pipeline, :with_corrupted_dependency_scanning_report, project: project),
-      with_corrupted_container_scanning_report: create(:ee_ci_pipeline, :with_corrupted_container_scanning_report, project: project),
+      with_secret_detection_feature_branch: create(:ee_ci_pipeline, :with_secret_detection_feature_branch,
+        project: project),
+      with_corrupted_dependency_scanning_report: create(:ee_ci_pipeline, :with_corrupted_dependency_scanning_report,
+        project: project),
+      with_corrupted_container_scanning_report: create(:ee_ci_pipeline, :with_corrupted_container_scanning_report,
+        project: project),
       advanced_sast: create(:ee_ci_pipeline, :advanced_sast, project: project),
       sast_differential_scan: create(:ee_ci_pipeline, :sast_differential_scan, project: project)
     }
@@ -66,8 +71,8 @@ RSpec.describe Ci::CompareSecurityReportsService, :clean_gitlab_redis_shared_sta
   end
 
   shared_examples_for 'serializes `found_by_pipeline` attribute' do
-    let(:first_added_finding) { subject.dig(:data, 'added').first }
-    let(:first_fixed_finding) { subject.dig(:data, 'fixed').first }
+    let(:first_added_finding) { comparison.dig(:data, 'added').first }
+    let(:first_fixed_finding) { comparison.dig(:data, 'fixed').first }
 
     it 'sets correct `found_by_pipeline` attribute' do
       expect(first_added_finding.dig('found_by_pipeline', 'iid')).to eq(head_pipeline.iid)
@@ -80,9 +85,9 @@ RSpec.describe Ci::CompareSecurityReportsService, :clean_gitlab_redis_shared_sta
     let(:head_pipeline) { test_pipelines[:"with_#{scan_type}_report"] }
 
     it 'reports the new vulnerabilities, while not changing the counts of fixed vulnerabilities' do
-      expect(subject[:status]).to eq(:parsed)
-      expect(subject[:data]['added'].count).to eq(num_findings_in_fixture)
-      expect(subject[:data]['fixed'].count).to eq(0)
+      expect(comparison[:status]).to eq(:parsed)
+      expect(comparison[:data]['added'].count).to eq(num_findings_in_fixture)
+      expect(comparison[:data]['fixed'].count).to eq(0)
     end
   end
 
@@ -95,21 +100,21 @@ RSpec.describe Ci::CompareSecurityReportsService, :clean_gitlab_redis_shared_sta
     end
 
     it 'reports status as parsed' do
-      expect(subject[:status]).to eq(:parsed)
+      expect(comparison[:status]).to eq(:parsed)
     end
 
     it 'populates fields based on current_user' do
-      payload = subject[:data]['added'].first
+      payload = comparison[:data]['added'].first
       expected_payload_fields.each { |f| expect(payload[f]).to be_present }
       expect(service.current_user).to eq(current_user)
     end
 
     it 'reports added vulnerabilities' do
-      expect(subject[:data]['added'].size).to eq(num_added_findings)
+      expect(comparison[:data]['added'].size).to eq(num_added_findings)
     end
 
     it 'reports fixed vulnerabilities' do
-      expect(subject[:data]['fixed'].size).to eq(num_fixed_findings)
+      expect(comparison[:data]['fixed'].size).to eq(num_fixed_findings)
     end
   end
 
@@ -118,8 +123,8 @@ RSpec.describe Ci::CompareSecurityReportsService, :clean_gitlab_redis_shared_sta
     let_it_be(:head_pipeline) { test_pipelines[:"with_corrupted_#{scan_type}_report"] }
 
     it 'returns status and error message' do
-      expect(subject[:status]).to eq(:error)
-      expect(subject[:status_reason]).to include('JSON parsing failed')
+      expect(comparison[:status]).to eq(:error)
+      expect(comparison[:status_reason]).to include('JSON parsing failed')
     end
 
     it 'returns status and error message when pipeline is nil' do
@@ -144,11 +149,11 @@ RSpec.describe Ci::CompareSecurityReportsService, :clean_gitlab_redis_shared_sta
     end
 
     it 'reports status as parsing' do
-      expect(subject[:status]).to eq(:parsing)
+      expect(comparison[:status]).to eq(:parsing)
     end
 
     it 'has the parsing payload' do
-      payload = subject[:key]
+      payload = comparison[:key]
       expect(payload).to include(base_pipeline.id, head_pipeline.id)
     end
 
@@ -159,11 +164,11 @@ RSpec.describe Ci::CompareSecurityReportsService, :clean_gitlab_redis_shared_sta
       end
 
       it 'reports status as parsing' do
-        expect(subject[:status]).to eq(:parsing)
+        expect(comparison[:status]).to eq(:parsing)
       end
 
       it 'does not query the database' do
-        expect { subject }.not_to make_queries_matching(/SELECT 1 AS one/)
+        expect { comparison }.not_to make_queries_matching(/SELECT 1 AS one/)
       end
 
       context 'when report type cache key exists' do
@@ -173,11 +178,11 @@ RSpec.describe Ci::CompareSecurityReportsService, :clean_gitlab_redis_shared_sta
         end
 
         it 'reports status as parsed' do
-          expect(subject[:status]).to eq(:parsed)
+          expect(comparison[:status]).to eq(:parsed)
         end
 
         it 'does not query the database' do
-          expect { subject }.not_to make_queries_matching(/SELECT 1 AS one/)
+          expect { comparison }.not_to make_queries_matching(/SELECT 1 AS one/)
         end
       end
     end
@@ -252,7 +257,7 @@ RSpec.describe Ci::CompareSecurityReportsService, :clean_gitlab_redis_shared_sta
       end
 
       it 'reports status as parsed' do
-        expect(subject[:status]).to eq(:parsed)
+        expect(comparison[:status]).to eq(:parsed)
       end
     end
 
@@ -268,7 +273,7 @@ RSpec.describe Ci::CompareSecurityReportsService, :clean_gitlab_redis_shared_sta
         let(:num_added_findings) { 4 }
 
         it 'queries the database' do
-          expect { subject }.to make_queries_matching(/SELECT 1 AS one/)
+          expect { comparison }.to make_queries_matching(/SELECT 1 AS one/)
         end
 
         it_behaves_like 'serializes `found_by_pipeline` attribute'
@@ -289,7 +294,7 @@ RSpec.describe Ci::CompareSecurityReportsService, :clean_gitlab_redis_shared_sta
         let(:num_added_findings) { 8 }
 
         it 'queries the database' do
-          expect { subject }.to make_queries_matching(/SELECT 1 AS one/)
+          expect { comparison }.to make_queries_matching(/SELECT 1 AS one/)
         end
 
         it_behaves_like 'serializes `found_by_pipeline` attribute'
@@ -310,7 +315,7 @@ RSpec.describe Ci::CompareSecurityReportsService, :clean_gitlab_redis_shared_sta
         let(:num_added_findings) { 20 }
 
         it 'queries the database' do
-          expect { subject }.to make_queries_matching(/SELECT 1 AS one/)
+          expect { comparison }.to make_queries_matching(/SELECT 1 AS one/)
         end
 
         it_behaves_like 'serializes `found_by_pipeline` attribute'
@@ -331,7 +336,7 @@ RSpec.describe Ci::CompareSecurityReportsService, :clean_gitlab_redis_shared_sta
         let(:num_added_findings) { 5 }
 
         it 'queries the database' do
-          expect { subject }.to make_queries_matching(/SELECT 1 AS one/)
+          expect { comparison }.to make_queries_matching(/SELECT 1 AS one/)
         end
 
         it_behaves_like 'serializes `found_by_pipeline` attribute'
@@ -406,7 +411,7 @@ RSpec.describe Ci::CompareSecurityReportsService, :clean_gitlab_redis_shared_sta
           end
 
           it 'adds only the new finding' do
-            added = subject.dig(:data, 'added')
+            added = comparison.dig(:data, 'added')
 
             expect(added.size).to eq(1)
             expect(added.first['uuid']).to eq(new_finding_uuid)
@@ -428,7 +433,7 @@ RSpec.describe Ci::CompareSecurityReportsService, :clean_gitlab_redis_shared_sta
         let(:expected_payload_fields) { [] }
 
         it 'queries the database' do
-          expect { subject }.to make_queries_matching(/SELECT 1 AS one/)
+          expect { comparison }.to make_queries_matching(/SELECT 1 AS one/)
         end
       end
 
@@ -481,7 +486,7 @@ RSpec.describe Ci::CompareSecurityReportsService, :clean_gitlab_redis_shared_sta
       end
 
       it 'returns findings in decreasing order of severity' do
-        added_findings_ids = subject[:data]['added'].pluck("id")
+        added_findings_ids = comparison[:data]['added'].pluck("id")
 
         expect(added_findings_ids[0]).to eq(critical_finding.id)
         expect(added_findings_ids[1]).to eq(high_finding.id)
@@ -491,7 +496,7 @@ RSpec.describe Ci::CompareSecurityReportsService, :clean_gitlab_redis_shared_sta
       it 'returns findings in decreasing order with no more than MAX_FINDINGS_COUNT findings' do
         stub_const("Gitlab::Ci::Reports::Security::SecurityFindingsReportsComparer::MAX_FINDINGS_COUNT", 2)
 
-        added_findings_ids = subject[:data]['added'].pluck("id")
+        added_findings_ids = comparison[:data]['added'].pluck("id")
 
         expect(added_findings_ids.count).to eq(2)
         expect(added_findings_ids[0]).to eq(critical_finding.id)

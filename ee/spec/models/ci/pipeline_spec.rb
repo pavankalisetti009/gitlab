@@ -212,7 +212,7 @@ RSpec.describe Ci::Pipeline, feature_category: :continuous_integration do
 
       let(:redis_spy) { instance_spy(Redis) }
       let(:pipeline_id) { pipeline.id }
-      let(:cache_key) { Ci::CompareSecurityReportsService.transition_cache_key(pipeline_id: pipeline_id) }
+      let(:cache_key) { Vulnerabilities::CompareSecurityReportsService.transition_cache_key(pipeline_id: pipeline_id) }
 
       before do
         allow(redis_spy).to receive(:ttl).and_return(10) # to allow event tracking Redis call

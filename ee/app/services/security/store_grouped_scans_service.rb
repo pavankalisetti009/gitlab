@@ -31,7 +31,7 @@ module Security
     rescue Gitlab::Ci::Parsers::ParserError => error
       Gitlab::ErrorTracking.track_exception(error)
     ensure
-      ::Ci::CompareSecurityReportsService.set_security_report_type_to_ready(
+      ::Vulnerabilities::CompareSecurityReportsService.set_security_report_type_to_ready(
         pipeline_id: pipeline.id,
         report_type: file_type
       )

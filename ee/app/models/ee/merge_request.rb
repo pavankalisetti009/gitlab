@@ -370,7 +370,7 @@ module EE
     def compare_dependency_scanning_reports(current_user)
       return missing_report_error("dependency scanning") unless has_dependency_scanning_reports?
 
-      compare_reports(::Ci::CompareSecurityReportsService, current_user, 'dependency_scanning')
+      compare_reports(::Vulnerabilities::CompareSecurityReportsService, current_user, 'dependency_scanning')
     end
 
     def has_container_scanning_reports?
@@ -384,7 +384,7 @@ module EE
     def compare_container_scanning_reports(current_user)
       return missing_report_error("container scanning") unless has_container_scanning_reports?
 
-      compare_reports(::Ci::CompareSecurityReportsService, current_user, 'container_scanning')
+      compare_reports(::Vulnerabilities::CompareSecurityReportsService, current_user, 'container_scanning')
     end
 
     def has_dast_reports?
@@ -394,7 +394,7 @@ module EE
     def compare_dast_reports(current_user)
       return missing_report_error("DAST") unless has_dast_reports?
 
-      compare_reports(::Ci::CompareSecurityReportsService, current_user, 'dast')
+      compare_reports(::Vulnerabilities::CompareSecurityReportsService, current_user, 'dast')
     end
 
     def compare_license_scanning_reports(current_user)
@@ -439,7 +439,7 @@ module EE
     def compare_coverage_fuzzing_reports(current_user)
       return missing_report_error("coverage fuzzing") unless has_coverage_fuzzing_reports?
 
-      compare_reports(::Ci::CompareSecurityReportsService, current_user, 'coverage_fuzzing')
+      compare_reports(::Vulnerabilities::CompareSecurityReportsService, current_user, 'coverage_fuzzing')
     end
 
     def has_api_fuzzing_reports?
@@ -449,7 +449,7 @@ module EE
     def compare_api_fuzzing_reports(current_user)
       return missing_report_error('api fuzzing') unless has_api_fuzzing_reports?
 
-      compare_reports(::Ci::CompareSecurityReportsService, current_user, 'api_fuzzing')
+      compare_reports(::Vulnerabilities::CompareSecurityReportsService, current_user, 'api_fuzzing')
     end
 
     def synchronize_approval_rules_from_target_project
@@ -737,7 +737,7 @@ module EE
     end
 
     def security_comparison?(service_class)
-      service_class == ::Ci::CompareSecurityReportsService
+      service_class == ::Vulnerabilities::CompareSecurityReportsService
     end
 
     def has_approved_license_check?
