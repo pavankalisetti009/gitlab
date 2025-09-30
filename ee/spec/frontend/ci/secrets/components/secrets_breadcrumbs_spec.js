@@ -26,22 +26,33 @@ describe('SecretsBreadcrumbs', () => {
 
   Vue.use(VueRouter);
 
+  const defaultRoute = {
+    params: { secretName: '' },
+    meta: {
+      isRoot: true,
+      isDetails: true,
+      getBreadcrumbText: jest.fn().mockReturnValue(''),
+    },
+  };
+
   const findBreadcrumbs = () => wrapper.findComponent(GlBreadcrumb);
 
-  const createWrapper = (props = { staticBreadcrumbs: [] }) => {
+  const createWrapper = ({ props = { staticBreadcrumbs: [] }, route = defaultRoute } = {}) => {
     router = createRouter('/-/secrets', defaultProps);
 
     wrapper = shallowMount(SecretsBreadcrumbs, {
       router,
       propsData: props,
+      global: {
+        mocks: {
+          $route: route,
+        },
+      },
     });
   };
 
-  beforeEach(() => {
-    createWrapper();
-  });
-
   it('should render only the root breadcrumb when on root route', () => {
+    createWrapper();
     expect(findBreadcrumbs().props('items')).toStrictEqual([rootBreadcrumb]);
   });
 
@@ -52,6 +63,18 @@ describe('SecretsBreadcrumbs', () => {
   `(
     'should render the root and $routeName breadcrumbs when on $route',
     async ({ routeName, route }) => {
+      createWrapper({
+        route: {
+          name: 'new',
+          path: '/new',
+          params: { secretName: routeName },
+          meta: {
+            isRoot: true,
+            isDetails: true,
+            getBreadcrumbText: jest.fn().mockReturnValue(routeName),
+          },
+        },
+      });
       await router.push(route);
 
       expect(findBreadcrumbs().props('items')).toStrictEqual([
@@ -69,6 +92,19 @@ describe('SecretsBreadcrumbs', () => {
   `(
     'should render the root, secret details, and $routeName breadcrumbs when on $route',
     async ({ routeName, route }) => {
+      createWrapper({
+        route: {
+          name: 'edit',
+          path: route,
+          params: { secretName: 'project_secret_1' },
+          meta: {
+            isRoot: false,
+            isDetails: false,
+            getBreadcrumbText: jest.fn().mockReturnValue(routeName),
+          },
+        },
+      });
+
       await router.push(route);
 
       expect(findBreadcrumbs().props('items')).toStrictEqual([
@@ -83,6 +119,7 @@ describe('SecretsBreadcrumbs', () => {
   );
 
   it('should disable auto-resize behavior', () => {
+    createWrapper();
     expect(findBreadcrumbs().props('autoResize')).toEqual(false);
   });
 
@@ -92,7 +129,7 @@ describe('SecretsBreadcrumbs', () => {
       { text: 'Static 2', href: '/static2' },
     ];
 
-    createWrapper({ staticBreadcrumbs });
+    createWrapper({ props: { staticBreadcrumbs } });
 
     expect(findBreadcrumbs().props('items')).toStrictEqual([...staticBreadcrumbs, rootBreadcrumb]);
   });
