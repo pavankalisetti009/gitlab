@@ -57,7 +57,7 @@ describe('UsageByUserTab', () => {
         },
         {
           key: 'totalUnitsUsed',
-          label: 'Total units used',
+          label: 'Total credits used',
         },
         {
           key: 'status',
@@ -124,7 +124,7 @@ describe('UsageByUserTab', () => {
         },
         {
           key: 'totalUnitsUsed',
-          label: 'Total units used',
+          label: 'Total credits used',
         },
         {
           key: 'status',

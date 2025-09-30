@@ -94,7 +94,9 @@ describe('CurrentUsageCard', () => {
     });
 
     it('renders correct pool units remaining', () => {
-      expect(wrapper.findByTestId('pool-units-remaining').text()).toBe('2.2k pool units remaining');
+      expect(wrapper.findByTestId('pool-units-remaining').text()).toBe(
+        '2.2k pool credits remaining',
+      );
     });
 
     it('renders correct current overage value', () => {

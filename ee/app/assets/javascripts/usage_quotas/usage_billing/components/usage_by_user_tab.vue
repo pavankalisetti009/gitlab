@@ -40,7 +40,7 @@ export default {
         },
         {
           key: 'totalUnitsUsed',
-          label: s__('UsageBilling|Total units used'),
+          label: s__('UsageBilling|Total credits used'),
         },
         {
           key: 'status',

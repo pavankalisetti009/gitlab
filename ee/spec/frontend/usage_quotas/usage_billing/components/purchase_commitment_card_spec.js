@@ -26,7 +26,7 @@ describe('PurchaseCommitmentCard', () => {
 
     it('renders card body', () => {
       expect(wrapper.find('p').text()).toBe(
-        'You can increase your commitment amount to extend your monthly allocation of tokens.',
+        'You can increase your commitment amount to extend your monthly allocation of credits.',
       );
     });
 
@@ -49,7 +49,7 @@ describe('PurchaseCommitmentCard', () => {
 
     it('renders card body', () => {
       expect(wrapper.find('p').text()).toBe(
-        'You can purchase a monthly allocation of GitLab Units to be shared across users.',
+        'You can purchase a monthly allocation of GitLab Credits to be shared across users.',
       );
     });
 
