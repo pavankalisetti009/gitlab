@@ -26,8 +26,4 @@ resources :merge_requests, only: [], constraints: { id: /\d+/ } do
       get '/reports(/*vueroute)', to: 'merge_requests#reports', defaults: { tab: 'reports' }
     end
   end
-
-  resources :approvers, only: :destroy
-  delete 'approvers', to: 'approvers#destroy_via_user_id', as: :approver_via_user_id
-  resources :approver_groups, only: :destroy
 end

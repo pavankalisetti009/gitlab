@@ -124,8 +124,6 @@ constraints(::Constraints::ProjectUrlConstrainer.new) do
           end
         end
 
-        resources :approvers, only: :destroy
-        resources :approver_groups, only: :destroy
         resources :push_rules, constraints: { id: /\d+/ }, only: [:update]
         resources :vulnerability_feedback, only: [:index, :create, :update, :destroy], constraints: { id: /\d+/ }
         namespace :vulnerability_feedback do
