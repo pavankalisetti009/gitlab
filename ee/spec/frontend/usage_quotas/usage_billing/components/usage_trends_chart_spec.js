@@ -37,7 +37,7 @@ describe('UsageTrendsChart', () => {
     it('passes the correct `option` prop to the gl-area-chart', () => {
       expect(wrapper.findComponent(GlAreaChart).props('option')).toMatchObject({
         xAxis: { name: 'Date', type: 'category' },
-        yAxis: { name: 'Tokens' },
+        yAxis: { name: 'Credits' },
       });
     });
 

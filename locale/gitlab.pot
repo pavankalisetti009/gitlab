@@ -69630,8 +69630,8 @@ msgstr ""
 msgid "UsageBilling|%{percentage}%{percentSymbol} utilized"
 msgstr ""
 
-msgid "UsageBilling|%{poolTokensRemaining} pool unit remaining"
-msgid_plural "UsageBilling|%{poolTokensRemaining} pool units remaining"
+msgid "UsageBilling|%{poolCreditsRemaining} pool credit remaining"
+msgid_plural "UsageBilling|%{poolCreditsRemaining} pool credits remaining"
 msgstr[0] ""
 msgstr[1] ""
 
@@ -69645,6 +69645,18 @@ msgid "UsageBilling|An error occurred while fetching data"
 msgstr ""
 
 msgid "UsageBilling|Blocked"
+msgstr ""
+
+msgid "UsageBilling|Credit amount"
+msgstr ""
+
+msgid "UsageBilling|Credits"
+msgstr ""
+
+msgid "UsageBilling|Credits used from pool this month"
+msgstr ""
+
+msgid "UsageBilling|Credits used this month"
 msgstr ""
 
 msgid "UsageBilling|Current month"
@@ -69707,22 +69719,10 @@ msgstr ""
 msgid "UsageBilling|Status"
 msgstr ""
 
-msgid "UsageBilling|Tokens"
-msgstr ""
-
-msgid "UsageBilling|Total units used"
+msgid "UsageBilling|Total credits used"
 msgstr ""
 
 msgid "UsageBilling|Total users (active users)"
-msgstr ""
-
-msgid "UsageBilling|Unit amount"
-msgstr ""
-
-msgid "UsageBilling|Units used from pool this month"
-msgstr ""
-
-msgid "UsageBilling|Units used this month"
 msgstr ""
 
 msgid "UsageBilling|Unknown"
@@ -69752,10 +69752,10 @@ msgstr ""
 msgid "UsageBilling|Using pool"
 msgstr ""
 
-msgid "UsageBilling|You can increase your commitment amount to extend your monthly allocation of tokens."
+msgid "UsageBilling|You can increase your commitment amount to extend your monthly allocation of credits."
 msgstr ""
 
-msgid "UsageBilling|You can purchase a monthly allocation of GitLab Units to be shared across users."
+msgid "UsageBilling|You can purchase a monthly allocation of GitLab Credits to be shared across users."
 msgstr ""
 
 msgid "UsageQuotas|(of %{totalStorageSize})"

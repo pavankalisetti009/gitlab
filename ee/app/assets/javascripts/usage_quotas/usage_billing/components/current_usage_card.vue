@@ -116,13 +116,13 @@ export default {
           <gl-sprintf
             :message="
               n__(
-                'UsageBilling|%{poolTokensRemaining} pool unit remaining',
-                'UsageBilling|%{poolTokensRemaining} pool units remaining',
+                'UsageBilling|%{poolCreditsRemaining} pool credit remaining',
+                'UsageBilling|%{poolCreditsRemaining} pool credits remaining',
                 usageRemaining,
               )
             "
           >
-            <template #poolTokensRemaining>{{ numberToMetricPrefix(usageRemaining) }}</template>
+            <template #poolCreditsRemaining>{{ numberToMetricPrefix(usageRemaining) }}</template>
           </gl-sprintf>
         </span>
       </div>

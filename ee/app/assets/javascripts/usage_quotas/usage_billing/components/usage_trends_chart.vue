@@ -90,7 +90,7 @@ export default {
   },
   chartOptions: {
     xAxis: { name: __('Date'), type: 'category' },
-    yAxis: { name: s__('UsageBilling|Tokens') },
+    yAxis: { name: s__('UsageBilling|Credits') },
   },
   methods: {
     numberToMetricPrefix,

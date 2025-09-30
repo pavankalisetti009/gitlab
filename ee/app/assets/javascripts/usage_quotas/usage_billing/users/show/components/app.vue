@@ -118,7 +118,7 @@ export default {
           </dd>
           <dt>
             <p class="gl-my-0">
-              {{ s__('UsageBilling|Units used this month') }}
+              {{ s__('UsageBilling|Credits used this month') }}
             </p>
             <p class="gl-my-0 gl-text-sm gl-text-subtle">
               (<human-timeframe
@@ -132,7 +132,7 @@ export default {
         <gl-card data-testid="month-pool-card" class="gl-flex-1 gl-bg-transparent">
           <dd class="gl-font-heading gl-heading-scale-400 gl-mb-3">{{ userUsage.poolUsed }}</dd>
           <dt>
-            <p class="gl-my-0">{{ s__('UsageBilling|Units used from pool this month') }}</p>
+            <p class="gl-my-0">{{ s__('UsageBilling|Credits used from pool this month') }}</p>
             <p class="gl-my-0 gl-text-sm gl-text-subtle">
               (<human-timeframe
                 :from="gitlabUnitsUsage.startDate"
@@ -147,7 +147,7 @@ export default {
             {{ userUsage.totalUnitsUsed }}
           </dd>
           <dt>
-            <p class="gl-my-0">{{ s__('UsageBilling|Total units used') }}</p>
+            <p class="gl-my-0">{{ s__('UsageBilling|Total credits used') }}</p>
             <p class="gl-my-0 gl-text-sm gl-text-subtle">
               (<human-timeframe
                 :from="gitlabUnitsUsage.startDate"

@@ -63,7 +63,7 @@ describe('EventsTable', () => {
         { key: 'timestamp', label: 'Date and time' },
         { key: 'eventType', label: 'Action' },
         { key: 'location', label: 'Location' },
-        { key: 'unitsUsed', label: 'Unit amount' },
+        { key: 'unitsUsed', label: 'Credit amount' },
       ]);
     });
 

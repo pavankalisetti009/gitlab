@@ -26,7 +26,7 @@ export default {
       <p>
         {{
           s__(
-            'UsageBilling|You can increase your commitment amount to extend your monthly allocation of tokens.',
+            'UsageBilling|You can increase your commitment amount to extend your monthly allocation of credits.',
           )
         }}
       </p>
@@ -41,7 +41,7 @@ export default {
       <p>
         {{
           s__(
-            'UsageBilling|You can purchase a monthly allocation of GitLab Units to be shared across users.',
+            'UsageBilling|You can purchase a monthly allocation of GitLab Credits to be shared across users.',
           )
         }}
       </p>
