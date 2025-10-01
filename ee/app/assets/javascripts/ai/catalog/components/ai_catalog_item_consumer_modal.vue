@@ -26,7 +26,8 @@ export default {
   data() {
     return {
       isOpen: true,
-      targetId: this.item.project?.id || null,
+      targetId: this.item?.public ? null : this.item?.project?.id || null,
+      isDirty: false,
       error: null,
     };
   },
@@ -50,14 +51,17 @@ export default {
     isPrivateItem() {
       return !this.item.public;
     },
+    isProjectValid() {
+      return !this.isDirty || this.targetId !== null;
+    },
   },
   methods: {
     onError(error) {
       this.error = error;
     },
     handleSubmit() {
-      if (this.targetId === null) {
-        this.onError(s__('AICatalog|Project is required.'));
+      this.isDirty = true;
+      if (!this.isProjectValid) {
         return;
       }
       this.$emit('submit', { projectId: this.targetId });
@@ -132,8 +136,15 @@ export default {
         :label="s__('AICatalog|Project')"
         :label-description="projectLabelDescription"
         label-for="target-id"
+        :state="isProjectValid"
+        :invalid-feedback="s__('AICatalog|Project is required.')"
       >
-        <form-project-dropdown id="target-id" v-model="targetId" @error="onError" />
+        <form-project-dropdown
+          id="target-id"
+          v-model="targetId"
+          :is-valid="isProjectValid"
+          @error="onError"
+        />
       </gl-form-group>
 
       <dl v-else>
