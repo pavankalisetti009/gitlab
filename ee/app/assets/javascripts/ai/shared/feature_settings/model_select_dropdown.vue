@@ -134,6 +134,8 @@ export default {
         <gl-button
           data-testid="add-self-hosted-model-button"
           category="tertiary"
+          block
+          class="!gl-justify-start"
           :to="{ name: $options.SELF_HOSTED_ROUTE_NAMES.NEW }"
         >
           {{ s__('AdminAIPoweredFeatures|Add self-hosted model') }}

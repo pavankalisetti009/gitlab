@@ -124,6 +124,7 @@ export default {
   <div>
     <gitlab-default-model-modal ref="defaultModelModal" @confirm-submit="onUpdate" />
     <model-select-dropdown
+      class="gl-w-34 lg:gl-w-48"
       :selected-option="selectedOption"
       :items="listItems"
       :is-loading="isSaving || batchUpdateIsSaving"
