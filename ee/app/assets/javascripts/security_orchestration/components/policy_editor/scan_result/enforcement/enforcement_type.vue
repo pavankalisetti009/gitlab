@@ -2,7 +2,7 @@
 import { GlAlert, GlFormGroup, GlFormRadioGroup, GlLink, GlSprintf } from '@gitlab/ui';
 import { s__ } from '~/locale';
 import { helpPagePath } from '~/helpers/help_page_helper';
-import { ENFORCEMENT_OPTIONS } from './constants';
+import { ENFORCEMENT_OPTIONS } from '../lib';
 
 export default {
   ENFORCEMENT_OPTIONS,
@@ -20,6 +20,11 @@ export default {
     GlSprintf,
   },
   props: {
+    disabledEnforcementOptions: {
+      type: Array,
+      required: false,
+      default: () => [],
+    },
     enforcement: {
       type: String,
       required: true,
@@ -38,13 +43,19 @@ export default {
     alertText() {
       if (this.isWarnMode) {
         return s__(
-          'SecurityOrchestration|In warn mode, project settings are checked and violations are reported, but fixes for the violations are not mandatory. %{linkStart}Learn more%{linkEnd}',
+          'SecurityOrchestration|In warn mode, project settings are checked and violations are reported, but fixes for the violations are not mandatory. License scanning is not supported in warn mode. %{linkStart}Learn more%{linkEnd}',
         );
       }
 
       return s__(
         'SecurityOrchestration|This policy was previously in warn mode, which was an experimental feature. Due to changes in the feature, warn mode is now disabled. To enable the new warn mode setting, update this property.',
       );
+    },
+    options() {
+      return this.$options.ENFORCEMENT_OPTIONS.map((option) => ({
+        ...option,
+        disabled: this.disabledEnforcementOptions.includes(option.value),
+      }));
     },
     showAlert() {
       return this.isWarnMode || this.hasLegacyWarnAction;
@@ -62,7 +73,7 @@ export default {
   <gl-form-group :label="s__('SecurityOrchestration|Policy enforcement')" class="gl-mt-5">
     <gl-form-radio-group
       class="gl-inline-block"
-      :options="$options.ENFORCEMENT_OPTIONS"
+      :options="options"
       :checked="enforcement"
       @change="handleEnforcementChange"
     />

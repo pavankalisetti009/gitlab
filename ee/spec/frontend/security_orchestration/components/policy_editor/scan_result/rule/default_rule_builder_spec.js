@@ -160,4 +160,9 @@ describe('DefaultRuleBuilder', () => {
       },
     ]);
   });
+
+  it('passes props to scan type select component', () => {
+    createComponent({ props: { disabledRuleTypes: ['test'] } });
+    expect(findScanTypeSelect().props('disabledRuleTypes')).toEqual(['test']);
+  });
 });
