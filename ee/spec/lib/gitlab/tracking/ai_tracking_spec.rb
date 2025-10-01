@@ -208,7 +208,13 @@ RSpec.describe Gitlab::Tracking::AiTracking, feature_category: :value_stream_man
       it_behaves_like 'standard ai usage event tracking'
     end
 
-    %w[agent_platform_session_created agent_platform_session_started agent_platform_session_finished].each do |e|
+    %w[
+      agent_platform_session_created
+      agent_platform_session_started
+      agent_platform_session_finished
+      agent_platform_session_dropped
+      agent_platform_session_stopped
+    ].each do |e|
       context "for `#{e}` event" do
         let(:event_name) { e }
         let(:event_context) do
