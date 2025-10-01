@@ -1084,16 +1084,4 @@ type: scan_execution_policy
       ]);
     });
   });
-
-  describe('advanced editor', () => {
-    it('enables advanced editor mode', () => {
-      factory({
-        propsData: {
-          advancedEditorEnabled: true,
-        },
-      });
-
-      expect(findPolicyEditorLayout().props('advancedEditorEnabled')).toBe(true);
-    });
-  });
 });

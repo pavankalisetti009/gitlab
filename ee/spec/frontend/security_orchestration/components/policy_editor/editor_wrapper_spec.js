@@ -412,14 +412,4 @@ describe('EditorWrapper component', () => {
       });
     });
   });
-
-  describe('advanced editor', () => {
-    it('enables advanced editor mode', () => {
-      factory({
-        propsData: { advancedEditorEnabled: true },
-      });
-
-      expect(findScanExecutionPolicyEditor().props('advancedEditorEnabled')).toBe(true);
-    });
-  });
 });

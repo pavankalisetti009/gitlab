@@ -36,7 +36,7 @@ import {
   SPLIT_VIEW_HALF_WIDTH,
   RULE_SECTION_MAX_WIDTH,
 } from './constants';
-import { getAdvancedEditorValue, getPolicyLimitDetails } from './utils';
+import { getPolicyLimitDetails } from './utils';
 
 const { scanExecution, legacyApproval, approval, vulnerabilityManagement, pipelineExecution } =
   POLICY_TYPE_COMPONENT_OPTIONS;
@@ -106,13 +106,9 @@ export default {
     'maxVulnerabilityManagementPoliciesAllowed',
     'maxActivePipelineExecutionPoliciesReached',
     'maxPipelineExecutionPoliciesAllowed',
+    'policyEditorEnabled',
   ],
   props: {
-    advancedEditorEnabled: {
-      type: Boolean,
-      required: false,
-      default: getAdvancedEditorValue(),
-    },
     defaultEditorMode: {
       type: String,
       required: false,
@@ -180,7 +176,7 @@ export default {
       return this.hasNewSplitView ? { width: `${width}px` } : {};
     },
     hasNewSplitView() {
-      return this.glFeatures.securityPoliciesSplitView && this.advancedEditorEnabled;
+      return this.glFeatures.securityPoliciesSplitView && this.policyEditorEnabled;
     },
     hasSPP() {
       return !isEmpty(this.assignedPolicyProject);

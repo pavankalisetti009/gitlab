@@ -1,7 +1,8 @@
 <script>
 import { GlLink, GlToggle } from '@gitlab/ui';
 import { __, s__ } from '~/locale';
-import { getAdvancedEditorValue } from './utils';
+import Api from 'ee/api';
+import { refreshCurrentPage } from '~/lib/utils/url_utility';
 
 export default {
   FEEDBACK_ISSUE_LINK: 'https://gitlab.com/gitlab-org/gitlab/-/issues/545147',
@@ -15,12 +16,11 @@ export default {
     GlLink,
     GlToggle,
   },
-  props: {
-    advancedEditorEnabled: {
-      type: Boolean,
-      required: false,
-      default: getAdvancedEditorValue(),
-    },
+  inject: ['policyEditorEnabled'],
+  data() {
+    return {
+      advancedEditorEnabled: this.policyEditorEnabled,
+    };
   },
   computed: {
     label() {
@@ -30,8 +30,11 @@ export default {
     },
   },
   methods: {
-    enableAdvancedEditor(value) {
-      this.$emit('enable-advanced-editor', value);
+    async toggleAdvancedEditor(advancedEditorEnabled) {
+      this.advancedEditorEnabled = advancedEditorEnabled;
+
+      await Api.updateUserPreferences(advancedEditorEnabled);
+      refreshCurrentPage();
     },
   },
 };
@@ -43,7 +46,7 @@ export default {
       label-position="left"
       :label="label"
       :value="advancedEditorEnabled"
-      @change="enableAdvancedEditor"
+      @change="toggleAdvancedEditor"
     />
     <gl-link
       v-if="advancedEditorEnabled"

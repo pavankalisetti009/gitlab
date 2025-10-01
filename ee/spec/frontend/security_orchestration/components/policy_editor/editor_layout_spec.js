@@ -57,6 +57,7 @@ describe('EditorLayout component', () => {
         maxVulnerabilityManagementPoliciesAllowed: 5,
         maxActivePipelineExecutionPoliciesReached: false,
         maxPipelineExecutionPoliciesAllowed: 5,
+        policyEditorEnabled: false,
         ...provide,
       },
       stubs: { YamlEditor: true },
@@ -411,7 +412,7 @@ describe('EditorLayout component', () => {
     beforeEach(() => {
       factory({
         propsData: { advancedEditorEnabled: true },
-        provide: { glFeatures: { securityPoliciesSplitView: true } },
+        provide: { glFeatures: { securityPoliciesSplitView: true }, policyEditorEnabled: true },
       });
     });
 
