@@ -2,6 +2,8 @@
 
 module Features
   module HandRaiseLeadHelpers
+    include ListboxHelpers
+
     def fill_in_and_submit_hand_raise_lead(user, namespace, glm_content: nil, product_interaction: 'Hand Raise PQL')
       form_data = {
         first_name: user.first_name,
@@ -49,9 +51,9 @@ module Features
           expect(page).to have_field('Company name', with: form_data[:company_name])
         end
 
-        fill_in 'phone-number', with: form_data[:phone_number]
-        select form_data.dig(:country, :name), from: 'country'
-        select form_data.dig(:state, :name), from: 'state'
+        fill_in 'Telephone number', with: form_data[:phone_number]
+        select_from_listbox form_data.dig(:country, :name), from: 'Select a country or region'
+        select_from_listbox form_data.dig(:state, :name), from: 'Select state or province'
 
         click_button 'Submit information'
       end

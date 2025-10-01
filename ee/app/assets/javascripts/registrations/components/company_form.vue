@@ -2,7 +2,6 @@
 import { GlForm, GlButton, GlFormFields } from '@gitlab/ui';
 import { formValidators } from '@gitlab/ui/src/utils';
 import {
-  COUNTRIES_WITH_STATES_ALLOWED,
   LEADS_COMPANY_NAME_LABEL,
   LEADS_COUNTRY_LABEL,
   LEADS_COUNTRY_PROMPT,
@@ -13,8 +12,7 @@ import {
 import csrf from '~/lib/utils/csrf';
 import { __, s__ } from '~/locale';
 import FormErrorTracker from '~/pages/shared/form_error_tracker';
-import countriesQuery from 'ee/subscriptions/graphql/queries/countries.query.graphql';
-import statesQuery from 'ee/subscriptions/graphql/queries/states.query.graphql';
+import countryStateMixin from 'ee/vue_shared/mixins/country_state_mixin';
 import {
   TRIAL_PHONE_DESCRIPTION,
   TRIAL_STATE_PROMPT,
@@ -32,6 +30,7 @@ export default {
     GlButton,
     GlFormFields,
   },
+  mixins: [countryStateMixin],
   inject: {
     user: {
       type: Object,
@@ -57,8 +56,6 @@ export default {
   data() {
     return {
       formValues: {},
-      countries: [],
-      states: [],
     };
   },
   computed: {
@@ -68,15 +65,6 @@ export default {
       }
 
       return s__('Trial|Continue');
-    },
-    showCountry() {
-      return !this.$apollo.queries.countries.loading;
-    },
-    stateRequired() {
-      return COUNTRIES_WITH_STATES_ALLOWED.includes(this.formValues.country);
-    },
-    showState() {
-      return !this.$apollo.queries.states.loading && this.formValues.country && this.stateRequired;
     },
     fields() {
       const result = {};
@@ -183,14 +171,6 @@ export default {
       trackCompanyForm('ultimate_trial', this.user.emailDomain);
       this.$refs.form.$el.submit();
     },
-    onCountrySelect(value, formFieldsInput) {
-      if (!this.showState) {
-        this.formValues.state = '';
-      }
-
-      // On initialization this can be undefined
-      formFieldsInput?.(value);
-    },
     onFieldValidation(event) {
       if (!event.state) {
         this.trackFieldError(event);
@@ -202,34 +182,6 @@ export default {
       const label = FormErrorTracker.formattedLabel(fieldName);
 
       Tracking.event(undefined, action, { label });
-    },
-  },
-  apollo: {
-    countries: {
-      query: countriesQuery,
-      update(data) {
-        return data.countries.map((country) => ({
-          value: country.id,
-          text: country.name,
-        }));
-      },
-    },
-    states: {
-      query: statesQuery,
-      update(data) {
-        return data.states.map((state) => ({
-          value: state.id,
-          text: state.name,
-        }));
-      },
-      skip() {
-        return !this.formValues.country;
-      },
-      variables() {
-        return {
-          countryId: this.formValues.country,
-        };
-      },
     },
   },
   i18n: {

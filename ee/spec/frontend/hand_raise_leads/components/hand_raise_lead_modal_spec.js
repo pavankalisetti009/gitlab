@@ -1,12 +1,13 @@
-import { GlModal, GlFormTextarea } from '@gitlab/ui';
-import { kebabCase, pick } from 'lodash';
-import { nextTick } from 'vue';
+import { GlModal, GlFormFields } from '@gitlab/ui';
+import Vue, { nextTick } from 'vue';
+import VueApollo from 'vue-apollo';
 import { createWrapper } from '@vue/test-utils';
 import { sprintf } from '~/locale';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import { mockTracking } from 'helpers/tracking_helper';
+import createMockApollo from 'helpers/mock_apollo_helper';
 import HandRaiseLeadModal from 'ee/hand_raise_leads/hand_raise_lead/components/hand_raise_lead_modal.vue';
-import CountryOrRegionSelector from 'ee/trials/components/country_or_region_selector.vue';
+import ListboxInput from '~/vue_shared/components/listbox_input/listbox_input.vue';
 import {
   PQL_MODAL_PRIMARY,
   PQL_MODAL_CANCEL,
@@ -17,26 +18,63 @@ import {
 import * as SubscriptionsApi from 'ee/api/subscriptions_api';
 import eventHub from 'ee/hand_raise_leads/hand_raise_lead/event_hub';
 import { BV_SHOW_MODAL } from '~/lib/utils/constants';
+import waitForPromises from 'helpers/wait_for_promises';
 import {
-  FORM_DATA,
   USER,
   CREATE_HAND_RAISE_LEAD_PATH,
   GLM_CONTENT,
   PRODUCT_INTERACTION,
+  COUNTRIES,
+  STATES,
+  COUNTRY_WITH_STATES,
+  STATE,
 } from './mock_data';
+
+Vue.use(VueApollo);
 
 describe('HandRaiseLeadModal', () => {
   let wrapper;
   let trackingSpy;
 
-  const createComponent = (props = {}) => {
-    return shallowMountExtended(HandRaiseLeadModal, {
+  const createComponent = async ({
+    props = {},
+    countriesLoading = false,
+    statesLoading = false,
+  } = {}) => {
+    const mockResolvers = {
+      Query: {
+        countries() {
+          if (countriesLoading) {
+            return new Promise(() => {});
+          }
+          return COUNTRIES;
+        },
+        states() {
+          if (statesLoading) {
+            return new Promise(() => {});
+          }
+          return STATES;
+        },
+      },
+    };
+
+    const component = shallowMountExtended(HandRaiseLeadModal, {
+      apolloProvider: createMockApollo([], mockResolvers),
       propsData: {
         submitPath: CREATE_HAND_RAISE_LEAD_PATH,
         user: USER,
         ...props,
       },
+      stubs: {
+        ListboxInput,
+      },
     });
+
+    if (!countriesLoading && !statesLoading) {
+      await waitForPromises();
+    }
+
+    return component;
   };
 
   const expectTracking = (action) =>
@@ -45,6 +83,10 @@ describe('HandRaiseLeadModal', () => {
     });
 
   const findModal = () => wrapper.findComponent(GlModal);
+  const findFormFields = () => wrapper.findComponent(GlFormFields);
+  const findCountrySelect = () => wrapper.findByTestId('country-dropdown');
+  const findStateSelect = () => wrapper.findByTestId('state-dropdown');
+  const fieldsProps = () => findFormFields().props('fields');
   const triggerOpenModal = async ({
     productInteraction = PRODUCT_INTERACTION,
     ctaTracking = {},
@@ -53,59 +95,50 @@ describe('HandRaiseLeadModal', () => {
     eventHub.$emit('openModal', { productInteraction, ctaTracking, glmContent });
     await nextTick();
   };
-  const findFormInput = (testId) => wrapper.findByTestId(testId);
-  const findCountryOrRegionSelector = () => wrapper.findComponent(CountryOrRegionSelector);
   const submitForm = () => findModal().vm.$emit('primary');
-
-  const fillForm = ({ stateRequired = false, comment = '' } = {}) => {
-    const { country, state } = FORM_DATA;
-    const inputForms = pick(FORM_DATA, ['firstName', 'lastName', 'companyName', 'phoneNumber']);
-
-    Object.entries(inputForms).forEach(([key, value]) => {
-      wrapper.findByTestId(kebabCase(key)).vm.$emit('input', value);
-    });
-
-    findCountryOrRegionSelector().vm.$emit('change', {
-      country,
-      state,
-      stateRequired,
-    });
-
-    wrapper.findComponent(GlFormTextarea).vm.$emit('input', comment);
-
-    return nextTick();
-  };
 
   describe('rendering', () => {
     let rootWrapper;
 
-    beforeEach(() => {
-      wrapper = createComponent();
+    beforeEach(async () => {
+      wrapper = await createComponent();
       trackingSpy = mockTracking(undefined, wrapper.element, jest.spyOn);
       rootWrapper = createWrapper(wrapper.vm.$root);
     });
 
-    it('has the default injected values', () => {
-      const formInputValues = [
-        { id: 'first-name', value: 'Joe' },
-        { id: 'last-name', value: 'Doe' },
-        { id: 'company-name', value: 'ACME' },
-        { id: 'phone-number', value: '' },
+    it('passes the correct fields to GlFormFields', () => {
+      expect(findFormFields().exists()).toBe(true);
+
+      const expectedFields = [
+        { key: 'firstName', name: 'first_name' },
+        { key: 'lastName', name: 'last_name' },
+        { key: 'companyName', name: 'company_name' },
+        { key: 'phoneNumber', name: 'phone_number' },
+        { key: 'country', name: undefined },
+        { key: 'comment', name: undefined },
       ];
 
-      formInputValues.forEach(({ id, value }) => {
-        expect(findFormInput(id).attributes('value')).toBe(value);
-      });
+      expectedFields.forEach(({ key, name }) => {
+        expect(fieldsProps()).toHaveProperty(key);
 
-      expect(findFormInput('state').exists()).toBe(false);
+        if (name !== undefined) {
+          expect(fieldsProps()[key].inputAttrs).toHaveProperty('name', name);
+        }
+      });
     });
 
-    it('has the correct form input in the form content', () => {
-      const visibleFields = ['first-name', 'last-name', 'company-name', 'phone-number'];
+    it('correctly binds formValues to GlFormFields via v-model', async () => {
+      expect(findFormFields().props('values')).toEqual(wrapper.vm.formValues);
 
-      visibleFields.forEach((f) => expect(wrapper.findByTestId(f).exists()).toBe(true));
+      const updatedValues = {
+        ...wrapper.vm.formValues,
+        company_name: 'New Company Name',
+      };
 
-      expect(wrapper.findByTestId('state').exists()).toBe(false);
+      findFormFields().vm.$emit('input', updatedValues);
+      await nextTick();
+
+      expect(findFormFields().props('values')).toEqual(updatedValues);
     });
 
     it('has the correct text in the modal content', () => {
@@ -135,15 +168,82 @@ describe('HandRaiseLeadModal', () => {
 
       expect(rootWrapper.emitted(BV_SHOW_MODAL)).toHaveLength(1);
     });
+
+    describe('country field', () => {
+      it('does not show country field when Apollo is loading countries', async () => {
+        wrapper = await createComponent({ countriesLoading: true });
+
+        await nextTick();
+
+        expect(fieldsProps()).not.toHaveProperty('country');
+      });
+
+      it('shows country field when Apollo is not loading countries', async () => {
+        wrapper = await createComponent();
+
+        await nextTick();
+
+        expect(fieldsProps()).toHaveProperty('country');
+      });
+    });
+
+    describe('state field', () => {
+      it('does not show state field when Apollo is loading states', async () => {
+        wrapper = await createComponent({ statesLoading: true });
+
+        await nextTick();
+
+        expect(fieldsProps()).not.toHaveProperty('state');
+      });
+
+      it('shows state field when country requires state', async () => {
+        wrapper = await createComponent();
+
+        const updatedValues = {
+          ...wrapper.vm.formValues,
+          country: COUNTRY_WITH_STATES,
+        };
+        findFormFields().vm.$emit('input', updatedValues);
+        await nextTick();
+        await waitForPromises();
+
+        expect(fieldsProps()).toHaveProperty('state');
+      });
+
+      it('does not show state field when country does not require state', async () => {
+        wrapper = await createComponent();
+
+        const updatedValues = {
+          ...wrapper.vm.formValues,
+          country: 'NL',
+        };
+        findFormFields().vm.$emit('input', updatedValues);
+        await nextTick();
+        await waitForPromises();
+
+        expect(fieldsProps()).not.toHaveProperty('state');
+      });
+    });
   });
 
   describe('submit button', () => {
-    beforeEach(() => {
-      wrapper = createComponent();
+    beforeEach(async () => {
+      wrapper = await createComponent();
     });
 
     it('becomes enabled when required info is there', async () => {
-      await fillForm();
+      const updatedValues = {
+        ...wrapper.vm.formValues,
+        firstName: 'Joe',
+        lastName: 'Doe',
+        companyName: 'ACME',
+        phoneNumber: '192919',
+        country: COUNTRY_WITH_STATES,
+        state: STATE,
+      };
+
+      findFormFields().vm.$emit('input', updatedValues);
+      await nextTick();
 
       expect(findModal().props('actionPrimary')).toStrictEqual({
         text: PQL_MODAL_PRIMARY,
@@ -152,11 +252,24 @@ describe('HandRaiseLeadModal', () => {
     });
   });
 
-  describe('form', () => {
+  describe('form submission', () => {
     beforeEach(async () => {
-      wrapper = createComponent();
+      wrapper = await createComponent();
       trackingSpy = mockTracking(undefined, wrapper.element, jest.spyOn);
-      await fillForm({ stateRequired: true, comment: 'comment' });
+
+      const updatedValues = {
+        ...wrapper.vm.formValues,
+        firstName: 'Joe',
+        lastName: 'Doe',
+        companyName: 'ACME',
+        phoneNumber: '192919',
+        country: COUNTRY_WITH_STATES,
+        state: STATE,
+        comment: 'test comment',
+      };
+
+      findFormFields().vm.$emit('input', updatedValues);
+      await nextTick();
     });
 
     describe('successful submission', () => {
@@ -168,29 +281,22 @@ describe('HandRaiseLeadModal', () => {
         submitForm();
       });
 
-      it('primary submits the valid form', () => {
+      it('submits the valid form with correct data', () => {
         expect(SubscriptionsApi.sendHandRaiseLead).toHaveBeenCalledWith(
-          '/-/gitlab_subscriptions/hand_raise_leads',
+          CREATE_HAND_RAISE_LEAD_PATH,
           {
             namespaceId: 1,
-            comment: 'comment',
+            firstName: 'Joe',
+            lastName: 'Doe',
+            companyName: 'ACME',
+            phoneNumber: '192919',
+            country: COUNTRY_WITH_STATES,
+            state: STATE,
+            comment: 'test comment',
             glmContent: GLM_CONTENT,
             productInteraction: PRODUCT_INTERACTION,
-            ...FORM_DATA,
           },
         );
-      });
-
-      it('clears the form after submission', () => {
-        ['first-name', 'last-name', 'company-name', 'phone-number'].forEach((f) =>
-          expect(wrapper.findByTestId(f).attributes('value')).toBe(''),
-        );
-
-        expect(findCountryOrRegionSelector().props()).toMatchObject({
-          country: '',
-          state: '',
-          required: false,
-        });
       });
 
       it('tracks successful submission', () => {
@@ -199,8 +305,10 @@ describe('HandRaiseLeadModal', () => {
     });
 
     describe('failed submission', () => {
-      beforeEach(() => {
+      beforeEach(async () => {
         jest.spyOn(SubscriptionsApi, 'sendHandRaiseLead').mockRejectedValue();
+
+        await triggerOpenModal();
 
         submitForm();
       });
@@ -218,6 +326,58 @@ describe('HandRaiseLeadModal', () => {
       it('tracks cancel', () => {
         expectTracking('hand_raise_form_canceled');
       });
+    });
+  });
+
+  describe('country and state field behavior', () => {
+    beforeEach(async () => {
+      wrapper = await createComponent();
+    });
+
+    it('renders country field after countries are loaded', async () => {
+      await nextTick();
+
+      expect(findCountrySelect().props('items').length).toBeGreaterThan(1);
+    });
+
+    it('renders state field after selecting a country that requires states', async () => {
+      await nextTick();
+
+      const updatedValues = {
+        ...wrapper.vm.formValues,
+        country: COUNTRY_WITH_STATES,
+      };
+      findFormFields().vm.$emit('input', updatedValues);
+      await nextTick();
+      await waitForPromises();
+
+      expect(fieldsProps()).toHaveProperty('state');
+      expect(findStateSelect().props('items').length).toBeGreaterThan(1);
+    });
+
+    it('has the proper state show and hide logic based on the selected country', async () => {
+      await nextTick();
+
+      const updatedValuesNL = {
+        ...wrapper.vm.formValues,
+        country: 'NL',
+      };
+
+      findFormFields().vm.$emit('input', updatedValuesNL);
+      await nextTick();
+      await waitForPromises();
+
+      expect(fieldsProps()).not.toHaveProperty('state');
+
+      const updatedValuesUS = {
+        ...wrapper.vm.formValues,
+        country: COUNTRY_WITH_STATES,
+      };
+      findFormFields().vm.$emit('input', updatedValuesUS);
+      await nextTick();
+      await waitForPromises();
+
+      expect(fieldsProps()).toHaveProperty('state');
     });
   });
 });
