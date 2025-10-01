@@ -4,6 +4,7 @@ require 'spec_helper'
 
 RSpec.describe SearchController, :elastic, feature_category: :global_search do
   let_it_be(:user) { create(:user) }
+  let(:category) { described_class.to_s }
 
   before do
     sign_in(user)
@@ -12,103 +13,226 @@ RSpec.describe SearchController, :elastic, feature_category: :global_search do
   shared_examples 'unique_users tracking' do |controller_action, tracked_action|
     let_it_be(:group) { create(:group) }
 
-    before do
-      stub_ee_application_setting(elasticsearch_search: true, elasticsearch_indexing: true)
-      allow(Gitlab::UsageDataCounters::HLLRedisCounter).to receive(:track_event)
-    end
-
-    describe 'Snowplow event tracking', :snowplow do
-      let(:category) { described_class.to_s }
-
-      subject { get controller_action, params: request_params }
-
-      it 'emits all search events' do
-        subject
-
-        expect_snowplow_event(
-          category: category, action: tracked_action, namespace: group, user: user,
-          context: context('i_search_total'),
-          property: 'i_search_total',
-          label: 'redis_hll_counters.search.search_total_unique_counts_monthly'
-        )
-        expect_snowplow_event(
-          category: category, action: tracked_action, namespace: group, user: user,
-          context: context('i_search_paid'),
-          property: 'i_search_paid',
-          label: 'redis_hll_counters.search.i_search_paid_monthly'
-        )
-        expect_snowplow_event(
-          category: category, action: tracked_action, namespace: group, user: user,
-          context: context('i_search_advanced'),
-          property: 'i_search_advanced',
-          label: 'redis_hll_counters.search.search_total_unique_counts_monthly'
-        )
+    context 'when elasticsearch is enabled' do
+      before do
+        stub_ee_application_setting(elasticsearch_search: true, elasticsearch_indexing: true)
       end
-    end
 
-    context 'on i_search_advanced' do
-      let(:target_event) { 'i_search_advanced' }
+      context 'for snowplow' do
+        it 'emits all snowplow search events' do
+          get controller_action, params: request_params
 
-      subject(:request) { get controller_action, params: request_params }
+          expect_snowplow_event(
+            category: category, action: tracked_action, namespace: group, user: user,
+            context: context('i_search_total'),
+            property: 'i_search_total',
+            label: 'redis_hll_counters.search.search_total_unique_counts_monthly'
+          )
+          expect_snowplow_event(
+            category: category, action: tracked_action, namespace: group, user: user,
+            context: context('i_search_paid'),
+            property: 'i_search_paid',
+            label: 'redis_hll_counters.search.i_search_paid_monthly'
+          )
+          expect_snowplow_event(
+            category: category, action: tracked_action, namespace: group, user: user,
+            context: context('i_search_advanced'),
+            property: 'i_search_advanced',
+            label: 'redis_hll_counters.search.search_total_unique_counts_monthly'
+          )
+        end
 
-      it_behaves_like 'tracking unique hll events' do
-        let(:expected_value) { instance_of(String) }
+        context 'when query params search_type is passed as basic' do
+          it 'does not emit i_search_paid and i_search_advanced snowplow search events' do
+            get controller_action, params: request_params.merge(search_type: 'basic')
+
+            expect_no_snowplow_event(
+              category: category, action: tracked_action, namespace: group, user: user,
+              context: context('i_search_advanced'),
+              property: 'i_search_advanced',
+              label: 'redis_hll_counters.search.search_total_unique_counts_monthly'
+            )
+            expect_no_snowplow_event(
+              category: category, action: tracked_action, namespace: group, user: user,
+              context: context('i_search_paid'),
+              property: 'i_search_paid',
+              label: 'redis_hll_counters.search.i_search_paid_monthly'
+            )
+            expect_snowplow_event(
+              category: category, action: tracked_action, namespace: group, user: user,
+              context: context('i_search_total'),
+              property: 'i_search_total',
+              label: 'redis_hll_counters.search.search_total_unique_counts_monthly'
+            )
+          end
+        end
       end
-    end
 
-    context 'on i_search_paid' do
-      let(:target_event) { 'i_search_paid' }
-
-      context 'on Gitlab.com', :snowplow do
+      context 'for redis_hll' do
         subject(:request) { get controller_action, params: request_params }
 
-        before do
-          allow(::Gitlab).to receive(:com?).and_return(true)
-          stub_ee_application_setting(elasticsearch_search: true, elasticsearch_indexing: true)
+        context 'with i_search_advanced' do
+          let(:target_event) { 'i_search_advanced' }
+
+          it_behaves_like 'tracking unique hll events' do
+            let(:expected_value) { instance_of(String) }
+          end
         end
 
-        it_behaves_like 'tracking unique hll events' do
-          let(:expected_value) { instance_of(String) }
+        context 'with i_search_paid' do
+          let(:target_event) { 'i_search_paid' }
+
+          it_behaves_like 'tracking unique hll events' do
+            let(:expected_value) { instance_of(String) }
+          end
+        end
+
+        context 'with i_search_total' do
+          let(:target_event) { 'i_search_total' }
+
+          it_behaves_like 'tracking unique hll events' do
+            let(:expected_value) { instance_of(String) }
+          end
+        end
+
+        context 'when query params search_type is passed as basic' do
+          subject(:request) { get controller_action, params: request_params.merge(search_type: 'basic') }
+
+          context 'with i_search_advanced' do
+            let(:target_event) { 'i_search_advanced' }
+
+            it_behaves_like 'does not tracking unique hll events' do
+              let(:expected_value) { instance_of(String) }
+            end
+          end
+
+          context 'with i_search_paid' do
+            let(:target_event) { 'i_search_paid' }
+
+            it_behaves_like 'does not tracking unique hll events' do
+              let(:expected_value) { instance_of(String) }
+            end
+          end
+
+          context 'with i_search_total' do
+            let(:target_event) { 'i_search_total' }
+
+            it_behaves_like 'tracking unique hll events' do
+              let(:expected_value) { instance_of(String) }
+            end
+          end
+        end
+      end
+    end
+
+    context 'when elasticsearch is disabled' do
+      before do
+        stub_ee_application_setting(elasticsearch_search: false, elasticsearch_indexing: false)
+      end
+
+      context 'for snowplow' do
+        it 'does not emit i_search_paid and i_search_advanced snowplow search events' do
+          get controller_action, params: request_params
+
+          expect_snowplow_event(
+            category: category, action: tracked_action, namespace: group, user: user,
+            context: context('i_search_total'),
+            property: 'i_search_total',
+            label: 'redis_hll_counters.search.search_total_unique_counts_monthly'
+          )
+          expect_no_snowplow_event(
+            category: category, action: tracked_action, namespace: group, user: user,
+            context: context('i_search_paid'),
+            property: 'i_search_paid',
+            label: 'redis_hll_counters.search.i_search_paid_monthly'
+          )
+          expect_no_snowplow_event(
+            category: category, action: tracked_action, namespace: group, user: user,
+            context: context('i_search_advanced'),
+            property: 'i_search_advanced',
+            label: 'redis_hll_counters.search.search_total_unique_counts_monthly'
+          )
+        end
+
+        context 'when query params search_type is passed as advanced' do
+          it 'does not emit i_search_paid and i_search_advanced snowplow search events' do
+            get controller_action, params: request_params.merge(search_type: 'advanced')
+
+            expect_no_snowplow_event(
+              category: category, action: tracked_action, namespace: group, user: user,
+              context: context('i_search_advanced'),
+              property: 'i_search_advanced',
+              label: 'redis_hll_counters.search.search_total_unique_counts_monthly'
+            )
+            expect_no_snowplow_event(
+              category: category, action: tracked_action, namespace: group, user: user,
+              context: context('i_search_paid'),
+              property: 'i_search_paid',
+              label: 'redis_hll_counters.search.i_search_paid_monthly'
+            )
+            expect_snowplow_event(
+              category: category, action: tracked_action, namespace: group, user: user,
+              context: context('i_search_total'),
+              property: 'i_search_total',
+              label: 'redis_hll_counters.search.search_total_unique_counts_monthly'
+            )
+          end
         end
       end
 
-      context 'on self-managed instance' do
-        before do
-          allow(::Gitlab).to receive(:com?).and_return(false)
-        end
+      context 'for redis_hll' do
+        subject(:request) { get controller_action, params: request_params }
 
-        context 'when license is available' do
-          before do
-            stub_licensed_features(elastic_search: true)
-          end
+        context 'with i_search_advanced' do
+          let(:target_event) { 'i_search_advanced' }
 
-          it_behaves_like 'tracking unique hll events' do
-            subject(:request) { get controller_action, params: request_params }
-
+          it_behaves_like 'does not tracking unique hll events' do
             let(:expected_value) { instance_of(String) }
           end
         end
 
-        context 'when feature is available through usage ping features' do
-          before do
-            allow(License).to receive(:current).and_return(nil)
-            stub_ee_application_setting(usage_ping_enabled: true)
-            stub_ee_application_setting(usage_ping_features_enabled: true)
-          end
+        context 'with i_search_paid' do
+          let(:target_event) { 'i_search_paid' }
 
-          it_behaves_like 'tracking unique hll events' do
-            subject(:request) { get controller_action, params: request_params }
-
+          it_behaves_like 'does not tracking unique hll events' do
             let(:expected_value) { instance_of(String) }
           end
         end
 
-        it 'does not track if there is no license available' do
-          stub_licensed_features(elastic_search: false)
-          expect(Gitlab::UsageDataCounters::HLLRedisCounter).not_to receive(:track_event).with(target_event,
-            values: instance_of(String))
+        context 'with i_search_total' do
+          let(:target_event) { 'i_search_total' }
 
-          get controller_action, params: request_params, format: :html
+          it_behaves_like 'tracking unique hll events' do
+            let(:expected_value) { instance_of(String) }
+          end
+        end
+
+        context 'when query params search_type is passed as advanced' do
+          subject(:request) { get controller_action, params: request_params.merge(search_type: 'advanced') }
+
+          context 'with i_search_advanced' do
+            let(:target_event) { 'i_search_advanced' }
+
+            it_behaves_like 'does not tracking unique hll events' do
+              let(:expected_value) { instance_of(String) }
+            end
+          end
+
+          context 'with i_search_paid' do
+            let(:target_event) { 'i_search_paid' }
+
+            it_behaves_like 'does not tracking unique hll events' do
+              let(:expected_value) { instance_of(String) }
+            end
+          end
+
+          context 'with i_search_total' do
+            let(:target_event) { 'i_search_total' }
+
+            it_behaves_like 'tracking unique hll events' do
+              let(:expected_value) { instance_of(String) }
+            end
+          end
         end
       end
     end
@@ -214,6 +338,46 @@ RSpec.describe SearchController, :elastic, feature_category: :global_search do
 
           expect(response).to redirect_to search_path
           expect(controller).to set_flash[:alert].to(/Global Search is disabled for this scope/)
+        end
+      end
+    end
+
+    context 'when zoekt search is enabled', :zoekt_settings_enabled, :clean_gitlab_redis_shared_state do
+      let(:params) { { scope: 'blobs', search: 'term' } }
+
+      subject(:request) { get :show, params: params }
+
+      it 'trigger search_exact_code internal event' do
+        expect { request }.to trigger_internal_events('search_exact_code').with(user: user)
+          .and increment_usage_metrics(
+            'redis_hll_counters.count_distinct_user_id_from_search_exact_code_weekly',
+            'redis_hll_counters.count_distinct_user_id_from_search_exact_code_monthly'
+          )
+      end
+
+      context 'when advanced search is enabled' do
+        before do
+          stub_ee_application_setting(elasticsearch_search: true, elasticsearch_indexing: true)
+        end
+
+        it 'trigger search_exact_code internal event' do
+          expect { request }.to trigger_internal_events('search_exact_code').with(user: user)
+            .and increment_usage_metrics(
+              'redis_hll_counters.count_distinct_user_id_from_search_exact_code_weekly',
+              'redis_hll_counters.count_distinct_user_id_from_search_exact_code_monthly'
+            )
+        end
+      end
+
+      context 'when search_type is passed as advanced' do
+        let(:params) { { scope: 'blobs', search: 'term' }.merge(search_type: 'advanced') }
+
+        it 'does not trigger search_exact_code internal event' do
+          expect { request }.to not_trigger_internal_events('search_exact_code')
+            .and not_increment_usage_metrics(
+              'redis_hll_counters.count_distinct_user_id_from_search_exact_code_weekly',
+              'redis_hll_counters.count_distinct_user_id_from_search_exact_code_monthly'
+            )
         end
       end
     end
@@ -434,12 +598,6 @@ RSpec.describe SearchController, :elastic, feature_category: :global_search do
     end
   end
 
-  private
-
-  def context(event)
-    [Gitlab::Tracking::ServicePingContext.new(data_source: :redis_hll, event: event).to_context.to_json]
-  end
-
   describe '#multi_match?' do
     subject(:controller_instance) { described_class.new }
 
@@ -475,5 +633,11 @@ RSpec.describe SearchController, :elastic, feature_category: :global_search do
         expect(result).to be(false)
       end
     end
+  end
+
+  private
+
+  def context(event)
+    [Gitlab::Tracking::ServicePingContext.new(data_source: :redis_hll, event: event).to_context.to_json]
   end
 end
