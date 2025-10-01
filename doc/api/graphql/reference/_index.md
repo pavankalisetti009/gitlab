@@ -34328,6 +34328,7 @@ Defines which user roles, users, or groups can merge into a protected branch.
 | <a id="mergerequestname"></a>`name` | [`String`](#string) | Name or title of the object. |
 | <a id="mergerequestparticipants"></a>`participants` | [`MergeRequestParticipantConnection`](#mergerequestparticipantconnection) | Participants in the merge request. This includes the author, assignees, reviewers, and users mentioned in notes. (see [Connections](#connections)) |
 | <a id="mergerequestpoliciesoverridingapprovalsettings"></a>`policiesOverridingApprovalSettings` | [`[PolicyApprovalSettingsOverride!]`](#policyapprovalsettingsoverride) | Approval settings that are overridden by the policies for the merge request. |
+| <a id="mergerequestpolicybypassstatuses"></a>`policyBypassStatuses` {{< icon name="warning-solid" >}} | [`[PolicyBypassStatus!]`](#policybypassstatus) | **Introduced** in GitLab 18.5. **Status**: Experiment. List of bypass settings for security policies. |
 | <a id="mergerequestpolicyviolations"></a>`policyViolations` | [`PolicyViolationDetails`](#policyviolationdetails) | Policy violations reported on the merge request. |
 | <a id="mergerequestpreparedat"></a>`preparedAt` | [`Time`](#time) | Timestamp of when the merge request was prepared. |
 | <a id="mergerequestproject"></a>`project` | [`Project!`](#project) | Alias for target_project. |
@@ -38650,6 +38651,19 @@ Multiple approvers action.
 | <a id="policyapproverstypecustomroles"></a>`customRoles` | [`[MemberRole!]`](#memberrole) | Approvers of the custom role type. Users belonging to these role(s) alone will be approvers. |
 | <a id="policyapproverstyperoles"></a>`roles` | [`[MemberAccessLevelName!]`](#memberaccesslevelname) | Approvers of the role type. Users belonging to these role(s) alone will be approvers. |
 | <a id="policyapproverstypeusers"></a>`users` | [`[UserCore!]`](#usercore) | Approvers of the user type. |
+
+### `PolicyBypassStatus`
+
+Represents bypass status of a merge request for a security policy.
+
+#### Fields
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="policybypassstatusallowbypass"></a>`allowBypass` | [`Boolean!`](#boolean) | Indicates if bypass is allowed for the policy. |
+| <a id="policybypassstatusbypassed"></a>`bypassed` | [`Boolean!`](#boolean) | Indicates if the policy has been bypassed. |
+| <a id="policybypassstatusid"></a>`id` | [`ID!`](#id) | ID of the security policy. |
+| <a id="policybypassstatusname"></a>`name` | [`String!`](#string) | Name of the security policy. |
 
 ### `PolicyComparisonPipeline`
 

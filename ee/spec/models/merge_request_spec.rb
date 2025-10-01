@@ -3499,6 +3499,102 @@ RSpec.describe MergeRequest, feature_category: :code_review_workflow do
     end
   end
 
+  describe '#security_policies_with_bypass_settings' do
+    let_it_be(:project) { create(:project) }
+    let_it_be(:user) { create(:user) }
+    let_it_be(:security_policy_with_bypass) do
+      create(:security_policy, content: {
+        bypass_settings: {
+          users: [
+            { id: user.id }
+          ]
+        }
+      }, linked_projects: [project])
+    end
+
+    let_it_be(:security_policy_without_bypass) do
+      create(:security_policy, content: {
+        bypass_settings: {}
+      }, linked_projects: [project])
+    end
+
+    let_it_be(:security_policy_no_bypass_key) do
+      create(:security_policy, content: {}, linked_projects: [project])
+    end
+
+    let_it_be(:approval_policy_rule_with_bypass) do
+      create(:approval_policy_rule, security_policy: security_policy_with_bypass)
+    end
+
+    let_it_be(:approval_policy_rule_without_bypass) do
+      create(:approval_policy_rule, security_policy: security_policy_without_bypass)
+    end
+
+    let_it_be(:approval_policy_rule_no_bypass_key) do
+      create(:approval_policy_rule, security_policy: security_policy_no_bypass_key)
+    end
+
+    let_it_be_with_refind(:merge_request) { create(:merge_request, source_project: project, target_project: project, source_branch: 'feature', target_branch: 'main') }
+
+    context 'when merge request has approval rules with security policies that have bypass settings' do
+      let_it_be(:approval_rule_with_bypass) do
+        create(:approval_merge_request_rule, merge_request: merge_request, approval_policy_rule: approval_policy_rule_with_bypass)
+      end
+
+      it 'returns security policies with bypass settings' do
+        expect(merge_request.security_policies_with_bypass_settings).to contain_exactly(security_policy_with_bypass)
+      end
+    end
+
+    context 'when merge request has approval rules with security policies without bypass settings' do
+      let_it_be(:approval_rule_without_bypass) do
+        create(:approval_merge_request_rule, merge_request: merge_request, approval_policy_rule: approval_policy_rule_without_bypass)
+      end
+
+      let_it_be(:approval_rule_no_bypass_key) do
+        create(:approval_merge_request_rule, merge_request: merge_request, approval_policy_rule: approval_policy_rule_no_bypass_key)
+      end
+
+      it 'returns empty collection' do
+        expect(merge_request.security_policies_with_bypass_settings).to be_empty
+      end
+    end
+
+    context 'when merge request has approval rules without approval_policy_rule_id' do
+      let_it_be(:approval_rule_without_policy) do
+        create(:approval_merge_request_rule, merge_request: merge_request, approval_policy_rule: nil)
+      end
+
+      it 'returns empty collection' do
+        expect(merge_request.security_policies_with_bypass_settings).to be_empty
+      end
+    end
+
+    context 'when merge request has no approval rules' do
+      it 'returns empty collection' do
+        expect(merge_request.security_policies_with_bypass_settings).to be_empty
+      end
+    end
+
+    context 'when merge request has mixed approval rules' do
+      let_it_be(:approval_rule_with_bypass) do
+        create(:approval_merge_request_rule, merge_request: merge_request, approval_policy_rule: approval_policy_rule_with_bypass)
+      end
+
+      let_it_be(:approval_rule_without_bypass) do
+        create(:approval_merge_request_rule, merge_request: merge_request, approval_policy_rule: approval_policy_rule_without_bypass)
+      end
+
+      let_it_be(:approval_rule_without_policy) do
+        create(:approval_merge_request_rule, merge_request: merge_request, approval_policy_rule: nil)
+      end
+
+      it 'returns only security policies with bypass settings' do
+        expect(merge_request.security_policies_with_bypass_settings).to contain_exactly(security_policy_with_bypass)
+      end
+    end
+  end
+
   describe '#approval_rules_editable_by?' do
     RSpec.shared_examples 'not editable by user' do
       it 'is not editable by user' do

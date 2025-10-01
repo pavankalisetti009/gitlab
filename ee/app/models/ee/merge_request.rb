@@ -497,6 +497,17 @@ module EE
     end
     strong_memoize_attr :security_policies_with_branch_exceptions
 
+    def security_policies_with_bypass_settings
+      project.security_policies.with_bypass_settings
+        .preload(:approval_policy_merge_request_bypass_events)
+        .joins(:approval_policy_rules)
+        .where(
+          approval_policy_rules: {
+            id: approval_rules.where.not(approval_policy_rule_id: nil).select(:approval_policy_rule_id)
+          }
+        )
+    end
+
     # TODO: Will be removed with https://gitlab.com/gitlab-org/gitlab/-/issues/504296
     def sync_project_approval_rules_for_policy_configuration(configuration_id)
       return if merged?

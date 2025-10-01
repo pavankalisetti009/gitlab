@@ -84,6 +84,13 @@ module EE
           description: 'Policy violations reported on the merge request. ',
           resolver: ::Resolvers::SecurityOrchestration::PolicyViolationsResolver
 
+        field :policy_bypass_statuses,
+          [::Types::SecurityOrchestration::PolicyBypassStatusType],
+          null: true,
+          description: 'List of bypass settings for security policies.',
+          experiment: { milestone: '18.5' },
+          method: :security_policies_with_bypass_settings
+
         field :change_requesters,
           type: ::Types::UserType.connection_type,
           null: true,
