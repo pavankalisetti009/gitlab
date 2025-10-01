@@ -129,13 +129,13 @@ describe('EE WorkItemDetail component', () => {
         const { workItem } = workItemByIidQueryResponse.data.workspace;
 
         expect(duoWorkflowAction.props()).toMatchObject({
-          title: 'Generate MR with Duo',
           hoverMessage: 'Generate merge request with Duo',
           goal: workItem.webUrl,
           workflowDefinition: 'issue_to_merge_request',
           agentPrivileges: [1, 2, 3, 4, 5],
           size: 'medium',
         });
+        expect(duoWorkflowAction.text()).toBe('Generate MR with Duo');
       });
     });
 

@@ -10,6 +10,7 @@ import { buildApiUrl } from '~/api/api_utils';
 const FLOW_WEB_ENVIRONMENT = 'web';
 
 export default {
+  name: 'DuoWorkflowAction',
   directives: {
     GlTooltip: GlTooltipDirective,
   },
@@ -26,11 +27,6 @@ export default {
     projectPath: {
       type: String,
       required: true,
-    },
-    title: {
-      type: String,
-      required: false,
-      default: '',
     },
     hoverMessage: {
       type: String,
@@ -65,7 +61,7 @@ export default {
       type: String,
       default: 'default',
       required: false,
-      validator: (variant) => ['default', 'confirm', 'danger', 'dashed', 'link'].includes(variant),
+      validator: (variant) => ['default', 'confirm', 'danger', 'link'].includes(variant),
     },
     sourceBranch: {
       type: String,
@@ -209,7 +205,6 @@ export default {
     :variant="variant"
     data-testid="duo-workflow-action-button"
     @click="startWorkflow"
-  >
-    {{ title }}
-  </gl-button>
+    ><slot></slot
+  ></gl-button>
 </template>
