@@ -22469,7 +22469,7 @@ msgstr ""
 msgid "Deletion scheduled at: %{time}"
 msgstr ""
 
-msgid "DeletionSettings|Deletion protection"
+msgid "DeletionSettings|Immediate deletion"
 msgstr ""
 
 msgid "DeletionSettings|Maximum deletion protection duration is 90 days."
@@ -22479,6 +22479,9 @@ msgid "DeletionSettings|Minimum deletion protection duration is 1 day."
 msgstr ""
 
 msgid "DeletionSettings|Period that deleted groups and projects will remain restorable for."
+msgstr ""
+
+msgid "DeletionSettings|Retention period"
 msgstr ""
 
 msgid "Denied authorization of account nickname %{user_name}."
@@ -33972,9 +33975,6 @@ msgid "ImmediateNamespacesDeletionSettings|Allow immediate deletion"
 msgstr ""
 
 msgid "ImmediateNamespacesDeletionSettings|Groups and projects marked for deletion can be immediately deleted with a second deletion action, bypassing the configured retention period. %{link_start}Learn more.%{link_end}"
-msgstr ""
-
-msgid "ImmediateNamespacesDeletionSettings|Prevent non-administrators from immediately deleting groups and projects."
 msgstr ""
 
 msgid "Immutable tag rules require an Ultimate license"
