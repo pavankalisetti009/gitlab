@@ -228,21 +228,12 @@ module EE
     def prevent_role_assignement?(current_user, params)
       return false if current_user.can_admin_all_resources?
 
-      assigning_access_level ||= params[:access_level] || access_level
-      member_role_id = params[:member_role_id]
-      current_access_level = params[:current_access_level]
+      member_role_id = params[:member_role_id] || member_role_id
 
       # first we need to check if there are possibly more custom abilities than current user has
       return true if custom_role_abilities_too_high?(current_user, member_role_id)
 
-      # check if it's a valid downgrade, if the member's current access level encompasses the target level
-      return false if Authz::Role.access_level_encompasses?(
-        current_access_level: current_access_level,
-        level_to_assign: assigning_access_level
-      )
-
-      # prevent assignement in case the role access level is higher than current user's role
-      source.assigning_role_too_high?(current_user, assigning_access_level)
+      super
     end
 
     private
