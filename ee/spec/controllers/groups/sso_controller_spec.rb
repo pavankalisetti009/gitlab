@@ -52,23 +52,6 @@ RSpec.describe Groups::SsoController, feature_category: :system_access do
       end
     end
 
-    context 'when feature flag ff_oauth_redirect_to_sso_login is disabled' do
-      let(:oauth_redirect_url) { '/oauth/authorize?client_id=test-app' }
-
-      before do
-        stub_feature_flags(ff_oauth_redirect_to_sso_login: false)
-      end
-
-      it 'redirect_path is taken as group_path and not from session' do
-        session[:user_sso_return_to] = oauth_redirect_url
-
-        get :saml, params: { group_id: group }
-
-        expect(response).to have_gitlab_http_status(:ok)
-        expect(assigns[:redirect_path]).to eq(group_path(group))
-      end
-    end
-
     it 'passes group name to the view' do
       get :saml, params: { group_id: group }
 
