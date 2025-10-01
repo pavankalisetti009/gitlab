@@ -1,5 +1,6 @@
 <script>
 import { debounce } from 'lodash';
+import { PanelBreakpointInstance } from '~/panel_breakpoint_instance';
 import { EPIC_DETAILS_CELL_WIDTH, TIMELINE_CELL_MIN_WIDTH } from '../constants';
 import eventHub from '../event_hub';
 
@@ -81,16 +82,11 @@ export default {
     },
     setRightSpacing() {
       // To support browsers other than chromium, we need to add 16 or 24px to
-      // the actual width of the timeline section isntead of using utility
+      // the actual width of the timeline section instead of using utility
       // classes like "gl-mr-5 @xl/panel:gl-mr-6". This will set the specing to 16px
       // when the viewport is smaller than our xl breakpoint, and 24px if it's
       // xl or larger.
-      const width = window.innerWidth;
-      if (width >= 1200) {
-        this.rightSpacing = 24;
-      } else {
-        this.rightSpacing = 16;
-      }
+      this.rightSpacing = PanelBreakpointInstance.getBreakpointSize() === 'xl' ? 24 : 16;
     },
   },
 };
