@@ -153,7 +153,7 @@ Gitlab::Seeder.quiet do
     Gitlab::CurrentSettings.current_application_settings.update(use_clickhouse_for_analytics: true)
     "
 
-    raise "ClickHouse is not configured"
+    Gitlab::Utils.to_boolean(ENV["SEED_AI_USAGE_STATS"]) ? raise("ClickHouse is not configured") : break
   end
 
   project = Project.find_by(id: ENV['PROJECT_ID'])

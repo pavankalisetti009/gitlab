@@ -28,6 +28,11 @@ export default {
       required: false,
       default: null,
     },
+    isValid: {
+      type: Boolean,
+      required: false,
+      default: true,
+    },
   },
   data() {
     return {
@@ -147,6 +152,7 @@ export default {
     :items="projectList"
     :toggle-id="id"
     :toggle-text="projectDropdownText"
+    :toggle-class="{ 'gl-shadow-inner-1-red-500': !isValid }"
     :header-text="__('Select a project')"
     :loading="isLoadingInitial"
     searchable
