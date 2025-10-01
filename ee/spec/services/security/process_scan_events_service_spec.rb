@@ -249,7 +249,7 @@ RSpec.describe Security::ProcessScanEventsService, feature_category: :vulnerabil
       end
     end
 
-    context 'with DS Gemnasium scan events' do
+    context 'with Gemnasium scan events' do
       using RSpec::Parameterized::TableSyntax
 
       let(:ds_artifact) { create(:ee_ci_job_artifact, artifact) }
@@ -312,6 +312,62 @@ RSpec.describe Security::ProcessScanEventsService, feature_category: :vulnerabil
               property: '077e707f-175c-4eed-a998-1be56780666d',
               value: 13
             }]
+        ]
+      end
+
+      with_them do
+        it "triggers event data from '#{params[:event_name]}'" do
+          expect { ds_service_object.execute }.to trigger_internal_events(event_name).with(
+            project: ds_pipeline.project,
+            additional_properties: expected_properties
+          )
+        end
+      end
+    end
+
+    context 'with DS scan events' do
+      using RSpec::Parameterized::TableSyntax
+
+      let(:ds_artifact) { create(:ee_ci_job_artifact, :dependency_scanning_observability) }
+      let(:ds_pipeline) { ds_artifact.job.pipeline }
+      let(:ds_service_object) { described_class.new(ds_pipeline) }
+
+      where(:event_name, :expected_properties) do
+        [
+          ['collect_ds_analyzer_scan_duration_metrics_from_pipeline', {
+            property: 'e1552d18-eb8b-4e3e-bd15-a286ad1bc0f4',
+            value: 100
+          }],
+          ['collect_ds_analyzer_scan_sbom_metrics_from_pipeline', {
+            property: 'e1552d18-eb8b-4e3e-bd15-a286ad1bc0f4',
+            label: 'npm',
+            value: 352,
+            input_file_path: 'package-lock.json'
+          }],
+          ['collect_ds_analyzer_scan_static_reachability_metrics_from_pipeline', {
+            property: 'e1552d18-eb8b-4e3e-bd15-a286ad1bc0f4',
+            label: 'npm',
+            value: 352,
+            in_use: 10,
+            input_file_path: "package-lock.json"
+          }],
+          ['collect_ds_analyzer_scan_metrics_from_pipeline', {
+            property: 'e1552d18-eb8b-4e3e-bd15-a286ad1bc0f4',
+            label: '6.1.9',
+            value: 40
+          }],
+          ['collect_ds_analyzer_scan_security_report_duration_metrics_from_pipeline', {
+            property: 'e1552d18-eb8b-4e3e-bd15-a286ad1bc0f4',
+            value: 30
+          }],
+          ['collect_ds_analyzer_scan_static_reachability_duration_metrics_from_pipeline', {
+            property: 'e1552d18-eb8b-4e3e-bd15-a286ad1bc0f4',
+            value: 20
+          }],
+          ['collect_ds_analyzer_scan_sbom_duration_metrics_from_pipeline', {
+            property: 'e1552d18-eb8b-4e3e-bd15-a286ad1bc0f4',
+            value: 10
+          }]
         ]
       end
 
