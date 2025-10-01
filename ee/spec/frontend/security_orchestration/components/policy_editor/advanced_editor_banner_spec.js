@@ -38,7 +38,6 @@ describe('AdvancedEditorBanner', () => {
 
       expect(alert.exists()).toBe(true);
       expect(alert.props()).toMatchObject({
-        primaryButtonText: 'Try advanced editor',
         secondaryButtonText: "Don't show again",
         variant: 'tip',
       });
@@ -71,14 +70,6 @@ describe('AdvancedEditorBanner', () => {
         await findAlert().vm.$emit('secondaryAction');
 
         expect(findAlert().exists()).toBe(false);
-      });
-    });
-
-    describe('enable advanced editor', () => {
-      it('emits enable-advanced-editor event', () => {
-        findAlert().vm.$emit('primaryAction');
-
-        expect(wrapper.emitted('enable-advanced-editor')).toHaveLength(1);
       });
     });
   });

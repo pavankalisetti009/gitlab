@@ -92,48 +92,4 @@ describe('App component', () => {
       });
     });
   });
-
-  describe('split view with advanced editor', () => {
-    it('renders advance editor banner and toggle', () => {
-      factory({
-        provide: {
-          glFeatures: {
-            securityPoliciesSplitView: true,
-          },
-        },
-      });
-
-      expect(findAdvancedEditorBanner().exists()).toBe(true);
-      expect(findAdvancedEditorToggle().exists()).toBe(true);
-      expect(findAdvancedEditorToggle().props('advancedEditorEnabled')).toBe(false);
-    });
-
-    it('enables advanced editor from a banner', async () => {
-      factory({
-        provide: {
-          glFeatures: {
-            securityPoliciesSplitView: true,
-          },
-        },
-      });
-
-      await findAdvancedEditorBanner().vm.$emit('enable-advanced-editor', true);
-
-      expect(findAdvancedEditorToggle().props('advancedEditorEnabled')).toBe(true);
-    });
-
-    it('enables advanced editor from a toggle', async () => {
-      factory({
-        provide: {
-          glFeatures: {
-            securityPoliciesSplitView: true,
-          },
-        },
-      });
-
-      await findAdvancedEditorToggle().vm.$emit('enable-advanced-editor', true);
-
-      expect(findAdvancedEditorToggle().props('advancedEditorEnabled')).toBe(true);
-    });
-  });
 });

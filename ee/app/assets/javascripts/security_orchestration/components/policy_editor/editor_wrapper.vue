@@ -5,12 +5,7 @@ import { NAMESPACE_TYPES } from '../../constants';
 import { POLICY_TYPE_COMPONENT_OPTIONS } from '../constants';
 import { fromYaml } from '../utils';
 import { GRAPHQL_ERROR_MESSAGE, SECURITY_POLICY_ACTIONS } from './constants';
-import {
-  assignSecurityPolicyProjectAsync,
-  getAdvancedEditorValue,
-  goToPolicyMR,
-  parseError,
-} from './utils';
+import { assignSecurityPolicyProjectAsync, goToPolicyMR, parseError } from './utils';
 import PipelineExecutionPolicyEditor from './pipeline_execution/editor_component.vue';
 import ScanExecutionPolicyEditor from './scan_execution/editor_component.vue';
 import ScanResultPolicyEditor from './scan_result/editor_component.vue';
@@ -67,11 +62,6 @@ export default {
     namespacePath: { default: '' },
   },
   props: {
-    advancedEditorEnabled: {
-      type: Boolean,
-      required: false,
-      default: getAdvancedEditorValue(),
-    },
     // This is the POLICY_TYPE_COMPONENT_OPTIONS object for the policy type
     selectedPolicy: {
       type: Object,
@@ -223,7 +213,6 @@ export default {
     </gl-alert>
     <component
       :is="policyOptions.component"
-      :advanced-editor-enabled="advancedEditorEnabled"
       :error-sources="errorSources"
       :existing-policy="existingPolicy"
       :is-creating="isCreating"

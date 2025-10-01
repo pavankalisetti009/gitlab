@@ -39,6 +39,13 @@ export default {
   aiEmbeddingsPath: '/api/:version/ai/experimentation/openai/embeddings',
   aiChatPath: '/api/:version/ai/experimentation/openai/chat/completions',
   tanukiBotAskPath: '/-/llm/tanuki_bot/ask',
+  userPreferencesPath: '/api/:version/user/preferences',
+
+  updateUserPreferences(advancedEditorEnabled) {
+    const url = Api.buildUrl(this.userPreferencesPath);
+
+    return axios.put(url, { policy_advanced_editor: advancedEditorEnabled });
+  },
 
   userSubscription(namespaceId) {
     const url = Api.buildUrl(this.subscriptionPath).replace(':id', encodeURIComponent(namespaceId));

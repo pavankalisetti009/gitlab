@@ -43,6 +43,7 @@ describe('Split View', () => {
       createWrapper({
         provide: {
           glFeatures: { securityPoliciesSplitView: true },
+          policyEditorEnabled: true,
           namespaceType: 'group',
         },
       });
