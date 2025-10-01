@@ -15,7 +15,7 @@ RSpec.describe Types::Analytics::AiUsage::CodeSuggestionEventType, feature_categ
   let(:batch_loader) { instance_double(Gitlab::Graphql::Loaders::BatchModelLoader) }
 
   it 'has the expected fields' do
-    expect(described_class).to have_graphql_fields(:id, :timestamp, :event, :user,
+    expect(described_class).to have_graphql_fields(:timestamp, :event, :user,
       :language, :suggestionSize, :uniqueTrackingId)
   end
 
