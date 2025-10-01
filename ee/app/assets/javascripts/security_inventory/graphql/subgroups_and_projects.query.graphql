@@ -52,6 +52,7 @@ query SubgroupsAndProjects(
       after: $projectsAfter
       search: $search
       includeSubgroups: $hasSearch
+      includeArchived: false
     ) {
       pageInfo {
         hasNextPage
