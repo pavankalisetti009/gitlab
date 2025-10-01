@@ -6,7 +6,8 @@ module Sidebars
       class DuoAgentsMenu < ::Sidebars::Menu
         override :configure_menu_items
         def configure_menu_items
-          return false unless context.project.duo_features_enabled &&
+          return false unless current_user&.can?(:duo_workflow, context.project) &&
+            context.project.duo_features_enabled &&
             (show_agents_runs_menu_items? || show_flow_triggers_menu_items? || show_flows_menu_item?)
 
           add_item(duo_agents_runs_menu_item) if show_agents_runs_menu_items?
