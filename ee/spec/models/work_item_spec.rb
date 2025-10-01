@@ -886,6 +886,101 @@ RSpec.describe WorkItem, :elastic_helpers, feature_category: :team_planning do
         end
       end
 
+      context 'with status mappings' do
+        let_it_be(:custom_to_do) do
+          create(:work_item_custom_status, :without_conversion_mapping, category: :to_do,
+            namespace: reusable_group, lifecycles: [lifecycle])
+        end
+
+        let_it_be(:mapped_in_progress) do
+          create(:work_item_custom_status, :without_conversion_mapping, category: :in_progress,
+            namespace: reusable_group, lifecycles: [lifecycle])
+        end
+
+        let_it_be(:mapped_in_progress_2) do
+          create(:work_item_custom_status, :without_conversion_mapping, category: :in_progress,
+            namespace: reusable_group, lifecycles: [lifecycle])
+        end
+
+        let_it_be(:custom_status_mapping) do
+          create(:work_item_custom_status_mapping,
+            old_status_id: lifecycle.default_open_status_id,
+            new_status_id: mapped_in_progress.id,
+            work_item_type_id: issue_work_item_type.id,
+            namespace_id: reusable_group.id
+          )
+        end
+
+        let_it_be(:expired_custom_status_mapping) do
+          create(:work_item_custom_status_mapping,
+            old_status_id: custom_to_do.id,
+            new_status_id: mapped_in_progress.id,
+            work_item_type_id: issue_work_item_type.id,
+            namespace_id: reusable_group.id,
+            valid_until: 1.day.ago
+          )
+        end
+
+        let_it_be(:future_custom_status_mapping) do
+          create(:work_item_custom_status_mapping,
+            old_status_id: custom_to_do.id,
+            new_status_id: mapped_in_progress_2.id,
+            work_item_type_id: issue_work_item_type.id,
+            namespace_id: reusable_group.id,
+            valid_from: 1.day.from_now
+          )
+        end
+
+        let_it_be(:wi_custom_mapped_in_progress) do
+          create(:work_item, project: project, custom_status_id: lifecycle.default_open_status_id)
+        end
+
+        let_it_be(:wi_sd_mapped_in_progress) { create(:work_item, project: project) }
+
+        let_it_be(:wi_sd_mapped_in_progress_current_status) do
+          # Skip validations since we are simulating an old record
+          # when the namespace still used the system defined lifecycle
+          build(:work_item_current_status,
+            work_item: wi_sd_mapped_in_progress,
+            system_defined_status_id: system_defined_todo_status.id
+          ).save!(validate: false)
+        end
+
+        let_it_be(:wi_with_time_bounded_mapping) do
+          create(:work_item, project: project, custom_status_id: custom_to_do.id).tap do |wi|
+            wi.current_status.update!(updated_at: 2.days.ago)
+          end
+        end
+
+        let_it_be(:wi_with_future_mapping) do
+          create(:work_item, project: project, custom_status_id: custom_to_do.id)
+        end
+
+        let(:work_items) do
+          [
+            wi_custom, wi_custom_mapped_in_progress, wi_sd_mapped_in_progress,
+            wi_converted_in_progress, wi_custom_done, wi_custom_duplicated, wi_default_open,
+            wi_default_closed, wi_default_duplicated, wi_with_time_bounded_mapping, wi_with_future_mapping
+          ]
+        end
+
+        it 'sorts work items by status asc' do
+          expect(result).to eq([
+            wi_with_future_mapping,
+            wi_custom,
+            wi_default_open,
+            wi_with_time_bounded_mapping,
+            wi_sd_mapped_in_progress,
+            wi_custom_mapped_in_progress,
+            wi_converted_in_progress,
+            wi_custom_done,
+            wi_default_closed,
+            wi_custom_duplicated,
+            wi_default_duplicated
+          ])
+        end
+      end
+
       context 'with system-defined and custom statuses from multiple namespaces' do
         let(:work_items) do
           [

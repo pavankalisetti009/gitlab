@@ -105,15 +105,73 @@ module WorkItems
         opened_state_value = Issue.available_states[:opened]
         closed_state_value = Issue.available_states[:closed]
 
+        mappings_exist_check = "EXISTS (
+          SELECT 1 FROM work_item_custom_status_mappings WHERE namespace_id = namespaces.traversal_ids[1]
+        )"
+
+        custom_status_has_mapping_check = "EXISTS (
+          SELECT 1 FROM work_item_custom_status_mappings
+          WHERE old_status_id = work_item_current_statuses.custom_status_id
+            AND work_item_type_id = #{table_name}.work_item_type_id
+            AND namespace_id = namespaces.traversal_ids[1]
+            AND (valid_from IS NULL OR valid_from <= work_item_current_statuses.updated_at)
+            AND (valid_until IS NULL OR valid_until > work_item_current_statuses.updated_at)
+        )"
+
+        system_status_has_mapping_check = "EXISTS (
+          SELECT 1 FROM work_item_custom_statuses inner_converted_statuses
+          JOIN work_item_custom_status_mappings ON
+            work_item_custom_status_mappings.old_status_id = inner_converted_statuses.id
+          WHERE
+            inner_converted_statuses.converted_from_system_defined_status_identifier =
+              work_item_current_statuses.system_defined_status_id
+            AND inner_converted_statuses.namespace_id = namespaces.traversal_ids[1]
+            AND work_item_custom_status_mappings.work_item_type_id = #{table_name}.work_item_type_id
+            AND work_item_custom_status_mappings.namespace_id =
+              namespaces.traversal_ids[1]
+            AND (work_item_custom_status_mappings.valid_from IS NULL OR
+              work_item_custom_status_mappings.valid_from <= work_item_current_statuses.updated_at)
+            AND (work_item_custom_status_mappings.valid_until IS NULL OR
+              work_item_custom_status_mappings.valid_until > work_item_current_statuses.updated_at)
+        )"
+
         <<-SQL.squish
           CASE
             WHEN work_item_current_statuses.custom_status_id IS NOT NULL THEN
-              work_item_custom_statuses.category
+              CASE
+                WHEN #{mappings_exist_check} AND #{custom_status_has_mapping_check} THEN
+                  (SELECT mapped_statuses.category
+                  FROM work_item_custom_status_mappings
+                  JOIN work_item_custom_statuses mapped_statuses ON mapped_statuses.id = work_item_custom_status_mappings.new_status_id
+                  WHERE work_item_custom_status_mappings.old_status_id = work_item_current_statuses.custom_status_id
+                    AND work_item_custom_status_mappings.work_item_type_id = #{table_name}.work_item_type_id
+                    AND work_item_custom_status_mappings.namespace_id = namespaces.traversal_ids[1]
+                    AND (work_item_custom_status_mappings.valid_from IS NULL OR work_item_custom_status_mappings.valid_from <= work_item_current_statuses.updated_at)
+                    AND (work_item_custom_status_mappings.valid_until IS NULL OR work_item_custom_status_mappings.valid_until > work_item_current_statuses.updated_at)
+                  LIMIT 1)
+                ELSE
+                  work_item_custom_statuses.category
+              END
             WHEN work_item_current_statuses.system_defined_status_id IS NOT NULL THEN
-              COALESCE(
-                converted_statuses.category,
-                CASE work_item_current_statuses.system_defined_status_id #{system_defined_status_cases} END
-              )
+              CASE
+                WHEN #{mappings_exist_check} AND #{system_status_has_mapping_check} THEN
+                  (SELECT mapped_statuses.category
+                  FROM work_item_custom_statuses inner_converted_statuses
+                  JOIN work_item_custom_status_mappings ON work_item_custom_status_mappings.old_status_id = inner_converted_statuses.id
+                  JOIN work_item_custom_statuses mapped_statuses ON mapped_statuses.id = work_item_custom_status_mappings.new_status_id
+                  WHERE inner_converted_statuses.converted_from_system_defined_status_identifier = work_item_current_statuses.system_defined_status_id
+                    AND inner_converted_statuses.namespace_id = namespaces.traversal_ids[1]
+                    AND work_item_custom_status_mappings.work_item_type_id = #{table_name}.work_item_type_id
+                    AND work_item_custom_status_mappings.namespace_id = namespaces.traversal_ids[1]
+                    AND (work_item_custom_status_mappings.valid_from IS NULL OR work_item_custom_status_mappings.valid_from <= work_item_current_statuses.updated_at)
+                    AND (work_item_custom_status_mappings.valid_until IS NULL OR work_item_custom_status_mappings.valid_until > work_item_current_statuses.updated_at)
+                  LIMIT 1)
+                ELSE
+                  COALESCE(
+                    converted_statuses.category,
+                    CASE work_item_current_statuses.system_defined_status_id #{system_defined_status_cases} END
+                  )
+              END
             ELSE
               CASE
                 WHEN #{table_name}.state_id = #{opened_state_value} THEN #{default_open_sort_order}
