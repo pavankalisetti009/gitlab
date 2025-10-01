@@ -70,25 +70,6 @@ RSpec.describe Resolvers::Security::VulnerabilitiesPerSeverityResolver, :elastic
       end
     end
 
-    shared_examples 'returns empty array' do
-      context 'when new_security_dashboard_vulnerabilities_per_severity feature flag is disabled' do
-        before_all do
-          group.add_maintainer(current_user)
-          Elastic::ProcessBookkeepingService.track!(*vulnerabilities, *additional_project_vulnerabilities)
-          ensure_elasticsearch_index!
-        end
-
-        before do
-          stub_feature_flags(new_security_dashboard_vulnerabilities_per_severity: false)
-        end
-
-        it 'returns an empty array connection' do
-          expect(resolved_metrics).to eq({})
-          expect(resolved_metrics).to be_empty
-        end
-      end
-    end
-
     shared_examples 'counts vulnerabilities from specified projects' do
       it 'only counts vulnerabilities from specified projects' do
         expect(resolved_metrics).not_to be_empty
@@ -142,8 +123,6 @@ RSpec.describe Resolvers::Security::VulnerabilitiesPerSeverityResolver, :elastic
       context 'when the current user does not have access' do
         it_behaves_like 'returns resource not available'
       end
-
-      it_behaves_like 'returns empty array'
     end
 
     context 'when operated on a project' do
@@ -177,8 +156,6 @@ RSpec.describe Resolvers::Security::VulnerabilitiesPerSeverityResolver, :elastic
       context 'when the current user does not have access' do
         it_behaves_like 'returns resource not available'
       end
-
-      it_behaves_like 'returns empty array'
     end
 
     context 'when security_dashboard feature flag is disabled' do

@@ -29,7 +29,7 @@ module Resolvers
 
         validate_date_range!(start_date, end_date)
 
-        return {} if !vulnerable || Feature.disabled?(:new_security_dashboard_vulnerabilities_per_severity, vulnerable)
+        return {} unless vulnerable
 
         params = build_base_params(start_date, end_date)
 

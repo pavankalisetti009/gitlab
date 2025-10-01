@@ -26,7 +26,6 @@ describe('Group Security Dashboard (new version) - Component', () => {
   const createComponent = ({
     props = {},
     glFeatures = {
-      newSecurityDashboardVulnerabilitiesPerSeverity: true,
       newSecurityDashboardTotalRiskScore: true,
     },
   } = {}) => {
@@ -162,16 +161,6 @@ describe('Group Security Dashboard (new version) - Component', () => {
       await nextTick();
 
       expect(getVulnerabilitiesOverTimePanel().componentProps.filters).toEqual({ projectId });
-    });
-  });
-
-  describe('with vulnerabilities per severity feature flag disabled', () => {
-    beforeEach(() => {
-      createComponent({ glFeatures: { newSecurityDashboardVulnerabilitiesPerSeverity: false } });
-    });
-
-    it.each(SEVERITY_LEVELS_KEYS)('does not render the %s severity panel', (severity) => {
-      expect(findPanelWithId(severity)).toBeUndefined();
     });
   });
 

@@ -60,12 +60,10 @@ export default {
           'SecurityReports|This dashboard provides an overview of your security vulnerabilities.',
         ),
         panels: [
-          ...(this.glFeatures.newSecurityDashboardVulnerabilitiesPerSeverity
-            ? generateVulnerabilitiesForSeverityPanels({
-                panelComponent: GroupVulnerabilitiesForSeverityPanel,
-                filters: this.filters,
-              })
-            : []),
+          ...generateVulnerabilitiesForSeverityPanels({
+            panelComponent: GroupVulnerabilitiesForSeverityPanel,
+            filters: this.filters,
+          }),
           ...(this.glFeatures.newSecurityDashboardTotalRiskScore
             ? [
                 {

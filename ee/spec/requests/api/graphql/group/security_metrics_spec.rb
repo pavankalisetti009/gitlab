@@ -399,7 +399,6 @@ RSpec.describe 'Security metrics through GroupQuery', :freeze_time, feature_cate
       before do
         stub_feature_flags(
           group_security_dashboard_new: false,
-          new_security_dashboard_vulnerabilities_per_severity: false,
           new_security_dashboard_total_risk_score: false
         )
       end
@@ -453,8 +452,7 @@ RSpec.describe 'Security metrics through GroupQuery', :freeze_time, feature_cate
 
     before do
       stub_feature_flags(
-        group_security_dashboard_new: true,
-        new_security_dashboard_vulnerabilities_per_severity: true
+        group_security_dashboard_new: true
       )
     end
 
@@ -496,8 +494,7 @@ RSpec.describe 'Security metrics through GroupQuery', :freeze_time, feature_cate
 
     before do
       stub_feature_flags(
-        group_security_dashboard_new: true,
-        new_security_dashboard_vulnerabilities_per_severity: true
+        group_security_dashboard_new: true
       )
     end
 
