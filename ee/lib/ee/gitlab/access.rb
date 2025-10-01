@@ -21,7 +21,7 @@ module EE
         end
 
         def options_with_minimal_access
-          options_with_owner.merge(MINIMAL_ACCESS_HASH)
+          MINIMAL_ACCESS_HASH.merge(options_with_owner)
         end
 
         def options_for_custom_roles

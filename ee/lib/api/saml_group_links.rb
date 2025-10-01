@@ -60,7 +60,7 @@ module API
       end
       params do
         requires 'saml_group_name', type: String, desc: 'The name of a SAML group'
-        requires 'access_level', type: Integer, values: Gitlab::Access.all_values,
+        requires 'access_level', type: Integer, values: Gitlab::Access.values_with_minimal_access,
           desc: 'Level of permissions for the linked SA group'
         optional 'member_role_id', type: Integer, desc: 'The ID of the Member Role for the linked SA group'
         optional 'provider', type: String,

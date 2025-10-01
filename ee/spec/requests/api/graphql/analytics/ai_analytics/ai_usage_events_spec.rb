@@ -21,7 +21,6 @@ RSpec.describe '(Group|Project).aiUsageData.all', feature_category: :code_sugges
         user {
           id
         }
-        id
         event
         timestamp
       }
@@ -57,6 +56,24 @@ RSpec.describe '(Group|Project).aiUsageData.all', feature_category: :code_sugges
       namespace: subgroup_project.reload.project_namespace, timestamp: 10.days.ago)
   end
 
+  def event_identifier(event)
+    {
+      user_id: event.user.to_global_id.to_s,
+      event: event.event.to_s.upcase,
+      timestamp: event.timestamp.iso8601
+    }
+  end
+
+  def extract_event_identifiers(response_events)
+    response_events.map do |event|
+      {
+        user_id: event.dig('user', 'id'),
+        event: event['event'],
+        timestamp: event['timestamp']
+      }
+    end
+  end
+
   shared_examples 'ai usage events endpoint without permissions' do
     before_all do
       group.add_guest(current_user)
@@ -77,7 +94,10 @@ RSpec.describe '(Group|Project).aiUsageData.all', feature_category: :code_sugges
     it 'returns events' do
       post_graphql(query, current_user: current_user)
 
-      expect(response_events.pluck('id')).to match_array(expected_event_ids)
+      expected_identifiers = expected_events.map { |event| event_identifier(event) }
+      actual_identifiers = extract_event_identifiers(response_events)
+
+      expect(actual_identifiers).to match_array(expected_identifiers)
     end
   end
 
@@ -88,12 +108,12 @@ RSpec.describe '(Group|Project).aiUsageData.all', feature_category: :code_sugges
     it_behaves_like 'ai usage events endpoint without permissions'
 
     it_behaves_like 'ai usage events endpoint with permissions' do
-      let(:expected_event_ids) do
+      let(:expected_events) do
         [
           code_suggestion_event_1,
           code_suggestion_event_2,
           code_suggestion_event_4
-        ].map(&:to_global_id).map(&:to_s)
+        ]
       end
     end
 
@@ -106,9 +126,7 @@ RSpec.describe '(Group|Project).aiUsageData.all', feature_category: :code_sugges
       end
 
       it_behaves_like 'ai usage events endpoint with permissions' do
-        let(:expected_event_ids) do
-          [code_suggestion_event_1].map(&:to_global_id).map(&:to_s)
-        end
+        let(:expected_events) { [code_suggestion_event_1] }
       end
     end
   end
@@ -120,11 +138,11 @@ RSpec.describe '(Group|Project).aiUsageData.all', feature_category: :code_sugges
     it_behaves_like 'ai usage events endpoint without permissions'
 
     it_behaves_like 'ai usage events endpoint with permissions' do
-      let(:expected_event_ids) do
+      let(:expected_events) do
         [
           code_suggestion_event_2,
           code_suggestion_event_4
-        ].map(&:to_global_id).map(&:to_s)
+        ]
       end
     end
 
@@ -137,9 +155,7 @@ RSpec.describe '(Group|Project).aiUsageData.all', feature_category: :code_sugges
       end
 
       it_behaves_like 'ai usage events endpoint with permissions' do
-        let(:expected_event_ids) do
-          [code_suggestion_event_2].map(&:to_global_id).map(&:to_s)
-        end
+        let(:expected_events) { [code_suggestion_event_2] }
       end
     end
   end

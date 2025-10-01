@@ -21,8 +21,8 @@ module Geo
           "Update this site's SSH port to match the primary's SSH port:",
           "- Omnibus GitLab: Update gitlab_rails['gitlab_shell_ssh_port'] in /etc/gitlab/gitlab.rb",
           "- GitLab Charts: See https://docs.gitlab.com/charts/charts/globals#port",
-          "- GitLab Development Kit: See https://gitlab.com/gitlab-org/gitlab-development-kit/-/blob/main/doc/howto/" \
-            "ssh.md#change-the-listen-port-or-other-configuration"
+          "- GitLab Development Kit: See https://gitlab-org.gitlab.io/gitlab-development-kit/howto/" \
+            "ssh/#change-the-listen-port-or-other-configuration"
         )
 
         for_more_information('doc/administration/geo/index.md#limitations')

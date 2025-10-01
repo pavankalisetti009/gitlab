@@ -12,20 +12,19 @@ RSpec.describe Types::Analytics::AiUsage::AiUsageEventType, feature_category: :v
   let(:batch_loader) { instance_double(Gitlab::Graphql::Loaders::BatchModelLoader) }
 
   it 'has the expected fields' do
-    expect(described_class).to have_graphql_fields(:id, :timestamp, :event, :user)
+    expect(described_class).to have_graphql_fields(:timestamp, :event, :user)
   end
 
   describe 'fields' do
     subject(:fields) { described_class.fields }
 
     it 'has expected fields' do
-      expected_fields = %i[id timestamp user event]
+      expected_fields = %i[timestamp user event]
 
       expect(described_class).to have_graphql_fields(*expected_fields)
     end
 
     it 'has proper types' do
-      expect(fields['id']).to have_graphql_type(::GraphQL::Types::ID.to_non_null_type)
       expect(fields['timestamp']).to have_graphql_type(Types::TimeType.to_non_null_type)
       expect(fields['user']).to have_graphql_type(Types::UserType.to_non_null_type)
       expect(fields['event']).to have_graphql_type(Types::Analytics::AiUsage::AiUsageEventTypeEnum.to_non_null_type)
