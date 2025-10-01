@@ -129,7 +129,7 @@ export default {
           <p class="gl-mb-0">
             {{
               s__(
-                'MergeChecks|Dismissing a finding will create an audit event. If this finding is merged into the default branch, it will be marked as a policy violation in the vulnerability report.',
+                'MergeChecks|Bypassing a policy violation creates an audit event. When merged into the default branch, bypassed vulnerability findings are marked as policy violations in the vulnerability report.',
               )
             }}
           </p>
