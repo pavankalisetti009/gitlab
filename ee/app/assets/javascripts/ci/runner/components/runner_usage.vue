@@ -256,7 +256,7 @@ export default {
       <gl-loading-icon v-if="loading" class="gl-ml-auto" />
     </div>
 
-    <div class="-gl-mx-5 gl-mb-4 gl-flex gl-gap-4 gl-bg-neutral-10 gl-px-5 gl-py-4">
+    <div class="-gl-mx-5 gl-mb-4 gl-flex gl-gap-4 gl-bg-subtle gl-px-5 gl-py-4">
       <gl-daterange-picker
         class="gl-grow"
         :default-start-date="fromDate"
