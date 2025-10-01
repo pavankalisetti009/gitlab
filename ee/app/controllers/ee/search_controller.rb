@@ -15,38 +15,33 @@ module EE
     end
 
     prepended do
-      # track unique users of advanced global search
       track_event :show,
         name: 'i_search_advanced',
         conditions: -> { track_search_advanced? },
         label: 'redis_hll_counters.search.search_total_unique_counts_monthly',
         action: 'executed',
-        destinations: [:redis_hll, :snowplow]
+        destinations: %i[redis_hll snowplow]
 
       track_event :autocomplete,
         name: 'i_search_advanced',
         conditions: -> { track_search_advanced? },
         label: 'redis_hll_counters.search.search_total_unique_counts_monthly',
         action: 'autocomplete',
-        destinations: [:redis_hll, :snowplow]
+        destinations: %i[redis_hll snowplow]
 
-      # track unique paid users (users who already use elasticsearch and users who could use it if they enable
-      # elasticsearch integration)
-      # for gitlab.com we check if the search uses elasticsearch
-      # for self-managed we check if the licensed feature available
       track_event :show,
         name: 'i_search_paid',
         conditions: -> { track_search_paid? },
         label: 'redis_hll_counters.search.i_search_paid_monthly',
         action: 'executed',
-        destinations: [:redis_hll, :snowplow]
+        destinations: %i[redis_hll snowplow]
 
       track_event :autocomplete,
         name: 'i_search_paid',
         conditions: -> { track_search_paid? },
         label: 'redis_hll_counters.search.i_search_paid_monthly',
         action: 'autocomplete',
-        destinations: [:redis_hll, :snowplow]
+        destinations: %i[redis_hll snowplow]
 
       rescue_from Elastic::TimeoutError, with: :render_timeout
 
@@ -57,8 +52,8 @@ module EE
       end
 
       before_action :sso_enforcement_redirect, only: [:show]
-
       after_action :run_index_integrity_worker, only: :show, if: :no_results_for_group_or_project_blobs_advanced_search?
+      after_action :track_exact_code_search, only: %i[autocomplete show], if: :track_search_zoekt?
     end
 
     def aggregations
@@ -92,15 +87,15 @@ module EE
     end
 
     def track_search_advanced?
-      search_service.use_elasticsearch?
+      search_type == 'advanced' && search_service.use_elasticsearch?
+    end
+
+    def track_search_zoekt?
+      search_type == 'zoekt' && search_service.use_zoekt?
     end
 
     def track_search_paid?
-      if ::Gitlab::Saas.feature_available?(:advanced_search)
-        search_service.use_elasticsearch?
-      else
-        License.feature_available?(:elastic_search)
-      end
+      track_search_advanced? || track_search_zoekt?
     end
 
     override :payload_metadata
@@ -151,6 +146,10 @@ module EE
       return unless redirect
 
       redirect_to sso_group_saml_providers_url(search_group.root_ancestor, { redirect: request.fullpath })
+    end
+
+    def track_exact_code_search
+      track_internal_event('search_exact_code', user: current_user)
     end
   end
 end
