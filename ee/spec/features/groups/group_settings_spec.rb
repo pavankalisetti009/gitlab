@@ -530,6 +530,57 @@ RSpec.describe 'Edit group settings', :js, feature_category: :groups_and_project
       end
     end
 
+    context 'for disable_invite_members setting' do
+      before do
+        stub_licensed_features(disable_invite_members: true)
+      end
+
+      context 'when SaaS', :saas do
+        context 'for a top-level group' do
+          context 'for a licensed group' do
+            it 'shows disable-invitations setting' do
+              visit edit_group_path(group)
+              wait_for_all_requests
+
+              within(permissions_selector) do
+                expect(page).to have_content(s_('User invitation restrictions'))
+              end
+            end
+          end
+
+          context 'for a non-licensed group' do
+            before do
+              stub_licensed_features(disable_invite_members: false)
+            end
+
+            it 'hides disable-invitations group setting' do
+              visit edit_group_path(group)
+              wait_for_all_requests
+              expect(page).not_to have_content(s_('User invitation restrictions'))
+            end
+          end
+        end
+
+        context 'for a not top-level group' do
+          let_it_be(:subgroup, refind: true) { create(:group, parent: group) }
+
+          it 'hides disable-invitations group setting' do
+            visit edit_group_path(subgroup)
+            wait_for_all_requests
+            expect(page).not_to have_content(s_('User invitation restrictions'))
+          end
+        end
+      end
+
+      context 'when not SaaS' do
+        it 'hides disable-invitations group setting' do
+          visit edit_group_path(group)
+          wait_for_all_requests
+          expect(page).not_to have_content(s_('User invitation restrictions'))
+        end
+      end
+    end
+
     def permissions_selector
       '[data-testid="permissions-settings"]'
     end

@@ -1,4 +1,4 @@
-- return unless group.root? && group.licensed_feature_available?(:disable_invite_members)
+- return unless group.root? && ::Gitlab::Saas.feature_available?(:group_disable_invite_members) && group.licensed_feature_available?(:disable_invite_members)
 
 %h5= _('User invitation restrictions')
 
