@@ -24,16 +24,11 @@ export default {
       required: false,
       default: false,
     },
-    aiCatalogAgent: {
-      type: Object,
-      required: false,
-      default: () => ({}),
-    },
   },
   data() {
     return {
       formValues: {
-        userPrompt: this.aiCatalogAgent.latestVersion?.userPrompt,
+        userPrompt: '',
       },
     };
   },

@@ -31,7 +31,6 @@ describe('AiCatalogAgentForm', () => {
       .props('dropdownItems')
       .map((t) => t.name)
       .join(', ');
-  const findUserPromptField = () => wrapper.findByTestId('agent-form-textarea-user-prompt');
   const findSubmitButton = () => wrapper.findByTestId('agent-form-submit-button');
 
   const defaultProps = {
@@ -45,7 +44,6 @@ describe('AiCatalogAgentForm', () => {
     name: 'My AI Agent',
     description: 'A helpful AI assistant',
     systemPrompt: 'You are a helpful assistant',
-    userPrompt: 'Help me with coding',
     public: true,
     tools: [],
   };
@@ -80,7 +78,6 @@ describe('AiCatalogAgentForm', () => {
       expect(findNameField().props('value')).toBe(initialValues.name);
       expect(findDescriptionField().props('value')).toBe(initialValues.description);
       expect(findSystemPromptField().props('value')).toBe(initialValues.systemPrompt);
-      expect(findUserPromptField().props('value')).toBe(initialValues.userPrompt);
       expect(findVisibilityLevelRadioGroup().props('initialValue')).toBe(initialValues.public);
       expect(findVisibilityLevelRadioGroup().props('value')).toBe(VISIBILITY_LEVEL_PUBLIC);
     });
@@ -92,7 +89,6 @@ describe('AiCatalogAgentForm', () => {
       expect(findNameField().props('value')).toBe('');
       expect(findDescriptionField().props('value')).toBe('');
       expect(findSystemPromptField().props('value')).toBe('');
-      expect(findUserPromptField().props('value')).toBe('');
       expect(findVisibilityLevelRadioGroup().props('initialValue')).toBe(false);
       expect(findVisibilityLevelRadioGroup().props('value')).toBe(VISIBILITY_LEVEL_PRIVATE);
     });
@@ -170,7 +166,6 @@ describe('AiCatalogAgentForm', () => {
         name: addRandomSpacesToString(initialValues.name),
         description: addRandomSpacesToString(initialValues.description),
         systemPrompt: addRandomSpacesToString(initialValues.systemPrompt),
-        userPrompt: addRandomSpacesToString(initialValues.userPrompt),
       };
 
       createWrapper({ props: { initialValues: formValuesWithRandomSpaces } });
