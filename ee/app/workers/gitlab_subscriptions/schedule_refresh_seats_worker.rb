@@ -12,7 +12,7 @@ module GitlabSubscriptions
     idempotent!
 
     def perform
-      return unless ::Gitlab::CurrentSettings.should_check_namespace_plan?
+      return unless ::Gitlab::Saas.feature_available?(:gitlab_com_subscriptions)
 
       GitlabSubscriptions::RefreshSeatsWorker.perform_with_capacity
     end

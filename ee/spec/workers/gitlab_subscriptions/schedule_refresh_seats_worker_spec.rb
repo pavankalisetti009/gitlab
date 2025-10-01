@@ -7,7 +7,7 @@ RSpec.describe GitlabSubscriptions::ScheduleRefreshSeatsWorker, feature_category
 
   describe '#perform' do
     before do
-      stub_ee_application_setting(check_namespace_plan: true)
+      stub_saas_features(gitlab_com_subscriptions: true)
     end
 
     include_examples 'an idempotent worker' do
@@ -20,7 +20,7 @@ RSpec.describe GitlabSubscriptions::ScheduleRefreshSeatsWorker, feature_category
 
     context 'when not on GitLab.com' do
       before do
-        stub_ee_application_setting(check_namespace_plan: false)
+        stub_saas_features(gitlab_com_subscriptions: false)
       end
 
       it 'does not schedule a worker to perform with capacity' do

@@ -19,7 +19,7 @@ RSpec.describe GitlabSubscriptions::UpcomingReconciliationHelper do
     end
 
     before do
-      stub_application_setting(check_namespace_plan: true)
+      stub_saas_features(gitlab_com_subscriptions: true)
     end
 
     it 'returns true and reconciliation date' do
@@ -55,7 +55,7 @@ RSpec.describe GitlabSubscriptions::UpcomingReconciliationHelper do
 
     context 'when instance does not have paid namespaces (ex: self managed instance)' do
       it 'returns false and empty hash' do
-        stub_application_setting(check_namespace_plan: false)
+        stub_saas_features(gitlab_com_subscriptions: false)
 
         expect(helper.display_upcoming_reconciliation_alert?(namespace)).to eq(false)
         expect(helper.upcoming_reconciliation_hash(namespace)).to eq({})
@@ -122,7 +122,7 @@ RSpec.describe GitlabSubscriptions::UpcomingReconciliationHelper do
       end
 
       it 'returns false and empty hash' do
-        stub_application_setting(check_namespace_plan: true)
+        stub_saas_features(gitlab_com_subscriptions: true)
         enable_admin_mode!(user)
 
         expect(helper.display_upcoming_reconciliation_alert?).to eq(false)

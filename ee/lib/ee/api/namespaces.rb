@@ -112,7 +112,10 @@ module EE
           end
           post ':id/storage/limit_exclusion', feature_category: :consumables_cost_management do
             authenticated_as_admin!
-            forbidden!('this API is for GitLab.com only') unless ::Gitlab::CurrentSettings.should_check_namespace_plan?
+
+            unless ::Gitlab::Saas.feature_available?(:namespaces_storage_limit)
+              forbidden!('this API is for GitLab.com only')
+            end
 
             namespace = find_namespace!(params[:id])
 
@@ -142,7 +145,10 @@ module EE
           end
           delete ':id/storage/limit_exclusion' do
             authenticated_as_admin!
-            forbidden!('this API is for GitLab.com only') unless ::Gitlab::CurrentSettings.should_check_namespace_plan?
+
+            unless ::Gitlab::Saas.feature_available?(:namespaces_storage_limit)
+              forbidden!('this API is for GitLab.com only')
+            end
 
             namespace = find_namespace!(params[:id])
 
@@ -169,7 +175,10 @@ module EE
           end
           get 'storage/limit_exclusions', feature_category: :consumables_cost_management do
             authenticated_as_admin!
-            forbidden!('this API is for GitLab.com only') unless ::Gitlab::CurrentSettings.should_check_namespace_plan?
+
+            unless ::Gitlab::Saas.feature_available?(:namespaces_storage_limit)
+              forbidden!('this API is for GitLab.com only')
+            end
 
             exclusions = ::Namespaces::Storage::LimitExclusion.all
 

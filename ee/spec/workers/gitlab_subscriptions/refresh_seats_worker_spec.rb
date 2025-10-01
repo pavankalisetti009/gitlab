@@ -11,7 +11,7 @@ RSpec.describe GitlabSubscriptions::RefreshSeatsWorker, :saas, feature_category:
 
     before do
       allow(Gitlab::Database).to receive(:read_only?).and_return(db_is_read_only)
-      allow(Gitlab::CurrentSettings).to receive(:should_check_namespace_plan?).and_return(true)
+      stub_saas_features(gitlab_com_subscriptions: true)
     end
 
     shared_examples 'updates nothing' do

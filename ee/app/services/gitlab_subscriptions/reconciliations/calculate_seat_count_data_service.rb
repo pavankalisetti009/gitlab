@@ -40,7 +40,7 @@ module GitlabSubscriptions
       private
 
       def owner_of_paid_group?
-        (::Gitlab::CurrentSettings.should_check_namespace_plan? &&
+        (::Gitlab::Saas.feature_available?(:gitlab_com_subscriptions) &&
           namespace.group_namespace? &&
           user.can?(:admin_group, namespace) &&
           current_subscription).present?

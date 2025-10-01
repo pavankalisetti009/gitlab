@@ -26,7 +26,7 @@ RSpec.describe GitlabSubscriptions::UpcomingReconciliation do
 
     context 'when instance has paid namespaces (ex: gitlab.com)' do
       before do
-        stub_application_setting(check_namespace_plan: true)
+        stub_saas_features(gitlab_com_subscriptions: true)
       end
 
       it { is_expected.to validate_presence_of(:namespace) }
@@ -104,7 +104,7 @@ RSpec.describe GitlabSubscriptions::UpcomingReconciliation do
       let(:namespace_id) { upcoming_reconciliation.namespace_id }
 
       before do
-        stub_application_setting(check_namespace_plan: true)
+        stub_saas_features(gitlab_com_subscriptions: true)
       end
 
       it 'returns row for given namespace' do
