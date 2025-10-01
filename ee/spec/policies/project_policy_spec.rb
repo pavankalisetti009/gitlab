@@ -4952,7 +4952,7 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
     end
   end
 
-  describe 'admin_group_member policy' do
+  describe 'admin_project_member policy' do
     let_it_be(:group) { create(:group) }
     let_it_be(:project) { create(:project, group: group) }
 
@@ -5066,6 +5066,13 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
       let_it_be(:project) { create(:project, group: subgroup) }
 
       it_behaves_like 'restricts policy based on SAML configuration for all maintainers, owners and admins'
+    end
+
+    context 'with project from user namespace' do
+      let_it_be(:user_namespace) { create(:user_namespace) }
+      let_it_be(:project) { create(:project, namespace: user_namespace) }
+
+      it_behaves_like 'allows policy for all maintainers, owners and admins'
     end
   end
 

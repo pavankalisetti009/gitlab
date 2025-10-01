@@ -251,11 +251,11 @@ module EE
       end
 
       condition(:saml_group_sync_available, scope: :subject) do
-        @subject.group.saml_group_sync_available?
+        @subject.group&.saml_group_sync_available?
       end
 
       condition(:saml_group_links_exists, scope: :subject) do
-        @subject.root_ancestor.saml_group_links_exists?
+        @subject.group&.root_ancestor&.saml_group_links_exists?
       end
 
       rule { memberships_locked_to_saml & saml_group_sync_available & saml_group_links_exists & ~admin }.policy do
