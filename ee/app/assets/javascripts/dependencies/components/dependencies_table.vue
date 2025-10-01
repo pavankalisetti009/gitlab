@@ -18,6 +18,7 @@ import DependencyLocationCount from './dependency_location_count.vue';
 import DependencyProjectCount from './dependency_project_count.vue';
 import DependencyVulnerabilities from './dependency_vulnerabilities.vue';
 import DependencyPathDrawer from './dependency_path_drawer.vue';
+import ShownVulnerabilitiesPopover from './shown_vulnerabilities_popover.vue';
 
 const tdClass =
   (defaultClasses = []) =>
@@ -53,6 +54,7 @@ export default {
     DependencyLocationCount,
     DependencyProjectCount,
     DependencyPathDrawer,
+    ShownVulnerabilitiesPopover,
     GlBadge,
     GlIcon,
     GlButton,
@@ -170,7 +172,11 @@ export default {
   ],
   projectFields: [
     ...sharedFields,
-    { key: 'isVulnerable', label: DEPENDENCIES_TABLE_I18N.vulnerabilities },
+    {
+      key: 'isVulnerable',
+      label: DEPENDENCIES_TABLE_I18N.vulnerabilities,
+      thAttr: { id: 'vulnerabilities-header' },
+    },
   ],
 
   DEPENDENCIES_PER_PAGE: 20,
@@ -298,5 +304,6 @@ export default {
         </div>
       </template>
     </gl-table>
+    <shown-vulnerabilities-popover />
   </div>
 </template>
