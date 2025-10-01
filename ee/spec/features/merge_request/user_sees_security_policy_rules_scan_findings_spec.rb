@@ -9,7 +9,7 @@ RSpec.describe 'Merge request > User sees security policy with scan finding rule
 
   let_it_be(:project) { create(:project, :repository) }
   let_it_be(:user) { project.creator }
-  let_it_be(:bot_user) { ::Users::Internal.security_bot }
+  let_it_be(:bot_user) { ::Users::Internal.for_organization(project.organization).security_bot }
   let(:policy_management_project) { create(:project, :repository, creator: user, namespace: project.namespace) }
   let(:mr_params) do
     {

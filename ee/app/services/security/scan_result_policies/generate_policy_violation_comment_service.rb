@@ -70,7 +70,7 @@ module Security
       end
 
       def bot_user
-        @bot_user ||= Users::Internal.security_bot
+        @bot_user ||= Users::Internal.for_organization(project.organization).security_bot
       end
 
       def note_params(body)

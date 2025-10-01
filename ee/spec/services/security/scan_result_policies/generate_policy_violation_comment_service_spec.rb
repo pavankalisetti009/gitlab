@@ -11,7 +11,7 @@ RSpec.describe Security::ScanResultPolicies::GeneratePolicyViolationCommentServi
   describe '#execute' do
     subject(:execute) { service.execute }
 
-    let_it_be(:bot_user) { Users::Internal.security_bot }
+    let_it_be(:bot_user) { Users::Internal.for_organization(project.organization).security_bot }
 
     let(:service) { described_class.new(merge_request) }
     let(:expected_optional_approvals_note) { 'Consider including optional reviewers' }
