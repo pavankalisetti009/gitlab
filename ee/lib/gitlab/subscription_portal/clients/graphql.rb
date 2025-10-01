@@ -193,7 +193,8 @@ module Gitlab
 
             data = response.dig('data', 'namespaceEligibility')
 
-            if response['errors'].blank? && data.present?
+            # Return success for empty arrays (valid filter result), but fail for nil data
+            if response['errors'].blank? && !data.nil?
               { success: true, data: data }
             else
               track_error(query, response)

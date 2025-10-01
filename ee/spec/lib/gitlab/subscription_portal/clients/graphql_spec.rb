@@ -485,6 +485,21 @@ RSpec.describe Gitlab::SubscriptionPortal::Clients::Graphql, feature_category: :
 
         expect(subject).to eq(success: true, data: [{ 'id' => 1 }, { 'id' => 3 }])
       end
+
+      it 'returns success with empty array when no namespaces are eligible', :aggregate_failures do
+        response = {
+          success: true,
+          data: {
+            'data' => {
+              'namespaceEligibility' => []
+            }
+          }
+        }
+
+        expect(client).to receive(:http_post).with('graphql', headers, params).and_return(response)
+
+        expect(subject).to eq(success: true, data: [])
+      end
     end
 
     context 'when the response is unsuccessful' do
