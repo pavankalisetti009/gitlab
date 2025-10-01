@@ -3,7 +3,7 @@
 class AddStateMetadataToSiphonNamespaceDetails < ClickHouse::Migration
   def up
     execute <<~SQL
-      ALTER TABLE siphon_namespace_details ADD COLUMN state_metadata JSON DEFAULT '{}'
+      ALTER TABLE siphon_namespace_details ADD COLUMN state_metadata String DEFAULT '{}'
     SQL
   end
 
