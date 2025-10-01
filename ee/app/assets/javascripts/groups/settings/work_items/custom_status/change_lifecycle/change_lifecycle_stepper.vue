@@ -154,7 +154,7 @@ export default {
 
       <slot v-if="index < currentStep" :name="`complete-step-${index}`"></slot>
 
-      <div v-if="index === currentStep" class="gl-mt-5">
+      <div v-if="index === currentStep" class="gl-mt-5 gl-flex gl-gap-3">
         <gl-button
           v-if="showBackButton && currentStep > 0"
           data-testid="stepper-back"
@@ -175,7 +175,6 @@ export default {
 
         <gl-button
           v-if="showFinishButton && currentStep === steps.length - 1"
-          class="gl-mr-2"
           variant="confirm"
           data-testid="stepper-finish"
           @click="finish"
