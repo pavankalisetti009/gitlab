@@ -21,6 +21,7 @@ RSpec.describe Ai::Catalog::Item, feature_category: :workflow_catalog do
     it { is_expected.to validate_presence_of(:item_type) }
     it { is_expected.to validate_presence_of(:description) }
     it { is_expected.to validate_presence_of(:name) }
+    it { is_expected.to validate_presence_of(:verification_level) }
 
     it { is_expected.to validate_length_of(:name).is_at_least(3).is_at_most(255) }
     it { is_expected.to validate_length_of(:description).is_at_most(1_024) }
@@ -166,9 +167,33 @@ RSpec.describe Ai::Catalog::Item, feature_category: :workflow_catalog do
 
   describe 'enums' do
     it { is_expected.to define_enum_for(:item_type).with_values(agent: 1, flow: 2) }
+
+    it 'defines verification_level enum with namespace verification levels' do
+      is_expected.to define_enum_for(:verification_level).with_values(
+        ::Namespaces::VerifiedNamespace::VERIFICATION_LEVELS
+      )
+    end
   end
 
   describe 'scopes' do
+    describe '.for_verification_level' do
+      ::Namespaces::VerifiedNamespace::VERIFICATION_LEVELS.each_key do |level|
+        it "returns items with #{level} verification level" do
+          expected_item = create(:ai_catalog_item, verification_level: level)
+
+          expect(described_class.for_verification_level(level))
+            .to contain_exactly(expected_item)
+        end
+      end
+
+      it 'returns multiple items with the same verification level' do
+        gitlab_maintained_items = create_list(:ai_catalog_item, 2, verification_level: :gitlab_maintained)
+
+        expect(described_class.for_verification_level(:gitlab_maintained))
+          .to match_array(gitlab_maintained_items)
+      end
+    end
+
     describe '.for_organization' do
       let_it_be(:item_1) { create(:ai_catalog_item, organization: create(:organization)) }
       let_it_be(:item_2) { create(:ai_catalog_item, organization: create(:organization)) }
