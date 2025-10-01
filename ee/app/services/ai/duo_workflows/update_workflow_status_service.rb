@@ -5,6 +5,13 @@ module Ai
     class UpdateWorkflowStatusService
       include Concerns::WorkflowEventTracking
 
+      EVENT_STATUSES = {
+        'start' => 'agent_platform_session_started',
+        'finish' => 'agent_platform_session_finished',
+        'drop' => 'agent_platform_session_dropped',
+        'stop' => 'agent_platform_session_stopped'
+      }.freeze
+
       def initialize(workflow:, status_event:, current_user:)
         @workflow = workflow
         @status_event = status_event
@@ -25,6 +32,7 @@ module Ai
 
       def handle_status_event
         workflow_events = ::Ai::DuoWorkflows::Workflow.state_machines[:status].events.map { |event| event.name.to_s }
+
         unless workflow_events.include?(@status_event)
           return error_response("Can not update workflow status, unsupported event: #{@status_event}")
         end
@@ -40,7 +48,7 @@ module Ai
 
         @workflow.fire_status_event(@status_event)
 
-        track_agent_platform_session_event if %w[start finish].include?(@status_event)
+        track_agent_platform_session_event
 
         GraphqlTriggers.workflow_events_updated(@workflow.checkpoints.last) if @workflow.checkpoints.any?
 
@@ -48,12 +56,8 @@ module Ai
       end
 
       def track_agent_platform_session_event
-        event_name = case @status_event
-                     when "start"
-                       "agent_platform_session_started"
-                     when "finish"
-                       "agent_platform_session_finished"
-                     end
+        event_name = EVENT_STATUSES[@status_event]
+        return unless event_name
 
         track_workflow_event(event_name, @workflow)
       end

@@ -34,8 +34,12 @@ module Gitlab
           }
         end
 
-        events(agent_platform_session_created: 8, agent_platform_session_started: 9,
-          agent_platform_session_finished: 19) do |context|
+        events(
+          agent_platform_session_created: 8,
+          agent_platform_session_started: 9,
+          agent_platform_session_finished: 19,
+          agent_platform_session_dropped: 20,
+          agent_platform_session_stopped: 21) do |context|
           {
             project_id: context['project']&.id,
             session_id: context['value'],
@@ -55,7 +59,7 @@ module Gitlab
           request_review_duo_code_review_on_mr_by_non_author: 17,
           excluded_files_from_duo_code_review: 18
         )
-        # Current highest event ID: 19, next available: 20
+        # Current highest event ID: 21, next available: 22
       end
 
       class << self

@@ -111,10 +111,21 @@ RSpec.describe ::Ai::DuoWorkflows::UpdateWorkflowStatusService, feature_category
       end
 
       it "can drop a workflow", :aggregate_failures do
-        result = described_class.new(workflow: workflow, current_user: user, status_event: "drop").execute
+        expect do
+          result = described_class.new(workflow: workflow, current_user: user, status_event: "drop").execute
 
-        expect(result[:status]).to eq(:success)
-        expect(result[:message]).to eq("Workflow status updated")
+          expect(result[:status]).to eq(:success)
+          expect(result[:message]).to eq("Workflow status updated")
+        end.to trigger_internal_events("agent_platform_session_dropped")
+                             .with(category: "Ai::DuoWorkflows::UpdateWorkflowStatusService",
+                               user: workflow.user,
+                               project: workflow.project,
+                               additional_properties: {
+                                 label: workflow.workflow_definition,
+                                 value: workflow.id,
+                                 property: "ide"
+                               })
+
         expect(workflow.reload.human_status_name).to eq("failed")
       end
 
@@ -127,10 +138,21 @@ RSpec.describe ::Ai::DuoWorkflows::UpdateWorkflowStatusService, feature_category
       end
 
       it "can stop a workflow", :aggregate_failures do
-        result = described_class.new(workflow: workflow, current_user: user, status_event: "stop").execute
+        expect do
+          result = described_class.new(workflow: workflow, current_user: user, status_event: "stop").execute
 
-        expect(result[:status]).to eq(:success)
-        expect(result[:message]).to eq("Workflow status updated")
+          expect(result[:status]).to eq(:success)
+          expect(result[:message]).to eq("Workflow status updated")
+        end.to trigger_internal_events("agent_platform_session_stopped")
+                             .with(category: "Ai::DuoWorkflows::UpdateWorkflowStatusService",
+                               user: workflow.user,
+                               project: workflow.project,
+                               additional_properties: {
+                                 label: workflow.workflow_definition,
+                                 value: workflow.id,
+                                 property: "ide"
+                               })
+
         expect(workflow.reload.human_status_name).to eq("stopped")
       end
 

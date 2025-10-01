@@ -1,0 +1,169 @@
+# frozen_string_literal: true
+
+require 'spec_helper'
+
+RSpec.describe Mcp::Tools::SearchCodebaseService, feature_category: :mcp_server do
+  let(:service) { described_class.new(name: 'get_code_context') }
+
+  describe '#description' do
+    it 'returns the correct description' do
+      expect(service.description).to eq(
+        'Search for relevant code snippets in a project'
+      )
+    end
+  end
+
+  describe '#input_schema' do
+    it 'returns the expected JSON schema' do
+      schema = service.input_schema
+
+      expect(schema[:type]).to eq('object')
+      expect(schema[:required]).to match_array(%w[search_term project_id])
+      expect(schema[:additionalProperties]).to be false
+
+      expect(schema[:properties][:search_term][:type]).to eq('string')
+      expect(schema[:properties][:search_term][:minLength]).to eq(1)
+
+      expect(schema[:properties][:project_id][:type]).to eq('integer')
+
+      expect(schema[:properties][:directory_path][:type]).to eq('string')
+
+      expect(schema[:properties][:knn][:type]).to eq('integer')
+      expect(schema[:properties][:knn][:default]).to eq(64)
+      expect(schema[:properties][:knn][:minimum]).to eq(1)
+
+      expect(schema[:properties][:limit][:type]).to eq('integer')
+      expect(schema[:properties][:limit][:default]).to eq(20)
+      expect(schema[:properties][:limit][:minimum]).to eq(1)
+    end
+  end
+
+  describe '#execute' do
+    let_it_be(:oauth_token) { 'test_token_123' }
+    let_it_be(:current_user) { build(:user) }
+
+    before do
+      service.set_cred(current_user: current_user, access_token: oauth_token)
+    end
+
+    context 'with valid arguments' do
+      let(:query_obj) { instance_double(::Ai::ActiveContext::Queries::Code) }
+
+      let(:arguments) do
+        {
+          arguments: {
+            search_term: 'Add raise Exception for protected type usage',
+            project_id: 123,
+            directory_path: 'app/services/'
+          }
+        }
+      end
+
+      let(:result_payload) do
+        {
+          items: [
+            { "path" => "app/services/foo/bar.rb", "content" => "class X\n  def y; end  \n" },
+            { "path" => "app/models/z.rb", "content" => "  module Z  \n end" }
+          ],
+          metadata: { count: 2, has_more: false }
+        }
+      end
+
+      before do
+        allow(::Ai::ActiveContext::Queries::Code)
+          .to receive(:new)
+          .and_return(query_obj)
+      end
+
+      it 'initializes the code query with search term and current_user and filters with expected params' do
+        expect(::Ai::ActiveContext::Queries::Code)
+          .to receive(:new)
+          .with(search_term: 'Add raise Exception for protected type usage', user: current_user)
+          .and_return(query_obj)
+
+        expect(query_obj)
+          .to receive(:filter)
+          .with(project_id: 123, path: 'app/services/', knn_count: 64, limit: 20)
+          .and_return(result_payload[:items])
+
+        response = service.execute(request: nil, params: arguments)
+
+        expect(response[:isError]).to be false
+        expect(response[:content]).to be_an(Array)
+        expect(response[:content].first[:type]).to eq('text')
+        expect(response[:content].first[:text]).to eq(
+          "1. app/services/foo/bar.rb\n   class X\n  def y; end  \n\n2. app/models/z.rb\n     module Z  \n end"
+        )
+        expect(response[:structuredContent]).to eq(result_payload)
+      end
+    end
+
+    context 'with missing required field' do
+      it 'returns validation error when search_term is missing' do
+        arguments = { arguments: { project_id: 1 } }
+        result = service.execute(request: nil, params: arguments)
+
+        expect(result[:isError]).to be true
+        expect(result[:content].first[:text]).to eq("Validation error: search_term is missing")
+      end
+
+      it 'returns validation error when project_id is missing' do
+        arguments = { arguments: { search_term: 'foo' } }
+        result = service.execute(request: nil, params: arguments)
+
+        expect(result[:isError]).to be true
+        expect(result[:content].first[:text]).to eq("Validation error: project_id is missing")
+      end
+    end
+
+    context 'with blank/invalid required field' do
+      it 'returns validation error when search_term is blank' do
+        arguments = { arguments: { search_term: '', project_id: 1 } }
+        result = service.execute(request: nil, params: arguments)
+
+        expect(result[:isError]).to be true
+        expect(result[:content].first[:text]).to eq("Validation error: search_term is invalid")
+      end
+
+      it 'returns validation error when search_term is too long' do
+        arguments = { arguments: { search_term: 'a' * 1001, project_id: 1 } }
+        result = service.execute(request: nil, params: arguments)
+
+        expect(result[:isError]).to be true
+        expect(result[:content].first[:text]).to eq("Validation error: search_term is invalid")
+      end
+
+      it 'returns validation error when directory_path is too long' do
+        arguments = { arguments: { search_term: 'foo', project_id: 1,  directory_path: 'a' * 101 } }
+        result = service.execute(request: nil, params: arguments)
+
+        expect(result[:isError]).to be true
+        expect(result[:content].first[:text]).to eq("Validation error: directory_path is invalid")
+      end
+
+      it 'returns validation error when project_id is not an integer' do
+        arguments = { arguments: { search_term: 'foo', project_id: 'not-an-int' } }
+        result = service.execute(request: nil, params: arguments)
+
+        expect(result[:isError]).to be true
+        expect(result[:content].first[:text]).to eq("Validation error: project_id is invalid")
+      end
+
+      it 'returns validation error when limit is too big' do
+        arguments = { arguments: { search_term: 'foo', project_id: 1, limit: 101 } }
+        result = service.execute(request: nil, params: arguments)
+
+        expect(result[:isError]).to be true
+        expect(result[:content].first[:text]).to eq("Validation error: limit is invalid")
+      end
+
+      it 'returns validation error when knn is too small' do
+        arguments = { arguments: { search_term: 'foo', project_id: 1, knn: 0 } }
+        result = service.execute(request: nil, params: arguments)
+
+        expect(result[:isError]).to be true
+        expect(result[:content].first[:text]).to eq("Validation error: knn is invalid")
+      end
+    end
+  end
+end

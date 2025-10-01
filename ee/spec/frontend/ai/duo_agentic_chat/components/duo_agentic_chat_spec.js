@@ -15,6 +15,7 @@ import getUserWorkflows from 'ee/ai/graphql/get_user_workflow.query.graphql';
 import getAiChatContextPresets from 'ee/ai/graphql/get_ai_chat_context_presets.query.graphql';
 import getAiChatAvailableModels from 'ee/ai/graphql/get_ai_chat_available_models.query.graphql';
 import getConfiguredAgents from 'ee/ai/graphql/get_configured_agents.query.graphql';
+import getAgentFlowConfig from 'ee/ai/graphql/get_agent_flow_config.query.graphql';
 import DuoAgenticChatApp from 'ee/ai/duo_agentic_chat/components/duo_agentic_chat.vue';
 import { ApolloUtils } from 'ee/ai/duo_agentic_chat/utils/apollo_utils';
 import { WorkflowUtils } from 'ee/ai/duo_agentic_chat/utils/workflow_utils';
@@ -65,7 +66,6 @@ jest.mock('ee/ai/duo_agentic_chat/utils/apollo_utils', () => ({
     createWorkflow: jest.fn(),
     deleteWorkflow: jest.fn(),
     fetchWorkflowEvents: jest.fn(),
-    getAgentFlowConfig: jest.fn(),
   },
 }));
 
@@ -173,7 +173,9 @@ const MOCK_TRANSFORMED_MESSAGES = [
   },
 ];
 
-const MOCK_FLOW_CONFIG = { yaml: 'string' };
+const MOCK_FLOW_CONFIG = 'components:\n  - name: test\n    type: agent';
+
+const MOCK_PARSED_FLOW_CONFIG = { components: [{ name: 'test', type: 'agent' }] };
 
 const MOCK_UTILS_SETUP = () => {
   ApolloUtils.createWorkflow.mockResolvedValue(MOCK_APOLLO_UTILS_CREATE_WORKFLOW_RESPONSE);
@@ -183,7 +185,7 @@ const MOCK_UTILS_SETUP = () => {
   WorkflowUtils.parseWorkflowData.mockReturnValue({
     checkpoint: { channel_values: { ui_chat_log: [] } },
   });
-  parseDocument.mockReturnValue(MOCK_FLOW_CONFIG);
+  parseDocument.mockReturnValue(MOCK_PARSED_FLOW_CONFIG);
 };
 
 const expectedAdditionalContext = [
@@ -233,6 +235,9 @@ describe('Duo Agentic Chat', () => {
     .fn()
     .mockResolvedValue(MOCK_AI_CHAT_AVAILABLE_MODELS_RESPONSE);
   const configuredAgentsQueryMock = jest.fn().mockResolvedValue(MOCK_CONFIGURED_AGENTS_RESPONSE);
+  const agentFlowConfigQueryMock = jest
+    .fn()
+    .mockResolvedValue({ data: { aiCatalogAgentFlowConfig: MOCK_FLOW_CONFIG } });
 
   const findDuoChat = () => wrapper.findComponent(WebAgenticDuoChat);
   const getLastSocketCall = () => {
@@ -263,6 +268,7 @@ describe('Duo Agentic Chat', () => {
       [getAiChatContextPresets, contextPresetsQueryHandlerMock],
       [getAiChatAvailableModels, availableModelsQueryHandlerMock],
       [getConfiguredAgents, configuredAgentsQueryMock],
+      [getAgentFlowConfig, agentFlowConfigQueryMock],
     ]);
 
     if (duoChatGlobalState.isAgenticChatShown !== false) {
@@ -1500,7 +1506,6 @@ describe('Duo Agentic Chat', () => {
 
   describe('agent selection', () => {
     let agent;
-    let flowConfig;
 
     beforeEach(async () => {
       duoChatGlobalState.isAgenticChatShown = true;
@@ -1508,8 +1513,6 @@ describe('Duo Agentic Chat', () => {
       const agentResponse =
         MOCK_CONFIGURED_AGENTS_RESPONSE.data.aiCatalogConfiguredItems.nodes[0].item;
       agent = { ...agentResponse, text: agentResponse.name };
-      flowConfig = 'YAML string';
-      ApolloUtils.getAgentFlowConfig.mockResolvedValue(flowConfig);
 
       await waitForPromises();
     });
@@ -1526,16 +1529,16 @@ describe('Duo Agentic Chat', () => {
       expect(findDuoChat().props('agents')).toContainEqual(agent);
     });
 
-    it('uses the selected flow config when start workflow is called', async () => {
+    it('uses the agentConfig from Apollo query when start workflow is called', async () => {
       await findDuoChat().vm.$emit('new-chat', agent);
+      await waitForPromises();
 
       findDuoChat().vm.$emit('send-chat-prompt', MOCK_USER_MESSAGE.content);
       await waitForPromises();
 
-      expect(ApolloUtils.getAgentFlowConfig).toHaveBeenCalledWith(
-        expect.anything(),
-        agent.versions.nodes[1].id,
-      );
+      expect(agentFlowConfigQueryMock).toHaveBeenCalledWith({
+        agentVersionId: agent.versions.nodes[1].id,
+      });
 
       const expectedStartRequest = {
         startRequest: {
@@ -1543,7 +1546,7 @@ describe('Duo Agentic Chat', () => {
           clientVersion: '1.0',
           workflowDefinition: 'chat',
           goal: MOCK_USER_MESSAGE.content,
-          flowConfig: MOCK_FLOW_CONFIG,
+          flowConfig: MOCK_PARSED_FLOW_CONFIG,
           flowConfigSchemaVersion: 'experimental',
           approval: {},
           workflowMetadata: null,
@@ -1555,6 +1558,7 @@ describe('Duo Agentic Chat', () => {
 
     it('re-uses the selected flow config when /new is used to start a new thread', async () => {
       await findDuoChat().vm.$emit('new-chat', agent);
+      await waitForPromises();
 
       findDuoChat().vm.$emit('send-chat-prompt', '/new');
       findDuoChat().vm.$emit('send-chat-prompt', MOCK_USER_MESSAGE.content);
@@ -1566,7 +1570,7 @@ describe('Duo Agentic Chat', () => {
           clientVersion: '1.0',
           workflowDefinition: 'chat',
           goal: MOCK_USER_MESSAGE.content,
-          flowConfig: MOCK_FLOW_CONFIG,
+          flowConfig: MOCK_PARSED_FLOW_CONFIG,
           flowConfigSchemaVersion: 'experimental',
           approval: {},
           workflowMetadata: null,
@@ -1655,16 +1659,31 @@ describe('Duo Agentic Chat', () => {
     });
   });
 
-  describe('flowConfig cache management', () => {
+  describe('flowConfig Apollo query integration', () => {
     beforeEach(() => {
       duoChatGlobalState.isAgenticChatShown = true;
-      ApolloUtils.getAgentFlowConfig = jest.fn();
       ApolloUtils.createWorkflow = jest
         .fn()
-        .mockResolvedValue({ workflowId: '789', threadId: null });
+        .mockResolvedValue({ workflowId: '456', threadId: null });
     });
 
-    it('fetches fresh agent config when switching agents instead of using cached config', async () => {
+    it('queries agentConfig when aiCatalogItemVersionId is set', async () => {
+      agentFlowConfigQueryMock.mockClear();
+
+      createComponent({
+        data: {
+          aiCatalogItemVersionId: 'gid://gitlab/Ai::Catalog::ItemVersion/1',
+        },
+      });
+
+      await waitForPromises();
+
+      expect(agentFlowConfigQueryMock).toHaveBeenCalledWith({
+        agentVersionId: 'gid://gitlab/Ai::Catalog::ItemVersion/1',
+      });
+    });
+
+    it('fetches fresh agent config when switching agents', async () => {
       const agent2 = {
         id: 'Agent 2',
         name: 'Test Agent',
@@ -1673,12 +1692,10 @@ describe('Duo Agentic Chat', () => {
         },
       };
 
-      ApolloUtils.getAgentFlowConfig.mockResolvedValue({ test: 'config' });
+      agentFlowConfigQueryMock.mockClear();
 
-      // Create component with cached flowConfig
       createComponent({
         data: {
-          flowConfig: { old: 'cached-config' },
           aiCatalogItemVersionId: 'version-1',
         },
       });
@@ -1687,13 +1704,12 @@ describe('Duo Agentic Chat', () => {
       // Switch to agent2
       findDuoChat().vm.$emit('new-chat', agent2);
       await nextTick();
-
-      // Send a message to trigger workflow
-      findDuoChat().vm.$emit('send-chat-prompt', 'test message');
       await waitForPromises();
 
-      // Verify fresh config was fetched for the new agent
-      expect(ApolloUtils.getAgentFlowConfig).toHaveBeenCalledWith(expect.anything(), 'version-2');
+      // Verify query was called with the new agent version id
+      expect(agentFlowConfigQueryMock).toHaveBeenCalledWith({
+        agentVersionId: 'version-2',
+      });
     });
   });
 });
