@@ -14,7 +14,7 @@ export default {
   mixins: [glFeatureFlagsMixin()],
   data() {
     return {
-      popoverDismissed: true,
+      popoverDismissed: false,
     };
   },
   computed: {
