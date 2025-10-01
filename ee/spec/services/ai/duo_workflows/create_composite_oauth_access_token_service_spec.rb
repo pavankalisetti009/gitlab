@@ -28,6 +28,9 @@ RSpec.describe ::Ai::DuoWorkflows::CreateCompositeOauthAccessTokenService, featu
       it 'creates a new oauth access token' do
         expect { response }.to change { OauthAccessToken.count }.by(1)
         expect(response).to be_success
+
+        oauth_token = OauthAccessToken.last
+        expect(oauth_token.scopes).to contain_exactly('mcp', 'ai_workflows', "user:#{user.id}")
       end
 
       context 'when service account does not have composite identity enabled' do

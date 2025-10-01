@@ -14,7 +14,7 @@ module Ai
         @current_user = current_user
         @organization = organization
         @service_account = service_account || ai_settings.duo_workflow_service_account_user
-        @scopes = (scopes || ::Gitlab::Auth::AI_WORKFLOW_SCOPES) + dynamic_user_scope
+        @scopes = (scopes || (::Gitlab::Auth::AI_WORKFLOW_SCOPES + [::Gitlab::Auth::MCP_SCOPE])) + dynamic_user_scope
       end
 
       def execute

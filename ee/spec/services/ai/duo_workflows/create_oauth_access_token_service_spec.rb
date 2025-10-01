@@ -21,7 +21,7 @@ RSpec.describe ::Ai::DuoWorkflows::CreateOauthAccessTokenService, feature_catego
           :oauth_application,
           owner: nil,
           id: application_settings.duo_workflow_oauth_application_id,
-          scopes: :ai_workflows
+          scopes: [:ai_workflows]
         )
       end
 
@@ -36,6 +36,8 @@ RSpec.describe ::Ai::DuoWorkflows::CreateOauthAccessTokenService, feature_catego
             token = execute[:oauth_access_token]
             expect(token.resource_owner_id).to eq user.id
             expect(token.application).to eq oauth_application
+            expect(token.scopes).to contain_exactly('mcp', 'ai_workflows')
+            expect(oauth_application.reload.scopes).to contain_exactly('mcp', 'ai_workflows')
           end
         end
 
@@ -111,7 +113,11 @@ RSpec.describe ::Ai::DuoWorkflows::CreateOauthAccessTokenService, feature_catego
       it 'creates a new doorkeeper oauth application' do
         expect(::Gitlab::CurrentSettings).to receive(:expire_current_application_settings).and_call_original
         expect { execute }.to change { Authn::OauthApplication.count }.by(1)
-        expect(application_settings.duo_workflow_oauth_application_id).to eq(Authn::OauthApplication.last&.id)
+
+        application = Authn::OauthApplication.last
+
+        expect(application_settings.duo_workflow_oauth_application_id).to eq(application.id)
+        expect(application.scopes).to contain_exactly('mcp', 'ai_workflows')
       end
     end
 
