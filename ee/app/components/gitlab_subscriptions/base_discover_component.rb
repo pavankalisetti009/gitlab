@@ -109,7 +109,7 @@ module GitlabSubscriptions
         button_attributes: {
           category: buy_now_link ? 'secondary' : 'primary',
           variant: 'confirm',
-          class: 'gl-w-full sm:gl-w-auto',
+          class: 'gl-w-full @sm/panel:gl-w-auto',
           'data-testid': 'trial-discover-hand-raise-lead-button'
         }.to_json
       }
@@ -128,11 +128,11 @@ module GitlabSubscriptions
     end
 
     def core_feature_one_grid_class
-      'md:gl-grid-cols-4'
+      '@md/panel:gl-grid-cols-4'
     end
 
     def core_feature_two_grid_class
-      'md:gl-grid-cols-4'
+      '@md/panel:gl-grid-cols-4'
     end
   end
 end

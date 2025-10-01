@@ -43,7 +43,7 @@ RSpec.describe Banzai::Filter::PlaceholdersPostFilter, feature_category: :markdo
 
       expect(html).not_to include 'js-'
       expect(html)
-        .to include 'title="&lt;span class=\'font-weight-bold\'&gt;Scoped label&lt;/span&gt;&lt;br&gt;xss "'
+        .to include 'title="&lt;span class=\'gl-font-bold\'&gt;Scoped label&lt;/span&gt;&lt;br&gt;xss "'
     end
   end
 end
