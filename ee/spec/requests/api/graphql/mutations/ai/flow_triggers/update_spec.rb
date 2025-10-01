@@ -116,8 +116,8 @@ RSpec.describe Mutations::Ai::FlowTriggers::Update, feature_category: :agent_fou
   end
 
   context 'when updating catalog item configuration' do
-    let_it_be(:item_consumer1) { create(:ai_catalog_item_consumer, project: project) }
-    let_it_be(:item_consumer2) { create(:ai_catalog_item_consumer, project: project) }
+    let_it_be(:item_consumer1) { create(:ai_catalog_item_consumer, :for_flow, project: project) }
+    let_it_be(:item_consumer2) { create(:ai_catalog_item_consumer, :for_flow, project: project) }
 
     before do
       allow(::Gitlab::Llm::StageCheck).to receive(:available?).with(project, :ai_catalog).and_return(true)

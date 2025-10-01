@@ -85,7 +85,7 @@ RSpec.describe Ai::FlowTriggers::CreateService, feature_category: :agent_foundat
     end
 
     context 'when using catalog item configuration' do
-      let_it_be(:item_consumer) { create(:ai_catalog_item_consumer, project: project) }
+      let_it_be(:item_consumer) { create(:ai_catalog_item_consumer, :for_flow, project: project) }
 
       let(:catalog_params) do
         {

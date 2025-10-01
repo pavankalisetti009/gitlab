@@ -56,7 +56,7 @@ RSpec.describe Ai::FlowTrigger, feature_category: :agent_foundations do
     end
 
     describe 'exactly_one_config_source' do
-      let_it_be(:item_consumer) { create(:ai_catalog_item_consumer, project: project) }
+      let_it_be(:item_consumer) { create(:ai_catalog_item_consumer, project: project, item: create(:ai_catalog_flow)) }
 
       context 'when using config_path only' do
         it 'is valid' do
@@ -98,15 +98,30 @@ RSpec.describe Ai::FlowTrigger, feature_category: :agent_foundations do
       end
     end
 
-    describe 'catalog_item_project_matches' do
-      let_it_be(:item_consumer) { create(:ai_catalog_item_consumer, project: create(:project)) }
+    describe 'catalog_item_valid' do
+      let(:item_consumer) { create(:ai_catalog_item_consumer, project: project, item: item) }
+
+      let(:item) { create(:ai_catalog_flow) }
 
       context 'when item consumer project does not match the project' do
+        let(:project) { create(:project) }
+
         it 'is invalid' do
           flow_trigger = build(:ai_flow_trigger, project: project, ai_catalog_item_consumer: item_consumer)
 
           expect(flow_trigger).not_to be_valid
           expect(flow_trigger.errors[:base]).to include('must have only one config_path or ai_catalog_item_consumer')
+        end
+      end
+
+      context 'when item is not a flow' do
+        let(:item) { create(:ai_catalog_agent) }
+
+        it 'is invalid' do
+          flow_trigger = build(:ai_flow_trigger, project: project, ai_catalog_item_consumer: item_consumer)
+
+          expect(flow_trigger).not_to be_valid
+          expect(flow_trigger.errors[:base]).to include('ai_catalog_item_consumer is not a flow')
         end
       end
     end

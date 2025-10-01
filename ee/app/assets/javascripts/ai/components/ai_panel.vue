@@ -1,4 +1,5 @@
 <script>
+import { GlBreakpointInstance } from '@gitlab/ui/src/utils';
 import { __ } from '~/locale';
 import LocalStorageSync from '~/vue_shared/components/local_storage_sync.vue';
 import AgentSessionsRoot from '~/vue_shared/spa/components/spa_root.vue';
@@ -19,6 +20,7 @@ export default {
     return {
       isExpanded: true,
       activeTab: localStorage.getItem(this.$options.ACTIVE_TAB_KEY) || null,
+      isDesktop: GlBreakpointInstance.isDesktop(),
     };
   },
   computed: {
@@ -58,6 +60,12 @@ export default {
       );
     },
   },
+  mounted() {
+    window.addEventListener('resize', this.handleWindowResize);
+  },
+  beforeDestroy() {
+    window.removeEventListener('resize', this.handleWindowResize);
+  },
   methods: {
     toggleAIPanel(val) {
       this.isExpanded = val;
@@ -81,6 +89,18 @@ export default {
       if (!this.isExpanded) {
         this.toggleAIPanel(true);
       }
+    },
+    handleWindowResize() {
+      const currentIsDesktop = GlBreakpointInstance.isDesktop();
+
+      // This check ensures that the panel is collapsed only when resizing
+      // from desktop to mobile/tablet, not the other way around
+      if (this.isDesktop && !currentIsDesktop) {
+        this.isExpanded = false;
+        this.activeTab = null;
+      }
+
+      this.isDesktop = currentIsDesktop;
     },
   },
 };

@@ -110,7 +110,7 @@ RSpec.describe Mutations::Ai::FlowTriggers::Create, feature_category: :agent_fou
   end
 
   context 'when using catalog item configuration' do
-    let_it_be(:item_consumer) { create(:ai_catalog_item_consumer, project: project) }
+    let_it_be(:item_consumer) { create(:ai_catalog_item_consumer, :for_flow, project: project) }
 
     before do
       allow(::Gitlab::Llm::StageCheck).to receive(:available?).with(project, :ai_catalog).and_return(true)
