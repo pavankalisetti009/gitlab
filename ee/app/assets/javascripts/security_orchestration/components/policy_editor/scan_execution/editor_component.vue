@@ -50,6 +50,7 @@ import {
   createPolicyObject,
   getConfiguration,
   getPolicyYaml,
+  getPredefinedRuleStrategy,
 } from './lib';
 import {
   ADD_CONDITION_LABEL,
@@ -176,6 +177,10 @@ export default {
     });
     const { policy, parsingError } = createPolicyObject(yamlEditorValueWithVariables);
 
+    const conditionStrategy =
+      (this.existingPolicy && getPredefinedRuleStrategy(policy.rules)) ||
+      DEFAULT_CONDITION_STRATEGY;
+
     return {
       configType: getConfiguration(policy),
       parsingError,
@@ -191,7 +196,7 @@ export default {
         'scan-execution-policy-editor',
       ),
       specificActionSectionError: '',
-      conditionStrategy: DEFAULT_CONDITION_STRATEGY,
+      conditionStrategy,
     };
   },
   computed: {

@@ -1,12 +1,16 @@
-import { mount } from '@vue/test-utils';
+import { shallowMount } from '@vue/test-utils';
+import { GlIntersperse } from '@gitlab/ui';
 import DirectDescendantViewer from 'ee/dependencies/components/direct_descendant_viewer.vue';
 
 describe('DirectDescendantViewer component', () => {
   let wrapper;
 
   const factory = (options = {}) => {
-    wrapper = mount(DirectDescendantViewer, {
+    wrapper = shallowMount(DirectDescendantViewer, {
       ...options,
+      stubs: {
+        GlIntersperse,
+      },
     });
   };
 

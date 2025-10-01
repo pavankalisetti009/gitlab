@@ -178,7 +178,7 @@ RSpec.describe Security::Attributes::CleanupProjectToSecurityAttributeWorker, fe
       before do
         stub_const('Security::Attributes::ProjectToSecurityAttributeDestroyService::BATCH_SIZE', 1)
 
-        # Create more than batch size (10) to test batching
+        # Create more than batch size to test batching
         5.times do
           project = create(:project, namespace: namespace)
           create(:project_to_security_attribute, security_attribute: attribute1,

@@ -1,3 +1,4 @@
+import { STRATEGIES_RULE_MAP } from 'ee/security_orchestration/components/policy_editor/scan_execution/lib';
 import { POLICY_SCOPE_MOCK } from 'ee_jest/security_orchestration/mocks/mock_apollo';
 import { actionId, ruleId, unsupportedManifest, unsupportedManifestObject } from './mock_data';
 
@@ -98,6 +99,12 @@ export const mockScheduleScanExecutionObject = {
       id: actionId,
     },
   ],
+};
+
+export const mockScheduledTemplateScanExecutionObject = {
+  ...defaultMockScanExecutionObject,
+  rules: [...STRATEGIES_RULE_MAP.scheduled],
+  actions: [{ scan: 'secret_detection', template: 'latest' }],
 };
 
 export const mockDastScanExecutionManifest = `name: Scheduled Dast/SAST scan

@@ -17,21 +17,21 @@
     .form-group
       - enable_web_auth_help_text = s_("GroupSAML|Before enforcing SSO-only authentication for Git activity of all users, enable SSO-only authentication for web activity.")
       = f.gitlab_ui_checkbox_component :git_check_enforced, s_('GroupSAML|Enforce SSO-only authentication for Git and Dependency Proxy activity for this group'), help_text: saml_sso_settings_generate_helper_text(display_none: saml_provider.enabled?, text: enable_web_auth_help_text), checkbox_options: { class: 'js-group-saml-enforced-git-check-input' }
-    .well-segment.borderless.mb-3.col-12.col-lg-9.p-0
+    .well-segment.borderless.mb-3.gl-col-12.gl-col-lg-9.p-0
       = f.label :sso_url, class: 'label-bold' do
         = s_('GroupSAML|Identity provider single sign-on URL')
       = f.text_field :sso_url, placeholder: 'e.g. https://example.com/adfs/ls', class: 'form-control', data: { testid: 'identity-provider-sso-field' }
       .form-text.gl-text-subtle
         = s_('GroupSAML|Members will be forwarded here when signing in to your group. Get this from your identity provider, where it can also be called "SSO Service Location", "SAML Token Issuance Endpoint", or "SAML 2.0/W-Federation URL".')
 
-    .well-segment.borderless.mb-3.col-12.col-lg-9.p-0
+    .well-segment.borderless.mb-3.gl-col-12.gl-col-lg-9.p-0
       = f.label :certificate_fingerprint, class: 'label-bold' do
         = s_('GroupSAML|Certificate fingerprint')
       = f.text_field :certificate_fingerprint, placeholder: 'e.g. 0a:1b:2c:3d:00:11:22:33:44:55:66:77:88:99:aa:bb:cc:dd:ee:ff', class: 'form-control', data: { testid: 'certificate-fingerprint-field' }
       .form-text.gl-text-subtle
         = s_('GroupSAML|SHA1 or SHA256 fingerprint of the SAML token signing certificate. Get this from your identity provider, where it can also be called "Thumbprint".')
 
-    .well-segment.borderless.gl-mb-3.col-12.col-lg-9.gl-p-0
+    .well-segment.borderless.gl-mb-3.gl-col-12.gl-col-lg-9.gl-p-0
       = f.label :default_membership_role, class: 'label-bold' do
         = s_('GroupSAML|Default membership role')
       .js-saml-membership-role-selector{ data: { saml_membership_role_selector_data: saml_membership_role_selector_data(group, current_user).to_json } }

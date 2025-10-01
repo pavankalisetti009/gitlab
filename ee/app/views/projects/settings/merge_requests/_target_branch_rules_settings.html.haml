@@ -24,14 +24,14 @@
           = gitlab_ui_form_for @project.target_branch_rules.new, url: project_target_branch_rules_path(@project) do |f|
             %h4.gl-mt-0= _("Add branch target")
             .form-group.row
-              = f.label :name, _('Branch name pattern'), class: 'col-sm-12'
-              .col-sm-6
+              = f.label :name, _('Branch name pattern'), class: 'gl-col-sm-12'
+              .gl-col-sm-6
                 = f.text_field :name, class: 'form-control gl-form-input', placeholder: _('eg. dev/*')
                 .form-text.gl-text-subtle
                   = _('Branches matching this string are retargeted. Wildcards are supported, and names are case-sensitive.')
             .form-group.row
-              = f.label :target_branch, _("Target branch"), class: 'col-sm-12'
-              .col-sm-6
+              = f.label :target_branch, _("Target branch"), class: 'gl-col-sm-12'
+              .gl-col-sm-6
                 = f.hidden_field :target_branch
                 #js-target-branch{ data: { project_id: @project.id } }
                 .form-text.gl-text-subtle
