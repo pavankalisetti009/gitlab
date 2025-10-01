@@ -7511,6 +7511,7 @@ Input type: `GroupUpdateInput`
 | <a id="mutationgroupupdatename"></a>`name` | [`String`](#string) | Name of the group. |
 | <a id="mutationgroupupdatepath"></a>`path` | [`String`](#string) | Path of the namespace. |
 | <a id="mutationgroupupdatesharedrunnerssetting"></a>`sharedRunnersSetting` | [`SharedRunnersSetting`](#sharedrunnerssetting) | Shared runners availability for the namespace and its descendants. |
+| <a id="mutationgroupupdatestepupauthrequiredoauthprovider"></a>`stepUpAuthRequiredOauthProvider` | [`String`](#string) | OAuth provider required for step-up authentication. |
 | <a id="mutationgroupupdatevisibility"></a>`visibility` | [`VisibilityLevelsEnum`](#visibilitylevelsenum) | Visibility of the namespace. |
 | <a id="mutationgroupupdatewebbasedcommitsigningenabled"></a>`webBasedCommitSigningEnabled` {{< icon name="warning-solid" >}} | [`Boolean`](#boolean) | **Deprecated**: **Status**: Experiment. Introduced in GitLab 18.2. |
 
@@ -30823,6 +30824,7 @@ GPG signature for a signed commit.
 | <a id="groupmentionsdisabled"></a>`mentionsDisabled` | [`Boolean`](#boolean) | Indicates if a group is disabled from getting mentioned. |
 | <a id="groupmergerequestsenabled"></a>`mergeRequestsEnabled` {{< icon name="warning-solid" >}} | [`Boolean!`](#boolean) | **Introduced** in GitLab 18.3. **Status**: Experiment. Indicates if merge requests are enabled for the namespace. |
 | <a id="groupname"></a>`name` | [`String`](#string) | Name of the group. |
+| <a id="groupnamespacesettings"></a>`namespaceSettings` | [`NamespaceSettings`](#namespacesettings) | Namespace settings for the namespace. |
 | <a id="grouporganizationeditpath"></a>`organizationEditPath` {{< icon name="warning-solid" >}} | [`String`](#string) | **Introduced** in GitLab 17.1. **Status**: Experiment. Path for editing group at the organization level. |
 | <a id="grouppackagesettings"></a>`packageSettings` | [`PackageSettings`](#packagesettings) | Package settings for the namespace. |
 | <a id="groupparent"></a>`parent` | [`Group`](#group) | Parent group. |
@@ -36565,6 +36567,7 @@ Product analytics events for a specific month and year.
 | <a id="namespacemarkdownpaths"></a>`markdownPaths` {{< icon name="warning-solid" >}} | [`MarkdownPaths`](#markdownpaths) | **Introduced** in GitLab 18.1. **Status**: Experiment. Namespace relevant paths to create markdown links on the UI. |
 | <a id="namespacemergerequestsenabled"></a>`mergeRequestsEnabled` {{< icon name="warning-solid" >}} | [`Boolean!`](#boolean) | **Introduced** in GitLab 18.3. **Status**: Experiment. Indicates if merge requests are enabled for the namespace. |
 | <a id="namespacename"></a>`name` | [`String!`](#string) | Name of the namespace. |
+| <a id="namespacenamespacesettings"></a>`namespaceSettings` | [`NamespaceSettings`](#namespacesettings) | Namespace settings for the namespace. |
 | <a id="namespacepackagesettings"></a>`packageSettings` | [`PackageSettings`](#packagesettings) | Package settings for the namespace. |
 | <a id="namespacepath"></a>`path` | [`String!`](#string) | Path of the namespace. |
 | <a id="namespaceplan"></a>`plan` {{< icon name="warning-solid" >}} | [`NamespacePlan`](#namespaceplan) | **Introduced** in GitLab 18.2. **Status**: Experiment. Subscription plan associated with the namespace. |
@@ -37256,6 +37259,16 @@ Represents a subscription plan.
 | <a id="namespaceprojectstatisticsstoragesize"></a>`storageSize` | [`Float`](#float) | Storage size of the project in bytes. |
 | <a id="namespaceprojectstatisticsuploadssize"></a>`uploadsSize` | [`Float`](#float) | Uploads size of the project in bytes. |
 | <a id="namespaceprojectstatisticswikisize"></a>`wikiSize` | [`Float`](#float) | Wiki size of the project in bytes. |
+
+### `NamespaceSettings`
+
+Settings for the namespace.
+
+#### Fields
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="namespacesettingsstepupauthrequiredoauthprovider"></a>`stepUpAuthRequiredOauthProvider` | [`String`](#string) | OAuth provider required for step-up authentication. |
 
 ### `NamespaceSidebar`
 
