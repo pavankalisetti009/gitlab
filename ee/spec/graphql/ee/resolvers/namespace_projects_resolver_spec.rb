@@ -5,20 +5,28 @@ require 'spec_helper'
 RSpec.describe Resolvers::NamespaceProjectsResolver do
   include GraphqlHelpers
 
-  let(:current_user) { create(:user) }
+  let_it_be(:current_user) { create(:user) }
+  let_it_be(:group) { create(:group) }
+  let_it_be(:project_1) do
+    create(:project, namespace: group).tap do |p|
+      p.add_developer(current_user)
+      p.project_setting.update!(has_vulnerabilities: true)
+    end
+  end
+
+  let_it_be(:project_2) do
+    create(:project, namespace: group).tap do |p|
+      p.add_developer(current_user)
+    end
+  end
+
+  let_it_be(:archived_project) do
+    create(:project, :archived, namespace: group).tap do |p|
+      p.add_developer(current_user)
+    end
+  end
 
   context "with a group" do
-    let(:group) { create(:group) }
-    let(:project_1) { create(:project, namespace: group) }
-    let(:project_2) { create(:project, namespace: group) }
-
-    before do
-      project_1.add_developer(current_user)
-      project_2.add_developer(current_user)
-
-      project_1.project_setting.update!(has_vulnerabilities: true)
-    end
-
     describe '#resolve' do
       context 'compliance framework filtering' do
         let(:framework) { create(:compliance_framework, namespace: group, name: 'Test1') }
@@ -124,6 +132,7 @@ RSpec.describe Resolvers::NamespaceProjectsResolver do
     compliance_framework_filters: nil, sbom_component_id: nil)
     args = {
       include_subgroups: false,
+      include_archived: false,
       has_vulnerabilities: has_vulnerabilities,
       sort: sort,
       search: nil,
