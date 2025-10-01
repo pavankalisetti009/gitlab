@@ -69,7 +69,6 @@ describe('AiCatalogAgentsDuplicate', () => {
         name: `Copy of ${mockAgent.name}`,
         description: mockAgent.description,
         systemPrompt: mockAgent.latestVersion.systemPrompt,
-        userPrompt: mockAgent.latestVersion.userPrompt,
         tools: mockAgent.latestVersion.tools.nodes.map((t) => t.id),
         public: false,
       };
@@ -85,7 +84,6 @@ describe('AiCatalogAgentsDuplicate', () => {
       description,
       projectId: project.id,
       systemPrompt: 'A new system prompt',
-      userPrompt: 'A new user prompt',
       public: true,
       release: true,
     };

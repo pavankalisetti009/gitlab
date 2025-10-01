@@ -125,10 +125,6 @@ export default {
       </gl-sprintf>
     </gl-alert>
 
-    <ai-catalog-agent-run-form
-      :is-submitting="isSubmitting"
-      :ai-catalog-agent="aiCatalogAgent"
-      @submit="onSubmit"
-    />
+    <ai-catalog-agent-run-form :is-submitting="isSubmitting" @submit="onSubmit" />
   </div>
 </template>

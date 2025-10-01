@@ -29,7 +29,6 @@ RSpec.describe 'AI Catalog', :js, feature_category: :workflow_catalog do
       find_by_testid('agent-form-input-name').set('New agent name')
       find_by_testid('agent-form-textarea-description').set('New agent description')
       find_by_testid('agent-form-textarea-system-prompt').set('System prompt')
-      find_by_testid('agent-form-textarea-user-prompt').set('User prompt')
 
       click_button 'Create agent'
 

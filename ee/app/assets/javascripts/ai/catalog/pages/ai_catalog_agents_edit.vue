@@ -37,7 +37,6 @@ export default {
         name: this.agentName,
         description: this.aiCatalogAgent.description,
         systemPrompt: this.aiCatalogAgent.latestVersion?.systemPrompt,
-        userPrompt: this.aiCatalogAgent.latestVersion?.userPrompt,
         public: this.aiCatalogAgent.public,
         tools: this.aiCatalogAgent.latestVersion?.tools?.nodes.map((t) => t.id) || [],
       };

@@ -73,10 +73,6 @@ describe('AiCatalogAgentDetails', () => {
       value: mockAgent.latestVersion.systemPrompt,
       fallbackOnError: true,
     });
-    expect(promptsDetails.at(1).findComponent(Markdown).props()).toMatchObject({
-      value: mockAgent.latestVersion.userPrompt,
-      fallbackOnError: true,
-    });
   });
 
   it('renders "Tools" details', () => {
