@@ -8,7 +8,7 @@ RSpec.describe GitlabSchema.types['MergeRequest'], feature_category: :code_revie
   it 'exposes the expected fields' do
     expect(described_class).to have_graphql_fields(
       :approvals_required, :merge_train_car, :merge_trains_count, :merge_train_index,
-      :approval_state, :finding_reports_comparer
+      :approval_state, :finding_reports_comparer, :policy_bypass_statuses
     ).at_least
   end
 
@@ -22,6 +22,7 @@ RSpec.describe GitlabSchema.types['MergeRequest'], feature_category: :code_revie
   it { expect(described_class).to have_graphql_field(:policy_violations) }
   it { expect(described_class).to have_graphql_field(:policies_overriding_approval_settings) }
   it { expect(described_class).to have_graphql_field(:change_requesters) }
+  it { expect(described_class).to have_graphql_field(:policy_bypass_statuses) }
 
   shared_context 'with a merge train' do
     let_it_be(:project) { create(:project, :public) }

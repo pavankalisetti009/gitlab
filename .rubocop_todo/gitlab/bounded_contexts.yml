@@ -2495,6 +2495,7 @@ Gitlab/BoundedContexts:
     - 'ee/app/graphql/types/security_orchestration/pipeline_execution_scheduled_policy_attributes_type.rb'
     - 'ee/app/graphql/types/security_orchestration/policy_any_merge_request_violation_type.rb'
     - 'ee/app/graphql/types/security_orchestration/policy_attributes_union.rb'
+    - 'ee/app/graphql/types/security_orchestration/policy_bypass_status_type.rb'
     - 'ee/app/graphql/types/security_orchestration/policy_comparison_pipeline_type.rb'
     - 'ee/app/graphql/types/security_orchestration/policy_error_type.rb'
     - 'ee/app/graphql/types/security_orchestration/policy_license_scanning_violation_type.rb'
