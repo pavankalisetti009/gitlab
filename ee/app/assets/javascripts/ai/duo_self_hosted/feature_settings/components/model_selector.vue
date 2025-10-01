@@ -224,6 +224,7 @@ export default {
 </script>
 <template>
   <model-select-dropdown
+    class="gl-w-34 lg:gl-w-48"
     :selected-option="selectedOption"
     :items="listItems"
     :placeholder-dropdown-text="s__('AdminAIPoweredFeatures|Select a self-hosted model')"
