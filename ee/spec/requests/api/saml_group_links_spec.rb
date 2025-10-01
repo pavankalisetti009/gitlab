@@ -198,6 +198,28 @@ RSpec.describe API::SamlGroupLinks, :api, feature_category: :system_access do
           end
         end
 
+        context 'with minimal access level' do
+          let_it_be(:params) { { saml_group_name: "Test group", access_level: ::Gitlab::Access::MINIMAL_ACCESS } }
+
+          it 'creates a saml group link with minimal access level' do
+            expect { subject }.not_to change { group_with_saml_group_links.saml_group_links.count }
+            expect(response).to have_gitlab_http_status(:bad_request)
+            expect(json_response['message']).to include('Access level is invalid')
+          end
+
+          context 'with minimal access role licensed feature enabled' do
+            before do
+              stub_licensed_features(minimal_access_role: true, saml_group_sync: true)
+            end
+
+            it 'creates a saml group link with minimal access level' do
+              expect { subject }.to change { group_with_saml_group_links.saml_group_links.count }.by(1)
+
+              expect(json_response['access_level']).to eq(::Gitlab::Access::MINIMAL_ACCESS)
+            end
+          end
+        end
+
         context 'when providing a provider parameter' do
           let(:params) { super().merge(provider: 'saml_provider_1') }
 
