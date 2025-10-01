@@ -63,6 +63,11 @@ export default {
       required: false,
       default: false,
     },
+    hideCount: {
+      type: Boolean,
+      required: false,
+      default: false,
+    },
   },
   data() {
     return {
@@ -134,7 +139,9 @@ export default {
     >
       <template #title>
         {{ title }}
-        <gl-badge v-if="count !== null" size="sm">{{ count }}</gl-badge>
+        <gl-badge v-if="!hideCount" size="sm" data-testid="merge-request-list-count">{{
+          count === null ? '-' : count
+        }}</gl-badge>
       </template>
 
       <template #actions>

@@ -49,10 +49,10 @@ describe('Merge request dashboard collapsible section', () => {
     expect(emptyState().exists()).toBe(true);
   });
 
-  it('hides badge when count is null', () => {
+  it('displays badge as `-` when count is `null`', () => {
     createComponent({ count: null });
 
-    expect(wrapper.findByTestId('merge-request-list-count').exists()).toBe(false);
+    expect(wrapper.findByTestId('merge-request-list-count').text()).toBe('-');
   });
 
   it('expands collapsed content', async () => {

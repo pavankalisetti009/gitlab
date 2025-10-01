@@ -82,6 +82,7 @@ export default {
             error?.networkError?.statusCode === HTTP_STATUS_SERVICE_UNAVAILABLE) ||
           !error
         ) {
+          this.loadedCount += 1;
           this.loading = false;
         }
       },
@@ -91,7 +92,7 @@ export default {
         return QUERIES[this.query].countQuery;
       },
       update(d) {
-        return d.currentUser?.mergeRequests?.count;
+        return d.currentUser?.mergeRequests?.count ?? 0;
       },
       variables() {
         return this.mergeRequestQueryVariables;
@@ -150,6 +151,7 @@ export default {
       fromSubscription: false,
       draftsCount: null,
       retryCount: 0,
+      loadedCount: 0,
     };
   },
   computed: {
@@ -225,7 +227,7 @@ export default {
     return this.$scopedSlots.default({
       mergeRequests: this.mergeRequests?.nodes || [],
       newMergeRequestIds: this.newMergeRequestIds || [],
-      count: this.count,
+      count: this.loadedCount ? this.count : null,
       hasNextPage: this.hasNextPage,
       loadMore: this.loadMore,
       loading: this.loading,

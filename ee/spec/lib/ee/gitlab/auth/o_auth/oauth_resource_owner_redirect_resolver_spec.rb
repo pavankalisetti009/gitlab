@@ -100,22 +100,6 @@ RSpec.describe Gitlab::Auth::OAuth::OauthResourceOwnerRedirectResolver, feature_
             end
           end
         end
-
-        context 'when feature flag is disabled' do
-          before do
-            stub_feature_flags(ff_oauth_redirect_to_sso_login: false)
-          end
-
-          it 'returns new_user_session_url' do
-            expect(resolver).not_to receive(:build_sso_redirect_url)
-            expect(resolve_redirect_url).to eq('/login')
-          end
-
-          it 'does not set user_sso_return_to in session' do
-            resolve_redirect_url
-            expect(session[:user_sso_return_to]).to be_nil
-          end
-        end
       end
 
       context 'when found namespace is not a Group' do
