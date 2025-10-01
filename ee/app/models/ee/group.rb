@@ -1037,15 +1037,6 @@ module EE
       users_without_bots(members, merge_condition: merge_condition)
     end
 
-    def assigning_role_too_high?(current_user, access_level)
-      return false if current_user.can_admin_all_resources?
-      return false unless access_level
-
-      max_access_level = max_member_access(current_user)
-
-      !Authz::Role.access_level_encompasses?(current_access_level: max_access_level, level_to_assign: access_level)
-    end
-
     def can_manage_extensions_marketplace_for_enterprise_users?
       root? &&
         licensed_feature_available?(:disable_extensions_marketplace_for_enterprise_users) &&
