@@ -15,13 +15,7 @@ import {
   PARSING_ERROR_MESSAGE,
   SECURITY_POLICY_ACTIONS,
 } from '../constants';
-import {
-  doesFileExist,
-  getAdvancedEditorValue,
-  getMergeRequestConfig,
-  policyBodyToYaml,
-  policyToYaml,
-} from '../utils';
+import { doesFileExist, getMergeRequestConfig, policyBodyToYaml, policyToYaml } from '../utils';
 import EditorLayout from '../editor_layout.vue';
 import DisabledSection from '../disabled_section.vue';
 import ActionSection from './action/action_section.vue';
@@ -58,11 +52,6 @@ export default {
     'scanPolicyDocumentationPath',
   ],
   props: {
-    advancedEditorEnabled: {
-      type: Boolean,
-      required: false,
-      default: getAdvancedEditorValue(),
-    },
     existingPolicy: {
       type: Object,
       required: false,
@@ -224,7 +213,6 @@ export default {
 <template>
   <editor-layout
     v-if="!disableScanPolicyUpdate"
-    :advanced-editor-enabled="advancedEditorEnabled"
     :is-editing="isEditing"
     :is-removing-policy="isDeleting"
     :is-updating-policy="isCreating"

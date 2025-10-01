@@ -57,6 +57,21 @@ describe('Api', () => {
     });
   });
 
+  describe('updateUserPreferences', () => {
+    it('calls `axios.put` using params `policy_advanced_editor`', async () => {
+      const advancedEditorEnabled = true;
+      const expectedUrl = `${dummyUrlRoot}/api/${dummyApiVersion}/user/preferences`;
+      const expectedRes = {
+        policy_advanced_editor: true,
+      };
+
+      mock.onPut(expectedUrl).reply(HTTP_STATUS_OK, expectedRes);
+
+      const { data } = await Api.updateUserPreferences(advancedEditorEnabled);
+      expect(data.policy_advanced_editor).toBe(expectedRes.policy_advanced_editor);
+    });
+  });
+
   describe('GroupActivityAnalytics', () => {
     const groupId = 'gitlab-org';
 

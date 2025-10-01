@@ -1,13 +1,22 @@
 import { GlLink, GlToggle } from '@gitlab/ui';
+import MockAdapter from 'axios-mock-adapter';
+import { HTTP_STATUS_OK } from '~/lib/utils/http_status';
+import * as urlUtils from '~/lib/utils/url_utility';
+import waitForPromises from 'helpers/wait_for_promises';
+import axios from '~/lib/utils/axios_utils';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import AdvancedEditorToggle from 'ee/security_orchestration/components/policy_editor/advanced_editor_toggle.vue';
 
 describe('AdvancedEditorToggle', () => {
   let wrapper;
 
-  const createComponent = ({ propsData = {} } = {}) => {
+  const createComponent = ({ propsData = {}, provide = {} } = {}) => {
     wrapper = shallowMountExtended(AdvancedEditorToggle, {
       propsData,
+      provide: {
+        policyEditorEnabled: false,
+        ...provide,
+      },
     });
   };
 
@@ -26,8 +35,8 @@ describe('AdvancedEditorToggle', () => {
 
     it('renders enabled toggle', () => {
       createComponent({
-        propsData: {
-          advancedEditorEnabled: true,
+        provide: {
+          policyEditorEnabled: true,
         },
       });
 
@@ -39,12 +48,25 @@ describe('AdvancedEditorToggle', () => {
   });
 
   describe('event handling', () => {
-    it('emits event when editor is toggled', () => {
+    const MOCKED_USER_PREFERENCES_URL = '/api/v4/user/preferences';
+    const mockAxios = new MockAdapter(axios);
+
+    beforeEach(() => {
+      gon.api_version = 'v4';
+
+      mockAxios
+        .onPut(MOCKED_USER_PREFERENCES_URL, { policy_advanced_editor: true })
+        .reply(HTTP_STATUS_OK, { policy_editor_enabled: true });
+    });
+
+    it('saves advanced editor settings', async () => {
       createComponent();
+      jest.spyOn(urlUtils, 'refreshCurrentPage').mockImplementation(() => '');
 
       findToggle().vm.$emit('change', true);
+      await waitForPromises();
 
-      expect(wrapper.emitted('enable-advanced-editor')).toEqual([[true]]);
+      expect(urlUtils.refreshCurrentPage).toHaveBeenCalled();
     });
   });
 });

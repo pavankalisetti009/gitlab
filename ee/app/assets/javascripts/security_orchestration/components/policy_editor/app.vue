@@ -4,13 +4,10 @@ import { getParameterByName } from '~/lib/utils/url_utility';
 import glFeatureFlagsMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
 import { POLICY_TYPE_COMPONENT_OPTIONS } from 'ee/security_orchestration/components/constants';
 import PageHeading from '~/vue_shared/components/page_heading.vue';
-import { saveStorageValue } from '~/lib/utils/local_storage';
 import AdvancedEditorToggle from 'ee/security_orchestration/components/policy_editor/advanced_editor_toggle.vue';
 import AdvancedEditorBanner from 'ee/security_orchestration/components/policy_editor/advanced_editor_banner.vue';
 import EditorWrapper from './editor_wrapper.vue';
 import PolicyTypeSelector from './policy_type_selector.vue';
-import { ADVANCED_EDITOR_STORAGE_KEY } from './constants';
-import { getAdvancedEditorValue } from './utils';
 
 export default {
   components: {
@@ -27,12 +24,12 @@ export default {
   data() {
     return {
       selectedPolicy: this.policyFromUrl(),
-      advancedEditorEnabled: getAdvancedEditorValue(),
+      hasPolicyType: false,
     };
   },
   computed: {
     hasNewSplitView() {
-      return this.glFeatures.securityPoliciesSplitView;
+      return this.glFeatures.securityPoliciesSplitView && this.hasPolicyType;
     },
     title() {
       const titleType = this.existingPolicy
@@ -46,12 +43,9 @@ export default {
     this.policyFromUrl(getParameterByName('type'));
   },
   methods: {
-    enableAdvancedEditor(value) {
-      saveStorageValue(ADVANCED_EDITOR_STORAGE_KEY, value);
-      this.advancedEditorEnabled = value;
-    },
     policyFromUrl() {
       const policyType = getParameterByName('type');
+      this.hasPolicyType = Boolean(policyType);
 
       return Object.values(POLICY_TYPE_COMPONENT_OPTIONS).find(
         ({ urlParameter }) => urlParameter === policyType,
@@ -94,25 +88,13 @@ export default {
 </script>
 <template>
   <div>
-    <advanced-editor-banner
-      v-if="hasNewSplitView"
-      class="gl-mt-4"
-      @enable-advanced-editor="enableAdvancedEditor(true)"
-    />
+    <advanced-editor-banner v-if="hasNewSplitView" class="gl-mt-4" />
     <page-heading :heading="title">
       <template #actions>
-        <advanced-editor-toggle
-          v-if="hasNewSplitView"
-          :advanced-editor-enabled="advancedEditorEnabled"
-          @enable-advanced-editor="enableAdvancedEditor"
-        />
+        <advanced-editor-toggle v-if="hasNewSplitView" />
       </template>
     </page-heading>
     <policy-type-selector v-if="!selectedPolicy" />
-    <editor-wrapper
-      v-else
-      :advanced-editor-enabled="advancedEditorEnabled"
-      :selected-policy="selectedPolicy"
-    />
+    <editor-wrapper v-else :selected-policy="selectedPolicy" />
   </div>
 </template>

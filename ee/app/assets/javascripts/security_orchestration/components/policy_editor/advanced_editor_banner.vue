@@ -30,9 +30,6 @@ export default {
     dismissBanner() {
       this.alertDismissed = true;
     },
-    enableAdvancedEditor() {
-      this.$emit('enable-advanced-editor');
-    },
   },
 };
 </script>
@@ -41,11 +38,9 @@ export default {
   <local-storage-sync v-model="alertDismissed" :storage-key="$options.BANNER_STORAGE_KEY">
     <gl-alert
       v-if="!alertDismissed"
-      :primary-button-text="$options.i18n.primaryButtonText"
       :secondary-button-text="$options.i18n.secondaryButtonText"
       variant="tip"
       @dismiss="dismissBanner"
-      @primaryAction="enableAdvancedEditor"
       @secondaryAction="dismissBanner"
     >
       <gl-sprintf :message="$options.i18n.bannerContent">
