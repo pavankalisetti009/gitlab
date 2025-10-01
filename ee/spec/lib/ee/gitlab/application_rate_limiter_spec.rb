@@ -28,8 +28,8 @@ RSpec.describe EE::Gitlab::ApplicationRateLimiter, feature_category: :system_acc
         :hard_phone_verification_transactions_limit | 100 | 1.day
         :container_scanning_for_registry_scans | 50 | 1.day
         :dependency_scanning_sbom_scan_api_throttling | 50 | 1.hour
-        :dependency_scanning_sbom_scan_api_upload | 200 | 1.hour
-        :dependency_scanning_sbom_scan_api_download | 400 | 1.hour
+        :dependency_scanning_sbom_scan_api_upload | 400 | 1.hour
+        :dependency_scanning_sbom_scan_api_download | 800 | 1.hour
         :virtual_registries_endpoints_api_limit | 1000 | 15.seconds
         :partner_aws_api | 400 | 1.second
         :partner_gcp_api | 500 | 1.second
