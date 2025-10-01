@@ -5,7 +5,6 @@ import csrf from '~/lib/utils/csrf';
 import { __, s__ } from '~/locale';
 import { trackSaasTrialLeadSubmit } from 'ee/google_tag_manager';
 import {
-  COUNTRIES_WITH_STATES_ALLOWED,
   LEADS_COMPANY_NAME_LABEL,
   LEADS_COUNTRY_LABEL,
   LEADS_COUNTRY_PROMPT,
@@ -14,8 +13,7 @@ import {
   LEADS_PHONE_NUMBER_LABEL,
 } from 'ee/vue_shared/leads/constants';
 import ListboxInput from '~/vue_shared/components/listbox_input/listbox_input.vue';
-import countriesQuery from 'ee/subscriptions/graphql/queries/countries.query.graphql';
-import statesQuery from 'ee/subscriptions/graphql/queries/states.query.graphql';
+import countryStateMixin from 'ee/vue_shared/mixins/country_state_mixin';
 import autofocusonshow from '~/vue_shared/directives/autofocusonshow';
 import {
   TRIAL_PHONE_DESCRIPTION,
@@ -44,6 +42,7 @@ export default {
   directives: {
     autofocusonshow,
   },
+  mixins: [countryStateMixin],
   props: {
     userData: {
       type: Object,
@@ -75,14 +74,9 @@ export default {
     return {
       serverValidations: { new_group_name: this.namespaceData.createErrors },
       formValues: {},
-      countries: [],
-      states: [],
     };
   },
   computed: {
-    showCountry() {
-      return !this.$apollo.queries.countries.loading;
-    },
     showNamespaceSelector() {
       return this.namespaceData.anyTrialEligibleNamespaces;
     },
@@ -94,12 +88,6 @@ export default {
     },
     showCreateGroupButton() {
       return this.canCreateGroup && this.formValues.group !== CREATE_GROUP_OPTION_VALUE;
-    },
-    stateRequired() {
-      return COUNTRIES_WITH_STATES_ALLOWED.includes(this.formValues.country);
-    },
-    showState() {
-      return !this.$apollo.queries.states.loading && this.formValues.country && this.stateRequired;
     },
     groupOptions() {
       return [
@@ -249,42 +237,6 @@ export default {
     },
     handleCreateGroupClick(onSelect) {
       onSelect(CREATE_GROUP_OPTION_VALUE);
-    },
-    onCountrySelect(value, formFieldsInput) {
-      if (!this.showState) {
-        this.formValues.state = '';
-      }
-
-      // On initialization this can be undefined
-      formFieldsInput?.(value);
-    },
-  },
-  apollo: {
-    countries: {
-      query: countriesQuery,
-      update(data) {
-        return data.countries.map((country) => ({
-          value: country.id,
-          text: country.name,
-        }));
-      },
-    },
-    states: {
-      query: statesQuery,
-      update(data) {
-        return data.states.map((state) => ({
-          value: state.id,
-          text: state.name,
-        }));
-      },
-      skip() {
-        return !this.formValues.country;
-      },
-      variables() {
-        return {
-          countryId: this.formValues.country,
-        };
-      },
     },
   },
   i18n: {

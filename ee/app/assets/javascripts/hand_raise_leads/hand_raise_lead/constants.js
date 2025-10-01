@@ -1,7 +1,7 @@
 import { __, s__ } from '~/locale';
 
 export const PQL_PHONE_DESCRIPTION = __('Provide a number our sales team can use to call you.');
-export const PQL_COMMENT_LABEL = s__('PQL|Message for the Sales team (optional)');
+export const PQL_COMMENT_LABEL = s__('PQL|Message for the Sales team');
 export const PQL_BUTTON_TEXT = s__('PQL|Contact sales');
 export const PQL_MODAL_TITLE = s__('PQL|Contact our Sales team');
 export const PQL_MODAL_PRIMARY = s__('PQL|Submit information');

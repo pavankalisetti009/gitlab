@@ -21,20 +21,10 @@ export const USER = {
 
 export const GLM_CONTENT = 'some-content';
 export const PRODUCT_INTERACTION = '_product_interaction_';
-export const MODAL_ID = '_some_id_';
 export const BUTTON_TEXT = '_button_text_';
 export const CREATE_HAND_RAISE_LEAD_PATH = '/-/gitlab_subscriptions/hand_raise_leads';
 
 export const BUTTON_ATTRIBUTES = {
   href: '#',
   buttonTextClasses: 'mocked-testing-class',
-};
-
-export const FORM_DATA = {
-  firstName: 'Joe',
-  lastName: 'Doe',
-  companyName: 'ACME',
-  phoneNumber: '192919',
-  country: COUNTRY_WITH_STATES,
-  state: STATE,
 };

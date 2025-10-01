@@ -1,17 +1,21 @@
 <script>
-import { GlFormGroup, GlFormInput, GlFormTextarea, GlModal } from '@gitlab/ui';
+import { GlFormTextarea, GlModal, GlFormFields } from '@gitlab/ui';
 import * as SubscriptionsApi from 'ee/api/subscriptions_api';
 import { createAlert, VARIANT_SUCCESS } from '~/alert';
 import { sprintf } from '~/locale';
 import Tracking from '~/tracking';
-import CountryOrRegionSelector from 'ee/trials/components/country_or_region_selector.vue';
+import ListboxInput from '~/vue_shared/components/listbox_input/listbox_input.vue';
+import countryStateMixin from 'ee/vue_shared/mixins/country_state_mixin';
 import {
+  LEADS_COUNTRY_PROMPT,
+  LEADS_COUNTRY_LABEL,
   LEADS_COMPANY_NAME_LABEL,
   LEADS_FIRST_NAME_LABEL,
   LEADS_LAST_NAME_LABEL,
   LEADS_PHONE_NUMBER_LABEL,
 } from 'ee/vue_shared/leads/constants';
 import { BV_SHOW_MODAL } from '~/lib/utils/constants';
+import { TRIAL_STATE_PROMPT, TRIAL_STATE_LABEL } from 'ee/trials/constants';
 import {
   PQL_COMMENT_LABEL,
   PQL_HAND_RAISE_ACTION_ERROR,
@@ -30,13 +34,12 @@ import eventHub from '../event_hub';
 export default {
   name: 'HandRaiseLeadModal',
   components: {
-    GlFormGroup,
-    GlFormInput,
     GlFormTextarea,
     GlModal,
-    CountryOrRegionSelector,
+    GlFormFields,
+    ListboxInput,
   },
-  mixins: [Tracking.mixin()],
+  mixins: [Tracking.mixin(), countryStateMixin],
   props: {
     user: {
       type: Object,
@@ -49,17 +52,10 @@ export default {
   },
   data() {
     return {
-      firstName: this.user.firstName,
-      lastName: this.user.lastName,
-      companyName: this.user.companyName,
-      phoneNumber: '',
-      country: '',
-      state: '',
-      comment: '',
-      stateRequired: false,
       ctaTracking: {},
       glmContent: '',
       productInteraction: '',
+      formValues: {},
     };
   },
   computed: {
@@ -70,12 +66,12 @@ export default {
     },
     canSubmit() {
       return (
-        this.firstName &&
-        this.lastName &&
-        this.companyName &&
-        this.phoneNumber &&
-        this.country &&
-        (this.stateRequired ? this.state : true)
+        this.formValues.firstName &&
+        this.formValues.lastName &&
+        this.formValues.companyName &&
+        this.formValues.phoneNumber &&
+        this.formValues.country &&
+        (this.stateRequired ? this.formValues.state : true)
       );
     },
     actionPrimary() {
@@ -106,19 +102,100 @@ export default {
     formParams() {
       return {
         namespaceId: Number(this.user.namespaceId),
-        firstName: this.firstName,
-        lastName: this.lastName,
-        companyName: this.companyName,
-        phoneNumber: this.phoneNumber,
-        country: this.country,
-        state: this.stateRequired ? this.state : null,
-        comment: this.comment,
+        firstName: this.formValues.firstName,
+        lastName: this.formValues.lastName,
+        companyName: this.formValues.companyName,
+        phoneNumber: this.formValues.phoneNumber,
+        country: this.formValues.country,
+        state: this.stateRequired ? this.formValues.state : null,
+        comment: this.formValues.comment,
         glmContent: this.glmContent,
         productInteraction: this.productInteraction,
       };
     },
+    fields() {
+      const result = {
+        firstName: {
+          label: LEADS_FIRST_NAME_LABEL,
+          groupAttrs: {
+            class: 'gl-col-span-12 @md/panel:gl-col-span-6',
+          },
+          inputAttrs: {
+            name: 'first_name',
+            'data-testid': 'first-name-field',
+          },
+        },
+        lastName: {
+          label: LEADS_LAST_NAME_LABEL,
+          groupAttrs: {
+            class: 'gl-col-span-12 @md/panel:gl-col-span-6',
+          },
+          inputAttrs: {
+            name: 'last_name',
+            'data-testid': 'last-name-field',
+          },
+        },
+        companyName: {
+          label: LEADS_COMPANY_NAME_LABEL,
+          groupAttrs: {
+            class: 'gl-col-span-12',
+          },
+          inputAttrs: {
+            name: 'company_name',
+          },
+        },
+        phoneNumber: {
+          label: LEADS_PHONE_NUMBER_LABEL,
+          groupAttrs: {
+            description: PQL_PHONE_DESCRIPTION,
+            class: 'gl-col-span-12',
+          },
+          inputAttrs: {
+            name: 'phone_number',
+          },
+        },
+      };
+
+      if (this.showCountry) {
+        result.country = {
+          label: LEADS_COUNTRY_LABEL,
+          groupAttrs: {
+            class: 'gl-col-span-12',
+          },
+        };
+
+        if (this.showState) {
+          result.state = {
+            label: TRIAL_STATE_LABEL,
+            groupAttrs: {
+              class: 'gl-col-span-12',
+            },
+          };
+        }
+      }
+
+      result.comment = {
+        label: PQL_COMMENT_LABEL,
+        groupAttrs: {
+          optional: true,
+          class: 'gl-col-span-12',
+        },
+      };
+
+      return result;
+    },
   },
   mounted() {
+    this.formValues = {
+      firstName: this.user.firstName,
+      lastName: this.user.lastName,
+      companyName: this.user.companyName,
+      phoneNumber: '',
+      country: '',
+      state: '',
+      comment: '',
+    };
+
     eventHub.$on('openModal', (options) => {
       this.openModal(options);
     });
@@ -135,14 +212,13 @@ export default {
       this.track('hand_raise_form_viewed');
     },
     resetForm() {
-      this.firstName = '';
-      this.lastName = '';
-      this.companyName = '';
-      this.phoneNumber = '';
-      this.country = '';
-      this.state = '';
-      this.comment = '';
-      this.stateRequired = false;
+      this.formValues.firstName = '';
+      this.formValues.lastName = '';
+      this.formValues.companyName = '';
+      this.formValues.phoneNumber = '';
+      this.formValues.country = '';
+      this.formValues.state = '';
+      this.formValues.comment = '';
     },
     async submit() {
       await SubscriptionsApi.sendHandRaiseLead(this.submitPath, this.formParams)
@@ -163,19 +239,10 @@ export default {
           this.track('hand_raise_submit_form_failed');
         });
     },
-    onChange({ country, state, stateRequired }) {
-      this.country = country;
-      this.state = state;
-      this.stateRequired = stateRequired;
-    },
   },
   i18n: {
-    firstNameLabel: LEADS_FIRST_NAME_LABEL,
-    lastNameLabel: LEADS_LAST_NAME_LABEL,
-    companyNameLabel: LEADS_COMPANY_NAME_LABEL,
-    phoneNumberLabel: LEADS_PHONE_NUMBER_LABEL,
-    phoneNumberDescription: PQL_PHONE_DESCRIPTION,
-    commentLabel: PQL_COMMENT_LABEL,
+    countryPrompt: LEADS_COUNTRY_PROMPT,
+    statePrompt: TRIAL_STATE_PROMPT,
     modalTitle: PQL_MODAL_TITLE,
     modalPrimary: PQL_MODAL_PRIMARY,
     modalCancel: PQL_MODAL_CANCEL,
@@ -201,70 +268,40 @@ export default {
     @cancel="track('hand_raise_form_canceled')"
   >
     {{ modalHeaderText }}
-    <div class="combined gl-mt-5 gl-flex">
-      <gl-form-group
-        :label="$options.i18n.firstNameLabel"
-        label-size="sm"
-        label-for="first-name"
-        class="!gl-mr-5 !gl-w-1/2"
-      >
-        <gl-form-input
-          id="first-name"
-          v-model="firstName"
-          type="text"
-          class="form-control"
-          data-testid="first-name"
-        />
-      </gl-form-group>
-      <gl-form-group
-        :label="$options.i18n.lastNameLabel"
-        label-size="sm"
-        label-for="last-name"
-        class="!gl-w-1/2"
-      >
-        <gl-form-input
-          id="last-name"
-          v-model="lastName"
-          type="text"
-          class="form-control"
-          data-testid="last-name"
-        />
-      </gl-form-group>
-    </div>
-    <div class="combined gl-flex">
-      <gl-form-group
-        :label="$options.i18n.companyNameLabel"
-        label-size="sm"
-        label-for="company-name"
-        class="!gl-mr-5 !gl-w-1/2"
-      >
-        <gl-form-input
-          id="company-name"
-          v-model="companyName"
-          type="text"
-          class="form-control"
-          data-testid="company-name"
-        />
-      </gl-form-group>
-    </div>
-    <gl-form-group
-      :label="$options.i18n.phoneNumberLabel"
-      label-size="sm"
-      :description="$options.i18n.phoneNumberDescription"
-      label-for="phone-number"
+    <gl-form-fields
+      v-model="formValues"
+      :form-id="$options.modalId"
+      :fields="fields"
+      class="gl-mt-5 gl-grid md:gl-gap-x-4"
     >
-      <gl-form-input
-        id="phone-number"
-        v-model="phoneNumber"
-        type="text"
-        class="form-control"
-        data-testid="phone-number"
-      />
-    </gl-form-group>
-    <country-or-region-selector :country="country" :state="state" @change="onChange" />
-    <gl-form-group :label="$options.i18n.commentLabel" label-size="sm" label-for="comment">
-      <gl-form-textarea v-model="comment" no-resize />
-    </gl-form-group>
+      <template #input(country)="{ value, input }">
+        <listbox-input
+          :selected="value"
+          name="country"
+          :items="countries"
+          :default-toggle-text="$options.i18n.countryPrompt"
+          :block="true"
+          :aria-label="$options.i18n.countryPrompt"
+          data-testid="country-dropdown"
+          @select="onCountrySelect($event, input)"
+        />
+      </template>
+      <template #input(state)="{ value, input }">
+        <listbox-input
+          :selected="value"
+          name="state"
+          :items="states"
+          :default-toggle-text="$options.i18n.statePrompt"
+          :block="true"
+          :aria-label="$options.i18n.statePrompt"
+          data-testid="state-dropdown"
+          @select="(val) => input && input(val)"
+        />
+      </template>
+      <template #input(comment)>
+        <gl-form-textarea v-model="formValues.comment" no-resize />
+      </template>
+    </gl-form-fields>
 
     <p class="gl-text-subtle">
       {{ $options.i18n.modalFooterText }}
