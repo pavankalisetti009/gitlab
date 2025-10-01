@@ -13,7 +13,7 @@ module Ai
             dispatch: { event: ProcessPendingEnabledNamespaceEvent }
           },
           index_repository: {
-            period: 1.hour,
+            period: 10.minutes,
             if: -> { ::Ai::ActiveContext::Code::Repository.pending.with_active_connection.exists? },
             execute: -> { RepositoryIndexService.enqueue_pending_jobs }
           },
