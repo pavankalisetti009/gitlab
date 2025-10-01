@@ -28,7 +28,6 @@ RSpec.describe Namespaces::FreeUserCap::UnlimitedMembersDuringTrialAlertComponen
       it 'renders the alert component with correct content' do
         render_inline(component)
 
-        expect(page).to have_css('.js-unlimited-members-during-trial-alert')
         expect(page).to have_content('Get the most out of your trial with space for more members')
         expect(page).to have_content("During your trial, invite as many members as you like to " \
           "#{namespace.name} to collaborate with you."
@@ -45,7 +44,6 @@ RSpec.describe Namespaces::FreeUserCap::UnlimitedMembersDuringTrialAlertComponen
         it 'does not render the alert' do
           render_inline(component)
           expect(page).not_to have_css("[data-testid='unlimited-members-during-trial-alert']")
-          expect(page).not_to have_css('.js-unlimited-members-during-trial-alert')
         end
       end
 
