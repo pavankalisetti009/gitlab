@@ -67,6 +67,49 @@ RSpec.describe Vulnerabilities::MergeRequestLink, feature_category: :vulnerabili
         expect(described_class.limit_exceeded_for_vulnerability?(new_vulnerability)).to be false
       end
     end
+
+    describe '.find_by_vulnerability_and_merge_request' do
+      let_it_be(:merge_request) { create(:merge_request) }
+      let_it_be(:other_merge_request) { create(:merge_request) }
+      let_it_be(:merge_request_link) do
+        create(:vulnerabilities_merge_request_link, vulnerability: vulnerability, merge_request: merge_request)
+      end
+
+      it 'returns the link when both vulnerability and merge request match' do
+        result = described_class.find_by_vulnerability_and_merge_request(vulnerability, merge_request)
+
+        expect(result).to eq(merge_request_link)
+        expect(result.vulnerability).to eq(vulnerability)
+        expect(result.merge_request).to eq(merge_request)
+      end
+
+      it 'returns nil when vulnerability does not match' do
+        result = described_class.find_by_vulnerability_and_merge_request(other_vulnerability, merge_request)
+
+        expect(result).to be_nil
+      end
+
+      it 'returns nil when merge request does not match' do
+        result = described_class.find_by_vulnerability_and_merge_request(vulnerability, other_merge_request)
+
+        expect(result).to be_nil
+      end
+
+      it 'returns nil when both vulnerability and merge request do not match' do
+        result = described_class.find_by_vulnerability_and_merge_request(other_vulnerability, other_merge_request)
+
+        expect(result).to be_nil
+      end
+
+      it 'returns nil when no links exist' do
+        new_vulnerability = create(:vulnerability)
+        new_merge_request = create(:merge_request)
+
+        result = described_class.find_by_vulnerability_and_merge_request(new_vulnerability, new_merge_request)
+
+        expect(result).to be_nil
+      end
+    end
   end
 
   context 'with loose foreign key on vulnerability_merge_request_links.project_id' do

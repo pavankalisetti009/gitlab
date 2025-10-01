@@ -14331,6 +14331,33 @@ Input type: `VulnerabilityRevertToDetectedInput`
 | <a id="mutationvulnerabilityreverttodetectederrors"></a>`errors` | [`[String!]!`](#string) | Errors encountered during the mutation. |
 | <a id="mutationvulnerabilityreverttodetectedvulnerability"></a>`vulnerability` | [`Vulnerability`](#vulnerability) | Vulnerability after state change. |
 
+### `Mutation.vulnerabilityUnlinkMergeRequest`
+
+{{< details >}}
+**Introduced** in GitLab 18.5.
+**Status**: Experiment.
+{{< /details >}}
+
+Unlink a merge request from a vulnerability.
+
+Input type: `VulnerabilityUnlinkMergeRequestInput`
+
+#### Arguments
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="mutationvulnerabilityunlinkmergerequestclientmutationid"></a>`clientMutationId` | [`String`](#string) | A unique identifier for the client performing the mutation. |
+| <a id="mutationvulnerabilityunlinkmergerequestmergerequestid"></a>`mergeRequestId` | [`MergeRequestID!`](#mergerequestid) | ID of the merge request. |
+| <a id="mutationvulnerabilityunlinkmergerequestvulnerabilityid"></a>`vulnerabilityId` | [`VulnerabilityID!`](#vulnerabilityid) | ID of the vulnerability. |
+
+#### Fields
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="mutationvulnerabilityunlinkmergerequestclientmutationid"></a>`clientMutationId` | [`String`](#string) | A unique identifier for the client performing the mutation. |
+| <a id="mutationvulnerabilityunlinkmergerequesterrors"></a>`errors` | [`[String!]!`](#string) | Errors encountered during the mutation. |
+| <a id="mutationvulnerabilityunlinkmergerequestvulnerability"></a>`vulnerability` | [`Vulnerability`](#vulnerability) | Updated vulnerability. |
+
 ### `Mutation.wikiPageSubscribe`
 
 {{< details >}}
