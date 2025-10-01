@@ -19,7 +19,7 @@ module EE
         rule { unprotect_restrictions_enabled & ~can_unprotect }.policy do
           prevent :create_branch_rule
           prevent :update_branch_rule
-          prevent :destroy_branch_rule
+          prevent :delete_branch_rule
         end
       end
     end
