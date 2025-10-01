@@ -143,9 +143,14 @@ export const STRATEGIES_RULE_MAP = STRATEGIES.reduce((acc, curr) => {
   return acc;
 }, {});
 
-export const hasPredefinedRuleStrategy = (rules) => {
+export const getPredefinedRuleStrategy = (rules = []) => {
   const rulesYaml = policyBodyToYaml({ rules });
-  return STRATEGIES.map((strategy) => policyBodyToYaml({ rules: strategy.rules })).some(
-    (strategyYaml) => isEqual(strategyYaml, rulesYaml),
-  );
+  return STRATEGIES.map((strategy) => ({
+    key: strategy.key,
+    yaml: policyBodyToYaml({ rules: strategy.rules }),
+  })).find((strategy) => isEqual(strategy.yaml, rulesYaml))?.key;
+};
+
+export const hasPredefinedRuleStrategy = (rules) => {
+  return Boolean(getPredefinedRuleStrategy(rules));
 };

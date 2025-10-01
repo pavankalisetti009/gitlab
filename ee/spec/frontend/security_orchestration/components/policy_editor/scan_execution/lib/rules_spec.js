@@ -1,6 +1,7 @@
 import {
   buildDefaultPipeLineRule,
   buildDefaultScheduleRule,
+  getPredefinedRuleStrategy,
   handleBranchTypeSelect,
   hasPredefinedRuleStrategy,
   STRATEGIES_RULE_MAP,
@@ -37,6 +38,49 @@ describe('buildDefaultScheduleRule', () => {
       id: ruleId,
       type: 'schedule',
     });
+  });
+});
+
+describe('getPredefinedRuleStrategy', () => {
+  it('returns the strategy when the rules match one of the strategies', () => {
+    expect(getPredefinedRuleStrategy(STRATEGIES_RULE_MAP[DEFAULT_CONDITION_STRATEGY])).toBe(
+      DEFAULT_CONDITION_STRATEGY,
+    );
+  });
+
+  it('returns the strategy when the rules match one of the strategies ignoring ids', () => {
+    const OPTIMIZED_RULES_WITH_IDS = STRATEGIES_RULE_MAP[DEFAULT_CONDITION_STRATEGY].map(
+      (rule, index) => ({
+        ...rule,
+        id: index.toString(),
+      }),
+    );
+    expect(getPredefinedRuleStrategy(OPTIMIZED_RULES_WITH_IDS)).toBe(DEFAULT_CONDITION_STRATEGY);
+  });
+
+  it('returns undefined when the rules include extra rules', () => {
+    expect(
+      getPredefinedRuleStrategy([
+        ...STRATEGIES_RULE_MAP[DEFAULT_CONDITION_STRATEGY],
+        { type: 'pipeline', branch_type: 'protected' },
+      ]),
+    ).toBe(undefined);
+  });
+
+  it('returns undefined when the rules do not match one of the strategies', () => {
+    expect(getPredefinedRuleStrategy([{ type: 'pipeline', branch_type: 'protected' }])).toBe(
+      undefined,
+    );
+  });
+
+  it('returns undefined when the rules do not match one of the strategies ignoring rule id', () => {
+    expect(
+      getPredefinedRuleStrategy([{ type: 'pipeline', branch_type: 'protected', id: '1' }]),
+    ).toBe(undefined);
+  });
+
+  it('returns undefined for empty rules', () => {
+    expect(getPredefinedRuleStrategy([])).toBe(undefined);
   });
 });
 
