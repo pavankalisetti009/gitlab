@@ -1,4 +1,4 @@
-import { GlDropdown, GlFormInput } from '@gitlab/ui';
+import { GlDropdown, GlFormInput, GlPopover } from '@gitlab/ui';
 import { mount } from '@vue/test-utils';
 import Vue from 'vue';
 import VueApollo from 'vue-apollo';
@@ -248,13 +248,9 @@ describe('SidebarDropdownWidget', () => {
               currentEpicSpy: jest.fn().mockResolvedValue(mockNoPermissionEpicResponse),
             });
 
-            const spy = jest.spyOn(wrapper.vm.$children[0].$refs.popover, '$emit');
-
             await clickEdit(wrapper);
 
-            expect(spy).toHaveBeenCalledWith('open');
-
-            spy.mockRestore();
+            expect(wrapper.findComponent(GlPopover).emitted('open')).toHaveLength(1);
           });
 
           it('renders dropdown when popover is confirmed', async () => {
