@@ -24,7 +24,6 @@ describe('DuoWorkflowAction component', () => {
 
   const defaultProps = {
     projectPath: 'group/project',
-    title: 'Convert to GitLab CI/CD',
     hoverMessage: 'Convert Jenkins to GitLab CI/CD using Duo',
     goal: 'Jenkinsfile',
     workflowDefinition: 'convert_to_gitlab_ci',
@@ -81,7 +80,7 @@ describe('DuoWorkflowAction component', () => {
     },
   };
 
-  const createComponent = (props = {}, provide = {}) => {
+  const createComponent = ({ props = {}, ...options } = {}) => {
     const handlers = [[getDuoWorkflowStatusCheck, mockGetHealthCheckHandler]];
 
     wrapper = shallowMount(DuoWorkflowAction, {
@@ -90,9 +89,7 @@ describe('DuoWorkflowAction component', () => {
         ...defaultProps,
         ...props,
       },
-      provide: {
-        ...provide,
-      },
+      ...options,
     });
 
     return waitForPromises();
@@ -161,7 +158,9 @@ describe('DuoWorkflowAction component', () => {
 
     describe('when both duoWorkflowStatusCheck and remoteFlowsEnabled are enabled', () => {
       beforeEach(async () => {
-        await createComponent();
+        await createComponent({
+          slots: { default: 'My button' },
+        });
       });
 
       it('renders button with correct props', () => {
@@ -171,13 +170,13 @@ describe('DuoWorkflowAction component', () => {
         expect(findButton().props('variant')).toBe('default');
         expect(findButton().props('loading')).toBe(false);
         expect(findButton().attributes('title')).toBe(defaultProps.hoverMessage);
-        expect(findButton().text()).toBe(defaultProps.title);
+        expect(findButton().text()).toBe('My button');
       });
     });
 
     describe('when projectPath is empty', () => {
       beforeEach(async () => {
-        await createComponent({ projectPath: '' });
+        await createComponent({ props: { projectPath: '' } });
       });
 
       it('does not render button', () => {
@@ -274,7 +273,9 @@ describe('DuoWorkflowAction component', () => {
       const invalidGoal = 'InvalidPath';
 
       beforeEach(async () => {
-        await createComponent({ goal: invalidGoal, promptValidatorRegex: /.*[Jj]enkinsfile.*/ });
+        await createComponent({
+          props: { goal: invalidGoal, promptValidatorRegex: /.*[Jj]enkinsfile.*/ },
+        });
         findButton().vm.$emit('click');
       });
 
@@ -292,7 +293,9 @@ describe('DuoWorkflowAction component', () => {
       const validGoal = 'Jenkinsfile';
 
       beforeEach(async () => {
-        await createComponent({ goal: validGoal, promptValidatorRegex: /.*[Jj]enkinsfile.*/ });
+        await createComponent({
+          props: { goal: validGoal, promptValidatorRegex: /.*[Jj]enkinsfile.*/ },
+        });
         findButton().vm.$emit('click');
       });
 
@@ -329,7 +332,7 @@ describe('DuoWorkflowAction component', () => {
         ];
 
         beforeEach(async () => {
-          await createComponent({ additionalContext });
+          await createComponent({ props: { additionalContext } });
 
           findButton().vm.$emit('click');
           await waitForPromises();
@@ -347,7 +350,7 @@ describe('DuoWorkflowAction component', () => {
         const additionalContext = [];
 
         beforeEach(async () => {
-          await createComponent({ additionalContext });
+          await createComponent({ props: { additionalContext } });
 
           findButton().vm.$emit('click');
           await waitForPromises();
@@ -381,7 +384,7 @@ describe('DuoWorkflowAction component', () => {
     describe('source branch handling', () => {
       describe('when currentRef is provided', () => {
         beforeEach(async () => {
-          await createComponent({}, { currentRef });
+          await createComponent({ provide: { currentRef } });
 
           findButton().vm.$emit('click');
           await waitForPromises();
@@ -397,7 +400,7 @@ describe('DuoWorkflowAction component', () => {
 
       describe('when sourceBranch prop is provided', () => {
         beforeEach(async () => {
-          await createComponent({ sourceBranch });
+          await createComponent({ props: { sourceBranch } });
 
           findButton().vm.$emit('click');
           await waitForPromises();
@@ -413,7 +416,7 @@ describe('DuoWorkflowAction component', () => {
 
       describe('when both currentRef and sourceBranch are provided', () => {
         beforeEach(async () => {
-          await createComponent({ sourceBranch }, { currentRef });
+          await createComponent({ props: { sourceBranch }, provide: { currentRef } });
 
           findButton().vm.$emit('click');
           await waitForPromises();

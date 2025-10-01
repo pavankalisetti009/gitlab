@@ -94,7 +94,6 @@ export default {
     <duo-workflow-action
       :agent-privileges="selectedAgentFlowItem.agentPrivileges"
       :project-path="projectPath"
-      :title="s__('DuoAgentsPlatform|Start agent session')"
       :goal="prompt"
       :workflow-definition="selectedAgentFlowItem.value"
       :disabled="isStartButtonDisabled"
@@ -103,7 +102,8 @@ export default {
       size="medium"
       @agent-flow-started="handleAgentFlowStarted"
       @prompt-validation-error="handleValidationError"
-    />
+      >{{ s__('DuoAgentsPlatform|Start agent session') }}</duo-workflow-action
+    >
 
     <ai-legal-disclaimer />
   </div>

@@ -151,14 +151,14 @@ export default {
       <duo-workflow-action
         v-if="showDuoWorkflowAction"
         :project-path="projectPath"
-        :title="__('Convert to GitLab CI/CD')"
         :hover-message="__('Convert Jenkins to GitLab CI/CD using Duo')"
         :goal="blob.path"
         :source-branch="currentRef"
         workflow-definition="convert_to_gitlab_ci"
         :agent-privileges="agentPrivileges"
         :additional-context="getAdditionalContext"
-      />
+        >{{ __('Convert to GitLab CI/CD') }}</duo-workflow-action
+      >
     </template>
 
     <template #prepend>

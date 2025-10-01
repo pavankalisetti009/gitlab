@@ -82,7 +82,6 @@ describe('RunAgentFlowForm', () => {
       expect(workflowAction.exists()).toBe(true);
       expect(workflowAction.props()).toEqual(
         expect.objectContaining({
-          title: 'Start agent session',
           hoverMessage: '',
           goal: '',
           size: 'medium',
@@ -92,6 +91,7 @@ describe('RunAgentFlowForm', () => {
           promptValidatorRegex: /.*[Jj]enkinsfile.*/,
         }),
       );
+      expect(workflowAction.text()).toBe('Start agent session');
     });
   });
 
