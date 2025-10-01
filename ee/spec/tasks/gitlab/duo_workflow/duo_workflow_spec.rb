@@ -87,6 +87,38 @@ RSpec.describe 'gitlab:duo_workflow rake tasks', :silence_stdout, feature_catego
         .to change { Ai::DuoWorkflows::Checkpoint.count }.by_at_least(5)
     end
 
+    it 'creates pipelines and workloads for each workflow' do
+      expect { run_rake_task('gitlab:duo_workflow:populate', '3', '1') }
+        .to change { Ci::Pipeline.count }.by(3)
+        .and change { Ci::Workloads::Workload.count }.by(3)
+        .and change { Ai::DuoWorkflows::WorkflowsWorkload.count }.by(3)
+    end
+
+    it 'creates pipelines with valid attributes' do
+      run_rake_task('gitlab:duo_workflow:populate', '2', '1')
+
+      pipeline = Ci::Pipeline.last
+      expect(pipeline).to have_attributes(
+        project: be_present,
+        user: be_present,
+        ref: be_present,
+        sha: be_present,
+        status: 'success',
+        source: 'web'
+      )
+    end
+
+    it 'creates workloads linked to workflows' do
+      run_rake_task('gitlab:duo_workflow:populate', '2', '1')
+
+      workflow = Ai::DuoWorkflows::Workflow.last
+      workflows_workload = Ai::DuoWorkflows::WorkflowsWorkload.find_by(workflow: workflow)
+
+      expect(workflows_workload).to be_present
+      expect(workflows_workload.workload).to be_present
+      expect(workflows_workload.project).to eq(workflow.project)
+    end
+
     it 'creates checkpoints with valid attributes' do
       run_rake_task('gitlab:duo_workflow:populate', '3', '1')
 
@@ -172,6 +204,25 @@ RSpec.describe 'gitlab:duo_workflow rake tasks', :silence_stdout, feature_catego
         expect(ui_chat_log[4]['message_type']).to eq('user')
         expect(ui_chat_log[5]['message_type']).to eq('agent')
         expect(ui_chat_log[6]['message_type']).to eq('workflow_end')
+
+        # Verify tool_info structure for tool messages
+        tool_message_with_args = ui_chat_log[1]
+        expect(tool_message_with_args['tool_info']).to include(
+          'name' => 'read_file',
+          'args' => include('file_path' => be_present)
+        )
+
+        tool_message_without_args = ui_chat_log[2]
+        expect(tool_message_without_args['tool_info']).to include(
+          'name' => 'get_issue'
+        )
+
+        # Verify non-tool messages have nil tool_info
+        expect(ui_chat_log[0]['tool_info']).to be_nil
+        expect(ui_chat_log[3]['tool_info']).to be_nil
+        expect(ui_chat_log[4]['tool_info']).to be_nil
+        expect(ui_chat_log[5]['tool_info']).to be_nil
+        expect(ui_chat_log[6]['tool_info']).to be_nil
       end
 
       it 'creates checkpoints with workflow goal referenced in chat log' do
@@ -185,12 +236,43 @@ RSpec.describe 'gitlab:duo_workflow rake tasks', :silence_stdout, feature_catego
         expect(first_message).to include('Starting workflow with goal:')
         expect(first_message).to include(workflow.goal.split(' (Workflow #').first)
       end
+
+      it 'creates checkpoints with properly structured tool_info data' do
+        run_rake_task('gitlab:duo_workflow:populate', '1', '1')
+
+        checkpoint = Ai::DuoWorkflows::Checkpoint.last
+        ui_chat_log = checkpoint.checkpoint['channel_values']['ui_chat_log']
+
+        # Find the read_file tool message
+        read_file_message = ui_chat_log.find { |msg| msg['tool_info']&.dig('name') == 'read_file' }
+        expect(read_file_message).to be_present
+        expect(read_file_message['tool_info']).to include(
+          'name' => 'read_file',
+          'args' => include(
+            'file_path' => 'app/assets/very-long-path/that-wont-end/ohnopleasehelpmeIamgoingoffscreenaaaaaaaaaa'
+          )
+        )
+
+        # Find the get_issue tool message
+        get_issue_message = ui_chat_log.find { |msg| msg['tool_info']&.dig('name') == 'get_issue' }
+        expect(get_issue_message).to be_present
+        expect(get_issue_message['tool_info']).to include(
+          'name' => 'get_issue'
+        )
+        expect(get_issue_message['tool_info']).not_to have_key('args')
+
+        # Verify message content matches expected pattern
+        expect(read_file_message['content']).to eq('Read file')
+        expect(get_issue_message['content']).to eq('Read issue http://gdk.test:3000/gitlab-duo/test/-/issues/1')
+      end
     end
 
     it 'uses default values when no arguments provided' do
       expect { run_rake_task('gitlab:duo_workflow:populate') }
         .to change { Ai::DuoWorkflows::Workflow.count }.by(50)
         .and change { Ai::DuoWorkflows::Checkpoint.count }.by_at_least(50)
+        .and change { Ci::Pipeline.count }.by(50)
+        .and change { Ci::Workloads::Workload.count }.by(50)
 
       first_user_workflows = Ai::DuoWorkflows::Workflow.where(user_id: User.first.id)
       expect(first_user_workflows.count).to eq(24)
