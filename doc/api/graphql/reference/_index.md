@@ -11884,6 +11884,26 @@ Input type: `SecurityCategoryCreateInput`
 | <a id="mutationsecuritycategorycreateerrors"></a>`errors` | [`[String!]!`](#string) | Errors encountered during the mutation. |
 | <a id="mutationsecuritycategorycreatesecuritycategory"></a>`securityCategory` | [`SecurityCategory`](#securitycategory) | Created security category. |
 
+### `Mutation.securityCategoryDestroy`
+
+Input type: `SecurityCategoryDestroyInput`
+
+#### Arguments
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="mutationsecuritycategorydestroyclientmutationid"></a>`clientMutationId` | [`String`](#string) | A unique identifier for the client performing the mutation. |
+| <a id="mutationsecuritycategorydestroyid"></a>`id` | [`SecurityCategoryID!`](#securitycategoryid) | Global ID of the security category to destroy. |
+
+#### Fields
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="mutationsecuritycategorydestroyclientmutationid"></a>`clientMutationId` | [`String`](#string) | A unique identifier for the client performing the mutation. |
+| <a id="mutationsecuritycategorydestroydeletedattributesgid"></a>`deletedAttributesGid` | [`[SecurityAttributeID!]`](#securityattributeid) | Global IDs of the deleted security attributes. |
+| <a id="mutationsecuritycategorydestroydeletedcategorygid"></a>`deletedCategoryGid` | [`SecurityCategoryID`](#securitycategoryid) | Global ID of the deleted security category. |
+| <a id="mutationsecuritycategorydestroyerrors"></a>`errors` | [`[String!]!`](#string) | Errors encountered during the mutation. |
+
 ### `Mutation.securityCategoryUpdate`
 
 Input type: `SecurityCategoryUpdateInput`
