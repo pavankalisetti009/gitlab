@@ -38,7 +38,7 @@ module GitlabSubscriptions
           category: 'secondary',
           variant: 'confirm',
           button_options: {
-            class: 'gl-w-full sm:gl-w-auto',
+            class: 'gl-w-full @sm/panel:gl-w-auto',
             data: {
               event_tracking: 'click_duo_enterprise_trial_billing_page',
               event_label: 'duo_pro_trial'
