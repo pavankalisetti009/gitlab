@@ -146,11 +146,22 @@ describe('Merge requests query component', () => {
 
     expect(slotSpy).toHaveBeenCalledWith(
       expect.objectContaining({
+        count: 0,
         mergeRequests: expect.arrayContaining([
           expect.objectContaining({
             title,
           }),
         ]),
+      }),
+    );
+  });
+
+  it('renders `count` as `null` when count query hasnt completed', () => {
+    createComponent();
+
+    expect(slotSpy).toHaveBeenCalledWith(
+      expect.objectContaining({
+        count: null,
       }),
     );
   });
