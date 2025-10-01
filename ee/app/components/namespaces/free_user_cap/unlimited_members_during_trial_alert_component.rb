@@ -19,43 +19,12 @@ module Namespaces
 
       attr_reader :namespace, :user, :wrapper_class, :hide_invite_members_button, :hide_explore_paid_plans_button
 
-      use_helpers :current_path?
-
       def render?
-        show_unlimited_members_during_trial_alert?
-      end
-
-      def show_unlimited_members_during_trial_alert?
         !Feature.enabled?(:streamlined_first_product_experience, :instance) &&
           ::Namespaces::FreeUserCap::Enforcement.new(namespace).qualified_namespace? &&
           ::Namespaces::FreeUserCap.owner_access?(user: user, namespace: namespace) &&
           namespace.trial_active? &&
-          !dismissed_for_namespace &&
           !::Onboarding::Progress.completed?(namespace, :user_added)
-      end
-
-      def feature_name
-        'unlimited_members_during_trial_alert'
-      end
-
-      def variant
-        :info
-      end
-
-      def alert_attributes
-        {
-          title: s_('UnlimitedMembersDuringTrialAlert|Get the most out of your trial with space for more members'),
-          body: body_text
-        }
-      end
-
-      def alert_data
-        {
-          feature_id: feature_name,
-          dismiss_endpoint: group_callouts_path,
-          group_id: namespace.id,
-          testid: 'unlimited-members-during-trial-alert'
-        }
       end
 
       def body_text
@@ -103,23 +72,6 @@ module Namespaces
 
       def render_secondary_cta?
         !hide_explore_paid_plans_button && !hide_invite_members_button
-      end
-
-      def dismissed_for_namespace
-        user.dismissed_callout_for_group?(
-          feature_name: feature_name,
-          group: namespace
-        )
-      end
-
-      def close_button_data
-        {
-          testid: 'hide-unlimited-members-during-trial-alert'
-        }
-      end
-
-      def dismissible
-        true
       end
     end
   end
