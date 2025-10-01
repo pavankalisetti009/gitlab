@@ -3,10 +3,12 @@
 require 'spec_helper'
 
 RSpec.describe Mcp::Tools::Manager, feature_category: :ai_agents do
-  let(:custom_service) { Mcp::Tools::GetServerVersionService.new(name: 'get_mcp_server_version') }
+  let(:get_mcp_server_version_service) { Mcp::Tools::GetServerVersionService.new(name: 'get_mcp_server_version') }
+  let(:get_code_context_service) { Mcp::Tools::SearchCodebaseService.new(name: 'get_code_context') }
 
   before do
-    stub_const("#{described_class}::CUSTOM_TOOLS", { 'get_mcp_server_version' => custom_service })
+    stub_const("#{described_class}::CUSTOM_TOOLS", { 'get_mcp_server_version' => get_mcp_server_version_service })
+    stub_const("EE::#{described_class}::EE_CUSTOM_TOOLS", { 'get_code_context' => get_code_context_service })
   end
 
   describe '#initialize' do
@@ -22,8 +24,8 @@ RSpec.describe Mcp::Tools::Manager, feature_category: :ai_agents do
       it 'initializes with only custom tools' do
         manager = described_class.new
 
-        expect(manager.tools).to eq(described_class::CUSTOM_TOOLS)
-        expect(manager.tools.keys).to contain_exactly('get_mcp_server_version')
+        expect(manager.tools).to eq(described_class::CUSTOM_TOOLS.merge(described_class::EE_CUSTOM_TOOLS))
+        expect(manager.tools.keys).to contain_exactly('get_mcp_server_version', 'get_code_context')
       end
     end
 
@@ -51,9 +53,10 @@ RSpec.describe Mcp::Tools::Manager, feature_category: :ai_agents do
         expect(manager.tools).to include(
           'create_user' => api_tool1,
           'delete_user' => api_tool2,
-          'get_mcp_server_version' => custom_service
+          'get_mcp_server_version' => get_mcp_server_version_service,
+          'get_code_context' => get_code_context_service
         )
-        expect(manager.tools.size).to eq(3)
+        expect(manager.tools.size).to eq(4)
       end
 
       it 'converts tool_name symbols to strings' do
@@ -87,9 +90,10 @@ RSpec.describe Mcp::Tools::Manager, feature_category: :ai_agents do
 
         expect(manager.tools).to include(
           'valid_tool' => api_tool1,
-          'get_mcp_server_version' => custom_service
+          'get_mcp_server_version' => get_mcp_server_version_service,
+          'get_code_context' => get_code_context_service
         )
-        expect(manager.tools.size).to eq(2)
+        expect(manager.tools.size).to eq(3)
         expect(Mcp::Tools::ApiTool).to have_received(:new).once.with(route1)
         expect(Mcp::Tools::ApiTool).not_to have_received(:new).with(route2)
         expect(Mcp::Tools::ApiTool).not_to have_received(:new).with(route3)
@@ -123,7 +127,8 @@ RSpec.describe Mcp::Tools::Manager, feature_category: :ai_agents do
         expect(manager.tools).to eq(
           'first_tool' => api_tool1,
           'third_tool' => api_tool3,
-          'get_mcp_server_version' => custom_service
+          'get_mcp_server_version' => get_mcp_server_version_service,
+          'get_code_context' => get_code_context_service
         )
       end
     end

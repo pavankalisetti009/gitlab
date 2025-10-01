@@ -285,6 +285,47 @@ RSpec.describe API::Mcp, 'List tools request', feature_category: :mcp_server do
           }
         },
         {
+          "name" => "get_code_context",
+          "description" => "Search for relevant code snippets in a project",
+          "inputSchema" => {
+            "type" => "object",
+            "properties" => {
+              "search_term" => {
+                "type" => "string",
+                "minLength" => 1,
+                "maxLength" => 1000,
+                "description" => "Natural language query for semantic code search."
+              },
+              "project_id" => {
+                "type" => "integer",
+                "description" => "Numeric project ID to search in."
+              },
+              "directory_path" => {
+                "type" => "string",
+                "minLength" => 1,
+                "maxLength" => 100,
+                "description" => "Optional directory path to scope the search (e.g., \"app/services/\")."
+              },
+              "knn" => {
+                "type" => "integer",
+                "default" => 64,
+                "minimum" => 1,
+                "maximum" => 100,
+                "description" => "Number of nearest neighbors used internally."
+              },
+              "limit" => {
+                "type" => "integer",
+                "default" => 20,
+                "minimum" => 1,
+                "maximum" => 100,
+                "description" => "Maximum number of results to return."
+              }
+            },
+            "required" => %w[search_term project_id],
+            "additionalProperties" => false
+          }
+        },
+        {
           "name" => "get_mcp_server_version",
           "description" => "Get the current version of MCP server.",
           "inputSchema" => {
@@ -294,6 +335,17 @@ RSpec.describe API::Mcp, 'List tools request', feature_category: :mcp_server do
           }
         }
       )
+    end
+
+    context 'when feature flag code_snippet_search_graphqlapi is disabled' do
+      before do
+        stub_feature_flags(code_snippet_search_graphqlapi: false)
+        post api('/mcp', user, oauth_access_token: access_token), params: params
+      end
+
+      it 'does not return get_code_context' do
+        expect(json_response['result']['tools'].pluck('name')).not_to include('get_code_context')
+      end
     end
   end
 end
