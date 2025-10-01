@@ -42,6 +42,7 @@ FactoryBot.define do
     after(:create) do |version, _|
       item = version.item
       item.latest_version = version
+      item.latest_released_version = version if version.released?
       item.save!
     end
   end

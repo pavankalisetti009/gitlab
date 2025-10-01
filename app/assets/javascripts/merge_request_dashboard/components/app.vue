@@ -182,6 +182,7 @@ export default {
                 :title="list.title"
                 :help-content="list.helpContent"
                 :loading="loading"
+                :error="error"
                 :new-merge-request-ids="newMergeRequestIds"
                 :merge-requests="mergeRequests"
                 :active-list="i === 0"

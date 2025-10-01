@@ -12,7 +12,7 @@ module Ai
 
       self.table_name = "ai_catalog_items"
 
-      validates :organization, :latest_version, :item_type, :description, :name, presence: true
+      validates :organization, :latest_version, :item_type, :description, :name, :verification_level, presence: true
 
       validates :name, length: { minimum: 3, maximum: 255 }, allow_nil: true
       validates :description, length: { maximum: 1_024 }, allow_nil: true
@@ -23,6 +23,7 @@ module Ai
       belongs_to :organization, class_name: 'Organizations::Organization', optional: false
       belongs_to :project
       belongs_to :latest_version, class_name: 'Ai::Catalog::ItemVersion', optional: false, autosave: true
+      belongs_to :latest_released_version, class_name: 'Ai::Catalog::ItemVersion', optional: true
 
       validate :organization_match
 
@@ -34,6 +35,9 @@ module Ai
         foreign_key: :dependency_id, inverse_of: :dependency, class_name: 'Ai::Catalog::ItemVersionDependency'
       )
 
+      enum :verification_level, ::Namespaces::VerifiedNamespace::VERIFICATION_LEVELS
+
+      scope :for_verification_level, ->(level) { where(verification_level: level) }
       scope :for_organization, ->(organization) { where(organization: organization) }
       scope :not_deleted, -> { where(deleted_at: nil) }
       scope :public_only, -> { where(public: true) }

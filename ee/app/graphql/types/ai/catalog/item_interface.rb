@@ -37,15 +37,21 @@ module Types
           description: 'Versions of the item.'
         field :latest_version, ::Types::Ai::Catalog::VersionInterface,
           null: true,
-          description: 'Latest version of the item.'
+          description: 'Latest version of the item.' do
+            argument :released, ::GraphQL::Types::Boolean, required: false,
+              description: 'Return the latest released version.'
+          end
 
         orphan_types ::Types::Ai::Catalog::AgentType
         orphan_types ::Types::Ai::Catalog::FlowType
 
-        def latest_version
+        def latest_version(released: nil)
+          version_id = released ? object.latest_released_version_id : object.latest_version_id
+          return unless version_id
+
           lazy_version = Gitlab::Graphql::Loaders::BatchModelLoader.new(
             ::Ai::Catalog::ItemVersion,
-            object.latest_version_id
+            version_id
           ).find
 
           # `ItemVersion#item` is needed for `VersionInterface.resolve_type` and authorization checks.
