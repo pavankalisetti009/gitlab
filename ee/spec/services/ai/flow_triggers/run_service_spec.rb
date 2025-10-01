@@ -661,7 +661,7 @@ RSpec.describe Ai::FlowTriggers::RunService, feature_category: :agent_foundation
     end
 
     context 'when flow trigger has ai_catalog_item_consumer' do
-      let_it_be(:ai_catalog_item) { create(:ai_catalog_item) }
+      let_it_be(:ai_catalog_item) { create(:ai_catalog_flow) }
       let_it_be(:ai_catalog_item_consumer) do
         create(:ai_catalog_item_consumer,
           item: ai_catalog_item, project: project, pinned_version_prefix: nil)

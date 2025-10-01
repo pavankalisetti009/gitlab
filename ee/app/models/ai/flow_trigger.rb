@@ -28,7 +28,7 @@ module Ai
     validate :event_types_are_valid
     validate :user_is_service_account, if: :user
     validate :exactly_one_config_source
-    validate :catalog_item_project_matches, if: :ai_catalog_item_consumer_id?
+    validate :catalog_item_valid, if: :ai_catalog_item_consumer_id?
 
     scope :with_ids, ->(ids) { where(id: ids) }
 
@@ -55,10 +55,14 @@ module Ai
       errors.add(:base, 'must have only one config_path or ai_catalog_item_consumer')
     end
 
-    def catalog_item_project_matches
-      return if ai_catalog_item_consumer.project == project
+    def catalog_item_valid
+      if ai_catalog_item_consumer.project != project
+        errors.add(:base, 'ai_catalog_item_consumer project does not match project')
+      end
 
-      errors.add(:base, 'ai_catalog_item_consumer project does not match project')
+      return if ai_catalog_item_consumer.item.flow?
+
+      errors.add(:base, 'ai_catalog_item_consumer is not a flow')
     end
   end
 end
