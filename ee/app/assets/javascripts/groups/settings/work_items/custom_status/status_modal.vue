@@ -223,7 +223,10 @@ export default {
       };
     },
     startRemovingStatus(status) {
-      if (this.workItemStatusMvc2Enabled) {
+      const count = this.getStatusCount(status);
+      const hasCount = count && count !== '0';
+      const showStatusMappingModal = hasCount || this.isDefaultStatus(status);
+      if (this.workItemStatusMvc2Enabled && showStatusMappingModal) {
         this.statusToRemove = status;
         return;
       }
@@ -536,10 +539,13 @@ export default {
       });
     },
     getStatusCount(status) {
-      const count =
+      return (
         this.lifecycle.statusCounts.find((statusCount) => statusCount.status.id === status.id)
-          ?.count ?? '0';
-
+          ?.count ?? '0'
+      );
+    },
+    getStatusCountText(status) {
+      const count = this.getStatusCount(status);
       return sprintf(n__('%{count} item', '%{count} items', count), { count });
     },
     getStatusCountHref(status) {
@@ -731,7 +737,7 @@ export default {
                       :href="getStatusCountHref(status)"
                       data-testid="status-count-link"
                     >
-                      {{ getStatusCount(status) }}
+                      {{ getStatusCountText(status) }}
                     </gl-link>
                     <gl-tooltip :target="`count-link-${status.id}`">
                       <div class="gl-font-bold">{{ s__('WorkItem|View items') }}</div>
@@ -863,6 +869,7 @@ export default {
       :lifecycle="lifecycle"
       :status-to-remove="statusToRemove"
       @hidden="statusToRemove = null"
+      @lifecycle-updated="$emit('lifecycle-updated')"
     />
   </div>
 </template>

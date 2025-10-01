@@ -15,9 +15,6 @@ import lifecycleUpdateMutation from './graphql/lifecycle_update.mutation.graphql
 import RemoveStatusModalListbox from './remove_status_modal_listbox.vue';
 
 export default {
-  actionCancel: {
-    text: __('Cancel'),
-  },
   components: {
     GlAlert,
     GlIcon,
@@ -48,7 +45,15 @@ export default {
     };
   },
   computed: {
+    actionCancel() {
+      return this.isDefaultStatusWithNoOtherStatuses
+        ? { text: __('Close') }
+        : { text: __('Cancel') };
+    },
     actionPrimary() {
+      if (this.isDefaultStatusWithNoOtherStatuses) {
+        return undefined;
+      }
       return {
         text: s__('WorkItem|Remove status'),
         attributes: {
@@ -102,12 +107,42 @@ export default {
     defaultStatusType() {
       return getDefaultStateType(this.lifecycle, this.statusToRemove);
     },
+    hasCount() {
+      // `count` is string from backend, and can include '999+'
+      return this.count && this.count !== '0';
+    },
+    isDefaultStatus() {
+      return Boolean(this.defaultStatusType);
+    },
+    isDefaultStatusWithNoOtherStatuses() {
+      return this.isDefaultStatus && !this.filteredStatuses.length;
+    },
+    isDefaultStatusWithNoOtherStatusesText() {
+      switch (this.defaultStatusType) {
+        case DEFAULT_STATE_CLOSED:
+        case DEFAULT_STATE_DUPLICATE:
+          return s__(
+            'WorkItem|This status is set as the Closed default, and no other Closed statuses exist. Create a "Done" or "Canceled" status to remove this status.',
+          );
+        case DEFAULT_STATE_OPEN:
+          return s__(
+            'WorkItem|This status is set as the Open default, and no other Open statuses exist. Create a "Triage", "To do", or "In progress" status to remove this status.',
+          );
+        default:
+          return undefined;
+      }
+    },
     items() {
       return this.filteredStatuses.map((status) => ({
         ...status,
         text: status.name,
         value: status.id,
       }));
+    },
+    modalTitle() {
+      return this.isDefaultStatusWithNoOtherStatuses
+        ? s__('WorkItem|Cannot remove status')
+        : s__('WorkItem|Remove status');
     },
     selectedNewDefault() {
       return (
@@ -138,6 +173,9 @@ export default {
       const input = {
         id: this.lifecycle.id,
         namespacePath: this.fullPath,
+        statuses: this.lifecycle.statuses
+          .filter((status) => status.id !== this.statusToRemove.id)
+          .map((status) => ({ id: status.id })),
       };
 
       if (this.selectedNewStatusId) {
@@ -173,6 +211,7 @@ export default {
           if (data.lifecycleUpdate.errors.length) {
             throw new Error(data.lifecycleUpdate.errors);
           }
+          this.$emit('lifecycle-updated');
           this.$refs.modal.hide();
         })
         .catch((error) => {
@@ -191,10 +230,10 @@ export default {
 <template>
   <gl-modal
     ref="modal"
-    :action-cancel="$options.actionCancel"
+    :action-cancel="actionCancel"
     :action-primary="actionPrimary"
     modal-id="remove-status-modal"
-    :title="s__('WorkItem|Remove status')"
+    :title="modalTitle"
     visible
     @hidden="$emit('hidden')"
     @primary="updateStatus"
@@ -202,39 +241,41 @@ export default {
     <gl-alert v-if="error" class="gl-mb-3" variant="danger" @dismiss="error = ''">
       {{ error }}
     </gl-alert>
-    <p class="gl-mb-4">{{ newStatusBodyText }}</p>
-    <div class="gl-mb-6 gl-flex gl-gap-8">
-      <div>
-        <div class="gl-mb-1 gl-font-bold gl-text-strong">
-          {{ s__('WorkItem|Current status') }}
+    <template v-if="hasCount && filteredStatuses.length">
+      <p class="gl-mb-4">{{ newStatusBodyText }}</p>
+      <div class="gl-mb-6 gl-flex gl-gap-8">
+        <div>
+          <div class="gl-mb-1 gl-font-bold gl-text-strong">
+            {{ s__('WorkItem|Current status') }}
+          </div>
+          <div data-testid="current-status-value">
+            <gl-icon
+              class="gl-mr-1"
+              :name="statusToRemove.iconName"
+              :size="12"
+              :style="getColorStyle(statusToRemove)"
+            />
+            {{ statusToRemove.name }}
+          </div>
         </div>
-        <div data-testid="current-status-value">
-          <gl-icon
-            class="gl-mr-1"
-            :name="statusToRemove.iconName"
-            :size="12"
-            :style="getColorStyle(statusToRemove)"
+        <div>
+          <label class="gl-mb-1 gl-block" for="new-status">
+            {{ s__('WorkItem|New status') }}
+          </label>
+          <remove-status-modal-listbox
+            v-model="selectedNewStatusId"
+            :items="items"
+            :selected="selectedNewStatus"
+            toggle-id="new-status"
           />
-          {{ statusToRemove.name }}
         </div>
       </div>
-      <div>
-        <label class="gl-mb-1 gl-block" for="new-status">
-          {{ s__('WorkItem|New status') }}
-        </label>
-        <remove-status-modal-listbox
-          v-model="selectedNewStatusId"
-          :items="items"
-          :selected="selectedNewStatus"
-          toggle-id="new-status"
-        />
-      </div>
-    </div>
+    </template>
 
-    <template v-if="Boolean(defaultStatusType)">
+    <template v-if="isDefaultStatus && filteredStatuses.length">
       <p class="gl-mb-4">{{ newDefaultBodyText }}</p>
       <div>
-        <label class="gl-mb-1 gl-block" for="new-default" data-testid="new-default-label">
+        <label class="gl-mb-1 gl-block" for="new-default">
           {{ newDefaultLabel }}
         </label>
         <remove-status-modal-listbox
@@ -245,6 +286,10 @@ export default {
           data-testid="new-default-listbox"
         />
       </div>
+    </template>
+
+    <template v-if="isDefaultStatusWithNoOtherStatuses">
+      {{ isDefaultStatusWithNoOtherStatusesText }}
     </template>
   </gl-modal>
 </template>
