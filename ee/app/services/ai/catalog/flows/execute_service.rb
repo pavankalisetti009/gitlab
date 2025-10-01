@@ -6,13 +6,11 @@ module Ai
       class ExecuteService < Ai::Catalog::BaseService
         include Gitlab::Utils::StrongMemoize
 
-        DEFAULT_EVENT_TYPE = 'manual'
-
         def initialize(project:, current_user:, params:)
           @flow = params[:flow]
           @flow_version = params[:flow_version]
           @execute_workflow = params[:execute_workflow]
-          @event_type = params[:event_type] || DEFAULT_EVENT_TYPE
+          @event_type = params[:event_type]
           super
         end
 
@@ -45,6 +43,7 @@ module Ai
           return error('Flow version is required') unless flow_version
           return error('Flow version must belong to the flow') unless flow_version.item == flow
           return error('Flow version must have steps') unless flow_version.def_steps.present?
+          return error('Trigger event type is required') if event_type.blank?
 
           ServiceResponse.success
         end

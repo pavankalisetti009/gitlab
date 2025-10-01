@@ -48,6 +48,7 @@ RSpec.describe Ai::Catalog::Flows::ExecuteService, :aggregate_failures, feature_
     {
       flow: flow,
       flow_version: flow_version,
+      event_type: 'manual',
       execute_workflow: true
     }
   end
@@ -117,6 +118,12 @@ RSpec.describe Ai::Catalog::Flows::ExecuteService, :aggregate_failures, feature_
       let(:service_params) { super().merge({ flow_version: nil }) }
 
       it_behaves_like 'returns error response', 'Flow version is required'
+    end
+
+    context 'when event_type is nil' do
+      let(:service_params) { super().merge({ event_type: nil }) }
+
+      it_behaves_like 'returns error response', 'Trigger event type is required'
     end
 
     context 'when flow_version does not belong to the flow' do
