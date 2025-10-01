@@ -13,6 +13,7 @@ import {
 } from 'ee/vue_merge_request_widget/components/checks/constants';
 import SecurityPolicyViolationsSelector from './security_policy_violations_selector.vue';
 import bypassSecurityPolicyViolations from './queries/bypass_security_policy_violations.mutation.graphql';
+import bypassSecurityPolicyExceptionViolations from './queries/bypass_security_policy_exception_violation.mutation.graphql';
 
 export default {
   ACTION_CANCEL: { text: __('Cancel') },
@@ -57,11 +58,15 @@ export default {
       bypassReason: '',
       loading: false,
       selectedPolicies: [],
+      selectedReason: '',
       selectedReasons: [],
       showErrorAlert: false,
     };
   },
   computed: {
+    selected() {
+      return this.isWarnMode ? this.selectedReasons : this.selectedReason;
+    },
     isBypassReasonEmpty() {
       return this.bypassReason.trim().length === 0;
     },
@@ -86,11 +91,11 @@ export default {
       return this.isWarnMode ? WARN_MODE_BYPASS_REASONS : POLICY_EXCEPTIONS_BYPASS_REASONS;
     },
     isValid() {
-      return (
-        this.selectedPolicies.length > 0 &&
-        this.selectedReasons.length > 0 &&
-        !this.isBypassReasonEmpty
-      );
+      const validReasons = this.isWarnMode
+        ? this.selectedReasons.length > 0
+        : this.selectedReason !== '';
+
+      return this.selectedPolicies.length > 0 && validReasons && !this.isBypassReasonEmpty;
     },
     nextSteps() {
       return this.showModeSelection ? INITIAL_STATE_NEXT_STEPS : WARN_MODE_NEXT_STEPS;
@@ -111,15 +116,31 @@ export default {
       });
     },
     selectedReasonText() {
-      return getSelectedOptionsText({
-        options: this.bypassReasonItems,
-        selected: this.selectedReasons,
-        placeholder: s__('SecurityOrchestration|Select bypass reasons'),
-        maxOptionsShown: 4,
-      });
+      const placeholder = s__('SecurityOrchestration|Select bypass reasons');
+
+      if (this.isWarnMode) {
+        return getSelectedOptionsText({
+          options: this.bypassReasonItems,
+          selected: this.selectedReasons,
+          placeholder,
+          maxOptionsShown: 4,
+        });
+      }
+
+      return (
+        POLICY_EXCEPTIONS_BYPASS_REASONS.find(({ value }) => value === this.selectedReason)?.text ||
+        placeholder
+      );
     },
     bypassReasonState() {
       return !(this.bypassReasonTextAreaDirty && this.isBypassReasonEmpty);
+    },
+    commonVariables() {
+      return {
+        iid: this.mr.iid.toString(),
+        projectPath: this.mr.targetProjectFullPath,
+        securityPolicyIds: this.selectedPolicies,
+      };
     },
   },
   methods: {
@@ -127,20 +148,9 @@ export default {
       this.loading = true;
 
       try {
-        const {
-          data: {
-            dismissPolicyViolations: { errors },
-          },
-        } = await this.$apollo.mutate({
-          mutation: bypassSecurityPolicyViolations,
-          variables: {
-            comment: this.bypassReason,
-            dismissalTypes: this.selectedReasons,
-            iid: this.mr.iid.toString(),
-            projectPath: this.mr.targetProjectFullPath,
-            securityPolicyIds: this.selectedPolicies,
-          },
-        });
+        const errors = this.isWarnMode
+          ? await this.handleBypassWarnMode()
+          : await this.handleBypassPolicyException();
 
         if (errors?.length) {
           throw Error(errors.join(','));
@@ -154,6 +164,37 @@ export default {
         this.loading = false;
       }
     },
+    async handleBypassPolicyException() {
+      const {
+        data: {
+          mergeRequestBypassSecurityPolicy: { errors },
+        },
+      } = await this.$apollo.mutate({
+        mutation: bypassSecurityPolicyExceptionViolations,
+        variables: {
+          ...this.commonVariables,
+          reason: `${this.selectedReason}:${this.bypassReason}`,
+        },
+      });
+
+      return errors;
+    },
+    async handleBypassWarnMode() {
+      const {
+        data: {
+          dismissPolicyViolations: { errors },
+        },
+      } = await this.$apollo.mutate({
+        mutation: bypassSecurityPolicyViolations,
+        variables: {
+          ...this.commonVariables,
+          comment: this.bypassReason,
+          dismissalTypes: this.selectedReasons,
+        },
+      });
+
+      return errors;
+    },
     handleClose() {
       this.$emit('close');
     },
@@ -166,6 +207,10 @@ export default {
     updateBypassReason(value) {
       this.bypassReasonTextAreaDirty = true;
       this.bypassReason = value;
+    },
+    handleSelectReason(value) {
+      const key = this.isWarnMode ? 'selectedReasons' : 'selectedReason';
+      this.handleSelect(key, value);
     },
   },
 };
@@ -192,6 +237,7 @@ export default {
 
     <gl-alert
       v-if="showErrorAlert"
+      data-testid="error-message"
       class="gl-mb-5"
       variant="danger"
       :dismissible="false"
@@ -232,13 +278,13 @@ export default {
         class="gl-mb-4"
       >
         <gl-collapsible-listbox
-          :selected="selectedReasons"
+          :selected="selected"
           block
-          multiple
+          :multiple="isWarnMode"
           :items="bypassReasonItems"
           :toggle-text="selectedReasonText"
           data-testid="reason-selector"
-          @select="handleSelect('selectedReasons', $event)"
+          @select="handleSelectReason"
         />
       </gl-form-group>
 
