@@ -96,11 +96,8 @@ describe('SecurityScanRuleBuilder', () => {
   });
 
   describe('initial rendering', () => {
-    beforeEach(() => {
-      factory();
-    });
-
     it('renders one field for each attribute of the rule', () => {
+      factory();
       expect(findBranches().exists()).toBe(true);
       expect(findGroupLevelBranches().exists()).toBe(false);
       expect(findScanners().exists()).toBe(true);
@@ -112,11 +109,17 @@ describe('SecurityScanRuleBuilder', () => {
     });
 
     it('includes select all option to all PolicyRuleMultiSelect', () => {
+      factory();
       const props = findAllPolicyRuleMultiSelect().wrappers.map((w) => w.props());
 
       expect(props).toEqual(
         expect.arrayContaining([expect.objectContaining({ includeSelectAll: true })]),
       );
+    });
+
+    it('passes props to scan type select component', () => {
+      factory({ disabledRuleTypes: ['test'] });
+      expect(findScanTypeSelect().props('disabledRuleTypes')).toEqual(['test']);
     });
   });
 

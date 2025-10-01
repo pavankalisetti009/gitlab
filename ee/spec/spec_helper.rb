@@ -61,6 +61,7 @@ RSpec.configure do |config|
 
   config.define_derived_metadata do |metadata|
     metadata[:do_not_stub_snowplow_by_default] = true if metadata.has_key?(:snowplow_micro)
+    metadata[:do_not_stub_snowplow_by_default] = true if metadata.has_key?(:experiment_tracking)
   end
 
   config.before(:example, :snowplow_micro) do

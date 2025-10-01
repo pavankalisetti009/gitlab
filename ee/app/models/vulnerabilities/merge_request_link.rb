@@ -33,5 +33,9 @@ module Vulnerabilities
     def self.limit_exceeded_for_vulnerability?(vulnerability)
       count_for_vulnerability(vulnerability) >= MAX_MERGE_REQUEST_LINKS_PER_VULNERABILITY
     end
+
+    def self.find_by_vulnerability_and_merge_request(vulnerability, merge_request)
+      find_by(vulnerability: vulnerability, merge_request: merge_request)
+    end
   end
 end

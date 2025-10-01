@@ -72,17 +72,15 @@ describe('LicenseScanRuleBuilder', () => {
   const findAlert = () => wrapper.findComponent(GlAlert);
 
   describe('initial rendering', () => {
-    beforeEach(() => {
-      factory();
-    });
-
     it('renders one field for each attribute of the rule', () => {
+      factory();
       expect(findBranches().exists()).toBe(true);
       expect(findGroupLevelBranches().exists()).toBe(false);
       expect(findStatusFilter().exists()).toBe(true);
     });
 
     it('includes select all option to all PolicyRuleMultiSelect', () => {
+      factory();
       expect(findPolicyRuleMultiSelect().props()).toEqual(
         expect.objectContaining({ includeSelectAll: true }),
       );
@@ -93,6 +91,11 @@ describe('LicenseScanRuleBuilder', () => {
       findScanTypeSelect().vm.$emit('select', SCAN_FINDING);
 
       expect(wrapper.emitted('set-scan-type')).toEqual([[getDefaultRule(SCAN_FINDING)]]);
+    });
+
+    it('passes props to scan type select component', () => {
+      factory({ props: { disabledRuleTypes: ['test'] } });
+      expect(findScanTypeSelect().props('disabledRuleTypes')).toEqual(['test']);
     });
   });
 

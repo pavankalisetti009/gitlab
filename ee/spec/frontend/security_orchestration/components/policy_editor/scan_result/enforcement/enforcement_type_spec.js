@@ -40,8 +40,8 @@ describe('EnforcementType', () => {
     it('renders the radio group with correct options and checked value', () => {
       expect(findRadioGroup().exists()).toBe(true);
       expect(findRadioGroup().props('options')).toEqual([
-        { value: 'warn', text: 'Warn mode' },
-        { value: 'enforce', text: 'Strictly enforced' },
+        { disabled: false, text: 'Warn mode', value: 'warn' },
+        { disabled: false, text: 'Strictly enforced', value: 'enforce' },
       ]);
       expect(findRadioGroup().attributes('checked')).toBe('enforce');
     });
@@ -65,6 +65,17 @@ describe('EnforcementType', () => {
     });
   });
 
+  describe('disabled prop', () => {
+    it('disables options', () => {
+      factory({ disabledEnforcementOptions: ['warn'] });
+
+      expect(findRadioGroup().props('options')).toEqual([
+        { disabled: true, text: 'Warn mode', value: 'warn' },
+        { disabled: false, text: 'Strictly enforced', value: 'enforce' },
+      ]);
+    });
+  });
+
   describe('alert display', () => {
     it('shows alert when isWarnMode is true', () => {
       factory({ isWarnMode: true });
@@ -72,7 +83,7 @@ describe('EnforcementType', () => {
       const alert = findAlert();
       expect(findAlert().exists()).toBe(true);
       expect(alert.text()).toBe(
-        'In warn mode, project settings are checked and violations are reported, but fixes for the violations are not mandatory. Learn more',
+        'In warn mode, project settings are checked and violations are reported, but fixes for the violations are not mandatory. License scanning is not supported in warn mode. Learn more',
       );
       const link = findLink();
       const expectedPath = helpPagePath(
@@ -101,8 +112,8 @@ describe('EnforcementType', () => {
 
       const alert = findAlert();
       expect(findAlert().exists()).toBe(true);
-      expect(alert.text()).toBe(
-        'In warn mode, project settings are checked and violations are reported, but fixes for the violations are not mandatory. Learn more',
+      expect(alert.text()).toContain(
+        'In warn mode, project settings are checked and violations are reported',
       );
     });
 

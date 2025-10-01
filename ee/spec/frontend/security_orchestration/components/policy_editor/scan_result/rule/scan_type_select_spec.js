@@ -34,6 +34,16 @@ describe('ScanTypeSelect', () => {
     ).toStrictEqual([ANY_MERGE_REQUEST, SCAN_FINDING, LICENSE_FINDING]);
   });
 
+  it('does not render disabled options', () => {
+    createComponent({ disabledRuleTypes: [LICENSE_FINDING] });
+    expect(findListBoxItems()).toHaveLength(2);
+    expect(
+      findListBox()
+        .props('items')
+        .map(({ value }) => value),
+    ).toStrictEqual([ANY_MERGE_REQUEST, SCAN_FINDING]);
+  });
+
   it('can select scan type', () => {
     createComponent();
     findListBox().vm.$emit('select', SCAN_FINDING);

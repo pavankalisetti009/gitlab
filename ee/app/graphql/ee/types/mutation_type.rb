@@ -121,6 +121,8 @@ module EE
         mount_mutation ::Mutations::Vulnerabilities::CreateExternalIssueLink
         mount_mutation ::Mutations::Vulnerabilities::DestroyExternalIssueLink
         mount_mutation ::Mutations::Vulnerabilities::LinkMergeRequest, scopes: [:api, :ai_workflows]
+        mount_mutation ::Mutations::Vulnerabilities::UnlinkMergeRequest, scopes: [:api, :ai_workflows],
+          experiment: { milestone: '18.5' }
         mount_mutation ::Mutations::Vulnerabilities::BulkSeverityOverride, scopes: [:api, :read_api, :ai_workflows]
         mount_mutation ::Mutations::Vulnerabilities::CreateIssue, experiment: { milestone: '17.9' }
         mount_mutation ::Mutations::Vulnerabilities::RefreshVulnerabilityFindingTokenStatus

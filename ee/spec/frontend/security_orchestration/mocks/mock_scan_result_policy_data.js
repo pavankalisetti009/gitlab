@@ -155,6 +155,11 @@ export const mockDefaultBranchesScanResultObject = {
   },
 };
 
+export const mockWarnTypeScanResultObject = {
+  ...mockDefaultBranchesScanResultManifest,
+  enforcement_type: 'warn',
+};
+
 export const mockDefaultBranchesScanResultObjectWithoutBotAction = {
   ...mockDefaultBranchesScanResultObject,
   actions: [
