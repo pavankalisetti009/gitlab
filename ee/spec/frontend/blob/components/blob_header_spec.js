@@ -84,7 +84,6 @@ describe('EE Blob Header', () => {
 
       const duoWorkflowAction = findDuoWorkflowAction();
       expect(duoWorkflowAction.props()).toMatchObject({
-        title: 'Convert to GitLab CI/CD',
         hoverMessage: 'Convert Jenkins to GitLab CI/CD using Duo',
         goal: 'test/Jenkinsfile',
         workflowDefinition: 'convert_to_gitlab_ci',
@@ -100,6 +99,7 @@ describe('EE Blob Header', () => {
           },
         ],
       });
+      expect(duoWorkflowAction.text()).toBe('Convert to GitLab CI/CD');
     });
 
     it('does not render DuoWorkflowAction when showDuoWorkflowAction is false', () => {

@@ -173,6 +173,16 @@ describe('EE - Pipelines Table', () => {
           expect(findDuoWorkflowAction().exists()).toBe(true);
         });
 
+        it('should render tables widths', () => {
+          expect(wrapper.findAll('col').wrappers.map((e) => e.classes())).toEqual([
+            ['gl-w-3/20'],
+            ['gl-w-5/20'],
+            ['gl-w-3/20'],
+            ['gl-w-4/20'],
+            ['gl-w-5/20'],
+          ]);
+        });
+
         it('passes correct props to DuoWorkflowAction with source branch from merge request', () => {
           expect(findDuoWorkflowAction().props()).toMatchObject({
             projectPath: 'frontend-fixtures/pipelines-project',
