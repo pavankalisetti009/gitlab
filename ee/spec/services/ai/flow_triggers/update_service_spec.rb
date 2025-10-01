@@ -82,8 +82,8 @@ RSpec.describe Ai::FlowTriggers::UpdateService, feature_category: :agent_foundat
     end
 
     context 'when updating catalog item configuration' do
-      let_it_be(:item_consumer1) { create(:ai_catalog_item_consumer, project: project) }
-      let_it_be(:item_consumer2) { create(:ai_catalog_item_consumer, project: project) }
+      let_it_be(:item_consumer1) { create(:ai_catalog_item_consumer, :for_flow, project: project) }
+      let_it_be(:item_consumer2) { create(:ai_catalog_item_consumer, :for_flow, project: project) }
 
       context 'when switching from config_path to catalog item' do
         let(:trigger) do
