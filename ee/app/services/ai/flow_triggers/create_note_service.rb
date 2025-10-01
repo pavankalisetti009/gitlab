@@ -15,11 +15,11 @@ module Ai
       def execute(params)
         note = create_note
 
-        response = yield(params.merge(discussion_id: note.discussion_id))
+        response, workflow = yield(params.merge(discussion_id: note.discussion_id))
 
-        update_note(note, response)
+        update_note(note, response, workflow)
 
-        response
+        [response, workflow]
       end
 
       private
@@ -36,11 +36,11 @@ module Ai
         ).execute
       end
 
-      def update_note(note, response)
+      def update_note(note, response, workflow)
         updated_message =
           if response.success?
             link_start = format('<a href="%{url}" target="_blank" rel="noopener noreferrer">'.html_safe,
-              url: response.payload.logs_url)
+              url: "#{Gitlab::Routing.url_helpers.project_automate_agent_sessions_url(project)}/#{workflow.id}")
             format(s_(
               "AiFlowTriggers|✅ Agent has started. You can view the progress %{link_start}here%{link_end}."
             ), link_start: link_start, link_end: '</a>'.html_safe)

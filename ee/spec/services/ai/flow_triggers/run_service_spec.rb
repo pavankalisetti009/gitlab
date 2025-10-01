@@ -230,7 +230,6 @@ RSpec.describe Ai::FlowTriggers::RunService, feature_category: :agent_foundation
           expect(variables[:AI_FLOW_INPUT]).to eq('test input')
           expect(variables[:AI_FLOW_EVENT]).to eq('mention')
           expect(variables[:AI_FLOW_DISCUSSION_ID]).to eq(existing_note.discussion_id)
-          expect(variables[:AI_FLOW_ID]).to be_present
 
           expect(variables[:AI_FLOW_AI_GATEWAY_TOKEN]).to eq('test-token-123')
           expect(variables[:AI_FLOW_AI_GATEWAY_HEADERS]).to eq(
@@ -371,7 +370,6 @@ RSpec.describe Ai::FlowTriggers::RunService, feature_category: :agent_foundation
           expect(variables[:AI_FLOW_INPUT]).to eq('test input')
           expect(variables[:AI_FLOW_EVENT]).to eq('mention')
           expect(variables[:AI_FLOW_DISCUSSION_ID]).to eq(existing_note.discussion_id)
-          expect(variables[:AI_FLOW_ID]).to be_present
 
           # These should not be present
           expect(variables).not_to have_key(:AI_FLOW_AI_GATEWAY_TOKEN)
@@ -417,7 +415,6 @@ RSpec.describe Ai::FlowTriggers::RunService, feature_category: :agent_foundation
           expect(variables[:AI_FLOW_INPUT]).to eq('test input')
           expect(variables[:AI_FLOW_EVENT]).to eq('mention')
           expect(variables[:AI_FLOW_DISCUSSION_ID]).to eq(existing_note.discussion_id)
-          expect(variables[:AI_FLOW_ID]).to be_present
 
           # These should not be present
           expect(variables).not_to have_key(:AI_FLOW_AI_GATEWAY_TOKEN)
@@ -450,8 +447,8 @@ RSpec.describe Ai::FlowTriggers::RunService, feature_category: :agent_foundation
             expect(variables[:AI_FLOW_INPUT]).to eq('test input')
             expect(variables[:AI_FLOW_EVENT]).to eq('mention')
             expect(variables[:AI_FLOW_DISCUSSION_ID]).to eq(existing_note.discussion_id)
-            expect(variables[:AI_FLOW_ID]).to be_present
             expect(variables[:AI_FLOW_GITLAB_TOKEN]).to be_nil
+
             original_method.call(**kwargs)
           end
 
@@ -483,8 +480,8 @@ RSpec.describe Ai::FlowTriggers::RunService, feature_category: :agent_foundation
               expect(variables[:AI_FLOW_INPUT]).to eq('test input')
               expect(variables[:AI_FLOW_EVENT]).to eq('mention')
               expect(variables[:AI_FLOW_DISCUSSION_ID]).to eq(existing_note.discussion_id)
-              expect(variables[:AI_FLOW_ID]).to be_present
               expect(variables[:AI_FLOW_GITLAB_TOKEN]).to be_nil
+
               original_method.call(**kwargs)
             end
 
@@ -506,8 +503,8 @@ RSpec.describe Ai::FlowTriggers::RunService, feature_category: :agent_foundation
             expect(variables[:AI_FLOW_INPUT]).to eq('test input')
             expect(variables[:AI_FLOW_EVENT]).to eq('mention')
             expect(variables[:AI_FLOW_DISCUSSION_ID]).to eq(existing_note.discussion_id)
-            expect(variables[:AI_FLOW_ID]).to be_present
             expect(variables[:AI_FLOW_GITLAB_TOKEN]).to be_present
+
             original_method.call(**kwargs)
           end
 
@@ -540,8 +537,8 @@ RSpec.describe Ai::FlowTriggers::RunService, feature_category: :agent_foundation
 
       expect(Note.last.note).to include('✅ Agent has started. You can view the progress')
 
-      logs_url = ::Ci::Workloads::Workload.last.logs_url
-      expect(Note.last.note).to include(logs_url)
+      workflow = ::Ai::DuoWorkflows::Workflow.last
+      expect(Note.last.note).to match(/automate.agent.sessions.#{workflow.id}/)
     end
 
     it 'updates workflow status to running initially and then to start on success' do
@@ -660,6 +657,108 @@ RSpec.describe Ai::FlowTriggers::RunService, feature_category: :agent_foundation
           expect(response).to be_error
           expect(response.message).to eq('invalid or missing flow definition')
         end.to change { ::Ai::DuoWorkflows::Workflow.count }.by(1)
+      end
+    end
+
+    context 'when flow trigger has ai_catalog_item_consumer' do
+      let_it_be(:ai_catalog_item) { create(:ai_catalog_item) }
+      let_it_be(:ai_catalog_item_consumer) do
+        create(:ai_catalog_item_consumer,
+          item: ai_catalog_item, project: project, pinned_version_prefix: nil)
+      end
+
+      let_it_be(:flow_trigger_with_catalog) do
+        create(:ai_flow_trigger,
+          project: project,
+          user: service_account,
+          config_path: nil,
+          ai_catalog_item_consumer: ai_catalog_item_consumer)
+      end
+
+      let(:catalog_workflow) { create(:duo_workflows_workflow, project: project, user: current_user) }
+      let(:catalog_execute_response) do
+        ServiceResponse.success(payload: { workflow: catalog_workflow })
+      end
+
+      subject(:service) do
+        described_class.new(
+          project: project,
+          current_user: current_user,
+          resource: resource,
+          flow_trigger: flow_trigger_with_catalog
+        )
+      end
+
+      before do
+        allow_next_instance_of(::Ai::Catalog::Flows::ExecuteService) do |instance|
+          allow(instance).to receive(:execute).and_return(catalog_execute_response)
+        end
+      end
+
+      it 'calls Ai::Catalog::Flows::ExecuteService with correct parameters' do
+        expect(::Ai::Catalog::Flows::ExecuteService).to receive(:new).with(
+          project: project,
+          current_user: current_user,
+          params: {
+            flow: ai_catalog_item,
+            flow_version: ai_catalog_item.latest_version,
+            event_type: 'mention',
+            execute_workflow: true
+          }
+        ).and_call_original
+
+        service.execute(params)
+      end
+
+      it 'creates a new workflow' do
+        expect { service.execute(params) }.to change { ::Ai::DuoWorkflows::Workflow.count }
+
+        response = service.execute(params)
+
+        expect(response).to be_success
+      end
+
+      it 'does not create workload or workload association' do
+        expect { service.execute(params) }.not_to change { ::Ci::Workloads::Workload.count }
+        expect { service.execute(params) }.not_to change { ::Ai::DuoWorkflows::WorkflowsWorkload.count }
+      end
+
+      it 'creates appropriate notes with catalog workflow' do
+        expect(::Ai::DuoWorkflows::UpdateWorkflowStatusService).to receive(:new).with(
+          workflow: catalog_workflow,
+          status_event: "start",
+          current_user: current_user
+        ).and_call_original
+
+        expect(Note.count).to eq(1)
+
+        response = service.execute(params)
+
+        expect(response).to be_success
+        expect(Note.count).to eq(2)
+
+        expect(Note.last.note).to include('✅ Agent has started. You can view the progress')
+        expect(Note.last.note).to match(/automate.agent.sessions.#{catalog_workflow.id}/)
+      end
+
+      context 'when catalog execute service fails' do
+        let(:catalog_execute_error_response) do
+          ServiceResponse.error(message: 'Catalog execution failed')
+        end
+
+        before do
+          allow_next_instance_of(::Ai::Catalog::Flows::ExecuteService) do |instance|
+            allow(instance).to receive(:execute).and_return(catalog_execute_error_response)
+          end
+        end
+
+        it 'returns error response' do
+          expect(::Ai::DuoWorkflows::UpdateWorkflowStatusService).not_to receive(:new)
+
+          response = service.execute(params)
+          expect(response).to be_error
+          expect(response.message).to eq('Catalog execution failed')
+        end
       end
     end
   end

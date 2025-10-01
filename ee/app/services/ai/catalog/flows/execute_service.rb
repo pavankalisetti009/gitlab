@@ -6,10 +6,13 @@ module Ai
       class ExecuteService < Ai::Catalog::BaseService
         include Gitlab::Utils::StrongMemoize
 
+        DEFAULT_EVENT_TYPE = 'manual'
+
         def initialize(project:, current_user:, params:)
           @flow = params[:flow]
           @flow_version = params[:flow_version]
           @execute_workflow = params[:execute_workflow]
+          @event_type = params[:event_type] || DEFAULT_EVENT_TYPE
           super
         end
 
@@ -26,7 +29,7 @@ module Ai
           if execution_result.success?
             track_ai_item_events(
               'trigger_ai_catalog_item',
-              { label: flow.item_type, property: 'manual', value: flow.id }
+              { label: flow.item_type, property: event_type, value: flow.id }
             )
           end
 
@@ -35,7 +38,7 @@ module Ai
 
         private
 
-        attr_reader :flow, :flow_version, :execute_workflow
+        attr_reader :flow, :flow_version, :event_type, :execute_workflow
 
         def validate
           return error('Flow is required') unless flow && flow.flow?

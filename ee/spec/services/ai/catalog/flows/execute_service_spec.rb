@@ -209,6 +209,31 @@ RSpec.describe Ai::Catalog::Flows::ExecuteService, :aggregate_failures, feature_
           )
       end
 
+      context 'when catalog item flow is triggered by a different event' do
+        let(:service_params) do
+          super().merge(event_type: 'mention')
+        end
+
+        it 'triggers trigger_ai_catalog_item with the event', :clean_gitlab_redis_shared_state do
+          expect { execute }
+            .to trigger_internal_events('trigger_ai_catalog_item')
+            .with(
+              user: current_user,
+              project: project,
+              additional_properties: {
+                label: flow.item_type,
+                property: 'mention',
+                value: flow.id
+              }
+            )
+            .and increment_usage_metrics(
+              'counts.count_total_trigger_ai_catalog_item_weekly',
+              'counts.count_total_trigger_ai_catalog_item_monthly',
+              'counts.count_total_trigger_ai_catalog_item'
+            )
+        end
+      end
+
       it_behaves_like 'creates CI pipeline for Duo Workflow execution' do
         subject { execute }
       end
