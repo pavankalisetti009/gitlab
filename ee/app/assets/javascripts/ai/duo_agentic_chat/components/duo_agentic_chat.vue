@@ -6,6 +6,7 @@ import { GlToggle } from '@gitlab/ui';
 import { parseDocument } from 'yaml';
 import getUserWorkflows from 'ee/ai/graphql/get_user_workflow.query.graphql';
 import getConfiguredAgents from 'ee/ai/graphql/get_configured_agents.query.graphql';
+import getAgentFlowConfig from 'ee/ai/graphql/get_agent_flow_config.query.graphql';
 import { renderGFM } from '~/behaviors/markdown/render_gfm';
 import { getCookie } from '~/lib/utils/common_utils';
 import { getStorageValue, saveStorageValue } from '~/lib/utils/local_storage';
@@ -173,6 +174,18 @@ export default {
         this.onError(err);
       },
     },
+    agentConfig: {
+      query: getAgentFlowConfig,
+      variables() {
+        return { agentVersionId: this.aiCatalogItemVersionId };
+      },
+      skip() {
+        return !this.aiCatalogItemVersionId;
+      },
+      update(data) {
+        return data?.aiCatalogAgentFlowConfig;
+      },
+    },
   },
   data() {
     const currentWorkflowRecord = getStorageValue(DUO_CURRENT_WORKFLOW_STORAGE_KEY);
@@ -182,6 +195,7 @@ export default {
       : currentWorkflowDefaultRecord;
 
     return {
+      agentConfig: null,
       duoChatGlobalState,
       width: 550,
       height: window.innerHeight,
@@ -204,7 +218,6 @@ export default {
       chatMessageHistory: [],
       selectedModel: null,
       catalogAgents: [],
-      flowConfig: '',
       aiCatalogItemVersionId: '',
       agentDeletedError: '',
       isChatAvailable: true,
@@ -423,8 +436,8 @@ export default {
         startRequest.startRequest.additionalContext = additionalContext;
       }
 
-      if (this.flowConfig) {
-        startRequest.startRequest.flowConfig = parseDocument(this.flowConfig);
+      if (this.agentConfig) {
+        startRequest.startRequest.flowConfig = parseDocument(this.agentConfig);
         startRequest.startRequest.flowConfigSchemaVersion = 'experimental';
       }
 
@@ -487,13 +500,6 @@ export default {
         this.setLoading(true);
       }
 
-      if (this.aiCatalogItemVersionId && !this.flowConfig) {
-        const config = await ApolloUtils.getAgentFlowConfig(
-          this.$apollo,
-          this.aiCatalogItemVersionId,
-        );
-        this.flowConfig = config;
-      }
       if (!this.workflowId) {
         try {
           const { workflowId, threadId } = await ApolloUtils.createWorkflow(this.$apollo, {
@@ -583,11 +589,6 @@ export default {
 
         this.workflowStatus = parsedWorkflowData?.workflowStatus;
         this.aiCatalogItemVersionId = workflow?.aiCatalogItemVersionId;
-
-        if (!this.aiCatalogItemVersionId) {
-          this.flowConfig = '';
-        }
-
         this.chatMessageHistory = messages;
       } catch (err) {
         this.onError(err);
@@ -631,9 +632,7 @@ export default {
 
       if (agent?.id) {
         this.aiCatalogItemVersionId = agent.versions.nodes.find(({ released }) => released)?.id;
-        this.flowConfig = ''; // Clear cached flow config when switching agents
       } else {
-        this.flowConfig = '';
         this.aiCatalogItemVersionId = '';
       }
     },
