@@ -5,7 +5,7 @@ module Resolvers
     class VulnerabilitiesOverTimeResolver < VulnerabilitiesBaseResolver
       include Gitlab::Graphql::Authorize::AuthorizeResource
 
-      MAX_DATE_RANGE_DAYS = 1.year.in_days.floor.freeze
+      MAX_DATE_RANGE_DAYS = 31
 
       type Types::Security::VulnerabilitiesOverTimeType.connection_type, null: true
 
@@ -17,7 +17,8 @@ module Resolvers
 
       argument :end_date, GraphQL::Types::ISO8601Date,
         required: true,
-        description: 'End date for the vulnerability metrics time range.'
+        description: 'End date for the vulnerability metrics time range. ' \
+          'The end date should be within 31 days from the start date.'
 
       argument :severity, [Types::VulnerabilitySeverityEnum],
         required: false,

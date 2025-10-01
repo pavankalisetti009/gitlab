@@ -1,7 +1,10 @@
-%div{ class: wrapper_class }
-  = render Pajamas::AlertComponent.new(variant: variant, dismissible: dismissible, alert_options: { class: 'js-unlimited-members-during-trial-alert', data: alert_data }, title: alert_attributes[:title], close_button_options: { data: close_button_data }) do |c|
-    - c.with_body do
-      = alert_attributes[:body]
-    - c.with_actions do
-      = primary_cta
-      = secondary_cta
+= render Users::GroupDismissibleAlertComponent.new(alert_options: { data: { testid: 'unlimited-members-during-trial-alert' } },
+  dismiss_options: { user: user, group: namespace, feature_id: 'unlimited_members_during_trial_alert' },
+  wrapper_options: { class: wrapper_class },
+  title: s_('UnlimitedMembersDuringTrialAlert|Get the most out of your trial with space for more members'),
+  close_button_options: { data: { testid: 'hide-unlimited-members-during-trial-alert' } }) do |c|
+  - c.with_body do
+    = body_text
+  - c.with_actions do
+    = primary_cta
+    = secondary_cta

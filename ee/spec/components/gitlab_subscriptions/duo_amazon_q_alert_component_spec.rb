@@ -13,10 +13,6 @@ RSpec.describe GitlabSubscriptions::DuoAmazonQAlertComponent, feature_category: 
   before do
     stub_saas_features(gitlab_com_subscriptions: gitlab_com_subscriptions_enabled)
     allow(GitlabSubscriptions::DuoAmazonQ).to receive(:any_add_on_purchase).and_return(add_on_purchase)
-    allow(user)
-      .to receive(:dismissed_callout?).with(
-        feature_name: described_class::CALLOUT_FEATURE_NAME
-      ).and_return(dismissed_callout?)
   end
 
   context 'when alert renders' do
@@ -60,7 +56,18 @@ RSpec.describe GitlabSubscriptions::DuoAmazonQAlertComponent, feature_category: 
     end
 
     context 'when user has dismissed the alert' do
-      let(:dismissed_callout?) { true }
+      let(:user) do
+        build_stubbed(
+          :user,
+          callouts: [
+            build_stubbed(
+              :callout,
+              feature_name: 'duo_amazon_q_alert',
+              dismissed_at: 1.day.ago
+            )
+          ]
+        )
+      end
 
       it { is_expected.not_to have_content(s_('AmazonQ|GitLab Duo with Amazon Q')) }
     end

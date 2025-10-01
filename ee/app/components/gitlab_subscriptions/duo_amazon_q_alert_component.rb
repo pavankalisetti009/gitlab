@@ -4,8 +4,6 @@ module GitlabSubscriptions
   class DuoAmazonQAlertComponent < ViewComponent::Base
     include Gitlab::Utils::StrongMemoize
 
-    CALLOUT_FEATURE_NAME = 'duo_amazon_q_alert'
-
     def initialize(user:)
       @user = user
     end
@@ -15,7 +13,7 @@ module GitlabSubscriptions
     attr_reader :user
 
     def render?
-      self_managed_instance? && add_on_purchase.present? && !user_dismissed_alert?
+      self_managed_instance? && add_on_purchase.present?
     end
 
     def self_managed_instance?
@@ -26,10 +24,6 @@ module GitlabSubscriptions
       GitlabSubscriptions::DuoAmazonQ.any_add_on_purchase
     end
     strong_memoize_attr :add_on_purchase
-
-    def user_dismissed_alert?
-      user.dismissed_callout?(feature_name: CALLOUT_FEATURE_NAME)
-    end
 
     def variant
       case days_to_expiration
@@ -52,17 +46,6 @@ module GitlabSubscriptions
       else
         s_('AmazonQ|Your GitLab Duo with Amazon Q subscription has ended')
       end
-    end
-
-    def alert_options
-      {
-        class: 'js-persistent-callout gl-mb-5',
-        data: {
-          feature_id: CALLOUT_FEATURE_NAME,
-          dismiss_endpoint: Rails.application.routes.url_helpers.callouts_path,
-          testid: 'duo-amazon-q-alert'
-        }
-      }
     end
 
     def days_to_expiration
