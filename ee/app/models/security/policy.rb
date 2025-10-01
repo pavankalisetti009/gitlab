@@ -85,7 +85,8 @@ module Security
     end
 
     scope :with_bypass_settings, -> do
-      where("content->'bypass_settings' IS NOT NULL").where("content->'bypass_settings' <> ?", '{}')
+      where("#{table_name}.content->'bypass_settings' IS NOT NULL")
+        .where("#{table_name}.content->'bypass_settings' <> ?", '{}')
     end
 
     scope :with_warn_mode, -> { where("content->>'enforcement_type' = ?", ENFORCEMENT_TYPE_WARN) }
