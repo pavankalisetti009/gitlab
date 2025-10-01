@@ -42379,6 +42379,7 @@ Returns [`Blame`](#blame).
 | Name | Type | Description |
 | ---- | ---- | ----------- |
 | <a id="repositoryblobblamefromline"></a>`fromLine` | [`Int`](#int) | Range starting from the line. Cannot be less than 1 or greater than `to_line`. |
+| <a id="repositoryblobblameignorerevs"></a>`ignoreRevs` | [`Boolean`](#boolean) | Enable to ignore revisions in the `.git-ignore-revs-file` when fetching the blame. |
 | <a id="repositoryblobblametoline"></a>`toLine` | [`Int`](#int) | Range ending on the line. Cannot be smaller than `from_line` or greater than `from_line` + 100. |
 
 ### `RepositoryCodeownerError`
