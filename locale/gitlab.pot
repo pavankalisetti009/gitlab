@@ -2687,6 +2687,9 @@ msgstr ""
 msgid "AICatalog|Name is required."
 msgstr ""
 
+msgid "AICatalog|New"
+msgstr ""
+
 msgid "AICatalog|New agent"
 msgstr ""
 
