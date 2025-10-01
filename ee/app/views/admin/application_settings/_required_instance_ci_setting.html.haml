@@ -12,7 +12,7 @@
       = gitlab_ui_form_for @application_setting, url: ci_cd_admin_application_settings_path(anchor: 'js-required-pipeline-settings'), html: { class: 'fieldset-form' } do |f|
         = form_errors(@application_setting)
 
-        .form-group.col-md-9.gl-p-0
+        .form-group.gl-col-md-9.gl-p-0
           = f.label :required_instance_ci_template, s_('AdminSettings|Select a CI/CD template')
           .js-ci-template-dropdown{ data: { gitlab_ci_ymls: gitlab_ci_ymls(@project).to_json, value: @application_setting.required_instance_ci_template } }
 

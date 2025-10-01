@@ -16,5 +16,5 @@
     &middot;
     = _('updated %{time_ago}').html_safe % { time_ago: time_ago_with_tooltip(epic.updated_at, placement: 'bottom') }
   - if epic.description.present?
-    .description.term.col-sm-10.gl-px-0.gl-text-sm
+    .description.term.gl-col-sm-10.gl-px-0.gl-text-sm
       = truncate(epic.description, length: 200)

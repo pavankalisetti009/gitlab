@@ -11,7 +11,7 @@
       = gitlab_ui_form_for @project, html: { multipart: true, class: "issue-settings-form" }, authenticity_token: true do |f|
         %input{ type: 'hidden', name: 'update_section', value: 'js-issue-settings' }
         .row
-          .form-group.col-md-9
+          .form-group.gl-col-md-9
             = f.label :issues_template, _('Default description template for issues'), class: 'gl-sr-only'
             = f.text_area :issues_template, class: "form-control gl-form-input", rows: 3, data: { testid: 'issue-template-field' }
             .gl-text-subtle
