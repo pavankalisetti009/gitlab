@@ -189,7 +189,12 @@ RSpec.describe Mutations::Ai::Catalog::Flow::Execute, :aggregate_failures, featu
         .to have_received(:new).with(
           project: flow_item.project,
           current_user: current_user,
-          params: { flow: flow_item, flow_version: latest_flow_version, execute_workflow: true }
+          params: {
+            flow: flow_item,
+            flow_version: latest_flow_version,
+            event_type: 'manual',
+            execute_workflow: true
+          }
         )
     end
   end
@@ -208,7 +213,12 @@ RSpec.describe Mutations::Ai::Catalog::Flow::Execute, :aggregate_failures, featu
         .with(
           project: flow_item.project,
           current_user: current_user,
-          params: { flow: flow_item, flow_version: flow_version, execute_workflow: true }
+          params: {
+            flow: flow_item,
+            flow_version: flow_version,
+            event_type: 'manual',
+            execute_workflow: true
+          }
         )
         .and_return(mock_service)
       allow(mock_service).to receive(:execute).and_return(service_result)
@@ -234,7 +244,12 @@ RSpec.describe Mutations::Ai::Catalog::Flow::Execute, :aggregate_failures, featu
         .with(
           project: flow_item.project,
           current_user: current_user,
-          params: { flow: flow_item, flow_version: flow_version, execute_workflow: true }
+          params: {
+            flow: flow_item,
+            flow_version: flow_version,
+            event_type: 'manual',
+            execute_workflow: true
+          }
         )
         .and_return(mock_service)
       allow(mock_service).to receive(:execute).and_return(service_result)

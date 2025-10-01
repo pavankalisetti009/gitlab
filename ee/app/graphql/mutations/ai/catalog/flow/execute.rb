@@ -36,7 +36,12 @@ module Mutations
             result = ::Ai::Catalog::Flows::ExecuteService.new(
               project: flow.project,
               current_user: current_user,
-              params: { flow: flow, flow_version: flow_version, execute_workflow: true }
+              params: {
+                flow: flow,
+                flow_version: flow_version,
+                event_type: 'manual',
+                execute_workflow: true
+              }
             ).execute
 
             {
