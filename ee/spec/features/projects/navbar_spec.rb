@@ -104,6 +104,40 @@ RSpec.describe 'Project navbar', :js, feature_category: :navigation do
       it_behaves_like 'verified navigation bar'
     end
 
+    context 'when Automate is available' do
+      before do
+        # Mock duo_workflow permissions for navbar tests
+        allow(user).to receive(:can?).and_call_original
+        allow(user).to receive(:can?).with(:duo_workflow, project).and_return(true)
+        allow(user).to receive(:can?).with(:manage_ai_flow_triggers, project).and_return(false)
+
+        # Mock the underlying requirements for duo_workflow permission
+        stub_feature_flags(duo_workflow: true)
+        allow(::Gitlab::Llm::StageCheck).to receive(:available?).and_return(false) # Default to false
+        allow(::Gitlab::Llm::StageCheck).to receive(:available?).with(project, :duo_workflow).and_return(true)
+        allow(::Gitlab::Llm::StageCheck).to receive(:available?).with(kind_of(ProjectPresenter),
+          :duo_workflow).and_return(true)
+        allow(user).to receive(:allowed_to_use?).and_return(false) # Default to false
+        allow(user).to receive(:allowed_to_use?).with(:duo_agent_platform).and_return(true)
+
+        insert_after_nav_item(
+          _('Plan'),
+          new_nav_item: {
+            nav_item: _('Automate'),
+            nav_sub_items: [
+              _('Agent sessions'),
+              s_('AICatalog|Agents'),
+              s_('AICatalog|Flows')
+            ]
+          }
+        )
+
+        visit project_path(project)
+      end
+
+      it_behaves_like 'verified navigation bar'
+    end
+
     context 'when security dashboard is available' do
       let(:secure_nav_item) do
         {
