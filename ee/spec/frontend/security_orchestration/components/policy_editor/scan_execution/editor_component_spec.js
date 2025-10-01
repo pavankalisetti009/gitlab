@@ -32,6 +32,7 @@ import {
   mockDastScanExecutionObject,
   mockInvalidActionScanExecutionObject,
   mockInvalidRuleScanExecutionObject,
+  mockScheduledTemplateScanExecutionObject,
 } from 'ee_jest/security_orchestration/mocks/mock_scan_execution_policy_data';
 
 import {
@@ -421,6 +422,14 @@ enabled: true`;
           });
           expect(findRuleStrategySelector().props('strategy')).toBe('any');
           expect(findPolicyEditorLayout().props('policy').rules).toStrictEqual(rules);
+        });
+
+        it('selects the pre-defined strategy for an existing policy', () => {
+          factoryWithExistingPolicy({
+            provide: { glFeatures },
+            policy: mockScheduledTemplateScanExecutionObject,
+          });
+          expect(findRuleStrategySelector().props('strategy')).toBe('scheduled');
         });
       });
 
