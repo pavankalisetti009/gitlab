@@ -19,6 +19,9 @@ module Ai
 
           prepare_item_to_update
           prepare_version_to_update
+
+          item.latest_released_version = item.latest_version if item.latest_version.released?
+
           save_item
 
           if item.saved_changes?

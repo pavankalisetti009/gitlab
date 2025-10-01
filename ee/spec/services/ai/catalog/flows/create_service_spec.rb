@@ -17,6 +17,7 @@ RSpec.describe Ai::Catalog::Flows::CreateService, feature_category: :workflow_ca
       name: 'Agent',
       description: 'Description',
       public: true,
+      release: true,
       steps: [
         { agent: agent }
       ]
@@ -75,9 +76,10 @@ RSpec.describe Ai::Catalog::Flows::CreateService, feature_category: :workflow_ca
           triggers: []
         }.stringify_keys
       )
+      expect(item.latest_released_version).to eq(item.latest_version)
     end
 
-    it 'trigger track_ai_item_events', :clean_gitlab_redis_shared_state do
+    it 'triggers create_ai_catalog_item', :clean_gitlab_redis_shared_state do
       expect { response }
        .to trigger_internal_events('create_ai_catalog_item')
        .with(user: user, project: project, additional_properties: { label: 'flow' })
@@ -86,6 +88,19 @@ RSpec.describe Ai::Catalog::Flows::CreateService, feature_category: :workflow_ca
          'redis_hll_counters.count_distinct_user_id_from_create_ai_catalog_item_monthly',
          'counts.count_total_create_ai_catalog_item'
        )
+    end
+
+    context 'when the version is not being released' do
+      let(:params) { super().merge(release: false) }
+
+      it 'creates a draft version' do
+        expect { response }.to change { Ai::Catalog::ItemVersion.count }
+
+        item = Ai::Catalog::Item.last
+
+        expect(item.latest_version).to be_draft
+        expect(item.latest_released_version).to be_nil
+      end
     end
 
     context 'when there is a validation issue' do

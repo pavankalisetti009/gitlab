@@ -28,7 +28,7 @@ module Ai
           item = Ai::Catalog::Item.new(item_params)
           item.build_new_version(version_params)
 
-          if item.save
+          if save_item(item)
             track_ai_item_events('create_ai_catalog_item', { label: item.item_type })
             return ServiceResponse.success(payload: { item: item })
           end
@@ -37,6 +37,16 @@ module Ai
         end
 
         private
+
+        def save_item(item)
+          Ai::Catalog::Item.transaction do
+            item.save!
+            item.update!(latest_released_version: item.latest_version) if item.latest_version.released?
+            true
+          end
+        rescue ActiveRecord::RecordInvalid
+          false
+        end
 
         def error_creating(item)
           error(item.errors.full_messages.presence || 'Failed to create agent')
