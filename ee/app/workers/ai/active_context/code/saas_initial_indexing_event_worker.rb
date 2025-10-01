@@ -27,7 +27,8 @@ module Ai
         private
 
         def process_in_batches!
-          duo_licenses = GitlabSubscriptions::AddOnPurchase.active.non_trial.for_duo_core_pro_or_enterprise
+          duo_licenses = GitlabSubscriptions::AddOnPurchase
+            .active.non_trial.for_duo_core_pro_or_enterprise.select_distinct_namespace_id
 
           total_count = 0
 
@@ -59,7 +60,7 @@ module Ai
             namespace = subscription.namespace
 
             next if Feature.disabled?(:active_context_saas_initial_indexing_namespace, namespace)
-            next unless namespace_has_duo_features_enabled?(namespace) && namespace.root?
+            next unless namespace_has_duo_features_enabled?(namespace)
 
             records << { namespace_id: namespace.id, connection_id: active_connection.id }
           end
