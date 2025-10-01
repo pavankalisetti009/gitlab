@@ -5,9 +5,9 @@
 - form = local_assigns.fetch(:form)
 
 .form-group.row
-  = form.label :label_ids, class: "col-12" do
+  = form.label :label_ids, class: "gl-col-12" do
     #{_('Weight')}
-  .col-12
+  .gl-col-12
     .issuable-form-select-holder
       - if issuable.weight
         = form.hidden_field :weight

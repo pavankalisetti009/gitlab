@@ -4,7 +4,7 @@
 = render "layouts/google_tag_manager_body"
 
 .row
-  .col-md-8.gl-flex.gl-flex-col
+  .gl-col-md-8.gl-flex.gl-flex-col
     %h1.gl-mt-0.gl-max-w-75
       = s_('InProductMarketing|Get Started with GitLab')
     %p.gl-text-lg.gl-max-w-75
@@ -47,7 +47,7 @@
           tracking_action: 'click_sign_in_from_registration_page',
           tracking_label: preregistration_tracking_label
 
-  .col-md-4.gl-flex-col.gl-mb-6.gl-items-center.gl-pr-8{ class: "@lg/panel:gl-flex" }
+  .gl-col-md-4.gl-flex-col.gl-mb-6.gl-items-center.gl-pr-8{ class: "@lg/panel:gl-flex" }
     %div
       - experiment(:premium_trial_positioning, actor: current_user) do |e|
         - e.control do
