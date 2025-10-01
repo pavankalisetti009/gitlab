@@ -59,15 +59,19 @@ namespace :gitlab do
               },
               {
                 "status" => "success",
-                "content" => "Reading files from repo...",
+                "content" => "Read file",
                 "timestamp" => timestamp,
-                "tool_info" => { name: 'read_file' },
+                "tool_info" => { name: 'read_file',
+                                 args: {
+                                   file_path:
+                                   'app/assets/very-long-path/that-wont-end/ohnopleasehelpmeIamgoingoffscreenaaaaaaaaaa'
+                                 } },
                 "message_type" => "tool",
                 "correlation_id" => nil
               },
               {
                 "status" => "success",
-                "content" => "Read issue #123",
+                "content" => "Read issue http://gdk.test:3000/gitlab-duo/test/-/issues/1",
                 "timestamp" => timestamp,
                 "tool_info" => { name: 'get_issue' },
                 "message_type" => "tool",
@@ -91,19 +95,38 @@ namespace :gitlab do
               },
               {
                 "status" => "success",
-                "content" => "I've successfully done all that you asked me and more! Please like and subscribe!",
                 "timestamp" => timestamp,
                 "tool_info" => nil,
                 "message_type" => "agent",
-                "correlation_id" => nil
+                "correlation_id" => nil,
+                "content" => <<~MARKDOWN
+                  I have successfully built comprehensive context around GitLab issue #569671 and identified the specific development tasks required.
+                  Here's the complete analysis:
+
+                  ## Issue Context
+
+                  **Title:** "Removed locked discussion banner on wikis in archived groups/projects"
+
+                  **Issue ID:** #569671
+
+                  **Epic:** Part of epic #18912 "Prevent write permissions when the group is archived"
+                MARKDOWN
               },
               {
                 "status" => "success",
-                "content" => "Summary of my task and other really cool insights.",
-                "timestamp" => timestamp,
-                "tool_info" => nil,
                 "message_type" => "workflow_end",
-                "correlation_id" => nil
+                "content" => <<~MARKDOWN
+                  Summary of my task and other really cool insights.
+                  # H1 title
+
+                  ## H2 title
+
+                  ## H3 Title
+
+                  This is some content.
+
+                  Also don't forget to check out the **bold** words. You can also use _italics_.
+                MARKDOWN
               }
             ],
             "last_human_input" => nil,
