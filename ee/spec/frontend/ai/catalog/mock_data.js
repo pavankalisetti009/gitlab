@@ -101,7 +101,6 @@ export const mockAgentVersions = {
       id: 'gid://gitlab/Ai::Catalog::ItemVersion/20',
       systemPrompt: 'sys',
       tools: { nodes: [], __typename: TYPENAME_AI_CATALOG_AGENT_TOOLS_CONNECTION },
-      userPrompt: 'user',
       versionName: '1.0.0',
       humanVersionName: 'v1.0.0',
       __typename: TYPENAME_AI_CATALOG_AGENT_VERSION,
@@ -132,7 +131,6 @@ export const mockAgentVersion = {
   versionName: '1.0.0',
   __typename: TYPENAME_AI_CATALOG_AGENT_VERSION,
   systemPrompt: 'The system prompt',
-  userPrompt: 'The user prompt',
   tools: {
     nodes: [],
     __typename: TYPENAME_AI_CATALOG_AGENT_TOOLS_CONNECTION,

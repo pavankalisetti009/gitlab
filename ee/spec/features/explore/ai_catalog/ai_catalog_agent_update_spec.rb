@@ -56,7 +56,6 @@ RSpec.describe 'AI Catalog', :js, feature_category: :workflow_catalog do
     find_by_testid('agent-form-input-name').set('Updated agent name')
     find_by_testid('agent-form-textarea-description').set('Updated agent description')
     find_by_testid('agent-form-textarea-system-prompt').set('Updated System prompt')
-    find_by_testid('agent-form-textarea-user-prompt').set('Updated User prompt')
 
     click_button 'Save changes'
 

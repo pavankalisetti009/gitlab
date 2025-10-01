@@ -35,7 +35,6 @@ export default {
         name: `${s__('AICatalog|Copy of')} ${this.agentName}`,
         description: this.aiCatalogAgent.description,
         systemPrompt: this.aiCatalogAgent.latestVersion?.systemPrompt,
-        userPrompt: this.aiCatalogAgent.latestVersion?.userPrompt,
         tools: this.aiCatalogAgent.latestVersion?.tools?.nodes.map((t) => t.id) || [],
         public: false,
       };

@@ -22,9 +22,6 @@ export default {
     systemPrompt() {
       return this.item.latestVersion?.systemPrompt;
     },
-    userPrompt() {
-      return this.item.latestVersion?.userPrompt;
-    },
     tools() {
       return this.item.latestVersion?.tools?.nodes.map((t) => t.title).join(', ');
     },
@@ -53,11 +50,6 @@ export default {
         <ai-catalog-item-field v-if="systemPrompt" :title="s__('AICatalog|System prompt')">
           <div class="gl-border gl-mb-3 gl-mt-2 gl-rounded-default gl-bg-default gl-p-3">
             <markdown fallback-on-error :value="systemPrompt" />
-          </div>
-        </ai-catalog-item-field>
-        <ai-catalog-item-field v-if="userPrompt" :title="s__('AICatalog|User prompt')">
-          <div class="gl-border gl-mb-3 gl-mt-2 gl-rounded-default gl-bg-default gl-p-3">
-            <markdown fallback-on-error :value="userPrompt" />
           </div>
         </ai-catalog-item-field>
       </form-section>

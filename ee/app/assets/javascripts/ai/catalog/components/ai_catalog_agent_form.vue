@@ -68,7 +68,6 @@ export default {
           name: '',
           description: '',
           systemPrompt: '',
-          userPrompt: '',
           public: false,
           release: true,
           tools: [],
@@ -176,18 +175,6 @@ export default {
             ),
           },
         },
-        userPrompt: {
-          label: s__('AICatalog|User prompt'),
-          validators: createFieldValidators({
-            requiredLabel: s__('AICatalog|User prompt is required.'),
-            maxLength: MAX_LENGTH_PROMPT,
-          }),
-          groupAttrs: {
-            labelDescription: s__(
-              'AICatalog|Provide default instructions or context that will be included with every user interaction.',
-            ),
-          },
-        },
         visibilityLevel: {
           label: __('Visibility level'),
           validators: createFieldValidators({
@@ -221,7 +208,6 @@ export default {
         name: this.formValues.name.trim(),
         description: this.formValues.description.trim(),
         systemPrompt: this.formValues.systemPrompt.trim(),
-        userPrompt: this.formValues.userPrompt.trim(),
         public: this.formValues.visibilityLevel === VISIBILITY_LEVEL_PUBLIC,
         release: this.initialValues.release,
         tools: this.formValues.tools,
@@ -294,23 +280,6 @@ export default {
             :state="validation.state"
             :value="value"
             data-testid="agent-form-textarea-system-prompt"
-            @blur="blur"
-            @update="input"
-          />
-        </template>
-        <template #input(userPrompt)="{ id, input, value, blur, validation }">
-          <gl-form-textarea
-            :id="id"
-            :no-resize="false"
-            :placeholder="
-              s__(
-                'AICatalog|Please consider my background in... When explaining concepts, use... My preferred format for responses is... Always include...',
-              )
-            "
-            :rows="10"
-            :state="validation.state"
-            :value="value"
-            data-testid="agent-form-textarea-user-prompt"
             @blur="blur"
             @update="input"
           />
