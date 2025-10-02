@@ -902,7 +902,7 @@ export const mockGroupUsageMetrics = [
     recordedAt: '2023-11-26T23:59:59Z',
     options: {
       title: 'Issues',
-      titleIcon: 'issues',
+      titleIcon: 'issue-type-issue',
     },
   },
   {
@@ -932,7 +932,7 @@ export const mockProjectUsageMetrics = [
     recordedAt: '2023-11-26T23:59:59Z',
     options: {
       title: 'Issues',
-      titleIcon: 'issues',
+      titleIcon: 'issue-type-issue',
     },
   },
   {
@@ -978,7 +978,7 @@ export const mockUsageMetricsNoData = [
     identifier: 'issues',
     value: 0,
     recordedAt: undefined,
-    options: { title: 'Issues', titleIcon: 'issues' },
+    options: { title: 'Issues', titleIcon: 'issue-type-issue' },
   },
   {
     identifier: 'merge_requests',
