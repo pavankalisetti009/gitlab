@@ -10,6 +10,7 @@ RSpec.describe 'Pipelines', :js, feature_category: :continuous_integration do
     sign_in(user)
 
     project.add_developer(user)
+    stub_feature_flags(pipelines_page_graphql: false)
   end
 
   describe 'GET /:project/-/pipelines' do

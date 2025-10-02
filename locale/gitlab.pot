@@ -13174,9 +13174,6 @@ msgstr ""
 msgid "Characters over limit"
 msgstr ""
 
-msgid "Chat content placeholder"
-msgstr ""
-
 msgid "ChatMessage|%{project_link}: Pipeline %{pipeline_link} of %{ref_type} %{ref_link} by %{user_combined_name} %{humanized_status} in %{duration}"
 msgstr ""
 
@@ -30147,6 +30144,9 @@ msgid "GitLab Community Edition"
 msgstr ""
 
 msgid "GitLab Duo"
+msgstr ""
+
+msgid "GitLab Duo Agentic Chat"
 msgstr ""
 
 msgid "GitLab Duo Chat"
@@ -48145,6 +48145,9 @@ msgid "Pipelines|Access GitLab University"
 msgstr ""
 
 msgid "Pipelines|Active"
+msgstr ""
+
+msgid "Pipelines|An error occurred while loading pipelines"
 msgstr ""
 
 msgid "Pipelines|An error occurred while trying to fetch the active merge train."

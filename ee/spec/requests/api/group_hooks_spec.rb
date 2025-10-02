@@ -5,7 +5,7 @@ require 'spec_helper'
 RSpec.describe API::GroupHooks, :aggregate_failures, feature_category: :webhooks do
   let_it_be(:group_admin) { create(:user) }
   let_it_be(:non_admin_user) { create(:user) }
-  let_it_be(:user3) { create(:user) }
+  let_it_be(:user2) { create(:user) }
   let_it_be(:group) { create(:group, owners: group_admin) }
   let_it_be_with_refind(:hook) do
     create(:group_hook,
@@ -83,7 +83,7 @@ RSpec.describe API::GroupHooks, :aggregate_failures, feature_category: :webhooks
 
       it_behaves_like 'test web-hook endpoint'
       it_behaves_like 'resend web-hook event endpoint' do
-        let(:unauthorized_user) { user3 }
+        let(:unauthorized_user) { user2 }
       end
 
       it_behaves_like 'get web-hook event endpoint' do

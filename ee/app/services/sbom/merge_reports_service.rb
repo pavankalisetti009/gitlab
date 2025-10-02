@@ -2,6 +2,8 @@
 
 module Sbom
   class MergeReportsService
+    UNKNOWN_SPDX_ID = Gitlab::LicenseScanning::PackageLicenses::UNKNOWN_LICENSE[:spdx_identifier]
+
     attr_reader :merged_report, :reports
 
     def initialize(reports)
@@ -37,13 +39,17 @@ module Sbom
       component_with_licenses_for(report).map do |component|
         component.type = 'library'
         component.purl = "pkg:#{component.purl_type}/#{component.name}@#{component.version}"
-
+        component.licenses = filtered_licenses(component.licenses)
         component
       end
     end
 
     def component_with_licenses_for(report)
       ::Gitlab::LicenseScanning::PackageLicenses.new(components: report.components).fetch
+    end
+
+    def filtered_licenses(licenses)
+      (licenses || []).reject { |license| license[:spdx_identifier] == UNKNOWN_SPDX_ID }
     end
 
     def convert_tools(tools)

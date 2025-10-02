@@ -21,8 +21,6 @@ RSpec.describe Preloaders::UserMemberRolesInGroupsPreloader, feature_category: :
 
   before do
     stub_licensed_features(custom_roles: true)
-
-    stub_feature_flags(track_user_group_member_roles_accuracy: false)
   end
 
   shared_examples 'custom roles' do |ability|
@@ -234,7 +232,7 @@ RSpec.describe Preloaders::UserMemberRolesInGroupsPreloader, feature_category: :
     end
   end
 
-  context 'when track_user_group_member_roles_accuracy feature flag is enabled', :saas do
+  describe 'old query vs new query results diff tracking', :saas do
     let_it_be(:ability) { MemberRole.all_customizable_group_permissions.first }
     let_it_be(:member_role) { create_member_role(group, ability) }
     let_it_be(:expected_abilities) { expected_group_abilities(ability) }
@@ -258,8 +256,6 @@ RSpec.describe Preloaders::UserMemberRolesInGroupsPreloader, feature_category: :
     end
 
     before do
-      stub_feature_flags(track_user_group_member_roles_accuracy: true)
-
       sub_group_1_member.update!(member_role: member_role)
 
       allow(Gitlab::AppLogger).to receive(:info)
@@ -326,18 +322,6 @@ RSpec.describe Preloaders::UserMemberRolesInGroupsPreloader, feature_category: :
           # group.root_ancestor.should_process_custom_roles? is called for each
           # input group
           expect { result }.to issue_same_number_of_queries_as(control).with_threshold(1)
-        end
-      end
-
-      context 'when track_user_group_member_roles_accuracy feature flag is disabled' do
-        before do
-          stub_feature_flags(track_user_group_member_roles_accuracy: false)
-        end
-
-        it 'does not log' do
-          expect(Gitlab::AppLogger).to receive(:info).once
-
-          result
         end
       end
     end

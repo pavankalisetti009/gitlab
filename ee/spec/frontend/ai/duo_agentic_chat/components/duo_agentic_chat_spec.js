@@ -1235,10 +1235,11 @@ describe('Duo Agentic Chat', () => {
         value    | description
         ${true}  | ${'true'}
         ${false} | ${'false'}
-      `('calls setAgenticMode with $description and saveCookie=true', ({ value }) => {
-        wrapper.vm.duoAgenticModePreference = value;
+      `('calls setAgenticMode with $description and saveCookie=true', async ({ value }) => {
+        findGlToggle().vm.$emit('change', value);
+        await nextTick();
 
-        expect(setAgenticMode).toHaveBeenCalledWith(value, true);
+        expect(setAgenticMode).toHaveBeenCalledWith(value, true, false);
       });
     });
   });
@@ -1355,7 +1356,7 @@ describe('Duo Agentic Chat', () => {
       findGlToggle().vm.$emit('change', true);
       await nextTick();
 
-      expect(setAgenticMode).toHaveBeenCalledWith(true, true);
+      expect(setAgenticMode).toHaveBeenCalledWith(true, true, false);
     });
 
     it('updates the toggle value when duoAgenticModePreference changes', async () => {
@@ -1712,6 +1713,114 @@ describe('Duo Agentic Chat', () => {
       // Verify query was called with the new agent version id
       expect(agentFlowConfigQueryMock).toHaveBeenCalledWith({
         agentVersionId: 'version-2',
+      });
+    });
+  });
+
+  describe('embedded mode behavior', () => {
+    describe('when embedded=false (standalone mode)', () => {
+      beforeEach(() => {
+        duoChatGlobalState.isAgenticChatShown = true;
+        createComponent({ propsData: { isEmbedded: false } });
+      });
+
+      it('shows header', () => {
+        expect(findDuoChat().props('showHeader')).toBe(true);
+      });
+
+      it('enables resizing', () => {
+        expect(findDuoChat().props('shouldRenderResizable')).toBe(true);
+      });
+
+      it('returns empty dimensions object', () => {
+        expect(findDuoChat().props('dimensions')).toEqual({});
+      });
+
+      it('sets up window resize listeners on mount', () => {
+        const addEventListenerSpy = jest.spyOn(window, 'addEventListener');
+        createComponent({ propsData: { isEmbedded: false } });
+
+        expect(addEventListenerSpy).toHaveBeenCalledWith('resize', expect.any(Function));
+        addEventListenerSpy.mockRestore();
+      });
+
+      it('cleans up resize listeners on destroy', () => {
+        const removeEventListenerSpy = jest.spyOn(window, 'removeEventListener');
+        wrapper.destroy();
+
+        expect(removeEventListenerSpy).toHaveBeenCalledWith('resize', expect.any(Function));
+        removeEventListenerSpy.mockRestore();
+      });
+
+      it('modifies duoChatGlobalState on @chat-hidden', async () => {
+        expect(duoChatGlobalState.isAgenticChatShown).toBe(true);
+
+        findDuoChat().vm.$emit('chat-hidden');
+        await nextTick();
+
+        expect(duoChatGlobalState.isAgenticChatShown).toBe(false);
+      });
+    });
+
+    describe('when embedded=true', () => {
+      beforeEach(() => {
+        duoChatGlobalState.isAgenticChatShown = true;
+        createComponent({ propsData: { isEmbedded: true } });
+      });
+
+      it('hides header', () => {
+        expect(findDuoChat().props('showHeader')).toBe(false);
+      });
+
+      it('disables resizing', () => {
+        expect(findDuoChat().props('shouldRenderResizable')).toBe(false);
+      });
+
+      it('passes dimensions object', () => {
+        expect(findDuoChat().props('dimensions')).toBeDefined();
+        expect(findDuoChat().props('dimensions')).toMatchObject({
+          width: expect.any(Number),
+          height: expect.any(Number),
+        });
+      });
+
+      it('does not set up window resize listeners on mount', () => {
+        const addEventListenerSpy = jest.spyOn(window, 'addEventListener');
+        createComponent({ propsData: { isEmbedded: true } });
+
+        const resizeCalls = addEventListenerSpy.mock.calls.filter(([event]) => event === 'resize');
+        expect(resizeCalls).toHaveLength(0);
+        addEventListenerSpy.mockRestore();
+      });
+
+      it('does not try to clean up resize listeners on destroy', () => {
+        const removeEventListenerSpy = jest.spyOn(window, 'removeEventListener');
+        wrapper.destroy();
+
+        const resizeCalls = removeEventListenerSpy.mock.calls.filter(
+          ([event]) => event === 'resize',
+        );
+        expect(resizeCalls).toHaveLength(0);
+        removeEventListenerSpy.mockRestore();
+      });
+
+      it('does not modify duoChatGlobalState on @chat-hidden', async () => {
+        expect(duoChatGlobalState.isAgenticChatShown).toBe(true);
+
+        findDuoChat().vm.$emit('chat-hidden');
+        await nextTick();
+
+        expect(duoChatGlobalState.isAgenticChatShown).toBe(true);
+      });
+
+      it('calls setAgenticMode with embedded=true when toggling agentic mode', async () => {
+        getCookie.mockReturnValue('false');
+        const findGlToggle = () => wrapper.findComponent(GlToggle);
+
+        findGlToggle().vm.$emit('change', true);
+        await nextTick();
+
+        expect(setAgenticMode).toHaveBeenCalledWith(true, true, true);
       });
     });
   });
