@@ -17,6 +17,7 @@ Vue.use(VueApollo);
 
 describe('GeoSiteFormOrganizations', () => {
   let wrapper;
+  let mockHandler;
   let mockApollo;
 
   const {
@@ -38,10 +39,17 @@ describe('GeoSiteFormOrganizations', () => {
     };
   };
 
-  const successHandler = jest.fn().mockResolvedValue(createMockResponse());
+  const responseWithoutNextPage = createMockResponse({ pageInfo: { hasNextPage: false } });
+  const responseWithNextPage = createMockResponse({
+    pageInfo: { hasNextPage: true, endCursor: 'cursor' },
+  });
 
-  const createComponent = ({ handler = successHandler, props = {} } = {}) => {
+  const createComponent = ({
+    handler = jest.fn().mockResolvedValue(responseWithoutNextPage),
+    props = {},
+  } = {}) => {
     mockApollo = createMockApollo([[organizationsQuery, handler]]);
+    mockHandler = handler;
 
     wrapper = shallowMount(GeoSiteFormOrganizations, {
       apolloProvider: mockApollo,
@@ -58,11 +66,21 @@ describe('GeoSiteFormOrganizations', () => {
       items: [],
       selected: defaultProps.selectedOrganizationIds,
       searching: true,
+      infiniteScrollLoading: false,
       noResultsText: 'Nothing found…',
       toggleText: '1 organization selected',
       multiple: true,
       infiniteScroll: true,
+      searchable: true,
+      headerText: 'Select organizations',
+      resetButtonLabel: 'Clear all',
     });
+  });
+
+  it('make organizations API call', () => {
+    createComponent();
+
+    expect(mockHandler).toHaveBeenCalledWith({ search: '' });
   });
 
   describe('when organizations API call is successful', () => {
@@ -79,6 +97,11 @@ describe('GeoSiteFormOrganizations', () => {
 
       expect(findGlCollapsibleListbox().props('items')).toEqual(expectedItems);
       expect(findGlCollapsibleListbox().props('searching')).toBe(false);
+    });
+
+    it('stops loading state', () => {
+      expect(findGlCollapsibleListbox().props('searching')).toBe(false);
+      expect(findGlCollapsibleListbox().props('infiniteScrollLoading')).toBe(false);
     });
   });
 
@@ -102,6 +125,11 @@ describe('GeoSiteFormOrganizations', () => {
         captureError: true,
       });
     });
+
+    it('stops loading state', () => {
+      expect(findGlCollapsibleListbox().props('searching')).toBe(false);
+      expect(findGlCollapsibleListbox().props('infiniteScrollLoading')).toBe(false);
+    });
   });
 
   describe.each`
@@ -123,6 +151,17 @@ describe('GeoSiteFormOrganizations', () => {
     });
   });
 
+  describe('when listbox emits `search` event', () => {
+    it('refetches organizations with search term', async () => {
+      createComponent();
+
+      findGlCollapsibleListbox().vm.$emit('search', 'searchTerm');
+      await waitForPromises();
+
+      expect(mockHandler).toHaveBeenCalledWith({ search: 'searchTerm' });
+    });
+  });
+
   describe('when listbox emits `select` event', () => {
     beforeEach(() => {
       createComponent();
@@ -137,42 +176,74 @@ describe('GeoSiteFormOrganizations', () => {
     });
   });
 
-  describe('when listbox emits `bottom-reached` event', () => {
-    const firstPageItemCount = organizations.nodes.length;
+  describe('when listbox emits `reset` event', () => {
+    beforeEach(() => {
+      createComponent();
 
+      findGlCollapsibleListbox().vm.$emit('reset');
+    });
+
+    it('emits `updateSyncOptions` with empty array', () => {
+      expect(wrapper.emitted('updateSyncOptions')).toEqual([
+        [{ key: SELECTIVE_SYNC_ORGANIZATIONS, value: [] }],
+      ]);
+    });
+  });
+
+  describe('when listbox emits `bottom-reached` event', () => {
     describe('when has no next page', () => {
       beforeEach(async () => {
-        const response = createMockResponse({ pageInfo: { hasNextPage: false } });
-        const handler = jest.fn().mockResolvedValue(response);
+        createComponent({ handler: jest.fn().mockResolvedValue(responseWithoutNextPage) });
 
-        createComponent({ handler });
         await waitForPromises();
+        mockHandler.mockClear();
 
         findGlCollapsibleListbox().vm.$emit('bottom-reached');
-        await waitForPromises();
       });
 
-      it('does not load more items', () => {
-        expect(findGlCollapsibleListbox().props('items')).toHaveLength(firstPageItemCount);
+      it('does not fetch more organizations', async () => {
+        await waitForPromises();
+
+        expect(mockHandler).not.toHaveBeenCalled();
+      });
+
+      it('does not start loading state', () => {
+        expect(findGlCollapsibleListbox().props('searching')).toBe(false);
+        expect(findGlCollapsibleListbox().props('infiniteScrollLoading')).toBe(false);
       });
     });
 
     describe('when has next page', () => {
       beforeEach(async () => {
-        const response = createMockResponse({ pageInfo: { hasNextPage: true } });
-        const handler = jest.fn().mockResolvedValue(response);
+        createComponent({ handler: jest.fn().mockResolvedValue(responseWithNextPage) });
 
-        createComponent({ handler });
+        findGlCollapsibleListbox().vm.$emit('search', 'searchTerm');
         await waitForPromises();
 
         findGlCollapsibleListbox().vm.$emit('bottom-reached');
-        await waitForPromises();
       });
 
-      it('load more items', () => {
-        expect(findGlCollapsibleListbox().props('items').length).toBeGreaterThan(
-          firstPageItemCount,
-        );
+      it('starts loading state', () => {
+        expect(findGlCollapsibleListbox().props('infiniteScrollLoading')).toBe(true);
+        expect(findGlCollapsibleListbox().props('searching')).toBe(false);
+      });
+
+      describe('when loading succeeds', () => {
+        beforeEach(async () => {
+          await waitForPromises();
+        });
+
+        it('fetches more organizations', () => {
+          expect(mockHandler).toHaveBeenCalledWith({
+            search: 'searchTerm',
+            after: 'cursor',
+          });
+        });
+
+        it('stops loading state', () => {
+          expect(findGlCollapsibleListbox().props('searching')).toBe(false);
+          expect(findGlCollapsibleListbox().props('infiniteScrollLoading')).toBe(false);
+        });
       });
     });
   });
