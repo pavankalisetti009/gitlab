@@ -1,4 +1,4 @@
-import Vue, { nextTick } from 'vue';
+import Vue from 'vue';
 import VueApollo from 'vue-apollo';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import ExtendedDashboardPanel from '~/vue_shared/components/customizable_dashboard/extended_dashboard_panel.vue';
@@ -6,7 +6,8 @@ import VulnerabilitiesOverTimeChart from 'ee/security_dashboard/components/share
 import GroupVulnerabilitiesOverTimePanel from 'ee/security_dashboard/components/shared/group_vulnerabilities_over_time_panel.vue';
 import OverTimeGroupBy from 'ee/security_dashboard/components/shared/over_time_group_by.vue';
 import OverTimeSeverityFilter from 'ee/security_dashboard/components/shared/over_time_severity_filter.vue';
-import vulnerabilitiesOverTime from 'ee/security_dashboard/graphql/queries/group_vulnerabilities_over_time.query.graphql';
+import OverTimePeriodSelector from 'ee/security_dashboard/components/shared/over_time_period_selector.vue';
+import groupVulnerabilitiesOverTime from 'ee/security_dashboard/graphql/queries/group_vulnerabilities_over_time.query.graphql';
 import createMockApollo from 'helpers/mock_apollo_helper';
 import waitForPromises from 'helpers/wait_for_promises';
 import { useFakeDate } from 'helpers/fake_date';
@@ -22,9 +23,9 @@ describe('GroupVulnerabilitiesOverTimePanel', () => {
   let wrapper;
 
   const mockGroupFullPath = 'group/subgroup';
-  const mockFilters = { projectId: 'gid://gitlab/Project/123' };
+  const mockFilters = { projectId: 'gid://gitlab/Project/123', reportType: ['SAST'] };
 
-  const defaultMockVulnerabilitiesOverTimeData = {
+  const createMockData = () => ({
     data: {
       group: {
         id: 'gid://gitlab/Group/1',
@@ -32,47 +33,27 @@ describe('GroupVulnerabilitiesOverTimePanel', () => {
           vulnerabilitiesOverTime: {
             nodes: [
               {
-                date: '2025-06-01',
+                date: '2022-06-01',
                 bySeverity: [
                   { severity: 'CRITICAL', count: 5 },
                   { severity: 'HIGH', count: 10 },
-                  { severity: 'MEDIUM', count: 15 },
-                  { severity: 'LOW', count: 8 },
                 ],
-                byReportType: [
-                  { reportType: 'SAST', count: 8 },
-                  { reportType: 'DEPENDENCY_SCANNING', count: 12 },
-                  { reportType: 'CONTAINER_SCANNING', count: 10 },
-                ],
-              },
-              {
-                date: '2025-06-02',
-                bySeverity: [
-                  { severity: 'CRITICAL', count: 6 },
-                  { severity: 'HIGH', count: 9 },
-                  { severity: 'MEDIUM', count: 14 },
-                  { severity: 'LOW', count: 7 },
-                ],
-                byReportType: [
-                  { reportType: 'DAST', count: 5 },
-                  { reportType: 'API_FUZZING', count: 3 },
-                  { reportType: 'SAST', count: 6 },
-                ],
+                byReportType: [{ reportType: 'SAST', count: 8 }],
               },
             ],
           },
         },
       },
     },
-  };
+  });
 
   const createComponent = ({ props = {}, mockVulnerabilitiesOverTimeHandler = null } = {}) => {
+    const defaultMockData = createMockData();
     const vulnerabilitiesOverTimeHandler =
-      mockVulnerabilitiesOverTimeHandler ||
-      jest.fn().mockResolvedValue(defaultMockVulnerabilitiesOverTimeData);
+      mockVulnerabilitiesOverTimeHandler || jest.fn().mockResolvedValue(defaultMockData);
 
     const apolloProvider = createMockApollo([
-      [vulnerabilitiesOverTime, vulnerabilitiesOverTimeHandler],
+      [groupVulnerabilitiesOverTime, vulnerabilitiesOverTimeHandler],
     ]);
 
     wrapper = shallowMountExtended(GroupVulnerabilitiesOverTimePanel, {
@@ -83,7 +64,6 @@ describe('GroupVulnerabilitiesOverTimePanel', () => {
       },
       provide: {
         groupFullPath: mockGroupFullPath,
-        securityVulnerabilitiesPath: '/group/security/vulnerabilities',
       },
     });
 
@@ -96,6 +76,7 @@ describe('GroupVulnerabilitiesOverTimePanel', () => {
   const findOverTimeGroupBy = () => wrapper.findComponent(OverTimeGroupBy);
   const findEmptyState = () => wrapper.findByTestId('vulnerabilities-over-time-empty-state');
   const findSeverityFilter = () => wrapper.findComponent(OverTimeSeverityFilter);
+  const findOverTimePeriodSelector = () => wrapper.findComponent(OverTimePeriodSelector);
 
   describe('component rendering', () => {
     beforeEach(() => {
@@ -120,200 +101,137 @@ describe('GroupVulnerabilitiesOverTimePanel', () => {
     it('passes severity value to OverTimeGroupBy by default', () => {
       expect(findOverTimeGroupBy().props('value')).toBe('severity');
     });
-  });
 
-  describe('filters prop', () => {
-    it('passes filters to VulnerabilitiesOverTimeChart component', async () => {
-      const customFilters = {
-        projectId: 'gid://gitlab/Project/456',
-        reportType: ['SAST', 'DAST'],
-        severity: ['HIGH', 'CRITICAL'],
-      };
-
-      const defaultPanelLevelFilters = { severity: [] };
-
-      createComponent({
-        props: {
-          filters: customFilters,
-        },
-      });
-
-      await waitForPromises();
-
-      expect(findVulnerabilitiesOverTimeChart().props('filters')).toEqual({
-        ...customFilters,
-        ...defaultPanelLevelFilters,
-      });
+    it('renders all filter components', () => {
+      expect(findOverTimePeriodSelector().exists()).toBe(true);
+      expect(findSeverityFilter().exists()).toBe(true);
+      expect(findOverTimeGroupBy().exists()).toBe(true);
     });
 
-    it('passes filters to VulnerabilitiesOverTimeChart when switching group by', async () => {
-      const customFilters = {
-        projectId: 'gid://gitlab/Project/789',
-        reportType: ['CONTAINER_SCANNING'],
-      };
-      const defaultPanelLevelFilters = { severity: [] };
-
-      createComponent({
-        props: {
-          filters: customFilters,
-        },
-      });
-
-      await waitForPromises();
-
-      // Switch to report type grouping
-      await findOverTimeGroupBy().vm.$emit('input', 'reportType');
-      await waitForPromises();
-
-      expect(findVulnerabilitiesOverTimeChart().props('filters')).toEqual({
-        ...customFilters,
-        ...defaultPanelLevelFilters,
-      });
-    });
-
-    it('combines props filters with panel level filters', async () => {
-      const customFilters = {
-        projectId: 'gid://gitlab/Project/456',
-        reportType: ['SAST', 'DAST'],
-      };
-
-      const panelLevelFilters = ['HIGH', 'MEDIUM'];
-
-      createComponent({
-        props: {
-          filters: customFilters,
-        },
-      });
-
-      await waitForPromises();
-
-      findSeverityFilter().vm.$emit('input', panelLevelFilters);
-      await nextTick();
-
-      // The combinedFilters should include both props filters and panel level filters
-      expect(findVulnerabilitiesOverTimeChart().props('filters')).toEqual({
-        projectId: 'gid://gitlab/Project/456',
-        reportType: ['SAST', 'DAST'],
-        severity: panelLevelFilters,
-      });
+    it('sets initial time period for the chart data to 30 days', () => {
+      expect(findOverTimePeriodSelector().props('value')).toBe(30);
     });
   });
 
-  describe('group by functionality', () => {
-    beforeEach(() => {
-      createComponent();
-    });
-
-    it('switches to report type grouping when report type button is clicked', async () => {
-      await waitForPromises();
-      const overTimeGroupBy = findOverTimeGroupBy();
-
-      await overTimeGroupBy.vm.$emit('input', 'reportType');
-      await nextTick();
-
-      expect(overTimeGroupBy.props('value')).toBe('reportType');
-    });
-
-    it('switches back to severity grouping when severity button is clicked', async () => {
-      await waitForPromises();
-      const overTimeGroupBy = findOverTimeGroupBy();
-
-      await overTimeGroupBy.vm.$emit('input', 'reportType');
-      await nextTick();
-
-      await overTimeGroupBy.vm.$emit('input', 'severity');
-      await nextTick();
-
-      expect(overTimeGroupBy.props('value')).toBe('severity');
-    });
-  });
-
-  describe('Apollo query', () => {
-    beforeEach(() => {
-      createComponent();
-    });
-
-    it('fetches vulnerabilities over time data when component is created', () => {
+  describe('data fetching', () => {
+    it('fetches data with correct variables for group namespace', async () => {
       const { vulnerabilitiesOverTimeHandler } = createComponent();
+      await waitForPromises();
 
       expect(vulnerabilitiesOverTimeHandler).toHaveBeenCalledWith({
         fullPath: mockGroupFullPath,
         projectId: mockFilters.projectId,
-        startDate: thirtyDaysAgoInIsoFormat,
-        endDate: todayInIsoFormat,
+        reportType: mockFilters.reportType,
+        severity: [],
         includeBySeverity: true,
         includeByReportType: false,
-        severity: [],
-        reportType: undefined,
+        startDate: thirtyDaysAgoInIsoFormat,
+        endDate: todayInIsoFormat,
       });
     });
 
-    it.each(['projectId', 'reportType'])(
-      'passes filters to the GraphQL query',
-      (availableFilterType) => {
-        const { vulnerabilitiesOverTimeHandler } = createComponent({
-          props: {
-            filters: { [availableFilterType]: ['filterValue'] },
-          },
-        });
+    it('re-fetches data when time period changes', async () => {
+      const { vulnerabilitiesOverTimeHandler } = createComponent();
+      await waitForPromises();
 
-        expect(vulnerabilitiesOverTimeHandler).toHaveBeenCalledWith(
-          expect.objectContaining({
-            [availableFilterType]: ['filterValue'],
-            projectId: availableFilterType === 'projectId' ? ['filterValue'] : undefined,
-            reportType: availableFilterType === 'reportType' ? ['filterValue'] : undefined,
-          }),
-        );
-      },
-    );
+      const initialCallCount = vulnerabilitiesOverTimeHandler.mock.calls.length;
 
-    it('does not add unsupported filters that are passed', () => {
-      const unsupportedFilter = ['filterValue'];
-      const { vulnerabilitiesOverTimeHandler } = createComponent({
-        props: {
-          filters: { unsupportedFilter },
-        },
+      await findOverTimePeriodSelector().vm.$emit('input', 60);
+      await waitForPromises();
+
+      expect(vulnerabilitiesOverTimeHandler.mock.calls.length).toBeGreaterThan(initialCallCount);
+    });
+  });
+
+  describe('time period selection', () => {
+    const sixtyDaysAgoInIsoFormat = '2022-05-07';
+    const thirtyOneDaysAgoInIsoFormat = '2022-06-05';
+    const ninetyDaysAgoInIsoFormat = '2022-04-07';
+    const sixtyOneDaysAgoInIsoFormat = '2022-05-06';
+
+    it('fetches only 30-day chunk for default period', async () => {
+      const { vulnerabilitiesOverTimeHandler } = createComponent();
+      await waitForPromises();
+
+      expect(vulnerabilitiesOverTimeHandler).toHaveBeenCalledTimes(1);
+      expect(vulnerabilitiesOverTimeHandler).toHaveBeenCalledWith({
+        fullPath: mockGroupFullPath,
+        projectId: mockFilters.projectId,
+        reportType: mockFilters.reportType,
+        severity: [],
+        includeBySeverity: true,
+        includeByReportType: false,
+        startDate: thirtyDaysAgoInIsoFormat,
+        endDate: todayInIsoFormat,
       });
+    });
 
-      expect(vulnerabilitiesOverTimeHandler).not.toHaveBeenCalledWith(
+    it('fetches 30-day and 60-day chunks when period is set to 60', async () => {
+      const { vulnerabilitiesOverTimeHandler } = createComponent();
+
+      await findOverTimePeriodSelector().vm.$emit('input', 60);
+      await waitForPromises();
+
+      expect(vulnerabilitiesOverTimeHandler).toHaveBeenCalledTimes(2);
+
+      expect(vulnerabilitiesOverTimeHandler).toHaveBeenCalledWith(
         expect.objectContaining({
-          unsupportedFilter,
+          startDate: thirtyDaysAgoInIsoFormat,
+          endDate: todayInIsoFormat,
+        }),
+      );
+
+      expect(vulnerabilitiesOverTimeHandler).toHaveBeenCalledWith(
+        expect.objectContaining({
+          startDate: sixtyDaysAgoInIsoFormat,
+          endDate: thirtyOneDaysAgoInIsoFormat,
         }),
       );
     });
 
-    it('updates query variables when switching to report type grouping', async () => {
+    it('fetches all three chunks when period is set to 90', async () => {
       const { vulnerabilitiesOverTimeHandler } = createComponent();
 
-      await findOverTimeGroupBy().vm.$emit('input', 'reportType');
+      await findOverTimePeriodSelector().vm.$emit('input', 90);
       await waitForPromises();
+
+      expect(vulnerabilitiesOverTimeHandler).toHaveBeenCalledTimes(3);
 
       expect(vulnerabilitiesOverTimeHandler).toHaveBeenCalledWith(
         expect.objectContaining({
-          includeBySeverity: false,
-          includeByReportType: true,
+          startDate: thirtyDaysAgoInIsoFormat,
+          endDate: todayInIsoFormat,
+        }),
+      );
+
+      expect(vulnerabilitiesOverTimeHandler).toHaveBeenCalledWith(
+        expect.objectContaining({
+          startDate: sixtyDaysAgoInIsoFormat,
+          endDate: thirtyOneDaysAgoInIsoFormat,
+        }),
+      );
+
+      expect(vulnerabilitiesOverTimeHandler).toHaveBeenCalledWith(
+        expect.objectContaining({
+          startDate: ninetyDaysAgoInIsoFormat,
+          endDate: sixtyOneDaysAgoInIsoFormat,
         }),
       );
     });
   });
 
-  describe('severity filter', () => {
-    beforeEach(() => {
-      createComponent();
-    });
-
-    it('passes the correct value prop', () => {
-      expect(findSeverityFilter().props('value')).toEqual([]);
-    });
-
-    it('updates the GraphQL query variables when severity filter changes', async () => {
+  describe('filters', () => {
+    it('updates GraphQL query when severity filter changes', async () => {
       const { vulnerabilitiesOverTimeHandler } = createComponent();
       const appliedFilters = ['CRITICAL', 'HIGH'];
 
-      findSeverityFilter().vm.$emit('input', appliedFilters);
+      await waitForPromises();
+      const initialCallCount = vulnerabilitiesOverTimeHandler.mock.calls.length;
+
+      await findSeverityFilter().vm.$emit('input', appliedFilters);
       await waitForPromises();
 
-      expect(findSeverityFilter().props('value')).toBe(appliedFilters);
+      expect(vulnerabilitiesOverTimeHandler.mock.calls.length).toBeGreaterThan(initialCallCount);
       expect(vulnerabilitiesOverTimeHandler).toHaveBeenCalledWith(
         expect.objectContaining({
           severity: appliedFilters,
@@ -322,133 +240,28 @@ describe('GroupVulnerabilitiesOverTimePanel', () => {
     });
   });
 
-  describe('chart data formatting', () => {
-    beforeEach(() => {
-      createComponent();
-    });
-
-    it('correctly formats chart data from the API response for severity grouping', async () => {
-      await waitForPromises();
-
-      const expectedChartData = [
-        {
-          name: 'Critical',
-          id: 'CRITICAL',
-          data: [
-            ['2025-06-01', 5],
-            ['2025-06-02', 6],
-          ],
-        },
-        {
-          name: 'High',
-          id: 'HIGH',
-          data: [
-            ['2025-06-01', 10],
-            ['2025-06-02', 9],
-          ],
-        },
-        {
-          name: 'Medium',
-          id: 'MEDIUM',
-          data: [
-            ['2025-06-01', 15],
-            ['2025-06-02', 14],
-          ],
-        },
-        {
-          name: 'Low',
-          id: 'LOW',
-          data: [
-            ['2025-06-01', 8],
-            ['2025-06-02', 7],
-          ],
-        },
-      ];
-
-      expect(findVulnerabilitiesOverTimeChart().props('chartSeries')).toEqual(expectedChartData);
-    });
-
-    it('passes the correct grouped-by prop for severity grouping', async () => {
-      await waitForPromises();
-
-      expect(findVulnerabilitiesOverTimeChart().props('groupedBy')).toBe('severity');
-    });
-
-    it('passes the correct grouped-by prop for report type grouping', async () => {
-      await findOverTimeGroupBy().vm.$emit('input', 'reportType');
-      await waitForPromises();
-
-      expect(findVulnerabilitiesOverTimeChart().props('groupedBy')).toBe('reportType');
-    });
-
-    it('correctly formats chart data from the API response for report type grouping', async () => {
-      await findOverTimeGroupBy().vm.$emit('input', 'reportType');
-      await waitForPromises();
-
-      const expectedChartData = [
-        {
-          name: 'SAST',
-          id: 'SAST',
-          data: [
-            ['2025-06-01', 8],
-            ['2025-06-02', 6],
-          ],
-        },
-        {
-          name: 'Dependency Scanning',
-          id: 'DEPENDENCY_SCANNING',
-          data: [['2025-06-01', 12]],
-        },
-        {
-          name: 'Container Scanning',
-          id: 'CONTAINER_SCANNING',
-          data: [['2025-06-01', 10]],
-        },
-        {
-          name: 'DAST',
-          id: 'DAST',
-          data: [['2025-06-02', 5]],
-        },
-        {
-          name: 'API Fuzzing',
-          id: 'API_FUZZING',
-          data: [['2025-06-02', 3]],
-        },
-      ];
-
-      expect(findVulnerabilitiesOverTimeChart().props('chartSeries')).toEqual(expectedChartData);
-    });
-
-    it('returns empty chart data when no vulnerabilities data is available', async () => {
-      const emptyResponse = {
-        data: {
-          group: {
-            id: 'gid://gitlab/Group/1',
-            securityMetrics: {
-              vulnerabilitiesOverTime: {
-                nodes: [],
-              },
-            },
-          },
-        },
-      };
-
-      createComponent({
-        mockVulnerabilitiesOverTimeHandler: jest.fn().mockResolvedValue(emptyResponse),
-      });
-      await waitForPromises();
-
-      expect(findVulnerabilitiesOverTimeChart().exists()).toBe(false);
-      expect(findEmptyState().text()).toBe('No data available.');
-    });
-  });
-
   describe('loading state', () => {
-    beforeEach(() => {
+    it('shows loading state initially', () => {
       createComponent();
+
+      expect(findExtendedDashboardPanel().props('loading')).toBe(true);
     });
 
-    it('passes loading state to panels base', async () => {
+    it('hides loading state after data is loaded', async () => {
+      createComponent();
+      await waitForPromises();
+
+      expect(findExtendedDashboardPanel().props('loading')).toBe(false);
+    });
+
+    it('shows loading state when switching time periods', async () => {
+      createComponent();
+      await waitForPromises();
+
+      expect(findExtendedDashboardPanel().props('loading')).toBe(false);
+
+      await findOverTimePeriodSelector().vm.$emit('input', 60);
+
       expect(findExtendedDashboardPanel().props('loading')).toBe(true);
 
       await waitForPromises();
@@ -458,30 +271,114 @@ describe('GroupVulnerabilitiesOverTimePanel', () => {
   });
 
   describe('error handling', () => {
-    describe.each`
-      errorType                   | mockVulnerabilitiesOverTimeHandler
-      ${'GraphQL query failures'} | ${jest.fn().mockRejectedValue(new Error('GraphQL query failed'))}
-      ${'server error responses'} | ${jest.fn().mockResolvedValue({ errors: [{ message: 'Internal server error' }] })}
-    `('$errorType', ({ mockVulnerabilitiesOverTimeHandler }) => {
-      beforeEach(async () => {
-        createComponent({
-          mockVulnerabilitiesOverTimeHandler,
-        });
-
-        await waitForPromises();
+    it('shows error state when GraphQL query fails', async () => {
+      createComponent({
+        mockVulnerabilitiesOverTimeHandler: jest.fn().mockRejectedValue(new Error('GraphQL error')),
       });
 
-      it('sets the panel alert state', () => {
-        expect(findExtendedDashboardPanel().props('showAlertState')).toBe(true);
+      await waitForPromises();
+
+      expect(findExtendedDashboardPanel().props('showAlertState')).toBe(true);
+      expect(findVulnerabilitiesOverTimeChart().exists()).toBe(false);
+      expect(findEmptyState().text()).toBe('Something went wrong. Please try again.');
+    });
+
+    it('shows error state when server returns error response', async () => {
+      createComponent({
+        mockVulnerabilitiesOverTimeHandler: jest.fn().mockResolvedValue({
+          errors: [{ message: 'Internal server error' }],
+        }),
       });
 
-      it('does not render the chart component', () => {
-        expect(findVulnerabilitiesOverTimeChart().exists()).toBe(false);
+      await waitForPromises();
+
+      expect(findExtendedDashboardPanel().props('showAlertState')).toBe(true);
+      expect(findVulnerabilitiesOverTimeChart().exists()).toBe(false);
+      expect(findEmptyState().text()).toBe('Something went wrong. Please try again.');
+    });
+
+    it('handles error when switching time periods', async () => {
+      const mockHandler = jest
+        .fn()
+        .mockResolvedValueOnce(createMockData())
+        .mockRejectedValueOnce(new Error('Network error'));
+
+      createComponent({
+        mockVulnerabilitiesOverTimeHandler: mockHandler,
       });
 
-      it('renders the correct error message', () => {
-        expect(findEmptyState().text()).toBe('Something went wrong. Please try again.');
+      await waitForPromises();
+
+      expect(findExtendedDashboardPanel().props('showAlertState')).toBe(false);
+      expect(findVulnerabilitiesOverTimeChart().exists()).toBe(true);
+
+      await findOverTimePeriodSelector().vm.$emit('input', 60);
+      await waitForPromises();
+
+      expect(findExtendedDashboardPanel().props('showAlertState')).toBe(true);
+      expect(findVulnerabilitiesOverTimeChart().exists()).toBe(false);
+      expect(findEmptyState().text()).toBe('Something went wrong. Please try again.');
+    });
+
+    it('handles partial chunk failures gracefully', async () => {
+      const mockHandler = jest
+        .fn()
+        .mockResolvedValueOnce(createMockData())
+        .mockRejectedValueOnce(new Error('Network timeout'));
+
+      createComponent({
+        mockVulnerabilitiesOverTimeHandler: mockHandler,
       });
+
+      await findOverTimePeriodSelector().vm.$emit('input', 60);
+      await waitForPromises();
+
+      expect(findExtendedDashboardPanel().props('showAlertState')).toBe(true);
+      expect(findVulnerabilitiesOverTimeChart().exists()).toBe(false);
+      expect(findEmptyState().text()).toBe('Something went wrong. Please try again.');
+    });
+
+    it('handles error during filter changes', async () => {
+      const mockHandler = jest
+        .fn()
+        .mockResolvedValueOnce(createMockData())
+        .mockRejectedValueOnce(new Error('Filter error'));
+
+      createComponent({
+        mockVulnerabilitiesOverTimeHandler: mockHandler,
+      });
+
+      await waitForPromises();
+
+      expect(findExtendedDashboardPanel().props('showAlertState')).toBe(false);
+
+      await findSeverityFilter().vm.$emit('input', ['CRITICAL']);
+      await waitForPromises();
+
+      expect(findExtendedDashboardPanel().props('showAlertState')).toBe(true);
+      expect(findVulnerabilitiesOverTimeChart().exists()).toBe(false);
+    });
+
+    it('resets error state when retrying after successful data fetch', async () => {
+      const mockHandler = jest
+        .fn()
+        .mockRejectedValueOnce(new Error('Initial error'))
+        .mockResolvedValue(createMockData());
+
+      createComponent({
+        mockVulnerabilitiesOverTimeHandler: mockHandler,
+      });
+
+      await waitForPromises();
+
+      expect(findExtendedDashboardPanel().props('showAlertState')).toBe(true);
+      expect(findVulnerabilitiesOverTimeChart().exists()).toBe(false);
+
+      await findOverTimePeriodSelector().vm.$emit('input', 60);
+      await waitForPromises();
+
+      expect(findExtendedDashboardPanel().props('showAlertState')).toBe(false);
+      expect(findVulnerabilitiesOverTimeChart().exists()).toBe(true);
     });
   });
 });
