@@ -214,16 +214,16 @@ describe('MR Widget Security Reports', () => {
   });
 
   describe('with vulnerabilityPartialScans feature flag turned on', () => {
-    it('should not mount the widget component until loading is complete', async () => {
+    it('should display a loading state until enabled scans are fetched', async () => {
       createComponent({
         provide: { glFeatures: { vulnerabilityPartialScans: true } },
         mountFn: mountExtended,
         mockApolloProvider: defaultMockApollo,
       });
 
-      expect(findWidget().exists()).toBe(false);
+      expect(findWidget().text()).toBe('Security scanning is loading');
       await waitForPromises();
-      expect(findWidget().exists()).toBe(true);
+      expect(findWidget().text()).not.toBe('Security scanning is loading');
     });
 
     it.each`

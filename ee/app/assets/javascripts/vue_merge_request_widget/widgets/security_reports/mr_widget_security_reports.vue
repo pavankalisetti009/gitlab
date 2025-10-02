@@ -208,6 +208,10 @@ export default {
 
       return !this.mr.isPipelineActive && this.endpoints.length > 0;
     },
+
+    isLoadingEnabledScans() {
+      return this.$apollo.queries.enabledScans?.loading;
+    },
   },
   apollo: {
     enabledScans: {
@@ -493,6 +497,27 @@ export default {
         :mr="mr"
         @modal-data="setModalData"
       />
+    </template>
+  </mr-widget>
+  <!-- 
+    We must fetch enabled scans before mounting the MR widget because the widget 
+    immediately calls `fetchCollapsedData` on mount. Since `fetchCollapsedData` 
+    needs the enabled scans result to determine which endpoints to query, we delay 
+    mounting until the enabled scans have been fetched.
+
+    In order to display the loading state in the meantime, we mount this 
+    <mr-widget> component instead of the one above.
+    -->
+  <mr-widget
+    v-else-if="isLoadingEnabledScans"
+    key="mr-widget-loading"
+    :is-collapsible="false"
+    :widget-name="$options.name"
+    loading-state="collapsed"
+    data-testid="vulnerability-report-grouped"
+  >
+    <template #summary>
+      <summary-text is-loading :total-new-vulnerabilities="0" />
     </template>
   </mr-widget>
 </template>
