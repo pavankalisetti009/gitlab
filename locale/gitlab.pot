@@ -33974,7 +33974,7 @@ msgstr ""
 msgid "ImmediateNamespacesDeletionSettings|Allow immediate deletion"
 msgstr ""
 
-msgid "ImmediateNamespacesDeletionSettings|Groups and projects marked for deletion can be immediately deleted with a second deletion action, bypassing the configured retention period. %{link_start}Learn more.%{link_end}"
+msgid "ImmediateNamespacesDeletionSettings|Immediately delete groups and projects scheduled for deletion and bypass the configured retention period. %{link_start}Learn more.%{link_end}"
 msgstr ""
 
 msgid "Immutable tag rules require an Ultimate license"
