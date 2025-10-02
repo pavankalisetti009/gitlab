@@ -100,7 +100,7 @@ export default {
           <span class="gl-text-subtle">{{ timeAgo(item) }}</span>
         </div>
         <non-gfm-markdown :markdown="item.content" class="gl-m-0 gl-flex-1 gl-py-2" />
-        <code v-if="filePath(item)">{{ filePath(item) }}</code>
+        <code v-if="filePath(item)" class="gl-break-all">{{ filePath(item) }}</code>
       </div>
     </li>
   </ul>

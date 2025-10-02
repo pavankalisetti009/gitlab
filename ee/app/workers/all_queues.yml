@@ -2496,8 +2496,8 @@
 - :name: gitlab_subscriptions_trials_apply_trial
   :worker_name: GitlabSubscriptions::Trials::ApplyTrialWorker
   :feature_category: :plan_provisioning
-  :has_external_dependencies: true
-  :urgency: :low
+  :has_external_dependencies: false
+  :urgency: :high
   :resource_boundary: :unknown
   :weight: 1
   :idempotent: true

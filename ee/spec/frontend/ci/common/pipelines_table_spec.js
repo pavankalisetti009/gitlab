@@ -194,6 +194,18 @@ describe('EE - Pipelines Table', () => {
             sourceBranch: 'feature-branch',
             additionalContext: [
               {
+                Category: 'merge_request',
+                Content: JSON.stringify({
+                  url: mergeRequestPath,
+                }),
+              },
+              {
+                Category: 'pipeline',
+                Content: JSON.stringify({
+                  source_branch: 'feature-branch',
+                }),
+              },
+              {
                 Category: 'agent_user_environment',
                 Content: JSON.stringify({
                   merge_request_url: mergeRequestPath,
@@ -232,6 +244,18 @@ describe('EE - Pipelines Table', () => {
             sourceBranch: 'master',
             additionalContext: [
               {
+                Category: 'merge_request',
+                Content: JSON.stringify({
+                  url: mergeRequestPath,
+                }),
+              },
+              {
+                Category: 'pipeline',
+                Content: JSON.stringify({
+                  source_branch: 'master',
+                }),
+              },
+              {
                 Category: 'agent_user_environment',
                 Content: JSON.stringify({
                   merge_request_url: mergeRequestPath,
@@ -260,14 +284,27 @@ describe('EE - Pipelines Table', () => {
         });
 
         it('prioritizes merge request source branch over ref name', () => {
+          const sourceBranch = failedPipelineWithBothMRAndRef.merge_request.source_branch;
           expect(findDuoWorkflowAction().props()).toMatchObject({
             sourceBranch: 'feature-branch',
             additionalContext: [
               {
+                Category: 'merge_request',
+                Content: JSON.stringify({
+                  url: mergeRequestPath,
+                }),
+              },
+              {
+                Category: 'pipeline',
+                Content: JSON.stringify({
+                  source_branch: sourceBranch,
+                }),
+              },
+              {
                 Category: 'agent_user_environment',
                 Content: JSON.stringify({
                   merge_request_url: mergeRequestPath,
-                  source_branch: 'feature-branch',
+                  source_branch: sourceBranch,
                 }),
                 Metadata: '{}',
               },
@@ -294,6 +331,18 @@ describe('EE - Pipelines Table', () => {
           expect(findDuoWorkflowAction().props()).toMatchObject({
             sourceBranch: 'main',
             additionalContext: [
+              {
+                Category: 'merge_request',
+                Content: JSON.stringify({
+                  url: mergeRequestPath,
+                }),
+              },
+              {
+                Category: 'pipeline',
+                Content: JSON.stringify({
+                  source_branch: 'main',
+                }),
+              },
               {
                 Category: 'agent_user_environment',
                 Content: JSON.stringify({
@@ -403,15 +452,28 @@ describe('EE - Pipelines Table', () => {
         });
 
         const additionalContext = findDuoWorkflowAction().props('additionalContext');
-        expect(additionalContext).toHaveLength(1);
-        expect(additionalContext[0]).toEqual({
-          Category: 'agent_user_environment',
-          Content: JSON.stringify({
-            merge_request_url: mergeRequestPath,
-            source_branch: 'feature-branch',
-          }),
-          Metadata: '{}',
-        });
+        expect(additionalContext[0]).toEqual(
+          {
+            Category: 'merge_request',
+            Content: JSON.stringify({
+              url: mergeRequestPath,
+            }),
+          },
+          {
+            Category: 'pipeline',
+            Content: JSON.stringify({
+              source_branch: 'feature-branch',
+            }),
+          },
+          {
+            Category: 'agent_user_environment',
+            Content: JSON.stringify({
+              merge_request_url: mergeRequestPath,
+              source_branch: 'feature-branch',
+            }),
+            Metadata: '{}',
+          },
+        );
       });
     });
 

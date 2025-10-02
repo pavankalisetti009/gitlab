@@ -2,11 +2,15 @@
 
 require 'spec_helper'
 
-RSpec.describe GitlabSubscriptions::Trials::ApplyTrialWorker, type: :worker, feature_category: :plan_provisioning do
+RSpec.describe GitlabSubscriptions::Trials::ApplyTrialWorker, feature_category: :plan_provisioning do
   describe '#perform' do
     let(:logger) { described_class.new.send(:logger) }
     let(:user) { build(:user, id: non_existing_record_id) }
     let(:job_args) { [user.id, trial_user_information] }
+
+    it 'has high urgency' do
+      expect(described_class.get_urgency).to eq(:high)
+    end
 
     context 'when valid to generate a trial' do
       let_it_be(:namespace) { create(:namespace) }
