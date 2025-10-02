@@ -608,7 +608,7 @@ export default {
         <gl-collapsible-listbox
           v-else
           placement="bottom"
-          positioning-strategy="fixed"
+          positioning-strategy="absolute"
           boundary="viewport"
           :data-testid="`control-select-${index}`"
           :selected="getSelected(control)"
