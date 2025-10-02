@@ -62,9 +62,7 @@ describe('MergedBy component', () => {
       expect(findAvatarLabel().props()).toMatchObject({
         subLabel: mergedBy.name,
         label: '',
-      });
-      expect(findAvatarLabel().attributes()).toMatchObject({
-        'entity-name': mergedBy.name,
+        entityName: mergedBy.name,
         src: mergedBy.avatarUrl,
       });
     });

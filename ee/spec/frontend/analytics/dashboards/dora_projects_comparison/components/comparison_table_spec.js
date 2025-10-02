@@ -50,9 +50,9 @@ describe('Comparison table', () => {
         it('renders the project avatar', () => {
           expect(findAvatar().props().label).toBe(name);
           expect(findAvatar().props().labelLink).toBe(webUrl);
-          expect(findAvatar().vm.$attrs['entity-id']).toBe(getIdFromGraphQLId(id));
-          expect(findAvatar().vm.$attrs['entity-name']).toBe(name);
-          expect(findAvatar().vm.$attrs.src).toBe(avatarUrl);
+          expect(findAvatar().props('entityId')).toBe(getIdFromGraphQLId(id));
+          expect(findAvatar().props('entityName')).toBe(name);
+          expect(findAvatar().props('src')).toBe(avatarUrl);
         });
 
         it('renders each metric value', () => {

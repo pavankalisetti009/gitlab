@@ -61,7 +61,6 @@ export default {
         <gl-avatar-labeled
           :size="32"
           :src="assignee.avatarUrl"
-          :alt="assignee.name"
           :entity-name="assignee.name"
           :label="assignee.name"
           :sub-label="avatarSubLabel"
