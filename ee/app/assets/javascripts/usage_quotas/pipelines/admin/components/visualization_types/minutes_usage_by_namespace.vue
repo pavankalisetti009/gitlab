@@ -79,11 +79,11 @@ export default {
           }}</span>
         </div>
       </template>
-      <template #cell(hostedRunnerDuration)="{ item: { durationSeconds } }">
-        <span data-testid="runner-duration">{{ durationSeconds }}</span>
+      <template #cell(hostedRunnerDuration)="{ item: { durationMinutes } }">
+        <span data-testid="runner-duration">{{ parseFloat(durationMinutes.toFixed(2)) }}</span>
       </template>
-      <template #cell(computeUsage)="{ item: { computeMinutes } }">
-        <span data-testid="compute-minutes">{{ computeMinutes }}</span>
+      <template #cell(computeUsage)="{ item: { computeMinutesUsage } }">
+        <span data-testid="compute-minutes">{{ parseFloat(computeMinutesUsage.toFixed(2)) }}</span>
       </template>
     </gl-table>
   </div>

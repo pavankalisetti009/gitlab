@@ -2,16 +2,16 @@ export const usageDataInstanceAggregated = [
   {
     billingMonth: 'February 2025',
     billingMonthIso8601: '2025-02-01',
-    computeMinutes: 300,
-    durationSeconds: 18000,
+    computeMinutesUsage: 300.25,
+    durationMinutes: 300.25,
     rootNamespace: null,
     __typename: 'CiDedicatedHostedRunnerUsage',
   },
   {
     billingMonth: 'January 2025',
     billingMonthIso8601: '2025-01-01',
-    computeMinutes: 200,
-    durationSeconds: 12000,
+    computeMinutesUsage: 200.75,
+    durationMinutes: 200.75,
     rootNamespace: null,
     __typename: 'CiDedicatedHostedRunnerUsage',
   },
@@ -21,8 +21,8 @@ export const usageDataNamespaceAggregated = [
   {
     billingMonth: 'January 2025',
     billingMonthIso8601: '2025-01-01',
-    computeMinutes: 200,
-    durationSeconds: 12000,
+    computeMinutesUsage: 200.33,
+    durationMinutes: 200.33,
     rootNamespace: {
       id: 'gid://gitlab/Namespaces::UserNamespace/1',
       name: 'Administrator',
@@ -34,8 +34,8 @@ export const usageDataNamespaceAggregated = [
   {
     billingMonth: 'February 2025',
     billingMonthIso8601: '2025-02-01',
-    computeMinutes: 100,
-    durationSeconds: 6000,
+    computeMinutesUsage: 100.67,
+    durationMinutes: 100.67,
     rootNamespace: {
       id: 'gid://gitlab/Group/33',
       name: 'Flightjs',
@@ -47,8 +47,8 @@ export const usageDataNamespaceAggregated = [
   {
     billingMonth: 'March 2025',
     billingMonthIso8601: '2025-03-01',
-    computeMinutes: 100,
-    durationSeconds: 6000,
+    computeMinutesUsage: 100.25,
+    durationMinutes: 100.25,
     rootNamespace: {
       id: 'gid://gitlab/Group/34',
       name: '',

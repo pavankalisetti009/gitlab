@@ -32,7 +32,7 @@ export default {
       return this.usageData
         .slice()
         .sort((a, b) => new Date(a.billingMonthIso8601) - new Date(b.billingMonthIso8601))
-        .map((el) => [el.billingMonth, el.computeMinutes]);
+        .map((el) => [el.billingMonth, el.computeMinutesUsage]);
     },
     emptyData() {
       return this.usageData.length === 0;

@@ -41,11 +41,11 @@ describe('MinutesUsageByNamespace', () => {
     });
 
     it('renders hosted runner duration', () => {
-      expect(findDuration().text()).toBe('12000');
+      expect(findDuration().text()).toBe('200.33');
     });
 
     it('renders compute minutes', () => {
-      expect(findComputeMinutes().text()).toBe('200');
+      expect(findComputeMinutes().text()).toBe('200.33');
     });
 
     it('renders "Deleted Namespace" for deleted namespaces for their name', () => {

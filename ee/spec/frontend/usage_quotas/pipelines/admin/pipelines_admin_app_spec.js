@@ -79,7 +79,7 @@ describe('Pipelines Admin App', () => {
     });
 
     it('Should display the compute minutes from february', () => {
-      const currentMonthMinutes = `${mockInstanceNamespaceUsage.data.ciDedicatedHostedRunnerUsage.nodes[mockedMonth].computeMinutes}`;
+      const currentMonthMinutes = `${mockInstanceNamespaceUsage.data.ciDedicatedHostedRunnerUsage.nodes[mockedMonth].computeMinutesUsage}`;
       expect(findRunnerUsageHeader().text()).toContain(currentMonthMinutes);
     });
   });

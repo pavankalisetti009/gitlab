@@ -142,7 +142,7 @@ export default {
       return this.$apollo.queries.dedicatedInstanceRunnerUsageMonth.loading;
     },
     monthlyUsage() {
-      return this.dedicatedInstanceRunnerUsageMonth[this.currentMonth]?.computeMinutes || 0;
+      return this.dedicatedInstanceRunnerUsageMonth[this.currentMonth]?.computeMinutesUsage || 0;
     },
   },
   methods: {
