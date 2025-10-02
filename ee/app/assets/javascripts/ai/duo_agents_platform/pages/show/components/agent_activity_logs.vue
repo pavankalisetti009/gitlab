@@ -88,9 +88,7 @@ export default {
 </script>
 <template>
   <div class="gl-h-full">
-    <div
-      class="gl-border-b gl-sticky gl-left-0 gl-top-0 gl-z-2 gl-flex gl-w-full gl-items-center gl-justify-end gl-bg-gray-10 gl-pr-3"
-    >
+    <div class="gl-border-b gl-flex gl-items-center gl-justify-end gl-bg-gray-10 gl-pr-3">
       <label class="gl-m-0 gl-mr-4 gl-p-5" for="log-level">{{
         s__('DuoAgentsPlatform|Detail level')
       }}</label>
@@ -103,7 +101,7 @@ export default {
       />
     </div>
     <div class="gl-relative gl-flex gl-flex-col gl-overflow-x-hidden gl-px-4 gl-pt-6">
-      <div class="gl-overflow-auto-y gl-h-[calc(100vh-22rem)]">
+      <div>
         <template v-if="isLoading">
           <gl-skeleton-loader class="gl-ml-4" />
           <gl-skeleton-loader class="gl-ml-4 gl-mt-4" />
