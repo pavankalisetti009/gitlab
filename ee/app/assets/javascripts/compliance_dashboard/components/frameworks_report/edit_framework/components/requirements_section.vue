@@ -135,6 +135,9 @@ export default {
     pageChanged(newPage) {
       this.currentPage = newPage;
     },
+    showPingDisabledBadge({ controlType, pingEnabled } = {}) {
+      return controlType === 'external' && pingEnabled === false;
+    },
   },
   tableFields: [
     {
@@ -171,6 +174,7 @@ export default {
     actionEdit: __('Edit'),
     actionDelete: __('Delete'),
     newRequirement: s__('ComplianceFrameworks|New requirement'),
+    pingDisabled: s__('ComplianceFrameworks|Disabled'),
   },
   emptyRequirement,
   requirementEvents,
@@ -213,6 +217,9 @@ export default {
             {{ control.displayValue }}
             <gl-badge v-if="control.controlType === 'external'">
               {{ $options.EXTERNAL_CONTROL_LABEL }}
+            </gl-badge>
+            <gl-badge v-if="showPingDisabledBadge(control)" variant="warning" class="gl-ml-2">
+              {{ $options.i18n.pingDisabled }}
             </gl-badge>
           </li>
         </ul>

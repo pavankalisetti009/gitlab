@@ -52,6 +52,7 @@ query groupComplianceRequirementsStatuses(
                 name
                 controlType
                 externalUrl
+                pingEnabled
                 externalControlName
               }
             }

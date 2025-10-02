@@ -12,6 +12,7 @@ mutation createComplianceRequirement($input: CreateComplianceRequirementInput!) 
           externalControlName
           externalUrl
           expression
+          pingEnabled
         }
       }
     }

@@ -528,6 +528,7 @@ export const mockRequirements = [
           controlType: 'internal',
           externalControlName: null,
           externalUrl: null,
+          pingEnabled: null,
           expression: {
             field: 'minimum_approvals_required',
             operator: '=',
@@ -541,6 +542,7 @@ export const mockRequirements = [
           controlType: 'internal',
           externalControlName: null,
           externalUrl: null,
+          pingEnabled: null,
           expression: {
             field: 'scanner_sast_running',
             operator: '=',
@@ -564,6 +566,7 @@ export const mockRequirements = [
           controlType: 'external',
           externalControlName: 'external_name',
           externalUrl: 'https://example.com',
+          pingEnabled: true,
           expression: null,
         },
       ],
@@ -646,6 +649,13 @@ export const mockExternalControl = {
   name: 'external_control',
   controlType: 'external',
   displayValue: 'external_name',
+};
+
+export const mockExternalControlWithPingDisabled = {
+  name: 'external_control_ping_disabled',
+  controlType: 'external',
+  displayValue: 'external_name_ping_disabled',
+  pingEnabled: false,
 };
 
 export const mockedRoutes = [

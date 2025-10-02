@@ -79,6 +79,7 @@ fragment ComplianceFrameworkConnectionDetails on ComplianceFrameworkConnection {
             expression
             externalControlName
             externalUrl
+            pingEnabled
           }
         }
       }

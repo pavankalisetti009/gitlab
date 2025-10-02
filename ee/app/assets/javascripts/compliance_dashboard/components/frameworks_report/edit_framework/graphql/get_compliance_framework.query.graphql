@@ -51,6 +51,7 @@ query getComplianceFrameworkWithPolicies(
                 externalControlName
                 externalUrl
                 expression
+                pingEnabled
               }
             }
           }

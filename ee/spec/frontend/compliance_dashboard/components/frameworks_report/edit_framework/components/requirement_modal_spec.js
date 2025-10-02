@@ -342,6 +342,8 @@ describe('RequirementModal', () => {
       wrapper.findByTestId(`external-control-summary-${index}`);
     const findExternalSecretInput = (index) =>
       wrapper.findByTestId(`external-secret-input-${index}`);
+    const findPingEnabledToggle = (index) => wrapper.findByTestId(`ping-enabled-toggle-${index}`);
+    const findPingEnabledGroup = (index) => wrapper.findByTestId(`ping-enabled-group-${index}`);
 
     it('renders external control form when adding external control', async () => {
       await findAddExternalControlButton().vm.$emit('click');
@@ -349,6 +351,7 @@ describe('RequirementModal', () => {
       expect(findExternalNameInput(1).exists()).toBe(true);
       expect(findExternalUrlInput(1).exists()).toBe(true);
       expect(findExternalSecretInput(1).exists()).toBe(true);
+      expect(findPingEnabledToggle(1).exists()).toBe(true);
     });
 
     it('saves requirement with external control data', async () => {
@@ -375,6 +378,7 @@ describe('RequirementModal', () => {
           secretToken,
           name: 'external_control',
           expression: null,
+          pingEnabled: true,
         },
       ]);
     });
@@ -625,6 +629,115 @@ describe('RequirementModal', () => {
         await nextTick();
 
         expect(wrapper.emitted(requirementEvents.create)).toBeDefined();
+      });
+    });
+
+    describe('Ping Toggle Functionality', () => {
+      beforeEach(() => {
+        createComponent();
+      });
+
+      it('renders ping toggle for external controls', async () => {
+        await findAddExternalControlButton().vm.$emit('click');
+        await nextTick();
+
+        expect(findPingEnabledToggle(1).exists()).toBe(true);
+        expect(findPingEnabledGroup(1).exists()).toBe(true);
+      });
+
+      it('defaults ping toggle to enabled for new external controls', async () => {
+        await findAddExternalControlButton().vm.$emit('click');
+        await nextTick();
+
+        expect(findPingEnabledToggle(1).props('value')).toBe(true);
+      });
+
+      it('saves external control with ping enabled by default', async () => {
+        await findAddExternalControlButton().vm.$emit('click');
+        await nextTick();
+
+        await findExternalNameInput(1).vm.$emit('input', 'external_name');
+        await findExternalUrlInput(1).vm.$emit('input', 'https://api.example.com');
+        await findExternalSecretInput(1).vm.$emit('input', 'secret123');
+        await fillForm('Test Name', 'Test Description');
+
+        submitModalForm();
+        await waitForPromises();
+
+        expect(
+          wrapper.emitted(requirementEvents.create)[0][0].requirement.stagedControls[0],
+        ).toMatchObject({
+          pingEnabled: true,
+        });
+      });
+
+      it('saves external control with ping disabled when toggled off', async () => {
+        await findAddExternalControlButton().vm.$emit('click');
+        await nextTick();
+
+        await findExternalNameInput(1).vm.$emit('input', 'external_name');
+        await findExternalUrlInput(1).vm.$emit('input', 'https://api.example.com');
+        await findExternalSecretInput(1).vm.$emit('input', 'secret123');
+        await findPingEnabledToggle(1).vm.$emit('change', false);
+        await fillForm('Test Name', 'Test Description');
+
+        submitModalForm();
+        await waitForPromises();
+
+        expect(
+          wrapper.emitted(requirementEvents.create)[0][0].requirement.stagedControls[0],
+        ).toMatchObject({
+          pingEnabled: false,
+        });
+      });
+
+      it('loads existing external control with correct ping status', async () => {
+        const existingRequirement = {
+          ...mockRequirements[0],
+          complianceRequirementsControls: {
+            nodes: [
+              {
+                id: '1',
+                name: 'external_control',
+                controlType: 'external',
+                externalControlName: 'External name',
+                externalUrl: 'https://api.example.com',
+                secretToken: 'secret123',
+                pingEnabled: false,
+              },
+            ],
+          },
+        };
+
+        createComponent({ requirement: existingRequirement });
+        await nextTick();
+
+        const editButton = findExternalControlEditButton(0);
+        await editButton.vm.$emit('click');
+        await nextTick();
+
+        expect(findPingEnabledToggle(0).props('value')).toBe(false);
+      });
+
+      it('does not show warning message for new controls with ping disabled', async () => {
+        await findAddExternalControlButton().vm.$emit('click');
+        await nextTick();
+
+        await findPingEnabledToggle(1).vm.$emit('change', false);
+        await nextTick();
+
+        const pingGroup = findPingEnabledGroup(1);
+        expect(pingGroup.text()).not.toContain(
+          'Disabling ping for an existing control will prevent automatic status resets',
+        );
+      });
+
+      it('does not render ping toggle for internal controls', async () => {
+        await addControl('scanner_sast_running');
+        await nextTick();
+
+        expect(findPingEnabledToggle(0).exists()).toBe(false);
+        expect(findPingEnabledGroup(0).exists()).toBe(false);
       });
     });
   });
