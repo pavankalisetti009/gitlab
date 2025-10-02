@@ -3593,6 +3593,9 @@ msgstr ""
 msgid "AccessTokens|Description"
 msgstr ""
 
+msgid "AccessTokens|Description is too long (maximum is 255 characters)."
+msgstr ""
+
 msgid "AccessTokens|Disable access tokens"
 msgstr ""
 
@@ -3761,6 +3764,9 @@ msgid "AccessTokens|Static object token"
 msgstr ""
 
 msgid "AccessTokens|Status"
+msgstr ""
+
+msgid "AccessTokens|The form contains the following errors:"
 msgstr ""
 
 msgid "AccessTokens|The last five distinct IP addresses from where the token was used"
