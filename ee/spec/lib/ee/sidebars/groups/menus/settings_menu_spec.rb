@@ -274,7 +274,7 @@ RSpec.describe Sidebars::Groups::Menus::SettingsMenu, feature_category: :navigat
         let(:check_billing) { true }
 
         before do
-          allow(::Gitlab::CurrentSettings).to receive(:should_check_namespace_plan?).and_return(check_billing)
+          stub_saas_features(gitlab_com_subscriptions: check_billing)
         end
 
         it { is_expected.to be_present }
@@ -362,7 +362,7 @@ RSpec.describe Sidebars::Groups::Menus::SettingsMenu, feature_category: :navigat
         let(:check_billing) { true }
 
         before do
-          allow(::Gitlab::CurrentSettings).to receive(:should_check_namespace_plan?).and_return(check_billing)
+          stub_saas_features(gitlab_com_subscriptions: check_billing)
         end
 
         it { is_expected.to be_present }

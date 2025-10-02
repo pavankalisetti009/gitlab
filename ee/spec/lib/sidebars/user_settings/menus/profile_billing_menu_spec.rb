@@ -16,7 +16,7 @@ RSpec.describe Sidebars::UserSettings::Menus::ProfileBillingMenu, feature_catego
 
     context 'when namespace check is required' do
       before do
-        allow(Gitlab::CurrentSettings).to receive(:should_check_namespace_plan?).and_return(true)
+        stub_saas_features(gitlab_com_subscriptions: true)
       end
 
       context 'when user is logged in' do
@@ -39,10 +39,6 @@ RSpec.describe Sidebars::UserSettings::Menus::ProfileBillingMenu, feature_catego
     end
 
     context 'when namespace check is not required' do
-      before do
-        allow(Gitlab::CurrentSettings).to receive(:should_check_namespace_plan?).and_return(false)
-      end
-
       context 'when user is logged in' do
         let(:context) { Sidebars::Context.new(current_user: user, container: nil) }
 

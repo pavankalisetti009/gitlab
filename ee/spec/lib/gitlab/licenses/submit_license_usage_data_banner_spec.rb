@@ -12,7 +12,7 @@ RSpec.describe Gitlab::Licenses::SubmitLicenseUsageDataBanner, feature_category:
 
     subject(:reset_data) { described_class.new.reset }
 
-    let(:check_namespace_plan) { false }
+    let(:gitlab_com_subscriptions_enabled) { false }
     let(:cloud_licensing_enabled) { true }
     let(:offline_cloud_licensing_enabled) { true }
     let(:trial) { false }
@@ -54,11 +54,11 @@ RSpec.describe Gitlab::Licenses::SubmitLicenseUsageDataBanner, feature_category:
 
       create(:callout, feature_name: feature_name, dismissed_at: Time.current)
 
-      allow(Gitlab::CurrentSettings).to receive(:should_check_namespace_plan?).and_return(check_namespace_plan)
+      stub_saas_features(gitlab_com_subscriptions: gitlab_com_subscriptions_enabled)
     end
 
     context 'when check namespace plan setting is enabled' do
-      let(:check_namespace_plan) { true }
+      let(:gitlab_com_subscriptions_enabled) { true }
 
       include_examples 'skips resetting the submit license usage data'
     end
@@ -137,7 +137,7 @@ RSpec.describe Gitlab::Licenses::SubmitLicenseUsageDataBanner, feature_category:
     let_it_be(:user, refind: true) { create(:admin) }
 
     let(:can_admin_all_resources) { true }
-    let(:check_namespace_plan) { false }
+    let(:gitlab_com_subscriptions_enabled) { false }
     let(:cloud_licensing_enabled) { true }
     let(:offline_cloud_licensing_enabled) { true }
     let(:trial) { false }
@@ -156,7 +156,7 @@ RSpec.describe Gitlab::Licenses::SubmitLicenseUsageDataBanner, feature_category:
       )
 
       allow(user).to receive(:can_admin_all_resources?).and_return(can_admin_all_resources) if user
-      allow(Gitlab::CurrentSettings).to receive(:should_check_namespace_plan?).and_return(check_namespace_plan)
+      stub_saas_features(gitlab_com_subscriptions: gitlab_com_subscriptions_enabled)
     end
 
     context 'when user is empty' do
@@ -172,7 +172,7 @@ RSpec.describe Gitlab::Licenses::SubmitLicenseUsageDataBanner, feature_category:
     end
 
     context 'when check namespace plan setting is enabled' do
-      let(:check_namespace_plan) { true }
+      let(:gitlab_com_subscriptions_enabled) { true }
 
       it { is_expected.to eq(false) }
     end
