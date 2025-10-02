@@ -14,12 +14,11 @@ RSpec.describe 'Issues', :js, feature_category: :team_planning do
   end
 
   shared_examples 'empty state' do |expect_button|
-    it "shows empty state #{expect_button ? 'with' : 'without'} \"New issue\" button" do
+    it "shows empty state #{expect_button ? 'with' : 'without'} \"Create issue\" button" do
       visit project_issues_path(project)
 
-      expect(page).to have_content('Use issues to collaborate on ideas, solve problems, and plan work')
-      expect(page).to have_content('Learn more about issues.')
-      expect(page.has_link?('New issue', exact: true)).to be(expect_button)
+      expect(page).to have_content('Track bugs, plan features, and organize your work with issues')
+      expect(page.has_link?('Create issue', exact: true)).to be(expect_button)
     end
   end
 
