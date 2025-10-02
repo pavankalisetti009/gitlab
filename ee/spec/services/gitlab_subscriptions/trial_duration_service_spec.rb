@@ -5,19 +5,20 @@ require 'spec_helper'
 RSpec.describe GitlabSubscriptions::TrialDurationService, feature_category: :acquisition do
   include SubscriptionPortalHelpers
 
-  describe '#execute', :saas, :use_clean_rails_memory_store_caching do
-    let_it_be(:free_duration) { 1 }
-    let_it_be(:premium_duration) { 2 }
-    let_it_be(:premium_next_duration) { 3 }
-    let_it_be(:duo_enterprise_duration) { 4 }
-    let_it_be(:duo_enterprise_next_duration) { 5 }
-    let_it_be(:corrupted_trial_type) { '_corrupted_trial_type_' }
-    let_it_be(:corrupted_duration) { 6 }
-    let_it_be(:corrupted_next_duration) { 7 }
-    let_it_be(:default_free_duration) { 30 }
-    let_it_be(:default_duo_enterprise_duration) { 60 }
+  describe '#execute', :use_clean_rails_memory_store_caching do
+    let(:subscriptions_trials_enabled) { true }
+    let(:free_duration) { 1 }
+    let(:premium_duration) { 2 }
+    let(:premium_next_duration) { 3 }
+    let(:duo_enterprise_duration) { 4 }
+    let(:duo_enterprise_next_duration) { 5 }
+    let(:corrupted_trial_type) { '_corrupted_trial_type_' }
+    let(:corrupted_duration) { 6 }
+    let(:corrupted_next_duration) { 7 }
+    let(:default_free_duration) { 30 }
+    let(:default_duo_enterprise_duration) { 60 }
 
-    let_it_be(:trial_types) do
+    let(:trial_types) do
       {
         GitlabSubscriptions::Trials::FREE_TRIAL_TYPE => { duration_days: free_duration },
         GitlabSubscriptions::Trials::PREMIUM_TRIAL_TYPE => {
@@ -43,6 +44,7 @@ RSpec.describe GitlabSubscriptions::TrialDurationService, feature_category: :acq
     subject(:service) { described_class.new }
 
     before do
+      stub_saas_features(subscriptions_trials: subscriptions_trials_enabled)
       stub_subscription_trial_types(trial_types: trial_types)
     end
 
@@ -75,6 +77,14 @@ RSpec.describe GitlabSubscriptions::TrialDurationService, feature_category: :acq
         .and_call_original
 
       service.execute
+    end
+
+    context 'when subscriptions_trials feature is not available' do
+      let(:subscriptions_trials_enabled) { false }
+
+      it 'returns nil' do
+        expect(service.execute).to be_nil
+      end
     end
 
     context 'when cache fails' do

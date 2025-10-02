@@ -17,6 +17,8 @@ module GitlabSubscriptions
     end
 
     def execute
+      return unless ::Gitlab::Saas.feature_available?(:subscriptions_trials)
+
       duration = find_trial_types[trial_type] || DEFAULT_DURATIONS[trial_type]
       return duration_days(duration) if duration
 
