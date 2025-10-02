@@ -36061,12 +36061,6 @@ msgstr ""
 msgid "Issues closed"
 msgstr ""
 
-msgid "Issues exist in projects. Select a project to create an issue, or create a project."
-msgstr ""
-
-msgid "Issues exist in projects. To create an issue, first create a project."
-msgstr ""
-
 msgid "Issues must match this scope to appear in this list."
 msgstr ""
 
@@ -36135,7 +36129,16 @@ msgstr ""
 msgid "Issues|An error occurred while importing issues."
 msgstr ""
 
+msgid "Issues|Create issue"
+msgstr ""
+
 msgid "Issues|Move selected"
+msgstr ""
+
+msgid "Issues|No closed issues"
+msgstr ""
+
+msgid "Issues|No open issues"
 msgstr ""
 
 msgid "Issues|Tasks and test cases can not be moved."
@@ -36148,6 +36151,12 @@ msgid "Issues|Test cases can not be moved."
 msgstr ""
 
 msgid "Issues|There was an error while moving the issues."
+msgstr ""
+
+msgid "Issues|Track bugs, plan features, and organize your work with issues"
+msgstr ""
+
+msgid "Issues|Use issues (also known as tickets or stories on other platforms) to collaborate on ideas, solve problems, and plan your project."
 msgstr ""
 
 msgid "Issue|Title"
@@ -36743,9 +36752,6 @@ msgstr ""
 msgid "JiraService| on branch %{branch_link}"
 msgstr ""
 
-msgid "JiraService|%{jiraDocsLinkStart}Enable the Jira integration%{jiraDocsLinkEnd} to view your Jira issues in GitLab."
-msgstr ""
-
 msgid "JiraService|%{jira_docs_link_start}Enable the Jira integration%{jira_docs_link_end} to view your Jira issues in GitLab."
 msgstr ""
 
@@ -36921,6 +36927,9 @@ msgid "JiraService|Ready, In Progress, Review"
 msgstr ""
 
 msgid "JiraService|Recommended. Only available for Jira Data Center and Jira Server."
+msgstr ""
+
+msgid "JiraService|See integration options"
 msgstr ""
 
 msgid "JiraService|Select issue type"
@@ -38328,9 +38337,6 @@ msgid "Learn more about groups."
 msgstr ""
 
 msgid "Learn more about importing GitLab projects"
-msgstr ""
-
-msgid "Learn more about issues."
 msgstr ""
 
 msgid "Learn more about linking epics"
@@ -70242,9 +70248,6 @@ msgid "Use issue count"
 msgstr ""
 
 msgid "Use issue weight"
-msgstr ""
-
-msgid "Use issues to collaborate on ideas, solve problems, and plan work"
 msgstr ""
 
 msgid "Use merge requests to propose, collaborate, and review code changes with others."
