@@ -70,17 +70,6 @@ module EE
         )
       end
 
-      override :has_update_permissions?
-      def has_update_permissions?(member, permission)
-        super && !member_role_too_high?(member)
-      end
-
-      def member_role_too_high?(member)
-        return false unless params[:access_level] # we don't update access_level
-
-        member.prevent_role_assignement?(current_user, params.merge(current_access_level: member.access_level))
-      end
-
       def non_admin_and_member_promotion_management_enabled?
         return false if current_user.can_admin_all_resources?
 
