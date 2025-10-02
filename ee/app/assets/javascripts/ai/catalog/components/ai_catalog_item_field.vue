@@ -17,7 +17,7 @@ export default {
 
 <template>
   <div>
-    <dt class="gl-text-subtle">{{ title }}</dt>
+    <dt class="gl-text-strong">{{ title }}</dt>
     <dd class="gl-mb-0">
       <template v-if="$scopedSlots.default">
         <slot></slot>
