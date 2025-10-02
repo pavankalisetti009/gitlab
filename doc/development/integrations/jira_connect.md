@@ -104,7 +104,7 @@ The following steps describe setting up an environment to test the GitLab OAuth 
 Ensure you have [set up OAuth first](#set-up-the-gitlab-oauth-authentication-flow) first before doing these steps,
 otherwise these steps fail.
 
-1. In Jira, go to **Jira settings > Apps > Manage apps**.
+1. In Jira, go to **Jira settings** > **Apps** > **Manage apps**.
 1. Scroll to **User-installed apps**, find your GitLab for Jira Cloud app and expand it.
 1. Select **Get started**.
 
@@ -188,7 +188,7 @@ If the _Installed and ready to go!_ dialog opens, select **Close** (don't select
      ```
 
 1. Configure this GitLab instance to use the proxy:
-   1. Go to **Admin > Settings > General**
+   1. Go to **Admin** > **Settings** > **General**
    1. Expand **GitLab for Jira App**
    1. Paste the **Application ID** value into **Jira Connect Application ID**
    1. In **Jira Connect Proxy URL**, enter `JIRA_CONNECT_PROXY_INSTANCE` (for example, `https://xxxx.gitpod.io`)
