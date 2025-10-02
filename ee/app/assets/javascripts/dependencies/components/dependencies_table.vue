@@ -221,6 +221,11 @@ export default {
         </gl-popover>
       </template>
 
+      <template #head(isVulnerable)="data">
+        {{ data.label }}
+        <shown-vulnerabilities-popover v-if="isProjectNamespace" />
+      </template>
+
       <!-- toggleDetails and detailsShowing are scoped slot props provided by
       GlTable; they mutate/read the item's _showDetails property, which GlTable
       uses to show/hide the row-details slot -->
@@ -304,6 +309,5 @@ export default {
         </div>
       </template>
     </gl-table>
-    <shown-vulnerabilities-popover />
   </div>
 </template>
