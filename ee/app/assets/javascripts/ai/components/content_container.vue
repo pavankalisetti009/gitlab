@@ -27,6 +27,36 @@ export default {
       required: false,
       default: false,
     },
+    projectId: {
+      type: String,
+      required: false,
+      default: null,
+    },
+    namespaceId: {
+      type: String,
+      required: false,
+      default: null,
+    },
+    rootNamespaceId: {
+      type: String,
+      required: false,
+      default: null,
+    },
+    resourceId: {
+      type: String,
+      required: false,
+      default: null,
+    },
+    metadata: {
+      type: String,
+      required: false,
+      default: null,
+    },
+    userModelSelectionEnabled: {
+      type: Boolean,
+      required: false,
+      default: false,
+    },
   },
   data() {
     return {
@@ -112,7 +142,17 @@ export default {
       <div v-if="typeof activeTab.component === 'string'" class="gl-self-center">
         {{ activeTab.component }}
       </div>
-      <component :is="activeTab.component" v-else />
+      <component
+        :is="activeTab.component"
+        v-else
+        :project-id="projectId"
+        :namespace-id="namespaceId"
+        :root-namespace-id="rootNamespaceId"
+        :resource-id="resourceId"
+        :metadata="metadata"
+        :user-model-selection-enabled="userModelSelectionEnabled"
+        :embedded="true"
+      />
     </div>
   </aside>
 </template>

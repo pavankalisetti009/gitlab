@@ -1,7 +1,9 @@
 import Vue from 'vue';
 import VueApollo from 'vue-apollo';
 import createDefaultClient from '~/lib/graphql';
+import { parseBoolean } from '~/lib/utils/common_utils';
 import { createRouter } from 'ee/ai/duo_agents_platform/router/ai_panel_router';
+import store from './tanuki_bot/store';
 import AIPanel from './components/ai_panel.vue';
 
 export function initDuoPanel() {
@@ -10,6 +12,15 @@ export function initDuoPanel() {
   if (!el) {
     return false;
   }
+
+  const {
+    projectId,
+    namespaceId,
+    rootNamespaceId,
+    resourceId,
+    metadata,
+    userModelSelectionEnabled,
+  } = el.dataset;
 
   const router = createRouter('/', 'user');
   Vue.use(VueApollo);
@@ -20,6 +31,7 @@ export function initDuoPanel() {
 
   return new Vue({
     el,
+    store: store(),
     router,
     apolloProvider,
     provide: {
@@ -29,6 +41,12 @@ export function initDuoPanel() {
       return createElement(AIPanel, {
         props: {
           name: 'AiPanel',
+          projectId,
+          namespaceId,
+          rootNamespaceId,
+          resourceId,
+          metadata,
+          userModelSelectionEnabled: parseBoolean(userModelSelectionEnabled),
         },
       });
     },
