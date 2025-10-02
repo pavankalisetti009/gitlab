@@ -70610,6 +70610,9 @@ msgstr ""
 msgid "UserMapping|Full user details missing"
 msgstr ""
 
+msgid "UserMapping|Group or project bot does not belong to top level group."
+msgstr ""
+
 msgid "UserMapping|How do I accept reassignments?"
 msgstr ""
 
@@ -70796,6 +70799,9 @@ msgstr ""
 msgid "UserMapping|Select user"
 msgstr ""
 
+msgid "UserMapping|Service account does not belong to top level group."
+msgstr ""
+
 msgid "UserMapping|Something went wrong while uploading the CSV file."
 msgstr ""
 
@@ -70841,10 +70847,10 @@ msgstr ""
 msgid "UserMapping|When to restore user confirmation"
 msgstr ""
 
-msgid "UserMapping|You can assign active users with regular or auditor access only."
+msgid "UserMapping|You can assign active users with regular or auditor access, service accounts and group or project bots only."
 msgstr ""
 
-msgid "UserMapping|You can assign active users with regular, auditor, or administrator access only."
+msgid "UserMapping|You can assign active users with regular, auditor, or administrator access, service accounts and group or project bots only."
 msgstr ""
 
 msgid "UserMapping|You can assign only enterprise users in the top-level group you're importing to."
@@ -70853,10 +70859,10 @@ msgstr ""
 msgid "UserMapping|You can assign only users with linked SAML and SCIM identities. Ensure the user has signed into GitLab through your SAML SSO provider and has an active SCIM identity for this group."
 msgstr ""
 
-msgid "UserMapping|You can assign users with regular or auditor access only."
+msgid "UserMapping|You can assign users with regular or auditor access, service accounts and group or project bots only."
 msgstr ""
 
-msgid "UserMapping|You can assign users with regular, auditor, or administrator access only."
+msgid "UserMapping|You can assign users with regular, auditor, or administrator access, service accounts and group or project bots only."
 msgstr ""
 
 msgid "UserMapping|You cannot reassign user contributions of imports to a personal namespace."
