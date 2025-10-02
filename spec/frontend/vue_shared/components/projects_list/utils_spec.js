@@ -41,12 +41,6 @@ const MOCK_PROJECT_PENDING_DELETION = {
 };
 
 describe('availableGraphQLProjectActions', () => {
-  beforeEach(() => {
-    window.gon = {
-      allow_immediate_namespaces_deletion: true,
-    };
-  });
-
   describe.each`
     userPermissions                                  | markedForDeletion | isSelfDeletionInProgress | isSelfDeletionScheduled | archived | availableActions
     ${{ viewEditPage: false, removeProject: false }} | ${false}          | ${false}                 | ${false}                | ${false} | ${[]}
@@ -74,6 +68,12 @@ describe('availableGraphQLProjectActions', () => {
       archived,
       availableActions,
     }) => {
+      beforeEach(() => {
+        window.gon = {
+          allow_immediate_namespaces_deletion: true,
+        };
+      });
+
       it(`when userPermissions = ${JSON.stringify(userPermissions)}, markedForDeletion is ${markedForDeletion}, isSelfDeletionInProgress is ${isSelfDeletionInProgress}, isSelfDeletionScheduled is ${isSelfDeletionScheduled}, and  archived is ${archived} then availableActions = [${availableActions}] and is sorted correctly`, () => {
         expect(
           availableGraphQLProjectActions({
