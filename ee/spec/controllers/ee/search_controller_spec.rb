@@ -401,6 +401,10 @@ RSpec.describe SearchController, :elastic, feature_category: :global_search do
       def request
         get(:aggregations, params: { search: 'foo@bar.com', scope: 'users' })
       end
+
+      def request_with_second_scope
+        get(:aggregations, params: { search: 'foo@bar.com', scope: 'projects' })
+      end
     end
 
     context 'for blobs scope' do
