@@ -391,14 +391,17 @@ export default {
         key-field="id"
         class="gl-h-full gl-min-h-0 gl-flex-grow"
       >
-        <template #default="{ item }">
+        <template #default="{ item, index }">
           <file-row
             :file="item"
             :file-url="item.routerPath"
             :level="item.level"
             :opened="item.opened"
             :loading="item.loading"
+            :tabindex="item.loading ? -1 : 0"
             :aria-current="isCurrentPath(item.path)"
+            :aria-setsize="filteredFlatFilesList.length"
+            :aria-posinset="index + 1"
             :style="{ '--level': item.level }"
             :class="{
               'tree-list-parent': item.level > 0,

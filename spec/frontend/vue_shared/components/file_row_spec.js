@@ -224,6 +224,64 @@ describe('File row component', () => {
     expect(wrapper.findComponent(GlIcon).props('name')).toBe('link');
   });
 
+  describe('ARIA tree view pattern', () => {
+    const createTreeItem = (fileProps = {}, level = 0) => {
+      createComponent({
+        file: { ...file('test.js'), ...fileProps },
+        level,
+      });
+      return wrapper.find('button');
+    };
+
+    it('renders treeitem role for files and folders', () => {
+      const button = createTreeItem();
+      expect(button.attributes('role')).toBe('treeitem');
+    });
+
+    it.each`
+      level | expectedAriaLevel
+      ${0}  | ${'1'}
+      ${2}  | ${'3'}
+    `('sets aria-level=$expectedAriaLevel when level=$level', ({ level, expectedAriaLevel }) => {
+      const button = createTreeItem({}, level);
+      expect(button.attributes('aria-level')).toBe(expectedAriaLevel);
+    });
+
+    it('does not render aria-setsize and aria-posinset (handled by parent components)', () => {
+      const button = createTreeItem({ ariaSetSize: 5, ariaPosInSet: 3 });
+      expect(button.attributes('aria-setsize')).toBeUndefined();
+      expect(button.attributes('aria-posinset')).toBeUndefined();
+    });
+
+    describe('folder-specific attributes', () => {
+      it.each`
+        opened   | expectedExpanded
+        ${true}  | ${'true'}
+        ${false} | ${'false'}
+      `(
+        'sets aria-expanded=$expectedExpanded when folder is opened=$opened',
+        ({ opened, expectedExpanded }) => {
+          const button = createTreeItem({ type: 'tree', opened });
+          expect(button.attributes('aria-expanded')).toBe(expectedExpanded);
+        },
+      );
+
+      it('does not set aria-expanded for files', () => {
+        const button = createTreeItem({ type: 'blob' });
+        expect(button.attributes('aria-expanded')).toBeUndefined();
+      });
+    });
+
+    it.each`
+      type      | name         | expectedLabel
+      ${'tree'} | ${'src'}     | ${'src'}
+      ${'blob'} | ${'test.js'} | ${'test.js'}
+    `('sets aria-label="$expectedLabel" for $type', ({ type, name, expectedLabel }) => {
+      const button = createTreeItem({ type, name });
+      expect(button.attributes('aria-label')).toBe(expectedLabel);
+    });
+  });
+
   describe('Show more button', () => {
     const findShowMoreButton = () => wrapper.findComponent(GlButton);
 
