@@ -380,7 +380,22 @@ To add an external control when creating or editing a framework:
 1. In the **Requirements** section, select **New requirement**.
 1. Select **Add an external control**.
 1. In the fields edit **External Control Name**, **External URL** and **`HMAC` shared secret**.
+1. Optional. Turn off the **Ping enabled** toggle to control whether GitLab sends notifications to the external service during compliance scans.
 1. Select **Save changes to the framework** to save the requirement.
+
+#### Ping enabled setting
+
+{{< history >}}
+
+- [Introduced](https://gitlab.com/gitlab-org/gitlab/-/issues/538898) in GitLab 18.5.
+
+{{< /history >}}
+
+The **Ping enabled** setting controls whether GitLab requests external control status updates from external systems every 12 hours.
+
+- Enabled (default): GitLab automatically sends HTTP requests to the external service URL every 12 hours and updates the external control status based on the response.
+- Disabled: GitLab does not send notifications to the external service and the external control displays a **Disabled** badge in the compliance framework UI. To request
+  the status of an external control, you must manually use the [External Controls API](../../../api/external_controls.md).
 
 #### External control lifecycle
 

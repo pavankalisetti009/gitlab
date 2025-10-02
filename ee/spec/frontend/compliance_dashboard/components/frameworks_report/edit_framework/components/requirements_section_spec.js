@@ -13,6 +13,7 @@ import EditSection from 'ee/compliance_dashboard/components/frameworks_report/ed
 import { mountExtended } from 'helpers/vue_test_utils_helper';
 import {
   mockExternalControl,
+  mockExternalControlWithPingDisabled,
   mockInternalControls,
   mockRequirements,
   mockGitLabStandardControls,
@@ -41,6 +42,8 @@ describe('Requirements section', () => {
   const findTable = () => wrapper.findComponent(GlTable);
   const findTableRow = (idx) => findTable().findAll('tbody > tr').at(idx);
   const findTableRowData = (idx) => findTableRow(idx).findAll('td');
+  const findControlsCell = (idx = 0) => findTableRowData(idx).at(2);
+  const findControlsBadges = (idx = 0) => findControlsCell(idx).findAllComponents(GlBadge);
   const findNewRequirementButton = () => wrapper.findByTestId('add-requirement-button');
   const findRequirementModal = () => wrapper.findComponent(RequirementModal);
   const findDeleteAction = () => wrapper.findByTestId('delete-action');
@@ -154,6 +157,7 @@ describe('Requirements section', () => {
             w
               .text()
               .replace(/\s+External$/, '')
+              .replace(/\s+Disabled$/, '')
               .trim(),
           );
         expect(listItems).toEqual(controls);
@@ -388,6 +392,98 @@ describe('Requirements section', () => {
       expect(wrapper.vm.currentPage).toBe(1);
       await findPagination().vm.$emit('input', 2);
       expect(wrapper.vm.currentPage).toBe(2);
+    });
+  });
+
+  describe('Ping disabled badge', () => {
+    beforeEach(() => {
+      controlsQueryHandler = jest.fn().mockResolvedValue({
+        data: {
+          complianceRequirementControls: {
+            controlExpressions: mockGitLabStandardControls,
+          },
+        },
+      });
+    });
+
+    it('shows ping disabled badge for external controls with pingEnabled false', async () => {
+      const requirementsWithPingDisabled = [
+        {
+          ...mockRequirements[0],
+          stagedControls: [mockExternalControlWithPingDisabled],
+        },
+      ];
+
+      await createComponent({
+        controlsQueryHandlerMockResponse: controlsQueryHandler,
+        requirements: requirementsWithPingDisabled,
+      });
+
+      const badges = findControlsBadges(0);
+
+      expect(badges).toHaveLength(2);
+      expect(badges.at(0).text()).toBe('External');
+      expect(badges.at(1).text()).toBe('Disabled');
+      expect(badges.at(1).props('variant')).toBe('warning');
+    });
+
+    it('does not show ping disabled badge for external controls with pingEnabled true', async () => {
+      const requirementsWithPingEnabled = [
+        {
+          ...mockRequirements[0],
+          stagedControls: [{ ...mockExternalControl, pingEnabled: true }],
+        },
+      ];
+
+      await createComponent({
+        controlsQueryHandlerMockResponse: controlsQueryHandler,
+        requirements: requirementsWithPingEnabled,
+      });
+
+      const badges = findControlsBadges(0);
+
+      expect(badges).toHaveLength(1);
+      expect(badges.at(0).text()).toBe('External');
+    });
+
+    it('does not show ping disabled badge for external controls with pingEnabled undefined', async () => {
+      const requirementsWithUndefinedPing = [
+        {
+          ...mockRequirements[0],
+          stagedControls: [mockExternalControl],
+        },
+      ];
+
+      await createComponent({
+        controlsQueryHandlerMockResponse: controlsQueryHandler,
+        requirements: requirementsWithUndefinedPing,
+      });
+
+      const badges = findControlsBadges(0);
+
+      expect(badges).toHaveLength(1);
+      expect(badges.at(0).text()).toBe('External');
+    });
+
+    it('does not show ping disabled badge for internal controls', async () => {
+      const requirementsWithInternalControls = [
+        {
+          ...mockRequirements[0],
+          stagedControls: mockInternalControls.map((control) => ({
+            ...control,
+            pingEnabled: false,
+          })),
+        },
+      ];
+
+      await createComponent({
+        controlsQueryHandlerMockResponse: controlsQueryHandler,
+        requirements: requirementsWithInternalControls,
+      });
+
+      const badges = findControlsBadges(0);
+
+      expect(badges).toHaveLength(0);
     });
   });
 

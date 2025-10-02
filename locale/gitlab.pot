@@ -16333,6 +16333,9 @@ msgstr ""
 msgid "ComplianceFrameworks|Description is required and must be less than %{maxLength} characters"
 msgstr ""
 
+msgid "ComplianceFrameworks|Disabled"
+msgstr ""
+
 msgid "ComplianceFrameworks|Edit compliance framework"
 msgstr ""
 
@@ -16340,6 +16343,9 @@ msgid "ComplianceFrameworks|Edit compliance framework: %{frameworkName}"
 msgstr ""
 
 msgid "ComplianceFrameworks|Edit requirement"
+msgstr ""
+
+msgid "ComplianceFrameworks|Enable ping"
 msgstr ""
 
 msgid "ComplianceFrameworks|Error fetching compliance frameworks data. Please refresh the page or try a different framework"
@@ -16517,6 +16523,9 @@ msgid "ComplianceFrameworks|Unable to save this compliance framework. Please try
 msgstr ""
 
 msgid "ComplianceFrameworks|Unknown"
+msgstr ""
+
+msgid "ComplianceFrameworks|When enabled, GitLab pings this external control every 12 hours to reset its status to 'pending'. To manage the control status exclusively through the API, disable this setting."
 msgstr ""
 
 msgid "ComplianceFrameworks|You are about to permanently delete the compliance framework %{framework} from all projects which currently have it applied, which may remove other functionality. This cannot be undone."

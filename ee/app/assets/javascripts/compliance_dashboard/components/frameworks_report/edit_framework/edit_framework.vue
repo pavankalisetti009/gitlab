@@ -364,6 +364,7 @@ export default {
         externalUrl: control.externalUrl || '',
         expression: control.expression || '',
         ...(control.secretToken && { secretToken: control.secretToken }),
+        ...(control.pingEnabled !== undefined && { pingEnabled: control.pingEnabled }),
       }));
 
       const { data } = await this.$apollo.mutate({
@@ -429,6 +430,7 @@ export default {
         externalUrl: control.externalUrl || '',
         expression: control.expression || '',
         ...(control.secretToken && { secretToken: control.secretToken }),
+        ...(control.pingEnabled !== undefined && { pingEnabled: control.pingEnabled }),
       }));
 
       const { data } = await this.$apollo.mutate({
@@ -574,14 +576,14 @@ export default {
           this.updateRequirementCacheOnDelete(cache, result, requirementId),
       });
 
-      const errors = data?.deleteComplianceRequirement?.errors;
+      const errors = data?.destroyComplianceRequirement?.errors;
       if (errors && errors.length) {
         throw new Error(errors[0]);
       }
     },
 
-    updateRequirementCacheOnDelete(cache, { data: { deleteComplianceRequirement } }, id) {
-      const errors = deleteComplianceRequirement?.errors;
+    updateRequirementCacheOnDelete(cache, { data: { destroyComplianceRequirement } }, id) {
+      const errors = destroyComplianceRequirement?.errors;
       if (errors && errors.length) {
         return;
       }

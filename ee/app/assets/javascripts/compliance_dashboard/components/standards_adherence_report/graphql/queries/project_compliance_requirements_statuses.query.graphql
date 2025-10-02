@@ -52,6 +52,7 @@ query projectComplianceRequirementsStatuses(
                 name
                 controlType
                 externalUrl
+                pingEnabled
                 externalControlName
               }
             }
