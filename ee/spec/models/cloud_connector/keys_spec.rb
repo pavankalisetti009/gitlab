@@ -242,4 +242,29 @@ RSpec.describe CloudConnector::Keys, :models, feature_category: :system_access d
       expect(payload).to include('iss' => 'test')
     end
   end
+
+  describe '#secret_key' do
+    it 'has a SHA1 key provider configured as a previous encryption scheme' do
+      attr_type = described_class.type_for_attribute('secret_key')
+      scheme = attr_type.scheme
+
+      expect(scheme.previous_schemes).not_to be_empty
+
+      sha1_scheme = scheme.previous_schemes.find do |scheme|
+        scheme.key_provider.is_a?(Gitlab::Encryption::Sha1EnvelopeEncryptionKeyProvider)
+      end
+
+      sha1_key_provider = sha1_scheme.key_provider
+      expect(sha1_key_provider).to be_a(Gitlab::Encryption::Sha1EnvelopeEncryptionKeyProvider)
+    end
+
+    it 'can encrypt and decrypt keys with the current encryption scheme' do
+      test_key = OpenSSL::PKey::RSA.new(2048).to_pem
+      key_record = described_class.create!(secret_key: test_key)
+
+      key_record.reload
+
+      expect(key_record.secret_key).to eq(test_key)
+    end
+  end
 end
