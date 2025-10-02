@@ -7,6 +7,8 @@ RSpec.describe Import::SourceUsers::ReassignService, feature_category: :importer
   let_it_be(:import_source_user) { create(:import_source_user, namespace: group) }
   let_it_be(:current_user) { create(:user) }
   let_it_be(:assignee_user) { create(:user) }
+  let_it_be(:service_account) { create(:service_account, provisioned_by_group: group) }
+  let_it_be(:another_service_account) { create(:service_account, provisioned_by_group: create(:group)) }
 
   subject(:service) { described_class.new(import_source_user, assignee_user, current_user: current_user) }
 
@@ -37,6 +39,21 @@ RSpec.describe Import::SourceUsers::ReassignService, feature_category: :importer
         expect(result.payload.reassign_to_user).to eq(assignee_user)
         expect(result.payload.reassigned_by_user).to eq(current_user)
         expect(result.payload.awaiting_approval?).to be(true)
+      end
+    end
+
+    shared_examples 'a success response that bypasses user confirmation' do
+      it 'returns success', :aggregate_failures do
+        expect(Import::ReassignPlaceholderUserRecordsWorker).to receive(:perform_async).with(import_source_user.id,
+          'confirmation_skipped' => true)
+
+        result = service.execute
+
+        expect(result).to be_success
+        expect(result.payload.reload).to eq(import_source_user)
+        expect(result.payload.reassign_to_user).to eq(assignee_user)
+        expect(result.payload.reassigned_by_user).to eq(current_user)
+        expect(result.payload.reassignment_in_progress?).to be(true)
       end
     end
 
@@ -131,17 +148,21 @@ RSpec.describe Import::SourceUsers::ReassignService, feature_category: :importer
         end
       end
 
-      it 'bypass confirmation and returns success', :aggregate_failures do
-        expect(Import::ReassignPlaceholderUserRecordsWorker).to receive(:perform_async).with(import_source_user.id,
-          'confirmation_skipped' => true)
+      it_behaves_like 'a success response that bypasses user confirmation'
+    end
 
-        result = service.execute
+    describe 'service account reassignment' do
+      context 'when assignee user is a service account that belongs to the group' do
+        let(:assignee_user) { service_account }
 
-        expect(result).to be_success
-        expect(result.payload.reload).to eq(import_source_user)
-        expect(result.payload.reassign_to_user).to eq(assignee_user)
-        expect(result.payload.reassigned_by_user).to eq(current_user)
-        expect(result.payload.reassignment_in_progress?).to be(true)
+        it_behaves_like 'a success response that bypasses user confirmation'
+      end
+
+      context 'when assignee user is a service account that does not belong to the group' do
+        let(:assignee_user) { another_service_account }
+
+        it_behaves_like 'an error response',
+          error: "Service account does not belong to top level group."
       end
     end
   end
