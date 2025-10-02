@@ -87,7 +87,7 @@ RSpec.describe 'Admin Groups', feature_category: :groups_and_projects do
           expect(page).to have_content(group.name)
 
           within_testid("groups-list-item-#{group.id}") do
-            expect(has_testid?('groups-projects-more-actions-dropdown')).to be false
+            expect(has_testid?('groups-list-item-actions')).to be false
           end
         end
       end
@@ -150,9 +150,9 @@ RSpec.describe 'Admin Groups', feature_category: :groups_and_projects do
 
         expect(page).to have_content(group.name)
 
-        find_by_testid('groups-projects-more-actions-dropdown').click
+        find_by_testid('groups-list-item-actions').click
 
-        within_testid('groups-projects-more-actions-dropdown') do
+        within_testid('groups-list-item-actions') do
           expect(page).to have_content('Edit')
           expect(page).to have_content('Delete')
         end

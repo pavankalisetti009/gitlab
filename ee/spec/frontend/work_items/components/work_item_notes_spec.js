@@ -2,6 +2,7 @@ import { GlModal } from '@gitlab/ui';
 import { shallowMount } from '@vue/test-utils';
 import Vue from 'vue';
 import VueApollo from 'vue-apollo';
+import { useLocalStorageSpy } from 'helpers/local_storage_helper';
 import createMockApollo from 'helpers/mock_apollo_helper';
 import { stubComponent } from 'helpers/stub_component';
 import waitForPromises from 'helpers/wait_for_promises';
@@ -12,7 +13,8 @@ import deleteWorkItemNoteMutation from '~/work_items/graphql/notes/delete_work_i
 import workItemNoteCreatedSubscription from '~/work_items/graphql/notes/work_item_note_created.subscription.graphql';
 import workItemNoteUpdatedSubscription from '~/work_items/graphql/notes/work_item_note_updated.subscription.graphql';
 import workItemNoteDeletedSubscription from '~/work_items/graphql/notes/work_item_note_deleted.subscription.graphql';
-import { WIDGET_TYPE_NOTES } from '~/work_items/constants';
+import { WIDGET_TYPE_NOTES, WORK_ITEM_NOTES_SORT_ORDER_KEY } from '~/work_items/constants';
+import { DESC } from '~/notes/constants';
 import {
   mockWorkItemNotesByIidResponse,
   workItemNotesCreateSubscriptionResponse,
@@ -84,19 +86,8 @@ describe('WorkItemNotes component', () => {
     });
   };
 
-  beforeEach(() => {
-    createComponent();
-  });
-
-  describe('collapse system notes with description changes', () => {
-    beforeEach(() => {
-      createComponent({
-        defaultWorkItemNotesQueryHandler: workItemNotesWithChangedDescriptionHandler,
-      });
-      return waitForPromises();
-    });
-
-    it('with time difference of 10 mins into one', () => {
+  describe('system notes with description changes', () => {
+    it('collapses notes with time difference of 10 mins into one', async () => {
       const notesWidget =
         workItemNotesWithSystemNotesWithChangedDescription.data.workspace.workItem.widgets.find(
           (widget) => widget.type === WIDGET_TYPE_NOTES,
@@ -106,8 +97,37 @@ describe('WorkItemNotes component', () => {
         discussions: { nodes },
       } = notesWidget;
 
+      createComponent({
+        defaultWorkItemNotesQueryHandler: workItemNotesWithChangedDescriptionHandler,
+      });
+
+      await waitForPromises();
+
       expect(findAllSystemNotes()).not.toHaveLength(nodes.length);
-      expect(findAllSystemNotes()).toHaveLength(1);
+      expect(findAllSystemNotes()).toHaveLength(2);
+    });
+
+    describe('when notes are fetched in descending order', () => {
+      it('collapses notes with time difference of 10 mins into one', async () => {
+        useLocalStorageSpy();
+        localStorage.setItem(WORK_ITEM_NOTES_SORT_ORDER_KEY, DESC);
+
+        const reversedNotes = { ...workItemNotesWithSystemNotesWithChangedDescription };
+        const discussions = reversedNotes.data.workspace.workItem.widgets.find(
+          (widget) => widget.type === WIDGET_TYPE_NOTES,
+        ).discussions.nodes;
+
+        discussions.reverse();
+
+        createComponent({
+          defaultWorkItemNotesQueryHandler: jest.fn().mockResolvedValue(reversedNotes),
+        });
+
+        await waitForPromises();
+
+        expect(findAllSystemNotes()).not.toHaveLength(discussions.length);
+        expect(findAllSystemNotes()).toHaveLength(2);
+      });
     });
   });
 });

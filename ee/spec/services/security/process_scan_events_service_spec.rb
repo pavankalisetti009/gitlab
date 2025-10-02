@@ -223,6 +223,10 @@ RSpec.describe Security::ProcessScanEventsService, feature_category: :vulnerabil
           label: '1',
           arch: 'amd64'
         }
+        'collect_dast_scan_config_variable_metrics_from_pipeline' | {
+          property: '294f623d-b2ce-4568-8008-6fd4a5fb3330',
+          label: 'DAST_CONFIG_VARIABLE'
+        }
         'collect_dast_scan_w3c_metrics_from_pipeline' | {
           property: '294f623d-b2ce-4568-8008-6fd4a5fb3330',
           label: '1',

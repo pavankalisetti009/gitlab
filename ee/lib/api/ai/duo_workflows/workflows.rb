@@ -22,7 +22,9 @@ module API
             # sends it as a query param.
             # The IDE only sends the namespace_id of the project's
             # immediate group, so we have to find the root_ancestor separately.
-            namespace_id = params[:root_namespace_id].presence || headers['X-Gitlab-Namespace-Id'].presence
+            namespace_id = params[:root_namespace_id].presence ||
+              params[:namespace_id].presence ||
+              headers['X-Gitlab-Namespace-Id'].presence
             return unless namespace_id
 
             namespace = find_namespace(namespace_id)
@@ -268,9 +270,10 @@ module API
               content_type Gitlab::Workhorse::INTERNAL_API_CONTENT_TYPE
 
               push_feature_flags
+              root_namespace = find_root_namespace
 
               model_metadata_headers = ::Ai::DuoWorkflows::DuoAgentPlatformModelMetadataService.new(
-                root_namespace: find_root_namespace,
+                root_namespace: root_namespace,
                 current_user: current_user,
                 user_selected_model_identifier: find_user_selected_model_identifier
               ).execute
@@ -279,6 +282,12 @@ module API
                 'x-gitlab-oauth-token' => gitlab_oauth_token.plaintext_token,
                 'x-gitlab-unidirectional-streaming' => 'enabled'
               ).merge(model_metadata_headers)
+
+              headers['x-gitlab-project-id'] ||= params[:project_id].presence
+              headers['x-gitlab-root-namespace-id'] = root_namespace&.id&.to_s
+              headers['x-gitlab-namespace-id'] ||= params[:namespace_id].presence ||
+                headers['X-Gitlab-Namespace-Id'].presence ||
+                headers['x-gitlab-root-namespace-id']
 
               {
                 DuoWorkflow: {

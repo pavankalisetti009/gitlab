@@ -2,13 +2,18 @@
 import ExtendedDashboardPanel from '~/vue_shared/components/customizable_dashboard/extended_dashboard_panel.vue';
 import { s__ } from '~/locale';
 import { formatDate, getDateInPast } from '~/lib/utils/datetime_utility';
-import { fetchPolicies } from '~/lib/graphql';
 import VulnerabilitiesOverTimeChart from 'ee/security_dashboard/components/shared/charts/open_vulnerabilities_over_time.vue';
 import projectVulnerabilitiesOverTime from 'ee/security_dashboard/graphql/queries/project_vulnerabilities_over_time.query.graphql';
 import { formatVulnerabilitiesOverTimeData } from 'ee/security_dashboard/utils/chart_utils';
-import { DASHBOARD_LOOKBACK_DAYS } from 'ee/security_dashboard/constants';
 import OverTimeSeverityFilter from './over_time_severity_filter.vue';
 import OverTimeGroupBy from './over_time_group_by.vue';
+import OverTimePeriodSelector from './over_time_period_selector.vue';
+
+const TIME_PERIODS = {
+  THIRTY_DAYS: { key: 'thirtyDays', startDays: 30, endDays: 0 },
+  SIXTY_DAYS: { key: 'sixtyDays', startDays: 60, endDays: 31 },
+  NINETY_DAYS: { key: 'ninetyDays', startDays: 90, endDays: 61 },
+};
 
 export default {
   name: 'ProjectVulnerabilitiesOverTimePanel',
@@ -17,6 +22,7 @@ export default {
     VulnerabilitiesOverTimeChart,
     OverTimeGroupBy,
     OverTimeSeverityFilter,
+    OverTimePeriodSelector,
   },
   inject: ['projectFullPath'],
   props: {
@@ -25,47 +31,99 @@ export default {
       required: true,
     },
   },
-  apollo: {
-    vulnerabilitiesOverTime: {
-      fetchPolicy: fetchPolicies.NETWORK_ONLY,
-      query: projectVulnerabilitiesOverTime,
-      variables() {
-        const lookbackDate = getDateInPast(new Date(), DASHBOARD_LOOKBACK_DAYS);
-        const startDate = formatDate(lookbackDate, 'isoDate');
-        const endDate = formatDate(new Date(), 'isoDate');
-
-        return {
-          fullPath: this.projectFullPath,
-          startDate,
-          endDate,
-          reportType: this.filters.reportType,
-          severity: this.panelLevelFilters.severity,
-          includeBySeverity: this.groupedBy === 'severity',
-          includeByReportType: this.groupedBy === 'reportType',
-        };
-      },
-      update(data) {
-        const rawData = data.project?.securityMetrics?.vulnerabilitiesOverTime?.nodes || [];
-        return formatVulnerabilitiesOverTimeData(rawData, this.groupedBy);
-      },
-      error() {
-        this.fetchError = true;
-      },
-    },
-  },
   data() {
     return {
-      vulnerabilitiesOverTime: [],
       fetchError: false,
       groupedBy: 'severity',
+      selectedTimePeriod: 30,
+      isLoading: false,
+      chartData: {
+        thirtyDays: [],
+        sixtyDays: [],
+        ninetyDays: [],
+      },
       panelLevelFilters: {
         severity: [],
       },
     };
   },
   computed: {
+    combinedFilters() {
+      return {
+        ...this.filters,
+        ...this.panelLevelFilters,
+      };
+    },
     hasChartData() {
-      return this.vulnerabilitiesOverTime.length > 0;
+      return this.selectedChartData.length > 0;
+    },
+    selectedChartData() {
+      const selectedChartData = [
+        ...(this.selectedTimePeriod >= 90 ? this.chartData.ninetyDays : []),
+        ...(this.selectedTimePeriod >= 60 ? this.chartData.sixtyDays : []),
+        ...this.chartData.thirtyDays,
+      ];
+
+      return formatVulnerabilitiesOverTimeData(selectedChartData, this.groupedBy);
+    },
+    baseQueryVariables() {
+      return {
+        reportType: this.filters.reportType,
+        severity: this.panelLevelFilters.severity,
+        includeBySeverity: this.groupedBy === 'severity',
+        includeByReportType: this.groupedBy === 'reportType',
+        fullPath: this.projectFullPath,
+      };
+    },
+    selectedTimePeriods() {
+      return Object.values(TIME_PERIODS).filter(
+        ({ startDays }) => startDays <= this.selectedTimePeriod,
+      );
+    },
+  },
+  watch: {
+    baseQueryVariables: {
+      handler() {
+        this.fetchChartData();
+      },
+      deep: true,
+      immediate: true,
+    },
+    selectedTimePeriod() {
+      this.fetchChartData();
+    },
+  },
+  methods: {
+    async fetchChartData() {
+      this.isLoading = true;
+      this.fetchError = false;
+
+      try {
+        // Note: we want to load each chunk sequentially for BE-performance reasons
+        for await (const timePeriod of this.selectedTimePeriods) {
+          await this.fetchTimeRangeData(timePeriod);
+        }
+      } catch (error) {
+        this.fetchError = true;
+      } finally {
+        this.isLoading = false;
+      }
+    },
+    async fetchTimeRangeData({ key, startDays, endDays }) {
+      const startDate = formatDate(getDateInPast(new Date(), startDays), 'isoDate');
+      const endDate = formatDate(getDateInPast(new Date(), endDays), 'isoDate');
+
+      const result = await this.$apollo.query({
+        query: projectVulnerabilitiesOverTime,
+        variables: {
+          ...this.baseQueryVariables,
+          startDate,
+          endDate,
+        },
+      });
+
+      this.chartData[key] =
+        result.data.project?.securityMetrics?.vulnerabilitiesOverTime?.nodes || [];
     },
   },
   tooltip: {
@@ -77,20 +135,23 @@ export default {
 <template>
   <extended-dashboard-panel
     :title="s__('SecurityReports|Vulnerabilities over time')"
-    :loading="$apollo.queries.vulnerabilitiesOverTime.loading"
+    :loading="isLoading"
     :show-alert-state="fetchError"
     :tooltip="$options.tooltip"
   >
     <template #filters>
-      <over-time-severity-filter v-model="panelLevelFilters.severity" />
+      <over-time-period-selector v-model="selectedTimePeriod" class="gl-ml-3 gl-mr-2" />
+      <over-time-severity-filter v-model="panelLevelFilters.severity" class="gl-mr-2" />
       <over-time-group-by v-model="groupedBy" />
     </template>
     <template #body>
+      <!-- resetting the z-index to 0 to make sure the the chart's tooltip is below any filter dropdowns, etc. -->
       <vulnerabilities-over-time-chart
         v-if="!fetchError && hasChartData"
-        class="gl-h-full gl-overflow-hidden gl-p-2"
-        :chart-series="vulnerabilitiesOverTime"
+        class="gl-z-0 gl-h-full gl-overflow-hidden gl-p-2"
+        :chart-series="selectedChartData"
         :grouped-by="groupedBy"
+        :filters="combinedFilters"
       />
       <p
         v-else
@@ -98,7 +159,7 @@ export default {
         data-testid="vulnerabilities-over-time-empty-state"
       >
         <template v-if="fetchError">{{ __('Something went wrong. Please try again.') }}</template>
-        <template v-else>{{ __('No data available.') }}</template>
+        <template v-else>{{ __('No results found') }}</template>
       </p>
     </template>
   </extended-dashboard-panel>

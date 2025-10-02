@@ -58,7 +58,7 @@ export default {
     :selected="selectedSeverities"
     block
     multiple
-    class="gl-mr-2 gl-w-15"
+    class="gl-w-15 gl-flex-shrink-0"
     size="small"
     :toggle-text="severityFilterToggleText"
     @select="updateSelected"

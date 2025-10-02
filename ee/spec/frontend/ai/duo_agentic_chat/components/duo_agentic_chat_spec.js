@@ -417,7 +417,7 @@ describe('Duo Agentic Chat', () => {
           aiCatalogItemVersionId: '',
         });
 
-        expect(createWebSocket).toHaveBeenCalledWith('/api/v4/ai/duo_workflows/ws', {
+        expect(createWebSocket).toHaveBeenCalledWith('/api/v4/ai/duo_workflows/ws?project_id=123', {
           onMessage: expect.any(Function),
           onError: expect.any(Function),
           onClose: expect.any(Function),
@@ -450,11 +450,14 @@ describe('Duo Agentic Chat', () => {
           aiCatalogItemVersionId: '',
         });
 
-        expect(createWebSocket).toHaveBeenCalledWith('/api/v4/ai/duo_workflows/ws', {
-          onMessage: expect.any(Function),
-          onError: expect.any(Function),
-          onClose: expect.any(Function),
-        });
+        expect(createWebSocket).toHaveBeenCalledWith(
+          '/api/v4/ai/duo_workflows/ws?namespace_id=456',
+          {
+            onMessage: expect.any(Function),
+            onError: expect.any(Function),
+            onClose: expect.any(Function),
+          },
+        );
 
         expect(actionSpies.addDuoChatMessage).toHaveBeenCalledWith(
           expect.anything(),
@@ -521,7 +524,7 @@ describe('Duo Agentic Chat', () => {
 
         expect(ApolloUtils.createWorkflow).not.toHaveBeenCalled();
         expect(createWebSocket).toHaveBeenCalledWith(
-          '/api/v4/ai/duo_workflows/ws',
+          '/api/v4/ai/duo_workflows/ws?project_id=123',
           expect.any(Object),
         );
       });

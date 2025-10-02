@@ -13,6 +13,7 @@ import {
   GlInputGroupText,
   GlTooltipDirective,
   GlTruncate,
+  GlToggle,
 } from '@gitlab/ui';
 import { cloneDeep, omit } from 'lodash';
 import { isValidURL } from '~/lib/utils/url_utility';
@@ -44,6 +45,7 @@ export default {
     GlFormInputGroup,
     GlInputGroupText,
     GlTruncate,
+    GlToggle,
   },
   directives: {
     GlTooltip: GlTooltipDirective,
@@ -164,6 +166,7 @@ export default {
               externalControlName: control.externalControlName,
               externalUrl: control.externalUrl,
               secretToken: control.secretToken,
+              pingEnabled: control.pingEnabled ?? true,
             };
           }
 
@@ -347,6 +350,7 @@ export default {
           externalUrl: '',
           secretToken: '',
           name: type === 'external' ? 'external_control' : '',
+          pingEnabled: type === 'external' ? true : undefined,
         });
         if (type === 'external') {
           this.controlValidation[newIndex] = {
@@ -420,6 +424,9 @@ export default {
     showExternalControlFieldToggle(control) {
       return control?.id;
     },
+    showPingDisabledBadge({ controlType, pingEnabled } = {}) {
+      return controlType === 'external' && pingEnabled === false;
+    },
   },
   requirementsDocsUrl,
   i18n: {
@@ -463,6 +470,11 @@ export default {
     invalidControlNameError: s__('ComplianceFrameworks|Please enter a valid name'),
     invalidUrlError: s__('ComplianceFrameworks|Please enter a valid URL'),
     secretTokenRequired: s__('ComplianceFrameworks|Secret token is required'),
+    pingEnabledLabel: s__('ComplianceFrameworks|Enable ping'),
+    pingEnabledHelpText: s__(
+      "ComplianceFrameworks|When enabled, GitLab pings this external control every 12 hours to reset its status to 'pending'. To manage the control status exclusively through the API, disable this setting.",
+    ),
+    pingDisabled: s__('ComplianceFrameworks|Disabled'),
     EXTERNAL_CONTROL_LABEL,
   },
 };
@@ -529,6 +541,9 @@ export default {
               <div :data-testid="`external-control-summary-${index}`">
                 {{ externalControlDisplayValue(control) }}
                 <gl-badge>{{ $options.i18n.EXTERNAL_CONTROL_LABEL }}</gl-badge>
+                <gl-badge v-if="showPingDisabledBadge(control)" variant="warning" class="gl-ml-2">
+                  {{ $options.i18n.pingDisabled }}
+                </gl-badge>
               </div>
             </div>
           </template>
@@ -600,6 +615,24 @@ export default {
               <template #description>
                 <div class="gl-text-sm">
                   {{ $options.i18n.secretDescription }}
+                </div>
+              </template>
+            </gl-form-group>
+
+            <gl-form-group class="gl-mt-3" :data-testid="`ping-enabled-group-${index}`">
+              <template #label>
+                <div class="gl-flex gl-items-center gl-gap-3">
+                  <span>{{ $options.i18n.pingEnabledLabel }}</span>
+                  <gl-toggle
+                    v-model="control.pingEnabled"
+                    :data-testid="`ping-enabled-toggle-${index}`"
+                    class="!gl-flex-row"
+                  />
+                </div>
+              </template>
+              <template #description>
+                <div class="gl-text-sm">
+                  {{ $options.i18n.pingEnabledHelpText }}
                 </div>
               </template>
             </gl-form-group>
