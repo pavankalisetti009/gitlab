@@ -47,9 +47,7 @@ describe('Project component', () => {
       expect(findAvatarLabel().props()).toMatchObject({
         subLabel: projectName,
         label: '',
-      });
-      expect(findAvatarLabel().attributes()).toMatchObject({
-        'entity-name': projectName,
+        entityName: projectName,
         src: '',
       });
     });
@@ -68,9 +66,7 @@ describe('Project component', () => {
       expect(findAvatarLabel().props()).toMatchObject({
         subLabel: projectName,
         label: '',
-      });
-      expect(findAvatarLabel().attributes()).toMatchObject({
-        'entity-name': projectName,
+        entityName: projectName,
         src: avatarUrl,
       });
     });

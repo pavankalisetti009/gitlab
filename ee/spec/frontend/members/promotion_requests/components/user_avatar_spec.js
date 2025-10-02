@@ -59,7 +59,7 @@ describe('UserAvatar', () => {
         },
       });
 
-      expect(findAvatarLabeled().attributes('src')).toBe(`${TEST_HOST}${avatarUrl}?width=96`);
+      expect(findAvatarLabeled().props('src')).toBe(`${TEST_HOST}${avatarUrl}?width=96`);
     });
 
     it('displays an external avatar and sets width', () => {
@@ -71,9 +71,7 @@ describe('UserAvatar', () => {
         },
       });
 
-      expect(findAvatarLabeled().attributes('src')).toBe(
-        'https://www.gravatar.com/avatar/0?width=96',
-      );
+      expect(findAvatarLabeled().props('src')).toBe('https://www.gravatar.com/avatar/0?width=96');
     });
 
     it('does not render user avatar image if avatarUrl is null', () => {
@@ -83,7 +81,7 @@ describe('UserAvatar', () => {
           avatarUrl: null,
         },
       });
-      expect(findAvatarLabeled().attributes('src')).toBe(undefined);
+      expect(findAvatarLabeled().props('src')).toBeNull();
     });
   });
 

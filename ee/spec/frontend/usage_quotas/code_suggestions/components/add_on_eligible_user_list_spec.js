@@ -243,8 +243,8 @@ describe('Add On Eligible User List', () => {
         alt: avatarLink.attributes('alt'),
       },
       avatarLabeled: {
-        src: avatarLabeled.attributes('src'),
-        size: avatarLabeled.attributes('size'),
+        src: avatarLabeled.props('src'),
+        size: avatarLabeled.props('size'),
         text: avatarLabeled.text(),
       },
     };
@@ -340,7 +340,7 @@ describe('Add On Eligible User List', () => {
           lastDuoActivityOn: '2023-08-25',
           tooltip: 'An email address is only visible for users with public emails.',
           user: {
-            avatarLabeled: { size: '32', src: 'path/to/img_userone', text: 'User One  @userone' },
+            avatarLabeled: { size: 32, src: 'path/to/img_userone', text: 'User One  @userone' },
             avatarLink: { alt: 'User One', href: 'path/to/userone' },
           },
         },
@@ -350,7 +350,7 @@ describe('Add On Eligible User List', () => {
           lastDuoActivityOn: 'Never',
           tooltip: 'An email address is only visible for users with public emails.',
           user: {
-            avatarLabeled: { size: '32', src: 'path/to/img_usertwo', text: 'User Two  @usertwo' },
+            avatarLabeled: { size: 32, src: 'path/to/img_usertwo', text: 'User Two  @usertwo' },
             avatarLink: { alt: 'User Two', href: 'path/to/usertwo' },
           },
         },
@@ -361,7 +361,7 @@ describe('Add On Eligible User List', () => {
           tooltip: 'An email address is only visible for users with public emails.',
           user: {
             avatarLabeled: {
-              size: '32',
+              size: 32,
               src: 'path/to/img_userthree',
               text: 'User Three  @userthree',
             },
@@ -452,7 +452,7 @@ describe('Add On Eligible User List', () => {
             tooltip: 'An email address is only visible for users with public emails.',
             user: {
               avatarLabeled: {
-                size: '32',
+                size: 32,
                 src: 'path/to/img_userone',
                 text: 'User One  @userone',
               },
@@ -467,7 +467,7 @@ describe('Add On Eligible User List', () => {
             tooltip: 'An email address is only visible for users with public emails.',
             user: {
               avatarLabeled: {
-                size: '32',
+                size: 32,
                 src: 'path/to/img_usertwo',
                 text: 'User Two  @usertwo',
               },
@@ -482,7 +482,7 @@ describe('Add On Eligible User List', () => {
             tooltip: 'An email address is only visible for users with public emails.',
             user: {
               avatarLabeled: {
-                size: '32',
+                size: 32,
                 src: 'path/to/img_userthree',
                 text: 'User Three  @userthree',
               },

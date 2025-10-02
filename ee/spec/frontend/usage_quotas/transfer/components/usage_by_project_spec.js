@@ -60,15 +60,15 @@ describe('UsageByProject', () => {
         .findAllComponents(GlAvatarLabeled)
         .wrappers.map((avatarLabeledWrapper) => ({
           label: avatarLabeledWrapper.props('label'),
-          entityName: avatarLabeledWrapper.attributes('entity-name'),
-          entityId: avatarLabeledWrapper.attributes('entity-id'),
-          src: avatarLabeledWrapper.attributes('src'),
+          entityName: avatarLabeledWrapper.props('entityName'),
+          entityId: avatarLabeledWrapper.props('entityId'),
+          src: avatarLabeledWrapper.props('src'),
         }));
       const expectedAvatarLabeledProps = projects.nodes.map((node) => ({
         label: node.nameWithNamespace,
         entityName: node.name,
-        entityId: getIdFromGraphQLId(node.id).toString(),
-        src: node.avatarUrl || undefined,
+        entityId: getIdFromGraphQLId(node.id),
+        src: node.avatarUrl || null,
       }));
 
       expect(avatarLinksHref).toEqual(expectedAvatarLinksHref);
