@@ -5,7 +5,12 @@
 - registry_data = registry_types(@group, @registry_types_with_counts)
 - has_registry_with_count = @registry_types_with_counts.any? { |type, count| count > 0 }
 
-= render ::Layouts::PageHeadingComponent.new(title)
+= render ::Layouts::PageHeadingComponent.new('') do |c|
+  - c.with_heading do
+    .gl-flex.gl-gap-2
+      %span
+        = title
+      = render('shared/beta_badge')
 
 = render ::Layouts::CrudComponent.new(s_('VirtualRegistry|Registry types'),
   options: { class: 'gl-mt-5' }) do |c|
