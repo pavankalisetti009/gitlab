@@ -43191,9 +43191,6 @@ msgstr ""
 msgid "No data available"
 msgstr ""
 
-msgid "No data available."
-msgstr ""
-
 msgid "No data found for this query."
 msgstr ""
 
@@ -60208,6 +60205,15 @@ msgstr ""
 msgid "SecurityReports|1 vulnerability attached to 1 issue"
 msgstr ""
 
+msgid "SecurityReports|30 days"
+msgstr ""
+
+msgid "SecurityReports|60 days"
+msgstr ""
+
+msgid "SecurityReports|90 days"
+msgstr ""
+
 msgid "SecurityReports|A comment is required when changing the severity."
 msgstr ""
 
@@ -60736,6 +60742,9 @@ msgid "SecurityReports|This project is reaching the maximum number of vulnerabil
 msgstr ""
 
 msgid "SecurityReports|This selection is required."
+msgstr ""
+
+msgid "SecurityReports|Time period"
 msgstr ""
 
 msgid "SecurityReports|To widen your search, change or remove filters above"
