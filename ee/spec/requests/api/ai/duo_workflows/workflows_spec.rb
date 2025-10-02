@@ -823,6 +823,142 @@ RSpec.describe API::Ai::DuoWorkflows::Workflows, :with_current_organization, fea
         expect(json_response['DuoWorkflow']['Secure']).to eq(true)
       end
 
+      context 'when project_id parameter is provided' do
+        it 'includes x-gitlab-project-id header' do
+          get api(path, user), headers: workhorse_headers, params: { project_id: project.id }
+
+          expect(response).to have_gitlab_http_status(:ok)
+          expect(json_response['DuoWorkflow']['Headers']).to include(
+            'x-gitlab-project-id' => project.id.to_s
+          )
+        end
+
+        it 'sets x-gitlab-project-id header to nil when project_id is blank' do
+          get api(path, user), headers: workhorse_headers, params: { project_id: '' }
+
+          expect(response).to have_gitlab_http_status(:ok)
+          expect(json_response['DuoWorkflow']['Headers']['x-gitlab-project-id']).to be_nil
+        end
+      end
+
+      context 'when namespace_id parameter is provided' do
+        it 'includes x-gitlab-namespace-id header' do
+          get api(path, user), headers: workhorse_headers, params: { namespace_id: group.id }
+
+          expect(response).to have_gitlab_http_status(:ok)
+          expect(json_response['DuoWorkflow']['Headers']).to include(
+            'x-gitlab-namespace-id' => group.id.to_s
+          )
+        end
+
+        it 'falls back to X-Gitlab-Namespace-Id header when namespace_id is blank' do
+          get api(path, user), headers: workhorse_headers.merge('X-Gitlab-Namespace-Id' => group.id),
+            params: { namespace_id: '' }
+
+          expect(response).to have_gitlab_http_status(:ok)
+          expect(json_response['DuoWorkflow']['Headers']).to include(
+            'x-gitlab-namespace-id' => group.id.to_s,
+            'x-gitlab-root-namespace-id' => group.id.to_s
+          )
+        end
+      end
+
+      context 'when root_namespace_id parameter is provided' do
+        it 'includes x-gitlab-root-namespace-id header and sets namespace-id to root' do
+          get api(path, user), headers: workhorse_headers, params: { root_namespace_id: group.id }
+
+          expect(response).to have_gitlab_http_status(:ok)
+          expect(json_response['DuoWorkflow']['Headers']).to include(
+            'x-gitlab-root-namespace-id' => group.id.to_s,
+            'x-gitlab-namespace-id' => group.id.to_s
+          )
+        end
+
+        it 'sets root_namespace_id header to nil when namespace is not found' do
+          get api(path, user), headers: workhorse_headers, params: { root_namespace_id: 99999 }
+
+          expect(response).to have_gitlab_http_status(:ok)
+          expect(json_response['DuoWorkflow']['Headers']['x-gitlab-root-namespace-id']).to be_nil
+        end
+      end
+
+      context 'when both project_id and namespace_id parameters are provided' do
+        it 'includes both x-gitlab-project-id and x-gitlab-namespace-id headers' do
+          get api(path, user), headers: workhorse_headers, params: {
+            project_id: project.id,
+            namespace_id: group.id
+          }
+
+          expect(response).to have_gitlab_http_status(:ok)
+          expect(json_response['DuoWorkflow']['Headers']).to include(
+            'x-gitlab-project-id' => project.id.to_s,
+            'x-gitlab-namespace-id' => group.id.to_s
+          )
+        end
+      end
+
+      context 'when namespace is provided via X-Gitlab-Namespace-Id header' do
+        it 'includes x-gitlab-namespace-id header in response' do
+          get api(path, user), headers: workhorse_headers.merge('X-Gitlab-Namespace-Id' => group.id)
+
+          expect(response).to have_gitlab_http_status(:ok)
+          expect(json_response['DuoWorkflow']['Headers']).to include(
+            'x-gitlab-namespace-id' => group.id.to_s
+          )
+        end
+      end
+
+      context 'when precedence of namespace parameters is tested' do
+        let_it_be(:child_group) { create(:group, parent: group) }
+
+        it 'sets both root and namespace headers, with namespace_id taking precedence for x-gitlab-namespace-id' do
+          get api(path, user), headers: workhorse_headers.merge('X-Gitlab-Namespace-Id' => child_group.id), params: {
+            root_namespace_id: group.id,
+            namespace_id: child_group.id
+          }
+
+          expect(response).to have_gitlab_http_status(:ok)
+          expect(json_response['DuoWorkflow']['Headers']).to include(
+            'x-gitlab-root-namespace-id' => group.id.to_s,
+            'x-gitlab-namespace-id' => child_group.id.to_s
+          )
+        end
+
+        it 'uses namespace_id parameter over X-Gitlab-Namespace-Id header when root_namespace_id is not provided' do
+          get api(path, user), headers: workhorse_headers.merge('X-Gitlab-Namespace-Id' => group.id), params: {
+            namespace_id: child_group.id
+          }
+
+          expect(response).to have_gitlab_http_status(:ok)
+          expect(json_response['DuoWorkflow']['Headers']).to include(
+            'x-gitlab-namespace-id' => child_group.id.to_s,
+            'x-gitlab-root-namespace-id' => child_group.root_ancestor.id.to_s
+          )
+        end
+
+        it 'falls back to X-Gitlab-Namespace-Id header when no namespace params are provided' do
+          get api(path, user), headers: workhorse_headers.merge('X-Gitlab-Namespace-Id' => group.id)
+
+          expect(response).to have_gitlab_http_status(:ok)
+          expect(json_response['DuoWorkflow']['Headers']).to include(
+            'x-gitlab-namespace-id' => group.id.to_s,
+            'x-gitlab-root-namespace-id' => group.id.to_s
+          )
+        end
+
+        it 'uses root_namespace_id for x-gitlab-namespace-id when only root_namespace_id is provided' do
+          get api(path, user), headers: workhorse_headers.merge('X-Gitlab-Namespace-Id' => child_group.id), params: {
+            root_namespace_id: group.id
+          }
+
+          expect(response).to have_gitlab_http_status(:ok)
+          expect(json_response['DuoWorkflow']['Headers']).to include(
+            'x-gitlab-root-namespace-id' => group.id.to_s,
+            'x-gitlab-namespace-id' => group.id.to_s
+          )
+        end
+      end
+
       context 'when duo_agent_platform_enable_direct_http is enabled' do
         it 'returns the websocket configuration with proper headers' do
           stub_feature_flags(duo_agent_platform_enable_direct_http: true)
@@ -845,6 +981,54 @@ RSpec.describe API::Ai::DuoWorkflows::Workflows, :with_current_organization, fea
 
           expect(json_response['DuoWorkflow']['ServiceURI']).to eq('duo-workflow-service.example.com:50052')
           expect(json_response['DuoWorkflow']['Secure']).to eq(true)
+        end
+
+        context 'when project_id parameter is provided' do
+          it 'includes x-gitlab-project-id header' do
+            stub_feature_flags(duo_agent_platform_enable_direct_http: true)
+
+            get api(path, user), headers: workhorse_headers, params: { project_id: project.id }
+
+            expect(response).to have_gitlab_http_status(:ok)
+            expect(json_response['DuoWorkflow']['Headers']).to include(
+              'x-gitlab-project-id' => project.id.to_s
+            )
+          end
+
+          it 'sets x-gitlab-project-id header to nil when project_id is blank' do
+            stub_feature_flags(duo_agent_platform_enable_direct_http: true)
+
+            get api(path, user), headers: workhorse_headers, params: { project_id: '' }
+
+            expect(response).to have_gitlab_http_status(:ok)
+            expect(json_response['DuoWorkflow']['Headers']['x-gitlab-project-id']).to be_nil
+          end
+        end
+
+        context 'when namespace_id parameter is provided' do
+          it 'includes x-gitlab-namespace-id header' do
+            stub_feature_flags(duo_agent_platform_enable_direct_http: true)
+
+            get api(path, user), headers: workhorse_headers, params: { namespace_id: group.id }
+
+            expect(response).to have_gitlab_http_status(:ok)
+            expect(json_response['DuoWorkflow']['Headers']).to include(
+              'x-gitlab-namespace-id' => group.id.to_s
+            )
+          end
+
+          it 'falls back to X-Gitlab-Namespace-Id header when namespace_id is blank' do
+            stub_feature_flags(duo_agent_platform_enable_direct_http: true)
+
+            get api(path, user), headers: workhorse_headers.merge('X-Gitlab-Namespace-Id' => group.id),
+              params: { namespace_id: '' }
+
+            expect(response).to have_gitlab_http_status(:ok)
+            expect(json_response['DuoWorkflow']['Headers']).to include(
+              'x-gitlab-namespace-id' => group.id.to_s,
+              'x-gitlab-root-namespace-id' => group.id.to_s
+            )
+          end
         end
       end
 
