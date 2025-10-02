@@ -155,16 +155,9 @@ module API
         end
         post do
           check_rate_limit!(:code_suggestions_api_endpoint, scope: current_user) do
-            Gitlab::InternalEvents.track_event(
-              'code_suggestions_rate_limit_exceeded',
-              user: current_user
-            )
+            Gitlab::InternalEvents.track_event('code_suggestions_rate_limit_exceeded', user: current_user)
 
             header('X-GitLab-Error-Origin', 'monolith')
-            too_many_requests!(
-              { error: _('This endpoint has been requested too many times. Try again later.') },
-              retry_after: Gitlab::ApplicationRateLimiter.interval(:code_suggestions_api_endpoint) || 1.minute
-            )
           end
 
           task = ::CodeSuggestions::TaskFactory.new(
@@ -234,15 +227,7 @@ module API
           forbidden!('Direct connections are disabled') if forbid_direct_access?
 
           check_rate_limit!(:code_suggestions_direct_access, scope: current_user) do
-            Gitlab::InternalEvents.track_event(
-              'code_suggestions_direct_access_rate_limit_exceeded',
-              user: current_user
-            )
-
-            too_many_requests!(
-              { error: _('This endpoint has been requested too many times. Try again later.') },
-              retry_after: Gitlab::ApplicationRateLimiter.interval(:code_suggestions_direct_access) || 1.minute
-            )
+            Gitlab::InternalEvents.track_event('code_suggestions_direct_access_rate_limit_exceeded', user: current_user)
           end
 
           token = Gitlab::Llm::AiGateway::CodeSuggestionsClient.new(current_user).direct_access_token
@@ -315,13 +300,7 @@ module API
 
           check_rate_limit!(:code_suggestions_connection_details, scope: current_user) do
             Gitlab::InternalEvents.track_event(
-              'code_suggestions_connection_details_rate_limit_exceeded',
-              user: current_user
-            )
-
-            too_many_requests!(
-              { error: _('This endpoint has been requested too many times. Try again later.') },
-              retry_after: Gitlab::ApplicationRateLimiter.interval(:code_suggestions_connection_details) || 1.minute
+              'code_suggestions_connection_details_rate_limit_exceeded', user: current_user
             )
           end
 
