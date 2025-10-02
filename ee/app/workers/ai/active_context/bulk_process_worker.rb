@@ -23,6 +23,7 @@ module Ai
       urgency :low
       data_consistency :sticky
       loggable_arguments 0, 1
+      defer_on_database_health_signal :gitlab_main
     end
   end
 end
