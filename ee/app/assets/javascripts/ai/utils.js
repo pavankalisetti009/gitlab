@@ -36,9 +36,11 @@ export const saveDuoAgenticModePreference = (isAgenticMode) => {
  * @returns {void}
  */
 
-export const setAgenticMode = (agenticMode = true, saveCookie = false) => {
-  duoChatGlobalState.isShown = !agenticMode;
-  duoChatGlobalState.isAgenticChatShown = agenticMode;
+export const setAgenticMode = (agenticMode = true, saveCookie = false, isEmbedded = false) => {
+  if (!isEmbedded) {
+    duoChatGlobalState.isShown = !agenticMode;
+    duoChatGlobalState.isAgenticChatShown = agenticMode;
+  }
 
   if (saveCookie) {
     saveDuoAgenticModePreference(agenticMode);

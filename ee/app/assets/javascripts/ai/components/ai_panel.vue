@@ -5,6 +5,7 @@ import LocalStorageSync from '~/vue_shared/components/local_storage_sync.vue';
 import AgentSessionsRoot from '~/vue_shared/spa/components/spa_root.vue';
 import { AGENTS_PLATFORM_SHOW_ROUTE } from 'ee/ai/duo_agents_platform/router/constants';
 import { formatAgentFlowName } from 'ee/ai/duo_agents_platform/utils';
+import DuoAgenticChat from 'ee/ai/duo_agentic_chat/components/duo_agentic_chat.vue';
 import AiContentContainer from './content_container.vue';
 import NavigationRail from './navigation_rail.vue';
 
@@ -16,6 +17,38 @@ export default {
     NavigationRail,
     LocalStorageSync,
   },
+  props: {
+    projectId: {
+      type: String,
+      required: false,
+      default: null,
+    },
+    namespaceId: {
+      type: String,
+      required: false,
+      default: null,
+    },
+    rootNamespaceId: {
+      type: String,
+      required: false,
+      default: null,
+    },
+    resourceId: {
+      type: String,
+      required: false,
+      default: null,
+    },
+    metadata: {
+      type: String,
+      required: false,
+      default: null,
+    },
+    userModelSelectionEnabled: {
+      type: Boolean,
+      required: false,
+      default: false,
+    },
+  },
   data() {
     return {
       isExpanded: true,
@@ -25,12 +58,11 @@ export default {
   },
   computed: {
     currentTabComponent() {
-      // TODO: To replace placeholder strings with actual components
       switch (this.activeTab) {
         case 'chat':
           return {
-            title: __('GitLab Duo Chat'),
-            component: __('Chat content placeholder'),
+            title: __('GitLab Duo Agentic Chat'),
+            component: DuoAgenticChat,
           };
         case 'suggestions':
           return {
@@ -117,6 +149,12 @@ export default {
       :active-tab="currentTabComponent"
       :is-expanded="isExpanded"
       :show-back-button="showBackButton"
+      :project-id="projectId"
+      :namespace-id="namespaceId"
+      :root-namespace-id="rootNamespaceId"
+      :resource-id="resourceId"
+      :metadata="metadata"
+      :user-model-selection-enabled="userModelSelectionEnabled"
       @closePanel="toggleAIPanel"
       @go-back="handleGoBack()"
     />

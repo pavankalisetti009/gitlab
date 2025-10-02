@@ -7,6 +7,7 @@ import AiContentContainer from 'ee/ai/components/content_container.vue';
 import NavigationRail from 'ee/ai/components/navigation_rail.vue';
 import LocalStorageSync from '~/vue_shared/components/local_storage_sync.vue';
 import AgentSessionsRoot from '~/vue_shared/spa/components/spa_root.vue';
+import DuoAgenticChat from 'ee/ai/duo_agentic_chat/components/duo_agentic_chat.vue';
 import { AGENTS_PLATFORM_SHOW_ROUTE } from 'ee/ai/duo_agents_platform/router/constants';
 
 describe('AIPanel', () => {
@@ -20,12 +21,22 @@ describe('AIPanel', () => {
     routeName = 'some_route',
     routePath = '/some-path',
     routeParams = {},
+    propsData = {},
   } = {}) => {
     mockRouter = {
       push: jest.fn(),
     };
 
     wrapper = shallowMountExtended(AIPanel, {
+      propsData: {
+        projectId: 'gid://gitlab/Project/123',
+        namespaceId: 'gid://gitlab/Group/456',
+        rootNamespaceId: 'gid://gitlab/Group/789',
+        resourceId: 'gid://gitlab/Resource/111',
+        metadata: '{"key":"value"}',
+        userModelSelectionEnabled: false,
+        ...propsData,
+      },
       data() {
         return {
           activeTab,
@@ -43,6 +54,7 @@ describe('AIPanel', () => {
       stubs: {
         AiContentContainer,
         NavigationRail,
+        DuoAgenticChat,
       },
     });
   };
@@ -85,6 +97,17 @@ describe('AIPanel', () => {
       component: 'Suggestions content placeholder',
     });
     expect(findContentContainer().props('isExpanded')).toBe(true);
+  });
+
+  describe('when chat tab is active', () => {
+    it('returns chat tab configuration with DuoAgenticChat component', () => {
+      createComponent({ activeTab: 'chat' });
+
+      expect(findContentContainer().props('activeTab')).toEqual({
+        title: 'GitLab Duo Agentic Chat',
+        component: DuoAgenticChat,
+      });
+    });
   });
 
   describe('when sessions tab is active', () => {
@@ -224,7 +247,32 @@ describe('AIPanel', () => {
 
       expect(findNavigationRail().props('isExpanded')).toBe(true);
       expect(findContentContainer().exists()).toBe(true);
-      expect(findContentContainer().props('activeTab').title).toBe('GitLab Duo Chat');
+      expect(findContentContainer().props('activeTab').title).toBe('GitLab Duo Agentic Chat');
+    });
+  });
+
+  describe('props passing', () => {
+    it('passes all props to content container', () => {
+      createComponent({
+        activeTab: 'chat',
+        propsData: {
+          projectId: 'gid://gitlab/Project/999',
+          namespaceId: 'gid://gitlab/Group/888',
+          rootNamespaceId: 'gid://gitlab/Group/777',
+          resourceId: 'gid://gitlab/Resource/666',
+          metadata: '{"test":"data"}',
+          userModelSelectionEnabled: true,
+        },
+      });
+
+      expect(findContentContainer().props()).toMatchObject({
+        projectId: 'gid://gitlab/Project/999',
+        namespaceId: 'gid://gitlab/Group/888',
+        rootNamespaceId: 'gid://gitlab/Group/777',
+        resourceId: 'gid://gitlab/Resource/666',
+        metadata: '{"test":"data"}',
+        userModelSelectionEnabled: true,
+      });
     });
   });
 });

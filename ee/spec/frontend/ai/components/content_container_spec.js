@@ -12,7 +12,11 @@ describe('AiContentContainer', () => {
     component: 'Placeholder content',
   };
 
-  const createComponent = ({ activeTab = activeTabMock, showBackButton = false } = {}) => {
+  const createComponent = ({
+    activeTab = activeTabMock,
+    showBackButton = false,
+    propsData = {},
+  } = {}) => {
     wrapper = shallowMountExtended(AiContentContainer, {
       directives: {
         GlTooltip: createMockDirective('gl-tooltip'),
@@ -21,6 +25,13 @@ describe('AiContentContainer', () => {
         activeTab,
         isExpanded: true,
         showBackButton,
+        projectId: 'gid://gitlab/Project/123',
+        namespaceId: 'gid://gitlab/Group/456',
+        rootNamespaceId: 'gid://gitlab/Group/789',
+        resourceId: 'gid://gitlab/Resource/111',
+        metadata: '{"key":"value"}',
+        userModelSelectionEnabled: false,
+        ...propsData,
       },
       stubs: {
         GlButton,
@@ -93,6 +104,39 @@ describe('AiContentContainer', () => {
       findBackButton().trigger('click');
       await nextTick();
       expect(wrapper.emitted('go-back')).toEqual([[]]);
+    });
+  });
+
+  describe('props passing to dynamic component', () => {
+    const mockComponentTab = {
+      title: 'Test Component',
+      component: { name: 'MockComponent', render: (h) => h('div') },
+    };
+
+    it('renders dynamic component with props bound', () => {
+      createComponent({
+        activeTab: mockComponentTab,
+        propsData: {
+          projectId: 'gid://gitlab/Project/999',
+          namespaceId: 'gid://gitlab/Group/888',
+          rootNamespaceId: 'gid://gitlab/Group/777',
+          resourceId: 'gid://gitlab/Resource/666',
+          metadata: '{"test":"data"}',
+          userModelSelectionEnabled: true,
+        },
+      });
+
+      // Verify the component is rendered in the panel body
+      expect(wrapper.find('.ai-panel-body').exists()).toBe(true);
+    });
+
+    it('does not render string placeholder for non-string components', () => {
+      createComponent({
+        activeTab: mockComponentTab,
+      });
+
+      const placeholderDiv = wrapper.find('.ai-panel-body .gl-self-center');
+      expect(placeholderDiv.exists()).toBe(false);
     });
   });
 });

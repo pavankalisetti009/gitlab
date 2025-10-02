@@ -89,6 +89,11 @@ export default {
       required: false,
       default: 'default',
     },
+    isEmbedded: {
+      type: Boolean,
+      required: false,
+      default: false,
+    },
   },
   apollo: {
     agenticWorkflows: {
@@ -226,6 +231,10 @@ export default {
   computed: {
     ...mapState(['loading', 'messages']),
     dimensions() {
+      if (!this.isEmbedded) {
+        return {};
+      }
+
       return {
         width: this.width,
         height: this.height,
@@ -276,7 +285,7 @@ export default {
         return getCookie(DUO_AGENTIC_MODE_COOKIE) === 'true';
       },
       set(value) {
-        setAgenticMode(value, true);
+        setAgenticMode(value, true, this.isEmbedded);
       },
     },
     agents() {
@@ -351,13 +360,18 @@ export default {
     },
   },
   mounted() {
-    this.setDimensions();
-    window.addEventListener('resize', this.onWindowResize);
+    // Only manage dimensions and resize when not isEmbedded
+    if (!this.isEmbedded) {
+      this.setDimensions();
+      window.addEventListener('resize', this.onWindowResize);
+    }
     this.switchMode(this.mode);
   },
   beforeDestroy() {
     // Remove the event listener when the component is destroyed
-    window.removeEventListener('resize', this.onWindowResize);
+    if (!this.isEmbedded) {
+      window.removeEventListener('resize', this.onWindowResize);
+    }
     this.cleanupSocket();
   },
   methods: {
@@ -527,7 +541,11 @@ export default {
       this.addDuoChatMessage(userMessage);
     },
     onChatClose() {
-      this.duoChatGlobalState.isAgenticChatShown = false;
+      // Only manage global state when not isEmbedded
+      // When isEmbedded, the parent container (AI Panel) manages the visibility
+      if (!this.isEmbedded) {
+        this.duoChatGlobalState.isAgenticChatShown = false;
+      }
     },
     onError(err) {
       this.addDuoChatMessage({ errors: [err.toString()] });
@@ -685,9 +703,9 @@ export default {
     :active-thread-id="activeThread"
     :is-multithreaded="true"
     :enable-code-insertion="false"
-    :should-render-resizable="true"
+    :should-render-resizable="!isEmbedded"
     :with-feedback="false"
-    :show-header="true"
+    :show-header="!isEmbedded"
     :session-id="workflowId"
     badge-type="beta"
     :dimensions="dimensions"
