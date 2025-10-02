@@ -103,7 +103,7 @@ module API
                   )
               ).execute.preload_users
 
-              present paginate(tokens), with: Entities::PersonalAccessToken
+              present paginate(tokens, skip_default_order: true), with: Entities::PersonalAccessToken
             elsif Feature.enabled?(:credentials_inventory_pat_finder, user_group || :instance)
               tokens = ::Authn::CredentialsInventoryPersonalAccessTokensFinder.new(pat_finder_params)
                                                                                     .execute.preload_users
@@ -181,7 +181,7 @@ module API
                                           .includes(user: [:members, { user_detail: :bot_namespace }])
               end
 
-            present paginate(tokens), with: Entities::ResourceAccessToken
+            present paginate(tokens, skip_default_order: true), with: Entities::ResourceAccessToken
           end
           # rubocop:enable CodeReuse/ActiveRecord
 
