@@ -24,3 +24,48 @@ production assets post-compile.
 ## Updating dependencies
 
 See the main [Dependencies](../dependencies.md) page for general information about dependency updates.
+
+## Patching dependencies
+
+Patches can be applied to dependencies with [`patch-package`](https://github.com/ds300/patch-package).
+
+### What warrants a patch
+
+Dependencies should only be patched as a last resort, as they are technical
+debt. Here are some acceptable reasons for patching a dependency:
+
+- it is unmaintained, so there won't be an upstream version which will include the change;
+- there is a vulnerability identified that we cannot wait for upstream to fix;
+- to change aspects that are specific to GitLab and would or could not be changed upstream.
+
+### Patching a dependency
+
+1. If possible, write and commit a test that ensures the patch achieves the desired behavior.
+1. Edit the relevant file directly in `node_modules`. Ensure to include a comment in your edit which details:
+   - why the patch is needed,
+   - when it can be removed,
+   - a link to an issue or merge request.
+1. Generate the patch from your edit by running `yarn patch-package <package-name>`.
+1. Add the patch with `git add patches/`.
+1. Commit as usual.
+
+### Updating a patch
+
+Patches are specific to the particular version of the dependency. When that dependency is updated, any patches for it must also be updated.
+
+If the patch applies cleanly:
+
+1. Run `yarn patch-package <package-name>` to update the patch to apply to the new version. This will rename the patch.
+1. Run `git add patches/`.
+1. Commit as usual.
+
+If the patch does not apply cleanly, determine whether the patch is still needed.
+
+- If so, [create](#patching-a-dependency) a new patch from scratch.
+- If not, delete the patch file, and commit.
+
+{{< alert type="warning" >}}
+
+Do not delete patches or parts of patches without confirming that they are no longer needed. If in doubt, ask the person who introduced the patch.
+
+{{< /alert >}}
