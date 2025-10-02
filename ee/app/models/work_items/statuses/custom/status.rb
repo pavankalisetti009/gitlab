@@ -77,6 +77,16 @@ module WorkItems
           end
         end
 
+        def self.find_by_name_across_namespaces(name, namespace_ids, limit = 100)
+          return none if name.blank? || namespace_ids.blank?
+
+          normalized_name = name.strip.downcase
+
+          where(namespace_id: namespace_ids)
+            .where('TRIM(BOTH FROM LOWER(name)) = ?', normalized_name)
+            .limit(limit)
+        end
+
         def position
           # Temporarily default to 0 as it is not meaningful without lifecycle context
           0

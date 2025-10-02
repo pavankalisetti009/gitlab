@@ -6,10 +6,12 @@ RSpec.describe WorkItems::Statuses::Finder, feature_category: :team_planning do
   let_it_be(:group) { create(:group) }
   let_it_be(:other_group) { create(:group) }
   let_it_be(:other_custom_status) { create(:work_item_custom_status, :to_do, name: 'To do', namespace: other_group) }
+  let_it_be(:current_user) { create(:user, guest_of: [group, other_group]) }
+
   let(:namespace) { group }
 
   describe '#execute' do
-    subject(:finder) { described_class.new(namespace, params).execute }
+    subject(:finder) { described_class.new(namespace, params, current_user).execute }
 
     shared_examples 'returns system-defined status' do
       it 'returns system-defined status' do
@@ -115,6 +117,24 @@ RSpec.describe WorkItems::Statuses::Finder, feature_category: :team_planning do
           let(:params) { { 'name' => 'Invalid' } }
 
           it_behaves_like 'returns nil'
+        end
+      end
+
+      context 'with multiple namespaces' do
+        let_it_be(:system_defined_status) { build(:work_item_system_defined_status, :to_do) }
+        let_it_be(:custom_status) { create(:work_item_custom_status, :to_do, name: 'To do', namespace: group) }
+        let(:namespace) { nil }
+
+        it 'returns matching statuses across authorized namespaces' do
+          expect(finder).to contain_exactly(system_defined_status, custom_status, other_custom_status)
+        end
+
+        context 'when no matching statuses are found' do
+          let(:params) { { 'name' => 'Invalid' } }
+
+          it 'returns nil' do
+            expect(finder).to be_nil
+          end
         end
       end
     end

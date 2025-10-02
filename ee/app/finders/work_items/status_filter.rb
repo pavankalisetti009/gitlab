@@ -14,8 +14,7 @@ module WorkItems
     private
 
     def can_filter_by_status?(issuables)
-      status_param_present? &&
-        root_ancestor&.licensed_feature_available?(:work_item_status) &&
+      status_param_present? && work_item_status_feature_available? &&
         issuables.respond_to?(:with_status)
     end
 
@@ -23,18 +22,33 @@ module WorkItems
       params[:status].to_h&.slice(:id, :name).present?
     end
 
+    def work_item_status_feature_available?
+      return License.feature_available?(:work_item_status) unless parent
+
+      parent.root_ancestor&.licensed_feature_available?(:work_item_status)
+    end
+
     def find_statuses_for_filtering
-      requested_status = find_requested_status
-      return [] unless requested_status
+      requested_statuses = find_requested_status
+      return [] unless requested_statuses.present?
 
-      statuses = [{ status: requested_status, mapping: nil }]
+      statuses = if requested_statuses.is_a?(Array)
+                   requested_statuses.map { |status| { status: status, mapping: nil } }
+                 else
+                   [{ status: requested_statuses, mapping: nil }]
+                 end
 
-      # Add any statuses that map to the requested status
-      if requested_status.is_a?(::WorkItems::Statuses::Custom::Status)
-        statuses.concat(find_statuses_mapping_to(requested_status))
+      all_mappings = []
+
+      statuses.each do |status_mapping|
+        status = status_mapping[:status]
+        if status.is_a?(::WorkItems::Statuses::Custom::Status)
+          mappings = find_statuses_mapping_to(status)
+          all_mappings.concat(mappings) if mappings.present?
+        end
       end
 
-      statuses.uniq
+      statuses.concat(all_mappings).uniq
     end
 
     def find_requested_status
@@ -46,11 +60,16 @@ module WorkItems
     def find_status_by_name(name)
       return unless name.present?
 
-      ::WorkItems::Statuses::Finder.new(root_ancestor, { 'name' => name }).execute
+      ::WorkItems::Statuses::Finder.new(root_ancestor, { 'name' => name }, current_user).execute
     end
 
     def find_statuses_mapping_to(status)
-      mappings_to_status = load_cached_mappings(root_ancestor).select { |m| m.new_status_id == status.id }
+      return [] unless status.is_a?(::WorkItems::Statuses::Custom::Status)
+
+      namespace = status.namespace
+      return [] unless namespace
+
+      mappings_to_status = load_cached_mappings(namespace).select { |m| m.new_status_id == status.id }
       return [] if mappings_to_status.empty?
 
       mappings_to_status.map do |mapping|
@@ -79,7 +98,7 @@ module WorkItems
     end
 
     def root_ancestor
-      @parent&.root_ancestor
+      parent&.root_ancestor
     end
   end
 end

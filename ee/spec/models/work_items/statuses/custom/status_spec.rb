@@ -4,6 +4,7 @@ require 'spec_helper'
 
 RSpec.describe WorkItems::Statuses::Custom::Status, feature_category: :team_planning do
   let_it_be(:group) { create(:group) }
+  let_it_be(:group_2) { create(:group) }
 
   subject(:custom_status) { build_stubbed(:work_item_custom_status) }
 
@@ -215,8 +216,6 @@ RSpec.describe WorkItems::Statuses::Custom::Status, feature_category: :team_plan
   end
 
   describe '.find_by_namespaces_with_partial_name' do
-    let_it_be(:group_2) { create(:group) }
-
     let_it_be(:to_do_status_1) { create(:work_item_custom_status, :to_do, name: 'To Do', namespace: group) }
     let_it_be(:to_do_status_2) { create(:work_item_custom_status, :to_do, name: 'To Do', namespace: group_2) }
     let_it_be(:done_status_1) { create(:work_item_custom_status, :done, name: 'Done', namespace: group) }
@@ -278,6 +277,37 @@ RSpec.describe WorkItems::Statuses::Custom::Status, feature_category: :team_plan
       result = described_class.find_by_converted_status(system_defined_status)
 
       expect(result).to eq(converted_status)
+    end
+  end
+
+  describe '.find_by_name_across_namespaces' do
+    let_it_be(:to_do_status_1) { create(:work_item_custom_status, :to_do, name: 'To do', namespace: group) }
+    let_it_be(:to_do_status_2) { create(:work_item_custom_status, :to_do, name: 'To do', namespace: group_2) }
+    let_it_be(:done_status_1) { create(:work_item_custom_status, :done, name: 'Done', namespace: group) }
+
+    let(:status_name) { 'To do' }
+    let(:namespace_ids) { [group.id, group_2.id] }
+
+    subject(:result) { described_class.find_by_name_across_namespaces(status_name, namespace_ids) }
+
+    it 'returns statuses that exactly match the name' do
+      expect(result).to contain_exactly(to_do_status_1, to_do_status_2)
+    end
+
+    context 'when status name is lower case' do
+      let(:status_name) { 'to do' }
+
+      it 'matches case insensitive' do
+        expect(result).to contain_exactly(to_do_status_1, to_do_status_2)
+      end
+    end
+
+    context 'with invalid name' do
+      let(:status_name) { 'Invalid' }
+
+      it 'returns an empty collection' do
+        expect(result).to be_empty
+      end
     end
   end
 

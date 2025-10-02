@@ -6,7 +6,9 @@ RSpec.describe 'Status filters', feature_category: :team_planning do
   include GraphqlHelpers
 
   let_it_be(:group) { create(:group) }
+  let_it_be(:group_2) { create(:group) }
   let_it_be(:project) { create(:project, group: group) }
+  let_it_be(:project_2) { create(:project, group: group_2) }
 
   let_it_be(:group_label) { create(:group_label, group: group) }
   let(:board) { create(:board, resource_parent: resource_parent) }
@@ -19,11 +21,13 @@ RSpec.describe 'Status filters', feature_category: :team_planning do
   let_it_be(:work_item_2) { create(:work_item, :task, project: project, labels: [group_label]) }
   let_it_be(:work_item_3) { create(:work_item, :task, project: project, labels: [group_label]) }
   let_it_be(:work_item_4) { create(:work_item, :task, project: project, labels: [group_label]) }
+  let_it_be(:work_item_5) { create(:work_item, :issue, project: project_2) }
 
-  let(:current_user) { create(:user, guest_of: group) }
+  let(:current_user) { create(:user, guest_of: [group, group_2]) }
 
   let(:expected_work_items) { [work_item_1, work_item_2, work_item_3] }
   let(:expected_unfiltered_work_items) { [work_item_1, work_item_2, work_item_3, work_item_4] }
+  let(:expected_work_items_across_namespaces) { [work_item_1, work_item_2, work_item_3, work_item_5] }
 
   before do
     stub_licensed_features(work_item_status: true)
@@ -82,6 +86,35 @@ RSpec.describe 'Status filters', feature_category: :team_planning do
 
     context 'when filtering by valid name' do
       it_behaves_like 'a filtered list'
+    end
+
+    context 'when filtering by invalid name' do
+      let(:params) { { status: { name: 'invalid' } } }
+
+      it 'returns an empty result' do
+        post_graphql(query, current_user: current_user)
+
+        expect_graphql_errors_to_be_empty
+
+        model_ids = items.map { |item| GlobalID.parse(item['id']).model_id.to_i }
+
+        expect(model_ids).to be_empty
+      end
+    end
+  end
+
+  shared_examples 'supports filtering by status name across namespaces' do
+    let(:params) { { status: { name: status.name } } }
+
+    context 'when filtering by valid name' do
+      it 'filters by status argument' do
+        post_graphql(query, current_user: current_user)
+
+        model_ids = items.map { |item| GlobalID.parse(item['id']).model_id.to_i }
+
+        expect(model_ids.size).to eq(expected_work_items_across_namespaces.size)
+        expect(model_ids).to match_array(expected_work_items_across_namespaces.map(&:id))
+      end
     end
 
     context 'when filtering by invalid name' do
@@ -168,6 +201,13 @@ RSpec.describe 'Status filters', feature_category: :team_planning do
         it_behaves_like 'supports filtering by status name'
         it_behaves_like 'does not support filtering by both status ID and name'
       end
+
+      context 'when querying issues' do
+        let(:query) { graphql_query_for(:issues, params) }
+        let(:items) { graphql_data.dig('issues', 'nodes') }
+
+        it_behaves_like 'supports filtering by status name across namespaces'
+      end
     end
 
     context 'for issue boards' do
@@ -242,6 +282,24 @@ RSpec.describe 'Status filters', feature_category: :team_planning do
 
         build(:work_item_type_custom_lifecycle,
           namespace: group,
+          work_item_type: task_work_item_type,
+          lifecycle: lifecycle
+        ).save!(validate: false)
+      end
+    end
+
+    let_it_be(:lifecycle_2) do
+      create(:work_item_custom_lifecycle, namespace: group_2).tap do |lifecycle|
+        # Skip validations so that we can skip the license check.
+        # We can't stub licensed features for let_it_be blocks.
+        build(:work_item_type_custom_lifecycle,
+          namespace: group_2,
+          work_item_type: issue_work_item_type,
+          lifecycle: lifecycle
+        ).save!(validate: false)
+
+        build(:work_item_type_custom_lifecycle,
+          namespace: group_2,
           work_item_type: task_work_item_type,
           lifecycle: lifecycle
         ).save!(validate: false)
@@ -336,6 +394,8 @@ RSpec.describe 'Status filters', feature_category: :team_planning do
           work_item_issue_old, work_item_issue_older, work_item_task_recent,
           work_item_issue_with_another_status, work_item_issue_with_system_status]
       end
+
+      let(:expected_work_items_across_namespaces) { expected_work_items }
 
       context 'when unbounded mapping for both work item types is present' do
         before_all do
