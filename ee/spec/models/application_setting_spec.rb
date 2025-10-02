@@ -280,6 +280,18 @@ RSpec.describe ApplicationSetting, feature_category: :shared, type: :model do
         it { is_expected.not_to allow_value('prefix.dot').for(:elasticsearch_prefix) }
         it { is_expected.not_to allow_value('a' * 101).for(:elasticsearch_prefix) }
       end
+
+      describe 'elasticsearch_aws_role_arn validation' do
+        let(:field) { 'elasticsearch_aws_role_arn' }
+
+        let(:es_settings) { setting.elasticsearch }
+
+        it { is_expected.to allow_value(es_settings.merge(field => nil)).for(:elasticsearch) }
+        it { is_expected.to allow_value(es_settings.merge(field => '')).for(:elasticsearch) }
+        it { is_expected.to allow_value(es_settings.merge(field => 'string')).for(:elasticsearch) }
+
+        it { is_expected.not_to allow_value(es_settings.merge(field => 1)).for(:elasticsearch) }
+      end
     end
 
     describe '#sdrs_jwt_signing_key' do
