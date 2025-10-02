@@ -10,10 +10,7 @@ module GitlabSubscriptions
       deduplicate :until_executed
       data_consistency :always
       idempotent!
-      # this worker calls `GitlabSubscriptions::Trials::ApplyTrialService`, which in turn makes
-      # a HTTP POST request to ::Gitlab::SubscriptionPortal::SUBSCRIPTIONS_URL
-      worker_has_external_dependencies!
-
+      urgency :high
       feature_category :plan_provisioning
 
       def perform(current_user_id, trial_user_information)
