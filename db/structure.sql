@@ -26893,7 +26893,9 @@ CREATE TABLE timelogs (
     summary text,
     note_id bigint,
     timelog_category_id bigint,
-    CONSTRAINT check_271d321699 CHECK ((char_length(summary) <= 255))
+    namespace_id bigint DEFAULT 0 NOT NULL,
+    CONSTRAINT check_271d321699 CHECK ((char_length(summary) <= 255)),
+    CONSTRAINT check_3b0344e3b6 CHECK ((num_nonnulls(issue_id, merge_request_id) = 1))
 );
 
 CREATE SEQUENCE timelogs_id_seq
@@ -42311,6 +42313,8 @@ CREATE INDEX index_timelogs_on_issue_id ON timelogs USING btree (issue_id);
 
 CREATE INDEX index_timelogs_on_merge_request_id ON timelogs USING btree (merge_request_id);
 
+CREATE INDEX index_timelogs_on_namespace_id ON timelogs USING btree (namespace_id);
+
 CREATE INDEX index_timelogs_on_note_id ON timelogs USING btree (note_id);
 
 CREATE INDEX index_timelogs_on_project_id_and_spent_at ON timelogs USING btree (project_id, spent_at);
@@ -49161,6 +49165,9 @@ ALTER TABLE ONLY vulnerability_partial_scans
 
 ALTER TABLE ONLY user_achievements
     ADD CONSTRAINT fk_d7653ef780 FOREIGN KEY (revoked_by_user_id) REFERENCES users(id) ON DELETE SET NULL;
+
+ALTER TABLE ONLY timelogs
+    ADD CONSTRAINT fk_d774bdf1ae FOREIGN KEY (namespace_id) REFERENCES namespaces(id) ON DELETE CASCADE NOT VALID;
 
 ALTER TABLE ONLY dependency_proxy_manifest_states
     ADD CONSTRAINT fk_d79f184865 FOREIGN KEY (group_id) REFERENCES namespaces(id) ON DELETE CASCADE;
