@@ -205,6 +205,10 @@ RSpec.describe API::Internal::Ai::XRay::Scan, feature_category: :code_suggestion
         def request
           post api(api_url), params: params, headers: headers
         end
+
+        def request_with_second_scope
+          post api(api_url), params: params.merge(token: sub_job.token), headers: headers
+        end
       end
 
       context 'when add on subscription is expired' do
@@ -407,6 +411,12 @@ RSpec.describe API::Internal::Ai::XRay::Scan, feature_category: :code_suggestion
       it_behaves_like 'rate limited endpoint', rate_limit_key: :code_suggestions_x_ray_dependencies do
         def request
           post api(api_url), params: params, headers: headers
+        end
+
+        def request_with_second_scope
+          post api("/internal/jobs/#{sub_job.id}/x_ray/dependencies"),
+            params: params.merge(token: sub_job.token),
+            headers: headers
         end
       end
 

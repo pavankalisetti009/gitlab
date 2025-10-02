@@ -145,18 +145,18 @@ RSpec.describe API::CodeSuggestions, feature_category: :code_suggestions do
   end
 
   shared_examples_for 'rate limited and tracked endpoint' do |rate_limit_key:, event_name:, metrics_names:|
-    it_behaves_like 'rate limited endpoint', rate_limit_key: rate_limit_key
+    it_behaves_like 'rate limited endpoint', rate_limit_key: rate_limit_key, use_second_scope: false
 
     it 'tracks rate limit exceeded event' do
       allow(Gitlab::ApplicationRateLimiter).to receive(:throttled_request?).and_return(true)
 
       expect { request }
         .to trigger_internal_events(event_name)
-        .with(
-          user: current_user,
-          category: 'InternalEventTracking'
-        )
-        .and increment_usage_metrics(*Array(metrics_names))
+          .with(
+            user: current_user,
+            category: 'InternalEventTracking'
+          )
+          .and increment_usage_metrics(*Array(metrics_names))
     end
   end
 
