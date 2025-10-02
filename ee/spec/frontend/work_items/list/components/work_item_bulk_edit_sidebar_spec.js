@@ -7,8 +7,12 @@ import { stubComponent } from 'helpers/stub_component';
 import waitForPromises from 'helpers/wait_for_promises';
 import workItemBulkUpdateMutation from '~/work_items/graphql/list/work_item_bulk_update.mutation.graphql';
 import getAvailableBulkEditWidgets from '~/work_items/graphql/list/get_available_bulk_edit_widgets.query.graphql';
-import WorkItemBulkEditSidebar from '~/work_items/components/work_item_bulk_edit/work_item_bulk_edit_sidebar.vue';
+import WorkItemBulkEditAssignee from '~/work_items/components/work_item_bulk_edit/work_item_bulk_edit_assignee.vue';
 import WorkItemBulkEditLabels from '~/work_items/components/work_item_bulk_edit/work_item_bulk_edit_labels.vue';
+import WorkItemBulkEditMilestone from '~/work_items/components/work_item_bulk_edit/work_item_bulk_edit_milestone.vue';
+import WorkItemBulkEditParent from '~/work_items/components/work_item_bulk_edit/work_item_bulk_edit_parent.vue';
+import WorkItemBulkEditSidebar from '~/work_items/components/work_item_bulk_edit/work_item_bulk_edit_sidebar.vue';
+import WorkItemBulkMove from '~/work_items/components/work_item_bulk_edit/work_item_bulk_move.vue';
 import { createAlert } from '~/alert';
 import WorkItemBulkEditStatus from 'ee_component/work_items/components/work_item_bulk_edit/work_item_bulk_edit_status.vue';
 import WorkItemBulkEditIteration from 'ee_component/work_items/components/list/work_item_bulk_edit_iteration.vue';
@@ -95,6 +99,16 @@ describe('WorkItemBulkEditSidebar component EE', () => {
   const findAddLabelsComponent = () => wrapper.findAllComponents(WorkItemBulkEditLabels).at(0);
   const findRemoveLabelsComponent = () => wrapper.findAllComponents(WorkItemBulkEditLabels).at(1);
 
+  const findStateComponent = () => wrapper.findComponentByTestId('bulk-edit-state');
+  const findAssigneeComponent = () => wrapper.findComponent(WorkItemBulkEditAssignee);
+  const findHealthStatusComponent = () => wrapper.findComponentByTestId('bulk-edit-health-status');
+  const findSubscriptionComponent = () => wrapper.findComponentByTestId('bulk-edit-subscription');
+  const findConfidentialityComponent = () =>
+    wrapper.findComponentByTestId('bulk-edit-confidentiality');
+  const findMilestoneComponent = () => wrapper.findComponent(WorkItemBulkEditMilestone);
+  const findParentComponent = () => wrapper.findComponent(WorkItemBulkEditParent);
+  const findBulkMoveComponent = () => wrapper.findComponent(WorkItemBulkMove);
+
   describe('when epics list', () => {
     it('calls mutation to bulk edit', async () => {
       const addLabelIds = ['gid://gitlab/Label/1'];
@@ -135,6 +149,46 @@ describe('WorkItemBulkEditSidebar component EE', () => {
         captureError: true,
         error: new Error('oh no'),
         message: 'Something went wrong while bulk editing.',
+      });
+    });
+
+    describe('widget visibility', () => {
+      it('shows the correct widgets', () => {
+        createComponent({
+          provide: { hasIssuableHealthStatusFeature: true },
+        });
+
+        // visible
+        expect(findStateComponent().exists()).toBe(true);
+        expect(findAssigneeComponent().exists()).toBe(true);
+        expect(findAddLabelsComponent().exists()).toBe(true);
+        expect(findRemoveLabelsComponent().exists()).toBe(true);
+        expect(findHealthStatusComponent().exists()).toBe(true);
+        expect(findSubscriptionComponent().exists()).toBe(true);
+        expect(findConfidentialityComponent().exists()).toBe(true);
+        expect(findMilestoneComponent().exists()).toBe(true);
+        expect(findParentComponent().exists()).toBe(true);
+        expect(findBulkMoveComponent().exists()).toBe(true);
+      });
+
+      it('shows the correct widgets on epics list', () => {
+        createComponent({
+          props: { isEpicsList: true },
+          provide: { hasIssuableHealthStatusFeature: true },
+        });
+
+        // visible
+        expect(findAssigneeComponent().exists()).toBe(true);
+        expect(findAddLabelsComponent().exists()).toBe(true);
+        expect(findRemoveLabelsComponent().exists()).toBe(true);
+        expect(findHealthStatusComponent().exists()).toBe(true);
+        expect(findSubscriptionComponent().exists()).toBe(true);
+        expect(findConfidentialityComponent().exists()).toBe(true);
+        expect(findMilestoneComponent().exists()).toBe(true);
+
+        // hidden
+        expect(findStateComponent().exists()).toBe(false);
+        expect(findBulkMoveComponent().exists()).toBe(false);
       });
     });
   });
