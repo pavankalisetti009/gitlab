@@ -19308,6 +19308,9 @@ msgstr ""
 msgid "Copy file permalink"
 msgstr ""
 
+msgid "Copy image link"
+msgstr ""
+
 msgid "Copy issue URL to clipboard"
 msgstr ""
 
@@ -33858,6 +33861,12 @@ msgstr ""
 msgid "Image"
 msgstr ""
 
+msgid "Image could not be loaded."
+msgstr ""
+
+msgid "Image viewer"
+msgstr ""
+
 msgid "ImageDiffViewer|2-up"
 msgstr ""
 
@@ -42907,6 +42916,9 @@ msgstr ""
 msgid "Next file in diff"
 msgstr ""
 
+msgid "Next image"
+msgstr ""
+
 msgid "Next open thread"
 msgstr ""
 
@@ -49390,6 +49402,9 @@ msgid "Previous design"
 msgstr ""
 
 msgid "Previous file in diff"
+msgstr ""
+
+msgid "Previous image"
 msgstr ""
 
 msgid "Previous open thread"
@@ -71336,6 +71351,9 @@ msgid "View group labels"
 msgstr ""
 
 msgid "View group pipeline usage quota"
+msgstr ""
+
+msgid "View image"
 msgstr ""
 
 msgid "View incident details at"
