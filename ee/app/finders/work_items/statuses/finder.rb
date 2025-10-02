@@ -3,11 +3,12 @@
 module WorkItems
   module Statuses
     class Finder
-      attr_reader :namespace, :params
+      attr_reader :namespace, :params, :current_user
 
-      def initialize(namespace, params = {})
+      def initialize(namespace, params = {}, current_user = nil)
         @namespace = namespace
         @params = params
+        @current_user = current_user
       end
 
       def execute
@@ -46,11 +47,31 @@ module WorkItems
       def find_status_by_name(name)
         return if name.blank?
 
+        namespace ? find_status_in_namespace(name) : find_statuses_across_namespaces(name)
+      end
+
+      def find_status_in_namespace(name)
         if namespace&.custom_statuses&.exists?
           ::WorkItems::Statuses::Custom::Status.find_by_namespace_and_name(namespace, name)
         else
           ::WorkItems::Statuses::SystemDefined::Status.find_by_name(name)
         end
+      end
+
+      def find_statuses_across_namespaces(name)
+        return unless current_user
+
+        group_ids = current_user.authorized_root_ancestor_ids
+        return if group_ids.empty?
+
+        custom_statuses = ::WorkItems::Statuses::Custom::Status.find_by_name_across_namespaces(name, group_ids)
+
+        statuses = custom_statuses.to_a
+
+        system_defined_status = ::WorkItems::Statuses::SystemDefined::Status.find_by_name(name)
+        statuses << system_defined_status if system_defined_status
+
+        statuses.presence
       end
     end
   end

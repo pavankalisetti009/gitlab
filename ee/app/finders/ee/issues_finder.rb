@@ -96,7 +96,8 @@ module EE
     def by_status(items)
       ::WorkItems::StatusFilter.new(
         params: original_params,
-        parent: params.parent
+        parent: params.parent,
+        current_user: current_user
       ).filter(items)
     end
 

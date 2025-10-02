@@ -24,7 +24,7 @@ module Resolvers
       end
 
       def allowed_statuses_for_the_user(name = nil)
-        group_ids = current_user&.authorized_groups&.top_level&.pluck(:id)
+        group_ids = current_user&.authorized_root_ancestor_ids
         return [] if group_ids.blank?
 
         custom_statuses = ::WorkItems::Statuses::Custom::Status.find_by_namespaces_with_partial_name(group_ids, name)

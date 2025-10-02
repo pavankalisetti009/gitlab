@@ -526,9 +526,11 @@ RSpec.describe IssuesFinder, feature_category: :team_planning do
   end
 
   describe 'filtering by status' do
-    let_it_be(:current_user) { create(:user) }
     let_it_be(:group) { create(:group) }
-    let_it_be(:project) { create(:project, group: group, developers: [current_user]) }
+    let_it_be(:group_2) { create(:group) }
+    let_it_be(:project) { create(:project, group: group) }
+    let_it_be(:project_2) { create(:project, group: group_2) }
+    let_it_be(:current_user) { create(:user, developer_of: [project, project_2]) }
 
     let_it_be(:to_do_issue) { create(:issue, project: project) }
     let_it_be(:to_do_issue_current_status) do
@@ -542,6 +544,10 @@ RSpec.describe IssuesFinder, feature_category: :team_planning do
 
     let(:status) { build(:work_item_system_defined_status) }
     let(:results) { described_class.new(current_user, params).execute }
+
+    before do
+      stub_licensed_features(work_item_status: true)
+    end
 
     shared_examples 'an unfiltered collection' do
       it 'does not filter by status' do
@@ -564,13 +570,7 @@ RSpec.describe IssuesFinder, feature_category: :team_planning do
     context 'when filtering by status id' do
       let(:params) { { project_id: project.id, status: { id: status } } }
 
-      it_behaves_like 'an unfiltered collection'
-
       context 'when feature is licensed' do
-        before do
-          stub_licensed_features(work_item_status: true)
-        end
-
         it_behaves_like 'a filtered collection'
 
         context 'when status is not found' do
@@ -579,19 +579,21 @@ RSpec.describe IssuesFinder, feature_category: :team_planning do
           it_behaves_like 'an empty collection'
         end
       end
+
+      context 'when feature is not licensed' do
+        before do
+          stub_licensed_features(work_item_status: false)
+        end
+
+        it_behaves_like 'an unfiltered collection'
+      end
     end
 
     context 'when filtering by status name' do
       let(:status_name) { 'to do' }
       let(:params) { { project_id: project.id, status: { name: status_name } } }
 
-      it_behaves_like 'an unfiltered collection'
-
       context 'when feature is licensed' do
-        before do
-          stub_licensed_features(work_item_status: true)
-        end
-
         it_behaves_like 'a filtered collection'
 
         context 'when status is not found' do
@@ -600,17 +602,52 @@ RSpec.describe IssuesFinder, feature_category: :team_planning do
           it_behaves_like 'an empty collection'
         end
       end
+
+      context 'when feature is not licensed' do
+        before do
+          stub_licensed_features(work_item_status: false)
+        end
+
+        it_behaves_like 'an unfiltered collection'
+      end
     end
 
     context 'when filtering by both status_id and status_name' do
       let(:status_name) { 'in progress' }
       let(:params) { { project_id: project.id, status: { id: status, name: status_name } } }
 
-      before do
-        stub_licensed_features(work_item_status: true)
+      it_behaves_like 'a filtered collection' # by status id
+    end
+
+    context 'when filtering across multiple namespaces' do
+      let_it_be(:to_do_issue_2) { create(:issue, project: project_2) }
+      let_it_be(:to_do_issue_current_status_2) do
+        create(:work_item_current_status, work_item_id: to_do_issue_2.id, system_defined_status_id: 1)
       end
 
-      it_behaves_like 'a filtered collection' # by status id
+      let(:params) { { status: { name: "To do" } } }
+
+      context 'when feature is licensed' do
+        it 'filters issues by status name across all namespaces' do
+          expect(results).to contain_exactly(to_do_issue, to_do_issue_2)
+        end
+
+        context 'when status is not found' do
+          let(:params) { { status: { name: "invalid" } } }
+
+          it_behaves_like 'an empty collection'
+        end
+      end
+
+      context 'when feature is not licensed' do
+        before do
+          stub_licensed_features(work_item_status: false)
+        end
+
+        it 'does not filter by status' do
+          expect(results).to contain_exactly(to_do_issue, in_progress_issue, to_do_issue_2)
+        end
+      end
     end
   end
 
