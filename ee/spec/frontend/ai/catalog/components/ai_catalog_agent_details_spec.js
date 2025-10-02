@@ -1,4 +1,5 @@
 import { shallowMount } from '@vue/test-utils';
+import { GlBadge } from '@gitlab/ui';
 import Markdown from '~/vue_shared/components/markdown/markdown_content.vue';
 import AiCatalogAgentDetails from 'ee/ai/catalog/components/ai_catalog_agent_details.vue';
 import AiCatalogItemField from 'ee/ai/catalog/components/ai_catalog_item_field.vue';
@@ -22,10 +23,10 @@ describe('AiCatalogAgentDetails', () => {
     },
   };
 
-  const createComponent = () => {
+  const createComponent = ({ props = defaultProps } = {}) => {
     wrapper = shallowMount(AiCatalogAgentDetails, {
       propsData: {
-        ...defaultProps,
+        ...props,
       },
     });
   };
@@ -34,6 +35,7 @@ describe('AiCatalogAgentDetails', () => {
   const findSection = (index) => findAllSections().at(index);
   const findAllFieldsForSection = (index) =>
     findSection(index).findAllComponents(AiCatalogItemField);
+  const findVisibilityBadge = () => wrapper.findComponent(GlBadge);
 
   beforeEach(() => {
     createComponent();
@@ -59,11 +61,45 @@ describe('AiCatalogAgentDetails', () => {
     });
   });
 
-  it('renders "Access rights" details', () => {
-    const accessRightsDetails = findAllFieldsForSection(1);
-    expect(accessRightsDetails.at(0).props()).toMatchObject({
-      title: 'Source project',
-      value: mockAgent.project.nameWithNamespace,
+  describe('renders "Access rights" details', () => {
+    let accessRightsDetails;
+    beforeEach(() => {
+      accessRightsDetails = findAllFieldsForSection(1);
+    });
+
+    it('renders Visibility', () => {
+      expect(accessRightsDetails.at(0).props()).toMatchObject({
+        title: 'Visibility',
+      });
+      expect(findVisibilityBadge().exists()).toBe(true);
+    });
+
+    it.each`
+      isPublic | badgeLabel   | badgeIcon
+      ${false} | ${'Private'} | ${'lock'}
+      ${true}  | ${'Public'}  | ${'earth'}
+    `(
+      'displays badge with $badgeLabel label and icon $badgeIcon when agent public prop is $isPublic',
+      ({ isPublic, badgeLabel, badgeIcon }) => {
+        createComponent({
+          props: {
+            item: {
+              ...mockAgent,
+              public: isPublic,
+            },
+          },
+        });
+
+        expect(findVisibilityBadge().text()).toBe(badgeLabel);
+        expect(findVisibilityBadge().props('icon')).toBe(badgeIcon);
+      },
+    );
+
+    it('renders Source project', () => {
+      expect(accessRightsDetails.at(1).props()).toMatchObject({
+        title: 'Source project',
+        value: mockAgent.project.nameWithNamespace,
+      });
     });
   });
 
