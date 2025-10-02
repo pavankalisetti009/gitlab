@@ -118,7 +118,7 @@ describe('Usage count data source', () => {
           expect(setVisualizationOverrides).toHaveBeenCalledWith({
             visualizationOptionOverrides: expect.objectContaining({
               title: 'Issues',
-              titleIcon: 'issues',
+              titleIcon: 'issue-type-issue',
               tooltip: {
                 description:
                   'Usage data is a cumulative count and is updated monthly. Last updated: 2023-11-26 11:59 PM',
@@ -174,7 +174,7 @@ describe('Usage count data source', () => {
         expect(setVisualizationOverrides).toHaveBeenCalledWith({
           visualizationOptionOverrides: expect.objectContaining({
             title: 'Issues',
-            titleIcon: 'issues',
+            titleIcon: 'issue-type-issue',
             tooltip: {
               description:
                 'Usage data is a cumulative count and is updated monthly. Last updated: 2023-11-26 11:59 PM',
