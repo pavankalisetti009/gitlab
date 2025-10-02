@@ -296,6 +296,14 @@ export default {
         params.append('root_namespace_id', getIdFromGraphQLId(this.rootNamespaceId));
       }
 
+      if (this.namespaceId) {
+        params.append('namespace_id', getIdFromGraphQLId(this.namespaceId));
+      }
+
+      if (this.projectId) {
+        params.append('project_id', getIdFromGraphQLId(this.projectId));
+      }
+
       if (
         this.rootNamespaceId &&
         this.userModelSelectionEnabled &&
