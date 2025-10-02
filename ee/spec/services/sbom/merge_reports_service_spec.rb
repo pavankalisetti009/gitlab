@@ -219,6 +219,46 @@ RSpec.describe Sbom::MergeReportsService, :freeze_time, feature_category: :depen
 
         it { is_expected.to have_json_attributes }
       end
+
+      context 'when components have unknown licenses' do
+        let(:unknown_license) { Gitlab::LicenseScanning::PackageLicenses::UNKNOWN_LICENSE }
+
+        let(:licenses_1) do
+          [
+            { name: "MIT", spdx_identifier: "MIT" },
+            unknown_license
+          ]
+        end
+
+        let(:licenses_2) { [unknown_license] }
+
+        let(:merged_report) { execute }
+
+        it 'filters out unknown licenses' do
+          licenses = merged_report.components.flat_map(&:licenses)
+
+          expect(licenses).not_to include(unknown_license)
+        end
+
+        it 'preserves existing licenses' do
+          component_with_existing_license = merged_report.components.find do |component|
+            component.name == components_1.first.name
+          end
+
+          expect(component_with_existing_license&.licenses).to contain_exactly({ name: "MIT", spdx_identifier: "MIT" })
+        end
+
+        it 'preserves components with empty licenses after filtering' do
+          components_with_no_licenses = merged_report.components.select do |c|
+            components_2.any? { |orig| orig.name == c.name }
+          end
+
+          expect(components_with_no_licenses).not_to be_empty
+          components_with_no_licenses.each do |component|
+            expect(component.licenses).to be_empty
+          end
+        end
+      end
     end
 
     def to_hashie_mash(component, licenses)
