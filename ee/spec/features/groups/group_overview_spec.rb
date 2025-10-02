@@ -18,13 +18,25 @@ RSpec.describe 'Group information', :with_trial_types, :js, :aggregate_failures,
     sign_in(user)
   end
 
-  context 'when the default value of "Group information content" preference is used' do
+  context 'when groups_overview_shared_vue_components feature flag is disabled' do
     before do
-      # Disable feature flag while it is a WIP.
-      # Feature specs for enabled feature flag will be added in https://gitlab.com/gitlab-org/gitlab/-/issues/519658
       stub_feature_flags(groups_overview_shared_vue_components: false)
     end
 
+    context 'when the default value of "Group information content" preference is used' do
+      it 'displays the Details view' do
+        visit_page
+
+        page.within(find('.content')) do
+          expect(page).to have_content _('Subgroups and projects')
+          expect(page).to have_content _('Shared projects')
+          expect(page).to have_content _('Inactive')
+        end
+      end
+    end
+  end
+
+  context 'when the default value of "Group information content" preference is used' do
     it 'displays the Details view' do
       visit_page
 
