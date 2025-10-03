@@ -34,11 +34,15 @@ module Projects
           }
         )
 
-        redirect_to project_path(project)
         flash[:success] = s_("LearnGitlab|You've ended the Learn GitLab tutorial.")
+        flash.keep(:success)
+
+        render json: { success: true, redirect_path: project_path(project) }
       else
-        flash[:danger] =
+        error =
           s_("LearnGitlab|There was a problem trying to end the Learn GitLab tutorial. Please try again.")
+
+        render json: { success: false, message: error }, status: :unprocessable_entity
       end
     end
 

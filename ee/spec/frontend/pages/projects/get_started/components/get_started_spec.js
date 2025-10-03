@@ -1,6 +1,8 @@
 import { GlCard, GlAlert } from '@gitlab/ui';
 import { nextTick } from 'vue';
+import MockAdapter from 'axios-mock-adapter';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
+import waitForPromises from 'helpers/wait_for_promises';
 import GetStarted from 'ee/pages/projects/get_started/components/get_started.vue';
 import SectionHeader from 'ee/pages/projects/get_started/components/section_header.vue';
 import SectionBody from 'ee/pages/projects/get_started/components/section_body.vue';
@@ -8,6 +10,13 @@ import eventHub from '~/invite_members/event_hub';
 import DuoExtensions from 'ee/pages/projects/get_started/components/duo_extensions.vue';
 import RightSidebar from 'ee/pages/projects/get_started/components/right_sidebar.vue';
 import { visitUrl } from '~/lib/utils/url_utility';
+import axios from '~/lib/utils/axios_utils';
+import { createAlert, VARIANT_INFO } from '~/alert';
+
+jest.mock('~/alert', () => ({
+  ...jest.requireActual('~/alert'),
+  createAlert: jest.fn().mockName('createAlertMock'),
+}));
 
 jest.mock('~/lib/utils/url_utility', () => ({
   ...jest.requireActual('~/lib/utils/url_utility'),
@@ -129,8 +138,16 @@ describe('GetStarted', () => {
   });
 
   describe('End tutorial button', () => {
+    let axiosMock;
+    const errorMessage = 'There was a problem trying to end the tutorial. Please try again.';
+
     beforeEach(() => {
+      axiosMock = new MockAdapter(axios);
       createComponent();
+    });
+
+    afterEach(() => {
+      axiosMock.restore();
     });
 
     it('should disable the button when clicked', async () => {
@@ -141,10 +158,50 @@ describe('GetStarted', () => {
       expect(findEndTutorialButton().attributes('disabled')).toBeDefined();
     });
 
-    it('should call visitUrl with the correct link when clicked', () => {
-      findEndTutorialButton().vm.$emit('click');
+    it('should call visitUrl with the correct link when clicked', async () => {
+      const redirectPath = '/group/project';
+      axiosMock.onPatch('/group/project/-/get-started/end').reply(200, {
+        success: true,
+        redirect_path: redirectPath,
+      });
 
-      expect(visitUrl).toHaveBeenCalledWith('/group/project/-/get-started/end');
+      findEndTutorialButton().vm.$emit('click');
+      await waitForPromises();
+
+      expect(visitUrl).toHaveBeenCalledWith(redirectPath);
+    });
+
+    it('should show alert when post request to end tutorial fails', async () => {
+      axiosMock.onPatch('/group/project/-/get-started/end').reply(422, {
+        success: false,
+        message: errorMessage,
+      });
+
+      findEndTutorialButton().vm.$emit('click');
+      await waitForPromises();
+
+      expect(visitUrl).not.toHaveBeenCalled();
+      expect(createAlert).toHaveBeenCalledWith({
+        message: errorMessage,
+        variant: VARIANT_INFO,
+      });
+      expect(findEndTutorialButton().attributes('disabled')).not.toBeDefined();
+    });
+
+    it('should show alert when post request does not return success', async () => {
+      axiosMock.onPatch('/group/project/-/get-started/end').reply(200, {
+        success: false,
+      });
+
+      findEndTutorialButton().vm.$emit('click');
+      await waitForPromises();
+
+      expect(visitUrl).not.toHaveBeenCalled();
+      expect(createAlert).toHaveBeenCalledWith({
+        message: errorMessage,
+        variant: VARIANT_INFO,
+      });
+      expect(findEndTutorialButton().attributes('disabled')).not.toBeDefined();
     });
   });
 

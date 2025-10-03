@@ -3,8 +3,10 @@ import { GlSprintf, GlAlert, GlButton } from '@gitlab/ui';
 import eventHub from '~/invite_members/event_hub';
 import { s__ } from '~/locale';
 import { getCookie, removeCookie, parseBoolean } from '~/lib/utils/common_utils';
+import axios from '~/lib/utils/axios_utils';
 import { visitUrl } from '~/lib/utils/url_utility';
 import { ON_CELEBRATION_TRACK_LABEL } from '~/invite_members/constants';
+import { createAlert, VARIANT_INFO } from '~/alert';
 import { ACTION_LABELS, INVITE_MODAL_OPEN_COOKIE } from '../constants';
 import LearnGitlabSectionCard from './learn_gitlab_section_card.vue';
 
@@ -116,10 +118,33 @@ export default {
     svgFor(index, section) {
       return this.sections[index][section].svg;
     },
-    handleEndTutorialClick() {
+    async handleEndTutorialClick() {
       this.disableEndTutorialButton = true;
 
-      visitUrl(this.learnGitlabEndPath);
+      try {
+        const { data } = await axios.patch(this.learnGitlabEndPath);
+        if (data?.success) {
+          visitUrl(data.redirect_path);
+          return;
+        }
+        this.handleEndTutorialError();
+      } catch (error) {
+        this.handleEndTutorialError(error);
+      }
+    },
+    handleEndTutorialError(error) {
+      const errorMessage =
+        error?.response?.data?.message ||
+        s__(
+          'LearnGitlab|There was a problem trying to end the Learn GitLab tutorial. Please try again.',
+        );
+
+      createAlert({
+        message: errorMessage,
+        variant: VARIANT_INFO,
+      });
+
+      this.disableEndTutorialButton = false;
     },
   },
 };
