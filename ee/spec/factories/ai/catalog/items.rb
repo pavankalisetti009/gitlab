@@ -8,6 +8,7 @@ FactoryBot.define do
 
     factory :ai_catalog_agent, traits: [:agent]
     factory :ai_catalog_flow, traits: [:flow]
+    factory :ai_catalog_third_party_flow, traits: [:third_party_flow]
 
     trait :agent do
       item_type { 'agent' }
@@ -15,6 +16,10 @@ FactoryBot.define do
 
     trait :flow do
       item_type { 'flow' }
+    end
+
+    trait :third_party_flow do
+      item_type { 'third_party_flow' }
     end
 
     versions do |item|

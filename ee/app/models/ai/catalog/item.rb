@@ -72,10 +72,12 @@ module Ai
 
       AGENT_TYPE = :agent
       FLOW_TYPE = :flow
+      THIRD_PARTY_FLOW_TYPE = :third_party_flow
 
       enum :item_type, {
         AGENT_TYPE => 1,
-        FLOW_TYPE => 2
+        FLOW_TYPE => 2,
+        THIRD_PARTY_FLOW_TYPE => 3
       }
 
       class << self

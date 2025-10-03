@@ -9,6 +9,7 @@ FactoryBot.define do
 
     factory :ai_catalog_agent_version, traits: [:for_agent]
     factory :ai_catalog_flow_version, traits: [:for_flow]
+    factory :ai_catalog_third_party_flow_version, traits: [:for_third_party_flow]
 
     trait :released do
       release_date { Time.current }
@@ -35,6 +36,18 @@ FactoryBot.define do
           'steps' => [
             { 'agent_id' => agent.id, 'current_version_id' => agent.latest_version.id, 'pinned_version_prefix' => nil }
           ]
+        }
+      end
+    end
+
+    trait :for_third_party_flow do
+      item { association :ai_catalog_third_party_flow }
+      definition do
+        {
+          'injectGatewayToken' => true,
+          'image' => 'node:22-slim',
+          'commands' => ['/bin/bash'],
+          'variables' => { 'VAR1' => 'VAL1' }
         }
       end
     end
