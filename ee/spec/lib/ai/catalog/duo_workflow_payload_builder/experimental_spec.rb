@@ -119,7 +119,7 @@ RSpec.describe Ai::Catalog::DuoWorkflowPayloadBuilder::Experimental, feature_cat
             'prompt_id' => "#{agent_item_1_flow_id}_prompt",
             'inputs' => [
               { 'from' => 'context:goal', 'as' => 'goal' },
-              { 'from' => 'context:project_id', 'as' => 'project_id' }
+              { 'from' => 'context:project_id', 'as' => 'project' }
             ],
             'toolset' => %w[gitlab_blob_search ci_linter create_epic],
             'ui_log_events' => %w[on_tool_execution_success on_agent_final_answer on_tool_execution_failed]
@@ -210,7 +210,7 @@ RSpec.describe Ai::Catalog::DuoWorkflowPayloadBuilder::Experimental, feature_cat
             'prompt_id' => "#{agent_item_1_flow_id}_prompt",
             'inputs' => [
               { 'from' => 'context:goal', 'as' => 'goal' },
-              { 'from' => 'context:project_id', 'as' => 'project_id' }
+              { 'from' => 'context:project_id', 'as' => 'project' }
             ],
             'toolset' => %w[gitlab_blob_search ci_linter create_epic],
             'ui_log_events' => %w[on_tool_execution_success on_agent_final_answer on_tool_execution_failed]
@@ -221,9 +221,9 @@ RSpec.describe Ai::Catalog::DuoWorkflowPayloadBuilder::Experimental, feature_cat
             'prompt_id' => "#{agent_item_2_flow_id}_prompt",
             'inputs' => [
               { 'from' => 'context:goal', 'as' => 'goal' },
-              { 'from' => 'context:project_id', 'as' => 'project_id' },
-              { 'from' => "context:#{agent_item_1_flow_id}.final_answer", 'as' => 'previous_step_answer' },
-              { 'from' => "conversation_history:#{agent_item_1_flow_id}", 'as' => 'previous_step_msg_history' }
+              { 'from' => 'context:project_id', 'as' => 'project' },
+              { 'from' => "context:#{agent_item_1_flow_id}.final_answer", 'as' => 'previous_agent_answer' },
+              { 'from' => "conversation_history:#{agent_item_1_flow_id}", 'as' => 'previous_agent_chat' }
             ],
             'toolset' => %w[run_git_command],
             'ui_log_events' => %w[on_tool_execution_success on_agent_final_answer on_tool_execution_failed]
