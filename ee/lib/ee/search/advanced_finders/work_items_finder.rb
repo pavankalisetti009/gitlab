@@ -58,7 +58,8 @@ module EE
           :label_name, :group_id, :project_id, :state, :confidential, :author_username,
           :milestone_title, :milestone_wildcard_id, :assignee_usernames, :assignee_wildcard_id, :not, :or,
           :weight, :weight_wildcard_id, :issue_types, :health_status_filter, :due_after, :due_before,
-          :created_after, :created_before, :updated_after, :updated_before, :closed_after, :closed_before, :iids
+          :created_after, :created_before, :updated_after, :updated_before, :closed_after, :closed_before, :iids,
+          :include_archived
         ].freeze
         NOT_FILTERS = [:author_username, :milestone_title, :assignee_usernames, :label_name, :weight,
           :weight_wildcard_id, :health_status_filter, :milestone_wildcard_id].freeze
@@ -149,7 +150,8 @@ module EE
             current_user: current_user,
             # NOTE: when set to true is does a global search
             public_and_internal_projects: false,
-            root_ancestor_ids: [resource_parent.root_ancestor.id]
+            root_ancestor_ids: [resource_parent.root_ancestor.id],
+            include_archived: params[:include_archived]
           }.merge(
             project_params,
             group_params,

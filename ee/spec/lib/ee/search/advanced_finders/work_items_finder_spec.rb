@@ -152,6 +152,43 @@ RSpec.describe Search::AdvancedFinders::WorkItemsFinder, :elastic_delete_by_quer
         end
       end
 
+      # This spec ensures that all control arguments defined in Namespaces::WorkItemsResolver
+      # are properly handled by the Advanced Finder. When new control arguments are added
+      # to the resolver with default values, they must also be added to CONTROL_KEYS or
+      # ALLOWED_ES_FILTERS to prevent validation failures that cause queries to fall back
+      # to PostgreSQL. See https://gitlab.com/gitlab-org/gitlab/-/issues/573896 for context.
+      context 'when GraphQL resolver control arguments are used' do
+        let(:resolver_class) { Resolvers::Namespaces::WorkItemsResolver }
+        let(:control_keys) { described_class::CONTROL_KEYS }
+        let(:allowed_filters) { described_class::ALLOWED_ES_FILTERS }
+
+        it 'all GROUP_NAMESPACE_ONLY_ARGS are in CONTROL_KEYS or ALLOWED_ES_FILTERS' do
+          resolver_control_args = resolver_class::GROUP_NAMESPACE_ONLY_ARGS
+
+          missing_keys = resolver_control_args - control_keys - allowed_filters - [:timeframe]
+
+          expect(missing_keys).to be_empty,
+            "The following arguments from Namespaces::WorkItemsResolver::GROUP_NAMESPACE_ONLY_ARGS " \
+              "are missing from both CONTROL_KEYS and ALLOWED_ES_FILTERS: #{missing_keys.inspect}. " \
+              "When adding new control arguments to the resolver, they must also be added to either " \
+              "CONTROL_KEYS (if ignored by ES) or ALLOWED_ES_FILTERS (if supported by ES) " \
+              "in ee/lib/ee/search/advanced_finders/work_items_finder.rb"
+        end
+
+        described_class::CONTROL_KEYS.each do |control_key|
+          context "when #{control_key} is used" do
+            let(:params) do
+              value = control_key == :sort ? :created_desc : true
+              { control_key => value }
+            end
+
+            it 'returns true and uses Elasticsearch' do
+              expect(finder.use_elasticsearch_finder?).to be_truthy
+            end
+          end
+        end
+      end
+
       context 'when url param is missing (since we do not want to force using this param)' do
         let(:url_query) { '' }
 
@@ -250,6 +287,47 @@ RSpec.describe Search::AdvancedFinders::WorkItemsFinder, :elastic_delete_by_quer
 
           it 'returns work items without specified author username' do
             expect(execute).to contain_exactly(work_item2_with_author)
+          end
+        end
+      end
+
+      context 'when searching with include_archived' do
+        let_it_be(:archived_project) { create(:project, :archived, group: group) }
+        let_it_be(:active_project) { create(:project, group: group) }
+        let_it_be(:work_item_archived) { create(:work_item, project: archived_project) }
+        let_it_be(:work_item_active) { create(:work_item, project: active_project) }
+
+        before_all do
+          group.add_owner(current_user)
+        end
+
+        before do
+          Elastic::ProcessBookkeepingService.track!(work_item_archived, work_item_active)
+
+          ensure_elasticsearch_index!
+        end
+
+        context 'when include_archived is false' do
+          let(:params) { { include_archived: false } }
+
+          it 'excludes work items from archived projects' do
+            expect(execute).to contain_exactly(work_item_active)
+          end
+        end
+
+        context 'when include_archived is true' do
+          let(:params) { { include_archived: true } }
+
+          it 'includes work items from archived projects' do
+            expect(execute).to contain_exactly(work_item_archived, work_item_active)
+          end
+        end
+
+        context 'when include_archived is not specified (defaults to false)' do
+          let(:params) { {} }
+
+          it 'excludes work items from archived projects by default' do
+            expect(execute).to contain_exactly(work_item_active)
           end
         end
       end
