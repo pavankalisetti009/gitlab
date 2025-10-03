@@ -150,9 +150,8 @@ RSpec.describe 'Trial Sign Up', :with_trial_types, :with_current_organization, :
         fill_in 'last_name', with: 'Doe'
         fill_in 'company_name', with: 'My Company'
 
-        select 'United States of America', from: 'country'
-        wait_for_all_requests
-        select 'California', from: 'state'
+        select_from_listbox 'United States of America', from: 'Select a country or region'
+        select_from_listbox 'California', from: 'Select state or province'
 
         fill_in 'group_name', with: 'My Group'
         fill_in 'project_name', with: 'My Project'
@@ -173,9 +172,8 @@ RSpec.describe 'Trial Sign Up', :with_trial_types, :with_current_organization, :
         fill_in 'last_name', with: 'Doe'
         fill_in 'company_name', with: 'My Company'
 
-        select 'United States of America', from: 'country'
-        wait_for_all_requests
-        select 'California', from: 'state'
+        select_from_listbox 'United States of America', from: 'Select a country or region'
+        select_from_listbox 'California', from: 'Select state or province'
 
         fill_in 'group_name', with: 'My Group'
         fill_in 'project_name', with: 'My Project*'
@@ -204,7 +202,7 @@ RSpec.describe 'Trial Sign Up', :with_trial_types, :with_current_organization, :
           end
         end
 
-        it 'can be retired successfully' do
+        it 'can be retried successfully' do
           sign_in(user)
 
           visit new_users_sign_up_trial_welcome_path
@@ -213,9 +211,8 @@ RSpec.describe 'Trial Sign Up', :with_trial_types, :with_current_organization, :
           fill_in 'last_name', with: 'Doe'
           fill_in 'company_name', with: 'My Company'
 
-          select 'United States of America', from: 'country'
-          wait_for_all_requests
-          select 'California', from: 'state'
+          select_from_listbox 'United States of America', from: 'Select a country or region'
+          select_from_listbox 'California', from: 'Select state or province'
 
           fill_in 'group_name', with: 'My Group'
           fill_in 'project_name', with: 'My Project'
