@@ -77,4 +77,25 @@ RSpec.describe Security::SecurityOrchestrationPolicies::GroupProtectedBranchesDe
 
     it { is_expected.to be(true) }
   end
+
+  context 'with warn mode' do
+    let(:block_branch_modification) { true }
+    let(:block_group_branch_modification) { true }
+
+    let(:policy) do
+      build(:approval_policy,
+        approval_settings: approval_settings,
+        enforcement_type: Security::Policy::ENFORCEMENT_TYPE_WARN)
+    end
+
+    it { is_expected.to be(false) }
+
+    context 'with feature disabled' do
+      before do
+        stub_feature_flags(security_policy_approval_warn_mode: false)
+      end
+
+      it { is_expected.to be(true) }
+    end
+  end
 end

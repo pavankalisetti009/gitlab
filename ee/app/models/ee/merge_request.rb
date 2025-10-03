@@ -166,12 +166,30 @@ module EE
       def policy_approval_settings
         return {} if scan_result_policy_violations.empty?
 
-        scan_result_policy_reads_through_violations
+        policy_approval_settings_scan_result_policy_reads
           .reduce({}) do |acc, read|
+          if warn_mode_feature_enabled? && read.approval_policy_rule&.security_policy&.warn_mode?
+            acc
+          else
             acc.merge!(read.project_approval_settings.select { |_, value| value }.symbolize_keys)
           end
+        end
       end
       strong_memoize_attr :policy_approval_settings
+
+      def policy_approval_settings_scan_result_policy_reads
+        scope = scan_result_policy_reads_through_violations
+
+        return scope unless warn_mode_feature_enabled?
+
+        scope.includes(approval_policy_rule: :security_policy)
+      end
+      strong_memoize_attr :policy_approval_settings_scan_result_policy_reads
+
+      def warn_mode_feature_enabled?
+        ::Feature.enabled?(:security_policy_approval_warn_mode, target_project)
+      end
+      strong_memoize_attr :warn_mode_feature_enabled?
 
       def policies_overriding_approval_settings
         return {} if scan_result_policy_violations.empty?

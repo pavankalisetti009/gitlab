@@ -15,7 +15,7 @@ RSpec.describe Gitlab::DataBuilder::Pipeline, feature_category: :continuous_inte
         create_additional_resources
 
         expect { described_class.build(pipeline.reload) }
-          .not_to exceed_query_limit(control)
+          .not_to exceed_query_limit(control).with_threshold(2)
       end
     end
 
