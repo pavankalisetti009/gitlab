@@ -12,6 +12,13 @@ module EE
         include ::Geo::ReplicableCiArtifactable
 
         with_replicator ::Geo::PipelineArtifactReplicator
+
+        has_one :pipeline_artifact_state,
+          ->(artifact) { where(partition_id: artifact.partition_id) },
+          class_name: 'Geo::PipelineArtifactState',
+          partition_foreign_key: :partition_id,
+          inverse_of: :pipeline_artifact,
+          autosave: false
       end
 
       class_methods do

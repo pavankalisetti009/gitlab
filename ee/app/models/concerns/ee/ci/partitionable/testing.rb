@@ -8,6 +8,7 @@ module EE
 
         PARTITIONABLE_EE_MODELS = %w[
           Geo::JobArtifactState
+          Geo::PipelineArtifactState
         ].freeze
 
         class_methods do
