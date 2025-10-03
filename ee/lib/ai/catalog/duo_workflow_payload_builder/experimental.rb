@@ -9,7 +9,7 @@ module Ai
         AGENT_COMPONENT_TYPE = 'AgentComponent'
         DEFAULT_INPUTS = [
           { 'from' => 'context:goal', 'as' => 'goal' },
-          { 'from' => 'context:project_id', 'as' => 'project_id' }
+          { 'from' => 'context:project_id', 'as' => 'project' }
         ].freeze
         LLM_MODEL_CLASS_PROVIDER = 'anthropic'
         LLM_MODEL_CLASS_NAME = 'claude-opus-4-20250514'
@@ -84,11 +84,11 @@ module Ai
           DEFAULT_INPUTS + [
             {
               'from' => "context:#{previous_step_id}.final_answer",
-              'as' => 'previous_step_answer'
+              'as' => 'previous_agent_answer'
             },
             {
               'from' => "conversation_history:#{previous_step_id}",
-              'as' => 'previous_step_msg_history'
+              'as' => 'previous_agent_chat'
             }
           ]
         end

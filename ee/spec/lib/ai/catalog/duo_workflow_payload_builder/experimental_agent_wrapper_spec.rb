@@ -9,7 +9,7 @@ RSpec.describe Ai::Catalog::DuoWorkflowPayloadBuilder::ExperimentalAgentWrapper,
   let_it_be(:wrapped_agent_response) { Ai::Catalog::WrappedAgentFlowBuilder.new(agent, agent_version).execute }
   let_it_be(:flow) { wrapped_agent_response.payload[:flow] }
   let_it_be(:flow_version) { flow.versions.last }
-  let(:user_prompt_input) { 'List all issues from project {{project_id}}' }
+  let(:user_prompt_input) { 'List all issues from project {{project}}' }
 
   let(:params) { { user_prompt_input: user_prompt_input } }
 
@@ -39,7 +39,7 @@ RSpec.describe Ai::Catalog::DuoWorkflowPayloadBuilder::ExperimentalAgentWrapper,
           'prompt_id' => "#{agent_flow_id}_prompt",
           'inputs' => [
             { 'from' => 'context:goal', 'as' => 'goal' },
-            { 'from' => 'context:project_id', 'as' => 'project_id' }
+            { 'from' => 'context:project_id', 'as' => 'project' }
           ],
           'toolset' => %w[gitlab_blob_search],
           'ui_log_events' => %w[on_tool_execution_success on_agent_final_answer on_tool_execution_failed]
