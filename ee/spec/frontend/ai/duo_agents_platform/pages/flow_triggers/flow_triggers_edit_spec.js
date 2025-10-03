@@ -7,7 +7,7 @@ import waitForPromises from 'helpers/wait_for_promises';
 import createMockApollo from 'helpers/mock_apollo_helper';
 import FlowTriggersEdit from 'ee/ai/duo_agents_platform/pages/flow_triggers/flow_triggers_edit.vue';
 import updateAiFlowTriggerMutation from 'ee/ai/duo_agents_platform/graphql/mutations/update_ai_flow_trigger.mutation.graphql';
-import getProjectAiFlowTriggers from 'ee/ai/duo_agents_platform/graphql/queries/get_ai_flow_triggers.query.graphql';
+import getAiFlowTriggersQuery from 'ee/ai/duo_agents_platform/graphql/queries/get_ai_flow_triggers.query.graphql';
 import FlowTriggerForm from 'ee/ai/duo_agents_platform/pages/flow_triggers/components/flow_trigger_form.vue';
 import { FLOW_TRIGGERS_INDEX_ROUTE } from 'ee/ai/duo_agents_platform/router/constants';
 import {
@@ -28,7 +28,8 @@ describe('FlowTriggersEdit', () => {
   let updateFlowTriggerMock;
   let getFlowTriggerMock;
 
-  const projectPath = 'myProject';
+  const projectId = 'graphqlid::Project//1';
+  const projectPath = 'group/path';
   const agentId = 1;
   const routeParams = { id: agentId };
 
@@ -43,13 +44,14 @@ describe('FlowTriggersEdit', () => {
     getFlowTriggerMock = jest.fn().mockResolvedValue(queryHandler);
     updateFlowTriggerMock = jest.fn().mockResolvedValue(mockUpdateFlowTriggerSuccessMutation);
     const apolloProvider = createMockApollo([
-      [getProjectAiFlowTriggers, getFlowTriggerMock],
+      [getAiFlowTriggersQuery, getFlowTriggerMock],
       [updateAiFlowTriggerMutation, updateFlowTriggerMock],
     ]);
 
     wrapper = shallowMountExtended(FlowTriggersEdit, {
       apolloProvider,
       provide: {
+        projectId,
         projectPath,
         flowTriggersEventTypeOptions: eventTypeOptions,
       },

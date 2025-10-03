@@ -4,6 +4,13 @@ fragment FlowTriggerFragment on AiFlowTriggerType {
   eventTypes
   configUrl
   configPath
+  aiCatalogItemConsumer {
+    id
+    item {
+      id
+      name
+    }
+  }
   user {
     id
     avatarUrl

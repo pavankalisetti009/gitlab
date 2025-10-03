@@ -20,7 +20,8 @@ describe('FlowTriggersNew', () => {
   let wrapper;
   let createFlowTriggerMock;
 
-  const projectPath = 'myProject';
+  const projectId = 'graphqlid::Project//1';
+  const projectPath = 'group/project';
 
   const mockToast = {
     show: jest.fn(),
@@ -36,6 +37,7 @@ describe('FlowTriggersNew', () => {
     wrapper = shallowMountExtended(FlowTriggersNew, {
       apolloProvider,
       provide: {
+        projectId,
         projectPath,
         flowTriggersEventTypeOptions: eventTypeOptions,
       },

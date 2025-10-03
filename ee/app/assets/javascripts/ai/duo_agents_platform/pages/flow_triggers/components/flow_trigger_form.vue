@@ -7,16 +7,23 @@ import {
   GlFormGroup,
   GlFormInput,
   GlFormTextarea,
+  GlFormRadioGroup,
 } from '@gitlab/ui';
 import { s__ } from '~/locale';
-import { createAlert } from '~/alert';
+import { convertToGraphQLId } from '~/graphql_shared/utils';
+import { TYPENAME_PROJECT } from '~/graphql_shared/constants';
 import UserSelect from '~/vue_shared/components/user_select/user_select.vue';
+import ErrorsAlert from '~/vue_shared/components/errors_alert.vue';
+import getCatalogConsumerItemsQuery from 'ee/ai/duo_agents_platform/graphql/queries/get_catalog_consumer_items.query.graphql';
 import projectServiceAccountsQuery from '../../../graphql/queries/get_project_service_accounts.query.graphql';
 import { FLOW_TRIGGERS_INDEX_ROUTE } from '../../../router/constants';
 import AiLegalDisclaimer from '../../../components/common/ai_legal_disclaimer.vue';
 
 const MODE_CREATE = 'create';
 const MODE_EDIT = 'edit';
+
+const CONFIG_MODE_CATALOG = 'catalog';
+const CONFIG_MODE_FILE_PATH = 'manual';
 
 export default {
   name: 'AiFlowTriggerForm',
@@ -26,9 +33,11 @@ export default {
     GlCollapsibleListbox,
     GlForm,
     GlFormGroup,
+    GlFormRadioGroup,
     GlFormInput,
     GlFormTextarea,
     UserSelect,
+    ErrorsAlert,
     AiLegalDisclaimer,
   },
   props: {
@@ -49,7 +58,9 @@ export default {
       type: Object,
       required: false,
       validator(obj) {
-        return ['description', 'eventTypes', 'configPath', 'user'].every((prop) => prop in obj);
+        return ['description', 'eventTypes', 'configPath', 'user', 'aiCatalogItemConsumer'].every(
+          (prop) => prop in obj,
+        );
       },
       default: () => {
         return {
@@ -57,6 +68,7 @@ export default {
           eventTypes: [],
           configPath: '',
           user: null,
+          aiCatalogItemConsumer: {},
         };
       },
     },
@@ -68,16 +80,56 @@ export default {
       type: String,
       required: true,
     },
+    projectId: {
+      type: String,
+      required: true,
+    },
+  },
+  apollo: {
+    catalogItems: {
+      query: getCatalogConsumerItemsQuery,
+      variables() {
+        return {
+          projectId: convertToGraphQLId(TYPENAME_PROJECT, this.projectId),
+        };
+      },
+      update(data) {
+        return (
+          data.aiCatalogConfiguredItems?.nodes.map((catalogItem) => ({
+            id: catalogItem.id,
+            name: catalogItem.item.name,
+          })) || []
+        );
+      },
+      error() {
+        this.errors.push(
+          s__(
+            'DuoAgentsPlatform|An error occurred while fetching flows configured for this project.',
+          ),
+        );
+      },
+    },
   },
   data() {
     return {
+      catalogItems: [],
+      errors: [],
+      configMode:
+        // We only want the default to be FILE_PATH if there are no consumer defaults AND there is an existing config path
+        this.initialValues.aiCatalogItemConsumer.id || !this.initialValues.configPath
+          ? CONFIG_MODE_CATALOG
+          : CONFIG_MODE_FILE_PATH,
+      configPath: this.initialValues.configPath,
       description: this.initialValues.description,
       eventTypes: this.initialValues.eventTypes,
-      configPath: this.initialValues.configPath,
+      selectedFlow: this.initialValues.aiCatalogItemConsumer.id,
       selectedUsers: this.initialValues.user ? [{ ...this.initialValues.user }] : [],
     };
   },
   computed: {
+    isCatalogConfigMode() {
+      return this.configMode === CONFIG_MODE_CATALOG;
+    },
     isEditMode() {
       return this.mode === MODE_EDIT;
     },
@@ -88,7 +140,7 @@ export default {
     },
     selectedEventTypeText() {
       const selectedOptions = this.eventTypeOptions
-        .filter((option) => option.value in this.eventTypes)
+        .filter((option) => this.eventTypes.includes(option.value))
         .map((option) => option.text);
       return (
         selectedOptions.join(', ') || s__('DuoAgentsPlatform|Select one or multiple event types')
@@ -98,6 +150,22 @@ export default {
       return this.selectedUsers.length > 0
         ? this.selectedUsers[0].name
         : s__('DuoAgentsPlatform|Select user');
+    },
+    selectedCatalogItem() {
+      return this.catalogItems.find((item) => {
+        return item.id === this.selectedFlow;
+      });
+    },
+    catalogItemOptions() {
+      return this.catalogItems.map((catalogConsumerItem) => ({
+        value: catalogConsumerItem.id,
+        text: catalogConsumerItem.name,
+      }));
+    },
+    selectedFlowText() {
+      return (
+        this.selectedCatalogItem?.name ?? s__('DuoAgentsPlatform|Select a flow from the AI Catalog')
+      );
     },
   },
   watch: {
@@ -120,32 +188,46 @@ export default {
       this.selectedUsers = users;
     },
     onUserSelectError() {
-      createAlert({ message: s__('DuoAgentsPlatform|An error occurred while fetching users.') });
+      this.errors.push(s__('DuoAgentsPlatform|An error occurred while fetching users.'));
+    },
+    setSelectedFlow(selectedValue) {
+      this.selectedFlow = selectedValue;
     },
     onSubmit() {
       const formValues = {
-        configPath: this.configPath.trim(),
         description: this.description.trim(),
         eventTypes: this.eventTypes,
         userId: this.selectedUsers.length > 0 ? this.selectedUsers[0].id : null,
+        configPath: this.isCatalogConfigMode ? '' : this.configPath.trim(),
+        aiCatalogItemConsumerId: this.isCatalogConfigMode ? this.selectedFlow : null,
       };
+
       this.$emit('submit', formValues);
     },
     usersProcessor(data) {
       return data.project?.projectMembers?.nodes?.map(({ user }) => user) || [];
     },
+    dismissErrors() {
+      this.errors = [];
+    },
   },
   indexRoute: FLOW_TRIGGERS_INDEX_ROUTE,
   projectServiceAccountsQuery,
+  configModeOptions: [
+    { value: CONFIG_MODE_CATALOG, text: s__('DuoAgentsPlatform|AI Catalog') },
+    { value: CONFIG_MODE_FILE_PATH, text: s__('DuoAgentsPlatform|Configuration path') },
+  ],
 };
 </script>
 
 <template>
   <div class="@lg/panel:gl-w-2/3">
+    <errors-alert :errors="errors" alert-class="gl-mb-3 gl-mt-5" @dismiss="dismissErrors" />
     <gl-alert
       v-if="errorMessages.length"
       class="gl-mb-3 gl-mt-5"
       variant="danger"
+      data-testid="error-messages-alert"
       @dismiss="$emit('dismiss-errors')"
     >
       <ul class="!gl-mb-0 gl-pl-5">
@@ -174,6 +256,7 @@ export default {
           :header-text="s__('DuoAgentsPlatform|Select one or multiple event types')"
           :multiple="true"
           block
+          data-testid="trigger-event-type-listbox"
           @select="setEventType"
         />
       </gl-form-group>
@@ -211,7 +294,45 @@ export default {
         />
       </gl-form-group>
 
-      <gl-form-group :label="s__('DuoAgentsPlatform|Config path')" label-for="trigger-config-path">
+      <gl-form-group :label="s__('DuoAgentsPlatform|Configuration source')" label-for="config-mode">
+        <gl-form-radio-group
+          id="config-mode"
+          v-model="configMode"
+          :options="$options.configModeOptions"
+        />
+      </gl-form-group>
+
+      <template v-if="isCatalogConfigMode">
+        <gl-form-group :label="s__('DuoAgentsPlatform|Flow')" label-for="trigger-agent">
+          <template #label-description>
+            {{
+              s__(
+                'DuoAgentsPlatform|From the flows configured for this project, select the flow that this trigger will execute.',
+              )
+            }}
+          </template>
+          <gl-collapsible-listbox
+            id="trigger-agent"
+            :items="catalogItemOptions"
+            :selected="selectedFlow"
+            :toggle-text="selectedFlowText"
+            :header-text="s__('DuoAgentsPlatform|Select a flow from the AI Catalog')"
+            :loading="$apollo.queries.catalogItems.loading"
+            block
+            searchable
+            data-testid="trigger-agent-listbox"
+            @select="setSelectedFlow"
+          />
+        </gl-form-group>
+      </template>
+      <gl-form-group
+        v-else
+        :label="s__('DuoAgentsPlatform|Configuration path')"
+        label-for="trigger-config-path"
+      >
+        <template #label-description>
+          {{ s__('DuoAgentsPlatform|Enter the path to your configuration file.') }}
+        </template>
         <gl-form-input
           id="trigger-config-path"
           v-model="configPath"

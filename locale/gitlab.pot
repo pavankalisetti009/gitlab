@@ -24631,6 +24631,9 @@ msgstr ""
 msgid "DuoAgenticChat|The agent associated with this conversation is no longer available. You can view the conversation history but cannot send new messages."
 msgstr ""
 
+msgid "DuoAgentsPlatform|AI Catalog"
+msgstr ""
+
 msgid "DuoAgentsPlatform|Action"
 msgstr ""
 
@@ -24641,6 +24644,9 @@ msgid "DuoAgentsPlatform|Agent session"
 msgstr ""
 
 msgid "DuoAgentsPlatform|Agent sessions"
+msgstr ""
+
+msgid "DuoAgentsPlatform|An error occurred while fetching flows configured for this project."
 msgstr ""
 
 msgid "DuoAgentsPlatform|An error occurred while fetching users."
@@ -24658,7 +24664,10 @@ msgstr ""
 msgid "DuoAgentsPlatform|Config Path"
 msgstr ""
 
-msgid "DuoAgentsPlatform|Config path"
+msgid "DuoAgentsPlatform|Configuration path"
+msgstr ""
+
+msgid "DuoAgentsPlatform|Configuration source"
 msgstr ""
 
 msgid "DuoAgentsPlatform|Could not display logs. Please try again."
@@ -24715,6 +24724,9 @@ msgstr ""
 msgid "DuoAgentsPlatform|Enter a description for this flow trigger"
 msgstr ""
 
+msgid "DuoAgentsPlatform|Enter the path to your configuration file."
+msgstr ""
+
 msgid "DuoAgentsPlatform|Event Type"
 msgstr ""
 
@@ -24730,6 +24742,9 @@ msgstr ""
 msgid "DuoAgentsPlatform|Failed to fetch workflows"
 msgstr ""
 
+msgid "DuoAgentsPlatform|Flow"
+msgstr ""
+
 msgid "DuoAgentsPlatform|Flow trigger created successfully."
 msgstr ""
 
@@ -24743,6 +24758,9 @@ msgid "DuoAgentsPlatform|Flow trigger updated successfully."
 msgstr ""
 
 msgid "DuoAgentsPlatform|Flow triggers"
+msgstr ""
+
+msgid "DuoAgentsPlatform|From the flows configured for this project, select the flow that this trigger will execute."
 msgstr ""
 
 msgid "DuoAgentsPlatform|Full"
@@ -24809,6 +24827,9 @@ msgid "DuoAgentsPlatform|Search issues"
 msgstr ""
 
 msgid "DuoAgentsPlatform|Select a flow"
+msgstr ""
+
+msgid "DuoAgentsPlatform|Select a flow from the AI Catalog"
 msgstr ""
 
 msgid "DuoAgentsPlatform|Select a service account user"

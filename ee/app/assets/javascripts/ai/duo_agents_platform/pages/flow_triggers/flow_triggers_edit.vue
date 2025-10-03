@@ -19,7 +19,7 @@ export default {
     GlLoadingIcon,
     PageHeading,
   },
-  inject: ['flowTriggersEventTypeOptions', 'projectPath'],
+  inject: ['flowTriggersEventTypeOptions', 'projectPath', 'projectId'],
   data() {
     return {
       flowTrigger: {},
@@ -44,6 +44,10 @@ export default {
               eventTypes: flowTrigger.eventTypes,
               user: flowTrigger.user,
               configPath: flowTrigger.configPath,
+              aiCatalogItemConsumer: {
+                id: flowTrigger?.aiCatalogItemConsumer?.id,
+                name: flowTrigger?.aiCatalogItemConsumer?.item.name,
+              },
             }
           : {};
       },
@@ -130,6 +134,7 @@ export default {
       :event-type-options="flowTriggersEventTypeOptions"
       :error-messages="errorMessages"
       :project-path="projectPath"
+      :project-id="projectId"
       :is-loading="isLoadingMutation"
       :initial-values="flowTrigger"
       mode="edit"
