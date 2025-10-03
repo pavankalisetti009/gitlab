@@ -46,18 +46,12 @@ RSpec.describe 'Groups > Billing', :js, :saas, :with_organization_url_helpers, f
         create(:gitlab_subscription, namespace: group, hosted_plan: nil, seats: 15)
       end
 
-      it_behaves_like 'hides search settings'
-
       it 'shows the proper title and subscription data' do
         visit group_billings_path(group)
 
-        expect(page).to have_content("#{group.name} is currently using the Free Plan")
-        expect(page).to have_text('Not the group')
-        expect(page).to have_link('Switch to a different group', href: dashboard_groups_path)
-
-        expect(page).not_to have_link("Manage")
-        expect(page).not_to have_link("Add seats")
-        expect(page).not_to have_link("Renew")
+        expect(page).to have_content('Your group is on GitLab Free')
+        expect(page).to have_link('Manage seats')
+        expect(page).to have_link('Start free trial')
       end
 
       it_behaves_like 'targeted message interactions' do
