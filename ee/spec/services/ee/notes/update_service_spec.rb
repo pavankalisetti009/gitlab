@@ -47,6 +47,45 @@ RSpec.describe Notes::UpdateService, feature_category: :team_planning do
         include_examples 'no trigger status page publish'
       end
     end
+
+    describe 'audit events' do
+      context 'when note is updated' do
+        it 'audits with comment_updated event' do
+          expect(::Gitlab::Audit::Auditor).to receive(:audit).with(
+            hash_including(
+              name: 'comment_updated',
+              target: note,
+              additional_details: {
+                previous_body: note.note,
+                body: note_text
+              },
+              stream_only: true
+            )
+          ).and_call_original
+
+          service.execute(note)
+        end
+      end
+
+      context 'when note is updated to commands only' do
+        let(:note_text) { "/todo\n" }
+
+        it 'audits with comment_deleted event' do
+          expect(::Gitlab::Audit::Auditor).to receive(:audit).with(
+            hash_including(
+              name: 'comment_deleted',
+              target: note,
+              additional_details: {
+                body: note.note
+              },
+              stream_only: true
+            )
+          ).and_call_original
+
+          service.execute(note)
+        end
+      end
+    end
   end
 
   context 'for epics' do
