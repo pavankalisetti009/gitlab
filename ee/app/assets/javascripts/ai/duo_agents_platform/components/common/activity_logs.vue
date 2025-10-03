@@ -87,10 +87,10 @@ export default {
   <ul id="activity-list" class="gl-relative gl-flex gl-flex-col gl-pl-0">
     <activity-connector-svg :targets="iconRefs" />
 
-    <li v-for="(item, index) in items" :key="item.id" class="gl-relative gl-mb-6 gl-flex gl-w-full">
+    <li v-for="(item, index) in items" :key="item.id" class="gl-relative gl-mb-5 gl-flex gl-w-full">
       <div :ref="`icon-${index}`" class="gl-relative gl-mr-4 gl-flex gl-flex-col gl-items-center">
-        <div class="gl-border gl-rounded-full gl-bg-gray-50 gl-p-2">
-          <gl-icon :name="assignIcon(item, index)" class="gl-h-4 gl-w-4 gl-text-gray-600" />
+        <div class="gl-border gl-rounded-full gl-bg-strong gl-p-2">
+          <gl-icon :name="assignIcon(item, index)" variant="subtle" />
         </div>
       </div>
 
