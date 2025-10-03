@@ -58,6 +58,37 @@ RSpec.describe Notes::PostProcessService, feature_category: :team_planning do
           expect { notes_post_process_service.execute }.not_to change { AuditEvent.count }
         end
       end
+
+      context 'with human authored note' do
+        let(:note) { create(:note) }
+
+        it 'audits with comment_created event' do
+          expect(::Gitlab::Audit::Auditor).to receive(:audit).with(
+            hash_including(
+              name: 'comment_created',
+              target: note,
+              additional_details: {
+                body: note.note
+              },
+              stream_only: true
+            )
+          ).and_call_original
+
+          notes_post_process_service.execute
+        end
+
+        context 'when note is a system note' do
+          let(:note) { create(:note, :system) }
+
+          it 'does not audit the event' do
+            expect(::Gitlab::Audit::Auditor).not_to receive(:audit).with(
+              hash_including(name: 'comment_created')
+            )
+
+            notes_post_process_service.execute
+          end
+        end
+      end
     end
 
     context 'for processing Duo Code Review chat' do
