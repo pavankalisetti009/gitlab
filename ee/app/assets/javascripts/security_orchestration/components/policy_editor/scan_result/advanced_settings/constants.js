@@ -10,6 +10,19 @@ export const UNBLOCK_RULES_TEXT = s__(
   'ScanResultPolicy|Make approval rules optional using execution policies',
 );
 
+export const TIME_WINDOW_KEY = 'security_report_time_window';
+
+export const TIME_WINDOW_TEXT = s__(
+  'ScanResultPolicy|Use time window for target pipeline comparison',
+);
+
+export const TIME_WINDOW_POPOVER_DESC = s__(
+  'ScanResultPolicy|In busy projects where the target branch always has a pipeline running, the latest pipeline might be pending. Instead, the policy can use security reports from successful pipelines completed during the specified time window.',
+);
+
+export const TIME_WINDOW_MIN_VALUE = 1;
+export const TIME_WINDOW_MAX_VALUE = 10080;
+
 export const NAME = 'name';
 export const PATTERN = 'pattern';
 export const SOURCE = 'source';

@@ -57061,6 +57061,9 @@ msgstr ""
 msgid "ScanResultPolicy|If your dependabot@company.com service account automatically creates pull requests for dependency updates that may contain license compliance violations requiring manual review."
 msgstr ""
 
+msgid "ScanResultPolicy|In busy projects where the target branch always has a pipeline running, the latest pipeline might be pending. Instead, the policy can use security reports from successful pipelines completed during the specified time window."
+msgstr ""
+
 msgid "ScanResultPolicy|Invalid fallback value detected. Please update your selection."
 msgstr ""
 
@@ -57256,6 +57259,12 @@ msgstr ""
 msgid "ScanResultPolicy|Unknown"
 msgstr ""
 
+msgid "ScanResultPolicy|Use security reports from pipelines completed within the last"
+msgstr ""
+
+msgid "ScanResultPolicy|Use time window for target pipeline comparison"
+msgstr ""
+
 msgid "ScanResultPolicy|Users"
 msgstr ""
 
@@ -57335,6 +57344,9 @@ msgid "ScanResultPolicy|license status"
 msgstr ""
 
 msgid "ScanResultPolicy|matching type"
+msgstr ""
+
+msgid "ScanResultPolicy|minutes"
 msgstr ""
 
 msgid "ScanResultPolicy|scanners"
