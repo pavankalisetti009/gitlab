@@ -73,7 +73,8 @@ RSpec.describe Gitlab::Ci::Variables::Builder::ScanExecutionPolicies, feature_ca
         'container-scanning-0'                   | { 'CS_REGISTRY_USER' => 'user' }
         'brakeman-sast-1'                        | { 'SAST_EXCLUDED_ANALYZERS' => 'semgrep',
                                                      'SAST_EXCLUDED_PATHS' => '$DEFAULT_SAST_EXCLUDED_PATHS',
-                                                     'DEFAULT_SAST_EXCLUDED_PATHS' => 'spec, test, tests, tmp' }
+                                                     'DEFAULT_SAST_EXCLUDED_PATHS' => 'spec, test, tests, tmp',
+                                                     'ADVANCED_SAST_PARTIAL_SCAN' => 'false' }
         'secret-detection-2'                     | { 'SECRET_DETECTION_HISTORIC_SCAN' => 'true',
                                                      'SECRET_DETECTION_EXCLUDED_PATHS' => '' }
         'kics-iac-sast-3'                        | { 'SAST_IMAGE_SUFFIX' => '-fips',
@@ -138,7 +139,8 @@ RSpec.describe Gitlab::Ci::Variables::Builder::ScanExecutionPolicies, feature_ca
             [
               item(key: 'DEFAULT_SAST_EXCLUDED_PATHS', value: 'spec, test, tests, tmp'),
               item(key: 'SAST_EXCLUDED_PATHS', value: '$DEFAULT_SAST_EXCLUDED_PATHS'),
-              item(key: 'SAST_EXCLUDED_ANALYZERS', value: 'semgrep')
+              item(key: 'SAST_EXCLUDED_ANALYZERS', value: 'semgrep'),
+              item(key: 'ADVANCED_SAST_PARTIAL_SCAN', value: 'false')
             ]
           end
         end
