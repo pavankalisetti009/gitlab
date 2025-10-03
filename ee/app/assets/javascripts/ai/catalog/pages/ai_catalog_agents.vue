@@ -185,7 +185,7 @@ export default {
                 name: AI_CATALOG_AGENTS_RUN_ROUTE,
                 params: { id },
               },
-              icon: 'rocket-launch',
+              icon: 'work-item-test-case',
             },
             {
               text: s__('AICatalog|Edit'),
@@ -400,6 +400,7 @@ export default {
     <ai-catalog-item-consumer-modal
       v-if="aiCatalogAgentToBeAdded"
       :item="aiCatalogAgentToBeAdded"
+      open
       @submit="addAgentToTarget"
       @hide="setAiCatalogAgentToBeAdded(null)"
     />

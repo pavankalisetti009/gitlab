@@ -1,10 +1,9 @@
 import { shallowMount } from '@vue/test-utils';
-import { GlButton } from '@gitlab/ui';
 import { useMockInternalEventsTracking } from 'helpers/tracking_internal_events_helper';
 import PageHeading from '~/vue_shared/components/page_heading.vue';
 import AiCatalogAgentsShow from 'ee/ai/catalog/pages/ai_catalog_agents_show.vue';
 import AiCatalogAgentDetails from 'ee/ai/catalog/components/ai_catalog_agent_details.vue';
-import { AI_CATALOG_AGENTS_EDIT_ROUTE } from 'ee/ai/catalog/router/constants';
+import AiCatalogItemActions from 'ee/ai/catalog/components/ai_catalog_item_actions.vue';
 import { TRACK_EVENT_TYPE_AGENT, TRACK_EVENT_VIEW_AI_CATALOG_ITEM } from 'ee/ai/catalog/constants';
 import { mockAgent } from '../mock_data';
 
@@ -32,7 +31,7 @@ describe('AiCatalogAgentsShow', () => {
   };
 
   const findPageHeading = () => wrapper.findComponent(PageHeading);
-  const findEditButton = () => wrapper.findComponent(GlButton);
+  const findItemActions = () => wrapper.findComponent(AiCatalogItemActions);
   const findAgentDetails = () => wrapper.findComponent(AiCatalogAgentDetails);
 
   beforeEach(() => {
@@ -43,12 +42,8 @@ describe('AiCatalogAgentsShow', () => {
     expect(findPageHeading().props('heading')).toBe(mockAgent.name);
   });
 
-  it('renders edit button', () => {
-    expect(findEditButton().text()).toBe('Edit');
-    expect(findEditButton().props('to')).toEqual({
-      name: AI_CATALOG_AGENTS_EDIT_ROUTE,
-      params: { id: routeParams.id },
-    });
+  it('renders item actions', () => {
+    expect(findItemActions().props('item')).toBe(mockAgent);
   });
 
   it('renders agent details', () => {
