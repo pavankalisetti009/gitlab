@@ -36,6 +36,7 @@ describe('ModelSelectDropdown', () => {
   const findBetaModelDropdownBadges = () => wrapper.findAllByTestId('beta-model-dropdown-badge');
   const findDefaultModelSelectedBadge = () => wrapper.findByTestId('default-model-selected-badge');
   const findDefaultModelDropdownBadge = () => wrapper.findByTestId('default-model-dropdown-badge');
+  const findToggleButton = () => wrapper.findByTestId('toggle-button');
 
   it('renders the component', () => {
     createComponent();
@@ -102,6 +103,13 @@ describe('ModelSelectDropdown', () => {
       createComponent({ props: { isLoading: true } });
 
       expect(findGLCollapsibleListbox().props('loading')).toBe(true);
+    });
+  });
+
+  describe('when disabled is true', () => {
+    it('disables the dropdown toggle', () => {
+      createComponent({ props: { disabled: true } });
+      expect(findToggleButton().props('disabled')).toBe(true);
     });
   });
 

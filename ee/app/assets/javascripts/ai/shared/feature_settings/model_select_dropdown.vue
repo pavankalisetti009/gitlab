@@ -39,6 +39,11 @@ export default {
       required: false,
       default: false,
     },
+    disabled: {
+      type: Boolean,
+      required: false,
+      default: false,
+    },
   },
   SELF_HOSTED_ROUTE_NAMES,
   computed: {
@@ -78,6 +83,8 @@ export default {
   >
     <template #toggle>
       <gl-button
+        data-testid="toggle-button"
+        :disabled="disabled"
         :loading="isLoading"
         :text="dropdownToggleText"
         :aria-label="dropdownToggleText"

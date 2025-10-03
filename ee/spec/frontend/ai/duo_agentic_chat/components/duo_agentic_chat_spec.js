@@ -38,6 +38,7 @@ import { getStorageValue, saveStorageValue } from '~/lib/utils/local_storage';
 import { getCookie } from '~/lib/utils/common_utils';
 import {
   MOCK_AI_CHAT_AVAILABLE_MODELS_RESPONSE,
+  MOCK_AI_CHAT_AVAILABLE_MODELS_WITH_PINNED_MODEL_RESPONSE,
   MOCK_MODEL_LIST_ITEMS,
   MOCK_GITLAB_DEFAULT_MODEL_ITEM,
 } from './mock_data';
@@ -253,6 +254,7 @@ describe('Duo Agentic Chat', () => {
     initialState = {},
     propsData = { projectId: MOCK_PROJECT_ID, resourceId: MOCK_RESOURCE_ID },
     data = {},
+    apolloHandlers = [[getAiChatAvailableModels, availableModelsQueryHandlerMock]],
   } = {}) => {
     const store = new Vuex.Store({
       actions: actionSpies,
@@ -266,9 +268,9 @@ describe('Duo Agentic Chat', () => {
     const apolloProvider = createMockApollo([
       [getUserWorkflows, userWorkflowsQueryHandlerMock],
       [getAiChatContextPresets, contextPresetsQueryHandlerMock],
-      [getAiChatAvailableModels, availableModelsQueryHandlerMock],
       [getConfiguredAgents, configuredAgentsQueryMock],
       [getAgentFlowConfig, agentFlowConfigQueryMock],
+      ...apolloHandlers,
     ]);
 
     if (duoChatGlobalState.isAgenticChatShown !== false) {
@@ -1391,6 +1393,7 @@ describe('Duo Agentic Chat', () => {
     useLocalStorageSpy();
 
     const findModelSelectDropdown = () => wrapper.findComponent(ModelSelectDropdown);
+    const findModelSelectDropdownContainer = () => wrapper.findByTestId('model-dropdown-container');
 
     describe('when user model selection is enabled', () => {
       beforeEach(() => {
@@ -1470,6 +1473,44 @@ describe('Duo Agentic Chat', () => {
           await findModelSelectDropdown().vm.$emit('select', selectedModel.value);
 
           expect(onNewChatSpy).toHaveBeenCalledWith(null, true);
+        });
+      });
+
+      describe('when there is a pinned model', () => {
+        const availableModelsQueryHandlerWithPinnedModelMock = jest
+          .fn()
+          .mockResolvedValue(MOCK_AI_CHAT_AVAILABLE_MODELS_WITH_PINNED_MODEL_RESPONSE);
+
+        beforeEach(() => {
+          duoChatGlobalState.isAgenticChatShown = true;
+          createComponent({
+            propsData: { userModelSelectionEnabled: true, rootNamespaceId: MOCK_NAMESPACE_ID },
+            apolloHandlers: [
+              [getAiChatAvailableModels, availableModelsQueryHandlerWithPinnedModelMock],
+            ],
+          });
+          return waitForPromises();
+        });
+
+        it('renders disabled model selection dropdown', () => {
+          expect(findModelSelectDropdown().props('disabled')).toBe(true);
+        });
+
+        it('sets pinned model as selected option', () => {
+          const { name, ref } =
+            MOCK_AI_CHAT_AVAILABLE_MODELS_WITH_PINNED_MODEL_RESPONSE.data.aiChatAvailableModels
+              .pinnedModel;
+          const pinnedModel = {
+            text: name,
+            value: ref,
+          };
+          expect(findModelSelectDropdown().props('selectedOption')).toStrictEqual(pinnedModel);
+        });
+
+        it('displays tooltip over the model selection dropdown', () => {
+          expect(findModelSelectDropdownContainer().attributes('title')).toBe(
+            'Model has been pinned by an administrator.',
+          );
         });
       });
     });

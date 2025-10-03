@@ -63,10 +63,7 @@ module Gitlab
                             .new(user, :duo_agent_platform, namespace)
                             .execute
 
-        # User-level model selection is enabled if either owner of the namespace didn't pin the model
-        # or it's set to default
-        feature_setting.success? &&
-          (feature_setting.payload.nil? || feature_setting.payload.set_to_gitlab_default?)
+        feature_setting.success?
       end
 
       def self.resource_id
