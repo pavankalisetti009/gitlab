@@ -1907,8 +1907,9 @@ RSpec.describe Vulnerabilities::Finding, feature_category: :vulnerability_manage
   describe '#cve_enrichment' do
     let_it_be(:cve_value) { 'CVE-2023-12345' }
     let(:finding) do
-      build(:vulnerabilities_finding, identifiers: [
-        build(:vulnerabilities_identifier, name: cve_value, external_type: 'cve')
+      create(:vulnerabilities_finding, cve_identifiers: [
+        create(:vulnerabilities_identifier, name: cve_value, external_type: 'cve'),
+        create(:vulnerabilities_identifier, name: 'GHSA-xxxx-12345', external_type: 'other')
       ])
     end
 
@@ -1921,34 +1922,20 @@ RSpec.describe Vulnerabilities::Finding, feature_category: :vulnerability_manage
     end
 
     it 'memoizes the result' do
-      expect(PackageMetadata::CveEnrichment).to receive(:find_by).once.and_return(cve_enrichment)
-      2.times { finding.cve_enrichment }
+      expect do
+        2.times { finding.cve_enrichment }
+      end.to make_queries_matching(/pm_cve_enrichment/, 1)
     end
 
     context 'when no CveEnrichment is found' do
       let(:finding_without_enrichment) do
-        build(:vulnerabilities_finding, identifiers: [
-          build(:vulnerabilities_identifier, name: 'CVE-2023-54321', external_type: 'cve')
+        create(:vulnerabilities_finding, identifiers: [
+          create(:vulnerabilities_identifier, name: 'CVE-2023-54321', external_type: 'cve')
         ])
       end
 
       it 'returns nil' do
         expect(finding_without_enrichment.cve_enrichment).to be_nil
-      end
-    end
-
-    context 'when cve_value is nil' do
-      before do
-        allow(finding).to receive(:cve_value).and_return(nil)
-      end
-
-      it 'returns nil' do
-        expect(finding.cve_enrichment).to be_nil
-      end
-
-      it 'does not query the database' do
-        expect(PackageMetadata::CveEnrichment).not_to receive(:find_by)
-        finding.cve_enrichment
       end
     end
   end

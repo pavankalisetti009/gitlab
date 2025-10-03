@@ -63,6 +63,8 @@ RSpec.describe Vulnerabilities::ConfirmService, feature_category: :vulnerability
         confirm_vulnerability
       end
 
+      it_behaves_like 'calls Vulnerabilities::Findings::RiskScoreCalculationService'
+
       context 'when vulnerability is dismissed' do
         let(:vulnerability) { create(:vulnerability, :dismissed, :with_findings, project: project) }
 

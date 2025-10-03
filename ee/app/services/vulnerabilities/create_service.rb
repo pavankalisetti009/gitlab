@@ -41,6 +41,7 @@ module Vulnerabilities
 
       if vulnerability.persisted?
         Vulnerabilities::StatisticsUpdateService.update_for(vulnerability)
+        Vulnerabilities::Findings::RiskScoreCalculationService.calculate_for(vulnerability)
       end
 
       vulnerability

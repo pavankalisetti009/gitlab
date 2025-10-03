@@ -87,6 +87,9 @@ module Vulnerabilities
     has_many :finding_identifiers, class_name: 'Vulnerabilities::FindingIdentifier', inverse_of: :finding, foreign_key: 'occurrence_id'
     has_many :identifiers, through: :finding_identifiers, class_name: 'Vulnerabilities::Identifier'
 
+    has_many :cve_identifiers, -> { where('LOWER(external_type) = ?', 'cve') }, through: :finding_identifiers, source: :identifier, class_name: 'Vulnerabilities::Identifier'
+    has_many :cve_enrichments, through: :cve_identifiers, disable_joins: true
+
     has_one :finding_token_status, class_name: 'Vulnerabilities::FindingTokenStatus', foreign_key: 'vulnerability_occurrence_id', inverse_of: :finding
 
     has_many :finding_links, class_name: 'Vulnerabilities::FindingLink', inverse_of: :finding, foreign_key: 'vulnerability_occurrence_id'
@@ -171,6 +174,7 @@ module Vulnerabilities
     scope :by_latest_pipeline, ->(pipeline_id) { where(latest_pipeline_id: pipeline_id) }
     scope :with_project, -> { includes(:project) }
     scope :with_token_status, -> { preload(:finding_token_status) }
+    scope :with_cve_enrichments, -> { includes(:cve_enrichments) }
 
     scope :all_preloaded, -> do
       preload(:scanner, :identifiers, :feedbacks, project: [:namespace, :project_feature])
@@ -363,9 +367,9 @@ module Vulnerabilities
     end
 
     def cve_enrichment
-      return unless cve_value
+      return unless cve_enrichments.load.any?
 
-      PackageMetadata::CveEnrichment.find_by(cve: cve_value)
+      cve_enrichments.first
     end
     strong_memoize_attr :cve_enrichment
 
@@ -457,6 +461,10 @@ module Vulnerabilities
           url: asset_data['url']
         }
       end
+    end
+
+    def risk_score
+      Vulnerabilities::RiskScore.from_finding(self).score
     end
 
     alias_method :==, :eql?

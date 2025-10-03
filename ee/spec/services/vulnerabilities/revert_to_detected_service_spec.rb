@@ -48,6 +48,8 @@ RSpec.describe Vulnerabilities::RevertToDetectedService, feature_category: :vuln
     end
 
     it_behaves_like 'calls vulnerability statistics utility services in order'
+
+    it_behaves_like 'calls Vulnerabilities::Findings::RiskScoreCalculationService'
   end
 
   context 'with an authorized user with proper permissions' do

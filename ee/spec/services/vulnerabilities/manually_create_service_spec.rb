@@ -110,6 +110,10 @@ RSpec.describe Vulnerabilities::ManuallyCreateService, feature_category: :vulner
           .and change { Vulnerabilities::Identifier.count }.by(1)
       end
 
+      it 'creates a vulnerability_finding_risk_scores record' do
+        expect { create_vulnerability }.to change { Vulnerabilities::FindingRiskScore.count }.by(1)
+      end
+
       context 'when Scanner already exists' do
         let!(:scanner) { create(:vulnerabilities_scanner, external_id: scanner_attributes[:id], project: project) }
 

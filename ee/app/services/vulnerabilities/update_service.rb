@@ -20,6 +20,7 @@ module Vulnerabilities
 
       vulnerability.update!(vulnerability_params)
       Vulnerabilities::StatisticsUpdateService.update_for(vulnerability)
+      Vulnerabilities::Findings::RiskScoreCalculationService.calculate_for(vulnerability)
 
       vulnerability
     end
