@@ -55,7 +55,11 @@ class Groups::PushRulesController < Groups::ApplicationController
 
   def push_rule
     strong_memoize(:push_rule) do
-      group.push_rule || group.build_push_rule
+      if ::Feature.enabled?(:read_and_write_group_push_rules, group)
+        GroupPushRuleFinder.new(group).execute || group.build_group_push_rule
+      else
+        group.push_rule || group.build_push_rule
+      end
     end
   end
 

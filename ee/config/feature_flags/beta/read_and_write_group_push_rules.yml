@@ -1,0 +1,10 @@
+---
+name: read_and_write_group_push_rules
+description:
+feature_issue_url: https://gitlab.com/gitlab-org/gitlab/-/issues/498936
+introduced_by_url: https://gitlab.com/gitlab-org/gitlab/-/merge_requests/206152
+rollout_issue_url: https://gitlab.com/gitlab-org/gitlab/-/issues/571517
+milestone: '18.5'
+group: group::source code
+type: beta
+default_enabled: false

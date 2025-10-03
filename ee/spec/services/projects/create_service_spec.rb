@@ -337,11 +337,7 @@ RSpec.describe Projects::CreateService, '#execute', feature_category: :groups_an
       end
 
       context 'when group has push rule defined' do
-        let(:group_push_rule) { create(:push_rule_without_project, commit_message_regex: 'testing me') }
-
-        before do
-          group.update!(push_rule: group_push_rule)
-        end
+        let!(:group_push_rule) { create(:group_push_rule, group: group, commit_message_regex: 'testing me') }
 
         it 'does not error if new columns are created since the last schema load' do
           PushRule.connection.execute('ALTER TABLE push_rules ADD COLUMN foobar boolean')
@@ -406,6 +402,96 @@ RSpec.describe Projects::CreateService, '#execute', feature_category: :groups_an
                 commit_message_regex: sample.commit_message_regex
               )
             )
+          end
+        end
+      end
+    end
+
+    context 'with read_and_write_group_push_rules disabled' do
+      before do
+        stub_feature_flags(read_and_write_group_push_rules: false)
+      end
+
+      context 'for project created within a group' do
+        let_it_be(:group) { create(:group) }
+        let_it_be(:sub_group) { create(:group, parent: group) }
+        let(:extra_params) { { namespace_id: group.id } }
+
+        before_all do
+          group.add_owner(user)
+        end
+
+        context 'when group has push rule defined' do
+          let(:group_push_rule) { create(:push_rule_without_project, commit_message_regex: 'testing me') }
+
+          before do
+            group.update!(push_rule: group_push_rule)
+          end
+
+          it 'does not error if new columns are created since the last schema load' do
+            PushRule.connection.execute('ALTER TABLE push_rules ADD COLUMN foobar boolean')
+
+            expect(created_project.push_rule).to be_persisted
+          end
+
+          it 'creates push rule from group push rule' do
+            project_push_rule = created_project.push_rule
+
+            expect(project_push_rule).to(
+              have_attributes(
+                deny_delete_tag: group_push_rule.deny_delete_tag,
+                commit_message_regex: group_push_rule.commit_message_regex,
+                is_sample: false
+              )
+            )
+            expect(created_project.project_setting.push_rule_id).to eq(project_push_rule.id)
+          end
+
+          it_behaves_like 'override push rule for security policy project'
+
+          context 'with subgroup' do
+            let(:extra_params) { { namespace_id: sub_group.id } }
+
+            it 'creates push rule from group push rule' do
+              project_push_rule = created_project.push_rule
+
+              expect(project_push_rule).to(
+                have_attributes(
+                  deny_delete_tag: group_push_rule.deny_delete_tag,
+                  commit_message_regex: group_push_rule.commit_message_regex,
+                  is_sample: false
+                )
+              )
+              expect(created_project.project_setting.push_rule_id).to eq(project_push_rule.id)
+            end
+          end
+        end
+
+        context 'when group does not have push rule defined' do
+          let_it_be(:sample) { create(:push_rule_sample, organization: user.organization) }
+
+          it 'creates push rule from sample' do
+            expect(created_project.push_rule).to(
+              have_attributes(
+                deny_delete_tag: sample.deny_delete_tag,
+                commit_message_regex: sample.commit_message_regex
+              )
+            )
+          end
+
+          it_behaves_like 'override push rule for security policy project'
+
+          context 'with subgroup' do
+            let(:extra_params) { { namespace_id: sub_group.id } }
+
+            it 'creates push rule from sample in sub-group' do
+              expect(created_project.push_rule).to(
+                have_attributes(
+                  deny_delete_tag: sample.deny_delete_tag,
+                  commit_message_regex: sample.commit_message_regex
+                )
+              )
+            end
           end
         end
       end
