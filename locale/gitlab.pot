@@ -32492,9 +32492,6 @@ msgstr ""
 msgid "GroupSettings|Default to Auto DevOps pipeline for all projects within this group"
 msgstr ""
 
-msgid "GroupSettings|Delete group"
-msgstr ""
-
 msgid "GroupSettings|Delete group immediately"
 msgstr ""
 
@@ -32589,9 +32586,6 @@ msgid "GroupSettings|If not specified at the group or instance level, the defaul
 msgstr ""
 
 msgid "GroupSettings|If the parent group's visibility is lower than the group's current visibility, visibility levels for subgroups and projects will be changed to match the new parent group's visibility."
-msgstr ""
-
-msgid "GroupSettings|Immediate deletion is disabled"
 msgstr ""
 
 msgid "GroupSettings|Include diff previews"
@@ -51762,9 +51756,6 @@ msgid "ProjectSettings|If enabled, project access tokens expiry webhooks execute
 msgstr ""
 
 msgid "ProjectSettings|If merge trains are enabled, merging is only possible if the branch can be rebased without conflicts."
-msgstr ""
-
-msgid "ProjectSettings|Immediate deletion is disabled"
 msgstr ""
 
 msgid "ProjectSettings|Include diff previews"
