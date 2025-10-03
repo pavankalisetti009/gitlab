@@ -6,6 +6,13 @@ export const mockFlowTriggerFactory = (overrides = {}) => ({
   eventTypes: [0, 1],
   configPath: '/config/test.yml',
   configUrl: 'https://example.com/config/test.yml',
+  aiCatalogItemConsumer: {
+    id: 'gid://gitlab/Ai::Catalog::ItemConsumer/1',
+    item: {
+      id: 'gid://gitlab/Ai::Catalog::Item/10',
+      name: 'Test Flow',
+    },
+  },
   user: {
     id: 'gid://gitlab/User/1',
     username: 'testuser',
@@ -29,11 +36,19 @@ export const mockTriggersWithoutUser = [mockFlowTriggerFactory({ user: undefined
 
 export const mockTriggersConfigPath = [mockFlowTriggerFactory({ configPath: '', configUrl: '' })];
 
+export const mockTriggersWithoutCatalogItem = [
+  mockFlowTriggerFactory({ project: { aiCatalogItemConsumer: null } }),
+];
+
 export const mockAiFlowTriggersResponse = {
   data: {
     project: {
       id: 'gid://gitlab/Project/1000000',
-      aiFlowTriggers: { nodes: mockTriggers },
+      aiFlowTriggers: {
+        nodes: mockTriggers,
+        __typename: 'AiFlowTriggerConnection',
+      },
+      __typename: 'Project',
     },
   },
 };
@@ -48,7 +63,14 @@ export const mockDeleteTriggerResponse = {
 
 export const mockEmptyAiFlowTriggersResponse = {
   data: {
-    project: { id: 'gid://gitlab/Project/1000000', aiFlowTriggers: { nodes: [] } },
+    project: {
+      id: 'gid://gitlab/Project/1000000',
+      aiFlowTriggers: {
+        nodes: [],
+        __typename: 'AiFlowTriggerConnection',
+      },
+      __typename: 'Project',
+    },
   },
 };
 
@@ -87,6 +109,29 @@ export const mockUpdateFlowTriggerErrorMutation = {
   data: {
     aiFlowTriggerUpdate: {
       errors: ['No input was provided.'],
+    },
+  },
+};
+
+export const mockCatalogFlowsResponse = {
+  data: {
+    aiCatalogConfiguredItems: {
+      nodes: [
+        {
+          id: 'gid://gitlab/Ai::Catalog::ItemConsumer/1',
+          item: {
+            id: 'gid://gitlab/Ai::Catalog::ItemConsumer/10',
+            name: 'Test Flow',
+          },
+        },
+        {
+          id: 'gid://gitlab/Ai::Catalog::ItemConsumer/2',
+          item: {
+            id: 'gid://gitlab/Ai::Catalog::ItemConsumer/100',
+            name: 'Another Flow',
+          },
+        },
+      ],
     },
   },
 };
