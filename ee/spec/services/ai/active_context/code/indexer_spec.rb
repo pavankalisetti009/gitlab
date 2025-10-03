@@ -181,7 +181,7 @@ RSpec.describe Ai::ActiveContext::Code::Indexer, feature_category: :global_searc
           end
 
           shared_examples 'forced reindexing' do
-            let(:expected_from_sha) { "" }
+            let(:expected_from_sha) { git_repository.empty_tree_id }
             let(:expected_to_sha) { git_repository.commit.id }
             let(:expected_force_reindex) { true }
 
