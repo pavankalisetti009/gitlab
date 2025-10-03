@@ -36,6 +36,15 @@ RSpec.describe Sbom::ComponentVersion, type: :model, feature_category: :dependen
     it { is_expected.to eq([in_project_occurrence.component_version]) }
   end
 
+  describe '.by_component_id' do
+    let_it_be(:matching_version) { create(:sbom_component_version) }
+    let_it_be(:non_matching_version) { create(:sbom_component_version) }
+
+    subject { described_class.by_component_id(matching_version.component_id) }
+
+    it { is_expected.to eq([matching_version]) }
+  end
+
   describe '.by_component_name' do
     let_it_be(:matching_occurrence) { create(:sbom_occurrence, component_name: 'activerecord') }
 
