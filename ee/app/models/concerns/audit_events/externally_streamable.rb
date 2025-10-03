@@ -75,8 +75,6 @@ module AuditEvents
       end
 
       def allowed_to_stream?(event_type, audit_event)
-        return true unless Feature.enabled?(:audit_events_fix_streaming_filters, :instance)
-
         event_type_allowed_to_stream?(event_type) &&
           namespace_allowed_to_stream?(audit_event)
       end
