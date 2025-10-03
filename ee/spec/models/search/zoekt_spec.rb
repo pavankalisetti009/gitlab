@@ -241,7 +241,7 @@ RSpec.describe Search::Zoekt, feature_category: :global_search do
       end
 
       it 'calls IndexingTaskWorker async' do
-        expect(Search::Zoekt::IndexingTaskWorker).to receive(:perform_async).with(project.id, :index_repo)
+        expect(Search::Zoekt::IndexingTaskWorker).to receive(:perform_async).with(project.id, 'index_repo')
 
         index_async
       end
@@ -270,7 +270,7 @@ RSpec.describe Search::Zoekt, feature_category: :global_search do
 
       it 'calls IndexingTaskWorker async' do
         expect(Search::Zoekt::IndexingTaskWorker).to receive(:perform_async)
-          .with(project.id, :index_repo, { delay: 1.second })
+          .with(project.id, 'index_repo', { delay: 1.second })
 
         index_in
       end
@@ -300,7 +300,7 @@ RSpec.describe Search::Zoekt, feature_category: :global_search do
       context 'when node_id is not provided' do
         it 'calls IndexingTaskWorker async' do
           expect(Search::Zoekt::IndexingTaskWorker).to receive(:perform_async)
-            .with(project.id, :delete_repo, { root_namespace_id: group.id, node_id: node.id })
+            .with(project.id, 'delete_repo', { root_namespace_id: group.id, node_id: node.id })
 
           delete_async
         end
@@ -313,7 +313,7 @@ RSpec.describe Search::Zoekt, feature_category: :global_search do
 
         it 'calls IndexingTaskWorker async' do
           expect(Search::Zoekt::IndexingTaskWorker).to receive(:perform_async)
-            .with(project.id, :delete_repo, { root_namespace_id: group.id, node_id: node.id })
+            .with(project.id, 'delete_repo', { root_namespace_id: group.id, node_id: node.id })
 
           delete_async
         end
@@ -344,7 +344,7 @@ RSpec.describe Search::Zoekt, feature_category: :global_search do
       context 'when node_id is not provided' do
         it 'calls IndexingTaskWorker async' do
           expect(Search::Zoekt::IndexingTaskWorker).to receive(:perform_async)
-            .with(project.id, :delete_repo, { root_namespace_id: group.id, node_id: node.id, delay: 1.second })
+            .with(project.id, 'delete_repo', { root_namespace_id: group.id, node_id: node.id, delay: 1.second })
 
           delete_in
         end
@@ -357,7 +357,7 @@ RSpec.describe Search::Zoekt, feature_category: :global_search do
 
         it 'calls IndexingTaskWorker async' do
           expect(Search::Zoekt::IndexingTaskWorker).to receive(:perform_async)
-            .with(project.id, :delete_repo, { root_namespace_id: group.id, node_id: node.id, delay: 2.seconds })
+            .with(project.id, 'delete_repo', { root_namespace_id: group.id, node_id: node.id, delay: 2.seconds })
 
           delete_in
         end

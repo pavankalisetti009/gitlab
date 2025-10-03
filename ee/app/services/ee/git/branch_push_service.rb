@@ -67,7 +67,7 @@ module EE
         return false unless ::GitlabSubscriptions::AddOnPurchase
           .for_active_add_ons(['duo_core'], resource: project.project_namespace).present?
 
-        ::Ai::KnowledgeGraph::IndexingTaskWorker.perform_async(project.project_namespace.id, :index_graph_repo)
+        ::Ai::KnowledgeGraph::IndexingTaskWorker.perform_async(project.project_namespace.id, 'index_graph_repo')
       end
 
       def enqueue_update_external_pull_requests

@@ -2,16 +2,15 @@
 
 require 'spec_helper'
 
-RSpec.describe API::Admin::Search::Zoekt, :zoekt, :zoekt_settings_enabled, feature_category: :global_search do
-  let(:admin) { create(:admin) }
+RSpec.describe API::Admin::Search::Zoekt, :zoekt_settings_enabled, feature_category: :global_search do
+  let_it_be(:admin) { create(:admin) }
   let_it_be(:namespace) { create(:group) }
-  let_it_be(:unindexed_namespace) { create(:group) }
   let_it_be(:project) { create(:project) }
-  let(:project_id) { project.id }
+  let_it_be(:node) { create(:zoekt_node) }
   let(:namespace_id) { namespace.id }
-  let(:params) { {} }
-  let(:node) { ::Search::Zoekt::Node.first }
+  let(:project_id) { project.id }
   let(:node_id) { node.id }
+  let(:params) { {} }
 
   shared_examples 'an API that returns 400 when the application setting zoekt_indexing_enabled is disabled' do |verb|
     before do
@@ -179,7 +178,7 @@ RSpec.describe API::Admin::Search::Zoekt, :zoekt, :zoekt_settings_enabled, featu
       expect(response).to have_gitlab_http_status(:ok)
       np = ::Search::Zoekt::EnabledNamespace.find_by(namespace: namespace)
       expect(json_response['id']).to eq(np.id)
-      expect(np.search).to eq(true)
+      expect(np.search).to be(true)
 
       zoekt_index = ::Search::Zoekt::Index.find_by(zoekt_enabled_namespace_id: np.id)
       expect(json_response['zoekt_node_id']).to eq(zoekt_index.zoekt_node_id)
@@ -199,7 +198,7 @@ RSpec.describe API::Admin::Search::Zoekt, :zoekt, :zoekt_settings_enabled, featu
         expect(response).to have_gitlab_http_status(:ok)
         np = ::Search::Zoekt::EnabledNamespace.find_by(namespace: namespace)
         expect(json_response['id']).to eq(np.id)
-        expect(np.search).to eq(false)
+        expect(np.search).to be(false)
       end
     end
 
@@ -220,7 +219,7 @@ RSpec.describe API::Admin::Search::Zoekt, :zoekt, :zoekt_settings_enabled, featu
           put api(path, admin, admin_mode: true)
           expect(json_response['id']).to eq(np.id)
           np.reload
-          expect(np.search).to eq(false)
+          expect(np.search).to be(false)
         end
       end
 
@@ -261,8 +260,8 @@ RSpec.describe API::Admin::Search::Zoekt, :zoekt, :zoekt_settings_enabled, featu
         expect(response).to have_gitlab_http_status(:ok)
         np = Search::Zoekt::EnabledNamespace.find_by(namespace: namespace)
         expect(json_response['id']).to eq(np.id)
-        expect(np.search).to eq(true)
-        expect(json_response['zoekt_node_id']).to eq(nil)
+        expect(np.search).to be(true)
+        expect(json_response['zoekt_node_id']).to be_nil
       end
     end
 
