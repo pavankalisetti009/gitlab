@@ -1,7 +1,10 @@
 <script>
 import { GlButton, GlCard, GlSprintf, GlAlert } from '@gitlab/ui';
 import eventHub from '~/invite_members/event_hub';
+import axios from '~/lib/utils/axios_utils';
 import { visitUrl } from '~/lib/utils/url_utility';
+import { s__ } from '~/locale';
+import { createAlert, VARIANT_INFO } from '~/alert';
 import SectionHeader from './section_header.vue';
 import SectionBody from './section_body.vue';
 import DuoExtensions from './duo_extensions.vue';
@@ -61,10 +64,31 @@ export default {
     toggleExpand(index) {
       this.expandedIndex = this.expandedIndex === index ? null : index;
     },
-    handleEndTutorialClick() {
+    async handleEndTutorialClick() {
       this.disableEndTutorialButton = true;
 
-      visitUrl(this.tutorialEndPath);
+      try {
+        const { data } = await axios.patch(this.tutorialEndPath);
+        if (data?.success) {
+          visitUrl(data.redirect_path);
+          return;
+        }
+        this.handleEndTutorialError();
+      } catch (error) {
+        this.handleEndTutorialError(error);
+      }
+    },
+    handleEndTutorialError(error = {}) {
+      const errorMessage =
+        error?.response?.data?.message ||
+        s__('GetStarted|There was a problem trying to end the tutorial. Please try again.');
+
+      createAlert({
+        message: errorMessage,
+        variant: VARIANT_INFO,
+      });
+
+      this.disableEndTutorialButton = false;
     },
   },
 };

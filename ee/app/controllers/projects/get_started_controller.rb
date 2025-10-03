@@ -37,11 +37,15 @@ module Projects
           }
         )
 
-        redirect_to project_path(project)
         flash[:success] = s_("GetStarted|You've ended the tutorial.")
+        flash.keep(:success)
+
+        render json: { success: true, redirect_path: project_path(project) }
       else
-        flash[:danger] =
+        error =
           s_("GetStarted|There was a problem trying to end the tutorial. Please try again.")
+
+        render json: { success: false, message: error }, status: :unprocessable_entity
       end
     end
 

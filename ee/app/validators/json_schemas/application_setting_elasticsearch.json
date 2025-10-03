@@ -23,20 +23,9 @@
       "maxLength": 255
     },
     "elasticsearch_aws_role_arn": {
-      "anyOf": [
-        {
-          "type": "null"
-        },
-        {
-          "type": "string",
-          "enum": [
-            ""
-          ]
-        },
-        {
-          "type": "string",
-          "pattern": "^arn:\\\\S+$"
-        }
+      "type": [
+        "string",
+        "null"
       ]
     },
     "elasticsearch_aws_region": {
