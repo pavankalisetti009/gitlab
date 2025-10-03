@@ -22,10 +22,15 @@ export default {
       type: Object,
       required: true,
     },
+    open: {
+      type: Boolean,
+      required: false,
+      default: false,
+    },
   },
   data() {
     return {
-      isOpen: true,
+      isOpen: this.open,
       targetId: this.item?.public ? null : this.item?.project?.id || null,
       isDirty: false,
       error: null,
@@ -64,6 +69,7 @@ export default {
       if (!this.isProjectValid) {
         return;
       }
+      this.isOpen = false;
       this.$emit('submit', { projectId: this.targetId });
     },
   },
