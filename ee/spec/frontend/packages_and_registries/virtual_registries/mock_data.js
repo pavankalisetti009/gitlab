@@ -15,6 +15,23 @@ export const mockCacheEntries = [
   },
 ];
 
+export const mockUpstreams = [
+  {
+    id: 1,
+    name: 'Maven Central',
+    url: 'https://repo1.maven.org/maven2/',
+    cache_validity_hours: 24,
+    metadata_cache_validity_hours: 12,
+  },
+  {
+    id: 2,
+    name: 'JCenter',
+    url: 'https://jcenter.bintray.com/',
+    cache_validity_hours: 48,
+    metadata_cache_validity_hours: 24,
+  },
+];
+
 export const mockUpstream = {
   id: 5,
   name: 'Upstream Registry',
