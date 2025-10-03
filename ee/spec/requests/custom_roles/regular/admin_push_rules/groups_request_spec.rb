@@ -28,6 +28,8 @@ RSpec.describe 'User with admin_push_rules custom role', feature_category: :sour
 
   describe Groups::PushRulesController do
     describe '#update' do
+      subject(:group_push_rule_update) { patch group_push_rules_path(group, params: { push_rule: push_rule }) }
+
       let(:push_rule) do
         {
           deny_delete_tag: true, commit_message_regex: 'any',
@@ -39,11 +41,25 @@ RSpec.describe 'User with admin_push_rules custom role', feature_category: :sour
       end
 
       it 'updates repository settings' do
-        patch group_push_rules_path(group, params: { push_rule: push_rule })
+        group_push_rule_update
 
-        expect(group.reload.push_rule).to have_attributes({
+        expect(group.reload.group_push_rule).to have_attributes({
           attributes: hash_including(push_rule.stringify_keys)
         })
+      end
+
+      context 'with read_and_write_group_push_rules disabled' do
+        before do
+          stub_feature_flags(read_and_write_group_push_rules: false)
+        end
+
+        it 'updates repository settings' do
+          group_push_rule_update
+
+          expect(group.reload.push_rule).to have_attributes({
+            attributes: hash_including(push_rule.stringify_keys)
+          })
+        end
       end
     end
   end

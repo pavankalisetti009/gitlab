@@ -14,6 +14,10 @@ module API
 
     resource :groups, requirements: API::NAMESPACE_OR_PROJECT_REQUIREMENTS do
       helpers do
+        def push_rule
+          ::GroupPushRuleFinder.new(user_group).execute
+        end
+
         def check_group_push_rule_access!
           not_found! unless can?(current_user, :change_push_rules, user_group)
         end
@@ -66,8 +70,6 @@ module API
         tags %w[push_rules]
       end
       get ":id/push_rule" do
-        push_rule = user_group.push_rule
-
         not_found! unless push_rule
 
         present push_rule, with: EE::API::Entities::GroupPushRule, user: current_user
@@ -87,7 +89,7 @@ module API
         use :push_rule_params
       end
       post ":id/push_rule" do
-        unprocessable_entity!('Group push rule exists, try updating') if user_group.push_rule
+        unprocessable_entity!('Group push rule exists, try updating') if push_rule
         create_or_update_push_rule
       end
 
@@ -105,7 +107,7 @@ module API
         use :push_rule_params
       end
       put ":id/push_rule" do
-        not_found!('Push rule') unless user_group.push_rule
+        not_found!('Push rule') unless push_rule
         create_or_update_push_rule
       end
 
@@ -119,7 +121,6 @@ module API
         tags %w[push_rules]
       end
       delete ":id/push_rule" do
-        push_rule = user_group.push_rule
         not_found! unless push_rule
 
         destroy_conditionally!(push_rule)

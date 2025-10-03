@@ -87,6 +87,8 @@ module EE
       belongs_to :file_template_project, class_name: "Project"
 
       belongs_to :push_rule, inverse_of: :group
+      has_one :group_push_rule, inverse_of: :group, foreign_key: 'group_id'
+
       has_many :approval_rules, class_name: 'ApprovalRules::ApprovalGroupRule', inverse_of: :group
 
       has_many :saved_replies, class_name: 'Groups::SavedReply'
@@ -706,6 +708,7 @@ module EE
 
     def predefined_push_rule
       strong_memoize(:predefined_push_rule) do
+        next group_push_rule if ::Feature.enabled?(:read_and_write_group_push_rules, self) && group_push_rule
         next push_rule if push_rule
 
         if has_parent?

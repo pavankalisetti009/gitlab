@@ -24,6 +24,7 @@ RSpec.describe Group, feature_category: :groups_and_projects do
     it { is_expected.to have_one(:google_cloud_platform_workload_identity_federation_integration) }
     it { is_expected.to have_one(:amazon_q_integration) }
     it { is_expected.to have_one(:group_wiki_repository) }
+    it { is_expected.to have_one(:group_push_rule).inverse_of(:group).with_foreign_key(:group_id) }
     it { is_expected.to belong_to(:push_rule).inverse_of(:group) }
     it { is_expected.to have_many(:saml_group_links) }
     it { is_expected.to have_many(:epics) }
@@ -1018,13 +1019,27 @@ RSpec.describe Group, feature_category: :groups_and_projects do
     end
 
     context 'group with associated push_rules record' do
-      context 'with its own push rule' do
-        let(:push_rule) { create(:push_rule) }
+      context 'with group_push_rule associated' do
+        let!(:group_push_rule) { create(:group_push_rule, group: group) }
 
-        it 'returns its own push rule' do
-          group.update!(push_rule: push_rule)
+        it 'returns group_push_rule' do
+          expect(group.predefined_push_rule).to eq(group_push_rule)
+        end
+      end
 
-          expect(group.predefined_push_rule).to eq(push_rule)
+      context 'with read_and_write_group_push_rules disabled' do
+        before do
+          stub_feature_flags(read_and_write_group_push_rules: false)
+        end
+
+        context 'with its own push_rule' do
+          let(:push_rule) { create(:push_rule) }
+
+          it 'returns its own push rule' do
+            group.update!(push_rule: push_rule)
+
+            expect(group.predefined_push_rule).to eq(push_rule)
+          end
         end
       end
 

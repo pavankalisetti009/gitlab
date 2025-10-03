@@ -22,7 +22,11 @@ module EE
 
         def define_push_rule_variable
           strong_memoize(:push_rule) do
-            group.push_rule || group.build_push_rule
+            if ::Feature.enabled?(:read_and_write_group_push_rules, group)
+              GroupPushRuleFinder.new(group).execute || group.build_group_push_rule
+            else
+              group.push_rule || group.build_push_rule
+            end
           end
         end
 
