@@ -68,7 +68,7 @@ module Ai
           raise Error, "Project repository commit not found" unless @to_sha
 
           if force_push?
-            @from_sha = ""
+            @from_sha = project_repository.empty_tree_id
             @force_reindex = true
             return
           end
