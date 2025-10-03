@@ -41,6 +41,7 @@ module Vulnerabilities
           vulnerabilities_to_sync = Vulnerability.id_in(vulnerability_ids)
 
           ::Vulnerabilities::BulkEsOperationService.new(vulnerabilities_to_sync).execute(&:itself)
+          ::Vulnerabilities::Findings::RiskScoreCalculationService.new(vulnerability_ids).execute
         end
       end
     end

@@ -77,6 +77,10 @@ RSpec.describe Vulnerabilities::CreateService, feature_category: :vulnerability_
 
     it_behaves_like 'creates a vulnerability state transition record with note'
 
+    it 'creates a vulnerability_finding_risk_scores record' do
+      expect { subject }.to change { Vulnerabilities::FindingRiskScore.count }.by(1)
+    end
+
     context 'and finding is dismissed' do
       subject { described_class.new(project, user, finding_id: finding.id, state: state).execute }
 
