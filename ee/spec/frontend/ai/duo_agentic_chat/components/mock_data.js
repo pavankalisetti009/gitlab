@@ -15,6 +15,19 @@ export const MOCK_AI_CHAT_AVAILABLE_MODELS_RESPONSE = {
           ref: 'claude_3_5_sonnet_20240620',
         },
       ],
+      pinnedModel: null,
+    },
+  },
+};
+
+export const MOCK_AI_CHAT_AVAILABLE_MODELS_WITH_PINNED_MODEL_RESPONSE = {
+  data: {
+    aiChatAvailableModels: {
+      ...MOCK_AI_CHAT_AVAILABLE_MODELS_RESPONSE.data.aiChatAvailableModels,
+      pinnedModel: {
+        name: 'OpenAI GPT-5-Codex',
+        ref: 'gpt_5_codex',
+      },
     },
   },
 };

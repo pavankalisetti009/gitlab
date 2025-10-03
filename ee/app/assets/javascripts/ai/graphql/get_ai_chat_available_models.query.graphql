@@ -8,5 +8,9 @@ query getAiChatAvailableModels($rootNamespaceId: GroupID!) {
       name
       ref
     }
+    pinnedModel {
+      name
+      ref
+    }
   }
 }
