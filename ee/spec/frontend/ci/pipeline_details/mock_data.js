@@ -2,6 +2,7 @@
 import pipelineHeaderSuccess from 'test_fixtures/graphql/pipelines/pipeline_header_success.json';
 import pipelineHeaderRunning from 'test_fixtures/graphql/pipelines/pipeline_header_running.json';
 import pipelineHeaderFinishedComputeMinutes from 'test_fixtures/graphql/pipelines/pipeline_header_compute_minutes.json';
+import pipelineHeaderFailed from 'test_fixtures/graphql/pipelines/pipeline_header_failed.json';
 
 export const pipelineHeaderMergeTrain = {
   data: {
@@ -21,4 +22,25 @@ export const mockPipelineStatusResponse = {
   },
 };
 
-export { pipelineHeaderFinishedComputeMinutes, pipelineHeaderRunning, pipelineHeaderSuccess };
+export const pipelineHeaderFailedNoPermissions = {
+  data: {
+    project: {
+      id: '1',
+      pipeline: {
+        ...pipelineHeaderFailed.data.project.pipeline,
+        userPermissions: {
+          destroyPipeline: false,
+          cancelPipeline: false,
+          updatePipeline: false,
+        },
+      },
+    },
+  },
+};
+
+export {
+  pipelineHeaderFinishedComputeMinutes,
+  pipelineHeaderRunning,
+  pipelineHeaderSuccess,
+  pipelineHeaderFailed,
+};
