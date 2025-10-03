@@ -67,6 +67,7 @@ module EE
             if: ->(_) {
               ::Gitlab::CurrentSettings.enable_member_promotion_management?
             }
+          store.subscribe ::Security::CreateDefaultTrackedContextWorker, to: ::Projects::ProjectCreatedEvent
 
           register_threat_insights_subscribers(store)
           register_security_policy_subscribers(store)
