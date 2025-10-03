@@ -1406,6 +1406,12 @@ This field returns a [connection](#connections). It accepts the
 four standard [pagination arguments](#pagination-arguments):
 `before: String`, `after: String`, `first: Int`, and `last: Int`.
 
+#### Arguments
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="queryorganizationssearch"></a>`search` | [`String`](#string) | Search query, which can be for the organization name or a path. |
+
 ### `Query.package`
 
 Find a package. This field can only be resolved for one query in any single request. Returns `null` if a package has no `default` status.
@@ -14417,6 +14423,33 @@ Input type: `VulnerabilityRevertToDetectedInput`
 | <a id="mutationvulnerabilityreverttodetectederrors"></a>`errors` | [`[String!]!`](#string) | Errors encountered during the mutation. |
 | <a id="mutationvulnerabilityreverttodetectedvulnerability"></a>`vulnerability` | [`Vulnerability`](#vulnerability) | Vulnerability after state change. |
 
+### `Mutation.vulnerabilityUnlinkMergeRequest`
+
+{{< details >}}
+**Introduced** in GitLab 18.5.
+**Status**: Experiment.
+{{< /details >}}
+
+Unlink a merge request from a vulnerability.
+
+Input type: `VulnerabilityUnlinkMergeRequestInput`
+
+#### Arguments
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="mutationvulnerabilityunlinkmergerequestclientmutationid"></a>`clientMutationId` | [`String`](#string) | A unique identifier for the client performing the mutation. |
+| <a id="mutationvulnerabilityunlinkmergerequestmergerequestid"></a>`mergeRequestId` | [`MergeRequestID!`](#mergerequestid) | ID of the merge request. |
+| <a id="mutationvulnerabilityunlinkmergerequestvulnerabilityid"></a>`vulnerabilityId` | [`VulnerabilityID!`](#vulnerabilityid) | ID of the vulnerability. |
+
+#### Fields
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="mutationvulnerabilityunlinkmergerequestclientmutationid"></a>`clientMutationId` | [`String`](#string) | A unique identifier for the client performing the mutation. |
+| <a id="mutationvulnerabilityunlinkmergerequesterrors"></a>`errors` | [`[String!]!`](#string) | Errors encountered during the mutation. |
+| <a id="mutationvulnerabilityunlinkmergerequestvulnerability"></a>`vulnerability` | [`Vulnerability`](#vulnerability) | Updated vulnerability. |
+
 ### `Mutation.wikiPageSubscribe`
 
 {{< details >}}
@@ -23461,6 +23494,7 @@ four standard [pagination arguments](#pagination-arguments):
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
+| <a id="addonuserstarredprojectsactive"></a>`active` | [`Boolean`](#boolean) | Filters by projects that are not archived and not scheduled for deletion. |
 | <a id="addonuserstarredprojectsminaccesslevel"></a>`minAccessLevel` | [`AccessLevelEnum`](#accesslevelenum) | Return only projects where current user has at least the specified access level. |
 | <a id="addonuserstarredprojectsprogramminglanguagename"></a>`programmingLanguageName` | [`String`](#string) | Filter projects by programming language name (case insensitive). For example: `css` or `ruby`. |
 | <a id="addonuserstarredprojectssearch"></a>`search` | [`String`](#string) | Search query. |
@@ -24093,7 +24127,6 @@ four standard [pagination arguments](#pagination-arguments):
 | Name | Type | Description |
 | ---- | ---- | ----------- |
 | <a id="aiusageeventevent"></a>`event` | [`AiUsageEventType!`](#aiusageeventtype) | Type of the event. |
-| <a id="aiusageeventid"></a>`id` | [`ID!`](#id) | ID of the usage event. |
 | <a id="aiusageeventtimestamp"></a>`timestamp` | [`Time!`](#time) | When the event happened. |
 | <a id="aiusageeventuser"></a>`user` | [`UserCore!`](#usercore) | User associated with the event. |
 
@@ -24894,6 +24927,7 @@ four standard [pagination arguments](#pagination-arguments):
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
+| <a id="autocompleteduserstarredprojectsactive"></a>`active` | [`Boolean`](#boolean) | Filters by projects that are not archived and not scheduled for deletion. |
 | <a id="autocompleteduserstarredprojectsminaccesslevel"></a>`minAccessLevel` | [`AccessLevelEnum`](#accesslevelenum) | Return only projects where current user has at least the specified access level. |
 | <a id="autocompleteduserstarredprojectsprogramminglanguagename"></a>`programmingLanguageName` | [`String`](#string) | Filter projects by programming language name (case insensitive). For example: `css` or `ruby`. |
 | <a id="autocompleteduserstarredprojectssearch"></a>`search` | [`String`](#string) | Search query. |
@@ -25519,7 +25553,7 @@ Check user's permission for the car.
 | <a id="cicatalogresourcefullpath"></a>`fullPath` {{< icon name="warning-solid" >}} | [`ID`](#id) | **Introduced** in GitLab 16.11. **Status**: Experiment. Full project path of the catalog resource. |
 | <a id="cicatalogresourceicon"></a>`icon` | [`String`](#string) | Icon for the catalog resource. |
 | <a id="cicatalogresourceid"></a>`id` | [`ID!`](#id) | ID of the catalog resource. |
-| <a id="cicatalogresourcelast30dayusagecount"></a>`last30DayUsageCount` {{< icon name="warning-solid" >}} | [`Int!`](#int) | **Introduced** in GitLab 17.0. **Status**: Experiment. Number of projects that used a component from this catalog resource in a pipeline, by using `include:component`, in the last 30 days. |
+| <a id="cicatalogresourcelast30dayusagecount"></a>`last30DayUsageCount` {{< icon name="warning-solid" >}} | [`Int!`](#int) | **Introduced** in GitLab 17.0. **Status**: Experiment. Number of projects that used a component fromthis catalog resource in a pipeline, by using `include:component` in the last 30 days. |
 | <a id="cicatalogresourcelatestreleasedat"></a>`latestReleasedAt` {{< icon name="warning-solid" >}} | [`Time`](#time) | **Introduced** in GitLab 16.5. **Status**: Experiment. Release date of the catalog resource's latest version. |
 | <a id="cicatalogresourcename"></a>`name` | [`String`](#string) | Name of the catalog resource. |
 | <a id="cicatalogresourcestarcount"></a>`starCount` | [`Int!`](#int) | Number of times the catalog resource has been starred. |
@@ -26743,7 +26777,6 @@ Code Quality report for a pipeline.
 | Name | Type | Description |
 | ---- | ---- | ----------- |
 | <a id="codesuggestioneventevent"></a>`event` | [`AiUsageEventType!`](#aiusageeventtype) | Type of the event. |
-| <a id="codesuggestioneventid"></a>`id` | [`ID!`](#id) | ID of the usage event. |
 | <a id="codesuggestioneventlanguage"></a>`language` | [`String`](#string) | Programming language in the context of the suggestion. |
 | <a id="codesuggestioneventsuggestionsize"></a>`suggestionSize` | [`String`](#string) | Size of the code suggestion measured in lines of code. |
 | <a id="codesuggestioneventtimestamp"></a>`timestamp` | [`Time!`](#time) | When the event happened. |
@@ -28111,6 +28144,7 @@ four standard [pagination arguments](#pagination-arguments):
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
+| <a id="currentuserstarredprojectsactive"></a>`active` | [`Boolean`](#boolean) | Filters by projects that are not archived and not scheduled for deletion. |
 | <a id="currentuserstarredprojectsminaccesslevel"></a>`minAccessLevel` | [`AccessLevelEnum`](#accesslevelenum) | Return only projects where current user has at least the specified access level. |
 | <a id="currentuserstarredprojectsprogramminglanguagename"></a>`programmingLanguageName` | [`String`](#string) | Filter projects by programming language name (case insensitive). For example: `css` or `ruby`. |
 | <a id="currentuserstarredprojectssearch"></a>`search` | [`String`](#string) | Search query. |
@@ -34603,6 +34637,7 @@ Defines which user roles, users, or groups can merge into a protected branch.
 | <a id="mergerequestname"></a>`name` | [`String`](#string) | Name or title of the object. |
 | <a id="mergerequestparticipants"></a>`participants` | [`MergeRequestParticipantConnection`](#mergerequestparticipantconnection) | Participants in the merge request. This includes the author, assignees, reviewers, and users mentioned in notes. (see [Connections](#connections)) |
 | <a id="mergerequestpoliciesoverridingapprovalsettings"></a>`policiesOverridingApprovalSettings` | [`[PolicyApprovalSettingsOverride!]`](#policyapprovalsettingsoverride) | Approval settings that are overridden by the policies for the merge request. |
+| <a id="mergerequestpolicybypassstatuses"></a>`policyBypassStatuses` {{< icon name="warning-solid" >}} | [`[PolicyBypassStatus!]`](#policybypassstatus) | **Introduced** in GitLab 18.5. **Status**: Experiment. List of bypass settings for security policies. |
 | <a id="mergerequestpolicyviolations"></a>`policyViolations` | [`PolicyViolationDetails`](#policyviolationdetails) | Policy violations reported on the merge request. |
 | <a id="mergerequestpreparedat"></a>`preparedAt` | [`Time`](#time) | Timestamp of when the merge request was prepared. |
 | <a id="mergerequestproject"></a>`project` | [`Project!`](#project) | Alias for target_project. |
@@ -35089,6 +35124,7 @@ four standard [pagination arguments](#pagination-arguments):
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
+| <a id="mergerequestassigneestarredprojectsactive"></a>`active` | [`Boolean`](#boolean) | Filters by projects that are not archived and not scheduled for deletion. |
 | <a id="mergerequestassigneestarredprojectsminaccesslevel"></a>`minAccessLevel` | [`AccessLevelEnum`](#accesslevelenum) | Return only projects where current user has at least the specified access level. |
 | <a id="mergerequestassigneestarredprojectsprogramminglanguagename"></a>`programmingLanguageName` | [`String`](#string) | Filter projects by programming language name (case insensitive). For example: `css` or `ruby`. |
 | <a id="mergerequestassigneestarredprojectssearch"></a>`search` | [`String`](#string) | Search query. |
@@ -35510,6 +35546,7 @@ four standard [pagination arguments](#pagination-arguments):
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
+| <a id="mergerequestauthorstarredprojectsactive"></a>`active` | [`Boolean`](#boolean) | Filters by projects that are not archived and not scheduled for deletion. |
 | <a id="mergerequestauthorstarredprojectsminaccesslevel"></a>`minAccessLevel` | [`AccessLevelEnum`](#accesslevelenum) | Return only projects where current user has at least the specified access level. |
 | <a id="mergerequestauthorstarredprojectsprogramminglanguagename"></a>`programmingLanguageName` | [`String`](#string) | Filter projects by programming language name (case insensitive). For example: `css` or `ruby`. |
 | <a id="mergerequestauthorstarredprojectssearch"></a>`search` | [`String`](#string) | Search query. |
@@ -35982,6 +36019,7 @@ four standard [pagination arguments](#pagination-arguments):
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
+| <a id="mergerequestparticipantstarredprojectsactive"></a>`active` | [`Boolean`](#boolean) | Filters by projects that are not archived and not scheduled for deletion. |
 | <a id="mergerequestparticipantstarredprojectsminaccesslevel"></a>`minAccessLevel` | [`AccessLevelEnum`](#accesslevelenum) | Return only projects where current user has at least the specified access level. |
 | <a id="mergerequestparticipantstarredprojectsprogramminglanguagename"></a>`programmingLanguageName` | [`String`](#string) | Filter projects by programming language name (case insensitive). For example: `css` or `ruby`. |
 | <a id="mergerequestparticipantstarredprojectssearch"></a>`search` | [`String`](#string) | Search query. |
@@ -36422,6 +36460,7 @@ four standard [pagination arguments](#pagination-arguments):
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
+| <a id="mergerequestreviewerstarredprojectsactive"></a>`active` | [`Boolean`](#boolean) | Filters by projects that are not archived and not scheduled for deletion. |
 | <a id="mergerequestreviewerstarredprojectsminaccesslevel"></a>`minAccessLevel` | [`AccessLevelEnum`](#accesslevelenum) | Return only projects where current user has at least the specified access level. |
 | <a id="mergerequestreviewerstarredprojectsprogramminglanguagename"></a>`programmingLanguageName` | [`String`](#string) | Filter projects by programming language name (case insensitive). For example: `css` or `ruby`. |
 | <a id="mergerequestreviewerstarredprojectssearch"></a>`search` | [`String`](#string) | Search query. |
@@ -38928,6 +38967,19 @@ Multiple approvers action.
 | <a id="policyapproverstypecustomroles"></a>`customRoles` | [`[MemberRole!]`](#memberrole) | Approvers of the custom role type. Users belonging to these role(s) alone will be approvers. |
 | <a id="policyapproverstyperoles"></a>`roles` | [`[MemberAccessLevelName!]`](#memberaccesslevelname) | Approvers of the role type. Users belonging to these role(s) alone will be approvers. |
 | <a id="policyapproverstypeusers"></a>`users` | [`[UserCore!]`](#usercore) | Approvers of the user type. |
+
+### `PolicyBypassStatus`
+
+Represents bypass status of a merge request for a security policy.
+
+#### Fields
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="policybypassstatusallowbypass"></a>`allowBypass` | [`Boolean!`](#boolean) | Indicates if bypass is allowed for the policy. |
+| <a id="policybypassstatusbypassed"></a>`bypassed` | [`Boolean!`](#boolean) | Indicates if the policy has been bypassed. |
+| <a id="policybypassstatusid"></a>`id` | [`ID!`](#id) | ID of the security policy. |
+| <a id="policybypassstatusname"></a>`name` | [`String!`](#string) | Name of the security policy. |
 
 ### `PolicyComparisonPipeline`
 
@@ -44806,6 +44858,7 @@ four standard [pagination arguments](#pagination-arguments):
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
+| <a id="usercorestarredprojectsactive"></a>`active` | [`Boolean`](#boolean) | Filters by projects that are not archived and not scheduled for deletion. |
 | <a id="usercorestarredprojectsminaccesslevel"></a>`minAccessLevel` | [`AccessLevelEnum`](#accesslevelenum) | Return only projects where current user has at least the specified access level. |
 | <a id="usercorestarredprojectsprogramminglanguagename"></a>`programmingLanguageName` | [`String`](#string) | Filter projects by programming language name (case insensitive). For example: `css` or `ruby`. |
 | <a id="usercorestarredprojectssearch"></a>`search` | [`String`](#string) | Search query. |
@@ -47464,8 +47517,10 @@ Type of AI usage event.
 | Value | Description |
 | ----- | ----------- |
 | <a id="aiusageeventtypeagent_platform_session_created"></a>`AGENT_PLATFORM_SESSION_CREATED` | Agent platform session was created. |
+| <a id="aiusageeventtypeagent_platform_session_dropped"></a>`AGENT_PLATFORM_SESSION_DROPPED` | Agent platform session was dropped. |
 | <a id="aiusageeventtypeagent_platform_session_finished"></a>`AGENT_PLATFORM_SESSION_FINISHED` | Agent platform session was finished. |
 | <a id="aiusageeventtypeagent_platform_session_started"></a>`AGENT_PLATFORM_SESSION_STARTED` | Agent platform session was started. |
+| <a id="aiusageeventtypeagent_platform_session_stopped"></a>`AGENT_PLATFORM_SESSION_STOPPED` | Agent platform session was stopped. |
 | <a id="aiusageeventtypecode_suggestions_requested"></a>`CODE_SUGGESTIONS_REQUESTED` | Code Suggestion was requested. Old data only. |
 | <a id="aiusageeventtypecode_suggestion_accepted_in_ide"></a>`CODE_SUGGESTION_ACCEPTED_IN_IDE` | Code Suggestion was accepted in IDE. |
 | <a id="aiusageeventtypecode_suggestion_direct_access_token_refresh"></a>`CODE_SUGGESTION_DIRECT_ACCESS_TOKEN_REFRESH` | Code Suggestion token was refreshed. Old data only. |
@@ -54449,6 +54504,7 @@ four standard [pagination arguments](#pagination-arguments):
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
+| <a id="userstarredprojectsactive"></a>`active` | [`Boolean`](#boolean) | Filters by projects that are not archived and not scheduled for deletion. |
 | <a id="userstarredprojectsminaccesslevel"></a>`minAccessLevel` | [`AccessLevelEnum`](#accesslevelenum) | Return only projects where current user has at least the specified access level. |
 | <a id="userstarredprojectsprogramminglanguagename"></a>`programmingLanguageName` | [`String`](#string) | Filter projects by programming language name (case insensitive). For example: `css` or `ruby`. |
 | <a id="userstarredprojectssearch"></a>`search` | [`String`](#string) | Search query. |
