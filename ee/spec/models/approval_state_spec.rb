@@ -79,12 +79,15 @@ RSpec.describe ApprovalState do
       end
 
       context 'when overridden by scan result policy' do
+        let_it_be(:approval_policy_rule) { create(:approval_policy_rule) }
+
         let(:policy) do
           create(
             :scan_result_policy_read,
             :prevent_approval_by_author,
             commits: :any,
-            project: merge_request.target_project)
+            project: merge_request.target_project,
+            approval_policy_rule: approval_policy_rule)
         end
 
         before do
@@ -115,12 +118,15 @@ RSpec.describe ApprovalState do
       end
 
       context 'when overridden by scan result policy' do
+        let_it_be(:approval_policy_rule) { create(:approval_policy_rule) }
+
         let(:policy) do
           create(
             :scan_result_policy_read,
             :prevent_approval_by_commit_author,
             commits: :any,
-            project: merge_request.target_project)
+            project: merge_request.target_project,
+            approval_policy_rule: approval_policy_rule)
         end
 
         before do

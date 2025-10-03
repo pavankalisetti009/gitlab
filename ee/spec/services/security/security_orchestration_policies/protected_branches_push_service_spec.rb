@@ -44,5 +44,25 @@ RSpec.describe Security::SecurityOrchestrationPolicies::ProtectedBranchesPushSer
 
       it { is_expected.to be_empty }
     end
+
+    context 'with warn mode' do
+      let(:approval_policy) do
+        build(:approval_policy, branches: [branch_name],
+          approval_settings: { prevent_pushing_and_force_pushing: prevent_pushing_and_force_pushing },
+          enforcement_type: Security::Policy::ENFORCEMENT_TYPE_WARN)
+      end
+
+      it { is_expected.to be_empty }
+
+      context 'with feature disabled' do
+        before do
+          stub_feature_flags(security_policy_approval_warn_mode: false)
+        end
+
+        it 'includes the protected branch' do
+          expect(result).to include(branch_name)
+        end
+      end
+    end
   end
 end
