@@ -70,6 +70,20 @@ RSpec.describe WorkItems::LegacyEpics::Imports::CreateFromImportedEpicService, f
       expect(work_item.resource_state_events.first.state).to eq('opened') # Assuming initial state
     end
 
+    it 'creates a work_item_description record' do
+      work_item = result.work_item
+      work_item_description = work_item.work_item_description
+
+      expect(work_item_description).to have_attributes(
+        work_item_id: work_item.id,
+        namespace_id: work_item.namespace_id,
+        description: work_item.description,
+        description_html: work_item.description_html,
+        last_edited_at: work_item.last_edited_at,
+        last_editing_user: work_item.last_edited_by
+      )
+    end
+
     it 'raises when epic work item is invalid' do
       epic_object.title = nil
 
