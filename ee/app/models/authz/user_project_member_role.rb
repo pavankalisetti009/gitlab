@@ -22,5 +22,11 @@ module Authz
     validates :user, presence: true, uniqueness: { scope: %i[project_id shared_with_group_id] }
     validates :project, presence: true
     validates :member_role, presence: true
+
+    scope :for_user_shared_with_group, ->(user, group) { where(user: user, shared_with_group: group) }
+
+    def self.delete_all_with_id(ids)
+      id_in(ids).delete_all
+    end
   end
 end
