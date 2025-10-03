@@ -2,13 +2,7 @@
 
 module VirtualRegistries
   class Setting < ApplicationRecord
-    include SafelyChangeColumnDefault
-
-    columns_changing_default :enabled
-
     belongs_to :group
-
-    attribute :enabled, default: true
 
     validates :group, top_level_group: true, presence: true, uniqueness: true
     validates :enabled, inclusion: { in: [true, false] }
