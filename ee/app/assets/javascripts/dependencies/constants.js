@@ -25,6 +25,6 @@ export const DEPENDENCIES_TABLE_I18N = {
   dependencyPathButtonText: s__('Dependencies|View dependency paths'),
   vulnerabilityInfoTitle: s__('Dependencies|Focused vulnerability reporting'),
   vulnerabilityInfoBody: s__(
-    'Dependencies|The dependency list shows active, currently detected issues. Vulnerabilities that are no longer detected are automatically filtered out for accurate risk assessment.',
+    'Dependencies|The dependency list shows only active, currently detected issues. Vulnerabilities that are no longer detected are filtered out.',
   ),
 };

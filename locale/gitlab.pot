@@ -22584,7 +22584,7 @@ msgstr ""
 msgid "Dependencies|The Dependency List was successfully exported from %{exportable}."
 msgstr ""
 
-msgid "Dependencies|The dependency list shows active, currently detected issues. Vulnerabilities that are no longer detected are automatically filtered out for accurate risk assessment."
+msgid "Dependencies|The dependency list shows only active, currently detected issues. Vulnerabilities that are no longer detected are filtered out."
 msgstr ""
 
 msgid "Dependencies|The dependency list was successfully exported."
