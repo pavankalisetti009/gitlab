@@ -41,11 +41,14 @@ RSpec.describe Gitlab::ApplicationContext, :request_store do
 
   context 'only include values for which an option was specified' do
     using RSpec::Parameterized::TableSyntax
+    before do
+      stub_feature_flags(log_labkit_user_id: false)
+    end
 
     where(:provided_options, :expected_context_keys) do
       [:user, :namespace, :project] | [:user, :project, :root_namespace, :client_id, :subscription_plan, :user_id]
-      [:user, :project]             | [:user, :project, :root_namespace, :client_id, :subscription_plan, :user_id]
-      [:user, :namespace]           | [:user, :root_namespace, :client_id, :subscription_plan, :user_id]
+      [:user, :project] | [:user, :project, :root_namespace, :client_id, :subscription_plan, :user_id]
+      [:user, :namespace] | [:user, :root_namespace, :client_id, :subscription_plan, :user_id]
       [:user]                       | [:user, :client_id, :user_id]
       [:remote_ip]                  | [:remote_ip, :client_id]
       [:runner]                     | [:project, :root_namespace, :client_id, :subscription_plan]
@@ -60,7 +63,37 @@ RSpec.describe Gitlab::ApplicationContext, :request_store do
         provided_values = provided_options.index_with { |key| nil }
         context = described_class.new(**provided_values)
 
-        expect(context.to_lazy_hash.keys).to contain_exactly(*expected_context_keys)
+        expect((context.to_lazy_hash.keys - described_class.known_keys)).to eq([])
+      end
+    end
+  end
+
+  context 'validate GL_USER_ID is when ff is enabled' do
+    using RSpec::Parameterized::TableSyntax
+    before do
+      stub_feature_flags(log_labkit_user_id: true)
+    end
+
+    where(:provided_options, :expected_context_keys) do
+      [:user, :namespace,
+        :project] | [:user, :project, :root_namespace, :client_id, :subscription_plan, Labkit::Fields::GL_USER_ID]
+      [:user, :project] | [:user, :project, :root_namespace, :client_id, :subscription_plan, Labkit::Fields::GL_USER_ID]
+      [:user, :namespace] | [:user, :root_namespace, :client_id, :subscription_plan, Labkit::Fields::GL_USER_ID]
+      [:user]                       | [:user, :client_id, Labkit::Fields::GL_USER_ID]
+      [:remote_ip]                  | [:remote_ip, :client_id]
+      [:runner]                     | [:project, :root_namespace, :client_id, :subscription_plan]
+      [:caller_id]                  | [:caller_id]
+      [:ai_resource]                | [:ai_resource]
+      []                            | []
+    end
+
+    with_them do
+      specify do
+        # Build a hash that has all `provided_options` as keys, and `nil` as value
+        provided_values = provided_options.index_with { |key| nil }
+        context = described_class.new(**provided_values)
+
+        expect((context.to_lazy_hash.keys - described_class.known_keys)).to eq([])
       end
     end
   end
