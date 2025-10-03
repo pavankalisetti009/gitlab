@@ -47,8 +47,8 @@ RSpec.describe Projects::LearnGitlabController, :saas, feature_category: :onboar
     end
   end
 
-  describe 'GET #end_tutorial' do
-    subject(:get_end_tutorial) { get :end_tutorial, params: params }
+  describe 'PATCH #end_tutorial' do
+    subject(:patch_end_tutorial) { patch :end_tutorial, params: params }
 
     context 'for unauthenticated user' do
       it { is_expected.to have_gitlab_http_status(:redirect) }
@@ -63,7 +63,7 @@ RSpec.describe Projects::LearnGitlabController, :saas, feature_category: :onboar
 
       context 'when update is successful' do
         it 'updates the onboarding progress ended value to be set and triggers tracking' do
-          expect { get_end_tutorial }
+          expect { patch_end_tutorial }
             .to trigger_internal_events('click_end_tutorial_button')
             .with(
               user: user,
@@ -76,7 +76,8 @@ RSpec.describe Projects::LearnGitlabController, :saas, feature_category: :onboar
               }
             )
 
-          expect(response).to redirect_to(project_path(project))
+          expect(response).to have_gitlab_http_status(:ok)
+          expect(json_response).to eq({ 'success' => true, 'redirect_path' => project_path(project) })
           expect(flash[:success]).to eql("You've ended the Learn GitLab tutorial.")
           expect(onboarding_progress.ended_at).to be_present
         end
@@ -89,15 +90,15 @@ RSpec.describe Projects::LearnGitlabController, :saas, feature_category: :onboar
         end
 
         it 'does not update the onboarding progress and shows an error message' do
-          expect { get_end_tutorial }.not_to change { onboarding_progress.reload.ended_at }
+          error = "There was a problem trying to end the Learn GitLab tutorial. Please try again."
+          expect { patch_end_tutorial }.not_to change { onboarding_progress.reload.ended_at }
 
-          expect(response).not_to redirect_to(project_path(project))
-          expect(flash[:danger])
-            .to eql("There was a problem trying to end the Learn GitLab tutorial. Please try again.")
+          expect(response).to have_gitlab_http_status(:unprocessable_entity)
+          expect(json_response).to eq({ 'success' => false, 'message' => error })
         end
 
         it 'does not trigger tracking' do
-          expect { get_end_tutorial }.to not_trigger_internal_events('click_end_tutorial_button')
+          expect { patch_end_tutorial }.to not_trigger_internal_events('click_end_tutorial_button')
         end
       end
     end
