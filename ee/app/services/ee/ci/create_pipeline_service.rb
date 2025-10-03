@@ -7,7 +7,7 @@ module EE
 
       override :extra_options
       def extra_options(mirror_update: false, **options)
-        options.merge(allow_mirror_update: mirror_update)
+        options.merge(mirror_update: mirror_update)
       end
 
       private
