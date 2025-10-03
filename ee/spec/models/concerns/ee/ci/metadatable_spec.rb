@@ -6,8 +6,6 @@ RSpec.describe EE::Ci::Metadatable, feature_category: :continuous_integration do
   let_it_be_with_refind(:processable) { create(:ci_processable, options: { script: 'echo' }) }
 
   before do
-    # Remove when FF `read_from_new_ci_destinations` is removed
-    processable.clear_memoization(:read_from_new_destination?)
     # Remove when FF `stop_writing_builds_metadata` is removed
     processable.clear_memoization(:can_write_metadata?)
   end
@@ -51,17 +49,6 @@ RSpec.describe EE::Ci::Metadatable, feature_category: :continuous_integration do
         it 'returns job definition secrets' do
           expect(secrets).to eq(job_definition_secrets)
           expect(processable.secrets?).to be(true)
-        end
-
-        context 'when FF `read_from_new_ci_destinations` is disabled' do
-          before do
-            stub_feature_flags(read_from_new_ci_destinations: false)
-          end
-
-          it 'returns metadata secrets' do
-            expect(secrets).to eq(metadata_secrets)
-            expect(processable.secrets?).to be(true)
-          end
         end
       end
     end
