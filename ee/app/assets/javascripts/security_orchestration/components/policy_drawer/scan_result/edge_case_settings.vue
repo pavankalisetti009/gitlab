@@ -1,8 +1,10 @@
 <script>
-import { s__ } from '~/locale';
+import { s__, n__ } from '~/locale';
 import {
   UNBLOCK_RULES_KEY,
   UNBLOCK_RULES_TEXT,
+  TIME_WINDOW_KEY,
+  TIME_WINDOW_TEXT,
 } from '../../policy_editor/scan_result/advanced_settings/constants';
 
 export default {
@@ -10,6 +12,7 @@ export default {
   i18n: {
     title: s__('SecurityOrchestration|Edge case settings'),
     [UNBLOCK_RULES_KEY]: UNBLOCK_RULES_TEXT,
+    [TIME_WINDOW_KEY]: TIME_WINDOW_TEXT,
   },
   props: {
     settings: {
@@ -20,7 +23,24 @@ export default {
   },
   computed: {
     settingsList() {
-      return Object.entries(this.settings).map(([key]) => this.$options.i18n[key] || key);
+      return Object.entries(this.settings)
+        .map(([key, value]) => {
+          if (key === TIME_WINDOW_KEY) {
+            return this.renderTimeWindowSetting(value);
+          }
+
+          return this.$options.i18n[key] || key;
+        })
+        .filter(Boolean);
+    },
+  },
+  methods: {
+    renderTimeWindowSetting(time) {
+      if (!Number.isInteger(time)) {
+        return '';
+      }
+
+      return `${TIME_WINDOW_TEXT}: ${n__('%d minute', '%d minutes', time)}`;
     },
   },
 };
