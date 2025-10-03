@@ -233,7 +233,7 @@ RSpec.describe Namespaces::DeletableHelper, feature_category: :groups_and_projec
           button_text: button_text, has_security_policy_project: has_security_policy_project,
           permanently_remove: permanently_remove)
         expect(expected).to eq({
-          button_text: button_text.nil? ? "Delete group" : button_text,
+          button_text: button_text.nil? ? "Delete" : button_text,
           confirm_danger_message: confirm_remove_group_message(group, permanently_remove),
           remove_form_id: form_value_id,
           phrase: group.full_path,

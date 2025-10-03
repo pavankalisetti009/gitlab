@@ -347,10 +347,10 @@ To delete a project:
 1. On the left sidebar, select **Search or go to** and find your project.
 1. Select **Settings** > **General**.
 1. Expand **Advanced**.
-1. In the **Delete project** section, select **Delete project**.
+1. In the **Delete project** section, select **Delete**.
 1. On the confirmation dialog, enter the project name and select **Yes, delete project**.
 
-This action adds a background job to mark a group for deletion. On GitLab.com, the group is deleted after 30 days. On GitLab Self-Managed,
+This action adds a background job to mark a project for deletion. On GitLab.com, the project is deleted after 30 days. On GitLab Self-Managed,
 you can modify the retention period through the [instance settings](../../administration/settings/visibility_and_access_controls.md#deletion-protection).
 
 If the user who scheduled the project deletion loses access to the project before the deletion occurs
@@ -371,17 +371,14 @@ You can also [delete projects using the Rails console](troubleshooting.md#delete
 
 - Option to delete projects immediately as a group setting removed [on GitLab.com](https://gitlab.com/gitlab-org/gitlab/-/issues/393622) and [on GitLab Self-Managed](https://gitlab.com/gitlab-org/gitlab/-/merge_requests/119606) in GitLab 16.0.
 - Option to delete projects immediately [moved](https://gitlab.com/groups/gitlab-org/-/epics/17208) from GitLab Premium to GitLab Free in 18.0.
-- [Instance setting](../../administration/settings/visibility_and_access_controls.md#immediate-deletion)
-  to allow immediate deletion for groups or projects scheduled for deletion
-  [introduced](https://gitlab.com/gitlab-org/gitlab/-/merge_requests/205556) in GitLab 18.5
-  [with a flag](../../administration/feature_flags/_index.md) named `allow_immediate_namespaces_deletion`.
-  Enabled by default. Disabled on GitLab.com and Dedicated.
+- [Introduced](https://gitlab.com/gitlab-org/gitlab/-/issues/561680) in GitLab 18.4 [with a flag](../../administration/feature_flags/_index.md) named `disallow_immediate_deletion`. Disabled by default.
+- [Replaced](https://gitlab.com/gitlab-org/gitlab/-/issues/569453) in GitLab 18.5 by an instance setting to allow immediate deletion of groups and projects scheduled for deletion. [Controlled by a flag](../../administration/feature_flags/_index.md) named `allow_immediate_namespaces_deletion`. Feature flag is disabled by default.
 
 {{< /history >}}
 
 {{< alert type="warning" >}}
 
-On GitLab.com, after a project is deleted, its data is retained for 30 days, and immediate deletion is not available.
+On GitLab.com and GitLab Dedicated, after a project is deleted, its data is retained for 30 days, and immediate deletion is not available.
 If you really need to delete a project immediately on GitLab.com, you can open a [support ticket](https://about.gitlab.com/support/).
 
 {{< /alert >}}
@@ -398,7 +395,7 @@ To immediately delete a project marked for deletion:
 1. On the left sidebar, select **Search or go to** and find your project.
 1. Select **Settings > General**.
 1. Expand **Advanced**.
-1. In the **Delete project immediately** section, select **Delete project immediately**.
+1. In the **Delete project** section, select **Delete immediately**.
 1. Confirm the action when asked to.
 
 This action deletes the group, its subgroups, projects, and all related resources, including issues and merge requests.

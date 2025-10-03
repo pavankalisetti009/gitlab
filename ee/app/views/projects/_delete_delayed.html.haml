@@ -10,4 +10,4 @@
       %li
         = link_to(configuration.project&.name || configuration.namespace&.name, security_policies_path(configuration.project || configuration.namespace))
   = render Pajamas::ButtonComponent.new(disabled: true) do
-    = _('Delete project')
+    = _('Delete')

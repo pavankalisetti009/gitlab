@@ -290,7 +290,7 @@ To delete a group and its contents:
 1. On the left sidebar, select **Search or go to** and find your group.
 1. Select **Settings** > **General**.
 1. Expand the **Advanced** section.
-1. In the **Delete group** section, select **Delete group**.
+1. In the **Delete group** section, select **Delete**.
 1. On the confirmation dialog, type the group name and select **Confirm**.
 
 You can also delete a group from the groups dashboard:
@@ -299,7 +299,6 @@ You can also delete a group from the groups dashboard:
 1. Select **View all my groups**.
 1. Select ({{< icon name="ellipsis_v" >}}) for the group you want to delete.
 1. Select **Delete**.
-1. In the **Delete group** section, select **Delete group**.
 1. On the confirmation dialog, type the group name and select **Confirm**.
 
 This action adds a background job to mark a group for deletion. On GitLab.com, the group is deleted after 30 days. On GitLab Self-Managed,
@@ -319,18 +318,14 @@ If the user who scheduled the group deletion regains Owner role or administrator
 {{< history >}}
 
 - Enabled delayed deletion by default [on GitLab.com](https://gitlab.com/gitlab-org/gitlab/-/issues/393622) and [on GitLab Self-Managed](https://gitlab.com/gitlab-org/gitlab/-/merge_requests/119606) in GitLab 16.0.
-- [Moved](https://gitlab.com/groups/gitlab-org/-/epics/17208) from GitLab Premium to GitLab Free in 18.0.
-- [Instance setting](../../administration/settings/visibility_and_access_controls.md#immediate-deletion)
-  to allow immediate deletion for groups or projects scheduled for deletion
-  [introduced](https://gitlab.com/gitlab-org/gitlab/-/merge_requests/205556) in GitLab 18.5
-  [with a flag](../../administration/feature_flags/_index.md) named `allow_immediate_namespaces_deletion`.
-  Enabled by default. Disabled on GitLab.com and Dedicated.
+- [Introduced](https://gitlab.com/gitlab-org/gitlab/-/issues/561680) in GitLab 18.4 [with a flag](../../administration/feature_flags/_index.md) named `disallow_immediate_deletion`. Disabled by default.
+- [Replaced](https://gitlab.com/gitlab-org/gitlab/-/issues/569453) in GitLab 18.5 by an instance setting to allow immediate deletion of groups and projects scheduled for deletion. [Controlled by a flag](../../administration/feature_flags/_index.md) named `allow_immediate_namespaces_deletion`. Feature flag is disabled by default.
 
 {{< /history >}}
 
 {{< alert type="warning" >}}
 
-On GitLab.com, after a group is deleted, its data is retained for 30 days, and immediate deletion is not available.
+On GitLab.com and GitLab Dedicated, after a group is deleted, its data is retained for 30 days, and immediate deletion is not available.
 If you really need to delete a group immediately on GitLab.com, you can open a [support ticket](https://about.gitlab.com/support/).
 
 {{< /alert >}}
@@ -347,7 +342,7 @@ To immediately delete a group marked for deletion:
 1. On the left sidebar, select **Search or go to** and find your group.
 1. Select **Settings** > **General**.
 1. Expand **Advanced**.
-1. In the **Delete group immediately** section, select **Delete group immediately**.
+1. In the **Delete group** section, select **Delete immediately**.
 1. Confirm the action when asked to.
 
 This action deletes the group, its subgroups, projects, and all related resources, including issues and merge requests.

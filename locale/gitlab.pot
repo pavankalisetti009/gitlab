@@ -32492,7 +32492,10 @@ msgstr ""
 msgid "GroupSettings|Default to Auto DevOps pipeline for all projects within this group"
 msgstr ""
 
-msgid "GroupSettings|Delete group immediately"
+msgid "GroupSettings|Delete group"
+msgstr ""
+
+msgid "GroupSettings|Delete immediately"
 msgstr ""
 
 msgid "GroupSettings|Disable personal access tokens"
@@ -51638,10 +51641,10 @@ msgstr ""
 msgid "ProjectSettings|Data sources"
 msgstr ""
 
-msgid "ProjectSettings|Delete project"
+msgid "ProjectSettings|Delete immediately"
 msgstr ""
 
-msgid "ProjectSettings|Delete project immediately"
+msgid "ProjectSettings|Delete project"
 msgstr ""
 
 msgid "ProjectSettings|Determine what happens to the commit history when you merge a merge request."
@@ -68253,12 +68256,6 @@ msgid "To continue, please update your password. After you update, you'll be dir
 msgstr ""
 
 msgid "To continue, you need to select the link in the confirmation email we sent to verify your email address. If you didn't get our email, select %{strongStart}Resend confirmation email.%{strongEnd}"
-msgstr ""
-
-msgid "To delete immediately this group, you must delete immediately its parent group."
-msgstr ""
-
-msgid "To delete immediately this project, you must delete immediately its parent group."
 msgstr ""
 
 msgid "To disable the setting, set this value to 0."

@@ -115,15 +115,6 @@ module Namespaces
       )
     end
 
-    def delete_immediately_unavailable_due_to_ancestor_message(namespace)
-      messages = {
-        group: _('To delete immediately this group, you must delete immediately its parent group.'),
-        project: _('To delete immediately this project, you must delete immediately its parent group.')
-      }
-
-      message_for_namespace(namespace, messages)
-    end
-
     def group_confirm_modal_data(
       group:,
       remove_form_id: nil,
@@ -132,7 +123,7 @@ module Namespaces
       has_security_policy_project: false)
       {
         remove_form_id: remove_form_id,
-        button_text: button_text.nil? ? _('Delete group') : button_text,
+        button_text: button_text.nil? ? _('Delete') : button_text,
         button_testid: 'remove-group-button',
         disabled: (group.linked_to_subscription? || has_security_policy_project).to_s,
         confirm_danger_message: confirm_remove_group_message(group, permanently_remove),
@@ -257,7 +248,7 @@ module Namespaces
         merge_requests_count: number_with_delimiter(merge_requests_count),
         forks_count: number_with_delimiter(forks_count),
         stars_count: number_with_delimiter(project.star_count),
-        button_text: button_text.presence || _('Delete project')
+        button_text: button_text.presence || _('Delete')
       }
     end
   end
