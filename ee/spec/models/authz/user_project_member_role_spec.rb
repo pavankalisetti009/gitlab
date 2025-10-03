@@ -18,4 +18,23 @@ RSpec.describe Authz::UserProjectMemberRole, feature_category: :permissions do
     it { is_expected.to validate_presence_of(:member_role) }
     it { is_expected.to validate_uniqueness_of(:user).scoped_to(%i[project_id shared_with_group_id]) }
   end
+
+  describe '.for_user_shared_with_group' do
+    let_it_be(:user) { create(:user) }
+    let_it_be(:group) { create(:group) }
+
+    # target records
+    let_it_be(:user_shared_with_group) { create(:user_project_member_role, user: user, shared_with_group: group) }
+    let_it_be(:user_shared_with_group2) { create(:user_project_member_role, user: user, shared_with_group: group) }
+
+    # non-target records
+    let_it_be(:user_shared_with_other_group) { create(:user_project_member_role, user: user) }
+    let_it_be(:other_user_shared_with_group) { create(:user_project_member_role, shared_with_group: group) }
+
+    subject(:results) { described_class.for_user_shared_with_group(user, group) }
+
+    it 'returns records only for the given user shared with the given group' do
+      expect(results).to match_array([user_shared_with_group, user_shared_with_group2])
+    end
+  end
 end
