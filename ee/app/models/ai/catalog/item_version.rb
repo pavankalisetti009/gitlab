@@ -36,6 +36,8 @@ module Ai
 
       before_create :populate_organization
 
+      delegate :flow?, to: :item
+
       def human_version
         return if version.nil?
 
