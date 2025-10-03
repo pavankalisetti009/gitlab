@@ -19,6 +19,7 @@ module Security
         return validation_result if validation_result.error?
 
         bypass_all_policies!
+        trigger_merge_request_update_subscriptions
         success
       end
 
@@ -73,6 +74,11 @@ module Security
         )
 
         auditor.log_merge_request_bypass(merge_request, security_policy, reason)
+      end
+
+      def trigger_merge_request_update_subscriptions
+        GraphqlTriggers.merge_request_approval_state_updated(merge_request)
+        GraphqlTriggers.merge_request_merge_status_updated(merge_request)
       end
 
       def error(message)
