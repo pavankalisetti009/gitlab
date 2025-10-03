@@ -23,4 +23,8 @@ export const DEPENDENCIES_TABLE_I18N = {
   locationDependencyTitle: s__('Dependencies|List of direct dependents'),
   toggleVulnerabilityList: s__('Dependencies|Toggle vulnerability list'),
   dependencyPathButtonText: s__('Dependencies|View dependency paths'),
+  vulnerabilityInfoTitle: s__('Dependencies|Focused vulnerability reporting'),
+  vulnerabilityInfoBody: s__(
+    'Dependencies|The dependency list shows active, currently detected issues. Vulnerabilities that are no longer detected are automatically filtered out for accurate risk assessment.',
+  ),
 };

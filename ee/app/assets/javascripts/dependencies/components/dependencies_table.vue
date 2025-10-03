@@ -11,6 +11,7 @@ import {
 } from '@gitlab/ui';
 import { cloneDeep } from 'lodash';
 import { DOCS_URL_IN_EE_DIR } from 'jh_else_ce/lib/utils/url_utility';
+import glFeatureFlagsMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
 import { NAMESPACE_PROJECT, DEPENDENCIES_TABLE_I18N } from '../constants';
 import DependencyLicenseLinks from './dependency_license_links.vue';
 import DependencyLocation from './dependency_location.vue';
@@ -18,7 +19,6 @@ import DependencyLocationCount from './dependency_location_count.vue';
 import DependencyProjectCount from './dependency_project_count.vue';
 import DependencyVulnerabilities from './dependency_vulnerabilities.vue';
 import DependencyPathDrawer from './dependency_path_drawer.vue';
-import ShownVulnerabilitiesPopover from './shown_vulnerabilities_popover.vue';
 
 const tdClass =
   (defaultClasses = []) =>
@@ -45,6 +45,8 @@ const sharedFields = [
   { key: 'license', label: DEPENDENCIES_TABLE_I18N.license, tdClass: tdClass() },
 ];
 
+const vulnerabilityField = { key: 'isVulnerable', label: DEPENDENCIES_TABLE_I18N.vulnerabilities };
+
 export default {
   name: 'DependenciesTable',
   components: {
@@ -54,7 +56,6 @@ export default {
     DependencyLocationCount,
     DependencyProjectCount,
     DependencyPathDrawer,
-    ShownVulnerabilitiesPopover,
     GlBadge,
     GlIcon,
     GlButton,
@@ -64,6 +65,7 @@ export default {
     GlLink,
     GlLoadingIcon,
   },
+  mixins: [glFeatureFlagsMixin()],
   inject: ['namespaceType'],
   props: {
     dependencies: {
@@ -105,6 +107,9 @@ export default {
     },
     showDrawer() {
       return this.drawerId !== null;
+    },
+    showVulnerabilitiesInfo() {
+      return this.glFeatures.hideNoLongerDetectedVulnerabilitiesOnTheDependencyList;
     },
   },
   methods: {
@@ -168,17 +173,9 @@ export default {
   groupFields: [
     ...sharedFields,
     { key: 'projects', label: DEPENDENCIES_TABLE_I18N.projects, tdClass: tdClass() },
-    { key: 'isVulnerable', label: '', tdClass: tdClass(['gl-text-right']) },
+    vulnerabilityField,
   ],
-  projectFields: [
-    ...sharedFields,
-    {
-      key: 'isVulnerable',
-      label: DEPENDENCIES_TABLE_I18N.vulnerabilities,
-      thAttr: { id: 'vulnerabilities-header' },
-    },
-  ],
-
+  projectFields: [...sharedFields, vulnerabilityField],
   DEPENDENCIES_PER_PAGE: 20,
   DEPENDENCY_PATH_LINK: `${DOCS_URL_IN_EE_DIR}/user/application_security/dependency_list/#dependency-paths`,
   i18n: DEPENDENCIES_TABLE_I18N,
@@ -223,7 +220,18 @@ export default {
 
       <template #head(isVulnerable)="data">
         {{ data.label }}
-        <shown-vulnerabilities-popover v-if="isProjectNamespace" />
+        <div v-if="showVulnerabilitiesInfo">
+          <gl-icon id="vulnerabilities-info" name="information-o" class="gl-ml-2" variant="info" />
+          <gl-popover
+            placement="bottom"
+            boundary="viewport"
+            target="vulnerabilities-info"
+            data-testid="vulnerability-info-popover"
+            :title="$options.i18n.vulnerabilityInfoTitle"
+          >
+            <p class="gl-mb-0">{{ $options.i18n.vulnerabilityInfoBody }}</p>
+          </gl-popover>
+        </div>
       </template>
 
       <!-- toggleDetails and detailsShowing are scoped slot props provided by
