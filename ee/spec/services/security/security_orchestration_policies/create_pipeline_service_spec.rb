@@ -437,7 +437,7 @@ RSpec.describe Security::SecurityOrchestrationPolicies::CreatePipelineService, f
             expect_next_instance_of(::Security::SecurityOrchestrationPolicies::CiConfigurationService) do |ci_configuration_service|
               expect(ci_configuration_service).to receive(:execute).once.with(
                 actions.first,
-                { 'SAST_EXCLUDED_ANALYZERS' => 'semgrep', 'DEFAULT_SAST_EXCLUDED_PATHS' => 'spec, test, tests, tmp', 'SAST_EXCLUDED_PATHS' => '$DEFAULT_SAST_EXCLUDED_PATHS' },
+                { 'ADVANCED_SAST_PARTIAL_SCAN' => 'false', 'SAST_EXCLUDED_ANALYZERS' => 'semgrep', 'DEFAULT_SAST_EXCLUDED_PATHS' => 'spec, test, tests, tmp', 'SAST_EXCLUDED_PATHS' => '$DEFAULT_SAST_EXCLUDED_PATHS' },
                 kind_of(Gitlab::Ci::Config::External::Context), 0
               ).and_call_original
             end
