@@ -7,7 +7,7 @@ import { mockUsageDataWithPool, mockUsageDataWithZeroAllocation } from '../mock_
 describe('UsageByUserTab', () => {
   /** @type {import('helpers/vue_test_utils_helper').ExtendedWrapper} */
   let wrapper;
-  const usersData = mockUsageDataWithPool.subscription.gitlabUnitsUsage.usersUsage;
+  const usersData = mockUsageDataWithPool.subscription.gitlabCreditsUsage.usersUsage;
 
   const createComponent = ({ mountFn = shallowMountExtended, propsData } = {}) => {
     wrapper = mountFn(UsageByUserTab, {
@@ -56,7 +56,7 @@ describe('UsageByUserTab', () => {
           label: 'Pool used',
         },
         {
-          key: 'totalUnitsUsed',
+          key: 'totalCreditsUsed',
           label: 'Total credits used',
         },
         {
@@ -88,7 +88,7 @@ describe('UsageByUserTab', () => {
     describe('with zero allocation', () => {
       beforeEach(() => {
         const usersDataWithZeroAllocation =
-          mockUsageDataWithZeroAllocation.subscription.gitlabUnitsUsage.usersUsage;
+          mockUsageDataWithZeroAllocation.subscription.gitlabCreditsUsage.usersUsage;
 
         createComponent({
           mountFn: mountExtended,
@@ -123,7 +123,7 @@ describe('UsageByUserTab', () => {
           label: 'Allocation used',
         },
         {
-          key: 'totalUnitsUsed',
+          key: 'totalCreditsUsed',
           label: 'Total credits used',
         },
         {

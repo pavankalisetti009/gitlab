@@ -31,31 +31,33 @@ export default {
     };
   },
   computed: {
-    gitlabUnitsUsage() {
-      return this.subscriptionData.gitlabUnitsUsage;
+    gitlabCreditsUsage() {
+      return this.subscriptionData.gitlabCreditsUsage;
     },
     hasCommitment() {
-      return Boolean(this.gitlabUnitsUsage.totalUnits);
+      return Boolean(this.gitlabCreditsUsage?.totalCredits);
     },
     trend() {
       return (
-        this.gitlabUnitsUsage.poolUsage?.usageTrend || this.gitlabUnitsUsage.seatUsage?.usageTrend
+        this.gitlabCreditsUsage.poolUsage?.usageTrend ||
+        this.gitlabCreditsUsage.seatUsage?.usageTrend
       );
     },
     dailyUsage() {
       return (
-        this.gitlabUnitsUsage.poolUsage?.dailyUsage || this.gitlabUnitsUsage.seatUsage?.dailyUsage
+        this.gitlabCreditsUsage.poolUsage?.dailyUsage ||
+        this.gitlabCreditsUsage.seatUsage?.dailyUsage
       );
     },
     dailyPeak() {
       return (
-        this.gitlabUnitsUsage.poolUsage?.peakUsage || this.gitlabUnitsUsage.seatUsage?.peakUsage
+        this.gitlabCreditsUsage.poolUsage?.peakUsage || this.gitlabCreditsUsage.seatUsage?.peakUsage
       );
     },
     dailyAverage() {
       return (
-        this.gitlabUnitsUsage.poolUsage?.dailyAverage ||
-        this.gitlabUnitsUsage.seatUsage?.dailyAverage
+        this.gitlabCreditsUsage.poolUsage?.dailyAverage ||
+        this.gitlabCreditsUsage.seatUsage?.dailyAverage
       );
     },
   },
@@ -125,11 +127,11 @@ export default {
       <section class="gl-flex gl-flex-col gl-gap-5 @md/panel:gl-flex-row">
         <current-usage-card
           v-if="hasCommitment"
-          :total-units="gitlabUnitsUsage.totalUnits"
-          :total-units-used="gitlabUnitsUsage.totalUnitsUsed"
-          :current-overage="gitlabUnitsUsage.overageUnits"
-          :month-start-date="gitlabUnitsUsage.startDate"
-          :month-end-date="gitlabUnitsUsage.endDate"
+          :total-credits="gitlabCreditsUsage.totalCredits"
+          :total-credits-used="gitlabCreditsUsage.totalCreditsUsed"
+          :current-overage="gitlabCreditsUsage.overageCredits"
+          :month-start-date="gitlabCreditsUsage.startDate"
+          :month-end-date="gitlabCreditsUsage.endDate"
         />
 
         <purchase-commitment-card :has-commitment="hasCommitment" />
@@ -138,17 +140,17 @@ export default {
         <gl-tab :title="s__('UsageBilling|Usage trends')">
           <usage-trends-chart
             :usage-data="dailyUsage"
-            :month-start-date="gitlabUnitsUsage.startDate"
-            :month-end-date="gitlabUnitsUsage.endDate"
+            :month-start-date="gitlabCreditsUsage.startDate"
+            :month-end-date="gitlabCreditsUsage.endDate"
             :trend="trend"
             :daily-peak="dailyPeak"
             :daily-average="dailyAverage"
-            :threshold="gitlabUnitsUsage.totalUnits"
+            :threshold="gitlabCreditsUsage.totalCredits"
           />
         </gl-tab>
         <gl-tab :title="s__('UsageBilling|Usage by user')">
           <usage-by-user-tab
-            :users-data="gitlabUnitsUsage.usersUsage"
+            :users-data="gitlabCreditsUsage.usersUsage"
             :has-commitment="hasCommitment"
           />
         </gl-tab>

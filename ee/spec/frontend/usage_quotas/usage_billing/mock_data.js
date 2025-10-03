@@ -1,14 +1,14 @@
 export const mockUsageDataWithoutPool = {
   subscription: {
-    gitlabUnitsUsage: {
+    gitlabCreditsUsage: {
       lastUpdated: '2024-01-15T10:30:00Z',
       // boundaries
       startDate: '2024-01-01',
       endDate: '2024-01-31',
 
-      overageUnits: 0,
-      totalUnits: 0,
-      totalUnitsUsed: 0,
+      overageCredits: 0,
+      totalCredits: 0,
+      totalCreditsUsed: 0,
 
       // pool allocation statistics (commitment)
       poolUsage: null,
@@ -60,7 +60,7 @@ export const mockUsageDataWithoutPool = {
         totalUsersUsingAllocation: 35,
         totalUsersUsingPool: null, // or 0
         totalUsersBlocked: 10,
-        avgUnitsPerUser: 150,
+        avgCreditsPerUser: 150,
 
         // per-user details
         users: [
@@ -71,7 +71,7 @@ export const mockUsageDataWithoutPool = {
             allocationUsed: 450,
             allocationTotal: 500,
             poolUsed: 0,
-            totalUnitsUsed: 450,
+            totalCreditsUsed: 450,
             status: 'seat',
           },
           {
@@ -81,7 +81,7 @@ export const mockUsageDataWithoutPool = {
             allocationUsed: 500,
             allocationTotal: 500,
             poolUsed: 125,
-            totalUnitsUsed: 625,
+            totalCreditsUsed: 625,
             status: 'pool',
           },
           {
@@ -91,7 +91,7 @@ export const mockUsageDataWithoutPool = {
             allocationUsed: 500,
             allocationTotal: 500,
             poolUsed: 200,
-            totalUnitsUsed: 700,
+            totalCreditsUsed: 700,
             status: 'overage',
           },
           {
@@ -101,7 +101,7 @@ export const mockUsageDataWithoutPool = {
             allocationUsed: 320,
             allocationTotal: 500,
             poolUsed: 0,
-            totalUnitsUsed: 320,
+            totalCreditsUsed: 320,
             status: 'seat',
           },
           {
@@ -111,7 +111,7 @@ export const mockUsageDataWithoutPool = {
             allocationUsed: 500,
             allocationTotal: 500,
             poolUsed: 75,
-            totalUnitsUsed: 575,
+            totalCreditsUsed: 575,
             status: 'pool',
           },
           {
@@ -121,7 +121,7 @@ export const mockUsageDataWithoutPool = {
             allocationUsed: 480,
             allocationTotal: 500,
             poolUsed: 0,
-            totalUnitsUsed: 480,
+            totalCreditsUsed: 480,
             status: 'blocked',
           },
           {
@@ -131,7 +131,7 @@ export const mockUsageDataWithoutPool = {
             allocationUsed: 500,
             allocationTotal: 500,
             poolUsed: 150,
-            totalUnitsUsed: 650,
+            totalCreditsUsed: 650,
             status: 'pool',
           },
           {
@@ -141,7 +141,7 @@ export const mockUsageDataWithoutPool = {
             allocationUsed: 500,
             allocationTotal: 500,
             poolUsed: 300,
-            totalUnitsUsed: 800,
+            totalCreditsUsed: 800,
             status: 'overage',
           },
         ],
@@ -153,15 +153,15 @@ export const mockUsageDataWithoutPool = {
 // Mock data for daily usage API response
 export const mockUsageDataWithPool = {
   subscription: {
-    gitlabUnitsUsage: {
+    gitlabCreditsUsage: {
       lastUpdated: '2024-01-15T10:30:00Z',
       // boundaries
       startDate: '2024-01-01',
       endDate: '2024-01-31',
 
-      overageUnits: 0,
-      totalUnits: 300,
-      totalUnitsUsed: 50,
+      overageCredits: 0,
+      totalCredits: 300,
+      totalCreditsUsed: 50,
 
       // pool allocation statistics (commitment)
       poolUsage: {
@@ -225,7 +225,7 @@ export const mockUsageDataWithPool = {
             allocationUsed: 450,
             allocationTotal: 500,
             poolUsed: 0,
-            totalUnitsUsed: 450,
+            totalCreditsUsed: 450,
             status: 'seat',
           },
           {
@@ -235,7 +235,7 @@ export const mockUsageDataWithPool = {
             allocationUsed: 500,
             allocationTotal: 500,
             poolUsed: 125,
-            totalUnitsUsed: 625,
+            totalCreditsUsed: 625,
             status: 'pool',
           },
           {
@@ -245,7 +245,7 @@ export const mockUsageDataWithPool = {
             allocationUsed: 500,
             allocationTotal: 500,
             poolUsed: 200,
-            totalUnitsUsed: 700,
+            totalCreditsUsed: 700,
             status: 'overage',
           },
           {
@@ -255,7 +255,7 @@ export const mockUsageDataWithPool = {
             allocationUsed: 320,
             allocationTotal: 500,
             poolUsed: 0,
-            totalUnitsUsed: 320,
+            totalCreditsUsed: 320,
             status: 'seat',
           },
           {
@@ -265,7 +265,7 @@ export const mockUsageDataWithPool = {
             allocationUsed: 500,
             allocationTotal: 500,
             poolUsed: 75,
-            totalUnitsUsed: 575,
+            totalCreditsUsed: 575,
             status: 'pool',
           },
           {
@@ -275,7 +275,7 @@ export const mockUsageDataWithPool = {
             allocationUsed: 480,
             allocationTotal: 500,
             poolUsed: 0,
-            totalUnitsUsed: 480,
+            totalCreditsUsed: 480,
             status: 'blocked',
           },
           {
@@ -285,7 +285,7 @@ export const mockUsageDataWithPool = {
             allocationUsed: 500,
             allocationTotal: 500,
             poolUsed: 150,
-            totalUnitsUsed: 650,
+            totalCreditsUsed: 650,
             status: 'pool',
           },
           {
@@ -295,7 +295,7 @@ export const mockUsageDataWithPool = {
             allocationUsed: 500,
             allocationTotal: 500,
             poolUsed: 300,
-            totalUnitsUsed: 800,
+            totalCreditsUsed: 800,
             status: 'overage',
           },
         ],
@@ -306,15 +306,15 @@ export const mockUsageDataWithPool = {
 
 export const mockUsageDataWithOverage = {
   subscription: {
-    gitlabUnitsUsage: {
+    gitlabCreditsUsage: {
       lastUpdated: '2024-01-15T10:30:00Z',
 
       startDate: '2024-01-01',
       endDate: '2024-01-31',
 
-      overageUnits: 50,
-      totalUnits: 300,
-      totalUnitsUsed: 350,
+      overageCredits: 50,
+      totalCredits: 300,
+      totalCreditsUsed: 350,
 
       poolUsage: {
         dailyAverage: 167,
@@ -370,7 +370,7 @@ export const mockUsageDataWithOverage = {
             allocationUsed: 450,
             allocationTotal: 500,
             poolUsed: 0,
-            totalUnitsUsed: 450,
+            totalCreditsUsed: 450,
             status: 'seat',
           },
           {
@@ -380,7 +380,7 @@ export const mockUsageDataWithOverage = {
             allocationUsed: 500,
             allocationTotal: 500,
             poolUsed: 125,
-            totalUnitsUsed: 625,
+            totalCreditsUsed: 625,
             status: 'pool',
           },
           {
@@ -390,7 +390,7 @@ export const mockUsageDataWithOverage = {
             allocationUsed: 500,
             allocationTotal: 500,
             poolUsed: 200,
-            totalUnitsUsed: 700,
+            totalCreditsUsed: 700,
             status: 'overage',
           },
           {
@@ -400,7 +400,7 @@ export const mockUsageDataWithOverage = {
             allocationUsed: 320,
             allocationTotal: 500,
             poolUsed: 0,
-            totalUnitsUsed: 320,
+            totalCreditsUsed: 320,
             status: 'seat',
           },
           {
@@ -410,7 +410,7 @@ export const mockUsageDataWithOverage = {
             allocationUsed: 500,
             allocationTotal: 500,
             poolUsed: 75,
-            totalUnitsUsed: 575,
+            totalCreditsUsed: 575,
             status: 'pool',
           },
           {
@@ -420,7 +420,7 @@ export const mockUsageDataWithOverage = {
             allocationUsed: 480,
             allocationTotal: 500,
             poolUsed: 0,
-            totalUnitsUsed: 480,
+            totalCreditsUsed: 480,
             status: 'blocked',
           },
           {
@@ -430,7 +430,7 @@ export const mockUsageDataWithOverage = {
             allocationUsed: 500,
             allocationTotal: 500,
             poolUsed: 150,
-            totalUnitsUsed: 650,
+            totalCreditsUsed: 650,
             status: 'pool',
           },
           {
@@ -440,7 +440,7 @@ export const mockUsageDataWithOverage = {
             allocationUsed: 500,
             allocationTotal: 500,
             poolUsed: 300,
-            totalUnitsUsed: 800,
+            totalCreditsUsed: 800,
             status: 'overage',
           },
         ],
@@ -452,14 +452,14 @@ export const mockUsageDataWithOverage = {
 // Mock data with zero allocation totals for testing edge cases
 export const mockUsageDataWithZeroAllocation = {
   subscription: {
-    gitlabUnitsUsage: {
+    gitlabCreditsUsage: {
       lastUpdated: '2024-01-15T10:30:00Z',
       startDate: '2024-01-01',
       endDate: '2024-01-31',
 
-      overageUnits: 0,
-      totalUnits: 100,
-      totalUnitsUsed: 100,
+      overageCredits: 0,
+      totalCredits: 100,
+      totalCreditsUsed: 100,
 
       poolUsage: null,
       seatUsage: null,
@@ -478,7 +478,7 @@ export const mockUsageDataWithZeroAllocation = {
             allocationUsed: 0,
             allocationTotal: 0,
             poolUsed: 0,
-            totalUnitsUsed: 0,
+            totalCreditsUsed: 0,
             status: 'seat',
           },
           {
@@ -488,7 +488,7 @@ export const mockUsageDataWithZeroAllocation = {
             allocationUsed: 100,
             allocationTotal: 0,
             poolUsed: 50,
-            totalUnitsUsed: 150,
+            totalCreditsUsed: 150,
             status: 'pool',
           },
           {
@@ -498,7 +498,7 @@ export const mockUsageDataWithZeroAllocation = {
             allocationUsed: 250,
             allocationTotal: 500,
             poolUsed: 0,
-            totalUnitsUsed: 250,
+            totalCreditsUsed: 250,
             status: 'seat',
           },
           {
@@ -508,7 +508,7 @@ export const mockUsageDataWithZeroAllocation = {
             allocationUsed: 200,
             allocationTotal: 0,
             poolUsed: 100,
-            totalUnitsUsed: 300,
+            totalCreditsUsed: 300,
             status: 'overage',
           },
           {
@@ -518,7 +518,7 @@ export const mockUsageDataWithZeroAllocation = {
             allocationUsed: 0,
             allocationTotal: 0,
             poolUsed: 0,
-            totalUnitsUsed: 0,
+            totalCreditsUsed: 0,
             status: 'blocked',
           },
         ],

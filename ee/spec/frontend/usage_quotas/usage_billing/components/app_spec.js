@@ -65,8 +65,8 @@ describe('UsageBillingApp', () => {
     it('renders current-usage-card', () => {
       expect(wrapper.findComponent(CurrentUsageCard).props()).toMatchObject({
         currentOverage: 0,
-        totalUnits: 300,
-        totalUnitsUsed: 50,
+        totalCredits: 300,
+        totalCreditsUsed: 50,
         monthStartDate: '2024-01-01',
         monthEndDate: '2024-01-31',
       });
@@ -102,7 +102,7 @@ describe('UsageBillingApp', () => {
       const usageByUserTab = wrapper.findComponent(UsageByUserTab);
 
       expect(usageByUserTab.props()).toMatchObject({
-        usersData: mockUsageDataWithPool.subscription.gitlabUnitsUsage.usersUsage,
+        usersData: mockUsageDataWithPool.subscription.gitlabCreditsUsage.usersUsage,
         hasCommitment: true,
       });
     });
