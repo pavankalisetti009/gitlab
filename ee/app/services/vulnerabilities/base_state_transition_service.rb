@@ -22,6 +22,7 @@ module Vulnerabilities
 
           update_vulnerability!
           update_vulnerability_reads!
+          update_risk_score
         end
       end
 
@@ -35,6 +36,12 @@ module Vulnerabilities
       return if to_state == :dismissed
 
       Vulnerabilities::Read.by_vulnerabilities(@vulnerability).update(dismissal_reason: nil)
+    end
+
+    def update_risk_score
+      return unless Vulnerability.active_states.include?(to_state.to_s)
+
+      Vulnerabilities::Findings::RiskScoreCalculationService.calculate_for(@vulnerability)
     end
   end
 end

@@ -16,6 +16,8 @@ module Vulnerabilities
 
     has_many :primary_findings, class_name: 'Vulnerabilities::Finding', inverse_of: :primary_identifier, foreign_key: 'primary_identifier_id'
 
+    belongs_to :cve_enrichment, class_name: 'PackageMetadata::CveEnrichment', foreign_key: :name, primary_key: :cve, inverse_of: :identifiers
+
     belongs_to :project
 
     validates :project, presence: true

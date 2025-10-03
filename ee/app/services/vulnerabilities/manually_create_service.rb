@@ -44,6 +44,7 @@ module Vulnerabilities
         update_security_statistics!
 
         Vulnerabilities::StatisticsUpdateService.update_for(vulnerability)
+        Vulnerabilities::Findings::RiskScoreCalculationService.calculate_for(vulnerability)
 
         ServiceResponse.success(payload: { vulnerability: vulnerability })
       end

@@ -181,6 +181,14 @@ RSpec.describe Vulnerabilities::BulkSeverityOverrideService, feature_category: :
         expect(last_system_note_metadata.action).to eq("vulnerability_severity_changed")
       end
 
+      it 'makes a call to Vulnerabilities::Findings::RiskScoreCalculationService' do
+        expect_next_instance_of(Vulnerabilities::Findings::RiskScoreCalculationService) do |instance|
+          expect(instance).to receive(:execute)
+        end
+
+        service.execute
+      end
+
       it 'returns a service response' do
         result = service.execute
 
