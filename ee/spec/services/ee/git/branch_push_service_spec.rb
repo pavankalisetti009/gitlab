@@ -153,7 +153,7 @@ RSpec.describe Git::BranchPushService, feature_category: :source_code_management
 
       it 'schedules IndexingTaskWorker' do
         expect(::Ai::KnowledgeGraph::IndexingTaskWorker)
-          .to receive(:perform_async).with(project.project_namespace.id, :index_graph_repo)
+          .to receive(:perform_async).with(project.project_namespace.id, 'index_graph_repo')
 
         branch_push_service.execute
       end

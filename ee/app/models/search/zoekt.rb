@@ -60,13 +60,13 @@ module Search
       def index_async(project_id)
         return false unless licensed_and_indexing_enabled?
 
-        IndexingTaskWorker.perform_async(project_id, :index_repo)
+        IndexingTaskWorker.perform_async(project_id, 'index_repo')
       end
 
       def index_in(delay, project_id)
         return false unless licensed_and_indexing_enabled?
 
-        IndexingTaskWorker.perform_async(project_id, :index_repo, { delay: delay })
+        IndexingTaskWorker.perform_async(project_id, 'index_repo', { delay: delay })
       end
 
       def delete_async(project_id, root_namespace_id:, node_id: nil)
@@ -75,7 +75,7 @@ module Search
         Router.fetch_nodes_for_indexing(project_id, root_namespace_id: root_namespace_id,
           node_ids: [node_id]).map do |node|
           options = { root_namespace_id: root_namespace_id, node_id: node.id }
-          IndexingTaskWorker.perform_async(project_id, :delete_repo, options)
+          IndexingTaskWorker.perform_async(project_id, 'delete_repo', options)
         end
       end
 
@@ -87,7 +87,7 @@ module Search
           options = {
             root_namespace_id: root_namespace_id, node_id: node.id, delay: delay
           }
-          IndexingTaskWorker.perform_async(project_id, :delete_repo, options)
+          IndexingTaskWorker.perform_async(project_id, 'delete_repo', options)
         end
       end
 
