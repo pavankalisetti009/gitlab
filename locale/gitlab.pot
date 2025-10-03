@@ -4601,16 +4601,19 @@ msgstr ""
 msgid "AdminAIPoweredFeatures|GitLab default model (%{defaultModel})"
 msgstr ""
 
+msgid "AdminAIPoweredFeatures|GitLab managed model"
+msgstr ""
+
 msgid "AdminAIPoweredFeatures|Model"
 msgstr ""
 
 msgid "AdminAIPoweredFeatures|Other GitLab Duo features"
 msgstr ""
 
-msgid "AdminAIPoweredFeatures|Select a model version for full control of your configuration, or GitLab Default for GitLab to manage the selection."
+msgid "AdminAIPoweredFeatures|Select a model"
 msgstr ""
 
-msgid "AdminAIPoweredFeatures|Select a self-hosted model"
+msgid "AdminAIPoweredFeatures|Select a model version for full control of your configuration, or GitLab Default for GitLab to manage the selection."
 msgstr ""
 
 msgid "AdminAIPoweredFeatures|Select the model for the feature"
@@ -33399,6 +33402,9 @@ msgstr ""
 msgid "I forgot my password"
 msgstr ""
 
+msgid "I understand"
+msgstr ""
+
 msgid "I want to explore GitLab to see if it’s worth switching to"
 msgstr ""
 
@@ -42081,6 +42087,9 @@ msgstr ""
 msgid "ModelSelection|An error occurred while updating the feature setting. Please try again."
 msgstr ""
 
+msgid "ModelSelection|By selecting %{selectedGitlabManagedModel}, you consent to using a GitLab managed model and sending data to the GitLab AI gateway."
+msgstr ""
+
 msgid "ModelSelection|GitLab default model"
 msgstr ""
 
@@ -42094,6 +42103,9 @@ msgid "ModelSelection|Model Selection"
 msgstr ""
 
 msgid "ModelSelection|Model Selection is enabled for GitLab Duo, which requires a default namespace to be set. You must select a default namespace in profile preferences to continue using GitLab Duo features."
+msgstr ""
+
+msgid "ModelSelection|Model has been pinned by an administrator."
 msgstr ""
 
 msgid "ModelSelection|Select a model"

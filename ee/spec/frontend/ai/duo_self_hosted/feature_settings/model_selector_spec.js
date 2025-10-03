@@ -2,9 +2,11 @@ import Vue from 'vue';
 import VueApollo from 'vue-apollo';
 import { GlToast } from '@gitlab/ui';
 import { shallowMount } from '@vue/test-utils';
+import { stubComponent } from 'helpers/stub_component';
 import waitForPromises from 'helpers/wait_for_promises';
 import createMockApollo from 'helpers/mock_apollo_helper';
 import ModelSelector from 'ee/ai/duo_self_hosted/feature_settings/components/model_selector.vue';
+import GitlabManagedModelsDisclaimerModal from 'ee/ai/duo_self_hosted/feature_settings/components/gitlab_managed_models_disclaimer_modal.vue';
 import ModelSelectDropdown from 'ee/ai/shared/feature_settings/model_select_dropdown.vue';
 import updateAiFeatureSetting from 'ee/ai/duo_self_hosted/feature_settings/graphql/mutations/update_ai_feature_setting.mutation.graphql';
 import getAiFeatureSettingsQuery from 'ee/ai/duo_self_hosted/feature_settings/graphql/queries/get_ai_feature_settings.query.graphql';
@@ -128,6 +130,7 @@ describe('ModelSelector', () => {
       },
     },
   });
+  const mockShowModal = jest.fn();
 
   const createComponent = ({
     apolloHandlers = [
@@ -152,6 +155,13 @@ describe('ModelSelector', () => {
           batchUpdateIsSaving: false,
           ...props,
         },
+        stubs: {
+          GitlabManagedModelsDisclaimerModal: stubComponent(GitlabManagedModelsDisclaimerModal, {
+            methods: {
+              showModal: mockShowModal,
+            },
+          }),
+        },
         mocks: {
           $toast: {
             show: jest.fn(),
@@ -167,6 +177,7 @@ describe('ModelSelector', () => {
     const modelOptions = findModelSelectDropdown().props('items');
     return modelOptions.find((option) => option.value === PROVIDERS.VENDORED);
   };
+  const findDisclaimerModal = () => wrapper.findComponent(GitlabManagedModelsDisclaimerModal);
 
   it('renders the component', () => {
     createComponent();
@@ -324,25 +335,80 @@ describe('ModelSelector', () => {
       createComponent();
     });
 
-    it.each`
-      testCase                   | selectedOption                          | provider                 | selfHostedModelId                       | offeredModelRef
-      ${'self-hosted model'}     | ${'gid://gitlab/Ai::SelfHostedModel/1'} | ${PROVIDERS.SELF_HOSTED} | ${'gid://gitlab/Ai::SelfHostedModel/1'} | ${null}
-      ${'GitLab managed model'}  | ${'claude_sonnet_4_20250514'}           | ${PROVIDERS.VENDORED}    | ${null}                                 | ${'claude_sonnet_4_20250514'}
-      ${'GitlLab default model'} | ${GITLAB_DEFAULT_MODEL}                 | ${PROVIDERS.VENDORED}    | ${null}                                 | ${GITLAB_DEFAULT_MODEL}
-      ${'disabled'}              | ${'disabled'}                           | ${PROVIDERS.DISABLED}    | ${null}                                 | ${null}
-      ${'vendored'}              | ${'vendored'}                           | ${PROVIDERS.VENDORED}    | ${null}                                 | ${null}
+    describe.each`
+      testCase               | selectedOption                          | provider                 | selfHostedModelId                       | offeredModelRef
+      ${'self-hosted model'} | ${'gid://gitlab/Ai::SelfHostedModel/1'} | ${PROVIDERS.SELF_HOSTED} | ${'gid://gitlab/Ai::SelfHostedModel/1'} | ${null}
+      ${'disabled'}          | ${'disabled'}                           | ${PROVIDERS.DISABLED}    | ${null}                                 | ${null}
+      ${'vendored'}          | ${'vendored'}                           | ${PROVIDERS.VENDORED}    | ${null}                                 | ${null}
     `(
       'with $testCase as selected option: calls the update mutation with the correct input',
       ({ selectedOption, provider, selfHostedModelId, offeredModelRef }) => {
-        const modelSelectDropdown = findModelSelectDropdown();
-        modelSelectDropdown.vm.$emit('select', selectedOption);
-        expect(updateFeatureSettingsSuccessHandler).toHaveBeenCalledWith({
-          input: {
-            features: ['CODE_GENERATIONS'],
-            provider: provider.toUpperCase(),
-            aiSelfHostedModelId: selfHostedModelId,
-            offeredModelRef,
-          },
+        beforeEach(() => {
+          const modelSelectDropdown = findModelSelectDropdown();
+          modelSelectDropdown.vm.$emit('select', selectedOption);
+        });
+
+        it('calls the update mutation with the correct input', () => {
+          expect(updateFeatureSettingsSuccessHandler).toHaveBeenCalledWith({
+            input: {
+              features: ['CODE_GENERATIONS'],
+              provider: provider.toUpperCase(),
+              aiSelfHostedModelId: selfHostedModelId,
+              offeredModelRef,
+            },
+          });
+        });
+
+        it('does not call show disclaimer modal when selected', () => {
+          expect(mockShowModal).not.toHaveBeenCalled();
+        });
+      },
+    );
+
+    describe.each`
+      testCase                   | selectedOption                    | modelName                                                 | provider              | offeredModelRef
+      ${'GitLab managed model'}  | ${mockGitlabManagedModels[0].ref} | ${mockGitlabManagedModels[0].name}                        | ${PROVIDERS.VENDORED} | ${mockGitlabManagedModels[0].ref}
+      ${'GitlLab default model'} | ${GITLAB_DEFAULT_MODEL}           | ${'GitLab default model (Claude Sonnet 4.0 - Anthropic)'} | ${PROVIDERS.VENDORED} | ${GITLAB_DEFAULT_MODEL}
+    `(
+      'with $testCase as selected option',
+      ({ selectedOption, modelName, provider, offeredModelRef }) => {
+        beforeEach(() => {
+          createComponent({
+            props: {
+              aiFeatureSetting: {
+                ...mockAiFeatureSetting,
+                validGitlabModels: { nodes: mockGitlabManagedModels },
+                defaultGitlabModel: mockDefaultGitlabModel,
+              },
+            },
+          });
+          const modelSelectDropdown = findModelSelectDropdown();
+          modelSelectDropdown.vm.$emit('select', selectedOption);
+        });
+
+        it('calls show disclaimer modal when selected', () => {
+          expect(mockShowModal).toHaveBeenCalledTimes(1);
+          expect(mockShowModal).toHaveBeenCalledWith({
+            value: selectedOption,
+            text: modelName,
+          });
+        });
+
+        it('calls update operations when Gitlab managed model modal is acknowledged', async () => {
+          findDisclaimerModal().vm.$emit('confirm', selectedOption);
+          await waitForPromises();
+
+          expect(updateFeatureSettingsSuccessHandler).toHaveBeenCalledWith({
+            input: {
+              features: ['CODE_GENERATIONS'],
+              provider: provider.toUpperCase(),
+              aiSelfHostedModelId: null,
+              offeredModelRef,
+            },
+          });
+          expect(wrapper.vm.$toast.show).toHaveBeenCalledWith(
+            'Successfully updated Code Suggestions / Code Generation',
+          );
         });
       },
     );
@@ -385,7 +451,7 @@ describe('ModelSelector', () => {
     });
 
     it('triggers a success toast', async () => {
-      findModelSelectDropdown().vm.$emit('select', 1);
+      findModelSelectDropdown().vm.$emit('select', 'gid://gitlab/Ai::SelfHostedModel/1');
 
       await waitForPromises();
 
@@ -395,7 +461,7 @@ describe('ModelSelector', () => {
     });
 
     it('refreshes self-hosted models and feature settings data', async () => {
-      findModelSelectDropdown().vm.$emit('select', 1);
+      findModelSelectDropdown().vm.$emit('select', 'gid://gitlab/Ai::SelfHostedModel/1');
 
       await waitForPromises();
 

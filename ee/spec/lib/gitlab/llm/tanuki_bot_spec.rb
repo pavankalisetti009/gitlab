@@ -393,27 +393,11 @@ RSpec.describe Gitlab::Llm::TanukiBot, feature_category: :duo_chat do
               end
             end
 
-            context 'when feature setting service returns no model metadata' do
-              let(:service_response) { ServiceResponse.success(payload: nil) }
-
-              it { is_expected.to be_truthy }
-            end
-
             context 'when the feature setting returns payload' do
               let(:payload) { build(:ai_namespace_feature_setting, namespace: group, feature: :duo_agent_platform) }
               let(:service_response) { ServiceResponse.success(payload: payload) }
 
-              context 'when model is set to default setting' do
-                before do
-                  allow(payload).to receive(:set_to_gitlab_default?).and_return(true)
-                end
-
-                it { is_expected.to be_truthy }
-              end
-
-              context 'when owner pinned a model' do
-                it { is_expected.to be_falsey }
-              end
+              it { is_expected.to be_truthy }
             end
 
             context 'when the feature setting service returns an error' do

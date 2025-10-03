@@ -2,7 +2,7 @@
 // eslint-disable-next-line no-restricted-imports
 import { mapActions, mapState } from 'vuex';
 import { WebAgenticDuoChat } from '@gitlab/duo-ui';
-import { GlToggle } from '@gitlab/ui';
+import { GlToggle, GlTooltipDirective } from '@gitlab/ui';
 import { parseDocument } from 'yaml';
 import getUserWorkflows from 'ee/ai/graphql/get_user_workflow.query.graphql';
 import getConfiguredAgents from 'ee/ai/graphql/get_configured_agents.query.graphql';
@@ -46,6 +46,9 @@ export default {
     WebAgenticDuoChat,
     GlToggle,
     ModelSelectDropdown,
+  },
+  directives: {
+    GlTooltip: GlTooltipDirective,
   },
   provide() {
     return {
@@ -137,6 +140,7 @@ export default {
     },
     availableModels: {
       query: getAiChatAvailableModels,
+      fetchPolicy: fetchPolicies.NETWORK_ONLY,
       skip() {
         if (!this.userModelSelectionEnabled) return true;
 
@@ -148,12 +152,19 @@ export default {
         };
       },
       update(data) {
-        const { selectableModels = [], defaultModel } = data.aiChatAvailableModels;
+        const { selectableModels = [], defaultModel, pinnedModel } = data.aiChatAvailableModels;
 
         const models = selectableModels.map(({ ref, name }) => ({
           text: name,
           value: ref === defaultModel?.ref ? GITLAB_DEFAULT_MODEL : ref,
         }));
+
+        this.pinnedModel = pinnedModel?.ref
+          ? {
+              text: pinnedModel.name,
+              value: pinnedModel.ref,
+            }
+          : null;
 
         return models;
       },
@@ -213,6 +224,7 @@ export default {
       maxWidth: null,
       contextPresets: [],
       availableModels: [],
+      pinnedModel: null,
       socketManager: null,
       workflowId,
       workflowStatus: null,
@@ -252,6 +264,7 @@ export default {
     currentModel: {
       get() {
         return (
+          this.pinnedModel ||
           this.selectedModel ||
           JSON.parse(localStorage.getItem(DUO_AGENTIC_CHAT_SELECTED_MODEL_KEY)) ||
           this.defaultModel
@@ -260,6 +273,14 @@ export default {
       set(val) {
         this.selectedModel = val;
       },
+    },
+    isModelSelectionDisabled() {
+      return Boolean(this.pinnedModel);
+    },
+    modelSelectionDisabledTooltipText() {
+      return this.isModelSelectionDisabled
+        ? s__('ModelSelection|Model has been pinned by an administrator.')
+        : '';
     },
     predefinedPrompts() {
       return this.contextPresets.questions || [];
@@ -741,9 +762,16 @@ export default {
             label-position="left"
           />
         </div>
-        <div v-if="userModelSelectionEnabled" class="gl-flex gl-pb-2 gl-pt-5">
+        <div
+          v-if="userModelSelectionEnabled"
+          v-gl-tooltip
+          :title="modelSelectionDisabledTooltipText"
+          class="gl-mb-2 gl-mt-5 gl-flex"
+          data-testid="model-dropdown-container"
+        >
           <model-select-dropdown
             class="gl-max-w-31"
+            :disabled="isModelSelectionDisabled"
             :is-loading="$apollo.queries.availableModels.loading"
             :items="availableModels"
             :selected-option="currentModel"

@@ -45,6 +45,14 @@ RSpec.describe Security::ScanResultPolicies::DismissPolicyViolationsService, fea
         expect(response.success?).to be_falsey
         expect(response.message).to eq('No warn mode policies are found.')
       end
+
+      it_behaves_like 'does not trigger GraphQL subscription mergeRequestApprovalStateUpdated' do
+        let(:action) { service.execute }
+      end
+
+      it_behaves_like 'does not trigger GraphQL subscription mergeRequestMergeStatusUpdated' do
+        let(:action) { service.execute }
+      end
     end
 
     context 'when there are no violations for the policy' do
@@ -53,6 +61,14 @@ RSpec.describe Security::ScanResultPolicies::DismissPolicyViolationsService, fea
 
         response = service.execute
         expect(response.success?).to be_truthy
+      end
+
+      it_behaves_like 'does not trigger GraphQL subscription mergeRequestApprovalStateUpdated' do
+        let(:action) { service.execute }
+      end
+
+      it_behaves_like 'does not trigger GraphQL subscription mergeRequestMergeStatusUpdated' do
+        let(:action) { service.execute }
       end
     end
 
@@ -82,6 +98,14 @@ RSpec.describe Security::ScanResultPolicies::DismissPolicyViolationsService, fea
         response = service.execute
 
         expect(response).to be_success
+      end
+
+      it_behaves_like 'triggers GraphQL subscription mergeRequestApprovalStateUpdated' do
+        let(:action) { service.execute }
+      end
+
+      it_behaves_like 'triggers GraphQL subscription mergeRequestMergeStatusUpdated' do
+        let(:action) { service.execute }
       end
 
       it 'creates a policy dismissal with the correct attributes' do

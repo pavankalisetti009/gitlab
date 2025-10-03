@@ -9,11 +9,13 @@ import updateAiFeatureSetting from '../graphql/mutations/update_ai_feature_setti
 import getAiFeatureSettingsQuery from '../graphql/queries/get_ai_feature_settings.query.graphql';
 import getSelfHostedModelsQuery from '../../self_hosted_models/graphql/queries/get_self_hosted_models.query.graphql';
 import { PROVIDERS, DUO_AGENT_PLATFORM_FEATURE, GITLAB_DEFAULT_MODEL } from '../constants';
+import GitlabManagedModelsDisclaimerModal from './gitlab_managed_models_disclaimer_modal.vue';
 
 export default {
   name: 'ModelSelector',
   components: {
     ModelSelectDropdown,
+    GitlabManagedModelsDisclaimerModal,
   },
   inject: ['showVendoredModelOption'],
   props: {
@@ -152,17 +154,34 @@ export default {
   },
 
   methods: {
-    async onSelect(selectedOption) {
+    isLegacyVendorOption(selectedOption) {
+      // We need to keep old implementation of AI vendor model option
+      // until the instance-level model selection feature flag is fully rolled out.
+      // Issue: https://gitlab.com/gitlab-org/gitlab/-/issues/570683
+      return selectedOption === PROVIDERS.VENDORED;
+    },
+    async onSelect(selectedOptionValue) {
+      const provider = this.getProvider(selectedOptionValue);
+
+      if (provider === PROVIDERS.VENDORED && !this.isLegacyVendorOption(selectedOptionValue)) {
+        const selectedOption = this.gitlabManagedModels.find(
+          ({ value }) => value === selectedOptionValue,
+        );
+        this.$refs.disclaimerModal.showModal(selectedOption);
+        return;
+      }
+
+      await this.updateSelectedModel(selectedOptionValue);
+    },
+    async updateSelectedModel(selectedOption) {
       this.isSaving = true;
 
       const provider = this.getProvider(selectedOption);
 
-      // We need to keep old implementation of AI vendor model option
-      // until the instance-level model selection feature flag is fully rolled out.
-      const isLegacyVendorOption = selectedOption === PROVIDERS.VENDORED;
-
       const offeredModelRef =
-        provider === PROVIDERS.VENDORED && !isLegacyVendorOption ? selectedOption : null;
+        provider === PROVIDERS.VENDORED && !this.isLegacyVendorOption(selectedOption)
+          ? selectedOption
+          : null;
       const selfHostedModelId = provider === PROVIDERS.SELF_HOSTED ? selectedOption : null;
 
       try {
@@ -223,13 +242,16 @@ export default {
 };
 </script>
 <template>
-  <model-select-dropdown
-    class="gl-w-34 lg:gl-w-48"
-    :selected-option="selectedOption"
-    :items="listItems"
-    :placeholder-dropdown-text="s__('AdminAIPoweredFeatures|Select a self-hosted model')"
-    :is-loading="isSaving || batchUpdateIsSaving"
-    is-feature-setting-dropdown
-    @select="onSelect"
-  />
+  <div>
+    <gitlab-managed-models-disclaimer-modal ref="disclaimerModal" @confirm="updateSelectedModel" />
+    <model-select-dropdown
+      class="gl-w-34 lg:gl-w-48"
+      :selected-option="selectedOption"
+      :items="listItems"
+      :placeholder-dropdown-text="s__('AdminAIPoweredFeatures|Select a model')"
+      :is-loading="isSaving || batchUpdateIsSaving"
+      is-feature-setting-dropdown
+      @select="onSelect"
+    />
+  </div>
 </template>

@@ -20,6 +20,7 @@ module Security
         return ServiceResponse.success if dismissal_attributes.empty?
 
         upsert_policy_dismissals(dismissal_attributes)
+        trigger_merge_request_update_subscriptions
 
         ServiceResponse.success
       end
@@ -66,6 +67,11 @@ module Security
 
       def upsert_policy_dismissals(attributes)
         Security::PolicyDismissal.upsert_all(attributes, unique_by: %i[security_policy_id merge_request_id])
+      end
+
+      def trigger_merge_request_update_subscriptions
+        GraphqlTriggers.merge_request_approval_state_updated(merge_request)
+        GraphqlTriggers.merge_request_merge_status_updated(merge_request)
       end
     end
   end
