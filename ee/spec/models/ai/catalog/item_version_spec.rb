@@ -85,6 +85,31 @@ RSpec.describe Ai::Catalog::ItemVersion, feature_category: :workflow_catalog do
         end
       end
 
+      context 'when item is third party agent' do
+        subject(:version) { build_stubbed(:ai_catalog_third_party_flow_version) }
+
+        it { is_expected.to be_valid }
+
+        context 'when definition has invalid image, commands, injectGatewayToken or variables' do
+          before do
+            version.definition['image'] = 123
+            version.definition['commands'] = { a: :b }
+            version.definition['injectGatewayToken'] = 'yes'
+            version.definition['variables'] = nil
+          end
+
+          it "adds errors for all the attributes" do
+            expect(version).not_to be_valid
+            expect(version.errors['definition']).to contain_exactly(
+              "value at `/commands` is not an array",
+              "value at `/image` is not a string",
+              "value at `/injectGatewayToken` is not a boolean",
+              "value at `/variables` is not an object"
+            )
+          end
+        end
+      end
+
       context 'when item is nil' do
         it 'cannot validate definition schema' do
           version.item = nil

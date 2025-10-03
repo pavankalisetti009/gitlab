@@ -167,7 +167,7 @@ RSpec.describe Ai::Catalog::Item, feature_category: :workflow_catalog do
   end
 
   describe 'enums' do
-    it { is_expected.to define_enum_for(:item_type).with_values(agent: 1, flow: 2) }
+    it { is_expected.to define_enum_for(:item_type).with_values(agent: 1, flow: 2, third_party_flow: 3) }
 
     it 'defines verification_level enum with namespace verification levels' do
       is_expected.to define_enum_for(:verification_level).with_values(
