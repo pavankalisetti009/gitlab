@@ -18,7 +18,7 @@ RSpec.describe Authz::UserGroupMemberRoles::DestroyForGroupService, feature_cate
     create(:user_group_member_role, user: user, group: other_group)
   end
 
-  shared_examples 'logs event data' do |deleted_count:|
+  shared_examples 'logs event data' do |deleted_for_group_count: 0, deleted_for_project_count: 0|
     it 'logs event data' do
       expect(Gitlab::AppJsonLogger).to receive(:info).with(
         hash_including(
@@ -26,7 +26,8 @@ RSpec.describe Authz::UserGroupMemberRoles::DestroyForGroupService, feature_cate
           group_id: group.id,
           'update_user_group_member_roles.event': 'member deleted',
           'update_user_group_member_roles.upserted_count': 0,
-          'update_user_group_member_roles.deleted_count': deleted_count
+          'update_user_group_member_roles.deleted_count': deleted_for_group_count,
+          'update_user_project_member_roles.deleted_count': deleted_for_project_count
         )
       )
 
@@ -43,7 +44,7 @@ RSpec.describe Authz::UserGroupMemberRoles::DestroyForGroupService, feature_cate
     }.from([true, true]).to([false, true])
   end
 
-  it_behaves_like 'logs event data', deleted_count: 1
+  it_behaves_like 'logs event data', deleted_for_group_count: 1
 
   context 'when there are groups shared with the group' do
     let_it_be(:shared_group) { create(:group) }
@@ -67,6 +68,40 @@ RSpec.describe Authz::UserGroupMemberRoles::DestroyForGroupService, feature_cate
       }.from([true, true, true, true]).to([false, false, false, true])
     end
 
-    it_behaves_like 'logs event data', deleted_count: 3
+    it_behaves_like 'logs event data', deleted_for_group_count: 3
+  end
+
+  context 'when there are projects shared with the group' do
+    let_it_be(:shared_project) { create(:project) }
+    let_it_be(:shared_project2) { create(:project) }
+    let_it_be(:shared_project3) { create(:project) }
+
+    before do
+      create(:user_project_member_role, user: user, project: shared_project, shared_with_group: group)
+      create(:user_project_member_role, user: user, project: shared_project2, shared_with_group: group)
+      create(:user_project_member_role, user: user, project: shared_project3, shared_with_group: other_group)
+    end
+
+    it 'destroys the user\'s UserProjectMemberRole records for all shared projects to the group' do
+      expect { execute }.to change {
+        [
+          user.user_project_member_roles.where(project: shared_project).exists?,
+          user.user_project_member_roles.where(project: shared_project2).exists?,
+          user.user_project_member_roles.where(project: shared_project3).exists?
+        ]
+      }.from([true, true, true]).to([false, false, true])
+    end
+
+    it_behaves_like 'logs event data', deleted_for_group_count: 1, deleted_for_project_count: 2
+
+    context 'when cache_user_project_member_roles feature flag is disabled' do
+      before do
+        stub_feature_flags(cache_user_project_member_roles: false)
+      end
+
+      it 'does not destroy the user\'s UserProjectMemberRole records' do
+        expect { execute }.not_to change { user.user_project_member_roles.count }
+      end
+    end
   end
 end
