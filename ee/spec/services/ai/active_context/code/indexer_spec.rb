@@ -202,14 +202,6 @@ RSpec.describe Ai::ActiveContext::Code::Indexer, feature_category: :global_searc
 
               run
             end
-
-            context 'when active_context_code_indexer_check_force_push FF is disabled' do
-              before do
-                stub_feature_flags(active_context_code_indexer_check_force_push: false)
-              end
-
-              it_behaves_like 'normal indexing update'
-            end
           end
 
           before do
