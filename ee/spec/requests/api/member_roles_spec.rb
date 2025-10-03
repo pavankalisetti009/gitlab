@@ -224,7 +224,7 @@ RSpec.describe API::MemberRoles, :api, feature_category: :system_access do
     it_behaves_like "it is available only on self-managed"
     it_behaves_like 'authorizing granular token permissions', :read_member_role do
       let(:user) { admin }
-      let(:boundary_object) { :instance }
+      let(:boundary_object) { nil }
       let(:request) { get api("/member_roles", personal_access_token: pat) }
     end
   end
@@ -302,7 +302,7 @@ RSpec.describe API::MemberRoles, :api, feature_category: :system_access do
     it_behaves_like "it is available only on self-managed"
     it_behaves_like 'authorizing granular token permissions', :create_member_role do
       let(:user) { admin }
-      let(:boundary_object) { :instance }
+      let(:boundary_object) { nil }
       let(:request) { post api("/member_roles", personal_access_token: pat), params: params }
     end
   end
@@ -343,7 +343,7 @@ RSpec.describe API::MemberRoles, :api, feature_category: :system_access do
     it_behaves_like "it is available only on self-managed"
     it_behaves_like 'authorizing granular token permissions', :delete_member_role do
       let(:user) { admin }
-      let(:boundary_object) { :instance }
+      let(:boundary_object) { nil }
       let(:request) { delete api("/member_roles/#{member_role_id}", personal_access_token: pat) }
     end
   end
