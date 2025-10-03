@@ -57,46 +57,11 @@ RSpec.describe 'groups/billings/index', :with_trial_types, :saas, :aggregate_fai
       end
     end
 
-    shared_examples 'without ultimate trial cta alert' do
-      it 'does not render the component' do
-        render
-
-        expect(rendered).not_to have_link('Start a free Ultimate trial')
-      end
-    end
-
     context 'with free plan' do
       it 'renders the billing page' do
         render
 
-        expect(rendered).not_to have_selector('#js-billing-plans')
-        expect(rendered).to have_text('is currently using the')
-        expect(rendered).to have_text('Not the group')
-        expect(rendered).to have_link('Switch to a different group', href: dashboard_groups_path)
-
-        page = rendered_html
-
-        # free
-        scoped_node = page.find("[data-testid='plan-card-free']")
-
-        expect(scoped_node).to have_content('Your current plan')
-        expect(scoped_node).to have_content('Free')
-        expect(scoped_node).to have_content('Use GitLab for personal projects')
-
-        # premium
-        scoped_node = page.find("[data-testid='plan-card-premium']")
-
-        expect(scoped_node).to have_content('Recommended')
-        expect(scoped_node).to have_content('Premium')
-        expect(scoped_node).to have_content('For scaling organizations and multi-team usage')
-        expect(scoped_node).to have_link('Upgrade to Premium')
-
-        # ultimate
-        scoped_node = page.find("[data-testid='plan-card-ultimate']")
-
-        expect(scoped_node).to have_content('Ultimate')
-        expect(scoped_node).to have_content('For enterprises looking to deliver software faster')
-        expect(scoped_node).to have_link('Upgrade to Ultimate')
+        expect(rendered).to have_selector('#js-free-trial-plan-billing')
       end
 
       it 'renders the trusted by section with company logos' do
@@ -128,50 +93,7 @@ RSpec.describe 'groups/billings/index', :with_trial_types, :saas, :aggregate_fai
         render
 
         expect(rendered).to have_tracking(action: 'render')
-        expect(rendered).to have_tracking(action: 'click_button', label: 'view_all_groups')
       end
-
-      it_behaves_like 'with duo enterprise trial alert'
-      it_behaves_like 'without ultimate trial cta alert'
-
-      context 'with an expired trial' do
-        let_it_be(:group) do
-          create(:group_with_plan,
-            plan: :free_plan,
-            trial: true,
-            trial_starts_on: 1.month.ago,
-            trial_ends_on: Date.yesterday)
-        end
-
-        it_behaves_like 'without ultimate trial cta alert'
-        it_behaves_like 'with duo enterprise trial alert'
-      end
-    end
-
-    context 'with an active trial' do
-      let_it_be(:group) do
-        create(:group_with_plan,
-          plan: :ultimate_trial_plan,
-          trial: true,
-          trial_starts_on: 1.month.ago,
-          trial_ends_on: 10.days.from_now)
-      end
-
-      it 'renders the trusted by section' do
-        render
-
-        expect(rendered).to have_text('Trusted by')
-        expect(rendered).to have_css('img[alt="T-Mobile"]')
-        expect(rendered).to have_css('img[alt="Goldman Sachs"]')
-        expect(rendered).to have_css('img[alt="Airbus"]')
-        expect(rendered).to have_css('img[alt="Lockheed Martin"]')
-        expect(rendered).to have_css('img[alt="Carfax"]')
-        expect(rendered).to have_css('img[alt="NVIDIA"]')
-        expect(rendered).to have_css('img[alt="UBS"]')
-      end
-
-      it_behaves_like 'without ultimate trial cta alert'
-      it_behaves_like 'without duo enterprise trial alert'
     end
 
     context 'with a paid plan' do

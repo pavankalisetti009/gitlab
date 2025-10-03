@@ -376,13 +376,12 @@ RSpec.describe 'Billing plan pages', :with_trial_types, :feature, :saas, :js, :w
         end
 
         it 'displays the billing plans table' do
-          expect(page).to have_selector("[data-testid='billing-plans']")
+          expect(page).to have_selector("[data-testid='seats-in-use']", text: '1')
+          expect(page).to have_link('Manage seats')
+          expect(page).to have_content('For individuals working on personal projects')
+          expect(page).to have_content('For scaling organizations seeking enhanced productivity')
+          expect(page).to have_content('Start free with advanced enterprise security and compliance')
         end
-
-        it_behaves_like 'non-upgradable plan'
-        it_behaves_like 'used seats rendering for non paid subscriptions'
-        it_behaves_like 'plan with subscription table'
-        it_behaves_like 'subscription table with management buttons'
       end
 
       context 'with auditor user' do

@@ -49,6 +49,30 @@ module BillingPlansHelper
     end
   end
 
+  def free_trial_plan_billing_attributes(namespace, plans_data)
+    premium = plans_data.find { |plan| plan.code == ::Plan::PREMIUM }
+    ultimate = plans_data.find { |plan| plan.code == ::Plan::ULTIMATE }
+
+    total_seats =
+      if ::Namespaces::FreeUserCap::Enforcement.new(namespace).enforce_cap?
+        ::Namespaces::FreeUserCap.dashboard_limit
+      else
+        namespace.gitlab_subscription&.seats
+      end
+
+    {
+      seatsInUse: namespace.gitlab_subscription&.seats_in_use,
+      totalSeats: total_seats,
+      trialActive: namespace.trial_active?,
+      trialExpired: namespace.trial_expired?,
+      trialEndsOn: namespace.trial_ends_on&.strftime('%B %-d, %Y'),
+      manageSeatsPath: group_usage_quotas_path(namespace, anchor: 'seats-quota-tab'),
+      startTrialPath: new_trial_path(namespace_id: namespace.id),
+      upgradeToPremiumUrl: plan_purchase_url(namespace, premium),
+      upgradeToUltimateUrl: plan_purchase_url(namespace, ultimate)
+    }
+  end
+
   def user_billing_data_attributes(plans_data)
     return { groups: [] } if plans_data.blank?
 

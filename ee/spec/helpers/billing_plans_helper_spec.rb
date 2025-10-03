@@ -4,6 +4,7 @@ require 'spec_helper'
 
 RSpec.describe BillingPlansHelper, :saas, feature_category: :subscription_management do
   include Devise::Test::ControllerHelpers
+  include FreeUserCapHelpers
 
   describe '#subscription_plan_data_attributes' do
     let(:group) { build(:group) }
@@ -164,6 +165,66 @@ RSpec.describe BillingPlansHelper, :saas, feature_category: :subscription_manage
 
       context 'when no last_seat_refresh_at is available' do
         it { is_expected.to be_nil }
+      end
+    end
+  end
+
+  describe '#free_trial_plan_billing_attributes' do
+    let_it_be(:plans_data) do
+      [Hashie::Mash.new(id: 1, code: ::Plan::PREMIUM),
+        Hashie::Mash.new(id: 2, code: ::Plan::ULTIMATE)]
+    end
+
+    let(:gitlab_subscription) { build(:gitlab_subscription) }
+    let(:namespace) { build(:group, id: 1, gitlab_subscription: gitlab_subscription) }
+
+    it 'returns billing attributes' do
+      expect(helper.free_trial_plan_billing_attributes(namespace, plans_data)).to eql({
+        manageSeatsPath: group_usage_quotas_path(namespace, anchor: 'seats-quota-tab'),
+        seatsInUse: gitlab_subscription.seats_in_use,
+        startTrialPath: new_trial_path(namespace_id: namespace.id),
+        totalSeats: gitlab_subscription.seats,
+        trialActive: false,
+        trialEndsOn: nil,
+        trialExpired: false,
+        upgradeToPremiumUrl: plan_purchase_url(namespace, plans_data[0]),
+        upgradeToUltimateUrl: plan_purchase_url(namespace, plans_data[1])
+      })
+    end
+
+    context 'when enforce_cap' do
+      let(:namespace) { build(:group, :private) }
+
+      before do
+        enforce_free_user_caps
+      end
+
+      it 'returns dashboard limit as total seats' do
+        expect(helper.free_trial_plan_billing_attributes(namespace, plans_data))
+          .to include(totalSeats: ::Namespaces::FreeUserCap.dashboard_limit)
+      end
+    end
+
+    context 'when trial is active' do
+      let(:gitlab_subscription) { build(:gitlab_subscription, :active_trial) }
+
+      it 'returns active trial' do
+        expect(helper.free_trial_plan_billing_attributes(namespace, plans_data)).to include(
+          trialActive: true,
+          trialEndsOn: gitlab_subscription.trial_ends_on.strftime('%B %-d, %Y'),
+          trialExpired: false
+        )
+      end
+    end
+
+    context 'when trial is expired' do
+      let(:gitlab_subscription) { build(:gitlab_subscription, :expired_trial) }
+
+      it 'returns expired trial' do
+        expect(helper.free_trial_plan_billing_attributes(namespace, plans_data)).to include(
+          trialActive: false,
+          trialExpired: true
+        )
       end
     end
   end
