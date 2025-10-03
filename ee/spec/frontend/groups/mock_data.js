@@ -140,3 +140,15 @@ export const mockRawChildren = [
     ],
   },
 ];
+
+export const mockBillingPageAttributes = {
+  seatsInUse: 1,
+  trialActive: false,
+  trialExpired: false,
+  manageSeatsPath: '__manage_seats_path__',
+  startTrialPath: '__start_trial_path__',
+  upgradeToPremiumUrl: '__upgrade_to_premium_url__',
+  upgradeToUltimateUrl: '__upgrade_to_ultimate_url__',
+  totalSeats: 5,
+  trialEndsOn: null,
+};

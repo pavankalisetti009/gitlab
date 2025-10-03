@@ -229,6 +229,25 @@ RSpec.describe Sbom::Occurrence, type: :model, feature_category: :dependency_man
     end
   end
 
+  describe '.order_by_component_name_collated' do
+    let_it_be(:occurrence_1) { create(:sbom_occurrence, component_name: 'component_1') }
+    let_it_be(:occurrence_2) { create(:sbom_occurrence, component_name: 'component_2') }
+
+    subject { described_class.order_by_component_name_collated(verse) }
+
+    where(:verse) { %i[asc desc] }
+
+    with_them do
+      it { is_expected.to be_sorted(:component_name, verse) }
+    end
+
+    describe 'default' do
+      subject { described_class.order_by_component_name_collated }
+
+      it { is_expected.to be_sorted(:component_name, :asc) }
+    end
+  end
+
   describe '.order_by_package_name' do
     let_it_be(:occurrence_nuget_a) { create(:sbom_occurrence, component_name: 'component-a', packager_name: 'nuget') }
     let_it_be(:occurrence_nuget_b) { create(:sbom_occurrence, component_name: 'component-b', packager_name: 'nuget') }
@@ -345,6 +364,10 @@ RSpec.describe Sbom::Occurrence, type: :model, feature_category: :dependency_man
 
     it 'returns records filtered by component name' do
       expect(described_class.filter_by_component_names([occurrence_1.name])).to eq([occurrence_1])
+    end
+
+    it 'returns records filtered by component name when using collation' do
+      expect(described_class.by_component_name_collated([occurrence_1.name])).to eq([occurrence_1])
     end
   end
 
@@ -520,6 +543,43 @@ RSpec.describe Sbom::Occurrence, type: :model, feature_category: :dependency_man
       result = described_class.for_namespace_and_descendants(group)
       expect(result).to match_array([occurrence_npm1, occurrence_npm2])
     end
+  end
+
+  describe '.by_component_name_prefix' do
+    let_it_be(:matches) do
+      [
+        create(:sbom_occurrence, component_name: 'activesupport'),
+        create(:sbom_occurrence, component_name: 'activerecord')
+      ]
+    end
+
+    before_all do
+      create(:sbom_occurrence, component_name: 'somethingactive')
+      create(:sbom_occurrence, component_name: 'ActiveSupport')
+    end
+
+    subject { described_class.by_component_name_prefix('active') }
+
+    it { is_expected.to match_array(matches) }
+  end
+
+  describe '.by_component_name_substring' do
+    let_it_be(:matches) do
+      [
+        create(:sbom_occurrence, component_name: 'activesupport'),
+        create(:sbom_occurrence, component_name: 'activerecord'),
+        create(:sbom_occurrence, component_name: 'somethingactive'),
+        create(:sbom_occurrence, component_name: 'ActiveSupport')
+      ]
+    end
+
+    before_all do
+      create(:sbom_occurrence, component_name: 'a')
+    end
+
+    subject { described_class.by_component_name_substring('active') }
+
+    it { is_expected.to match_array(matches) }
   end
 
   describe '.filter_by_search_with_component_and_group' do

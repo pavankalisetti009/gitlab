@@ -17,8 +17,9 @@ module Sbom
     end
 
     scope :by_project, ->(project) { joins(:occurrences).merge(Occurrence.for_project(project)) }
+    scope :by_component_id, ->(component_id) { where(component_id: component_id) }
     scope :by_component_name, ->(component_name) {
-      joins(:occurrences).merge(Occurrence.filter_by_component_names(component_name))
+      joins(:occurrences).merge(Occurrence.by_component_name_collated(component_name))
     }
 
     scope :order_by_version, ->(verse = :asc) { order(version: verse) }

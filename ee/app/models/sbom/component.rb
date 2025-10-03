@@ -31,16 +31,5 @@ module Sbom
     scope :by_name, ->(name) do
       where('name ILIKE ?', "%#{sanitize_sql_like(name)}%") # rubocop:disable GitlabSecurity/SqlInjection -- using sanitize_sql_like here
     end
-
-    scope :select_distinct, ->(on:) do
-      select_values = column_names.map do |column|
-        connection.quote_table_name("#{table_name}.#{column}")
-      end
-
-      distinct_values = Array(on).map { |column| arel_table[column] }
-      distinct_sql = Arel::Nodes::DistinctOn.new(distinct_values).to_sql
-
-      select("#{distinct_sql} #{select_values.join(', ')}")
-    end
   end
 end
