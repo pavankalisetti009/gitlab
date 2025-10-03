@@ -9,7 +9,10 @@ FactoryBot.define do
       if evaluator.secrets
         # TODO: Remove this when FF `stop_writing_builds_metadata` is removed.
         # https://gitlab.com/gitlab-org/gitlab/-/issues/552065
-        build.metadata.write_attribute(:secrets, evaluator.secrets)
+        if Feature.disabled?(:stop_writing_builds_metadata, build.project)
+          build.metadata.write_attribute(:secrets, evaluator.secrets)
+        end
+
         next unless build.job_definition
 
         updated_config = build.job_definition.config.merge(secrets: evaluator.secrets)
@@ -282,7 +285,10 @@ FactoryBot.define do
 
         # TODO: Remove this when FF `stop_writing_builds_metadata` is removed.
         # https://gitlab.com/gitlab-org/gitlab/-/issues/552065
-        build.metadata.write_attribute(:config_options, updated_options)
+        if Feature.disabled?(:stop_writing_builds_metadata, build.project)
+          build.metadata.write_attribute(:config_options, updated_options)
+        end
+
         next unless build.job_definition
 
         updated_config = build.job_definition.config.merge(options: updated_options)

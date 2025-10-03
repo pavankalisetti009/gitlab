@@ -77,6 +77,8 @@ RSpec.describe EE::Ci::Metadatable, feature_category: :continuous_integration do
     subject(:set_secrets) { processable.secrets = secrets }
 
     it 'does not change metadata.secrets' do
+      processable.ensure_metadata
+
       expect { set_secrets }
         .to not_change { processable.metadata.secrets }
     end
