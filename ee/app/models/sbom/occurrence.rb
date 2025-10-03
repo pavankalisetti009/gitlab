@@ -2,6 +2,7 @@
 
 module Sbom
   class Occurrence < ::SecApplicationRecord
+    COMPONENT_NAME_WITH_C_COLLATION = 'sbom_occurrences.component_name COLLATE "C"'
     LICENSE_COLUMNS = [:spdx_identifier, :name, :url].freeze
     include EachBatch
     include ::Namespaces::Traversal::Traversable
@@ -107,6 +108,22 @@ module Sbom
     end
     scope :by_uuids, ->(uuids) { where(uuid: uuids) }
     scope :for_namespace_and_descendants, ->(namespace) { within(namespace.traversal_ids) }
+    scope :by_component_name_prefix, ->(query) do
+      sanitized_query = "#{sanitize_sql_like(query)}%"
+      where('sbom_occurrences.component_name LIKE ? COLLATE "C"', sanitized_query)
+    end
+    scope :by_component_name_substring, ->(query) do
+      sanitized_query = "%#{sanitize_sql_like(query)}%"
+      where('sbom_occurrences.component_name ILIKE ? COLLATE "C"', sanitized_query)
+    end
+    scope :by_component_name_collated, ->(component_name) do
+      where('sbom_occurrences.component_name = ? COLLATE "C"', component_name)
+    end
+    scope :order_by_component_name_collated, ->(verse = :asc) do
+      sql_verse = verse == :asc ? 'ASC' : 'DESC'
+      order_sql = "#{COMPONENT_NAME_WITH_C_COLLATION} #{sql_verse}"
+      order(order_sql)
+    end
 
     scope :filter_by_package_managers, ->(package_managers) do
       where(package_manager: package_managers)

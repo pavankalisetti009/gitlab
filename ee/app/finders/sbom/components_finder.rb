@@ -11,9 +11,9 @@ module Sbom
 
     def execute
       base_relation
-       .select_distinct(on: "name")
-       .order_by_name
-       .limit(COMPONENT_NAMES_LIMIT)
+        .select(distinct(on: Arel.sql(Sbom::Occurrence::COMPONENT_NAME_WITH_C_COLLATION)))
+        .merge(Sbom::Occurrence.order_by_component_name_collated)
+        .limit(COMPONENT_NAMES_LIMIT)
     end
 
     private
@@ -31,89 +31,27 @@ module Sbom
       end
     end
 
+    def distinct(on:)
+      select_values = Sbom::Component.column_names.map do |column|
+        Sbom::Component.connection.quote_table_name("#{Sbom::Component.table_name}.#{column}")
+      end
+
+      distinct_sql = Arel::Nodes::DistinctOn.new([on]).to_sql
+
+      "#{distinct_sql} #{select_values.join(', ')}"
+    end
+
     def project_relation
       Sbom::Component
         .for_project(namespace)
-        .by_name(query)
+        .merge(Sbom::Occurrence.by_component_name_substring(query))
     end
 
-    # In addition we need to perform a loose index scan with custom collation for performance reasons.
-    # Sorting can be unpredictable for words containing non-ASCII characters, but dependency names
-    # are usually ASCII
-    # See https://gitlab.com/gitlab-org/gitlab/-/issues/442407#note_2099802302 for performance
     def group_relation
-      # rubocop:disable CodeReuse/ActiveRecord -- context-specific
-      # rubocop:disable GitlabSecurity/SqlInjection -- Sanitized with sanitize_sql_array
-      Sbom::Component.where("id IN (#{group_query_sql})")
-      # rubocop:enable GitlabSecurity/SqlInjection
-      # rubocop:enable CodeReuse/ActiveRecord
-    end
-
-    def group_query_sql
-      Sbom::Component.sanitize_sql_array([group_query_template, group_query_params])
-    end
-
-    def group_query_template
-      <<~SQL
-        WITH RECURSIVE component_names AS (
-          SELECT
-            *
-          FROM (
-              SELECT
-                traversal_ids,
-                component_name,
-                component_id
-              FROM
-                sbom_occurrences
-              WHERE
-                traversal_ids >= '{:start_id}'
-                AND traversal_ids < '{:end_id}'
-                AND component_name LIKE :query COLLATE "C"
-              ORDER BY
-                sbom_occurrences.component_name COLLATE "C" ASC
-              LIMIT 1
-            ) sub_select
-          UNION ALL
-          SELECT
-            lateral_query.traversal_ids,
-            lateral_query.component_name,
-            lateral_query.component_id
-          FROM
-            component_names,
-            LATERAL (
-              SELECT
-                sbom_occurrences.traversal_ids,
-                sbom_occurrences.component_name,
-                sbom_occurrences.component_id
-              FROM
-                sbom_occurrences
-              WHERE
-                sbom_occurrences.traversal_ids >= '{:start_id}'
-                AND sbom_occurrences.traversal_ids < '{:end_id}'
-                AND component_name LIKE :query COLLATE "C"
-                AND sbom_occurrences.component_name > component_names.component_name
-              ORDER BY
-                sbom_occurrences.component_name COLLATE "C" ASC
-              LIMIT 1
-            ) lateral_query
-        )
-        SELECT
-          component_names.component_id AS id
-        FROM
-          component_names
-      SQL
-    end
-
-    def group_query_params
-      {
-        start_id: namespace.traversal_ids,
-        end_id: namespace.next_traversal_ids,
-        query: "#{sanitized_query}%"
-      }
-    end
-
-    def sanitized_query
-      Sbom::Component.sanitize_sql_like(query)
+      Sbom::Component
+        .joins(:occurrences) # rubocop:disable CodeReuse/ActiveRecord -- context-specific
+        .merge(Sbom::Occurrence.by_component_name_prefix(query))
+        .merge(Sbom::Occurrence.for_namespace_and_descendants(namespace))
     end
   end
 end
