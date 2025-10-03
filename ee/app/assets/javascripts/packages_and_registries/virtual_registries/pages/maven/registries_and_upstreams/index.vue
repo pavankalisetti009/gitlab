@@ -2,7 +2,6 @@
 import { GlTabs, GlTab, GlBadge } from '@gitlab/ui';
 import { n__, sprintf } from '~/locale';
 import RegistriesList from 'ee/packages_and_registries/virtual_registries/components/maven/registries_and_upstreams/registries_list.vue';
-import UpstreamsList from 'ee/packages_and_registries/virtual_registries/components/maven/registries_and_upstreams/upstreams_list.vue';
 
 export default {
   name: 'MavenVirtualRegistriesAndUpstreamsApp',
@@ -11,7 +10,10 @@ export default {
     GlTabs,
     GlTab,
     RegistriesList,
-    UpstreamsList,
+    UpstreamsList: () =>
+      import(
+        'ee/packages_and_registries/virtual_registries/components/maven/registries_and_upstreams/upstreams_list.vue'
+      ),
   },
   data() {
     return {
@@ -59,7 +61,7 @@ export default {
 </script>
 
 <template>
-  <gl-tabs sync-active-tab-with-query-params>
+  <gl-tabs content-class="gl-p-0" sync-active-tab-with-query-params>
     <gl-tab query-param-value="registries">
       <template #title>
         <span aria-hidden="true" data-testid="registries-tab-title">{{

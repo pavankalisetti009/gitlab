@@ -1,8 +1,9 @@
 import { GlTab } from '@gitlab/ui';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
+import { stubComponent } from 'helpers/stub_component';
 import MavenRegistriesAndUpstreamsApp from 'ee/packages_and_registries/virtual_registries/pages/maven/registries_and_upstreams/index.vue';
-import MavenRegistriesList from 'ee/packages_and_registries/virtual_registries/components/maven/registries_and_upstreams/registries_list.vue';
-import MavenUpstreamsList from 'ee/packages_and_registries/virtual_registries/components/maven/registries_and_upstreams/upstreams_list.vue';
+import RegistriesList from 'ee/packages_and_registries/virtual_registries/components/maven/registries_and_upstreams/registries_list.vue';
+import UpstreamsList from 'ee/packages_and_registries/virtual_registries/components/maven/registries_and_upstreams/upstreams_list.vue';
 
 describe('MavenRegistriesAndUpstreamsApp', () => {
   let wrapper;
@@ -12,16 +13,17 @@ describe('MavenRegistriesAndUpstreamsApp', () => {
       stubs: {
         GlTabs: true,
         GlTab,
+        UpstreamsList: stubComponent(UpstreamsList),
       },
     });
   };
 
   const findRegistriesTabTitle = () => wrapper.findByTestId('registries-tab-title');
   const findRegistriesCount = () => wrapper.findByTestId('registries-tab-counter-badge');
-  const findRegistriesList = () => wrapper.findComponent(MavenRegistriesList);
+  const findRegistriesList = () => wrapper.findComponent(RegistriesList);
   const findUpstreamsTabTitle = () => wrapper.findByTestId('upstreams-tab-title');
   const findUpstreamsCount = () => wrapper.findByTestId('upstreams-tab-counter-badge');
-  const findUpstreamsList = () => wrapper.findComponent(MavenUpstreamsList);
+  const findUpstreamsList = () => wrapper.findComponent(UpstreamsList);
 
   beforeEach(() => {
     createComponent();
@@ -37,6 +39,10 @@ describe('MavenRegistriesAndUpstreamsApp', () => {
 
   it('renders MavenRegistriesList component', () => {
     expect(findRegistriesList().exists()).toBe(true);
+  });
+
+  it('renders MavenUpstreamsList component', () => {
+    expect(findUpstreamsList().exists()).toBe(true);
   });
 
   it('initially does not render registries count', () => {

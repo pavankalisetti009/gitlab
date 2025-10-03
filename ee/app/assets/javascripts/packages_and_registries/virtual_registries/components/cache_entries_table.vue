@@ -69,18 +69,18 @@ export default {
     {
       key: 'relative_path',
       label: __('Artifact'),
-      thClass: 'gl-w-3/5 !gl-border-none',
+      thClass: 'gl-w-3/5',
     },
     {
       key: 'size',
       label: __('Size'),
-      thClass: ' !gl-border-none',
       tdClass: '!gl-align-middle',
     },
     {
       key: 'actions',
       label: __('Actions'),
-      thClass: 'hidden',
+      thAlignRight: true,
+      thClass: 'gl-w-26',
     },
   ],
   modal: {
@@ -145,7 +145,7 @@ export default {
             data-testid="delete-cache-entry-btn"
             @click="handleDelete(item)"
           />
-          <div class="gl-text-right gl-text-sm gl-text-subtle">
+          <div class="gl-text-sm gl-text-subtle">
             <gl-sprintf :message="s__('VirtualRegistry|last checked %{date}')">
               <template #date>
                 <time-ago-tooltip :time="item.upstream_checked_at" />
