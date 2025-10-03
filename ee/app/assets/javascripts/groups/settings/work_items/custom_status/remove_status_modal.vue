@@ -1,7 +1,7 @@
 <script>
 import { GlAlert, GlIcon, GlModal } from '@gitlab/ui';
 import { getAdaptiveStatusColor } from '~/lib/utils/color_utils';
-import { __, s__, sprintf } from '~/locale';
+import { __, s__, sprintf, n__ } from '~/locale';
 import * as Sentry from '~/sentry/sentry_browser_wrapper';
 import {
   DEFAULT_STATE_CLOSED,
@@ -76,10 +76,14 @@ export default {
       });
     },
     newStatusBodyText() {
+      const singular = `WorkItem|%{count} item currently uses the status '%{status}'. Select a new status for this item.`;
+      const plural = `WorkItem|%{count} items currently use the status '%{status}'. Select a new status for these items.`;
+      const countValue = parseInt(this.count, 10) || 0; // Handle invalid values
+      // eslint-disable-next-line @gitlab/require-valid-i18n-helpers
+      const message = n__(singular, plural, countValue);
+
       return sprintf(
-        s__(
-          `WorkItem|%{count} items currently use the status '%{status}'. Select a new status for these items.`,
-        ),
+        message,
         {
           count: this.count,
           status: this.statusToRemove.name,
@@ -243,12 +247,12 @@ export default {
     </gl-alert>
     <template v-if="hasCount && filteredStatuses.length">
       <p class="gl-mb-4">{{ newStatusBodyText }}</p>
-      <div class="gl-mb-6 gl-flex gl-gap-8">
+      <div class="gl-mb-6 gl-flex gl-flex-wrap gl-gap-8 gl-gap-y-4">
         <div>
           <div class="gl-mb-1 gl-font-bold gl-text-strong">
             {{ s__('WorkItem|Current status') }}
           </div>
-          <div data-testid="current-status-value">
+          <div data-testid="current-status-value" class="gl-mt-3">
             <gl-icon
               class="gl-mr-1"
               :name="statusToRemove.iconName"
@@ -258,12 +262,13 @@ export default {
             {{ statusToRemove.name }}
           </div>
         </div>
-        <div>
+        <div class="gl-w-full sm:!gl-w-auto">
           <label class="gl-mb-1 gl-block" for="new-status">
             {{ s__('WorkItem|New status') }}
           </label>
           <remove-status-modal-listbox
             v-model="selectedNewStatusId"
+            class="gl-w-full sm:!gl-w-30"
             :items="items"
             :selected="selectedNewStatus"
             toggle-id="new-status"
@@ -274,12 +279,13 @@ export default {
 
     <template v-if="isDefaultStatus && filteredStatuses.length">
       <p class="gl-mb-4">{{ newDefaultBodyText }}</p>
-      <div>
+      <div class="sm:gl-w-full">
         <label class="gl-mb-1 gl-block" for="new-default">
           {{ newDefaultLabel }}
         </label>
         <remove-status-modal-listbox
           v-model="selectedNewDefaultId"
+          class="gl-w-full sm:!gl-w-30"
           :items="items"
           :selected="selectedNewDefault"
           toggle-id="new-default"

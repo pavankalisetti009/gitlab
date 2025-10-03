@@ -232,7 +232,11 @@ export default {
       }
       this.removingStatusId = status.id;
       this.removingStatusName = status.name;
-      this.showRemoveConfirmation = true;
+      if (hasCount) {
+        this.showRemoveConfirmation = true;
+      } else {
+        this.confirmRemoveStatus();
+      }
     },
     async startDefaultingStatus(status, defaultState) {
       if (!status?.id || !defaultState) {
@@ -742,7 +746,7 @@ export default {
                     <gl-tooltip :target="`count-link-${status.id}`">
                       <div class="gl-font-bold">{{ s__('WorkItem|View items') }}</div>
                       <div>
-                        {{ s__('WorkItem|Items from archived projects will not be shown.') }}
+                        {{ s__('WorkItem|Items in archived projects are counted but not shown.') }}
                       </div>
                     </gl-tooltip>
                   </template>

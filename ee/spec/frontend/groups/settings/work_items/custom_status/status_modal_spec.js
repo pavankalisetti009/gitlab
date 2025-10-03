@@ -172,14 +172,17 @@ describe('StatusLifecycleModal', () => {
     }
   };
 
-  const findStatusAndDelete = async (status) => {
+  const findStatusAndDelete = async (status, workItemStatusMvc2Enabled) => {
     const findFirstStatus = wrapper.findByTestId(`remove-status-${status.id}`);
 
     findFirstStatus.vm.$emit('action', status);
     await nextTick();
 
-    expect(findConfirmationModal().exists()).toBe(true);
-    findConfirmationModal().vm.$emit('primary');
+    if (workItemStatusMvc2Enabled) {
+      expect(findConfirmationModal().exists()).toBe(true);
+      findConfirmationModal().vm.$emit('primary');
+    }
+
     await waitForPromises();
   };
 
@@ -853,13 +856,7 @@ describe('StatusLifecycleModal', () => {
             workItemStatusMvc2Enabled: false,
           });
           const status = mockLifecycle.statuses[0];
-          await findStatusAndDelete(status);
-        });
-
-        it('should show remove confirmation modal when `Remove status` is clicked', async () => {
-          expect(lifecycleUpdateHandler).toHaveBeenCalled();
-          await nextTick();
-          expect(findErrorMessage().exists()).toBe(true);
+          await findStatusAndDelete(status, false);
         });
 
         it('should have sticky class for error message', () => {
@@ -951,7 +948,9 @@ describe('StatusLifecycleModal', () => {
 
       it('renders tooltip', () => {
         expect(findGlTooltip().text()).toContain('View items');
-        expect(findGlTooltip().text()).toContain('Items from archived projects will not be shown.');
+        expect(findGlTooltip().text()).toContain(
+          'Items in archived projects are counted but not shown.',
+        );
       });
     });
 
