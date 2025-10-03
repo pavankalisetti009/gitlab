@@ -165,6 +165,7 @@ module Preloaders
 
     # Remove when use_user_group_member_roles feature flag is removed
     def track_diff(results)
+      return if use_user_group_member_roles?
       return unless ::Gitlab::Saas.feature_available?(:gitlab_com_subscriptions)
 
       group_ids = groups_with_traversal_ids.map(&:first)
