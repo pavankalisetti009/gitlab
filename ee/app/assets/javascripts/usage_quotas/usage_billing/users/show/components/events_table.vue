@@ -23,7 +23,7 @@ export default {
         { key: 'timestamp', label: s__('UsageBilling|Date and time') },
         { key: 'eventType', label: s__('UsageBilling|Action') },
         { key: 'location', label: s__('UsageBilling|Location') },
-        { key: 'unitsUsed', label: s__('UsageBilling|Credit amount') },
+        { key: 'creditsUsed', label: s__('UsageBilling|Credit amount') },
       ];
     },
   },

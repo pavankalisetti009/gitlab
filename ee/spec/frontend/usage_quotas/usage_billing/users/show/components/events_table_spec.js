@@ -15,7 +15,7 @@ describe('EventsTable', () => {
         name: 'gitlab-org/gitlab',
         web_url: 'https://gitlab.com/gitlab-org/gitlab',
       },
-      unitsUsed: 150,
+      creditsUsed: 150,
     },
     {
       timestamp: '2023-12-01T09:15:00Z',
@@ -24,13 +24,13 @@ describe('EventsTable', () => {
         name: 'gitlab-org/gitlabhq',
         web_url: 'https://gitlab.com/gitlab-org/gitlabhq',
       },
-      unitsUsed: 75,
+      creditsUsed: 75,
     },
     {
       timestamp: '2023-12-01T08:45:00Z',
       eventType: 'Chat',
       location: null,
-      unitsUsed: 25,
+      creditsUsed: 25,
     },
   ];
 
@@ -63,7 +63,7 @@ describe('EventsTable', () => {
         { key: 'timestamp', label: 'Date and time' },
         { key: 'eventType', label: 'Action' },
         { key: 'location', label: 'Location' },
-        { key: 'unitsUsed', label: 'Credit amount' },
+        { key: 'creditsUsed', label: 'Credit amount' },
       ]);
     });
 
@@ -104,7 +104,7 @@ describe('EventsTable', () => {
       });
 
       it('renders GU amount', () => {
-        expect(firstRowCells.at(3).text()).toBe(mockEvents[0].unitsUsed.toString());
+        expect(firstRowCells.at(3).text()).toBe(mockEvents[0].creditsUsed.toString());
       });
     });
   });

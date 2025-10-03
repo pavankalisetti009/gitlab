@@ -20,12 +20,12 @@ export default {
       required: false,
       default: 0,
     },
-    totalUnitsUsed: {
+    totalCreditsUsed: {
       type: Number,
       required: false,
       default: 0,
     },
-    totalUnits: {
+    totalCredits: {
       type: Number,
       required: false,
       default: 0,
@@ -41,11 +41,11 @@ export default {
   },
   computed: {
     usagePercentage() {
-      if (this.totalUnits === 0) return 0;
-      return ((this.totalUnitsUsed / this.totalUnits) * 100).toFixed(1);
+      if (this.totalCredits === 0) return 0;
+      return ((this.totalCreditsUsed / this.totalCredits) * 100).toFixed(1);
     },
     usageRemaining() {
-      return Math.max(0, this.totalUnits - this.totalUnitsUsed);
+      return Math.max(0, this.totalCredits - this.totalCreditsUsed);
     },
     progressBarVariant() {
       if (this.usagePercentage >= USAGE_DANGER_THRESHOLD) {
@@ -69,7 +69,7 @@ export default {
   methods: {
     numberToMetricPrefix,
   },
-  totalUnitsSeparator: '/ ',
+  totalCreditsSeparator: '/ ',
   daysRemainingSeparator: ' - ',
 };
 </script>
@@ -90,12 +90,12 @@ export default {
       </span>
     </p>
     <div class="gl-flex gl-flex-row gl-justify-between">
-      <span class="gl-text-size-h2 gl-font-bold" data-testid="total-units-used">
-        {{ numberToMetricPrefix(totalUnitsUsed) }}
+      <span class="gl-text-size-h2 gl-font-bold" data-testid="total-credits-used">
+        {{ numberToMetricPrefix(totalCreditsUsed) }}
       </span>
-      <span class="gl-text-size-h2 gl-font-bold gl-text-gray-500" data-testid="total-units">
-        {{ $options.totalUnitsSeparator }}
-        {{ numberToMetricPrefix(totalUnits) }}
+      <span class="gl-text-size-h2 gl-font-bold gl-text-gray-500" data-testid="total-credits">
+        {{ $options.totalCreditsSeparator }}
+        {{ numberToMetricPrefix(totalCredits) }}
       </span>
     </div>
     <gl-progress-bar
@@ -112,7 +112,7 @@ export default {
           </gl-sprintf>
         </span>
 
-        <span data-testid="pool-units-remaining">
+        <span data-testid="pool-credits-remaining">
           <gl-sprintf
             :message="
               n__(

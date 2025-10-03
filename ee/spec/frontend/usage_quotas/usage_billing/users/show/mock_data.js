@@ -1,12 +1,12 @@
 export const mockDataWithPool = {
   subscription: {
-    gitlabUnitsUsage: {
+    gitlabCreditsUsage: {
       lastUpdated: '2025-02-02T18:45:32Z',
 
       startDate: '2025-08-01',
       endDate: '2025-08-31',
 
-      totalUnits: 1000,
+      totalCredits: 1000,
 
       userUsage: {
         user: {
@@ -16,7 +16,7 @@ export const mockDataWithPool = {
           avatar_url: 'https://www.gravatar.com/avatar/1?s=80&d=identicon',
         },
 
-        totalUnitsUsed: 1500,
+        totalCreditsUsed: 1500,
         firstConsumptionDate: '2025-01-01',
         allocationUsed: 1000,
         allocationTotal: 1000,
@@ -30,7 +30,7 @@ export const mockDataWithPool = {
               name: 'frontend-app',
               web_url: 'http://localhost:3000/frontend-app',
             },
-            unitsUsed: 44,
+            creditsUsed: 44,
           },
           {
             timestamp: '2025-01-21T16:41:15Z',
@@ -39,7 +39,7 @@ export const mockDataWithPool = {
               name: 'group-app',
               web_url: 'http://localhost:3000/group-app',
             },
-            unitsUsed: 62,
+            creditsUsed: 62,
           },
           {
             timestamp: '2025-01-21T16:40:22Z',
@@ -48,7 +48,7 @@ export const mockDataWithPool = {
               name: 'frontend-app',
               web_url: 'http://localhost:3000/frontend-app',
             },
-            unitsUsed: 30,
+            creditsUsed: 30,
           },
           {
             timestamp: '2025-01-21T16:39:45Z',
@@ -57,7 +57,7 @@ export const mockDataWithPool = {
               name: 'group-app',
               web_url: 'http://localhost:3000/group-app',
             },
-            unitsUsed: 45,
+            creditsUsed: 45,
           },
           {
             timestamp: '2025-01-21T16:38:12Z',
@@ -66,13 +66,13 @@ export const mockDataWithPool = {
               name: 'frontend-app',
               web_url: 'http://localhost:3000/frontend-app',
             },
-            unitsUsed: 82,
+            creditsUsed: 82,
           },
           {
             timestamp: '2025-01-21T16:37:33Z',
             eventType: 'Duo Chat',
             location: null,
-            unitsUsed: 55,
+            creditsUsed: 55,
           },
           {
             timestamp: '2025-01-21T16:36:58Z',
@@ -81,7 +81,7 @@ export const mockDataWithPool = {
               name: 'frontend-app',
               web_url: 'http://localhost:3000/frontend-app',
             },
-            unitsUsed: 26,
+            creditsUsed: 26,
           },
           {
             timestamp: '2025-01-21T16:35:41Z',
@@ -90,7 +90,7 @@ export const mockDataWithPool = {
               name: 'group-app',
               web_url: 'http://localhost:3000/group-app',
             },
-            unitsUsed: 74,
+            creditsUsed: 74,
           },
           {
             timestamp: '2025-01-21T16:34:27Z',
@@ -99,7 +99,7 @@ export const mockDataWithPool = {
               name: 'frontend-app',
               web_url: 'http://localhost:3000/frontend-app',
             },
-            unitsUsed: 51,
+            creditsUsed: 51,
           },
           {
             timestamp: '2025-01-21T16:33:05Z',
@@ -108,7 +108,7 @@ export const mockDataWithPool = {
               name: 'frontend-app',
               web_url: 'http://localhost:3000/frontend-app',
             },
-            unitsUsed: 70,
+            creditsUsed: 70,
           },
           {
             timestamp: '2025-01-21T16:31:52Z',
@@ -117,7 +117,7 @@ export const mockDataWithPool = {
               name: 'frontend-app',
               web_url: 'http://localhost:3000/frontend-app',
             },
-            unitsUsed: 15,
+            creditsUsed: 15,
           },
         ],
       },
@@ -127,13 +127,13 @@ export const mockDataWithPool = {
 
 export const mockDataWithoutPool = {
   subscription: {
-    gitlabUnitsUsage: {
-      ...mockDataWithPool.subscription.gitlabUnitsUsage,
+    gitlabCreditsUsage: {
+      ...mockDataWithPool.subscription.gitlabCreditsUsage,
 
-      totalUnits: 0,
+      totalCredits: 0,
 
       userUsage: {
-        ...mockDataWithPool.subscription.gitlabUnitsUsage.userUsage,
+        ...mockDataWithPool.subscription.gitlabCreditsUsage.userUsage,
         poolUsed: 0,
       },
     },
@@ -142,7 +142,7 @@ export const mockDataWithoutPool = {
 
 export const mockEmptyData = {
   subscription: {
-    gitlabUnitsUsage: {
+    gitlabCreditsUsage: {
       lastUpdated: '2025-02-02T18:45:32Z',
 
       startDate: '2025-08-01',
@@ -156,7 +156,7 @@ export const mockEmptyData = {
           avatar_url: 'https://www.gravatar.com/avatar/1?s=80&d=identicon',
         },
 
-        totalUnitsUsed: 0,
+        totalCreditsUsed: 0,
         firstConsumptionDate: '2025-01-01',
         allocationUsed: 0,
         allocationTotal: 10000,

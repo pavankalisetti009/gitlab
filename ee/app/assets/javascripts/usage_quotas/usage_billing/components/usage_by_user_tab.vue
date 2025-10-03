@@ -39,7 +39,7 @@ export default {
           label: s__('UsageBilling|Pool used'),
         },
         {
-          key: 'totalUnitsUsed',
+          key: 'totalCreditsUsed',
           label: s__('UsageBilling|Total credits used'),
         },
         {
@@ -147,9 +147,9 @@ export default {
         </span>
       </template>
 
-      <template #cell(totalUnitsUsed)="{ item }">
+      <template #cell(totalCreditsUsed)="{ item }">
         <span class="gl-font-weight-semibold gl-text-gray-900">
-          {{ item.totalUnitsUsed }}
+          {{ item.totalCreditsUsed }}
         </span>
       </template>
 
