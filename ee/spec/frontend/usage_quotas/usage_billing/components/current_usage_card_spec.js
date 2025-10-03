@@ -12,8 +12,8 @@ describe('CurrentUsageCard', () => {
   useFakeDate(2025, 8, 7);
   const defaultProps = {
     currentOverage: 1,
-    totalUnitsUsed: 7800,
-    totalUnits: 10000,
+    totalCreditsUsed: 7800,
+    totalCredits: 10000,
     monthStartDate: '2025-09-01',
     monthEndDate: '2025-09-30',
   };
@@ -40,12 +40,12 @@ describe('CurrentUsageCard', () => {
       expect(wrapper.find('h2').text()).toBe('Current month usage');
     });
 
-    it('renders formatted total units used', () => {
-      expect(wrapper.findByTestId('total-units-used').text()).toBe('7.8k');
+    it('renders formatted total credits used', () => {
+      expect(wrapper.findByTestId('total-credits-used').text()).toBe('7.8k');
     });
 
-    it('renders formatted total units', () => {
-      expect(wrapper.findByTestId('total-units').text()).toMatchInterpolatedText('/ 10k');
+    it('renders formatted total credits', () => {
+      expect(wrapper.findByTestId('total-credits').text()).toMatchInterpolatedText('/ 10k');
     });
 
     it('renders the formatted date range', () => {
@@ -60,7 +60,7 @@ describe('CurrentUsageCard', () => {
       createComponent();
     });
 
-    it('renders gl-progress-bar with correct units', () => {
+    it('renders gl-progress-bar with correct credits', () => {
       const progressBar = wrapper.findComponent(GlProgressBar);
 
       expect(progressBar.props()).toMatchObject({ max: 100, value: '78.0' });
@@ -73,8 +73,8 @@ describe('CurrentUsageCard', () => {
         ['danger', 120, 100],
       ])(
         'renders progress bar with "%s" variant when usagePercentage is %d',
-        (variant, totalUnitsUsed, totalUnits) => {
-          createComponent({ totalUnitsUsed, totalUnits });
+        (variant, totalCreditsUsed, totalCredits) => {
+          createComponent({ totalCreditsUsed, totalCredits });
 
           const progressBar = wrapper.findComponent(GlProgressBar);
 
@@ -84,17 +84,17 @@ describe('CurrentUsageCard', () => {
     });
   });
 
-  describe('rendering units percentages', () => {
+  describe('rendering credits percentages', () => {
     beforeEach(() => {
       createComponent();
     });
 
-    it('renders correct utilized units percentage', () => {
+    it('renders correct utilized credits percentage', () => {
       expect(wrapper.findByTestId('percentage-utilized').text()).toBe('78.0% utilized');
     });
 
-    it('renders correct pool units remaining', () => {
-      expect(wrapper.findByTestId('pool-units-remaining').text()).toBe(
+    it('renders correct pool credits remaining', () => {
+      expect(wrapper.findByTestId('pool-credits-remaining').text()).toBe(
         '2.2k pool credits remaining',
       );
     });
@@ -104,12 +104,12 @@ describe('CurrentUsageCard', () => {
     });
   });
 
-  describe('when total units is 0', () => {
+  describe('when total credits is 0', () => {
     beforeEach(() => {
-      createComponent({ totalUnits: 0 });
+      createComponent({ totalCredits: 0 });
     });
 
-    it('renders correct utilized units percentage', () => {
+    it('renders correct utilized credits percentage', () => {
       expect(wrapper.findByTestId('percentage-utilized').text()).toBe('0% utilized');
     });
 

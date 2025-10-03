@@ -26,18 +26,18 @@ export default {
     return {
       isError: false,
       isLoading: true,
-      gitlabUnitsUsage: null,
+      gitlabCreditsUsage: null,
     };
   },
   computed: {
     userUsage() {
-      return this.gitlabUnitsUsage.userUsage;
+      return this.gitlabCreditsUsage.userUsage;
     },
     user() {
       return this.userUsage.user;
     },
     hasCommitment() {
-      return Boolean(this.gitlabUnitsUsage.totalUnits);
+      return Boolean(this.gitlabCreditsUsage?.totalCredits);
     },
   },
   async mounted() {
@@ -48,14 +48,14 @@ export default {
       try {
         this.isLoading = true;
         const response = await axios.get(this.fetchUserUsageDataApiUrl);
-        this.gitlabUnitsUsage = response?.data?.subscription?.gitlabUnitsUsage;
+        this.gitlabCreditsUsage = response?.data?.subscription?.gitlabCreditsUsage;
       } catch (error) {
         this.isError = true;
         logError(error);
         captureException(error);
 
         // TODO: this fallback will be removed once we integrate with actual BE
-        this.gitlabUnitsUsage = mockDataWithPool.subscription.gitlabUnitsUsage;
+        this.gitlabCreditsUsage = mockDataWithPool.subscription.gitlabCreditsUsage;
       } finally {
         this.isLoading = false;
       }
@@ -108,7 +108,7 @@ export default {
         <div class="gl-text-sm gl-text-subtle">
           {{ s__('UsageBilling|Last updated:') }}
           <user-date
-            :date="gitlabUnitsUsage.lastUpdated"
+            :date="gitlabCreditsUsage.lastUpdated"
             :date-format="$options.SHORT_DATE_FORMAT_WITH_TIME"
           />
         </div>
@@ -125,8 +125,8 @@ export default {
             </p>
             <p class="gl-my-0 gl-text-sm gl-text-subtle">
               (<human-timeframe
-                :from="gitlabUnitsUsage.startDate"
-                :till="gitlabUnitsUsage.endDate"
+                :from="gitlabCreditsUsage.startDate"
+                :till="gitlabCreditsUsage.endDate"
               />)
             </p>
           </dt>
@@ -142,8 +142,8 @@ export default {
             <p class="gl-my-0">{{ s__('UsageBilling|Credits used from pool this month') }}</p>
             <p class="gl-my-0 gl-text-sm gl-text-subtle">
               (<human-timeframe
-                :from="gitlabUnitsUsage.startDate"
-                :till="gitlabUnitsUsage.endDate"
+                :from="gitlabCreditsUsage.startDate"
+                :till="gitlabCreditsUsage.endDate"
               />)
             </p>
           </dt>
@@ -151,14 +151,14 @@ export default {
 
         <gl-card data-testid="total-usage-card" class="gl-flex-1 gl-bg-transparent">
           <dd class="gl-font-heading gl-heading-scale-400 gl-mb-3">
-            {{ userUsage.totalUnitsUsed }}
+            {{ userUsage.totalCreditsUsed }}
           </dd>
           <dt>
             <p class="gl-my-0">{{ s__('UsageBilling|Total credits used') }}</p>
             <p class="gl-my-0 gl-text-sm gl-text-subtle">
               (<human-timeframe
-                :from="gitlabUnitsUsage.startDate"
-                :till="gitlabUnitsUsage.endDate"
+                :from="gitlabCreditsUsage.startDate"
+                :till="gitlabCreditsUsage.endDate"
               />)
             </p>
           </dt>

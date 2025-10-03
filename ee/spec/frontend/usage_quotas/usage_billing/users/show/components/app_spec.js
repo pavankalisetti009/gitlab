@@ -17,7 +17,7 @@ describe('UsageBillingUserDashboardApp', () => {
   /** @type { MockAdapter } */
   let mockAxios;
 
-  const MOCK_USAGE = mockDataWithPool.subscription.gitlabUnitsUsage.userUsage;
+  const MOCK_USAGE = mockDataWithPool.subscription.gitlabCreditsUsage.userUsage;
   const MOCK_USER = MOCK_USAGE.user;
   const USER_ID = MOCK_USER.id;
   const API_ENDPOINT = `/admin/gitlab_duo/usage/users/${USER_ID}/data`;
@@ -98,7 +98,7 @@ describe('UsageBillingUserDashboardApp', () => {
       it('renders total usage card with correct values', () => {
         const card = findTotalUsageCard();
         expect(card.exists()).toBe(true);
-        expect(card.text()).toContain(`${MOCK_USAGE.totalUnitsUsed}`);
+        expect(card.text()).toContain(`${MOCK_USAGE.totalCreditsUsed}`);
       });
     });
   });
