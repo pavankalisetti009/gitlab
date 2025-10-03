@@ -3,6 +3,8 @@
 module Security
   module SecurityOrchestrationPolicies
     class ProtectedBranchesPushService < BaseProjectService
+      include Gitlab::Utils::StrongMemoize
+
       def execute
         PolicyBranchesService.new(project: project).scan_result_branches(rules)
       end
@@ -23,8 +25,18 @@ module Security
         project
           .all_security_orchestration_policy_configurations
           .flat_map(&:active_scan_result_policies)
+          .reject { |policy| policy_in_warn_mode?(policy) }
           .select { |policy| policy_scope_checker.policy_applicable?(policy) }
       end
+
+      def policy_in_warn_mode?(policy)
+        warn_mode_feature_enabled? && policy[:enforcement_type] == Security::Policy::ENFORCEMENT_TYPE_WARN
+      end
+
+      def warn_mode_feature_enabled?
+        Feature.enabled?(:security_policy_approval_warn_mode, project)
+      end
+      strong_memoize_attr :warn_mode_feature_enabled?
     end
   end
 end

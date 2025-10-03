@@ -652,6 +652,8 @@ RSpec.describe MergeRequests::RefreshService, feature_category: :code_review_wor
           end
 
           context 'when enforced by policy' do
+            let_it_be(:approval_policy_rule) { create(:approval_policy_rule) }
+
             let(:configuration) { create(:security_orchestration_policy_configuration) }
 
             let(:scan_result_policy_read) do
@@ -659,7 +661,8 @@ RSpec.describe MergeRequests::RefreshService, feature_category: :code_review_wor
                 :scan_result_policy_read,
                 :remove_approvals_with_new_commit,
                 security_orchestration_policy_configuration: configuration,
-                project: project)
+                project: project,
+                approval_policy_rule: approval_policy_rule)
             end
 
             let!(:violation) do

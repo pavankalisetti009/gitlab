@@ -1,17 +1,29 @@
 <script>
-import { GlButton } from '@gitlab/ui';
+import { s__, sprintf } from '~/locale';
 import { InternalEvents } from '~/tracking';
+import { helpPagePath } from '~/helpers/help_page_helper';
+import * as Sentry from '~/sentry/sentry_browser_wrapper';
 import PageHeading from '~/vue_shared/components/page_heading.vue';
 import { TRACK_EVENT_TYPE_AGENT, TRACK_EVENT_VIEW_AI_CATALOG_ITEM } from 'ee/ai/catalog/constants';
-import { AI_CATALOG_AGENTS_EDIT_ROUTE } from '../router/constants';
+import ErrorsAlert from '~/vue_shared/components/errors_alert.vue';
 import AiCatalogAgentDetails from '../components/ai_catalog_agent_details.vue';
+import AiCatalogItemActions from '../components/ai_catalog_item_actions.vue';
+import createAiCatalogItemConsumer from '../graphql/mutations/create_ai_catalog_item_consumer.mutation.graphql';
+import deleteAiCatalogAgentMutation from '../graphql/mutations/delete_ai_catalog_agent.mutation.graphql';
+import {
+  AI_CATALOG_AGENTS_ROUTE,
+  AI_CATALOG_AGENTS_DUPLICATE_ROUTE,
+  AI_CATALOG_AGENTS_EDIT_ROUTE,
+  AI_CATALOG_AGENTS_RUN_ROUTE,
+} from '../router/constants';
 
 export default {
   name: 'AiCatalogAgentsShow',
   components: {
-    GlButton,
+    ErrorsAlert,
     PageHeading,
     AiCatalogAgentDetails,
+    AiCatalogItemActions,
   },
   mixins: [InternalEvents.mixin()],
   props: {
@@ -19,6 +31,12 @@ export default {
       type: Object,
       required: true,
     },
+  },
+  data() {
+    return {
+      errors: [],
+      errorTitle: null,
+    };
   },
   computed: {
     agentName() {
@@ -30,24 +48,112 @@ export default {
       label: TRACK_EVENT_TYPE_AGENT,
     });
   },
-  editRoute: AI_CATALOG_AGENTS_EDIT_ROUTE,
+  methods: {
+    async addToProject(target) {
+      const input = {
+        itemId: this.aiCatalogAgent.id,
+        target,
+      };
+
+      try {
+        const { data } = await this.$apollo.mutate({
+          mutation: createAiCatalogItemConsumer,
+          variables: {
+            input,
+          },
+        });
+
+        if (data) {
+          const { errors } = data.aiCatalogItemConsumerCreate;
+          if (errors.length > 0) {
+            this.errorTitle = sprintf(s__('AICatalog|Agent could not be added: %{agentName}'), {
+              agentName: this.aiCatalogAgent.name,
+            });
+            this.errors = errors;
+            return;
+          }
+
+          const name = data.aiCatalogItemConsumerCreate.itemConsumer.project?.name || '';
+
+          this.$toast.show(
+            sprintf(s__('AICatalog|Agent added successfully to %{name}.'), { name }),
+          );
+        }
+      } catch (error) {
+        this.errors = [
+          sprintf(
+            s__(
+              'AICatalog|The agent could not be added to the project. Check that the project meets the %{link_start}prerequisites%{link_end} and try again.',
+            ),
+            {
+              link_start: `<a href="${helpPagePath('user/duo_agent_platform/ai_catalog', {
+                anchor: 'view-the-ai-catalog',
+              })}" target="_blank">`,
+              link_end: '</a>',
+            },
+            false,
+          ),
+        ];
+        Sentry.captureException(error);
+      }
+    },
+    async deleteAgent() {
+      const { id } = this.aiCatalogAgent;
+      try {
+        const { data } = await this.$apollo.mutate({
+          mutation: deleteAiCatalogAgentMutation,
+          variables: {
+            id,
+          },
+        });
+
+        if (!data.aiCatalogAgentDelete.success) {
+          this.errors = [
+            sprintf(s__('AICatalog|Failed to delete agent. %{error}'), {
+              error: data.aiCatalogAgentDelete.errors?.[0],
+            }),
+          ];
+          return;
+        }
+
+        this.$toast.show(s__('AICatalog|Agent deleted successfully.'));
+        this.$router.push({
+          name: AI_CATALOG_AGENTS_ROUTE,
+        });
+      } catch (error) {
+        this.errors = [sprintf(s__('AICatalog|Failed to delete agent. %{error}'), { error })];
+        Sentry.captureException(error);
+      }
+    },
+    dismissErrors() {
+      this.errors = [];
+      this.errorTitle = null;
+    },
+  },
+  itemRoutes: {
+    duplicate: AI_CATALOG_AGENTS_DUPLICATE_ROUTE,
+    edit: AI_CATALOG_AGENTS_EDIT_ROUTE,
+    run: AI_CATALOG_AGENTS_RUN_ROUTE,
+  },
 };
 </script>
 
 <template>
   <div>
+    <errors-alert class="gl-mt-5" :title="errorTitle" :errors="errors" @dismiss="dismissErrors" />
     <page-heading :heading="agentName">
       <template #description>
         {{ aiCatalogAgent.description }}
       </template>
       <template #actions>
-        <gl-button
-          :to="{ name: $options.editRoute, params: { id: $route.params.id } }"
-          type="button"
-          category="secondary"
-        >
-          {{ __('Edit') }}
-        </gl-button>
+        <ai-catalog-item-actions
+          :item="aiCatalogAgent"
+          :item-routes="$options.itemRoutes"
+          :delete-fn="deleteAgent"
+          :delete-confirm-title="s__('AICatalog|Delete agent')"
+          :delete-confirm-message="s__('AICatalog|Are you sure you want to delete agent %{name}?')"
+          @add-to-project="addToProject"
+        />
       </template>
     </page-heading>
     <ai-catalog-agent-details :item="aiCatalogAgent" />

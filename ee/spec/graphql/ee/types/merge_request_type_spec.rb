@@ -116,7 +116,8 @@ RSpec.describe GitlabSchema.types['MergeRequest'], feature_category: :code_revie
       # +2 as we do extra queries for:
       # MergeRequests::Mergeability::CheckSecurityPolicyViolationService
       # MergeRequests::Mergeability::CheckPathLocksService
-      expect { GitlabSchema.execute(query, context: { current_user: user }) }.not_to exceed_query_limit(control).with_threshold(2)
+      # MergeRequest#policy_approval_settings
+      expect { GitlabSchema.execute(query, context: { current_user: user }) }.not_to exceed_query_limit(control).with_threshold(7)
     end
   end
 

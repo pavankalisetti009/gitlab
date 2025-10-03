@@ -350,6 +350,7 @@ export default {
     <ai-catalog-item-consumer-modal
       v-if="aiCatalogFlowToBeAdded"
       :item="aiCatalogFlowToBeAdded"
+      open
       @submit="addFlowToTarget"
       @hide="setAiCatalogFlowToBeAdded(null)"
     />

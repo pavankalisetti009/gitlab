@@ -205,12 +205,15 @@ RSpec.describe MergeRequest, feature_category: :code_review_workflow do
         end
 
         context 'when overriden by scan result policy' do
+          let_it_be(:approval_policy_rule, reload: true) { create(:approval_policy_rule) }
+
           let(:policy) do
             create(
               :scan_result_policy_read,
               :prevent_approval_by_author,
               commits: :any,
-              project: merge_request.target_project)
+              project: merge_request.target_project,
+              approval_policy_rule: approval_policy_rule)
           end
 
           before do
@@ -230,6 +233,26 @@ RSpec.describe MergeRequest, feature_category: :code_review_workflow do
 
           it 'returns false' do
             expect(merge_request.merge_requests_author_approval?).to be(false)
+          end
+
+          context 'with warn mode' do
+            before do
+              approval_policy_rule.update!(security_policy: create(:security_policy, :warn_mode))
+            end
+
+            it 'returns true' do
+              expect(merge_request.merge_requests_author_approval?).to be(true)
+            end
+
+            context 'with feature disabled' do
+              before do
+                stub_feature_flags(security_policy_approval_warn_mode: false)
+              end
+
+              it 'returns false' do
+                expect(merge_request.merge_requests_author_approval?).to be(false)
+              end
+            end
           end
         end
       end
@@ -255,12 +278,15 @@ RSpec.describe MergeRequest, feature_category: :code_review_workflow do
         end
 
         context 'when overriden by scan result policy' do
+          let_it_be(:approval_policy_rule, reload: true) { create(:approval_policy_rule) }
+
           let(:policy) do
             create(
               :scan_result_policy_read,
               :prevent_approval_by_commit_author,
               commits: :any,
-              project: merge_request.target_project)
+              project: merge_request.target_project,
+              approval_policy_rule: approval_policy_rule)
           end
 
           before do
@@ -280,6 +306,26 @@ RSpec.describe MergeRequest, feature_category: :code_review_workflow do
 
           it 'returns false' do
             expect(merge_request.merge_requests_disable_committers_approval?).to be(true)
+          end
+
+          context 'with warn mode' do
+            before do
+              approval_policy_rule.update!(security_policy: create(:security_policy, :warn_mode))
+            end
+
+            it 'returns false' do
+              expect(merge_request.merge_requests_disable_committers_approval?).to be(false)
+            end
+
+            context 'with feature disabled' do
+              before do
+                stub_feature_flags(security_policy_approval_warn_mode: false)
+              end
+
+              it 'returns true' do
+                expect(merge_request.merge_requests_disable_committers_approval?).to be(true)
+              end
+            end
           end
         end
       end
@@ -304,12 +350,15 @@ RSpec.describe MergeRequest, feature_category: :code_review_workflow do
         it { is_expected.to be(password_required?) }
 
         context 'when overridden by scan result policy' do
+          let_it_be(:approval_policy_rule, reload: true) { create(:approval_policy_rule) }
+
           let(:policy) do
             create(
               :scan_result_policy_read,
               :require_password_to_approve,
               commits: :any,
-              project: merge_request.target_project)
+              project: merge_request.target_project,
+              approval_policy_rule: approval_policy_rule)
           end
 
           before do
@@ -328,10 +377,29 @@ RSpec.describe MergeRequest, feature_category: :code_review_workflow do
           end
 
           it { is_expected.to be(true) }
+
+          context 'with warn mode' do
+            before do
+              approval_policy_rule.update!(security_policy: create(:security_policy, :warn_mode))
+            end
+
+            it { is_expected.to be(false) }
+
+            context 'with feature disabled' do
+              before do
+                stub_feature_flags(security_policy_approval_warn_mode: false)
+              end
+
+              it { is_expected.to be(true) }
+            end
+          end
         end
       end
 
       describe '#policy_approval_settings' do
+        let_it_be(:security_policy) { create(:security_policy) }
+        let_it_be(:approval_policy_rule, reload: true) { create(:approval_policy_rule, security_policy: security_policy) }
+
         let(:project_approval_settings) do
           { prevent_approval_by_author: true,
             prevent_approval_by_commit_author: false,
@@ -342,7 +410,8 @@ RSpec.describe MergeRequest, feature_category: :code_review_workflow do
         let(:policy) do
           create(:scan_result_policy_read,
             project: merge_request.target_project,
-            project_approval_settings: project_approval_settings)
+            project_approval_settings: project_approval_settings,
+            approval_policy_rule: approval_policy_rule)
         end
 
         let(:overrides) { project_approval_settings.select { |_, v| v } }
@@ -371,6 +440,22 @@ RSpec.describe MergeRequest, feature_category: :code_review_workflow do
               end
 
               it { is_expected.to eq(overrides) }
+            end
+
+            context 'with warn mode' do
+              before_all do
+                approval_policy_rule.update!(security_policy: create(:security_policy, :warn_mode))
+              end
+
+              it { is_expected.to be_empty }
+
+              context 'with feature disabled' do
+                before do
+                  stub_feature_flags(security_policy_approval_warn_mode: false)
+                end
+
+                it { is_expected.to eq(overrides) }
+              end
             end
           end
 
