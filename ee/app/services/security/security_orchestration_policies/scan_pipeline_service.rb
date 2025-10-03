@@ -21,7 +21,8 @@ module Security
         sast: {
           'DEFAULT_SAST_EXCLUDED_PATHS' => 'spec, test, tests, tmp',
           'SAST_EXCLUDED_PATHS' => '$DEFAULT_SAST_EXCLUDED_PATHS',
-          'SAST_EXCLUDED_ANALYZERS' => ''
+          'SAST_EXCLUDED_ANALYZERS' => '',
+          'ADVANCED_SAST_PARTIAL_SCAN' => 'false'
         },
         sast_iac: {
           'SAST_EXCLUDED_PATHS' => 'spec, test, tests, tmp',

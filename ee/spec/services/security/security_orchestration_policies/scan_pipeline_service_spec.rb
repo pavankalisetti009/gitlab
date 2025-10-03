@@ -113,12 +113,12 @@ RSpec.describe Security::SecurityOrchestrationPolicies::ScanPipelineService,
     context 'when action contains variables overriding predefined ones' do
       let(:actions) { [{ scan: 'sast', variables: { SAST_EXCLUDED_ANALYZERS: 'semgrep', 'SAST_EXCLUDED_PATHS' => 'spec, test, tests, tmp, other_location' } }] }
 
-      it_behaves_like 'creates scan jobs', pipeline_scan_job_templates: %w[Jobs/SAST], variables: { 'sast-0': { 'DEFAULT_SAST_EXCLUDED_PATHS' => 'spec, test, tests, tmp', 'SAST_EXCLUDED_ANALYZERS' => 'semgrep', 'SAST_EXCLUDED_PATHS' => 'spec, test, tests, tmp, other_location' } }
+      it_behaves_like 'creates scan jobs', pipeline_scan_job_templates: %w[Jobs/SAST], variables: { 'sast-0': { 'DEFAULT_SAST_EXCLUDED_PATHS' => 'spec, test, tests, tmp', 'SAST_EXCLUDED_ANALYZERS' => 'semgrep', 'SAST_EXCLUDED_PATHS' => 'spec, test, tests, tmp, other_location', 'ADVANCED_SAST_PARTIAL_SCAN' => 'false' } }
 
       it 'allows passing variables from the action into configuration service' do
         expect_next_instance_of(::Security::SecurityOrchestrationPolicies::CiConfigurationService) do |ci_configuration_service|
           expect(ci_configuration_service).to receive(:execute).once
-            .with(actions.first, { 'DEFAULT_SAST_EXCLUDED_PATHS' => 'spec, test, tests, tmp', 'SAST_EXCLUDED_ANALYZERS' => 'semgrep', 'SAST_EXCLUDED_PATHS' => 'spec, test, tests, tmp, other_location' }, context, 0).and_call_original
+            .with(actions.first, { 'DEFAULT_SAST_EXCLUDED_PATHS' => 'spec, test, tests, tmp', 'SAST_EXCLUDED_ANALYZERS' => 'semgrep', 'SAST_EXCLUDED_PATHS' => 'spec, test, tests, tmp, other_location', 'ADVANCED_SAST_PARTIAL_SCAN' => 'false' }, context, 0).and_call_original
         end
 
         subject
@@ -172,7 +172,7 @@ RSpec.describe Security::SecurityOrchestrationPolicies::ScanPipelineService,
       it_behaves_like 'creates scan jobs',
         on_demand_jobs: %i[dast-on-demand-0],
         pipeline_scan_job_templates: %w[Jobs/Secret-Detection Jobs/Container-Scanning Jobs/SAST],
-        variables: { 'container-scanning-1': {}, 'dast-on-demand-0': {}, 'sast-2': { 'DEFAULT_SAST_EXCLUDED_PATHS' => 'spec, test, tests, tmp', 'SAST_EXCLUDED_ANALYZERS' => '', 'SAST_EXCLUDED_PATHS' => '$DEFAULT_SAST_EXCLUDED_PATHS' }, 'secret-detection-0': { 'SECRET_DETECTION_HISTORIC_SCAN' => 'false', 'SECRET_DETECTION_EXCLUDED_PATHS' => '' } }
+        variables: { 'container-scanning-1': {}, 'dast-on-demand-0': {}, 'sast-2': { 'DEFAULT_SAST_EXCLUDED_PATHS' => 'spec, test, tests, tmp', 'SAST_EXCLUDED_ANALYZERS' => '', 'SAST_EXCLUDED_PATHS' => '$DEFAULT_SAST_EXCLUDED_PATHS', 'ADVANCED_SAST_PARTIAL_SCAN' => 'false' }, 'secret-detection-0': { 'SECRET_DETECTION_HISTORIC_SCAN' => 'false', 'SECRET_DETECTION_EXCLUDED_PATHS' => '' } }
     end
 
     context 'when there are valid and invalid actions' do
