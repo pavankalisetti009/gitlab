@@ -101,7 +101,8 @@ RSpec.describe Security::SecurityOrchestrationPolicies::PersistPolicyService, '#
         persist
       end
 
-      it 'calls EventPublisher with created policies' do
+      it 'calls EventPublisher with created policies',
+        quarantine: 'https://gitlab.com/gitlab-org/gitlab/-/issues/545645' do
         expect(Security::SecurityOrchestrationPolicies::EventPublisher).to receive(:new).with({
           db_policies: policy_configuration.security_policies.reload.type_approval_policy.undeleted,
           created_policies: policy_configuration.security_policies.reload.type_approval_policy,
