@@ -41,7 +41,10 @@ FactoryBot.define do
 
       # TODO: Remove this when FF `stop_writing_builds_metadata` is removed.
       # https://gitlab.com/gitlab-org/gitlab/-/issues/552065
-      job.metadata.write_attribute(:config_options, updated_options)
+      if Feature.disabled?(:stop_writing_builds_metadata, job.project)
+        job.metadata.write_attribute(:config_options, updated_options)
+      end
+
       next unless job.job_definition
 
       updated_config = job.job_definition.config.merge(options: updated_options)
