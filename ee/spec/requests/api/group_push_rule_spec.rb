@@ -10,7 +10,7 @@ RSpec.describe API::GroupPushRule, 'GroupPushRule', :aggregate_failures, :api, f
   let_it_be(:maintainer) { create(:user) }
   let_it_be(:developer) { create(:user) }
 
-  let_it_be(:attributes) do
+  let(:attributes) do
     {
       author_email_regex: '^[A-Za-z0-9.]+@gitlab.com$',
       commit_committer_check: true,
@@ -93,12 +93,8 @@ RSpec.describe API::GroupPushRule, 'GroupPushRule', :aggregate_failures, :api, f
     end
   end
 
-  describe 'GET /groups/:id/push_rule' do
+  shared_examples 'retrieves a group push rule' do
     subject(:get_push_rule) { get api("/groups/#{group.id}/push_rule", user) }
-
-    before_all do
-      create(:push_rule, group: group, **attributes)
-    end
 
     context 'when the current user is a maintainer' do
       let(:user) { maintainer }
@@ -108,25 +104,23 @@ RSpec.describe API::GroupPushRule, 'GroupPushRule', :aggregate_failures, :api, f
       it 'returns group push rule' do
         get_push_rule
 
-        expect(json_response).to eq(
-          {
-            "author_email_regex" => attributes[:author_email_regex],
-            "branch_name_regex" => nil,
-            "commit_committer_check" => true,
-            "commit_committer_name_check" => true,
-            "commit_message_negative_regex" => attributes[:commit_message_negative_regex],
-            "commit_message_regex" => attributes[:commit_message_regex],
-            "created_at" => group.reload.push_rule.created_at.iso8601(3),
-            "deny_delete_tag" => false,
-            "file_name_regex" => nil,
-            "id" => group.push_rule.id,
-            "max_file_size" => 100,
-            "member_check" => false,
-            "reject_non_dco_commits" => true,
-            "prevent_secrets" => true,
-            "reject_unsigned_commits" => true
-          }
-        )
+        expect(json_response).to eq({
+          "author_email_regex" => attributes[:author_email_regex],
+          "branch_name_regex" => nil,
+          "commit_committer_check" => true,
+          "commit_committer_name_check" => true,
+          "commit_message_negative_regex" => attributes[:commit_message_negative_regex],
+          "commit_message_regex" => attributes[:commit_message_regex],
+          "created_at" => push_rule.created_at.iso8601(3),
+          "deny_delete_tag" => false,
+          "file_name_regex" => nil,
+          "id" => push_rule.id,
+          "max_file_size" => 100,
+          "member_check" => false,
+          "reject_non_dco_commits" => true,
+          "prevent_secrets" => true,
+          "reject_unsigned_commits" => true
+        })
       end
 
       it 'matches response schema' do
@@ -141,11 +135,11 @@ RSpec.describe API::GroupPushRule, 'GroupPushRule', :aggregate_failures, :api, f
         end
 
         it 'returns group push rule', :aggregate_failures do
-          get api("/groups/#{CGI.escape(group.full_path)}/push_rule", user)
+          get api("/groups/#{CGI.escape(group.reload.full_path)}/push_rule", user)
 
           expect(response).to have_gitlab_http_status(:ok)
           expect(json_response).to be_an Hash
-          expect(json_response['id']).to eq(group.push_rule_id)
+          expect(json_response['id']).to eq(push_rule.id)
         end
       end
 
@@ -197,12 +191,61 @@ RSpec.describe API::GroupPushRule, 'GroupPushRule', :aggregate_failures, :api, f
         expect(response).to have_gitlab_http_status(:not_found)
       end
     end
+
+    context 'with read_and_write_group_push_rules disabled' do
+      before do
+        stub_feature_flags(read_and_write_group_push_rules: false)
+        create(:push_rule, group: group, **attributes)
+      end
+
+      context 'when the current user is a maintainer' do
+        let(:user) { maintainer }
+
+        it_behaves_like 'requires a license'
+
+        it 'returns group push rule' do
+          get_push_rule
+
+          expect(json_response).to eq({
+            "author_email_regex" => attributes[:author_email_regex],
+            "branch_name_regex" => nil,
+            "commit_committer_check" => true,
+            "commit_committer_name_check" => true,
+            "commit_message_negative_regex" => attributes[:commit_message_negative_regex],
+            "commit_message_regex" => attributes[:commit_message_regex],
+            "created_at" => group.push_rule.created_at.iso8601(3),
+            "deny_delete_tag" => false,
+            "file_name_regex" => nil,
+            "id" => group.push_rule.id,
+            "max_file_size" => 100,
+            "member_check" => false,
+            "reject_non_dco_commits" => true,
+            "prevent_secrets" => true,
+            "reject_unsigned_commits" => true
+          })
+        end
+
+        context 'when group name contains a dot' do
+          before do
+            group.update!(path: 'group.path')
+          end
+
+          it 'returns push rule', :aggregate_failures do
+            get api("/groups/#{CGI.escape(group.reload.full_path)}/push_rule", user)
+
+            expect(response).to have_gitlab_http_status(:ok)
+            expect(json_response).to be_an Hash
+            expect(json_response['id']).to eq(group.push_rule.id)
+          end
+        end
+      end
+    end
   end
 
-  describe 'POST /groups/:id/push_rule' do
-    subject(:create_push_rule) { post api("/groups/#{group.id}/push_rule", user), params: params }
-
+  shared_examples 'creates a group push rule' do
     let(:params) { attributes }
+
+    subject(:create_push_rule) { post api("/groups/#{group.id}/push_rule", user), params: params }
 
     context 'when the current user is a maintainer' do
       let(:user) { maintainer }
@@ -216,13 +259,13 @@ RSpec.describe API::GroupPushRule, 'GroupPushRule', :aggregate_failures, :api, f
       end
 
       it do
-        expect { create_push_rule }.to change { PushRule.count }.by(1)
+        expect { create_push_rule }.to change { push_rule_class.count }.by(1)
       end
 
       it 'creates the push rule' do
         create_push_rule
 
-        push_rule = group.reload.push_rule
+        group.reload
 
         expect(push_rule.author_email_regex).to eq(attributes[:author_email_regex])
         expect(push_rule.commit_committer_check).to eq(attributes[:commit_committer_check])
@@ -239,7 +282,7 @@ RSpec.describe API::GroupPushRule, 'GroupPushRule', :aggregate_failures, :api, f
 
       context 'when a push rule already exists' do
         before do
-          create(:push_rule, group: group)
+          create(push_rule_factory, group: group)
         end
 
         it 'returns an error response' do
@@ -301,10 +344,10 @@ RSpec.describe API::GroupPushRule, 'GroupPushRule', :aggregate_failures, :api, f
     end
   end
 
-  describe 'PUT /groups/:id/push_rule' do
+  shared_examples 'updates a group push rule' do
     subject(:update_push_rule) { put api("/groups/#{group.id}/push_rule", user), params: params }
 
-    let_it_be(:attributes_for_update) do
+    let(:attributes_for_update) do
       {
         author_email_regex: '^[A-Za-z0-9.]+@disney.com$',
         reject_unsigned_commits: true,
@@ -315,10 +358,6 @@ RSpec.describe API::GroupPushRule, 'GroupPushRule', :aggregate_failures, :api, f
     end
 
     let(:params) { attributes_for_update }
-
-    before_all do
-      create(:push_rule, group: group, **attributes)
-    end
 
     context 'when the current user is a maintainer' do
       let(:user) { maintainer }
@@ -332,15 +371,15 @@ RSpec.describe API::GroupPushRule, 'GroupPushRule', :aggregate_failures, :api, f
       end
 
       it 'updates the push rule' do
-        expect { update_push_rule }.to change { group.reload.push_rule.author_email_regex }
-                                .from(attributes[:author_email_regex])
-                                .to(attributes_for_update[:author_email_regex])
+        expect { update_push_rule }.to change { push_rule.reload.author_email_regex }
+          .from(attributes[:author_email_regex])
+          .to(attributes_for_update[:author_email_regex])
       end
 
       context 'when push rule does not exist for group' do
-        let_it_be(:group_without_push_rule) { create(:group) }
+        let(:group_without_push_rule) { create(:group) }
 
-        before_all do
+        before do
           group_without_push_rule.add_maintainer(maintainer)
         end
 
@@ -403,12 +442,8 @@ RSpec.describe API::GroupPushRule, 'GroupPushRule', :aggregate_failures, :api, f
     end
   end
 
-  describe 'DELETE /groups/:id/push_rule' do
+  shared_examples 'deletes a group push rule' do
     subject(:delete_push_rule) { delete api("/groups/#{group.id}/push_rule", user) }
-
-    before_all do
-      create(:push_rule, group: group)
-    end
 
     context 'when the current user is a maintainer' do
       let(:user) { maintainer }
@@ -419,8 +454,10 @@ RSpec.describe API::GroupPushRule, 'GroupPushRule', :aggregate_failures, :api, f
         it 'deletes push rule from group', :aggregate_failures do
           delete_push_rule
 
+          group.reload
+
           expect(response).to have_gitlab_http_status(:no_content)
-          expect(group.reload.push_rule).to be_nil
+          expect(push_rule).to be_nil
         end
       end
 
@@ -442,6 +479,89 @@ RSpec.describe API::GroupPushRule, 'GroupPushRule', :aggregate_failures, :api, f
         delete_push_rule
 
         expect(response).to have_gitlab_http_status(:not_found)
+      end
+    end
+  end
+
+  describe 'GET /groups/:id/push_rule' do
+    it_behaves_like 'retrieves a group push rule' do
+      before do
+        create(:group_push_rule, group: group, **attributes)
+      end
+
+      let(:push_rule) { group.group_push_rule }
+    end
+
+    context 'with read_and_write_group_push_rules disabled' do
+      before do
+        stub_feature_flags(read_and_write_group_push_rules: false)
+        create(:push_rule, group: group, **attributes)
+      end
+
+      it_behaves_like 'retrieves a group push rule' do
+        let(:push_rule) { group.push_rule }
+      end
+    end
+  end
+
+  describe 'POST /groups/:id/push_rule' do
+    it_behaves_like 'creates a group push rule' do
+      let(:push_rule) { group.group_push_rule }
+      let(:push_rule_class) { GroupPushRule }
+      let(:push_rule_factory) { :group_push_rule }
+    end
+
+    context 'when read_and_write_group_push_rules is disabled' do
+      before do
+        stub_feature_flags(read_and_write_group_push_rules: false)
+      end
+
+      it_behaves_like 'creates a group push rule' do
+        let(:push_rule) { group.push_rule }
+        let(:push_rule_class) { PushRule }
+        let(:push_rule_factory) { :push_rule }
+      end
+    end
+  end
+
+  describe 'PUT /groups/:id/push_rule' do
+    it_behaves_like 'updates a group push rule' do
+      let(:push_rule) { group.group_push_rule }
+
+      before do
+        create(:group_push_rule, group: group, **attributes)
+      end
+    end
+
+    context 'when read_and_write_group_push_rules is disabled' do
+      before do
+        stub_feature_flags(read_and_write_group_push_rules: false)
+        create(:push_rule, group: group, **attributes)
+      end
+
+      it_behaves_like 'updates a group push rule' do
+        let(:push_rule) { group.push_rule }
+      end
+    end
+  end
+
+  describe 'DELETE /groups/:id/push_rule' do
+    it_behaves_like 'deletes a group push rule' do
+      let(:push_rule) { group.group_push_rule }
+
+      before do
+        create(:group_push_rule, group: group, **attributes)
+      end
+    end
+
+    context 'with read_and_write_group_push_rules disabled' do
+      before do
+        stub_feature_flags(read_and_write_group_push_rules: false)
+        create(:push_rule, group: group, **attributes)
+      end
+
+      it_behaves_like 'deletes a group push rule' do
+        let(:push_rule) { group.push_rule }
       end
     end
   end

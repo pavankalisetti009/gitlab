@@ -154,7 +154,7 @@ RSpec.describe Groups::CreateService, '#execute', feature_category: :groups_and_
         let_it_be(:sample) { create(:organization_push_rule, organization_id: organization.id) }
 
         it 'uses the configured push rules settings' do
-          expect(created_group.push_rule).to be_nil
+          expect(created_group.group_push_rule).to be_nil
           expect(created_group.predefined_push_rule).to eq(sample)
         end
 
@@ -166,7 +166,7 @@ RSpec.describe Groups::CreateService, '#execute', feature_category: :groups_and_
           end
 
           it 'uses the configured push rules settings' do
-            expect(created_group.push_rule).to be_nil
+            expect(created_group.group_push_rule).to be_nil
             expect(created_group.predefined_push_rule).to eq(sample)
           end
         end
@@ -174,7 +174,7 @@ RSpec.describe Groups::CreateService, '#execute', feature_category: :groups_and_
 
       context 'when there are not push rules settings' do
         it 'is does not create the group push rule' do
-          expect(created_group.push_rule).to be_nil
+          expect(created_group.group_push_rule).to be_nil
         end
       end
     end
@@ -185,7 +185,7 @@ RSpec.describe Groups::CreateService, '#execute', feature_category: :groups_and_
       end
 
       it 'ignores the group push rule' do
-        expect(created_group.push_rule).to be_nil
+        expect(created_group.group_push_rule).to be_nil
       end
     end
   end

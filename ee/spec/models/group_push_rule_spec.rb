@@ -10,7 +10,7 @@ RSpec.describe GroupPushRule, :saas, feature_category: :source_code_management d
   it_behaves_like 'a push ruleable model'
 
   describe 'associations' do
-    it { is_expected.to belong_to(:group) }
+    it { is_expected.to belong_to(:group).required }
   end
 
   describe 'validations' do
