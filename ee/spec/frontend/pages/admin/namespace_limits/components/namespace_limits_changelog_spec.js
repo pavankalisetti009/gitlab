@@ -1,5 +1,6 @@
 import { GlLink } from '@gitlab/ui';
 import { mountExtended } from 'helpers/vue_test_utils_helper';
+import { removeWhitespace } from 'helpers/text_helper';
 import NamespaceLimitsChangelog from 'ee/pages/admin/namespace_limits/components/namespace_limits_changelog.vue';
 
 const sampleChangelogEntries = [
@@ -54,7 +55,7 @@ describe('NamespaceLimitsChangelog', () => {
     it('renders changelog entries interpolated text', () => {
       const changelogTexts = findChangelogEntries()
         .findAll('li')
-        .wrappers.map((w) => w.text().replace(/\s\s+/g, ' '));
+        .wrappers.map((w) => removeWhitespace(w.text()));
 
       expect(changelogTexts).toStrictEqual([
         '2023-07-11 10:07:17 admin changed the limit to 150000 MiB',

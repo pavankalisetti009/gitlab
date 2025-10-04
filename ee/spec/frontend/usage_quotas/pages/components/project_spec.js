@@ -1,5 +1,6 @@
 import { GlBadge, GlAvatar } from '@gitlab/ui';
 import { mountExtended } from 'helpers/vue_test_utils_helper';
+import { removeWhitespace } from 'helpers/text_helper';
 import ProjectView from 'ee/usage_quotas/pages/components/project.vue';
 import UserDate from '~/vue_shared/components/user_date.vue';
 import NumberToHumanSize from '~/vue_shared/components/number_to_human_size/number_to_human_size.vue';
@@ -139,7 +140,7 @@ describe('ProjectView', () => {
     });
 
     it('displays the correct number of total deployments', () => {
-      expect(wrapper.text().replace(/\s\s+/g, ' ')).toContain('Parallel deployments: 100');
+      expect(removeWhitespace(wrapper.text())).toContain('Parallel deployments: 100');
     });
   });
 
@@ -156,7 +157,7 @@ describe('ProjectView', () => {
     });
 
     it('does not display the number of total deployments', () => {
-      expect(wrapper.text().replace(/\s\s+/g, ' ')).not.toContain('Parallel deployments');
+      expect(removeWhitespace(wrapper.text())).not.toContain('Parallel deployments');
     });
   });
 });
