@@ -673,6 +673,13 @@ module EE
           description: 'AI flow triggers of the project. This field can only be resolved for one project per request.',
           resolver: ::Resolvers::Ai::FlowTriggersResolver,
           experiment: { milestone: '18.3' }
+
+        field :security_attributes,
+          ::Types::Security::AttributeType.connection_type,
+          null: true,
+          description: 'Security attributes linked to the project.',
+          resolver: ::Resolvers::Security::AttributesResolver,
+          experiment: { milestone: '18.5' }
       end
 
       def tracking_key

@@ -89,6 +89,7 @@ query SubgroupsAndProjects(
         # resolver returns empty array if feature flag is disabled
         securityAttributes @client {
           nodes {
+            id
             name
             color
           }
