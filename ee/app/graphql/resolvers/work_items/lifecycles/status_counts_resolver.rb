@@ -35,15 +35,15 @@ module Resolvers
 
         # rubocop:disable CodeReuse/ActiveRecord -- skip
         def count_work_items_for_status(status)
-          work_item_type_ids = lifecycle.work_item_types.pluck(:id)
-          return if work_item_type_ids.blank?
+          work_item_types = lifecycle.work_item_types.pluck(:base_type)
+          return if work_item_types.blank?
 
           finder = ::WorkItems::WorkItemsFinder.new(
             current_user,
             {
               group_id: namespace.id,
               include_descendants: true,
-              work_item_type_id: work_item_type_ids,
+              issue_types: work_item_types,
               status: { name: status.name },
               state: 'all'
             }
