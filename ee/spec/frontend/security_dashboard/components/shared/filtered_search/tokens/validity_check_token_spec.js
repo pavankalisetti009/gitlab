@@ -78,6 +78,13 @@ describe('ValidityCheckToken', () => {
         'Inactive secret',
       ]);
     });
+
+    it('shows no initial selected value', () => {
+      createWrapper({ value: { data: [], operator: '&&' } });
+      expect(isOptionChecked('UNKNOWN')).toBe(false);
+      expect(isOptionChecked('ACTIVE')).toBe(false);
+      expect(isOptionChecked('INACTIVE')).toBe(false);
+    });
   });
 
   describe('item selection', () => {
