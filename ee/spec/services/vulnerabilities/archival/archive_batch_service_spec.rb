@@ -23,9 +23,9 @@ RSpec.describe Vulnerabilities::Archival::ArchiveBatchService, feature_category:
   end
 
   describe '#execute' do
-    let_it_be(:project) { create(:project) }
-    let_it_be(:archive) { create(:vulnerability_archive, project: project) }
-    let_it_be(:vulnerability) { create(:vulnerability, project: project) }
+    let_it_be_with_refind(:project) { create(:project) }
+    let_it_be_with_refind(:archive) { create(:vulnerability_archive, project: project) }
+    let_it_be_with_refind(:vulnerability) { create(:vulnerability, project: project) }
     let_it_be(:archived_record) do
       build(:vulnerability_archived_record,
         archive: archive,
@@ -75,6 +75,24 @@ RSpec.describe Vulnerabilities::Archival::ArchiveBatchService, feature_category:
         expect { archive_vulnerabilities }.to change { vulnerability.deleted_from_database? }.to(true)
                                           .and change { archive.archived_records.count }.by(1)
                                           .and change { archive.reload.archived_records_count }.by(1)
+      end
+    end
+
+    describe 'preloading the associations' do
+      before do
+        allow(Vulnerabilities::Archival::ArchivedRecordBuilderService).to receive(:execute).and_call_original
+      end
+
+      it 'does not cause N+1 query issues' do
+        control = ActiveRecord::QueryRecorder.new { described_class.new(archive, project.vulnerabilities).execute }
+
+        another_vulnerability_1 = create(:vulnerability, project: project)
+        another_vulnerability_1.vulnerability_finding.update_column(:vulnerability_id, another_vulnerability_1.id)
+
+        another_vulnerability_2 = create(:vulnerability, project: project)
+        another_vulnerability_2.vulnerability_finding.update_column(:vulnerability_id, another_vulnerability_2.id)
+
+        expect { described_class.new(archive, project.vulnerabilities).execute }.not_to exceed_query_limit(control)
       end
     end
 
