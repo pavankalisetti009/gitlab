@@ -91,7 +91,8 @@ RSpec.describe Namespaces::GroupChangesAuditor, feature_category: :groups_and_pr
           extra_shared_runners_minutes_limit last_ci_minutes_notification_at last_ci_minutes_usage_notification_level
           subgroup_creation_level max_pages_size max_artifacts_size default_branch_protection
           max_personal_access_token_lifetime push_rule_id shared_runners_enabled
-          allow_descendants_override_disabled_shared_runners traversal_ids organization_id]
+          allow_descendants_override_disabled_shared_runners traversal_ids organization_id
+          state]
 
         columns_to_audit = audited_group_column_keys.map(&:to_s)
 
