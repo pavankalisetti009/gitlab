@@ -59829,7 +59829,13 @@ msgstr ""
 msgid "SecurityOrchestration|Select security policy project"
 msgstr ""
 
+msgid "SecurityOrchestration|Select source, currently selected: %{selected}"
+msgstr ""
+
 msgid "SecurityOrchestration|Select suffix"
+msgstr ""
+
+msgid "SecurityOrchestration|Select type, currently selected: %{selected}"
 msgstr ""
 
 msgid "SecurityOrchestration|Send a bot message when the conditions match."
