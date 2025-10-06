@@ -23821,6 +23821,11 @@ msgstr ""
 msgid "Developer (default)"
 msgstr ""
 
+msgid "Developers may dismiss findings to proceed or%{requireStart}receive%{requireEnd} %{approvalsRequired} %{approvalStart}approval%{approvalEnd} from:"
+msgid_plural "Developers may dismiss findings to proceed or%{requireStart}receive%{requireEnd} %{approvalsRequired} %{approvalStart}approvals%{approvalEnd} from:"
+msgstr[0] ""
+msgstr[1] ""
+
 msgid "Development widget is not enabled for this work item type"
 msgstr ""
 
