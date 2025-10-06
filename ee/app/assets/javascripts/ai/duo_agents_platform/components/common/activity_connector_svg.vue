@@ -48,13 +48,13 @@ export default {
 </script>
 
 <template>
-  <svg ref="svg" class="pointer-events-none gl-absolute gl-z-0 gl-h-full">
+  <svg ref="svg" aria-hidden="true" class="pointer-events-none gl-absolute gl-z-0 gl-h-full">
     <line
       :x1="startCoordinate.x"
       :y1="startCoordinate.y"
       :x2="endCoordinate.x"
       :y2="endCoordinate.y"
-      stroke="#D1D5DB"
+      stroke="var(--gl-background-color-strong)"
       stroke-width="1"
     />
   </svg>

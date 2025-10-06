@@ -21,7 +21,7 @@ export default {
     searchTokens() {
       const tokens = [];
 
-      if (this.glFeatures.workItemStatusMvc2 && this.hasStatusFeature) {
+      if (this.glFeatures.workItemStatusOnDashboard && this.hasStatusFeature) {
         tokens.push({
           type: TOKEN_TYPE_STATUS,
           title: TOKEN_TITLE_STATUS,

@@ -205,14 +205,6 @@ describe('EE - Pipelines Table', () => {
                   source_branch: 'feature-branch',
                 }),
               },
-              {
-                Category: 'agent_user_environment',
-                Content: JSON.stringify({
-                  merge_request_url: mergeRequestPath,
-                  source_branch: 'feature-branch',
-                }),
-                Metadata: '{}',
-              },
             ],
           });
         });
@@ -255,14 +247,6 @@ describe('EE - Pipelines Table', () => {
                   source_branch: 'master',
                 }),
               },
-              {
-                Category: 'agent_user_environment',
-                Content: JSON.stringify({
-                  merge_request_url: mergeRequestPath,
-                  source_branch: 'master',
-                }),
-                Metadata: '{}',
-              },
             ],
           });
         });
@@ -300,14 +284,6 @@ describe('EE - Pipelines Table', () => {
                   source_branch: sourceBranch,
                 }),
               },
-              {
-                Category: 'agent_user_environment',
-                Content: JSON.stringify({
-                  merge_request_url: mergeRequestPath,
-                  source_branch: sourceBranch,
-                }),
-                Metadata: '{}',
-              },
             ],
           });
         });
@@ -342,14 +318,6 @@ describe('EE - Pipelines Table', () => {
                 Content: JSON.stringify({
                   source_branch: 'main',
                 }),
-              },
-              {
-                Category: 'agent_user_environment',
-                Content: JSON.stringify({
-                  merge_request_url: mergeRequestPath,
-                  source_branch: 'main',
-                }),
-                Metadata: '{}',
               },
             ],
           });
@@ -464,14 +432,6 @@ describe('EE - Pipelines Table', () => {
             Content: JSON.stringify({
               source_branch: 'feature-branch',
             }),
-          },
-          {
-            Category: 'agent_user_environment',
-            Content: JSON.stringify({
-              merge_request_url: mergeRequestPath,
-              source_branch: 'feature-branch',
-            }),
-            Metadata: '{}',
           },
         );
       });
