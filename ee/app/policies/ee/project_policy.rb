@@ -713,6 +713,7 @@ module EE
         enable :push_code_to_protected_branches
         enable :admin_path_locks
         enable :read_approvers
+        enable :read_project_secrets_manager
         enable :update_approvers
         enable :modify_approvers_rules
         enable :modify_merge_request_author_setting
