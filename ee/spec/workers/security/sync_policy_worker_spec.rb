@@ -3,6 +3,8 @@
 require 'spec_helper'
 
 RSpec.describe ::Security::SyncPolicyWorker, feature_category: :security_policy_management do
+  include_context 'with policy sync state'
+
   let_it_be(:project) { create(:project) }
   let_it_be(:policy_configuration) { create(:security_orchestration_policy_configuration, project: project) }
   let_it_be_with_reload(:policy) do
@@ -64,6 +66,8 @@ RSpec.describe ::Security::SyncPolicyWorker, feature_category: :security_policy_
     subject(:state) { Security::SecurityOrchestrationPolicies::PolicySyncState::State.new(policy_configuration.id) }
 
     before do
+      skip unless policy_configuration.namespace?
+
       state.append_projects([project_id])
       state.start_merge_request(merge_request_id)
     end
@@ -150,6 +154,10 @@ RSpec.describe ::Security::SyncPolicyWorker, feature_category: :security_policy_
 
       let_it_be(:policy) { create(:security_policy, security_orchestration_policy_configuration: policy_configuration) }
 
+      before do
+        stub_csp_group(nil)
+      end
+
       it 'calls Security::SyncProjectPolicyWorker' do
         expect(::Security::SyncProjectPolicyWorker)
           .to receive(:bulk_perform_async_with_contexts)
@@ -206,6 +214,10 @@ RSpec.describe ::Security::SyncPolicyWorker, feature_category: :security_policy_
       end
 
       let_it_be(:policy) { create(:security_policy, security_orchestration_policy_configuration: policy_configuration) }
+
+      before do
+        stub_csp_group(nil)
+      end
 
       it 'calls Security::SyncProjectPolicyWorker' do
         expect(::Security::SyncProjectPolicyWorker)

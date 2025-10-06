@@ -6,6 +6,8 @@ RSpec.describe 'Admin interacts with merge requests approvals settings', :js, fe
   include StubENV
   include Features::SecurityPolicyHelpers
 
+  include_context 'with policy sync state'
+
   let_it_be(:user) { create(:admin) }
   let_it_be(:project) { create(:project, :repository, creator: user) }
 
