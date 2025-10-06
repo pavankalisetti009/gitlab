@@ -30,6 +30,10 @@ module ExperimentTrackingHelper
       experiment.present?
     end
 
+    def namespace
+      @kwargs[:namespace]
+    end
+
     def data
       @kwargs[:context]&.first&.to_json.try(:[], :data) || {}
     end
@@ -61,9 +65,38 @@ module ExperimentTrackingHelper
   end
 end
 
+RSpec::Matchers.define :have_tracked_experiment do |experiment_name, expectation|
+  def format_event(event, expected_event)
+    return event.action unless expected_event.is_a?(Hash)
+
+    expected_event.keys.index_with do |key|
+      event.public_send(key)
+    end
+  end
+
+  def formatted_events(experiment_name, events, expectation)
+    events.select { |e| e.category == experiment_name.to_s }
+          .uniq(&:action)
+          .map.with_index { |e, i| format_event(e, expectation[i] || {}) }
+  end
+
+  def events_to_s(events)
+    events.join(",\n").indent(3)
+  end
+
+  match do
+    expectation == formatted_events(experiment_name, tracked_events, expectation)
+  end
+
+  failure_message do
+    actual = formatted_events(experiment_name, tracked_events, expectation)
+    "Expected to track ordered events:\n#{events_to_s(expectation)}\n but tracked:\n#{events_to_s(actual)}"
+  end
+end
+
 RSpec.configure do |config|
   config.before(:each, :experiment_tracking) do
-    self.class.clear_tracked_events
+    self.class.clear_tracked_events if self.class.respond_to?(:clear_tracked_events)
 
     allow(Gitlab::Tracking).to receive(:event) do |category, action, **kwargs| # rubocop:disable RSpec/ExpectGitlabTracking -- snowplow stubbing wouldn't work here
       event = ExperimentTrackingHelper::Event.new(category, action, kwargs)
