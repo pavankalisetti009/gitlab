@@ -78,8 +78,6 @@ module Ai
         end
 
         def force_push?
-          return false if Feature.disabled?(:active_context_code_indexer_check_force_push, project)
-
           if last_indexed_commit.blank? ||
               Gitlab::Git.blank_ref?(last_indexed_commit) ||
               last_indexed_commit == project_repository.empty_tree_id
