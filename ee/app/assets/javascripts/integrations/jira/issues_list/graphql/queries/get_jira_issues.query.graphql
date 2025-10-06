@@ -3,7 +3,7 @@
 
 query jiraIssues(
   $issuesFetchPath: String
-  $page: Integer
+  $nextPageToken: String
   $sort: String
   $state: String
   $project: String
@@ -15,7 +15,7 @@ query jiraIssues(
 ) {
   externalIssues(
     issuesFetchPath: $issuesFetchPath
-    page: $page
+    nextPageToken: $nextPageToken
     sort: $sort
     state: $state
     project: $project
@@ -27,8 +27,8 @@ query jiraIssues(
   ) @client {
     errors
     pageInfo {
-      total
-      page
+      nextPageToken
+      isLast
     }
     nodes {
       id

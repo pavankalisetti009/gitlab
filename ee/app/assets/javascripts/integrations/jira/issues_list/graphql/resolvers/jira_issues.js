@@ -28,8 +28,8 @@ const transformJiraIssueLabels = (jiraIssue) => {
 const transformJiraIssuePageInfo = (responseHeaders = {}) => {
   return {
     __typename: 'JiraIssuesPageInfo',
-    page: parseInt(responseHeaders['x-page'], 10) ?? 1,
-    total: parseInt(responseHeaders['x-total'], 10) ?? 0,
+    nextPageToken: responseHeaders['x-next-page-token'] || null,
+    isLast: responseHeaders['x-is-last'] === 'true',
   };
 };
 
@@ -59,7 +59,7 @@ export default function jiraIssuesResolver(
   _,
   {
     issuesFetchPath,
-    page,
+    nextPageToken,
     sort,
     state,
     project,
@@ -75,7 +75,7 @@ export default function jiraIssuesResolver(
       params: {
         with_labels_details: true,
         per_page: DEFAULT_PAGE_SIZE,
-        page,
+        next_page_token: nextPageToken,
         sort,
         state,
         project,

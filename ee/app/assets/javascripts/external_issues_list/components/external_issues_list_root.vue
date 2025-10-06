@@ -41,7 +41,6 @@ export default {
   inject: [
     'initialState',
     'initialSortBy',
-    'page',
     'issuesFetchPath',
     'projectFullPath',
     'issueCreateUrl',
@@ -62,11 +61,13 @@ export default {
   data() {
     return {
       issues: [],
-      totalIssues: 0,
       currentState: this.initialState,
       filterParams: this.initialFilterParams,
       sortedBy: this.initialSortBy,
-      currentPage: this.page,
+      nextPageToken: null,
+      isLast: false,
+      currentPageInfo: null,
+      pageTokenHistory: [],
       issuesCount: {
         [STATUS_OPEN]: 0,
         [STATUS_CLOSED]: 0,
@@ -80,7 +81,11 @@ export default {
       return this.$apollo.queries.externalIssues.loading;
     },
     showPaginationControls() {
-      return Boolean(!this.issuesListLoading && this.issues.length && this.totalIssues > 1);
+      return Boolean(
+        !this.issuesListLoading &&
+          this.issues.length &&
+          (this.pageTokenHistory.length > 0 || !this.isLast),
+      );
     },
     hasFiltersApplied() {
       return Boolean(
@@ -100,10 +105,27 @@ export default {
         assignee_username: this.filterParams.assigneeUsername,
         'labels[]': this.filterParams.labels,
         search: this.filterParams.search,
-        ...(this.currentPage === 1 ? {} : { page: this.currentPage }),
+        ...(this.nextPageToken ? { next_page_token: this.nextPageToken } : {}),
         ...(this.sortedBy === this.initialSortBy ? {} : { sort: this.sortedBy }),
         ...(this.currentState === this.initialState ? {} : { state: this.currentState }),
       };
+    },
+  },
+  watch: {
+    nextPageToken() {
+      this.$apollo.queries.externalIssues.refetch();
+    },
+    sortedBy() {
+      this.$apollo.queries.externalIssues.refetch();
+    },
+    currentState() {
+      this.$apollo.queries.externalIssues.refetch();
+    },
+    filterParams: {
+      deep: true,
+      handler() {
+        this.$apollo.queries.externalIssues.refetch();
+      },
     },
   },
   apollo: {
@@ -115,7 +137,7 @@ export default {
       variables() {
         return {
           issuesFetchPath: this.issuesFetchPath,
-          page: this.currentPage, // navigation attributes
+          nextPageToken: this.nextPageToken, // navigation attributes
           sort: this.sortedBy, // navigation attributes
           state: this.currentState, // navigation attributes
           project: this.filterParams.project, // filter attributes
@@ -139,8 +161,8 @@ export default {
         }
 
         this.issues = nodes;
-        this.currentPage = pageInfo.page;
-        this.totalIssues = pageInfo.total;
+        this.currentPageInfo = pageInfo;
+        this.isLast = pageInfo.isLast;
         this.issuesCount[this.currentState] = nodes.length;
       },
       error(error) {
@@ -197,14 +219,24 @@ export default {
       Sentry.captureException(error);
     },
     onIssuableListClickTab(selectedIssueState) {
-      this.currentPage = 1;
+      this.nextPageToken = null;
+      this.pageTokenHistory = [];
       this.currentState = selectedIssueState;
     },
-    onIssuableListPageChange(selectedPage) {
-      this.currentPage = selectedPage;
+    onIssuableListNextPage() {
+      if (this.currentPageInfo?.nextPageToken) {
+        this.pageTokenHistory.push(this.nextPageToken);
+        this.nextPageToken = this.currentPageInfo.nextPageToken;
+      }
+    },
+    onIssuableListPreviousPage() {
+      if (this.pageTokenHistory.length > 0) {
+        this.nextPageToken = this.pageTokenHistory.pop();
+      }
     },
     onIssuableListSort(selectedSort) {
-      this.currentPage = 1;
+      this.nextPageToken = null;
+      this.pageTokenHistory = [];
       this.sortedBy = selectedSort;
     },
     onIssuableListFilter(filters = []) {
@@ -234,6 +266,9 @@ export default {
       if (labels.length) {
         filterParams.labels = labels;
       }
+
+      this.nextPageToken = null;
+      this.pageTokenHistory = [];
 
       this.filterParams = {
         ...filterParams,
@@ -265,16 +300,16 @@ export default {
     :issuables="issues"
     :issuables-loading="issuesListLoading"
     :show-pagination-controls="showPaginationControls"
+    :use-keyset-pagination="true"
+    :has-next-page="!isLast"
+    :has-previous-page="pageTokenHistory.length > 0"
     :default-page-size="$options.defaultPageSize"
-    :total-items="totalIssues"
-    :current-page="currentPage"
-    :previous-page="currentPage - 1"
-    :next-page="currentPage + 1"
     :url-params="urlParams"
     label-filter-param="labels"
     :recent-searches-storage-key="recentSearchesStorageKey"
     @click-tab="onIssuableListClickTab"
-    @page-change="onIssuableListPageChange"
+    @next-page="onIssuableListNextPage"
+    @previous-page="onIssuableListPreviousPage"
     @sort="onIssuableListSort"
     @filter="onIssuableListFilter"
   >
