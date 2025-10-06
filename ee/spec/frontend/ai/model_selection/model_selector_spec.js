@@ -111,7 +111,7 @@ describe('ModelSelector', () => {
   });
 
   describe('.listItems', () => {
-    it('contains a list of models, including a default model option', () => {
+    it('contains a list of models sorted in descending alphabetical order, including a default model option', () => {
       createComponent();
 
       expect(findModelSelectDropdown().props('items')).toEqual([
@@ -122,6 +122,33 @@ describe('ModelSelector', () => {
           value: GITLAB_DEFAULT_MODEL,
           text: 'GitLab default model (Claude Sonnet 3.7 - Anthropic)',
         },
+      ]);
+    });
+
+    it('sorts models in descending alphabetical order', () => {
+      const testFeatureSetting = {
+        ...aiFeatureSetting,
+        selectableModels: [
+          { ref: 'claude_3_haiku_20240307', name: 'Claude Haiku 3 - Anthropic' },
+          { ref: 'gpt_5', name: 'OpenAI GPT-5' },
+          { ref: 'claude_sonnet_4_20250514', name: 'Claude Sonnet 4 - Anthropic' },
+          { ref: 'claude_3_5_sonnet_20240620', name: 'Claude Sonnet 3.5 - Anthropic' },
+          { ref: 'claude_sonnet_3_7_20250219', name: 'Claude Sonnet 3.7 - Anthropic' },
+        ],
+      };
+
+      createComponent({ props: { aiFeatureSetting: testFeatureSetting } });
+
+      const items = findModelSelectDropdown().props('items');
+      const modelNames = items.map((item) => item.text);
+
+      expect(modelNames).toEqual([
+        'OpenAI GPT-5',
+        'Claude Sonnet 4 - Anthropic',
+        'Claude Sonnet 3.7 - Anthropic',
+        'Claude Sonnet 3.5 - Anthropic',
+        'Claude Haiku 3 - Anthropic',
+        'GitLab default model (Claude Sonnet 3.7 - Anthropic)',
       ]);
     });
   });
