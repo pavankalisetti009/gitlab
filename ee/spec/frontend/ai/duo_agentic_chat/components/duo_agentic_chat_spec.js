@@ -1756,6 +1756,47 @@ describe('Duo Agentic Chat', () => {
         agentVersionId: 'version-2',
       });
     });
+
+    describe('when switching from custom agent to default agent', () => {
+      beforeEach(async () => {
+        createComponent({
+          data: {
+            aiCatalogItemVersionId: 'version-1',
+          },
+        });
+        await waitForPromises();
+      });
+
+      it('stops querying agent config', async () => {
+        const expectedStartRequest = {
+          startRequest: {
+            workflowID: '456',
+            clientVersion: '1.0',
+            workflowDefinition: 'chat',
+            goal: MOCK_USER_MESSAGE.content,
+            approval: {},
+            workflowMetadata: null,
+          },
+        };
+        // Verify config query was called for the custom agent
+        expect(agentFlowConfigQueryMock).toHaveBeenCalledWith({
+          agentVersionId: 'version-1',
+        });
+
+        agentFlowConfigQueryMock.mockClear();
+
+        // Switch to default agent (no agent.id)
+        findDuoChat().vm.$emit('new-chat', { name: 'default duo' });
+        await waitForPromises();
+
+        // Verify no config is sent when starting workflow with default agent
+        findDuoChat().vm.$emit('send-chat-prompt', MOCK_USER_MESSAGE.content);
+        await waitForPromises();
+
+        expect(mockSocketManager.connect).toHaveBeenCalledWith(expectedStartRequest);
+        expect(agentFlowConfigQueryMock).not.toHaveBeenCalled();
+      });
+    });
   });
 
   describe('embedded mode behavior', () => {
