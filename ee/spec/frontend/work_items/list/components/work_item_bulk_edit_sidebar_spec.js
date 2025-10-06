@@ -147,7 +147,7 @@ describe('WorkItemBulkEditSidebar component EE', () => {
 
       expect(createAlert).toHaveBeenCalledWith({
         captureError: true,
-        error: new Error('oh no'),
+        error: new Error('1 out of 1 chunk(s) failed to update'),
         message: 'Something went wrong while bulk editing.',
       });
     });
