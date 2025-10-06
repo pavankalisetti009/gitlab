@@ -4,7 +4,4 @@
 - add_to_breadcrumbs(_('GitLab Duo'), admin_gitlab_duo_path)
 - add_to_breadcrumbs(s_('UsageBilling|Usage Billing'), admin_gitlab_duo_usage_path)
 
--# TODO: the fetch_user_usage_data_api_url will be replaced once the backend is ready
--# https://gitlab.com/gitlab-org/gitlab/-/issues/568055
-#js-instance-user-usage-billing-dashboard{ data: { user_id: @user_id,
-  fetch_user_usage_data_api_url: admin_gitlab_duo_usage_user_path(@user_id) + '/data' } }
+#js-instance-user-usage-billing-dashboard{ data: { user_id: @user_id } }
