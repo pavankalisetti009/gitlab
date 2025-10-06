@@ -31,7 +31,10 @@ module Sbom
         end
 
         def components
-          sbom_occurrences.map { |occurrence| component(occurrence) }
+          sbom_occurrences
+            .map { |occurrence| component(occurrence) }
+            .uniq { |component| component['bom-ref'] }
+            .sort_by { |component| component['bom-ref'] }
         end
 
         def sbom_occurrences

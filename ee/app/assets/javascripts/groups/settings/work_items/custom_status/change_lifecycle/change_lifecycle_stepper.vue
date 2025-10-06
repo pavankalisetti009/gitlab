@@ -120,7 +120,7 @@ export default {
 </script>
 
 <template>
-  <ul class="workflow-container gl-relative gl-list-none gl-ps-0">
+  <ul class="workflow-container gl-relative gl-ml-3 gl-list-none gl-ps-0">
     <li
       v-for="(step, index) in steps"
       :key="index"

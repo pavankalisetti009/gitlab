@@ -25344,7 +25344,7 @@ msgstr ""
 msgid "DuoFeatures|Save exclusions"
 msgstr ""
 
-msgid "DuoFeatures|Specify project files and directories that GitLab Duo will not access. Excluded content is never sent to AI models. %{linkStart}learn more%{linkEnd}."
+msgid "DuoFeatures|Specify project files and directories that GitLab Duo will not access. Excluded content is never sent to AI models. %{linkStart}Learn more%{linkEnd}."
 msgstr ""
 
 msgid "DuoFeatures|The exclusion rule was deleted."
@@ -72738,6 +72738,15 @@ msgid "Vulnerability|A 'source' refers to untrusted inputs like user data or ext
 msgstr ""
 
 msgid "Vulnerability|A solution is available for this vulnerability"
+msgstr ""
+
+msgid "Vulnerability|AI Generating Fix"
+msgstr ""
+
+msgid "Vulnerability|AI has created a merge request to resolve this vulnerability"
+msgstr ""
+
+msgid "Vulnerability|AI is currently working to resolve this vulnerability"
 msgstr ""
 
 msgid "Vulnerability|Active secret"

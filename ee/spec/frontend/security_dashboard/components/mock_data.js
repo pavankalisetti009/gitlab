@@ -75,6 +75,7 @@ export const projectClusters = {
 
 export const clusterImageScanningVulnerability = {
   mergeRequest: null,
+  aiFixInProgress: false,
   __typename: 'Vulnerability',
   id: 'gid://gitlab/Vulnerability/22087293',
   title: 'CVE-2021-29921',
@@ -121,7 +122,12 @@ export const containerScanningForRegistryVulnerability = {
     webUrl: 'www.testmr.com/1',
     state: 'status_warning',
     iid: 1,
+    author: {
+      id: 1,
+      human: true,
+    },
   },
+  aiFixInProgress: false,
   identifiers: [
     {
       externalType: 'cve',
@@ -193,7 +199,12 @@ export const generateVulnerabilities = () => [
       webUrl: 'www.testmr.com/1',
       state: 'status_warning',
       iid: 1,
+      author: {
+        id: 1,
+        human: true,
+      },
     },
+    aiFixInProgress: false,
     identifiers: [
       {
         externalType: 'cve',
@@ -268,6 +279,7 @@ export const generateVulnerabilities = () => [
     resolvedOnDefaultBranch: false,
     issueLinks: [],
     mergeRequest: null,
+    aiFixInProgress: true,
     identifiers: [
       {
         externalType: 'gemnasium',
@@ -311,6 +323,7 @@ export const generateVulnerabilities = () => [
     resolvedOnDefaultBranch: false,
     issueLinks: [],
     mergeRequest: null,
+    aiFixInProgress: false,
     identifiers: [],
     dismissalReason: null,
     cvss: [],
@@ -351,6 +364,7 @@ export const generateVulnerabilities = () => [
     resolvedOnDefaultBranch: true,
     issueLinks: [],
     mergeRequest: null,
+    aiFixInProgress: false,
     identifiers: [],
     dismissalReason: null,
     cvss: [],
@@ -388,6 +402,7 @@ export const generateVulnerabilities = () => [
     resolvedOnDefaultBranch: true,
     issueLinks: [],
     mergeRequest: null,
+    aiFixInProgress: false,
     identifiers: [],
     dismissalReason: null,
     cvss: [],
@@ -421,6 +436,7 @@ export const generateVulnerabilities = () => [
     resolvedOnDefaultBranch: false,
     issueLinks: [],
     mergeRequest: null,
+    aiFixInProgress: false,
     identifiers: [],
     dismissalReason: null,
     cvss: [],
@@ -456,6 +472,7 @@ export const generateVulnerabilities = () => [
     resolvedOnDefaultBranch: false,
     issueLinks: [],
     mergeRequest: null,
+    aiFixInProgress: false,
     identifiers: [],
     dismissalReason: null,
     cvss: [],
@@ -492,6 +509,7 @@ export const generateVulnerabilities = () => [
     resolvedOnDefaultBranch: false,
     issueLinks: [],
     mergeRequest: null,
+    aiFixInProgress: false,
     identifiers: [
       {
         externalType: 'secret_detection',
