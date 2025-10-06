@@ -272,28 +272,28 @@ exports[`AI impact Dashboard utils generateSkeletonTableData returns the skeleto
   {
     "metric": {
       "identifier": "code_suggestions_usage_rate",
-      "value": "Code Suggestions: Usage",
+      "value": "Code Suggestions usage",
     },
     "trendStyle": "ASC",
   },
   {
     "metric": {
       "identifier": "code_suggestions_acceptance_rate",
-      "value": "Code Suggestions: Acceptance rate",
+      "value": "Code Suggestions acceptance rate",
     },
     "trendStyle": "ASC",
   },
   {
     "metric": {
       "identifier": "duo_chat_usage_rate",
-      "value": "Duo Chat: Usage",
+      "value": "Duo Chat usage",
     },
     "trendStyle": "ASC",
   },
   {
     "metric": {
       "identifier": "duo_rca_usage_rate",
-      "value": "Duo RCA: Usage",
+      "value": "Duo RCA usage",
     },
     "trendStyle": "ASC",
   },

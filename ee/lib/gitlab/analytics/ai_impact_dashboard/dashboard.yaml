@@ -10,7 +10,7 @@ panels:
       xPos: 0
       width: 3
       height: 1
-  - title: "Code Suggestions: Usage"
+  - title: "Code Suggestions usage"
     visualization: code_suggestions_usage_rate_over_time
     gridAttributes:
       yPos: 0
@@ -18,7 +18,7 @@ panels:
       width: 3
       height: 1
     options: {}
-  - title: "Code Suggestions: Acceptance rate"
+  - title: "Code Suggestions acceptance rate"
     visualization: code_suggestions_acceptance_rate_over_time
     gridAttributes:
       yPos: 0
@@ -26,7 +26,7 @@ panels:
       width: 3
       height: 1
     options: {}
-  - title: "Duo Chat: Usage"
+  - title: "Duo Chat usage"
     visualization: duo_chat_usage_rate_over_time
     gridAttributes:
       yPos: 0
