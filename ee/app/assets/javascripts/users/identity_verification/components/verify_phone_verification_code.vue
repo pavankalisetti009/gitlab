@@ -200,7 +200,7 @@ export default {
     </gl-form-group>
 
     <div v-if="!disableSubmitButton" class="gl-text-sm gl-text-subtle" :class="helpTextClasses">
-      <gl-icon name="information-o" :size="12" class="gl-mt-2" variant="subtle" />
+      <gl-icon name="information-o" :size="16" class="gl-mt-2" variant="info" />
       <gl-sprintf v-if="sendCodeAllowed" :message="$options.i18n.noCode">
         <template #codeLink="{ content }">
           <gl-link data-testid="resend-code-link" @click="resendCode">{{ content }}</gl-link>
