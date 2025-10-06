@@ -10,6 +10,7 @@ import {
 import { TYPENAME_AI_CATALOG_ITEM } from 'ee/graphql_shared/constants';
 import * as Sentry from '~/sentry/sentry_browser_wrapper';
 import ErrorsAlert from '~/vue_shared/components/errors_alert.vue';
+import glFeatureFlagsMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
 import { InternalEvents } from '~/tracking';
 import aiCatalogFlowsQuery from '../graphql/queries/ai_catalog_flows.query.graphql';
 import aiCatalogFlowQuery from '../graphql/queries/ai_catalog_flow.query.graphql';
@@ -21,6 +22,7 @@ import AiCatalogItemDrawer from '../components/ai_catalog_item_drawer.vue';
 import AiCatalogItemConsumerModal from '../components/ai_catalog_item_consumer_modal.vue';
 import {
   AI_CATALOG_SHOW_QUERY_PARAM,
+  AI_CATALOG_FLOWS_SHOW_ROUTE,
   AI_CATALOG_FLOWS_EDIT_ROUTE,
   AI_CATALOG_FLOWS_DUPLICATE_ROUTE,
 } from '../router/constants';
@@ -41,7 +43,7 @@ export default {
     AiCatalogItemConsumerModal,
     ErrorsAlert,
   },
-  mixins: [InternalEvents.mixin()],
+  mixins: [glFeatureFlagsMixin(), InternalEvents.mixin()],
   apollo: {
     aiCatalogFlows: {
       query: aiCatalogFlowsQuery,
@@ -187,6 +189,7 @@ export default {
         deleteActionItem: {
           showActionItem: (item) => item.userPermissions?.adminAiCatalogItem || false,
         },
+        showRoute: this.glFeatures.aiCatalogShowPage ? AI_CATALOG_FLOWS_SHOW_ROUTE : null,
         visibilityTooltip: {
           [VISIBILITY_LEVEL_PUBLIC_STRING]:
             FLOW_VISIBILITY_LEVEL_DESCRIPTIONS[VISIBILITY_LEVEL_PUBLIC_STRING],

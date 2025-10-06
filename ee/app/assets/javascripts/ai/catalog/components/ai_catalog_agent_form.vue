@@ -16,7 +16,7 @@ import {
 import { __, s__ } from '~/locale';
 import ErrorsAlert from '~/vue_shared/components/errors_alert.vue';
 import glFeatureFlagsMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
-import { AI_CATALOG_AGENTS_ROUTE } from '../router/constants';
+import { AI_CATALOG_AGENTS_ROUTE, AI_CATALOG_AGENTS_SHOW_ROUTE } from '../router/constants';
 import { createFieldValidators } from '../utils';
 import aiCatalogBuiltInToolsQuery from '../graphql/queries/ai_catalog_built_in_tools.query.graphql';
 import AiCatalogFormButtons from './ai_catalog_form_buttons.vue';
@@ -103,6 +103,18 @@ export default {
     },
     submitButtonText() {
       return this.isEditMode ? s__('AICatalog|Save changes') : s__('AICatalog|Create agent');
+    },
+    cancelRoute() {
+      if (this.glFeatures.aiCatalogShowPage && this.$route.params.id) {
+        return {
+          name: AI_CATALOG_AGENTS_SHOW_ROUTE,
+          params: { id: this.$route.params.id },
+        };
+      }
+
+      return {
+        name: AI_CATALOG_AGENTS_ROUTE,
+      };
     },
     fields() {
       const projectIdField = this.isEditMode
@@ -228,7 +240,6 @@ export default {
       this.$emit('dismiss-errors');
     },
   },
-  indexRoute: AI_CATALOG_AGENTS_ROUTE,
   visibilityLevelTexts: {
     textPrivate: AGENT_VISIBILITY_LEVEL_DESCRIPTIONS[VISIBILITY_LEVEL_PRIVATE_STRING],
     textPublic: AGENT_VISIBILITY_LEVEL_DESCRIPTIONS[VISIBILITY_LEVEL_PUBLIC_STRING],
@@ -308,7 +319,7 @@ export default {
           />
         </template>
       </gl-form-fields>
-      <ai-catalog-form-buttons :is-disabled="isLoading" :index-route="$options.indexRoute">
+      <ai-catalog-form-buttons :is-disabled="isLoading" :cancel-route="cancelRoute">
         <gl-button
           class="js-no-auto-disable gl-w-full @sm/panel:gl-w-auto"
           type="submit"

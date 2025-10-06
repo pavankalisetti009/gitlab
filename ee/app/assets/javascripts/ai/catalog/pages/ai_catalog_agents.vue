@@ -13,6 +13,7 @@ import {
 } from '~/visibility_level/constants';
 import ErrorsAlert from '~/vue_shared/components/errors_alert.vue';
 import { FILTERED_SEARCH_TERM } from '~/vue_shared/components/filtered_search_bar/constants';
+import glFeatureFlagsMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
 import { TYPENAME_AI_CATALOG_ITEM } from 'ee/graphql_shared/constants';
 import aiCatalogAgentsQuery from '../graphql/queries/ai_catalog_agents.query.graphql';
 import aiCatalogAgentQuery from '../graphql/queries/ai_catalog_agent.query.graphql';
@@ -23,6 +24,7 @@ import AiCatalogList from '../components/ai_catalog_list.vue';
 import AiCatalogItemDrawer from '../components/ai_catalog_item_drawer.vue';
 import AiCatalogItemConsumerModal from '../components/ai_catalog_item_consumer_modal.vue';
 import {
+  AI_CATALOG_AGENTS_SHOW_ROUTE,
   AI_CATALOG_AGENTS_EDIT_ROUTE,
   AI_CATALOG_AGENTS_RUN_ROUTE,
   AI_CATALOG_AGENTS_DUPLICATE_ROUTE,
@@ -46,7 +48,7 @@ export default {
     ErrorsAlert,
     GlFilteredSearch,
   },
-  mixins: [InternalEvents.mixin()],
+  mixins: [glFeatureFlagsMixin(), InternalEvents.mixin()],
   data() {
     return {
       aiCatalogAgents: [],
@@ -202,6 +204,7 @@ export default {
         deleteActionItem: {
           showActionItem: (item) => item.userPermissions?.adminAiCatalogItem || false,
         },
+        showRoute: this.glFeatures.aiCatalogShowPage ? AI_CATALOG_AGENTS_SHOW_ROUTE : null,
         visibilityTooltip: {
           [VISIBILITY_LEVEL_PUBLIC_STRING]:
             AGENT_VISIBILITY_LEVEL_DESCRIPTIONS[VISIBILITY_LEVEL_PUBLIC_STRING],

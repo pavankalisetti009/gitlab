@@ -12,8 +12,8 @@ export default {
       required: false,
       default: false,
     },
-    indexRoute: {
-      type: String,
+    cancelRoute: {
+      type: Object,
       required: true,
     },
   },
@@ -25,7 +25,7 @@ export default {
     <slot></slot>
     <gl-button
       :disabled="isDisabled"
-      :to="{ name: indexRoute }"
+      :to="cancelRoute"
       type="button"
       category="secondary"
       class="gl-w-full @sm/panel:gl-w-auto"

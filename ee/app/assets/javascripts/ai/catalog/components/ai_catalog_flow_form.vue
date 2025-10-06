@@ -14,7 +14,8 @@ import {
 } from 'ee/ai/catalog/constants';
 import { __, s__ } from '~/locale';
 import ErrorsAlert from '~/vue_shared/components/errors_alert.vue';
-import { AI_CATALOG_FLOWS_ROUTE } from '../router/constants';
+import glFeatureFlagsMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
+import { AI_CATALOG_FLOWS_ROUTE, AI_CATALOG_FLOWS_SHOW_ROUTE } from '../router/constants';
 import { createFieldValidators } from '../utils';
 import AiCatalogFormButtons from './ai_catalog_form_buttons.vue';
 import AiCatalogStepsEditor from './ai_catalog_steps_editor.vue';
@@ -35,6 +36,7 @@ export default {
     GlFormTextarea,
     VisibilityLevelRadioGroup,
   },
+  mixins: [glFeatureFlagsMixin()],
   props: {
     mode: {
       type: String,
@@ -90,6 +92,18 @@ export default {
     },
     submitButtonText() {
       return this.isEditMode ? s__('AICatalog|Save changes') : s__('AICatalog|Create flow');
+    },
+    cancelRoute() {
+      if (this.glFeatures.aiCatalogShowPage && this.$route.params.id) {
+        return {
+          name: AI_CATALOG_FLOWS_SHOW_ROUTE,
+          params: { id: this.$route.params.id },
+        };
+      }
+
+      return {
+        name: AI_CATALOG_FLOWS_ROUTE,
+      };
     },
     isPublic() {
       return this.formValues.visibilityLevel === VISIBILITY_LEVEL_PUBLIC;
@@ -248,7 +262,7 @@ export default {
             />
           </template>
         </gl-form-fields>
-        <ai-catalog-form-buttons :is-disabled="isLoading" :index-route="$options.indexRoute">
+        <ai-catalog-form-buttons :is-disabled="isLoading" :cancel-route="cancelRoute">
           <gl-button
             class="js-no-auto-disable gl-w-full @sm/panel:gl-w-auto"
             type="submit"
