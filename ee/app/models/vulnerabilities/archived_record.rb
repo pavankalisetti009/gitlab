@@ -16,7 +16,7 @@ module Vulnerabilities
 
     attribute :data, Gitlab::Database::Type::JsonPgSafe.new(replace_with: '\\\\\u0000')
 
-    validates :vulnerability_identifier, presence: true, uniqueness: true
+    validates :vulnerability_identifier, presence: true
     validates :data, presence: true, json_schema: { filename: 'archived_record_data' }
 
     def archive=(archive)
