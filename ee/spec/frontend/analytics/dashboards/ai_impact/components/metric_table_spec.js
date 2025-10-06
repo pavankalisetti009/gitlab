@@ -254,10 +254,10 @@ describe('Metric table', () => {
     ${VULNERABILITY_METRICS.HIGH}                  | ${'High vulnerabilities over time'}
     ${MERGE_REQUEST_METRICS.THROUGHPUT}            | ${'Merge request throughput'}
     ${CONTRIBUTOR_METRICS.COUNT}                   | ${'Contributor count'}
-    ${AI_METRICS.CODE_SUGGESTIONS_USAGE_RATE}      | ${'Code Suggestions: Usage'}
-    ${AI_METRICS.CODE_SUGGESTIONS_ACCEPTANCE_RATE} | ${'Code Suggestions: Acceptance rate'}
-    ${AI_METRICS.DUO_CHAT_USAGE_RATE}              | ${'Duo Chat: Usage'}
-    ${AI_METRICS.DUO_RCA_USAGE_RATE}               | ${'Duo RCA: Usage'}
+    ${AI_METRICS.CODE_SUGGESTIONS_USAGE_RATE}      | ${'Code Suggestions usage'}
+    ${AI_METRICS.CODE_SUGGESTIONS_ACCEPTANCE_RATE} | ${'Code Suggestions acceptance rate'}
+    ${AI_METRICS.DUO_CHAT_USAGE_RATE}              | ${'Duo Chat usage'}
+    ${AI_METRICS.DUO_RCA_USAGE_RATE}               | ${'Duo RCA usage'}
     ${PIPELINE_ANALYTICS_METRICS.COUNT}            | ${'Total pipeline runs'}
     ${PIPELINE_ANALYTICS_METRICS.MEDIAN}           | ${'Median duration'}
     ${PIPELINE_ANALYTICS_METRICS.SUCCESS_RATE}     | ${'Success rate'}
