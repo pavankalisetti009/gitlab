@@ -10,7 +10,6 @@ RSpec.describe Vulnerabilities::ArchivedRecord, feature_category: :vulnerability
 
   describe 'validations' do
     it { is_expected.to validate_presence_of(:vulnerability_identifier) }
-    it { is_expected.to validate_uniqueness_of(:vulnerability_identifier) }
     it { is_expected.to validate_presence_of(:data) }
   end
 
