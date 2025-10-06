@@ -13,7 +13,7 @@ RSpec.describe 'Getting secret permissions', :gitlab_secrets_manager, feature_ca
 
   let_it_be(:project) { create(:project, group: group) }
   let_it_be(:current_user) { create(:user) }
-  let_it_be(:secrets_manager) { create(:project_secrets_manager, project: project) }
+  let_it_be_with_reload(:secrets_manager) { create(:project_secrets_manager, project: project) }
 
   let(:query) do
     <<~GQL
@@ -33,34 +33,14 @@ RSpec.describe 'Getting secret permissions', :gitlab_secrets_manager, feature_ca
 
   subject(:post_graphql_query) { post_graphql(query, variables: query_variables, current_user: current_user) }
 
-  context 'when the user has permissions' do
-    before_all do
-      project.add_owner(current_user)
-    end
-
-    before do
-      provision_project_secrets_manager(secrets_manager, current_user)
-
-      update_secret_permission(
-        user: current_user, project: project, permissions: %w[create
-          update read], principal: { id: current_user.id, type: 'User' }
-      )
-      update_secret_permission(
-        user: current_user, project: project, permissions: %w[create read], principal: { id: group.id, type: 'Group' }
-      )
-      update_secret_permission(
-        user: current_user, project: project, permissions: %w[create read], principal: { id: 20, type: 'Role' }
-      )
-    end
-
+  shared_examples 'returns secret permissions successfully' do
     it 'returns secret permissions' do
-      post_graphql_query
+      post_graphql(query, variables: query_variables, current_user: test_user)
 
       expect(response).to have_gitlab_http_status(:success)
-
       permissions_data = graphql_data_at['secretPermissions']['edges'].pluck('node')
-      expect(permissions_data.length).to eq(4)
 
+      expect(permissions_data.length).to eq(4)
       expect(permissions_data).to include(
         a_hash_including(
           'principal' => a_hash_including(
@@ -94,6 +74,44 @@ RSpec.describe 'Getting secret permissions', :gitlab_secrets_manager, feature_ca
         })
       )
     end
+  end
+
+  context 'when the user has permissions' do
+    let_it_be(:maintainer_user) { create(:user) }
+
+    before_all do
+      project.add_owner(current_user)
+      project.add_maintainer(maintainer_user)
+    end
+
+    before do
+      provision_project_secrets_manager(secrets_manager, current_user)
+
+      update_secret_permission(
+        user: current_user, project: project, permissions: %w[create update read],
+        principal: { id: current_user.id, type: 'User' }
+      )
+      update_secret_permission(
+        user: current_user, project: project, permissions: %w[create read],
+        principal: { id: group.id, type: 'Group' }
+      )
+      update_secret_permission(
+        user: current_user, project: project, permissions: %w[create read],
+        principal: { id: 20, type: 'Role' }
+      )
+    end
+
+    context 'when user is a maintainer' do
+      let(:test_user)  { maintainer_user }
+
+      it_behaves_like 'returns secret permissions successfully'
+    end
+
+    context 'when user is an owner' do
+      let(:test_user) { current_user }
+
+      it_behaves_like 'returns secret permissions successfully'
+    end
 
     context 'and service results to a failure' do
       before do
@@ -106,7 +124,6 @@ RSpec.describe 'Getting secret permissions', :gitlab_secrets_manager, feature_ca
         expect_next_instance_of(SecretsManagement::Permissions::ListService) do |service|
           secret_permission = SecretsManagement::SecretPermission.new
           secret_permission.errors.add(:base, 'some error')
-
           result = ServiceResponse.error(message: 'some error', payload: { secret_permission: secret_permission })
           expect(service).to receive(:execute).and_return(result)
         end
@@ -139,9 +156,7 @@ RSpec.describe 'Getting secret permissions', :gitlab_secrets_manager, feature_ca
   end
 
   context 'when list service fails' do
-    before_all do
-      project.add_maintainer(current_user)
-    end
+    before_all { project.add_developer(current_user) }
 
     it 'returns a GraphQL error with the service error message' do
       post_graphql_query
