@@ -92,10 +92,92 @@ module WorkItems
     end
 
     def apply_status_filters(issuables, statuses_for_filtering)
-      statuses_for_filtering.reduce(issuables.none) do |relation, status_mapping|
+      combined_relation = statuses_for_filtering.reduce(issuables.none) do |relation, status_mapping|
         relation.or(issuables.with_status(status_mapping[:status], status_mapping[:mapping]))
       end
+
+      # Excludes items that match direct status criteria but would be mapped to a different status
+      exclude_items_mapped_away_from_direct_matches(combined_relation, statuses_for_filtering)
     end
+
+    def exclude_items_mapped_away_from_direct_matches(relation, statuses_for_filtering)
+      # Find all mappings that could transform items away from our target statuses
+      # - old_status is one of our target statuses (or converts to one of our target statuses)
+      # - new_status is NOT one of our target statuses
+      statuses_for_filtering.each do |status_filter|
+        target_status = status_filter[:status]
+        next unless target_status.is_a?(::WorkItems::Statuses::Custom::Status)
+
+        target_status_ids = statuses_for_filtering.map { |sf| sf[:status].id }
+        all_relevant_mappings = load_all_relevant_mappings(statuses_for_filtering)
+
+        conflicting_mappings = find_custom_status_conflicting_mappings(
+          target_status, all_relevant_mappings, target_status_ids
+        )
+
+        conflicting_mappings.each do |mapping|
+          relation = apply_mapping_exclusion_condition(relation, mapping, target_status)
+        end
+      end
+
+      relation
+    end
+
+    def load_all_relevant_mappings(statuses_for_filtering)
+      relevant_namespaces = statuses_for_filtering
+        .filter_map { |sf| sf[:status].try(:namespace) }
+        .uniq
+
+      relevant_namespaces.flat_map do |namespace|
+        load_cached_mappings(namespace)
+      end
+    end
+
+    def find_custom_status_conflicting_mappings(target_status, all_relevant_mappings, target_status_ids)
+      conflicting_mappings = []
+
+      # Find direct mappings FROM this target status
+      direct_mappings = all_relevant_mappings.select do |mapping|
+        mapping.old_status_id == target_status.id &&
+          target_status_ids.exclude?(mapping.new_status_id)
+      end
+      conflicting_mappings.concat(direct_mappings)
+
+      # Find mappings from system-defined status this custom status was converted from
+      if target_status.converted_from_system_defined_status_identifier.present?
+        system_mappings = all_relevant_mappings.select do |mapping|
+          mapping.old_status&.converted_from_system_defined_status_identifier ==
+            target_status.converted_from_system_defined_status_identifier &&
+            target_status_ids.exclude?(mapping.new_status_id)
+        end
+        conflicting_mappings.concat(system_mappings)
+      end
+
+      conflicting_mappings
+    end
+
+    # rubocop:disable CodeReuse/ActiveRecord -- context-specific dynamic logic
+    def apply_mapping_exclusion_condition(relation, mapping, target_status)
+      base_condition = { work_item_type_id: mapping.work_item_type_id }
+      time_condition = mapping.time_constrained? ? { updated_at: mapping.time_range } : {}
+
+      custom_condition = base_condition.merge(
+        work_item_current_statuses: { custom_status_id: target_status.id }.merge(time_condition)
+      )
+      relation = relation.where.not(custom_condition)
+
+      if target_status.converted_from_system_defined_status_identifier.present?
+        system_condition = base_condition.merge(
+          work_item_current_statuses: {
+            system_defined_status_id: target_status.converted_from_system_defined_status_identifier
+          }.merge(time_condition)
+        )
+        relation = relation.where.not(system_condition)
+      end
+
+      relation
+    end
+    # rubocop:enable CodeReuse/ActiveRecord
 
     def root_ancestor
       parent&.root_ancestor
