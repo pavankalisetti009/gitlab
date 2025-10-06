@@ -39,6 +39,10 @@ RSpec.describe VirtualRegistries::Container::Registry, feature_category: :virtua
     it { is_expected.to eq([registry]) }
   end
 
+  it_behaves_like 'virtual registries: upstreams ordering',
+    registry_factory: :virtual_registries_container_registry,
+    upstream_factory: :virtual_registries_container_upstream
+
   it_behaves_like 'virtual registries: group registry limit', registry_factory: :virtual_registries_container_registry
 
   it_behaves_like 'virtual registries: has exclusive upstreams',
