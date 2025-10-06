@@ -12,7 +12,6 @@ module EE
           super
 
           log_audit_event
-          create_or_update_seat_assignments
           update_user_group_member_roles
         end
 
@@ -37,13 +36,6 @@ module EE
           }
 
           ::Gitlab::Audit::Auditor.audit(audit_context)
-        end
-
-        def create_or_update_seat_assignments
-          return unless ::Feature.enabled?(:sam_group_links, root_ancestor)
-          return unless ::Gitlab::Saas.feature_available?(:gitlab_com_subscriptions)
-
-          ::GitlabSubscriptions::SeatAssignments::GroupLinks::CreateOrUpdateSeatsWorker.perform_async(link.id)
         end
 
         def update_user_group_member_roles

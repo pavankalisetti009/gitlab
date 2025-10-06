@@ -2453,16 +2453,6 @@
   :idempotent: true
   :tags: []
   :queue_namespace:
-- :name: gitlab_subscriptions_seat_assignments_group_links_create_or_update_seats
-  :worker_name: GitlabSubscriptions::SeatAssignments::GroupLinks::CreateOrUpdateSeatsWorker
-  :feature_category: :seat_cost_management
-  :has_external_dependencies: false
-  :urgency: :low
-  :resource_boundary: :unknown
-  :weight: 1
-  :idempotent: true
-  :tags: []
-  :queue_namespace:
 - :name: gitlab_subscriptions_seat_assignments_member_transfers_create_group_seats
   :worker_name: GitlabSubscriptions::SeatAssignments::MemberTransfers::CreateGroupSeatsWorker
   :feature_category: :seat_cost_management
