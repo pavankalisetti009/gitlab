@@ -48,6 +48,7 @@ export const branchRulesMockResponse = {
                 edges: accessLevelsMockResponse,
                 __typename: 'PushAccessLevelConnection',
               },
+              isGroupLevel: false,
             },
             approvalRules: {
               nodes: [{ id: 1 }],
@@ -75,6 +76,7 @@ export const branchRulesMockResponse = {
                 edges: [],
                 __typename: 'PushAccessLevelConnection',
               },
+              isGroupLevel: false,
             },
             approvalRules: {
               nodes: [],

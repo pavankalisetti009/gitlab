@@ -8,6 +8,7 @@ query getBranchRulesEE($projectPath: ID!) {
         isDefault
         matchingBranchesCount
         branchProtection {
+          isGroupLevel
           allowForcePush
           codeOwnerApprovalRequired
           mergeAccessLevels {
