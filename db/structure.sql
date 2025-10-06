@@ -5182,7 +5182,7 @@ CREATE TABLE p_ci_job_definitions (
     partition_id bigint NOT NULL,
     project_id bigint NOT NULL,
     created_at timestamp with time zone NOT NULL,
-    updated_at timestamp with time zone NOT NULL,
+    updated_at timestamp with time zone,
     interruptible boolean DEFAULT false NOT NULL,
     checksum bytea NOT NULL,
     config jsonb DEFAULT '{}'::jsonb NOT NULL
