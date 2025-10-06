@@ -25,6 +25,9 @@ describe('SourceFilter component', () => {
     createWrapper(value);
 
     expect(findToggle().props('toggleText')).toBe(expectedToggleText);
+    expect(findToggle().attributes('aria-label')).toBe(
+      `Select source, currently selected: ${expectedToggleText}`,
+    );
   });
 
   it('displays the "All policies" option first', () => {
