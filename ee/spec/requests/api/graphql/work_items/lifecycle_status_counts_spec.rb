@@ -81,41 +81,13 @@ RSpec.describe 'Query lifecycle status counts', feature_category: :team_planning
       it 'returns status counts' do
         post_graphql(query, current_user: current_user, variables: variables)
 
-        expect(graphql_data.dig('namespace', 'lifecycles', 'nodes')).to include(
-          'id' => lifecycle.to_gid.to_s,
-          'statusCounts' => match_array([
-            {
-              'status' => {
-                'id' => lifecycle.default_open_status.to_gid.to_s
-              },
-              'count' => "3"
-            },
-            {
-              'status' => {
-                'id' => system_defined_in_progress.to_gid.to_s
-              },
-              'count' => "0"
-            },
-            {
-              'status' => {
-                'id' => lifecycle.default_closed_status.to_gid.to_s
-              },
-              'count' => "2"
-            },
-            {
-              'status' => {
-                'id' => system_defined_wont_do.to_gid.to_s
-              },
-              'count' => "0"
-            },
-            {
-              'status' => {
-                'id' => lifecycle.default_duplicate_status.to_gid.to_s
-              },
-              'count' => "0"
-            }
-          ])
-        )
+        expect(get_lifecycle_status_counts(lifecycle)).to match_array([
+          status_expectation(lifecycle.default_open_status.to_gid.to_s, "3"),
+          status_expectation(system_defined_in_progress.to_gid.to_s, "0"),
+          status_expectation(lifecycle.default_closed_status.to_gid.to_s, "2"),
+          status_expectation(system_defined_wont_do.to_gid.to_s, "0"),
+          status_expectation(lifecycle.default_duplicate_status.to_gid.to_s, "0")
+        ])
       end
 
       it_behaves_like 'a work item status counter with overflow handling'
@@ -128,78 +100,89 @@ RSpec.describe 'Query lifecycle status counts', feature_category: :team_planning
         it 'returns status counts with null values' do
           post_graphql(query, current_user: current_user, variables: variables)
 
-          expect(graphql_data.dig('namespace', 'lifecycles', 'nodes')).to include(
-            'id' => lifecycle.to_gid.to_s,
-            'statusCounts' => match_array([
-              {
-                'status' => {
-                  'id' => lifecycle.default_open_status.to_gid.to_s
-                },
-                'count' => nil
-              },
-              {
-                'status' => {
-                  'id' => lifecycle.default_closed_status.to_gid.to_s
-                },
-                'count' => nil
-              },
-              {
-                'status' => {
-                  'id' => lifecycle.default_duplicate_status.to_gid.to_s
-                },
-                'count' => nil
-              }
-            ])
-          )
+          expect(get_lifecycle_status_counts(lifecycle)).to match_array([
+            status_expectation(lifecycle.default_open_status.to_gid.to_s, nil),
+            status_expectation(lifecycle.default_closed_status.to_gid.to_s, nil),
+            status_expectation(lifecycle.default_duplicate_status.to_gid.to_s, nil)
+          ])
         end
       end
 
       context 'when lifecycle is in use' do
-        let!(:issue_type_custom_lifecycle) do
-          create(:work_item_type_custom_lifecycle,
-            work_item_type: issue_work_item_type,
-            lifecycle: lifecycle,
-            namespace: group
-          )
-        end
+        context 'when multiple work item types share the same lifecycle' do
+          let!(:issue_type_custom_lifecycle) do
+            create(:work_item_type_custom_lifecycle,
+              work_item_type: issue_work_item_type,
+              lifecycle: lifecycle,
+              namespace: group
+            )
+          end
 
-        let!(:task_type_custom_lifecycle) do
-          create(:work_item_type_custom_lifecycle,
-            work_item_type: task_work_item_type,
-            lifecycle: lifecycle,
-            namespace: group
-          )
-        end
+          let!(:task_type_custom_lifecycle) do
+            create(:work_item_type_custom_lifecycle,
+              work_item_type: task_work_item_type,
+              lifecycle: lifecycle,
+              namespace: group
+            )
+          end
 
-        it 'returns status counts' do
-          post_graphql(query, current_user: current_user, variables: variables)
+          it 'returns status counts' do
+            post_graphql(query, current_user: current_user, variables: variables)
 
-          expect(graphql_data.dig('namespace', 'lifecycles', 'nodes')).to include(
-            'id' => lifecycle.to_gid.to_s,
-            'statusCounts' => match_array([
-              {
-                'status' => {
-                  'id' => lifecycle.default_open_status.to_gid.to_s
-                },
-                'count' => "3"
-              },
-              {
-                'status' => {
-                  'id' => lifecycle.default_closed_status.to_gid.to_s
-                },
-                'count' => "2"
-              },
-              {
-                'status' => {
-                  'id' => lifecycle.default_duplicate_status.to_gid.to_s
-                },
-                'count' => "0"
-              }
+            expect(get_lifecycle_status_counts(lifecycle)).to match_array([
+              status_expectation(lifecycle.default_open_status.to_gid.to_s, "3"),
+              status_expectation(lifecycle.default_closed_status.to_gid.to_s, "2"),
+              status_expectation(lifecycle.default_duplicate_status.to_gid.to_s, "0")
             ])
-          )
+          end
+
+          it_behaves_like 'a work item status counter with overflow handling'
         end
 
-        it_behaves_like 'a work item status counter with overflow handling'
+        context 'when different lifecycles share the same statuses' do
+          let_it_be(:shared_open_status) { create(:work_item_custom_status, :to_do, namespace: group) }
+          let_it_be(:shared_closed_status) { create(:work_item_custom_status, :done, namespace: group) }
+
+          let_it_be(:issue_lifecycle) do
+            create(:work_item_custom_lifecycle,
+              default_open_status: shared_open_status, default_closed_status: shared_closed_status, namespace: group
+            )
+          end
+
+          let_it_be(:task_lifecycle) do
+            create(:work_item_custom_lifecycle,
+              default_open_status: shared_open_status, default_closed_status: shared_closed_status, namespace: group
+            )
+          end
+
+          let!(:issue_type_lifecycle_association) do
+            create(:work_item_type_custom_lifecycle,
+              work_item_type: issue_work_item_type, lifecycle: issue_lifecycle, namespace: group
+            )
+          end
+
+          let!(:task_type_lifecycle_association) do
+            create(:work_item_type_custom_lifecycle,
+              work_item_type: task_work_item_type, lifecycle: task_lifecycle, namespace: group
+            )
+          end
+
+          it 'returns separate status counts for each lifecycle' do
+            post_graphql(query, current_user: current_user, variables: variables)
+
+            expect(get_lifecycle_status_counts(issue_lifecycle)).to match_array([
+              status_expectation(shared_open_status.to_gid.to_s, "2"),
+              status_expectation(shared_closed_status.to_gid.to_s, "0"),
+              status_expectation(issue_lifecycle.default_duplicate_status.to_gid.to_s, "0")
+            ])
+
+            expect(get_lifecycle_status_counts(task_lifecycle)).to match_array([
+              status_expectation(shared_open_status.to_gid.to_s, "1"),
+              status_expectation(shared_closed_status.to_gid.to_s, "2"),
+              status_expectation(task_lifecycle.default_duplicate_status.to_gid.to_s, "0")
+            ])
+          end
+        end
       end
     end
   end
@@ -214,5 +197,18 @@ RSpec.describe 'Query lifecycle status counts', feature_category: :team_planning
 
       expect(graphql_data.dig('namespace', 'lifecycles')).to be_nil
     end
+  end
+
+  def get_lifecycle_status_counts(lifecycle)
+    lifecycles_data = graphql_data.dig('namespace', 'lifecycles', 'nodes')
+    lifecycle_data = lifecycles_data.find { |l| l['id'] == lifecycle.to_gid.to_s }
+    lifecycle_data['statusCounts']
+  end
+
+  def status_expectation(status_id, count)
+    {
+      'status' => { 'id' => status_id },
+      'count' => count
+    }
   end
 end
