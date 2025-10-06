@@ -7,6 +7,7 @@ module EE
     prepended do
       before_action only: :issues do
         push_frontend_feature_flag(:work_item_status_mvc2, :instance)
+        push_frontend_feature_flag(:work_item_status_on_dashboard, current_user)
       end
     end
   end

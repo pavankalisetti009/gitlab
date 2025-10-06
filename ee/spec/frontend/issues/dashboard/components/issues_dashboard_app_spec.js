@@ -17,11 +17,11 @@ describe('IssuesDashboardAppEE component', () => {
   };
 
   describe('tokens', () => {
-    describe('when workItemStatusMvc2=true', () => {
+    describe('when workItemStatusOnDashboard=true', () => {
       describe('when hasStatusFeature=true', () => {
         it('passes status token to IssuesDashboardApp', () => {
           mountComponent({
-            provide: { hasStatusFeature: true, glFeatures: { workItemStatusMvc2: true } },
+            provide: { hasStatusFeature: true, glFeatures: { workItemStatusOnDashboard: true } },
           });
 
           expect(findIssuesDashboardApp().props('eeSearchTokens')).toMatchObject([
@@ -33,7 +33,7 @@ describe('IssuesDashboardAppEE component', () => {
       describe('when hasStatusFeature=false', () => {
         it('does not pass status token to IssuesDashboardApp', () => {
           mountComponent({
-            provide: { hasStatusFeature: false, glFeatures: { workItemStatusMvc2: true } },
+            provide: { hasStatusFeature: false, glFeatures: { workItemStatusOnDashboard: true } },
           });
 
           expect(findIssuesDashboardApp().props('eeSearchTokens')).toEqual([]);
@@ -41,11 +41,11 @@ describe('IssuesDashboardAppEE component', () => {
       });
     });
 
-    describe('when workItemStatusMvc2=false', () => {
+    describe('when workItemStatusOnDashboard=false', () => {
       describe('when hasStatusFeature=true', () => {
         it('does not pass status token to IssuesDashboardApp', () => {
           mountComponent({
-            provide: { hasStatusFeature: true, glFeatures: { workItemStatusMvc2: false } },
+            provide: { hasStatusFeature: true, glFeatures: { workItemStatusOnDashboard: false } },
           });
 
           expect(findIssuesDashboardApp().props('eeSearchTokens')).toEqual([]);
@@ -55,7 +55,7 @@ describe('IssuesDashboardAppEE component', () => {
       describe('when hasStatusFeature=false', () => {
         it('does not pass status token to IssuesDashboardApp', () => {
           mountComponent({
-            provide: { hasStatusFeature: false, glFeatures: { workItemStatusMvc2: false } },
+            provide: { hasStatusFeature: false, glFeatures: { workItemStatusOnDashboard: false } },
           });
 
           expect(findIssuesDashboardApp().props('eeSearchTokens')).toEqual([]);
