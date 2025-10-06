@@ -46,7 +46,7 @@ export default {
           value: ref,
           text: name,
         }))
-        .sort((a, b) => b.text.localeCompare(a.text));
+        .sort((a, b) => a.text.localeCompare(b.text));
 
       return [...modelOptions, this.defaultModelOption];
     },

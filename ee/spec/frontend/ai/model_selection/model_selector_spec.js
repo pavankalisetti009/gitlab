@@ -95,7 +95,7 @@ describe('ModelSelector', () => {
   });
 
   describe('loading state', () => {
-    it('passes corect loading state to `ModelSelectDropdown` while saving', async () => {
+    it('passes correct loading state to `ModelSelectDropdown` while saving', async () => {
       createComponent();
 
       await findModelSelectDropdown().vm.$emit('select', 'claude_3_5_sonnet_20240620');
@@ -103,7 +103,7 @@ describe('ModelSelector', () => {
       expect(findModelSelectDropdown().props('isLoading')).toBe(true);
     });
 
-    it('passes corect loading state to `ModelSelectDropdown` while batch saving', () => {
+    it('passes correct loading state to `ModelSelectDropdown` while batch saving', () => {
       createComponent({ props: { batchUpdateIsSaving: true } });
 
       expect(findModelSelectDropdown().props('isLoading')).toBe(true);
@@ -111,13 +111,13 @@ describe('ModelSelector', () => {
   });
 
   describe('.listItems', () => {
-    it('contains a list of models sorted in descending alphabetical order, including a default model option', () => {
+    it('contains a list of models sorted in ascending alphabetical order, including a default model option', () => {
       createComponent();
 
       expect(findModelSelectDropdown().props('items')).toEqual([
-        { value: 'claude_sonnet_3_7_20250219', text: 'Claude Sonnet 3.7 - Anthropic' },
-        { value: 'claude_3_5_sonnet_20240620', text: 'Claude Sonnet 3.5 - Anthropic' },
         { value: 'claude_3_haiku_20240307', text: 'Claude Haiku 3 - Anthropic' },
+        { value: 'claude_3_5_sonnet_20240620', text: 'Claude Sonnet 3.5 - Anthropic' },
+        { value: 'claude_sonnet_3_7_20250219', text: 'Claude Sonnet 3.7 - Anthropic' },
         {
           value: GITLAB_DEFAULT_MODEL,
           text: 'GitLab default model (Claude Sonnet 3.7 - Anthropic)',
@@ -125,7 +125,7 @@ describe('ModelSelector', () => {
       ]);
     });
 
-    it('sorts models in descending alphabetical order', () => {
+    it('sorts models in ascending alphabetical order', () => {
       const testFeatureSetting = {
         ...aiFeatureSetting,
         selectableModels: [
@@ -143,11 +143,11 @@ describe('ModelSelector', () => {
       const modelNames = items.map((item) => item.text);
 
       expect(modelNames).toEqual([
-        'OpenAI GPT-5',
-        'Claude Sonnet 4 - Anthropic',
-        'Claude Sonnet 3.7 - Anthropic',
-        'Claude Sonnet 3.5 - Anthropic',
         'Claude Haiku 3 - Anthropic',
+        'Claude Sonnet 3.5 - Anthropic',
+        'Claude Sonnet 3.7 - Anthropic',
+        'Claude Sonnet 4 - Anthropic',
+        'OpenAI GPT-5',
         'GitLab default model (Claude Sonnet 3.7 - Anthropic)',
       ]);
     });
