@@ -50,7 +50,7 @@ module ComplianceManagement
       end
 
       def merged_at
-        merge_request&.merged_at
+        merge_request&.merged_at&.xmlschema if merge_request&.merged_at
       end
 
       def pipeline
