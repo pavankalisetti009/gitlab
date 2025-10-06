@@ -1916,6 +1916,52 @@ describe('Duo Agentic Chat', () => {
           isEmbedded: true,
         });
       });
+
+      describe('Apollo queries in embedded mode', () => {
+        beforeEach(async () => {
+          duoChatGlobalState.isAgenticChatShown = false;
+          createComponent({
+            propsData: {
+              isEmbedded: true,
+              userModelSelectionEnabled: true,
+              rootNamespaceId: MOCK_NAMESPACE_ID,
+            },
+          });
+          await waitForPromises();
+        });
+
+        it('runs agenticWorkflows query when embedded=true even if isAgenticChatShown=false', () => {
+          expect(userWorkflowsQueryHandlerMock).toHaveBeenCalled();
+        });
+
+        it('runs contextPresets query when embedded=true even if isAgenticChatShown=false', () => {
+          expect(contextPresetsQueryHandlerMock).toHaveBeenCalled();
+        });
+
+        it('runs availableModels query when embedded=true even if isAgenticChatShown=false', () => {
+          expect(availableModelsQueryHandlerMock).toHaveBeenCalled();
+        });
+
+        it('runs catalogAgents query when embedded=true even if isAgenticChatShown=false', () => {
+          expect(configuredAgentsQueryMock).toHaveBeenCalled();
+        });
+      });
+
+      describe('@thread-selected event in embedded mode', () => {
+        it('emits switch-to-active-tab event when thread is selected', async () => {
+          const mockThread = { id: MOCK_WORKFLOW_ID, aiCatalogItemVersionId: null };
+          const mockParsedData = { checkpoint: { channel_values: { ui_chat_log: [] } } };
+
+          WorkflowUtils.parseWorkflowData.mockReturnValue(mockParsedData);
+          WorkflowUtils.transformChatMessages.mockReturnValue(MOCK_TRANSFORMED_MESSAGES);
+
+          findDuoChat().vm.$emit('thread-selected', mockThread);
+          await waitForPromises();
+
+          expect(wrapper.emitted('switch-to-active-tab')?.length > 0).toBe(true);
+          expect(wrapper.emitted('switch-to-active-tab')).toHaveLength(1);
+        });
+      });
     });
   });
 });

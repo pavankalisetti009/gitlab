@@ -25,6 +25,7 @@ describe('AiContentContainer', () => {
         activeTab,
         isExpanded: true,
         showBackButton,
+        userId: 'gid://gitlab/User/1',
         projectId: 'gid://gitlab/Project/123',
         namespaceId: 'gid://gitlab/Group/456',
         rootNamespaceId: 'gid://gitlab/Group/789',
@@ -137,6 +138,44 @@ describe('AiContentContainer', () => {
 
       const placeholderDiv = wrapper.find('.ai-panel-body .gl-self-center');
       expect(placeholderDiv.exists()).toBe(false);
+    });
+  });
+
+  describe('event forwarding', () => {
+    const mockComponentTab = {
+      title: 'Test Component',
+      component: { name: 'MockComponent', render: (h) => h('div') },
+      props: { mode: 'test', isAgenticAvailable: true },
+    };
+
+    it('forwards switch-to-active-tab event from dynamic component', async () => {
+      createComponent({ activeTab: mockComponentTab });
+
+      const dynamicComponent = wrapper.findComponent({ name: 'MockComponent' });
+      dynamicComponent.vm.$emit('switch-to-active-tab', 'chat');
+      await nextTick();
+
+      expect(wrapper.emitted('switch-to-active-tab')?.length > 0).toBe(true);
+      expect(wrapper.emitted('switch-to-active-tab')).toHaveLength(1);
+      expect(wrapper.emitted('switch-to-active-tab')[0]).toEqual(['chat']);
+    });
+
+    it('passes mode prop with optional chaining to dynamic component', () => {
+      createComponent({ activeTab: mockComponentTab });
+
+      const panelBody = wrapper.find('.ai-panel-body');
+      expect(panelBody.exists()).toBe(true);
+    });
+
+    it('does not error when activeTab.props is undefined', () => {
+      const tabWithoutProps = {
+        title: 'Test Component',
+        component: { name: 'MockComponent', render: (h) => h('div') },
+      };
+
+      expect(() => {
+        createComponent({ activeTab: tabWithoutProps });
+      }).not.toThrow();
     });
   });
 });

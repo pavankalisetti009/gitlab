@@ -12,7 +12,9 @@ export default {
     GlTooltip: GlTooltipDirective,
   },
   i18n: {
-    duoChatLabel: __('GitLab Duo Chat'),
+    duoChatLabel: __('GitLab Duo Active Chat'),
+    newLabel: __('GitLab Duo New Chat'),
+    historyLabel: __('GitLab Duo Chat History'),
     suggestionsLabel: __('GitLab Duo Suggestions'),
     sessionsLabel: __('GitLab Duo Sessions'),
   },
@@ -38,6 +40,7 @@ export default {
   },
 };
 </script>
+
 <template>
   <div
     class="gl-flex gl-gap-3 gl-bg-transparent gl-p-3 sm:gl-px-0 lg:gl-flex-col"
@@ -60,6 +63,38 @@ export default {
     />
     <gl-button
       v-gl-tooltip.left
+      icon="plus"
+      class="!gl-rounded-lg"
+      :class="['ai-nav-icon', { 'ai-nav-icon-active': activeTab === 'new' }]"
+      category="tertiary"
+      :aria-selected="activeTab === 'new'"
+      :aria-expanded="isExpanded"
+      :aria-label="$options.i18n.newLabel"
+      :title="$options.i18n.newLabel"
+      data-testid="ai-new-toggle"
+      @mouseout="hideTooltips"
+      @click="toggleTab('new')"
+    />
+    <gl-button
+      v-gl-tooltip.left
+      icon="history"
+      class="!gl-rounded-lg"
+      :class="['ai-nav-icon', { 'ai-nav-icon-active': activeTab === 'history' }]"
+      category="tertiary"
+      :aria-selected="activeTab === 'history'"
+      :aria-expanded="isExpanded"
+      :aria-label="$options.i18n.historyLabel"
+      :title="$options.i18n.historyLabel"
+      data-testid="ai-history-toggle"
+      @mouseout="hideTooltips"
+      @click="toggleTab('history')"
+    />
+    <div
+      class="gl-mx-auto gl-my-4 gl-h-1 gl-w-5 gl-border-0 gl-border-t-1 gl-border-solid gl-border-[#7759C233]"
+      name="divider"
+    ></div>
+    <gl-button
+      v-gl-tooltip.left
       icon="session-ai"
       class="!gl-rounded-lg"
       :class="['ai-nav-icon', { 'ai-nav-icon-active': activeTab === 'sessions' }]"
@@ -75,7 +110,7 @@ export default {
     <gl-button
       v-gl-tooltip.left
       icon="suggestion-ai"
-      class="!gl-rounded-lg"
+      class="gl-mt-auto !gl-rounded-lg"
       :class="['ai-nav-icon', { 'ai-nav-icon-active': activeTab === 'suggestions' }]"
       category="tertiary"
       :aria-selected="activeTab === 'suggestions'"

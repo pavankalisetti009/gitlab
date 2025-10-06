@@ -14,12 +14,15 @@ export function initDuoPanel() {
   }
 
   const {
+    userId,
     projectId,
     namespaceId,
     rootNamespaceId,
     resourceId,
     metadata,
     userModelSelectionEnabled,
+    agenticAvailable,
+    chatTitle,
   } = el.dataset;
 
   const router = createRouter('/', 'user');
@@ -36,11 +39,14 @@ export function initDuoPanel() {
     apolloProvider,
     provide: {
       isSidePanelView: true,
+      isAgenticAvailable: parseBoolean(agenticAvailable),
+      chatTitle,
     },
     render(createElement) {
       return createElement(AIPanel, {
         props: {
           name: 'AiPanel',
+          userId,
           projectId,
           namespaceId,
           rootNamespaceId,

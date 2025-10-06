@@ -27,6 +27,11 @@ export default {
       required: false,
       default: false,
     },
+    userId: {
+      type: String,
+      required: false,
+      default: null,
+    },
     projectId: {
       type: String,
       required: false,
@@ -70,6 +75,9 @@ export default {
     maximizeButtonLabel() {
       return this.isMaximized ? __('Minimize Duo Panel') : __('Maximize Duo Panel');
     },
+    tabMode() {
+      return this.activeTab?.props?.mode;
+    },
   },
   methods: {
     handleGoBack() {
@@ -77,6 +85,9 @@ export default {
     },
     toggleIsMaximized() {
       this.isMaximized = !this.isMaximized;
+    },
+    onSwitchToActiveTab(tab) {
+      this.$emit('switch-to-active-tab', tab);
     },
   },
 };
@@ -136,7 +147,7 @@ export default {
       </div>
     </div>
     <div
-      class="ai-panel-body gl-flex-wrap gl-justify-center gl-overflow-auto gl-text-sm gl-text-secondary"
+      class="ai-panel-body gl-h-full gl-flex-wrap gl-justify-center gl-overflow-auto gl-text-sm gl-text-secondary"
       :class="{ 'gl-flex gl-min-h-full': typeof activeTab.component === 'string' }"
     >
       <div v-if="typeof activeTab.component === 'string'" class="gl-self-center">
@@ -145,13 +156,17 @@ export default {
       <component
         :is="activeTab.component"
         v-else
+        :user-id="userId"
         :project-id="projectId"
         :namespace-id="namespaceId"
         :root-namespace-id="rootNamespaceId"
         :resource-id="resourceId"
         :metadata="metadata"
         :user-model-selection-enabled="userModelSelectionEnabled"
+        :agentic-available="activeTab.props && activeTab.props.isAgenticAvailable"
         :embedded="true"
+        :mode="tabMode"
+        @switch-to-active-tab="onSwitchToActiveTab"
       />
     </div>
   </aside>

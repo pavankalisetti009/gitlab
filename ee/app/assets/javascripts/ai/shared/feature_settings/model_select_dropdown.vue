@@ -77,6 +77,7 @@ export default {
     :items="items"
     :header-text="headerText"
     :loading="isLoading"
+    :fluid_width="true"
     category="primary"
     block
     @select="onSelect"
