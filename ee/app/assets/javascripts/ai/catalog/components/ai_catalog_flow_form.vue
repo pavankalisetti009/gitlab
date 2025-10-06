@@ -13,13 +13,14 @@ import {
   FLOW_VISIBILITY_LEVEL_DESCRIPTIONS,
 } from 'ee/ai/catalog/constants';
 import { __, s__ } from '~/locale';
-import ErrorsAlert from '~/vue_shared/components/errors_alert.vue';
 import glFeatureFlagsMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
+import ErrorsAlert from '~/vue_shared/components/errors_alert.vue';
 import { AI_CATALOG_FLOWS_ROUTE, AI_CATALOG_FLOWS_SHOW_ROUTE } from '../router/constants';
 import { createFieldValidators } from '../utils';
 import AiCatalogFormButtons from './ai_catalog_form_buttons.vue';
 import AiCatalogStepsEditor from './ai_catalog_steps_editor.vue';
 import AiCatalogFormSidePanel from './ai_catalog_form_side_panel.vue';
+import FormFlowConfiguration from './form_flow_configuration.vue';
 import FormProjectDropdown from './form_project_dropdown.vue';
 import VisibilityLevelRadioGroup from './visibility_level_radio_group.vue';
 
@@ -29,6 +30,7 @@ export default {
     AiCatalogFormButtons,
     AiCatalogStepsEditor,
     AiCatalogFormSidePanel,
+    FormFlowConfiguration,
     FormProjectDropdown,
     GlButton,
     GlForm,
@@ -59,6 +61,7 @@ export default {
           projectId: null,
           name: '',
           description: '',
+          configuration: '',
           steps: [],
           release: true,
           public: false,
@@ -66,7 +69,6 @@ export default {
       },
     },
   },
-
   data() {
     return {
       formValues: {
@@ -86,6 +88,9 @@ export default {
     },
     isEditMode() {
       return this.mode === 'edit';
+    },
+    isThirdPartyFlowsAvailable() {
+      return this.glFeatures.aiCatalogThirdPartyFlows;
     },
     allErrors() {
       return [...this.errors, ...this.formErrors];
@@ -124,6 +129,19 @@ export default {
               },
             },
           };
+      const configurationField = this.isThirdPartyFlowsAvailable
+        ? {
+            configuration: {
+              label: s__('AICatalog|Configuration'),
+              groupAttrs: {
+                optional: true,
+                labelDescription: s__(
+                  'AICatalog|This YAML configuration file determines the prompts, tools, and capabilities of your flow.',
+                ),
+              },
+            },
+          }
+        : {};
 
       return {
         ...projectIdField,
@@ -164,6 +182,7 @@ export default {
             ),
           },
         },
+        ...configurationField,
         steps: {
           label: s__('AICatalog|Flow nodes'),
           groupAttrs: {
@@ -217,7 +236,7 @@ export default {
   <div>
     <errors-alert :errors="allErrors" @dismiss="dismissErrors" />
     <div class="gl-flex gl-items-stretch gl-gap-8">
-      <gl-form :id="formId" class="gl-max-w-lg" @submit.prevent>
+      <gl-form :id="formId" @submit.prevent>
         <gl-form-fields
           v-model="formValues"
           :form-id="formId"
@@ -253,6 +272,9 @@ export default {
               :texts="$options.visibilityLevelTexts"
               @input="input"
             />
+          </template>
+          <template #input(configuration)="{ input, value }">
+            <form-flow-configuration :value="value" @input="input" />
           </template>
           <template #input(steps)>
             <ai-catalog-steps-editor

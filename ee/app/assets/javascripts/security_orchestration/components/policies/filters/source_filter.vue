@@ -1,6 +1,6 @@
 <script>
 import { GlFormGroup, GlCollapsibleListbox } from '@gitlab/ui';
-import { s__ } from '~/locale';
+import { s__, sprintf } from '~/locale';
 import { validateSourceFilter } from 'ee/security_orchestration/components/policies/utils';
 import { POLICY_SOURCE_OPTIONS } from '../constants';
 
@@ -20,6 +20,11 @@ export default {
     },
   },
   computed: {
+    ariaLabel() {
+      return sprintf(s__('SecurityOrchestration|Select source, currently selected: %{selected}'), {
+        selected: this.selectedValueText,
+      });
+    },
     selectedValueText() {
       return POLICY_SOURCE_OPTIONS_VALUES.find(({ value }) => value === this.value).text;
     },
@@ -45,6 +50,7 @@ export default {
   >
     <gl-collapsible-listbox
       :id="$options.policySourceFilterId"
+      :aria-label="ariaLabel"
       block
       class="gl-flex"
       toggle-class="gl-truncate"

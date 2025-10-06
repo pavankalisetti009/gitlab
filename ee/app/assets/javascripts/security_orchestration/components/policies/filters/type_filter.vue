@@ -1,6 +1,6 @@
 <script>
 import { GlFormGroup, GlCollapsibleListbox } from '@gitlab/ui';
-import { __ } from '~/locale';
+import { __, s__, sprintf } from '~/locale';
 import { validateTypeFilter } from 'ee/security_orchestration/components/policies/utils';
 import { POLICY_TYPE_FILTER_OPTIONS } from '../constants';
 
@@ -18,6 +18,11 @@ export default {
     },
   },
   computed: {
+    ariaLabel() {
+      return sprintf(s__('SecurityOrchestration|Select type, currently selected: %{selected}'), {
+        selected: this.selectedValueText,
+      });
+    },
     listboxItems() {
       return Object.values(POLICY_TYPE_FILTER_OPTIONS).map((option) => ({
         value: option.value,
@@ -50,6 +55,7 @@ export default {
   >
     <gl-collapsible-listbox
       :id="$options.policyTypeFilterId"
+      :aria-label="ariaLabel"
       class="gl-flex"
       toggle-class="gl-truncate"
       block

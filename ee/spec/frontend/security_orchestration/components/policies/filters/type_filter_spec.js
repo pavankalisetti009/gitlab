@@ -36,6 +36,9 @@ describe('TypeFilter component', () => {
       createWrapper({ value });
 
       expect(findToggle().props('toggleText')).toBe(expectedToggleText);
+      expect(findToggle().attributes('aria-label')).toBe(
+        `Select type, currently selected: ${expectedToggleText}`,
+      );
     });
 
     it('displays the "All policies" option first', () => {
