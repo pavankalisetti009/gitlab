@@ -229,6 +229,39 @@ RSpec.describe Notes::PostProcessService, feature_category: :team_planning do
               execute
             end
           end
+
+          context 'when multiple flow triggers match the same mentioned user' do
+            let_it_be(:second_flow_trigger) do
+              create(:ai_flow_trigger, project: project, user: mentioned_user)
+            end
+
+            it 'triggers all matching flow triggers' do
+              service_instance_1 = instance_double('Ai::FlowTriggers::RunService')
+              service_instance_2 = instance_double('Ai::FlowTriggers::RunService')
+
+              expect(::Ai::FlowTriggers::RunService).to receive(:new).with(
+                hash_including(flow_trigger: flow_trigger)
+              ).and_return(service_instance_1)
+
+              expect(::Ai::FlowTriggers::RunService).to receive(:new).with(
+                hash_including(flow_trigger: second_flow_trigger)
+              ).and_return(service_instance_2)
+
+              expect(service_instance_1).to receive(:execute).with({
+                input: "Test note content",
+                event: :mention,
+                discussion: note.discussion
+              })
+
+              expect(service_instance_2).to receive(:execute).with({
+                input: "Test note content",
+                event: :mention,
+                discussion: note.discussion
+              })
+
+              execute
+            end
+          end
         end
 
         context 'when there is no matching flow trigger' do

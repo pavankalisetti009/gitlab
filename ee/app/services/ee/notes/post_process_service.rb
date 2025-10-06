@@ -76,18 +76,20 @@ module EE
       def process_ai_flow_triggers
         return unless note.author.can?(:trigger_ai_flow, note.project)
 
-        flow_trigger = note.project.ai_flow_triggers.triggered_on(:mention).by_users(note.mentioned_users).first
-        return unless flow_trigger
+        flow_triggers = note.project.ai_flow_triggers.triggered_on(:mention).by_users(note.mentioned_users)
+        return if flow_triggers.empty?
 
-        # We don't want the service account to talk to itself
-        return if note.author == flow_trigger.user
+        flow_triggers.each do |flow_trigger|
+          # We don't want the service account to talk to itself
+          next if note.author == flow_trigger.user
 
-        ::Ai::FlowTriggers::RunService.new(
-          project: note.project,
-          current_user: note.author,
-          resource: note.noteable,
-          flow_trigger: flow_trigger
-        ).execute({ input: note.note, event: :mention, discussion: note.discussion })
+          ::Ai::FlowTriggers::RunService.new(
+            project: note.project,
+            current_user: note.author,
+            resource: note.noteable,
+            flow_trigger: flow_trigger
+          ).execute({ input: note.note, event: :mention, discussion: note.discussion })
+        end
       end
     end
   end
