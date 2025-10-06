@@ -866,7 +866,7 @@ four standard [pagination arguments](#pagination-arguments):
 | <a id="queryduoworkflowworkflowsenvironment"></a>`environment` | [`WorkflowEnvironment`](#workflowenvironment) | Environment, for example, IDE or web. |
 | <a id="queryduoworkflowworkflowsexcludetypes"></a>`excludeTypes` | [`[String!]`](#string) | Types of flows to exclude (for example, ["software_development", "chat"]). |
 | <a id="queryduoworkflowworkflowsprojectpath"></a>`projectPath` | [`ID`](#id) | Full path of the project that contains the flows. |
-| <a id="queryduoworkflowworkflowssort"></a>`sort` | [`Sort`](#sort) | Sort flows by the criteria. |
+| <a id="queryduoworkflowworkflowssort"></a>`sort` | [`DuoWorkflowsWorkflowSort`](#duoworkflowsworkflowsort) | Sort flows by the criteria. |
 | <a id="queryduoworkflowworkflowstype"></a>`type` | [`String`](#string) | Type of flow to filter by (for example, software_development). |
 | <a id="queryduoworkflowworkflowsworkflowid"></a>`workflowId` | [`AiDuoWorkflowsWorkflowID`](#aiduoworkflowsworkflowid) | Flow ID to filter by. |
 
@@ -39718,7 +39718,7 @@ four standard [pagination arguments](#pagination-arguments):
 | <a id="projectduoworkflowworkflowsenvironment"></a>`environment` | [`WorkflowEnvironment`](#workflowenvironment) | Environment, for example, IDE or web. |
 | <a id="projectduoworkflowworkflowsexcludetypes"></a>`excludeTypes` | [`[String!]`](#string) | Types of flows to exclude (for example, ["software_development", "chat"]). |
 | <a id="projectduoworkflowworkflowsprojectpath"></a>`projectPath` | [`ID`](#id) | Full path of the project that contains the flows. |
-| <a id="projectduoworkflowworkflowssort"></a>`sort` | [`Sort`](#sort) | Sort flows by the criteria. |
+| <a id="projectduoworkflowworkflowssort"></a>`sort` | [`DuoWorkflowsWorkflowSort`](#duoworkflowsworkflowsort) | Sort flows by the criteria. |
 | <a id="projectduoworkflowworkflowstype"></a>`type` | [`String`](#string) | Type of flow to filter by (for example, software_development). |
 | <a id="projectduoworkflowworkflowsworkflowid"></a>`workflowId` | [`AiDuoWorkflowsWorkflowID`](#aiduoworkflowsworkflowid) | Flow ID to filter by. |
 
@@ -48388,6 +48388,23 @@ The status of the workflow.
 | <a id="duoworkflowstatusrunning"></a>`RUNNING` | The workflow is running. |
 | <a id="duoworkflowstatusstopped"></a>`STOPPED` | The workflow is stopped. |
 | <a id="duoworkflowstatustool_call_approval_required"></a>`TOOL_CALL_APPROVAL_REQUIRED` | The workflow is tool_call_approval_required. |
+
+### `DuoWorkflowsWorkflowSort`
+
+Values for sorting Duo Workflows.
+
+| Value | Description |
+| ----- | ----------- |
+| <a id="duoworkflowsworkflowsortcreated_asc"></a>`CREATED_ASC` | Created at ascending order. |
+| <a id="duoworkflowsworkflowsortcreated_desc"></a>`CREATED_DESC` | Created at descending order. |
+| <a id="duoworkflowsworkflowsortstatus_asc"></a>`STATUS_ASC` | By status ascending order. |
+| <a id="duoworkflowsworkflowsortstatus_desc"></a>`STATUS_DESC` | By status descending order. |
+| <a id="duoworkflowsworkflowsortupdated_asc"></a>`UPDATED_ASC` | Updated at ascending order. |
+| <a id="duoworkflowsworkflowsortupdated_desc"></a>`UPDATED_DESC` | Updated at descending order. |
+| <a id="duoworkflowsworkflowsortcreated_asc"></a>`created_asc` {{< icon name="warning-solid" >}} | **Deprecated** in GitLab 13.5. This was renamed. Use: `CREATED_ASC`. |
+| <a id="duoworkflowsworkflowsortcreated_desc"></a>`created_desc` {{< icon name="warning-solid" >}} | **Deprecated** in GitLab 13.5. This was renamed. Use: `CREATED_DESC`. |
+| <a id="duoworkflowsworkflowsortupdated_asc"></a>`updated_asc` {{< icon name="warning-solid" >}} | **Deprecated** in GitLab 13.5. This was renamed. Use: `UPDATED_ASC`. |
+| <a id="duoworkflowsworkflowsortupdated_desc"></a>`updated_desc` {{< icon name="warning-solid" >}} | **Deprecated** in GitLab 13.5. This was renamed. Use: `UPDATED_DESC`. |
 
 ### `EntryType`
 

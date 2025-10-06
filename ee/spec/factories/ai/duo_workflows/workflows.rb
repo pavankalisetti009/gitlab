@@ -15,6 +15,18 @@ FactoryBot.define do
       workflow_definition { "chat" }
     end
 
+    trait :created do
+      status { 0 }
+    end
+
+    trait :running do
+      status { 1 }
+    end
+
+    trait :failed do
+      status { 4 }
+    end
+
     after(:build) do |workflow, _|
       workflow.project_id = nil if workflow.namespace_id
     end

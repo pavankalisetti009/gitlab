@@ -409,8 +409,8 @@ RSpec.describe 'Querying Duo Workflows Workflows', feature_category: :agent_foun
       end
 
       context 'with the sort argument' do
-        context 'when :created_asc' do
-          let(:variables) { { sort: :created_asc } }
+        context 'when CREATED_ASC' do
+          let(:variables) { { sort: :CREATED_ASC } }
 
           it 'returns the workflows oldest first', :aggregate_failures do
             post_graphql(query, current_user: current_user)
@@ -423,8 +423,8 @@ RSpec.describe 'Querying Duo Workflows Workflows', feature_category: :agent_foun
           end
         end
 
-        context 'when :created_desc' do
-          let(:variables) { { sort: :created_desc } }
+        context 'when CREATED_DESC' do
+          let(:variables) { { sort: :CREATED_DESC } }
 
           it 'returns the workflows latest first', :aggregate_failures do
             post_graphql(query, current_user: current_user)
@@ -434,6 +434,42 @@ RSpec.describe 'Querying Duo Workflows Workflows', feature_category: :agent_foun
 
             expect(returned_workflows.length).to eq(all_project_workflows.length + all_namespace_workflows.length)
             expect(returned_workflows.first['createdAt']).to be > returned_workflows.last['createdAt']
+          end
+        end
+
+        context 'when STATUS_ASC' do
+          let(:variables) { { sort: :STATUS_ASC } }
+
+          it 'returns the workflows ordered by status ascending', :aggregate_failures do
+            post_graphql(query, current_user: current_user)
+
+            expect(response).to have_gitlab_http_status(:success)
+            expect(graphql_errors).to be_nil
+
+            statuses = returned_workflows.pluck('status')
+            expect(statuses).to eq(%w[
+              CREATED CREATED CREATED
+              CREATED CREATED CREATED
+              CREATED RUNNING RUNNING
+            ])
+          end
+        end
+
+        context 'when STATUS_DESC' do
+          let(:variables) { { sort: :STATUS_DESC } }
+
+          it 'returns the workflows ordered by status descending', :aggregate_failures do
+            post_graphql(query, current_user: current_user)
+
+            expect(response).to have_gitlab_http_status(:success)
+            expect(graphql_errors).to be_nil
+
+            statuses = returned_workflows.pluck('status')
+            expect(statuses).to eq(%w[
+              RUNNING RUNNING CREATED
+              CREATED CREATED CREATED
+              CREATED CREATED CREATED
+            ])
           end
         end
       end
