@@ -20,7 +20,7 @@ module Resolvers
           required: false,
           description: 'Types of flows to exclude (for example, ["software_development", "chat"]).'
 
-        argument :sort, Types::SortEnum,
+        argument :sort, Types::Ai::DuoWorkflows::WorkflowSortEnum,
           description: 'Sort flows by the criteria.',
           required: false,
           default_value: :created_desc
@@ -41,8 +41,15 @@ module Resolvers
 
           return resolve_single_workflow(args[:workflow_id]) if args[:workflow_id].present?
 
-          workflows = build_workflows_query(args)
-          apply_filters(workflows, args)
+          ::Ai::DuoWorkflows::WorkflowsFinder.new(
+            source: object,
+            current_user: current_user,
+            project_path: args[:project_path],
+            type: args[:type],
+            exclude_types: args[:exclude_types],
+            environment: args[:environment],
+            sort: args[:sort]
+          ).results
         end
 
         private
@@ -64,38 +71,6 @@ module Resolvers
               ::Ai::DuoWorkflows::Workflow.id_in([workflow.id])
             end
           end
-        end
-
-        def build_workflows_query(args)
-          workflows = ::Ai::DuoWorkflows::Workflow
-
-          if object.is_a?(::Project)
-            return [] unless current_user.can?(:duo_workflow, object)
-
-            workflows.for_project(object).from_pipeline
-          else
-            workflows = workflows.for_user(current_user.id)
-            apply_project_filter(workflows, args[:project_path])
-          end
-        end
-
-        def apply_project_filter(workflows, project_path)
-          return workflows unless project_path.present?
-
-          project = Project.find_by_full_path(project_path)
-          return [] unless current_user.can?(:duo_workflow, project)
-
-          workflows.for_project(project)
-        end
-
-        def apply_filters(workflows, args)
-          return workflows if workflows.empty?
-
-          workflows = workflows.with_workflow_definition(args[:type]) if args[:type].present?
-          workflows = workflows.without_workflow_definition(args[:exclude_types]) if args[:exclude_types].present?
-          workflows = workflows.with_environment(args[:environment]) if args[:environment].present?
-
-          workflows.order_by(args[:sort])
         end
 
         def find_object(id:)

@@ -190,6 +190,12 @@ RSpec.describe API::MemberRoles, :api, feature_category: :system_access do
         expect(json_response).to(match([]))
       end
     end
+
+    it_behaves_like 'authorizing granular token permissions', :read_member_role do
+      let(:user) { owner }
+      let(:boundary_object) { group }
+      let(:request) { get api("/groups/#{group.id}/member_roles", personal_access_token: pat) }
+    end
   end
 
   describe "GET /member_roles" do
@@ -216,6 +222,11 @@ RSpec.describe API::MemberRoles, :api, feature_category: :system_access do
 
     it_behaves_like "getting member roles"
     it_behaves_like "it is available only on self-managed"
+    it_behaves_like 'authorizing granular token permissions', :read_member_role do
+      let(:user) { admin }
+      let(:boundary_object) { :instance }
+      let(:request) { get api("/member_roles", personal_access_token: pat) }
+    end
   end
 
   describe "POST /groups/:id/member_roles", :saas do
@@ -259,6 +270,12 @@ RSpec.describe API::MemberRoles, :api, feature_category: :system_access do
         expect(json_response['message']).to match(/Namespace must be top-level namespace/)
       end
     end
+
+    it_behaves_like 'authorizing granular token permissions', :create_member_role do
+      let(:user) { owner }
+      let(:boundary_object) { group }
+      let(:request) { post api("/groups/#{group.id}/member_roles", personal_access_token: pat), params: params }
+    end
   end
 
   describe "POST /member_roles" do
@@ -283,6 +300,11 @@ RSpec.describe API::MemberRoles, :api, feature_category: :system_access do
 
     it_behaves_like "creating member role"
     it_behaves_like "it is available only on self-managed"
+    it_behaves_like 'authorizing granular token permissions', :create_member_role do
+      let(:user) { admin }
+      let(:boundary_object) { :instance }
+      let(:request) { post api("/member_roles", personal_access_token: pat), params: params }
+    end
   end
 
   describe "DELETE /groups/:id/member_roles/:member_role_id", :saas do
@@ -298,6 +320,11 @@ RSpec.describe API::MemberRoles, :api, feature_category: :system_access do
 
     it_behaves_like "deleting member role"
     it_behaves_like "it is available only on SaaS"
+    it_behaves_like 'authorizing granular token permissions', :delete_member_role do
+      let(:user) { owner }
+      let(:boundary_object) { group }
+      let(:request) { delete api("/groups/#{group.id}/member_roles/#{member_role_id}", personal_access_token: pat) }
+    end
   end
 
   describe "DELETE /member_roles/:member_role_id" do
@@ -314,6 +341,11 @@ RSpec.describe API::MemberRoles, :api, feature_category: :system_access do
 
     it_behaves_like "deleting member role"
     it_behaves_like "it is available only on self-managed"
+    it_behaves_like 'authorizing granular token permissions', :delete_member_role do
+      let(:user) { admin }
+      let(:boundary_object) { :instance }
+      let(:request) { delete api("/member_roles/#{member_role_id}", personal_access_token: pat) }
+    end
   end
 
   private

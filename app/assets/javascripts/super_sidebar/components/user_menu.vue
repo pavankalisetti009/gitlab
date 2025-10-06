@@ -382,7 +382,7 @@ export default {
 
       <gl-disclosure-dropdown-item
         v-if="projectStudioEnabled"
-        class="gl-flex md:gl-hidden"
+        class="gl-border-t gl-flex gl-pt-2 md:gl-hidden"
         data-testid="user-counts-item"
       >
         <user-counts

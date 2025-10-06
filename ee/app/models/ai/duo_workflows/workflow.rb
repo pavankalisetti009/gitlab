@@ -13,6 +13,7 @@ module Ai
       belongs_to :project, optional: true
       belongs_to :namespace, optional: true
       belongs_to :ai_catalog_item_version, optional: true, class_name: 'Ai::Catalog::ItemVersion'
+
       has_many :checkpoints, class_name: 'Ai::DuoWorkflows::Checkpoint'
       has_many :checkpoint_writes, class_name: 'Ai::DuoWorkflows::CheckpointWrite'
       has_many :events, class_name: 'Ai::DuoWorkflows::Event'
@@ -33,11 +34,44 @@ module Ai
       scope :for_user, ->(user_id) { where(user_id: user_id) }
       scope :for_project, ->(project) { where(project: project) }
       scope :stale_since, ->(time) { where(updated_at: ...time).order(updated_at: :asc, id: :asc) }
-
       scope :with_workflow_definition, ->(definition) { where(workflow_definition: definition) }
       scope :without_workflow_definition, ->(definition) { where.not(workflow_definition: definition) }
       scope :with_environment, ->(environment) { where(environment: environment) }
       scope :from_pipeline, -> { where.not(workflow_definition: :chat).with_environment(:web) }
+      scope :order_by_status, ->(direction) do
+        status_order_expression = Arel::Nodes::NamedFunction.new(
+          'ARRAY_POSITION',
+          [
+            Arel.sql("ARRAY#{ordered_statuses}::smallint[]"),
+            arel_table[:status]
+          ]
+        )
+
+        final_order_expression =
+          if direction.to_s.casecmp?('desc')
+            status_order_expression.desc
+          else
+            status_order_expression.asc
+          end
+
+        order = Gitlab::Pagination::Keyset::Order.build([
+          Gitlab::Pagination::Keyset::ColumnOrderDefinition.new(
+            attribute_name: 'status',
+            column_expression: status_order_expression,
+            order_expression: final_order_expression,
+            order_direction: direction,
+            nullable: :not_nullable
+          ),
+          # Tie-breaker for deterministic ordering
+          Gitlab::Pagination::Keyset::ColumnOrderDefinition.new(
+            attribute_name: 'id',
+            order_expression: arel_table[:id].desc,
+            nullable: :not_nullable
+          )
+        ])
+
+        reorder(order)
+      end
 
       TARGET_STATUSES = {
         start: :running,
@@ -50,6 +84,15 @@ module Ai
         finish: :finished,
         drop: :failed,
         stop: :stopped
+      }.freeze
+
+      GROUPED_STATUSES = {
+        active: [:created, :running],
+        paused: [:paused],
+        awaiting_input: [:input_required, :plan_approval_required, :tool_call_approval_required],
+        completed: [:finished],
+        failed: [:failed],
+        cancelled: [:stopped]
       }.freeze
 
       class AgentPrivileges
@@ -95,6 +138,16 @@ module Ai
 
       def self.target_status_for_event(status_event)
         TARGET_STATUSES[status_event]
+      end
+
+      def self.ordered_statuses
+        statuses_values = state_machines[:status].states
+
+        GROUPED_STATUSES.flat_map do |_group, statuses|
+          statuses.map do |status|
+            statuses_values.fetch(status).value
+          end
+        end
       end
 
       def only_known_agent_priviliges

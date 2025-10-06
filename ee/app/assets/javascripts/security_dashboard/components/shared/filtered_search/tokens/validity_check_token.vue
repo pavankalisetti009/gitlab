@@ -38,7 +38,7 @@ export default {
   },
   data() {
     return {
-      selectedValidityCheck: this.value.data?.[0] || VALUES.unknown,
+      selectedValidityCheck: this.value.data?.[0] || '',
     };
   },
   computed: {

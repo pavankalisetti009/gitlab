@@ -1,11 +1,17 @@
 // eslint-disable-next-line import/no-extraneous-dependencies
 import MockAdapter from 'axios-mock-adapter';
+import VueApollo from 'vue-apollo';
 import {
   mockUsageDataWithPool,
+  mockUsersUsageDataWithPool,
   mockUsageDataWithoutPool,
+  mockUsersUsageDataWithoutPool,
   mockUsageDataWithOverage,
+  mockUsersUsageDataWithOverage,
 } from 'ee_jest/usage_quotas/usage_billing/mock_data';
+import { createMockClient } from 'helpers/mock_apollo_helper';
 import axios from '~/lib/utils/axios_utils';
+import getSubscriptionUsersUsageQuery from '../graphql/get_subscription_users_usage.query.graphql';
 import UsageBillingApp from './app.vue';
 
 const meta = {
@@ -19,14 +25,34 @@ export default meta;
  *
  * @param {Object} config
  * @param {Object} [config.provide]
- * @param {Function} [config.mockHandler]
+ * @param {Function} [config.restUsageDataHandler]
+ * @param {Function} [config.getSubscriptionUsersUsageQueryHandler]
  * @returns
  */
 const createTemplate = (config = {}) => {
-  let { mockHandler } = config;
-  let mockAdapter;
+  let { restUsageDataHandler, getSubscriptionUsersUsageQueryHandler } = config;
 
+  // NOTE: currently we mock both, REST and GraphQL APIs, as we transition towards GraphQL API
+  // Apollo
+  let defaultClient = config.apollo?.defaultClient;
+  if (!defaultClient) {
+    if (!getSubscriptionUsersUsageQueryHandler) {
+      getSubscriptionUsersUsageQueryHandler = () => Promise.resolve(mockUsersUsageDataWithPool);
+    }
+
+    const requestHandlers = [
+      [getSubscriptionUsersUsageQuery, getSubscriptionUsersUsageQueryHandler],
+    ];
+    defaultClient = createMockClient(requestHandlers);
+  }
+
+  const apolloProvider = new VueApollo({
+    defaultClient,
+  });
+
+  let axiosMockAdapter;
   return (args, { argTypes }) => ({
+    apolloProvider,
     components: {
       // NOTE: we have to make AdminUsageDashboardApp async,
       // to delay it's mounting, to have an opportunity to stub Axios
@@ -40,12 +66,12 @@ const createTemplate = (config = {}) => {
     props: Object.keys(argTypes),
     template: `<usage-billing-app />`,
     mounted() {
-      mockAdapter = new MockAdapter(axios);
-      mockHandler ??= () => Promise.resolve([200, mockUsageDataWithPool]);
-      mockAdapter.onGet('/admin/gitlab_duo/usage/data').replyOnce(mockHandler);
+      axiosMockAdapter = new MockAdapter(axios);
+      restUsageDataHandler ??= () => Promise.resolve([200, mockUsageDataWithPool]);
+      axiosMockAdapter.onGet('/admin/gitlab_duo/usage/data').replyOnce(restUsageDataHandler);
     },
     destroyed() {
-      mockAdapter.restore();
+      axiosMockAdapter.restore();
     },
   });
 };
@@ -56,20 +82,26 @@ export const Default = {
 
 export const NoCommitment = {
   render: (...args) => {
-    const mockHandler = () => Promise.resolve([200, mockUsageDataWithoutPool]);
+    const restUsageDataHandler = () => Promise.resolve([200, mockUsageDataWithoutPool]);
+    const getSubscriptionUsersUsageQueryHandler = () =>
+      Promise.resolve(mockUsersUsageDataWithoutPool);
 
     return createTemplate({
-      mockHandler,
+      restUsageDataHandler,
+      getSubscriptionUsersUsageQueryHandler,
     })(...args);
   },
 };
 
 export const WithOverage = {
   render: (...args) => {
-    const mockHandler = () => Promise.resolve([200, mockUsageDataWithOverage]);
+    const restUsageDataHandler = () => Promise.resolve([200, mockUsageDataWithOverage]);
+    const getSubscriptionUsersUsageQueryHandler = () =>
+      Promise.resolve(mockUsersUsageDataWithOverage);
 
     return createTemplate({
-      mockHandler,
+      restUsageDataHandler,
+      getSubscriptionUsersUsageQueryHandler,
     })(...args);
   },
 };
@@ -77,20 +109,46 @@ export const WithOverage = {
 export const LoadingState = {
   render: (...args) => {
     // Never resolved
-    const mockHandler = () => new Promise(() => {});
+    const restUsageDataHandler = () => new Promise(() => {});
+    const getSubscriptionUsersUsageQueryHandler = () => new Promise(() => {});
 
     return createTemplate({
-      mockHandler,
+      restUsageDataHandler,
+      getSubscriptionUsersUsageQueryHandler,
+    })(...args);
+  },
+};
+
+export const LoadingUsersUsageState = {
+  render: (...args) => {
+    const getSubscriptionUsersUsageQueryHandler = () => new Promise(() => {});
+
+    return createTemplate({
+      getSubscriptionUsersUsageQueryHandler,
     })(...args);
   },
 };
 
 export const ErrorState = {
   render: (...args) => {
-    const mockHandler = () => Promise.reject(new Error('Failed to fetch usage data'));
+    const restUsageDataHandler = () => Promise.reject(new Error('Failed to fetch usage data'));
+    const getSubscriptionUsersUsageQueryHandler = () =>
+      Promise.reject(new Error('Failed to fetch usage data'));
 
     return createTemplate({
-      mockHandler,
+      restUsageDataHandler,
+      getSubscriptionUsersUsageQueryHandler,
+    })(...args);
+  },
+};
+
+export const ErrorUsersUsageState = {
+  render: (...args) => {
+    const getSubscriptionUsersUsageQueryHandler = () =>
+      Promise.reject(new Error('Failed to fetch usage data'));
+
+    return createTemplate({
+      getSubscriptionUsersUsageQueryHandler,
     })(...args);
   },
 };
