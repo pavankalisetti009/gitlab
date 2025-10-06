@@ -1241,7 +1241,11 @@ describe('Duo Agentic Chat', () => {
         findGlToggle().vm.$emit('change', value);
         await nextTick();
 
-        expect(setAgenticMode).toHaveBeenCalledWith(value, true, false);
+        expect(setAgenticMode).toHaveBeenCalledWith({
+          agenticMode: value,
+          saveCookie: true,
+          isEmbedded: false,
+        });
       });
     });
   });
@@ -1358,7 +1362,11 @@ describe('Duo Agentic Chat', () => {
       findGlToggle().vm.$emit('change', true);
       await nextTick();
 
-      expect(setAgenticMode).toHaveBeenCalledWith(true, true, false);
+      expect(setAgenticMode).toHaveBeenCalledWith({
+        agenticMode: true,
+        saveCookie: true,
+        isEmbedded: false,
+      });
     });
 
     it('updates the toggle value when duoAgenticModePreference changes', async () => {
@@ -1861,7 +1869,11 @@ describe('Duo Agentic Chat', () => {
         findGlToggle().vm.$emit('change', true);
         await nextTick();
 
-        expect(setAgenticMode).toHaveBeenCalledWith(true, true, true);
+        expect(setAgenticMode).toHaveBeenCalledWith({
+          agenticMode: true,
+          saveCookie: true,
+          isEmbedded: true,
+        });
       });
     });
   });

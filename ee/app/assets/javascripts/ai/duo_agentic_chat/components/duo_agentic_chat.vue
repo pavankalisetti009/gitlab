@@ -306,7 +306,7 @@ export default {
         return getCookie(DUO_AGENTIC_MODE_COOKIE) === 'true';
       },
       set(value) {
-        setAgenticMode(value, true, this.isEmbedded);
+        setAgenticMode({ agenticMode: value, saveCookie: true, isEmbedded: this.isEmbedded });
       },
     },
     agents() {
