@@ -206,6 +206,21 @@ describe('FrameworksNeedsAttention', () => {
       expect(listItems.at(0).text()).toBe('Requirement 1');
       expect(listItems.at(1).text()).toBe('Requirement 2');
     });
+
+    it('applies proper CSS classes to requirements without controls column header', () => {
+      const headers = findHeaders();
+      const requirementsWithoutControlsHeader = headers.at(3);
+
+      expect(requirementsWithoutControlsHeader.classes()).toContain('@md/panel:gl-max-w-20');
+      expect(requirementsWithoutControlsHeader.classes()).toContain('gl-text-left');
+    });
+
+    it('applies proper CSS classes to requirements without controls table cells', () => {
+      const requirementsCell = findTableRow(0).findAll('td').at(3);
+
+      expect(requirementsCell.classes()).toContain('@md/panel:gl-max-w-20');
+      expect(requirementsCell.classes()).toContain('gl-text-left');
+    });
   });
 
   describe('policies cell rendering', () => {
