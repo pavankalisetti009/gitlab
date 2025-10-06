@@ -1,11 +1,13 @@
 <script>
 import { getIdFromGraphQLId } from '~/graphql_shared/utils';
 import AiCatalogItemField from './ai_catalog_item_field.vue';
+import FormFlowConfiguration from './form_flow_configuration.vue';
 import FormSection from './form_section.vue';
 
 export default {
   components: {
     AiCatalogItemField,
+    FormFlowConfiguration,
     FormSection,
   },
   props: {
@@ -17,6 +19,9 @@ export default {
   computed: {
     projectName() {
       return this.item.project?.nameWithNamespace;
+    },
+    configuration() {
+      return this.item.configuration;
     },
     steps() {
       return (
@@ -46,7 +51,12 @@ export default {
           :value="projectName"
         />
       </form-section>
-      <form-section :title="s__('AICatalog|Steps')">
+      <form-section v-if="configuration" :title="s__('AICatalog|Configuration')">
+        <ai-catalog-item-field :title="s__('AICatalog|Configuration')">
+          <form-flow-configuration :value="configuration" read-only />
+        </ai-catalog-item-field>
+      </form-section>
+      <form-section v-else :title="s__('AICatalog|Steps')">
         <ai-catalog-item-field :title="s__('AICatalog|Steps')">
           <div v-for="(step, index) in steps" :key="index">
             {{ step.agent.name }} ({{ step.agent.id }})
