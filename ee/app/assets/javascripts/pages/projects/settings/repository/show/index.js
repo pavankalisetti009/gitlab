@@ -11,7 +11,7 @@ import ProtectedTagEditList from '~/protected_tags/protected_tag_edit_list';
 import initSearchSettings from '~/search_settings';
 import initSettingsPanels from '~/settings_panels';
 import UserCallout from '~/user_callout';
-import mountBranchRules from '~/projects/settings/repository/branch_rules/mount_branch_rules';
+import mountBranchRulesListing from '~/projects/settings/repository/branch_rules/mount_branch_rules_listing';
 import mountDefaultBranchSelector from '~/projects/settings/mount_default_branch_selector';
 import mountRepositoryMaintenance from '~/projects/settings/repository/maintenance/mount_repository_maintenance';
 import EEMirrorRepos from './ee_mirror_repos';
@@ -48,6 +48,6 @@ fileUpload('.js-choose-file', '.js-object-map-input');
 
 initSearchSettings();
 
-mountBranchRules(document.getElementById('js-branch-rules'));
+mountBranchRulesListing(document.getElementById('js-branch-rules-listing'));
 mountDefaultBranchSelector(document.querySelector('.js-select-default-branch'));
 mountRepositoryMaintenance();
