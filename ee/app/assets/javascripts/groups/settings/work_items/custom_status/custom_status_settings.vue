@@ -140,7 +140,7 @@ export default {
     <section
       v-if="workItemStatusMvc2Enabled"
       data-testid="more-lifecycle-information"
-      class="gl-mb-4 gl-flex gl-items-center gl-justify-between"
+      class="gl-mb-4 gl-flex gl-flex-wrap gl-items-center gl-justify-between"
     >
       <div>
         <h3 class="gl-mb-2 gl-text-base">{{ s__('WorkItem|Lifecycles') }}</h3>
