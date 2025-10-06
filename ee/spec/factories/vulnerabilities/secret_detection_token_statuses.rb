@@ -5,6 +5,7 @@ FactoryBot.define do
     association :finding, factory: :vulnerabilities_finding, strategy: :create
 
     vulnerability_occurrence_id { finding.id }
+    last_verified_at { Time.current }
 
     status { :active }
 

@@ -5,6 +5,7 @@ FactoryBot.define do
     association :security_finding, factory: :security_finding
 
     status { :active }
+    last_verified_at { Time.current }
 
     trait :with_secret_detection_finding do
       association :security_finding, factory: [:security_finding], strategy: :create

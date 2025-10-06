@@ -207,6 +207,7 @@ RSpec.describe Security::SecretDetection::UpdateTokenStatusService, feature_cate
               it 'updates existing finding token status to inactive' do
                 original_created_at = Vulnerabilities::FindingTokenStatus.first.created_at
                 original_updated_at = Vulnerabilities::FindingTokenStatus.first.updated_at
+                original_last_verified_at = Vulnerabilities::FindingTokenStatus.first.last_verified_at
 
                 expect(Vulnerabilities::FindingTokenStatus.count).to eq(1)
                 expect(finding.reload.finding_token_status.status).to eq('active')
@@ -215,6 +216,7 @@ RSpec.describe Security::SecretDetection::UpdateTokenStatusService, feature_cate
 
                 expect(finding.finding_token_status.created_at).to eq(original_created_at)
                 expect(finding.finding_token_status.updated_at).to be > original_updated_at
+                expect(finding.finding_token_status.last_verified_at).to be > original_last_verified_at
                 expect(finding.finding_token_status.status).to eq('inactive')
               end
             end
@@ -431,7 +433,8 @@ RSpec.describe Security::SecretDetection::UpdateTokenStatusService, feature_cate
               vulnerability_occurrence_id: finding.id,
               status: 'unknown',
               created_at: Time.current,
-              updated_at: Time.current
+              updated_at: Time.current,
+              last_verified_at: Time.current
             }] }, get_tokens_by_raw_token_value: {})
 
             expect { service.execute_for_vulnerability_pipeline(pipeline.id) }
@@ -557,6 +560,7 @@ RSpec.describe Security::SecretDetection::UpdateTokenStatusService, feature_cate
               it 'updates existing finding token status to inactive' do
                 original_created_at = Vulnerabilities::FindingTokenStatus.first.created_at
                 original_updated_at = Vulnerabilities::FindingTokenStatus.first.updated_at
+                original_last_verified_at = Vulnerabilities::FindingTokenStatus.first.last_verified_at
 
                 expect(Vulnerabilities::FindingTokenStatus.count).to eq(1)
                 expect(finding.reload.finding_token_status.status).to eq('active')
@@ -565,6 +569,7 @@ RSpec.describe Security::SecretDetection::UpdateTokenStatusService, feature_cate
 
                 expect(finding.finding_token_status.created_at).to eq(original_created_at)
                 expect(finding.finding_token_status.updated_at).to be > original_updated_at
+                expect(finding.finding_token_status.last_verified_at).to be > original_last_verified_at
                 expect(finding.finding_token_status.status).to eq('inactive')
               end
             end
