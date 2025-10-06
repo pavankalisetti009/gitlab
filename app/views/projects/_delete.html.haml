@@ -9,7 +9,7 @@
   - c.with_body do
     - if @project.self_deletion_scheduled? && allow_immediate_namespaces_deletion
       %p= delete_immediately_namespace_scheduled_for_deletion_message(@project)
-      #js-project-delete-button{ data: project_delete_immediately_button_data(@project, s_('ProjectSettings|Delete immediately')) }
+      #js-project-delete-button{ data: project_delete_immediately_button_data(@project) }
     - elsif @project.scheduled_for_deletion_in_hierarchy_chain?
       -# Immediate deletion not available: either because of ancestor, or instance setting
       - help_page_link = link_to('', help_page_path('user/project/working_with_projects.md', anchor: 'delete-a-project-immediately'), target: '_blank', rel: 'noopener noreferrer')

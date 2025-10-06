@@ -143,16 +143,16 @@ module Namespaces
       )
     end
 
-    def project_delete_delayed_button_data(project, button_text = nil)
-      _project_delete_button_shared_data(project, button_text).merge({
+    def project_delete_delayed_button_data(project)
+      _project_delete_button_shared_data(project).merge({
         restore_help_path: help_page_path('user/project/working_with_projects.md', anchor: 'restore-a-project'),
         delayed_deletion_date: permanent_deletion_date_formatted,
         form_path: project_path(project)
       })
     end
 
-    def project_delete_immediately_button_data(project, button_text = nil)
-      _project_delete_button_shared_data(project, button_text).merge({
+    def project_delete_immediately_button_data(project)
+      _project_delete_button_shared_data(project, s_('ProjectSettings|Delete immediately')).merge({
         form_path: project_path(project, permanently_delete: true)
       })
     end
