@@ -3779,7 +3779,12 @@ class Project < ApplicationRecord
   end
 
   def create_new_pool_repository
-    pool = PoolRepository.safe_find_or_create_by!(shard: Shard.by_name(repository_storage), source_project: self)
+    pool = PoolRepository.safe_find_or_create_by!(
+      shard: Shard.by_name(repository_storage),
+      source_project: self,
+      organization: organization
+    )
+
     update!(pool_repository: pool)
 
     pool.schedule unless pool.scheduled?
