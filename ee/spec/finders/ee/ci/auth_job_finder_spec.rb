@@ -23,9 +23,9 @@ RSpec.describe Ci::AuthJobFinder, feature_category: :continuous_integration do
         end
       end
 
-      context 'when the scoped_user_id is stored in the metadata attributes' do
+      context 'when the scoped_user_id is stored in job definition options' do
         before do
-          allow(job).to receive(:options).and_return(job.options.merge(scoped_user_id: scoped_user.id))
+          stub_ci_job_definition(job, options: job.options.merge(scoped_user_id: scoped_user.id))
         end
 
         it_behaves_like 'job user that supports composite identity'
@@ -41,7 +41,7 @@ RSpec.describe Ci::AuthJobFinder, feature_category: :continuous_integration do
 
       context 'when the scoped_user_id is stored in both locations' do
         before do
-          allow(job).to receive(:options).and_return(job.options.merge(scoped_user_id: non_existing_record_id))
+          stub_ci_job_definition(job, options: job.options.merge(scoped_user_id: non_existing_record_id))
           job.update!(scoped_user_id: scoped_user.id)
         end
 

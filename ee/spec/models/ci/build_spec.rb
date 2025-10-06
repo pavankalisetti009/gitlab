@@ -1198,7 +1198,7 @@ RSpec.describe Ci::Build, :saas, feature_category: :continuous_integration do
     with_them do
       before do
         allow(job).to receive(:pages_generator?).and_return(pages_generator)
-        allow(job).to receive(:options).and_return(options)
+        stub_ci_job_definition(job, options: options)
         create(:ci_job_variable, key: 'CUSTOM_FOLDER', value: 'custom_folder', job: job)
         create(:ci_job_variable, key: 'DURATION', value: '2d', job: job)
       end
