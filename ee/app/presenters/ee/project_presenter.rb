@@ -8,7 +8,16 @@ module EE
 
     delegator_override :approver_groups
     def approver_groups
+      return [] if ::Feature.enabled?(:deprecate_approver_and_approver_group, project)
+
       ::ApproverGroup.filtered_approver_groups(project.approver_groups, current_user)
+    end
+
+    delegator_override :approvers
+    def approvers
+      return [] if ::Feature.enabled?(:deprecate_approver_and_approver_group, project)
+
+      project.approvers
     end
 
     private

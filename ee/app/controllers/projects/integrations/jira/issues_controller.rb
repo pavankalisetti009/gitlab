@@ -52,15 +52,15 @@ module Projects
         end
 
         def issues_json
-          jira_issues = Kaminari.paginate_array(
-            finder.execute,
-            limit: finder.per_page,
-            total_count: finder.total_count
-          )
+          issues = finder.execute
+
+          # Set pagination headers for token-based pagination (after execute sets the values)
+          response.headers['X-Per-Page'] = finder.per_page.to_s
+          response.headers['X-Next-Page-Token'] = finder.next_page_token if finder.next_page_token.present?
+          response.headers['X-Is-Last'] = finder.is_last.to_s
 
           ::Integrations::JiraSerializers::IssueSerializer.new
-            .with_pagination(request, response)
-            .represent(jira_issues, project: project)
+            .represent(issues, project: project)
         end
 
         def issue_json

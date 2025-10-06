@@ -221,7 +221,7 @@ RSpec.describe API::ProjectApprovals, :aggregate_failures, feature_category: :so
       it_behaves_like 'a user with access' do
         let(:current_user) { admin }
         let(:admin_mode) { true }
-        let(:visible_approver_groups_count) { 1 }
+        let(:visible_approver_groups_count) { 0 }
       end
 
       context 'updates merge requests settings' do
@@ -245,6 +245,20 @@ RSpec.describe API::ProjectApprovals, :aggregate_failures, feature_category: :so
           let(:permission) { :modify_merge_request_author_setting }
           let(:setting) { :merge_requests_author_approval }
         end
+      end
+    end
+
+    context 'as a global admin and deprecate_approver_and_approver_group FF turned off' do
+      let_it_be(:admin_mode) { true }
+
+      before do
+        stub_feature_flags(deprecate_approver_and_approver_group: false)
+      end
+
+      it_behaves_like 'a user with access' do
+        let(:current_user) { admin }
+        let(:admin_mode) { true }
+        let(:visible_approver_groups_count) { 1 }
       end
     end
 

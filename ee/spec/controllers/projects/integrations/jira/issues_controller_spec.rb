@@ -158,16 +158,39 @@ RSpec.describe Projects::Integrations::Jira::IssuesController, feature_category:
       end
 
       it 'sets pagination headers' do
-        expect_next_instance_of(Projects::Integrations::Jira::IssuesFinder) do |finder|
-          expect(finder).to receive(:execute).and_return(jira_issues)
-        end
+        finder = instance_double(Projects::Integrations::Jira::IssuesFinder,
+          execute: nil,
+          issues: jira_issues,
+          per_page: 100,
+          next_page_token: 'token123',
+          is_last: false)
+
+        allow(Projects::Integrations::Jira::IssuesFinder).to receive(:new).and_return(finder)
 
         get :index, params: { namespace_id: project.namespace, project_id: project }, format: :json
 
-        expect(response).to include_pagination_headers
-        expect(response.headers['X-Page']).to eq '1'
-        expect(response.headers['X-Per-Page']).to eq Jira::Requests::Issues::ListService::PER_PAGE.to_s
-        expect(response.headers['X-Total']).to eq '0'
+        expect(response.headers['X-Per-Page']).to eq '100'
+        expect(response.headers['X-Next-Page-Token']).to eq 'token123'
+        expect(response.headers['X-Is-Last']).to eq 'false'
+      end
+
+      context 'when it is the last page' do
+        it 'sets is_last to true and does not include next_page_token' do
+          finder = instance_double(Projects::Integrations::Jira::IssuesFinder,
+            execute: nil,
+            issues: jira_issues,
+            per_page: 100,
+            next_page_token: nil,
+            is_last: true)
+
+          allow(Projects::Integrations::Jira::IssuesFinder).to receive(:new).and_return(finder)
+
+          get :index, params: { namespace_id: project.namespace, project_id: project }, format: :json
+
+          expect(response.headers['X-Per-Page']).to eq '100'
+          expect(response.headers['X-Next-Page-Token']).to be_nil
+          expect(response.headers['X-Is-Last']).to eq 'true'
+        end
       end
 
       context 'when parameters are passed' do
@@ -190,8 +213,8 @@ RSpec.describe Projects::Integrations::Jira::IssuesController, feature_category:
 
         context 'when pagination params' do
           it_behaves_like 'proper parameter values' do
-            let(:params) { { 'page' => '12', 'per_page' => '20' } }
-            let(:expected_params) { { 'page' => '12', 'per_page' => '20', 'state' => 'opened', 'sort' => 'created_date' } }
+            let(:params) { { 'next_page_token' => 'abc123', 'per_page' => '20' } }
+            let(:expected_params) { { 'next_page_token' => 'abc123', 'per_page' => '20', 'state' => 'opened', 'sort' => 'created_date' } }
           end
         end
 
