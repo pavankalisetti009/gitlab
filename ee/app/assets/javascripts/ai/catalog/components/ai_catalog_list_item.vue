@@ -56,6 +56,12 @@ export default {
       return getIdFromGraphQLId(this.item.id);
     },
     showItemRoute() {
+      if (this.itemTypeConfig.showRoute)
+        return {
+          name: this.itemTypeConfig.showRoute,
+          params: { id: this.formattedItemId },
+        };
+
       return {
         name: this.$route.name,
         query: { [AI_CATALOG_SHOW_QUERY_PARAM]: this.formattedItemId },
@@ -109,9 +115,7 @@ export default {
       // This can be removed once this issue is resolved:
       // https://gitlab.com/gitlab-org/gitlab-services/design.gitlab.com/-/issues/2935
       event.preventDefault();
-      this.$router.push({
-        query: { [AI_CATALOG_SHOW_QUERY_PARAM]: this.formattedItemId },
-      });
+      this.$router.push(this.showItemRoute);
     },
   },
 };

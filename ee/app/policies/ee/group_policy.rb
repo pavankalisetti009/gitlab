@@ -847,6 +847,7 @@ module EE
       rule { admin | owner }.policy do
         enable :owner_access
         enable :read_billable_member
+        enable :read_subscription_usage
         enable :admin_ci_minutes
       end
 

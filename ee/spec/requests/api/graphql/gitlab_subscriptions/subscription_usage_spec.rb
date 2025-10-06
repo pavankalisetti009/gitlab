@@ -1,0 +1,189 @@
+# frozen_string_literal: true
+
+require 'spec_helper'
+
+RSpec.describe 'Query.subscriptionUsage', feature_category: :consumables_cost_management do
+  include GraphqlHelpers
+
+  let_it_be(:admin) { create(:admin) }
+  let_it_be(:owner) { create(:user) }
+  let_it_be(:maintainer) { create(:user) }
+  let_it_be(:root_group) { create(:group, owners: owner, maintainers: maintainer) }
+  let_it_be(:subgroup) { create(:group, parent: root_group, owners: owner) }
+  let_it_be(:project_namespace) { create(:project_namespace, owner: owner) }
+  let_it_be(:user_namespace) { create(:user_namespace, owner: owner) }
+
+  let(:error_message) do
+    "The resource that you are attempting to access does not exist or you don't have permission to perform this action"
+  end
+
+  let(:query_fields) do
+    [
+      query_graphql_field(:pool_usage, {}, [:total_credits, :credits_used]),
+      query_graphql_field(:users_usage, {}, [
+        query_graphql_field(:users, {}, [
+          query_graphql_field(:nodes, {}, [:id, :name, :avatar_url])
+        ])
+      ])
+    ]
+  end
+
+  let(:query) do
+    graphql_query_for(
+      :subscription_usage,
+      {
+        namespace_path: namespace_path,
+        start_date: Date.current.beginning_of_month,
+        end_date: Date.current.end_of_month
+      },
+      query_fields
+    )
+  end
+
+  shared_examples 'empty response' do
+    it 'returns nil for subscription usage' do
+      post_graphql(query, current_user: current_user)
+
+      expect(graphql_data_at(:subscription_usage)).to be_nil
+    end
+
+    it 'returns an error message' do
+      post_graphql(query, current_user: current_user)
+
+      expect(graphql_errors).to include(a_hash_including('message' => error_message))
+    end
+  end
+
+  before do
+    stub_feature_flags(usage_billing_dev: true)
+
+    allow(Gitlab::SubscriptionPortal::Client).to receive(:get_subscription_pool_usage).and_return({
+      success: true,
+      poolUsage: {
+        totalUnits: 1000,
+        unitsUsed: 250
+      }
+    })
+  end
+
+  context 'when in Self-Managed' do
+    let(:namespace_path) { nil }
+
+    context 'with admin user' do
+      context 'when feature flag is enabled' do
+        it 'returns subscription usage for instance' do
+          post_graphql(query, current_user: admin)
+
+          expect(graphql_data_at(:subscription_usage, :poolUsage)).to eq({
+            totalCredits: 1000,
+            creditsUsed: 250
+          }.with_indifferent_access)
+
+          expect(graphql_data_at(:subscription_usage, :usersUsage, :users, :nodes)).to match_array(
+            User.all.map do |u|
+              {
+                id: u.to_global_id.to_s,
+                name: u.name,
+                avatarUrl: u.avatar_url
+              }.with_indifferent_access
+            end
+          )
+        end
+      end
+
+      context 'when feature flag is disabled' do
+        before do
+          stub_feature_flags(usage_billing_dev: false)
+        end
+
+        include_examples 'empty response' do
+          let(:current_user) { admin }
+        end
+      end
+    end
+
+    context 'with non-admin user' do
+      include_examples 'empty response' do
+        let(:current_user) { owner }
+      end
+    end
+  end
+
+  context 'when in GitLab.com' do
+    context 'with root group' do
+      let(:namespace_path) { root_group.full_path }
+
+      context 'when user is group owner' do
+        context 'when feature flag is enabled' do
+          it 'returns subscription usage for the group' do
+            post_graphql(query, current_user: owner)
+
+            expect(graphql_data_at(:subscription_usage, :poolUsage)).to eq({
+              totalCredits: 1000,
+              creditsUsed: 250
+            }.with_indifferent_access)
+
+            expect(graphql_data_at(:subscription_usage, :usersUsage, :users, :nodes)).to match_array(
+              root_group.users.map do |u|
+                {
+                  id: u.to_global_id.to_s,
+                  name: u.name,
+                  avatarUrl: u.avatar_url
+                }.with_indifferent_access
+              end
+            )
+          end
+        end
+
+        context 'when feature flag is disabled' do
+          before do
+            stub_feature_flags(usage_billing_dev: false)
+          end
+
+          include_examples 'empty response' do
+            let(:current_user) { owner }
+          end
+        end
+      end
+
+      context 'when user is not group owner' do
+        include_examples 'empty response' do
+          let(:current_user) { maintainer }
+        end
+      end
+    end
+
+    context 'with subgroup' do
+      let(:namespace_path) { subgroup.full_path }
+
+      include_examples 'empty response' do
+        let(:current_user) { owner }
+        let(:error_message) { "Subscription usage can only be queried on a root namespace" }
+      end
+    end
+
+    context 'with project namespace' do
+      let(:namespace_path) { project_namespace.full_path }
+
+      include_examples 'empty response' do
+        let(:current_user) { owner }
+      end
+    end
+
+    context 'with user namespace' do
+      let(:namespace_path) { user_namespace.full_path }
+
+      include_examples 'empty response' do
+        let(:current_user) { owner }
+      end
+    end
+
+    context 'with non-existent namespace' do
+      let(:namespace_path) { 'non-existent-namespace' }
+
+      include_examples 'empty response' do
+        let(:current_user) { admin }
+      end
+    end
+  end
+end

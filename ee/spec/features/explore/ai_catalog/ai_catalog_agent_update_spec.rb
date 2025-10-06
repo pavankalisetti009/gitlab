@@ -33,16 +33,14 @@ RSpec.describe 'AI Catalog', :js, feature_category: :workflow_catalog do
       fill_edit_form_and_submit
     end
 
-    it('navigates to Edit agent form from drawer, updates values and submit') do
+    it('navigates to Edit agent form from show page, updates values and submit') do
       agents = page.all('[data-testid="ai-catalog-item"]')
       expect(agents.length).to be(1)
 
       click_link(agent1.name)
 
-      page.within('aside') do
-        expect(page).to have_content('Agent Description')
-        expect(page).to have_content('Talk like a pirate!')
-      end
+      expect(page).to have_content('Agent Description')
+      expect(page).to have_content('Talk like a pirate!')
 
       click_link('Edit')
 

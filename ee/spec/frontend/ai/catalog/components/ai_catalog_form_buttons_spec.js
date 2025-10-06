@@ -9,7 +9,7 @@ describe('AiCatalogFormButtons', () => {
 
   const defaultProps = {
     isDisabled: true,
-    indexRoute: 'ai-catalog-index',
+    cancelRoute: { name: 'ai-catalog-index' },
   };
 
   const createWrapper = (props = {}) => {

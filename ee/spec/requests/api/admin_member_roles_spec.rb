@@ -69,6 +69,11 @@ RSpec.describe API::AdminMemberRoles, :api, feature_category: :permissions do
 
     it_behaves_like "getting member roles"
     it_behaves_like 'forbidden when FF is disabled'
+    it_behaves_like 'authorizing granular token permissions', :read_admin_member_role do
+      let(:boundary_object) { :instance }
+      let(:user) { admin }
+      let(:request) { get api("/admin_member_roles", personal_access_token: pat) }
+    end
   end
 
   describe "POST /admin_member_roles" do
@@ -99,6 +104,11 @@ RSpec.describe API::AdminMemberRoles, :api, feature_category: :permissions do
 
     it_behaves_like "creating member role"
     it_behaves_like 'forbidden when FF is disabled'
+    it_behaves_like 'authorizing granular token permissions', :create_admin_member_role do
+      let(:boundary_object) { :instance }
+      let(:user) { admin }
+      let(:request) { post api("/admin_member_roles", personal_access_token: pat), params: params }
+    end
   end
 
   describe "DELETE /admin_member_roles/:member_role_id" do
@@ -112,5 +122,10 @@ RSpec.describe API::AdminMemberRoles, :api, feature_category: :permissions do
 
     it_behaves_like "deleting member role"
     it_behaves_like 'forbidden when FF is disabled'
+    it_behaves_like 'authorizing granular token permissions', :delete_admin_member_role do
+      let(:boundary_object) { :instance }
+      let(:user) { admin }
+      let(:request) { delete api("/admin_member_roles/#{member_role_id}", personal_access_token: pat) }
+    end
   end
 end

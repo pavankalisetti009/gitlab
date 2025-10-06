@@ -8,6 +8,10 @@ module Types
 
       authorize :read_subscription_usage
 
+      field :pool_usage, SubscriptionUsage::PoolUsageType,
+        null: true,
+        description: 'Consumption usage for the subscription shared pool.'
+
       field :users_usage, SubscriptionUsage::UsersUsageType,
         null: true,
         description: 'Consumption usage for users under the subscription.'

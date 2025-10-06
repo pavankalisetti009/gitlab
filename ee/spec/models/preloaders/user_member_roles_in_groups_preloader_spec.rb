@@ -261,6 +261,18 @@ RSpec.describe Preloaders::UserMemberRolesInGroupsPreloader, feature_category: :
       allow(Gitlab::AppLogger).to receive(:info)
     end
 
+    context 'when use_user_group_member_roles feature flag is enabled' do
+      before do
+        stub_feature_flags(use_user_group_member_roles: true)
+      end
+
+      it 'does not execute the old query ("... UNION ALL ...")' do
+        query_recorder = ActiveRecord::QueryRecorder.new { result }
+
+        expect(query_recorder.log).not_to include(/UNION ALL/)
+      end
+    end
+
     # Here, the result will be different because there are no
     # user_group_member_roles records for user i.e.
     # ::Authz::UserGroupMemberRoles::UpdateForGroupService was not run on the
@@ -275,24 +287,6 @@ RSpec.describe Preloaders::UserMemberRolesInGroupsPreloader, feature_category: :
         })
 
         result
-      end
-
-      context 'when use_user_group_member_roles feature flag is enabled' do
-        before do
-          stub_feature_flags(use_user_group_member_roles: true)
-        end
-
-        it 'logs' do
-          expect(Gitlab::AppLogger).to receive(:info) # earlier call in #log_statistics
-          expect(Gitlab::AppLogger).to receive(:info).with({
-            **log_payload,
-            permissions: expected_abilities.join(', '),
-            user_group_member_roles_permissions: '',
-            use_user_group_member_roles: true
-          })
-
-          result
-        end
       end
 
       context 'when there are multiple groups with different results' do
