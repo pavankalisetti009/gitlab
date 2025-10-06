@@ -66,9 +66,9 @@ RSpec.describe 'Query.project(id).dashboards.panels(id).visualization', feature_
 
       where(:node_idx, :panel_type, :panel_title) do
         0 | 'SingleStat' | 'Assigned Duo seat engagement'
-        1 | 'SingleStat' | 'Code Suggestions: Usage'
-        2 | 'SingleStat' | 'Code Suggestions: Acceptance rate'
-        3 | 'SingleStat' | 'Duo Chat: Usage'
+        1 | 'SingleStat' | 'Code Suggestions usage'
+        2 | 'SingleStat' | 'Code Suggestions acceptance rate'
+        3 | 'SingleStat' | 'Duo Chat usage'
         4 | 'AiImpactTable' | 'Duo usage metrics for the %{namespaceName} %{namespaceType}'
         5 | 'AiImpactTable' | 'Development metrics for the %{namespaceName} %{namespaceType}'
       end

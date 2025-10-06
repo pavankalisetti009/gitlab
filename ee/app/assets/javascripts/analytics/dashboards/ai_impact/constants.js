@@ -21,15 +21,15 @@ export const HIDE_METRIC_DRILL_DOWN = [
 // The AI impact metrics supported for over time tiles
 export const AI_IMPACT_OVER_TIME_METRICS = {
   [AI_METRICS.CODE_SUGGESTIONS_USAGE_RATE]: {
-    label: s__('AiImpactAnalytics|Code Suggestions: Usage'),
+    label: s__('AiImpactAnalytics|Code Suggestions usage'),
     units: UNITS.PERCENT,
   },
   [AI_METRICS.CODE_SUGGESTIONS_ACCEPTANCE_RATE]: {
-    label: s__('AiImpactAnalytics|Code Suggestions: Acceptance rate'),
+    label: s__('AiImpactAnalytics|Code Suggestions acceptance rate'),
     units: UNITS.PERCENT,
   },
   [AI_METRICS.DUO_CHAT_USAGE_RATE]: {
-    label: s__('AiImpactAnalytics|Duo Chat: Usage'),
+    label: s__('AiImpactAnalytics|Duo Chat usage'),
     units: UNITS.PERCENT,
   },
   [AI_METRICS.DUO_USAGE_RATE]: {
@@ -41,7 +41,7 @@ export const AI_IMPACT_OVER_TIME_METRICS = {
 export const AI_IMPACT_USAGE_METRICS = {
   ...AI_IMPACT_OVER_TIME_METRICS,
   [AI_METRICS.DUO_RCA_USAGE_RATE]: {
-    label: s__('AiImpactAnalytics|Duo RCA: Usage'),
+    label: s__('AiImpactAnalytics|Duo RCA usage'),
     units: UNITS.PERCENT,
   },
 };
@@ -63,7 +63,7 @@ export const AI_IMPACT_OVER_TIME_METRICS_TOOLTIPS = {
   },
   [AI_METRICS.CODE_SUGGESTIONS_ACCEPTANCE_RATE]: {
     description: s__(
-      'AiImpactAnalytics|Percentage ratio of total number of code suggestions accepted / code suggestions generated. %{linkStart}Learn more%{linkEnd}.',
+      'AiImpactAnalytics|Code Suggestions accepted out of total Code Suggestions generated. %{linkStart}Learn more%{linkEnd}.',
     ),
     descriptionLink: helpPagePath('user/project/repository/code_suggestions/_index', {
       anchor: 'use-code-suggestions',
@@ -71,13 +71,13 @@ export const AI_IMPACT_OVER_TIME_METRICS_TOOLTIPS = {
   },
   [AI_METRICS.DUO_CHAT_USAGE_RATE]: {
     description: s__(
-      'AiImpactAnalytics|Percentage ratio of Duo seats assigned that interacted with Duo Chat / total Duo seats assigned. %{linkStart}Learn more%{linkEnd}.',
+      'AiImpactAnalytics|Users with assigned Duo seats who used Duo Chat. %{linkStart}Learn more%{linkEnd}.',
     ),
     descriptionLink: helpPagePath('user/gitlab_duo_chat/_index'),
   },
   [AI_METRICS.DUO_USAGE_RATE]: {
     description: s__(
-      'AiImpactAnalytics|Percentage ratio of Duo seats assigned that used at least one Duo feature / total Duo seats assigned. %{linkStart}Learn more%{linkEnd}.',
+      'AiImpactAnalytics|Users with assigned Duo seats who used at least one Duo feature. %{linkStart}Learn more%{linkEnd}.',
     ),
     descriptionLink: helpPagePath('subscriptions/subscription-add-ons', {
       anchor: 'assign-gitlab-duo-seats',
