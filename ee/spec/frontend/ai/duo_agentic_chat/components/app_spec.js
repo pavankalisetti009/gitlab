@@ -95,6 +95,10 @@ describe('DuoAgenticLayoutApp', () => {
       expect(findDuoLayout().props('dimensions')).toEqual(expectedDimensions);
     });
 
+    it('fixes layout to the right', () => {
+      expect(findDuoLayout().classes()).toContain('gl-right-0', '!gl-left-auto');
+    });
+
     it('passes shouldRenderResizable prop to DuoLayout', () => {
       expect(findDuoLayout().props('shouldRenderResizable')).toBe(true);
     });
