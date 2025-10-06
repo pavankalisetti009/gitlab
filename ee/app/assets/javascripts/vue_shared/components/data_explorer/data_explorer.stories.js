@@ -2,7 +2,7 @@ import DataExplorer from './data_explorer.vue';
 
 export default {
   component: DataExplorer,
-  title: 'ee/data_explorer',
+  title: 'ee/vue_shared/components/data_explorer',
 };
 
 const Template = () => ({

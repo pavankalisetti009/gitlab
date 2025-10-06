@@ -1,6 +1,6 @@
 import { shallowMount } from '@vue/test-utils';
 import { GlFormTextarea, GlLink, GlButton, GlEmptyState } from '@gitlab/ui';
-import DataExplorer from 'ee/data_explorer/components/data_explorer.vue';
+import DataExplorer from 'ee/vue_shared/components/data_explorer/data_explorer.vue';
 import ModalCopyButton from '~/vue_shared/components/modal_copy_button.vue';
 
 describe('Data Explorer', () => {
