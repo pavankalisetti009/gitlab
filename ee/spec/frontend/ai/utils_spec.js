@@ -261,20 +261,20 @@ describe('AI Utils', () => {
 
     describe('when agenticMode is true', () => {
       it('sets correct state values', () => {
-        setAgenticMode(true);
+        setAgenticMode({ agenticMode: true });
 
         expect(duoChatGlobalState.isShown).toBe(false);
         expect(duoChatGlobalState.isAgenticChatShown).toBe(true);
       });
 
       it('does not save to cookie by default', () => {
-        setAgenticMode(true);
+        setAgenticMode({ agenticMode: true });
 
         expect(setCookie).not.toHaveBeenCalled();
       });
 
       it('saves to cookie when saveCookie is true', () => {
-        setAgenticMode(true, true);
+        setAgenticMode({ agenticMode: true, saveCookie: true });
 
         expect(setCookie).toHaveBeenCalledWith(DUO_AGENTIC_MODE_COOKIE, true, {
           expires: DUO_AGENTIC_MODE_COOKIE_EXPIRATION,
@@ -285,20 +285,20 @@ describe('AI Utils', () => {
 
     describe('when agenticMode is false', () => {
       it('sets correct state values', () => {
-        setAgenticMode(false);
+        setAgenticMode({ agenticMode: false });
 
         expect(duoChatGlobalState.isShown).toBe(true);
         expect(duoChatGlobalState.isAgenticChatShown).toBe(false);
       });
 
       it('does not save to cookie by default', () => {
-        setAgenticMode(false);
+        setAgenticMode({ agenticMode: false });
 
         expect(setCookie).not.toHaveBeenCalled();
       });
 
       it('saves to cookie when saveCookie is true', () => {
-        setAgenticMode(false, true);
+        setAgenticMode({ agenticMode: false, saveCookie: true });
 
         expect(setCookie).toHaveBeenCalledWith(DUO_AGENTIC_MODE_COOKIE, false, {
           expires: DUO_AGENTIC_MODE_COOKIE_EXPIRATION,
@@ -317,7 +317,7 @@ describe('AI Utils', () => {
       });
 
       it('defaults saveCookie to false when only agenticMode is provided', () => {
-        setAgenticMode(false);
+        setAgenticMode({ agenticMode: false });
 
         expect(setCookie).not.toHaveBeenCalled();
       });
@@ -346,7 +346,7 @@ describe('AI Utils', () => {
           duoChatGlobalState.isShown = initialIsShown;
           duoChatGlobalState.isAgenticChatShown = initialIsAgenticChatShown;
 
-          setAgenticMode(agenticMode);
+          setAgenticMode({ agenticMode });
 
           expect(duoChatGlobalState.isShown).toBe(expectedIsShown);
           expect(duoChatGlobalState.isAgenticChatShown).toBe(expectedIsAgenticChatShown);
