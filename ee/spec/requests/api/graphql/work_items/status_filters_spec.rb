@@ -507,6 +507,24 @@ RSpec.describe 'Status filters', feature_category: :team_planning do
 
         it_behaves_like 'filtering by status'
 
+        context 'when filtering for the converted status while the status still exists for tasks' do
+          let_it_be(:work_item_task_with_converted_status) do
+            create(:work_item, :task, project: project, labels: [group_label]).tap do |wi|
+              create(:work_item_current_status, :custom, work_item: wi, custom_status: converted_custom_status)
+            end
+          end
+
+          let(:status) { converted_custom_status }
+          # work_item_issue_with_system_status must not be included although the current_status data match
+          # the direct filter. The exclude condition removes this item from the result.
+          let(:expected_work_items) { [work_item_task_with_converted_status] }
+          let(:expected_unfiltered_work_items) do
+            super() << work_item_task_with_converted_status
+          end
+
+          it_behaves_like 'filtering by status'
+        end
+
         context 'with time constraints that include the item with system-defined current status' do
           let(:valid_from) { 3.days.ago }
           let(:valid_until) { 1.day.ago }
