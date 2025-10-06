@@ -104,7 +104,7 @@ RSpec.describe Ai::Catalog::ItemVersion, feature_category: :workflow_catalog do
               "value at `/commands` is not an array",
               "value at `/image` is not a string",
               "value at `/injectGatewayToken` is not a boolean",
-              "value at `/variables` is not an object"
+              "value at `/variables` is not an array"
             )
           end
         end

@@ -22,7 +22,7 @@ RSpec.describe Ai::FlowTriggers::RunService, feature_category: :agent_foundation
       'commands' => ['echo "Hello World"', 'ruby script.rb'],
       'variables' => %w[API_KEY DATABASE_URL],
       'injectGatewayToken' => true
-    }
+    }.to_yaml
   end
 
   let_it_be(:project_variable1) do
@@ -175,7 +175,7 @@ RSpec.describe Ai::FlowTriggers::RunService, feature_category: :agent_foundation
   describe '#execute' do
     before do
       # Mock the flow definition fetching instead of creating/updating files
-      allow(service).to receive(:fetch_flow_definition).and_return(flow_definition)
+      allow(project.repository).to receive(:blob_data_at).and_return(flow_definition)
 
       token_service_double = instance_double(::Ai::ThirdPartyAgents::TokenService)
       allow(::Ai::ThirdPartyAgents::TokenService).to receive(:new)
@@ -345,12 +345,10 @@ RSpec.describe Ai::FlowTriggers::RunService, feature_category: :agent_foundation
           'commands' => ['echo "Hello World"', 'ruby script.rb'],
           'variables' => %w[API_KEY DATABASE_URL],
           'injectGatewayToken' => false
-        }
+        }.to_yaml
       end
 
       before do
-        allow(service).to receive(:fetch_flow_definition).and_return(flow_definition)
-
         allow(::Ai::ThirdPartyAgents::TokenService).to receive(:new).and_call_original
       end
 
@@ -390,12 +388,10 @@ RSpec.describe Ai::FlowTriggers::RunService, feature_category: :agent_foundation
           'commands' => ['echo "Hello World"', 'ruby script.rb'],
           'variables' => %w[API_KEY DATABASE_URL]
           # injectGatewayToken is not present
-        }
+        }.to_yaml
       end
 
       before do
-        allow(service).to receive(:fetch_flow_definition).and_return(flow_definition)
-
         allow(::Ai::ThirdPartyAgents::TokenService).to receive(:new).and_call_original
       end
 
@@ -657,13 +653,13 @@ RSpec.describe Ai::FlowTriggers::RunService, feature_category: :agent_foundation
     end
 
     context 'when flow trigger has ai_catalog_item_consumer' do
-      let_it_be(:ai_catalog_item) { create(:ai_catalog_flow) }
-      let_it_be(:ai_catalog_item_consumer) do
+      let(:ai_catalog_item) { create(:ai_catalog_flow) }
+      let(:ai_catalog_item_consumer) do
         create(:ai_catalog_item_consumer,
           item: ai_catalog_item, project: project, pinned_version_prefix: nil)
       end
 
-      let_it_be(:flow_trigger_with_catalog) do
+      let(:flow_trigger_with_catalog) do
         create(:ai_flow_trigger,
           project: project,
           user: service_account,
@@ -749,6 +745,52 @@ RSpec.describe Ai::FlowTriggers::RunService, feature_category: :agent_foundation
           response = service.execute(params)
           expect(response).to be_error
           expect(response.message).to eq('Catalog execution failed')
+        end
+      end
+
+      context 'when flow trigger has ai_catalog_item with third_party_flow_type' do
+        let(:ai_catalog_item) { create(:ai_catalog_third_party_flow, latest_version:) }
+        let(:latest_version) do
+          create(:ai_catalog_item_version, :for_third_party_flow, definition: third_party_flow_definition)
+        end
+
+        let(:third_party_flow_definition) do
+          {
+            'image' => 'node:18',
+            'commands' => ['npm install', 'node index.js'],
+            'variables' => ['API_TOKEN'],
+            'injectGatewayToken' => true
+          }
+        end
+
+        it 'creates workload with third party flow definition' do
+          expect(::Ci::Workloads::RunWorkloadService).to receive(:new).and_wrap_original do |original_method, kwargs|
+            workload_definition = kwargs[:workload_definition]
+            expect(workload_definition.image).to eq('node:18')
+            expect(workload_definition.commands).to eq(['npm install', 'node index.js'])
+            expect(kwargs[:ci_variables_included]).to eq(['API_TOKEN'])
+
+            original_method.call(**kwargs)
+          end
+
+          response = service.execute(params)
+          expect(response).to be_success
+        end
+      end
+    end
+
+    context 'when flow definition is not a valid' do
+      where(:flow_definition) do
+        ['invalid yaml', '[not_a_hash]', "--- &1\n- *1\n", "%x", ""]
+      end
+
+      with_them do
+        it 'returns nil without calling workload service' do
+          expect(Ci::Workloads::RunWorkloadService).not_to receive(:new)
+
+          response = service.execute(params)
+          expect(response).to be_error
+          expect(response.message).to eq('invalid or missing flow definition')
         end
       end
     end

@@ -118,6 +118,8 @@ module Ai
           raise ArgumentError, "pinned_version_id is not supported for flows" if pinned_version_id
 
           FlowDefinition.new(self, version)
+        when THIRD_PARTY_FLOW_TYPE
+          version.definition
         end
       end
 

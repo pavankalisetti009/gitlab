@@ -47,7 +47,7 @@ FactoryBot.define do
           'injectGatewayToken' => true,
           'image' => 'node:22-slim',
           'commands' => ['/bin/bash'],
-          'variables' => { 'VAR1' => 'VAL1' }
+          'variables' => %w[VAL1 VAL2]
         }
       end
     end

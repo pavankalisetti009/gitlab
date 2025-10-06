@@ -60,7 +60,7 @@ module Ai
         errors.add(:base, 'ai_catalog_item_consumer project does not match project')
       end
 
-      return if ai_catalog_item_consumer.item.flow?
+      return if ai_catalog_item_consumer.item.flow? || ai_catalog_item_consumer.item.third_party_flow?
 
       errors.add(:base, 'ai_catalog_item_consumer is not a flow')
     end

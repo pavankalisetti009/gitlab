@@ -19,7 +19,7 @@ module Ai
 
         update_note(note, response, workflow)
 
-        [response, workflow]
+        response
       end
 
       private
