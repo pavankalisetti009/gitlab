@@ -15,6 +15,16 @@ RSpec.describe ::Sbom::Exporters::Cyclonedx::V16JsonService, feature_category: :
     create(:sbom_occurrence, component: component, project: project)
   end
 
+  let_it_be(:component_in_multiple_locations) { create(:sbom_occurrence, :bundler, project: project) }
+  let_it_be(:other_location) do
+    create(:sbom_occurrence,
+      :bundler,
+      component: component_in_multiple_locations.component,
+      component_version: component_in_multiple_locations.component_version,
+      project: project
+    )
+  end
+
   let(:generate) { described_class.new(export, sbom_occurrences).generate }
 
   subject(:output) { Gitlab::Json.parse(generate) }
@@ -75,6 +85,26 @@ RSpec.describe ::Sbom::Exporters::Cyclonedx::V16JsonService, feature_category: :
 
     it 'removes unknown licenses' do
       expect(find_component(record_with_unknown_license)['licenses']).to be_empty
+    end
+
+    it 'removes duplicates if same component exists in multiple locations' do
+      deduplicated_component = output['components'].select do |component|
+        component['name'] == component_in_multiple_locations.component_name
+      end
+
+      expect(deduplicated_component.size).to eq(1)
+      expect(deduplicated_component.first).to eq({
+        'name' => component_in_multiple_locations.name,
+        'version' => component_in_multiple_locations.version,
+        'type' => 'library',
+        'bom-ref' => component_in_multiple_locations.purl.to_s,
+        'licenses' => [],
+        'purl' => component_in_multiple_locations.purl.to_s
+      })
+    end
+
+    it 'sorts components by bom-ref' do
+      expect(output['components']).to be_sorted.by { |component| component['bom-ref'] }
     end
 
     it 'uses uuid as bom-ref if there is no purl_type' do
