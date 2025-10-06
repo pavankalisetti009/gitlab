@@ -20,7 +20,12 @@ describe('Pipelines', () => {
         projectId: '1',
         params: {},
       },
-      provide: { identityVerificationRequired, identityVerificationPath: '#' },
+      provide: {
+        identityVerificationRequired,
+        identityVerificationPath: '#',
+        usesExternalConfig: false,
+        emptyStateIllustrationPath: 'illustrations/empty-state/empty-pipeline-md.svg',
+      },
     });
   };
 
