@@ -7,6 +7,6 @@ RSpec.describe GitlabSchema.types['GitlabSubscriptionUsage'], feature_category: 
   it { expect(described_class).to require_graphql_authorizations(:read_subscription_usage) }
 
   it 'has expected fields' do
-    expect(described_class).to have_graphql_fields([:users_usage])
+    expect(described_class).to have_graphql_fields([:pool_usage, :users_usage])
   end
 end

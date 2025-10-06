@@ -328,12 +328,67 @@ module Gitlab
             end
           end
 
+          def get_subscription_pool_usage(
+            start_date: Date.current.beginning_of_month,
+            end_date: Date.current.end_of_month,
+            namespace_id: nil,
+            license_key: nil
+          )
+            query = <<~GQL
+              query subscriptionUsage(
+                $namespaceId: ID,
+                $licenseKey: String,
+                $startDate: ISO8601Date,
+                $endDate: ISO8601Date
+              ) {
+                subscription(namespaceId: $namespaceId, licenseKey: $licenseKey) {
+                  gitlabUnitsUsage(startDate: $startDate, endDate: $endDate) {
+                    poolUsage {
+                      totalUnits
+                      unitsUsed
+                    }
+                  }
+                }
+              }
+            GQL
+
+            variables = { startDate: start_date, endDate: end_date }
+            variables[:namespaceId] = namespace_id if namespace_id
+            variables[:licenseKey] = license_key if license_key
+
+            response = execute_graphql_query_for_subscription_usage(
+              query: query,
+              variables: variables
+            )
+
+            if response[:success]
+              {
+                success: true,
+                poolUsage: response.dig(:data, :data, :subscription, :gitlabUnitsUsage, :poolUsage)
+              }
+            else
+              error(response.dig(:data, :errors))
+            end
+          end
+
           private
 
           def execute_graphql_query(params)
             response = ::Gitlab::HTTP.post(
               graphql_endpoint,
               headers: admin_headers,
+              body: params.to_json
+            )
+
+            parse_response(response)
+          end
+
+          def execute_graphql_query_for_subscription_usage(params)
+            headers = params.dig(:variables, :licenseKey) ? json_headers : admin_headers
+
+            response = ::Gitlab::HTTP.post(
+              graphql_endpoint,
+              headers: headers,
               body: params.to_json
             )
 

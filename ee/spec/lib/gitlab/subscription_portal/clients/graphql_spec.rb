@@ -953,4 +953,162 @@ RSpec.describe Gitlab::SubscriptionPortal::Clients::Graphql, feature_category: :
 
     include_examples 'connectivity problems calling the endpoint'
   end
+
+  describe '#get_subscription_pool_usage' do
+    let(:start_date) { Date.current.beginning_of_month }
+    let(:end_date) { Date.current.end_of_month }
+
+    let(:query) do
+      <<~GQL
+        query subscriptionUsage(
+          $namespaceId: ID,
+          $licenseKey: String,
+          $startDate: ISO8601Date,
+          $endDate: ISO8601Date
+        ) {
+          subscription(namespaceId: $namespaceId, licenseKey: $licenseKey) {
+            gitlabUnitsUsage(startDate: $startDate, endDate: $endDate) {
+              poolUsage {
+                totalUnits
+                unitsUsed
+              }
+            }
+          }
+        }
+      GQL
+    end
+
+    let(:params) do
+      { query: query, variables: variables }
+    end
+
+    subject(:get_subscription_pool_usage) do
+      client.get_subscription_pool_usage(
+        license_key: license_key,
+        namespace_id: namespace_id,
+        start_date: start_date,
+        end_date: end_date
+      )
+    end
+
+    shared_examples 'performs request with correct params' do
+      let(:headers) do
+        {
+          "Accept" => "application/json",
+          "Content-Type" => "application/json",
+          "User-Agent" => "GitLab/#{Gitlab::VERSION}"
+        }.merge(admin_headers || {})
+      end
+
+      it 'perform post request with correct params' do
+        expect(::Gitlab::HTTP).to receive(:post).with(
+          graphql_url,
+          headers: headers,
+          body: params.to_json
+        ).and_return(instance_double(
+          HTTParty::Response,
+          response: Net::HTTPSuccess.new(1.0, '200', 'OK'),
+          parsed_response: { success: true }
+        ))
+
+        get_subscription_pool_usage
+      end
+    end
+
+    context 'when the subscription portal response is successful' do
+      let(:portal_response) do
+        {
+          success: true,
+          data: {
+            data: {
+              subscription: {
+                gitlabUnitsUsage: {
+                  poolUsage: {
+                    totalUnits: 1000,
+                    unitsUsed: 250
+                  }
+                }
+              }
+            }
+          }
+        }
+      end
+
+      shared_examples 'returns successfully' do
+        it 'returns successfull response' do
+          expect(client).to receive(:execute_graphql_query_for_subscription_usage)
+            .with(params).and_return(portal_response)
+
+          expect(get_subscription_pool_usage).to eq({
+            success: true,
+            poolUsage: {
+              totalUnits: 1000,
+              unitsUsed: 250
+            }
+          })
+        end
+      end
+
+      context 'for self-managed request' do
+        let(:namespace_id) { nil }
+        let(:license_key) { 'license_key' }
+        let(:variables) do
+          { startDate: start_date, endDate: end_date, licenseKey: license_key }
+        end
+
+        include_examples 'returns successfully'
+
+        include_examples 'performs request with correct params' do
+          let(:admin_headers) { nil }
+        end
+      end
+
+      context 'for gitlab.com request' do
+        let(:namespace_id) { 1234 }
+        let(:license_key) { nil }
+
+        let(:variables) do
+          { startDate: start_date, endDate: end_date, namespaceId: namespace_id }
+        end
+
+        include_examples 'returns successfully'
+
+        include_examples 'performs request with correct params' do
+          let(:admin_headers) do
+            {
+              "X-Admin-Email" => "gl_com_api@gitlab.com",
+              "X-Admin-Token" => "customer_admin_token"
+            }
+          end
+        end
+      end
+    end
+
+    context 'when the subscription portal response is unsuccessful' do
+      let(:namespace_id) { 1234 }
+      let(:license_key) { nil }
+      let(:portal_response) do
+        {
+          success: false,
+          data: {
+            errors: error
+          }
+        }
+      end
+
+      it 'returns failure' do
+        error = "some error"
+        expect(client).to receive(:execute_graphql_query_for_subscription_usage).and_return(
+          {
+            success: false,
+            data: {
+              errors: error
+            }
+          }
+        )
+
+        expect(get_subscription_pool_usage).to eq({ success: false, errors: error })
+      end
+    end
+  end
 end

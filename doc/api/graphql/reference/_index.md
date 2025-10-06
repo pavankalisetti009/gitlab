@@ -1852,7 +1852,9 @@ Returns [`GitlabSubscriptionUsage`](#gitlabsubscriptionusage).
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
+| <a id="querysubscriptionusageenddate"></a>`endDate` | [`ISO8601Date`](#iso8601date) | Filter usage ending on or before the date. |
 | <a id="querysubscriptionusagenamespacepath"></a>`namespacePath` | [`ID`](#id) | Path of the top-level namespace. Leave it blank if querying the instance subscription. |
+| <a id="querysubscriptionusagestartdate"></a>`startDate` | [`ISO8601Date`](#iso8601date) | Filter usage starting on or after the date. |
 
 ### `Query.syntheticNote`
 
@@ -30659,6 +30661,17 @@ Describes the subscription history of a given namespace.
 | <a id="gitlabsubscriptionhistoryseatsinuse"></a>`seatsInUse` | [`Int`](#int) | Seats being used in subscription. |
 | <a id="gitlabsubscriptionhistorystartdate"></a>`startDate` | [`Time`](#time) | Subscription start date. |
 
+### `GitlabSubscriptionPoolUsage`
+
+Describes the usage of consumables for the subscription shared pool.
+
+#### Fields
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="gitlabsubscriptionpoolusagecreditsused"></a>`creditsUsed` | [`Float`](#float) | Total of GitLab Credits consumed by the subscription. |
+| <a id="gitlabsubscriptionpoolusagetotalcredits"></a>`totalCredits` | [`Float`](#float) | Total of GitLab Credits allocated to the subscription. |
+
 ### `GitlabSubscriptionUsage`
 
 Describes the usage of consumables under the subscription.
@@ -30667,6 +30680,7 @@ Describes the usage of consumables under the subscription.
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
+| <a id="gitlabsubscriptionusagepoolusage"></a>`poolUsage` | [`GitlabSubscriptionPoolUsage`](#gitlabsubscriptionpoolusage) | Consumption usage for the subscription shared pool. |
 | <a id="gitlabsubscriptionusageusersusage"></a>`usersUsage` | [`GitlabSubscriptionUsageUsersUsage`](#gitlabsubscriptionusageusersusage) | Consumption usage for users under the subscription. |
 
 ### `GitlabSubscriptionUsageUsers`

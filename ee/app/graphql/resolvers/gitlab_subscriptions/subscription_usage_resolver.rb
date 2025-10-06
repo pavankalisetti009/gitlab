@@ -9,6 +9,14 @@ module Resolvers
         required: false,
         description: "Path of the top-level namespace. Leave it blank if querying the instance subscription."
 
+      argument :start_date, GraphQL::Types::ISO8601Date,
+        required: false,
+        description: "Filter usage starting on or after the date."
+
+      argument :end_date, GraphQL::Types::ISO8601Date,
+        required: false,
+        description: "Filter usage ending on or before the date."
+
       def resolve(**args)
         subscription_target = args[:namespace_path] ? :namespace : :instance
         namespace = find_namespace(args[:namespace_path])
@@ -17,7 +25,9 @@ module Resolvers
 
         ::GitlabSubscriptions::SubscriptionUsage.new(
           subscription_target: subscription_target,
-          namespace: namespace
+          namespace: namespace,
+          start_date: args[:start_date],
+          end_date: args[:end_date]
         )
       end
 
@@ -28,7 +38,7 @@ module Resolvers
 
         raise_resource_not_available_error! unless namespace
         raise_resource_not_available_error! unless Feature.enabled?(:usage_billing_dev, namespace)
-        raise_resource_not_available_error! unless Ability.allowed?(current_user, :owner_access, namespace)
+        raise_resource_not_available_error! unless Ability.allowed?(current_user, :read_subscription_usage, namespace)
 
         return if namespace.root? && namespace.group_namespace?
 
@@ -37,7 +47,7 @@ module Resolvers
 
       def authorize_for_instance!
         raise_resource_not_available_error! unless Feature.enabled?(:usage_billing_dev, :instance)
-        raise_resource_not_available_error! unless Ability.allowed?(current_user, :admin_all_resources)
+        raise_resource_not_available_error! unless Ability.allowed?(current_user, :read_subscription_usage)
       end
 
       def find_namespace(namespace_path)
