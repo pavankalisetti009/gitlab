@@ -304,10 +304,22 @@ module Security
           strong_memoize_with(:feature_disabled, config_id) do
             project = policy_configuration&.security_policy_management_project
 
-            break true unless project
+            break true if !project || Feature.disabled?(:security_policy_sync_propagation_tracking, project)
 
-            Feature.disabled?(:security_policy_sync_propagation_tracking, project)
+            config_id != csp_configuration_id
           end
+        end
+
+        def csp_configuration_id
+          return unless csp_namespace_id
+
+          Security::OrchestrationPolicyConfiguration.for_namespace(csp_namespace_id).first&.id
+        end
+
+        def csp_namespace_id
+          Security::PolicySetting
+            .for_organization(::Organizations::Organization.default_organization)
+            .csp_namespace_id
         end
 
         def policy_configuration

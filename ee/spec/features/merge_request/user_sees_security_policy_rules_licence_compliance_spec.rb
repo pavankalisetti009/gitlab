@@ -7,6 +7,8 @@ RSpec.describe 'Merge request > User sees security policy rules license complian
   feature_category: :security_policy_management do
   include Features::SecurityPolicyHelpers
 
+  include_context 'with policy sync state'
+
   let_it_be(:project) { create(:project, :repository) }
   let(:policy_management_project) { create(:project, :repository, creator: user, namespace: project.namespace) }
   let_it_be(:user) { create(:user, developer_of: project) }

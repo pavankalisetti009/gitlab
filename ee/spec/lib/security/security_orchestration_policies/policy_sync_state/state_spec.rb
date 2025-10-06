@@ -3,14 +3,22 @@
 require 'spec_helper'
 
 RSpec.describe Security::SecurityOrchestrationPolicies::PolicySyncState::State, :clean_gitlab_redis_shared_state, feature_category: :security_policy_management do
+  include Security::PolicyCspHelpers
+
   let(:redis) { Gitlab::Redis::SharedState.pool.checkout }
 
   let(:merge_request_id) { 1 }
   let(:project_id) { 1 }
   let(:other_project_id) { 2 }
 
+  let_it_be(:organization) { create(:organization, id: Organizations::Organization::DEFAULT_ORGANIZATION_ID) }
   let_it_be(:policy_configuration) { create(:security_orchestration_policy_configuration, :namespace) }
+
   let(:policy_configuration_id) { policy_configuration.id }
+
+  before do
+    stub_csp_group(policy_configuration.namespace)
+  end
 
   subject(:state) { described_class.new(policy_configuration.id) }
 
@@ -41,14 +49,26 @@ RSpec.describe Security::SecurityOrchestrationPolicies::PolicySyncState::State, 
       expect { state.start_sync }.to change { state.sync_in_progress?(redis) }.from(false).to(true)
     end
 
+    shared_examples 'when disabled' do
+      it 'does not mark pending' do
+        expect { state.start_sync }.not_to change { state.sync_in_progress?(redis) }.from(false)
+      end
+    end
+
     context 'with feature disabled' do
       before do
         stub_feature_flags(security_policy_sync_propagation_tracking: false)
       end
 
-      it 'does not mark pending' do
-        expect { state.start_sync }.not_to change { state.sync_in_progress?(redis) }.from(false)
+      it_behaves_like 'when disabled'
+    end
+
+    context 'without CSP configuration' do
+      before do
+        stub_csp_group(nil)
       end
+
+      it_behaves_like 'when disabled'
     end
   end
 
@@ -84,16 +104,28 @@ RSpec.describe Security::SecurityOrchestrationPolicies::PolicySyncState::State, 
       end
     end
 
-    context 'with feature disabled' do
-      before do
-        stub_feature_flags(security_policy_sync_propagation_tracking: false)
-      end
-
+    shared_examples 'when disabled' do
       it 'does not add pending IDs' do
         expect { state.append_projects([project_id, other_project_id]) }.not_to change {
           state.pending_projects
         }.from(be_empty)
       end
+    end
+
+    context 'with feature disabled' do
+      before do
+        stub_feature_flags(security_policy_sync_propagation_tracking: false)
+      end
+
+      it_behaves_like 'when disabled'
+    end
+
+    context 'without CSP configuration' do
+      before do
+        stub_csp_group(nil)
+      end
+
+      it_behaves_like 'when disabled'
     end
   end
 
@@ -134,13 +166,7 @@ RSpec.describe Security::SecurityOrchestrationPolicies::PolicySyncState::State, 
       end
     end
 
-    context 'with feature disabled' do
-      before do
-        stub_feature_flags(security_policy_sync_propagation_tracking: false)
-
-        state.clear_memoization(:feature_disabled)
-      end
-
+    shared_examples 'when disabled' do
       it 'does not remove a pending project ID' do
         expect { state.finish_project(project_id) }.not_to change {
           state.pending_projects
@@ -152,6 +178,26 @@ RSpec.describe Security::SecurityOrchestrationPolicies::PolicySyncState::State, 
 
         state.finish_project(other_project_id)
       end
+    end
+
+    context 'with feature disabled' do
+      before do
+        stub_feature_flags(security_policy_sync_propagation_tracking: false)
+
+        state.clear_memoization(:feature_disabled)
+      end
+
+      it_behaves_like 'when disabled'
+    end
+
+    context 'without CSP configuration' do
+      before do
+        stub_csp_group(nil)
+
+        state.clear_memoization(:feature_disabled)
+      end
+
+      it_behaves_like 'when disabled'
     end
   end
 
@@ -182,11 +228,7 @@ RSpec.describe Security::SecurityOrchestrationPolicies::PolicySyncState::State, 
       state.finish_project(project_id)
     end
 
-    context 'with feature disabled' do
-      before do
-        stub_feature_flags(security_policy_sync_propagation_tracking: false)
-      end
-
+    shared_examples 'when disabled' do
       it 'does not add a project ID as failed' do
         expect { state.fail_project(project_id) }.not_to change {
           state.failed_projects
@@ -198,6 +240,22 @@ RSpec.describe Security::SecurityOrchestrationPolicies::PolicySyncState::State, 
 
         state.finish_project(project_id)
       end
+    end
+
+    context 'with feature disabled' do
+      before do
+        stub_feature_flags(security_policy_sync_propagation_tracking: false)
+      end
+
+      it_behaves_like 'when disabled'
+    end
+
+    context 'without CSP configuration' do
+      before do
+        stub_csp_group(nil)
+      end
+
+      it_behaves_like 'when disabled'
     end
   end
 
@@ -226,11 +284,7 @@ RSpec.describe Security::SecurityOrchestrationPolicies::PolicySyncState::State, 
       }.from(nil).to(0)
     end
 
-    context 'with feature disabled' do
-      before do
-        stub_feature_flags(security_policy_sync_propagation_tracking: false)
-      end
-
+    shared_examples 'when disabled' do
       it 'does not add a merge request ID as pending' do
         expect { state.start_merge_request(merge_request_id) }.not_to change {
           state.pending_merge_requests
@@ -249,6 +303,22 @@ RSpec.describe Security::SecurityOrchestrationPolicies::PolicySyncState::State, 
         }.from(nil)
       end
     end
+
+    context 'with feature disabled' do
+      before do
+        stub_feature_flags(security_policy_sync_propagation_tracking: false)
+      end
+
+      it_behaves_like 'when disabled'
+    end
+
+    context 'without CSP configuration' do
+      before do
+        stub_csp_group(nil)
+      end
+
+      it_behaves_like 'when disabled'
+    end
   end
 
   describe '#start_merge_request_worker' do
@@ -265,6 +335,22 @@ RSpec.describe Security::SecurityOrchestrationPolicies::PolicySyncState::State, 
     context 'with feature disabled' do
       before do
         stub_feature_flags(security_policy_sync_propagation_tracking: false)
+      end
+
+      it 'does not increase merge request worker count', :aggregate_failures do
+        expect { state.start_merge_request_worker(merge_request_id) }.not_to change {
+          state.total_merge_request_workers_count(merge_request_id)
+        }.from(nil)
+
+        expect { state.start_merge_request_worker(merge_request_id) }.not_to change {
+          state.total_merge_request_workers_count(merge_request_id)
+        }.from(nil)
+      end
+    end
+
+    context 'without CSP configuration' do
+      before do
+        stub_csp_group(nil)
       end
 
       it 'does not increase merge request worker count', :aggregate_failures do
@@ -307,13 +393,7 @@ RSpec.describe Security::SecurityOrchestrationPolicies::PolicySyncState::State, 
         state.finish_merge_request_worker(merge_request_id)
       end
 
-      context 'with feature disabled' do
-        before do
-          stub_feature_flags(security_policy_sync_propagation_tracking: false)
-
-          state.clear_memoization(:feature_disabled)
-        end
-
+      shared_examples 'when disabled' do
         it 'does not decrement merge request worker count' do
           expect { state.finish_merge_request_worker(merge_request_id) }.not_to change {
             state.total_merge_request_workers_count(merge_request_id)
@@ -331,6 +411,26 @@ RSpec.describe Security::SecurityOrchestrationPolicies::PolicySyncState::State, 
 
           state.finish_merge_request_worker(merge_request_id)
         end
+      end
+
+      context 'with feature disabled' do
+        before do
+          stub_feature_flags(security_policy_sync_propagation_tracking: false)
+
+          state.clear_memoization(:feature_disabled)
+        end
+
+        it_behaves_like 'when disabled'
+      end
+
+      context 'without CSP configuration' do
+        before do
+          stub_csp_group(nil)
+
+          state.clear_memoization(:feature_disabled)
+        end
+
+        it_behaves_like 'when disabled'
       end
     end
 
@@ -357,13 +457,7 @@ RSpec.describe Security::SecurityOrchestrationPolicies::PolicySyncState::State, 
         state.finish_merge_request_worker(merge_request_id)
       end
 
-      context 'with feature disabled' do
-        before do
-          stub_feature_flags(security_policy_sync_propagation_tracking: false)
-
-          state.clear_memoization(:feature_disabled)
-        end
-
+      shared_examples 'when disabled' do
         it 'does not decrement merge request worker count' do
           expect { state.finish_merge_request_worker(merge_request_id) }.not_to change {
             state.total_merge_request_workers_count(merge_request_id)
@@ -375,6 +469,26 @@ RSpec.describe Security::SecurityOrchestrationPolicies::PolicySyncState::State, 
 
           state.finish_merge_request_worker(merge_request_id)
         end
+      end
+
+      context 'with feature disabled' do
+        before do
+          stub_feature_flags(security_policy_sync_propagation_tracking: false)
+
+          state.clear_memoization(:feature_disabled)
+        end
+
+        it_behaves_like 'when disabled'
+      end
+
+      context 'without CSP configuration' do
+        before do
+          stub_csp_group(nil)
+
+          state.clear_memoization(:feature_disabled)
+        end
+
+        it_behaves_like 'when disabled'
       end
     end
   end
@@ -396,6 +510,16 @@ RSpec.describe Security::SecurityOrchestrationPolicies::PolicySyncState::State, 
       context 'with feature disabled' do
         before do
           stub_feature_flags(security_policy_sync_propagation_tracking: false)
+
+          state.clear_memoization(:feature_disabled)
+        end
+
+        it { is_expected.to be(false) }
+      end
+
+      context 'without CSP configuration' do
+        before do
+          stub_csp_group(nil)
 
           state.clear_memoization(:feature_disabled)
         end
@@ -448,13 +572,7 @@ RSpec.describe Security::SecurityOrchestrationPolicies::PolicySyncState::State, 
       }.from(contain_exactly(merge_request_id.to_s)).to(be_empty)
     end
 
-    context 'with feature disabled' do
-      before do
-        stub_feature_flags(security_policy_sync_propagation_tracking: false)
-
-        state.clear_memoization(:feature_disabled)
-      end
-
+    shared_examples 'when disabled' do
       it 'does not reset pending project IDs' do
         expect { clear }.not_to change { state.pending_projects }.from(contain_exactly(project_id.to_s))
       end
@@ -464,6 +582,26 @@ RSpec.describe Security::SecurityOrchestrationPolicies::PolicySyncState::State, 
           state.pending_merge_requests
         }.from(contain_exactly(merge_request_id.to_s))
       end
+    end
+
+    context 'with feature disabled' do
+      before do
+        stub_feature_flags(security_policy_sync_propagation_tracking: false)
+
+        state.clear_memoization(:feature_disabled)
+      end
+
+      it_behaves_like 'when disabled'
+    end
+
+    context 'without CSP configuration' do
+      before do
+        stub_csp_group(nil)
+
+        state.clear_memoization(:feature_disabled)
+      end
+
+      it_behaves_like 'when disabled'
     end
   end
 

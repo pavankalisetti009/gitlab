@@ -7,6 +7,8 @@ RSpec.describe 'Merge request > User sees security policy with scan finding rule
   feature_category: :security_policy_management do
   include Features::SecurityPolicyHelpers
 
+  include_context 'with policy sync state'
+
   let_it_be(:project) { create(:project, :repository) }
   let_it_be(:user) { project.creator }
   let_it_be(:bot_user) { ::Users::Internal.for_organization(project.organization).security_bot }
