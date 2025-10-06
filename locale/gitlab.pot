@@ -76627,6 +76627,9 @@ msgstr ""
 msgid "YouTube"
 msgstr ""
 
+msgid "Your %{changesLinkStart}changes%{changesLinkEnd} have been committed successfully."
+msgstr ""
+
 msgid "Your %{changes_link} have been committed successfully."
 msgstr ""
 
