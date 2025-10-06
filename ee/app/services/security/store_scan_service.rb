@@ -77,8 +77,6 @@ module Security
     alias_method :store_security_scan, :security_scan
 
     def store_partial_scan
-      return unless ::Feature.enabled?(:vulnerability_partial_scans, project)
-
       # If we have a dependency scanning report then `scan` will return nil
       mode = security_report.scan&.partial_scan_mode
 

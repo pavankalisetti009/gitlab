@@ -6,7 +6,6 @@ import axios from '~/lib/utils/axios_utils';
 import { s__ } from '~/locale';
 import enabledScansQuery from 'ee/vue_merge_request_widget/queries/enabled_scans.query.graphql';
 import SummaryHighlights from 'ee/vue_shared/security_reports/components/summary_highlights.vue';
-import glFeatureFlagMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
 import { EXTENSION_ICONS } from '~/vue_merge_request_widget/constants';
 import { convertToCamelCase } from '~/lib/utils/text_utility';
 import { helpPagePath } from '~/helpers/help_page_helper';
@@ -40,7 +39,6 @@ export default {
     SummaryHighlights,
     SecurityTrainingPromoWidget,
   },
-  mixins: [glFeatureFlagMixin()],
   i18n,
   props: {
     mr: {
@@ -262,10 +260,6 @@ export default {
         );
       },
       skip() {
-        if (!this.glFeatures.vulnerabilityPartialScans) {
-          return true;
-        }
-
         return (
           !this.mr.pipeline?.iid ||
           !this.mr.targetProjectFullPath ||

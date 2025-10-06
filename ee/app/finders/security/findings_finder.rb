@@ -143,7 +143,7 @@ module Security
     def by_scan_mode(relation)
       scan_mode = params.fetch(:scan_mode, 'all')
 
-      return relation if ::Feature.disabled?(:vulnerability_partial_scans, project) || scan_mode == 'all'
+      return relation if scan_mode == 'all'
 
       exists_clause = <<~SQL
         EXISTS (

@@ -226,18 +226,6 @@ RSpec.describe Security::MergeRequestSecurityReportGenerationService, :use_clean
               }
             end
 
-            context 'when vulnerability_partial_scans is disabled' do
-              before do
-                stub_feature_flags(vulnerability_partial_scans: false)
-              end
-
-              it 'returns the report and does not queue ReactiveCachingWorker' do
-                expect(ReactiveCachingWorker).not_to receive(:perform_async)
-                expect(merge_request).to receive(mr_report_method).with(nil).and_return(mock_report)
-                expect(report).to eq(expected_report)
-              end
-            end
-
             context 'when cached results is not latest' do
               before do
                 allow(ReactiveCachingWorker).to receive(:perform_async).and_call_original

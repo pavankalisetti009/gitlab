@@ -11,8 +11,6 @@ module EE
 
         before_action :authorize_read_licenses!, only: [:licenses, :license_count]
         before_action do
-          push_frontend_feature_flag(:vulnerability_partial_scans, project)
-
           push_frontend_feature_flag(:validity_checks_security_finding_status, project)
         end
 
