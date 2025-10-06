@@ -323,6 +323,14 @@ module EE
           extras: [:lookahead],
           experiment: { milestone: '16.11' }
 
+        field :ai_metrics_basic,
+          ::Types::Analytics::AiMetricsBasic::NamespaceMetricsType,
+          null: true,
+          description: 'AI-related metrics with three months of data retention.',
+          resolver: ::Resolvers::Analytics::AiMetricsBasic::NamespaceMetricsResolver,
+          extras: [:lookahead],
+          experiment: { milestone: '18.5' }
+
         field :ai_usage_data,
           ::Types::Analytics::AiUsage::AiUsageDataType,
           description: 'AI-related data.',
