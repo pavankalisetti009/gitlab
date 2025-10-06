@@ -4,7 +4,9 @@ require 'spec_helper'
 
 RSpec.describe Security::PersistSecurityPoliciesWorker, '#perform', feature_category: :security_policy_management do
   include_context 'with approval policy' do
-    let(:policy_configuration) { create(:security_orchestration_policy_configuration) }
+    let_it_be(:organization) { create(:organization, id: Organizations::Organization::DEFAULT_ORGANIZATION_ID) }
+
+    let(:policy_configuration) { create(:security_orchestration_policy_configuration, :namespace) }
 
     let(:policy_yaml) do
       build(
