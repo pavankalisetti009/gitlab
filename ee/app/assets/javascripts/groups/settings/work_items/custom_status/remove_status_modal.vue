@@ -262,7 +262,7 @@ export default {
             {{ statusToRemove.name }}
           </div>
         </div>
-        <div class="gl-w-full sm:!gl-w-auto">
+        <div class="gl-w-full sm:gl-w-auto">
           <label class="gl-mb-1 gl-block" for="new-status">
             {{ s__('WorkItem|New status') }}
           </label>
@@ -279,7 +279,7 @@ export default {
 
     <template v-if="isDefaultStatus && filteredStatuses.length">
       <p class="gl-mb-4">{{ newDefaultBodyText }}</p>
-      <div class="sm:gl-w-full">
+      <div class="gl-w-full sm:gl-w-auto">
         <label class="gl-mb-1 gl-block" for="new-default">
           {{ newDefaultLabel }}
         </label>
