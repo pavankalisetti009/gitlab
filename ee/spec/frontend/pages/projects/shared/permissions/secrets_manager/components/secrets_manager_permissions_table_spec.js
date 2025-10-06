@@ -153,6 +153,9 @@ describe('SecretsManagerPermissionsSettings', () => {
   });
 
   describe('Role table', () => {
+    const findOwner = () => findRowCell();
+    const findReporter = () => findRowCell(1);
+
     beforeEach(() => {
       createComponent({
         mountFn: mountExtended,
@@ -164,23 +167,28 @@ describe('SecretsManagerPermissionsSettings', () => {
     });
 
     it('renders role info', () => {
-      expect(findRowCell().at(0).text()).toContain('Owner');
-      expect(findRowCell().at(1).text()).toContain('Create, Read, Update, Delete');
-      expect(findRowCell().at(2).text()).toContain('N/A');
+      expect(findOwner().at(0).text()).toContain('Owner');
+      expect(findOwner().at(1).text()).toContain('Create, Read, Update, Delete');
+      expect(findOwner().at(2).text()).toContain('N/A');
 
-      expect(findRowCell(1).at(0).text()).toContain('Reporter');
-      expect(findRowCell(1).at(1).text()).toContain('Read, Create');
-      expect(findRowCell(1).at(2).text()).toContain('root');
+      expect(findReporter().at(0).text()).toContain('Reporter');
+      expect(findReporter().at(1).text()).toContain('Read, Create');
+      expect(findReporter().at(2).text()).toContain('root');
+    });
+
+    it('hides delete button for owner role', () => {
+      expect(findOwner().at(3).findComponent(GlButton).exists()).toBe(false);
+      expect(findReporter().at(3).findComponent(GlButton).exists()).toBe(true);
     });
 
     it('emits delete-permission event when clicking on delete button', () => {
       expect(wrapper.emitted('delete-permission')).toBeUndefined();
 
-      findDeleteButton(0).trigger('click');
+      findDeleteButton(1).trigger('click');
 
       expect(wrapper.emitted('delete-permission')).toHaveLength(1);
       expect(wrapper.emitted('delete-permission')[0][0]).toMatchObject({
-        id: 50,
+        id: 20,
         type: 'ROLE',
         group: null,
         user: null,

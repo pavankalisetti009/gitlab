@@ -2,7 +2,10 @@
 import { GlAvatarLabeled, GlButton, GlTab, GlTableLite } from '@gitlab/ui';
 import { upperFirst } from 'lodash';
 import { __ } from '~/locale';
-import { ACCESS_LEVELS_INTEGER_TO_STRING } from '~/access_level/constants';
+import {
+  ACCESS_LEVELS_INTEGER_TO_STRING,
+  ACCESS_LEVEL_OWNER_INTEGER,
+} from '~/access_level/constants';
 import {
   PERMISSION_CATEGORY_GROUP,
   PERMISSION_CATEGORY_ROLE,
@@ -118,6 +121,9 @@ export default {
       const role = ACCESS_LEVELS_INTEGER_TO_STRING[id] || '';
       return upperFirst(role.toLowerCase());
     },
+    isOwner(accessLevel) {
+      return Number(accessLevel) === ACCESS_LEVEL_OWNER_INTEGER;
+    },
   },
 };
 </script>
@@ -177,6 +183,7 @@ export default {
       </template>
       <template #cell(actions)="{ item: { principal } }">
         <gl-button
+          v-if="!isOwner(principal.id)"
           icon="remove"
           :title="__('Delete')"
           :aria-label="__('Delete')"
