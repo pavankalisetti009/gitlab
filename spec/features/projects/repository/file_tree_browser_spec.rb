@@ -35,6 +35,10 @@ RSpec.describe 'Repository file tree browser', :js, feature_category: :source_co
       end
     end
 
+    it 'passes axe automated accessibility testing' do
+      expect(page).to be_axe_clean.within('.file-tree-browser')
+    end
+
     it 'navigates to a file' do
       within('.file-tree-browser') do
         click_file('README.md')
