@@ -290,10 +290,9 @@ export default {
         :item-size="rowHeight"
         :buffer="100"
         key-field="key"
-        role="tree"
         data-testid="tree-list-scroll"
       >
-        <template #default="{ item, index }">
+        <template #default="{ item }">
           <diff-file-row
             :file="item"
             :level="item.level"
@@ -303,8 +302,6 @@ export default {
             :style="{ '--level': item.level }"
             :class="{ 'tree-list-parent': item.level > 0 }"
             :tabindex="item.loading ? -1 : 0"
-            :aria-setsize="treeList.length"
-            :aria-posinset="index + 1"
             class="gl-relative"
             :data-file-row="item.fileHash"
             @toggleTreeOpen="$emit('toggleFolder', $event)"

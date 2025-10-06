@@ -417,16 +417,4 @@ describe('Tree List', () => {
       expect(getQueryHandlerSuccess).toHaveBeenCalledTimes(2); // root + dir_0
     });
   });
-
-  describe('ARIA tree view pattern', () => {
-    it('applies ARIA attributes directly to file rows', () => {
-      const fileRows = findFileRows();
-
-      expect(fileRows.at(0).attributes('aria-setsize')).toBe('2');
-      expect(fileRows.at(0).attributes('aria-posinset')).toBe('1');
-
-      expect(fileRows.at(1).attributes('aria-setsize')).toBe('2');
-      expect(fileRows.at(1).attributes('aria-posinset')).toBe('2');
-    });
-  });
 });

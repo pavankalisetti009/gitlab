@@ -389,10 +389,9 @@ export default {
         :item-size="$options.ROW_HEIGHT"
         :buffer="100"
         key-field="id"
-        role="tree"
         class="gl-h-full gl-min-h-0 gl-flex-grow"
       >
-        <template #default="{ item, index }">
+        <template #default="{ item }">
           <file-row
             :file="item"
             :file-url="item.routerPath"
@@ -401,8 +400,6 @@ export default {
             :loading="item.loading"
             :tabindex="item.loading ? -1 : 0"
             :aria-current="isCurrentPath(item.path)"
-            :aria-setsize="filteredFlatFilesList.length"
-            :aria-posinset="index + 1"
             :style="{ '--level': item.level }"
             :class="{
               'tree-list-parent': item.level > 0,

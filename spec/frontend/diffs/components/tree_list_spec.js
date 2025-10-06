@@ -39,7 +39,7 @@ describe('Diffs tree list component', () => {
           },
           {
             template:
-              '<div><template v-for="(item, index) in items"><slot :item="item" :index="index"></slot></template></div>',
+              '<div><template v-for="item in items"><slot :item="item"></slot></template></div>',
           },
         ),
       },
@@ -412,20 +412,6 @@ describe('Diffs tree list component', () => {
           ),
         ).toMatchSnapshot();
       });
-    });
-  });
-
-  describe('ARIA tree view pattern', () => {
-    beforeEach(() => {
-      setupFilesInState();
-      createComponent();
-    });
-
-    it('applies ARIA attributes directly to file rows', () => {
-      const fileRow = getFileRow();
-
-      expect(fileRow.attributes('aria-setsize')).toBe('7');
-      expect(fileRow.attributes('aria-posinset')).toBe('1');
     });
   });
 
