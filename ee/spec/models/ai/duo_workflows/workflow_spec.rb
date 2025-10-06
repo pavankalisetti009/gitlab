@@ -80,6 +80,38 @@ RSpec.describe Ai::DuoWorkflows::Workflow, feature_category: :agent_foundations 
     end
   end
 
+  describe '.order_by_status' do
+    subject(:workflows) { described_class.order_by_status(direction) }
+
+    let_it_be(:created_workflow) { create(:duo_workflows_workflow, :created) }
+    let_it_be(:running_workflow) { create(:duo_workflows_workflow, :running) }
+    let_it_be(:failed_workflow) { create(:duo_workflows_workflow, :failed) }
+
+    context 'when direction is asc' do
+      let(:direction) { :asc }
+
+      it 'sorts workflows by their status ascending' do
+        expect(workflows.map(&:human_status_name)).to eq(%w[created running failed])
+      end
+    end
+
+    context 'when direction is desc' do
+      let(:direction) { :desc }
+
+      it 'sorts workflows by their status descending' do
+        expect(workflows.map(&:human_status_name)).to eq(%w[failed running created])
+      end
+    end
+  end
+
+  describe '.ordered_statuses' do
+    it 'returns the ordered statuses based on the defined groups' do
+      expect(described_class.ordered_statuses).to eq(
+        [0, 1, 2, 6, 7, 8, 3, 4, 5]
+      )
+    end
+  end
+
   describe 'validations' do
     it { is_expected.to validate_presence_of(:status) }
     it { is_expected.to validate_length_of(:goal).is_at_most(16_384) }
