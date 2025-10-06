@@ -93,7 +93,7 @@ export default {
       return this.approvalsRequiredValid && this.isApproverFieldValid;
     },
     humanizedTemplate() {
-      return getDefaultHumanizedTemplate(this.approvalsRequired);
+      return getDefaultHumanizedTemplate(this.approvalsRequired, this.isWarnType);
     },
     isApproverFieldValid() {
       return this.errors
@@ -213,7 +213,7 @@ export default {
       <div class="gl-mb-3 gl-ml-5 gl-flex gl-items-center">
         <gl-sprintf :message="humanizedTemplate">
           <template #require="{ content }">
-            <strong>{{ content }}</strong>
+            <strong class="gl-pl-2">{{ content }}</strong>
           </template>
 
           <template #approvalsRequired>

@@ -27,7 +27,7 @@ describe('NavigationRail', () => {
   });
 
   it('sets the correct aria-labels for toggles', () => {
-    expect(findChatToggle().attributes('aria-label')).toBe('GitLab Duo Chat');
+    expect(findChatToggle().attributes('aria-label')).toBe('GitLab Duo Active Chat');
     expect(findSuggestionsToggle().attributes('aria-label')).toBe('GitLab Duo Suggestions');
     expect(findSessionsToggle().attributes('aria-label')).toBe('GitLab Duo Sessions');
   });
@@ -43,5 +43,9 @@ describe('NavigationRail', () => {
     await findChatToggle().trigger('click');
 
     expect(wrapper.emitted('handleTabToggle')).toEqual([['chat']]);
+  });
+
+  it('applies margin-top auto class to suggestions button for alignment', () => {
+    expect(findSuggestionsToggle().classes()).toContain('gl-mt-auto');
   });
 });

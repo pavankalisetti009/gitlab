@@ -1241,7 +1241,11 @@ describe('Duo Agentic Chat', () => {
         findGlToggle().vm.$emit('change', value);
         await nextTick();
 
-        expect(setAgenticMode).toHaveBeenCalledWith(value, true, false);
+        expect(setAgenticMode).toHaveBeenCalledWith({
+          agenticMode: value,
+          saveCookie: true,
+          isEmbedded: false,
+        });
       });
     });
   });
@@ -1358,7 +1362,11 @@ describe('Duo Agentic Chat', () => {
       findGlToggle().vm.$emit('change', true);
       await nextTick();
 
-      expect(setAgenticMode).toHaveBeenCalledWith(true, true, false);
+      expect(setAgenticMode).toHaveBeenCalledWith({
+        agenticMode: true,
+        saveCookie: true,
+        isEmbedded: false,
+      });
     });
 
     it('updates the toggle value when duoAgenticModePreference changes', async () => {
@@ -1756,6 +1764,47 @@ describe('Duo Agentic Chat', () => {
         agentVersionId: 'version-2',
       });
     });
+
+    describe('when switching from custom agent to default agent', () => {
+      beforeEach(async () => {
+        createComponent({
+          data: {
+            aiCatalogItemVersionId: 'version-1',
+          },
+        });
+        await waitForPromises();
+      });
+
+      it('stops querying agent config', async () => {
+        const expectedStartRequest = {
+          startRequest: {
+            workflowID: '456',
+            clientVersion: '1.0',
+            workflowDefinition: 'chat',
+            goal: MOCK_USER_MESSAGE.content,
+            approval: {},
+            workflowMetadata: null,
+          },
+        };
+        // Verify config query was called for the custom agent
+        expect(agentFlowConfigQueryMock).toHaveBeenCalledWith({
+          agentVersionId: 'version-1',
+        });
+
+        agentFlowConfigQueryMock.mockClear();
+
+        // Switch to default agent (no agent.id)
+        findDuoChat().vm.$emit('new-chat', { name: 'default duo' });
+        await waitForPromises();
+
+        // Verify no config is sent when starting workflow with default agent
+        findDuoChat().vm.$emit('send-chat-prompt', MOCK_USER_MESSAGE.content);
+        await waitForPromises();
+
+        expect(mockSocketManager.connect).toHaveBeenCalledWith(expectedStartRequest);
+        expect(agentFlowConfigQueryMock).not.toHaveBeenCalled();
+      });
+    });
   });
 
   describe('embedded mode behavior', () => {
@@ -1861,7 +1910,57 @@ describe('Duo Agentic Chat', () => {
         findGlToggle().vm.$emit('change', true);
         await nextTick();
 
-        expect(setAgenticMode).toHaveBeenCalledWith(true, true, true);
+        expect(setAgenticMode).toHaveBeenCalledWith({
+          agenticMode: true,
+          saveCookie: true,
+          isEmbedded: true,
+        });
+      });
+
+      describe('Apollo queries in embedded mode', () => {
+        beforeEach(async () => {
+          duoChatGlobalState.isAgenticChatShown = false;
+          createComponent({
+            propsData: {
+              isEmbedded: true,
+              userModelSelectionEnabled: true,
+              rootNamespaceId: MOCK_NAMESPACE_ID,
+            },
+          });
+          await waitForPromises();
+        });
+
+        it('runs agenticWorkflows query when embedded=true even if isAgenticChatShown=false', () => {
+          expect(userWorkflowsQueryHandlerMock).toHaveBeenCalled();
+        });
+
+        it('runs contextPresets query when embedded=true even if isAgenticChatShown=false', () => {
+          expect(contextPresetsQueryHandlerMock).toHaveBeenCalled();
+        });
+
+        it('runs availableModels query when embedded=true even if isAgenticChatShown=false', () => {
+          expect(availableModelsQueryHandlerMock).toHaveBeenCalled();
+        });
+
+        it('runs catalogAgents query when embedded=true even if isAgenticChatShown=false', () => {
+          expect(configuredAgentsQueryMock).toHaveBeenCalled();
+        });
+      });
+
+      describe('@thread-selected event in embedded mode', () => {
+        it('emits switch-to-active-tab event when thread is selected', async () => {
+          const mockThread = { id: MOCK_WORKFLOW_ID, aiCatalogItemVersionId: null };
+          const mockParsedData = { checkpoint: { channel_values: { ui_chat_log: [] } } };
+
+          WorkflowUtils.parseWorkflowData.mockReturnValue(mockParsedData);
+          WorkflowUtils.transformChatMessages.mockReturnValue(MOCK_TRANSFORMED_MESSAGES);
+
+          findDuoChat().vm.$emit('thread-selected', mockThread);
+          await waitForPromises();
+
+          expect(wrapper.emitted('switch-to-active-tab')?.length > 0).toBe(true);
+          expect(wrapper.emitted('switch-to-active-tab')).toHaveLength(1);
+        });
       });
     });
   });

@@ -102,7 +102,7 @@ export default {
     agenticWorkflows: {
       query: getUserWorkflows,
       skip() {
-        return !this.duoChatGlobalState.isAgenticChatShown;
+        return !(this.duoChatGlobalState.isAgenticChatShown || this.isEmbedded);
       },
       variables() {
         return {
@@ -121,7 +121,7 @@ export default {
     contextPresets: {
       query: getAiChatContextPresets,
       skip() {
-        return !this.duoChatGlobalState.isAgenticChatShown;
+        return !(this.duoChatGlobalState.isAgenticChatShown || this.isEmbedded);
       },
       variables() {
         return {
@@ -144,7 +144,10 @@ export default {
       skip() {
         if (!this.userModelSelectionEnabled) return true;
 
-        return !(this.duoChatGlobalState.isAgenticChatShown && this.rootNamespaceId);
+        return !(
+          (this.duoChatGlobalState.isAgenticChatShown || this.isEmbedded) &&
+          this.rootNamespaceId
+        );
       },
       variables() {
         return {
@@ -175,7 +178,7 @@ export default {
     catalogAgents: {
       query: getConfiguredAgents,
       skip() {
-        return !this.duoChatGlobalState.isAgenticChatShown;
+        return !(this.duoChatGlobalState.isAgenticChatShown || this.isEmbedded);
       },
       variables() {
         return {
@@ -306,7 +309,7 @@ export default {
         return getCookie(DUO_AGENTIC_MODE_COOKIE) === 'true';
       },
       set(value) {
-        setAgenticMode(value, true, this.isEmbedded);
+        setAgenticMode({ agenticMode: value, saveCookie: true, isEmbedded: this.isEmbedded });
       },
     },
     agents() {
@@ -337,7 +340,8 @@ export default {
       if (
         this.rootNamespaceId &&
         this.userModelSelectionEnabled &&
-        this.currentModel.value !== this.defaultModel.value
+        this.currentModel?.value &&
+        this.currentModel?.value !== this.defaultModel?.value
       ) {
         params.append('user_selected_model_identifier', this.currentModel.value);
       }
@@ -608,6 +612,11 @@ export default {
       // Check if the thread's agent still exists after hydration
       this.validateAgentExists();
 
+      // Notify parent to switch to active chat tab when embedded
+      if (this.isEmbedded) {
+        this.$emit('switch-to-active-tab', DUO_CHAT_VIEWS.CHAT);
+      }
+
       if (this.$route?.path !== '/chat') {
         this.$router.push(`/chat`);
       }
@@ -681,6 +690,7 @@ export default {
         this.aiCatalogItemVersionId = agent.versions.nodes.find(({ released }) => released)?.id;
       } else {
         this.aiCatalogItemVersionId = '';
+        this.agentConfig = null;
       }
     },
     onModelSelect(selectedModel) {

@@ -31,12 +31,18 @@ export const saveDuoAgenticModePreference = (isAgenticMode) => {
  * Swith duo chat based on agenticMode value and save to cookie based on
  * saveCookie value.
  *
- * @param {agenticMode} Boolean - Agentic mode state
- * @param {saveCookie} Boolean - Save to cookie flag
+ * @param {Object} params - The parameters object.
+ * @param {boolean} params.agenticMode - The state of the agentic mode (true or false).
+ * @param {boolean} params.saveCookie - Flag to save to cookie (true or false).
+ * @param {boolean} params.isEmbedded - Flag to indicate if the chat is embedded (true or false).
  * @returns {void}
  */
 
-export const setAgenticMode = (agenticMode = true, saveCookie = false, isEmbedded = false) => {
+export const setAgenticMode = ({
+  agenticMode = true,
+  saveCookie = false,
+  isEmbedded = false,
+} = {}) => {
   if (!isEmbedded) {
     duoChatGlobalState.isShown = !agenticMode;
     duoChatGlobalState.isAgenticChatShown = agenticMode;
@@ -59,7 +65,7 @@ export const sendDuoChatCommand = ({ question, resourceId, variables = {} } = {}
   if (!question || !resourceId) {
     throw new Error('Both arguments `question` and `resourceId` are required');
   }
-  setAgenticMode(false, true);
+  setAgenticMode({ agenticMode: false, saveCookie: true });
 
   window.requestIdleCallback(() => {
     duoChatGlobalState.commands.push({

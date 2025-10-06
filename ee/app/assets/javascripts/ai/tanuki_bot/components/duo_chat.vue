@@ -206,7 +206,7 @@ export default {
         return getCookie(DUO_AGENTIC_MODE_COOKIE) === 'true';
       },
       set(value) {
-        setAgenticMode(value, true);
+        setAgenticMode({ agenticMode: value, saveCookie: true });
       },
     },
     computedResourceId() {

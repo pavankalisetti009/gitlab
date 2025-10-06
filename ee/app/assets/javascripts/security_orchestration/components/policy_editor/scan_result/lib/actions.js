@@ -68,7 +68,15 @@ export const WARN_TEMPLATE_HELP_DESCRIPTION = s__(
   'SecurityOrchestration|A consultant will show up in the bot comment and developers should ask them for help if needed.',
 );
 
-export const getDefaultHumanizedTemplate = (numOfApproversRequired) => {
+export const getDefaultHumanizedTemplate = (numOfApproversRequired, isWarnType) => {
+  if (isWarnType) {
+    return n__(
+      'Developers may dismiss findings to proceed or%{requireStart}receive%{requireEnd} %{approvalsRequired} %{approvalStart}approval%{approvalEnd} from:',
+      'Developers may dismiss findings to proceed or%{requireStart}receive%{requireEnd} %{approvalsRequired} %{approvalStart}approvals%{approvalEnd} from:',
+      numOfApproversRequired,
+    );
+  }
+
   return n__(
     '%{requireStart}Require%{requireEnd} %{approvalsRequired} %{approvalStart}approval%{approvalEnd} from:',
     '%{requireStart}Require%{requireEnd} %{approvalsRequired} %{approvalStart}approvals%{approvalEnd} from:',

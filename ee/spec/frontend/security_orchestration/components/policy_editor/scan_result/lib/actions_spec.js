@@ -6,6 +6,7 @@ import {
   buildAction,
   createActionFromApprovers,
   REQUIRE_APPROVAL_TYPE,
+  getDefaultHumanizedTemplate,
   isRoleApprover,
   mapYamlApproversActionsToSelectedApproverTypes,
 } from 'ee/security_orchestration/components/policy_editor/scan_result/lib/actions';
@@ -79,6 +80,19 @@ describe('ACTION_LISTBOX_ITEMS', () => {
       { text: 'Send bot message', value: 'send_bot_message' },
     ]);
   });
+});
+
+describe('getDefaultHumanizedTemplate', () => {
+  it.each`
+    numOfApproversRequired | isWarnType | expected
+    ${0}                   | ${false}   | ${'%{requireStart}Require%{requireEnd} %{approvalsRequired} %{approvalStart}approvals%{approvalEnd} from:'}
+    ${0}                   | ${true}    | ${'Developers may dismiss findings to proceed or%{requireStart}receive%{requireEnd} %{approvalsRequired} %{approvalStart}approvals%{approvalEnd} from:'}
+  `(
+    'creates the correct template when the number of approvers is $numOfApproversRequired and isWarnType is $isWarnType',
+    ({ expected, isWarnType, numOfApproversRequired }) => {
+      expect(getDefaultHumanizedTemplate(numOfApproversRequired, isWarnType)).toBe(expected);
+    },
+  );
 });
 
 describe('isRoleApprover', () => {

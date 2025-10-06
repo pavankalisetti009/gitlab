@@ -22,13 +22,15 @@ describe('AIPanel', () => {
     routePath = '/some-path',
     routeParams = {},
     propsData = {},
+    provide = {},
   } = {}) => {
     mockRouter = {
-      push: jest.fn(),
+      push: jest.fn().mockResolvedValue(),
     };
 
     wrapper = shallowMountExtended(AIPanel, {
       propsData: {
+        userId: 'gid://gitlab/User/1',
         projectId: 'gid://gitlab/Project/123',
         namespaceId: 'gid://gitlab/Group/456',
         rootNamespaceId: 'gid://gitlab/Group/789',
@@ -36,6 +38,11 @@ describe('AIPanel', () => {
         metadata: '{"key":"value"}',
         userModelSelectionEnabled: false,
         ...propsData,
+      },
+      provide: {
+        isAgenticAvailable: true,
+        chatTitle: null,
+        ...provide,
       },
       data() {
         return {
@@ -106,6 +113,7 @@ describe('AIPanel', () => {
       expect(findContentContainer().props('activeTab')).toEqual({
         title: 'GitLab Duo Agentic Chat',
         component: DuoAgenticChat,
+        props: { mode: 'active', isAgenticAvailable: true },
       });
     });
   });
@@ -272,6 +280,102 @@ describe('AIPanel', () => {
         resourceId: 'gid://gitlab/Resource/666',
         metadata: '{"test":"data"}',
         userModelSelectionEnabled: true,
+      });
+    });
+  });
+
+  describe('router navigation for tabs with initialRoute', () => {
+    it('navigates to initialRoute when sessions tab is activated', async () => {
+      createComponent({ activeTab: 'chat' });
+
+      findNavigationRail().vm.$emit('handleTabToggle', 'sessions');
+      await waitForPromises();
+
+      expect(mockRouter.push).toHaveBeenCalledWith('/agent-sessions');
+    });
+
+    it('does not call router.push when chat tab is activated (no initialRoute)', async () => {
+      createComponent({ activeTab: 'sessions' });
+      mockRouter.push.mockClear();
+
+      findNavigationRail().vm.$emit('handleTabToggle', 'chat');
+      await waitForPromises();
+
+      expect(mockRouter.push).not.toHaveBeenCalled();
+    });
+
+    it('navigates to initialRoute regardless of promise resolution', async () => {
+      createComponent({ activeTab: 'chat' });
+
+      // Create a promise that won't reject synchronously
+      const pushMock = jest.fn().mockResolvedValue(undefined);
+      wrapper.vm.$router.push = pushMock;
+
+      findNavigationRail().vm.$emit('handleTabToggle', 'sessions');
+      await waitForPromises();
+
+      expect(pushMock).toHaveBeenCalledWith('/agent-sessions');
+    });
+  });
+
+  describe('onSwitchToActiveTab', () => {
+    it('switches to specified tab when event is emitted from content container', async () => {
+      createComponent({ activeTab: 'history' });
+
+      findContentContainer().vm.$emit('switch-to-active-tab', 'chat');
+      await waitForPromises();
+
+      expect(localStorage.setItem).toHaveBeenCalledWith('ai-panel-active-tab', 'chat');
+    });
+
+    it('updates localStorage with specified tab', async () => {
+      createComponent({ activeTab: 'history' });
+
+      findContentContainer().vm.$emit('switch-to-active-tab', 'new');
+      await waitForPromises();
+
+      expect(localStorage.setItem).toHaveBeenCalledWith('ai-panel-active-tab', 'new');
+    });
+
+    it('does not trigger router navigation', async () => {
+      createComponent({ activeTab: 'history' });
+      mockRouter.push.mockClear();
+
+      findContentContainer().vm.$emit('switch-to-active-tab', 'sessions');
+      await waitForPromises();
+
+      expect(mockRouter.push).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('tab configuration', () => {
+    it('returns chat tab with mode "active" when chat tab is selected', () => {
+      createComponent({ activeTab: 'chat' });
+
+      expect(findContentContainer().props('activeTab')).toEqual({
+        title: 'GitLab Duo Agentic Chat',
+        component: DuoAgenticChat,
+        props: { mode: 'active', isAgenticAvailable: true },
+      });
+    });
+
+    it('returns new chat tab with mode "new"', () => {
+      createComponent({ activeTab: 'new' });
+
+      expect(findContentContainer().props('activeTab')).toEqual({
+        title: 'New Chat',
+        component: DuoAgenticChat,
+        props: { mode: 'new', isAgenticAvailable: true },
+      });
+    });
+
+    it('returns history tab with mode "history"', () => {
+      createComponent({ activeTab: 'history' });
+
+      expect(findContentContainer().props('activeTab')).toEqual({
+        title: 'History',
+        component: DuoAgenticChat,
+        props: { mode: 'history', isAgenticAvailable: true },
       });
     });
   });
