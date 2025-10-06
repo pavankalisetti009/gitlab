@@ -681,6 +681,7 @@ export default {
         this.aiCatalogItemVersionId = agent.versions.nodes.find(({ released }) => released)?.id;
       } else {
         this.aiCatalogItemVersionId = '';
+        this.agentConfig = null;
       }
     },
     onModelSelect(selectedModel) {
