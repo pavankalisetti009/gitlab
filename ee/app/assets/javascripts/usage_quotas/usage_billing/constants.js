@@ -1,2 +1,4 @@
+export const PAGE_SIZE = 20;
+
 export const USAGE_WARNING_THRESHOLD = 80;
 export const USAGE_DANGER_THRESHOLD = 100;

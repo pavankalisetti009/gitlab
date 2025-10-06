@@ -101,8 +101,8 @@ describe('UsageBillingApp', () => {
     it('renders users table tab with correct props', () => {
       const usageByUserTab = wrapper.findComponent(UsageByUserTab);
 
+      expect(usageByUserTab.exists()).toBe(true);
       expect(usageByUserTab.props()).toMatchObject({
-        usersData: mockUsageDataWithPool.subscription.gitlabCreditsUsage.usersUsage,
         hasCommitment: true,
       });
     });
@@ -151,27 +151,6 @@ describe('UsageBillingApp', () => {
     it('logs the error to console and Sentry', () => {
       expect(logError).toHaveBeenCalledWith(expect.any(Error));
       expect(captureException).toHaveBeenCalledWith(expect.any(Error));
-    });
-  });
-
-  describe('rendering usage by user tab', () => {
-    beforeEach(async () => {
-      mockAxios.onGet(API_ENDPOINT).reply(200, mockUsageDataWithPool);
-      createComponent();
-      await waitForPromises();
-    });
-
-    it('renders the tab with correct props', () => {
-      expect(wrapper.findComponent(UsageByUserTab).exists()).toBe(true);
-      expect(wrapper.findComponent(UsageByUserTab).props('usersData')).toMatchObject({
-        totalUsers: 50,
-        totalUsersUsingAllocation: 35,
-        totalUsersUsingPool: 15,
-        totalUsersBlocked: 10,
-
-        // per-user details
-        users: expect.any(Array),
-      });
     });
   });
 });

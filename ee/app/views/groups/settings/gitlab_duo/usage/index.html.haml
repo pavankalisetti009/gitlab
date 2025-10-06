@@ -7,5 +7,6 @@
   user_usage_path: group_settings_gitlab_duo_usage_user_path(@group, ':id'),
   # TODO: the next url will be replaced with the actual API endpoint when it's ready
   # https://gitlab.com/gitlab-org/gitlab/-/issues/568055
-  fetch_usage_data_api_url: '/groups/gitlab_duo/usage/data'
+  fetch_usage_data_api_url: '/groups/gitlab_duo/usage/data',
+  namespace_path: @group.full_path
  } }

@@ -92,7 +92,7 @@ export default {
       </template>
     </page-heading>
 
-    <gl-alert v-if="isError" class="gl-my-3">
+    <gl-alert v-if="isError" variant="danger" class="gl-my-3">
       {{ s__('UsageBilling|An error occurred while fetching data') }}
     </gl-alert>
 
@@ -136,7 +136,7 @@ export default {
 
         <purchase-commitment-card :has-commitment="hasCommitment" />
       </section>
-      <gl-tabs class="gl-mt-5">
+      <gl-tabs class="gl-mt-5" lazy>
         <gl-tab :title="s__('UsageBilling|Usage trends')">
           <usage-trends-chart
             :usage-data="dailyUsage"
@@ -149,10 +149,7 @@ export default {
           />
         </gl-tab>
         <gl-tab :title="s__('UsageBilling|Usage by user')">
-          <usage-by-user-tab
-            :users-data="gitlabCreditsUsage.usersUsage"
-            :has-commitment="hasCommitment"
-          />
+          <usage-by-user-tab :has-commitment="hasCommitment" />
         </gl-tab>
       </gl-tabs>
     </template>

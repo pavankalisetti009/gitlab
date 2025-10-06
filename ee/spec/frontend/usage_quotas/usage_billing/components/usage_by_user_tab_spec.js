@@ -1,19 +1,46 @@
-import { GlTable, GlCard, GlProgressBar } from '@gitlab/ui';
+import Vue, { nextTick } from 'vue';
+import VueApollo from 'vue-apollo';
+import { GlTable, GlCard, GlProgressBar, GlAlert, GlKeysetPagination } from '@gitlab/ui';
 import { mountExtended, shallowMountExtended } from 'helpers/vue_test_utils_helper';
+import waitForPromises from 'helpers/wait_for_promises';
 import UsageByUserTab from 'ee/usage_quotas/usage_billing/components/usage_by_user_tab.vue';
+import getSubscriptionUsersUsageQuery from 'ee/usage_quotas/usage_billing/graphql/get_subscription_users_usage.query.graphql';
 import UserAvatarLink from '~/vue_shared/components/user_avatar/user_avatar_link.vue';
-import { mockUsageDataWithPool, mockUsageDataWithZeroAllocation } from '../mock_data';
+import { createMockClient } from 'helpers/mock_apollo_helper';
+import { logError } from '~/lib/logger';
+import { captureException } from '~/sentry/sentry_browser_wrapper';
+import { PAGE_SIZE } from 'ee/usage_quotas/usage_billing/constants';
+import {
+  mockUsersUsageDataWithPool,
+  mockUsersUsageDataWithoutPool,
+  mockUsersUsageDataWithZeroAllocation,
+} from '../mock_data';
+
+Vue.use(VueApollo);
+jest.mock('~/sentry/sentry_browser_wrapper');
+jest.mock('~/lib/logger');
 
 describe('UsageByUserTab', () => {
   /** @type {import('helpers/vue_test_utils_helper').ExtendedWrapper} */
   let wrapper;
-  const usersData = mockUsageDataWithPool.subscription.gitlabCreditsUsage.usersUsage;
 
-  const createComponent = ({ mountFn = shallowMountExtended, propsData } = {}) => {
+  /** @type {jest.Mock} */
+  let getSubscriptionUsersUsageQueryHandler;
+
+  const createComponent = ({ mountFn = shallowMountExtended, provide, propsData } = {}) => {
+    const defaultClient = createMockClient([
+      [getSubscriptionUsersUsageQuery, getSubscriptionUsersUsageQueryHandler],
+    ]);
+
+    const apolloProvider = new VueApollo({ defaultClient });
+
     wrapper = mountFn(UsageByUserTab, {
-      propsData: { usersData, hasCommitment: true, ...propsData },
+      apolloProvider,
+      propsData: { hasCommitment: true, ...propsData },
       provide: {
+        namespacePath: null,
         userUsagePath: '/path/to/user/:id',
+        ...provide,
       },
     });
   };
@@ -21,95 +48,178 @@ describe('UsageByUserTab', () => {
   const findTable = () => wrapper.findComponent(GlTable);
   const findCards = () => wrapper.findAllComponents(GlCard);
   const findProgressBars = () => wrapper.findAllComponents(GlProgressBar);
+  const findAlert = () => wrapper.findComponent(GlAlert);
 
-  describe('rendering cards', () => {
-    beforeEach(() => {
-      createComponent();
-    });
-
-    it('renders total users card', () => {
-      const cards = findCards();
-
-      expect(cards.at(0).text()).toMatchInterpolatedText('50 Total users (active users)');
-      expect(cards.at(1).text()).toMatchInterpolatedText('35 Users using allocation');
-      expect(cards.at(2).text()).toMatchInterpolatedText('10 Users blocked');
-    });
+  beforeEach(() => {
+    getSubscriptionUsersUsageQueryHandler = jest.fn();
   });
 
-  describe('rendering table', () => {
+  describe('normal state', () => {
     beforeEach(() => {
-      createComponent({ mountFn: mountExtended });
+      getSubscriptionUsersUsageQueryHandler.mockResolvedValue(mockUsersUsageDataWithPool);
     });
 
-    it('renders the table with correct props', () => {
-      expect(findTable().props('fields')).toEqual([
-        {
-          key: 'user',
-          label: 'User',
-        },
-        {
-          key: 'allocationUsed',
-          label: 'Allocation used',
-        },
-        {
-          key: 'poolUsed',
-          label: 'Pool used',
-        },
-        {
-          key: 'totalCreditsUsed',
-          label: 'Total credits used',
-        },
-        {
-          key: 'status',
-          label: 'Status',
-        },
-      ]);
-    });
-
-    it('renders the table with user avatar pointing to the correct path', () => {
-      const userAvatars = findTable().findAllComponents(UserAvatarLink);
-
-      expect(userAvatars).toHaveLength(8);
-
-      // testing the first two instances
-      expect(userAvatars.at(0).props('linkHref')).toBe('/path/to/user/1');
-      expect(userAvatars.at(1).props('linkHref')).toBe('/path/to/user/2');
-    });
-
-    it('renders the progress bars for allocation', () => {
-      const progressBars = findProgressBars();
-
-      expect(progressBars).toHaveLength(8);
-      // testing the first two instances
-      expect(progressBars.at(0).props('value')).toBe(90);
-      expect(progressBars.at(1).props('value')).toBe(100);
-    });
-
-    describe('with zero allocation', () => {
-      beforeEach(() => {
-        const usersDataWithZeroAllocation =
-          mockUsageDataWithZeroAllocation.subscription.gitlabCreditsUsage.usersUsage;
-
-        createComponent({
-          mountFn: mountExtended,
-          propsData: { usersData: usersDataWithZeroAllocation },
-        });
+    // NOTE: with limited GraphQL API, we can't test this functionality at the moment
+    // TODO: tests to be restored within https://gitlab.com/gitlab-org/gitlab/-/issues/573644
+    /* eslint-disable jest/no-disabled-tests */
+    describe.skip('rendering cards', () => {
+      beforeEach(async () => {
+        createComponent();
+        await waitForPromises();
       });
 
-      it('renders the progress bar with 0 value when allocationTotal is 0', () => {
+      it('renders total users card', () => {
+        const cards = findCards();
+
+        expect(cards.at(0).text()).toMatchInterpolatedText('50 Total users (active users)');
+        expect(cards.at(1).text()).toMatchInterpolatedText('35 Users using allocation');
+        expect(cards.at(2).text()).toMatchInterpolatedText('10 Users blocked');
+      });
+    });
+
+    describe('rendering table', () => {
+      beforeEach(async () => {
+        createComponent({ mountFn: mountExtended });
+        await waitForPromises();
+      });
+
+      it('renders the table with correct props', () => {
+        expect(findTable().props('fields')).toEqual([
+          {
+            key: 'user',
+            label: 'User',
+          },
+          {
+            key: 'allocationUsed',
+            label: 'Allocation used',
+          },
+          {
+            key: 'poolUsed',
+            label: 'Pool used',
+          },
+          {
+            key: 'totalCreditsUsed',
+            label: 'Total credits used',
+          },
+          {
+            key: 'status',
+            label: 'Status',
+          },
+        ]);
+      });
+
+      it('renders the table with user avatar pointing to the correct path', () => {
+        const userAvatars = findTable().findAllComponents(UserAvatarLink);
+
+        expect(userAvatars).toHaveLength(8);
+
+        // testing the first two instances
+        expect(userAvatars.at(0).props('linkHref')).toBe('/path/to/user/1');
+        expect(userAvatars.at(1).props('linkHref')).toBe('/path/to/user/2');
+      });
+
+      // NOTE: with limited GraphQL API, we can't test this functionality at the moment
+      // TODO: tests to be restored within https://gitlab.com/gitlab-org/gitlab/-/issues/573644
+      /* eslint-disable jest/no-disabled-tests */
+      it.skip('renders the progress bars for allocation', () => {
         const progressBars = findProgressBars();
 
-        expect(progressBars).toHaveLength(5);
+        expect(progressBars).toHaveLength(8);
         // testing the first two instances
-        expect(progressBars.at(0).props('value')).toBe(0);
-        expect(progressBars.at(1).props('value')).toBe(0);
+        expect(progressBars.at(0).props('value')).toBe(90);
+        expect(progressBars.at(1).props('value')).toBe(100);
+      });
+
+      // NOTE: with limited GraphQL API, we can't test this functionality at the moment
+      // TODO: tests to be restored within https://gitlab.com/gitlab-org/gitlab/-/issues/573644
+      /* eslint-disable jest/no-disabled-tests */
+      describe.skip('with zero allocation', () => {
+        beforeEach(async () => {
+          getSubscriptionUsersUsageQueryHandler.mockResolvedValue(
+            mockUsersUsageDataWithZeroAllocation,
+          );
+          createComponent({ mountFn: mountExtended });
+          await waitForPromises();
+        });
+
+        it('renders the progress bar with 0 value when allocationTotal is 0', () => {
+          const progressBars = findProgressBars();
+
+          expect(progressBars).toHaveLength(5);
+          // testing the first two instances
+          expect(progressBars.at(0).props('value')).toBe(0);
+          expect(progressBars.at(1).props('value')).toBe(0);
+        });
+      });
+    });
+
+    describe('pagination', () => {
+      const findPagination = () => wrapper.findComponent(GlKeysetPagination);
+
+      beforeEach(async () => {
+        createComponent({ mountFn: mountExtended });
+        await waitForPromises();
+      });
+
+      it('calls the graphql query on load', () => {
+        expect(getSubscriptionUsersUsageQueryHandler).toHaveBeenCalledWith(
+          expect.objectContaining({
+            after: null,
+            before: null,
+            first: PAGE_SIZE,
+            last: null,
+          }),
+        );
+      });
+
+      it('will render the pagination', () => {
+        expect(findPagination().exists()).toBe(true);
+        expect(findPagination().props()).toEqual(
+          expect.objectContaining(
+            mockUsersUsageDataWithPool.data.subscriptionUsage.usersUsage.users.pageInfo,
+          ),
+        );
+      });
+
+      it('navigates to next page', async () => {
+        getSubscriptionUsersUsageQueryHandler.mockClear();
+
+        findPagination().vm.$emit('next', '42');
+        await nextTick();
+
+        expect(getSubscriptionUsersUsageQueryHandler).toHaveBeenCalledWith(
+          expect.objectContaining({
+            after: '42',
+            before: null,
+            first: PAGE_SIZE,
+            last: null,
+          }),
+        );
+      });
+
+      it('navigates to prev page', async () => {
+        getSubscriptionUsersUsageQueryHandler.mockClear();
+
+        findPagination().vm.$emit('prev', '37');
+        await nextTick();
+
+        expect(getSubscriptionUsersUsageQueryHandler).toHaveBeenCalledWith(
+          expect.objectContaining({
+            after: null,
+            before: '37',
+            first: null,
+            last: PAGE_SIZE,
+          }),
+        );
       });
     });
   });
 
   describe('no commitment state', () => {
-    beforeEach(() => {
+    beforeEach(async () => {
+      getSubscriptionUsersUsageQueryHandler.mockResolvedValue(mockUsersUsageDataWithoutPool);
       createComponent({ propsData: { hasCommitment: false } });
+      await waitForPromises();
     });
 
     it('renders the table with correct props', () => {
@@ -131,6 +241,50 @@ describe('UsageByUserTab', () => {
           label: 'Status',
         },
       ]);
+    });
+  });
+
+  describe('SaaS', () => {
+    beforeEach(async () => {
+      createComponent({ provide: { namespacePath: 'some_namespace' } });
+      await waitForPromises();
+    });
+
+    it('passes the namespace path to the API', () => {
+      expect(getSubscriptionUsersUsageQueryHandler).toHaveBeenCalledWith(
+        expect.objectContaining({
+          namespacePath: 'some_namespace',
+        }),
+      );
+    });
+  });
+
+  describe('loading state', () => {
+    beforeEach(async () => {
+      getSubscriptionUsersUsageQueryHandler.mockReturnValue(new Promise(() => {}));
+      createComponent();
+      await waitForPromises();
+    });
+
+    it('doesnt render the table', () => {
+      expect(findTable().exists()).toBe(false);
+    });
+  });
+
+  describe('error state', () => {
+    beforeEach(async () => {
+      getSubscriptionUsersUsageQueryHandler.mockRejectedValue(new Error('Failed to fetch data'));
+      createComponent();
+      await waitForPromises();
+    });
+
+    it('reports the error', () => {
+      expect(logError).toHaveBeenCalled();
+      expect(captureException).toHaveBeenCalled();
+    });
+
+    it('renders alert', () => {
+      expect(findAlert().exists()).toBe(true);
     });
   });
 });
