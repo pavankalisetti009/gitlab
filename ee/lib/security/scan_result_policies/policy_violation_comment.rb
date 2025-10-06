@@ -122,6 +122,7 @@ module Security
             'Consider including optional reviewers based on the policy rules in the MR widget.'
           end
         }
+        #{warn_mode_summary}
         #{
           if details.fail_open_policies.any?
             "\nThe following policies enforced on your project were skipped because they are configured to fail open: " \
@@ -291,6 +292,15 @@ module Security
         MARKDOWN
 
         [(pipeline.report_type.humanize if render_title), info].compact.join("\n")
+      end
+
+      def warn_mode_summary
+        return unless Feature.enabled?(:security_policy_approval_warn_mode, project) && details.warn_mode_policies.any?
+
+        warn_mode_policy_names = details.warn_mode_policies.map(&:name).sort
+
+        "\n**Note:** The following policies are in warn-mode and can be bypassed to make approvals optional: \n" \
+          "#{array_to_list(warn_mode_policy_names)}"
       end
 
       def array_to_list(array)
