@@ -14078,6 +14078,9 @@ msgstr ""
 msgid "CiVariable|Variable %{key} has been updated."
 msgstr ""
 
+msgid "Classic Chat Placeholder"
+msgstr ""
+
 msgid "Classification Label (optional)"
 msgstr ""
 
@@ -30316,16 +30319,25 @@ msgstr ""
 msgid "GitLab Duo"
 msgstr ""
 
+msgid "GitLab Duo Active Chat"
+msgstr ""
+
 msgid "GitLab Duo Agentic Chat"
 msgstr ""
 
 msgid "GitLab Duo Chat"
 msgstr ""
 
+msgid "GitLab Duo Chat History"
+msgstr ""
+
 msgid "GitLab Duo Chat with Amazon Q"
 msgstr ""
 
 msgid "GitLab Duo Core is on"
+msgstr ""
+
+msgid "GitLab Duo New Chat"
 msgstr ""
 
 msgid "GitLab Duo Sessions"

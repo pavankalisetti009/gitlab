@@ -17,7 +17,20 @@ export default {
     NavigationRail,
     LocalStorageSync,
   },
+  inject: {
+    isAgenticAvailable: {
+      default: false,
+    },
+    chatTitle: {
+      default: null,
+    },
+  },
   props: {
+    userId: {
+      type: String,
+      required: false,
+      default: null,
+    },
     projectId: {
       type: String,
       required: false,
@@ -57,12 +70,31 @@ export default {
     };
   },
   computed: {
+    availableChat() {
+      return this.isAgenticAvailable ? DuoAgenticChat : __('Classic Chat Placeholder');
+    },
+    getChatTitle() {
+      return this.chatTitle ? this.chatTitle : __('GitLab Duo Agentic Chat');
+    },
     currentTabComponent() {
       switch (this.activeTab) {
         case 'chat':
           return {
-            title: __('GitLab Duo Agentic Chat'),
-            component: DuoAgenticChat,
+            title: this.getChatTitle,
+            component: this.availableChat,
+            props: { mode: 'active', isAgenticAvailable: this.isAgenticAvailable },
+          };
+        case 'new':
+          return {
+            title: __('New Chat'),
+            component: this.availableChat,
+            props: { mode: 'new', isAgenticAvailable: this.isAgenticAvailable },
+          };
+        case 'history':
+          return {
+            title: __('History'),
+            component: this.availableChat,
+            props: { mode: 'history', isAgenticAvailable: this.isAgenticAvailable },
           };
         case 'suggestions':
           return {
@@ -121,6 +153,17 @@ export default {
       if (!this.isExpanded) {
         this.toggleAIPanel(true);
       }
+
+      // Navigate to the initial route if the tab has one (e.g., sessions)
+      this.$nextTick(() => {
+        if (this.currentTabComponent?.initialRoute) {
+          this.$router.push(this.currentTabComponent.initialRoute);
+        }
+      });
+    },
+    onSwitchToActiveTab(tab) {
+      this.activeTab = tab;
+      localStorage.setItem(this.$options.ACTIVE_TAB_KEY, tab);
     },
     handleWindowResize() {
       const currentIsDesktop = GlBreakpointInstance.isDesktop();
@@ -146,6 +189,7 @@ export default {
     />
     <ai-content-container
       v-if="activeTab"
+      :user-id="userId"
       :active-tab="currentTabComponent"
       :is-expanded="isExpanded"
       :show-back-button="showBackButton"
@@ -157,6 +201,7 @@ export default {
       :user-model-selection-enabled="userModelSelectionEnabled"
       @closePanel="toggleAIPanel"
       @go-back="handleGoBack()"
+      @switch-to-active-tab="onSwitchToActiveTab"
     />
     <navigation-rail
       :is-expanded="isExpanded"
