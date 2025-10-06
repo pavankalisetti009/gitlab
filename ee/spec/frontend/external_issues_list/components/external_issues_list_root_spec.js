@@ -40,8 +40,9 @@ jest.mock(
 
 const resolvedValue = {
   headers: {
-    'x-page': 1,
-    'x-total': mockExternalIssues.length,
+    'x-per-page': '2',
+    'x-next-page-token': 'token123',
+    'x-is-last': 'false',
   },
   data: mockExternalIssues,
 };
@@ -70,7 +71,6 @@ describe('ExternalIssuesListRoot', () => {
   const expectedParams = {
     with_labels_details: true,
     per_page: 2,
-    page: 1,
     sort: 'created_desc',
     state: 'opened',
     project: undefined,
@@ -79,6 +79,7 @@ describe('ExternalIssuesListRoot', () => {
     assignee_username: undefined,
     labels: undefined,
     search: undefined,
+    next_page_token: null,
   };
 
   const findIssuableList = () => wrapper.findComponent(IssuableList);
@@ -201,8 +202,8 @@ describe('ExternalIssuesListRoot', () => {
     describe('issuable-list events', () => {
       it.each`
         desc             | input                                 | expected
-        ${'with label'}  | ${[createLabelFilterEvent('label2')]} | ${{ labels: ['label2'] }}
-        ${'with search'} | ${[createSearchFilterEvent('foo')]}   | ${{ search: 'foo' }}
+        ${'with label'}  | ${[createLabelFilterEvent('label2')]} | ${{ labels: ['label2'], next_page_token: null }}
+        ${'with search'} | ${[createSearchFilterEvent('foo')]}   | ${{ search: 'foo', next_page_token: null }}
       `(
         '$desc, filter event sets "filterParams" value and calls fetchIssues',
         async ({ input, expected }) => {
@@ -211,7 +212,7 @@ describe('ExternalIssuesListRoot', () => {
           issuableList.vm.$emit('filter', input);
           await waitForPromises();
 
-          expect(axios.get).toHaveBeenCalledWith(mockProvide.issuesFetchPath, {
+          expect(axios.get).toHaveBeenLastCalledWith(mockProvide.issuesFetchPath, {
             params: {
               ...expectedParams,
               project: mockProject,
@@ -237,7 +238,12 @@ describe('ExternalIssuesListRoot', () => {
     it('renders issuable-list component with correct props', () => {
       const issuableList = findIssuableList();
       expect(issuableList.exists()).toBe(true);
-      expect(issuableList.props()).toMatchSnapshot();
+      expect(issuableList.props()).toMatchObject({
+        useKeysetPagination: true,
+        hasNextPage: true,
+        hasPreviousPage: false,
+        totalItems: 0,
+      });
     });
 
     describe('issuable-list reference section', () => {
@@ -274,7 +280,7 @@ describe('ExternalIssuesListRoot', () => {
         issuableList.vm.$emit('click-tab', 'closed');
         await waitForPromises();
 
-        expect(axios.get).toHaveBeenCalledWith(mockProvide.issuesFetchPath, {
+        expect(axios.get).toHaveBeenLastCalledWith(mockProvide.issuesFetchPath, {
           params: {
             ...expectedParams,
             state: 'closed',
@@ -283,29 +289,65 @@ describe('ExternalIssuesListRoot', () => {
         expect(issuableList.props('currentTab')).toBe('closed');
       });
 
-      it('"page-change" event executes GET request correctly', async () => {
-        const mockPage = 2;
+      it('"next-page" event executes GET request correctly', async () => {
         const issuableList = findIssuableList();
         jest.spyOn(axios, 'get').mockResolvedValue({
           ...resolvedValue,
-          headers: { 'x-page': mockPage, 'x-total': mockExternalIssues.length },
+          headers: {
+            'x-per-page': '2',
+            'x-next-page-token': 'token456',
+            'x-is-last': 'true',
+          },
         });
 
-        issuableList.vm.$emit('page-change', mockPage);
+        issuableList.vm.$emit('next-page');
         await waitForPromises();
 
-        expect(axios.get).toHaveBeenCalledWith(mockProvide.issuesFetchPath, {
+        expect(axios.get).toHaveBeenLastCalledWith(mockProvide.issuesFetchPath, {
           params: {
             ...expectedParams,
-            page: mockPage,
+            next_page_token: 'token123',
           },
         });
 
         await nextTick();
         expect(issuableList.props()).toMatchObject({
-          currentPage: mockPage,
-          previousPage: mockPage - 1,
-          nextPage: mockPage + 1,
+          useKeysetPagination: true,
+          hasNextPage: false,
+          hasPreviousPage: true,
+        });
+      });
+
+      it('"previous-page" event executes GET request correctly', async () => {
+        const issuableList = findIssuableList();
+        jest.spyOn(axios, 'get').mockResolvedValue({
+          ...resolvedValue,
+          headers: {
+            'x-per-page': '2',
+            'x-next-page-token': null,
+            'x-is-last': 'false',
+          },
+        });
+
+        // Simulate being on a later page first
+        wrapper.vm.pageTokenHistory = ['token123'];
+        wrapper.vm.nextPageToken = 'token456';
+
+        issuableList.vm.$emit('previous-page');
+        await waitForPromises();
+
+        expect(axios.get).toHaveBeenLastCalledWith(mockProvide.issuesFetchPath, {
+          params: {
+            ...expectedParams,
+            next_page_token: 'token123',
+          },
+        });
+
+        await nextTick();
+        expect(issuableList.props()).toMatchObject({
+          useKeysetPagination: true,
+          hasNextPage: true,
+          hasPreviousPage: false,
         });
       });
 
@@ -316,7 +358,7 @@ describe('ExternalIssuesListRoot', () => {
         issuableList.vm.$emit('sort', mockSortBy);
         await waitForPromises();
 
-        expect(axios.get).toHaveBeenCalledWith(mockProvide.issuesFetchPath, {
+        expect(axios.get).toHaveBeenLastCalledWith(mockProvide.issuesFetchPath, {
           params: {
             ...expectedParams,
             sort: 'updated_asc',
@@ -327,9 +369,9 @@ describe('ExternalIssuesListRoot', () => {
 
       it.each`
         desc                        | input                                                                           | expected
-        ${'with label and search'}  | ${[createLabelFilterEvent(mockLabel), createSearchFilterEvent(mockSearchTerm)]} | ${{ labels: [mockLabel], search: mockSearchTerm }}
-        ${'with multiple lables'}   | ${[createLabelFilterEvent('label1'), createLabelFilterEvent('label2')]}         | ${{ labels: ['label1', 'label2'], search: undefined }}
-        ${'with multiple searches'} | ${[createSearchFilterEvent('foo bar'), createSearchFilterEvent('lorem')]}       | ${{ labels: undefined, search: 'foo bar lorem' }}
+        ${'with label and search'}  | ${[createLabelFilterEvent(mockLabel), createSearchFilterEvent(mockSearchTerm)]} | ${{ labels: [mockLabel], search: mockSearchTerm, next_page_token: null }}
+        ${'with multiple lables'}   | ${[createLabelFilterEvent('label1'), createLabelFilterEvent('label2')]}         | ${{ labels: ['label1', 'label2'], search: undefined, next_page_token: null }}
+        ${'with multiple searches'} | ${[createSearchFilterEvent('foo bar'), createSearchFilterEvent('lorem')]}       | ${{ labels: undefined, search: 'foo bar lorem', next_page_token: null }}
       `(
         '$desc, filter event sets "filterParams" value and calls fetchIssues',
         async ({ input, expected }) => {
@@ -338,7 +380,7 @@ describe('ExternalIssuesListRoot', () => {
           issuableList.vm.$emit('filter', input);
           await waitForPromises();
 
-          expect(axios.get).toHaveBeenCalledWith(mockProvide.issuesFetchPath, {
+          expect(axios.get).toHaveBeenLastCalledWith(mockProvide.issuesFetchPath, {
             params: {
               ...expectedParams,
               ...expected,
@@ -396,24 +438,32 @@ describe('ExternalIssuesListRoot', () => {
 
   describe('pagination', () => {
     it.each`
-      scenario                 | issues                | shouldShowPaginationControls
-      ${'returns no issues'}   | ${[]}                 | ${false}
-      ${`returns some issues`} | ${mockExternalIssues} | ${true}
+      scenario                 | issues                | hasNextPage | hasPreviousPage | shouldShowPaginationControls
+      ${'returns no issues'}   | ${[]}                 | ${false}    | ${false}        | ${false}
+      ${`returns some issues`} | ${mockExternalIssues} | ${true}     | ${false}        | ${true}
+      ${'has previous page'}   | ${mockExternalIssues} | ${false}    | ${true}         | ${true}
     `(
       'sets `showPaginationControls` prop to $shouldShowPaginationControls when request $scenario',
-      async ({ issues, shouldShowPaginationControls }) => {
+      async ({ issues, hasNextPage, hasPreviousPage, shouldShowPaginationControls }) => {
         jest.spyOn(axios, 'get');
         mock.onGet(mockProvide.issuesFetchPath).replyOnce(HTTP_STATUS_OK, issues, {
-          'x-page': 1,
-          'x-total': issues.length,
+          'x-per-page': '2',
+          'x-next-page-token': hasNextPage ? 'token123' : null,
+          'x-is-last': !hasNextPage ? 'true' : 'false',
         });
 
         createComponent();
+        if (hasPreviousPage) {
+          wrapper.vm.pageTokenHistory = ['token123'];
+        }
         await waitForPromises();
 
         expect(findIssuableList().props('showPaginationControls')).toBe(
           shouldShowPaginationControls,
         );
+        expect(findIssuableList().props('useKeysetPagination')).toBe(true);
+        expect(findIssuableList().props('hasNextPage')).toBe(hasNextPage);
+        expect(findIssuableList().props('hasPreviousPage')).toBe(hasPreviousPage);
       },
     );
   });

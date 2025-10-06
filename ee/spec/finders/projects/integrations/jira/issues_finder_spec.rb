@@ -14,7 +14,7 @@ RSpec.describe Projects::Integrations::Jira::IssuesFinder, feature_category: :in
   end
 
   describe '#execute' do
-    subject(:issues) { service.execute }
+    subject(:execute_service) { service.execute }
 
     let(:client) { double(options: { site: 'https://jira.example.com' }) }
 
@@ -24,7 +24,7 @@ RSpec.describe Projects::Integrations::Jira::IssuesFinder, feature_category: :in
       end
 
       it 'raises error' do
-        expect { subject }.to raise_error(Projects::Integrations::Jira::IssuesFinder::IntegrationError, 'Jira service not configured.')
+        expect { execute_service }.to raise_error(Projects::Integrations::Jira::IssuesFinder::IntegrationError, 'Jira service not configured.')
       end
     end
 
@@ -43,7 +43,7 @@ RSpec.describe Projects::Integrations::Jira::IssuesFinder, feature_category: :in
         end
 
         it 'raises error', :aggregate_failures do
-          expect { subject }.to raise_error(Projects::Integrations::Jira::IssuesFinder::RequestError)
+          expect { execute_service }.to raise_error(Projects::Integrations::Jira::IssuesFinder::RequestError)
         end
       end
 
@@ -51,17 +51,20 @@ RSpec.describe Projects::Integrations::Jira::IssuesFinder, feature_category: :in
         before do
           expect(client).to receive(:get).and_return(
             {
-              "total" => 375,
-              "startAt" => 0,
-              "issues" => [{ "key" => 'TEST-1' }, { "key" => 'TEST-2' }]
+              "issues" => [{ "key" => 'TEST-1' }, { "key" => 'TEST-2' }],
+              "isLast" => false,
+              "nextPageToken" => "token123"
             }
           )
         end
 
         it 'return service response with issues', :aggregate_failures do
-          expect(issues.size).to eq 2
-          expect(service.total_count).to eq 375
-          expect(issues.map(&:key)).to eq(%w[TEST-1 TEST-2])
+          execute_service
+
+          expect(service.issues.size).to eq 2
+          expect(service.next_page_token).to eq 'token123'
+          expect(service.is_last).to be false
+          expect(service.issues.map(&:key)).to eq(%w[TEST-1 TEST-2])
         end
 
         context 'when sorting' do
@@ -71,7 +74,7 @@ RSpec.describe Projects::Integrations::Jira::IssuesFinder, feature_category: :in
                 .with(jira_integration.project_keys_as_string, expected_sort_values)
                 .and_call_original
 
-              subject
+              execute_service
             end
           end
 
@@ -107,14 +110,14 @@ RSpec.describe Projects::Integrations::Jira::IssuesFinder, feature_category: :in
         end
 
         context 'when pagination params used' do
-          let(:params) { { page: '10', per_page: '20' } }
+          let(:params) { { next_page_token: 'abc123', per_page: '20' } }
 
           it 'passes them to JqlBuilderService' do
             expect(::Jira::JqlBuilderService).to receive(:new)
-              .with(jira_integration.project_keys_as_string, include({ page: '10', per_page: '20' }))
+              .with(jira_integration.project_keys_as_string, include({ next_page_token: 'abc123', per_page: '20' }))
               .and_call_original
 
-            subject
+            execute_service
           end
         end
       end
@@ -132,7 +135,7 @@ RSpec.describe Projects::Integrations::Jira::IssuesFinder, feature_category: :in
           let(:params) { { project: 'TEST3' } }
 
           it 'returns empty issues' do
-            expect(subject).to eq []
+            expect(execute_service).to eq []
           end
         end
 
@@ -143,9 +146,9 @@ RSpec.describe Projects::Integrations::Jira::IssuesFinder, feature_category: :in
             end
             expect(client).to receive(:get).and_return(
               {
-                "total" => 375,
-                "startAt" => 0,
-                "issues" => [{ "key" => 'TEST-1' }, { "key" => 'TEST-2' }]
+                "issues" => [{ "key" => 'TEST-1' }, { "key" => 'TEST-2' }],
+                "isLast" => true,
+                "nextPageToken" => nil
               }
             )
           end
@@ -155,7 +158,7 @@ RSpec.describe Projects::Integrations::Jira::IssuesFinder, feature_category: :in
               .with('TEST1', include({ sort: 'created', sort_direction: 'DESC' }))
               .and_call_original
 
-            subject
+            execute_service
           end
         end
       end
@@ -167,9 +170,9 @@ RSpec.describe Projects::Integrations::Jira::IssuesFinder, feature_category: :in
           end
           expect(client).to receive(:get).and_return(
             {
-              "total" => 375,
-              "startAt" => 0,
-              "issues" => [{ "key" => 'TEST-1' }, { "key" => 'TEST-2' }]
+              "issues" => [{ "key" => 'TEST-1' }, { "key" => 'TEST-2' }],
+              "isLast" => true,
+              "nextPageToken" => nil
             }
           )
         end
@@ -179,7 +182,7 @@ RSpec.describe Projects::Integrations::Jira::IssuesFinder, feature_category: :in
             .with('TEST1', include({ sort: 'created', sort_direction: 'DESC' }))
             .and_call_original
 
-          subject
+          execute_service
         end
       end
     end
@@ -189,7 +192,7 @@ RSpec.describe Projects::Integrations::Jira::IssuesFinder, feature_category: :in
 
       context 'when jira service integration does not have project_key' do
         it 'raises error' do
-          expect { subject }.to raise_error(Projects::Integrations::Jira::IssuesFinder::IntegrationError, 'Jira project key is not configured.')
+          expect { execute_service }.to raise_error(Projects::Integrations::Jira::IssuesFinder::IntegrationError, 'Jira project key is not configured.')
         end
       end
 
@@ -203,9 +206,9 @@ RSpec.describe Projects::Integrations::Jira::IssuesFinder, feature_category: :in
           end
           expect(client).to receive(:get).and_return(
             {
-              "total" => 375,
-              "startAt" => 0,
-              "issues" => [{ "key" => 'TEST-1' }, { "key" => 'TEST-2' }]
+              "issues" => [{ "key" => 'TEST-1' }, { "key" => 'TEST-2' }],
+              "isLast" => true,
+              "nextPageToken" => nil
             }
           )
         end
@@ -215,7 +218,7 @@ RSpec.describe Projects::Integrations::Jira::IssuesFinder, feature_category: :in
             .with('TEST', include({ sort: 'created', sort_direction: 'DESC', vulnerability_ids: ['123'] }))
             .and_call_original
 
-          subject
+          execute_service
         end
       end
     end
@@ -224,8 +227,7 @@ RSpec.describe Projects::Integrations::Jira::IssuesFinder, feature_category: :in
       it 'exits early and returns no issues' do
         stub_licensed_features(jira_issues_integration: false)
 
-        expect(issues.size).to eq 0
-        expect(service.total_count).to be_nil
+        expect(execute_service).to eq []
       end
     end
   end

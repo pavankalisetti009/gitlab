@@ -54,28 +54,36 @@ RSpec.describe 'Jira issues list', :js, feature_category: :integrations do
     end
 
     it 'paginates the list results' do
-      number_of_issues = 35.0
-      number_of_pages = (number_of_issues / per_page).ceil
+      with_issues 25 do |issues|
+        expect(page).to have_css '.gl-keyset-pagination'
 
-      with_issues number_of_issues do |issues|
-        expect(all_pages.size).to be(number_of_pages)
-        all_pages.size.times do |page_num|
-          navigate_to_page(page_num)
+        # Verify first page shows first batch of issues with all details
+        within('ul.issuable-list') do
+          issues.first(per_page).each do |issue|
+            issuable_reference = issue[:key]
+            issuable_row = find("li#issuable_#{issuable_reference}", wait: 0)
+            expect(issuable_row.text).to include(jira_user)
+            expect(issuable_row.text).to include(issue[:key])
+            expect(issuable_row.text).to include(issue.dig(:fields, :summary))
+            expect(issuable_row.text).to include(issue.dig(:fields, :status, :name))
+            expect(issuable_row.text).to include(issue.dig(:fields, :labels, 0))
+          end
+        end
 
-          offset = per_page * page_num
+        visit_next_page
 
-          aggregate_failures do
-            within('ul.issuable-list') do
-              issues[offset...per_page].each_with_index do |issue, idx|
-                issuable_reference = issues[idx + offset][:key]
-                issuable_row = find("li#issuable_#{issuable_reference}", wait: 0)
-                expect(issuable_row.text).to include(jira_user)
-                expect(issuable_row.text).to include(issue[:key])
-                expect(issuable_row.text).to include(issue.dig(:fields, :summary))
-                expect(issuable_row.text).to include(issue.dig(:fields, :status, :name))
-                expect(issuable_row.text).to include(issue.dig(:fields, :labels, 0))
-              end
-            end
+        # Verify we're still on the issues page and pagination is working
+        expect(page).to have_css '.gl-keyset-pagination'
+        within('ul.issuable-list') do
+          # Verify the same level of detail on the next page
+          issues.first(per_page).each do |issue|
+            issuable_reference = issue[:key]
+            issuable_row = find("li#issuable_#{issuable_reference}", wait: 0)
+            expect(issuable_row.text).to include(jira_user)
+            expect(issuable_row.text).to include(issue[:key])
+            expect(issuable_row.text).to include(issue.dig(:fields, :summary))
+            expect(issuable_row.text).to include(issue.dig(:fields, :status, :name))
+            expect(issuable_row.text).to include(issue.dig(:fields, :labels, 0))
           end
         end
       end
@@ -121,14 +129,9 @@ RSpec.describe 'Jira issues list', :js, feature_category: :integrations do
 
   private
 
-  def all_pages
-    # the first and last navigation items
-    # are Previous, and Next - ignore these.
-    all('[data-testid="gl-pagination-li"]')[1..-2]
-  end
-
-  def navigate_to_page(page)
-    all_pages[page].click
+  def visit_next_page
+    pagination = find '.gl-keyset-pagination'
+    pagination.click_button 'Next'
   end
 
   def build_issues(count = 10)
@@ -176,8 +179,32 @@ RSpec.describe 'Jira issues list', :js, feature_category: :integrations do
   end
 
   def stub_issues(issues)
-    body = { startAt: 0, total: issues.size, maxResults: issues.size, issues: issues }
+    # First page request (no next_page_token param)
     stub_request(:get, /\A#{public_url}/)
-      .to_return(headers: { 'Content-Type' => 'application/json' }, body: body.to_json)
+      .with(query: hash_not_including('nextPageToken'))
+      .to_return(
+        headers: {
+          'Content-Type' => 'application/json'
+        },
+        body: {
+          issues: issues,
+          isLast: false,
+          nextPageToken: 'next-token-123'
+        }.to_json
+      )
+
+    # Subsequent page requests (with nextPageToken param)
+    stub_request(:get, /\A#{public_url}/)
+      .with(query: hash_including('nextPageToken'))
+      .to_return(
+        headers: {
+          'Content-Type' => 'application/json'
+        },
+        body: {
+          issues: issues,
+          isLast: true,
+          nextPageToken: nil
+        }.to_json
+      )
   end
 end

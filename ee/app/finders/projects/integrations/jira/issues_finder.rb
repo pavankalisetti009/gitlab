@@ -8,11 +8,11 @@ module Projects
         IntegrationError = Class.new(Error)
         RequestError = Class.new(Error)
 
-        attr_reader :issues, :total_count, :per_page
+        attr_reader :issues, :per_page, :next_page_token, :is_last
 
         class << self
           def valid_params
-            @valid_params ||= %i[page per_page search state status author_username assignee_username project]
+            @valid_params ||= %i[next_page_token per_page search state status author_username assignee_username project]
             # to permit array params you need to init them to an empty array
             @valid_params << { labels: [], vulnerability_ids: [], issue_ids: [] }
           end
@@ -45,18 +45,19 @@ module Projects
 
         private
 
-        attr_reader :project, :jira_integration, :page, :params
+        attr_reader :project, :jira_integration, :next_page_token_param, :params
 
         # rubocop: disable CodeReuse/ServiceClass
         def fetch_issues(project_keys)
           jql = ::Jira::JqlBuilderService.new(project_keys, params).execute
           response = ::Jira::Requests::Issues::ListService
-                       .new(jira_integration, { jql: jql, page: page, per_page: per_page })
+                       .new(jira_integration, { jql: jql, next_page_token: next_page_token_param, per_page: per_page })
                        .execute
 
           raise RequestError, response.message if response.error?
 
-          @total_count = response.payload[:total_count]
+          @next_page_token = response.payload[:next_page_token]
+          @is_last = response.payload[:is_last]
           @issues = response.payload[:issues]
         end
         # rubocop: enable CodeReuse/ServiceClass
@@ -77,7 +78,7 @@ module Projects
         end
 
         def set_pagination
-          @page = (params[:page].presence || 1).to_i
+          @next_page_token_param = params[:next_page_token]
           @per_page = (params[:per_page].presence || ::Jira::Requests::Issues::ListService::PER_PAGE).to_i
         end
 
