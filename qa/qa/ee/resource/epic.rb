@@ -82,54 +82,6 @@ module QA
           parse_body(response)
         end
 
-        # Return subset of variable date fields for comparing work item epics with legacy epics
-        # Can be removed after migration to work item epics is complete
-        #
-        # @return [Hash]
-        def epic_dates
-          reload! if api_response.nil?
-
-          api_resource.slice(
-            :created_at,
-            :updated_at,
-            :closed_at
-          )
-        end
-
-        # Return author field for comparing work item epics with legacy epics
-        # Can be removed after migration to work item epics is complete
-        #
-        # @return [Hash]
-        def epic_author
-          reload! if api_response.nil?
-
-          api_resource[:author] = { id: api_resource.dig(:author, :id) }
-
-          api_resource.slice(
-            :author
-          )
-        end
-
-        # Return iid for comparing work item epics with legacy epics
-        # Can be removed after migration to work item epics is complete
-        #
-        # @return [Hash]
-        def epic_iid
-          reload! if api_response.nil?
-
-          api_resource.slice(:iid)
-        end
-
-        # Return group id for comparing work item epics with legacy epics
-        # Can be removed after migration to work item epics is complete
-        #
-        # @return [Hash]
-        def epic_group_id
-          reload! if api_response.nil?
-
-          api_resource.slice(:group_id)
-        end
-
         protected
 
         # Return subset of fields for comparing epics
