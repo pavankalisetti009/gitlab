@@ -156,6 +156,27 @@ RSpec.describe Users::UpdateService, feature_category: :user_profile do
           end
         end
 
+        context 'updating external status' do
+          let_it_be_with_reload(:admin_user) { create(:admin) }
+
+          it 'logs flagging a user as external' do
+            expect do
+              update_user_as(admin_user, user, external: true)
+            end.to change { AuditEvent.count }.by(1)
+
+            expect(AuditEvent.last.present.action).to eq('Changed external status from false to true')
+          end
+
+          it 'logs unflagging an external to an internal user' do
+            user.update!(external: true)
+            expect do
+              update_user_as(admin_user, user, external: false)
+            end.to change { AuditEvent.count }.by(1)
+
+            expect(AuditEvent.last.present.action).to eq('Changed external status from true to false')
+          end
+        end
+
         context 'updating username' do
           it 'logs audit event' do
             previous_username = user.username

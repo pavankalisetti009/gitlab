@@ -28,6 +28,7 @@ module EE
         audit_changes(:name, as: 'name', event_type: 'user_name_updated')
         audit_changes(:admin, as: 'admin status', event_type: 'user_admin_status_updated')
         audit_changes(:auditor, as: 'auditor status', event_type: 'user_auditor_status_updated')
+        audit_changes(:external, as: 'external status', event_type: 'user_external_status_updated')
 
         log_audit_events
       end
