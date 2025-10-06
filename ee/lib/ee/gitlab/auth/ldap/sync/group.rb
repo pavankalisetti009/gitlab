@@ -219,6 +219,7 @@ module EE
                   warn_cannot_remove_last_owner(user, group)
                 else
                   group.group_members.destroy(member.id)
+                  destroy_user_group_member_roles(user.id, group.id)
                 end
               end
             end
@@ -313,6 +314,10 @@ module EE
                 .allow_cross_joins_across_databases(url: "https://gitlab.com/gitlab-org/gitlab/-/issues/422405")
             end
             # rubocop: enable CodeReuse/ActiveRecord
+
+            def destroy_user_group_member_roles(user_id, group_id)
+              ::Authz::UserGroupMemberRoles::DestroyForGroupWorker.perform_async(user_id, group_id)
+            end
           end
         end
       end

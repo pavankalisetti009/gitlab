@@ -335,6 +335,15 @@ RSpec.describe EE::Gitlab::Auth::Ldap::Sync::Group, feature_category: :system_ac
 
           expect(project.authorized_users.find_by(id: user.id)).to be_nil
         end
+
+        it 'enqueues an Authz::UserGroupMemberRoles::DestroyForGroupWorker job' do
+          expect(::Authz::UserGroupMemberRoles::DestroyForGroupWorker)
+            .to receive(:perform_async).with(user.id, group.id)
+
+          group.add_member(user, Gitlab::Access::MAINTAINER)
+
+          sync_group.update_permissions
+        end
       end
 
       context 'when the user is the last owner' do
