@@ -3,8 +3,8 @@
 require 'spec_helper'
 
 RSpec.describe 'User adds a merge request to a merge train', :sidekiq_inline, :js, feature_category: :merge_trains do
-  let_it_be(:project) { create(:project, :repository) }
-  let_it_be(:user) { project.owner }
+  let(:project) { create(:project, :repository) }
+  let(:user) { project.owner }
 
   let!(:merge_request) do
     create(:merge_request, :with_merge_request_pipeline,
