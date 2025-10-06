@@ -290,6 +290,7 @@ export default {
         :item-size="rowHeight"
         :buffer="100"
         key-field="key"
+        role="tree"
         data-testid="tree-list-scroll"
       >
         <template #default="{ item, index }">

@@ -389,6 +389,7 @@ export default {
         :item-size="$options.ROW_HEIGHT"
         :buffer="100"
         key-field="id"
+        role="tree"
         class="gl-h-full gl-min-h-0 gl-flex-grow"
       >
         <template #default="{ item, index }">
