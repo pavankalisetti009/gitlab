@@ -58,7 +58,7 @@ export default {
 </script>
 
 <template>
-  <div class="gl-flex gl-items-center gl-justify-between gl-gap-2">
+  <div class="gl-flex gl-items-center gl-justify-between gl-gap-0">
     <counter
       v-gl-tooltip.bottom="$options.i18n.issues"
       class="dashboard-shortcuts-issues gl-basis-1/3"
