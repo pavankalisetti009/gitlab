@@ -1,4 +1,6 @@
 import Vue from 'vue';
+import VueApollo from 'vue-apollo';
+import createApolloClient from '~/lib/graphql';
 import UsageBillingDashboardPage from 'ee/usage_quotas/usage_billing/components/app.vue';
 
 /**
@@ -9,12 +11,16 @@ export function initUsageBillingDashboard(el) {
     return null;
   }
 
-  const { purchaseCommitmentUrl, userUsagePath, fetchUsageDataApiUrl } = el.dataset;
+  const { purchaseCommitmentUrl, userUsagePath, fetchUsageDataApiUrl, namespacePath } = el.dataset;
+
+  Vue.use(VueApollo);
+  const apolloProvider = new VueApollo({ defaultClient: createApolloClient() });
 
   return new Vue({
     el,
     name: 'UsageBillingDashboardRoot',
-    provide: { purchaseCommitmentUrl, userUsagePath, fetchUsageDataApiUrl },
+    apolloProvider,
+    provide: { purchaseCommitmentUrl, userUsagePath, fetchUsageDataApiUrl, namespacePath },
     render(createElement) {
       return createElement(UsageBillingDashboardPage);
     },
