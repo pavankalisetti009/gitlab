@@ -189,9 +189,12 @@ RSpec.describe ConcurrencyLimit::ResumeWorker, feature_category: :scalability do
           stub_application_setting(elasticsearch_max_code_indexing_concurrency: 35)
           expect(Gitlab::SidekiqMiddleware::ConcurrencyLimit::ConcurrencyLimitService)
             .to receive(:resume_processing!)
-                  .with(worker_with_concurrency_limit.name, limit: 35 - concurrent_workers)
+                  .with(worker_with_concurrency_limit.name)
+                  .and_return(10)
 
           perform
+
+          expect(worker.logging_extras).to eq({ "extra.concurrency_limit_resume_worker.resumed_jobs" => 10 })
         end
 
         context 'when concurrency_limit_current_limit_from_redis FF is disabled' do
@@ -203,7 +206,7 @@ RSpec.describe ConcurrencyLimit::ResumeWorker, feature_category: :scalability do
             stub_application_setting(elasticsearch_max_code_indexing_concurrency: 35)
             expect(Gitlab::SidekiqMiddleware::ConcurrencyLimit::ConcurrencyLimitService)
               .to receive(:resume_processing!)
-                    .with(worker_with_concurrency_limit.name, limit: 35 - concurrent_workers)
+                    .with(worker_with_concurrency_limit.name)
 
             perform
           end
@@ -212,7 +215,7 @@ RSpec.describe ConcurrencyLimit::ResumeWorker, feature_category: :scalability do
             stub_application_setting(elasticsearch_max_code_indexing_concurrency: 60)
             expect(Gitlab::SidekiqMiddleware::ConcurrencyLimit::ConcurrencyLimitService)
               .to receive(:resume_processing!)
-                    .with(worker_with_concurrency_limit.name, limit: 60 - concurrent_workers)
+                    .with(worker_with_concurrency_limit.name)
 
             perform
           end
@@ -227,7 +230,7 @@ RSpec.describe ConcurrencyLimit::ResumeWorker, feature_category: :scalability do
           it 'resumes processing based on limit in Redis' do
             expect(Gitlab::SidekiqMiddleware::ConcurrencyLimit::ConcurrencyLimitService)
               .to receive(:resume_processing!)
-                    .with(worker_with_concurrency_limit.name, limit: 10 - concurrent_workers)
+                    .with(worker_with_concurrency_limit.name)
 
             perform
           end
@@ -254,10 +257,10 @@ RSpec.describe ConcurrencyLimit::ResumeWorker, feature_category: :scalability do
                                                                                              .and_return(0)
           end
 
-          it 'resumes processing using the BATCH_SIZE' do
+          it 'resumes processing' do
             expect(Gitlab::SidekiqMiddleware::ConcurrencyLimit::ConcurrencyLimitService)
               .to receive(:resume_processing!)
-                .with(worker_with_concurrency_limit.name, limit: described_class::BATCH_SIZE)
+                .with(worker_with_concurrency_limit.name)
             expect(described_class).to receive(:perform_in)
 
             perform
