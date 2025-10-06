@@ -4,7 +4,8 @@ import { GlButton, GlForm, GlFormFields, GlFormTextarea } from '@gitlab/ui';
 import { s__ } from '~/locale';
 import { MAX_LENGTH_PROMPT } from 'ee/ai/catalog/constants';
 import ClipboardButton from '~/vue_shared/components/clipboard_button.vue';
-import { AI_CATALOG_AGENTS_ROUTE } from '../router/constants';
+import glFeatureFlagsMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
+import { AI_CATALOG_AGENTS_ROUTE, AI_CATALOG_AGENTS_SHOW_ROUTE } from '../router/constants';
 import { createFieldValidators } from '../utils';
 import AiCatalogFormButtons from './ai_catalog_form_buttons.vue';
 
@@ -18,6 +19,7 @@ export default {
     GlFormFields,
     GlFormTextarea,
   },
+  mixins: [glFeatureFlagsMixin()],
   props: {
     isSubmitting: {
       type: Boolean,
@@ -36,6 +38,18 @@ export default {
     formId() {
       return uniqueId('ai-catalog-agent-run-form-');
     },
+    cancelRoute() {
+      if (this.glFeatures.aiCatalogShowPage) {
+        return {
+          name: AI_CATALOG_AGENTS_SHOW_ROUTE,
+          params: { id: this.$route.params.id },
+        };
+      }
+
+      return {
+        name: AI_CATALOG_AGENTS_ROUTE,
+      };
+    },
   },
   methods: {
     onSubmit() {
@@ -53,7 +67,6 @@ export default {
       }),
     },
   },
-  indexRoute: AI_CATALOG_AGENTS_ROUTE,
 };
 </script>
 
@@ -99,7 +112,7 @@ export default {
         />
       </template>
     </gl-form-fields>
-    <ai-catalog-form-buttons :is-disabled="isSubmitting" :index-route="$options.indexRoute">
+    <ai-catalog-form-buttons :is-disabled="isSubmitting" :cancel-route="cancelRoute">
       <gl-button
         class="js-no-auto-disable gl-w-full @sm/panel:gl-w-auto"
         type="submit"
