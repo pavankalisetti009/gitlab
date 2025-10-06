@@ -162,6 +162,15 @@ RSpec.describe 'Trial Sign Up', :with_trial_types, :with_current_organization, :
         wait_for_all_requests
 
         expect(page).to have_content('Get started')
+
+        is_expected.to have_tracked_experiment(:lightweight_trial_registration_redesign, [
+          :assignment,
+          :completed_trial_registration_form,
+          :completed_identity_verification,
+          :render_welcome,
+          { action: :completed_group_project_creation, namespace: Group.last },
+          :render_get_started
+        ])
       end
 
       it 'when model errors occur form can be resubmitted' do
