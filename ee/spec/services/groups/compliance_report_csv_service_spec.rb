@@ -139,7 +139,7 @@ RSpec.describe ::Groups::ComplianceReportCsvService, :freeze_time, feature_categ
         end
 
         specify 'Merged At' do
-          expect(row['Merged At']).to eq project1_merge_request.merged_at.to_s
+          expect(row['Merged At']).to eq project1_merge_request.merged_at.xmlschema
         end
 
         specify 'Pipeline' do
