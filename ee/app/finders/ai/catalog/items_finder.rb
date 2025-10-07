@@ -14,7 +14,9 @@ module Ai
 
         items = init_collection
         items = by_organization(items)
+        items = by_project(items)
         items = by_item_type(items)
+        items = by_id(items)
         by_search(items)
       end
 
@@ -32,10 +34,22 @@ module Ai
         items.for_organization(params[:organization])
       end
 
+      def by_project(items)
+        return items unless params[:project]
+
+        items.for_project(params[:project])
+      end
+
       def by_item_type(items)
         return items unless params[:item_type]
 
         items.with_item_type(params[:item_type])
+      end
+
+      def by_id(items)
+        return items unless params[:id]
+
+        items.id_in(params[:id])
       end
 
       def by_search(items)

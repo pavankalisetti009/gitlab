@@ -39,6 +39,7 @@ module Ai
 
       scope :for_verification_level, ->(level) { where(verification_level: level) }
       scope :for_organization, ->(organization) { where(organization: organization) }
+      scope :for_project, ->(project) { where(project: project) }
       scope :not_deleted, -> { where(deleted_at: nil) }
       scope :public_only, -> { where(public: true) }
       scope :search, ->(query) { fuzzy_search(query, [:name, :description]) }

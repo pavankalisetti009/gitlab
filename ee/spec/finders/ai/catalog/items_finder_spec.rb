@@ -98,6 +98,22 @@ RSpec.describe Ai::Catalog::ItemsFinder, feature_category: :workflow_catalog do
     end
   end
 
+  context 'when filtering by project' do
+    let(:params) { { project: [public_flow.project, public_agent.project] } }
+
+    it 'returns the matching items' do
+      is_expected.to contain_exactly(public_flow, public_agent)
+    end
+  end
+
+  context 'when filtering by ID' do
+    let(:params) { { id: [public_flow.id, public_agent.id] } }
+
+    it 'returns the matching items' do
+      is_expected.to contain_exactly(public_flow, public_agent)
+    end
+  end
+
   describe 'ordering' do
     let_it_be(:gitlab_item_1) { create(:ai_catalog_agent, public: true) }
     let_it_be(:regular_item_1) { create(:ai_catalog_agent, public: true) }
