@@ -113,17 +113,17 @@ module EE
         mount_mutation ::Mutations::Vulnerabilities::Create
         mount_mutation ::Mutations::Vulnerabilities::BulkDismiss
         mount_mutation ::Mutations::Vulnerabilities::RemoveAllFromProject
-        mount_mutation ::Mutations::Vulnerabilities::Dismiss, scopes: [:api, :read_api, :ai_workflows]
+        mount_mutation ::Mutations::Vulnerabilities::Dismiss, scopes: [:api, :ai_workflows]
         mount_mutation ::Mutations::Vulnerabilities::Resolve
-        mount_mutation ::Mutations::Vulnerabilities::Confirm, scopes: [:api, :read_api, :ai_workflows]
-        mount_mutation ::Mutations::Vulnerabilities::RevertToDetected, scopes: [:api, :read_api, :ai_workflows]
-        mount_mutation ::Mutations::Vulnerabilities::CreateIssueLink, scopes: [:api, :read_api, :ai_workflows]
+        mount_mutation ::Mutations::Vulnerabilities::Confirm, scopes: [:api, :ai_workflows]
+        mount_mutation ::Mutations::Vulnerabilities::RevertToDetected, scopes: [:api, :ai_workflows]
+        mount_mutation ::Mutations::Vulnerabilities::CreateIssueLink, scopes: [:api, :ai_workflows]
         mount_mutation ::Mutations::Vulnerabilities::CreateExternalIssueLink
         mount_mutation ::Mutations::Vulnerabilities::DestroyExternalIssueLink
         mount_mutation ::Mutations::Vulnerabilities::LinkMergeRequest, scopes: [:api, :ai_workflows]
         mount_mutation ::Mutations::Vulnerabilities::UnlinkMergeRequest, scopes: [:api, :ai_workflows],
           experiment: { milestone: '18.5' }
-        mount_mutation ::Mutations::Vulnerabilities::BulkSeverityOverride, scopes: [:api, :read_api, :ai_workflows]
+        mount_mutation ::Mutations::Vulnerabilities::BulkSeverityOverride, scopes: [:api, :ai_workflows]
         mount_mutation ::Mutations::Vulnerabilities::CreateIssue, experiment: { milestone: '17.9' }
         mount_mutation ::Mutations::Vulnerabilities::RefreshVulnerabilityFindingTokenStatus
         mount_mutation ::Mutations::Boards::UpdateEpicUserPreferences,
