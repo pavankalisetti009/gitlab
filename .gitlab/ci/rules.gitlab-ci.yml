@@ -908,6 +908,10 @@
   - "tooling/custom_roles/docs/templates/custom_abilities.md.erb"
   - "ee/{lib/,spec/}tasks/gitlab/custom_roles/*"
 
+.permissions-patterns: &permissions-patterns
+  - "config/authz/permissions/**/*.yml"
+  - "{,ee/}app/policies/**/*.rb"
+
 .ci-job-token-policies-patterns: &ci-job-token-policies-patterns
   - "{,ee/}lib/api/*.rb"
   - "app/validators/json_schemas/ci_job_token_policies.json"
@@ -1451,6 +1455,16 @@
       when: never
     - <<: *if-default-refs
       changes: *custom-roles-patterns
+
+############################
+# Permissions rules        #
+############################
+.permissions:rules:permissions-verify:
+  rules:
+    - <<: *if-not-ee
+      when: never
+    - <<: *if-default-refs
+      changes: *permissions-patterns
 
 #############################
 # CI job token policy rules #
