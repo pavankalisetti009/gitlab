@@ -2,10 +2,19 @@
 import { GlAlert, GlKeysetPagination, GlCard, GlTable, GlBadge, GlProgressBar } from '@gitlab/ui';
 import UserAvatarLink from '~/vue_shared/components/user_avatar/user_avatar_link.vue';
 import { s__, __ } from '~/locale';
+import { getIdFromGraphQLId } from '~/graphql_shared/utils';
 import { logError } from '~/lib/logger';
 import { captureException } from '~/sentry/sentry_browser_wrapper';
 import getSubscriptionUsersUsageQuery from '../graphql/get_subscription_users_usage.query.graphql';
 import { PAGE_SIZE } from '../constants';
+
+/**
+ * @typedef {object} Usage
+ * @property { number } totalCredits
+ * @property { number } creditsUsed
+ * @property { number } poolCreditsUsed
+ * @property { number } overageCreditsUsed
+ */
 
 export default {
   name: 'UsageByUserTab',
@@ -78,7 +87,7 @@ export default {
           label: s__('UsageBilling|Allocation used'),
         },
         this.hasCommitment && {
-          key: 'poolUsed',
+          key: 'poolCreditsUsed',
           label: s__('UsageBilling|Pool used'),
         },
         {
@@ -91,34 +100,41 @@ export default {
         },
       ].filter(Boolean);
     },
+    usersList() {
+      return this.usersUsage.users.nodes.map((user) => ({
+        ...user,
+        usage: {
+          totalCredits: 0,
+          creditsUsed: 0,
+          poolCreditsUsed: 0,
+          overageCreditsUsed: 0,
+          ...user.usage,
+        },
+      }));
+    },
   },
   methods: {
-    getStatusVariant(status) {
-      switch (status) {
-        case 'seat':
-          return { variant: 'neutral', label: s__('UsageBilling|Normal usage') };
-        case 'pool':
-          return { variant: 'info', label: s__('UsageBilling|Using pool') };
-        case 'overage':
-          return { variant: 'warning', label: s__('UsageBilling|Using overage') };
-        case 'blocked':
-          return { variant: 'danger', label: s__('UsageBilling|Blocked') };
-        default:
-          return { variant: 'neutral', label: s__('UsageBilling|Unknown') };
-      }
+    getStatusBadge() {
+      return { variant: 'neutral', label: s__('UsageBilling|Unknown') };
+    },
+    /** @param { Usage } usage */
+    getTotalUsage(usage) {
+      return usage.creditsUsed + usage.poolCreditsUsed + usage.overageCreditsUsed;
     },
     formatAllocationUsed(allocationUsed, allocationTotal) {
       return `${allocationUsed} / ${allocationTotal}`;
     },
     getUserUsagePath(userId) {
-      return this.userUsagePath.replace(':id', userId);
+      const id = getIdFromGraphQLId(userId);
+      return this.userUsagePath.replace(':id', id);
     },
-    getProgressBarValue(item) {
-      if (item.allocationTotal > 0) {
-        return Math.min(100, (item.allocationUsed / item.allocationTotal) * 100);
+    /** @param { Usage } usage */
+    getProgressBarValue(usage) {
+      if (usage.totalCredits === 0) {
+        return 0;
       }
 
-      return 0;
+      return (usage.creditsUsed / usage.totalCredits) * 100;
     },
     onNextPage(item) {
       this.pageInfo = {
@@ -196,7 +212,7 @@ export default {
     </dl>
 
     <gl-table
-      :items="usersUsage.users.nodes"
+      :items="usersList"
       :fields="tableFields"
       :busy="false"
       show-empty
@@ -220,27 +236,33 @@ export default {
       <template #cell(allocationUsed)="{ item }">
         <div class="gl-display-flex gl-flex-direction-column">
           <span class="gl-font-weight-semibold gl-text-gray-900">
-            {{ formatAllocationUsed(item.allocationUsed, item.allocationTotal) }}
+            {{ formatAllocationUsed(item.usage.creditsUsed, item.usage.totalCredits) }}
           </span>
-          <gl-progress-bar :value="getProgressBarValue(item)" class="gl-mt-1" />
+          <gl-progress-bar :value="getProgressBarValue(item.usage)" class="gl-mt-1" />
         </div>
       </template>
 
-      <template #cell(poolUsed)="{ item }">
+      <template #cell(poolCreditsUsed)="{ item }">
         <span class="gl-font-weight-semibold gl-text-gray-900">
-          {{ item.poolUsed }}
+          {{ item.usage.poolCreditsUsed }}
+        </span>
+      </template>
+
+      <template #cell(overageCreditsUsed)="{ item }">
+        <span class="gl-font-weight-semibold gl-text-gray-900">
+          {{ item.usage.overageCreditsUsed }}
         </span>
       </template>
 
       <template #cell(totalCreditsUsed)="{ item }">
         <span class="gl-font-weight-semibold gl-text-gray-900">
-          {{ item.totalCreditsUsed }}
+          {{ getTotalUsage(item.usage) }}
         </span>
       </template>
 
       <template #cell(status)="{ item }">
-        <gl-badge :variant="getStatusVariant(item.status).variant" size="sm">
-          {{ getStatusVariant(item.status).label }}
+        <gl-badge :variant="getStatusBadge(item.usage).variant" size="sm">
+          {{ getStatusBadge(item.usage).label }}
         </gl-badge>
       </template>
 
