@@ -10,6 +10,7 @@ describe('AiCatalogAgentRunForm', () => {
   const defaultProps = {
     isSubmitting: false,
   };
+  const routeParams = { id: 1 };
 
   const findForm = () => wrapper.findComponent(GlForm);
   const findFormFields = () => wrapper.findComponent(GlFormFields);
@@ -22,6 +23,11 @@ describe('AiCatalogAgentRunForm', () => {
       propsData: {
         ...defaultProps,
         ...props,
+      },
+      mocks: {
+        $route: {
+          params: routeParams,
+        },
       },
       stubs,
     });

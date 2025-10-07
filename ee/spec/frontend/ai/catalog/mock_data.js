@@ -195,12 +195,6 @@ export const mockAiCatalogAgentResponse = {
   },
 };
 
-export const mockAiCatalogAgentResponse2 = {
-  data: {
-    aiCatalogItem: { ...mockAgent, id: 'gid://gitlab/Ai::Catalog::ItemVersion/2' },
-  },
-};
-
 export const mockAiCatalogAgentNullResponse = {
   data: {
     aiCatalogItem: null,
@@ -406,12 +400,6 @@ export const mockUpdateAiCatalogFlowErrorMutation = {
 export const mockAiCatalogFlowResponse = {
   data: {
     aiCatalogItem: mockFlow,
-  },
-};
-
-export const mockAiCatalogFlowResponse2 = {
-  data: {
-    aiCatalogItem: { ...mockFlow, id: 'gid://gitlab/Ai::Catalog::ItemVersion/5' },
   },
 };
 

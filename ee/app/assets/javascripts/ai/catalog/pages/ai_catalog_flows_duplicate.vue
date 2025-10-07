@@ -5,7 +5,7 @@ import PageHeading from '~/vue_shared/components/page_heading.vue';
 import * as Sentry from '~/sentry/sentry_browser_wrapper';
 import createAiCatalogFlow from '../graphql/mutations/create_ai_catalog_flow.mutation.graphql';
 import { mapSteps } from '../utils';
-import { AI_CATALOG_FLOWS_ROUTE, AI_CATALOG_SHOW_QUERY_PARAM } from '../router/constants';
+import { AI_CATALOG_FLOWS_SHOW_ROUTE } from '../router/constants';
 import AiCatalogFlowForm from '../components/ai_catalog_flow_form.vue';
 
 export default {
@@ -61,8 +61,8 @@ export default {
           const newFlowId = getIdFromGraphQLId(item.id);
           this.$toast.show(s__('AICatalog|Flow created successfully.'));
           this.$router.push({
-            name: AI_CATALOG_FLOWS_ROUTE,
-            query: { [AI_CATALOG_SHOW_QUERY_PARAM]: newFlowId },
+            name: AI_CATALOG_FLOWS_SHOW_ROUTE,
+            params: { id: newFlowId },
           });
         }
       } catch (error) {

@@ -27,7 +27,7 @@ describe('AiCatalogFlowForm', () => {
     isLoading: false,
     errors: [],
   };
-
+  const routeParams = { id: 1 };
   const initialValues = {
     projectId: 'gid://gitlab/Project/1000000',
     name: 'My AI Flow',
@@ -41,6 +41,11 @@ describe('AiCatalogFlowForm', () => {
       propsData: {
         ...defaultProps,
         ...props,
+      },
+      mocks: {
+        $route: {
+          params: props.mode === 'create' ? {} : routeParams,
+        },
       },
       stubs: {
         GlFormFields,
