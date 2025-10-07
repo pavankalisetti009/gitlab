@@ -7,22 +7,20 @@ import {
   GlLink,
   GlFormFields,
   GlFormGroup,
-  GlFormSelect,
 } from '@gitlab/ui';
 import { formValidators } from '@gitlab/ui/src/utils';
 import csrf from '~/lib/utils/csrf';
 import { __, s__ } from '~/locale';
 import { trackSaasTrialLeadSubmit } from 'ee/google_tag_manager';
 import {
-  COUNTRIES_WITH_STATES_ALLOWED,
   LEADS_COMPANY_NAME_LABEL,
   LEADS_COUNTRY_LABEL,
   LEADS_COUNTRY_PROMPT,
   LEADS_FIRST_NAME_LABEL,
   LEADS_LAST_NAME_LABEL,
 } from 'ee/vue_shared/leads/constants';
-import countriesQuery from 'ee/subscriptions/graphql/queries/countries.query.graphql';
-import statesQuery from 'ee/subscriptions/graphql/queries/states.query.graphql';
+import ListboxInput from '~/vue_shared/components/listbox_input/listbox_input.vue';
+import countryStateMixin from 'ee/vue_shared/mixins/country_state_mixin';
 import {
   TRIAL_TERMS_TEXT,
   TRIAL_GITLAB_SUBSCRIPTION_AGREEMENT,
@@ -36,15 +34,16 @@ export default {
   name: 'CreateTrialWelcomeForm',
   csrf,
   components: {
+    ListboxInput,
     GlForm,
     GlButton,
     GlSprintf,
     GlLink,
     GlFormFields,
-    GlFormSelect,
     GlFormGroup,
     GlFormInput,
   },
+  mixins: [countryStateMixin],
   props: {
     userData: {
       type: Object,
@@ -71,41 +70,10 @@ export default {
   },
   data() {
     return {
-      countries: [],
-      states: [],
       formValues: {},
     };
   },
   computed: {
-    showCountry() {
-      return !this.$apollo.queries.countries.loading;
-    },
-    countryOptionsWithDefault() {
-      const countriesArray = Array.isArray(this.countries) ? this.countries : [];
-      return [
-        {
-          name: LEADS_COUNTRY_PROMPT,
-          id: '',
-        },
-        ...countriesArray,
-      ];
-    },
-    stateRequired() {
-      return COUNTRIES_WITH_STATES_ALLOWED.includes(this.formValues.country);
-    },
-    showState() {
-      return !this.$apollo.queries.states.loading && this.formValues.country && this.stateRequired;
-    },
-    stateOptionsWithDefault() {
-      const statesArray = Array.isArray(this.states) ? this.states : [];
-      return [
-        {
-          name: TRIAL_STATE_PROMPT,
-          id: '',
-        },
-        ...statesArray,
-      ];
-    },
     fields() {
       const result = {};
 
@@ -196,11 +164,6 @@ export default {
       return result;
     },
   },
-  watch: {
-    'formValues.country': function handleCountryChange() {
-      this.resetSelectedState();
-    },
-  },
   mounted() {
     this.formValues = {
       first_name: this.userData.firstName,
@@ -218,11 +181,6 @@ export default {
       trackSaasTrialLeadSubmit(this.gtmSubmitEventLabel, this.userData.emailDomain);
       this.$refs.form.$el.submit();
     },
-    resetSelectedState() {
-      if (!this.showState) {
-        this.formValues.state = '';
-      }
-    },
     onCompanyNameChange(input, text) {
       input(text);
 
@@ -230,39 +188,12 @@ export default {
       this.formValues.project_name = `${text}-${this.$options.i18n.project}`;
     },
   },
-  apollo: {
-    countries: {
-      query: countriesQuery,
-      result(result) {
-        if (result.data && result.data.countries) {
-          this.countries = Array.isArray(result.data.countries) ? result.data.countries : [];
-        }
-      },
-      error() {
-        this.countries = [];
-      },
-    },
-    states: {
-      query: statesQuery,
-      skip() {
-        return !this.formValues.country;
-      },
-      variables() {
-        return {
-          countryId: this.formValues.country,
-        };
-      },
-      result(result) {
-        if (result.data && result.data.states) {
-          this.states = Array.isArray(result.data.states) ? result.data.states : [];
-        }
-      },
-    },
-  },
   i18n: {
     firstNameLabel: LEADS_FIRST_NAME_LABEL,
     lastNameLabel: LEADS_LAST_NAME_LABEL,
     companyNameLabel: LEADS_COMPANY_NAME_LABEL,
+    countryPrompt: LEADS_COUNTRY_PROMPT,
+    statePrompt: TRIAL_STATE_PROMPT,
     buttonText: s__('Trial|Continue to GitLab'),
     termsText: TRIAL_TERMS_TEXT,
     gitlabSubscription: TRIAL_GITLAB_SUBSCRIPTION_AGREEMENT,
@@ -303,27 +234,29 @@ export default {
         />
       </template>
 
-      <template #input(country)>
-        <gl-form-select
-          id="country"
-          v-model="formValues.country"
+      <template #input(country)="{ value, input }">
+        <listbox-input
+          :selected="value"
           name="country"
-          :options="countryOptionsWithDefault"
-          value-field="id"
-          text-field="name"
+          :items="countries"
+          :default-toggle-text="$options.i18n.countryPrompt"
+          :block="true"
+          :aria-label="$options.i18n.countryPrompt"
           data-testid="country-dropdown"
+          @select="onCountrySelect($event, input)"
         />
       </template>
 
-      <template #input(state)>
-        <gl-form-select
-          id="state"
-          v-model="formValues.state"
+      <template #input(state)="{ value, input }">
+        <listbox-input
+          :selected="value"
           name="state"
-          :options="stateOptionsWithDefault"
-          value-field="id"
-          text-field="name"
+          :items="states"
+          :default-toggle-text="$options.i18n.statePrompt"
+          :block="true"
+          :aria-label="$options.i18n.statePrompt"
           data-testid="state-dropdown"
+          @select="(val) => input && input(val)"
         />
       </template>
 
