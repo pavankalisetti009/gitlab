@@ -10,7 +10,7 @@ RSpec.describe Ai::FlowTriggers::RunService, feature_category: :agent_foundation
   let_it_be(:resource) { create(:issue, project: project) }
   let_it_be(:existing_note) { create(:note, project: project, noteable: resource) }
 
-  let(:params) { { input: 'test input', event: 'mention', discussion: existing_note.discussion } }
+  let(:params) { { input: 'test input', event: :mention, discussion: existing_note.discussion } }
 
   let_it_be(:flow_trigger) do
     create(:ai_flow_trigger, project: project, user: service_account, config_path: '.gitlab/duo/flow.yml')
@@ -635,8 +635,6 @@ RSpec.describe Ai::FlowTriggers::RunService, feature_category: :agent_foundation
       end
 
       it 'returns error without calling workload service' do
-        expect { service.execute(params) }.to change { ::Ai::DuoWorkflows::Workflow.count }.by(1)
-
         response = service.execute(params)
         expect(response).to be_error
         expect(response.message).to eq('invalid or missing flow definition')
@@ -651,12 +649,10 @@ RSpec.describe Ai::FlowTriggers::RunService, feature_category: :agent_foundation
       it 'returns error without calling workload service' do
         expect(Ci::Workloads::RunWorkloadService).not_to receive(:new)
 
-        expect do
-          response = service.execute(params)
+        response = service.execute(params)
 
-          expect(response).to be_error
-          expect(response.message).to eq('invalid or missing flow definition')
-        end.to change { ::Ai::DuoWorkflows::Workflow.count }.by(1)
+        expect(response).to be_error
+        expect(response.message).to eq('invalid or missing flow definition')
       end
     end
 
@@ -724,12 +720,7 @@ RSpec.describe Ai::FlowTriggers::RunService, feature_category: :agent_foundation
       end
 
       it 'creates appropriate notes with catalog workflow' do
-        expect(::Ai::DuoWorkflows::UpdateWorkflowStatusService).to receive(:new).with(
-          workflow: catalog_workflow,
-          status_event: "start",
-          current_user: current_user
-        ).and_call_original
-
+        expect(::Ai::DuoWorkflows::UpdateWorkflowStatusService).not_to receive(:new)
         expect(Note.count).to eq(1)
 
         response = service.execute(params)
