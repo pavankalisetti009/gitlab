@@ -76,6 +76,17 @@ module EE
         ::IncidentManagement::Incidents::CreateSlaService.new(issue, current_user).execute
 
         issue.pending_escalations.delete_all(:delete_all) unless issue.supports_escalation?
+
+        update_status_after_work_item_type_change(issue)
+      end
+
+      def update_status_after_work_item_type_change(issue)
+        lifecycle = lifecycle_for(issue)
+        return unless lifecycle
+        return unless lifecycle.custom?
+        return if lifecycle.has_status_id?(issue&.status_with_fallback&.id)
+
+        ::WorkItems::Widgets::Statuses::UpdateService.new(issue, current_user, :default).execute
       end
 
       def handle_promotion(issue)
