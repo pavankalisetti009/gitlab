@@ -159,6 +159,40 @@ RSpec.describe MergeRequests::Mergeability::CheckSecurityPolicyViolationsService
           expect { check_policies.execute }.not_to exceed_query_limit(control_count)
         end
       end
+
+      context 'when security policy is bypassed' do
+        let_it_be(:user) { create(:user) }
+        let_it_be(:security_policy) do
+          create(:security_policy, :approval_policy,
+            linked_projects: [project],
+            bypass_user_ids: [user.id]
+          )
+        end
+
+        let_it_be(:approval_policy_rule) { create(:approval_policy_rule, security_policy: security_policy) }
+
+        let!(:approval_rule) do
+          create(:report_approver_rule, :scan_finding,
+            merge_request: merge_request,
+            name: 'Bypass rule',
+            approval_policy_rule: approval_policy_rule
+          )
+        end
+
+        before do
+          create(:approval_policy_merge_request_bypass_event,
+            security_policy: security_policy,
+            project: merge_request.project,
+            merge_request: merge_request,
+            user: user,
+            reason: 'Test bypass')
+        end
+
+        it "returns a check result with status warning" do
+          expect(result.status)
+            .to eq Gitlab::MergeRequests::Mergeability::CheckResult::WARNING_STATUS
+        end
+      end
     end
   end
 

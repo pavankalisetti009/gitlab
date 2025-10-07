@@ -17,7 +17,7 @@ module MergeRequests
         # When the MR is approved, it is considered to 'override' the violations
         if merge_request.failed_scan_result_policy_violations.any? && !merge_request.approved?
           failure
-        elsif has_dismissed_policy_violations?
+        elsif has_dismissed_policy_violations? || security_policy_bypassed?
           warning
         else
           success
@@ -41,6 +41,12 @@ module MergeRequests
         return false if violations_with_dismissals.empty?
 
         violations_with_dismissals.any?(&:dismissed?)
+      end
+
+      def security_policy_bypassed?
+        merge_request.security_policies_with_bypass_settings.any? do |policy|
+          policy.merge_request_bypassed?(merge_request)
+        end
       end
     end
   end

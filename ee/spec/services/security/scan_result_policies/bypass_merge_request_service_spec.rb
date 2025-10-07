@@ -87,6 +87,14 @@ RSpec.describe Security::ScanResultPolicies::BypassMergeRequestService, feature_
         execute
       end
 
+      it_behaves_like 'triggers GraphQL subscription mergeRequestApprovalStateUpdated' do
+        let(:action) { execute }
+      end
+
+      it_behaves_like 'triggers GraphQL subscription mergeRequestMergeStatusUpdated' do
+        let(:action) { execute }
+      end
+
       context 'with multiple security policies' do
         let(:params) do
           {
@@ -105,6 +113,14 @@ RSpec.describe Security::ScanResultPolicies::BypassMergeRequestService, feature_
         it 'returns success response' do
           expect(execute).to be_success
         end
+
+        it_behaves_like 'triggers GraphQL subscription mergeRequestApprovalStateUpdated' do
+          let(:action) { execute }
+        end
+
+        it_behaves_like 'triggers GraphQL subscription mergeRequestMergeStatusUpdated' do
+          let(:action) { execute }
+        end
       end
     end
 
@@ -120,6 +136,14 @@ RSpec.describe Security::ScanResultPolicies::BypassMergeRequestService, feature_
         expect(execute).to be_error
         expect(execute.message).to eq('Security policies not found')
       end
+
+      it_behaves_like 'does not trigger GraphQL subscription mergeRequestApprovalStateUpdated' do
+        let(:action) { execute }
+      end
+
+      it_behaves_like 'does not trigger GraphQL subscription mergeRequestMergeStatusUpdated' do
+        let(:action) { execute }
+      end
     end
 
     context 'when reason is blank' do
@@ -134,6 +158,14 @@ RSpec.describe Security::ScanResultPolicies::BypassMergeRequestService, feature_
         expect(execute).to be_error
         expect(execute.message).to eq('Reason is required')
       end
+
+      it_behaves_like 'does not trigger GraphQL subscription mergeRequestApprovalStateUpdated' do
+        let(:action) { execute }
+      end
+
+      it_behaves_like 'does not trigger GraphQL subscription mergeRequestMergeStatusUpdated' do
+        let(:action) { execute }
+      end
     end
 
     context 'when reason is nil' do
@@ -147,6 +179,14 @@ RSpec.describe Security::ScanResultPolicies::BypassMergeRequestService, feature_
       it 'returns error response' do
         expect(execute).to be_error
         expect(execute.message).to eq('Reason is required')
+      end
+
+      it_behaves_like 'does not trigger GraphQL subscription mergeRequestApprovalStateUpdated' do
+        let(:action) { execute }
+      end
+
+      it_behaves_like 'does not trigger GraphQL subscription mergeRequestMergeStatusUpdated' do
+        let(:action) { execute }
       end
     end
 
@@ -169,6 +209,14 @@ RSpec.describe Security::ScanResultPolicies::BypassMergeRequestService, feature_
       it 'does not create additional bypass event' do
         expect { execute }.not_to change { Security::ApprovalPolicyMergeRequestBypassEvent.count }
       end
+
+      it_behaves_like 'does not trigger GraphQL subscription mergeRequestApprovalStateUpdated' do
+        let(:action) { execute }
+      end
+
+      it_behaves_like 'does not trigger GraphQL subscription mergeRequestMergeStatusUpdated' do
+        let(:action) { execute }
+      end
     end
 
     context 'when user is not allowed to bypass security policy' do
@@ -188,6 +236,14 @@ RSpec.describe Security::ScanResultPolicies::BypassMergeRequestService, feature_
 
       it 'does not create bypass event' do
         expect { execute }.not_to change { Security::ApprovalPolicyMergeRequestBypassEvent.count }
+      end
+
+      it_behaves_like 'does not trigger GraphQL subscription mergeRequestApprovalStateUpdated' do
+        let(:action) { execute }
+      end
+
+      it_behaves_like 'does not trigger GraphQL subscription mergeRequestMergeStatusUpdated' do
+        let(:action) { execute }
       end
     end
 
@@ -217,6 +273,14 @@ RSpec.describe Security::ScanResultPolicies::BypassMergeRequestService, feature_
       it 'does not process remaining policies' do
         expect { execute }.not_to change { Security::ApprovalPolicyMergeRequestBypassEvent.count }
       end
+
+      it_behaves_like 'does not trigger GraphQL subscription mergeRequestApprovalStateUpdated' do
+        let(:action) { execute }
+      end
+
+      it_behaves_like 'does not trigger GraphQL subscription mergeRequestMergeStatusUpdated' do
+        let(:action) { execute }
+      end
     end
 
     context 'with multiple security policies where user is not allowed to bypass one' do
@@ -243,6 +307,14 @@ RSpec.describe Security::ScanResultPolicies::BypassMergeRequestService, feature_
 
       it 'does not process remaining policies' do
         expect { execute }.not_to change { Security::ApprovalPolicyMergeRequestBypassEvent.count }
+      end
+
+      it_behaves_like 'does not trigger GraphQL subscription mergeRequestApprovalStateUpdated' do
+        let(:action) { execute }
+      end
+
+      it_behaves_like 'does not trigger GraphQL subscription mergeRequestMergeStatusUpdated' do
+        let(:action) { execute }
       end
     end
   end
