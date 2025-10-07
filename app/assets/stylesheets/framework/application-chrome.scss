@@ -6,6 +6,10 @@
  */
 
 :where(.application-chrome) {
+  // Scroll bars styles
+  * {
+    scrollbar-color: var(--gl-color-neutral-400) transparent;
+  }
 
   // Variable overrides
   @include media-breakpoint-up(xl) {
@@ -234,12 +238,6 @@
     }
   }
 
-  // Super sidebar scollbar.
-  .super-sidebar-inner-scrollbar {
-    scrollbar-color: var(--gl-color-neutral-400) transparent;
-    scrollbar-width: thin;
-  }
-
   // Panels container
   .panels-container {
     @apply gl-relative gl-grow gl-flex gl-pr-0 gl-pb-0;
@@ -260,8 +258,6 @@
       height: calc(100% - #{$header-height} - #{$gl-spacing-scale-3});
 
       @apply gl-overflow-y-auto gl-overflow-x-hidden;
-      scrollbar-color: var(--gl-color-neutral-400) transparent;
-      scrollbar-width: thin;
 
       // This prevents the scrollbar transparency rule above from breaking scrollbars in dropdown menus
       .dropdown-menu {
@@ -540,14 +536,6 @@
       @container content-panels (width >= #{map.get($breakpoints, 'sm')}) {
         padding-right: $right-sidebar-collapsed-width;
       }
-    }
-  }
-
-  // Linux scrollbar adjustment
-  .gl-platform-linux .panels-container {
-    .panel-content-inner,
-    .vue-portal-target [data-testid="work-item-detail"] {
-      scrollbar-width: auto;
     }
   }
 

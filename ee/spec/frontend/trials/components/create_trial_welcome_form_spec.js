@@ -87,7 +87,6 @@ describe('CreateTrialWelcomeForm', () => {
 
   const findForm = () => wrapper.findComponent(GlForm);
   const findFormFields = () => wrapper.findComponent(GlFormFields);
-  const findCountrySelect = () => wrapper.findByTestId('country-dropdown');
   const findStateSelect = () => wrapper.findByTestId('state-dropdown');
   const findCompanyNameInput = () => wrapper.find('[name="company_name"]');
   const fieldsProps = () => findFormFields().props('fields');
@@ -344,14 +343,23 @@ describe('CreateTrialWelcomeForm', () => {
       wrapper = await createComponent();
       await nextTick();
 
-      const countrySelect = findCountrySelect();
+      const updatedValuesNL = {
+        ...wrapper.vm.formValues,
+        country: 'NL',
+      };
 
-      await countrySelect.vm.$emit('input', 'NL');
+      findFormFields().vm.$emit('input', updatedValuesNL);
       await nextTick();
+
       expect(fieldsProps()).not.toHaveProperty('state');
 
-      await countrySelect.vm.$emit('input', COUNTRY_WITH_STATES);
+      const updatedValuesUS = {
+        ...wrapper.vm.formValues,
+        country: COUNTRY_WITH_STATES,
+      };
+      findFormFields().vm.$emit('input', updatedValuesUS);
       await nextTick();
+
       expect(fieldsProps()).toHaveProperty('state');
     });
 
