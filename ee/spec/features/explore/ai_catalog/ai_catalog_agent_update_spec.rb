@@ -57,10 +57,7 @@ RSpec.describe 'AI Catalog', :js, feature_category: :workflow_catalog do
 
     click_button 'Save changes'
 
-    agents = page.all('[data-testid="ai-catalog-item"]')
-    expect(agents.length).to be(1)
-
-    expect(page).to have_css('h2', text: 'Updated agent name')
+    expect(page).to have_css('h1', text: 'Updated agent name')
 
     expect(page).not_to have_content('Agent Description')
     expect(page).to have_content('Updated agent description')

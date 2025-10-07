@@ -3,7 +3,7 @@ import { s__ } from '~/locale';
 import * as Sentry from '~/sentry/sentry_browser_wrapper';
 import PageHeading from '~/vue_shared/components/page_heading.vue';
 import updateAiCatalogAgent from '../graphql/mutations/update_ai_catalog_agent.mutation.graphql';
-import { AI_CATALOG_AGENTS_ROUTE, AI_CATALOG_SHOW_QUERY_PARAM } from '../router/constants';
+import { AI_CATALOG_AGENTS_SHOW_ROUTE } from '../router/constants';
 import AiCatalogAgentForm from '../components/ai_catalog_agent_form.vue';
 
 export default {
@@ -66,8 +66,8 @@ export default {
 
           this.$toast.show(s__('AICatalog|Agent updated successfully.'));
           this.$router.push({
-            name: AI_CATALOG_AGENTS_ROUTE,
-            query: { [AI_CATALOG_SHOW_QUERY_PARAM]: this.$route.params.id },
+            name: AI_CATALOG_AGENTS_SHOW_ROUTE,
+            params: { id: this.$route.params.id },
           });
         }
       } catch (error) {

@@ -29,7 +29,6 @@ import {
   AI_CATALOG_FLOWS_NEW_ROUTE,
   AI_CATALOG_FLOWS_EDIT_ROUTE,
   AI_CATALOG_FLOWS_DUPLICATE_ROUTE,
-  AI_CATALOG_SHOW_QUERY_PARAM,
 } from './constants';
 
 Vue.use(VueRouter);
@@ -74,19 +73,6 @@ export const createRouter = (base) => {
               text: s__('AICatalog|New'),
             },
           },
-          // Catch-all route for /agents/:id - redirect to /agents?show=:id
-          ...(gon.features?.aiCatalogShowPage
-            ? []
-            : [
-                {
-                  path: ':id(\\d+)',
-                  redirect: (to) => ({
-                    path: '/agents',
-                    query: { [AI_CATALOG_SHOW_QUERY_PARAM]: to.params.id },
-                  }),
-                },
-              ]),
-
           {
             path: ':id(\\d+)',
             component: AiCatalogAgent,
@@ -151,18 +137,6 @@ export const createRouter = (base) => {
                     text: s__('AICatalog|New'),
                   },
                 },
-                // Catch-all route for /flows/:id - redirect to /flows?show=:id
-                ...(gon.features?.aiCatalogShowPage
-                  ? []
-                  : [
-                      {
-                        path: ':id(\\d+)',
-                        redirect: (to) => ({
-                          path: '/flows',
-                          query: { [AI_CATALOG_SHOW_QUERY_PARAM]: to.params.id },
-                        }),
-                      },
-                    ]),
                 {
                   path: ':id(\\d+)',
                   component: AiCatalogFlow,

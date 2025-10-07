@@ -5,7 +5,7 @@ import { s__ } from '~/locale';
 import { MAX_LENGTH_PROMPT } from 'ee/ai/catalog/constants';
 import ClipboardButton from '~/vue_shared/components/clipboard_button.vue';
 import glFeatureFlagsMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
-import { AI_CATALOG_AGENTS_ROUTE, AI_CATALOG_AGENTS_SHOW_ROUTE } from '../router/constants';
+import { AI_CATALOG_AGENTS_SHOW_ROUTE } from '../router/constants';
 import { createFieldValidators } from '../utils';
 import AiCatalogFormButtons from './ai_catalog_form_buttons.vue';
 
@@ -39,15 +39,9 @@ export default {
       return uniqueId('ai-catalog-agent-run-form-');
     },
     cancelRoute() {
-      if (this.glFeatures.aiCatalogShowPage) {
-        return {
-          name: AI_CATALOG_AGENTS_SHOW_ROUTE,
-          params: { id: this.$route.params.id },
-        };
-      }
-
       return {
-        name: AI_CATALOG_AGENTS_ROUTE,
+        name: AI_CATALOG_AGENTS_SHOW_ROUTE,
+        params: { id: this.$route.params.id },
       };
     },
   },

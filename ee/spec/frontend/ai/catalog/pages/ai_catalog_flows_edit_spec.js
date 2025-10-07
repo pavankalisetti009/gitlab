@@ -9,10 +9,7 @@ import createMockApollo from 'helpers/mock_apollo_helper';
 import AiCatalogFlowsEdit from 'ee/ai/catalog/pages/ai_catalog_flows_edit.vue';
 import AiCatalogFlowForm from 'ee/ai/catalog/components/ai_catalog_flow_form.vue';
 import updateAiCatalogFlow from 'ee/ai/catalog/graphql/mutations/update_ai_catalog_flow.mutation.graphql';
-import {
-  AI_CATALOG_FLOWS_ROUTE,
-  AI_CATALOG_SHOW_QUERY_PARAM,
-} from 'ee/ai/catalog/router/constants';
+import { AI_CATALOG_FLOWS_SHOW_ROUTE } from 'ee/ai/catalog/router/constants';
 import {
   mockFlow,
   mockUpdateAiCatalogFlowSuccessMutation,
@@ -108,11 +105,11 @@ describe('AiCatalogFlowsEdit', () => {
         expect(mockToast.show).toHaveBeenCalledWith('Flow updated successfully.');
       });
 
-      it('navigates to flows page with show query', async () => {
+      it('navigates to flows show page', async () => {
         await waitForPromises();
         expect(mockRouter.push).toHaveBeenCalledWith({
-          name: AI_CATALOG_FLOWS_ROUTE,
-          query: { [AI_CATALOG_SHOW_QUERY_PARAM]: flowId },
+          name: AI_CATALOG_FLOWS_SHOW_ROUTE,
+          params: { id: flowId },
         });
       });
     });

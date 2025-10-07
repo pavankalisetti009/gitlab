@@ -9,10 +9,7 @@ import createMockApollo from 'helpers/mock_apollo_helper';
 import AiCatalogAgentsEdit from 'ee/ai/catalog/pages/ai_catalog_agents_edit.vue';
 import AiCatalogAgentForm from 'ee/ai/catalog/components/ai_catalog_agent_form.vue';
 import updateAiCatalogAgent from 'ee/ai/catalog/graphql/mutations/update_ai_catalog_agent.mutation.graphql';
-import {
-  AI_CATALOG_AGENTS_ROUTE,
-  AI_CATALOG_SHOW_QUERY_PARAM,
-} from 'ee/ai/catalog/router/constants';
+import { AI_CATALOG_AGENTS_SHOW_ROUTE } from 'ee/ai/catalog/router/constants';
 import {
   mockAgent,
   mockUpdateAiCatalogAgentSuccessMutation,
@@ -109,11 +106,11 @@ describe('AiCatalogAgentsEdit', () => {
         expect(mockToast.show).toHaveBeenCalledWith('Agent updated successfully.');
       });
 
-      it('navigates to agents page with show query', async () => {
+      it('navigates to agents show page', async () => {
         await waitForPromises();
         expect(mockRouter.push).toHaveBeenCalledWith({
-          name: AI_CATALOG_AGENTS_ROUTE,
-          query: { [AI_CATALOG_SHOW_QUERY_PARAM]: 1 },
+          name: AI_CATALOG_AGENTS_SHOW_ROUTE,
+          params: { id: 1 },
         });
       });
     });

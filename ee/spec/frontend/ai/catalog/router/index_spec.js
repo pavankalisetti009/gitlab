@@ -12,7 +12,6 @@ import {
   AI_CATALOG_FLOWS_EDIT_ROUTE,
   AI_CATALOG_FLOWS_NEW_ROUTE,
   AI_CATALOG_FLOWS_DUPLICATE_ROUTE,
-  AI_CATALOG_SHOW_QUERY_PARAM,
 } from 'ee/ai/catalog/router/constants';
 import { isLoggedIn } from '~/lib/utils/common_utils';
 
@@ -27,7 +26,6 @@ describe('AI Catalog Router', () => {
   beforeEach(() => {
     gon.features = {
       aiCatalogFlows: true,
-      aiCatalogShowPage: true,
     };
     isLoggedIn.mockReturnValue(true);
     router = createRouter();
@@ -58,11 +56,10 @@ describe('AI Catalog Router', () => {
     });
   });
 
-  describe('When aiCatalogFlows and aiCatalogShowPage feature flags are off', () => {
+  describe('When aiCatalogFlows feature flag is off', () => {
     beforeEach(() => {
       gon.features = {
         aiCatalogFlows: false,
-        aiCatalogShowPage: false,
       };
       router = createRouter();
     });
@@ -71,7 +68,7 @@ describe('AI Catalog Router', () => {
       testName              | path                              | expectedRouteName
       ${'agents index'}     | ${'/agents'}                      | ${AI_CATALOG_AGENTS_ROUTE}
       ${'agents new'}       | ${'/agents/new'}                  | ${AI_CATALOG_AGENTS_NEW_ROUTE}
-      ${'agents show'}      | ${`/agents/${agentId}`}           | ${AI_CATALOG_AGENTS_ROUTE}
+      ${'agents show'}      | ${`/agents/${agentId}`}           | ${AI_CATALOG_AGENTS_SHOW_ROUTE}
       ${'agents edit'}      | ${`/agents/${agentId}/edit`}      | ${AI_CATALOG_AGENTS_EDIT_ROUTE}
       ${'agents run'}       | ${`/agents/${agentId}/run`}       | ${AI_CATALOG_AGENTS_RUN_ROUTE}
       ${'agents duplicate'} | ${`/agents/${agentId}/duplicate`} | ${AI_CATALOG_AGENTS_DUPLICATE_ROUTE}
@@ -85,30 +82,6 @@ describe('AI Catalog Router', () => {
 
       expect(router.currentRoute.name).toBe(expectedRouteName);
     });
-  });
-
-  describe('Show query param routes', () => {
-    beforeEach(() => {
-      gon.features = {
-        aiCatalogFlows: true,
-        aiCatalogShowPage: false,
-      };
-      router = createRouter();
-    });
-
-    it.each`
-      type        | inputPath               | expectedPath | expectedId
-      ${'agents'} | ${`/agents/${agentId}`} | ${'/agents'} | ${agentId}
-      ${'flows'}  | ${`/flows/${flowId}`}   | ${'/flows'}  | ${flowId}
-    `(
-      'should redirect $type/:id to $type with show query parameter',
-      async ({ inputPath, expectedPath, expectedId }) => {
-        await router.push(inputPath);
-
-        expect(router.currentRoute.path).toBe(expectedPath);
-        expect(router.currentRoute.query[AI_CATALOG_SHOW_QUERY_PARAM]).toBe(`${expectedId}`);
-      },
-    );
   });
 
   describe('Non-numeric ID routes', () => {
