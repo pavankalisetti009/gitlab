@@ -19,6 +19,8 @@ module Vulnerabilities
     validates :vulnerability_identifier, presence: true
     validates :data, presence: true, json_schema: { filename: 'archived_record_data' }
 
+    scope :by_vulnerability_ids, ->(vulnerability_ids) { where(vulnerability_identifier: vulnerability_ids) }
+
     def archive=(archive)
       self.date = archive&.date
 

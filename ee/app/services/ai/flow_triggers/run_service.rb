@@ -18,20 +18,13 @@ module Ai
           project: project, resource: resource, author: flow_trigger_user, discussion: params[:discussion]
         )
 
-        response, workflow = note_service.execute(params) do |updated_params|
+        response, _ = note_service.execute(params) do |updated_params|
           if flow_trigger.ai_catalog_item_consumer.present?
             start_catalog_workflow(params)
           else
             run_workload(updated_params)
           end
         end
-
-        return response unless workflow
-
-        status_event = response.success? ? "start" : "drop"
-        ::Ai::DuoWorkflows::UpdateWorkflowStatusService.new(
-          workflow: workflow, status_event: status_event, current_user: current_user
-        ).execute
 
         response
       end
@@ -41,6 +34,9 @@ module Ai
       attr_reader :project, :current_user, :resource, :flow_trigger, :flow_trigger_user
 
       def run_workload(params)
+        flow_definition = fetch_flow_definition
+        return ServiceResponse.error(message: 'invalid or missing flow definition') unless flow_definition
+
         workflow_params = {
           workflow_definition: "Trigger - #{flow_trigger.description}",
           status: :running,
@@ -57,8 +53,6 @@ module Ai
         return ServiceResponse.error(message: wf_create_result[:message]) if wf_create_result.error?
 
         workflow = wf_create_result[:workflow]
-        flow_definition = fetch_flow_definition
-        return ServiceResponse.error(message: 'invalid or missing flow definition') unless flow_definition
 
         if flow_definition['injectGatewayToken'] == true
           token_response = ::Ai::ThirdPartyAgents::TokenService.new(current_user: current_user).direct_access_token
@@ -87,6 +81,11 @@ module Ai
             workload_id: response.payload.id)
         end
 
+        status_event = response.success? ? "start" : "drop"
+        ::Ai::DuoWorkflows::UpdateWorkflowStatusService.new(
+          workflow: workflow, status_event: status_event, current_user: current_user
+        ).execute
+
         [response, workflow]
       end
 
@@ -100,7 +99,7 @@ module Ai
           params: {
             flow: catalog_item,
             flow_version: catalog_item.resolve_version(version),
-            event_type: params[:event],
+            event_type: params[:event].to_s,
             execute_workflow: true
           }
         ).execute

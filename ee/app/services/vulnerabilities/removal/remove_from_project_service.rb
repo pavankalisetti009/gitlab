@@ -92,7 +92,8 @@ module Vulnerabilities
           Vulnerabilities::Removal::BackupService.execute(
             Vulnerabilities::Backups::Vulnerability,
             backup,
-            deleted_rows
+            deleted_rows,
+            extra: { traversal_ids: project.namespace.traversal_ids }
           )
         end
 

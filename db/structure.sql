@@ -4900,7 +4900,8 @@ CREATE TABLE backup_vulnerabilities (
     original_record_identifier bigint NOT NULL,
     project_id bigint NOT NULL,
     date date NOT NULL,
-    data jsonb NOT NULL
+    data jsonb NOT NULL,
+    traversal_ids bigint[] DEFAULT '{}'::bigint[] NOT NULL
 )
 PARTITION BY RANGE (date);
 
@@ -38046,6 +38047,8 @@ CREATE INDEX idx_security_pipeline_execution_project_schedules_next_run_at ON se
 
 CREATE INDEX idx_security_policies_config_id_policy_index ON security_policies USING btree (security_orchestration_policy_configuration_id, policy_index);
 
+CREATE INDEX idx_security_policy_dismissals_project_findings_uuids ON security_policy_dismissals USING gin (security_findings_uuids);
+
 CREATE INDEX idx_security_policy_project_links_on_project_id_and_id ON security_policy_project_links USING btree (project_id, id);
 
 CREATE UNIQUE INDEX idx_security_scans_on_build_and_scan_type ON security_scans USING btree (build_id, scan_type);
@@ -38663,6 +38666,8 @@ CREATE INDEX index_backup_finding_signatures_on_project_id ON ONLY backup_findin
 CREATE INDEX index_backup_findings_on_fk ON ONLY backup_findings USING btree (vulnerability_id);
 
 CREATE INDEX index_backup_findings_on_project_id ON ONLY backup_findings USING btree (project_id);
+
+CREATE INDEX index_backup_vulnerabilities_for_restoring ON ONLY backup_vulnerabilities USING btree (traversal_ids, original_record_identifier);
 
 CREATE INDEX index_backup_vulnerabilities_on_project_id ON ONLY backup_vulnerabilities USING btree (project_id);
 

@@ -3,6 +3,10 @@
 module QA
   RSpec.describe 'Manage', feature_category: :importers do
     describe 'Jira issues integration', :jira, :orchestrated, :requires_admin,
+      quarantine: {
+        issue: 'https://gitlab.com/gitlab-org/quality/e2e-test-issues/-/issues/1735',
+        type: :investigating
+      },
       feature_flag: { name: 'jira_multiple_project_keys', scope: :project } do
       # rubocop:disable RSpec/InstanceVariable
       before(:context) do

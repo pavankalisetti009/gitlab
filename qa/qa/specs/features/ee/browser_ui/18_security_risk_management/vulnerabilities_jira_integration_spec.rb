@@ -2,6 +2,10 @@
 
 module QA
   RSpec.describe 'Security Risk Management', :jira, :orchestrated, :requires_admin,
+    quarantine: {
+      issue: 'https://gitlab.com/gitlab-org/quality/e2e-test-issues/-/issues/1732',
+      type: :investigating
+    },
     feature_category: :vulnerability_management do
     describe 'vulnerability report with jira integration' do
       let(:jira_project_key) { 'JITP' }

@@ -107,6 +107,7 @@ RSpec.describe Vulnerabilities::Archival::ArchiveBatchService, feature_category:
       let_it_be(:external_issue_link) { create(:vulnerabilities_external_issue_link, vulnerability: vulnerability) }
       let_it_be(:issue_link) { create(:vulnerabilities_issue_link, vulnerability: vulnerability) }
       let_it_be(:merge_request_link) { create(:vulnerabilities_merge_request_link, vulnerability: vulnerability) }
+      let_it_be(:severity_override) { create(:vulnerability_severity_override, vulnerability: vulnerability) }
       let_it_be(:state_transition) { create(:vulnerability_state_transition, vulnerability: vulnerability) }
       let_it_be(:user_mention) { create(:vulnerability_user_mention, vulnerability: vulnerability) }
 
@@ -125,8 +126,17 @@ RSpec.describe Vulnerabilities::Archival::ArchiveBatchService, feature_category:
                                           .and change { backup_record_of(external_issue_link) }.from(nil)
                                           .and change { backup_record_of(issue_link) }.from(nil)
                                           .and change { backup_record_of(merge_request_link) }.from(nil)
+                                          .and change { backup_record_of(severity_override) }.from(nil)
                                           .and change { backup_record_of(state_transition) }.from(nil)
                                           .and change { backup_record_of(user_mention) }.from(nil)
+      end
+
+      it 'assigns `traversal_ids` to vulnerability backup' do
+        archive_vulnerabilities
+
+        backup_record = Vulnerabilities::Backups::Vulnerability.find_by(original_record_identifier: vulnerability.id)
+
+        expect(backup_record.traversal_ids).to eq(project.namespace.traversal_ids)
       end
 
       def backup_record_of(record)
