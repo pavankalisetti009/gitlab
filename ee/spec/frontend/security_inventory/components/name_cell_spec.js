@@ -17,7 +17,7 @@ describe('NameCell', () => {
   const $toast = {
     show: jest.fn(),
   };
-  const mockProject = subgroupsAndProjects.data.group.projects.nodes[0];
+  const mockProject = subgroupsAndProjects.data.namespaceSecurityProjects.edges[0].node;
   const mockGroup = subgroupsAndProjects.data.group.descendantGroups.nodes[0];
 
   const createComponent = (prop = {}) => {

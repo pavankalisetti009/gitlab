@@ -7,7 +7,7 @@ import { subgroupsAndProjects } from 'ee_jest/security_inventory/mock_data';
 describe('ProjectToolCoverageIndicator', () => {
   let wrapper;
 
-  const mockProject = subgroupsAndProjects.data.group.projects.nodes[0];
+  const mockProject = subgroupsAndProjects.data.namespaceSecurityProjects.edges[0].node;
   const projectName = mockProject.name;
   const { webUrl } = mockProject;
 
@@ -131,11 +131,11 @@ describe('ProjectToolCoverageIndicator', () => {
   });
 
   describe.each`
-    analyzer                             | propKey                                  | enabled  | expectedVariant | expectedClass
-    ${'SECRET_PUSH_PROTECTION'}          | ${'secretPushProtectionEnabled'}         | ${true}  | ${'success'}    | ${'gl-border-transparent'}
-    ${'SECRET_PUSH_PROTECTION'}          | ${'secretPushProtectionEnabled'}         | ${false} | ${'neutral'}    | ${'gl-border-dashed'}
-    ${'CONTAINER_SCANNING_FOR_REGISTRY'} | ${'containerScanningForRegistryEnabled'} | ${true}  | ${'success'}    | ${'gl-border-transparent'}
-    ${'CONTAINER_SCANNING_FOR_REGISTRY'} | ${'containerScanningForRegistryEnabled'} | ${false} | ${'neutral'}    | ${'gl-border-dashed'}
+    analyzer                                     | propKey                                  | enabled  | expectedVariant | expectedClass
+    ${'SECRET_DETECTION_SECRET_PUSH_PROTECTION'} | ${'secretPushProtectionEnabled'}         | ${true}  | ${'success'}    | ${'gl-border-transparent'}
+    ${'SECRET_DETECTION_SECRET_PUSH_PROTECTION'} | ${'secretPushProtectionEnabled'}         | ${false} | ${'neutral'}    | ${'gl-border-dashed'}
+    ${'CONTAINER_SCANNING_FOR_REGISTRY'}         | ${'containerScanningForRegistryEnabled'} | ${true}  | ${'success'}    | ${'gl-border-transparent'}
+    ${'CONTAINER_SCANNING_FOR_REGISTRY'}         | ${'containerScanningForRegistryEnabled'} | ${false} | ${'neutral'}    | ${'gl-border-dashed'}
   `(
     '$analyzer badge rendering',
     ({ analyzer, propKey, enabled, expectedVariant, expectedClass }) => {
@@ -192,11 +192,11 @@ describe('ProjectToolCoverageIndicator', () => {
     });
 
     describe.each`
-      analyzer                             | propKey                                  | enabled  | expectedStatus
-      ${'SECRET_PUSH_PROTECTION'}          | ${'secretPushProtectionEnabled'}         | ${true}  | ${'SUCCESS'}
-      ${'SECRET_PUSH_PROTECTION'}          | ${'secretPushProtectionEnabled'}         | ${false} | ${'DEFAULT'}
-      ${'CONTAINER_SCANNING_FOR_REGISTRY'} | ${'containerScanningForRegistryEnabled'} | ${true}  | ${'SUCCESS'}
-      ${'CONTAINER_SCANNING_FOR_REGISTRY'} | ${'containerScanningForRegistryEnabled'} | ${false} | ${'DEFAULT'}
+      analyzer                                     | propKey                                  | enabled  | expectedStatus
+      ${'SECRET_DETECTION_SECRET_PUSH_PROTECTION'} | ${'secretPushProtectionEnabled'}         | ${true}  | ${'SUCCESS'}
+      ${'SECRET_DETECTION_SECRET_PUSH_PROTECTION'} | ${'secretPushProtectionEnabled'}         | ${false} | ${'DEFAULT'}
+      ${'CONTAINER_SCANNING_FOR_REGISTRY'}         | ${'containerScanningForRegistryEnabled'} | ${true}  | ${'SUCCESS'}
+      ${'CONTAINER_SCANNING_FOR_REGISTRY'}         | ${'containerScanningForRegistryEnabled'} | ${false} | ${'DEFAULT'}
     `('$analyzer', ({ analyzer, propKey, enabled, expectedStatus }) => {
       it(`returns status ${expectedStatus} when ${propKey} is ${enabled}`, () => {
         createComponent({

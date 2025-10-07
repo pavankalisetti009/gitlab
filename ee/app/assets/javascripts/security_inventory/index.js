@@ -11,13 +11,14 @@ export default () => {
     return null;
   }
 
-  const { groupFullPath, groupName, newProjectPath } = el.dataset;
+  const { groupFullPath, groupId, groupName, newProjectPath } = el.dataset;
 
   return new Vue({
     el,
     apolloProvider,
     provide: {
       groupFullPath,
+      groupId,
       groupName,
       newProjectPath,
     },

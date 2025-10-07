@@ -168,6 +168,85 @@ export const subgroupsAndProjects = {
         },
       },
     },
+    namespaceSecurityProjects: {
+      edges: [
+        {
+          node: {
+            __typename: 'Project',
+            id: 'gid://gitlab/Project/19',
+            name: 'security-reports-example',
+            path: 'security-reports-example',
+            fullPath: 'flightjs/security-reports-example',
+            avatarUrl: null,
+            webUrl: 'http://gdk.test:3000/flightjs/security-reports-example',
+            updatedAt: '2025-01-01T09:55:10Z',
+            secretPushProtectionEnabled: false,
+            containerScanningForRegistryEnabled: false,
+            vulnerabilityStatistic: {
+              critical: 10,
+              high: 5,
+              low: 4,
+              info: 0,
+              medium: 48,
+              unknown: 7,
+              updatedAt: '2025-01-01T00:00:00Z',
+            },
+            analyzerStatuses: [
+              {
+                status: 'SUCCESS',
+                analyzerType: 'SAST',
+                lastCall: '2025-01-01T00:00:00Z',
+                buildId: 'gid://git/path/123',
+                updatedAt: '2025-01-01T00:00:00Z',
+              },
+            ],
+          },
+        },
+        {
+          node: {
+            __typename: 'Project',
+            id: 'gid://gitlab/Project/7',
+            name: 'Flight',
+            path: 'Flight',
+            fullPath: 'flightjs/Flight',
+            avatarUrl: null,
+            webUrl: 'http://gdk.test:3000/flightjs/Flight',
+            updatedAt: '2025-01-01T09:55:10Z',
+            secretPushProtectionEnabled: false,
+            containerScanningForRegistryEnabled: false,
+            vulnerabilityStatistic: {
+              critical: 10,
+              high: 0,
+              low: 0,
+              info: 0,
+              medium: 0,
+              unknown: 0,
+              updatedAt: '2025-01-01T00:00:00Z',
+            },
+            analyzerStatuses: [
+              {
+                status: 'FAILED',
+                analyzerType: 'SAST',
+                lastCall: '2025-01-01T10:20:14Z',
+                buildId: 'gid://git/path/123',
+                updatedAt: '2025-01-01T00:00:00Z',
+              },
+              {
+                status: 'FAILED',
+                analyzerType: 'SAST_ADVANCED',
+                lastCall: '2025-01-01T10:20:14Z',
+                updatedAt: '2025-01-01T00:00:00Z',
+                buildId: 'gid://git/path/123',
+              },
+            ],
+          },
+        },
+      ],
+      pageInfo: {
+        hasNextPage: false,
+        endCursor: null,
+      },
+    },
   },
 };
 
@@ -254,4 +333,11 @@ export const mockGroupAvatarAndParent = {
   parent: {
     fullPath: 'path/to',
   },
+};
+
+export const mockAnalyzerFilter = { analyzerType: 'SAST_ADVANCED', status: 'NOT_CONFIGURED' };
+export const mockVulnerabilityFilter = {
+  severity: 'CRITICAL',
+  operator: 'EQUAL_TO',
+  count: 0,
 };

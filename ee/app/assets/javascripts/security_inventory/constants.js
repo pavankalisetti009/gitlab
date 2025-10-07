@@ -1,15 +1,20 @@
-import { s__ } from '~/locale';
-import { CRITICAL, HIGH, MEDIUM, LOW } from 'ee/vulnerabilities/constants';
+import { s__, __ } from '~/locale';
+import { CRITICAL, HIGH, MEDIUM, LOW, INFO, UNKNOWN } from 'ee/vulnerabilities/constants';
+import {
+  OPERATOR_IS,
+  OPERATOR_LESS_THAN_OR_EQUAL,
+  OPERATOR_GREATER_THAN_OR_EQUAL,
+} from '~/vue_shared/components/filtered_search_bar/constants';
 
-const DEPENDENCY_SCANNING_KEY = 'DEPENDENCY_SCANNING';
-const SAST_KEY = 'SAST';
+export const DEPENDENCY_SCANNING_KEY = 'DEPENDENCY_SCANNING';
+export const SAST_KEY = 'SAST';
 export const SAST_ADVANCED_KEY = 'SAST_ADVANCED';
-const SECRET_DETECTION_KEY = 'SECRET_DETECTION';
-export const SECRET_PUSH_PROTECTION_KEY = 'SECRET_PUSH_PROTECTION';
-const CONTAINER_SCANNING_KEY = 'CONTAINER_SCANNING';
+export const SECRET_DETECTION_KEY = 'SECRET_DETECTION_PIPELINE_BASED';
+export const SECRET_PUSH_PROTECTION_KEY = 'SECRET_DETECTION_SECRET_PUSH_PROTECTION';
+export const CONTAINER_SCANNING_KEY = 'CONTAINER_SCANNING';
 export const CONTAINER_SCANNING_FOR_REGISTRY_KEY = 'CONTAINER_SCANNING_FOR_REGISTRY';
-const DAST_KEY = 'DAST';
-const SAST_IAC_KEY = 'SAST_IAC';
+export const DAST_KEY = 'DAST';
+export const SAST_IAC_KEY = 'SAST_IAC';
 
 export const SIDEBAR_WIDTH_INITIAL = 300;
 export const SIDEBAR_WIDTH_MINIMUM = 200;
@@ -67,7 +72,7 @@ export const SCANNER_TYPES = {
 export const SCANNER_POPOVER_GROUPS = {
   [DEPENDENCY_SCANNING_KEY]: ['DEPENDENCY_SCANNING'],
   [SAST_KEY]: ['SAST', 'SAST_ADVANCED'],
-  [SECRET_DETECTION_KEY]: ['SECRET_DETECTION', 'SECRET_PUSH_PROTECTION'],
+  [SECRET_DETECTION_KEY]: [SECRET_DETECTION_KEY, SECRET_PUSH_PROTECTION_KEY],
   [CONTAINER_SCANNING_KEY]: ['CONTAINER_SCANNING', 'CONTAINER_SCANNING_FOR_REGISTRY'],
   [DAST_KEY]: ['DAST'],
   [SAST_IAC_KEY]: ['SAST_IAC'],
@@ -103,3 +108,40 @@ export const PROJECT_PIPELINE_JOB_PATH = '/-/jobs';
 
 export const VISIBLE_ATTRIBUTE_COUNT = 3;
 export const LIGHT_GRAY = '#DCDCDE';
+
+export const SCANNER_FILTER_LABELS = {
+  [DEPENDENCY_SCANNING_KEY]: s__('SecurityInventory|Dependency scanning (DS)'),
+  [SAST_KEY]: s__('SecurityInventory|Basic SAST (SAST)'),
+  [SAST_ADVANCED_KEY]: s__('SecurityInventory|Advanced SAST (SAST)'),
+  [SECRET_DETECTION_KEY]: s__('SecurityInventory|Pipeline secret detection (SD)'),
+  [SECRET_PUSH_PROTECTION_KEY]: s__('SecurityInventory|Secret push protection (SD)'),
+  [CONTAINER_SCANNING_KEY]: s__('SecurityInventory|Container scanning (CS)'),
+  [CONTAINER_SCANNING_FOR_REGISTRY_KEY]: s__(
+    'SecurityInventory|Container scanning for registry (CS)',
+  ),
+  [DAST_KEY]: s__('SecurityInventory|Dynamic Application Security Testing (DAST)'),
+  [SAST_IAC_KEY]: s__('SecurityInventory|Infrastructure as Code (IaC)'),
+};
+
+export const TOOL_ENABLED = 'SUCCESS';
+export const TOOL_NOT_ENABLED = 'NOT_CONFIGURED';
+export const TOOL_FAILED = 'FAILED';
+export const TOOL_FILTER_LABELS = {
+  [TOOL_ENABLED]: __('Enabled'),
+  [TOOL_NOT_ENABLED]: __('Not enabled'),
+  [TOOL_FAILED]: __('Failed'),
+};
+
+export const SEVERITY_FILTER_LABELS = {
+  [CRITICAL]: s__('SecurityInventory|Severity critical'),
+  [HIGH]: s__('SecurityInventory|Severity high'),
+  [MEDIUM]: s__('SecurityInventory|Severity medium'),
+  [LOW]: s__('SecurityInventory|Severity low'),
+  [INFO]: s__('SecurityInventory|Severity info'),
+  [UNKNOWN]: s__('SecurityInventory|Severity unknown'),
+};
+export const SEVERITY_FILTER_OPERATOR_TO_CONST = {
+  [OPERATOR_LESS_THAN_OR_EQUAL]: 'LESS_THAN_OR_EQUAL_TO',
+  [OPERATOR_IS]: 'EQUAL_TO',
+  [OPERATOR_GREATER_THAN_OR_EQUAL]: 'GREATER_THAN_OR_EQUAL_TO',
+};

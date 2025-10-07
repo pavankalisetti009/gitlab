@@ -2,12 +2,29 @@
 import FilteredSearch from '~/vue_shared/components/filtered_search_bar/filtered_search_bar_root.vue';
 import { FILTERED_SEARCH_TERM } from '~/vue_shared/components/filtered_search_bar/constants';
 import { queryToObject } from '~/lib/utils/url_utility';
+import glFeatureFlagMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
+import { CRITICAL, HIGH, MEDIUM, LOW, INFO, UNKNOWN } from 'ee/vulnerabilities/constants';
+import {
+  DEPENDENCY_SCANNING_KEY,
+  SAST_KEY,
+  SAST_ADVANCED_KEY,
+  SECRET_DETECTION_KEY,
+  SECRET_PUSH_PROTECTION_KEY,
+  CONTAINER_SCANNING_KEY,
+  CONTAINER_SCANNING_FOR_REGISTRY_KEY,
+  DAST_KEY,
+  SAST_IAC_KEY,
+  SEVERITY_FILTER_OPERATOR_TO_CONST,
+} from '../constants';
+import { toolCoverageTokens } from './tool_coverage_tokens';
+import { vulnerabilityCountTokens } from './vulnerability_count_tokens';
 
 export default {
   name: 'InventoryDashboardFilteredSearchBar',
   components: {
     FilteredSearch,
   },
+  mixins: [glFeatureFlagMixin()],
   props: {
     initialFilters: {
       type: Object,
@@ -27,6 +44,9 @@ export default {
   },
   computed: {
     searchTokens() {
+      if (this.glFeatures.securityInventoryFiltering) {
+        return [...vulnerabilityCountTokens, ...toolCoverageTokens];
+      }
       return [];
     },
     initialFilterValue() {
@@ -39,7 +59,10 @@ export default {
   },
   methods: {
     onFilter(filters = []) {
-      const filterParams = {};
+      const filterParams = {
+        vulnerabilityCountFilters: [],
+        securityAnalyzerFilters: [],
+      };
       const plainText = [];
 
       filters.forEach((filter) => {
@@ -47,6 +70,29 @@ export default {
 
         if (filter.type === FILTERED_SEARCH_TERM) {
           plainText.push(filter.value.data);
+        } else if (
+          [
+            DEPENDENCY_SCANNING_KEY,
+            SAST_KEY,
+            SAST_ADVANCED_KEY,
+            SECRET_DETECTION_KEY,
+            SECRET_PUSH_PROTECTION_KEY,
+            CONTAINER_SCANNING_KEY,
+            CONTAINER_SCANNING_FOR_REGISTRY_KEY,
+            DAST_KEY,
+            SAST_IAC_KEY,
+          ].includes(filter.type)
+        ) {
+          filterParams.securityAnalyzerFilters.push({
+            analyzerType: filter.type,
+            status: filter.value.data,
+          });
+        } else if ([CRITICAL, HIGH, MEDIUM, LOW, INFO, UNKNOWN].includes(filter.type)) {
+          filterParams.vulnerabilityCountFilters.push({
+            severity: filter.type.toUpperCase(),
+            operator: SEVERITY_FILTER_OPERATOR_TO_CONST[filter.value.operator],
+            count: parseInt(filter.value.data, 10) || 0,
+          });
         }
       });
 
