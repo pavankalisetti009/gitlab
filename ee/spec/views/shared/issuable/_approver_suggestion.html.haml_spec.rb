@@ -43,11 +43,11 @@ RSpec.describe 'shared/issuable/_approver_suggestion.html.haml' do
     let(:approvals_available) { false }
 
     before do
-      stub_application_setting(check_namespace_plan: check_namespace_plan)
+      stub_saas_features(gitlab_com_subscriptions: gitlab_com_subscriptions_enabled)
     end
 
-    context 'when the check_namespace_plan setting is on' do
-      let(:check_namespace_plan) { true }
+    context 'when the gitlab_com_subscriptions saas feature is available' do
+      let(:gitlab_com_subscriptions_enabled) { true }
 
       before do
         allow(view).to receive(:can?).with(user, :admin_group, anything).and_return(user_can_admin_group)
@@ -74,8 +74,8 @@ RSpec.describe 'shared/issuable/_approver_suggestion.html.haml' do
       end
     end
 
-    context 'when the check_namespace_plan setting is off' do
-      let(:check_namespace_plan) { false }
+    context 'when the gitlab_com_subscriptions saas feature is not available' do
+      let(:gitlab_com_subscriptions_enabled) { false }
 
       it 'renders nothing' do
         do_render

@@ -697,6 +697,7 @@ FactoryBot.define do
     trait :with_token_status do
       transient do
         token_status { :unknown } # Default to unknown, but can be overridden
+        last_verified_at { Time.current }
       end
 
       after(:create) do |finding, evaluator|

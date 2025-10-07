@@ -21,7 +21,7 @@
     .gl-mt-5
       = gl_loading_icon(size: 'md', inline: true)
   = render 'projects/merge_requests/code_owner_approval_rules', merge_request: @mr_presenter
-- elsif ::Gitlab::CurrentSettings.should_check_namespace_plan?
+- elsif ::Gitlab::Saas.feature_available?(:gitlab_com_subscriptions)
   - top_level_namespace = @target_project.root_ancestor
   - if can?(current_user, :admin_group, top_level_namespace)
     #js-mr-approvals-promo{ data: { try_now_path: new_trial_path(namespace_id: top_level_namespace.id),

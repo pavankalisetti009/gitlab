@@ -8,7 +8,7 @@ RSpec.describe 'Promotions', :js do
   let_it_be(:support_bot) { Users::Internal.support_bot }
 
   let(:admin) { create(:admin) }
-  let(:user) { create(:user) }
+  let_it_be(:user) { create(:user) }
   let(:otherdeveloper) { create(:user, name: 'TheOtherDeveloper') }
   let(:group) { create(:group) }
   let(:project) { create(:project, :repository, namespace: group) }
@@ -19,7 +19,7 @@ RSpec.describe 'Promotions', :js do
   describe 'for merge request improve', :js, feature_category: :code_review_workflow do
     before do
       allow(License).to receive(:current).and_return(nil)
-      stub_application_setting(check_namespace_plan: false)
+      stub_saas_features(gitlab_com_subscriptions: false)
 
       project.add_maintainer(user)
       sign_in(user)
@@ -49,7 +49,7 @@ RSpec.describe 'Promotions', :js do
   describe 'for repository features', :js, feature_category: :source_code_management do
     before do
       allow(License).to receive(:current).and_return(nil)
-      stub_application_setting(check_namespace_plan: false)
+      stub_saas_features(gitlab_com_subscriptions: false)
 
       project.add_maintainer(user)
       sign_in(user)
@@ -74,10 +74,12 @@ RSpec.describe 'Promotions', :js do
     end
   end
 
-  describe 'for burndown charts', :js, feature_category: :team_planning do
+  describe 'for burndown charts', :js, :saas, feature_category: :team_planning do
+    let_it_be(:group) { create(:group_with_plan) }
+
     before do
+      stub_saas_features(gitlab_com_subscriptions: true)
       stub_application_setting(check_namespace_plan: true)
-      allow(Gitlab).to receive(:com?).and_return(true)
 
       project.add_maintainer(user)
       sign_in(user)
@@ -146,10 +148,11 @@ RSpec.describe 'Promotions', :js do
       end
     end
 
-    context 'gitlab.com' do
+    context 'when gitlab_com_subscriptions saas feature is available', :saas do
+      let_it_be(:group) { create(:group_with_plan) }
+
       before do
-        stub_application_setting(check_namespace_plan: true)
-        allow(Gitlab).to receive(:com?).and_return(true)
+        stub_saas_features(gitlab_com_subscriptions: true)
 
         project.add_maintainer(user)
         sign_in(user)
@@ -158,10 +161,10 @@ RSpec.describe 'Promotions', :js do
       it_behaves_like 'Epics promotion'
     end
 
-    context 'self hosted' do
+    context 'when self hosted' do
       before do
         allow(License).to receive(:current).and_return(nil)
-        stub_application_setting(check_namespace_plan: false)
+        stub_saas_features(gitlab_com_subscriptions: false)
 
         project.add_maintainer(user)
         sign_in(user)
@@ -179,7 +182,7 @@ RSpec.describe 'Promotions', :js do
   describe 'for issue weight', :js, feature_category: :team_planning do
     before do
       allow(License).to receive(:current).and_return(nil)
-      stub_application_setting(check_namespace_plan: false)
+      stub_saas_features(gitlab_com_subscriptions: false)
 
       project.add_maintainer(user)
       sign_in(user)
@@ -234,11 +237,11 @@ RSpec.describe 'Promotions', :js do
       expect(page).to have_selector('.js-weight-sidebar-callout')
     end
 
-    context 'when checking namespace plans' do
-      before do
-        stub_application_setting(check_namespace_plan: true)
+    context 'when gitlab_com_subscriptions is available', :saas do
+      let_it_be(:group) { create(:group_with_plan, owners: user) }
 
-        group.add_owner(user)
+      before do
+        stub_saas_features(gitlab_com_subscriptions: true)
       end
 
       it 'appears on the page', :js do
@@ -259,7 +262,7 @@ RSpec.describe 'Promotions', :js do
   describe 'for project audit events', :js, feature_category: :audit_events do
     before do
       allow(License).to receive(:current).and_return(nil)
-      stub_application_setting(check_namespace_plan: false)
+      stub_saas_features(gitlab_com_subscriptions: false)
 
       project.add_maintainer(user)
       sign_in(user)
@@ -279,7 +282,7 @@ RSpec.describe 'Promotions', :js do
   describe 'for group webhooks' do
     before do
       allow(License).to receive(:current).and_return(nil)
-      stub_application_setting(check_namespace_plan: false)
+      stub_saas_features(gitlab_com_subscriptions: false)
 
       group.add_owner(user)
       sign_in(user)
@@ -295,7 +298,7 @@ RSpec.describe 'Promotions', :js do
   describe 'for advanced search', :js, feature_category: :global_search do
     before do
       allow(License).to receive(:current).and_return(nil)
-      stub_application_setting(check_namespace_plan: false)
+      stub_saas_features(gitlab_com_subscriptions: false)
 
       sign_in(user)
     end

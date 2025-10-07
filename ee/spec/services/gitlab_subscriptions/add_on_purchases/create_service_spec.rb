@@ -77,11 +77,11 @@ RSpec.describe GitlabSubscriptions::AddOnPurchases::CreateService, :aggregate_fa
       end
     end
 
-    context 'when on .com', :saas do
+    context 'when gitlab_com_subscriptions saas feature is available' do
       let_it_be(:namespace) { create(:group) }
 
       before do
-        stub_ee_application_setting(should_check_namespace_plan: true)
+        stub_saas_features(gitlab_com_subscriptions: true)
       end
 
       context 'when passing in an empty namespace' do
@@ -131,7 +131,7 @@ RSpec.describe GitlabSubscriptions::AddOnPurchases::CreateService, :aggregate_fa
       end
     end
 
-    context 'when not on .com' do
+    context 'when gitlab_com_subscriptions saas feature is not available' do
       let_it_be(:organization) { create(:organization) }
 
       let(:namespace) { nil }

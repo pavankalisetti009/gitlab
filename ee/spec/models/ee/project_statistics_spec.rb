@@ -11,9 +11,9 @@ RSpec.describe ProjectStatistics, feature_category: :source_code_management do
     let(:other_sizes) { 3 }
     let(:uploads_size) { 5 }
 
-    context 'when should_check_namespace_plan? returns true' do
+    context 'when gitlab_com_subscriptions saas feature is available' do
       before do
-        stub_ee_application_setting(should_check_namespace_plan: true)
+        stub_saas_features(gitlab_com_subscriptions: true)
       end
 
       it "sums the relevant storage counters without uploads_size" do
@@ -35,7 +35,7 @@ RSpec.describe ProjectStatistics, feature_category: :source_code_management do
       end
     end
 
-    context 'when should_check_namespace_plan? returns false' do
+    context 'when gitlab_com_subscriptions saas feature is not available' do
       it "sums the relevant storage counters along with uploads_size" do
         statistics.update!(
           repository_size: other_sizes,

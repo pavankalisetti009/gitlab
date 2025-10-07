@@ -2,16 +2,14 @@
 
 require 'spec_helper'
 
-RSpec.describe 'user sees MR approvals promo', :js, feature_category: :code_review_workflow do
+RSpec.describe 'user sees MR approvals promo', :js, :saas, feature_category: :code_review_workflow do
   let_it_be(:user) { create(:user) }
-  let_it_be(:group) { create(:group) }
+  let_it_be(:group) { create(:group_with_plan, owners: user) }
   let_it_be(:project) { create(:project, :repository, group: group) }
   let_it_be(:promo_title) { s_("ApprovalRule|Improve your organization's code review with required approvals.") }
 
   before do
-    group.add_owner(user)
-
-    stub_application_setting(check_namespace_plan: true)
+    stub_saas_features(gitlab_com_subscriptions: true)
     stub_licensed_features(merge_request_approvers: false)
 
     sign_in(user)
