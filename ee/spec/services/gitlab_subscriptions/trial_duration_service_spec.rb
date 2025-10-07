@@ -73,7 +73,7 @@ RSpec.describe GitlabSubscriptions::TrialDurationService, feature_category: :acq
 
     it 'uses Rails cache with correct key and expiry' do
       expect(Rails.cache).to receive(:fetch)
-        .with('gitlab_subscriptions_trial_duration_service', expires_in: 1.hour, race_condition_ttl: 2.minutes)
+        .with('gitlab_subscriptions_trial_duration_service', expires_in: 1.hour, race_condition_ttl: 5.seconds)
         .and_call_original
 
       service.execute
@@ -90,7 +90,7 @@ RSpec.describe GitlabSubscriptions::TrialDurationService, feature_category: :acq
     context 'when cache fails' do
       before do
         allow(Rails.cache).to receive(:fetch)
-          .with('gitlab_subscriptions_trial_duration_service', expires_in: 1.hour, race_condition_ttl: 2.minutes)
+          .with('gitlab_subscriptions_trial_duration_service', expires_in: 1.hour, race_condition_ttl: 5.seconds)
           .and_return(nil)
       end
 
