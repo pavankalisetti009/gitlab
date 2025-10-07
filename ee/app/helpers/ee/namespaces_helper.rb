@@ -47,7 +47,7 @@ module EE
         monthly_minutes_limit: minutes_usage_presenter.monthly_minutes_limit_text
       }
 
-      return super.merge(ci_minutes: ci_minutes) unless ::Gitlab::CurrentSettings.should_check_namespace_plan?
+      return super.merge(ci_minutes: ci_minutes) unless ::Gitlab::Saas.feature_available?(:gitlab_com_subscriptions)
 
       # SaaS data
       ci_minutes.merge!({
@@ -70,7 +70,7 @@ module EE
       is_in_namespace_limits_pre_enforcement = ::Namespaces::Storage::NamespaceLimit::Enforcement
         .in_pre_enforcement_phase?(namespace)
 
-      unless ::Gitlab::CurrentSettings.should_check_namespace_plan?
+      unless ::Gitlab::Saas.feature_available?(:gitlab_com_subscriptions)
         # EE SM app data
         return super.merge({
           enforcement_type: namespace.root_storage_size.enforcement_type,

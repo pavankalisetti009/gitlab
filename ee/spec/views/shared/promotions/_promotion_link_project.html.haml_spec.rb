@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe 'shared/_promotion_link_project' do
+RSpec.describe 'shared/_promotion_link_project', feature_category: :acquisition do
   let_it_be(:user) { create(:user) }
   let_it_be(:namespace) { create(:group, name: 'Our group') }
 
@@ -17,9 +17,9 @@ RSpec.describe 'shared/_promotion_link_project' do
     @group = namespace
   end
 
-  context 'with namespace plans ' do
+  context 'when gitlab_com_subscriptions saas feature is available' do
     before do
-      stub_application_setting(check_namespace_plan: true)
+      stub_saas_features(gitlab_com_subscriptions: true)
     end
 
     context 'for namespace admin users' do
@@ -28,7 +28,8 @@ RSpec.describe 'shared/_promotion_link_project' do
       end
 
       it do
-        is_expected.to have_link 'Try it for free', href: new_trial_registration_path(glm_source: Gitlab.config.gitlab.host, glm_content: 'some_location')
+        href = new_trial_registration_path(glm_source: Gitlab.config.gitlab.host, glm_content: 'some_location')
+        is_expected.to have_link 'Try it for free', href: href
       end
     end
 
@@ -50,11 +51,7 @@ RSpec.describe 'shared/_promotion_link_project' do
     end
   end
 
-  context 'with instance plans' do
-    before do
-      stub_application_setting(check_namespace_plan: false)
-    end
-
+  context 'when gitlab_com_subscriptions saas feature is not available' do
     context 'for admin users' do
       let_it_be(:user) { create(:admin) }
 

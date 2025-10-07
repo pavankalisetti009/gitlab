@@ -2,12 +2,14 @@
 
 require 'spec_helper'
 
-RSpec.describe 'Groups > Usage quotas > Pipelines tab', :js, feature_category: :consumables_cost_management do
+RSpec.describe 'Groups > Usage quotas > Pipelines tab', :js, :saas, feature_category: :consumables_cost_management do
   include UsageQuotasHelpers
 
-  let_it_be(:user) { create(:user) }
+  let_it_be(:user) do
+    create(:user, namespace: create(:gitlab_subscription, namespace: create(:user_namespace)).namespace)
+  end
 
-  let(:group) { create(:group) }
+  let(:group) { create(:group_with_plan) }
   let!(:project) do
     create(:project, :with_ci_minutes, amount_used: 100, namespace: group, shared_runners_enabled: true)
   end
@@ -17,7 +19,7 @@ RSpec.describe 'Groups > Usage quotas > Pipelines tab', :js, feature_category: :
   shared_context 'when user is allowed to see usage quotas', :with_trial_types do
     before do
       stub_signing_key
-      stub_ee_application_setting(should_check_namespace_plan: gitlab_dot_com)
+      stub_saas_features(gitlab_com_subscriptions: gitlab_dot_com, purchases_additional_minutes: gitlab_dot_com)
       stub_subscription_permissions_data(group.id)
 
       group.add_owner(user)

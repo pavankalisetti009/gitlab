@@ -58,7 +58,7 @@ module EE
 
     override :storage_size_components
     def storage_size_components
-      if ::Gitlab::CurrentSettings.should_check_namespace_plan?
+      if ::Gitlab::Saas.feature_available?(:gitlab_com_subscriptions)
         self.class::STORAGE_SIZE_COMPONENTS - [:uploads_size]
       else
         super

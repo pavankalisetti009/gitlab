@@ -4,7 +4,7 @@
     - c.with_illustration do
       = image_tag image_path('illustrations/search-sm.svg')
     - c.with_title do
-      - if Gitlab::CurrentSettings.should_check_namespace_plan?
+      - if ::Gitlab::Saas.feature_available?(:gitlab_com_subscriptions)
         = s_('Promotions|Upgrade your plan to activate Advanced Search.')
       - else
         = s_('Promotions|Improve search with Advanced Search and GitLab Enterprise Edition.')

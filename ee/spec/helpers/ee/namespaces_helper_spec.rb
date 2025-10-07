@@ -166,10 +166,9 @@ RSpec.describe EE::NamespacesHelper, feature_category: :groups_and_projects do
     let(:minutes_usage) { user_group.ci_minutes_usage }
     let(:minutes_usage_presenter) { ::Ci::Minutes::UsagePresenter.new(minutes_usage) }
 
-    context 'when gitlab sass', :saas do
+    context 'when gitlab_com_subscriptions saas feature is available' do
       before do
-        allow(Gitlab).to receive(:com?).and_return(true)
-        stub_ee_application_setting(should_check_namespace_plan: true)
+        stub_saas_features(gitlab_com_subscriptions: true)
       end
 
       it 'returns a hash with proper SaaS data' do
@@ -200,7 +199,7 @@ RSpec.describe EE::NamespacesHelper, feature_category: :groups_and_projects do
       end
     end
 
-    context 'when gitlab self managed' do
+    context 'when gitlab_com_subscriptions saas feature is not available' do
       it 'returns a hash without SaaS data' do
         expect(helper.pipeline_usage_app_data(user_group)).to eql({
           namespace_actual_plan_name: user_group.actual_plan_name,
@@ -259,7 +258,7 @@ RSpec.describe EE::NamespacesHelper, feature_category: :groups_and_projects do
         )
         allow(namespace.root_storage_size).to receive(:enforcement_type).and_return(enforcement_type)
         allow(helper).to receive(:current_user).and_return(admin)
-        stub_ee_application_setting(should_check_namespace_plan: true)
+        stub_saas_features(gitlab_com_subscriptions: true)
         stub_ee_application_setting(repository_size_limit: repository_size_limit)
       end
 

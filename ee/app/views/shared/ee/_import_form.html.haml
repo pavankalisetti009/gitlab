@@ -7,6 +7,6 @@
   .form-text.gl-text-subtle
     = _("Automatically update this project's branches and tags from the upstream repository.")
     = link_to _('How does pull mirroring work?'), help_page_path('user/project/repository/mirror/pull.md', anchor: 'how-pull-mirroring-works'), target: '_blank', rel: 'noopener noreferrer'
-  - if Gitlab::CurrentSettings.should_check_namespace_plan?
+  - if ::Gitlab::Saas.feature_available?(:gitlab_com_subscriptions)
     .form-text.gl-text-subtle
       = _('Mirroring will only be available if the feature is included in the plan of the selected group or user.')

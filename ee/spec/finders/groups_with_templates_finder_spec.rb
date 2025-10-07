@@ -36,12 +36,14 @@ RSpec.describe GroupsWithTemplatesFinder, :saas, feature_category: :source_code_
   shared_examples 'groups_with_templates' do
     describe 'without group id' do
       it 'returns all groups' do
+        stub_saas_features(gitlab_com_subscriptions: false)
+
         is_expected.to contain_exactly(group_1, group_2, group_3)
       end
 
       context 'when namespace checked' do
         before do
-          stub_ee_application_setting(should_check_namespace_plan: true)
+          stub_saas_features(gitlab_com_subscriptions: true)
         end
 
         it 'returns groups on ultimate/premium plan' do

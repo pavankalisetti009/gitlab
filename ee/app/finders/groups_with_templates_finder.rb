@@ -6,7 +6,7 @@ class GroupsWithTemplatesFinder
   end
 
   def execute
-    if ::Gitlab::CurrentSettings.should_check_namespace_plan?
+    if ::Gitlab::Saas.feature_available?(:gitlab_com_subscriptions)
       groups = extended_group_search
       simple_group_search(groups)
     else
