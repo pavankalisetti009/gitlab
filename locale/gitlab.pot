@@ -8057,6 +8057,9 @@ msgstr ""
 msgid "An example showing how to use Jsonnet with GitLab dynamic child pipelines"
 msgstr ""
 
+msgid "An export is already running or queued for this project. Please try again once it's done."
+msgstr ""
+
 msgid "An incident has been resolved in %{project_path}."
 msgstr ""
 
@@ -33451,9 +33454,6 @@ msgstr ""
 msgid "HomePageMergeRequestsWidget|Merge requests waiting for your review"
 msgstr ""
 
-msgid "HomePageMergeRequestsWidget|Merge requests with review requested"
-msgstr ""
-
 msgid "HomePageMergeRequestsWidget|The number of merge requests is not available. Please refresh the page to try again, or visit the dashboard."
 msgstr ""
 
@@ -33470,12 +33470,6 @@ msgid "HomePageWorkItemsWidget|Issues authored by you"
 msgstr ""
 
 msgid "HomePageWorkItemsWidget|The number of issues is not available. Please refresh the page to try again, or visit the issue list."
-msgstr ""
-
-msgid "HomePageWorkItemsWidget|Work items assigned to you"
-msgstr ""
-
-msgid "HomePageWorkItemsWidget|Work items authored by you"
 msgstr ""
 
 msgid "Homepage"
@@ -67235,9 +67229,6 @@ msgid "This project is %{strongStart}NOT%{strongEnd} a fork, and has the followi
 msgstr ""
 
 msgid "This project is %{strongStart}NOT%{strongEnd} a fork. This process deletes the project repository and all related resources."
-msgstr ""
-
-msgid "This project is archived and cannot be commented on."
 msgstr ""
 
 msgid "This project is archived and read-only. To resume pull mirroring, unarchive the project."
