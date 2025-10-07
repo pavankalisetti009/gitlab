@@ -4900,7 +4900,8 @@ CREATE TABLE backup_vulnerabilities (
     original_record_identifier bigint NOT NULL,
     project_id bigint NOT NULL,
     date date NOT NULL,
-    data jsonb NOT NULL
+    data jsonb NOT NULL,
+    traversal_ids bigint[] DEFAULT '{}'::bigint[] NOT NULL
 )
 PARTITION BY RANGE (date);
 
@@ -38663,6 +38664,8 @@ CREATE INDEX index_backup_finding_signatures_on_project_id ON ONLY backup_findin
 CREATE INDEX index_backup_findings_on_fk ON ONLY backup_findings USING btree (vulnerability_id);
 
 CREATE INDEX index_backup_findings_on_project_id ON ONLY backup_findings USING btree (project_id);
+
+CREATE INDEX index_backup_vulnerabilities_for_restoring ON ONLY backup_vulnerabilities USING btree (traversal_ids, original_record_identifier);
 
 CREATE INDEX index_backup_vulnerabilities_on_project_id ON ONLY backup_vulnerabilities USING btree (project_id);
 

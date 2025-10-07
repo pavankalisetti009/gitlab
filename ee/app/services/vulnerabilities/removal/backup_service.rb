@@ -7,10 +7,11 @@ module Vulnerabilities
         new(...).execute
       end
 
-      def initialize(backup_model, date, deleted_rows)
+      def initialize(backup_model, date, deleted_rows, extra: {})
         @backup_model = backup_model
         @date = date
         @deleted_rows = deleted_rows
+        @extra = extra
       end
 
       def execute
@@ -19,7 +20,7 @@ module Vulnerabilities
 
       private
 
-      attr_reader :backup_model, :date, :deleted_rows
+      attr_reader :backup_model, :date, :deleted_rows, :extra
 
       delegate :column_mappings, to: :backup_model, private: true
 
@@ -43,10 +44,10 @@ module Vulnerabilities
 
       def initiate_data_for(row)
         {
-          original_record_identifier: row.delete('id'),
           created_at: timestamp,
           updated_at: timestamp,
-          data: row
+          data: row,
+          **extra
         }
       end
 
