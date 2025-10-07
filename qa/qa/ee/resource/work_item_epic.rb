@@ -366,58 +366,6 @@ module QA
           get_widget('HIERARCHY')&.dig(:parent, :id)&.split('/')&.last
         end
 
-        # Return subset of variable date fields for comparing work item epics with legacy epics
-        # Can be removed after migration to work item epics is complete
-        #
-        # @return [Hash]
-        def epic_dates
-          reload! if api_response.nil?
-
-          api_resource.slice(
-            :created_at,
-            :updated_at,
-            :closed_at
-          )
-        end
-
-        # Return author field for comparing work item epics with legacy epics
-        # Can be removed after migration to work item epics is complete
-        #
-        # @return [Hash]
-        def epic_author
-          reload! if api_response.nil?
-
-          api_resource[:author][:id] = api_resource.dig(:author, :id).split('/').last.to_i
-
-          api_resource.slice(
-            :author
-          )
-        end
-
-        # Return iid for comparing work item epics with legacy epics
-        # Can be removed after migration to work item epics is complete
-        #
-        # @return [Hash]
-        def epic_iid
-          reload! if api_response.nil?
-
-          api_resource[:iid] = api_resource[:iid].to_i
-
-          api_resource.slice(:iid)
-        end
-
-        # Return namespace id for comparing work item epics with legacy epics
-        # Can be removed after migration to work item epics is complete
-        #
-        # @return [Hash]
-        def epic_namespace_id
-          reload! if api_response.nil?
-
-          api_resource[:group_id] = api_resource.dig(:namespace, :id).split('/').last.to_i
-
-          api_resource.slice(:group_id)
-        end
-
         protected
 
         # Return available parameters formatted to be used in a GraphQL query
@@ -462,7 +410,6 @@ module QA
         def comparable
           reload! if api_response.nil?
 
-          api_resource[:state] = convert_graphql_state_to_legacy_state(api_resource[:state])
           api_resource[:labels] = get_widget('LABELS')&.dig(:labels, :nodes)
           api_resource[:upvotes] = get_widget('AWARD_EMOJI')&.dig(:upvotes)
           api_resource[:downvotes] = get_widget('AWARD_EMOJI')&.dig(:downvotes)
@@ -478,7 +425,7 @@ module QA
             :description,
             :state,
             :is_fixed,
-            # :roll_up, uncomment when qa/specs/features/ee/api/2_plan/epics_to_work_items_sync_spec.rb is removed
+            :roll_up,
             :start_date,
             :due_date,
             :confidential,
@@ -488,16 +435,6 @@ module QA
             :color,
             :text_color
           )
-        end
-
-        # Remove when qa/specs/features/ee/api/2_plan/epics_to_work_items_sync_spec.rb is removed
-        def convert_graphql_state_to_legacy_state(state)
-          case state
-          when 'OPEN'
-            'opened'
-          when 'CLOSE'
-            'closed'
-          end
         end
 
         def get_widget(type)
