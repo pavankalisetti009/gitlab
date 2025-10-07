@@ -17,7 +17,7 @@ module Gitlab
                 "issues"
               WHERE
                 "timelogs"."issue_id" = "issues"."id"
-                AND "timelogs"."id" IN (#{sub_batch.select(:id).to_sql})
+                AND "timelogs"."id" IN (#{sub_batch.select(:id).limit(sub_batch_size).to_sql})
             SQL
           )
           connection.execute(
