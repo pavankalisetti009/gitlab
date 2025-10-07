@@ -130,6 +130,14 @@ module API
             wrkf_params
           end
 
+          def service_uri(feature_setting)
+            if feature_setting&.self_hosted?
+              Gitlab::DuoWorkflow::Client.self_hosted_url
+            else
+              Gitlab::DuoWorkflow::Client.cloud_connected_url(user: current_user)
+            end
+          end
+
           params :workflow_params do
             optional :project_id, type: String, desc: 'The ID or path of the workflow project',
               documentation: { example: '1' }
@@ -278,6 +286,10 @@ module API
                 user_selected_model_identifier: find_user_selected_model_identifier
               ).execute
 
+              feature_setting = ::Ai::FeatureSettingSelectionService
+                                  .new(current_user, :duo_agent_platform, root_namespace)
+                                  .execute.payload
+
               headers = Gitlab::DuoWorkflow::Client.cloud_connector_headers(user: current_user).merge(
                 'x-gitlab-oauth-token' => gitlab_oauth_token.plaintext_token,
                 'x-gitlab-unidirectional-streaming' => 'enabled'
@@ -292,7 +304,7 @@ module API
               {
                 DuoWorkflow: {
                   Headers: headers,
-                  ServiceURI: Gitlab::DuoWorkflow::Client.url(user: current_user),
+                  ServiceURI: service_uri(feature_setting),
                   Secure: Gitlab::DuoWorkflow::Client.secure?
                 }
               }

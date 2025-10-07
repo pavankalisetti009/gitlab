@@ -4,9 +4,11 @@ module Gitlab
   module DuoWorkflow
     class Client
       def self.url(user:)
-        self_hosted_url ||
-          Gitlab.config.duo_workflow.service_url ||
-          default_service_url(user: user)
+        self_hosted_url || cloud_connected_url(user: user)
+      end
+
+      def self.cloud_connected_url(user:)
+        Gitlab.config.duo_workflow.service_url || default_service_url(user: user)
       end
 
       def self.default_service_url(user:)

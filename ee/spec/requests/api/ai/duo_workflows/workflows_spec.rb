@@ -782,8 +782,12 @@ RSpec.describe API::Ai::DuoWorkflows::Workflows, :with_current_organization, fea
 
   describe 'GET /ai/duo_workflows/ws' do
     let(:path) { '/ai/duo_workflows/ws' }
+    let(:self_hosted_duo_workflow_service_url) { 'self-hosted-dap-service-url:50052' }
+    let(:default_duo_workflow_service_url) { 'cloud.gitlab.com:50052' }
 
     include_context 'workhorse headers'
+
+    subject(:get_response) { get api(path, user), headers: workhorse_headers }
 
     before do
       allow_next_instance_of(::Ai::DuoWorkflows::CreateOauthAccessTokenService) do |service|
@@ -795,16 +799,47 @@ RSpec.describe API::Ai::DuoWorkflows::Workflows, :with_current_organization, fea
       end
 
       allow(Gitlab::DuoWorkflow::Client).to receive_messages(
-        url: 'duo-workflow-service.example.com:50052',
+        self_hosted_url: self_hosted_duo_workflow_service_url,
+        default_service_url: default_duo_workflow_service_url,
         secure?: true
       )
+
+      allow(Gitlab.config.duo_workflow).to receive(:service_url).and_return(duo_workflow_service_url)
 
       allow(::CloudConnector::Tokens).to receive(:get).and_return('token')
     end
 
+    shared_examples 'ServiceURI has the right value' do |with_self_hosted_setting|
+      context 'with a duo workflow service url set' do
+        it 'routes to the right service uri' do
+          get_response
+
+          if with_self_hosted_setting
+            expect(json_response['DuoWorkflow']['ServiceURI']).to eq(self_hosted_duo_workflow_service_url)
+          else
+            expect(json_response['DuoWorkflow']['ServiceURI']).to eq(duo_workflow_service_url)
+          end
+        end
+      end
+
+      context 'with no duo workflow service url set' do
+        let(:duo_workflow_service_url) { nil }
+
+        it 'routes to the right service uri' do
+          get_response
+
+          if with_self_hosted_setting
+            expect(json_response['DuoWorkflow']['ServiceURI']).to eq(self_hosted_duo_workflow_service_url)
+          else
+            expect(json_response['DuoWorkflow']['ServiceURI']).to eq(default_duo_workflow_service_url)
+          end
+        end
+      end
+    end
+
     context 'when user is authenticated' do
       it 'returns the websocket configuration with proper headers' do
-        get api(path, user), headers: workhorse_headers
+        get_response
 
         expect(response).to have_gitlab_http_status(:ok)
         expect(response.media_type).to eq(Gitlab::Workhorse::INTERNAL_API_CONTENT_TYPE)
@@ -819,9 +854,10 @@ RSpec.describe API::Ai::DuoWorkflows::Workflows, :with_current_organization, fea
           'x-gitlab-unidirectional-streaming' => 'enabled'
         )
 
-        expect(json_response['DuoWorkflow']['ServiceURI']).to eq('duo-workflow-service.example.com:50052')
         expect(json_response['DuoWorkflow']['Secure']).to eq(true)
       end
+
+      it_behaves_like 'ServiceURI has the right value', false
 
       context 'when project_id parameter is provided' do
         it 'includes x-gitlab-project-id header' do
@@ -960,10 +996,13 @@ RSpec.describe API::Ai::DuoWorkflows::Workflows, :with_current_organization, fea
       end
 
       context 'when duo_agent_platform_enable_direct_http is enabled' do
-        it 'returns the websocket configuration with proper headers' do
+        subject(:get_response) do
           stub_feature_flags(duo_agent_platform_enable_direct_http: true)
-
           get api(path, user), headers: workhorse_headers
+        end
+
+        it 'returns the websocket configuration with proper headers' do
+          get_response
 
           expect(response).to have_gitlab_http_status(:ok)
           expect(response.media_type).to eq(Gitlab::Workhorse::INTERNAL_API_CONTENT_TYPE)
@@ -979,9 +1018,10 @@ RSpec.describe API::Ai::DuoWorkflows::Workflows, :with_current_organization, fea
             'x-gitlab-unidirectional-streaming' => 'enabled'
           )
 
-          expect(json_response['DuoWorkflow']['ServiceURI']).to eq('duo-workflow-service.example.com:50052')
           expect(json_response['DuoWorkflow']['Secure']).to eq(true)
         end
+
+        it_behaves_like 'ServiceURI has the right value', false
 
         context 'when project_id parameter is provided' do
           it 'includes x-gitlab-project-id header' do
@@ -1049,7 +1089,7 @@ RSpec.describe API::Ai::DuoWorkflows::Workflows, :with_current_organization, fea
         end
 
         it 'includes model metadata headers in the response' do
-          get api(path, user), headers: workhorse_headers
+          get_response
 
           expect(response).to have_gitlab_http_status(:ok)
 
@@ -1078,11 +1118,16 @@ RSpec.describe API::Ai::DuoWorkflows::Workflows, :with_current_organization, fea
           get api(path, user), headers: workhorse_headers
         end
 
-        context 'when ModelMetadata returns nil' do
-          it 'does not include model metadata headers' do
-            duo_agent_platform_setting.destroy!
+        it_behaves_like 'ServiceURI has the right value', true
 
+        context 'when ModelMetadata returns nil' do
+          subject(:get_response) do
+            duo_agent_platform_setting.destroy!
             get api(path, user), headers: workhorse_headers
+          end
+
+          it 'does not include model metadata headers' do
+            get_response
 
             expect(response).to have_gitlab_http_status(:ok)
 
@@ -1093,13 +1138,19 @@ RSpec.describe API::Ai::DuoWorkflows::Workflows, :with_current_organization, fea
             )
             expect(headers).not_to have_key('x-gitlab-agent-platform-model-metadata')
           end
+
+          it_behaves_like 'ServiceURI has the right value', false
         end
 
         context 'when feature setting is disabled' do
-          it 'does not include model metadata headers when provider is disabled' do
+          subject(:get_response) do
             duo_agent_platform_setting.update!(provider: :disabled)
 
             get api(path, user), headers: workhorse_headers
+          end
+
+          it 'does not include model metadata headers when provider is disabled' do
+            get_response
 
             expect(response).to have_gitlab_http_status(:ok)
 
@@ -1110,6 +1161,8 @@ RSpec.describe API::Ai::DuoWorkflows::Workflows, :with_current_organization, fea
             )
             expect(headers).not_to have_key('x-gitlab-agent-platform-model-metadata')
           end
+
+          it_behaves_like 'ServiceURI has the right value', false
         end
       end
 
@@ -1129,10 +1182,14 @@ RSpec.describe API::Ai::DuoWorkflows::Workflows, :with_current_organization, fea
           stub_feature_flags(ai_model_switching: false)
         end
 
-        it 'does not include model metadata headers' do
+        subject(:get_response) do
           expect(::Gitlab::Llm::AiGateway::AgentPlatform::ModelMetadata).not_to receive(:new)
 
           get api(path, user), headers: workhorse_headers
+        end
+
+        it 'does not include model metadata headers' do
+          get_response
 
           expect(response).to have_gitlab_http_status(:ok)
 
@@ -1145,7 +1202,7 @@ RSpec.describe API::Ai::DuoWorkflows::Workflows, :with_current_organization, fea
         end
 
         it 'returns the standard websocket configuration' do
-          get api(path, user), headers: workhorse_headers
+          get_response
 
           expect(response).to have_gitlab_http_status(:ok)
           expect(response.media_type).to eq(Gitlab::Workhorse::INTERNAL_API_CONTENT_TYPE)
@@ -1160,9 +1217,10 @@ RSpec.describe API::Ai::DuoWorkflows::Workflows, :with_current_organization, fea
             'x-gitlab-unidirectional-streaming' => 'enabled'
           )
 
-          expect(json_response['DuoWorkflow']['ServiceURI']).to eq('duo-workflow-service.example.com:50052')
           expect(json_response['DuoWorkflow']['Secure']).to eq(true)
         end
+
+        it_behaves_like 'ServiceURI has the right value', true
       end
 
       context 'for model selection at instance level' do
@@ -1175,7 +1233,7 @@ RSpec.describe API::Ai::DuoWorkflows::Workflows, :with_current_organization, fea
 
         context 'when model selection at instance level does not exist' do
           it 'includes model metadata headers with default model' do
-            get api(path, user), headers: workhorse_headers
+            get_response
 
             expect(response).to have_gitlab_http_status(:ok)
 
@@ -1192,6 +1250,8 @@ RSpec.describe API::Ai::DuoWorkflows::Workflows, :with_current_organization, fea
               'identifier' => nil
             )
           end
+
+          it_behaves_like 'ServiceURI has the right value', false
         end
 
         context 'when model selection at instance level exists' do
@@ -1202,7 +1262,7 @@ RSpec.describe API::Ai::DuoWorkflows::Workflows, :with_current_organization, fea
           end
 
           it 'includes model metadata headers in the response' do
-            get api(path, user), headers: workhorse_headers
+            get_response
 
             expect(response).to have_gitlab_http_status(:ok)
 
@@ -1215,6 +1275,8 @@ RSpec.describe API::Ai::DuoWorkflows::Workflows, :with_current_organization, fea
               'identifier' => 'claude-3-7-sonnet-20250219'
             )
           end
+
+          it_behaves_like 'ServiceURI has the right value', false
         end
 
         context 'when the feature flag is disabled' do
@@ -1223,7 +1285,7 @@ RSpec.describe API::Ai::DuoWorkflows::Workflows, :with_current_organization, fea
           end
 
           it 'does not include model metadata headers' do
-            get api(path, user), headers: workhorse_headers
+            get_response
 
             expect(response).to have_gitlab_http_status(:ok)
 
@@ -1234,6 +1296,8 @@ RSpec.describe API::Ai::DuoWorkflows::Workflows, :with_current_organization, fea
             )
             expect(headers).not_to have_key('x-gitlab-agent-platform-model-metadata')
           end
+
+          it_behaves_like 'ServiceURI has the right value', false
         end
       end
 
@@ -1255,7 +1319,7 @@ RSpec.describe API::Ai::DuoWorkflows::Workflows, :with_current_organization, fea
         end
 
         it 'does not include model metadata headers' do
-          get api(path, user), headers: workhorse_headers
+          get_response
 
           expect(response).to have_gitlab_http_status(:ok)
 
@@ -1267,6 +1331,8 @@ RSpec.describe API::Ai::DuoWorkflows::Workflows, :with_current_organization, fea
 
           expect(headers).not_to have_key('x-gitlab-agent-platform-model-metadata')
         end
+
+        it_behaves_like 'ServiceURI has the right value', false
 
         context 'when namespace params are provided' do
           let_it_be(:group) { create(:group) }
@@ -1280,8 +1346,12 @@ RSpec.describe API::Ai::DuoWorkflows::Workflows, :with_current_organization, fea
             end
 
             context 'when provided as param[:root_namespace_id]' do
-              it 'includes model metadata headers' do
+              subject(:get_response) do
                 get api(path, user), headers: workhorse_headers, params: { root_namespace_id: group.id }
+              end
+
+              it 'includes model metadata headers' do
+                get_response
 
                 expect(response).to have_gitlab_http_status(:ok)
 
@@ -1296,15 +1366,21 @@ RSpec.describe API::Ai::DuoWorkflows::Workflows, :with_current_organization, fea
                 )
               end
 
+              it_behaves_like 'ServiceURI has the right value', false
+
               context 'when user_selected_model_identifier is provided' do
                 context 'when a valid user_selected_model_identifier is provided' do
                   let(:user_selected_model_identifier) { 'claude_sonnet_4_20250514' }
 
-                  it 'continues to use the namespace-level model selection' do
+                  subject(:get_response) do
                     get api(path, user), headers: workhorse_headers, params: {
                       root_namespace_id: group.id,
                       user_selected_model_identifier: user_selected_model_identifier
                     }
+                  end
+
+                  it 'continues to use the namespace-level model selection' do
+                    get_response
 
                     expect(response).to have_gitlab_http_status(:ok)
 
@@ -1316,13 +1392,19 @@ RSpec.describe API::Ai::DuoWorkflows::Workflows, :with_current_organization, fea
                       'identifier' => 'claude_sonnet_3_7_20250219'
                     )
                   end
+
+                  it_behaves_like 'ServiceURI has the right value', false
                 end
               end
             end
 
             context 'when provided as header[X-Gitlab-Namespace-Id]' do
-              it 'includes model metadata headers' do
+              subject(:get_response) do
                 get api(path, user), headers: workhorse_headers.merge('X-Gitlab-Namespace-Id' => group.id)
+              end
+
+              it 'includes model metadata headers' do
+                get_response
 
                 expect(response).to have_gitlab_http_status(:ok)
 
@@ -1334,13 +1416,19 @@ RSpec.describe API::Ai::DuoWorkflows::Workflows, :with_current_organization, fea
                   'identifier' => 'claude_sonnet_3_7_20250219'
                 )
               end
+
+              it_behaves_like 'ServiceURI has the right value', false
             end
           end
 
           context 'when a model selection setting does not exist' do
             context 'when provided as param[:root_namespace_id]' do
-              it 'includes model metadata headers with default model' do
+              subject(:get_response) do
                 get api(path, user), headers: workhorse_headers, params: { root_namespace_id: group.id }
+              end
+
+              it 'includes model metadata headers with default model' do
+                get_response
 
                 expect(response).to have_gitlab_http_status(:ok)
 
@@ -1353,17 +1441,23 @@ RSpec.describe API::Ai::DuoWorkflows::Workflows, :with_current_organization, fea
                   'identifier' => nil
                 )
               end
+
+              it_behaves_like 'ServiceURI has the right value', false
             end
 
             context 'when a user_selected_model_identifier is provided' do
+              subject(:get_response) do
+                get api(path, user), headers: workhorse_headers, params: {
+                  root_namespace_id: group.id,
+                  user_selected_model_identifier: user_selected_model_identifier
+                }
+              end
+
               context 'when a valid user_selected_model_identifier is provided' do
                 let(:user_selected_model_identifier) { 'claude_sonnet_4_20250514' }
 
                 it 'uses the user-selected model' do
-                  get api(path, user), headers: workhorse_headers, params: {
-                    root_namespace_id: group.id,
-                    user_selected_model_identifier: user_selected_model_identifier
-                  }
+                  get_response
 
                   expect(response).to have_gitlab_http_status(:ok)
 
@@ -1375,16 +1469,15 @@ RSpec.describe API::Ai::DuoWorkflows::Workflows, :with_current_organization, fea
                     'identifier' => user_selected_model_identifier
                   )
                 end
+
+                it_behaves_like 'ServiceURI has the right value', false
               end
 
               context 'when an invalid user_selected_model_identifier is provided' do
                 let(:user_selected_model_identifier) { 'invalid-model-for-duo-agent-platform' }
 
                 it 'uses the default model' do
-                  get api(path, user), headers: workhorse_headers, params: {
-                    root_namespace_id: group.id,
-                    user_selected_model_identifier: user_selected_model_identifier
-                  }
+                  get_response
 
                   expect(response).to have_gitlab_http_status(:ok)
 
@@ -1396,14 +1489,15 @@ RSpec.describe API::Ai::DuoWorkflows::Workflows, :with_current_organization, fea
                     'identifier' => nil
                   )
                 end
+
+                it_behaves_like 'ServiceURI has the right value', false
               end
 
               context 'when an empty user_selected_model_identifier is provided' do
+                let(:user_selected_model_identifier) { '' }
+
                 it 'uses the default model' do
-                  get api(path, user), headers: workhorse_headers, params: {
-                    root_namespace_id: group.id,
-                    user_selected_model_identifier: ''
-                  }
+                  get_response
 
                   expect(response).to have_gitlab_http_status(:ok)
 
@@ -1415,6 +1509,8 @@ RSpec.describe API::Ai::DuoWorkflows::Workflows, :with_current_organization, fea
                     'identifier' => nil
                   )
                 end
+
+                it_behaves_like 'ServiceURI has the right value', false
               end
 
               context 'when user level model selection is disabled' do
@@ -1426,10 +1522,7 @@ RSpec.describe API::Ai::DuoWorkflows::Workflows, :with_current_organization, fea
                   let(:user_selected_model_identifier) { 'claude_sonnet_4_20250514' }
 
                   it 'uses the default model' do
-                    get api(path, user), headers: workhorse_headers, params: {
-                      root_namespace_id: group.id,
-                      user_selected_model_identifier: user_selected_model_identifier
-                    }
+                    get_response
 
                     expect(response).to have_gitlab_http_status(:ok)
 
@@ -1441,6 +1534,8 @@ RSpec.describe API::Ai::DuoWorkflows::Workflows, :with_current_organization, fea
                       'identifier' => nil
                     )
                   end
+
+                  it_behaves_like 'ServiceURI has the right value', false
                 end
               end
             end
@@ -1455,7 +1550,7 @@ RSpec.describe API::Ai::DuoWorkflows::Workflows, :with_current_organization, fea
         end
 
         it 'returns not found' do
-          get api(path, user), headers: workhorse_headers
+          get_response
 
           expect(response).to have_gitlab_http_status(:not_found)
         end
