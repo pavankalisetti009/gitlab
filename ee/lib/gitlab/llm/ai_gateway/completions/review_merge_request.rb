@@ -98,7 +98,7 @@ module Gitlab
               ::Ai::DuoWorkflows::Workflow::AgentPrivileges::USE_GIT
             ]
 
-            ::Ai::DuoWorkflows::CreateAndStartWorkflowService.new(
+            result = ::Ai::DuoWorkflows::CreateAndStartWorkflowService.new(
               container: merge_request.project,
               current_user: user,
               workflow_definition: 'code_review/experimental',
@@ -111,6 +111,21 @@ module Gitlab
                 environment: 'web'
               }
             ).execute
+
+            # If workflow fails to start, reset review state immediately
+            unless result.success?
+              update_review_state('reviewed') if merge_request.present?
+              return result
+            end
+
+            # Schedule timeout cleanup job for 30 minutes from now in case workflow fails midway
+            ::Ai::DuoWorkflows::CodeReview::TimeoutWorker.perform_in(30.minutes, merge_request.id)
+
+            result
+          rescue StandardError => error
+            Gitlab::ErrorTracking.track_exception(error, unit_primitive: UNIT_PRIMITIVE)
+            update_review_state('reviewed') if merge_request.present?
+            ServiceResponse.error(message: error.message)
           end
 
           override :inputs
