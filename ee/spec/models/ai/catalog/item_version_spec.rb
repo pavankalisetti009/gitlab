@@ -85,7 +85,7 @@ RSpec.describe Ai::Catalog::ItemVersion, feature_category: :workflow_catalog do
         end
       end
 
-      context 'when item is third party agent' do
+      context 'when item is third party flow' do
         subject(:version) { build_stubbed(:ai_catalog_third_party_flow_version) }
 
         it { is_expected.to be_valid }
