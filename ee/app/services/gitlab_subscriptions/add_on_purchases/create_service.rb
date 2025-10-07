@@ -7,7 +7,7 @@ module GitlabSubscriptions
 
       override :execute
       def execute
-        return root_namespace_error if ::Gitlab::CurrentSettings.should_check_namespace_plan? && !namespace&.root?
+        return root_namespace_error if ::Gitlab::Saas.feature_available?(:gitlab_com_subscriptions) && !namespace&.root?
 
         add_on_purchase.save ? successful_response : error_response
       end

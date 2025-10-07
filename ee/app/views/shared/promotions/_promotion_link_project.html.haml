@@ -1,7 +1,7 @@
 - short_form = local_assigns.fetch :short_form, false
 - target_blank = local_assigns.fetch :target_blank, false
 
-- if Gitlab::CurrentSettings.should_check_namespace_plan?
+- if ::Gitlab::Saas.feature_available?(:gitlab_com_subscriptions)
   -# EE:SaaS
   - namespace = @project&.namespace || @group
   - if can?(current_user, :admin_namespace, namespace)

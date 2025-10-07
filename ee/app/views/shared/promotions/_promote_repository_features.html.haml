@@ -4,7 +4,7 @@
     close_options: {'aria-label' => s_('Promotions|Dismiss repository features promotion'), class: 'js-close-callout'}) do |c|
 
     - c.with_title do
-      - if Gitlab::CurrentSettings.should_check_namespace_plan?
+      - if ::Gitlab::Saas.feature_available?(:gitlab_com_subscriptions)
         = s_('Promotions|Upgrade your plan to improve repositories')
       - else
         = s_('Promotions|Improve repositories with GitLab Enterprise Edition.')

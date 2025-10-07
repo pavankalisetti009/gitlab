@@ -4,7 +4,7 @@
   = render Pajamas::BannerComponent.new(banner_options: { id: 'promote_burndown_charts', class: 'user-callout', data: { uid: callout_id } },
     close_options: { 'aria-label' => s_('Promotions|Dismiss burndown charts promotion'), class: 'js-close-callout' }) do |c|
     - c.with_title do
-      - if Gitlab::CurrentSettings.should_check_namespace_plan?
+      - if ::Gitlab::Saas.feature_available?(:gitlab_com_subscriptions)
         = s_('Promotions|Upgrade your plan to improve milestones with Burndown Charts.')
       - else
         = s_('Promotions|Improve milestones with Burndown Charts.')
