@@ -65,10 +65,9 @@ module Search
         end
 
         def enabled_for_group_search?
-          np = ::Namespace.find_by(id: group_id)
-          return false unless np.present?
+          return false unless namespace.present?
 
-          znp = ::Search::Zoekt::EnabledNamespace.for_root_namespace_id(np.root_ancestor.id).first
+          znp = ::Search::Zoekt::EnabledNamespace.for_root_namespace_id(namespace.root_ancestor.id).first
           return false unless znp.present?
 
           Rails.cache.fetch(cache_key, expires_in: group_search_cache_duration) do
@@ -76,6 +75,10 @@ module Search
               .for_zoekt_indices(znp.indices)
               .minimum_schema_version.to_i >= minimum_schema_version
           end
+        end
+
+        def namespace
+          @namespace ||= Namespace.find_by(id: group_id) if group_id
         end
 
         def enabled_for_global_search?

@@ -24,7 +24,12 @@ RSpec.shared_examples 'zoekt feature' do |feature: nil, feature_flag: nil|
 
       allow(scope).to receive(:minimum_schema_version).and_return(returned_min_version)
 
-      stub_feature_flags(feature_flag => feature_enabled) if feature_flag.present?
+      if feature_flag.present?
+        feature_class = "Search::Zoekt::Features::#{feature.to_s.camelize}".safe_constantize
+        allow_next_instance_of(feature_class) do |instance|
+          allow(instance).to receive(:preflight_checks_passed?).and_return(feature_enabled)
+        end
+      end
     end
 
     subject(:availability) do
