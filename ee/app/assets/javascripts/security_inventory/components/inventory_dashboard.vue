@@ -11,6 +11,8 @@ import {
   updateHistory,
 } from '~/lib/utils/url_utility';
 import LocalStorageSync from '~/vue_shared/components/local_storage_sync.vue';
+import { convertToGraphQLId } from '~/graphql_shared/utils';
+import { TYPENAME_GROUP } from '~/graphql_shared/constants';
 import { SIDEBAR_VISIBLE_STORAGE_KEY } from '../constants';
 import SubgroupsAndProjectsQuery from '../graphql/subgroups_and_projects.query.graphql';
 import { getData, getPageInfo } from '../graphql/helper';
@@ -31,7 +33,7 @@ export default {
     SecurityInventoryTable,
     InventoryDashboardFilteredSearchBar,
   },
-  inject: ['groupFullPath', 'newProjectPath'],
+  inject: ['groupFullPath', 'groupId', 'newProjectPath'],
   i18n: {
     errorFetchingChildren: s__(
       'SecurityInventory|An error occurred while fetching subgroups and projects. Please try again.',
@@ -41,6 +43,7 @@ export default {
   data() {
     return {
       activeFullPath: this.groupFullPath,
+      activeGroupId: this.groupId,
       sidebarVisible: true,
       filters: {
         search: this.getSearchParams(),
@@ -65,14 +68,23 @@ export default {
     subgroupItems: {
       query: SubgroupsAndProjectsQuery,
       variables() {
+        const {
+          search = '',
+          securityAnalyzerFilters = [],
+          vulnerabilityCountFilters = [],
+        } = this.filters;
+
         return {
           fullPath: this.activeFullPath,
-          search: this.filters.search || '',
+          namespaceId: convertToGraphQLId(TYPENAME_GROUP, this.activeGroupId),
+          search,
           hasSearch: this.hasSearch,
           subgroupsFirst: PAGE_SIZE,
           subgroupsAfter: null,
           projectsFirst: PAGE_SIZE,
           projectsAfter: null,
+          securityAnalyzerFilters,
+          vulnerabilityCountFilters,
         };
       },
       update(data) {
@@ -84,17 +96,21 @@ export default {
       result({ data }) {
         const groupData = getData(data, 'group');
         if (!groupData) return;
+        this.activeGroupId = groupData.id;
 
         this.subgroupsPageInfo = getPageInfo(groupData, 'descendantGroups.pageInfo');
-        this.projectsPageInfo = getPageInfo(groupData, 'projects.pageInfo');
+        this.projectsPageInfo = this.hasSearch
+          ? getPageInfo(data, 'namespaceSecurityProjects.pageInfo')
+          : getPageInfo(groupData, 'projects.pageInfo');
 
         const subgroups = getData(groupData, 'descendantGroups.nodes', []);
-        this.projectItems = getData(groupData, 'projects.nodes', []);
+        this.projectItems = this.hasSearch
+          ? getData(data, 'namespaceSecurityProjects.edges', []).map((edge) => edge.node)
+          : getData(groupData, 'projects.nodes', []);
         this.projectsInitialized = true;
 
         // Initially, populate items with only subgroups
         this.displayItems = [...subgroups];
-
         // Once all subgroups are loaded, display both subgroups and projects
         if (!this.hasMoreSubgroups) {
           this.displayItems = [...subgroups, ...this.projectItems];
@@ -116,7 +132,11 @@ export default {
       return this.$apollo.queries.subgroupItems.loading && !this.isLoadingMore;
     },
     hasSearch() {
-      return Boolean(this.filters.search);
+      return Boolean(
+        this.filters.search?.length ||
+          this.filters.securityAnalyzerFilters?.length ||
+          this.filters.vulnerabilityCountFilters?.length,
+      );
     },
     hasChildren() {
       return this.displayItems.length > 0;
@@ -209,17 +229,25 @@ export default {
         projectsFirst = 0,
         projectsAfter = null,
       } = options;
+      const {
+        search = '',
+        securityAnalyzerFilters = [],
+        vulnerabilityCountFilters = [],
+      } = this.filters;
 
       return this.$apollo.query({
         query: SubgroupsAndProjectsQuery,
         variables: {
           fullPath: this.activeFullPath,
-          search: this.filters.search || '',
+          namespaceId: convertToGraphQLId(TYPENAME_GROUP, this.activeGroupId),
+          search,
           hasSearch: this.hasSearch,
           subgroupsFirst,
           subgroupsAfter,
           projectsFirst,
           projectsAfter,
+          securityAnalyzerFilters,
+          vulnerabilityCountFilters,
         },
       });
     },
@@ -233,7 +261,7 @@ export default {
       if (!groupData) return;
 
       const newSubgroups = getData(groupData, 'descendantGroups.nodes', []);
-      this.subgroupsPageInfo = getPageInfo(groupData, 'descendantGroups.pageInfo');
+      this.subgroupsPageInfo = getPageInfo(data, 'descendantGroups.pageInfo');
       this.subgroupItems = [...this.subgroupItems, ...newSubgroups];
 
       if (!this.hasMoreSubgroups) {
@@ -251,8 +279,12 @@ export default {
       const groupData = getData(data, 'group');
       if (!groupData) return;
 
-      const newProjects = getData(groupData, 'projects.nodes', []);
-      this.projectsPageInfo = getPageInfo(groupData, 'projects.pageInfo');
+      const newProjects = this.hasSearch
+        ? getData(groupData, 'namespaceSecurityProjects.edges', [])
+        : getData(groupData, 'projects.nodes', []);
+      this.projectsPageInfo = this.hasSearch
+        ? getPageInfo(data, 'namespaceSecurityProjects.pageInfo')
+        : getPageInfo(groupData, 'projects.pageInfo');
       this.projectItems = [...this.projectItems, ...newProjects];
 
       this.displayItems = [...this.subgroupItems, ...this.projectItems];
@@ -266,7 +298,7 @@ export default {
     },
     performFilter(filters) {
       const currentHash = getLocationHash();
-      const newUrl = setUrlParams(filters, window.location.href, true);
+      const newUrl = setUrlParams({ search: filters.search }, window.location.href, true);
       const urlWithHashPreserved = newUrl.split('#')[0] + (currentHash ? `#${currentHash}` : '');
       updateHistory({
         url: urlWithHashPreserved,

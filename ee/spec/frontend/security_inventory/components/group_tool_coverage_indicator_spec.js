@@ -111,13 +111,13 @@ describe('GroupToolCoverageIndicator', () => {
     });
 
     it.each`
-      index | analyzerType             | expectedCounts
-      ${0}  | ${'DEPENDENCY_SCANNING'} | ${{ failure: 0, notConfigured: 0, success: 0 }}
-      ${1}  | ${'SAST'}                | ${{ failure: 1, notConfigured: 3, success: 0 }}
-      ${2}  | ${'SECRET_DETECTION'}    | ${{ failure: 0, notConfigured: 3, success: 4 }}
-      ${3}  | ${'CONTAINER_SCANNING'}  | ${{ failure: 0, notConfigured: 6, success: 1 }}
-      ${4}  | ${'DAST'}                | ${{ failure: 0, notConfigured: 0, success: 0 }}
-      ${5}  | ${'SAST_IAC'}            | ${{ failure: 0, notConfigured: 3, success: 1 }}
+      index | analyzerType                         | expectedCounts
+      ${0}  | ${'DEPENDENCY_SCANNING'}             | ${{ failure: 0, notConfigured: 0, success: 0 }}
+      ${1}  | ${'SAST'}                            | ${{ failure: 1, notConfigured: 3, success: 0 }}
+      ${2}  | ${'SECRET_DETECTION_PIPELINE_BASED'} | ${{ failure: 0, notConfigured: 3, success: 4 }}
+      ${3}  | ${'CONTAINER_SCANNING'}              | ${{ failure: 0, notConfigured: 6, success: 1 }}
+      ${4}  | ${'DAST'}                            | ${{ failure: 0, notConfigured: 0, success: 0 }}
+      ${5}  | ${'SAST_IAC'}                        | ${{ failure: 0, notConfigured: 3, success: 1 }}
     `(
       'passes correct data to tool coverage details component for $analyzerType',
       ({ index, analyzerType, expectedCounts }) => {

@@ -1,0 +1,104 @@
+import { OPERATORS_IS } from '~/vue_shared/components/filtered_search_bar/constants';
+import BaseToken from '~/vue_shared/components/filtered_search_bar/tokens/base_token.vue';
+import {
+  SCANNER_FILTER_LABELS,
+  DEPENDENCY_SCANNING_KEY,
+  SAST_KEY,
+  SAST_ADVANCED_KEY,
+  SECRET_DETECTION_KEY,
+  SECRET_PUSH_PROTECTION_KEY,
+  CONTAINER_SCANNING_KEY,
+  CONTAINER_SCANNING_FOR_REGISTRY_KEY,
+  DAST_KEY,
+  SAST_IAC_KEY,
+  TOOL_FILTER_LABELS,
+  TOOL_ENABLED,
+  TOOL_NOT_ENABLED,
+  TOOL_FAILED,
+} from '../constants';
+
+const options = [
+  { value: TOOL_ENABLED, title: TOOL_FILTER_LABELS[TOOL_ENABLED] },
+  { value: TOOL_NOT_ENABLED, title: TOOL_FILTER_LABELS[TOOL_NOT_ENABLED] },
+  { value: TOOL_FAILED, title: TOOL_FILTER_LABELS[TOOL_FAILED] },
+];
+
+export const toolCoverageTokens = [
+  // uncomment to add section header once supported
+  // {
+  //   type: 'gl-filtered-search-suggestion-group-tool-coverage',
+  //   title: 'Tool coverage',
+  // },
+  {
+    type: DEPENDENCY_SCANNING_KEY,
+    title: SCANNER_FILTER_LABELS[DEPENDENCY_SCANNING_KEY],
+    token: BaseToken,
+    unique: true,
+    operators: OPERATORS_IS,
+    options,
+  },
+  {
+    type: SAST_KEY,
+    title: SCANNER_FILTER_LABELS[SAST_KEY],
+    token: BaseToken,
+    unique: true,
+    operators: OPERATORS_IS,
+    options,
+  },
+  {
+    type: SAST_ADVANCED_KEY,
+    title: SCANNER_FILTER_LABELS[SAST_ADVANCED_KEY],
+    token: BaseToken,
+    unique: true,
+    operators: OPERATORS_IS,
+    options,
+  },
+  {
+    type: SECRET_DETECTION_KEY,
+    title: SCANNER_FILTER_LABELS[SECRET_DETECTION_KEY],
+    token: BaseToken,
+    unique: true,
+    operators: OPERATORS_IS,
+    options,
+  },
+  {
+    type: SECRET_PUSH_PROTECTION_KEY,
+    title: SCANNER_FILTER_LABELS[SECRET_PUSH_PROTECTION_KEY],
+    token: BaseToken,
+    unique: true,
+    operators: OPERATORS_IS,
+    options,
+  },
+  {
+    type: CONTAINER_SCANNING_KEY,
+    title: SCANNER_FILTER_LABELS[CONTAINER_SCANNING_KEY],
+    token: BaseToken,
+    unique: true,
+    operators: OPERATORS_IS,
+    options,
+  },
+  {
+    type: CONTAINER_SCANNING_FOR_REGISTRY_KEY,
+    title: SCANNER_FILTER_LABELS[CONTAINER_SCANNING_FOR_REGISTRY_KEY],
+    token: BaseToken,
+    unique: true,
+    operators: OPERATORS_IS,
+    options,
+  },
+  {
+    type: DAST_KEY,
+    title: SCANNER_FILTER_LABELS[DAST_KEY],
+    token: BaseToken,
+    unique: true,
+    operators: OPERATORS_IS,
+    options,
+  },
+  {
+    type: SAST_IAC_KEY,
+    title: SCANNER_FILTER_LABELS[SAST_IAC_KEY],
+    token: BaseToken,
+    unique: true,
+    operators: OPERATORS_IS,
+    options,
+  },
+];

@@ -1,27 +1,35 @@
 import { subgroupsAndProjects } from './mock_data';
 
-export const mockGroup = subgroupsAndProjects.data.group;
+export const mockData = subgroupsAndProjects.data;
 
 export const createGroupResponse = ({
-  subgroups = mockGroup.descendantGroups.nodes || [],
-  projects = mockGroup.projects.nodes || [],
+  subgroups = mockData.group.descendantGroups.nodes || [],
+  projects = mockData.group.projects.nodes || [],
+  namespaceSecurityProjects = mockData.namespaceSecurityProjects.edges || [],
   subgroupsPageInfo = { hasNextPage: false, endCursor: null },
   projectsPageInfo = { hasNextPage: false, endCursor: null },
-} = {}) => ({
-  data: {
-    group: {
-      ...mockGroup,
-      descendantGroups: {
-        nodes: subgroups,
-        pageInfo: subgroupsPageInfo,
+} = {}) => {
+  const result = {
+    data: {
+      group: {
+        ...mockData.group,
+        descendantGroups: {
+          nodes: subgroups,
+          pageInfo: subgroupsPageInfo,
+        },
+        projects: {
+          nodes: projects,
+          pageInfo: projectsPageInfo,
+        },
       },
-      projects: {
-        nodes: projects,
+      namespaceSecurityProjects: {
+        edges: namespaceSecurityProjects,
         pageInfo: projectsPageInfo,
       },
     },
-  },
-});
+  };
+  return result;
+};
 
 export const createPaginatedHandler = ({ first, second }) => {
   const handler = jest.fn();

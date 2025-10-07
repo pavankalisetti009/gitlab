@@ -27,7 +27,7 @@ import ToolCoverageCell from 'ee/security_inventory/components/tool_coverage_cel
 import ActionCell from 'ee/security_inventory/components/action_cell.vue';
 import SecurityInventoryTable from 'ee/security_inventory/components/security_inventory_table.vue';
 import InventoryDashboardFilteredSearchBar from 'ee/security_inventory/components/inventory_dashboard_filtered_search_bar.vue';
-import { subgroupsAndProjects } from '../mock_data';
+import { subgroupsAndProjects, mockAnalyzerFilter, mockVulnerabilityFilter } from '../mock_data';
 import { createGroupResponse, createPaginatedHandler } from '../mock_pagination_helpers';
 
 Vue.use(VueApollo);
@@ -60,11 +60,12 @@ describe('InventoryDashboard', () => {
   const childrenResolver = jest.fn().mockResolvedValue(subgroupsAndProjects);
   const mockChildren = [
     ...subgroupsAndProjects.data.group.descendantGroups.nodes,
-    ...subgroupsAndProjects.data.group.projects.nodes,
+    ...subgroupsAndProjects.data.namespaceSecurityProjects.edges.map((edge) => edge.node),
   ];
 
   const defaultProvide = {
     groupFullPath: 'group/project',
+    groupId: '33',
     newProjectPath: '/new',
   };
 
@@ -135,7 +136,13 @@ describe('InventoryDashboard', () => {
   describe('Empty state', () => {
     it('displays empty state when there are no children', async () => {
       const emptyResolver = jest.fn().mockResolvedValue({
-        data: { group: { descendantGroups: { nodes: [] }, projects: { nodes: [] } } },
+        data: {
+          group: {
+            id: 'gid://Gitlab/Group/17',
+            descendantGroups: { nodes: [] },
+          },
+          namespaceSecurityProjects: { edges: [] },
+        },
       });
       await createComponent({ resolver: emptyResolver });
       await waitForPromises();
@@ -383,8 +390,11 @@ describe('InventoryDashboard', () => {
         subgroupsAfter: null,
         projectsFirst: 20,
         projectsAfter: 'project-cursor-123',
-        hasSearch: false,
         search: '',
+        namespaceId: 'gid://gitlab/Group/33',
+        hasSearch: false,
+        securityAnalyzerFilters: [],
+        vulnerabilityCountFilters: [],
       });
     });
 
@@ -413,18 +423,25 @@ describe('InventoryDashboard', () => {
         subgroupsAfter: 'subgroup-cursor-999',
         projectsFirst: 0,
         projectsAfter: null,
-        hasSearch: false,
         search: '',
+        namespaceId: 'gid://gitlab/Group/33',
+        hasSearch: false,
+        securityAnalyzerFilters: [],
+        vulnerabilityCountFilters: [],
       });
     });
   });
 
   describe('filtered search', () => {
     it('passes the filters to the filtered search bar', async () => {
-      queryToObject.mockReturnValue({ search: 'test-search' });
+      queryToObject.mockReturnValue({
+        search: 'test-search',
+      });
       await createComponent();
 
-      expect(findFilteredSearchBar().props('initialFilters')).toEqual({ search: 'test-search' });
+      expect(findFilteredSearchBar().props('initialFilters')).toEqual({
+        search: 'test-search',
+      });
     });
 
     it('passes the namespace to the filtered search bar', async () => {
@@ -435,15 +452,21 @@ describe('InventoryDashboard', () => {
     });
 
     it('updates query variables when filter changes', async () => {
-      const searchParams = { search: 'test query' };
+      const filters = {
+        search: 'test query',
+        securityAnalyzerFilters: [mockAnalyzerFilter],
+        vulnerabilityCountFilters: [mockVulnerabilityFilter],
+      };
       await createFullComponent();
 
-      findFilteredSearchBar().vm.$emit('filterSubgroupsAndProjects', searchParams);
+      findFilteredSearchBar().vm.$emit('filterSubgroupsAndProjects', filters);
       await nextTick();
       expect(requestHandler).toHaveBeenCalledWith(
         expect.objectContaining({
           hasSearch: true,
           search: 'test query',
+          securityAnalyzerFilters: [mockAnalyzerFilter],
+          vulnerabilityCountFilters: [mockVulnerabilityFilter],
         }),
       );
     });

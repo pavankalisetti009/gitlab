@@ -3,6 +3,9 @@ import { nextTick } from 'vue';
 import InventoryDashboardFilteredSearchBar from 'ee/security_inventory/components/inventory_dashboard_filtered_search_bar.vue';
 import FilteredSearch from '~/vue_shared/components/filtered_search_bar/filtered_search_bar_root.vue';
 import { queryToObject } from '~/lib/utils/url_utility';
+import { toolCoverageTokens } from 'ee/security_inventory/components/tool_coverage_tokens';
+import { vulnerabilityCountTokens } from 'ee/security_inventory/components/vulnerability_count_tokens';
+import { mockAnalyzerFilter, mockVulnerabilityFilter } from '../mock_data';
 
 jest.mock('~/lib/utils/url_utility', () => ({
   queryToObject: jest.fn().mockReturnValue({}),
@@ -12,8 +15,13 @@ jest.mock('~/lib/utils/url_utility', () => ({
 describe('InventoryDashboardFilteredSearchBar', () => {
   let wrapper;
 
-  const createComponent = ({ props = {} } = {}) => {
+  const createComponent = ({ props = {}, securityInventoryFiltering = true } = {}) => {
     wrapper = shallowMount(InventoryDashboardFilteredSearchBar, {
+      provide: {
+        glFeatures: {
+          securityInventoryFiltering,
+        },
+      },
       propsData: {
         namespace: 'group1',
         ...props,
@@ -35,9 +43,15 @@ describe('InventoryDashboardFilteredSearchBar', () => {
     it('passes the correct props to filtered search', () => {
       expect(findFilteredSearch().props()).toMatchObject({
         initialFilterValue: [],
-        tokens: [],
+        tokens: [...vulnerabilityCountTokens, ...toolCoverageTokens],
         termsAsTokens: true,
       });
+    });
+
+    it('has no tokens when filtering feature flag is disabled', () => {
+      createComponent({ securityInventoryFiltering: false });
+
+      expect(findFilteredSearch().props('tokens')).toStrictEqual([]);
     });
   });
 
@@ -79,6 +93,8 @@ describe('InventoryDashboardFilteredSearchBar', () => {
       filters[0].search = searchTerm;
       expect(wrapper.emitted('filterSubgroupsAndProjects')[0][0]).toEqual({
         search: searchTerm,
+        securityAnalyzerFilters: [],
+        vulnerabilityCountFilters: [],
       });
     });
 
@@ -93,13 +109,50 @@ describe('InventoryDashboardFilteredSearchBar', () => {
 
       expect(wrapper.emitted('filterSubgroupsAndProjects')[0][0]).toEqual({
         search: 'test project',
+        securityAnalyzerFilters: [],
+        vulnerabilityCountFilters: [],
       });
     });
 
-    it('emits filterSubgroupsAndProjects event with empty object when no search terms are provided', async () => {
+    it('emits filterSubgroupsAndProjects event without search when no search terms are provided', async () => {
       findFilteredSearch().vm.$emit('onFilter', []);
       await nextTick();
-      expect(wrapper.emitted('filterSubgroupsAndProjects')[0][0]).toEqual({});
+      expect(wrapper.emitted('filterSubgroupsAndProjects')[0][0]).toEqual({
+        securityAnalyzerFilters: [],
+        vulnerabilityCountFilters: [],
+      });
+    });
+
+    it('emits filterSubgroupsAndProjects with vulnerability count filter', async () => {
+      const filters = [
+        {
+          id: 'token-1',
+          type: 'critical',
+          value: { operator: '=', data: '0' },
+        },
+      ];
+      findFilteredSearch().vm.$emit('onFilter', filters);
+      await nextTick();
+      expect(wrapper.emitted('filterSubgroupsAndProjects')[0][0]).toEqual({
+        securityAnalyzerFilters: [],
+        vulnerabilityCountFilters: [mockVulnerabilityFilter],
+      });
+    });
+
+    it('emits filterSubgroupsAndProjects with tool coverage filter', async () => {
+      const filters = [
+        {
+          id: 'token-2',
+          type: 'SAST_ADVANCED',
+          value: { operator: '=', data: 'NOT_CONFIGURED' },
+        },
+      ];
+      findFilteredSearch().vm.$emit('onFilter', filters);
+      await nextTick();
+      expect(wrapper.emitted('filterSubgroupsAndProjects')[0][0]).toEqual({
+        securityAnalyzerFilters: [mockAnalyzerFilter],
+        vulnerabilityCountFilters: [],
+      });
     });
 
     it('skips filters without value data', async () => {
@@ -118,6 +171,8 @@ describe('InventoryDashboardFilteredSearchBar', () => {
 
       expect(wrapper.emitted('filterSubgroupsAndProjects')[0][0]).toEqual({
         search: 'test search',
+        securityAnalyzerFilters: [],
+        vulnerabilityCountFilters: [],
       });
     });
 
@@ -137,6 +192,8 @@ describe('InventoryDashboardFilteredSearchBar', () => {
 
       expect(wrapper.emitted('filterSubgroupsAndProjects')[0][0]).toEqual({
         search: 'test search',
+        securityAnalyzerFilters: [],
+        vulnerabilityCountFilters: [],
       });
     });
   });
