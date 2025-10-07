@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe 'User with read_admin_monitoring', :enable_admin_mode, feature_category: :audit_events do
+RSpec.describe 'User with read_admin_monitoring', :enable_admin_mode, feature_category: :permissions do
   let!(:current_user) { create(:user) }
   let!(:permission) { :read_admin_monitoring }
   let!(:role) { create(:admin_member_role, permission, user: current_user) }
