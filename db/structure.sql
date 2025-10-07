@@ -9795,6 +9795,7 @@ CREATE TABLE admin_roles (
     created_at timestamp with time zone NOT NULL,
     updated_at timestamp with time zone NOT NULL,
     organization_id bigint,
+    CONSTRAINT check_1c6a3bcca1 CHECK ((organization_id IS NOT NULL)),
     CONSTRAINT check_89a2f4f799 CHECK ((char_length(name) <= 255)),
     CONSTRAINT check_a8c6d1de58 CHECK ((char_length(description) <= 255))
 );
