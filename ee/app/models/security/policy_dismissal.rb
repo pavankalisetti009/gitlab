@@ -19,6 +19,11 @@ module Security
     validates :comment, length: { maximum: 255 }, allow_nil: true
     validate  :dismissal_types_are_valid
 
+    scope :for_projects, ->(project_ids) { where(project_id: project_ids) }
+    scope :for_security_findings_uuids, ->(security_findings_uuids) do
+      where("security_findings_uuids && ARRAY[?]::text[]", security_findings_uuids)
+    end
+
     private
 
     def dismissal_types_are_valid
