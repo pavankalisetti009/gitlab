@@ -30708,6 +30708,18 @@ Describes the usage of consumables under the subscription.
 | <a id="gitlabsubscriptionusagepoolusage"></a>`poolUsage` | [`GitlabSubscriptionPoolUsage`](#gitlabsubscriptionpoolusage) | Consumption usage for the subscription shared pool. |
 | <a id="gitlabsubscriptionusageusersusage"></a>`usersUsage` | [`GitlabSubscriptionUsageUsersUsage`](#gitlabsubscriptionusageusersusage) | Consumption usage for users under the subscription. |
 
+### `GitlabSubscriptionUsageUserUsage`
+
+Describes the usage of consumables for a user under the subscription.
+
+#### Fields
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="gitlabsubscriptionusageuserusagecreditsused"></a>`creditsUsed` | [`Float`](#float) | GitLab Credits used by the user. |
+| <a id="gitlabsubscriptionusageuserusagepoolcreditsused"></a>`poolCreditsUsed` | [`Float`](#float) | GitLab Credits from the subscription pool used by the user. |
+| <a id="gitlabsubscriptionusageuserusagetotalcredits"></a>`totalCredits` | [`Float`](#float) | Total GitLab Credits available for the user. |
+
 ### `GitlabSubscriptionUsageUsers`
 
 Describes the user with their usage data.
@@ -30719,6 +30731,7 @@ Describes the user with their usage data.
 | <a id="gitlabsubscriptionusageusersavatarurl"></a>`avatarUrl` | [`String`](#string) | URL of the user's avatar. |
 | <a id="gitlabsubscriptionusageusersid"></a>`id` | [`UserID!`](#userid) | Global ID of the user. |
 | <a id="gitlabsubscriptionusageusersname"></a>`name` | [`String!`](#string) | Human-readable name of the user. |
+| <a id="gitlabsubscriptionusageusersusage"></a>`usage` | [`GitlabSubscriptionUsageUserUsage`](#gitlabsubscriptionusageuserusage) | Usage of consumables for a user under the subscription. |
 
 ### `GitlabSubscriptionUsageUsersUsage`
 
