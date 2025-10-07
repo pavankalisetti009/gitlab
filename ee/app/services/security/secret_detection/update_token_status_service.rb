@@ -120,7 +120,7 @@ module Security
           model_class.upsert_all(
             attributes_to_upsert,
             unique_by: unique_by,
-            update_only: [:status, :updated_at],
+            update_only: [:status, :updated_at, :last_verified_at],
             record_timestamps: false
           )
 
@@ -139,9 +139,11 @@ module Security
 
       def merge_token_status_into_attributes(tokens_by_raw, attrs_by_raw)
         tokens_by_raw.each do |raw_token, token|
+          now = Time.current
           attrs_by_raw[raw_token]&.each do |finding_token_status_attr|
             finding_token_status_attr[:status] = token_status(token)
-            finding_token_status_attr[:updated_at] = Time.current
+            finding_token_status_attr[:updated_at] = now
+            finding_token_status_attr[:last_verified_at] = now
           end
         end
       end
@@ -237,7 +239,8 @@ module Security
             project_id: finding.project_id,
             status: 'unknown',
             created_at: now,
-            updated_at: now
+            updated_at: now,
+            last_verified_at: now
           }
           attributes[id_key] = finding.id
           attr_by_raw_token[token_value] << attributes
