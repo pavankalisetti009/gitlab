@@ -1113,6 +1113,33 @@ RETURN NEW;
 END
 $$;
 
+CREATE FUNCTION sync_sharding_key_with_notes_table() RETURNS trigger
+    LANGUAGE plpgsql
+    AS $$
+DECLARE
+  note_project_id BIGINT;
+  note_namespace_id BIGINT;
+BEGIN
+  IF NEW."note_id" IS NULL OR NEW."namespace_id" IS NOT NULL THEN
+    RETURN NEW;
+  END IF;
+
+  SELECT "project_id", "namespace_id"
+  INTO note_project_id, note_namespace_id
+  FROM "notes"
+  WHERE "id" = NEW."note_id";
+
+  IF note_project_id IS NOT NULL THEN
+    SELECT "project_namespace_id" FROM "projects"
+    INTO NEW."namespace_id" WHERE "projects"."id" = note_project_id;
+  ELSE
+    NEW."namespace_id" := note_namespace_id;
+  END IF;
+
+  RETURN NEW;
+END
+$$;
+
 CREATE FUNCTION sync_to_p_sent_notifications_table() RETURNS trigger
     LANGUAGE plpgsql
     AS $$
@@ -26564,7 +26591,8 @@ CREATE TABLE suggestions (
     lines_above integer DEFAULT 0 NOT NULL,
     lines_below integer DEFAULT 0 NOT NULL,
     outdated boolean DEFAULT false NOT NULL,
-    note_id bigint NOT NULL
+    note_id bigint NOT NULL,
+    namespace_id bigint
 );
 
 CREATE SEQUENCE suggestions_id_seq
@@ -33204,6 +33232,9 @@ ALTER TABLE packages_packages
 
 ALTER TABLE sprints
     ADD CONSTRAINT check_df3816aed7 CHECK ((due_date IS NOT NULL)) NOT VALID;
+
+ALTER TABLE suggestions
+    ADD CONSTRAINT check_e69372e45f CHECK ((namespace_id IS NOT NULL)) NOT VALID;
 
 ALTER TABLE redirect_routes
     ADD CONSTRAINT check_e82ff70482 CHECK ((namespace_id IS NOT NULL)) NOT VALID;
@@ -42463,6 +42494,8 @@ CREATE INDEX index_subscriptions_on_user ON subscriptions USING btree (user_id);
 
 CREATE INDEX index_successful_authentication_events_for_metrics ON authentication_events USING btree (user_id, provider, created_at) WHERE (result = 1);
 
+CREATE INDEX index_suggestions_on_namespace_id ON suggestions USING btree (namespace_id);
+
 CREATE UNIQUE INDEX index_suggestions_on_note_id_and_relative_order ON suggestions USING btree (note_id, relative_order);
 
 CREATE UNIQUE INDEX index_system_access_group_microsoft_applications_on_group_id ON system_access_group_microsoft_applications USING btree (group_id);
@@ -46851,6 +46884,8 @@ CREATE TRIGGER projects_loose_fk_trigger AFTER DELETE ON projects REFERENCING OL
 
 CREATE TRIGGER push_rules_loose_fk_trigger AFTER DELETE ON push_rules REFERENCING OLD TABLE AS old_table FOR EACH STATEMENT EXECUTE FUNCTION insert_into_loose_foreign_keys_deleted_records();
 
+CREATE TRIGGER set_sharding_key_for_suggestions_on_insert_and_update BEFORE INSERT OR UPDATE ON suggestions FOR EACH ROW EXECUTE FUNCTION sync_sharding_key_with_notes_table();
+
 CREATE TRIGGER set_sharding_key_for_system_note_metadata_on_insert BEFORE INSERT ON system_note_metadata FOR EACH ROW EXECUTE FUNCTION get_sharding_key_from_notes_table();
 
 CREATE TRIGGER sync_project_authorizations_to_migration AFTER INSERT OR DELETE OR UPDATE ON project_authorizations FOR EACH ROW EXECUTE FUNCTION sync_project_authorizations_to_migration_table();
@@ -47959,6 +47994,9 @@ ALTER TABLE ONLY namespaces
 
 ALTER TABLE ONLY saml_providers
     ADD CONSTRAINT fk_351dde3a84 FOREIGN KEY (member_role_id) REFERENCES member_roles(id) ON DELETE SET NULL;
+
+ALTER TABLE ONLY suggestions
+    ADD CONSTRAINT fk_35c950f0d6 FOREIGN KEY (namespace_id) REFERENCES namespaces(id) ON DELETE CASCADE NOT VALID;
 
 ALTER TABLE ONLY approval_merge_request_rules_users
     ADD CONSTRAINT fk_35e88790f5 FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE CASCADE;
