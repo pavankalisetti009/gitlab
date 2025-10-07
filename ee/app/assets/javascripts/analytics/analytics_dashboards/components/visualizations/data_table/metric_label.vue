@@ -94,7 +94,7 @@ export default {
     },
   },
   i18n: {
-    docsLabel: s__('DORA4Metrics|Go to docs'),
+    docsLabel: s__('DORA4Metrics|Learn more'),
   },
 };
 </script>

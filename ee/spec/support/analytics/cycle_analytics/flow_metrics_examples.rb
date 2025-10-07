@@ -88,7 +88,7 @@ RSpec.shared_examples 'value stream analytics flow metrics leadTime examples' do
       'title' => _('Lead time'),
       'links' => [
         { 'label' => s_('ValueStreamAnalytics|Dashboard'), 'url' => match(/issues_analytics/) },
-        { 'label' => s_('ValueStreamAnalytics|Go to docs'), 'url' => match(/definitions/) }
+        { 'label' => s_('ValueStreamAnalytics|Learn more'), 'url' => match(/definitions/) }
       ]
     }))
   end
@@ -357,7 +357,7 @@ RSpec.shared_examples 'value stream analytics flow metrics issuesCompleted examp
       'title' => _('Issues Completed'),
       'links' => [
         { 'label' => s_('ValueStreamAnalytics|Dashboard'), 'url' => match(/issues_analytics/) },
-        { 'label' => s_('ValueStreamAnalytics|Go to docs'), 'url' => match(/definitions/) }
+        { 'label' => s_('ValueStreamAnalytics|Learn more'), 'url' => match(/definitions/) }
       ]
     }))
   end

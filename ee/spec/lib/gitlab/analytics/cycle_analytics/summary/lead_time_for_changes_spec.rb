@@ -79,7 +79,7 @@ data: [{ 'lead_time_for_changes' => 5.days.to_i }] })
           { "name" => _('Lead time for changes'),
             "url" => helpers.help_page_path('user/analytics/_index.md', anchor: 'definitions'),
             "docs_link" => true,
-            "label" => s_('ValueStreamAnalytics|Go to docs') }
+            "label" => s_('ValueStreamAnalytics|Learn more') }
         ]
       )
     end
@@ -102,7 +102,7 @@ data: [{ 'lead_time_for_changes' => 5.days.to_i }] })
             { "name" => _('Lead time for changes'),
               "url" => helpers.help_page_path('user/analytics/_index.md', anchor: 'definitions'),
               "docs_link" => true,
-              "label" => s_('ValueStreamAnalytics|Go to docs') }
+              "label" => s_('ValueStreamAnalytics|Learn more') }
           ]
         )
       end

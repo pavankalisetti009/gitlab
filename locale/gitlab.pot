@@ -20927,9 +20927,6 @@ msgstr ""
 msgid "DORA4Metrics|Filtered by"
 msgstr ""
 
-msgid "DORA4Metrics|Go to docs"
-msgstr ""
-
 msgid "DORA4Metrics|Has no calculated data."
 msgid_plural "DORA4Metrics|Have no calculated data."
 msgstr[0] ""
@@ -20966,6 +20963,9 @@ msgid "DORA4Metrics|Lead time for changes (Velocity)"
 msgstr ""
 
 msgid "DORA4Metrics|Lead time for changes (median days)"
+msgstr ""
+
+msgid "DORA4Metrics|Learn more"
 msgstr ""
 
 msgid "DORA4Metrics|Looking for DORA metrics?"
@@ -31343,9 +31343,6 @@ msgid "Go to commits"
 msgstr ""
 
 msgid "Go to definition"
-msgstr ""
-
-msgid "Go to docs"
 msgstr ""
 
 msgid "Go to environments"
@@ -71557,10 +71554,10 @@ msgstr ""
 msgid "ValueStreamAnalytics|Failed to load usage overview data"
 msgstr ""
 
-msgid "ValueStreamAnalytics|Go to docs"
+msgid "ValueStreamAnalytics|High vulnerabilities over time."
 msgstr ""
 
-msgid "ValueStreamAnalytics|High vulnerabilities over time."
+msgid "ValueStreamAnalytics|Learn more"
 msgstr ""
 
 msgid "ValueStreamAnalytics|Lifecycle metrics"
