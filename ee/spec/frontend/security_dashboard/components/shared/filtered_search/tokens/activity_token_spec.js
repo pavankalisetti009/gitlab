@@ -4,6 +4,11 @@ import VueRouter from 'vue-router';
 import ActivityToken, {
   GROUPS,
 } from 'ee/security_dashboard/components/shared/filtered_search/tokens/activity_token.vue';
+import {
+  DASHBOARD_TYPE_PROJECT,
+  DASHBOARD_TYPE_GROUP,
+  DASHBOARD_TYPE_INSTANCE,
+} from 'ee/security_dashboard/constants';
 import SearchSuggestion from 'ee/security_dashboard/components/shared/filtered_search/components/search_suggestion.vue';
 import { OPERATORS_OR } from '~/vue_shared/components/filtered_search_bar/constants';
 import { mountExtended, shallowMountExtended } from 'helpers/vue_test_utils_helper';
@@ -40,6 +45,7 @@ describe('ActivityToken', () => {
         portalName: 'fake target',
         alignSuggestions: jest.fn(),
         termsAsTokens: () => false,
+        dashboardType: DASHBOARD_TYPE_PROJECT,
         ...provide,
       },
       stubs: {
@@ -74,12 +80,20 @@ describe('ActivityToken', () => {
 
   describe('default view', () => {
     const findAllBadges = () => wrapper.findAllComponents(GlBadge);
-    const createWrapperWithAbility = ({ resolveVulnerabilityWithAi } = {}) => {
+    const createWrapperWithAbility = ({
+      resolveVulnerabilityWithAi,
+      securityPolicyApprovalWarnMode,
+      provide = {},
+    } = {}) => {
       createWrapper({
         provide: {
           glAbilities: {
             resolveVulnerabilityWithAi,
           },
+          glFeatures: {
+            securityPolicyApprovalWarnMode,
+          },
+          ...provide,
         },
       });
     };
@@ -110,18 +124,35 @@ describe('ActivityToken', () => {
       'Vulnerability Resolution unavailable',
     ];
 
+    const policyViolationOptions = ['Dismissed in MR'];
+
     const baseGroupHeaders = ['Detection', 'Issue', 'Merge Request', 'Solution available'];
 
     const aiGroupHeaders = ['GitLab Duo (AI)'];
 
+    const policyViolationsGroupHeaders = ['Policy violations'];
+
     it.each`
-      resolveVulnerabilityWithAi | expectedOptions
-      ${true}                    | ${[...baseOptions, ...aiOptions]}
-      ${false}                   | ${baseOptions}
+      dashboardType              | resolveVulnerabilityWithAi | securityPolicyApprovalWarnMode | expectedOptions
+      ${DASHBOARD_TYPE_PROJECT}  | ${true}                    | ${true}                        | ${[...baseOptions, ...aiOptions, ...policyViolationOptions]}
+      ${DASHBOARD_TYPE_PROJECT}  | ${true}                    | ${false}                       | ${[...baseOptions, ...aiOptions]}
+      ${DASHBOARD_TYPE_PROJECT}  | ${false}                   | ${true}                        | ${[...baseOptions, ...policyViolationOptions]}
+      ${DASHBOARD_TYPE_GROUP}    | ${false}                   | ${true}                        | ${[...baseOptions, ...policyViolationOptions]}
+      ${DASHBOARD_TYPE_INSTANCE} | ${false}                   | ${true}                        | ${baseOptions}
+      ${DASHBOARD_TYPE_PROJECT}  | ${false}                   | ${false}                       | ${baseOptions}
     `(
-      'shows the dropdown with correct options when resolveVulnerabilityWithAi=$resolveVulnerabilityWithAi',
-      ({ resolveVulnerabilityWithAi, expectedOptions }) => {
-        createWrapperWithAbility({ resolveVulnerabilityWithAi });
+      'shows the dropdown with correct options when dashboardType=$dashboardType and resolveVulnerabilityWithAi=$resolveVulnerabilityWithAi and securityPolicyApprovalWarnMode=$securityPolicyApprovalWarnMode',
+      ({
+        dashboardType,
+        resolveVulnerabilityWithAi,
+        securityPolicyApprovalWarnMode,
+        expectedOptions,
+      }) => {
+        createWrapperWithAbility({
+          provide: { dashboardType },
+          resolveVulnerabilityWithAi,
+          securityPolicyApprovalWarnMode,
+        });
 
         const findDropdownOptions = () =>
           wrapper.findAllComponents(SearchSuggestion).wrappers.map((c) => c.text());
@@ -131,13 +162,26 @@ describe('ActivityToken', () => {
     );
 
     it.each`
-      resolveVulnerabilityWithAi | expectedGroups
-      ${true}                    | ${[...baseGroupHeaders, ...aiGroupHeaders]}
-      ${false}                   | ${baseGroupHeaders}
+      dashboardType              | resolveVulnerabilityWithAi | securityPolicyApprovalWarnMode | expectedGroups
+      ${DASHBOARD_TYPE_PROJECT}  | ${true}                    | ${true}                        | ${[...baseGroupHeaders, ...aiGroupHeaders, ...policyViolationsGroupHeaders]}
+      ${DASHBOARD_TYPE_PROJECT}  | ${true}                    | ${false}                       | ${[...baseGroupHeaders, ...aiGroupHeaders]}
+      ${DASHBOARD_TYPE_PROJECT}  | ${false}                   | ${true}                        | ${[...baseGroupHeaders, ...policyViolationsGroupHeaders]}
+      ${DASHBOARD_TYPE_GROUP}    | ${false}                   | ${true}                        | ${[...baseGroupHeaders, ...policyViolationsGroupHeaders]}
+      ${DASHBOARD_TYPE_INSTANCE} | ${false}                   | ${true}                        | ${baseGroupHeaders}
+      ${DASHBOARD_TYPE_PROJECT}  | ${false}                   | ${false}                       | ${baseGroupHeaders}
     `(
-      'shows the group headers correctly resolveVulnerabilityWithAi=$resolveVulnerabilityWithAi',
-      ({ resolveVulnerabilityWithAi, expectedGroups }) => {
-        createWrapperWithAbility({ resolveVulnerabilityWithAi });
+      'shows the correct group headers when dashboardType=$dashboardType and resolveVulnerabilityWithAi=$resolveVulnerabilityWithAi and securityPolicyApprovalWarnMode=$securityPolicyApprovalWarnMode',
+      ({
+        dashboardType,
+        resolveVulnerabilityWithAi,
+        securityPolicyApprovalWarnMode,
+        expectedGroups,
+      }) => {
+        createWrapperWithAbility({
+          provide: { dashboardType },
+          resolveVulnerabilityWithAi,
+          securityPolicyApprovalWarnMode,
+        });
 
         const findDropdownGroupHeaders = () =>
           wrapper.findAllComponents(GlDropdownSectionHeader).wrappers.map((c) => c.text());
@@ -147,13 +191,15 @@ describe('ActivityToken', () => {
     );
 
     it.each`
-      resolveVulnerabilityWithAi | expectedBadges
-      ${true}                    | ${['check-circle-dashed', 'issues', 'merge-request', 'bulb', 'tanuki-ai']}
-      ${false}                   | ${['check-circle-dashed', 'issues', 'merge-request', 'bulb']}
+      resolveVulnerabilityWithAi | securityPolicyApprovalWarnMode | expectedBadges
+      ${true}                    | ${true}                        | ${['check-circle-dashed', 'issues', 'merge-request', 'bulb', 'tanuki-ai', 'flag']}
+      ${true}                    | ${false}                       | ${['check-circle-dashed', 'issues', 'merge-request', 'bulb', 'tanuki-ai']}
+      ${false}                   | ${true}                        | ${['check-circle-dashed', 'issues', 'merge-request', 'bulb', 'flag']}
+      ${false}                   | ${false}                       | ${['check-circle-dashed', 'issues', 'merge-request', 'bulb']}
     `(
-      'shows the correct badges when resolveVulnerabilityWithAi=$resolveVulnerabilityWithAi',
-      ({ resolveVulnerabilityWithAi, expectedBadges }) => {
-        createWrapperWithAbility({ resolveVulnerabilityWithAi });
+      'shows the correct badges when resolveVulnerabilityWithAi=$resolveVulnerabilityWithAi and securityPolicyApprovalWarnMode=$securityPolicyApprovalWarnMode',
+      ({ resolveVulnerabilityWithAi, securityPolicyApprovalWarnMode, expectedBadges }) => {
+        createWrapperWithAbility({ resolveVulnerabilityWithAi, securityPolicyApprovalWarnMode });
 
         expect(findAllBadges().wrappers.map((component) => component.props('icon'))).toEqual(
           expectedBadges,

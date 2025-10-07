@@ -10,6 +10,7 @@ import { s__ } from '~/locale';
 import { getSelectedOptionsText } from '~/lib/utils/listbox_helpers';
 import glAbilitiesMixin from '~/vue_shared/mixins/gl_abilities_mixin';
 import glFeatureFlagsMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
+import { DASHBOARD_TYPE_GROUP, DASHBOARD_TYPE_PROJECT } from 'ee/security_dashboard/constants';
 import { ALL_ID as ALL_ACTIVITY_VALUE } from '../../filters/constants';
 import { ITEMS as ACTIVITY_FILTER_ITEMS } from '../../filters/activity_filter.vue';
 import SearchSuggestion from '../components/search_suggestion.vue';
@@ -23,6 +24,10 @@ const ITEMS = {
   AI_RESOLUTION_UNAVAILABLE: {
     value: 'AI_RESOLUTION_UNAVAILABLE',
     text: s__('SecurityReports|Vulnerability Resolution unavailable'),
+  },
+  DISMISSED_IN_MR: {
+    value: 'DISMISSED_IN_MR',
+    text: s__('SecurityReports|Dismissed in MR'),
   },
 };
 
@@ -99,6 +104,7 @@ export default {
     SearchSuggestion,
   },
   mixins: [glAbilitiesMixin(), glFeatureFlagsMixin()],
+  inject: ['dashboardType'],
   props: {
     config: {
       type: Object,
@@ -145,20 +151,33 @@ export default {
     showAiResolutionFilter() {
       return this.glAbilities.resolveVulnerabilityWithAi;
     },
+    showPolicyViolationsFilter() {
+      return (
+        this.glFeatures.securityPolicyApprovalWarnMode &&
+        [DASHBOARD_TYPE_GROUP, DASHBOARD_TYPE_PROJECT].includes(this.dashboardType)
+      );
+    },
     activityTokenGroups() {
-      return [
-        ...GROUPS,
-        ...(this.showAiResolutionFilter
-          ? [
-              {
-                text: s__('SecurityReports|GitLab Duo (AI)'),
-                options: [ITEMS.AI_RESOLUTION_AVAILABLE, ITEMS.AI_RESOLUTION_UNAVAILABLE],
-                icon: 'tanuki-ai',
-                variant: 'info',
-              },
-            ]
-          : []),
-      ];
+      const groups = [...GROUPS];
+
+      if (this.showAiResolutionFilter) {
+        groups.push({
+          text: s__('SecurityReports|GitLab Duo (AI)'),
+          options: [ITEMS.AI_RESOLUTION_AVAILABLE, ITEMS.AI_RESOLUTION_UNAVAILABLE],
+          icon: 'tanuki-ai',
+          variant: 'info',
+        });
+      }
+
+      if (this.showPolicyViolationsFilter) {
+        groups.push({
+          text: s__('SecurityReports|Policy violations'),
+          options: [ITEMS.DISMISSED_IN_MR],
+          icon: 'flag',
+        });
+      }
+
+      return groups;
     },
   },
   methods: {
