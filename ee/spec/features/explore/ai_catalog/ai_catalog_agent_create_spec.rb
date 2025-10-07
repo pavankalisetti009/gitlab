@@ -32,10 +32,9 @@ RSpec.describe 'AI Catalog', :js, feature_category: :workflow_catalog do
 
       click_button 'Create agent'
 
-      agents = page.all('[data-testid="ai-catalog-item"]')
-      expect(agents.length).to be(1)
-
-      expect(page).to have_css('h2', text: 'New agent name')
+      expect(page).to have_css('h1', text: 'New agent name')
+      expect(page).to have_content('New agent description')
+      expect(page).to have_content('System prompt')
     end
   end
 end

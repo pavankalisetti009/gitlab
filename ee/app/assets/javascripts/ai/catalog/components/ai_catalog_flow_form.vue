@@ -94,13 +94,15 @@ export default {
       return this.isEditMode ? s__('AICatalog|Save changes') : s__('AICatalog|Create flow');
     },
     cancelRoute() {
-      if (this.glFeatures.aiCatalogShowPage && this.$route.params.id) {
+      // when navigating from edit or duplicate page, we go back to show page
+      if (this.$route.params.id) {
         return {
           name: AI_CATALOG_FLOWS_SHOW_ROUTE,
           params: { id: this.$route.params.id },
         };
       }
 
+      // when navigating from new page, we go back to index page
       return {
         name: AI_CATALOG_FLOWS_ROUTE,
       };

@@ -3,7 +3,6 @@ import Vue, { nextTick } from 'vue';
 import { GlFilteredSearch } from '@gitlab/ui';
 import ErrorsAlert from '~/vue_shared/components/errors_alert.vue';
 import * as Sentry from '~/sentry/sentry_browser_wrapper';
-import { convertToGraphQLId, getIdFromGraphQLId } from '~/graphql_shared/utils';
 import { isLoggedIn } from '~/lib/utils/common_utils';
 import createMockApollo from 'helpers/mock_apollo_helper';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
@@ -12,16 +11,12 @@ import { useMockInternalEventsTracking } from 'helpers/tracking_internal_events_
 import AiCatalogAgents from 'ee/ai/catalog/pages/ai_catalog_agents.vue';
 import AiCatalogList from 'ee/ai/catalog/components/ai_catalog_list.vue';
 import AiCatalogListHeader from 'ee/ai/catalog/components/ai_catalog_list_header.vue';
-import AiCatalogItemDrawer from 'ee/ai/catalog/components/ai_catalog_item_drawer.vue';
 import AiCatalogItemConsumerModal from 'ee/ai/catalog/components/ai_catalog_item_consumer_modal.vue';
-import aiCatalogAgentQuery from 'ee/ai/catalog/graphql/queries/ai_catalog_agent.query.graphql';
 import aiCatalogAgentsQuery from 'ee/ai/catalog/graphql/queries/ai_catalog_agents.query.graphql';
 import createAiCatalogItemConsumer from 'ee/ai/catalog/graphql/mutations/create_ai_catalog_item_consumer.mutation.graphql';
 import deleteAiCatalogAgentMutation from 'ee/ai/catalog/graphql/mutations/delete_ai_catalog_agent.mutation.graphql';
-import { TYPENAME_AI_CATALOG_ITEM } from 'ee/graphql_shared/constants';
 import {
   TRACK_EVENT_VIEW_AI_CATALOG_ITEM_INDEX,
-  TRACK_EVENT_VIEW_AI_CATALOG_ITEM,
   TRACK_EVENT_TYPE_AGENT,
 } from 'ee/ai/catalog/constants';
 import {
@@ -30,8 +25,6 @@ import {
   mockCatalogItemsResponse,
   mockCatalogAgentDeleteResponse,
   mockCatalogAgentDeleteErrorResponse,
-  mockAiCatalogAgentResponse,
-  mockAiCatalogAgentResponse2,
   mockAiCatalogItemConsumerCreateSuccessProjectResponse,
   mockAiCatalogItemConsumerCreateErrorResponse,
   mockPageInfo,
@@ -45,7 +38,6 @@ Vue.use(VueApollo);
 describe('AiCatalogAgents', () => {
   let wrapper;
   let mockApollo;
-  let mockRoute;
 
   const mockRouter = {
     push: jest.fn(),
@@ -55,22 +47,16 @@ describe('AiCatalogAgents', () => {
     show: jest.fn(),
   };
 
-  const mockAgentQueryHandler = jest.fn().mockResolvedValue(mockAiCatalogAgentResponse);
   const mockCatalogItemsQueryHandler = jest.fn().mockResolvedValue(mockCatalogItemsResponse);
   const createAiCatalogItemConsumerHandler = jest.fn();
   const deleteCatalogItemMutationHandler = jest.fn();
 
   const { bindInternalEventDocument } = useMockInternalEventsTracking();
 
-  const createComponent = ({ $route = { query: {} } } = {}) => {
+  const createComponent = () => {
     isLoggedIn.mockReturnValue(true);
 
-    mockRoute = Vue.observable({
-      query: $route.query,
-    });
-
     mockApollo = createMockApollo([
-      [aiCatalogAgentQuery, mockAgentQueryHandler],
       [aiCatalogAgentsQuery, mockCatalogItemsQueryHandler],
       [createAiCatalogItemConsumer, createAiCatalogItemConsumerHandler],
       [deleteAiCatalogAgentMutation, deleteCatalogItemMutationHandler],
@@ -81,7 +67,6 @@ describe('AiCatalogAgents', () => {
       mocks: {
         $toast: mockToast,
         $router: mockRouter,
-        $route: mockRoute,
       },
     });
   };
@@ -89,9 +74,7 @@ describe('AiCatalogAgents', () => {
   const findErrorsAlert = () => wrapper.findComponent(ErrorsAlert);
   const findFilteredSearch = () => wrapper.findComponent(GlFilteredSearch);
   const findAiCatalogList = () => wrapper.findComponent(AiCatalogList);
-  const findAiCatalogItemDrawer = () => wrapper.findComponent(AiCatalogItemDrawer);
   const findAiCatalogItemConsumerModal = () => wrapper.findComponent(AiCatalogItemConsumerModal);
-  const agentNotFoundErrorMessage = 'Agent not found.';
 
   afterEach(() => {
     jest.clearAllMocks();
@@ -121,11 +104,6 @@ describe('AiCatalogAgents', () => {
 
       expect(catalogList.props('items')).toEqual(mockAgents);
       expect(catalogList.props('isLoading')).toBe(false);
-    });
-
-    it('renders item drawer closed by default', () => {
-      expect(findAiCatalogItemDrawer().exists()).toBe(true);
-      expect(findAiCatalogItemDrawer().props('isOpen')).toBe(false);
     });
   });
 
@@ -170,159 +148,6 @@ describe('AiCatalogAgents', () => {
         first: 20,
         last: null,
         search: 'foo',
-      });
-    });
-  });
-
-  describe('when linking directly to an agent via URL', () => {
-    describe('when agent exists in the list', () => {
-      let resolveDetails;
-
-      beforeEach(async () => {
-        // keep state as loading until we manually resolve
-        mockAgentQueryHandler.mockReturnValue(
-          new Promise((resolve) => {
-            resolveDetails = resolve;
-          }),
-        );
-        await createComponent({
-          $route: { query: { show: getIdFromGraphQLId(mockAgents[0].id) } },
-        });
-        await waitForPromises();
-      });
-
-      it('fetches agent details with correct GraphQL ID', () => {
-        expect(mockAgentQueryHandler).toHaveBeenCalledTimes(1);
-        expect(mockAgentQueryHandler).toHaveBeenCalledWith({
-          id: convertToGraphQLId(TYPENAME_AI_CATALOG_ITEM, getIdFromGraphQLId(mockAgents[0].id)),
-        });
-      });
-
-      it('opens the drawer immediately when agent is in list', () => {
-        expect(findAiCatalogItemDrawer().props('isOpen')).toBe(true);
-      });
-
-      it('shows loading state initially', () => {
-        expect(findAiCatalogItemDrawer().props('isItemDetailsLoading')).toBe(true);
-      });
-
-      it('provides agent from list while details are loading', () => {
-        const activeItem = findAiCatalogItemDrawer().props('activeItem');
-        expect(activeItem).toEqual(mockAgents[0]);
-      });
-
-      it('displays fetched agent details after loading completes', async () => {
-        // resolve to complete loading
-        resolveDetails(mockAiCatalogAgentResponse);
-        await waitForPromises();
-
-        expect(findAiCatalogItemDrawer().props()).toMatchObject({
-          isOpen: true,
-          isItemDetailsLoading: false,
-          activeItem: mockAgent,
-        });
-      });
-
-      describe('when closing the drawer', () => {
-        beforeEach(() => {
-          findAiCatalogItemDrawer().vm.$emit('close');
-        });
-
-        it('removes show query param from URL', () => {
-          expect(mockRouter.push).toHaveBeenCalledWith({
-            path: undefined,
-            query: {},
-          });
-        });
-      });
-    });
-
-    describe('when agent is not in list and needs to be fetched', () => {
-      beforeEach(() => {
-        // Mock a list without the requested agent
-        mockCatalogItemsQueryHandler.mockResolvedValue({
-          data: {
-            aiCatalogItems: {
-              nodes: mockAgents.slice(1),
-              pageInfo: mockPageInfo,
-            },
-          },
-        });
-
-        mockAgentQueryHandler.mockResolvedValue(mockAiCatalogAgentResponse);
-
-        createComponent({
-          $route: { query: { show: getIdFromGraphQLId(mockAgents[0].id) } },
-        });
-      });
-
-      it('does not open drawer while loading', () => {
-        expect(findAiCatalogItemDrawer().props('isOpen')).toBe(false);
-      });
-
-      it('opens drawer after agent details load', async () => {
-        await waitForPromises();
-        expect(findAiCatalogItemDrawer().props('isOpen')).toBe(true);
-      });
-    });
-
-    describe('when user has no permission to view agent', () => {
-      beforeEach(async () => {
-        // Mock response with null agent (no permissions)
-        mockAgentQueryHandler.mockResolvedValue({
-          data: {
-            aiCatalogItem: null,
-          },
-        });
-
-        await createComponent({ $route: { query: { show: 'unauthorized-id' } } });
-        await waitForPromises();
-      });
-
-      it('does not open the drawer', () => {
-        expect(findAiCatalogItemDrawer().props('isOpen')).toBe(false);
-      });
-
-      it('closes the drawer automatically', () => {
-        expect(mockRouter.push).toHaveBeenCalledWith({
-          path: undefined,
-          query: {},
-        });
-      });
-
-      it('displays permission error message', () => {
-        expect(findErrorsAlert().props('errors')).toStrictEqual([agentNotFoundErrorMessage]);
-      });
-
-      it('does not log to Sentry for permission issues', () => {
-        expect(Sentry.captureException).not.toHaveBeenCalled();
-      });
-    });
-
-    describe('when agent fetch fails with error', () => {
-      beforeEach(async () => {
-        mockAgentQueryHandler.mockRejectedValue(new Error('Network error'));
-        await createComponent({ $route: { query: { show: 'invalid-id' } } });
-        await waitForPromises();
-      });
-
-      it('does not open the drawer', () => {
-        expect(findAiCatalogItemDrawer().props('isOpen')).toBe(false);
-      });
-
-      it('closes the drawer automatically', () => {
-        expect(mockRouter.push).toHaveBeenCalledWith({
-          path: undefined,
-          query: {},
-        });
-      });
-
-      it('displays error message', () => {
-        expect(findErrorsAlert().props('errors')).toStrictEqual(['Network error']);
-      });
-
-      it('logs error to Sentry', () => {
-        expect(Sentry.captureException).toHaveBeenCalledWith(expect.any(Error));
       });
     });
   });
@@ -507,7 +332,7 @@ describe('AiCatalogAgents', () => {
   });
 
   describe('tracking events', () => {
-    describe('when component is mounted without show query param', () => {
+    describe('when component is mounted', () => {
       beforeEach(() => {
         createComponent();
       });
@@ -515,107 +340,6 @@ describe('AiCatalogAgents', () => {
       it(`tracks ${TRACK_EVENT_VIEW_AI_CATALOG_ITEM_INDEX} event`, () => {
         const { trackEventSpy } = bindInternalEventDocument(wrapper.element);
         expect(trackEventSpy).toHaveBeenCalledWith(
-          TRACK_EVENT_VIEW_AI_CATALOG_ITEM_INDEX,
-          { label: TRACK_EVENT_TYPE_AGENT },
-          undefined,
-        );
-      });
-    });
-
-    describe('when component is mounted with show query param', () => {
-      beforeEach(async () => {
-        mockAgentQueryHandler.mockResolvedValue(mockAiCatalogAgentResponse);
-        createComponent({ $route: { query: { show: getIdFromGraphQLId(mockAgents[0].id) } } });
-        await waitForPromises();
-      });
-
-      it('does not track the index event immediately on mount', () => {
-        const { trackEventSpy } = bindInternalEventDocument(wrapper.element);
-        expect(trackEventSpy).not.toHaveBeenCalledWith(
-          TRACK_EVENT_VIEW_AI_CATALOG_ITEM_INDEX,
-          { label: TRACK_EVENT_TYPE_AGENT },
-          undefined,
-        );
-      });
-
-      it('tracks the detail event for the initial show param', () => {
-        const { trackEventSpy } = bindInternalEventDocument(wrapper.element);
-        expect(trackEventSpy).toHaveBeenCalledWith(
-          TRACK_EVENT_VIEW_AI_CATALOG_ITEM,
-          { label: TRACK_EVENT_TYPE_AGENT },
-          undefined,
-        );
-      });
-
-      it('waits for the query param to be removed before tracking the index event', async () => {
-        const { trackEventSpy } = bindInternalEventDocument(wrapper.element);
-
-        mockRoute.query = {};
-        await nextTick();
-
-        expect(trackEventSpy).toHaveBeenCalledWith(
-          TRACK_EVENT_VIEW_AI_CATALOG_ITEM_INDEX,
-          { label: TRACK_EVENT_TYPE_AGENT },
-          undefined,
-        );
-      });
-    });
-
-    describe('when show query param changes', () => {
-      beforeEach(async () => {
-        mockAgentQueryHandler.mockResolvedValue(mockAiCatalogAgentResponse);
-        createComponent({ $route: { query: { show: getIdFromGraphQLId(mockAgents[0].id) } } });
-        await waitForPromises();
-      });
-
-      it('tracks the detail event for every show query param change', async () => {
-        const { trackEventSpy } = bindInternalEventDocument(wrapper.element);
-
-        expect(trackEventSpy).toHaveBeenCalledWith(
-          TRACK_EVENT_VIEW_AI_CATALOG_ITEM,
-          { label: TRACK_EVENT_TYPE_AGENT },
-          undefined,
-        );
-
-        mockAgentQueryHandler.mockResolvedValue(mockAiCatalogAgentResponse2);
-        mockRoute.query = { show: getIdFromGraphQLId(mockAgents[1].id) };
-        await waitForPromises();
-
-        expect(trackEventSpy).toHaveBeenCalledWith(
-          TRACK_EVENT_VIEW_AI_CATALOG_ITEM,
-          { label: TRACK_EVENT_TYPE_AGENT },
-          undefined,
-        );
-
-        expect(trackEventSpy).toHaveBeenCalledTimes(2);
-      });
-
-      it('does not track the index event more than once', async () => {
-        const { trackEventSpy } = bindInternalEventDocument(wrapper.element);
-
-        mockRoute.query = {};
-        await nextTick();
-
-        expect(trackEventSpy).toHaveBeenCalledWith(
-          TRACK_EVENT_VIEW_AI_CATALOG_ITEM_INDEX,
-          { label: TRACK_EVENT_TYPE_AGENT },
-          undefined,
-        );
-
-        mockRoute.query = { show: getIdFromGraphQLId(mockAgents[0].id) };
-        await waitForPromises();
-
-        expect(trackEventSpy).toHaveBeenCalledWith(
-          TRACK_EVENT_VIEW_AI_CATALOG_ITEM,
-          { label: TRACK_EVENT_TYPE_AGENT },
-          undefined,
-        );
-
-        trackEventSpy.mockClear();
-        mockRoute.query = {};
-        await nextTick();
-
-        expect(trackEventSpy).not.toHaveBeenCalledWith(
           TRACK_EVENT_VIEW_AI_CATALOG_ITEM_INDEX,
           { label: TRACK_EVENT_TYPE_AGENT },
           undefined,

@@ -2,7 +2,7 @@
 import { GlFilteredSearch } from '@gitlab/ui';
 import * as Sentry from '~/sentry/sentry_browser_wrapper';
 import { s__, sprintf } from '~/locale';
-import { getIdFromGraphQLId, convertToGraphQLId } from '~/graphql_shared/utils';
+import { getIdFromGraphQLId } from '~/graphql_shared/utils';
 import { fetchPolicies } from '~/lib/graphql';
 import { InternalEvents } from '~/tracking';
 import { helpPagePath } from '~/helpers/help_page_helper';
@@ -13,28 +13,22 @@ import {
 } from '~/visibility_level/constants';
 import ErrorsAlert from '~/vue_shared/components/errors_alert.vue';
 import { FILTERED_SEARCH_TERM } from '~/vue_shared/components/filtered_search_bar/constants';
-import glFeatureFlagsMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
-import { TYPENAME_AI_CATALOG_ITEM } from 'ee/graphql_shared/constants';
 import aiCatalogAgentsQuery from '../graphql/queries/ai_catalog_agents.query.graphql';
-import aiCatalogAgentQuery from '../graphql/queries/ai_catalog_agent.query.graphql';
 import createAiCatalogItemConsumer from '../graphql/mutations/create_ai_catalog_item_consumer.mutation.graphql';
 import deleteAiCatalogAgentMutation from '../graphql/mutations/delete_ai_catalog_agent.mutation.graphql';
 import AiCatalogListHeader from '../components/ai_catalog_list_header.vue';
 import AiCatalogList from '../components/ai_catalog_list.vue';
-import AiCatalogItemDrawer from '../components/ai_catalog_item_drawer.vue';
 import AiCatalogItemConsumerModal from '../components/ai_catalog_item_consumer_modal.vue';
 import {
   AI_CATALOG_AGENTS_SHOW_ROUTE,
   AI_CATALOG_AGENTS_EDIT_ROUTE,
   AI_CATALOG_AGENTS_RUN_ROUTE,
   AI_CATALOG_AGENTS_DUPLICATE_ROUTE,
-  AI_CATALOG_SHOW_QUERY_PARAM,
 } from '../router/constants';
 import {
   AGENT_VISIBILITY_LEVEL_DESCRIPTIONS,
   PAGE_SIZE,
   TRACK_EVENT_VIEW_AI_CATALOG_ITEM_INDEX,
-  TRACK_EVENT_VIEW_AI_CATALOG_ITEM,
   TRACK_EVENT_TYPE_AGENT,
 } from '../constants';
 
@@ -43,20 +37,17 @@ export default {
   components: {
     AiCatalogListHeader,
     AiCatalogList,
-    AiCatalogItemDrawer,
     AiCatalogItemConsumerModal,
     ErrorsAlert,
     GlFilteredSearch,
   },
-  mixins: [glFeatureFlagsMixin(), InternalEvents.mixin()],
+  mixins: [InternalEvents.mixin()],
   data() {
     return {
       aiCatalogAgents: [],
-      aiCatalogAgent: null,
       aiCatalogAgentToBeAdded: null,
       errors: [],
       pageInfo: {},
-      hasTrackedPageView: false,
       searchTerm: '',
     };
   },
@@ -78,78 +69,10 @@ export default {
         this.pageInfo = data.aiCatalogItems.pageInfo;
       },
     },
-    aiCatalogAgent: {
-      query: aiCatalogAgentQuery,
-      skip() {
-        return !this.hasQueryParam;
-      },
-      variables() {
-        return { id: convertToGraphQLId(TYPENAME_AI_CATALOG_ITEM, this.showQueryParam) };
-      },
-      update(data) {
-        return data?.aiCatalogItem || null;
-      },
-      result({ data }) {
-        if (typeof data === 'undefined') return;
-
-        if (data.aiCatalogItem === null && this.hasQueryParam) {
-          this.handleNotFound();
-          return;
-        }
-
-        this.trackViewEvent();
-      },
-      error(error) {
-        if (this.showQueryParam) {
-          this.closeDrawer();
-        }
-        this.errors = [error.message];
-        Sentry.captureException(error);
-      },
-    },
   },
   computed: {
     isLoading() {
       return this.$apollo.queries.aiCatalogAgents.loading;
-    },
-    isItemDetailsLoading() {
-      return this.$apollo.queries.aiCatalogAgent.loading;
-    },
-    showQueryParam() {
-      return this.$route.query[AI_CATALOG_SHOW_QUERY_PARAM];
-    },
-    hasQueryParam() {
-      return Boolean(this.showQueryParam);
-    },
-    agentFromList() {
-      if (!this.hasQueryParam) return null;
-
-      return this.aiCatalogAgents.find(
-        (n) => getIdFromGraphQLId(n.id).toString() === String(this.showQueryParam),
-      );
-    },
-    isDrawerOpen() {
-      if (!this.hasQueryParam) return false;
-
-      // If we have the agent in the list, show drawer immediately
-      if (this.agentFromList) return true;
-
-      // If query is still loading, don't show drawer yet.
-      // It might be that the agent does not exist,
-      // or the user has no permission to view it.
-      if (this.isItemDetailsLoading) return false;
-
-      return Boolean(this.aiCatalogAgent);
-    },
-    activeAgent() {
-      // Prefer the fully loaded agent from the query
-      if (this.aiCatalogAgent) return this.aiCatalogAgent;
-
-      // Fall back to agent from list if available
-      if (this.agentFromList) return this.agentFromList;
-
-      // Return minimal object with IID for loading state
-      return this.hasQueryParam ? { iid: this.showQueryParam } : null;
     },
     itemTypeConfig() {
       return {
@@ -204,7 +127,7 @@ export default {
         deleteActionItem: {
           showActionItem: (item) => item.userPermissions?.adminAiCatalogItem || false,
         },
-        showRoute: this.glFeatures.aiCatalogShowPage ? AI_CATALOG_AGENTS_SHOW_ROUTE : null,
+        showRoute: AI_CATALOG_AGENTS_SHOW_ROUTE,
         visibilityTooltip: {
           [VISIBILITY_LEVEL_PUBLIC_STRING]:
             AGENT_VISIBILITY_LEVEL_DESCRIPTIONS[VISIBILITY_LEVEL_PUBLIC_STRING],
@@ -222,38 +145,12 @@ export default {
       ];
     },
   },
-  watch: {
-    hasQueryParam: {
-      handler: 'trackViewIndexEvent',
-      immediate: true,
-    },
+  mounted() {
+    this.trackEvent(TRACK_EVENT_VIEW_AI_CATALOG_ITEM_INDEX, {
+      label: TRACK_EVENT_TYPE_AGENT,
+    });
   },
   methods: {
-    trackViewIndexEvent() {
-      if (this.hasTrackedPageView || this.hasQueryParam) return;
-
-      this.hasTrackedPageView = true;
-      this.trackEvent(TRACK_EVENT_VIEW_AI_CATALOG_ITEM_INDEX, {
-        label: TRACK_EVENT_TYPE_AGENT,
-      });
-    },
-    trackViewEvent() {
-      this.trackEvent(TRACK_EVENT_VIEW_AI_CATALOG_ITEM, {
-        label: TRACK_EVENT_TYPE_AGENT,
-      });
-    },
-    closeDrawer() {
-      const { show, ...otherQuery } = this.$route.query;
-
-      this.$router.push({
-        path: this.$route.path,
-        query: otherQuery,
-      });
-    },
-    handleNotFound() {
-      this.errors = [s__('AICatalog|Agent not found.')];
-      this.closeDrawer();
-    },
     async deleteAgent(item) {
       const { id } = item;
 
@@ -364,7 +261,6 @@ export default {
       this.searchTerm = '';
     },
   },
-  editRoute: AI_CATALOG_AGENTS_EDIT_ROUTE,
 };
 </script>
 
@@ -392,13 +288,6 @@ export default {
       :search="searchTerm"
       @next-page="handleNextPage"
       @prev-page="handlePrevPage"
-    />
-    <ai-catalog-item-drawer
-      :is-open="isDrawerOpen"
-      :is-item-details-loading="isItemDetailsLoading"
-      :active-item="activeAgent"
-      :edit-route="$options.editRoute"
-      @close="closeDrawer"
     />
     <ai-catalog-item-consumer-modal
       v-if="aiCatalogAgentToBeAdded"
