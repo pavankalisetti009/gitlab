@@ -1,5 +1,5 @@
 <script>
-import { GlCard, GlButton, GlBadge } from '@gitlab/ui';
+import { GlCard, GlBadge } from '@gitlab/ui';
 import { GlAreaChart } from '@gitlab/ui/src/charts';
 import { s__, __ } from '~/locale';
 import { numberToMetricPrefix } from '~/lib/utils/number_utils';
@@ -9,7 +9,6 @@ export default {
   name: 'UsageTrendsChart',
   components: {
     GlCard,
-    GlButton,
     GlAreaChart,
     GlBadge,
   },
@@ -103,12 +102,6 @@ export default {
       <h2 class="gl-font-heading gl-heading-scale-400" data-testid="chart-heading">
         {{ formattedRange }}
       </h2>
-      <div class="gl-flex gl-flex-col gl-justify-between gl-gap-3 @sm/panel:gl-flex-row">
-        <gl-button size="small">{{ s__('UsageBilling|Last 3 months') }}</gl-button>
-        <gl-button size="small">{{ s__('UsageBilling|Last month') }}</gl-button>
-        <gl-button size="small">{{ s__('UsageBilling|Current month') }}</gl-button>
-        <gl-button size="small">{{ s__('UsageBilling|Custom dates') }}</gl-button>
-      </div>
     </header>
 
     <gl-area-chart

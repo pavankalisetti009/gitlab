@@ -23,7 +23,8 @@ module EE
         target_id: user.id,
         target_type: ::User,
         action: ::Todo::DUO_PRO_ACCESS_GRANTED,
-        author_id: ::Users::Internal.duo_code_review_bot.id
+        author_id: ::Users::Internal.duo_code_review_bot.id,
+        organization_id: user.organization_id
       }
       create_todos(user, attributes, nil, nil)
     end
@@ -33,7 +34,8 @@ module EE
         target_id: user.id,
         target_type: ::User,
         action: ::Todo::DUO_ENTERPRISE_ACCESS_GRANTED,
-        author_id: ::Users::Internal.duo_code_review_bot.id
+        author_id: ::Users::Internal.duo_code_review_bot.id,
+        organization_id: user.organization_id
       }
       create_todos(user, attributes, nil, nil)
     end
@@ -103,7 +105,7 @@ module EE
 
     def bulk_insert_todos_for_user_target_type(users, attributes)
       bulk_insert_todos(users, attributes) do |user, attrs|
-        attrs.merge(user_id: user.id, target_id: user.id)
+        attrs.merge(user_id: user.id, target_id: user.id, organization_id: user.organization_id)
       end
     end
   end
