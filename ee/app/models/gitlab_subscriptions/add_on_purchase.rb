@@ -36,7 +36,7 @@ module GitlabSubscriptions
     }
 
     scope :ready_for_cleanup, -> {
-      where('expires_on < ?', CLEANUP_DELAY_PERIOD.ago.to_date)
+      where(expires_on: ...CLEANUP_DELAY_PERIOD.ago.to_date)
     }
     scope :has_assigned_users, -> {
       where(
