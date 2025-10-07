@@ -4,5 +4,5 @@ require 'spec_helper'
 
 RSpec.describe Vulnerabilities::Backups::FindingIdentifier, feature_category: :vulnerability_management do
   it_behaves_like 'a vulnerability retention policy backup model',
-    mappings: { project_id: :project_id, occurrence_id: :finding_id }
+    mappings: { id: :original_record_identifier, project_id: :project_id, occurrence_id: :finding_id }
 end

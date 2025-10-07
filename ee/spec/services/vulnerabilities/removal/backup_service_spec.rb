@@ -20,11 +20,11 @@ RSpec.describe Vulnerabilities::Removal::BackupService, feature_category: :vulne
   end
 
   describe '#execute' do
-    shared_examples_for 'creating backup for' do |backup_model, factory:|
+    shared_examples_for 'creating backup for' do |backup_model, factory:, extra: {}|
       let(:backup_date) { Time.zone.today }
       let(:original_record) { create(*factory).reload } # rubocop:disable Rails/SaveBang -- This is factory bot `create`.
       let(:deleted_rows) { original_record.class.primary_key_in(original_record).delete_all_returning }
-      let(:service_object) { described_class.new(backup_model, backup_date, deleted_rows) }
+      let(:service_object) { described_class.new(backup_model, backup_date, deleted_rows, extra: extra) }
 
       subject(:backup!) { service_object.execute }
 
@@ -45,14 +45,25 @@ RSpec.describe Vulnerabilities::Removal::BackupService, feature_category: :vulne
           original_record_identifier: original_record.attributes['id'],
           date: backup_date,
           **mapped_columns(backup_model, original_record),
-          project_id: original_record.project_id
+          project_id: original_record.project_id,
+          **extra
         )
       end
 
       def validate_data_consistency(backup_record, original_record, column)
+        original_data = original_data_for(backup_record)
         original_value = prepare_value_for_comparison(original_record, column)
 
-        expect(backup_record.original_data[column]).to eq(original_value)
+        expect(original_data[column]).to eq(original_value)
+      end
+
+      def original_data_for(backup_record)
+        backup_record.class.data_columns.each_with_object({}) do |column, memo|
+          caster = backup_record.class.original_model.connection.lookup_cast_type_from_column(column)
+          value = backup_record.data[column.name]
+
+          memo[column.name] = caster.deserialize(value)
+        end
       end
 
       def prepare_value_for_comparison(original_record, column)
@@ -78,7 +89,7 @@ RSpec.describe Vulnerabilities::Removal::BackupService, feature_category: :vulne
 
       def mapped_columns(backup_model, original_record)
         backup_model.column_mappings.each_with_object({}) do |(original_column_name, new_column_name), memo|
-          memo[new_column_name] = original_record[original_column_name]
+          memo[new_column_name] = original_record.attributes[original_column_name.to_s]
         end
       end
     end
@@ -113,7 +124,8 @@ RSpec.describe Vulnerabilities::Removal::BackupService, feature_category: :vulne
 
     it_behaves_like 'creating backup for',
       Vulnerabilities::Backups::Vulnerability,
-      factory: :vulnerability
+      factory: :vulnerability,
+      extra: { traversal_ids: [1, 2, 3] }
 
     it_behaves_like 'creating backup for',
       Vulnerabilities::Backups::VulnerabilityExternalIssueLink,
