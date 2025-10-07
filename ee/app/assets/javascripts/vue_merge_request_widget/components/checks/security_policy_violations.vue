@@ -8,6 +8,9 @@ import ActionButtons from '~/vue_merge_request_widget/components/action_buttons.
 import getPolicyViolations from 'ee/merge_requests/reports/queries/policy_violations.query.graphql';
 import SecurityPolicyViolationsModal from 'ee/vue_merge_request_widget/components/checks/security_policy_violations_modal.vue';
 import { getSelectedModeOption } from './utils';
+import { EXCEPTION_MODE, WARN_MODE } from './constants';
+import SecurityPolicyViolationsSelector from './security_policy_violations_selector.vue';
+import SecurityPolicyBypassStatusesModal from './security_policy_bypass_statuses_modal.vue';
 
 export default {
   BYPASS_POLICY_ENFORCEMENT_TYPES: ['WARN'],
@@ -19,6 +22,8 @@ export default {
     GlPopover,
     MergeChecksMessage,
     SecurityPolicyViolationsModal,
+    SecurityPolicyViolationsSelector,
+    SecurityPolicyBypassStatusesModal,
   },
   apollo: {
     policies: {
@@ -29,6 +34,9 @@ export default {
       update(data) {
         const policies = get(data, 'project.mergeRequest.policyViolations.policies', []);
         return uniqBy(policies, 'securityPolicyId');
+      },
+      result({ data }) {
+        this.bypassStatuses = get(data, 'project.mergeRequest.policyBypassStatuses', []);
       },
     },
   },
@@ -46,14 +54,24 @@ export default {
   },
   data() {
     return {
+      bypassStatuses: [],
       policies: [],
       showModal: false,
-      selectedModeOption: getSelectedModeOption(this.mr),
+      selectedModeOption: '',
     };
   },
   computed: {
+    mode() {
+      return getSelectedModeOption({
+        hasBypassPolicies: this.hasBypassPolicies,
+        allowBypass: this.allowBypass,
+      });
+    },
     allowBypass() {
-      return Boolean(this.mr.allowBypass);
+      return this.bypassStatuses.some(({ allowBypass, bypassed }) => allowBypass && !bypassed);
+    },
+    activeBypassStatuses() {
+      return this.bypassStatuses.filter(({ allowBypass, bypassed }) => allowBypass && !bypassed);
     },
     bypassPolicies() {
       return this.policies.filter((policy) =>
@@ -61,16 +79,25 @@ export default {
       );
     },
     enableBypassButton() {
-      return Boolean(this.bypassPolicies.filter((policy) => !policy.dismissed).length);
+      return (
+        Boolean(this.bypassPolicies.filter((policy) => !policy.dismissed).length) ||
+        this.activeBypassStatuses.length > 0
+      );
     },
     hasBypassFeatureFlags() {
       return this.warnModeEnabled || this.bypassOptionsEnabled;
+    },
+    hasBypassPolicies() {
+      return this.bypassPolicies.length > 0;
+    },
+    hasBypassStatuses() {
+      return this.bypassStatuses.length > 0;
     },
     showBypassButton() {
       return (
         this.hasBypassFeatureFlags &&
         this.mr.securityPoliciesPath &&
-        Boolean(this.bypassPolicies.length)
+        (this.hasBypassPolicies || this.hasBypassStatuses)
       );
     },
     tertiaryActionsButtons() {
@@ -91,19 +118,38 @@ export default {
     bypassButtonText() {
       return this.enableBypassButton ? s__('MergeChecks|Bypass') : s__('MergeChecks|Bypassed');
     },
+    showModeSelector() {
+      return this.showModal && this.calculatedMode === '';
+    },
+    showBypassStatusesModal() {
+      return this.showModal && this.calculatedMode === EXCEPTION_MODE;
+    },
+    showViolationsModal() {
+      return this.showModal && this.calculatedMode === WARN_MODE;
+    },
+    calculatedMode() {
+      return this.selectedModeOption || this.mode;
+    },
     warnModeEnabled() {
       return this.glFeatures.securityPolicyApprovalWarnMode;
     },
     bypassOptionsEnabled() {
-      return this.glFeatures.securityPoliciesBypassOptionsMrWidget && this.allowBypass;
+      return this.glFeatures.securityPoliciesBypassOptionsMrWidget;
     },
   },
   methods: {
+    cancelEdit() {
+      this.showModal = false;
+      this.selectedModeOption = this.mode;
+    },
     toggleModal(value) {
       this.showModal = value;
     },
     selectMode(mode) {
       this.selectedModeOption = mode;
+    },
+    refetchPolicies() {
+      this.$apollo.queries.policies.refetch();
     },
   },
 };
@@ -136,14 +182,30 @@ export default {
         </gl-popover>
       </div>
       <action-buttons :tertiary-buttons="tertiaryActionsButtons" />
+
+      <security-policy-violations-selector
+        v-if="showModeSelector"
+        v-model="showModal"
+        @select="selectMode"
+        @close="cancelEdit"
+      />
+
+      <security-policy-bypass-statuses-modal
+        v-if="showBypassStatusesModal"
+        v-model="showModal"
+        :mr="mr"
+        :policies="activeBypassStatuses"
+        @close="cancelEdit"
+        @saved="refetchPolicies"
+      />
+
       <security-policy-violations-modal
-        v-if="showModal"
+        v-if="showViolationsModal"
         v-model="showModal"
         :mr="mr"
         :policies="bypassPolicies"
-        :mode="selectedModeOption"
-        @close="toggleModal(false)"
-        @select-mode="selectMode"
+        @close="cancelEdit"
+        @saved="refetchPolicies"
       />
     </template>
   </merge-checks-message>

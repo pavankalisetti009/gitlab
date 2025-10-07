@@ -2,20 +2,19 @@
 import { GlAlert, GlModal, GlFormGroup, GlFormTextarea, GlCollapsibleListbox } from '@gitlab/ui';
 import { DEFAULT_DEBOUNCE_AND_THROTTLE_MS } from '~/lib/utils/constants';
 import { getSelectedOptionsText } from '~/lib/utils/listbox_helpers';
+import { getIdFromGraphQLId } from '~/graphql_shared/utils';
 import { __, s__ } from '~/locale';
 import * as Sentry from '~/sentry/sentry_browser_wrapper';
 import {
-  INITIAL_STATE_NEXT_STEPS,
   WARN_MODE_BYPASS_REASONS,
-  POLICY_EXCEPTIONS_BYPASS_REASONS,
   WARN_MODE_NEXT_STEPS,
-  WARN_MODE,
 } from 'ee/vue_merge_request_widget/components/checks/constants';
-import SecurityPolicyViolationsSelector from './security_policy_violations_selector.vue';
 import bypassSecurityPolicyViolations from './queries/bypass_security_policy_violations.mutation.graphql';
-import bypassSecurityPolicyExceptionViolations from './queries/bypass_security_policy_exception_violation.mutation.graphql';
 
 export default {
+  BYPASS_POLICY_ENFORCEMENT_TYPES: ['WARN'],
+  WARN_MODE_BYPASS_REASONS,
+  WARN_MODE_NEXT_STEPS,
   ACTION_CANCEL: { text: __('Cancel') },
   DEFAULT_DEBOUNCE_AND_THROTTLE_MS,
   name: 'SecurityPolicyViolationsModal',
@@ -25,7 +24,6 @@ export default {
     GlFormGroup,
     GlFormTextarea,
     GlCollapsibleListbox,
-    SecurityPolicyViolationsSelector,
   },
   model: {
     prop: 'visible',
@@ -46,11 +44,6 @@ export default {
       required: false,
       default: false,
     },
-    mode: {
-      type: String,
-      required: false,
-      default: '',
-    },
   },
   data() {
     return {
@@ -58,23 +51,21 @@ export default {
       bypassReason: '',
       loading: false,
       selectedPolicies: [],
-      selectedReason: '',
       selectedReasons: [],
       showErrorAlert: false,
     };
   },
   computed: {
-    selected() {
-      return this.isWarnMode ? this.selectedReasons : this.selectedReason;
+    bypassStatusesPoliciesIds() {
+      return this.bypassStatuses.map(({ id }) => String(getIdFromGraphQLId(id)));
+    },
+    bypassStatusesPolicies() {
+      return this.policies.filter(({ securityPolicyId }) =>
+        this.bypassStatusesPoliciesIds.includes(securityPolicyId),
+      );
     },
     isBypassReasonEmpty() {
       return this.bypassReason.trim().length === 0;
-    },
-    showModeSelection() {
-      return this.mode === '';
-    },
-    isWarnMode() {
-      return this.mode === WARN_MODE;
     },
     actionPrimary() {
       return {
@@ -87,18 +78,12 @@ export default {
         },
       };
     },
-    bypassReasonItems() {
-      return this.isWarnMode ? WARN_MODE_BYPASS_REASONS : POLICY_EXCEPTIONS_BYPASS_REASONS;
-    },
     isValid() {
-      const validReasons = this.isWarnMode
-        ? this.selectedReasons.length > 0
-        : this.selectedReason !== '';
-
-      return this.selectedPolicies.length > 0 && validReasons && !this.isBypassReasonEmpty;
-    },
-    nextSteps() {
-      return this.showModeSelection ? INITIAL_STATE_NEXT_STEPS : WARN_MODE_NEXT_STEPS;
+      return (
+        this.selectedPolicies.length > 0 &&
+        this.selectedReasons.length > 0 &&
+        !this.isBypassReasonEmpty
+      );
     },
     policyItems() {
       return this.policies.map((policy) => ({
@@ -116,31 +101,15 @@ export default {
       });
     },
     selectedReasonText() {
-      const placeholder = s__('SecurityOrchestration|Select bypass reasons');
-
-      if (this.isWarnMode) {
-        return getSelectedOptionsText({
-          options: this.bypassReasonItems,
-          selected: this.selectedReasons,
-          placeholder,
-          maxOptionsShown: 4,
-        });
-      }
-
-      return (
-        POLICY_EXCEPTIONS_BYPASS_REASONS.find(({ value }) => value === this.selectedReason)?.text ||
-        placeholder
-      );
+      return getSelectedOptionsText({
+        options: this.$options.WARN_MODE_BYPASS_REASONS,
+        selected: this.selectedReasons,
+        placeholder: s__('SecurityOrchestration|Select bypass reasons'),
+        maxOptionsShown: 4,
+      });
     },
     bypassReasonState() {
       return !(this.bypassReasonTextAreaDirty && this.isBypassReasonEmpty);
-    },
-    commonVariables() {
-      return {
-        iid: this.mr.iid.toString(),
-        projectPath: this.mr.targetProjectFullPath,
-        securityPolicyIds: this.selectedPolicies,
-      };
     },
   },
   methods: {
@@ -148,15 +117,27 @@ export default {
       this.loading = true;
 
       try {
-        const errors = this.isWarnMode
-          ? await this.handleBypassWarnMode()
-          : await this.handleBypassPolicyException();
+        const {
+          data: {
+            dismissPolicyViolations: { errors },
+          },
+        } = await this.$apollo.mutate({
+          mutation: bypassSecurityPolicyViolations,
+          variables: {
+            iid: this.mr.iid.toString(),
+            projectPath: this.mr.targetProjectFullPath,
+            securityPolicyIds: this.selectedPolicies,
+            comment: this.bypassReason,
+            dismissalTypes: this.selectedReasons,
+          },
+        });
 
         if (errors?.length) {
           throw Error(errors.join(','));
         }
 
         this.handleClose();
+        this.$emit('saved');
       } catch (e) {
         this.showErrorAlert = true;
         Sentry.captureException(e);
@@ -164,39 +145,13 @@ export default {
         this.loading = false;
       }
     },
-    async handleBypassPolicyException() {
-      const {
-        data: {
-          mergeRequestBypassSecurityPolicy: { errors },
-        },
-      } = await this.$apollo.mutate({
-        mutation: bypassSecurityPolicyExceptionViolations,
-        variables: {
-          ...this.commonVariables,
-          reason: `${this.selectedReason}:${this.bypassReason}`,
-        },
-      });
-
-      return errors;
-    },
-    async handleBypassWarnMode() {
-      const {
-        data: {
-          dismissPolicyViolations: { errors },
-        },
-      } = await this.$apollo.mutate({
-        mutation: bypassSecurityPolicyViolations,
-        variables: {
-          ...this.commonVariables,
-          comment: this.bypassReason,
-          dismissalTypes: this.selectedReasons,
-        },
-      });
-
-      return errors;
-    },
     handleClose() {
       this.$emit('close');
+    },
+    handleChange(opened) {
+      if (!opened) {
+        this.handleClose();
+      }
     },
     handleSelect(property, value) {
       this[property] = value;
@@ -207,10 +162,6 @@ export default {
     updateBypassReason(value) {
       this.bypassReasonTextAreaDirty = true;
       this.bypassReason = value;
-    },
-    handleSelectReason(value) {
-      const key = this.isWarnMode ? 'selectedReasons' : 'selectedReason';
-      this.handleSelect(key, value);
     },
   },
 };
@@ -226,10 +177,11 @@ export default {
     size="md"
     @primary.prevent="handleBypass"
     @cancel="handleClose"
+    @change="handleChange"
   >
     <gl-alert variant="info" :dismissible="false" class="gl-mb-4" :title="__('What happens next?')">
       <ul class="gl-mb-0 gl-pl-5">
-        <li v-for="step in nextSteps" :key="step">
+        <li v-for="step in $options.WARN_MODE_NEXT_STEPS" :key="step">
           {{ step }}
         </li>
       </ul>
@@ -250,12 +202,7 @@ export default {
       }}
     </gl-alert>
 
-    <security-policy-violations-selector
-      v-if="showModeSelection"
-      class="gl-mb-7"
-      @select="selectMode"
-    />
-    <div v-else data-testid="modal-content">
+    <div data-testid="modal-content">
       <gl-form-group
         :label="s__('SecurityOrchestration|Select policies to bypass')"
         label-for="policy-selector"
@@ -278,13 +225,13 @@ export default {
         class="gl-mb-4"
       >
         <gl-collapsible-listbox
-          :selected="selected"
+          :selected="selectedReasons"
           block
-          :multiple="isWarnMode"
-          :items="bypassReasonItems"
+          multiple
+          :items="$options.WARN_MODE_BYPASS_REASONS"
           :toggle-text="selectedReasonText"
           data-testid="reason-selector"
-          @select="handleSelectReason"
+          @select="handleSelect('selectedReasons', $event)"
         />
       </gl-form-group>
 

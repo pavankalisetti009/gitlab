@@ -43,10 +43,6 @@ export const INITIAL_STATE_NEXT_STEPS = [
 
 export const POLICY_EXCEPTIONS_NEXT_STEPS = [
   s__(
-    'SecurityOrchestration|You have permissions to bypass all checks in this merge request or selectively only bypass Warn Mode policies.',
-  ),
-  s__(
-    'SecurityOrchestration|Choose from the options below based on how you would like to proceed.',
     'SecurityOrchestration|All policy requirements will be bypassed for this MR and can be merged immediately',
   ),
   s__(

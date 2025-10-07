@@ -5,9 +5,11 @@ import waitForPromises from 'helpers/wait_for_promises';
 import createMockApollo from 'helpers/mock_apollo_helper';
 import SecurityPolicyViolations from 'ee/vue_merge_request_widget/components/checks/security_policy_violations.vue';
 import SecurityPolicyViolationsModal from 'ee/vue_merge_request_widget/components/checks/security_policy_violations_modal.vue';
+import SecurityPolicyBypassStatusesModal from 'ee/vue_merge_request_widget/components/checks/security_policy_bypass_statuses_modal.vue';
+import SecurityPolicyViolationsSelector from 'ee/vue_merge_request_widget/components/checks/security_policy_violations_selector.vue';
 import ActionButtons from '~/vue_merge_request_widget/components/action_buttons.vue';
 import getPolicyViolations from 'ee/merge_requests/reports/queries/policy_violations.query.graphql';
-import { WARN_MODE, EXCEPTION_MODE } from 'ee/vue_merge_request_widget/components/checks/constants';
+import { EXCEPTION_MODE } from 'ee/vue_merge_request_widget/components/checks/constants';
 import {
   mockEnforcedSecurityPolicyViolation,
   mockWarnSecurityPolicyViolation,
@@ -15,53 +17,61 @@ import {
 
 Vue.use(VueApollo);
 
-const getApolloProvider = (policies) =>
-  createMockApollo(
-    [
-      [
-        getPolicyViolations,
-        jest.fn().mockResolvedValue({
-          data: {
-            project: {
-              id: 'gid://gitlab/Project/25',
-              mergeRequest: {
-                id: 'gid://gitlab/MergeRequest/598',
-                targetBranch: 'main',
-                sourceBranch: 'root-main-patch-82768',
-                headPipeline: {
-                  id: 'gid://gitlab/Ci::Pipeline/101891',
-                  iid: '19776',
-                  updatedAt: '2025-08-20T22:13:19Z',
-                  path: '/gitlab-org/security-reports/-/pipelines/101891',
-                  __typename: 'Pipeline',
-                },
-                policyViolations: {
-                  comparisonPipelines: [],
-                  anyMergeRequest: [],
-                  licenseScanning: [],
-                  newScanFinding: [],
-                  policies,
-                  previousScanFinding: [],
-                  __typename: 'PolicyViolationDetails',
-                },
-                __typename: 'MergeRequest',
-              },
-              __typename: 'Project',
-            },
-          },
-        }),
-      ],
-    ],
-    {},
-    { typePolicies: { Query: { fields: { project: { merge: false } } } } },
-  );
-
 describe('SecurityPolicyViolations merge checks component', () => {
   let wrapper;
   const policiesPath = '/security-path';
+  let resolver;
+
+  const getApolloProvider = (policies, allowBypass = false, bypassed = false) => {
+    resolver = jest.fn().mockResolvedValue({
+      data: {
+        project: {
+          id: 'gid://gitlab/Project/25',
+          mergeRequest: {
+            id: 'gid://gitlab/MergeRequest/598',
+            targetBranch: 'main',
+            sourceBranch: 'root-main-patch-82768',
+            headPipeline: {
+              id: 'gid://gitlab/Ci::Pipeline/101891',
+              iid: '19776',
+              updatedAt: '2025-08-20T22:13:19Z',
+              path: '/gitlab-org/security-reports/-/pipelines/101891',
+              __typename: 'Pipeline',
+            },
+            policyBypassStatuses: [
+              {
+                allowBypass,
+                bypassed,
+                id: '2',
+                name: 'Prevent Critical Vulnerabilities',
+              },
+            ],
+            policyViolations: {
+              comparisonPipelines: [],
+              anyMergeRequest: [],
+              licenseScanning: [],
+              newScanFinding: [],
+              policies,
+              previousScanFinding: [],
+              __typename: 'PolicyViolationDetails',
+            },
+            __typename: 'MergeRequest',
+          },
+          __typename: 'Project',
+        },
+      },
+    });
+
+    return createMockApollo(
+      [[getPolicyViolations, resolver]],
+      {},
+      { typePolicies: { Query: { fields: { project: { merge: false } } } } },
+    );
+  };
 
   function createComponent({
     allowBypass = false,
+    bypassed = false,
     status = 'SUCCESS',
     securityPoliciesPath = null,
     warnModeEnabled = false,
@@ -73,10 +83,9 @@ describe('SecurityPolicyViolations merge checks component', () => {
     ],
   } = {}) {
     wrapper = mountExtended(SecurityPolicyViolations, {
-      apolloProvider: getApolloProvider(policies),
+      apolloProvider: getApolloProvider(policies, allowBypass, bypassed),
       propsData: {
         mr: {
-          allowBypass,
           securityPoliciesPath,
           iid: 123,
           targetProjectFullPath: 'group/project',
@@ -100,6 +109,9 @@ describe('SecurityPolicyViolations merge checks component', () => {
   const findBypassButton = () => wrapper.findByTestId('bypass-button');
   const findIcon = () => wrapper.findByTestId('security-policy-help-icon');
   const findModal = () => wrapper.findComponent(SecurityPolicyViolationsModal);
+  const findBypassStatusesModal = () => wrapper.findComponent(SecurityPolicyBypassStatusesModal);
+  const findSecurityPolicyViolationsSelector = () =>
+    wrapper.findComponent(SecurityPolicyViolationsSelector);
   const findPopover = () => wrapper.findByTestId('security-policy-help-popover');
   const findViewPoliciesLink = () => wrapper.find('[href="/security-path"]');
 
@@ -149,8 +161,6 @@ describe('SecurityPolicyViolations merge checks component', () => {
       ${'warn mode is enabled and this is no security path and there are no policies'}            | ${true}         | ${''}                | ${[]}
       ${'warn mode is enabled and this is no security path and there are enforced policies'}      | ${true}         | ${''}                | ${[mockEnforcedSecurityPolicyViolation]}
       ${'warn mode is enabled and this is no security path and there are warn policies'}          | ${true}         | ${''}                | ${[mockWarnSecurityPolicyViolation]}
-      ${'warn mode is enabled and this is is a security path and there are no policies'}          | ${true}         | ${policiesPath}      | ${[]}
-      ${'warn mode is enabled and this is is a security path and there are enforced policies'}    | ${true}         | ${policiesPath}      | ${[mockEnforcedSecurityPolicyViolation]}
     `(
       'does not show the bypass button when $title',
       async ({ warnModeEnabled, securityPoliciesPath, policies }) => {
@@ -221,24 +231,29 @@ describe('SecurityPolicyViolations merge checks component', () => {
       createComponent({
         warnModeEnabled: true,
         securityPoliciesPath,
+        securityPoliciesBypassOptionsMrWidget: true,
       });
       await waitForPromises();
-
-      expect(findModal().exists()).toBe(false);
 
       await findBypassButton().vm.$emit('click');
 
       expect(findModal().exists()).toBe(true);
+      expect(findModal().props('visible')).toBe(true);
+
+      await findBypassButton().vm.$emit('click');
+
+      expect(findModal().exists()).toBe(true);
+      expect(findModal().props('visible')).toBe(true);
+
       expect(findModal().props()).toEqual(
         expect.objectContaining({
-          mode: WARN_MODE,
           mr: {
-            allowBypass: false,
             securityPoliciesPath,
             iid: 123,
             targetProjectFullPath: 'group/project',
           },
           policies: [mockWarnSecurityPolicyViolation],
+          visible: true,
         }),
       );
     });
@@ -252,6 +267,7 @@ describe('SecurityPolicyViolations merge checks component', () => {
 
       await findBypassButton().vm.$emit('click');
       expect(findModal().exists()).toBe(true);
+      expect(findModal().props('visible')).toBe(true);
 
       await findModal().vm.$emit('close');
 
@@ -262,14 +278,19 @@ describe('SecurityPolicyViolations merge checks component', () => {
       createComponent({
         warnModeEnabled: true,
         securityPoliciesPath: policiesPath,
+        securityPoliciesBypassOptionsMrWidget: true,
+        allowBypass: true,
       });
       await waitForPromises();
 
       await findBypassButton().vm.$emit('click');
 
-      await findModal().vm.$emit('select-mode', EXCEPTION_MODE);
+      expect(findSecurityPolicyViolationsSelector().exists()).toBe(true);
 
-      expect(findModal().props('mode')).toBe(EXCEPTION_MODE);
+      await findSecurityPolicyViolationsSelector().vm.$emit('select', EXCEPTION_MODE);
+
+      expect(findSecurityPolicyViolationsSelector().exists()).toBe(false);
+      expect(findBypassStatusesModal().exists()).toBe(true);
     });
 
     it('enables mode selector when there is a conflict', async () => {
@@ -283,7 +304,68 @@ describe('SecurityPolicyViolations merge checks component', () => {
 
       await findBypassButton().vm.$emit('click');
 
-      expect(findModal().props('mode')).toBe('');
+      expect(findSecurityPolicyViolationsSelector().exists()).toBe(true);
+    });
+
+    it('enables bypass button for bypass statuses', async () => {
+      createComponent({
+        securityPoliciesBypassOptionsMrWidget: true,
+        allowBypass: true,
+        securityPoliciesPath: policiesPath,
+        warnModeEnabled: true,
+        policies: [mockEnforcedSecurityPolicyViolation],
+      });
+      await waitForPromises();
+
+      await findBypassButton().vm.$emit('click');
+
+      expect(findBypassStatusesModal().props('policies')).toEqual([
+        {
+          allowBypass: true,
+          bypassed: false,
+          id: '2',
+          name: 'Prevent Critical Vulnerabilities',
+        },
+      ]);
+      expect(findBypassButton().exists()).toBe(true);
+      expect(findBypassButton().props('disabled')).toBe(false);
+    });
+
+    it('refetches the policies when policies are bypassed', async () => {
+      createComponent({
+        securityPoliciesBypassOptionsMrWidget: true,
+        allowBypass: true,
+        bypassed: true,
+        securityPoliciesPath: policiesPath,
+        warnModeEnabled: true,
+      });
+      await waitForPromises();
+
+      expect(resolver).toHaveBeenCalledTimes(1);
+      await findBypassButton().vm.$emit('click');
+      expect(findModal().props('policies')).toEqual([mockWarnSecurityPolicyViolation]);
+
+      await findModal().vm.$emit('saved');
+      expect(resolver).toHaveBeenCalledTimes(2);
+    });
+
+    it('disables bypass button after policies bypassed by user', async () => {
+      createComponent({
+        securityPoliciesBypassOptionsMrWidget: true,
+        securityPoliciesPath: policiesPath,
+        allowBypass: true,
+        policies: [],
+      });
+      await waitForPromises();
+      expect(resolver).toHaveBeenCalledTimes(1);
+      await findBypassButton().vm.$emit('click');
+
+      expect(findBypassButton().props('disabled')).toBe(false);
+
+      findBypassStatusesModal().vm.$emit('saved');
+      await waitForPromises();
+
+      expect(resolver).toHaveBeenCalledTimes(2);
     });
   });
 });

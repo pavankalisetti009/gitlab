@@ -73,6 +73,14 @@ describe('Merge request reports blockers page component', () => {
                   sourceBranch: 'feature',
                   headPipeline: null,
                   policyViolations,
+                  policyBypassStatuses: [
+                    {
+                      allowBypass: false,
+                      bypassed: false,
+                      id: '2',
+                      name: 'Prevent Critical Vulnerabilities',
+                    },
+                  ],
                 },
               },
             },
