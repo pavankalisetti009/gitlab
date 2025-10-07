@@ -6,6 +6,9 @@ query SubgroupsAndProjects(
   $projectsAfter: String
   $search: String
   $hasSearch: Boolean!
+  $namespaceId: NamespaceID!
+  $vulnerabilityCountFilters: [VulnerabilityCountFilterInput!]
+  $securityAnalyzerFilters: [AnalyzerFilterInput!]
 ) {
   group(fullPath: $fullPath) {
     id
@@ -53,7 +56,7 @@ query SubgroupsAndProjects(
       search: $search
       includeSubgroups: $hasSearch
       includeArchived: false
-    ) {
+    ) @skip(if: $hasSearch) {
       pageInfo {
         hasNextPage
         endCursor
@@ -95,6 +98,59 @@ query SubgroupsAndProjects(
           }
         }
       }
+    }
+  }
+  namespaceSecurityProjects(
+    namespaceId: $namespaceId
+    vulnerabilityCountFilters: $vulnerabilityCountFilters
+    securityAnalyzerFilters: $securityAnalyzerFilters
+    first: $projectsFirst
+    after: $projectsAfter
+    search: $search
+    includeSubgroups: true
+  ) @include(if: $hasSearch) {
+    edges {
+      node {
+        __typename
+        id
+        name
+        path
+        fullPath
+        avatarUrl
+        webUrl
+        updatedAt
+        secretPushProtectionEnabled
+        containerScanningForRegistryEnabled
+        vulnerabilityStatistic {
+          critical
+          high
+          low
+          info
+          medium
+          unknown
+          updatedAt
+        }
+        analyzerStatuses {
+          status
+          analyzerType
+          lastCall
+          buildId
+          updatedAt
+        }
+        # @client cannot be combined with @include
+        # resolver returns empty array if feature flag is disabled
+        securityAttributes @client {
+          nodes {
+            id
+            name
+            color
+          }
+        }
+      }
+    }
+    pageInfo {
+      hasNextPage
+      endCursor
     }
   }
 }

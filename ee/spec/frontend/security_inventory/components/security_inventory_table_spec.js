@@ -9,7 +9,7 @@ import ActionCell from 'ee/security_inventory/components/action_cell.vue';
 import AttributesCell from 'ee/security_inventory/components/attributes_cell.vue';
 import { subgroupsAndProjects } from '../mock_data';
 
-const mockProject = subgroupsAndProjects.data.group.projects.nodes[0];
+const mockProject = subgroupsAndProjects.data.namespaceSecurityProjects.edges[0].node;
 const mockGroup = subgroupsAndProjects.data.group.descendantGroups.nodes[0];
 const items = [mockGroup, mockProject];
 
