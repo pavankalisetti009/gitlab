@@ -12,15 +12,8 @@
         },
         {
           "bool": {
+            "minimum_should_match": 1,
             "should": [
-              {
-                "term": {
-                  "author_id": {
-                    "_name": "filters:confidentiality:projects:confidential:as_author",
-                    "value": __USER_ID__
-                  }
-                }
-              },
               {
                 "term": {
                   "assignee_id": {
@@ -30,23 +23,57 @@
                 }
               },
               {
+                "bool": {
+                  "filter": [
+                    {
+                      "term": {
+                        "author_id": {
+                          "_name": "filters:confidentiality:projects:confidential:as_author",
+                          "value": __USER_ID__
+                        }
+                      }
+                    }
+                  ],
+                  "minimum_should_match": 1,
+                  "should": [
+                    {
+                      "bool": {
+                        "must_not": [
+                          {
+                            "term": {
+                              "namespace_visibility_level": 0
+                            }
+                          }
+                        ]
+                      }
+                    }
+                  ]
+                }
+              },
+              {
                 "terms": {
-                  "_name": "filters:confidentiality:projects:project:member",
+                  "_name": "filters:confidentiality:projects:private:project:member",
                   "project_id": [
                     __PROJECT_ID__
                   ]
                 }
               },
               {
-                "prefix": {
-                  "traversal_ids": {
-                    "_name": "filters:confidentiality:projects:ancestry_filter:descendants",
-                    "value": "__NAMESPACE_ANCESTRY__"
-                  }
+                "bool": {
+                  "minimum_should_match": 1,
+                  "should": [
+                    {
+                      "prefix": {
+                        "traversal_ids": {
+                          "_name": "filters:confidentiality:projects:private:ancestry_filter:descendants",
+                          "value": "__NAMESPACE_ANCESTRY__"
+                        }
+                      }
+                    }
+                  ]
                 }
               }
-            ],
-            "minimum_should_match": 1
+            ]
           }
         }
       ],

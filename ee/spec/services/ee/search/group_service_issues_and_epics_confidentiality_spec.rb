@@ -20,7 +20,7 @@ RSpec.describe Search::GroupService, '#confidentiality', feature_category: :glob
     let_it_be(:term) { 'hello' }
     let(:search) { term }
 
-    context 'for issues', skip: 'skipped temporarily until project query is fixed' do
+    context 'for issues' do
       let(:scope) { 'issues' }
 
       let_it_be(:non_confidential) { create :work_item, project: project, title: term }
