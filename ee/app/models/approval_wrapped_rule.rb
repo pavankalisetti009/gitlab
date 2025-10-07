@@ -153,7 +153,7 @@ class ApprovalWrappedRule
   end
 
   def approvals_required
-    return 0 if approval_rule_dismissed?
+    return 0 if approval_rule_dismissed? || approval_rule_bypassed?
 
     @approval_rule.approvals_required
   end

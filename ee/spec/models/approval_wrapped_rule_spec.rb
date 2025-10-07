@@ -618,6 +618,33 @@ RSpec.describe ApprovalWrappedRule, feature_category: :code_review_workflow do
         end
       end
     end
+
+    context 'when rule is bypassed' do
+      let_it_be(:security_policy) { create(:security_policy, :approval_policy) }
+      let_it_be(:approval_policy_rule) { create(:approval_policy_rule, security_policy: security_policy) }
+
+      let(:rule) do
+        create(
+          :approval_merge_request_rule,
+          report_type: :scan_finding,
+          merge_request: merge_request,
+          approvals_required: 19,
+          approval_policy_rule: approval_policy_rule
+        )
+      end
+
+      before do
+        create(:approval_policy_merge_request_bypass_event,
+          security_policy: security_policy,
+          project: merge_request.project,
+          merge_request: merge_request
+        )
+      end
+
+      it 'returns 0 when the rule is bypassed' do
+        expect(approval_wrapped_rule.approvals_required).to eq(0)
+      end
+    end
   end
 
   describe '#name' do

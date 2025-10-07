@@ -50,22 +50,28 @@ FactoryBot.define do
     transient do
       bypass_access_token_ids { [] }
       bypass_service_account_ids { [] }
+      bypass_user_ids { [] }
     end
 
     after(:build) do |policy, evaluator|
-      next if evaluator.bypass_access_token_ids.blank?
-
-      policy.content ||= {}
-      policy.content[:bypass_settings] ||= {}
-      policy.content[:bypass_settings][:access_tokens] = evaluator.bypass_access_token_ids.map do |token_id|
-        { id: token_id }
+      unless evaluator.bypass_access_token_ids.blank?
+        policy.content ||= {}
+        policy.content[:bypass_settings] ||= {}
+        policy.content[:bypass_settings][:access_tokens] = evaluator.bypass_access_token_ids.map do |token_id|
+          { id: token_id }
+        end
       end
 
-      next if evaluator.bypass_service_account_ids.blank?
+      unless evaluator.bypass_service_account_ids.blank?
+        policy.content[:bypass_settings] ||= {}
+        policy.content[:bypass_settings][:service_accounts] = evaluator
+          .bypass_service_account_ids.map { |service_account_id| { id: service_account_id } }
+      end
 
-      policy.content[:bypass_settings] ||= {}
-      policy.content[:bypass_settings][:service_accounts] = evaluator
-        .bypass_service_account_ids.map { |service_account_id| { id: service_account_id } }
+      unless evaluator.bypass_user_ids.blank?
+        policy.content[:bypass_settings] ||= {}
+        policy.content[:bypass_settings][:users] = evaluator.bypass_user_ids.map { |user_id| { id: user_id } }
+      end
     end
 
     trait :deleted do
