@@ -10,7 +10,7 @@ module Mutations
       end
 
       def self.authorization_scopes
-        [:api, :read_api, :ai_workflows]
+        [:api, :ai_workflows]
       end
 
       prepend Mutations::VulnerabilityStateTransitions

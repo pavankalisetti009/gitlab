@@ -36,7 +36,7 @@ module Mutations
         description: "IDs of vulnerabilities to link to the given issue.  Up to #{MAX_VULNERABILITIES} can be provided."
 
       def self.authorization_scopes
-        [:api, :read_api, :ai_workflows]
+        [:api, :ai_workflows]
       end
 
       def resolve(issue_id:, vulnerability_ids:)
