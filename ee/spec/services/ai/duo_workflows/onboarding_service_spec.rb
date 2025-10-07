@@ -27,6 +27,8 @@ RSpec.describe Ai::DuoWorkflows::OnboardingService, type: :service, feature_cate
         service_account_user = User.find_by_id(service_account_user_id)
         expect(service_account_user.composite_identity_enforced?).to be true
         expect(service_account_user.private_profile?).to be true
+        expect(service_account_user.name).to eq('Duo Developer')
+        expect(service_account_user.username).to eq('duo-developer')
       end
     end
 
