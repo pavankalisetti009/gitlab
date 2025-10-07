@@ -22,7 +22,12 @@ RSpec.describe 'Query.subscriptionUsage', feature_category: :consumables_cost_ma
       query_graphql_field(:pool_usage, {}, [:total_credits, :credits_used]),
       query_graphql_field(:users_usage, {}, [
         query_graphql_field(:users, {}, [
-          query_graphql_field(:nodes, {}, [:id, :name, :avatar_url])
+          query_graphql_field(:nodes, {}, [
+            :id,
+            :name,
+            :avatar_url,
+            query_graphql_field(:usage, {}, [:total_credits, :credits_used, :pool_credits_used])
+          ])
         ])
       ])
     ]
@@ -57,13 +62,28 @@ RSpec.describe 'Query.subscriptionUsage', feature_category: :consumables_cost_ma
   before do
     stub_feature_flags(usage_billing_dev: true)
 
-    allow(Gitlab::SubscriptionPortal::Client).to receive(:get_subscription_pool_usage).and_return({
+    users_usage = User.all.map do |user|
+      {
+        user_id: user.id,
+        total_credits: user.id,
+        credits_used: user.id * 10,
+        pool_credits_used: user.id * 100,
+        status: 'Using pool'
+      }
+    end
+
+    pool_usage = {
       success: true,
       poolUsage: {
         totalUnits: 1000,
         unitsUsed: 250
       }
-    })
+    }
+
+    allow(Gitlab::SubscriptionPortal::Client).to receive_messages(
+      get_subscription_pool_usage: pool_usage,
+      get_subscription_usage_for_user_ids: { success: true, usersUsage: users_usage }
+    )
   end
 
   context 'when in Self-Managed' do
@@ -84,7 +104,12 @@ RSpec.describe 'Query.subscriptionUsage', feature_category: :consumables_cost_ma
               {
                 id: u.to_global_id.to_s,
                 name: u.name,
-                avatarUrl: u.avatar_url
+                avatarUrl: u.avatar_url,
+                usage: {
+                  totalCredits: u.id,
+                  creditsUsed: u.id * 10,
+                  poolCreditsUsed: u.id * 100
+                }
               }.with_indifferent_access
             end
           )
@@ -128,7 +153,12 @@ RSpec.describe 'Query.subscriptionUsage', feature_category: :consumables_cost_ma
                 {
                   id: u.to_global_id.to_s,
                   name: u.name,
-                  avatarUrl: u.avatar_url
+                  avatarUrl: u.avatar_url,
+                  usage: {
+                    totalCredits: u.id,
+                    creditsUsed: u.id * 10,
+                    poolCreditsUsed: u.id * 100
+                  }
                 }.with_indifferent_access
               end
             )

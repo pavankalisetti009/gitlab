@@ -1,5 +1,12 @@
 <script>
-import { GlBadge, GlButton, GlCollapsibleListbox, GlExperimentBadge, GlIcon } from '@gitlab/ui';
+import {
+  GlBadge,
+  GlButton,
+  GlCollapsibleListbox,
+  GlExperimentBadge,
+  GlIcon,
+  GlTooltipDirective,
+} from '@gitlab/ui';
 import { s__ } from '~/locale';
 import { SELF_HOSTED_ROUTE_NAMES } from 'ee/ai/duo_self_hosted/constants';
 import { GITLAB_DEFAULT_MODEL } from 'ee/ai/model_selection/constants';
@@ -13,6 +20,9 @@ export default {
     GlCollapsibleListbox,
     GlExperimentBadge,
     GlIcon,
+  },
+  directives: {
+    GlTooltip: GlTooltipDirective,
   },
   props: {
     selectedOption: {
@@ -44,6 +54,11 @@ export default {
       required: false,
       default: false,
     },
+    withDefaultModelTooltip: {
+      type: Boolean,
+      required: false,
+      default: false,
+    },
   },
   SELF_HOSTED_ROUTE_NAMES,
   computed: {
@@ -55,6 +70,9 @@ export default {
     },
     headerText() {
       return this.isFeatureSettingDropdown ? s__('AdminAIPoweredFeatures|Compatible models') : null;
+    },
+    defaultModelTooltipText() {
+      return this.withDefaultModelTooltip ? s__('AdminAIPoweredFeatures|GitLab default model') : '';
     },
   },
   methods: {
@@ -96,6 +114,8 @@ export default {
             <div class="gl-align-items gl-flex gl-overflow-hidden">
               <gl-badge
                 v-if="isDefaultModel(selectedOption)"
+                v-gl-tooltip
+                :title="defaultModelTooltipText"
                 data-testid="default-model-selected-badge"
                 class="!gl-ml-0 gl-mr-3"
                 variant="info"
@@ -123,6 +143,8 @@ export default {
         {{ item.text }}
         <gl-badge
           v-if="isDefaultModel(item)"
+          v-gl-tooltip
+          :title="defaultModelTooltipText"
           data-testid="default-model-dropdown-badge"
           variant="info"
           icon="tanuki"

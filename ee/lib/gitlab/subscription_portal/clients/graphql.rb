@@ -371,6 +371,54 @@ module Gitlab
             end
           end
 
+          def get_subscription_usage_for_user_ids(
+            user_ids:,
+            start_date: Date.current.beginning_of_month,
+            end_date: Date.current.end_of_month,
+            namespace_id: nil,
+            license_key: nil
+          )
+            query = <<~GQL
+              query subscriptionUsageForUserIds(
+                $userIds: [Int],
+                $namespaceId: ID,
+                $licenseKey: String,
+                $startDate: ISO8601Date,
+                $endDate: ISO8601Date
+              ) {
+                subscription(namespaceId: $namespaceId, licenseKey: $licenseKey) {
+                  gitlabUnitsUsage(startDate: $startDate, endDate:$endDate) {
+                    usersUsage {
+                      userId
+                      totalCredits
+                      creditsUsed
+                      poolCreditsUsed
+                      users(userIds: $userIds)
+                    }
+                  }
+                }
+              }
+            GQL
+
+            variables = { startDate: start_date, endDate: end_date, userIds: user_ids }
+            variables[:namespaceId] = namespace_id if namespace_id
+            variables[:licenseKey] = license_key if license_key
+
+            response = execute_graphql_query_for_subscription_usage(
+              query: query,
+              variables: variables
+            )
+
+            if response[:success]
+              {
+                success: true,
+                usersUsage: response.dig(:data, :data, :subscription, :gitlabUnitsUsage, :usersUsage, :users)
+              }
+            else
+              error(response.dig(:data, :errors))
+            end
+          end
+
           private
 
           def execute_graphql_query(params)
