@@ -67,13 +67,7 @@ module EE
 
       return false unless ::Feature.enabled?(:ai_user_default_duo_namespace, user)
 
-      users_namespaces = user.user_preference.distinct_eligible_duo_add_on_assignments.map(&:namespace)
-
-      has_feature_enabled = users_namespaces.any? do |namespace|
-        ::Feature.enabled?(:ai_model_switching, namespace)
-      end
-
-      return false unless has_feature_enabled
+      return false unless user.user_preference.distinct_eligible_duo_add_on_assignments.exists?
 
       ::Gitlab::CurrentSettings.current_application_settings.duo_features_enabled
     end
