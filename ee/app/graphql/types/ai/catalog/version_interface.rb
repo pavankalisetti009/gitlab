@@ -8,7 +8,8 @@ module Types
 
         RESOLVE_TYPES = {
           ::Ai::Catalog::Item::AGENT_TYPE => ::Types::Ai::Catalog::AgentVersionType,
-          ::Ai::Catalog::Item::FLOW_TYPE => ::Types::Ai::Catalog::FlowVersionType
+          ::Ai::Catalog::Item::FLOW_TYPE => ::Types::Ai::Catalog::FlowVersionType,
+          ::Ai::Catalog::Item::THIRD_PARTY_FLOW_TYPE => ::Types::Ai::Catalog::ThirdPartyFlowVersionType
         }.freeze
 
         graphql_name 'AiCatalogItemVersion'
@@ -30,6 +31,7 @@ module Types
 
         orphan_types ::Types::Ai::Catalog::AgentVersionType
         orphan_types ::Types::Ai::Catalog::FlowVersionType
+        orphan_types ::Types::Ai::Catalog::ThirdPartyFlowVersionType
 
         def self.resolve_type(version, _context)
           item_type = version.item.item_type.to_sym

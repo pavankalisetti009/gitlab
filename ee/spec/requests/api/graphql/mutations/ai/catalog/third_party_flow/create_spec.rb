@@ -1,0 +1,161 @@
+# frozen_string_literal: true
+
+require 'spec_helper'
+
+RSpec.describe Mutations::Ai::Catalog::ThirdPartyFlow::Create, feature_category: :workflow_catalog do
+  include Ai::Catalog::TestHelpers
+  include GraphqlHelpers
+
+  let_it_be(:maintainer) { create(:user) }
+  let_it_be(:project) { create(:project, maintainers: maintainer) }
+
+  let(:current_user) { maintainer }
+  let(:mutation) do
+    graphql_mutation(:ai_catalog_third_party_flow_create, params) do
+      <<~FIELDS
+        errors
+        item {
+          name
+          description
+          project {
+            id
+          }
+          public
+          latestVersion {
+            released
+            ... on AiCatalogThirdPartyFlowVersion {
+              definition
+            }
+          }
+        }
+      FIELDS
+    end
+  end
+
+  let(:name) { 'Name' }
+  let(:description) { 'Description' }
+  let(:tools) { Ai::Catalog::BuiltInTool.where(id: [1, 9]) }
+  let(:params) do
+    {
+      project_id: project.to_global_id,
+      name: name,
+      description: description,
+      public: true,
+      release: true,
+      definition: <<-YAML
+      injectGatewayToken: true
+      image: example/image:latest
+      commands:
+        - /bin/bash
+      variables:
+        VAR1: VAL1
+      YAML
+    }
+  end
+
+  subject(:execute) { post_graphql_mutation(mutation, current_user: current_user) }
+
+  before do
+    enable_ai_catalog
+  end
+
+  shared_examples 'an authorization failure' do
+    it_behaves_like 'a mutation that returns a top-level access error'
+
+    it 'does not create a catalog item or version' do
+      expect { execute }.not_to change { Ai::Catalog::Item.count }
+    end
+  end
+
+  context 'when user is a developer' do
+    let(:current_user) { create(:user).tap { |user| project.add_developer(user) } }
+
+    it_behaves_like 'an authorization failure'
+  end
+
+  context 'when global_ai_catalog feature flag is disabled' do
+    before do
+      stub_feature_flags(global_ai_catalog: false)
+    end
+
+    it_behaves_like 'an authorization failure'
+  end
+
+  context 'when graphql params are invalid' do
+    let(:name) { nil }
+    let(:description) { nil }
+
+    it 'returns the validation error' do
+      execute
+
+      expect(graphql_errors.first['message']).to include(
+        'provided invalid value for',
+        'name (Expected value to not be null)',
+        'description (Expected value to not be null)'
+      )
+    end
+  end
+
+  context 'when model params are invalid' do
+    let(:name) { '' }
+    let(:description) { '' }
+
+    it 'returns the validation error' do
+      execute
+
+      expect(graphql_data_at(:ai_catalog_third_party_flow_create, :errors)).to contain_exactly(
+        "Description can't be blank",
+        "Name can't be blank",
+        "Name is too short (minimum is 3 characters)"
+      )
+      expect(graphql_data_at(:ai_catalog_third_party_flow_create, :item)).to be_nil
+    end
+  end
+
+  it 'creates a catalog item and version with expected data', :freeze_time do
+    execute
+
+    item = Ai::Catalog::Item.last
+
+    expect(item).to have_attributes(
+      name: params[:name],
+      description: params[:description],
+      public: true,
+      item_type: Ai::Catalog::Item::THIRD_PARTY_FLOW_TYPE.to_s
+    )
+    expect(item.latest_version).to have_attributes(
+      schema_version: 1,
+      release_date: Time.zone.now,
+      version: '1.0.0',
+      definition: {
+        injectGatewayToken: true,
+        image: 'example/image:latest',
+        commands: ['/bin/bash'],
+        variables: { 'VAR1' => 'VAL1' }
+      }.stringify_keys
+    )
+  end
+
+  it 'returns the new item' do
+    execute
+
+    expect(graphql_data_at(:ai_catalog_third_party_flow_create, :item)).to match a_hash_including(
+      'name' => name,
+      'description' => description,
+      'project' => a_graphql_entity_for(project),
+      'public' => true,
+      'latestVersion' => {
+        'released' => true,
+        'definition' => a_kind_of(String)
+      }
+    )
+
+    expect(YAML.load(graphql_data_at(:ai_catalog_third_party_flow_create, :item, :latestVersion, :definition)))
+      .to match(
+        'injectGatewayToken' => true,
+        'image' => 'example/image:latest',
+        'commands' => ['/bin/bash'],
+        'variables' => { 'VAR1' => 'VAL1' }
+      )
+  end
+end

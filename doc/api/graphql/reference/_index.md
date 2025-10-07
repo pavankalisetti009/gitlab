@@ -2850,6 +2850,35 @@ Input type: `AiCatalogItemConsumerUpdateInput`
 | <a id="mutationaicatalogitemconsumerupdateerrors"></a>`errors` | [`[String!]!`](#string) | Errors encountered during the mutation. |
 | <a id="mutationaicatalogitemconsumerupdateitemconsumer"></a>`itemConsumer` | [`AiCatalogItemConsumer`](#aicatalogitemconsumer) | Item consumer that was updated. |
 
+### `Mutation.aiCatalogThirdPartyFlowCreate`
+
+{{< details >}}
+**Introduced** in GitLab 18.5.
+**Status**: Experiment.
+{{< /details >}}
+
+Input type: `AiCatalogThirdPartyFlowCreateInput`
+
+#### Arguments
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="mutationaicatalogthirdpartyflowcreateclientmutationid"></a>`clientMutationId` | [`String`](#string) | A unique identifier for the client performing the mutation. |
+| <a id="mutationaicatalogthirdpartyflowcreatedefinition"></a>`definition` | [`String!`](#string) | YAML definition for the Flow. |
+| <a id="mutationaicatalogthirdpartyflowcreatedescription"></a>`description` | [`String!`](#string) | Description for the Flow. |
+| <a id="mutationaicatalogthirdpartyflowcreatename"></a>`name` | [`String!`](#string) | Name for the Flow. |
+| <a id="mutationaicatalogthirdpartyflowcreateprojectid"></a>`projectId` | [`ProjectID!`](#projectid) | Project for the Flow. |
+| <a id="mutationaicatalogthirdpartyflowcreatepublic"></a>`public` | [`Boolean!`](#boolean) | Whether the Flow is publicly visible in the catalog. |
+| <a id="mutationaicatalogthirdpartyflowcreaterelease"></a>`release` | [`Boolean`](#boolean) | Whether to release the latest version of the Flow. |
+
+#### Fields
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="mutationaicatalogthirdpartyflowcreateclientmutationid"></a>`clientMutationId` | [`String`](#string) | A unique identifier for the client performing the mutation. |
+| <a id="mutationaicatalogthirdpartyflowcreateerrors"></a>`errors` | [`[String!]!`](#string) | Errors encountered during the mutation. |
+| <a id="mutationaicatalogthirdpartyflowcreateitem"></a>`item` | [`AiCatalogThirdPartyFlow`](#aicatalogthirdpartyflow) | Item created. |
+
 ### `Mutation.aiDuoWorkflowCreate`
 
 {{< details >}}
@@ -23740,6 +23769,56 @@ Check permissions for the current user on an AI catalog item.
 | ---- | ---- | ----------- |
 | <a id="aicatalogitempermissionsadminaicatalogitem"></a>`adminAiCatalogItem` | [`Boolean!`](#boolean) | If `true`, the user can perform `admin_ai_catalog_item` on this resource. |
 | <a id="aicatalogitempermissionsreadaicatalogitem"></a>`readAiCatalogItem` | [`Boolean!`](#boolean) | If `true`, the user can perform `read_ai_catalog_item` on this resource. |
+
+### `AiCatalogThirdPartyFlow`
+
+An AI catalog third party flow.
+
+#### Fields
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="aicatalogthirdpartyflowcreatedat"></a>`createdAt` | [`Time!`](#time) | Timestamp of when the item was created. |
+| <a id="aicatalogthirdpartyflowdescription"></a>`description` | [`String!`](#string) | Description of the item. |
+| <a id="aicatalogthirdpartyflowid"></a>`id` | [`ID!`](#id) | ID of the item. |
+| <a id="aicatalogthirdpartyflowitemtype"></a>`itemType` | [`AiCatalogItemType!`](#aicatalogitemtype) | Type of the item. |
+| <a id="aicatalogthirdpartyflowname"></a>`name` | [`String!`](#string) | Name of the item. |
+| <a id="aicatalogthirdpartyflowproject"></a>`project` | [`Project`](#project) | Project for the item. |
+| <a id="aicatalogthirdpartyflowpublic"></a>`public` | [`Boolean!`](#boolean) | Whether the item is publicly visible in the catalog. |
+| <a id="aicatalogthirdpartyflowupdatedat"></a>`updatedAt` | [`Time!`](#time) | Timestamp of when the item was updated. |
+| <a id="aicatalogthirdpartyflowuserpermissions"></a>`userPermissions` | [`AiCatalogItemPermissions!`](#aicatalogitempermissions) | Permissions for the current user on the resource. |
+| <a id="aicatalogthirdpartyflowversions"></a>`versions` | [`AiCatalogItemVersionConnection`](#aicatalogitemversionconnection) | Versions of the item. (see [Connections](#connections)) |
+
+#### Fields with arguments
+
+##### `AiCatalogThirdPartyFlow.latestVersion`
+
+Latest version of the item.
+
+Returns [`AiCatalogItemVersion`](#aicatalogitemversion).
+
+###### Arguments
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="aicatalogthirdpartyflowlatestversionreleased"></a>`released` | [`Boolean`](#boolean) | Return the latest released version. |
+
+### `AiCatalogThirdPartyFlowVersion`
+
+An AI catalog third party flow version.
+
+#### Fields
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="aicatalogthirdpartyflowversioncreatedat"></a>`createdAt` | [`Time!`](#time) | Timestamp of when the item version was created. |
+| <a id="aicatalogthirdpartyflowversiondefinition"></a>`definition` | [`String!`](#string) | YAML definition of the third party flow. |
+| <a id="aicatalogthirdpartyflowversionhumanversionname"></a>`humanVersionName` | [`String`](#string) | Human-friendly name of the item version. In the form v1.0.0-draft. |
+| <a id="aicatalogthirdpartyflowversionid"></a>`id` | [`ID!`](#id) | ID of the item version. |
+| <a id="aicatalogthirdpartyflowversionreleased"></a>`released` | [`Boolean!`](#boolean) | Indicates the item version is released. |
+| <a id="aicatalogthirdpartyflowversionreleasedat"></a>`releasedAt` | [`Time`](#time) | Timestamp of when the item version was released. |
+| <a id="aicatalogthirdpartyflowversionupdatedat"></a>`updatedAt` | [`Time!`](#time) | Timestamp of when the item version was updated. |
+| <a id="aicatalogthirdpartyflowversionversionname"></a>`versionName` | [`String`](#string) | Version name of the item version. |
 
 ### `AiConversationsThread`
 
@@ -52898,6 +52977,7 @@ Implementations:
 
 - [`AiCatalogAgent`](#aicatalogagent)
 - [`AiCatalogFlow`](#aicatalogflow)
+- [`AiCatalogThirdPartyFlow`](#aicatalogthirdpartyflow)
 
 ##### Fields
 
@@ -52936,6 +53016,7 @@ Implementations:
 
 - [`AiCatalogAgentVersion`](#aicatalogagentversion)
 - [`AiCatalogFlowVersion`](#aicatalogflowversion)
+- [`AiCatalogThirdPartyFlowVersion`](#aicatalogthirdpartyflowversion)
 
 ##### Fields
 
