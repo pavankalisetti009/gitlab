@@ -128,6 +128,56 @@ RSpec.describe Security::ScanResultPolicyViolation, feature_category: :security_
     it { is_expected.to contain_exactly violation_with_data }
   end
 
+  describe '.with_security_policy_dismissal' do
+    let_it_be(:project) { create(:project) }
+    let_it_be(:merge_request) { create(:merge_request, source_project: project) }
+    let_it_be(:other_merge_request) { create(:merge_request, :unique_branches, source_project: project) }
+    let_it_be(:scan_result_policy_read) { create(:scan_result_policy_read, project: project) }
+    let_it_be(:security_policy_1) { create(:security_policy) }
+    let_it_be(:security_policy_2) { create(:security_policy) }
+    let_it_be(:approval_policy_rule_1) do
+      create(:approval_policy_rule, security_policy: security_policy_1)
+    end
+
+    let_it_be(:approval_policy_rule_2) do
+      create(:approval_policy_rule, security_policy: security_policy_2)
+    end
+
+    let_it_be(:violation_with_dismissal) do
+      create(:scan_result_policy_violation,
+        project: project,
+        merge_request: merge_request,
+        scan_result_policy_read: scan_result_policy_read,
+        approval_policy_rule: approval_policy_rule_1
+      )
+    end
+
+    let_it_be(:violation_without_dismissal) do
+      create(:scan_result_policy_violation,
+        project: project,
+        merge_request: other_merge_request,
+        scan_result_policy_read: scan_result_policy_read,
+        approval_policy_rule: approval_policy_rule_2
+      )
+    end
+
+    let_it_be(:policy_dismissal) do
+      create(:policy_dismissal,
+        project: project,
+        merge_request: merge_request,
+        security_policy: security_policy_1
+      )
+    end
+
+    subject(:with_security_policy_dismissal) do
+      described_class.with_security_policy_dismissal
+    end
+
+    it 'returns only violations that have dismissals for the given merge request' do
+      expect(with_security_policy_dismissal).to contain_exactly(violation_with_dismissal)
+    end
+  end
+
   describe '.without_violation_data' do
     let_it_be(:project) { create(:project) }
     let_it_be(:merge_request) { create(:merge_request, source_project: project) }
@@ -363,6 +413,19 @@ RSpec.describe Security::ScanResultPolicyViolation, feature_category: :security_
 
     subject { violation.dismissed? }
 
+    context 'when security_policy is nil' do
+      let(:violation) do
+        create(:scan_result_policy_violation,
+          project: project,
+          merge_request: merge_request,
+          scan_result_policy_read: scan_result_policy_read,
+          approval_policy_rule: nil
+        )
+      end
+
+      it { is_expected.to be(false) }
+    end
+
     context 'when no dismissal exists' do
       let(:violation) do
         create(:scan_result_policy_violation, :new_scan_finding,
@@ -413,6 +476,20 @@ RSpec.describe Security::ScanResultPolicyViolation, feature_category: :security_
         end
 
         it { is_expected.to be(true) }
+
+        it 'does not execute additional queries when associations are preloaded' do
+          queries_without_preload = ActiveRecord::QueryRecorder.new do
+            violation.dismissed?
+          end
+
+          with_loaded_associations = described_class.with_security_policy_dismissal.find(violation.id)
+
+          queries_with_preload = ActiveRecord::QueryRecorder.new do
+            with_loaded_associations.dismissed?
+          end
+
+          expect(queries_with_preload.count).to be < queries_without_preload.count
+        end
       end
 
       context 'when some finding UUIDs are missing from dismissal' do

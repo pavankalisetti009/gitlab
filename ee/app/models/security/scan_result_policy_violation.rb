@@ -46,6 +46,12 @@ module Security
     scope :without_violation_data, -> { where(violation_data: nil) }
     scope :with_violation_data, -> { where.not(violation_data: nil) }
 
+    scope :with_security_policy_dismissal, -> {
+      joins(security_policy: :policy_dismissals)
+        .includes(security_policy: :policy_dismissals)
+        .where('security_policy_dismissals.merge_request_id = scan_result_policy_violations.merge_request_id')
+    }
+
     ERRORS = {
       scan_removed: 'SCAN_REMOVED',
       target_pipeline_missing: 'TARGET_PIPELINE_MISSING',
@@ -68,14 +74,21 @@ module Security
     end
 
     def dismissed?
-      dismissal = Security::PolicyDismissal.find_by(
-        security_policy: security_policy,
-        merge_request: merge_request
-      )
+      return false if security_policy.nil?
+
+      dismissal = if association(:security_policy).loaded? && security_policy.association(:policy_dismissals).loaded?
+                    security_policy.policy_dismissals.find { |d| d.merge_request_id == merge_request_id }
+                  else
+                    Security::PolicyDismissal.find_by(
+                      security_policy: security_policy,
+                      merge_request: merge_request
+                    )
+                  end
 
       return false unless dismissal
 
-      finding_uuids.all? { |uuid| dismissal.security_findings_uuids.include?(uuid) }
+      dismissed_uuids = dismissal.security_findings_uuids.to_set
+      finding_uuids.all? { |uuid| dismissed_uuids.include?(uuid) }
     end
   end
 end
