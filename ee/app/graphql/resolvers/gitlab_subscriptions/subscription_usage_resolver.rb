@@ -23,6 +23,15 @@ module Resolvers
 
         authorize!(subscription_target, namespace)
 
+        license_key = License.current&.data if subscription_target == :instance
+
+        context[:query_arguments] = {
+          start_date: args[:start_date],
+          end_date: args[:end_date],
+          license_key: license_key,
+          namespace_id: namespace&.id
+        }
+
         ::GitlabSubscriptions::SubscriptionUsage.new(
           subscription_target: subscription_target,
           namespace: namespace,

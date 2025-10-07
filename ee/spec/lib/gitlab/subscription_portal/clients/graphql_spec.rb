@@ -954,43 +954,7 @@ RSpec.describe Gitlab::SubscriptionPortal::Clients::Graphql, feature_category: :
     include_examples 'connectivity problems calling the endpoint'
   end
 
-  describe '#get_subscription_pool_usage' do
-    let(:start_date) { Date.current.beginning_of_month }
-    let(:end_date) { Date.current.end_of_month }
-
-    let(:query) do
-      <<~GQL
-        query subscriptionUsage(
-          $namespaceId: ID,
-          $licenseKey: String,
-          $startDate: ISO8601Date,
-          $endDate: ISO8601Date
-        ) {
-          subscription(namespaceId: $namespaceId, licenseKey: $licenseKey) {
-            gitlabUnitsUsage(startDate: $startDate, endDate: $endDate) {
-              poolUsage {
-                totalUnits
-                unitsUsed
-              }
-            }
-          }
-        }
-      GQL
-    end
-
-    let(:params) do
-      { query: query, variables: variables }
-    end
-
-    subject(:get_subscription_pool_usage) do
-      client.get_subscription_pool_usage(
-        license_key: license_key,
-        namespace_id: namespace_id,
-        start_date: start_date,
-        end_date: end_date
-      )
-    end
-
+  context 'for subscription usage' do
     shared_examples 'performs request with correct params' do
       let(:headers) do
         {
@@ -1011,103 +975,269 @@ RSpec.describe Gitlab::SubscriptionPortal::Clients::Graphql, feature_category: :
           parsed_response: { success: true }
         ))
 
-        get_subscription_pool_usage
+        request
       end
     end
 
-    context 'when the subscription portal response is successful' do
-      let(:portal_response) do
-        {
-          success: true,
-          data: {
-            data: {
-              subscription: {
-                gitlabUnitsUsage: {
-                  poolUsage: {
-                    totalUnits: 1000,
-                    unitsUsed: 250
-                  }
-                }
-              }
-            }
-          }
-        }
-      end
-
-      shared_examples 'returns successfully' do
-        it 'returns successfull response' do
-          expect(client).to receive(:execute_graphql_query_for_subscription_usage)
-            .with(params).and_return(portal_response)
-
-          expect(get_subscription_pool_usage).to eq({
-            success: true,
-            poolUsage: {
-              totalUnits: 1000,
-              unitsUsed: 250
-            }
-          })
-        end
-      end
-
-      context 'for self-managed request' do
-        let(:namespace_id) { nil }
-        let(:license_key) { 'license_key' }
-        let(:variables) do
-          { startDate: start_date, endDate: end_date, licenseKey: license_key }
-        end
-
-        include_examples 'returns successfully'
-
-        include_examples 'performs request with correct params' do
-          let(:admin_headers) { nil }
-        end
-      end
-
-      context 'for gitlab.com request' do
-        let(:namespace_id) { 1234 }
-        let(:license_key) { nil }
-
-        let(:variables) do
-          { startDate: start_date, endDate: end_date, namespaceId: namespace_id }
-        end
-
-        include_examples 'returns successfully'
-
-        include_examples 'performs request with correct params' do
-          let(:admin_headers) do
-            {
-              "X-Admin-Email" => "gl_com_api@gitlab.com",
-              "X-Admin-Token" => "customer_admin_token"
-            }
-          end
-        end
-      end
-    end
-
-    context 'when the subscription portal response is unsuccessful' do
+    shared_examples 'returns error on unsuccessful subscription portal response' do
       let(:namespace_id) { 1234 }
       let(:license_key) { nil }
       let(:portal_response) do
         {
           success: false,
           data: {
-            errors: error
+            errors: 'some error'
           }
         }
       end
 
-      it 'returns failure' do
-        error = "some error"
-        expect(client).to receive(:execute_graphql_query_for_subscription_usage).and_return(
-          {
-            success: false,
-            data: {
-              errors: error
+      it 'returns error' do
+        expect(client).to receive(:execute_graphql_query_for_subscription_usage).and_return(portal_response)
+
+        expect(request).to eq({ success: false, errors: 'some error' })
+      end
+    end
+
+    describe '#get_subscription_pool_usage' do
+      let(:start_date) { Date.current.beginning_of_month }
+      let(:end_date) { Date.current.end_of_month }
+
+      let(:query) do
+        <<~GQL
+        query subscriptionUsage(
+          $namespaceId: ID,
+          $licenseKey: String,
+          $startDate: ISO8601Date,
+          $endDate: ISO8601Date
+        ) {
+          subscription(namespaceId: $namespaceId, licenseKey: $licenseKey) {
+            gitlabUnitsUsage(startDate: $startDate, endDate: $endDate) {
+              poolUsage {
+                totalUnits
+                unitsUsed
+              }
             }
           }
-        )
+        }
+        GQL
+      end
 
-        expect(get_subscription_pool_usage).to eq({ success: false, errors: error })
+      let(:params) do
+        { query: query, variables: variables }
+      end
+
+      subject(:get_subscription_pool_usage) do
+        client.get_subscription_pool_usage(
+          license_key: license_key,
+          namespace_id: namespace_id,
+          start_date: start_date,
+          end_date: end_date
+        )
+      end
+
+      context 'when the subscription portal response is successful' do
+        let(:portal_response) do
+          {
+            success: true,
+            data: {
+              data: {
+                subscription: {
+                  gitlabUnitsUsage: {
+                    poolUsage: {
+                      totalUnits: 1000,
+                      unitsUsed: 250
+                    }
+                  }
+                }
+              }
+            }
+          }
+        end
+
+        shared_examples 'returns successfully' do
+          it 'returns successfull response' do
+            expect(client).to receive(:execute_graphql_query_for_subscription_usage)
+              .with(params).and_return(portal_response)
+
+            expect(get_subscription_pool_usage).to eq({
+              success: true,
+              poolUsage: {
+                totalUnits: 1000,
+                unitsUsed: 250
+              }
+            })
+          end
+        end
+
+        context 'for self-managed request' do
+          let(:namespace_id) { nil }
+          let(:license_key) { 'license_key' }
+          let(:variables) do
+            { startDate: start_date, endDate: end_date, licenseKey: license_key }
+          end
+
+          include_examples 'returns successfully'
+
+          include_examples 'performs request with correct params' do
+            let(:request) { get_subscription_pool_usage }
+            let(:admin_headers) { nil }
+          end
+        end
+
+        context 'for gitlab.com request' do
+          let(:namespace_id) { 1234 }
+          let(:license_key) { nil }
+
+          let(:variables) do
+            { startDate: start_date, endDate: end_date, namespaceId: namespace_id }
+          end
+
+          include_examples 'returns successfully'
+
+          include_examples 'performs request with correct params' do
+            let(:request) { get_subscription_pool_usage }
+            let(:admin_headers) do
+              {
+                "X-Admin-Email" => "gl_com_api@gitlab.com",
+                "X-Admin-Token" => "customer_admin_token"
+              }
+            end
+          end
+        end
+      end
+
+      include_examples 'returns error on unsuccessful subscription portal response' do
+        let(:request) { get_subscription_pool_usage }
+      end
+    end
+
+    describe '#get_subscription_usage_for_user_ids' do
+      let(:user_ids) { [123, 321] }
+      let(:start_date) { Date.current.beginning_of_month }
+      let(:end_date) { Date.current.end_of_month }
+
+      let(:query) do
+        <<~GQL
+        query subscriptionUsageForUserIds(
+          $userIds: [Int],
+          $namespaceId: ID,
+          $licenseKey: String,
+          $startDate: ISO8601Date,
+          $endDate: ISO8601Date
+        ) {
+          subscription(namespaceId: $namespaceId, licenseKey: $licenseKey) {
+            gitlabUnitsUsage(startDate: $startDate, endDate:$endDate) {
+              usersUsage {
+                userId
+                totalCredits
+                creditsUsed
+                poolCreditsUsed
+                users(userIds: $userIds)
+              }
+            }
+          }
+        }
+        GQL
+      end
+
+      let(:params) do
+        { query: query, variables: variables }
+      end
+
+      subject(:get_subscription_usage_for_user_ids) do
+        client.get_subscription_usage_for_user_ids(
+          user_ids: user_ids,
+          namespace_id: namespace_id,
+          license_key: license_key,
+          start_date: start_date,
+          end_date: end_date
+        )
+      end
+
+      context 'when the subscription portal response is successful' do
+        let(:users_usage) do
+          [
+            {
+              userId: 123,
+              totalUnits: 100,
+              unitsUsed: 500,
+              poolUnitsUsed: 400
+            },
+            {
+              userId: 321,
+              totalUnits: 100,
+              unitsUsed: 50,
+              poolUnitsUsed: 0
+            }
+          ]
+        end
+
+        let(:portal_response) do
+          {
+            success: true,
+            data: {
+              data: {
+                subscription: {
+                  gitlabUnitsUsage: {
+                    usersUsage: { users: users_usage }
+                  }
+                }
+              }
+            }
+          }
+        end
+
+        shared_examples 'returns successfully' do
+          it 'returns successfull response' do
+            expect(client).to receive(:execute_graphql_query_for_subscription_usage)
+              .with(params).and_return(portal_response)
+
+            expect(get_subscription_usage_for_user_ids).to eq({
+              success: true,
+              usersUsage: users_usage
+            })
+          end
+        end
+
+        context 'for self-managed request' do
+          let(:namespace_id) { nil }
+          let(:license_key) { 'license_key' }
+          let(:variables) do
+            { startDate: start_date, endDate: end_date, userIds: user_ids, licenseKey: license_key }
+          end
+
+          include_examples 'returns successfully'
+
+          include_examples 'performs request with correct params' do
+            let(:request) { get_subscription_usage_for_user_ids }
+            let(:admin_headers) { nil }
+          end
+        end
+
+        context 'for gitlab.com request' do
+          let(:namespace_id) { 1234 }
+          let(:license_key) { nil }
+
+          let(:variables) do
+            { startDate: start_date, endDate: end_date, userIds: user_ids, namespaceId: namespace_id }
+          end
+
+          include_examples 'returns successfully'
+
+          include_examples 'performs request with correct params' do
+            let(:request) { get_subscription_usage_for_user_ids }
+            let(:admin_headers) do
+              {
+                "X-Admin-Email" => "gl_com_api@gitlab.com",
+                "X-Admin-Token" => "customer_admin_token"
+              }
+            end
+          end
+        end
+      end
+
+      include_examples 'returns error on unsuccessful subscription portal response' do
+        let(:request) { get_subscription_usage_for_user_ids }
       end
     end
   end
