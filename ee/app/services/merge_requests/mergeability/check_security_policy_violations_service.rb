@@ -17,6 +17,8 @@ module MergeRequests
         # When the MR is approved, it is considered to 'override' the violations
         if merge_request.failed_scan_result_policy_violations.any? && !merge_request.approved?
           failure
+        elsif has_dismissed_policy_violations?
+          warning
         else
           success
         end
@@ -28,6 +30,17 @@ module MergeRequests
 
       def cacheable?
         false
+      end
+
+      private
+
+      def has_dismissed_policy_violations?
+        violations_with_dismissals = merge_request.scan_result_policy_violations
+                                                  .with_security_policy_dismissal
+
+        return false if violations_with_dismissals.empty?
+
+        violations_with_dismissals.any?(&:dismissed?)
       end
     end
   end

@@ -100,6 +100,65 @@ RSpec.describe MergeRequests::Mergeability::CheckSecurityPolicyViolationsService
             .to eq Gitlab::MergeRequests::Mergeability::CheckResult::SUCCESS_STATUS
         end
       end
+
+      context 'when some scan result policy violations are dismissed' do
+        let(:security_policy_1) { create(:security_policy) }
+        let(:approval_policy_rule_1) { create(:approval_policy_rule, security_policy: security_policy_1) }
+        let!(:violation_1) do
+          create(:scan_result_policy_violation, :failed, project: project, merge_request: merge_request,
+            scan_result_policy_read: policy, approval_policy_rule: approval_policy_rule_1,
+            violation_data: {
+              'violations' => {
+                'scan_finding' => {
+                  'uuids' => {
+                    'newly_detected' => %w[uuid-1 uuid-2]
+                  }
+                }
+              }
+            })
+        end
+
+        let(:policy_2) { create(:scan_result_policy_read, project: project) }
+        let(:security_policy_2) { create(:security_policy) }
+        let(:approval_policy_rule_2) { create(:approval_policy_rule, security_policy: security_policy_2) }
+        let!(:violation_2) do
+          create(:scan_result_policy_violation, :failed, project: project, merge_request: merge_request,
+            scan_result_policy_read: policy_2, approval_policy_rule: approval_policy_rule_2)
+        end
+
+        it 'returns a check result with status warning' do
+          create(:policy_dismissal,
+            security_policy: security_policy_1,
+            merge_request: merge_request,
+            project: project,
+            security_findings_uuids: %w[uuid-1 uuid-2])
+
+          expect(result.status)
+            .to eq Gitlab::MergeRequests::Mergeability::CheckResult::WARNING_STATUS
+
+          expect(result.payload[:identifier]).to eq(:security_policy_violations)
+        end
+
+        it 'does not produce N+1 queries when checking dismissals' do
+          control_count = ActiveRecord::QueryRecorder.new do
+            check_policies.execute
+          end
+
+          policy_3 = create(:scan_result_policy_read, project: project)
+          security_policy_3 = create(:security_policy)
+          approval_policy_rule_3 = create(:approval_policy_rule, security_policy: security_policy_3)
+
+          create(:scan_result_policy_violation, :failed, project: project, merge_request: merge_request,
+            scan_result_policy_read: policy_3, approval_policy_rule: approval_policy_rule_3)
+
+          create(:policy_dismissal,
+            security_policy: security_policy_3,
+            merge_request: merge_request,
+            project: project)
+
+          expect { check_policies.execute }.not_to exceed_query_limit(control_count)
+        end
+      end
     end
   end
 
