@@ -35,6 +35,7 @@ RSpec.describe ::Search::Zoekt::InfoService, :silence_stdout, feature_category: 
       persisted_name?: false
     )
     allow(Search::Zoekt::Index).to receive(:sum).and_return(0)
+    allow(settings).to receive(:zoekt_minimum_projects_for_traversal_id_search).and_return(6_000)
   end
 
   describe '#execute' do
