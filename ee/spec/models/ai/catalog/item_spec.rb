@@ -430,6 +430,14 @@ RSpec.describe Ai::Catalog::Item, feature_category: :workflow_catalog do
       end
     end
 
+    context 'when item_type is third party flow' do
+      let(:item) { create(:ai_catalog_third_party_flow) }
+
+      it 'returns the version definition' do
+        expect(item.definition).to eq(version.definition)
+      end
+    end
+
     describe 'version resolution' do
       let_it_be(:item) { create(:ai_catalog_agent) }
       let_it_be(:v1_1) { create(:ai_catalog_agent_version, item: item, version: '1.1.0') }

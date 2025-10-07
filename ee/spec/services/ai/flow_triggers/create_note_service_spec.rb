@@ -38,7 +38,7 @@ RSpec.describe Ai::FlowTriggers::CreateNoteService, feature_category: :agent_fou
 
         initial_note_count = Note.count
 
-        response, _ = service.execute(params) do |yielded_params|
+        response = service.execute(params) do |yielded_params|
           expect(yielded_params).to eq(params.merge(discussion_id: discussion.id))
           expect(yielded_params[:discussion_id]).to be_present
 
@@ -61,10 +61,9 @@ RSpec.describe Ai::FlowTriggers::CreateNoteService, feature_category: :agent_fou
       it 'creates initial note and updates with error message' do
         initial_note_count = Note.count
 
-        response, response_workflow = service.execute(params) { [error_response, workflow] }
+        response = service.execute(params) { [error_response, workflow] }
 
         expect(response).to eq(error_response)
-        expect(response_workflow).to eq(workflow)
         expect(Note.count).to eq(initial_note_count + 1)
 
         created_note = Note.last

@@ -48,7 +48,8 @@ RSpec.describe Mutations::Ai::Catalog::ThirdPartyFlow::Create, feature_category:
       commands:
         - /bin/bash
       variables:
-        VAR1: VAL1
+        - VAL1
+        - VAL2
       YAML
     }
   end
@@ -131,7 +132,7 @@ RSpec.describe Mutations::Ai::Catalog::ThirdPartyFlow::Create, feature_category:
         injectGatewayToken: true,
         image: 'example/image:latest',
         commands: ['/bin/bash'],
-        variables: { 'VAR1' => 'VAL1' }
+        variables: %w[VAL1 VAL2]
       }.stringify_keys
     )
   end
@@ -155,7 +156,7 @@ RSpec.describe Mutations::Ai::Catalog::ThirdPartyFlow::Create, feature_category:
         'injectGatewayToken' => true,
         'image' => 'example/image:latest',
         'commands' => ['/bin/bash'],
-        'variables' => { 'VAR1' => 'VAL1' }
+        'variables' => %w[VAL1 VAL2]
       )
   end
 end

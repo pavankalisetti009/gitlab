@@ -9,6 +9,8 @@ module Ai
         @resource = resource
         @flow_trigger = flow_trigger
         @flow_trigger_user = flow_trigger.user
+        @catalog_item = flow_trigger.ai_catalog_item_consumer&.item
+        @catalog_item_pinned_version = flow_trigger.ai_catalog_item_consumer&.pinned_version_prefix
 
         link_composite_identity! if can_use_composite_identity?
       end
@@ -18,20 +20,19 @@ module Ai
           project: project, resource: resource, author: flow_trigger_user, discussion: params[:discussion]
         )
 
-        response, _ = note_service.execute(params) do |updated_params|
-          if flow_trigger.ai_catalog_item_consumer.present?
+        note_service.execute(params) do |updated_params|
+          if catalog_item&.flow?
             start_catalog_workflow(params)
           else
             run_workload(updated_params)
           end
         end
-
-        response
       end
 
       private
 
-      attr_reader :project, :current_user, :resource, :flow_trigger, :flow_trigger_user
+      attr_reader :project, :current_user, :resource, :flow_trigger, :flow_trigger_user,
+        :catalog_item, :catalog_item_pinned_version
 
       def run_workload(params)
         flow_definition = fetch_flow_definition
@@ -90,15 +91,12 @@ module Ai
       end
 
       def start_catalog_workflow(params)
-        item_consumer = flow_trigger.ai_catalog_item_consumer
-        catalog_item = item_consumer.item
-        version = item_consumer.pinned_version_prefix
         response = ::Ai::Catalog::Flows::ExecuteService.new(
           project: project,
           current_user: current_user,
           params: {
             flow: catalog_item,
-            flow_version: catalog_item.resolve_version(version),
+            flow_version: catalog_item.resolve_version(catalog_item_pinned_version),
             event_type: params[:event].to_s,
             execute_workflow: true
           }
@@ -110,11 +108,13 @@ module Ai
       end
 
       def fetch_flow_definition
-        root_ref = project.repository.root_ref
-        flow_definition = project.repository.blob_data_at(root_ref, flow_trigger.config_path)
-        return unless flow_definition
+        return catalog_item.definition(catalog_item_pinned_version) if catalog_item&.third_party_flow?
 
-        flow_definition = YAML.safe_load(flow_definition)
+        root_ref = project.repository.root_ref
+        flow_definition_yaml = project.repository.blob_data_at(root_ref, flow_trigger.config_path)
+        return unless flow_definition_yaml
+
+        flow_definition = YAML.safe_load(flow_definition_yaml)
         return unless flow_definition.is_a?(Hash)
 
         flow_definition

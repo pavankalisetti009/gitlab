@@ -21,7 +21,8 @@ RSpec.describe Ai::Catalog::ThirdPartyFlows::CreateService, feature_category: :w
       commands:
         - /bin/bash
       variables:
-        VAR1: VAL1
+        - VAL1
+        - VAL2
       YAML
     }
   end
@@ -74,7 +75,7 @@ RSpec.describe Ai::Catalog::ThirdPartyFlows::CreateService, feature_category: :w
           injectGatewayToken: true,
           image: 'example/image:latest',
           commands: ['/bin/bash'],
-          variables: { 'VAR1' => 'VAL1' }
+          variables: %w[VAL1 VAL2]
         }.stringify_keys
       )
     end
