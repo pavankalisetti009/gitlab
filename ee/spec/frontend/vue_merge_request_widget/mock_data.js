@@ -155,3 +155,11 @@ export const mockWarnSecurityPolicyViolation = {
   status: 'FAILED',
   __typename: 'PolicyViolationInfo',
 };
+
+export const mockBypassStatus = {
+  __typename: 'PolicyBypassStatus',
+  allowBypass: true,
+  bypassed: false,
+  id: 'gid://gitlab/Security::Policy/182',
+  name: 'Prevent Critical Vulnerabilities',
+};

@@ -11,6 +11,12 @@ query getPolicyViolations($projectPath: ID!, $iid: String!) {
         updatedAt
         path
       }
+      policyBypassStatuses {
+        allowBypass
+        bypassed
+        id
+        name
+      }
       policyViolations {
         comparisonPipelines {
           reportType

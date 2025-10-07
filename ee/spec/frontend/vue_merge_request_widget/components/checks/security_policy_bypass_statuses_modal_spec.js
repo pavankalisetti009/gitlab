@@ -5,38 +5,40 @@ import createMockApollo from 'helpers/mock_apollo_helper';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import waitForPromises from 'helpers/wait_for_promises';
 import * as Sentry from '~/sentry/sentry_browser_wrapper';
-import SecurityPolicyViolationsModal from 'ee/vue_merge_request_widget/components/checks/security_policy_violations_modal.vue';
-import bypassSecurityPolicyViolations from 'ee/vue_merge_request_widget/components/checks/queries/bypass_security_policy_violations.mutation.graphql';
-import { mockWarnSecurityPolicyViolation } from '../../mock_data';
+import SecurityPolicyBypassStatusesModal from 'ee/vue_merge_request_widget/components/checks/security_policy_bypass_statuses_modal.vue';
+import bypassSecurityPolicyExceptionViolations from 'ee/vue_merge_request_widget/components/checks/queries/bypass_security_policy_exception_violation.mutation.graphql';
+import { mockBypassStatus } from '../../mock_data';
 
 jest.mock('~/sentry/sentry_browser_wrapper');
 
 Vue.use(VueApollo);
-const mockBypassSecurityPolicyViolationsResponses = {
+
+const mockBypassSecurityPolicyExceptionViolationsResponses = {
   success: jest.fn().mockResolvedValue({
     data: {
-      dismissPolicyViolations: {
+      mergeRequestBypassSecurityPolicy: {
         errors: [],
-        typename: '__DismissPolicyViolationsPayload',
+        typename: '__MergeRequestBypassSecurityPolicyPayload',
       },
     },
   }),
   successWithErrors: jest.fn().mockResolvedValue({
     data: {
-      dismissPolicyViolations: {
+      mergeRequestBypassSecurityPolicy: {
         errors: ['no policies'],
-        typename: '__DismissPolicyViolationsPayload',
+        typename: '__MergeRequestBypassSecurityPolicyPayload',
       },
     },
   }),
   failure: jest.fn().mockRejectedValue(),
 };
 
-describe('SecurityPolicyViolationsModal', () => {
+describe('SecurityPolicyBypassStatusesModal', () => {
   let wrapper;
 
   const findModal = () => wrapper.findComponent(GlModal);
   const findAlert = () => wrapper.findComponent(GlAlert);
+
   const findPolicySelector = () => wrapper.findByTestId('policy-selector');
   const findReasonSelector = () => wrapper.findByTestId('reason-selector');
   const findBypassTextarea = () => wrapper.findComponent(GlFormTextarea);
@@ -45,14 +47,14 @@ describe('SecurityPolicyViolationsModal', () => {
   const findErrorMessage = () => wrapper.findByTestId('error-message');
 
   const createComponent = ({
-    mutationQuery = bypassSecurityPolicyViolations,
-    mutationResult = mockBypassSecurityPolicyViolationsResponses.success,
+    mutationExceptionQuery = bypassSecurityPolicyExceptionViolations,
+    mutationExceptionResult = mockBypassSecurityPolicyExceptionViolationsResponses.success,
     props = {},
   } = {}) => {
-    wrapper = shallowMountExtended(SecurityPolicyViolationsModal, {
-      apolloProvider: createMockApollo([[mutationQuery, mutationResult]]),
+    wrapper = shallowMountExtended(SecurityPolicyBypassStatusesModal, {
+      apolloProvider: createMockApollo([[mutationExceptionQuery, mutationExceptionResult]]),
       propsData: {
-        policies: [mockWarnSecurityPolicyViolation],
+        policies: [mockBypassStatus],
         visible: true,
         mr: {
           iid: 123,
@@ -142,20 +144,24 @@ describe('SecurityPolicyViolationsModal', () => {
       const selector = findPolicySelector();
       expect(selector.props('items')).toEqual([
         expect.objectContaining({
-          value: mockWarnSecurityPolicyViolation.securityPolicyId,
-          text: mockWarnSecurityPolicyViolation.name,
+          value: mockBypassStatus.id,
+          text: mockBypassStatus.name,
         }),
       ]);
       expect(selector.props('multiple')).toBe(true);
     });
 
     it('renders reason selector with bypass reasons', () => {
-      expect(findReasonSelector().props('multiple')).toBe(true);
+      expect(findReasonSelector().props('multiple')).toBe(false);
       expect(findReasonSelector().props('items')).toEqual([
-        { value: 'POLICY_FALSE_POSITIVE', text: 'Policy false positive' },
-        { value: 'SCANNER_FALSE_POSITIVE', text: 'Scanner false positive' },
-        { value: 'EMERGENCY_HOT_FIX', text: 'Emergency hotfix' },
-        { value: 'OTHER', text: 'Other' },
+        { text: 'Emergency production issue', value: 'emergency' },
+        { text: 'Critical business deadline', value: 'critical' },
+        { text: 'Technical limitation', value: 'technical' },
+        {
+          text: 'Authorized business risk acceptance',
+          value: 'authorized_risk',
+        },
+        { text: 'Other', value: 'other' },
       ]);
     });
   });
@@ -174,14 +180,14 @@ describe('SecurityPolicyViolationsModal', () => {
     });
 
     it('updates toggle text when policies are selected', async () => {
-      await findPolicySelector().vm.$emit('select', ['8']);
-      expect(findPolicySelector().props('toggleText')).toBe(mockWarnSecurityPolicyViolation.name);
+      await findPolicySelector().vm.$emit('select', [mockBypassStatus.id]);
+      expect(findPolicySelector().props('toggleText')).toBe(mockBypassStatus.name);
     });
 
     it('updates toggle text when reasons are selected', async () => {
-      await findReasonSelector().vm.$emit('select', ['POLICY_FALSE_POSITIVE']);
+      await findReasonSelector().vm.$emit('select', 'emergency');
 
-      expect(findReasonSelector().props('toggleText')).toContain('Policy false positive');
+      expect(findReasonSelector().props('toggleText')).toContain('Emergency production issue');
     });
   });
 
@@ -201,7 +207,7 @@ describe('SecurityPolicyViolationsModal', () => {
           createComponent();
           await fillFormWithData();
           await findModal().vm.$emit('primary', { preventDefault: jest.fn() });
-          expect(mockBypassSecurityPolicyViolationsResponses.success).toHaveBeenCalled();
+          expect(mockBypassSecurityPolicyExceptionViolationsResponses.success).toHaveBeenCalled();
           await waitForPromises();
           expect(wrapper.emitted('close')).toEqual([[]]);
           expect(wrapper.emitted('saved')).toEqual([[]]);
@@ -209,11 +215,14 @@ describe('SecurityPolicyViolationsModal', () => {
 
         it('does not close the modal when `bypassSecurityPolicyViolations` query fails with errors', async () => {
           createComponent({
-            mutationResult: mockBypassSecurityPolicyViolationsResponses.successWithErrors,
+            mutationExceptionResult:
+              mockBypassSecurityPolicyExceptionViolationsResponses.successWithErrors,
           });
           await fillFormWithData();
           await findModal().vm.$emit('primary', { preventDefault: jest.fn() });
-          expect(mockBypassSecurityPolicyViolationsResponses.successWithErrors).toHaveBeenCalled();
+          expect(
+            mockBypassSecurityPolicyExceptionViolationsResponses.successWithErrors,
+          ).toHaveBeenCalled();
           await waitForPromises();
           expect(wrapper.emitted('close')).toBe(undefined);
           expect(wrapper.emitted('saved')).toEqual(undefined);
@@ -221,11 +230,11 @@ describe('SecurityPolicyViolationsModal', () => {
 
         it('does not close the modal when `bypassSecurityPolicyViolations` query fails', async () => {
           createComponent({
-            mutationResult: mockBypassSecurityPolicyViolationsResponses.failure,
+            mutationExceptionResult: mockBypassSecurityPolicyExceptionViolationsResponses.failure,
           });
           await fillFormWithData();
           await findModal().vm.$emit('primary', { preventDefault: jest.fn() });
-          expect(mockBypassSecurityPolicyViolationsResponses.failure).toHaveBeenCalled();
+          expect(mockBypassSecurityPolicyExceptionViolationsResponses.failure).toHaveBeenCalled();
           await waitForPromises();
           expect(wrapper.emitted('close')).toBe(undefined);
         });
@@ -244,13 +253,14 @@ describe('SecurityPolicyViolationsModal', () => {
           await fillFormWithData();
           await findModal().vm.$emit('primary', { preventDefault: jest.fn() });
 
-          expect(mockBypassSecurityPolicyViolationsResponses.success).toHaveBeenCalledWith({
-            comment: 'Valid bypass reason',
-            dismissalTypes: ['POLICY_FALSE_POSITIVE'],
-            iid: '123',
-            projectPath: 'test/project',
-            securityPolicyIds: [1],
-          });
+          expect(mockBypassSecurityPolicyExceptionViolationsResponses.success).toHaveBeenCalledWith(
+            {
+              reason: 'POLICY_FALSE_POSITIVE:Valid bypass reason',
+              iid: '123',
+              projectPath: 'test/project',
+              securityPolicyIds: [1],
+            },
+          );
         });
 
         it('sets loading state during mutation execution', async () => {
@@ -281,7 +291,8 @@ describe('SecurityPolicyViolationsModal', () => {
       describe('failure', () => {
         it('handles mutation response with errors', async () => {
           createComponent({
-            mutationResult: mockBypassSecurityPolicyViolationsResponses.successWithErrors,
+            mutationExceptionResult:
+              mockBypassSecurityPolicyExceptionViolationsResponses.successWithErrors,
           });
           await fillFormWithData();
           await findModal().vm.$emit('primary', { preventDefault: jest.fn() });
@@ -294,7 +305,7 @@ describe('SecurityPolicyViolationsModal', () => {
         it('handles network errors', async () => {
           const networkError = new Error('Network error');
           createComponent({
-            mutationResult: jest.fn().mockRejectedValue(networkError),
+            mutationExceptionResult: jest.fn().mockRejectedValue(networkError),
           });
           await fillFormWithData();
           await findModal().vm.$emit('primary', { preventDefault: jest.fn() });

@@ -1,23 +1,20 @@
 <script>
 import { GlAlert, GlModal, GlFormGroup, GlFormTextarea, GlCollapsibleListbox } from '@gitlab/ui';
-import { DEFAULT_DEBOUNCE_AND_THROTTLE_MS } from '~/lib/utils/constants';
-import { getSelectedOptionsText } from '~/lib/utils/listbox_helpers';
-import { getIdFromGraphQLId } from '~/graphql_shared/utils';
 import { __, s__ } from '~/locale';
 import * as Sentry from '~/sentry/sentry_browser_wrapper';
+import { getSelectedOptionsText } from '~/lib/utils/listbox_helpers';
+import { getIdFromGraphQLId } from '~/graphql_shared/utils';
 import {
-  WARN_MODE_BYPASS_REASONS,
-  WARN_MODE_NEXT_STEPS,
+  POLICY_EXCEPTIONS_NEXT_STEPS,
+  POLICY_EXCEPTIONS_BYPASS_REASONS,
 } from 'ee/vue_merge_request_widget/components/checks/constants';
-import bypassSecurityPolicyViolations from './queries/bypass_security_policy_violations.mutation.graphql';
+import bypassSecurityPolicyExceptionViolations from './queries/bypass_security_policy_exception_violation.mutation.graphql';
 
 export default {
-  BYPASS_POLICY_ENFORCEMENT_TYPES: ['WARN'],
-  WARN_MODE_BYPASS_REASONS,
-  WARN_MODE_NEXT_STEPS,
+  POLICY_EXCEPTIONS_BYPASS_REASONS,
+  POLICY_EXCEPTIONS_NEXT_STEPS,
   ACTION_CANCEL: { text: __('Cancel') },
-  DEFAULT_DEBOUNCE_AND_THROTTLE_MS,
-  name: 'SecurityPolicyViolationsModal',
+  name: 'SecurityPolicyBypassStatusesModal',
   components: {
     GlAlert,
     GlModal,
@@ -51,22 +48,11 @@ export default {
       bypassReason: '',
       loading: false,
       selectedPolicies: [],
-      selectedReasons: [],
+      selectedReason: '',
       showErrorAlert: false,
     };
   },
   computed: {
-    bypassStatusesPoliciesIds() {
-      return this.bypassStatuses.map(({ id }) => String(getIdFromGraphQLId(id)));
-    },
-    bypassStatusesPolicies() {
-      return this.policies.filter(({ securityPolicyId }) =>
-        this.bypassStatusesPoliciesIds.includes(securityPolicyId),
-      );
-    },
-    isBypassReasonEmpty() {
-      return this.bypassReason.trim().length === 0;
-    },
     actionPrimary() {
       return {
         text: __('Bypass'),
@@ -78,18 +64,28 @@ export default {
         },
       };
     },
+    isBypassReasonEmpty() {
+      return this.bypassReason.trim().length === 0;
+    },
     isValid() {
       return (
-        this.selectedPolicies.length > 0 &&
-        this.selectedReasons.length > 0 &&
-        !this.isBypassReasonEmpty
+        this.selectedPolicies.length > 0 && this.selectedReason !== '' && !this.isBypassReasonEmpty
       );
+    },
+    selectedReasonText() {
+      return (
+        POLICY_EXCEPTIONS_BYPASS_REASONS.find(({ value }) => value === this.selectedReason)?.text ||
+        s__('SecurityOrchestration|Select bypass reasons')
+      );
+    },
+    bypassReasonState() {
+      return !(this.bypassReasonTextAreaDirty && this.isBypassReasonEmpty);
     },
     policyItems() {
       return this.policies.map((policy) => ({
         ...policy,
         text: policy.name,
-        value: policy.securityPolicyId,
+        value: policy.id,
       }));
     },
     selectedPolicyText() {
@@ -100,17 +96,6 @@ export default {
         maxOptionsShown: 2,
       });
     },
-    selectedReasonText() {
-      return getSelectedOptionsText({
-        options: this.$options.WARN_MODE_BYPASS_REASONS,
-        selected: this.selectedReasons,
-        placeholder: s__('SecurityOrchestration|Select bypass reasons'),
-        maxOptionsShown: 4,
-      });
-    },
-    bypassReasonState() {
-      return !(this.bypassReasonTextAreaDirty && this.isBypassReasonEmpty);
-    },
   },
   methods: {
     async handleBypass() {
@@ -119,16 +104,15 @@ export default {
       try {
         const {
           data: {
-            dismissPolicyViolations: { errors },
+            mergeRequestBypassSecurityPolicy: { errors },
           },
         } = await this.$apollo.mutate({
-          mutation: bypassSecurityPolicyViolations,
+          mutation: bypassSecurityPolicyExceptionViolations,
           variables: {
             iid: this.mr.iid.toString(),
             projectPath: this.mr.targetProjectFullPath,
-            securityPolicyIds: this.selectedPolicies,
-            comment: this.bypassReason,
-            dismissalTypes: this.selectedReasons,
+            securityPolicyIds: this.selectedPolicies?.map((id) => getIdFromGraphQLId(id)),
+            reason: `${this.selectedReason}:${this.bypassReason}`,
           },
         });
 
@@ -156,9 +140,6 @@ export default {
     handleSelect(property, value) {
       this[property] = value;
     },
-    selectMode(mode) {
-      this.$emit('select-mode', mode);
-    },
     updateBypassReason(value) {
       this.bypassReasonTextAreaDirty = true;
       this.bypassReason = value;
@@ -181,7 +162,7 @@ export default {
   >
     <gl-alert variant="info" :dismissible="false" class="gl-mb-4" :title="__('What happens next?')">
       <ul class="gl-mb-0 gl-pl-5">
-        <li v-for="step in $options.WARN_MODE_NEXT_STEPS" :key="step">
+        <li v-for="step in $options.POLICY_EXCEPTIONS_NEXT_STEPS" :key="step">
           {{ step }}
         </li>
       </ul>
@@ -225,13 +206,13 @@ export default {
         class="gl-mb-4"
       >
         <gl-collapsible-listbox
-          :selected="selectedReasons"
+          :selected="selectedReason"
           block
-          multiple
-          :items="$options.WARN_MODE_BYPASS_REASONS"
+          :multiple="false"
+          :items="$options.POLICY_EXCEPTIONS_BYPASS_REASONS"
           :toggle-text="selectedReasonText"
           data-testid="reason-selector"
-          @select="handleSelect('selectedReasons', $event)"
+          @select="handleSelect('selectedReason', $event)"
         />
       </gl-form-group>
 
