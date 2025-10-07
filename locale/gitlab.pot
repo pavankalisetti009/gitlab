@@ -8057,6 +8057,9 @@ msgstr ""
 msgid "An example showing how to use Jsonnet with GitLab dynamic child pipelines"
 msgstr ""
 
+msgid "An export is already running or queued for this project. Please try again once it's done."
+msgstr ""
+
 msgid "An incident has been resolved in %{project_path}."
 msgstr ""
 
