@@ -2,10 +2,10 @@
 
 require 'spec_helper'
 
-RSpec.describe Gitlab::ImportExport::Project::ObjectBuilder do
-  let!(:group) { create(:group, :private) }
-  let!(:subgroup) { create(:group, :private, parent: group) }
-  let!(:project) do
+RSpec.describe Gitlab::ImportExport::Project::ObjectBuilder, feature_category: :importers do
+  let_it_be(:group) { create(:group, :private) }
+  let_it_be(:subgroup) { create(:group, :private, parent: group) }
+  let_it_be(:project) do
     create(
       :project, :repository,
       :builds_disabled,
@@ -16,41 +16,66 @@ RSpec.describe Gitlab::ImportExport::Project::ObjectBuilder do
     )
   end
 
-  context 'for epics' do
-    it 'finds the existing epic' do
-      epic = create(:epic, title: 'epic', group: project.group)
+  context 'epics' do
+    let_it_be(:epic1) { create(:epic, group: group, title: 'Shared title', iid: 1) }
+    let_it_be(:epic2) { create(:epic, group: group, title: 'Shared title', iid: 2) }
 
-      expect(described_class.build(
+    it 'finds the correct epic by iid even if titles are identical' do
+      found_epic = described_class.build(
         Epic,
-        'iid' => 1,
-        'title' => 'epic',
-        'group' => project.group,
-        'author_id' => project.creator.id
-      )).to eq(epic)
+        'title' => 'Shared title',
+        'iid' => epic2.iid,
+        'group' => group
+      )
+
+      expect(found_epic).to eq(epic2)
+    end
+
+    it 'falls back to title-based matching when iid is missing' do
+      found_epic = described_class.build(
+        Epic,
+        'title' => 'Shared title',
+        'group' => group
+      )
+
+      # without iid, it should return the first epic found (deterministic based on creation order)
+      expect(found_epic).to eq(epic1)
+    end
+
+    it 'returns nil if group is missing for a group-level object' do
+      found_epic = described_class.build(
+        Epic,
+        'title' => 'Shared title',
+        'iid' => epic1.iid,
+        'group' => nil
+      )
+
+      expect(found_epic).to be_nil
     end
 
     it 'finds the existing epic in root ancestor' do
-      epic = create(:epic, title: 'epic', group: group)
-
-      expect(described_class.build(
+      root_ancestor_epic = create(:epic, title: 'root ancestor epic', group: group)
+      found_epic = described_class.build(
         Epic,
-        'iid' => 1,
-        'title' => 'epic',
-        'group' => project.group,
-        'author_id' => project.creator.id
-      )).to eq(epic)
-    end
-
-    it 'creates a new epic' do
-      epic = described_class.build(
-        Epic,
-        'iid' => 1,
-        'title' => 'epic',
+        'iid' => root_ancestor_epic.iid,
+        'title' => 'root ancestor epic',
         'group' => project.group,
         'author_id' => project.creator.id
       )
 
-      expect(epic.persisted?).to be false
+      expect(found_epic).to eq(root_ancestor_epic)
+    end
+
+    it 'creates a new epic' do
+      created_epic = described_class.build(
+        Epic,
+        'iid' => 1,
+        'title' => 'new epic',
+        'group' => project.group,
+        'author_id' => project.creator.id
+      )
+
+      expect(created_epic.persisted?).to be false
     end
   end
 
