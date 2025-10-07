@@ -67240,9 +67240,6 @@ msgstr ""
 msgid "This project is %{strongStart}NOT%{strongEnd} a fork. This process deletes the project repository and all related resources."
 msgstr ""
 
-msgid "This project is archived and cannot be commented on."
-msgstr ""
-
 msgid "This project is archived and read-only. To resume pull mirroring, unarchive the project."
 msgstr ""
 
