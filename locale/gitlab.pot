@@ -22712,6 +22712,9 @@ msgstr ""
 msgid "Dependencies|Export as JSON"
 msgstr ""
 
+msgid "Dependencies|Focused vulnerability reporting"
+msgstr ""
+
 msgid "Dependencies|Follow the link below to download the export."
 msgstr ""
 
@@ -22752,6 +22755,9 @@ msgid "Dependencies|Software Bill of Materials (SBOM) based on the latest succes
 msgstr ""
 
 msgid "Dependencies|The Dependency List was successfully exported from %{exportable}."
+msgstr ""
+
+msgid "Dependencies|The dependency list shows only active, currently detected issues. Vulnerabilities that are no longer detected are filtered out."
 msgstr ""
 
 msgid "Dependencies|The dependency list was successfully exported."
