@@ -1,0 +1,67 @@
+# frozen_string_literal: true
+
+module Ai
+  module DuoWorkflows
+    module CodeReview
+      class TimeoutWorker
+        include ::ApplicationWorker
+        include Gitlab::Utils::StrongMemoize
+
+        idempotent!
+        worker_resource_boundary :cpu
+        urgency :low
+        feature_category :code_review_workflow
+        data_consistency :always
+        defer_on_database_health_signal :gitlab_main
+
+        def perform(merge_request_id)
+          merge_request = MergeRequest.find_by_id(merge_request_id)
+          return unless merge_request
+
+          # Check if review is already completed - if so, nothing to do
+          return if reviewer_already_reviewed?(merge_request, review_bot)
+
+          result = update_review_state_service(merge_request, review_bot).execute(merge_request, 'reviewed')
+
+          log_timeout_reset(merge_request) if result.success?
+        rescue StandardError => error
+          Gitlab::ErrorTracking.track_exception(
+            error,
+            merge_request_id: merge_request_id
+          )
+        end
+
+        private
+
+        def review_bot
+          Users::Internal.duo_code_review_bot
+        end
+        strong_memoize_attr :review_bot
+
+        def reviewer_already_reviewed?(merge_request, review_bot)
+          # rubocop: disable CodeReuse/ActiveRecord -- Worker needs direct access to check reviewer state
+          reviewer = merge_request.merge_request_reviewers.find_by(user_id: review_bot.id)
+          # rubocop: enable CodeReuse/ActiveRecord
+          reviewer&.state == 'reviewed'
+        end
+
+        def update_review_state_service(merge_request, review_bot)
+          ::MergeRequests::UpdateReviewerStateService.new(
+            project: merge_request.project,
+            current_user: review_bot
+          )
+        end
+
+        def log_timeout_reset(merge_request)
+          Gitlab::AppLogger.info(
+            message: "Duo Code Review Flow timed out and was reset",
+            event: "duo_code_review_flow_timeout_reset",
+            unit_primitive: 'review_merge_request',
+            merge_request_id: merge_request.id,
+            project_id: merge_request.project.id
+          )
+        end
+      end
+    end
+  end
+end

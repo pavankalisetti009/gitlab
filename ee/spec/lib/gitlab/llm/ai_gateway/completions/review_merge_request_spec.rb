@@ -1870,7 +1870,7 @@ RSpec.describe Gitlab::Llm::AiGateway::Completions::ReviewMergeRequest, feature_
 
     context 'when duo_code_review_on_agent_platform is enabled' do
       let(:create_and_start_service) do
-        instance_double(::Ai::DuoWorkflows::CreateAndStartWorkflowService, execute: true)
+        instance_double(::Ai::DuoWorkflows::CreateAndStartWorkflowService, execute: ServiceResponse.success)
       end
 
       let(:required_privileges) do
@@ -1917,6 +1917,14 @@ RSpec.describe Gitlab::Llm::AiGateway::Completions::ReviewMergeRequest, feature_
         ) do |service|
           expect(service).to receive(:execute).with(merge_request, 'review_started')
         end
+
+        completion.execute
+      end
+
+      it 'schedules timeout cleanup job for 30 minutes' do
+        expect(::Ai::DuoWorkflows::CodeReview::TimeoutWorker)
+          .to receive(:perform_in)
+          .with(30.minutes, merge_request.id)
 
         completion.execute
       end
