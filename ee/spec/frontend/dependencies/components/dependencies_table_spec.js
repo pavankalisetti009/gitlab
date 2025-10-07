@@ -23,6 +23,9 @@ describe('DependenciesTable component', () => {
     namespaceType: 'project',
     endpoint: 'endpoint',
     locationsEndpoint: 'endpoint',
+    glFeatures: {
+      hideNoLongerDetectedVulnerabilitiesOnTheDependencyList: true,
+    },
   };
 
   const createComponent = ({ propsData, provide } = {}) => {
@@ -52,6 +55,8 @@ describe('DependenciesTable component', () => {
   const findDependencyPathDrawer = () => wrapper.findComponent(DependencyPathDrawer);
   const findDependencyLicenseLinks = (licenseCell) =>
     licenseCell.findComponent(DependencyLicenseLinks);
+  const findVulnerabilityInfoIcon = () => wrapper.find('#vulnerabilities-info');
+  const findVulnerabilityInfoPopover = () => wrapper.findByTestId('vulnerability-info-popover');
   const normalizeWhitespace = (string) => string.replace(/\s+/g, ' ');
   const loadingIcon = () => wrapper.findComponent(GlLoadingIcon);
   const sharedExpectations = (rowWrapper, dependency) => {
@@ -152,7 +157,7 @@ describe('DependenciesTable component', () => {
     describe.each`
       namespaceType | expectedLabels
       ${'project'}  | ${['Component', 'Packager', 'Location', 'License', 'Vulnerabilities']}
-      ${'group'}    | ${['Component', 'Packager', 'Location', 'License', 'Projects']}
+      ${'group'}    | ${['Component', 'Packager', 'Location', 'License', 'Projects', 'Vulnerabilities']}
     `('with namespaceType set to "$namespaceType"', ({ namespaceType, expectedLabels }) => {
       beforeEach(() => {
         createComponent({
@@ -171,6 +176,37 @@ describe('DependenciesTable component', () => {
 
         expectedLabels.forEach((expectedLabel, i) => {
           expect(headerCells.at(i).text()).toContain(expectedLabel);
+        });
+      });
+
+      it('renders vulnerability info icon and popover', () => {
+        expect(findVulnerabilityInfoIcon().exists()).toBe(true);
+        expect(findVulnerabilityInfoPopover().exists()).toBe(true);
+        expect(findVulnerabilityInfoPopover().props('title')).toBe(
+          DEPENDENCIES_TABLE_I18N.vulnerabilityInfoTitle,
+        );
+        expect(findVulnerabilityInfoPopover().text()).toBe(
+          DEPENDENCIES_TABLE_I18N.vulnerabilityInfoBody,
+        );
+      });
+
+      describe('when hideNoLongerDetectedVulnerabilitiesOnTheDependencyList is false', () => {
+        beforeEach(() => {
+          createComponent({
+            propsData: {
+              dependencies: [],
+              isLoading: false,
+            },
+            provide: {
+              namespaceType,
+              glFeatures: { hideNoLongerDetectedVulnerabilitiesOnTheDependencyList: false },
+            },
+          });
+        });
+
+        it('does not render the icon or popover', () => {
+          expect(findVulnerabilityInfoIcon().exists()).toBe(false);
+          expect(findVulnerabilityInfoPopover().exists()).toBe(false);
         });
       });
 
