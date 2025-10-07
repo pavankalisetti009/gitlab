@@ -315,6 +315,19 @@ module EE
           method: :itself,
           description: "Project's DORA metrics."
 
+        field :ai_catalog_item,
+          ::Types::Ai::Catalog::ItemInterface,
+          null: true,
+          description: 'AI Catalog item of the project. ' \
+            'This field can only be resolved for one project in any single request.',
+          experiment: { milestone: '18.5' } do
+            extension(::Gitlab::Graphql::Limit::FieldCallCount, limit: 1)
+            argument :id,
+              ::Types::GlobalIDType[::Ai::Catalog::Item],
+              required: true,
+              description: 'Global ID of the catalog item to find.'
+          end
+
         field :ai_metrics,
           ::Types::Analytics::AiMetrics::NamespaceMetricsType,
           null: true,
@@ -769,6 +782,13 @@ module EE
             loader.call(project, project.analyzer_statuses)
           end
         end
+      end
+
+      def ai_catalog_item(id:)
+        ::Ai::Catalog::ItemsFinder.new(
+          current_user,
+          params: { project: project, id: id.model_id }
+        ).execute.first
       end
 
       override :container_protection_tag_rules
