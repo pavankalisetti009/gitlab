@@ -259,16 +259,13 @@ export default {
       };
     },
     defaultModel() {
-      return this.availableModels.find((item) => item.value === GITLAB_DEFAULT_MODEL);
+      return this.getModel(GITLAB_DEFAULT_MODEL);
     },
     currentModel: {
       get() {
-        return (
-          this.pinnedModel ||
-          this.selectedModel ||
-          JSON.parse(localStorage.getItem(DUO_AGENTIC_CHAT_SELECTED_MODEL_KEY)) ||
-          this.defaultModel
-        );
+        if (this.$apollo.queries.availableModels.loading) return null;
+
+        return this.pinnedModel || this.selectedModel || this.getSavedModel() || this.defaultModel;
       },
       set(val) {
         this.selectedModel = val;
@@ -683,8 +680,25 @@ export default {
         this.aiCatalogItemVersionId = '';
       }
     },
+    getSavedModel() {
+      try {
+        const savedModel = JSON.parse(localStorage.getItem(DUO_AGENTIC_CHAT_SELECTED_MODEL_KEY));
+
+        if (!this.getModel(savedModel.value)) {
+          localStorage.removeItem(DUO_AGENTIC_CHAT_SELECTED_MODEL_KEY);
+          return null;
+        }
+
+        return savedModel;
+      } catch {
+        return null;
+      }
+    },
+    getModel(modelValue) {
+      return this.availableModels.find((item) => item.value === modelValue);
+    },
     onModelSelect(selectedModel) {
-      const model = this.availableModels.find((item) => item.value === selectedModel);
+      const model = this.getModel(selectedModel);
 
       this.currentModel = model;
       localStorage.setItem(DUO_AGENTIC_CHAT_SELECTED_MODEL_KEY, JSON.stringify(model));

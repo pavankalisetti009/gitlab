@@ -1418,17 +1418,32 @@ describe('Duo Agentic Chat', () => {
       });
 
       describe('when there is a selected model set in `localStorage`', () => {
-        it('returns the selected model', async () => {
+        it('returns the selected model if it is available', async () => {
           const selectedModel = MOCK_MODEL_LIST_ITEMS[0];
           localStorage.setItem(DUO_AGENTIC_CHAT_SELECTED_MODEL_KEY, JSON.stringify(selectedModel));
 
           createComponent({
             propsData: { userModelSelectionEnabled: true, rootNamespaceId: MOCK_NAMESPACE_ID },
           });
-          await nextTick();
+          await waitForPromises();
 
           expect(localStorage.getItem).toHaveBeenCalledWith(DUO_AGENTIC_CHAT_SELECTED_MODEL_KEY);
           expect(findModelSelectDropdown().props('selectedOption')).toEqual(selectedModel);
+        });
+
+        it('clears local storage item and returns the default model if selected model is not available', async () => {
+          const selectedModel = { text: 'No longer available model', value: 'some_model' };
+          localStorage.setItem(DUO_AGENTIC_CHAT_SELECTED_MODEL_KEY, JSON.stringify(selectedModel));
+
+          createComponent({
+            propsData: { userModelSelectionEnabled: true, rootNamespaceId: MOCK_NAMESPACE_ID },
+          });
+          await waitForPromises();
+
+          expect(localStorage.removeItem).toHaveBeenCalledWith(DUO_AGENTIC_CHAT_SELECTED_MODEL_KEY);
+          expect(findModelSelectDropdown().props('selectedOption')).toMatchObject(
+            MOCK_GITLAB_DEFAULT_MODEL_ITEM,
+          );
         });
       });
 
