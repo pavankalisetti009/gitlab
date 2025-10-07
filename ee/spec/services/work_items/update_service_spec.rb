@@ -6,9 +6,13 @@ RSpec.describe WorkItems::UpdateService, feature_category: :team_planning do
   let_it_be(:developer) { create(:user) }
   let_it_be(:group) { create(:group, developers: developer) }
   let_it_be(:project) { create(:project, group: group) }
+  let_it_be(:issue_work_item_type) { create(:work_item_type, :issue) }
+  let_it_be(:task_work_item_type) { create(:work_item_type, :task) }
+  let_it_be(:incident_work_item_type) { create(:work_item_type, :incident) }
   let_it_be(:work_item, refind: true) { create(:work_item, project: project) }
 
   let_it_be(:current_user) { developer }
+  let(:widget_params) { {} }
   let(:params) { {} }
 
   describe '#execute' do
@@ -757,6 +761,110 @@ RSpec.describe WorkItems::UpdateService, feature_category: :team_planning do
             service.execute(work_item)
             expect(work_item.reload.description).to eq("- [x] Task item\n- [x] Completed task")
             expect(work_item.description).to eq(epic.reload.description)
+          end
+        end
+      end
+    end
+
+    context 'when changing work_item_type' do
+      let(:params) { { issue_type: 'task' } }
+
+      context 'with system-defined lifecycle' do
+        let_it_be(:lifecycle) { build(:work_item_system_defined_lifecycle) }
+
+        it 'updates the work item type and preserves the status' do
+          expect { update_work_item }
+            .to change { work_item.reload.work_item_type }
+            .from(issue_work_item_type).to(task_work_item_type)
+
+          expect(work_item.reload.status_with_fallback).to eq(lifecycle.default_open_status)
+        end
+
+        it_behaves_like 'update service that triggers GraphQL work_item_updated subscription' do
+          subject(:execute_service) { update_work_item }
+        end
+      end
+
+      context 'with custom lifecycles' do
+        let_it_be(:lifecycle) { create(:work_item_custom_lifecycle, namespace: group) }
+
+        before do
+          stub_licensed_features(work_item_status: true)
+        end
+
+        context 'when old and new work item types share the same lifecycle' do
+          let!(:issue_type_custom_lifecycle) do
+            create(:work_item_type_custom_lifecycle,
+              work_item_type: issue_work_item_type, lifecycle: lifecycle, namespace: group
+            )
+          end
+
+          let!(:task_type_custom_lifecycle) do
+            create(:work_item_type_custom_lifecycle,
+              work_item_type: task_work_item_type, lifecycle: lifecycle, namespace: group
+            )
+          end
+
+          it 'updates the work item type and preserves the status' do
+            expect { update_work_item }
+              .to change { work_item.reload.work_item_type }
+              .from(issue_work_item_type).to(task_work_item_type)
+
+            expect(work_item.reload.status_with_fallback).to eq(lifecycle.default_open_status)
+          end
+
+          it_behaves_like 'update service that triggers GraphQL work_item_updated subscription' do
+            subject(:execute_service) { update_work_item }
+          end
+        end
+
+        context 'when old and new work item types have different lifecycles' do
+          let_it_be(:lifecycle_2) { create(:work_item_custom_lifecycle, namespace: group) }
+
+          let!(:issue_type_custom_lifecycle) do
+            create(:work_item_type_custom_lifecycle,
+              work_item_type: issue_work_item_type, lifecycle: lifecycle, namespace: group
+            )
+          end
+
+          let!(:task_type_custom_lifecycle) do
+            create(:work_item_type_custom_lifecycle,
+              work_item_type: task_work_item_type, lifecycle: lifecycle_2, namespace: group
+            )
+          end
+
+          it 'updates the work item type and sets the default status' do
+            expect { update_work_item }
+              .to change { work_item.reload.work_item_type }
+              .from(issue_work_item_type).to(task_work_item_type)
+              .and change { work_item.status_with_fallback }
+              .from(lifecycle.default_open_status).to(lifecycle_2.default_open_status)
+          end
+
+          it_behaves_like 'update service that triggers GraphQL work_item_updated subscription' do
+            subject(:execute_service) { update_work_item }
+          end
+        end
+
+        context 'when work item type does not support configurable statuses' do
+          let!(:issue_type_custom_lifecycle) do
+            create(:work_item_type_custom_lifecycle,
+              work_item_type: issue_work_item_type, lifecycle: lifecycle, namespace: group
+            )
+          end
+
+          let(:params) { { issue_type: 'incident' } }
+
+          it 'updates the work item type but without any status' do
+            expect { update_work_item }
+              .to change { work_item.reload.work_item_type }
+              .from(issue_work_item_type).to(incident_work_item_type)
+              .and change { work_item.status_with_fallback }
+              .from(lifecycle.default_open_status).to(nil)
+          end
+
+          it_behaves_like 'update service that triggers GraphQL work_item_updated subscription' do
+            subject(:execute_service) { update_work_item }
           end
         end
       end
