@@ -630,6 +630,10 @@
       border-color: var(--gl-color-alpha-dark-8);
     }
 
+    .super-sidebar .super-sidebar-nav-item:not(.super-sidebar-nav-item-current) .badge {
+      background-color: transparent;
+    }
+
     .super-sidebar .super-sidebar-nav-item.super-sidebar-nav-item-current:not(:hover) .badge {
       background-color: var(--_shade-1);
     }
@@ -686,6 +690,11 @@
 
     .super-sidebar hr {
       border-color: var(--gl-color-alpha-light-16);
+    }
+
+    .super-sidebar .super-sidebar-nav-item:not(.super-sidebar-nav-item-current) .badge {
+      color: var(--super-sidebar-accent-color-fg);
+      background-color: transparent;
     }
 
     .super-sidebar .super-sidebar-nav-item.super-sidebar-nav-item-current:not(:hover) .badge {
