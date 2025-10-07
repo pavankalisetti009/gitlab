@@ -55,7 +55,18 @@ module Resolvers
           created_before: end_date,
           project_id: project_ids,
           report_type: report_type
-        }.compact
+        }.merge(default_filters).compact
+      end
+
+      # To include only active and exclude no longer detected vulnerabilities.
+      def default_filters
+        states = Vulnerability.active_states
+        resolved_on_default_branch = false
+
+        {
+          state: states,
+          has_resolution: resolved_on_default_branch
+        }
       end
 
       def fetch_results(params)
