@@ -103,17 +103,19 @@ module API
                   )
               ).execute.preload_users
 
-              present paginate(tokens, skip_default_order: true), with: Entities::PersonalAccessToken
+              present paginate(tokens, exclude_total_headers: true, skip_default_order: true),
+                with: Entities::PersonalAccessToken
             elsif Feature.enabled?(:credentials_inventory_pat_finder, user_group || :instance)
               tokens = ::Authn::CredentialsInventoryPersonalAccessTokensFinder.new(pat_finder_params)
                                                                                     .execute.preload_users
 
               # The optimization breaks if re-ordered
-              present paginate(tokens, skip_default_order: true), with: Entities::PersonalAccessToken
+              present paginate(tokens, exclude_total_headers: true, skip_default_order: true),
+                with: Entities::PersonalAccessToken
             else
               tokens = PersonalAccessTokensFinder.new(pat_finder_params).execute.preload_users
 
-              present paginate(tokens), with: Entities::PersonalAccessToken
+              present paginate(tokens, exclude_total_headers: true), with: Entities::PersonalAccessToken
             end
           end
 
