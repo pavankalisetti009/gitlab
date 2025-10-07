@@ -136,10 +136,9 @@ For more information, see the history.
 
 {{< /alert >}}
 
-By default, immediate deletion is allowed for groups and projects marked for deletion. This allows users
-to effectively bypass the configured retention period and delete groups or projects immediately.
+Immediately delete groups and projects scheduled for deletion. This action bypasses the configured retention period and deletes groups or projects immediately.
 
-To disable immediate deletion for groups and projects:
+To turn off immediate deletion for groups and projects:
 
 1. On the left sidebar, at the bottom, select **Admin**.
 1. Select **Settings** > **General**.
@@ -149,7 +148,7 @@ To disable immediate deletion for groups and projects:
 
 {{< alert type="note" >}}
 
-Administrators can still delete groups and projects when this setting is disabled.
+Administrators can still delete groups and projects when this setting is turned off.
 
 {{< /alert >}}
 
