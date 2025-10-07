@@ -91,10 +91,6 @@ export default {
       return this.isSaaS && !this.isAdminInstanceDuoHome;
     },
     shouldShowDuoAgentPlatformSettings() {
-      if (!this.isSaaS) {
-        // Disabled in self-managed instances, will be released in a future milestone
-        return false;
-      }
       return this.isAdminInstanceDuoHome;
     },
   },
