@@ -170,7 +170,7 @@ export default {
         v-else
         :dimensions="dimensions"
         :should-render-resizable="true"
-        class="duo-chat duo-chat-layout"
+        class="duo-chat duo-chat-layout !gl-left-auto gl-right-0"
       >
         <template v-if="glFeatures.duoSideRail" #siderail>
           <side-rail :buttons="siderail" @click="onClick" />
