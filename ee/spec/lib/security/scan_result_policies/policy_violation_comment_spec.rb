@@ -231,6 +231,60 @@ RSpec.describe Security::ScanResultPolicies::PolicyViolationComment, feature_cat
               'configured to fail open: Any merge request.'
           end
         end
+
+        context 'with warn-mode policies' do
+          let_it_be(:warn_mode_policy) do
+            create(:security_policy, :enforcement_type_warn, name: 'Warn Policy')
+          end
+
+          context 'when there is one warn-mode policy' do
+            before do
+              allow_next_instance_of(::Security::ScanResultPolicies::PolicyViolationDetails) do |details|
+                allow(details).to receive(:warn_mode_policies).and_return([warn_mode_policy])
+              end
+            end
+
+            it 'includes warn-mode summary in the comment body' do
+              expect(body).to include(
+                '**Note:** The following policies are in warn-mode and can be bypassed to make approvals optional:'
+              )
+              expect(body).to include('- Warn Policy')
+            end
+          end
+
+          context 'when there are multiple warn-mode policies' do
+            let_it_be(:warn_mode_policy_2) do
+              create(:security_policy, :enforcement_type_warn, policy_index: 1, name: 'Another Warn Policy')
+            end
+
+            before do
+              allow_next_instance_of(::Security::ScanResultPolicies::PolicyViolationDetails) do |details|
+                allow(details).to receive(:warn_mode_policies).and_return([warn_mode_policy, warn_mode_policy_2])
+              end
+            end
+
+            it 'includes warn-mode summary for multiple policies' do
+              expect(body).to include('- Another Warn Policy')
+              expect(body).to include('- Warn Policy')
+            end
+          end
+
+          context 'when the feature flag is disabled' do
+            before do
+              stub_feature_flags(security_policy_approval_warn_mode: false)
+
+              allow_next_instance_of(::Security::ScanResultPolicies::PolicyViolationDetails) do |details|
+                allow(details).to receive(:warn_mode_policies).and_return([warn_mode_policy])
+              end
+            end
+
+            it 'does not include warn-mode summary' do
+              expect(body).not_to include(
+                '**Note:** The following policies are in warn-mode and can be bypassed to make approvals optional:'
+              )
+            end
+          end
+        end
       end
 
       context 'without violation details' do
