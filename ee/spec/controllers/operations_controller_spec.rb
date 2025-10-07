@@ -154,7 +154,7 @@ RSpec.describe OperationsController, feature_category: :release_orchestration do
           get_index(:json)
 
           expect(response).to have_gitlab_http_status(:unauthorized)
-          expect(json_response['error']).to include('sign in or sign up before continuing')
+          expect(json_response['error']).to include('Sign in or sign up before continuing')
         end
       end
     end
@@ -200,7 +200,7 @@ RSpec.describe OperationsController, feature_category: :release_orchestration do
           get_environments(:json)
 
           expect(response).to have_gitlab_http_status(:unauthorized)
-          expect(json_response['error']).to include('sign in or sign up before continuing')
+          expect(json_response['error']).to include('Sign in or sign up before continuing')
         end
       end
 

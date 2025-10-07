@@ -22,7 +22,7 @@ You might get the following message prompting you to sign in to GitLab.com
 when you're already signed in:
 
 ```plaintext
-You need to sign in or sign up before continuing.
+Sign in or sign up before continuing.
 ```
 
 The GitLab for Jira Cloud app uses an iframe to add groups on the
@@ -271,7 +271,7 @@ For the second log, you might have one of the following scenarios:
         "uri":"/-/jira_connect/events/installed"
       }
       ```
-  
+
   - If `json.jira_status_code` is `404 Not Found` and `json.jira_body` contains the HTML of a typical GitLab 404 page, confirm that the
     [integration allowlist](project_integration_management.md#integration-allowlist) on the self-managed instance allows the GitLab for Jira Cloud app.
 

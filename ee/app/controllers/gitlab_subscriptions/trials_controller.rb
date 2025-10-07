@@ -70,7 +70,7 @@ module GitlabSubscriptions
 
       redirect_to(
         new_trial_registration_path(::Onboarding::StatusPresenter.glm_tracking_params(params)), # rubocop:disable Rails/StrongParams -- method performs strong params
-        alert: I18n.t('devise.failure.unauthenticated')
+        notice: I18n.t('devise.failure.unauthenticated')
       )
     end
 
