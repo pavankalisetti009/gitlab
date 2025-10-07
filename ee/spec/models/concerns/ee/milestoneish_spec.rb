@@ -31,9 +31,9 @@ RSpec.describe Milestoneish, feature_category: :groups_and_projects do
   describe '#milestone_issues' do
     it 'returns expected results' do
       items = milestone.milestone_issues(user)
-      expect(items.first).to eq(sub_group_work_item_epic)
+      expect(items.first).to eq(issue)
       expect(items.second).to eq(parent_group_work_item_epic)
-      expect(items.third).to eq(issue)
+      expect(items.third).to eq(sub_group_work_item_epic)
     end
   end
 end
