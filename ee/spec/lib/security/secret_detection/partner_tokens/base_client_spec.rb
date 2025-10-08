@@ -7,10 +7,17 @@ RSpec.describe Security::SecretDetection::PartnerTokens::BaseClient, feature_cat
   let(:uri) { URI.parse('https://example.com/api') }
   let(:response) { instance_double(Net::HTTPResponse, body: '{"test": "data"}', code: '200') }
 
-  describe '#verify_token' do
+  describe '#verify_partner_token' do
     it 'raises NotImplementedError' do
-      expect { client.verify_token('test-token') }
-        .to raise_error(NotImplementedError, 'Subclasses must implement verify_token')
+      expect { client.verify_partner_token('test-token') }
+        .to raise_error(NotImplementedError, 'Subclasses must implement verify_partner_token')
+    end
+  end
+
+  describe '#valid_format?' do
+    it 'raises NotImplementedError' do
+      expect { client.valid_format?('test-token') }
+        .to raise_error(NotImplementedError, 'Subclasses must implement valid_format?')
     end
   end
 

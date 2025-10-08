@@ -6,26 +6,9 @@ module Security
       class GcpClient < BaseClient
         TOKENINFO_ENDPOINT = 'https://oauth2.googleapis.com/tokeninfo'
 
-        def verify_token(token_value)
-          return token_response(:unknown) unless valid_gcp_token_format?(token_value)
-
-          # GCP OAuth2 tokeninfo endpoint approach:
-          # Send access token as query parameter to validate its status
-          # - Valid token: 200 response with token details
-          # - Invalid/expired token: 400/401 response
-          verify_gcp_token(token_value)
-
-        rescue RateLimitError, NetworkError => e
-          # Let the worker handle rate limit retries
-          raise e
-        rescue ResponseError, StandardError
-          # Response parsing errors typically don't benefit from retry
-          token_response(:unknown)
-        end
-
         private
 
-        def valid_gcp_token_format?(token_value)
+        def valid_format?(token_value)
           # Match GCP token patterns based on secret detection rules
           # Ref: https://gitlab.com/gitlab-org/security-products/secret-detection/secret-detection-rules/-/blob/main/rules/mit/gcp/gcp.toml
           return false unless token_value
@@ -42,7 +25,11 @@ module Security
             token_value.match?(gcp_client_secret_pattern)
         end
 
-        def verify_gcp_token(token_value)
+        # GCP OAuth2 tokeninfo endpoint approach:
+        # Send access token as query parameter to validate its status
+        # - Valid token: 200 response with token details
+        # - Invalid/expired token: 400/401 response
+        def verify_partner_token(token_value)
           response = make_tokeninfo_request(token_value)
           analyze_gcp_response(response)
         end

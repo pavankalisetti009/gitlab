@@ -6,27 +6,9 @@ module Security
       class PostmanClient < BaseClient
         API_ENDPOINT = 'https://api.getpostman.com/me'
 
-        def verify_token(token_value)
-          return token_response(:unknown) unless valid_postman_token_format?(token_value)
-
-          # Postman /me endpoint approach:
-          # Send API key via X-API-Key header to validate its status
-          # - Valid token: 200 response with user details
-          # - Invalid/revoked token: 401 response
-          verify_postman_token(token_value)
-
-        rescue RateLimitError, NetworkError => e
-          # Let the worker handle rate limit retries
-          raise e
-        rescue ResponseError => e
-          ::Gitlab::ErrorTracking.log_exception(e)
-          # Response parsing errors typically don't benefit from retry
-          token_response(:unknown)
-        end
-
         private
 
-        def valid_postman_token_format?(token_value)
+        def valid_format?(token_value)
           # Match Postman API key pattern based on secret detection rules
           # Postman API keys are typically 64 character hexadecimal strings
           # Pattern: PMAK-[a-f0-9]{24}-[a-f0-9]{34}
@@ -37,7 +19,11 @@ module Security
           token_value.match?(postman_api_key_pattern)
         end
 
-        def verify_postman_token(token_value)
+        # Postman /me endpoint approach:
+        # Send API key via X-API-Key header to validate its status
+        # - Valid token: 200 response with user details
+        # - Invalid/revoked token: 401 response
+        def verify_partner_token(token_value)
           response = make_postman_request(token_value)
           analyze_postman_response(response)
         end
