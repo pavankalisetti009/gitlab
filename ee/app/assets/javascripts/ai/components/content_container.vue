@@ -141,7 +141,7 @@ export default {
       </div>
     </div>
     <div
-      class="ai-panel-body gl-h-full gl-flex-wrap gl-justify-center gl-overflow-auto gl-text-sm gl-text-secondary"
+      class="ai-panel-body gl-h-full gl-flex-wrap gl-justify-center gl-overflow-auto gl-text-secondary"
       :class="{ 'gl-flex gl-min-h-full': typeof activeTab.component === 'string' }"
     >
       <div v-if="typeof activeTab.component === 'string'" class="gl-self-center">
