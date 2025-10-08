@@ -8,7 +8,12 @@ RSpec.describe GitlabSchema.types['CiDedicatedHostedRunnerUsage'], feature_categ
 
   subject(:type) { described_class }
 
-  let_it_be(:fields) { %i[billing_month billing_month_iso8601 compute_minutes duration_seconds root_namespace] }
+  let_it_be(:fields) do
+    %i[
+      billing_month billing_month_iso8601 compute_minutes duration_seconds
+      compute_minutes_usage duration_minutes root_namespace
+    ]
+  end
 
   before do
     stub_application_setting(gitlab_dedicated_instance: true)
@@ -26,6 +31,24 @@ RSpec.describe GitlabSchema.types['CiDedicatedHostedRunnerUsage'], feature_categ
 
     it 'has the correct description' do
       expect(field.description).to eq('Namespace associated with the usage data. Null for instance aggregate data.')
+    end
+  end
+
+  describe 'compute_minutes_usage field' do
+    let(:field) { described_class.fields['computeMinutesUsage'] }
+
+    it 'has the correct type and nullability' do
+      expect(field.type.to_type_signature).to eq('Float!')
+      expect(field.type.non_null?).to be true
+    end
+  end
+
+  describe 'duration_minutes field' do
+    let(:field) { described_class.fields['durationMinutes'] }
+
+    it 'has the correct type and nullability' do
+      expect(field.type.to_type_signature).to eq('Float!')
+      expect(field.type.non_null?).to be true
     end
   end
 
@@ -62,6 +85,8 @@ RSpec.describe GitlabSchema.types['CiDedicatedHostedRunnerUsage'], feature_categ
               billingMonthIso8601
               computeMinutes
               durationSeconds
+              computeMinutesUsage
+              durationMinutes
               rootNamespace {
                 __typename
                 ... on Namespace {
@@ -92,6 +117,21 @@ RSpec.describe GitlabSchema.types['CiDedicatedHostedRunnerUsage'], feature_categ
         expect(nodes).not_to be_nil
         expect(nodes[0]['rootNamespace']).not_to be_nil
         expect(nodes[0]['rootNamespace']).to include('id', 'name')
+      end
+
+      it 'returns both integer and float field values' do
+        result = execute_query
+
+        nodes = result.dig('data', 'ciDedicatedHostedRunnerUsage', 'nodes')
+        node = nodes[0]
+
+        # Integer fields (rounded down)
+        expect(node['computeMinutes']).to eq(120)
+        expect(node['durationSeconds']).to eq(7200)
+
+        # Float fields (precise values)
+        expect(node['computeMinutesUsage']).to eq(120.0)
+        expect(node['durationMinutes']).to eq(120.0) # 7200 seconds = 120 minutes
       end
     end
 
