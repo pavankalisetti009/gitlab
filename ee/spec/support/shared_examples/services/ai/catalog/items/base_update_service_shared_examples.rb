@@ -215,6 +215,7 @@ RSpec.shared_examples Ai::Catalog::Items::BaseUpdateService do
         before do
           stub_const('Ai::Catalog::ItemVersion::AGENT_SCHEMA_VERSION', nil)
           stub_const('Ai::Catalog::ItemVersion::FLOW_SCHEMA_VERSION', nil)
+          stub_const('Ai::Catalog::ItemVersion::THIRD_PARTY_FLOW_SCHEMA_VERSION', nil)
         end
 
         it_behaves_like 'an error response', [
