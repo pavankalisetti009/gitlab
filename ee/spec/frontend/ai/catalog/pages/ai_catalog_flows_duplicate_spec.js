@@ -61,6 +61,7 @@ describe('AiCatalogFlowsDuplicate', () => {
 
     it('sets initial values based on the original agent, but always private and without a project', () => {
       const expectedInitialValues = {
+        type: 'FLOW',
         name: `Copy of ${mockFlow.name}`,
         description: mockFlow.description,
         steps: mapSteps(mockFlow.latestVersion.steps),

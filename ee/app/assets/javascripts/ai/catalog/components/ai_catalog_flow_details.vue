@@ -20,8 +20,8 @@ export default {
     projectName() {
       return this.item.project?.nameWithNamespace;
     },
-    configuration() {
-      return this.item.configuration;
+    definition() {
+      return this.item.latestVersion?.definition;
     },
     steps() {
       return (
@@ -51,9 +51,9 @@ export default {
           :value="projectName"
         />
       </form-section>
-      <form-section v-if="configuration" :title="s__('AICatalog|Configuration')">
+      <form-section v-if="definition" :title="s__('AICatalog|Configuration')">
         <ai-catalog-item-field :title="s__('AICatalog|Configuration')">
-          <form-flow-configuration :value="configuration" read-only />
+          <form-flow-configuration :value="definition" read-only />
         </ai-catalog-item-field>
       </form-section>
       <form-section v-else :title="s__('AICatalog|Steps')">
