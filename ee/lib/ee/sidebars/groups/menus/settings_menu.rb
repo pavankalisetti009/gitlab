@@ -171,7 +171,7 @@ module EE
           end
 
           def billing_enabled?
-            ::Gitlab::CurrentSettings.should_check_namespace_plan?
+            ::Gitlab::Saas.feature_available?(:gitlab_com_subscriptions)
           end
 
           def reporting_menu_item

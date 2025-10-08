@@ -276,6 +276,7 @@ RSpec.describe 'Group navbar', :js, feature_category: :groups_and_projects do
       stub_config(registry: { enabled: false })
       stub_group_wikis(false)
       stub_licensed_features(domain_verification: true)
+      stub_saas_features(gitlab_com_subscriptions: false)
       sign_in(user)
       create_package_nav(_('Operate'))
       insert_infrastructure_registry_nav(_('Kubernetes'))
