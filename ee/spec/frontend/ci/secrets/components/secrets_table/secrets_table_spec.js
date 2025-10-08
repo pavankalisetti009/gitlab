@@ -10,10 +10,10 @@ import {
 import Vue, { nextTick } from 'vue';
 import VueApollo from 'vue-apollo';
 import { RouterLinkStub } from '@vue/test-utils';
+import { createAlert } from '~/alert';
 import { mountExtended } from 'helpers/vue_test_utils_helper';
 import createMockApollo from 'helpers/mock_apollo_helper';
 import waitForPromises from 'helpers/wait_for_promises';
-import { createAlert } from '~/alert';
 import { PAGE_SIZE } from 'ee/ci/secrets/constants';
 import SecretsTable from 'ee/ci/secrets/components/secrets_table/secrets_table.vue';
 import SecretActionsCell from 'ee/ci/secrets/components/secrets_table/secret_actions_cell.vue';
@@ -25,7 +25,6 @@ import getSecretManagerStatusQuery from 'ee/ci/secrets/graphql/queries/get_secre
 import { mockEmptySecrets, mockProjectSecretsData } from '../../mock_data';
 
 jest.mock('~/alert');
-
 Vue.use(VueApollo);
 
 describe('SecretsTable component', () => {
@@ -237,6 +236,24 @@ describe('SecretsTable component', () => {
 
     it('renders link to secret form', () => {
       expect(findEmptyStateButton().attributes('href')).toBe('new');
+    });
+  });
+
+  describe('when secrets query fails', () => {
+    const error = new Error('Permission denied.');
+
+    beforeEach(async () => {
+      mockProjectSecretsResponse = jest.fn().mockRejectedValue(error);
+      await createComponent();
+    });
+
+    it('renders error message', () => {
+      expect(createAlert).toHaveBeenCalledWith({
+        message:
+          'An error occurred while fetching secrets. Please make sure you have the proper permissions, or try again.',
+        captureError: true,
+        error,
+      });
     });
   });
 

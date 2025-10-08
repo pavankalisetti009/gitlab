@@ -142,7 +142,7 @@ describe('SecretsManagerPermissionsModal', () => {
 
   const USER_ITEMS = ['Administrator', 'John Doe'];
   const GROUP_ITEMS = ['Organization', 'test-org'];
-  const ROLE_ITEMS = ['Planner', 'Reporter', 'Developer', 'Maintainer'];
+  const ROLE_ITEMS = ['Reporter', 'Developer', 'Maintainer'];
 
   describe.each`
     category   | title          | fieldItems     | selectedItem    | principalId

@@ -22,8 +22,12 @@ module Types
           null: false,
           description: 'User associated with the event.'
 
+        def event
+          ::Ai::UsageEvent.events.key(object['event']) || object['event']
+        end
+
         def user
-          Gitlab::Graphql::Loaders::BatchModelLoader.new(User, object.user_id).find
+          Gitlab::Graphql::Loaders::BatchModelLoader.new(User, object['user_id']).find
         end
       end
       # rubocop:enable Graphql/AuthorizeTypes
