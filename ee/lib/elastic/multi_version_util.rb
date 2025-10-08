@@ -14,7 +14,13 @@ module Elastic
     def version(version)
       version = Elastic.const_get(version, false) if version.is_a?(String)
 
-      version.const_get(proxy_class_name, false).new(data_target, use_separate_indices: use_separate_indices)
+      proxy_class = if version.const_defined?(proxy_class_name, false)
+                      version.const_get(proxy_class_name, false)
+                    else
+                      version.const_get(:ApplicationClassProxy, false)
+                    end
+
+      proxy_class.new(data_target, use_separate_indices: use_separate_indices)
     end
 
     # TODO: load from db table https://gitlab.com/gitlab-org/gitlab/issues/12555
