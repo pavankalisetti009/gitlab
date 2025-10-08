@@ -24,7 +24,7 @@ module Authz
       private
 
       def with_possible_changes_after_create?
-        member.member_role || group_has_member_role_in_another_group?
+        member.member_role || group_has_member_role_in_another_group? || group_has_member_role_in_project?
       end
 
       def with_possible_changes_after_update?
@@ -33,13 +33,22 @@ module Authz
         member_role_changed = member.member_role_id != old_values_map[:member_role_id]
         access_level_changed = member.access_level != old_values_map[:access_level]
 
-        member_role_changed || (access_level_changed && group_has_member_role_in_another_group?)
+        return true if member_role_changed
+
+        access_level_changed && (group_has_member_role_in_another_group? || group_has_member_role_in_project?)
       end
 
       def group_has_member_role_in_another_group?
         ::GroupGroupLink.for_shared_with_groups(member.source_id).with_custom_role.exists?
       end
       strong_memoize_attr :group_has_member_role_in_another_group?
+
+      def group_has_member_role_in_project?
+        return false if ::Feature.disabled?(:cache_user_project_member_roles, member.source.root_ancestor)
+
+        ::ProjectGroupLink.in_group(member.source_id).with_custom_role.exists?
+      end
+      strong_memoize_attr :group_has_member_role_in_project?
     end
   end
 end
