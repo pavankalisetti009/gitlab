@@ -78,7 +78,8 @@ module API
               use_service_account: token_service.use_service_account?,
               source_branch: params[:source_branch],
               additional_context: params[:additional_context],
-              workflow_metadata: Gitlab::DuoWorkflow::Client.metadata(current_user).to_json
+              workflow_metadata: Gitlab::DuoWorkflow::Client.metadata(current_user).to_json,
+              shallow_clone: params.fetch(:shallow_clone, true)
             }
           end
 
@@ -121,8 +122,13 @@ module API
           end
 
           def create_workflow_params
-            wrkf_params = declared_params(include_missing: false).except(:start_workflow, :source_branch,
-              :additional_context)
+            wrkf_params = declared_params(include_missing: false).except(
+              :start_workflow,
+              :source_branch,
+              :additional_context,
+              :shallow_clone
+            )
+
             return wrkf_params unless wrkf_params[:ai_catalog_item_version_id]
 
             wrkf_params[:ai_catalog_item_version] = ::Ai::Catalog::ItemVersion
@@ -187,6 +193,11 @@ module API
                 example: '[{"Category": "agent_user_environment", "Content": "{\"merge_request_url\": ' \
                   'https://gitlab.com/project/-/merge_requests/1\"}", "Metadata": "{}"}]'
               }
+            optional :shallow_clone, type: Boolean,
+              desc: 'Whether or not the workflow should use a shallow clone of the repository during its execution.  ' \
+                'Defaults to true.',
+              default: true,
+              documentation: { example: true }
             exactly_one_of :project_id, :namespace_id
           end
         end
