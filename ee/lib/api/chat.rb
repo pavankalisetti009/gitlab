@@ -53,7 +53,7 @@ module API
             desc: 'Indicates if we need to reset the history before and after the request'
           optional :project_id, type: Integer,
             desc: 'Project ID. Required if resource_type is a commit.'
-          optional :current_file, type: Hash do
+          optional :current_file, type: Hash, desc: 'Object that contains information about the current file' do
             optional :file_name, type: String, limit: 1000, desc: 'The name of the current file'
             optional :content_above_cursor, type: String,
               limit: ::API::CodeSuggestions::MAX_CONTENT_SIZE, desc: 'The content above cursor'

@@ -72,7 +72,7 @@ module API
         success EE::API::Entities::Vulnerability
       end
       params do
-        optional :comment, type: String
+        optional :comment, type: String, desc: 'Comment related to the vulnerability'
       end
       post ':id/confirm' do
         not_modified! if @vulnerability.confirmed?
@@ -85,7 +85,7 @@ module API
         success EE::API::Entities::Vulnerability
       end
       params do
-        optional :comment, type: String
+        optional :comment, type: String, desc: 'Comment related to the vulnerability'
       end
       post ':id/revert' do
         not_modified! if @vulnerability.detected?
