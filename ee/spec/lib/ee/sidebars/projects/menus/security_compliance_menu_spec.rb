@@ -324,5 +324,60 @@ RSpec.describe Sidebars::Projects::Menus::SecurityComplianceMenu, feature_catego
         it { is_expected.to be_nil }
       end
     end
+
+    describe 'Secrets manager' do
+      let(:item_id) { :secrets_manager }
+      let_it_be(:secrets_manager) { build(:project_secrets_manager, project: project) }
+
+      before_all do
+        stub_feature_flags(secrets_manager: true)
+        secrets_manager.activate!
+      end
+
+      context 'when all conditions are met' do
+        before do
+          stub_licensed_features(native_secrets_management: true)
+        end
+
+        it { is_expected.not_to be_nil }
+      end
+
+      context 'when user is not Reporter+' do
+        let(:guest) { create(:user) }
+        let(:context) { Sidebars::Projects::Context.new(current_user: guest, container: project) }
+
+        before do
+          stub_licensed_features(native_secrets_management: true)
+        end
+
+        it { is_expected.to be_nil }
+      end
+
+      context 'when feature flag is disabled' do
+        before do
+          stub_feature_flags(secrets_manager: false)
+          stub_licensed_features(native_secrets_management: true)
+        end
+
+        it { is_expected.to be_nil }
+      end
+
+      context 'when feature license is disabled' do
+        before do
+          stub_licensed_features(native_secrets_management: false)
+        end
+
+        it { is_expected.to be_nil }
+      end
+
+      context 'when secrets manager is not active' do
+        before do
+          stub_licensed_features(native_secrets_management: true)
+          secrets_manager.update!(status: SecretsManagement::ProjectSecretsManager::STATUSES[:deprovisioning])
+        end
+
+        it { is_expected.to be_nil }
+      end
+    end
   end
 end

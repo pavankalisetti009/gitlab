@@ -13,13 +13,17 @@ module Projects
     private
 
     def authorize_view_secrets!
-      render_404 unless can?(current_user, :developer_access, project)
+      render_404 unless can?(current_user, :reporter_access, project)
     end
 
     def check_secrets_enabled!
+      secrets_manager = SecretsManagement::ProjectSecretsManager.find_by_project_id(@project.id)
+
       render_404 unless
-        Feature.enabled?(:secrets_manager, project) &&
-          SecretsManagement::ProjectSecretsManager.find_by_project_id(@project.id)
+        secrets_manager &&
+          Feature.enabled?(:secrets_manager, project) &&
+          project.licensed_feature_available?(:native_secrets_management) &&
+          secrets_manager.status == SecretsManagement::ProjectSecretsManager::STATUSES[:active]
     end
   end
 end
