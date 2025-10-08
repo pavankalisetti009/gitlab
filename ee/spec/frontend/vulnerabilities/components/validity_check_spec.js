@@ -81,7 +81,7 @@ describe('ValidityCheck', () => {
 
   const findLastCheckedTimestamp = () => wrapper.findByTestId('validity-last-checked');
   const findTimeAgoTooltip = () => wrapper.findComponent(TimeAgoTooltip);
-  const findRetryButton = () => wrapper.findComponent(GlButton);
+  const findRecheckButton = () => wrapper.findComponent(GlButton);
   const findTooltip = () => wrapper.findComponent(GlTooltip);
   const findTokenValidityBadge = () => wrapper.findComponent(TokenValidityBadge);
 
@@ -129,13 +129,13 @@ describe('ValidityCheck', () => {
     });
   });
 
-  describe('retry button', () => {
+  describe('recheck button', () => {
     beforeEach(() => {
       createWrapper();
     });
 
     it('is rendered correctly', () => {
-      expect(findRetryButton().props()).toMatchObject({
+      expect(findRecheckButton().props()).toMatchObject({
         category: 'tertiary',
         size: 'small',
         icon: 'retry',
@@ -144,7 +144,7 @@ describe('ValidityCheck', () => {
     });
   });
 
-  describe('when user clicks retry button', () => {
+  describe('when user clicks recheck button', () => {
     describe('loading', () => {
       it.each`
         scenario            | mutationResolver
@@ -154,11 +154,11 @@ describe('ValidityCheck', () => {
       `('shows and clears loading state for "$scenario"', async ({ mutationResolver }) => {
         createWrapperWithApollo({ mutationResolver: mutationResolver() });
 
-        await findRetryButton().vm.$emit('click');
-        expect(findRetryButton().props('loading')).toBe(true);
+        await findRecheckButton().vm.$emit('click');
+        expect(findRecheckButton().props('loading')).toBe(true);
 
         await waitForPromises();
-        expect(findRetryButton().props('loading')).toBe(false);
+        expect(findRecheckButton().props('loading')).toBe(false);
       });
     });
 
@@ -170,7 +170,7 @@ describe('ValidityCheck', () => {
       });
 
       it('updates the last checked timestamp', async () => {
-        await findRetryButton().vm.$emit('click');
+        await findRecheckButton().vm.$emit('click');
         await waitForPromises();
 
         expect(findTimeAgoTooltip().props('time')).toBe(
@@ -183,7 +183,7 @@ describe('ValidityCheck', () => {
           defaultProps.findingTokenStatus.status,
         );
 
-        await findRetryButton().vm.$emit('click');
+        await findRecheckButton().vm.$emit('click');
         await waitForPromises();
 
         expect(findTokenValidityBadge().props('status')).toBe(
@@ -192,7 +192,7 @@ describe('ValidityCheck', () => {
       });
 
       it('does not show any error alerts', async () => {
-        await findRetryButton().vm.$emit('click');
+        await findRecheckButton().vm.$emit('click');
         await waitForPromises();
 
         expect(createAlert).not.toHaveBeenCalled();
@@ -203,7 +203,7 @@ describe('ValidityCheck', () => {
       it('shows error alert with the error message when GraphQL errors occur', async () => {
         createWrapperWithApollo({ mutationResolver: jest.fn().mockResolvedValue(errorResponse) });
 
-        await findRetryButton().vm.$emit('click');
+        await findRecheckButton().vm.$emit('click');
         await waitForPromises();
 
         expect(createAlert).toHaveBeenCalledWith({
@@ -218,7 +218,7 @@ describe('ValidityCheck', () => {
           mutationResolver: jest.fn().mockRejectedValue(new Error('Network error')),
         });
 
-        await findRetryButton().vm.$emit('click');
+        await findRecheckButton().vm.$emit('click');
         await waitForPromises();
 
         expect(createAlert).toHaveBeenCalledWith({
@@ -238,7 +238,7 @@ describe('ValidityCheck', () => {
           mutationResolver: jest.fn().mockResolvedValue(securityFindingErrorResponse),
         });
 
-        await findRetryButton().vm.$emit('click');
+        await findRecheckButton().vm.$emit('click');
         await waitForPromises();
 
         expect(createAlert).toHaveBeenCalledWith({
@@ -261,7 +261,7 @@ describe('ValidityCheck', () => {
 
       createWrapper({ vulnerabilityId }, { apolloProvider });
 
-      await findRetryButton().vm.$emit('click');
+      await findRecheckButton().vm.$emit('click');
 
       expect(mutationResolver).toHaveBeenCalledWith({
         vulnerabilityId: `gid://gitlab/Vulnerability/${vulnerabilityId}`,
@@ -282,7 +282,7 @@ describe('ValidityCheck', () => {
         { apolloProvider },
       );
 
-      await findRetryButton().vm.$emit('click');
+      await findRecheckButton().vm.$emit('click');
 
       expect(mutationResolver).toHaveBeenCalledWith({ securityFindingUuid });
     });
@@ -307,7 +307,7 @@ describe('ValidityCheck', () => {
       createWrapper();
 
       const tooltip = findTooltip();
-      expect(tooltip.text()).toBe('Retry');
+      expect(tooltip.text()).toBe('Recheck');
       expect(tooltip.attributes()).toMatchObject({
         target: 'vulnerability-validity-check-button',
         placement: 'top',
@@ -320,7 +320,7 @@ describe('ValidityCheck', () => {
         mutationResolver: jest.fn().mockResolvedValue(successResponse),
       });
 
-      await findRetryButton().vm.$emit('click');
+      await findRecheckButton().vm.$emit('click');
       expect(findTooltip().exists()).toBe(false);
 
       await waitForPromises();
@@ -334,7 +334,7 @@ describe('ValidityCheck', () => {
     });
 
     it('does not render validity refresh UI', () => {
-      expect(findRetryButton().exists()).toBe(false);
+      expect(findRecheckButton().exists()).toBe(false);
       expect(findLastCheckedTimestamp().exists()).toBe(false);
     });
 
