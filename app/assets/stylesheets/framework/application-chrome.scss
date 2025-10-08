@@ -282,11 +282,12 @@
     }
   }
 
-
   // Add some left margin on pages with no left sidebar (like /search)
-  .panels-container { margin-left: 0.5rem; }
+  .panels-container {
+    @apply gl-ml-3;
+  }
 
-  @media (min-width: $breakpoint-xl) {
+  @include media-breakpoint-up(lg) {
     .page-with-super-sidebar {
       .super-sidebar-loading ~ .panels-container,
       .super-sidebar-wrapper ~ .panels-container {
