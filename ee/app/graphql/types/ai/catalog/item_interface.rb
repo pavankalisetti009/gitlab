@@ -9,7 +9,8 @@ module Types
 
         RESOLVE_TYPES = {
           ::Ai::Catalog::Item::AGENT_TYPE => ::Types::Ai::Catalog::AgentType,
-          ::Ai::Catalog::Item::FLOW_TYPE => ::Types::Ai::Catalog::FlowType
+          ::Ai::Catalog::Item::FLOW_TYPE => ::Types::Ai::Catalog::FlowType,
+          ::Ai::Catalog::Item::THIRD_PARTY_FLOW_TYPE => ::Types::Ai::Catalog::ThirdPartyFlowType
         }.freeze
 
         graphql_name 'AiCatalogItem'
