@@ -3,7 +3,14 @@ import { GlCollapsibleListbox, GlTooltipDirective as GlTooltip } from '@gitlab/u
 import { s__ } from '~/locale';
 import SectionLayout from 'ee/security_orchestration/components/policy_editor/section_layout.vue';
 import HelpIcon from '~/vue_shared/components/help_icon/help_icon.vue';
-import { DEFAULT_TEMPLATE, LATEST_TEMPLATE } from './constants';
+import {
+  DEFAULT_TEMPLATE,
+  LATEST_TEMPLATE,
+  NONVERSIONED_TEMPLATES,
+  VERSIONED_TEMPLATES,
+} from './constants';
+
+const VERSIONED_TEMPLATE_TYPES = Object.keys(VERSIONED_TEMPLATES);
 
 export default {
   i18n: {
@@ -12,7 +19,10 @@ export default {
       'SecurityOrchestration|CI/CD template edition to be enforced. The default template is stable, but may not have all the features of the latest template.',
     ),
     latestTemplateInformation: s__(
-      'SecurityOrchestration|CI/CD template edition to be enforced. The latest edition may introduce breaking changes.',
+      'SecurityOrchestration|CI/CD template edition to be enforced. The latest edition may introduce breaking changes.',
+    ),
+    versionedTemplateInformation: s__(
+      'SecurityOrchestration|CI/CD template version to be enforced. Specific versions offer stability but may not include the latest features.',
     ),
   },
   components: {
@@ -29,15 +39,32 @@ export default {
       required: false,
       default: DEFAULT_TEMPLATE,
     },
+    scanType: {
+      type: String,
+      required: false,
+      default: '',
+    },
   },
   computed: {
+    supportsVersionedTemplates() {
+      return VERSIONED_TEMPLATE_TYPES.includes(this.scanType);
+    },
     availableOptions() {
-      return [
-        { text: s__('SecurityOrchestration|latest'), value: LATEST_TEMPLATE },
-        { text: s__('SecurityOrchestration|default'), value: DEFAULT_TEMPLATE },
-      ];
+      if (this.supportsVersionedTemplates) {
+        return VERSIONED_TEMPLATES[this.scanType];
+      }
+
+      return NONVERSIONED_TEMPLATES;
     },
     tooltipMessage() {
+      if (
+        this.supportsVersionedTemplates &&
+        this.selected !== LATEST_TEMPLATE &&
+        this.selected !== DEFAULT_TEMPLATE
+      ) {
+        return this.$options.i18n.versionedTemplateInformation;
+      }
+
       return this.selected === LATEST_TEMPLATE
         ? this.$options.i18n.latestTemplateInformation
         : this.$options.i18n.defaultTemplateInformation;
@@ -45,7 +72,7 @@ export default {
   },
   methods: {
     toggleValue(value) {
-      if (value === LATEST_TEMPLATE) {
+      if (value !== DEFAULT_TEMPLATE) {
         this.$emit('input', { template: value });
       } else {
         this.$emit('remove');

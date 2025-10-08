@@ -1257,19 +1257,35 @@ RSpec.describe Security::OrchestrationPolicyConfiguration, feature_category: :se
         end
 
         context "with template" do
-          let(:action) { { scan: "container_scanning", template: "latest" } }
+          let(:action) { { scan: "dependency_scanning", template: template } }
 
-          specify { expect(errors).to be_empty }
+          context "with latest" do
+            let(:template) { 'latest' }
+
+            specify { expect(errors).to be_empty }
+          end
+
+          context "with default" do
+            let(:template) { 'default' }
+
+            specify { expect(errors).to be_empty }
+          end
+
+          context "with versioned" do
+            let(:template) { 'v2' }
+
+            specify { expect(errors).to be_empty }
+          end
 
           context "with invalid value" do
-            before do
-              action[:template] = 'regular'
-            end
+            let(:template) { 'regular' }
 
             specify do
-              expect(errors.count).to be(1)
+              expect(errors.count).to be(2)
               expect(errors.first).to match(
                 "property '/scan_execution_policy/0/actions/0/template' is not one of: [\"default\", \"latest\"]")
+              expect(errors.last).to match(
+                "property '/scan_execution_policy/0/actions/0/template' does not match pattern: ^v\\d+$")
             end
           end
         end

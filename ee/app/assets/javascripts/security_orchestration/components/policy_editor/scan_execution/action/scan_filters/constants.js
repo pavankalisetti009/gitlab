@@ -1,4 +1,5 @@
 import { s__ } from '~/locale';
+import { REPORT_TYPE_DEPENDENCY_SCANNING } from '~/vue_shared/security_reports/constants';
 
 export const CI_VARIABLE = 'ci_variable';
 
@@ -7,6 +8,19 @@ export const TEMPLATE = 'template';
 export const DEFAULT_TEMPLATE = 'default';
 
 export const LATEST_TEMPLATE = 'latest';
+
+export const NONVERSIONED_TEMPLATES = [
+  { text: s__('SecurityOrchestration|latest'), value: LATEST_TEMPLATE },
+  { text: s__('SecurityOrchestration|default'), value: DEFAULT_TEMPLATE },
+];
+
+export const VERSIONED_TEMPLATES = {
+  [REPORT_TYPE_DEPENDENCY_SCANNING]: [
+    { text: s__('SecurityOrchestration|v2'), value: 'v2' },
+    { text: s__('SecurityOrchestration|latest'), value: LATEST_TEMPLATE },
+    { text: s__('SecurityOrchestration|default'), value: DEFAULT_TEMPLATE },
+  ],
+};
 
 export const FILTERS = [
   {
