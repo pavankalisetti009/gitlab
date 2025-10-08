@@ -18,6 +18,7 @@ module Sidebars
           add_item(issues_analytics_menu_item)
           add_item(productivity_analytics_menu_item)
           add_item(repository_analytics_menu_item)
+          add_item(data_explorer_menu_item)
 
           true
         end
@@ -172,6 +173,24 @@ module Sidebars
         def show_repository_analytics?
           context.group.licensed_feature_available?(:group_coverage_reports) &&
             can?(context.current_user, :read_group_repository_analytics, context.group)
+        end
+
+        def data_explorer_menu_item
+          unless show_data_explorer?
+            return ::Sidebars::NilMenuItem.new(item_id: :data_explorer)
+          end
+
+          ::Sidebars::MenuItem.new(
+            title: s_('DataExplorer|Data explorer'),
+            link: group_analytics_data_explorer_path(context.group),
+            super_sidebar_parent: ::Sidebars::Groups::SuperSidebarMenus::AnalyzeMenu,
+            active_routes: { path: 'groups/analytics/data_explorer#show' },
+            item_id: :data_explorer
+          )
+        end
+
+        def show_data_explorer?
+          Feature.enabled?(:analyze_data_explorer, context.group)
         end
 
         def cycle_analytics_menu_item

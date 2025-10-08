@@ -15,11 +15,12 @@ RSpec.describe 'The group page', :js, feature_category: :groups_and_projects do
 
   describe 'The sidebar' do
     context 'when contributions_analytics_dashboard feature flag is enabled' do
-      it 'does not show Analyze submenu' do
+      it 'does not show the link to contribution analytics' do
         visit group_path(group)
 
         within_testid('super-sidebar') do
-          expect(page).not_to have_button 'Analyze'
+          click_button 'Analyze'
+          expect(page).not_to have_link('Contribution analytics')
         end
       end
     end
