@@ -19,5 +19,30 @@ module Ai
     belongs_to :user
     belongs_to :namespace, optional: true
     belongs_to :organization, class_name: 'Organizations::Organization'
+
+    scope :for_namespace, ->(namespace) {
+      if namespace.group_namespace?
+        cte = Gitlab::SQL::CTE.new(:namespace_cte, Namespace
+          .project_namespaces
+          .where("traversal_ids @> '{?}'", namespace.id)
+          .select(:id)
+        )
+
+        with(cte.to_arel)
+          .where("namespace_id IN (SELECT id FROM namespace_cte)")
+      else
+        where(namespace_id: namespace.id)
+      end
+    }
+
+    scope :for_event, ->(event) { where(event: event) }
+    scope :in_date_range, ->(from, to) { where(events_date: from..to) }
+
+    def self.total_occurrences_for(namespace:, event:, from:, to:)
+      for_namespace(namespace)
+        .for_event(event)
+        .in_date_range(from, to)
+        .sum(:total_occurrences)
+    end
   end
 end
