@@ -1,0 +1,162 @@
+import Vue, { nextTick } from 'vue';
+import VueApollo from 'vue-apollo';
+import { GlTableLite, GlButton, GlLabel } from '@gitlab/ui';
+import { shallowMountExtended, mountExtended } from 'helpers/vue_test_utils_helper';
+import createMockApollo from 'helpers/mock_apollo_helper';
+import waitForPromises from 'helpers/wait_for_promises';
+import { useMockInternalEventsTracking } from 'helpers/tracking_internal_events_helper';
+import ProjectAttributesList from 'ee/security_configuration/security_attributes/components/project_attributes_list.vue';
+import ProjectAttributesUpdateDrawer from 'ee/security_configuration/security_attributes/components/project_attributes_update_drawer.vue';
+import getProjectSecurityAttributesQuery from 'ee/security_configuration/graphql/project_security_attributes.query.graphql';
+import ProjectSecurityAttributesUpdateMutation from 'ee/security_configuration/graphql/project_security_attributes_update.mutation.graphql';
+import getSecurityCategoriesAndAttributes from 'ee/security_configuration/graphql/group_security_categories_and_attributes.query.graphql';
+import { mockSecurityAttributeCategories, mockSecurityAttributesWithCategories } from './mock_data';
+
+Vue.use(VueApollo);
+
+describe('ProjectAttributesList', () => {
+  let wrapper;
+  let projectQueryHandler;
+  let updateMutationHandler;
+
+  const groupCategoriesQueryHandler = jest.fn().mockResolvedValue({
+    data: {
+      group: {
+        id: 'gid://gitlab/Group/group',
+        securityCategories: mockSecurityAttributeCategories,
+      },
+    },
+  });
+
+  const createComponent = (mountFn = shallowMountExtended) => {
+    projectQueryHandler = jest.fn().mockResolvedValue({
+      data: {
+        project: {
+          id: 'gid://gitlab/Project/1',
+          securityAttributes: { nodes: mockSecurityAttributesWithCategories },
+        },
+      },
+    });
+
+    updateMutationHandler = jest.fn().mockResolvedValue({
+      data: {
+        securityAttributeProjectUpdate: { removedCount: 1, addedCount: 1, errors: [] },
+      },
+    });
+
+    const apolloProvider = createMockApollo([
+      [getProjectSecurityAttributesQuery, projectQueryHandler],
+      [ProjectSecurityAttributesUpdateMutation, updateMutationHandler],
+      [getSecurityCategoriesAndAttributes, groupCategoriesQueryHandler],
+    ]);
+
+    wrapper = mountFn(ProjectAttributesList, {
+      provide: {
+        projectFullPath: 'path/to/project',
+        groupFullPath: 'path/to/group',
+      },
+      apolloProvider,
+      stubs: {
+        GlTableLite,
+        GlButton,
+        GlLabel,
+        ProjectAttributesUpdateDrawer,
+      },
+      mocks: {
+        $toast: { show: jest.fn() },
+      },
+    });
+  };
+
+  const findTable = () => wrapper.findComponent(GlTableLite);
+  const findTableRows = () => findTable().findAll('tbody tr');
+  const findDrawer = () => wrapper.findComponent(ProjectAttributesUpdateDrawer);
+  const findEditButton = () => wrapper.findAllComponents(GlButton).at(0);
+
+  const { bindInternalEventDocument } = useMockInternalEventsTracking();
+
+  beforeEach(() => {
+    createComponent();
+  });
+
+  describe('tracking and rendering', () => {
+    it('tracks a page view event on mount', () => {
+      const { trackEventSpy } = bindInternalEventDocument(wrapper.element);
+      expect(trackEventSpy).toHaveBeenCalledWith('view_project_security_attributes', {}, undefined);
+    });
+
+    it('renders the informational text', () => {
+      expect(wrapper.text()).toContain(
+        'Security attributes help classify and organize your projects',
+      );
+    });
+  });
+
+  describe('table rendering', () => {
+    beforeEach(async () => {
+      createComponent(mountExtended);
+      await waitForPromises();
+    });
+
+    it('renders each attribute with category, name, and description', () => {
+      const rows = findTableRows();
+      expect(rows).toHaveLength(mockSecurityAttributesWithCategories.length);
+
+      mockSecurityAttributesWithCategories.forEach((attr, i) => {
+        const rowText = rows.at(i).text();
+        expect(rowText).toContain(attr.securityCategory.name);
+        expect(rowText).toContain(attr.name);
+        expect(rowText).toContain(attr.description);
+      });
+    });
+  });
+
+  describe('edit drawer interactions', () => {
+    beforeEach(async () => {
+      createComponent(mountExtended);
+      await waitForPromises();
+    });
+
+    it('opens the edit drawer when clicking the edit button', async () => {
+      const openDrawerSpy = jest.spyOn(findDrawer().vm, 'openDrawer');
+      await findEditButton().trigger('click');
+      expect(openDrawerSpy).toHaveBeenCalled();
+    });
+
+    it('refreshes the project data when drawer emits "saved"', async () => {
+      const refetchSpy = jest.spyOn(wrapper.vm.$apollo.queries.project, 'refetch');
+      findDrawer().vm.$emit('saved');
+      await nextTick();
+      expect(refetchSpy).toHaveBeenCalled();
+    });
+  });
+
+  describe('attribute removal', () => {
+    beforeEach(async () => {
+      createComponent(mountExtended);
+      await waitForPromises();
+    });
+
+    it('removes an attribute and shows a toast notification', async () => {
+      const firstRow = findTableRows().at(0);
+      const removeButton = firstRow.findAllComponents(GlButton).at(0);
+      const expectedAttribute = mockSecurityAttributesWithCategories[0];
+
+      await removeButton.trigger('click');
+      await waitForPromises();
+
+      expect(updateMutationHandler).toHaveBeenCalledWith(
+        expect.objectContaining({
+          input: expect.objectContaining({
+            projectId: 'gid://gitlab/Project/1',
+            removeAttributeIds: [expectedAttribute.id],
+          }),
+        }),
+      );
+
+      expect(wrapper.vm.$toast.show).toHaveBeenCalledWith(
+        `Successfully removed "${expectedAttribute.name}" security attribute from this project`,
+      );
+    });
+  });
+});

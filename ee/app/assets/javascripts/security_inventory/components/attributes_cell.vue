@@ -1,5 +1,5 @@
 <script>
-import { GlLabel, GlPopover } from '@gitlab/ui';
+import { GlLabel, GlPopover, GlButton } from '@gitlab/ui';
 import { sprintf, s__ } from '~/locale';
 import { isSubGroup } from '../utils';
 import { VISIBLE_ATTRIBUTE_COUNT, LIGHT_GRAY } from '../constants';
@@ -8,6 +8,7 @@ export default {
   components: {
     GlLabel,
     GlPopover,
+    GlButton,
   },
   props: {
     item: {
@@ -23,6 +24,10 @@ export default {
     attributes() {
       return this.item.securityAttributes?.nodes || [];
     },
+    hasAttributes() {
+      return this.attributes.length > 0;
+    },
+
     visibleAttributes() {
       return this.attributes.slice(0, VISIBLE_ATTRIBUTE_COUNT);
     },
@@ -42,13 +47,16 @@ export default {
   },
   methods: {
     isSubGroup,
+    addSecurityAttributes() {
+      this.$emit('openAttributesDrawer', this.item);
+    },
   },
   LIGHT_GRAY,
 };
 </script>
 <template>
   <div v-if="!isSubGroup(item)">
-    <span data-testid="visible-attributes">
+    <span v-if="hasAttributes" data-testid="visible-attributes">
       <gl-label
         v-for="attribute in visibleAttributes"
         :key="attribute.id"
@@ -57,6 +65,11 @@ export default {
         class="gl-m-1"
       />
     </span>
+    <span v-else
+      ><gl-button variant="link" @click="addSecurityAttributes">{{
+        s__('SecurityAttributes|+ Add security attributes')
+      }}</gl-button></span
+    >
     <span :id="`attributes-overflow-popover-${index}`">
       <gl-label
         v-if="showOverflow"
@@ -67,8 +80,11 @@ export default {
       />
     </span>
     <gl-popover v-if="showOverflow" :target="`attributes-overflow-popover-${index}`">
-      <strong>{{ popoverTitle }}</strong>
-      <span data-testid="all-attributes">
+      <template #title>
+        {{ popoverTitle }}
+      </template>
+
+      <div data-testid="all-attributes">
         <gl-label
           v-for="attribute in attributes"
           :key="attribute.id"
@@ -76,7 +92,7 @@ export default {
           :background-color="attribute.color"
           class="gl-m-1"
         />
-      </span>
+      </div>
     </gl-popover>
   </div>
 </template>

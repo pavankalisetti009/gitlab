@@ -1,3 +1,111 @@
+export const mockSecurityAttributesWithCategories = [
+  {
+    id: 'gid://gitlab/Security::Attribute/14',
+    securityCategory: {
+      id: 'gid://gitlab/Security::Category/12',
+      name: 'new',
+      __typename: 'SecurityCategory',
+    },
+    name: 'one',
+    description: 'one',
+    color: '#eee',
+    __typename: 'SecurityAttribute',
+  },
+  {
+    id: 'gid://gitlab/Security::Attribute/13',
+    securityCategory: {
+      id: 'gid://gitlab/Security::Category/11',
+      name: 'hello 2',
+      __typename: 'SecurityCategory',
+    },
+    name: 'second',
+    description: 'test2',
+    color: '#fff',
+    __typename: 'SecurityAttribute',
+  },
+];
+
+export const mockSecurityAttributeCategories = [
+  {
+    id: 6,
+    name: 'Business Impact',
+    description: 'Classify projects by their importance to business operations.',
+    multipleSelection: false,
+    editableState: 'LOCKED',
+    templateType: 'BUSINESS_IMPACT',
+    securityAttributes: [
+      {
+        id: 10,
+        name: 'Business Administrative',
+        description: 'Supporting administrative functions.',
+        color: '#e9be74',
+      },
+      {
+        id: 8,
+        name: 'Business Critical',
+        description: 'Important for key business operations.',
+        color: '#c17d10',
+      },
+      {
+        id: 9,
+        name: 'Business Operational',
+        description: 'Standard operational systems.',
+        color: '#9d6e2b',
+      },
+      {
+        id: 7,
+        name: 'Mission Critical',
+        description: 'Essential for core business functions.',
+        color: '#ab6100',
+      },
+      {
+        id: 11,
+        name: 'Non-essential',
+        description: 'Minimal business impact.',
+        color: '#f5d9a8',
+      },
+    ],
+  },
+  {
+    id: 10,
+    name: 'Custom',
+    description: 'Custom category for experimental tagging.',
+    multipleSelection: true,
+    editableState: 'EDITABLE',
+    templateType: null,
+    securityAttributes: [
+      {
+        id: 13,
+        name: 'first',
+        description: 'Example attribute.',
+        color: '#aaa',
+      },
+    ],
+  },
+  {
+    id: 12,
+    name: 'Example',
+    description: 'Example category used for testing.',
+    multipleSelection: true,
+    editableState: 'EDITABLE',
+    templateType: null,
+    securityAttributes: [
+      {
+        id: 14,
+        name: 'One',
+        description: 'Example attribute one.',
+        color: '#fff',
+      },
+      {
+        id: 15,
+        name: 'Onee',
+        description: 'Example attribute two.',
+        color: '#eee',
+      },
+    ],
+  },
+];
+
 export const expectedAttributes = [
   {
     id: 3,
@@ -13,7 +121,7 @@ export const expectedAttributes = [
       description: 'Categorize projects by application type and technology stack.',
       multipleSelection: true,
       canEditCategory: false,
-      canEditAttributes: true,
+      canEditsecurityAttributes: true,
       attributeCount: 8,
     },
   },
@@ -31,7 +139,7 @@ export const expectedAttributes = [
       description: 'Categorize projects by application type and technology stack.',
       multipleSelection: true,
       canEditCategory: false,
-      canEditAttributes: true,
+      canEditsecurityAttributes: true,
       attributeCount: 8,
     },
   },
@@ -48,7 +156,7 @@ export const expectedAttributes = [
       description: 'Classify projects by their importance to business operations.',
       multipleSelection: false,
       canEditCategory: false,
-      canEditAttributes: false,
+      canEditsecurityAttributes: false,
       attributeCount: 5,
     },
   },
@@ -65,7 +173,7 @@ export const expectedAttributes = [
       description: 'Track system hosting locations and geographic deployment.',
       multipleSelection: false,
       canEditCategory: true,
-      canEditAttributes: true,
+      canEditsecurityAttributes: true,
       attributeCount: 7,
     },
   },

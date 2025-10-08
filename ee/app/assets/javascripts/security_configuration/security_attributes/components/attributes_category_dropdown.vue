@@ -3,23 +3,26 @@ import { GlCollapsibleListbox, GlButton } from '@gitlab/ui';
 import { debounce } from 'lodash';
 import { __ } from '~/locale';
 import { DEFAULT_DEBOUNCE_AND_THROTTLE_MS } from '~/lib/utils/constants';
-import getSecurityAttributesByCategoryQuery from '../../graphql/client/security_attributes_by_category.query.graphql';
 
 export default {
   components: {
     GlCollapsibleListbox,
     GlButton,
   },
-  inject: ['groupFullPath', 'canManageAttributes', 'groupManageAttributesPath'],
+  inject: {
+    canManageAttributes: { default: false },
+    groupManageAttributesPath: { default: false },
+  },
   props: {
     category: {
       type: Object,
       required: false,
       default: () => ({}),
     },
-    projectAttributes: {
+    attributes: {
       type: Array,
-      required: true,
+      required: false,
+      default: () => [],
     },
     selectedAttributesInCategory: {
       type: Array,
@@ -29,122 +32,83 @@ export default {
   },
   data() {
     return {
-      group: {
-        securityAttributes: { nodes: [] },
-      },
       search: '',
-      selectedAttribute: null,
-      selectedAttributes: [],
+      selectedIds: [],
     };
-  },
-  apollo: {
-    group: {
-      query: getSecurityAttributesByCategoryQuery,
-      variables() {
-        return {
-          fullPath: this.groupFullPath,
-          categoryId: this.category.id,
-        };
-      },
-    },
   },
   computed: {
     items() {
-      const items = this.group.securityAttributes.nodes.map((attribute) => ({
-        value: attribute.id,
-        text: attribute.name,
-        ...attribute,
+      const base = this.attributes.map((a) => ({
+        value: a.id,
+        text: a.name,
+        ...a,
       }));
-      if (this.search) {
-        return items.filter((item) => item.text.toLowerCase().includes(this.search.toLowerCase()));
-      }
-      return items;
+      return this.search
+        ? base.filter((i) => i.text.toLowerCase().includes(this.search.toLowerCase()))
+        : base;
     },
     isBlank() {
-      return !this.selectedAttribute && !this.selectedAttributes.length;
-    },
-    knownAttributes() {
-      return [...this.projectAttributes, ...this.group.securityAttributes.nodes];
+      return this.selectedIds.length === 0;
     },
     boundValue: {
       get() {
-        return this.category.multipleSelection ? this.selectedAttributes : this.selectedAttribute;
+        return this.category.multipleSelection ? this.selectedIds : this.selectedIds[0] || null;
       },
       set(value) {
-        if (this.category.multipleSelection) {
-          this.selectedAttributes = value;
-        } else {
-          this.selectedAttribute = value;
-        }
+        const normalized = value ? [value] : [];
+        this.selectedIds = this.category.multipleSelection ? value : normalized;
       },
     },
     toggleText() {
       if (this.isBlank) return __('None');
-      return this.category.multipleSelection
-        ? this.toggleTextForMultipleSelection
-        : this.toggleTextForSingleSelection;
-    },
-    toggleTextForMultipleSelection() {
-      const firstTwoAttributes = this.selectedAttributes.slice(0, 2);
-      const names = firstTwoAttributes.map(
-        (attributeId) =>
-          this.knownAttributes.find((attribute) => attribute.id === attributeId)?.name || '',
-      );
-      if (this.selectedAttributes.length > 2) {
-        names.push(`+${this.selectedAttributes.length - 2} more`);
+      if (this.category.multipleSelection) {
+        const firstTwo = this.selectedIds.slice(0, 2);
+        const names = firstTwo
+          .map((id) => this.attributes.find((a) => a.id === id)?.name || '')
+          .filter(Boolean);
+        if (this.selectedIds.length > 2) {
+          names.push(`+${this.selectedIds.length - 2} more`);
+        }
+        return names.join(', ');
       }
-      return names.join(', ');
-    },
-    toggleTextForSingleSelection() {
-      const name = this.knownAttributes.find(
-        (attribute) => attribute.id === this.selectedAttribute,
-      )?.name;
-      return name;
+      return this.attributes.find((a) => a.id === this.selectedIds[0])?.name;
     },
   },
   created() {
     this.debouncedSearch = debounce(this.handleSearch, DEFAULT_DEBOUNCE_AND_THROTTLE_MS);
   },
   mounted() {
-    this.selectedAttribute = this.selectedAttributesInCategory[0]?.id || null;
-    this.selectedAttributes =
-      this.selectedAttributesInCategory.map((attribute) => attribute.id) || [];
+    this.selectedIds = this.selectedAttributesInCategory.map((a) => a.id || a);
   },
   destroyed() {
     this.debouncedSearch.cancel();
   },
   methods: {
-    handleSearch(search) {
-      this.search = search.trim();
+    handleSearch(term) {
+      this.search = term.trim();
     },
     onSearch(term) {
       const handler = this.category.multipleSelection ? this.debouncedSearch : this.handleSearch;
       handler(term);
     },
     handleSelect(selected) {
-      if (this.category.multipleSelection) {
-        this.selectedAttributes = selected;
-        this.selectedAttribute = null;
-      } else {
-        this.selectedAttribute = selected;
-        this.selectedAttributes = [];
-      }
-      this.$emit('change', {
-        categoryId: this.category.id,
-        selectedAttributes: this.category.multipleSelection ? selected : [selected],
-      });
+      this.boundValue = selected;
+      this.emitSelection();
     },
     handleReset() {
-      this.selectedAttributes = [];
-      this.selectedAttribute = null;
+      this.selectedIds = [];
+      this.emitSelection();
+    },
+    emitSelection() {
       this.$emit('change', {
         categoryId: this.category.id,
-        selectedAttributes: [],
+        selectedAttributes: [...this.selectedIds],
       });
     },
   },
 };
 </script>
+
 <template>
   <gl-collapsible-listbox
     v-model="boundValue"
@@ -154,7 +118,7 @@ export default {
     :header-text="s__('SecurityAttributes|Select security attributes')"
     :items="items"
     :reset-button-label="__('Clear')"
-    :searchable="true"
+    searchable
     block
     @search="onSearch"
     @select="handleSelect"

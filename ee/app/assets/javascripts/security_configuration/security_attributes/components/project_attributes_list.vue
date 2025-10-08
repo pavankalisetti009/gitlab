@@ -1,0 +1,120 @@
+<script>
+import { GlTableLite, GlLabel, GlButton } from '@gitlab/ui';
+import { s__, sprintf } from '~/locale';
+import { InternalEvents } from '~/tracking';
+import getProjectSecurityAttributesQuery from 'ee_component/security_configuration/graphql/project_security_attributes.query.graphql';
+import ProjectSecurityAttributesUpdateMutation from '../../graphql/project_security_attributes_update.mutation.graphql';
+import ProjectAttributesUpdateDrawer from './project_attributes_update_drawer.vue';
+
+export default {
+  components: {
+    GlTableLite,
+    GlLabel,
+    GlButton,
+    ProjectAttributesUpdateDrawer,
+  },
+  mixins: [InternalEvents.mixin()],
+  inject: ['projectFullPath'],
+  data() {
+    return {
+      project: {
+        id: '',
+        securityAttributes: { nodes: [] },
+      },
+    };
+  },
+  apollo: {
+    project: {
+      query: getProjectSecurityAttributesQuery,
+      variables() {
+        return {
+          fullPath: this.projectFullPath,
+        };
+      },
+    },
+  },
+  mounted() {
+    this.trackEvent('view_project_security_attributes');
+  },
+  methods: {
+    openEditDrawer() {
+      this.$refs.updateAttributesDrawer.openDrawer();
+    },
+    refreshDashboard() {
+      this.$apollo.queries.project.refetch();
+    },
+    removeAttribute(item) {
+      return this.$apollo
+        .mutate({
+          mutation: ProjectSecurityAttributesUpdateMutation,
+          variables: {
+            input: {
+              projectId: this.project.id,
+              removeAttributeIds: [item.id],
+            },
+          },
+        })
+        .then(() => {
+          const toastMsg = sprintf(
+            s__(
+              'SecurityAttributes|Successfully removed "%{name}" security attribute from this project',
+            ),
+            {
+              name: item.name,
+            },
+          );
+          this.$toast.show(toastMsg);
+          this.$apollo.queries.project.refetch();
+        });
+    },
+  },
+  fields: [
+    {
+      key: 'securityCategory.name',
+      label: s__('SecurityAttributes|Category'),
+      thClass: 'gl-max-w-0',
+    },
+    { key: 'name', label: s__('SecurityAttributes|Attributes'), thClass: 'gl-w-1/5' },
+    { key: 'description', label: s__('SecurityAttributes|Description'), thClass: 'gl-w-1/2' },
+    { key: 'actions', label: '' },
+  ],
+};
+</script>
+
+<template>
+  <div>
+    <gl-button variant="confirm" class="gl-float-right gl-mb-5 gl-ml-5" @click="openEditDrawer">
+      {{ s__('SecurityAttributes|Edit project attributes') }}
+    </gl-button>
+
+    <p class="gl-my-5">
+      {{
+        s__(
+          'SecurityAttributes|Security attributes help classify and organize your projects. Attributes are managed at the group level. You can add or remove attributes to this project as needed.',
+        )
+      }}
+    </p>
+
+    <gl-table-lite
+      :fields="$options.fields"
+      :items="project.securityAttributes.nodes"
+      table-class="gl-table-fixed"
+    >
+      <template #cell(name)="{ item: { name, color } }">
+        <gl-label :background-color="color" :title="name" />
+      </template>
+      <template #cell(actions)="{ item }">
+        <gl-button @click="removeAttribute(item)">
+          {{ s__('SecurityAttributes|Remove attribute') }}
+        </gl-button>
+      </template>
+    </gl-table-lite>
+
+    <project-attributes-update-drawer
+      ref="updateAttributesDrawer"
+      :project-id="project.id"
+      :selected-attributes="project.securityAttributes.nodes"
+      @saved="refreshDashboard"
+    />
+  </div>
+</template>

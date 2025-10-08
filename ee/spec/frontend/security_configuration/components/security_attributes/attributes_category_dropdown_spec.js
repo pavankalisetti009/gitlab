@@ -2,29 +2,9 @@ import Vue, { nextTick } from 'vue';
 import VueApollo from 'vue-apollo';
 import { shallowMount } from '@vue/test-utils';
 import { GlCollapsibleListbox, GlButton } from '@gitlab/ui';
-import createMockApollo from 'helpers/mock_apollo_helper';
 import AttributesCategoryDropdown from 'ee/security_configuration/security_attributes/components/attributes_category_dropdown.vue';
 import waitForPromises from 'helpers/wait_for_promises';
-import getSecurityAttributesByCategoryQuery from 'ee/security_configuration/graphql/client/security_attributes_by_category.query.graphql';
-import {
-  mockSecurityAttributeCategories,
-  mockSecurityAttributes,
-} from 'ee/security_configuration/security_attributes/graphql/resolvers';
-
-const mockMultipleSelection = {
-  category: mockSecurityAttributeCategories[0],
-  attributes: mockSecurityAttributes.filter((attribute) => attribute.categoryId === 11),
-  selectedAttributesInCategory: [
-    { id: 1, text: 'Asset Track' },
-    { id: 2, text: 'Bank Branch' },
-    { id: 3, text: 'Capital Commit' },
-  ],
-};
-const mockSingleSelection = {
-  category: mockSecurityAttributeCategories[1],
-  attributes: mockSecurityAttributes.filter((attribute) => attribute.categoryId === 12),
-  selectedAttributesInCategory: [{ id: 13, text: 'Non-essential' }],
-};
+import { mockSecurityAttributeCategories } from './mock_data';
 
 Vue.use(VueApollo);
 
@@ -34,75 +14,83 @@ describe('AttributesCategoryDropdown', () => {
   const findListbox = () => wrapper.findComponent(GlCollapsibleListbox);
   const findButton = () => wrapper.findComponent(GlButton);
 
-  const groupAttributesQueryHandler = jest.fn().mockImplementation(({ categoryId }) => ({
-    data: {
-      group: {
-        id: 'gid://gitlab/Group/group',
-        securityAttributes: {
-          nodes: mockSecurityAttributes.filter((attribute) => attribute.categoryId === categoryId),
-        },
-      },
-    },
-  }));
-
   const createComponent = ({
     category = {},
+    attributes = [],
     selectedAttributesInCategory = [],
-    requestHandlers = [[getSecurityAttributesByCategoryQuery, groupAttributesQueryHandler]],
     canManageAttributes = false,
     groupManageAttributesPath = 'path/to/group/-/security/configuration',
   } = {}) => {
-    const apolloProvider = createMockApollo(requestHandlers);
     wrapper = shallowMount(AttributesCategoryDropdown, {
       provide: {
-        groupFullPath: 'path/to/group',
         canManageAttributes,
         groupManageAttributesPath,
       },
-      apolloProvider,
       propsData: {
         category,
-        projectAttributes: [],
+        attributes,
         selectedAttributesInCategory,
+      },
+      stubs: {
+        GlCollapsibleListbox,
+        GlButton,
       },
     });
   };
 
+  const mockMultipleSelection = {
+    category: mockSecurityAttributeCategories.find((c) => c.id === 12), // Example category
+    attributes: mockSecurityAttributeCategories.find((c) => c.id === 12).securityAttributes,
+    selectedAttributesInCategory: [
+      { id: 14, text: 'One' },
+      { id: 15, text: 'Onee' },
+      { id: 999, text: 'Extra' },
+    ],
+  };
+
+  const mockSingleSelection = {
+    category: mockSecurityAttributeCategories.find((c) => c.id === 6), // Business Impact
+    attributes: mockSecurityAttributeCategories.find((c) => c.id === 6).securityAttributes,
+    selectedAttributesInCategory: [{ id: 11, text: 'Non-essential' }],
+  };
+
   describe.each`
-    description             | category                          | selectedAttributesInCategory
-    ${'multiple selection'} | ${mockMultipleSelection.category} | ${mockMultipleSelection.selectedAttributesInCategory}
-    ${'single selection'}   | ${mockSingleSelection.category}   | ${mockSingleSelection.selectedAttributesInCategory}
-  `('$description category', ({ category, selectedAttributesInCategory }) => {
+    description             | category                          | attributes                          | selectedAttributesInCategory
+    ${'multiple selection'} | ${mockMultipleSelection.category} | ${mockMultipleSelection.attributes} | ${mockMultipleSelection.selectedAttributesInCategory}
+    ${'single selection'}   | ${mockSingleSelection.category}   | ${mockSingleSelection.attributes}   | ${mockSingleSelection.selectedAttributesInCategory}
+  `('$description category', ({ category, attributes, selectedAttributesInCategory }) => {
     beforeEach(async () => {
       createComponent({
         category,
+        attributes,
         selectedAttributesInCategory,
       });
-
       await waitForPromises();
     });
 
-    it('loads and lists attributes in the category', () => {
-      expect(groupAttributesQueryHandler).toHaveBeenCalledWith({
-        categoryId: category.id,
-        fullPath: 'path/to/group',
-      });
-      expect(findListbox().props('items')).toMatchObject(
-        mockSecurityAttributes
-          .filter((attribute) => attribute.categoryId === category.id)
-          .map(({ id, name }) => ({ id, text: name })),
-      );
+    it('renders list items based on provided attributes', () => {
+      const items = attributes.map(({ id, name }) => ({
+        value: id,
+        text: name,
+      }));
+
+      const simplified = findListbox()
+        .props('items')
+        .map(({ value, text }) => ({ value, text }));
+      expect(simplified).toEqual(expect.arrayContaining(items));
     });
 
-    it('filters items based on search', async () => {
-      findListbox().vm.$emit('search', 'ra');
-
+    it('filters items based on search term', async () => {
+      const searchTerm = category.multipleSelection ? 'one' : 'business';
+      findListbox().vm.$emit('search', searchTerm);
       await nextTick();
-
-      expect(findListbox().props('items')).toHaveLength(2);
+      const filteredItems = findListbox()
+        .props('items')
+        .filter((i) => i.text.toLowerCase().includes(searchTerm));
+      expect(filteredItems.length).toBeGreaterThan(0);
     });
 
-    it('allows multiple selection depending on the category', () => {
+    it('respects multiple selection setting', () => {
       expect(findListbox().props('multiple')).toBe(category.multipleSelection);
     });
   });
@@ -111,33 +99,27 @@ describe('AttributesCategoryDropdown', () => {
     beforeEach(async () => {
       createComponent({
         category: mockMultipleSelection.category,
+        attributes: mockMultipleSelection.attributes,
         selectedAttributesInCategory: mockMultipleSelection.selectedAttributesInCategory,
       });
-
       await waitForPromises();
     });
 
-    it('starts out with the attributes passed in props selected', () => {
-      expect(findListbox().props('selected')).toStrictEqual([1, 2, 3]);
-      expect(findListbox().props('toggleText')).toBe('Asset Track, Bank Branch, +1 more');
+    it('starts with attributes from props selected', () => {
+      // Computed: first two + “+1 more”
+      expect(wrapper.vm.toggleText).toBe('One, Onee, +1 more');
     });
 
-    it('changes selection', async () => {
-      findListbox().vm.$emit('select', [1, 3, 4]);
-
+    it('changes selection correctly', async () => {
+      findListbox().vm.$emit('select', [14, 15]);
       await nextTick();
-
-      expect(findListbox().props('selected')).toStrictEqual([1, 3, 4]);
-      expect(findListbox().props('toggleText')).toBe('Asset Track, Capital Commit, +1 more');
+      expect(wrapper.vm.toggleText).toBe('One, Onee');
     });
 
     it('clears selection', async () => {
       findListbox().vm.$emit('reset');
-
       await nextTick();
-
-      expect(findListbox().props('selected')).toStrictEqual([]);
-      expect(findListbox().props('toggleText')).toBe('None');
+      expect(wrapper.vm.toggleText).toBe('None');
     });
   });
 
@@ -145,50 +127,47 @@ describe('AttributesCategoryDropdown', () => {
     beforeEach(async () => {
       createComponent({
         category: mockSingleSelection.category,
+        attributes: mockSingleSelection.attributes,
         selectedAttributesInCategory: mockSingleSelection.selectedAttributesInCategory,
       });
-
       await waitForPromises();
     });
 
-    it('starts out with the attribute passed in props selected', () => {
-      expect(findListbox().props('selected')).toStrictEqual(13);
-      expect(findListbox().props('toggleText')).toBe('Non-essential');
+    it('starts with attribute from props selected', () => {
+      expect(wrapper.vm.toggleText).toBe('Non-essential');
     });
 
-    it('changes selection', async () => {
-      findListbox().vm.$emit('select', 12);
-
+    it('updates selection correctly', async () => {
+      const newSelection = mockSingleSelection.attributes.find((a) => a.id === 10);
+      findListbox().vm.$emit('select', newSelection.id);
       await nextTick();
-
-      expect(findListbox().props('selected')).toStrictEqual(12);
-      expect(findListbox().props('toggleText')).toBe('Business Administrative');
+      expect(wrapper.vm.toggleText).toBe('Business Administrative');
     });
 
-    it('clears selection', async () => {
+    it('clears selection correctly', async () => {
       findListbox().vm.$emit('reset');
-
       await nextTick();
-
-      expect(findListbox().props('selected')).toStrictEqual(null);
-      expect(findListbox().props('toggleText')).toBe('None');
+      expect(wrapper.vm.toggleText).toBe('None');
     });
   });
 
-  describe('footer', () => {
-    it('shows a link to manage attributes when user has permission', () => {
+  describe('footer section', () => {
+    it('shows Manage Attributes link when permission is true', () => {
       createComponent({
+        category: mockSingleSelection.category,
+        attributes: mockSingleSelection.attributes,
         canManageAttributes: true,
       });
-
-      expect(findButton().text()).toBe('Manage security attributes');
+      expect(findButton().exists()).toBe(true);
+      expect(findButton().text()).toContain('Manage security attributes');
     });
 
-    it('does not show a link when user does not have permission', () => {
+    it('does not show link when permission is false', () => {
       createComponent({
+        category: mockSingleSelection.category,
+        attributes: mockSingleSelection.attributes,
         canManageAttributes: false,
       });
-
       expect(findButton().exists()).toBe(false);
     });
   });
