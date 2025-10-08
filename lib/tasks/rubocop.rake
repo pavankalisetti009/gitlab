@@ -143,6 +143,7 @@ unless Rails.env.production?
       end
 
       @cops_by_location = cops.group_by do |_, location|
+        # The regex extracts the gem name from a path like .../gems/3.3.0/rubocop-1.71.1/lib...
         location.start_with?(gitlab_rubocop_path) ? :gitlab : location[%r{/gems/([^/]+)-[\d.].+?/}, 1]
       end
     end
