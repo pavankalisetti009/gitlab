@@ -170,6 +170,13 @@ RSpec.describe ::Ai::DuoWorkflows::StartWorkflowService, feature_category: :agen
     end
   end
 
+  shared_context 'with Duo enabled' do
+    before do
+      allow(::Gitlab::Llm::StageCheck).to receive(:available?).with(project, :duo_workflow).and_return(true)
+      allow(maintainer).to receive(:allowed_to_use?).and_return(true)
+    end
+  end
+
   subject(:execute) { described_class.new(workflow: workflow, params: params).execute }
 
   context 'with workflow enablement checks' do
@@ -785,6 +792,65 @@ RSpec.describe ::Ai::DuoWorkflows::StartWorkflowService, feature_category: :agen
 
         expect(execute).to be_success
       end
+    end
+  end
+
+  context 'when shallow_clone is empty', :aggregate_failures do
+    include_context 'with Duo enabled'
+
+    it 'sets GIT_DEPTH to 1' do
+      expect(Ci::Workloads::RunWorkloadService).to receive(:new).and_wrap_original do |method, **kwargs|
+        workload_definition = kwargs[:workload_definition]
+        variables = workload_definition.variables
+
+        expect(variables[:GIT_DEPTH]).to eq(1)
+
+        method.call(**kwargs)
+      end
+
+      expect(execute).to be_success
+    end
+  end
+
+  context 'when shallow_clone is true', :aggregate_failures do
+    include_context 'with Duo enabled'
+
+    let(:params) do
+      super().merge(shallow_clone: true)
+    end
+
+    it 'sets GIT_DEPTH to 1' do
+      expect(Ci::Workloads::RunWorkloadService).to receive(:new).and_wrap_original do |method, **kwargs|
+        workload_definition = kwargs[:workload_definition]
+        variables = workload_definition.variables
+
+        expect(variables[:GIT_DEPTH]).to eq(1)
+
+        method.call(**kwargs)
+      end
+
+      expect(execute).to be_success
+    end
+  end
+
+  context 'when shallow_clone is false', :aggregate_failures do
+    include_context 'with Duo enabled'
+
+    let(:params) do
+      super().merge(shallow_clone: false)
+    end
+
+    it 'does not set GIT_DEPTH' do
+      expect(Ci::Workloads::RunWorkloadService).to receive(:new).and_wrap_original do |method, **kwargs|
+        workload_definition = kwargs[:workload_definition]
+        variables = workload_definition.variables
+
+        expect(variables).not_to have_key(:GIT_DEPTH)
+
+        method.call(**kwargs)
+      end
+
+      expect(execute).to be_success
     end
   end
 end

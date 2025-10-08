@@ -573,6 +573,53 @@ RSpec.describe API::Ai::DuoWorkflows::Workflows, :with_current_organization, fea
           expect(response).to have_gitlab_http_status(:bad_request)
         end
       end
+
+      context 'when shallow_clone is not provided' do
+        it 'starts the workflow with a shallow clone' do
+          expect(::Ai::DuoWorkflows::StartWorkflowService).to receive(:new).with(
+            workflow: anything,
+            params: hash_including(shallow_clone: true)
+          ).and_call_original
+
+          post api(path, user), params: params
+
+          expect(response).to have_gitlab_http_status(:created)
+        end
+      end
+
+      context 'when shallow_clone is true' do
+        let(:params) do
+          super().merge(shallow_clone: true)
+        end
+
+        it 'starts the workflow with a shallow clone' do
+          expect(::Ai::DuoWorkflows::StartWorkflowService).to receive(:new).with(
+            workflow: anything,
+            params: hash_including(shallow_clone: true)
+          ).and_call_original
+
+          post api(path, user), params: params
+
+          expect(response).to have_gitlab_http_status(:created)
+        end
+      end
+
+      context 'when shallow_clone is false' do
+        let(:params) do
+          super().merge(shallow_clone: false)
+        end
+
+        it 'starts the workflow with a regular clone' do
+          expect(::Ai::DuoWorkflows::StartWorkflowService).to receive(:new).with(
+            workflow: anything,
+            params: hash_including(shallow_clone: false)
+          ).and_call_original
+
+          post api(path, user), params: params
+
+          expect(response).to have_gitlab_http_status(:created)
+        end
+      end
     end
   end
 

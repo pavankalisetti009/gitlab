@@ -86,8 +86,14 @@ module Ai
         duo_config.setup_script || []
       end
 
+      def git_clone_variables
+        vars = {}
+        vars[:GIT_DEPTH] = 1 if @params.fetch(:shallow_clone, true)
+        vars
+      end
+
       def variables
-        {
+        git_clone_variables.merge(
           DUO_WORKFLOW_ADDITIONAL_CONTEXT_CONTENT: serialized_flow_additional_context,
           DUO_WORKFLOW_BASE_PATH: './',
           DUO_WORKFLOW_DEFINITION: @params[:workflow_definition],
@@ -110,7 +116,7 @@ module Ai
           DUO_WORKFLOW_METADATA: @params[:workflow_metadata],
           GITLAB_BASE_URL: Gitlab.config.gitlab.url,
           AGENT_PLATFORM_GITLAB_VERSION: Gitlab.version_info.to_s
-        }
+        )
       end
 
       def commands
