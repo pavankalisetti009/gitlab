@@ -9,13 +9,9 @@ import {
   GlTableLite,
   GlDisclosureDropdown,
   GlDisclosureDropdownItem,
-  GlLink,
 } from '@gitlab/ui';
 import { nextTick } from 'vue';
-import {
-  mockSecurityAttributeCategories,
-  mockSecurityAttributes,
-} from 'ee/security_configuration/security_attributes/graphql/resolvers';
+import { mockSecurityAttributeCategories } from 'ee/security_configuration/security_attributes/graphql/resolvers';
 import {
   CATEGORY_EDITABLE,
   CATEGORY_PARTIALLY_EDITABLE,
@@ -25,9 +21,7 @@ import { shallowMountExtended, mountExtended } from 'helpers/vue_test_utils_help
 import CategoryForm from 'ee/security_configuration/components/security_attributes/category_form.vue';
 
 const category = mockSecurityAttributeCategories[0];
-const expectedAttributes = mockSecurityAttributes.filter(
-  (attribute) => attribute.categoryId === category.id,
-);
+const expectedAttributes = category.securityAttributes;
 
 describe('Category form', () => {
   let wrapper;
@@ -35,8 +29,6 @@ describe('Category form', () => {
   const createComponent = (props, mountFn = shallowMountExtended) => {
     wrapper = mountFn(CategoryForm, {
       propsData: {
-        securityAttributes: mockSecurityAttributes,
-        category,
         ...props,
       },
       stubs: {
@@ -57,7 +49,7 @@ describe('Category form', () => {
     describe('category metadata', () => {
       beforeEach(() => {
         createComponent({
-          category: {
+          selectedCategory: {
             ...category,
             id,
             editableState,
@@ -66,11 +58,26 @@ describe('Category form', () => {
         });
       });
 
+      it('shows the category name if saved, "Category details" if new', () => {
+        expect(wrapper.findByTestId('category-form-title').text()).toBe(
+          id === undefined ? 'Category details' : category.name,
+        );
+      });
+
       it('shows the appropriate badge', () => {
         if (expectedBadge === false) expect(wrapper.findComponent(GlBadge).exists()).toBe(false);
         else expect(wrapper.findComponent(GlBadge).text()).toBe(expectedBadge);
       });
 
+      if (editableState === CATEGORY_EDITABLE && id) {
+        it('shows the category delete action', async () => {
+          wrapper.findByTestId('delete-category-item').vm.$emit('action');
+
+          await nextTick();
+
+          expect(wrapper.emitted()).toMatchObject({ deleteCategory: [[{ name: 'Application' }]] });
+        });
+      }
       if (editableState === CATEGORY_EDITABLE) {
         it('renders the category name and description form fields', () => {
           expect(wrapper.findComponent(GlFormInput).props('value')).toBe(category.name);
@@ -106,11 +113,12 @@ describe('Category form', () => {
       beforeEach(() => {
         createComponent(
           {
-            category: {
+            selectedCategory: {
               ...category,
               id,
               editableState,
               multipleSelection,
+              securityAttributes: expectedAttributes,
             },
           },
           mountExtended,
@@ -127,16 +135,13 @@ describe('Category form', () => {
             expect(
               wrapper.findComponent(GlTableLite).find('tbody').findAll('tr').at(index).text(),
             ).toContain(attribute.description);
-            expect(wrapper.findAllComponents(GlLink).at(index).text()).toContain(
-              `${attribute.projectCount} project`,
-            );
           });
         });
       }
 
       if (editableState !== CATEGORY_LOCKED) {
         it('shows an attribute create button that emits addAttribute', async () => {
-          wrapper.findComponent(GlButton).vm.$emit('click');
+          wrapper.findByTestId('add-attribute-button').vm.$emit('click');
           await nextTick();
 
           expect(wrapper.emitted('addAttribute')).toStrictEqual([[]]);
@@ -144,11 +149,19 @@ describe('Category form', () => {
       }
       if (editableState !== CATEGORY_LOCKED && id !== undefined) {
         it('shows an attribute edit dropdown item that emits editAttribute', async () => {
-          wrapper.findAllComponents(GlDisclosureDropdownItem).at(0).vm.$emit('action');
+          wrapper.findByTestId('edit-attribute-item').vm.$emit('action');
 
           await nextTick();
 
           expect(wrapper.emitted()).toMatchObject({ editAttribute: [[{ name: 'Asset Track' }]] });
+        });
+
+        it('shows an attribute delete dropdown item that emits deleteAttribute', async () => {
+          wrapper.findByTestId('delete-attribute-item').vm.$emit('action');
+
+          await nextTick();
+
+          expect(wrapper.emitted()).toMatchObject({ deleteAttribute: [[{ name: 'Asset Track' }]] });
         });
       }
       if (editableState === CATEGORY_LOCKED) {
@@ -157,6 +170,68 @@ describe('Category form', () => {
           expect(wrapper.findComponent(GlDisclosureDropdownItem).exists()).toBe(false);
         });
       }
+    });
+  });
+
+  describe('form validation and submission', () => {
+    beforeEach(() => {
+      createComponent({
+        selectedCategory: {
+          ...category,
+          id: undefined,
+          name: '',
+          multipleSelection: null,
+        },
+      });
+    });
+
+    it('requires a name', async () => {
+      wrapper.findByTestId('save-button').vm.$emit('click');
+      await nextTick();
+
+      expect(wrapper.findByTestId('category-name-group').attributes('state')).toBe(undefined);
+
+      wrapper.findByTestId('category-name-input').vm.$emit('input', 'Category name');
+      wrapper.findByTestId('save-button').vm.$emit('click');
+      await nextTick();
+
+      expect(wrapper.findByTestId('category-name-group').attributes('state')).toBe('true');
+    });
+
+    it('requires a selection type', async () => {
+      wrapper.findByTestId('save-button').vm.$emit('click');
+      await nextTick();
+
+      expect(wrapper.findByTestId('selection-type-group').attributes('state')).toBe(undefined);
+
+      wrapper.findByTestId('selection-type-input').vm.$emit('input', false);
+      wrapper.findByTestId('save-button').vm.$emit('click');
+      await nextTick();
+
+      expect(wrapper.findByTestId('selection-type-group').attributes('state')).toBe('true');
+    });
+
+    it('resets validation state when the selected category changes', async () => {
+      wrapper.findByTestId('save-button').vm.$emit('click');
+      await nextTick();
+
+      expect(wrapper.findByTestId('category-name-group').attributes('state')).toBe(undefined);
+
+      wrapper.setProps({ selectedCategory: category });
+      await nextTick();
+
+      expect(wrapper.findByTestId('category-name-group').attributes('state')).toBe('true');
+    });
+
+    it('emits saveCategory on save when valid', () => {
+      wrapper.findByTestId('category-name-input').vm.$emit('input', 'Category name');
+      wrapper.findByTestId('selection-type-input').vm.$emit('input', false);
+      wrapper.findByTestId('save-button').vm.$emit('click');
+
+      expect(wrapper.emitted('saveCategory')[0][0]).toMatchObject({
+        name: 'Category name',
+        multipleSelection: false,
+      });
     });
   });
 });

@@ -16,7 +16,7 @@ import {
   GlDisclosureDropdownItem,
   GlLink,
 } from '@gitlab/ui';
-import { __ } from '~/locale';
+import { s__, __ } from '~/locale';
 import CrudComponent from '~/vue_shared/components/crud_component.vue';
 import {
   defaultCategory,
@@ -47,15 +47,28 @@ export default {
     GlTooltip: GlTooltipDirective,
   },
   props: {
-    securityAttributes: {
-      type: Array,
-      required: true,
-    },
-    category: {
+    selectedCategory: {
       type: Object,
       required: false,
       default: () => defaultCategory,
     },
+    unsavedAttributes: {
+      type: Array,
+      required: false,
+      default: () => [],
+    },
+  },
+  data() {
+    return {
+      category: {
+        name: '',
+        description: '',
+      },
+      formErrors: {
+        name: null,
+        multipleSelection: null,
+      },
+    };
   },
   computed: {
     isNew() {
@@ -73,20 +86,39 @@ export default {
     areAttributesEditable() {
       return !this.isLocked || this.isNew;
     },
-    categoryName() {
-      return this.category?.name;
-    },
-    categoryDescription() {
-      return this.category?.description;
-    },
     attributes() {
-      return this.category?.id ? this.securityAttributes : [];
+      return [...(this.category?.securityAttributes || []), ...this.unsavedAttributes];
+    },
+  },
+  watch: {
+    selectedCategory(newCategory) {
+      this.category = newCategory;
+      this.formErrors.name = null;
+      this.formErrors.multipleSelection = null;
+    },
+  },
+  mounted() {
+    this.category = this.selectedCategory || defaultCategory;
+  },
+  methods: {
+    isFormValid() {
+      this.formErrors.name =
+        this.category.name.trim() === '' ? s__('SecurityAttributes|Name is required') : null;
+      this.formErrors.multipleSelection =
+        this.category.multipleSelection === null
+          ? s__('SecurityAttributes|Selection type is required')
+          : null;
+      return !this.formErrors.name && !this.formErrors.multipleSelection;
+    },
+    handleSubmit() {
+      if (!this.isFormValid()) return;
+      this.$emit('saveCategory', this.category);
     },
   },
   attributesTableFields: [
     {
       key: 'name',
-      label: __('Attribute'),
+      label: s__('SecurityAttributes|Attribute'),
       // eslint-disable-next-line @gitlab/require-i18n-strings
       tdClass: '!gl-border-b-0 gl-md-w-1/5',
       // eslint-disable-next-line @gitlab/require-i18n-strings
@@ -114,6 +146,11 @@ export default {
   editItem: {
     text: __('Edit'),
   },
+  deleteItem: {
+    text: __('Delete'),
+  },
+  singleSelection: s__('SecurityAttributes|Single selection'),
+  multipleSelection: s__('SecurityAttributes|Multiple selection'),
 };
 </script>
 <template>
@@ -142,19 +179,42 @@ export default {
         >
           {{ s__('SecurityAttributes|Limited edits allowed') }}
         </gl-badge>
+        <gl-disclosure-dropdown v-else-if="!isNew" category="tertiary" icon="ellipsis_v" no-caret>
+          <gl-disclosure-dropdown-item
+            :item="$options.deleteItem"
+            data-testid="delete-category-item"
+            @action="$emit('deleteCategory', category)"
+          />
+        </gl-disclosure-dropdown>
       </div>
-      <h3 class="gl-heading-3">{{ s__('SecurityAttributes|Category details') }}</h3>
+      <h3 class="gl-heading-3" data-testid="category-form-title">
+        {{ isNew ? s__('SecurityAttributes|Category details') : category.name }}
+      </h3>
       <p>{{ s__('SecurityAttributes|View category settings and associated attributes.') }}</p>
-      <gl-form>
-        <gl-form-group :label="__('Name')">
-          <gl-form-input v-if="isCategoryEditable" :value="categoryName" />
-          <span v-else>{{ categoryName }}</span>
+      <gl-form @submit.prevent>
+        <gl-form-group
+          :label="s__('SecurityAttributes|Name')"
+          :state="formErrors.name === null"
+          :invalid-feedback="formErrors.name"
+          data-testid="category-name-group"
+        >
+          <gl-form-input
+            v-if="isCategoryEditable"
+            v-model="category.name"
+            :state="formErrors.name === null"
+            data-testid="category-name-input"
+          />
+          <span v-else>{{ category.name }}</span>
         </gl-form-group>
         <gl-form-group :label="__('Description')">
-          <gl-form-textarea v-if="isCategoryEditable" :value="categoryDescription" />
-          <span v-else>{{ categoryDescription }}</span>
+          <gl-form-textarea v-if="isCategoryEditable" v-model="category.description" />
+          <span v-else>{{ category.description }}</span>
         </gl-form-group>
-        <gl-form-group>
+        <gl-form-group
+          :state="formErrors.multipleSelection === null"
+          :invalid-feedback="formErrors.multipleSelection"
+          data-testid="selection-type-group"
+        >
           <template #label>
             {{ s__('SecurityAttributes|Selection type') }}
             <gl-icon
@@ -167,17 +227,21 @@ export default {
               name="information-o"
             />
           </template>
-          <gl-form-radio-group v-if="isNew">
-            <gl-form-radio :value="false">
-              {{ s__('SecurityAttributes|Single selection') }}
+          <gl-form-radio-group
+            v-if="isNew"
+            v-model="category.multipleSelection"
+            data-testid="selection-type-input"
+          >
+            <gl-form-radio :value="false" class="gl-z-0">
+              {{ $options.singleSelection }}
             </gl-form-radio>
-            <gl-form-radio :value="true">
-              {{ s__('SecurityAttributes|Multiple selection') }}
+            <gl-form-radio :value="true" class="gl-z-0">
+              {{ $options.multipleSelection }}
             </gl-form-radio>
           </gl-form-radio-group>
-          <span v-else>{{
-            category.multipleSelection ? 'Multiple selection' : 'Single selection'
-          }}</span>
+          <span v-else>
+            {{ category.multipleSelection ? $options.multipleSelection : $options.singleSelection }}
+          </span>
         </gl-form-group>
         <gl-button
           v-if="areAttributesEditable"
@@ -185,15 +249,18 @@ export default {
           variant="confirm"
           size="small"
           class="gl-float-right"
+          data-testid="add-attribute-button"
           @click="$emit('addAttribute')"
         >
           {{ s__('SecurityAttributes|Create attribute') }}
         </gl-button>
         <gl-form-group
           :description="s__('SecurityAttributes|View the attributes available in this category')"
+          :state="formErrors.attributes === null"
+          :invalid-feedback="formErrors.attributes"
         >
           <template #label>
-            {{ __('Attributes') }}
+            {{ s__('SecurityAttributes|Attributes') }}
             <span class="gl-font-normal gl-text-subtle">
               <gl-icon name="label" />
               {{ attributes.length }}
@@ -219,7 +286,13 @@ export default {
               <gl-disclosure-dropdown category="tertiary" icon="ellipsis_v" no-caret>
                 <gl-disclosure-dropdown-item
                   :item="$options.editItem"
+                  data-testid="edit-attribute-item"
                   @action="$emit('editAttribute', item)"
+                />
+                <gl-disclosure-dropdown-item
+                  :item="$options.deleteItem"
+                  data-testid="delete-attribute-item"
+                  @action="$emit('deleteAttribute', item)"
                 />
               </gl-disclosure-dropdown>
             </template>
@@ -228,7 +301,12 @@ export default {
       </gl-form>
     </div>
     <div v-if="!isLocked" class="gl-border-t gl-sticky gl-bottom-0 gl-w-full gl-bg-default gl-p-6">
-      <gl-button category="primary" variant="confirm">
+      <gl-button
+        category="primary"
+        variant="confirm"
+        data-testid="save-button"
+        @click="handleSubmit"
+      >
         {{ s__('SecurityAttributes|Save changes') }}
       </gl-button>
     </div>

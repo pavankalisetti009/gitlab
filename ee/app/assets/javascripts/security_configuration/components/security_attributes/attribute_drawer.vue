@@ -5,14 +5,12 @@ import { s__ } from '~/locale';
 import { getContentWrapperHeight } from '~/lib/utils/dom_utils';
 import { DRAWER_MODES } from './constants';
 import SecurityAttributeForm from './attribute_form.vue';
-import AttributeDeleteModal from './attribute_delete_modal.vue';
 
 export default {
   components: {
     GlDrawer,
     GlButton,
     SecurityAttributeForm,
-    AttributeDeleteModal,
   },
   DRAWER_Z_INDEX,
   i18n: {
@@ -28,7 +26,6 @@ export default {
       isOpen: false,
       mode: DRAWER_MODES.ADD,
       attribute: {},
-      showDeleteModal: false,
     };
   },
   computed: {
@@ -66,12 +63,14 @@ export default {
       this.isOpen = false;
     },
     onSubmit(payload) {
-      this.$emit('saved', payload);
+      this.$emit('saveAttribute', {
+        id: this.attribute.id,
+        ...payload,
+      });
       this.close();
     },
     onDelete() {
-      this.$emit('delete', this.attribute);
-      this.showDeleteModal = false;
+      this.$emit('deleteAttribute', this.attribute);
       this.close();
     },
   },
@@ -101,12 +100,6 @@ export default {
       @saved="onSubmit"
       @cancel="close"
     />
-    <attribute-delete-modal
-      :visible="showDeleteModal"
-      :attribute="attribute"
-      @confirm="onDelete"
-      @cancel="showDeleteModal = false"
-    />
 
     <template #footer>
       <div class="gl-align-items-center gl-flex !gl-flex-auto gl-justify-between">
@@ -129,7 +122,7 @@ export default {
           category="primary"
           variant="danger"
           data-testid="delete-btn"
-          @click="showDeleteModal = true"
+          @click="onDelete"
         >
           {{ deleteButtonText }}
         </gl-button>

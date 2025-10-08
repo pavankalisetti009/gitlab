@@ -9404,16 +9404,10 @@ msgstr ""
 msgid "Attempted to update the pipeline trigger token but failed"
 msgstr ""
 
-msgid "Attribute"
-msgstr ""
-
 msgid "Attribute 'container-overrides' is not yet supported"
 msgstr ""
 
 msgid "Attribute 'pod-overrides' is not yet supported"
-msgstr ""
-
-msgid "Attributes"
 msgstr ""
 
 msgid "Audit events"
@@ -58322,6 +58316,30 @@ msgstr ""
 msgid "SecurityAttributes|Add security attribute"
 msgstr ""
 
+msgid "SecurityAttributes|An error has occurred while deleting the security attribute."
+msgstr ""
+
+msgid "SecurityAttributes|An error has occurred while deleting the security category."
+msgstr ""
+
+msgid "SecurityAttributes|An error has occurred while saving the security attribute."
+msgstr ""
+
+msgid "SecurityAttributes|An error has occurred while saving the security category."
+msgstr ""
+
+msgid "SecurityAttributes|Attribute"
+msgstr ""
+
+msgid "SecurityAttributes|Attribute created"
+msgstr ""
+
+msgid "SecurityAttributes|Attribute deleted"
+msgstr ""
+
+msgid "SecurityAttributes|Attribute updated"
+msgstr ""
+
 msgid "SecurityAttributes|Attributes"
 msgstr ""
 
@@ -58334,10 +58352,16 @@ msgstr ""
 msgid "SecurityAttributes|Category"
 msgstr ""
 
+msgid "SecurityAttributes|Category deleted"
+msgstr ""
+
 msgid "SecurityAttributes|Category details"
 msgstr ""
 
 msgid "SecurityAttributes|Category locked"
+msgstr ""
+
+msgid "SecurityAttributes|Category saved"
 msgstr ""
 
 msgid "SecurityAttributes|Color"
@@ -58352,13 +58376,22 @@ msgstr ""
 msgid "SecurityAttributes|Delete"
 msgstr ""
 
+msgid "SecurityAttributes|Delete category"
+msgstr ""
+
+msgid "SecurityAttributes|Delete category?"
+msgstr ""
+
 msgid "SecurityAttributes|Delete security attribute"
 msgstr ""
 
 msgid "SecurityAttributes|Delete security attribute?"
 msgstr ""
 
-msgid "SecurityAttributes|Deleting the \"%{attributeName}\" Security Attribute will permanently remove it from its category and any projects where it is applied. This action cannot be undone."
+msgid "SecurityAttributes|Deleting the \"%{attributeName}\" Security Attribute will permanently remove it from the \"%{categoryName}\" category and any projects where it's applied. This action cannot be undone."
+msgstr ""
+
+msgid "SecurityAttributes|Deleting the \"%{categoryName}\" Security Attribute category will permanently remove it and all its attributes. Projects using attributes from this category will lose those attributes. This action cannot be undone."
 msgstr ""
 
 msgid "SecurityAttributes|Description"
@@ -58410,6 +58443,9 @@ msgid "SecurityAttributes|Select security attributes"
 msgstr ""
 
 msgid "SecurityAttributes|Selection type"
+msgstr ""
+
+msgid "SecurityAttributes|Selection type is required"
 msgstr ""
 
 msgid "SecurityAttributes|Single selection"

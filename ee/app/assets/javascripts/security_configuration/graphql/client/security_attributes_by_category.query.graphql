@@ -4,7 +4,6 @@ query getSecurityAttributesByCategory($fullPath: ID!, $categoryId: ID) {
     securityAttributes(categoryId: $categoryId) @client {
       nodes {
         id
-        categoryId
         name
         color
       }

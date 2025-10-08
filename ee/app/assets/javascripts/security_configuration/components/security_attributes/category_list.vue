@@ -7,7 +7,7 @@ export default {
     GlBadge,
   },
   props: {
-    securityAttributeCategories: {
+    securityCategories: {
       type: Array,
       required: true,
     },
@@ -31,8 +31,8 @@ export default {
       />
     </div>
     <div
-      v-for="category in securityAttributeCategories"
-      :key="category.id"
+      v-for="category in securityCategories"
+      :key="category.id || category.name"
       class="gl-my-1 gl-flex gl-cursor-pointer gl-items-center gl-rounded-base gl-p-3 hover:!gl-bg-status-neutral"
       :class="{ 'gl-bg-strong': selectedCategory.id === category.id }"
       :data-testid="`attribute-category-${category.id}`"
@@ -46,7 +46,7 @@ export default {
           {{ category.description }}
         </div>
       </div>
-      <gl-badge>{{ category.attributeCount }}</gl-badge>
+      <gl-badge v-if="category.attributeCount">{{ category.attributeCount }}</gl-badge>
     </div>
   </div>
 </template>
