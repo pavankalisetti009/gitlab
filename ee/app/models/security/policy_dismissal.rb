@@ -2,6 +2,8 @@
 
 module Security
   class PolicyDismissal < ApplicationRecord
+    include AfterCommitQueue
+
     self.table_name = 'security_policy_dismissals'
     DISMISSAL_TYPES = {
       policy_false_positive: 0,
@@ -24,7 +26,45 @@ module Security
       where("security_findings_uuids && ARRAY[?]::text[]", security_findings_uuids)
     end
 
+    state_machine :status, initial: :open do
+      state :open, value: 0
+      state :preserved, value: 1
+
+      event :preserve do
+        transition any - [:preserved] => :preserved
+      end
+
+      after_transition open: :preserved do |dismissal, _|
+        next dismissal.destroy! unless dismissal.applicable_for_all_violations?
+
+        dismissal.run_after_commit do
+          event = Security::PolicyDismissalPreservedEvent.new(data: { security_policy_dismissal_id: dismissal.id })
+          ::Gitlab::EventStore.publish(event)
+        end
+      end
+    end
+
+    def applicable_for_findings?(finding_uuids)
+      return false if security_findings_uuids.nil?
+
+      finding_uuids.to_set.subset?(security_findings_uuids.to_set)
+    end
+
+    def applicable_for_all_violations?
+      applicable_for_findings?(mr_violation_finding_uuids)
+    end
+
     private
+
+    def scan_result_policy_violations
+      merge_request.scan_result_policy_violations
+                   .joins(:security_policy)
+                   .where(security_policies: { id: security_policy_id })
+    end
+
+    def mr_violation_finding_uuids
+      scan_result_policy_violations.flat_map(&:finding_uuids).uniq
+    end
 
     def dismissal_types_are_valid
       invalid_values = Array(dismissal_types) - DISMISSAL_TYPES.values

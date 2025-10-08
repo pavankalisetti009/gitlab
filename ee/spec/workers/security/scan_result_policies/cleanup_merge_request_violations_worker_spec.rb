@@ -3,7 +3,7 @@
 require 'spec_helper'
 
 RSpec.describe Security::ScanResultPolicies::CleanupMergeRequestViolationsWorker, '#perform', feature_category: :security_policy_management do
-  let_it_be(:merge_request) { create(:merge_request) }
+  let_it_be(:merge_request) { create(:merge_request, :merged) }
 
   let_it_be_with_reload(:merge_request_violation) do
     create(:scan_result_policy_violation, :running, merge_request: merge_request)
@@ -99,6 +99,54 @@ RSpec.describe Security::ScanResultPolicies::CleanupMergeRequestViolationsWorker
         end
 
         perform
+      end
+
+      it 'preserves security policy dismissals' do
+        policy_dismissal = create(:policy_dismissal, merge_request: merge_request)
+
+        expect { perform }.to change { policy_dismissal.reload.status }.from(0).to(1)
+      end
+
+      context 'when there are multiple policy dismissals with different statuses' do
+        let_it_be(:open_dismissal_1) { create(:policy_dismissal, merge_request: merge_request) }
+        let_it_be(:open_dismissal_2) { create(:policy_dismissal, merge_request: merge_request) }
+        let_it_be(:preserved_dismissal) { create(:policy_dismissal, merge_request: merge_request, status: 1) }
+
+        it 'only preserves open policy dismissals' do
+          expect { perform }.to change { open_dismissal_1.reload.status }.from(0).to(1)
+                            .and change { open_dismissal_2.reload.status }.from(0).to(1)
+                            .and not_change { preserved_dismissal.reload.status }
+        end
+      end
+
+      context 'when policy dismissal is no longer applicable' do
+        let_it_be(:project) { merge_request.project }
+        let_it_be(:policy_configuration) { create(:security_orchestration_policy_configuration, project: project) }
+        let_it_be(:security_policy) do
+          create(:security_policy, security_orchestration_policy_configuration: policy_configuration)
+        end
+
+        let_it_be(:approval_policy_rule) { create(:approval_policy_rule, security_policy: security_policy) }
+        let_it_be(:violation) do
+          create(:scan_result_policy_violation, :new_scan_finding,
+            project: project,
+            merge_request: merge_request,
+            approval_policy_rule: approval_policy_rule,
+            uuids: %w[uuid-1 uuid-2])
+        end
+
+        let_it_be(:non_applicable_dismissal) do
+          create(:policy_dismissal,
+            project: project,
+            merge_request: merge_request,
+            security_policy: security_policy,
+            security_findings_uuids: ['uuid-1']) # Missing uuid-2
+        end
+
+        it 'destroys non-applicable policy dismissals during preservation' do
+          expect { perform }.to change { Security::PolicyDismissal.exists?(non_applicable_dismissal.id) }
+            .from(true).to(false)
+        end
       end
 
       context 'when there is no merge_request scan result policy violations' do

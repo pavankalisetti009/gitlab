@@ -3744,6 +3744,16 @@
   :idempotent: true
   :tags: []
   :queue_namespace:
+- :name: security_policies_dismissal_preserve
+  :worker_name: Security::Policies::DismissalPreserveWorker
+  :feature_category: :security_policy_management
+  :has_external_dependencies: true
+  :urgency: :low
+  :resource_boundary: :unknown
+  :weight: 1
+  :idempotent: true
+  :tags: []
+  :queue_namespace:
 - :name: security_policies_failed_pipelines_audit
   :worker_name: Security::Policies::FailedPipelinesAuditWorker
   :feature_category: :security_policy_management
