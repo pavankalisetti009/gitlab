@@ -14,6 +14,7 @@ module EE
 
       scope :in_project, ->(projects) { where(project: projects) }
       scope :not_in_group, ->(groups) { where.not(group: groups) }
+      scope :with_custom_role, -> { where.not(member_role_id: nil) }
 
       before_destroy :delete_related_access_levels
 
