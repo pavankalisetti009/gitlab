@@ -248,7 +248,7 @@ RSpec.describe IdentityVerification::UserRiskProfile, feature_category: :instanc
       before do
         allow(Gitlab::ApplicationRateLimiter)
           .to receive(:peek)
-          .with(:soft_phone_verification_transactions_limit, scope: nil)
+          .with(:soft_phone_verification_transactions_limit, scope: :global)
           .and_return(is_exceeded)
       end
     end

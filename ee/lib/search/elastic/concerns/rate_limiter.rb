@@ -12,11 +12,11 @@ module Search
         THRESHOLD_LIMIT = 0.7
 
         def embeddings_throttled?
-          ::Gitlab::ApplicationRateLimiter.peek(ENDPOINT, scope: nil, threshold: threshold)
+          ::Gitlab::ApplicationRateLimiter.peek(ENDPOINT, scope: :global, threshold: threshold)
         end
 
         def embeddings_throttled_after_increment?
-          ::Gitlab::ApplicationRateLimiter.throttled?(ENDPOINT, scope: nil, threshold: threshold)
+          ::Gitlab::ApplicationRateLimiter.throttled?(ENDPOINT, scope: :global, threshold: threshold)
         end
 
         def threshold

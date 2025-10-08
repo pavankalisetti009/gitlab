@@ -24,7 +24,7 @@ RSpec.describe PhoneVerification::Users::SendVerificationCodeService, feature_ca
       %i[soft hard].each do |prefix|
         rate_limit_name = :"#{prefix}_phone_verification_transactions_limit"
         allow(Gitlab::ApplicationRateLimiter)
-          .to receive(:throttled?).with(rate_limit_name, scope: nil).and_return(false)
+          .to receive(:throttled?).with(rate_limit_name, scope: :global).and_return(false)
       end
 
       allow_next_instance_of(PhoneVerification::TelesignClient::RiskScoreService,
@@ -383,9 +383,9 @@ RSpec.describe PhoneVerification::Users::SendVerificationCodeService, feature_ca
 
         it 'increments phone verification transactions count' do
           expect(Gitlab::ApplicationRateLimiter).to receive(:throttled?)
-            .with(:soft_phone_verification_transactions_limit, scope: nil).and_return(true)
+            .with(:soft_phone_verification_transactions_limit, scope: :global).and_return(true)
           expect(Gitlab::ApplicationRateLimiter).to receive(:throttled?)
-            .with(:hard_phone_verification_transactions_limit, scope: nil).and_return(true)
+            .with(:hard_phone_verification_transactions_limit, scope: :global).and_return(true)
           service.execute
         end
 
@@ -398,7 +398,7 @@ RSpec.describe PhoneVerification::Users::SendVerificationCodeService, feature_ca
           with_them do
             before do
               allow(Gitlab::ApplicationRateLimiter).to receive(:throttled?).with(rate_limit_key,
-                scope: nil).and_return(true)
+                scope: :global).and_return(true)
             end
 
             it 'logs the event' do
