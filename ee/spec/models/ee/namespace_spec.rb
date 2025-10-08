@@ -2341,14 +2341,6 @@ RSpec.describe Namespace, feature_category: :groups_and_projects do
       end
 
       it { is_expected.to be(true) }
-
-      context 'when feature flag "security_policies_csp" is disabled' do
-        before do
-          stub_feature_flags(security_policies_csp: false)
-        end
-
-        it { is_expected.to be(false) }
-      end
     end
   end
 
@@ -2394,16 +2386,6 @@ RSpec.describe Namespace, feature_category: :groups_and_projects do
             .to contain_exactly(group_project, subgroup_project, other_project, csp_policy_project)
         end
       end
-
-      context 'with feature flag "security_policies_csp" disabled' do
-        before do
-          stub_feature_flags(security_policies_csp: false)
-        end
-
-        it 'yields only the group projects' do
-          expect(yielded_projects(csp_group)).to contain_exactly(csp_policy_project)
-        end
-      end
     end
   end
 
@@ -2422,14 +2404,6 @@ RSpec.describe Namespace, feature_category: :groups_and_projects do
       end
 
       it { is_expected.to eq(group) }
-
-      context 'when feature flag "security_policies_csp" is disabled' do
-        before do
-          stub_feature_flags(security_policies_csp: false)
-        end
-
-        it { is_expected.to be_nil }
-      end
     end
   end
 
@@ -2458,16 +2432,6 @@ RSpec.describe Namespace, feature_category: :groups_and_projects do
         expect(yielded_projects(csp_group))
           .to contain_exactly(group_project, subgroup_project, other_project, csp_policy_project)
       end
-
-      context 'with feature flag "security_policies_csp" disabled' do
-        before do
-          stub_feature_flags(security_policies_csp: false)
-        end
-
-        it 'yields only the group projects' do
-          expect(yielded_projects(csp_group)).to contain_exactly(csp_policy_project)
-        end
-      end
     end
   end
 
@@ -2484,14 +2448,6 @@ RSpec.describe Namespace, feature_category: :groups_and_projects do
       include_context 'with csp group configuration'
 
       it { is_expected.to match([subgroup.id, group.id, csp_group.id]) }
-
-      context 'with feature flag "security_policies_csp" disabled' do
-        before do
-          stub_feature_flags(security_policies_csp: false)
-        end
-
-        it { is_expected.to match([subgroup.id, group.id]) }
-      end
     end
   end
 
@@ -2508,14 +2464,6 @@ RSpec.describe Namespace, feature_category: :groups_and_projects do
       include_context 'with csp group configuration'
 
       it { is_expected.to match([group.id, csp_group.id]) }
-
-      context 'with feature flag "security_policies_csp" disabled' do
-        before do
-          stub_feature_flags(security_policies_csp: false)
-        end
-
-        it { is_expected.to contain_exactly(group.id) }
-      end
     end
   end
 
@@ -2574,21 +2522,6 @@ RSpec.describe Namespace, feature_category: :groups_and_projects do
               child_security_orchestration_policy_configuration
             ]
           )
-        end
-
-        context 'when feature flag "security_policies_csp" is disabled' do
-          before do
-            stub_feature_flags(security_policies_csp: false)
-          end
-
-          it 'does not include the CSP configuration' do
-            expect(configurations).to match_array(
-              [
-                parent_security_orchestration_policy_configuration,
-                child_security_orchestration_policy_configuration
-              ]
-            )
-          end
         end
       end
     end
@@ -2649,20 +2582,6 @@ RSpec.describe Namespace, feature_category: :groups_and_projects do
               parent_security_orchestration_policy_configuration
             ]
           )
-        end
-
-        context 'when feature flag "security_policies_csp" is disabled' do
-          before do
-            stub_feature_flags(security_policies_csp: false)
-          end
-
-          it 'does not include the CSP configuration' do
-            expect(configurations).to match_array(
-              [
-                parent_security_orchestration_policy_configuration
-              ]
-            )
-          end
         end
       end
     end

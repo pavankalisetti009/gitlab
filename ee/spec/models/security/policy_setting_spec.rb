@@ -121,32 +121,6 @@ RSpec.describe Security::PolicySetting, feature_category: :security_policy_manag
       context 'when on GitLab.com', :saas do
         it { is_expected.to be(false) }
       end
-
-      context 'when feature flag "security_policies_csp" is disabled' do
-        before do
-          stub_feature_flags(security_policies_csp: false)
-        end
-
-        it { is_expected.to be(false) }
-      end
-
-      context 'with subgroup and feature flag "security_policies_csp" enabled for the root ancestor' do
-        let(:group) { subgroup }
-
-        before do
-          stub_feature_flags(security_policies_csp: top_level_group)
-        end
-
-        it { is_expected.to be(true) }
-      end
-
-      context 'with feature flag "security_policies_csp" enabled for :instance' do
-        before do
-          stub_feature_flags(security_policies_csp: Feature::FlipperGitlabInstance.new)
-        end
-
-        it { is_expected.to be(true) }
-      end
     end
   end
 

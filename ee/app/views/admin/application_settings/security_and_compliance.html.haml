@@ -33,20 +33,16 @@
     - c.with_body do
       = render 'security_policies'
 
-  - if Feature.enabled?(:security_policies_csp, :instance)
-    - title_content = capture do
-      = _('Compliance and security policy group')
-      = render Pajamas::BadgeComponent.new(_('Beta'), variant: :tier)
-    = render ::Layouts::SettingsBlockComponent.new(title_content,
-      id: 'js-centralized_security_policy_management_setting',
-      testid: 'admin-centralized_security_policy_management_setting',
-      expanded: expanded_by_default?) do |c|
-      - c.with_description do
-        - link = help_page_path('user/application_security/policies/_index.md')
-        = _('Select a group to create, distribute, and manage compliance frameworks and security polices for this GitLab instance. You should select a group without existing compliance frameworks.')
-        = render Pajamas::ButtonComponent.new(variant: :link, icon: 'information-o', href: link)
-      - c.with_body do
-        = render 'csp_group'
+  = render ::Layouts::SettingsBlockComponent.new(_('Compliance and security policy group'),
+    id: 'js-centralized_security_policy_management_setting',
+    testid: 'admin-centralized_security_policy_management_setting',
+    expanded: expanded_by_default?) do |c|
+    - c.with_description do
+      - link = help_page_path('user/application_security/policies/_index.md')
+      = _('Select a group to create, distribute, and manage compliance frameworks and security polices for this GitLab instance. You should select a group without existing compliance frameworks.')
+      = render Pajamas::ButtonComponent.new(variant: :link, icon: 'information-o', href: link)
+    - c.with_body do
+      = render 'csp_group'
 
 - if ::Gitlab::Saas.feature_available?(:pipl_compliance)
   = render ::Layouts::SettingsBlockComponent.new(s_('AdminSettings|PIPL compliance'),

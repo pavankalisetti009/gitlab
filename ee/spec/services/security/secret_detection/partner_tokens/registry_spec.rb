@@ -8,19 +8,19 @@ RSpec.describe Security::SecretDetection::PartnerTokens::Registry, feature_categ
 
     where(:token_type, :client_class, :rate_limit_key) do
       'AWS' |
-        'Security::SecretDetection::PartnerTokens::AwsClient' |
+        ::Security::SecretDetection::PartnerTokens::AwsClient |
         :partner_aws_api
       'GCP API key' |
-        'Security::SecretDetection::PartnerTokens::GcpClient' |
+        ::Security::SecretDetection::PartnerTokens::GcpClient |
         :partner_gcp_api
       'GCP OAuth client secret' |
-        'Security::SecretDetection::PartnerTokens::GcpClient' |
+        ::Security::SecretDetection::PartnerTokens::GcpClient |
         :partner_gcp_api
       'Google (GCP) Service-account' |
-        'Security::SecretDetection::PartnerTokens::GcpClient' |
+        ::Security::SecretDetection::PartnerTokens::GcpClient |
         :partner_gcp_api
       'Postman API token' |
-        'Security::SecretDetection::PartnerTokens::PostmanClient' |
+        ::Security::SecretDetection::PartnerTokens::PostmanClient |
         :partner_postman_api
     end
 
@@ -87,12 +87,12 @@ RSpec.describe Security::SecretDetection::PartnerTokens::Registry, feature_categ
   describe '.client_for' do
     shared_examples 'instantiates client successfully' do |token_type, client_class|
       before do
-        stub_const(client_class, Class.new)
+        stub_const(client_class.name, Class.new)
       end
 
       it 'returns new instance of client class' do
         client = described_class.client_for(token_type)
-        expect(client).to be_a(client_class.constantize)
+        expect(client).to be_a(client_class)
       end
     end
 
@@ -108,7 +108,7 @@ RSpec.describe Security::SecretDetection::PartnerTokens::Registry, feature_categ
     context 'with existing client classes' do
       it_behaves_like 'instantiates client successfully',
         'AWS',
-        'Security::SecretDetection::PartnerTokens::AwsClient'
+        ::Security::SecretDetection::PartnerTokens::AwsClient
     end
 
     context 'with non-existent client classes' do

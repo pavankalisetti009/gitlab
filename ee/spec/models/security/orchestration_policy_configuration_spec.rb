@@ -4540,17 +4540,6 @@ RSpec.describe Security::OrchestrationPolicyConfiguration, feature_category: :se
           expect { |block| configuration.all_project_ids(&block) }
             .to yield_successive_args(*Project.pluck_primary_key.map { |id| Array.wrap(id) })
         end
-
-        context 'when feature flag "security_policies_csp" is disabled' do
-          before do
-            stub_feature_flags(security_policies_csp: false)
-          end
-
-          it 'returns all project IDs under the namespace' do
-            expect { |block| configuration.all_project_ids(&block) }
-              .to yield_successive_args([project1.id, project2.id, project3.id])
-          end
-        end
       end
     end
 
@@ -4609,18 +4598,6 @@ RSpec.describe Security::OrchestrationPolicyConfiguration, feature_category: :se
             .to contain_exactly(configuration_project.id, configuration_direct_subgroup.id,
               configuration_top_level_group.id, csp_security_orchestration_policy_configuration.id)
         end
-
-        context 'when feature flag "security_policies_csp" is disabled' do
-          before do
-            stub_feature_flags(security_policies_csp: false)
-          end
-
-          it 'returns original set of configurations' do
-            expect(self_and_ancestor_configuration_ids)
-              .to contain_exactly(configuration_project.id, configuration_direct_subgroup.id,
-                configuration_top_level_group.id)
-          end
-        end
       end
     end
 
@@ -4650,17 +4627,6 @@ RSpec.describe Security::OrchestrationPolicyConfiguration, feature_category: :se
             .to contain_exactly(configuration_direct_subgroup.id, configuration_top_level_group.id,
               csp_security_orchestration_policy_configuration.id)
         end
-
-        context 'when feature flag "security_policies_csp" is disabled' do
-          before do
-            stub_feature_flags(security_policies_csp: false)
-          end
-
-          it 'returns original set of configurations' do
-            expect(self_and_ancestor_configuration_ids)
-              .to contain_exactly(configuration_direct_subgroup.id, configuration_top_level_group.id)
-          end
-        end
       end
     end
 
@@ -4677,16 +4643,6 @@ RSpec.describe Security::OrchestrationPolicyConfiguration, feature_category: :se
         it 'returns top-level group configuration id including the CSP configuration' do
           expect(self_and_ancestor_configuration_ids).to contain_exactly(configuration_top_level_group.id,
             csp_security_orchestration_policy_configuration.id)
-        end
-
-        context 'when feature flag "security_policies_csp" is disabled' do
-          before do
-            stub_feature_flags(security_policies_csp: false)
-          end
-
-          it 'returns original set of configurations' do
-            expect(self_and_ancestor_configuration_ids).to contain_exactly(configuration_top_level_group.id)
-          end
         end
       end
     end
