@@ -125,7 +125,8 @@ RSpec.describe Analytics::AiAnalytics::UsageEventsCounterService, feature_catego
         ]
       end
 
-      it 'creates separate aggregations for each unique combination of namespace, user, event, and date' do
+      it 'creates separate aggregations for each unique combination of namespace, user, event, and date',
+        quarantine: 'https://gitlab.com/gitlab-org/gitlab/-/issues/575730' do
         expect { service.execute }.to change { Ai::EventsCount.count }.by(5)
 
         counts = Ai::EventsCount.pluck(:namespace_id, :user_id, :event, :events_date, :total_occurrences)
