@@ -30,6 +30,7 @@ describe('AiCatalogFlowForm', () => {
   const routeParams = { id: 1 };
   const initialValues = {
     projectId: 'gid://gitlab/Project/1000000',
+    type: 'FLOW',
     name: 'My AI Flow',
     description: 'A helpful AI assistant',
     public: true,
@@ -133,12 +134,20 @@ describe('AiCatalogFlowForm', () => {
   });
 
   describe('Form Submission', () => {
+    const expectedValues = {
+      projectId: 'gid://gitlab/Project/1000000',
+      name: 'My AI Flow',
+      description: 'A helpful AI assistant',
+      public: true,
+      steps: [],
+    };
+
     it('emits form values when user clicks submit', async () => {
       createWrapper({ initialValues });
 
       await findFormFields().vm.$emit('submit');
 
-      expect(wrapper.emitted('submit')).toEqual([[initialValues]]);
+      expect(wrapper.emitted('submit')).toEqual([[expectedValues]]);
     });
 
     it('trims the form values before emitting them', async () => {
@@ -154,7 +163,7 @@ describe('AiCatalogFlowForm', () => {
 
       await findFormFields().vm.$emit('submit');
 
-      expect(wrapper.emitted('submit')).toEqual([[initialValues]]);
+      expect(wrapper.emitted('submit')).toEqual([[expectedValues]]);
     });
   });
 

@@ -2563,6 +2563,9 @@ msgstr ""
 msgid "AICatalog|Configuration"
 msgstr ""
 
+msgid "AICatalog|Configuration is required."
+msgstr ""
+
 msgid "AICatalog|Connect AI agents to automate complicated tasks."
 msgstr ""
 
@@ -2642,6 +2645,9 @@ msgid "AICatalog|Failed to remove agent. %{error}"
 msgstr ""
 
 msgid "AICatalog|Failed to remove flow. %{error}"
+msgstr ""
+
+msgid "AICatalog|Flow"
 msgstr ""
 
 msgid "AICatalog|Flow added successfully to %{name}."
@@ -2761,6 +2767,9 @@ msgstr ""
 msgid "AICatalog|Select agent"
 msgstr ""
 
+msgid "AICatalog|Select the type of your flow."
+msgstr ""
+
 msgid "AICatalog|Select tools that this agent will have access to."
 msgstr ""
 
@@ -2815,10 +2824,13 @@ msgstr ""
 msgid "AICatalog|The test run failed. %{error}"
 msgstr ""
 
+msgid "AICatalog|Third-party flow"
+msgstr ""
+
 msgid "AICatalog|This %{itemType} is private and can only be added to the project it was created in. Duplicate the agent to use the same configuration in other projects."
 msgstr ""
 
-msgid "AICatalog|This YAML configuration file determines the prompts, tools, and capabilities of your flow."
+msgid "AICatalog|This YAML configuration file determines the prompts, tools, and capabilities of your flow. Required properties: injectGatewayToken, image, commands"
 msgstr ""
 
 msgid "AICatalog|This agent can be made private if it is not used."

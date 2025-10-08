@@ -5,6 +5,7 @@ import * as Sentry from '~/sentry/sentry_browser_wrapper';
 import updateAiCatalogFlow from '../graphql/mutations/update_ai_catalog_flow.mutation.graphql';
 import { mapSteps } from '../utils';
 import { AI_CATALOG_FLOWS_SHOW_ROUTE } from '../router/constants';
+import { AI_CATALOG_TYPE_THIRD_PARTY_FLOW } from '../constants';
 import AiCatalogFlowForm from '../components/ai_catalog_flow_form.vue';
 
 export default {
@@ -26,6 +27,9 @@ export default {
     };
   },
   computed: {
+    isThirdPartyFlow() {
+      return this.aiCatalogFlow.itemType === AI_CATALOG_TYPE_THIRD_PARTY_FLOW;
+    },
     flowName() {
       return this.aiCatalogFlow.name;
     },
@@ -33,12 +37,17 @@ export default {
       return `${s__('AICatalog|Edit flow')}: ${this.flowName || this.$route.params.id}`;
     },
     initialValues() {
+      const configurationField = this.isThirdPartyFlow
+        ? { definition: this.aiCatalogFlow.latestVersion?.definition }
+        : { steps: mapSteps(this.aiCatalogFlow.latestVersion?.steps) };
+
       return {
         projectId: this.aiCatalogFlow.project?.id,
+        type: this.aiCatalogFlow.itemType,
         name: this.flowName,
         description: this.aiCatalogFlow.description,
         public: this.aiCatalogFlow.public,
-        steps: mapSteps(this.aiCatalogFlow.latestVersion.steps),
+        ...configurationField,
       };
     },
   },

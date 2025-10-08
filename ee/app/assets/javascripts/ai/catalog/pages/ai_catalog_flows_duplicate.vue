@@ -1,9 +1,12 @@
 <script>
 import { s__ } from '~/locale';
 import { getIdFromGraphQLId } from '~/graphql_shared/utils';
+import glFeatureFlagsMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
 import PageHeading from '~/vue_shared/components/page_heading.vue';
 import * as Sentry from '~/sentry/sentry_browser_wrapper';
+import { AI_CATALOG_TYPE_THIRD_PARTY_FLOW } from 'ee/ai/catalog/constants';
 import createAiCatalogFlow from '../graphql/mutations/create_ai_catalog_flow.mutation.graphql';
+import createAiCatalogThirdPartyFlow from '../graphql/mutations/create_ai_catalog_third_party_flow.mutation.graphql';
 import { mapSteps } from '../utils';
 import { AI_CATALOG_FLOWS_SHOW_ROUTE } from '../router/constants';
 import AiCatalogFlowForm from '../components/ai_catalog_flow_form.vue';
@@ -14,6 +17,7 @@ export default {
     AiCatalogFlowForm,
     PageHeading,
   },
+  mixins: [glFeatureFlagsMixin()],
   props: {
     aiCatalogFlow: {
       type: Object,
@@ -27,32 +31,49 @@ export default {
     };
   },
   computed: {
+    isThirdPartyFlow() {
+      return this.aiCatalogFlow.itemType === AI_CATALOG_TYPE_THIRD_PARTY_FLOW;
+    },
     flowName() {
       return this.aiCatalogFlow.name;
     },
     initialValues() {
+      const configurationField = this.isThirdPartyFlow
+        ? { definition: this.aiCatalogFlow.latestVersion?.definition }
+        : { steps: mapSteps(this.aiCatalogFlow.latestVersion?.steps) };
+
       return {
+        type: this.aiCatalogFlow.itemType,
         name: `${s__('AICatalog|Copy of')} ${this.flowName}`,
         public: false,
         description: this.aiCatalogFlow.description,
-        steps: mapSteps(this.aiCatalogFlow.latestVersion.steps),
+        ...configurationField,
       };
+    },
+    isThirdPartyFlowsAvailable() {
+      return this.glFeatures.aiCatalogThirdPartyFlows;
     },
   },
   methods: {
     async handleSubmit(input) {
       this.isSubmitting = true;
       this.resetErrorMessages();
+      const isThirdPartyFlow = this.isThirdPartyFlowsAvailable && input.definition;
+      const createQuery = isThirdPartyFlow ? createAiCatalogThirdPartyFlow : createAiCatalogFlow;
+
       try {
         const { data } = await this.$apollo.mutate({
-          mutation: createAiCatalogFlow,
+          mutation: createQuery,
           variables: {
             input,
           },
         });
 
         if (data) {
-          const { errors, item } = data.aiCatalogFlowCreate;
+          const createResponse = isThirdPartyFlow
+            ? data.aiCatalogThirdPartyFlowCreate
+            : data.aiCatalogFlowCreate;
+          const { errors, item } = createResponse;
           if (errors.length > 0) {
             this.errors = errors;
             return;

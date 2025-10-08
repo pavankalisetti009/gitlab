@@ -6,6 +6,8 @@ import {
   VISIBILITY_LEVEL_PRIVATE_STRING,
 } from '~/visibility_level/constants';
 import {
+  AI_CATALOG_TYPE_FLOW,
+  AI_CATALOG_TYPE_THIRD_PARTY_FLOW,
   MAX_LENGTH_NAME,
   MAX_LENGTH_DESCRIPTION,
   VISIBILITY_LEVEL_PRIVATE,
@@ -21,6 +23,7 @@ import AiCatalogFormButtons from './ai_catalog_form_buttons.vue';
 import AiCatalogStepsEditor from './ai_catalog_steps_editor.vue';
 import AiCatalogFormSidePanel from './ai_catalog_form_side_panel.vue';
 import FormFlowConfiguration from './form_flow_configuration.vue';
+import FormFlowType from './form_flow_type.vue';
 import FormProjectDropdown from './form_project_dropdown.vue';
 import VisibilityLevelRadioGroup from './visibility_level_radio_group.vue';
 
@@ -31,6 +34,7 @@ export default {
     AiCatalogStepsEditor,
     AiCatalogFormSidePanel,
     FormFlowConfiguration,
+    FormFlowType,
     FormProjectDropdown,
     GlButton,
     GlForm,
@@ -59,9 +63,10 @@ export default {
       default() {
         return {
           projectId: null,
+          type: AI_CATALOG_TYPE_FLOW,
           name: '',
           description: '',
-          configuration: '',
+          definition: '',
           steps: [],
           release: true,
           public: false,
@@ -91,6 +96,11 @@ export default {
     },
     isThirdPartyFlowsAvailable() {
       return this.glFeatures.aiCatalogThirdPartyFlows;
+    },
+    isThirdPartyFlow() {
+      return (
+        this.isThirdPartyFlowsAvailable && this.formValues.type === AI_CATALOG_TYPE_THIRD_PARTY_FLOW
+      );
     },
     allErrors() {
       return [...this.errors, ...this.formErrors];
@@ -131,22 +141,37 @@ export default {
               },
             },
           };
-      const configurationField = this.isThirdPartyFlowsAvailable
+      const configurationField = this.isThirdPartyFlow
         ? {
-            configuration: {
+            definition: {
               label: s__('AICatalog|Configuration'),
+              validators: createFieldValidators({
+                requiredLabel: s__('AICatalog|Configuration is required.'),
+              }),
               groupAttrs: {
-                optional: true,
                 labelDescription: s__(
-                  'AICatalog|This YAML configuration file determines the prompts, tools, and capabilities of your flow.',
+                  'AICatalog|This YAML configuration file determines the prompts, tools, and capabilities of your flow. Required properties: injectGatewayToken, image, commands',
                 ),
               },
             },
           }
-        : {};
+        : {
+            steps: {
+              label: s__('AICatalog|Flow nodes'),
+              groupAttrs: {
+                labelDescription: s__('AICatalog|Nodes run sequentially.'),
+              },
+            },
+          };
 
       return {
         ...projectIdField,
+        type: {
+          label: __('Type'),
+          groupAttrs: {
+            labelDescription: s__('AICatalog|Select the type of your flow.'),
+          },
+        },
         name: {
           label: __('Name'),
           validators: createFieldValidators({
@@ -185,28 +210,29 @@ export default {
           },
         },
         ...configurationField,
-        steps: {
-          label: s__('AICatalog|Flow nodes'),
-          groupAttrs: {
-            labelDescription: s__('AICatalog|Nodes run sequentially.'),
-          },
-        },
       };
     },
   },
   methods: {
     handleSubmit() {
+      const configurationField = this.isThirdPartyFlow
+        ? { definition: this.formValues.definition?.trim() }
+        : {
+            steps: this.formValues.steps?.map((s) => ({
+              agentId: s.id,
+              pinnedVersionPrefix: s.versionName,
+            })),
+          };
+
       const transformedValues = {
         projectId: this.formValues.projectId,
         name: this.formValues.name.trim(),
         description: this.formValues.description.trim(),
         public: this.isPublic,
-        steps: this.formValues.steps.map((s) => ({
-          agentId: s.id,
-          pinnedVersionPrefix: s.versionName,
-        })),
         release: this.initialValues.release,
+        ...configurationField,
       };
+
       this.$emit('submit', transformedValues);
     },
     onError(error) {
@@ -248,6 +274,9 @@ export default {
           <template #input(projectId)="{ id }">
             <form-project-dropdown :id="id" v-model="formValues.projectId" @error="onError" />
           </template>
+          <template #input(type)="{ id, input, value }">
+            <form-flow-type :id="id" :value="value" @input="input" />
+          </template>
           <template #input(description)="{ id, input, value, blur, validation }">
             <gl-form-textarea
               :id="id"
@@ -275,7 +304,7 @@ export default {
               @input="input"
             />
           </template>
-          <template #input(configuration)="{ input, value }">
+          <template #input(definition)="{ input, value }">
             <form-flow-configuration :value="value" @input="input" />
           </template>
           <template #input(steps)>
