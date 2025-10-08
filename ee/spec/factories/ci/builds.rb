@@ -1,4 +1,7 @@
 # frozen_string_literal: true
+
+require Rails.root.join('spec/support/helpers/ci/job_factory_helpers')
+
 FactoryBot.define do
   factory :ee_ci_build, class: 'Ci::Build', parent: :ci_build do
     transient do
@@ -13,10 +16,7 @@ FactoryBot.define do
           build.metadata.write_attribute(:secrets, evaluator.secrets)
         end
 
-        next unless build.job_definition
-
-        updated_config = build.job_definition.config.merge(secrets: evaluator.secrets)
-        build.job_definition.write_attribute(:config, updated_config)
+        Ci::JobFactoryHelpers.mutate_temp_job_definition(build, secrets: evaluator.secrets)
       end
     end
 
@@ -289,10 +289,7 @@ FactoryBot.define do
           build.metadata.write_attribute(:config_options, updated_options)
         end
 
-        next unless build.job_definition
-
-        updated_config = build.job_definition.config.merge(options: updated_options)
-        build.job_definition.write_attribute(:config, updated_config)
+        Ci::JobFactoryHelpers.mutate_temp_job_definition(build, options: updated_options)
       end
     end
   end

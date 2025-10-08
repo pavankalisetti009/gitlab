@@ -32,6 +32,8 @@ RSpec.describe Ci::RetryJobService, feature_category: :continuous_integration do
         let_it_be(:dast_scanner_profile) { create(:dast_scanner_profile, project: project) }
 
         before do
+          # Reload required to avoid CrossDatabaseModificationAcrossUnsupportedTablesError on 'gitlab_sec, gitlab_ci'
+          build.reload
           build.update!(dast_site_profile: dast_site_profile, dast_scanner_profile: dast_scanner_profile)
         end
 
