@@ -11,7 +11,7 @@ export default {
     GlTooltip: GlTooltipDirective,
   },
   i18n: {
-    collapseButtonLabel: __('Collapse GitLab Duo Panel'),
+    collapseButtonLabel: __('Collapse GitLab Duo panel'),
   },
   props: {
     activeTab: {
@@ -69,7 +69,7 @@ export default {
       return __('Go back');
     },
     maximizeButtonLabel() {
-      return this.isMaximized ? __('Minimize Duo Panel') : __('Maximize Duo Panel');
+      return this.isMaximized ? __('Minimize Duo panel') : __('Maximize Duo panel');
     },
     tabMode() {
       return this.activeTab?.props?.mode;

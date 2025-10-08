@@ -4004,6 +4004,9 @@ msgstr ""
 msgid "Active"
 msgstr ""
 
+msgid "Active GitLab Duo Chat"
+msgstr ""
+
 msgid "Active group access tokens"
 msgstr ""
 
@@ -15675,7 +15678,7 @@ msgstr ""
 msgid "Collapse %{section} merge requests"
 msgstr ""
 
-msgid "Collapse GitLab Duo Panel"
+msgid "Collapse GitLab Duo panel"
 msgstr ""
 
 msgid "Collapse all files"
@@ -30296,16 +30299,13 @@ msgstr ""
 msgid "GitLab Duo"
 msgstr ""
 
-msgid "GitLab Duo Active Chat"
-msgstr ""
-
 msgid "GitLab Duo Agentic Chat"
 msgstr ""
 
 msgid "GitLab Duo Chat"
 msgstr ""
 
-msgid "GitLab Duo Chat History"
+msgid "GitLab Duo Chat history"
 msgstr ""
 
 msgid "GitLab Duo Chat with Amazon Q"
@@ -30314,19 +30314,16 @@ msgstr ""
 msgid "GitLab Duo Core is on"
 msgstr ""
 
-msgid "GitLab Duo New Chat"
-msgstr ""
-
-msgid "GitLab Duo Sessions"
-msgstr ""
-
-msgid "GitLab Duo Suggestions"
-msgstr ""
-
 msgid "GitLab Duo code features"
 msgstr ""
 
 msgid "GitLab Duo features"
+msgstr ""
+
+msgid "GitLab Duo sessions"
+msgstr ""
+
+msgid "GitLab Duo suggestions"
 msgstr ""
 
 msgid "GitLab Enterprise Edition"
@@ -39823,7 +39820,7 @@ msgstr ""
 msgid "Max size of this project's repository. %{repository_size_limit_link}."
 msgstr ""
 
-msgid "Maximize Duo Panel"
+msgid "Maximize Duo panel"
 msgstr ""
 
 msgid "Maximum 20 characters"
@@ -41588,7 +41585,7 @@ msgstr ""
 msgid "Minimal Access"
 msgstr ""
 
-msgid "Minimize Duo Panel"
+msgid "Minimize Duo panel"
 msgstr ""
 
 msgid "Minimum GitLab Language Server client version"
@@ -43043,6 +43040,9 @@ msgid "New Chat"
 msgstr ""
 
 msgid "New File"
+msgstr ""
+
+msgid "New GitLab Duo Chat"
 msgstr ""
 
 msgid "New Group"

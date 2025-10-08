@@ -12,11 +12,11 @@ export default {
     GlTooltip: GlTooltipDirective,
   },
   i18n: {
-    duoChatLabel: __('GitLab Duo Active Chat'),
-    newLabel: __('GitLab Duo New Chat'),
-    historyLabel: __('GitLab Duo Chat History'),
-    suggestionsLabel: __('GitLab Duo Suggestions'),
-    sessionsLabel: __('GitLab Duo Sessions'),
+    duoChatLabel: __('Active GitLab Duo Chat'),
+    newLabel: __('New GitLab Duo Chat'),
+    historyLabel: __('GitLab Duo Chat history'),
+    suggestionsLabel: __('GitLab Duo suggestions'),
+    sessionsLabel: __('GitLab Duo sessions'),
   },
   props: {
     activeTab: {
