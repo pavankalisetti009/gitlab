@@ -12,6 +12,7 @@ RSpec.describe Timelog, feature_category: :team_planning do
   it { is_expected.to belong_to(:issue).touch(true) }
   it { is_expected.to belong_to(:merge_request).touch(true) }
   it { is_expected.to belong_to(:timelog_category).optional(true) }
+  it { is_expected.to belong_to(:namespace) }
 
   it { is_expected.to be_valid }
 
@@ -21,8 +22,6 @@ RSpec.describe Timelog, feature_category: :team_planning do
   it { is_expected.to validate_length_of(:summary).is_at_most(255) }
 
   it { expect(subject.project_id).not_to be_nil }
-
-  it { is_expected.to belong_to(:namespace) }
 
   describe 'validation' do
     it 'is invalid if issue_id and merge_request_id are missing' do
@@ -100,7 +99,7 @@ RSpec.describe Timelog, feature_category: :team_planning do
       it 'is valid if issue_id and merge_request_id are missing' do
         subject.attributes = { issue: nil, merge_request: nil, importing: true }
 
-        expect(subject).to be_valid
+        expect(subject).not_to be_valid
       end
     end
   end

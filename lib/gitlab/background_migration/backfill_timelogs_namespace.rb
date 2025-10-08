@@ -29,7 +29,7 @@ module Gitlab
                 "merge_requests" INNER JOIN "projects" ON "merge_requests"."target_project_id" = "projects"."id"
               WHERE
                 "timelogs"."merge_request_id" = "merge_requests"."id"
-                AND "timelogs"."id" IN (#{sub_batch.select(:id).to_sql})
+                AND "timelogs"."id" IN (#{sub_batch.select(:id).limit(sub_batch_size).to_sql})
             SQL
           )
         end

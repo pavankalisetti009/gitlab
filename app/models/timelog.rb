@@ -12,9 +12,9 @@ class Timelog < ApplicationRecord
   before_validation :ensure_namespace_id
   before_save :set_project
 
-  validates :time_spent, :user, presence: true
+  validates :time_spent, :user, :namespace, presence: true
   validates :summary, length: { maximum: 255 }
-  validate :issuable_id_is_present, unless: :importing?
+  validate :issuable_id_is_present
   validate :check_total_time_spent_is_within_range, on: :create, unless: :importing?, if: :time_spent
 
   belongs_to :issue, touch: true
