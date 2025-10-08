@@ -16,12 +16,6 @@ module API
             forbidden!('security_orchestration_policies license feature not available')
           end
 
-          def ensure_feature_enabled!
-            return if ::Feature.enabled?(:security_policies_csp, :instance)
-
-            bad_request!('feature flag security_policies_csp is not enabled')
-          end
-
           def policy_setting
             @policy_setting ||= ::Security::PolicySetting.for_organization(
               ::Organizations::Organization.default_organization
@@ -43,7 +37,6 @@ module API
               end
               get do
                 ensure_licensed!
-                ensure_feature_enabled!
 
                 present policy_setting, with: ::API::Entities::Admin::Security::PolicySetting
               end
@@ -65,7 +58,6 @@ module API
               end
               put do
                 ensure_licensed!
-                ensure_feature_enabled!
 
                 if policy_setting.update(declared_params)
                   present policy_setting, with: ::API::Entities::Admin::Security::PolicySetting

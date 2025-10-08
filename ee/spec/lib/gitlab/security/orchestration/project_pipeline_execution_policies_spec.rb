@@ -85,21 +85,6 @@ RSpec.describe Gitlab::Security::Orchestration::ProjectPipelineExecutionPolicies
             policy_project_id: csp_policy_project.id)
         ])
       end
-
-      context 'when feature flag "security_policies_csp" is disabled' do
-        before do
-          stub_feature_flags(security_policies_csp: false)
-        end
-
-        it 'includes original configs' do
-          expect(configs).to match([
-            have_attributes(content: policy[:content].to_yaml, policy_index: 0,
-              policy_project_id: policies_repository.id),
-            have_attributes(content: namespace_policy[:content].to_yaml, policy_index: 0,
-              policy_project_id: namespace_policies_repository.id)
-          ])
-        end
-      end
     end
 
     describe 'limits' do

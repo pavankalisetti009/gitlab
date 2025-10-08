@@ -4233,16 +4233,6 @@ RSpec.describe Project, feature_category: :groups_and_projects do
               project_security_orchestration_policy_configuration
             )
           end
-
-          context 'when feature flag "security_policies_csp" is disabled' do
-            before do
-              stub_feature_flags(security_policies_csp: false)
-            end
-
-            it 'does not include the CSP configuration' do
-              expect(configurations).to contain_exactly(project_security_orchestration_policy_configuration)
-            end
-          end
         end
       end
     end
@@ -4313,21 +4303,6 @@ RSpec.describe Project, feature_category: :groups_and_projects do
               project_security_orchestration_policy_configuration
             )
           end
-
-          context 'when feature flag "security_policies_csp" is disabled' do
-            before do
-              stub_feature_flags(security_policies_csp: false)
-            end
-
-            it 'does not include the CSP configuration' do
-              expect(configurations).to contain_exactly(
-                parent_security_orchestration_policy_configuration,
-                child_security_orchestration_policy_configuration,
-                child_security_orchestration_policy_configuration_2,
-                project_security_orchestration_policy_configuration
-              )
-            end
-          end
         end
       end
     end
@@ -4388,20 +4363,6 @@ RSpec.describe Project, feature_category: :groups_and_projects do
             child_security_orchestration_policy_configuration,
             child_security_orchestration_policy_configuration_2
           )
-        end
-
-        context 'when feature flag "security_policies_csp" is disabled' do
-          before do
-            stub_feature_flags(security_policies_csp: false)
-          end
-
-          it 'does not include the CSP configuration' do
-            expect(configurations).to contain_exactly(
-              parent_security_orchestration_policy_configuration,
-              child_security_orchestration_policy_configuration,
-              child_security_orchestration_policy_configuration_2
-            )
-          end
         end
       end
     end

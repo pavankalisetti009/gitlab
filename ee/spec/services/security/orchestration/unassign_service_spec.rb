@@ -73,21 +73,6 @@ RSpec.describe Security::Orchestration::UnassignService, :sidekiq_inline, featur
           expect(result).not_to be_success
           expect(result.message).to eq('You cannot unassign security policy project for group designated as CSP.')
         end
-
-        context 'when feature flag "security_policies_csp" is disabled' do
-          before do
-            stub_feature_flags(security_policies_csp: false)
-          end
-
-          it 'unassigns policy project from the CSP group', :aggregate_failures do
-            expect { result }.to change { csp_group.reload.security_orchestration_policy_configuration }.from(
-              csp_security_orchestration_policy_configuration
-            ).to(nil)
-              .and change { Security::OrchestrationPolicyConfiguration.count }.by(-1)
-
-            expect(result).to be_success
-          end
-        end
       end
     end
 

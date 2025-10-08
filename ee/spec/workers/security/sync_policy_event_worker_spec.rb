@@ -128,26 +128,6 @@ RSpec.describe Security::SyncPolicyEventWorker, feature_category: :security_poli
 
           handle_event
         end
-
-        context 'when feature flag "security_policies_csp" is disabled' do
-          before do
-            stub_feature_flags(security_policies_csp: false)
-          end
-
-          it 'calls sync_rules_for_group for each security policy' do
-            expect(Security::SyncProjectPolicyWorker).to receive(:perform_async).with(
-              project_1.id, security_policy.id, {}, { event:
-                { event_type: 'Repositories::ProtectedBranchCreatedEvent', data: event.data } }.deep_stringify_keys)
-            expect(Security::SyncProjectPolicyWorker).to receive(:perform_async).with(
-              project_2.id, security_policy.id, {}, { event:
-                { event_type: 'Repositories::ProtectedBranchCreatedEvent', data: event.data } }.deep_stringify_keys)
-            expect(Security::SyncProjectPolicyWorker).to receive(:perform_async).with(
-              project_3.id, security_policy.id, {}, { event:
-                { event_type: 'Repositories::ProtectedBranchCreatedEvent', data: event.data } }.deep_stringify_keys)
-
-            handle_event
-          end
-        end
       end
     end
 
