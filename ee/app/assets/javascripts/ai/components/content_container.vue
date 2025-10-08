@@ -18,10 +18,6 @@ export default {
       type: Object,
       required: true,
     },
-    isExpanded: {
-      type: Boolean,
-      required: true,
-    },
     showBackButton: {
       type: Boolean,
       required: false,
@@ -94,11 +90,9 @@ export default {
 </script>
 <template>
   <aside
-    v-if="isExpanded"
     id="ai-panel-portal"
     :aria-label="activeTab.title"
-    :aria-hidden="!isExpanded"
-    class="ai-panel !gl-left-auto gl-h-full gl-w-[400px] gl-grow gl-overflow-hidden gl-rounded-[1rem] gl-bg-default [contain:strict]"
+    class="ai-panel !gl-left-auto gl-h-full gl-w-[var(--ai-panel-width)] gl-grow gl-overflow-hidden gl-rounded-[1rem] gl-bg-default [contain:strict]"
     :class="{ 'ai-panel-maximized': isMaximized }"
   >
     <div class="ai-panel-header gl-flex gl-items-center gl-justify-between">
@@ -140,7 +134,7 @@ export default {
           category="tertiary"
           :aria-label="$options.i18n.collapseButtonLabel"
           :title="$options.i18n.collapseButtonLabel"
-          :aria-expanded="isExpanded"
+          aria-expanded
           data-testid="content-container-collapse-button"
           @click="$emit('closePanel', false)"
         />
