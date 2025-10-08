@@ -14,6 +14,8 @@ module Authz
 
         @upserted_for_group_count = 0
         @deleted_for_group_count = 0
+        @upserted_for_project_count = 0
+        @deleted_for_project_count = 0
       end
 
       def execute
@@ -25,6 +27,9 @@ module Authz
         return unless member.active?
 
         update_user_group_member_roles
+        update_user_project_member_roles
+
+        log
       end
 
       private
@@ -48,8 +53,22 @@ module Authz
         ::Authz::UserGroupMemberRole
           .upsert_all(in_shared_groups, unique_by: %i[user_id group_id shared_with_group_id])
           .tap { |result| @upserted_for_group_count += result.count } unless in_shared_groups.empty?
+      end
 
-        log
+      def update_user_project_member_roles
+        return unless ::Feature.enabled?(:cache_user_project_member_roles, member.source.root_ancestor)
+
+        to_delete_ids, attrs_to_upsert = get_ids_to_delete_and_attrs_to_upsert(
+          user_project_member_roles_in_shared_projects
+        )
+
+        unless to_delete_ids.empty?
+          @deleted_for_project_count += ::Authz::UserProjectMemberRole.delete_all_with_id(to_delete_ids)
+        end
+
+        ::Authz::UserProjectMemberRole
+          .upsert_all(attrs_to_upsert, unique_by: %i[user_id project_id shared_with_group_id])
+          .tap { |result| @upserted_for_project_count += result.count } unless attrs_to_upsert.empty?
       end
 
       def user_group_member_role_in_group
@@ -85,6 +104,31 @@ module Authz
         results.to_a
       end
 
+      def user_project_member_roles_in_shared_projects
+        # For each project shared to the group, determine which member role
+        # (user's member role in the invited group or member role assigned to
+        # the invited group) should take effect for the user in the project.
+        query = project_group_links
+          .join(members).on(user_is_member_of_invited_group(project_group_links[:group_id]))
+          # Left join with user_project_member_roles to retrieve ids of existing
+          # records to delete
+          .join(user_project_member_roles, Arel::Nodes::OuterJoin).on(
+            user_project_member_roles[:user_id].eq(members[:user_id])
+            .and(user_project_member_roles[:project_id].eq(project_group_links[:project_id]))
+            .and(user_project_member_roles[:shared_with_group_id].eq(project_group_links[:group_id]))
+          )
+          .project(
+            user_project_member_roles[:id],
+            members[:user_id],
+            project_group_links[:project_id],
+            member_role_id_in_shared_resource(::ProjectGroupLink),
+            project_group_links[:group_id].as('shared_with_group_id'))
+          .to_sql
+
+        results = ::Authz::UserProjectMemberRole.connection.select_all query
+        results.to_a
+      end
+
       def user_is_member_of_invited_group(link_column)
         link_column.eq(group.id)
           .and(members[:user_id].eq(user.id))
@@ -108,8 +152,16 @@ module Authz
         ::Authz::UserGroupMemberRole.arel_table
       end
 
+      def user_project_member_roles
+        ::Authz::UserProjectMemberRole.arel_table
+      end
+
       def group_group_links
         ::GroupGroupLink.arel_table
+      end
+
+      def project_group_links
+        ::ProjectGroupLink.arel_table
       end
 
       def log
@@ -118,7 +170,9 @@ module Authz
           group_id: @group.id,
           'update_user_group_member_roles.event': 'member created/updated',
           'update_user_group_member_roles.upserted_count': @upserted_for_group_count,
-          'update_user_group_member_roles.deleted_count': @deleted_for_group_count
+          'update_user_group_member_roles.deleted_count': @deleted_for_group_count,
+          'update_user_project_member_roles.upserted_count': @upserted_for_project_count,
+          'update_user_project_member_roles.deleted_count': @deleted_for_project_count
         )
       end
     end

@@ -24,6 +24,30 @@ RSpec.describe Authz::UserGroupMemberRoles::UpdateForGroupMemberService, feature
     end
   end
 
+  shared_context 'with source invited to another group with a member role' do
+    before do
+      other_group = create(:group)
+
+      create(:group_group_link,
+        shared_group: other_group,
+        shared_with_group: member.source,
+        member_role: create(:member_role, namespace: other_group)
+      )
+    end
+  end
+
+  shared_context 'with source invited to a project with a member role' do
+    before do
+      project = create(:project)
+
+      create(:project_group_link,
+        project: project,
+        group: member.source,
+        member_role: create(:member_role, namespace: project.root_ancestor)
+      )
+    end
+  end
+
   context 'when no old_values_map is passed (i.e. member has just been created)' do
     subject(:execute) { described_class.new(member).execute }
 
@@ -33,17 +57,23 @@ RSpec.describe Authz::UserGroupMemberRoles::UpdateForGroupMemberService, feature
       it_behaves_like 'does not enqueue UpdateForGroupWorker job'
 
       context 'when source has been invited to another group with a member role' do
-        let_it_be(:other_group) { create(:group) }
-
-        before do
-          create(:group_group_link,
-            shared_group: other_group,
-            shared_with_group: member.source,
-            member_role: create(:member_role, namespace: other_group)
-          )
-        end
+        include_context 'with source invited to another group with a member role'
 
         it_behaves_like 'enqueues an UpdateForGroupWorker job'
+      end
+
+      context 'when source has been invited to a project with a member role' do
+        include_context 'with source invited to a project with a member role'
+
+        it_behaves_like 'enqueues an UpdateForGroupWorker job'
+
+        context 'when cache_user_project_member_roles feature flag is disabled' do
+          before do
+            stub_feature_flags(cache_user_project_member_roles: false)
+          end
+
+          it_behaves_like 'does not enqueue UpdateForGroupWorker job'
+        end
       end
     end
 
@@ -80,17 +110,23 @@ RSpec.describe Authz::UserGroupMemberRoles::UpdateForGroupMemberService, feature
       it_behaves_like 'does not enqueue UpdateForGroupWorker job'
 
       context 'when source has been invited to another group with a member role' do
-        let_it_be(:other_group) { create(:group) }
-
-        before do
-          create(:group_group_link,
-            shared_group: other_group,
-            shared_with_group: member.source,
-            member_role: create(:member_role, namespace: other_group)
-          )
-        end
+        include_context 'with source invited to another group with a member role'
 
         it_behaves_like 'enqueues an UpdateForGroupWorker job'
+      end
+
+      context 'when source has been invited to a project with a member role' do
+        include_context 'with source invited to a project with a member role'
+
+        it_behaves_like 'enqueues an UpdateForGroupWorker job'
+
+        context 'when cache_user_project_member_roles feature flag is disabled' do
+          before do
+            stub_feature_flags(cache_user_project_member_roles: false)
+          end
+
+          it_behaves_like 'does not enqueue UpdateForGroupWorker job'
+        end
       end
     end
   end
