@@ -254,6 +254,7 @@ export default {
 
             <template-selector
               :selected="initAction.template"
+              :scan-type="selectedScanner"
               @input="triggerChanged"
               @remove="removeFilter($options.TEMPLATE)"
             />
