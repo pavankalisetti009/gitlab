@@ -223,7 +223,12 @@ export default {
         };
       },
       update({ project }) {
-        const scans = project?.pipeline || {};
+        // Return early if pipeline is not defined
+        if (!project?.pipeline) {
+          return { full: {}, partial: {} };
+        }
+
+        const scans = project.pipeline;
 
         // We need to check only one of these because they make the same query in the backend
         const isReady = scans.enabledSecurityScans?.ready === true;

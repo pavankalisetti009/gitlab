@@ -328,6 +328,30 @@ describe('MR Widget Security Reports', () => {
         wrapper.findByText('Error while fetching enabled scans. Please try again later.').exists(),
       ).toBe(true);
     });
+
+    it('when the pipeline is null, it should not render anything', async () => {
+      createComponent({
+        provide: { glFeatures: { vulnerabilityPartialScans: true } },
+        mountFn: mountExtended,
+        apolloProvider: createMockApollo([
+          [
+            enabledScansQuery,
+            jest.fn().mockResolvedValueOnce({
+              data: {
+                project: {
+                  id: 'gid://1',
+                  pipeline: null,
+                },
+              },
+            }),
+          ],
+        ]),
+      });
+
+      await waitForPromises();
+
+      expect(wrapper.text()).toBe('');
+    });
   });
 
   describe('with empty MR data', () => {
