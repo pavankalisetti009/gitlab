@@ -10,6 +10,8 @@ module Ai
         include Gitlab::ExclusiveLeaseHelpers
         prepend ::Geo::SkipSecondary
 
+        CONCURRENCY_LIMIT = 50
+
         pause_control :active_context
 
         feature_category :global_search
@@ -18,6 +20,7 @@ module Ai
         urgency :low
         idempotent!
         defer_on_database_health_signal :gitlab_main, [:p_ai_active_context_code_repositories], 10.minutes
+        concurrency_limit -> { CONCURRENCY_LIMIT }
 
         LEASE_TRY_AFTER = 2.seconds
         LEASE_RETRIES = 2
