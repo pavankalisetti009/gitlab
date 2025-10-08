@@ -35,6 +35,11 @@ query getProjectDependencies(
         packager
         location {
           path
+          blobPath
+          ancestors {
+            name
+            version
+          }
         }
         licenses {
           name
