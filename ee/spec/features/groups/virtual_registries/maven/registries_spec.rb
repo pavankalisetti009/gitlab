@@ -302,6 +302,8 @@ RSpec.describe 'Maven virtual registries', feature_category: :virtual_registry d
 
             click_button 'Add upstream'
 
+            wait_for_requests
+
             expect(page).to have_link('test upstream',
               href: group_virtual_registries_maven_upstream_path(group, upstream1))
           end
