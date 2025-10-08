@@ -190,6 +190,29 @@ RSpec.describe WorkItems::Statuses::SystemDefined::Status, feature_category: :te
         expect(status.in_use_in_namespace?(namespace)).to be_falsy
       end
     end
+
+    context 'when work item type IDs are provided' do
+      let_it_be(:issue) { create(:work_item, :issue, project: project) }
+      let_it_be(:task) { create(:work_item, :task, project: project) }
+
+      let_it_be(:in_progress_status) { described_class.find(2) }
+
+      before do
+        create(:work_item_current_status, system_defined_status: in_progress_status, work_item: issue, namespace: group)
+      end
+
+      it 'returns true if status is in use for the provided work item type IDs' do
+        expect(
+          in_progress_status.in_use_in_namespace?(namespace, work_item_type_ids: [issue.work_item_type_id])
+        ).to be_truthy
+      end
+
+      it 'returns false if status is not in use for the provided work item type IDs' do
+        expect(
+          in_progress_status.in_use_in_namespace?(namespace, work_item_type_ids: [task.work_item_type_id])
+        ).to be_falsy
+      end
+    end
   end
 
   it 'has the correct attributes' do

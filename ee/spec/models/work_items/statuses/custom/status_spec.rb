@@ -323,23 +323,73 @@ RSpec.describe WorkItems::Statuses::Custom::Status, feature_category: :team_plan
     end
   end
 
-  describe '#in_use?' do
-    let(:custom_status) { create(:work_item_custom_status, namespace: group) }
+  describe '#in_use_in_lifecycle?' do
+    let_it_be(:custom_status) { create(:work_item_custom_status, :to_do, namespace: group) }
+
+    let_it_be(:lifecycle) do
+      create(:work_item_custom_lifecycle, namespace: group, default_open_status: custom_status)
+    end
+
+    before do
+      stub_licensed_features(work_item_status: true)
+
+      create(
+        :work_item_type_custom_lifecycle,
+        namespace: group, work_item_type: build(:work_item_type, :issue), lifecycle: lifecycle
+      )
+    end
 
     context 'when custom status is in use' do
-      let(:work_item) { create(:work_item, namespace: group) }
-      let!(:current_status) do
-        create(:work_item_current_status, custom_status: custom_status, work_item: work_item, namespace: group)
+      before do
+        create(:work_item, namespace: group, custom_status_id: custom_status.id)
       end
 
       it 'returns true' do
-        expect(custom_status.in_use?).to be true
+        expect(custom_status.in_use_in_lifecycle?(lifecycle)).to be true
+      end
+    end
+
+    context 'when custom status is used using system defined mapping' do
+      let(:work_item) { create(:work_item, namespace: group) }
+
+      before do
+        # Skip validations since we are simulating an old record
+        # when the namespace still used the system defined lifecycle
+        build(
+          :work_item_current_status,
+          system_defined_status_id: custom_status.converted_from_system_defined_status_identifier,
+          work_item: work_item,
+          namespace: group
+        ).save!(validate: false)
+      end
+
+      it 'returns true' do
+        expect(custom_status.in_use_in_lifecycle?(lifecycle)).to be true
+      end
+    end
+
+    context 'when custom status is used in another lifecycle' do
+      let_it_be(:lifecycle_2) do
+        create(:work_item_custom_lifecycle, namespace: group, default_open_status: custom_status)
+      end
+
+      before do
+        create(
+          :work_item_type_custom_lifecycle,
+          namespace: group, work_item_type: build(:work_item_type, :task), lifecycle: lifecycle_2
+        )
+
+        create(:work_item, :task, namespace: group, custom_status_id: custom_status.id)
+      end
+
+      it 'returns false' do
+        expect(custom_status.in_use_in_lifecycle?(lifecycle)).to be_falsy
       end
     end
 
     context 'when custom status is not in use' do
       it 'returns false' do
-        expect(custom_status.in_use?).to be_falsy
+        expect(custom_status.in_use_in_lifecycle?(lifecycle)).to be_falsy
       end
     end
   end
@@ -349,7 +399,7 @@ RSpec.describe WorkItems::Statuses::Custom::Status, feature_category: :team_plan
 
     let_it_be(:to_do_status) { create(:work_item_custom_status, :to_do, namespace: group) }
 
-    let_it_be(:lifecycle) do
+    let_it_be(:lifecycle, reload: true) do
       create(:work_item_custom_lifecycle, namespace: group, default_open_status: to_do_status)
     end
 
@@ -372,7 +422,14 @@ RSpec.describe WorkItems::Statuses::Custom::Status, feature_category: :team_plan
     end
 
     context 'when status is in use by work items' do
-      let_it_be(:work_item) { create(:work_item, :issue, custom_status_id: to_do_status, namespace: group) }
+      let_it_be(:work_item) { create(:work_item, :issue, custom_status_id: to_do_status.id, namespace: group) }
+
+      before do
+        create(
+          :work_item_type_custom_lifecycle,
+          namespace: group, work_item_type: build(:work_item_type, :issue), lifecycle: lifecycle
+        )
+      end
 
       it { is_expected.to be false }
     end

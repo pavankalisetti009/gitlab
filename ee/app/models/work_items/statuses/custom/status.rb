@@ -92,17 +92,17 @@ module WorkItems
           0
         end
 
-        def in_use?
-          return true if direct_usage_exists?
+        def in_use_in_lifecycle?(lifecycle)
+          return true if direct_usage_exists?(lifecycle)
           return false unless has_system_defined_mapping?
 
-          system_defined_usage_exists?
+          system_defined_usage_exists?(lifecycle)
         end
 
         def can_be_deleted_from_namespace?(current_lifecycle)
           namespace = current_lifecycle.namespace
           !used_in_other_lifecycle?(current_lifecycle, namespace) &&
-            !in_use? &&
+            !in_use_in_lifecycle?(current_lifecycle) &&
             !used_in_mapping?(namespace)
         end
 
@@ -117,20 +117,24 @@ module WorkItems
           )
         end
 
-        def direct_usage_exists?
-          ::WorkItems::Statuses::CurrentStatus.exists?(custom_status: self)
+        def direct_usage_exists?(lifecycle)
+          WorkItem.joins(:current_status)
+            .where(
+              work_item_type_id: lifecycle.work_item_type_ids,
+              work_item_current_statuses: { custom_status: self }
+            ).exists?
         end
 
         def has_system_defined_mapping?
           converted_from_system_defined_status_identifier.present?
         end
 
-        def system_defined_usage_exists?
+        def system_defined_usage_exists?(lifecycle)
           system_defined_status = ::WorkItems::Statuses::SystemDefined::Status.find(
             converted_from_system_defined_status_identifier
           )
 
-          system_defined_status.in_use_in_namespace?(namespace)
+          system_defined_status.in_use_in_namespace?(namespace, work_item_type_ids: lifecycle.work_item_type_ids)
         end
 
         def used_in_other_lifecycle?(lifecycle, namespace)

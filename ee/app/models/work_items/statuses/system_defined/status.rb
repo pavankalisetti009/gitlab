@@ -101,11 +101,14 @@ module WorkItems
           name.casecmp(other_name) == 0
         end
 
-        def in_use_in_namespace?(namespace)
-          WorkItem.joins(:namespace)
+        def in_use_in_namespace?(namespace, work_item_type_ids: nil)
+          relation = WorkItem.joins(:namespace)
             .where(namespace_id: namespace.self_and_descendant_ids(skope: Namespace))
             .with_system_defined_status(self)
-            .exists?
+
+          relation = relation.where(work_item_type_id: work_item_type_ids) if work_item_type_ids
+
+          relation.exists?
         end
       end
     end
