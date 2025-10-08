@@ -32,6 +32,7 @@ module Projects
 
         pipeline = vulnerability.finding.first_finding_pipeline
         @pipeline = pipeline if can?(current_user, :read_pipeline, pipeline)
+        @policy_dismissals = policy_dismissals
         @gfm_form = true
       end
 
@@ -43,6 +44,18 @@ module Projects
 
       def vulnerability
         @issuable = @noteable = @vulnerability ||= vulnerable.vulnerabilities.find(params.permit(:id)[:id])
+      end
+
+      def policy_dismissals
+        finding_uuid = vulnerability.vulnerability_finding&.uuid
+
+        return [] if finding_uuid.nil? || Feature.disabled?(:security_policy_approval_warn_mode, project)
+
+        project
+          .policy_dismissals
+          .including_merge_request_and_user
+          .for_security_findings_uuids(finding_uuid)
+          .with_status(:preserved)
       end
 
       alias_method :issuable, :vulnerability

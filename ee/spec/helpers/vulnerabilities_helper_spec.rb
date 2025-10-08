@@ -104,7 +104,7 @@ RSpec.describe VulnerabilitiesHelper, feature_category: :vulnerability_managemen
   end
 
   describe '#vulnerability_details_app_data' do
-    subject { helper.vulnerability_details_app_data(vulnerability, pipeline, project) }
+    subject { helper.vulnerability_details_app_data(vulnerability, pipeline, project, []) }
 
     let(:jira_integration) do
       create(:jira_integration, project: project, issues_enabled: true, project_key: 'FE', project_keys: %w[FE BE],
@@ -135,7 +135,7 @@ RSpec.describe VulnerabilitiesHelper, feature_category: :vulnerability_managemen
       allow(helper).to receive(:can?).and_return(true)
     end
 
-    subject(:vulnerability_details) { helper.vulnerability_details(vulnerability, pipeline) }
+    subject(:vulnerability_details) { helper.vulnerability_details(vulnerability, pipeline, []) }
 
     describe '[:archival_information]' do
       let(:expected_archival_date) { Time.zone.now.beginning_of_month }
@@ -208,7 +208,7 @@ RSpec.describe VulnerabilitiesHelper, feature_category: :vulnerability_managemen
     end
 
     context 'when pipeline exists' do
-      subject { helper.vulnerability_details(vulnerability, pipeline) }
+      subject { helper.vulnerability_details(vulnerability, pipeline, []) }
 
       include_examples 'vulnerability properties'
 
@@ -222,7 +222,7 @@ RSpec.describe VulnerabilitiesHelper, feature_category: :vulnerability_managemen
     end
 
     context 'when pipeline is nil' do
-      subject { helper.vulnerability_details(vulnerability, nil) }
+      subject { helper.vulnerability_details(vulnerability, nil, []) }
 
       include_examples 'vulnerability properties'
 
@@ -723,6 +723,54 @@ RSpec.describe VulnerabilitiesHelper, feature_category: :vulnerability_managemen
         expect(subject[:resolved_in_commit_sha]).to be_nil
         expect(subject[:resolved_in_commit_sha_link]).to be_nil
         expect(subject[:created_at]).to eq(Date.yesterday)
+      end
+    end
+  end
+
+  describe '#serialize_policy_dismissals' do
+    let_it_be(:security_orchestration_policy_configuration) do
+      create(:security_orchestration_policy_configuration, project: project)
+    end
+
+    let_it_be(:security_policy) do
+      create(:security_policy, security_orchestration_policy_configuration: security_orchestration_policy_configuration)
+    end
+
+    let_it_be(:merge_request) { create(:merge_request, source_project: project) }
+    let_it_be(:policy_dismissal) do
+      create(:policy_dismissal,
+        project: project,
+        merge_request: merge_request,
+        security_policy: security_policy,
+        user: user,
+        dismissal_types: [0, 1],
+        comment: 'Test dismissal comment')
+    end
+
+    subject { helper.serialize_policy_dismissals([policy_dismissal]) }
+
+    it 'serializes policy dismissals using the serializer' do
+      expect(subject).to be_an(Array)
+      expect(subject.first).to include(
+        id: policy_dismissal.id,
+        comment: 'Test dismissal comment',
+        dismissal_types: ['Policy false positive', 'Scanner false positive']
+      )
+    end
+
+    context 'when policy_dismissals is nil' do
+      subject { helper.serialize_policy_dismissals(nil) }
+
+      it 'returns empty array' do
+        expect(subject).to eq([])
+      end
+    end
+
+    context 'when policy_dismissals is empty' do
+      subject { helper.serialize_policy_dismissals([]) }
+
+      it 'returns empty array' do
+        expect(subject).to eq([])
       end
     end
   end
