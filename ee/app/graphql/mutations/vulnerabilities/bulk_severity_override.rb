@@ -28,7 +28,7 @@ module Mutations
         scopes: [:api, :read_api, :ai_workflows]
 
       def self.authorization_scopes
-        [:api, :read_api, :ai_workflows]
+        [:api, :ai_workflows]
       end
 
       def resolve(vulnerability_ids: [], severity: nil, comment: nil)

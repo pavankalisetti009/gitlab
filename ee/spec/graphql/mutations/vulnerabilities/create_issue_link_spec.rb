@@ -63,8 +63,8 @@ RSpec.describe Mutations::Vulnerabilities::CreateIssueLink, feature_category: :v
   end
 
   describe '.authorization_scopes' do
-    it 'includes api, read_api, ai_workflows scope' do
-      expect(described_class.authorization_scopes).to include(:api, :read_api, :ai_workflows)
+    it 'includes api, ai_workflows scope' do
+      expect(described_class.authorization_scopes).to match_array([:api, :ai_workflows])
     end
   end
 end

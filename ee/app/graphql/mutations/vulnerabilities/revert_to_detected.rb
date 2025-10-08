@@ -6,7 +6,7 @@ module Mutations
       graphql_name 'VulnerabilityRevertToDetected'
 
       def self.authorization_scopes
-        [:api, :read_api, :ai_workflows]
+        [:api, :ai_workflows]
       end
 
       def self.state_transition_name_past_tense

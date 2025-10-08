@@ -29,38 +29,38 @@ RSpec.describe Types::MutationType do
   end
 
   describe 'vulnerabilities revert to detected mutation scopes' do
-    it 'includes api, read_api scopes, ai_workflows scope for vulnerabilities revert to detected mutation' do
+    it 'includes api and ai_workflows scopes for vulnerabilities revert to detected mutation' do
       dismiss_mutation = described_class.fields['vulnerabilityRevertToDetected']
-      expect(dismiss_mutation.instance_variable_get(:@scopes)).to include(:api, :read_api, :ai_workflows)
+      expect(dismiss_mutation.instance_variable_get(:@scopes)).to match_array([:api, :ai_workflows])
     end
   end
 
   describe 'vulnerabilities dismiss mutation scopes' do
-    it 'includes api, read_api scopes, ai_workflows scope for vulnerabilities dismiss mutation' do
+    it 'includes api and ai_workflows scopes for vulnerabilities dismiss mutation' do
       dismiss_mutation = described_class.fields['vulnerabilityDismiss']
-      expect(dismiss_mutation.instance_variable_get(:@scopes)).to include(:api, :read_api, :ai_workflows)
+      expect(dismiss_mutation.instance_variable_get(:@scopes)).to match_array([:api, :ai_workflows])
     end
   end
 
   describe 'vulnerabilities confirm mutation scopes' do
-    it 'includes api, read_api scopes, ai_workflows scope for vulnerabilities confirm mutation' do
+    it 'includes api and ai_workflows scopes for vulnerabilities confirm mutation' do
       confirm_mutation = described_class.fields['vulnerabilityConfirm']
-      expect(confirm_mutation.instance_variable_get(:@scopes)).to include(:api, :read_api, :ai_workflows)
+      expect(confirm_mutation.instance_variable_get(:@scopes)).to match_array([:api, :ai_workflows])
     end
   end
 
   describe 'vulnerabilities severity override mutation scopes' do
-    it 'includes api, read_api, ai_workflows scope for vulnerabilities bulk severity override mutation' do
+    it 'includes api and ai_workflows scopes for vulnerabilities bulk severity override mutation' do
       bulk_severity_override_mutation = described_class.fields['vulnerabilitiesSeverityOverride']
       scopes = bulk_severity_override_mutation.instance_variable_get(:@scopes)
-      expect(scopes).to include(:api, :read_api, :ai_workflows)
+      expect(scopes).to match_array([:api, :ai_workflows])
     end
   end
 
   describe 'vulnerability issue link create mutation scopes' do
-    it 'includes api, read_api, ai_workflows scopes' do
+    it 'includes api and ai_workflows scopes' do
       mutation = described_class.fields['vulnerabilityIssueLinkCreate']
-      expect(mutation.instance_variable_get(:@scopes)).to include(:api, :read_api, :ai_workflows)
+      expect(mutation.instance_variable_get(:@scopes)).to match_array([:api, :ai_workflows])
     end
   end
 end
