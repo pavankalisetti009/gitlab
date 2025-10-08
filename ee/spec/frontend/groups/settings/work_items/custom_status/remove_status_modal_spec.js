@@ -72,7 +72,7 @@ describe('RemoveStatusModal', () => {
 
   const findModal = () => wrapper.findComponent(GlModal);
   const findCurrentStatus = () => wrapper.findByTestId('current-status-value');
-  const findNewStatusLabel = () => wrapper.find('label');
+  const findListboxLabels = () => wrapper.findAll('label');
   const findNewStatusListbox = () => wrapper.findComponent(RemoveStatusModalListbox);
   const findNewDefaultListbox = () => wrapper.findByTestId('new-default-listbox');
 
@@ -107,7 +107,7 @@ describe('RemoveStatusModal', () => {
 
     it('renders "new status" body text', () => {
       expect(wrapper.text()).toContain(
-        `10 items currently use the status 'To do!'. Select a new status for these items.`,
+        'Select a new status to use for any items currently using this status.',
       );
     });
 
@@ -120,7 +120,8 @@ describe('RemoveStatusModal', () => {
     });
 
     it('renders the new status selection label', () => {
-      expect(findNewStatusLabel().text()).toBe('New status');
+      expect(findListboxLabels()).toHaveLength(1);
+      expect(findListboxLabels().at(0).text()).toBe('New status');
     });
 
     it('filters listbox items to remove statusToRemove and keep statuses from same open/closed state', () => {
@@ -198,7 +199,9 @@ describe('RemoveStatusModal', () => {
     });
 
     it('renders the new status selection label', () => {
-      expect(findNewStatusLabel().text()).toBe('Closed default');
+      expect(findListboxLabels()).toHaveLength(2);
+      expect(findListboxLabels().at(0).text()).toBe('New status');
+      expect(findListboxLabels().at(1).text()).toBe('Closed default');
     });
 
     it('filters listbox items to remove statusToRemove and keep statuses from same open/closed state', () => {

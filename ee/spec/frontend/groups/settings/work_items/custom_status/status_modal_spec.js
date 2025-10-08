@@ -1,7 +1,7 @@
 import Vue, { nextTick } from 'vue';
 import VueApollo from 'vue-apollo';
 import Draggable from 'vuedraggable';
-import { GlLink, GlModal, GlSprintf, GlDisclosureDropdown, GlTooltip } from '@gitlab/ui';
+import { GlLink, GlModal, GlSprintf, GlDisclosureDropdown } from '@gitlab/ui';
 import { stubComponent } from 'helpers/stub_component';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import waitForPromises from 'helpers/wait_for_promises';
@@ -12,12 +12,7 @@ import StatusForm from 'ee/groups/settings/work_items/custom_status/status_form.
 import WorkItemStateBadge from '~/work_items/components/work_item_state_badge.vue';
 import lifecycleUpdateMutation from 'ee/groups/settings/work_items/custom_status/graphql/lifecycle_update.mutation.graphql';
 import namespaceMetadataQuery from 'ee/groups/settings/work_items/custom_status/graphql/namespace_metadata.query.graphql';
-import {
-  mockNamespaceMetadata,
-  deleteStatusErrorResponse,
-  statusCounts,
-  mockLifecycles,
-} from '../mock_data';
+import { mockNamespaceMetadata, deleteStatusErrorResponse, mockLifecycles } from '../mock_data';
 
 Vue.use(VueApollo);
 
@@ -68,23 +63,6 @@ describe('StatusLifecycleModal', () => {
         iconName: 'status-success',
         description: 'Information regarding done',
         __typename: 'WorkItemStatus',
-      },
-    ],
-    statusCounts: [
-      {
-        status: { id: 'status-1', __typename: 'WorkItemStatus' },
-        count: null,
-        __typename: 'WorkItemStatusCount',
-      },
-      {
-        status: { id: 'status-2', __typename: 'WorkItemStatus' },
-        count: '1',
-        __typename: 'WorkItemStatusCount',
-      },
-      {
-        status: { id: 'status-3', __typename: 'WorkItemStatus' },
-        count: '999+',
-        __typename: 'WorkItemStatusCount',
       },
     ],
     defaultOpenStatus: {
@@ -138,8 +116,6 @@ describe('StatusLifecycleModal', () => {
   const findIssuesPathLink = () => wrapper.findComponent(GlLink);
   const findCategorySection = (category) => wrapper.findByTestId(`category-${category}`);
   const findStatusBadges = () => wrapper.findAllByTestId('status-badge');
-  const findStatusCountLinks = () => wrapper.findAllByTestId('status-count-link');
-  const findGlTooltip = () => wrapper.findComponent(GlTooltip);
   const findHelpPageLink = () => wrapper.findByTestId('help-page-link');
   const findDefaultStatusBadges = () => wrapper.findAllByTestId('default-status-badge');
   const findStatusForm = () => wrapper.findComponent(StatusForm);
@@ -172,17 +148,14 @@ describe('StatusLifecycleModal', () => {
     }
   };
 
-  const findStatusAndDelete = async (status, workItemStatusMvc2Enabled) => {
+  const findStatusAndDelete = async (status) => {
     const findFirstStatus = wrapper.findByTestId(`remove-status-${status.id}`);
 
     findFirstStatus.vm.$emit('action', status);
     await nextTick();
 
-    if (workItemStatusMvc2Enabled) {
-      expect(findConfirmationModal().exists()).toBe(true);
-      findConfirmationModal().vm.$emit('primary');
-    }
-
+    expect(findConfirmationModal().exists()).toBe(true);
+    findConfirmationModal().vm.$emit('primary');
     await waitForPromises();
   };
 
@@ -598,7 +571,6 @@ describe('StatusLifecycleModal', () => {
             __typename: 'WorkItemStatus',
           },
         ],
-        statusCounts,
         __typename: 'WorkItemLifecycle',
       };
 
@@ -790,7 +762,6 @@ describe('StatusLifecycleModal', () => {
             __typename: 'WorkItemStatus',
           },
         ],
-        statusCounts,
         __typename: 'WorkItemLifecycle',
       };
 
@@ -856,7 +827,7 @@ describe('StatusLifecycleModal', () => {
             workItemStatusMvc2Enabled: false,
           });
           const status = mockLifecycle.statuses[0];
-          await findStatusAndDelete(status, false);
+          await findStatusAndDelete(status);
         });
 
         it('should have sticky class for error message', () => {
@@ -919,53 +890,6 @@ describe('StatusLifecycleModal', () => {
             defaultOpenStatusIndex: 1,
           }),
         });
-      });
-    });
-  });
-
-  describe('status counts', () => {
-    describe('when `workItemStatusMvc2` FF is true', () => {
-      beforeEach(async () => {
-        createComponent({ workItemStatusMvc2Enabled: true });
-        await waitForPromises();
-      });
-
-      it('renders status count links', () => {
-        expect(findStatusCountLinks()).toHaveLength(3);
-        expect(findStatusCountLinks().at(0).text()).toBe('0 items');
-        expect(findStatusCountLinks().at(0).attributes('href')).toBe(
-          '/groups/gitlab-org/-/issues?status=Open',
-        );
-        expect(findStatusCountLinks().at(1).text()).toBe('1 item');
-        expect(findStatusCountLinks().at(1).attributes('href')).toBe(
-          '/groups/gitlab-org/-/issues?status=In Progress',
-        );
-        expect(findStatusCountLinks().at(2).text()).toBe('999+ items');
-        expect(findStatusCountLinks().at(2).attributes('href')).toBe(
-          '/groups/gitlab-org/-/issues?status=Done',
-        );
-      });
-
-      it('renders tooltip', () => {
-        expect(findGlTooltip().text()).toContain('View items');
-        expect(findGlTooltip().text()).toContain(
-          'Items in archived projects are counted but not shown.',
-        );
-      });
-    });
-
-    describe('when `workItemStatusMvc2` FF is false', () => {
-      beforeEach(async () => {
-        createComponent({ workItemStatusMvc2Enabled: false });
-        await waitForPromises();
-      });
-
-      it('does not render status count links', () => {
-        expect(findStatusCountLinks()).toHaveLength(0);
-      });
-
-      it('does not render tooltip', () => {
-        expect(findGlTooltip().exists()).toBe(false);
       });
     });
   });
