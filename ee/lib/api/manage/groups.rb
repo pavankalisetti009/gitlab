@@ -74,7 +74,7 @@ module API
 
       namespace 'groups/:id/manage' do
         params do
-          requires :id, type: String
+          requires :id, type: String, desc: 'ID or URL-encoded path of the group'
         end
 
         resources :personal_access_tokens do

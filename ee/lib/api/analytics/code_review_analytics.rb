@@ -47,7 +47,7 @@ module API
           requires :project_id, type: Integer, desc: 'Project ID'
           use :negatable_params
           use :pagination
-          optional :not, type: Hash do
+          optional :not, type: Hash, desc: 'Filters by the specified parameters' do
             use :negatable_params
           end
         end

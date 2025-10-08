@@ -22,8 +22,10 @@ module API
           detail 'This feature is experimental.'
         end
         params do
-          optional :enable_google_cloud_artifact_registry, types: Boolean
-          optional :google_cloud_artifact_registry_project_id, types: String, regexp: GOOGLE_PROJECT_ID_REGEXP
+          optional :enable_google_cloud_artifact_registry, types: Boolean,
+            desc: 'If `true`, indicates the Google Artifact Management integration should be enabled'
+          optional :google_cloud_artifact_registry_project_id, types: String,
+            desc: 'Google Cloud Project ID for the Artifact Registry', regexp: GOOGLE_PROJECT_ID_REGEXP
           at_least_one_of :enable_google_cloud_artifact_registry
         end
         get '/integrations.sh' do
@@ -61,7 +63,8 @@ module API
           detail 'This feature is experimental.'
         end
         params do
-          requires :google_cloud_project_id, types: String, regexp: GOOGLE_PROJECT_ID_REGEXP
+          requires :google_cloud_project_id, types: String, desc: 'ID of the Google Cloud project',
+            regexp: GOOGLE_PROJECT_ID_REGEXP
         end
         get '/runner_deployment_project.sh' do
           env['api.format'] = :binary

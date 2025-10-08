@@ -63,7 +63,7 @@ module EE
             optional :extra_shared_runners_minutes_limit, type: Integer, desc: "Extra compute minutes for this namespace"
             optional :additional_purchased_storage_size, type: Integer, desc: "Additional storage size for this namespace"
             optional :additional_purchased_storage_ends_on, type: Date, desc: "End of subscription of the additional purchased storage"
-            optional :gitlab_subscription_attributes, type: Hash do
+            optional :gitlab_subscription_attributes, type: Hash, desc: 'Object that contains information on the GitLab subscription' do
               use :gitlab_subscription_optional_attributes
             end
           end

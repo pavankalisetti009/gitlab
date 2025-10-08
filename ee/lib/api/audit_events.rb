@@ -33,8 +33,8 @@ module API
         is_array true
       end
       params do
-        optional :entity_type, type: String, desc: 'Return list of audit events for the specified entity type', values: AuditEventFinder::VALID_ENTITY_TYPES
-        optional :entity_id, type: Integer
+        optional :entity_type, type: String, desc: 'Return audit events for the specified entity type', values: AuditEventFinder::VALID_ENTITY_TYPES
+        optional :entity_id, type: Integer, desc: 'Return audit events for the specified entity ID. If defined, the request must also include the `entity_type` attribute.'
         given :entity_id do
           requires :entity_type, type: String
         end

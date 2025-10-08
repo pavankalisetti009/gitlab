@@ -125,7 +125,7 @@ module API
     namespace 'code_suggestions' do
       resources :completions do
         params do
-          requires :current_file, type: Hash do
+          requires :current_file, type: Hash, desc: 'Object that contains information about the current file' do
             requires :file_name, type: String, limit: 255, desc: 'The name of the current file'
             requires :content_above_cursor, type: String, limit: MAX_CONTENT_SIZE, desc: 'The content above cursor'
             optional :content_below_cursor, type: String, limit: MAX_CONTENT_SIZE, desc: 'The content below cursor'

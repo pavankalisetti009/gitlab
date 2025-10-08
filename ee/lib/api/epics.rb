@@ -121,7 +121,7 @@ module API
           optional :confidential, type: Boolean, desc: 'Return epics with given confidentiality'
           use :pagination
 
-          optional :not, type: Hash do
+          optional :not, type: Hash, desc: 'Object that contains filters' do
             use :negatable_epic_filter_params
           end
         end

@@ -15,7 +15,7 @@ module API
         namespace 'ai/llm' do
           desc 'Generates Git commands from natural text'
           params do
-            requires :prompt, type: String
+            requires :prompt, type: String, desc: 'Prompt used to generate the Git commands'
           end
 
           post 'git_command' do
