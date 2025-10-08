@@ -43,12 +43,14 @@ export default {
         {
           key: 'requirementsCount',
           label: s__('Compliance report|Requirements'),
-          thClass: '@md/panel:gl-max-w-12 gl-text-right',
-          tdClass: '@md/panel:gl-max-w-12 gl-text-right',
+          thClass: '@md/panel:gl-max-w-20 gl-text-right',
+          tdClass: '@md/panel:gl-max-w-20 gl-text-right',
         },
         {
           key: 'requirementsWithoutControls',
           label: s__('Compliance report|Requirements without controls'),
+          thClass: '@md/panel:gl-max-w-20 gl-text-left',
+          tdClass: '@md/panel:gl-max-w-20 gl-text-left',
         },
         {
           key: 'policies',
