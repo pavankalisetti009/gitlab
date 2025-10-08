@@ -1,4 +1,4 @@
-import { GlBadge, GlButton } from '@gitlab/ui';
+import { GlButton } from '@gitlab/ui';
 import { mockSecurityAttributeCategories } from 'ee/security_configuration/security_attributes/graphql/resolvers';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import CategoryList from 'ee/security_configuration/components/security_attributes/category_list.vue';
@@ -12,7 +12,7 @@ describe('Category list', () => {
   const createComponent = () => {
     wrapper = shallowMountExtended(CategoryList, {
       propsData: {
-        securityAttributeCategories: mockSecurityAttributeCategories,
+        securityCategories: mockSecurityAttributeCategories,
         selectedCategory: firstCategory,
       },
     });
@@ -25,7 +25,6 @@ describe('Category list', () => {
   it('renders the category name, description, and project count for each category', () => {
     expect(wrapper.text()).toContain(firstCategory.name);
     expect(wrapper.text()).toContain(firstCategory.description);
-    expect(wrapper.findComponent(GlBadge).text()).toBe(firstCategory.attributeCount.toString());
   });
 
   it('emits selectCategory on category click', () => {

@@ -1,8 +1,8 @@
 import { GlDrawer } from '@gitlab/ui';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
+import waitForPromises from 'helpers/wait_for_promises';
 import AttributeDrawer from 'ee/security_configuration/components/security_attributes/attribute_drawer.vue';
 import SecurityAttributeForm from 'ee/security_configuration/components/security_attributes/attribute_form.vue';
-import AttributeDeleteModal from 'ee/security_configuration/components/security_attributes/attribute_delete_modal.vue';
 import { DRAWER_MODES } from 'ee/security_configuration/components/security_attributes/constants';
 import { DRAWER_Z_INDEX } from '~/lib/utils/constants';
 
@@ -21,7 +21,6 @@ describe('AttributeDrawer', () => {
 
   const findDrawer = () => wrapper.findComponent(GlDrawer);
   const findForm = () => wrapper.findComponent(SecurityAttributeForm);
-  const findDeleteModal = () => wrapper.findComponent(AttributeDeleteModal);
   const findSubmitButton = () => wrapper.findByTestId('submit-btn');
   const findCancelButton = () => wrapper.findByTestId('cancel-btn');
   const findDeleteButton = () => wrapper.findByTestId('delete-btn');
@@ -46,16 +45,26 @@ describe('AttributeDrawer', () => {
     });
   });
 
-  it('renders AttributeDeleteModal with correct visibility and attribute', () => {
-    expect(findDeleteModal().props()).toMatchObject({
-      visible: false,
-      attribute,
-    });
-  });
-
   it('renders submit and cancel buttons', () => {
     expect(findSubmitButton().exists()).toBe(true);
     expect(findCancelButton().exists()).toBe(true);
+  });
+
+  it('submits the form on save button click', async () => {
+    wrapper.vm.$refs.form.onSubmit = jest.fn();
+    findSubmitButton().vm.$emit('click');
+    await waitForPromises();
+
+    expect(wrapper.vm.$refs.form.onSubmit).toHaveBeenCalled();
+  });
+
+  it('emits saveAttribute event when form is submitted', async () => {
+    const newAttribute = { id: undefined, name: 'Attribute' };
+    wrapper.findComponent(SecurityAttributeForm).vm.$emit('saved', newAttribute);
+
+    await waitForPromises();
+
+    expect(wrapper.emitted()).toEqual({ saveAttribute: [[newAttribute]] });
   });
 
   it('does not render delete button in ADD mode', () => {

@@ -1,6 +1,16 @@
 <script>
 import { InternalEvents } from '~/tracking';
-import getSecurityAttributesQuery from '../../graphql/client/security_attributes.query.graphql';
+import { s__, sprintf } from '~/locale';
+import * as Sentry from '~/sentry/sentry_browser_wrapper';
+import { createAlert } from '~/alert';
+import { confirmAction } from '~/lib/utils/confirm_via_gl_modal/confirm_via_gl_modal';
+import getSecurityAttributesQuery from '../../graphql/security_attributes.query.graphql';
+import createSecurityCategoryMutation from '../../graphql/security_category_create.mutation.graphql';
+import updateSecurityCategoryMutation from '../../graphql/security_category_update.mutation.graphql';
+import deleteSecurityCategoryMutation from '../../graphql/security_category_delete.mutation.graphql';
+import createSecurityAttributesMutation from '../../graphql/security_attributes_create.mutation.graphql';
+import updateSecurityAttributeMutation from '../../graphql/security_attribute_update.mutation.graphql';
+import deleteSecurityAttributeMutation from '../../graphql/security_attribute_delete.mutation.graphql';
 import CategoryList from './category_list.vue';
 import CategoryForm from './category_form.vue';
 import AttributeDrawer from './attribute_drawer.vue';
@@ -17,10 +27,10 @@ export default {
   data() {
     return {
       group: {
-        securityAttributeCategories: { nodes: [] },
-        securityAttributes: { nodes: [] },
+        securityCategories: [],
       },
       selectedCategory: null,
+      unsavedAttributes: [],
     };
   },
   apollo: {
@@ -29,12 +39,13 @@ export default {
       variables() {
         return {
           fullPath: this.groupFullPath,
-          categoryId: this.selectedCategory?.id,
         };
       },
+      fetchPolicy: 'no-cache',
+      nextFetchPolicy: 'no-cache',
       result({ data }) {
-        if (!this.selectedCategory && data.group.securityAttributeCategories.nodes.length) {
-          this.selectCategory(data.group.securityAttributeCategories.nodes[0]);
+        if (!this.selectedCategory && data.group.securityCategories.length) {
+          this.selectCategory(data.group.securityCategories[0]);
         }
       },
     },
@@ -48,6 +59,7 @@ export default {
         ...defaultCategory,
         ...category,
       };
+      this.unsavedAttributes = [];
     },
     openDrawer(mode, item) {
       this.$refs.attributeDrawer.open(mode, item);
@@ -58,13 +70,207 @@ export default {
     addAttribute() {
       this.openDrawer('add');
     },
-    onSubmit(item) {
-      // eslint-disable-next-line no-console
-      console.log(item);
+    async saveCategory(category) {
+      try {
+        const { id, name, description, multipleSelection } = category;
+
+        // create or update category
+        const categoryResult = await this.$apollo.mutate({
+          mutation: id ? updateSecurityCategoryMutation : createSecurityCategoryMutation,
+          variables: {
+            namespaceId: this.group.id,
+            id,
+            name,
+            description,
+            multipleSelection,
+          },
+        });
+
+        if (categoryResult.data) {
+          if (!id && categoryResult.data.securityCategoryCreate) {
+            const createdCategory = categoryResult.data.securityCategoryCreate.securityCategory;
+
+            // save unsaved attributes now that we have category id
+            if (this.unsavedAttributes.length) {
+              const attributesResult = await this.$apollo.mutate({
+                mutation: createSecurityAttributesMutation,
+                variables: {
+                  categoryId: createdCategory.id,
+                  attributes: this.unsavedAttributes,
+                },
+              });
+              if (attributesResult.data) {
+                this.selectedCategory = {
+                  ...createdCategory,
+                  securityAttributes:
+                    attributesResult.data.securityAttributeCreate.securityAttributes,
+                };
+                this.unsavedAttributes = [];
+              }
+            }
+          }
+          this.$apollo.queries.group.refetch();
+          this.$toast.show(s__('SecurityAttributes|Category saved'));
+        }
+      } catch (error) {
+        Sentry.captureException(error);
+        createAlert({
+          message: s__(
+            'SecurityAttributes|An error has occurred while saving the security category.',
+          ),
+        });
+      }
     },
-    onDelete(item) {
-      // eslint-disable-next-line no-console
-      console.log(item);
+    async deleteCategory(category) {
+      try {
+        // confirm via gl-modal
+        const confirmed = await confirmAction(
+          sprintf(
+            s__(
+              'SecurityAttributes|Deleting the "%{categoryName}" Security Attribute category will permanently remove it and all its attributes. Projects using attributes from this category will lose those attributes. This action cannot be undone.',
+            ),
+            {
+              categoryName: category.name,
+            },
+          ),
+          {
+            title: s__('SecurityAttributes|Delete category?'),
+            primaryBtnText: s__('SecurityAttributes|Delete category'),
+            primaryBtnVariant: 'danger',
+          },
+        );
+        if (!confirmed) {
+          return;
+        }
+
+        // delete category
+        const result = await this.$apollo.mutate({
+          mutation: deleteSecurityCategoryMutation,
+          variables: {
+            id: category.id,
+          },
+        });
+        if (result.data) {
+          this.selectedCategory = null;
+          this.$apollo.queries.group.refetch();
+          this.$toast.show(s__('SecurityAttributes|Category deleted'));
+        }
+      } catch (error) {
+        Sentry.captureException(error);
+        createAlert({
+          message: s__(
+            'SecurityAttributes|An error has occurred while deleting the security category.',
+          ),
+        });
+      }
+    },
+    async saveAttribute(attribute) {
+      try {
+        // if category hasn't been saved, queue the attribute to be created later
+        if (!this.selectedCategory.id) {
+          this.unsavedAttributes.push(attribute);
+        }
+
+        // if attribute has no id, create a new attribute
+        else if (!attribute.id) {
+          await this.$apollo
+            .mutate({
+              mutation: createSecurityAttributesMutation,
+              variables: {
+                categoryId: this.selectedCategory.id,
+                attributes: [attribute],
+              },
+            })
+            .then(({ data }) => {
+              // append new attribute to local array
+              this.selectedCategory.securityAttributes = [
+                ...this.selectedCategory.securityAttributes,
+                ...data.securityAttributeCreate.securityAttributes,
+              ];
+              this.$apollo.queries.group.refetch();
+              this.$toast.show(s__('SecurityAttributes|Attribute created'));
+            });
+        }
+
+        // if attribute has id, update the existing attribute
+        else {
+          await this.$apollo
+            .mutate({
+              mutation: updateSecurityAttributeMutation,
+              variables: {
+                ...attribute,
+              },
+            })
+            .then(({ data }) => {
+              const updatedAttribute = data.securityAttributeUpdate.securityAttribute;
+              // update attribute in local array
+              this.selectedCategory.securityAttributes =
+                this.selectedCategory.securityAttributes.map((existingAttribute) => {
+                  if (existingAttribute.id === updatedAttribute.id) {
+                    return updatedAttribute;
+                  }
+                  return existingAttribute;
+                });
+              this.$apollo.queries.group.refetch();
+              this.$toast.show(s__('SecurityAttributes|Attribute updated'));
+            });
+        }
+      } catch (error) {
+        Sentry.captureException(error);
+        createAlert({
+          message: s__(
+            'SecurityAttributes|An error has occurred while saving the security attribute.',
+          ),
+        });
+      }
+    },
+    async deleteAttribute(deletedAttribute) {
+      try {
+        // confirm via gl-modal
+        const confirmed = await confirmAction(
+          sprintf(
+            s__(
+              'SecurityAttributes|Deleting the "%{attributeName}" Security Attribute will permanently remove it from the "%{categoryName}" category and any projects where it\'s applied. This action cannot be undone.',
+            ),
+            {
+              attributeName: deletedAttribute.name,
+              categoryName: this.selectedCategory.name,
+            },
+          ),
+          {
+            title: s__('SecurityAttributes|Delete security attribute?'),
+            primaryBtnText: s__('SecurityAttributes|Delete security attribute'),
+            primaryBtnVariant: 'danger',
+          },
+        );
+        if (!confirmed) {
+          return;
+        }
+
+        // delete attribute
+        const result = await this.$apollo.mutate({
+          mutation: deleteSecurityAttributeMutation,
+          variables: {
+            id: deletedAttribute.id,
+          },
+        });
+        if (result.data) {
+          // remove attribute from local array
+          this.selectedCategory.securityAttributes =
+            this.selectedCategory.securityAttributes.filter(
+              (attribute) => attribute.id !== deletedAttribute.id,
+            );
+          this.$apollo.queries.group.refetch();
+          this.$toast.show(s__('SecurityAttributes|Attribute deleted'));
+        }
+      } catch (error) {
+        Sentry.captureException(error);
+        createAlert({
+          message: s__(
+            'SecurityAttributes|An error has occurred while deleting the security attribute.',
+          ),
+        });
+      }
     },
   },
 };
@@ -73,19 +279,26 @@ export default {
   <div class="gl-border-t gl-flex">
     <div class="gl-border-r gl-w-1/4 gl-min-w-20 gl-p-5">
       <category-list
-        :security-attribute-categories="group.securityAttributeCategories.nodes"
+        :security-categories="group.securityCategories"
         :selected-category="selectedCategory"
         @selectCategory="selectCategory"
       />
     </div>
     <div class="gl-w-3/4">
       <category-form
-        :security-attributes="group.securityAttributes.nodes"
-        :category="selectedCategory"
+        :selected-category="selectedCategory"
+        :unsaved-attributes="unsavedAttributes"
         @addAttribute="addAttribute"
         @editAttribute="editAttribute"
+        @saveCategory="saveCategory"
+        @deleteCategory="deleteCategory"
+        @deleteAttribute="deleteAttribute"
       />
-      <attribute-drawer ref="attributeDrawer" @saved="onSubmit" @delete="onDelete" />
+      <attribute-drawer
+        ref="attributeDrawer"
+        @saveAttribute="saveAttribute"
+        @deleteAttribute="deleteAttribute"
+      />
     </div>
   </div>
 </template>

@@ -1,0 +1,19 @@
+mutation createSecurityAttributes(
+  $categoryId: SecurityCategoryID!
+  $attributes: [SecurityAttributeInput!]!
+) {
+  securityAttributeCreate(input: { categoryId: $categoryId, attributes: $attributes }) {
+    securityAttributes {
+      id
+      name
+      description
+      color
+      editableState
+      securityCategory {
+        id
+        name
+      }
+    }
+    errors
+  }
+}
