@@ -341,14 +341,6 @@ RSpec.describe Security::Orchestration::AssignService, feature_category: :securi
             expect(service).to be_error
             expect(service.message).to eq("You cannot modify security policy project for group designated as CSP.")
           end
-
-          context 'with feature flag "security_policies_csp" disabled' do
-            before do
-              stub_feature_flags(security_policies_csp: false)
-            end
-
-            it_behaves_like 'assigns the policy project'
-          end
         end
       end
     end

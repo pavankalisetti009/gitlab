@@ -26,14 +26,10 @@ module Security
       safe_find_or_create_by(organization: organization) # rubocop:disable Performance/ActiveRecordSubtransactionMethods -- only uses a subtransaction if creating a record, which should only happen once per organization
     end
 
-    def csp_enabled?(group)
+    def csp_enabled?(_group)
       return false if GitlabSubscriptions::SubscriptionHelper.gitlab_com_subscription?
 
-      csp_namespace_id.present? && (
-        ::Feature.enabled?(:security_policies_csp, group) ||
-          ::Feature.enabled?(:security_policies_csp, group&.root_ancestor) ||
-          ::Feature.enabled?(:security_policies_csp, :instance)
-      )
+      csp_namespace_id.present?
     end
 
     def csp_namespace_locked?

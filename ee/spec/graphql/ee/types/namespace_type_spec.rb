@@ -112,14 +112,6 @@ RSpec.describe GitlabSchema.types['Namespace'], feature_category: :groups_and_pr
         end
 
         it { is_expected.to be(true) }
-
-        context 'when feature flag "security_policies_csp" is disabled' do
-          before do
-            stub_feature_flags(security_policies_csp: false)
-          end
-
-          it { is_expected.to be(false) }
-        end
       end
     end
   end

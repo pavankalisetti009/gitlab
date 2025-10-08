@@ -206,18 +206,6 @@ RSpec.describe Security::SecurityOrchestrationPolicies::ComplianceFrameworks::Sy
             ComplianceManagement::ComplianceFramework::SecurityPolicy.all.pluck(:framework_id)
           }.from(be_empty).to(contain_exactly(framework1.id, csp_framework.id))
         end
-
-        context 'when CSP feature flag is disabled' do
-          before do
-            stub_feature_flags(security_policies_csp: false)
-          end
-
-          it 'does not create ComplianceFramework::SecurityPolicy' do
-            expect { execute }.not_to change {
-              ComplianceManagement::ComplianceFramework::SecurityPolicy.count
-            }.from(0)
-          end
-        end
       end
     end
   end

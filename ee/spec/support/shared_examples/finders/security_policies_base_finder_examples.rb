@@ -180,24 +180,6 @@ RSpec.shared_examples 'security policies finder' do
                     **expected_extra_attrs
                   })])
               end
-
-              context 'when feature flag "security_policies_csp" is disabled' do
-                before do
-                  stub_feature_flags(security_policies_csp: false)
-                end
-
-                it 'returns policies with csp as false' do
-                  is_expected.to match_array([policy.merge(
-                    {
-                      config: group_policy_configuration,
-                      project: nil,
-                      namespace: group,
-                      inherited: true,
-                      csp: false,
-                      **expected_extra_attrs
-                    })])
-                end
-              end
             end
           end
 

@@ -41,19 +41,6 @@ RSpec.describe API::Admin::Security::CompliancePolicySettings, feature_category:
     end
   end
 
-  shared_examples 'requires security_policies_csp feature flag' do |verb|
-    before do
-      stub_feature_flags(security_policies_csp: false)
-    end
-
-    it 'returns 400' do
-      public_send(verb, api(path, admin, admin_mode: true), params: params)
-
-      expect(response).to have_gitlab_http_status(:bad_request)
-      expect(json_response['message']).to eq('400 Bad request - feature flag security_policies_csp is not enabled')
-    end
-  end
-
   describe 'GET /admin/security/compliance_policy_settings' do
     let(:path) { '/admin/security/compliance_policy_settings' }
 
@@ -64,7 +51,6 @@ RSpec.describe API::Admin::Security::CompliancePolicySettings, feature_category:
     it_behaves_like 'GET request permissions for admin mode'
     it_behaves_like 'requires admin authentication', :get
     it_behaves_like 'requires security_orchestration_policies license', :get
-    it_behaves_like 'requires security_policies_csp feature flag', :get
 
     context 'when all requirements are met' do
       let!(:policy_setting) { Security::PolicySetting.for_organization(default_organization) }
@@ -109,7 +95,6 @@ RSpec.describe API::Admin::Security::CompliancePolicySettings, feature_category:
     it_behaves_like 'PUT request permissions for admin mode'
     it_behaves_like 'requires admin authentication', :put
     it_behaves_like 'requires security_orchestration_policies license', :put
-    it_behaves_like 'requires security_policies_csp feature flag', :put
 
     context 'when all requirements are met' do
       let!(:policy_setting) { Security::PolicySetting.for_organization(default_organization) }
