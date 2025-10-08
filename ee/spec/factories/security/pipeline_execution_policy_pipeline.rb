@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+require Rails.root.join('spec/support/helpers/ci/job_factory_helpers')
+
 FactoryBot.define do
   factory(
     :pipeline_execution_policy_pipeline,
@@ -45,10 +47,7 @@ FactoryBot.define do
         job.metadata.write_attribute(:config_options, updated_options)
       end
 
-      next unless job.job_definition
-
-      updated_config = job.job_definition.config.merge(options: updated_options)
-      job.job_definition.write_attribute(:config, updated_config)
+      Ci::JobFactoryHelpers.mutate_temp_job_definition(job, options: updated_options)
     end
   end
 end
