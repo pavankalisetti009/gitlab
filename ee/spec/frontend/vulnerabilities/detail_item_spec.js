@@ -42,8 +42,7 @@ describe('DetailItem', () => {
     });
 
     it('renders experiment badge when showExperimentBadge is true', () => {
-      const experimentBadge = wrapper.findComponent(GlExperimentBadge);
-      expect(experimentBadge.exists()).toBe(true);
+      expect(wrapper.findComponent(GlExperimentBadge).props('type')).toBe('beta');
     });
   });
 });

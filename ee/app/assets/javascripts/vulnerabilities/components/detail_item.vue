@@ -20,7 +20,7 @@ export default {
   <li :data-testid="valueName" class="!gl-ml-0 gl-mb-4 gl-list-none">
     <gl-sprintf :message="sprintfMessage">
       <template #label="{ content }">
-        <gl-experiment-badge v-if="showExperimentBadge" class="gl-ml-0" />
+        <gl-experiment-badge v-if="showExperimentBadge" type="beta" class="!gl-mx-0" />
         <strong data-testid="label">{{ content }}</strong>
       </template>
       <template #[valueName]>

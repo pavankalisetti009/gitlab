@@ -141,7 +141,7 @@ export default {
         category="tertiary"
         size="small"
         icon="retry"
-        :aria-label="s__('VulnerabilityManagement|Retry')"
+        :aria-label="s__('VulnerabilityManagement|Recheck')"
         @click="refreshValidityCheck"
       />
       <gl-tooltip
@@ -150,7 +150,7 @@ export default {
         placement="top"
         triggers="hover focus"
       >
-        {{ s__('VulnerabilityManagement|Retry') }}
+        {{ s__('VulnerabilityManagement|Recheck') }}
       </gl-tooltip>
     </div>
   </span>
