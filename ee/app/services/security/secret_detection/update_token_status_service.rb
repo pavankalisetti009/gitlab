@@ -21,6 +21,8 @@ module Security
 
         relation.each_batch(of: DEFAULT_BATCH_SIZE) do |batch|
           process_findings_batch(batch, :vulnerability)
+
+          Vulnerabilities::PartnerTokenService.process_finding_async(batch, project)
         end
       end
 
@@ -46,6 +48,7 @@ module Security
 
         @pipeline = vulnerability_finding.latest_finding_pipeline
 
+        Vulnerabilities::PartnerTokenService.process_partner_finding(vulnerability_finding)
         process_findings_batch([vulnerability_finding], :vulnerability)
       end
 
@@ -54,6 +57,10 @@ module Security
         security_finding = ::Security::Finding.find_by_id(security_finding_id)
         return unless security_finding
 
+        execute_for_gitlab_security_finding(security_finding)
+      end
+
+      def execute_for_gitlab_security_finding(security_finding)
         @project = security_finding.project
         return unless can_run?(@project)
         return unless Feature.enabled?(:validity_checks_security_finding_status, @project)

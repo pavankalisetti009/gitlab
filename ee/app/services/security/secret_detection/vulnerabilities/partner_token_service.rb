@@ -3,26 +3,19 @@
 module Security
   module SecretDetection
     module Vulnerabilities
-      class PartnerTokenService
-        def save_result(finding, result)
-          save_to_database(finding, result.status, result.metadata[:verified_at])
-        end
+      class PartnerTokenService < PartnerTokenServiceBase
+        class << self
+          def finding_type
+            :vulnerability
+          end
 
-        private
+          def token_status_model
+            ::Vulnerabilities::FindingTokenStatus
+          end
 
-        def save_to_database(finding, status, verified_at)
-          attributes = {
-            vulnerability_occurrence_id: finding.id,
-            project_id: finding.project_id,
-            status: status,
-            last_verified_at: verified_at
-          }
-
-          ::Vulnerabilities::FindingTokenStatus.upsert(
-            attributes,
-            unique_by: :vulnerability_occurrence_id,
-            update_only: [:status, :last_verified_at]
-          )
+          def unique_by_column
+            :vulnerability_occurrence_id
+          end
         end
       end
     end
