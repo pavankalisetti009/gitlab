@@ -13,11 +13,11 @@ RSpec.describe IdentityVerifiable, :saas, feature_category: :instance_resiliency
 
   def stub_phone_verification_limits(soft: false, hard: false)
     allow(::Gitlab::ApplicationRateLimiter).to receive(:peek)
-      .with(:soft_phone_verification_transactions_limit, scope: nil)
+      .with(:soft_phone_verification_transactions_limit, scope: :global)
       .and_return(soft)
 
     allow(::Gitlab::ApplicationRateLimiter).to receive(:peek)
-      .with(:hard_phone_verification_transactions_limit, scope: nil)
+      .with(:hard_phone_verification_transactions_limit, scope: :global)
       .and_return(hard)
   end
 

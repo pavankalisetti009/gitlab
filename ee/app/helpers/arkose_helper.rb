@@ -4,7 +4,7 @@ module ArkoseHelper
   def arkose_data_exchange_payload(use_case, email: nil)
     show_challenge =
       if use_case == Arkose::DataExchangePayload::USE_CASE_SIGN_UP
-        ::Gitlab::ApplicationRateLimiter.peek(:hard_phone_verification_transactions_limit, scope: nil)
+        ::Gitlab::ApplicationRateLimiter.peek(:hard_phone_verification_transactions_limit, scope: :global)
       else
         use_case == Arkose::DataExchangePayload::USE_CASE_IDENTITY_VERIFICATION
       end
