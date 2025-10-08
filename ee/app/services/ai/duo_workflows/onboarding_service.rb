@@ -85,7 +85,7 @@ module Ai
         Authn::OauthApplication.create!(
           name: 'GitLab Duo Agent Platform Composite OAuth Application',
           redirect_uri: oauth_callback_url,
-          scopes: ::Gitlab::Auth::AI_WORKFLOW_SCOPES + [::Gitlab::Auth::DYNAMIC_USER],
+          scopes: ::Gitlab::Auth::AI_WORKFLOW_SCOPES + [::Gitlab::Auth::MCP_SCOPE, ::Gitlab::Auth::DYNAMIC_USER],
           trusted: true,
           confidential: true
         )

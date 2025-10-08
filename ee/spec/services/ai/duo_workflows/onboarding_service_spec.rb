@@ -52,7 +52,7 @@ RSpec.describe Ai::DuoWorkflows::OnboardingService, type: :service, feature_cate
           {
             name: 'GitLab Duo Agent Platform Composite OAuth Application',
             redirect_uri: Gitlab::Routing.url_helpers.root_url,
-            scopes: [:ai_workflows, :"user:*"],
+            scopes: [:ai_workflows, :mcp, :"user:*"],
             trusted: true,
             confidential: true
           }

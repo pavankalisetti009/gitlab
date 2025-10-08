@@ -37,7 +37,16 @@ module Ai
       end
 
       def ensure_oauth_application!
-        return if oauth_application
+        return if oauth_application&.scopes&.include?(::Gitlab::Auth::MCP_SCOPE)
+
+        scopes = ::Gitlab::Auth::AI_WORKFLOW_SCOPES + [::Gitlab::Auth::MCP_SCOPE]
+
+        # Add missing mcp scope if the application exists
+        if oauth_application.present?
+          oauth_application.update!(scopes: scopes)
+
+          return
+        end
 
         should_expire_cache = false
 
@@ -50,7 +59,7 @@ module Ai
           application = Authn::OauthApplication.new(
             name: 'GitLab Duo Agent Platform',
             redirect_uri: oauth_callback_url,
-            scopes: ::Gitlab::Auth::AI_WORKFLOW_SCOPES,
+            scopes: scopes,
             trusted: true,
             confidential: false
           )
