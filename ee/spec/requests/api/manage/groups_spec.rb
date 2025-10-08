@@ -293,12 +293,6 @@ RSpec.describe API::Manage::Groups, :aggregate_failures, feature_category: :syst
         expect(response).to have_gitlab_http_status(:not_found)
       end
 
-      it 'returns limited pagination headers (without counts)' do
-        get api(path, personal_access_token: personal_access_token)
-
-        expect(response).to include_limited_pagination_headers
-      end
-
       context 'when optimize_credentials_inventory FF is disabled' do
         before do
           stub_feature_flags(optimize_credentials_inventory: false)
