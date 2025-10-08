@@ -9,7 +9,6 @@ module Projects
     before_action only: :index do
       push_frontend_feature_flag(:dependency_paths, project)
       push_frontend_feature_flag(:project_dependencies_graphql, project.group)
-      push_frontend_feature_flag(:hide_no_longer_detected_vulnerabilities_on_the_dependency_list, project)
     end
 
     before_action :authorize_read_dependency_list!
