@@ -769,10 +769,14 @@ RSpec.describe WorkItems::Lifecycles::UpdateService, feature_category: :team_pla
               before do
                 create(:work_item_custom_lifecycle_status, lifecycle: other_lifecycle, status: custom_status,
                   namespace: group)
+
+                create(:work_item, :task, namespace: group, custom_status_id: custom_status.id)
               end
 
               it 'removes status from lifecycle but not from namespace' do
                 expect { result }.not_to change { WorkItems::Statuses::Custom::Status.count }
+
+                expect(result.errors).to be_empty
 
                 expect(other_lifecycle.reset.statuses.pluck(:name)).to include(custom_status.name)
 

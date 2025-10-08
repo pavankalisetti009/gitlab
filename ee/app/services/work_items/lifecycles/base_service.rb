@@ -382,7 +382,7 @@ module WorkItems
                    when ::WorkItems::Statuses::SystemDefined::Status
                      status.in_use_in_namespace?(group)
                    when ::WorkItems::Statuses::Custom::Status
-                     status.in_use?
+                     status.in_use_in_lifecycle?(lifecycle)
                    end
 
           next unless in_use

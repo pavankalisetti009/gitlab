@@ -236,9 +236,13 @@ RSpec.describe 'Updating a custom lifecycle', feature_category: :team_planning d
         it_behaves_like 'updates the lifecycle'
 
         context 'when status to remove is in use' do
-          let!(:work_item) { create(:work_item, namespace: group) }
-          let!(:current_status) do
-            create(:work_item_current_status, work_item: work_item, custom_status: existing_in_progress_status)
+          before do
+            create(
+              :work_item_type_custom_lifecycle,
+              namespace: group, work_item_type: build(:work_item_type, :issue), lifecycle: custom_lifecycle
+            )
+
+            create(:work_item, namespace: group, custom_status_id: existing_in_progress_status.id)
           end
 
           it 'returns an error' do
