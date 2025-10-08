@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 module Ai
-  class CodeSuggestionEventsFinder < UsageEventsFinder
+  class CodeSuggestionEventsFinder < PostgresqlUsageEventsFinder
     include Gitlab::Utils::StrongMemoize
 
     # TODO - Replace with namespace_traversal_path filter

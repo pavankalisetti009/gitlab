@@ -5,9 +5,10 @@ module Types
     module AiUsage
       class AiUsageDataType < BaseObject
         graphql_name 'AiUsageData'
-        description "Usage data for events stored in the default PostgreSQL database. " \
-          "Data retained for three months. Requires a personal access token. " \
-          "Endpoint works only on the top-level group. Premium and Ultimate with GitLab Duo Enterprise only."
+        description "Usage data for events stored in either PostgreSQL (default) or ClickHouse (when configured). " \
+          "Data retention: three months in PostgreSQL, indefinite in ClickHouse. " \
+          "Requires a personal access token. Works only on top-level groups. " \
+          "Premium and Ultimate with GitLab Duo Enterprise only."
 
         authorize :read_enterprise_ai_analytics
 
