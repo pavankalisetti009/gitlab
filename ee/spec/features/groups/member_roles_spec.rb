@@ -12,14 +12,13 @@ RSpec.describe 'Member Roles', feature_category: :permissions do
   let(:name) { 'My custom role' }
   let(:description) { 'My role description' }
   let(:access_level) { 'Developer' }
-  let(:permissions) { ['Manage vulnerabilities'] }
 
   before do
     stub_licensed_features(custom_roles: true)
     sign_in(owner)
   end
 
-  def create_role(access_level, name, description, permissions)
+  def create_role(access_level, name, description)
     click_link s_('MemberRole|New role')
     wait_for_requests
 
@@ -27,16 +26,14 @@ RSpec.describe 'Member Roles', feature_category: :permissions do
     fill_in 'Description', with: description
     select_from_listbox access_level, from: 'Select a role'
 
-    permissions.each do |permission|
-      page.find('tr', text: permission).click
-    end
+    page.find('label', text: 'Manage vulnerabilities').click
 
     click_button s_('MemberRole|Create role')
   end
 
   shared_examples 'creates a new custom role' do
     it 'and displays it' do
-      create_role(access_level, name, description, permissions)
+      create_role(access_level, name, description)
 
       created_member_role = MemberRole.find_by(name: name)
 

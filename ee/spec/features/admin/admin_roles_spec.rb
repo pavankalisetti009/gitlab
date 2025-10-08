@@ -33,9 +33,7 @@ RSpec.describe 'Admin roles', feature_category: :permissions do
           fill_in 'Name', with: name
           fill_in 'Description', with: 'My role description'
 
-          ['View CI/CD'].each do |permission|
-            page.find('tr', text: permission).click
-          end
+          page.find('label', text: 'View CI/CD').click
 
           click_button s_('MemberRole|Create role')
 

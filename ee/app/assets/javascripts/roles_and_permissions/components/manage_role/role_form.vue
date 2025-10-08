@@ -195,8 +195,8 @@ export default {
 
       <permissions-selector
         v-model="permissions"
+        :base-access-level="baseAccessLevel"
         :is-valid="isPermissionsValid"
-        :selected-base-role="baseAccessLevel"
       />
     </settings-section>
 

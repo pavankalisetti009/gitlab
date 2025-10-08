@@ -179,7 +179,7 @@ describe('Role details', () => {
         });
 
         it('shows custom permissions count', () => {
-          expect(findValueText('custom-permissions')).toBe('5 of 7 permissions added');
+          expect(findValueText('custom-permissions')).toBe('6 of 8 permissions added');
         });
 
         describe.each(enabledPermissions)('for permission $name', ({ name, value }) => {
