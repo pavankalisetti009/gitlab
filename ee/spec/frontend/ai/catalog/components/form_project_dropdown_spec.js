@@ -62,6 +62,12 @@ describe('FormProjectDropdown', () => {
     expect(findListbox().props('toggleText')).toBe('Group / Project 1');
   });
 
+  it('passes disabled prop to listbox', () => {
+    createComponent({ props: { disabled: true } });
+
+    expect(findListbox().props('disabled')).toBe(true);
+  });
+
   describe('Apollo query', () => {
     it('calls getProjects query with correct variables', () => {
       expect(mockProjectsQueryHandler).toHaveBeenCalledWith({
