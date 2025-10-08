@@ -30,6 +30,7 @@ module SecretsManagement
           next unless principal_type && principal_id
 
           granted_by = nil
+          expired_at = nil
           # Extract permissions from the capabilities
           permissions_set = Set.new
 
@@ -45,6 +46,7 @@ module SecretsManagement
             next unless correct_path_exists
 
             granted_by = path_obj.granted_by
+            expired_at = path_obj.expired_at
             path_obj.capabilities.each do |capability|
               if SecretsManagement::SecretPermission::VALID_PERMISSIONS.include?(capability)
                 permissions_set.add(capability)
@@ -60,6 +62,7 @@ module SecretsManagement
             resource_type: 'Project',
             resource_id: project.id,
             granted_by: granted_by,
+            expired_at: expired_at,
             permissions: permissions_set.to_a
           )
         end
