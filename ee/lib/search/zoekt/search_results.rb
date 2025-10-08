@@ -272,7 +272,7 @@ module Search
         # Remove results for deleted projects
         items.compact!
 
-        [items, total_count]
+        [items, [total_count, 0].max] # count can never be lower than 0
       end
 
       def search_mode
