@@ -59142,7 +59142,10 @@ msgstr ""
 msgid "SecurityOrchestration|CI/CD template edition to be enforced. The default template is stable, but may not have all the features of the latest template."
 msgstr ""
 
-msgid "SecurityOrchestration|CI/CD template edition to be enforced. The latest edition may introduce breaking changes."
+msgid "SecurityOrchestration|CI/CD template edition to be enforced. The latest edition may introduce breaking changes."
+msgstr ""
+
+msgid "SecurityOrchestration|CI/CD template version to be enforced. Specific versions offer stability but may not include the latest features."
 msgstr ""
 
 msgid "SecurityOrchestration|Cadence is invalid"
@@ -60474,6 +60477,9 @@ msgid "SecurityOrchestration|the default branch"
 msgstr ""
 
 msgid "SecurityOrchestration|type: scan_result_policy is replaced with %{linkStart}type: approval_policy%{linkEnd}"
+msgstr ""
+
+msgid "SecurityOrchestration|v2"
 msgstr ""
 
 msgid "SecurityOrchestration|with %{exceptionType}"

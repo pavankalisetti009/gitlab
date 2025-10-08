@@ -2,6 +2,7 @@ import { isEmpty } from 'lodash';
 import {
   DEFAULT_TEMPLATE,
   LATEST_TEMPLATE,
+  VERSIONED_TEMPLATES,
 } from 'ee/security_orchestration/components/policy_editor/scan_execution/action/scan_filters/constants';
 import { fromYaml } from 'ee/security_orchestration/components/utils';
 import { POLICY_TYPE_COMPONENT_OPTIONS } from 'ee/security_orchestration/components/constants';
@@ -11,6 +12,8 @@ import {
   RULE_MODE_SCANNERS,
   VALID_SCAN_EXECUTION_BRANCH_TYPE_OPTIONS,
 } from '../../constants';
+
+const VERSIONED_TEMPLATE_TYPES = Object.keys(VERSIONED_TEMPLATES);
 
 /**
  * Check if any rule has invalid branch type
@@ -32,9 +35,22 @@ const hasInvalidBranchType = (rules) => {
  * @param {Array} actions
  * @returns {Boolean}
  */
-const hasInvalidTemplate = (actions = []) => {
-  return actions.some(({ template }) => {
-    return (template || template === '') && ![DEFAULT_TEMPLATE, LATEST_TEMPLATE].includes(template);
+export const hasInvalidTemplate = (actions = []) => {
+  return actions.some(({ template, scan }) => {
+    if (!template && template !== '') {
+      return false;
+    }
+
+    // Allow versioned templates for dependency_scanning
+    if (
+      VERSIONED_TEMPLATE_TYPES.includes(scan) &&
+      VERSIONED_TEMPLATES[scan].map(({ value }) => value).includes(template)
+    ) {
+      return false;
+    }
+
+    // For other scan types, only allow default or latest
+    return ![DEFAULT_TEMPLATE, LATEST_TEMPLATE].includes(template);
   });
 };
 

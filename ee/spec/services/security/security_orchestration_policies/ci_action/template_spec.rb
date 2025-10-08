@@ -24,7 +24,7 @@ RSpec.describe Security::SecurityOrchestrationPolicies::CiAction::Template,
 
     shared_examples 'with template name for scan type' do
       it 'fetches template content from cache' do
-        expect(template_cache).to receive(:fetch).with(action[:scan], latest: false).and_call_original
+        expect(template_cache).to receive(:fetch).with(action[:scan], template: 'default').and_call_original
 
         config
       end
@@ -35,7 +35,7 @@ RSpec.describe Security::SecurityOrchestrationPolicies::CiAction::Template,
         end
 
         it 'fetches template content from cache' do
-          expect(template_cache).to receive(:fetch).with(action[:scan], latest: true).and_call_original
+          expect(template_cache).to receive(:fetch).with(action[:scan], template: 'latest').and_call_original
 
           config
         end
@@ -47,7 +47,7 @@ RSpec.describe Security::SecurityOrchestrationPolicies::CiAction::Template,
         end
 
         it 'fetches template content from cache' do
-          expect(template_cache).to receive(:fetch).with(action[:scan], latest: false).and_call_original
+          expect(template_cache).to receive(:fetch).with(action[:scan], template: 'default').and_call_original
 
           config
         end
@@ -76,20 +76,53 @@ RSpec.describe Security::SecurityOrchestrationPolicies::CiAction::Template,
     end
 
     describe '.scan_template_path' do
-      let(:scan_type) { 'container_scanning' }
-      let(:latest) { false }
+      let(:scan_type) { 'dependency_scanning' }
+      let(:template) { 'default' }
 
-      subject(:path) { described_class.scan_template_path(scan_type, latest) }
+      subject(:path) { described_class.scan_template_path(scan_type, template) }
 
       it "returns the correct template path" do
-        expect(path).to eq("Jobs/Container-Scanning")
+        expect(path).to eq("Jobs/Dependency-Scanning")
       end
 
       context "when using latest template" do
-        let(:latest) { true }
+        let(:template) { 'latest' }
 
         it "returns the correct template path" do
-          expect(path).to eq("Jobs/Container-Scanning.latest")
+          expect(path).to eq("Jobs/Dependency-Scanning.latest")
+        end
+
+        context "when version is specified" do
+          let(:template) { 'v2' }
+
+          it "returns the versioned template path, prioritizing version over latest" do
+            expect(path).to eq("Jobs/Dependency-Scanning.v2")
+          end
+        end
+      end
+
+      context "when using versioned template" do
+        let(:template) { 'v2' }
+
+        it "returns the versioned template path" do
+          expect(path).to eq("Jobs/Dependency-Scanning.v2")
+        end
+
+        context "with unsupported version" do
+          let(:template) { 'v1' }
+
+          it "ignores the version and returns the regular template path" do
+            expect(path).to eq("Jobs/Dependency-Scanning")
+          end
+        end
+
+        context "with unsupported scan type for versioning" do
+          let(:scan_type) { 'secret_detection' }
+          let(:template) { 'v1' }
+
+          it "ignores the version and returns the regular template path" do
+            expect(path).to eq("Jobs/Secret-Detection")
+          end
         end
       end
     end

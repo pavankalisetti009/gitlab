@@ -1,6 +1,7 @@
 import {
   createPolicyObject,
   hasInvalidScanners,
+  hasInvalidTemplate,
   validatePolicy,
 } from 'ee/security_orchestration/components/policy_editor/scan_execution/lib/from_yaml';
 import {
@@ -26,6 +27,7 @@ import {
 } from 'ee_jest/security_orchestration/mocks/mock_scan_execution_policy_data';
 import { fromYaml } from 'ee/security_orchestration/components/utils';
 import { POLICY_TYPE_COMPONENT_OPTIONS } from 'ee/security_orchestration/components/constants';
+import { REPORT_TYPE_DEPENDENCY_SCANNING } from '~/vue_shared/security_reports/constants';
 
 jest.mock('lodash/uniqueId', () => jest.fn((prefix) => `${prefix}0`));
 
@@ -75,5 +77,21 @@ describe('hasInvalidScanners', () => {
     ${'return true when no valid scanners'}              | ${[{ scan2: 'sast' }, { scan3: 'cluster_image_scanning' }]}                           | ${true}
   `('$title', ({ input, output }) => {
     expect(hasInvalidScanners(input)).toBe(output);
+  });
+});
+
+// Import constants for testin
+
+describe('hasInvalidTemplate', () => {
+  it.each`
+    title                                                               | input                                                                                                | output
+    ${'returns false for default template'}                             | ${[{ template: 'default', scan: 'sast' }]}                                                           | ${false}
+    ${'returns false for latest template'}                              | ${[{ template: 'latest', scan: 'sast' }]}                                                            | ${false}
+    ${'returns true for invalid template with non-versioned scan type'} | ${[{ template: 'v1', scan: 'sast' }]}                                                                | ${true}
+    ${'returns false for versioned template with dependency_scanning'}  | ${[{ template: 'v2', scan: REPORT_TYPE_DEPENDENCY_SCANNING }]}                                       | ${false}
+    ${'returns false for mixed valid templates'}                        | ${[{ template: 'latest', scan: 'sast' }, { template: 'v2', scan: REPORT_TYPE_DEPENDENCY_SCANNING }]} | ${false}
+    ${'returns true if any template is invalid'}                        | ${[{ template: 'v1', scan: REPORT_TYPE_DEPENDENCY_SCANNING }, { template: 'v3', scan: 'sast' }]}     | ${true}
+  `('$title', ({ input, output }) => {
+    expect(hasInvalidTemplate(input)).toBe(output);
   });
 });
