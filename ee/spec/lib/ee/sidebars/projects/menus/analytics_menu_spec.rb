@@ -103,6 +103,20 @@ RSpec.describe Sidebars::Projects::Menus::AnalyticsMenu, feature_category: :navi
       end
     end
 
+    describe 'Data explorer' do
+      let(:item_id) { :data_explorer }
+
+      it { is_expected.not_to be_nil }
+
+      describe 'when `analyze_data_explorer` is disabled' do
+        before do
+          stub_feature_flags(analyze_data_explorer: false)
+        end
+
+        it { is_expected.to be_nil }
+      end
+    end
+
     describe 'Dashboards' do
       let(:item_id) { :dashboards_analytics }
 
