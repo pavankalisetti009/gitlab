@@ -149,4 +149,95 @@ RSpec.describe VirtualRegistries::Container::Cache::Entry, feature_category: :vi
       let(:find_model) { described_class.last }
     end
   end
+
+  describe '.create_or_update_by!' do
+    let_it_be(:upstream) { create(:virtual_registries_container_upstream) }
+    let_it_be(:group) { create(:group) }
+
+    let(:relative_path) { '/test/path' }
+    let(:updates) { { file_sha1: 'da39a3ee5e6b4b0d3255bfef95601890afd80709' } }
+
+    let(:size) { 10.bytes }
+
+    subject(:create_or_update) do
+      Tempfile.create('test.txt') do |file|
+        file.write('test')
+        described_class.create_or_update_by!(
+          upstream: upstream,
+          group_id: upstream.group_id,
+          relative_path: '/test',
+          updates: { file: file, size: size, file_sha1: '4e1243bd22c66e76c2ba9eddc1f91394e57f9f95' }
+        )
+      end
+    end
+
+    context 'with parallel execution' do
+      it 'creates or update the existing record' do
+        expect { with_threads { create_or_update } }.to change { described_class.count }.by(1)
+      end
+    end
+
+    context 'with invalid updates' do
+      let(:size) { nil }
+
+      it 'bubbles up the error' do
+        expect { create_or_update }.to not_change { described_class.count }
+          .and raise_error(ActiveRecord::RecordInvalid)
+      end
+    end
+  end
+
+  describe '#filename' do
+    let(:cache_entry) { build(:virtual_registries_container_cache_entry) }
+
+    subject { cache_entry.filename }
+
+    it { is_expected.to eq(File.basename(cache_entry.relative_path)) }
+
+    context 'when relative_path is nil' do
+      before do
+        cache_entry.relative_path = nil
+      end
+
+      it { is_expected.to be_nil }
+    end
+  end
+
+  describe '#bump_downloads_count' do
+    let_it_be(:cache_entry) { create(:virtual_registries_container_cache_entry) }
+
+    subject(:bump) { cache_entry.bump_downloads_count }
+
+    it 'enqueues the update', :sidekiq_inline do
+      expect(FlushCounterIncrementsWorker)
+        .to receive(:perform_in)
+        .with(Gitlab::Counters::BufferedCounter::WORKER_DELAY, described_class.name, cache_entry.id, 'downloads_count')
+        .and_call_original
+
+      expect { bump }.to change { cache_entry.reload.downloads_count }.by(1)
+        .and change { cache_entry.downloaded_at }
+    end
+  end
+
+  def with_threads(count: 5, &block)
+    return unless block
+
+    # create a race condition - structure from https://blog.arkency.com/2015/09/testing-race-conditions/
+    wait_for_it = true
+
+    threads = Array.new(count) do
+      Thread.new do
+        # each thread must checkout its own connection
+        ApplicationRecord.connection_pool.with_connection do
+          # A loop to make threads busy until we `join` them
+          true while wait_for_it
+
+          yield
+        end
+      end
+    end
+
+    wait_for_it = false
+    threads.each(&:join)
+  end
 end
