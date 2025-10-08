@@ -131,6 +131,19 @@ RSpec.describe Security::PolicyDismissal, feature_category: :security_policy_man
         end
       end
     end
+
+    describe '.including_merge_request_and_user' do
+      let_it_be(:policy_dismissal) { create(:policy_dismissal) }
+
+      it 'includes user and merge_request associations' do
+        result = described_class.including_merge_request_and_user
+
+        expect(result).to include(policy_dismissal)
+
+        expect(result.first.association(:user)).to be_loaded
+        expect(result.first.association(:merge_request)).to be_loaded
+      end
+    end
   end
 
   describe '#applicable_for_all_violations?' do

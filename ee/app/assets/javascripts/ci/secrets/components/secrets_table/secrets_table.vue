@@ -7,6 +7,7 @@ import {
   GlLoadingIcon,
   GlLink,
   GlTableLite,
+  GlTooltipDirective,
   GlKeysetPagination,
 } from '@gitlab/ui';
 import EmptySecretsSvg from '@gitlab/svgs/dist/illustrations/chat-sm.svg?url';
@@ -19,15 +20,18 @@ import TimeAgo from '~/vue_shared/components/time_ago_tooltip.vue';
 import UserDate from '~/vue_shared/components/user_date.vue';
 import { convertEnvironmentScope } from '~/ci/common/private/ci_environments_dropdown';
 import getProjectSecretsQuery from '../../graphql/queries/get_project_secrets.query.graphql';
+import getProjectSecretsNeedingRotation from '../../graphql/queries/get_project_secrets_needing_rotation.query.graphql';
 import {
   DETAILS_ROUTE_NAME,
   EDIT_ROUTE_NAME,
   NEW_ROUTE_NAME,
   PAGE_SIZE,
   SCOPED_LABEL_COLOR,
+  SECRET_ROTATION_STATUS,
 } from '../../constants';
 import SecretDeleteModal from '../secret_delete_modal.vue';
 import ActionsCell from './secret_actions_cell.vue';
+import SecretsAlertBanner from './secrets_alert_banner.vue';
 
 export default {
   name: 'SecretsTable',
@@ -43,8 +47,12 @@ export default {
     GlLink,
     GlTableLite,
     SecretDeleteModal,
+    SecretsAlertBanner,
     TimeAgo,
     UserDate,
+  },
+  directives: {
+    GlTooltip: GlTooltipDirective,
   },
   props: {
     fullPath: {
@@ -60,6 +68,7 @@ export default {
   data() {
     return {
       secrets: [],
+      secretsNeedingRotation: [],
       secretToDelete: '',
       showDeleteModal: false,
       endCursor: null,
@@ -89,8 +98,35 @@ export default {
       },
       fetchPolicy: fetchPolicies.NETWORK_ONLY,
     },
+    secretsNeedingRotation: {
+      query: getProjectSecretsNeedingRotation,
+      variables() {
+        return {
+          projectPath: this.fullPath,
+        };
+      },
+      update({ projectSecretsNeedingRotation }) {
+        return projectSecretsNeedingRotation?.nodes || [];
+      },
+      error(e) {
+        createAlert({
+          message: s__(
+            'SecretRotation|An error occurred while fetching secrets needing rotation. Please try again.',
+          ),
+          captureError: true,
+          error: e,
+        });
+      },
+      fetchPolicy: fetchPolicies.NETWORK_ONLY,
+    },
   },
   computed: {
+    showRotationApproachingIcon() {
+      return (rotationInfo) => rotationInfo?.status === SECRET_ROTATION_STATUS.approaching;
+    },
+    showRotationOverdueIcon() {
+      return (rotationInfo) => rotationInfo?.status === SECRET_ROTATION_STATUS.overdue;
+    },
     hasNextPage() {
       return this.endCursor !== null;
     },
@@ -201,6 +237,10 @@ export default {
       </template>
     </gl-empty-state>
     <crud-component v-else :title="s__('Secrets|Stored secrets')">
+      <secrets-alert-banner
+        v-if="secretsNeedingRotation.length"
+        :secrets-to-rotate="secretsNeedingRotation"
+      />
       <template #actions>
         <gl-button size="small" :to="$options.NEW_ROUTE_NAME" data-testid="new-secret-button">
           {{ s__('Secrets|New secret') }}
@@ -208,14 +248,31 @@ export default {
       </template>
 
       <gl-table-lite :fields="$options.fields" :items="secrets" stacked="md" class="gl-mb-0">
-        <template #cell(name)="{ item: { name, branch, environment } }">
-          <router-link
-            data-testid="secret-details-link"
-            :to="getDetailsRoute(name)"
-            class="gl-block"
-          >
-            {{ name }}
-          </router-link>
+        <template #cell(name)="{ item: { name, branch, environment, rotationInfo } }">
+          <div class="gl-block gl-pb-3">
+            <router-link data-testid="secret-details-link" :to="getDetailsRoute(name)">
+              {{ name }}
+            </router-link>
+            <gl-icon
+              v-if="showRotationApproachingIcon(rotationInfo)"
+              v-gl-tooltip
+              :title="
+                s__('SecretRotation|Rotation reminder: This secret needs to be updated soon.')
+              "
+              name="warning"
+              variant="warning"
+              data-testid="rotation-approaching-icon"
+            />
+            <gl-icon
+              v-else-if="showRotationOverdueIcon(rotationInfo)"
+              v-gl-tooltip
+              :title="s__('SecretRotation|Rotation overdue')"
+              name="warning-solid"
+              variant="danger"
+              data-testid="rotation-overdue-icon"
+            />
+          </div>
+
           <gl-label
             :title="environmentLabelText(environment)"
             :background-color="$options.SCOPED_LABEL_COLOR"

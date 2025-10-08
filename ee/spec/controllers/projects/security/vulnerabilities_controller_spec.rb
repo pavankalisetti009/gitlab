@@ -94,6 +94,49 @@ RSpec.describe Projects::Security::VulnerabilitiesController, feature_category: 
         let(:request) { show_vulnerability }
       end
     end
+
+    context 'with policy dismissals' do
+      context 'when there are matching policy dismissals' do
+        let_it_be(:finding) { create(:vulnerabilities_finding, vulnerability: vulnerability, project: vulnerability.project) }
+        let_it_be(:preserved_policy_dismissal) do
+          create(:policy_dismissal, project: project, security_findings_uuids: [vulnerability.vulnerability_finding.uuid], status: 1)
+        end
+
+        it 'assigns policy dismissals for the vulnerability finding UUID' do
+          show_vulnerability
+
+          expect(assigns(:policy_dismissals)).to contain_exactly(preserved_policy_dismissal)
+        end
+
+        context 'when there are not preserved dismissals' do
+          let_it_be(:open_policy_dismissal) do
+            create(:policy_dismissal,
+              project: project,
+              security_findings_uuids: [vulnerability.vulnerability_finding.uuid], status: 0
+            )
+          end
+
+          it 'only assigns policy dismissals with preserved status' do
+            show_vulnerability
+
+            expect(assigns(:policy_dismissals)).to contain_exactly(preserved_policy_dismissal)
+            expect(assigns(:policy_dismissals)).not_to include(open_policy_dismissal)
+          end
+        end
+
+        context 'when feature is disabled' do
+          before do
+            stub_feature_flags(security_policy_approval_warn_mode: false)
+          end
+
+          it 'assigns an empty array for policy dismissals' do
+            show_vulnerability
+
+            expect(assigns(:policy_dismissals)).to eq([])
+          end
+        end
+      end
+    end
   end
 
   describe 'GET #discussions' do

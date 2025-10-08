@@ -154,7 +154,10 @@ RSpec.describe Profiles::TwoFactorAuthsController, feature_category: :system_acc
               target_id: user.id,
               target_type: user.class.name,
               target_details: user.name,
-              details: include(custom_message: 'Registered WebAuthn device')
+              details: hash_including(
+                custom_message: 'Registered WebAuthn device',
+                device_name: 'touch id'
+              )
             )
           end
 
@@ -175,7 +178,10 @@ RSpec.describe Profiles::TwoFactorAuthsController, feature_category: :system_acc
                   target_id: user.id,
                   target_type: user.class.name,
                   target_details: user.name,
-                  details: include(custom_message: 'Registered WebAuthn device')
+                  details: hash_including(
+                    custom_message: 'Registered WebAuthn device',
+                    device_name: 'touch id'
+                  )
                 )
               end
             end
