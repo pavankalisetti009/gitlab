@@ -23,6 +23,7 @@ RSpec.describe '1_settings', feature_category: :shared do
         analytics_cycle_analytics_stage_aggregation_worker
         analytics_devops_adoption_create_all_snapshots_worker
         analytics_dump_ai_user_metrics_database_write_buffer_cron_worker
+        analytics_refresh_ai_events_counts_cron_worker
         analytics_usage_trends_count_job_trigger_worker
         analytics_value_stream_dashboard_count_worker
         app_sec_dast_profile_schedule_worker
