@@ -44,12 +44,6 @@ module EE
       end
     end
 
-    def upstream_has_diverged?(branch_name, remote_ref)
-      diverged?(branch_name, remote_ref) do |branch_commit, upstream_commit|
-        !raw_repository.ancestor?(upstream_commit.id, branch_commit.id)
-      end
-    end
-
     def up_to_date_with_upstream?(branch_name)
       diverged?(branch_name, MIRROR_REMOTE) do |branch_commit, upstream_commit|
         ancestor?(branch_commit.id, upstream_commit.id)
