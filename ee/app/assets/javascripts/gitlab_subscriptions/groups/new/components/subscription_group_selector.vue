@@ -184,6 +184,7 @@ export default {
   },
   created() {
     this.shouldShowNewGroupForm = !this.hasEligibleGroups;
+    this.isLoading = false;
   },
   methods: {
     continueWithSelection() {
