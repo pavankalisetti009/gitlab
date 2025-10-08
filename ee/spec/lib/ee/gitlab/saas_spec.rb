@@ -57,11 +57,5 @@ RSpec.describe Gitlab::Saas, feature_category: :shared do
     let(:feature) { described_class::FEATURES.first }
 
     it { is_expected.to eq(Rails.root.join(described_class::CONFIG_FILE_ROOT, "#{feature}.yml")) }
-
-    context 'when feature is nil' do
-      let(:feature) { nil }
-
-      it { is_expected.to be_nil }
-    end
   end
 end

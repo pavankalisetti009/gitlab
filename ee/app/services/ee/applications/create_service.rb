@@ -16,6 +16,11 @@ module EE
         def disable_ropc_available?
           ::Gitlab::Saas.feature_available?(:disable_ropc_for_new_applications)
         end
+
+        override :disable_ropc_for_all_applications?
+        def disable_ropc_for_all_applications?
+          ::Gitlab::Saas.feature_available?(:disable_ropc_for_all_applications)
+        end
       end
 
       override :execute
