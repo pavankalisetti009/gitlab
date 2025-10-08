@@ -515,18 +515,12 @@ module EE
       end
 
       def find_maven_registry_by_id(id)
-        return unless ::Gitlab.config.dependency_proxy.enabled
-
         ::Gitlab::Graphql::Lazy.with_value(::GitlabSchema.find_by_gid(id)) do |registry_object|
-          registry_object if maven_registry_available?(registry_object)
+          next unless registry_object&.group
+
+          registry_object if ::VirtualRegistries::Packages::Maven
+            .virtual_registry_available?(registry_object.group, current_user)
         end
-      end
-
-      def maven_registry_available?(registry_object)
-        return false unless registry_object&.group
-
-        ::Feature.enabled?(:maven_virtual_registry, registry_object.group) &&
-          registry_object.group.licensed_feature_available?(:packages_virtual_registry)
       end
     end
   end

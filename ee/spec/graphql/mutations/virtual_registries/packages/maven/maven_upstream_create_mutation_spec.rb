@@ -46,6 +46,8 @@ RSpec.describe Mutations::VirtualRegistries::Packages::Maven::MavenUpstreamCreat
     before do
       stub_config(dependency_proxy: { enabled: true })
       stub_licensed_features(packages_virtual_registry: true)
+      allow(VirtualRegistries::Setting).to receive(:cached_for_group).with(group).and_return(build_stubbed(
+        :virtual_registries_setting, group: group))
     end
 
     def resolve
@@ -67,6 +69,17 @@ RSpec.describe Mutations::VirtualRegistries::Packages::Maven::MavenUpstreamCreat
 
       it 'creates an upstream' do
         expect(mutated_upstream).to have_attributes(expected_attributes)
+      end
+
+      context 'when the virtual registries setting enabled is false' do
+        before do
+          allow(VirtualRegistries::Setting).to receive(:cached_for_group).with(group).and_return(build_stubbed(
+            :virtual_registries_setting, :disabled, group: group))
+        end
+
+        it 'raises an exception' do
+          expect { resolver }.to raise_error(Gitlab::Graphql::Errors::ResourceNotAvailable)
+        end
       end
     end
 

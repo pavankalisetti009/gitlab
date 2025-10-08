@@ -34,4 +34,17 @@ RSpec.shared_examples 'virtual registry is unavailable' do
       expect(page).to have_gitlab_http_status(:not_found)
     end
   end
+
+  context 'when virtual registry setting enabled is false' do
+    before do
+      allow(VirtualRegistries::Setting).to receive(:cached_for_group).with(group).and_return(build_stubbed(
+        :virtual_registries_setting, :disabled, group: group))
+    end
+
+    it 'renders 404' do
+      visit url
+
+      expect(page).to have_gitlab_http_status(:not_found)
+    end
+  end
 end

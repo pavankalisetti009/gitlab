@@ -34,6 +34,8 @@ RSpec.describe Sidebars::Groups::Menus::PackagesRegistriesMenu, feature_category
         before do
           stub_config(dependency_proxy: { enabled: true })
           stub_licensed_features(packages_virtual_registry: true)
+          allow(VirtualRegistries::Setting).to receive(:cached_for_group).with(group).and_return(build_stubbed(
+            :virtual_registries_setting, group: group))
         end
 
         context 'when all conditions are met' do
@@ -67,6 +69,15 @@ RSpec.describe Sidebars::Groups::Menus::PackagesRegistriesMenu, feature_category
         context 'when licensed feature is not available' do
           before do
             stub_licensed_features(packages_virtual_registry: false)
+          end
+
+          it { is_expected.to be_nil }
+        end
+
+        context 'when virtual registries setting enabled is false' do
+          before do
+            allow(VirtualRegistries::Setting).to receive(:cached_for_group).with(group).and_return(build_stubbed(
+              :virtual_registries_setting, :disabled, group: group))
           end
 
           it { is_expected.to be_nil }

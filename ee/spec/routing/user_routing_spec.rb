@@ -19,9 +19,17 @@ RSpec.describe 'EE-specific user routing' do
     end
 
     shared_examples 'routes session paths' do |route_type|
-      it "handles #{route_type} named route helpers" do
+      before do
+        allow(Gitlab::Geo).to receive(:secondary?).with(infer_without_database: true).and_return(route_type == :geo)
         Rails.application.reload_routes!
+      end
 
+      after do
+        allow(Gitlab::Geo).to receive(:secondary?).with(infer_without_database: true).and_call_original
+        Rails.application.reload_routes!
+      end
+
+      it "handles #{route_type} named route helpers" do
         sign_in_path, sign_out_path = case route_type
                                       when :regular then
                                         ['/users/sign_in', '/users/sign_out']
@@ -35,18 +43,10 @@ RSpec.describe 'EE-specific user routing' do
     end
 
     context 'when a Geo secondary, checked without a database connection' do
-      before do
-        allow(Gitlab::Geo).to receive(:secondary?).with(infer_without_database: true).and_return(false)
-      end
-
       it_behaves_like 'routes session paths', :regular
     end
 
     context 'Geo database is configured' do
-      before do
-        allow(Gitlab::Geo).to receive(:secondary?).with(infer_without_database: true).and_return(true)
-      end
-
       it_behaves_like 'routes session paths', :geo
     end
   end
