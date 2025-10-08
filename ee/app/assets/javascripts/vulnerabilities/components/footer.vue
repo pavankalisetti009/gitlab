@@ -10,12 +10,14 @@ import { createAlert } from '~/alert';
 import { TYPENAME_VULNERABILITY } from '~/graphql_shared/constants';
 import { convertToGraphQLId } from '~/graphql_shared/utils';
 import { s__ } from '~/locale';
+import glFeatureFlagsMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
 import { normalizeGraphQLNote } from '../helpers';
 import GenericReportSection from './generic_report/report_section.vue';
 import HistoryEntry from './history_entry.vue';
 import RelatedIssues from './related_issues.vue';
 import RelatedJiraIssues from './related_jira_issues.vue';
 import StatusDescription from './status_description.vue';
+import SecurityPolicyBypassDescription from './security_policy_bypass_description.vue';
 
 const TEN_SECONDS = 10000;
 
@@ -23,15 +25,17 @@ export default {
   name: 'VulnerabilityFooter',
   components: {
     GenericReportSection,
-    SolutionCard,
-    MergeRequestNote,
-    HistoryEntry,
-    RelatedIssues,
-    RelatedJiraIssues,
     GlLoadingIcon,
     GlIcon,
+    HistoryEntry,
+    MergeRequestNote,
+    RelatedIssues,
+    RelatedJiraIssues,
+    SecurityPolicyBypassDescription,
+    SolutionCard,
     StatusDescription,
   },
+  mixins: [glFeatureFlagsMixin()],
   inject: {
     createJiraIssueUrl: {
       default: '',
@@ -81,6 +85,9 @@ export default {
         url: this.vulnerability.project.fullPath,
         value: this.vulnerability.project.fullName,
       };
+    },
+    securityPolicyBypasses() {
+      return this.vulnerability.policyDismissals || [];
     },
     solutionText() {
       const { solutionHtml, solution, remediations } = this.vulnerability;
@@ -245,6 +252,13 @@ export default {
         />
       </div>
     </div>
+    <template v-if="glFeatures.securityPolicyApprovalWarnMode">
+      <security-policy-bypass-description
+        v-for="bypass in securityPolicyBypasses"
+        :key="bypass.id"
+        :bypass="bypass"
+      />
+    </template>
     <hr />
     <gl-loading-icon v-if="discussionsLoading" />
     <div v-else-if="discussions.length">
