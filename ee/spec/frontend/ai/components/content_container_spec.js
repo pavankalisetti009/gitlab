@@ -23,7 +23,6 @@ describe('AiContentContainer', () => {
       },
       propsData: {
         activeTab,
-        isExpanded: true,
         showBackButton,
         userId: 'gid://gitlab/User/1',
         projectId: 'gid://gitlab/Project/123',

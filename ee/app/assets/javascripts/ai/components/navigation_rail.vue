@@ -41,9 +41,10 @@ export default {
 };
 </script>
 
+<!-- eslint-disable @gitlab/vue-tailwind-no-max-width-media-queries -->
 <template>
   <div
-    class="gl-flex gl-gap-3 gl-bg-transparent gl-p-3 sm:gl-px-0 lg:gl-flex-col"
+    class="gl-flex gl-items-center gl-gap-3 gl-bg-transparent max-lg:gl-h-[var(--ai-navigation-rail-size)] max-lg:gl-flex-1 max-lg:gl-px-3 max-sm:gl-px-0 lg:gl-w-[var(--ai-navigation-rail-size)] lg:gl-flex-col lg:gl-py-3"
     role="tablist"
     aria-orientation="vertical"
   >
@@ -90,7 +91,7 @@ export default {
       @click="toggleTab('history')"
     />
     <div
-      class="gl-mx-auto gl-my-4 gl-h-1 gl-w-5 gl-border-0 gl-border-t-1 gl-border-solid gl-border-[#7759C233]"
+      class="gl-my-4 gl-h-1 gl-w-5 gl-border-0 gl-border-t-1 gl-border-solid gl-border-[#7759C233] lg:gl-mx-auto"
       name="divider"
     ></div>
     <gl-button
@@ -110,7 +111,7 @@ export default {
     <gl-button
       v-gl-tooltip.left
       icon="suggestion-ai"
-      class="gl-mt-auto !gl-rounded-lg"
+      class="!gl-rounded-lg max-lg:gl-ml-auto lg:gl-mt-auto"
       :class="['ai-nav-icon', { 'ai-nav-icon-active': activeTab === 'suggestions' }]"
       category="tertiary"
       :aria-selected="activeTab === 'suggestions'"

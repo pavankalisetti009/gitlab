@@ -44,8 +44,4 @@ describe('NavigationRail', () => {
 
     expect(wrapper.emitted('handleTabToggle')).toEqual([['chat']]);
   });
-
-  it('applies margin-top auto class to suggestions button for alignment', () => {
-    expect(findSuggestionsToggle().classes()).toContain('gl-mt-auto');
-  });
 });
