@@ -196,8 +196,6 @@ module Search
       end
 
       def use_scroll_api?
-        return false unless Feature.enabled?(:search_schema_migration_scroll_api, :instance)
-
         current_scroll_id.present? || remaining_documents_count > query_batch_size
       end
 
