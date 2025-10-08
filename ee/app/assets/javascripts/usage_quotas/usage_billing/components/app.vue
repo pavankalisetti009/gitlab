@@ -5,6 +5,7 @@ import { logError } from '~/lib/logger';
 import axios from '~/lib/utils/axios_utils';
 import { captureException } from '~/sentry/sentry_browser_wrapper';
 import PageHeading from '~/vue_shared/components/page_heading.vue';
+import getSubscriptionUsageQuery from '../graphql/get_subscription_usage.query.graphql';
 import PurchaseCommitmentCard from './purchase_commitment_card.vue';
 import UsageTrendsChart from './usage_trends_chart.vue';
 import UsageByUserTab from './usage_by_user_tab.vue';
@@ -22,20 +23,47 @@ export default {
     UsageByUserTab,
     CurrentUsageCard,
   },
-  inject: ['fetchUsageDataApiUrl'],
+  apollo: {
+    subscriptionUsage: {
+      query: getSubscriptionUsageQuery,
+      variables() {
+        return {
+          namespacePath: this.namespacePath,
+          startDate: '2025-09-01',
+          endDate: '2025-09-30',
+        };
+      },
+      update(data) {
+        return data.subscriptionUsage;
+      },
+      error(error) {
+        logError(error);
+        captureException(error);
+        this.isError = true;
+      },
+    },
+  },
+  inject: {
+    fetchUsageDataApiUrl: { default: '' },
+    namespacePath: { default: '' },
+  },
   data() {
     return {
-      isLoading: true,
+      isFetchingData: true,
       isError: false,
       subscriptionData: null,
+      subscriptionUsage: {},
     };
   },
   computed: {
     gitlabCreditsUsage() {
       return this.subscriptionData.gitlabCreditsUsage;
     },
+    poolUsage() {
+      return this.subscriptionUsage.poolUsage;
+    },
     hasCommitment() {
-      return Boolean(this.gitlabCreditsUsage?.totalCredits);
+      return Boolean(this.poolUsage?.totalCredits);
     },
     trend() {
       return (
@@ -60,6 +88,12 @@ export default {
         this.gitlabCreditsUsage.seatUsage?.dailyAverage
       );
     },
+    isLoading() {
+      return this.isFetchingData || this.$apollo.queries.subscriptionUsage.loading;
+    },
+    threshold() {
+      return this.poolUsage?.totalCredits ?? 0;
+    },
   },
   async mounted() {
     await this.fetchUsageData();
@@ -67,7 +101,7 @@ export default {
   methods: {
     async fetchUsageData() {
       try {
-        this.isLoading = true;
+        this.isFetchingData = true;
         const response = await axios.get(this.fetchUsageDataApiUrl);
         this.subscriptionData = response?.data?.subscription;
       } catch (error) {
@@ -78,7 +112,7 @@ export default {
         // TODO: this fallback will be removed once we integrate with actual BE
         this.subscriptionData = mockUsageDataWithPool.subscription;
       } finally {
-        this.isLoading = false;
+        this.isFetchingData = false;
       }
     },
   },
@@ -127,8 +161,8 @@ export default {
       <section class="gl-flex gl-flex-col gl-gap-5 @md/panel:gl-flex-row">
         <current-usage-card
           v-if="hasCommitment"
-          :total-credits="gitlabCreditsUsage.totalCredits"
-          :total-credits-used="gitlabCreditsUsage.totalCreditsUsed"
+          :total-credits="poolUsage.totalCredits"
+          :total-credits-used="poolUsage.creditsUsed"
           :current-overage="gitlabCreditsUsage.overageCredits"
           :month-start-date="gitlabCreditsUsage.startDate"
           :month-end-date="gitlabCreditsUsage.endDate"
@@ -145,7 +179,7 @@ export default {
             :trend="trend"
             :daily-peak="dailyPeak"
             :daily-average="dailyAverage"
-            :threshold="gitlabCreditsUsage.totalCredits"
+            :threshold="threshold"
           />
         </gl-tab>
         <gl-tab :title="s__('UsageBilling|Usage by user')">

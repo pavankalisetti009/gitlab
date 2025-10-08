@@ -1,5 +1,9 @@
+import Vue from 'vue';
 import { GlAlert, GlTab } from '@gitlab/ui';
+import VueApollo from 'vue-apollo';
 import MockAdapter from 'axios-mock-adapter';
+import getSubscriptionUsageQuery from 'ee/usage_quotas/usage_billing/graphql/get_subscription_usage.query.graphql';
+import createMockApollo from 'helpers/mock_apollo_helper';
 import UsageBillingApp from 'ee/usage_quotas/usage_billing/components/app.vue';
 import UsageByUserTab from 'ee/usage_quotas/usage_billing/components/usage_by_user_tab.vue';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
@@ -10,10 +14,12 @@ import { captureException } from '~/sentry/sentry_browser_wrapper';
 import PurchaseCommitmentCard from 'ee/usage_quotas/usage_billing/components/purchase_commitment_card.vue';
 import UsageTrendsChart from 'ee/usage_quotas/usage_billing/components/usage_trends_chart.vue';
 import CurrentUsageCard from 'ee/usage_quotas/usage_billing/components/current_usage_card.vue';
-import { mockUsageDataWithoutPool, mockUsageDataWithPool } from '../mock_data';
+import { mockUsageDataWithPool, usageDataWithPool, usageDataWithoutPool } from '../mock_data';
 
 jest.mock('~/lib/logger');
 jest.mock('~/sentry/sentry_browser_wrapper');
+
+Vue.use(VueApollo);
 
 describe('UsageBillingApp', () => {
   /** @type {import('helpers/vue_test_utils_helper').ExtendedWrapper} */
@@ -23,8 +29,11 @@ describe('UsageBillingApp', () => {
 
   const API_ENDPOINT = '/admin/gitlab_duo/usage/data';
 
-  const createComponent = () => {
+  const createComponent = ({
+    mockQueryHandler = jest.fn().mockResolvedValue(usageDataWithPool),
+  } = {}) => {
     wrapper = shallowMountExtended(UsageBillingApp, {
+      apolloProvider: createMockApollo([[getSubscriptionUsageQuery, mockQueryHandler]]),
       provide: {
         fetchUsageDataApiUrl: '/admin/gitlab_duo/usage/data',
       },
@@ -45,7 +54,9 @@ describe('UsageBillingApp', () => {
 
   describe('loading state', () => {
     beforeEach(() => {
-      createComponent();
+      const loadingQueryHandler = jest.fn().mockImplementation(() => new Promise(() => {}));
+
+      createComponent({ mockQueryHandler: loadingQueryHandler });
     });
 
     it('shows only a loading icon when fetching data', () => {
@@ -57,7 +68,6 @@ describe('UsageBillingApp', () => {
 
   describe('rendering elements', () => {
     beforeEach(async () => {
-      mockAxios.onGet(API_ENDPOINT).reply(200, mockUsageDataWithPool);
       createComponent();
       await waitForPromises();
     });
@@ -110,8 +120,8 @@ describe('UsageBillingApp', () => {
 
   describe('no commitment state', () => {
     beforeEach(async () => {
-      mockAxios.onGet(API_ENDPOINT).reply(200, mockUsageDataWithoutPool);
-      createComponent();
+      mockAxios.onGet(API_ENDPOINT).reply(200, mockUsageDataWithPool);
+      createComponent({ mockQueryHandler: jest.fn().mockResolvedValue(usageDataWithoutPool) });
       await waitForPromises();
     });
 

@@ -581,3 +581,22 @@ export const mockUsersUsageDataWithZeroAllocation = {
     },
   },
 };
+
+export const usageDataWithPool = {
+  data: {
+    subscriptionUsage: {
+      poolUsage: {
+        totalCredits: 300,
+        creditsUsed: 50,
+      },
+    },
+  },
+};
+
+export const usageDataWithoutPool = {
+  data: {
+    subscriptionUsage: {
+      poolUsage: null,
+    },
+  },
+};

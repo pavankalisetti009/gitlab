@@ -8,10 +8,13 @@ import {
   mockUsersUsageDataWithoutPool,
   mockUsageDataWithOverage,
   mockUsersUsageDataWithOverage,
+  usageDataWithPool,
+  usageDataWithoutPool,
 } from 'ee_jest/usage_quotas/usage_billing/mock_data';
 import { createMockClient } from 'helpers/mock_apollo_helper';
 import axios from '~/lib/utils/axios_utils';
 import getSubscriptionUsersUsageQuery from '../graphql/get_subscription_users_usage.query.graphql';
+import getSubscriptionUsageQuery from '../graphql/get_subscription_usage.query.graphql';
 import UsageBillingApp from './app.vue';
 
 const meta = {
@@ -27,10 +30,15 @@ export default meta;
  * @param {Object} [config.provide]
  * @param {Function} [config.restUsageDataHandler]
  * @param {Function} [config.getSubscriptionUsersUsageQueryHandler]
+ * @param {Function} [config.getSubscriptionUsageQueryHandler]
  * @returns
  */
 const createTemplate = (config = {}) => {
-  let { restUsageDataHandler, getSubscriptionUsersUsageQueryHandler } = config;
+  let {
+    restUsageDataHandler,
+    getSubscriptionUsersUsageQueryHandler,
+    getSubscriptionUsageQueryHandler,
+  } = config;
 
   // NOTE: currently we mock both, REST and GraphQL APIs, as we transition towards GraphQL API
   // Apollo
@@ -39,9 +47,13 @@ const createTemplate = (config = {}) => {
     if (!getSubscriptionUsersUsageQueryHandler) {
       getSubscriptionUsersUsageQueryHandler = () => Promise.resolve(mockUsersUsageDataWithPool);
     }
+    if (!getSubscriptionUsageQueryHandler) {
+      getSubscriptionUsageQueryHandler = () => Promise.resolve(usageDataWithPool);
+    }
 
     const requestHandlers = [
       [getSubscriptionUsersUsageQuery, getSubscriptionUsersUsageQueryHandler],
+      [getSubscriptionUsageQuery, getSubscriptionUsageQueryHandler],
     ];
     defaultClient = createMockClient(requestHandlers);
   }
@@ -86,9 +98,12 @@ export const NoCommitment = {
     const getSubscriptionUsersUsageQueryHandler = () =>
       Promise.resolve(mockUsersUsageDataWithoutPool);
 
+    const getSubscriptionUsageQueryHandler = () => Promise.resolve(usageDataWithoutPool);
+
     return createTemplate({
       restUsageDataHandler,
       getSubscriptionUsersUsageQueryHandler,
+      getSubscriptionUsageQueryHandler,
     })(...args);
   },
 };
