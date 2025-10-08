@@ -1,21 +1,21 @@
 <script>
 import { GlBreakpointInstance } from '@gitlab/ui/src/utils';
 import { __ } from '~/locale';
-import LocalStorageSync from '~/vue_shared/components/local_storage_sync.vue';
 import AgentSessionsRoot from '~/vue_shared/spa/components/spa_root.vue';
 import { AGENTS_PLATFORM_SHOW_ROUTE } from 'ee/ai/duo_agents_platform/router/constants';
 import { formatAgentFlowName } from 'ee/ai/duo_agents_platform/utils';
 import DuoAgenticChat from 'ee/ai/duo_agentic_chat/components/duo_agentic_chat.vue';
+import Cookies from '~/lib/utils/cookies';
 import AiContentContainer from './content_container.vue';
 import NavigationRail from './navigation_rail.vue';
 
+const ACTIVE_TAB_KEY = 'ai_panel_active_tab';
+
 export default {
-  PANEL_EXPANDED_STORAGE_KEY: 'ai-panel-expanded',
-  ACTIVE_TAB_KEY: 'ai-panel-active-tab',
+  name: 'AiPanel',
   components: {
     AiContentContainer,
     NavigationRail,
-    LocalStorageSync,
   },
   inject: {
     isAgenticAvailable: {
@@ -64,8 +64,7 @@ export default {
   },
   data() {
     return {
-      isExpanded: true,
-      activeTab: localStorage.getItem(this.$options.ACTIVE_TAB_KEY) || null,
+      activeTab: Cookies.get(ACTIVE_TAB_KEY),
       isDesktop: GlBreakpointInstance.isDesktop(),
     };
   },
@@ -126,44 +125,36 @@ export default {
   },
   mounted() {
     window.addEventListener('resize', this.handleWindowResize);
+    window.addEventListener('focus', this.handleWindowFocus);
   },
   beforeDestroy() {
     window.removeEventListener('resize', this.handleWindowResize);
+    window.removeEventListener('focus', this.handleWindowFocus);
   },
   methods: {
-    toggleAIPanel(val) {
-      this.isExpanded = val;
-      if (!val) this.activeTab = null;
-    },
     handleGoBack() {
       if (this.currentTabComponent.initialRoute) {
         this.$router.push(this.currentTabComponent.initialRoute);
       }
     },
-    handleTabToggle(tab) {
-      if (tab === this.activeTab) {
-        // Collapse and clear active tab
-        this.toggleAIPanel(false);
-        this.activeTab = null;
-        localStorage.removeItem(this.$options.ACTIVE_TAB_KEY);
-        return;
+    setActiveTab(value) {
+      this.activeTab = value;
+      if (value) {
+        Cookies.set(ACTIVE_TAB_KEY, value);
+      } else {
+        Cookies.remove(ACTIVE_TAB_KEY);
       }
-      this.activeTab = tab;
-      localStorage.setItem(this.$options.ACTIVE_TAB_KEY, tab);
-      if (!this.isExpanded) {
-        this.toggleAIPanel(true);
-      }
-
-      // Navigate to the initial route if the tab has one (e.g., sessions)
-      this.$nextTick(() => {
-        if (this.currentTabComponent?.initialRoute) {
-          this.$router.push(this.currentTabComponent.initialRoute);
-        }
-      });
     },
-    onSwitchToActiveTab(tab) {
-      this.activeTab = tab;
-      localStorage.setItem(this.$options.ACTIVE_TAB_KEY, tab);
+    handleTabToggle(tab) {
+      const selected = tab === this.activeTab ? undefined : tab;
+      this.setActiveTab(selected);
+      if (selected && this.currentTabComponent.initialRoute) {
+        // Navigate to the initial route if the tab has one (e.g., sessions)
+        this.$router.push(this.currentTabComponent.initialRoute);
+      }
+    },
+    closePanel() {
+      this.setActiveTab(undefined);
     },
     handleWindowResize() {
       const currentIsDesktop = GlBreakpointInstance.isDesktop();
@@ -171,27 +162,28 @@ export default {
       // This check ensures that the panel is collapsed only when resizing
       // from desktop to mobile/tablet, not the other way around
       if (this.isDesktop && !currentIsDesktop) {
-        this.isExpanded = false;
-        this.activeTab = null;
+        this.closePanel();
       }
 
       this.isDesktop = currentIsDesktop;
     },
+    handleWindowFocus() {
+      // persist panel's opened state to the currently opened browser tab context
+      // this is important for:
+      //   1. new tabs opened to have the same panel state as the origin tab
+      //   2. current tab initial load/reload to have no layout shift
+      this.setActiveTab(this.activeTab);
+    },
   },
 };
 </script>
+
 <template>
-  <div class="gl-flex gl-h-full gl-gap-3">
-    <local-storage-sync
-      :value="isExpanded"
-      :storage-key="$options.PANEL_EXPANDED_STORAGE_KEY"
-      @input="toggleAIPanel($event)"
-    />
+  <div class="gl-flex gl-h-full gl-gap-[var(--ai-panels-gap)]">
     <ai-content-container
-      v-if="activeTab"
+      v-if="currentTabComponent"
       :user-id="userId"
       :active-tab="currentTabComponent"
-      :is-expanded="isExpanded"
       :show-back-button="showBackButton"
       :project-id="projectId"
       :namespace-id="namespaceId"
@@ -199,12 +191,12 @@ export default {
       :resource-id="resourceId"
       :metadata="metadata"
       :user-model-selection-enabled="userModelSelectionEnabled"
-      @closePanel="toggleAIPanel"
-      @go-back="handleGoBack()"
-      @switch-to-active-tab="onSwitchToActiveTab"
+      @closePanel="closePanel"
+      @go-back="handleGoBack"
+      @switch-to-active-tab="setActiveTab"
     />
     <navigation-rail
-      :is-expanded="isExpanded"
+      :is-expanded="Boolean(currentTabComponent)"
       :active-tab="activeTab"
       @handleTabToggle="handleTabToggle"
     />

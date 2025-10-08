@@ -18,7 +18,8 @@ module EE
         metadata: ::Gitlab::DuoWorkflow::Client.metadata(user).to_json,
         user_model_selection_enabled: user_model_selection_enabled.to_s,
         agentic_available: is_agentic_available.to_s,
-        chat_title: chat_title
+        chat_title: chat_title,
+        expanded: ('true' if ai_panel_expanded?)
       }
     end
   end
