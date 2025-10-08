@@ -1,9 +1,11 @@
 <script>
 import { s__ } from '~/locale';
 import { getIdFromGraphQLId } from '~/graphql_shared/utils';
+import glFeatureFlagsMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
 import PageHeading from '~/vue_shared/components/page_heading.vue';
 import * as Sentry from '~/sentry/sentry_browser_wrapper';
 import createAiCatalogFlow from '../graphql/mutations/create_ai_catalog_flow.mutation.graphql';
+import createAiCatalogThirdPartyFlow from '../graphql/mutations/create_ai_catalog_third_party_flow.mutation.graphql';
 import { AI_CATALOG_FLOWS_SHOW_ROUTE } from '../router/constants';
 import AiCatalogFlowForm from '../components/ai_catalog_flow_form.vue';
 
@@ -13,32 +15,44 @@ export default {
     AiCatalogFlowForm,
     PageHeading,
   },
+  mixins: [glFeatureFlagsMixin()],
   data() {
     return {
       errors: [],
       isSubmitting: false,
     };
   },
+  computed: {
+    isThirdPartyFlowsAvailable() {
+      return this.glFeatures.aiCatalogThirdPartyFlows;
+    },
+  },
   methods: {
     async handleSubmit(input) {
       this.isSubmitting = true;
       this.resetErrorMessages();
+      const isThirdPartyFlow = this.isThirdPartyFlowsAvailable && input.definition;
+      const createQuery = isThirdPartyFlow ? createAiCatalogThirdPartyFlow : createAiCatalogFlow;
+
       try {
         const { data } = await this.$apollo.mutate({
-          mutation: createAiCatalogFlow,
+          mutation: createQuery,
           variables: {
             input,
           },
         });
 
         if (data) {
-          const { errors } = data.aiCatalogFlowCreate;
+          const createResponse = isThirdPartyFlow
+            ? data.aiCatalogThirdPartyFlowCreate
+            : data.aiCatalogFlowCreate;
+          const { errors } = createResponse;
           if (errors.length > 0) {
             this.errors = errors;
             return;
           }
 
-          const newFlowId = getIdFromGraphQLId(data.aiCatalogFlowCreate.item.id);
+          const newFlowId = getIdFromGraphQLId(createResponse.item.id);
           this.$toast.show(s__('AICatalog|Flow created successfully.'));
           this.$router.push({
             name: AI_CATALOG_FLOWS_SHOW_ROUTE,
