@@ -21,7 +21,7 @@ module Sidebars
 
         override :render?
         def render?
-          !!context.current_user && ::Gitlab::CurrentSettings.should_check_namespace_plan?
+          !!context.current_user && ::Gitlab::Saas.feature_available?(:gitlab_com_subscriptions)
         end
 
         override :active_routes

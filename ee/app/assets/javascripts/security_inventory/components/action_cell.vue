@@ -47,10 +47,16 @@ export default {
       ];
 
       if (!isGroup) {
-        items.push({
-          text: s__('SecurityInventory|Manage tool coverage'),
-          href: this.toolCoveragePath(item),
-        });
+        items.push(
+          {
+            text: s__('SecurityInventory|Manage tool coverage'),
+            href: this.toolCoveragePath(item),
+          },
+          {
+            text: s__('SecurityInventory|Edit security attributes'),
+            action: () => this.$emit('openAttributesDrawer', item),
+          },
+        );
       }
 
       return items;

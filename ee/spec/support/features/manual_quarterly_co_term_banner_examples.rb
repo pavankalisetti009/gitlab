@@ -17,7 +17,7 @@ RSpec.shared_examples 'manual quarterly co-term banner' do |path_to_visit:|
     let_it_be(:reminder_days) { Gitlab::ManualQuarterlyCoTermBanner::REMINDER_DAYS }
 
     before do
-      allow(Gitlab::CurrentSettings).to receive(:should_check_namespace_plan?) { should_check_namespace_plan? }
+      stub_saas_features(gitlab_com_subscriptions: gitlab_com_subscriptions_enabled)
 
       create_current_license(
         cloud_licensing_enabled: true,
@@ -30,16 +30,16 @@ RSpec.shared_examples 'manual quarterly co-term banner' do |path_to_visit:|
       visit(send(path_to_visit))
     end
 
-    context 'when on Gitlab.com' do
+    context 'when gitlab_com_subscriptions saas feature is available' do
       let(:reconciliation_date) { Date.current }
-      let(:should_check_namespace_plan?) { true }
+      let(:gitlab_com_subscriptions_enabled) { true }
       let(:type) { :saas }
 
       it_behaves_like 'a hidden manual quarterly co-term banner'
     end
 
-    context 'when on self-managed' do
-      let(:should_check_namespace_plan?) { false }
+    context 'when gitlab_com_subscriptions saas feature is not available' do
+      let(:gitlab_com_subscriptions_enabled) { false }
       let(:type) { :self_managed }
 
       context 'when reconciliation is upcoming' do

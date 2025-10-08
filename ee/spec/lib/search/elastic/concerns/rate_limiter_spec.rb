@@ -8,7 +8,7 @@ RSpec.describe Search::Elastic::Concerns::RateLimiter, feature_category: :global
   describe '#embeddings_throttled?' do
     it 'calls ApplicationRateLimiter.peek' do
       expect(::Gitlab::ApplicationRateLimiter)
-        .to receive(:peek).with(described_class::ENDPOINT, scope: nil, threshold: 315.0)
+        .to receive(:peek).with(described_class::ENDPOINT, scope: :global, threshold: 315.0)
         .and_call_original
 
       expect(instance).not_to be_embeddings_throttled
@@ -28,7 +28,7 @@ RSpec.describe Search::Elastic::Concerns::RateLimiter, feature_category: :global
   describe '#embeddings_throttled_after_increment?' do
     it 'calls ApplicationRateLimiter.throttled?' do
       expect(::Gitlab::ApplicationRateLimiter)
-        .to receive(:throttled?).with(described_class::ENDPOINT, scope: nil, threshold: 315.0)
+        .to receive(:throttled?).with(described_class::ENDPOINT, scope: :global, threshold: 315.0)
         .and_call_original
 
       expect(instance).not_to be_embeddings_throttled_after_increment

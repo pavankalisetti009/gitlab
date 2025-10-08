@@ -343,6 +343,7 @@ export default {
           :items="displayItems"
           :is-loading="isLoading"
           :has-search="hasSearch"
+          @saved="$apollo.queries.subgroupItems.refetch()"
         />
         <div v-if="showLoadMoreButton" class="gl-mt-5 gl-flex gl-justify-center">
           <gl-button data-testid="load-more-button" :loading="isLoadingMore" @click="loadMore">

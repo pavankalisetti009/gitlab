@@ -57,7 +57,7 @@ module Gitlab
       attr_reader :user
 
       def has_non_trial_offline_cloud_license?
-        return false if Gitlab::CurrentSettings.should_check_namespace_plan?
+        return false if ::Gitlab::Saas.feature_available?(:gitlab_com_subscriptions)
         return false unless ::License.current&.offline_cloud_license?
         return false if ::License.current.trial?
 

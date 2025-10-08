@@ -285,7 +285,7 @@ RSpec.describe RegistrationsController, :with_current_organization, type: :reque
     describe 'phone verification service daily transaction limit check' do
       it 'sets high risk attribute when phone verification limit is exceeded' do
         allow(Gitlab::ApplicationRateLimiter).to receive(:peek)
-          .with(:soft_phone_verification_transactions_limit, scope: nil)
+          .with(:soft_phone_verification_transactions_limit, scope: :global)
           .and_return(true)
         create_user
         expect(

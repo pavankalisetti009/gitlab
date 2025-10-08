@@ -28,14 +28,14 @@ RSpec.describe Gitlab::ManualQuarterlyCoTermBanner do
   describe '#display?' do
     subject(:display?) { manual_quarterly_co_term_banner.display? }
 
-    let(:should_check_namespace_plan?) { false }
+    let(:gitlab_com_subscriptions_enabled) { false }
 
     before do
-      allow(Gitlab::CurrentSettings).to receive(:should_check_namespace_plan?) { should_check_namespace_plan? }
+      stub_saas_features(gitlab_com_subscriptions: gitlab_com_subscriptions_enabled)
     end
 
-    context 'when on GitLab.com' do
-      let(:should_check_namespace_plan?) { true }
+    context 'when gitlab_com_subscriptions saas feature is available' do
+      let(:gitlab_com_subscriptions_enabled) { true }
 
       it { is_expected.to eq(false) }
     end
