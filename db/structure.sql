@@ -18935,6 +18935,19 @@ CREATE TABLE label_links (
     namespace_id bigint
 );
 
+CREATE TABLE label_links_archived (
+    id bigint NOT NULL,
+    label_id bigint,
+    target_id bigint,
+    target_type character varying,
+    created_at timestamp without time zone,
+    updated_at timestamp without time zone,
+    namespace_id bigint,
+    archived_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP
+);
+
+COMMENT ON TABLE label_links_archived IS 'Temporary table for storing orphaned label_links during namespace_id backfill. To be dropped after migration completion.';
+
 CREATE SEQUENCE label_links_id_seq
     START WITH 1
     INCREMENT BY 1
@@ -33962,6 +33975,9 @@ ALTER TABLE ONLY job_environments
 
 ALTER TABLE ONLY keys
     ADD CONSTRAINT keys_pkey PRIMARY KEY (id);
+
+ALTER TABLE ONLY label_links_archived
+    ADD CONSTRAINT label_links_archived_pkey PRIMARY KEY (id);
 
 ALTER TABLE ONLY label_links
     ADD CONSTRAINT label_links_pkey PRIMARY KEY (id);
