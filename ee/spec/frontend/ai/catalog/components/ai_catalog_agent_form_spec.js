@@ -1,6 +1,6 @@
 import VueApollo from 'vue-apollo';
 import Vue, { nextTick } from 'vue';
-import { GlFormFields } from '@gitlab/ui';
+import { GlForm } from '@gitlab/ui';
 import ErrorsAlert from '~/vue_shared/components/errors_alert.vue';
 import createMockApollo from 'helpers/mock_apollo_helper';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
@@ -8,6 +8,7 @@ import waitForPromises from 'helpers/wait_for_promises';
 import AiCatalogAgentForm from 'ee/ai/catalog/components/ai_catalog_agent_form.vue';
 import aiCatalogBuiltInToolsQuery from 'ee/ai/catalog/graphql/queries/ai_catalog_built_in_tools.query.graphql';
 import FormProjectDropdown from 'ee/ai/catalog/components/form_project_dropdown.vue';
+import FormGroup from 'ee/ai/catalog/components/form_group.vue';
 import VisibilityLevelRadioGroup from 'ee/ai/catalog/components//visibility_level_radio_group.vue';
 import { VISIBILITY_LEVEL_PRIVATE, VISIBILITY_LEVEL_PUBLIC } from 'ee/ai/catalog/constants';
 import { mockToolQueryResponse, toolTitles } from '../mock_data';
@@ -19,7 +20,7 @@ describe('AiCatalogAgentForm', () => {
   let mockApollo;
 
   const findErrorAlert = () => wrapper.findComponent(ErrorsAlert);
-  const findFormFields = () => wrapper.findComponent(GlFormFields);
+  const findForm = () => wrapper.findComponent(GlForm);
   const findProjectDropdown = () => wrapper.findComponent(FormProjectDropdown);
   const findVisibilityLevelRadioGroup = () => wrapper.findComponent(VisibilityLevelRadioGroup);
   const findNameField = () => wrapper.findByTestId('agent-form-input-name');
@@ -65,7 +66,8 @@ describe('AiCatalogAgentForm', () => {
         },
       },
       stubs: {
-        GlFormFields,
+        FormGroup,
+        GlForm,
       },
       provide: {
         glFeatures: {
@@ -98,10 +100,10 @@ describe('AiCatalogAgentForm', () => {
       expect(findVisibilityLevelRadioGroup().props('value')).toBe(VISIBILITY_LEVEL_PRIVATE);
     });
 
-    it('does not render project dropdown when in edit mode', () => {
+    it('renders project dropdown as disabled when in edit mode', () => {
       createWrapper({ props: { mode: 'edit' } });
 
-      expect(findProjectDropdown().exists()).toBe(false);
+      expect(findProjectDropdown().props('disabled')).toBe(true);
     });
 
     it('does not render tools selector when aiCatalogAgentTools FF is off', () => {
@@ -158,7 +160,9 @@ describe('AiCatalogAgentForm', () => {
     it('emits form values when user clicks submit', async () => {
       createWrapper({ props: { initialValues } });
 
-      await findFormFields().vm.$emit('submit');
+      await findForm().vm.$emit('submit', {
+        preventDefault: jest.fn(),
+      });
 
       expect(wrapper.emitted('submit')).toEqual([[initialValues]]);
     });
@@ -175,7 +179,9 @@ describe('AiCatalogAgentForm', () => {
 
       createWrapper({ props: { initialValues: formValuesWithRandomSpaces } });
 
-      await findFormFields().vm.$emit('submit');
+      await findForm().vm.$emit('submit', {
+        preventDefault: jest.fn(),
+      });
 
       expect(wrapper.emitted('submit')).toEqual([[initialValues]]);
     });

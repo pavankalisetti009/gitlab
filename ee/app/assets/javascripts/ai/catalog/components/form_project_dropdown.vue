@@ -33,6 +33,11 @@ export default {
       required: false,
       default: true,
     },
+    disabled: {
+      type: Boolean,
+      required: false,
+      default: false,
+    },
   },
   data() {
     return {
@@ -163,6 +168,7 @@ export default {
     is-check-centered
     :infinite-scroll="hasNextPage"
     :infinite-scroll-loading="isLoadingMore"
+    :disabled="disabled"
     data-testid="project-select"
     @bottom-reached="onBottomReached"
     @search="onSearch"
