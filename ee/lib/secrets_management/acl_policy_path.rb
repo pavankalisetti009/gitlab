@@ -23,7 +23,7 @@ module SecretsManagement
       ret.denied_parameters = object["denied_parameters"] if object.key?("denied_parameters")
       ret.required_parameters = Set.new(object["required_parameters"]) if object.key?("required_parameters")
       ret.granted_by = object["comment"] if object.key?("comment")
-      ret.expired_at = object["expired_at"] if object.key?("expired_at")
+      ret.expired_at = object["expiration"] if object.key?("expiration")
 
       ret
     end

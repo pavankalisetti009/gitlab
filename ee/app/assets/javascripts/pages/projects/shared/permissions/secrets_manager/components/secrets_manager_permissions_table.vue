@@ -6,6 +6,7 @@ import {
   ACCESS_LEVELS_INTEGER_TO_STRING,
   ACCESS_LEVEL_OWNER_INTEGER,
 } from '~/access_level/constants';
+import { localeDateFormat } from '~/lib/utils/datetime/locale_dateformat';
 import {
   PERMISSION_CATEGORY_GROUP,
   PERMISSION_CATEGORY_ROLE,
@@ -48,6 +49,7 @@ export default {
       return this.permissionCategory === PERMISSION_CATEGORY_USER;
     },
     tableFields() {
+      const thClass = this.canDelete ? 'gl-w-1/5' : 'gl-w-1/4';
       return [
         ...(this.isCategoryUser
           ? [
@@ -66,7 +68,7 @@ export default {
               {
                 key: 'group',
                 label: __('Group'),
-                thClass: !this.canDelete ? 'gl-w-1/3' : 'gl-w-1/4',
+                thClass,
               },
             ]
           : []),
@@ -75,17 +77,20 @@ export default {
               {
                 key: 'role',
                 label: __('Role'),
-                thClass: !this.canDelete ? 'gl-w-1/3' : 'gl-w-1/4',
+                thClass,
               },
             ]
           : []),
         {
           key: 'scope',
           label: __('Scope'),
-          thClass: !this.canDelete ? 'gl-w-1/3' : 'gl-w-1/4',
+          thClass,
         },
-        // TODO: Add expiration column once available
-        // See https://gitlab.com/gitlab-org/gitlab/-/issues/560580
+        {
+          key: 'expiration',
+          label: __('Expiration'),
+          thClass,
+        },
         {
           key: 'access-granted',
           label: __('Access granted'),
@@ -113,6 +118,13 @@ export default {
     },
   },
   methods: {
+    formatExpiration(expiration) {
+      if (expiration) {
+        return localeDateFormat.asDate.format(new Date(expiration));
+      }
+
+      return __('Never');
+    },
     formatPermissions(permissions) {
       const scopes = JSON.parse(permissions).map((p) => upperFirst(p));
       return scopes.join(', ');
@@ -169,6 +181,9 @@ export default {
       </template>
       <template #cell(scope)="{ item: { permissions } }">
         {{ formatPermissions(permissions) }}
+      </template>
+      <template #cell(expiration)="{ item: { expiredAt } }">
+        <span>{{ formatExpiration(expiredAt) }}</span>
       </template>
       <template #cell(access-granted)="{ item: { grantedBy } }">
         <gl-avatar-labeled

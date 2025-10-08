@@ -38,18 +38,21 @@ describe('SecretsManagerPermissionsSettings', () => {
     { key: 'user', label: 'User' },
     { key: 'role', label: 'Role' },
     { key: 'scope', label: 'Scope' },
+    { key: 'expiration', label: 'Expiration' },
     { key: 'access-granted', label: 'Access granted' },
     { key: 'actions', label: 'Actions' },
   ];
   const groupFields = [
     { key: 'group', label: 'Group' },
     { key: 'scope', label: 'Scope' },
+    { key: 'expiration', label: 'Expiration' },
     { key: 'access-granted', label: 'Access granted' },
     { key: 'actions', label: 'Actions' },
   ];
   const roleFields = [
     { key: 'role', label: 'Role' },
     { key: 'scope', label: 'Scope' },
+    { key: 'expiration', label: 'Expiration' },
     { key: 'access-granted', label: 'Access granted' },
     { key: 'actions', label: 'Actions' },
   ];
@@ -98,7 +101,8 @@ describe('SecretsManagerPermissionsSettings', () => {
       expect(findRowCell().at(0).text()).toContain('kristina.moen');
       expect(findRowCell().at(1).text()).toContain('Maintainer');
       expect(findRowCell().at(2).text()).toContain('Read, Delete');
-      expect(findRowCell().at(3).text()).toContain('root');
+      expect(findRowCell().at(3).text()).toContain('Never');
+      expect(findRowCell().at(4).text()).toContain('root');
     });
 
     it('emits delete-permission event when clicking on delete button', () => {
@@ -132,7 +136,8 @@ describe('SecretsManagerPermissionsSettings', () => {
     it('renders group info', () => {
       expect(findRowCell().at(0).text()).toContain('Toolbox');
       expect(findRowCell().at(1).text()).toContain('Read, Create, Update');
-      expect(findRowCell().at(2).text()).toContain('lonnie');
+      expect(findRowCell().at(2).text()).toContain('Jan 1, 2035');
+      expect(findRowCell().at(3).text()).toContain('lonnie');
     });
 
     it('emits delete-permission event when clicking on delete button', () => {
@@ -167,18 +172,15 @@ describe('SecretsManagerPermissionsSettings', () => {
     });
 
     it('renders role info', () => {
-      expect(findOwner().at(0).text()).toContain('Owner');
-      expect(findOwner().at(1).text()).toContain('Create, Read, Update, Delete');
-      expect(findOwner().at(2).text()).toContain('N/A');
+      expect(findOwner().at(0).text()).toBe('Owner');
+      expect(findOwner().at(1).text()).toBe('Create, Read, Update, Delete');
+      expect(findOwner().at(2).text()).toBe('Never');
+      expect(findOwner().at(3).text()).toBe('N/A');
 
-      expect(findReporter().at(0).text()).toContain('Reporter');
-      expect(findReporter().at(1).text()).toContain('Read, Create');
-      expect(findReporter().at(2).text()).toContain('root');
-    });
-
-    it('hides delete button for owner role', () => {
-      expect(findOwner().at(3).findComponent(GlButton).exists()).toBe(false);
-      expect(findReporter().at(3).findComponent(GlButton).exists()).toBe(true);
+      expect(findReporter(1).at(0).text()).toBe('Reporter');
+      expect(findReporter(1).at(1).text()).toBe('Read, Create');
+      expect(findReporter(1).at(2).text()).toBe('Jan 1, 2035');
+      expect(findReporter(1).at(3).text()).toContain('root');
     });
 
     it('emits delete-permission event when clicking on delete button', () => {
