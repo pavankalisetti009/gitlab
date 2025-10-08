@@ -65,6 +65,14 @@ RSpec.describe Security::SecretDetection::UpdateTokenStatusService, feature_cate
           project.security_setting.update!(validity_checks_enabled: true)
         end
 
+        it 'calls PartnerTokenService.process_finding_async with the findings batch' do
+          expect(
+            Security::SecretDetection::Vulnerabilities::PartnerTokenService
+          ).to receive(:process_finding_async).once
+
+          execute
+        end
+
         context 'when there are no findings' do
           let(:empty_pipeline) { create(:ci_pipeline, :success, project: project) }
 
@@ -389,6 +397,15 @@ RSpec.describe Security::SecretDetection::UpdateTokenStatusService, feature_cate
             execute
           end
 
+          it 'calls process_finding_async for each batch' do
+            stub_const("#{described_class}::DEFAULT_BATCH_SIZE", 2)
+
+            expect(Security::SecretDetection::Vulnerabilities::PartnerTokenService).to receive(:process_finding_async)
+              .exactly(3).times
+
+            execute
+          end
+
           it 'does not perform N+1 queries' do
             # Set a batch size that ensures all findings are processed in a single batch
             stub_const("#{described_class}::DEFAULT_BATCH_SIZE", 20)
@@ -398,8 +415,8 @@ RSpec.describe Security::SecretDetection::UpdateTokenStatusService, feature_cate
               metadata = ::Gitlab::Json.parse(finding.raw_metadata)
               metadata['identifiers'].first['value'] = 'gitlab_personal_access_token'
               finding.update!(raw_metadata: metadata.to_json)
+              finding.clear_memoization(:metadata)
             end
-
             # Count queries when processing all findings
             query_count = ActiveRecord::QueryRecorder.new do
               execute
@@ -415,7 +432,8 @@ RSpec.describe Security::SecretDetection::UpdateTokenStatusService, feature_cate
             # 7. Query to fetch all findings in the batch
             # 8. Query to fetch tokens
             # 9. Query to insert/update statuses
-            expect(query_count).to eq(9)
+            # 10. Query to fetch project to check FF secret_detection_partner_token_verification
+            expect(query_count).to eq(10)
           end
         end
 
@@ -504,6 +522,14 @@ RSpec.describe Security::SecretDetection::UpdateTokenStatusService, feature_cate
       context 'when validity checks is enabled for the project' do
         before do
           project.security_setting.update!(validity_checks_enabled: true)
+        end
+
+        it 'calls PartnerTokenService.process_partner_finding with the findings batch' do
+          expect(
+            Security::SecretDetection::Vulnerabilities::PartnerTokenService
+          ).to receive(:process_partner_finding).once
+
+          execute
         end
 
         context 'when finding exists with no token' do
