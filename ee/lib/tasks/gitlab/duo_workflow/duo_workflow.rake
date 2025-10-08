@@ -51,7 +51,9 @@ namespace :gitlab do
             "ui_chat_log" => [
               {
                 "status" => "success",
-                "content" => "Starting workflow with goal: #{workflow_goal}",
+                "content" => "Starting workflow with goal: #{workflow_goal}
+                \ for file file_path_that_is_super_long/another_directory_
+                \ that_hopefully_ends_someday_andasinglewordthatsjustsolongitshouldwrap",
                 "timestamp" => timestamp,
                 "tool_info" => nil,
                 "message_type" => "tool",
@@ -124,6 +126,27 @@ namespace :gitlab do
                   ## H3 Title
 
                   This is some content.
+
+                  <pre>
+                    <failure_2>
+                      <test_name>TestAgent.test_run_with_empty_conversation</test_name>
+                      <location>tests/duo_workflow_service/agents/test_agent.py</location>
+                      <error_type>AssertionError</error_type>
+                      <description>AIMessage object comparison failed due to additional fields in actual result</description>
+                      <expected>AIMessage(content='Hello there!', additional_kwargs={}, response_metadata={})</expected>
+                      <actual>AIMessage(content='Hello there!', additional_kwargs={}, response_metadata={}, id='run--467148e1-9150-4c46-8711-8322b66957d3-0', usage_metadata={'total_cost': 0})</actual>
+                      <root_cause>The actual AIMessage contains additional fields (id and usage_metadata) that are not expected in the test assertion</root_cause>
+                    </failure_2>
+                </test_failures>
+
+                <test_summary>
+                  <total_tests>4549</total_tests>
+                  <passed>4544</passed>
+                  <failed>2</failed>
+                  <skipped>3</skipped>
+                  <warnings>227</warnings>
+                  <coverage>93%</coverage>
+                </test_summary></pre>
 
                   Also don't forget to check out the **bold** words. You can also use _italics_.
                 MARKDOWN
