@@ -499,20 +499,15 @@ module EE
         end
 
         def maven_virtual_registries
-          ::VirtualRegistries::Packages::Maven::Registry.for_group(object) if maven_virtual_registries_enabled?(object)
+          return unless ::VirtualRegistries::Packages::Maven.virtual_registry_available?(object, current_user)
+
+          ::VirtualRegistries::Packages::Maven::Registry.for_group(object)
         end
 
         def virtual_registries_setting
           ::VirtualRegistries::Setting.find_for_group(object) if ::Feature.enabled?(:maven_virtual_registry, object) &&
             object.licensed_feature_available?(:packages_virtual_registry)
         end
-      end
-
-      private
-
-      def maven_virtual_registries_enabled?(object)
-        ::Gitlab.config.dependency_proxy.enabled && ::Feature.enabled?(:maven_virtual_registry, object) &&
-          object.licensed_feature_available?(:packages_virtual_registry)
       end
     end
   end

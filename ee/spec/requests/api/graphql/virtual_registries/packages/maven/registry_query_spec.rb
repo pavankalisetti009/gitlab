@@ -75,6 +75,15 @@ RSpec.describe 'Querying a maven virtual registry', feature_category: :virtual_r
 
         it_behaves_like 'returns null for mavenVirtualRegistry'
       end
+
+      context 'when the virtual registries setting enabled is false' do
+        before do
+          allow(VirtualRegistries::Setting).to receive(:cached_for_group).with(group).and_return(build_stubbed(
+            :virtual_registries_setting, :disabled, group: group))
+        end
+
+        it_behaves_like 'returns null for mavenVirtualRegistry'
+      end
     end
 
     context 'when registry does not exist' do
@@ -89,5 +98,7 @@ RSpec.describe 'Querying a maven virtual registry', feature_category: :virtual_r
   def setup_default_configuration
     stub_config(dependency_proxy: { enabled: true })
     stub_licensed_features(packages_virtual_registry: true)
+    allow(VirtualRegistries::Setting).to receive(:cached_for_group).with(group).and_return(build_stubbed(
+      :virtual_registries_setting, group: group))
   end
 end
