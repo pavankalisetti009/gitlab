@@ -25,6 +25,8 @@ module VirtualRegistries
         sha_attribute :file_sha1
         sha_attribute :file_md5
 
+        counter_attribute :downloads_count, touch: :downloaded_at
+
         validates :group, top_level_group: true, presence: true
         validates :relative_path,
           :object_storage_key,
@@ -41,10 +43,42 @@ module VirtualRegistries
         validates :object_storage_key, uniqueness: { scope: :relative_path }
         validates :file, presence: true
 
+        mount_file_store_uploader ::VirtualRegistries::Cache::EntryUploader
+
         before_validation :set_object_storage_key, if: -> { object_storage_key.blank? && upstream }
         attr_readonly :object_storage_key
 
         scope :requiring_cleanup, ->(n_days_to_keep) { where(downloaded_at: ...(Time.current - n_days_to_keep.days)) }
+
+        # create or update a cached response identified by the upstream, group_id and relative_path
+        # Given that we have chances that this function is not executed in isolation, we can't use
+        # safe_find_or_create_by.
+        # We are using the check existence and rescue alternative.
+        def self.create_or_update_by!(upstream:, group_id:, relative_path:, updates: {})
+          default.find_or_initialize_by(
+            upstream: upstream,
+            group_id: group_id,
+            relative_path: relative_path
+          ).tap do |record|
+            record.update!(**updates)
+          end
+        rescue ActiveRecord::RecordInvalid => invalid
+          # in case of a race condition, retry the block
+          retry if invalid.record&.errors&.of_kind?(:relative_path, :taken)
+
+          # otherwise, bubble up the error
+          raise
+        end
+
+        def filename
+          return unless relative_path
+
+          File.basename(relative_path)
+        end
+
+        def bump_downloads_count
+          increment_downloads_count(1)
+        end
 
         private
 
