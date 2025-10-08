@@ -1,0 +1,35 @@
+# frozen_string_literal: true
+
+module Security
+  module Policies
+    class DismissalPreserveWorker
+      include Gitlab::EventStore::Subscriber
+
+      data_consistency :sticky
+      idempotent!
+
+      defer_on_database_health_signal :gitlab_main, [:project_audit_events], 1.minute
+
+      # Audit stream to external destination with HTTP request if configured
+      worker_has_external_dependencies!
+
+      feature_category :security_policy_management
+
+      def handle_event(event)
+        dismissal = Security::PolicyDismissal.find_by_id(event.data[:security_policy_dismissal_id])
+
+        return unless dismissal
+
+        audit_context = {
+          name: 'merge_request_merged_with_dismissed_security_policy',
+          author: dismissal.user,
+          scope: dismissal.project,
+          target: dismissal.security_policy,
+          message: "Merge request #{dismissal.merge_request.to_reference} was merged with violated security policy."
+        }
+
+        ::Gitlab::Audit::Auditor.audit(audit_context)
+      end
+    end
+  end
+end

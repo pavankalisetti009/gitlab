@@ -87,8 +87,7 @@ module Security
 
       return false unless dismissal
 
-      dismissed_uuids = dismissal.security_findings_uuids.to_set
-      finding_uuids.all? { |uuid| dismissed_uuids.include?(uuid) }
+      dismissal.applicable_for_findings?(finding_uuids)
     end
   end
 end

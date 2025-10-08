@@ -25780,6 +25780,7 @@ CREATE TABLE security_policy_dismissals (
     security_findings_uuids text[] DEFAULT '{}'::text[],
     dismissal_types smallint[] DEFAULT '{}'::smallint[] NOT NULL,
     comment text,
+    status smallint DEFAULT 0 NOT NULL,
     CONSTRAINT check_654ff06528 CHECK ((char_length(comment) <= 255))
 );
 

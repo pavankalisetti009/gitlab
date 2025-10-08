@@ -20,6 +20,7 @@ module Security
         if event.is_a?(::MergeRequests::MergedEvent)
           log_running_violations_after_merge(merge_request)
           audit_merged_with_policy_violations(merge_request)
+          preserve_security_policy_dismissals(merge_request)
         end
 
         merge_request.scan_result_policy_violations.delete_all(:delete_all)
@@ -44,6 +45,10 @@ module Security
 
       def audit_merged_with_policy_violations(merge_request)
         MergeRequests::MergedWithPolicyViolationsAuditEventService.new(merge_request).execute
+      end
+
+      def preserve_security_policy_dismissals(merge_request)
+        merge_request.preserve_open_policy_dismissals!
       end
     end
   end

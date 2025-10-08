@@ -107,6 +107,7 @@ export const ROOT_USER_DETAILS = {
 };
 
 export const OWNER_PERMISSION_NODE = {
+  expiredAt: null,
   grantedBy: null,
   permissions: '["create", "read", "update", "delete"]',
   principal: {
@@ -122,6 +123,7 @@ export const OWNER_PERMISSION_NODE = {
 };
 
 export const ROLE_PERMISSION_NODE = {
+  expiredAt: '2035-01-01',
   grantedBy: { ...ROOT_USER_DETAILS },
   permissions: '["read", "create"]',
   principal: {
@@ -137,6 +139,7 @@ export const ROLE_PERMISSION_NODE = {
 };
 
 export const GROUP_PERMISSION_NODE = {
+  expiredAt: '2035-01-01',
   grantedBy: {
     id: 'gid://gitlab/User/4',
     username: 'lonnie',
@@ -164,6 +167,7 @@ export const GROUP_PERMISSION_NODE = {
 };
 
 export const USER_PERMISSION_NODE = {
+  expiredAt: null,
   grantedBy: { ...ROOT_USER_DETAILS },
   permissions: '["read", "delete"]',
   principal: {

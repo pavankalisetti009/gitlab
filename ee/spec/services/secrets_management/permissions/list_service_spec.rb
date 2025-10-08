@@ -37,13 +37,16 @@ RSpec.describe SecretsManagement::Permissions::ListService, :gitlab_secrets_mana
 
       context 'when there are secret permissions' do
         let!(:member_role) { create(:member_role, namespace: project.group) }
+        let(:expired_at) { 2.days.from_now.iso8601 }
 
         before do
           update_secret_permission(
-            user: user, project: project, permissions: %w[create update read], principal: { id: user.id, type: 'User' }
+            user: user, project: project, permissions: %w[create update
+              read], principal: { id: user.id, type: 'User' }, expired_at: expired_at
           )
           update_secret_permission(
-            user: user, project: project, permissions: %w[create update read], principal: { id: 20, type: 'Role' }
+            user: user, project: project, permissions: %w[create update
+              read], principal: { id: 20, type: 'Role' }
           )
           update_secret_permission(
             user: user, project: project, permissions: %w[create update
@@ -60,6 +63,29 @@ RSpec.describe SecretsManagement::Permissions::ListService, :gitlab_secrets_mana
 
           secret_permissions = result.payload[:secret_permissions]
           expect(secret_permissions.size).to eq(5)
+
+          permissions_data = secret_permissions.to_h do |p|
+            [
+              [p.principal_type, p.principal_id],
+              {
+                permissions: Array(p.permissions).sort,
+                granted_by: p.granted_by,
+                expired_at: p.expired_at
+              }
+            ]
+          end
+
+          expect(permissions_data[["User", user.id]]).to include(
+            permissions: %w[create read update],
+            granted_by: user.id,
+            expired_at: expired_at
+          )
+
+          expect(permissions_data[["Role", 20]]).to include(
+            permissions: %w[create read update],
+            granted_by: user.id,
+            expired_at: nil
+          )
         end
       end
     end

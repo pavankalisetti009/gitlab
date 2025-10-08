@@ -109,6 +109,8 @@ module EE
 
           store.subscribe ::Security::ScanResultPolicies::ProcessPipelineCompletionWorker,
             to: ::Ci::PipelineFinishedEvent
+
+          store.subscribe ::Security::Policies::DismissalPreserveWorker, to: ::Security::PolicyDismissalPreservedEvent
         end
 
         def register_threat_insights_subscribers(store)
