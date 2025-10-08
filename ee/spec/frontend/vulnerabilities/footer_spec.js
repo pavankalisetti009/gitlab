@@ -12,6 +12,7 @@ import HistoryEntry from 'ee/vulnerabilities/components/history_entry.vue';
 import RelatedIssues from 'ee/vulnerabilities/components/related_issues.vue';
 import RelatedJiraIssues from 'ee/vulnerabilities/components/related_jira_issues.vue';
 import StatusDescription from 'ee/vulnerabilities/components/status_description.vue';
+import SecurityPolicyBypassDescription from 'ee/vulnerabilities/components/security_policy_bypass_description.vue';
 import { VULNERABILITY_STATES } from 'ee/vulnerabilities/constants';
 import { normalizeGraphQLNote } from 'ee/vulnerabilities/helpers';
 import createMockApollo from 'helpers/mock_apollo_helper';
@@ -79,6 +80,10 @@ describe('Vulnerability Footer', () => {
   const findMergeRequestNote = () => wrapper.findComponent(MergeRequestNote);
   const findRelatedIssues = () => wrapper.findComponent(RelatedIssues);
   const findRelatedJiraIssues = () => wrapper.findComponent(RelatedJiraIssues);
+  const findSecurityPolicyBypassDescription = () =>
+    wrapper.findComponent(SecurityPolicyBypassDescription);
+  const findAllSecurityPolicyBypassDescriptions = () =>
+    wrapper.findAllComponents(SecurityPolicyBypassDescription);
 
   beforeEach(() => {
     discussion1 = {
@@ -449,6 +454,33 @@ describe('Vulnerability Footer', () => {
 
       it('does not render the report section', () => {
         expect(genericReportSection().exists()).toBe(false);
+      });
+    });
+  });
+
+  describe('security policy bypass', () => {
+    it.each`
+      title                                                                                                      | securityPolicyApprovalWarnMode | policyDismissals | expected
+      ${'does not render the policy violation note if the feature flag is false and there are no policy bypass'} | ${false}                       | ${[]}            | ${false}
+      ${'does not render the policy violation note if the feature flag is true and there are no policy bypass'}  | ${true}                        | ${[]}            | ${false}
+      ${'does not render the policy violation note if the feature flag is false and there are policy bypass'}    | ${false}                       | ${[{ id: 1 }]}   | ${false}
+      ${'renders the policy violation note if the feature flag is true and there are policy bypass'}             | ${true}                        | ${[{ id: 1 }]}   | ${true}
+    `('$title', ({ securityPolicyApprovalWarnMode, policyDismissals, expected }) => {
+      createWrapper({
+        properties: { policyDismissals },
+        mountOptions: { provide: { glFeatures: { securityPolicyApprovalWarnMode } } },
+      });
+      expect(findSecurityPolicyBypassDescription().exists()).toBe(expected);
+    });
+
+    it('renders the security policy dismissal description correctly', () => {
+      createWrapper({
+        properties: { policyDismissals: [{ id: 1 }, { id: 2 }] },
+        mountOptions: { provide: { glFeatures: { securityPolicyApprovalWarnMode: true } } },
+      });
+      expect(findAllSecurityPolicyBypassDescriptions()).toHaveLength(2);
+      expect(findAllSecurityPolicyBypassDescriptions().at(0).props('bypass')).toEqual({
+        id: 1,
       });
     });
   });

@@ -16,6 +16,7 @@ module Projects
         push_frontend_feature_flag(:hide_vulnerability_severity_override, project)
         push_frontend_feature_flag(:validity_checks, project)
         push_frontend_feature_flag(:secret_detection_validity_checks_refresh_token, project)
+        push_frontend_feature_flag(:security_policy_approval_warn_mode, project)
       end
 
       alias_method :vulnerable, :project
