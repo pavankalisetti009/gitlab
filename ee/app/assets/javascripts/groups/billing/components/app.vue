@@ -105,9 +105,13 @@ export default {
     <div class="gl-hidden md:gl-block">
       <div class="gl-flex gl-justify-end">
         <div
-          class="gl-border gl-mt-8 gl-basis-2/3 gl-rounded-t-base gl-border-b-0 gl-bg-strong gl-p-3 gl-text-center gl-font-bold gl-text-strong"
+          class="gl-border gl-mt-8 gl-flex gl-basis-2/3 gl-flex-row gl-justify-center gl-rounded-t-base gl-border-b-0 gl-bg-strong gl-p-3"
         >
-          {{ s__('BillingPlans|Now with AI features included') }}
+          <div class="gradient-star gl-mr-3 gl-mt-1 gl-h-5 gl-w-5"></div>
+
+          <span class="gl-font-bold gl-text-strong">{{
+            s__('BillingPlans|Now with AI features included')
+          }}</span>
         </div>
       </div>
       <div class="gl-flex gl-bg-subtle">
@@ -180,3 +184,12 @@ export default {
     </gl-tabs>
   </div>
 </template>
+
+<style scoped>
+.gradient-star {
+  background-image: url('gradient-star.svg?url');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+</style>
