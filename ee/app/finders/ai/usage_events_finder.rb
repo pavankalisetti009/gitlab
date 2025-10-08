@@ -4,22 +4,20 @@ module Ai
   class UsageEventsFinder
     attr_reader :current_user, :namespace, :from, :to, :events, :users
 
-    def initialize(current_user, from:, to:, events: nil, namespace: nil, users: nil)
+    # rubocop: disable CodeReuse/Finder -- For being able to use Clickhouse Finder along with Postgres
+    def initialize(current_user, **options)
       @current_user = current_user
-      @namespace = namespace
-      @from = from
-      @to = to
-      @events = events
-      @users = users
+      @options = options
+      @namespace = options[:namespace]
     end
 
     def execute
-      scope = ::Ai::UsageEvent.in_timeframe(from..to).sort_by_timestamp_id
-      scope = scope.with_events(events) if events.present?
-      scope = scope.with_users(users) if users.present?
-      # Hierarchy must be last because it applies IN optimization
-      scope = scope.for_namespace_hierarchy(namespace) if namespace
-      scope
+      if @namespace && ::Gitlab::ClickHouse.enabled_for_analytics?(@namespace)
+        Ai::ClickHouseUsageEventsFinder.new(@current_user, **@options).execute
+      else
+        Ai::PostgresqlUsageEventsFinder.new(@current_user, **@options).execute
+      end
     end
+    # rubocop: enable CodeReuse/Finder
   end
 end

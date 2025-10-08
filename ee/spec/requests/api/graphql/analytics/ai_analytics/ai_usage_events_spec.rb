@@ -101,61 +101,167 @@ RSpec.describe '(Group|Project).aiUsageData.all', feature_category: :code_sugges
     end
   end
 
-  context 'for group' do
-    let(:query) { graphql_query_for(:group, { fullPath: group.full_path }, ai_usage_data_fields) }
-    let(:response_events) { graphql_data.dig('group', 'aiUsageData', 'all', 'nodes') }
+  shared_examples 'ai usage events endpoint tests' do
+    context 'for group' do
+      let(:query) { graphql_query_for(:group, { fullPath: group.full_path }, ai_usage_data_fields) }
+      let(:response_events) { graphql_data.dig('group', 'aiUsageData', 'all', 'nodes') }
 
-    it_behaves_like 'ai usage events endpoint without permissions'
+      it_behaves_like 'ai usage events endpoint without permissions'
 
-    it_behaves_like 'ai usage events endpoint with permissions' do
-      let(:expected_events) do
-        [
-          code_suggestion_event_1,
-          code_suggestion_event_2,
-          code_suggestion_event_4
-        ]
+      it_behaves_like 'ai usage events endpoint with permissions' do
+        let(:expected_events) do
+          [
+            code_suggestion_event_1,
+            code_suggestion_event_2,
+            code_suggestion_event_4
+          ]
+        end
+      end
+
+      context 'when filtering by users and events' do
+        let(:filter_params) do
+          super().merge(
+            user_ids: [user_1.to_global_id.to_s],
+            events: [:CODE_SUGGESTION_SHOWN_IN_IDE]
+          )
+        end
+
+        it_behaves_like 'ai usage events endpoint with permissions' do
+          let(:expected_events) { [code_suggestion_event_1] }
+        end
       end
     end
 
-    context 'when filtering by users and events' do
-      let(:filter_params) do
-        super().merge(
-          user_ids: [user_1.to_global_id.to_s],
-          events: [:CODE_SUGGESTION_SHOWN_IN_IDE]
-        )
-      end
+    context 'for project' do
+      let(:query) { graphql_query_for(:project, { fullPath: subgroup_project.full_path }, ai_usage_data_fields) }
+      let(:response_events) { graphql_data.dig('project', 'aiUsageData', 'all', 'nodes') }
+
+      it_behaves_like 'ai usage events endpoint without permissions'
 
       it_behaves_like 'ai usage events endpoint with permissions' do
-        let(:expected_events) { [code_suggestion_event_1] }
+        let(:expected_events) do
+          [
+            code_suggestion_event_2,
+            code_suggestion_event_4
+          ]
+        end
+      end
+
+      context 'when filtering by users and events' do
+        let(:filter_params) do
+          super().merge(
+            user_ids: [user_1.to_global_id.to_s],
+            events: [:CODE_SUGGESTION_ACCEPTED_IN_IDE]
+          )
+        end
+
+        it_behaves_like 'ai usage events endpoint with permissions' do
+          let(:expected_events) { [code_suggestion_event_2] }
+        end
       end
     end
   end
 
-  context 'for project' do
-    let(:query) { graphql_query_for(:project, { fullPath: subgroup_project.full_path }, ai_usage_data_fields) }
-    let(:response_events) { graphql_data.dig('project', 'aiUsageData', 'all', 'nodes') }
-
-    it_behaves_like 'ai usage events endpoint without permissions'
-
-    it_behaves_like 'ai usage events endpoint with permissions' do
-      let(:expected_events) do
-        [
-          code_suggestion_event_2,
-          code_suggestion_event_4
-        ]
-      end
+  context 'when using PostgreSQL data source' do
+    before do
+      allow(Gitlab::ClickHouse).to receive(:enabled_for_analytics?).and_return(false)
     end
 
-    context 'when filtering by users and events' do
-      let(:filter_params) do
-        super().merge(
-          user_ids: [user_1.to_global_id.to_s],
-          events: [:CODE_SUGGESTION_ACCEPTED_IN_IDE]
-        )
+    it_behaves_like 'ai usage events endpoint tests'
+  end
+
+  context 'when using ClickHouse data source', :click_house do
+    include ClickHouseHelpers
+
+    before do
+      allow(Gitlab::ClickHouse).to receive(:globally_enabled_for_analytics?).and_return(true)
+
+      [
+        code_suggestion_event_1,
+        code_suggestion_event_2,
+        code_suggestion_event_3,
+        code_suggestion_event_4,
+        out_of_timeframe_event
+      ].map(&:store_to_clickhouse)
+
+      ClickHouse::DumpWriteBufferWorker.new.perform(Ai::UsageEvent.clickhouse_table_name)
+    end
+
+    it_behaves_like 'ai usage events endpoint tests'
+
+    context 'when there are duplicate events' do
+      let_it_be(:duplicate_event) do
+        create(:ai_usage_event, event: :code_suggestion_shown_in_ide, user: user_1,
+          namespace: group_project.reload.project_namespace)
       end
 
-      it_behaves_like 'ai usage events endpoint with permissions' do
-        let(:expected_events) { [code_suggestion_event_2] }
+      before do
+        allow(Gitlab::ClickHouse).to receive(:enabled_for_analytics?).and_return(true)
+
+        # Create duplicate entries with the same grouping key (user_id, namespace_path, event, timestamp)
+        # to test that deduplication via GROUP BY works correctly
+        clickhouse_fixture(:ai_usage_events, [
+          {
+            user_id: user_1.id,
+            namespace_path: group_project.project_namespace.traversal_path,
+            event: ::Ai::UsageEvent.events[:code_suggestion_shown_in_ide],
+            timestamp: duplicate_event.timestamp.utc.strftime('%Y-%m-%d %H:%M:%S.%6N')
+          },
+          {
+            user_id: user_1.id,
+            namespace_path: group_project.project_namespace.traversal_path,
+            event: ::Ai::UsageEvent.events[:code_suggestion_shown_in_ide],
+            timestamp: duplicate_event.timestamp.utc.strftime('%Y-%m-%d %H:%M:%S.%6N')
+          },
+          {
+            user_id: user_1.id,
+            namespace_path: group_project.project_namespace.traversal_path,
+            event: ::Ai::UsageEvent.events[:code_suggestion_shown_in_ide],
+            timestamp: duplicate_event.timestamp.utc.strftime('%Y-%m-%d %H:%M:%S.%6N')
+          }
+        ])
+      end
+
+      context 'for group' do
+        let(:query) { graphql_query_for(:group, { fullPath: group.full_path }, ai_usage_data_fields) }
+        let(:response_events) { graphql_data.dig('group', 'aiUsageData', 'all', 'nodes') }
+
+        before_all do
+          group.add_reporter(current_user)
+        end
+
+        it 'deduplicates events and returns only one event per unique combination' do
+          post_graphql(query, current_user: current_user)
+
+          duplicate_events = response_events.select do |event|
+            event.dig('user', 'id') == user_1.to_global_id.to_s &&
+              event['event'] == 'CODE_SUGGESTION_SHOWN_IN_IDE' &&
+              event['timestamp'] == duplicate_event.timestamp.iso8601
+          end
+
+          expect(duplicate_events.count).to eq(1)
+        end
+      end
+
+      context 'for project' do
+        let(:query) { graphql_query_for(:project, { fullPath: group_project.full_path }, ai_usage_data_fields) }
+        let(:response_events) { graphql_data.dig('project', 'aiUsageData', 'all', 'nodes') }
+
+        before_all do
+          group.add_reporter(current_user)
+        end
+
+        it 'deduplicates events and returns only one event per unique combination' do
+          post_graphql(query, current_user: current_user)
+
+          duplicate_events = response_events.select do |event|
+            event.dig('user', 'id') == user_1.to_global_id.to_s &&
+              event['event'] == 'CODE_SUGGESTION_SHOWN_IN_IDE' &&
+              event['timestamp'] == duplicate_event.timestamp.iso8601
+          end
+
+          expect(duplicate_events.count).to eq(1)
+        end
       end
     end
   end
