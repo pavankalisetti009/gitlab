@@ -3818,6 +3818,41 @@ RSpec.describe MergeRequest, feature_category: :code_review_workflow do
     end
   end
 
+  describe '#preserve_open_policy_dismissals!' do
+    let_it_be(:project) { create(:project) }
+    let_it_be(:merge_request) { create(:merge_request, :merged, source_project: project, target_project: project) }
+
+    subject(:preserve_open_policy_dismissals) { merge_request.preserve_open_policy_dismissals! }
+
+    context 'when merge request is merged' do
+      context 'when there are open policy dismissals' do
+        let_it_be(:open_dismissal_1) { create(:policy_dismissal, merge_request: merge_request, project: project) }
+        let_it_be(:open_dismissal_2) { create(:policy_dismissal, merge_request: merge_request, project: project) }
+        let_it_be(:preserved_dismissal) { create(:policy_dismissal, merge_request: merge_request, project: project, status: 1) }
+
+        it 'preserves all open policy dismissals' do
+          expect { preserve_open_policy_dismissals }
+            .to change { open_dismissal_1.reload.status }.from(0).to(1)
+            .and change { open_dismissal_2.reload.status }.from(0).to(1)
+            .and not_change { preserved_dismissal.reload.status }
+        end
+      end
+    end
+
+    context 'when merge request is not merged' do
+      let_it_be(:open_dismissal) { create(:policy_dismissal, merge_request: merge_request, project: project) }
+
+      before do
+        allow(merge_request).to receive(:merged?).and_return(false)
+      end
+
+      it 'returns early without processing dismissals' do
+        expect { preserve_open_policy_dismissals }
+          .not_to change { open_dismissal.reload.status }
+      end
+    end
+  end
+
   describe '#all_target_branch_pipelines' do
     let_it_be(:project) { create(:project, :public, :repository) }
     let_it_be_with_refind(:merge_request) do
