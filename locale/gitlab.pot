@@ -40238,6 +40238,15 @@ msgstr ""
 msgid "MemberRole|Change role"
 msgstr ""
 
+msgid "MemberRole|Code review workflow"
+msgstr ""
+
+msgid "MemberRole|Compliance management"
+msgstr ""
+
+msgid "MemberRole|Continuous delivery"
+msgstr ""
+
 msgid "MemberRole|Could not fetch available permissions."
 msgstr ""
 
@@ -40349,6 +40358,9 @@ msgstr ""
 msgid "MemberRole|Group cn:"
 msgstr ""
 
+msgid "MemberRole|Infrastructure as code"
+msgstr ""
+
 msgid "MemberRole|Learn more about %{linkStart}available custom permissions%{linkEnd}."
 msgstr ""
 
@@ -40374,9 +40386,6 @@ msgid "MemberRole|No description"
 msgstr ""
 
 msgid "MemberRole|Overridden"
-msgstr ""
-
-msgid "MemberRole|Permission"
 msgstr ""
 
 msgid "MemberRole|Remove LDAP synchronization"
@@ -40421,7 +40430,13 @@ msgstr ""
 msgid "MemberRole|Save role"
 msgstr ""
 
+msgid "MemberRole|Secrets management"
+msgstr ""
+
 msgid "MemberRole|Security policy dependency"
+msgstr ""
+
+msgid "MemberRole|Security policy management"
 msgstr ""
 
 msgid "MemberRole|Select a %{linkStart} default role%{linkEnd} to predefine a set of permissions."
@@ -40436,6 +40451,9 @@ msgstr ""
 msgid "MemberRole|Server:"
 msgstr ""
 
+msgid "MemberRole|Source code management"
+msgstr ""
+
 msgid "MemberRole|Sync all"
 msgstr ""
 
@@ -40443,6 +40461,12 @@ msgid "MemberRole|Sync scheduled"
 msgstr ""
 
 msgid "MemberRole|Sync status:"
+msgstr ""
+
+msgid "MemberRole|System access"
+msgstr ""
+
+msgid "MemberRole|Team planning"
 msgstr ""
 
 msgid "MemberRole|The CSV report contains a list of users, assigned role and access in all groups, subgroups, and projects. When the export is completed, it will be sent as an attachment to %{email}."

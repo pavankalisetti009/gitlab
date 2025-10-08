@@ -1,16 +1,14 @@
-import { GlTable, GlFormCheckbox, GlAlert, GlSprintf, GlLink } from '@gitlab/ui';
+import { GlAlert, GlSprintf, GlLink } from '@gitlab/ui';
 import Vue from 'vue';
 import VueApollo from 'vue-apollo';
 import createMockApollo from 'helpers/mock_apollo_helper';
-import PermissionsSelector, {
-  FIELDS,
-} from 'ee/roles_and_permissions/components/manage_role/permissions_selector.vue';
-import { shallowMountExtended, mountExtended } from 'helpers/vue_test_utils_helper';
-import { stubComponent } from 'helpers/stub_component';
+import PermissionsSelector from 'ee/roles_and_permissions/components/manage_role/permissions_selector.vue';
+import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import waitForPromises from 'helpers/wait_for_promises';
 import memberPermissionsQuery from 'ee/roles_and_permissions/graphql/member_role_permissions.query.graphql';
 import adminPermissionsQuery from 'ee/roles_and_permissions/graphql/admin_role/role_permissions.query.graphql';
 import CrudComponent from '~/vue_shared/components/crud_component.vue';
+import PermissionCategory from 'ee/roles_and_permissions/components/manage_role/permission_category.vue';
 import { mockPermissionsResponse, mockDefaultPermissions } from '../../mock_data';
 
 Vue.use(VueApollo);
@@ -19,43 +17,36 @@ describe('Permissions Selector component', () => {
   let wrapper;
 
   const defaultAvailablePermissionsHandler = jest.fn().mockResolvedValue(mockPermissionsResponse);
-  const glTableStub = stubComponent(GlTable, { props: ['items', 'fields', 'busy'] });
 
   const createComponent = ({
     mountFn = shallowMountExtended,
     permissions = [],
     permissionsQuery = memberPermissionsQuery,
     isValid = true,
-    selectedBaseRole = null,
+    baseAccessLevel = null,
     availablePermissionsHandler = defaultAvailablePermissionsHandler,
     isAdminRole = false,
   } = {}) => {
     wrapper = mountFn(PermissionsSelector, {
-      propsData: { permissions, isValid, selectedBaseRole },
+      propsData: { permissions, isValid, baseAccessLevel },
       provide: { isAdminRole },
       apolloProvider: createMockApollo([[permissionsQuery, availablePermissionsHandler]]),
-      stubs: {
-        GlSprintf,
-        ...(mountFn === shallowMountExtended ? { GlTable: glTableStub } : {}),
-        CrudComponent,
-      },
+      stubs: { GlSprintf, CrudComponent },
     });
 
     return waitForPromises();
   };
 
-  const findTable = () => wrapper.findComponent(GlTable);
-  const findTableRow = (idx) => findTable().findAll('tbody > tr').at(idx);
-  const findTableRowData = (idx) => findTableRow(idx).findAll('td');
-  const findCheckbox = (idx) => findTableRow(idx).findComponent(GlFormCheckbox);
-  const findToggleAllCheckbox = () => wrapper.findByTestId('permission-checkbox-all');
+  const findCrudComponent = () => wrapper.findComponent(CrudComponent);
   const findPermissionsSelectedMessage = () => wrapper.findByTestId('permissions-selected-message');
   const findAlert = () => wrapper.findComponent(GlAlert);
   const findLearnMore = () => wrapper.findByTestId('learn-more');
   const findLearnMoreLink = () => findLearnMore().findComponent(GlLink);
+  const findAllPermissionCategories = () => wrapper.findAllComponents(PermissionCategory);
+  const findValidationMessage = () => wrapper.findByTestId('validation-message');
 
-  const checkPermission = (value) => {
-    findTable().vm.$emit('row-clicked', { value });
+  const selectPermission = (value) => {
+    findAllPermissionCategories().at(0).vm.$emit('change', { value });
   };
 
   const expectSelectedPermissions = (expected) => {
@@ -90,8 +81,8 @@ describe('Permissions Selector component', () => {
         expect(defaultAvailablePermissionsHandler).toHaveBeenCalledTimes(1);
       });
 
-      it('shows the table as busy', () => {
-        expect(findTable().props('busy')).toBe(true);
+      it('shows the crud component as busy', () => {
+        expect(findCrudComponent().props('isLoading')).toBe(true);
       });
 
       it('does not show the permissions selected message', () => {
@@ -104,70 +95,29 @@ describe('Permissions Selector component', () => {
     });
 
     describe('after data is loaded', () => {
-      beforeEach(() => {
-        return createComponent();
+      beforeEach(() => createComponent({ baseAccessLevel: 'DEVELOPER' }));
+
+      it('shows permission categories', () => {
+        expect(findAllPermissionCategories()).toHaveLength(2);
       });
 
-      it('shows the table with the expected permissions', () => {
-        expect(findTable().props('busy')).toBe(false);
-        expect(findTable().props()).toMatchObject({
-          fields: FIELDS,
-          items: mockDefaultPermissions,
+      it.each`
+        name                        | index
+        ${'Source code management'} | ${0}
+        ${'Other'}                  | ${1}
+      `('shows $name category', ({ name, index }) => {
+        expect(findAllPermissionCategories().at(index).props()).toMatchObject({
+          category: expect.objectContaining({ name }),
+          baseAccessLevel: 'DEVELOPER',
         });
       });
 
       it('shows the permissions selected message', () => {
-        expect(findPermissionsSelectedMessage().text()).toBe('0 of 7 permissions selected');
+        expect(findPermissionsSelectedMessage().text()).toBe('4 of 8 permissions selected');
       });
 
       it('does not show the error message', () => {
         expect(findAlert().exists()).toBe(false);
-      });
-    });
-
-    describe('when base access role is selected', () => {
-      beforeEach(() => {
-        return createComponent({
-          mountFn: mountExtended,
-          selectedBaseRole: 'DEVELOPER',
-        });
-      });
-
-      it('shows the permissions selected message', () => {
-        expect(findPermissionsSelectedMessage().text()).toBe('3 of 7 permissions selected');
-      });
-
-      it('disables the included permissions and adds a badge', () => {
-        const notIncludedIndexes = [0, 1, 2, 3];
-        const includedIndexes = [4, 5, 6];
-
-        notIncludedIndexes.forEach((i) => {
-          expect(findTableRowData(i).at(1).text()).not.toContain('Added from');
-
-          expect(findCheckbox(i).props('disabled')).toBe(false);
-        });
-
-        includedIndexes.forEach((i) => {
-          expect(findTableRowData(i).at(1).text()).toContain('Added from Developer');
-          expect(findCheckbox(i).props('disabled')).toBe(true);
-        });
-      });
-
-      it('does not emit `change` event for included permissions when all permissions are selected', async () => {
-        await findToggleAllCheckbox().trigger('change');
-
-        expect(wrapper.emitted('change')[0][0]).toEqual(['A', 'B', 'C', 'D']);
-      });
-    });
-
-    describe('when disabled permissions is clicked', () => {
-      beforeEach(async () => {
-        await createComponent();
-        findTable().vm.$emit('row-clicked', { disabled: true });
-      });
-
-      it('does not toggle permission', () => {
-        expect(wrapper.emitted('change')).toBeUndefined();
       });
     });
 
@@ -181,8 +131,8 @@ describe('Permissions Selector component', () => {
         expect(findAlert().text()).toBe('Could not fetch available permissions.');
       });
 
-      it('does not show the table', () => {
-        expect(findTable().exists()).toBe(false);
+      it('does not show permission categories', () => {
+        expect(findAllPermissionCategories()).toHaveLength(0);
       });
 
       it('does not show the permissions selected message', () => {
@@ -203,52 +153,44 @@ describe('Permissions Selector component', () => {
       ${'G'}     | ${['A', 'B', 'C', 'G']}
     `('selects $expected when $permission is selected', async ({ permission, expected }) => {
       await createComponent();
-      checkPermission(permission);
+      selectPermission(permission);
 
       expectSelectedPermissions(expected);
     });
 
     it.each`
       permission | expected
-      ${'A'}     | ${['E', 'F']}
-      ${'B'}     | ${['A', 'E', 'F']}
-      ${'C'}     | ${['A', 'B', 'E', 'F']}
-      ${'D'}     | ${['A', 'B', 'C', 'E', 'F', 'G']}
-      ${'E'}     | ${['A', 'B', 'C', 'D', 'G']}
-      ${'F'}     | ${['A', 'B', 'C', 'D', 'G']}
-      ${'G'}     | ${['A', 'B', 'C', 'D', 'E', 'F']}
+      ${'A'}     | ${['E', 'F', 'READ_CODE']}
+      ${'B'}     | ${['A', 'E', 'F', 'READ_CODE']}
+      ${'C'}     | ${['A', 'B', 'E', 'F', 'READ_CODE']}
+      ${'D'}     | ${['A', 'B', 'C', 'E', 'F', 'G', 'READ_CODE']}
+      ${'E'}     | ${['A', 'B', 'C', 'D', 'G', 'READ_CODE']}
+      ${'F'}     | ${['A', 'B', 'C', 'D', 'G', 'READ_CODE']}
+      ${'G'}     | ${['A', 'B', 'C', 'D', 'E', 'F', 'READ_CODE']}
     `(
       'selects $expected when all permissions start off selected and $permission is unselected',
       async ({ permission, expected }) => {
         const permissions = mockDefaultPermissions.map((p) => p.value);
         await createComponent({ permissions });
         // Uncheck the permission by removing it from all permissions.
-        checkPermission(permission);
+        selectPermission(permission);
 
         expectSelectedPermissions(expected);
       },
     );
-
-    it('checks the permission when the table row is clicked', async () => {
-      await createComponent({ mountFn: mountExtended });
-      findTable().find('tbody tr').trigger('click');
-
-      expectSelectedPermissions(['A']);
-    });
-
-    it('checks the permission when the checkbox is clicked', async () => {
-      await createComponent({ mountFn: mountExtended });
-      wrapper.findAllComponents(GlFormCheckbox).at(1).trigger('click');
-
-      expectSelectedPermissions(['A']);
-    });
   });
 
   describe('validation state', () => {
-    it.each([true, false])('shows the expected text when isValid prop is %s', async (isValid) => {
-      await createComponent({ mountFn: mountExtended, isValid });
+    it('shows error message when isValid prop is false', () => {
+      createComponent({ isValid: false });
 
-      expect(wrapper.find('tbody td span').classes('gl-text-danger')).toBe(!isValid);
+      expect(findValidationMessage().text()).toBe('Select at least one permission.');
+    });
+
+    it('does not show error message when isValid prop is true', () => {
+      createComponent({ isValid: true });
+
+      expect(findValidationMessage().exists()).toBe(false);
     });
   });
 

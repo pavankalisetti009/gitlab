@@ -1,39 +1,20 @@
 <script>
-import {
-  GlFormCheckbox,
-  GlLoadingIcon,
-  GlTable,
-  GlSprintf,
-  GlLink,
-  GlAlert,
-  GlBadge,
-} from '@gitlab/ui';
-import { pull } from 'lodash';
-import { __, s__ } from '~/locale';
+import { GlSprintf, GlLink, GlAlert } from '@gitlab/ui';
+import pull from 'lodash/pull';
 import { helpPagePath } from '~/helpers/help_page_helper';
-import { BASE_ROLES } from '~/access_level/constants';
 import CrudComponent from '~/vue_shared/components/crud_component.vue';
 import { isPermissionPreselected } from '../../utils';
 import memberPermissionsQuery from '../../graphql/member_role_permissions.query.graphql';
 import adminPermissionsQuery from '../../graphql/admin_role/role_permissions.query.graphql';
-
-export const FIELDS = [
-  { key: 'checkbox', label: __('Select') },
-  { key: 'name', label: s__('MemberRole|Permission') },
-  { key: 'description', label: s__('MemberRole|Description') },
-].map((field) => ({ ...field, class: '!gl-pt-6 !gl-pb-6' }));
+import PermissionCategory from './permission_category.vue';
+import {
+  getPermissionsTree,
+  getCustomPermissionsTreeTemplate,
+  getAdminPermissionsTreeTemplate,
+} from './utils';
 
 export default {
-  components: {
-    GlFormCheckbox,
-    GlLoadingIcon,
-    GlLink,
-    GlSprintf,
-    GlTable,
-    GlAlert,
-    GlBadge,
-    CrudComponent,
-  },
+  components: { GlLink, GlSprintf, GlAlert, CrudComponent, PermissionCategory },
   inject: ['isAdminRole'],
   model: {
     prop: 'permissions',
@@ -48,7 +29,7 @@ export default {
       type: Boolean,
       required: true,
     },
-    selectedBaseRole: {
+    baseAccessLevel: {
       type: String,
       required: false,
       default: null,
@@ -85,14 +66,6 @@ export default {
     hasAvailablePermissions() {
       return this.availablePermissions.length > 0;
     },
-    isSomePermissionsSelected() {
-      return this.permissions.length > 0 && !this.isAllPermissionsSelected;
-    },
-    isAllPermissionsSelected() {
-      return (
-        !this.isLoadingPermissions && this.permissions.length >= this.selectablePermissions.length
-      );
-    },
     parentPermissionsLookup() {
       return this.selectablePermissions.reduce((acc, { value, requirements }) => {
         const required = this.getSelectableValues(requirements);
@@ -116,7 +89,7 @@ export default {
     },
     permissionsList() {
       return this.availablePermissions.map((permission) => {
-        const isPreselected = isPermissionPreselected(permission, this.selectedBaseRole);
+        const isPreselected = isPermissionPreselected(permission, this.baseAccessLevel);
 
         return {
           ...permission,
@@ -125,8 +98,12 @@ export default {
         };
       });
     },
-    baseRoleName() {
-      return BASE_ROLES.find(({ value }) => value === this.selectedBaseRole)?.text;
+    permissionsTree() {
+      const template = this.isAdminRole
+        ? getAdminPermissionsTreeTemplate()
+        : getCustomPermissionsTreeTemplate();
+
+      return getPermissionsTree(template, this.permissionsList);
     },
     selectablePermissions() {
       return this.permissionsList.filter((item) => !item.disabled);
@@ -139,9 +116,7 @@ export default {
     },
   },
   methods: {
-    updatePermissions({ value, disabled }) {
-      if (disabled) return;
-
+    updatePermissions({ value }) {
       const selected = [...this.permissions];
 
       if (selected.includes(value)) {
@@ -155,10 +130,6 @@ export default {
       }
 
       this.emitPermissionsUpdate(selected);
-    },
-    toggleAllPermissions() {
-      const permissions = this.isAllPermissionsSelected ? [] : this.selectablePermissions;
-      this.emitPermissionsUpdate(permissions.map(({ value }) => value));
     },
     emitPermissionsUpdate(permissions) {
       this.$emit('change', permissions);
@@ -191,7 +162,6 @@ export default {
       return values?.filter((value) => this.selectablePermissionValues.has(value));
     },
   },
-  FIELDS,
 };
 </script>
 
@@ -200,6 +170,7 @@ export default {
     :title="s__('MemberRole|Custom permissions')"
     class="gl-mb-5"
     title-class="gl-flex-wrap"
+    :is-loading="$apollo.queries.availablePermissions.loading"
   >
     <template v-if="hasAvailablePermissions" #count>
       <span data-testid="permissions-selected-message">
@@ -223,7 +194,11 @@ export default {
         </gl-sprintf>
       </span>
 
-      <p v-if="!isValid" class="gl-mb-0 gl-mt-2 gl-text-base gl-text-danger">
+      <p
+        v-if="!isValid"
+        class="gl-mb-0 gl-mt-2 gl-text-base gl-text-danger"
+        data-testid="validation-message"
+      >
         {{ s__('MemberRole|Select at least one permission.') }}
       </p>
     </template>
@@ -232,52 +207,13 @@ export default {
       {{ s__('MemberRole|Could not fetch available permissions.') }}
     </gl-alert>
 
-    <gl-table
+    <permission-category
+      v-for="category in permissionsTree"
       v-else
-      :items="permissionsList"
-      :fields="$options.FIELDS"
-      :busy="isLoadingPermissions"
-      selected-variant=""
-      selectable
-      stacked="sm"
-      @row-clicked="updatePermissions"
-    >
-      <template #table-busy>
-        <gl-loading-icon size="md" />
-      </template>
-
-      <template #head(checkbox)>
-        <gl-form-checkbox
-          :disabled="isLoadingPermissions"
-          :checked="isAllPermissionsSelected"
-          :indeterminate="isSomePermissionsSelected"
-          class="gl-min-h-0"
-          data-testid="permission-checkbox-all"
-          @change="toggleAllPermissions"
-        />
-      </template>
-
-      <template #cell(checkbox)="{ item }">
-        <gl-form-checkbox
-          :disabled="item.disabled"
-          :checked="item.checked"
-          class="gl-min-h-0"
-          data-testid="permission-checkbox"
-          @change="updatePermissions(item)"
-        />
-      </template>
-
-      <template #cell(name)="{ item }">
-        <span :class="{ 'gl-text-danger': !isValid }" class="@md/panel:gl-whitespace-nowrap">
-          {{ item.name }}
-
-          <gl-badge v-if="item.disabled" variant="info" class="gl-ml-2">
-            <gl-sprintf :message="s__('MemberRole|Added from %{role}')">
-              <template #role>{{ baseRoleName }}</template>
-            </gl-sprintf>
-          </gl-badge>
-        </span>
-      </template>
-    </gl-table>
+      :key="category.name"
+      :category="category"
+      :base-access-level="baseAccessLevel"
+      @change="updatePermissions"
+    />
   </crud-component>
 </template>

@@ -55,6 +55,14 @@ export const mockDefaultPermissions = [
     enabledForGroupAccessLevels: null,
     enabledForProjectAccessLevels: ['DEVELOPER'],
   }, // Multiple dependencies
+  {
+    value: 'READ_CODE',
+    name: 'Read code',
+    description: 'Read code',
+    requirements: null,
+    enabledForGroupAccessLevels: null,
+    enabledForProjectAccessLevels: ['DEVELOPER'],
+  },
 ];
 
 export const mockPermissionsResponse = {
@@ -310,4 +318,18 @@ export const newAdminRoleOption = {
   text: 'Admin role',
   href: 'new/role/path?admin',
   description: 'Create a role to manage permissions in the Admin area.',
+};
+
+export const permissionWithoutChildren = {
+  name: 'Permission A',
+  value: 'PERMISSION_A',
+  checked: false,
+  disabled: false,
+};
+export const permissionWithChildren = {
+  name: 'Permission B',
+  value: 'PERMISSION_B',
+  checked: true,
+  disabled: true,
+  children: [{ value: 'PERMISSION_C' }, { value: 'PERMISSION_D' }],
 };
