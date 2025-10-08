@@ -7,9 +7,8 @@
 
 = render Pajamas::CardComponent.new(body_options: { class: 'gl-bg-feedback-danger' }) do |c|
   - c.with_header do
-    .gl-flex.gl-grow
-      %h4.gl-text-base.gl-leading-24.gl-m-0
-        = s_('GroupSettings|Delete group')
+    %h4.gl-text-base.gl-leading-24.gl-m-0
+      = s_('GroupSettings|Delete group')
 
   - c.with_body do
     - if immediate_deletion_available
