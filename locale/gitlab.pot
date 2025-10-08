@@ -58000,7 +58000,23 @@ msgstr[1] ""
 msgid "SecretDetection|What are validity checks?"
 msgstr ""
 
+msgid "SecretRotation|%d secret has not been rotated after the configured rotation reminder intervals"
+msgid_plural "SecretRotation|%d secrets have not been rotated after the configured rotation reminder intervals"
+msgstr[0] ""
+msgstr[1] ""
+
+msgid "SecretRotation|%d secret needs to be manually rotated soon to maintain security"
+msgid_plural "SecretRotation|%d secrets need to be manually rotated soon to maintain security"
+msgstr[0] ""
+msgstr[1] ""
+
+msgid "SecretRotation|%{date} (Every %{days} days)"
+msgstr ""
+
 msgid "SecretRotation|After a set number of days, send a reminder to rotate the secret. Minimum 7 days."
+msgstr ""
+
+msgid "SecretRotation|An error occurred while fetching secrets needing rotation. Please try again."
 msgstr ""
 
 msgid "SecretRotation|Hi %{name}!"
@@ -58009,10 +58025,22 @@ msgstr ""
 msgid "SecretRotation|Please change the secret value to maintain security."
 msgstr ""
 
+msgid "SecretRotation|Rotation overdue"
+msgstr ""
+
+msgid "SecretRotation|Rotation reminder"
+msgstr ""
+
 msgid "SecretRotation|Rotation reminder period"
 msgstr ""
 
+msgid "SecretRotation|Rotation reminder: This secret needs to be updated soon."
+msgstr ""
+
 msgid "SecretRotation|Secret rotation reminder"
+msgstr ""
+
+msgid "SecretRotation|Some secrets require your attention"
 msgstr ""
 
 msgid "SecretRotation|You can %{secret_link_start}update the secret%{secret_link_end} in your project settings."

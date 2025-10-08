@@ -74,7 +74,11 @@ export const mockProjectSecretsData = [
       description: 'This is the first secret',
       environment: '*',
       metadataVersion: 1,
-      rotationInfo: null,
+      rotationInfo: {
+        rotationIntervalDays: 7,
+        status: 'APPROACHING',
+        __typename: 'SecretRotationInfo',
+      },
       name: 'SECRET_1',
       project: {
         id: 'gid://gitlab/Project/19',
@@ -91,7 +95,11 @@ export const mockProjectSecretsData = [
       description: 'This is the second secret',
       environment: '*',
       metadataVersion: 1,
-      rotationInfo: null,
+      rotationInfo: {
+        rotationIntervalDays: 7,
+        status: 'OVERDUE',
+        __typename: 'SecretRotationInfo',
+      },
       name: 'SECRET_2',
       project: {
         id: 'gid://gitlab/Project/19',

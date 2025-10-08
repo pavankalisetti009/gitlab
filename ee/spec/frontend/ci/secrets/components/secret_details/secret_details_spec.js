@@ -8,6 +8,7 @@ describe('SecretDetails component', () => {
 
   const findBranches = () => wrapper.findByTestId('secret-details-branches');
   const findDescription = () => wrapper.findByTestId('secret-details-description');
+  const findRotationReminder = () => wrapper.findByTestId('secret-details-rotation-reminder');
   const findEnvironments = () => wrapper.findComponent(GlLabel);
 
   const createComponent = ({ customSecret } = {}) => {
@@ -44,6 +45,25 @@ describe('SecretDetails component', () => {
 
     it("renders 'None' for optional fields that don't have values", () => {
       expect(findDescription().text()).toBe('None');
+      expect(findRotationReminder().text()).toBe('None');
+    });
+  });
+
+  describe('with rotation info', () => {
+    beforeEach(() => {
+      createComponent({
+        customSecret: {
+          rotationInfo: {
+            rotationIntervalDays: 7,
+            nextReminderAt: '2025-10-08T00:00:00Z',
+            status: 'APPROACHING',
+          },
+        },
+      });
+    });
+
+    it('renders rotation reminder information', () => {
+      expect(findRotationReminder().text()).toBe('Oct 8, 2025 (Every 7 days)');
     });
   });
 });
