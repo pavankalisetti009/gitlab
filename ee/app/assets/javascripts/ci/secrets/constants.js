@@ -44,6 +44,11 @@ export const SECRET_STATUS = {
   },
 };
 
+export const SECRET_ROTATION_STATUS = {
+  approaching: 'APPROACHING',
+  overdue: 'OVERDUE',
+};
+
 export const POLL_INTERVAL = 2000;
 
 export const FAILED_TO_LOAD_ERROR_MESSAGE = s__(
