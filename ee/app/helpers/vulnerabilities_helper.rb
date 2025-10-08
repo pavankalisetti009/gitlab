@@ -5,9 +5,9 @@ module VulnerabilitiesHelper
 
   FINDING_FIELDS = %i[metadata identifiers name issue_feedback merge_request_feedback project scanner uuid details dismissal_feedback false_positive state_transitions issue_links merge_request_links].freeze
 
-  def vulnerability_details_app_data(vulnerability, pipeline, project)
+  def vulnerability_details_app_data(vulnerability, pipeline, project, policy_dismissals)
     {
-      vulnerability: vulnerability_details_json(vulnerability, pipeline),
+      vulnerability: vulnerability_details_json(vulnerability, pipeline, policy_dismissals),
       can_view_false_positive: project.licensed_feature_available?(:sast_fp_reduction).to_s,
       commit_path_template: commit_path_template(project),
       project_full_path: project.full_path,
@@ -16,11 +16,11 @@ module VulnerabilitiesHelper
     }
   end
 
-  def vulnerability_details_json(vulnerability, pipeline)
-    vulnerability_details(vulnerability, pipeline).to_json
+  def vulnerability_details_json(vulnerability, pipeline, policy_dismissals)
+    vulnerability_details(vulnerability, pipeline, policy_dismissals).to_json
   end
 
-  def vulnerability_details(vulnerability, pipeline)
+  def vulnerability_details(vulnerability, pipeline, policy_dismissals)
     return unless vulnerability
 
     result = {
@@ -41,7 +41,8 @@ module VulnerabilitiesHelper
       dismissal_descriptions: dismissal_descriptions,
       representation_information: format_vulnerability_representation_information(vulnerability.representation_information),
       severity_override: severity_override_data(vulnerability),
-      archival_information: archival_information(vulnerability)
+      archival_information: archival_information(vulnerability),
+      policy_dismissals: serialize_policy_dismissals(policy_dismissals)
     }
 
     result.merge(vulnerability_data(vulnerability), vulnerability_finding_data(vulnerability))
@@ -173,6 +174,12 @@ module VulnerabilitiesHelper
         version: cvss.version
       }
     end
+  end
+
+  def serialize_policy_dismissals(policy_dismissals)
+    return [] unless policy_dismissals.present?
+
+    Security::PolicyDismissalSerializer.new(current_user: current_user).represent(policy_dismissals)
   end
 
   def vulnerability_scan_data?(vulnerability)
