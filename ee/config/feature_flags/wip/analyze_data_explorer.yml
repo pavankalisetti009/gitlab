@@ -1,0 +1,10 @@
+---
+name: analyze_data_explorer
+description:
+feature_issue_url: https://gitlab.com/gitlab-org/gitlab/-/issues/570016
+introduced_by_url: https://gitlab.com/gitlab-org/gitlab/-/merge_requests/207124
+rollout_issue_url:
+milestone: '18.5'
+group: group::optimize
+type: wip
+default_enabled: false

@@ -1,7 +1,7 @@
 <script>
 import { GlAlert, GlIcon, GlModal } from '@gitlab/ui';
 import { getAdaptiveStatusColor } from '~/lib/utils/color_utils';
-import { __, s__, sprintf, n__ } from '~/locale';
+import { __, s__, sprintf } from '~/locale';
 import * as Sentry from '~/sentry/sentry_browser_wrapper';
 import {
   DEFAULT_STATE_CLOSED,
@@ -75,29 +75,6 @@ export default {
         state: DEFAULT_STATE_TO_TEXT_MAP[this.defaultStatusType],
       });
     },
-    newStatusBodyText() {
-      const singular = `WorkItem|%{count} item currently uses the status '%{status}'. Select a new status for this item.`;
-      const plural = `WorkItem|%{count} items currently use the status '%{status}'. Select a new status for these items.`;
-      const countValue = parseInt(this.count, 10) || 0; // Handle invalid values
-      // eslint-disable-next-line @gitlab/require-valid-i18n-helpers
-      const message = n__(singular, plural, countValue);
-
-      return sprintf(
-        message,
-        {
-          count: this.count,
-          status: this.statusToRemove.name,
-        },
-        false, // Don't escape apostrophe in "Won't do"
-      );
-    },
-    count() {
-      return (
-        this.lifecycle.statusCounts.find(
-          (statusCount) => statusCount.status.id === this.statusToRemove.id,
-        )?.count ?? '0'
-      );
-    },
     filteredStatuses() {
       // Only show statuses in the same open or closed state
       const state = STATUS_CATEGORIES_MAP[this.statusToRemove.category.toUpperCase()].workItemState;
@@ -110,10 +87,6 @@ export default {
     },
     defaultStatusType() {
       return getDefaultStateType(this.lifecycle, this.statusToRemove);
-    },
-    hasCount() {
-      // `count` is string from backend, and can include '999+'
-      return this.count && this.count !== '0';
     },
     isDefaultStatus() {
       return Boolean(this.defaultStatusType);
@@ -245,8 +218,10 @@ export default {
     <gl-alert v-if="error" class="gl-mb-3" variant="danger" @dismiss="error = ''">
       {{ error }}
     </gl-alert>
-    <template v-if="hasCount && filteredStatuses.length">
-      <p class="gl-mb-4">{{ newStatusBodyText }}</p>
+    <template v-if="filteredStatuses.length">
+      <p class="gl-mb-4">
+        {{ s__('WorkItem|Select a new status to use for any items currently using this status.') }}
+      </p>
       <div class="gl-mb-6 gl-flex gl-flex-wrap gl-gap-8 gl-gap-y-4">
         <div>
           <div class="gl-mb-1 gl-font-bold gl-text-strong">

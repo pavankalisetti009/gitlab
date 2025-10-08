@@ -20,6 +20,7 @@ module EE
             add_item(issues_analytics_menu_item)
             add_item(merge_request_analytics_menu_item)
             add_item(repository_analytics_menu_item)
+            add_item(data_explorer_menu_item)
 
             true
           end
@@ -106,6 +107,24 @@ module EE
             )
           end
           strong_memoize_attr :dashboards_analytics_menu_item
+
+          def data_explorer_menu_item
+            unless show_data_explorer?
+              return ::Sidebars::NilMenuItem.new(item_id: :data_explorer)
+            end
+
+            ::Sidebars::MenuItem.new(
+              title: s_('DataExplorer|Data explorer'),
+              link: project_analytics_data_explorer_path(context.project),
+              super_sidebar_parent: ::Sidebars::Projects::SuperSidebarMenus::AnalyzeMenu,
+              active_routes: { path: 'projects/analytics/data_explorer#show' },
+              item_id: :data_explorer
+            )
+          end
+
+          def show_data_explorer?
+            ::Feature.enabled?(:analyze_data_explorer, context.project.group)
+          end
         end
       end
     end

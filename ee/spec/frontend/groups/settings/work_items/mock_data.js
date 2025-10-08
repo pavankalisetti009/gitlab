@@ -113,7 +113,6 @@ export const mockLifecycles = [
         __typename: 'WorkItemStatus',
       },
     ],
-    statusCounts,
     __typename: 'WorkItemLifecycle',
   },
   {
@@ -164,7 +163,6 @@ export const mockLifecycles = [
         __typename: 'WorkItemStatus',
       },
     ],
-    statusCounts,
     __typename: 'WorkItemLifecycle',
   },
   {
@@ -215,7 +213,6 @@ export const mockLifecycles = [
         __typename: 'WorkItemStatus',
       },
     ],
-    statusCounts,
     __typename: 'WorkItemLifecycle',
   },
   {
@@ -266,7 +263,6 @@ export const mockLifecycles = [
         __typename: 'WorkItemStatus',
       },
     ],
-    statusCounts,
     __typename: 'WorkItemLifecycle',
   },
   {
@@ -317,7 +313,6 @@ export const mockLifecycles = [
         __typename: 'WorkItemStatus',
       },
     ],
-    statusCounts,
     __typename: 'WorkItemLifecycle',
   },
   {
@@ -368,7 +363,6 @@ export const mockLifecycles = [
         __typename: 'WorkItemStatus',
       },
     ],
-    statusCounts,
     __typename: 'WorkItemLifecycle',
   },
 ];
@@ -518,7 +512,6 @@ export const mockDefaultLifecycleTemplateReponse = {
               __typename: 'WorkItemStatus',
             },
           ],
-          statusCounts,
           __typename: 'WorkItemLifecycle',
         },
       ],
@@ -530,7 +523,6 @@ export const mockDefaultLifecycleTemplateReponse = {
 const mockDefaultLifecycle = {
   ...mockDefaultLifecycleTemplateReponse.data.namespace.lifecycleTemplates[0],
 };
-delete mockDefaultLifecycle.statusCounts;
 export { mockDefaultLifecycle };
 
 export const mockStatusesResponse = {

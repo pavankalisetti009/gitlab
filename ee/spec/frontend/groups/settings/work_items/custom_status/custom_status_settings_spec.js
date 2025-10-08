@@ -11,7 +11,6 @@ import StatusModal from 'ee/groups/settings/work_items/custom_status/status_moda
 import LifecycleDetail from 'ee/groups/settings/work_items/custom_status/lifecycle_detail.vue';
 import CreateLifecycleModal from 'ee/groups/settings/work_items/custom_status/create_lifecycle_modal.vue';
 import namespaceStatusesQuery from 'ee/groups/settings/work_items/custom_status/graphql/namespace_lifecycles.query.graphql';
-import { statusCounts } from 'ee_jest/groups/settings/work_items/mock_data';
 
 Vue.use(VueApollo);
 
@@ -67,7 +66,6 @@ const mockLifecycles = [
         category: 'done',
       },
     ],
-    statusCounts,
   },
   {
     id: 'gid://gitlab/WorkItems::Lifecycle/2',
@@ -103,7 +101,6 @@ const mockLifecycles = [
         __typename: 'WorkItemStatus',
       },
     ],
-    statusCounts,
   },
 ];
 

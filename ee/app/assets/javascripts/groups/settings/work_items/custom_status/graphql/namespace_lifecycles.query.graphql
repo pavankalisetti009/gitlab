@@ -30,12 +30,6 @@ query getNamespaceLifecycles($fullPath: ID!) {
           description
           category
         }
-        statusCounts {
-          status {
-            id
-          }
-          count
-        }
       }
     }
   }

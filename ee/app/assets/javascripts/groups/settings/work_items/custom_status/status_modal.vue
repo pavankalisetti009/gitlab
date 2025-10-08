@@ -10,12 +10,10 @@ import {
   GlModal,
   GlLoadingIcon,
   GlSprintf,
-  GlTooltip,
-  GlTooltipDirective,
   GlLink,
 } from '@gitlab/ui';
 import VueDraggable from 'vuedraggable';
-import { __, createListFormat, n__, s__, sprintf } from '~/locale';
+import { __, createListFormat, s__, sprintf } from '~/locale';
 import { getAdaptiveStatusColor, validateHexColor } from '~/lib/utils/color_utils';
 import {
   STATUS_CATEGORIES,
@@ -49,16 +47,12 @@ export default {
     GlModal,
     GlLoadingIcon,
     GlSprintf,
-    GlTooltip,
     RemoveStatusModal,
     StatusForm,
     VueDraggable,
     GlLink,
     HelpPageLink,
     WorkItemStateBadge,
-  },
-  directives: {
-    GlTooltip: GlTooltipDirective,
   },
   mixins: [glFeatureFlagMixin()],
   props: {
@@ -223,20 +217,13 @@ export default {
       };
     },
     startRemovingStatus(status) {
-      const count = this.getStatusCount(status);
-      const hasCount = count && count !== '0';
-      const showStatusMappingModal = hasCount || this.isDefaultStatus(status);
-      if (this.workItemStatusMvc2Enabled && showStatusMappingModal) {
+      if (this.workItemStatusMvc2Enabled) {
         this.statusToRemove = status;
         return;
       }
       this.removingStatusId = status.id;
       this.removingStatusName = status.name;
-      if (hasCount) {
-        this.showRemoveConfirmation = true;
-      } else {
-        this.confirmRemoveStatus();
-      }
+      this.showRemoveConfirmation = true;
     },
     async startDefaultingStatus(status, defaultState) {
       if (!status?.id || !defaultState) {
@@ -542,19 +529,6 @@ export default {
         defaultState,
       });
     },
-    getStatusCount(status) {
-      return (
-        this.lifecycle.statusCounts.find((statusCount) => statusCount.status.id === status.id)
-          ?.count ?? '0'
-      );
-    },
-    getStatusCountText(status) {
-      const count = this.getStatusCount(status);
-      return sprintf(n__('%{count} item', '%{count} items', count), { count });
-    },
-    getStatusCountHref(status) {
-      return `${this.groupWorkItemsPath}?status=${status.name}`;
-    },
     closeModal() {
       this.cancelForm();
       this.$emit('close');
@@ -734,25 +708,9 @@ export default {
                       {{ status.description }}
                     </div>
                   </div>
-                  <template v-if="workItemStatusMvc2Enabled">
-                    <gl-link
-                      :id="`count-link-${status.id}`"
-                      class="gl-ml-auto gl-mt-1 gl-text-sm"
-                      :href="getStatusCountHref(status)"
-                      data-testid="status-count-link"
-                    >
-                      {{ getStatusCountText(status) }}
-                    </gl-link>
-                    <gl-tooltip :target="`count-link-${status.id}`">
-                      <div class="gl-font-bold">{{ s__('WorkItem|View items') }}</div>
-                      <div>
-                        {{ s__('WorkItem|Items in archived projects are counted but not shown.') }}
-                      </div>
-                    </gl-tooltip>
-                  </template>
                   <gl-disclosure-dropdown
                     :ref="status.name"
-                    :class="{ 'gl-ml-auto': !workItemStatusMvc2Enabled }"
+                    class="gl-ml-auto"
                     text-sr-only
                     :toggle-text="__('More actions')"
                     no-caret

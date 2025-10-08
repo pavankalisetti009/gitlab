@@ -117,6 +117,8 @@ RSpec.describe 'Groups > Settings > Work items', :js, feature_category: :team_pl
           click_button('More actions')
           click_button('Remove status')
         end
+        click_button('Remove')
+        click_button('Close', match: :first)
 
         within_testid('lifecycle-container') do
           expect(page).not_to have_text('Edit me')

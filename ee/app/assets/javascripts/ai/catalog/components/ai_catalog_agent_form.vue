@@ -1,6 +1,6 @@
 <script>
 import { uniqueId } from 'lodash';
-import { GlButton, GlForm, GlFormFields, GlFormTextarea, GlTokenSelector } from '@gitlab/ui';
+import { GlButton, GlForm, GlFormInput, GlFormTextarea, GlTokenSelector } from '@gitlab/ui';
 import {
   VISIBILITY_LEVEL_PUBLIC_STRING,
   VISIBILITY_LEVEL_PRIVATE_STRING,
@@ -17,9 +17,10 @@ import { __, s__ } from '~/locale';
 import ErrorsAlert from '~/vue_shared/components/errors_alert.vue';
 import glFeatureFlagsMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
 import { AI_CATALOG_AGENTS_ROUTE, AI_CATALOG_AGENTS_SHOW_ROUTE } from '../router/constants';
-import { createFieldValidators } from '../utils';
 import aiCatalogBuiltInToolsQuery from '../graphql/queries/ai_catalog_built_in_tools.query.graphql';
 import AiCatalogFormButtons from './ai_catalog_form_buttons.vue';
+import FormGroup from './form_group.vue';
+import FormSection from './form_section.vue';
 import FormProjectDropdown from './form_project_dropdown.vue';
 import VisibilityLevelRadioGroup from './visibility_level_radio_group.vue';
 
@@ -27,10 +28,12 @@ export default {
   components: {
     ErrorsAlert,
     AiCatalogFormButtons,
+    FormGroup,
+    FormSection,
     FormProjectDropdown,
     GlButton,
     GlForm,
-    GlFormFields,
+    GlFormInput,
     GlFormTextarea,
     GlTokenSelector,
     VisibilityLevelRadioGroup,
@@ -119,24 +122,10 @@ export default {
       };
     },
     fields() {
-      const projectIdField = this.isEditMode
-        ? {}
-        : {
-            projectId: {
-              label: s__('AICatalog|Project'),
-              validators: createFieldValidators({
-                requiredLabel: s__('AICatalog|Project is required.'),
-              }),
-              groupAttrs: {
-                labelDescription: s__(
-                  'AICatalog|Select a project for your AI agent to be associated with.',
-                ),
-              },
-            },
-          };
       const toolsField = this.isToolsAvailable
         ? {
             tools: {
+              id: 'agent-form-tools',
               label: s__('AICatalog|Tools'),
               groupAttrs: {
                 optional: true,
@@ -149,13 +138,25 @@ export default {
         : {};
 
       return {
-        ...projectIdField,
+        projectId: {
+          id: 'agent-form-project-id',
+          label: s__('AICatalog|Source project'),
+          validations: {
+            requiredLabel: s__('AICatalog|Project is required.'),
+          },
+          groupAttrs: {
+            labelDescription: s__(
+              'AICatalog|Select a project for your AI agent to be associated with.',
+            ),
+          },
+        },
         name: {
-          label: __('Name'),
-          validators: createFieldValidators({
+          id: 'agent-form-name',
+          label: __('Display name'),
+          validations: {
             requiredLabel: s__('AICatalog|Name is required.'),
             maxLength: MAX_LENGTH_NAME,
-          }),
+          },
           inputAttrs: {
             'data-testid': 'agent-form-input-name',
             placeholder: s__('AICatalog|e.g., Research Assistant, Creative Writer, Code Helper'),
@@ -165,11 +166,12 @@ export default {
           },
         },
         description: {
+          id: 'agent-form-description',
           label: __('Description'),
-          validators: createFieldValidators({
+          validations: {
             requiredLabel: s__('AICatalog|Description is required.'),
             maxLength: MAX_LENGTH_DESCRIPTION,
-          }),
+          },
           groupAttrs: {
             labelDescription: s__(
               'AICatalog|Briefly describe what this agent is designed to do and its key capabilities.',
@@ -178,11 +180,12 @@ export default {
         },
         ...toolsField,
         systemPrompt: {
+          id: 'agent-form-system-prompt',
           label: s__('AICatalog|System prompt'),
-          validators: createFieldValidators({
+          validations: {
             requiredLabel: s__('AICatalog|System prompt is required.'),
             maxLength: MAX_LENGTH_PROMPT,
-          }),
+          },
           groupAttrs: {
             labelDescription: s__(
               "AICatalog|Define the agent's personality, expertise, and behavioral guidelines. This shapes how the agent responds and approaches tasks.",
@@ -190,10 +193,8 @@ export default {
           },
         },
         visibilityLevel: {
-          label: __('Visibility level'),
-          validators: createFieldValidators({
-            requiredLabel: s__('AICatalog|Visibility level is required.'),
-          }),
+          id: 'agent-form-visibility-level',
+          label: __('Visibility'),
           groupAttrs: {
             labelDescription: s__(
               'AICatalog|Choose who can view and interact with this agent after it is published to the public AI catalog.',
@@ -217,8 +218,13 @@ export default {
 
   methods: {
     handleSubmit() {
+      const isFormValid = this.validate();
+      if (!isFormValid) {
+        return;
+      }
+
       const transformedValues = {
-        projectId: this.formValues.projectId,
+        projectId: this.isEditMode ? undefined : this.formValues.projectId,
         name: this.formValues.name.trim(),
         description: this.formValues.description.trim(),
         systemPrompt: this.formValues.systemPrompt.trim(),
@@ -241,6 +247,14 @@ export default {
       this.formErrors = [];
       this.$emit('dismiss-errors');
     },
+    validate() {
+      return Object.keys(this.$refs)
+        .filter((key) => key.startsWith('field'))
+        .reduce((allValid, key) => {
+          const isFieldValid = this.$refs[key].validate();
+          return allValid && isFieldValid;
+        }, true);
+    },
   },
   visibilityLevelTexts: {
     textPrivate: AGENT_VISIBILITY_LEVEL_DESCRIPTIONS[VISIBILITY_LEVEL_PRIVATE_STRING],
@@ -254,35 +268,77 @@ export default {
 <template>
   <div>
     <errors-alert :errors="allErrors" @dismiss="dismissErrors" />
-    <gl-form :id="formId" @submit.prevent="">
-      <gl-form-fields
-        v-model="formValues"
-        :form-id="formId"
-        :fields="fields"
-        @submit="handleSubmit"
-      >
-        <template #input(projectId)="{ id }">
-          <form-project-dropdown :id="id" v-model="formValues.projectId" @error="onError" />
-        </template>
-        <template #input(description)="{ id, input, value, blur, validation }">
+    <gl-form :id="formId" class="gl-flex gl-flex-col gl-gap-5" @submit.prevent="handleSubmit">
+      <form-section :title="s__('AICatalog|Basic information')">
+        <form-group
+          #default="{ state, blur }"
+          ref="fieldName"
+          :field="fields.name"
+          :field-value="formValues.name"
+        >
+          <gl-form-input
+            :id="fields.name.id"
+            v-model="formValues.name"
+            :data-testid="fields.name.inputAttrs['data-testid']"
+            :placeholder="fields.name.inputAttrs.placeholder"
+            :state="state"
+            @blur="blur"
+          />
+        </form-group>
+        <form-group
+          #default="{ state, blur }"
+          ref="fieldDescription"
+          :field="fields.description"
+          :field-value="formValues.description"
+        >
           <gl-form-textarea
-            :id="id"
+            :id="fields.description.id"
+            v-model="formValues.description"
             :no-resize="false"
             :placeholder="
               s__(
                 'AICatalog|This agent specializes in... It can help you with... Best suited for...',
               )
             "
-            :state="validation.state"
-            :value="value"
+            :state="state"
             data-testid="agent-form-textarea-description"
             @blur="blur"
-            @update="input"
           />
-        </template>
-        <template #input(systemPrompt)="{ id, input, value, blur, validation }">
+        </form-group>
+      </form-section>
+      <form-section :title="s__('AICatalog|Access rights')">
+        <form-group :field="fields.visibilityLevel" :field-value="formValues.visibilityLevel">
+          <visibility-level-radio-group
+            :id="fields.visibilityLevel.id"
+            v-model="formValues.visibilityLevel"
+            :is-edit-mode="isEditMode"
+            :initial-value="initialValues.public"
+            :texts="$options.visibilityLevelTexts"
+          />
+        </form-group>
+        <form-group
+          ref="fieldProject"
+          :field="fields.projectId"
+          :field-value="formValues.projectId"
+        >
+          <form-project-dropdown
+            :id="fields.projectId.id"
+            v-model="formValues.projectId"
+            :disabled="isEditMode"
+            @error="onError"
+          />
+        </form-group>
+      </form-section>
+      <form-section :title="s__('AICatalog|Prompts')">
+        <form-group
+          #default="{ state, blur }"
+          ref="fieldSystemPrompt"
+          :field="fields.systemPrompt"
+          :field-value="formValues.systemPrompt"
+        >
           <gl-form-textarea
-            :id="id"
+            :id="fields.systemPrompt.id"
+            v-model="formValues.systemPrompt"
             :no-resize="false"
             :placeholder="
               s__(
@@ -290,15 +346,16 @@ export default {
               )
             "
             :rows="20"
-            :state="validation.state"
-            :value="value"
             data-testid="agent-form-textarea-system-prompt"
+            :state="state"
             @blur="blur"
-            @update="input"
           />
-        </template>
-        <template #input(tools)>
+        </form-group>
+      </form-section>
+      <form-section :title="s__('AICatalog|Available tools')">
+        <form-group v-if="isToolsAvailable" :field="fields.tools" :field-value="formValues.tools">
           <gl-token-selector
+            :id="fields.tools.id"
             :selected-tokens="selectedTools"
             :dropdown-items="filteredAvailableTools"
             :placeholder="s__('AICatalog|Search and select tools for this agent.')"
@@ -308,19 +365,8 @@ export default {
             @text-input="handleToolSearch"
             @keydown.enter.prevent
           />
-        </template>
-        <template #input(visibilityLevel)="{ id, input, validation, value }">
-          <visibility-level-radio-group
-            :id="id"
-            :is-edit-mode="isEditMode"
-            :initial-value="initialValues.public"
-            :validation-state="validation.state"
-            :value="value"
-            :texts="$options.visibilityLevelTexts"
-            @input="input"
-          />
-        </template>
-      </gl-form-fields>
+        </form-group>
+      </form-section>
       <ai-catalog-form-buttons :is-disabled="isLoading" :cancel-route="cancelRoute">
         <gl-button
           class="js-no-auto-disable gl-w-full @sm/panel:gl-w-auto"
