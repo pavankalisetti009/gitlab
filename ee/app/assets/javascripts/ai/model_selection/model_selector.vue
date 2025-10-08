@@ -41,10 +41,12 @@ export default {
       return { value: GITLAB_DEFAULT_MODEL, text };
     },
     listItems() {
-      const modelOptions = this.aiFeatureSetting.selectableModels.map(({ ref, name }) => ({
-        value: ref,
-        text: name,
-      }));
+      const modelOptions = this.aiFeatureSetting.selectableModels
+        .map(({ ref, name }) => ({
+          value: ref,
+          text: name,
+        }))
+        .sort((a, b) => a.text.localeCompare(b.text));
 
       return [...modelOptions, this.defaultModelOption];
     },
