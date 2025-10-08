@@ -120,7 +120,7 @@ module API
         tags %w[member_roles]
       end
 
-      route_setting :authorization, permissions: :read_member_role, boundary_type: :instance
+      route_setting :authorization, permissions: :read_member_role, boundary_type: :standalone
       get do
         get_roles
       end
@@ -135,7 +135,7 @@ module API
         use :create_role_params
       end
 
-      route_setting :authorization, permissions: :create_member_role, boundary_type: :instance
+      route_setting :authorization, permissions: :create_member_role, boundary_type: :standalone
       post do
         create_role
       end
@@ -150,7 +150,7 @@ module API
         requires :member_role_id, type: Integer, desc: 'ID of the member role'
       end
 
-      route_setting :authorization, permissions: :delete_member_role, boundary_type: :instance
+      route_setting :authorization, permissions: :delete_member_role, boundary_type: :standalone
       delete ':member_role_id' do
         delete_role
       end
