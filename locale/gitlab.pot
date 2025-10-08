@@ -15494,6 +15494,12 @@ msgstr ""
 msgid "CodeOwner|Pattern"
 msgstr ""
 
+msgid "CodeSuggestionsAcceptanceByLanguageChart|Acceptance rate"
+msgstr ""
+
+msgid "CodeSuggestionsAcceptanceByLanguageChart|Failed to load metrics for: %{languages}"
+msgstr ""
+
 msgid "CodeSuggestions|%{addOnName} status"
 msgstr ""
 

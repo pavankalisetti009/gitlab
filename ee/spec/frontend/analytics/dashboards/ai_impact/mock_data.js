@@ -121,6 +121,8 @@ export const mockTimePeriods = [
   },
 ];
 
+const mockCodeSuggestionsLanguages = ['js', 'ruby', 'go'];
+
 export const mockTableValues = [
   {
     deploymentFrequency: 10,
@@ -139,6 +141,7 @@ export const mockTableValues = [
     codeContributorsCount: 20,
     acceptedCount: 3,
     shownCount: 15,
+    languages: mockCodeSuggestionsLanguages,
     duoChatContributorsCount: 3,
     rootCauseAnalysisUsersCount: 5,
     duoAssignedUsersCount: 15,
@@ -165,6 +168,7 @@ export const mockTableValues = [
     codeContributorsCount: 10,
     acceptedCount: 3,
     shownCount: 7,
+    languages: mockCodeSuggestionsLanguages,
     duoChatContributorsCount: 3,
     rootCauseAnalysisUsersCount: 6,
     duoAssignedUsersCount: 7,
@@ -191,6 +195,7 @@ export const mockTableValues = [
     codeContributorsCount: 4,
     acceptedCount: 10,
     shownCount: 15,
+    languages: mockCodeSuggestionsLanguages,
     duoChatContributorsCount: 10,
     rootCauseAnalysisUsersCount: 11,
     duoAssignedUsersCount: 15,
@@ -217,6 +222,7 @@ export const mockTableValues = [
     codeContributorsCount: 20,
     acceptedCount: 9,
     shownCount: 18,
+    languages: mockCodeSuggestionsLanguages,
     duoChatContributorsCount: 9,
     rootCauseAnalysisUsersCount: 12,
     duoAssignedUsersCount: 18,
@@ -243,6 +249,7 @@ export const mockTableValues = [
     codeContributorsCount: 10,
     acceptedCount: 3,
     shownCount: 17,
+    languages: mockCodeSuggestionsLanguages,
     duoChatContributorsCount: 3,
     rootCauseAnalysisUsersCount: 7,
     duoAssignedUsersCount: 17,
@@ -269,6 +276,7 @@ export const mockTableValues = [
     codeContributorsCount: 4,
     acceptedCount: 4,
     shownCount: 12,
+    languages: mockCodeSuggestionsLanguages,
     duoChatContributorsCount: 4,
     rootCauseAnalysisUsersCount: 6,
     duoAssignedUsersCount: 12,
@@ -492,6 +500,7 @@ export const mockAiMetricsResponseData = {
       contributorsCount: 5,
       acceptedCount: 2,
       shownCount: 5,
+      languages: mockCodeSuggestionsLanguages,
     },
     codeContributorsCount: 8,
     duoChatContributorsCount: 5,
