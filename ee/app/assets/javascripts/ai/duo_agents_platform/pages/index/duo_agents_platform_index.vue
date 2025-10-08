@@ -1,5 +1,5 @@
 <script>
-import { GlExperimentBadge, GlLoadingIcon } from '@gitlab/ui';
+import { GlExperimentBadge, GlSkeletonLoader } from '@gitlab/ui';
 import emptyStateIllustrationPath from '@gitlab/svgs/dist/illustrations/empty-state/empty-pipeline-md.svg?url';
 import PageHeading from '~/vue_shared/components/page_heading.vue';
 import AgentFlowList from '../../components/common/agent_flow_list.vue';
@@ -10,7 +10,7 @@ export default {
   components: {
     AgentFlowList,
     GlExperimentBadge,
-    GlLoadingIcon,
+    GlSkeletonLoader,
     PageHeading,
   },
   inject: {
@@ -74,7 +74,15 @@ export default {
         </div>
       </template>
     </page-heading>
-    <gl-loading-icon v-if="isLoadingWorkflows" size="lg" />
+    <div
+      v-if="isLoadingWorkflows"
+      class="gl-flex gl-w-full gl-flex-col gl-gap-5 gl-p-5"
+      data-testid="loading-container"
+    >
+      <gl-skeleton-loader :lines="2" :width="300" />
+      <gl-skeleton-loader :lines="2" :width="300" />
+      <gl-skeleton-loader :lines="2" :width="300" />
+    </div>
     <agent-flow-list
       v-else
       :show-project-info="isSidePanelView"
