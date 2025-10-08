@@ -1,17 +1,16 @@
-query getProjectSecurityAttributes($fullPath: ID!, $categoryId: ID) {
+query getProjectSecurityAttributes($fullPath: ID!) {
   project(fullPath: $fullPath) {
     id
-    securityAttributes(categoryId: $categoryId) @client {
+    securityAttributes {
       nodes {
         id
-        category {
+        securityCategory {
           id
           name
         }
         name
         description
         color
-        projectCount
       }
     }
   }

@@ -105,6 +105,9 @@ export const subgroupsAndProjects = {
             updatedAt: '2025-01-01T09:55:10Z',
             secretPushProtectionEnabled: false,
             containerScanningForRegistryEnabled: false,
+            securityAttributes: {
+              nodes: [],
+            },
             vulnerabilityStatistic: {
               critical: 10,
               high: 5,
@@ -135,6 +138,9 @@ export const subgroupsAndProjects = {
             updatedAt: '2025-01-01T09:55:10Z',
             secretPushProtectionEnabled: false,
             containerScanningForRegistryEnabled: false,
+            securityAttributes: {
+              nodes: [],
+            },
             vulnerabilityStatistic: {
               critical: 10,
               high: 0,

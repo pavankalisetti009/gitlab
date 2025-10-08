@@ -58294,6 +58294,9 @@ msgstr ""
 msgid "SecurityApprovals|Requires approval for decreases in test coverage."
 msgstr ""
 
+msgid "SecurityAttributes|+ Add security attributes"
+msgstr ""
+
 msgid "SecurityAttributes|+%{additionalAttributeCount} more"
 msgstr ""
 
@@ -58301,6 +58304,9 @@ msgid "SecurityAttributes|Add attribute"
 msgstr ""
 
 msgid "SecurityAttributes|Add security attribute"
+msgstr ""
+
+msgid "SecurityAttributes|Attributes"
 msgstr ""
 
 msgid "SecurityAttributes|Cancel"
@@ -58391,6 +58397,21 @@ msgid "SecurityAttributes|Selection type"
 msgstr ""
 
 msgid "SecurityAttributes|Single selection"
+msgstr ""
+
+msgid "SecurityAttributes|Successfully added %{addedCount} and removed %{removedCount} security attributes"
+msgstr ""
+
+msgid "SecurityAttributes|Successfully added %{addedCount} security attributes"
+msgstr ""
+
+msgid "SecurityAttributes|Successfully removed \"%{name}\" security attribute from this project"
+msgstr ""
+
+msgid "SecurityAttributes|Successfully removed %{removedCount} security attributes"
+msgstr ""
+
+msgid "SecurityAttributes|Successfully updated the security attributes"
 msgstr ""
 
 msgid "SecurityAttributes|Update attribute"
@@ -58758,6 +58779,9 @@ msgid "SecurityInventory|Dynamic Application Security Testing (DAST)"
 msgstr ""
 
 msgid "SecurityInventory|Dynamic application security testing (DAST)"
+msgstr ""
+
+msgid "SecurityInventory|Edit security attributes"
 msgstr ""
 
 msgid "SecurityInventory|GitLab Advanced SAST"

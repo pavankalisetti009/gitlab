@@ -48,7 +48,7 @@ describe('ActionCell', () => {
 
     it('renders correct dropdown items', () => {
       const items = findDropdown().props('items');
-      const expectedLength = showToolCoverage ? 3 : 2;
+      const expectedLength = showToolCoverage ? 4 : 2;
 
       expect(items).toHaveLength(expectedLength);
 
