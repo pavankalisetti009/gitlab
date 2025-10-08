@@ -30,6 +30,15 @@ RSpec.shared_examples 'maven virtual registry feature not licensed' do
   it_behaves_like 'returning response status', :not_found
 end
 
+RSpec.shared_examples 'virtual registries setting enabled is false' do
+  before do
+    allow(VirtualRegistries::Setting).to receive(:cached_for_group).with(group).and_return(build_stubbed(
+      :virtual_registries_setting, :disabled, group: group))
+  end
+
+  it_behaves_like 'returning response status', :not_found
+end
+
 RSpec.shared_examples 'an authenticated virtual registry REST API' do |with_successful_status: :ok|
   using RSpec::Parameterized::TableSyntax
 

@@ -34,12 +34,8 @@ module EE
           end
 
           def virtual_registry_available?
-            context.group.root? &&
-              ::Feature.enabled?(:ui_for_virtual_registries, context.group) &&
-              ::Feature.enabled?(:maven_virtual_registry, context.group) &&
-              ::Gitlab.config.dependency_proxy.enabled &&
-              context.group.licensed_feature_available?(:packages_virtual_registry) &&
-              can?(current_user, :read_virtual_registry, context.group.virtual_registry_policy_subject)
+            ::VirtualRegistries::Packages::Maven.virtual_registry_available?(context.group, current_user) &&
+              ::Feature.enabled?(:ui_for_virtual_registries, context.group)
           end
         end
       end

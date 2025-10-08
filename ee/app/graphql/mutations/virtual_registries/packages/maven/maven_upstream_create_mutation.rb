@@ -54,7 +54,8 @@ module Mutations
 
             raise_resource_not_available_error! if registry.nil?
 
-            raise_resource_not_available_error! unless Feature.enabled?(:maven_virtual_registry, registry.group)
+            raise_resource_not_available_error! unless ::VirtualRegistries::Packages::Maven.virtual_registry_available?(
+              registry.group, current_user)
 
             service_response = ::VirtualRegistries::Packages::Maven::CreateUpstreamService
                                  .new(registry: registry, current_user: current_user, params: args)

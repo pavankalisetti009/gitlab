@@ -42,6 +42,7 @@ RSpec.describe API::VirtualRegistries::Packages::Maven::Cache::Entries, :aggrega
     it_behaves_like 'virtual registry disabled dependency proxy'
     it_behaves_like 'virtual registry not authenticated user'
     it_behaves_like 'maven virtual registry feature not licensed'
+    it_behaves_like 'virtual registries setting enabled is false'
 
     context 'with invalid upstream' do
       where(:upstream_id, :status) do
@@ -122,6 +123,7 @@ RSpec.describe API::VirtualRegistries::Packages::Maven::Cache::Entries, :aggrega
     it_behaves_like 'virtual registry disabled dependency proxy'
     it_behaves_like 'virtual registry not authenticated user'
     it_behaves_like 'maven virtual registry feature not licensed'
+    it_behaves_like 'virtual registries setting enabled is false'
 
     context 'for different user roles' do
       where(:user_role, :status) do

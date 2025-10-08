@@ -18,5 +18,11 @@ module VirtualRegistries
     def self.find_for_group(group)
       find_or_initialize_by(group: group)
     end
+
+    def self.cached_for_group(group)
+      Gitlab::SafeRequestStore.fetch("virtual_registry_setting_#{group.id}") do
+        find_for_group(group)
+      end
+    end
   end
 end

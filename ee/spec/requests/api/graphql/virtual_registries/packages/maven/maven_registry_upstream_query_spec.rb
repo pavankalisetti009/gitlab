@@ -38,6 +38,8 @@ RSpec.describe 'Maven Registry Upstream', feature_category: :virtual_registry do
     group.add_member(current_user, Gitlab::Access::MAINTAINER)
     stub_config(dependency_proxy: { enabled: true })
     stub_licensed_features(packages_virtual_registry: true)
+    allow(VirtualRegistries::Setting).to receive(:cached_for_group).with(group).and_return(build_stubbed(
+      :virtual_registries_setting, group: group))
   end
 
   it 'returns registry upstreams for an upstream' do
@@ -52,6 +54,19 @@ RSpec.describe 'Maven Registry Upstream', feature_category: :virtual_registry do
   context 'with feature flag maven_virtual_registry disabled' do
     before do
       stub_feature_flags(maven_virtual_registry: false)
+    end
+
+    it 'returns no maven virtual registries' do
+      maven_registries = query_result.dig(*%w[data group mavenVirtualRegistries nodes])
+
+      expect(maven_registries).to be_nil
+    end
+  end
+
+  context 'when the virtual registries setting enabled is false' do
+    before do
+      allow(VirtualRegistries::Setting).to receive(:cached_for_group).with(group).and_return(build_stubbed(
+        :virtual_registries_setting, :disabled, group: group))
     end
 
     it 'returns no maven virtual registries' do
