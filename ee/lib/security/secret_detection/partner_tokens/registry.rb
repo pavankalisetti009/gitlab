@@ -9,29 +9,29 @@ module Security
 
         PARTNERS = {
           'AWS' => {
-            client_class: 'Security::SecretDetection::PartnerTokens::AwsClient',
+            client_class: ::Security::SecretDetection::PartnerTokens::AwsClient,
             rate_limit_key: :partner_aws_api,
             enabled: true
           }.freeze,
           # GCP - multiple rule types
           'GCP API key' => {
-            client_class: 'Security::SecretDetection::PartnerTokens::GcpClient',
+            client_class: ::Security::SecretDetection::PartnerTokens::GcpClient,
             rate_limit_key: :partner_gcp_api,
             enabled: true
           }.freeze,
           'GCP OAuth client secret' => {
-            client_class: 'Security::SecretDetection::PartnerTokens::GcpClient',
+            client_class: ::Security::SecretDetection::PartnerTokens::GcpClient,
             rate_limit_key: :partner_gcp_api,
             enabled: true
           }.freeze,
           'Google (GCP) Service-account' => {
-            client_class: 'Security::SecretDetection::PartnerTokens::GcpClient',
+            client_class: ::Security::SecretDetection::PartnerTokens::GcpClient,
             rate_limit_key: :partner_gcp_api,
             enabled: true
           }.freeze,
           # Postman
           'Postman API token' => {
-            client_class: 'Security::SecretDetection::PartnerTokens::PostmanClient',
+            client_class: ::Security::SecretDetection::PartnerTokens::PostmanClient,
             rate_limit_key: :partner_postman_api,
             enabled: true
           }.freeze
@@ -49,7 +49,7 @@ module Security
             config = partner_for(token_type)
             return unless config
 
-            config[:client_class].constantize.new
+            config[:client_class].new
           rescue NameError => e
             Gitlab::ErrorTracking.track_exception(
               e,

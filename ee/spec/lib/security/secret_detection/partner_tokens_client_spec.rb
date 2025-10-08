@@ -17,7 +17,7 @@ RSpec.describe Security::SecretDetection::PartnerTokensClient, feature_category:
     let(:token_type) { partner_type }
     let(:expected_config) do
       {
-        client_class: 'Security::SecretDetection::PartnerTokens::AwsClient',
+        client_class: ::Security::SecretDetection::PartnerTokens::AwsClient,
         rate_limit_key: expected_rate_limit_key,
         enabled: true
       }
@@ -114,14 +114,14 @@ RSpec.describe Security::SecretDetection::PartnerTokensClient, feature_category:
     context 'with valid token type' do
       let(:expected_config) do
         {
-          client_class: 'Security::SecretDetection::PartnerTokens::AwsClient',
+          client_class: ::Security::SecretDetection::PartnerTokens::AwsClient,
           rate_limit_key: :partner_aws_api,
           enabled: true
         }
       end
 
       before do
-        allow(Security::SecretDetection::PartnerTokens::Registry)
+        allow(::Security::SecretDetection::PartnerTokens::Registry)
           .to receive(:partner_for).with('AWS').and_return(expected_config)
       end
 
@@ -133,7 +133,7 @@ RSpec.describe Security::SecretDetection::PartnerTokensClient, feature_category:
     context 'with invalid token type' do
       before do
         allow(finding).to receive(:token_type).and_return('INVALID')
-        allow(Security::SecretDetection::PartnerTokens::Registry)
+        allow(::Security::SecretDetection::PartnerTokens::Registry)
           .to receive(:partner_for).with('INVALID').and_return(nil)
       end
 
@@ -166,13 +166,13 @@ RSpec.describe Security::SecretDetection::PartnerTokensClient, feature_category:
     let(:mock_client) { instance_double(Security::SecretDetection::PartnerTokens::AwsClient) }
 
     before do
-      allow(Security::SecretDetection::PartnerTokens::Registry)
+      allow(::Security::SecretDetection::PartnerTokens::Registry)
         .to receive(:client_for).with('AWS').and_return(mock_client)
       allow(mock_client).to receive(:verify_token).with('AKIAIOSFODNN7EXAMPLE').and_return(verification_result)
     end
 
     it 'creates client from registry and verifies token' do
-      expect(Security::SecretDetection::PartnerTokens::Registry)
+      expect(::Security::SecretDetection::PartnerTokens::Registry)
         .to receive(:client_for).with('AWS')
       expect(mock_client).to receive(:verify_token).with('AKIAIOSFODNN7EXAMPLE')
 

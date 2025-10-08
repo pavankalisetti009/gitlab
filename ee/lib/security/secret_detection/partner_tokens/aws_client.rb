@@ -7,38 +7,9 @@ module Security
         STS_ENDPOINT = 'https://sts.amazonaws.com/'
         DUMMY_SECRET = 'DUMMY_SECRET_FOR_AWS_AUTH_PROBING_NOT_REAL'
 
-        def verify_token(token_value)
-          return token_response(:unknown) unless valid_aws_access_key_format?(token_value)
-
-          # Use dummy secret to probe AWS error responses for access key status
-          #
-          # APPROACH RATIONALE:
-          # AWS STS API requires both Access Key ID and Secret Access Key, but GitLab's secret detection
-          # only identifies the Access Key ID. Since we don't have the corresponding secret, we use a
-          # "dummy secret" approach to probe AWS error responses:
-          #
-          # 1. Valid token + dummy secret: 403 with Error.Code = "SignatureDoesNotMatch" : ACTIVE TOKEN
-          # 2. Invalid token + dummy secret: 403 with Error.Code = "InvalidClientTokenId" : INACTIVE TOKEN
-          #
-          # RISKS & MITIGATION:
-          # - Risk: AWS could change API or error codes, breaking verification logic
-          # - Mitigation: Vendors typically version APIs instead of breaking changes
-          # - Future: Could implement sanity checks or engage AWS for dedicated verification endpoint
-          #
-          # This approach balances practical implementation constraints with effective token verification.
-          verify_credentials(token_value)
-
-        rescue RateLimitError, NetworkError => e
-          # Let the worker handle rate limit retries
-          raise e
-        rescue ResponseError, StandardError
-          # Response parsing errors typically don't benefit from retry
-          token_response(:unknown)
-        end
-
         private
 
-        def valid_aws_access_key_format?(access_key_id)
+        def valid_format?(access_key_id)
           # Match exact AWS secret pattern: AKIA[0-9A-Z]{16}
           # Ref: https://gitlab.com/gitlab-org/security-products/secret-detection/secret-detection-rules/-/blob/main/rules/mit/aws/aws.toml
           # This check prevents breaking the feature if more AWS patterns are added in the future.
@@ -48,7 +19,23 @@ module Security
           access_key_id.match?(/\AAKIA[0-9A-Z]{16}\z/)
         end
 
-        def verify_credentials(access_key_id)
+        # Use dummy secret to probe AWS error responses for access key status
+        #
+        # APPROACH RATIONALE:
+        # AWS STS API requires both Access Key ID and Secret Access Key, but GitLab's secret detection
+        # only identifies the Access Key ID. Since we don't have the corresponding secret, we use a
+        # "dummy secret" approach to probe AWS error responses:
+        #
+        # 1. Valid token + dummy secret: 403 with Error.Code = "SignatureDoesNotMatch" : ACTIVE TOKEN
+        # 2. Invalid token + dummy secret: 403 with Error.Code = "InvalidClientTokenId" : INACTIVE TOKEN
+        #
+        # RISKS & MITIGATION:
+        # - Risk: AWS could change API or error codes, breaking verification logic
+        # - Mitigation: Vendors typically version APIs instead of breaking changes
+        # - Future: Could implement sanity checks or engage AWS for dedicated verification endpoint
+        #
+        # This approach balances practical implementation constraints with effective token verification.
+        def verify_partner_token(access_key_id)
           response = make_sts_request(access_key_id)
           analyze_aws_error_response(response, access_key_id)
         end

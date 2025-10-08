@@ -19,7 +19,25 @@ module Security
         end
 
         def verify_token(token_value)
-          raise NotImplementedError, 'Subclasses must implement verify_token'
+          return token_response(:unknown) unless valid_format?(token_value)
+
+          verify_partner_token(token_value)
+
+        rescue RateLimitError, NetworkError => e
+          # Let the worker handle rate limit retries
+          raise e
+        rescue ResponseError => e
+          ::Gitlab::ErrorTracking.log_exception(e)
+          # Response parsing errors typically don't benefit from retry
+          token_response(:unknown)
+        end
+
+        def valid_format?(token_value)
+          raise NotImplementedError, 'Subclasses must implement valid_format?'
+        end
+
+        def verify_partner_token(token_value)
+          raise NotImplementedError, 'Subclasses must implement verify_partner_token'
         end
 
         protected
