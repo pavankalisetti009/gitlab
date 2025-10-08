@@ -68,6 +68,7 @@ module Analytics
         duo_chat_usage_rate_over_time
         duo_usage_rate_over_time
         pipeline_metrics_table
+        code_suggestions_acceptance_rate_by_language_chart
       ].freeze
 
       CONTRIBUTIONS_DASHBOARD_PATH = 'ee/lib/gitlab/analytics/contributions_dashboard/visualizations'

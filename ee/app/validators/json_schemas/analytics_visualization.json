@@ -77,7 +77,8 @@
             "namespace_metadata",
             "merge_requests",
             "merge_request_counts",
-            "mean_time_to_merge"
+            "mean_time_to_merge",
+            "code_suggestions_acceptance_by_language"
           ]
         },
         "query": {

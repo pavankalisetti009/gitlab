@@ -6,9 +6,10 @@ fragment AiMetricItem on AiMetrics {
   duoAssignedUsersCount
   duoUsedCount
   rootCauseAnalysisUsersCount
-  codeSuggestions {
+  codeSuggestions(languages: $languages) {
     contributorsCount
     shownCount
     acceptedCount
+    languages
   }
 }

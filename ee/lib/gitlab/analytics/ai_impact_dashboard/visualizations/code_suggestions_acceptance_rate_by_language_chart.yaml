@@ -1,0 +1,17 @@
+---
+version: 1
+type: BarChart
+data:
+  type: code_suggestions_acceptance_by_language
+  query:
+    dateRange: last_30_days
+options:
+  xAxis:
+    name: "Acceptance rate"
+    type: value
+  yAxis:
+    name: ""
+    type: category
+  chartTooltip:
+    titleFormatter: VALUE_ONLY
+    valueUnit: PERCENT

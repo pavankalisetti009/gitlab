@@ -58,3 +58,11 @@ panels:
       width: 12
       height: 3
     options: {}
+  - title: 'Code suggestions acceptance rate by language (Last 30 days)'
+    visualization: code_suggestions_acceptance_rate_by_language_chart
+    gridAttributes:
+      yPos: 12
+      xPos: 0
+      width: 12
+      height: 4
+    options: {}

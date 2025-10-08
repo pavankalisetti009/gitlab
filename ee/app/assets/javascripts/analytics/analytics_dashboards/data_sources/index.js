@@ -46,4 +46,6 @@ export default {
   merge_requests: () => import('./merge_requests'),
   merge_request_counts: () => import('./merge_request_counts'),
   mean_time_to_merge: () => import('./mean_time_to_merge'),
+  code_suggestions_acceptance_by_language: () =>
+    import('./code_suggestions_acceptance_by_language'),
 };
