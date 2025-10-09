@@ -313,7 +313,7 @@
   // AI panel
   .paneled-view.ai-panels {
     @apply gl-px-0 sm:gl-px-3 lg:gl-px-2 lg:-gl-mx-2;
-    --ai-panel-width: 400px;
+    --ai-panel-width: clamp(400px, 20vw, 560px);
     --ai-panels-gap: var(--gl-spacing-scale-3);
     --ai-navigation-rail-size: #{$gl-button-medium-size};
 
