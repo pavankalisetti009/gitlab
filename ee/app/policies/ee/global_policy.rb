@@ -20,6 +20,8 @@ module EE
       end
 
       condition(:top_level_group_creation_enabled) do
+        next true if ::Gitlab.com? && @user&.can_admin_all_resources?
+
         ::Gitlab::CurrentSettings.top_level_group_creation_enabled?
       end
 
