@@ -41702,10 +41702,19 @@ msgstr[1] ""
 msgid "MlExperimentTracking|(Optional)"
 msgstr ""
 
+msgid "MlExperimentTracking|-"
+msgstr ""
+
 msgid "MlExperimentTracking|Artifacts"
 msgstr ""
 
+msgid "MlExperimentTracking|Author"
+msgstr ""
+
 msgid "MlExperimentTracking|CI Info"
+msgstr ""
+
+msgid "MlExperimentTracking|CI Job"
 msgstr ""
 
 msgid "MlExperimentTracking|Complete the form below to promote run to a model version."
@@ -41718,6 +41727,12 @@ msgid "MlExperimentTracking|Create an experiment using MLflow"
 msgstr ""
 
 msgid "MlExperimentTracking|Create experiments using MLflow"
+msgstr ""
+
+msgid "MlExperimentTracking|Create new candidates"
+msgstr ""
+
+msgid "MlExperimentTracking|Created at"
 msgstr ""
 
 msgid "MlExperimentTracking|Creating an experiment"
@@ -41738,6 +41753,9 @@ msgstr ""
 msgid "MlExperimentTracking|Delete run?"
 msgstr ""
 
+msgid "MlExperimentTracking|Deleting this experiment will also delete its candidates and their associated metadata."
+msgstr ""
+
 msgid "MlExperimentTracking|Deleting this experiment will also delete its runs and their associated metadata."
 msgstr ""
 
@@ -41745,6 +41763,9 @@ msgid "MlExperimentTracking|Deleting this run will delete the associated paramet
 msgstr ""
 
 msgid "MlExperimentTracking|Description"
+msgstr ""
+
+msgid "MlExperimentTracking|Details"
 msgstr ""
 
 msgid "MlExperimentTracking|Details & Metadata"
@@ -41774,13 +41795,13 @@ msgstr ""
 msgid "MlExperimentTracking|Experiments keep track of comparable model runs, and determine which parameters provides the best performance."
 msgstr ""
 
-msgid "MlExperimentTracking|Failed to load experiment candidates with error: %{message}"
-msgstr ""
-
 msgid "MlExperimentTracking|Failed to load experiments with error: %{error}"
 msgstr ""
 
 msgid "MlExperimentTracking|Failed to remove run"
+msgstr ""
+
+msgid "MlExperimentTracking|Filter candidates"
 msgstr ""
 
 msgid "MlExperimentTracking|For example 1.0.0"
@@ -41796,6 +41817,9 @@ msgid "MlExperimentTracking|Last activity"
 msgstr ""
 
 msgid "MlExperimentTracking|MLflow run ID"
+msgstr ""
+
+msgid "MlExperimentTracking|Machine learning experiment tracking"
 msgstr ""
 
 msgid "MlExperimentTracking|Metric"
@@ -41816,7 +41840,13 @@ msgstr ""
 msgid "MlExperimentTracking|Name"
 msgstr ""
 
-msgid "MlExperimentTracking|No candidates associated with this experiment"
+msgid "MlExperimentTracking|No artifacts"
+msgstr ""
+
+msgid "MlExperimentTracking|No candidates"
+msgstr ""
+
+msgid "MlExperimentTracking|No candidates logged for the query. Create new candidates using the MLflow client."
 msgstr ""
 
 msgid "MlExperimentTracking|No logged artifacts."
@@ -41829,6 +41859,9 @@ msgid "MlExperimentTracking|No logged metrics"
 msgstr ""
 
 msgid "MlExperimentTracking|No logged parameters"
+msgstr ""
+
+msgid "MlExperimentTracking|No name"
 msgstr ""
 
 msgid "MlExperimentTracking|No results"
@@ -41877,9 +41910,6 @@ msgid "MlExperimentTracking|To learn more about MLflow client compatibility, see
 msgstr ""
 
 msgid "MlExperimentTracking|Triggered by"
-msgstr ""
-
-msgid "MlExperimentTracking|Use candidates to track performance, parameters, and metadata"
 msgstr ""
 
 msgid "MlExperimentTracking|Using the MLflow client"
