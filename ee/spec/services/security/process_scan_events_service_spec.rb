@@ -280,6 +280,11 @@ RSpec.describe Security::ProcessScanEventsService, feature_category: :vulnerabil
               property: 'e1552d18-eb8b-4e3e-bd15-a286ad1bc0f4',
               value: 40
             }],
+          [:dependency_scanning_gemnasium_observability,
+            'collect_gemnasium_scan_non_default_config_metrics_from_pipeline', {
+              property: 'e1552d18-eb8b-4e3e-bd15-a286ad1bc0f4',
+              label: 'DS_INCLUDE_DEV_DEPENDENCIES'
+            }],
           [:dependency_scanning_gemnasium_python_observability,
             'collect_gemnasium_python_scan_metrics_from_pipeline', {
               property: 'eb0e47db-9d04-4557-ae8e-c3b9dffc601e',
@@ -298,6 +303,11 @@ RSpec.describe Security::ProcessScanEventsService, feature_category: :vulnerabil
               property: 'eb0e47db-9d04-4557-ae8e-c3b9dffc601e',
               value: 28
             }],
+          [:dependency_scanning_gemnasium_python_observability,
+            'collect_gemnasium_python_scan_non_default_config_metrics_from_pipeline', {
+              property: 'eb0e47db-9d04-4557-ae8e-c3b9dffc601e',
+              label: 'DS_INCLUDE_DEV_DEPENDENCIES'
+            }],
           [:dependency_scanning_gemnasium_maven_observability,
             'collect_gemnasium_maven_scan_metrics_from_pipeline', {
               property: '077e707f-175c-4eed-a998-1be56780666d',
@@ -315,6 +325,11 @@ RSpec.describe Security::ProcessScanEventsService, feature_category: :vulnerabil
             'collect_gemnasium_maven_scan_performance_metrics_from_pipeline', {
               property: '077e707f-175c-4eed-a998-1be56780666d',
               value: 13
+            }],
+          [:dependency_scanning_gemnasium_maven_observability,
+            'collect_gemnasium_maven_scan_non_default_config_metrics_from_pipeline', {
+              property: '077e707f-175c-4eed-a998-1be56780666d',
+              label: 'DS_INCLUDE_DEV_DEPENDENCIES'
             }]
         ]
       end
@@ -376,6 +391,10 @@ RSpec.describe Security::ProcessScanEventsService, feature_category: :vulnerabil
             property: 'e1552d18-eb8b-4e3e-bd15-a286ad1bc0f4',
             label: 'maven.graph.json',
             value: 95
+          }],
+          ['collect_ds_analyzer_scan_non_default_config_metrics_from_pipeline', {
+            property: 'e1552d18-eb8b-4e3e-bd15-a286ad1bc0f4',
+            label: 'DS_INCLUDE_DEV_DEPENDENCIES'
           }]
         ]
       end

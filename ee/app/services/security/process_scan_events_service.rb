@@ -21,12 +21,15 @@ module Security
       collect_gemnasium_scan_metrics_from_pipeline
       collect_gemnasium_scan_sbom_metrics_from_pipeline
       collect_gemnasium_scan_performance_metrics_from_pipeline
+      collect_gemnasium_scan_non_default_config_metrics_from_pipeline
       collect_gemnasium_maven_scan_metrics_from_pipeline
       collect_gemnasium_maven_scan_sbom_metrics_from_pipeline
       collect_gemnasium_maven_scan_performance_metrics_from_pipeline
+      collect_gemnasium_maven_scan_non_default_config_metrics_from_pipeline
       collect_gemnasium_python_scan_metrics_from_pipeline
       collect_gemnasium_python_scan_sbom_metrics_from_pipeline
       collect_gemnasium_python_scan_performance_metrics_from_pipeline
+      collect_gemnasium_python_scan_non_default_config_metrics_from_pipeline
       collect_ds_analyzer_scan_metrics_from_pipeline
       collect_ds_analyzer_scan_duration_metrics_from_pipeline
       collect_ds_analyzer_scan_static_reachability_duration_metrics_from_pipeline
@@ -35,6 +38,7 @@ module Security
       collect_ds_analyzer_scan_sbom_metrics_from_pipeline
       collect_ds_analyzer_scan_static_reachability_metrics_from_pipeline
       collect_ds_analyzer_scan_java_sr_coverage_metrics_from_pipeline
+      collect_ds_analyzer_scan_non_default_config_metrics_from_pipeline
     ].freeze
 
     def self.execute(pipeline)
