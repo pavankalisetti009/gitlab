@@ -1,6 +1,5 @@
 <script>
 import { GlBadge } from '@gitlab/ui';
-import Markdown from '~/vue_shared/components/markdown/markdown_content.vue';
 import {
   VISIBILITY_LEVEL_LABELS,
   VISIBILITY_TYPE_ICON,
@@ -13,7 +12,6 @@ import FormSection from './form_section.vue';
 export default {
   components: {
     GlBadge,
-    Markdown,
     AiCatalogItemField,
     FormSection,
   },
@@ -81,7 +79,7 @@ export default {
       <form-section :title="s__('AICatalog|Prompts')">
         <ai-catalog-item-field v-if="systemPrompt" :title="s__('AICatalog|System prompt')">
           <div class="gl-border gl-mb-3 gl-mt-2 gl-rounded-default gl-bg-default gl-p-3">
-            <markdown fallback-on-error :value="systemPrompt" />
+            <pre class="gl-m-0 gl-whitespace-pre-wrap">{{ systemPrompt }}</pre>
           </div>
         </ai-catalog-item-field>
       </form-section>

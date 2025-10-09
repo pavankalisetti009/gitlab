@@ -109,7 +109,6 @@ describe('AiCatalogListItem', () => {
         id: mockId,
         avatarLabel: mockItem.name,
         avatarUrl: null,
-        descriptionHtml: mockItem.description,
         fullName: mockItem.name,
         relativeWebUrl: mockUrl,
       };
