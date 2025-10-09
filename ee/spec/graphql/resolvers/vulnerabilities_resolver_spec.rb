@@ -520,6 +520,60 @@ RSpec.describe Resolvers::VulnerabilitiesResolver, feature_category: :vulnerabil
       end
     end
 
+    context 'with validity_check as parameter', :elastic do
+      using RSpec::Parameterized::TableSyntax
+
+      def create_vuln_with_status(severity:, status: nil)
+        vuln = create(:vulnerability, :with_read, project: project, severity: severity)
+        if status
+          finding = create(:vulnerabilities_finding, vulnerability: vuln, project: project)
+          create(:finding_token_status, finding: finding, project: project, status: status)
+        end
+
+        vuln.vulnerability_read
+      end
+
+      let_it_be(:vuln_read_active)   { create_vuln_with_status(severity: :critical, status: :active) }
+      let_it_be(:vuln_read_inactive) { create_vuln_with_status(severity: :high,     status: :inactive) }
+      let_it_be(:vuln_read_without_token) { create_vuln_with_status(severity: :medium) }
+
+      before do
+        stub_ee_application_setting(elasticsearch_search: true, elasticsearch_indexing: true)
+
+        Elastic::ProcessBookkeepingService.track!(
+          vuln_read_active,
+          vuln_read_inactive,
+          vuln_read_without_token
+        )
+        ensure_elasticsearch_index!
+
+        allow(current_user)
+          .to receive(:can?)
+          .with(:access_advanced_vulnerability_management, vulnerable)
+          .and_return(true)
+      end
+
+      where(:validity_check, :expected_result) do
+        :active   | { 'critical' => 1 }
+        :inactive | { 'high' => 1 }
+        :unknown  | { 'medium' => 1 }
+      end
+
+      with_them do
+        let(:params) { { validity_check: [validity_check] } }
+
+        it 'only considers vulnerabilities with matching token_status values' do
+          expect(Gitlab::Search::Client).to receive(:execute_search).and_call_original
+
+          results = resolved.to_a
+          severities = results.map(&:severity)
+          severity_counts = severities.tally.transform_keys(&:to_s)
+
+          expect(severity_counts).to eq(expected_result)
+        end
+      end
+    end
+
     context 'when identifer_name is given' do
       let_it_be(:identifier_name) { 'CVE-2024-1234' }
 
