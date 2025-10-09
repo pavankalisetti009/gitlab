@@ -1406,7 +1406,7 @@ export default {
           />
         </template>
         <template v-if="!isPlanningViewsEnabled" #nav-actions>
-          <div class="gl-flex gl-gap-3">
+          <div class="gl-flex gl-justify-end gl-gap-3">
             <gl-button
               v-if="enableClientSideBoardsExperiment"
               data-testid="show-local-board-button"
@@ -1450,7 +1450,7 @@ export default {
 
         <template v-if="isPlanningViewsEnabled" #list-header>
           <work-item-list-heading>
-            <div class="gl-flex gl-gap-3">
+            <div class="gl-flex gl-justify-end gl-gap-3">
               <gl-button
                 v-if="enableClientSideBoardsExperiment"
                 data-testid="show-local-board-button"
