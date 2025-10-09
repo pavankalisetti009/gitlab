@@ -7,6 +7,6 @@ RSpec.describe GitlabSchema.types['GitlabSubscriptionPoolUsage'], feature_catego
   it { expect(described_class).to require_graphql_authorizations(:read_subscription_usage) }
 
   it 'has expected fields' do
-    expect(described_class).to have_graphql_fields([:total_credits, :credits_used])
+    expect(described_class).to have_graphql_fields([:total_credits, :credits_used, :daily_usage])
   end
 end

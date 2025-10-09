@@ -30835,6 +30835,17 @@ A feature flag for the GitLab instance.
 | <a id="gitlabinstancefeatureflagenabled"></a>`enabled` | [`Boolean!`](#boolean) | Indicates whether the GitLab instance feature flag is enabled or not. |
 | <a id="gitlabinstancefeatureflagname"></a>`name` | [`String!`](#string) | Name of the GitLab instance feature flag. |
 
+### `GitlabSubscriptionDailyUsage`
+
+Describes daily the usage of GitLab Credits.
+
+#### Fields
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="gitlabsubscriptiondailyusagecreditsused"></a>`creditsUsed` | [`Float!`](#float) | GitLab Credits consumed on the date. |
+| <a id="gitlabsubscriptiondailyusagedate"></a>`date` | [`ISO8601Date!`](#iso8601date) | Date when credits were used. |
+
 ### `GitlabSubscriptionHistory`
 
 Describes the subscription history of a given namespace.
@@ -30860,6 +30871,7 @@ Describes the usage of consumables for the subscription shared pool.
 | Name | Type | Description |
 | ---- | ---- | ----------- |
 | <a id="gitlabsubscriptionpoolusagecreditsused"></a>`creditsUsed` | [`Float`](#float) | Total of GitLab Credits consumed by the subscription. |
+| <a id="gitlabsubscriptionpoolusagedailyusage"></a>`dailyUsage` | [`[GitlabSubscriptionDailyUsage!]`](#gitlabsubscriptiondailyusage) | Array of daily usage of pool GitLab Credits. |
 | <a id="gitlabsubscriptionpoolusagetotalcredits"></a>`totalCredits` | [`Float`](#float) | Total of GitLab Credits allocated to the subscription. |
 
 ### `GitlabSubscriptionUsage`

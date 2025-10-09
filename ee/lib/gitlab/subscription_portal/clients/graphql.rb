@@ -342,10 +342,14 @@ module Gitlab
                 $endDate: ISO8601Date
               ) {
                 subscription(namespaceId: $namespaceId, licenseKey: $licenseKey) {
-                  gitlabUnitsUsage(startDate: $startDate, endDate: $endDate) {
+                  gitlabCreditsUsage(startDate: $startDate, endDate: $endDate) {
                     poolUsage {
-                      totalUnits
-                      unitsUsed
+                      totalCredits
+                      creditsUsed
+                      dailyUsage {
+                        date
+                        creditsUsed
+                      }
                     }
                   }
                 }
@@ -364,7 +368,7 @@ module Gitlab
             if response[:success]
               {
                 success: true,
-                poolUsage: response.dig(:data, :data, :subscription, :gitlabUnitsUsage, :poolUsage)
+                poolUsage: response.dig(:data, :data, :subscription, :gitlabCreditsUsage, :poolUsage)
               }
             else
               error(response.dig(:data, :errors))
@@ -387,7 +391,7 @@ module Gitlab
                 $endDate: ISO8601Date
               ) {
                 subscription(namespaceId: $namespaceId, licenseKey: $licenseKey) {
-                  gitlabUnitsUsage(startDate: $startDate, endDate:$endDate) {
+                  gitlabCreditsUsage(startDate: $startDate, endDate:$endDate) {
                     usersUsage {
                       userId
                       totalCredits
@@ -412,7 +416,7 @@ module Gitlab
             if response[:success]
               {
                 success: true,
-                usersUsage: response.dig(:data, :data, :subscription, :gitlabUnitsUsage, :usersUsage, :users)
+                usersUsage: response.dig(:data, :data, :subscription, :gitlabCreditsUsage, :usersUsage, :users)
               }
             else
               error(response.dig(:data, :errors))

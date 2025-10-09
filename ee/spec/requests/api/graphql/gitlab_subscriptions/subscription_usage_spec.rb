@@ -19,7 +19,11 @@ RSpec.describe 'Query.subscriptionUsage', feature_category: :consumables_cost_ma
 
   let(:query_fields) do
     [
-      query_graphql_field(:pool_usage, {}, [:total_credits, :credits_used]),
+      query_graphql_field(:pool_usage, {}, [
+        :total_credits,
+        :credits_used,
+        query_graphql_field(:daily_usage, {}, [:date, :credits_used])
+      ]),
       query_graphql_field(:users_usage, {}, [
         query_graphql_field(:users, {}, [
           query_graphql_field(:nodes, {}, [
@@ -76,7 +80,8 @@ RSpec.describe 'Query.subscriptionUsage', feature_category: :consumables_cost_ma
       success: true,
       poolUsage: {
         totalUnits: 1000,
-        unitsUsed: 250
+        unitsUsed: 250,
+        dailyUsage: [{ date: '2025-10-01', creditsUsed: 250 }]
       }
     }
 
@@ -96,7 +101,8 @@ RSpec.describe 'Query.subscriptionUsage', feature_category: :consumables_cost_ma
 
           expect(graphql_data_at(:subscription_usage, :poolUsage)).to eq({
             totalCredits: 1000,
-            creditsUsed: 250
+            creditsUsed: 250,
+            dailyUsage: [{ date: '2025-10-01', creditsUsed: 250 }]
           }.with_indifferent_access)
 
           expect(graphql_data_at(:subscription_usage, :usersUsage, :users, :nodes)).to match_array(
@@ -145,7 +151,8 @@ RSpec.describe 'Query.subscriptionUsage', feature_category: :consumables_cost_ma
 
             expect(graphql_data_at(:subscription_usage, :poolUsage)).to eq({
               totalCredits: 1000,
-              creditsUsed: 250
+              creditsUsed: 250,
+              dailyUsage: [{ date: '2025-10-01', creditsUsed: 250 }]
             }.with_indifferent_access)
 
             expect(graphql_data_at(:subscription_usage, :usersUsage, :users, :nodes)).to match_array(

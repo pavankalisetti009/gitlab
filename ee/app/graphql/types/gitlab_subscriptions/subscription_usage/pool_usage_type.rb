@@ -18,6 +18,11 @@ module Types
           type: GraphQL::Types::Float,
           null: true,
           description: 'Total of GitLab Credits consumed by the subscription.'
+
+        field :daily_usage,
+          [DailyUsageType],
+          null: true,
+          description: 'Array of daily usage of pool GitLab Credits.'
       end
     end
   end

@@ -32,7 +32,8 @@ RSpec.describe GitlabSubscriptions::SubscriptionUsage, feature_category: :consum
             success: true,
             poolUsage: {
               totalUnits: 1000,
-              unitsUsed: 750
+              unitsUsed: 750,
+              dailyUsage: [{ date: '2025-10-01', creditsUsed: 750 }]
             }
           }
         end
@@ -51,9 +52,19 @@ RSpec.describe GitlabSubscriptions::SubscriptionUsage, feature_category: :consum
 
         it 'returns a PoolUsage struct with correct data' do
           expect(pool_usage).to be_a(GitlabSubscriptions::SubscriptionUsage::PoolUsage)
-          expect(pool_usage.total_credits).to eq(1000)
-          expect(pool_usage.credits_used).to eq(750)
-          expect(pool_usage.declarative_policy_subject).to eq(subscription_usage)
+          expect(pool_usage).to have_attributes(
+            total_credits: 1000,
+            credits_used: 750,
+            declarative_policy_subject: subscription_usage
+          )
+
+          expect(pool_usage.daily_usage).to be_a(Array)
+          expect(pool_usage.daily_usage.first).to be_a(GitlabSubscriptions::SubscriptionUsage::DailyUsage)
+          expect(pool_usage.daily_usage.first).to have_attributes(
+            date: '2025-10-01',
+            credits_used: 750,
+            declarative_policy_subject: subscription_usage
+          )
         end
       end
 
@@ -73,11 +84,14 @@ RSpec.describe GitlabSubscriptions::SubscriptionUsage, feature_category: :consum
           }
         end
 
-        it 'returns a PoolUsage struct with nil values' do
+        it 'returns a PoolUsage struct with no values' do
           expect(pool_usage).to be_a(GitlabSubscriptions::SubscriptionUsage::PoolUsage)
-          expect(pool_usage.total_credits).to be_nil
-          expect(pool_usage.credits_used).to be_nil
-          expect(pool_usage.declarative_policy_subject).to eq(subscription_usage)
+          expect(pool_usage).to have_attributes(
+            total_credits: nil,
+            credits_used: nil,
+            daily_usage: [],
+            declarative_policy_subject: subscription_usage
+          )
         end
       end
 
@@ -122,7 +136,8 @@ RSpec.describe GitlabSubscriptions::SubscriptionUsage, feature_category: :consum
           success: true,
           poolUsage: {
             totalUnits: 2000,
-            unitsUsed: 1500
+            unitsUsed: 1500,
+            dailyUsage: [{ date: '2025-10-01', creditsUsed: 1500 }]
           }
         }
       end
@@ -145,9 +160,19 @@ RSpec.describe GitlabSubscriptions::SubscriptionUsage, feature_category: :consum
 
       it 'returns a PoolUsage struct with correct data' do
         expect(pool_usage).to be_a(GitlabSubscriptions::SubscriptionUsage::PoolUsage)
-        expect(pool_usage.total_credits).to eq(2000)
-        expect(pool_usage.credits_used).to eq(1500)
-        expect(pool_usage.declarative_policy_subject).to eq(subscription_usage)
+        expect(pool_usage).to have_attributes(
+          total_credits: 2000,
+          credits_used: 1500,
+          declarative_policy_subject: subscription_usage
+        )
+
+        expect(pool_usage.daily_usage).to be_a(Array)
+        expect(pool_usage.daily_usage.first).to be_a(GitlabSubscriptions::SubscriptionUsage::DailyUsage)
+        expect(pool_usage.daily_usage.first).to have_attributes(
+          date: '2025-10-01',
+          credits_used: 1500,
+          declarative_policy_subject: subscription_usage
+        )
       end
 
       context 'when License.current is nil' do
