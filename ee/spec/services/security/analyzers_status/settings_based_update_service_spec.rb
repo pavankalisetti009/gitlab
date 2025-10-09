@@ -474,28 +474,24 @@ RSpec.describe Security::AnalyzersStatus::SettingsBasedUpdateService, feature_ca
           match_array([project1, project2]),
           match_array([
             hash_including(
-              secret_detection_secret_push_protection: hash_including(
-                project_id: project1.id,
-                analyzer_type: :secret_detection_secret_push_protection,
-                status: :success
-              ),
-              secret_detection: hash_including(
-                project_id: project1.id,
-                analyzer_type: :secret_detection,
-                status: :success
-              )
+              project_id: project1.id,
+              analyzer_type: :secret_detection_secret_push_protection,
+              status: :success
             ),
             hash_including(
-              secret_detection_secret_push_protection: hash_including(
-                project_id: project2.id,
-                analyzer_type: :secret_detection_secret_push_protection,
-                status: :not_configured
-              ),
-              secret_detection: hash_including(
-                project_id: project2.id,
-                analyzer_type: :secret_detection,
-                status: :not_configured
-              )
+              project_id: project1.id,
+              analyzer_type: :secret_detection,
+              status: :success
+            ),
+            hash_including(
+              project_id: project2.id,
+              analyzer_type: :secret_detection_secret_push_protection,
+              status: :not_configured
+            ),
+            hash_including(
+              project_id: project2.id,
+              analyzer_type: :secret_detection,
+              status: :not_configured
             )
           ])
         )
