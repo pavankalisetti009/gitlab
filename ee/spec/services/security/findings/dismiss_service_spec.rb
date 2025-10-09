@@ -167,6 +167,104 @@ RSpec.describe Security::Findings::DismissService, feature_category: :vulnerabil
 
           dismiss_finding
         end
+
+        describe 'scheduling sync merge request approvals worker' do
+          let(:project) { create(:project) }
+          let(:merge_request) { create(:merge_request, source_project: project) }
+          let(:pipeline) { create(:ci_pipeline, project: project, merge_request: merge_request) }
+          let(:scan) { create(:security_scan, pipeline: pipeline, project: project) }
+          let(:finding) { create(:security_finding, scan: scan) }
+
+          let(:security_finding_params) do
+            { security_finding_uuid: finding.uuid,
+              comment: comment,
+              dismissal_reason: dismissal_reason }
+          end
+
+          let(:service_double) do
+            instance_double(::Vulnerabilities::FindOrCreateFromSecurityFindingService,
+              execute: ServiceResponse.success(payload: { vulnerability: vulnerability }))
+          end
+
+          before do
+            project.add_maintainer(user)
+            allow(::Vulnerabilities::FindOrCreateFromSecurityFindingService)
+              .to receive(:new).with(
+                project: finding.project,
+                current_user: user,
+                params: security_finding_params,
+                state: :dismissed,
+                present_on_default_branch: false
+              ).and_return(service_double)
+          end
+
+          context 'when feature flag is enabled' do
+            before do
+              stub_feature_flags(sync_mr_approvals_on_vulnerability_dismiss: true)
+            end
+
+            context 'when pipeline has a merge request' do
+              it 'schedules the sync worker with 1 minute delay' do
+                expect(Security::ScanResultPolicies::SyncFindingsToApprovalRulesWorker)
+                  .to receive(:perform_in).with(1.minute, pipeline.id)
+
+                dismiss_finding
+              end
+            end
+
+            context 'when pipeline does not have a merge request' do
+              let(:pipeline) { create(:ci_pipeline, project: project, merge_request: nil) }
+
+              it 'schedules the sync worker with 1 minute delay' do
+                expect(Security::ScanResultPolicies::SyncFindingsToApprovalRulesWorker)
+                  .to receive(:perform_in).with(1.minute, pipeline.id)
+
+                dismiss_finding
+              end
+            end
+          end
+
+          context 'when feature flag is disabled' do
+            before do
+              stub_feature_flags(sync_mr_approvals_on_vulnerability_dismiss: false)
+            end
+
+            it 'does not schedule the sync worker' do
+              expect(Security::ScanResultPolicies::SyncFindingsToApprovalRulesWorker)
+                .not_to receive(:perform_in)
+
+              dismiss_finding
+            end
+          end
+
+          context 'when dismissal fails' do
+            let(:create_service_double) do
+              instance_double("VulnerabilityFeedback::CreateService", execute: service_failure_payload)
+            end
+
+            let(:service_failure_payload) do
+              {
+                status: :error,
+                message: errors_double
+              }
+            end
+
+            let(:errors_double) { instance_double("ActiveModel::Errors", full_messages: error_messages_array) }
+            let(:error_messages_array) { instance_double("Array", join: "something went wrong") }
+
+            before do
+              stub_feature_flags(sync_mr_approvals_on_vulnerability_dismiss: true)
+              allow(VulnerabilityFeedback::CreateService).to receive(:new).and_return(create_service_double)
+            end
+
+            it 'does not schedule the sync worker when dismissal fails' do
+              expect(Security::ScanResultPolicies::SyncFindingsToApprovalRulesWorker)
+                .not_to receive(:perform_in)
+
+              dismiss_finding
+            end
+          end
+        end
       end
     end
 

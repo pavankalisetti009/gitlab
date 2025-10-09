@@ -5,6 +5,8 @@ module Security
     class DismissService < BaseProjectService
       include Gitlab::Allowable
 
+      SYNC_POLICIES_DELAY = 1.minute
+
       def initialize(user:, security_finding:, comment: nil, dismissal_reason: nil)
         super(project: security_finding.project, current_user: user)
         @security_finding = security_finding
@@ -38,6 +40,7 @@ module Security
           ServiceResponse.error(message: error_string, http_status: :unprocessable_entity)
         else
           trigger_webhook_event
+          schedule_sync_merge_request_approvals_worker
           ServiceResponse.success(payload: { security_finding: @security_finding })
         end
       end
@@ -110,6 +113,18 @@ module Security
         else
           { comment: nil, comment_timestamp: nil, comment_author: nil }
         end
+      end
+
+      def schedule_sync_merge_request_approvals_worker
+        return unless Feature.enabled?(:sync_mr_approvals_on_vulnerability_dismiss, @project)
+
+        pipeline = @security_finding.pipeline
+
+        # we are scheduling this in 1 minute so we can deduplicate if multiple findings are dismissed
+        ::Security::ScanResultPolicies::SyncFindingsToApprovalRulesWorker.perform_in(
+          SYNC_POLICIES_DELAY,
+          pipeline.id
+        )
       end
     end
   end
