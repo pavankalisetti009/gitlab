@@ -60,7 +60,7 @@ import { fetchPolicies } from '~/lib/graphql';
 import { isPositiveInteger } from '~/lib/utils/number_utils';
 import { scrollUp } from '~/lib/utils/scroll_utils';
 import { getParameterByName, removeParams, updateHistory } from '~/lib/utils/url_utility';
-import { __, s__ } from '~/locale';
+import { __, s__, n__ } from '~/locale';
 import {
   OPERATOR_IS,
   OPERATORS_AFTER_BEFORE,
@@ -883,6 +883,20 @@ export default {
     showGroupNewWorkItem() {
       return this.isGroupIssuesList && this.hasProjects;
     },
+    workItemTotalStateCount() {
+      const stateToken = this.filterTokens?.find((token) => token.type === TOKEN_TYPE_STATE);
+      const stateValue = stateToken?.value?.data;
+
+      let count = this.workItemStateCounts?.all || 0;
+
+      if (stateValue === STATUS_OPEN) {
+        count = this.workItemStateCounts?.opened || 0;
+      } else if (stateValue === STATUS_CLOSED) {
+        count = this.workItemStateCounts?.closed || 0;
+      }
+
+      return n__('WorkItem|%d item', 'WorkItem|%d items', count);
+    },
   },
   watch: {
     eeWorkItemUpdateCount() {
@@ -1208,7 +1222,6 @@ export default {
       return this.filterTokens.some((filterToken) => filterToken.type === TOKEN_TYPE_STATE);
     },
     handleWorkItemCreated() {
-      this.isInitialLoadComplete = false;
       this.refetchItems({ refetchCounts: true });
     },
     fetchReleases(search) {
@@ -1422,7 +1435,7 @@ export default {
               :full-path="rootPageFullPath"
               :is-group="isGroup"
               :preselected-work-item-type="preselectedWorkItemType"
-              @workItemCreated="refetchItems"
+              @workItemCreated="handleWorkItemCreated"
             />
             <new-resource-dropdown
               v-if="showGroupNewWorkItem"
@@ -1466,7 +1479,7 @@ export default {
                 :full-path="rootPageFullPath"
                 :is-group="isGroup"
                 :preselected-work-item-type="preselectedWorkItemType"
-                @workItemCreated="refetchItems"
+                @workItemCreated="handleWorkItemCreated"
               />
               <new-resource-dropdown
                 v-if="isGroupIssuesList"
@@ -1483,6 +1496,13 @@ export default {
               />
             </div>
           </work-item-list-heading>
+        </template>
+
+        <template v-if="isPlanningViewsEnabled && workItems.length" #before-list-items>
+          <!-- state-count -->
+          <div class="gl-border-b gl-py-3">
+            {{ workItemTotalStateCount }}
+          </div>
         </template>
 
         <template #timeframe="{ issuable = {} }">
