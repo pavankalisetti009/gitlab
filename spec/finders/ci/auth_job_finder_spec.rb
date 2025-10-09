@@ -29,12 +29,6 @@ RSpec.describe Ci::AuthJobFinder, feature_category: :continuous_integration do
     context 'when job has a `scoped_user_id` tracked' do
       let(:scoped_user) { create(:user) }
 
-      before do
-        # Remove stub with stop_writing_builds_metadata
-        stub_ci_job_definition(job, options: job.options.merge(scoped_user_id: scoped_user.id))
-        job.update!(scoped_user_id: scoped_user.id)
-      end
-
       context 'when job user does not support composite identity' do
         it 'does not link the scoped user as composite identity' do
           execute

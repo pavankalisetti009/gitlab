@@ -73,12 +73,6 @@ RSpec.describe Ci::Build, :saas, feature_category: :continuous_integration do
     end
   end
 
-  describe 'clone_accessors' do
-    it 'includes the cloneable extra accessors' do
-      expect(::Ci::Build.clone_accessors).to include(:secrets)
-    end
-  end
-
   describe 'associations' do
     it { is_expected.to have_many(:security_scans).class_name('Security::Scan').with_foreign_key(:build_id) }
     it { is_expected.to have_many(:security_report_artifacts).class_name('Ci::JobArtifact') }

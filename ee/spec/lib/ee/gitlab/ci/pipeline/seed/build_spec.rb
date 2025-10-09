@@ -45,17 +45,6 @@ RSpec.describe Gitlab::Ci::Pipeline::Seed::Build, feature_category: :pipeline_co
           it 'propagates the composite identity as `scoped_user_id`' do
             expect(seed_attributes[:scoped_user_id]).to be(scoped_user.id)
           end
-
-          context 'with the feature flag disabled' do
-            before do
-              stub_feature_flags(stop_writing_builds_metadata: false)
-            end
-
-            it 'propagates the composite identity as `scoped_user_id` in the options and attributes' do
-              expect(seed_attributes[:options][:scoped_user_id]).to be(scoped_user.id)
-              expect(seed_attributes[:scoped_user_id]).to be(scoped_user.id)
-            end
-          end
         end
       end
     end

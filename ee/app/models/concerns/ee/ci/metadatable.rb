@@ -12,10 +12,6 @@ module EE
       def secrets?
         secrets.present?
       end
-
-      def secrets=(value)
-        ensure_metadata.secrets = value if can_write_metadata?
-      end
     end
   end
 end

@@ -41,12 +41,6 @@ FactoryBot.define do
       job = instance.pipeline.stages[0].statuses[0]
       updated_options = { script: evaluator.job_script }
 
-      # TODO: Remove this when FF `stop_writing_builds_metadata` is removed.
-      # https://gitlab.com/gitlab-org/gitlab/-/issues/552065
-      if Feature.disabled?(:stop_writing_builds_metadata, job.project)
-        job.metadata.write_attribute(:config_options, updated_options)
-      end
-
       Ci::JobFactoryHelpers.mutate_temp_job_definition(job, options: updated_options)
     end
   end

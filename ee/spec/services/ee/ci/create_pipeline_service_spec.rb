@@ -162,16 +162,6 @@ RSpec.describe Ci::CreatePipelineService, '#execute', :saas, feature_category: :
     it 'does not write to ci_builds_metadata' do
       expect { create_pipeline! }.to not_change { Ci::BuildMetadata.count }
     end
-
-    context 'when FF `stop_writing_builds_metadata` is disabled' do
-      before do
-        stub_feature_flags(stop_writing_builds_metadata: false)
-      end
-
-      it 'writes to ci_builds_metadata' do
-        expect { create_pipeline! }.to change { Ci::BuildMetadata.count }.by(1)
-      end
-    end
   end
 
   context 'with partition_id param' do
