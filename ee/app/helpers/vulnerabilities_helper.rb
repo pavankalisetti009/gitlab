@@ -151,6 +151,8 @@ module VulnerabilitiesHelper
       data[:validity_checks_enabled] = finding.project&.security_setting&.validity_checks_enabled || false
     end
 
+    data[:latest_flag] = finding.vulnerability_flags&.last
+
     data
   end
 

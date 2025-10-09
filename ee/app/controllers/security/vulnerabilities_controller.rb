@@ -16,6 +16,7 @@ module Security
       )
 
       push_frontend_ability(ability: :resolve_vulnerability_with_ai, resource: vulnerable, user: current_user)
+      push_frontend_feature_flag(:ai_experiment_sast_fp_detection, current_user, type: :wip)
     end
 
     private

@@ -23,6 +23,7 @@ query instanceVulnerabilities(
   $clusterAgentId: [ClustersAgentID!]
   $owaspTopTen: [VulnerabilityOwaspTop10!]
   $includeSeverityOverrides: Boolean = false
+  $includeLatestFlag: Boolean = false
 ) {
   vulnerabilities(
     before: $before
