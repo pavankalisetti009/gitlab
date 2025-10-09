@@ -26779,6 +26779,25 @@ CREATE SEQUENCE tag_ssh_signatures_id_seq
 
 ALTER SEQUENCE tag_ssh_signatures_id_seq OWNED BY tag_ssh_signatures.id;
 
+CREATE TABLE tag_x509_signatures (
+    id bigint NOT NULL,
+    project_id bigint NOT NULL,
+    x509_certificate_id bigint NOT NULL,
+    created_at timestamp with time zone NOT NULL,
+    updated_at timestamp with time zone NOT NULL,
+    verification_status smallint DEFAULT 0 NOT NULL,
+    object_name bytea NOT NULL
+);
+
+CREATE SEQUENCE tag_x509_signatures_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+ALTER SEQUENCE tag_x509_signatures_id_seq OWNED BY tag_x509_signatures.id;
+
 CREATE TABLE tags (
     id bigint NOT NULL,
     name character varying,
@@ -31585,6 +31604,8 @@ ALTER TABLE ONLY tag_gpg_signatures ALTER COLUMN id SET DEFAULT nextval('tag_gpg
 
 ALTER TABLE ONLY tag_ssh_signatures ALTER COLUMN id SET DEFAULT nextval('tag_ssh_signatures_id_seq'::regclass);
 
+ALTER TABLE ONLY tag_x509_signatures ALTER COLUMN id SET DEFAULT nextval('tag_x509_signatures_id_seq'::regclass);
+
 ALTER TABLE ONLY tags ALTER COLUMN id SET DEFAULT nextval('tags_id_seq'::regclass);
 
 ALTER TABLE ONLY target_branch_rules ALTER COLUMN id SET DEFAULT nextval('target_branch_rules_id_seq'::regclass);
@@ -35179,6 +35200,9 @@ ALTER TABLE ONLY tag_gpg_signatures
 
 ALTER TABLE ONLY tag_ssh_signatures
     ADD CONSTRAINT tag_ssh_signatures_pkey PRIMARY KEY (id);
+
+ALTER TABLE ONLY tag_x509_signatures
+    ADD CONSTRAINT tag_x509_signatures_pkey PRIMARY KEY (id);
 
 ALTER TABLE ONLY tags
     ADD CONSTRAINT tags_pkey PRIMARY KEY (id);
@@ -42457,6 +42481,10 @@ CREATE INDEX index_tag_ssh_signatures_on_key_id ON tag_ssh_signatures USING btre
 
 CREATE UNIQUE INDEX index_tag_ssh_signatures_on_project_id_and_object_name ON tag_ssh_signatures USING btree (project_id, object_name);
 
+CREATE UNIQUE INDEX index_tag_x509_signatures_on_project_id_and_object_name ON tag_x509_signatures USING btree (project_id, object_name);
+
+CREATE INDEX index_tag_x509_signatures_on_x509_certificate_id ON tag_x509_signatures USING btree (x509_certificate_id);
+
 CREATE UNIQUE INDEX index_tags_on_name ON tags USING btree (name);
 
 CREATE INDEX index_tags_on_name_trigram ON tags USING gin (name gin_trgm_ops);
@@ -48393,6 +48421,9 @@ ALTER TABLE ONLY projects
 ALTER TABLE ONLY compliance_framework_security_policies
     ADD CONSTRAINT fk_6d3bd0c9f1 FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE CASCADE;
 
+ALTER TABLE ONLY tag_x509_signatures
+    ADD CONSTRAINT fk_6d4c24da42 FOREIGN KEY (x509_certificate_id) REFERENCES x509_certificates(id) ON DELETE CASCADE;
+
 ALTER TABLE ONLY organization_cluster_agent_mappings
     ADD CONSTRAINT fk_6d8bfa275e FOREIGN KEY (organization_id) REFERENCES organizations(id) ON DELETE CASCADE;
 
@@ -48617,6 +48648,9 @@ ALTER TABLE ONLY work_item_weights_sources
 
 ALTER TABLE ONLY alert_management_alert_user_mentions
     ADD CONSTRAINT fk_8175238264 FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE CASCADE;
+
+ALTER TABLE ONLY tag_x509_signatures
+    ADD CONSTRAINT fk_81b00bcc6e FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE CASCADE;
 
 ALTER TABLE ONLY related_epic_links
     ADD CONSTRAINT fk_8257080565 FOREIGN KEY (group_id) REFERENCES namespaces(id) ON DELETE CASCADE;
