@@ -13,12 +13,12 @@ module Resolvers
 
         argument :start_date, Types::DateType,
           required: false,
-          description: 'Date range to start from. Default is the beginning of current month. \
+          description: 'Date range to start from. Default is the beginning of current month.
            ClickHouse needs to be enabled when passing this param.'
 
         argument :end_date, Types::DateType,
           required: false,
-          description: 'Date range to end at. Default is the end of current month. \
+          description: 'Date range to end at. Default is the end of current month.
            ClickHouse needs to be enabled when passing this param.'
 
         def ready?(**args)
