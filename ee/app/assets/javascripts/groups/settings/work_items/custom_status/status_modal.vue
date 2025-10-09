@@ -454,9 +454,9 @@ export default {
         // adding an existing status from other lifecycle/namespace
         currentStatuses.push({
           id: addingExistingStatus.id,
-          name: this.formData.name.trim(),
-          color: this.formData.color,
-          description: this.formData.description.trim(),
+          name: this.formData?.name?.trim(),
+          color: this.formData?.color,
+          description: this.formData?.description?.trim() || '',
           category: addingExistingStatus.category.toUpperCase(),
         });
       } else if (this.isEditing) {

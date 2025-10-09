@@ -124,6 +124,12 @@ describe('ChangeLifecycleStepper', () => {
 
       expect(findCancelButton().exists()).toBe(false);
     });
+
+    it('shows loading on the finish button when is updating', () => {
+      createWrapper({ isUpdating: true, initialStep: 2 });
+
+      expect(findFinishButton().props('loading')).toBe(true);
+    });
   });
 
   describe('Events', () => {

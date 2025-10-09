@@ -1,5 +1,5 @@
 <script>
-import { GlCollapsibleListbox, GlTruncate, GlIcon, GlButton } from '@gitlab/ui';
+import { GlCollapsibleListbox, GlTruncate, GlIcon, GlButton, GlAlert } from '@gitlab/ui';
 import fuzzaldrinPlus from 'fuzzaldrin-plus';
 import { getAdaptiveStatusColor } from '~/lib/utils/color_utils';
 import { getNewStatusOptionsFromTheSameState, getDefaultStatusMapping } from '../utils';
@@ -11,6 +11,7 @@ export default {
     GlTruncate,
     GlIcon,
     GlButton,
+    GlAlert,
   },
   props: {
     currentLifecycle: {
@@ -20,6 +21,11 @@ export default {
     selectedLifecycle: {
       type: Object,
       required: true,
+    },
+    stepError: {
+      type: String,
+      required: false,
+      default: '',
     },
   },
   data() {
@@ -136,6 +142,10 @@ export default {
         )
       }}
     </div>
+
+    <gl-alert v-if="stepError" class="gl-my-3" variant="danger" @dismiss="$emit('error-dismissed')">
+      {{ stepError }}
+    </gl-alert>
 
     <div class="gl-max-w-88">
       <!-- Table Container -->

@@ -1,5 +1,5 @@
 import { nextTick } from 'vue';
-import { GlCollapsibleListbox, GlTruncate, GlIcon, GlButton } from '@gitlab/ui';
+import { GlCollapsibleListbox, GlTruncate, GlIcon, GlButton, GlAlert } from '@gitlab/ui';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import StatusMapping from 'ee/groups/settings/work_items/custom_status/change_lifecycle/status_mapping.vue';
 import { mockLifecycles } from '../../mock_data';
@@ -15,6 +15,7 @@ describe('StatusMapping', () => {
   const findCurrentStatusTableHeading = () => wrapper.findByTestId('current-status-mapping-header');
   const findNewStatusTableHeading = () => wrapper.findByTestId('new-status-mapping-header');
   const findCurrentStatuses = () => wrapper.findAllByTestId('current-status');
+  const findError = () => wrapper.findComponent(GlAlert);
 
   const mockCurrentLifecycle = {
     ...mockLifecycles[0],
@@ -73,6 +74,16 @@ describe('StatusMapping', () => {
     it('emits initialise-mapping event on mount', () => {
       expect(wrapper.emitted('initialise-mapping')).toHaveLength(1);
       expect(wrapper.emitted('initialise-mapping')[0][0]).toEqual(mockStatusMappings);
+    });
+
+    it('shows error when we have it in props', async () => {
+      createComponent({ stepError: 'Some error while updating mapping' });
+
+      expect(findError().exists()).toBe(true);
+      findError().vm.$emit('dismiss');
+      await nextTick();
+
+      expect(wrapper.emitted('error-dismissed')).toHaveLength(1);
     });
   });
 

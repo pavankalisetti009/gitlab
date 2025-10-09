@@ -34,6 +34,7 @@ export default {
       errorText: '',
       selectedLifecycleId: null,
       isValidStep: true,
+      isUpdating: false,
     };
   },
   apollo: {
@@ -130,6 +131,8 @@ export default {
     },
     async mapStatuses() {
       try {
+        this.isUpdating = true;
+
         const leanMapping = excludeSelfReferencingIds(this.statusMappings);
 
         const { data } = await this.$apollo.mutate({
@@ -161,6 +164,8 @@ export default {
         this.errorText =
           error.message || s__('WorkItem|Something went wrong while updating mappings.');
         Sentry.captureException(error);
+      } finally {
+        this.isUpdating = false;
       }
     },
     goToIssuesSettings() {
@@ -180,6 +185,7 @@ export default {
       :initial-step="currentStep"
       :show-back-button="false"
       :is-valid-step="isValidStep"
+      :is-updating="isUpdating"
       @finish="mapStatuses"
       @cancel="goToIssuesSettings"
       @step-change="onStepChange"
@@ -217,6 +223,8 @@ export default {
         <status-mapping
           :current-lifecycle="currentLifecycle"
           :selected-lifecycle="selectedLifecycle"
+          :step-error="errorText"
+          @error-dismissed="errorText = ''"
           @mapping-updated="updateStatusMappings"
           @initialise-mapping="updateStatusMappings"
         />
