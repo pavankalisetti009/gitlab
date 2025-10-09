@@ -180,17 +180,9 @@ module EE
       end
 
       def metrics_report
-        if ::Feature.enabled?(:show_child_reports_in_mr_page, project)
-          ::Gitlab::Ci::Reports::Metrics::Report.new.tap do |metrics_report|
-            latest_report_builds_in_self_and_project_descendants(::Ci::JobArtifact.of_report_type(:metrics)).each do |build|
-              build.collect_metrics_reports!(metrics_report)
-            end
-          end
-        else
-          ::Gitlab::Ci::Reports::Metrics::Report.new.tap do |metrics_report|
-            latest_report_builds(::Ci::JobArtifact.of_report_type(:metrics)).each do |build|
-              build.collect_metrics_reports!(metrics_report)
-            end
+        ::Gitlab::Ci::Reports::Metrics::Report.new.tap do |metrics_report|
+          latest_report_builds_in_self_and_project_descendants(::Ci::JobArtifact.of_report_type(:metrics)).each do |build|
+            build.collect_metrics_reports!(metrics_report)
           end
         end
       end

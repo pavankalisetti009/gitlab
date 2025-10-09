@@ -1181,14 +1181,6 @@ RSpec.describe MergeRequest, feature_category: :code_review_workflow do
 
           expect(subject).to be_truthy
         end
-
-        context 'when ff show_child_reports_in_mr_page is disabled' do
-          before do
-            stub_feature_flags(show_child_reports_in_mr_page: false)
-          end
-
-          it { is_expected.to be_falsey }
-        end
       end
     end
   end

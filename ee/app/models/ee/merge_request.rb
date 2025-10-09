@@ -437,11 +437,7 @@ module EE
     end
 
     def has_metrics_reports?
-      if ::Feature.enabled?(:show_child_reports_in_mr_page, project)
-        !!diff_head_pipeline&.complete_and_has_self_or_descendant_reports?(::Ci::JobArtifact.of_report_type(:metrics))
-      else
-        !!diff_head_pipeline&.complete_and_has_reports?(::Ci::JobArtifact.of_report_type(:metrics))
-      end
+      !!diff_head_pipeline&.complete_and_has_self_or_descendant_reports?(::Ci::JobArtifact.of_report_type(:metrics))
     end
 
     def compare_metrics_reports
