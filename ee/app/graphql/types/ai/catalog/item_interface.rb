@@ -45,6 +45,7 @@ module Types
 
         orphan_types ::Types::Ai::Catalog::AgentType
         orphan_types ::Types::Ai::Catalog::FlowType
+        orphan_types ::Types::Ai::Catalog::ThirdPartyFlowType
 
         def latest_version(released: nil)
           version_id = released ? object.latest_released_version_id : object.latest_version_id
