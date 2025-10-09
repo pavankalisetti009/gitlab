@@ -31,6 +31,8 @@ RSpec.describe Arkose::RecordUserDataService, feature_category: :instance_resili
     end
 
     it 'executes abuse trust score workers' do
+      stub_feature_flags(remove_trust_scores: false)
+
       expect(AntiAbuse::TrustScoreWorker).to receive(:perform_async).once.ordered.with(
         user.id, :arkose_global_score, 0.0
       )
@@ -70,6 +72,8 @@ RSpec.describe Arkose::RecordUserDataService, feature_category: :instance_resili
       end
 
       it 'does not store the arkose risk scores in abuse trust scores' do
+        stub_feature_flags(remove_trust_scores: false)
+
         # Create and store initial scores
         create(:abuse_trust_score, user: user, score: 13.0, source: :arkose_global_score)
         create(:abuse_trust_score, user: user, score: 11.0, source: :arkose_custom_score)
