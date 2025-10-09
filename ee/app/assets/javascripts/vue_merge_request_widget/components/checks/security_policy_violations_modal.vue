@@ -86,11 +86,7 @@ export default {
       );
     },
     policyItems() {
-      return this.policies.map((policy) => ({
-        ...policy,
-        text: policy.name,
-        value: policy.securityPolicyId,
-      }));
+      return this.policies.map((policy) => ({ text: policy.name, value: policy.securityPolicyId }));
     },
     selectedPolicyText() {
       return getSelectedOptionsText({

@@ -12,8 +12,9 @@ import { EXCEPTION_MODE, WARN_MODE } from './constants';
 import SecurityPolicyViolationsSelector from './security_policy_violations_selector.vue';
 import SecurityPolicyBypassStatusesModal from './security_policy_bypass_statuses_modal.vue';
 
+const BYPASS_POLICY_ENFORCEMENT_TYPES = ['WARN'];
+
 export default {
-  BYPASS_POLICY_ENFORCEMENT_TYPES: ['WARN'],
   HELP_ICON_ID: 'security-policy-help-icon',
   name: 'MergeChecksSecurityPolicyViolations',
   components: {
@@ -63,26 +64,29 @@ export default {
   computed: {
     mode() {
       return getSelectedModeOption({
-        hasBypassPolicies: this.hasBypassPolicies,
-        allowBypass: this.allowBypass,
+        hasBypassPolicies: this.hasActiveWarnPolicies,
+        allowBypass: this.hasActiveBypassStatuses,
       });
-    },
-    allowBypass() {
-      return this.bypassStatuses.some(({ allowBypass, bypassed }) => allowBypass && !bypassed);
     },
     activeBypassStatuses() {
       return this.bypassStatuses.filter(({ allowBypass, bypassed }) => allowBypass && !bypassed);
     },
+    activeWarnPolicies() {
+      return this.bypassPolicies.filter(({ dismissed }) => !dismissed);
+    },
     bypassPolicies() {
       return this.policies.filter((policy) =>
-        this.$options.BYPASS_POLICY_ENFORCEMENT_TYPES.includes(policy.enforcementType),
+        BYPASS_POLICY_ENFORCEMENT_TYPES.includes(policy.enforcementType),
       );
     },
     enableBypassButton() {
-      return (
-        Boolean(this.bypassPolicies.filter((policy) => !policy.dismissed).length) ||
-        this.activeBypassStatuses.length > 0
-      );
+      return this.hasActiveWarnPolicies || this.hasActiveBypassStatuses;
+    },
+    hasActiveBypassStatuses() {
+      return Boolean(this.activeBypassStatuses.length);
+    },
+    hasActiveWarnPolicies() {
+      return Boolean(this.activeWarnPolicies.length);
     },
     hasBypassFeatureFlags() {
       return this.warnModeEnabled || this.bypassOptionsEnabled;
@@ -203,7 +207,7 @@ export default {
         v-if="showViolationsModal"
         v-model="showModal"
         :mr="mr"
-        :policies="bypassPolicies"
+        :policies="activeWarnPolicies"
         @close="cancelEdit"
         @saved="refetchPolicies"
       />
