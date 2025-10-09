@@ -1,5 +1,5 @@
 import { shallowMount } from '@vue/test-utils';
-import { GlExperimentBadge, GlLoadingIcon } from '@gitlab/ui';
+import { GlExperimentBadge } from '@gitlab/ui';
 import PageHeading from '~/vue_shared/components/page_heading.vue';
 
 import AgentFlowList from 'ee/ai/duo_agents_platform/components/common/agent_flow_list.vue';
@@ -41,7 +41,7 @@ describe('AgentsPlatformIndex', () => {
   };
 
   const findWorkflowsList = () => wrapper.findComponent(AgentFlowList);
-  const findLoadingIcon = () => wrapper.findComponent(GlLoadingIcon);
+  const findLoadingIcon = () => wrapper.find('[data-testid="loading-container"]');
   const findPageHeading = () => wrapper.findComponent(PageHeading);
   const findExperimentBadge = () => wrapper.findComponent(GlExperimentBadge);
 
