@@ -76,7 +76,7 @@ RSpec.describe Analytics::Dashboards::Dashboard, feature_category: :product_anal
       expect(dashboard.title).to eq('Merge request analytics')
       expect(dashboard.slug).to eq('merge_request_analytics')
       expect(dashboard.description).to eq(
-        "MR stats and trends"
+        "Get insights into your merge request lifecycle and view trends over time."
       )
     end
 
