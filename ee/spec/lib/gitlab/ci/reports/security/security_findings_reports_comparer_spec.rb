@@ -196,4 +196,76 @@ RSpec.describe Gitlab::Ci::Reports::Security::SecurityFindingsReportsComparer, f
       expect(comparer.added).to eq([])
     end
   end
+
+  describe 'partial scan scanner filtering' do
+    let(:semgrep_scanner) { build(:ci_reports_security_scanner, external_id: 'semgrep') }
+    let(:glas_scanner) { build(:ci_reports_security_scanner, external_id: 'glas') }
+    let(:bandit_scanner) { build(:ci_reports_security_scanner, external_id: 'bandit') }
+
+    let(:semgrep_finding) { build(:ci_reports_security_finding, scanner: semgrep_scanner) }
+    let(:glas_finding) { build(:ci_reports_security_finding, scanner: glas_scanner) }
+    let(:bandit_finding) { build(:ci_reports_security_finding, scanner: bandit_scanner) }
+
+    let(:base_report) do
+      build(:ci_reports_security_aggregated_findings, findings: [semgrep_finding, glas_finding, bandit_finding])
+    end
+
+    let(:head_report) { build(:ci_reports_security_aggregated_findings, findings: []) }
+
+    context 'when scan_mode is full and partial_scan_scanner_ids are provided' do
+      let(:params) do
+        base_params.merge(
+          scan_mode: 'full',
+          partial_scan_scanner_ids: Set.new(%w[glas])
+        )
+      end
+
+      it 'filters out base findings from partial scan scanners' do
+        expect(report_comparer.fixed).to contain_exactly(semgrep_finding, bandit_finding)
+      end
+
+      it 'does not affect added findings' do
+        head_report_with_new_finding = build(:ci_reports_security_aggregated_findings,
+          findings: [build(:ci_reports_security_finding)])
+        params_with_head = params.merge(head_report: head_report_with_new_finding)
+        comparer = described_class.new(project, params_with_head)
+
+        expect(comparer.added.size).to eq(1)
+      end
+    end
+
+    context 'when scan_mode is not full' do
+      let(:params) do
+        base_params.merge(
+          scan_mode: 'partial',
+          partial_scan_scanner_ids: Set.new(%w[glas])
+        )
+      end
+
+      it 'does not filter base findings' do
+        expect(report_comparer.fixed).to be_empty
+      end
+    end
+
+    context 'when partial_scan_scanner_ids is empty' do
+      let(:params) do
+        base_params.merge(
+          scan_mode: 'full',
+          partial_scan_scanner_ids: Set.new
+        )
+      end
+
+      it 'does not filter any base findings' do
+        expect(report_comparer.fixed).to contain_exactly(semgrep_finding, glas_finding, bandit_finding)
+      end
+    end
+
+    context 'when partial_scan_scanner_ids is not provided' do
+      let(:params) { base_params.merge(scan_mode: 'full') }
+
+      it 'does not filter any base findings' do
+        expect(report_comparer.fixed).to contain_exactly(semgrep_finding, glas_finding, bandit_finding)
+      end
+    end
+  end
 end

@@ -43,6 +43,9 @@ module Security
     scope :with_errors, -> { where("jsonb_array_length(COALESCE(info->'errors', '[]'::jsonb)) > 0") }
     scope :not_in_terminal_state, -> { where.not(status: Security::ScanStatusEnum::TERMINAL_STATUSES) }
     scope :processing, -> { where(status: %i[created preparing]) }
+    scope :partial, -> do
+      joins(:partial_scan)
+    end
 
     delegate :name, to: :build
     delegate :mode, to: :partial_scan, prefix: true, allow_nil: true

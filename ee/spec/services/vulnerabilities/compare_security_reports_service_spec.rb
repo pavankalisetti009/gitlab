@@ -35,6 +35,46 @@ RSpec.describe Vulnerabilities::CompareSecurityReportsService, :clean_gitlab_red
   let(:params) { { report_type: scan_type.to_s } }
   let(:service) { described_class.new(project, current_user, params) }
 
+  # This method creates a pipeline with multiple security scans and findings.
+  # It allows associating each scan with a specific scanner and configuring
+  # whether the scan is partial or not.
+  def create_pipeline_with_scans_and_findings(configs, project:)
+    pipeline = create(:ee_ci_pipeline, project: project, status: :success)
+
+    configs.each do |config|
+      scan_type = config[:scan_type]
+      scanner = config[:scanner]
+      build_trait = config[:build_trait]
+      finding_uuid = config.fetch(:finding_uuid, SecureRandom.uuid)
+      is_partial = config.fetch(:partial, false)
+
+      build = create(:ee_ci_build, build_trait, pipeline: pipeline, project: project)
+
+      scan = create(
+        :security_scan,
+        build: build,
+        status: :succeeded,
+        project: project,
+        pipeline: pipeline,
+        scan_type: scan_type
+      )
+
+      create(:vulnerabilities_partial_scan, scan: scan) if is_partial
+
+      # Create finding with the specified scanner
+      create(
+        :security_finding,
+        :with_finding_data,
+        uuid: finding_uuid,
+        deduplicated: true,
+        scan: scan,
+        scanner: scanner
+      )
+    end
+
+    pipeline
+  end
+
   def create_scan_with_findings(scan_type, pipeline, count = 1, partial: false)
     scan = create(
       :security_scan,
@@ -416,6 +456,57 @@ RSpec.describe Vulnerabilities::CompareSecurityReportsService, :clean_gitlab_red
             expect(added.size).to eq(1)
             expect(added.first['uuid']).to eq(new_finding_uuid)
           end
+        end
+      end
+
+      context 'when scan_mode is full and head pipeline contains both full and partial scans' do
+        let(:params) { { report_type: 'sast', scan_mode: 'full' } }
+
+        let_it_be(:semgrep_scanner) { create(:vulnerabilities_scanner, project: project, external_id: 'semgrep') }
+        let_it_be(:advanced_sast_scanner) do
+          create(:vulnerabilities_scanner, project: project, external_id: 'gitlab-advanced-sast')
+        end
+
+        let_it_be(:semgrep_base_uuid) { SecureRandom.uuid }
+        let_it_be(:semgrep_head_uuid) { SecureRandom.uuid }
+
+        # Create base pipeline with full scans for both semgrep and advanced SAST
+        let_it_be(:base_pipeline) do
+          create_pipeline_with_scans_and_findings(
+            [
+              { scan_type: 'sast', scanner: semgrep_scanner,
+                build_trait: :sast_semgrep, finding_uuid: semgrep_base_uuid },
+              { scan_type: 'sast', scanner: advanced_sast_scanner,
+                build_trait: :advanced_sast }
+            ],
+            project: project
+          )
+        end
+
+        # Create head pipeline with semgrep and partial advanced SAST scans
+        let_it_be(:head_pipeline) do
+          create_pipeline_with_scans_and_findings(
+            [
+              { scan_type: 'sast', scanner: semgrep_scanner,
+                build_trait: :sast_semgrep, finding_uuid: semgrep_head_uuid },
+              { scan_type: 'sast', scanner: advanced_sast_scanner,
+                build_trait: :sast_differential_scan, partial: true }
+            ],
+            project: project
+          )
+        end
+
+        let(:fixed_findings) { comparison[:data]['fixed'] }
+        let(:added_findings) { comparison[:data]['added'] }
+
+        it 'includes only findings from full scanners in fixed list' do
+          expect(fixed_findings.count).to eq(1)
+          expect(fixed_findings.first['uuid']).to eq(semgrep_base_uuid)
+        end
+
+        it 'includes only full scan findings in added list' do
+          expect(added_findings.count).to eq(1)
+          expect(added_findings.first['uuid']).to eq(semgrep_head_uuid)
         end
       end
     end

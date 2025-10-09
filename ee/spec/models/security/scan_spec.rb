@@ -564,4 +564,17 @@ RSpec.describe Security::Scan, feature_category: :vulnerability_management do
       let_it_be(:model) { create(:security_scan, project: parent) }
     end
   end
+
+  describe '.partial' do
+    let_it_be(:sast_partial_scan) { create(:security_scan, scan_type: :sast) }
+
+    before do
+      create(:security_scan, scan_type: :sast)
+      create(:vulnerabilities_partial_scan, scan: sast_partial_scan)
+    end
+
+    it 'returns only scans that have associated partial scan records' do
+      expect(described_class.partial).to match_array([sast_partial_scan])
+    end
+  end
 end
