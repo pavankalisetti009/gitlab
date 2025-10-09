@@ -346,19 +346,108 @@ RSpec.describe WorkItems::Lifecycles::UpdateService, feature_category: :team_pla
             {
               id: system_defined_lifecycle.to_gid,
               statuses: [
+                status_params_for(system_defined_in_progress_status),
                 status_params_for(system_defined_lifecycle.default_closed_status),
                 status_params_for(system_defined_lifecycle.default_duplicate_status)
               ]
             }
           end
 
-          let(:expected_error_message) do
-            "Cannot delete status '#{system_defined_lifecycle.default_open_status.name}' " \
-              "because it is marked as a default status"
+          context 'when no mapping is provided' do
+            let(:expected_error_message) do
+              "Cannot remove default status '#{system_defined_lifecycle.default_open_status.name}' " \
+                "without providing a mapping"
+            end
+
+            it_behaves_like 'lifecycle service does not create custom lifecycle'
+            it_behaves_like 'lifecycle service returns validation error'
+
+            context 'when work_item_status_mvc2 feature flag is disabled' do
+              before do
+                stub_feature_flags(work_item_status_mvc2: false)
+              end
+
+              let(:expected_error_message) do
+                "Cannot delete status '#{system_defined_lifecycle.default_open_status.name}' " \
+                  "because it is marked as a default status"
+              end
+
+              it_behaves_like 'lifecycle service does not create custom lifecycle'
+              it_behaves_like 'lifecycle service returns validation error'
+            end
           end
 
-          it_behaves_like 'lifecycle service does not create custom lifecycle'
-          it_behaves_like 'lifecycle service returns validation error'
+          context 'when mapping is provided' do
+            let(:params) do
+              super().merge(
+                status_mappings: [
+                  {
+                    old_status_id: system_defined_lifecycle.default_open_status.to_gid,
+                    new_status_id: system_defined_in_progress_status.to_gid
+                  }
+                ]
+              )
+            end
+
+            let(:expected_error_message) do
+              "Validation failed: Default open status can't be blank"
+            end
+
+            it_behaves_like 'lifecycle service does not create custom lifecycle'
+            it_behaves_like 'lifecycle service returns validation error'
+
+            context 'and default open status index is provided' do
+              let(:params) do
+                super().merge(
+                  default_open_status_index: 0
+                )
+              end
+
+              it_behaves_like 'lifecycle service creates custom lifecycle'
+
+              it 'sets default statuses correctly' do
+                expect(lifecycle.default_open_status.name).to eq(system_defined_in_progress_status.name)
+                expect(lifecycle.default_closed_status.name).to eq(system_defined_lifecycle.default_closed_status.name)
+                expect(lifecycle.default_duplicate_status.name).to eq(
+                  system_defined_lifecycle.default_duplicate_status.name)
+              end
+
+              it 'adds mapping record' do
+                expect { result }.to change { WorkItems::Statuses::Custom::Mapping.count }.by(2)
+
+                mappings = WorkItems::Statuses::Custom::Mapping.last(2)
+
+                expect(mappings.pluck(:work_item_type_id)).to match_array(lifecycle.work_item_types.pluck(:id))
+                expect(mappings).to all(
+                  have_attributes(
+                    old_status_id: WorkItems::Statuses::Custom::Status.find_by(namespace: group, name: "To do").id,
+                    new_status_id: lifecycle.default_open_status.id,
+                    namespace_id: group.id,
+                    valid_from: nil,
+                    valid_until: nil
+                  )
+                )
+              end
+
+              context 'when work_item_status_mvc2 feature flag is disabled' do
+                before do
+                  stub_feature_flags(work_item_status_mvc2: false)
+                end
+
+                let(:expected_error_message) do
+                  "Cannot delete status '#{system_defined_lifecycle.default_open_status.name}' " \
+                    "because it is marked as a default status"
+                end
+
+                it_behaves_like 'lifecycle service does not create custom lifecycle'
+                it_behaves_like 'lifecycle service returns validation error'
+
+                it 'does not add mapping' do
+                  expect { result }.not_to change { WorkItems::Statuses::Custom::Mapping.count }
+                end
+              end
+            end
+          end
         end
       end
 
@@ -1150,15 +1239,78 @@ RSpec.describe WorkItems::Lifecycles::UpdateService, feature_category: :team_pla
                 }
               end
 
-              it 'returns an error' do
+              before do
                 custom_lifecycle_status.destroy!
                 custom_lifecycle.update!(default_open_status: custom_status)
+              end
 
-                expect(result).to be_error
-                expect(result.message).to eq(
-                  "Cannot delete status '#{custom_status.name}' " \
-                    "because it is marked as a default status"
-                )
+              context 'when no mapping is provided' do
+                let(:expected_error_message) do
+                  "Cannot remove default status '#{custom_status.name}' without providing a mapping"
+                end
+
+                it_behaves_like 'lifecycle service returns validation error'
+
+                context 'when work_item_status_mvc2 feature flag is disabled' do
+                  before do
+                    stub_feature_flags(work_item_status_mvc2: false)
+                  end
+
+                  let(:expected_error_message) do
+                    "Cannot delete status '#{custom_status.name}' because it is marked as a default status"
+                  end
+
+                  it_behaves_like 'lifecycle service returns validation error'
+                end
+              end
+
+              context 'when mapping is provided' do
+                let(:new_default_open_status) do
+                  create(:work_item_custom_status, :without_conversion_mapping,
+                    name: 'Planning breakdown', namespace: group)
+                end
+
+                let(:params) do
+                  {
+                    id: custom_lifecycle.to_gid,
+                    statuses: [
+                      status_params_for(new_default_open_status),
+                      status_params_for(custom_lifecycle.default_closed_status),
+                      status_params_for(custom_lifecycle.default_duplicate_status)
+                    ],
+                    status_mappings: [
+                      {
+                        old_status_id: custom_status.to_gid,
+                        new_status_id: new_default_open_status.to_gid
+                      }
+                    ],
+                    default_open_status_index: 0,
+                    default_closed_status_index: 1,
+                    default_duplicate_status_index: 2
+                  }
+                end
+
+                it 'sets the new default status' do
+                  expect(lifecycle.default_open_status).to eq(new_default_open_status)
+                end
+
+                it 'removes the old default status from the lifecycle' do
+                  expect { result }.not_to change { WorkItems::Statuses::Custom::Status.count }
+                  expect(lifecycle.statuses.pluck(:name)).not_to include(custom_status.name)
+                  expect(lifecycle.statuses.count).to eq(3)
+                end
+
+                context 'when work_item_status_mvc2 feature flag is disabled' do
+                  before do
+                    stub_feature_flags(work_item_status_mvc2: false)
+                  end
+
+                  let(:expected_error_message) do
+                    "Cannot delete status '#{custom_status.name}' because it is marked as a default status"
+                  end
+
+                  it_behaves_like 'lifecycle service returns validation error'
+                end
               end
             end
           end
@@ -1259,25 +1411,62 @@ RSpec.describe WorkItems::Lifecycles::UpdateService, feature_category: :team_pla
             end
 
             context 'when trying to remove a default status' do
+              let(:new_default_open_status) do
+                create(:work_item_custom_status, :to_do, name: 'Planning breakdown', namespace: group)
+              end
+
               let(:params) do
                 {
                   id: custom_lifecycle.to_gid.to_s,
                   statuses: [
+                    status_params_for(new_default_open_status),
                     status_params_for(custom_lifecycle.default_closed_status),
                     status_params_for(custom_lifecycle.default_duplicate_status)
                   ]
                 }
               end
 
-              it 'returns an error' do
+              before do
                 custom_lifecycle_status.destroy!
                 custom_lifecycle.update!(default_open_status: custom_status)
+              end
 
-                expect(result).to be_error
-                expect(result.message).to eq(
-                  "Cannot delete status '#{custom_status.name}' " \
-                    "because it is marked as a default status"
-                )
+              context 'when no mapping is provided' do
+                let(:expected_error_message) do
+                  "Cannot remove default status '#{custom_status.name}' without providing a mapping"
+                end
+
+                it_behaves_like 'lifecycle service returns validation error'
+              end
+
+              context 'when mapping is provided' do
+                let(:params) do
+                  {
+                    id: custom_lifecycle.to_gid,
+                    statuses: [
+                      status_params_for(new_default_open_status),
+                      status_params_for(custom_lifecycle.default_closed_status),
+                      status_params_for(custom_lifecycle.default_duplicate_status)
+                    ],
+                    status_mappings: [
+                      {
+                        old_status_id: custom_lifecycle.default_open_status.to_gid,
+                        new_status_id: new_default_open_status.to_gid
+                      }
+                    ],
+                    default_open_status_index: 0
+                  }
+                end
+
+                it 'sets the new default status' do
+                  expect(lifecycle.default_open_status).to eq(new_default_open_status)
+                end
+
+                it 'removes the old default status from the lifecycle' do
+                  expect { result }.not_to change { WorkItems::Statuses::Custom::Status.count }
+                  expect(lifecycle.statuses.pluck(:name)).not_to include(custom_status.name)
+                  expect(lifecycle.statuses.count).to eq(3)
+                end
               end
             end
           end

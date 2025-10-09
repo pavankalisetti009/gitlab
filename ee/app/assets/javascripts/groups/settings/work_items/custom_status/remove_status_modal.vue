@@ -165,7 +165,7 @@ export default {
       }
 
       if (this.defaultStatusType && this.selectedNewDefaultId) {
-        const statusesIndex = this.lifecycle.statuses.findIndex(
+        const statusesIndex = input.statuses.findIndex(
           (status) => status.id === this.selectedNewDefaultId,
         );
         if (this.defaultStatusType === DEFAULT_STATE_CLOSED) {
