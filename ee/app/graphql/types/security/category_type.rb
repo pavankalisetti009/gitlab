@@ -15,7 +15,7 @@ module Types
         null: false,
         description: 'Editable state of the security category.'
       field :id, Types::GlobalIDType[::Security::Category],
-        null: true,
+        null: false,
         description: 'Global ID of the security category.',
         resolver_method: :resolve_id
       field :multiple_selection, GraphQL::Types::Boolean,
@@ -32,7 +32,11 @@ module Types
         description: 'Template type for predefined categories.'
 
       def resolve_id
-        object.persisted? ? object.to_global_id : nil
+        if object.persisted?
+          object.to_global_id
+        else
+          ::Gitlab::GlobalId.build(object, id: object.template_type)
+        end
       end
     end
   end
