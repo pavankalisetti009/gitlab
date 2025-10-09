@@ -8,6 +8,7 @@ import AiCatalogFlowsDuplicate from 'ee/ai/catalog/pages/ai_catalog_flows_duplic
 import AiCatalogFlowForm from 'ee/ai/catalog/components/ai_catalog_flow_form.vue';
 import { AI_CATALOG_FLOWS_SHOW_ROUTE } from 'ee/ai/catalog/router/constants';
 import { mapSteps } from 'ee/ai/catalog/utils';
+import createAiCatalogThirdPartyFlow from 'ee/ai/catalog/graphql/mutations/create_ai_catalog_third_party_flow.mutation.graphql';
 import {
   mockFlow,
   mockCreateAiCatalogFlowSuccessMutation,
@@ -19,8 +20,13 @@ jest.mock('~/sentry/sentry_browser_wrapper');
 
 describe('AiCatalogFlowsDuplicate', () => {
   let wrapper;
-  let createAiCatalogFlowMock;
 
+  const createAiCatalogFlowMock = jest
+    .fn()
+    .mockResolvedValue(mockCreateAiCatalogFlowSuccessMutation);
+  const createAiCatalogThirdPartyFlowMock = jest
+    .fn()
+    .mockResolvedValue(mockCreateAiCatalogFlowSuccessMutation);
   const mockToast = {
     show: jest.fn(),
   };
@@ -28,15 +34,19 @@ describe('AiCatalogFlowsDuplicate', () => {
     push: jest.fn(),
   };
 
-  const createComponent = () => {
-    createAiCatalogFlowMock = jest.fn().mockResolvedValue(mockCreateAiCatalogFlowSuccessMutation);
-
-    const apolloProvider = createMockApollo([[createAiCatalogFlow, createAiCatalogFlowMock]]);
+  const createComponent = ({ provide = {} } = {}) => {
+    const apolloProvider = createMockApollo([
+      [createAiCatalogFlow, createAiCatalogFlowMock],
+      [createAiCatalogThirdPartyFlow, createAiCatalogThirdPartyFlowMock],
+    ]);
 
     wrapper = shallowMountExtended(AiCatalogFlowsDuplicate, {
       apolloProvider,
       propsData: {
         aiCatalogFlow: mockFlow,
+      },
+      provide: {
+        ...provide,
       },
       mocks: {
         $route: {
@@ -105,6 +115,57 @@ describe('AiCatalogFlowsDuplicate', () => {
       expect(findForm().props('isLoading')).toBe(true);
     });
 
+    describe('when flow type is third-party flow', () => {
+      beforeEach(() => {
+        createComponent({
+          provide: {
+            glFeatures: {
+              aiCatalogThirdPartyFlows: true,
+            },
+          },
+        });
+      });
+
+      const thirdPartyFlowFormValues = {
+        name,
+        description,
+        projectId: project.id,
+        public: true,
+        definition: 'image:node@22',
+      };
+
+      const submitThirdPartyForm = () => findForm().vm.$emit('submit', thirdPartyFlowFormValues);
+
+      it('sends a create request for third-party flow', () => {
+        submitThirdPartyForm();
+
+        expect(createAiCatalogFlowMock).not.toHaveBeenCalled();
+        expect(createAiCatalogThirdPartyFlowMock).toHaveBeenCalledTimes(1);
+        expect(createAiCatalogThirdPartyFlowMock).toHaveBeenCalledWith({
+          input: thirdPartyFlowFormValues,
+        });
+      });
+    });
+
+    describe('when request succeeds', () => {
+      beforeEach(async () => {
+        submitForm();
+        await waitForPromises();
+      });
+
+      it('shows toast', () => {
+        expect(mockToast.show).toHaveBeenCalledWith('Flow created successfully.');
+      });
+
+      it('navigates to flows show page', async () => {
+        await waitForPromises();
+        expect(mockRouter.push).toHaveBeenCalledWith({
+          name: AI_CATALOG_FLOWS_SHOW_ROUTE,
+          params: { id: 4 },
+        });
+      });
+    });
+
     describe('when request fails', () => {
       beforeEach(async () => {
         createAiCatalogFlowMock.mockRejectedValue(new Error());
@@ -131,25 +192,6 @@ describe('AiCatalogFlowsDuplicate', () => {
           mockCreateAiCatalogFlowErrorMutation.data.aiCatalogFlowCreate.errors[0],
         ]);
         expect(findForm().props('isLoading')).toBe(false);
-      });
-    });
-
-    describe('when request succeeds', () => {
-      beforeEach(async () => {
-        submitForm();
-        await waitForPromises();
-      });
-
-      it('shows toast', () => {
-        expect(mockToast.show).toHaveBeenCalledWith('Flow created successfully.');
-      });
-
-      it('navigates to flows show page', async () => {
-        await waitForPromises();
-        expect(mockRouter.push).toHaveBeenCalledWith({
-          name: AI_CATALOG_FLOWS_SHOW_ROUTE,
-          params: { id: 4 },
-        });
       });
     });
   });

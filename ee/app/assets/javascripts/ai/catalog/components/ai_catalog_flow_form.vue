@@ -22,7 +22,7 @@ import { createFieldValidators } from '../utils';
 import AiCatalogFormButtons from './ai_catalog_form_buttons.vue';
 import AiCatalogStepsEditor from './ai_catalog_steps_editor.vue';
 import AiCatalogFormSidePanel from './ai_catalog_form_side_panel.vue';
-import FormFlowConfiguration from './form_flow_configuration.vue';
+import FormFlowDefinition from './form_flow_definition.vue';
 import FormFlowType from './form_flow_type.vue';
 import FormProjectDropdown from './form_project_dropdown.vue';
 import VisibilityLevelRadioGroup from './visibility_level_radio_group.vue';
@@ -33,7 +33,7 @@ export default {
     AiCatalogFormButtons,
     AiCatalogStepsEditor,
     AiCatalogFormSidePanel,
-    FormFlowConfiguration,
+    FormFlowDefinition,
     FormFlowType,
     FormProjectDropdown,
     GlButton,
@@ -275,7 +275,7 @@ export default {
             <form-project-dropdown :id="id" v-model="formValues.projectId" @error="onError" />
           </template>
           <template #input(type)="{ id, input, value }">
-            <form-flow-type :id="id" :value="value" @input="input" />
+            <form-flow-type :id="id" :value="value" :disabled="isEditMode" @input="input" />
           </template>
           <template #input(description)="{ id, input, value, blur, validation }">
             <gl-form-textarea
@@ -305,7 +305,7 @@ export default {
             />
           </template>
           <template #input(definition)="{ input, value }">
-            <form-flow-configuration :value="value" @input="input" />
+            <form-flow-definition :value="value" @input="input" />
           </template>
           <template #input(steps)>
             <ai-catalog-steps-editor

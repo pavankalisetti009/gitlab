@@ -5,6 +5,7 @@ import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import AiCatalogFlowForm from 'ee/ai/catalog/components/ai_catalog_flow_form.vue';
 import AiCatalogStepsEditor from 'ee/ai/catalog/components/ai_catalog_steps_editor.vue';
 import AiCatalogFormSidePanel from 'ee/ai/catalog/components/ai_catalog_form_side_panel.vue';
+import FormFlowType from 'ee/ai/catalog/components/form_flow_type.vue';
 import FormProjectDropdown from 'ee/ai/catalog/components/form_project_dropdown.vue';
 import VisibilityLevelRadioGroup from 'ee/ai/catalog/components//visibility_level_radio_group.vue';
 import { VISIBILITY_LEVEL_PRIVATE, VISIBILITY_LEVEL_PUBLIC } from 'ee/ai/catalog/constants';
@@ -14,6 +15,7 @@ describe('AiCatalogFlowForm', () => {
 
   const findErrorAlert = () => wrapper.findComponent(ErrorsAlert);
   const findFormFields = () => wrapper.findComponent(GlFormFields);
+  const findFlowType = () => wrapper.findComponent(FormFlowType);
   const findProjectDropdown = () => wrapper.findComponent(FormProjectDropdown);
   const findVisibilityLevelRadioGroup = () => wrapper.findComponent(VisibilityLevelRadioGroup);
   const findNameField = () => wrapper.findByTestId('flow-form-input-name');
@@ -37,12 +39,13 @@ describe('AiCatalogFlowForm', () => {
     steps: [],
   };
 
-  const createWrapper = (props = {}) => {
+  const createWrapper = ({ props = {}, provide = {} } = {}) => {
     wrapper = shallowMountExtended(AiCatalogFlowForm, {
       propsData: {
         ...defaultProps,
         ...props,
       },
+      provide: { ...provide },
       mocks: {
         $route: {
           params: props.mode === 'create' ? {} : routeParams,
@@ -56,9 +59,10 @@ describe('AiCatalogFlowForm', () => {
 
   describe('Initial Rendering', () => {
     it('renders the form with the correct initial values when props are provided', () => {
-      createWrapper({ initialValues });
+      createWrapper({ props: { initialValues } });
 
       expect(findProjectDropdown().props('value')).toBe(initialValues.projectId);
+      expect(findFlowType().props('value')).toBe(initialValues.type);
       expect(findNameField().props('value')).toBe(initialValues.name);
       expect(findDescriptionField().props('value')).toBe(initialValues.description);
       expect(findVisibilityLevelRadioGroup().props('initialValue')).toBe(initialValues.public);
@@ -70,6 +74,7 @@ describe('AiCatalogFlowForm', () => {
       createWrapper();
 
       expect(findProjectDropdown().props('value')).toBe(null);
+      expect(findFlowType().props('value')).toBe('FLOW');
       expect(findNameField().props('value')).toBe('');
       expect(findDescriptionField().props('value')).toBe('');
       expect(findVisibilityLevelRadioGroup().props('initialValue')).toBe(false);
@@ -77,28 +82,36 @@ describe('AiCatalogFlowForm', () => {
       expect(findStepsEditor().props('steps')).toEqual([]);
     });
 
-    it('does not render project dropdown when in edit mode', () => {
-      createWrapper({ mode: 'edit' });
-
-      expect(findProjectDropdown().exists()).toBe(false);
-    });
-
     it('renders steps editor', () => {
       createWrapper();
 
       expect(findStepsEditor().exists()).toBe(true);
     });
+
+    describe('when in edit mode', () => {
+      beforeEach(() => {
+        createWrapper({ props: { mode: 'edit' } });
+      });
+
+      it('does not render project dropdown', () => {
+        expect(findProjectDropdown().exists()).toBe(false);
+      });
+
+      it('renders flow type as disabled', () => {
+        expect(findFlowType().props('disabled')).toBe(true);
+      });
+    });
   });
 
   describe('Loading Prop', () => {
     it('shows button with loading icon when the loading property is true', () => {
-      createWrapper({ isLoading: true });
+      createWrapper({ props: { isLoading: true } });
 
       expect(findSubmitButton().props('loading')).toBe(true);
     });
 
     it('does not show the button with loading icon when the loading property is false', () => {
-      createWrapper({ isLoading: false });
+      createWrapper({ props: { isLoading: false } });
 
       expect(findSubmitButton().props('loading')).toBe(false);
     });
@@ -106,7 +119,7 @@ describe('AiCatalogFlowForm', () => {
 
   describe('Side Panel', () => {
     beforeEach(() => {
-      createWrapper({ isLoading: false });
+      createWrapper({ props: { isLoading: false } });
     });
 
     it('does not render by default', () => {
@@ -143,7 +156,7 @@ describe('AiCatalogFlowForm', () => {
     };
 
     it('emits form values when user clicks submit', async () => {
-      createWrapper({ initialValues });
+      createWrapper({ props: { initialValues } });
 
       await findFormFields().vm.$emit('submit');
 
@@ -159,11 +172,42 @@ describe('AiCatalogFlowForm', () => {
         description: addRandomSpacesToString(initialValues.description),
       };
 
-      createWrapper({ initialValues: formValuesWithRandomSpaces });
+      createWrapper({ props: { initialValues: formValuesWithRandomSpaces } });
 
       await findFormFields().vm.$emit('submit');
 
       expect(wrapper.emitted('submit')).toEqual([[expectedValues]]);
+    });
+
+    describe('when flow type is third-party flow', () => {
+      const expectedValuesThirdPartyFlow = {
+        projectId: 'gid://gitlab/Project/1000000',
+        name: 'My AI Flow',
+        description: 'A helpful AI assistant',
+        definition: 'image:node@22',
+        public: true,
+      };
+
+      it('emits form values on submit', async () => {
+        createWrapper({
+          props: {
+            initialValues: {
+              ...initialValues,
+              type: 'THIRD_PARTY_FLOW',
+              definition: 'image:node@22',
+            },
+          },
+          provide: {
+            glFeatures: {
+              aiCatalogThirdPartyFlows: true,
+            },
+          },
+        });
+
+        await findFormFields().vm.$emit('submit');
+
+        expect(wrapper.emitted('submit')).toEqual([[expectedValuesThirdPartyFlow]]);
+      });
     });
   });
 
@@ -171,7 +215,7 @@ describe('AiCatalogFlowForm', () => {
     const mockError = 'The flow could not be created';
 
     beforeEach(() => {
-      createWrapper({ errors: [mockError] });
+      createWrapper({ props: { errors: [mockError] } });
     });
 
     it('passes error alert', () => {

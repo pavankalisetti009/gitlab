@@ -12,6 +12,7 @@ const TYPENAME_AI_CATALOG_FLOW_VERSION = 'AiCatalogFlowVersion';
 const TYPENAME_AI_CATALOG_FLOW_CREATE = 'AiCatalogFlowCreatePayload';
 const TYPENAME_AI_CATALOG_FLOW_UPDATE = 'AiCatalogFlowUpdatePayload';
 const TYPENAME_AI_CATALOG_FLOW_DELETE = 'AiCatalogFlowDeletePayload';
+const TYPENAME_AI_CATALOG_THIRD_PARTY_FLOW_VERSION = 'AiCatalogThirdPartyFlowVersion';
 const TYPENAME_PROJECT = 'Project';
 const TYPENAME_PROJECT_PERMISSIONS = 'ProjectPermissions';
 const TYPENAME_PROJECTS_CONNECTION = 'ProjectsConnection';
@@ -428,6 +429,28 @@ export const mockCatalogFlowDeleteErrorResponse = {
     },
   },
 };
+
+/* THIRD-PARTY FLOWS */
+
+export const mockThirdPartyFlowVersion = {
+  ...mockBaseLatestVersion,
+  humanVersionName: 'v1.0.0-draft',
+  versionName: '1.0.0',
+  definition: '---\\nimage: node:22\\ncommands:\\n- ls\\ninjectGatewayToken: true\\n',
+  __typename: TYPENAME_AI_CATALOG_THIRD_PARTY_FLOW_VERSION,
+};
+
+const mockThirdPartyFlowFactory = (overrides = {}) => ({
+  ...mockFlowFactory(overrides),
+  itemType: 'THIRD_PARTY_FLOW',
+});
+
+export const mockThirdPartyFlow = mockThirdPartyFlowFactory({
+  project: mockProjectWithNamespace,
+  latestVersion: mockThirdPartyFlowVersion,
+});
+
+/* ITEM CONSUMERS */
 
 export const mockBaseItemConsumer = {
   id: 'gid://gitlab/Ai::Catalog::ItemConsumer/1',

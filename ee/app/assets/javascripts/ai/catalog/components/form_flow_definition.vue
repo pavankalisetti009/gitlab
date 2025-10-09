@@ -41,6 +41,7 @@ export default {
   <div class="gl-rounded-base gl-border-1 gl-border-solid gl-border-default">
     <div
       class="gl-flex gl-justify-between gl-border-b-1 gl-border-default gl-bg-subtle gl-px-5 gl-py-3 gl-border-b-solid"
+      data-testid="flow-definition-header"
     >
       <strong>{{ $options.configFile }}</strong>
       <clipboard-button
