@@ -695,6 +695,7 @@ RSpec.describe Ai::FlowTriggers::RunService, feature_category: :agent_foundation
             flow: ai_catalog_item,
             flow_version: ai_catalog_item.latest_version,
             event_type: 'mention',
+            user_prompt: start_with("Input: test input\nContext:"),
             execute_workflow: true
           }
         ).and_call_original

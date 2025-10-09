@@ -7,9 +7,10 @@ module Ai
         include Gitlab::Utils::StrongMemoize
         include ActiveModel::Model
 
-        def initialize(flow, pinned_version_prefix = nil)
+        def initialize(flow, pinned_version_prefix = nil, params = {})
           @flow = flow
           @pinned_version_prefix = pinned_version_prefix
+          @params = params
         end
 
         def build
@@ -19,7 +20,7 @@ module Ai
 
         private
 
-        attr_reader :flow, :pinned_version_prefix
+        attr_reader :flow, :pinned_version_prefix, :params
 
         def validate_inputs!
           raise ArgumentError, 'Flow is required' if flow.nil?

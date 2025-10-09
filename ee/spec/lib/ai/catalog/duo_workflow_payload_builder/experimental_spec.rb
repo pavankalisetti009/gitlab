@@ -8,6 +8,7 @@ RSpec.describe Ai::Catalog::DuoWorkflowPayloadBuilder::Experimental, feature_cat
   let_it_be(:agent_item_1) { create(:ai_catalog_item, :agent, project: project) }
   let_it_be(:agent_item_2) { create(:ai_catalog_item, :agent, project: project) }
   let_it_be(:tool_ids) { [1, 2, 5] } # 1 => "gitlab_blob_search" 2 => 'ci_linter', 5 =>  'create_epic'
+  let_it_be(:params) { {} }
 
   let_it_be(:agent_definition) do
     {
@@ -100,7 +101,7 @@ RSpec.describe Ai::Catalog::DuoWorkflowPayloadBuilder::Experimental, feature_cat
           version: '2.2.0')
       end
 
-      let(:builder) { described_class.new(single_agent_flow) }
+      let(:builder) { described_class.new(single_agent_flow, nil, params) }
 
       include_examples 'builds valid flow configuration' do
         let(:result) { builder.build }
@@ -149,6 +150,16 @@ RSpec.describe Ai::Catalog::DuoWorkflowPayloadBuilder::Experimental, feature_cat
         expect(result['routers']).to eq([
           { 'from' => agent_item_1_flow_id, 'to' => 'end' }
         ])
+      end
+
+      context 'when user prompt input is passed as a parameter' do
+        let_it_be(:params) { { user_prompt_input: "test input" } }
+
+        it 'adds it to the user prompt' do
+          result = builder.build
+
+          expect(result['prompts'][0]['prompt_template']['user']).to eq('test input')
+        end
       end
 
       describe 'version handling' do
