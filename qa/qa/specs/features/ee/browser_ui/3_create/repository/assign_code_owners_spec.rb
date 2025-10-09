@@ -1,7 +1,10 @@
 # frozen_string_literal: true
 
 module QA
-  RSpec.describe 'Create', feature_category: :source_code_management do
+  RSpec.describe 'Create', feature_category: :source_code_management, feature_flag: {
+    name: :edit_branch_rules,
+    scope: :project
+  } do
     describe 'Codeowners', :requires_admin do
       # Create one user to be the assigned approver and another user who will not be an approver
       let(:approver) { create(:user) }
@@ -21,6 +24,7 @@ module QA
       it 'merge request assigns code owners as approvers',
         testcase: 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/347776' do
         # Commit CODEOWNERS to default branch
+        Runtime::Feature.disable(:edit_branch_rules, project: project)
         create(:commit, project: project, commit_message: 'Add CODEOWNERS and test files', actions: [
           {
             action: 'create',

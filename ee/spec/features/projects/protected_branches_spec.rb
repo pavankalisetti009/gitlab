@@ -16,6 +16,7 @@ RSpec.describe 'Protected Branches', :js, feature_category: :source_code_managem
     let(:success_message) { s_('ProtectedBranch|Protected branch was successfully created') }
 
     before do
+      stub_feature_flags(edit_branch_rules: false)
       stub_licensed_features(custom_roles: true)
       sign_in(user)
     end

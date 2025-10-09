@@ -1,7 +1,10 @@
 # frozen_string_literal: true
 
 module QA
-  RSpec.describe 'Create', feature_category: :source_code_management do
+  RSpec.describe 'Create', feature_category: :source_code_management, feature_flag: {
+    name: :edit_branch_rules,
+    scope: :project
+  } do
     describe 'Restricted protected branch push and merge', :requires_admin do
       let(:user_developer) { create(:user) }
       let(:user_maintainer) { create(:user) }
@@ -40,6 +43,7 @@ module QA
         let(:project) { create(:project, :with_readme, name: 'user-with-access-to-protected-branch') }
 
         before do
+          Runtime::Feature.disable(:edit_branch_rules, project: project)
           project.add_member(user_developer, Resource::Members::AccessLevel::DEVELOPER)
           project.add_member(user_maintainer, Resource::Members::AccessLevel::MAINTAINER)
 
@@ -67,6 +71,7 @@ module QA
         let(:project) { create(:project, :with_readme, name: 'group-with-access-to-protected-branch') }
 
         before do
+          Runtime::Feature.disable(:edit_branch_rules, project: project)
           login
 
           group.add_member(user_developer, Resource::Members::AccessLevel::DEVELOPER)
@@ -96,6 +101,7 @@ module QA
         let(:project) { create(:project, :with_readme, name: 'project-with-subgroup-with-push-access', group: parent_group) }
 
         before do
+          Runtime::Feature.disable(:edit_branch_rules, project: project)
           login
 
           parent_group.add_member(user_developer, Resource::Members::AccessLevel::DEVELOPER)
