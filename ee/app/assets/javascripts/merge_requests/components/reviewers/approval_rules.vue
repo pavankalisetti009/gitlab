@@ -43,11 +43,6 @@ export default {
       showApprovalSections: this.group.key !== 'optional',
     };
   },
-  computed: {
-    relativeUrlRoot() {
-      return gon.relative_url_root ?? '';
-    },
-  },
   methods: {
     mappedRules(rules) {
       return rules.map((rule) => ({
@@ -180,7 +175,6 @@ export default {
               <td colspan="3" class="gl-px-5 gl-pb-3">
                 <uncollapsed-reviewer-list
                   :users="rule.reviewers"
-                  :root-path="relativeUrlRoot"
                   :is-editable="userPermissions.adminMergeRequest"
                   :can-rerequest="userPermissions.adminMergeRequest"
                   data-testid="approval-rule-reviewers"
