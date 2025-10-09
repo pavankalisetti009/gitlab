@@ -235,6 +235,7 @@ duo_agent_platform:
   main_feature: GitLab Duo Agent Platform
   compatible_llms:
     - claude_3
+    - gpt
     - general
   unit_primitives:
     - duo_workflow_execute_workflow
