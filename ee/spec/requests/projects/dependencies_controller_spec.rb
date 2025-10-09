@@ -33,13 +33,6 @@ RSpec.describe Projects::DependenciesController, feature_category: :dependency_m
           stub_licensed_features(dependency_scanning: true, license_scanning: true, security_dashboard: true)
         end
 
-        it 'pushes hideNoLongerDetectedVulnerabilitiesOnTheDependencyList feature flag' do
-          show_dependency_list
-
-          expect(response.body).to have_pushed_frontend_feature_flags(
-            hideNoLongerDetectedVulnerabilitiesOnTheDependencyList: true)
-        end
-
         context 'when project has sbom_occurrences' do
           let_it_be(:registry_occurrence) { create(:sbom_occurrence, :registry_occurrence, project: project) }
           let_it_be(:occurrences) do

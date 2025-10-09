@@ -23,9 +23,6 @@ describe('DependenciesTable component', () => {
     namespaceType: 'project',
     endpoint: 'endpoint',
     locationsEndpoint: 'endpoint',
-    glFeatures: {
-      hideNoLongerDetectedVulnerabilitiesOnTheDependencyList: true,
-    },
   };
 
   const createComponent = ({ propsData, provide } = {}) => {
@@ -188,26 +185,6 @@ describe('DependenciesTable component', () => {
         expect(findVulnerabilityInfoPopover().text()).toBe(
           DEPENDENCIES_TABLE_I18N.vulnerabilityInfoBody,
         );
-      });
-
-      describe('when hideNoLongerDetectedVulnerabilitiesOnTheDependencyList is false', () => {
-        beforeEach(() => {
-          createComponent({
-            propsData: {
-              dependencies: [],
-              isLoading: false,
-            },
-            provide: {
-              namespaceType,
-              glFeatures: { hideNoLongerDetectedVulnerabilitiesOnTheDependencyList: false },
-            },
-          });
-        });
-
-        it('does not render the icon or popover', () => {
-          expect(findVulnerabilityInfoIcon().exists()).toBe(false);
-          expect(findVulnerabilityInfoPopover().exists()).toBe(false);
-        });
       });
 
       it('renders a message that there are no records to show', () => {
