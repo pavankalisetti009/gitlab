@@ -21,9 +21,9 @@ module Ai
           # Check if review is already completed - if so, nothing to do
           return if reviewer_already_reviewed?(merge_request, review_bot)
 
-          result = update_review_state_service(merge_request, review_bot).execute(merge_request, 'reviewed')
-
-          log_timeout_reset(merge_request) if result.success?
+          update_review_state_service(merge_request, review_bot).execute(merge_request, 'reviewed')
+          delete_progress_note(merge_request)
+          log_timeout_reset(merge_request)
         rescue StandardError => error
           Gitlab::ErrorTracking.track_exception(
             error,
@@ -50,6 +50,11 @@ module Ai
             project: merge_request.project,
             current_user: review_bot
           )
+        end
+
+        def delete_progress_note(merge_request)
+          progress_note = merge_request.duo_code_review_progress_note
+          progress_note&.destroy
         end
 
         def log_timeout_reset(merge_request)
