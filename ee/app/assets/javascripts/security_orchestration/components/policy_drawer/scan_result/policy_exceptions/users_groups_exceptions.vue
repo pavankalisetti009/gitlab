@@ -7,7 +7,7 @@ import searchProjectMembers from '~/graphql_shared/queries/project_user_members_
 import searchGroupMembers from '~/graphql_shared/queries/group_users_search.query.graphql';
 import getGroups from 'ee/security_orchestration/graphql/queries/get_groups_by_ids.query.graphql';
 import { convertToGraphQLId, getIdFromGraphQLId } from '~/graphql_shared/utils';
-import { TYPENAME_GROUP } from '~/graphql_shared/constants';
+import { TYPENAME_GROUP, TYPENAME_USER } from '~/graphql_shared/constants';
 import PolicyExceptionsLoader from './policy_exceptions_loader.vue';
 
 export default {
@@ -54,6 +54,9 @@ export default {
     },
     groupsIdsFullFormat() {
       return this.groupsIds.map((id) => convertToGraphQLId(TYPENAME_GROUP, String(id)));
+    },
+    usersIdsFullFormat() {
+      return this.usersIds.map((id) => convertToGraphQLId(TYPENAME_USER, String(id)));
     },
     usersIds() {
       return (this.users || []).map(({ id }) => id).filter(Boolean);
@@ -128,6 +131,7 @@ export default {
           variables: {
             fullPath: this.namespacePath,
             search: '',
+            ids: this.usersIdsFullFormat,
           },
         });
 
