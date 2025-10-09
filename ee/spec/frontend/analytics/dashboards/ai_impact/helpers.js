@@ -55,7 +55,7 @@ export const mockFlowMetricsResponse = (values = []) =>
                     __typename: 'ValueStreamMetricLinkType',
                   },
                   {
-                    label: 'Go to docs',
+                    label: 'Learn more',
                     name: 'Lead time',
                     docsLink: true,
                     url: '/help/user/analytics/index#definitions',
@@ -102,7 +102,7 @@ export const mockFlowMetricsResponse = (values = []) =>
                     __typename: 'ValueStreamMetricLinkType',
                   },
                   {
-                    label: 'Go to docs',
+                    label: 'Learn more',
                     name: 'Median time to merge',
                     docsLink: true,
                     url: '/help/user/analytics/index#definitions',

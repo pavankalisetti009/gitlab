@@ -47,7 +47,7 @@ module Gitlab
                 "name" => _('Change failure rate'),
                 "url" => helpers.help_page_path('user/analytics/_index.md', anchor: 'change-failure-rate'),
                 "docs_link" => true,
-                "label" => s_('ValueStreamAnalytics|Go to docs')
+                "label" => s_('ValueStreamAnalytics|Learn more')
               }
             ]
           end
