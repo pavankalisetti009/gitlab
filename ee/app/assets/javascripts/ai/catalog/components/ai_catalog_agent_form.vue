@@ -15,7 +15,6 @@ import {
 } from 'ee/ai/catalog/constants';
 import { __, s__ } from '~/locale';
 import ErrorsAlert from '~/vue_shared/components/errors_alert.vue';
-import glFeatureFlagsMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
 import { AI_CATALOG_AGENTS_ROUTE, AI_CATALOG_AGENTS_SHOW_ROUTE } from '../router/constants';
 import aiCatalogBuiltInToolsQuery from '../graphql/queries/ai_catalog_built_in_tools.query.graphql';
 import AiCatalogFormButtons from './ai_catalog_form_buttons.vue';
@@ -38,14 +37,10 @@ export default {
     GlTokenSelector,
     VisibilityLevelRadioGroup,
   },
-  mixins: [glFeatureFlagsMixin()],
   apollo: {
     availableTools: {
       query: aiCatalogBuiltInToolsQuery,
       update: (data) => data.aiCatalogBuiltInTools.nodes.map((t) => ({ id: t.id, name: t.title })),
-      skip() {
-        return !this.isToolsAvailable;
-      },
     },
   },
   props: {
@@ -92,9 +87,6 @@ export default {
     };
   },
   computed: {
-    isToolsAvailable() {
-      return this.glFeatures.aiCatalogAgentTools;
-    },
     formId() {
       return uniqueId('ai-catalog-agent-form-');
     },
@@ -122,21 +114,6 @@ export default {
       };
     },
     fields() {
-      const toolsField = this.isToolsAvailable
-        ? {
-            tools: {
-              id: 'agent-form-tools',
-              label: s__('AICatalog|Tools'),
-              groupAttrs: {
-                optional: true,
-                labelDescription: s__(
-                  'AICatalog|Select tools that this agent will have access to.',
-                ),
-              },
-            },
-          }
-        : {};
-
       return {
         projectId: {
           id: 'agent-form-project-id',
@@ -178,7 +155,6 @@ export default {
             ),
           },
         },
-        ...toolsField,
         systemPrompt: {
           id: 'agent-form-system-prompt',
           label: s__('AICatalog|System prompt'),
@@ -199,6 +175,14 @@ export default {
             labelDescription: s__(
               'AICatalog|Choose who can view and interact with this agent after it is published to the public AI catalog.',
             ),
+          },
+        },
+        tools: {
+          id: 'agent-form-tools',
+          label: s__('AICatalog|Tools'),
+          groupAttrs: {
+            optional: true,
+            labelDescription: s__('AICatalog|Select tools that this agent will have access to.'),
           },
         },
       };
@@ -353,7 +337,7 @@ export default {
         </form-group>
       </form-section>
       <form-section :title="s__('AICatalog|Available tools')">
-        <form-group v-if="isToolsAvailable" :field="fields.tools" :field-value="formValues.tools">
+        <form-group :field="fields.tools" :field-value="formValues.tools">
           <gl-token-selector
             :id="fields.tools.id"
             :selected-tokens="selectedTools"

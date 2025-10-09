@@ -51,7 +51,7 @@ describe('AiCatalogAgentForm', () => {
 
   const mockToolQueryHandler = jest.fn().mockResolvedValue(mockToolQueryResponse);
 
-  const createWrapper = ({ props = {}, aiCatalogAgentTools = true } = {}) => {
+  const createWrapper = ({ props = {} } = {}) => {
     mockApollo = createMockApollo([[aiCatalogBuiltInToolsQuery, mockToolQueryHandler]]);
 
     wrapper = shallowMountExtended(AiCatalogAgentForm, {
@@ -68,11 +68,6 @@ describe('AiCatalogAgentForm', () => {
       stubs: {
         FormGroup,
         GlForm,
-      },
-      provide: {
-        glFeatures: {
-          aiCatalogAgentTools,
-        },
       },
     });
   };
@@ -105,19 +100,6 @@ describe('AiCatalogAgentForm', () => {
 
       expect(findProjectDropdown().props('disabled')).toBe(true);
     });
-
-    it('does not render tools selector when aiCatalogAgentTools FF is off', () => {
-      createWrapper({ aiCatalogAgentTools: false });
-
-      expect(findToolsField().exists()).toBe(false);
-    });
-
-    it('does not fetch available tools when aiCatalogAgentTools FF is off', async () => {
-      createWrapper({ aiCatalogAgentTools: false });
-      await waitForPromises();
-
-      expect(mockToolQueryHandler).not.toHaveBeenCalled();
-    });
   });
 
   describe('Tool selection', () => {
@@ -126,7 +108,8 @@ describe('AiCatalogAgentForm', () => {
       await waitForPromises();
     });
 
-    it('fetches list data', () => {
+    it('renders tools selector and fetches list data', () => {
+      expect(findToolsField().exists()).toBe(true);
       expect(mockToolQueryHandler).toHaveBeenCalled();
     });
 
