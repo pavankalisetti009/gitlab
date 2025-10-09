@@ -122,6 +122,17 @@ export const SCANNER_FILTER_LABELS = {
   [DAST_KEY]: s__('SecurityInventory|Dynamic Application Security Testing (DAST)'),
   [SAST_IAC_KEY]: s__('SecurityInventory|Infrastructure as Code (IaC)'),
 };
+export const SCANNER_SEGMENT_LABELS = {
+  [DEPENDENCY_SCANNING_KEY]: s__('SecurityInventory|Dependency scanning'),
+  [SAST_KEY]: s__('SecurityInventory|Basic SAST'),
+  [SAST_ADVANCED_KEY]: s__('SecurityInventory|Advanced SAST'),
+  [SECRET_DETECTION_KEY]: s__('SecurityInventory|Secret detection'),
+  [SECRET_PUSH_PROTECTION_KEY]: s__('SecurityInventory|Secret push protection'),
+  [CONTAINER_SCANNING_KEY]: s__('SecurityInventory|Container scanning'),
+  [CONTAINER_SCANNING_FOR_REGISTRY_KEY]: s__('SecurityInventory|Container scanning for registry'),
+  [DAST_KEY]: s__('SecurityInventory|Dynamic Application Security Testing (DAST)'),
+  [SAST_IAC_KEY]: s__('SecurityInventory|Infrastructure as Code (IaC)'),
+};
 
 export const TOOL_ENABLED = 'SUCCESS';
 export const TOOL_NOT_ENABLED = 'NOT_CONFIGURED';
@@ -139,6 +150,14 @@ export const SEVERITY_FILTER_LABELS = {
   [LOW]: s__('SecurityInventory|Severity low'),
   [INFO]: s__('SecurityInventory|Severity info'),
   [UNKNOWN]: s__('SecurityInventory|Severity unknown'),
+};
+export const SEVERITY_SEGMENT_LABELS = {
+  [CRITICAL]: s__('SecurityInventory|Vulnerability count critical'),
+  [HIGH]: s__('SecurityInventory|Vulnerability count high'),
+  [MEDIUM]: s__('SecurityInventory|Vulnerability count medium'),
+  [LOW]: s__('SecurityInventory|Vulnerability count low'),
+  [INFO]: s__('SecurityInventory|Vulnerability count info'),
+  [UNKNOWN]: s__('SecurityInventory|Vulnerability count unknown'),
 };
 export const SEVERITY_FILTER_OPERATOR_TO_CONST = {
   [OPERATOR_LESS_THAN_OR_EQUAL]: 'LESS_THAN_OR_EQUAL_TO',

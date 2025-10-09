@@ -1,7 +1,9 @@
+import { s__ } from '~/locale';
 import { OPERATORS_IS } from '~/vue_shared/components/filtered_search_bar/constants';
 import BaseToken from '~/vue_shared/components/filtered_search_bar/tokens/base_token.vue';
 import {
   SCANNER_FILTER_LABELS,
+  SCANNER_SEGMENT_LABELS,
   DEPENDENCY_SCANNING_KEY,
   SAST_KEY,
   SAST_ADVANCED_KEY,
@@ -23,15 +25,30 @@ const options = [
   { value: TOOL_FAILED, title: TOOL_FILTER_LABELS[TOOL_FAILED] },
 ];
 
+const showWhenAnyItemMatches = ({ query, title, defaultMatcher }) =>
+  [
+    title,
+    SCANNER_FILTER_LABELS[DEPENDENCY_SCANNING_KEY],
+    SCANNER_FILTER_LABELS[SAST_KEY],
+    SCANNER_FILTER_LABELS[SAST_ADVANCED_KEY],
+    SCANNER_FILTER_LABELS[SECRET_DETECTION_KEY],
+    SCANNER_FILTER_LABELS[SECRET_PUSH_PROTECTION_KEY],
+    SCANNER_FILTER_LABELS[CONTAINER_SCANNING_KEY],
+    SCANNER_FILTER_LABELS[CONTAINER_SCANNING_FOR_REGISTRY_KEY],
+    SCANNER_FILTER_LABELS[DAST_KEY],
+    SCANNER_FILTER_LABELS[SAST_IAC_KEY],
+  ].some((keyword) => defaultMatcher(keyword, query));
+
 export const toolCoverageTokens = [
-  // uncomment to add section header once supported
-  // {
-  //   type: 'gl-filtered-search-suggestion-group-tool-coverage',
-  //   title: 'Tool coverage',
-  // },
+  {
+    type: 'gl-filtered-search-suggestion-group-tool-coverage',
+    title: s__('SecurityInventory|Tool coverage'),
+    match: showWhenAnyItemMatches,
+  },
   {
     type: DEPENDENCY_SCANNING_KEY,
     title: SCANNER_FILTER_LABELS[DEPENDENCY_SCANNING_KEY],
+    segmentTitle: SCANNER_SEGMENT_LABELS[DEPENDENCY_SCANNING_KEY],
     token: BaseToken,
     unique: true,
     operators: OPERATORS_IS,
@@ -40,6 +57,7 @@ export const toolCoverageTokens = [
   {
     type: SAST_KEY,
     title: SCANNER_FILTER_LABELS[SAST_KEY],
+    segmentTitle: SCANNER_SEGMENT_LABELS[SAST_KEY],
     token: BaseToken,
     unique: true,
     operators: OPERATORS_IS,
@@ -48,6 +66,7 @@ export const toolCoverageTokens = [
   {
     type: SAST_ADVANCED_KEY,
     title: SCANNER_FILTER_LABELS[SAST_ADVANCED_KEY],
+    segmentTitle: SCANNER_SEGMENT_LABELS[SAST_ADVANCED_KEY],
     token: BaseToken,
     unique: true,
     operators: OPERATORS_IS,
@@ -56,6 +75,7 @@ export const toolCoverageTokens = [
   {
     type: SECRET_DETECTION_KEY,
     title: SCANNER_FILTER_LABELS[SECRET_DETECTION_KEY],
+    segmentTitle: SCANNER_SEGMENT_LABELS[SECRET_DETECTION_KEY],
     token: BaseToken,
     unique: true,
     operators: OPERATORS_IS,
@@ -64,6 +84,7 @@ export const toolCoverageTokens = [
   {
     type: SECRET_PUSH_PROTECTION_KEY,
     title: SCANNER_FILTER_LABELS[SECRET_PUSH_PROTECTION_KEY],
+    segmentTitle: SCANNER_SEGMENT_LABELS[SECRET_PUSH_PROTECTION_KEY],
     token: BaseToken,
     unique: true,
     operators: OPERATORS_IS,
@@ -72,6 +93,7 @@ export const toolCoverageTokens = [
   {
     type: CONTAINER_SCANNING_KEY,
     title: SCANNER_FILTER_LABELS[CONTAINER_SCANNING_KEY],
+    segmentTitle: SCANNER_SEGMENT_LABELS[CONTAINER_SCANNING_KEY],
     token: BaseToken,
     unique: true,
     operators: OPERATORS_IS,
@@ -80,6 +102,7 @@ export const toolCoverageTokens = [
   {
     type: CONTAINER_SCANNING_FOR_REGISTRY_KEY,
     title: SCANNER_FILTER_LABELS[CONTAINER_SCANNING_FOR_REGISTRY_KEY],
+    segmentTitle: SCANNER_SEGMENT_LABELS[CONTAINER_SCANNING_FOR_REGISTRY_KEY],
     token: BaseToken,
     unique: true,
     operators: OPERATORS_IS,
@@ -88,6 +111,7 @@ export const toolCoverageTokens = [
   {
     type: DAST_KEY,
     title: SCANNER_FILTER_LABELS[DAST_KEY],
+    segmentTitle: SCANNER_SEGMENT_LABELS[DAST_KEY],
     token: BaseToken,
     unique: true,
     operators: OPERATORS_IS,
@@ -96,6 +120,7 @@ export const toolCoverageTokens = [
   {
     type: SAST_IAC_KEY,
     title: SCANNER_FILTER_LABELS[SAST_IAC_KEY],
+    segmentTitle: SCANNER_SEGMENT_LABELS[SAST_IAC_KEY],
     token: BaseToken,
     unique: true,
     operators: OPERATORS_IS,

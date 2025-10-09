@@ -76,8 +76,8 @@ RSpec.describe 'Requirements list', :js, feature_category: :requirements_managem
 
           expect(page.find('.gl-filtered-search-suggestion-list')).to have_selector('li', count: 2)
           page.within('.gl-filtered-search-suggestion-list') do
-            expect(page.find('li:nth-child(1)')).to have_content('Author')
-            expect(page.find('li:nth-child(2)')).to have_content('Status')
+            expect(page.find('li:nth-child(2)')).to have_content('Author')
+            expect(page.find('li:nth-child(3)')).to have_content('Status')
           end
         end
       end
@@ -85,13 +85,13 @@ RSpec.describe 'Requirements list', :js, feature_category: :requirements_managem
       it 'shows options `satisfied`, `failed` and `missing` for status token' do
         page.within('.vue-filtered-search-bar-container .gl-search-box-by-click') do
           page.find('input').click
-          page.find('.gl-filtered-search-suggestion-list li:nth-child(2)').click
+          page.find('.gl-filtered-search-suggestion-list li:nth-child(3)').click
 
           expect(page.find('.gl-filtered-search-suggestion-list')).to have_selector('li', count: 3)
           page.within('.gl-filtered-search-suggestion-list') do
-            expect(page.find('li:nth-child(1)')).to have_content('Satisfied')
-            expect(page.find('li:nth-child(2)')).to have_content('Failed')
-            expect(page.find('li:nth-child(3)')).to have_content('Missing')
+            expect(page.find('li:nth-child(2)')).to have_content('Satisfied')
+            expect(page.find('li:nth-child(3)')).to have_content('Failed')
+            expect(page.find('li:nth-child(4)')).to have_content('Missing')
           end
         end
       end
