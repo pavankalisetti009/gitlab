@@ -206,7 +206,11 @@ module Security
       strong_memoize_attr :pipeline
 
       def scan_result_policy_rules
-        merge_request.approval_rules.with_scan_result_policy_read.index_by(&:scan_result_policy_id)
+        merge_request
+          .approval_rules
+          .with_scan_result_policy_read
+          .applicable_to_branch(merge_request.target_branch)
+          .index_by(&:scan_result_policy_id)
       end
       strong_memoize_attr :scan_result_policy_rules
 

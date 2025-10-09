@@ -76,7 +76,8 @@ RSpec.describe Security::ScanResultPolicies::PolicyViolationDetails, feature_cat
       scan_result_policy_read: policy, violation_data: data)
   end
 
-  describe '#violations' do # rubocop:disable RSpec/MultipleMemoizedHelpers -- the total number increased because of the inherited memoized helpers which are required for the tests
+  # rubocop:disable RSpec/MultipleMemoizedHelpers -- the total number increased because of the inherited memoized helpers which are required for the tests
+  describe '#violations' do
     subject(:violations) { details.violations }
 
     let(:scan_finding_violation_data) do
@@ -206,7 +207,7 @@ RSpec.describe Security::ScanResultPolicies::PolicyViolationDetails, feature_cat
       end
     end
 
-    context 'when there is a violation that has no approval rules associated with it' do # rubocop:disable RSpec/MultipleMemoizedHelpers -- the total number increased because of the inherited memoized helpers which are required for the tests
+    context 'when there is a violation that has no approval rules associated with it' do
       let_it_be(:policy_without_rules) do
         create(:scan_result_policy_read, project: project,
           security_orchestration_policy_configuration: security_orchestration_policy_configuration)
@@ -221,7 +222,59 @@ RSpec.describe Security::ScanResultPolicies::PolicyViolationDetails, feature_cat
         expect(violations).to be_empty
       end
     end
+
+    describe 'filtering violation by branch rule' do
+      let_it_be(:policy) do
+        create(:scan_result_policy_read, project: project,
+          security_orchestration_policy_configuration: security_orchestration_policy_configuration)
+      end
+
+      let_it_be(:approval_policy_rule) do
+        create(:approval_policy_rule)
+      end
+
+      let_it_be(:approver_rule_policy) do
+        create(:report_approver_rule, :scan_finding, merge_request: merge_request,
+          scan_result_policy_read: policy, approval_policy_rule: approval_policy_rule, name: 'Test Policy')
+      end
+
+      before do
+        create(:scan_result_policy_violation, project: project, merge_request: merge_request,
+          scan_result_policy_read: policy, violation_data: scan_finding_violation_data,
+          approval_policy_rule: approval_policy_rule
+        )
+      end
+
+      context 'when the associated approval rule is not applicable to target branch' do
+        before do
+          approval_policy_rule.update!(
+            content: approval_policy_rule.content.merge("branches" => ['random'])
+          )
+        end
+
+        it 'ignores the violation' do
+          expect(violations).to be_empty
+        end
+      end
+
+      context 'when the associated approval rule is applicable to target branch' do
+        before do
+          approval_policy_rule.update!(
+            content: approval_policy_rule.content.merge("branches" => [merge_request.target_branch])
+          )
+        end
+
+        it 'includes the violation' do
+          expect(violations.size).to eq 1
+
+          violation = violations.first
+          expect(violation.name).to eq 'Test Policy'
+          expect(violation.scan_result_policy_id).to eq policy.id
+        end
+      end
+    end
   end
+  # rubocop:enable RSpec/MultipleMemoizedHelpers
 
   describe '#fail_closed_policies' do
     subject(:fail_closed_policies) { details.fail_closed_policies }
