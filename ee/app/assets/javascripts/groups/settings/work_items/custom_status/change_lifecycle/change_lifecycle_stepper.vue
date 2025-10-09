@@ -44,6 +44,11 @@ export default {
       required: false,
       default: true,
     },
+    isUpdating: {
+      type: Boolean,
+      required: false,
+      default: false,
+    },
   },
   data() {
     return {
@@ -175,6 +180,7 @@ export default {
 
         <gl-button
           v-if="showFinishButton && currentStep === steps.length - 1"
+          :loading="isUpdating"
           variant="confirm"
           data-testid="stepper-finish"
           @click="finish"
