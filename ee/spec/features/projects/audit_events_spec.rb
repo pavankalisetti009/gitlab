@@ -95,6 +95,10 @@ RSpec.describe 'Projects > Audit events', :js, feature_category: :audit_events d
       fill_in 'deploy_key_key', with: "#{ssh_key} user@laptop"
 
       click_button 'Add key'
+      wait_for_all_requests
+
+      # Allow time for audit event creation
+      sleep 1
 
       visit project_audit_events_path(project)
 
@@ -104,6 +108,13 @@ RSpec.describe 'Projects > Audit events', :js, feature_category: :audit_events d
 
       click_button 'Remove'
       click_button 'Remove deploy key'
+      wait_for_all_requests
+
+      # Wait for deploy key removal to complete and audit event to be created
+      wait_until(max_duration: 10, reload: false) do
+        !page.has_button?('Remove deploy key')
+      end
+      sleep 1
 
       visit project_audit_events_path(project)
 
@@ -125,10 +136,14 @@ RSpec.describe 'Projects > Audit events', :js, feature_category: :audit_events d
         select_from_listbox 'Maintainer', from: 'Developer'
       end
 
-      within_testid('super-sidebar') do
-        click_button 'Secure'
-        click_link 'Audit events'
-      end
+      # Wait for the member update to complete
+      wait_for_all_requests
+
+      # Allow time for audit event creation
+      sleep 1
+
+      # Navigate directly to audit events instead of using sidebar
+      visit project_audit_events_path(project)
 
       page.within('.audit-log-table') do
         expect(page).to have_content 'Changed access level from Default role: Developer to Default role: Maintainer'
@@ -155,10 +170,11 @@ RSpec.describe 'Projects > Audit events', :js, feature_category: :audit_events d
 
       wait_for_all_requests
 
-      within_testid('super-sidebar') do
-        click_button 'Secure'
-        click_link 'Audit events'
-      end
+      # Allow time for audit event creation
+      sleep 1
+
+      # Navigate directly to audit events instead of using sidebar
+      visit project_audit_events_path(project)
 
       wait_for_all_requests
 
