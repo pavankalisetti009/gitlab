@@ -31,7 +31,7 @@ RSpec.describe Ci::CreatePipelineService, feature_category: :security_policy_man
 
   let_it_be_with_reload(:namespace_policies_project) { create(:project, :empty_repo, group: group) }
 
-  let_it_be(:namespace_configuration) do
+  let_it_be_with_reload(:namespace_configuration) do
     create(:security_orchestration_policy_configuration,
       project: nil, namespace: group, security_policy_management_project: namespace_policies_project)
   end
@@ -53,7 +53,7 @@ RSpec.describe Ci::CreatePipelineService, feature_category: :security_policy_man
 
   let_it_be_with_reload(:project_policies_project) { create(:project, :empty_repo, group: group) }
 
-  let_it_be(:project_configuration) do
+  let_it_be_with_reload(:project_configuration) do
     create(:security_orchestration_policy_configuration,
       project: project, security_policy_management_project: project_policies_project)
   end
@@ -697,6 +697,159 @@ RSpec.describe Ci::CreatePipelineService, feature_category: :security_policy_man
         expect(stages.find_by(name: 'test').builds.map(&:name)).to contain_exactly('rspec')
         expect(stages.find_by(name: 'policy-test').builds.map(&:name)).to contain_exactly('project_test_job')
         expect(stages.find_by(name: '.pipeline-policy-post').builds.map(&:name)).to contain_exactly('project_post_job')
+      end
+    end
+
+    context 'when project specifies .post stage' do
+      let(:namespace_policy_content) do
+        { stages: %w[.pre build policy-build],
+          namespace_build_job: { stage: 'policy-build', script: 'policy build script' } }
+      end
+
+      let(:project_policy_content) do
+        { stages: %w[.pre test policy-test], project_test_job: { stage: 'policy-test', script: 'policy test script' } }
+      end
+
+      let(:project_ci_yaml) do
+        <<~YAML
+          stages: [build, test, .post]
+          build:
+            stage: build
+            script:
+              - echo 'build'
+          rspec:
+            stage: test
+            script:
+              - echo 'test'
+          post_job:
+            stage: .post
+            script: echo 'post'
+        YAML
+      end
+
+      it 'injects policy stages at the end of the pipeline, but before .post', :aggregate_failures do
+        expect { execute }.to change { Ci::Build.count }.from(0).to(5)
+
+        expect(execute).to be_success
+        expect(execute.payload).to be_persisted
+
+        stages = execute.payload.stages
+        expect(stages.sort_by(&:position).map(&:name)).to eq(%w[build test policy-test policy-build .post])
+      end
+
+      context 'when policies try to specify stages after .post' do
+        let(:namespace_policy_content) do
+          { stages: %w[.post policy-build],
+            namespace_build_job: { stage: 'policy-build', script: 'policy build script' } }
+        end
+
+        let(:project_policy_content) do
+          { stages: %w[.post policy-test],
+            project_test_job: { stage: 'policy-test', script: 'policy test script' } }
+        end
+
+        it 'overrides them and enforces the correct position' do
+          stages = execute.payload.stages
+          expect(stages.sort_by(&:position).map(&:name)).to eq(%w[build test policy-test policy-build .post])
+        end
+      end
+    end
+
+    context 'when policy stages are injected at the beginning of the pipeline' do
+      before do
+        experiments = { pipeline_execution_policy_stages_higher_precedence: { enabled: experiment_enabled } }
+        [namespace_configuration, project_configuration].each do |configuration|
+          configuration.update!(experiments: experiments)
+        end
+      end
+
+      let(:experiment_enabled) { true }
+      let(:namespace_policy_content) do
+        { stages: %w[.pipeline-policy-pre .pre policy-build policy-test policy-deploy .post],
+          namespace_test_job: { stage: 'policy-test', script: 'policy test script' },
+          namespace_deploy_job: { stage: 'policy-deploy', script: 'policy deploy script' },
+          namespace_post_job: { stage: '.post', script: 'policy post script' },
+          namespace_build_job: { stage: 'policy-build', script: 'policy build script' },
+          namespace_policy_pre_job: { stage: '.pipeline-policy-pre', script: 'policy .pre script' },
+          namespace_pre_job: { stage: '.pre', script: '.pre script' } }
+      end
+
+      let(:project_policy_content) do
+        { stages: %w[policy-test .post],
+          project_test_job_2: { stage: 'policy-test', script: 'policy test 2 script' } }
+      end
+
+      it 'responds with success and injects at the beginning of the pipeline', :aggregate_failures do
+        expect { execute }.to change { Ci::Build.count }.from(0).to(9)
+
+        expect(execute).to be_success
+        expect(execute.payload).to be_persisted
+
+        stages = execute.payload.stages
+        expect(stages.sort_by(&:position).map(&:name)).to eq(%w[.pipeline-policy-pre .pre policy-build policy-test
+          policy-deploy build test .post])
+      end
+
+      context 'when project defines .pre stage' do
+        let(:project_ci_yaml) do
+          <<~YAML
+          stages: [.pre, build, test]
+          pre_job:
+            stage: .pre
+            script: echo 'pre'
+          build:
+            stage: build
+            script:
+              - echo 'build'
+          rspec:
+            stage: test
+            script:
+              - echo 'test'
+          YAML
+        end
+
+        it 'injects policy stages at the beginning of the pipeline, but after .pre', :aggregate_failures do
+          expect { execute }.to change { Ci::Build.count }.from(0).to(10)
+
+          expect(execute).to be_success
+          expect(execute.payload).to be_persisted
+
+          stages = execute.payload.stages
+          expect(stages.sort_by(&:position).map(&:name)).to eq(%w[.pipeline-policy-pre .pre policy-build policy-test
+            policy-deploy build test .post])
+        end
+
+        context 'when policies try to specify stages before .pre' do
+          let(:namespace_policy_content) do
+            { stages: %w[policy-build policy-test .pre],
+              namespace_build_job: { stage: 'policy-build', script: 'policy build script' } }
+          end
+
+          let(:project_policy_content) do
+            { stages: %w[policy-test .pre],
+              project_test_job: { stage: 'policy-test', script: 'policy test script' } }
+          end
+
+          it 'overrides them and enforces the correct position' do
+            stages = execute.payload.stages
+            expect(stages.sort_by(&:position).map(&:name)).to eq(%w[.pre policy-build policy-test build test])
+          end
+        end
+      end
+
+      context 'when the experiment is disabled' do
+        let(:experiment_enabled) { false }
+
+        it 'injects policy stages after project stages', :aggregate_failures do
+          expect { execute }.to change { Ci::Build.count }.from(0).to(9)
+
+          expect(execute).to be_success
+          expect(execute.payload).to be_persisted
+
+          stages = execute.payload.stages
+          expect(stages.sort_by(&:position).map(&:name)).to eq(%w[.pipeline-policy-pre .pre build test policy-build
+            policy-test policy-deploy .post])
+        end
       end
     end
 

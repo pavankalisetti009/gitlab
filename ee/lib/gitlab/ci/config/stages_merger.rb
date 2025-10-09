@@ -11,21 +11,29 @@ module Gitlab
         class << self
           # @param original_stages [Array] Original stages
           # @param stages_to_merge [Array<Array>] List of stages for each pipeline we merge
+          # @param strategy [Symbol] Strategy for merging stages (:original_stages_first or :original_stages_last)
           # @return [Array] Merged project and other pipeline stages
-          def inject(original_stages, stages_to_merge)
-            project_tree = generate_tree(original_stages)
-            other_pipelines_trees = stages_to_merge.flat_map do |stages|
-              generate_tree(stages)
+          def inject(original_stages, stages_to_merge, strategy: :original_stages_first)
+            if strategy == :original_stages_last
+              premerged_stage_groups = merge_stages([], stages_to_merge)
+              merge_stages(premerged_stage_groups, [original_stages])
+            else
+              merge_stages(original_stages, stages_to_merge)
             end
-
-            dependency_tree = merge_trees([project_tree, *other_pipelines_trees])
-            ::Gitlab::Ci::YamlProcessor::Dag.order(dependency_tree) # rubocop:disable CodeReuse/ActiveRecord -- not an ActiveRecord object
           rescue TSort::Cyclic
             raise InvalidStageConditionError, 'Cyclic dependencies detected. ' \
               'Ensure stages across all pipelines are aligned.' \
           end
 
           private
+
+          def merge_stages(reference_stages, stage_groups_to_merge)
+            reference_tree = generate_tree(reference_stages)
+            trees_to_merge = stage_groups_to_merge.flat_map { |stages| generate_tree(stages) }
+
+            tree = merge_trees([reference_tree, *trees_to_merge])
+            ::Gitlab::Ci::YamlProcessor::Dag.order(tree) # rubocop:disable CodeReuse/ActiveRecord -- not an ActiveRecord object
+          end
 
           def generate_tree(stages)
             stages.each_with_object({}).with_index do |(stage, tree), index|
