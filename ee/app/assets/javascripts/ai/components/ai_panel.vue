@@ -1,6 +1,6 @@
 <script>
 import { GlBreakpointInstance } from '@gitlab/ui/src/utils';
-import { __ } from '~/locale';
+import { s__, __ } from '~/locale';
 import AgentSessionsRoot from '~/vue_shared/spa/components/spa_root.vue';
 import { AGENTS_PLATFORM_SHOW_ROUTE } from 'ee/ai/duo_agents_platform/router/constants';
 import { formatAgentFlowName } from 'ee/ai/duo_agents_platform/utils';
@@ -70,7 +70,9 @@ export default {
   },
   computed: {
     availableChat() {
-      return this.isAgenticAvailable ? DuoAgenticChat : __('Classic Chat Placeholder');
+      return this.isAgenticAvailable
+        ? DuoAgenticChat
+        : s__('DuoChat|Duo Chat is not yet supported on this page');
     },
     getChatTitle() {
       return this.chatTitle ? this.chatTitle : __('GitLab Duo Agentic Chat');
