@@ -238,7 +238,7 @@ describe('RemoveStatusModal', () => {
           input: {
             id: 'gid://gitlab/WorkItems::Statuses::Custom::Lifecycle/9',
             namespacePath: 'full/path',
-            defaultClosedStatusIndex: 4,
+            defaultClosedStatusIndex: 3,
             statuses: [triageStatus, toDoStatus, inProgressStatus, canceledStatus].map(
               ({ id }) => ({ id }),
             ),

@@ -406,6 +406,13 @@ module WorkItems
         return unless conflicting_ids.any?
 
         conflicting_status = @statuses_to_remove.find { |status| conflicting_ids.include?(status.id) }
+
+        if status_mvc2_enabled?
+          return if find_mapping_for_status(conflicting_status)
+
+          raise StandardError, "Cannot remove default status '#{conflicting_status.name}' without providing a mapping"
+        end
+
         raise StandardError,
           "Cannot delete status '#{conflicting_status.name}' because it is marked as a default status"
       end
