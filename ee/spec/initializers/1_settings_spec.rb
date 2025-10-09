@@ -28,6 +28,7 @@ RSpec.describe '1_settings', feature_category: :shared do
         analytics_value_stream_dashboard_count_worker
         app_sec_dast_profile_schedule_worker
         arkose_blocked_users_report_worker
+        authn_data_retention_oauth_access_grant_archive_worker
         authn_data_retention_oauth_access_token_archive_worker
         authorized_project_update_periodic_recalculate_worker
         batched_background_migrations_worker
