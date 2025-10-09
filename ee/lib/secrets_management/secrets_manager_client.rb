@@ -13,6 +13,8 @@ module SecretsManagement
     OPENBAO_EXPIRATION_LEEWAY = 150
     OPENBAO_NOT_BEFORE_LEEWAY = 150
     OPENBAO_CLOCK_SKEW_LEEWAY = 60
+    OPENBAO_INLINE_AUTH_FAILED_HEADER = "X-Vault-Inline-Auth-Failed"
+    OPENBAO_INLINE_AUTH_FAILED_VALUE = "true"
 
     ApiError = Class.new(StandardError)
     ConnectionError = Class.new(StandardError)
@@ -32,11 +34,35 @@ module SecretsManagement
       path.read.chomp
     end
 
-    def initialize(jwt:, role: DEFAULT_JWT_ROLE, auth_mount: GITLAB_JWT_AUTH_PATH, use_cel_auth: false)
+    def initialize(
+      jwt:, role: DEFAULT_JWT_ROLE, auth_namespace: "", auth_mount: GITLAB_JWT_AUTH_PATH,
+      use_cel_auth: false, namespace: "")
       @jwt = jwt
       @role = role
+      @auth_namespace = auth_namespace
       @auth_mount = auth_mount
       @use_cel_auth = use_cel_auth
+      @namespace = namespace
+    end
+
+    def enable_namespace(path, metadata: nil)
+      make_request(:post, "sys/namespaces/#{path}", {
+        custom_metadata: metadata
+      })
+    end
+
+    def disable_namespace(path)
+      make_request(:delete, "sys/namespaces/#{path}")
+    end
+
+    def with_namespace(namespace)
+      SecretsManagerClient.new(jwt: @jwt, role: @role, auth_namespace: @auth_namespace, auth_mount: @auth_mount,
+        use_cel_auth: @use_cel_auth, namespace: namespace)
+    end
+
+    def with_auth_namespace(auth_namespace)
+      SecretsManagerClient.new(jwt: @jwt, role: @role, auth_namespace: auth_namespace, auth_mount: @auth_mount,
+        use_cel_auth: @use_cel_auth, namespace: @namespace)
     end
 
     def enable_auth_engine(mount_path, type, allow_existing: false)
@@ -78,23 +104,32 @@ module SecretsManagement
       end
     end
 
-    def list_project_policies(project_id:, type: nil)
+    def list_policies(type: nil)
       subdir = "/#{type}" if type
-      result = make_request(:list, "sys/policies/acl/project_#{project_id}#{subdir}", {}, optional: true)
+      result = make_request(:list, "sys/policies/acl#{subdir}", {}, optional: true)
       return [] unless result
 
       result["data"]["keys"].filter_map do |key|
+        # Always skip the default policy in the root of a namespace; this is
+        # managed by OpenBao and not for our consumption.
+        next if (key == "default") && type.nil?
+
         metadata = get_policy(key)
         next unless metadata
 
         policy_data = { "key" => key, "metadata" => metadata }
-
         if block_given?
           yield(policy_data)
         else
           policy_data
         end
       end
+    end
+
+    def list_project_policies(project_id:, type: nil, &block)
+      subdir = "/#{type}" if type
+      subtype = "project_#{project_id}#{subdir}"
+      list_policies(type: subtype, &block)
     end
 
     def read_secret_metadata(mount_path, secret_path)
@@ -230,16 +265,19 @@ module SecretsManagement
     end
 
     def inline_auth_path
+      ns = ""
+      ns = "#{auth_namespace}/" unless auth_namespace.empty?
+
       if use_cel_auth
-        "auth/#{auth_mount}/cel/login"
+        "#{ns}auth/#{auth_mount}/cel/login"
       else
-        "auth/#{auth_mount}/login"
+        "#{ns}auth/#{auth_mount}/login"
       end
     end
 
     private
 
-    attr_reader :jwt, :role, :auth_mount, :use_cel_auth
+    attr_reader :jwt, :role, :auth_namespace, :auth_mount, :use_cel_auth, :namespace
 
     # save_raw_policy and read_raw_policy handle raw (direct API responses)
     # and the get_policy/set_policy forms should be preferred as they return
@@ -279,21 +317,32 @@ module SecretsManagement
     end
     strong_memoize_attr :connection
 
+    def namespaced_url(path)
+      if namespace.empty?
+        path
+      else
+        "#{namespace}/#{path}"
+      end
+    end
+
     def make_request(method, url, params = {}, optional: false)
+      path = namespaced_url(url)
       response = case method
                  when :get
-                   connection.get(url, params)
+                   connection.get(path, params)
                  when :list
-                   connection.get(url, params.merge(list: true))
+                   connection.get(path, params.merge(list: true))
+                 when :scan
+                   connection.get(path, params.merge(scan: true))
                  when :delete
-                   connection.delete(url, params)
+                   connection.delete(path, params)
                  else
-                   connection.post(url, params)
+                   connection.post(path, params)
                  end
 
       body = response.body
 
-      handle_authentication_error!(body)
+      handle_authentication_error!(body, response)
       handle_api_error!(body)
 
       if response.status == 404
@@ -307,8 +356,9 @@ module SecretsManagement
       raise ConnectionError, e.message
     end
 
-    def handle_authentication_error!(body)
-      return unless body && body["errors"]&.to_sentence&.include?('inline authentication')
+    def handle_authentication_error!(_body, response)
+      return unless response.headers.key?(OPENBAO_INLINE_AUTH_FAILED_HEADER)
+      return unless response.headers[OPENBAO_INLINE_AUTH_FAILED_HEADER] == OPENBAO_INLINE_AUTH_FAILED_VALUE
 
       raise AuthenticationError, "Failed to authenticate with OpenBao"
     end

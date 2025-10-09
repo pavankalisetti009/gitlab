@@ -65,7 +65,8 @@ module SecretsManagement
         project: project
       ).encoded
 
-      SecretsManagerClient.new(jwt: jwt)
+      client = SecretsManagerClient.new(jwt: jwt)
+      client.with_namespace(project.secrets_manager.full_project_namespace_path)
     end
 
     def cleanup_orphaned_record(rotation_info)

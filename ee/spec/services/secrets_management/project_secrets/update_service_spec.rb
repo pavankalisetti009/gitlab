@@ -80,6 +80,7 @@ RSpec.describe SecretsManagement::ProjectSecrets::UpdateService, :gitlab_secrets
 
             # Rotation ID is removed from metadata
             expect_kv_secret_not_to_have_custom_metadata(
+              project.secrets_manager.full_project_namespace_path,
               project.secrets_manager.ci_secrets_mount_path,
               secrets_manager.ci_data_path(name),
               "secret_rotation_info_id"
@@ -98,6 +99,7 @@ RSpec.describe SecretsManagement::ProjectSecrets::UpdateService, :gitlab_secrets
 
           # Verify metadata was updated
           expect_kv_secret_to_have_custom_metadata(
+            project.secrets_manager.full_project_namespace_path,
             project.secrets_manager.ci_secrets_mount_path,
             secrets_manager.ci_data_path(name),
             "description" => new_description
@@ -105,14 +107,16 @@ RSpec.describe SecretsManagement::ProjectSecrets::UpdateService, :gitlab_secrets
 
           # Verify value is unchanged
           expect_kv_secret_to_have_value(
+            project.secrets_manager.full_project_namespace_path,
             project.secrets_manager.ci_secrets_mount_path,
             secrets_manager.ci_data_path(name),
             original_value
           )
 
           # Verify policies are unchanged
+          client = secrets_manager_client.with_namespace(project.secrets_manager.full_project_namespace_path)
           policy_name = project.secrets_manager.ci_policy_name(original_environment, original_branch)
-          policy = secrets_manager_client.get_policy(policy_name)
+          policy = client.get_policy(policy_name)
           expect(policy.paths).to include(project.secrets_manager.ci_full_path(name))
         end
 
@@ -128,6 +132,7 @@ RSpec.describe SecretsManagement::ProjectSecrets::UpdateService, :gitlab_secrets
 
           # Verify the value was updated
           expect_kv_secret_to_have_value(
+            project.secrets_manager.full_project_namespace_path,
             project.secrets_manager.ci_secrets_mount_path,
             secrets_manager.ci_data_path(name),
             new_value
@@ -135,6 +140,7 @@ RSpec.describe SecretsManagement::ProjectSecrets::UpdateService, :gitlab_secrets
 
           # Verify metadata is unchanged except version
           expect_kv_secret_to_have_custom_metadata(
+            project.secrets_manager.full_project_namespace_path,
             project.secrets_manager.ci_secrets_mount_path,
             secrets_manager.ci_data_path(name),
             "description" => original_description,
@@ -163,12 +169,14 @@ RSpec.describe SecretsManagement::ProjectSecrets::UpdateService, :gitlab_secrets
           expect(secret.rotation_info).to eq(rotation_info)
 
           expect_kv_secret_to_have_metadata_version(
+            project.secrets_manager.full_project_namespace_path,
             project.secrets_manager.ci_secrets_mount_path,
             secrets_manager.ci_data_path(name),
             new_version
           )
 
           expect_kv_secret_to_have_custom_metadata(
+            project.secrets_manager.full_project_namespace_path,
             project.secrets_manager.ci_secrets_mount_path,
             secrets_manager.ci_data_path(name),
             "secret_rotation_info_id" => rotation_info.id.to_s
@@ -201,12 +209,14 @@ RSpec.describe SecretsManagement::ProjectSecrets::UpdateService, :gitlab_secrets
           expect(secret.rotation_info).to eq(new_rotation_info)
 
           expect_kv_secret_to_have_metadata_version(
+            project.secrets_manager.full_project_namespace_path,
             project.secrets_manager.ci_secrets_mount_path,
             secrets_manager.ci_data_path(name),
             new_version
           )
 
           expect_kv_secret_to_have_custom_metadata(
+            project.secrets_manager.full_project_namespace_path,
             project.secrets_manager.ci_secrets_mount_path,
             secrets_manager.ci_data_path(name),
             "secret_rotation_info_id" => new_rotation_info.id.to_s
@@ -239,12 +249,14 @@ RSpec.describe SecretsManagement::ProjectSecrets::UpdateService, :gitlab_secrets
           expect(secret.rotation_info).to eq(new_rotation_info)
 
           expect_kv_secret_to_have_metadata_version(
+            project.secrets_manager.full_project_namespace_path,
             project.secrets_manager.ci_secrets_mount_path,
             secrets_manager.ci_data_path(name),
             new_version
           )
 
           expect_kv_secret_to_have_custom_metadata(
+            project.secrets_manager.full_project_namespace_path,
             project.secrets_manager.ci_secrets_mount_path,
             secrets_manager.ci_data_path(name),
             "secret_rotation_info_id" => new_rotation_info.id.to_s
@@ -262,20 +274,22 @@ RSpec.describe SecretsManagement::ProjectSecrets::UpdateService, :gitlab_secrets
 
           # Verify metadata was updated
           expect_kv_secret_to_have_custom_metadata(
+            project.secrets_manager.full_project_namespace_path,
             project.secrets_manager.ci_secrets_mount_path,
             secrets_manager.ci_data_path(name),
             "environment" => new_environment
           )
 
           # Verify old policy no longer contains the secret
+          client = secrets_manager_client.with_namespace(project.secrets_manager.full_project_namespace_path)
           old_policy_name = project.secrets_manager.ci_policy_name(original_environment, original_branch)
-          old_policy = secrets_manager_client.get_policy(old_policy_name)
+          old_policy = client.get_policy(old_policy_name)
 
           expect(old_policy.paths).not_to include(project.secrets_manager.ci_full_path(name))
 
           # Verify new policy contains the secret
           new_policy_name = project.secrets_manager.ci_policy_name(new_environment, original_branch)
-          new_policy = secrets_manager_client.get_policy(new_policy_name)
+          new_policy = client.get_policy(new_policy_name)
 
           expect(new_policy.paths).to include(project.secrets_manager.ci_full_path(name))
         end
@@ -288,6 +302,7 @@ RSpec.describe SecretsManagement::ProjectSecrets::UpdateService, :gitlab_secrets
           expect(result).to be_success
 
           # Verify the old policy has been completely deleted or is empty
+          secrets_manager_client.with_namespace(project.secrets_manager.full_project_namespace_path)
           old_policy_name = project.secrets_manager.ci_policy_name(original_environment, original_branch)
           old_policy = secrets_manager_client.get_policy(old_policy_name)
 
@@ -305,20 +320,22 @@ RSpec.describe SecretsManagement::ProjectSecrets::UpdateService, :gitlab_secrets
 
           # Verify metadata was updated
           expect_kv_secret_to_have_custom_metadata(
+            project.secrets_manager.full_project_namespace_path,
             project.secrets_manager.ci_secrets_mount_path,
             secrets_manager.ci_data_path(name),
             "branch" => new_branch
           )
 
           # Verify old policy no longer contains the secret
+          client = secrets_manager_client.with_namespace(project.secrets_manager.full_project_namespace_path)
           old_policy_name = project.secrets_manager.ci_policy_name(original_environment, original_branch)
-          old_policy = secrets_manager_client.get_policy(old_policy_name)
+          old_policy = client.get_policy(old_policy_name)
 
           expect(old_policy.paths).not_to include(project.secrets_manager.ci_full_path(name))
 
           # Verify new policy contains the secret
           new_policy_name = project.secrets_manager.ci_policy_name(original_environment, new_branch)
-          new_policy = secrets_manager_client.get_policy(new_policy_name)
+          new_policy = client.get_policy(new_policy_name)
 
           expect(new_policy.paths).to include(project.secrets_manager.ci_full_path(name))
         end
@@ -350,6 +367,7 @@ RSpec.describe SecretsManagement::ProjectSecrets::UpdateService, :gitlab_secrets
 
             # Verify value was updated
             expect_kv_secret_to_have_value(
+              project.secrets_manager.full_project_namespace_path,
               project.secrets_manager.ci_secrets_mount_path,
               secrets_manager.ci_data_path(name),
               new_value
@@ -357,12 +375,14 @@ RSpec.describe SecretsManagement::ProjectSecrets::UpdateService, :gitlab_secrets
 
             # Verify metadata was updated
             expect_kv_secret_to_have_metadata_version(
+              project.secrets_manager.full_project_namespace_path,
               project.secrets_manager.ci_secrets_mount_path,
               secrets_manager.ci_data_path(name),
               new_version
             )
 
             expect_kv_secret_to_have_custom_metadata(
+              project.secrets_manager.full_project_namespace_path,
               project.secrets_manager.ci_secrets_mount_path,
               secrets_manager.ci_data_path(name),
               "description" => new_description,
@@ -372,14 +392,15 @@ RSpec.describe SecretsManagement::ProjectSecrets::UpdateService, :gitlab_secrets
             )
 
             # Verify old policy no longer contains the secret
+            client = secrets_manager_client.with_namespace(project.secrets_manager.full_project_namespace_path)
             old_policy_name = project.secrets_manager.ci_policy_name(original_environment, original_branch)
-            old_policy = secrets_manager_client.get_policy(old_policy_name)
+            old_policy = client.get_policy(old_policy_name)
 
             expect(old_policy.paths).not_to include(project.secrets_manager.ci_full_path(name))
 
             # Verify new policy contains the secret
             new_policy_name = project.secrets_manager.ci_policy_name(new_environment, new_branch)
-            new_policy = secrets_manager_client.get_policy(new_policy_name)
+            new_policy = client.get_policy(new_policy_name)
 
             expect(new_policy.paths).to include(project.secrets_manager.ci_full_path(name))
           end
@@ -399,7 +420,8 @@ RSpec.describe SecretsManagement::ProjectSecrets::UpdateService, :gitlab_secrets
             expect(result).to be_success
 
             # Check JWT role after update
-            role_after = secrets_manager_client.read_jwt_role(
+            client = secrets_manager_client.with_namespace(project.secrets_manager.full_project_namespace_path)
+            role_after = client.read_jwt_role(
               project.secrets_manager.ci_auth_mount,
               project.secrets_manager.ci_auth_role
             )
@@ -409,7 +431,7 @@ RSpec.describe SecretsManagement::ProjectSecrets::UpdateService, :gitlab_secrets
 
             # Verify the secret is in the right policy
             new_policy_name = project.secrets_manager.ci_policy_name(environment, branch)
-            new_policy = secrets_manager_client.get_policy(new_policy_name)
+            new_policy = client.get_policy(new_policy_name)
 
             expect(new_policy.paths).to include(project.secrets_manager.ci_full_path(name))
           end
@@ -425,7 +447,8 @@ RSpec.describe SecretsManagement::ProjectSecrets::UpdateService, :gitlab_secrets
             old_glob_policies = project.secrets_manager.ci_auth_glob_policies(original_environment, original_branch)
 
             # Check JWT role before update
-            role_before = secrets_manager_client.read_jwt_role(
+            client = secrets_manager_client.with_namespace(project.secrets_manager.full_project_namespace_path)
+            role_before = client.read_jwt_role(
               project.secrets_manager.ci_auth_mount,
               project.secrets_manager.ci_auth_role
             )
@@ -437,7 +460,7 @@ RSpec.describe SecretsManagement::ProjectSecrets::UpdateService, :gitlab_secrets
             expect(result).to be_success
 
             # Check JWT role after update
-            role_after = secrets_manager_client.read_jwt_role(
+            role_after = client.read_jwt_role(
               project.secrets_manager.ci_auth_mount,
               project.secrets_manager.ci_auth_role
             )
@@ -469,7 +492,8 @@ RSpec.describe SecretsManagement::ProjectSecrets::UpdateService, :gitlab_secrets
               expect(result).to be_success
 
               # Check JWT role after update
-              role_after = secrets_manager_client.read_jwt_role(
+              client = secrets_manager_client.with_namespace(project.secrets_manager.full_project_namespace_path)
+              role_after = client.read_jwt_role(
                 project.secrets_manager.ci_auth_mount,
                 project.secrets_manager.ci_auth_role
               )
@@ -510,6 +534,7 @@ RSpec.describe SecretsManagement::ProjectSecrets::UpdateService, :gitlab_secrets
 
           # Verify value was updated
           expect_kv_secret_to_have_value(
+            project.secrets_manager.full_project_namespace_path,
             project.secrets_manager.ci_secrets_mount_path,
             secrets_manager.ci_data_path(name),
             new_value
@@ -517,12 +542,14 @@ RSpec.describe SecretsManagement::ProjectSecrets::UpdateService, :gitlab_secrets
 
           # Verify metadata was updated
           expect_kv_secret_to_have_metadata_version(
+            project.secrets_manager.full_project_namespace_path,
             project.secrets_manager.ci_secrets_mount_path,
             secrets_manager.ci_data_path(name),
             new_version
           )
 
           expect_kv_secret_to_have_custom_metadata(
+            project.secrets_manager.full_project_namespace_path,
             project.secrets_manager.ci_secrets_mount_path,
             secrets_manager.ci_data_path(name),
             "description" => new_description,
@@ -547,6 +574,7 @@ RSpec.describe SecretsManagement::ProjectSecrets::UpdateService, :gitlab_secrets
 
           # Verify value was not updated
           expect_kv_secret_to_have_value(
+            project.secrets_manager.full_project_namespace_path,
             project.secrets_manager.ci_secrets_mount_path,
             secrets_manager.ci_data_path(name),
             original_value
@@ -554,12 +582,14 @@ RSpec.describe SecretsManagement::ProjectSecrets::UpdateService, :gitlab_secrets
 
           # Verify metadata is unchanged
           expect_kv_secret_to_have_metadata_version(
+            project.secrets_manager.full_project_namespace_path,
             project.secrets_manager.ci_secrets_mount_path,
             secrets_manager.ci_data_path(name),
             1
           )
 
           expect_kv_secret_to_have_custom_metadata(
+            project.secrets_manager.full_project_namespace_path,
             project.secrets_manager.ci_secrets_mount_path,
             secrets_manager.ci_data_path(name),
             "description" => original_description,
@@ -579,6 +609,7 @@ RSpec.describe SecretsManagement::ProjectSecrets::UpdateService, :gitlab_secrets
             expect(rotation_info).not_to be_nil
 
             expect_kv_secret_not_to_have_custom_metadata(
+              project.secrets_manager.full_project_namespace_path,
               project.secrets_manager.ci_secrets_mount_path,
               secrets_manager.ci_data_path(name),
               "secret_rotation_info_id"
@@ -632,6 +663,7 @@ RSpec.describe SecretsManagement::ProjectSecrets::UpdateService, :gitlab_secrets
 
             # Secret should remain unchanged
             expect_kv_secret_to_have_value(
+              project.secrets_manager.full_project_namespace_path,
               project.secrets_manager.ci_secrets_mount_path,
               secrets_manager.ci_data_path(name),
               original_value
@@ -666,8 +698,9 @@ RSpec.describe SecretsManagement::ProjectSecrets::UpdateService, :gitlab_secrets
           expect(result).to be_success
 
           # Verify the shared policy has both secrets
+          client = secrets_manager_client.with_namespace(project.secrets_manager.full_project_namespace_path)
           shared_policy_name = project.secrets_manager.ci_policy_name(environment, branch)
-          shared_policy = secrets_manager_client.get_policy(shared_policy_name)
+          shared_policy = client.get_policy(shared_policy_name)
 
           expect(shared_policy.paths).to include(project.secrets_manager.ci_full_path(name))
           expect(shared_policy.paths).to include(project.secrets_manager.ci_full_path(second_secret_name))

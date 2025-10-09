@@ -105,5 +105,6 @@ RSpec.configure do |config|
     clean_all_pipeline_jwt_engines
     clean_all_user_jwt_engines
     clean_all_policies
+    clean_all_namespaces
   end
 end

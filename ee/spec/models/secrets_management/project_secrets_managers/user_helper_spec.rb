@@ -10,13 +10,13 @@ RSpec.describe SecretsManagement::ProjectSecretsManagers::UserHelper, feature_ca
     let(:namespace_path) { "#{project.namespace.type.downcase}_#{project.namespace.id}" }
 
     it 'returns the correct mount path' do
-      expect(secrets_manager.user_auth_mount).to eq("#{namespace_path}/user_jwt")
+      expect(secrets_manager.user_auth_mount).to eq("user_jwt")
     end
   end
 
   describe '#user_auth_role' do
     it 'returns the correct auth role' do
-      expect(secrets_manager.user_auth_role).to eq("project_#{project.id}")
+      expect(secrets_manager.user_auth_role).to eq("all_users")
     end
   end
 

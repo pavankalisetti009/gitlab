@@ -19,7 +19,7 @@ module SecretsManagement
       def list_secret_permissions(project)
         permissions = []
 
-        secrets_manager_client.list_project_policies(project_id: project.id, type: :users) do |policy_data|
+        project_secrets_manager_client.list_policies(type: :users) do |policy_data|
           policy_name = policy_data["key"]
           policy = policy_data["metadata"]
 
@@ -34,17 +34,7 @@ module SecretsManagement
           # Extract permissions from the capabilities
           permissions_set = Set.new
 
-          policy.paths.each do |path, path_obj|
-            # Skip paths that don't match the project's pattern
-
-            correct_path_exists = if project.namespace.type == "User"
-                                    path.include?("user_#{project.namespace.id}/project_#{project.id}")
-                                  else
-                                    path.include?("group_#{project.group.id}/project_#{project.id}")
-                                  end
-
-            next unless correct_path_exists
-
+          policy.paths.each_value do |path_obj|
             granted_by = path_obj.granted_by
             expired_at = path_obj.expired_at
             path_obj.capabilities.each do |capability|
@@ -71,20 +61,20 @@ module SecretsManagement
       end
 
       def extract_principal_info_from_policy(path_parts)
-        # path_parts structure: ["project_ID", "users", TYPE, IDENTIFIER]
-        return [nil, nil] if path_parts.size < 4
+        # path_parts structure: ["users", TYPE, IDENTIFIER]
+        return [nil, nil] if path_parts.size < 3
 
-        case path_parts[2]
+        case path_parts[1]
         when 'direct'
-          if path_parts[3].start_with?('user_')
-            ['User', path_parts[3].sub('user_', '').to_i]
-          elsif path_parts[3].start_with?('member_role_')
-            ['MemberRole', path_parts[3].sub('member_role_', '').to_i]
-          elsif path_parts[3].start_with?('group_')
-            ['Group', path_parts[3].sub('group_', '').to_i]
+          if path_parts[2].start_with?('user_')
+            ['User', path_parts[2].sub('user_', '').to_i]
+          elsif path_parts[2].start_with?('member_role_')
+            ['MemberRole', path_parts[2].sub('member_role_', '').to_i]
+          elsif path_parts[2].start_with?('group_')
+            ['Group', path_parts[2].sub('group_', '').to_i]
           end
         when 'roles'
-          role_id = path_parts[3]
+          role_id = path_parts[2]
           role_id ? ['Role', role_id] : [nil, nil]
         end
       end

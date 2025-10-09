@@ -44,6 +44,7 @@ RSpec.describe SecretsManagement::ProjectSecrets::CreateService, :gitlab_secrets
         expect(secret.metadata_version).to eq(1)
 
         expect_kv_secret_to_have_value(
+          project.secrets_manager.full_project_namespace_path,
           project.secrets_manager.ci_secrets_mount_path,
           secrets_manager.ci_data_path(name),
           value
@@ -59,12 +60,14 @@ RSpec.describe SecretsManagement::ProjectSecrets::CreateService, :gitlab_secrets
         expect(secret.rotation_info).to eq(rotation_info)
 
         expect_kv_secret_to_have_metadata_version(
+          project.secrets_manager.full_project_namespace_path,
           project.secrets_manager.ci_secrets_mount_path,
           secrets_manager.ci_data_path(name),
           rotation_info.secret_metadata_version
         )
 
         expect_kv_secret_to_have_custom_metadata(
+          project.secrets_manager.full_project_namespace_path,
           project.secrets_manager.ci_secrets_mount_path,
           secrets_manager.ci_data_path(name),
           "description" => description,
@@ -75,7 +78,9 @@ RSpec.describe SecretsManagement::ProjectSecrets::CreateService, :gitlab_secrets
 
         # Validate correct policy has path.
         expected_policy_name = project.secrets_manager.ci_policy_name_combined(environment, branch)
-        actual_policy = secrets_manager_client.get_policy(expected_policy_name)
+
+        client = secrets_manager_client.with_namespace(secrets_manager.full_project_namespace_path)
+        actual_policy = client.get_policy(expected_policy_name)
         expect(actual_policy).not_to be_nil
 
         expected_path = project.secrets_manager.ci_full_path(name)
@@ -108,7 +113,9 @@ RSpec.describe SecretsManagement::ProjectSecrets::CreateService, :gitlab_secrets
 
           # Validate correct policy has path.
           expected_policy_name = project.secrets_manager.ci_policy_name_branch(branch)
-          actual_policy = secrets_manager_client.get_policy(expected_policy_name)
+
+          client = secrets_manager_client.with_namespace(secrets_manager.full_project_namespace_path)
+          actual_policy = client.get_policy(expected_policy_name)
           expect(actual_policy).not_to be_nil
 
           expected_path = project.secrets_manager.ci_full_path(name)
@@ -120,6 +127,7 @@ RSpec.describe SecretsManagement::ProjectSecrets::CreateService, :gitlab_secrets
           expect(actual_policy.paths[expected_path].capabilities).to eq(Set.new(["read"]))
 
           expect_kv_secret_to_have_custom_metadata(
+            project.secrets_manager.full_project_namespace_path,
             project.secrets_manager.ci_secrets_mount_path,
             secrets_manager.ci_data_path(name),
             "environment" => environment
@@ -135,7 +143,9 @@ RSpec.describe SecretsManagement::ProjectSecrets::CreateService, :gitlab_secrets
 
           # Validate correct policy has path.
           expected_policy_name = project.secrets_manager.ci_policy_name_env(environment)
-          actual_policy = secrets_manager_client.get_policy(expected_policy_name)
+
+          client = secrets_manager_client.with_namespace(secrets_manager.full_project_namespace_path)
+          actual_policy = client.get_policy(expected_policy_name)
           expect(actual_policy).not_to be_nil
 
           expected_path = project.secrets_manager.ci_full_path(name)
@@ -147,6 +157,7 @@ RSpec.describe SecretsManagement::ProjectSecrets::CreateService, :gitlab_secrets
           expect(actual_policy.paths[expected_path].capabilities).to eq(Set.new(["read"]))
 
           expect_kv_secret_to_have_custom_metadata(
+            project.secrets_manager.full_project_namespace_path,
             project.secrets_manager.ci_secrets_mount_path,
             secrets_manager.ci_data_path(name),
             "branch" => branch
@@ -161,7 +172,9 @@ RSpec.describe SecretsManagement::ProjectSecrets::CreateService, :gitlab_secrets
 
             # Validate correct policy has path.
             expected_policy_name = project.secrets_manager.ci_policy_name_global
-            actual_policy = secrets_manager_client.get_policy(expected_policy_name)
+
+            client = secrets_manager_client.with_namespace(secrets_manager.full_project_namespace_path)
+            actual_policy = client.get_policy(expected_policy_name)
             expect(actual_policy).not_to be_nil
 
             expected_path = project.secrets_manager.ci_full_path(name)
@@ -173,6 +186,7 @@ RSpec.describe SecretsManagement::ProjectSecrets::CreateService, :gitlab_secrets
             expect(actual_policy.paths[expected_path].capabilities).to eq(Set.new(["read"]))
 
             expect_kv_secret_to_have_custom_metadata(
+              project.secrets_manager.full_project_namespace_path,
               project.secrets_manager.ci_secrets_mount_path,
               secrets_manager.ci_data_path(name),
               "environment" => environment,
@@ -273,6 +287,7 @@ RSpec.describe SecretsManagement::ProjectSecrets::CreateService, :gitlab_secrets
             secret_metadata_path = [
               SecretsManagement::SecretsManagerClient.configuration.host,
               SecretsManagement::SecretsManagerClient.configuration.base_path,
+              secrets_manager.full_project_namespace_path,
               secrets_manager.ci_secrets_mount_path,
               'metadata',
               secrets_manager.ci_data_path(name)
@@ -281,6 +296,7 @@ RSpec.describe SecretsManagement::ProjectSecrets::CreateService, :gitlab_secrets
             secret_create_path = [
               SecretsManagement::SecretsManagerClient.configuration.host,
               SecretsManagement::SecretsManagerClient.configuration.base_path,
+              secrets_manager.full_project_namespace_path,
               secrets_manager.ci_secrets_mount_path,
               'data',
               secrets_manager.ci_data_path(name)
@@ -315,6 +331,7 @@ RSpec.describe SecretsManagement::ProjectSecrets::CreateService, :gitlab_secrets
 
             # The secret should not exist in openbao
             expect_kv_secret_not_to_exist(
+              project.secrets_manager.full_project_namespace_path,
               project.secrets_manager.ci_secrets_mount_path,
               secrets_manager.ci_data_path(name)
             )
@@ -337,18 +354,21 @@ RSpec.describe SecretsManagement::ProjectSecrets::CreateService, :gitlab_secrets
 
               # Verify that the secret now exists in openbao
               expect_kv_secret_to_have_value(
+                project.secrets_manager.full_project_namespace_path,
                 project.secrets_manager.ci_secrets_mount_path,
                 secrets_manager.ci_data_path(name),
                 value
               )
 
               expect_kv_secret_to_have_metadata_version(
+                project.secrets_manager.full_project_namespace_path,
                 project.secrets_manager.ci_secrets_mount_path,
                 secrets_manager.ci_data_path(name),
                 existing_rotation_info.secret_metadata_version
               )
 
               expect_kv_secret_to_have_custom_metadata(
+                project.secrets_manager.full_project_namespace_path,
                 project.secrets_manager.ci_secrets_mount_path,
                 secrets_manager.ci_data_path(name),
                 "secret_rotation_info_id" => existing_rotation_info.id.to_s
@@ -372,18 +392,21 @@ RSpec.describe SecretsManagement::ProjectSecrets::CreateService, :gitlab_secrets
 
               # Verify that the secret now exists in openbao
               expect_kv_secret_to_have_value(
+                project.secrets_manager.full_project_namespace_path,
                 project.secrets_manager.ci_secrets_mount_path,
                 secrets_manager.ci_data_path(name),
                 value
               )
 
               expect_kv_secret_to_have_metadata_version(
+                project.secrets_manager.full_project_namespace_path,
                 project.secrets_manager.ci_secrets_mount_path,
                 secrets_manager.ci_data_path(name),
                 1
               )
 
               expect_kv_secret_not_to_have_custom_metadata(
+                project.secrets_manager.full_project_namespace_path,
                 project.secrets_manager.ci_secrets_mount_path,
                 secrets_manager.ci_data_path(name),
                 "secret_rotation_info_id" => existing_rotation_info.id.to_s
@@ -399,6 +422,7 @@ RSpec.describe SecretsManagement::ProjectSecrets::CreateService, :gitlab_secrets
             expect(SecretsManagement::SecretRotationInfo.count).to be_zero
 
             expect_kv_secret_not_to_exist(
+              project.secrets_manager.full_project_namespace_path,
               project.secrets_manager.ci_secrets_mount_path,
               secrets_manager.ci_data_path(name)
             )

@@ -30,11 +30,11 @@ module SecretsManagement
         secret_permission.permissions = secret_permission.permissions + INTERNAL_PERMISSIONS
 
         # Get or create policy
-        policy_name = secrets_manager.generate_policy_name(project_id: project.id,
+        policy_name = secrets_manager.generate_policy_name(
           principal_type: secret_permission.principal_type,
           principal_id: secret_permission.principal_id)
 
-        policy = secrets_manager_client.get_policy(policy_name)
+        policy = project_secrets_manager_client.get_policy(policy_name)
 
         # If policy doesn't exist, create a new one
         policy ||= AclPolicy.new(policy_name)
@@ -43,7 +43,7 @@ module SecretsManagement
         update_policy_paths(policy, secret_permission.permissions, secret_permission.normalized_expired_at)
 
         # Save the policy to OpenBao
-        secrets_manager_client.set_policy(policy)
+        project_secrets_manager_client.set_policy(policy)
 
         # the list permission is only used internally and should not be returned to the user
         secret_permission.permissions = secret_permission.permissions - INTERNAL_PERMISSIONS

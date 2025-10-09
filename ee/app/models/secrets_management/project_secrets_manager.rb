@@ -58,11 +58,16 @@ module SecretsManagement
     private_class_method :default_openbao_server_url
 
     def ci_secrets_mount_path
+      %w[
+        secrets
+        kv
+      ].compact.join('/')
+    end
+
+    def legacy_ci_secrets_mount_path
       [
-        namespace_path,
-        "project_#{project.id}",
-        'secrets',
-        'kv'
+        full_project_namespace_path,
+        ci_secrets_mount_path
       ].compact.join('/')
     end
 
@@ -103,12 +108,29 @@ module SecretsManagement
 
     def ci_auth_mount
       [
-        namespace_path,
         'pipeline_jwt'
       ].compact.join('/')
     end
 
+    def legacy_ci_auth_mount
+      [
+        full_project_namespace_path,
+        ci_auth_mount
+      ].compact.join('/')
+    end
+
+    def legacy_user_auth_mount
+      [
+        full_project_namespace_path,
+        "user_jwt"
+      ].compact.join('/')
+    end
+
     def ci_auth_role
+      "all_pipelines"
+    end
+
+    def legacy_ci_auth_role
       "project_#{project.id}"
     end
 
@@ -134,16 +156,14 @@ module SecretsManagement
     end
 
     def ci_policy_name_global
-      [
-        "project_#{project.id}",
-        "pipelines",
-        "global"
+      %w[
+        pipelines
+        global
       ].compact.join('/')
     end
 
     def ci_policy_name_env(environment)
       [
-        "project_#{project.id}",
         "pipelines",
         "env",
         environment.unpack1('H*')
@@ -152,7 +172,6 @@ module SecretsManagement
 
     def ci_policy_name_branch(branch)
       [
-        "project_#{project.id}",
         "pipelines",
         "branch",
         branch.unpack1('H*')
@@ -161,7 +180,6 @@ module SecretsManagement
 
     def ci_policy_name_combined(environment, branch)
       [
-        "project_#{project.id}",
         "pipelines",
         "combined",
         "env",
@@ -186,19 +204,19 @@ module SecretsManagement
 
     def ci_policy_template_literal_environment
       "{{ if and (ne nil (index . \"environment\")) (ne \"\" .environment) }}" \
-        "project_{{ .project_id }}/pipelines/env/{{ .environment | hex }}{{ end }}"
+        "pipelines/env/{{ .environment | hex }}{{ end }}"
     end
 
     def ci_policy_template_literal_branch
       "{{ if and (eq \"branch\" .ref_type) (ne \"\" .ref) }}" \
-        "project_{{ .project_id }}/pipelines/" \
+        "pipelines/" \
         "branch/{{ .ref | hex }}" \
         "{{ end }}"
     end
 
     def ci_policy_template_literal_combined
       "{{ if and (eq \"branch\" .ref_type) (ne nil (index . \"environment\")) (ne \"\" .environment) }}" \
-        "project_{{ .project_id }}/pipelines/combined/" \
+        "pipelines/combined/" \
         "env/{{ .environment | hex}}/" \
         "branch/{{ .ref | hex }}" \
         "{{ end }}"
@@ -293,42 +311,40 @@ module SecretsManagement
         "{{ end }}"
     end
 
-    def user_path(project_id)
-      [
-        "project_#{project_id}",
-        "users",
-        "direct"
+    def user_path
+      %w[
+        users
+        direct
       ].compact.join('/')
     end
 
-    def role_path(project_id)
-      [
-        "project_#{project_id}",
-        "users",
-        "roles"
+    def role_path
+      %w[
+        users
+        roles
       ].compact.join('/')
     end
 
-    def generate_policy_name(project_id:, principal_type:, principal_id:)
+    def generate_policy_name(principal_type:, principal_id:)
       case principal_type
       when 'User'
         [
-          user_path(project_id),
+          user_path,
           "user_#{principal_id}"
         ].compact.join('/')
       when 'Role'
         [
-          role_path(project_id),
+          role_path,
           principal_id
         ].compact.join('/')
       when 'MemberRole'
         [
-          user_path(project_id),
+          user_path,
           "member_role_#{principal_id}"
         ].compact.join('/')
       when 'Group'
         [
-          user_path(project_id),
+          user_path,
           "group_#{principal_id}"
         ].compact.join('/')
       end
@@ -337,7 +353,7 @@ module SecretsManagement
     def user_auth_cel_program(project_id)
       {
         variables: [
-          { name: "base",  expression: %("project_#{project_id}") },
+          { name: "base",  expression: %("users") },
           { name: "uid",   expression: %q(('user_id' in claims) ? string(claims['user_id']) : "") },
           { name: "mrid",
             expression: %q(('member_role_id' in claims && claims['member_role_id'] != null) ?
@@ -360,16 +376,14 @@ module SecretsManagement
             display_name: who,
             alias: logical.Alias { name: who },
             policies:
-              (uid  != "" ? [base + "/users/direct/user_"        + uid]  : []) +
-              (mrid != "" ? [base + "/users/direct/member_role_" + mrid] : []) +
-              grps.map(g, base + "/users/direct/group_" + string(g)) +
-              (rid  != "" ? [base + "/users/roles/"              + rid]  : [])
+              (uid  != "" ? [base + "/direct/user_"        + uid]  : []) +
+              (mrid != "" ? [base + "/direct/member_role_" + mrid] : []) +
+              grps.map(g, base + "/direct/group_" + string(g)) +
+              (rid  != "" ? [base + "/roles/"              + rid]  : [])
           }
         CEL
       }
     end
-
-    private
 
     def namespace_path
       [
@@ -377,6 +391,19 @@ module SecretsManagement
         project.namespace.id.to_s
       ].join('_')
     end
+
+    def project_path
+      "project_#{project.id}"
+    end
+
+    def full_project_namespace_path
+      [
+        namespace_path,
+        project_path
+      ].compact.join('/')
+    end
+
+    private
 
     def track_ci_jwt_generation(build)
       track_internal_event(

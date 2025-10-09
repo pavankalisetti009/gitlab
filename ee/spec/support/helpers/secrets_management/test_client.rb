@@ -2,12 +2,24 @@
 
 module SecretsManagement
   class TestClient < SecretsManagerClient
+    attr_reader :jwt, :role, :auth_namespace, :auth_mount, :use_cel_auth, :namespace
+
     def read_secrets_engine_configuration(mount_path)
       make_request(:get, "sys/mounts/#{mount_path}")
     end
 
     def read_auth_engine_configuration(mount_path)
       make_request(:get, "sys/auth/#{mount_path}")
+    end
+
+    def with_namespace(namespace)
+      TestClient.new(jwt: @jwt, role: @role, auth_namespace: @auth_namespace, auth_mount: @auth_mount,
+        use_cel_auth: @use_cel_auth, namespace: namespace)
+    end
+
+    def with_auth_namespace(auth_namespace)
+      TestClient.new(jwt: @jwt, role: @role, auth_namespace: auth_namespace, auth_mount: @auth_mount,
+        use_cel_auth: @use_cel_auth, namespace: @namespace)
     end
 
     def each_secrets_engine
@@ -34,6 +46,24 @@ module SecretsManagement
 
       body["data"]["keys"].each do |policy|
         yield(policy)
+      end
+    end
+
+    def each_namespace
+      body = make_request(:scan, "sys/namespaces", {}, optional: true)
+      return unless body
+      return unless body["data"].key?("keys")
+      return if body["data"]["keys"].nil?
+
+      # Iterate depth-first; do not immediately yield the namespace path
+      # but instead sort by most nested.
+      ordered = body["data"]["keys"].map do |path|
+        path
+      end
+
+      ordered.sort! { |a, b| b.count('/') <=> a.count('/') }
+      ordered.each do |path|
+        yield(path)
       end
     end
 

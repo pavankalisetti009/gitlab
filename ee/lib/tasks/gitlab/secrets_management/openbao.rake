@@ -23,9 +23,9 @@ Usage: rake "gitlab:secrets_management:openbao:clone[/installation/dir]")
 
         # As per https://gitlab.com/gitlab-org/govern/secrets-management/openbao-internal/-/packages/
         checksums_sha256 = {
-          'bao-darwin-arm64' => 'a6d3a0096593c1beb8a295a58d860299a96bfe523ee1be704b92df24cba5bba2',
-          'bao-darwin-amd64' => '25fe6afef2b47a30cae14b9e611ff41d8eeb354a193e6a6e8916a257688d7f9c',
-          'bao-linux-amd64' => '0f64a82e2548947a4a94523ee153e63f65459ff9011fac0695be28cfe3da32f3'
+          'bao-darwin-arm64' => '67df73725c198cf3387b73e97829d1a2c58c7af07ba5f3e15b052a0fe20a1086',
+          'bao-darwin-amd64' => '88d8bff43ebcbaa5cfb158d61c0a3d6c69ca8a9f8f2ce20375f4e61cee985f43',
+          'bao-linux-amd64' => 'c128027272ed973486ded9e2b9d1bef0fa72324e67878bdd5ab47c16128ce245'
         }
 
         os = Gem::Platform.local.os

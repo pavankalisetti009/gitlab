@@ -4,6 +4,7 @@ require 'spec_helper'
 
 RSpec.describe SecretsManagement::SecretsManagerClient, :gitlab_secrets_manager, feature_category: :secrets_management do
   let(:jwt) { SecretsManagement::TestJwt.new.encoded }
+  let(:bad_jwt) { SecretsManagement::TestJwt.new(aud: "bad_aud").encoded }
   let(:role) { described_class::DEFAULT_JWT_ROLE }
   let(:client) { described_class.new(jwt: jwt, role: role) }
 
@@ -71,7 +72,7 @@ RSpec.describe SecretsManagement::SecretsManagerClient, :gitlab_secrets_manager,
 
     context 'when authentication error happens during API calls' do
       it 'raises AuthenticationError wrapping the connection error' do
-        client = described_class.new(jwt: jwt, role: role, auth_mount: 'something_else')
+        client = described_class.new(jwt: bad_jwt)
         expect { client.enable_secrets_engine('test', 'kv-v2') }
           .to raise_error(described_class::AuthenticationError, /Failed to authenticate with OpenBao/)
       end
@@ -85,7 +86,7 @@ RSpec.describe SecretsManagement::SecretsManagerClient, :gitlab_secrets_manager,
     it 'enables the secrets engine' do
       client.enable_secrets_engine(mount_path, engine)
 
-      expect_kv_secret_engine_to_be_mounted(mount_path)
+      expect_kv_secret_engine_to_be_mounted("", mount_path)
     end
   end
 
@@ -96,7 +97,7 @@ RSpec.describe SecretsManagement::SecretsManagerClient, :gitlab_secrets_manager,
     it 'enables the secrets engine' do
       client.enable_auth_engine(mount_path, engine)
 
-      expect_jwt_auth_engine_to_be_mounted(mount_path)
+      expect_jwt_auth_engine_to_be_mounted("", mount_path)
     end
 
     context 'when the engine already exists' do
@@ -121,10 +122,10 @@ RSpec.describe SecretsManagement::SecretsManagerClient, :gitlab_secrets_manager,
 
     it 'disables the auth engine' do
       client.enable_auth_engine(mount_path, engine)
-      expect_jwt_auth_engine_to_be_mounted(mount_path)
+      expect_jwt_auth_engine_to_be_mounted("", mount_path)
 
       client.disable_auth_engine(mount_path)
-      expect_jwt_auth_engine_not_to_be_mounted(mount_path)
+      expect_jwt_auth_engine_not_to_be_mounted("", mount_path)
     end
   end
 
@@ -137,11 +138,11 @@ RSpec.describe SecretsManagement::SecretsManagerClient, :gitlab_secrets_manager,
       end
 
       it 'disables the secrets engine' do
-        expect_kv_secret_engine_to_be_mounted(mount_path)
+        expect_kv_secret_engine_to_be_mounted("", mount_path)
 
         client.disable_secrets_engine(mount_path)
 
-        expect_kv_secret_engine_not_to_be_mounted(mount_path)
+        expect_kv_secret_engine_not_to_be_mounted("", mount_path)
       end
     end
 
@@ -392,7 +393,7 @@ RSpec.describe SecretsManagement::SecretsManagerClient, :gitlab_secrets_manager,
         it 'creates the secret and the custom metadata' do
           call_api
 
-          expect_kv_secret_to_have_value(mount_path, secret_path, value)
+          expect_kv_secret_to_have_value("", mount_path, secret_path, value)
         end
 
         it 'returns the response of the API call' do
@@ -419,7 +420,7 @@ RSpec.describe SecretsManagement::SecretsManagerClient, :gitlab_secrets_manager,
           it 'updates the secret value' do
             call_api
 
-            expect_kv_secret_to_have_value(mount_path, secret_path, value)
+            expect_kv_secret_to_have_value("", mount_path, secret_path, value)
           end
         end
 
@@ -467,7 +468,7 @@ RSpec.describe SecretsManagement::SecretsManagerClient, :gitlab_secrets_manager,
         it 'creates the secret and the custom metadata' do
           call_api
 
-          expect_kv_secret_to_have_custom_metadata(mount_path, secret_path, custom_metadata.stringify_keys)
+          expect_kv_secret_to_have_custom_metadata("", mount_path, secret_path, custom_metadata.stringify_keys)
         end
       end
 
@@ -480,7 +481,7 @@ RSpec.describe SecretsManagement::SecretsManagerClient, :gitlab_secrets_manager,
           it 'updates the custom metadata' do
             call_api
 
-            expect_kv_secret_to_have_custom_metadata(mount_path, secret_path, custom_metadata.stringify_keys)
+            expect_kv_secret_to_have_custom_metadata("", mount_path, secret_path, custom_metadata.stringify_keys)
           end
         end
 
@@ -545,6 +546,84 @@ RSpec.describe SecretsManagement::SecretsManagerClient, :gitlab_secrets_manager,
       expect(policy.to_openbao_attributes).to match(
         acl_policy.to_openbao_attributes
       )
+    end
+  end
+
+  describe '#list_policies' do
+    let(:type) { nil }
+    let(:test_ns) { "user_1234_test_list_policies" }
+    let(:ns_client) { client.with_namespace(test_ns) }
+
+    before do
+      client.enable_namespace(test_ns)
+    end
+
+    subject(:result) { ns_client.list_policies(type: type) }
+
+    context 'when no policies exist' do
+      it 'returns an empty array' do
+        expect(result).to eq([])
+      end
+    end
+
+    context 'when policies exist' do
+      before do
+        # Create user policies
+        ns_client.set_policy(SecretsManagement::AclPolicy.new("users/direct/user_123"))
+        ns_client.set_policy(SecretsManagement::AclPolicy.new("users/direct/user_124"))
+        ns_client.set_policy(SecretsManagement::AclPolicy.new("users/roles/50"))
+
+        # Create pipeline policies
+        ns_client.set_policy(SecretsManagement::AclPolicy.new("pipelines/global"))
+        ns_client.set_policy(SecretsManagement::AclPolicy.new("pipelines/branch/6d61696e"))
+      end
+
+      context 'when type is not specified' do
+        it 'returns all policies for the project' do
+          expect(result).to be_an(Array)
+          expect(result.size).to eq(5) # All policies
+
+          policy_keys = result.pluck('key')
+          expect(policy_keys).to contain_exactly(
+            'users/direct/user_123',
+            'users/direct/user_124',
+            'users/roles/50',
+            'pipelines/global',
+            'pipelines/branch/6d61696e'
+          )
+        end
+      end
+
+      context 'when type is given' do
+        let(:type) { :users }
+
+        it 'returns only policies under the given type for the project' do
+          expect(result).to be_an(Array)
+          expect(result.size).to eq(3) # Only user policies
+
+          policy_keys = result.pluck('key')
+          expect(policy_keys).to contain_exactly(
+            'users/direct/user_123',
+            'users/direct/user_124',
+            'users/roles/50'
+          )
+        end
+      end
+
+      context 'with a block' do
+        it 'yields each policy data' do
+          policies = []
+          ns_client.list_policies(type: :users) do |policy_data|
+            policies << policy_data['key']
+          end
+
+          expect(policies).to contain_exactly(
+            'users/direct/user_123',
+            'users/direct/user_124',
+            'users/roles/50'
+          )
+        end
+      end
     end
   end
 
@@ -700,7 +779,7 @@ RSpec.describe SecretsManagement::SecretsManagerClient, :gitlab_secrets_manager,
         it 'deletes the secret permanently' do
           call_api
 
-          expect_kv_secret_not_to_exist(mount_path, secret_path)
+          expect_kv_secret_not_to_exist("", mount_path, secret_path)
         end
       end
 
@@ -902,7 +981,7 @@ RSpec.describe SecretsManagement::SecretsManagerClient, :gitlab_secrets_manager,
           bound_audiences: [server_aud]
         )
 
-        policy_name = "project_#{project_id}/users/direct/user_#{user_id}"
+        policy_name = "users/direct/user_#{user_id}"
         policy_body = {
           "path" => {
             # list on detailed-metadata and read on metadata is enough for list_secrets

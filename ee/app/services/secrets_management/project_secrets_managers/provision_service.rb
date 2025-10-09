@@ -18,6 +18,7 @@ module SecretsManagement
 
       def execute
         update_gitlab_rails_jwt_role
+        enable_namespaces
         enable_secret_store
         enable_auth
         create_owner_policy
@@ -28,8 +29,19 @@ module SecretsManagement
 
       private
 
+      def enable_namespaces
+        # This namespaces may already exist if there's another project in
+        # this namespace.
+        global_secrets_manager_client.enable_namespace(secrets_manager.namespace_path)
+
+        # This namespace should not exist if we're being enabled, but OpenBao
+        # does not differentiate between first creation and subsequent
+        # namespace creation.
+        namespace_secrets_manager_client.enable_namespace(secrets_manager.project_path)
+      end
+
       def enable_secret_store
-        secrets_manager_client.enable_secrets_engine(secrets_manager.ci_secrets_mount_path, SECRETS_ENGINE_TYPE)
+        project_secrets_manager_client.enable_secrets_engine(secrets_manager.ci_secrets_mount_path, SECRETS_ENGINE_TYPE)
       rescue SecretsManagerClient::ApiError => e
         raise e unless e.message.include?('path is already in use')
 
@@ -52,7 +64,7 @@ module SecretsManagement
       end
 
       def enable_auth_engine(auth_mount, auth_type)
-        secrets_manager_client.enable_auth_engine(
+        project_secrets_manager_client.enable_auth_engine(
           auth_mount,
           auth_type,
           allow_existing: true
@@ -67,11 +79,11 @@ module SecretsManagement
 
         issuer_base_url = ProjectSecretsManager.jwt_issuer
         issuer_key = Gitlab::CurrentSettings.ci_jwt_signing_key
-        secrets_manager_client.configure_jwt(auth_mount, issuer_base_url, issuer_key)
+        project_secrets_manager_client.configure_jwt(auth_mount, issuer_base_url, issuer_key)
       end
 
       def configure_user_auth_cel
-        secrets_manager_client.update_jwt_cel_role(
+        project_secrets_manager_client.update_jwt_cel_role(
           secrets_manager.user_auth_mount,
           secrets_manager.user_auth_role,
           cel_program: secrets_manager.user_auth_cel_program(secrets_manager.project.id),
@@ -80,7 +92,7 @@ module SecretsManagement
       end
 
       def configure_auth
-        secrets_manager_client.update_jwt_role(
+        project_secrets_manager_client.update_jwt_role(
           secrets_manager.ci_auth_mount,
           secrets_manager.ci_auth_role,
           role_type: 'jwt',
@@ -97,14 +109,13 @@ module SecretsManagement
 
       def create_owner_policy
         policy_name = secrets_manager.generate_policy_name(
-          project_id: secrets_manager.project.id,
           principal_type: OWNER_PRINCIPAL_TYPE,
           principal_id: OWNER_PRINCIPAL_ID
         )
 
         policy = SecretsManagement::AclPolicy.new(policy_name)
         update_policy_paths(policy, OWNER_PERMISSIONS)
-        secrets_manager_client.set_policy(policy)
+        project_secrets_manager_client.set_policy(policy)
       rescue SecretsManagement::SecretsManagerClient::ApiError => e
         Gitlab::AppLogger.error("Failed to create owner policy for project #{secrets_manager.project.id}: #{e.message}")
         raise e
@@ -130,7 +141,7 @@ module SecretsManagement
         return if Rails.env.test?
 
         begin
-          secrets_manager_client.read_jwt_role('gitlab_rails_jwt', 'app')
+          global_secrets_manager_client.read_jwt_role('gitlab_rails_jwt', 'app')
         rescue SecretsManagement::SecretsManagerClient::ConnectionError
           # This is a temporary code to update the JWT bound_audiences in Staging and Production.
           jwt = SecretsManagement::SecretsManagerJwt.new(
