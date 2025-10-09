@@ -49,6 +49,10 @@ module VirtualRegistries
         attr_readonly :object_storage_key
 
         scope :requiring_cleanup, ->(n_days_to_keep) { where(downloaded_at: ...(Time.current - n_days_to_keep.days)) }
+        scope :order_created_desc, -> { reorder(created_at: :desc) }
+        scope :search_by_relative_path, ->(query) do
+          fuzzy_search(query, [:relative_path], use_minimum_char_limit: false)
+        end
 
         # create or update a cached response identified by the upstream, group_id and relative_path
         # Given that we have chances that this function is not executed in isolation, we can't use
@@ -68,6 +72,14 @@ module VirtualRegistries
 
           # otherwise, bubble up the error
           raise
+        end
+
+        def mark_as_pending_destruction
+          update_columns(
+            status: :pending_destruction,
+            relative_path: "#{relative_path}/deleted/#{SecureRandom.uuid}",
+            updated_at: Time.current
+          )
         end
 
         def filename

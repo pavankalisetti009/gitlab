@@ -90,6 +90,7 @@ module EE
         mount ::API::Security::VulnerabilityScanning::SbomScans
         mount ::API::VirtualRegistries::Container::Registries
         mount ::API::VirtualRegistries::Container::Upstreams
+        mount ::API::VirtualRegistries::Container::Cache::Entries
         mount ::API::VirtualRegistries::Packages::Maven::Registries
         mount ::API::VirtualRegistries::Packages::Maven::Upstreams
         mount ::API::VirtualRegistries::Packages::Maven::RegistryUpstreams
