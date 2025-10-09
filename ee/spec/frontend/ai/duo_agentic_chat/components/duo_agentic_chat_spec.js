@@ -1874,7 +1874,11 @@ describe('Duo Agentic Chat', () => {
       });
 
       it('hides header', () => {
-        expect(findDuoChat().props('showHeader')).toBe(false);
+        expect(findDuoChat().props('showHeader')).toBe(true);
+      });
+
+      it('shows studio header', () => {
+        expect(findDuoChat().props('showStudioHeader')).toBe(true);
       });
 
       it('disables resizing', () => {

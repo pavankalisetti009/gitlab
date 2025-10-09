@@ -158,8 +158,8 @@ export default {
         :metadata="metadata"
         :user-model-selection-enabled="userModelSelectionEnabled"
         :agentic-available="activeTab.props && activeTab.props.isAgenticAvailable"
-        :embedded="true"
         :mode="tabMode"
+        :is-embedded="true"
         @switch-to-active-tab="onSwitchToActiveTab"
       />
     </div>
