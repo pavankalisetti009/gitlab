@@ -24,7 +24,7 @@ module Geo
 
     override :calculate_checksum
     def calculate_checksum
-      raise 'File is not checksummable' unless checksummable?
+      raise not_checksummable_error unless checksummable?
 
       state = model_record.verification_state_object
 

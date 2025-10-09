@@ -147,7 +147,7 @@ module Geo
     #
     # @return [String] SHA256 hash or file size
     def calculate_checksum
-      raise 'File is not checksummable' unless checksummable?
+      raise not_checksummable_error unless checksummable?
 
       if carrierwave_uploader.file_storage?
         model.sha256_hexdigest(blob_path)
@@ -182,6 +182,21 @@ module Geo
       # Most blobs are supposed to be immutable.
       # Override this in your specific Replicator class if needed.
       true
+    end
+
+    private
+
+    def not_checksummable_error
+      unless model_record.in_verifiables?
+        return Geo::Errors::ReplicableExcludedFromVerificationError.new(
+          model_class: model_record.class.name,
+          model_record_id: model_record_id
+        )
+      end
+
+      Geo::Errors::ReplicableDoesNotExistError.new(
+        file_path: blob_path
+      )
     end
   end
 end
