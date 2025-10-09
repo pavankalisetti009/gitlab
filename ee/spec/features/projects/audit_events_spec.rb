@@ -110,10 +110,10 @@ RSpec.describe 'Projects > Audit events', :js, feature_category: :audit_events d
       click_button 'Remove deploy key'
       wait_for_all_requests
 
-      # Wait for deploy key removal to complete and audit event to be created
-      wait_until(max_duration: 10, reload: false) do
-        !page.has_button?('Remove deploy key')
-      end
+      # Wait for deploy key removal to complete
+      expect(page).not_to have_button('Remove deploy key', wait: 10)
+
+      # Allow time for audit event creation
       sleep 1
 
       visit project_audit_events_path(project)
