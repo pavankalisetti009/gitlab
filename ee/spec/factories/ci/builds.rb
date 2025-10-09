@@ -122,6 +122,12 @@ FactoryBot.define do
       end
     end
 
+    trait :sast_semgrep do
+      after(:build) do |build|
+        build.job_artifacts << build(:ee_ci_job_artifact, :sast_semgrep, job: build)
+      end
+    end
+
     trait :secret_detection_feature_branch do
       after(:build) do |build|
         build.job_artifacts << build(:ee_ci_job_artifact, :secret_detection_feature_branch, job: build)

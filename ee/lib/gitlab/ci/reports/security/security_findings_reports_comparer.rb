@@ -99,6 +99,18 @@ module Gitlab
             base_findings = base_report.findings
             head_findings = head_report.findings
 
+            # For full scan comparisons where the head pipeline includes partial scans,
+            # filter out base findings from scanners that also run as partial scans
+            # (identified by partial_scan_scanner_ids). This prevents vulnerabilities
+            # detected by those scanners in the base pipeline from incorrectly appearing
+            # as "fixed" in the full scan tab, since they're already handled in their
+            # respective partial scan comparisons.
+            if params[:scan_mode] == 'full' && params[:partial_scan_scanner_ids].present?
+              base_findings = base_findings.reject do |finding|
+                params[:partial_scan_scanner_ids].include?(finding.scanner.external_id)
+              end
+            end
+
             base_findings_uuids_set = base_findings.map(&:uuid).to_set
             head_findings_uuids_set = head_findings.map(&:uuid).to_set
 

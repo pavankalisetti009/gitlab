@@ -35,6 +35,17 @@ module EE
         with_file_types(valid_file_types)
       end
 
+      scope :security_reports_by_build_and_type_pairs, ->(build_type_pairs) do
+        return security_reports.none if build_type_pairs.empty?
+
+        table = arel_table
+        conditions = build_type_pairs.map do |build_id, file_type|
+          table[:job_id].eq(build_id).and(table[:file_type].eq(file_type))
+        end.reduce(:or)
+
+        security_reports.where(conditions)
+      end
+
       scope :with_verification_state, ->(state) { joins(:job_artifact_state).where(verification_arel_table[:verification_state].eq(verification_state_value(state))) }
       scope :checksummed, -> { joins(:job_artifact_state).where.not(verification_arel_table[:verification_checksum].eq(nil)) }
       scope :not_checksummed, -> { joins(:job_artifact_state).where(verification_arel_table[:verification_checksum].eq(nil)) }
