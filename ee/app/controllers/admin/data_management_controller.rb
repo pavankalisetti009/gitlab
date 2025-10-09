@@ -5,11 +5,10 @@ module Admin
     feature_category :geo_replication
     urgency :low
 
-    before_action :license_paid?
-    before_action :flag_enabled?
-    before_action do
-      push_frontend_feature_flag(:geo_primary_verification_view, current_user)
-    end
+    # TODO: Remove in https://gitlab.com/gitlab-org/gitlab/-/issues/575225
+    before_action :ensure_feature_available!
+
+    authorize! :read_admin_data_management, only: [:index, :show]
 
     def index
       @models = model_params[:model_name].blank? ? default_model.all : all_models
@@ -25,12 +24,9 @@ module Admin
 
     private
 
-    def flag_enabled?
+    def ensure_feature_available!
+      render_404 unless License.feature_available?(:data_management)
       render_404 unless Feature.enabled?(:geo_primary_verification_view, current_user)
-    end
-
-    def license_paid?
-      render_404 unless License.current&.paid?
     end
 
     def all_models

@@ -15,6 +15,7 @@ module GitlabSubscriptions
       auditor_user
       custom_file_templates
       custom_project_templates
+      data_management
       db_load_balancing
       default_branch_protection_restriction_in_groups
       elastic_search
@@ -54,6 +55,7 @@ module GitlabSubscriptions
       board_iteration_lists
       code_owners
       code_review_analytics
+      data_management
       full_codequality_report
       group_activity_analytics
       group_bulk_edit

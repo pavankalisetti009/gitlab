@@ -3,6 +3,7 @@
 require 'spec_helper'
 
 RSpec.describe GlobalPolicy, :aggregate_failures, feature_category: :shared do
+  include AdminModeHelper
   include ExternalAuthorizationServiceHelpers
   using RSpec::Parameterized::TableSyntax
 
@@ -77,6 +78,7 @@ RSpec.describe GlobalPolicy, :aggregate_failures, feature_category: :shared do
   it { is_expected.to be_disallowed(:manage_subscription) }
   it { is_expected.to be_disallowed(:read_cloud_connector_status) }
   it { is_expected.to be_disallowed(:read_admin_subscription) }
+  it { is_expected.to be_disallowed(:read_admin_data_management) }
   it { is_expected.to be_disallowed(:manage_ldap_admin_links) }
 
   context 'when admin mode enabled', :enable_admin_mode do
@@ -87,6 +89,7 @@ RSpec.describe GlobalPolicy, :aggregate_failures, feature_category: :shared do
     it { expect(described_class.new(admin, [user])).to be_allowed(:manage_subscription) }
     it { expect(described_class.new(admin, [user])).to be_allowed(:read_cloud_connector_status) }
     it { expect(described_class.new(admin, [user])).to be_allowed(:read_admin_subscription) }
+    it { expect(described_class.new(admin, [user])).to be_allowed(:read_admin_data_management) }
     it { expect(described_class.new(admin, [user])).to be_allowed(:manage_ldap_admin_links) }
   end
 
@@ -98,6 +101,7 @@ RSpec.describe GlobalPolicy, :aggregate_failures, feature_category: :shared do
     it { expect(described_class.new(admin, [user])).to be_disallowed(:manage_subscription) }
     it { expect(described_class.new(admin, [user])).to be_disallowed(:read_cloud_connector_status) }
     it { expect(described_class.new(admin, [user])).to be_disallowed(:read_admin_subscription) }
+    it { expect(described_class.new(admin, [user])).to be_disallowed(:read_admin_data_management) }
     it { expect(described_class.new(admin, [user])).to be_disallowed(:manage_ldap_admin_links) }
   end
 
@@ -913,6 +917,7 @@ RSpec.describe GlobalPolicy, :aggregate_failures, feature_category: :shared do
       :read_admin_cicd         | %i[read_admin_cicd]
       :read_admin_monitoring   | %i[
         read_admin_background_migrations
+        read_admin_data_management
         read_admin_gitaly_servers
         read_admin_health_check
         read_admin_system_information
@@ -1057,6 +1062,31 @@ RSpec.describe GlobalPolicy, :aggregate_failures, feature_category: :shared do
 
         it { is_expected.to check_policy }
       end
+    end
+  end
+
+  describe 'data management' do
+    let(:current_user) { admin }
+
+    where(:admin_mode, :data_management_available, :geo_primary_verification_view, :check_policy) do
+      true  | true  | true  | be_allowed(:read_admin_data_management)
+      true  | true  | false | be_disallowed(:read_admin_data_management)
+      true  | false | true  | be_disallowed(:read_admin_data_management)
+      true  | false | false | be_disallowed(:read_admin_data_management)
+      false | true  | true  | be_disallowed(:read_admin_data_management)
+      false | true  | false | be_disallowed(:read_admin_data_management)
+      false | false | true  | be_disallowed(:read_admin_data_management)
+      false | false | false | be_disallowed(:read_admin_data_management)
+    end
+
+    with_them do
+      before do
+        enable_admin_mode!(current_user) if admin_mode
+        stub_licensed_features(data_management: data_management_available)
+        stub_feature_flags(geo_primary_verification_view: geo_primary_verification_view)
+      end
+
+      it { is_expected.to check_policy }
     end
   end
 end
