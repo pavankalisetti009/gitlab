@@ -55,7 +55,8 @@ module Ai
           ::Users::ServiceAccounts::CreateService.new(
             @current_user, # instance admin
             {
-              name: 'Duo Agent Platform Service',
+              name: 'Duo Developer',
+              username: 'duo-developer',
               composite_identity_enforced: true,
               organization_id: @organization.id,
               private_profile: true
