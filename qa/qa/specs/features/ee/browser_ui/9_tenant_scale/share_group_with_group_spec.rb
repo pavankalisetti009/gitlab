@@ -37,6 +37,7 @@ module QA
           project.find_user(maintainer_user.username)
         end
 
+        Page::Main::Menu.perform(&:go_to_projects)
         Page::Dashboard::Projects.perform do |projects|
           projects.click_member_tab
           expect(projects).to have_filtered_project_with_access_role(project.name, "Guest")
