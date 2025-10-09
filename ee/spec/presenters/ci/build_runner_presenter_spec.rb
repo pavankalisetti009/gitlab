@@ -512,7 +512,7 @@ RSpec.describe Ci::BuildRunnerPresenter, feature_category: :secrets_management d
 
         it 'sets the correct values for inline_auth keys' do
           expect(gitlab_secrets_manager_server.fetch('inline_auth')['jwt']).to eq(jwt_token)
-          expect(gitlab_secrets_manager_server.fetch('inline_auth')['role']).to eq("project_#{ci_build.project.id}")
+          expect(gitlab_secrets_manager_server.fetch('inline_auth')['role']).to eq("all_pipelines")
           expect(gitlab_secrets_manager_server.fetch('inline_auth')['auth_mount']).to eq(project_secrets_manager.ci_auth_mount)
         end
 

@@ -144,6 +144,7 @@ RSpec.describe 'Update project secret', :gitlab_secrets_manager, :freeze_time, f
         # Can't check the value directly in GraphQL response, but we can verify it was updated
         secret_path = secrets_manager.ci_data_path(project_secret_attributes[:name])
         expect_kv_secret_to_have_value(
+          project.secrets_manager.full_project_namespace_path,
           project.secrets_manager.ci_secrets_mount_path,
           secret_path,
           'test value'
@@ -175,6 +176,7 @@ RSpec.describe 'Update project secret', :gitlab_secrets_manager, :freeze_time, f
         # Can't check the value directly in GraphQL response, but we can verify it was updated
         secret_path = secrets_manager.ci_data_path(project_secret_attributes[:name])
         expect_kv_secret_to_have_value(
+          project.secrets_manager.full_project_namespace_path,
           project.secrets_manager.ci_secrets_mount_path,
           secret_path,
           'new-secret-value'

@@ -17,14 +17,21 @@ RSpec.describe SecretsManagement::ProjectSecretsManagers::ProvisionService, :git
 
       expect(secrets_manager.reload).to be_active
 
-      expect_kv_secret_engine_to_be_mounted(secrets_manager.ci_secrets_mount_path)
-      expect_jwt_auth_engine_to_be_mounted(secrets_manager.ci_auth_mount)
+      expect_kv_secret_engine_to_be_mounted(
+        secrets_manager.full_project_namespace_path,
+        secrets_manager.ci_secrets_mount_path
+      )
+      expect_jwt_auth_engine_to_be_mounted(
+        secrets_manager.full_project_namespace_path,
+        secrets_manager.ci_auth_mount
+      )
     end
 
     it 'configures JWT auth role with correct settings', :aggregate_failures do
       result
 
-      jwt_role = secrets_manager_client.read_jwt_role(secrets_manager.ci_auth_mount, secrets_manager.ci_auth_role)
+      client = secrets_manager_client.with_namespace(secrets_manager.full_project_namespace_path)
+      jwt_role = client.read_jwt_role(secrets_manager.ci_auth_mount, secrets_manager.ci_auth_role)
 
       expect(jwt_role).to be_present
       expect(jwt_role["token_policies"]).to include(*secrets_manager.ci_auth_literal_policies)
@@ -42,7 +49,8 @@ RSpec.describe SecretsManagement::ProjectSecretsManagers::ProvisionService, :git
     it 'configures JWT CEL user auth role with correct settings', :aggregate_failures do
       result
 
-      jwt_role = secrets_manager_client.read_jwt_cel_role(
+      client = secrets_manager_client.with_namespace(secrets_manager.full_project_namespace_path)
+      jwt_role = client.read_jwt_cel_role(
         secrets_manager.user_auth_mount,
         secrets_manager.user_auth_role)
 
@@ -63,8 +71,66 @@ RSpec.describe SecretsManagement::ProjectSecretsManagers::ProvisionService, :git
         expect(secrets_manager.reload).to be_active
 
         # Verify the engines are still mounted
-        expect_kv_secret_engine_to_be_mounted(secrets_manager.ci_secrets_mount_path)
-        expect_jwt_auth_engine_to_be_mounted(secrets_manager.ci_auth_mount)
+        expect_kv_secret_engine_to_be_mounted(
+          secrets_manager.full_project_namespace_path,
+          secrets_manager.ci_secrets_mount_path
+        )
+        expect_jwt_auth_engine_to_be_mounted(
+          secrets_manager.full_project_namespace_path,
+          secrets_manager.ci_auth_mount
+        )
+      end
+    end
+
+    context 'when the parent namespace has already been enabled' do
+      before do
+        clean_all_kv_secrets_engines
+        clean_all_pipeline_jwt_engines
+        clean_all_namespaces
+
+        secrets_manager_client.enable_namespace(secrets_manager.namespace_path)
+      end
+
+      it 'still activates the secrets manager and creates the JWT' do
+        expect(result).to be_success
+
+        expect(secrets_manager.reload).to be_active
+
+        expect_kv_secret_engine_to_be_mounted(
+          secrets_manager.full_project_namespace_path,
+          secrets_manager.ci_secrets_mount_path
+        )
+        expect_jwt_auth_engine_to_be_mounted(
+          secrets_manager.full_project_namespace_path,
+          secrets_manager.ci_auth_mount
+        )
+      end
+    end
+
+    context 'when the project namespace has already been enabled' do
+      before do
+        clean_all_kv_secrets_engines
+        clean_all_pipeline_jwt_engines
+        clean_all_namespaces
+
+        secrets_manager_client.enable_namespace(secrets_manager.namespace_path)
+        project_client = secrets_manager_client.with_namespace(secrets_manager.namespace_path)
+        project_client.enable_namespace(secrets_manager.project_path)
+      end
+
+      it 'still activates the secrets manager and creates the JWT' do
+        expect(result).to be_success
+
+        expect(secrets_manager.reload).to be_active
+
+        expect_kv_secret_engine_to_be_mounted(
+          secrets_manager.full_project_namespace_path,
+          secrets_manager.ci_secrets_mount_path
+        )
+        expect_jwt_auth_engine_to_be_mounted(
+          secrets_manager.full_project_namespace_path,
+          secrets_manager.ci_auth_mount
+        )
       end
     end
 
@@ -72,8 +138,14 @@ RSpec.describe SecretsManagement::ProjectSecretsManagers::ProvisionService, :git
       before do
         clean_all_kv_secrets_engines
         clean_all_pipeline_jwt_engines
+        clean_all_namespaces
 
-        secrets_manager_client.enable_secrets_engine(
+        secrets_manager_client.enable_namespace(secrets_manager.namespace_path)
+        project_client = secrets_manager_client.with_namespace(secrets_manager.namespace_path)
+        project_client.enable_namespace(secrets_manager.project_path)
+
+        client = secrets_manager_client.with_namespace(secrets_manager.full_project_namespace_path)
+        client.enable_secrets_engine(
           secrets_manager.ci_secrets_mount_path,
           described_class::SECRETS_ENGINE_TYPE
         )
@@ -84,8 +156,14 @@ RSpec.describe SecretsManagement::ProjectSecretsManagers::ProvisionService, :git
 
         expect(secrets_manager.reload).to be_active
 
-        expect_kv_secret_engine_to_be_mounted(secrets_manager.ci_secrets_mount_path)
-        expect_jwt_auth_engine_to_be_mounted(secrets_manager.ci_auth_mount)
+        expect_kv_secret_engine_to_be_mounted(
+          secrets_manager.full_project_namespace_path,
+          secrets_manager.ci_secrets_mount_path
+        )
+        expect_jwt_auth_engine_to_be_mounted(
+          secrets_manager.full_project_namespace_path,
+          secrets_manager.ci_auth_mount
+        )
       end
     end
 
@@ -93,8 +171,14 @@ RSpec.describe SecretsManagement::ProjectSecretsManagers::ProvisionService, :git
       before do
         clean_all_kv_secrets_engines
         clean_all_pipeline_jwt_engines
+        clean_all_namespaces
 
-        secrets_manager_client.enable_auth_engine(secrets_manager.ci_auth_mount, secrets_manager.ci_auth_type)
+        secrets_manager_client.enable_namespace(secrets_manager.namespace_path)
+        project_client = secrets_manager_client.with_namespace(secrets_manager.namespace_path)
+        project_client.enable_namespace(secrets_manager.project_path)
+
+        client = secrets_manager_client.with_namespace(secrets_manager.full_project_namespace_path)
+        client.enable_auth_engine(secrets_manager.ci_auth_mount, secrets_manager.ci_auth_type)
       end
 
       it 'still activates the secrets manager and creates the KV mount' do
@@ -102,10 +186,17 @@ RSpec.describe SecretsManagement::ProjectSecretsManagers::ProvisionService, :git
 
         expect(secrets_manager.reload).to be_active
 
-        expect_kv_secret_engine_to_be_mounted(secrets_manager.ci_secrets_mount_path)
-        expect_jwt_auth_engine_to_be_mounted(secrets_manager.ci_auth_mount)
+        expect_kv_secret_engine_to_be_mounted(
+          secrets_manager.full_project_namespace_path,
+          secrets_manager.ci_secrets_mount_path
+        )
+        expect_jwt_auth_engine_to_be_mounted(
+          secrets_manager.full_project_namespace_path,
+          secrets_manager.ci_auth_mount
+        )
 
-        expect { secrets_manager_client.read_jwt_role(secrets_manager.ci_auth_mount, secrets_manager.ci_auth_role) }
+        client = secrets_manager_client.with_namespace(secrets_manager.full_project_namespace_path)
+        expect { client.read_jwt_role(secrets_manager.ci_auth_mount, secrets_manager.ci_auth_role) }
           .not_to raise_error
       end
     end
@@ -114,13 +205,19 @@ RSpec.describe SecretsManagement::ProjectSecretsManagers::ProvisionService, :git
       before do
         clean_all_kv_secrets_engines
         clean_all_pipeline_jwt_engines
+        clean_all_namespaces
 
-        secrets_manager_client.enable_secrets_engine(
+        secrets_manager_client.enable_namespace(secrets_manager.namespace_path)
+        project_client = secrets_manager_client.with_namespace(secrets_manager.namespace_path)
+        project_client.enable_namespace(secrets_manager.project_path)
+
+        client = secrets_manager_client.with_namespace(secrets_manager.full_project_namespace_path)
+        client.enable_secrets_engine(
           secrets_manager.ci_secrets_mount_path,
           described_class::SECRETS_ENGINE_TYPE
         )
 
-        secrets_manager_client.enable_auth_engine(
+        client.enable_auth_engine(
           secrets_manager.ci_auth_mount,
           secrets_manager.ci_auth_type
         )
@@ -131,7 +228,8 @@ RSpec.describe SecretsManagement::ProjectSecretsManagers::ProvisionService, :git
         expect(secrets_manager.reload).to be_active
 
         # Check that JWT role was properly configured
-        jwt_role = secrets_manager_client.read_jwt_role(secrets_manager.ci_auth_mount, secrets_manager.ci_auth_role)
+        client = secrets_manager_client.with_namespace(secrets_manager.full_project_namespace_path)
+        jwt_role = client.read_jwt_role(secrets_manager.ci_auth_mount, secrets_manager.ci_auth_role)
         expect(jwt_role).to be_present
 
         # Verify the specifics of JWT role configuration
@@ -170,7 +268,8 @@ RSpec.describe SecretsManagement::ProjectSecretsManagers::ProvisionService, :git
         }
       )
 
-      resp = secrets_manager_client.cel_login_jwt(
+      client = secrets_manager_client.with_namespace(secrets_manager.full_project_namespace_path)
+      resp = client.cel_login_jwt(
         mount_path: secrets_manager.user_auth_mount,
         role: secrets_manager.user_auth_role,
         jwt: jwt
@@ -179,12 +278,12 @@ RSpec.describe SecretsManagement::ProjectSecretsManagers::ProvisionService, :git
       expect(resp.dig('auth', 'client_token')).to be_present
       policies = resp.dig('auth', 'policies')
       expect(policies).to include(
-        "project_#{project.id}/users/direct/user_#{user.id}",
-        "project_#{project.id}/users/direct/member_role_7",
-        "project_#{project.id}/users/direct/group_101",
-        "project_#{project.id}/users/direct/group_102",
-        "project_#{project.id}/users/direct/group_103",
-        "project_#{project.id}/users/roles/deploy"
+        "users/direct/user_#{user.id}",
+        "users/direct/member_role_7",
+        "users/direct/group_101",
+        "users/direct/group_102",
+        "users/direct/group_103",
+        "users/roles/deploy"
       )
     end
 
@@ -201,7 +300,8 @@ RSpec.describe SecretsManagement::ProjectSecretsManagers::ProvisionService, :git
         )
 
         expect do
-          secrets_manager_client.cel_login_jwt(
+          client = secrets_manager_client.with_namespace(secrets_manager.full_project_namespace_path)
+          client.cel_login_jwt(
             mount_path: secrets_manager.user_auth_mount,
             role: secrets_manager.user_auth_role,
             jwt: jwt
@@ -209,7 +309,7 @@ RSpec.describe SecretsManagement::ProjectSecretsManagers::ProvisionService, :git
         end.to raise_error(
           SecretsManagement::SecretsManagerClient::ApiError,
           "error executing cel program: " \
-            "Cel role 'project_#{project.id}' blocked authorization with message: " \
+            "Cel role '#{secrets_manager.user_auth_role}' blocked authorization with message: " \
             "token project_id does not match role base"
         )
       end
@@ -226,14 +326,15 @@ RSpec.describe SecretsManagement::ProjectSecretsManagers::ProvisionService, :git
           }
         )
         expect do
-          secrets_manager_client.cel_login_jwt(
+          client = secrets_manager_client.with_namespace(secrets_manager.full_project_namespace_path)
+          client.cel_login_jwt(
             mount_path: secrets_manager.user_auth_mount,
             role: secrets_manager.user_auth_role,
             jwt: jwt
           )
         end.to raise_error(
           SecretsManagement::SecretsManagerClient::ApiError,
-          "error executing cel program: Cel role 'project_#{project.id}' " \
+          "error executing cel program: Cel role '#{secrets_manager.user_auth_role}' " \
             "blocked authorization with message: missing user_id"
         )
       end
@@ -249,14 +350,16 @@ RSpec.describe SecretsManagement::ProjectSecretsManagers::ProvisionService, :git
         groups: many
       )
 
-      resp = secrets_manager_client.cel_login_jwt(
+      client = secrets_manager_client.with_namespace(secrets_manager.full_project_namespace_path)
+      resp = client.cel_login_jwt(
         mount_path: secrets_manager.user_auth_mount,
         role: secrets_manager.user_auth_role,
         jwt: jwt
       )
 
       policies = resp.dig('auth', 'policies') || []
-      group_policies = policies.grep(%r{\Aproject_#{project.id}/users/direct/group_})
+
+      group_policies = policies.grep(%r{\Ausers/direct/group_})
       expect(group_policies.size).to eq(30)
     end
   end
@@ -275,7 +378,8 @@ RSpec.describe SecretsManagement::ProjectSecretsManagers::ProvisionService, :git
       )
 
       expect do
-        secrets_manager_client.cel_login_jwt(
+        client = secrets_manager_client.with_namespace(secrets_manager.full_project_namespace_path)
+        client.cel_login_jwt(
           mount_path: secrets_manager.user_auth_mount,
           role: secrets_manager.user_auth_role,
           jwt: jwt

@@ -45,10 +45,10 @@ RSpec.describe SecretsManagement::Permissions::UpdateService, :gitlab_secrets_ma
 
       describe 'expiration in the policy payload' do
         def stub_roles_and_test_requests
-          stub_role   = stub_request(:post, %r{.*/v1/sys/policies/acl/.*/users/roles/.*})
+          stub_role   = stub_request(:post, %r{.*/v1/.*/sys/policies/acl/users/roles/.*})
             .to_return(status: 204, body: '', headers: { 'Content-Type' => 'application/json' })
 
-          stub_direct = stub_request(:post, %r{.*/v1/sys/policies/acl/.*/users/direct/.*})
+          stub_direct = stub_request(:post, %r{.*/v1/.*/sys/policies/acl/users/direct/.*})
             .to_return(status: 204, body: '', headers: { 'Content-Type' => 'application/json' })
 
           expect(result).to be_success
@@ -62,7 +62,7 @@ RSpec.describe SecretsManagement::Permissions::UpdateService, :gitlab_secrets_ma
           it 'sends expiration in OpenBao policy payload for all updated paths' do
             stub_roles_and_test_requests
 
-            assert_requested(:post, %r{.*/v1/sys/policies/acl/.*/users/direct/.*}) do |req|
+            assert_requested(:post, %r{.*/v1/.*/sys/policies/acl/users/direct/.*}) do |req|
               body   = Gitlab::Json.parse(req.body)
               policy = Gitlab::Json.parse(body.fetch('policy'))
               paths  = policy.fetch('path')
@@ -79,7 +79,7 @@ RSpec.describe SecretsManagement::Permissions::UpdateService, :gitlab_secrets_ma
             it 'does not include expiration in OpenBao policy payload' do
               stub_roles_and_test_requests
 
-              assert_requested(:post, %r{.*/v1/sys/policies/acl/.*/users/direct/.*}) do |req|
+              assert_requested(:post, %r{.*/v1/.*/sys/policies/acl/users/direct/.*}) do |req|
                 expect(req.body).not_to include('\"expiration\"')
               end
             end
@@ -142,7 +142,7 @@ RSpec.describe SecretsManagement::Permissions::UpdateService, :gitlab_secrets_ma
       before do
         provision_project_secrets_manager(secrets_manager, user)
 
-        stub_request(:post, %r{.*/v1/sys/policies/acl/.*})
+        stub_request(:post, %r{.*/v1/.*/sys/policies/acl/.*})
         .to_return(
           status: 400,
           body: { errors: [err] }.to_json,

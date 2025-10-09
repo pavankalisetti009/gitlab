@@ -65,18 +65,23 @@ RSpec.describe SecretsManagement::DeprovisionProjectSecretsManagerWorker, :gitla
         expect { perform_idempotent_work }.not_to raise_error
 
         # Verify JWT roles are deleted
-        expect_jwt_role_not_to_exist(secrets_manager.ci_auth_mount, secrets_manager.ci_auth_role)
-        expect_jwt_cel_role_not_to_exist(secrets_manager.user_auth_mount, secrets_manager.user_auth_role)
+        expect_jwt_role_not_to_exist(secrets_manager.full_project_namespace_path, secrets_manager.ci_auth_mount,
+          secrets_manager.ci_auth_role)
+        expect_jwt_cel_role_not_to_exist(secrets_manager.full_project_namespace_path, secrets_manager.user_auth_mount,
+          secrets_manager.user_auth_role)
 
-        # Auth engines should still be mounted (shared per namespace)
-        expect_jwt_auth_engine_to_be_mounted(secrets_manager.ci_auth_mount)
-        expect_jwt_auth_engine_to_be_mounted(secrets_manager.user_auth_mount)
+        # Auth engines are deleted
+        expect_jwt_auth_engine_not_to_be_mounted(secrets_manager.full_project_namespace_path,
+          secrets_manager.ci_auth_mount)
+        expect_jwt_auth_engine_not_to_be_mounted(secrets_manager.full_project_namespace_path,
+          secrets_manager.user_auth_mount)
 
         # Secrets engine should be deleted
-        expect_kv_secret_engine_not_to_be_mounted(secrets_manager.ci_secrets_mount_path)
+        expect_kv_secret_engine_not_to_be_mounted(secrets_manager.full_project_namespace_path,
+          secrets_manager.ci_secrets_mount_path)
 
         # All policies should be deleted
-        expect_project_to_have_no_policies(project)
+        expect_project_to_have_no_policies(secrets_manager.full_project_namespace_path)
 
         # Verify the secrets manager record is deleted
         expect(SecretsManagement::ProjectSecretsManager.find_by(id: secrets_manager.id)).to be_nil
@@ -89,11 +94,12 @@ RSpec.describe SecretsManagement::DeprovisionProjectSecretsManagerWorker, :gitla
       context 'when JWT roles are already deleted' do
         before do
           # Simulate JWT roles already being deleted
-          secrets_manager_client.delete_jwt_role(
+          client = secrets_manager_client.with_namespace(secrets_manager.full_project_namespace_path)
+          client.delete_jwt_role(
             secrets_manager.ci_auth_mount,
             secrets_manager.ci_auth_role
           )
-          secrets_manager_client.delete_jwt_cel_role(
+          client.delete_jwt_cel_role(
             secrets_manager.user_auth_mount,
             secrets_manager.user_auth_role
           )
@@ -104,15 +110,17 @@ RSpec.describe SecretsManagement::DeprovisionProjectSecretsManagerWorker, :gitla
 
           # Verify complete deletion
           expect(SecretsManagement::ProjectSecretsManager.find_by_id(secrets_manager.id)).to be_nil
-          expect_kv_secret_engine_not_to_be_mounted(secrets_manager.ci_secrets_mount_path)
-          expect_project_to_have_no_policies(project)
+          expect_kv_secret_engine_not_to_be_mounted(secrets_manager.full_project_namespace_path,
+            secrets_manager.ci_secrets_mount_path)
+          expect_project_to_have_no_policies(secrets_manager.full_project_namespace_path)
         end
       end
 
       context 'when secrets engine is already deleted' do
         before do
           # Simulate secrets engine already being deleted
-          secrets_manager_client.disable_secrets_engine(secrets_manager.ci_secrets_mount_path)
+          client = secrets_manager_client.with_namespace(secrets_manager.full_project_namespace_path)
+          client.disable_secrets_engine(secrets_manager.ci_secrets_mount_path)
         end
 
         it 'completes successfully on retry' do
@@ -120,8 +128,10 @@ RSpec.describe SecretsManagement::DeprovisionProjectSecretsManagerWorker, :gitla
 
           # Verify complete deletion including DB record
           expect(SecretsManagement::ProjectSecretsManager.find_by_id(secrets_manager.id)).to be_nil
-          expect_jwt_role_not_to_exist(secrets_manager.ci_auth_mount, secrets_manager.ci_auth_role)
-          expect_jwt_cel_role_not_to_exist(secrets_manager.user_auth_mount, secrets_manager.user_auth_role)
+          expect_jwt_role_not_to_exist(secrets_manager.full_project_namespace_path, secrets_manager.ci_auth_mount,
+            secrets_manager.ci_auth_role)
+          expect_jwt_cel_role_not_to_exist(secrets_manager.full_project_namespace_path,
+            secrets_manager.user_auth_mount, secrets_manager.user_auth_role)
         end
       end
 
@@ -140,9 +150,9 @@ RSpec.describe SecretsManagement::DeprovisionProjectSecretsManagerWorker, :gitla
           expect { worker.perform(user.id, secrets_manager.id) }.not_to raise_error
 
           # OpenBao resources should remain since the service wasn't executed
-          expect_jwt_role_to_exist(ci_auth_mount, ci_auth_role)
-          expect_jwt_cel_role_to_exist(user_auth_mount, user_auth_role)
-          expect_kv_secret_engine_to_be_mounted(ci_secrets_mount_path)
+          expect_jwt_role_to_exist(secrets_manager.full_project_namespace_path, ci_auth_mount, ci_auth_role)
+          expect_jwt_cel_role_to_exist(secrets_manager.full_project_namespace_path, user_auth_mount, user_auth_role)
+          expect_kv_secret_engine_to_be_mounted(secrets_manager.full_project_namespace_path, ci_secrets_mount_path)
         end
       end
 

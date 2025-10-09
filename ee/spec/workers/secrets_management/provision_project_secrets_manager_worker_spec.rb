@@ -34,7 +34,8 @@ RSpec.describe SecretsManagement::ProvisionProjectSecretsManagerWorker, :gitlab_
 
         expect(secrets_manager.reload).to be_active
 
-        expect_kv_secret_engine_to_be_mounted(secrets_manager.ci_secrets_mount_path)
+        expect_kv_secret_engine_to_be_mounted(secrets_manager.full_project_namespace_path,
+          secrets_manager.ci_secrets_mount_path)
       end
     end
   end

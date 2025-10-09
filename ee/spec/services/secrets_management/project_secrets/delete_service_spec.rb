@@ -46,13 +46,17 @@ RSpec.describe SecretsManagement::ProjectSecrets::DeleteService, :gitlab_secrets
           expect(result.payload[:project_secret].environment).to eq(environment)
 
           expect_kv_secret_not_to_exist(
+            project.secrets_manager.full_project_namespace_path,
             project.secrets_manager.ci_secrets_mount_path,
             secrets_manager.ci_data_path(name)
           )
 
           # Since this was the only secret, the policy should be completely deleted
           policy_name = project.secrets_manager.ci_policy_name(environment, branch)
-          expect_policy_not_to_exist(policy_name)
+          expect_policy_not_to_exist(
+            project.secrets_manager.full_project_namespace_path,
+            policy_name
+          )
 
           expect_project_secret_not_to_exist(project, name, user)
         end
@@ -81,12 +85,15 @@ RSpec.describe SecretsManagement::ProjectSecrets::DeleteService, :gitlab_secrets
           expect(result).to be_success
 
           expect_kv_secret_not_to_exist(
+            project.secrets_manager.full_project_namespace_path,
             project.secrets_manager.ci_secrets_mount_path,
             secrets_manager.ci_data_path(name)
           )
 
           policy_name = project.secrets_manager.ci_policy_name(environment, branch)
-          updated_policy = secrets_manager_client.get_policy(policy_name)
+
+          client = secrets_manager_client.with_namespace(secrets_manager.full_project_namespace_path)
+          updated_policy = client.get_policy(policy_name)
           expect(updated_policy).to be_present
 
           # First secret paths should be removed from the policy
@@ -119,7 +126,8 @@ RSpec.describe SecretsManagement::ProjectSecrets::DeleteService, :gitlab_secrets
 
             it 'deletes the secret and removes glob policies from the JWT role' do
               # Get JWT role before deletion
-              role_before = secrets_manager_client.read_jwt_role(
+              client = secrets_manager_client.with_namespace(secrets_manager.full_project_namespace_path)
+              role_before = client.read_jwt_role(
                 project.secrets_manager.ci_auth_mount,
                 project.secrets_manager.ci_auth_role
               )
@@ -133,12 +141,14 @@ RSpec.describe SecretsManagement::ProjectSecrets::DeleteService, :gitlab_secrets
 
               # Verify secret is deleted
               expect_kv_secret_not_to_exist(
+                project.secrets_manager.full_project_namespace_path,
                 project.secrets_manager.ci_secrets_mount_path,
                 secrets_manager.ci_data_path(name)
               )
 
               # Verify glob policies are removed from JWT role
-              updated_role = secrets_manager_client.read_jwt_role(
+              client = secrets_manager_client.with_namespace(secrets_manager.full_project_namespace_path)
+              updated_role = client.read_jwt_role(
                 project.secrets_manager.ci_auth_mount,
                 project.secrets_manager.ci_auth_role
               )
@@ -147,7 +157,7 @@ RSpec.describe SecretsManagement::ProjectSecrets::DeleteService, :gitlab_secrets
 
               # Verify policy is also deleted
               policy_name = project.secrets_manager.ci_policy_name(wildcard_environment, wildcard_branch)
-              expect_policy_not_to_exist(policy_name)
+              expect_policy_not_to_exist(project.secrets_manager.full_project_namespace_path, policy_name)
             end
           end
 
@@ -162,12 +172,14 @@ RSpec.describe SecretsManagement::ProjectSecrets::DeleteService, :gitlab_secrets
 
               # Verify secret is deleted
               expect_kv_secret_not_to_exist(
+                project.secrets_manager.full_project_namespace_path,
                 project.secrets_manager.ci_secrets_mount_path,
                 secrets_manager.ci_data_path(name)
               )
 
               # Get the updated JWT role
-              updated_role = secrets_manager_client.read_jwt_role(
+              client = secrets_manager_client.with_namespace(secrets_manager.full_project_namespace_path)
+              updated_role = client.read_jwt_role(
                 project.secrets_manager.ci_auth_mount,
                 project.secrets_manager.ci_auth_role
               )
@@ -186,7 +198,7 @@ RSpec.describe SecretsManagement::ProjectSecrets::DeleteService, :gitlab_secrets
               expect(second_delete_result).to be_success
 
               # After deleting both secrets, the glob policies should be removed
-              final_role = secrets_manager_client.read_jwt_role(
+              final_role = client.read_jwt_role(
                 project.secrets_manager.ci_auth_mount,
                 project.secrets_manager.ci_auth_role
               )
@@ -211,7 +223,8 @@ RSpec.describe SecretsManagement::ProjectSecrets::DeleteService, :gitlab_secrets
             end
 
             it 'correctly handles overlapping glob policies' do
-              role_before = secrets_manager_client.read_jwt_role(
+              client = secrets_manager_client.with_namespace(secrets_manager.full_project_namespace_path)
+              role_before = client.read_jwt_role(
                 project.secrets_manager.ci_auth_mount,
                 project.secrets_manager.ci_auth_role
               )
@@ -232,7 +245,7 @@ RSpec.describe SecretsManagement::ProjectSecrets::DeleteService, :gitlab_secrets
               expect(result).to be_success
 
               # Get updated JWT role
-              updated_role = secrets_manager_client.read_jwt_role(
+              updated_role = client.read_jwt_role(
                 project.secrets_manager.ci_auth_mount,
                 project.secrets_manager.ci_auth_role
               )

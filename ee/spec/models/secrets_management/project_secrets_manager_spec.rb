@@ -63,7 +63,7 @@ RSpec.describe SecretsManagement::ProjectSecretsManager, feature_category: :secr
 
     describe '#ci_policy_name_global' do
       it 'returns the correct global policy name' do
-        expect(secrets_manager.ci_policy_name_global).to eq("project_#{project.id}/pipelines/global")
+        expect(secrets_manager.ci_policy_name_global).to eq("pipelines/global")
       end
     end
 
@@ -72,14 +72,14 @@ RSpec.describe SecretsManagement::ProjectSecretsManager, feature_category: :secr
         environment = 'production'
         hex_env = environment.unpack1('H*')
 
-        expect(secrets_manager.ci_policy_name_env(environment)).to eq("project_#{project.id}/pipelines/env/#{hex_env}")
+        expect(secrets_manager.ci_policy_name_env(environment)).to eq("pipelines/env/#{hex_env}")
       end
 
       it 'handles special characters in environment names' do
         environment = 'staging/us-east-1'
         hex_env = environment.unpack1('H*')
 
-        expect(secrets_manager.ci_policy_name_env(environment)).to eq("project_#{project.id}/pipelines/env/#{hex_env}")
+        expect(secrets_manager.ci_policy_name_env(environment)).to eq("pipelines/env/#{hex_env}")
       end
     end
 
@@ -87,7 +87,7 @@ RSpec.describe SecretsManagement::ProjectSecretsManager, feature_category: :secr
       it 'returns the correct branch policy name with hex-encoded branch' do
         branch = 'main'
         hex_branch = branch.unpack1('H*')
-        policy_name = "project_#{project.id}/pipelines/branch/#{hex_branch}"
+        policy_name = "pipelines/branch/#{hex_branch}"
 
         expect(secrets_manager.ci_policy_name_branch(branch)).to eq(policy_name)
       end
@@ -95,7 +95,7 @@ RSpec.describe SecretsManagement::ProjectSecretsManager, feature_category: :secr
       it 'handles special characters in branch names' do
         branch = 'feature/add-new-widget'
         hex_branch = branch.unpack1('H*')
-        policy_name = "project_#{project.id}/pipelines/branch/#{hex_branch}"
+        policy_name = "pipelines/branch/#{hex_branch}"
 
         expect(secrets_manager.ci_policy_name_branch(branch)).to eq(policy_name)
       end
@@ -108,7 +108,7 @@ RSpec.describe SecretsManagement::ProjectSecretsManager, feature_category: :secr
         hex_env = environment.unpack1('H*')
         hex_branch = branch.unpack1('H*')
 
-        expected = "project_#{project.id}/pipelines/combined/env/#{hex_env}/branch/#{hex_branch}"
+        expected = "pipelines/combined/env/#{hex_env}/branch/#{hex_branch}"
         expect(secrets_manager.ci_policy_name_combined(environment, branch)).to eq(expected)
       end
 
@@ -118,7 +118,7 @@ RSpec.describe SecretsManagement::ProjectSecretsManager, feature_category: :secr
         hex_env = environment.unpack1('H*')
         hex_branch = branch.unpack1('H*')
 
-        expected = "project_#{project.id}/pipelines/combined/env/#{hex_env}/branch/#{hex_branch}"
+        expected = "pipelines/combined/env/#{hex_env}/branch/#{hex_branch}"
         expect(secrets_manager.ci_policy_name_combined(environment, branch)).to eq(expected)
       end
     end
@@ -128,7 +128,7 @@ RSpec.describe SecretsManagement::ProjectSecretsManager, feature_category: :secr
         policies = secrets_manager.ci_auth_literal_policies
 
         expect(policies.size).to eq(4)
-        expect(policies[0]).to eq("project_#{project.id}/pipelines/global") # Global policy
+        expect(policies[0]).to eq("pipelines/global") # Global policy
         expect(policies[1]).to eq(secrets_manager.ci_policy_template_literal_environment)
         expect(policies[2]).to eq(secrets_manager.ci_policy_template_literal_branch)
         expect(policies[3]).to eq(secrets_manager.ci_policy_template_literal_combined)
@@ -266,7 +266,7 @@ RSpec.describe SecretsManagement::ProjectSecretsManager, feature_category: :secr
       let_it_be(:project) { create(:project) }
 
       it 'includes the namespace type and ID in the path' do
-        expect(path).to eq("user_#{project.namespace.id}/project_#{project.id}/secrets/kv")
+        expect(path).to eq("secrets/kv")
       end
     end
 
@@ -274,7 +274,73 @@ RSpec.describe SecretsManagement::ProjectSecretsManager, feature_category: :secr
       let_it_be(:project) { create(:project, :in_group) }
 
       it 'includes the namespace type and ID in the path' do
-        expect(path).to eq("group_#{project.namespace.id}/project_#{project.id}/secrets/kv")
+        expect(path).to eq("secrets/kv")
+      end
+    end
+  end
+
+  describe '#full_project_namespace_path' do
+    let(:secrets_manager) { build(:project_secrets_manager, project: project) }
+
+    subject(:path) { secrets_manager.full_project_namespace_path }
+
+    context 'when the project belongs to a user namespace' do
+      let_it_be(:project) { create(:project) }
+
+      it 'includes namespace information' do
+        expect(path).to eq("user_#{project.namespace.id}/project_#{project.id}")
+      end
+    end
+
+    context 'when the project belongs to a group namespace' do
+      let_it_be(:project) { create(:project, :in_group) }
+
+      it 'includes namespace information' do
+        expect(path).to eq("group_#{project.namespace.id}/project_#{project.id}")
+      end
+    end
+  end
+
+  describe '#namespace_path' do
+    let(:secrets_manager) { build(:project_secrets_manager, project: project) }
+
+    subject(:path) { secrets_manager.namespace_path }
+
+    context 'when the project belongs to a user namespace' do
+      let_it_be(:project) { create(:project) }
+
+      it 'includes namespace information' do
+        expect(path).to eq("user_#{project.namespace.id}")
+      end
+    end
+
+    context 'when the project belongs to a group namespace' do
+      let_it_be(:project) { create(:project, :in_group) }
+
+      it 'includes namespace information' do
+        expect(path).to eq("group_#{project.namespace.id}")
+      end
+    end
+  end
+
+  describe '#project_path' do
+    let(:secrets_manager) { build(:project_secrets_manager, project: project) }
+
+    subject(:path) { secrets_manager.project_path }
+
+    context 'when the project belongs to a user namespace' do
+      let_it_be(:project) { create(:project) }
+
+      it 'includes just project information' do
+        expect(path).to eq("project_#{project.id}")
+      end
+    end
+
+    context 'when the project belongs to a group namespace' do
+      let_it_be(:project) { create(:project, :in_group) }
+
+      it 'includes just project information' do
+        expect(path).to eq("project_#{project.id}")
       end
     end
   end
@@ -310,7 +376,7 @@ RSpec.describe SecretsManagement::ProjectSecretsManager, feature_category: :secr
       let_it_be(:project) { create(:project) }
 
       it 'does not include any namespace information' do
-        expect(path).to eq("user_#{project.namespace.id}/project_#{project.id}/secrets/kv/data/explicit/DB_PASS")
+        expect(path).to eq("secrets/kv/data/explicit/DB_PASS")
       end
     end
 
@@ -318,7 +384,7 @@ RSpec.describe SecretsManagement::ProjectSecretsManager, feature_category: :secr
       let_it_be(:project) { create(:project, :in_group) }
 
       it 'does not include any namespace information' do
-        expect(path).to eq("group_#{project.namespace.id}/project_#{project.id}/secrets/kv/data/explicit/DB_PASS")
+        expect(path).to eq("secrets/kv/data/explicit/DB_PASS")
       end
     end
   end
@@ -332,7 +398,7 @@ RSpec.describe SecretsManagement::ProjectSecretsManager, feature_category: :secr
       let_it_be(:project) { create(:project) }
 
       it "returns the correct metadata path" do
-        expect(path).to eq("user_#{project.namespace.id}/project_#{project.id}/secrets/kv/metadata/explicit/DB_PASS")
+        expect(path).to eq("secrets/kv/metadata/explicit/DB_PASS")
       end
     end
 
@@ -340,7 +406,7 @@ RSpec.describe SecretsManagement::ProjectSecretsManager, feature_category: :secr
       let_it_be(:project) { create(:project, :in_group) }
 
       it "returns the correct metadata path" do
-        expect(path).to eq("group_#{project.namespace.id}/project_#{project.id}/secrets/kv/metadata/explicit/DB_PASS")
+        expect(path).to eq("secrets/kv/metadata/explicit/DB_PASS")
       end
     end
   end
@@ -374,7 +440,7 @@ RSpec.describe SecretsManagement::ProjectSecretsManager, feature_category: :secr
     let_it_be(:project) { create(:project) }
 
     subject(:test_subject) do
-      described_class.new.send(:generate_policy_name, project_id: project.id, principal_type: principal_type,
+      described_class.new.send(:generate_policy_name, principal_type: principal_type,
         principal_id: principal_id)
     end
 
@@ -383,7 +449,7 @@ RSpec.describe SecretsManagement::ProjectSecretsManager, feature_category: :secr
       let(:principal_id) { 123 }
 
       it 'generates the correct policy name' do
-        expect(test_subject).to eq("project_#{project.id}/users/direct/user_123")
+        expect(test_subject).to eq("users/direct/user_123")
       end
     end
 
@@ -392,7 +458,7 @@ RSpec.describe SecretsManagement::ProjectSecretsManager, feature_category: :secr
       let(:principal_id) { 3 }
 
       it 'generates the correct policy name with role ID' do
-        expect(test_subject).to eq("project_#{project.id}/users/roles/3")
+        expect(test_subject).to eq("users/roles/3")
       end
     end
 
@@ -401,7 +467,7 @@ RSpec.describe SecretsManagement::ProjectSecretsManager, feature_category: :secr
       let(:principal_id) { 3 }
 
       it 'generates the correct policy name with member role ID' do
-        expect(test_subject).to eq("project_#{project.id}/users/direct/member_role_3")
+        expect(test_subject).to eq("users/direct/member_role_3")
       end
     end
 
@@ -410,7 +476,7 @@ RSpec.describe SecretsManagement::ProjectSecretsManager, feature_category: :secr
       let(:principal_id) { 3 }
 
       it 'generates the correct policy name with group ID' do
-        expect(test_subject).to eq("project_#{project.id}/users/direct/group_3")
+        expect(test_subject).to eq("users/direct/group_3")
       end
     end
   end
@@ -517,7 +583,7 @@ RSpec.describe SecretsManagement::ProjectSecretsManager, feature_category: :secr
 
       it 'sets base and expected_pid for the given project' do
         vars = var_map(program)
-        expect(vars['base'][:expression]).to eq(%("project_#{project.id}"))
+        expect(vars['base'][:expression]).to eq(%("users"))
         expect(vars['expected_pid'][:expression]).to eq(%("#{project.id}"))
       end
 
@@ -553,10 +619,11 @@ RSpec.describe SecretsManagement::ProjectSecretsManager, feature_category: :secr
 
       it 'emits policies for user, member_role, groups, and role' do
         expr = program[:expression]
-        expect(expr).to include('/users/direct/user_')
-        expect(expr).to include('/users/direct/member_role_')
+        expect(expr).to include('/direct/user_')
+        expect(expr).to include('/direct/member_role_')
         expect(expr).to include('grps.map')
-        expect(expr).to include('/users/roles/')
+        expect(expr).to include('/direct/group_')
+        expect(expr).to include('/roles/')
       end
 
       it 'sets display_name and alias to "who"' do
@@ -571,7 +638,7 @@ RSpec.describe SecretsManagement::ProjectSecretsManager, feature_category: :secr
 
       it 'embeds the project id consistently in base and expected_pid' do
         vars = var_map(program)
-        expect(vars['base'][:expression]).to eq(%("project_#{project.id}"))
+        expect(vars['base'][:expression]).to eq(%("users"))
         expect(vars['expected_pid'][:expression]).to eq(%("#{project.id}"))
       end
     end

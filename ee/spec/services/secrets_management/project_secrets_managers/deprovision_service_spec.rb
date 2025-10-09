@@ -46,7 +46,8 @@ RSpec.describe SecretsManagement::ProjectSecretsManagers::DeprovisionService, :g
       # TODO: This is temporary, we just add this here to simulate left-over jwt non-CEL role in production
       # that needs to be cleaned up when running this service. In the next milestone, let's remove
       # this and related code in the service. Expectation is that user auth mounts will only have CEL role.
-      secrets_manager_client.update_jwt_role(
+      client = secrets_manager_client.with_namespace(project.secrets_manager.full_project_namespace_path)
+      client.update_jwt_role(
         secrets_manager.user_auth_mount,
         secrets_manager.user_auth_role,
         bound_claims: {
@@ -58,49 +59,62 @@ RSpec.describe SecretsManagement::ProjectSecretsManagers::DeprovisionService, :g
       )
     end
 
-    it 'deletes all resources related to the project secrets manager except the auth mounts' do
+    it 'deletes all resources related to the project secrets manager' do
       # Verify resources exist before deletion
-      expect_jwt_role_to_exist(secrets_manager.ci_auth_mount, secrets_manager.ci_auth_role)
-      expect_jwt_role_to_exist(secrets_manager.user_auth_mount, secrets_manager.user_auth_role)
-      expect_jwt_cel_role_to_exist(secrets_manager.user_auth_mount, secrets_manager.user_auth_role)
-      expect_jwt_auth_engine_to_be_mounted(secrets_manager.ci_auth_mount)
-      expect_jwt_auth_engine_to_be_mounted(secrets_manager.user_auth_mount)
-      expect_kv_secret_engine_to_be_mounted(secrets_manager.ci_secrets_mount_path)
+      expect_jwt_role_to_exist(secrets_manager.full_project_namespace_path, secrets_manager.ci_auth_mount,
+        secrets_manager.ci_auth_role)
+      expect_jwt_role_to_exist(secrets_manager.full_project_namespace_path, secrets_manager.user_auth_mount,
+        secrets_manager.user_auth_role)
+      expect_jwt_cel_role_to_exist(secrets_manager.full_project_namespace_path, secrets_manager.user_auth_mount,
+        secrets_manager.user_auth_role)
+      expect_jwt_auth_engine_to_be_mounted(secrets_manager.full_project_namespace_path, secrets_manager.ci_auth_mount)
+      expect_jwt_auth_engine_to_be_mounted(secrets_manager.full_project_namespace_path, secrets_manager.user_auth_mount)
+      expect_kv_secret_engine_to_be_mounted(secrets_manager.full_project_namespace_path,
+        secrets_manager.ci_secrets_mount_path)
 
       # Verify policies exist before deletion using the model's policy name generators
       # Pipeline policies (created when secret is created with dev-* and development)
-      expect_policy_to_exist(secrets_manager.ci_policy_name('dev-*', 'development'))
+      expect_policy_to_exist(secrets_manager.full_project_namespace_path,
+        secrets_manager.ci_policy_name('dev-*', 'development'))
 
       # Owner role policy (created by provision service)
-      expect_policy_to_exist(secrets_manager.generate_policy_name(
-        project_id: project.id,
-        principal_type: 'Role',
-        principal_id: Gitlab::Access.sym_options_with_owner[:owner]
-      ))
+      expect_policy_to_exist(
+        secrets_manager.full_project_namespace_path,
+        secrets_manager.generate_policy_name(
+          principal_type: 'Role',
+          principal_id: Gitlab::Access.sym_options_with_owner[:owner]
+        ))
 
       # Member role policy (created by update_secret_permission)
-      expect_policy_to_exist(secrets_manager.generate_policy_name(
-        project_id: project.id,
-        principal_type: 'MemberRole',
-        principal_id: member_role.id
-      ))
+      expect_policy_to_exist(
+        secrets_manager.full_project_namespace_path,
+        secrets_manager.generate_policy_name(
+          principal_type: 'MemberRole',
+          principal_id: member_role.id
+        ))
 
       expect(result).to be_success
 
       # Verify JWT roles are deleted
-      expect_jwt_role_not_to_exist(secrets_manager.ci_auth_mount, secrets_manager.ci_auth_role)
-      expect_jwt_role_not_to_exist(secrets_manager.user_auth_mount, secrets_manager.user_auth_role)
-      expect_jwt_cel_role_not_to_exist(secrets_manager.user_auth_mount, secrets_manager.user_auth_role)
+      expect_jwt_role_not_to_exist(secrets_manager.full_project_namespace_path, secrets_manager.ci_auth_mount,
+        secrets_manager.ci_auth_role)
+      expect_jwt_role_not_to_exist(secrets_manager.full_project_namespace_path, secrets_manager.user_auth_mount,
+        secrets_manager.user_auth_role)
+      expect_jwt_cel_role_not_to_exist(secrets_manager.full_project_namespace_path, secrets_manager.user_auth_mount,
+        secrets_manager.user_auth_role)
 
-      # Auth engines should still be mounted (shared per namespace)
-      expect_jwt_auth_engine_to_be_mounted(secrets_manager.ci_auth_mount)
-      expect_jwt_auth_engine_to_be_mounted(secrets_manager.user_auth_mount)
+      # Auth engines should be deleted
+      expect_jwt_auth_engine_not_to_be_mounted(secrets_manager.full_project_namespace_path,
+        secrets_manager.ci_auth_mount)
+      expect_jwt_auth_engine_not_to_be_mounted(secrets_manager.full_project_namespace_path,
+        secrets_manager.user_auth_mount)
 
       # Secrets engine should be deleted
-      expect_kv_secret_engine_not_to_be_mounted(secrets_manager.ci_secrets_mount_path)
+      expect_kv_secret_engine_not_to_be_mounted(secrets_manager.full_project_namespace_path,
+        secrets_manager.ci_secrets_mount_path)
 
       # All policies should be deleted
-      expect_project_to_have_no_policies(project)
+      expect_project_to_have_no_policies(secrets_manager.full_project_namespace_path)
 
       # Verify the secrets manager record is deleted
       expect(SecretsManagement::ProjectSecretsManager.find_by(id: secrets_manager.id)).to be_nil
@@ -119,6 +133,7 @@ RSpec.describe SecretsManagement::ProjectSecretsManagers::DeprovisionService, :g
 
       it 'only deletes this project resources without affecting other projects' do
         expect_jwt_role_to_exist(
+          another_secrets_manager.full_project_namespace_path,
           another_secrets_manager.ci_auth_mount,
           another_secrets_manager.ci_auth_role
         )
@@ -126,33 +141,80 @@ RSpec.describe SecretsManagement::ProjectSecretsManagers::DeprovisionService, :g
         expect(result).to be_success
 
         # This project's resources should be deleted
-        expect_jwt_role_not_to_exist(secrets_manager.ci_auth_mount, secrets_manager.ci_auth_role)
-        expect_jwt_role_not_to_exist(secrets_manager.user_auth_mount, secrets_manager.user_auth_role)
-        expect_kv_secret_engine_not_to_be_mounted(secrets_manager.ci_secrets_mount_path)
-        expect_project_to_have_no_policies(project)
+        expect_jwt_role_not_to_exist(secrets_manager.full_project_namespace_path, secrets_manager.ci_auth_mount,
+          secrets_manager.ci_auth_role)
+        expect_jwt_role_not_to_exist(secrets_manager.full_project_namespace_path, secrets_manager.user_auth_mount,
+          secrets_manager.user_auth_role)
+        expect_kv_secret_engine_not_to_be_mounted(secrets_manager.full_project_namespace_path,
+          secrets_manager.ci_secrets_mount_path)
+        expect_project_to_have_no_policies(secrets_manager.full_project_namespace_path)
         expect(SecretsManagement::ProjectSecretsManager.find_by(id: secrets_manager.id)).to be_nil
 
-        # Auth engines should still be mounted (shared per namespace)
-        expect_jwt_auth_engine_to_be_mounted(secrets_manager.ci_auth_mount)
-        expect_jwt_auth_engine_to_be_mounted(secrets_manager.user_auth_mount)
+        # Auth engines should be deleted
+        expect_jwt_auth_engine_not_to_be_mounted(secrets_manager.full_project_namespace_path,
+          secrets_manager.ci_auth_mount)
+        expect_jwt_auth_engine_not_to_be_mounted(secrets_manager.full_project_namespace_path,
+          secrets_manager.user_auth_mount)
 
         # Other project's JWT roles should still exist
         expect_jwt_role_to_exist(
+          another_secrets_manager.full_project_namespace_path,
           another_secrets_manager.ci_auth_mount,
           another_secrets_manager.ci_auth_role
         )
 
         # Other project's secrets engine should still exist
-        expect_kv_secret_engine_to_be_mounted(another_secrets_manager.ci_secrets_mount_path)
+        expect_kv_secret_engine_to_be_mounted(another_secrets_manager.full_project_namespace_path,
+          another_secrets_manager.ci_secrets_mount_path)
 
         # Other project's policies should still exist
-        expect_policy_to_exist(another_secrets_manager.generate_policy_name(
-          project_id: another_project.id,
-          principal_type: 'Role',
-          principal_id: Gitlab::Access.sym_options_with_owner[:owner]
-        ))
+        expect_policy_to_exist(
+          another_secrets_manager.full_project_namespace_path,
+          another_secrets_manager.generate_policy_name(
+            principal_type: 'Role',
+            principal_id: Gitlab::Access.sym_options_with_owner[:owner]
+          ))
         expect(another_secrets_manager.reload).to be_present
       end
+    end
+  end
+
+  context 'when cleaning up a legacy project' do
+    let!(:another_project) { create(:project, namespace: project.namespace) }
+    let(:another_service) { described_class.new(another_project.secrets_manager, user) }
+
+    before do
+      # Create a secrets manager database object manually.
+      another_project.secrets_manager = SecretsManagement::ProjectSecretsManager.create!(project: another_project)
+      another_project.secrets_manager.status = SecretsManagement::ProjectSecretsManager::STATUSES[:active]
+      another_project.secrets_manager.save!
+
+      # Create legacy auth mounts
+      secrets_manager_client.enable_auth_engine(another_project.secrets_manager.legacy_ci_auth_mount, "jwt")
+      secrets_manager_client.enable_auth_engine(another_project.secrets_manager.legacy_user_auth_mount, "jwt")
+
+      # Create legacy secrets mounts
+      secrets_manager_client.enable_secrets_engine(another_project.secrets_manager.legacy_ci_secrets_mount_path,
+        "kv-v2")
+
+      # Create a legacy policy
+      secrets_manager_client.set_policy(SecretsManagement::AclPolicy.new("project_#{project.id}/pipelines/global"))
+    end
+
+    subject(:another_result) { another_service.execute }
+
+    it 'removes legacy mounts' do
+      expect(another_result).to be_success
+
+      # Auth engines should be deleted
+      expect_jwt_auth_engine_not_to_be_mounted("", another_project.secrets_manager.legacy_ci_auth_mount)
+      expect_jwt_auth_engine_not_to_be_mounted("", another_project.secrets_manager.legacy_user_auth_mount)
+
+      # Secrets engine should be deleted
+      expect_kv_secret_engine_not_to_be_mounted("", another_project.secrets_manager.legacy_ci_secrets_mount_path)
+
+      # Expect there to be no policies
+      expect_legacy_project_to_have_no_policies(another_project)
     end
   end
 end

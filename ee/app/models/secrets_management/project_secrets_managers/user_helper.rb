@@ -9,6 +9,10 @@ module SecretsManagement
       MAX_GROUPS = 25
 
       def user_auth_mount
+        'user_jwt'
+      end
+
+      def legacy_user_auth_mount
         [
           namespace_path,
           'user_jwt'
@@ -16,6 +20,10 @@ module SecretsManagement
       end
 
       def user_auth_role
+        'all_users'
+      end
+
+      def legacy_user_auth_role
         "project_#{project.id}"
       end
 

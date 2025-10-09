@@ -68,8 +68,8 @@ RSpec.describe SecretsManagement::Permissions::DeleteService, :gitlab_secrets_ma
 
       it 'returns an error response with the connection error message' do
         client = SecretsManagement::SecretsManagerClient
-        allow(service).to receive(:secrets_manager_client).and_return(instance_double(client))
-        allow(service.secrets_manager_client).to receive(:delete_policy)
+        allow(service).to receive(:project_secrets_manager_client).and_return(instance_double(client))
+        allow(service.project_secrets_manager_client).to receive(:delete_policy)
           .and_raise(SecretsManagement::SecretsManagerClient::ConnectionError.new(error_message))
 
         result = service.execute(principal: { id: principal_id, type: principal_type })

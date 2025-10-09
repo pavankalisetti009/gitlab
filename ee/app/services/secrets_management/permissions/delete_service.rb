@@ -12,7 +12,7 @@ module SecretsManagement
 
         return invalid_principal_response unless valid_principal?(principal)
 
-        secret_permission = secrets_manager.generate_policy_name(project_id: project.id,
+        secret_permission = secrets_manager.generate_policy_name(
           principal_type: principal[:type],
           principal_id: principal[:id])
 
@@ -22,7 +22,7 @@ module SecretsManagement
       private
 
       def delete_permission(secret_permission)
-        secrets_manager_client.delete_policy(secret_permission)
+        project_secrets_manager_client.delete_policy(secret_permission)
         ServiceResponse.success(payload: { secret_permission: nil })
       rescue SecretsManagement::SecretsManagerClient::ConnectionError => e
         ServiceResponse.error(message: "Failed to delete permission: #{e.message}",
