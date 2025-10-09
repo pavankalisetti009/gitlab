@@ -33,7 +33,7 @@ module GitlabSubscriptions
     private
 
     def find_trial_types
-      Rails.cache.fetch(CACHE_KEY, expires_in: CACHE_EXPIRY, race_condition_ttl: 5.seconds) do
+      Rails.cache.fetch(CACHE_KEY, expires_in: CACHE_EXPIRY) do
         response = trial_types_request
 
         Gitlab::AppLogger.info(
