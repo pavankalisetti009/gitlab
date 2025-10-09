@@ -16,51 +16,40 @@ RSpec.describe Admin::DataManagementController, :enable_admin_mode, feature_cate
     sign_in(admin)
   end
 
-  shared_examples 'pushes geo_primary_verification_view feature flag' do
-    it 'pushes the feature flag' do
-      get example_path
-
-      expect(response.body).to have_pushed_frontend_feature_flags(geoPrimaryVerificationView: true)
-    end
-  end
-
   describe 'before_actions' do
-    let(:model_name) { 'project' }
-    let(:id) { 1 }
+    let_it_be(:model) { create(:project) }
+    let_it_be(:model_name) { Gitlab::Geo::ModelMapper.convert_to_name(model.class) }
+    let_it_be(:id) { model.id }
 
-    describe '#license_paid?' do
-      context 'when license is not paid' do
-        before do
-          allow(License).to receive(:current).and_return(nil)
-        end
+    context 'when the data_management licensed feature is available' do
+      before do
+        stub_licensed_features(data_management: true)
+      end
 
-        it '#index renders 404' do
-          get index_path
-          expect(response).to have_gitlab_http_status(:not_found)
-        end
+      it '#index renders template' do
+        get index_path
+        expect(response).to render_template(:index)
+      end
 
-        it '#show renders 404' do
-          get show_path
-          expect(response).to have_gitlab_http_status(:not_found)
-        end
+      it '#show renders template' do
+        get show_path
+        expect(response).to render_template(:show)
       end
     end
 
-    describe '#flag_enabled?' do
-      context 'when feature flag is disabled' do
-        before do
-          stub_feature_flags(geo_primary_verification_view: false)
-        end
+    context 'when the data_management licensed feature is not available' do
+      before do
+        stub_licensed_features(data_management: false)
+      end
 
-        it '#index renders 404' do
-          get index_path
-          expect(response).to have_gitlab_http_status(:not_found)
-        end
+      it '#index renders 404' do
+        get index_path
+        expect(response).to have_gitlab_http_status(:not_found)
+      end
 
-        it '#show renders 404' do
-          get show_path
-          expect(response).to have_gitlab_http_status(:not_found)
-        end
+      it '#show renders 404' do
+        get show_path
+        expect(response).to have_gitlab_http_status(:not_found)
       end
     end
   end
@@ -74,10 +63,6 @@ RSpec.describe Admin::DataManagementController, :enable_admin_mode, feature_cate
       let(:id) { model.id }
 
       describe '#index' do
-        it_behaves_like 'pushes geo_primary_verification_view feature flag' do
-          let(:example_path) { index_path }
-        end
-
         it 'assigns @models with all records from model_class' do
           get index_path
 
@@ -95,10 +80,6 @@ RSpec.describe Admin::DataManagementController, :enable_admin_mode, feature_cate
       end
 
       describe '#show' do
-        it_behaves_like 'pushes geo_primary_verification_view feature flag' do
-          let(:example_path) { show_path }
-        end
-
         it 'assigns @model with the record found from ID' do
           get show_path
 

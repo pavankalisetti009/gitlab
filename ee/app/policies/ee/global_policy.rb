@@ -152,6 +152,10 @@ module EE
         License.duo_core_features_available?
       end
 
+      condition(:data_management_available) do
+        License.feature_available?(:data_management) && ::Feature.enabled?(:geo_primary_verification_view, @user)
+      end
+
       rule { ~anonymous & remote_development_feature_licensed }.policy do
         enable :access_workspaces_feature
       end
@@ -165,6 +169,7 @@ module EE
         enable :destroy_licenses
         enable :manage_subscription
         enable :read_admin_subscription
+        enable :read_admin_data_management
         enable :read_all_geo
         enable :read_all_workspaces
         enable :read_cloud_connector_status
@@ -248,6 +253,7 @@ module EE
 
       rule { custom_role_enables_read_admin_monitoring }.policy do
         enable :read_admin_background_migrations
+        enable :read_admin_data_management
         enable :read_admin_gitaly_servers
         enable :read_admin_health_check
         enable :read_admin_system_information
@@ -290,6 +296,8 @@ module EE
       rule { third_party_agents_enabled & direct_access_enabled & allowed_to_use_model_proxy }.policy do
         enable :duo_generate_direct_access_token
       end
+
+      rule { ~data_management_available }.prevent :read_admin_data_management
     end
 
     # Check whether a user is allowed to use Duo Chat powered by self-hosted models
