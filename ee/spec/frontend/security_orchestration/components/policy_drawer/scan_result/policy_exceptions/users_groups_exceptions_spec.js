@@ -285,6 +285,7 @@ describe('UsersGroupsExceptions', () => {
       expect(searchGroupMembersHandler).toHaveBeenCalledWith({
         fullPath: 'test/project',
         search: '',
+        ids: mockLoadedUsers.map(({ user }) => user.id),
       });
     });
   });
