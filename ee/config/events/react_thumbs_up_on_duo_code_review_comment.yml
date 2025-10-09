@@ -2,6 +2,7 @@
 description: When a user posts a thumbs up on a Duo Code Review comment
 internal_events: true
 action: react_thumbs_up_on_duo_code_review_comment
+classification: duo
 identifiers:
 - project
 - namespace

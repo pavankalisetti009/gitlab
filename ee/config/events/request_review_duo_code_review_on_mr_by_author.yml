@@ -2,6 +2,7 @@
 description: When an author requests Duo Code Review to perform code review on an MR
 internal_events: true
 action: request_review_duo_code_review_on_mr_by_author
+classification: duo
 identifiers:
 - project
 - namespace

@@ -2,6 +2,7 @@
 description: When Duo Code Review posts a diff comment
 internal_events: true
 action: post_comment_duo_code_review_on_diff
+classification: duo
 identifiers:
 - project
 - namespace

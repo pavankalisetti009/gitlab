@@ -2,6 +2,7 @@
 description: When Duo Code Review found nothing to comment on after reviewing an MR
 internal_events: true
 action: find_no_issues_duo_code_review_after_review
+classification: duo
 identifiers:
 - project
 - namespace
