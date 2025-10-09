@@ -66018,6 +66018,9 @@ msgstr ""
 msgid "The number of times an upload record could not find its file"
 msgstr ""
 
+msgid "The observability service is initializing. Please try again in a few minutes."
+msgstr ""
+
 msgid "The only thread is resolved"
 msgid_plural "All %{resolvableDiscussionsCount} threads resolved"
 msgstr[0] ""
