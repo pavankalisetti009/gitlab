@@ -481,7 +481,7 @@ RSpec.describe Groups::SyncService, feature_category: :system_access do
 
         expect(Gitlab::AppLogger).to receive(:info).with(
           hash_including(
-            message: 'SAML group membership access level adjusted due to BSO seat limits',
+            message: 'Group membership access level adjusted due to BSO seat limits',
             group_id: group.id,
             user_id: user.id,
             requested_access_level: Gitlab::Access::GUEST,
@@ -506,7 +506,7 @@ RSpec.describe Groups::SyncService, feature_category: :system_access do
 
       it 'does not log BSO adjustment' do
         expect(Gitlab::AppLogger).not_to receive(:info).with(
-          hash_including(message: 'SAML group membership access level adjusted due to BSO seat limits')
+          hash_including(message: 'Group membership access level adjusted due to BSO seat limits')
         )
 
         sync

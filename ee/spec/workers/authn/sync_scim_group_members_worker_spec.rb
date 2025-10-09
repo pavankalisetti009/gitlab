@@ -152,13 +152,29 @@ RSpec.describe Authn::SyncScimGroupMembersWorker, feature_category: :system_acce
           it 'logs BSO adjustment when access level is downgraded' do
             expect(Gitlab::AppLogger).to receive(:info).with(
               hash_including(
-                message: 'SCIM group membership access level adjusted due to BSO seat limits',
-                scim_group_uid: scim_group_uid,
+                message: 'Group membership access level adjusted due to BSO seat limits',
+                group_id: group.id,
+                group_path: group.full_path,
                 user_id: user1.id,
-                desired_access_level: Gitlab::Access::DEVELOPER,
-                effective_access_level: Gitlab::Access::MINIMAL_ACCESS
+                requested_access_level: Gitlab::Access::DEVELOPER,
+                adjusted_access_level: Gitlab::Access::MINIMAL_ACCESS,
+                feature_flag: 'bso_minimal_access_fallback',
+                scim_group_uid: scim_group_uid
               )
-            ).twice # Once for each group linked to the same SCIM group UID
+            )
+
+            expect(Gitlab::AppLogger).to receive(:info).with(
+              hash_including(
+                message: 'Group membership access level adjusted due to BSO seat limits',
+                group_id: another_group.id,
+                group_path: another_group.full_path,
+                user_id: user1.id,
+                requested_access_level: Gitlab::Access::DEVELOPER,
+                adjusted_access_level: Gitlab::Access::MINIMAL_ACCESS,
+                feature_flag: 'bso_minimal_access_fallback',
+                scim_group_uid: scim_group_uid
+              )
+            )
 
             execute_worker
           end
@@ -182,7 +198,7 @@ RSpec.describe Authn::SyncScimGroupMembersWorker, feature_category: :system_acce
 
           it 'does not log BSO adjustment' do
             expect(Gitlab::AppLogger).not_to receive(:info).with(
-              hash_including(message: 'SCIM group membership access level adjusted due to BSO seat limits')
+              hash_including(message: 'Group membership access level adjusted due to BSO seat limits')
             )
 
             execute_worker

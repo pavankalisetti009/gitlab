@@ -139,28 +139,6 @@ module Groups
       group_links.max_by { |group_link| [group_link.access_level, group_link.member_role_id.to_i] }
     end
 
-    def calculate_adjusted_access_level(group, user, requested_access_level)
-      adjusted_access_level = adjust_access_level_for_seat_availability(group, user, requested_access_level)
-
-      if adjusted_access_level != requested_access_level
-        log_access_level_adjustment(group, user, requested_access_level, adjusted_access_level)
-      end
-
-      adjusted_access_level
-    end
-
-    def log_access_level_adjustment(group, user, requested_access_level, adjusted_access_level)
-      Gitlab::AppLogger.info(
-        message: 'SAML group membership access level adjusted due to BSO seat limits',
-        group_id: group.id,
-        group_path: group.full_path,
-        user_id: user.id,
-        requested_access_level: requested_access_level,
-        adjusted_access_level: adjusted_access_level,
-        feature_flag: 'bso_minimal_access_fallback'
-      )
-    end
-
     def log_membership_update(group_id:, action:, prior_access_level:, access_level:, prior_member_role_id:, member_role_id:)
       @updated_membership[action] += 1
 
