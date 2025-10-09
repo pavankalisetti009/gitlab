@@ -41212,9 +41212,6 @@ msgstr ""
 msgid "MergeRequest|Remove reviewer"
 msgstr ""
 
-msgid "MergeRequest|Reviewed by @%{username} but not yet approved"
-msgstr ""
-
 msgid "MergeRequest|Reviewer approved changes"
 msgstr ""
 
