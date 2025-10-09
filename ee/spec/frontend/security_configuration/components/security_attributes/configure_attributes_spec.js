@@ -270,4 +270,12 @@ describe('Configure attributes', () => {
 
     expect(handlers.deleteSecurityAttributeMutation).toHaveBeenCalledWith({ id: attribute.id });
   });
+
+  it('does not call the attribute delete mutation when ID is not present', async () => {
+    const attribute = { id: null, name: 'Attribute', description: 'desc' };
+    wrapper.findComponent(CategoryForm).vm.$emit('deleteAttribute', attribute);
+    await waitForPromises();
+
+    expect(handlers.deleteSecurityAttributeMutation).not.toHaveBeenCalled();
+  });
 });

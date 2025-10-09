@@ -68,7 +68,7 @@ RSpec.describe 'Group Security Categories', feature_category: :security_asset_in
               'name' => be_present,
               'description' => be_present,
               'editableState' => be_present,
-              'id' => nil,
+              'id' => be_present,
               'multipleSelection' => be_in([true, false]),
               'templateType' => be_present
             )
@@ -83,7 +83,7 @@ RSpec.describe 'Group Security Categories', feature_category: :security_asset_in
               'color' => be_present,
               'description' => be_present,
               'editableState' => be_present,
-              'id' => nil
+              'id' => be_present
             )
           end
         end

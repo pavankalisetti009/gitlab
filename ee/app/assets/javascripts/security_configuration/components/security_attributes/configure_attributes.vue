@@ -89,6 +89,7 @@ export default {
         if (categoryResult.data) {
           if (!id && categoryResult.data.securityCategoryCreate) {
             const createdCategory = categoryResult.data.securityCategoryCreate.securityCategory;
+            this.selectedCategory = createdCategory;
 
             // save unsaved attributes now that we have category id
             if (this.unsavedAttributes.length) {
@@ -225,6 +226,10 @@ export default {
       }
     },
     async deleteAttribute(deletedAttribute) {
+      if (!deletedAttribute.id) {
+        this.unsavedAttributes.splice(this.unsavedAttributes.indexOf(deletedAttribute), 1);
+        return;
+      }
       try {
         // confirm via gl-modal
         const confirmed = await confirmAction(
