@@ -226,7 +226,8 @@ RSpec.describe Search::Elastic::MigrationReindexBasedOnSchemaVersion, feature_ca
           end
 
           it 'updates migration state with scroll_id and last_processed_id' do
-            expect(migration).to receive(:set_migration_state).with(scroll_id: 'scroll_123', last_processed_id: 2)
+            expect(migration).to receive(:set_migration_state).with(scroll_id: 'scroll_123',
+              last_processed_id: 2)
 
             migration.send(:process_batch!)
           end
@@ -340,8 +341,10 @@ RSpec.describe Search::Elastic::MigrationReindexBasedOnSchemaVersion, feature_ca
           end
 
           it 'processes multiple scroll batches until empty or threshold reached' do
-            expect(migration).to receive(:set_migration_state).with(scroll_id: 'scroll_123', last_processed_id: 4)
-            expect(migration).to receive(:set_migration_state).with(scroll_id: 'scroll_456', last_processed_id: 8)
+            expect(migration).to receive(:set_migration_state).with(scroll_id: 'scroll_123',
+              last_processed_id: 4)
+            expect(migration).to receive(:set_migration_state).with(scroll_id: 'scroll_456',
+              last_processed_id: 8)
             expect(migration).to receive(:cleanup_scroll).with('scroll_789')
             expect(migration).to receive(:set_migration_state).with(scroll_id: nil, last_processed_id: nil)
 
@@ -357,14 +360,6 @@ RSpec.describe Search::Elastic::MigrationReindexBasedOnSchemaVersion, feature_ca
 
             migration.send(:process_batch!)
           end
-        end
-
-        context 'when search_scroll_api_increase_throughput is false' do
-          before do
-            stub_feature_flags(search_scroll_api_increase_throughput: false)
-          end
-
-          it_behaves_like 'a scroll api migration helper'
         end
       end
     end
@@ -383,14 +378,6 @@ RSpec.describe Search::Elastic::MigrationReindexBasedOnSchemaVersion, feature_ca
         end
 
         it { is_expected.to be(true) }
-
-        context 'when search_schema_migration_scroll_api is false' do
-          before do
-            stub_feature_flags(search_schema_migration_scroll_api: false)
-          end
-
-          it { is_expected.to be(false) }
-        end
       end
 
       context 'when remaining_documents_count exceed batch size' do
@@ -399,14 +386,6 @@ RSpec.describe Search::Elastic::MigrationReindexBasedOnSchemaVersion, feature_ca
         end
 
         it { is_expected.to be(true) }
-
-        context 'when search_schema_migration_scroll_api is false' do
-          before do
-            stub_feature_flags(search_schema_migration_scroll_api: false)
-          end
-
-          it { is_expected.to be(false) }
-        end
       end
 
       context 'when remaining_documents_count are within batch size' do
@@ -415,14 +394,6 @@ RSpec.describe Search::Elastic::MigrationReindexBasedOnSchemaVersion, feature_ca
         end
 
         it { is_expected.to be(false) }
-
-        context 'when search_schema_migration_scroll_api is false' do
-          before do
-            stub_feature_flags(search_schema_migration_scroll_api: false)
-          end
-
-          it { is_expected.to be(false) }
-        end
       end
     end
 
@@ -618,32 +589,6 @@ RSpec.describe Search::Elastic::MigrationReindexBasedOnSchemaVersion, feature_ca
         context 'when using scroll API' do
           before do
             allow(migration).to receive(:query_batch_size).and_return(objects.size - 2)
-          end
-
-          context 'when search_scroll_api_increase_throughput is disabled' do
-            before do
-              stub_feature_flags(search_scroll_api_increase_throughput: false)
-            end
-
-            it 'processes records using scroll API' do
-              expect(migration.send(:bookkeeping_service)).to receive(:track!).twice.and_call_original
-
-              state_before_first_run = migration.migration_state
-              expect(state_before_first_run[:scroll_id]).to be_nil
-              expect(state_before_first_run[:last_processed_id]).to be_nil
-
-              migration.migrate
-              ensure_elasticsearch_index!
-
-              state_after_first_run = migration.migration_state
-              expect(state_after_first_run[:scroll_id]).to be_present
-              expect(state_after_first_run[:last_processed_id]).to be_present
-
-              migration.migrate
-              ensure_elasticsearch_index!
-
-              expect(migration.completed?).to be(true)
-            end
           end
 
           it 'processes records using scroll API' do
