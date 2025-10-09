@@ -1011,10 +1011,14 @@ RSpec.describe Gitlab::SubscriptionPortal::Clients::Graphql, feature_category: :
           $endDate: ISO8601Date
         ) {
           subscription(namespaceId: $namespaceId, licenseKey: $licenseKey) {
-            gitlabUnitsUsage(startDate: $startDate, endDate: $endDate) {
+            gitlabCreditsUsage(startDate: $startDate, endDate: $endDate) {
               poolUsage {
-                totalUnits
-                unitsUsed
+                totalCredits
+                creditsUsed
+                dailyUsage {
+                  date
+                  creditsUsed
+                }
               }
             }
           }
@@ -1042,10 +1046,11 @@ RSpec.describe Gitlab::SubscriptionPortal::Clients::Graphql, feature_category: :
             data: {
               data: {
                 subscription: {
-                  gitlabUnitsUsage: {
+                  gitlabCreditsUsage: {
                     poolUsage: {
-                      totalUnits: 1000,
-                      unitsUsed: 250
+                      totalCredits: 1000,
+                      creditsUsed: 250,
+                      dailyUsage: [{ date: '2025-10-01', creditsUsed: 250 }]
                     }
                   }
                 }
@@ -1062,8 +1067,9 @@ RSpec.describe Gitlab::SubscriptionPortal::Clients::Graphql, feature_category: :
             expect(get_subscription_pool_usage).to eq({
               success: true,
               poolUsage: {
-                totalUnits: 1000,
-                unitsUsed: 250
+                totalCredits: 1000,
+                creditsUsed: 250,
+                dailyUsage: [{ date: '2025-10-01', creditsUsed: 250 }]
               }
             })
           end
@@ -1126,7 +1132,7 @@ RSpec.describe Gitlab::SubscriptionPortal::Clients::Graphql, feature_category: :
           $endDate: ISO8601Date
         ) {
           subscription(namespaceId: $namespaceId, licenseKey: $licenseKey) {
-            gitlabUnitsUsage(startDate: $startDate, endDate:$endDate) {
+            gitlabCreditsUsage(startDate: $startDate, endDate:$endDate) {
               usersUsage {
                 userId
                 totalCredits
@@ -1159,15 +1165,15 @@ RSpec.describe Gitlab::SubscriptionPortal::Clients::Graphql, feature_category: :
           [
             {
               userId: 123,
-              totalUnits: 100,
-              unitsUsed: 500,
-              poolUnitsUsed: 400
+              totalCredits: 100,
+              creditsUsed: 500,
+              poolCreditsUsed: 400
             },
             {
               userId: 321,
-              totalUnits: 100,
-              unitsUsed: 50,
-              poolUnitsUsed: 0
+              totalCredits: 100,
+              creditsUsed: 50,
+              poolCreditsUsed: 0
             }
           ]
         end
@@ -1178,7 +1184,7 @@ RSpec.describe Gitlab::SubscriptionPortal::Clients::Graphql, feature_category: :
             data: {
               data: {
                 subscription: {
-                  gitlabUnitsUsage: {
+                  gitlabCreditsUsage: {
                     usersUsage: { users: users_usage }
                   }
                 }
