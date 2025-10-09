@@ -43289,7 +43289,7 @@ A security attribute.
 | <a id="securityattributecolor"></a>`color` | [`Color!`](#color) | Color of the security attribute. |
 | <a id="securityattributedescription"></a>`description` | [`String`](#string) | Description of the security attribute. |
 | <a id="securityattributeeditablestate"></a>`editableState` | [`SecurityCategoryEditableState!`](#securitycategoryeditablestate) | Editable state of the security attribute. |
-| <a id="securityattributeid"></a>`id` | [`SecurityAttributeID`](#securityattributeid) | Global ID of the security attribute. |
+| <a id="securityattributeid"></a>`id` | [`SecurityAttributeID!`](#securityattributeid) | Global ID of the security attribute. |
 | <a id="securityattributename"></a>`name` | [`String!`](#string) | Name of the security attribute. |
 | <a id="securityattributesecuritycategory"></a>`securityCategory` | [`SecurityCategory!`](#securitycategory) | Security category the attribute belongs to. |
 
@@ -43303,7 +43303,7 @@ A security category.
 | ---- | ---- | ----------- |
 | <a id="securitycategorydescription"></a>`description` | [`String`](#string) | Description of the security category. |
 | <a id="securitycategoryeditablestate"></a>`editableState` | [`SecurityCategoryEditableState!`](#securitycategoryeditablestate) | Editable state of the security category. |
-| <a id="securitycategoryid"></a>`id` | [`SecurityCategoryID`](#securitycategoryid) | Global ID of the security category. |
+| <a id="securitycategoryid"></a>`id` | [`SecurityCategoryID!`](#securitycategoryid) | Global ID of the security category. |
 | <a id="securitycategorymultipleselection"></a>`multipleSelection` | [`Boolean!`](#boolean) | Whether multiple attributes can be selected. |
 | <a id="securitycategoryname"></a>`name` | [`String!`](#string) | Name of the security category. |
 | <a id="securitycategorysecurityattributes"></a>`securityAttributes` | [`[SecurityAttribute!]`](#securityattribute) | Security attributes belonging to the category. |
