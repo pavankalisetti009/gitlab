@@ -8,7 +8,7 @@ RSpec.describe Projects::GroupLinks::DestroyService, feature_category: :groups_a
   let!(:project) { create(:project) }
   let!(:group_link) { create(:project_group_link, project: project, group: group) }
 
-  subject { described_class.new(project, user, {}) }
+  subject(:service) { described_class.new(project, user, {}) }
 
   before do
     project.add_owner(user)
@@ -75,6 +75,28 @@ RSpec.describe Projects::GroupLinks::DestroyService, feature_category: :groups_a
         expect(worker).to receive(:perform_async).with(project.root_ancestor.id)
 
         subject.execute(group_link)
+      end
+    end
+  end
+
+  describe "link.group members' ::Authz::UserProjectMemberRole records" do
+    it 'enqueues a ::Authz::UserProjectMemberRoles::DestroyForSharedProjectWorker job' do
+      expect(::Authz::UserProjectMemberRoles::DestroyForSharedProjectWorker)
+        .to receive(:perform_async).with(group_link.project_id, group_link.group_id)
+
+      service.execute(group_link)
+    end
+
+    context 'when cache_user_project_member_roles feature flag is disabled' do
+      before do
+        stub_feature_flags(cache_user_project_member_roles: false)
+      end
+
+      it 'does not enqueue an ::Authz::UserProjectMemberRoles::DestroyForSharedProjectWorker job' do
+        expect(::Authz::UserProjectMemberRoles::DestroyForSharedProjectWorker)
+          .not_to receive(:perform_async)
+
+        service.execute(group_link)
       end
     end
   end

@@ -16,6 +16,7 @@ module EE
               send_audit_event(link)
 
               enqueue_refresh_add_on_assignments_woker(link)
+              destroy_user_project_member_roles(link)
             end
           end
         end
@@ -46,6 +47,13 @@ module EE
           return unless gitlab_com_subscription?
 
           GitlabSubscriptions::AddOnPurchases::RefreshUserAssignmentsWorker.perform_async(namespace.id)
+        end
+
+        def destroy_user_project_member_roles(link)
+          return if ::Feature.disabled?(:cache_user_project_member_roles, link.project.root_ancestor)
+
+          ::Authz::UserProjectMemberRoles::DestroyForSharedProjectWorker
+            .perform_async(link.project_id, link.group_id)
         end
       end
     end
