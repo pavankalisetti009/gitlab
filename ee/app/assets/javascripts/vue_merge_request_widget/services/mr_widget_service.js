@@ -10,7 +10,7 @@ export default class MRWidgetService extends CEWidgetService {
 
   approveMergeRequestWithAuth(approvalPassword) {
     return axios
-      .post(this.apiApprovePath, { approval_password: approvalPassword })
+      .post(this.apiApprovePath, { approval_password: approvalPassword, publish_review: true })
       .then((res) => res.data);
   }
 
