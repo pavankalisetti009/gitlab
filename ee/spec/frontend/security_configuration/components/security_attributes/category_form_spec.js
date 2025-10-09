@@ -9,6 +9,7 @@ import {
   GlTableLite,
   GlDisclosureDropdown,
   GlDisclosureDropdownItem,
+  GlPopover,
 } from '@gitlab/ui';
 import { nextTick } from 'vue';
 import { mockSecurityAttributeCategories } from 'ee/security_configuration/security_attributes/graphql/resolvers';
@@ -35,9 +36,12 @@ describe('Category form', () => {
         GlFormGroup,
         GlTableLite,
         GlDisclosureDropdown,
+        GlDisclosureDropdownItem,
       },
     });
   };
+
+  const findPopover = () => wrapper.findComponent(GlPopover);
 
   describe.each`
     description                  | id           | editableState                  | multipleSelection | expectedBadge
@@ -232,6 +236,68 @@ describe('Category form', () => {
         name: 'Category name',
         multipleSelection: false,
       });
+    });
+  });
+
+  describe('unsaved changes status', () => {
+    it('shows "All changes saved" message when no unsaved changes exist', async () => {
+      createComponent({
+        selectedCategory: {
+          ...category,
+          id: 10,
+          name: 'Network',
+          description: 'Security-related category',
+          multipleSelection: false,
+        },
+        unsavedAttributes: [],
+      });
+
+      await nextTick();
+
+      const container = wrapper.findByTestId('unsaved-changes-container');
+      expect(container.text()).toContain('All changes saved');
+      expect(wrapper.findComponent({ name: 'GlPopover' }).exists()).toBe(false);
+    });
+
+    it('shows unsaved changes warning and renders the popover when unsavedAttributes exist', async () => {
+      createComponent({
+        selectedCategory: {
+          ...category,
+          id: 11,
+          name: 'Network',
+          description: 'Security category',
+          multipleSelection: false,
+        },
+        unsavedAttributes: [{ name: 'New Attribute' }],
+      });
+
+      await nextTick();
+
+      const container = wrapper.findByTestId('unsaved-changes-container');
+      expect(container.text()).toContain('unsaved change');
+      expect(findPopover().exists()).toBe(true);
+
+      expect(findPopover().text()).toContain('Created the attribute "New Attribute"');
+    });
+  });
+
+  describe('new category with unsaved attributes', () => {
+    beforeEach(async () => {
+      createComponent({
+        selectedCategory: {
+          ...category,
+          name: 'Network',
+          description: 'Security category',
+          multipleSelection: false,
+          editableState: CATEGORY_EDITABLE,
+        },
+        unsavedAttributes: [{ name: 'New Attribute', description: 'test' }],
+      });
+
+      await nextTick();
+    });
+    it('does not render edit dropdown item', () => {
+      expect(wrapper.findByTestId('edit-attribute-item').exists()).toBe(false);
     });
   });
 });

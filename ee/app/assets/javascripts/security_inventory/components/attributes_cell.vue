@@ -67,7 +67,7 @@ export default {
     </span>
     <span v-else
       ><gl-button variant="link" @click="addSecurityAttributes">{{
-        s__('SecurityAttributes|+ Add security attributes')
+        s__('SecurityAttributes|+ Add attributes')
       }}</gl-button></span
     >
     <span :id="`attributes-overflow-popover-${index}`">

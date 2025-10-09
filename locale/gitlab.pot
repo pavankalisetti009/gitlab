@@ -529,6 +529,11 @@ msgid_plural "%d templates found"
 msgstr[0] ""
 msgstr[1] ""
 
+msgid "%d unsaved change"
+msgid_plural "%d unsaved changes"
+msgstr[0] ""
+msgstr[1] ""
+
 msgid "%d user"
 msgid_plural "%d users"
 msgstr[0] ""
@@ -58319,7 +58324,7 @@ msgstr ""
 msgid "SecurityApprovals|Requires approval for decreases in test coverage."
 msgstr ""
 
-msgid "SecurityAttributes|+ Add security attributes"
+msgid "SecurityAttributes|+ Add attributes"
 msgstr ""
 
 msgid "SecurityAttributes|+%{additionalAttributeCount} more"
@@ -58329,6 +58334,9 @@ msgid "SecurityAttributes|Add attribute"
 msgstr ""
 
 msgid "SecurityAttributes|Add security attribute"
+msgstr ""
+
+msgid "SecurityAttributes|All changes saved"
 msgstr ""
 
 msgid "SecurityAttributes|An error has occurred while deleting the security attribute."
@@ -58379,6 +58387,9 @@ msgstr ""
 msgid "SecurityAttributes|Category saved"
 msgstr ""
 
+msgid "SecurityAttributes|Changed the selection type"
+msgstr ""
+
 msgid "SecurityAttributes|Color"
 msgstr ""
 
@@ -58386,6 +58397,9 @@ msgid "SecurityAttributes|Create attribute"
 msgstr ""
 
 msgid "SecurityAttributes|Create category"
+msgstr ""
+
+msgid "SecurityAttributes|Created the attribute \"%{name}\""
 msgstr ""
 
 msgid "SecurityAttributes|Delete"
@@ -58481,7 +58495,16 @@ msgstr ""
 msgid "SecurityAttributes|Successfully updated the security attributes"
 msgstr ""
 
+msgid "SecurityAttributes|Unsaved changes"
+msgstr ""
+
 msgid "SecurityAttributes|Update attribute"
+msgstr ""
+
+msgid "SecurityAttributes|Updated the category description"
+msgstr ""
+
+msgid "SecurityAttributes|Updated the category name"
 msgstr ""
 
 msgid "SecurityAttributes|Use security attributes to categorize projects by business context, security needs, and more. Categories are shared across your groups, enabling consistent and scalable classification of assets. These attributes can help prioritize security efforts, filter dashboards, and apply consistent governance across projects."
@@ -70676,9 +70699,6 @@ msgid "Use your smart card to authenticate with the LDAP server."
 msgstr ""
 
 msgid "Used"
-msgstr ""
-
-msgid "Used by"
 msgstr ""
 
 msgid "Used by %d package"

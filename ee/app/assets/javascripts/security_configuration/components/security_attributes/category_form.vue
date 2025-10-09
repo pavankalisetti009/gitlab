@@ -15,8 +15,9 @@ import {
   GlDisclosureDropdown,
   GlDisclosureDropdownItem,
   GlLink,
+  GlPopover,
 } from '@gitlab/ui';
-import { s__, __ } from '~/locale';
+import { s__, __, sprintf } from '~/locale';
 import CrudComponent from '~/vue_shared/components/crud_component.vue';
 import {
   defaultCategory,
@@ -42,6 +43,7 @@ export default {
     GlDisclosureDropdownItem,
     CrudComponent,
     GlLink,
+    GlPopover,
   },
   directives: {
     GlTooltip: GlTooltipDirective,
@@ -68,6 +70,7 @@ export default {
         name: null,
         multipleSelection: null,
       },
+      originalCategory: {},
     };
   },
   computed: {
@@ -89,16 +92,48 @@ export default {
     attributes() {
       return [...(this.category?.securityAttributes || []), ...this.unsavedAttributes];
     },
+    unsavedChanges() {
+      const changes = [];
+
+      if (!Object.keys(this.originalCategory).length) return changes;
+
+      if (this.category.name !== this.originalCategory.name) {
+        changes.push(s__('SecurityAttributes|Updated the category name'));
+      }
+      if (this.category.description !== this.originalCategory.description) {
+        changes.push(s__('SecurityAttributes|Updated the category description'));
+      }
+      if (this.category.multipleSelection !== this.originalCategory.multipleSelection) {
+        changes.push(s__('SecurityAttributes|Changed the selection type'));
+      }
+
+      if (this.unsavedAttributes?.length) {
+        this.unsavedAttributes.forEach((attr) => {
+          changes.push(
+            sprintf(s__('SecurityAttributes|Created the attribute "%{name}"'), { name: attr.name }),
+          );
+        });
+      }
+
+      return changes;
+    },
+
+    unsavedCount() {
+      return this.unsavedChanges.length;
+    },
   },
   watch: {
     selectedCategory(newCategory) {
       this.category = newCategory;
+      this.originalCategory = JSON.parse(JSON.stringify(newCategory));
+
       this.formErrors.name = null;
       this.formErrors.multipleSelection = null;
     },
   },
   mounted() {
     this.category = this.selectedCategory || defaultCategory;
+    this.originalCategory = JSON.parse(JSON.stringify(this.category));
   },
   methods: {
     isFormValid() {
@@ -113,6 +148,7 @@ export default {
     handleSubmit() {
       if (!this.isFormValid()) return;
       this.$emit('saveCategory', this.category);
+      this.originalCategory = JSON.parse(JSON.stringify(this.category));
     },
   },
   attributesTableFields: [
@@ -130,12 +166,13 @@ export default {
       tdClass: '!gl-border-b-0 gl-md-w-[55%]',
       thClass: '!gl-border-t-0 gl-md-w-[55%]',
     },
+    /* To be added later
     {
       key: 'usedBy',
       label: __('Used by'),
       tdClass: '!gl-border-b-0 gl-md-w-[15%]',
       thClass: '!gl-border-t-0 gl-md-w-[15%]',
-    },
+    }, */
     {
       key: 'actions',
       label: '',
@@ -285,6 +322,7 @@ export default {
             <template v-if="areAttributesEditable" #cell(actions)="{ item }">
               <gl-disclosure-dropdown category="tertiary" icon="ellipsis_v" no-caret>
                 <gl-disclosure-dropdown-item
+                  v-if="item.id"
                   :item="$options.editItem"
                   data-testid="edit-attribute-item"
                   @action="$emit('editAttribute', item)"
@@ -300,7 +338,10 @@ export default {
         </crud-component>
       </gl-form>
     </div>
-    <div v-if="!isLocked" class="gl-border-t gl-sticky gl-bottom-0 gl-w-full gl-bg-default gl-p-6">
+    <div
+      v-if="!isLocked"
+      class="gl-border-t gl-sticky gl-bottom-0 gl-flex gl-w-full gl-items-center gl-bg-default gl-p-6"
+    >
       <gl-button
         category="primary"
         variant="confirm"
@@ -309,6 +350,31 @@ export default {
       >
         {{ s__('SecurityAttributes|Save changes') }}
       </gl-button>
+
+      <div
+        id="unsaved-changes-container"
+        data-testid="unsaved-changes-container"
+        class="gl-ml-5 gl-flex gl-items-center gl-text-sm gl-text-subtle"
+      >
+        <gl-icon v-if="unsavedCount === 0" name="check" variant="success" class="gl-mr-2" />
+        <gl-icon v-else name="warning" variant="warning" class="gl-mr-2" />
+        <span v-if="unsavedCount === 0">
+          {{ s__('SecurityAttributes|All changes saved') }}
+        </span>
+        <span v-else>
+          <span> {{ n__('%d unsaved change', '%d unsaved changes', unsavedCount) }}</span>
+        </span>
+        <gl-popover v-if="unsavedCount > 0" placement="top" target="unsaved-changes-container">
+          <template #title>
+            {{ s__('SecurityAttributes|Unsaved changes') }}
+          </template>
+          <ul class="gl-mb-0 gl-pl-3">
+            <li v-for="(change, index) in unsavedChanges" :key="index" class="gl-ml-2 gl-list-disc">
+              {{ change }}
+            </li>
+          </ul>
+        </gl-popover>
+      </div>
     </div>
   </div>
 </template>
