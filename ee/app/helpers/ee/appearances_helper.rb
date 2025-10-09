@@ -9,25 +9,17 @@ module EE
       _('GitLab Enterprise Edition')
     end
 
-    override :brand_title
-    def brand_title
-      return super unless ::Onboarding.enabled?
+    override :custom_sign_in_brand_title
+    def custom_sign_in_brand_title
+      return unless ::Onboarding.enabled?
 
-      case request.path
-      when new_user_session_path
-        sign_in_page_title
-      when new_user_registration_path
-        sign_up_page_title
-      else
-        super
-      end
-    end
-
-    def sign_in_page_title
       _("Sign in to GitLab")
     end
 
-    def sign_up_page_title
+    override :custom_sign_up_brand_title
+    def custom_sign_up_brand_title
+      return unless ::Onboarding.enabled?
+
       _("Get started with GitLab")
     end
   end

@@ -3,39 +3,39 @@
 require 'spec_helper'
 
 RSpec.describe EE::AppearancesHelper, feature_category: :shared do
-  let_it_be(:appearance) { build_stubbed(:appearance) }
   let_it_be(:user) { build_stubbed(:user) }
 
   describe '#brand_title' do
     before do
-      stub_saas_features(onboarding: true)
       allow(helper).to receive(:current_user).and_return(user)
     end
 
-    it 'returns the sign-in page title' do
-      allow(helper).to receive_message_chain(:request, :path).and_return(new_user_session_path)
+    context 'when onboarding is disabled' do
+      before do
+        stub_saas_features(onboarding: false)
+      end
 
-      expect(helper.send(:brand_title)).to eq('Sign in to GitLab')
+      it 'returns nil with custom sign in' do
+        expect(helper.send(:custom_sign_in_brand_title)).to be_nil
+      end
+
+      it 'returns nil with custom sign up' do
+        expect(helper.send(:custom_sign_up_brand_title)).to be_nil
+      end
     end
 
-    it 'returns the sign-up page title' do
-      allow(helper).to receive_message_chain(:request, :path).and_return(new_user_registration_path)
+    context 'when onboarding is enabled' do
+      before do
+        stub_saas_features(onboarding: true)
+      end
 
-      expect(helper.send(:brand_title)).to eq('Get started with GitLab')
-    end
+      it 'returns the sign-in page title' do
+        expect(helper.send(:custom_sign_in_brand_title)).to eq('Sign in to GitLab')
+      end
 
-    it 'returns EE default brand title when onboarding feature is disabled' do
-      allow(helper).to receive_message_chain(:request, :path).and_return('/dashboard')
-
-      expect(helper.send(:brand_title)).to eq('GitLab Enterprise Edition')
-    end
-
-    it 'returns CE brand title when onboarding feature is disabled' do
-      stub_saas_features(onboarding: false)
-      allow(helper).to receive(:current_appearance).and_return(appearance)
-      allow(helper).to receive_message_chain(:request, :path).and_return(new_user_session_path)
-
-      expect(helper.send(:brand_title)).to eq(appearance.title)
+      it 'returns the sign-up page title' do
+        expect(helper.send(:custom_sign_up_brand_title)).to eq('Get started with GitLab')
+      end
     end
   end
 end
