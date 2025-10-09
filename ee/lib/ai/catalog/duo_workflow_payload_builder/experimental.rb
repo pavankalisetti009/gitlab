@@ -130,7 +130,7 @@ module Ai
         end
 
         def user_prompt(definition)
-          definition.user_prompt
+          params[:user_prompt_input] || definition.user_prompt
         end
 
         def system_prompt(definition)

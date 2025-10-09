@@ -98,6 +98,7 @@ module Ai
             flow: catalog_item,
             flow_version: catalog_item.resolve_version(catalog_item_pinned_version),
             event_type: params[:event].to_s,
+            user_prompt: catalog_item_user_prompt(params[:input]),
             execute_workflow: true
           }
         ).execute
@@ -123,7 +124,6 @@ module Ai
       end
 
       def build_variables(params)
-        serialized_resource = ::Ai::AiResource::Wrapper.new(current_user, resource).wrap.serialize_for_ai.to_json
         base_variables = {
           AI_FLOW_CONTEXT: serialized_resource,
           AI_FLOW_DISCUSSION_ID: params[:discussion_id],
@@ -182,6 +182,16 @@ module Ai
       def link_composite_identity!
         identity = ::Gitlab::Auth::Identity.fabricate(flow_trigger_user)
         identity.link!(current_user) if identity&.composite?
+      end
+
+      def serialized_resource
+        ::Ai::AiResource::Wrapper.new(current_user, resource).wrap.serialize_for_ai.to_json
+      end
+
+      # Pass the user input and the current context as a user prompt to a catalog item
+      # Ideally, it should be prompt variables for better flexibility
+      def catalog_item_user_prompt(user_input)
+        "Input: #{user_input}\nContext: #{serialized_resource}"
       end
     end
   end

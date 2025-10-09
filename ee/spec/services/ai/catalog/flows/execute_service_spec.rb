@@ -11,6 +11,7 @@ RSpec.describe Ai::Catalog::Flows::ExecuteService, :aggregate_failures, feature_
   let_it_be(:agent_item_1) { create(:ai_catalog_item, :agent, project: project) }
   let_it_be(:agent_item_2) { create(:ai_catalog_item, :agent, project: project) }
   let_it_be(:tool_ids) { [1, 2, 5] } # 1 => "gitlab_blob_search" 2 => 'ci_linter', 5 =>  'create_epic'
+  let_it_be(:user_prompt) { nil }
 
   let_it_be(:agent_definition) do
     {
@@ -49,7 +50,8 @@ RSpec.describe Ai::Catalog::Flows::ExecuteService, :aggregate_failures, feature_
       flow: flow,
       flow_version: flow_version,
       event_type: 'manual',
-      execute_workflow: true
+      execute_workflow: true,
+      user_prompt: user_prompt
     }
   end
 
@@ -255,6 +257,18 @@ RSpec.describe Ai::Catalog::Flows::ExecuteService, :aggregate_failures, feature_
         end
 
         it_behaves_like 'returns error response', 'Workflow execution failed'
+      end
+
+      context 'when user_prompt is specified' do
+        let(:service_params) { super().merge({ user_prompt: "test input" }) }
+
+        it 'does not call execute_workflow_service' do
+          result = execute
+          parsed_yaml = YAML.safe_load(result.payload[:flow_config], aliases: true)
+
+          expect(result).to be_success
+          expect(parsed_yaml['prompts'][0]['prompt_template']['user']).to eq('test input')
+        end
       end
     end
   end

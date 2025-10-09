@@ -11,6 +11,7 @@ module Ai
           @flow_version = params[:flow_version]
           @execute_workflow = params[:execute_workflow]
           @event_type = params[:event_type]
+          @user_prompt = params[:user_prompt]
           super
         end
 
@@ -36,7 +37,7 @@ module Ai
 
         private
 
-        attr_reader :flow, :flow_version, :event_type, :execute_workflow
+        attr_reader :flow, :flow_version, :event_type, :user_prompt, :execute_workflow
 
         def validate
           return error('Flow is required') unless flow && flow.flow?
@@ -62,7 +63,8 @@ module Ai
         def generate_flow_config
           payload_builder = ::Ai::Catalog::DuoWorkflowPayloadBuilder::Experimental.new(
             flow,
-            flow_version.version
+            flow_version.version,
+            { user_prompt_input: user_prompt }
           )
           payload_builder.build
         end
