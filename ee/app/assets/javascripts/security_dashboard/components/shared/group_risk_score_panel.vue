@@ -30,7 +30,6 @@ export default {
   data() {
     return {
       riskScore: 0,
-      vulnerabilitiesAverageScore: 0,
       projects: [],
       hasFetchError: false,
       groupedBy: 'default',
@@ -53,9 +52,7 @@ export default {
         return data?.group?.securityMetrics?.riskScore?.score || 0;
       },
       result({ data }) {
-        const { factors, byProject } = data?.group?.securityMetrics?.riskScore || {};
-
-        this.vulnerabilitiesAverageScore = factors?.vulnerabilitiesAverageScore?.factor || 0;
+        const { byProject } = data?.group?.securityMetrics?.riskScore || {};
 
         const projectNodes = [...(byProject?.nodes || [])];
         projectNodes.sort((a, b) => b.score - a.score);
@@ -92,13 +89,11 @@ export default {
     :border-color-class="hasFetchError ? 'gl-border-t-red-500' : ''"
     :title-icon="hasFetchError ? 'error' : ''"
     :title-icon-class="hasFetchError ? 'gl-text-red-500' : ''"
+    :title-popover-classes="['gl-min-w-fit']"
   >
-    <template #info-popover-title>{{ s__('SecurityReports|Risk score') }}</template>
+    <template #info-popover-title>{{ s__('SecurityReports|Risk score formula') }}</template>
     <template #info-popover-content>
-      <risk-score-tooltip
-        :vulnerabilities-average-score-factor="vulnerabilitiesAverageScore"
-        :is-loading="$apollo.queries.riskScore.loading"
-      />
+      <risk-score-tooltip />
     </template>
     <template #filters>
       <gl-badge

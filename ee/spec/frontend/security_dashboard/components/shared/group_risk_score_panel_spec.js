@@ -130,20 +130,6 @@ describe('GroupRiskScorePanel', () => {
     it('renders the risk score tooltip', () => {
       expect(findRiskScoreTooltip().exists()).toBe(true);
     });
-
-    it('passes correct props to the risk score tooltip', async () => {
-      expect(findRiskScoreTooltip().props()).toMatchObject({
-        vulnerabilitiesAverageScoreFactor: 0,
-        isLoading: true,
-      });
-
-      await waitForPromises();
-
-      expect(findRiskScoreTooltip().props()).toMatchObject({
-        vulnerabilitiesAverageScoreFactor: defaultVulnerabilitiesAverageScore,
-        isLoading: false,
-      });
-    });
   });
 
   describe('group by functionality', () => {

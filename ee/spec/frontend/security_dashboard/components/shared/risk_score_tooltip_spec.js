@@ -1,72 +1,44 @@
-import { GlSkeletonLoader } from '@gitlab/ui';
+import { GlSprintf } from '@gitlab/ui';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import RiskScoreTooltip from 'ee/security_dashboard/components/shared/risk_score_tooltip.vue';
 
 describe('RiskScoreTooltip', () => {
   let wrapper;
 
-  const defaultProps = {
-    isLoading: false,
-    vulnerabilitiesAverageScoreFactor: 2.5,
-  };
-
-  const createComponent = (props = {}) => {
+  const createComponent = () => {
     wrapper = shallowMountExtended(RiskScoreTooltip, {
-      propsData: {
-        ...defaultProps,
-        ...props,
+      stubs: {
+        GlSprintf,
       },
     });
   };
 
-  const findDescription = () => wrapper.findByTestId('risk-score-description');
-  const findLabelForId = (id) => wrapper.findByTestId(`${id}-label`);
-  const findValueForId = (id) => wrapper.findByTestId(`${id}-value`);
-  const findSkeletonLoader = () => wrapper.findComponent(GlSkeletonLoader);
+  const findFormulaDescription = () => wrapper.find('p');
+  const findExplanationItems = () => wrapper.findAll('ol li');
 
-  describe('loaded state', () => {
-    beforeEach(createComponent);
+  beforeEach(createComponent);
 
-    it('renders the vulnerabilities average score label', () => {
-      expect(findLabelForId('vulnerabilities-average-score').text()).toBe(
-        'Vulnerabilities average score',
-      );
-    });
-
-    it('displays the formatted score value', () => {
-      expect(findValueForId('vulnerabilities-average-score').text()).toBe(
-        `${defaultProps.vulnerabilitiesAverageScoreFactor}x`,
-      );
-    });
-
-    it('renders the description text', () => {
-      expect(findDescription().text()).toBe(
-        '(Includes Severity, Age, Exploitation status, EPSS score, Reachability, and/or Secret validity)',
-      );
-    });
-
-    it('does not show skeleton loader', () => {
-      expect(findSkeletonLoader().exists()).toBe(false);
-    });
+  it('renders the risk score formula description', () => {
+    expect(findFormulaDescription().text()).toMatchInterpolatedText(
+      '(Sum of open vulnerability scores%{supStart}*%{supEnd} + Age penalty%{supStart}†%{supEnd}) * Diminishing factor%{supStart}‡%{supEnd}',
+    );
   });
 
-  describe('loading state', () => {
-    beforeEach(() => {
-      createComponent({ isLoading: true });
-    });
+  it('renders the open vulnerability scores explanation', () => {
+    expect(findExplanationItems().at(0).text()).toMatchInterpolatedText(
+      '%{supStart}*%{supEnd}Base score (associated with severity level) + EPSS modifier + KEV modifier',
+    );
+  });
 
-    it('shows skeleton loader when loading', () => {
-      expect(findSkeletonLoader().exists()).toBe(true);
-    });
+  it('renders the age penalty explanation', () => {
+    expect(findExplanationItems().at(1).text()).toMatchInterpolatedText(
+      '%{supStart}†%{supEnd}Sum of vulnerability ages in months * 0.005',
+    );
+  });
 
-    it('still shows the label when loading', () => {
-      expect(findLabelForId('vulnerabilities-average-score').text()).toBe(
-        'Vulnerabilities average score',
-      );
-    });
-
-    it('still shows the description when loading', () => {
-      expect(findDescription().exists()).toBe(true);
-    });
+  it('renders the diminishing factor explanation', () => {
+    expect(findExplanationItems().at(2).text()).toMatchInterpolatedText(
+      '%{supStart}‡%{supEnd}Diminishing factor = 1.0 / √(vulnerability count)',
+    );
   });
 });
