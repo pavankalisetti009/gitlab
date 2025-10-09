@@ -279,8 +279,15 @@ describe('MR Widget Security Reports', () => {
             enabledScansQuery,
             jest
               .fn()
-              .mockResolvedValueOnce(enabledScansQueryResult({ full: { ready: false } }))
-              .mockResolvedValueOnce(enabledScansQueryResult()), // Second call is when all is ready
+              .mockResolvedValueOnce(
+                enabledScansQueryResult({ full: { ready: false }, partial: { ready: false } }),
+              )
+              .mockResolvedValueOnce(
+                enabledScansQueryResult({
+                  full: { ready: true },
+                  partial: { ready: true },
+                }),
+              ),
           ],
         ]),
       });
@@ -296,10 +303,10 @@ describe('MR Widget Security Reports', () => {
         }),
       );
 
-      // Widget should not be visible
-      expect(findWidget().exists()).toBe(false);
+      // Widget should be loading
+      expect(findWidget().text()).toBe('Security scanning is loading');
 
-      const spy = jest.spyOn(wrapper.vm.pollingInterval, 'destroy');
+      const spy = jest.spyOn(wrapper.vm.$options.pollingInterval, 'destroy');
 
       wrapper.vm.$apollo.queries.enabledScans.refetch();
 
