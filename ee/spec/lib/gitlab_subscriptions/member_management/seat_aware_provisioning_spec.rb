@@ -14,11 +14,11 @@ RSpec.describe GitlabSubscriptions::MemberManagement::SeatAwareProvisioning, fea
 
   let(:instance) { test_class.new }
 
-  describe '#adjust_access_level_for_seat_availability' do
+  describe '#calculate_adjusted_access_level' do
     let(:desired_access) { Gitlab::Access::DEVELOPER }
 
     subject(:result) do
-      instance.adjust_access_level_for_seat_availability(group, user, desired_access)
+      instance.calculate_adjusted_access_level(group, user, desired_access)
     end
 
     context 'when on saas', :saas do
@@ -67,6 +67,16 @@ RSpec.describe GitlabSubscriptions::MemberManagement::SeatAwareProvisioning, fea
             .to have_received(:seats_available_for?)
             .with(group, [user.id], desired_access, nil)
         end
+
+        it 'does not log access level adjustment' do
+          allow(Gitlab::AppLogger).to receive(:info)
+
+          result
+
+          expect(Gitlab::AppLogger).not_to have_received(:info).with(
+            hash_including(message: 'Group membership access level adjusted due to BSO seat limits')
+          )
+        end
       end
 
       context 'when seats are not available' do
@@ -85,6 +95,43 @@ RSpec.describe GitlabSubscriptions::MemberManagement::SeatAwareProvisioning, fea
             expect(GitlabSubscriptions::MemberManagement::BlockSeatOverages)
               .to have_received(:seats_available_for?)
               .with(group, [user.id], desired_access, nil)
+          end
+
+          it 'logs the access level adjustment' do
+            allow(Gitlab::AppLogger).to receive(:info)
+
+            result
+
+            expect(Gitlab::AppLogger).to have_received(:info).with(
+              hash_including(
+                message: 'Group membership access level adjusted due to BSO seat limits',
+                group_id: group.id,
+                group_path: group.full_path,
+                user_id: user.id,
+                requested_access_level: desired_access,
+                adjusted_access_level: Gitlab::Access::MINIMAL_ACCESS,
+                feature_flag: 'bso_minimal_access_fallback'
+              )
+            )
+          end
+
+          it 'logs the access level adjustment with extra parameters' do
+            allow(Gitlab::AppLogger).to receive(:info)
+
+            instance.calculate_adjusted_access_level(group, user, desired_access, { scim_group_uid: 'test-uid' })
+
+            expect(Gitlab::AppLogger).to have_received(:info).with(
+              hash_including(
+                message: 'Group membership access level adjusted due to BSO seat limits',
+                group_id: group.id,
+                group_path: group.full_path,
+                user_id: user.id,
+                requested_access_level: desired_access,
+                adjusted_access_level: Gitlab::Access::MINIMAL_ACCESS,
+                feature_flag: 'bso_minimal_access_fallback',
+                scim_group_uid: 'test-uid'
+              )
+            )
           end
         end
 
@@ -106,7 +153,7 @@ RSpec.describe GitlabSubscriptions::MemberManagement::SeatAwareProvisioning, fea
       let(:email) { 'test@example.com' }
 
       subject(:result) do
-        instance.adjust_access_level_for_seat_availability(group, email, desired_access)
+        instance.calculate_adjusted_access_level(group, email, desired_access)
       end
 
       before do
@@ -140,6 +187,24 @@ RSpec.describe GitlabSubscriptions::MemberManagement::SeatAwareProvisioning, fea
           expect(GitlabSubscriptions::MemberManagement::BlockSeatOverages)
             .to have_received(:seats_available_for?)
             .with(group, [email], desired_access, nil)
+        end
+
+        it 'logs the access level adjustment with email invitee' do
+          allow(Gitlab::AppLogger).to receive(:info)
+
+          result
+
+          expect(Gitlab::AppLogger).to have_received(:info).with(
+            hash_including(
+              message: 'Group membership access level adjusted due to BSO seat limits',
+              group_id: group.id,
+              group_path: group.full_path,
+              user_id: nil,
+              requested_access_level: desired_access,
+              adjusted_access_level: Gitlab::Access::MINIMAL_ACCESS,
+              feature_flag: 'bso_minimal_access_fallback'
+            )
+          )
         end
       end
 

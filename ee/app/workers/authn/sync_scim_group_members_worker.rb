@@ -91,12 +91,10 @@ module Authn
           existing_member = group.members.by_user_id(user.id).first
           next if existing_member && existing_member.access_level >= highest_access_level
 
-          effective_access_level = adjust_access_level_for_seat_availability(group, user, highest_access_level)
+          effective_access_level = calculate_adjusted_access_level(
+            group, user, highest_access_level, { scim_group_uid: scim_group_uid }
+          )
           group.add_member(user, effective_access_level)
-
-          next if effective_access_level == highest_access_level
-
-          log_bso_access_level_adjustment(group, user, highest_access_level, effective_access_level)
         end
       end
     end
@@ -184,20 +182,6 @@ module Authn
 
     def group_links
       @group_links ||= SamlGroupLink.by_scim_group_uid(@scim_group_uid)
-    end
-
-    def log_bso_access_level_adjustment(group, user, desired_access_level, effective_access_level)
-      Gitlab::AppLogger.info(
-        message: 'SCIM group membership access level adjusted due to BSO seat limits',
-        scim_group_uid: scim_group_uid,
-        group_id: group.id,
-        group_path: group.full_path,
-        user_id: user.id,
-        user_email: user.email,
-        desired_access_level: desired_access_level,
-        effective_access_level: effective_access_level,
-        feature_flag: 'bso_minimal_access_fallback'
-      )
     end
   end
 end

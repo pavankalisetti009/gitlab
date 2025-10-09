@@ -276,26 +276,6 @@ module EE
               end
             end
 
-            def calculate_adjusted_access_level(group, user, requested_access_level)
-              adjusted_access_level = adjust_access_level_for_seat_availability(group, user, requested_access_level)
-
-              if adjusted_access_level != requested_access_level
-                info_adjusted_access_level(group, user, adjusted_access_level, requested_access_level)
-              end
-
-              adjusted_access_level
-            end
-
-            def info_adjusted_access_level(group, user, adjusted_access_level, requested_access_level)
-              logger.info(
-                message: 'LDAP user given different access level due to seat overage',
-                adjusted_access_level: adjusted_access_level,
-                requested_access_level: requested_access_level,
-                group_id: group.id,
-                user_id: user.id
-              )
-            end
-
             def warn_cannot_remove_last_owner(user, group)
               logger.warn(
                 <<-MSG.strip_heredoc.tr("\n", ' ')
