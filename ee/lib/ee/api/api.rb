@@ -55,6 +55,7 @@ module EE
         mount ::API::ProjectApprovals
         mount ::API::ProjectGoogleCloudIntegration
         mount ::API::Vulnerabilities
+        mount ::API::VulnerabilityFlags
         mount ::API::VulnerabilityFindings
         mount ::API::VulnerabilityIssueLinks
         mount ::API::VulnerabilityArchiveExports
