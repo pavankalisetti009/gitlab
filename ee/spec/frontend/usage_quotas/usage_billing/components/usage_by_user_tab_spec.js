@@ -78,6 +78,10 @@ describe('UsageByUserTab', () => {
     });
 
     describe('rendering table', () => {
+      const findRows = () => findTable().find('tbody').findAll('tr');
+      const findFirstRow = () => findRows().at(0);
+      const findCell = (index) => findFirstRow().find(`td:nth-child(${index})`);
+
       beforeEach(async () => {
         createComponent({ mountFn: mountExtended });
         await waitForPromises();
@@ -94,7 +98,7 @@ describe('UsageByUserTab', () => {
             label: 'Allocation used',
           },
           {
-            key: 'poolUsed',
+            key: 'poolCreditsUsed',
             label: 'Pool used',
           },
           {
@@ -108,32 +112,74 @@ describe('UsageByUserTab', () => {
         ]);
       });
 
-      it('renders the table with user avatar pointing to the correct path', () => {
-        const userAvatars = findTable().findAllComponents(UserAvatarLink);
+      describe('rendering table', () => {
+        it('will render all rows', () => {
+          const rows = findRows();
+          expect(rows).toHaveLength(8);
+        });
 
-        expect(userAvatars).toHaveLength(8);
+        describe.each`
+          userId | userName           | allocationUsed | allocationUsedPercent | poolUsed | totalCreditsUsed | status
+          ${'1'} | ${'Alice Johnson'} | ${'450 / 500'} | ${90}                 | ${'0'}   | ${'450'}         | ${'Unknown'}
+        `(
+          'rendering $userId: $userName',
+          ({
+            userId,
+            userName,
+            allocationUsed,
+            allocationUsedPercent,
+            poolUsed,
+            totalCreditsUsed,
+            status,
+          }) => {
+            describe('user cell', () => {
+              it('renders user avatar with link to the user details page', () => {
+                const userAvatar = findCell(1).findComponent(UserAvatarLink);
+                expect(userAvatar.props('linkHref')).toBe(`/path/to/user/${userId}`);
+              });
 
-        // testing the first two instances
-        expect(userAvatars.at(0).props('linkHref')).toBe('/path/to/user/1');
-        expect(userAvatars.at(1).props('linkHref')).toBe('/path/to/user/2');
+              it('renders user avatar pointing to the correct path', () => {
+                const cell = findCell(1);
+                expect(cell.text()).toBe(userName);
+              });
+            });
+
+            describe('allocation used cell', () => {
+              it('renders the allocation usage values', () => {
+                const cell = findCell(2);
+                expect(cell.text()).toBe(allocationUsed);
+              });
+
+              it('renders the progress bars for allocation', () => {
+                const cell = findCell(2);
+                const progressBar = cell.findComponent(GlProgressBar);
+
+                expect(progressBar.props('value')).toBe(allocationUsedPercent);
+              });
+            });
+
+            it('renders pool used cell', () => {
+              const cell = findCell(3);
+
+              expect(cell.text()).toBe(poolUsed);
+            });
+
+            it('renders total credits used cell', () => {
+              const cell = findCell(4);
+
+              expect(cell.text()).toBe(totalCreditsUsed);
+            });
+
+            it('renders status cell', () => {
+              const cell = findCell(5);
+
+              expect(cell.text()).toBe(status);
+            });
+          },
+        );
       });
 
-      // NOTE: with limited GraphQL API, we can't test this functionality at the moment
-      // TODO: tests to be restored within https://gitlab.com/gitlab-org/gitlab/-/issues/573644
-      /* eslint-disable jest/no-disabled-tests */
-      it.skip('renders the progress bars for allocation', () => {
-        const progressBars = findProgressBars();
-
-        expect(progressBars).toHaveLength(8);
-        // testing the first two instances
-        expect(progressBars.at(0).props('value')).toBe(90);
-        expect(progressBars.at(1).props('value')).toBe(100);
-      });
-
-      // NOTE: with limited GraphQL API, we can't test this functionality at the moment
-      // TODO: tests to be restored within https://gitlab.com/gitlab-org/gitlab/-/issues/573644
-      /* eslint-disable jest/no-disabled-tests */
-      describe.skip('with zero allocation', () => {
+      describe('with zero allocation', () => {
         beforeEach(async () => {
           getSubscriptionUsersUsageQueryHandler.mockResolvedValue(
             mockUsersUsageDataWithZeroAllocation,

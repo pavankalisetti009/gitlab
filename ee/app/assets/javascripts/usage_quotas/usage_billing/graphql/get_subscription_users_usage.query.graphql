@@ -7,11 +7,21 @@ query getSubscriptionUsersUsage(
 ) {
   subscriptionUsage(namespacePath: $namespacePath) {
     usersUsage {
+      # totalUsersUsingCredits
+      # totalUsersUsingPool
+      # totalUsersUsingOverage
       users(first: $first, last: $last, after: $after, before: $before) {
         nodes {
           id
           name
+          # username
           avatarUrl
+          usage {
+            creditsUsed
+            totalCredits
+            poolCreditsUsed
+            # overageCreditsUsed
+          }
         }
         pageInfo {
           hasNextPage

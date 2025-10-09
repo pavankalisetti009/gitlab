@@ -70146,9 +70146,6 @@ msgstr ""
 msgid "UsageBilling|An error occurred while fetching data"
 msgstr ""
 
-msgid "UsageBilling|Blocked"
-msgstr ""
-
 msgid "UsageBilling|Credit amount"
 msgstr ""
 
@@ -70191,9 +70188,6 @@ msgstr ""
 msgid "UsageBilling|No user data available"
 msgstr ""
 
-msgid "UsageBilling|Normal usage"
-msgstr ""
-
 msgid "UsageBilling|Peak daily use"
 msgstr ""
 
@@ -70234,12 +70228,6 @@ msgid "UsageBilling|Users blocked"
 msgstr ""
 
 msgid "UsageBilling|Users using allocation"
-msgstr ""
-
-msgid "UsageBilling|Using overage"
-msgstr ""
-
-msgid "UsageBilling|Using pool"
 msgstr ""
 
 msgid "UsageBilling|You can increase your commitment amount to extend your monthly allocation of credits."
