@@ -992,6 +992,11 @@
           "label": "pypi",
           "value": 12,
           "input_file_path": "requirements.txt"
+        },
+        {
+          "event": "collect_gemnasium_python_scan_non_default_config_metrics_from_pipeline",
+          "property": "eb0e47db-9d04-4557-ae8e-c3b9dffc601e",
+          "label": "DS_INCLUDE_DEV_DEPENDENCIES"
         }
       ]
     }

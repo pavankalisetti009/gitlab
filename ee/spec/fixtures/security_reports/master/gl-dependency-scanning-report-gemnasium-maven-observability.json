@@ -3290,6 +3290,11 @@
           "label": "maven",
           "value": 36,
           "input_file_path": "pom.xml"
+        },
+        {
+          "event": "collect_gemnasium_maven_scan_non_default_config_metrics_from_pipeline",
+          "property": "077e707f-175c-4eed-a998-1be56780666d",
+          "label": "DS_INCLUDE_DEV_DEPENDENCIES"
         }
       ]
     }
