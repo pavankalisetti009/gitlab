@@ -16,16 +16,22 @@ module GitlabSubscriptions
       private
 
       def adjust_access_level_for_seat_availability(source, invitee, desired_access_level)
-        return desired_access_level if ::Gitlab::Saas.feature_available?(:gitlab_com_subscriptions)
+        return desired_access_level unless feature_flag_enabled?(source)
         return desired_access_level unless apply_bso_adjustment?(source)
         return desired_access_level if seats_available_for_desired_access?(source, invitee, desired_access_level)
 
         ::Gitlab::Access::MINIMAL_ACCESS
       end
 
-      def apply_bso_adjustment?(source)
-        return false unless ::Feature.enabled?(:bso_minimal_access_fallback, :instance)
+      def feature_flag_enabled?(source)
+        if ::Gitlab::Saas.feature_available?(:gitlab_com_subscriptions)
+          ::Feature.enabled?(:bso_minimal_access_fallback, source.root_ancestor)
+        else
+          ::Feature.enabled?(:bso_minimal_access_fallback, :instance)
+        end
+      end
 
+      def apply_bso_adjustment?(source)
         ::GitlabSubscriptions::MemberManagement::BlockSeatOverages.block_seat_overages?(source)
       end
 
