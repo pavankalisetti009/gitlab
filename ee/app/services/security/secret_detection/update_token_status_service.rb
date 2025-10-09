@@ -3,6 +3,8 @@
 module Security
   module SecretDetection
     class UpdateTokenStatusService
+      include Gitlab::InternalEventsTracking
+
       DEFAULT_BATCH_SIZE = 100
 
       attr_reader :project
@@ -19,11 +21,22 @@ module Security
           .report_type('secret_detection')
           .by_latest_pipeline(pipeline_id)
 
+        track_count = 0
         relation.each_batch(of: DEFAULT_BATCH_SIZE) do |batch|
           process_findings_batch(batch, :vulnerability)
+          track_count += batch.size
 
           Vulnerabilities::PartnerTokenService.process_finding_async(batch, project)
         end
+
+        track_internal_event(
+          'number_of_tokens_processed_by_token_status_service',
+          project: @project,
+          additional_properties: {
+            label: 'vulnerability', # Type of pipeline that triggered token status processing: security or vulnerability
+            value: track_count # Number of secret detection findings sent to UpdateTokenStatusService for processing
+          }
+        )
       end
 
       # For ::Security::Finding (MR pipelines)
@@ -33,9 +46,20 @@ module Security
 
         relation = @pipeline.security_findings.by_report_types(['secret_detection'])
 
+        track_count = 0
         relation.each_batch(of: DEFAULT_BATCH_SIZE) do |batch|
           process_findings_batch(batch, :security)
+          track_count += batch.size
         end
+
+        track_internal_event(
+          'number_of_tokens_processed_by_token_status_service',
+          project: @project,
+          additional_properties: {
+            label: 'security', # Type of pipeline that triggered token status processing: security or vulnerability
+            value: track_count # Number of secret detection findings sent to UpdateTokenStatusService for processing
+          }
+        )
       end
 
       # Single Vulnerabilities::Finding

@@ -73,6 +73,18 @@ RSpec.describe Security::SecretDetection::UpdateTokenStatusService, feature_cate
           execute
         end
 
+        it 'tracks number_of_tokens_processed_by_token_status_service event' do
+          expect { execute }
+            .to trigger_internal_events('number_of_tokens_processed_by_token_status_service')
+            .with(
+              project: project,
+              additional_properties: {
+                label: 'vulnerability',
+                value: 1
+              }
+            )
+        end
+
         context 'when there are no findings' do
           let(:empty_pipeline) { create(:ci_pipeline, :success, project: project) }
 
@@ -433,7 +445,8 @@ RSpec.describe Security::SecretDetection::UpdateTokenStatusService, feature_cate
             # 8. Query to fetch tokens
             # 9. Query to insert/update statuses
             # 10. Query to fetch project to check FF secret_detection_partner_token_verification
-            expect(query_count).to eq(10)
+            # 11. Query to insert tracking event number_of_tokens_processed_by_token_status_service
+            expect(query_count).to eq(11)
           end
         end
 
@@ -728,6 +741,18 @@ RSpec.describe Security::SecretDetection::UpdateTokenStatusService, feature_cate
             context 'when validity checks is enabled for the project' do
               before do
                 project.security_setting.update!(validity_checks_enabled: true)
+              end
+
+              it 'tracks number_of_tokens_processed_by_token_status_service event' do
+                expect { execute }
+                  .to trigger_internal_events('number_of_tokens_processed_by_token_status_service')
+                  .with(
+                    project: project,
+                    additional_properties: {
+                      label: 'security',
+                      value: 1
+                    }
+                  )
               end
 
               it 'creates security finding token status' do
