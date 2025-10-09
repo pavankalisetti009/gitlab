@@ -24,9 +24,16 @@ RSpec.describe Geo::SystemCheck::CurrentNodeCheck, :geo, :silence_stdout, featur
   end
 
   describe '.check_pass' do
-    it 'outputs additional helpful info', quarantine: 'https://gitlab.com/gitlab-org/gitlab/-/issues/411332' do
+    it 'outputs additional helpful info' do
+      # Clear any cached Geo state to ensure clean test environment
+      Gitlab::Geo.expire_cache!
+
       allow(GeoNode).to receive(:current_node_name).and_return('Foo')
-      create(:geo_node, :primary, name: GeoNode.current_node_name)
+
+      primary_node = create(:geo_node, :primary, name: GeoNode.current_node_name)
+
+      # Ensure Gitlab::Geo.current_node returns our created node
+      allow(Gitlab::Geo).to receive(:current_node).and_return(primary_node)
 
       expect(described_class.check_pass).to eq('yes, found a primary node named "Foo"')
     end
