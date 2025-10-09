@@ -1,5 +1,11 @@
 <script>
-import { GlAlert, GlEmptyState, GlFilteredSearch, GlSkeletonLoader } from '@gitlab/ui';
+import {
+  GlAlert,
+  GlEmptyState,
+  GlFilteredSearch,
+  GlPagination,
+  GlSkeletonLoader,
+} from '@gitlab/ui';
 import emptyStateIllustrationUrl from '@gitlab/svgs/dist/illustrations/empty-state/empty-radar-md.svg?url';
 import { s__ } from '~/locale';
 import EmptyResult from '~/vue_shared/components/empty_result.vue';
@@ -8,13 +14,18 @@ import { convertObjectPropsToCamelCase } from '~/lib/utils/common_utils';
 import { captureException } from '../../../sentry_utils';
 import UpstreamsTable from './upstreams_table.vue';
 
+const PAGE_SIZE = 20;
+const INITIAL_PAGE = 1;
+
 export default {
   name: 'MavenUpstreamsList',
+  perPage: PAGE_SIZE,
   components: {
     EmptyResult,
     GlAlert,
     GlEmptyState,
     GlFilteredSearch,
+    GlPagination,
     GlSkeletonLoader,
     UpstreamsTable,
   },
@@ -24,15 +35,14 @@ export default {
       alertMessage: '',
       isLoading: false,
       searchTerm: '',
+      page: INITIAL_PAGE,
       mavenUpstreams: [],
+      mavenUpstreamsTotalCount: 0,
     };
   },
   computed: {
     hasSearchTerm() {
       return this.searchTerm.length > 0;
-    },
-    isSearching() {
-      return this.hasSearchTerm && this.isLoading;
     },
     showUpstreamsTable() {
       return this.mavenUpstreams.length > 0 || this.hasSearchTerm;
@@ -47,12 +57,15 @@ export default {
     hasUpstreams() {
       return this.upstreams.length > 0;
     },
+    showPagination() {
+      return this.mavenUpstreamsTotalCount > this.$options.perPage;
+    },
   },
   created() {
     this.fetchMavenUpstreamRegistriesList();
   },
   methods: {
-    async fetchMavenUpstreamRegistriesList(searchTerm = '') {
+    async fetchMavenUpstreamRegistriesList(searchTerm = '', page = this.page) {
       this.searchTerm = searchTerm;
       this.alertMessage = '';
       try {
@@ -61,11 +74,14 @@ export default {
           id: this.fullPath,
           params: {
             upstream_name: this.searchTerm,
+            page,
+            per_page: PAGE_SIZE,
           },
         });
 
+        this.mavenUpstreamsTotalCount = Number(response.headers['x-total']) || 0;
         this.mavenUpstreams = response.data;
-        this.$emit('updateCount', response.headers['x-total']);
+        this.$emit('updateCount', this.mavenUpstreamsTotalCount);
       } catch (error) {
         this.alertMessage =
           error.message ||
@@ -75,8 +91,13 @@ export default {
         this.isLoading = false;
       }
     },
+    handlePageChange(page) {
+      this.page = page;
+      this.fetchMavenUpstreamRegistriesList(this.searchTerm);
+    },
     searchUpstreams(filters) {
       const [searchTerm] = filters;
+      this.page = INITIAL_PAGE;
       this.fetchMavenUpstreamRegistriesList(searchTerm);
     },
   },
@@ -100,8 +121,17 @@ export default {
     <gl-alert v-if="alertMessage" variant="danger" :dismissible="false">
       {{ alertMessage }}
     </gl-alert>
-    <upstreams-table v-if="hasUpstreams" :upstreams="upstreams" :busy="isSearching" />
+    <upstreams-table v-if="hasUpstreams" :upstreams="upstreams" :busy="isLoading" />
     <empty-result v-else />
+    <gl-pagination
+      v-if="showPagination"
+      :value="page"
+      :per-page="$options.perPage"
+      :total-items="mavenUpstreamsTotalCount"
+      align="center"
+      class="gl-mt-5"
+      @input="handlePageChange"
+    />
   </div>
   <div v-else>
     <gl-alert v-if="alertMessage" variant="danger" :dismissible="false">

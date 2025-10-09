@@ -1,4 +1,10 @@
-import { GlAlert, GlEmptyState, GlFilteredSearch, GlSkeletonLoader } from '@gitlab/ui';
+import {
+  GlAlert,
+  GlEmptyState,
+  GlFilteredSearch,
+  GlPagination,
+  GlSkeletonLoader,
+} from '@gitlab/ui';
 import { nextTick } from 'vue';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import waitForPromises from 'helpers/wait_for_promises';
@@ -22,6 +28,7 @@ describe('MavenUpstreamsList', () => {
   const findEmptyState = () => wrapper.findComponent(GlEmptyState);
   const findAlert = () => wrapper.findComponent(GlAlert);
   const findFilteredSearch = () => wrapper.findComponent(GlFilteredSearch);
+  const findPagination = () => wrapper.findComponent(GlPagination);
   const findSkeletonLoader = () => wrapper.findComponent(GlSkeletonLoader);
   const findUpstreamsTable = () => wrapper.findComponent(UpstreamsTable);
   const findEmptyResult = () => wrapper.findComponent(EmptyResult);
@@ -57,6 +64,8 @@ describe('MavenUpstreamsList', () => {
         id: 'gitlab-org/gitlab',
         params: {
           upstream_name: '',
+          page: 1,
+          per_page: 20,
         },
       });
     });
@@ -96,7 +105,7 @@ describe('MavenUpstreamsList', () => {
     });
 
     it('emits updateCount event with total count', () => {
-      expect(wrapper.emitted('updateCount')).toEqual([['2']]);
+      expect(wrapper.emitted('updateCount')).toEqual([[2]]);
     });
 
     it('does not show empty state', () => {
@@ -132,7 +141,7 @@ describe('MavenUpstreamsList', () => {
     });
 
     it('emits updateCount event with zero', () => {
-      expect(wrapper.emitted('updateCount')).toEqual([['0']]);
+      expect(wrapper.emitted('updateCount')).toEqual([[0]]);
     });
   });
 
@@ -152,6 +161,8 @@ describe('MavenUpstreamsList', () => {
         id: 'gitlab-org/gitlab',
         params: {
           upstream_name: 'test-search',
+          page: 1,
+          per_page: 20,
         },
       });
     });
@@ -174,6 +185,94 @@ describe('MavenUpstreamsList', () => {
       await nextTick();
 
       expect(findUpstreamsTable().props('busy')).toBe(true);
+    });
+  });
+
+  describe('pagination', () => {
+    describe('when total count is greater than page size', () => {
+      beforeEach(async () => {
+        getMavenUpstreamRegistriesList.mockResolvedValue({
+          data: mockUpstreams,
+          headers: { 'x-total': '25' },
+        });
+        createComponent();
+        await waitForPromises();
+      });
+
+      it('shows pagination component', () => {
+        expect(findPagination().exists()).toBe(true);
+      });
+
+      it('configures pagination with correct props', () => {
+        expect(findPagination().props()).toMatchObject({
+          value: 1,
+          perPage: 20,
+          totalItems: 25,
+        });
+      });
+
+      it('fetches data for new page when pagination changes', async () => {
+        getMavenUpstreamRegistriesList.mockClear();
+
+        findPagination().vm.$emit('input', 2);
+        await waitForPromises();
+
+        expect(getMavenUpstreamRegistriesList).toHaveBeenCalledWith({
+          id: 'gitlab-org/gitlab',
+          params: {
+            upstream_name: '',
+            page: 2,
+            per_page: 20,
+          },
+        });
+      });
+
+      it('maintains search term when changing pages', async () => {
+        findFilteredSearch().vm.$emit('submit', ['test-search']);
+        await waitForPromises();
+        getMavenUpstreamRegistriesList.mockClear();
+
+        findPagination().vm.$emit('input', 3);
+        await waitForPromises();
+
+        expect(getMavenUpstreamRegistriesList).toHaveBeenCalledWith({
+          id: 'gitlab-org/gitlab',
+          params: {
+            upstream_name: 'test-search',
+            page: 3,
+            per_page: 20,
+          },
+        });
+      });
+
+      it('resets page to 1 when search term changes', () => {
+        findPagination().vm.$emit('input', 2);
+        findFilteredSearch().vm.$emit('submit', ['test-search']);
+
+        expect(getMavenUpstreamRegistriesList).toHaveBeenLastCalledWith({
+          id: 'gitlab-org/gitlab',
+          params: {
+            upstream_name: 'test-search',
+            page: 1,
+            per_page: 20,
+          },
+        });
+      });
+    });
+
+    describe('when total count is less than or equal to page size', () => {
+      beforeEach(async () => {
+        getMavenUpstreamRegistriesList.mockResolvedValue({
+          data: mockUpstreams,
+          headers: { 'x-total': '15' },
+        });
+        createComponent();
+        await waitForPromises();
+      });
+
+      it('does not show pagination component', () => {
+        expect(findPagination().exists()).toBe(false);
+      });
     });
   });
 
