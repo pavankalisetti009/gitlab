@@ -5,6 +5,7 @@ import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import waitForPromises from 'helpers/wait_for_promises';
 import createMockApollo from 'helpers/mock_apollo_helper';
 import createAiCatalogFlow from 'ee/ai/catalog/graphql/mutations/create_ai_catalog_flow.mutation.graphql';
+import createAiCatalogThirdPartyFlow from 'ee/ai/catalog/graphql/mutations/create_ai_catalog_third_party_flow.mutation.graphql';
 import AiCatalogFlowsNew from 'ee/ai/catalog/pages/ai_catalog_flows_new.vue';
 import AiCatalogFlowForm from 'ee/ai/catalog/components/ai_catalog_flow_form.vue';
 import { AI_CATALOG_FLOWS_SHOW_ROUTE } from 'ee/ai/catalog/router/constants';
@@ -19,8 +20,13 @@ jest.mock('~/sentry/sentry_browser_wrapper');
 
 describe('AiCatalogFlowsNew', () => {
   let wrapper;
-  let createAiCatalogFlowMock;
 
+  const createAiCatalogFlowMock = jest
+    .fn()
+    .mockResolvedValue(mockCreateAiCatalogFlowSuccessMutation);
+  const createAiCatalogThirdPartyFlowMock = jest
+    .fn()
+    .mockResolvedValue(mockCreateAiCatalogFlowSuccessMutation);
   const mockToast = {
     show: jest.fn(),
   };
@@ -28,12 +34,17 @@ describe('AiCatalogFlowsNew', () => {
     push: jest.fn(),
   };
 
-  const createComponent = () => {
-    createAiCatalogFlowMock = jest.fn().mockResolvedValue(mockCreateAiCatalogFlowSuccessMutation);
-    const apolloProvider = createMockApollo([[createAiCatalogFlow, createAiCatalogFlowMock]]);
+  const createComponent = ({ provide = {} } = {}) => {
+    const apolloProvider = createMockApollo([
+      [createAiCatalogFlow, createAiCatalogFlowMock],
+      [createAiCatalogThirdPartyFlow, createAiCatalogThirdPartyFlowMock],
+    ]);
 
     wrapper = shallowMountExtended(AiCatalogFlowsNew, {
       apolloProvider,
+      provide: {
+        ...provide,
+      },
       mocks: {
         $router: mockRouter,
         $toast: mockToast,
@@ -59,6 +70,7 @@ describe('AiCatalogFlowsNew', () => {
       projectId: project.id,
       public: true,
       release: true,
+      steps: [],
     };
 
     const submitForm = () => findForm().vm.$emit('submit', formValues);
@@ -66,6 +78,7 @@ describe('AiCatalogFlowsNew', () => {
     it('sends a create request', () => {
       submitForm();
 
+      expect(createAiCatalogThirdPartyFlowMock).not.toHaveBeenCalled();
       expect(createAiCatalogFlowMock).toHaveBeenCalledTimes(1);
       expect(createAiCatalogFlowMock).toHaveBeenCalledWith({
         input: formValues,
@@ -78,6 +91,57 @@ describe('AiCatalogFlowsNew', () => {
       await submitForm();
 
       expect(findForm().props('isLoading')).toBe(true);
+    });
+
+    describe('when flow type is third-party flow', () => {
+      beforeEach(() => {
+        createComponent({
+          provide: {
+            glFeatures: {
+              aiCatalogThirdPartyFlows: true,
+            },
+          },
+        });
+      });
+
+      const thirdPartyFlowFormValues = {
+        name,
+        description,
+        projectId: project.id,
+        public: true,
+        definition: 'image:node@22',
+      };
+
+      const submitThirdPartyForm = () => findForm().vm.$emit('submit', thirdPartyFlowFormValues);
+
+      it('sends a create request for third-party flow', () => {
+        submitThirdPartyForm();
+
+        expect(createAiCatalogFlowMock).not.toHaveBeenCalled();
+        expect(createAiCatalogThirdPartyFlowMock).toHaveBeenCalledTimes(1);
+        expect(createAiCatalogThirdPartyFlowMock).toHaveBeenCalledWith({
+          input: thirdPartyFlowFormValues,
+        });
+      });
+    });
+
+    describe('when request succeeds', () => {
+      beforeEach(async () => {
+        submitForm();
+        await waitForPromises();
+      });
+
+      it('shows toast', () => {
+        expect(mockToast.show).toHaveBeenCalledWith('Flow created successfully.');
+      });
+
+      it('navigates to flows show page', async () => {
+        await waitForPromises();
+        expect(mockRouter.push).toHaveBeenCalledWith({
+          name: AI_CATALOG_FLOWS_SHOW_ROUTE,
+          params: { id: 4 },
+        });
+      });
     });
 
     describe('when request fails', () => {
@@ -112,25 +176,6 @@ describe('AiCatalogFlowsNew', () => {
           mockCreateAiCatalogFlowErrorMutation.data.aiCatalogFlowCreate.errors[0],
         ]);
         expect(findForm().props('isLoading')).toBe(false);
-      });
-    });
-
-    describe('when request succeeds', () => {
-      beforeEach(async () => {
-        submitForm();
-        await waitForPromises();
-      });
-
-      it('shows toast', () => {
-        expect(mockToast.show).toHaveBeenCalledWith('Flow created successfully.');
-      });
-
-      it('navigates to flows show page', async () => {
-        await waitForPromises();
-        expect(mockRouter.push).toHaveBeenCalledWith({
-          name: AI_CATALOG_FLOWS_SHOW_ROUTE,
-          params: { id: 4 },
-        });
       });
     });
   });

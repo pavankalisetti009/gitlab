@@ -1,13 +1,13 @@
 <script>
 import { getIdFromGraphQLId } from '~/graphql_shared/utils';
 import AiCatalogItemField from './ai_catalog_item_field.vue';
-import FormFlowConfiguration from './form_flow_configuration.vue';
+import FormFlowDefinition from './form_flow_definition.vue';
 import FormSection from './form_section.vue';
 
 export default {
   components: {
     AiCatalogItemField,
-    FormFlowConfiguration,
+    FormFlowDefinition,
     FormSection,
   },
   props: {
@@ -53,7 +53,7 @@ export default {
       </form-section>
       <form-section v-if="definition" :title="s__('AICatalog|Configuration')">
         <ai-catalog-item-field :title="s__('AICatalog|Configuration')">
-          <form-flow-configuration :value="definition" read-only />
+          <form-flow-definition :value="definition" read-only class="gl-mt-3" />
         </ai-catalog-item-field>
       </form-section>
       <form-section v-else :title="s__('AICatalog|Steps')">
