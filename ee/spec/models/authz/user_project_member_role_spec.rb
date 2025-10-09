@@ -37,4 +37,25 @@ RSpec.describe Authz::UserProjectMemberRole, feature_category: :permissions do
       expect(results).to match_array([user_shared_with_group, user_shared_with_group2])
     end
   end
+
+  describe '.in_project_shared_with_group' do
+    let_it_be(:project) { create(:project) }
+    let_it_be(:group) { create(:group) }
+
+    let_it_be(:targets) do
+      create_list(:user_project_member_role, 2, project: project, shared_with_group: group)
+    end
+
+    subject(:results) { described_class.in_project_shared_with_group(project, group) }
+
+    before do
+      # non-target records
+      create(:user_project_member_role, project: project)
+      create(:user_project_member_role, shared_with_group: group)
+    end
+
+    it 'returns only records that match the given shared_project and shared_with_group' do
+      expect(results).to match_array(targets)
+    end
+  end
 end

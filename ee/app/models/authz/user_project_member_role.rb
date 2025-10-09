@@ -25,6 +25,10 @@ module Authz
 
     scope :for_user_shared_with_group, ->(user, group) { where(user: user, shared_with_group: group) }
 
+    scope :in_project_shared_with_group, ->(project, shared_with_group) do
+      where(project: project, shared_with_group: shared_with_group)
+    end
+
     def self.delete_all_with_id(ids)
       id_in(ids).delete_all
     end
