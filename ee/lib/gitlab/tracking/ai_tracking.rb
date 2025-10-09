@@ -69,7 +69,22 @@ module Gitlab
           excluded_files_from_duo_code_review: 18
         )
       end
-      # Current highest event ID: 22, next available: 23
+
+      register_feature(:mcp) do
+        events(
+          start_mcp_tool_call: 23,
+          finish_mcp_tool_call: 24
+        ) do |context|
+          {
+            tool_name: context['tool_name'],
+            session_id: context['session_id'],
+            has_tool_call_success: context['has_tool_call_success'],
+            failure_reason: context['failure_reason'],
+            error_status: context['error_status']
+          }
+        end
+      end
+      # Current highest event ID: 24, next available: 25
 
       class << self
         def track_event(event_name, **context_hash)

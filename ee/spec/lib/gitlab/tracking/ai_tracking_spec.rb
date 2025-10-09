@@ -290,6 +290,57 @@ RSpec.describe Gitlab::Tracking::AiTracking, feature_category: :value_stream_man
         it_behaves_like 'standard ai usage event tracking'
       end
     end
+
+    context 'for MCP events' do
+      let(:mcp_extras) do
+        {
+          session_id: 123,
+          tool_name: "test_tool",
+          has_tool_call_success: true,
+          failure_reason: nil,
+          error_status: nil
+        }
+      end
+
+      %w[
+        start_mcp_tool_call
+        finish_mcp_tool_call
+      ].each do |e|
+        context "for `#{e}` event" do
+          let(:event_name) { e }
+          let(:event_context) do
+            super().merge({
+              project: project,
+              session_id: 123,
+              tool_name: "test_tool",
+              has_tool_call_success: true,
+              failure_reason: nil,
+              error_status: nil
+            })
+          end
+
+          let(:expected_pg_attributes) do
+            {
+              user_id: current_user.id,
+              event: event_name,
+              namespace_id: project.project_namespace_id,
+              extras: mcp_extras
+            }
+          end
+
+          let(:expected_ch_attributes) do
+            {
+              user_id: current_user.id,
+              event: Ai::UsageEvent.events[event_name],
+              namespace_path: project.project_namespace.reload.traversal_path,
+              extras: mcp_extras.to_json
+            }
+          end
+
+          it_behaves_like 'standard ai usage event tracking'
+        end
+      end
+    end
   end
 
   describe '.track_user_activity' do

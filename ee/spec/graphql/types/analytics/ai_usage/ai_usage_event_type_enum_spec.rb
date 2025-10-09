@@ -40,6 +40,8 @@ RSpec.describe Types::Analytics::AiUsage::AiUsageEventTypeEnum, feature_category
       'EXCLUDED_FILES_FROM_DUO_CODE_REVIEW' => have_attributes(
         value: 'excluded_files_from_duo_code_review'
       ),
+      'START_MCP_TOOL_CALL' => have_attributes(value: 'start_mcp_tool_call'),
+      'FINISH_MCP_TOOL_CALL' => have_attributes(value: 'finish_mcp_tool_call'),
       'AGENT_PLATFORM_SESSION_CREATED' => have_attributes(value: 'agent_platform_session_created'),
       'AGENT_PLATFORM_SESSION_STARTED' => have_attributes(value: 'agent_platform_session_started'),
       'AGENT_PLATFORM_SESSION_FINISHED' => have_attributes(value: 'agent_platform_session_finished'),

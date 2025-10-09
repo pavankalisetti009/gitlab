@@ -5,7 +5,7 @@ require 'spec_helper'
 RSpec.describe API::Mcp::Handlers::CallTool, feature_category: :mcp_server do
   let(:manager) { instance_double(Mcp::Tools::Manager) }
   let(:request) { instance_double(Rack::Request) }
-  let(:current_user) { instance_double(User) }
+  let_it_be(:current_user) { create(:user) }
 
   subject(:handler) { described_class.new(manager) }
 
@@ -13,6 +13,10 @@ RSpec.describe API::Mcp::Handlers::CallTool, feature_category: :mcp_server do
     let(:tool_name) { 'test_tool' }
     let(:params) { { name: tool_name, arguments: { param: 'value' } } }
     let(:tool) { instance_double(Mcp::Tools::BaseService) }
+
+    before do
+      allow(request).to receive(:[]).with(:id).and_return('1')
+    end
 
     context 'when tool is found and version matches' do
       before do
@@ -53,11 +57,21 @@ RSpec.describe API::Mcp::Handlers::CallTool, feature_category: :mcp_server do
       before do
         allow(manager).to receive(:get_tool).with(name: tool_name)
           .and_raise(Mcp::Tools::Manager::ToolNotFoundError.new(tool_name))
+        allow(handler).to receive(:track_internal_event)
       end
 
-      it 'raises ArgumentError' do
+      it 'raises ArgumentError and tracks finish event' do
         expect { handler.invoke(request, params, current_user) }
           .to raise_error(ArgumentError, "Tool '#{tool_name}' not found.")
+
+        expect(handler).to have_received(:track_internal_event).with(
+          'finish_mcp_tool_call',
+          user: current_user,
+          additional_properties: hash_including(
+            tool_name: tool_name,
+            has_tool_call_success: 'false'
+          )
+        )
       end
     end
   end
