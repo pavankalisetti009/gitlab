@@ -7,8 +7,8 @@ query getDedicatedInstanceUsageByMonth(
     nodes {
       billingMonth
       billingMonthIso8601
-      computeMinutes
-      durationSeconds
+      computeMinutesUsage
+      durationMinutes
       rootNamespace {
         __typename
         ... on Namespace {

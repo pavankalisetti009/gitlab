@@ -51,6 +51,9 @@ export default {
         false,
       );
     },
+    formatRunnerValues(value) {
+      return parseFloat(value.toFixed(2));
+    },
   },
 };
 </script>
@@ -79,11 +82,11 @@ export default {
           }}</span>
         </div>
       </template>
-      <template #cell(hostedRunnerDuration)="{ item: { durationSeconds } }">
-        <span data-testid="runner-duration">{{ durationSeconds }}</span>
+      <template #cell(hostedRunnerDuration)="{ item: { durationMinutes } }">
+        <span data-testid="runner-duration">{{ formatRunnerValues(durationMinutes) }}</span>
       </template>
-      <template #cell(computeUsage)="{ item: { computeMinutes } }">
-        <span data-testid="compute-minutes">{{ computeMinutes }}</span>
+      <template #cell(computeUsage)="{ item: { computeMinutesUsage } }">
+        <span data-testid="compute-minutes">{{ formatRunnerValues(computeMinutesUsage) }}</span>
       </template>
     </gl-table>
   </div>
