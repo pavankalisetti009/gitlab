@@ -2,6 +2,7 @@
 description: When a (non-author) user requests Duo Code Review to perform a code review on an MR
 internal_events: true
 action: request_review_duo_code_review_on_mr_by_non_author
+classification: duo
 identifiers:
 - project
 - namespace

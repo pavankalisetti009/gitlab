@@ -2,6 +2,7 @@
 description: Tracks the number of rejected code suggestions. Important for AI analytics
 internal_events: true
 action: code_suggestion_rejected_in_ide
+classification: duo
 additional_properties:
   label:
     description: not actually used - to be fixed in https://gitlab.com/gitlab-org/gitlab/-/issues/501387

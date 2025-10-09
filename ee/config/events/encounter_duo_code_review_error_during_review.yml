@@ -2,6 +2,7 @@
 description: When there's an error during Duo Code Review process
 internal_events: true
 action: encounter_duo_code_review_error_during_review
+classification: duo
 identifiers:
 - project
 - namespace

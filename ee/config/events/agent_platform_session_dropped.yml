@@ -3,6 +3,7 @@ description: Tracks duo agent platform session drop
 internal_events: true
 status: active
 action: agent_platform_session_dropped
+classification: duo
 identifiers:
 - project
 - namespace

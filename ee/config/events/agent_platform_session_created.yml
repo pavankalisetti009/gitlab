@@ -3,6 +3,7 @@ description: Tracks duo agent platform session creation
 internal_events: true
 status: active
 action: agent_platform_session_created
+classification: duo
 identifiers:
 - project
 - namespace

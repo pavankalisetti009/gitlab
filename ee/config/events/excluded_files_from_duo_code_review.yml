@@ -2,6 +2,7 @@
 description: When files have been excluded from Duo Code Review due to Duo Context Exclusion
 internal_events: true
 action: excluded_files_from_duo_code_review
+classification: duo
 identifiers:
 - project
 - namespace

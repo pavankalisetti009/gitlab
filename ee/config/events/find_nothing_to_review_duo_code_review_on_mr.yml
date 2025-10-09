@@ -2,6 +2,7 @@
 description: When Duo Code Review is triggered but there are no reviewable changes in the MR
 internal_events: true
 action: find_nothing_to_review_duo_code_review_on_mr
+classification: duo
 identifiers:
 - project
 - namespace
