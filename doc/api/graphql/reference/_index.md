@@ -2880,6 +2880,30 @@ Input type: `AiCatalogThirdPartyFlowCreateInput`
 | <a id="mutationaicatalogthirdpartyflowcreateerrors"></a>`errors` | [`[String!]!`](#string) | Errors encountered during the mutation. |
 | <a id="mutationaicatalogthirdpartyflowcreateitem"></a>`item` | [`AiCatalogThirdPartyFlow`](#aicatalogthirdpartyflow) | Item created. |
 
+### `Mutation.aiCatalogThirdPartyFlowDelete`
+
+{{< details >}}
+**Introduced** in GitLab 18.5.
+**Status**: Experiment.
+{{< /details >}}
+
+Input type: `AiCatalogThirdPartyFlowDeleteInput`
+
+#### Arguments
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="mutationaicatalogthirdpartyflowdeleteclientmutationid"></a>`clientMutationId` | [`String`](#string) | A unique identifier for the client performing the mutation. |
+| <a id="mutationaicatalogthirdpartyflowdeleteid"></a>`id` | [`AiCatalogItemID!`](#aicatalogitemid) | Global ID of the catalog Third Party Flow to delete. |
+
+#### Fields
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="mutationaicatalogthirdpartyflowdeleteclientmutationid"></a>`clientMutationId` | [`String`](#string) | A unique identifier for the client performing the mutation. |
+| <a id="mutationaicatalogthirdpartyflowdeleteerrors"></a>`errors` | [`[String!]!`](#string) | Errors encountered during the mutation. |
+| <a id="mutationaicatalogthirdpartyflowdeletesuccess"></a>`success` | [`Boolean!`](#boolean) | Returns true if catalog Third Party Flow was successfully deleted. |
+
 ### `Mutation.aiCatalogThirdPartyFlowUpdate`
 
 {{< details >}}
