@@ -75,6 +75,7 @@ RSpec.describe 'User adds a merge request to a merge train', :sidekiq_inline, :j
 
         before do
           visit project_merge_request_path(project, merge_request)
+          wait_for_requests
           merge_request.merge_train_car.pipeline.builds.map(&:success!)
         end
 
@@ -166,6 +167,7 @@ RSpec.describe 'User adds a merge request to a merge train', :sidekiq_inline, :j
         before do
           merge_request.head_pipeline.succeed!
           visit project_merge_request_path(project, merge_request)
+          wait_for_requests
         end
 
         it 'adds the MR to the merge train but not yet merged' do
