@@ -11,6 +11,12 @@ module WorkItems
         belongs_to :new_status, class_name: 'WorkItems::Statuses::Custom::Status'
         belongs_to :work_item_type, class_name: 'WorkItems::Type'
 
+        enum :old_status_role, {
+          open: 0,
+          closed: 1,
+          duplicate: 2
+        }, allow_nil: true
+
         validates :old_status, :new_status, :work_item_type, :namespace, presence: true
 
         validate :statuses_in_same_namespace

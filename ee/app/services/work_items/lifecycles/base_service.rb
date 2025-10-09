@@ -284,7 +284,7 @@ module WorkItems
         # rubocop:enable CodeReuse/ActiveRecord
       end
 
-      def create_or_update_mapping(old_status, new_status, work_item_type, valid_until: nil)
+      def create_or_update_mapping(old_status, new_status, work_item_type, valid_until: nil, old_status_role: nil)
         prevent_mapping_chains(old_status, new_status, work_item_type)
 
         existing_mappings = Statuses::Custom::Mapping.originating_from_status(
@@ -306,7 +306,8 @@ module WorkItems
           new_status_id: new_status.id,
           work_item_type_id: work_item_type.id,
           valid_from: valid_from,
-          valid_until: valid_until
+          valid_until: valid_until,
+          old_status_role: old_status_role
         ).first_or_create!
       end
 

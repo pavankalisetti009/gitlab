@@ -280,4 +280,47 @@ RSpec.describe WorkItems::Statuses::Custom::Lifecycle, feature_category: :team_p
       end
     end
   end
+
+  describe '#role_for_status' do
+    let(:lifecycle) do
+      build(:work_item_custom_lifecycle,
+        namespace: namespace,
+        default_open_status: open_status,
+        default_closed_status: closed_status,
+        default_duplicate_status: duplicate_status
+      )
+    end
+
+    subject { lifecycle.role_for_status(status) }
+
+    context 'when status is system-defined' do
+      let(:status) { build(:work_item_system_defined_status) }
+
+      it { is_expected.to be_nil }
+    end
+
+    context 'when status is not a default in the lifecycle' do
+      let(:status) { create(:work_item_custom_status) }
+
+      it { is_expected.to be_nil }
+    end
+
+    context 'when status is default open status' do
+      let(:status) { lifecycle.default_open_status }
+
+      it { is_expected.to eq(:open) }
+    end
+
+    context 'when status is default closed status' do
+      let(:status) { lifecycle.default_closed_status }
+
+      it { is_expected.to eq(:closed) }
+    end
+
+    context 'when status is default duplicate status' do
+      let(:status) { lifecycle.default_duplicate_status }
+
+      it { is_expected.to eq(:duplicate) }
+    end
+  end
 end

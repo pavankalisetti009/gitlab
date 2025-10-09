@@ -8,7 +8,7 @@ module WorkItems
       has_one :current_status, class_name: 'WorkItems::Statuses::CurrentStatus',
         foreign_key: 'work_item_id', inverse_of: :work_item
 
-      scope :with_status, ->(status, mapping = nil) {
+      scope :with_status, ->(status, mapping = nil, status_roles: []) {
         relation = left_joins(:current_status)
 
         if status.is_a?(::WorkItems::Statuses::SystemDefined::Status)
@@ -28,6 +28,28 @@ module WorkItems
             .where.not(work_item_current_statuses: { custom_status_id: nil })
             .where(matching_condition)
 
+          build_role_relation = ->(role, work_item_type_id) {
+            base_relation = case role.to_sym
+                            when :open then opened
+                            when :duplicate then closed.where.not(duplicated_to_id: nil)
+                            when :closed then closed.where(duplicated_to_id: nil)
+                            end
+            base_relation.where(work_item_type_id: work_item_type_id).without_current_status
+          }
+
+          # The old status was a default status before so we include those items that
+          # don't have a current status record and were created within the time range of the mapping.
+          if mapping.present? && mapping.old_status_role.present?
+            include_default = build_role_relation.call(mapping.old_status_role, mapping.work_item_type_id)
+            include_default = include_default.where(created_at: mapping.time_range) if mapping.time_constrained?
+            relation = relation.or(include_default)
+          end
+
+          status_roles.each do |role_definition|
+            include_default = build_role_relation.call(role_definition[:role], role_definition[:work_item_type_id])
+            relation = relation.or(include_default)
+          end
+
           if status.converted_from_system_defined_status_identifier.present?
             system_defined_status = WorkItems::Statuses::SystemDefined::Status.find(
               status.converted_from_system_defined_status_identifier
@@ -41,7 +63,7 @@ module WorkItems
       }
 
       scope :with_system_defined_status, ->(status, mapping = nil) {
-        next none unless status.is_a?(::WorkItems::Statuses::SystemDefined::Status)
+        return none unless status.is_a?(::WorkItems::Statuses::SystemDefined::Status)
 
         matching_condition = { work_item_current_statuses: { system_defined_status_id: status.id } }
 
@@ -54,9 +76,6 @@ module WorkItems
                     .where.not(work_item_current_statuses: { system_defined_status_id: nil })
                     .where(matching_condition)
 
-        # Right now the mapping doesn't know whether the old_status was a default
-        # status, so we skip the default matching logic.
-        # See https://gitlab.com/gitlab-org/gitlab/-/issues/572551
         return relation if mapping.present?
 
         lifecycle = WorkItems::Statuses::SystemDefined::Lifecycle.all.first
@@ -70,7 +89,7 @@ module WorkItems
                                 closed.where(duplicated_to_id: nil)
                               end
 
-        next relation if with_default_status.nil?
+        return relation if with_default_status.nil?
 
         relation.or(
           with_default_status.without_current_status.with_issue_type(lifecycle.work_item_base_types)
