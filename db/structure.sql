@@ -40972,6 +40972,8 @@ CREATE INDEX index_oauth_access_token_archived_records_on_organization_id ON oau
 
 CREATE INDEX index_oauth_access_tokens_on_application_id ON oauth_access_tokens USING btree (application_id);
 
+CREATE INDEX index_oauth_access_tokens_on_id_where_revoked ON oauth_access_tokens USING btree (id) WHERE (revoked_at IS NOT NULL);
+
 CREATE UNIQUE INDEX index_oauth_access_tokens_on_refresh_token ON oauth_access_tokens USING btree (refresh_token);
 
 CREATE UNIQUE INDEX index_oauth_access_tokens_on_token ON oauth_access_tokens USING btree (token);
