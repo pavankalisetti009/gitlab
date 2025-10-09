@@ -16,7 +16,6 @@ RSpec.describe Security::AnalyzerNamespaceStatusPolicy, feature_category: :secur
   context 'when the security_dashboard feature is enabled' do
     before do
       stub_licensed_features(security_inventory: true)
-      stub_feature_flags(security_inventory_dashboard: true)
     end
 
     context 'when the current user has maintainer access to the group' do

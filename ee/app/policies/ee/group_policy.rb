@@ -97,8 +97,7 @@ module EE
       end
 
       condition(:security_inventory_available, scope: :subject) do
-        @subject.licensed_feature_available?(:security_inventory) &&
-          ::Feature.enabled?(:security_inventory_dashboard, @subject.root_ancestor)
+        @subject.licensed_feature_available?(:security_inventory)
       end
 
       condition(:prevent_group_forking_available, scope: :subject) do
