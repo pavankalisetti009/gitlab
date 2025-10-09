@@ -5000,29 +5000,6 @@ RSpec.describe Project, feature_category: :groups_and_projects do
     end
   end
 
-  describe '.replicables_for_current_secondary' do
-    before do
-      node = create(:geo_node, :secondary)
-
-      stub_current_geo_node(node)
-    end
-
-    it 'returns projects' do
-      project = create(:project)
-      project2 = create(:project)
-
-      projects = described_class.replicables_for_current_secondary(project.id..project2.id)
-
-      expect(projects).to include(project)
-      expect(projects).to include(project2)
-    end
-  end
-
-  include_examples 'a verifiable model with a separate table for verification state' do
-    let(:verifiable_model_record) { build(:project) }
-    let(:unverifiable_model_record) { nil }
-  end
-
   describe '#security_policy_bot' do
     let_it_be(:project) { create(:project) }
 
@@ -5418,44 +5395,183 @@ RSpec.describe Project, feature_category: :groups_and_projects do
     end
   end
 
-  describe '.selective_sync_scope' do
+  include_examples 'a verifiable model with a separate table for verification state' do
+    let(:verifiable_model_record) { build(:project) }
+    let(:unverifiable_model_record) { nil }
+  end
+
+  describe 'Geo replication', feature_category: :geo_replication do
     let(:node) { create(:geo_node, :secondary) }
 
-    let_it_be(:group_1) { create(:group) }
-    let_it_be(:group_2) { create(:group) }
+    let_it_be(:group_1) { create(:group, organization: create(:organization)) }
+    let_it_be(:group_2) { create(:group, organization: create(:organization)) }
     let_it_be(:nested_group_1) { create(:group, parent: group_1) }
     let_it_be(:project_1) { create(:project, group: group_1) }
     let_it_be(:project_2) { create(:project, group: nested_group_1) }
     let_it_be(:project_3) { create(:project, :broken_storage, group: group_2) }
 
-    it 'returns all projects without selective sync' do
-      expect(described_class.selective_sync_scope(node)).to match_array([project_1, project_2, project_3])
+    describe '.selective_sync_scope' do
+      it 'returns all projects when selective sync is disabled' do
+        expect(described_class.selective_sync_scope(node)).to match_array([project_1, project_2, project_3])
+      end
+
+      it 'returns projects that belong to the namespaces and descendants with selective sync by namespaces' do
+        node.update!(selective_sync_type: 'namespaces', namespaces: [group_1])
+
+        expect(described_class.selective_sync_scope(node)).to match_array([project_1, project_2])
+      end
+
+      it 'returns projects that belong to the shards with selective sync by shards' do
+        node.update!(selective_sync_type: 'shards', selective_sync_shards: ['default'])
+
+        expect(described_class.selective_sync_scope(node)).to match_array([project_1, project_2])
+      end
+
+      it 'returns projects that belong to the organizations with selective sync by organizations' do
+        node.update!(selective_sync_type: 'organizations', organizations: [group_2.organization])
+
+        expect(described_class.selective_sync_scope(node)).to match_array([project_3])
+      end
+
+      it 'raises if an unrecognised selective sync type is used' do
+        node.update_attribute(:selective_sync_type, 'unknown')
+
+        expect { described_class.selective_sync_scope(node) }.to raise_error(Geo::Errors::UnknownSelectiveSyncType)
+      end
     end
 
-    it 'returns projects that belong to the namespaces with selective sync by namespace' do
-      node.update!(selective_sync_type: 'namespaces', namespaces: [group_1, nested_group_1])
+    describe '.verifiables' do
+      before do
+        stub_current_geo_node(node)
+      end
 
-      expect(described_class.selective_sync_scope(node)).to match_array([project_1, project_2])
+      it 'returns all projects when selective sync is disabled' do
+        expect(described_class.verifiables).to match_array(
+          [
+            project_1,
+            project_2,
+            project_3
+          ]
+        )
+      end
+
+      context 'with selective sync by namespace' do
+        it 'returns projects that belong to the namespaces and descendants' do
+          node.update!(selective_sync_type: 'namespaces', namespaces: [group_1])
+
+          expect(described_class.verifiables).to match_array(
+            [
+              project_1,
+              project_2
+            ])
+        end
+
+        it 'returns projects that belong to the namespaces and descendants' do
+          node.update!(selective_sync_type: 'namespaces', namespaces: [nested_group_1])
+
+          expect(described_class.verifiables).to match_array(
+            [
+              project_2
+            ])
+        end
+      end
+
+      context 'with selective sync by shard' do
+        it 'returns projects that belong to the shards' do
+          node.update!(selective_sync_type: 'shards', selective_sync_shards: ['default'])
+
+          expect(described_class.verifiables).to match_array(
+            [
+              project_1,
+              project_2
+            ])
+        end
+      end
+
+      context 'with selective sync by organizations' do
+        it 'returns projects that belong to selected organizations' do
+          node.update!(selective_sync_type: 'organizations', organizations: [group_2.organization])
+
+          expect(described_class.verifiables).to match_array(
+            [
+              project_3
+            ]
+          )
+        end
+
+        it 'returns empty when no organizations are in selected organizations' do
+          node.update!(selective_sync_type: 'organizations', organizations: [])
+
+          expect(described_class.verifiables).to be_empty
+        end
+      end
     end
 
-    it 'returns projects that belong to the shards with selective sync by shard' do
-      node.update!(selective_sync_type: 'shards', selective_sync_shards: ['default'])
+    describe '.replicables_for_current_secondary' do
+      before do
+        stub_current_geo_node(node)
+      end
 
-      expect(described_class.selective_sync_scope(node)).to match_array([project_1, project_2])
-    end
+      it 'returns all projects when selective sync is disabled' do
+        expect(described_class.replicables_for_current_secondary(1..described_class.last.id)).to match_array(
+          [
+            project_1,
+            project_2,
+            project_3
+          ]
+        )
+      end
 
-    it 'returns none with selective sync by organizations, for now' do
-      organization_1 = create(:organization)
-      organization_2 = create(:organization)
-      node.update!(selective_sync_type: 'organizations', organizations: [organization_1, organization_2])
+      context 'with selective sync by namespace' do
+        it 'returns projects that belong to the namespaces and descendants' do
+          node.update!(selective_sync_type: 'namespaces', namespaces: [group_1])
 
-      expect(described_class.selective_sync_scope(node)).to be_empty
-    end
+          expect(described_class.replicables_for_current_secondary(1..described_class.last.id)).to match_array(
+            [
+              project_1,
+              project_2
+            ])
+        end
 
-    it 'raises if an unrecognised selective sync type is used' do
-      node.update_attribute(:selective_sync_type, 'unknown')
+        it 'returns projects that belong to the namespaces and descendants' do
+          node.update!(selective_sync_type: 'namespaces', namespaces: [nested_group_1])
 
-      expect { described_class.selective_sync_scope(node) }.to raise_error(Geo::Errors::UnknownSelectiveSyncType)
+          expect(described_class.replicables_for_current_secondary(1..described_class.last.id)).to match_array(
+            [
+              project_2
+            ])
+        end
+      end
+
+      context 'with selective sync by shard' do
+        it 'returns projects that belong to the shards' do
+          node.update!(selective_sync_type: 'shards', selective_sync_shards: ['default'])
+
+          expect(described_class.replicables_for_current_secondary(1..described_class.last.id)).to match_array(
+            [
+              project_1,
+              project_2
+            ])
+        end
+      end
+
+      context 'with selective sync by organizations' do
+        it 'returns projects that belong to selected organizations' do
+          node.update!(selective_sync_type: 'organizations', organizations: [group_2.organization])
+
+          expect(described_class.replicables_for_current_secondary(1..described_class.last.id)).to match_array(
+            [
+              project_3
+            ]
+          )
+        end
+
+        it 'returns empty when no organizations are in selected organizations' do
+          node.update!(selective_sync_type: 'organizations', organizations: [])
+
+          expect(described_class.replicables_for_current_secondary(1..described_class.last.id)).to be_empty
+        end
+      end
     end
   end
 

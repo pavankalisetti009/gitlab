@@ -68,9 +68,7 @@ module Geo
       elsif selective_sync_by_shards?
         selected_leaf_namespaces_and_ancestors
       elsif selective_sync_by_organizations?
-        # TODO: https://gitlab.com/gitlab-org/gitlab/-/issues/534201 or other sibling issues that need this
-        # This should return all namespaces owned by the selected orgs.
-        Namespace.none
+        selected_organization_namespaces_and_descendants
       else
         raise 'This scope should not be needed without selective sync'
       end
@@ -78,9 +76,18 @@ module Geo
 
     private
 
+    def selected_organization_namespaces_and_descendants
+      read_only_relation(
+        Namespace.where(
+          organization_id: geo_node_organization_links.select(geo_node_organization_links.arel_table[:organization_id])
+        )
+      )
+    end
+
     def selected_namespaces_and_descendants
-      relation = selected_namespaces_and_descendants_cte.apply_to(Namespace.all)
-      read_only_relation(relation)
+      read_only_relation(
+        selected_namespaces_and_descendants_cte.apply_to(Namespace.all)
+      )
     end
 
     def selected_namespaces_and_descendants_cte
@@ -103,8 +110,9 @@ module Geo
     end
 
     def selected_leaf_namespaces_and_ancestors
-      relation = selected_leaf_namespaces_and_ancestors_cte.apply_to(Namespace.all)
-      read_only_relation(relation)
+      read_only_relation(
+        selected_leaf_namespaces_and_ancestors_cte.apply_to(Namespace.all)
+      )
     end
 
     # Returns a CTE selecting namespace IDs for selected shards
