@@ -36,6 +36,8 @@ RSpec.describe PhoneVerification::Users::RecordUserDataService, feature_category
     end
 
     it 'executes the abuse trust score worker' do
+      stub_feature_flags(remove_trust_scores: false)
+
       expect(AntiAbuse::TrustScoreWorker).to receive(:perform_async).once.with(user.id, :telesign,
         low_risk_score.to_f)
 
@@ -50,6 +52,8 @@ RSpec.describe PhoneVerification::Users::RecordUserDataService, feature_category
       end
 
       it 'executes the abuse trust score worker with a risk score of 1.0' do
+        stub_feature_flags(remove_trust_scores: false)
+
         expect(AntiAbuse::TrustScoreWorker).to receive(:perform_async).once.with(user.id, :telesign, 1.0)
 
         service.execute

@@ -31,6 +31,8 @@ module PhoneVerification
       end
 
       def store_risk_score(risk_score)
+        return if Feature.enabled?(:remove_trust_scores, user)
+
         AntiAbuse::TrustScoreWorker.perform_async(user.id, :telesign, risk_score.to_f)
       end
 
