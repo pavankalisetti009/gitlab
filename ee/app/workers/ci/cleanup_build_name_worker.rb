@@ -14,8 +14,6 @@ module Ci
     defer_on_database_health_signal :gitlab_ci, [:p_ci_build_names], 10.minutes
 
     def perform
-      return unless Feature.enabled?(:truncate_build_names, :instance)
-
       partitions_to_truncate.each do |partition|
         partition_table_name = partition.fully_qualified_partition
 
