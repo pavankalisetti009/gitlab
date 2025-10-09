@@ -1,7 +1,6 @@
 
 title: Merge request analytics
-description: MR stats and trends
-status: experiment
+description: Get insights into your merge request lifecycle and view trends over time.
 filters:
   dateRange:
     enabled: true

@@ -10,6 +10,7 @@ options:
     - key: link
       label: Merge Request
       component: MergeRequestLink
+      thClass: gl-w-1/4
     - key: dateMerged
       label: Date Merged
       component: FormatTime
@@ -25,6 +26,8 @@ options:
     - key: diffStatsSummary
       label: Line changes
       component: DiffLineChanges
+      thClass: gl-w-1/8
     - key: assignees
       label: Assignees
       component: AssigneeAvatars
+      thClass: gl-w-1/8
