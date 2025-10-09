@@ -28,7 +28,9 @@ module Ai
       validate :only_known_pre_approved_agent_privileges
       validate :pre_approved_privileges_included_in_agent_privileges, on: :create
 
-      enum :environment, { ide: 1, web: 2, chat_partial: 3 }
+      # `ide` is deprecated in favor of `chat`
+      # `web` is deprecated in favor of `ambient`
+      enum :environment, { ide: 1, web: 2, chat_partial: 3, chat: 4, ambient: 5 }
 
       scope :for_user_with_id!, ->(user_id, id) { find_by!(user_id: user_id, id: id) }
       scope :for_user, ->(user_id) { where(user_id: user_id) }
