@@ -1,54 +1,57 @@
 <script>
-import { GlSkeletonLoader } from '@gitlab/ui';
+import { GlSprintf } from '@gitlab/ui';
 import { s__ } from '~/locale';
 
 export default {
   name: 'RiskScoreTooltip',
   components: {
-    GlSkeletonLoader,
+    GlSprintf,
   },
-  props: {
-    vulnerabilitiesAverageScoreFactor: {
-      type: Number,
-      required: false,
-      default: null,
-    },
-    isLoading: {
-      type: Boolean,
-      required: true,
-    },
-  },
-  computed: {
-    riskScoreFactors() {
-      return [
-        {
-          id: 'vulnerabilities-average-score',
-          label: s__('Security Reports|Vulnerabilities average score'),
-          value: this.vulnerabilitiesAverageScoreFactor,
-        },
-      ];
-    },
+  i18n: {
+    riskScoreFormulaDescription: s__(
+      'SecurityReports|(Sum of open vulnerability scores%{supStart}*%{supEnd} + Age penalty%{supStart}†%{supEnd}) * Diminishing factor%{supStart}‡%{supEnd}',
+    ),
+    explanations: [
+      {
+        id: 'open-vulnerability-scores',
+        message: s__(
+          'SecurityReports|%{supStart}*%{supEnd}Base score (associated with severity level) + EPSS modifier + KEV modifier',
+        ),
+      },
+      {
+        id: 'age-penalty',
+        message: s__(
+          'SecurityReports|%{supStart}†%{supEnd}Sum of vulnerability ages in months * 0.005',
+        ),
+      },
+      {
+        id: 'diminishing-factor',
+        message: s__(
+          'SecurityReports|%{supStart}‡%{supEnd}Diminishing factor = 1.0 / √(vulnerability count)',
+        ),
+      },
+    ],
   },
 };
 </script>
 
 <template>
   <div>
-    <dl v-for="factor in riskScoreFactors" :key="factor.label" class="gl-my-0 gl-flex gl-min-w-30">
-      <dt :data-testid="`${factor.id}-label`">{{ factor.label }}</dt>
-      <dd class="gl-my-0 gl-ml-auto">
-        <gl-skeleton-loader v-if="isLoading" :width="30" :lines="1" />
-        <span v-else :data-testid="`${factor.id}-value`">{{
-          sprintf(s__('SecurityReports|%{riskFactor}x'), { riskFactor: factor.value })
-        }}</span>
-      </dd>
-    </dl>
-    <p class="gl-my-0 gl-text-gray-500" data-testid="risk-score-description">
-      ({{
-        s__(
-          'SecurityReports|Includes Severity, Age, Exploitation status, EPSS score, Reachability, and/or Secret validity',
-        )
-      }})
+    <p>
+      <gl-sprintf :message="$options.i18n.riskScoreFormulaDescription">
+        <template #sup="{ content }">
+          <sup>{{ content }}</sup>
+        </template>
+      </gl-sprintf>
     </p>
+    <ol class="gl-mb-0 gl-list-none gl-p-0 gl-text-gray-600">
+      <li v-for="explanation in $options.i18n.explanations" :key="explanation.id">
+        <gl-sprintf :message="explanation.message">
+          <template #sup="{ content }">
+            <sup class="gl-mr-1">{{ content }}</sup>
+          </template>
+        </gl-sprintf>
+      </li>
+    </ol>
   </div>
 </template>
