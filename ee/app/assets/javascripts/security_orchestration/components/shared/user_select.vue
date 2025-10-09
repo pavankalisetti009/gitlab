@@ -49,7 +49,7 @@ export default {
   apollo: {
     users: {
       query() {
-        return isProject(this.namespaceType) ? searchProjectMembers : searchGroupMembers;
+        return this.query;
       },
       variables() {
         return {
@@ -58,20 +58,19 @@ export default {
         };
       },
       update(data) {
-        const nodes = isProject(this.namespaceType)
-          ? data?.project?.projectMembers?.nodes
-          : data?.workspace?.users?.nodes;
-
-        const users = (nodes || [])
-          .filter(({ user }) => user)
-          .map(({ user }) => createUserObject(user));
+        const users = this.extractUsers(data);
         const accumulatedUsers = [...this.users, ...users];
 
         return uniqBy(accumulatedUsers, 'id');
       },
+      result() {
+        if (this.selectedButNotLoadedUsersIds.length > 0) {
+          this.fetchUsersByIds();
+        }
+      },
       debounce: DEFAULT_DEBOUNCE_AND_THROTTLE_MS,
       error() {
-        this.$emit('error');
+        this.emitError();
       },
     },
   },
@@ -82,6 +81,15 @@ export default {
     };
   },
   computed: {
+    query() {
+      return isProject(this.namespaceType) ? searchProjectMembers : searchGroupMembers;
+    },
+    selectedButNotLoadedUsersIds() {
+      return this.selectedGraphQlIds.filter((id) => !this.userIds.includes(id));
+    },
+    userIds() {
+      return this.users?.map(({ id }) => id);
+    },
     listBoxItems() {
       return searchInItemsProperties({
         items: this.users,
@@ -144,6 +152,16 @@ export default {
     }
   },
   methods: {
+    emitError() {
+      this.$emit('error');
+    },
+    extractUsers(data) {
+      const nodes = isProject(this.namespaceType)
+        ? data?.project?.projectMembers?.nodes
+        : data?.workspace?.users?.nodes;
+
+      return (nodes || []).filter(({ user }) => user).map(({ user }) => createUserObject(user));
+    },
     setSearch(value) {
       this.search = value?.trim();
     },
@@ -151,6 +169,25 @@ export default {
       this.$emit('select-items', {
         user_approvers_ids: userIds.map((id) => getIdFromGraphQLId(id)),
       });
+    },
+    getUniqueUsers(items = []) {
+      return uniqBy([...this.users, ...items], 'id');
+    },
+    async fetchUsersByIds() {
+      try {
+        const { data } = await this.$apollo.query({
+          query: this.query,
+          variables: {
+            fullPath: this.namespacePath,
+            search: this.search,
+            ids: this.selectedButNotLoadedUsersIds,
+          },
+        });
+
+        this.users = this.getUniqueUsers(this.extractUsers(data));
+      } catch {
+        this.emitError();
+      }
     },
   },
 };

@@ -340,4 +340,25 @@ describe('UserSelect component', () => {
       expect(wrapper.emitted('error')).toHaveLength(1);
     });
   });
+
+  describe('selected user ids from yaml that were not initially loaded', () => {
+    it('loads selected users if it is not initially loaded', async () => {
+      createComponent({ propsData: { selected: [4, 5] } });
+      await waitForApolloAndVue();
+      await waitForPromises();
+
+      expect(projectSearchQueryHandlerSuccess).toHaveBeenCalledTimes(2);
+
+      expect(projectSearchQueryHandlerSuccess).toHaveBeenNthCalledWith(1, {
+        fullPath: namespacePath,
+        search: '',
+      });
+
+      expect(projectSearchQueryHandlerSuccess).toHaveBeenNthCalledWith(2, {
+        fullPath: namespacePath,
+        search: '',
+        ids: ['gid://gitlab/User/4', 'gid://gitlab/User/5'],
+      });
+    });
+  });
 });
