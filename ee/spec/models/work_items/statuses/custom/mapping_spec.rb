@@ -29,6 +29,20 @@ RSpec.describe WorkItems::Statuses::Custom::Mapping, feature_category: :team_pla
     it { is_expected.to validate_presence_of(:old_status) }
     it { is_expected.to validate_presence_of(:new_status) }
 
+    describe '#old_status_role' do
+      it 'allows nil values for regular custom statuses' do
+        mapping = build(:work_item_custom_status_mapping, old_status_role: nil)
+        expect(mapping).to be_valid
+      end
+
+      it 'allows valid enum values' do
+        %w[open closed duplicate].each do |role|
+          mapping = build(:work_item_custom_status_mapping, old_status_role: role)
+          expect(mapping).to be_valid
+        end
+      end
+    end
+
     it 'is invalid when old_status and new_status are the same' do
       mapping = build(:work_item_custom_status_mapping,
         namespace: namespace,

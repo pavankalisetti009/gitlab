@@ -28990,6 +28990,7 @@ CREATE TABLE work_item_custom_status_mappings (
     valid_until timestamp with time zone,
     created_at timestamp with time zone NOT NULL,
     updated_at timestamp with time zone NOT NULL,
+    old_status_role smallint,
     CONSTRAINT check_34fa9b844a CHECK (((valid_from IS NULL) OR (valid_until IS NULL) OR (valid_from < valid_until))),
     CONSTRAINT check_a1a8681f3e CHECK ((old_status_id <> new_status_id))
 );

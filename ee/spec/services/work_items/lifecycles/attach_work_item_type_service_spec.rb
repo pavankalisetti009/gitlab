@@ -129,10 +129,66 @@ RSpec.describe WorkItems::Lifecycles::AttachWorkItemTypeService, feature_categor
           namespace_id: group.id,
           work_item_type_id: work_item_type.id,
           old_status_id: current_status.id,
+          old_status_role: nil,
           new_status_id: target_status.id,
           valid_from: nil,
           valid_until: nil
         )
+      end
+
+      context 'when old status is default status' do
+        let(:params) do
+          super().merge(
+            status_mappings: [
+              {
+                old_status_id: old_status.to_gid,
+                new_status_id: new_status.to_gid
+              }
+            ]
+          )
+        end
+
+        shared_examples 'attaches work item type with bounded mapping and old status role' do
+          it_behaves_like 'work item type successfully attached'
+
+          it 'creates bounded mapping with old status role', :freeze_time do
+            expect { result }.to change { WorkItems::Statuses::Custom::Mapping.count }.by(1)
+
+            expect(mapping).to have_attributes(
+              namespace_id: group.id,
+              work_item_type_id: work_item_type.id,
+              old_status_id: old_status.id,
+              old_status_role: old_status_role,
+              new_status_id: new_status.id,
+              valid_from: nil,
+              valid_until: Time.current
+            )
+          end
+        end
+
+        context 'when default open status' do
+          let(:old_status) { current_lifecycle.default_open_status }
+          let(:new_status) { target_status }
+          let(:old_status_role) { "open" }
+
+          it_behaves_like 'attaches work item type with bounded mapping and old status role'
+        end
+
+        context 'when default closed status' do
+          let(:old_status) { current_lifecycle.default_closed_status }
+          let(:new_status) { target_lifecycle.default_closed_status }
+          let(:old_status_role) { "closed" }
+
+          it_behaves_like 'attaches work item type with bounded mapping and old status role'
+        end
+
+        context 'when default duplicate status' do
+          let(:old_status) { current_lifecycle.default_duplicate_status }
+          let(:new_status) { target_lifecycle.default_duplicate_status }
+          let(:old_status_role) { "duplicate" }
+
+          it_behaves_like 'attaches work item type with bounded mapping and old status role'
+        end
       end
 
       context 'when old status exists in target lifecycle' do
@@ -150,6 +206,7 @@ RSpec.describe WorkItems::Lifecycles::AttachWorkItemTypeService, feature_categor
             namespace_id: group.id,
             work_item_type_id: work_item_type.id,
             old_status_id: current_status.id,
+            old_status_role: nil,
             new_status_id: target_status.id,
             valid_from: nil,
             valid_until: Time.current
@@ -177,6 +234,7 @@ RSpec.describe WorkItems::Lifecycles::AttachWorkItemTypeService, feature_categor
             namespace_id: group.id,
             work_item_type_id: work_item_type.id,
             old_status_id: current_status.id,
+            old_status_role: nil,
             new_status_id: target_status.id,
             valid_from: existing_mapping.valid_until,
             valid_until: nil
@@ -204,6 +262,7 @@ RSpec.describe WorkItems::Lifecycles::AttachWorkItemTypeService, feature_categor
               namespace_id: group.id,
               work_item_type_id: work_item_type.id,
               old_status_id: current_status.id,
+              old_status_role: nil,
               new_status_id: target_status.id,
               valid_from: existing_mapping.valid_until,
               valid_until: nil
@@ -312,6 +371,7 @@ RSpec.describe WorkItems::Lifecycles::AttachWorkItemTypeService, feature_categor
             namespace_id: group.id,
             work_item_type_id: work_item_type.id,
             old_status_id: current_status.id,
+            old_status_role: nil,
             new_status_id: target_status.id,
             valid_from: nil,
             valid_until: nil
@@ -321,6 +381,7 @@ RSpec.describe WorkItems::Lifecycles::AttachWorkItemTypeService, feature_categor
             namespace_id: group.id,
             work_item_type_id: work_item_type.id,
             old_status_id: second_current_status.id,
+            old_status_role: nil,
             new_status_id: second_target_status.id,
             valid_from: nil,
             valid_until: nil

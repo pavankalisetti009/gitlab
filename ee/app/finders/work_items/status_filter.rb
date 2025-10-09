@@ -93,11 +93,41 @@ module WorkItems
 
     def apply_status_filters(issuables, statuses_for_filtering)
       combined_relation = statuses_for_filtering.reduce(issuables.none) do |relation, status_mapping|
-        relation.or(issuables.with_status(status_mapping[:status], status_mapping[:mapping]))
+        # When it's the requested custom status, figure out whether it's a default status for
+        # work item types, so we can also include items without a current status record.
+        status_roles = status_mapping[:mapping].nil? ? build_status_roles(status_mapping[:status]) : []
+
+        relation.or(
+          issuables.with_status(status_mapping[:status], status_mapping[:mapping], status_roles: status_roles)
+        )
       end
 
       # Excludes items that match direct status criteria but would be mapped to a different status
       exclude_items_mapped_away_from_direct_matches(combined_relation, statuses_for_filtering)
+    end
+
+    def build_status_roles(status)
+      requested_work_item_types.filter_map do |work_item_type|
+        build_status_role(work_item_type, status)
+      end
+    end
+
+    def requested_work_item_types
+      # We don't have to lookup default types if the param doesn't exist because
+      # the frontend provides all supported types if we don't filter by type explicitly.
+      return [] unless params[:issue_types].present?
+
+      params[:issue_types].filter_map { |type| WorkItems::Type.default_by_type(type) }
+    end
+
+    def build_status_role(work_item_type, status)
+      lifecycle = work_item_type.custom_lifecycle_for(parent.root_ancestor)
+      return unless lifecycle
+
+      role = lifecycle.role_for_status(status)
+      return unless role.present?
+
+      { role: role, work_item_type_id: work_item_type.id }
     end
 
     def exclude_items_mapped_away_from_direct_matches(relation, statuses_for_filtering)

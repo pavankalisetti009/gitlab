@@ -519,10 +519,10 @@ RSpec.describe WorkItem, :elastic_helpers, feature_category: :team_planning do
     let_it_be(:issue_work_item_type) { create(:work_item_type, :issue) }
 
     let_it_be(:wi_no_status) { create(:work_item, :incident, project: project) }
-    let_it_be(:wi_default_open) { create(:work_item, project: project) }
-    let_it_be(:wi_default_closed) { create(:work_item, :closed, project: project) }
+    let_it_be(:wi_default_open) { create(:work_item, project: project, created_at: 2.days.ago) }
+    let_it_be(:wi_default_closed) { create(:work_item, :closed, project: project, created_at: 2.days.ago) }
     let_it_be(:wi_default_duplicated) do
-      create(:work_item, :closed, project: project, duplicated_to_id: wi_default_closed.id)
+      create(:work_item, :closed, project: project, duplicated_to_id: wi_default_closed.id, created_at: 2.days.ago)
     end
 
     let_it_be(:system_defined_todo_status) { build(:work_item_system_defined_status, :to_do) }
@@ -551,7 +551,7 @@ RSpec.describe WorkItem, :elastic_helpers, feature_category: :team_planning do
       create(:work_item, :closed, project: project, system_defined_status_id: system_defined_wont_do_status.id)
     end
 
-    let_it_be(:lifecycle) do
+    let_it_be_with_reload(:lifecycle) do
       create(:work_item_custom_lifecycle, namespace: reusable_group).tap do |lifecycle|
         # Skip validations so that we can skip the license check.
         # We can't stub licensed features for let_it_be blocks.
@@ -629,8 +629,9 @@ RSpec.describe WorkItem, :elastic_helpers, feature_category: :team_planning do
 
     describe '.with_status' do
       let(:mapping) { nil }
+      let(:status_roles) { [] }
 
-      subject { described_class.with_status(status, mapping) }
+      subject { described_class.with_status(status, mapping, status_roles: status_roles) }
 
       context 'with a system defined status' do
         let(:status) { system_defined_todo_status }
@@ -646,6 +647,26 @@ RSpec.describe WorkItem, :elastic_helpers, feature_category: :team_planning do
         it 'returns items with matching current_status or the system defined status it was converted from' do
           is_expected.to contain_exactly(wi_custom_todo, wi_system_defined_todo, wi_default_open)
         end
+
+        context 'when status does not have converted_from_system_defined_status_identifier set' do
+          before do
+            status.update!(converted_from_system_defined_status_identifier: nil)
+          end
+
+          it 'returns only items with matching current_status' do
+            is_expected.to contain_exactly(wi_custom_todo)
+          end
+
+          context 'when status role is provided' do
+            let(:status_roles) do
+              [{ role: :open, work_item_type_id: issue_work_item_type.id }]
+            end
+
+            it 'returns items with matching current_status or without a current_status of the same state' do
+              is_expected.to contain_exactly(wi_custom_todo, wi_default_open)
+            end
+          end
+        end
       end
 
       context 'with custom done status' do
@@ -654,6 +675,26 @@ RSpec.describe WorkItem, :elastic_helpers, feature_category: :team_planning do
         it 'returns items with matching current_status or the system defined status it was converted from' do
           is_expected.to contain_exactly(wi_custom_done, wi_system_defined_done, wi_default_closed)
         end
+
+        context 'when status does not have converted_from_system_defined_status_identifier set' do
+          before do
+            status.update!(converted_from_system_defined_status_identifier: nil)
+          end
+
+          it 'returns only items with matching current_status' do
+            is_expected.to contain_exactly(wi_custom_done)
+          end
+
+          context 'when status role is provided' do
+            let(:status_roles) do
+              [{ role: :closed, work_item_type_id: issue_work_item_type.id }]
+            end
+
+            it 'returns items with matching current_status or without a current_status of the same state' do
+              is_expected.to contain_exactly(wi_custom_done, wi_default_closed)
+            end
+          end
+        end
       end
 
       context 'with custom duplicated status' do
@@ -661,6 +702,26 @@ RSpec.describe WorkItem, :elastic_helpers, feature_category: :team_planning do
 
         it 'returns items with matching current_status or the system defined status it was converted from' do
           is_expected.to contain_exactly(wi_custom_duplicated, wi_system_defined_duplicated, wi_default_duplicated)
+        end
+
+        context 'when status does not have converted_from_system_defined_status_identifier set' do
+          before do
+            status.update!(converted_from_system_defined_status_identifier: nil)
+          end
+
+          it 'returns only items with matching current_status' do
+            is_expected.to contain_exactly(wi_custom_duplicated)
+          end
+
+          context 'when status role is provided' do
+            let(:status_roles) do
+              [{ role: :duplicate, work_item_type_id: issue_work_item_type.id }]
+            end
+
+            it 'returns items with matching current_status or without a current_status of the same state' do
+              is_expected.to contain_exactly(wi_custom_duplicated, wi_default_duplicated)
+            end
+          end
         end
       end
 
@@ -784,6 +845,84 @@ RSpec.describe WorkItem, :elastic_helpers, feature_category: :team_planning do
               it 'returns items with matching current_status' do
                 is_expected.to contain_exactly(wi_converted_in_progress)
               end
+            end
+          end
+        end
+
+        context 'with old status role' do
+          let!(:custom_mapping) do
+            create(:work_item_custom_status_mapping,
+              namespace: reusable_group, work_item_type: issue_work_item_type,
+              old_status: old_status, old_status_role: old_status_role,
+              new_status: target_status,
+              valid_from: nil, valid_until: 1.day.ago)
+          end
+
+          context 'when set to open' do
+            let!(:old_status) do
+              create(:work_item_custom_status,
+                :without_conversion_mapping,
+                namespace: reusable_group
+              )
+            end
+
+            let(:target_status) { custom_status }
+            let(:old_status_role) { :open }
+
+            it 'returns items with matching current_status' do
+              is_expected.to contain_exactly(wi_other_custom, wi_default_open)
+            end
+          end
+
+          context 'when set to closed' do
+            let!(:old_status) do
+              create(:work_item_custom_status,
+                :closed,
+                namespace: reusable_group,
+                converted_from_system_defined_status_identifier: nil
+              )
+            end
+
+            let!(:target_status) do
+              create(:work_item_custom_status,
+                :closed,
+                namespace: reusable_group,
+                lifecycles: [lifecycle],
+                converted_from_system_defined_status_identifier: nil
+              )
+            end
+
+            let(:old_status_role) { :closed }
+            let(:status) { target_status }
+
+            it 'returns items with matching current_status' do
+              is_expected.to contain_exactly(wi_default_closed)
+            end
+          end
+
+          context 'when set to duplicate' do
+            let!(:old_status) do
+              create(:work_item_custom_status,
+                :duplicate,
+                namespace: reusable_group,
+                converted_from_system_defined_status_identifier: nil
+              )
+            end
+
+            let!(:target_status) do
+              create(:work_item_custom_status,
+                :duplicate,
+                namespace: reusable_group,
+                lifecycles: [lifecycle],
+                converted_from_system_defined_status_identifier: nil
+              )
+            end
+
+            let(:old_status_role) { :duplicate }
+            let(:status) { target_status }
+
+            it 'returns items with matching current_status' do
+              is_expected.to contain_exactly(wi_default_duplicated)
             end
           end
         end

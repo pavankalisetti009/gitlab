@@ -91,11 +91,16 @@ module WorkItems
 
           ensure_mapped_statuses_have_same_state(old_status, new_status)
 
+          status_role = lifecycle.role_for_status(old_status)
           # If the status is still available in the target lifecycle, we need to limit
           # the mapping to be created to the current timestamp so the status remains usable.
-          valid_until = target_lifecycle_statuses.include?(old_status) ? Time.current : nil
+          # That's also the case if the old status was a default status before.
+          valid_until = target_lifecycle_statuses.include?(old_status) || status_role.present? ? Time.current : nil
 
-          create_or_update_mapping(old_status, new_status, work_item_type, valid_until: valid_until)
+          create_or_update_mapping(old_status, new_status, work_item_type,
+            valid_until: valid_until,
+            old_status_role: status_role
+          )
         end
       end
 

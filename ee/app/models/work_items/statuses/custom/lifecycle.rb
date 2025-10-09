@@ -65,6 +65,18 @@ module WorkItems
           true
         end
 
+        def role_for_status(status)
+          return unless status.is_a?(WorkItems::Statuses::Custom::Status)
+
+          if default_open_status_id == status.id
+            :open
+          elsif default_closed_status_id == status.id
+            :closed
+          elsif default_duplicate_status_id == status.id
+            :duplicate
+          end
+        end
+
         private
 
         def ensure_default_statuses_in_lifecycle
