@@ -754,6 +754,21 @@ RSpec.describe API::GroupServiceAccounts, :with_current_organization, :aggregate
             ]
           end
 
+          let_it_be(:all_token_ids) do
+            [
+              active_token1.id,
+              active_token2.id,
+              expired_token1.id,
+              expired_token2.id,
+              revoked_token1.id,
+              revoked_token2.id,
+              named_token.id,
+              created_2_days_ago_token.id,
+              last_used_2_days_ago_token.id,
+              last_used_2_months_ago_token.id
+            ]
+          end
+
           it_behaves_like 'an access token GET API with access token params'
         end
 

@@ -198,9 +198,18 @@ RSpec.describe API::Manage::Groups, :aggregate_failures, feature_category: :syst
 
     let_it_be(:enterprise_user1) { create(:enterprise_user, enterprise_group: group) }
     let_it_be(:enterprise_user2) { create(:enterprise_user, enterprise_group: group) }
+    let_it_be(:service_account_user1) { create(:user, :service_account, provisioned_by_group: group) }
+    let_it_be(:service_account_user2) { create(:user, :service_account, provisioned_by_group: group) }
 
     let_it_be(:active_token1) { create(:personal_access_token, user: enterprise_user1, group: group, scopes: [:api]) }
     let_it_be(:active_token2) { create(:personal_access_token, user: enterprise_user2, group: group, scopes: [:api]) }
+    let_it_be(:service_account_token1) do
+      create(:personal_access_token, user: service_account_user1, group: group, scopes: [:api])
+    end
+
+    let_it_be(:service_account_token2) do
+      create(:personal_access_token, user: service_account_user2, group: group, scopes: [:api])
+    end
 
     let_it_be(:expired_token1) do
       create(:personal_access_token, user: enterprise_user1, group: group, expires_at: 1.year.ago)
@@ -232,6 +241,8 @@ RSpec.describe API::Manage::Groups, :aggregate_failures, feature_category: :syst
         created_2_days_ago_token,
         active_token1,
         active_token2,
+        service_account_token1,
+        service_account_token2,
         expired_token1,
         expired_token2,
         revoked_token1,
@@ -239,6 +250,23 @@ RSpec.describe API::Manage::Groups, :aggregate_failures, feature_category: :syst
         named_token,
         last_used_2_days_ago_token,
         last_used_2_months_ago_token
+      ]
+    end
+
+    let_it_be(:all_token_ids) do
+      [
+        active_token1.id,
+        active_token2.id,
+        service_account_token1.id,
+        service_account_token2.id,
+        expired_token1.id,
+        expired_token2.id,
+        revoked_token1.id,
+        revoked_token2.id,
+        named_token.id,
+        created_2_days_ago_token.id,
+        last_used_2_days_ago_token.id,
+        last_used_2_months_ago_token.id
       ]
     end
 
@@ -277,6 +305,19 @@ RSpec.describe API::Manage::Groups, :aggregate_failures, feature_category: :syst
       create(:resource_access_token, resource: group, group: group, scopes: [:api])
     end
 
+    let_it_be(:service_account_token_without_group) do
+      create(:personal_access_token, user: create(:user, :service_account), scopes: [:api])
+    end
+
+    let_it_be(:service_account_token_another_group) do
+      create(
+        :personal_access_token,
+        user: create(:user, :service_account, provisioned_by_group: another_group),
+        group: another_group,
+        scopes: [:api]
+      )
+    end
+
     it_behaves_like 'feature is not available to non saas versions', "get_request"
 
     context 'when saas', :saas do
@@ -302,6 +343,7 @@ RSpec.describe API::Manage::Groups, :aggregate_failures, feature_category: :syst
       context 'when optimize_credentials_inventory FF is disabled' do
         before do
           stub_feature_flags(optimize_credentials_inventory: false)
+          stub_feature_flags(credentials_inventory_pat_finder: false)
         end
 
         it_behaves_like 'a /manage/PAT GET endpoint using the credentials inventory PAT finder'
@@ -371,6 +413,21 @@ RSpec.describe API::Manage::Groups, :aggregate_failures, feature_category: :syst
           let_it_be(:path) { "/groups/#{group.id}/manage/personal_access_tokens/#{regular_user_token.id}" }
 
           it_behaves_like "forbidden action for delete_request", "token"
+        end
+
+        context 'when token belongs to service account user' do
+          let_it_be(:service_account) { create(:user, :service_account, provisioned_by_group: group) }
+          let_it_be(:service_account_token) { create(:personal_access_token, user: service_account) }
+          let_it_be(:service_account_path) do
+            "/groups/#{group.id}/manage/personal_access_tokens/#{service_account_token.id}"
+          end
+
+          it "revokes the service account token" do
+            delete api(service_account_path, personal_access_token: personal_access_token)
+
+            expect(response).to have_gitlab_http_status(:no_content)
+            expect(service_account_token.reload).to be_revoked
+          end
         end
 
         context 'when token does not belong to the group' do
@@ -666,6 +723,19 @@ RSpec.describe API::Manage::Groups, :aggregate_failures, feature_category: :syst
         end
       end
 
+      context 'when token belongs to service account user' do
+        let_it_be(:service_account) { create(:user, :service_account, provisioned_by_group: group) }
+        let_it_be(:service_account_token) { create(:personal_access_token, user: service_account) }
+        let_it_be(:path) { "/groups/#{group.id}/manage/personal_access_tokens/#{service_account_token.id}/rotate" }
+
+        # current policy does not allow service account token rotation
+        it 'returns forbidden error' do
+          rotate_request
+
+          expect(response).to have_gitlab_http_status(:forbidden)
+        end
+      end
+
       it_behaves_like "rotate token endpoint", "personal_access_tokens"
     end
   end
@@ -838,6 +908,21 @@ RSpec.describe API::Manage::Groups, :aggregate_failures, feature_category: :syst
         named_token,
         last_used_2_days_ago_token,
         last_used_2_months_ago_token
+      ]
+    end
+
+    let_it_be(:all_token_ids) do
+      [
+        active_token1.id,
+        active_token2.id,
+        expired_token1.id,
+        expired_token2.id,
+        revoked_token1.id,
+        revoked_token2.id,
+        named_token.id,
+        created_2_days_ago_token.id,
+        last_used_2_days_ago_token.id,
+        last_used_2_months_ago_token.id
       ]
     end
 

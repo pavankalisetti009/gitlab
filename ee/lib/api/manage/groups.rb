@@ -19,7 +19,7 @@ module API
 
       helpers do
         def users
-          user_group.enterprise_users
+          user_group.enterprise_users.or(user_group.service_accounts)
         end
 
         def ssh_keys_finder_params
@@ -38,7 +38,6 @@ module API
                 users: users,
                 impersonation: false,
                 group: user_group,
-                owner_type: 'human',
                 sort: sort_order
               }
             )
@@ -94,9 +93,7 @@ module API
                   include_missing: false).merge(
                     {
                       group: user_group,
-                      # See bug: https://gitlab.com/gitlab-org/gitlab/-/issues/560151
-                      # user_types should include :service_account too
-                      user_types: [:human],
+                      user_types: [:human, :service_account],
                       impersonation: false,
                       sort: sort_order
                     }
