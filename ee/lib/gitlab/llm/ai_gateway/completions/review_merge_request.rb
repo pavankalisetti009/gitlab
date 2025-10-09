@@ -125,6 +125,7 @@ module Gitlab
           rescue StandardError => error
             Gitlab::ErrorTracking.track_exception(error, unit_primitive: UNIT_PRIMITIVE)
             update_review_state('reviewed') if merge_request.present?
+            @progress_note&.destroy
             ServiceResponse.error(message: error.message)
           end
 
