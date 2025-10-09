@@ -398,10 +398,6 @@ RSpec.shared_examples 'processes hunk headers' do
           hash_including(
             "message" => error_msg,
             "class" => "Gitlab::Checks::SecretPushProtection::PayloadProcessor"
-          ),
-          hash_including(
-            "message" => error_messages[:invalid_input_error],
-            "class" => "Gitlab::Checks::SecretPushProtection::ResponseHandler"
           )
         )
       end
@@ -439,10 +435,6 @@ RSpec.shared_examples 'processes hunk headers' do
         hash_including(
           "message" => error_msg,
           "class" => "Gitlab::Checks::SecretPushProtection::PayloadProcessor"
-        ),
-        hash_including(
-          "message" => error_messages[:invalid_input_error],
-          "class" => "Gitlab::Checks::SecretPushProtection::ResponseHandler"
         )
       )
     end
