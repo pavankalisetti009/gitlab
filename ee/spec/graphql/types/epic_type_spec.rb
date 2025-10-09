@@ -139,7 +139,7 @@ RSpec.describe GitlabSchema.types['Epic'], feature_category: :portfolio_manageme
     end
   end
 
-  describe 'use work item logic to present dates' do
+  describe 'use work item logic to present dates', :freeze_time do
     using RSpec::Parameterized::TableSyntax
 
     let_it_be(:epic) do
