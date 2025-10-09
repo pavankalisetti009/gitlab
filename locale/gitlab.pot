@@ -15672,6 +15672,9 @@ msgstr ""
 msgid "Collapse"
 msgstr ""
 
+msgid "Collapse %{accessibleLabel}"
+msgstr ""
+
 msgid "Collapse %{section} merge requests"
 msgstr ""
 
@@ -19448,6 +19451,9 @@ msgid "Copy commands"
 msgstr ""
 
 msgid "Copy commit SHA"
+msgstr ""
+
+msgid "Copy commit SHA %{sha}"
 msgstr ""
 
 msgid "Copy contents"
@@ -27474,6 +27480,9 @@ msgid "Exit full screen"
 msgstr ""
 
 msgid "Expand"
+msgstr ""
+
+msgid "Expand %{accessibleLabel}"
 msgstr ""
 
 msgid "Expand %{section} merge requests"
