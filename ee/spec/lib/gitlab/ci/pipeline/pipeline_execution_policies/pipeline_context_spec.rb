@@ -783,4 +783,43 @@ RSpec.describe Gitlab::Ci::Pipeline::PipelineExecutionPolicies::PipelineContext,
       end
     end
   end
+
+  describe '#policy_stages_higher_precedence?' do
+    subject { context.policy_stages_higher_precedence? }
+
+    include_context 'with mocked policy configs'
+
+    let(:policy_configuration) { build_stubbed(:security_orchestration_policy_configuration) }
+    let(:policy_experiment_configuration) do
+      build_stubbed(:security_orchestration_policy_configuration,
+        experiments: { pipeline_execution_policy_stages_higher_precedence: { enabled: true } })
+    end
+
+    context 'without experiment enabled' do
+      let(:policy_configs) do
+        build_list(:pipeline_execution_policy_config, 2, policy_config: policy_configuration)
+      end
+
+      it { is_expected.to eq(false) }
+    end
+
+    context 'when all policy_pipelines enable the experiment' do
+      let(:policy_configs) do
+        build_list(:pipeline_execution_policy_config, 2, policy_config: policy_experiment_configuration)
+      end
+
+      it { is_expected.to eq(true) }
+    end
+
+    context 'when at least one policy_pipeline does not enable the experiment' do
+      let(:policy_configs) do
+        [
+          *build_list(:pipeline_execution_policy_config, 2, policy_config: policy_experiment_configuration),
+          build(:pipeline_execution_policy_config, policy_config: policy_configuration)
+        ]
+      end
+
+      it { is_expected.to eq(false) }
+    end
+  end
 end

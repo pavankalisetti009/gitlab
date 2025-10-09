@@ -86,6 +86,10 @@ module Gitlab
             policy_pipelines.all? { |policy_pipeline| policy_pipeline.skip_ci_allowed?(current_user&.id) }
           end
 
+          def policy_stages_higher_precedence?
+            policies.all? { |policy| policy.experiment_enabled?(:pipeline_execution_policy_stages_higher_precedence) }
+          end
+
           def has_overriding_execution_policy_pipelines?
             policies.any?(&:strategy_override_project_ci?)
           end
@@ -140,7 +144,11 @@ module Gitlab
             config[:stages] = override_policy_stages if has_override_stages?
 
             if has_injected_stages?
-              config[:stages] = ::Gitlab::Ci::Config::StagesMerger.inject(config[:stages], injected_policy_stages)
+              config[:stages] =
+                ::Gitlab::Ci::Config::StagesMerger.inject(
+                  config[:stages],
+                  injected_policy_stages,
+                  strategy: policy_stages_higher_precedence? ? :original_stages_last : :original_stages_first)
             end
 
             config
