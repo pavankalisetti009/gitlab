@@ -37,6 +37,8 @@ module WorkItems
         ApplicationRecord.transaction do
           apply_status_changes(params[:statuses])
 
+          record_previous_default_statuses
+
           if @processed_statuses.present?
             validate_status_removal_constraints
             update_lifecycle_status_positions!
@@ -60,6 +62,7 @@ module WorkItems
         ApplicationRecord.transaction do
           apply_status_changes(params[:statuses])
 
+          record_previous_default_statuses
           validate_status_removal_constraints
 
           statuses = @processed_statuses

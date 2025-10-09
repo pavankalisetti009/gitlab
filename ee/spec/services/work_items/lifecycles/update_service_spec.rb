@@ -421,6 +421,7 @@ RSpec.describe WorkItems::Lifecycles::UpdateService, feature_category: :team_pla
                 expect(mappings).to all(
                   have_attributes(
                     old_status_id: WorkItems::Statuses::Custom::Status.find_by(namespace: group, name: "To do").id,
+                    old_status_role: "open",
                     new_status_id: lifecycle.default_open_status.id,
                     namespace_id: group.id,
                     valid_from: nil,
@@ -1291,13 +1292,34 @@ RSpec.describe WorkItems::Lifecycles::UpdateService, feature_category: :team_pla
                 end
 
                 it 'sets the new default status' do
-                  expect(lifecycle.default_open_status).to eq(new_default_open_status)
+                  expect { result }.not_to change { WorkItems::Statuses::Custom::Status.count }
+
+                  custom_lifecycle.reset
+
+                  expect(custom_lifecycle.default_open_status).to eq(new_default_open_status)
                 end
 
                 it 'removes the old default status from the lifecycle' do
                   expect { result }.not_to change { WorkItems::Statuses::Custom::Status.count }
-                  expect(lifecycle.statuses.pluck(:name)).not_to include(custom_status.name)
-                  expect(lifecycle.statuses.count).to eq(3)
+
+                  custom_lifecycle.reset
+
+                  expect(custom_lifecycle.statuses.pluck(:name)).not_to include(custom_status.name)
+                  expect(custom_lifecycle.statuses.count).to eq(3)
+                end
+
+                it 'adds mapping record' do
+                  expect { result }.to change { WorkItems::Statuses::Custom::Mapping.count }.by(1)
+
+                  expect(WorkItems::Statuses::Custom::Mapping.last).to have_attributes(
+                    old_status_id: custom_status.id,
+                    old_status_role: "open",
+                    new_status_id: new_default_open_status.id,
+                    work_item_type_id: custom_lifecycle.work_item_types.first.id,
+                    namespace_id: group.id,
+                    valid_from: nil,
+                    valid_until: nil
+                  )
                 end
 
                 context 'when work_item_status_mvc2 feature flag is disabled' do
@@ -1466,6 +1488,20 @@ RSpec.describe WorkItems::Lifecycles::UpdateService, feature_category: :team_pla
                   expect { result }.not_to change { WorkItems::Statuses::Custom::Status.count }
                   expect(lifecycle.statuses.pluck(:name)).not_to include(custom_status.name)
                   expect(lifecycle.statuses.count).to eq(3)
+                end
+
+                it 'adds mapping record' do
+                  expect { result }.to change { WorkItems::Statuses::Custom::Mapping.count }.by(1)
+
+                  expect(WorkItems::Statuses::Custom::Mapping.last).to have_attributes(
+                    old_status_id: custom_status.id,
+                    old_status_role: "open",
+                    new_status_id: new_default_open_status.id,
+                    work_item_type_id: custom_lifecycle.work_item_types.first.id,
+                    namespace_id: group.id,
+                    valid_from: nil,
+                    valid_until: nil
+                  )
                 end
               end
             end
