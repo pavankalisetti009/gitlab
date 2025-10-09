@@ -252,6 +252,8 @@ module BillingPlansHelper
       ],
       premium: [
         { title: s_('BillingPlans|All the benefits of Free +'), highlight: true },
+        { title: s_('BillingPlans|AI Chat in the IDE') },
+        { title: s_('BillingPlans|AI Code Suggestions in the IDE') },
         { title: s_('BillingPlans|Cross-team project management') },
         { title: s_('BillingPlans|Multiple approval rules') },
         { title: s_('BillingPlans|Multi-region support') },
