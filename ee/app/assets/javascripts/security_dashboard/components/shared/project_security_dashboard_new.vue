@@ -49,12 +49,10 @@ export default {
           'SecurityReports|This dashboard provides an overview of your security vulnerabilities.',
         ),
         panels: [
-          ...(this.glFeatures.newSecurityDashboardVulnerabilitiesPerSeverity
-            ? generateVulnerabilitiesForSeverityPanels({
-                panelComponent: ProjectVulnerabilitiesForSeverityPanel,
-                filters: this.filters,
-              })
-            : []),
+          ...generateVulnerabilitiesForSeverityPanels({
+            panelComponent: ProjectVulnerabilitiesForSeverityPanel,
+            filters: this.filters,
+          }),
           {
             id: '1',
             component: markRaw(ProjectVulnerabilitiesOverTimePanel),

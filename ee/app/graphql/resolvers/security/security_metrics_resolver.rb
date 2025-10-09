@@ -23,11 +23,9 @@ module Resolvers
         return unless Ability.allowed?(current_user, :read_security_resource, object)
 
         if object.is_a?(Project)
-          return if Feature.disabled?(:project_security_dashboard_new, object) &&
-            Feature.disabled?(:new_security_dashboard_vulnerabilities_per_severity, object)
+          return if Feature.disabled?(:project_security_dashboard_new, object)
         elsif object.is_a?(Group)
-          return if Feature.disabled?(:group_security_dashboard_new, object) &&
-            Feature.disabled?(:new_security_dashboard_vulnerabilities_per_severity, object)
+          return if Feature.disabled?(:group_security_dashboard_new, object)
         else
           return
         end

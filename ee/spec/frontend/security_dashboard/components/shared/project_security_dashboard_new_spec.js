@@ -22,15 +22,10 @@ describe('Project Security Dashboard (new version) - Component', () => {
 
   const mockProjectFullPath = 'project-1';
 
-  const createComponent = ({
-    glFeatures = {
-      newSecurityDashboardVulnerabilitiesPerSeverity: true,
-    },
-  } = {}) => {
+  const createComponent = () => {
     wrapper = shallowMountExtended(ProjectSecurityDashboardNew, {
       provide: {
         projectFullPath: mockProjectFullPath,
-        glFeatures,
       },
     });
   };
@@ -171,16 +166,6 @@ describe('Project Security Dashboard (new version) - Component', () => {
       SEVERITY_LEVELS_KEYS.forEach((severity) => {
         expect(findPanelWithId(severity).componentProps.filters).toEqual({ reportType });
       });
-    });
-  });
-
-  describe('with vulnerabilities per severity feature flag disabled', () => {
-    beforeEach(() => {
-      createComponent({ glFeatures: { newSecurityDashboardVulnerabilitiesPerSeverity: false } });
-    });
-
-    it.each(SEVERITY_LEVELS_KEYS)('does not render the %s severity panel', (severity) => {
-      expect(findPanelWithId(severity)).toBeUndefined();
     });
   });
 });
