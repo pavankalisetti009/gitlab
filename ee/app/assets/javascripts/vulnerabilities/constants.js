@@ -142,3 +142,12 @@ export const VULNERABILITY_TAB_NAMES = Object.freeze({
 export const VULNERABILITY_TAB_INDEX_TO_NAME = {
   1: CODE_FLOW_TAB_URL,
 };
+
+export const CONFIDENCE_SCORES = {
+  MINIMAL: 0.3,
+  LIKELY_FALSE_POSITIVE: 0.7,
+};
+
+export const AI_FP_DISMISSAL_COMMENT = s__(
+  'Vulnerability|Dismissed as false positive detected by Duo AI',
+);

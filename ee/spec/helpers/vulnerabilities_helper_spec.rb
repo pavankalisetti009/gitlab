@@ -524,7 +524,8 @@ RSpec.describe VulnerabilitiesHelper, feature_category: :vulnerability_managemen
             version: 3.1
           }
         ],
-        validity_checks_enabled: be_in([true, false])
+        validity_checks_enabled: be_in([true, false]),
+        latest_flag: anything
       )
 
       expect(subject[:location]['blob_path']).to match(kind_of(String))

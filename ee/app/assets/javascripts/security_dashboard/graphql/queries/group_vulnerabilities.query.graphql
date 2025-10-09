@@ -26,6 +26,7 @@ query groupVulnerabilities(
   $owaspTopTen: [VulnerabilityOwaspTop10!]
   $owaspTopTen2021: [VulnerabilityOwasp2021Top10!]
   $includeSeverityOverrides: Boolean = false
+  $includeLatestFlag: Boolean = false
   $reachability: ReachabilityType
 ) {
   group(fullPath: $fullPath) {
