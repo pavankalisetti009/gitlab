@@ -58844,6 +58844,9 @@ msgstr ""
 msgid "SecurityInventory|Add projects to this group to start tracking their security posture."
 msgstr ""
 
+msgid "SecurityInventory|Advanced SAST"
+msgstr ""
+
 msgid "SecurityInventory|Advanced SAST (SAST)"
 msgstr ""
 
@@ -58979,6 +58982,9 @@ msgstr ""
 msgid "SecurityInventory|This group doesn't have any subgroups."
 msgstr ""
 
+msgid "SecurityInventory|Tool coverage"
+msgstr ""
+
 msgid "SecurityInventory|Tool coverage: %{coverage}"
 msgstr ""
 
@@ -58992,6 +58998,27 @@ msgid "SecurityInventory|View subgroup"
 msgstr ""
 
 msgid "SecurityInventory|View vulnerability report"
+msgstr ""
+
+msgid "SecurityInventory|Vulnerability count"
+msgstr ""
+
+msgid "SecurityInventory|Vulnerability count critical"
+msgstr ""
+
+msgid "SecurityInventory|Vulnerability count high"
+msgstr ""
+
+msgid "SecurityInventory|Vulnerability count info"
+msgstr ""
+
+msgid "SecurityInventory|Vulnerability count low"
+msgstr ""
+
+msgid "SecurityInventory|Vulnerability count medium"
+msgstr ""
+
+msgid "SecurityInventory|Vulnerability count unknown"
 msgstr ""
 
 msgid "SecurityInventory|You're already viewing this subgroup"

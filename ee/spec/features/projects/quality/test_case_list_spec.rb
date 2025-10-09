@@ -59,8 +59,8 @@ RSpec.describe 'Test cases', :js, feature_category: :quality_management do
         page.find('input').click
 
         expect(page.find('.gl-filtered-search-suggestion-list')).to have_selector('li', count: 2)
-        expect(page.find('.gl-filtered-search-suggestion-list li:nth-child(1)')).to have_content('Author')
-        expect(page.find('.gl-filtered-search-suggestion-list li:nth-child(2)')).to have_content('Label')
+        expect(page.find('.gl-filtered-search-suggestion-list li:nth-child(2)')).to have_content('Author')
+        expect(page.find('.gl-filtered-search-suggestion-list li:nth-child(3)')).to have_content('Label')
       end
     end
 
