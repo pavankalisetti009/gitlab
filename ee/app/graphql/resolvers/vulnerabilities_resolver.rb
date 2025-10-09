@@ -105,6 +105,11 @@ module Resolvers
       experiment: { milestone: '18.2' },
       description: 'Filter vulnerabilities by reachability.'
 
+    argument :validity_check, [::Types::Vulnerabilities::FindingTokenStatusStateEnum],
+      required: false,
+      experiment: { milestone: '18.5' },
+      description: 'Filter vulnerabilities by validity check.'
+
     def resolve_with_lookahead(**args)
       return Vulnerability.none unless vulnerable&.feature_available?(:security_dashboard)
 
