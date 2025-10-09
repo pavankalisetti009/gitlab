@@ -803,27 +803,55 @@ RSpec.describe API::Groups, :with_current_organization, :aggregate_failures, fea
       let(:params) { attributes_for_group_api shared_runners_minutes_limit: 133 }
     end
 
-    context 'when the top_level_group_creation_enabled application_setting is enabled (default)' do
-      it 'creates a top-level group' do
-        group_attributes = attributes_for_group_api name: 'top_level_group_1', path: 'top_level_group_1'
-
-        expect { post api("/groups", user), params: group_attributes }
-          .to change { Group.count }.by(1)
-        expect(response).to have_gitlab_http_status(:created)
-      end
-    end
-
-    context 'when the top_level_group_creation_enabled application_setting is disabled' do
+    context 'when on .com', :saas, :do_not_mock_admin_mode_setting do
       before do
         stub_ee_application_setting(top_level_group_creation_enabled: false)
       end
 
-      it 'returns an error' do
-        group_attributes = attributes_for_group_api name: 'top_level_group_1', path: 'top_level_group_1'
+      context 'when an admin user' do
+        it 'creates a top-level group' do
+          group_attributes = attributes_for_group_api name: 'top_level_group_1', path: 'top_level_group_1'
 
-        expect { post api("/groups", user), params: group_attributes }
-          .not_to change { Group.count }
-        expect(response).to have_gitlab_http_status(:forbidden)
+          expect { post api("/groups", admin), params: group_attributes }
+            .to change { Group.count }.by(1)
+          expect(response).to have_gitlab_http_status(:created)
+        end
+      end
+
+      context 'when a non-admin user' do
+        it 'returns an error' do
+          group_attributes = attributes_for_group_api name: 'top_level_group_1', path: 'top_level_group_1'
+
+          expect { post api("/groups", user), params: group_attributes }
+            .not_to change { Group.count }
+          expect(response).to have_gitlab_http_status(:forbidden)
+        end
+      end
+    end
+
+    context 'when on self-managed' do
+      context 'when the top_level_group_creation_enabled application_setting is enabled (default)' do
+        it 'creates a top-level group for any user' do
+          group_attributes = attributes_for_group_api name: 'top_level_group_1', path: 'top_level_group_1'
+
+          expect { post api("/groups", user), params: group_attributes }
+            .to change { Group.count }.by(1)
+          expect(response).to have_gitlab_http_status(:created)
+        end
+      end
+
+      context 'when the top_level_group_creation_enabled application_setting is disabled' do
+        before do
+          stub_ee_application_setting(top_level_group_creation_enabled: false)
+        end
+
+        it 'returns an error for any user' do
+          group_attributes = attributes_for_group_api name: 'top_level_group_1', path: 'top_level_group_1'
+
+          expect { post api("/groups", user), params: group_attributes }
+            .not_to change { Group.count }
+          expect(response).to have_gitlab_http_status(:forbidden)
+        end
       end
     end
 

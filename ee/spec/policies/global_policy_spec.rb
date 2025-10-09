@@ -314,16 +314,64 @@ RSpec.describe GlobalPolicy, :aggregate_failures, feature_category: :shared do
   describe 'create_group_via_api' do
     let(:policy) { :create_group_via_api }
 
-    context 'when the top_level_group_creation_enabled application_setting is enabled (default)' do
-      it { is_expected.to be_allowed(policy) }
-    end
-
-    context 'when the top_level_group_creation_enabled application_setting is disabled' do
+    context 'when on .com', :saas do
       before do
         stub_ee_application_setting(top_level_group_creation_enabled: false)
       end
 
-      it { is_expected.to be_disallowed(policy) }
+      context 'when user is an admin', :do_not_mock_admin_mode_setting do
+        let(:current_user) { admin }
+
+        it { is_expected.to be_allowed(policy) }
+
+        context 'when in admin_mode', :enable_admin_mode do
+          it { is_expected.to be_allowed(policy) }
+        end
+      end
+
+      context 'when user is a non-admin user' do
+        let(:current_user) { user }
+
+        it { is_expected.not_to be_allowed(policy) }
+      end
+    end
+
+    context 'when on self-managed' do
+      context 'when the top_level_group_creation_enabled application_setting is enabled (default)' do
+        context 'when user is an admin', :do_not_mock_admin_mode_setting do
+          let(:current_user) { admin }
+
+          it { is_expected.to be_allowed(policy) }
+
+          context 'when in admin_mode', :enable_admin_mode do
+            it { is_expected.to be_allowed(policy) }
+          end
+        end
+
+        context 'when user is a non-admin user' do
+          let(:current_user) { user }
+
+          it { is_expected.to be_allowed(policy) }
+        end
+      end
+
+      context 'when the top_level_group_creation_enabled application_setting is disabled' do
+        before do
+          stub_ee_application_setting(top_level_group_creation_enabled: false)
+        end
+
+        context 'when user is an admin', :enable_admin_mode do
+          let(:current_user) { admin }
+
+          it { is_expected.not_to be_allowed(policy) }
+        end
+
+        context 'when user is a non-admin user' do
+          let(:current_user) { user }
+
+          it { is_expected.not_to be_allowed(policy) }
+        end
+      end
     end
   end
 
