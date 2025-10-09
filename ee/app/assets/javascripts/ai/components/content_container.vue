@@ -92,7 +92,7 @@ export default {
   <aside
     id="ai-panel-portal"
     :aria-label="activeTab.title"
-    class="ai-panel !gl-left-auto gl-h-full gl-w-[var(--ai-panel-width)] gl-grow gl-overflow-hidden gl-rounded-[1rem] gl-bg-default [contain:strict]"
+    class="ai-panel !gl-left-auto gl-flex gl-h-full gl-w-[var(--ai-panel-width)] gl-grow gl-flex-col gl-overflow-hidden gl-rounded-[1rem] gl-bg-default [contain:strict]"
     :class="{ 'ai-panel-maximized': isMaximized }"
   >
     <div class="ai-panel-header gl-flex gl-items-center gl-justify-between">
@@ -141,7 +141,7 @@ export default {
       </div>
     </div>
     <div
-      class="ai-panel-body gl-h-full gl-flex-wrap gl-justify-center gl-overflow-auto gl-text-secondary"
+      class="ai-panel-body gl-grow gl-flex-wrap gl-justify-center gl-overflow-auto gl-text-secondary"
       :class="{ 'gl-flex gl-min-h-full': typeof activeTab.component === 'string' }"
     >
       <div v-if="typeof activeTab.component === 'string'" class="gl-self-center">
