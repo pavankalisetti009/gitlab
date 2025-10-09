@@ -1,6 +1,5 @@
 import { shallowMount } from '@vue/test-utils';
 import { GlBadge } from '@gitlab/ui';
-import Markdown from '~/vue_shared/components/markdown/markdown_content.vue';
 import AiCatalogAgentDetails from 'ee/ai/catalog/components/ai_catalog_agent_details.vue';
 import AiCatalogItemField from 'ee/ai/catalog/components/ai_catalog_item_field.vue';
 import FormSection from 'ee/ai/catalog/components/form_section.vue';
@@ -105,10 +104,10 @@ describe('AiCatalogAgentDetails', () => {
 
   it('renders "Prompts" details', () => {
     const promptsDetails = findAllFieldsForSection(2);
-    expect(promptsDetails.at(0).findComponent(Markdown).props()).toMatchObject({
-      value: mockAgent.latestVersion.systemPrompt,
-      fallbackOnError: true,
+    expect(promptsDetails.at(0).props()).toMatchObject({
+      title: 'System prompt',
     });
+    expect(promptsDetails.at(0).find('pre').text()).toBe(mockAgent.latestVersion.systemPrompt);
   });
 
   it('renders "Tools" details', () => {
