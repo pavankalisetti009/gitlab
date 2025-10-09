@@ -27,9 +27,9 @@ describe('NavigationRail', () => {
   });
 
   it('sets the correct aria-labels for toggles', () => {
-    expect(findChatToggle().attributes('aria-label')).toBe('GitLab Duo Active Chat');
-    expect(findSuggestionsToggle().attributes('aria-label')).toBe('GitLab Duo Suggestions');
-    expect(findSessionsToggle().attributes('aria-label')).toBe('GitLab Duo Sessions');
+    expect(findChatToggle().attributes('aria-label')).toBe('Active GitLab Duo Chat');
+    expect(findSuggestionsToggle().attributes('aria-label')).toBe('GitLab Duo suggestions');
+    expect(findSessionsToggle().attributes('aria-label')).toBe('GitLab Duo sessions');
   });
 
   it('sets the correct aria-selected attribute based on the active tab', () => {

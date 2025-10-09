@@ -55,7 +55,7 @@ describe('AiContentContainer', () => {
   it('renders maximize and collapse buttons', () => {
     expect(findMaximizeButton().exists()).toBe(true);
     expect(findCollapseButton().exists()).toBe(true);
-    expect(findCollapseButton().attributes('aria-label')).toBe('Collapse GitLab Duo Panel');
+    expect(findCollapseButton().attributes('aria-label')).toBe('Collapse GitLab Duo panel');
   });
 
   it('collapses the panel when collapse button is clicked', async () => {
