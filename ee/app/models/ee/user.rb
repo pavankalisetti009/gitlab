@@ -781,6 +781,11 @@ module EE
 
     private
 
+    override :self_managed_admin?
+    def self_managed_admin?
+      super && !::Gitlab::Saas.feature_available?(:admin_homepage)
+    end
+
     def ci_namespace_mirrors_permitted_to(permission)
       ::Ci::NamespaceMirror.by_group_and_descendants(
         group_members

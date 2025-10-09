@@ -4108,4 +4108,37 @@ RSpec.describe User, feature_category: :system_access do
       end
     end
   end
+
+  describe '#should_use_flipped_dashboard_mapping_for_rollout?' do
+    let_it_be(:user) { create(:user) }
+
+    before do
+      stub_feature_flags(personal_homepage: true)
+    end
+
+    context 'when admin_homepage SaaS feature is disabled (self-managed)' do
+      before do
+        stub_saas_features(admin_homepage: false)
+      end
+
+      it 'returns true for users' do
+        expect(user.should_use_flipped_dashboard_mapping_for_rollout?).to be true
+      end
+    end
+
+    context 'when admin_homepage SaaS feature is enabled (GitLab.com)' do
+      before do
+        stub_saas_features(admin_homepage: true)
+      end
+
+      it 'returns true for users' do
+        expect(user).to be_should_use_flipped_dashboard_mapping_for_rollout
+      end
+
+      it 'returns true for admins', :enable_admin_mode do
+        admin_user = create(:admin)
+        expect(admin_user).to be_should_use_flipped_dashboard_mapping_for_rollout
+      end
+    end
+  end
 end

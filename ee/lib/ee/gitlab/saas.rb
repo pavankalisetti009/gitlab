@@ -46,6 +46,7 @@ module EE
           notify_compromised_passwords
           repositories_web_based_commit_signing
           security_scans_api
+          admin_homepage
         ].freeze
 
       CONFIG_FILE_ROOT = 'ee/config/saas_features'
