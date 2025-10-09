@@ -8,7 +8,6 @@ RSpec.describe Groups::Security::InventoryController, feature_category: :securit
 
   before do
     stub_licensed_features(security_inventory: true)
-    stub_feature_flags(security_inventory_dashboard: true)
 
     sign_in(user)
   end
@@ -54,18 +53,6 @@ RSpec.describe Groups::Security::InventoryController, feature_category: :securit
     context 'when security inventory feature is disabled' do
       before do
         stub_licensed_features(security_inventory: false)
-      end
-
-      it 'returns 403 response' do
-        request
-
-        expect(response).to have_gitlab_http_status(:forbidden)
-      end
-    end
-
-    context 'when security inventory feature flag is disabled' do
-      before do
-        stub_feature_flags(security_inventory_dashboard: false)
       end
 
       it 'returns 403 response' do

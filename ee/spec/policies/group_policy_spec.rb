@@ -5082,14 +5082,6 @@ RSpec.describe GroupPolicy, feature_category: :groups_and_projects do
         let(:current_user) { developer }
 
         it { is_expected.to be_allowed(:read_security_inventory) }
-
-        context 'when the security_inventory_dashboard feature flag is disabled' do
-          before do
-            stub_feature_flags(security_inventory_dashboard: false)
-          end
-
-          it { is_expected.to be_disallowed(:read_security_inventory) }
-        end
       end
 
       context 'when user is reporter' do

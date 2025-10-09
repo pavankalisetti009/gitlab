@@ -769,7 +769,6 @@ module EE
       end
 
       def vulnerability_statistic
-        return unless ::Feature.enabled?(:security_inventory_dashboard, object.group&.root_ancestor)
         return unless object.licensed_feature_available?(:security_inventory)
 
         object.vulnerability_statistic
@@ -782,10 +781,7 @@ module EE
           ::Namespaces::Preloaders::NamespaceRootAncestorPreloader.new(namespaces).execute if namespaces.present?
 
           projects.each do |project|
-            unless ::Feature.enabled?(:security_inventory_dashboard, project.root_ancestor) &&
-                project.licensed_feature_available?(:security_inventory)
-              next loader.call(project, nil)
-            end
+            next loader.call(project, nil) unless project.licensed_feature_available?(:security_inventory)
 
             loader.call(project, project.analyzer_statuses)
           end
