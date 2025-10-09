@@ -202,7 +202,7 @@ export default {
     },
 
     shouldRenderMrWidget() {
-      if (this.$apollo.queries.enabledScans?.loading) {
+      if (this.isLoadingEnabledScans) {
         return false;
       }
 
@@ -210,7 +210,7 @@ export default {
     },
 
     isLoadingEnabledScans() {
-      return this.$apollo.queries.enabledScans?.loading;
+      return this.$apollo.queries.enabledScans?.loading || this.$options.pollingInterval;
     },
   },
   apollo: {
@@ -233,23 +233,18 @@ export default {
         // We need to check only one of these because they make the same query in the backend
         const isReady = scans.enabledSecurityScans?.ready === true;
 
-        if (!isReady) {
-          if (!this.pollingInterval) {
-            this.initPolling();
-          }
-
-          // This will prevent the widget from loading until results are ready
-          return { full: {}, partial: {} };
+        if (!isReady && !this.$options.pollingInterval) {
+          this.initPolling();
         }
 
-        if (isReady && this.pollingInterval) {
-          this.pollingInterval.destroy();
-          this.pollingInterval = undefined;
+        if (isReady && this.$options.pollingInterval) {
+          this.$options.pollingInterval.destroy();
+          this.$options.pollingInterval = undefined;
         }
 
         return {
-          full: scans.enabledSecurityScans,
-          partial: scans.enabledPartialSecurityScans,
+          full: scans.enabledSecurityScans || {},
+          partial: scans.enabledPartialSecurityScans || {},
         };
       },
       error() {
@@ -273,13 +268,13 @@ export default {
   beforeDestroy() {
     this.cleanUpResolveWithAiHandlers();
 
-    if (this.pollingInterval) {
-      this.pollingInterval.destroy();
+    if (this.$options.pollingInterval) {
+      this.$options.pollingInterval.destroy();
     }
   },
   methods: {
     initPolling() {
-      this.pollingInterval = new SmartInterval({
+      this.$options.pollingInterval = new SmartInterval({
         callback: () => this.$apollo.queries.enabledScans.refetch(),
         startingInterval: POLL_INTERVAL,
         incrementByFactorOf: 1,
@@ -449,6 +444,7 @@ export default {
     COVERAGE_FUZZING: 'coverage-fuzzing-report',
     API_FUZZING: 'api-fuzzing-report',
   },
+  pollingInterval: undefined,
 };
 </script>
 
