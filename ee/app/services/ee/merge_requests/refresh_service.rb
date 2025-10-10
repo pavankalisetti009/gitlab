@@ -15,15 +15,29 @@ module EE
 
         remove_requested_changes
 
-        update_approvers_for_source_branch_merge_requests
+        if ::Feature.disabled?(:split_refresh_approval_worker, current_user)
+          update_approvers_for_source_branch_merge_requests
+          update_approvers_for_target_branch_merge_requests
+          reset_approvals_for_merge_requests(push.ref, push.newrev)
+          sync_any_merge_request_approval_rules
+          sync_preexisting_states_approval_rules
+          sync_unenforceable_approval_rules
+        end
+      end
 
-        update_approvers_for_target_branch_merge_requests
+      override :execute_async_workers
+      def execute_async_workers
+        super
 
-        reset_approvals_for_merge_requests(push.ref, push.newrev)
-
-        sync_any_merge_request_approval_rules
-        sync_preexisting_states_approval_rules
-        sync_unenforceable_approval_rules
+        if ::Feature.enabled?(:split_refresh_approval_worker, current_user)
+          ::MergeRequests::Refresh::ApprovalWorker.perform_async(
+            project.id,
+            current_user.id,
+            push.oldrev,
+            push.newrev,
+            push.ref
+          )
+        end
       end
 
       def reset_approvals_for_merge_requests(ref, newrev)
