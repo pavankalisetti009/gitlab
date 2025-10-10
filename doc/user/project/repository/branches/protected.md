@@ -52,7 +52,7 @@ To protect a branch:
 1. Select **Settings** > **Repository**.
 1. Expand **Branch rules**.
 1. Select **Add branch rule** > **Branch name or pattern**.
-1. From dropdown list, search for and select the branch you want to protect.
+1. From the dropdown list, search for and select the branch you want to protect.
 1. Select **Create branch rule**. You are directed to the **Branch rule details** page.
 1. From the **Protect branch** section, choose one of the following options:
    - From **Allowed to merge**, select **Edit**.
@@ -358,7 +358,7 @@ To protect a branch and enable force push:
 1. Select **Settings** > **Repository**.
 1. Expand **Branch rules**.
 1. Select **Add branch rule** > **Branch name or pattern**.
-1. From dropdown list, search for and select the branch you want to protect and enable force push.
+1. From the dropdown list, search for and select the branch you want to protect and enable force push.
 1. Select **Create branch rule**. You are directed to the **Branch rule details** page.
 1. From the **Allowed to push and merge** and **Allowed to merge** sections, select the settings you want.
 1. Select **Save changes**.
@@ -391,7 +391,7 @@ To protect a new branch and enable Code Owner's approval:
 1. Select **Settings** > **Repository**.
 1. Expand **Branch rules**.
 1. Select **Add branch rule** > **Branch name or pattern**.
-1. From dropdown list, search for and select the branch you want to protect and enable force push.
+1. From the dropdown list, search for and select the branch you want to protect and enable force push.
 1. Select **Create branch rule**. You are directed to the **Branch rule details** page.
 1. From the **Allowed to push and merge** and **Allowed to merge** sections, select the settings you want.
 1. Select **Save changes**.
