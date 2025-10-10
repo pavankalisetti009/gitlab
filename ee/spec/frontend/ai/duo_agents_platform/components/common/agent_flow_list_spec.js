@@ -14,6 +14,8 @@ describe('AgentFlowList', () => {
   const createWrapper = (props = {}) => {
     wrapper = shallowMount(AgentFlowList, {
       propsData: {
+        showEmptyState: false,
+        initialSort: 'CREATED_DESC',
         workflows: mockAgentFlows,
         workflowsPageInfo: {},
         ...props,
@@ -27,8 +29,8 @@ describe('AgentFlowList', () => {
     });
 
     describe('and there are no workflows', () => {
-      beforeEach(async () => {
-        await createWrapper({ workflows: [] });
+      beforeEach(() => {
+        createWrapper({ showEmptyState: true, workflows: [] });
       });
 
       it('renders the emptyState', () => {
@@ -46,13 +48,29 @@ describe('AgentFlowList', () => {
     });
 
     describe('when there are workflows', () => {
+      beforeEach(() => {
+        createWrapper({
+          showEmptyState: false,
+          workflows: mockAgentFlows,
+          workflowsPageInfo: {
+            startCursor: 'start',
+            endCursor: 'end',
+            hasNextPage: true,
+            hasPreviousPage: false,
+          },
+        });
+      });
+
       it('render the agent flow list items', () => {
         expect(findAgentFlowListItems().length).toBeGreaterThan(0);
       });
 
       describe('when showProjectInfo is false', () => {
         beforeEach(() => {
-          createWrapper({ showProjectInfo: false });
+          createWrapper({
+            showEmptyState: false,
+            showProjectInfo: false,
+          });
         });
 
         it('passes showProjectInfo as false to each AgentFlowListItem', () => {
@@ -64,7 +82,10 @@ describe('AgentFlowList', () => {
 
       describe('when showProjectInfo is true', () => {
         beforeEach(() => {
-          createWrapper({ showProjectInfo: true });
+          createWrapper({
+            showEmptyState: false,
+            showProjectInfo: true,
+          });
         });
 
         it('passes showProjectInfo as true to each AgentFlowListItem', () => {
@@ -76,7 +97,7 @@ describe('AgentFlowList', () => {
 
       describe('when showProjectInfo is not provided', () => {
         beforeEach(() => {
-          createWrapper();
+          createWrapper({ showEmptyState: false });
         });
 
         it('defaults showProjectInfo to false for each AgentFlowListItem', () => {
@@ -91,8 +112,13 @@ describe('AgentFlowList', () => {
   describe('keyset pagination controls', () => {
     describe('when there is no pagination data', () => {
       beforeEach(() => {
-        createWrapper({
-          workflowsPageInfo: {},
+        wrapper = shallowMount(AgentFlowList, {
+          propsData: {
+            showEmptyState: true,
+            initialSort: 'CREATED_DESC',
+            workflows: mockAgentFlows,
+            workflowsPageInfo: {},
+          },
         });
       });
 
@@ -112,6 +138,8 @@ describe('AgentFlowList', () => {
       describe('when hasNextPage is false and hasPreviousPage is false', () => {
         beforeEach(() => {
           createWrapper({
+            showEmptyState: true,
+            workflows: mockAgentFlows,
             workflowsPageInfo: createPaginationData(false, false),
           });
         });
@@ -130,6 +158,8 @@ describe('AgentFlowList', () => {
         ({ hasNextPage, hasPreviousPage }) => {
           beforeEach(() => {
             createWrapper({
+              showEmptyState: false,
+              workflows: mockAgentFlows,
               workflowsPageInfo: createPaginationData(hasNextPage, hasPreviousPage),
             });
           });
