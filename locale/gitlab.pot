@@ -72919,7 +72919,7 @@ msgstr ""
 msgid "VulnerabilityManagement|A verified true-positive vulnerability"
 msgstr ""
 
-msgid "VulnerabilityManagement|Add reason for severity change (Required)"
+msgid "VulnerabilityManagement|Add reason for the severity change (required)"
 msgstr ""
 
 msgid "VulnerabilityManagement|Add vulnerability finding"

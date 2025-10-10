@@ -135,7 +135,9 @@ export default {
         <gl-form-textarea
           v-model="comment"
           :class="{ '!gl-border !gl-border-red-500': !commentValid }"
-          :placeholder="s__('VulnerabilityManagement|Add reason for severity change (Required)')"
+          :placeholder="
+            s__('VulnerabilityManagement|Add reason for the severity change (required)')
+          "
           data-testid="comment"
           @change="commentValid = true"
         />
