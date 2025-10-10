@@ -1,10 +1,9 @@
 <script>
 import { GlBreakpointInstance } from '@gitlab/ui/src/utils';
-import { s__, __ } from '~/locale';
+import { __ } from '~/locale';
 import AgentSessionsRoot from '~/vue_shared/spa/components/spa_root.vue';
 import { AGENTS_PLATFORM_SHOW_ROUTE } from 'ee/ai/duo_agents_platform/router/constants';
 import { formatAgentFlowName } from 'ee/ai/duo_agents_platform/utils';
-import DuoAgenticChat from 'ee/ai/duo_agentic_chat/components/duo_agentic_chat.vue';
 import Cookies from '~/lib/utils/cookies';
 import AiContentContainer from './content_container.vue';
 import NavigationRail from './navigation_rail.vue';
@@ -17,14 +16,7 @@ export default {
     AiContentContainer,
     NavigationRail,
   },
-  inject: {
-    isAgenticAvailable: {
-      default: false,
-    },
-    chatTitle: {
-      default: null,
-    },
-  },
+  inject: ['chatConfiguration'],
   props: {
     userId: {
       type: String,
@@ -69,33 +61,25 @@ export default {
     };
   },
   computed: {
-    availableChat() {
-      return this.isAgenticAvailable
-        ? DuoAgenticChat
-        : s__('DuoChat|Duo Chat is not yet supported on this page');
-    },
-    getChatTitle() {
-      return this.chatTitle ? this.chatTitle : __('GitLab Duo Agentic Chat');
-    },
     currentTabComponent() {
       switch (this.activeTab) {
         case 'chat':
           return {
-            title: this.getChatTitle,
-            component: this.availableChat,
-            props: { mode: 'active', isAgenticAvailable: this.isAgenticAvailable },
+            title: this.chatConfiguration.title,
+            component: this.chatConfiguration.component,
+            props: { mode: 'active', ...this.chatConfiguration.defaultProps },
           };
         case 'new':
           return {
             title: __('New Chat'),
-            component: this.availableChat,
-            props: { mode: 'new', isAgenticAvailable: this.isAgenticAvailable },
+            component: this.chatConfiguration.component,
+            props: { mode: 'new', ...this.chatConfiguration.defaultProps },
           };
         case 'history':
           return {
             title: __('History'),
-            component: this.availableChat,
-            props: { mode: 'history', isAgenticAvailable: this.isAgenticAvailable },
+            component: this.chatConfiguration.component,
+            props: { mode: 'history', ...this.chatConfiguration.defaultProps },
           };
         case 'suggestions':
           return {

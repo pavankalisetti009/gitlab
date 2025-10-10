@@ -24,7 +24,7 @@
       size: 'medium',
       button_options: { class: 'disabled-button-2 js-tanuki-bot-chat-toggle @md/panel:gl-hidden', data: { track_action: 'click_button', track_label: 'tanuki_bot_breadcrumbs_button', chat_disabled_reason: chat_disabled_reason }, aria: { label: label, disabled: "true" }, disabled: true })
 
-- else
+- elsif !project_studio_enabled?
   - duo_button_description = _('Open GitLab Duo Chat')
   - duo_button_shortcut = 'd'
   - duo_button_title = "#{duo_button_description} <kbd class='flat !gl-ml-2' aria-hidden=true>#{duo_button_shortcut}</kbd>"
