@@ -178,7 +178,7 @@ RSpec.describe Gitlab::Llm::Chain::Tools::EpicReader::Executor, feature_category
         end
 
         context 'when is epic identified with url' do
-          let(:identifier) { Gitlab::Saas.com_url + Gitlab::Routing.url_helpers.group_epic_path(group, epic2) }
+          let(:identifier) { Gitlab.com_url + Gitlab::Routing.url_helpers.group_epic_path(group, epic2) }
           let(:ai_response) { "url\", \"ResourceIdentifier\": \"#{identifier}\"}" }
           let(:resource) { epic2 }
 
@@ -198,7 +198,7 @@ RSpec.describe Gitlab::Llm::Chain::Tools::EpicReader::Executor, feature_category
         end
 
         context 'when ai response is a fully formed json' do
-          let(:identifier) { Gitlab::Saas.com_url + Gitlab::Routing.url_helpers.group_epic_path(group, epic2) }
+          let(:identifier) { Gitlab.com_url + Gitlab::Routing.url_helpers.group_epic_path(group, epic2) }
           let(:resource) { epic2 }
           let(:ai_response) { "{\"ResourceIdentifierType\": \"url\", \"ResourceIdentifier\": \"#{identifier}\"}```" }
 
@@ -257,7 +257,7 @@ RSpec.describe Gitlab::Llm::Chain::Tools::EpicReader::Executor, feature_category
           end
 
           context 'when is epic identified with url' do
-            let(:identifier) { Gitlab::Saas.com_url + Gitlab::Routing.url_helpers.group_epic_path(group, epic2) }
+            let(:identifier) { Gitlab.com_url + Gitlab::Routing.url_helpers.group_epic_path(group, epic2) }
             let(:ai_response) { "url\", \"ResourceIdentifier\": \"#{identifier}\"}" }
             let(:resource) { epic2 }
 

@@ -104,7 +104,7 @@ module SidebarsHelper
       groups_path: dashboard_groups_path,
       gitlab_com_but_not_canary: Gitlab.com_but_not_canary?,
       gitlab_com_and_canary: Gitlab.com_and_canary?,
-      canary_toggle_com_url: Gitlab::Saas.canary_toggle_com_url,
+      canary_toggle_com_url: Gitlab.canary_toggle_com_url,
       current_context: super_sidebar_current_context(project: project, group: group),
       pinned_items: user.pinned_nav_items[panel_type] || super_sidebar_default_pins(panel_type, user),
       update_pins_url: pins_path,

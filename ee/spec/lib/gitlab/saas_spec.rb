@@ -9,7 +9,7 @@ RSpec.describe Gitlab::Saas, feature_category: :shared do
 
     let(:feature) { described_class::FEATURES.first }
 
-    subject(:feature_available?) { described_class.feature_available?(feature) } # rubocop:disable Gitlab/FeatureAvailableUsage
+    subject(:feature_available?) { described_class.feature_available?(feature) } # rubocop:disable Gitlab/FeatureAvailableUsage -- This is the source/one use for it allowed
 
     context 'with an existing feature' do
       before do
@@ -19,13 +19,13 @@ RSpec.describe Gitlab::Saas, feature_category: :shared do
       context 'when on .com' do
         let(:com?) { true }
 
-        it { is_expected.to eq true }
+        it { is_expected.to be true }
       end
 
       context 'when not on .com' do
         let(:com?) { false }
 
-        it { is_expected.to eq false }
+        it { is_expected.to be false }
       end
     end
 
@@ -33,7 +33,7 @@ RSpec.describe Gitlab::Saas, feature_category: :shared do
       let(:feature) { '_bogus_feature_' }
 
       it 'raises an error' do
-        expect { feature_available? }.to raise_error(EE::Gitlab::Saas::MissingFeatureError, 'Feature does not exist')
+        expect { feature_available? }.to raise_error(described_class::MissingFeatureError, 'Feature does not exist')
       end
     end
   end

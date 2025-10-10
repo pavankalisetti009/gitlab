@@ -12,7 +12,7 @@ module EE
 
       # Our marketing site will be the only thing we are sure of the language placement in the url for.
       glm_source = params.permit(:glm_source)[:glm_source]
-      locale = glm_source&.match(%r{\A#{::Gitlab::Saas.promo_host}/([a-z]{2})-([a-z]{2})}i)&.captures
+      locale = glm_source&.match(%r{\A#{::Gitlab.promo_host}/([a-z]{2})-([a-z]{2})}i)&.captures
 
       return [] if locale.blank?
 
