@@ -22,6 +22,12 @@ describe('SecurityPolicyViolations merge checks component', () => {
   const policiesPath = '/security-path';
   let resolver;
 
+  const defaultPolicies = [
+    mockEnforcedSecurityPolicyViolation,
+    mockWarnSecurityPolicyViolation,
+    mockWarnSecurityPolicyViolation,
+  ];
+
   const getApolloProvider = (policies, allowBypass = false, bypassed = false) => {
     resolver = jest.fn().mockResolvedValue({
       data: {
@@ -76,11 +82,7 @@ describe('SecurityPolicyViolations merge checks component', () => {
     securityPoliciesPath = null,
     warnModeEnabled = false,
     securityPoliciesBypassOptionsMrWidget = false,
-    policies = [
-      mockEnforcedSecurityPolicyViolation,
-      mockWarnSecurityPolicyViolation,
-      mockWarnSecurityPolicyViolation,
-    ],
+    policies = defaultPolicies,
   } = {}) {
     wrapper = mountExtended(SecurityPolicyViolations, {
       apolloProvider: getApolloProvider(policies, allowBypass, bypassed),
@@ -108,7 +110,7 @@ describe('SecurityPolicyViolations merge checks component', () => {
   const findActionLink = () => wrapper.findByTestId('view-policies-button');
   const findBypassButton = () => wrapper.findByTestId('bypass-button');
   const findIcon = () => wrapper.findByTestId('security-policy-help-icon');
-  const findModal = () => wrapper.findComponent(SecurityPolicyViolationsModal);
+  const findWarnModeModal = () => wrapper.findComponent(SecurityPolicyViolationsModal);
   const findBypassStatusesModal = () => wrapper.findComponent(SecurityPolicyBypassStatusesModal);
   const findSecurityPolicyViolationsSelector = () =>
     wrapper.findComponent(SecurityPolicyViolationsSelector);
@@ -237,15 +239,15 @@ describe('SecurityPolicyViolations merge checks component', () => {
 
       await findBypassButton().vm.$emit('click');
 
-      expect(findModal().exists()).toBe(true);
-      expect(findModal().props('visible')).toBe(true);
+      expect(findWarnModeModal().exists()).toBe(true);
+      expect(findWarnModeModal().props('visible')).toBe(true);
 
       await findBypassButton().vm.$emit('click');
 
-      expect(findModal().exists()).toBe(true);
-      expect(findModal().props('visible')).toBe(true);
+      expect(findWarnModeModal().exists()).toBe(true);
+      expect(findWarnModeModal().props('visible')).toBe(true);
 
-      expect(findModal().props()).toEqual(
+      expect(findWarnModeModal().props()).toEqual(
         expect.objectContaining({
           mr: {
             securityPoliciesPath,
@@ -266,45 +268,12 @@ describe('SecurityPolicyViolations merge checks component', () => {
       await waitForPromises();
 
       await findBypassButton().vm.$emit('click');
-      expect(findModal().exists()).toBe(true);
-      expect(findModal().props('visible')).toBe(true);
+      expect(findWarnModeModal().exists()).toBe(true);
+      expect(findWarnModeModal().props('visible')).toBe(true);
 
-      await findModal().vm.$emit('close');
+      await findWarnModeModal().vm.$emit('close');
 
-      expect(findModal().exists()).toBe(false);
-    });
-
-    it('selects the mode for bypass options', async () => {
-      createComponent({
-        warnModeEnabled: true,
-        securityPoliciesPath: policiesPath,
-        securityPoliciesBypassOptionsMrWidget: true,
-        allowBypass: true,
-      });
-      await waitForPromises();
-
-      await findBypassButton().vm.$emit('click');
-
-      expect(findSecurityPolicyViolationsSelector().exists()).toBe(true);
-
-      await findSecurityPolicyViolationsSelector().vm.$emit('select', EXCEPTION_MODE);
-
-      expect(findSecurityPolicyViolationsSelector().exists()).toBe(false);
-      expect(findBypassStatusesModal().exists()).toBe(true);
-    });
-
-    it('enables mode selector when there is a conflict', async () => {
-      createComponent({
-        securityPoliciesBypassOptionsMrWidget: true,
-        allowBypass: true,
-        securityPoliciesPath: policiesPath,
-        warnModeEnabled: true,
-      });
-      await waitForPromises();
-
-      await findBypassButton().vm.$emit('click');
-
-      expect(findSecurityPolicyViolationsSelector().exists()).toBe(true);
+      expect(findWarnModeModal().exists()).toBe(false);
     });
 
     it('enables bypass button for bypass statuses', async () => {
@@ -343,9 +312,9 @@ describe('SecurityPolicyViolations merge checks component', () => {
 
       expect(resolver).toHaveBeenCalledTimes(1);
       await findBypassButton().vm.$emit('click');
-      expect(findModal().props('policies')).toEqual([mockWarnSecurityPolicyViolation]);
+      expect(findWarnModeModal().props('policies')).toEqual([mockWarnSecurityPolicyViolation]);
 
-      await findModal().vm.$emit('saved');
+      await findWarnModeModal().vm.$emit('saved');
       expect(resolver).toHaveBeenCalledTimes(2);
     });
 
@@ -366,6 +335,59 @@ describe('SecurityPolicyViolations merge checks component', () => {
       await waitForPromises();
 
       expect(resolver).toHaveBeenCalledTimes(2);
+    });
+
+    describe('selector modal', () => {
+      it('shows the exception modal when selected from the selector modal', async () => {
+        createComponent({
+          warnModeEnabled: true,
+          securityPoliciesPath: policiesPath,
+          securityPoliciesBypassOptionsMrWidget: true,
+          allowBypass: true,
+        });
+        await waitForPromises();
+
+        await findBypassButton().vm.$emit('click');
+
+        expect(findSecurityPolicyViolationsSelector().exists()).toBe(true);
+
+        await findSecurityPolicyViolationsSelector().vm.$emit('select', EXCEPTION_MODE);
+
+        expect(findSecurityPolicyViolationsSelector().exists()).toBe(false);
+        expect(findBypassStatusesModal().exists()).toBe(true);
+      });
+
+      it.each`
+        title                                                                                             | allowException | exceptionPolicyBypassed | policies                                                     | hasSelectorModal | hasExceptionModal | hasWarnModeModal
+        ${'shows the selector modal when there are exception policies and warn mode policies'}            | ${true}        | ${false}                | ${defaultPolicies}                                           | ${true}          | ${false}          | ${false}
+        ${'shows the exception modal when there are exception policies and no active warn mode policies'} | ${true}        | ${false}                | ${[{ ...mockWarnSecurityPolicyViolation, dismissed: true }]} | ${false}         | ${true}           | ${false}
+        ${'shows the warn mode modal when there are no active exception policies and warn mode policies'} | ${true}        | ${true}                 | ${defaultPolicies}                                           | ${false}         | ${false}          | ${true}
+      `(
+        '$title',
+        async ({
+          allowException,
+          exceptionPolicyBypassed,
+          policies,
+          hasSelectorModal,
+          hasExceptionModal,
+          hasWarnModeModal,
+        }) => {
+          createComponent({
+            allowBypass: allowException,
+            bypassed: exceptionPolicyBypassed,
+            policies,
+            securityPoliciesBypassOptionsMrWidget: true,
+            securityPoliciesPath: policiesPath,
+            warnModeEnabled: true,
+          });
+          await waitForPromises();
+          await findBypassButton().vm.$emit('click');
+
+          expect(findSecurityPolicyViolationsSelector().exists()).toBe(hasSelectorModal);
+          expect(findBypassStatusesModal().exists()).toBe(hasExceptionModal);
+          expect(findWarnModeModal().exists()).toBe(hasWarnModeModal);
+        },
+      );
     });
   });
 });
