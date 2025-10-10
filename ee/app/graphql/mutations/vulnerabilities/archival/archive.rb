@@ -27,7 +27,7 @@ module Mutations
 
           ::Vulnerabilities::Archival::ArchiveWorker.perform_async(project.id, date) # rubocop:disable CodeReuse/Worker -- This is the only place we call the worker
 
-          { status: :ok }
+          { status: :ok, errors: [] }
         end
 
         private
