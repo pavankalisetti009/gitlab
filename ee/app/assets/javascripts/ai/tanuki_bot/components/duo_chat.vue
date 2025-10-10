@@ -216,9 +216,6 @@ export default {
 
       return this.resourceId || this.userId;
     },
-    shouldRenderResizable() {
-      return this.glFeatures.duoChatDynamicDimension;
-    },
     dimensions() {
       return {
         width: this.width,
@@ -544,7 +541,7 @@ export default {
         :messages="messages"
         :error="error"
         :is-loading="loading"
-        :should-render-resizable="shouldRenderResizable"
+        :should-render-resizable="true"
         :predefined-prompts="predefinedPrompts"
         :badge-type="null"
         :tool-name="toolName"

@@ -121,7 +121,7 @@ describeSkipVue3(skipReason, () => {
     initialState = {},
     propsData = { userId: MOCK_USER_ID, resourceId: MOCK_RESOURCE_ID },
     data = {},
-    glFeatures = { duoChatDynamicDimension: false },
+    glFeatures = {},
   } = {}) => {
     const store = new Vuex.Store({
       actions: actionSpies,
@@ -829,15 +829,8 @@ describeSkipVue3(skipReason, () => {
       expect(wrapper.vm.maxHeight).toBe(800);
     });
 
-    it('renders DuoChat with shouldRenderResizable=false when duoChatDynamicDimension flag is false', () => {
-      createComponent({ glFeatures: { duoChatDynamicDimension: false } });
-      const duoChat = findDuoChat();
-      expect(duoChat.exists()).toBe(true);
-      expect(duoChat.props('shouldRenderResizable')).toBe(false);
-    });
-
-    it('renders DuoChat with shouldRenderResizable=true when duoChatDynamicDimension flag is true', () => {
-      createComponent({ glFeatures: { duoChatDynamicDimension: true } });
+    it('renders DuoChat with shouldRenderResizable=true by default', () => {
+      createComponent();
       const duoChat = findDuoChat();
       expect(duoChat.exists()).toBe(true);
       expect(duoChat.props('shouldRenderResizable')).toBe(true);
