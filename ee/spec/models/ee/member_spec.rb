@@ -1050,15 +1050,15 @@ RSpec.describe Member, type: :model, feature_category: :groups_and_projects do
           allow(shared_group).to receive(:can_assign_custom_roles_to_group_links?).and_return(true)
         end
 
-        context 'when `use_user_group_member_roles` feature flag is disabled' do
+        context 'when `use_user_group_member_roles_members_page` feature flag is disabled' do
           before do
-            stub_feature_flags(use_user_group_member_roles: false)
+            stub_feature_flags(use_user_group_member_roles_members_page: false)
           end
 
           it_behaves_like 'invited group members'
         end
 
-        context 'when `use_user_group_member_roles` feature flag is enabled' do
+        context 'when `use_user_group_member_roles_members_page` feature flag is enabled' do
           before do
             stub_feature_flags(use_user_group_member_roles: true)
           end

@@ -18,6 +18,7 @@ RSpec.describe GroupMembersFinder, feature_category: :groups_and_projects do
     context 'with custom roles' do
       before do
         stub_licensed_features(custom_roles: true)
+        stub_feature_flags(use_user_group_member_roles_members_page: false)
       end
 
       let_it_be(:group)                { create(:group) }
