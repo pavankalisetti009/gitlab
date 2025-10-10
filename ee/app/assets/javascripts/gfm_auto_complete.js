@@ -51,20 +51,10 @@ export const Q_MERGE_REQUEST_SUB_COMMANDS = {
     header: s__('AmazonQ|review'),
     description: s__('AmazonQ|Review merge request for code quality and security issues'),
   },
-  test: {
-    header: s__('AmazonQ|test'),
-    description: s__('AmazonQ|Create unit tests for this merge request'),
-  },
 };
 
 export const Q_MERGE_REQUEST_DIFF_SUB_COMMANDS = {
   ...Q_MERGE_REQUEST_SUB_COMMANDS,
-  test: {
-    header: s__('AmazonQ|test'),
-    description: s__(
-      'AmazonQ|Create unit tests for selected lines of code in Java or Python files',
-    ),
-  },
 };
 
 const getQSubCommands = ($input) => {

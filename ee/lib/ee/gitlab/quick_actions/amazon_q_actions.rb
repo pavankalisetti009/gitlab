@@ -41,7 +41,8 @@ module EE
             }
             action_data[:input] = comment unless comment.empty?
             @updates[:amazon_q] = action_data
-          rescue Ai::AmazonQValidateCommandSourceService::UnsupportedCommandError => error
+          rescue Ai::AmazonQValidateCommandSourceService::UnsupportedCommandError,
+            Ai::AmazonQValidateCommandSourceService::DeprecatedCommandError => error
             @execution_message[:q] = error.message
           end
         end

@@ -2,7 +2,6 @@ import $ from 'jquery';
 import GfmAutoCompleteEE, {
   Q_ISSUE_SUB_COMMANDS,
   Q_MERGE_REQUEST_SUB_COMMANDS,
-  Q_MERGE_REQUEST_DIFF_SUB_COMMANDS,
 } from 'ee/gfm_auto_complete';
 import { TEST_HOST } from 'helpers/test_constants';
 import GfmAutoComplete from '~/gfm_auto_complete';
@@ -233,18 +232,8 @@ describe('GfmAutoCompleteEE', () => {
         name: 'review',
         description: Q_MERGE_REQUEST_SUB_COMMANDS.review.description,
       },
-      {
-        name: 'test',
-        description: Q_MERGE_REQUEST_SUB_COMMANDS.test.description,
-      },
     ];
-    const EXPECTATION_MR_DIFF_SUB_COMMANDS = [
-      ...EXPECTATION_MR_SUB_COMMANDS.filter((cmd) => cmd.name !== 'test'),
-      {
-        name: 'test',
-        description: Q_MERGE_REQUEST_DIFF_SUB_COMMANDS.test.description,
-      },
-    ];
+    const EXPECTATION_MR_DIFF_SUB_COMMANDS = [...EXPECTATION_MR_SUB_COMMANDS];
 
     describe.each`
       availableCommand | textareaAttributes                                             | expectation
