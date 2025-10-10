@@ -2,7 +2,10 @@
 
 .gl-grid.gl-grid-cols-1.gl-mt-7.gl-mx-auto.gl-gap-5{ class: 'gl-w-full @md/panel:gl-w-16/20 @md/panel:gl-grid-cols-2', data: { testid: 'hero-section' } }
   .gl-self-center
-    = image_tag(hero_logo, class: "gl-w-full")
+    .div{ class: 'dark:gl-hidden' }
+      = image_tag(hero_logo, class: "gl-w-full")
+    .div{ class: 'gl-hidden dark:gl-block' }
+      = image_tag(hero_logo_dark, class: "gl-w-full")
     %h2.gl-text-size-h1.gl-mb-5
       = hero_header_text
     - if hero_tagline_text.present?

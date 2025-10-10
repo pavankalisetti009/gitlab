@@ -40,6 +40,10 @@ module GitlabSubscriptions
       raise NoMethodError, 'This method must be implemented in a subclass'
     end
 
+    def hero_logo_dark
+      raise NoMethodError, 'This method must be implemented in a subclass'
+    end
+
     def hero_header_text
       raise NoMethodError, 'This method must be implemented in a subclass'
     end
