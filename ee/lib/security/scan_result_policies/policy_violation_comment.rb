@@ -96,7 +96,8 @@ module Security
           license_scanning_violations,
           error_messages,
           comparison_pipelines,
-          additional_info
+          additional_info,
+          warn_mode_approval_setting_conflicts
         ].compact.join("\n")
       end
 
@@ -267,6 +268,50 @@ module Security
 
         #{details.warn_mode_policies.map { |policy| "- [#{policy.name}](#{policy.edit_path})" }.join("\n")}
         MARKDOWN
+      end
+
+      def warn_mode_approval_setting_conflicts
+        return unless Feature.enabled?(:security_policy_approval_warn_mode, project) && details.warn_mode_policies.any?
+
+        overrides = ::Security::ScanResultPolicies::ApprovalSettingsOverrides.new(
+          project: merge_request.target_project,
+          security_policies: details.warn_mode_policies
+        ).all
+
+        return if overrides.empty?
+
+        <<~MARKDOWN
+        :lock: **Warn-mode policies set more restrictive approval settings**
+
+        Some security policies set `approval_settings` that are more restrictive than this
+        project's merge request approval settings. When the following policies
+        get strictly enforced, their approval settings will take precedence:
+
+        #{overrides.map { |override| warn_mode_approval_settings_overrides(override) }.join("\n")}
+        MARKDOWN
+      end
+
+      def warn_mode_approval_settings_overrides(override)
+        label = case override.attribute
+                when :prevent_approval_by_author
+                  s_("ApprovalSettings|Prevent approval by merge request creator")
+                when :prevent_approval_by_commit_author
+                  s_("ApprovalSettings|Prevent approvals by users who add commits")
+                when :require_password_to_approve
+                  s_("ApprovalSettings|Require user re-authentication (password or SAML) to approve")
+                when :remove_approvals_with_new_commit
+                  "#{s_('ApprovalSettings|When a commit is added:')} #{s_('ApprovalSettings|Remove all approvals')}"
+                else return
+                end
+
+        policy_names = override
+                         .security_policies
+                         .pluck(:name) # rubocop:disable CodeReuse/ActiveRecord -- false positive: `Enumerable#pluck`
+                         .sort
+                         .map { |name| "`#{name}`" }
+                         .join(", ")
+
+        "* __#{label}__: #{policy_names}"
       end
 
       def comparison_pipelines
