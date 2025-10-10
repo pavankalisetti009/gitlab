@@ -39,6 +39,7 @@ import {
   WORKSPACE_PROJECT,
 } from '~/issues/constants';
 import { AutocompleteCache } from '~/issues/dashboard/utils';
+import EmptyStateWithAnyIssues from '~/issues/list/components/empty_state_with_any_issues.vue';
 import EmptyStateWithoutAnyIssues from '~/issues/list/components/empty_state_without_any_issues.vue';
 import NewResourceDropdown from '~/vue_shared/components/new_resource_dropdown/new_resource_dropdown.vue';
 import {
@@ -178,6 +179,7 @@ export default {
       import('~/work_items/components/work_item_bulk_edit/work_item_bulk_edit_sidebar.vue'),
     WorkItemDrawer,
     WorkItemHealthStatus,
+    EmptyStateWithAnyIssues,
     EmptyStateWithoutAnyIssues,
     CreateWorkItemModal,
     LocalBoard,
@@ -237,6 +239,7 @@ export default {
     'canEdit',
     'isIssueRepositioningDisabled',
     'hasProjects',
+    'newIssuePath',
   ],
   props: {
     eeWorkItemUpdateCount: {
@@ -1459,7 +1462,7 @@ export default {
                 {{ __('Bulk edit') }}
               </gl-button>
               <create-work-item-modal
-                v-if="showNewWorkItem && !isGroupIssuesList"
+                v-if="showProjectNewWorkItem"
                 :allowed-work-item-types="allowedWorkItemTypes"
                 :always-show-work-item-type-select="!isEpicsList"
                 :creation-context="$options.CREATION_CONTEXT_LIST_ROUTE"
@@ -1503,7 +1506,33 @@ export default {
         </template>
 
         <template #empty-state>
-          <slot name="list-empty-state" :has-search="hasSearch" :is-open-tab="isOpenTab"></slot>
+          <slot name="list-empty-state" :has-search="hasSearch" :is-open-tab="isOpenTab">
+            <empty-state-with-any-issues
+              :has-search="hasSearch"
+              :is-open-tab="isOpenTab"
+              :is-epic="isEpicsList"
+            >
+              <template #new-issue-button>
+                <create-work-item-modal
+                  v-if="showProjectNewWorkItem"
+                  :allowed-work-item-types="allowedWorkItemTypes"
+                  :always-show-work-item-type-select="!isEpicsList"
+                  :creation-context="$options.CREATION_CONTEXT_LIST_ROUTE"
+                  :full-path="rootPageFullPath"
+                  :is-group="isGroup"
+                  :preselected-work-item-type="preselectedWorkItemType"
+                  @workItemCreated="handleWorkItemCreated"
+                />
+                <new-resource-dropdown
+                  v-if="showGroupNewWorkItem"
+                  :query="$options.searchProjectsQuery"
+                  :query-variables="newIssueDropdownQueryVariables"
+                  :extract-projects="extractProjects"
+                  :group-id="groupId"
+                />
+              </template>
+            </empty-state-with-any-issues>
+          </slot>
         </template>
 
         <template #list-body>
