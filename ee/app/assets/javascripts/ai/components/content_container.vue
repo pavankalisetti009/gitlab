@@ -17,6 +17,9 @@ export default {
     activeTab: {
       type: Object,
       required: true,
+      validator(activeTabObject) {
+        return typeof activeTabObject?.title === 'string';
+      },
     },
     showBackButton: {
       type: Boolean,
@@ -62,6 +65,7 @@ export default {
   data() {
     return {
       isMaximized: false,
+      currentTitle: null,
     };
   },
   computed: {
@@ -70,9 +74,6 @@ export default {
     },
     maximizeButtonLabel() {
       return this.isMaximized ? __('Minimize Duo panel') : __('Maximize Duo panel');
-    },
-    tabMode() {
-      return this.activeTab?.props?.mode;
     },
   },
   methods: {
@@ -85,9 +86,13 @@ export default {
     onSwitchToActiveTab(tab) {
       this.$emit('switch-to-active-tab', tab);
     },
+    handleTitleChange(title) {
+      this.currentTitle = title ?? this.activeTab.title;
+    },
   },
 };
 </script>
+
 <template>
   <aside
     id="ai-panel-portal"
@@ -96,7 +101,9 @@ export default {
     :class="{ 'ai-panel-maximized': isMaximized }"
   >
     <div class="ai-panel-header gl-flex gl-items-center gl-justify-between">
-      <div class="gl-flex gl-items-center gl-justify-start gl-gap-2">
+      <div
+        class="gl-flex gl-max-w-17/20 gl-flex-1 gl-shrink-0 gl-items-center gl-justify-start gl-gap-2 gl-overflow-hidden gl-truncate gl-text-ellipsis gl-whitespace-nowrap"
+      >
         <gl-button
           v-gl-tooltip
           class="lg:gl-flex"
@@ -113,7 +120,7 @@ export default {
           :class="{ 'gl-ml-4': !showBackButton }"
           data-testid="content-container-title"
         >
-          {{ activeTab.title }}
+          {{ currentTitle || activeTab.title }}
         </h3>
       </div>
 
@@ -157,10 +164,9 @@ export default {
         :resource-id="resourceId"
         :metadata="metadata"
         :user-model-selection-enabled="userModelSelectionEnabled"
-        :agentic-available="activeTab.props && activeTab.props.isAgenticAvailable"
-        :mode="tabMode"
-        :is-embedded="true"
+        v-bind="activeTab.props"
         @switch-to-active-tab="onSwitchToActiveTab"
+        @change-title="handleTitleChange"
       />
     </div>
   </aside>

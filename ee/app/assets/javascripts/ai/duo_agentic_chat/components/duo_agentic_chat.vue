@@ -50,6 +50,14 @@ export default {
   directives: {
     GlTooltip: GlTooltipDirective,
   },
+  inject: {
+    chatConfiguration: {
+      default: () => ({
+        title: s__('DuoAgenticChat|GitLab Duo Agentic Chat'),
+        isAgenticAvailable: false,
+      }),
+    },
+  },
   provide() {
     return {
       renderGFM,
@@ -90,20 +98,12 @@ export default {
     mode: {
       type: String,
       required: false,
-      default: 'default',
-    },
-    isEmbedded: {
-      type: Boolean,
-      required: false,
-      default: false,
+      default: 'active',
     },
   },
   apollo: {
     agenticWorkflows: {
       query: getUserWorkflows,
-      skip() {
-        return !(this.duoChatGlobalState.isAgenticChatShown || this.isEmbedded);
-      },
       variables() {
         return {
           type: 'chat',
@@ -120,9 +120,6 @@ export default {
     },
     contextPresets: {
       query: getAiChatContextPresets,
-      skip() {
-        return !(this.duoChatGlobalState.isAgenticChatShown || this.isEmbedded);
-      },
       variables() {
         return {
           resourceId: this.resourceId,
@@ -143,11 +140,7 @@ export default {
       fetchPolicy: fetchPolicies.NETWORK_ONLY,
       skip() {
         if (!this.userModelSelectionEnabled) return true;
-
-        return !(
-          (this.duoChatGlobalState.isAgenticChatShown || this.isEmbedded) &&
-          this.rootNamespaceId
-        );
+        return !this.rootNamespaceId;
       },
       variables() {
         return {
@@ -177,9 +170,6 @@ export default {
     },
     catalogAgents: {
       query: getConfiguredAgents,
-      skip() {
-        return !(this.duoChatGlobalState.isAgenticChatShown || this.isEmbedded);
-      },
       variables() {
         return {
           projectId: this.projectId,
@@ -241,6 +231,14 @@ export default {
       aiCatalogItemVersionId: '',
       agentDeletedError: '',
       isChatAvailable: true,
+      isEmbedded: this.chatConfiguration?.defaultProps?.isEmbedded ?? false,
+      // this is required for classic/agentic toggle
+      // eslint-disable-next-line vue/no-unused-properties
+      isAgenticAvailable: this.chatConfiguration?.isAgenticAvailable ?? false,
+      // eslint-disable-next-line vue/no-unused-properties
+      userId: this.activeTabData?.props?.userId,
+      // I believe this is a default chat agent name
+      duoChatTitle: s__('DuoAgenticChat|Duo Agent'),
     };
   },
   computed: {
@@ -346,17 +344,15 @@ export default {
       return params.toString() ? `${baseUrl}?${params}` : baseUrl;
     },
     dynamicTitle() {
-      const baseTitle = s__('DuoAgenticChat|GitLab Duo Agentic Chat');
-
       if (!this.aiCatalogItemVersionId) {
-        return baseTitle;
+        return this.duoChatTitle;
       }
 
       const activeAgent = this.catalogAgents.find((agent) =>
         agent.versions.nodes.some((version) => version.id === this.aiCatalogItemVersionId),
       );
 
-      return activeAgent ? activeAgent.name : baseTitle;
+      return activeAgent ? activeAgent.name : this.duoChatTitle;
     },
   },
   watch: {
@@ -413,9 +409,11 @@ export default {
       }
       if (mode === 'new') {
         this.onNewChat();
+        this.$emit('change-title', '');
       }
       if (mode === 'history') {
         this.onBackToList();
+        this.$emit('change-title', '');
       }
     },
 
@@ -643,6 +641,7 @@ export default {
         this.workflowStatus = parsedWorkflowData?.workflowStatus;
         this.aiCatalogItemVersionId = workflow?.aiCatalogItemVersionId;
         this.chatMessageHistory = messages;
+        this.$emit('change-title', parsedWorkflowData.workflowGoal);
       } catch (err) {
         this.onError(err);
       } finally {
@@ -678,6 +677,7 @@ export default {
       this.chatMessageHistory = [];
       this.multithreadedView = DUO_CHAT_VIEWS.CHAT;
       this.cleanupState();
+      this.$emit('change-title');
 
       if (reuseAgent) {
         return;

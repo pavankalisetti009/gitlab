@@ -255,6 +255,7 @@ describe('Duo Agentic Chat', () => {
     propsData = { projectId: MOCK_PROJECT_ID, resourceId: MOCK_RESOURCE_ID },
     data = {},
     apolloHandlers = [[getAiChatAvailableModels, availableModelsQueryHandlerMock]],
+    provide = {},
   } = {}) => {
     const store = new Vuex.Store({
       actions: actionSpies,
@@ -281,10 +282,29 @@ describe('Duo Agentic Chat', () => {
       push: jest.fn(),
     };
 
+    const defaultProvide = {
+      chatConfiguration: {
+        title: 'GitLab Duo Agentic Chat',
+        isAgenticAvailable: false,
+        defaultProps: {
+          isEmbedded: false,
+        },
+      },
+      activeTabData: {
+        props: {
+          isEmbedded: false,
+          isAgenticAvailable: false,
+          userId: null,
+        },
+      },
+      ...provide,
+    };
+
     wrapper = shallowMountExtended(DuoAgenticChatApp, {
       store,
       apolloProvider,
       propsData,
+      provide: defaultProvide,
       mocks: {
         $router: mockRouter,
       },
@@ -1712,7 +1732,7 @@ describe('Duo Agentic Chat', () => {
       createComponent();
       await waitForPromises();
 
-      expect(findDuoChat().props('title')).toBe('GitLab Duo Agentic Chat');
+      expect(findDuoChat().props('title')).toBe('Duo Agent');
     });
 
     it('passes the agent name as title when a custom agent is selected', async () => {
@@ -1826,7 +1846,17 @@ describe('Duo Agentic Chat', () => {
     describe('when embedded=false (standalone mode)', () => {
       beforeEach(() => {
         duoChatGlobalState.isAgenticChatShown = true;
-        createComponent({ propsData: { isEmbedded: false } });
+        createComponent({
+          provide: {
+            chatConfiguration: {
+              title: 'GitLab Duo Agentic Chat',
+              isAgenticAvailable: false,
+              defaultProps: {
+                isEmbedded: false,
+              },
+            },
+          },
+        });
       });
 
       it('shows header', () => {
@@ -1843,7 +1873,17 @@ describe('Duo Agentic Chat', () => {
 
       it('sets up window resize listeners on mount', () => {
         const addEventListenerSpy = jest.spyOn(window, 'addEventListener');
-        createComponent({ propsData: { isEmbedded: false } });
+        createComponent({
+          provide: {
+            chatConfiguration: {
+              title: 'GitLab Duo Agentic Chat',
+              isAgenticAvailable: false,
+              defaultProps: {
+                isEmbedded: false,
+              },
+            },
+          },
+        });
 
         expect(addEventListenerSpy).toHaveBeenCalledWith('resize', expect.any(Function));
         addEventListenerSpy.mockRestore();
@@ -1870,7 +1910,24 @@ describe('Duo Agentic Chat', () => {
     describe('when embedded=true', () => {
       beforeEach(() => {
         duoChatGlobalState.isAgenticChatShown = true;
-        createComponent({ propsData: { isEmbedded: true } });
+        createComponent({
+          provide: {
+            chatConfiguration: {
+              title: 'GitLab Duo Agentic Chat',
+              isAgenticAvailable: true,
+              defaultProps: {
+                isEmbedded: true,
+              },
+            },
+            activeTabData: {
+              props: {
+                isEmbedded: true,
+                isAgenticAvailable: true,
+                userId: null,
+              },
+            },
+          },
+        });
       });
 
       it('hides header', () => {
@@ -1895,7 +1952,24 @@ describe('Duo Agentic Chat', () => {
 
       it('does not set up window resize listeners on mount', () => {
         const addEventListenerSpy = jest.spyOn(window, 'addEventListener');
-        createComponent({ propsData: { isEmbedded: true } });
+        createComponent({
+          provide: {
+            chatConfiguration: {
+              title: 'GitLab Duo Agentic Chat',
+              isAgenticAvailable: true,
+              defaultProps: {
+                isEmbedded: true,
+              },
+            },
+            activeTabData: {
+              props: {
+                isEmbedded: true,
+                isAgenticAvailable: true,
+                userId: null,
+              },
+            },
+          },
+        });
 
         const resizeCalls = addEventListenerSpy.mock.calls.filter(([event]) => event === 'resize');
         expect(resizeCalls).toHaveLength(0);
@@ -1924,6 +1998,7 @@ describe('Duo Agentic Chat', () => {
 
       it('calls setAgenticMode with embedded=true when toggling agentic mode', async () => {
         getCookie.mockReturnValue('false');
+
         const findGlToggle = () => wrapper.findComponent(GlToggle);
 
         findGlToggle().vm.$emit('change', true);
@@ -1941,9 +2016,24 @@ describe('Duo Agentic Chat', () => {
           duoChatGlobalState.isAgenticChatShown = false;
           createComponent({
             propsData: {
-              isEmbedded: true,
               userModelSelectionEnabled: true,
               rootNamespaceId: MOCK_NAMESPACE_ID,
+            },
+            provide: {
+              chatConfiguration: {
+                title: 'GitLab Duo Agentic Chat',
+                isAgenticAvailable: true,
+                defaultProps: {
+                  isEmbedded: true,
+                },
+              },
+              activeTabData: {
+                props: {
+                  isEmbedded: true,
+                  isAgenticAvailable: true,
+                  userId: null,
+                },
+              },
             },
           });
           await waitForPromises();

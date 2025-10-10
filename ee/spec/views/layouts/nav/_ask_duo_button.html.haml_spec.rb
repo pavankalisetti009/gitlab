@@ -8,7 +8,7 @@ RSpec.describe 'layouts/nav/_ask_duo_button', feature_category: :duo_chat do
   let(:project) { build_stubbed(:project, namespace: group) }
 
   before do
-    allow(view).to receive(:current_user).and_return(user)
+    allow(view).to receive_messages(current_user: user, project_studio_enabled?: false)
     assign(:group, group)
     assign(:project, project)
   end

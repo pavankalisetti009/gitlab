@@ -2,7 +2,9 @@ import Vue from 'vue';
 import VueApollo from 'vue-apollo';
 import createDefaultClient from '~/lib/graphql';
 import { parseBoolean } from '~/lib/utils/common_utils';
+import { __ } from '~/locale';
 import { createRouter } from 'ee/ai/duo_agents_platform/router/ai_panel_router';
+import DuoAgenticChat from 'ee/ai/duo_agentic_chat/components/duo_agentic_chat.vue';
 import store from './tanuki_bot/store';
 import AIPanel from './components/ai_panel.vue';
 
@@ -32,15 +34,26 @@ export function initDuoPanel() {
     defaultClient: createDefaultClient(),
   });
 
+  // Configure chat-specific values in a single configuration object
+  const chatConfiguration = {
+    component: agenticAvailable ? DuoAgenticChat : __('Classic Chat Placeholder'),
+    title: chatTitle || __('GitLab Duo Agentic Chat'),
+    isAgenticAvailable: agenticAvailable,
+    defaultProps: {
+      isEmbedded: true,
+    },
+  };
+
   return new Vue({
     el,
+    name: 'DuoPanel',
     store: store(),
     router,
     apolloProvider,
     provide: {
       isSidePanelView: true,
-      isAgenticAvailable: parseBoolean(agenticAvailable),
-      chatTitle,
+      // Inject chat configuration directly to components that need it
+      chatConfiguration,
     },
     render(createElement) {
       return createElement(AIPanel, {

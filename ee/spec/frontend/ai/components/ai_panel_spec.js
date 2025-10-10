@@ -40,6 +40,15 @@ describe('AiPanel', () => {
       provide: {
         isAgenticAvailable: true,
         chatTitle: null,
+        chatConfiguration: {
+          title: 'GitLab Duo Agentic Chat',
+          component: DuoAgenticChat,
+          defaultProps: {
+            isAgenticAvailable: true,
+            isEmbedded: true,
+            showStudioHeader: true,
+          },
+        },
         ...provide,
       },
       mocks: {
@@ -79,8 +88,10 @@ describe('AiPanel', () => {
         title: 'GitLab Duo Agentic Chat',
         component: DuoAgenticChat,
         props: {
-          isAgenticAvailable: true,
           mode: 'active',
+          isAgenticAvailable: true,
+          isEmbedded: true,
+          showStudioHeader: true,
         },
       });
     });
@@ -131,8 +142,10 @@ describe('AiPanel', () => {
         title: 'GitLab Duo Agentic Chat',
         component: DuoAgenticChat,
         props: {
-          isAgenticAvailable: true,
           mode: 'active',
+          isAgenticAvailable: true,
+          isEmbedded: true,
+          showStudioHeader: true,
         },
       });
       expect(Cookies.get(aiPanelStateCookie)).toBe('chat');
@@ -369,8 +382,10 @@ describe('AiPanel', () => {
         title: 'GitLab Duo Agentic Chat',
         component: DuoAgenticChat,
         props: {
-          isAgenticAvailable: true,
           mode: 'active',
+          isAgenticAvailable: true,
+          isEmbedded: true,
+          showStudioHeader: true,
         },
       });
       expect(Cookies.get(aiPanelStateCookie)).toBe('chat');
@@ -398,7 +413,12 @@ describe('AiPanel', () => {
       expect(findContentContainer().props('activeTab')).toEqual({
         title: 'GitLab Duo Agentic Chat',
         component: DuoAgenticChat,
-        props: { mode: 'active', isAgenticAvailable: true },
+        props: {
+          mode: 'active',
+          isAgenticAvailable: true,
+          isEmbedded: true,
+          showStudioHeader: true,
+        },
       });
     });
 
@@ -410,7 +430,12 @@ describe('AiPanel', () => {
       expect(findContentContainer().props('activeTab')).toEqual({
         title: 'New Chat',
         component: DuoAgenticChat,
-        props: { mode: 'new', isAgenticAvailable: true },
+        props: {
+          mode: 'new',
+          isAgenticAvailable: true,
+          isEmbedded: true,
+          showStudioHeader: true,
+        },
       });
     });
 
@@ -422,7 +447,12 @@ describe('AiPanel', () => {
       expect(findContentContainer().props('activeTab')).toEqual({
         title: 'History',
         component: DuoAgenticChat,
-        props: { mode: 'history', isAgenticAvailable: true },
+        props: {
+          mode: 'history',
+          isAgenticAvailable: true,
+          isEmbedded: true,
+          showStudioHeader: true,
+        },
       });
     });
   });
