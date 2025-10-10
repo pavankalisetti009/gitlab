@@ -74,7 +74,7 @@ module Security
     end
 
     def self.results_ready?(pipeline)
-      pipeline.complete? && !processing?(pipeline)
+      pipeline.complete_or_manual? && !processing?(pipeline)
     end
 
     def self.processing?(pipeline)
