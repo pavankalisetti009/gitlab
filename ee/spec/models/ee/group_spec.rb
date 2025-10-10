@@ -332,6 +332,9 @@ RSpec.describe Group, feature_category: :groups_and_projects do
     it { is_expected.to delegate_method(:disable_invite_members=).to(:namespace_settings).with_arguments(:args) }
     it { is_expected.to delegate_method(:disable_invite_members?).to(:namespace_settings) }
     it { is_expected.to delegate_method(:enterprise_users_extensions_marketplace_enabled=).to(:namespace_settings).with_arguments(:args) }
+    it { is_expected.to delegate_method(:allow_personal_snippets).to(:namespace_settings) }
+    it { is_expected.to delegate_method(:allow_personal_snippets=).to(:namespace_settings).with_arguments(:args) }
+    it { is_expected.to delegate_method(:allow_personal_snippets?).to(:namespace_settings) }
   end
 
   describe 'states' do

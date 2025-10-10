@@ -581,6 +581,54 @@ RSpec.describe 'Edit group settings', :js, feature_category: :groups_and_project
       end
     end
 
+    context 'allow personal snippets', :saas do
+      before do
+        stub_licensed_features(domain_verification: true, allow_personal_snippets: true)
+        stub_saas_features(allow_personal_snippets: true)
+        allow(group).to receive(:domain_verification_available?).and_return(true)
+      end
+
+      context 'when :allow_personal_snippets_setting is disabled' do
+        before do
+          stub_feature_flags(allow_personal_snippets_setting: false)
+        end
+
+        it 'does not render allow personal snippets setting' do
+          visit edit_group_path(group)
+          wait_for_all_requests
+
+          within(permissions_selector) do
+            expect(page).not_to have_content(s_('GroupSettings|Allow personal snippets'))
+          end
+        end
+      end
+
+      context 'when :allow_personal_snippets_setting is enabled' do
+        it 'renders allow personal snippets setting' do
+          visit edit_group_path(group)
+          wait_for_all_requests
+
+          within(permissions_selector) do
+            expect(page).to have_content(s_('GroupSettings|Allow personal snippets'))
+          end
+        end
+
+        it 'saves the setting', :js do
+          visit edit_group_path(group)
+          wait_for_all_requests
+
+          within(permissions_selector) do
+            uncheck 'Allow personal snippets'
+            click_button 'Save changes'
+          end
+
+          wait_for_all_requests
+          expect(page).to have_content("Group 'Foo bar' was successfully updated.")
+          expect(group.reload.namespace_settings.allow_personal_snippets).to be(false)
+        end
+      end
+    end
+
     def permissions_selector
       '[data-testid="permissions-settings"]'
     end

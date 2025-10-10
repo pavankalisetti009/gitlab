@@ -118,6 +118,9 @@ module EE
       delegate :disable_personal_access_tokens=, to: :namespace_settings
       delegate :hide_email_on_profile=, to: :namespace_settings
       delegate :hide_email_on_profile?, to: :namespace_settings
+      delegate :allow_personal_snippets, to: :namespace_settings
+      delegate :allow_personal_snippets=, to: :namespace_settings
+      delegate :allow_personal_snippets?, to: :namespace_settings
 
       delegate :enterprise_users_extensions_marketplace_enabled=, to: :namespace_settings
 
@@ -1056,6 +1059,13 @@ module EE
       root? &&
         ::Gitlab::Saas.feature_available?(:disable_personal_access_tokens) &&
         licensed_feature_available?(:disable_personal_access_tokens)
+    end
+
+    def allow_personal_snippets_available?(user = nil)
+      root? &&
+        enterprise_user_settings_available?(user) &&
+        ::Gitlab::Saas.feature_available?(:allow_personal_snippets) &&
+        licensed_feature_available?(:allow_personal_snippets)
     end
 
     # Disable personal access tokens for enterprise users of this group
