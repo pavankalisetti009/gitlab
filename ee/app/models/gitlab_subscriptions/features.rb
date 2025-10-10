@@ -90,6 +90,7 @@ module GitlabSubscriptions
       admin_audit_log
       agent_managed_resources
       agentic_chat
+      allow_personal_snippets
       auditor_user
       blocking_merge_requests
       board_assignee_lists

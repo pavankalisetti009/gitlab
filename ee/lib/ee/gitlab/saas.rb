@@ -48,6 +48,7 @@ module EE
           security_scans_api
           admin_homepage
           auto_enable_secret_push_protection_public_projects
+          allow_personal_snippets
         ].freeze
 
       CONFIG_FILE_ROOT = 'ee/config/saas_features'
