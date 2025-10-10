@@ -53,7 +53,7 @@ module Gitlab
               .limit(limit)
 
             dismissed_uuids = ::Gitlab::Metrics.measure(VULNERABILITY_FILTER_METRIC_KEY) do
-              query.pluck(:uuid)
+              query.pluck('findings.uuid')
             end.to_set
 
             findings.reject { |f| dismissed_uuids.include?(f.uuid) }
