@@ -2823,6 +2823,16 @@
   :idempotent: true
   :tags: []
   :queue_namespace:
+- :name: merge_requests_refresh_approval
+  :worker_name: MergeRequests::Refresh::ApprovalWorker
+  :feature_category: :code_review_workflow
+  :has_external_dependencies: false
+  :urgency: :high
+  :resource_boundary: :unknown
+  :weight: 1
+  :idempotent: false
+  :tags: []
+  :queue_namespace:
 - :name: merge_requests_remove_user_approval_rules
   :worker_name: MergeRequests::RemoveUserApprovalRulesWorker
   :feature_category: :code_review_workflow
