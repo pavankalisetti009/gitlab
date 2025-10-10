@@ -26,7 +26,6 @@ import {
   DUO_WORKFLOW_ADDITIONAL_CONTEXT_REPOSITORY,
   DUO_CURRENT_WORKFLOW_STORAGE_KEY,
   DUO_CHAT_VIEWS,
-  DUO_AGENTIC_CHAT_SELECTED_MODEL_KEY,
 } from 'ee/ai/constants';
 import getAiChatContextPresets from 'ee/ai/graphql/get_ai_chat_context_presets.query.graphql';
 import getAiChatAvailableModels from 'ee/ai/graphql/get_ai_chat_available_models.query.graphql';
@@ -38,6 +37,13 @@ import { s__ } from '~/locale';
 import { WIDTH_OFFSET, DUO_AGENTIC_MODE_COOKIE } from '../../tanuki_bot/constants';
 import { WorkflowUtils } from '../utils/workflow_utils';
 import { ApolloUtils } from '../utils/apollo_utils';
+import {
+  getCurrentModel,
+  getDefaultModel,
+  getModel,
+  saveModel,
+  isModelSelectionDisabled as checkModelSelectionDisabled,
+} from '../utils/model_selection_utils';
 
 export default {
   name: 'DuoAgenticChatApp',
@@ -259,20 +265,23 @@ export default {
       };
     },
     defaultModel() {
-      return this.getModel(GITLAB_DEFAULT_MODEL);
+      return getDefaultModel(this.availableModels);
     },
     currentModel: {
       get() {
-        if (this.$apollo.queries.availableModels.loading) return null;
-
-        return this.pinnedModel || this.selectedModel || this.getSavedModel() || this.defaultModel;
+        return getCurrentModel({
+          availableModels: this.availableModels,
+          pinnedModel: this.pinnedModel,
+          selectedModel: this.selectedModel,
+          isLoading: this.$apollo.queries.availableModels?.loading,
+        });
       },
       set(val) {
         this.selectedModel = val;
       },
     },
     isModelSelectionDisabled() {
-      return Boolean(this.pinnedModel);
+      return checkModelSelectionDisabled(this.pinnedModel);
     },
     modelSelectionDisabledTooltipText() {
       return this.isModelSelectionDisabled
@@ -693,29 +702,14 @@ export default {
       this.isChatAvailable = true;
       this.agentDeletedError = '';
     },
-    getSavedModel() {
-      try {
-        const savedModel = JSON.parse(localStorage.getItem(DUO_AGENTIC_CHAT_SELECTED_MODEL_KEY));
+    onModelSelect(selectedModelValue) {
+      const model = getModel(this.availableModels, selectedModelValue);
 
-        if (!this.getModel(savedModel.value)) {
-          localStorage.removeItem(DUO_AGENTIC_CHAT_SELECTED_MODEL_KEY);
-          return null;
-        }
-
-        return savedModel;
-      } catch {
-        return null;
+      if (model) {
+        this.currentModel = model;
+        saveModel(model);
+        this.onNewChat(null, true);
       }
-    },
-    getModel(modelValue) {
-      return this.availableModels.find((item) => item.value === modelValue);
-    },
-    onModelSelect(selectedModel) {
-      const model = this.getModel(selectedModel);
-
-      this.currentModel = model;
-      localStorage.setItem(DUO_AGENTIC_CHAT_SELECTED_MODEL_KEY, JSON.stringify(model));
-      this.onNewChat(null, true);
     },
     validateAgentExists() {
       if (!this.aiCatalogItemVersionId) {

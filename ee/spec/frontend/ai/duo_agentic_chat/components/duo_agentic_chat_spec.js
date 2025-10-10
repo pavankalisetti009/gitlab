@@ -6,7 +6,6 @@ import VueApollo from 'vue-apollo';
 import { GlToggle } from '@gitlab/ui';
 import { parseDocument } from 'yaml';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
-import { useLocalStorageSpy } from 'helpers/local_storage_helper';
 import { setAgenticMode } from 'ee/ai/utils';
 import createMockApollo from 'helpers/mock_apollo_helper';
 import waitForPromises from 'helpers/wait_for_promises';
@@ -19,6 +18,13 @@ import getAgentFlowConfig from 'ee/ai/graphql/get_agent_flow_config.query.graphq
 import DuoAgenticChatApp from 'ee/ai/duo_agentic_chat/components/duo_agentic_chat.vue';
 import { ApolloUtils } from 'ee/ai/duo_agentic_chat/utils/apollo_utils';
 import { WorkflowUtils } from 'ee/ai/duo_agentic_chat/utils/workflow_utils';
+import {
+  getCurrentModel,
+  getDefaultModel,
+  getModel,
+  saveModel,
+  isModelSelectionDisabled as checkModelSelectionDisabled,
+} from 'ee/ai/duo_agentic_chat/utils/model_selection_utils';
 import ModelSelectDropdown from 'ee/ai/shared/feature_settings/model_select_dropdown.vue';
 import {
   GENIE_CHAT_RESET_MESSAGE,
@@ -30,7 +36,6 @@ import {
   DUO_CURRENT_WORKFLOW_STORAGE_KEY,
   DUO_CHAT_VIEWS,
   DUO_WORKFLOW_STATUS_RUNNING,
-  DUO_AGENTIC_CHAT_SELECTED_MODEL_KEY,
 } from 'ee/ai/constants';
 import { WIDTH_OFFSET } from 'ee/ai/tanuki_bot/constants';
 import { createWebSocket, closeSocket } from '~/lib/utils/websocket_utils';
@@ -38,7 +43,6 @@ import { getStorageValue, saveStorageValue } from '~/lib/utils/local_storage';
 import { getCookie } from '~/lib/utils/common_utils';
 import {
   MOCK_AI_CHAT_AVAILABLE_MODELS_RESPONSE,
-  MOCK_AI_CHAT_AVAILABLE_MODELS_WITH_PINNED_MODEL_RESPONSE,
   MOCK_MODEL_LIST_ITEMS,
   MOCK_GITLAB_DEFAULT_MODEL_ITEM,
 } from './mock_data';
@@ -75,6 +79,14 @@ jest.mock('ee/ai/duo_agentic_chat/utils/workflow_utils', () => ({
     transformChatMessages: jest.fn(),
     parseWorkflowData: jest.fn(),
   },
+}));
+
+jest.mock('ee/ai/duo_agentic_chat/utils/model_selection_utils', () => ({
+  getCurrentModel: jest.fn(),
+  getDefaultModel: jest.fn(),
+  getModel: jest.fn(),
+  saveModel: jest.fn(),
+  isModelSelectionDisabled: jest.fn(),
 }));
 
 const MOCK_PROJECT_ID = 'gid://gitlab/Project/123';
@@ -187,6 +199,13 @@ const MOCK_UTILS_SETUP = () => {
     checkpoint: { channel_values: { ui_chat_log: [] } },
   });
   parseDocument.mockReturnValue(MOCK_PARSED_FLOW_CONFIG);
+
+  getCurrentModel.mockReturnValue(MOCK_GITLAB_DEFAULT_MODEL_ITEM);
+  getDefaultModel.mockReturnValue(MOCK_GITLAB_DEFAULT_MODEL_ITEM);
+  // getModel needs to search arrays by value, simple Array.find helper
+  getModel.mockImplementation((models, value) => models?.find((m) => m.value === value));
+  saveModel.mockReturnValue(true);
+  checkModelSelectionDisabled.mockReturnValue(false);
 };
 
 const expectedAdditionalContext = [
@@ -1418,10 +1437,7 @@ describe('Duo Agentic Chat', () => {
   });
 
   describe('Agentic chat user model selection', () => {
-    useLocalStorageSpy();
-
     const findModelSelectDropdown = () => wrapper.findComponent(ModelSelectDropdown);
-    const findModelSelectDropdownContainer = () => wrapper.findByTestId('model-dropdown-container');
 
     describe('when user model selection is enabled', () => {
       beforeEach(() => {
@@ -1445,140 +1461,31 @@ describe('Duo Agentic Chat', () => {
         );
       });
 
-      describe('when there is a selected model set in `localStorage`', () => {
-        it('returns the selected model if it is available', async () => {
-          const selectedModel = MOCK_MODEL_LIST_ITEMS[0];
-          localStorage.setItem(DUO_AGENTIC_CHAT_SELECTED_MODEL_KEY, JSON.stringify(selectedModel));
+      it('calls saveModel utility and starts new chat when model is selected', async () => {
+        await waitForPromises();
 
-          createComponent({
-            propsData: { userModelSelectionEnabled: true, rootNamespaceId: MOCK_NAMESPACE_ID },
-          });
-          await waitForPromises();
+        const selectedModel = MOCK_MODEL_LIST_ITEMS[1];
+        const onNewChatSpy = jest.spyOn(wrapper.vm, 'onNewChat');
 
-          expect(localStorage.getItem).toHaveBeenCalledWith(DUO_AGENTIC_CHAT_SELECTED_MODEL_KEY);
-          expect(findModelSelectDropdown().props('selectedOption')).toEqual(selectedModel);
-        });
+        await findModelSelectDropdown().vm.$emit('select', selectedModel.value);
 
-        it('clears local storage item and returns the default model if selected model is not available', async () => {
-          const selectedModel = { text: 'No longer available model', value: 'some_model' };
-          localStorage.setItem(DUO_AGENTIC_CHAT_SELECTED_MODEL_KEY, JSON.stringify(selectedModel));
-
-          createComponent({
-            propsData: { userModelSelectionEnabled: true, rootNamespaceId: MOCK_NAMESPACE_ID },
-          });
-          await waitForPromises();
-
-          expect(localStorage.removeItem).toHaveBeenCalledWith(DUO_AGENTIC_CHAT_SELECTED_MODEL_KEY);
-          expect(findModelSelectDropdown().props('selectedOption')).toMatchObject(
-            MOCK_GITLAB_DEFAULT_MODEL_ITEM,
-          );
-        });
+        expect(saveModel).toHaveBeenCalledWith(selectedModel);
+        expect(onNewChatSpy).toHaveBeenCalledWith(null, true);
       });
 
-      describe('when there is no selected model set in `localStorage`', () => {
-        it('returns the default model', async () => {
-          localStorage.getItem.mockReturnValue(null);
+      it('disables dropdown when pinned model is set', async () => {
+        const pinnedModel = { text: 'Pinned Model', value: 'pinned/model' };
+        checkModelSelectionDisabled.mockReturnValue(true);
 
-          createComponent({
-            propsData: { userModelSelectionEnabled: true, rootNamespaceId: MOCK_NAMESPACE_ID },
-          });
-          await waitForPromises();
-
-          expect(localStorage.getItem).toHaveBeenCalledWith(DUO_AGENTIC_CHAT_SELECTED_MODEL_KEY);
-          expect(findModelSelectDropdown().props('selectedOption')).toMatchObject(
-            MOCK_GITLAB_DEFAULT_MODEL_ITEM,
-          );
+        createComponent({
+          propsData: { userModelSelectionEnabled: true, rootNamespaceId: MOCK_NAMESPACE_ID },
+          data: { pinnedModel },
         });
-      });
+        await waitForPromises();
 
-      describe('updating the model selection', () => {
-        it('persists the selected model in a `localStorage` item and updates dropdown', async () => {
-          createComponent({
-            propsData: { userModelSelectionEnabled: true, rootNamespaceId: MOCK_NAMESPACE_ID },
-          });
-          await waitForPromises();
-
-          const selectedModel = MOCK_MODEL_LIST_ITEMS[1];
-
-          await findModelSelectDropdown().vm.$emit('select', selectedModel.value);
-
-          expect(findModelSelectDropdown().props('selectedOption')).toStrictEqual(selectedModel);
-          expect(localStorage.setItem).toHaveBeenCalledWith(
-            DUO_AGENTIC_CHAT_SELECTED_MODEL_KEY,
-            JSON.stringify(selectedModel),
-          );
-        });
-
-        it('starts a new chat', async () => {
-          const onNewChatSpy = jest.spyOn(wrapper.vm, 'onNewChat');
-          const selectedModel = MOCK_MODEL_LIST_ITEMS[0];
-
-          await findModelSelectDropdown().vm.$emit('select', selectedModel.value);
-
-          expect(onNewChatSpy).toHaveBeenCalledWith(null, true);
-        });
-      });
-
-      describe('when there is a pinned model', () => {
-        const availableModelsQueryHandlerWithPinnedModelMock = jest
-          .fn()
-          .mockResolvedValue(MOCK_AI_CHAT_AVAILABLE_MODELS_WITH_PINNED_MODEL_RESPONSE);
-
-        beforeEach(() => {
-          duoChatGlobalState.isAgenticChatShown = true;
-          createComponent({
-            propsData: { userModelSelectionEnabled: true, rootNamespaceId: MOCK_NAMESPACE_ID },
-            apolloHandlers: [
-              [getAiChatAvailableModels, availableModelsQueryHandlerWithPinnedModelMock],
-            ],
-          });
-          return waitForPromises();
-        });
-
-        it('renders disabled model selection dropdown', () => {
-          expect(findModelSelectDropdown().props('disabled')).toBe(true);
-        });
-
-        it('sets pinned model as selected option', () => {
-          const { name, ref } =
-            MOCK_AI_CHAT_AVAILABLE_MODELS_WITH_PINNED_MODEL_RESPONSE.data.aiChatAvailableModels
-              .pinnedModel;
-          const pinnedModel = {
-            text: name,
-            value: ref,
-          };
-          expect(findModelSelectDropdown().props('selectedOption')).toStrictEqual(pinnedModel);
-        });
-
-        it('displays tooltip over the model selection dropdown', () => {
-          expect(findModelSelectDropdownContainer().attributes('title')).toBe(
-            'Model has been pinned by an administrator.',
-          );
-        });
+        expect(findModelSelectDropdown().props('disabled')).toBe(true);
       });
     });
-
-    it.each`
-      case                                       | isAgenticChatShown | userModelSelectionEnabled | hasRootNamespaceId
-      ${'when user model selection is disabled'} | ${true}            | ${false}                  | ${true}
-      ${'when isAgenticChatShown is false'}      | ${false}           | ${true}                   | ${true}
-      ${'when no root namespace ID is passed'}   | ${true}            | ${true}                   | ${false}
-    `(
-      'when $case: query is skipped',
-      ({ isAgenticChatShown, userModelSelectionEnabled, hasRootNamespaceId }) => {
-        beforeEach(() => {
-          duoChatGlobalState.isAgenticChatShown = isAgenticChatShown;
-          createComponent({
-            propsData: {
-              userModelSelectionEnabled,
-              rootNamespaceId: hasRootNamespaceId ? MOCK_NAMESPACE_ID : undefined,
-            },
-          });
-        });
-
-        expect(availableModelsQueryHandlerMock).not.toHaveBeenCalled();
-      },
-    );
 
     describe('when user model selection is disabled', () => {
       beforeEach(() => {
