@@ -1,0 +1,6 @@
+mutation deleteAiCatalogThirdPartyFlow($id: AiCatalogItemID!) {
+  aiCatalogThirdPartyFlowDelete(input: { id: $id }) {
+    errors
+    success
+  }
+}

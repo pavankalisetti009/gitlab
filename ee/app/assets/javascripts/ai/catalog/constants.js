@@ -5,6 +5,13 @@ import {
   VISIBILITY_LEVEL_PRIVATE_STRING,
 } from '~/visibility_level/constants';
 
+import createAiCatalogFlow from './graphql/mutations/create_ai_catalog_flow.mutation.graphql';
+import createAiCatalogThirdPartyFlow from './graphql/mutations/create_ai_catalog_third_party_flow.mutation.graphql';
+import deleteAiCatalogFlowMutation from './graphql/mutations/delete_ai_catalog_flow.mutation.graphql';
+import deleteAiCatalogThirdPartyFlowMutation from './graphql/mutations/delete_ai_catalog_third_party_flow.mutation.graphql';
+import updateAiCatalogFlow from './graphql/mutations/update_ai_catalog_flow.mutation.graphql';
+import updateAiCatalogThirdPartyFlow from './graphql/mutations/update_ai_catalog_third_party_flow.mutation.graphql';
+
 export const AI_CATALOG_TYPE_AGENT = 'AGENT';
 export const AI_CATALOG_TYPE_FLOW = 'FLOW';
 export const AI_CATALOG_TYPE_THIRD_PARTY_FLOW = 'THIRD_PARTY_FLOW';
@@ -44,3 +51,35 @@ export const TRACK_EVENT_VIEW_AI_CATALOG_ITEM_INDEX = 'view_ai_catalog_item_inde
 export const TRACK_EVENT_VIEW_AI_CATALOG_ITEM = 'view_ai_catalog_item';
 export const TRACK_EVENT_TYPE_AGENT = AI_CATALOG_TYPE_AGENT.toLowerCase();
 export const TRACK_EVENT_TYPE_FLOW = AI_CATALOG_TYPE_FLOW.toLowerCase();
+
+// FLOW and THIRD_PARTY_FLOW apollo configuration
+export const FLOW_TYPE_APOLLO_CONFIG = {
+  [AI_CATALOG_TYPE_FLOW]: {
+    create: {
+      mutation: createAiCatalogFlow,
+      responseKey: 'aiCatalogFlowCreate',
+    },
+    delete: {
+      mutation: deleteAiCatalogFlowMutation,
+      responseKey: 'aiCatalogFlowDelete',
+    },
+    update: {
+      mutation: updateAiCatalogFlow,
+      responseKey: 'aiCatalogFlowUpdate',
+    },
+  },
+  [AI_CATALOG_TYPE_THIRD_PARTY_FLOW]: {
+    create: {
+      mutation: createAiCatalogThirdPartyFlow,
+      responseKey: 'aiCatalogThirdPartyFlowCreate',
+    },
+    delete: {
+      mutation: deleteAiCatalogThirdPartyFlowMutation,
+      responseKey: 'aiCatalogThirdPartyFlowDelete',
+    },
+    update: {
+      mutation: updateAiCatalogThirdPartyFlow,
+      responseKey: 'aiCatalogThirdPartyFlowUpdate',
+    },
+  },
+};

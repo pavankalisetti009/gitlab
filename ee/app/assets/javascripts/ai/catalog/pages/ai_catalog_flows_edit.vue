@@ -2,11 +2,9 @@
 import { s__ } from '~/locale';
 import PageHeading from '~/vue_shared/components/page_heading.vue';
 import * as Sentry from '~/sentry/sentry_browser_wrapper';
-import updateAiCatalogFlow from '../graphql/mutations/update_ai_catalog_flow.mutation.graphql';
-import updateAiCatalogThirdPartyFlow from '../graphql/mutations/update_ai_catalog_third_party_flow.mutation.graphql';
 import { mapSteps } from '../utils';
 import { AI_CATALOG_FLOWS_SHOW_ROUTE } from '../router/constants';
-import { AI_CATALOG_TYPE_THIRD_PARTY_FLOW } from '../constants';
+import { AI_CATALOG_TYPE_THIRD_PARTY_FLOW, FLOW_TYPE_APOLLO_CONFIG } from '../constants';
 import AiCatalogFlowForm from '../components/ai_catalog_flow_form.vue';
 
 export default {
@@ -56,13 +54,11 @@ export default {
     async handleSubmit(input) {
       this.isSubmitting = true;
       this.resetErrorMessages();
-      const updateQuery = this.isThirdPartyFlow
-        ? updateAiCatalogThirdPartyFlow
-        : updateAiCatalogFlow;
+      const config = FLOW_TYPE_APOLLO_CONFIG[this.aiCatalogFlow.itemType].update;
 
       try {
         const { data } = await this.$apollo.mutate({
-          mutation: updateQuery,
+          mutation: config.mutation,
           variables: {
             input: {
               id: this.aiCatalogFlow.id,
@@ -72,10 +68,7 @@ export default {
         });
 
         if (data) {
-          const updateResponse = this.isThirdPartyFlow
-            ? data.aiCatalogThirdPartyFlowUpdate
-            : data.aiCatalogFlowUpdate;
-          const { errors } = updateResponse;
+          const { errors } = data[config.responseKey];
           if (errors.length > 0) {
             this.errors = errors;
             return;

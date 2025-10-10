@@ -3,12 +3,15 @@ import { s__, sprintf } from '~/locale';
 import { InternalEvents } from '~/tracking';
 import * as Sentry from '~/sentry/sentry_browser_wrapper';
 import PageHeading from '~/vue_shared/components/page_heading.vue';
-import { TRACK_EVENT_TYPE_FLOW, TRACK_EVENT_VIEW_AI_CATALOG_ITEM } from 'ee/ai/catalog/constants';
+import {
+  FLOW_TYPE_APOLLO_CONFIG,
+  TRACK_EVENT_TYPE_FLOW,
+  TRACK_EVENT_VIEW_AI_CATALOG_ITEM,
+} from 'ee/ai/catalog/constants';
 import ErrorsAlert from '~/vue_shared/components/errors_alert.vue';
 import AiCatalogFlowDetails from '../components/ai_catalog_flow_details.vue';
 import AiCatalogItemActions from '../components/ai_catalog_item_actions.vue';
 import createAiCatalogItemConsumer from '../graphql/mutations/create_ai_catalog_item_consumer.mutation.graphql';
-import deleteAiCatalogFlowMutation from '../graphql/mutations/delete_ai_catalog_flow.mutation.graphql';
 import {
   AI_CATALOG_FLOWS_DUPLICATE_ROUTE,
   AI_CATALOG_FLOWS_EDIT_ROUTE,
@@ -86,19 +89,22 @@ export default {
       }
     },
     async deleteFlow() {
-      const { id } = this.aiCatalogFlow;
+      const { id, itemType } = this.aiCatalogFlow;
+      const config = FLOW_TYPE_APOLLO_CONFIG[itemType].delete;
+
       try {
         const { data } = await this.$apollo.mutate({
-          mutation: deleteAiCatalogFlowMutation,
+          mutation: config.mutation,
           variables: {
             id,
           },
         });
 
-        if (!data.aiCatalogFlowDelete.success) {
+        const deleteResponse = data[config.responseKey];
+        if (!deleteResponse.success) {
           this.errors = [
             sprintf(s__('AICatalog|Failed to delete flow. %{error}'), {
-              error: data.aiCatalogFlowDelete.errors?.[0],
+              error: deleteResponse.errors?.[0],
             }),
           ];
           return;
