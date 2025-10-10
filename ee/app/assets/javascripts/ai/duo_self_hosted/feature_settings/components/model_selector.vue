@@ -17,7 +17,7 @@ export default {
     ModelSelectDropdown,
     GitlabManagedModelsDisclaimerModal,
   },
-  inject: ['showVendoredModelOption'],
+  inject: ['showVendoredModelOption', 'isDedicatedInstance'],
   props: {
     aiFeatureSetting: {
       type: Object,
@@ -250,7 +250,7 @@ export default {
       :items="listItems"
       :placeholder-dropdown-text="s__('AdminAIPoweredFeatures|Select a model')"
       :is-loading="isSaving || batchUpdateIsSaving"
-      is-feature-setting-dropdown
+      :is-feature-setting-dropdown="!isDedicatedInstance"
       @select="onSelect"
     />
   </div>

@@ -153,26 +153,67 @@ describe('GitLab Duo Home', () => {
       });
     });
 
-    describe('when canManageSelfHostedModels is true', () => {
-      it('renders model switching card for Duo self-hosted', () => {
-        createComponent({
-          isSaaS: false,
-          isAdminInstanceDuoHome: true,
-          canManageSelfHostedModels: true,
+    describe('model switching card', () => {
+      describe('with Duo Self-Hosted', () => {
+        it('renders card when `canManageSelfHostedModels` is true', () => {
+          createComponent({
+            isSaaS: false,
+            isAdminInstanceDuoHome: true,
+            canManageSelfHostedModels: true,
+          });
+
+          const duoSelfHostedCard = findDuoModelsConfigurationCard();
+          expect(duoSelfHostedCard.props('duoModelsConfigurationProps')).toMatchObject({
+            header: 'GitLab Duo Self-Hosted',
+            description: 'Assign self-hosted models to specific AI-native features.',
+            buttonText: 'Configure GitLab Duo Self-Hosted',
+            path: '/admin/gitlab_duo/self_hosted',
+          });
         });
 
-        const duoSelfHostedCard = findDuoModelsConfigurationCard();
-        expect(duoSelfHostedCard.props('duoModelsConfigurationProps')).toMatchObject({
-          header: 'GitLab Duo Self-Hosted',
-          description: 'Assign self-hosted models to specific AI-native features.',
-          buttonText: 'Configure GitLab Duo Self-Hosted',
-          path: '/admin/gitlab_duo/self_hosted',
+        it('does not render card when `canManageSelfHostedModels` is false', () => {
+          createComponent({
+            provide: {
+              isSaaS: false,
+              isAdminInstanceDuoHome: true,
+              canManageSelfHostedModels: false,
+            },
+          });
+
+          expect(findDuoModelsConfigurationCard().exists()).toBe(false);
         });
       });
-    });
 
-    describe('when withAdminModelSelection is true', () => {
-      it('renders model switching card for Duo self-hosted with model selection support', () => {
+      describe('with instance-level model selection', () => {
+        it('renders the card when `canManageInstanceModelSelection` is true', () => {
+          createComponent({
+            isSaaS: false,
+            isAdminInstanceDuoHome: true,
+            canManageInstanceModelSelection: true,
+          });
+
+          const duoSelfHostedCard = findDuoModelsConfigurationCard();
+          expect(duoSelfHostedCard.props('duoModelsConfigurationProps')).toMatchObject({
+            header: 'GitLab Duo Model Selection',
+            description:
+              'Assign self-hosted or cloud-connected models to use with specific AI-native features.',
+            buttonText: 'Configure models for GitLab Duo',
+            path: '/admin/gitlab_duo/self_hosted',
+          });
+        });
+
+        it('does not render the card when `canManageInstanceModelSelection` is false', () => {
+          createComponent({
+            isSaaS: false,
+            isAdminInstanceDuoHome: true,
+            canManageInstanceModelSelection: false,
+          });
+
+          expect(findDuoModelsConfigurationCard().exists()).toBe(false);
+        });
+      });
+
+      it('renders the card when `canManageInstanceModelSelection` and `canManageSelfHostedModels` are true', () => {
         createComponent({
           isSaaS: false,
           isAdminInstanceDuoHome: true,
@@ -188,20 +229,6 @@ describe('GitLab Duo Home', () => {
           buttonText: 'Configure models for GitLab Duo',
           path: '/admin/gitlab_duo/self_hosted',
         });
-      });
-    });
-
-    describe('when canManageSelfHostedModels is false', () => {
-      it('does not render Duo self-hosted card', () => {
-        createComponent({
-          provide: {
-            isSaaS: false,
-            isAdminInstanceDuoHome: true,
-            canManageSelfHostedModels: false,
-          },
-        });
-
-        expect(findDuoModelsConfigurationCard().exists()).toBe(false);
       });
     });
   });

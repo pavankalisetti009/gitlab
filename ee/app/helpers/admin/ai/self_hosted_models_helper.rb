@@ -33,6 +33,10 @@ module Admin
         model_options.sort_by { |option| option[:modelName] }
       end
 
+      def dedicated_instance?
+        ::Gitlab::CurrentSettings.gitlab_dedicated_instance?
+      end
+
       def show_self_hosted_vendored_model_option?
         return false if ::Feature.enabled?(:instance_level_model_selection, :instance)
         return false unless ::Feature.enabled?(:ai_self_hosted_vendored_features, current_user)

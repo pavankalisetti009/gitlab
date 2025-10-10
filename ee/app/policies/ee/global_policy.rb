@@ -107,14 +107,18 @@ module EE
         ::License.feature_available?(:default_roles_assignees)
       end
 
-      condition(:user_allowed_to_manage_self_hosted_models_settings) do
+      condition(:instance_model_configuration_allowed, scope: :global) do
+        ::License.feature_available?(:self_hosted_models) &&
+          ::GitlabSubscriptions::AddOnPurchase.for_self_managed.for_duo_enterprise.active.exists?
+      end
+
+      condition(:self_hosted_models_allowed, scope: :global) do
         next false if ::Feature.disabled?(:allow_self_hosted_features_for_com, :instance) &&
           ::Gitlab::Saas.feature_available?(:gitlab_com_subscriptions)
 
         next false if ::Gitlab::CurrentSettings.gitlab_dedicated_instance?
 
-        (::License.current&.ultimate? || ::License.current&.premium?) &&
-          ::GitlabSubscriptions::AddOnPurchase.for_self_managed.for_duo_enterprise.active.exists?
+        true
       end
 
       condition(:instance_model_selection_available) do
@@ -179,15 +183,17 @@ module EE
         enable :read_licenses
         enable :read_runner_usage
         enable :manage_ldap_admin_links
-      end
-
-      rule { admin & user_allowed_to_manage_self_hosted_models_settings }.policy do
         enable :manage_self_hosted_models_settings
-      end
-
-      rule { admin & instance_model_selection_available & user_allowed_to_manage_self_hosted_models_settings }.policy do
         enable :manage_instance_model_selection
       end
+
+      rule { ~instance_model_configuration_allowed }.policy do
+        prevent :manage_self_hosted_models_settings
+        prevent :manage_instance_model_selection
+      end
+
+      rule { ~self_hosted_models_allowed }.prevent :manage_self_hosted_models_settings
+      rule { ~instance_model_selection_available }.prevent :manage_instance_model_selection
 
       rule { admin & custom_roles_allowed }.policy do
         enable :admin_member_role

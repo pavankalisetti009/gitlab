@@ -116,12 +116,7 @@ module Admin
     end
 
     def can_manage_self_hosted_models?
-      return false if gitlab_dedicated_instance?
-
-      has_required_license = ::License.feature_available?(:self_hosted_models)
-      has_duo_enterprise = ::GitlabSubscriptions::DuoEnterprise.active_add_on_purchase_for_self_managed?
-
-      has_required_license && has_duo_enterprise
+      ::Ability.allowed?(@current_user, :manage_self_hosted_models_settings)
     end
 
     def duo_workflow_service_account

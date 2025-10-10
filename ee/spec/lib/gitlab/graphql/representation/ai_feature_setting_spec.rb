@@ -39,12 +39,14 @@ RSpec.describe Gitlab::Graphql::Representation::AiFeatureSetting, feature_catego
     )
   end
 
-  let(:with_valid_models) { true }
+  let(:with_self_hosted_models) { true }
+  let(:with_gitlab_models) { true }
 
   subject(:decorate) do
     described_class.decorate(
       feature_settings,
-      with_valid_models: with_valid_models,
+      with_self_hosted_models: with_self_hosted_models,
+      with_gitlab_models: with_gitlab_models,
       model_definitions: model_definitions
     )
   end
@@ -63,8 +65,8 @@ RSpec.describe Gitlab::Graphql::Representation::AiFeatureSetting, feature_catego
     end
 
     context 'when feature_settings is present' do
-      context 'without valid models' do
-        let(:with_valid_models) { false }
+      context "without self-hosted models" do
+        let(:with_self_hosted_models) { false }
 
         it 'does not include valid_models' do
           decorate.each do |setting|
@@ -72,17 +74,30 @@ RSpec.describe Gitlab::Graphql::Representation::AiFeatureSetting, feature_catego
           end
         end
 
-        it 'includes gitlab model information' do
+        it 'includes gitlab models' do
           duo_chat_setting = decorate.find { |s| s.feature == 'duo_chat' }
           expect(duo_chat_setting.default_gitlab_model).to eq({
             'name' => 'Claude Sonnet',
             'ref' => 'claude-sonnet'
           })
-          expect(duo_chat_setting.valid_gitlab_models).to be_empty
+          expect(duo_chat_setting.valid_gitlab_models).to be_present
         end
       end
 
-      context 'with valid models' do
+      context "without gitlab models" do
+        let(:with_gitlab_models) { false }
+
+        before do
+          allow(::Ai::TestingTermsAcceptance).to receive(:has_accepted?).and_return(true)
+        end
+
+        it 'includes self-hosted models for compatible features' do
+          code_completions_setting = decorate.find { |s| s.feature == 'code_completions' }
+          expect(code_completions_setting.valid_models).to be_present
+        end
+      end
+
+      context 'with self-hosted and gitlab models' do
         before do
           allow(::Ai::TestingTermsAcceptance).to receive(:has_accepted?).and_return(true)
         end

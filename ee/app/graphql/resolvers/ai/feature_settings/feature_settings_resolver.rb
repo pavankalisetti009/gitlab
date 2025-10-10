@@ -14,13 +14,12 @@ module Resolvers
           description: 'Global ID of the self-hosted model.'
 
         def resolve(self_hosted_model_id: nil)
-          return unless Ability.allowed?(current_user, :manage_self_hosted_models_settings)
-
           feature_settings = get_feature_settings(self_hosted_model_id)
 
           ::Gitlab::Graphql::Representation::AiFeatureSetting
             .decorate(feature_settings,
-              with_valid_models: valid_models_field_requested?,
+              with_self_hosted_models: self_hosted_models?,
+              with_gitlab_models: gitlab_models?,
               model_definitions: gitlab_model_definitions)
         end
 
@@ -30,8 +29,20 @@ module Resolvers
           ::Ai::FeatureSettings::FeatureSettingFinder.new(self_hosted_model_id: self_hosted_model_id).execute
         end
 
-        def valid_models_field_requested?
-          context.query.sanitized_query_string.include?('validModels')
+        def self_hosted_models?
+          self_hosted_models_requested = context.query.sanitized_query_string.include?('validModels')
+
+          return false unless self_hosted_models_requested
+
+          Ability.allowed?(current_user, :manage_self_hosted_models_settings)
+        end
+
+        def gitlab_models?
+          gitlab_models_requested = context.query.sanitized_query_string.include?('validGitlabModels')
+
+          return false unless gitlab_models_requested
+
+          Ability.allowed?(current_user, :manage_instance_model_selection)
         end
 
         def gitlab_model_definitions

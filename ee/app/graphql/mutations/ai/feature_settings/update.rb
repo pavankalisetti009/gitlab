@@ -25,7 +25,8 @@ module Mutations
           description: 'Identifier of the selected model for the feature.'
 
         def resolve(**args)
-          check_feature_access!
+          return raise_resource_not_available_error! if args[:ai_self_hosted_model_id] && !self_hosted_models?
+          return raise_resource_not_available_error! if args[:offered_model_ref] && !gitlab_models?
 
           return { ai_feature_settings: [], errors: ['At least one feature is required'] } if args[:features].empty?
 
@@ -43,7 +44,8 @@ module Mutations
           feature_settings = results.reject(&:error?).flat_map(&:payload)
 
           decorated_feature_settings = ::Gitlab::Graphql::Representation::AiFeatureSetting
-            .decorate(feature_settings, with_valid_models: true, model_definitions: gitlab_model_definitions)
+            .decorate(feature_settings, with_self_hosted_models: self_hosted_models?,
+              with_gitlab_models: gitlab_models?, model_definitions: gitlab_model_definitions)
 
           {
             ai_feature_settings: decorated_feature_settings,
@@ -52,6 +54,14 @@ module Mutations
         end
 
         private
+
+        def self_hosted_models?
+          Ability.allowed?(current_user, :manage_self_hosted_models_settings)
+        end
+
+        def gitlab_models?
+          Ability.allowed?(current_user, :manage_instance_model_selection)
+        end
 
         def update_model_selection(feature, args)
           ::Ai::ModelSelection::UpdateSelfManagedModelSelectionService.new(

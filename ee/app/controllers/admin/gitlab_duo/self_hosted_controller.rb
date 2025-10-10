@@ -7,14 +7,16 @@ module Admin
       feature_category :"self-hosted_models"
       urgency :low
 
-      before_action :ensure_feature_enabled!
+      before_action :authorize_feature!
 
       def index; end
 
       private
 
-      def ensure_feature_enabled!
-        render_404 unless Ability.allowed?(current_user, :manage_self_hosted_models_settings)
+      def authorize_feature!
+        return if can_any?(current_user, %i[manage_self_hosted_models_settings manage_instance_model_selection])
+
+        render_404
       end
     end
   end
