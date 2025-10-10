@@ -150,6 +150,8 @@ export const mockTableValues = [
     pipelineSuccessCount: 149,
     pipelineFailedCount: 175,
     pipelineDurationMedian: 150,
+    acceptedLinesOfCode: 100,
+    shownLinesOfCode: 200,
   },
   {
     deploymentFrequency: 20,
@@ -177,6 +179,8 @@ export const mockTableValues = [
     pipelineSuccessCount: 49,
     pipelineFailedCount: 15,
     pipelineDurationMedian: 120,
+    acceptedLinesOfCode: 300,
+    shownLinesOfCode: 500,
   },
   {
     deploymentFrequency: 40,
@@ -204,6 +208,8 @@ export const mockTableValues = [
     pipelineSuccessCount: 10,
     pipelineFailedCount: 5,
     pipelineDurationMedian: 165,
+    acceptedLinesOfCode: 50,
+    shownLinesOfCode: 70,
   },
   {
     deploymentFrequency: 10,
@@ -231,6 +237,8 @@ export const mockTableValues = [
     pipelineSuccessCount: 60,
     pipelineFailedCount: 10,
     pipelineDurationMedian: 90,
+    acceptedLinesOfCode: 250,
+    shownLinesOfCode: 400,
   },
   {
     deploymentFrequency: 20,
@@ -258,6 +266,8 @@ export const mockTableValues = [
     pipelineSuccessCount: 18,
     pipelineFailedCount: 15,
     pipelineDurationMedian: 250,
+    acceptedLinesOfCode: 100,
+    shownLinesOfCode: 600,
   },
   {
     deploymentFrequency: 40,
@@ -285,6 +295,8 @@ export const mockTableValues = [
     pipelineSuccessCount: 50,
     pipelineFailedCount: 25,
     pipelineDurationMedian: 100,
+    acceptedLinesOfCode: 300,
+    shownLinesOfCode: 700,
   },
 ];
 
@@ -501,6 +513,8 @@ export const mockAiMetricsResponseData = {
       acceptedCount: 2,
       shownCount: 5,
       languages: mockCodeSuggestionsLanguages,
+      acceptedLinesOfCode: 30,
+      shownLinesOfCode: 70,
     },
     codeContributorsCount: 8,
     duoChatContributorsCount: 5,
@@ -517,6 +531,8 @@ export const mockAiMetricsZeroResponseData = {
       contributorsCount: 0,
       acceptedCount: 0,
       shownCount: 0,
+      acceptedLinesOfCode: 0,
+      shownLinesOfCode: 0,
     },
     codeContributorsCount: 0,
     duoChatContributorsCount: 0,

@@ -11,5 +11,7 @@ fragment AiMetricItem on AiMetrics {
     shownCount
     acceptedCount
     languages
+    acceptedLinesOfCode
+    shownLinesOfCode
   }
 }

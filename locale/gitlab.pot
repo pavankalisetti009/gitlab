@@ -15406,6 +15406,12 @@ msgstr ""
 msgid "Code snippet copied. Insert it in the correct location in the YAML file."
 msgstr ""
 
+msgid "CodeGenerationVolumeTrendsChart|Lines of code accepted"
+msgstr ""
+
+msgid "CodeGenerationVolumeTrendsChart|Lines of code shown"
+msgstr ""
+
 msgid "CodeIntelligence|This is the definition"
 msgstr ""
 
