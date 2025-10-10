@@ -16,6 +16,8 @@ module Ai
       end
 
       def execute(params)
+        return ServiceResponse.error(message: 'cannot be triggered by non-human users') unless current_user.human?
+
         note_service = ::Ai::FlowTriggers::CreateNoteService.new(
           project: project, resource: resource, author: flow_trigger_user, discussion: params[:discussion]
         )
