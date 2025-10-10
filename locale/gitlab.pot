@@ -50996,16 +50996,28 @@ msgstr ""
 msgid "ProjectFileTree|Show more"
 msgstr ""
 
+msgid "ProjectImportByURL|Check connection"
+msgstr ""
+
+msgid "ProjectImportByURL|Connection failed: %{error}"
+msgstr ""
+
+msgid "ProjectImportByURL|Connection successful."
+msgstr ""
+
+msgid "ProjectImportByURL|Enter a valid URL"
+msgstr ""
+
+msgid "ProjectImportByURL|Import repository by URL"
+msgstr ""
+
+msgid "ProjectImportByURL|The repository must be accessible over http://, https:// or git://"
+msgstr ""
+
 msgid "ProjectImport|Bitbucket Cloud"
 msgstr ""
 
 msgid "ProjectImport|Bitbucket Server"
-msgstr ""
-
-msgid "ProjectImport|Check connection"
-msgstr ""
-
-msgid "ProjectImport|Connection failed: %{error}"
 msgstr ""
 
 msgid "ProjectImport|FogBugz"
@@ -51020,16 +51032,10 @@ msgstr ""
 msgid "ProjectImport|Gitea"
 msgstr ""
 
-msgid "ProjectImport|Import repository by URL"
-msgstr ""
-
 msgid "ProjectImport|Manifest file"
 msgstr ""
 
 msgid "ProjectImport|Project URL"
-msgstr ""
-
-msgid "ProjectImport|The repository must be accessible over http://, https:// or git://"
 msgstr ""
 
 msgid "ProjectMaintenance|Afterwards, run housekeeping manually to remove old versions of the file from Git history."
