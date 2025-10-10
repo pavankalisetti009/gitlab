@@ -36339,9 +36339,6 @@ msgstr ""
 msgid "Issues|An error occurred while importing issues."
 msgstr ""
 
-msgid "Issues|Create issue"
-msgstr ""
-
 msgid "Issues|Move selected"
 msgstr ""
 
