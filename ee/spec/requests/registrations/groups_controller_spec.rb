@@ -63,16 +63,32 @@ RSpec.describe 'Project creation via Registrations::GroupsController',
           allow(Gitlab::QueryLimiting::Transaction).to receive(:threshold).and_return(157)
         end
 
+        context 'for free' do
+          it { is_expected.to redirect_to(project_learn_gitlab_path(Project.last)) }
+        end
+
         context 'for trials' do
           before do
             user.update!(onboarding_status_registration_type: 'trial')
           end
 
-          it { is_expected.to redirect_to(project_get_started_path(Project.last)) }
-        end
+          context 'with the legacy_onboarding experiment' do
+            context 'when control variant' do
+              before do
+                stub_experiments(legacy_onboarding: :control)
+              end
 
-        context 'for free' do
-          it { is_expected.to redirect_to(project_learn_gitlab_path(Project.last)) }
+              it { is_expected.to redirect_to(project_get_started_path(Project.last)) }
+            end
+
+            context 'when candidate variant' do
+              before do
+                stub_experiments(legacy_onboarding: :candidate)
+              end
+
+              it { is_expected.to redirect_to(project_learn_gitlab_path(Project.last)) }
+            end
+          end
         end
       end
 

@@ -4,6 +4,7 @@ module EE
   module Sidebars
     module Projects
       module Panel
+        include ::Gitlab::Experiment::Dsl
         extend ::Gitlab::Utils::Override
 
         override :configure_menus
@@ -41,7 +42,14 @@ module EE
           # This is most likely to only happen on the first page load and this fix can be removed
           # once fully cutover to the new design for free and trials.
           # Detect the current path and if it matches project_get_started_path(context.project) then return true
-          context.project.namespace.trial? || context.show_get_started_menu
+          return context.show_get_started_menu unless context.project.namespace.trial?
+
+          # rubocop:disable Cop/ExperimentsTestCoverage -- Returns false positive, because test file is not in location expected by cop
+          experiment(:legacy_onboarding, namespace: context.project.namespace) do |e|
+            e.control { true }
+            e.candidate { false }
+          end.run
+          # rubocop:enable Cop/ExperimentsTestCoverage
         end
       end
     end

@@ -50,18 +50,50 @@ RSpec.describe Sidebars::Projects::Panel, feature_category: :navigation do
         project.update!(namespace: group)
       end
 
-      it 'contains the menu' do
-        expect(panel).to include_menu(Sidebars::Projects::Menus::GetStartedMenu)
+      context 'when control variant' do
+        before do
+          stub_experiments(legacy_onboarding: :control)
+        end
+
+        it 'contains the GetStarted menu' do
+          expect(panel).to include_menu(Sidebars::Projects::Menus::GetStartedMenu)
+        end
+
+        it 'does not contain the LearnGitlab menu' do
+          expect(panel).not_to include_menu(Sidebars::Projects::Menus::LearnGitlabMenu)
+        end
+      end
+
+      context 'when candidate variant' do
+        before do
+          stub_experiments(legacy_onboarding: :candidate)
+        end
+
+        it 'does not contain the GetStarted menu' do
+          expect(panel).not_to include_menu(Sidebars::Projects::Menus::GetStartedMenu)
+        end
+
+        it 'contains the LearnGitlab menu' do
+          expect(panel).to include_menu(Sidebars::Projects::Menus::LearnGitlabMenu)
+        end
       end
     end
 
-    context 'when show_get_started_menu is true' do
-      before do
-        allow(context).to receive(:show_get_started_menu).and_return(true)
+    context 'when the project namespace is not on a trial' do
+      context 'when show_get_started_menu is false' do
+        it 'contains the LearnGitlab menu' do
+          expect(panel).to include_menu(Sidebars::Projects::Menus::LearnGitlabMenu)
+        end
       end
 
-      it 'contains the getting started menu' do
-        expect(panel).to include_menu(Sidebars::Projects::Menus::GetStartedMenu)
+      context 'when show_get_started_menu is true' do
+        before do
+          allow(context).to receive(:show_get_started_menu).and_return(true)
+        end
+
+        it 'contains the GetStarted menu' do
+          expect(panel).to include_menu(Sidebars::Projects::Menus::GetStartedMenu)
+        end
       end
     end
   end

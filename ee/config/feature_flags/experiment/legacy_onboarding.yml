@@ -1,0 +1,10 @@
+---
+name: legacy_onboarding
+description:
+feature_issue_url: https://gitlab.com/gitlab-org/gitlab/-/issues/572457
+introduced_by_url: https://gitlab.com/gitlab-org/gitlab/-/merge_requests/207352
+rollout_issue_url: https://gitlab.com/gitlab-org/gitlab/-/issues/573753
+milestone: '18.5'
+group: group::activation
+type: experiment
+default_enabled: false
