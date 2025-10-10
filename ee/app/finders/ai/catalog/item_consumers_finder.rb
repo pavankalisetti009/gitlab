@@ -17,7 +17,7 @@ module Ai
 
         consumers = by_container
         consumers = by_item(consumers) if item_id
-        consumers = with_item_type(consumers) if item_type
+        consumers = with_item_type(consumers) if item_types.any?
         consumers = with_parents(consumers) if container && include_inherited?
 
         consumers
@@ -45,8 +45,8 @@ module Ai
         params[:item_id]
       end
 
-      def item_type
-        params[:item_type]
+      def item_types
+        [params[:item_type], *params[:item_types]].compact
       end
 
       def include_inherited?
@@ -59,7 +59,7 @@ module Ai
       end
 
       def with_item_type(consumers)
-        consumers.with_item_type(item_type)
+        consumers.with_item_type(item_types)
       end
 
       def none

@@ -10,7 +10,8 @@ RSpec.describe 'getting consumed AI catalog items', feature_category: :workflow_
   let_it_be(:project) { create(:project, :public, developers: developer) }
   let_it_be(:catalog_agents) { create_list(:ai_catalog_agent, 2) }
   let_it_be(:catalog_flows) { create_list(:ai_catalog_flow, 2) }
-  let_it_be(:catalog_items) { [*catalog_agents, *catalog_flows] }
+  let_it_be(:catalog_third_party_flows) { create_list(:ai_catalog_third_party_flow, 2) }
+  let_it_be(:catalog_items) { [*catalog_agents, *catalog_flows, *configured_third_party_flows] }
   let_it_be(:configured_agents) do
     catalog_agents.map { |item| create(:ai_catalog_item_consumer, project: project, item: item) }
   end
@@ -19,8 +20,12 @@ RSpec.describe 'getting consumed AI catalog items', feature_category: :workflow_
     catalog_flows.map { |item| create(:ai_catalog_item_consumer, project: project, item: item) }
   end
 
+  let_it_be(:configured_third_party_flows) do
+    catalog_third_party_flows.map { |item| create(:ai_catalog_item_consumer, project: project, item: item) }
+  end
+
   let_it_be(:configured_items) do
-    [*configured_agents, *configured_flows]
+    [*configured_agents, *configured_flows, *configured_third_party_flows]
   end
 
   let(:current_user) { developer }
@@ -101,6 +106,30 @@ RSpec.describe 'getting consumed AI catalog items', feature_category: :workflow_
 
       expect(response).to have_gitlab_http_status(:success)
       expect(nodes).to match_array(configured_flows.map { |flow| a_graphql_entity_for(flow) })
+    end
+  end
+
+  context 'when filtering by item_types' do
+    let(:args) { { projectId: project_gid, item_types: %i[THIRD_PARTY_FLOW AGENT] } }
+
+    it 'returns the matching items' do
+      post_graphql(query, current_user: current_user)
+
+      expect(nodes).to match_array(
+        [*configured_agents, *configured_third_party_flows].map { |flow| a_graphql_entity_for(flow) }
+      )
+    end
+  end
+
+  context 'when filtering by item_type and item_types' do
+    let(:args) { { projectId: project_gid, item_types: [:THIRD_PARTY_FLOW], item_type: :AGENT } }
+
+    it 'returns items matching both arguments' do
+      post_graphql(query, current_user: current_user)
+
+      expect(nodes).to match_array(
+        [*configured_agents, *configured_third_party_flows].map { |flow| a_graphql_entity_for(flow) }
+      )
     end
   end
 
