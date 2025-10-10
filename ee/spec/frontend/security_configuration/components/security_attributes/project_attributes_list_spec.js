@@ -1,6 +1,6 @@
 import Vue, { nextTick } from 'vue';
 import VueApollo from 'vue-apollo';
-import { GlTableLite, GlButton, GlLabel } from '@gitlab/ui';
+import { GlTable, GlButton, GlLabel } from '@gitlab/ui';
 import { shallowMountExtended, mountExtended } from 'helpers/vue_test_utils_helper';
 import createMockApollo from 'helpers/mock_apollo_helper';
 import waitForPromises from 'helpers/wait_for_promises';
@@ -57,7 +57,7 @@ describe('ProjectAttributesList', () => {
       },
       apolloProvider,
       stubs: {
-        GlTableLite,
+        GlTable,
         GlButton,
         GlLabel,
         ProjectAttributesUpdateDrawer,
@@ -68,7 +68,7 @@ describe('ProjectAttributesList', () => {
     });
   };
 
-  const findTable = () => wrapper.findComponent(GlTableLite);
+  const findTable = () => wrapper.findComponent(GlTable);
   const findTableRows = () => findTable().findAll('tbody tr');
   const findDrawer = () => wrapper.findComponent(ProjectAttributesUpdateDrawer);
   const findEditButton = () => wrapper.findAllComponents(GlButton).at(0);

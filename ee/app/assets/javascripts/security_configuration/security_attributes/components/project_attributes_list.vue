@@ -1,5 +1,6 @@
 <script>
-import { GlTableLite, GlLabel, GlButton } from '@gitlab/ui';
+import { GlTable, GlLabel, GlButton, GlEmptyState } from '@gitlab/ui';
+import EMPTY_ATTRIBUTE_SVG from '@gitlab/svgs/dist/illustrations/empty-state/empty-labels-md.svg?url';
 import { s__, sprintf } from '~/locale';
 import { InternalEvents } from '~/tracking';
 import getProjectSecurityAttributesQuery from 'ee_component/security_configuration/graphql/project_security_attributes.query.graphql';
@@ -8,13 +9,15 @@ import ProjectAttributesUpdateDrawer from './project_attributes_update_drawer.vu
 
 export default {
   components: {
-    GlTableLite,
+    GlTable,
     GlLabel,
     GlButton,
+    GlEmptyState,
     ProjectAttributesUpdateDrawer,
   },
   mixins: [InternalEvents.mixin()],
   inject: ['projectFullPath'],
+  EMPTY_ATTRIBUTE_SVG,
   data() {
     return {
       project: {
@@ -95,11 +98,26 @@ export default {
       }}
     </p>
 
-    <gl-table-lite
+    <gl-table
       :fields="$options.fields"
       :items="project.securityAttributes.nodes"
       table-class="gl-table-fixed"
+      show-empty
     >
+      <template #empty>
+        <gl-empty-state
+          :svg-path="$options.EMPTY_ATTRIBUTE_SVG"
+          :svg-height="100"
+          :title="s__('SecurityAttributes|No security attributes added yet')"
+          :description="__('Attributes you add will appear here.')"
+        >
+          <template #actions>
+            <gl-button variant="confirm" @click="openEditDrawer">
+              {{ s__('SecurityAttributes|Add attributes') }}
+            </gl-button>
+          </template>
+        </gl-empty-state>
+      </template>
       <template #cell(name)="{ item: { name, color } }">
         <gl-label :background-color="color" :title="name" />
       </template>
@@ -108,7 +126,7 @@ export default {
           {{ s__('SecurityAttributes|Remove attribute') }}
         </gl-button>
       </template>
-    </gl-table-lite>
+    </gl-table>
 
     <project-attributes-update-drawer
       ref="updateAttributesDrawer"

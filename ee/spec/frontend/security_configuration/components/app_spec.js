@@ -16,6 +16,7 @@ import { REPORT_TYPE_CONTAINER_SCANNING_FOR_REGISTRY } from '~/vue_shared/securi
 import FeatureCard from '~/security_configuration/components/feature_card.vue';
 import ContainerScanningForRegistryFeatureCard from 'ee_component/security_configuration/components/container_scanning_for_registry_feature_card.vue';
 import ProjectSecurityAttributesList from 'ee/security_configuration/security_attributes/components/project_attributes_list.vue';
+import BetaBadge from '~/vue_shared/components/badges/beta_badge.vue';
 import LicenseInformationSourceFeatureCard from 'ee/security_configuration/components/license_information_source_feature_card.vue';
 import { stubComponent } from 'helpers/stub_component';
 
@@ -261,6 +262,7 @@ describe('~/security_configuration/components/app', () => {
 
         it('renders the tab when correctly licensed', () => {
           expect(wrapper.findComponent(ProjectSecurityAttributesList).exists()).toBe(result);
+          expect(wrapper.findComponent(BetaBadge).exists()).toBe(result);
         });
       },
     );

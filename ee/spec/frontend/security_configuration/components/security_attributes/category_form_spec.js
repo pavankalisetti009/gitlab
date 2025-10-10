@@ -6,7 +6,7 @@ import {
   GlBadge,
   GlLabel,
   GlButton,
-  GlTableLite,
+  GlTable,
   GlDisclosureDropdown,
   GlDisclosureDropdownItem,
   GlPopover,
@@ -34,7 +34,7 @@ describe('Category form', () => {
       },
       stubs: {
         GlFormGroup,
-        GlTableLite,
+        GlTable,
         GlDisclosureDropdown,
         GlDisclosureDropdownItem,
       },
@@ -137,7 +137,7 @@ describe('Category form', () => {
               attribute.name,
             );
             expect(
-              wrapper.findComponent(GlTableLite).find('tbody').findAll('tr').at(index).text(),
+              wrapper.findComponent(GlTable).find('tbody').findAll('tr').at(index).text(),
             ).toContain(attribute.description);
           });
         });
