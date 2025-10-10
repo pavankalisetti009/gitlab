@@ -279,6 +279,16 @@ RSpec.describe Ai::FlowTriggers::RunService, feature_category: :agent_foundation
         end
       end
 
+      context 'when a flow is triggered by a service account' do
+        let_it_be(:current_user) { create(:service_account, maintainer_of: project) }
+
+        it 'returns an error' do
+          response = service.execute(params)
+          expect(response).to be_error
+          expect(response.message).to eq('cannot be triggered by non-human users')
+        end
+      end
+
       context 'when token response has empty headers' do
         let(:mock_token_response_empty_headers) do
           ServiceResponse.success(payload: {
