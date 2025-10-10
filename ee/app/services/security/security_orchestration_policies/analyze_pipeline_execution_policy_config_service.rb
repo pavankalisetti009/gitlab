@@ -10,18 +10,25 @@ module Security
         unless config.valid?
           return ServiceResponse.error(
             message: "Error occurred while parsing the CI configuration: #{config.errors}",
-            payload: []
+            payload: build_payload
           )
         end
 
-        analyzers_config = extract_analyzers_from_config(config.to_hash)
+        config_hash = config.to_hash
+        analyzers_config = extract_analyzers_from_config(config_hash)
+
         scans = analyzers_config.keys & Security::MergeRequestSecurityReportGenerationService::ALLOWED_REPORT_TYPES
-        ServiceResponse.success(payload: scans)
+        variables = parse_prefill_variables(config_hash)
+        ServiceResponse.success(payload: build_payload(scans: scans, variables: variables))
       rescue StandardError => e
-        ServiceResponse.error(message: e.message, payload: [])
+        ServiceResponse.error(message: e.message, payload: build_payload)
       end
 
       private
+
+      def build_payload(scans: [], variables: {})
+        { enforced_scans: scans, prefill_variables: variables }
+      end
 
       def extract_analyzers_from_config(config)
         artifact_reports = config.select { |_key, entry| entry.is_a?(Hash) && entry[:artifacts].present? }
@@ -33,6 +40,11 @@ module Security
             obj[report_type] << path
           end
         end.with_indifferent_access
+      end
+
+      def parse_prefill_variables(config)
+        variables = config.fetch(:variables, {}).with_indifferent_access
+        variables.select { |_key, value| value.is_a?(Hash) && value[:description] }
       end
     end
   end

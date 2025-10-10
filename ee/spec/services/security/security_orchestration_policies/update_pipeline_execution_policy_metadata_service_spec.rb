@@ -3,7 +3,10 @@
 require 'spec_helper'
 
 RSpec.describe Security::SecurityOrchestrationPolicies::UpdatePipelineExecutionPolicyMetadataService, feature_category: :security_policy_management do
-  let(:service) { described_class.new(security_policy: policy, enforced_scans: enforced_scans) }
+  let(:service) do
+    described_class.new(security_policy: policy, enforced_scans: enforced_scans, prefill_variables: prefill_variables)
+  end
+
   let_it_be(:project) { create(:project) }
   let_it_be(:configuration) { create(:security_orchestration_policy_configuration, project: project) }
   let(:policy) do
@@ -14,7 +17,10 @@ RSpec.describe Security::SecurityOrchestrationPolicies::UpdatePipelineExecutionP
     subject(:execute) { service.execute }
 
     let(:enforced_scans) { %w[sast] }
-    let(:expected_metadata) { { 'enforced_scans' => enforced_scans } }
+    let(:prefill_variables) { { 'ENVIRONMENT' => { description: 'Policy environment' } } }
+    let(:expected_metadata) do
+      { 'enforced_scans' => enforced_scans, 'prefill_variables' => prefill_variables.deep_stringify_keys }
+    end
 
     it 'updates the metadata' do
       expect(execute).to be_success

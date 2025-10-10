@@ -8,10 +8,17 @@ RSpec.describe Security::SecurityOrchestrationPolicies::AnalyzePipelineExecution
   let_it_be(:user) { create(:user) }
   let(:content) do
     {
+      variables: content_variables,
       include: [
         { template: 'Jobs/Secret-Detection.gitlab-ci.yml' },
         { template: 'Jobs/Dependency-Scanning.gitlab-ci.yml' }
       ]
+    }
+  end
+
+  let(:content_variables) do
+    {
+      'ENVIRONMENT' => { value: 'staging', description: 'Value for environment.' }
     }
   end
 
@@ -20,7 +27,58 @@ RSpec.describe Security::SecurityOrchestrationPolicies::AnalyzePipelineExecution
 
     it 'extracts scanners by the declared artifacts:reports' do
       expect(execute).to be_success
-      expect(execute.payload).to eq(%w[secret_detection dependency_scanning])
+      expect(execute.payload).to eq(
+        enforced_scans: %w[secret_detection dependency_scanning],
+        prefill_variables: content[:variables].deep_stringify_keys
+      )
+    end
+
+    describe 'prefill variables' do
+      context 'when variables have mixed formats' do
+        let(:content_variables) do
+          {
+            'VAR1' => { value: 'value1', description: 'var 1' },
+            'VAR2' => { description: 'var 2' },
+            'VAR3' => { value: 'value3', options: %w[value2 value3], description: 'var 3' },
+            'VAR4' => { value: 'value4' },
+            'VAR5' => 'value5'
+          }
+        end
+
+        it 'only extracts variables with description' do
+          expect(execute.payload).to match a_hash_including(prefill_variables: {
+            'VAR1' => { value: 'value1', description: 'var 1' },
+            'VAR2' => { description: 'var 2' },
+            'VAR3' => { value: 'value3', options: %w[value2 value3], description: 'var 3' }
+          })
+        end
+      end
+
+      context 'when variables are not prefill variables' do
+        context 'when variables do not declare description' do
+          let(:content_variables) do
+            {
+              'ENVIRONMENT' => { value: 'value' }
+            }
+          end
+
+          it 'does not extract the variables' do
+            expect(execute.payload).to match a_hash_including(prefill_variables: {})
+          end
+        end
+
+        context 'when variables are not a hash' do
+          let(:content_variables) do
+            {
+              'ENVIRONMENT' => 'value'
+            }
+          end
+
+          it 'does not extract the variables' do
+            expect(execute.payload).to match a_hash_including(prefill_variables: {})
+          end
+        end
+      end
     end
 
     context 'when a job with artifacts is declared manually' do
@@ -40,7 +98,7 @@ RSpec.describe Security::SecurityOrchestrationPolicies::AnalyzePipelineExecution
 
       it 'extracts scanners by the declared artifacts:reports' do
         expect(execute).to be_success
-        expect(execute.payload).to eq(%w[secret_detection])
+        expect(execute.payload).to match(a_hash_including(enforced_scans: %w[secret_detection]))
       end
     end
 
@@ -63,7 +121,7 @@ RSpec.describe Security::SecurityOrchestrationPolicies::AnalyzePipelineExecution
 
       it 'extracts scanners without duplicates' do
         expect(execute).to be_success
-        expect(execute.payload).to eq(%w[secret_detection])
+        expect(execute.payload).to match(a_hash_including(enforced_scans: %w[secret_detection]))
       end
     end
 
@@ -83,7 +141,7 @@ RSpec.describe Security::SecurityOrchestrationPolicies::AnalyzePipelineExecution
 
       it 'returns an empty array' do
         expect(execute).to be_success
-        expect(execute.payload).to be_empty
+        expect(execute.payload).to eq(enforced_scans: [], prefill_variables: {})
       end
     end
 
@@ -99,7 +157,7 @@ RSpec.describe Security::SecurityOrchestrationPolicies::AnalyzePipelineExecution
             'Error occurred while parsing the CI configuration',
             'jobs config should contain at least one visible job'
           )
-        expect(execute.payload).to be_empty
+        expect(execute.payload).to eq(enforced_scans: [], prefill_variables: {})
       end
     end
 
@@ -113,7 +171,7 @@ RSpec.describe Security::SecurityOrchestrationPolicies::AnalyzePipelineExecution
       it 'returns an error' do
         expect(execute).to be_error
         expect(execute.message).to include('Project `invalid` not found or access denied!')
-        expect(execute.payload).to be_empty
+        expect(execute.payload).to eq(enforced_scans: [], prefill_variables: {})
       end
     end
   end

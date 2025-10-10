@@ -1177,6 +1177,53 @@ RSpec.describe Security::Policy, feature_category: :security_policy_management d
     end
   end
 
+  describe '#prefill_variables' do
+    subject(:prefill_variables) { policy.prefill_variables }
+
+    let(:policy) { build(:security_policy, :pipeline_execution_policy, metadata: metadata) }
+    let(:metadata) { { prefill_variables: { 'VAR' => { value: 'value', description: 'description' } } } }
+
+    it { is_expected.to eq('VAR' => { 'value' => 'value', 'description' => 'description' }) }
+
+    context 'when metadata is empty' do
+      let(:metadata) { {} }
+
+      it { is_expected.to eq({}) }
+    end
+
+    context 'when metadata does not contain prefill_variables' do
+      let(:metadata) { { other: 'property' } }
+
+      it { is_expected.to eq({}) }
+    end
+  end
+
+  describe '#prefill_variables=' do
+    let(:policy) { build(:security_policy, :pipeline_execution_policy, metadata: metadata) }
+    let(:metadata) { {} }
+
+    it 'updates metadata' do
+      policy.prefill_variables = { 'VAR' => { value: 'value', description: 'description' } }
+
+      expect(policy.metadata).to eq(
+        'prefill_variables' => { 'VAR' => { value: 'value', description: 'description' } }
+      )
+    end
+
+    context 'when metadata contains other properties' do
+      let(:metadata) { { other: 'property' } }
+
+      it 'updates extends metadata and keeps the other property' do
+        policy.prefill_variables = { 'VAR' => { value: 'value', description: 'description' } }
+
+        expect(policy.metadata).to eq(
+          'prefill_variables' => { 'VAR' => { value: 'value', description: 'description' } },
+          'other' => 'property'
+        )
+      end
+    end
+  end
+
   describe '#framework_ids_from_scope' do
     let_it_be(:policy) { build(:security_policy) }
 

@@ -343,6 +343,14 @@ module Security
       metadata['enforced_scans'] = scans
     end
 
+    def prefill_variables
+      metadata.fetch('prefill_variables', {})
+    end
+
+    def prefill_variables=(variables)
+      metadata['prefill_variables'] = variables
+    end
+
     def bypass_settings
       Security::ScanResultPolicies::BypassSettings.new(policy_content[:bypass_settings])
     end

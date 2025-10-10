@@ -29,7 +29,11 @@ module Security
 
       Security::Policy.id_in(security_policy_ids).find_each do |policy|
         Security::SecurityOrchestrationPolicies::UpdatePipelineExecutionPolicyMetadataService
-          .new(security_policy: policy, enforced_scans: result.payload).execute
+          .new(
+            security_policy: policy,
+            enforced_scans: result.payload[:enforced_scans],
+            prefill_variables: result.payload[:prefill_variables]
+          ).execute
       end
     end
   end
