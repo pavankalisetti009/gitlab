@@ -24,13 +24,31 @@ export const mockAgentFlowEdges = [
       status: 'RUNNING',
       humanStatus: 'running',
       updatedAt: '2024-01-02T00:00:00Z',
-      workflowDefinition: 'convert_to_ci',
+      workflowDefinition: 'convert_to_gitlab_ci',
       project: {
         id: 'gid://gitlab/Project/2',
         name: 'Another Project',
         namespace: {
           id: 'gid://gitlab/Group/1',
           name: 'gitlab-org',
+        },
+      },
+    },
+  },
+  {
+    node: {
+      __typename: 'DuoWorkflow',
+      id: 'gid://gitlab/DuoWorkflow::Workflow/3',
+      status: 'CREATED',
+      humanStatus: 'created',
+      updatedAt: '2024-01-03T00:00:00Z',
+      workflowDefinition: 'chat',
+      project: {
+        id: 'gid://gitlab/Project/3',
+        name: 'Chat Project',
+        namespace: {
+          id: 'gid://gitlab/Group/2',
+          name: 'test-group',
         },
       },
     },

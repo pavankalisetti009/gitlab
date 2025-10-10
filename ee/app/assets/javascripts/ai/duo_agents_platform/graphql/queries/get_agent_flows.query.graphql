@@ -1,6 +1,14 @@
 #import "../fragments/flow.fragment.graphql"
 
-query getAgentFlows($projectPath: ID!, $after: String, $before: String, $first: Int, $last: Int) {
+query getAgentFlows(
+  $projectPath: ID!
+  $after: String
+  $before: String
+  $first: Int
+  $last: Int
+  $sort: DuoWorkflowsWorkflowSort
+  $type: String
+) {
   project(fullPath: $projectPath) {
     id
     duoWorkflowWorkflows(
@@ -9,6 +17,8 @@ query getAgentFlows($projectPath: ID!, $after: String, $before: String, $first: 
       after: $after
       last: $last
       before: $before
+      sort: $sort
+      type: $type
     ) {
       pageInfo {
         startCursor

@@ -6,6 +6,8 @@ query getUserAgentFlows(
   $first: Int
   $last: Int
   $excludeTypes: [String!]
+  $sort: DuoWorkflowsWorkflowSort
+  $type: String
 ) {
   duoWorkflowWorkflows(
     first: $first
@@ -13,6 +15,8 @@ query getUserAgentFlows(
     last: $last
     before: $before
     excludeTypes: $excludeTypes
+    sort: $sort
+    type: $type
   ) {
     pageInfo {
       startCursor

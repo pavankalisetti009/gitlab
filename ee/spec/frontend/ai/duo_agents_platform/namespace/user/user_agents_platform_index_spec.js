@@ -57,12 +57,11 @@ describe('UserAgentsPlatformIndex', () => {
     await createWrapper();
 
     expect(findIndexComponent().props()).toMatchObject({
+      initialSort: 'UPDATED_ASC',
+      hasInitialWorkflows: expect.any(Boolean),
       isLoadingWorkflows: expect.any(Boolean),
       workflows: expect.any(Array),
       workflowsPageInfo: expect.any(Object),
-      workflowQuery: expect.objectContaining({
-        refetch: expect.any(Function),
-      }),
     });
   });
 
@@ -87,8 +86,10 @@ describe('UserAgentsPlatformIndex', () => {
         it('fetches workflows data with correct variables', () => {
           expect(getUserAgentFlowsHandler).toHaveBeenCalledTimes(1);
           expect(getUserAgentFlowsHandler).toHaveBeenCalledWith({
-            first: 20,
+            sort: 'UPDATED_ASC',
+            after: null,
             before: null,
+            first: 20,
             last: null,
             excludeTypes: ['chat'],
           });
@@ -225,8 +226,8 @@ describe('UserAgentsPlatformIndex', () => {
           createWrapper();
         });
 
-        it('returns true', () => {
-          expect(wrapper.vm.isLoadingWorkflows).toBe(true);
+        it('passes isLoadingWorkflows as true to DuoAgentsPlatformIndex', () => {
+          expect(findIndexComponent().props('isLoadingWorkflows')).toBe(true);
         });
       });
 
@@ -235,35 +236,35 @@ describe('UserAgentsPlatformIndex', () => {
           await createWrapper();
         });
 
-        it('returns false', () => {
-          expect(wrapper.vm.isLoadingWorkflows).toBe(false);
+        it('passes isLoadingWorkflows as false to DuoAgentsPlatformIndex', () => {
+          expect(findIndexComponent().props('isLoadingWorkflows')).toBe(false);
         });
       });
     });
+  });
 
-    describe('polling', () => {
-      beforeEach(async () => {
-        await createWrapper();
-      });
+  describe('polling', () => {
+    beforeEach(async () => {
+      await createWrapper();
+    });
 
-      it('polls every 10 seconds', async () => {
-        expect(getUserAgentFlowsHandler).toHaveBeenCalledTimes(1);
+    it('polls every 10 seconds', async () => {
+      expect(getUserAgentFlowsHandler).toHaveBeenCalledTimes(1);
 
-        jest.advanceTimersByTime(5000);
-        await waitForPromises();
+      jest.advanceTimersByTime(5000);
+      await waitForPromises();
 
-        expect(getUserAgentFlowsHandler).toHaveBeenCalledTimes(1);
+      expect(getUserAgentFlowsHandler).toHaveBeenCalledTimes(1);
 
-        jest.advanceTimersByTime(10000);
-        await waitForPromises();
+      jest.advanceTimersByTime(10000);
+      await waitForPromises();
 
-        expect(getUserAgentFlowsHandler).toHaveBeenCalledTimes(2);
+      expect(getUserAgentFlowsHandler).toHaveBeenCalledTimes(2);
 
-        jest.advanceTimersByTime(10000);
-        await waitForPromises();
+      jest.advanceTimersByTime(10000);
+      await waitForPromises();
 
-        expect(getUserAgentFlowsHandler).toHaveBeenCalledTimes(3);
-      });
+      expect(getUserAgentFlowsHandler).toHaveBeenCalledTimes(3);
     });
   });
 });

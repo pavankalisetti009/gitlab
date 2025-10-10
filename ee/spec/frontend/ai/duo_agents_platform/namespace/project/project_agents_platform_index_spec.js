@@ -40,12 +40,11 @@ describe('ProjectAgentsPlatformIndex', () => {
     await createWrapper();
 
     expect(findIndexComponent().props()).toMatchObject({
+      initialSort: 'UPDATED_ASC',
+      hasInitialWorkflows: expect.any(Boolean),
       isLoadingWorkflows: expect.any(Boolean),
       workflows: expect.any(Array),
       workflowsPageInfo: expect.any(Object),
-      workflowQuery: expect.objectContaining({
-        refetch: expect.any(Function),
-      }),
     });
   });
 
@@ -71,9 +70,11 @@ describe('ProjectAgentsPlatformIndex', () => {
           expect(getAgentFlowsHandler).toHaveBeenCalledTimes(1);
           expect(getAgentFlowsHandler).toHaveBeenCalledWith({
             projectPath,
+            after: null,
             before: null,
             first: 20,
             last: null,
+            sort: 'UPDATED_ASC',
           });
         });
 
@@ -82,6 +83,13 @@ describe('ProjectAgentsPlatformIndex', () => {
             mockAgentFlowsResponse.data.project.duoWorkflowWorkflows.edges.map((w) => w.node);
 
           expect(findIndexComponent().props('workflows')).toEqual(expectedWorkflows);
+        });
+
+        it('passes workflowsPageInfo to DuoAgentsPlatformIndex component', () => {
+          const expectedPageInfo =
+            mockAgentFlowsResponse.data.project.duoWorkflowWorkflows.pageInfo;
+
+          expect(findIndexComponent().props('workflowsPageInfo')).toEqual(expectedPageInfo);
         });
       });
 
@@ -102,6 +110,20 @@ describe('ProjectAgentsPlatformIndex', () => {
 
         it('passes empty array to DuoAgentsPlatformIndex component', () => {
           expect(findIndexComponent().props('workflows')).toEqual([]);
+        });
+      });
+
+      describe('when workflows query fails without error message', () => {
+        beforeEach(async () => {
+          getAgentFlowsHandler.mockRejectedValue(new Error());
+          await createWrapper();
+        });
+
+        it('calls createAlert with default error message', () => {
+          expect(createAlert).toHaveBeenCalledWith({
+            message: 'Failed to fetch workflows',
+            captureError: true,
+          });
         });
       });
 
@@ -138,6 +160,30 @@ describe('ProjectAgentsPlatformIndex', () => {
             hasPreviousPage: false,
           };
           expect(findIndexComponent().props('workflowsPageInfo')).toEqual(expectedPageInfo);
+        });
+      });
+    });
+  });
+
+  describe('computed properties', () => {
+    describe('isLoadingWorkflows', () => {
+      describe('when query is loading', () => {
+        beforeEach(() => {
+          createWrapper();
+        });
+
+        it('passes isLoadingWorkflows as true to DuoAgentsPlatformIndex', () => {
+          expect(findIndexComponent().props('isLoadingWorkflows')).toBe(true);
+        });
+      });
+
+      describe('when query is not loading', () => {
+        beforeEach(async () => {
+          await createWrapper();
+        });
+
+        it('passes isLoadingWorkflows as false to DuoAgentsPlatformIndex', () => {
+          expect(findIndexComponent().props('isLoadingWorkflows')).toBe(false);
         });
       });
     });

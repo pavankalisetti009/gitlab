@@ -24811,6 +24811,9 @@ msgstr ""
 msgid "DuoAgentsPlatform|Configuration source"
 msgstr ""
 
+msgid "DuoAgentsPlatform|Convert to gitlab ci"
+msgstr ""
+
 msgid "DuoAgentsPlatform|Could not display logs. Please try again."
 msgstr ""
 
@@ -24886,6 +24889,9 @@ msgstr ""
 msgid "DuoAgentsPlatform|Flow"
 msgstr ""
 
+msgid "DuoAgentsPlatform|Flow Name"
+msgstr ""
+
 msgid "DuoAgentsPlatform|Flow trigger created successfully."
 msgstr ""
 
@@ -24952,6 +24958,9 @@ msgstr ""
 msgid "DuoAgentsPlatform|Prompt"
 msgstr ""
 
+msgid "DuoAgentsPlatform|Raw text search is not currently supported. Please use the available search tokens."
+msgstr ""
+
 msgid "DuoAgentsPlatform|Read file"
 msgstr ""
 
@@ -24962,6 +24971,9 @@ msgid "DuoAgentsPlatform|Search"
 msgstr ""
 
 msgid "DuoAgentsPlatform|Search files"
+msgstr ""
+
+msgid "DuoAgentsPlatform|Search for a session"
 msgstr ""
 
 msgid "DuoAgentsPlatform|Search issues"
@@ -24983,6 +24995,9 @@ msgid "DuoAgentsPlatform|Select user"
 msgstr ""
 
 msgid "DuoAgentsPlatform|Service account user"
+msgstr ""
+
+msgid "DuoAgentsPlatform|Software Development"
 msgstr ""
 
 msgid "DuoAgentsPlatform|Something went wrong while fetching Agent Flows"

@@ -47,3 +47,10 @@ export const AGENT_PLATFORM_STATUS_ICON = {
     color: 'red',
   },
 };
+
+export const DEFAULT_AGENT_PLATFORM_PAGINATION_VARIABLES = {
+  first: 20,
+  before: null,
+  after: null,
+  last: null,
+};
