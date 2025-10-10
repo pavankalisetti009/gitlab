@@ -8,6 +8,115 @@ RSpec.describe GitlabSubscriptions::SubscriptionUsage, feature_category: :consum
   let(:start_date) { Date.current.beginning_of_month }
   let(:end_date) { Date.current.end_of_month }
 
+  describe '#last_updated' do
+    subject(:last_updated) { subscription_usage.last_updated }
+
+    before do
+      allow(Gitlab::SubscriptionPortal::Client).to receive(:get_subscription_usage_last_updated)
+        .and_return(client_response)
+    end
+
+    context 'when subscription_target is :namespace' do
+      let(:subscription_usage) do
+        described_class.new(
+          subscription_target: :namespace,
+          namespace: group,
+          start_date: start_date,
+          end_date: end_date
+        )
+      end
+
+      context 'when the client returns a successful response' do
+        let(:client_response) { { success: true, lastUpdated: "2025-10-01T16:19:59Z" } }
+
+        it 'calls the subscription portal client with correct parameters' do
+          last_updated
+
+          expect(Gitlab::SubscriptionPortal::Client).to have_received(:get_subscription_usage_last_updated)
+            .with(license_key: nil, namespace_id: group.id)
+        end
+
+        it 'returns the last updated time' do
+          expect(last_updated).to be("2025-10-01T16:19:59Z")
+        end
+      end
+
+      context 'when the client returns an unsuccessful response' do
+        let(:client_response) { { success: false } }
+
+        it 'returns nil' do
+          expect(last_updated).to be_nil
+        end
+      end
+
+      context 'when the client response is missing lastUpdated' do
+        let(:client_response) { { success: true, lastUpdated: nil } }
+
+        it 'returns nil' do
+          expect(last_updated).to be_nil
+        end
+      end
+
+      context 'when namespace is nil' do
+        let(:subscription_usage) do
+          described_class.new(
+            subscription_target: :namespace,
+            namespace: nil,
+            start_date: start_date,
+            end_date: end_date
+          )
+        end
+
+        let(:client_response) { { success: true, lastUpdated: "2025-10-01T16:19:59Z" } }
+
+        it 'calls the client with nil namespace_id' do
+          last_updated
+
+          expect(Gitlab::SubscriptionPortal::Client).to have_received(:get_subscription_usage_last_updated)
+            .with(license_key: nil, namespace_id: nil)
+        end
+      end
+    end
+
+    context 'when subscription_target is :instance' do
+      let(:subscription_usage) do
+        described_class.new(
+          subscription_target: :instance,
+          start_date: start_date,
+          end_date: end_date
+        )
+      end
+
+      let(:license) { create(:license) }
+      let(:client_response) { { success: true, lastUpdated: "2025-10-01T16:19:59Z" } }
+
+      before do
+        allow(License).to receive(:current).and_return(license)
+      end
+
+      it 'calls the subscription portal client with license key' do
+        last_updated
+
+        expect(Gitlab::SubscriptionPortal::Client).to have_received(:get_subscription_usage_last_updated)
+          .with(license_key: license.data, namespace_id: nil)
+      end
+
+      it 'returns the last updated time' do
+        expect(last_updated).to be("2025-10-01T16:19:59Z")
+      end
+
+      context 'when License.current is nil' do
+        before do
+          allow(License).to receive(:current).and_return(nil)
+        end
+
+        it 'handles nil license gracefully' do
+          expect { last_updated }.not_to raise_error
+        end
+      end
+    end
+  end
+
   describe '#pool_usage' do
     subject(:pool_usage) { subscription_usage.pool_usage }
 

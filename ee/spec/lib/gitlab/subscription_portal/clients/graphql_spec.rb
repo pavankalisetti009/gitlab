@@ -998,6 +998,99 @@ RSpec.describe Gitlab::SubscriptionPortal::Clients::Graphql, feature_category: :
       end
     end
 
+    describe '#get_subscription_usage_last_updated' do
+      let(:query) do
+        <<~GQL
+        query subscriptionUsage(
+          $namespaceId: ID,
+          $licenseKey: String
+        ) {
+          subscription(namespaceId: $namespaceId, licenseKey: $licenseKey) {
+            gitlabCreditsUsage {
+              lastUpdated
+            }
+          }
+        }
+        GQL
+      end
+
+      let(:params) do
+        { query: query, variables: variables }
+      end
+
+      subject(:get_subscription_usage_last_updated) do
+        client.get_subscription_usage_last_updated(
+          license_key: license_key,
+          namespace_id: namespace_id
+        )
+      end
+
+      context 'when the subscription portal response is successful' do
+        let(:portal_response) do
+          {
+            success: true,
+            data: {
+              data: {
+                subscription: {
+                  gitlabCreditsUsage: {
+                    lastUpdated: "2025-10-01T16:19:59Z"
+                  }
+                }
+              }
+            }
+          }
+        end
+
+        shared_examples 'returns successfully' do
+          it 'returns a successful response' do
+            expect(client).to receive(:execute_graphql_query_for_subscription_usage)
+              .with(params).and_return(portal_response)
+
+            expect(get_subscription_usage_last_updated).to eq({
+              success: true,
+              lastUpdated: "2025-10-01T16:19:59Z"
+            })
+          end
+        end
+
+        context 'for self-managed request' do
+          let(:namespace_id) { nil }
+          let(:license_key) { 'license_key' }
+          let(:variables) { { licenseKey: license_key } }
+
+          include_examples 'returns successfully'
+
+          include_examples 'performs request with correct params' do
+            let(:request) { get_subscription_usage_last_updated }
+            let(:admin_headers) { nil }
+          end
+        end
+
+        context 'for gitlab.com request' do
+          let(:namespace_id) { 1234 }
+          let(:license_key) { nil }
+
+          let(:variables) { { namespaceId: namespace_id } }
+
+          include_examples 'returns successfully'
+
+          include_examples 'performs request with correct params' do
+            let(:request) { get_subscription_usage_last_updated }
+            let(:admin_headers) do
+              {
+                "X-Admin-Email" => "gl_com_api@gitlab.com",
+                "X-Admin-Token" => "customer_admin_token"
+              }
+            end
+          end
+        end
+      end
+
+      include_examples 'returns error on unsuccessful subscription portal response' do
+        let(:request) { get_subscription_usage_last_updated }
+      end
+    end
+
     describe '#get_subscription_pool_usage' do
       let(:start_date) { Date.current.beginning_of_month }
       let(:end_date) { Date.current.end_of_month }
