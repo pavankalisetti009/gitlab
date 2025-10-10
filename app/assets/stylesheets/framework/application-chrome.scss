@@ -409,7 +409,7 @@
   // Scrollbar offset
   .panel-content-inner,
   .vue-portal-target .work-item-drawer {
-    @apply gl-mx-3;
+    @apply gl-px-3 gl-mx-0;
   }
 
   // Panel content
