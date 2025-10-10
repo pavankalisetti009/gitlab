@@ -204,8 +204,6 @@ export default {
       anchor: 'vulnerability-resolution-in-a-merge-request',
     }),
   },
-  // Temporarily disabling linting until docs MR is merged
-  // eslint-disable-next-line
   diffBasedScansLearnMorePath: helpPagePath('user/application_security/sast/gitlab_advanced_sast', {
     anchor: 'use-diff-based-scanning-to-improve-performance',
   }),
