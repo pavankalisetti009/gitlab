@@ -303,6 +303,136 @@ RSpec.describe Projects::UpdateService, '#execute', feature_category: :groups_an
     end
   end
 
+  context 'when changing project visibility level updates secret_push_protection_enabled' do
+    let_it_be(:user) { create(:user) }
+    let_it_be(:project) { create(:project, :public, namespace: user.namespace) }
+
+    before do
+      stub_saas_features(auto_enable_secret_push_protection_public_projects: true)
+      stub_feature_flags(auto_spp_public_com_projects: true)
+    end
+
+    context 'when project visibility changes from public to private' do
+      it 'disables secret push protection' do
+        project.security_setting.update!(secret_push_protection_enabled: true)
+
+        result = update_project(project, user, visibility_level: Gitlab::VisibilityLevel::PRIVATE)
+
+        expect(result).to eq(status: :success)
+        expect(project.reload.security_setting.secret_push_protection_enabled).to be false
+      end
+    end
+
+    context 'when project visibility changes from public to internal' do
+      it 'disables secret push protection' do
+        project.security_setting.update!(secret_push_protection_enabled: true)
+
+        result = update_project(project, user, visibility_level: Gitlab::VisibilityLevel::INTERNAL)
+
+        expect(result).to eq(status: :success)
+        expect(project.reload.security_setting.secret_push_protection_enabled).to be false
+      end
+    end
+
+    context 'when project visibility changes from private to public' do
+      let_it_be(:project) { create(:project, :private, namespace: user.namespace) }
+
+      it 'enables secret push protection' do
+        project.security_setting.update!(secret_push_protection_enabled: false)
+
+        result = update_project(project, user, visibility_level: Gitlab::VisibilityLevel::PUBLIC)
+
+        expect(result).to eq(status: :success)
+        expect(project.reload.security_setting.secret_push_protection_enabled).to be true
+      end
+    end
+
+    context 'when project visibility changes from internal to public' do
+      let_it_be(:project) { create(:project, :internal, namespace: user.namespace) }
+
+      it 'enables secret push protection' do
+        project.security_setting.update!(secret_push_protection_enabled: false)
+
+        result = update_project(project, user, visibility_level: Gitlab::VisibilityLevel::PUBLIC)
+
+        expect(result).to eq(status: :success)
+        expect(project.reload.security_setting.secret_push_protection_enabled).to be true
+      end
+    end
+
+    context 'when visibility does not change' do
+      it 'does not modify secret push protection setting' do
+        project.security_setting.update!(secret_push_protection_enabled: false)
+
+        expect do
+          update_project(project, user, name: 'New Name')
+        end.not_to change { project.reload.security_setting.secret_push_protection_enabled }
+      end
+    end
+
+    context 'when security_setting does not exist' do
+      context 'when changing visibility from public to private' do
+        let_it_be(:project) { create(:project, :public, namespace: user.namespace) }
+
+        it 'creates a security_setting with correct value based on visibility' do
+          project.security_setting.destroy!
+          project.reload
+
+          result = update_project(project, user, visibility_level: Gitlab::VisibilityLevel::PRIVATE)
+
+          expect(result).to eq(status: :success)
+          expect(project.reload.security_setting).to be_present
+          expect(project.security_setting.secret_push_protection_enabled).to be false
+        end
+      end
+
+      context 'when changing visibility from private to public' do
+        let_it_be(:project) { create(:project, :private, namespace: user.namespace) }
+
+        it 'creates a security_setting with spp enabled' do
+          project.security_setting.destroy!
+          project.reload
+          result = update_project(project, user, visibility_level: Gitlab::VisibilityLevel::PUBLIC)
+
+          expect(result).to eq(status: :success)
+          expect(project.reload.security_setting).to be_present
+          expect(project.security_setting.secret_push_protection_enabled).to be true
+        end
+      end
+
+      context 'when auto_spp_public_com_projects is disabled' do
+        before do
+          stub_feature_flags(auto_spp_public_com_projects: false)
+        end
+
+        context 'when project visibility changes from public to private' do
+          it 'does not modify secret push protection setting' do
+            project.security_setting.update!(secret_push_protection_enabled: true)
+
+            expect do
+              update_project(project, user, visibility_level: Gitlab::VisibilityLevel::PRIVATE)
+            end.not_to change { project.reload.security_setting.secret_push_protection_enabled }
+          end
+        end
+      end
+    end
+
+    context 'when not on GitLab.com' do
+      before do
+        stub_saas_features(auto_enable_secret_push_protection_public_projects: false)
+        stub_feature_flags(auto_spp_public_com_projects: true)
+      end
+
+      it 'does not modify secret push protection when visibility changes' do
+        project.security_setting.update!(secret_push_protection_enabled: true)
+
+        expect do
+          update_project(project, user, visibility_level: Gitlab::VisibilityLevel::PRIVATE)
+        end.not_to change { project.reload.security_setting.secret_push_protection_enabled }
+      end
+    end
+  end
+
   context 'when updating a default branch' do
     let_it_be(:project) { create(:project, :repository) }
 

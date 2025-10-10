@@ -1701,5 +1701,17 @@ module EE
     def update_security_inventory_filters
       Security::InventoryFilter.by_project_id(self.id).update(project_name: self.name)
     end
+
+    def create_security_setting
+      setting = { license_configuration_source: 0 }
+
+      if ::Gitlab::Saas.feature_available?(:auto_enable_secret_push_protection_public_projects) &&
+          ::Feature.enabled?(:auto_spp_public_com_projects, self) &&
+          public?
+        setting[:secret_push_protection_enabled] = true
+      end
+
+      build_security_setting(setting).save!
+    end
   end
 end
