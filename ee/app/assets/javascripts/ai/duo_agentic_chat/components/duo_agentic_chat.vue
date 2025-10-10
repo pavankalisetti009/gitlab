@@ -38,7 +38,6 @@ import { s__ } from '~/locale';
 import { WIDTH_OFFSET, DUO_AGENTIC_MODE_COOKIE } from '../../tanuki_bot/constants';
 import { WorkflowUtils } from '../utils/workflow_utils';
 import { ApolloUtils } from '../utils/apollo_utils';
-// TODO: Remove mock data when API is ready https://gitlab.com/gitlab-org/gitlab/-/work_items/566562
 
 export default {
   name: 'DuoAgenticChatApp',
