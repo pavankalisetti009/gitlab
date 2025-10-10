@@ -11,7 +11,6 @@ import * as Sentry from '~/sentry/sentry_browser_wrapper';
 import ErrorsAlert from '~/vue_shared/components/errors_alert.vue';
 import { InternalEvents } from '~/tracking';
 import aiCatalogFlowsQuery from '../graphql/queries/ai_catalog_flows.query.graphql';
-import deleteAiCatalogFlowMutation from '../graphql/mutations/delete_ai_catalog_flow.mutation.graphql';
 import createAiCatalogItemConsumer from '../graphql/mutations/create_ai_catalog_item_consumer.mutation.graphql';
 import AiCatalogListHeader from '../components/ai_catalog_list_header.vue';
 import AiCatalogList from '../components/ai_catalog_list.vue';
@@ -22,6 +21,7 @@ import {
   AI_CATALOG_FLOWS_DUPLICATE_ROUTE,
 } from '../router/constants';
 import {
+  FLOW_TYPE_APOLLO_CONFIG,
   FLOW_VISIBILITY_LEVEL_DESCRIPTIONS,
   PAGE_SIZE,
   TRACK_EVENT_VIEW_AI_CATALOG_ITEM_INDEX,
@@ -132,20 +132,23 @@ export default {
       this.aiCatalogFlowToBeAdded = flow;
     },
     async deleteFlow(item) {
-      const { id } = item;
+      const { id, itemType } = item;
+      const config = FLOW_TYPE_APOLLO_CONFIG[itemType].delete;
+
       try {
         const { data } = await this.$apollo.mutate({
-          mutation: deleteAiCatalogFlowMutation,
+          mutation: config.mutation,
           variables: {
             id,
           },
           refetchQueries: [aiCatalogFlowsQuery],
         });
 
-        if (!data.aiCatalogFlowDelete.success) {
+        const deleteResponse = data[config.responseKey];
+        if (!deleteResponse.success) {
           this.errors = [
             sprintf(s__('AICatalog|Failed to delete flow. %{error}'), {
-              error: data.aiCatalogFlowDelete.errors?.[0],
+              error: deleteResponse.errors?.[0],
             }),
           ];
           return;

@@ -94,12 +94,16 @@ export default {
     isEditMode() {
       return this.mode === 'edit';
     },
+    isFlowsAvailable() {
+      return this.glFeatures.aiCatalogFlows;
+    },
     isThirdPartyFlowsAvailable() {
       return this.glFeatures.aiCatalogThirdPartyFlows;
     },
     isThirdPartyFlow() {
       return (
-        this.isThirdPartyFlowsAvailable && this.formValues.type === AI_CATALOG_TYPE_THIRD_PARTY_FLOW
+        this.isThirdPartyFlowsAvailable &&
+        (this.formValues.type === AI_CATALOG_TYPE_THIRD_PARTY_FLOW || !this.isFlowsAvailable)
       );
     },
     allErrors() {
@@ -164,14 +168,21 @@ export default {
             },
           };
 
+      const itemTypeField =
+        this.isFlowsAvailable && this.isThirdPartyFlowsAvailable
+          ? {
+              type: {
+                label: __('Type'),
+                groupAttrs: {
+                  labelDescription: s__('AICatalog|Select the type of your flow.'),
+                },
+              },
+            }
+          : {};
+
       return {
         ...projectIdField,
-        type: {
-          label: __('Type'),
-          groupAttrs: {
-            labelDescription: s__('AICatalog|Select the type of your flow.'),
-          },
-        },
+        ...itemTypeField,
         name: {
           label: __('Name'),
           validators: createFieldValidators({

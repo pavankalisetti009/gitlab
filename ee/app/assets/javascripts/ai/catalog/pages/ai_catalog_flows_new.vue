@@ -4,9 +4,12 @@ import { getIdFromGraphQLId } from '~/graphql_shared/utils';
 import glFeatureFlagsMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
 import PageHeading from '~/vue_shared/components/page_heading.vue';
 import * as Sentry from '~/sentry/sentry_browser_wrapper';
-import createAiCatalogFlow from '../graphql/mutations/create_ai_catalog_flow.mutation.graphql';
-import createAiCatalogThirdPartyFlow from '../graphql/mutations/create_ai_catalog_third_party_flow.mutation.graphql';
 import { AI_CATALOG_FLOWS_SHOW_ROUTE } from '../router/constants';
+import {
+  FLOW_TYPE_APOLLO_CONFIG,
+  AI_CATALOG_TYPE_FLOW,
+  AI_CATALOG_TYPE_THIRD_PARTY_FLOW,
+} from '../constants';
 import AiCatalogFlowForm from '../components/ai_catalog_flow_form.vue';
 
 export default {
@@ -32,20 +35,19 @@ export default {
       this.isSubmitting = true;
       this.resetErrorMessages();
       const isThirdPartyFlow = this.isThirdPartyFlowsAvailable && input.definition;
-      const createQuery = isThirdPartyFlow ? createAiCatalogThirdPartyFlow : createAiCatalogFlow;
+      const itemType = isThirdPartyFlow ? AI_CATALOG_TYPE_THIRD_PARTY_FLOW : AI_CATALOG_TYPE_FLOW;
+      const config = FLOW_TYPE_APOLLO_CONFIG[itemType].create;
 
       try {
         const { data } = await this.$apollo.mutate({
-          mutation: createQuery,
+          mutation: config.mutation,
           variables: {
             input,
           },
         });
 
         if (data) {
-          const createResponse = isThirdPartyFlow
-            ? data.aiCatalogThirdPartyFlowCreate
-            : data.aiCatalogFlowCreate;
+          const createResponse = data[config.responseKey];
           const { errors } = createResponse;
           if (errors.length > 0) {
             this.errors = errors;

@@ -7,6 +7,7 @@ import AiCatalogStepsEditor from 'ee/ai/catalog/components/ai_catalog_steps_edit
 import AiCatalogFormSidePanel from 'ee/ai/catalog/components/ai_catalog_form_side_panel.vue';
 import FormFlowType from 'ee/ai/catalog/components/form_flow_type.vue';
 import FormProjectDropdown from 'ee/ai/catalog/components/form_project_dropdown.vue';
+import FormFlowDefinition from 'ee/ai/catalog/components/form_flow_definition.vue';
 import VisibilityLevelRadioGroup from 'ee/ai/catalog/components//visibility_level_radio_group.vue';
 import { VISIBILITY_LEVEL_PRIVATE, VISIBILITY_LEVEL_PUBLIC } from 'ee/ai/catalog/constants';
 
@@ -22,6 +23,7 @@ describe('AiCatalogFlowForm', () => {
   const findDescriptionField = () => wrapper.findByTestId('flow-form-textarea-description');
   const findSubmitButton = () => wrapper.findByTestId('flow-form-submit-button');
   const findStepsEditor = () => wrapper.findComponent(AiCatalogStepsEditor);
+  const findDefinition = () => wrapper.findComponent(FormFlowDefinition);
   const findSidePanel = () => wrapper.findComponent(AiCatalogFormSidePanel);
 
   const defaultProps = {
@@ -45,7 +47,13 @@ describe('AiCatalogFlowForm', () => {
         ...defaultProps,
         ...props,
       },
-      provide: { ...provide },
+      provide: {
+        glFeatures: {
+          aiCatalogFlows: true,
+          aiCatalogThirdPartyFlows: true,
+        },
+        ...provide,
+      },
       mocks: {
         $route: {
           params: props.mode === 'create' ? {} : routeParams,
@@ -99,6 +107,57 @@ describe('AiCatalogFlowForm', () => {
 
       it('renders flow type as disabled', () => {
         expect(findFlowType().props('disabled')).toBe(true);
+      });
+    });
+  });
+
+  describe('Flow Type Field', () => {
+    describe('when both feature flags are enabled', () => {
+      it('renders the flow type field', () => {
+        createWrapper({
+          provide: {
+            glFeatures: {
+              aiCatalogFlows: true,
+              aiCatalogThirdPartyFlows: true,
+            },
+          },
+        });
+
+        expect(findFlowType().exists()).toBe(true);
+      });
+    });
+
+    describe('when only aiCatalogFlows is enabled', () => {
+      it('does not render the flow type field', () => {
+        createWrapper({
+          provide: {
+            glFeatures: {
+              aiCatalogFlows: true,
+              aiCatalogThirdPartyFlows: false,
+            },
+          },
+        });
+
+        expect(findFlowType().exists()).toBe(false);
+        expect(findStepsEditor().exists()).toBe(true);
+        expect(findDefinition().exists()).toBe(false);
+      });
+    });
+
+    describe('when only aiCatalogThirdPartyFlows is enabled', () => {
+      it('does not render the flow type field', () => {
+        createWrapper({
+          provide: {
+            glFeatures: {
+              aiCatalogFlows: false,
+              aiCatalogThirdPartyFlows: true,
+            },
+          },
+        });
+
+        expect(findFlowType().exists()).toBe(false);
+        expect(findStepsEditor().exists()).toBe(false);
+        expect(findDefinition().exists()).toBe(true);
       });
     });
   });
