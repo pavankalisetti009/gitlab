@@ -6,7 +6,7 @@ module Ai
       include ::Services::ReturnServiceResponses
       include ::Gitlab::InternalEventsTracking
 
-      EXPIRATION_IN_MINUTES = 10
+      EXPIRATION_IN_MINUTES = 30
       BATCH_LIMIT = 1000
 
       def execute
