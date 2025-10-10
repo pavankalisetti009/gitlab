@@ -3,6 +3,8 @@
 module EE
   module PageLayoutHelper
     def duo_chat_panel_data(user, project, group)
+      group ||= user.user_preference.get_default_duo_namespace unless project
+
       user_model_selection_enabled = ::Gitlab::Llm::TanukiBot.user_model_selection_enabled?(user: user)
       chat_title = ::Ai::AmazonQ.enabled? ? s_('GitLab Duo Chat with Amazon Q') : s_('GitLab Duo Chat')
       is_agentic_available = ::Gitlab::Llm::TanukiBot.agentic_mode_available?(
