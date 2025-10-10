@@ -153,7 +153,7 @@ RSpec.describe Projects::AutocompleteService, feature_category: :groups_and_proj
         it 'contains /q merge request subcommands' do
           expect(commands).to include(a_hash_including(
             name: :q,
-            params: ['<dev | review | test>']
+            params: ['<dev | review>']
           ))
         end
       end

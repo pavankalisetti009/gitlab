@@ -27,7 +27,6 @@ module Ai
       def execute
         validate_service_account!
         validate_source!
-        validate_code_position! if command == 'test' && note.is_a?(DiffNote)
 
         add_service_account_to_project
 
@@ -75,14 +74,6 @@ module Ai
 
       def validate_source!
         Ai::AmazonQValidateCommandSourceService.new(command: command, source: source).validate
-      end
-
-      def validate_code_position!
-        position = note&.position
-
-        raise ArgumentError, "Invalid code position" if position.nil?
-        raise ArgumentError, "Invalid code position" if position.start_sha.nil? || position.head_sha.nil?
-        raise ArgumentError, "Unknown code line position" unless line_position_for_comment
       end
 
       def use_existing_thread?

@@ -1,12 +1,14 @@
 ---
 key_path: redis_hll_counters.count_distinct_user_id_from_i_quickactions_q_test
-description: Count of unique users using the /q test quickaction
+description: Count of unique users attempting the deprecated /q test quickaction (deprecated in favor of /q dev)
 product_group: ai_framework
 performance_indicator_type: []
 value_type: number
-status: active
+status: removed
 milestone: '17.8'
+milestone_removed: '18.5'
 introduced_by_url: https://gitlab.com/gitlab-org/gitlab/-/merge_requests/175919
+removed_by_url: https://gitlab.com/gitlab-org/gitlab/-/merge_requests/202130
 time_frame:
 - 7d
 - 28d

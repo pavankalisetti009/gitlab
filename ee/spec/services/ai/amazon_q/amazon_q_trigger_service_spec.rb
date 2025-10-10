@@ -126,7 +126,7 @@ RSpec.describe Ai::AmazonQ::AmazonQTriggerService, feature_category: :ai_agents 
       end
     end
 
-    context 'with test command' do
+    context 'with deprecated test command' do
       let_it_be(:diff_note) { build(:diff_note_on_merge_request, noteable: merge_request, project: project) }
       let(:command) { 'test' }
       let(:service) do
@@ -136,33 +136,14 @@ RSpec.describe Ai::AmazonQ::AmazonQTriggerService, feature_category: :ai_agents 
 
       let(:source) { merge_request }
 
-      let(:expected_payload) do
-        {
-          command: 'test',
-          source: 'merge_request',
-          merge_request_id: merge_request.id.to_s,
-          merge_request_iid: merge_request.iid.to_s,
-          note_id: "",
-          project_id: project.id.to_s,
-          project_path: project.full_path,
-          role_arn: role_arn,
-          discussion_id: diff_note.discussion_id,
-          source_branch: merge_request.source_branch,
-          target_branch: merge_request.target_branch,
-          last_commit_id: merge_request.recent_commits.first.id,
-          comment_start_line: diff_note.position.new_line.to_s,
-          comment_end_line: diff_note.position.new_line.to_s,
-          start_sha: diff_note.position.start_sha,
-          head_sha: diff_note.position.head_sha,
-          file_path: diff_note.position.new_path,
-          user_message: nil
-        }
-      end
+      it 'adds deprecation error to note' do
+        service.execute
 
-      it 'executes successfully with the right payload' do
-        expect { execution }.to change { Note.system.count }.by(1).and change { Note.user.count }.by(1)
-        expect(execution.parsed_response).to be_nil
-        expect(service.send(:payload)).to eq(expected_payload)
+        expect(diff_note.errors[:quick_action]).to include(
+          'command /q: /q test is now supported by using /q dev in an issue or merge request. ' \
+            'To generate unit tests for this MR, add an inline comment and enter /q ' \
+            'dev along with a comment about the tests you want written.'
+        )
       end
     end
 

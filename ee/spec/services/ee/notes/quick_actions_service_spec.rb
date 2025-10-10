@@ -1094,6 +1094,25 @@ RSpec.describe Notes::QuickActionsService, feature_category: :team_planning do
           expect(message).to eq('Unsupported merge request command: transform')
         end
       end
+
+      context 'when using deprecated test command for merge request' do
+        let_it_be(:note_text) { '/q test' }
+        let_it_be(:note) { create(:note_on_merge_request, project: project, noteable: merge_request, note: note_text) }
+
+        it 'returns a deprecation error' do
+          expect(::Ai::AmazonQ::AmazonQTriggerService).not_to receive(:new)
+
+          content, update_params, message, _ = service.execute(note)
+
+          expect(content).to be_blank
+          expect(update_params).to be_empty
+          expect(message).to eq(
+            '/q test is now supported by using /q dev in an issue or merge request. ' \
+              'To generate unit tests for this MR, add an inline comment and enter /q ' \
+              'dev along with a comment about the tests you want written.'
+          )
+        end
+      end
     end
   end
 end

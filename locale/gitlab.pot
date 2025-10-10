@@ -1987,6 +1987,9 @@ msgstr ""
 msgid "/day"
 msgstr ""
 
+msgid "/q test is now supported by using /q dev in an issue or merge request. To generate unit tests for this MR, add an inline comment and enter /q dev along with a comment about the tests you want written."
+msgstr ""
+
 msgid "0"
 msgstr ""
 
@@ -7450,12 +7453,6 @@ msgstr ""
 msgid "AmazonQ|Create an identity provider for this GitLab instance within AWS using the following values. %{helpStart}Learn more%{helpEnd}."
 msgstr ""
 
-msgid "AmazonQ|Create unit tests for selected lines of code in Java or Python files"
-msgstr ""
-
-msgid "AmazonQ|Create unit tests for this merge request"
-msgstr ""
-
 msgid "AmazonQ|Delete the IAM identity provider created for AI gateway."
 msgstr ""
 
@@ -7613,9 +7610,6 @@ msgid "AmazonQ|dev"
 msgstr ""
 
 msgid "AmazonQ|review"
-msgstr ""
-
-msgid "AmazonQ|test"
 msgstr ""
 
 msgid "AmazonQ|transform"
@@ -69856,6 +69850,12 @@ msgstr ""
 msgid "Unsubscribes from notifications."
 msgstr ""
 
+msgid "Unsupported issue command: %{command}"
+msgstr ""
+
+msgid "Unsupported merge request command: %{command}"
+msgstr ""
+
 msgid "Unsupported options '%{options}' for exec command '%{command}'. Only '%{supported_options}' are supported."
 msgstr ""
 
@@ -69863,6 +69863,9 @@ msgid "Unsupported signature"
 msgstr ""
 
 msgid "Unsupported sort value."
+msgstr ""
+
+msgid "Unsupported source type: %{source_class}"
 msgstr ""
 
 msgid "Unsupported todo type passed. Supported todo types are: %{todo_types}"
