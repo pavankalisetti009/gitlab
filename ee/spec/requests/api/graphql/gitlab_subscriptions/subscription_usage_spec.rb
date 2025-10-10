@@ -19,6 +19,7 @@ RSpec.describe 'Query.subscriptionUsage', feature_category: :consumables_cost_ma
 
   let(:query_fields) do
     [
+      :last_updated,
       query_graphql_field(:pool_usage, {}, [
         :total_credits,
         :credits_used,
@@ -66,6 +67,8 @@ RSpec.describe 'Query.subscriptionUsage', feature_category: :consumables_cost_ma
   before do
     stub_feature_flags(usage_billing_dev: true)
 
+    last_updated = { success: true, lastUpdated: "2025-10-01T16:19:59Z" }
+
     users_usage = User.all.map do |user|
       {
         user_id: user.id,
@@ -86,6 +89,7 @@ RSpec.describe 'Query.subscriptionUsage', feature_category: :consumables_cost_ma
     }
 
     allow(Gitlab::SubscriptionPortal::Client).to receive_messages(
+      get_subscription_usage_last_updated: last_updated,
       get_subscription_pool_usage: pool_usage,
       get_subscription_usage_for_user_ids: { success: true, usersUsage: users_usage }
     )
@@ -98,6 +102,8 @@ RSpec.describe 'Query.subscriptionUsage', feature_category: :consumables_cost_ma
       context 'when feature flag is enabled' do
         it 'returns subscription usage for instance' do
           post_graphql(query, current_user: admin)
+
+          expect(graphql_data_at(:subscription_usage, :lastUpdated)).to eq("2025-10-01T16:19:59Z")
 
           expect(graphql_data_at(:subscription_usage, :poolUsage)).to eq({
             totalCredits: 1000,
@@ -148,6 +154,8 @@ RSpec.describe 'Query.subscriptionUsage', feature_category: :consumables_cost_ma
         context 'when feature flag is enabled' do
           it 'returns subscription usage for the group' do
             post_graphql(query, current_user: owner)
+
+            expect(graphql_data_at(:subscription_usage, :lastUpdated)).to eq("2025-10-01T16:19:59Z")
 
             expect(graphql_data_at(:subscription_usage, :poolUsage)).to eq({
               totalCredits: 1000,

@@ -2,6 +2,8 @@
 
 module GitlabSubscriptions
   class SubscriptionUsage
+    include ::Gitlab::Utils::StrongMemoize
+
     PoolUsage = Struct.new(:total_credits, :credits_used, :daily_usage, :declarative_policy_subject)
     DailyUsage = Struct.new(:date, :credits_used, :declarative_policy_subject)
     UsersUsage = Struct.new(:users, :declarative_policy_subject)
@@ -20,6 +22,16 @@ module GitlabSubscriptions
     end
 
     attr_reader :namespace, :start_date, :end_date
+
+    def last_updated
+      last_updated_response = Gitlab::SubscriptionPortal::Client.get_subscription_usage_last_updated(
+        license_key: license_key,
+        namespace_id: namespace&.id
+      )
+
+      last_updated_response[:lastUpdated] if last_updated_response[:success]
+    end
+    strong_memoize_attr :last_updated
 
     def pool_usage
       pool_usage_response = Gitlab::SubscriptionPortal::Client.get_subscription_pool_usage(

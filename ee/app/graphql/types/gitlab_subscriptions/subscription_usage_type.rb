@@ -8,6 +8,10 @@ module Types
 
       authorize :read_subscription_usage
 
+      field :last_updated, GraphQL::Types::ISO8601DateTime,
+        null: true,
+        description: 'Date and time when the usage data was last updated.'
+
       field :pool_usage, SubscriptionUsage::PoolUsageType,
         null: true,
         description: 'Consumption usage for the subscription shared pool.'

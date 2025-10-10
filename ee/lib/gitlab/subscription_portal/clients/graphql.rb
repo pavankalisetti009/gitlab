@@ -328,6 +328,42 @@ module Gitlab
             end
           end
 
+          def get_subscription_usage_last_updated(
+            namespace_id: nil,
+            license_key: nil
+          )
+            query = <<~GQL
+              query subscriptionUsage(
+                $namespaceId: ID,
+                $licenseKey: String
+              ) {
+                subscription(namespaceId: $namespaceId, licenseKey: $licenseKey) {
+                  gitlabCreditsUsage {
+                    lastUpdated
+                  }
+                }
+              }
+            GQL
+
+            variables = {}
+            variables[:namespaceId] = namespace_id if namespace_id
+            variables[:licenseKey] = license_key if license_key
+
+            response = execute_graphql_query_for_subscription_usage(
+              query: query,
+              variables: variables
+            )
+
+            if response[:success]
+              {
+                success: true,
+                lastUpdated: response.dig(:data, :data, :subscription, :gitlabCreditsUsage, :lastUpdated)
+              }
+            else
+              error(response.dig(:data, :errors))
+            end
+          end
+
           def get_subscription_pool_usage(
             start_date: Date.current.beginning_of_month,
             end_date: Date.current.end_of_month,

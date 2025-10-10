@@ -30882,6 +30882,7 @@ Describes the usage of consumables under the subscription.
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
+| <a id="gitlabsubscriptionusagelastupdated"></a>`lastUpdated` | [`ISO8601DateTime`](#iso8601datetime) | Date and time when the usage data was last updated. |
 | <a id="gitlabsubscriptionusagepoolusage"></a>`poolUsage` | [`GitlabSubscriptionPoolUsage`](#gitlabsubscriptionpoolusage) | Consumption usage for the subscription shared pool. |
 | <a id="gitlabsubscriptionusageusersusage"></a>`usersUsage` | [`GitlabSubscriptionUsageUsersUsage`](#gitlabsubscriptionusageusersusage) | Consumption usage for users under the subscription. |
 
