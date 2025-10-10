@@ -164,6 +164,57 @@ RSpec.describe ProjectSecuritySetting, feature_category: :software_composition_a
     end
 
     describe 'when creating a new project' do
+      context 'on GitLab.com' do
+        before do
+          stub_saas_features(auto_enable_secret_push_protection_public_projects: true)
+          stub_feature_flags(auto_spp_public_com_projects: true)
+        end
+
+        context 'when public project' do
+          it 'enables SPP by default' do
+            project = create(:project, :public)
+            expect(project.security_setting.secret_push_protection_enabled).to be(true)
+          end
+        end
+
+        context 'when private project' do
+          it 'does not enable SPP by default' do
+            project = create(:project, :private)
+            expect(project.security_setting.secret_push_protection_enabled).to be(false)
+          end
+        end
+      end
+
+      context 'when auto_spp_public_com_projects is disabled' do
+        before do
+          stub_feature_flags(auto_spp_public_com_projects: false)
+        end
+
+        context 'when public project' do
+          it 'does not enable SPP by default' do
+            project = create(:project, :public)
+            expect(project.security_setting.secret_push_protection_enabled).to be(false)
+          end
+        end
+      end
+
+      context 'on self-managed or Dedicated' do
+        before do
+          stub_saas_features(auto_enable_secret_push_protection_public_projects: false)
+          stub_feature_flags(auto_spp_public_com_projects: true)
+        end
+
+        it 'does not enable SPP by default for public projects' do
+          project = create(:project, :public)
+          expect(project.security_setting.secret_push_protection_enabled).to be(false)
+        end
+
+        it 'does not enable SPP by default for private projects' do
+          project = create(:project, :private)
+          expect(project.security_setting.secret_push_protection_enabled).to be(false)
+        end
+      end
+
       it 'schedules SettingChangedUpdateWorker worker for each analyzer status related type' do
         expect(Security::AnalyzersStatus::SettingChangedUpdateWorker)
           .to receive(:perform_async).with(anything, 'container_scanning')

@@ -48,6 +48,8 @@ module EE
 
           log_audit_events
 
+          update_secret_push_protection_on_visibility_change if project.visibility_level_previously_changed?
+
           sync_wiki_on_enable if !wiki_was_enabled && project.wiki_enabled?
           project.import_state.force_import_job! if params[:mirror].present? && project.mirror?
           project.remove_import_data if project.previous_changes.include?('mirror') && !project.mirror?
@@ -253,6 +255,20 @@ module EE
 
       def non_assignable_project_params
         super + [:amazon_q_auto_review_enabled]
+      end
+
+      def update_secret_push_protection_on_visibility_change
+        return unless ::Gitlab::Saas.feature_available?(:auto_enable_secret_push_protection_public_projects)
+
+        return unless ::Feature.enabled?(:auto_spp_public_com_projects, project)
+
+        security_setting = project.security_setting
+
+        if security_setting
+          security_setting.update!(secret_push_protection_enabled: project.public?)
+        else
+          project.create_security_setting!(secret_push_protection_enabled: project.public?)
+        end
       end
     end
   end

@@ -47,6 +47,7 @@ module EE
           repositories_web_based_commit_signing
           security_scans_api
           admin_homepage
+          auto_enable_secret_push_protection_public_projects
         ].freeze
 
       CONFIG_FILE_ROOT = 'ee/config/saas_features'
