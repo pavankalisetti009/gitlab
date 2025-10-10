@@ -65,14 +65,17 @@ RSpec.describe Security::SyncPipelineExecutionPolicyMetadataWorker, '#perform', 
 
       expect(policy.reload.metadata).to match("enforced_scans" => an_array_matching(
         %w[secret_detection dependency_scanning container_scanning sast]
-      ))
+      ), "prefill_variables" => {})
     end
 
     it 'calls AnalyzePipelineExecutionPolicyConfigService and UpdatePipelineExecutionPolicyMetadataService' do
       expect_next_instance_of(
         Security::SecurityOrchestrationPolicies::AnalyzePipelineExecutionPolicyConfigService
       ) do |service|
-        expect(service).to receive(:execute).and_return(ServiceResponse.success(payload: %w[sast]))
+        expect(service).to receive(:execute).and_return(
+          ServiceResponse.success(payload: { enforced_scans: %w[sast],
+                                             prefill_variables: { 'VAR' => { description: 'desc' } } })
+        )
       end
 
       update_metadata_service = instance_double(
@@ -80,7 +83,11 @@ RSpec.describe Security::SyncPipelineExecutionPolicyMetadataWorker, '#perform', 
         execute: ServiceResponse.success
       )
       expect(Security::SecurityOrchestrationPolicies::UpdatePipelineExecutionPolicyMetadataService)
-        .to receive(:new).with(security_policy: policy, enforced_scans: %w[sast]).and_return(update_metadata_service)
+        .to receive(:new).with(
+          security_policy: policy,
+          enforced_scans: %w[sast],
+          prefill_variables: { 'VAR' => { description: 'desc' } }
+        ).and_return(update_metadata_service)
       expect(update_metadata_service).to receive(:execute)
 
       perform
@@ -91,7 +98,10 @@ RSpec.describe Security::SyncPipelineExecutionPolicyMetadataWorker, '#perform', 
         allow_next_instance_of(
           Security::SecurityOrchestrationPolicies::AnalyzePipelineExecutionPolicyConfigService
         ) do |service|
-          allow(service).to receive(:execute).and_return(ServiceResponse.error(message: 'error', payload: []))
+          allow(service)
+            .to receive(:execute).and_return(
+              ServiceResponse.error(message: 'error', payload: { enforced_scans: [], prefill_variables: {} })
+            )
         end
       end
 
@@ -108,7 +118,7 @@ RSpec.describe Security::SyncPipelineExecutionPolicyMetadataWorker, '#perform', 
       it 'persists empty array as metadata' do
         perform
 
-        expect(policy.reload.metadata).to eq("enforced_scans" => [])
+        expect(policy.reload.metadata).to eq("enforced_scans" => [], "prefill_variables" => {})
       end
     end
   end
@@ -117,7 +127,7 @@ RSpec.describe Security::SyncPipelineExecutionPolicyMetadataWorker, '#perform', 
     it 'persists empty array as metadata' do
       perform
 
-      expect(policy.reload.metadata).to eq("enforced_scans" => [])
+      expect(policy.reload.metadata).to eq("enforced_scans" => [], "prefill_variables" => {})
     end
 
     it 'logs the error' do
