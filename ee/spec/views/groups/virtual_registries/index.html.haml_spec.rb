@@ -17,7 +17,7 @@ RSpec.describe 'groups/virtual_registries/index', feature_category: :virtual_reg
       current_user: user,
       can?: false,
       can_create_virtual_registry?: false,
-      registry_types: registry_types(group, registry_types_with_counts)
+      registry_types: registry_types(group)
     )
   end
 
@@ -31,7 +31,8 @@ RSpec.describe 'groups/virtual_registries/index', feature_category: :virtual_reg
     render
 
     expect(rendered).to have_text('Maven')
-    expect(rendered).to have_link('View 3 registries')
+    expect(rendered).to have_link('View registries',
+      href: group_virtual_registries_maven_registries_and_upstreams_path(group))
   end
 
   context 'when user can create virtual registry' do
