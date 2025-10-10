@@ -19,6 +19,7 @@ import AddUpstream from './add_upstream.vue';
 import LinkUpstreamForm from './link_upstream_form.vue';
 import RegistryUpstreamItem from './registry_upstream_item.vue';
 import RegistryUpstreamForm from './maven/shared/registry_upstream_form.vue';
+import UpstreamClearCacheModal from './maven/shared/upstream_clear_cache_modal.vue';
 
 const FORM_TYPES = {
   CREATE: 'create',
@@ -39,6 +40,7 @@ export default {
     LinkUpstreamForm,
     RegistryUpstreamItem,
     RegistryUpstreamForm,
+    UpstreamClearCacheModal,
   },
   mixins: [glAbilitiesMixin()],
   inject: {
@@ -128,12 +130,8 @@ export default {
     queriesInProgress() {
       return this.topLevelUpstreamsQueryInProgress || this.loading;
     },
-    clearUpstreamCacheModalTitle() {
-      if (!this.upstreamClearCacheModalIsShown) return '';
-
-      return sprintf(s__('VirtualRegistry|Clear cache for %{upstreamName}?'), {
-        upstreamName: this.upstreamToBeCleared.name,
-      });
+    upstreamNameForClearCache() {
+      return this.upstreamToBeCleared?.name ?? '';
     },
     upstreamsCountBadgeText() {
       return sprintf(s__('VirtualRegistry|%{count} of %{max}'), {
@@ -416,23 +414,12 @@ export default {
             )
           }}
         </gl-modal>
-        <gl-modal
+        <upstream-clear-cache-modal
           v-model="upstreamClearCacheModalIsShown"
-          data-testid="clear-upstream-cache-modal"
-          modal-id="clear-upstream-cache-modal"
-          size="sm"
-          :title="clearUpstreamCacheModalTitle"
-          :action-primary="$options.modal.primaryAction"
-          :action-cancel="$options.modal.cancelAction"
-          @canceled="hideUpstreamClearCacheModal"
+          :upstream-name="upstreamNameForClearCache"
           @primary="clearUpstreamCache"
-        >
-          {{
-            s__(
-              'VirtualRegistry|This will delete all cached packages for this upstream and re-fetch them from the source. If the upstream is unavailable or misconfigured, jobs might fail. Are you sure you want to continue?',
-            )
-          }}
-        </gl-modal>
+          @canceled="hideUpstreamClearCacheModal"
+        />
       </div>
       <p v-else class="gl-text-subtle">
         {{ s__('VirtualRegistry|No upstreams yet') }}

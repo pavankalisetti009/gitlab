@@ -1,8 +1,19 @@
-import { GlButton, GlSkeletonLoader, GlTable, GlTruncate } from '@gitlab/ui';
+import { GlSkeletonLoader, GlTable, GlTruncate } from '@gitlab/ui';
 import { mountExtended } from 'helpers/vue_test_utils_helper';
+import waitForPromises from 'helpers/wait_for_promises';
 import MavenUpstreamsTable from 'ee/packages_and_registries/virtual_registries/components/maven/registries_and_upstreams/upstreams_table.vue';
+import UpstreamClearCacheModal from 'ee/packages_and_registries/virtual_registries/components/maven/shared/upstream_clear_cache_modal.vue';
+import { captureException } from 'ee/packages_and_registries/virtual_registries/sentry_utils';
+import { deleteMavenUpstreamCache } from 'ee/api/virtual_registries_api';
 import { convertObjectPropsToCamelCase } from '~/lib/utils/common_utils';
 import { mockUpstreams } from '../../../mock_data';
+
+jest.mock('ee/packages_and_registries/virtual_registries/sentry_utils', () => ({
+  captureException: jest.fn(),
+}));
+jest.mock('ee/api/virtual_registries_api', () => ({
+  deleteMavenUpstreamCache: jest.fn(),
+}));
 
 describe('MavenUpstreamsTable', () => {
   let wrapper;
@@ -23,8 +34,15 @@ describe('MavenUpstreamsTable', () => {
   const findTable = () => wrapper.findComponent(GlTable);
   const findSkeletonLoader = () => wrapper.findComponent(GlSkeletonLoader);
   const findUpstreamLinks = () => wrapper.findAllByTestId('upstream-name');
-  const findEditButtons = () => wrapper.findAllComponents(GlButton);
+  const findEditButtons = () => wrapper.findAllByTestId('edit-upstream-button');
+  const findClearCacheButtons = () => wrapper.findAllByTestId('clear-cache-button');
   const findTruncateComponents = () => wrapper.findAllComponents(GlTruncate);
+  const findUpstreamClearCacheModal = () => wrapper.findComponent(UpstreamClearCacheModal);
+  const findCacheValidityHoursElement = () => wrapper.findByTestId('cache-validity-hours');
+  const findMetadataCacheValidityHoursElement = () =>
+    wrapper.findByTestId('metadata-cache-validity-hours');
+
+  const showToastSpy = jest.fn();
 
   const createComponent = ({ props = {}, provide = {} } = {}) => {
     wrapper = mountExtended(MavenUpstreamsTable, {
@@ -35,6 +53,11 @@ describe('MavenUpstreamsTable', () => {
       provide: {
         ...defaultProvide,
         ...provide,
+      },
+      mocks: {
+        $toast: {
+          show: showToastSpy,
+        },
       },
     });
   };
@@ -87,16 +110,25 @@ describe('MavenUpstreamsTable', () => {
     });
 
     it('displays cache validity hours correctly', () => {
-      expect(wrapper.findByTestId('cache-validity-hours').text()).toBe('Artifact cache: 24 hours');
+      expect(findCacheValidityHoursElement().text()).toBe('Artifact cache: 24 hours');
     });
 
     it('displays metadata cache validity hours correctly', () => {
-      expect(wrapper.findByTestId('metadata-cache-validity-hours').text()).toBe(
-        'Metadata cache: 12 hours',
-      );
+      expect(findMetadataCacheValidityHoursElement().text()).toBe('Metadata cache: 12 hours');
     });
 
-    it('renders edit buttons when user has permissions', () => {
+    it('renders clear cache button when user has permission', () => {
+      const clearCacheButtons = findClearCacheButtons();
+
+      expect(clearCacheButtons).toHaveLength(2);
+      expect(clearCacheButtons.at(0).props()).toMatchObject({
+        size: 'small',
+        category: 'tertiary',
+      });
+      expect(clearCacheButtons.at(0).text()).toBe('Clear cache');
+    });
+
+    it('renders edit button link when user has permission', () => {
       const editButtons = findEditButtons();
 
       expect(editButtons).toHaveLength(2);
@@ -109,7 +141,7 @@ describe('MavenUpstreamsTable', () => {
       expect(editButtons.at(0).attributes('aria-label')).toBe('Edit upstream Maven Central');
     });
 
-    it('does not render edit buttons when user lacks permissions', () => {
+    it('does not render action buttons when user lacks permissions', () => {
       createComponent({
         provide: {
           glAbilities: {
@@ -118,7 +150,15 @@ describe('MavenUpstreamsTable', () => {
         },
       });
 
+      expect(findClearCacheButtons()).toHaveLength(0);
       expect(findEditButtons()).toHaveLength(0);
+    });
+
+    it('does not render upstream clear cache modal', () => {
+      expect(findUpstreamClearCacheModal().props()).toStrictEqual({
+        visible: false,
+        upstreamName: '',
+      });
     });
   });
 
@@ -148,10 +188,79 @@ describe('MavenUpstreamsTable', () => {
         },
       });
 
-      expect(wrapper.findByTestId('cache-validity-hours').text()).toBe('Artifact cache: 1 hour');
-      expect(wrapper.findByTestId('metadata-cache-validity-hours').text()).toBe(
-        'Metadata cache: 1 hour',
-      );
+      expect(findCacheValidityHoursElement().text()).toBe('Artifact cache: 1 hour');
+      expect(findMetadataCacheValidityHoursElement().text()).toBe('Metadata cache: 1 hour');
+    });
+  });
+
+  describe('clear upstream cache action', () => {
+    beforeEach(() => {
+      deleteMavenUpstreamCache.mockReset();
+      showToastSpy.mockReset();
+    });
+
+    it('shows modal when clear cache button is clicked', async () => {
+      createComponent();
+
+      await findClearCacheButtons().at(0).vm.$emit('click');
+
+      expect(findUpstreamClearCacheModal().props()).toStrictEqual({
+        visible: true,
+        upstreamName: 'Maven Central',
+      });
+    });
+
+    it('hides modal when canceled', async () => {
+      createComponent();
+
+      await findClearCacheButtons().at(0).vm.$emit('click');
+      await findUpstreamClearCacheModal().vm.$emit('canceled');
+
+      expect(findUpstreamClearCacheModal().props()).toStrictEqual({
+        visible: false,
+        upstreamName: '',
+      });
+    });
+
+    describe('when API succeeds', () => {
+      beforeEach(() => {
+        deleteMavenUpstreamCache.mockResolvedValue();
+        createComponent();
+      });
+
+      it('calls API with correct parameters and shows success toast', async () => {
+        await findClearCacheButtons().at(0).vm.$emit('click');
+        await findUpstreamClearCacheModal().vm.$emit('primary');
+
+        expect(deleteMavenUpstreamCache).toHaveBeenCalledWith({ id: 1 });
+
+        await waitForPromises();
+
+        expect(showToastSpy).toHaveBeenCalledWith('Upstream cache cleared successfully.');
+        expect(findUpstreamClearCacheModal().props('visible')).toBe(false);
+        expect(captureException).not.toHaveBeenCalled();
+      });
+    });
+
+    describe('when API fails', () => {
+      it('shows error message', async () => {
+        const mockError = new Error('API Error');
+        deleteMavenUpstreamCache.mockRejectedValue(mockError);
+
+        createComponent();
+
+        await findClearCacheButtons().at(0).vm.$emit('click');
+        await findUpstreamClearCacheModal().vm.$emit('primary');
+
+        await waitForPromises();
+
+        expect(findUpstreamClearCacheModal().props('visible')).toBe(false);
+        expect(showToastSpy).toHaveBeenCalledWith('Failed to clear upstream cache. Try again.');
+        expect(captureException).toHaveBeenCalledWith({
+          error: mockError,
+          component: 'MavenUpstreamsTable',
+        });
+      });
     });
   });
 });

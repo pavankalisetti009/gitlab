@@ -10,6 +10,7 @@ import AddUpstream from 'ee/packages_and_registries/virtual_registries/component
 import LinkUpstreamForm from 'ee/packages_and_registries/virtual_registries/components/link_upstream_form.vue';
 import RegistryUpstreamItem from 'ee/packages_and_registries/virtual_registries/components/registry_upstream_item.vue';
 import RegistryUpstreamForm from 'ee/packages_and_registries/virtual_registries/components/maven/shared/registry_upstream_form.vue';
+import UpstreamClearCacheModal from 'ee/packages_and_registries/virtual_registries/components/maven/shared/upstream_clear_cache_modal.vue';
 import { captureException } from 'ee/packages_and_registries/virtual_registries/sentry_utils';
 import createUpstreamRegistryMutation from 'ee/packages_and_registries/virtual_registries/graphql/mutations/create_maven_upstream.mutation.graphql';
 import {
@@ -84,7 +85,7 @@ describe('MavenRegistryDetailsApp', () => {
   const findClearRegistryCacheButton = () => wrapper.findByTestId('clear-registry-cache-button');
   const findCrudComponent = () => wrapper.findComponent(CrudComponent);
   const findClearRegistryCacheModal = () => wrapper.findByTestId('clear-registry-cache-modal');
-  const findClearUpstreamCacheModal = () => wrapper.findByTestId('clear-upstream-cache-modal');
+  const findUpstreamClearCacheModal = () => wrapper.findComponent(UpstreamClearCacheModal);
   const findCreateUpstreamForm = () => wrapper.findComponent(RegistryUpstreamForm);
   const findLinkUpstreamForm = () => wrapper.findComponent(LinkUpstreamForm);
   const findCreateUpstreamErrorAlert = () => wrapper.findComponent(GlAlert);
@@ -195,7 +196,7 @@ describe('MavenRegistryDetailsApp', () => {
     });
 
     it('hides the upstream clear cache modal', () => {
-      expect(findClearUpstreamCacheModal().props('visible')).toBe(false);
+      expect(findUpstreamClearCacheModal().props('visible')).toBe(false);
     });
   });
 
@@ -646,20 +647,10 @@ describe('MavenRegistryDetailsApp', () => {
       const upstreamItems = findUpstreamItems();
       await upstreamItems.at(0).vm.$emit('clearCache', upstreams[0]);
 
-      expect(findClearUpstreamCacheModal().props()).toMatchObject({
+      expect(findUpstreamClearCacheModal().props()).toStrictEqual({
         visible: true,
-        title: 'Clear cache for Maven upstream?',
-        size: 'sm',
-        modalId: 'clear-upstream-cache-modal',
-        actionPrimary: {
-          text: 'Clear cache',
-          attributes: { variant: 'danger', category: 'primary' },
-        },
-        actionCancel: { text: 'Cancel' },
+        upstreamName: 'Maven upstream',
       });
-      expect(findClearUpstreamCacheModal().text()).toBe(
-        'This will delete all cached packages for this upstream and re-fetch them from the source. If the upstream is unavailable or misconfigured, jobs might fail. Are you sure you want to continue?',
-      );
     });
 
     it('hides modal on cancel', () => {
@@ -668,9 +659,9 @@ describe('MavenRegistryDetailsApp', () => {
       const upstreamItems = findUpstreamItems();
       upstreamItems.at(0).vm.$emit('clearCache', upstreams[0]);
 
-      findClearUpstreamCacheModal().vm.$emit('canceled');
+      findUpstreamClearCacheModal().vm.$emit('canceled');
 
-      expect(findClearUpstreamCacheModal().props('visible')).toBe(false);
+      expect(findUpstreamClearCacheModal().props('visible')).toBe(false);
     });
 
     describe('when modal is confirmed', () => {
@@ -680,7 +671,7 @@ describe('MavenRegistryDetailsApp', () => {
         const upstreamItems = findUpstreamItems();
 
         upstreamItems.at(0).vm.$emit('clearCache', upstreams[0]);
-        findClearUpstreamCacheModal().vm.$emit('primary');
+        findUpstreamClearCacheModal().vm.$emit('primary');
       });
 
       it('calls the right arguments', () => {
@@ -706,7 +697,7 @@ describe('MavenRegistryDetailsApp', () => {
         const upstreamItems = findUpstreamItems();
 
         upstreamItems.at(0).vm.$emit('clearCache', upstreams[0]);
-        findClearUpstreamCacheModal().vm.$emit('primary');
+        findUpstreamClearCacheModal().vm.$emit('primary');
 
         await waitForPromises();
 
