@@ -6,12 +6,9 @@ import EdgeCasesSection from 'ee/security_orchestration/components/policy_editor
 describe('EdgeCasesSection', () => {
   let wrapper;
 
-  const createComponent = (propsData = {}, featureFlags = {}) => {
+  const createComponent = (propsData = {}) => {
     wrapper = shallowMount(EdgeCasesSection, {
       propsData: { policyTuning: { unblock_rules_using_execution_policies: false }, ...propsData },
-      provide: {
-        glFeatures: { approvalPolicyTimeWindow: true, ...featureFlags },
-      },
     });
   };
 
@@ -115,15 +112,6 @@ describe('EdgeCasesSection', () => {
 
       findTimeWindowInput().vm.$emit('input', '10081');
       expect(wrapper.emitted('changed')).toBeUndefined();
-    });
-  });
-
-  describe('disabled feature flags', () => {
-    it('does not render time window setting when flag is disabled', () => {
-      createComponent({ featureFlags: { approvalPolicyTimeWindow: false } });
-
-      expect(findTimeWindowInput().exists()).toBe(false);
-      expect(findTimeWindowGroup().exists()).toBe(false);
     });
   });
 });

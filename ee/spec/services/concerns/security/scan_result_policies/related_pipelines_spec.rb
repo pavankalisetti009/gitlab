@@ -239,34 +239,6 @@ RSpec.describe Security::ScanResultPolicies::RelatedPipelines, feature_category:
           expect(target_pipeline).to eq(latest_pipeline)
         end
       end
-
-      context 'when approval_policy_time_window feature is disabled' do
-        before do
-          stub_feature_flags(approval_policy_time_window: false)
-          approval_rule.update!(approval_policy_rule: approval_policy_rule)
-        end
-
-        let_it_be(:approval_policy_rule) do
-          create(:approval_policy_rule, :scan_finding).tap do |rule|
-            rule.security_policy.update!(
-              content: {
-                policy_tuning: { security_report_time_window: 1440 }
-              }
-            )
-          end
-        end
-
-        it 'ignores the time window and returns the latest target branch pipeline' do
-          latest_pipeline = create(:ee_ci_pipeline, :success,
-            pipeline_report_type,
-            project: project,
-            ref: merge_request.target_branch,
-            sha: merge_request.diff_base_sha
-          )
-
-          expect(target_pipeline).to eq(latest_pipeline)
-        end
-      end
     end
 
     context 'when report_type is scan_finding' do
