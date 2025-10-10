@@ -80,7 +80,10 @@ module Registrations
 
     def learn_gitlab_path(project)
       if onboarding_status_presenter.learn_gitlab_redesign?
-        project_get_started_path(project)
+        experiment(:legacy_onboarding, namespace: project.namespace) do |e|
+          e.control { project_get_started_path(project) }
+          e.candidate { project_learn_gitlab_path(project) }
+        end.run
       else
         project_learn_gitlab_path(project)
       end
