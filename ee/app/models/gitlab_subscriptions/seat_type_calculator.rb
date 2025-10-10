@@ -38,9 +38,9 @@ module GitlabSubscriptions
 
         user = resolve_user(user)
         tier = subscription_tier(root_namespace)
-        access_level = find_highest_membership(user, root_namespace)&.access_level
+        membership_details = seat_assignable_member_details(user, root_namespace)[user.id]
 
-        calculate_seat_type(user, tier, access_level)
+        calculate_seat_type(user, tier, membership_details)
       end
 
       def bulk_execute(users, root_namespace)
@@ -48,10 +48,11 @@ module GitlabSubscriptions
 
         users = resolve_users(users)
         tier = subscription_tier(root_namespace)
-        access_levels = Member.seat_assignable_highest_access_levels(users: users, namespace: root_namespace)
+        membership_details_by_user_id = seat_assignable_member_details(users, root_namespace)
 
         users.compact.each_with_object({}) do |user, hash|
-          hash[user.id] = calculate_seat_type(user, tier, access_levels[user.id])
+          membership_details = membership_details_by_user_id[user.id]
+          hash[user.id] = calculate_seat_type(user, tier, membership_details)
         end
       end
 
@@ -69,15 +70,25 @@ module GitlabSubscriptions
         ::Gitlab::Saas.feature_available?(:gitlab_com_subscriptions)
       end
 
-      def find_highest_membership(user, root_namespace)
-        Member.seat_assignable(users: user, namespace: root_namespace).order_access_level_desc.first
+      def seat_assignable_member_details(users, root_namespace)
+        Member.seat_assignable(users: users, namespace: root_namespace)
+          .left_joins(:member_role)
+          .group(:user_id)
+          .select(
+            :user_id,
+            "MAX(members.access_level) AS max_access_level",
+            "COALESCE(BOOL_OR(member_roles.occupies_seat), false) AS has_billable_custom_role"
+          )
+          .index_by(&:user_id)
       end
 
-      def calculate_seat_type(user, tier, access_level)
-        return unless access_level
+      def calculate_seat_type(user, tier, membership_details)
+        return unless membership_details
         return SYSTEM_SEAT if user.bot?
         return BASE_SEAT if tier == FREE_TIER
+        return BASE_SEAT if billable_custom_role?(tier, membership_details)
 
+        access_level = membership_details.max_access_level
         SEAT_TYPE_MAPPINGS.dig(tier, access_level)
       end
 
@@ -85,6 +96,10 @@ module GitlabSubscriptions
         return FREE_TIER if root_namespace.free_plan?
 
         root_namespace.exclude_guests? ? ULTIMATE_TIER : PREMIUM_TIER
+      end
+
+      def billable_custom_role?(tier, membership_details)
+        tier == ULTIMATE_TIER && membership_details.has_billable_custom_role
       end
     end
   end
