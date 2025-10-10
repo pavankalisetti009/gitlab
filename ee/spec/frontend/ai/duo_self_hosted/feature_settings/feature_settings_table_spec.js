@@ -13,7 +13,7 @@ describe('FeatureSettingsTable', () => {
 
   const createComponent = (props = {}) => {
     wrapper = mountExtended(FeatureSettingsTable, {
-      provide: { showVendoredModelOption: false },
+      provide: { showVendoredModelOption: false, isDedicatedInstance: false },
       propsData: {
         featureSettings: mockCodeSuggestionsFeatureSettings,
         isLoading: false,

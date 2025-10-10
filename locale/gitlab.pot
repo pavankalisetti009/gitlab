@@ -4932,6 +4932,9 @@ msgstr ""
 msgid "AdminSelfHostedModels|Assign a model to enable this feature"
 msgstr ""
 
+msgid "AdminSelfHostedModels|Configure and assign GitLab managed models to AI-native features."
+msgstr ""
+
 msgid "AdminSelfHostedModels|Configure and assign self-hosted models or GitLab managed models to AI-native features."
 msgstr ""
 

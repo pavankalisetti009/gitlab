@@ -148,6 +148,7 @@ describe('ModelSelector', () => {
         apolloProvider: mockApollo,
         provide: {
           showVendoredModelOption: true,
+          isDedicatedInstance: false,
           ...injectedProps,
         },
         propsData: {
@@ -186,129 +187,148 @@ describe('ModelSelector', () => {
   });
 
   describe('.listItems', () => {
-    describe('for self-hosted models', () => {
-      it('contains a list of options sorted by release state', () => {
-        createComponent();
+    it('renders model selector dropdown footer', () => {
+      createComponent();
+      expect(findModelSelectDropdown().props('isFeatureSettingDropdown')).toBe(true);
+    });
 
-        const modelOptions = findModelSelectDropdown().props('items');
-        const selfHostedModelsOptions = modelOptions[0].options;
-
-        expect(
-          selfHostedModelsOptions.map(({ text, releaseState }) => {
-            const withReleaseState = releaseState ? [releaseState] : [];
-            return [text, ...withReleaseState];
-          }),
-        ).toEqual([
-          ['Model 1 (Mistral)', 'GA'],
-          ['Model 4 (GPT)', 'GA'],
-          ['Model 5 (Claude)', 'GA'],
-          ['Model 2 (Code Llama)', 'BETA'],
-          ['Model 3 (CodeGemma)', 'BETA'],
-          ['GitLab AI vendor model'],
-          ['Disabled'],
-        ]);
-      });
-
-      describe('when showVendoredModelOption is false', () => {
-        it('does not include vendored option in options list', () => {
-          createComponent({
-            injectedProps: {
-              showVendoredModelOption: false,
-            },
-          });
-
-          expect(findVendoredModelOption()).toBeUndefined();
+    describe('with Dedicated instance', () => {
+      beforeEach(() => {
+        createComponent({
+          injectedProps: {
+            isDedicatedInstance: true,
+          },
         });
       });
 
-      describe('when feature is Duo Agent Platform', () => {
-        it('does not include vendored option in options list', () => {
-          createComponent({
-            injectedProps: {
-              showVendoredModelOption: true,
-            },
-            props: {
-              aiFeatureSetting: mockDuoAgentPlatformFeatureSettings[0],
-            },
-          });
+      it('does not render model dropdown footer', () => {
+        expect(findModelSelectDropdown().props('isFeatureSettingDropdown')).toBe(false);
+      });
+    });
+  });
 
-          expect(findVendoredModelOption()).toBeUndefined();
+  describe('for self-hosted models', () => {
+    it('contains a list of options sorted by release state', () => {
+      createComponent();
+
+      const modelOptions = findModelSelectDropdown().props('items');
+      const selfHostedModelsOptions = modelOptions[0].options;
+
+      expect(
+        selfHostedModelsOptions.map(({ text, releaseState }) => {
+          const withReleaseState = releaseState ? [releaseState] : [];
+          return [text, ...withReleaseState];
+        }),
+      ).toEqual([
+        ['Model 1 (Mistral)', 'GA'],
+        ['Model 4 (GPT)', 'GA'],
+        ['Model 5 (Claude)', 'GA'],
+        ['Model 2 (Code Llama)', 'BETA'],
+        ['Model 3 (CodeGemma)', 'BETA'],
+        ['GitLab AI vendor model'],
+        ['Disabled'],
+      ]);
+    });
+
+    describe('when showVendoredModelOption is false', () => {
+      it('does not include vendored option in options list', () => {
+        createComponent({
+          injectedProps: {
+            showVendoredModelOption: false,
+          },
         });
+
+        expect(findVendoredModelOption()).toBeUndefined();
       });
     });
 
-    describe('with GitLab managed models', () => {
-      it('renders two groups of options: self-hosted models and GitLab managed models', () => {
-        createComponent({
-          injectedProps: {
-            showVendoredModelOption: false,
-          },
-          props: {
-            aiFeatureSetting: {
-              ...mockAiFeatureSetting,
-              validGitlabModels: { nodes: mockGitlabManagedModels },
-            },
-          },
-        });
-
-        const modelOptions = findModelSelectDropdown().props('items');
-        expect(modelOptions).toStrictEqual([
-          EXPECTED_SELF_HOSTED_MODELS_GROUPED_OPTIONS,
-          EXPECTED_GITLAB_MANAGED_MODELS_GROUPED_OPTIONS,
-        ]);
-      });
-
-      it('does not render self-hosted models if there are none returned', () => {
-        createComponent({
-          injectedProps: {
-            showVendoredModelOption: false,
-          },
-          props: {
-            aiFeatureSetting: {
-              ...mockAiFeatureSetting,
-              validModels: { nodes: [] },
-              validGitlabModels: { nodes: mockGitlabManagedModels },
-            },
-          },
-        });
-
-        const modelOptions = findModelSelectDropdown().props('items');
-        expect(modelOptions).toStrictEqual([EXPECTED_GITLAB_MANAGED_MODELS_GROUPED_OPTIONS]);
-      });
-
-      it('renders default GitLab model under GitLab managed models group if it exists', () => {
-        createComponent({
-          injectedProps: {
-            showVendoredModelOption: false,
-          },
-          props: {
-            aiFeatureSetting: {
-              ...mockAiFeatureSetting,
-              validModels: { nodes: [] },
-              validGitlabModels: { nodes: mockGitlabManagedModels },
-              defaultGitlabModel: mockDefaultGitlabModel,
-            },
-          },
-        });
-
-        const modelOptions = findModelSelectDropdown().props('items');
-        expect(modelOptions).toStrictEqual([
-          EXPECTED_GITLAB_MANAGED_MODELS_GROUPED_OPTIONS_WITH_DEFAULT_MODEL_OPTION,
-        ]);
-      });
-
-      it('does not render GitLab managed models group if there are none returned', () => {
+    describe('when feature is Duo Agent Platform', () => {
+      it('does not include vendored option in options list', () => {
         createComponent({
           injectedProps: {
             showVendoredModelOption: true,
           },
+          props: {
+            aiFeatureSetting: mockDuoAgentPlatformFeatureSettings[0],
+          },
         });
 
-        const modelOptions = findModelSelectDropdown().props('items');
-        expect(modelOptions).toStrictEqual([
-          EXPECTED_SELF_HOSTED_MODELS_GROUPED_OPTIONS_WITH_VENDORED_OPTION,
-        ]);
+        expect(findVendoredModelOption()).toBeUndefined();
       });
+    });
+  });
+
+  describe('with GitLab managed models', () => {
+    it('renders two groups of options: self-hosted models and GitLab managed models', () => {
+      createComponent({
+        injectedProps: {
+          showVendoredModelOption: false,
+        },
+        props: {
+          aiFeatureSetting: {
+            ...mockAiFeatureSetting,
+            validGitlabModels: { nodes: mockGitlabManagedModels },
+          },
+        },
+      });
+
+      const modelOptions = findModelSelectDropdown().props('items');
+      expect(modelOptions).toStrictEqual([
+        EXPECTED_SELF_HOSTED_MODELS_GROUPED_OPTIONS,
+        EXPECTED_GITLAB_MANAGED_MODELS_GROUPED_OPTIONS,
+      ]);
+    });
+
+    it('does not render self-hosted models if there are none returned', () => {
+      createComponent({
+        injectedProps: {
+          showVendoredModelOption: false,
+        },
+        props: {
+          aiFeatureSetting: {
+            ...mockAiFeatureSetting,
+            validModels: { nodes: [] },
+            validGitlabModels: { nodes: mockGitlabManagedModels },
+          },
+        },
+      });
+
+      const modelOptions = findModelSelectDropdown().props('items');
+      expect(modelOptions).toStrictEqual([EXPECTED_GITLAB_MANAGED_MODELS_GROUPED_OPTIONS]);
+    });
+
+    it('renders default GitLab model under GitLab managed models group if it exists', () => {
+      createComponent({
+        injectedProps: {
+          showVendoredModelOption: false,
+        },
+        props: {
+          aiFeatureSetting: {
+            ...mockAiFeatureSetting,
+            validModels: { nodes: [] },
+            validGitlabModels: { nodes: mockGitlabManagedModels },
+            defaultGitlabModel: mockDefaultGitlabModel,
+          },
+        },
+      });
+
+      const modelOptions = findModelSelectDropdown().props('items');
+      expect(modelOptions).toStrictEqual([
+        EXPECTED_GITLAB_MANAGED_MODELS_GROUPED_OPTIONS_WITH_DEFAULT_MODEL_OPTION,
+      ]);
+    });
+
+    it('does not render GitLab managed models group if there are none returned', () => {
+      createComponent({
+        injectedProps: {
+          showVendoredModelOption: true,
+        },
+      });
+
+      const modelOptions = findModelSelectDropdown().props('items');
+      expect(modelOptions).toStrictEqual([
+        EXPECTED_SELF_HOSTED_MODELS_GROUPED_OPTIONS_WITH_VENDORED_OPTION,
+      ]);
     });
   });
 

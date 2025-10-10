@@ -29,8 +29,38 @@ RSpec.describe 'Updating an AI Feature setting', feature_category: :"self-hosted
     context 'when the user does not have write access' do
       let(:current_user) { create(:user) }
 
-      it_behaves_like 'performs the right authorization'
-      it_behaves_like 'a mutation that returns a top-level access error'
+      context "for self-hosted models" do
+        let(:self_hosted_model_id) { self_hosted_model.to_global_id.to_s }
+        let(:mutation_params) do
+          {
+            features: ['CODE_GENERATIONS'],
+            provider: 'SELF_HOSTED',
+            ai_self_hosted_model_id: self_hosted_model_id
+          }
+        end
+
+        it_behaves_like 'performs the right authorization'
+        it_behaves_like 'a mutation that returns a top-level access error'
+      end
+
+      context "for gitlab managed models" do
+        let(:self_hosted_model_id) { self_hosted_model.to_global_id.to_s }
+        let(:mutation_params) do
+          {
+            features: ['CODE_GENERATIONS'],
+            provider: 'VENDORED',
+            offered_model_ref: 'claude_3_5_sonnet_20240620'
+          }
+        end
+
+        before do
+          allow(Ability).to receive(:allowed?).and_call_original
+          allow(Ability).to receive(:allowed?).with(current_user, :manage_instance_model_selection)
+          request
+        end
+
+        it_behaves_like 'a mutation that returns a top-level access error'
+      end
     end
 
     context 'when the user has write access' do

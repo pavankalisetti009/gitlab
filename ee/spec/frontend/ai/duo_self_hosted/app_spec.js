@@ -16,6 +16,7 @@ describe('DuoSelfHostedApp', () => {
       },
       provide: {
         canManageInstanceModelSelection: false,
+        isDedicatedInstance: false,
         ...provide,
       },
       mocks: {
@@ -46,7 +47,7 @@ describe('DuoSelfHostedApp', () => {
     );
   });
 
-  describe('with admin model selection', () => {
+  describe('with instance-level model selection', () => {
     beforeEach(() => {
       createComponent({
         provide: {
@@ -126,6 +127,30 @@ describe('DuoSelfHostedApp', () => {
       });
 
       expect(findFeatureSettings().exists()).toBe(true);
+    });
+  });
+
+  describe('for Dedicated instance', () => {
+    beforeEach(() => {
+      createComponent({
+        provide: {
+          isDedicatedInstance: true,
+        },
+      });
+
+      it('renders correct description', () => {
+        expect(wrapper.text()).toMatch(
+          'Configure and assign GitLab managed models to AI-native features.',
+        );
+      });
+
+      it('does not render button to add new self-hosted model', () => {
+        expect(findAddModelButton().exists()).toBe(false);
+      });
+
+      it('does not render self-hosted models tab', () => {
+        expect(findSelfHostedModelsTab().exists()).toBe(false);
+      });
     });
   });
 });

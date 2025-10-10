@@ -171,7 +171,7 @@ export default {
         <p class="gl-m-0 gl-py-4">
           <gl-sprintf :message="$options.i18n.emptyStateText">
             <template #link="{ content }">
-              <gl-link to="new">{{ content }}</gl-link>
+              <gl-link to="/models/new">{{ content }}</gl-link>
             </template>
           </gl-sprintf>
         </p>

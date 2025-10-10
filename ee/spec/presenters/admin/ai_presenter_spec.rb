@@ -57,6 +57,7 @@ RSpec.describe Admin::AiPresenter, feature_category: :ai_abstraction_layer do
     let(:active_self_managed_duo_pro_or_enterprise) { any_add_on_purchase }
     let(:auto_review_enabled) { true }
     let(:can_manage_instance_model_selection) { true }
+    let(:can_manage_self_hosted_settings) { true }
     let(:beta_self_hosted_models_enabled) { true }
     let(:duo_workflow_enabled) { true }
     let(:is_saas) { true }
@@ -90,6 +91,8 @@ RSpec.describe Admin::AiPresenter, feature_category: :ai_abstraction_layer do
 
       allow(Ability).to receive(:allowed?).with(user,
         :manage_instance_model_selection).and_return(can_manage_instance_model_selection)
+      allow(Ability).to receive(:allowed?).with(user,
+        :manage_self_hosted_models_settings).and_return(can_manage_self_hosted_settings)
 
       allow(Gitlab::CurrentSettings)
         .to receive_messages(
@@ -214,20 +217,8 @@ RSpec.describe Admin::AiPresenter, feature_category: :ai_abstraction_layer do
       it { expect(settings).to include(can_manage_instance_model_selection: 'false') }
     end
 
-    context 'with Dedicated instance' do
-      let(:application_setting_attributes) { super().merge(gitlab_dedicated_instance?: true) }
-
-      it { expect(settings).to include(can_manage_self_hosted_models: 'false') }
-    end
-
-    context 'without self_hosted_models license' do
-      let(:self_hosted_models) { false }
-
-      it { expect(settings).to include(can_manage_self_hosted_models: 'false') }
-    end
-
-    context 'without add-on purchase for Duo Enterprise' do
-      let(:active_add_on_purchase_for_self_managed?) { false }
+    context 'when user cannot manage self-hosted settings' do
+      let(:can_manage_self_hosted_settings) { false }
 
       it { expect(settings).to include(can_manage_self_hosted_models: 'false') }
     end

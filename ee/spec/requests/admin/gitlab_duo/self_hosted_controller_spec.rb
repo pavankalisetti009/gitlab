@@ -15,16 +15,11 @@ RSpec.describe Admin::GitlabDuo::SelfHostedController, :enable_admin_mode, featu
     stub_ee_application_setting(duo_features_enabled: duo_features_enabled)
   end
 
-  shared_examples 'returns 404' do
-    context 'when the user is not authorized' do
-      it 'performs the right authorization correctly' do
-        allow(Ability).to receive(:allowed?).and_call_original
-        expect(Ability).to receive(:allowed?).with(admin, :manage_self_hosted_models_settings).and_return(false)
+  shared_examples 'returns successful response' do
+    it 'returns 200' do
+      perform_request
 
-        perform_request
-
-        expect(response).to have_gitlab_http_status(:not_found)
-      end
+      expect(response).to have_gitlab_http_status(:ok)
     end
   end
 
@@ -35,12 +30,40 @@ RSpec.describe Admin::GitlabDuo::SelfHostedController, :enable_admin_mode, featu
       get admin_gitlab_duo_self_hosted_index_path
     end
 
-    it 'returns 200' do
-      perform_request
+    context 'when user can manage self hosted models settings' do
+      before do
+        allow(Ability).to receive(:allowed?).and_call_original
+        allow(Ability).to receive(:allowed?).with(admin,
+          :manage_self_hosted_models_settings, anything).and_return(true)
+      end
 
-      expect(response).to have_gitlab_http_status(:ok)
+      it_behaves_like 'returns successful response'
     end
 
-    it_behaves_like 'returns 404'
+    context 'when user can manage instance model selection' do
+      before do
+        allow(Ability).to receive(:allowed?).and_call_original
+        allow(Ability).to receive(:allowed?).with(admin,
+          :manage_instance_model_selection, anything).and_return(true)
+      end
+
+      it_behaves_like 'returns successful response'
+    end
+
+    context 'when the user is not authorized' do
+      before do
+        allow(Ability).to receive(:allowed?).and_call_original
+        allow(Ability).to receive(:allowed?).with(admin,
+          :manage_self_hosted_models_settings, anything).and_return(false)
+        allow(Ability).to receive(:allowed?).with(admin,
+          :manage_instance_model_selection, anything).and_return(false)
+      end
+
+      it 'returns 404' do
+        perform_request
+
+        expect(response).to have_gitlab_http_status(:not_found)
+      end
+    end
   end
 end

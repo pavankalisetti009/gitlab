@@ -9,12 +9,6 @@ module Mutations
           [::Types::Ai::FeatureSettings::FeatureSettingType],
           null: false,
           description: 'List of AI feature settings after mutation.'
-
-        private
-
-        def check_feature_access!
-          raise_resource_not_available_error! unless Ability.allowed?(current_user, :manage_self_hosted_models_settings)
-        end
       end
       # rubocop: enable GraphQL/GraphqlName
     end

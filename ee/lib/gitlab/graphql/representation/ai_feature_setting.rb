@@ -7,14 +7,16 @@ module Gitlab
         class << self
           include Gitlab::Utils::StrongMemoize
 
-          def decorate(feature_settings, with_valid_models: false, model_definitions: nil)
+          def decorate(
+            feature_settings, with_self_hosted_models: false, with_gitlab_models: false,
+            model_definitions: nil)
             return [] unless feature_settings.present?
 
             feature_settings.map do |feature_setting|
               new(
                 feature_setting,
-                **valid_model_params(feature_setting, with_valid_models),
-                **gitlab_managed_models_params(feature_setting, model_definitions, with_valid_models)
+                **valid_model_params(feature_setting, with_self_hosted_models),
+                **gitlab_managed_models_params(feature_setting, model_definitions, with_gitlab_models)
               )
             end
           end

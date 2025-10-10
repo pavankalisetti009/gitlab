@@ -16,7 +16,7 @@ export default {
     FeatureSettings,
     PageHeading,
   },
-  inject: ['canManageInstanceModelSelection'],
+  inject: ['canManageInstanceModelSelection', 'isDedicatedInstance'],
   i18n: {
     title: s__('AdminSelfHostedModels|Model configuration'),
   },
@@ -28,23 +28,34 @@ export default {
     },
   },
   SELF_HOSTED_ROUTE_NAMES,
-  tabs: [
-    {
-      id: SELF_HOSTED_DUO_TABS.AI_FEATURE_SETTINGS,
-      title: s__('AdminAIPoweredFeatures|AI-native features'),
-    },
-    {
-      id: SELF_HOSTED_DUO_TABS.SELF_HOSTED_MODELS,
-      title: s__('AdminSelfHostedModels|Self-hosted models'),
-    },
-  ],
+
   data() {
     return {
       currentTabIndex: 0,
     };
   },
   computed: {
+    tabs() {
+      return [
+        {
+          id: SELF_HOSTED_DUO_TABS.AI_FEATURE_SETTINGS,
+          title: s__('AdminAIPoweredFeatures|AI-native features'),
+          show: true,
+        },
+        {
+          id: SELF_HOSTED_DUO_TABS.SELF_HOSTED_MODELS,
+          title: s__('AdminSelfHostedModels|Self-hosted models'),
+          show: !this.isDedicatedInstance,
+        },
+      ];
+    },
     description() {
+      if (this.isDedicatedInstance) {
+        return s__(
+          'AdminSelfHostedModels|Configure and assign GitLab managed models to AI-native features.',
+        );
+      }
+
       if (this.canManageInstanceModelSelection) {
         return s__(
           'AdminSelfHostedModels|Configure and assign self-hosted models or GitLab managed models to AI-native features.',
@@ -62,7 +73,7 @@ export default {
   watch: {
     tabId: {
       handler(newTabId) {
-        this.currentTabIndex = this.$options.tabs.findIndex((tab) => tab.id === newTabId) || 0;
+        this.currentTabIndex = this.tabs.findIndex((tab) => tab.id === newTabId) || 0;
       },
       immediate: true,
     },
@@ -96,7 +107,11 @@ export default {
       </template>
       <template #description>{{ description }}</template>
       <template #actions>
-        <gl-button variant="confirm" :to="{ name: $options.SELF_HOSTED_ROUTE_NAMES.NEW }">
+        <gl-button
+          v-if="!isDedicatedInstance"
+          variant="confirm"
+          :to="{ name: $options.SELF_HOSTED_ROUTE_NAMES.NEW }"
+        >
           {{ s__('AdminSelfHostedModels|Add self-hosted model') }}
         </gl-button>
       </template>
@@ -108,19 +123,16 @@ export default {
         class="gl-flex gl-grow"
         nav-class="gl-border-b-0"
       >
-        <gl-tab
-          v-for="tab in $options.tabs"
-          :key="tab.id"
-          :data-testid="`${tab.id}-tab`"
-          @click="onTabClick(tab.id)"
-        >
-          <template #title>
-            {{ tab.title }}
-          </template>
-        </gl-tab>
+        <div v-for="tab in tabs" :key="tab.id">
+          <gl-tab v-if="tab.show" :data-testid="`${tab.id}-tab`" @click="onTabClick(tab.id)">
+            <template #title>
+              {{ tab.title }}
+            </template>
+          </gl-tab>
+        </div>
       </gl-tabs>
     </div>
-    <div v-if="isSelfHostedModelsTab">
+    <div v-if="!isDedicatedInstance && isSelfHostedModelsTab">
       <self-hosted-models-table />
     </div>
     <div v-else>

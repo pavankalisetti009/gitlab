@@ -184,7 +184,7 @@ describe('SelfHostedModelsTable', () => {
       });
 
       it('renders a link to create a new self-hosted model', () => {
-        expect(findEmptyStateLink().props('to')).toBe('new');
+        expect(findEmptyStateLink().props('to')).toBe('/models/new');
       });
     });
 

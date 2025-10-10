@@ -45,6 +45,16 @@ export default {
     isSelfHostedModelsEnabled() {
       return !this.isSaaS && this.canManageSelfHostedModels;
     },
+    isInstanceModelSelectionEnabled() {
+      return this.canManageInstanceModelSelection;
+    },
+    showDuoModelsConfigurationCard() {
+      return (
+        this.isModelSwitchingEnabled ||
+        this.isSelfHostedModelsEnabled ||
+        this.isInstanceModelSelectionEnabled
+      );
+    },
     duoModelsConfigurationProps() {
       if (this.isModelSwitchingEnabled) {
         return {
@@ -55,7 +65,7 @@ export default {
         };
       }
 
-      if (this.canManageInstanceModelSelection) {
+      if (this.isInstanceModelSelectionEnabled) {
         return {
           header: s__('AiPowered|GitLab Duo Model Selection'),
           description: s__(
@@ -134,7 +144,7 @@ export default {
         </section>
         <section class="gl-flex gl-flex-col gl-gap-5">
           <duo-models-configuration-info-card
-            v-if="isModelSwitchingEnabled || isSelfHostedModelsEnabled"
+            v-if="showDuoModelsConfigurationCard"
             :duo-models-configuration-props="duoModelsConfigurationProps"
           />
           <duo-usage-analytics-card

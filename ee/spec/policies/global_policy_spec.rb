@@ -830,131 +830,98 @@ RSpec.describe GlobalPolicy, :aggregate_failures, feature_category: :shared do
     end
   end
 
-  describe 'manage self-hosted AI models' do
+  describe 'manage instance AI model configuration' do
     let_it_be(:active_add_on) { create(:gitlab_subscription_add_on_purchase, :duo_enterprise, :active) }
 
     let(:current_user) { admin }
 
-    shared_examples 'allowed to manage self-hosted models' do
-      it { is_expected.to be_allowed(:manage_self_hosted_models_settings) }
-    end
-
-    shared_examples 'disallowed to manage self-hosted models' do
-      it { is_expected.to be_disallowed(:manage_self_hosted_models_settings) }
-    end
-
-    shared_context 'with license setup' do |ultimate:, premium:|
-      let(:license_double) { instance_double('License', ultimate?: ultimate, premium?: premium) }
-
+    shared_context 'with expected license and active add-on' do
       before do
-        allow(License).to receive(:current).and_return(license_double)
-      end
-    end
-
-    shared_context 'with active add-on' do
-      before do
-        allow(::GitlabSubscriptions::AddOnPurchase)
-          .to receive_message_chain(:for_self_managed, :for_duo_enterprise, :active, :exists?).and_return(true)
-      end
-    end
-
-    shared_context 'with expired add-on' do
-      before do
-        allow(::GitlabSubscriptions::AddOnPurchase)
-          .to receive_message_chain(:for_duo_enterprise, :active, :exists?).and_return(false)
-      end
-    end
-
-    context 'when admin' do
-      context 'when on dedicated installation', :enable_admin_mode do
-        before do
-          allow(Gitlab::CurrentSettings).to receive(:gitlab_dedicated_instance?).and_return(true)
-        end
-
-        include_context 'with license setup', ultimate: true, premium: false
-        include_context 'with active add-on'
-        include_examples 'disallowed to manage self-hosted models'
-      end
-
-      context 'Ultimate + Active Add-on', :enable_admin_mode do
-        include_context 'with license setup', ultimate: true, premium: false
-        include_context 'with active add-on'
-
-        include_examples 'allowed to manage self-hosted models'
-      end
-
-      context 'Premium + Active Add-on', :enable_admin_mode do
-        include_context 'with license setup', ultimate: false, premium: true
-        include_context 'with active add-on'
-
-        include_examples 'allowed to manage self-hosted models'
-      end
-
-      context 'Ultimate + Expired Add-on', :enable_admin_mode do
-        include_context 'with license setup', ultimate: true, premium: false
-        include_context 'with expired add-on'
-
-        include_examples 'disallowed to manage self-hosted models'
-      end
-
-      context 'Premium + Expired Add-on', :enable_admin_mode do
-        include_context 'with license setup', ultimate: false, premium: true
-        include_context 'with expired add-on'
-
-        include_examples 'disallowed to manage self-hosted models'
-      end
-
-      context 'No license', :enable_admin_mode do
-        include_context 'with license setup', ultimate: false, premium: false
-        include_context 'with active add-on'
-
-        include_examples 'disallowed to manage self-hosted models'
-      end
-
-      context 'Admin Mode disabled' do
-        include_context 'with license setup', ultimate: true, premium: false
-        include_context 'with active add-on'
-
-        include_examples 'disallowed to manage self-hosted models'
-      end
-
-      context 'SaaS + feature flag enabled', :enable_admin_mode do
-        include_context 'with license setup', ultimate: true, premium: false
-        include_context 'with active add-on'
-
-        before do
-          stub_saas_features(gitlab_com_subscriptions: true)
-          stub_feature_flags(allow_self_hosted_features_for_com: true)
-        end
-
-        include_examples 'allowed to manage self-hosted models'
-      end
-
-      context 'SaaS + feature flag disabled', :enable_admin_mode do
-        include_context 'with license setup', ultimate: true, premium: false
-        include_context 'with active add-on'
-
-        before do
-          stub_saas_features(gitlab_com_subscriptions: true)
-          stub_feature_flags(allow_self_hosted_features_for_com: false)
-        end
-
-        include_examples 'disallowed to manage self-hosted models'
-      end
-    end
-
-    context 'when regular user' do
-      let(:current_user) { build(:user) }
-
-      before do
-        allow(License).to receive(:current)
-          .and_return(instance_double('License', ultimate?: true, premium?: false, feature_available?: false))
-
+        stub_licensed_features(self_hosted_models: true)
         allow(::GitlabSubscriptions::AddOnPurchase)
           .to receive_message_chain(:for_duo_enterprise, :active, :exists?).and_return(true)
       end
+    end
 
-      include_examples 'disallowed to manage self-hosted models'
+    describe "manage self-hosted AI models" do
+      using RSpec::Parameterized::TableSyntax
+
+      context "when regular user" do
+        let(:current_user) { build(:user) }
+
+        include_context 'with expected license and active add-on'
+
+        it { is_expected.to be_disallowed(:manage_self_hosted_models_settings) }
+      end
+
+      context 'when admin', :enable_admin_mode do
+        where(:is_licensed, :is_active_add_on, :is_saas, :with_saas_flag_enabled, :dedicated_instance,
+          :can_manage_self_hosted_settings) do
+          true  | true  | false | false | false | be_allowed(:manage_self_hosted_models_settings)
+          true  | false | false | false | false | be_disallowed(:manage_self_hosted_models_settings)
+          true  | true  | true  | false | false | be_disallowed(:manage_self_hosted_models_settings)
+          true  | true  | true  | true  | false | be_allowed(:manage_self_hosted_models_settings)
+          true  | true  | false | false | true  | be_disallowed(:manage_self_hosted_models_settings)
+          false | true  | false | false | false | be_disallowed(:manage_self_hosted_models_settings)
+        end
+
+        with_them do
+          before do
+            stub_licensed_features(self_hosted_models: is_licensed)
+            allow(::GitlabSubscriptions::AddOnPurchase)
+        .to receive_message_chain(:for_self_managed, :for_duo_enterprise, :active,
+          :exists?).and_return(is_active_add_on)
+
+            stub_saas_features(gitlab_com_subscriptions: is_saas)
+            stub_feature_flags(allow_self_hosted_features_for_com: with_saas_flag_enabled)
+
+            allow(Gitlab::CurrentSettings).to receive(:gitlab_dedicated_instance?).and_return(dedicated_instance)
+          end
+
+          it { is_expected.to can_manage_self_hosted_settings }
+        end
+      end
+    end
+
+    describe "manage instance model selection" do
+      using RSpec::Parameterized::TableSyntax
+
+      context "when regular user" do
+        let(:current_user) { build(:user) }
+
+        include_context 'with expected license and active add-on'
+
+        it { is_expected.to be_disallowed(:manage_instance_model_selection) }
+      end
+
+      context 'when admin', :enable_admin_mode do
+        where(:is_licensed, :is_active_add_on, :instance_level_model_selection_enabled, :is_offline_license,
+          :can_manage_instance_model_selection) do
+          true  | true  | true  | false | be_allowed(:manage_instance_model_selection)
+          true  | false | true  | false | be_disallowed(:manage_instance_model_selection)
+          true  | true  | false | false | be_disallowed(:manage_instance_model_selection)
+          true  | true  | true  | true  | be_disallowed(:manage_instance_model_selection)
+          false | true  | true  | false | be_disallowed(:manage_instance_model_selection)
+        end
+
+        with_them do
+          let(:license_double) do
+            instance_double('License', offline_cloud_license?: is_offline_license)
+          end
+
+          before do
+            stub_licensed_features(self_hosted_models: is_licensed)
+            allow(License).to receive(:current).and_return(license_double)
+            allow(::GitlabSubscriptions::AddOnPurchase)
+        .to receive_message_chain(:for_self_managed, :for_duo_enterprise, :active,
+          :exists?).and_return(is_active_add_on)
+
+            stub_feature_flags(instance_level_model_selection: instance_level_model_selection_enabled)
+          end
+
+          it { is_expected.to can_manage_instance_model_selection }
+        end
+      end
     end
   end
 
@@ -998,60 +965,6 @@ RSpec.describe GlobalPolicy, :aggregate_failures, feature_category: :shared do
           it { is_expected.to be_disallowed(*(enabled_permissions + enabled_for_all)) }
         end
       end
-    end
-  end
-
-  describe 'manage admin model selection' do
-    let(:current_user) { admin }
-
-    context 'when user is not an admin' do
-      it { is_expected.to be_disallowed(:manage_instance_model_selection) }
-    end
-
-    context 'when instance level model selection flag is disabled', :enable_admin_mode do
-      before do
-        stub_feature_flags(instance_level_model_selection: false)
-      end
-
-      it { is_expected.to be_disallowed(:manage_instance_model_selection) }
-    end
-
-    context 'when no online license found', :enable_admin_mode do
-      let(:license) { build(:license, cloud: false) }
-
-      before do
-        allow(License).to receive(:current).and_return(license)
-      end
-
-      it { is_expected.to be_disallowed(:manage_instance_model_selection) }
-    end
-
-    context 'when admin is not allowed to manage self-hosted model settings', :enable_admin_mode do
-      let(:license) { build(:license, cloud: true) }
-
-      before do
-        allow(License).to receive(:current).and_return(license)
-        allow(::GitlabSubscriptions::AddOnPurchase)
-          .to receive_message_chain(:for_self_managed, :for_duo_enterprise, :active, :exists?).and_return(false)
-      end
-
-      it { is_expected.to be_disallowed(:manage_instance_model_selection) }
-    end
-
-    context 'when feature flag is enabled, admin can manage self-hosted model settings with non-offline license',
-      :enable_admin_mode do
-      let(:license_double) do
-        instance_double('License', ultimate?: true, premium?: true, offline_cloud_license?: false)
-      end
-
-      before do
-        stub_feature_flags(instance_level_model_selection: true)
-        allow(License).to receive(:current).and_return(license_double)
-        allow(::GitlabSubscriptions::AddOnPurchase)
-          .to receive_message_chain(:for_self_managed, :for_duo_enterprise, :active, :exists?).and_return(true)
-      end
-
-      it { is_expected.to be_allowed(:manage_instance_model_selection) }
     end
   end
 

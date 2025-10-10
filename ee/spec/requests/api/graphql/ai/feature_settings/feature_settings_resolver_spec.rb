@@ -91,38 +91,102 @@ RSpec.describe 'List of configurable AI feature with metadata.', feature_categor
     allow(::Ai::FeatureSetting).to receive(:allowed_features).and_return(test_ai_feature_enum)
   end
 
-  context "when the user is authorized" do
-    context 'when no query parameters are given' do
-      let(:expected_response) do
-        test_ai_feature_enum.keys.map do |feature|
-          feature_setting = ::Ai::FeatureSetting.find_or_initialize_by_feature(feature)
+  context "for feature setting decorator" do
+    before do
+      allow(::Gitlab::Graphql::Representation::AiFeatureSetting).to receive(:decorate)
+      .and_return(generate_feature_setting_data(feature_setting))
+    end
 
-          generate_feature_setting_data(feature_setting)
-        end
+    context 'with manage_self_hosted_models_settings check' do
+      where(:allowed) do
+        [
+          true,
+          false
+        ]
       end
 
-      it 'returns the expected response' do
-        post_graphql(query, current_user: current_user)
-
-        result = ai_feature_settings_data
-
-        expect(result).to match_array(expected_response)
-      end
-
-      context 'when :instance_level_model_selection feature flag is off' do
+      with_them do
         before do
-          stub_feature_flags(instance_level_model_selection: false)
+          allow(Ability).to receive(:allowed?).and_call_original
+          allow(Ability).to receive(:allowed?)
+            .with(current_user, :manage_self_hosted_models_settings)
+            .and_return(allowed)
         end
 
-        it 'does not make request for model definitions' do
-          expect(::Ai::ModelSelection::FetchModelDefinitionsService).not_to receive(:new)
+        it "decorates with_self_hosted_models: #{params[:allowed]}" do
+          post_graphql(query, current_user: current_user)
+
+          expect(::Gitlab::Graphql::Representation::AiFeatureSetting)
+            .to have_received(:decorate)
+            .with(
+              anything,
+              hash_including(with_self_hosted_models: allowed)
+            )
         end
       end
     end
 
-    context 'when an Self-hosted model ID query parameters are given' do
-      let(:query) do
-        %(
+    context 'with manage_instance_model_selection check' do
+      where(:allowed) do
+        [
+          true,
+          false
+        ]
+      end
+
+      with_them do
+        before do
+          allow(Ability).to receive(:allowed?).and_call_original
+          allow(Ability).to receive(:allowed?)
+            .with(current_user, :manage_instance_model_selection)
+            .and_return(allowed)
+        end
+
+        it "decorates with_gitlab_models: #{params[:allowed]}" do
+          post_graphql(query, current_user: current_user)
+
+          expect(::Gitlab::Graphql::Representation::AiFeatureSetting)
+            .to have_received(:decorate)
+            .with(
+              anything,
+              hash_including(with_gitlab_models: allowed)
+            )
+        end
+      end
+    end
+  end
+
+  context 'when no query parameters are given' do
+    let(:expected_response) do
+      test_ai_feature_enum.keys.map do |feature|
+        feature_setting = ::Ai::FeatureSetting.find_or_initialize_by_feature(feature)
+
+        generate_feature_setting_data(feature_setting)
+      end
+    end
+
+    it 'returns the expected response' do
+      post_graphql(query, current_user: current_user)
+
+      result = ai_feature_settings_data
+
+      expect(result).to match_array(expected_response)
+    end
+
+    context 'when :instance_level_model_selection feature flag is off' do
+      before do
+        stub_feature_flags(instance_level_model_selection: false)
+      end
+
+      it 'does not make request for model definitions' do
+        expect(::Ai::ModelSelection::FetchModelDefinitionsService).not_to receive(:new)
+      end
+    end
+  end
+
+  context 'when an Self-hosted model ID query parameters are given' do
+    let(:query) do
+      %(
           query aiFeatureSettings {
             aiFeatureSettings(selfHostedModelId: "#{model_gid}") {
               nodes {
@@ -166,58 +230,48 @@ RSpec.describe 'List of configurable AI feature with metadata.', feature_categor
             }
           }
         )
+    end
+
+    context 'when the self-hosted model id exists' do
+      let(:model_gid) { self_hosted_model.to_global_id }
+
+      let(:expected_response) do
+        [generate_feature_setting_data(feature_setting)]
       end
 
-      context 'when the self-hosted model id exists' do
-        let(:model_gid) { self_hosted_model.to_global_id }
+      it 'returns the expected response' do
+        post_graphql(query, current_user: current_user)
 
-        let(:expected_response) do
-          [generate_feature_setting_data(feature_setting)]
-        end
-
-        it 'returns the expected response' do
-          post_graphql(query, current_user: current_user)
-
-          expect(ai_feature_settings_data).to match_array(expected_response)
-        end
-      end
-
-      context 'when the self-hosted model id does not exist' do
-        let(:model_gid) { "gid://gitlab/Ai::SelfHostedModel/999999" }
-
-        it 'returns the expected response' do
-          post_graphql(query, current_user: current_user)
-
-          expect(ai_feature_settings_data).to be_empty
-        end
+        expect(ai_feature_settings_data).to match_array(expected_response)
       end
     end
 
-    context 'when FetchModelDefinitionsService returns error ServiceResponse' do
-      before do
-        error_service = instance_double(::Ai::ModelSelection::FetchModelDefinitionsService)
-        allow(::Ai::ModelSelection::FetchModelDefinitionsService).to receive(:new).and_return(error_service)
-        allow(error_service).to receive(:execute).and_return(
-          ServiceResponse.success(payload: nil)
-        )
+    context 'when the self-hosted model id does not exist' do
+      let(:model_gid) { "gid://gitlab/Ai::SelfHostedModel/999999" }
 
-        stub_feature_flags(instance_level_model_selection: true)
-        stub_application_setting(duo_features_enabled: false)
-      end
+      it 'returns the expected response' do
+        post_graphql(query, current_user: current_user)
 
-      it 'handles ServiceResponse gracefully without crashing' do
-        expect { post_graphql(query, current_user: current_user) }.not_to raise_error
-        expect(graphql_errors).to be_nil
+        expect(ai_feature_settings_data).to be_empty
       end
     end
   end
 
-  context 'when the user is not authorized' do
-    let(:current_user) { create(:user) }
+  context 'when FetchModelDefinitionsService returns error ServiceResponse' do
+    before do
+      error_service = instance_double(::Ai::ModelSelection::FetchModelDefinitionsService)
+      allow(::Ai::ModelSelection::FetchModelDefinitionsService).to receive(:new).and_return(error_service)
+      allow(error_service).to receive(:execute).and_return(
+        ServiceResponse.success(payload: nil)
+      )
 
-    it 'does not return feature settings' do
-      post_graphql(query, current_user: current_user)
-      expect(graphql_data['aiFeatureSettings']).to be_nil
+      stub_feature_flags(instance_level_model_selection: true)
+      stub_application_setting(duo_features_enabled: false)
+    end
+
+    it 'handles ServiceResponse gracefully without crashing' do
+      expect { post_graphql(query, current_user: current_user) }.not_to raise_error
+      expect(graphql_errors).to be_nil
     end
   end
 
