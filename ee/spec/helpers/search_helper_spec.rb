@@ -670,14 +670,55 @@ RSpec.describe SearchHelper, feature_category: :global_search do
         })
       end
 
-      it 'includes AI catalog flows section' do
-        results = search_autocomplete_opts('flows')
-        flows_result = results.find { |r| r[:label].include?('Flows') }
-        expect(flows_result).to include({
-          category: 'Jump to',
-          label: 'Explore / AI Catalog (Flows)',
-          url: '/explore/ai_catalog/flows'
-        })
+      context 'when ai_catalog_flows feature is enabled' do
+        before do
+          stub_feature_flags(ai_catalog_flows: true)
+          stub_feature_flags(ai_catalog_third_party_flows: false)
+        end
+
+        it 'includes AI catalog flows section' do
+          results = search_autocomplete_opts('flows')
+          flows_result = results.find { |r| r[:label].include?('Flows') }
+          expect(flows_result).to include({
+            category: 'Jump to',
+            label: 'Explore / AI Catalog (Flows)',
+            url: '/explore/ai_catalog/flows'
+          })
+        end
+      end
+
+      context 'when ai_catalog_third_party_flows feature is enabled' do
+        before do
+          stub_feature_flags(ai_catalog_flows: false)
+          stub_feature_flags(ai_catalog_third_party_flows: true)
+        end
+
+        it 'includes AI catalog flows section' do
+          results = search_autocomplete_opts('flows')
+          flows_result = results.find { |r| r[:label].include?('Flows') }
+          expect(flows_result).to include({
+            category: 'Jump to',
+            label: 'Explore / AI Catalog (Flows)',
+            url: '/explore/ai_catalog/flows'
+          })
+        end
+      end
+
+      context 'when ai_catalog_flows and ai_catalog_third_party_flows feature are enabled' do
+        before do
+          stub_feature_flags(ai_catalog_flows: true)
+          stub_feature_flags(ai_catalog_third_party_flows: true)
+        end
+
+        it 'includes AI catalog flows section' do
+          results = search_autocomplete_opts('flows')
+          flows_result = results.find { |r| r[:label].include?('Flows') }
+          expect(flows_result).to include({
+            category: 'Jump to',
+            label: 'Explore / AI Catalog (Flows)',
+            url: '/explore/ai_catalog/flows'
+          })
+        end
       end
 
       it 'matches case insensitive search terms' do
@@ -686,9 +727,10 @@ RSpec.describe SearchHelper, feature_category: :global_search do
         expect(search_autocomplete_opts('explore').size).to eq(2)
       end
 
-      context 'when ai_catalog_flows feature is disabled' do
+      context 'when ai_catalog_flows and ai_catalog_third_party_flows features are disabled' do
         before do
           stub_feature_flags(ai_catalog_flows: false)
+          stub_feature_flags(ai_catalog_third_party_flows: false)
         end
 
         it 'includes AI catalog agents section' do

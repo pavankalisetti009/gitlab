@@ -156,7 +156,8 @@ module EE
         }
       ]
 
-      if ::Feature.enabled?(:ai_catalog_flows, current_user)
+      if ::Feature.enabled?(:ai_catalog_flows,
+        current_user) || ::Feature.enabled?(:ai_catalog_third_party_flows, current_user)
         ai_catalog_results.push({
           category: "Jump to",
           id: "ai_catalog_flows",
