@@ -1,6 +1,6 @@
 import Vue from 'vue';
 import VueApollo from 'vue-apollo';
-import { GlAlert } from '@gitlab/ui';
+import { GlAlert, GlBadge } from '@gitlab/ui';
 import createMockApollo from 'helpers/mock_apollo_helper';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import waitForPromises from 'helpers/wait_for_promises';
@@ -90,6 +90,8 @@ describe('MavenRegistryDetailsApp', () => {
   const findCreateUpstreamErrorAlert = () => wrapper.findComponent(GlAlert);
   const findUpstreamItems = () => wrapper.findAllComponents(RegistryUpstreamItem);
   const findUpdateActionErrorAlert = () => wrapper.findByTestId('update-action-error-alert');
+  const findUpstreamsCountBadge = () => wrapper.findComponent(GlBadge);
+  const findMaxUpstreamsMessage = () => wrapper.findByTestId('max-upstreams');
 
   const createComponent = ({ props = {}, glAbilities = {}, handlers = [], stubs = {} } = {}) => {
     wrapper = shallowMountExtended(MavenRegistryDetailsApp, {
@@ -140,10 +142,12 @@ describe('MavenRegistryDetailsApp', () => {
     it('renders the Crud component with correct props', () => {
       expect(findCrudComponent().props()).toMatchObject({
         title: 'Upstreams',
-        icon: 'infrastructure-registry',
-        count: defaultProps.upstreams.length,
         isLoading: false,
       });
+    });
+
+    it('renders upstreams count badge with correct text', () => {
+      expect(findUpstreamsCountBadge().text()).toBe('4 of 20');
     });
 
     it('renders `Clear all caches` button', () => {
@@ -152,6 +156,10 @@ describe('MavenRegistryDetailsApp', () => {
 
     it('renders AddUpstreamAction component with `canLink` set to false', () => {
       expect(findAddUpstream().props('canLink')).toBe(false);
+    });
+
+    it('does not show max upstreams message when limit not reached', () => {
+      expect(findMaxUpstreamsMessage().exists()).toBe(false);
     });
 
     it('renders the upstreams and passes correct props to each', () => {
@@ -711,6 +719,54 @@ describe('MavenRegistryDetailsApp', () => {
           error: mockError,
         });
       });
+    });
+  });
+
+  describe('when maximum upstreams limit is reached', () => {
+    const maxUpstreams = Array.from({ length: 20 }, (_, i) => ({
+      id: `upstream-${i}`,
+      name: `Upstream ${i}`,
+      position: i + 1,
+      registryUpstreams: [{ id: `registry-upstream-${i}`, position: i + 1 }],
+    }));
+
+    beforeEach(() => {
+      createComponent({
+        props: {
+          upstreams: maxUpstreams,
+        },
+      });
+    });
+
+    it('renders upstreams count badge showing maximum reached', () => {
+      expect(findUpstreamsCountBadge().text()).toBe('20 of 20');
+    });
+
+    it('shows max upstreams message instead of AddUpstream component', () => {
+      expect(findMaxUpstreamsMessage().text()).toBe('Maximum number of upstreams reached.');
+      expect(findAddUpstream().exists()).toBe(false);
+    });
+  });
+
+  describe('upstreams count badge text', () => {
+    it('shows correct count for single upstream', () => {
+      createComponent({
+        props: {
+          upstreams: [upstreams[0]],
+        },
+      });
+
+      expect(findUpstreamsCountBadge().text()).toBe('1 of 20');
+    });
+
+    it('shows correct count for no upstreams', () => {
+      createComponent({
+        props: {
+          upstreams: [],
+        },
+      });
+
+      expect(findUpstreamsCountBadge().text()).toBe('0 of 20');
     });
   });
 });

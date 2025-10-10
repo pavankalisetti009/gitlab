@@ -4,9 +4,15 @@
 - page_title title
 
 = render ::Layouts::PageHeadingComponent.new(title) do |c|
-  - if can_create_virtual_registry?(@group) && ::VirtualRegistries.registries_count_for(@group, registry_type: 'maven') < VirtualRegistries::Packages::Maven::Registry::MAX_REGISTRY_COUNT
+  - c.with_description do
+    = s_('VirtualRegistry|You can add up to 20 registries per top-level group.')
+  - if can_create_virtual_registry?(@group)
     - c.with_actions do
-      = render Pajamas::ButtonComponent.new(variant: :confirm, href: new_group_virtual_registries_maven_registry_path(@group)) do
-        = s_('VirtualRegistry|Create registry')
+      - if max_maven_registries_count_exceeded?(@group)
+        %span
+          = s_('VirtualRegistry|Maximum number of registries reached.')
+      - else
+        = render Pajamas::ButtonComponent.new(variant: :confirm, href: new_group_virtual_registries_maven_registry_path(@group)) do
+          = s_('VirtualRegistry|Create registry')
 
 #js-vue-maven-virtual-registries-and-upstreams{ "data-provide": maven_registries_and_upstreams_data(@group) }

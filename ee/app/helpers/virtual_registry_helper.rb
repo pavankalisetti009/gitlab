@@ -29,6 +29,17 @@ module VirtualRegistryHelper
     }).to_json
   end
 
+  def max_registries_count_exceeded?(group, registry_type)
+    return max_maven_registries_count_exceeded?(group) if registry_type == :maven
+
+    false
+  end
+
+  def max_maven_registries_count_exceeded?(group)
+    ::VirtualRegistries.registries_count_for(group, registry_type: 'maven') >=
+      VirtualRegistries::Packages::Maven::Registry::MAX_REGISTRY_COUNT
+  end
+
   def delete_registry_modal_data(group, maven_registry)
     {
       path: group_virtual_registries_maven_registry_path(group, maven_registry),

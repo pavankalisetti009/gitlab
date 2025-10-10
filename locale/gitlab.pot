@@ -72205,6 +72205,9 @@ msgid_plural "VirtualRegistry|%{count} artifacts"
 msgstr[0] ""
 msgstr[1] ""
 
+msgid "VirtualRegistry|%{count} of %{max}"
+msgstr ""
+
 msgid "VirtualRegistry|%{count} registry"
 msgid_plural "VirtualRegistry|%{count} registries"
 msgstr[0] ""
@@ -72396,6 +72399,12 @@ msgstr ""
 msgid "VirtualRegistry|Maven virtual registry was updated"
 msgstr ""
 
+msgid "VirtualRegistry|Maximum number of registries reached."
+msgstr ""
+
+msgid "VirtualRegistry|Maximum number of upstreams reached."
+msgstr ""
+
 msgid "VirtualRegistry|Metadata cache: %{hours} hour"
 msgid_plural "VirtualRegistry|Metadata cache: %{hours} hours"
 msgstr[0] ""
@@ -72524,6 +72533,12 @@ msgstr[0] ""
 msgstr[1] ""
 
 msgid "VirtualRegistry|You can add GitLab-hosted repositories as upstreams. Use your GitLab username and a personal access token as the password."
+msgstr ""
+
+msgid "VirtualRegistry|You can add up to 20 registries per top-level group."
+msgstr ""
+
+msgid "VirtualRegistry|You can add up to 20 upstreams per registry."
 msgstr ""
 
 msgid "VirtualRegistry|last checked %{date}"

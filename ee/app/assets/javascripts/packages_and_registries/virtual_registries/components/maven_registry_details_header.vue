@@ -38,6 +38,9 @@ export default {
     <template #metadata-registry-type>
       <metadata-item icon="infrastructure-registry" :text="s__('VirtualRegistry|Maven')" />
     </template>
+    <template #sub-header>
+      <div>{{ s__('VirtualRegistry|You can add up to 20 upstreams per registry.') }}</div>
+    </template>
     <p data-testid="description">{{ registry.description }}</p>
   </title-area>
 </template>

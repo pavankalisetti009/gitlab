@@ -116,6 +116,69 @@ RSpec.describe VirtualRegistryHelper, feature_category: :virtual_registry do
     end
   end
 
+  describe '#max_registries_count_exceeded?' do
+    let(:group) { build_stubbed(:group) }
+
+    subject { helper.max_registries_count_exceeded?(group, registry_type) }
+
+    context 'when registry_type is :maven' do
+      let(:registry_type) { :maven }
+
+      before do
+        allow(helper).to receive(:max_maven_registries_count_exceeded?).with(group).and_return(max_count_reached)
+      end
+
+      context 'when max maven registries count is reached' do
+        let(:max_count_reached) { true }
+
+        it { is_expected.to be true }
+      end
+
+      context 'when max maven registries count is not reached' do
+        let(:max_count_reached) { false }
+
+        it { is_expected.to be false }
+      end
+    end
+
+    context 'when registry_type is not :maven' do
+      let(:registry_type) { :npm }
+
+      it { is_expected.to be false }
+    end
+  end
+
+  describe '#max_maven_registries_count_exceeded?' do
+    let(:group) { build_stubbed(:group) }
+
+    subject { helper.max_maven_registries_count_exceeded?(group) }
+
+    before do
+      stub_const('VirtualRegistries::Packages::Maven::Registry::MAX_REGISTRY_COUNT', 20)
+      allow(::VirtualRegistries).to receive(:registries_count_for)
+        .with(group, registry_type: 'maven')
+        .and_return(current_count)
+    end
+
+    context 'when current count is below maximum' do
+      let(:current_count) { 15 }
+
+      it { is_expected.to be false }
+    end
+
+    context 'when current count equals maximum' do
+      let(:current_count) { 20 }
+
+      it { is_expected.to be true }
+    end
+
+    context 'when current count exceeds maximum' do
+      let(:current_count) { 25 }
+
+      it { is_expected.to be true }
+    end
+  end
+
   describe '#edit_upstream_template_data' do
     let(:maven_upstream) { build_stubbed(:virtual_registries_packages_maven_upstream) }
     let(:maven_upstream_attributes) do
