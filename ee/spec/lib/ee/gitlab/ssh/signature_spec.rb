@@ -8,7 +8,6 @@ RSpec.describe Gitlab::Ssh::Signature, feature_category: :source_code_management
   let(:commit) { project.commit }
   let(:signed_text) { 'This message was signed by an ssh key' }
   let(:signer) { :SIGNER_USER }
-  let(:author_email) { 'blob@example.com' }
 
   let(:signature_text) do
     # ssh-keygen -Y sign -n git -f id_test-cert.pub message.txt
@@ -30,7 +29,7 @@ RSpec.describe Gitlab::Ssh::Signature, feature_category: :source_code_management
   end
 
   subject(:signature) do
-    described_class.new(signature_text, signed_text, signer, commit, author_email)
+    described_class.new(signature_text, signed_text, signer, commit)
   end
 
   before do
