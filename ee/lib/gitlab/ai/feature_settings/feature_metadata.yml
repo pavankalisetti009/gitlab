@@ -40,6 +40,7 @@ duo_chat:
   compatible_llms:
     - mistral
     - mixtral
+    - codestral
     - claude_3
     - gpt
     - llama3
