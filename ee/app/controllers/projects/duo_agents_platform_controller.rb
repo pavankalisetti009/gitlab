@@ -6,6 +6,7 @@ module Projects
     before_action :check_access
     before_action do
       push_frontend_feature_flag(:ai_catalog_flows, current_user)
+      push_frontend_feature_flag(:ai_catalog_third_party_flows, current_user)
       push_frontend_feature_flag(:ai_catalog_item_project_curation, current_user)
     end
 
@@ -38,7 +39,8 @@ module Projects
         current_user.can?(:manage_ai_flow_triggers, project)
       when 'flows'
         Feature.enabled?(:global_ai_catalog, current_user) &&
-          Feature.enabled?(:ai_catalog_flows, current_user)
+          (Feature.enabled?(:ai_catalog_flows, current_user) ||
+                Feature.enabled?(:ai_catalog_third_party_flows, current_user))
       end
     end
 

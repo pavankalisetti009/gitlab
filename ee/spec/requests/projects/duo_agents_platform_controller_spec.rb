@@ -161,7 +161,7 @@ RSpec.describe 'Projects::DuoAgentsPlatform', type: :request, feature_category: 
     context 'when vueroute is flows' do
       context 'when ai_catalog_flows feature is enabled' do
         before do
-          stub_feature_flags(global_ai_catalog: true, ai_catalog_flows: true)
+          stub_feature_flags(global_ai_catalog: true, ai_catalog_flows: true, ai_catalog_third_party_flows: false)
         end
 
         it 'returns successfully' do
@@ -171,9 +171,45 @@ RSpec.describe 'Projects::DuoAgentsPlatform', type: :request, feature_category: 
         end
       end
 
-      context 'when ai_catalog_flows feature is disabled' do
+      context 'when ai_catalog_third_party_flows feature is enabled' do
         before do
-          stub_feature_flags(global_ai_catalog: true, ai_catalog_flows: false)
+          stub_feature_flags(global_ai_catalog: true, ai_catalog_flows: false, ai_catalog_third_party_flows: true)
+        end
+
+        it 'returns successfully' do
+          get project_automate_flows_path(project)
+
+          expect(response).to have_gitlab_http_status(:ok)
+        end
+      end
+
+      context 'when both ai_catalog_flows and ai_catalog_third_party_flows are enabled' do
+        before do
+          stub_feature_flags(global_ai_catalog: true, ai_catalog_flows: true, ai_catalog_third_party_flows: true)
+        end
+
+        it 'returns successfully' do
+          get project_automate_flows_path(project)
+
+          expect(response).to have_gitlab_http_status(:ok)
+        end
+      end
+
+      context 'when both ai_catalog_flows and ai_catalog_third_party_flows are disabled' do
+        before do
+          stub_feature_flags(global_ai_catalog: true, ai_catalog_flows: false, ai_catalog_third_party_flows: false)
+        end
+
+        it 'returns 404' do
+          get project_automate_flows_path(project)
+
+          expect(response).to have_gitlab_http_status(:not_found)
+        end
+      end
+
+      context 'when global_ai_catalog is disabled' do
+        before do
+          stub_feature_flags(global_ai_catalog: false, ai_catalog_flows: true)
         end
 
         it 'returns 404' do
