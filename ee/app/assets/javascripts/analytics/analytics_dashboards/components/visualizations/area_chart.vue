@@ -31,6 +31,9 @@ export default {
         ...AREA_CHART_SERIES_OPTIONS,
       }));
     },
+    includeLegendAvgMax() {
+      return this.options.includeLegendAvgMax ?? true;
+    },
   },
   methods: {
     formatVisualizationValue,
@@ -51,7 +54,9 @@ export default {
   <gl-area-chart
     :data="chartData"
     :option="fullOptions"
+    :include-legend-avg-max="includeLegendAvgMax"
     height="auto"
+    responsive
     data-testid="dashboard-visualization-area-chart"
   >
     <template #tooltip-title="{ title, params }">

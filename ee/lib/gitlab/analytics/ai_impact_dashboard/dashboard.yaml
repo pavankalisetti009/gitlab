@@ -66,3 +66,11 @@ panels:
       width: 12
       height: 4
     options: {}
+  - title: 'Code generation volume trends (Last 180 days)'
+    visualization: code_generation_volume_trends_chart
+    gridAttributes:
+      yPos: 16
+      xPos: 0
+      width: 12
+      height: 4
+    options: {}
