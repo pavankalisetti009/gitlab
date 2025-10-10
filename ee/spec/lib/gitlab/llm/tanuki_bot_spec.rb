@@ -158,7 +158,6 @@ RSpec.describe Gitlab::Llm::TanukiBot, feature_category: :duo_chat do
 
   describe '.show_breadcrumbs_entry_point' do
     let(:authorizer_response) { instance_double(Gitlab::Llm::Utils::Authorizer::Response, allowed?: allowed) }
-    let(:allowed) { true }
 
     before do
       allow(described_class).to receive(:chat_enabled?).with(user)
@@ -167,26 +166,18 @@ RSpec.describe Gitlab::Llm::TanukiBot, feature_category: :duo_chat do
                                                                         .and_return(authorizer_response)
     end
 
-    where(:container, :ai_features_enabled_for_user, :allowed, :duo_chat_access) do
+    where(:ai_features_enabled_for_user, :allowed, :duo_chat_access) do
       [
-        [:project, true, true, true],
-        [:project, true, false, false],
-        [:project, false, false, false],
-        [:project, false, true, false],
-        [:group, true, true, true],
-        [:group, true, false, false],
-        [:group, false, false, false],
-        [:group, false, true, false],
-        [nil, true, true, false],
-        [nil, true, false, false],
-        [nil, false, false, false],
-        [nil, false, true, false]
+        [true, true, true],
+        [true, false, false],
+        [false, true, false],
+        [false, false, false]
       ]
     end
 
     with_them do
       it 'shows button in correct cases' do
-        expect(described_class.show_breadcrumbs_entry_point?(user: user, container: container)).to be(duo_chat_access)
+        expect(described_class.show_breadcrumbs_entry_point?(user: user)).to be(duo_chat_access)
       end
     end
   end

@@ -184,6 +184,19 @@ RSpec.describe 'AiDuoWorkflowCreate', feature_category: :duo_chat do
           expect(mutation_response['workflow']).to match a_graphql_entity_for(workflow)
         end
       end
+
+      context 'when neither project_id nor namespace_id are specified' do
+        let(:container_input) { {} }
+
+        it 'uses the default duo namespace from user preferences' do
+          post_graphql_mutation(mutation, current_user: current_user)
+
+          expect(response).to have_gitlab_http_status(:success)
+          workflow = ::Ai::DuoWorkflows::Workflow.last
+          expect(mutation_response['workflow']['id']).to eq("gid://gitlab/Ai::DuoWorkflows::Workflow/#{workflow.id}")
+          expect(mutation_response['errors']).to be_empty
+        end
+      end
     end
 
     context 'when the user is not licensed to use the feature' do
