@@ -17,7 +17,6 @@ RSpec.describe 'Projects > Settings > Repository settings using custom role', :j
 
   context 'when user is a guest with custom roles that enables handling protected branches' do
     before do
-      stub_feature_flags(edit_branch_rules: false)
       stub_licensed_features(custom_roles: true)
 
       sign_in(current_user)

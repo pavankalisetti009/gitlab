@@ -15,7 +15,6 @@ RSpec.describe 'Protected Branches', :js, :disable_rate_limiter, feature_categor
   end
 
   before do
-    stub_feature_flags(edit_branch_rules: false)
     sign_in(user)
   end
 

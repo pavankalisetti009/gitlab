@@ -4,7 +4,6 @@ require 'spec_helper'
 
 RSpec.describe "Search results for project settings", :js, feature_category: :global_search, type: :feature do
   before do
-    stub_feature_flags(edit_branch_rules: false)
     stub_licensed_features(
       issuable_default_templates: true,
       target_branch_rules: true,
