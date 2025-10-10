@@ -50,9 +50,6 @@ msgid_plural " except branches:"
 msgstr[0] ""
 msgstr[1] ""
 
-msgid " hook: %{hook_name} (ID: %{hook_id})."
-msgstr ""
-
 msgid " or "
 msgstr ""
 
@@ -73532,9 +73529,6 @@ msgid "WebAuthn devices"
 msgstr ""
 
 msgid "WebAuthn only works with HTTPS-enabled websites. Contact your administrator for more details."
-msgstr ""
-
-msgid "WebHooks|%{reason}. Update or delete the following "
 msgstr ""
 
 msgid "WebIDE|Quickly and easily edit multiple files in your project."
