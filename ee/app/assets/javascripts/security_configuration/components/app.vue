@@ -1,6 +1,7 @@
 <script>
 import { GlTabs, GlTab } from '@gitlab/ui';
 import PageHeading from '~/vue_shared/components/page_heading.vue';
+import BetaBadge from '~/vue_shared/components/badges/beta_badge.vue';
 import ConfigureAttributes from './security_attributes/configure_attributes.vue';
 
 export default {
@@ -9,6 +10,7 @@ export default {
     GlTab,
     PageHeading,
     ConfigureAttributes,
+    BetaBadge,
   },
 };
 </script>
@@ -16,7 +18,10 @@ export default {
   <div>
     <page-heading :heading="s__('SecurityConfiguration|Security configuration')" />
     <gl-tabs>
-      <gl-tab :title="s__('SecurityAttributes|Security attributes')">
+      <gl-tab>
+        <template #title>
+          {{ s__('SecurityAttributes|Security attributes') }} <beta-badge class="gl-ml-2" />
+        </template>
         <p class="gl-my-5">
           {{
             s__(

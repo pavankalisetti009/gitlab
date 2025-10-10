@@ -9418,6 +9418,12 @@ msgstr ""
 msgid "Attribute 'pod-overrides' is not yet supported"
 msgstr ""
 
+msgid "Attributes you add will appear here."
+msgstr ""
+
+msgid "Attributes you create will appear here."
+msgstr ""
+
 msgid "Audit events"
 msgstr ""
 
@@ -58408,6 +58414,9 @@ msgstr ""
 msgid "SecurityAttributes|Add attribute"
 msgstr ""
 
+msgid "SecurityAttributes|Add attributes"
+msgstr ""
+
 msgid "SecurityAttributes|Add security attribute"
 msgstr ""
 
@@ -58526,6 +58535,9 @@ msgid "SecurityAttributes|Name"
 msgstr ""
 
 msgid "SecurityAttributes|Name is required"
+msgstr ""
+
+msgid "SecurityAttributes|No security attributes added yet"
 msgstr ""
 
 msgid "SecurityAttributes|Remove attribute"
@@ -66537,6 +66549,9 @@ msgid "There are no archived requirements"
 msgstr ""
 
 msgid "There are no archived test cases"
+msgstr ""
+
+msgid "There are no attributes in this category."
 msgstr ""
 
 msgid "There are no changed labels"

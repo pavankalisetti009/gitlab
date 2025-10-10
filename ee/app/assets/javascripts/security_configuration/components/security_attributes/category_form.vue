@@ -8,7 +8,7 @@ import {
   GlFormRadioGroup,
   GlFormRadio,
   GlIcon,
-  GlTableLite,
+  GlTable,
   GlLabel,
   GlButton,
   GlTooltipDirective,
@@ -16,7 +16,9 @@ import {
   GlDisclosureDropdownItem,
   GlLink,
   GlPopover,
+  GlEmptyState,
 } from '@gitlab/ui';
+import EMPTY_ATTRIBUTE_SVG from '@gitlab/svgs/dist/illustrations/empty-state/empty-labels-md.svg?url';
 import { s__, __, sprintf } from '~/locale';
 import CrudComponent from '~/vue_shared/components/crud_component.vue';
 import {
@@ -36,7 +38,7 @@ export default {
     GlFormRadioGroup,
     GlFormRadio,
     GlIcon,
-    GlTableLite,
+    GlTable,
     GlLabel,
     GlButton,
     GlDisclosureDropdown,
@@ -44,6 +46,7 @@ export default {
     CrudComponent,
     GlLink,
     GlPopover,
+    GlEmptyState,
   },
   directives: {
     GlTooltip: GlTooltipDirective,
@@ -188,6 +191,7 @@ export default {
   },
   singleSelection: s__('SecurityAttributes|Single selection'),
   multipleSelection: s__('SecurityAttributes|Multiple selection'),
+  EMPTY_ATTRIBUTE_SVG,
 };
 </script>
 <template>
@@ -305,12 +309,27 @@ export default {
           </template>
         </gl-form-group>
         <crud-component header-class="gl-hidden">
-          <gl-table-lite
+          <gl-table
             :items="attributes"
             :fields="$options.attributesTableFields"
             stacked="md"
             class="gl-mb-0"
+            show-empty
           >
+            <template #empty>
+              <gl-empty-state
+                :svg-path="$options.EMPTY_ATTRIBUTE_SVG"
+                :svg-height="100"
+                :title="__('There are no attributes in this category.')"
+                :description="__('Attributes you create will appear here.')"
+                ><template v-if="areAttributesEditable" #actions>
+                  <gl-button variant="confirm" @click="$emit('addAttribute')">
+                    {{ s__('SecurityAttributes|Create attribute') }}
+                  </gl-button>
+                </template>
+              </gl-empty-state>
+            </template>
+
             <template #cell(name)="{ item: { name, color } }">
               <gl-label :background-color="color" :title="name" />
             </template>
@@ -334,7 +353,7 @@ export default {
                 />
               </gl-disclosure-dropdown>
             </template>
-          </gl-table-lite>
+          </gl-table>
         </crud-component>
       </gl-form>
     </div>
