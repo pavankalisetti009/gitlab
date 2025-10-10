@@ -1,7 +1,7 @@
 ---
 RSpec/BeforeAllRoleAssignment:
   Exclude:
-    - 'ee/spec/controllers/autocomplete_controller_spec.rb'
+    - 'ee/spec/controllers/ee/autocomplete_controller_spec.rb'
     - 'ee/spec/controllers/ee/dashboard_controller_spec.rb'
     - 'ee/spec/controllers/ee/groups/settings/ci_cd_controller_spec.rb'
     - 'ee/spec/controllers/ee/groups/usage_quotas_controller_spec.rb'
