@@ -53,7 +53,7 @@ RSpec.describe 'Duo Chat', :js, :saas, :clean_gitlab_redis_cache, feature_catego
       'group' | :visit_root | :hidden | nil
       nil | :visit_group | :enabled | nil
       nil | :visit_project | :enabled | nil
-      nil | :visit_root | :hidden | nil
+      nil | :visit_root | :enabled | nil
     end
 
     with_them do

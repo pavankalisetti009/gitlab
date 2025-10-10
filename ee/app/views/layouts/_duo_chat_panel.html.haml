@@ -1,5 +1,5 @@
 - amazon_q_enabled = ::Ai::AmazonQ.enabled?
-- duo_enabled_for_project_or_group = ::Gitlab::Llm::TanukiBot.show_breadcrumbs_entry_point?(user: current_user, container: @group || @project)
+- duo_enabled_for_project_or_group = ::Gitlab::Llm::TanukiBot.show_breadcrumbs_entry_point?(user: current_user)
 
 - if !amazon_q_enabled && duo_enabled_for_project_or_group
   #duo-chat-panel.duo-chat-panel{ data: duo_chat_panel_data(current_user, @project, @group) }

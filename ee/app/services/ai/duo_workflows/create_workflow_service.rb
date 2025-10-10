@@ -7,7 +7,7 @@ module Ai
       include Concerns::WorkflowEventTracking
 
       def initialize(container:, current_user:, params:)
-        @container = container
+        @container = container || current_user.user_preference.get_default_duo_namespace
         @current_user = current_user
         @params = params
       end

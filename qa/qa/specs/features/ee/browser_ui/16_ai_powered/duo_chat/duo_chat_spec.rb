@@ -7,7 +7,6 @@ module QA
       let(:user) { Runtime::User::Store.test_user }
       let(:api_client) { Runtime::User::Store.default_api_client }
       let(:token) { api_client.personal_access_token }
-      let(:project) { create(:project, name: 'duo-chat-project', api_client: api_client) }
 
       shared_examples 'Duo Chat' do |testcase|
         it 'a valid response is returned', testcase: testcase do
@@ -30,7 +29,6 @@ module QA
 
       before do
         Flow::Login.sign_in(as: user)
-        project.visit!
       end
 
       context "when asking 'hi'" do
