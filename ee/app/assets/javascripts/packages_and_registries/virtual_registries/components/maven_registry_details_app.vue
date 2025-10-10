@@ -1,5 +1,5 @@
 <script>
-import { GlAlert, GlButton, GlModal } from '@gitlab/ui';
+import { GlAlert, GlBadge, GlButton, GlModal } from '@gitlab/ui';
 import { getIdFromGraphQLId } from '~/graphql_shared/utils';
 import CrudComponent from '~/vue_shared/components/crud_component.vue';
 import glAbilitiesMixin from '~/vue_shared/mixins/gl_abilities_mixin';
@@ -25,10 +25,13 @@ const FORM_TYPES = {
   LINK: 'link',
 };
 
+const MAX_UPSTREAMS_PER_REGISTRY = 20;
+
 export default {
   name: 'MavenRegistryDetailsApp',
   components: {
     GlAlert,
+    GlBadge,
     GlButton,
     GlModal,
     AddUpstream,
@@ -131,6 +134,15 @@ export default {
       return sprintf(s__('VirtualRegistry|Clear cache for %{upstreamName}?'), {
         upstreamName: this.upstreamToBeCleared.name,
       });
+    },
+    upstreamsCountBadgeText() {
+      return sprintf(s__('VirtualRegistry|%{count} of %{max}'), {
+        max: MAX_UPSTREAMS_PER_REGISTRY,
+        count: this.upstreamsCount,
+      });
+    },
+    upstreamsLimitReached() {
+      return this.upstreamsCount === MAX_UPSTREAMS_PER_REGISTRY;
     },
   },
   watch: {
@@ -334,14 +346,17 @@ export default {
     ref="registryDetailsCrud"
     :title="s__('VirtualRegistry|Upstreams')"
     :is-loading="loading"
-    icon="infrastructure-registry"
     :description="
       s__(
         'VirtualRegistry|Use the arrow buttons to reorder upstreams. Artifacts are resolved from top to bottom.',
       )
     "
-    :count="upstreamsCount"
   >
+    <template #count>
+      <gl-badge>
+        {{ upstreamsCountBadgeText }}
+      </gl-badge>
+    </template>
     <template #actions="{ isFormVisible }">
       <gl-button
         v-if="canClearRegistryCache"
@@ -352,8 +367,11 @@ export default {
       >
         {{ s__('VirtualRegistry|Clear all caches') }}
       </gl-button>
+      <span v-if="upstreamsLimitReached" data-testid="max-upstreams">{{
+        s__('VirtualRegistry|Maximum number of upstreams reached.')
+      }}</span>
       <add-upstream
-        v-if="canCreate"
+        v-else-if="canCreate"
         :loading="queriesInProgress"
         :can-link="canLinkUpstream"
         :disabled="isFormVisible"

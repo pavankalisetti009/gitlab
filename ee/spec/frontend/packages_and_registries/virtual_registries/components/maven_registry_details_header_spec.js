@@ -53,6 +53,10 @@ describe('MavenRegistryDetailsHeader', () => {
     it('does not render Edit button', () => {
       expect(findEditButton().exists()).toBe(false);
     });
+
+    it('renders sub-header with upstreams limit information', () => {
+      expect(wrapper.text()).toContain('You can add up to 20 upstreams per registry.');
+    });
   });
 
   describe('when user has ability to edit', () => {
