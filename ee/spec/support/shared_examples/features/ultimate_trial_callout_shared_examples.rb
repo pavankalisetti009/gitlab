@@ -25,7 +25,7 @@ RSpec.shared_examples 'dashboard ultimate trial callout' do
       expect(page).to have_selector('[data-track-action=render]')
       expect(page).to have_selector('[data-track-label=ultimate_banner]')
 
-      page.within('[data-testid="start-trial-banner"]') do
+      page.within('body.page-initialised [data-testid="start-trial-banner"]') do
         expect(page).to have_selector('[data-track-action=click_button]')
         expect(page).to have_selector('[data-track-label=start_your_trial]')
 
