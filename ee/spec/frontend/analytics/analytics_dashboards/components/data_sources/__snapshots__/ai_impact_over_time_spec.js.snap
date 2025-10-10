@@ -55,7 +55,7 @@ exports[`AI Impact Over Time Data Source fetch setVisualizationOverrides callbac
       "visualizationOptionOverrides": {
         "title": "Last 30 days",
         "tooltip": {
-          "description": "Percentage ratio of Duo seats assigned that interacted with Code Suggestions / total number of unique code contributors with Duo seats. %{linkStart}Learn more%{linkEnd}.",
+          "description": "Code contributors with assigned Duo seats who used Code Suggestions. %{linkStart}Learn more%{linkEnd}.",
           "descriptionLink": "/help/user/project/repository/code_suggestions/_index#use-code-suggestions",
         },
       },
@@ -71,7 +71,7 @@ exports[`AI Impact Over Time Data Source fetch setVisualizationOverrides callbac
       "visualizationOptionOverrides": {
         "title": "Last 30 days",
         "tooltip": {
-          "description": "Percentage ratio of Duo seats assigned that interacted with Code Suggestions / total number of unique code contributors with Duo seats. %{linkStart}Learn more%{linkEnd}.",
+          "description": "Code contributors with assigned Duo seats who used Code Suggestions. %{linkStart}Learn more%{linkEnd}.",
           "descriptionLink": "/help/user/project/repository/code_suggestions/_index#use-code-suggestions",
         },
       },
@@ -87,7 +87,7 @@ exports[`AI Impact Over Time Data Source fetch setVisualizationOverrides callbac
       "visualizationOptionOverrides": {
         "title": "Last 30 days",
         "tooltip": {
-          "description": "Percentage ratio of Duo seats assigned that interacted with Code Suggestions / total number of unique code contributors with Duo seats. %{linkStart}Learn more%{linkEnd}.",
+          "description": "Code contributors with assigned Duo seats who used Code Suggestions. %{linkStart}Learn more%{linkEnd}.",
           "descriptionLink": "/help/user/project/repository/code_suggestions/_index#use-code-suggestions",
         },
       },

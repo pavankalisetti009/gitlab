@@ -55,7 +55,7 @@ export const AI_IMPACT_TABLE_METRICS = {
 export const AI_IMPACT_OVER_TIME_METRICS_TOOLTIPS = {
   [AI_METRICS.CODE_SUGGESTIONS_USAGE_RATE]: {
     description: s__(
-      'AiImpactAnalytics|Percentage ratio of Duo seats assigned that interacted with Code Suggestions / total number of unique code contributors with Duo seats. %{linkStart}Learn more%{linkEnd}.',
+      'AiImpactAnalytics|Code contributors with assigned Duo seats who used Code Suggestions. %{linkStart}Learn more%{linkEnd}.',
     ),
     descriptionLink: helpPagePath('user/project/repository/code_suggestions/_index', {
       anchor: 'use-code-suggestions',
