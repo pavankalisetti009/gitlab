@@ -106,12 +106,12 @@
   // Search button
   .super-topbar .topbar-search-button {
     @apply gl-text-subtle gl-border-alpha-dark-24 #{!important};
-    
+
     kbd {
       @apply gl-border-strong gl-font-semibold gl-text-subtle gl-shadow-none dark:gl-border-transparent;
     }
   }
-  
+
   .super-topbar .topbar-search-button:not(:hover):not(:focus):not(:active) {
     @apply dark:gl-bg-alpha-light-8 dark:gl-border-alpha-light-16 #{!important};
   }
@@ -400,7 +400,7 @@
   // Scrollbar offset
   .panel-content-inner,
   .vue-portal-target .work-item-drawer {
-    @apply gl-mx-3;
+    @apply gl-px-3 gl-mx-0;
   }
 
   // Panel content
