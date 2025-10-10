@@ -74,6 +74,27 @@ module EE
       }
     end
 
+    def model_types
+      ::Gitlab::Geo::ModelMapper.available_models.map do |klass|
+        model_data(klass)
+      end
+    end
+
+    def model_data(model_class)
+      model_name = ::Gitlab::Geo::ModelMapper.convert_to_name(model_class)
+      has_replicator = model_class.respond_to?(:replicator_class)
+
+      {
+        title: model_name.titleize,
+        title_plural: model_name.titleize.pluralize,
+        name: model_name,
+        name_plural: model_name.pluralize,
+        model_class: model_class.name,
+        rest_endpoint: api_v4_admin_data_management_path(model_name:),
+        checksum_enabled: has_replicator ? model_class.replicator_class.verification_enabled? : false
+      }
+    end
+
     def enabled_replicator_classes
       replication_enabled_replicator_classes | verification_enabled_replicator_classes
     end

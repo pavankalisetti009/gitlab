@@ -6,6 +6,7 @@ RSpec.describe 'admin/data_management/index.html.haml', :enable_admin_mode, feat
   before do
     allow(view).to receive(:breadcrumb_title)
     allow(view).to receive(:page_title)
+    @model_class = Gitlab::Geo::ModelMapper.available_models.first
 
     render
   end

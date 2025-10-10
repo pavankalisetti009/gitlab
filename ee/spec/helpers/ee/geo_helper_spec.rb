@@ -2,6 +2,8 @@
 require 'spec_helper'
 
 RSpec.describe EE::GeoHelper, feature_category: :geo_replication do
+  include EE::GeoHelpers
+
   describe '.current_node_human_status' do
     where(:primary, :secondary, :result) do
       [
@@ -72,6 +74,67 @@ RSpec.describe EE::GeoHelper, feature_category: :geo_replication do
       it 'returns even length file size string with a padded leading zero' do
         expect(helper.format_file_size_for_checksum("0")).to eq("00")
       end
+    end
+  end
+
+  describe '#model_data' do
+    let(:result) { helper.model_data(DummyModel) }
+
+    before do
+      stub_dummy_replicator_class
+      stub_dummy_model_class
+    end
+
+    context 'when model has a replicator' do
+      context 'with verification enabled' do
+        before do
+          allow(::Geo::DummyReplicator).to receive(:verification_enabled?).and_return(true)
+        end
+
+        it 'returns model data with checksum enabled' do
+          expect(result).to eq({
+            title: 'Dummy Model',
+            title_plural: 'Dummy Models',
+            name: 'dummy_model',
+            name_plural: 'dummy_models',
+            model_class: 'DummyModel',
+            rest_endpoint: '/api/v4/admin/data_management/dummy_model',
+            checksum_enabled: true
+          })
+        end
+      end
+
+      context 'with verification disabled' do
+        before do
+          allow(::Geo::DummyReplicator).to receive(:verification_enabled?).and_return(false)
+        end
+
+        it 'returns checksum disabled' do
+          expect(result).to include(checksum_enabled: false)
+        end
+      end
+    end
+
+    context 'when model does not have a replicator' do
+      before do
+        allow(DummyModel).to receive(:respond_to?).with(:replicator_class).and_return(false)
+      end
+
+      it 'returns checksum disabled' do
+        expect(result).to include(checksum_enabled: false)
+      end
+    end
+  end
+
+  describe '#model_types' do
+    subject(:model_types) { helper.model_types }
+
+    it 'includes all model_class_data' do
+      expected_model_types = Gitlab::Geo::REPLICATOR_CLASSES.map do |replicator|
+        helper.model_data(replicator.model)
+      end
+
+      expect(model_types).to include(*expected_model_types)
     end
   end
 end

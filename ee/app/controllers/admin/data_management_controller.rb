@@ -7,16 +7,13 @@ module Admin
 
     # TODO: Remove in https://gitlab.com/gitlab-org/gitlab/-/issues/575225
     before_action :ensure_feature_available!
+    before_action :model_found?
 
     authorize! :read_admin_data_management, only: [:index, :show]
 
-    def index
-      @models = model_params[:model_name].blank? ? default_model.all : all_models
-    end
+    def index; end
 
     def show
-      return render_404 unless model_class
-
       @model = model_class.find(model_params[:id])
     rescue ActiveRecord::RecordNotFound
       render_404
@@ -29,18 +26,19 @@ module Admin
       render_404 unless Feature.enabled?(:geo_primary_verification_view, current_user)
     end
 
-    def all_models
-      return render_404 unless model_class
-
-      model_class.all
+    def model_found?
+      render_404 unless model_class
     end
 
     def model_class
-      @model_class ||= ::Gitlab::Geo::ModelMapper.find_from_name(model_params[:model_name])
+      @model_class ||= find_or_default_model_class
     end
 
-    def default_model
-      @default_model ||= ::Gitlab::Geo::ModelMapper.available_models.first
+    def find_or_default_model_class
+      mapper = ::Gitlab::Geo::ModelMapper
+      return mapper.available_models.first if model_params[:model_name].blank?
+
+      mapper.find_from_name(model_params[:model_name])
     end
 
     def model_params
