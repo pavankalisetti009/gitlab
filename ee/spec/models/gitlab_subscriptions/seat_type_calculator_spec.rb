@@ -103,6 +103,21 @@ RSpec.describe GitlabSubscriptions::SeatTypeCalculator,
             expect(seat_type).to eq(:free)
           end
         end
+
+        context 'when the namespace is downgraded from Ultimate tier' do
+          context 'with a membership that retained a pre-existing custom role association' do
+            # After the downgrade, members retain their member_role_id but custom permissions are ignored
+            let(:billable_role) { create(:member_role, :minimal_access, :read_runners, namespace: root_namespace) }
+
+            before do
+              create(:group_member, :minimal_access, group: root_namespace, user: user, member_role: billable_role)
+            end
+
+            it 'ignores the custom role and returns the seat type based on the highest access level' do
+              expect(seat_type).to eq(:free)
+            end
+          end
+        end
       end
 
       context 'with a namespace on an ultimate plan' do
@@ -155,6 +170,93 @@ RSpec.describe GitlabSubscriptions::SeatTypeCalculator,
             expect(seat_type).to eq(:free)
           end
         end
+
+        context 'when a user has a custom role membership' do
+          before do
+            create(:group_member, base_role, group: root_namespace, user: user, member_role: custom_role)
+          end
+
+          context 'with a permission that does not consume a seat' do
+            where(:base_role) do
+              [
+                :minimal_access,
+                :guest
+              ]
+            end
+
+            with_them do
+              let(:custom_role) { create(:member_role, base_role, :read_code, namespace: root_namespace) }
+
+              it 'returns free seat type' do
+                expect(seat_type).to eq(:free)
+              end
+            end
+          end
+
+          context 'with a permission that consumes a seat' do
+            where(:base_role) do
+              [
+                :minimal_access,
+                :guest,
+                :planner,
+                :reporter,
+                :developer,
+                :maintainer
+              ]
+            end
+
+            with_them do
+              let(:custom_role) { create(:member_role, base_role, :read_runners, namespace: root_namespace) }
+
+              it 'returns base seat type' do
+                expect(seat_type).to eq(:base)
+              end
+            end
+          end
+        end
+
+        context 'when the user has standard and custom role memberships' do
+          let(:sub_group) { create(:group, parent: root_namespace) }
+
+          context 'with non-billable standard role and billable custom role memberships' do
+            let(:billable_role) { create(:member_role, :minimal_access, :read_runners, namespace: root_namespace) }
+
+            before do
+              create(:group_member, :minimal_access, group: root_namespace, user: user, member_role: billable_role)
+              create(:group_member, :guest, group: sub_group, user: user)
+            end
+
+            it 'returns the seat type for the custom role' do
+              expect(seat_type).to eq(:base)
+            end
+          end
+
+          context 'with billable standard role and non-billable custom role memberships' do
+            let(:non_billable_role) { create(:member_role, :guest, :read_code, namespace: root_namespace) }
+
+            before do
+              create(:group_member, :guest, group: root_namespace, user: user, member_role: non_billable_role)
+              create(:group_member, :planner, group: sub_group, user: user)
+            end
+
+            it 'returns the seat type for the highest access level' do
+              expect(seat_type).to eq(:plan)
+            end
+          end
+
+          context 'with non-billable standard role and custom role memberships' do
+            let(:non_billable_role) { create(:member_role, :guest, :read_code, namespace: root_namespace) }
+
+            before do
+              create(:group_member, :guest, group: root_namespace, user: user, member_role: non_billable_role)
+              create(:group_member, :guest, group: sub_group, user: user)
+            end
+
+            it 'returns free seat type' do
+              expect(seat_type).to eq(:free)
+            end
+          end
+        end
       end
 
       context 'with a bot user' do
@@ -178,6 +280,12 @@ RSpec.describe GitlabSubscriptions::SeatTypeCalculator,
 
         it 'returns base seat type' do
           expect(seat_type).to eq(:base)
+        end
+      end
+
+      context 'when the user has no memberships' do
+        it 'returns nil' do
+          expect(seat_type).to be_nil
         end
       end
     end
@@ -260,6 +368,23 @@ RSpec.describe GitlabSubscriptions::SeatTypeCalculator,
 
         it 'filters out nil values' do
           expect(seat_types).to eq({ user1.id => nil, user2.id => nil })
+        end
+      end
+
+      context 'with custom role memberships' do
+        let(:sub_group) { create(:group, parent: root_namespace) }
+        let(:billable_role) { create(:member_role, :guest, :read_runners, namespace: root_namespace) }
+        let(:non_billable_role) { create(:member_role, :guest, :read_code, namespace: root_namespace) }
+
+        before do
+          create(:group_member, :guest, group: root_namespace, user: user1)
+          create(:group_member, :guest, group: sub_group, user: user1, member_role: billable_role)
+          create(:group_member, :minimal_access, group: root_namespace, user: user2)
+          create(:group_member, :guest, group: sub_group, user: user2, member_role: non_billable_role)
+        end
+
+        it 'returns seat types for multiple users' do
+          expect(seat_types).to eq({ user1.id => :base, user2.id => :free })
         end
       end
     end
