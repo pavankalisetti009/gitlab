@@ -19,6 +19,7 @@ module Vulnerabilities
             update_updated_at_values
             restore_records
             delete_backups
+            sync_elasticsearch
           end
 
           private
@@ -38,6 +39,14 @@ module Vulnerabilities
 
           def delete_backups
             Vulnerabilities::Backups::Vulnerability.by_original_ids(original_ids).delete_all
+          end
+
+          def sync_elasticsearch
+            Vulnerability.current_transaction.after_commit do
+              vulnerabilities = Vulnerability.id_in(original_ids)
+
+              BulkEsOperationService.new(vulnerabilities).execute(&:itself)
+            end
           end
 
           def values
