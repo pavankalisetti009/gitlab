@@ -3,6 +3,7 @@ description: AI Catalog item detail view visited
 internal_events: true
 status: active
 action: view_ai_catalog_item
+classification: duo
 identifiers:
   - user
 additional_properties:

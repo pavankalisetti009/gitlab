@@ -2,6 +2,7 @@
 description: Tracks the number of requests that have exceeded the rate limit for the `POST /code_suggestions/direct_access` API endpoint.
 internal_events: true
 action: code_suggestions_direct_access_rate_limit_exceeded
+classification: duo
 identifiers:
 - user
 product_group: code_creation

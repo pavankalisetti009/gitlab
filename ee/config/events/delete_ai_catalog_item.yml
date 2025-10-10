@@ -3,6 +3,7 @@ description: AI Catalog item deleted successfully
 internal_events: true
 status: active
 action: delete_ai_catalog_item
+classification: duo
 identifiers:
 - project
 - user

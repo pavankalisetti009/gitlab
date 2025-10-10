@@ -3,6 +3,7 @@ description: Tracks duo agent platform session failures. Important for Duo Agent
 internal_events: true
 status: active
 action: cleanup_stuck_agent_platform_session
+classification: duo
 identifiers:
 - project
 - user

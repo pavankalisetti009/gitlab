@@ -2,6 +2,7 @@
 description: When a user mentions @GitLabDuo in an MR comment
 internal_events: true
 action: mention_gitlabduo_in_mr_comment
+classification: duo
 identifiers:
 - project
 - namespace

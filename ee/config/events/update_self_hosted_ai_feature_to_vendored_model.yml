@@ -3,6 +3,7 @@ description: Tracks when a self-hosted AI features switches to a vendored model
 internal_events: true
 status: active
 action: update_self_hosted_ai_feature_to_vendored_model
+classification: duo
 identifiers:
 - user
 additional_properties:
