@@ -72354,6 +72354,9 @@ msgstr ""
 msgid "VirtualRegistry|Clear cache for %{upstreamName}?"
 msgstr ""
 
+msgid "VirtualRegistry|Clearing the cache deletes all cached packages for this upstream and re-fetch them from the source. If the upstream is unavailable or misconfigured, jobs might fail. Are you sure you want to continue?"
+msgstr ""
+
 msgid "VirtualRegistry|Configure an upstream registry to manage Maven artifacts and cache entries."
 msgstr ""
 
@@ -72570,9 +72573,6 @@ msgid "VirtualRegistry|This action cannot be undone. Deleting this upstream migh
 msgstr ""
 
 msgid "VirtualRegistry|This will delete all cached packages for exclusive upstream registries in this virtual registry. If any upstream is unavailable or misconfigured after clearing, jobs that rely on those packages might fail. Are you sure you want to continue?"
-msgstr ""
-
-msgid "VirtualRegistry|This will delete all cached packages for this upstream and re-fetch them from the source. If the upstream is unavailable or misconfigured, jobs might fail. Are you sure you want to continue?"
 msgstr ""
 
 msgid "VirtualRegistry|Time in hours"
