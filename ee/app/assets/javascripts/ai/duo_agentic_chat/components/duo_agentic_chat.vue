@@ -688,6 +688,10 @@ export default {
         this.aiCatalogItemVersionId = '';
         this.agentConfig = null;
       }
+
+      // Reset agent validation state
+      this.isChatAvailable = true;
+      this.agentDeletedError = '';
     },
     getSavedModel() {
       try {

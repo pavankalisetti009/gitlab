@@ -1721,6 +1721,34 @@ describe('Duo Agentic Chat', () => {
 
       expect(findDuoChat().props('error')).toBe('');
     });
+
+    it('re-enables chat when starting new chat after viewing deleted agent thread', async () => {
+      // Mock thread with deleted agent
+      ApolloUtils.fetchWorkflowEvents.mockResolvedValue({
+        ...MOCK_WORKFLOW_EVENTS_RESPONSE,
+        duoWorkflowWorkflows: {
+          nodes: [{ id: 'workflow-1', aiCatalogItemVersionId: 'AgentVersion 999' }],
+        },
+      });
+
+      // Select thread with deleted agent
+      findDuoChat().vm.$emit('thread-selected', { id: MOCK_WORKFLOW_ID });
+      await waitForPromises();
+
+      // Verify chat is disabled
+      expect(findDuoChat().props('isChatAvailable')).toBe(false);
+      expect(findDuoChat().props('error')).toBe(
+        'The agent associated with this conversation is no longer available. You can view the conversation history but cannot send new messages.',
+      );
+
+      // Start a new chat with default agent
+      findDuoChat().vm.$emit('new-chat', { name: 'GitLab Duo Agent' });
+      await nextTick();
+
+      // Verify chat is re-enabled and error is cleared
+      expect(findDuoChat().props('isChatAvailable')).toBe(true);
+      expect(findDuoChat().props('error')).toBe('');
+    });
   });
 
   describe('dynamicTitle', () => {
