@@ -603,6 +603,34 @@ RSpec.describe Geo::VerificationState, feature_category: :geo_replication do
           expect { subject.verification_started! }.to change { subject.verification_state }.from(0).to(1)
         end
       end
+
+      context 'with verification not pending / not disabled' do
+        let(:pending) { DummyModel.new }
+        let(:started) { DummyModel.new }
+        let(:succeeded) { DummyModel.new }
+        let(:failed) { DummyModel.new }
+        let(:disabled) { DummyModel.new }
+
+        before do
+          pending.update!(verification_state: DummyModel.verification_state_value(:verification_pending))
+          started.update!(verification_state: DummyModel.verification_state_value(:verification_started))
+          succeeded.update!(verification_state: DummyModel.verification_state_value(:verification_succeeded), verification_checksum: 'abc')
+          failed.update!(verification_state: DummyModel.verification_state_value(:verification_failed), verification_failure: 'error')
+          disabled.update!(verification_state: DummyModel.verification_state_value(:verification_disabled))
+        end
+
+        describe '.verification_not_disabled' do
+          it 'returns available verifiables, excluding verification_disabled' do
+            expect(subject.class.verification_not_disabled).to match_array([pending, started, succeeded, failed])
+          end
+        end
+
+        describe '.verification_not_pending' do
+          it 'returns available verifiables, excluding verification_pending' do
+            expect(subject.class.verification_not_pending).to match_array([started, succeeded, failed, disabled])
+          end
+        end
+      end
     end
 
     context 'when verification state is stored in a separate table' do
@@ -660,6 +688,84 @@ RSpec.describe Geo::VerificationState, feature_category: :geo_replication do
           expect(subject.verification_failure).to eq('draft changes')
         end
       end
+
+      describe '.needs_verification' do
+        it 'includes verification_pending' do
+          subject.save!
+
+          expect(subject.class.needs_verification).to include(subject)
+        end
+
+        it 'includes verification_failed and verification_retry_due' do
+          subject.verification_started
+          subject.verification_failed_with_message!('foo')
+          subject.update!(verification_retry_at: 1.minute.ago)
+
+          expect(subject.class.needs_verification).to include(subject)
+        end
+
+        it 'excludes verification_failed with future verification_retry_at' do
+          subject.verification_started
+          subject.verification_failed_with_message!('foo')
+          subject.update!(verification_retry_at: 1.minute.from_now)
+
+          expect(subject.class.needs_verification).not_to include(subject)
+        end
+      end
+
+      describe '.needs_reverification' do
+        let(:pending_value) { TestDummyModelWithSeparateState.verification_state_value(:verification_pending) }
+        let(:failed_value) { TestDummyModelWithSeparateState.verification_state_value(:verification_failed) }
+        let(:succeeded_value) { TestDummyModelWithSeparateState.verification_state_value(:verification_succeeded) }
+
+        it 'includes verification_succeeded with expired checksum' do
+          model_record.verification_state_object.update!(verification_state: succeeded_value,
+            verified_at: 15.days.ago,
+            verification_checksum: 'abc')
+
+          expect(subject.class.needs_reverification.first).to eq(model_record)
+        end
+
+        it 'excludes non-success verification states and fresh checksums' do
+          [pending_value, failed_value, succeeded_value].each_with_index do |state, i|
+            state_params = { verification_state: state, verified_at: (i * 3).days.ago }
+            state_params = state_params.merge(verification_checksum: 'abc') if state == succeeded_value
+            state_params = state_params.merge(verification_failure: 'error') if state == failed_value
+
+            TestDummyModelWithSeparateState.new.update!(state_params)
+          end
+
+          expect(subject.class.needs_reverification.count).to eq 0
+        end
+      end
+
+      context 'with verification not pending / not disabled' do
+        let(:pending) { TestDummyModelWithSeparateState.new }
+        let(:started) { TestDummyModelWithSeparateState.new }
+        let(:succeeded) { TestDummyModelWithSeparateState.new }
+        let(:failed) { TestDummyModelWithSeparateState.new }
+        let(:disabled) { TestDummyModelWithSeparateState.new }
+
+        before do
+          pending.update!(verification_state: TestDummyModelWithSeparateState.verification_state_value(:verification_pending))
+          started.update!(verification_state: TestDummyModelWithSeparateState.verification_state_value(:verification_started))
+          succeeded.update!(verification_state: TestDummyModelWithSeparateState.verification_state_value(:verification_succeeded), verification_checksum: 'abc')
+          failed.update!(verification_state: TestDummyModelWithSeparateState.verification_state_value(:verification_failed), verification_failure: 'error')
+          disabled.update!(verification_state: TestDummyModelWithSeparateState.verification_state_value(:verification_disabled))
+        end
+
+        describe '.verification_not_disabled' do
+          it 'returns available verifiables, excluding verification_disabled' do
+            expect(subject.class.verification_not_disabled).to match_array([pending, started, succeeded, failed])
+          end
+        end
+
+        describe '.verification_not_pending' do
+          it 'returns available verifiables, excluding verification_pending' do
+            expect(subject.class.verification_not_pending).to match_array([started, succeeded, failed, disabled])
+          end
+        end
+      end
     end
   end
 
@@ -672,15 +778,19 @@ RSpec.describe Geo::VerificationState, feature_category: :geo_replication do
       let_it_be(:factory) { :geo_package_file_registry }
       let_it_be(:registry_class) { Geo::PackageFileRegistry }
 
-      let_it_be(:pending) { create(factory, :synced, verification_state: registry_class.verification_state_value(:verification_pending)) }
+      let_it_be(:pending_value) { registry_class.verification_state_value(:verification_pending) }
+      let_it_be(:failed_value) { registry_class.verification_state_value(:verification_failed) }
+      let_it_be(:succeeded_value) { registry_class.verification_state_value(:verification_succeeded) }
+
+      let_it_be(:pending) { create(factory, :synced, verification_state: pending_value) }
       let_it_be(:started) { create(factory, :synced, verification_state: registry_class.verification_state_value(:verification_started)) }
 
       let_it_be(:succeeded) do
-        create(factory, :synced, verification_state: registry_class.verification_state_value(:verification_succeeded), verification_checksum: 'abc123')
+        create(factory, :synced, verification_state: succeeded_value, verification_checksum: 'abc123')
       end
 
       let_it_be(:failed) do
-        create(factory, :synced, verification_state: registry_class.verification_state_value(:verification_failed), verification_failure: 'Foo bar')
+        create(factory, :synced, verification_state: failed_value, verification_failure: 'Foo bar')
       end
     end
 
@@ -722,6 +832,56 @@ RSpec.describe Geo::VerificationState, feature_category: :geo_replication do
         registry = create(:geo_package_file_registry)
 
         expect { registry.verification_started! }.to change { registry.verification_state }.from(0).to(1)
+      end
+    end
+
+    describe '.needs_verification' do
+      include_context 'with Geo registries'
+
+      let_it_be(:failed_retry_due) do
+        create(factory, :synced, verification_state: failed_value, verification_failure: 'Foo bar', verification_retry_at: 1.minute.ago)
+      end
+
+      let_it_be(:failed_future_retry_due) do
+        create(factory, :synced, verification_state: failed_value, verification_failure: 'Foo bar', verification_retry_at: 1.minute.from_now)
+      end
+
+      it 'only includes verification_pending, failed and retry_due in the past' do
+        records = registry_class.needs_verification
+
+        expect(records.pluck(:id)).to match_array([pending.id, failed_retry_due.id, failed.id])
+        expect(records.size).to eq(3)
+      end
+    end
+
+    describe '.needs_reverification' do
+      include_context 'with Geo registries'
+
+      let_it_be(:outdated_success) do
+        create(factory, :synced, verification_state: succeeded_value, verification_checksum: 'abc123', verified_at: 4.months.ago)
+      end
+
+      it 'includes verification_succeeded with expired checksum' do
+        results = registry_class.needs_reverification
+
+        expect(results.first).to eq(outdated_success)
+        expect(results.size).to eq(1)
+      end
+
+      it 'excludes non-success verification states and fresh checksums' do
+        [pending_value, failed_value, succeeded_value].each_with_index do |state, i|
+          state_params = { verification_state: state, verified_at: (i * 3).days.ago }
+          state_params = state_params.merge(verification_checksum: 'abc') if state == succeeded_value
+          state_params = state_params.merge(verification_failure: 'error') if state == failed_value
+
+          create(factory, :synced, **state_params)
+        end
+
+        results = registry_class.needs_reverification
+
+        # There still should be only the one result
+        expect(results.first).to eq(outdated_success)
+        expect(results.size).to eq(1)
       end
     end
   end
