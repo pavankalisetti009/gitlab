@@ -8,11 +8,9 @@ RSpec.describe VirtualRegistryHelper, feature_category: :virtual_registry do
   describe '#registry_types' do
     let(:group) { build_stubbed(:group) }
 
-    subject(:registry_types) { helper.registry_types(group, registry_types_with_counts) }
+    subject(:registry_types) { helper.registry_types(group) }
 
     context 'when there are available registry types' do
-      let(:registry_types_with_counts) { { maven: 3 } }
-
       it 'returns the correct structure for registry types' do
         expect(registry_types).to be_a(Hash)
         expect(registry_types.keys).to contain_exactly(:maven)
@@ -21,7 +19,6 @@ RSpec.describe VirtualRegistryHelper, feature_category: :virtual_registry do
           new_page_path: a_string_matching(%r{virtual_registries/maven/registries/new}),
           landing_page_path: a_string_matching(%r{virtual_registries/maven}),
           image_path: 'illustrations/logos/maven.svg',
-          count: 3,
           type_name: 'Maven'
         )
       end

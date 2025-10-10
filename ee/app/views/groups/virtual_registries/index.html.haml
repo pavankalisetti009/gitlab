@@ -2,7 +2,7 @@
 - page_title title
 - learn_more_path = local_assigns.fetch(:learn_more_path, help_page_path('user/packages/virtual_registry/_index.md'))
 - learn_more_link = link_to _('Learn more.'), learn_more_path
-- registry_data = registry_types(@group, @registry_types_with_counts)
+- registry_data = registry_types(@group)
 - has_registry_with_count = @registry_types_with_counts.any? { |type, count| count > 0 }
 
 = render ::Layouts::PageHeadingComponent.new('') do |c|
@@ -25,7 +25,7 @@
                 .gl-font-bold= data[:type_name]
                 .gl-mx-3.gl-hidden{ class: "@sm/panel:gl-inline" } ·
                 = render Pajamas::ButtonComponent.new(variant: :link, href: data[:landing_page_path]) do
-                  = n_('View %d registry', 'View %d registries', data[:count]) % data[:count]
+                  = s_('VirtualRegistry|View registries')
             - if can_create_virtual_registry?(@group)
               - if max_registries_count_exceeded?(@group, key)
                 = s_('VirtualRegistry|Maximum number of registries reached.')
