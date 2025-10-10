@@ -10,7 +10,9 @@ module QA
           end
 
           def open_duo_chat
-            click_button('GitLab Duo Chat')
+            dismiss_duo_chat_popup if respond_to?(:dismiss_duo_chat_popup)
+
+            click_button('GitLab Duo Chat', match: :first)
           end
 
           def send_duo_chat_prompt(prompt)
@@ -71,3 +73,5 @@ module QA
     end
   end
 end
+
+QA::EE::Page::Component::DuoChat.prepend_mod_with('Page::Component::DuoChatCallout', namespace: QA)
