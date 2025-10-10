@@ -237,7 +237,7 @@ module Emails
 
       email_with_layout(
         to: @user.notification_email_or_default,
-        subject: subject(_("Two-factor authentication enabled - OTP"))
+        subject: subject(_("One-time password authenticator registered"))
       )
     end
 
@@ -249,7 +249,7 @@ module Emails
 
       email_with_layout(
         to: @user.notification_email_or_default,
-        subject: subject(_("Two-factor authentication enabled - WebAuthn"))
+        subject: subject(_("WebAuthn device registered"))
       )
     end
 
