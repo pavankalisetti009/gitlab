@@ -2,6 +2,7 @@
 description: Tracks when a self-hosted AI model is updated
 internal_events: true
 action: update_ai_self_hosted_model
+classification: duo
 identifiers:
 - user
 additional_properties:

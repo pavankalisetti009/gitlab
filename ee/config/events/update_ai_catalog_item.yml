@@ -3,6 +3,7 @@ description: AI Catalog item updated successfully
 internal_events: true
 status: active
 action: update_ai_catalog_item
+classification: duo
 identifiers:
 - project
 - user

@@ -3,6 +3,7 @@ description: An AI catalog item (agent or flow) is executed.
 internal_events: true
 status: active
 action: trigger_ai_catalog_item
+classification: duo
 identifiers:
 - project
 - user

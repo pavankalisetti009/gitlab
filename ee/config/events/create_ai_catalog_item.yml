@@ -3,6 +3,7 @@ description: AI Catalog item created successfully
 internal_events: true
 status: active
 action: create_ai_catalog_item
+classification: duo
 identifiers:
 - project
 - user

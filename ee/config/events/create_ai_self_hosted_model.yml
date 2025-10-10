@@ -2,6 +2,7 @@
 description: Tracks when a self-hosted AI model is created
 internal_events: true
 action: create_ai_self_hosted_model
+classification: duo
 identifiers:
 - user
 additional_properties:

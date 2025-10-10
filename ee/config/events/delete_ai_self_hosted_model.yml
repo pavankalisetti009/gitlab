@@ -2,6 +2,7 @@
 description: Tracks when a self-hosted AI model is deleted
 internal_events: true
 action: delete_ai_self_hosted_model
+classification: duo
 identifiers:
 - user
 additional_properties:

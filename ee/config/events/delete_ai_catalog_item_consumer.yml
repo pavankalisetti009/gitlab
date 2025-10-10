@@ -2,6 +2,7 @@
 description: AI Catalog item consumer deleted
 internal_events: true
 action: delete_ai_catalog_item_consumer
+classification: duo
 identifiers:
 - project
 - namespace

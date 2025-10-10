@@ -2,6 +2,7 @@
 description: AI Catalog item consumer created
 internal_events: true
 action: create_ai_catalog_item_consumer
+classification: duo
 identifiers:
 - project
 - namespace

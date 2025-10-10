@@ -2,6 +2,7 @@
 description: Tracks when a model selection feature  is updated
 internal_events: true
 action: update_model_selection_feature
+classification: duo
 identifiers:
 - user
 additional_properties:

@@ -2,6 +2,7 @@
 description: Created CI Job Artifacts for Repository X-Ray
 internal_events: true
 action: ci_repository_xray_artifact_created
+classification: duo
 identifiers:
 - project
 - user

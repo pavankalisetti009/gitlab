@@ -2,6 +2,7 @@
 description: AI Catalog item consumer updated
 internal_events: true
 action: update_ai_catalog_item_consumer
+classification: duo
 identifiers:
 - project
 - namespace
