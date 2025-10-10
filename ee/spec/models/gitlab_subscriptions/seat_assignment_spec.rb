@@ -52,6 +52,24 @@ RSpec.describe GitlabSubscriptions::SeatAssignment, feature_category: :seat_cost
     end
   end
 
+  describe '.by_namespace_and_users' do
+    let_it_be(:user_2) { create(:user) }
+    let_it_be(:user_3) { create(:user) }
+    let_it_be(:seat_assignment_1) { create(:gitlab_subscription_seat_assignment, user: user, namespace: namespace) }
+    let_it_be(:seat_assignment_2) { create(:gitlab_subscription_seat_assignment, user: user_2, namespace: namespace) }
+
+    it 'returns records by namespace and users' do
+      expect(described_class.by_namespace_and_users(namespace, [user, user_2])).to contain_exactly(
+        seat_assignment_1,
+        seat_assignment_2
+      )
+    end
+
+    it 'returns empty array when no records exist' do
+      expect(described_class.by_namespace_and_users(namespace, [user_3])).to be_empty
+    end
+  end
+
   describe '.dormant_in_namespace', :freeze_time do
     let_it_be(:dormant_seat_assignment_1) do
       create(:gitlab_subscription_seat_assignment, namespace: namespace, last_activity_on: 91.days.ago)

@@ -27,6 +27,10 @@ module GitlabSubscriptions
       by_namespace(namespace).by_user(user).first
     end
 
+    def self.by_namespace_and_users(namespace, users)
+      by_namespace(namespace).by_user(users)
+    end
+
     private
 
     def gitlab_com_subscription?
