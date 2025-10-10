@@ -32762,6 +32762,9 @@ msgstr ""
 msgid "GroupsEmptyState|No public or internal groups"
 msgstr ""
 
+msgid "GroupsEmptyState|Organize your work with projects and subgroups"
+msgstr ""
+
 msgid "GroupsEmptyState|Other groups this group has been %{linkStart}invited to%{linkEnd} will appear here."
 msgstr ""
 
@@ -32777,19 +32780,13 @@ msgstr ""
 msgid "GroupsEmptyState|There are no inactive subgroups or projects in this group"
 msgstr ""
 
-msgid "GroupsEmptyState|There are no subgroups or projects in this group"
-msgstr ""
-
 msgid "GroupsEmptyState|This group has not been invited to any other groups."
 msgstr ""
 
 msgid "GroupsEmptyState|This group has not been invited to any other projects."
 msgstr ""
 
-msgid "GroupsEmptyState|Use groups to manage multiple projects and members."
-msgstr ""
-
-msgid "GroupsEmptyState|Use projects to store and access issues, wiki pages, and other GitLab features."
+msgid "GroupsEmptyState|Use projects to store Git repositories and collaborate on issues. Use subgroups as folders to organize related projects and manage team access."
 msgstr ""
 
 msgid "GroupsEmptyState|You do not have necessary permissions to create a subgroup or project in this group. Please contact an owner of this group to create a new subgroup or project."
