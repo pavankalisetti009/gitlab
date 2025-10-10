@@ -5,7 +5,7 @@ require 'spec_helper'
 RSpec.describe Security::ScanResultPolicies::PolicyViolationComment, feature_category: :security_policy_management do
   using RSpec::Parameterized::TableSyntax
 
-  let_it_be(:project) { create(:project, :repository) }
+  let_it_be_with_reload(:project) { create(:project, :repository) }
   let_it_be_with_reload(:merge_request) { create(:merge_request, source_project: project) }
   let_it_be(:security_orchestration_policy_configuration) do
     create(:security_orchestration_policy_configuration, project: project)
@@ -282,6 +282,127 @@ RSpec.describe Security::ScanResultPolicies::PolicyViolationComment, feature_cat
               expect(body).not_to include(
                 '**Note:** The following policies are in warn-mode and can be bypassed to make approvals optional:'
               )
+            end
+          end
+
+          context 'without warn-mode policy approval settings overrides' do
+            let_it_be(:enforced_policy) do
+              create(:security_policy,
+                content: {
+                  enforcement_type: 'enforce',
+                  approval_settings: {
+                    prevent_approval_by_author: true
+                  }
+                })
+            end
+
+            before do
+              project.update!(merge_requests_author_approval: false)
+
+              allow_next_instance_of(::Security::ScanResultPolicies::PolicyViolationDetails) do |details|
+                allow(details).to receive(:warn_mode_policies).and_return([enforced_policy])
+              end
+            end
+
+            it 'excludes overrides segment' do
+              expect(body).to exclude(
+                ':lock: **Warn-mode policies set more restrictive approval settings**'
+              )
+            end
+          end
+
+          context 'with warn-mode policy but without overrides' do
+            let_it_be(:warn_mode_policy) do
+              create(:security_policy,
+                content: {
+                  enforcement_type: 'enforce',
+                  approval_settings: {
+                    prevent_approval_by_author: true
+                  }
+                })
+            end
+
+            before do
+              project.update!(merge_requests_author_approval: false)
+
+              allow_next_instance_of(::Security::ScanResultPolicies::PolicyViolationDetails) do |details|
+                allow(details).to receive(:warn_mode_policies).and_return([warn_mode_policy])
+              end
+            end
+
+            it 'excludes overrides segment' do
+              expect(body).to exclude(
+                ':lock: **Warn-mode policies set more restrictive approval settings**'
+              )
+            end
+          end
+
+          context 'when warn-mode policy overrides project approval settings' do
+            let_it_be(:warn_mode_policy_3) do
+              create(:security_policy,
+                content: {
+                  enforcement_type: 'warn',
+                  approval_settings: {
+                    prevent_approval_by_author: true,
+                    prevent_approval_by_commit_author: true,
+                    remove_approvals_with_new_commit: true,
+                    require_password_to_approve: true
+                  }
+                })
+            end
+
+            let_it_be(:warn_mode_policy_4) do
+              create(:security_policy,
+                content: {
+                  enforcement_type: 'warn',
+                  approval_settings: {
+                    prevent_approval_by_author: true
+                  }
+                })
+            end
+
+            before do
+              project.update!(
+                merge_requests_author_approval: true,
+                merge_requests_disable_committers_approval: false,
+                reset_approvals_on_push: false,
+                require_password_to_approve: false
+              )
+
+              allow_next_instance_of(::Security::ScanResultPolicies::PolicyViolationDetails) do |details|
+                allow(details).to receive(:warn_mode_policies).and_return(
+                  [warn_mode_policy, warn_mode_policy_3, warn_mode_policy_4]
+                )
+              end
+            end
+
+            it 'includes overrides segment' do
+              expect(body).to include(
+                ':lock: **Warn-mode policies set more restrictive approval settings**'
+              )
+            end
+
+            it 'lists more restrictive policies' do
+              expect(body).to include(
+                <<~MARKDOWN
+                * __Prevent approval by merge request creator__: `#{warn_mode_policy_3.name}`, `#{warn_mode_policy_4.name}`
+                * __Prevent approvals by users who add commits__: `#{warn_mode_policy_3.name}`
+                * __When a commit is added: Remove all approvals__: `#{warn_mode_policy_3.name}`
+                * __Require user re-authentication (password or SAML) to approve__: `#{warn_mode_policy_3.name}`
+                MARKDOWN
+              )
+            end
+
+            context 'with feature disabled' do
+              before do
+                stub_feature_flags(security_policy_approval_warn_mode: false)
+              end
+
+              it 'excludes overrides segment' do
+                expect(body).to exclude(
+                  ':lock: **Warn-mode policies set more restrictive approval settings**'
+                )
+              end
             end
           end
         end
