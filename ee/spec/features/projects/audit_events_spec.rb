@@ -109,8 +109,6 @@ RSpec.describe 'Projects > Audit events', :js, feature_category: :audit_events d
 
       expect(page).not_to have_button('Remove deploy key', wait: 10)
 
-      sleep 1
-
       visit project_audit_events_path(project)
 
       wait_for('Audit event background creation job is done', polling_interval: 0.5, reload: true) do
