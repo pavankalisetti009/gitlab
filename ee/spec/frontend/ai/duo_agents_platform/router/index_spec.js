@@ -8,6 +8,7 @@ describe('Agents Platform Router', () => {
   beforeEach(() => {
     gon.features = {
       aiCatalogFlows: false,
+      aiCatalogThirdPartyFlows: false,
     };
 
     // this is needed to disable the warning thrown for incorrect path
@@ -68,15 +69,101 @@ describe('Agents Platform Router', () => {
     });
   });
 
-  describe('flows', () => {
-    it('redirect to flows base route when path does not exist', async () => {
-      gon.features = {
-        aiCatalogFlows: true,
-      };
-      router = createRouter(baseRoute, 'project');
-      await router.push('/flows/invalid');
+  describe('flows routes', () => {
+    describe('when aiCatalogFlows is enabled', () => {
+      beforeEach(() => {
+        gon.features = {
+          aiCatalogFlows: true,
+          aiCatalogThirdPartyFlows: false,
+        };
+      });
 
-      expect(router.currentRoute.path).toBe('/flows');
+      it('includes flows routes', () => {
+        router = createRouter(baseRoute, 'project');
+        const { routes } = router.options;
+        const flowsRoute = routes.find((route) => route.path === '/flows');
+
+        expect(flowsRoute).toBeDefined();
+      });
+
+      it('redirect to flows base route when path does not exist', async () => {
+        router = createRouter(baseRoute, 'project');
+        await router.push('/flows/invalid');
+
+        expect(router.currentRoute.path).toBe('/flows');
+      });
+    });
+
+    describe('when aiCatalogThirdPartyFlows is enabled', () => {
+      beforeEach(() => {
+        gon.features = {
+          aiCatalogFlows: false,
+          aiCatalogThirdPartyFlows: true,
+        };
+      });
+
+      it('includes flows routes', () => {
+        router = createRouter(baseRoute, 'project');
+        const { routes } = router.options;
+        const flowsRoute = routes.find((route) => route.path === '/flows');
+
+        expect(flowsRoute).toBeDefined();
+      });
+
+      it('redirect to flows base route when path does not exist', async () => {
+        router = createRouter(baseRoute, 'project');
+        await router.push('/flows/invalid');
+
+        expect(router.currentRoute.path).toBe('/flows');
+      });
+    });
+
+    describe('when both aiCatalogFlows and aiCatalogThirdPartyFlows are enabled', () => {
+      beforeEach(() => {
+        gon.features = {
+          aiCatalogFlows: true,
+          aiCatalogThirdPartyFlows: true,
+        };
+      });
+
+      it('includes flows routes', () => {
+        router = createRouter(baseRoute, 'project');
+        const { routes } = router.options;
+        const flowsRoute = routes.find((route) => route.path === '/flows');
+
+        expect(flowsRoute).toBeDefined();
+      });
+
+      it('redirect to flows base route when path does not exist', async () => {
+        router = createRouter(baseRoute, 'project');
+        await router.push('/flows/invalid');
+
+        expect(router.currentRoute.path).toBe('/flows');
+      });
+    });
+
+    describe('when both feature flags are disabled', () => {
+      beforeEach(() => {
+        gon.features = {
+          aiCatalogFlows: false,
+          aiCatalogThirdPartyFlows: false,
+        };
+      });
+
+      it('does not include flows routes', () => {
+        router = createRouter(baseRoute, 'project');
+        const { routes } = router.options;
+        const flowsRoute = routes.find((route) => route.path === '/flows');
+
+        expect(flowsRoute).toBeUndefined();
+      });
+
+      it('redirects to agent sessions when trying to access flows', async () => {
+        router = createRouter(baseRoute, 'project');
+        await router.push('/flows');
+
+        expect(router.currentRoute.path).toBe('/agent-sessions');
+      });
     });
   });
 
