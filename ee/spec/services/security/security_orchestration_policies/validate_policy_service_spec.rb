@@ -680,10 +680,6 @@ RSpec.describe Security::SecurityOrchestrationPolicies::ValidatePolicyService, f
       context "when policy_type is approval_policy" do
         let(:policy_type) { 'approval_policy' }
 
-        before do
-          stub_feature_flags(approval_policy_time_window: true)
-        end
-
         context 'when security_report_time_window is not provided' do
           it { expect(result[:status]).to eq(:success) }
         end
@@ -743,26 +739,6 @@ RSpec.describe Security::SecurityOrchestrationPolicies::ValidatePolicyService, f
             it { expect(result[:status]).to eq(:success) }
           end
         end
-
-        context 'when feature flag is disabled' do
-          before do
-            stub_feature_flags(approval_policy_time_window: false)
-          end
-
-          let(:policy) do
-            {
-              type: policy_type,
-              name: name,
-              enabled: enabled,
-              rules: rules,
-              policy_tuning: {
-                security_report_time_window: 0
-              }
-            }
-          end
-
-          it { expect(result[:status]).to eq(:success) }
-        end
       end
 
       context "when policy_type is not approval_policy" do
@@ -777,10 +753,6 @@ RSpec.describe Security::SecurityOrchestrationPolicies::ValidatePolicyService, f
               security_report_time_window: 0
             }
           }
-        end
-
-        before do
-          stub_feature_flags(approval_policy_time_window: true)
         end
 
         it { expect(result[:status]).to eq(:success) }

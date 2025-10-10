@@ -49,9 +49,6 @@ export default {
     };
   },
   computed: {
-    isTimeWindowFeatureEnabled() {
-      return this.glFeatures.approvalPolicyTimeWindow;
-    },
     timeWindowValue() {
       return this.policyTuning[TIME_WINDOW_KEY] || this.$options.TIME_WINDOW_MIN_VALUE;
     },
@@ -112,7 +109,7 @@ export default {
       {{ $options.i18n.popoverDesc }}
     </gl-popover>
 
-    <div v-if="isTimeWindowFeatureEnabled" class="gl-mt-3">
+    <div class="gl-mt-3">
       <gl-form-checkbox
         :id="$options.TIME_WINDOW_KEY"
         class="gl-inline-block"

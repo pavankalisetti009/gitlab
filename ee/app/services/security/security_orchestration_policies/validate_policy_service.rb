@@ -297,7 +297,6 @@ module Security
       end
 
       def invalid_security_report_time_window?
-        return false if ::Feature.disabled?(:approval_policy_time_window, container)
         return false unless approval_policy?
 
         security_report_time_window = policy.dig(:policy_tuning, :security_report_time_window)

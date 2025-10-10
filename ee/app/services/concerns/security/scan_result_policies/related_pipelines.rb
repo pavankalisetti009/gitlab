@@ -55,7 +55,7 @@ module Security
         time_window = approval_rule.security_report_time_window
         latest_target_branch_pipeline = merge_request.latest_pipeline_for_target_branch
 
-        if ::Feature.enabled?(:approval_policy_time_window, merge_request.project) && time_window.present?
+        if time_window.present?
           reference_pipeline = target_pipelines.first || latest_target_branch_pipeline
           return unless reference_pipeline
 
