@@ -101,14 +101,14 @@ module Gitlab
             result = ::Ai::DuoWorkflows::CreateAndStartWorkflowService.new(
               container: merge_request.project,
               current_user: user,
-              workflow_definition: 'code_review/experimental',
+              workflow_definition: 'code_review/v1',
               goal: merge_request.iid,
               source_branch: merge_request.source_branch,
               workflow_params: {
                 agent_privileges: required_privileges,
                 pre_approved_agent_privileges: required_privileges,
                 allow_agent_to_request_user: false,
-                environment: 'web'
+                environment: 'ambient'
               }
             ).execute
 
