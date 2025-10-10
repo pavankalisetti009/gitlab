@@ -55,27 +55,26 @@ RSpec.describe Admin::DataManagementController, :enable_admin_mode, feature_cate
   end
 
   context 'when model is valid' do
-    where(model_classes: Gitlab::Geo::Replicator.subclasses.map(&:model))
+    let_it_be(:default_model) { ::Gitlab::Geo::ModelMapper.available_models.first }
 
+    where(model_classes: Gitlab::Geo::ModelMapper.available_models)
     with_them do
       let(:model_name) { Gitlab::Geo::ModelMapper.convert_to_name(model_classes) }
       let(:model) { create(factory_name(model_classes)) } # rubocop:disable Rails/SaveBang -- this is creating a factory, not a record
       let(:id) { model.id }
 
       describe '#index' do
-        it 'assigns @models with all records from model_class' do
+        it 'assigns @model_class with the correct class' do
           get index_path
 
-          expect(assigns(:models)).to eq(model_classes.all)
+          expect(assigns(:model_class)).to eq(model_classes)
           expect(response).to render_template(:index)
         end
 
         it 'uses the default model when no model_name parameter' do
-          default_model = ::Gitlab::Geo::ModelMapper.available_models.first
-
           get path
 
-          expect(assigns(:models)).to eq(default_model.all)
+          expect(assigns(:model_class)).to eq(default_model)
         end
       end
 
@@ -94,7 +93,7 @@ RSpec.describe Admin::DataManagementController, :enable_admin_mode, feature_cate
     let(:model_name) { 'project' }
     let(:id) { 999 }
 
-    it 'renders 404' do
+    it 'show renders 404' do
       get show_path
 
       expect(response).to have_gitlab_http_status(:not_found)
@@ -105,13 +104,13 @@ RSpec.describe Admin::DataManagementController, :enable_admin_mode, feature_cate
     let(:model_name) { 'invalid' }
     let(:id) { 1 }
 
-    it 'renders 404' do
+    it 'index renders 404' do
       get index_path
 
       expect(response).to have_gitlab_http_status(:not_found)
     end
 
-    it 'renders 404' do
+    it 'show renders 404' do
       get show_path
 
       expect(response).to have_gitlab_http_status(:not_found)
