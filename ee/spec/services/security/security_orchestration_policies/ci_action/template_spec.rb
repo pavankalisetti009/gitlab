@@ -289,7 +289,8 @@ RSpec.describe Security::SecurityOrchestrationPolicies::CiAction::Template,
             :"security-code-scan-sast-0",
             :"semgrep-sast-0",
             :"sobelow-sast-0",
-            :"spotbugs-sast-0"
+            :"spotbugs-sast-0",
+            :"gitlab-advanced-sast-cpp-0"
           ]
 
           expected_variables = {
