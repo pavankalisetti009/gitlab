@@ -127,5 +127,27 @@ RSpec.describe EE::PageLayoutHelper, feature_category: :shared do
 
       helper.duo_chat_panel_data(user, project, group)
     end
+
+    context 'when group context is absent' do
+      let(:default_namespace) { create(:group) } # rubocop:disable RSpec/FactoryBot/AvoidCreate -- for persist check
+
+      before do
+        allow(user.user_preference).to receive(:get_default_duo_namespace).and_return(default_namespace)
+      end
+
+      it 'uses default namespace if project is absent' do
+        result = helper.duo_chat_panel_data(user, nil, nil)
+
+        expect(result[:namespace_id]).to eq(default_namespace.to_global_id)
+      end
+
+      it 'does not use default namespace when project is present' do
+        expect(user.user_preference).not_to receive(:get_default_duo_namespace)
+
+        result = helper.duo_chat_panel_data(user, project, nil)
+
+        expect(result[:namespace_id]).to be_nil
+      end
+    end
   end
 end
