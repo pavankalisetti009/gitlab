@@ -224,6 +224,13 @@ export default {
       };
     },
   },
+  watch: {
+    isThirdPartyFlow(val) {
+      if (val) {
+        this.resetAgentPanel();
+      }
+    },
+  },
   methods: {
     handleSubmit() {
       const configurationField = this.isThirdPartyFlow
@@ -257,7 +264,7 @@ export default {
       this.isAgentPanelVisible = true;
       this.activeStepIndex = stepIndex;
     },
-    onCloseAgentPanel() {
+    resetAgentPanel() {
       this.isAgentPanelVisible = false;
       this.activeStepIndex = null;
     },
@@ -345,7 +352,7 @@ export default {
         class="gl-grow"
         :active-step-index="activeStepIndex"
         :is-flow-public="isPublic"
-        @close="onCloseAgentPanel"
+        @close="resetAgentPanel"
       />
     </div>
   </div>
