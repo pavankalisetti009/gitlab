@@ -231,7 +231,8 @@ module WorkItems
         ensure_mapped_statuses_have_same_state(source_status, target_status)
 
         lifecycle.work_item_types.each do |work_item_type|
-          create_or_update_mapping(source_status, target_status, work_item_type)
+          create_or_update_mapping(source_status, target_status, work_item_type,
+            old_status_role: previous_role_for_status(status_to_remove))
         end
       end
 
@@ -269,6 +270,14 @@ module WorkItems
         raise StandardError,
           "Mapping statuses '#{source_status.name}' and '#{target_status.name}' " \
             "must be of a category of the same state (open/closed)."
+      end
+
+      def previous_role_for_status(status)
+        case status.id
+        when @previous_lifecycle_default_ids[:open] then :open
+        when @previous_lifecycle_default_ids[:closed] then :closed
+        when @previous_lifecycle_default_ids[:duplicate] then :duplicate
+        end
       end
 
       def destroy_eligible_statuses(statuses)
@@ -491,6 +500,14 @@ module WorkItems
             }
           )
         end
+      end
+
+      def record_previous_default_statuses
+        @previous_lifecycle_default_ids = {
+          open: lifecycle.default_open_status_id,
+          closed: lifecycle.default_closed_status_id,
+          duplicate: lifecycle.default_duplicate_status_id
+        }
       end
 
       def system_defined_status?(status)
