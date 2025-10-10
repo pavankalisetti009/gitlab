@@ -25,7 +25,7 @@ module Resolvers
       end
 
       def category_enabled?(category)
-        already_enabled_context = %w[file snippet user_rule].freeze
+        already_enabled_context = %w[file snippet user_rule agent_user_environment].freeze
         return true if already_enabled_context.include?(category)
 
         # both the `repository` and `directory` categories are part of the "Codebase as Additional Context" feature

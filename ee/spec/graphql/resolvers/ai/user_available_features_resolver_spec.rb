@@ -65,12 +65,16 @@ RSpec.describe Resolvers::Ai::UserAvailableFeaturesResolver, feature_category: :
                 duo_include_context_dependency: ['include_dependency_context'],
                 duo_include_context_local_git: ['include_local_git_context'],
                 duo_include_context_terminal: ['include_terminal_context'],
-                duo_include_context_repository: %w[include_repository_context include_directory_context],
-                duo_include_context_agent_user_environment: ['include_agent_user_environment_context']
+                duo_include_context_repository: %w[include_repository_context include_directory_context]
               }
 
             let(:default_enabled_features) do
-              %w[include_file_context include_snippet_context include_user_rule_context]
+              %w[
+                include_file_context
+                include_snippet_context
+                include_user_rule_context
+                include_agent_user_environment_context
+              ]
             end
 
             feature_flags.each do |flag, ff_enabled_features|
