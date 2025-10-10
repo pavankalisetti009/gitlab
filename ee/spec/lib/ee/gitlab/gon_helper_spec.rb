@@ -55,7 +55,6 @@ RSpec.describe EE::Gitlab::GonHelper do
         allow(Gitlab).to receive(:com?).and_return(false)
       end
 
-      it_behaves_like 'pushes frontend feature flag', :duo_chat_dynamic_dimension
       it_behaves_like 'pushes frontend feature flag', :advanced_context_resolver
       it_behaves_like 'pushes frontend feature flag', :vulnerability_report_type_scanner_filter
     end
@@ -65,7 +64,6 @@ RSpec.describe EE::Gitlab::GonHelper do
         allow(Gitlab).to receive(:com?).and_return(true)
       end
 
-      it_behaves_like 'pushes frontend feature flag', :duo_chat_dynamic_dimension
       it_behaves_like 'pushes frontend feature flag', :advanced_context_resolver
       it_behaves_like 'pushes frontend feature flag', :vulnerability_report_type_scanner_filter
 
