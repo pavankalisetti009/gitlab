@@ -21,7 +21,13 @@ module WorkItems
 
         def execute
           return unless status_in_lifecycle?
-          return if work_item.current_status&.status == status
+
+          # Check if current status explicit values are set. Using work_item.current_status.status would follow the
+          # mappings resulting in potentially current_status.custom_status_id or current_status.system_defined_status_id
+          # to continue to point to a value that needs to look up a mapping.
+          current_status = work_item.current_status
+          return if current_status&.custom_status == status
+          return if current_status&.system_defined_status == status
 
           update_work_item_status
           create_system_note

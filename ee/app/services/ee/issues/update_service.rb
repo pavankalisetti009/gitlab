@@ -84,7 +84,10 @@ module EE
         lifecycle = lifecycle_for(issue)
         return unless lifecycle
         return unless lifecycle.custom?
-        return if lifecycle.has_status_id?(issue&.status_with_fallback&.id)
+        # Check here that current custom lifecycle has the value of the custom status in the current status.
+        # If not we need to update it to have current status pointing to actual status value and reduce lookups in the
+        # mappings
+        return if lifecycle.has_status_id?(issue&.current_status&.custom_status_id)
 
         ::WorkItems::Widgets::Statuses::UpdateService.new(issue, current_user, :default).execute
       end
