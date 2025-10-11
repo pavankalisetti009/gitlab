@@ -1,4 +1,4 @@
-import { GlIcon } from '@gitlab/ui';
+import { GlIcon, GlEmptyState } from '@gitlab/ui';
 import { nextTick } from 'vue';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import ProjectAttributesUpdateForm from 'ee/security_configuration/security_attributes/components/project_attributes_update_form.vue';
@@ -8,10 +8,14 @@ import { mockSecurityAttributeCategories } from './mock_data';
 describe('ProjectAttributesDrawer', () => {
   let wrapper;
 
-  const createComponent = () => {
+  const createComponent = ({
+    categories = mockSecurityAttributeCategories,
+    filteredCategories = mockSecurityAttributeCategories,
+  } = {}) => {
     wrapper = shallowMountExtended(ProjectAttributesUpdateForm, {
       propsData: {
-        categories: mockSecurityAttributeCategories,
+        categories,
+        filteredCategories,
         selectedAttributes: [],
       },
     });
@@ -19,6 +23,7 @@ describe('ProjectAttributesDrawer', () => {
 
   const findDropdowns = () => wrapper.findAllComponents(AttributesCategoryDropdown);
   const findIcons = () => wrapper.findAllComponents(GlIcon);
+  const findEmptyState = () => wrapper.findComponent(GlEmptyState);
 
   beforeEach(() => {
     createComponent();
@@ -66,5 +71,17 @@ describe('ProjectAttributesDrawer', () => {
 
     // We have [1] because [0] is from the watcher
     expect(emitted[1][0]).toEqual([100, 200]);
+  });
+
+  it('shows an empty state when no categories have attributes', () => {
+    const emptyCategory = {
+      ...mockSecurityAttributeCategories[0],
+      securityAttributes: [],
+    };
+    createComponent({ categories: [emptyCategory], filteredCategories: [] });
+
+    expect(findEmptyState().props('title')).toBe(
+      "There are no attributes for this project's group.",
+    );
   });
 });

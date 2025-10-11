@@ -1,4 +1,5 @@
 import Vue from 'vue';
+import { parseBoolean } from '~/lib/utils/common_utils';
 import apolloProvider from './graphql/provider';
 import App from './components/app.vue';
 
@@ -11,7 +12,14 @@ export default () => {
     return null;
   }
 
-  const { groupFullPath, groupId, groupName, newProjectPath } = el.dataset;
+  const {
+    groupFullPath,
+    groupId,
+    groupName,
+    canManageAttributes,
+    groupManageAttributesPath,
+    newProjectPath,
+  } = el.dataset;
 
   return new Vue({
     el,
@@ -20,6 +28,8 @@ export default () => {
       groupFullPath,
       groupId,
       groupName,
+      canManageAttributes: parseBoolean(canManageAttributes),
+      groupManageAttributesPath,
       newProjectPath,
     },
     render(createElement) {
