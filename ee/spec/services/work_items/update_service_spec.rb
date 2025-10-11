@@ -844,6 +844,48 @@ RSpec.describe WorkItems::UpdateService, feature_category: :team_planning do
           it_behaves_like 'update service that triggers GraphQL work_item_updated subscription' do
             subject(:execute_service) { update_work_item }
           end
+
+          context 'with status mapping between issue default open and a previous task status' do
+            let_it_be(:custom_status) do
+              create(:work_item_custom_status, :to_do, name: "Custom to do", namespace: group)
+            end
+
+            let_it_be(:custom_mapping) do
+              create(
+                :work_item_custom_status_mapping, namespace: group, work_item_type: issue_work_item_type,
+                old_status: custom_status, new_status: lifecycle.default_open_status
+              )
+            end
+
+            before do
+              lifecycle_2.statuses << custom_status
+              lifecycle_2.save!
+              work_item.update!(work_item_type: task_work_item_type)
+              create(
+                :work_item_current_status, work_item: work_item, custom_status: custom_status, updated_at: 2.days.ago
+              )
+            end
+
+            it 'sets the statuses to correct defaults' do
+              described_class.new(
+                container: project,
+                current_user: current_user,
+                params: { issue_type: 'issue' },
+                widget_params: widget_params
+              ).execute(work_item)
+
+              expect(work_item.reload.status_with_fallback).to eq(lifecycle.default_open_status)
+
+              described_class.new(
+                container: project,
+                current_user: current_user,
+                params: { issue_type: 'task' },
+                widget_params: widget_params
+              ).execute(work_item)
+
+              expect(work_item.reload.status_with_fallback).to eq(lifecycle_2.default_open_status)
+            end
+          end
         end
 
         context 'when work item type does not support configurable statuses' do
