@@ -293,8 +293,8 @@ RSpec.describe Security::Scan, feature_category: :vulnerability_management do
 
     subject(:results_ready?) { described_class.results_ready?(pipeline) }
 
-    context 'when pipeline is complete' do
-      where(:status) { Ci::Pipeline::COMPLETED_STATUSES }
+    context 'when pipeline is complete or manual' do
+      where(:status) { Ci::Pipeline::COMPLETED_WITH_MANUAL_STATUSES }
 
       with_them do
         it 'returns true if there are no scans processing' do
@@ -311,8 +311,8 @@ RSpec.describe Security::Scan, feature_category: :vulnerability_management do
       end
     end
 
-    context 'when pipeline is not complete' do
-      where(:status) { Ci::Pipeline::AVAILABLE_STATUSES - Ci::Pipeline::COMPLETED_STATUSES }
+    context 'when pipeline is not complete or manual' do
+      where(:status) { Ci::Pipeline::AVAILABLE_STATUSES - Ci::Pipeline::COMPLETED_WITH_MANUAL_STATUSES }
 
       before do
         allow(described_class).to receive(:processing?).and_return(false)
