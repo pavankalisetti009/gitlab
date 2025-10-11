@@ -186,7 +186,7 @@ export default {
 
 <template>
   <section-layout
-    :class="{ 'gl-pr-7': isWarnType, 'gl-pr-0': !isWarnType }"
+    class="gl-pr-0"
     content-classes="gl-py-5 gl-pr-2 gl-bg-default"
     :show-remove-button="false"
   >

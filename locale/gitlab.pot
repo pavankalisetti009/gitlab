@@ -59901,6 +59901,9 @@ msgid_plural "SecurityOrchestration|On runners with the tags:"
 msgstr[0] ""
 msgstr[1] ""
 
+msgid "SecurityOrchestration|Only allowed in warn mode."
+msgstr ""
+
 msgid "SecurityOrchestration|Only custom roles with the permission to approve merge requests are shown"
 msgstr ""
 
@@ -60496,6 +60499,9 @@ msgid "SecurityOrchestration|Vulnerability management"
 msgstr ""
 
 msgid "SecurityOrchestration|Vulnerability management policy"
+msgstr ""
+
+msgid "SecurityOrchestration|Warn in merge request"
 msgstr ""
 
 msgid "SecurityOrchestration|Warn mode"

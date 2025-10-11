@@ -9,6 +9,7 @@ import {
   getDefaultHumanizedTemplate,
   isRoleApprover,
   mapYamlApproversActionsToSelectedApproverTypes,
+  WARN_TYPE,
 } from 'ee/security_orchestration/components/policy_editor/scan_result/lib/actions';
 import { GROUP_TYPE, USER_TYPE, ROLE_TYPE } from 'ee/security_orchestration/constants';
 
@@ -79,6 +80,17 @@ describe('ACTION_LISTBOX_ITEMS', () => {
       { text: 'Require Approvers', value: 'require_approval' },
       { text: 'Send bot message', value: 'send_bot_message' },
     ]);
+  });
+
+  it('should not include WARN_TYPE when feature flag is off', () => {
+    const warnTypeEntry = ACTION_LISTBOX_ITEMS().find((item) => item.value === WARN_TYPE);
+    expect(warnTypeEntry).toBeUndefined();
+  });
+
+  it('should include WARN_TYPE when feature flag is on', () => {
+    window.gon.features = { securityPolicyApprovalWarnMode: true };
+    const warnTypeEntry = ACTION_LISTBOX_ITEMS().find((item) => item.value === WARN_TYPE);
+    expect(warnTypeEntry).toEqual({ value: WARN_TYPE, text: 'Warn in merge request' });
   });
 });
 
