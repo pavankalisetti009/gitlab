@@ -152,7 +152,7 @@ RSpec/NamedSubject:
     - 'ee/spec/graphql/resolvers/vulnerabilities/issue_links_resolver_spec.rb'
     - 'ee/spec/graphql/resolvers/vulnerabilities_resolver_spec.rb'
     - 'ee/spec/graphql/types/asset_type_spec.rb'
-    - 'ee/spec/graphql/types/ci/pipeline_type_spec.rb'
+    - 'ee/spec/graphql/ee/types/ci/pipeline_type_spec.rb'
     - 'ee/spec/graphql/types/pipeline_security_report_finding_type_spec.rb'
     - 'ee/spec/graphql/types/project_type_spec.rb'
     - 'ee/spec/graphql/types/vulnerability_evidence_source_type_spec.rb'
