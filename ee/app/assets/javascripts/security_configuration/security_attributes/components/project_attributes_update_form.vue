@@ -1,15 +1,22 @@
 <script>
-import { GlIcon, GlTooltipDirective } from '@gitlab/ui';
+import EMPTY_ATTRIBUTE_SVG from '@gitlab/svgs/dist/illustrations/empty-state/empty-labels-md.svg?url';
+import { GlIcon, GlTooltipDirective, GlEmptyState, GlButton } from '@gitlab/ui';
 import AttributesCategoryDropdown from './attributes_category_dropdown.vue';
 
 export default {
   name: 'ProjectAttributesForm',
   components: {
     GlIcon,
+    GlEmptyState,
+    GlButton,
     AttributesCategoryDropdown,
   },
   directives: {
     tooltip: GlTooltipDirective,
+  },
+  inject: {
+    canManageAttributes: { default: false },
+    groupManageAttributesPath: { default: false },
   },
   props: {
     categories: {
@@ -22,6 +29,11 @@ export default {
       required: false,
       default: () => [],
     },
+    filteredCategories: {
+      type: Array,
+      required: false,
+      default: () => [],
+    },
   },
   data() {
     return {
@@ -29,9 +41,6 @@ export default {
     };
   },
   computed: {
-    filteredCategories() {
-      return this.categories.filter((category) => category.securityAttributes?.length > 0);
-    },
     flattenedAttributes() {
       return Object.values(this.selectedAttributesByCategory).flat();
     },
@@ -65,12 +74,27 @@ export default {
       return this.selectedAttributesByCategory[category.id] || [];
     },
   },
+  EMPTY_ATTRIBUTE_SVG,
 };
 </script>
 
 <template>
   <div class="!gl-py-3">
-    <div v-for="category in filteredCategories" :key="category.id" class="gl-py-2">
+    <div v-if="!filteredCategories.length">
+      <gl-empty-state
+        :svg-path="$options.EMPTY_ATTRIBUTE_SVG"
+        :svg-height="100"
+        :title="__(`There are no attributes for this project's group.`)"
+        :description="__('Attributes you create will appear here.')"
+      >
+        <template v-if="canManageAttributes" #actions>
+          <gl-button variant="confirm" :href="groupManageAttributesPath">
+            {{ s__('SecurityAttributes|Manage security attributes') }}
+          </gl-button>
+        </template>
+      </gl-empty-state>
+    </div>
+    <div v-for="category in filteredCategories" v-else :key="category.id" class="gl-py-2">
       <div>
         <h5 class="gl-mb-2">
           {{ category.name }}

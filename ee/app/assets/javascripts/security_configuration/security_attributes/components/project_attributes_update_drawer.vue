@@ -39,7 +39,7 @@ export default {
   data() {
     return {
       group: {
-        securityCategories: { nodes: [] },
+        securityCategories: [],
       },
       isDrawerOpen: false,
       pendingAttributes: this.selectedAttributes.map((attr) => attr.id),
@@ -71,6 +71,14 @@ export default {
     isFormDirty() {
       const { addAttributeIds, removeAttributeIds } = this.saveAttributePayload;
       return addAttributeIds.length > 0 || removeAttributeIds.length > 0;
+    },
+    filteredCategories() {
+      if (this.group.securityCategories === null) {
+        return [];
+      }
+      return this.group.securityCategories.filter(
+        (category) => category.securityAttributes?.length > 0,
+      );
     },
   },
   methods: {
@@ -142,13 +150,14 @@ export default {
     <project-attributes-update-form
       v-if="!$apollo.queries.group.loading"
       :categories="group.securityCategories"
+      :filtered-categories="filteredCategories"
       :selected-attributes="selectedAttributes"
       @update="handleUpdate"
     />
     <gl-skeleton-loader v-else :height="200" :width="400" />
 
     <template #footer>
-      <div class="gl-display-flex gl-gap-3">
+      <div v-if="filteredCategories.length" class="gl-display-flex gl-gap-3">
         <gl-button
           category="primary"
           variant="confirm"
