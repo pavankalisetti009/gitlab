@@ -55,4 +55,11 @@ export const DUO_WORKFLOW_STATUS_INPUT_REQUIRED = 'INPUT_REQUIRED';
 export const DUO_WORKFLOW_ADDITIONAL_CONTEXT_REPOSITORY = 'repository';
 export const DUO_CURRENT_WORKFLOW_STORAGE_KEY = 'agenticChat.currentWorkflow';
 
+// WebSocket URL and query parameters
+export const DUO_WORKFLOW_WEBSOCKET_BASE_URL = '/api/v4/ai/duo_workflows/ws';
+export const DUO_WORKFLOW_WEBSOCKET_PARAM_ROOT_NAMESPACE_ID = 'root_namespace_id';
+export const DUO_WORKFLOW_WEBSOCKET_PARAM_NAMESPACE_ID = 'namespace_id';
+export const DUO_WORKFLOW_WEBSOCKET_PARAM_PROJECT_ID = 'project_id';
+export const DUO_WORKFLOW_WEBSOCKET_PARAM_USER_SELECTED_MODEL = 'user_selected_model_identifier';
+
 export const DUO_AGENTIC_CHAT_SELECTED_MODEL_KEY = 'agentic-chat-user-selected-model';
