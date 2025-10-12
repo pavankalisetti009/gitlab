@@ -57,7 +57,7 @@ export default {
         };
       },
       result({ data }) {
-        const iteration = data.group.iterations?.nodes[0];
+        const iteration = data?.group?.iterations?.nodes[0];
 
         if (!iteration) {
           this.error = s__('Iterations|Unable to find iteration.');
