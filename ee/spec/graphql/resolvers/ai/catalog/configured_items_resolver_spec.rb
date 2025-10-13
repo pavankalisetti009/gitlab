@@ -11,7 +11,8 @@ RSpec.describe Resolvers::Ai::Catalog::ConfiguredItemsResolver, feature_category
       :include_inherited,
       :item_id,
       :project_id,
-      :item_type
+      :item_type,
+      :item_types
     )
   end
 end

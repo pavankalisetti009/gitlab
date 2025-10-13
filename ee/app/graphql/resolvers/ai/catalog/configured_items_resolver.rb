@@ -36,6 +36,10 @@ module Resolvers
           required: false,
           description: 'Type of items to retrieve.'
 
+        argument :item_types, [::Types::Ai::Catalog::ItemTypeEnum],
+          required: false,
+          description: 'Types of items to retrieve.'
+
         validates exactly_one_of: [:group_id, :project_id]
 
         def resolve(**args)
