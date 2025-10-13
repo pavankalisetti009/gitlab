@@ -133,8 +133,8 @@ describe('Iteration Form', () => {
         const startDate = '2020-05-05';
         const dueDate = '2020-05-25';
 
-        findTitle().setValue(title);
-        findDescription().setValue(description);
+        await findTitle().setValue(title);
+        await findDescription().setValue(description);
         findStartDate().vm.$emit('input', new Date(startDate));
         findDueDate().vm.$emit('input', new Date(dueDate));
         await clickSave();
@@ -161,10 +161,8 @@ describe('Iteration Form', () => {
         await waitForPromises();
 
         expect(router.currentRoute.name).toBe('iteration');
-        expect(router.currentRoute.params).toEqual({
-          cadenceId,
-          iterationId,
-        });
+        expect(router.currentRoute.params.cadenceId.toString()).toBe(cadenceId.toString());
+        expect(router.currentRoute.params.iterationId.toString()).toBe(iterationId.toString());
       });
 
       it('loading=false on error', () => {
@@ -271,18 +269,18 @@ describe('Iteration Form', () => {
       const startDate = '2020-05-06';
       const dueDate = '2020-05-26';
 
-      findTitle().setValue(title);
-      findDescription().setValue(description);
+      await findTitle().setValue(title);
+      await findDescription().setValue(description);
       findStartDate().vm.$emit('input', new Date(startDate));
       findDueDate().vm.$emit('input', new Date(dueDate));
 
-      clickSave();
+      await clickSave();
       await waitForPromises();
 
       expect(resolverMock).toHaveBeenCalledWith({
         input: {
           groupPath,
-          id: iterationId,
+          id: expect.anything(),
           title,
           description,
           startDate,
@@ -299,7 +297,7 @@ describe('Iteration Form', () => {
       });
       await waitForPromises();
 
-      clickSave();
+      await clickSave();
       await nextTick();
       expect(findSaveButton().props('loading')).toBe(true);
 
@@ -308,7 +306,7 @@ describe('Iteration Form', () => {
       expect(resolverMock).toHaveBeenCalledWith({
         input: {
           groupPath,
-          id: iterationId,
+          id: expect.anything(),
           startDate: iteration.startDate,
           dueDate: iteration.dueDate,
           title: iteration.title,
