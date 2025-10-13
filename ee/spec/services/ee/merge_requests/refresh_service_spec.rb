@@ -988,4 +988,61 @@ RSpec.describe MergeRequests::RefreshService, feature_category: :code_review_wor
       it_behaves_like 'maintained merge requests for auto merges'
     end
   end
+
+  describe 'timing logging' do
+    let(:project) { create(:project, :repository, namespace: group) }
+    let(:user) { create(:user) }
+    let(:service) { described_class.new(project: project, current_user: user) }
+
+    let!(:merge_request) do
+      create(
+        :merge_request,
+        source_project: project,
+        source_branch: source_branch,
+        target_branch: 'master',
+        target_project: project
+      )
+    end
+
+    before do
+      project.add_developer(user)
+    end
+
+    context 'when log_refresh_service_duration feature flag is enabled' do
+      before do
+        stub_feature_flags(log_refresh_service_duration: user)
+      end
+
+      it 'logs duration metrics with non-zero values' do
+        expect(Gitlab::AppJsonLogger).to receive(:info).with(
+          hash_including(
+            event: 'merge_requests_refresh_service',
+            project_id: project.id,
+            user_id: user.id,
+            ref: "refs/heads/#{source_branch}",
+            total_duration_s: be_positive,
+            find_new_commits_duration_s: be_positive,
+            post_merge_manually_merged_duration_s: be >= 0,
+            link_forks_lfs_objects_duration_s: be >= 0,
+            reload_merge_requests_duration_s: be_positive,
+            remove_requested_changes_duration_s: be >= 0
+          )
+        )
+
+        service.execute(oldrev, newrev, "refs/heads/#{source_branch}")
+      end
+    end
+
+    context 'when log_refresh_service_duration feature flag is disabled' do
+      before do
+        stub_feature_flags(log_refresh_service_duration: false)
+      end
+
+      it 'does not log duration metrics' do
+        expect(Gitlab::AppJsonLogger).not_to receive(:info)
+
+        service.execute(oldrev, newrev, "refs/heads/#{source_branch}")
+      end
+    end
+  end
 end
