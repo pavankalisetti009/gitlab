@@ -175,6 +175,10 @@ export default {
       axios
         .post(this.duoWorkflowInvokePath, requestData)
         .then(({ data }) => {
+          if (data.workload && !data.workload.id && data.workload.message) {
+            throw new Error(data.workload.message);
+          }
+
           this.$emit('agent-flow-started', data);
 
           createAlert(this.successAlert(data.id));
