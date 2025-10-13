@@ -28,7 +28,7 @@ describe('KevFilter', () => {
     it('renders checkbox filter', () => {
       expect(findCheckBox().exists()).toBe(true);
       expect(findCheckBox().props('checked')).toBe(false);
-      expect(wrapper.text()).toBe('Vulnerabilities that are not being exploited.');
+      expect(wrapper.text()).toBe('Only show/block vulnerabilities that are being exploited.');
       expect(findPolicyPopover().exists()).toBe(true);
       expect(findSectionLayout().props('ruleLabel')).toBe('KEV status');
       expect(findSectionLayout().props('showRemoveButton')).toBe(false);
@@ -58,7 +58,6 @@ describe('KevFilter', () => {
     });
 
     it('renders selected filter', () => {
-      expect(wrapper.text()).toBe('Vulnerabilities that are being exploited.');
       expect(findCheckBox().props('checked')).toBe(true);
     });
   });

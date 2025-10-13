@@ -9,11 +9,8 @@ export default {
   KEV_FILTER_HELP_PATH: helpPagePath('user/application_security/policies/_index.md'),
   i18n: {
     label: s__('ScanResultPolicy|KEV status'),
-    helpTextEnabled: s__(
-      'ScanResultPolicy|Vulnerabilities that %{boldStart}are%{boldEnd} being exploited.',
-    ),
-    helpTextDisabled: s__(
-      'ScanResultPolicy|Vulnerabilities that %{boldStart}are not%{boldEnd} being exploited.',
+    helpText: s__(
+      'ScanResultPolicy|Only show/block vulnerabilities that %{boldStart}are%{boldEnd} being exploited.',
     ),
     kevFilterPopoverContent: s__(
       'ScanResultPolicy|Select this option if you want the policy to block the merge request (or warn the user if the policy is in warn mode) only if it includes vulnerabilities that are actively exploited according to their KEV status. %{linkStart}Learn more%{linkEnd}.',
@@ -31,13 +28,6 @@ export default {
       type: Boolean,
       required: false,
       default: false,
-    },
-  },
-  computed: {
-    message() {
-      return this.selected
-        ? this.$options.i18n.helpTextEnabled
-        : this.$options.i18n.helpTextDisabled;
     },
   },
   methods: {
@@ -58,7 +48,7 @@ export default {
     <template #content>
       <gl-form-checkbox class="gl-mt-3" :checked="selected" @input="select">
         <template #default>
-          <gl-sprintf :message="message">
+          <gl-sprintf :message="$options.i18n.helpText">
             <template #bold="{ content }">
               <strong>{{ content }}</strong>
             </template>

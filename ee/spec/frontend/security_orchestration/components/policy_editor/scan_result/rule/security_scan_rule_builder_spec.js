@@ -544,7 +544,7 @@ describe('SecurityScanRuleBuilder', () => {
         [
           {
             ...securityScanBuildRule(),
-            vulnerabilities: { vulnerability_attributes: { known_exploited: true } },
+            vulnerability_attributes: { known_exploited: true },
           },
         ],
       ]);
@@ -555,7 +555,7 @@ describe('SecurityScanRuleBuilder', () => {
         {
           initRule: {
             ...securityScanBuildRule(),
-            vulnerabilities: { vulnerability_attributes: { known_exploited: true } },
+            vulnerability_attributes: { known_exploited: true },
           },
         },
         { glFeatures: { securityPoliciesKevFilter: true } },
