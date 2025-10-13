@@ -40,7 +40,7 @@ module VirtualRegistries
         validates :relative_path,
           uniqueness: { scope: [:upstream_id, :status] },
           if: :default?
-        validates :object_storage_key, uniqueness: { scope: :relative_path }
+        validates :object_storage_key, uniqueness: { scope: %i[relative_path group_id] }
         validates :file, presence: true
 
         mount_file_store_uploader ::VirtualRegistries::Cache::EntryUploader
