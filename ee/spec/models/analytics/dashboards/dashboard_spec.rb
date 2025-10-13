@@ -369,8 +369,15 @@ description: with missing properties
 
       it 'returns the correct panels' do
         expect(dashboard.panels.size).to eq(6)
-        expect(dashboard.panels.map { |panel| panel.visualization.type }).to eq(
-          %w[UsageOverview DORAChart DORAChart DORAChart DoraPerformersScore DoraProjectsComparison]
+        expect(dashboard.panels.map { |panel| panel.visualization.slug }).to eq(
+          %w[
+            usage_overview
+            vsd_lifecycle_metrics_table
+            vsd_dora_metrics_table
+            vsd_security_metrics_table
+            dora_performers_score
+            dora_projects_comparison
+          ]
         )
       end
     end
@@ -382,8 +389,13 @@ description: with missing properties
 
       it 'returns the correct panels' do
         expect(dashboard.panels.size).to eq(4)
-        expect(dashboard.panels.map { |panel| panel.visualization.type }).to eq(
-          %w[UsageOverview DORAChart DORAChart DORAChart]
+        expect(dashboard.panels.map { |panel| panel.visualization.slug }).to eq(
+          %w[
+            usage_overview
+            vsd_lifecycle_metrics_table
+            vsd_dora_metrics_table
+            vsd_security_metrics_table
+          ]
         )
       end
     end
