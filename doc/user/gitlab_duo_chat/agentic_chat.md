@@ -403,9 +403,9 @@ GitLab Duo Chat works best with natural language questions. Here are some exampl
 
 {{< /details >}}
 
-You can use Agentic Chat to triage, manage, and remediate vulnerabilities through natural language commands.
+You can use GitLab Duo Chat (Agentic) to triage, manage, and remediate vulnerabilities through natural language commands.
 
-You can use the following security tools in Agentic Chat:
+You can use the following security tools in GitLab Duo Chat (Agentic):
 
 Vulnerability information and analysis:
 
@@ -435,7 +435,7 @@ Issue management integration:
 - `Confirm all container scanning vulnerabilities with known exploits`
 - `Link vulnerability 123 to issue 456 for tracking remediation`
 
-For more information about these security capabilities, see the [Vulnerability Management Tools for Duo Agentic Chat epic](https://gitlab.com/groups/gitlab-org/-/epics/19639).
+For more information about these security capabilities, see [epic 19639](https://gitlab.com/groups/gitlab-org/-/epics/19639).
 
 ## Troubleshooting
 
