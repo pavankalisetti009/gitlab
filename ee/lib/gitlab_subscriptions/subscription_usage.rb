@@ -10,46 +10,37 @@ module GitlabSubscriptions
 
     def initialize(
       subscription_target:,
-      start_date: Date.current.beginning_of_month,
-      end_date: Date.current.end_of_month,
+      subscription_usage_client:,
       namespace: nil
     )
       @subscription_target = subscription_target
       @namespace = namespace
-      @start_date = start_date
-      @end_date = end_date
+      @subscription_usage_client = subscription_usage_client
       @license_key = License.current&.data if subscription_target == :instance
     end
 
-    attr_reader :namespace, :start_date, :end_date
+    attr_reader :namespace, :subscription_usage_client
 
     def last_updated
-      last_updated_response = Gitlab::SubscriptionPortal::Client.get_subscription_usage_last_updated(
-        license_key: license_key,
-        namespace_id: namespace&.id
-      )
+      last_updated_response = subscription_usage_client.get_last_updated
 
       last_updated_response[:lastUpdated] if last_updated_response[:success]
     end
     strong_memoize_attr :last_updated
 
     def pool_usage
-      pool_usage_response = Gitlab::SubscriptionPortal::Client.get_subscription_pool_usage(
-        license_key: license_key,
-        namespace_id: namespace&.id,
-        start_date: start_date,
-        end_date: end_date
-      )
+      pool_usage_response = subscription_usage_client.get_pool_usage
 
       return unless pool_usage_response[:success]
 
       PoolUsage.new(
-        total_credits: pool_usage_response.dig(:poolUsage, :totalUnits),
-        credits_used: pool_usage_response.dig(:poolUsage, :unitsUsed),
+        total_credits: pool_usage_response.dig(:poolUsage, :totalCredits),
+        credits_used: pool_usage_response.dig(:poolUsage, :creditsUsed),
         daily_usage: build_daily_usage(pool_usage_response.dig(:poolUsage, :dailyUsage)),
         declarative_policy_subject: self
       )
     end
+    strong_memoize_attr :pool_usage
 
     def users_usage
       UsersUsage.new(
@@ -57,6 +48,7 @@ module GitlabSubscriptions
         declarative_policy_subject: self
       )
     end
+    strong_memoize_attr :users_usage
 
     private
 

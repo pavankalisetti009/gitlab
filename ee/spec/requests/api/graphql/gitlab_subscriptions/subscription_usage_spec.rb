@@ -71,28 +71,29 @@ RSpec.describe 'Query.subscriptionUsage', feature_category: :consumables_cost_ma
 
     users_usage = User.all.map do |user|
       {
-        user_id: user.id,
-        total_credits: user.id,
-        credits_used: user.id * 10,
-        pool_credits_used: user.id * 100,
-        status: 'Using pool'
+        userId: user.id,
+        totalCredits: user.id,
+        creditsUsed: user.id * 10,
+        poolCreditsUsed: user.id * 100
       }
     end
 
     pool_usage = {
       success: true,
       poolUsage: {
-        totalUnits: 1000,
-        unitsUsed: 250,
+        totalCredits: 1000,
+        creditsUsed: 250,
         dailyUsage: [{ date: '2025-10-01', creditsUsed: 250 }]
       }
     }
 
-    allow(Gitlab::SubscriptionPortal::Client).to receive_messages(
-      get_subscription_usage_last_updated: last_updated,
-      get_subscription_pool_usage: pool_usage,
-      get_subscription_usage_for_user_ids: { success: true, usersUsage: users_usage }
-    )
+    allow_next_instance_of(Gitlab::SubscriptionPortal::SubscriptionUsageClient) do |client|
+      allow(client).to receive_messages(
+        get_last_updated: last_updated,
+        get_pool_usage: pool_usage,
+        get_usage_for_user_ids: { success: true, usersUsage: users_usage }
+      )
+    end
   end
 
   context 'when in Self-Managed' do
