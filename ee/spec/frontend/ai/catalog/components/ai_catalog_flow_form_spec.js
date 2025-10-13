@@ -203,6 +203,22 @@ describe('AiCatalogFlowForm', () => {
 
       expect(findSidePanel().isVisible()).toBe(false);
     });
+
+    describe('when the step editor was opened', () => {
+      beforeEach(async () => {
+        findStepsEditor().vm.$emit('openAgentPanel');
+        await nextTick();
+      });
+
+      it('close when third-party flow is selected', async () => {
+        expect(findSidePanel().isVisible()).toBe(true);
+
+        findFlowType().vm.$emit('input', 'THIRD_PARTY_FLOW');
+        await nextTick();
+
+        expect(findSidePanel().isVisible()).toBe(false);
+      });
+    });
   });
 
   describe('Form Submission', () => {
