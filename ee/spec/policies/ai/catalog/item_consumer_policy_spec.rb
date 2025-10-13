@@ -8,20 +8,12 @@ RSpec.describe Ai::Catalog::ItemConsumerPolicy, feature_category: :workflow_cata
   context 'when item consumer belongs to a project' do
     let(:item_consumer) { build_stubbed(:ai_catalog_item_consumer, project: build_stubbed(:project)) }
 
-    it 'delegates to ProjectPolicy' do
-      delegations = policy.delegated_policies
-
-      expect(delegations.values).to include(an_instance_of(::ProjectPolicy))
-    end
+    it { is_expected.to delegate_to(::ProjectPolicy) }
   end
 
   context 'when item consumer belongs to a group' do
     let(:item_consumer) { build_stubbed(:ai_catalog_item_consumer, group: build_stubbed(:group)) }
 
-    it 'delegates to GroupPolicy' do
-      delegations = policy.delegated_policies
-
-      expect(delegations.values).to include(an_instance_of(::GroupPolicy))
-    end
+    it { is_expected.to delegate_to(::GroupPolicy) }
   end
 end
