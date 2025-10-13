@@ -187,7 +187,7 @@ module QA
             end
           end
 
-          finished_loading?
+          spinner_cleared?
         end
       end
     end
