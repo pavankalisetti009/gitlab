@@ -1,14 +1,23 @@
 import { createRouter } from 'ee/ai/duo_agents_platform/router';
 import * as utils from 'ee/ai/duo_agents_platform/router/utils';
+import {
+  AI_CATALOG_AGENTS_ROUTE,
+  AI_CATALOG_AGENTS_SHOW_ROUTE,
+  AI_CATALOG_AGENTS_EDIT_ROUTE,
+  AI_CATALOG_AGENTS_NEW_ROUTE,
+  AI_CATALOG_AGENTS_DUPLICATE_ROUTE,
+} from 'ee/ai/catalog/router/constants';
 
 describe('Agents Platform Router', () => {
   let router;
   const baseRoute = '/test-project/-/agents';
+  const agentId = 1;
 
   beforeEach(() => {
     gon.features = {
       aiCatalogFlows: false,
       aiCatalogThirdPartyFlows: false,
+      aiCatalogItemProjectCuration: false,
     };
 
     // this is needed to disable the warning thrown for incorrect path
@@ -66,6 +75,38 @@ describe('Agents Platform Router', () => {
       await router.push('/agents/invalid');
 
       expect(router.currentRoute.path).toBe('/agents');
+    });
+
+    it('includes agents routes', () => {
+      router = createRouter(baseRoute, 'project');
+      const { routes } = router.options;
+      const agentsRoute = routes.find((route) => route.path === '/agents');
+
+      expect(agentsRoute).toBeDefined();
+    });
+
+    describe('when aiCatalogItemProjectCuration enabled', () => {
+      beforeEach(() => {
+        gon.features = {
+          aiCatalogItemProjectCuration: true,
+        };
+        router = createRouter(baseRoute, 'project');
+      });
+
+      describe('Agent child routes', () => {
+        it.each`
+          testName              | path                              | expectedRouteName
+          ${'agents index'}     | ${'/agents'}                      | ${AI_CATALOG_AGENTS_ROUTE}
+          ${'agents new'}       | ${'/agents/new'}                  | ${AI_CATALOG_AGENTS_NEW_ROUTE}
+          ${'agents show'}      | ${`/agents/${agentId}`}           | ${AI_CATALOG_AGENTS_SHOW_ROUTE}
+          ${'agents edit'}      | ${`/agents/${agentId}/edit`}      | ${AI_CATALOG_AGENTS_EDIT_ROUTE}
+          ${'agents duplicate'} | ${`/agents/${agentId}/duplicate`} | ${AI_CATALOG_AGENTS_DUPLICATE_ROUTE}
+        `('renders $testName child route', async ({ path, expectedRouteName }) => {
+          await router.push(path);
+
+          expect(router.currentRoute.name).toBe(expectedRouteName);
+        });
+      });
     });
   });
 

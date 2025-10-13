@@ -34,6 +34,9 @@ export const initAiCatalog = (selector = '#js-ai-catalog') => {
     name: 'AiCatalogRoot',
     router,
     apolloProvider,
+    provide: {
+      isGlobal: true,
+    },
     render(h) {
       return h(AiCatalogApp);
     },
