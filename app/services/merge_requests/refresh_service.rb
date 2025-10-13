@@ -401,10 +401,7 @@ module MergeRequests
 
       Gitlab::AppJsonLogger.info(
         event: 'merge_requests_refresh_service',
-        project_id: @project.id,
-        user_id: @current_user&.id,
-        ref: @push&.ref,
-        total_duration_s: total_duration,
+        refresh_service_total_duration_s: total_duration,
         **@duration_statistics
       )
     end
