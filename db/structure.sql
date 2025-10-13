@@ -20643,6 +20643,7 @@ CREATE TABLE note_metadata (
     email_participant text,
     created_at timestamp with time zone,
     updated_at timestamp with time zone,
+    namespace_id bigint,
     CONSTRAINT check_40aa5ff1c6 CHECK ((char_length(email_participant) <= 255))
 );
 
@@ -33254,6 +33255,9 @@ ALTER TABLE bulk_import_trackers
 ALTER TABLE ONLY project_type_ci_runners
     ADD CONSTRAINT check_619c71f3a2 UNIQUE (id);
 
+ALTER TABLE note_metadata
+    ADD CONSTRAINT check_67a890ebba CHECK ((namespace_id IS NOT NULL)) NOT VALID;
+
 ALTER TABLE ONLY group_type_ci_runners
     ADD CONSTRAINT check_81b90172a6 UNIQUE (id);
 
@@ -41061,6 +41065,8 @@ CREATE UNIQUE INDEX index_non_sql_service_pings_on_recorded_at ON non_sql_servic
 
 CREATE UNIQUE INDEX index_note_diff_files_on_diff_note_id ON note_diff_files USING btree (diff_note_id);
 
+CREATE INDEX index_note_metadata_on_namespace_id ON note_metadata USING btree (namespace_id);
+
 CREATE INDEX index_note_metadata_on_note_id ON note_metadata USING btree (note_id);
 
 CREATE INDEX index_notes_archived_on_namespace_id ON notes_archived USING btree (namespace_id);
@@ -46951,6 +46957,8 @@ CREATE TRIGGER push_rules_loose_fk_trigger AFTER DELETE ON push_rules REFERENCIN
 
 CREATE TRIGGER set_sharding_key_for_commit_user_mentions_on_insert_and_update BEFORE INSERT OR UPDATE ON commit_user_mentions FOR EACH ROW EXECUTE FUNCTION sync_sharding_key_with_notes_table();
 
+CREATE TRIGGER set_sharding_key_for_note_metadata_on_insert_and_update BEFORE INSERT OR UPDATE ON note_metadata FOR EACH ROW EXECUTE FUNCTION sync_sharding_key_with_notes_table();
+
 CREATE TRIGGER set_sharding_key_for_suggestions_on_insert_and_update BEFORE INSERT OR UPDATE ON suggestions FOR EACH ROW EXECUTE FUNCTION sync_sharding_key_with_notes_table();
 
 CREATE TRIGGER set_sharding_key_for_system_note_metadata_on_insert BEFORE INSERT ON system_note_metadata FOR EACH ROW EXECUTE FUNCTION get_sharding_key_from_notes_table();
@@ -47926,6 +47934,9 @@ ALTER TABLE ONLY resource_link_events
 
 ALTER TABLE ONLY ml_candidates
     ADD CONSTRAINT fk_2a0421d824 FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE CASCADE;
+
+ALTER TABLE ONLY note_metadata
+    ADD CONSTRAINT fk_2a22435354 FOREIGN KEY (namespace_id) REFERENCES namespaces(id) ON DELETE CASCADE NOT VALID;
 
 ALTER TABLE ONLY personal_access_token_granular_scopes
     ADD CONSTRAINT fk_2a2bab7170 FOREIGN KEY (personal_access_token_id) REFERENCES personal_access_tokens(id) ON DELETE CASCADE;
