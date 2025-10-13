@@ -29,7 +29,7 @@ import FlowTriggersIndex from '../pages/flow_triggers/index/flow_triggers_index.
 import FlowTriggersNew from '../pages/flow_triggers/flow_triggers_new.vue';
 import FlowTriggersEdit from '../pages/flow_triggers/flow_triggers_edit.vue';
 import AiAgentsIndex from '../pages/agents/ai_agents_index.vue';
-import AiFlows from '../pages/flows/ai_flows.vue';
+import AiFlowsIndex from '../pages/flows/ai_flows_index.vue';
 import {
   AGENTS_PLATFORM_INDEX_ROUTE,
   AGENTS_PLATFORM_SHOW_ROUTE,
@@ -189,7 +189,7 @@ export const createRouter = (base, namespace) => {
                 {
                   name: AI_CATALOG_FLOWS_ROUTE,
                   path: '',
-                  component: AiFlows,
+                  component: AiFlowsIndex,
                 },
                 ...(gon.features?.aiCatalogItemProjectCuration
                   ? [
