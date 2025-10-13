@@ -13,7 +13,9 @@ module EE
 
         super
 
-        remove_requested_changes
+        measure_duration(:remove_requested_changes) do
+          remove_requested_changes
+        end
 
         if ::Feature.disabled?(:split_refresh_approval_worker, current_user)
           update_approvers_for_source_branch_merge_requests
@@ -23,6 +25,8 @@ module EE
           sync_preexisting_states_approval_rules
           sync_unenforceable_approval_rules
         end
+
+        log_refresh_details if ::Feature.enabled?(:log_refresh_service_duration, current_user)
       end
 
       override :execute_async_workers
@@ -42,7 +46,7 @@ module EE
 
       def reset_approvals_for_merge_requests(ref, newrev)
         # Add a flag that prevents unverified changes from getting through in the
-        #   10 second window below
+        # 10 second window below
         #
         merge_requests_for(push.branch_name, mr_states: [:opened, :closed]).each do |mr|
           if reset_approvals?(mr, newrev)
@@ -51,8 +55,8 @@ module EE
         end
 
         # We need to make sure the code owner approval rules have all been synced
-        #   first, so we delay for 10s. We are trying to pin down and fix the race
-        #   condition: https://gitlab.com/gitlab-org/gitlab/-/issues/373846
+        # first, so we delay for 10s. We are trying to pin down and fix the race
+        # condition: https://gitlab.com/gitlab-org/gitlab/-/issues/373846
         #
         MergeRequestResetApprovalsWorker.perform_in(10.seconds, project.id, current_user.id, ref, newrev)
       end

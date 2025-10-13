@@ -72,8 +72,6 @@ module MergeRequests
 
       execute_async_workers
 
-      log_refresh_details
-
       true
     end
 
