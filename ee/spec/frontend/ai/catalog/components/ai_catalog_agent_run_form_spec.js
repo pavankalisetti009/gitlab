@@ -16,7 +16,6 @@ describe('AiCatalogAgentRunForm', () => {
   const findFormFields = () => wrapper.findComponent(GlFormFields);
   const findClipboardButton = () => wrapper.findComponent(ClipboardButton);
   const findUserPromptField = () => wrapper.findByTestId('agent-run-form-user-prompt');
-  const findSubmitButton = () => wrapper.findByTestId('agent-run-form-submit-button');
 
   const createComponent = ({ props = {}, stubs = { GlFormFields } } = {}) => {
     wrapper = shallowMountExtended(AiCatalogAgentRunForm, {
@@ -37,9 +36,8 @@ describe('AiCatalogAgentRunForm', () => {
     createComponent();
   });
 
-  it('renders form with submit button', () => {
+  it('renders form', () => {
     expect(findForm().exists()).toBe(true);
-    expect(findSubmitButton().text()).toBe('Run');
   });
 
   it('renders form fields with correct initial values', () => {
@@ -76,16 +74,6 @@ describe('AiCatalogAgentRunForm', () => {
       findFormFields().vm.$emit('submit');
 
       expect(wrapper.emitted('submit')[0]).toEqual([{ userPrompt: mockUserPrompt }]);
-    });
-
-    it('renders submit button as loading', async () => {
-      createComponent();
-
-      expect(findSubmitButton().props('loading')).toBe(false);
-
-      await wrapper.setProps({ isSubmitting: true });
-
-      expect(findSubmitButton().props('loading')).toBe(true);
     });
   });
 });

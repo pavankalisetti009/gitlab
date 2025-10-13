@@ -2,7 +2,6 @@ import { GlDisclosureDropdown, GlDisclosureDropdownItem, GlIcon } from '@gitlab/
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import AiCatalogListItem from 'ee/ai/catalog/components/ai_catalog_list_item.vue';
 import {
-  AI_CATALOG_AGENTS_RUN_ROUTE,
   AI_CATALOG_AGENTS_EDIT_ROUTE,
   AI_CATALOG_SHOW_QUERY_PARAM,
 } from 'ee/ai/catalog/router/constants';
@@ -51,14 +50,6 @@ describe('AiCatalogListItem', () => {
 
   const defaultItemTypeConfig = {
     actionItems: (itemId) => [
-      {
-        text: 'Test Run',
-        to: {
-          name: AI_CATALOG_AGENTS_RUN_ROUTE,
-          params: { id: itemId },
-        },
-        icon: 'rocket-launch',
-      },
       {
         text: 'Edit',
         to: {
@@ -121,11 +112,10 @@ describe('AiCatalogListItem', () => {
       const items = findDisclosureDropdownItems();
 
       expect(findDisclosureDropdown().exists()).toBe(true);
-      expect(items).toHaveLength(3);
-      expect(items.at(0).text()).toBe('Test Run');
-      expect(items.at(1).text()).toBe('Edit');
-      expect(items.at(2).text()).toBe('Delete');
-      expect(items.at(2).attributes('variant')).toBe('danger');
+      expect(items).toHaveLength(2);
+      expect(items.at(0).text()).toBe('Edit');
+      expect(items.at(1).text()).toBe('Delete');
+      expect(items.at(1).attributes('variant')).toBe('danger');
     });
 
     it('renders delete action text when passed', () => {
@@ -140,7 +130,7 @@ describe('AiCatalogListItem', () => {
       });
       const items = findDisclosureDropdownItems();
 
-      expect(items.at(2).text()).toBe('Remove');
+      expect(items.at(1).text()).toBe('Remove');
     });
 
     describe('when the action items are empty but the user has permission to admin the item', () => {
@@ -248,7 +238,7 @@ describe('AiCatalogListItem', () => {
 
   describe('on delete action', () => {
     it('emits delete event', () => {
-      const deleteAction = findDisclosureDropdownItems().at(2);
+      const deleteAction = findDisclosureDropdownItems().at(1);
 
       deleteAction.vm.$emit('action');
 

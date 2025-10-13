@@ -1,6 +1,7 @@
 import { isLoggedIn } from '~/lib/utils/common_utils';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import AiCatalogItemActions from 'ee/ai/catalog/components/ai_catalog_item_actions.vue';
+import { AI_CATALOG_TYPE_FLOW, AI_CATALOG_TYPE_AGENT } from 'ee/ai/catalog/constants';
 import { mockAgent } from '../mock_data';
 
 jest.mock('~/lib/utils/common_utils');
@@ -41,36 +42,37 @@ describe('AiCatalogItemActions', () => {
   const findDeleteButton = () => wrapper.findByTestId('delete-button');
 
   describe.each`
-    scenario                                   | canAdmin | canUse   | runRoute | editBtn  | testBtn  | addBtn   | moreActions | duplicateBtn | deleteBtn
-    ${'not logged in'}                         | ${false} | ${false} | ${true}  | ${false} | ${false} | ${false} | ${false}    | ${false}     | ${false}
-    ${'logged in, not admin of item'}          | ${false} | ${true}  | ${true}  | ${false} | ${false} | ${true}  | ${true}     | ${true}      | ${false}
-    ${'logged in, admin of item'}              | ${true}  | ${true}  | ${true}  | ${true}  | ${true}  | ${true}  | ${true}     | ${true}      | ${true}
-    ${'logged in, admin of item (no testing)'} | ${true}  | ${true}  | ${false} | ${true}  | ${false} | ${true}  | ${true}     | ${true}      | ${true}
+    scenario                           | canAdmin | canUse   | editBtn  | testBtn  | addBtn   | moreActions | duplicateBtn | deleteBtn | itemType
+    ${'not logged in'}                 | ${false} | ${false} | ${false} | ${false} | ${false} | ${false}    | ${false}     | ${false}  | ${AI_CATALOG_TYPE_AGENT}
+    ${'not logged in'}                 | ${false} | ${false} | ${false} | ${false} | ${false} | ${false}    | ${false}     | ${false}  | ${AI_CATALOG_TYPE_AGENT}
+    ${'logged in, not admin of item'}  | ${false} | ${true}  | ${false} | ${false} | ${true}  | ${true}     | ${true}      | ${false}  | ${AI_CATALOG_TYPE_AGENT}
+    ${'logged in, admin of item'}      | ${true}  | ${true}  | ${true}  | ${true}  | ${true}  | ${true}     | ${true}      | ${true}   | ${AI_CATALOG_TYPE_AGENT}
+    ${'logged in, admin of flow item'} | ${true}  | ${true}  | ${true}  | ${false} | ${true}  | ${true}     | ${true}      | ${true}   | ${AI_CATALOG_TYPE_FLOW}
   `(
     'when $scenario',
     ({
       canAdmin,
       canUse,
-      runRoute,
       editBtn,
       testBtn,
       addBtn,
       moreActions,
       duplicateBtn,
       deleteBtn,
+      itemType,
     }) => {
       beforeEach(() => {
         createComponent({
           props: {
             item: {
               ...mockAgent,
+              itemType,
               userPermissions: {
                 adminAiCatalogItem: canAdmin,
               },
             },
             itemRoutes: {
               ...defaultProps.itemRoutes,
-              ...(runRoute ? {} : { run: undefined }),
             },
           },
         });
@@ -89,12 +91,6 @@ describe('AiCatalogItemActions', () => {
 
       it(`${testBtn ? 'renders' : 'does not render'} Test button`, () => {
         expect(findTestButton().exists()).toBe(testBtn);
-        if (testBtn) {
-          expect(findTestButton().props('to')).toMatchObject({
-            name: defaultProps.itemRoutes.run,
-            params: { id: routeParams.id },
-          });
-        }
       });
 
       it(`${addBtn ? 'renders' : 'does not render'} "Add to project" button`, () => {

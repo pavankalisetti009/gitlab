@@ -5,7 +5,6 @@ import {
   AI_CATALOG_AGENTS_SHOW_ROUTE,
   AI_CATALOG_AGENTS_EDIT_ROUTE,
   AI_CATALOG_AGENTS_NEW_ROUTE,
-  AI_CATALOG_AGENTS_RUN_ROUTE,
   AI_CATALOG_AGENTS_DUPLICATE_ROUTE,
   AI_CATALOG_FLOWS_ROUTE,
   AI_CATALOG_FLOWS_SHOW_ROUTE,
@@ -39,7 +38,6 @@ describe('AI Catalog Router', () => {
       ${'agents new'}       | ${'/agents/new'}                  | ${AI_CATALOG_AGENTS_NEW_ROUTE}
       ${'agents show'}      | ${`/agents/${agentId}`}           | ${AI_CATALOG_AGENTS_SHOW_ROUTE}
       ${'agents edit'}      | ${`/agents/${agentId}/edit`}      | ${AI_CATALOG_AGENTS_EDIT_ROUTE}
-      ${'agents run'}       | ${`/agents/${agentId}/run`}       | ${AI_CATALOG_AGENTS_RUN_ROUTE}
       ${'agents duplicate'} | ${`/agents/${agentId}/duplicate`} | ${AI_CATALOG_AGENTS_DUPLICATE_ROUTE}
     `('renders $testName child route', async ({ path, expectedRouteName }) => {
       await router.push(path);
@@ -165,7 +163,6 @@ describe('AI Catalog Router', () => {
       testName              | path
       ${'agents new'}       | ${'/agents/new'}
       ${'agents edit'}      | ${`/agents/${agentId}/edit`}
-      ${'agents run'}       | ${`/agents/${agentId}/run`}
       ${'agents duplicate'} | ${`/agents/${agentId}/duplicate`}
       ${'flows new'}        | ${'/flows/new'}
       ${'flows edit'}       | ${`/flows/${flowId}/edit`}

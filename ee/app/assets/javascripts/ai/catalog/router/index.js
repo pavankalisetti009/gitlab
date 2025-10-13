@@ -7,7 +7,6 @@ import AiCatalogAgents from '../pages/ai_catalog_agents.vue';
 import AiCatalogAgent from '../pages/ai_catalog_agent.vue';
 import AiCatalogAgentsShow from '../pages/ai_catalog_agents_show.vue';
 import AiCatalogAgentsEdit from '../pages/ai_catalog_agents_edit.vue';
-import AiCatalogAgentsRun from '../pages/ai_catalog_agents_run.vue';
 import AiCatalogAgentsNew from '../pages/ai_catalog_agents_new.vue';
 import AiCatalogAgentsDuplicate from '../pages/ai_catalog_agents_duplicate.vue';
 import AiCatalogFlow from '../pages/ai_catalog_flow.vue';
@@ -21,7 +20,6 @@ import {
   AI_CATALOG_AGENTS_ROUTE,
   AI_CATALOG_AGENTS_SHOW_ROUTE,
   AI_CATALOG_AGENTS_EDIT_ROUTE,
-  AI_CATALOG_AGENTS_RUN_ROUTE,
   AI_CATALOG_AGENTS_NEW_ROUTE,
   AI_CATALOG_AGENTS_DUPLICATE_ROUTE,
   AI_CATALOG_FLOWS_ROUTE,
@@ -89,15 +87,6 @@ export const createRouter = (base) => {
                 beforeEnter: requireAuth,
                 meta: {
                   text: s__('AICatalog|Edit agent'),
-                },
-              },
-              {
-                name: AI_CATALOG_AGENTS_RUN_ROUTE,
-                path: 'run',
-                component: AiCatalogAgentsRun,
-                beforeEnter: requireAuth,
-                meta: {
-                  text: s__('AICatalog|Run agent'),
                 },
               },
               {
