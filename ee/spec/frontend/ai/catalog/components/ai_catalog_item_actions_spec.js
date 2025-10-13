@@ -20,12 +20,13 @@ describe('AiCatalogItemActions', () => {
   };
   const routeParams = { id: '4' };
 
-  const createComponent = ({ props = {} } = {}) => {
+  const createComponent = ({ props = {}, provide = {} } = {}) => {
     wrapper = shallowMountExtended(AiCatalogItemActions, {
       propsData: {
         ...defaultProps,
         ...props,
       },
+      provide,
       mocks: {
         $route: {
           params: routeParams,
@@ -42,12 +43,13 @@ describe('AiCatalogItemActions', () => {
   const findDeleteButton = () => wrapper.findByTestId('delete-button');
 
   describe.each`
-    scenario                           | canAdmin | canUse   | editBtn  | testBtn  | addBtn   | moreActions | duplicateBtn | deleteBtn | itemType
-    ${'not logged in'}                 | ${false} | ${false} | ${false} | ${false} | ${false} | ${false}    | ${false}     | ${false}  | ${AI_CATALOG_TYPE_AGENT}
-    ${'not logged in'}                 | ${false} | ${false} | ${false} | ${false} | ${false} | ${false}    | ${false}     | ${false}  | ${AI_CATALOG_TYPE_AGENT}
-    ${'logged in, not admin of item'}  | ${false} | ${true}  | ${false} | ${false} | ${true}  | ${true}     | ${true}      | ${false}  | ${AI_CATALOG_TYPE_AGENT}
-    ${'logged in, admin of item'}      | ${true}  | ${true}  | ${true}  | ${true}  | ${true}  | ${true}     | ${true}      | ${true}   | ${AI_CATALOG_TYPE_AGENT}
-    ${'logged in, admin of flow item'} | ${true}  | ${true}  | ${true}  | ${false} | ${true}  | ${true}     | ${true}      | ${true}   | ${AI_CATALOG_TYPE_FLOW}
+    scenario                                     | canAdmin | canUse   | editBtn  | testBtn  | addBtn   | moreActions | duplicateBtn | deleteBtn | itemType                 | isGlobal
+    ${'not logged in'}                           | ${false} | ${false} | ${false} | ${false} | ${false} | ${false}    | ${false}     | ${false}  | ${AI_CATALOG_TYPE_AGENT} | ${true}
+    ${'not logged in, project level'}            | ${false} | ${false} | ${false} | ${false} | ${false} | ${false}    | ${false}     | ${false}  | ${AI_CATALOG_TYPE_AGENT} | ${false}
+    ${'logged in, not admin of item'}            | ${false} | ${true}  | ${false} | ${false} | ${true}  | ${true}     | ${true}      | ${false}  | ${AI_CATALOG_TYPE_AGENT} | ${true}
+    ${'logged in, admin of item'}                | ${true}  | ${true}  | ${true}  | ${true}  | ${true}  | ${true}     | ${true}      | ${true}   | ${AI_CATALOG_TYPE_AGENT} | ${true}
+    ${'logged in, admin of item, project level'} | ${true}  | ${true}  | ${true}  | ${true}  | ${false} | ${true}     | ${true}      | ${true}   | ${AI_CATALOG_TYPE_AGENT} | ${false}
+    ${'logged in, admin of flow item'}           | ${true}  | ${true}  | ${true}  | ${false} | ${true}  | ${true}     | ${true}      | ${true}   | ${AI_CATALOG_TYPE_FLOW}  | ${true}
   `(
     'when $scenario',
     ({
@@ -60,6 +62,7 @@ describe('AiCatalogItemActions', () => {
       duplicateBtn,
       deleteBtn,
       itemType,
+      isGlobal,
     }) => {
       beforeEach(() => {
         createComponent({
@@ -74,6 +77,9 @@ describe('AiCatalogItemActions', () => {
             itemRoutes: {
               ...defaultProps.itemRoutes,
             },
+          },
+          provide: {
+            isGlobal,
           },
         });
         isLoggedIn.mockReturnValue(canUse);

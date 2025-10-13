@@ -29,6 +29,11 @@ export default {
   directives: {
     GlModal: GlModalDirective,
   },
+  inject: {
+    isGlobal: {
+      default: false,
+    },
+  },
   props: {
     item: {
       type: Object,
@@ -70,6 +75,9 @@ export default {
     showRun() {
       return this.canAdmin && this.item.itemType === AI_CATALOG_TYPE_AGENT;
     },
+    showAddToProject() {
+      return this.canUse && this.isGlobal;
+    },
     duplicateItemProps() {
       return {
         text: s__('AICatalog|Duplicate'),
@@ -104,7 +112,7 @@ export default {
       {{ s__('AICatalog|Test') }}
     </gl-button>
     <gl-button
-      v-if="canUse"
+      v-if="showAddToProject"
       v-gl-modal="'add-item-consumer-modal'"
       variant="confirm"
       category="primary"

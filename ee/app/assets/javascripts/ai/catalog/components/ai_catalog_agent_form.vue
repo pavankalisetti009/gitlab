@@ -13,6 +13,9 @@ import {
   VISIBILITY_LEVEL_PUBLIC,
   AGENT_VISIBILITY_LEVEL_DESCRIPTIONS,
 } from 'ee/ai/catalog/constants';
+import { TYPENAME_PROJECT } from '~/graphql_shared/constants';
+
+import { convertToGraphQLId } from '~/graphql_shared/utils';
 import { __, s__ } from '~/locale';
 import ErrorsAlert from '~/vue_shared/components/errors_alert.vue';
 import { AI_CATALOG_AGENTS_ROUTE, AI_CATALOG_AGENTS_SHOW_ROUTE } from '../router/constants';
@@ -36,6 +39,14 @@ export default {
     GlFormTextarea,
     GlTokenSelector,
     VisibilityLevelRadioGroup,
+  },
+  inject: {
+    projectId: {
+      default: null,
+    },
+    isGlobal: {
+      default: false,
+    },
   },
   apollo: {
     availableTools: {
@@ -79,6 +90,10 @@ export default {
       toolFilter: '',
       formValues: {
         ...this.initialValues,
+        projectId:
+          !this.isGlobal && this.projectId
+            ? convertToGraphQLId(TYPENAME_PROJECT, this.projectId)
+            : this.initialValues.projectId,
         visibilityLevel: this.initialValues.public
           ? VISIBILITY_LEVEL_PUBLIC
           : VISIBILITY_LEVEL_PRIVATE,
@@ -308,7 +323,7 @@ export default {
           <form-project-dropdown
             :id="fields.projectId.id"
             v-model="formValues.projectId"
-            :disabled="isEditMode"
+            :disabled="isEditMode || !isGlobal"
             @error="onError"
           />
         </form-group>

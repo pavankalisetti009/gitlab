@@ -6,8 +6,8 @@ import waitForPromises from 'helpers/wait_for_promises';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import AiAgentsIndex from 'ee/ai/duo_agents_platform/pages/agents/ai_agents_index.vue';
 import AiCatalogList from 'ee/ai/catalog/components/ai_catalog_list.vue';
+import AiCatalogListHeader from 'ee/ai/catalog/components/ai_catalog_list_header.vue';
 import ErrorsAlert from '~/vue_shared/components/errors_alert.vue';
-import PageHeading from '~/vue_shared/components/page_heading.vue';
 import ResourceListsEmptyState from '~/vue_shared/components/resource_lists/empty_state.vue';
 import aiCatalogConfiguredItemsQuery from 'ee/ai/catalog/graphql/queries/ai_catalog_configured_items.query.graphql';
 import aiCatalogAgentQuery from 'ee/ai/catalog/graphql/queries/ai_catalog_agent.query.graphql';
@@ -80,8 +80,8 @@ describe('AiAgentsIndex', () => {
   });
 
   describe('component rendering', () => {
-    it('renders PageHeading component', () => {
-      expect(wrapper.findComponent(PageHeading).exists()).toBe(true);
+    it('renders AiCatalogListHeader component', () => {
+      expect(wrapper.findComponent(AiCatalogListHeader).exists()).toBe(true);
     });
 
     it('renders AiCatalogList component', async () => {

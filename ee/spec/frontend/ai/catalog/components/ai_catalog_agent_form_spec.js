@@ -51,7 +51,7 @@ describe('AiCatalogAgentForm', () => {
 
   const mockToolQueryHandler = jest.fn().mockResolvedValue(mockToolQueryResponse);
 
-  const createWrapper = ({ props = {} } = {}) => {
+  const createWrapper = ({ props = {}, projectId = '1000000', isGlobal = false } = {}) => {
     mockApollo = createMockApollo([[aiCatalogBuiltInToolsQuery, mockToolQueryHandler]]);
 
     wrapper = shallowMountExtended(AiCatalogAgentForm, {
@@ -59,6 +59,10 @@ describe('AiCatalogAgentForm', () => {
       propsData: {
         ...defaultProps,
         ...props,
+      },
+      provide: {
+        projectId,
+        isGlobal,
       },
       mocks: {
         $route: {
@@ -84,10 +88,21 @@ describe('AiCatalogAgentForm', () => {
       expect(findVisibilityLevelRadioGroup().props('value')).toBe(VISIBILITY_LEVEL_PUBLIC);
     });
 
-    it('renders the form with default values when no props are provided', () => {
-      createWrapper();
+    it('renders the form with default values when no props are provided and form is global', () => {
+      createWrapper({ isGlobal: true });
 
       expect(findProjectDropdown().props('value')).toBe(null);
+      expect(findNameField().props('value')).toBe('');
+      expect(findDescriptionField().props('value')).toBe('');
+      expect(findSystemPromptField().props('value')).toBe('');
+      expect(findVisibilityLevelRadioGroup().props('initialValue')).toBe(false);
+      expect(findVisibilityLevelRadioGroup().props('value')).toBe(VISIBILITY_LEVEL_PRIVATE);
+    });
+
+    it('renders the form with default values and provided project when no props are provided and form is not global', () => {
+      createWrapper({ isGlobal: false });
+
+      expect(findProjectDropdown().props('value')).toBe('gid://gitlab/Project/1000000');
       expect(findNameField().props('value')).toBe('');
       expect(findDescriptionField().props('value')).toBe('');
       expect(findSystemPromptField().props('value')).toBe('');

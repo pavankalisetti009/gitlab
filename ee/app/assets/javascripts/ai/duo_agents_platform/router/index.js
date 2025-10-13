@@ -3,17 +3,24 @@ import VueRouter from 'vue-router';
 import { s__ } from '~/locale';
 import {
   AI_CATALOG_AGENTS_ROUTE,
+  AI_CATALOG_AGENTS_SHOW_ROUTE,
   AI_CATALOG_AGENTS_NEW_ROUTE,
+  AI_CATALOG_AGENTS_EDIT_ROUTE,
+  AI_CATALOG_AGENTS_DUPLICATE_ROUTE,
   AI_CATALOG_FLOWS_ROUTE,
   AI_CATALOG_FLOWS_EDIT_ROUTE,
 } from 'ee/ai/catalog/router/constants';
+import AiCatalogAgent from 'ee/ai/catalog/pages/ai_catalog_agent.vue';
+import AiCatalogAgentsShow from 'ee/ai/catalog/pages/ai_catalog_agents_show.vue';
+import AiCatalogAgentsNew from 'ee/ai/catalog/pages/ai_catalog_agents_new.vue';
+import AiCatalogAgentsEdit from 'ee/ai/catalog/pages/ai_catalog_agents_edit.vue';
+import AiCatalogAgentsDuplicate from 'ee/ai/catalog/pages/ai_catalog_agents_duplicate.vue';
 import NestedRouteApp from '../nested_route_app.vue';
 import AgentsPlatformShow from '../pages/show/duo_agents_platform_show.vue';
 import FlowTriggersIndex from '../pages/flow_triggers/index/flow_triggers_index.vue';
 import FlowTriggersNew from '../pages/flow_triggers/flow_triggers_new.vue';
 import FlowTriggersEdit from '../pages/flow_triggers/flow_triggers_edit.vue';
 import AiAgentsIndex from '../pages/agents/ai_agents_index.vue';
-import AiCatalogAgentsNew from '../pages/agents/ai_agents_new.vue';
 import AiFlows from '../pages/flows/ai_flows.vue';
 import AiFlowsEdit from '../pages/flows/ai_flows_edit.vue';
 import {
@@ -108,6 +115,33 @@ export const createRouter = (base, namespace) => {
                   meta: {
                     text: s__('AICatalog|New agent'),
                   },
+                },
+                {
+                  path: ':id(\\d+)',
+                  component: AiCatalogAgent,
+                  children: [
+                    {
+                      name: AI_CATALOG_AGENTS_SHOW_ROUTE,
+                      path: '',
+                      component: AiCatalogAgentsShow,
+                    },
+                    {
+                      name: AI_CATALOG_AGENTS_EDIT_ROUTE,
+                      path: 'edit',
+                      component: AiCatalogAgentsEdit,
+                      meta: {
+                        text: s__('AICatalog|Edit agent'),
+                      },
+                    },
+                    {
+                      name: AI_CATALOG_AGENTS_DUPLICATE_ROUTE,
+                      path: 'duplicate',
+                      component: AiCatalogAgentsDuplicate,
+                      meta: {
+                        text: s__('AICatalog|Duplicate agent'),
+                      },
+                    },
+                  ],
                 },
               ]
             : []),
