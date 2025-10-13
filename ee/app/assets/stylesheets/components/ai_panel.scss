@@ -3,5 +3,7 @@
   position: sticky !important;
   top: 0;
   border-bottom: 1px solid var(--theme-border-color);
-  @apply gl-py-3 gl-pl-5 gl-pr-3;
+  @apply gl-py-3;
+  @apply gl-pl-5;
+  @apply gl-pr-3;
 }
