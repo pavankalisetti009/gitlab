@@ -41,9 +41,9 @@ module Ai
       end
 
       def by_item_type(items)
-        return items unless params[:item_type]
+        return items unless params[:item_type] || params[:item_types]
 
-        items.with_item_type(params[:item_type])
+        items.with_item_type([params[:item_type], *params[:item_types]].compact)
       end
 
       def by_id(items)

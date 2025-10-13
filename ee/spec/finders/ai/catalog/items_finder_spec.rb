@@ -28,6 +28,10 @@ RSpec.describe Ai::Catalog::ItemsFinder, feature_category: :workflow_catalog do
     create(:ai_catalog_agent, public: false, project: project_developer_acceess)
   end
 
+  let_it_be(:private_third_party_flow_developer_access) do
+    create(:ai_catalog_third_party_flow, public: false, project: project_developer_acceess)
+  end
+
   let(:params) { {} }
 
   subject(:results) { described_class.new(user, params: params).execute }
@@ -39,6 +43,7 @@ RSpec.describe Ai::Catalog::ItemsFinder, feature_category: :workflow_catalog do
   it 'returns items visible to user' do
     is_expected.to contain_exactly(
       public_flow,
+      private_third_party_flow_developer_access,
       public_agent,
       private_flow_developer_access,
       private_agent_developer_access
@@ -52,6 +57,30 @@ RSpec.describe Ai::Catalog::ItemsFinder, feature_category: :workflow_catalog do
       is_expected.to contain_exactly(
         public_agent,
         private_agent_developer_access
+      )
+    end
+  end
+
+  context 'when filtering by item_types' do
+    let(:params) { { item_types: %w[third_party_flow agent] } }
+
+    it 'returns the matching items' do
+      is_expected.to contain_exactly(
+        public_agent,
+        private_agent_developer_access,
+        private_third_party_flow_developer_access
+      )
+    end
+  end
+
+  context 'when filtering by item_type and item_types' do
+    let(:params) { { item_types: ['third_party_flow'], item_type: 'agent' } }
+
+    it 'returns items matching both arguments' do
+      is_expected.to contain_exactly(
+        public_agent,
+        private_agent_developer_access,
+        private_third_party_flow_developer_access
       )
     end
   end
@@ -78,7 +107,7 @@ RSpec.describe Ai::Catalog::ItemsFinder, feature_category: :workflow_catalog do
 
       it 'returns the matching items' do
         is_expected.not_to include(public_flow_in_other_org)
-        expect(results.size).to eq(4)
+        expect(results.size).to eq(5)
       end
     end
 
@@ -87,7 +116,7 @@ RSpec.describe Ai::Catalog::ItemsFinder, feature_category: :workflow_catalog do
 
       it 'does not return items in that organization' do
         is_expected.not_to include(public_flow_in_other_org)
-        expect(results.size).to eq(4)
+        expect(results.size).to eq(5)
       end
 
       it 'returns the matching items when user is nil' do
@@ -131,6 +160,7 @@ RSpec.describe Ai::Catalog::ItemsFinder, feature_category: :workflow_catalog do
           gitlab_item_2,
           regular_item_1,
           gitlab_item_1,
+          private_third_party_flow_developer_access,
           private_agent_developer_access,
           private_flow_developer_access,
           public_agent,
@@ -147,6 +177,7 @@ RSpec.describe Ai::Catalog::ItemsFinder, feature_category: :workflow_catalog do
             gitlab_item_2,
             regular_item_2,
             regular_item_1,
+            private_third_party_flow_developer_access,
             private_agent_developer_access,
             private_flow_developer_access,
             public_agent,

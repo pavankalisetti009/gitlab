@@ -117,6 +117,38 @@ RSpec.describe 'getting AI catalog items', :with_current_organization, feature_c
     end
   end
 
+  describe 'item_types argument' do
+    let_it_be(:agent_type_item) { create(:ai_catalog_item, item_type: :agent, project: project, public: true) }
+    let_it_be(:flow_type_item) { create(:ai_catalog_item, item_type: :flow, project: project, public: true) }
+    let_it_be(:third_party_flow_type_item) do
+      create(:ai_catalog_item, item_type: :third_party_flow, project: project, public: true)
+    end
+
+    context 'when not provided' do
+      it 'returns all catalog items' do
+        post_graphql(query, current_user: current_user)
+
+        expect(nodes).to contain_exactly(
+          a_graphql_entity_for(agent_type_item),
+          a_graphql_entity_for(flow_type_item),
+          a_graphql_entity_for(third_party_flow_type_item)
+        )
+      end
+    end
+
+    context 'when flow AND third_party_flow' do
+      let(:args) { { item_types: %i[FLOW THIRD_PARTY_FLOW] } }
+
+      it 'returns only flows and third party flows' do
+        post_graphql(query, current_user: current_user)
+
+        expect(nodes).to contain_exactly(
+          a_graphql_entity_for(flow_type_item), a_graphql_entity_for(third_party_flow_type_item)
+        )
+      end
+    end
+  end
+
   it 'returns only items in the current organization' do
     item = create(:ai_catalog_item, public: true, organization: current_organization)
     create(:ai_catalog_item, public: true, organization: create(:organization))

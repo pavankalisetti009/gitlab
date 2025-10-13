@@ -14,6 +14,10 @@ module Resolvers
           required: false,
           description: 'Type of items to retrieve.'
 
+        argument :item_types, [::Types::Ai::Catalog::ItemTypeEnum],
+          required: false,
+          description: 'Types of items to retrieve.'
+
         argument :search, GraphQL::Types::String,
           required: false,
           description: 'Search items by name and description.'
