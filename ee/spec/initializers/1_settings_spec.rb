@@ -196,6 +196,7 @@ RSpec.describe '1_settings', feature_category: :shared do
         vulnerability_namespace_statistics_schedule_worker
         vulnerability_orphaned_remediations_cleanup_worker
         vulnerability_statistics_schedule_worker
+        virtual_registries_cleanup_enqueue_policy_worker
         x509_issuer_crl_check_worker
       ]
     end

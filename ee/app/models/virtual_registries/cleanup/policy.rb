@@ -3,6 +3,10 @@
 module VirtualRegistries
   module Cleanup
     class Policy < ApplicationRecord
+      include Schedulable
+
+      FAILURE_MESSAGE_MAX_LENGTH = 255
+
       belongs_to :group
 
       enum :status, { scheduled: 0, running: 1, failed: 2 }
@@ -17,7 +21,20 @@ module VirtualRegistries
       validates :last_run_deleted_size, :last_run_deleted_entries_count,
         numericality: { only_integer: true, greater_than_or_equal_to: 0 }
       validates :enabled, :notify_on_success, :notify_on_failure, inclusion: { in: [true, false] }
-      validates :failure_message, length: { maximum: 255 }, allow_nil: true
+      validates :failure_message, length: { maximum: FAILURE_MESSAGE_MAX_LENGTH }, allow_nil: true
+
+      scope :enabled, -> { where(enabled: true) }
+      scope :active, -> { enabled.where(status: %i[scheduled failed]) }
+
+      def self.next_runnable_schedule
+        runnable_schedules.lock('FOR UPDATE SKIP LOCKED').take
+      end
+
+      private
+
+      def set_next_run_at
+        self.next_run_at = Time.current + cadence.days
+      end
     end
   end
 end
