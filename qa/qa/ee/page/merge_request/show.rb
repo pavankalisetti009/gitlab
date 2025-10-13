@@ -240,7 +240,7 @@ module QA
           def merge_via_merge_train
             try_to_merge!(wait_for_no_auto_merge: false)
 
-            finished_loading?
+            spinner_cleared?
           end
 
           def verify_approved

@@ -21,7 +21,7 @@ module QA
           def wait_issues_analytics_graph_finish_loading
             within_element('issues-analytics-chart-wrapper') do
               wait_until(reload: false, max_duration: 5, sleep_interval: 1) do
-                finished_loading?
+                spinner_cleared?
                 yield
               end
             end
