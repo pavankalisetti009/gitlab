@@ -8,7 +8,6 @@ module CodeSuggestions
       @current_user = current_user
       @client = client
       @params = params
-      @params = params.except(:user_instruction, :context) if Feature.disabled?(:code_suggestions_context, current_user)
       @unsafe_passthrough_params = unsafe_passthrough_params
 
       @content_above_cursor = params.dig(:current_file, :content_above_cursor)

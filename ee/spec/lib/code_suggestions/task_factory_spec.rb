@@ -199,28 +199,6 @@ RSpec.describe CodeSuggestions::TaskFactory, feature_category: :code_suggestions
           it_behaves_like 'correct task initializer'
         end
       end
-
-      context 'when code_suggestions_context feature flag is off' do
-        let(:expected_params) do
-          {
-            current_user: current_user,
-            client: client,
-            params: params.except(:user_instruction, :context).merge(
-              instruction: instruction,
-              content_above_cursor: content_above_cursor,
-              project: expected_project,
-              current_user: current_user
-            ),
-            unsafe_passthrough_params: {}
-          }
-        end
-
-        before do
-          stub_feature_flags(code_suggestions_context: false)
-        end
-
-        it_behaves_like 'correct task initializer'
-      end
     end
   end
 end
