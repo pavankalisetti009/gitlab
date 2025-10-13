@@ -28,21 +28,17 @@ module Mutations
             null: true,
             description: 'Created workflow.'
 
-          authorize :admin_ai_catalog_item
+          authorize :execute_ai_catalog_item_version
 
           def resolve(agent_id:, agent_version_id: nil, user_prompt: nil)
-            agent = authorized_find!(id: agent_id)
-
-            agent_version = resolve_agent_version(agent, agent_version_id)
-
-            authorize!(agent_version)
+            agent = GitlabSchema.object_from_id(agent_id).sync
+            agent_version = authorized_find!(agent:, agent_version_id:)
 
             result = ::Ai::Catalog::Agents::ExecuteService.new(
               project: agent.project,
               current_user: current_user,
               params: { agent: agent, agent_version: agent_version, execute_workflow: true, user_prompt: user_prompt }
             ).execute
-
             {
               flow_config: result.payload[:flow_config],
               workflow: result.payload[:workflow],
@@ -52,7 +48,9 @@ module Mutations
 
           private
 
-          def resolve_agent_version(agent, agent_version_id)
+          def find_object(agent:, agent_version_id:)
+            return if agent.nil?
+
             if agent_version_id.present?
               GitlabSchema.object_from_id(agent_version_id).sync
             else

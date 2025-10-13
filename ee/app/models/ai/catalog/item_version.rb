@@ -35,6 +35,8 @@ module Ai
 
       has_many :dependencies, class_name: 'Ai::Catalog::ItemVersionDependency', inverse_of: :ai_catalog_item_version
 
+      has_one :project, through: :item
+
       before_create :populate_organization
 
       delegate :flow?, to: :item

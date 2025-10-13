@@ -7,9 +7,11 @@ RSpec.describe Mutations::Ai::Catalog::Agent::Execute, :aggregate_failures, feat
   include GraphqlHelpers
 
   let_it_be(:current_user) { create(:user) }
-  let_it_be(:project) { create(:project, :repository, maintainers: current_user) }
+  let_it_be(:project) { create(:project, :repository, developers: current_user) }
   let_it_be_with_reload(:agent) { create(:ai_catalog_agent, project: project) }
-  let_it_be_with_reload(:agent_version) { agent.versions.last }
+  let_it_be_with_reload(:agent_version) do
+    agent.versions.last.tap { |version| version.update!(release_date: 1.hour.ago) }
+  end
 
   let(:mutation) do
     graphql_mutation(:ai_catalog_agent_execute, params) do
@@ -107,8 +109,8 @@ RSpec.describe Mutations::Ai::Catalog::Agent::Execute, :aggregate_failures, feat
     end
   end
 
-  context 'when user is a developer' do
-    let(:current_user) { create(:user).tap { |user| project.add_developer(user) } }
+  context 'when user is a reporter' do
+    let(:current_user) { create(:user).tap { |user| project.add_reporter(user) } }
 
     it_behaves_like 'an authorization failure'
   end
@@ -145,7 +147,7 @@ RSpec.describe Mutations::Ai::Catalog::Agent::Execute, :aggregate_failures, feat
     it_behaves_like 'successful execution'
 
     it 'executes the latest version of the agent' do
-      latest_agent_version = create(:ai_catalog_item_version, version: '2.0.0', item: agent)
+      latest_agent_version = create(:ai_catalog_item_version, :released, version: '2.0.0', item: agent)
       allow(::Ai::Catalog::Agents::ExecuteService).to receive(:new).and_call_original
 
       execute
@@ -202,6 +204,23 @@ RSpec.describe Mutations::Ai::Catalog::Agent::Execute, :aggregate_failures, feat
     end
   end
 
+  context 'when latest version is still in draft' do
+    let_it_be(:agent) { create(:ai_catalog_agent, project: project) }
+    let_it_be(:agent_version) do
+      agent.versions.last.tap { |version| version.update!(release_date: nil) }
+    end
+
+    context 'when user is a developer' do
+      it_behaves_like 'an authorization failure'
+    end
+
+    context 'when user is a maintainer' do
+      let(:current_user) { create(:user).tap { |user| project.add_maintainer(user) } }
+
+      it_behaves_like 'successful execution'
+    end
+  end
+
   context 'when execute service fails' do
     let(:error_message) { 'Service execution failed' }
     let(:mock_service) { instance_double(::Ai::Catalog::Agents::ExecuteService) }
@@ -255,7 +274,7 @@ RSpec.describe Mutations::Ai::Catalog::Agent::Execute, :aggregate_failures, feat
 
   context 'with mismatched agent type and agent version' do
     let_it_be(:flow) { create(:ai_catalog_flow, project: project) }
-    let_it_be(:flow_version) { flow.versions.last }
+    let_it_be(:flow_version) { flow.versions.last.tap { |version| version.update!(release_date: 1.hour.ago) } }
 
     context 'when a flow item is passed with an agent item version' do
       let(:params) { super().merge(agent_id: flow.to_global_id) }
@@ -285,7 +304,9 @@ RSpec.describe Mutations::Ai::Catalog::Agent::Execute, :aggregate_failures, feat
 
     context "when an agent is passed with a different agent's version" do
       let_it_be(:other_agent) { create(:ai_catalog_agent, project: project) }
-      let_it_be(:other_agent_version) { other_agent.versions.last }
+      let_it_be(:other_agent_version) do
+        other_agent.versions.last.tap { |version| version.update!(release_date: 1.hour.ago) }
+      end
 
       let(:params) { super().merge(agent_version_id: other_agent_version.to_global_id) }
 

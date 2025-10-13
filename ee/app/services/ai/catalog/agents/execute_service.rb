@@ -42,6 +42,10 @@ module Ai
 
         attr_reader :agent, :agent_version, :flow, :execute_workflow, :user_prompt
 
+        def allowed?
+          Ability.allowed?(current_user, :execute_ai_catalog_item_version, agent_version)
+        end
+
         def validate
           return error('Agent is required') unless agent && agent.agent?
           return error('Agent version is required') unless agent_version
@@ -65,7 +69,8 @@ module Ai
           params = {
             json_config: flow_config,
             container: agent.project,
-            goal: user_prompt
+            goal: user_prompt,
+            item_version: agent_version
           }
 
           ::Ai::Catalog::ExecuteWorkflowService.new(current_user, params).execute
