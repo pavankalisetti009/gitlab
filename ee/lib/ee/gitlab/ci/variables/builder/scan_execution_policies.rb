@@ -39,7 +39,7 @@ module EE
 
             def active_scan_variables
               ::Security::SecurityOrchestrationPolicies::ScanPipelineService
-                .new(ci_context)
+                .new(ci_context, branch: pipeline.ref, pipeline_source: pipeline.source)
                 .execute(active_scan_actions)[:variables]
             end
             strong_memoize_attr :active_scan_variables

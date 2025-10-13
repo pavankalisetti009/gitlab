@@ -4,6 +4,7 @@ module Security
   module SecurityOrchestrationPolicies
     class ScanPipelineService
       include Gitlab::Loggable
+      include ::Gitlab::Utils::StrongMemoize
 
       EMPTY_RESULT = { pipeline_scan: {}, on_demand: {}, variables: {} }.freeze
       HISTOGRAM = :gitlab_security_policies_scan_execution_configuration_rendering_seconds
@@ -30,19 +31,22 @@ module Security
         }
       }.freeze
 
-      attr_reader :project, :base_variables, :context, :template_cache
+      attr_reader :project, :base_variables, :branch, :context, :template_cache
 
-      def initialize(context, base_variables: {})
+      def initialize(context, branch: nil, pipeline_source: nil)
         @project = context.project
         @context = context
-        @base_variables = SCAN_VARIABLES_WITH_RESTRICTED_VARIABLES.deep_merge(base_variables)
+        @branch = branch
         @template_cache = TemplateCacheService.new
+        @pipeline_source = pipeline_source
       end
 
       def execute(actions)
         return EMPTY_RESULT if actions.empty?
 
         measure(HISTOGRAM, callback: ->(duration) { log_duration(duration, actions.size) }) do
+          prepare_base_variables(actions)
+
           actions = actions.select do |action|
             valid_scan_type?(action[:scan]) && pipeline_scan_type?(action[:scan].to_s)
           end
@@ -136,6 +140,50 @@ module Security
             duration: duration,
             project_id: project.id,
             action_count: action_count))
+      end
+
+      def prepare_base_variables(actions)
+        @base_variables = SCAN_VARIABLES_WITH_RESTRICTED_VARIABLES.deep_merge(secret_detection_variables(actions))
+      end
+
+      def security_orchestration_policy?
+        @pipeline_source == :security_orchestration_policy
+      end
+
+      def secret_detection_variables(actions)
+        return {} unless security_orchestration_policy?
+        return {} unless actions.detect { |a| a[:scan] == 'secret_detection' }
+
+        unless last_scan_commit_sha.present? && most_recent_commit_sha.present?
+          return { secret_detection: { 'SECRET_DETECTION_HISTORIC_SCAN' => 'true' } }
+        end
+
+        # if the actions has the SECRET_DETECTION_HISTORIC_SCAN variable set to true, we don't want to set
+        # the SECRET_DETECTION_LOG_OPTIONS
+        return {} if actions.detect { |a| a.dig(:variables, :SECRET_DETECTION_HISTORIC_SCAN) == 'true' }
+
+        { secret_detection: { 'SECRET_DETECTION_LOG_OPTIONS' => commit_range } }
+      end
+
+      def last_scan_commit_sha
+        Ci::Pipeline.order_id_desc
+                    .for_project(project).for_ref(branch)
+                    .with_pipeline_source(:security_orchestration_policy)
+                    .find_by_id(pipeline_ids)&.sha
+      end
+      strong_memoize_attr :last_scan_commit_sha
+
+      def pipeline_ids
+        Security::Scan.pipeline_ids(project, 'secret_detection')
+      end
+
+      def most_recent_commit_sha
+        project.repository.commit(branch)&.sha
+      end
+      strong_memoize_attr :most_recent_commit_sha
+
+      def commit_range
+        "#{last_scan_commit_sha}..#{most_recent_commit_sha}"
       end
 
       delegate :measure, to: Security::SecurityOrchestrationPolicies::ObserveHistogramsService
