@@ -121,4 +121,50 @@ RSpec.describe Search::AuthorizationContext, feature_category: :global_search do
       context.get_projects_with_custom_roles(authorized_projects)
     end
   end
+
+  describe '#admin_user?' do
+    context 'when user is nil' do
+      let(:current_user) { nil }
+
+      it 'returns false' do
+        expect(context.admin_user?).to be false
+      end
+    end
+
+    context 'when user can read all resources' do
+      before do
+        allow(current_user).to receive(:can_read_all_resources?).and_return(true)
+      end
+
+      it 'returns true' do
+        expect(context.admin_user?).to be true
+      end
+    end
+
+    context 'when user cannot read all resources' do
+      before do
+        allow(current_user).to receive(:can_read_all_resources?).and_return(false)
+      end
+
+      it 'returns false' do
+        expect(context.admin_user?).to be false
+      end
+    end
+  end
+
+  describe '#anonymous_user?' do
+    context 'when user is nil' do
+      let(:current_user) { nil }
+
+      it 'returns true' do
+        expect(context.anonymous_user?).to be true
+      end
+    end
+
+    context 'when user is present' do
+      it 'returns false' do
+        expect(context.anonymous_user?).to be false
+      end
+    end
+  end
 end

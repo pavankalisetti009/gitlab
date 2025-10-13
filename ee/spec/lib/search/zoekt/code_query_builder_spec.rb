@@ -92,7 +92,7 @@ RSpec.describe Search::Zoekt::CodeQueryBuilder, feature_category: :global_search
             search_level: :group))
           .and_return(reporter_groups)
 
-        allow(auth).to receive(:get_traversal_ids_for_groups)
+        allow(auth).to receive(:get_formatted_traversal_ids_for_groups)
           .with(reporter_groups,
             group_ids: [group.id],
             project_ids: [],
@@ -166,14 +166,14 @@ RSpec.describe Search::Zoekt::CodeQueryBuilder, feature_category: :global_search
             search_level: :global))
           .and_return(reporter_groups)
 
-        allow(auth).to receive(:get_traversal_ids_for_groups)
+        allow(auth).to receive(:get_formatted_traversal_ids_for_groups)
           .with(guest_groups,
             group_ids: [],
             project_ids: [],
             search_level: :global)
           .and_return(%w[2270-])
 
-        allow(auth).to receive(:get_traversal_ids_for_groups)
+        allow(auth).to receive(:get_formatted_traversal_ids_for_groups)
           .with(reporter_groups,
             group_ids: [],
             project_ids: [],

@@ -31,7 +31,7 @@ RSpec.describe ::Search::Elastic::WorkItemGroupQueryBuilder, :elastic_helpers, f
       filters:not_hidden
       filters:work_item_type_ids
       filters:non_archived
-      filters:confidentiality:groups:non_confidential:public
+      filters:confidentiality:groups:non_confidential
     ])
   end
 
@@ -72,6 +72,7 @@ RSpec.describe ::Search::Elastic::WorkItemGroupQueryBuilder, :elastic_helpers, f
   describe 'filters' do
     let_it_be(:public_group) { create(:group, :public) }
     let_it_be(:private_group) { create(:group, :private) }
+    let_it_be(:private_project) { create(:project, :private, namespace: private_group) }
 
     it_behaves_like 'a query filtered by archived'
     it_behaves_like 'a query filtered by hidden'
@@ -87,33 +88,68 @@ RSpec.describe ::Search::Elastic::WorkItemGroupQueryBuilder, :elastic_helpers, f
 
     describe 'confidentiality' do
       context 'when user has role set in min_access_level_non_confidential option' do
-        it 'applies only non-confidential public/private filters' do
-          private_group.add_guest(user)
+        context 'in group' do
+          it 'applies non-confidential filters and confidential for assignees and authors' do
+            private_group.add_guest(user)
 
-          assert_names_in_query(build,
-            with: %w[filters:confidentiality:groups:non_confidential:public
-              filters:confidentiality:groups:non_confidential:private],
-            without: %w[filters:confidentiality:groups:confidential:private])
+            assert_names_in_query(build,
+              with: %w[filters:confidentiality:groups:non_confidential
+                filters:confidentiality:groups:confidential:as_assignee
+                filters:confidentiality:groups:confidential:as_author])
+          end
+        end
+
+        context 'in project' do
+          it 'applies non-confidential and confidential for assignees and authors' do
+            private_project.add_guest(user)
+
+            assert_names_in_query(build,
+              with: %w[filters:confidentiality:groups:non_confidential
+                filters:confidentiality:groups:confidential:as_assignee
+                filters:confidentiality:groups:confidential:as_author])
+          end
         end
       end
 
       context 'when user has role set in min_access_level_confidential option' do
-        it 'applies only confidential and non-confidential public/private filters' do
-          private_group.add_planner(user)
+        context 'in group' do
+          it 'applies the expected membership filters' do
+            private_group.add_planner(user)
 
-          assert_names_in_query(build,
-            with: %w[filters:confidentiality:groups:non_confidential:public
-              filters:confidentiality:groups:non_confidential:private
-              filters:confidentiality:groups:confidential:private])
+            assert_names_in_query(build,
+              with: %w[filters:confidentiality:groups:non_confidential
+                filters:confidentiality:groups:confidential
+                filters:confidentiality:groups:confidential:as_assignee
+                filters:confidentiality:groups:private:ancestry_filter:descendants],
+              without: %w[filters:confidentiality:groups:public_and_internal:ancestry_filter:descendants
+                filters:confidentiality:groups:public_and_internal:confidential:as_author])
+          end
+        end
+
+        context 'in project' do
+          it 'applies the expected membership filters' do
+            private_project.add_planner(user)
+
+            assert_names_in_query(build,
+              with: %w[filters:confidentiality:groups:non_confidential
+                filters:confidentiality:groups:confidential
+                filters:confidentiality:groups:confidential:as_assignee
+                filters:confidentiality:groups:private:ancestry_filter:descendants],
+              without: %w[filters:confidentiality:groups:public_and_internal:confidential:as_author
+                filters:confidentiality:groups:public_and_internal:ancestry_filter:descendants])
+          end
         end
       end
 
       context 'when user does not have role' do
-        it 'applies only non-confidential public filters' do
+        it 'only applies the non-confidential filters' do
           assert_names_in_query(build,
-            with: %w[filters:confidentiality:groups:non_confidential:public],
-            without: %w[filters:confidentiality:groups:non_confidential:private
-              filters:confidentiality:groups:private])
+            with: %w[filters:confidentiality:groups:non_confidential
+              filters:confidentiality:groups:confidential
+              filters:confidentiality:groups:confidential:as_assignee],
+            without: %w[filters:confidentiality:groups:private:ancestry_filter:descendants
+              filters:confidentiality:groups:public_and_internal:ancestry_filter:descendants
+              filters:confidentiality:groups:public_and_internal:confidential:as_author])
         end
       end
 
@@ -122,9 +158,12 @@ RSpec.describe ::Search::Elastic::WorkItemGroupQueryBuilder, :elastic_helpers, f
 
         it 'only applies the non-confidential filter' do
           assert_names_in_query(build,
-            with: %w[filters:confidentiality:groups:non_confidential:public],
-            without: %w[filters:confidentiality:groups:non_confidential:private
-              filters:confidentiality:groups:confidential:private])
+            with: %w[filters:confidentiality:groups:non_confidential],
+            without: %w[filters:confidentiality:groups:confidential:as_author
+              filters:confidentiality:groups:confidential:as_assignee
+              filters:confidentiality:groups:confidential
+              filters:confidentiality:groups:private:ancestry_filter:descendants
+              filters:confidentiality:groups:public_and_internal:ancestry_filter:descendants])
         end
       end
 
@@ -133,11 +172,15 @@ RSpec.describe ::Search::Elastic::WorkItemGroupQueryBuilder, :elastic_helpers, f
           allow(user).to receive(:can_read_all_resources?).and_return(true)
         end
 
-        it 'applies skips applying all confidential filters' do
+        it 'applies no confidential filters' do
           assert_names_in_query(build,
-            without: %w[filters:confidentiality:groups:non_confidential:public
-              filters:confidentiality:groups:non_confidential:private
-              filters:confidentiality:groups:confidential:private])
+            without: %w[filters:confidentiality:groups:non_confidential
+              filters:confidentiality:groups:confidential
+              filters:confidentiality:groups:public_and_internal:confidential:as_author
+              filters:confidentiality:groups:public_and_internal:confidential:as_assignee
+              filters:confidentiality:groups:confidential
+              filters:confidentiality:groups:public_and_internal:ancestry_filter:descendants
+              filters:confidentiality:groups:private:ancestry_filter:descendants])
         end
       end
     end

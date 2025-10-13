@@ -36,14 +36,22 @@ module Search
     # search_level
     # group_ids
     # project_ids
-    def get_traversal_ids_for_groups(authorized_groups, options)
-      get_traversal_ids_for_search_level(authorized_groups, options)
+    def get_formatted_traversal_ids_for_groups(authorized_groups, options)
+      format_traversal_ids(traversal_ids_for_search_level(authorized_groups, options))
     end
 
     # Supported options:
     # min_access_level
     def get_groups_for_user(options)
       groups_for_user(user: current_user, min_access_level: options[:min_access_level])
+    end
+
+    # Supported options:
+    # search_level
+    # group_ids
+    # project_ids
+    def get_traversal_ids_for_search_level(authorized_groups, options)
+      traversal_ids_for_search_level(authorized_groups, options)
     end
 
     # Supported options:
@@ -56,6 +64,16 @@ module Search
 
       projects_for_user(current_user, options)
         .where_exists(current_user.authorizations_for_projects(min_access_level:))
+    end
+
+    def admin_user?
+      return false if anonymous_user?
+
+      current_user.can_read_all_resources?
+    end
+
+    def anonymous_user?
+      current_user.nil?
     end
 
     private

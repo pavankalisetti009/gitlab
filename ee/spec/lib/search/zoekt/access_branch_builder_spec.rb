@@ -22,7 +22,7 @@ RSpec.describe Search::Zoekt::AccessBranchBuilder, feature_category: :global_sea
     allow(auth).to receive_messages(
       get_projects_for_user: Project.none,
       get_groups_for_user: Group.none,
-      get_traversal_ids_for_groups: [],
+      get_formatted_traversal_ids_for_groups: [],
       get_groups_with_custom_roles: Group.none,
       get_projects_with_custom_roles: Project.none
     )
@@ -161,11 +161,11 @@ RSpec.describe Search::Zoekt::AccessBranchBuilder, feature_category: :global_sea
             .with(hash_including(min_access_level: ::Gitlab::Access::REPORTER))
             .and_return(reporter_groups)
 
-          allow(auth).to receive(:get_traversal_ids_for_groups)
+          allow(auth).to receive(:get_formatted_traversal_ids_for_groups)
             .with(guest_groups, hash_including(search_level: :group))
             .and_return(%w[123- 456-])
 
-          allow(auth).to receive(:get_traversal_ids_for_groups)
+          allow(auth).to receive(:get_formatted_traversal_ids_for_groups)
             .with(reporter_groups, hash_including(search_level: :group))
             .and_return(['789-'])
         end
@@ -192,7 +192,7 @@ RSpec.describe Search::Zoekt::AccessBranchBuilder, feature_category: :global_sea
             .with(hash_including(min_access_level: ::Gitlab::Access::GUEST))
             .and_return(guest_groups)
 
-          allow(auth).to receive(:get_traversal_ids_for_groups)
+          allow(auth).to receive(:get_formatted_traversal_ids_for_groups)
             .with(guest_groups, hash_including(search_level: :group))
             .and_return(%w[123- 456-])
         end
@@ -237,7 +237,7 @@ RSpec.describe Search::Zoekt::AccessBranchBuilder, feature_category: :global_sea
             .with(hash_including(min_access_level: ::Gitlab::Access::REPORTER))
             .and_return(reporter_groups)
 
-          allow(auth).to receive(:get_traversal_ids_for_groups)
+          allow(auth).to receive(:get_formatted_traversal_ids_for_groups)
             .with(reporter_groups, hash_including(search_level: :group))
             .and_return(%w[1- 56- 99-])
         end

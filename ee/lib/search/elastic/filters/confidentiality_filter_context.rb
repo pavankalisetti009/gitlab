@@ -1,0 +1,47 @@
+# frozen_string_literal: true
+
+module Search
+  module Elastic
+    module Filters
+      class ConfidentialityFilterContext
+        attr_reader :user, :filter_path, :confidential, :auth
+
+        def initialize(options)
+          @confidential = options[:confidential]
+          @user = options[:current_user]
+          @filter_path = options.fetch(:filter_path, [:query, :bool, :filter])
+          @options = options
+          @auth = ::Search::AuthorizationContext.new(user)
+        end
+
+        def confidential_only?
+          confidential == true
+        end
+
+        def non_confidential_only?
+          confidential == false
+        end
+
+        def confidential_filter_specified?
+          confidential_only? || non_confidential_only?
+        end
+
+        def min_access_level_confidential
+          options.fetch(:min_access_level_confidential)
+        end
+
+        def min_access_level_confidential_public_internal
+          options.fetch(:min_access_level_confidential_public_internal)
+        end
+
+        def traversal_ids_field
+          options.fetch(:traversal_ids_prefix, Search::Elastic::Filters::TRAVERSAL_IDS_FIELD)
+        end
+
+        private
+
+        attr_reader :options
+      end
+    end
+  end
+end

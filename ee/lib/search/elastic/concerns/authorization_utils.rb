@@ -96,7 +96,7 @@ module Search
 
           authorized_groups = groups_for_user(user: user, min_access_level: options[:min_access_level])
 
-          get_traversal_ids_for_search_level(authorized_groups, options)
+          format_traversal_ids(traversal_ids_for_search_level(authorized_groups, options))
         end
 
         # Returns the traversal IDs for a given user based on the search level and options.
@@ -107,8 +107,8 @@ module Search
         #   An array of group IDs to filter by (for :group search_level).
         # @option options [Array<Integer>] :project_ids Optional:
         #   An array of project IDs to filter by (for :project search_level).
-        # @return [Array<Array<Integer>>] An array of arrays, where each inner array represents a traversal ID path.
-        def get_traversal_ids_for_search_level(authorized_groups, options)
+        # @return [Array<Array<Integer>>] An array of arrays, where each array represents a traversal ID path.
+        def traversal_ids_for_search_level(authorized_groups, options)
           search_level = options.fetch(:search_level).to_sym
 
           case search_level
@@ -118,7 +118,11 @@ module Search
             authorized_traversal_ids_for_groups(authorized_groups, options[:group_ids])
           when :project
             authorized_traversal_ids_for_projects(authorized_groups, options[:project_ids])
-          end.map { |id| "#{id.join('-')}-" }
+          end
+        end
+
+        def format_traversal_ids(traversal_ids)
+          traversal_ids.map { |id_array| "#{id_array.join('-')}-" }
         end
 
         def authorized_traversal_ids_for_global(authorized_groups)

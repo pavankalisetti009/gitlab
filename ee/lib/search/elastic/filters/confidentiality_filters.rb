@@ -11,14 +11,36 @@ module Search
           include Search::Elastic::Concerns::FilterUtils
           include Search::Elastic::Concerns::AuthorizationUtils
 
+          # Applies combined confidentiality filters for both project and group level resources.
+          # This method orchestrates the application of confidentiality filters, allowing for
+          # authorization checks at both the project and group levels. It uses `BoolExpr`
+          # to combine the results of project and group confidentiality filters with a `should`
+          # clause, meaning a resource is accessible if it passes either the project or group
+          # level authorization.
+          #
+          # @param query_hash [Hash] The Elasticsearch query hash to which filters will be added.
+          # @param options [Hash] A hash of options controlling the filtering behavior.
+          #
+          # @option options [Boolean] :use_project_authorization (false) If `true`, project-level
+          #   confidentiality filters will be applied.
+          # @option options [Boolean] :use_group_authorization (false) If `true`, group-level
+          #   confidentiality filters will be applied.
+          # @option options [Hash] :features A hash of project features used in authorization.
+          #   Used to check `<feature>_access_level`. This key is removed for group confidentiality filters.
+          # @option options [Array<Symbol>] :filter_path ([:query, :bool, :filter]) The path within the
+          #   `query_hash` where the generated filter should be inserted.
+          #
+          # @return [Hash] The modified `query_hash` with combined confidentiality filters applied.
+          #
+          # @note This method assumes that `by_project_confidentiality` and `by_group_level_confidentiality`
+          #   are defined and handle their respective filtering logic.
           def by_combined_confidentiality(query_hash:, options:)
             combined_filter = Search::Elastic::BoolExpr.new
 
             if options[:use_project_authorization]
               add_filter(combined_filter, :should) do
                 project_filter = Search::Elastic::BoolExpr.new
-                project_options = options.dup
-                project_options[:filter_path] = [:filter]
+                project_options = options.merge(filter_path: [:filter])
 
                 by_project_confidentiality(query_hash: project_filter, options: project_options)
 
@@ -29,8 +51,7 @@ module Search
             if options[:use_group_authorization]
               add_filter(combined_filter, :should) do
                 group_filter = Search::Elastic::BoolExpr.new
-                group_options = options.dup
-                group_options[:filter_path] = [:filter]
+                group_options = options.merge(filter_path: [:filter])
                 # group authorization for confidentiality uses min_access_level
                 # `features` is only needed for the project confidentiality so remove it for group checks
                 group_options.delete(:features)
@@ -54,6 +75,7 @@ module Search
           #
           # @param query_hash [Hash] The Elasticsearch query hash to which filters will be added.
           # @param options [Hash] A hash of options controlling the filtering behavior.
+          #
           # @option options [Boolean] :confidential (nil) If `true`, only confidential resources are returned.
           #   If `false`, only non-confidential resources are returned. If `nil`, both are considered,
           #   and access rules are applied.
@@ -79,21 +101,56 @@ module Search
               return legacy_project_confidentiality_filter(query_hash:, options:)
             end
 
-            confidential = options[:confidential]
-            user = options[:current_user]
-            filter_path = options.fetch(:filter_path, [:query, :bool, :filter])
+            filter_context = ConfidentialityFilterContext.new(options)
 
             context.name(:filters, :confidentiality, :projects) do
-              apply_user_confidentiality_filter(query_hash, user, confidential, filter_path)
+              apply_user_confidentiality_filter(query_hash, filter_context)
 
-              next query_hash if user&.can_read_all_resources?
-              next query_hash if confidential == false
+              next query_hash if filter_context.auth.admin_user?
+              next query_hash if filter_context.non_confidential_only?
 
-              apply_confidentiality_access_filters(query_hash, user, confidential, filter_path, options)
+              apply_project_confidentiality_access_filters(query_hash,
+                filter_context.user, filter_context.confidential, filter_context.filter_path, options)
             end
           end
 
+          # Applies confidentiality filters for group-level resources.
+          # This method constructs an Elasticsearch query to filter group-level resources
+          #
+          # @option options [Array<Symbol>] :filter_path ([:query, :bool, :filter]) The path within the
+          #   `query_hash` where the generated filter should be inserted.
+          #   to view confidential resources.
+          # @option options [Array<Integer>] :group_ids (nil) An array of group IDs to scope the search.
+          # @option options [Integer] :min_access_level_non_confidential The minimum access level required
+          #   to view non-confidential resources. Defaults to `Gitlab::Access::GUEST`.
+          # @option options [Integer] :min_access_level_confidential The minimum access level required
+          #   to view confidential resources. Defaults to `Gitlab::Access::PLANNER`.
+          # @option options [String] :project_id_field ('project_id') The field name in Elasticsearch
+          #   documents that stores the project ID.
+          # @option options [String] :traversal_ids_prefix ('traversal_ids') The field name prefix in
+          #   Elasticsearch documents that stores traversal IDs for ancestry.
+          #
+          # @return [Hash] The modified `query_hash` with confidentiality filters applied.
+          #
+          # @note This method uses the `search_group_confidentiality_use_traversal_ids` feature flag
           def by_group_level_confidentiality(query_hash:, options:)
+            if ::Feature.disabled?(:search_group_confidentiality_use_traversal_ids, options[:current_user])
+              return legacy_group_level_confidentiality(query_hash:, options:)
+            end
+
+            filter_context = ConfidentialityFilterContext.new(options)
+
+            context.name(:filters, :confidentiality, :groups) do
+              apply_user_confidentiality_filter(query_hash, filter_context)
+
+              next query_hash if filter_context.auth.admin_user?
+              next query_hash if filter_context.non_confidential_only?
+
+              apply_group_confidentiality_access_filters(query_hash, filter_context, options)
+            end
+          end
+
+          def legacy_group_level_confidentiality(query_hash:, options:)
             confidential = options[:confidential]
             user = options[:current_user]
             filter_path = options.fetch(:filter_path, [:query, :bool, :filter])
@@ -147,27 +204,27 @@ module Search
 
           private
 
-          def apply_user_confidentiality_filter(query_hash, user, confidential, filter_path)
-            return query_hash unless [true, false].include?(confidential)
+          def apply_user_confidentiality_filter(query_hash, filter_context)
+            return query_hash unless filter_context.confidential_filter_specified?
 
-            if !user && confidential == true
-              add_filter(query_hash, *filter_path) do
+            if filter_context.auth.anonymous_user? && filter_context.confidential_only?
+              add_filter(query_hash, *filter_context.filter_path) do
                 { match_none: { _name: context.name(:anonymous_user_confidential_filter_not_allowed) } }
               end
 
               return
             end
 
-            add_filter(query_hash, *filter_path) do
-              { term: { confidential: { _name: context.name(:user_filter), value: confidential } } }
+            add_filter(query_hash, *filter_context.filter_path) do
+              { term: { confidential: { _name: context.name(:user_filter), value: filter_context.confidential } } }
             end
           end
 
-          def apply_confidentiality_access_filters(query_hash, user, confidential, filter_path, options)
+          def apply_project_confidentiality_access_filters(query_hash, user, confidential, filter_path, options)
             # anonymous users can only see non-confidential data
             unless user
               add_filter(query_hash, *filter_path) do
-                non_confidential_filter
+                build_non_confidential_filter
               end
 
               return query_hash
@@ -176,18 +233,18 @@ module Search
             if confidential == true
               # reduce query nesting when confidential filter is selected
               add_filter(query_hash, *filter_path) do
-                build_confidential_access_filter(user, options, confidential)
+                build_project_confidential_access_filter(user, options, confidential)
               end
             else
               bool_expr = ::Search::Elastic::BoolExpr.new
 
               # reduce query complexity if confidential user filter is selected
               add_filter(bool_expr, :should) do
-                non_confidential_filter
+                build_non_confidential_filter
               end
 
               add_filter(bool_expr, :should) do
-                build_confidential_access_filter(user, options, confidential)
+                build_project_confidential_access_filter(user, options, confidential)
               end
 
               add_filter(query_hash, *filter_path) do
@@ -198,9 +255,13 @@ module Search
             query_hash
           end
 
-          def build_confidential_access_filter(user, options, confidential)
+          def build_project_confidential_access_filter(user, options, confidential)
             confidential_filter = ::Search::Elastic::BoolExpr.new
             min_access_level = options.fetch(:min_access_level_confidential)
+
+            # public or internal groups/projects
+            # can read group via traversal_ids or parent group (through project) && author or assignee
+            # is planner or above
 
             traversal_ids = traversal_ids_for_user(user, options.merge(min_access_level: min_access_level))
             projects = projects_for_user(user, options)
@@ -241,6 +302,154 @@ module Search
             end
 
             confidential_filter.to_bool_query
+          end
+
+          def apply_group_confidentiality_access_filters(query_hash, filter_context, options)
+            # anonymous users can only see non-confidential data
+            # membership filter will handle the authorization and role checks
+            if filter_context.auth.anonymous_user?
+              add_filter(query_hash, *filter_context.filter_path) do
+                build_non_confidential_filter
+              end
+
+              return query_hash
+            end
+
+            if filter_context.confidential_only?
+              # reduce query nesting when confidential filter is selected
+              add_filter(query_hash, *filter_context.filter_path) do
+                build_group_confidential_access_filter(options, filter_context)
+              end
+            else
+              bool_expr = ::Search::Elastic::BoolExpr.new
+
+              add_filter(bool_expr, :should) do
+                build_non_confidential_filter
+              end
+
+              add_filter(bool_expr, :should) do
+                build_group_confidential_access_filter(options, filter_context)
+              end
+
+              add_filter(query_hash, *filter_context.filter_path) do
+                bool_expr.to_bool_query
+              end
+            end
+
+            query_hash
+          end
+
+          def build_group_confidential_access_filter(options, filter_context)
+            confidential_filter = ::Search::Elastic::BoolExpr.new
+            auth_data = prepare_group_authorization_data(options, filter_context)
+
+            add_confidential_term_filter(confidential_filter, filter_context)
+            add_assignee_filter(confidential_filter, filter_context)
+            add_author_filter(confidential_filter, filter_context, auth_data)
+            add_group_private_filters(confidential_filter, filter_context, auth_data)
+
+            confidential_filter.to_bool_query
+          end
+
+          def prepare_group_authorization_data(options, filter_context)
+            private_traversal_ids = get_group_and_project_traversal_ids(filter_context,
+              options.merge(min_access_level: filter_context.min_access_level_confidential))
+
+            public_internal_traversal_ids = get_group_and_project_traversal_ids(filter_context,
+              options.merge(min_access_level: filter_context.min_access_level_confidential_public_internal))
+            public_internal_traversal_ids -= private_traversal_ids
+
+            {
+              private_traversal_ids: private_traversal_ids,
+              public_internal_traversal_ids: public_internal_traversal_ids
+            }
+          end
+
+          def get_group_and_project_traversal_ids(filter_context, auth_options)
+            groups = filter_context.auth.get_groups_for_user(auth_options)
+            traversal_ids = filter_context.auth.get_traversal_ids_for_search_level(groups, auth_options)
+            trie = ::Namespaces::Traversal::TrieNode.build(traversal_ids)
+
+            projects = filter_context.auth.get_projects_for_user(auth_options)
+            namespaces_for_projects = Namespace.id_in(projects.select(:namespace_id))
+            project_traversal_ids = namespaces_for_projects.map(&:traversal_ids).reject do |s|
+              trie.covered?(s)
+            end
+
+            combined_traversal_ids = traversal_ids + project_traversal_ids
+            format_traversal_ids(combined_traversal_ids.uniq)
+          end
+
+          def add_confidential_term_filter(confidential_filter, filter_context)
+            return if filter_context.confidential_only?
+
+            add_filter(confidential_filter, :filter) do
+              { term: { confidential: { _name: context.name(:confidential), value: true } } }
+            end
+          end
+
+          def add_assignee_filter(confidential_filter, filter_context)
+            add_filter(confidential_filter, :should) do
+              build_assignee_filter(filter_context.user)
+            end
+          end
+
+          def add_author_filter(confidential_filter, filter_context, auth_data)
+            add_filter(confidential_filter, :should) do
+              auth_expr = Search::Elastic::BoolExpr.new
+
+              add_filter(auth_expr, :filter) do
+                build_author_filter(filter_context.user)
+              end
+
+              add_filter(auth_expr, :should) do
+                build_traversal_authorization_filter(auth_data[:public_internal_traversal_ids], filter_context)
+              end
+
+              add_filter(auth_expr, :should) do
+                build_non_private_visibility_filter
+              end
+
+              auth_expr.to_bool_query
+            end
+          end
+
+          def add_group_private_filters(confidential_filter, filter_context, auth_data)
+            return if auth_data[:private_traversal_ids].empty?
+
+            context.name(:private) do
+              add_filter(confidential_filter, :should) do
+                build_traversal_authorization_filter(auth_data[:private_traversal_ids], filter_context)
+              end
+            end
+          end
+
+          def build_author_filter(user)
+            { term: { author_id: { _name: context.name(:confidential, :as_author), value: user.id } } }
+          end
+
+          def build_assignee_filter(user)
+            { term: { assignee_id: { _name: context.name(:confidential, :as_assignee), value: user.id } } }
+          end
+
+          def build_non_private_visibility_filter
+            bool_expr = Search::Elastic::BoolExpr.new
+            add_filter(bool_expr, :must_not) do
+              { term: { namespace_visibility_level: ::Gitlab::VisibilityLevel::PRIVATE } }
+            end
+
+            bool_expr.to_bool_query
+          end
+
+          def build_traversal_authorization_filter(traversal_ids, filter_context)
+            return if traversal_ids.empty?
+
+            auth_expr = Search::Elastic::BoolExpr.new
+            add_filter(auth_expr, :should) do
+              ancestry_filter(traversal_ids, traversal_id_field: filter_context.traversal_ids_field)
+            end
+
+            auth_expr.to_bool_query
           end
 
           def legacy_project_confidentiality_filter(query_hash:, options:)
@@ -311,7 +520,7 @@ module Search
             end
           end
 
-          def non_confidential_filter
+          def build_non_confidential_filter
             {
               term: { confidential: { _name: context.name(:non_confidential), value: false } }
             }

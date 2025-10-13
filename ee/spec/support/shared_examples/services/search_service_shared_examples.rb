@@ -366,3 +366,142 @@ RSpec.shared_examples 'can search by title for miscellaneous cases' do |type|
   end
   # rubocop:enable RSpec/InstanceVariable
 end
+
+RSpec.shared_examples 'search respects confidentiality' do |group_access: true, project_access: true,
+  group_access_shared_group: true, project_access_shared_group: true, project_feature_setup: true|
+  include ProjectHelpers
+  include UserHelpers
+
+  before do
+    set_project_visibility_and_feature_access_level if project_feature_setup && project_access
+    set_group_visibility_level if group_access
+
+    ensure_elasticsearch_index! if ::Gitlab::CurrentSettings.elasticsearch_indexing?
+  end
+
+  # sidekiq needed for ElasticAssociationIndexerWorker
+  it 'respects visibility with access at project level', :sidekiq_inline do
+    skip unless project_access
+
+    user = create_user_from_membership(project, membership)
+    confidential_user_as_assignee.update!(assignees: [user]) if user
+    confidential_user_as_author.update!(author: user) if user
+
+    enable_admin_mode!(user) if admin_mode
+
+    items = [confidential, non_confidential, confidential_user_as_assignee]
+    Elastic::ProcessInitialBookkeepingService.track!(*items)
+    ensure_elasticsearch_index!
+
+    expect_search_results(user, scope, expected_count: expected_count) do |user|
+      if described_class.eql?(Search::GlobalService)
+        described_class.new(user, search: search, scope: scope).execute
+      else
+        described_class.new(user, search_level, search: search, scope: scope).execute
+      end
+    end
+  end
+
+  it 'respects visibility with access at group level', :sidekiq_inline do
+    skip unless group_access
+
+    user_in_group = create_user_from_membership(group, membership)
+    confidential_user_as_assignee.update!(assignees: [user_in_group]) if user_in_group
+    confidential_user_as_author.update!(author: user_in_group) if user_in_group
+
+    enable_admin_mode!(user_in_group) if admin_mode
+
+    items = [confidential, non_confidential, confidential_user_as_assignee]
+    Elastic::ProcessInitialBookkeepingService.track!(*items)
+    ensure_elasticsearch_index!
+
+    expect_search_results(user_in_group, scope, expected_count: expected_count) do |user|
+      if described_class.eql?(Search::GlobalService)
+        described_class.new(user, search: search, scope: scope).execute
+      else
+        described_class.new(user, search_level, search: search, scope: scope).execute
+      end
+    end
+  end
+
+  it 'respects visibility with access at project level through a shared group', :sidekiq_inline do
+    skip unless project_access_shared_group
+
+    shared_with_group = create(:group)
+    user_in_shared_group = create_user_from_membership(shared_with_group, membership)
+    confidential_user_as_assignee.update!(assignees: [user_in_shared_group]) if user_in_shared_group
+    confidential_user_as_author.update!(author: user_in_shared_group) if user_in_shared_group
+
+    items = [confidential, non_confidential, confidential_user_as_assignee]
+    Elastic::ProcessInitialBookkeepingService.track!(*items)
+    ensure_elasticsearch_index!
+
+    if Gitlab::Access.sym_options_with_owner.key?(membership)
+      create(:project_group_link,
+        group_access: Gitlab::Access.sym_options_with_owner[membership],
+        project: project,
+        group: shared_with_group
+      )
+    end
+
+    enable_admin_mode!(user_in_shared_group) if admin_mode
+
+    expect_search_results(user_in_shared_group, scope, expected_count: expected_count) do |u|
+      if described_class.eql?(Search::GlobalService)
+        described_class.new(u, search: search, scope: scope).execute
+      else
+        described_class.new(u, search_level, search: search, scope: scope).execute
+      end
+    end
+  end
+
+  it 'respects visibility with access at group level through a shared group', :sidekiq_inline do
+    skip unless group_access_shared_group
+
+    shared_with_group = create(:group)
+    user_in_shared_group = create_user_from_membership(shared_with_group, membership)
+    confidential_user_as_assignee.update!(assignees: [user_in_shared_group]) if user_in_shared_group
+    confidential_user_as_author.update!(author: user_in_shared_group) if user_in_shared_group
+
+    items = [confidential, non_confidential, confidential_user_as_assignee]
+    Elastic::ProcessInitialBookkeepingService.track!(*items)
+    ensure_elasticsearch_index!
+
+    if Gitlab::Access.sym_options_with_owner.key?(membership)
+      create(:group_group_link,
+        group_access: Gitlab::Access.sym_options_with_owner[membership],
+        shared_group: group,
+        shared_with_group: shared_with_group
+      )
+    end
+
+    enable_admin_mode!(user_in_shared_group) if admin_mode
+
+    # ensure project authorizations are updated
+    group.refresh_members_authorized_projects
+
+    expect_search_results(user_in_shared_group, scope, expected_count: expected_count) do |u|
+      if described_class.eql?(Search::GlobalService)
+        described_class.new(u, search: search, scope: scope).execute
+      else
+        described_class.new(u, search_level, search: search, scope: scope).execute
+      end
+    end
+  end
+
+  private
+
+  def set_group_visibility_level
+    group.update!(visibility_level: Gitlab::VisibilityLevel.level_value(project_level.to_s))
+  end
+
+  def set_project_visibility_and_feature_access_level
+    projects.each do |project|
+      update_feature_access_level(
+        project,
+        feature_access_level,
+        visibility_level: Gitlab::VisibilityLevel.level_value(project_level.to_s)
+      )
+    end
+  end
+end

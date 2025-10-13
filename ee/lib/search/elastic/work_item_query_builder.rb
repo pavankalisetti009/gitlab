@@ -139,6 +139,7 @@ module Search
           model: model,
           project_visibility_level_field: :project_visibility_level,
           min_access_level_non_confidential: ::Gitlab::Access::GUEST,
+          min_access_level_confidential_public_internal: ::Gitlab::Access::GUEST,
           min_access_level_confidential: ::Gitlab::Access::PLANNER
         }
       end

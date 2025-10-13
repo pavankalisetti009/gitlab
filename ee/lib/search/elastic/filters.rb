@@ -21,21 +21,21 @@ module Search
 
         def by_combined_search_level_and_membership(query_hash:, options:)
           combined_filter = Search::Elastic::BoolExpr.new
-          options[:filter_path] = [:filter]
+          combined_options = options.merge(filter_path: [:filter])
 
-          if options[:use_project_authorization]
+          if combined_options[:use_project_authorization]
             add_filter(combined_filter, :should) do
               project_filter = Search::Elastic::BoolExpr.new
-              by_search_level_and_membership(query_hash: project_filter, options: options)
+              by_search_level_and_membership(query_hash: project_filter, options: combined_options)
 
               project_filter.to_bool_query
             end
           end
 
-          if options[:use_group_authorization]
+          if combined_options[:use_group_authorization]
             add_filter(combined_filter, :should) do
               group_filter = Search::Elastic::BoolExpr.new
-              by_search_level_and_group_membership(query_hash: group_filter, options: options)
+              by_search_level_and_group_membership(query_hash: group_filter, options: combined_options)
 
               group_filter.to_bool_query
             end
@@ -1528,7 +1528,7 @@ module Search
           if features.empty?
             add_filter(membership_filters, :should) do
               traversal_id_field = options.fetch(:traversal_ids_prefix, TRAVERSAL_IDS_FIELD)
-              traversal_ids = get_traversal_ids_for_search_level(groups, options)
+              traversal_ids = format_traversal_ids(traversal_ids_for_search_level(groups, options))
 
               ancestry_filter(traversal_ids, traversal_id_field: traversal_id_field)
             end
@@ -1559,7 +1559,7 @@ module Search
             # add in custom role groups
             private_group_ids.concat(allowed_ids_by_ability(feature:, user_abilities:))
             private_groups = Group.id_in(private_group_ids)
-            private_traversal_ids = get_traversal_ids_for_search_level(private_groups, options)
+            private_traversal_ids = format_traversal_ids(traversal_ids_for_search_level(private_groups, options))
 
             # limit to public/internal visibility level groups to avoid duplicate access filters
             public_and_internal_group_ids = groups_for_user(user: user,
@@ -1569,7 +1569,8 @@ module Search
             # remove private groups, they already have access
             public_and_internal_group_ids -= private_group_ids
             public_and_internal_groups = Group.id_in(public_and_internal_group_ids)
-            public_and_internal_traversal_ids = get_traversal_ids_for_search_level(public_and_internal_groups, options)
+            public_and_internal_traversal_ids = format_traversal_ids(
+              traversal_ids_for_search_level(public_and_internal_groups, options))
 
             add_filter(membership_filters, :should) do
               build_public_and_internal_group_filters(traversal_ids: public_and_internal_traversal_ids,

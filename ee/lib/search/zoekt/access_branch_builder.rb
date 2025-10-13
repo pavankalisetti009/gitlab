@@ -131,7 +131,7 @@ module Search
       end
 
       def authorized_traversal_ids_for_groups(groups)
-        auth.get_traversal_ids_for_groups(groups,
+        auth.get_formatted_traversal_ids_for_groups(groups,
           group_ids: group_ids,
           project_ids: project_ids,
           search_level: options.fetch(:search_level))

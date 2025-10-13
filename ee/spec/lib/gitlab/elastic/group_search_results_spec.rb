@@ -92,10 +92,12 @@ RSpec.describe Gitlab::Elastic::GroupSearchResults, :elastic, feature_category: 
         allow(Gitlab::Search::FoundBlob).to receive(:new).and_return(instance_double(Gitlab::Search::FoundBlob))
 
         allow(Gitlab::Search::FoundBlob).to receive(:new)
-          .with(a_hash_including(project_id: unarchived_project.id, ref: unarchived_project.commit.id)).and_return(unarchived_result)
+          .with(a_hash_including(project_id: unarchived_project.id,
+            ref: unarchived_project.commit.id)).and_return(unarchived_result)
 
         allow(Gitlab::Search::FoundBlob).to receive(:new)
-          .with(a_hash_including(project_id: archived_project.id, ref: archived_project.commit.id)).and_return(archived_result)
+          .with(a_hash_including(project_id: archived_project.id,
+            ref: archived_project.commit.id)).and_return(archived_result)
       end
 
       let_it_be(:unarchived_project) { create(:project, :public, :repository, group: group) }
@@ -119,7 +121,8 @@ RSpec.describe Gitlab::Elastic::GroupSearchResults, :elastic, feature_category: 
     let_it_be(:archived_project) { create(:project, :archived, :repository, :public, group: group, creator: owner) }
 
     let_it_be(:unarchived_result_object) do
-      unarchived_project.repository.create_file(owner, 'test.rb', '# foo bar', message: 'foo bar', branch_name: 'master')
+      unarchived_project.repository.create_file(owner, 'test.rb', '# foo bar', message: 'foo bar',
+        branch_name: 'master')
     end
 
     let_it_be(:archived_result_object) do
@@ -227,12 +230,27 @@ RSpec.describe Gitlab::Elastic::GroupSearchResults, :elastic, feature_category: 
     let_it_be(:child_group) { create(:group, :private, parent: group) }
     let_it_be(:child_of_child_group) { create(:group, :private, parent: child_group) }
     let_it_be(:another_group) { create(:group, :private, parent: public_parent_group) }
-    let!(:parent_group_epic) { create(:work_item, :group_level, :epic_with_legacy_epic, namespace: public_parent_group, title: query) }
+    let!(:parent_group_epic) do
+      create(:work_item, :group_level, :epic_with_legacy_epic, namespace: public_parent_group, title: query)
+    end
+
     let!(:group_epic) { create(:work_item, :group_level, :epic_with_legacy_epic, namespace: group, title: query) }
-    let!(:child_group_epic) { create(:work_item, :group_level, :epic_with_legacy_epic, namespace: child_group, title: query) }
-    let!(:confidential_child_group_epic) { create(:work_item, :group_level, :epic_with_legacy_epic, :confidential, namespace: child_group, title: query) }
-    let!(:confidential_child_of_child_epic) { create(:work_item, :group_level, :epic_with_legacy_epic, :confidential, namespace: child_of_child_group, title: query) }
-    let!(:another_group_epic) { create(:work_item, :group_level, :epic_with_legacy_epic, namespace: another_group, title: query) }
+    let!(:child_group_epic) do
+      create(:work_item, :group_level, :epic_with_legacy_epic, namespace: child_group, title: query)
+    end
+
+    let!(:confidential_child_group_epic) do
+      create(:work_item, :group_level, :epic_with_legacy_epic, :confidential, namespace: child_group, title: query)
+    end
+
+    let!(:confidential_child_of_child_epic) do
+      create(:work_item, :group_level, :epic_with_legacy_epic, :confidential, namespace: child_of_child_group,
+        title: query)
+    end
+
+    let!(:another_group_epic) do
+      create(:work_item, :group_level, :epic_with_legacy_epic, namespace: another_group, title: query)
+    end
 
     before do
       ensure_elasticsearch_index!
@@ -287,10 +305,11 @@ RSpec.describe Gitlab::Elastic::GroupSearchResults, :elastic, feature_category: 
           'work_item:multi_match:and:search_terms',
           'work_item:multi_match_phrase:search_terms',
           'filters:level:group:ancestry_filter:descendants',
-          'filters:confidentiality:groups:non_confidential:public',
-          'filters:confidentiality:groups:non_confidential:internal',
-          'filters:confidentiality:groups:non_confidential:private',
-          without: %w[filters:confidentiality:groups:confidential:private]
+          'filters:confidentiality:groups:non_confidential',
+          'filters:confidentiality:groups:confidential',
+          'filters:confidentiality:groups:confidential:as_assignee',
+          'filters:confidentiality:groups:confidential:as_author',
+          without: %w[filters:confidentiality:groups:private:ancestry_filter:descendants]
         )
       end
 
@@ -311,10 +330,11 @@ RSpec.describe Gitlab::Elastic::GroupSearchResults, :elastic, feature_category: 
             'work_item:multi_match:and:search_terms',
             'work_item:multi_match_phrase:search_terms',
             'filters:level:group:ancestry_filter:descendants',
-            'filters:confidentiality:groups:non_confidential:public',
-            'filters:confidentiality:groups:non_confidential:internal',
-            'filters:confidentiality:groups:non_confidential:private',
-            'filters:confidentiality:groups:confidential:private'
+            'filters:confidentiality:groups:non_confidential',
+            'filters:confidentiality:groups:confidential',
+            'filters:confidentiality:groups:confidential:as_assignee',
+            'filters:confidentiality:groups:confidential:as_author',
+            'filters:confidentiality:groups:private:ancestry_filter:descendants'
           )
         end
       end
@@ -326,7 +346,8 @@ RSpec.describe Gitlab::Elastic::GroupSearchResults, :elastic, feature_category: 
       before do
         code_examples.values.uniq.each do |description|
           sha = Digest::SHA256.hexdigest(description)
-          create :work_item, :group_level, :epic_with_legacy_epic, namespace: public_parent_group, title: sha, description: description
+          create :work_item, :group_level, :epic_with_legacy_epic, namespace: public_parent_group, title: sha,
+            description: description
         end
 
         ensure_elasticsearch_index!
@@ -436,14 +457,16 @@ RSpec.describe Gitlab::Elastic::GroupSearchResults, :elastic, feature_category: 
     allowed_scopes = %w[projects notes blobs wiki_blobs commits issues merge_requests epics milestones users]
     scopes_with_notes_query = %w[issues]
 
-    include_examples 'calls Elasticsearch the expected number of times', scopes: (allowed_scopes - scopes_with_notes_query), scopes_with_multiple: scopes_with_notes_query
+    include_examples 'calls Elasticsearch the expected number of times',
+      scopes: (allowed_scopes - scopes_with_notes_query), scopes_with_multiple: scopes_with_notes_query
 
     context 'when search_work_item_queries_notes flag is false' do
       before do
         stub_feature_flags(search_work_item_queries_notes: false)
       end
 
-      include_examples 'calls Elasticsearch the expected number of times', scopes: allowed_scopes, scopes_with_multiple: []
+      include_examples 'calls Elasticsearch the expected number of times', scopes: allowed_scopes,
+        scopes_with_multiple: []
     end
 
     allowed_scopes_and_index_names = [
