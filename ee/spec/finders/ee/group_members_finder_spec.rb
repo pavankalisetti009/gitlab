@@ -3,6 +3,9 @@
 require 'spec_helper'
 
 RSpec.describe GroupMembersFinder, feature_category: :groups_and_projects do
+  include MemberRoleHelpers
+  using RSpec::Parameterized::TableSyntax
+
   subject(:finder) { described_class.new(group) }
 
   let_it_be(:group) { create :group }
@@ -18,7 +21,6 @@ RSpec.describe GroupMembersFinder, feature_category: :groups_and_projects do
     context 'with custom roles' do
       before do
         stub_licensed_features(custom_roles: true)
-        stub_feature_flags(use_user_group_member_roles_members_page: false)
       end
 
       let_it_be(:group)                { create(:group) }
@@ -47,13 +49,14 @@ RSpec.describe GroupMembersFinder, feature_category: :groups_and_projects do
         }
       end
 
+      let_it_be(:public_shared_group_custom_maintainer_role) { create(:member_role, :maintainer, namespace: public_shared_group) }
+      let_it_be(:public_shared_group_custom_developer_role) { create(:member_role, :developer, namespace: public_shared_group) }
+      let_it_be(:public_shared_group_custom_reporter_role) { create(:member_role, :reporter, namespace: public_shared_group) }
+
       let_it_be(:members) do
         group_custom_maintainer_role = create(:member_role, :maintainer, namespace: group)
         group_custom_developer_role = create(:member_role, :developer, namespace: group)
         group_custom_reporter_role = create(:member_role, :reporter, namespace: group)
-        public_shared_group_custom_maintainer_role = create(:member_role, :maintainer, namespace: public_shared_group)
-        public_shared_group_custom_developer_role = create(:member_role, :developer, namespace: public_shared_group)
-        public_shared_group_custom_reporter_role = create(:member_role, :reporter, namespace: public_shared_group)
         private_shared_group_custom_maintainer_role = create(:member_role, :maintainer, namespace: private_shared_group)
         private_shared_group_custom_developer_role = create(:member_role, :developer, namespace: private_shared_group)
         private_shared_group_custom_reporter_role = create(:member_role, :reporter, namespace: private_shared_group)
@@ -82,7 +85,11 @@ RSpec.describe GroupMembersFinder, feature_category: :groups_and_projects do
         }
       end
 
-      using RSpec::Parameterized::TableSyntax
+      subject(:result) do
+        described_class
+          .new(groups[subject_group], params: { with_custom_role: true })
+          .execute(include_relations: subject_relations)
+      end
 
       # rubocop: disable Layout/ArrayAlignment
       where(:subject_relations, :subject_group, :expected_members) do
@@ -131,12 +138,63 @@ RSpec.describe GroupMembersFinder, feature_category: :groups_and_projects do
       end
       # rubocop: enable Layout/ArrayAlignment
       with_them do
-        it 'returns correct members' do
-          result = described_class
-                     .new(groups[subject_group], params: { with_custom_role: true })
-                     .execute(include_relations: subject_relations)
+        context 'when `use_user_group_member_roles_members_page` feature flag is disabled' do
+          before do
+            stub_feature_flags(use_user_group_member_roles_members_page: false)
+          end
 
-          expect(result.to_a).to match_array(expected_members.map { |name| members[name] })
+          it 'returns correct members' do
+            expect(result.to_a).to match_array(expected_members.map { |name| members[name] })
+          end
+        end
+
+        context 'when `use_user_group_member_roles_members_page` feature flag is enabled' do
+          before do
+            stub_feature_flags(use_user_group_member_roles_members_page: true)
+          end
+
+          it 'returns correct members' do
+            expect(result.to_a).to match_array(expected_members.map { |name| members[name] })
+          end
+        end
+      end
+
+      context 'member roles' do
+        subject(:shared_member_roles) do
+          described_class
+            .new(groups[:sub_group], params: { with_custom_role: true })
+            .execute(include_relations: [:shared_from_groups])
+            .to_a
+            .map(&:member_role_id)
+        end
+
+        let_it_be(:expected_member_roles) do
+          [
+            public_shared_group_custom_maintainer_role.id,
+            public_shared_group_custom_developer_role.id,
+            public_shared_group_custom_reporter_role.id,
+            public_shared_group_custom_developer_role.id
+          ]
+        end
+
+        context 'when `use_user_group_member_roles_members_page` feature flag is disabled' do
+          before do
+            stub_feature_flags(use_user_group_member_roles_members_page: false)
+          end
+
+          it 'returns the correct member roles of the members shared through group sharing' do
+            expect(shared_member_roles).to match_array(expected_member_roles)
+          end
+        end
+
+        context 'when `use_user_group_member_roles_members_page` feature flag is enabled' do
+          before do
+            stub_feature_flags(use_user_group_member_roles_members_page: true)
+          end
+
+          it 'returns the correct member roles of the members shared through group sharing' do
+            expect(shared_member_roles).to match_array(expected_member_roles)
+          end
         end
       end
     end

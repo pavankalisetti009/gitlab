@@ -31,6 +31,18 @@ module EE::GroupMembersFinder
     super
   end
 
+  override :shared_members
+  def shared_members(shared_from_groups)
+    shared_members_with_member_role = GroupMember
+      .non_request
+      .of_groups(shared_from_groups)
+      .shared_members_with_member_role(group)
+
+    return super if shared_members_with_member_role.empty?
+
+    super << shared_members_with_member_role
+  end
+
   override :apply_additional_filters
   def apply_additional_filters(filtered_members)
     members = super

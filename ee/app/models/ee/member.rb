@@ -83,24 +83,40 @@ module EE
       extend ::Gitlab::Utils::Override
       include ::Authz::MemberRoleInSharedResource
 
-      override :with_group_group_sharing_access
-      def with_group_group_sharing_access(group)
-        return super unless ::Feature.enabled?(:use_user_group_member_roles_members_page, ::Feature.current_request)
+      def shared_members_with_member_role(group)
+        return ::Member.none unless group.can_assign_custom_roles_to_group_links?
 
-        super.joins("LEFT OUTER JOIN user_group_member_roles ON members.user_id = user_group_member_roles.user_id \
-          AND user_group_member_roles.group_id = group_group_links.shared_group_id \
-          AND user_group_member_roles.shared_with_group_id = group_group_links.shared_with_group_id")
+        return ::Member.none unless ::Feature.enabled?(:use_user_group_member_roles_members_page,
+          ::Feature.current_request)
+
+        columns = member_columns_for_shared_members_with_member_role
+
+        joins("JOIN group_group_links on members.source_id = group_group_links.shared_with_group_id")
+        .joins("JOIN user_group_member_roles on members.user_id = user_group_member_roles.user_id \
+          and members.source_id =  user_group_member_roles.shared_with_group_id")
+        .select(columns)
+        .where(group_group_links: { shared_group_id: group.self_and_ancestors })
       end
 
+      def member_columns_for_shared_members_with_member_role
+        column_names.map do |column_name|
+          case column_name
+          when 'member_role_id'
+            ::Authz::UserGroupMemberRole.arel_table[:member_role_id]
+          else
+            arel_table[column_name]
+          end
+        end
+      end
+
+      # TODO: remove when `use_user_group_member_roles_members_page` is rolled out
+      # and is being cleaned up, https://gitlab.com/gitlab-org/gitlab/-/issues/576194
       override :member_role_id
       def member_role_id(group)
         return super unless group.can_assign_custom_roles_to_group_links?
+        return super if ::Feature.enabled?(:use_user_group_member_roles_members_page, ::Feature.current_request)
 
-        unless ::Feature.enabled?(:use_user_group_member_roles_members_page, ::Feature.current_request)
-          return member_role_id_in_shared_resource(::GroupGroupLink)
-        end
-
-        ::Authz::UserGroupMemberRole.arel_table[:member_role_id]
+        member_role_id_in_shared_resource(::GroupGroupLink)
       end
 
       def highest_role(user, source)
