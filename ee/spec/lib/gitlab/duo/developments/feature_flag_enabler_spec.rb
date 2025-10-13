@@ -20,6 +20,14 @@ RSpec.describe Gitlab::Duo::Developments::FeatureFlagEnabler, feature_category: 
     described_class.execute
   end
 
+  it 'enables feature flags by group agent foundations' do
+    expect(Feature::Definition).to receive(:definitions)
+      .and_return({ test_f: Feature::Definition.new(nil, group: 'group::agent foundations', name: 'test_f') })
+    expect(Feature).to receive(:enable).with(:test_f)
+
+    described_class.execute
+  end
+
   it 'enables feature flags by group duo chat' do
     expect(Feature::Definition).to receive(:definitions)
       .and_return({ test_f: Feature::Definition.new(nil, group: 'group::duo chat', name: 'test_f') })
