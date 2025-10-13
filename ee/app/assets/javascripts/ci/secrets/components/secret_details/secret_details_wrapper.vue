@@ -1,9 +1,14 @@
 <script>
-import { GlButton, GlDisclosureDropdown, GlLoadingIcon } from '@gitlab/ui';
-import { __ } from '~/locale';
+import { GlAlert, GlButton, GlDisclosureDropdown, GlLoadingIcon } from '@gitlab/ui';
+import { __, s__, sprintf } from '~/locale';
 import { fetchPolicies } from '~/lib/graphql';
+import { localeDateFormat } from '~/lib/utils/datetime_utility';
 import { createAlert } from '~/alert';
-import { EDIT_ROUTE_NAME, FAILED_TO_LOAD_ERROR_MESSAGE } from '../../constants';
+import {
+  EDIT_ROUTE_NAME,
+  FAILED_TO_LOAD_ERROR_MESSAGE,
+  SECRET_ROTATION_STATUS,
+} from '../../constants';
 import getSecretDetailsQuery from '../../graphql/queries/get_secret_details.query.graphql';
 import SecretDeleteModal from '../secret_delete_modal.vue';
 import SecretDetails from './secret_details.vue';
@@ -11,6 +16,7 @@ import SecretDetails from './secret_details.vue';
 export default {
   name: 'SecretDetailsWrapper',
   components: {
+    GlAlert,
     GlButton,
     GlDisclosureDropdown,
     GlLoadingIcon,
@@ -70,6 +76,32 @@ export default {
     isSecretLoading() {
       return this.$apollo.queries.secret.loading;
     },
+    rotationAlertProperties() {
+      const { rotationInfo } = this.secret;
+      const status = rotationInfo?.status;
+
+      if (status === SECRET_ROTATION_STATUS.approaching && rotationInfo?.nextReminderAt) {
+        const formattedDate = localeDateFormat.asDate.format(new Date(rotationInfo.nextReminderAt));
+        return {
+          title: s__('SecretRotation|Rotation reminder'),
+          message: sprintf(
+            s__('SecretRotation|Update this secret by %{date} to maintain security.'),
+            { date: formattedDate },
+          ),
+        };
+      }
+
+      if (status === SECRET_ROTATION_STATUS.overdue) {
+        return {
+          title: s__('SecretRotation|Secret overdue for rotation'),
+          message: s__(
+            'SecretRotation|This secret has not been rotated after the configured rotation reminder interval.',
+          ),
+        };
+      }
+
+      return null;
+    },
   },
   methods: {
     goToEdit() {
@@ -92,6 +124,14 @@ export default {
         @hide="hideModal"
         v-on="$listeners"
       />
+      <gl-alert
+        v-if="rotationAlertProperties"
+        class="gl-mb-5 gl-mt-5"
+        :title="rotationAlertProperties.title"
+        variant="warning"
+      >
+        {{ rotationAlertProperties.message }}
+      </gl-alert>
       <div class="gl-flex gl-items-center gl-justify-between">
         <h1 class="page-title gl-text-size-h-display">{{ secret.name }}</h1>
         <div>

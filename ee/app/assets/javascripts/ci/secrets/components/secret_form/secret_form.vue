@@ -12,6 +12,7 @@ import {
 import { createAlert } from '~/alert';
 import { __, s__, sprintf } from '~/locale';
 import { getDateInFuture } from '~/lib/utils/datetime_utility';
+import { isEmptyValue } from '~/lib/utils/forms';
 import CiEnvironmentsDropdown from '~/ci/common/private/ci_environments_dropdown';
 import {
   DETAILS_ROUTE_NAME,
@@ -83,7 +84,8 @@ export default {
         this.isNameValid &&
         this.isValueValid &&
         this.isDescriptionValid &&
-        this.isEnvironmentScopeValid
+        this.isEnvironmentScopeValid &&
+        this.isRotationValid
       );
     },
     isBranchValid() {
@@ -107,6 +109,10 @@ export default {
       }
 
       return this.secret.secret.length > 0;
+    },
+    isRotationValid() {
+      const { rotationIntervalDays } = this.secret;
+      return isEmptyValue(rotationIntervalDays) || rotationIntervalDays > 6;
     },
     minExpirationDate() {
       // secrets can expire tomorrow, but not today or yesterday
@@ -193,6 +199,12 @@ export default {
     },
     setEnvironment(environment) {
       this.secret.environment = environment;
+    },
+    setRotation(value) {
+      const rotationValue = value.trim();
+      this.secret.rotationIntervalDays = Number(rotationValue)
+        ? Number(rotationValue)
+        : rotationValue;
     },
     showUpdateToastMessage() {
       const toastMessage = sprintf(s__('Secrets|Secret %{secretName} was successfully updated.'), {
@@ -329,8 +341,15 @@ export default {
           "
           label-for="secret-rotation-period"
           optional
+          :invalid-feedback="
+            s__('SecretRotation|This field must be a number greater than or equal to 7.')
+          "
         >
-          <gl-form-input v-model.number="secret.rotationIntervalDays" type="number" :min="7" />
+          <gl-form-input
+            :value="secret.rotationIntervalDays"
+            :state="isRotationValid"
+            @input="setRotation"
+          />
         </gl-form-group>
       </div>
       <div class="gl-my-3">

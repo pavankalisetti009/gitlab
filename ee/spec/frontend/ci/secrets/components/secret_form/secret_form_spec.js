@@ -226,6 +226,37 @@ describe('SecretForm component', () => {
       expect(findDescriptionField().attributes('state')).toBeUndefined();
     });
 
+    it('validates rotation field', async () => {
+      // value must be an integer
+      findRotationField().vm.$emit('input', 'four');
+      await nextTick();
+
+      expect(findRotationField().attributes('state')).toBeUndefined();
+      expect(findRotationFieldGroup().attributes('invalid-feedback')).toBe(
+        'This field must be a number greater than or equal to 7.',
+      );
+
+      // value cannot be < 7
+      findRotationField().vm.$emit('input', '4');
+      await nextTick();
+
+      expect(findRotationField().attributes('state')).toBeUndefined();
+      expect(findRotationFieldGroup().attributes('invalid-feedback')).toBe(
+        'This field must be a number greater than or equal to 7.',
+      );
+
+      // value must be integer >= 7 or empty
+      findRotationField().vm.$emit('input', '');
+      await nextTick();
+
+      expect(findRotationField().attributes('state')).toBe('true');
+
+      findRotationField().vm.$emit('input', '7');
+      await nextTick();
+
+      expect(findRotationField().attributes('state')).toBe('true');
+    });
+
     it('submit button is enabled when required fields have input', async () => {
       expect(findSubmitButton().props('disabled')).toBe(true);
 
@@ -295,7 +326,22 @@ describe('SecretForm component', () => {
 
       it('calls the create mutation with correct rotation period when set to typical value', async () => {
         await inputRequiredFields();
-        findRotationField().vm.$emit('input', 30);
+        findRotationField().vm.$emit('input', '30');
+        await nextTick();
+
+        findSubmitButton().vm.$emit('click');
+        await waitForPromises();
+
+        expect(mockCreateSecretResponse).toHaveBeenCalledWith(
+          expect.objectContaining({
+            rotationIntervalDays: 30,
+          }),
+        );
+      });
+
+      it('calls the create mutation with trimmed rotation period', async () => {
+        await inputRequiredFields();
+        findRotationField().vm.$emit('input', '   30    ');
         await nextTick();
 
         findSubmitButton().vm.$emit('click');
@@ -510,7 +556,7 @@ describe('SecretForm component', () => {
       });
 
       it('calls the update mutation with rotation period when set', async () => {
-        findRotationField().vm.$emit('input', 14);
+        findRotationField().vm.$emit('input', '14');
         await nextTick();
 
         await editSecret();
