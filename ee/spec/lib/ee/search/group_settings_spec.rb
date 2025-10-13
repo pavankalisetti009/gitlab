@@ -12,7 +12,8 @@ RSpec.describe "Search results for settings", :js, feature_category: :global_sea
       custom_file_templates_for_namespace: true,
       pages_size_limit: true,
       protected_environments: true,
-      push_rules: true
+      push_rules: true,
+      packages_virtual_registry: true
     )
 
     stub_config(dependency_proxy: { enabled: true })
