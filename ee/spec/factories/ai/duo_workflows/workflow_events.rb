@@ -3,7 +3,6 @@
 FactoryBot.define do
   factory :duo_workflows_event, class: 'Ai::DuoWorkflows::Event' do
     workflow { association(:duo_workflows_workflow) }
-    project { association(:project) }
     event_type { 'pause' }
     event_status { 'queued' }
     correlation_id_value { nil }
