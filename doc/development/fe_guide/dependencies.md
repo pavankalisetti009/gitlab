@@ -40,11 +40,11 @@ debt. Here are some acceptable reasons for patching a dependency:
 
 ### Patching a dependency
 
-1. If possible, write and commit a test that ensures the patch achieves the desired behavior.
+1. If possible, add tests that ensure the patch achieves the desired behavior.
 1. Edit the relevant file directly in `node_modules`. Ensure to include a comment in your edit which details:
    - why the patch is needed,
    - when it can be removed,
-   - a link to an issue or merge request.
+   - a link to an issue or merge request which describes the problem that the patch solves.
 1. Generate the patch from your edit by running `yarn patch-package <package-name>`.
 1. Add the patch with `git add patches/`.
 1. Commit as usual.
