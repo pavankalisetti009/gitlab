@@ -114,6 +114,7 @@ module Ai
         ::Ai::DuoWorkflows::TokenGenerationService.new(
           current_user: current_user,
           organization: container.organization,
+          container: container,
           workflow_definition: determine_workflow_definition
         )
       end

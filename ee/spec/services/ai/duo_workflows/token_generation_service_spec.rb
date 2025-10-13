@@ -4,13 +4,14 @@ require 'spec_helper'
 
 RSpec.describe Ai::DuoWorkflows::TokenGenerationService, :aggregate_failures, feature_category: :workflow_catalog do
   let_it_be(:user) { create(:user) }
-  let_it_be(:organization) { create(:organization) }
+  let_it_be(:container) { create(:project) }
   let(:workflow_definition) { 'software_development' }
   let(:service) do
     described_class.new(
       current_user: user,
-      organization: organization,
-      workflow_definition: workflow_definition
+      organization: container.organization,
+      workflow_definition: workflow_definition,
+      container: container
     )
   end
 

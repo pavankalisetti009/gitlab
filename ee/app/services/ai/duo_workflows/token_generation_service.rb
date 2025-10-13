@@ -3,8 +3,9 @@
 module Ai
   module DuoWorkflows
     class TokenGenerationService
-      def initialize(current_user:, organization:, workflow_definition: nil)
+      def initialize(current_user:, organization:, workflow_definition: nil, container: nil)
         @current_user = current_user
+        @container = container
         @organization = organization
         @workflow_definition = workflow_definition
       end
@@ -46,7 +47,7 @@ module Ai
 
       private
 
-      attr_reader :current_user, :organization, :workflow_definition
+      attr_reader :current_user, :container, :organization, :workflow_definition
 
       def composite_identity_enabled?
         Feature.enabled?(:duo_workflow_use_composite_identity, current_user)
