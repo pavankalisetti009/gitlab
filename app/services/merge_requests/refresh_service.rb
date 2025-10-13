@@ -16,18 +16,28 @@ module MergeRequests
     private
 
     def refresh_merge_requests!
+      @duration_statistics = {}
+
       # n + 1: https://gitlab.com/gitlab-org/gitlab-foss/issues/60289
-      Gitlab::GitalyClient.allow_n_plus_1_calls { find_new_commits }
+      measure_duration(:find_new_commits) do
+        Gitlab::GitalyClient.allow_n_plus_1_calls { find_new_commits }
+      end
 
       # Be sure to close outstanding MRs before reloading them to avoid generating an
       # empty diff during a manual merge
       close_upon_missing_source_branch_ref
 
-      post_merge_manually_merged
+      measure_duration(:post_merge_manually_merged) do
+        post_merge_manually_merged
+      end
 
-      link_forks_lfs_objects
+      measure_duration(:link_forks_lfs_objects) do
+        link_forks_lfs_objects
+      end
 
-      reload_merge_requests
+      measure_duration(:reload_merge_requests) do
+        reload_merge_requests
+      end
 
       merge_requests_for_source_branch.each do |mr|
         outdate_suggestions(mr)
@@ -61,6 +71,8 @@ module MergeRequests
       end
 
       execute_async_workers
+
+      log_refresh_details
 
       true
     end
@@ -372,6 +384,31 @@ module MergeRequests
           params.slice(:push_options, :gitaly_context)
         )
       end
+    end
+
+    def measure_duration(operation_name)
+      start_time = current_monotonic_time
+      result = yield
+      duration = (current_monotonic_time - start_time).round(Gitlab::InstrumentationHelper::DURATION_PRECISION)
+      @duration_statistics[:"#{operation_name}_duration_s"] = duration
+      result
+    end
+
+    def log_refresh_details
+      total_duration = @duration_statistics.values.sum
+
+      Gitlab::AppJsonLogger.info(
+        event: 'merge_requests_refresh_service',
+        project_id: @project.id,
+        user_id: @current_user&.id,
+        ref: @push&.ref,
+        total_duration_s: total_duration,
+        **@duration_statistics
+      )
+    end
+
+    def current_monotonic_time
+      Gitlab::Metrics::System.monotonic_time
     end
   end
 end
