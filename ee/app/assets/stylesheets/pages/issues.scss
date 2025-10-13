@@ -23,7 +23,8 @@
     background: $white;
     margin: 16px -20px -20px;
     padding: 16px 20px;
-    @apply gl-border-t gl-border-b;
+    @apply gl-border-t;
+    @apply gl-border-b;
   }
 }
 

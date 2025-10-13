@@ -156,7 +156,8 @@ html.group-epics-roadmap-html {
 
     .item-label {
       padding: $gl-padding-8 $gl-padding;
-      @apply gl-border-b gl-border-r;
+      @apply gl-border-b;
+      @apply gl-border-r;
     }
 
     .item-sublabel {
