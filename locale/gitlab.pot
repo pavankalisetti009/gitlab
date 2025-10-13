@@ -38304,10 +38304,19 @@ msgstr ""
 msgid "Labels|%{spanStart}Promote label%{spanEnd} %{labelTitle} %{spanStart}to Group Label?%{spanEnd}"
 msgstr ""
 
+msgid "Labels|An error occurred while archiving the label."
+msgstr ""
+
 msgid "Labels|Label actions"
 msgstr ""
 
 msgid "Labels|Label actions dropdown"
+msgstr ""
+
+msgid "Labels|Label archived."
+msgstr ""
+
+msgid "Labels|Label unarchived."
 msgstr ""
 
 msgid "Labels|Promote Label"
