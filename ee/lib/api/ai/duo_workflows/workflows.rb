@@ -337,7 +337,7 @@ module API
               end
               post do
                 ::Gitlab::QueryLimiting.disable!(
-                  'https://gitlab.com/gitlab-org/gitlab/-/issues/566195', new_threshold: 105
+                  'https://gitlab.com/gitlab-org/gitlab/-/issues/566195', new_threshold: 107
                 )
 
                 container = if params[:project_id]

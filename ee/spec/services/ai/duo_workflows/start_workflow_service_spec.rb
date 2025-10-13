@@ -251,7 +251,8 @@ RSpec.describe ::Ai::DuoWorkflows::StartWorkflowService, feature_category: :agen
       params[:use_service_account] = true
       settings_double = instance_double(::Ai::Setting,
         duo_workflow_service_account_user: service_account,
-        duo_agent_platform_service_url: 'http://agent-platform-url:50052'
+        duo_agent_platform_service_url: 'http://agent-platform-url:50052',
+        ai_gateway_url: nil
       )
       allow(::Ai::Setting).to receive(:instance).and_return(settings_double)
       allow(::Gitlab::Llm::StageCheck).to receive(:available?).with(project, :duo_workflow).and_return(true)
@@ -454,6 +455,95 @@ RSpec.describe ::Ai::DuoWorkflows::StartWorkflowService, feature_category: :agen
 
         expect(execute).to be_success
       end
+    end
+  end
+
+  shared_examples 'sets AGENT_PLATFORM_MODEL_METADATA' do
+    it 'sets the correct model metadata' do
+      expect(Ci::Workloads::RunWorkloadService)
+        .to receive(:new).and_wrap_original do |method, **kwargs|
+        variables = kwargs[:workload_definition].variables
+        expect(variables[:AGENT_PLATFORM_MODEL_METADATA]).to eq(expected_model_metadata.to_json)
+        method.call(**kwargs)
+      end
+
+      expect(execute).to be_success
+    end
+  end
+
+  context 'for AGENT_PLATFORM_MODEL_METADATA' do
+    before do
+      allow(::Gitlab::Llm::StageCheck).to receive(:available?).with(project, :duo_workflow).and_return(true)
+      allow(maintainer).to receive(:allowed_to_use?).and_return(true)
+      project.project_setting.update!(duo_features_enabled: true, duo_remote_flows_enabled: true)
+      allow(Gitlab::DuoWorkflow::Client).to receive_messages(self_hosted_url: 'gdk.test:50052',
+        cloud_connected_url: 'cloud.staging.gitlab.com:443')
+    end
+
+    context 'when self-hosted feature setting exists' do
+      let(:expected_model_metadata) do
+        {
+          provider: 'openai',
+          name: 'claude_3',
+          endpoint: 'http://localhost:11434/v1',
+          api_key: 'token',
+          identifier: 'claude-3-7-sonnet-20250219'
+        }
+      end
+
+      before do
+        model = create(:ai_self_hosted_model, model: :claude_3, identifier: 'claude-3-7-sonnet-20250219')
+        create(:ai_feature_setting, :duo_agent_platform, self_hosted_model: model)
+      end
+
+      it_behaves_like 'sets AGENT_PLATFORM_MODEL_METADATA'
+    end
+
+    context 'when instance level model selection exists' do
+      let(:expected_model_metadata) do
+        {
+          provider: 'gitlab',
+          feature_setting: 'duo_agent_platform',
+          identifier: 'claude-3-7-sonnet-20250219'
+        }
+      end
+
+      before do
+        create(:instance_model_selection_feature_setting, feature: :duo_agent_platform)
+      end
+
+      it_behaves_like 'sets AGENT_PLATFORM_MODEL_METADATA'
+    end
+
+    context 'when namespace level model selection exists', :saas do
+      let(:expected_model_metadata) do
+        {
+          provider: 'gitlab',
+          feature_setting: 'duo_agent_platform',
+          identifier: 'claude_sonnet_3_7_20250219'
+        }
+      end
+
+      before do
+        create(:ai_namespace_feature_setting,
+          namespace: project.namespace,
+          feature: :duo_agent_platform,
+          offered_model_ref: "claude_sonnet_3_7_20250219")
+      end
+
+      it_behaves_like 'sets AGENT_PLATFORM_MODEL_METADATA'
+    end
+
+    context 'when no feature setting exists' do
+      let(:expected_model_metadata) do
+        {
+          provider: 'gitlab',
+          feature_setting: 'duo_agent_platform',
+          identifier: nil
+        }
+      end
+
+      it_behaves_like 'sets AGENT_PLATFORM_MODEL_METADATA'
     end
   end
 

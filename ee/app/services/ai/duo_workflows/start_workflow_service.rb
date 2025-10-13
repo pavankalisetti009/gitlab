@@ -115,7 +115,8 @@ module Ai
           DUO_WORKFLOW_GIT_HTTP_USER: "oauth",
           DUO_WORKFLOW_METADATA: @params[:workflow_metadata],
           GITLAB_BASE_URL: Gitlab.config.gitlab.url,
-          AGENT_PLATFORM_GITLAB_VERSION: Gitlab.version_info.to_s
+          AGENT_PLATFORM_GITLAB_VERSION: Gitlab.version_info.to_s,
+          AGENT_PLATFORM_MODEL_METADATA: agent_platform_model_metadata_json
         )
       end
 
@@ -151,6 +152,28 @@ module Ai
 
       def project
         @workflow.project
+      end
+
+      def root_namespace
+        project&.root_namespace
+      end
+
+      def ai_feature
+        :duo_agent_platform
+      end
+
+      def feature_setting
+        ::Ai::FeatureSettingSelectionService
+            .new(@current_user, ai_feature, root_namespace)
+            .execute.payload
+      end
+
+      def agent_platform_model_metadata_json
+        response = ::Gitlab::Llm::AiGateway::AgentPlatform::ModelMetadata.new(
+          feature_setting: feature_setting
+        ).execute
+
+        response.fetch(Gitlab::Llm::AiGateway::AgentPlatform::ModelMetadata::HEADER_KEY, nil)
       end
 
       def link_composite_identity
