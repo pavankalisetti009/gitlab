@@ -1003,7 +1003,8 @@ RSpec.describe MergeRequests::RefreshService, feature_category: :code_review_wor
           post_merge_manually_merged_duration_s: be >= 0,
           link_forks_lfs_objects_duration_s: be >= 0,
           reload_merge_requests_duration_s: be >= 0,
-          remove_requested_changes_duration_s: be >= 0
+          remove_requested_changes_duration_s: be >= 0,
+          other_method_calls_duration_s: be >= 0
         )
       )
 

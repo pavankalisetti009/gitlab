@@ -41,35 +41,37 @@ module MergeRequests
         reload_merge_requests
       end
 
-      merge_requests_for_source_branch.each do |mr|
-        outdate_suggestions(mr)
-        abort_auto_merges(mr)
-        mark_pending_todos_done(mr)
-      end
-
-      abort_ff_merge_requests_with_auto_merges
-      cache_merge_requests_closing_issues
-
-      merge_requests_for_source_branch.each do |mr|
-        # Leave a system note if a branch was deleted/added
-        if branch_added_or_removed?
-          comment_mr_branch_presence_changed(mr)
+      measure_duration(:other_method_calls) do
+        merge_requests_for_source_branch.each do |mr|
+          outdate_suggestions(mr)
+          abort_auto_merges(mr)
+          mark_pending_todos_done(mr)
         end
 
-        notify_about_push(mr)
-        mark_mr_as_draft_from_commits(mr)
+        abort_ff_merge_requests_with_auto_merges
+        cache_merge_requests_closing_issues
 
-        # Call merge request webhook with update branches
-        if Feature.disabled?(:split_refresh_worker_web_hooks, @current_user)
-          execute_mr_web_hooks(mr)
+        merge_requests_for_source_branch.each do |mr|
+          # Leave a system note if a branch was deleted/added
+          if branch_added_or_removed?
+            comment_mr_branch_presence_changed(mr)
+          end
+
+          notify_about_push(mr)
+          mark_mr_as_draft_from_commits(mr)
+
+          # Call merge request webhook with update branches
+          if Feature.disabled?(:split_refresh_worker_web_hooks, @current_user)
+            execute_mr_web_hooks(mr)
+          end
+
+          if Feature.disabled?(:split_refresh_worker_pipeline, @current_user) && !@push.branch_removed?
+            # Run at the end of the loop to avoid any potential contention on the MR object
+            refresh_pipelines_on_merge_requests(mr)
+          end
+
+          merge_request_activity_counter.track_mr_including_ci_config(user: mr.author, merge_request: mr)
         end
-
-        if Feature.disabled?(:split_refresh_worker_pipeline, @current_user) && !@push.branch_removed?
-          # Run at the end of the loop to avoid any potential contention on the MR object
-          refresh_pipelines_on_merge_requests(mr)
-        end
-
-        merge_request_activity_counter.track_mr_including_ci_config(user: mr.author, merge_request: mr)
       end
 
       execute_async_workers
