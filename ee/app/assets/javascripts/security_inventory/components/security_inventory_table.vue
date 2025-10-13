@@ -137,6 +137,7 @@ export default {
     </gl-table-lite>
     <project-attributes-update-drawer
       v-if="selectedProject"
+      :key="selectedProject.id"
       ref="attributesDrawer"
       :project-id="selectedProject.id"
       :selected-attributes="selectedProject.securityAttributes.nodes"
