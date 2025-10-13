@@ -5,6 +5,8 @@ module Gitlab
     module AiGateway
       module AgentPlatform
         class ModelMetadata
+          HEADER_KEY = 'x-gitlab-agent-platform-model-metadata'
+
           def initialize(feature_setting:)
             @feature_setting = feature_setting
           end
@@ -13,7 +15,7 @@ module Gitlab
             model_metadata = ::Gitlab::Llm::AiGateway::ModelMetadata.new(feature_setting: feature_setting).to_params
             return {} unless model_metadata.present?
 
-            { 'x-gitlab-agent-platform-model-metadata' => model_metadata.to_json }
+            { HEADER_KEY => model_metadata.to_json }
           end
 
           private
