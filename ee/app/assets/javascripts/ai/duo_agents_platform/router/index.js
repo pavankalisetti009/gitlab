@@ -57,6 +57,9 @@ export const createRouter = (base, namespace) => {
             name: AGENTS_PLATFORM_SHOW_ROUTE,
             path: ':id(\\d+)',
             component: AgentsPlatformShow,
+            meta: {
+              useId: true,
+            },
           },
         ],
       },

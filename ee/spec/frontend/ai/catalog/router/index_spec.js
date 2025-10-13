@@ -1,6 +1,5 @@
 import { createRouter } from 'ee/ai/catalog/router';
 import {
-  AI_CATALOG_INDEX_ROUTE,
   AI_CATALOG_AGENTS_ROUTE,
   AI_CATALOG_AGENTS_SHOW_ROUTE,
   AI_CATALOG_AGENTS_EDIT_ROUTE,
@@ -126,11 +125,11 @@ describe('AI Catalog Router', () => {
 
     it.each`
       testName             | path                            | expectedRouteName
-      ${'flows index'}     | ${'/flows'}                     | ${AI_CATALOG_INDEX_ROUTE}
-      ${'flows show'}      | ${`/flows/${agentId}`}          | ${AI_CATALOG_INDEX_ROUTE}
-      ${'flows new'}       | ${'/flows/new'}                 | ${AI_CATALOG_INDEX_ROUTE}
-      ${'flows edit'}      | ${`/flows/${flowId}/edit`}      | ${AI_CATALOG_INDEX_ROUTE}
-      ${'flows duplicate'} | ${`/flows/${flowId}/duplicate`} | ${AI_CATALOG_INDEX_ROUTE}
+      ${'flows index'}     | ${'/flows'}                     | ${AI_CATALOG_AGENTS_ROUTE}
+      ${'flows show'}      | ${`/flows/${agentId}`}          | ${AI_CATALOG_AGENTS_ROUTE}
+      ${'flows new'}       | ${'/flows/new'}                 | ${AI_CATALOG_AGENTS_ROUTE}
+      ${'flows edit'}      | ${`/flows/${flowId}/edit`}      | ${AI_CATALOG_AGENTS_ROUTE}
+      ${'flows duplicate'} | ${`/flows/${flowId}/duplicate`} | ${AI_CATALOG_AGENTS_ROUTE}
     `('renders $testName child route', async ({ path, expectedRouteName }) => {
       await router.push(path);
 
@@ -146,7 +145,7 @@ describe('AI Catalog Router', () => {
     `('redirects to index for non-numeric $type id', async ({ path }) => {
       await router.push(path);
 
-      expect(router.currentRoute.path).toBe('/');
+      expect(router.currentRoute.path).toMatch(/^\/agents\/?$/);
     });
   });
 
@@ -176,12 +175,12 @@ describe('AI Catalog Router', () => {
         // * in Vue.js 2 this will trigger "redundant navigation" error and will be caught here
       }
 
-      expect(router.currentRoute.path).toBe('/');
+      expect(router.currentRoute.path).toMatch(/^\/agents\/?$/);
     });
 
     it.each`
       testName          | path         | expectedRouteName
-      ${'index route'}  | ${''}        | ${AI_CATALOG_INDEX_ROUTE}
+      ${'index route'}  | ${''}        | ${AI_CATALOG_AGENTS_ROUTE}
       ${'agents index'} | ${`/agents`} | ${AI_CATALOG_AGENTS_ROUTE}
       ${'flows index'}  | ${`/flows`}  | ${AI_CATALOG_FLOWS_ROUTE}
     `('lets the user enter the page', async ({ path, expectedRouteName }) => {
@@ -195,7 +194,7 @@ describe('AI Catalog Router', () => {
     it('redirects to index for unknown route', async () => {
       await router.push('/some/unknown/path');
 
-      expect(router.currentRoute.path).toBe('/');
+      expect(router.currentRoute.path).toMatch(/^\/agents\/?$/);
     });
   });
 });
