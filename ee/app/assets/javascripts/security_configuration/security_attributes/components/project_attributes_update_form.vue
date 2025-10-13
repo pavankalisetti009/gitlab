@@ -49,6 +49,11 @@ export default {
     categories: {
       immediate: true,
       handler(newCategories) {
+        if (!newCategories || newCategories.length === 0) {
+          this.selectedAttributesByCategory = {};
+          return;
+        }
+
         this.selectedAttributesByCategory = newCategories.reduce((acc, category) => {
           acc[category.id] = this.selectedAttributes
             .filter((a) => a.securityCategory?.id === category.id)

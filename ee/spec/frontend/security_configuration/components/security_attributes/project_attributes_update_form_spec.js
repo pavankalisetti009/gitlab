@@ -84,4 +84,12 @@ describe('ProjectAttributesDrawer', () => {
       "There are no attributes for this project's group.",
     );
   });
+
+  it('handles properly when categories is null or empty array', () => {
+    createComponent({ categories: null, filteredCategories: [] });
+    expect(wrapper.exists()).toBe(true);
+
+    createComponent({ categories: [], filteredCategories: [] });
+    expect(wrapper.exists()).toBe(true);
+  });
 });
