@@ -32,9 +32,7 @@ module Search
         super.merge({
           use_project_authorization: false,
           use_group_authorization: true,
-          features: nil,
-          min_access_level_non_confidential: ::Gitlab::Access::GUEST,
-          min_access_level_confidential: ::Gitlab::Access::PLANNER
+          features: nil
         })
       end
     end

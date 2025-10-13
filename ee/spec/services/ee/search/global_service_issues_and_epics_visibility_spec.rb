@@ -50,21 +50,21 @@ RSpec.describe Search::GlobalService, '#visibility', feature_category: :global_s
         create(:work_item, :group_level, :epic_with_legacy_epic, namespace: group, title: 'chosen epic title')
       end
 
-      where(:group_level, :membership, :admin_mode, :expected_count) do
+      where(:project_level, :membership, :admin_mode, :expected_count) do
         permission_table_for_epics_access
       end
 
       with_them do
-        it 'respects visibility' do
-          enable_admin_mode!(user_in_group) if admin_mode
+        before do
+          # project associated with group must have visibility_level updated to allow
+          # the shared example to update the group visibility_level setting. projects cannot
+          # have higher visibility than the group to which they belong
+          project.update!(visibility_level: Gitlab::VisibilityLevel.level_value(project_level.to_s))
 
           ::Elastic::ProcessBookkeepingService.track!(epic)
-          group.update!(visibility_level: Gitlab::VisibilityLevel.level_value(group_level.to_s))
-          ensure_elasticsearch_index!
-          expect_search_results(user_in_group, scope, expected_count: expected_count) do |user|
-            described_class.new(user, search: search).execute
-          end
         end
+
+        it_behaves_like 'search respects visibility', project_access: false
       end
     end
   end
