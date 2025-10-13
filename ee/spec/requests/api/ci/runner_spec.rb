@@ -119,7 +119,7 @@ RSpec.describe API::Ci::Runner, feature_category: :runner do
                           "path" => "explicit/my_test_secret",
                           "field" => 'value',
                           "server" => {
-                            "url" => "http://localhost:8200",
+                            "url" => ::SecretsManagement::ProjectSecretsManager.server_url,
                             "inline_auth" => {
                               "jwt" => 'jwt_token',
                               "role" => project_secrets_manager.ci_auth_role,

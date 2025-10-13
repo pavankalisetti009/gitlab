@@ -45,6 +45,7 @@ module SecretsManagement
     end
 
     def self.server_url
+      return SecretsManagement::OpenbaoTestSetup::SERVER_ADDRESS_WITH_HTTP if Rails.env.test?
       # Gitlab.com deployment configuration
       return Gitlab.config.openbao.url if Gitlab.config.has_key?("openbao") && Gitlab.config.openbao.has_key?("url")
 
@@ -140,7 +141,7 @@ module SecretsManagement
 
     def ci_jwt(build)
       track_ci_jwt_generation(build)
-      Gitlab::Ci::JwtV2.for_build(build, aud: self.class.server_url)
+      Gitlab::Ci::JwtV2.for_build(build, aud: aud)
     end
 
     def ci_policy_name(environment, branch)
@@ -364,13 +365,16 @@ module SecretsManagement
           { name: "grps",  expression: %q(('groups' in claims) ? claims['groups'] : []) },
           { name: "who",   expression: %q(uid != "" ? "gitlab-user:" + uid : "gitlab-user:anonymous") },
           { name: "aud",   expression: %q(('aud' in claims) ? claims['aud'] : "") },
-          { name: "expected_aud", expression: %("#{ProjectSecretsManager.server_url}") }
+          { name: "expected_aud", expression: %("#{aud}") },
+          { name: "sub", expression: %q(('sub' in claims) ? claims['sub'] : "") }
         ],
         expression: <<~'CEL'.strip
           pid == "" ? "missing project_id" :
           pid != expected_pid ? "token project_id does not match role base" :
           aud == "" ? "missing audience" :
           aud != expected_aud ? "audience validation failed" :
+          sub == "" ? "missing subject" :
+          !sub.startsWith("user:") ? "invalid subject for user authentication" :
           uid == "" ? "missing user_id" :
           pb.Auth{
             display_name: who,
@@ -412,6 +416,10 @@ module SecretsManagement
         namespace: project.namespace,
         user: build.user
       )
+    end
+
+    def aud
+      self.class.server_url
     end
   end
 end

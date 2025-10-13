@@ -89,5 +89,22 @@ module SecretsManagement
     def get_raw_policy(name)
       read_raw_policy(name)
     end
+
+    def jwt_login
+      response = make_request(:post, inline_auth_path_without_namespace, { jwt: jwt, role: role })
+      { success: true, token: response.dig("auth", "client_token") }
+    rescue AuthenticationError, ConnectionError, ApiError => e
+      { success: false, error: e.message }
+    end
+
+    # This is because the make_request method always prefixes
+    # the path with the namespace
+    def inline_auth_path_without_namespace
+      if use_cel_auth
+        "auth/#{auth_mount}/cel/login"
+      else
+        "auth/#{auth_mount}/login"
+      end
+    end
   end
 end

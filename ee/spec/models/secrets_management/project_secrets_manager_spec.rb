@@ -522,6 +522,12 @@ RSpec.describe SecretsManagement::ProjectSecretsManager, feature_category: :secr
   end
 
   describe '.server_url' do
+    before do
+      # because server_url has a different value in test env
+      # and we need to test the actual logic for non-test env
+      allow(Rails).to receive(:env).and_return(ActiveSupport::StringInquirer.new('production'))
+    end
+
     context 'when openbao is configured with url' do
       before do
         allow(Gitlab.config).to receive(:has_key?).with('openbao').and_return(true)
@@ -592,12 +598,13 @@ RSpec.describe SecretsManagement::ProjectSecretsManager, feature_category: :secr
         expect(vars['expected_aud'][:expression]).to eq(%("#{server_url}"))
       end
 
-      it 'defines uid, pid, grps, who with expected expressions' do
+      it 'defines uid, pid, grps, who, sub with expected expressions' do
         vars = var_map(program)
         expect(vars['uid'][:expression]).to include("('user_id' in claims)")
         expect(vars['pid'][:expression]).to include("('project_id' in claims)")
         expect(vars['grps'][:expression]).to include("('groups' in claims)")
         expect(vars['who'][:expression]).to include(%q(gitlab-user:))
+        expect(vars['sub'][:expression]).to include("('sub' in claims)")
       end
 
       it 'defines mrid conditionally and converts to string only when present' do
@@ -608,12 +615,14 @@ RSpec.describe SecretsManagement::ProjectSecretsManager, feature_category: :secr
         expect(expr).to include("string(claims['member_role_id'])")
       end
 
-      it 'guards on project_id, audience, and user_id' do
+      it 'guards on project_id, audience, subject and user_id' do
         expr = program[:expression]
         expect(expr).to include('missing project_id')
         expect(expr).to include('token project_id does not match role base')
         expect(expr).to include('missing audience')
         expect(expr).to include('audience validation failed')
+        expect(expr).to include('missing subject')
+        expect(expr).to include('invalid subject for user authentication')
         expect(expr).to include('missing user_id')
       end
 
