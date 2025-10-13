@@ -38,11 +38,7 @@ module SecretsManagement
 
     def aud
       if old_aud.nil?
-        if Rails.env.test?
-          SecretsManagement::OpenbaoTestSetup::SERVER_ADDRESS_WITH_HTTP
-        else
-          SecretsManagement::ProjectSecretsManager.server_url
-        end
+        SecretsManagement::ProjectSecretsManager.server_url
       else
         old_aud
       end

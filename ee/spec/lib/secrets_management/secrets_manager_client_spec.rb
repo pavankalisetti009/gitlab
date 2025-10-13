@@ -4,9 +4,10 @@ require 'spec_helper'
 
 RSpec.describe SecretsManagement::SecretsManagerClient, :gitlab_secrets_manager, feature_category: :secrets_management do
   let(:jwt) { SecretsManagement::TestJwt.new.encoded }
+  let(:global_jwt) { SecretsManagement::TestJwt.new(scope: :global).encoded }
   let(:bad_jwt) { SecretsManagement::TestJwt.new(aud: "bad_aud").encoded }
   let(:role) { described_class::DEFAULT_JWT_ROLE }
-  let(:client) { described_class.new(jwt: jwt, role: role) }
+  let(:client) { described_class.new(jwt: global_jwt, role: role) }
 
   shared_examples_for 'making an invalid API request' do
     it 'raises an error' do
@@ -74,7 +75,7 @@ RSpec.describe SecretsManagement::SecretsManagerClient, :gitlab_secrets_manager,
       it 'raises AuthenticationError wrapping the connection error' do
         client = described_class.new(jwt: bad_jwt)
         expect { client.enable_secrets_engine('test', 'kv-v2') }
-          .to raise_error(described_class::AuthenticationError, /Failed to authenticate with OpenBao/)
+          .to raise_error(described_class::AuthenticationError, /error validating token/)
       end
     end
   end
@@ -920,6 +921,7 @@ RSpec.describe SecretsManagement::SecretsManagerClient, :gitlab_secrets_manager,
 
   describe "CEL authentication" do
     let(:user_id) { '0' }
+    let(:user_name) { 'user' }
     let(:project_id) { '123' }
     let(:server_aud) { SecretsManagement::OpenbaoTestSetup::SERVER_ADDRESS_WITH_HTTP }
     let(:auth_mount) { "project_#{project_id}/users/direct/user_#{user_id}" }
@@ -927,7 +929,8 @@ RSpec.describe SecretsManagement::SecretsManagerClient, :gitlab_secrets_manager,
       SecretsManagement::TestJwt.new(
         project_id: project_id,
         user_id: user_id,
-        aud: server_aud
+        aud: server_aud,
+        user_name: user_name
       ).encoded
     end
 

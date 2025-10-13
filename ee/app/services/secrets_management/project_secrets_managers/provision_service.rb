@@ -87,7 +87,7 @@ module SecretsManagement
           secrets_manager.user_auth_mount,
           secrets_manager.user_auth_role,
           cel_program: secrets_manager.user_auth_cel_program(secrets_manager.project.id),
-          bound_audiences: [ProjectSecretsManager.server_url]
+          bound_audiences: bound_audiences
         )
       end
 
@@ -101,7 +101,7 @@ module SecretsManagement
           bound_claims: {
             project_id: secrets_manager.project.id.to_s
           },
-          bound_audiences: [ProjectSecretsManager.server_url],
+          bound_audiences: bound_audiences,
           user_claim: "project_id",
           token_type: "service"
         )
@@ -160,6 +160,10 @@ module SecretsManagement
         return if secrets_manager.active?
 
         secrets_manager.activate!
+      end
+
+      def bound_audiences
+        [SecretsManagement::ProjectSecretsManager.server_url]
       end
 
       attr_reader :secrets_manager

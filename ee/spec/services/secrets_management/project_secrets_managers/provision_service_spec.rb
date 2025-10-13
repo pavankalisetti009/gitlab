@@ -263,6 +263,7 @@ RSpec.describe SecretsManagement::ProjectSecretsManagers::ProvisionService, :git
           project_id: project.id.to_s,
           groups: [101, 102, 103],
           user_id: user.id.to_s,
+          sub: "user:#{user.username}",
           member_role_id: '7',
           role_id: 'deploy'
         }
@@ -295,6 +296,7 @@ RSpec.describe SecretsManagement::ProjectSecretsManagers::ProvisionService, :git
           {
             project_id: (project.id + 1).to_s,
             user_id: user.id.to_s,
+            sub: "user:#{user.username}",
             groups: [101, 102, 103]
           }
         )
@@ -322,6 +324,7 @@ RSpec.describe SecretsManagement::ProjectSecretsManagers::ProvisionService, :git
           {
             project_id: project.id.to_s,
             groups: [101, 102, 103],
+            sub: "user:#{user.username}",
             user_id: ""
           }
         )
@@ -340,6 +343,31 @@ RSpec.describe SecretsManagement::ProjectSecretsManagers::ProvisionService, :git
       end
     end
 
+    context 'when sub is missing' do
+      it 'fails to authenticate via CEL', :aggregate_failures do
+        result
+        jwt = sign_test_jwt(
+          {
+            project_id: project.id.to_s,
+            groups: [101, 102, 103],
+            user_id: user.id.to_s,
+            sub: ""
+          }
+        )
+        expect do
+          client = secrets_manager_client.with_namespace(secrets_manager.full_project_namespace_path)
+          client.cel_login_jwt(
+            mount_path: secrets_manager.user_auth_mount,
+            role: secrets_manager.user_auth_role,
+            jwt: jwt
+          )
+        end.to raise_error(
+          SecretsManagement::SecretsManagerClient::ApiError,
+          /blocked authorization with message: missing subject/
+        )
+      end
+    end
+
     it 'assign groups more than 25 groups' do
       result
 
@@ -347,6 +375,7 @@ RSpec.describe SecretsManagement::ProjectSecretsManagers::ProvisionService, :git
       jwt = sign_test_jwt(
         project_id: project.id.to_s,
         user_id: user.id.to_s,
+        sub: "user:#{user.username}",
         groups: many
       )
 
@@ -373,6 +402,7 @@ RSpec.describe SecretsManagement::ProjectSecretsManagers::ProvisionService, :git
           project_id: project.id.to_s,
           groups: [101, 102, 103],
           user_id: user.id.to_s,
+          sub: "user:#{user.username}",
           aud: 'http://wrong.com/aud'
         }
       )

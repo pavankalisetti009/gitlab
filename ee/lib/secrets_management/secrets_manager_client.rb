@@ -356,9 +356,11 @@ module SecretsManagement
       raise ConnectionError, e.message
     end
 
-    def handle_authentication_error!(_body, response)
+    def handle_authentication_error!(body, response)
       return unless response.headers.key?(OPENBAO_INLINE_AUTH_FAILED_HEADER)
       return unless response.headers[OPENBAO_INLINE_AUTH_FAILED_HEADER] == OPENBAO_INLINE_AUTH_FAILED_VALUE
+
+      raise AuthenticationError, body["errors"].to_sentence if body && body["errors"]&.any?
 
       raise AuthenticationError, "Failed to authenticate with OpenBao"
     end

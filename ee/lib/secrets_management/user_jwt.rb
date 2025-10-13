@@ -4,7 +4,7 @@ module SecretsManagement
   class UserJwt < SecretsManagerJwt
     def payload
       claims = super
-      claims[:sub] = "user:#{current_user.username}" if current_user.present?
+      claims[:sub] = "user:#{current_user.username}"
       claims[:aud] = SecretsManagement::ProjectSecretsManager.server_url
       claims[:member_role_id] = member_role_id
       claims[:groups] = group_ids
