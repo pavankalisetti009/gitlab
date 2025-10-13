@@ -5,6 +5,8 @@ require 'spec_helper'
 RSpec.describe VirtualRegistries::Cleanup::Policy, feature_category: :virtual_registry do
   subject(:policy) { build(:virtual_registries_cleanup_policy) }
 
+  it { is_expected.to be_a(Schedulable) }
+
   describe 'associations' do
     it { is_expected.to belong_to(:group) }
   end
@@ -58,5 +60,27 @@ RSpec.describe VirtualRegistries::Cleanup::Policy, feature_category: :virtual_re
           .with_message(/docker` is a disallowed additional property/)
       end
     end
+  end
+
+  describe '.next_runnable_schedule' do
+    let!(:policy) do
+      create(:virtual_registries_cleanup_policy, :enabled).tap { |p| p.update_column(:next_run_at, 1.day.ago) }
+    end
+
+    let!(:running_policy) do
+      create(:virtual_registries_cleanup_policy, :enabled, :running).tap do |p|
+        p.update_column(:next_run_at, 1.day.ago)
+      end
+    end
+
+    let!(:future_policy) do
+      create(:virtual_registries_cleanup_policy, :enabled).tap { |p| p.update_column(:next_run_at, 1.day.from_now) }
+    end
+
+    let!(:disabled_policy) { create(:virtual_registries_cleanup_policy) }
+
+    subject { described_class.next_runnable_schedule }
+
+    it { is_expected.to eq(policy) }
   end
 end

@@ -1,0 +1,10 @@
+---
+name: virtual_registry_cleanup_policies
+description:
+feature_issue_url: https://gitlab.com/gitlab-org/gitlab/-/work_items/568107
+introduced_by_url: https://gitlab.com/gitlab-org/gitlab/-/merge_requests/204548
+rollout_issue_url: https://gitlab.com/gitlab-org/gitlab/-/issues/572839
+milestone: '18.6'
+group: group::package registry
+type: gitlab_com_derisk
+default_enabled: false

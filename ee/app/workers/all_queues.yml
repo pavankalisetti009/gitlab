@@ -943,6 +943,16 @@
   :idempotent: true
   :tags: []
   :queue_namespace: :cronjob
+- :name: cronjob:virtual_registries_cleanup_enqueue_policy
+  :worker_name: VirtualRegistries::Cleanup::EnqueuePolicyWorker
+  :feature_category: :virtual_registry
+  :has_external_dependencies: false
+  :urgency: :low
+  :resource_boundary: :unknown
+  :weight: 1
+  :idempotent: true
+  :tags: []
+  :queue_namespace: :cronjob
 - :name: cronjob:vulnerabilities_archival_schedule
   :worker_name: Vulnerabilities::Archival::ScheduleWorker
   :feature_category: :vulnerability_management
@@ -4213,6 +4223,17 @@
   :weight: 1
   :idempotent: true
   :tags: []
+  :queue_namespace:
+- :name: virtual_registries_cleanup_execute_policy
+  :worker_name: VirtualRegistries::Cleanup::ExecutePolicyWorker
+  :feature_category: :virtual_registry
+  :has_external_dependencies: false
+  :urgency: :low
+  :resource_boundary: :unknown
+  :weight: 1
+  :idempotent: true
+  :tags:
+  - :cronjob_child
   :queue_namespace:
 - :name: vulnerabilities_archival_archive
   :worker_name: Vulnerabilities::Archival::ArchiveWorker
