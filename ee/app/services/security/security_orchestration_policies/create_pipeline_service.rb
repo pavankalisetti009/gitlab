@@ -3,7 +3,7 @@
 module Security
   module SecurityOrchestrationPolicies
     class CreatePipelineService < ::BaseProjectService
-      include ::Gitlab::Utils::StrongMemoize
+      PIPELINE_SOURCE = :security_orchestration_policy
 
       def execute
         return error(s_('SecurityPolicies|Invalid or empty policy')) if ci_configs.values.all?(&:blank?)
@@ -60,48 +60,15 @@ module Security
       def prepare_ci_configurations(actions)
         context = Gitlab::Ci::Config::External::Context.new(project: project, user: current_user)
 
-        ::Security::SecurityOrchestrationPolicies::ScanPipelineService.new(
-          context,
-          base_variables: scan_variables(actions)
-        ).execute(actions)
+        ::Security::SecurityOrchestrationPolicies::ScanPipelineService.new(context,
+          branch: params[:branch], pipeline_source: PIPELINE_SOURCE).execute(actions)
       end
-
-      def scan_variables(actions)
-        return {} unless actions.detect { |a| a[:scan] == 'secret_detection' }
-
-        unless last_scan_commit_sha.present? && most_recent_commit_sha.present?
-          return { secret_detection: { 'SECRET_DETECTION_HISTORIC_SCAN' => 'true' } }
-        end
-
-        { secret_detection: { 'SECRET_DETECTION_LOG_OPTIONS' => commit_range } }
-      end
-
-      def pipeline_ids
-        @pipeline_ids ||= Security::Scan.pipeline_ids(project, 'secret_detection')
-      end
-
-      def commit_range
-        "#{last_scan_commit_sha}..#{most_recent_commit_sha}"
-      end
-
-      def last_scan_commit_sha
-        Ci::Pipeline.order_id_desc
-          .for_project(project).for_ref(params[:branch])
-          .with_pipeline_source(:security_orchestration_policy)
-          .find_by_id(pipeline_ids)&.sha
-      end
-      strong_memoize_attr :last_scan_commit_sha
-
-      def most_recent_commit_sha
-        project.repository.commit(params[:branch])&.sha
-      end
-      strong_memoize_attr :most_recent_commit_sha
 
       def execute_pipeline_scans(ci_config)
         return if ci_config.blank?
 
         service = Ci::CreatePipelineService.new(project, current_user, ref: params[:branch])
-        service.execute(:security_orchestration_policy,
+        service.execute(PIPELINE_SOURCE,
           content: ci_config.to_yaml, variables_attributes: [], ignore_skip_ci: true)
       end
 

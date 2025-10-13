@@ -7,14 +7,17 @@ RSpec.describe Security::SecurityOrchestrationPolicies::ScanPipelineService,
   feature_category: :security_policy_management do
   describe '#execute' do
     let_it_be(:group) { create(:group) }
-    let_it_be(:project) { create(:project, group: group) }
+    let_it_be(:project) { create(:project, :repository, group: group) }
     let_it_be(:user) { create(:user) }
 
     let(:pipeline_scan_config) { subject[:pipeline_scan] }
     let(:on_demand_config) { subject[:on_demand] }
     let(:variables_config) { subject[:variables] }
-    let(:service) { described_class.new(context) }
+    let(:service) { described_class.new(context, branch: branch, pipeline_source: pipeline_source) }
     let(:context) { Gitlab::Ci::Config::External::Context.new(project: project, user: user) }
+    let(:pipeline) { nil }
+    let(:branch) { project.default_branch_or_main }
+    let(:pipeline_source) { nil }
 
     subject(:execute) { service.execute(actions) }
 
@@ -126,10 +129,28 @@ RSpec.describe Security::SecurityOrchestrationPolicies::ScanPipelineService,
     end
 
     context 'when action contains the SECRET_DETECTION_HISTORIC_SCAN variable' do
-      let(:actions) { [{ scan: 'secret_detection', variables: { SECRET_DETECTION_HISTORIC_SCAN: 'true' } }] }
+      let(:actions) { [{ scan: 'secret_detection', variables: { SECRET_DETECTION_HISTORIC_SCAN: 'false' } }] }
+      let(:branch) { project.default_branch }
+      let(:service) { described_class.new(context, branch: branch, pipeline_source: pipeline_source) }
 
-      context 'when SECRET_DETECTION_HISTORIC_SCAN is provided when initializing the service' do
-        let(:service) { described_class.new(context, base_variables: { secret_detection: { 'SECRET_DETECTION_HISTORIC_SCAN' => 'false' } }) }
+      context 'when the calculated SECRET_DETECTION_HISTORIC_SCAN would be true' do
+        it 'sets the value provided from action variables' do
+          expect_next_instance_of(::Security::SecurityOrchestrationPolicies::CiConfigurationService) do |ci_configuration_service|
+            expect(ci_configuration_service).to receive(:execute).once
+              .with(actions.first, { 'SECRET_DETECTION_HISTORIC_SCAN' => 'false', 'SECRET_DETECTION_EXCLUDED_PATHS' => '' }, context, 0).and_call_original
+          end
+
+          subject
+        end
+      end
+
+      context 'when the calculated SECRET_DETECTION_HISTORIC_SCAN would be false' do
+        let(:actions) { [{ scan: 'secret_detection', variables: { SECRET_DETECTION_HISTORIC_SCAN: 'true' } }] }
+
+        before do
+          pipeline = create(:ci_pipeline, project: project, user: user, source: :security_orchestration_policy, sha: project.commit(branch).sha, ref: branch)
+          create(:security_scan, :latest_successful, project: project, pipeline: pipeline, scan_type: 'secret_detection')
+        end
 
         it 'sets the value provided from action variables' do
           expect_next_instance_of(::Security::SecurityOrchestrationPolicies::CiConfigurationService) do |ci_configuration_service|
@@ -144,16 +165,48 @@ RSpec.describe Security::SecurityOrchestrationPolicies::ScanPipelineService,
 
     context 'when actions does not contain the SECRET_DETECTION_HISTORIC_SCAN variable' do
       let(:actions) { [{ scan: 'secret_detection', variables: {} }] }
-      let(:service) { described_class.new(context, base_variables: { secret_detection: { 'SECRET_DETECTION_HISTORIC_SCAN' => 'true' } }) }
+      let(:service) { described_class.new(context, branch: project.default_branch_or_main, pipeline_source: pipeline_source) }
 
-      context 'when SECRET_DETECTION_HISTORIC_SCAN is provided when initializing the service' do
-        it 'sets the value provided when initializing the service' do
+      context 'when scan is added to regular pipeline' do
+        it 'sets the value with predefined SECRET_DETECTION_HISTORIC_SCAN value (false)' do
           expect_next_instance_of(::Security::SecurityOrchestrationPolicies::CiConfigurationService) do |ci_configuration_service|
             expect(ci_configuration_service).to receive(:execute).once
-              .with(actions.first, { 'SECRET_DETECTION_HISTORIC_SCAN' => 'true', 'SECRET_DETECTION_EXCLUDED_PATHS' => '' }, context, 0).and_call_original
+              .with(actions.first, { 'SECRET_DETECTION_HISTORIC_SCAN' => 'false', 'SECRET_DETECTION_EXCLUDED_PATHS' => '' }, context, 0).and_call_original
           end
 
           subject
+        end
+      end
+
+      context 'when scan is added to security_orchestration_policy pipeline (from scheduled scan execution policy)' do
+        let(:pipeline) { create(:ci_pipeline, sha: current_sha, project: project, ref: project.default_branch_or_main, source: :security_orchestration_policy) }
+        let(:current_sha) { project.repository.commit(project.default_branch_or_main)&.sha }
+        let(:previous_sha) { OpenSSL::Digest.hexdigest('SHA256', 'previous') }
+        let(:pipeline_source) { :security_orchestration_policy }
+
+        context 'when no previous pipeline was executed for that source' do
+          it 'sets the value for SECRET_DETECTION_HISTORIC_SCAN to true' do
+            expect_next_instance_of(::Security::SecurityOrchestrationPolicies::CiConfigurationService) do |ci_configuration_service|
+              expect(ci_configuration_service).to receive(:execute).once
+                .with(actions.first, { 'SECRET_DETECTION_HISTORIC_SCAN' => 'true', 'SECRET_DETECTION_EXCLUDED_PATHS' => '' }, context, 0).and_call_original
+            end
+
+            subject
+          end
+        end
+
+        context 'when there is a pipeline was executed for that source' do
+          let!(:previous_pipeline) { create(:ci_pipeline, project: project, sha: previous_sha, ref: project.default_branch_or_main, source: :security_orchestration_policy) }
+          let!(:security_scan) { create(:security_scan, build: create(:ci_build), status: :succeeded, scan_type: 'secret_detection', project: project, pipeline: previous_pipeline) }
+
+          it 'sets the value for SECRET_DETECTION_LOG_OPTIONS to propper range' do
+            expect_next_instance_of(::Security::SecurityOrchestrationPolicies::CiConfigurationService) do |ci_configuration_service|
+              expect(ci_configuration_service).to receive(:execute).once
+                .with(actions.first, { 'SECRET_DETECTION_HISTORIC_SCAN' => 'false', 'SECRET_DETECTION_EXCLUDED_PATHS' => '', 'SECRET_DETECTION_LOG_OPTIONS' => "#{previous_sha}..#{current_sha}" }, context, 0).and_call_original
+            end
+
+            subject
+          end
         end
       end
     end
