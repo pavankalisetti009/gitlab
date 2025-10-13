@@ -32,7 +32,7 @@ module VirtualRegistries
       attr_reader :policy, :counts
 
       def process_upstream_class(key, klass)
-        klass.select(:id).for_group(policy.group_id).find_each do |upstream|
+        klass.select(:id, :url).for_group(policy.group_id).find_each do |upstream|
           process_upstream(upstream, key)
         end
       end

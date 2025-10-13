@@ -25,6 +25,10 @@ module VirtualRegistries
           class_name: 'VirtualRegistries::Packages::Maven::Cache::Entry',
           inverse_of: :upstream
 
+        has_many :cache_local_entries,
+          class_name: 'VirtualRegistries::Packages::Maven::Cache::Local::Entry',
+          inverse_of: :upstream
+
         encrypts :username, :password
 
         validates :group, top_level_group: true, presence: true
@@ -67,6 +71,14 @@ module VirtualRegistries
         scope :for_group, ->(group) { where(group:) }
         scope :for_id_and_group, ->(id:, group:) { where(id:, group:) }
         scope :search_by_name, ->(query) { fuzzy_search(query, [:name], use_minimum_char_limit: false) }
+
+        def cache_entries
+          remote? ? super : super.none
+        end
+
+        def cache_local_entries
+          local? ? super : super.none
+        end
 
         def url_for(path)
           return unless remote?
