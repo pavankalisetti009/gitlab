@@ -27,7 +27,7 @@ See the main [Dependencies](../dependencies.md) page for general information abo
 
 ## Patching dependencies
 
-Patches can be applied to dependencies with [`patch-package`](https://github.com/ds300/patch-package).
+Patches can be applied to dependencies with [`patch-package`](https://github.com/ds300/patch-package). Patches are stored under the [`patches/`](https://gitlab.com/gitlab-org/gitlab/-/tree/master/patches) directory.
 
 ### What warrants a patch
 
