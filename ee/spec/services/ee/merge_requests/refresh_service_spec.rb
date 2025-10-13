@@ -999,6 +999,7 @@ RSpec.describe MergeRequests::RefreshService, feature_category: :code_review_wor
           ref: "refs/heads/#{source_branch}",
           total_duration_s: be >= 0,
           find_new_commits_duration_s: be >= 0,
+          close_upon_missing_source_branch_ref_duration_s: be >= 0,
           post_merge_manually_merged_duration_s: be >= 0,
           link_forks_lfs_objects_duration_s: be >= 0,
           reload_merge_requests_duration_s: be >= 0,

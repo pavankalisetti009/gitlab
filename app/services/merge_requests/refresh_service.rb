@@ -25,7 +25,9 @@ module MergeRequests
 
       # Be sure to close outstanding MRs before reloading them to avoid generating an
       # empty diff during a manual merge
-      close_upon_missing_source_branch_ref
+      measure_duration(:close_upon_missing_source_branch_ref) do
+        close_upon_missing_source_branch_ref
+      end
 
       measure_duration(:post_merge_manually_merged) do
         post_merge_manually_merged
