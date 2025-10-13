@@ -1,32 +1,20 @@
 <script>
-import { uniqueId } from 'lodash';
-import { GlButton, GlForm, GlFormFields, GlFormTextarea } from '@gitlab/ui';
+import { GlForm, GlFormFields, GlFormTextarea } from '@gitlab/ui';
 import { s__ } from '~/locale';
-import { MAX_LENGTH_PROMPT } from 'ee/ai/catalog/constants';
+import { MAX_LENGTH_PROMPT, FORM_ID_TEST_RUN } from 'ee/ai/catalog/constants';
 import ClipboardButton from '~/vue_shared/components/clipboard_button.vue';
 import glFeatureFlagsMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
-import { AI_CATALOG_AGENTS_SHOW_ROUTE } from '../router/constants';
 import { createFieldValidators } from '../utils';
-import AiCatalogFormButtons from './ai_catalog_form_buttons.vue';
 
 export default {
   name: 'AiCatalogAgentRunForm',
   components: {
-    AiCatalogFormButtons,
     ClipboardButton,
-    GlButton,
     GlForm,
     GlFormFields,
     GlFormTextarea,
   },
   mixins: [glFeatureFlagsMixin()],
-  props: {
-    isSubmitting: {
-      type: Boolean,
-      required: false,
-      default: false,
-    },
-  },
   data() {
     return {
       formValues: {
@@ -36,13 +24,7 @@ export default {
   },
   computed: {
     formId() {
-      return uniqueId('ai-catalog-agent-run-form-');
-    },
-    cancelRoute() {
-      return {
-        name: AI_CATALOG_AGENTS_SHOW_ROUTE,
-        params: { id: this.$route.params.id },
-      };
+      return FORM_ID_TEST_RUN;
     },
   },
   methods: {
@@ -73,15 +55,13 @@ export default {
       @submit="onSubmit"
     >
       <template #group(userPrompt)-label>
-        {{ s__('AICatalog|User prompt') }}
+        {{ s__('AICatalog|Instructions') }}
         <div class="label-description">
           <div class="gl-flex gl-justify-between gl-gap-1">
-            {{
-              s__('AICatalog|Provide instructions or context that will be included for this run.')
-            }}
+            {{ s__('AICatalog|Ask a question or describe something you want the agent to do.') }}
             <clipboard-button
               :text="formValues.userPrompt"
-              :title="s__('AICatalog|Copy user prompt')"
+              :title="s__('AICatalog|Copy instructions')"
               category="secondary"
               size="small"
             />
@@ -106,18 +86,5 @@ export default {
         />
       </template>
     </gl-form-fields>
-    <ai-catalog-form-buttons :is-disabled="isSubmitting" :cancel-route="cancelRoute">
-      <gl-button
-        class="js-no-auto-disable gl-w-full @sm/panel:gl-w-auto"
-        type="submit"
-        variant="confirm"
-        category="primary"
-        data-testid="agent-run-form-submit-button"
-        icon="play"
-        :loading="isSubmitting"
-      >
-        {{ s__('AICatalog|Run') }}
-      </gl-button>
-    </ai-catalog-form-buttons>
   </gl-form>
 </template>

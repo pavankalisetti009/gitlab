@@ -14,7 +14,6 @@ import {
   AI_CATALOG_AGENTS_ROUTE,
   AI_CATALOG_AGENTS_DUPLICATE_ROUTE,
   AI_CATALOG_AGENTS_EDIT_ROUTE,
-  AI_CATALOG_AGENTS_RUN_ROUTE,
 } from '../router/constants';
 
 export default {
@@ -133,7 +132,6 @@ export default {
   itemRoutes: {
     duplicate: AI_CATALOG_AGENTS_DUPLICATE_ROUTE,
     edit: AI_CATALOG_AGENTS_EDIT_ROUTE,
-    run: AI_CATALOG_AGENTS_RUN_ROUTE,
   },
 };
 </script>

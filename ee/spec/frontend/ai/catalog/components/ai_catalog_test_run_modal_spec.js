@@ -1,10 +1,9 @@
 import Vue from 'vue';
 import VueApollo from 'vue-apollo';
-import { GlAlert, GlLink, GlSprintf } from '@gitlab/ui';
+import { GlAlert, GlLink, GlModal, GlSprintf } from '@gitlab/ui';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import ErrorsAlert from '~/vue_shared/components/errors_alert.vue';
-import PageHeading from '~/vue_shared/components/page_heading.vue';
-import AiCatalogAgentsRun from 'ee/ai/catalog/pages/ai_catalog_agents_run.vue';
+import AiCatalogTestRunModal from 'ee/ai/catalog/components/ai_catalog_test_run_modal.vue';
 import AiCatalogAgentRunForm from 'ee/ai/catalog/components/ai_catalog_agent_run_form.vue';
 import executeAiCatalogAgent from 'ee/ai/catalog/graphql/mutations/execute_ai_catalog_agent.mutation.graphql';
 import createMockApollo from 'helpers/mock_apollo_helper';
@@ -17,11 +16,11 @@ import {
 
 Vue.use(VueApollo);
 
-describe('AiCatalogAgentsRun', () => {
+describe('AiCatalogTestRunModal', () => {
   let wrapper;
 
   const defaultProps = {
-    aiCatalogAgent: mockAgent,
+    item: mockAgent,
   };
 
   const executeAiCatalogAgentSuccessHandler = jest
@@ -39,7 +38,7 @@ describe('AiCatalogAgentsRun', () => {
       [executeAiCatalogAgent, executeAiCatalogAgentMutationHandler],
     ]);
 
-    wrapper = shallowMountExtended(AiCatalogAgentsRun, {
+    wrapper = shallowMountExtended(AiCatalogTestRunModal, {
       apolloProvider,
       propsData: {
         ...defaultProps,
@@ -50,7 +49,7 @@ describe('AiCatalogAgentsRun', () => {
     });
   };
 
-  const findPageHeading = () => wrapper.findComponent(PageHeading);
+  const findModal = () => wrapper.findComponent(GlModal);
   const findRunForm = () => wrapper.findComponent(AiCatalogAgentRunForm);
   const findErrorsAlert = () => wrapper.findComponent(ErrorsAlert);
   const findSuccessAlert = () => wrapper.findComponent(GlAlert);
@@ -70,8 +69,8 @@ describe('AiCatalogAgentsRun', () => {
     jest.clearAllMocks();
   });
 
-  it('renders page heading', () => {
-    expect(findPageHeading().props('heading')).toBe(`Run agent: ${mockAgent.name}`);
+  it('renders modal with title', () => {
+    expect(findModal().props('title')).toBe(`Test run agent: ${mockAgent.name}`);
   });
 
   it('renders run form', () => {
@@ -138,6 +137,14 @@ describe('AiCatalogAgentsRun', () => {
       it('does not show the success alert', () => {
         expect(findSuccessAlert().exists()).toBe(false);
       });
+    });
+  });
+
+  describe('when the modal emits the hidden event', () => {
+    it('emits the hidden event', () => {
+      findModal().vm.$emit('hidden');
+
+      expect(wrapper.emitted('hide')).toHaveLength(1);
     });
   });
 });

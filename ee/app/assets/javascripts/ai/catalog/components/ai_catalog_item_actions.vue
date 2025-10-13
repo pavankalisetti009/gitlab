@@ -10,7 +10,9 @@ import {
 import { s__ } from '~/locale';
 import { isLoggedIn } from '~/lib/utils/common_utils';
 import ConfirmActionModal from '~/vue_shared/components/confirm_action_modal.vue';
+import { AI_CATALOG_TYPE_AGENT } from '../constants';
 import AiCatalogItemConsumerModal from './ai_catalog_item_consumer_modal.vue';
+import AiCatalogTestRunModal from './ai_catalog_test_run_modal.vue';
 
 export default {
   name: 'AiCatalogItemActions',
@@ -22,6 +24,7 @@ export default {
     GlSprintf,
     ConfirmActionModal,
     AiCatalogItemConsumerModal,
+    AiCatalogTestRunModal,
   },
   directives: {
     GlModal: GlModalDirective,
@@ -65,7 +68,7 @@ export default {
       return isLoggedIn();
     },
     showRun() {
-      return this.canAdmin && this.itemRoutes.run;
+      return this.canAdmin && this.item.itemType === AI_CATALOG_TYPE_AGENT;
     },
     duplicateItemProps() {
       return {
@@ -93,7 +96,7 @@ export default {
     </gl-button>
     <gl-button
       v-if="showRun"
-      :to="{ name: itemRoutes.run, params: { id: $route.params.id } }"
+      v-gl-modal="'ai-catalog-test-run-modal'"
       category="secondary"
       icon="work-item-test-case"
       data-testid="test-button"
@@ -159,6 +162,7 @@ export default {
         </template>
       </gl-sprintf>
     </confirm-action-modal>
+    <ai-catalog-test-run-modal v-if="showRun" :item="item" />
     <ai-catalog-item-consumer-modal
       v-if="canUse"
       :item="item"

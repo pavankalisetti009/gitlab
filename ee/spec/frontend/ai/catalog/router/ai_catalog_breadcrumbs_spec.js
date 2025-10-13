@@ -5,7 +5,6 @@ import {
   AI_CATALOG_INDEX_ROUTE,
   AI_CATALOG_AGENTS_ROUTE,
   AI_CATALOG_AGENTS_EDIT_ROUTE,
-  AI_CATALOG_AGENTS_RUN_ROUTE,
   AI_CATALOG_AGENTS_NEW_ROUTE,
   AI_CATALOG_FLOWS_ROUTE,
 } from 'ee/ai/catalog/router/constants';
@@ -57,7 +56,6 @@ describe('AiCatalogBreadcrumbs', () => {
     ${AI_CATALOG_AGENTS_ROUTE}      | ${'Agents'}     | ${[{ path: '/agents', meta: { text: 'Agents' } }]}                                                             | ${{}}
     ${AI_CATALOG_AGENTS_NEW_ROUTE}  | ${'New agent'}  | ${[{ path: '/agents', meta: { text: 'Agents' } }, { path: '/agents/new', meta: { text: 'New agent' } }]}       | ${{}}
     ${AI_CATALOG_AGENTS_EDIT_ROUTE} | ${'Edit agent'} | ${[{ path: '/agents', meta: { text: 'Agents' } }, { path: '/agents/:id/edit', meta: { text: 'Edit agent' } }]} | ${{ id: 4 }}
-    ${AI_CATALOG_AGENTS_RUN_ROUTE}  | ${'Run agent'}  | ${[{ path: '/agents', meta: { text: 'Agents' } }, { path: '/agents/:id/run', meta: { text: 'Run agent' } }]}   | ${{ id: 4 }}
     ${AI_CATALOG_FLOWS_ROUTE}       | ${'Flows'}      | ${[{ path: '/flows', meta: { text: 'Flows' } }]}                                                               | ${{}}
   `('breadcrumbs on $routeName', ({ expectedText, matched, routeName, params }) => {
     beforeEach(() => {

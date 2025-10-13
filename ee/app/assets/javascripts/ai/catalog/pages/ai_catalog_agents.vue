@@ -22,7 +22,6 @@ import AiCatalogItemConsumerModal from '../components/ai_catalog_item_consumer_m
 import {
   AI_CATALOG_AGENTS_SHOW_ROUTE,
   AI_CATALOG_AGENTS_EDIT_ROUTE,
-  AI_CATALOG_AGENTS_RUN_ROUTE,
   AI_CATALOG_AGENTS_DUPLICATE_ROUTE,
 } from '../router/constants';
 import {
@@ -104,14 +103,6 @@ export default {
           }
 
           const adminItems = [
-            {
-              text: s__('AICatalog|Test run'),
-              to: {
-                name: AI_CATALOG_AGENTS_RUN_ROUTE,
-                params: { id },
-              },
-              icon: 'work-item-test-case',
-            },
             {
               text: s__('AICatalog|Edit'),
               to: {
