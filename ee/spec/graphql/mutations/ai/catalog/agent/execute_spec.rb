@@ -9,7 +9,7 @@ RSpec.describe Mutations::Ai::Catalog::Agent::Execute, feature_category: :workfl
 
   it { is_expected.to have_graphql_name('AiCatalogAgentExecute') }
 
-  it { expect(described_class).to require_graphql_authorizations(:admin_ai_catalog_item) }
+  it { expect(described_class).to require_graphql_authorizations(:execute_ai_catalog_item_version) }
 
   it { is_expected.to have_graphql_fields(:flow_config, :workflow, :errors, :client_mutation_id) }
 

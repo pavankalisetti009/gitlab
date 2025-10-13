@@ -24,14 +24,11 @@ module Mutations
             null: true,
             description: 'Created workflow.'
 
-          authorize :admin_ai_catalog_item
+          authorize :execute_ai_catalog_item_version
 
           def resolve(flow_id:, flow_version_id: nil)
-            flow = authorized_find!(id: flow_id)
-
-            flow_version = resolve_flow_version(flow, flow_version_id)
-
-            authorize!(flow_version)
+            flow = GitlabSchema.object_from_id(flow_id).sync
+            flow_version = authorized_find!(flow:, flow_version_id:)
 
             result = ::Ai::Catalog::Flows::ExecuteService.new(
               project: flow.project,
@@ -53,7 +50,9 @@ module Mutations
 
           private
 
-          def resolve_flow_version(flow, flow_version_id)
+          def find_object(flow:, flow_version_id:)
+            return if flow.nil?
+
             if flow_version_id.present?
               GitlabSchema.object_from_id(flow_version_id).sync
             else

@@ -39,6 +39,10 @@ module Ai
 
         attr_reader :flow, :flow_version, :event_type, :user_prompt, :execute_workflow
 
+        def allowed?
+          Ability.allowed?(current_user, :execute_ai_catalog_item_version, flow_version)
+        end
+
         def validate
           return error('Flow is required') unless flow && flow.flow?
           return error('Flow version is required') unless flow_version
@@ -54,7 +58,8 @@ module Ai
           params = {
             json_config: flow_config,
             container: flow.project,
-            goal: flow_goal
+            goal: flow_goal,
+            item_version: flow_version
           }
 
           ::Ai::Catalog::ExecuteWorkflowService.new(current_user, params).execute

@@ -5,8 +5,8 @@ require 'spec_helper'
 RSpec.describe Ai::Catalog::Flows::ExecuteService, :aggregate_failures, feature_category: :workflow_catalog do
   include Ai::Catalog::TestHelpers
 
-  let_it_be(:maintainer) { create(:user) }
-  let_it_be(:project) { create(:project, :repository, maintainers: maintainer) }
+  let_it_be(:developer) { create(:user) }
+  let_it_be(:project) { create(:project, :repository, developers: developer) }
   let_it_be(:flow) { create(:ai_catalog_flow, project: project) }
   let_it_be(:agent_item_1) { create(:ai_catalog_item, :agent, project: project) }
   let_it_be(:agent_item_2) { create(:ai_catalog_item, :agent, project: project) }
@@ -41,7 +41,7 @@ RSpec.describe Ai::Catalog::Flows::ExecuteService, :aggregate_failures, feature_
 
   let_it_be_with_reload(:flow_version) do
     item_version = flow.latest_version
-    item_version.update!(definition: flow_definition)
+    item_version.update!(definition: flow_definition, release_date: 1.hour.ago)
     item_version
   end
 
@@ -66,7 +66,7 @@ RSpec.describe Ai::Catalog::Flows::ExecuteService, :aggregate_failures, feature_
     }
   end
 
-  let(:current_user) { maintainer }
+  let(:current_user) { developer }
 
   let(:service) do
     described_class.new(
@@ -93,7 +93,7 @@ RSpec.describe Ai::Catalog::Flows::ExecuteService, :aggregate_failures, feature_
     end
 
     context 'when user lack permission' do
-      let(:current_user) { create(:user).tap { |user| project.add_developer(user) } }
+      let(:current_user) { create(:user).tap { |user| project.add_reporter(user) } }
 
       it_behaves_like 'returns error response', 'You have insufficient permissions'
 
@@ -130,7 +130,7 @@ RSpec.describe Ai::Catalog::Flows::ExecuteService, :aggregate_failures, feature_
 
     context 'when flow_version does not belong to the flow' do
       let(:other_flow) { build(:ai_catalog_flow, project: project) }
-      let(:other_flow_version) { other_flow.versions.last }
+      let(:other_flow_version) { other_flow.versions.last.tap { |version| version.release_date = 1.hour.ago } }
       let(:service_params) { super().merge({ flow_version: other_flow_version }) }
 
       it_behaves_like 'returns error response', 'Flow version must belong to the flow'
@@ -138,7 +138,8 @@ RSpec.describe Ai::Catalog::Flows::ExecuteService, :aggregate_failures, feature_
 
     context 'when flow_version has no steps' do
       before do
-        flow_version.update!(definition: { steps: [], triggers: [1] })
+        flow_version.definition = { steps: [], triggers: [1] }
+        flow_version.save!(validate: false) # Cannot update definition of already released version
       end
 
       it_behaves_like 'returns error response', 'Flow version must have steps'

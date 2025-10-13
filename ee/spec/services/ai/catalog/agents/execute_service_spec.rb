@@ -60,7 +60,7 @@ RSpec.describe Ai::Catalog::Agents::ExecuteService, :aggregate_failures, feature
     end
 
     context 'when user lack permission' do
-      let(:current_user) { create(:user).tap { |user| project.add_developer(user) } }
+      let(:current_user) { create(:user).tap { |user| project.add_reporter(user) } }
 
       it_behaves_like 'returns error response', 'You have insufficient permissions'
 

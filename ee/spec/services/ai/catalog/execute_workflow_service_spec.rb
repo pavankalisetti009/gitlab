@@ -7,7 +7,9 @@ RSpec.describe Ai::Catalog::ExecuteWorkflowService, :aggregate_failures, feature
 
   let_it_be(:organization) { create(:organization) }
   let_it_be(:user) { create(:user) }
-  let_it_be(:project) { create(:project, :repository, organization: organization, maintainers: user) }
+  let_it_be(:project) { create(:project, :repository, organization: organization, developers: user) }
+  let_it_be(:item) { create(:ai_catalog_item, project:) }
+  let_it_be(:item_version) { item.versions.last.tap { |version| version.update!(release_date: 1.hour.ago) } }
 
   let(:json_config) do
     {
@@ -25,7 +27,8 @@ RSpec.describe Ai::Catalog::ExecuteWorkflowService, :aggregate_failures, feature
     {
       json_config: json_config,
       container: container,
-      goal: goal
+      goal: goal,
+      item_version: item_version
     }
   end
 
@@ -59,7 +62,7 @@ RSpec.describe Ai::Catalog::ExecuteWorkflowService, :aggregate_failures, feature
   context 'when container is missing' do
     let(:container) { nil }
 
-    it_behaves_like 'returns error response', 'You have insufficient permissions'
+    it_behaves_like 'returns error response', 'container must be a Project or Namespace'
   end
 
   context 'when goal is missing' do
@@ -82,8 +85,8 @@ RSpec.describe Ai::Catalog::ExecuteWorkflowService, :aggregate_failures, feature
     it_behaves_like 'returns error response', 'You have insufficient permissions'
   end
 
-  context 'with a container where the user is not a maintainer' do
-    let(:user) { create(:user, developer_of: project) }
+  context 'with a container where the user is not a developer' do
+    let(:user) { create(:user, reporter_of: project) }
 
     it_behaves_like 'returns error response', 'You have insufficient permissions'
   end

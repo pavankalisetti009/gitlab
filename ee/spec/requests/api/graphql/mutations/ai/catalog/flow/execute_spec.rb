@@ -7,7 +7,7 @@ RSpec.describe Mutations::Ai::Catalog::Flow::Execute, :aggregate_failures, featu
   include GraphqlHelpers
 
   let_it_be(:current_user) { create(:user) }
-  let_it_be(:project) { create(:project, :repository, maintainers: current_user) }
+  let_it_be(:project) { create(:project, :repository, developers: current_user) }
   let_it_be(:flow_item) { create(:ai_catalog_flow, project: project) }
   let_it_be(:agent_item_1) { create(:ai_catalog_item, :agent, project: project) }
   let_it_be(:agent_item_2) { create(:ai_catalog_item, :agent, project: project) }
@@ -41,7 +41,7 @@ RSpec.describe Mutations::Ai::Catalog::Flow::Execute, :aggregate_failures, featu
 
   let_it_be_with_reload(:flow_version) do
     item_version = flow_item.latest_version
-    item_version.update!(definition: flow_definition)
+    item_version.update!(definition: flow_definition, release_date: 1.hour.ago)
     item_version
   end
 
@@ -137,8 +137,8 @@ RSpec.describe Mutations::Ai::Catalog::Flow::Execute, :aggregate_failures, featu
     end
   end
 
-  context 'when user is a developer' do
-    let(:current_user) { create(:user).tap { |user| project.add_developer(user) } }
+  context 'when user is a reporter' do
+    let(:current_user) { create(:user).tap { |user| project.add_reporter(user) } }
 
     it_behaves_like 'an authorization failure'
   end
@@ -179,7 +179,7 @@ RSpec.describe Mutations::Ai::Catalog::Flow::Execute, :aggregate_failures, featu
 
     it 'executes the latest version of the flow' do
       latest_flow_version = create(
-        :ai_catalog_flow_version, version: '2.0.0', item: flow_item, definition: flow_definition
+        :ai_catalog_flow_version, :released, version: '2.0.0', item: flow_item, definition: flow_definition
       )
       allow(::Ai::Catalog::Flows::ExecuteService).to receive(:new).and_call_original
 
@@ -233,6 +233,23 @@ RSpec.describe Mutations::Ai::Catalog::Flow::Execute, :aggregate_failures, featu
     end
   end
 
+  context 'when latest version is still in draft' do
+    let_it_be(:flow_item) { create(:ai_catalog_flow, project: project) }
+    let_it_be(:flow_version) do
+      flow_item.versions.last.tap { |version| version.update!(release_date: nil) }
+    end
+
+    context 'when user is a developer' do
+      it_behaves_like 'an authorization failure'
+    end
+
+    context 'when user is a maintainer' do
+      let(:current_user) { create(:user).tap { |user| project.add_maintainer(user) } }
+
+      it_behaves_like 'successful execution'
+    end
+  end
+
   context 'when workflow is not created' do
     let(:mock_service) { instance_double(::Ai::Catalog::Flows::ExecuteService) }
     let(:service_result) do
@@ -266,7 +283,9 @@ RSpec.describe Mutations::Ai::Catalog::Flow::Execute, :aggregate_failures, featu
 
   context 'with mismatched flow type and flow version' do
     let_it_be(:agent) { create(:ai_catalog_agent, project: project) }
-    let_it_be(:agent_version) { agent.versions.last }
+    let_it_be(:agent_version) do
+      agent.versions.last.tap { |version| version.update!(release_date: 1.hour.ago) }
+    end
 
     context 'when an agent item is passed with a flow item version' do
       let(:params) do
@@ -306,7 +325,9 @@ RSpec.describe Mutations::Ai::Catalog::Flow::Execute, :aggregate_failures, featu
 
     context "when a flow is passed with a different flow's version" do
       let_it_be(:other_flow) { create(:ai_catalog_flow, project: project) }
-      let_it_be(:other_flow_version) { other_flow.versions.last }
+      let_it_be(:other_flow_version) do
+        other_flow.versions.last.tap { |version| version.update!(release_date: 1.hour.ago) }
+      end
 
       let(:params) do
         {
