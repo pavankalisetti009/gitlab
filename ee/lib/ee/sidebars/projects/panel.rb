@@ -44,12 +44,10 @@ module EE
           # Detect the current path and if it matches project_get_started_path(context.project) then return true
           return context.show_get_started_menu unless context.project.namespace.trial?
 
-          # rubocop:disable Cop/ExperimentsTestCoverage -- Returns false positive, because test file is not in location expected by cop
           experiment(:legacy_onboarding, namespace: context.project.namespace) do |e|
             e.control { true }
             e.candidate { false }
           end.run
-          # rubocop:enable Cop/ExperimentsTestCoverage
         end
       end
     end
