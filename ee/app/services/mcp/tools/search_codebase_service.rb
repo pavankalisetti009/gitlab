@@ -8,7 +8,18 @@ module Mcp
 
       override :description
       def description
-        'Search for relevant code snippets in a project'
+        desc = <<~DESC
+          Performs semantic code search across project files using vector similarity.
+
+          Returns ranked code snippets with file paths and content matches based on natural language queries.
+
+          Use this tool for questions about a project's codebase.
+          For example: "how something works" or "code that does X", or finding specific implementations.
+
+          This tool supports directory scoping and configurable result limits for targeted code discovery and analysis.
+        DESC
+
+        desc.strip
       end
 
       override :input_schema
@@ -16,11 +27,12 @@ module Mcp
         {
           type: 'object',
           properties: {
-            search_term: {
+            semantic_query: {
               type: 'string',
               minLength: 1,
               maxLength: 1000,
-              description: 'Natural language query for semantic code search.'
+              description: "A brief natural language query about the code you want to find in the project " \
+                "(e.g.: 'authentication middleware', 'database connection logic', or 'API error handling')."
             },
             project_id: {
               type: 'integer',
@@ -37,7 +49,8 @@ module Mcp
               default: 64,
               minimum: 1,
               maximum: 100,
-              description: 'Number of nearest neighbors used internally.'
+              description: "Number of nearest neighbors used internally. " \
+                "This controls search precision vs. speed - higher values find more diverse results but take longer."
             },
             limit: {
               type: 'integer',
@@ -47,7 +60,7 @@ module Mcp
               description: 'Maximum number of results to return.'
             }
           },
-          required: %w[search_term project_id],
+          required: %w[semantic_query project_id],
           additionalProperties: false
         }
       end
@@ -58,11 +71,11 @@ module Mcp
       def perform(arguments = {}, query = {}) # rubocop:disable Lint/UnusedMethodArgument -- `query` is required by the contract
         limit = arguments[:limit] || 20
         knn = arguments[:knn] || 64
-        search_term = arguments[:search_term]
+        semantic_query = arguments[:semantic_query]
         project_id = arguments[:project_id]
         directory_path = arguments[:directory_path]
 
-        result = codebase_query(search_term).filter(
+        result = codebase_query(semantic_query).filter(
           project_id: project_id,
           path: directory_path,
           knn_count: knn,
@@ -79,8 +92,8 @@ module Mcp
         ::Mcp::Tools::Response.success(formatted_content, result)
       end
 
-      def codebase_query(search_term)
-        @codebase_query ||= ::Ai::ActiveContext::Queries::Code.new(search_term: search_term, user: current_user)
+      def codebase_query(semantic_query)
+        @codebase_query ||= ::Ai::ActiveContext::Queries::Code.new(search_term: semantic_query, user: current_user)
       end
     end
   end

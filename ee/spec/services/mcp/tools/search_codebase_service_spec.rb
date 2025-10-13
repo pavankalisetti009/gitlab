@@ -7,9 +7,18 @@ RSpec.describe Mcp::Tools::SearchCodebaseService, feature_category: :mcp_server 
 
   describe '#description' do
     it 'returns the correct description' do
-      expect(service.description).to eq(
-        'Search for relevant code snippets in a project'
-      )
+      expected_description = <<~DESC
+        Performs semantic code search across project files using vector similarity.
+
+        Returns ranked code snippets with file paths and content matches based on natural language queries.
+
+        Use this tool for questions about a project's codebase.
+        For example: "how something works" or "code that does X", or finding specific implementations.
+
+        This tool supports directory scoping and configurable result limits for targeted code discovery and analysis.
+      DESC
+
+      expect(service.description).to eq(expected_description.strip)
     end
   end
 
@@ -18,11 +27,11 @@ RSpec.describe Mcp::Tools::SearchCodebaseService, feature_category: :mcp_server 
       schema = service.input_schema
 
       expect(schema[:type]).to eq('object')
-      expect(schema[:required]).to match_array(%w[search_term project_id])
+      expect(schema[:required]).to match_array(%w[semantic_query project_id])
       expect(schema[:additionalProperties]).to be false
 
-      expect(schema[:properties][:search_term][:type]).to eq('string')
-      expect(schema[:properties][:search_term][:minLength]).to eq(1)
+      expect(schema[:properties][:semantic_query][:type]).to eq('string')
+      expect(schema[:properties][:semantic_query][:minLength]).to eq(1)
 
       expect(schema[:properties][:project_id][:type]).to eq('integer')
 
@@ -52,7 +61,7 @@ RSpec.describe Mcp::Tools::SearchCodebaseService, feature_category: :mcp_server 
       let(:arguments) do
         {
           arguments: {
-            search_term: 'Add raise Exception for protected type usage',
+            semantic_query: 'Add raise Exception for protected type usage',
             project_id: 123,
             directory_path: 'app/services/'
           }
@@ -99,16 +108,16 @@ RSpec.describe Mcp::Tools::SearchCodebaseService, feature_category: :mcp_server 
     end
 
     context 'with missing required field' do
-      it 'returns validation error when search_term is missing' do
+      it 'returns validation error when semantic_query is missing' do
         arguments = { arguments: { project_id: 1 } }
         result = service.execute(request: nil, params: arguments)
 
         expect(result[:isError]).to be true
-        expect(result[:content].first[:text]).to eq("Validation error: search_term is missing")
+        expect(result[:content].first[:text]).to eq("Validation error: semantic_query is missing")
       end
 
       it 'returns validation error when project_id is missing' do
-        arguments = { arguments: { search_term: 'foo' } }
+        arguments = { arguments: { semantic_query: 'foo' } }
         result = service.execute(request: nil, params: arguments)
 
         expect(result[:isError]).to be true
@@ -117,24 +126,24 @@ RSpec.describe Mcp::Tools::SearchCodebaseService, feature_category: :mcp_server 
     end
 
     context 'with blank/invalid required field' do
-      it 'returns validation error when search_term is blank' do
-        arguments = { arguments: { search_term: '', project_id: 1 } }
+      it 'returns validation error when semantic_query is blank' do
+        arguments = { arguments: { semantic_query: '', project_id: 1 } }
         result = service.execute(request: nil, params: arguments)
 
         expect(result[:isError]).to be true
-        expect(result[:content].first[:text]).to eq("Validation error: search_term is invalid")
+        expect(result[:content].first[:text]).to eq("Validation error: semantic_query is invalid")
       end
 
-      it 'returns validation error when search_term is too long' do
-        arguments = { arguments: { search_term: 'a' * 1001, project_id: 1 } }
+      it 'returns validation error when semantic_query is too long' do
+        arguments = { arguments: { semantic_query: 'a' * 1001, project_id: 1 } }
         result = service.execute(request: nil, params: arguments)
 
         expect(result[:isError]).to be true
-        expect(result[:content].first[:text]).to eq("Validation error: search_term is invalid")
+        expect(result[:content].first[:text]).to eq("Validation error: semantic_query is invalid")
       end
 
       it 'returns validation error when directory_path is too long' do
-        arguments = { arguments: { search_term: 'foo', project_id: 1,  directory_path: 'a' * 101 } }
+        arguments = { arguments: { semantic_query: 'foo', project_id: 1, directory_path: 'a' * 101 } }
         result = service.execute(request: nil, params: arguments)
 
         expect(result[:isError]).to be true
@@ -142,7 +151,7 @@ RSpec.describe Mcp::Tools::SearchCodebaseService, feature_category: :mcp_server 
       end
 
       it 'returns validation error when project_id is not an integer' do
-        arguments = { arguments: { search_term: 'foo', project_id: 'not-an-int' } }
+        arguments = { arguments: { semantic_query: 'foo', project_id: 'not-an-int' } }
         result = service.execute(request: nil, params: arguments)
 
         expect(result[:isError]).to be true
@@ -150,7 +159,7 @@ RSpec.describe Mcp::Tools::SearchCodebaseService, feature_category: :mcp_server 
       end
 
       it 'returns validation error when limit is too big' do
-        arguments = { arguments: { search_term: 'foo', project_id: 1, limit: 101 } }
+        arguments = { arguments: { semantic_query: 'foo', project_id: 1, limit: 101 } }
         result = service.execute(request: nil, params: arguments)
 
         expect(result[:isError]).to be true
@@ -158,7 +167,7 @@ RSpec.describe Mcp::Tools::SearchCodebaseService, feature_category: :mcp_server 
       end
 
       it 'returns validation error when knn is too small' do
-        arguments = { arguments: { search_term: 'foo', project_id: 1, knn: 0 } }
+        arguments = { arguments: { semantic_query: 'foo', project_id: 1, knn: 0 } }
         result = service.execute(request: nil, params: arguments)
 
         expect(result[:isError]).to be true

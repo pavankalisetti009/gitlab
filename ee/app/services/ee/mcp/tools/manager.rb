@@ -7,7 +7,7 @@ module EE
         extend ::Gitlab::Utils::Override
 
         EE_CUSTOM_TOOLS = {
-          'get_code_context' => ::Mcp::Tools::SearchCodebaseService.new(name: 'get_code_context')
+          'semantic_code_search' => ::Mcp::Tools::SearchCodebaseService.new(name: 'semantic_code_search')
         }.freeze
 
         override :build_tools

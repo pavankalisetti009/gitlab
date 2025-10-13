@@ -4,11 +4,11 @@ require 'spec_helper'
 
 RSpec.describe Mcp::Tools::Manager, feature_category: :ai_agents do
   let(:get_mcp_server_version_service) { Mcp::Tools::GetServerVersionService.new(name: 'get_mcp_server_version') }
-  let(:get_code_context_service) { Mcp::Tools::SearchCodebaseService.new(name: 'get_code_context') }
+  let(:semantic_code_search_service) { Mcp::Tools::SearchCodebaseService.new(name: 'semantic_code_search') }
 
   before do
     stub_const("#{described_class}::CUSTOM_TOOLS", { 'get_mcp_server_version' => get_mcp_server_version_service })
-    stub_const("EE::#{described_class}::EE_CUSTOM_TOOLS", { 'get_code_context' => get_code_context_service })
+    stub_const("EE::#{described_class}::EE_CUSTOM_TOOLS", { 'semantic_code_search' => semantic_code_search_service })
   end
 
   describe '#initialize' do
@@ -25,7 +25,7 @@ RSpec.describe Mcp::Tools::Manager, feature_category: :ai_agents do
         manager = described_class.new
 
         expect(manager.tools).to eq(described_class::CUSTOM_TOOLS.merge(described_class::EE_CUSTOM_TOOLS))
-        expect(manager.tools.keys).to contain_exactly('get_mcp_server_version', 'get_code_context')
+        expect(manager.tools.keys).to contain_exactly('get_mcp_server_version', 'semantic_code_search')
       end
     end
 
@@ -54,7 +54,7 @@ RSpec.describe Mcp::Tools::Manager, feature_category: :ai_agents do
           'create_user' => api_tool1,
           'delete_user' => api_tool2,
           'get_mcp_server_version' => get_mcp_server_version_service,
-          'get_code_context' => get_code_context_service
+          'semantic_code_search' => semantic_code_search_service
         )
         expect(manager.tools.size).to eq(4)
       end
@@ -91,7 +91,7 @@ RSpec.describe Mcp::Tools::Manager, feature_category: :ai_agents do
         expect(manager.tools).to include(
           'valid_tool' => api_tool1,
           'get_mcp_server_version' => get_mcp_server_version_service,
-          'get_code_context' => get_code_context_service
+          'semantic_code_search' => semantic_code_search_service
         )
         expect(manager.tools.size).to eq(3)
         expect(Mcp::Tools::ApiTool).to have_received(:new).once.with(route1)
@@ -128,7 +128,7 @@ RSpec.describe Mcp::Tools::Manager, feature_category: :ai_agents do
           'first_tool' => api_tool1,
           'third_tool' => api_tool3,
           'get_mcp_server_version' => get_mcp_server_version_service,
-          'get_code_context' => get_code_context_service
+          'semantic_code_search' => semantic_code_search_service
         )
       end
     end

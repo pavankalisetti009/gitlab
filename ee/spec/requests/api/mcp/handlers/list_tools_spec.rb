@@ -281,16 +281,22 @@ RSpec.describe API::Mcp, 'List tools request', feature_category: :mcp_server do
           }
         },
         {
-          "name" => "get_code_context",
-          "description" => "Search for relevant code snippets in a project",
+          "name" => "semantic_code_search",
+          "description" => "Performs semantic code search across project files using vector similarity.\n\n" \
+            "Returns ranked code snippets with file paths and content matches based on natural language queries.\n\n" \
+            "Use this tool for questions about a project's codebase.\n" \
+            "For example: \"how something works\" or \"code that does X\", or finding specific implementations.\n\n" \
+            "This tool supports directory scoping and configurable result limits for " \
+            "targeted code discovery and analysis.",
           "inputSchema" => {
             "type" => "object",
             "properties" => {
-              "search_term" => {
+              "semantic_query" => {
                 "type" => "string",
                 "minLength" => 1,
                 "maxLength" => 1000,
-                "description" => "Natural language query for semantic code search."
+                "description" => "A brief natural language query about the code you want to find in the project " \
+                  "(e.g.: 'authentication middleware', 'database connection logic', or 'API error handling')."
               },
               "project_id" => {
                 "type" => "integer",
@@ -307,7 +313,8 @@ RSpec.describe API::Mcp, 'List tools request', feature_category: :mcp_server do
                 "default" => 64,
                 "minimum" => 1,
                 "maximum" => 100,
-                "description" => "Number of nearest neighbors used internally."
+                "description" => "Number of nearest neighbors used internally. " \
+                  "This controls search precision vs. speed - higher values find more diverse results but take longer."
               },
               "limit" => {
                 "type" => "integer",
@@ -317,7 +324,7 @@ RSpec.describe API::Mcp, 'List tools request', feature_category: :mcp_server do
                 "description" => "Maximum number of results to return."
               }
             },
-            "required" => %w[search_term project_id],
+            "required" => %w[semantic_query project_id],
             "additionalProperties" => false
           }
         },
@@ -339,8 +346,8 @@ RSpec.describe API::Mcp, 'List tools request', feature_category: :mcp_server do
         post api('/mcp', user, oauth_access_token: access_token), params: params
       end
 
-      it 'does not return get_code_context' do
-        expect(json_response['result']['tools'].pluck('name')).not_to include('get_code_context')
+      it 'does not return semantic_code_search' do
+        expect(json_response['result']['tools'].pluck('name')).not_to include('semantic_code_search')
       end
     end
   end
