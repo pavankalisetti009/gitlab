@@ -46,15 +46,16 @@ export const createRouter = (base) => {
     routes: [
       {
         name: AI_CATALOG_INDEX_ROUTE,
-        path: '',
-        component: AiCatalogAgents,
+        path: '/',
+        redirect: { name: AI_CATALOG_AGENTS_ROUTE },
       },
       // AGENTS
       {
         component: NestedRouteApp,
         path: '/agents',
         meta: {
-          text: s__('AICatalog|Agents'),
+          text: s__('AICatalog|Agents'), // Defined on the parent so that all children inherit this as a breadcrumb
+          indexRoute: AI_CATALOG_AGENTS_ROUTE, // Used by breadcrumbs to ensure we can identify the index for this tree
         },
         children: [
           {
@@ -73,7 +74,11 @@ export const createRouter = (base) => {
           },
           {
             path: ':id(\\d+)',
-            component: AiCatalogAgent,
+            component: AiCatalogAgent, // simple router-view with loading states, etc...
+            meta: {
+              useId: true, // Defined on this parent so that all children inherit the param ID as a breadcrumb
+              indexRoute: AI_CATALOG_AGENTS_SHOW_ROUTE,
+            },
             children: [
               {
                 name: AI_CATALOG_AGENTS_SHOW_ROUTE,
@@ -110,6 +115,7 @@ export const createRouter = (base) => {
               path: '/flows',
               meta: {
                 text: s__('AICatalog|Flows'),
+                indexRoute: AI_CATALOG_FLOWS_ROUTE,
               },
               children: [
                 {
@@ -129,6 +135,10 @@ export const createRouter = (base) => {
                 {
                   path: ':id(\\d+)',
                   component: AiCatalogFlow,
+                  meta: {
+                    useId: true,
+                    indexRoute: AI_CATALOG_FLOWS_SHOW_ROUTE,
+                  },
                   children: [
                     {
                       name: AI_CATALOG_FLOWS_SHOW_ROUTE,
