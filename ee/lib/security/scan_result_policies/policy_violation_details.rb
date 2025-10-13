@@ -9,7 +9,7 @@ module Security
         :security_policy, :security_policy_id, :enforcement_type, :dismissed, keyword_init: true)
       ViolationError = Struct.new(:report_type, :error, :data, :message, :warning, keyword_init: true)
       ScanFindingViolation = Struct.new(:name, :report_type, :severity, :location, :path, keyword_init: true)
-      AnyMergeRequestViolation = Struct.new(:name, :commits, keyword_init: true)
+      AnyMergeRequestViolation = Struct.new(:name, :commits, :warn_mode, keyword_init: true)
       LicenseScanningViolation = Struct.new(:license, :dependencies, :url, keyword_init: true)
       ComparisonPipelines = Struct.new(:report_type, :source, :target, keyword_init: true)
 
@@ -68,7 +68,7 @@ module Security
             data: violation.violation_data,
             warning: violation.warn?,
             status: violation.status,
-            warn_mode: violation.security_policy&.warn_mode?,
+            warn_mode: violation.security_policy&.warn_mode? || false,
             security_policy: violation.security_policy,
             security_policy_id: violation.security_policy&.id,
             enforcement_type: violation.security_policy&.enforcement_type,
@@ -203,11 +203,24 @@ module Security
         violations.select { |violation| violation.report_type == 'any_merge_request' }.flat_map do |violation|
           AnyMergeRequestViolation.new(
             name: violation.name,
-            commits: violation.data&.dig('violations', 'any_merge_request', 'commits')
+            commits: violation.data&.dig('violations', 'any_merge_request', 'commits'),
+            warn_mode: violation.security_policy&.warn_mode? || false
           )
         end
       end
       strong_memoize_attr :any_merge_request_violations
+
+      def enforced_any_merge_request_violations
+        return [] if enforced_violations.empty?
+
+        any_merge_request_violations.reject(&:warn_mode)
+      end
+
+      def warn_mode_any_merge_request_violations
+        return [] if warn_mode_violations.empty?
+
+        any_merge_request_violations.select(&:warn_mode)
+      end
 
       def errors
         violations.flat_map do |violation|

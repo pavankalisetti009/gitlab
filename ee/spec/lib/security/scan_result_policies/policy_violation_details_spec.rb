@@ -737,6 +737,177 @@ RSpec.describe Security::ScanResultPolicies::PolicyViolationDetails, feature_cat
     end
   end
 
+  describe '#enforced_any_merge_request_violations' do
+    subject(:violations_enforced) { details.enforced_any_merge_request_violations }
+
+    let(:normal_db_policy) do
+      create(:security_policy, policy_index: 1,
+        security_orchestration_policy_configuration: security_orchestration_policy_configuration)
+    end
+
+    let(:normal_policy_rule) { create(:approval_policy_rule, security_policy: normal_db_policy) }
+
+    context 'when there are both enforced and warn mode violations' do
+      before do
+        create(:scan_result_policy_violation, project: project, merge_request: merge_request,
+          scan_result_policy_read: policy3,
+          approval_policy_rule: normal_policy_rule,
+          violation_data: { 'violations' => { 'any_merge_request' => { 'commits' => true } } })
+
+        create(:scan_result_policy_violation, project: project, merge_request: merge_request,
+          scan_result_policy_read: policy_warn_mode,
+          approval_policy_rule: warn_mode_policy_rule,
+          violation_data: { 'violations' => { 'any_merge_request' => { 'commits' => ['sha123'] } } })
+      end
+
+      it { is_expected.to contain_exactly(have_attributes(name: 'Policy', warn_mode: false, commits: true)) }
+    end
+
+    context 'when there are only warn mode violations' do
+      before do
+        create(:scan_result_policy_violation, project: project, merge_request: merge_request,
+          scan_result_policy_read: policy_warn_mode,
+          approval_policy_rule: warn_mode_policy_rule,
+          violation_data: { 'violations' => { 'any_merge_request' => { 'commits' => true } } })
+      end
+
+      it { is_expected.to be_empty }
+    end
+
+    context 'when there are multiple enforced violations' do
+      let(:another_normal_db_policy) do
+        create(:security_policy, policy_index: 2,
+          security_orchestration_policy_configuration: security_orchestration_policy_configuration)
+      end
+
+      let(:another_normal_policy_rule) { create(:approval_policy_rule, security_policy: another_normal_db_policy) }
+
+      let_it_be(:another_policy) do
+        create(:scan_result_policy_read, project: project,
+          security_orchestration_policy_configuration: security_orchestration_policy_configuration)
+      end
+
+      before do
+        create(:report_approver_rule, :any_merge_request, merge_request: merge_request,
+          scan_result_policy_read: another_policy, name: 'Another Policy')
+
+        create(:scan_result_policy_violation, project: project, merge_request: merge_request,
+          scan_result_policy_read: policy3,
+          approval_policy_rule: normal_policy_rule,
+          violation_data: { 'violations' => { 'any_merge_request' => { 'commits' => ['sha1'] } } })
+
+        create(:scan_result_policy_violation, project: project, merge_request: merge_request,
+          scan_result_policy_read: another_policy,
+          approval_policy_rule: another_normal_policy_rule,
+          violation_data: { 'violations' => { 'any_merge_request' => { 'commits' => ['sha2'] } } })
+      end
+
+      specify do
+        expect(violations_enforced).to contain_exactly(
+          have_attributes(name: 'Policy', warn_mode: false, commits: %w[sha1]),
+          have_attributes(name: 'Another Policy', warn_mode: false, commits: %w[sha2])
+        )
+      end
+    end
+
+    context 'when violations have commits as array' do
+      before do
+        create(:scan_result_policy_violation, project: project, merge_request: merge_request,
+          scan_result_policy_read: policy3,
+          approval_policy_rule: normal_policy_rule,
+          violation_data: { 'violations' => { 'any_merge_request' => { 'commits' => %w[sha1 sha2] } } })
+      end
+
+      it { is_expected.to contain_exactly(have_attributes(name: 'Policy', warn_mode: false, commits: %w[sha1 sha2])) }
+    end
+  end
+
+  describe '#warn_mode_any_merge_request_violations' do
+    subject(:violations_bypassable) { details.warn_mode_any_merge_request_violations }
+
+    let(:normal_db_policy) do
+      create(:security_policy, policy_index: 1,
+        security_orchestration_policy_configuration: security_orchestration_policy_configuration)
+    end
+
+    let(:normal_policy_rule) { create(:approval_policy_rule, security_policy: normal_db_policy) }
+
+    context 'when there are both enforced and warn mode violations' do
+      before do
+        create(:scan_result_policy_violation, project: project, merge_request: merge_request,
+          scan_result_policy_read: policy3,
+          approval_policy_rule: normal_policy_rule,
+          violation_data: { 'violations' => { 'any_merge_request' => { 'commits' => true } } })
+
+        create(:scan_result_policy_violation, project: project, merge_request: merge_request,
+          scan_result_policy_read: policy_warn_mode,
+          approval_policy_rule: warn_mode_policy_rule,
+          violation_data: { 'violations' => { 'any_merge_request' => { 'commits' => ['sha123'] } } })
+      end
+
+      it { is_expected.to contain_exactly(have_attributes(name: 'Warn mode', warn_mode: true, commits: %w[sha123])) }
+    end
+
+    context 'when there are only enforced violations' do
+      before do
+        create(:scan_result_policy_violation, project: project, merge_request: merge_request,
+          scan_result_policy_read: policy3,
+          approval_policy_rule: normal_policy_rule,
+          violation_data: { 'violations' => { 'any_merge_request' => { 'commits' => true } } })
+      end
+
+      it { is_expected.to be_empty }
+    end
+
+    context 'when there are multiple warn mode violations' do
+      let(:another_warn_mode_db_policy) do
+        create(:security_policy, :warn_mode, policy_index: 4,
+          security_orchestration_policy_configuration: security_orchestration_policy_configuration)
+      end
+
+      let(:another_warn_policy_rule) { create(:approval_policy_rule, security_policy: another_warn_mode_db_policy) }
+
+      let_it_be(:another_policy_warn) do
+        create(:scan_result_policy_read, project: project,
+          security_orchestration_policy_configuration: security_orchestration_policy_configuration)
+      end
+
+      before do
+        create(:report_approver_rule, :any_merge_request, merge_request: merge_request,
+          scan_result_policy_read: another_policy_warn, name: 'Another Warn Policy')
+
+        create(:scan_result_policy_violation, project: project, merge_request: merge_request,
+          scan_result_policy_read: policy_warn_mode,
+          approval_policy_rule: warn_mode_policy_rule,
+          violation_data: { 'violations' => { 'any_merge_request' => { 'commits' => ['sha1'] } } })
+
+        create(:scan_result_policy_violation, project: project, merge_request: merge_request,
+          scan_result_policy_read: another_policy_warn,
+          approval_policy_rule: another_warn_policy_rule,
+          violation_data: { 'violations' => { 'any_merge_request' => { 'commits' => ['sha2'] } } })
+      end
+
+      specify do
+        expect(violations_bypassable).to contain_exactly(
+          have_attributes(name: 'Warn mode', warn_mode: true, commits: %w[sha1]),
+          have_attributes(name: 'Another Warn Policy', warn_mode: true,
+            commits: %w[sha2])
+        )
+      end
+    end
+
+    context 'when violations have commits as boolean' do
+      before do
+        create(:scan_result_policy_violation, project: project, merge_request: merge_request,
+          scan_result_policy_read: policy_warn_mode,
+          approval_policy_rule: warn_mode_policy_rule,
+          violation_data: { 'violations' => { 'any_merge_request' => { 'commits' => false } } })
+      end
+
+      it { is_expected.to contain_exactly(have_attributes(name: 'Warn mode', warn_mode: true, commits: false)) }
+    end
+  end
+
   describe '#license_scanning_violations' do
     subject(:violations) { details.license_scanning_violations }
 
