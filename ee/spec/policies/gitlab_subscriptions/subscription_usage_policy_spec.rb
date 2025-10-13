@@ -6,6 +6,7 @@ RSpec.describe GitlabSubscriptions::SubscriptionUsagePolicy, feature_category: :
   include AdminModeHelper
   using RSpec::Parameterized::TableSyntax
 
+  let(:subscription_usage_client) { instance_double(Gitlab::SubscriptionPortal::SubscriptionUsageClient) }
   let_it_be(:group) { create(:group) }
   let_it_be(:admin) { create(:admin) }
   let_it_be(:owner) { create(:user, owner_of: group) }
@@ -18,8 +19,12 @@ RSpec.describe GitlabSubscriptions::SubscriptionUsagePolicy, feature_category: :
     let(:policy) { :read_subscription_usage }
 
     context 'when namespace is present' do
-      let_it_be(:subscription_usage) do
-        GitlabSubscriptions::SubscriptionUsage.new(subscription_target: :namespace, namespace: group)
+      let(:subscription_usage) do
+        GitlabSubscriptions::SubscriptionUsage.new(
+          subscription_target: :namespace,
+          subscription_usage_client: subscription_usage_client,
+          namespace: group
+        )
       end
 
       # only admin and owner are allowed
@@ -45,7 +50,12 @@ RSpec.describe GitlabSubscriptions::SubscriptionUsagePolicy, feature_category: :
     end
 
     context 'when namespace is nil, in Self-Managed instance context' do
-      let_it_be(:subscription_usage) { GitlabSubscriptions::SubscriptionUsage.new(subscription_target: :instance) }
+      let(:subscription_usage) do
+        GitlabSubscriptions::SubscriptionUsage.new(
+          subscription_target: :instance,
+          subscription_usage_client: subscription_usage_client
+        )
+      end
 
       # only admin is allowed
       where(:user, :admin_mode, :result) do

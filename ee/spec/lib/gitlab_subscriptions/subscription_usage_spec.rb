@@ -5,36 +5,26 @@ require 'spec_helper'
 RSpec.describe GitlabSubscriptions::SubscriptionUsage, feature_category: :consumables_cost_management do
   let_it_be(:users) { create_list(:user, 3) }
   let_it_be(:group) { create(:group, developers: users.first(2)) }
-  let(:start_date) { Date.current.beginning_of_month }
-  let(:end_date) { Date.current.end_of_month }
+  let(:subscription_usage_client) { instance_double(Gitlab::SubscriptionPortal::SubscriptionUsageClient) }
 
   describe '#last_updated' do
     subject(:last_updated) { subscription_usage.last_updated }
 
     before do
-      allow(Gitlab::SubscriptionPortal::Client).to receive(:get_subscription_usage_last_updated)
-        .and_return(client_response)
+      allow(subscription_usage_client).to receive(:get_last_updated).and_return(client_response)
     end
 
     context 'when subscription_target is :namespace' do
       let(:subscription_usage) do
         described_class.new(
           subscription_target: :namespace,
-          namespace: group,
-          start_date: start_date,
-          end_date: end_date
+          subscription_usage_client: subscription_usage_client,
+          namespace: group
         )
       end
 
       context 'when the client returns a successful response' do
         let(:client_response) { { success: true, lastUpdated: "2025-10-01T16:19:59Z" } }
-
-        it 'calls the subscription portal client with correct parameters' do
-          last_updated
-
-          expect(Gitlab::SubscriptionPortal::Client).to have_received(:get_subscription_usage_last_updated)
-            .with(license_key: nil, namespace_id: group.id)
-        end
 
         it 'returns the last updated time' do
           expect(last_updated).to be("2025-10-01T16:19:59Z")
@@ -56,49 +46,21 @@ RSpec.describe GitlabSubscriptions::SubscriptionUsage, feature_category: :consum
           expect(last_updated).to be_nil
         end
       end
-
-      context 'when namespace is nil' do
-        let(:subscription_usage) do
-          described_class.new(
-            subscription_target: :namespace,
-            namespace: nil,
-            start_date: start_date,
-            end_date: end_date
-          )
-        end
-
-        let(:client_response) { { success: true, lastUpdated: "2025-10-01T16:19:59Z" } }
-
-        it 'calls the client with nil namespace_id' do
-          last_updated
-
-          expect(Gitlab::SubscriptionPortal::Client).to have_received(:get_subscription_usage_last_updated)
-            .with(license_key: nil, namespace_id: nil)
-        end
-      end
     end
 
     context 'when subscription_target is :instance' do
       let(:subscription_usage) do
         described_class.new(
           subscription_target: :instance,
-          start_date: start_date,
-          end_date: end_date
+          subscription_usage_client: subscription_usage_client
         )
       end
 
-      let(:license) { create(:license) }
+      let(:license) { build_stubbed(:license) }
       let(:client_response) { { success: true, lastUpdated: "2025-10-01T16:19:59Z" } }
 
       before do
         allow(License).to receive(:current).and_return(license)
-      end
-
-      it 'calls the subscription portal client with license key' do
-        last_updated
-
-        expect(Gitlab::SubscriptionPortal::Client).to have_received(:get_subscription_usage_last_updated)
-          .with(license_key: license.data, namespace_id: nil)
       end
 
       it 'returns the last updated time' do
@@ -121,17 +83,15 @@ RSpec.describe GitlabSubscriptions::SubscriptionUsage, feature_category: :consum
     subject(:pool_usage) { subscription_usage.pool_usage }
 
     before do
-      allow(Gitlab::SubscriptionPortal::Client).to receive(:get_subscription_pool_usage)
-        .and_return(client_response)
+      allow(subscription_usage_client).to receive(:get_pool_usage).and_return(client_response)
     end
 
     context 'when subscription_target is :namespace' do
       let(:subscription_usage) do
         described_class.new(
           subscription_target: :namespace,
-          namespace: group,
-          start_date: start_date,
-          end_date: end_date
+          subscription_usage_client: subscription_usage_client,
+          namespace: group
         )
       end
 
@@ -140,23 +100,11 @@ RSpec.describe GitlabSubscriptions::SubscriptionUsage, feature_category: :consum
           {
             success: true,
             poolUsage: {
-              totalUnits: 1000,
-              unitsUsed: 750,
+              totalCredits: 1000,
+              creditsUsed: 750,
               dailyUsage: [{ date: '2025-10-01', creditsUsed: 750 }]
             }
           }
-        end
-
-        it 'calls the subscription portal client with correct parameters' do
-          pool_usage
-
-          expect(Gitlab::SubscriptionPortal::Client).to have_received(:get_subscription_pool_usage)
-            .with(
-              license_key: nil,
-              namespace_id: group.id,
-              start_date: start_date,
-              end_date: end_date
-            )
         end
 
         it 'returns a PoolUsage struct with correct data' do
@@ -203,49 +151,23 @@ RSpec.describe GitlabSubscriptions::SubscriptionUsage, feature_category: :consum
           )
         end
       end
-
-      context 'when namespace is nil' do
-        let(:subscription_usage) do
-          described_class.new(
-            subscription_target: :namespace,
-            namespace: nil,
-            start_date: start_date,
-            end_date: end_date
-          )
-        end
-
-        let(:client_response) { { success: true, poolUsage: {} } }
-
-        it 'calls the client with nil namespace_id' do
-          pool_usage
-
-          expect(Gitlab::SubscriptionPortal::Client).to have_received(:get_subscription_pool_usage)
-            .with(
-              license_key: nil,
-              namespace_id: nil,
-              start_date: start_date,
-              end_date: end_date
-            )
-        end
-      end
     end
 
     context 'when subscription_target is :instance' do
       let(:subscription_usage) do
         described_class.new(
           subscription_target: :instance,
-          start_date: start_date,
-          end_date: end_date
+          subscription_usage_client: subscription_usage_client
         )
       end
 
-      let(:license) { create(:license) }
+      let(:license) { build_stubbed(:license) }
       let(:client_response) do
         {
           success: true,
           poolUsage: {
-            totalUnits: 2000,
-            unitsUsed: 1500,
+            totalCredits: 2000,
+            creditsUsed: 1500,
             dailyUsage: [{ date: '2025-10-01', creditsUsed: 1500 }]
           }
         }
@@ -253,18 +175,6 @@ RSpec.describe GitlabSubscriptions::SubscriptionUsage, feature_category: :consum
 
       before do
         allow(License).to receive(:current).and_return(license)
-      end
-
-      it 'calls the subscription portal client with license key' do
-        pool_usage
-
-        expect(Gitlab::SubscriptionPortal::Client).to have_received(:get_subscription_pool_usage)
-          .with(
-            license_key: license.data,
-            namespace_id: nil,
-            start_date: start_date,
-            end_date: end_date
-          )
       end
 
       it 'returns a PoolUsage struct with correct data' do
@@ -301,9 +211,8 @@ RSpec.describe GitlabSubscriptions::SubscriptionUsage, feature_category: :consum
       let(:subscription_usage) do
         described_class.new(
           subscription_target: :namespace,
-          namespace: group,
-          start_date: start_date,
-          end_date: end_date
+          subscription_usage_client: subscription_usage_client,
+          namespace: group
         )
       end
 
@@ -319,9 +228,7 @@ RSpec.describe GitlabSubscriptions::SubscriptionUsage, feature_category: :consum
         let(:subscription_usage) do
           described_class.new(
             subscription_target: :namespace,
-            namespace: nil,
-            start_date: start_date,
-            end_date: end_date
+            subscription_usage_client: subscription_usage_client
           )
         end
 
@@ -335,9 +242,8 @@ RSpec.describe GitlabSubscriptions::SubscriptionUsage, feature_category: :consum
         let(:subscription_usage) do
           described_class.new(
             subscription_target: :namespace,
-            namespace: no_members_namespace,
-            start_date: start_date,
-            end_date: end_date
+            subscription_usage_client: subscription_usage_client,
+            namespace: no_members_namespace
           )
         end
 
@@ -351,8 +257,7 @@ RSpec.describe GitlabSubscriptions::SubscriptionUsage, feature_category: :consum
       let(:subscription_usage) do
         described_class.new(
           subscription_target: :instance,
-          start_date: start_date,
-          end_date: end_date
+          subscription_usage_client: subscription_usage_client
         )
       end
 
@@ -369,8 +274,7 @@ RSpec.describe GitlabSubscriptions::SubscriptionUsage, feature_category: :consum
       let(:subscription_usage) do
         described_class.new(
           subscription_target: :unknown,
-          start_date: start_date,
-          end_date: end_date
+          subscription_usage_client: subscription_usage_client
         )
       end
 

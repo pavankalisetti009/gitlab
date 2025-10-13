@@ -43,20 +43,17 @@ module Types
         private
 
         def load_users_usage(user_ids, loader)
-          result = Gitlab::SubscriptionPortal::Client.get_subscription_usage_for_user_ids(
-            user_ids: user_ids,
-            **context[:query_arguments]
-          )
+          result = context[:subscription_usage_client].get_usage_for_user_ids(user_ids)
 
           return unless result[:usersUsage]
 
           result[:usersUsage].each do |usage|
             loader.call(
-              usage[:user_id],
+              usage[:userId],
               UserUsage.new(
-                total_credits: usage[:total_credits],
-                credits_used: usage[:credits_used],
-                pool_credits_used: usage[:pool_credits_used],
+                total_credits: usage[:totalCredits],
+                credits_used: usage[:creditsUsed],
+                pool_credits_used: usage[:poolCreditsUsed],
                 declarative_policy_subject: object
               )
             )
