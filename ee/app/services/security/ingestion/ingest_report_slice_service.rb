@@ -22,6 +22,7 @@ module Security
         IngestVulnerabilityStatistics
         IngestVulnerabilityNamespaceStatistics
         IngestRemediations
+        IngestFindingRiskScores
         HooksExecution
       ].freeze
 

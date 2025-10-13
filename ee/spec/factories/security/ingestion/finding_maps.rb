@@ -7,7 +7,7 @@ FactoryBot.define do
     pipeline factory: :ci_pipeline
 
     trait :with_finding do
-      finding factory: :vulnerabilities_finding
+      finding { association(:vulnerabilities_finding, severity: security_finding.severity) }
     end
 
     trait :new_record do
