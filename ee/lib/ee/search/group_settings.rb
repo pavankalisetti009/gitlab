@@ -78,6 +78,20 @@ module EE
 
         settings
       end
+
+      override :packages_settings
+      def packages_settings
+        settings = super
+
+        if group.licensed_feature_available?(:packages_virtual_registry)
+          settings.push(
+            { text: s_('VirtualRegistry|Virtual Registry'),
+              href: group_settings_packages_and_registries_path(group, anchor: 'virtual-registries-setting') }
+          )
+        end
+
+        settings
+      end
     end
   end
 end

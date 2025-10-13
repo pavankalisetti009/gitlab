@@ -8,8 +8,9 @@ import waitForPromises from 'helpers/wait_for_promises';
 import PackagesSettings from '~/packages_and_registries/settings/group/components/packages_settings.vue';
 import DependencyProxySettings from '~/packages_and_registries/settings/group/components/dependency_proxy_settings.vue';
 import PackagesForwardingSettings from '~/packages_and_registries/settings/group/components/packages_forwarding_settings.vue';
+import VirtualRegistriesSetting from 'ee_component/packages_and_registries/settings/group/components/virtual_registries_setting.vue';
 
-import component from '~/packages_and_registries/settings/group/components/group_settings_app.vue';
+import GroupSettingsApp from '~/packages_and_registries/settings/group/components/group_settings_app.vue';
 
 import getGroupPackagesSettingsQuery from '~/packages_and_registries/settings/group/graphql/queries/get_group_packages_settings.query.graphql';
 import {
@@ -17,11 +18,12 @@ import {
   packageSettings,
   dependencyProxySettings,
   dependencyProxyImageTtlPolicy,
-} from 'ee_else_ce_jest/packages_and_registries/settings/group/mock_data';
+  virtualRegistriesSetting,
+} from '../mock_data';
 
 jest.mock('~/alert');
 
-describe('Group Settings App', () => {
+describe('EE Group Settings App', () => {
   let wrapper;
   let apolloProvider;
   let show;
@@ -35,6 +37,10 @@ describe('Group Settings App', () => {
     resolver = jest.fn().mockResolvedValue(groupPackageSettingsMock),
     provide = defaultProvide,
     adminDependencyProxyAbility = true,
+    adminVirtualRegistryAbility = true,
+    mavenVirtualRegistryFeature = true,
+    packagesVirtualRegistryLicense = true,
+    uiForVirtualRegistriesFeature = true,
   } = {}) => {
     Vue.use(VueApollo);
 
@@ -42,12 +48,20 @@ describe('Group Settings App', () => {
 
     apolloProvider = createMockApollo(requestHandlers);
 
-    wrapper = shallowMount(component, {
+    wrapper = shallowMount(GroupSettingsApp, {
       apolloProvider,
       provide: {
         ...provide,
         glAbilities: {
           adminDependencyProxy: adminDependencyProxyAbility,
+          adminVirtualRegistry: adminVirtualRegistryAbility,
+        },
+        glFeatures: {
+          mavenVirtualRegistry: mavenVirtualRegistryFeature,
+          uiForVirtualRegistries: uiForVirtualRegistriesFeature,
+        },
+        glLicensedFeatures: {
+          packagesVirtualRegistry: packagesVirtualRegistryLicense,
         },
       },
       mocks: {
@@ -66,6 +80,7 @@ describe('Group Settings App', () => {
   const findPackageSettings = () => wrapper.findComponent(PackagesSettings);
   const findPackageForwardingSettings = () => wrapper.findComponent(PackagesForwardingSettings);
   const findDependencyProxySettings = () => wrapper.findComponent(DependencyProxySettings);
+  const findVirtualRegistriesSetting = () => wrapper.findComponent(VirtualRegistriesSetting);
 
   const waitForApolloQueryAndRender = async () => {
     await waitForPromises();
@@ -78,12 +93,14 @@ describe('Group Settings App', () => {
     dependencyProxySettings: dependencyProxySettings(),
     dependencyProxyImageTtlPolicy: dependencyProxyImageTtlPolicy(),
   };
+  const virtualRegistriesProps = { virtualRegistriesSetting: virtualRegistriesSetting() };
 
   describe.each`
     finder                           | entitySpecificProps               | id
     ${findPackageSettings}           | ${packageSettingsProps}           | ${'packages-settings'}
     ${findPackageForwardingSettings} | ${packageForwardingSettingsProps} | ${'packages-forwarding-settings'}
     ${findDependencyProxySettings}   | ${dependencyProxyProps}           | ${'dependency-proxy-settings'}
+    ${findVirtualRegistriesSetting}  | ${virtualRegistriesProps}         | ${'virtual-registries-setting'}
   `('settings blocks', ({ finder, entitySpecificProps, id }) => {
     beforeEach(() => {
       mountComponent();
@@ -127,10 +144,6 @@ describe('Group Settings App', () => {
         return nextTick();
       });
 
-      it('shows an alert', () => {
-        expect(findAlert().exists()).toBe(true);
-      });
-
       it('alert has the right text', () => {
         expect(findAlert().text()).toBe('An error occurred while saving the settings.');
       });
@@ -147,20 +160,75 @@ describe('Group Settings App', () => {
     });
   });
 
-  describe('when ability adminDependencyProxy is false', () => {
+  describe('when ability adminVirtualRegistriesSetting is false', () => {
     beforeEach(() => {
       mountComponent({
-        adminDependencyProxyAbility: false,
+        adminVirtualRegistryAbility: false,
       });
     });
 
-    it('does not render dependency proxy settings section', () => {
-      expect(findDependencyProxySettings().exists()).toBe(false);
+    it('does not render the virtual registries setting section', () => {
+      expect(findVirtualRegistriesSetting().exists()).toBe(false);
     });
 
     it('renders other settings section', () => {
       expect(findPackageSettings().exists()).toBe(true);
       expect(findPackageForwardingSettings().exists()).toBe(true);
+      expect(findDependencyProxySettings().exists()).toBe(true);
+    });
+  });
+
+  describe('when maven virtual registry feature flag is false', () => {
+    beforeEach(() => {
+      mountComponent({
+        mavenVirtualRegistryFeature: false,
+      });
+    });
+
+    it('does not render the virtual registries setting section', () => {
+      expect(findVirtualRegistriesSetting().exists()).toBe(false);
+    });
+
+    it('renders other settings section', () => {
+      expect(findPackageSettings().exists()).toBe(true);
+      expect(findPackageForwardingSettings().exists()).toBe(true);
+      expect(findDependencyProxySettings().exists()).toBe(true);
+    });
+  });
+
+  describe('when packages virtual registry license is false', () => {
+    beforeEach(() => {
+      mountComponent({
+        packagesVirtualRegistryLicense: false,
+      });
+    });
+
+    it('does not render the virtual registries setting section', () => {
+      expect(findVirtualRegistriesSetting().exists()).toBe(false);
+    });
+
+    it('renders other settings section', () => {
+      expect(findPackageSettings().exists()).toBe(true);
+      expect(findPackageForwardingSettings().exists()).toBe(true);
+      expect(findDependencyProxySettings().exists()).toBe(true);
+    });
+  });
+
+  describe('when ui for virtual registries feature flag is  false', () => {
+    beforeEach(() => {
+      mountComponent({
+        uiForVirtualRegistriesFeature: false,
+      });
+    });
+
+    it('does not render the virtual registries setting section', () => {
+      expect(findVirtualRegistriesSetting().exists()).toBe(false);
+    });
+
+    it('renders other settings section', () => {
+      expect(findPackageSettings().exists()).toBe(true);
+      expect(findPackageForwardingSettings().exists()).toBe(true);
+      expect(findDependencyProxySettings().exists()).toBe(true);
     });
   });
 });
