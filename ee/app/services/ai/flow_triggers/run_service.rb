@@ -175,7 +175,7 @@ module Ai
 
       def can_use_composite_identity?
         return false unless current_user
-        return false unless Feature.enabled?(:duo_workflow_use_composite_identity, current_user)
+        return false unless Feature.enabled?(:ai_flow_triggers_use_composite_identity, current_user)
         return false if Ai::Setting.instance.duo_workflow_oauth_application.nil?
 
         flow_trigger_user.composite_identity_enforced?

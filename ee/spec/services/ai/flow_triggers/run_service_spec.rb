@@ -86,7 +86,7 @@ RSpec.describe Ai::FlowTriggers::RunService, feature_category: :agent_foundation
           duo_workflow_service_account_user: service_account,
           duo_workflow_oauth_application: oauth_app
         )
-        stub_feature_flags(duo_workflow_use_composite_identity: true)
+        stub_feature_flags(ai_flow_triggers_use_composite_identity: true)
       end
 
       it 'calls link_composite_identity!' do
@@ -136,7 +136,7 @@ RSpec.describe Ai::FlowTriggers::RunService, feature_category: :agent_foundation
 
       context 'when feature flag is disabled' do
         before do
-          stub_feature_flags(duo_workflow_use_composite_identity: false)
+          stub_feature_flags(ai_flow_triggers_use_composite_identity: false)
         end
 
         it 'does not call fabricate on Gitlab::Auth::Identity' do
@@ -472,9 +472,9 @@ RSpec.describe Ai::FlowTriggers::RunService, feature_category: :agent_foundation
           service_account.update!(composite_identity_enforced: true)
         end
 
-        context 'when FF duo_workflow_use_composite_identity is disabled' do
+        context 'when FF ai_flow_triggers_use_composite_identity is disabled' do
           before do
-            stub_feature_flags(duo_workflow_use_composite_identity: false)
+            stub_feature_flags(ai_flow_triggers_use_composite_identity: false)
           end
 
           it 'does not create variable AI_FLOW_GITLAB_TOKEN' do

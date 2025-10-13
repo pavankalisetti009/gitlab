@@ -38,11 +38,11 @@ RSpec.describe Ai::FlowTriggers::UpdateService, feature_category: :agent_foundat
       expect(service_account.reload.composite_identity_enforced).to be(true)
     end
 
-    context 'when duo_workflow_use_composite_identity is disabled' do
+    context 'when ai_flow_triggers_use_composite_identity is disabled' do
       let_it_be(:composite_identity_enforced) { true }
 
       before do
-        stub_feature_flags(duo_workflow_use_composite_identity: false)
+        stub_feature_flags(ai_flow_triggers_use_composite_identity: false)
       end
 
       it 'does not update composite_identity_enforced field' do

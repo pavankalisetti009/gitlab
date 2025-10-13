@@ -36,7 +36,7 @@ module Ai
 
       def enforce_composite_identity!(service_account)
         service_account.update!(
-          composite_identity_enforced: Feature.enabled?(:duo_workflow_use_composite_identity, current_user)
+          composite_identity_enforced: Feature.enabled?(:ai_flow_triggers_use_composite_identity, current_user)
         )
       end
     end
