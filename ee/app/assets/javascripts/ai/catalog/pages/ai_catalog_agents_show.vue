@@ -3,6 +3,7 @@ import { s__, sprintf } from '~/locale';
 import { InternalEvents } from '~/tracking';
 import { helpPagePath } from '~/helpers/help_page_helper';
 import * as Sentry from '~/sentry/sentry_browser_wrapper';
+import glFeatureFlagsMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
 import PageHeading from '~/vue_shared/components/page_heading.vue';
 import { TRACK_EVENT_TYPE_AGENT, TRACK_EVENT_VIEW_AI_CATALOG_ITEM } from 'ee/ai/catalog/constants';
 import ErrorsAlert from '~/vue_shared/components/errors_alert.vue';
@@ -24,7 +25,12 @@ export default {
     AiCatalogAgentDetails,
     AiCatalogItemActions,
   },
-  mixins: [InternalEvents.mixin()],
+  mixins: [glFeatureFlagsMixin(), InternalEvents.mixin()],
+  inject: {
+    isGlobal: {
+      default: false,
+    },
+  },
   props: {
     aiCatalogAgent: {
       type: Object,
@@ -40,6 +46,9 @@ export default {
   computed: {
     agentName() {
       return this.aiCatalogAgent.name;
+    },
+    showActions() {
+      return this.isGlobal || this.glFeatures.aiCatalogItemProjectCuration;
     },
   },
   mounted() {
@@ -145,6 +154,7 @@ export default {
       </template>
       <template #actions>
         <ai-catalog-item-actions
+          v-if="showActions"
           :item="aiCatalogAgent"
           :item-routes="$options.itemRoutes"
           :delete-fn="deleteAgent"

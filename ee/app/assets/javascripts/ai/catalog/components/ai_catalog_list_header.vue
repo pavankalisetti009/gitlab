@@ -1,6 +1,7 @@
 <script>
 import { GlExperimentBadge } from '@gitlab/ui';
 import { s__ } from '~/locale';
+import glFeatureFlagsMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
 import PageHeading from '~/vue_shared/components/page_heading.vue';
 import AiCatalogNavTabs from './ai_catalog_nav_tabs.vue';
 import AiCatalogNavActions from './ai_catalog_nav_actions.vue';
@@ -13,6 +14,7 @@ export default {
     AiCatalogNavActions,
     PageHeading,
   },
+  mixins: [glFeatureFlagsMixin()],
   inject: {
     isGlobal: {
       default: false,
@@ -34,6 +36,9 @@ export default {
     title() {
       return this.heading || s__('AICatalog|AI Catalog');
     },
+    showActionsForProject() {
+      return !this.isGlobal && this.glFeatures.aiCatalogItemProjectCuration;
+    },
   },
 };
 </script>
@@ -48,7 +53,7 @@ export default {
         </div>
       </template>
       <template #actions>
-        <ai-catalog-nav-actions v-if="!isGlobal" />
+        <ai-catalog-nav-actions v-if="showActionsForProject" />
       </template>
     </page-heading>
     <div v-if="isGlobal" class="gl-border-b gl-flex">
