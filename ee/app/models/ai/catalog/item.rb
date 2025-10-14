@@ -8,7 +8,7 @@ module Ai
 
       # Items owned by https://gitlab.com/gitlab-org/modelops/applied-ml/code-suggestions/ai-assist
       # TODO: https://gitlab.com/gitlab-org/gitlab/-/issues/557843
-      GITLAB_ITEM_IDS = [104, 105, 107].freeze
+      GITLAB_ITEM_IDS = [104, 105, 107, 348].freeze
 
       self.table_name = "ai_catalog_items"
 
