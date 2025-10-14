@@ -11,6 +11,7 @@ module GitlabSubscriptions
 
     def new
       @plan_data = find_plan
+      @promo_code = subscription_params[:promo_code]
 
       return not_found unless @plan_data
 
@@ -42,7 +43,7 @@ module GitlabSubscriptions
     end
 
     def subscription_params
-      params.permit(:plan_id)
+      params.permit(:plan_id, :promo_code)
     end
 
     def find_plan

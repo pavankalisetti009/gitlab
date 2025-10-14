@@ -55,6 +55,11 @@ export default {
       type: String,
       required: true,
     },
+    promoCode: {
+      type: String,
+      required: false,
+      default: null,
+    },
   },
   data() {
     return {
@@ -271,7 +276,12 @@ export default {
         return;
       }
 
-      const purchaseLink = `${this.plansData.purchaseLink.href}&gl_namespace_id=${groupId}`;
+      let purchaseLink = `${this.plansData.purchaseLink.href}&gl_namespace_id=${groupId}`;
+
+      if (this.promoCode) {
+        purchaseLink += `&promo_code=${encodeURIComponent(this.promoCode)}`;
+      }
+
       visitUrl(purchaseLink);
     },
     reportError(error) {
