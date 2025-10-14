@@ -12,7 +12,7 @@ export default {
     return {
       workflows: [],
       workflowsPageInfo: {},
-      currentSort: 'UPDATED_ASC',
+      currentSort: 'UPDATED_DESC',
       hasInitialWorkflows: false,
       paginationVariables: { ...DEFAULT_AGENT_PLATFORM_PAGINATION_VARIABLES },
       filterVariables: {},
