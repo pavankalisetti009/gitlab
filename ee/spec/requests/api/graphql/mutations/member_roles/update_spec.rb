@@ -121,22 +121,11 @@ RSpec.describe 'updating member role', feature_category: :system_access do
           stub_feature_flags(custom_ability_admin_vulnerability: false)
         end
 
-        it 'returns success without the ability' do
+        it 'returns an error' do
           post_graphql_mutation(mutation, current_user: current_user)
 
-          expect(graphql_errors).to be_nil
-
-          expect(update_member_role['memberRole']['enabledPermissions']['nodes'].flat_map(&:values))
-            .to eq(['READ_VULNERABILITY'])
-        end
-
-        it 'updates member role' do
-          post_graphql_mutation(mutation, current_user: current_user)
-
-          member_role.reload
-
-          expect(member_role.read_vulnerability).to be(true)
-          expect(member_role.admin_vulnerability).to be(true)
+          expect(update_member_role['errors'].first).to include("Unknown permission: admin_vulnerability")
+          expect(update_member_role['memberRole']).not_to be_nil
         end
       end
     end
