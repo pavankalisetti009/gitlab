@@ -13,9 +13,15 @@ module Resolvers
           required: true,
           description: 'Global ID of the catalog item to find.'
 
-        def resolve(id:)
+        argument :show_soft_deleted,
+          GraphQL::Types::Boolean,
+          required: false,
+          default_value: false,
+          description: 'Whether to show the item if it has been soft-deleted. Defaults to `false`.'
+
+        def resolve(id:, show_soft_deleted:)
           Gitlab::Graphql::Lazy.with_value(find_object(id: id)) do |item|
-            next if item&.deleted?
+            next if item&.deleted? && show_soft_deleted == false
 
             item
           end

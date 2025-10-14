@@ -12,6 +12,7 @@ RSpec.describe 'getting an AI catalog item', :with_current_organization, feature
   let(:latest_version) { catalog_item.latest_version }
   let(:data) { graphql_data_at(:ai_catalog_item) }
   let(:params) { { id: catalog_item.to_global_id } }
+  let(:query_args) { attributes_to_graphql(params) }
   let(:current_user) { nil }
 
   let(:query) do
@@ -45,7 +46,7 @@ RSpec.describe 'getting an AI catalog item', :with_current_organization, feature
       }
 
       query {
-        aiCatalogItem(id: "#{params[:id]}") {
+        aiCatalogItem(#{query_args}) {
           description
           id
           itemType
@@ -108,18 +109,6 @@ RSpec.describe 'getting an AI catalog item', :with_current_organization, feature
           )
         )
       )
-    end
-
-    context 'with a deleted catalog item' do
-      let_it_be(:catalog_item) { create(:ai_catalog_item, project: project, deleted_at: 1.day.ago) }
-
-      context 'when owner' do
-        let(:current_user) do
-          create(:user).tap { |user| project.add_owner(user) }
-        end
-
-        it_behaves_like 'an unsuccessful query'
-      end
     end
   end
 
@@ -247,5 +236,25 @@ RSpec.describe 'getting an AI catalog item', :with_current_organization, feature
     end
 
     it_behaves_like 'an unsuccessful query'
+  end
+
+  context 'when item has been soft deleted' do
+    let_it_be(:catalog_item) { create(:ai_catalog_item, public: true, project: project, deleted_at: 1.day.ago) }
+
+    context 'when show_soft_deleted is not provided' do
+      it_behaves_like 'an unsuccessful query'
+    end
+
+    context 'when show_soft_deleted is true' do
+      let(:params) { super().merge(show_soft_deleted: true) }
+
+      it_behaves_like 'a successful query'
+    end
+
+    context 'when show_soft_deleted is false' do
+      let(:params) { super().merge(show_soft_deleted: false) }
+
+      it_behaves_like 'an unsuccessful query'
+    end
   end
 end
