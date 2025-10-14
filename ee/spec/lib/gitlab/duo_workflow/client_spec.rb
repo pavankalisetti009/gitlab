@@ -9,6 +9,43 @@ RSpec.describe Gitlab::DuoWorkflow::Client, feature_category: :agent_foundations
     stub_feature_flags(duo_agent_platform_enable_direct_http: false)
   end
 
+  describe '.url_for' do
+    subject(:url) { described_class.url_for(feature_setting: feature_setting, user: user) }
+
+    let(:self_hosted_url) { 'self-hosted-dap-service-url:50052' }
+    let(:cloud_connector_url) { 'cloud.gitlab.com:443' }
+
+    before do
+      ::Ai::Setting.instance.update!(duo_agent_platform_service_url: self_hosted_url)
+      allow(described_class).to receive(:cloud_connected_url).and_return(cloud_connector_url)
+    end
+
+    context 'when feature setting is self-hosted' do
+      let_it_be(:model) { create(:ai_self_hosted_model, model: :claude_3, identifier: 'claude-3-7-sonnet-20250219') }
+      let_it_be(:feature_setting) { create(:ai_feature_setting, :duo_agent_platform, self_hosted_model: model) }
+
+      it 'returns the self-hosted URL' do
+        expect(url).to eq(self_hosted_url)
+      end
+    end
+
+    context 'when feature setting is not self-hosted' do
+      let_it_be(:feature_setting) { create(:ai_feature_setting, :duo_agent_platform, provider: :vendored) }
+
+      it 'returns the cloud connector URL' do
+        expect(url).to eq(cloud_connector_url)
+      end
+    end
+
+    context 'when feature setting is nil' do
+      let(:feature_setting) { nil }
+
+      it 'returns the cloud connector URL' do
+        expect(url).to eq(cloud_connector_url)
+      end
+    end
+  end
+
   describe '.url' do
     subject(:url) { described_class.url(user: user) }
 

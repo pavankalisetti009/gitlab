@@ -136,14 +136,6 @@ module API
             wrkf_params
           end
 
-          def service_uri(feature_setting)
-            if feature_setting&.self_hosted?
-              Gitlab::DuoWorkflow::Client.self_hosted_url
-            else
-              Gitlab::DuoWorkflow::Client.cloud_connected_url(user: current_user)
-            end
-          end
-
           params :workflow_params do
             optional :project_id, type: String, desc: 'The ID or path of the workflow project',
               documentation: { example: '1' }
@@ -315,7 +307,7 @@ module API
               {
                 DuoWorkflow: {
                   Headers: headers,
-                  ServiceURI: service_uri(feature_setting),
+                  ServiceURI: Gitlab::DuoWorkflow::Client.url_for(feature_setting: feature_setting, user: current_user),
                   Secure: Gitlab::DuoWorkflow::Client.secure?
                 }
               }
