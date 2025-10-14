@@ -21,7 +21,8 @@
   :resource_boundary: :unknown
   :weight: 1
   :idempotent: true
-  :tags: []
+  :tags:
+  - :clickhouse
   :queue_namespace: :click_house_buffer_sync
 - :name: cronjob:active_user_count_threshold
   :worker_name: ActiveUserCountThresholdWorker
@@ -211,7 +212,8 @@
   :resource_boundary: :unknown
   :weight: 1
   :idempotent: true
-  :tags: []
+  :tags:
+  - :clickhouse
   :queue_namespace: :cronjob
 - :name: cronjob:click_house_code_suggestion_events_cron
   :worker_name: ClickHouse::CodeSuggestionEventsCronWorker
@@ -221,7 +223,8 @@
   :resource_boundary: :unknown
   :weight: 1
   :idempotent: true
-  :tags: []
+  :tags:
+  - :clickhouse
   :queue_namespace: :cronjob
 - :name: cronjob:click_house_dump_all_write_buffers_cron
   :worker_name: ClickHouse::DumpAllWriteBuffersCronWorker
@@ -231,7 +234,8 @@
   :resource_boundary: :unknown
   :weight: 1
   :idempotent: true
-  :tags: []
+  :tags:
+  - :clickhouse
   :queue_namespace: :cronjob
 - :name: cronjob:click_house_event_authors_consistency_cron
   :worker_name: ClickHouse::EventAuthorsConsistencyCronWorker
@@ -241,7 +245,8 @@
   :resource_boundary: :unknown
   :weight: 1
   :idempotent: true
-  :tags: []
+  :tags:
+  - :clickhouse
   :queue_namespace: :cronjob
 - :name: cronjob:click_house_event_paths_consistency_cron
   :worker_name: ClickHouse::EventPathsConsistencyCronWorker
@@ -251,7 +256,8 @@
   :resource_boundary: :unknown
   :weight: 1
   :idempotent: true
-  :tags: []
+  :tags:
+  - :clickhouse
   :queue_namespace: :cronjob
 - :name: cronjob:click_house_events_sync
   :worker_name: ClickHouse::EventsSyncWorker
@@ -261,7 +267,8 @@
   :resource_boundary: :unknown
   :weight: 1
   :idempotent: true
-  :tags: []
+  :tags:
+  - :clickhouse
   :queue_namespace: :cronjob
 - :name: cronjob:click_house_rebuild_materialized_view_cron
   :worker_name: ClickHouse::RebuildMaterializedViewCronWorker
@@ -271,7 +278,8 @@
   :resource_boundary: :unknown
   :weight: 1
   :idempotent: true
-  :tags: []
+  :tags:
+  - :clickhouse
   :queue_namespace: :cronjob
 - :name: cronjob:click_house_user_add_on_assignments_sync
   :worker_name: ClickHouse::UserAddOnAssignmentsSyncWorker
@@ -281,7 +289,8 @@
   :resource_boundary: :unknown
   :weight: 1
   :idempotent: true
-  :tags: []
+  :tags:
+  - :clickhouse
   :queue_namespace: :cronjob
 - :name: cronjob:click_house_user_addon_assignment_versions_sync
   :worker_name: ClickHouse::UserAddonAssignmentVersionsSyncWorker
@@ -291,7 +300,8 @@
   :resource_boundary: :unknown
   :weight: 1
   :idempotent: true
-  :tags: []
+  :tags:
+  - :clickhouse
   :queue_namespace: :cronjob
 - :name: cronjob:cloud_connector_sync_service_token
   :worker_name: CloudConnector::SyncServiceTokenWorker
@@ -1511,7 +1521,8 @@
   :resource_boundary: :unknown
   :weight: 1
   :idempotent: true
-  :tags: []
+  :tags:
+  - :clickhouse
   :queue_namespace:
 - :name: analytics_code_review_metrics
   :worker_name: Analytics::CodeReviewMetricsWorker
@@ -1811,7 +1822,8 @@
   :resource_boundary: :unknown
   :weight: 1
   :idempotent: true
-  :tags: []
+  :tags:
+  - :clickhouse
   :queue_namespace:
 - :name: clusters_agents_auto_flow_merge_requests_closed_event
   :worker_name: Clusters::Agents::AutoFlow::MergeRequests::ClosedEventWorker

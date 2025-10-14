@@ -8,6 +8,7 @@ module ClickHouse
     queue_namespace :cronjob
     data_consistency :delayed
     feature_category :value_stream_management
+    tags :clickhouse
 
     TABLES = [Ai::UsageEvent.clickhouse_table_name].freeze
 

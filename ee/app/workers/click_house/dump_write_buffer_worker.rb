@@ -10,6 +10,7 @@ module ClickHouse
     queue_namespace :click_house_buffer_sync
     data_consistency :delayed
     feature_category :value_stream_management
+    tags :clickhouse
     loggable_arguments 0
 
     MAX_RUNTIME = 200.seconds

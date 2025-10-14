@@ -10,6 +10,7 @@ module ClickHouse
     queue_namespace :cronjob
     data_consistency :delayed
     feature_category :value_stream_management
+    tags :clickhouse
 
     MAX_TTL = 5.minutes
     MAX_RUNTIME = 4.minutes
