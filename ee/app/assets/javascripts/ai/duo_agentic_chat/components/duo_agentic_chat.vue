@@ -3,7 +3,6 @@
 import { mapActions, mapState } from 'vuex';
 import { WebAgenticDuoChat } from '@gitlab/duo-ui';
 import { GlToggle, GlTooltipDirective } from '@gitlab/ui';
-import { parseDocument } from 'yaml';
 import getUserWorkflows from 'ee/ai/graphql/get_user_workflow.query.graphql';
 import getConfiguredAgents from 'ee/ai/graphql/get_configured_agents.query.graphql';
 import getAgentFlowConfig from 'ee/ai/graphql/get_agent_flow_config.query.graphql';
@@ -12,14 +11,12 @@ import { getCookie } from '~/lib/utils/common_utils';
 import { getStorageValue, saveStorageValue } from '~/lib/utils/local_storage';
 import { duoChatGlobalState } from '~/super_sidebar/constants';
 import { clearDuoChatCommands, setAgenticMode } from 'ee/ai/utils';
-import { parseGid, convertToGraphQLId, getIdFromGraphQLId } from '~/graphql_shared/utils';
+import { parseGid, convertToGraphQLId } from '~/graphql_shared/utils';
 import { TYPENAME_AI_DUO_WORKFLOW } from '~/graphql_shared/constants';
 import {
   GENIE_CHAT_RESET_MESSAGE,
   GENIE_CHAT_CLEAR_MESSAGE,
   GENIE_CHAT_NEW_MESSAGE,
-  DUO_WORKFLOW_CHAT_DEFINITION,
-  DUO_WORKFLOW_CLIENT_VERSION,
   DUO_WORKFLOW_STATUS_TOOL_CALL_APPROVAL_REQUIRED,
   DUO_WORKFLOW_STATUS_RUNNING,
   DUO_WORKFLOW_STATUS_INPUT_REQUIRED,
@@ -30,7 +27,7 @@ import {
 import getAiChatContextPresets from 'ee/ai/graphql/get_ai_chat_context_presets.query.graphql';
 import getAiChatAvailableModels from 'ee/ai/graphql/get_ai_chat_available_models.query.graphql';
 import ModelSelectDropdown from 'ee/ai/shared/feature_settings/model_select_dropdown.vue';
-import { createWebSocket, parseMessage, closeSocket } from '~/lib/utils/websocket_utils';
+import { createWebSocket, closeSocket } from '~/lib/utils/websocket_utils';
 import { fetchPolicies } from '~/lib/graphql';
 import { GITLAB_DEFAULT_MODEL } from 'ee/ai/model_selection/constants';
 import { s__ } from '~/locale';
@@ -44,6 +41,11 @@ import {
   saveModel,
   isModelSelectionDisabled as checkModelSelectionDisabled,
 } from '../utils/model_selection_utils';
+import {
+  buildWebsocketUrl,
+  buildStartRequest,
+  processWorkflowMessage,
+} from '../utils/workflow_socket_utils';
 
 export default {
   name: 'DuoAgenticChatApp',
@@ -325,31 +327,14 @@ export default {
       ].map((agent) => ({ ...agent, text: agent.name }));
     },
     websocketUrl() {
-      const baseUrl = '/api/v4/ai/duo_workflows/ws';
-      const params = new URLSearchParams();
-
-      if (this.rootNamespaceId) {
-        params.append('root_namespace_id', getIdFromGraphQLId(this.rootNamespaceId));
-      }
-
-      if (this.namespaceId) {
-        params.append('namespace_id', getIdFromGraphQLId(this.namespaceId));
-      }
-
-      if (this.projectId) {
-        params.append('project_id', getIdFromGraphQLId(this.projectId));
-      }
-
-      if (
-        this.rootNamespaceId &&
-        this.userModelSelectionEnabled &&
-        this.currentModel?.value &&
-        this.currentModel?.value !== this.defaultModel?.value
-      ) {
-        params.append('user_selected_model_identifier', this.currentModel.value);
-      }
-
-      return params.toString() ? `${baseUrl}?${params}` : baseUrl;
+      return buildWebsocketUrl({
+        rootNamespaceId: this.rootNamespaceId,
+        namespaceId: this.namespaceId,
+        projectId: this.projectId,
+        userModelSelectionEnabled: this.userModelSelectionEnabled,
+        currentModel: this.currentModel,
+        defaultModel: this.defaultModel,
+      });
     },
     dynamicTitle() {
       if (!this.aiCatalogItemVersionId) {
@@ -471,25 +456,14 @@ export default {
     startWorkflow(goal, approval = {}, additionalContext) {
       this.cleanupSocket();
 
-      const startRequest = {
-        startRequest: {
-          workflowID: this.workflowId,
-          clientVersion: DUO_WORKFLOW_CLIENT_VERSION,
-          workflowDefinition: DUO_WORKFLOW_CHAT_DEFINITION,
-          workflowMetadata: this.metadata,
-          goal,
-          approval,
-        },
-      };
-
-      if (additionalContext) {
-        startRequest.startRequest.additionalContext = additionalContext;
-      }
-
-      if (this.agentConfig) {
-        startRequest.startRequest.flowConfig = parseDocument(this.agentConfig);
-        startRequest.startRequest.flowConfigSchemaVersion = 'experimental';
-      }
+      const startRequest = buildStartRequest({
+        workflowId: this.workflowId,
+        goal,
+        approval,
+        additionalContext,
+        agentConfig: this.agentConfig,
+        metadata: this.metadata,
+      });
 
       this.socketManager = createWebSocket(this.websocketUrl, {
         onMessage: this.onMessageReceived,
@@ -512,24 +486,17 @@ export default {
 
     async onMessageReceived(event) {
       try {
-        const action = await parseMessage(event);
+        const workflowData = await processWorkflowMessage(event, this.workflowId);
 
-        if (!action || !action.newCheckpoint) {
+        if (!workflowData) {
           return; // No checkpoint to process
         }
 
-        const checkpoint = JSON.parse(action.newCheckpoint.checkpoint);
-        const messages = WorkflowUtils.transformChatMessages(
-          checkpoint.channel_values.ui_chat_log,
-          this.workflowId,
-        );
+        this.setMessages(workflowData.messages);
+        this.workflowStatus = workflowData.status;
 
-        this.setMessages(messages);
-
-        // Update workflow status and pending tool call
-        this.workflowStatus = action.newCheckpoint.status;
-        if (action.newCheckpoint.goal && !this.activeThread) {
-          this.activeThread = action.newCheckpoint.goal;
+        if (workflowData.goal && !this.activeThread) {
+          this.activeThread = workflowData.goal;
         }
 
         if (this.workflowStatus === DUO_WORKFLOW_STATUS_INPUT_REQUIRED) {

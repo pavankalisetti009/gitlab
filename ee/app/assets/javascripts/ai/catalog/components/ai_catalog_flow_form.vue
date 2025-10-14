@@ -244,7 +244,7 @@ export default {
       label: __('Visibility'),
       groupAttrs: {
         labelDescription: s__(
-          'AICatalog|Choose who can view and interact with this flow after it is published to the public AI catalog.',
+          'AICatalog|Choose who can view and interact with this flow after it is published to the public AI Catalog.',
         ),
       },
     },
