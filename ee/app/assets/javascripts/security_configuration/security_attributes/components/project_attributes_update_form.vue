@@ -1,6 +1,7 @@
 <script>
 import EMPTY_ATTRIBUTE_SVG from '@gitlab/svgs/dist/illustrations/empty-state/empty-labels-md.svg?url';
 import { GlIcon, GlTooltipDirective, GlEmptyState, GlButton } from '@gitlab/ui';
+import { DRAWER_FLASH_CONTAINER_CLASS } from '../../components/security_attributes/constants';
 import AttributesCategoryDropdown from './attributes_category_dropdown.vue';
 
 export default {
@@ -80,11 +81,13 @@ export default {
     },
   },
   EMPTY_ATTRIBUTE_SVG,
+  DRAWER_FLASH_CONTAINER_CLASS,
 };
 </script>
 
 <template>
   <div class="!gl-py-3">
+    <div :class="$options.DRAWER_FLASH_CONTAINER_CLASS" class="!gl-py-0"></div>
     <div v-if="!filteredCategories.length">
       <gl-empty-state
         :svg-path="$options.EMPTY_ATTRIBUTE_SVG"

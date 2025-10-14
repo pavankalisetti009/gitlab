@@ -1,6 +1,8 @@
 import Vue, { nextTick } from 'vue';
 import VueApollo from 'vue-apollo';
 import { GlDrawer, GlSkeletonLoader } from '@gitlab/ui';
+import * as Sentry from '~/sentry/sentry_browser_wrapper';
+import { createAlert } from '~/alert';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import createMockApollo from 'helpers/mock_apollo_helper';
 import waitForPromises from 'helpers/wait_for_promises';
@@ -9,9 +11,13 @@ import ProjectAttributesUpdateDrawer from 'ee/security_configuration/security_at
 import ProjectAttributesUpdateForm from 'ee/security_configuration/security_attributes/components/project_attributes_update_form.vue';
 import getSecurityCategoriesAndAttributes from 'ee/security_configuration/graphql/group_security_categories_and_attributes.query.graphql';
 import ProjectSecurityAttributesUpdateMutation from 'ee/security_configuration/graphql/project_security_attributes_update.mutation.graphql';
+import { DRAWER_FLASH_CONTAINER_CLASS } from 'ee/security_configuration/components/security_attributes/constants';
 import { mockSecurityAttributeCategories } from './mock_data';
 
 Vue.use(VueApollo);
+
+jest.mock('~/sentry/sentry_browser_wrapper');
+jest.mock('~/alert');
 
 describe('ProjectAttributesUpdateDrawer', () => {
   let wrapper;
@@ -25,7 +31,7 @@ describe('ProjectAttributesUpdateDrawer', () => {
     },
   });
 
-  const updateAttributesMock = jest.fn().mockResolvedValue({
+  let updateAttributesMock = jest.fn().mockResolvedValue({
     data: {
       securityAttributeProjectUpdate: {
         addedCount: 2,
@@ -98,8 +104,9 @@ describe('ProjectAttributesUpdateDrawer', () => {
   });
 
   describe('actions', () => {
+    const updatedAttributes = ['3', '4'];
+
     it('calls mutation with correct payload and shows toast', async () => {
-      const updatedAttributes = ['3', '4'];
       findForm().vm.$emit('update', updatedAttributes);
       await nextTick();
 
@@ -120,6 +127,25 @@ describe('ProjectAttributesUpdateDrawer', () => {
 
       expect(wrapper.emitted('saved')).toHaveLength(1);
       expect(findDrawer().props('open')).toBe(false);
+    });
+
+    it('calls sentry and creates an alert on error', async () => {
+      updateAttributesMock = jest.fn().mockRejectedValue(new Error());
+      createComponent();
+      wrapper.vm.openDrawer();
+      await waitForPromises();
+
+      findForm().vm.$emit('update', updatedAttributes);
+      await nextTick();
+
+      await findSubmitButton().vm.$emit('click');
+      await waitForPromises();
+
+      expect(Sentry.captureException).toHaveBeenCalled();
+      expect(createAlert).toHaveBeenCalledWith({
+        message: 'An error has occurred while applying security attributes.',
+        containerSelector: `.${DRAWER_FLASH_CONTAINER_CLASS}`,
+      });
     });
   });
 

@@ -3,6 +3,9 @@ import { GlDrawer, GlButton, GlSkeletonLoader } from '@gitlab/ui';
 import { s__, sprintf } from '~/locale';
 import { DRAWER_Z_INDEX } from '~/lib/utils/constants';
 import { getContentWrapperHeight } from '~/lib/utils/dom_utils';
+import * as Sentry from '~/sentry/sentry_browser_wrapper';
+import { createAlert } from '~/alert';
+import { DRAWER_FLASH_CONTAINER_CLASS } from '../../components/security_attributes/constants';
 import getSecurityCategoriesAndAttributes from '../../graphql/group_security_categories_and_attributes.query.graphql';
 import ProjectSecurityAttributesUpdateMutation from '../../graphql/project_security_attributes_update.mutation.graphql';
 import ProjectAttributesUpdateForm from './project_attributes_update_form.vue';
@@ -126,6 +129,15 @@ export default {
           this.$toast.show(toastMsg);
           this.$emit('saved');
           this.closeDrawer();
+        })
+        .catch((error) => {
+          Sentry.captureException(error);
+          createAlert({
+            message: s__(
+              'SecurityAttributes|An error has occurred while applying security attributes.',
+            ),
+            containerSelector: `.${DRAWER_FLASH_CONTAINER_CLASS}`,
+          });
         });
     },
   },
