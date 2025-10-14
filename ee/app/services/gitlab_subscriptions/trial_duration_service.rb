@@ -34,15 +34,7 @@ module GitlabSubscriptions
 
     def find_trial_types
       Rails.cache.fetch(CACHE_KEY, expires_in: CACHE_EXPIRY) do
-        response = trial_types_request
-
-        Gitlab::AppLogger.info(
-          class: self.class.name,
-          message: 'Cache miss - fetching trial types from subscription portal',
-          response: response.present? ? 'OK' : 'FAILURE'
-        )
-
-        response
+        trial_types_request
       end || {}
     end
 

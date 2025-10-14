@@ -53,21 +53,10 @@ RSpec.describe GitlabSubscriptions::TrialDurationService, feature_category: :acq
       expect(service.execute).to eq(free_duration)
     end
 
-    it 'logs cache miss when fetching from subscription portal' do
-      expect(Gitlab::AppLogger).to receive(:info).with(
-        class: 'GitlabSubscriptions::TrialDurationService',
-        message: 'Cache miss - fetching trial types from subscription portal',
-        response: 'OK'
-      )
-
-      service.execute
-    end
-
     it 'uses cache on subsequent calls' do
       service.execute
 
       expect(Gitlab::SubscriptionPortal::Client).not_to receive(:namespace_trial_types)
-      expect(Gitlab::AppLogger).not_to receive(:info)
       expect(service.execute).to eq(free_duration)
     end
 
@@ -139,16 +128,6 @@ RSpec.describe GitlabSubscriptions::TrialDurationService, feature_category: :acq
       end
 
       it { expect(service.execute).to eq(default_free_duration) }
-
-      it 'logs cache miss even when CustomersDot query fails' do
-        expect(Gitlab::AppLogger).to receive(:info).with(
-          class: 'GitlabSubscriptions::TrialDurationService',
-          message: 'Cache miss - fetching trial types from subscription portal',
-          response: 'FAILURE'
-        )
-
-        service.execute
-      end
 
       context 'when trial type is specified' do
         let(:trial_type) { GitlabSubscriptions::Trials::DUO_ENTERPRISE_TRIAL_TYPE }
