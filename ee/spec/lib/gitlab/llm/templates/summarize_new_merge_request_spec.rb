@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe Gitlab::Llm::Templates::SummarizeNewMergeRequest, feature_category: :code_review_workflow do
+RSpec.describe Gitlab::Llm::Templates::SummarizeNewMergeRequest, feature_category: :code_suggestions do
   let_it_be(:project) { create(:project, :repository) }
   let_it_be(:user) { project.owner }
 

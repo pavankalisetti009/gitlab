@@ -35,8 +35,10 @@ const findShowMoreButton = (wrapper) => wrapper.findByText('Show more');
 describe('Approvals ProjectRules', () => {
   let wrapper;
   let store;
+  let vuexStore;
 
   const factory = (props = {}, options = {}) => {
+    vuexStore = new Vuex.Store(store);
     wrapper = mountExtended(ProjectRules, {
       provide: {
         glFeatures: {
@@ -44,7 +46,7 @@ describe('Approvals ProjectRules', () => {
         },
       },
       propsData: props,
-      store: new Vuex.Store(store),
+      store: vuexStore,
       ...options,
     });
   };
@@ -93,11 +95,9 @@ describe('Approvals ProjectRules', () => {
       });
 
       describe('when there are no rules', () => {
-        beforeEach(() => {
-          store.modules.approvals.state.rules = [];
-        });
+        it('renders the "no rules text"', async () => {
+          await vuexStore.commit('SET_RULES', []);
 
-        it('renders the "no rules text"', () => {
           expect(wrapper.text()).toContain(
             'Define target branch approval rules for new merge requests.',
           );
@@ -123,10 +123,13 @@ describe('Approvals ProjectRules', () => {
       const userAddedRules = wrapper
         .findComponent(Rules)
         .findAll('tbody tr')
-        .filter((_, index) => index > 1)
-        .wrappers.map(getRowData);
+        .filter((_, index) => index > 1);
 
-      expect(userAddedRules).toEqual(
+      const userAddedRulesWrappers = userAddedRules.wrappers || userAddedRules;
+
+      const userAddedRulesMappedItems = [...userAddedRulesWrappers.map(getRowData)];
+
+      expect(userAddedRulesMappedItems).toEqual(
         TEST_RULES.filter((_, index) => index !== 0).map((rule) => ({
           name: rule.name,
           approvers: rule.eligibleApprovers,

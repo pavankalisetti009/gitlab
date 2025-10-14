@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe Gitlab::Llm::PromptResolvers::ReviewMergeRequest, feature_category: :code_review_workflow do
+RSpec.describe Gitlab::Llm::PromptResolvers::ReviewMergeRequest, feature_category: :code_suggestions do
   describe '.execute' do
     subject(:prompt_version) { described_class.execute }
 

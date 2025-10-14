@@ -26,7 +26,7 @@ module Gitlab
           summarize_review: {
             service_class: ::Gitlab::Llm::AiGateway::Completions::SummarizeReview,
             prompt_class: nil,
-            feature_category: :ai_abstraction_layer,
+            feature_category: :code_suggestions,
             execute_method: ::Llm::MergeRequests::SummarizeReviewService,
             maturity: :experimental,
             self_managed: true,
@@ -82,7 +82,7 @@ module Gitlab
           summarize_new_merge_request: {
             service_class: ::Gitlab::Llm::AiGateway::Completions::SummarizeNewMergeRequest,
             prompt_class: ::Gitlab::Llm::Templates::SummarizeNewMergeRequest,
-            feature_category: :code_review_workflow,
+            feature_category: :code_suggestions,
             execute_method: ::Llm::SummarizeNewMergeRequestService,
             maturity: :beta,
             self_managed: true,
@@ -100,7 +100,7 @@ module Gitlab
           review_merge_request: {
             service_class: ::Gitlab::Llm::AiGateway::Completions::ReviewMergeRequest,
             prompt_class: ::Gitlab::Llm::Templates::ReviewMergeRequest,
-            feature_category: :code_review_workflow,
+            feature_category: :code_suggestions,
             execute_method: ::Llm::ReviewMergeRequestService,
             maturity: :ga,
             self_managed: true,

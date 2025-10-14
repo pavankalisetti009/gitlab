@@ -1465,7 +1465,7 @@
   :queue_namespace:
 - :name: ai_duo_workflows_code_review_timeout
   :worker_name: Ai::DuoWorkflows::CodeReview::TimeoutWorker
-  :feature_category: :code_review_workflow
+  :feature_category: :code_suggestions
   :has_external_dependencies: false
   :urgency: :low
   :resource_boundary: :cpu
@@ -2825,7 +2825,7 @@
   :queue_namespace:
 - :name: merge_requests_duo_code_review_chat
   :worker_name: MergeRequests::DuoCodeReviewChatWorker
-  :feature_category: :code_review_workflow
+  :feature_category: :code_suggestions
   :has_external_dependencies: true
   :urgency: :low
   :resource_boundary: :unknown

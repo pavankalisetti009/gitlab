@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe Llm::SummarizeNewMergeRequestService, :saas, feature_category: :code_review_workflow do
+RSpec.describe Llm::SummarizeNewMergeRequestService, :saas, feature_category: :code_suggestions do
   let_it_be(:user) { create(:user) }
   let_it_be_with_reload(:group) { create(:group_with_plan, plan: :ultimate_plan) }
   let_it_be(:project) { create(:project, :public, group: group) }

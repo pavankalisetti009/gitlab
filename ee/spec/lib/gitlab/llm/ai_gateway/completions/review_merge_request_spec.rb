@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe Gitlab::Llm::AiGateway::Completions::ReviewMergeRequest, feature_category: :code_review_workflow do
+RSpec.describe Gitlab::Llm::AiGateway::Completions::ReviewMergeRequest, feature_category: :code_suggestions do
   let(:review_prompt_class) { Gitlab::Llm::Templates::ReviewMergeRequest }
   let(:summarize_review_class) { Gitlab::Llm::AiGateway::Completions::SummarizeReview }
   let(:tracking_context) { { request_id: 'uuid', action: :review_merge_request } }

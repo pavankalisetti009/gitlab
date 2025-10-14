@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe Gitlab::Llm::Evaluators::ReviewMergeRequest, feature_category: :code_review_workflow do
+RSpec.describe Gitlab::Llm::Evaluators::ReviewMergeRequest, feature_category: :code_suggestions do
   describe '#execute' do
     subject(:evaluation_response) { described_class.new(user:, tracking_context:, options:).execute }
 
