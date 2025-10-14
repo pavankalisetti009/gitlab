@@ -64178,9 +64178,6 @@ msgstr ""
 msgid "Status page"
 msgstr ""
 
-msgid "Status was retried."
-msgstr ""
-
 msgid "Status:"
 msgstr ""
 
