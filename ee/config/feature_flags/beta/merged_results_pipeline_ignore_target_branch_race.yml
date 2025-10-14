@@ -1,0 +1,9 @@
+---
+name: merged_results_pipeline_ignore_target_branch_race
+feature_issue_url: https://gitlab.com/gitlab-org/gitlab/-/issues/469380
+introduced_by_url: https://gitlab.com/gitlab-org/gitlab/-/merge_requests/158250
+rollout_issue_url: https://gitlab.com/gitlab-org/gitlab/-/issues/470550
+milestone: "18.5"
+group: group::pipeline execution
+type: beta
+default_enabled: false
