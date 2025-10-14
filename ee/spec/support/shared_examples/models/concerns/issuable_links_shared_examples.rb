@@ -13,17 +13,6 @@ RSpec.shared_examples 'issuables that can block or be blocked' do
     end
   end
 
-  describe '.blocked_issuable_ids' do
-    it 'returns only ids of issues which are blocked' do
-      link1 = create(factory_class, link_type: ::IssuableLink::TYPE_BLOCKS)
-      link2 = create(factory_class, link_type: ::IssuableLink::TYPE_RELATES_TO)
-      link3 = create(factory_class, source: create(issuable_type, :closed), link_type: ::IssuableLink::TYPE_BLOCKS)
-
-      expect(described_class.blocked_issuable_ids([link1.target_id, link2.source_id, link3.target_id]))
-        .to match_array([link1.target_id])
-    end
-  end
-
   describe '.blocking_issuables_ids_for' do
     it 'returns blocking issuables ids' do
       create(factory_class, source: blocking_issuable_1, target: blocked_issuable_1, link_type: ::IssuableLink::TYPE_BLOCKS)

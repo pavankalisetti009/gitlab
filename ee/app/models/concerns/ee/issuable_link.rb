@@ -20,10 +20,6 @@ module EE
         super
       end
 
-      def blocked_issuable_ids(issuable_ids)
-        blocked_or_blocking_issuables(issuable_ids).pluck(:target_id)
-      end
-
       def blocking_issuables_ids_for(issuable)
         blocked_or_blocking_issuables(issuable.id).pluck(:source_id)
       end
