@@ -6,7 +6,7 @@ RSpec.shared_context 'for virtual registry api setup' do
 
   let_it_be(:group) { create(:group) }
   let_it_be(:project) { create(:project, namespace: group) }
-  let_it_be(:user) { create(:user, owner_of: project) }
+  let_it_be(:user) { create(:user, owner_of: group) }
   let_it_be(:job) { create(:ci_build, :running, user: user, project: project) }
   let_it_be(:deploy_token) do
     create(:deploy_token, :group, groups: [group], read_virtual_registry: true)

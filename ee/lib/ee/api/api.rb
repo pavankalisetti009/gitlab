@@ -89,6 +89,7 @@ module EE
         mount ::API::SecurityScans
         mount ::API::ComplianceExternalControls
         mount ::API::Security::VulnerabilityScanning::SbomScans
+        mount ::API::VirtualRegistries::Cleanup::Policies
         mount ::API::VirtualRegistries::Container::Registries
         mount ::API::VirtualRegistries::Container::Upstreams
         mount ::API::VirtualRegistries::Container::Cache::Entries
