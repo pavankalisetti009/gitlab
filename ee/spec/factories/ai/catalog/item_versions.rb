@@ -15,6 +15,10 @@ FactoryBot.define do
       release_date { Time.current }
     end
 
+    trait :draft do
+      release_date { nil }
+    end
+
     trait :for_agent do
       item { association :ai_catalog_agent }
       definition do
