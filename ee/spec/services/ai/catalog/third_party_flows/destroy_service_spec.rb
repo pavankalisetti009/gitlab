@@ -11,7 +11,7 @@ RSpec.describe Ai::Catalog::ThirdPartyFlows::DestroyService, feature_category: :
 
   it_behaves_like Ai::Catalog::Items::BaseDestroyService do
     let_it_be_with_reload(:incorrect_item_type) { create(:ai_catalog_flow, project: project) }
-    let!(:item) { create(:ai_catalog_third_party_flow, project: project) }
+    let!(:item) { create(:ai_catalog_third_party_flow, public: true, project: project) }
     let(:not_found_error) { 'Third Party Flow not found' }
   end
 end
