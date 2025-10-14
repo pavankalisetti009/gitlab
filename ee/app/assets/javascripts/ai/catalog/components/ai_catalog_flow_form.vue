@@ -1,6 +1,6 @@
 <script>
 import { uniqueId } from 'lodash';
-import { GlButton, GlForm, GlFormFields, GlFormTextarea } from '@gitlab/ui';
+import { GlButton, GlForm, GlFormInput, GlFormTextarea } from '@gitlab/ui';
 import {
   VISIBILITY_LEVEL_PUBLIC_STRING,
   VISIBILITY_LEVEL_PRIVATE_STRING,
@@ -18,13 +18,14 @@ import { __, s__ } from '~/locale';
 import glFeatureFlagsMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
 import ErrorsAlert from '~/vue_shared/components/errors_alert.vue';
 import { AI_CATALOG_FLOWS_ROUTE, AI_CATALOG_FLOWS_SHOW_ROUTE } from '../router/constants';
-import { createFieldValidators } from '../utils';
 import AiCatalogFormButtons from './ai_catalog_form_buttons.vue';
 import AiCatalogStepsEditor from './ai_catalog_steps_editor.vue';
 import AiCatalogFormSidePanel from './ai_catalog_form_side_panel.vue';
 import FormFlowDefinition from './form_flow_definition.vue';
 import FormFlowType from './form_flow_type.vue';
 import FormProjectDropdown from './form_project_dropdown.vue';
+import FormGroup from './form_group.vue';
+import FormSection from './form_section.vue';
 import VisibilityLevelRadioGroup from './visibility_level_radio_group.vue';
 
 export default {
@@ -38,8 +39,10 @@ export default {
     FormProjectDropdown,
     GlButton,
     GlForm,
-    GlFormFields,
+    GlFormInput,
     GlFormTextarea,
+    FormSection,
+    FormGroup,
     VisibilityLevelRadioGroup,
   },
   mixins: [glFeatureFlagsMixin()],
@@ -129,100 +132,6 @@ export default {
     isPublic() {
       return this.formValues.visibilityLevel === VISIBILITY_LEVEL_PUBLIC;
     },
-    fields() {
-      const projectIdField = this.isEditMode
-        ? {}
-        : {
-            projectId: {
-              label: s__('AICatalog|Project'),
-              validators: createFieldValidators({
-                requiredLabel: s__('AICatalog|Project is required.'),
-              }),
-              groupAttrs: {
-                labelDescription: s__(
-                  'AICatalog|Select a project for your AI flow to be associated with.',
-                ),
-              },
-            },
-          };
-      const configurationField = this.isThirdPartyFlow
-        ? {
-            definition: {
-              label: s__('AICatalog|Configuration'),
-              validators: createFieldValidators({
-                requiredLabel: s__('AICatalog|Configuration is required.'),
-              }),
-              groupAttrs: {
-                labelDescription: s__(
-                  'AICatalog|This YAML configuration file determines the prompts, tools, and capabilities of your flow. Required properties: injectGatewayToken, image, commands',
-                ),
-              },
-            },
-          }
-        : {
-            steps: {
-              label: s__('AICatalog|Flow nodes'),
-              groupAttrs: {
-                labelDescription: s__('AICatalog|Nodes run sequentially.'),
-              },
-            },
-          };
-
-      const itemTypeField =
-        this.isFlowsAvailable && this.isThirdPartyFlowsAvailable
-          ? {
-              type: {
-                label: __('Type'),
-                groupAttrs: {
-                  labelDescription: s__('AICatalog|Select the type of your flow.'),
-                },
-              },
-            }
-          : {};
-
-      return {
-        ...projectIdField,
-        ...itemTypeField,
-        name: {
-          label: __('Name'),
-          validators: createFieldValidators({
-            requiredLabel: s__('AICatalog|Name is required.'),
-            maxLength: MAX_LENGTH_NAME,
-          }),
-          inputAttrs: {
-            'data-testid': 'flow-form-input-name',
-            placeholder: s__('AICatalog|e.g., Research Assistant, Creative Writer, Code Helper'),
-          },
-          groupAttrs: {
-            labelDescription: s__('AICatalog|Choose a memorable name for your AI flow.'),
-          },
-        },
-        description: {
-          label: __('Description'),
-          validators: createFieldValidators({
-            requiredLabel: s__('AICatalog|Description is required.'),
-            maxLength: MAX_LENGTH_DESCRIPTION,
-          }),
-          groupAttrs: {
-            labelDescription: s__(
-              'AICatalog|Briefly describe what this flow is designed to do and its key capabilities.',
-            ),
-          },
-        },
-        visibilityLevel: {
-          label: __('Visibility level'),
-          validators: createFieldValidators({
-            requiredLabel: s__('AICatalog|Visibility level is required.'),
-          }),
-          groupAttrs: {
-            labelDescription: s__(
-              'AICatalog|Choose who can view and interact with this flow after it is published to the public AI catalog.',
-            ),
-          },
-        },
-        ...configurationField,
-      };
-    },
   },
   watch: {
     isThirdPartyFlow(val) {
@@ -233,6 +142,11 @@ export default {
   },
   methods: {
     handleSubmit() {
+      const isFormValid = this.validate();
+      if (!isFormValid) {
+        return;
+      }
+
       const configurationField = this.isThirdPartyFlow
         ? { definition: this.formValues.definition?.trim() }
         : {
@@ -243,7 +157,7 @@ export default {
           };
 
       const transformedValues = {
-        projectId: this.formValues.projectId,
+        projectId: this.isEditMode ? undefined : this.formValues.projectId,
         name: this.formValues.name.trim(),
         description: this.formValues.description.trim(),
         public: this.isPublic,
@@ -268,6 +182,16 @@ export default {
       this.isAgentPanelVisible = false;
       this.activeStepIndex = null;
     },
+    validate() {
+      return Object.keys(this.$refs)
+        .filter((key) => key.startsWith('field'))
+        .reduce((allValid, key) => {
+          const field = this.$refs[key];
+          if (!field) return allValid;
+          const isFieldValid = this.$refs[key].validate();
+          return allValid && isFieldValid;
+        }, true);
+    },
   },
   indexRoute: AI_CATALOG_FLOWS_ROUTE,
   visibilityLevelTexts: {
@@ -276,63 +200,182 @@ export default {
     alertTextPrivate: s__('AICatalog|This flow can be made private if it is not used.'),
     alertTextPublic: s__('AICatalog|A public flow can be made private only if it is not used.'),
   },
+  fields: {
+    projectId: {
+      id: 'flow-form-project-id',
+      label: s__('AICatalog|Source project'),
+      validations: {
+        requiredLabel: s__('AICatalog|Project is required.'),
+      },
+      groupAttrs: {
+        labelDescription: s__('AICatalog|Select a project for your AI flow to be associated with.'),
+      },
+    },
+    name: {
+      id: 'flow-form-name',
+      label: __('Display name'),
+      validations: {
+        requiredLabel: s__('AICatalog|Name is required.'),
+        maxLength: MAX_LENGTH_NAME,
+      },
+      inputAttrs: {
+        'data-testid': 'flow-form-input-name',
+        placeholder: s__('AICatalog|e.g., Research Assistant, Creative Writer, Code Helper'),
+      },
+      groupAttrs: {
+        labelDescription: s__('AICatalog|Choose a memorable name for your AI flow.'),
+      },
+    },
+    description: {
+      id: 'flow-form-description',
+      label: __('Description'),
+      validations: {
+        requiredLabel: s__('AICatalog|Description is required.'),
+        maxLength: MAX_LENGTH_DESCRIPTION,
+      },
+      groupAttrs: {
+        labelDescription: s__(
+          'AICatalog|Briefly describe what this flow is designed to do and its key capabilities.',
+        ),
+      },
+    },
+    visibilityLevel: {
+      id: 'flow-form-visibility-level',
+      label: __('Visibility'),
+      groupAttrs: {
+        labelDescription: s__(
+          'AICatalog|Choose who can view and interact with this flow after it is published to the public AI catalog.',
+        ),
+      },
+    },
+    type: {
+      id: 'flow-form-type',
+      label: __('Type'),
+      groupAttrs: {
+        labelDescription: s__('AICatalog|Select the type of your flow.'),
+      },
+    },
+    steps: {
+      id: 'flow-form-steps',
+      label: s__('AICatalog|Flow nodes'),
+      groupAttrs: {
+        labelDescription: s__('AICatalog|Nodes run sequentially.'),
+      },
+    },
+    definition: {
+      id: 'flow-form-configuration',
+      label: s__('AICatalog|Configuration'),
+      validations: {
+        requiredLabel: s__('AICatalog|Configuration is required.'),
+      },
+      groupAttrs: {
+        labelDescription: s__(
+          'AICatalog|This YAML configuration file determines the prompts, tools, and capabilities of your flow. Required properties: injectGatewayToken, image, commands',
+        ),
+      },
+    },
+  },
 };
 </script>
+
 <template>
   <div>
     <errors-alert :errors="allErrors" @dismiss="dismissErrors" />
-    <div class="gl-flex gl-items-stretch gl-gap-8">
-      <gl-form :id="formId" @submit.prevent>
-        <gl-form-fields
-          v-model="formValues"
-          :form-id="formId"
-          :fields="fields"
-          @submit="handleSubmit"
-        >
-          <template #input(projectId)="{ id }">
-            <form-project-dropdown :id="id" v-model="formValues.projectId" @error="onError" />
-          </template>
-          <template #input(type)="{ id, input, value }">
-            <form-flow-type :id="id" :value="value" :disabled="isEditMode" @input="input" />
-          </template>
-          <template #input(description)="{ id, input, value, blur, validation }">
+    <div class="gl-flex gl-flex-row gl-gap-8">
+      <gl-form :id="formId" class="gl-flex gl-flex-col gl-gap-5" @submit.prevent="handleSubmit">
+        <form-section :title="s__('AICatalog|Basic information')">
+          <form-group
+            #default="{ state, blur }"
+            ref="fieldName"
+            :field="$options.fields.name"
+            :field-value="formValues.name"
+          >
+            <gl-form-input
+              :id="$options.fields.name.id"
+              v-model="formValues.name"
+              :data-testid="$options.fields.name.inputAttrs['data-testid']"
+              :placeholder="$options.fields.name.inputAttrs.placeholder"
+              :state="state"
+              @blur="blur"
+            />
+          </form-group>
+          <form-group
+            #default="{ state, blur }"
+            ref="fieldDescription"
+            :field="$options.fields.description"
+            :field-value="formValues.description"
+          >
             <gl-form-textarea
-              :id="id"
+              :id="$options.fields.description.id"
+              v-model="formValues.description"
               :no-resize="false"
               :placeholder="
                 s__(
                   'AICatalog|This flow specializes in... It can help you with... Best suited for...',
                 )
               "
-              :state="validation.state"
-              :value="value"
+              :state="state"
               data-testid="flow-form-textarea-description"
               @blur="blur"
-              @update="input"
             />
-          </template>
-          <template #input(visibilityLevel)="{ id, input, validation, value }">
+          </form-group>
+        </form-section>
+        <form-section :title="s__('AICatalog|Access rights')">
+          <form-group
+            :field="$options.fields.visibilityLevel"
+            :field-value="formValues.visibilityLevel"
+          >
             <visibility-level-radio-group
-              :id="id"
+              :id="$options.fields.visibilityLevel.id"
+              v-model="formValues.visibilityLevel"
               :is-edit-mode="isEditMode"
               :initial-value="initialValues.public"
-              :validation-state="validation.state"
-              :value="value"
               :texts="$options.visibilityLevelTexts"
-              @input="input"
             />
-          </template>
-          <template #input(definition)="{ input, value }">
-            <form-flow-definition :value="value" @input="input" />
-          </template>
-          <template #input(steps)>
+          </form-group>
+          <form-group
+            ref="fieldProject"
+            :field="$options.fields.projectId"
+            :field-value="formValues.projectId"
+          >
+            <form-project-dropdown
+              :id="$options.fields.projectId.id"
+              v-model="formValues.projectId"
+              :disabled="isEditMode"
+              @error="onError"
+            />
+          </form-group>
+        </form-section>
+        <form-section :title="s__('AICatalog|Configuration')">
+          <form-group
+            v-if="isFlowsAvailable && isThirdPartyFlowsAvailable"
+            :field="$options.fields.type"
+            :field-value="formValues.type"
+          >
+            <form-flow-type v-model="formValues.type" :disabled="isEditMode" />
+          </form-group>
+          <form-group
+            v-if="isThirdPartyFlow"
+            ref="fieldDefinition"
+            :key="$options.fields.definition.id"
+            :field="$options.fields.definition"
+            :field-value="formValues.definition"
+          >
+            <form-flow-definition v-model="formValues.definition" />
+          </form-group>
+          <form-group
+            v-else
+            :key="$options.fields.steps.id"
+            :field="$options.fields.steps"
+            :field-value="formValues.steps"
+          >
             <ai-catalog-steps-editor
               :steps="formValues.steps"
               class="gl-mb-4"
               @openAgentPanel="openAgentPanel"
             />
-          </template>
-        </gl-form-fields>
+          </form-group>
+        </form-section>
         <ai-catalog-form-buttons :is-disabled="isLoading" :cancel-route="cancelRoute">
           <gl-button
             class="js-no-auto-disable gl-w-full @sm/panel:gl-w-auto"
@@ -347,7 +390,7 @@ export default {
         </ai-catalog-form-buttons>
       </gl-form>
       <ai-catalog-form-side-panel
-        v-show="isAgentPanelVisible"
+        v-show="isAgentPanelVisible && !isThirdPartyFlow"
         v-model="formValues.steps"
         class="gl-grow"
         :active-step-index="activeStepIndex"

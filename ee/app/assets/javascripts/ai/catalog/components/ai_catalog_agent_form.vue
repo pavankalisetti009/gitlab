@@ -128,80 +128,6 @@ export default {
         name: AI_CATALOG_AGENTS_ROUTE,
       };
     },
-    fields() {
-      return {
-        projectId: {
-          id: 'agent-form-project-id',
-          label: s__('AICatalog|Source project'),
-          validations: {
-            requiredLabel: s__('AICatalog|Project is required.'),
-          },
-          groupAttrs: {
-            labelDescription: s__(
-              'AICatalog|Select a project for your AI agent to be associated with.',
-            ),
-          },
-        },
-        name: {
-          id: 'agent-form-name',
-          label: __('Display name'),
-          validations: {
-            requiredLabel: s__('AICatalog|Name is required.'),
-            maxLength: MAX_LENGTH_NAME,
-          },
-          inputAttrs: {
-            'data-testid': 'agent-form-input-name',
-            placeholder: s__('AICatalog|e.g., Research Assistant, Creative Writer, Code Helper'),
-          },
-          groupAttrs: {
-            labelDescription: s__('AICatalog|Choose a memorable name for your AI agent.'),
-          },
-        },
-        description: {
-          id: 'agent-form-description',
-          label: __('Description'),
-          validations: {
-            requiredLabel: s__('AICatalog|Description is required.'),
-            maxLength: MAX_LENGTH_DESCRIPTION,
-          },
-          groupAttrs: {
-            labelDescription: s__(
-              'AICatalog|Briefly describe what this agent is designed to do and its key capabilities.',
-            ),
-          },
-        },
-        systemPrompt: {
-          id: 'agent-form-system-prompt',
-          label: s__('AICatalog|System prompt'),
-          validations: {
-            requiredLabel: s__('AICatalog|System prompt is required.'),
-            maxLength: MAX_LENGTH_PROMPT,
-          },
-          groupAttrs: {
-            labelDescription: s__(
-              "AICatalog|Define the agent's personality, expertise, and behavioral guidelines. This shapes how the agent responds and approaches tasks.",
-            ),
-          },
-        },
-        visibilityLevel: {
-          id: 'agent-form-visibility-level',
-          label: __('Visibility'),
-          groupAttrs: {
-            labelDescription: s__(
-              'AICatalog|Choose who can view and interact with this agent after it is published to the public AI catalog.',
-            ),
-          },
-        },
-        tools: {
-          id: 'agent-form-tools',
-          label: s__('AICatalog|Tools'),
-          groupAttrs: {
-            optional: true,
-            labelDescription: s__('AICatalog|Select tools that this agent will have access to.'),
-          },
-        },
-      };
-    },
     filteredAvailableTools() {
       return this.availableTools.filter((tool) =>
         tool.name.toLowerCase().includes(this.toolFilter.toLowerCase()),
@@ -214,7 +140,6 @@ export default {
       }));
     },
   },
-
   methods: {
     handleSubmit() {
       const isFormValid = this.validate();
@@ -261,6 +186,78 @@ export default {
     alertTextPrivate: s__('AICatalog|This agent can be made private if it is not used.'),
     alertTextPublic: s__('AICatalog|A public agent can be made private only if it is not used.'),
   },
+  fields: {
+    projectId: {
+      id: 'agent-form-project-id',
+      label: s__('AICatalog|Source project'),
+      validations: {
+        requiredLabel: s__('AICatalog|Project is required.'),
+      },
+      groupAttrs: {
+        labelDescription: s__(
+          'AICatalog|Select a project for your AI agent to be associated with.',
+        ),
+      },
+    },
+    name: {
+      id: 'agent-form-name',
+      label: __('Display name'),
+      validations: {
+        requiredLabel: s__('AICatalog|Name is required.'),
+        maxLength: MAX_LENGTH_NAME,
+      },
+      inputAttrs: {
+        'data-testid': 'agent-form-input-name',
+        placeholder: s__('AICatalog|e.g., Research Assistant, Creative Writer, Code Helper'),
+      },
+      groupAttrs: {
+        labelDescription: s__('AICatalog|Choose a memorable name for your AI agent.'),
+      },
+    },
+    description: {
+      id: 'agent-form-description',
+      label: __('Description'),
+      validations: {
+        requiredLabel: s__('AICatalog|Description is required.'),
+        maxLength: MAX_LENGTH_DESCRIPTION,
+      },
+      groupAttrs: {
+        labelDescription: s__(
+          'AICatalog|Briefly describe what this agent is designed to do and its key capabilities.',
+        ),
+      },
+    },
+    systemPrompt: {
+      id: 'agent-form-system-prompt',
+      label: s__('AICatalog|System prompt'),
+      validations: {
+        requiredLabel: s__('AICatalog|System prompt is required.'),
+        maxLength: MAX_LENGTH_PROMPT,
+      },
+      groupAttrs: {
+        labelDescription: s__(
+          "AICatalog|Define the agent's personality, expertise, and behavioral guidelines. This shapes how the agent responds and approaches tasks.",
+        ),
+      },
+    },
+    visibilityLevel: {
+      id: 'agent-form-visibility-level',
+      label: __('Visibility'),
+      groupAttrs: {
+        labelDescription: s__(
+          'AICatalog|Choose who can view and interact with this agent after it is published to the public AI catalog.',
+        ),
+      },
+    },
+    tools: {
+      id: 'agent-form-tools',
+      label: s__('AICatalog|Tools'),
+      groupAttrs: {
+        optional: true,
+        labelDescription: s__('AICatalog|Select tools that this agent will have access to.'),
+      },
+    },
+  },
 };
 </script>
 
@@ -272,14 +269,14 @@ export default {
         <form-group
           #default="{ state, blur }"
           ref="fieldName"
-          :field="fields.name"
+          :field="$options.fields.name"
           :field-value="formValues.name"
         >
           <gl-form-input
-            :id="fields.name.id"
+            :id="$options.fields.name.id"
             v-model="formValues.name"
-            :data-testid="fields.name.inputAttrs['data-testid']"
-            :placeholder="fields.name.inputAttrs.placeholder"
+            :data-testid="$options.fields.name.inputAttrs['data-testid']"
+            :placeholder="$options.fields.name.inputAttrs.placeholder"
             :state="state"
             @blur="blur"
           />
@@ -287,11 +284,11 @@ export default {
         <form-group
           #default="{ state, blur }"
           ref="fieldDescription"
-          :field="fields.description"
+          :field="$options.fields.description"
           :field-value="formValues.description"
         >
           <gl-form-textarea
-            :id="fields.description.id"
+            :id="$options.fields.description.id"
             v-model="formValues.description"
             :no-resize="false"
             :placeholder="
@@ -306,9 +303,12 @@ export default {
         </form-group>
       </form-section>
       <form-section :title="s__('AICatalog|Access rights')">
-        <form-group :field="fields.visibilityLevel" :field-value="formValues.visibilityLevel">
+        <form-group
+          :field="$options.fields.visibilityLevel"
+          :field-value="formValues.visibilityLevel"
+        >
           <visibility-level-radio-group
-            :id="fields.visibilityLevel.id"
+            :id="$options.fields.visibilityLevel.id"
             v-model="formValues.visibilityLevel"
             :is-edit-mode="isEditMode"
             :initial-value="initialValues.public"
@@ -317,11 +317,11 @@ export default {
         </form-group>
         <form-group
           ref="fieldProject"
-          :field="fields.projectId"
+          :field="$options.fields.projectId"
           :field-value="formValues.projectId"
         >
           <form-project-dropdown
-            :id="fields.projectId.id"
+            :id="$options.fields.projectId.id"
             v-model="formValues.projectId"
             :disabled="isEditMode || !isGlobal"
             @error="onError"
@@ -332,11 +332,11 @@ export default {
         <form-group
           #default="{ state, blur }"
           ref="fieldSystemPrompt"
-          :field="fields.systemPrompt"
+          :field="$options.fields.systemPrompt"
           :field-value="formValues.systemPrompt"
         >
           <gl-form-textarea
-            :id="fields.systemPrompt.id"
+            :id="$options.fields.systemPrompt.id"
             v-model="formValues.systemPrompt"
             :no-resize="false"
             :placeholder="
@@ -352,9 +352,9 @@ export default {
         </form-group>
       </form-section>
       <form-section :title="s__('AICatalog|Available tools')">
-        <form-group :field="fields.tools" :field-value="formValues.tools">
+        <form-group :field="$options.fields.tools" :field-value="formValues.tools">
           <gl-token-selector
-            :id="fields.tools.id"
+            :id="$options.fields.tools.id"
             :selected-tokens="selectedTools"
             :dropdown-items="filteredAvailableTools"
             :placeholder="s__('AICatalog|Search and select tools for this agent.')"
