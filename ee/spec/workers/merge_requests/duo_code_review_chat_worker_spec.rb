@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe MergeRequests::DuoCodeReviewChatWorker, feature_category: :code_review_workflow do
+RSpec.describe MergeRequests::DuoCodeReviewChatWorker, feature_category: :code_suggestions do
   subject(:worker) { described_class.new }
 
   let_it_be(:project) { create(:project, :repository) }

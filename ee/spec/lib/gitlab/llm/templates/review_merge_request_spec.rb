@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe Gitlab::Llm::Templates::ReviewMergeRequest, feature_category: :code_review_workflow do
+RSpec.describe Gitlab::Llm::Templates::ReviewMergeRequest, feature_category: :code_suggestions do
   let(:diffs_and_paths) do
     {
       'UPDATED.md' => <<~RAWDIFF

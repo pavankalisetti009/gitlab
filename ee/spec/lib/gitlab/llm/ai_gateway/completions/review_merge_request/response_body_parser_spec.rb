@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe Gitlab::Llm::AiGateway::Completions::ReviewMergeRequest::ResponseBodyParser, feature_category: :code_review_workflow do
+RSpec.describe Gitlab::Llm::AiGateway::Completions::ReviewMergeRequest::ResponseBodyParser, feature_category: :code_suggestions do
   subject(:parser) { described_class.new(body) }
 
   let(:body) { nil }

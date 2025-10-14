@@ -260,7 +260,7 @@ RSpec.describe Llm::Internal::CompletionService, :saas, feature_category: :ai_ab
         expect(Gitlab::Metrics::Sli::ErrorRate[:llm_completion])
           .to receive(:increment)
           .with(labels: {
-            feature_category: :ai_abstraction_layer,
+            feature_category: :code_suggestions,
             service_class: 'Gitlab::Llm::AiGateway::Completions::SummarizeReview'
           }, error: true)
 
@@ -276,7 +276,7 @@ RSpec.describe Llm::Internal::CompletionService, :saas, feature_category: :ai_ab
           expect(Gitlab::Metrics::Sli::ErrorRate[:llm_completion])
             .to receive(:increment)
               .with(labels: {
-                feature_category: :ai_abstraction_layer,
+                feature_category: :code_suggestions,
                 service_class: 'Gitlab::Llm::AiGateway::Completions::SummarizeReview'
               }, error: true)
 

@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe Gitlab::Llm::AiGateway::Completions::SummarizeNewMergeRequest, feature_category: :code_review_workflow do
+RSpec.describe Gitlab::Llm::AiGateway::Completions::SummarizeNewMergeRequest, feature_category: :code_suggestions do
   let_it_be(:user) { create(:user) }
   let_it_be(:project) { create(:project, :repository) }
   let(:prompt_class) { Gitlab::Llm::Templates::SummarizeNewMergeRequest }

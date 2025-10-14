@@ -4,7 +4,7 @@ module API
   class DuoCodeReview < ::API::Base
     include APIGuard
 
-    feature_category :code_review_workflow
+    feature_category :code_suggestions
 
     allow_access_with_scope :ai_features
 
