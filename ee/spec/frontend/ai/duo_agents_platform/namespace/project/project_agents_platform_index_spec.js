@@ -40,7 +40,7 @@ describe('ProjectAgentsPlatformIndex', () => {
     await createWrapper();
 
     expect(findIndexComponent().props()).toMatchObject({
-      initialSort: 'UPDATED_ASC',
+      initialSort: 'UPDATED_DESC',
       hasInitialWorkflows: expect.any(Boolean),
       isLoadingWorkflows: expect.any(Boolean),
       workflows: expect.any(Array),
@@ -74,7 +74,7 @@ describe('ProjectAgentsPlatformIndex', () => {
             before: null,
             first: 20,
             last: null,
-            sort: 'UPDATED_ASC',
+            sort: 'UPDATED_DESC',
           });
         });
 

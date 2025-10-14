@@ -1,11 +1,11 @@
 # frozen_string_literal: true
 
-RSpec.shared_examples 'disabled maven_virtual_registry feature flag' do
+RSpec.shared_examples 'disabled maven_virtual_registry feature flag' do |status: :unauthorized|
   before do
     stub_feature_flags(maven_virtual_registry: false)
   end
 
-  it_behaves_like 'returning response status', :unauthorized
+  it_behaves_like 'returning response status', status
 end
 
 RSpec.shared_examples 'virtual registry disabled dependency proxy' do

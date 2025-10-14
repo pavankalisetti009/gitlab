@@ -32,7 +32,7 @@ RSpec.describe Vulnerabilities::Flags::UpdateAiDetectionService, feature_categor
           result = service.execute
 
           expect(result).to be_success
-          expect(result.payload[:new_flag]).to be true
+          expect(result.payload[:is_new_flag]).to be true
 
           flag = result.payload[:flag]
           expect(flag).to be_persisted
@@ -89,7 +89,7 @@ RSpec.describe Vulnerabilities::Flags::UpdateAiDetectionService, feature_categor
           result = service.execute
 
           expect(result).to be_success
-          expect(result.payload[:new_flag]).to be false
+          expect(result.payload[:is_new_flag]).to be false
 
           flag = result.payload[:flag]
           expect(flag.id).to eq(existing_flag.id)

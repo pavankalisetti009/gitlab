@@ -17,7 +17,7 @@ describe('AgentsPlatformIndex', () => {
   let wrapper;
 
   const defaultProps = {
-    initialSort: 'UPDATED_ASC',
+    initialSort: 'UPDATED_DESC',
     hasInitialWorkflows: true,
     isLoadingWorkflows: false,
     workflows: mockAgentFlowsResponse.data.project.duoWorkflowWorkflows.edges.map(
@@ -122,7 +122,7 @@ describe('AgentsPlatformIndex', () => {
         searchInputPlaceholder: 'Search for a session',
         syncFilterAndSort: true,
         termsAsTokens: true,
-        initialSortBy: 'UPDATED_ASC',
+        initialSortBy: 'UPDATED_DESC',
       });
     });
 

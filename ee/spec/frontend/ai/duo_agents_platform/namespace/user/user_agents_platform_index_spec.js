@@ -57,7 +57,7 @@ describe('UserAgentsPlatformIndex', () => {
     await createWrapper();
 
     expect(findIndexComponent().props()).toMatchObject({
-      initialSort: 'UPDATED_ASC',
+      initialSort: 'UPDATED_DESC',
       hasInitialWorkflows: expect.any(Boolean),
       isLoadingWorkflows: expect.any(Boolean),
       workflows: expect.any(Array),
@@ -86,7 +86,7 @@ describe('UserAgentsPlatformIndex', () => {
         it('fetches workflows data with correct variables', () => {
           expect(getUserAgentFlowsHandler).toHaveBeenCalledTimes(1);
           expect(getUserAgentFlowsHandler).toHaveBeenCalledWith({
-            sort: 'UPDATED_ASC',
+            sort: 'UPDATED_DESC',
             after: null,
             before: null,
             first: 20,
