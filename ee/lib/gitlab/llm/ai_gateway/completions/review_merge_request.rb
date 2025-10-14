@@ -43,6 +43,9 @@ module Gitlab
           end
 
           def execute
+            # Progress note may not exist for existing jobs so we create one if we can
+            @progress_note = find_progress_note || create_progress_note
+
             if ::Feature.enabled?(:duo_code_review_on_agent_platform, user)
               update_review_state('review_started') if merge_request
               execute_duo_agent_platform_flow
@@ -52,9 +55,6 @@ module Gitlab
           end
 
           def execute_legacy_flow
-            # Progress note may not exist for existing jobs so we create one if we can
-            @progress_note = find_progress_note || create_progress_note
-
             unless progress_note.present?
               Gitlab::ErrorTracking.track_exception(
                 StandardError.new("Unable to perform Duo Code Review: progress_note and resource not found"),
@@ -115,6 +115,7 @@ module Gitlab
             # If workflow fails to start, reset review state immediately
             unless result.success?
               update_review_state('reviewed') if merge_request.present?
+              @progress_note&.destroy
               return result
             end
 

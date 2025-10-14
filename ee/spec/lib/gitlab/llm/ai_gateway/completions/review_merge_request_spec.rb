@@ -1925,8 +1925,44 @@ RSpec.describe Gitlab::Llm::AiGateway::Completions::ReviewMergeRequest, feature_
         expect(::Ai::DuoWorkflows::CodeReview::TimeoutWorker)
           .to receive(:perform_in)
           .with(30.minutes, merge_request.id)
-
         completion.execute
+      end
+
+      context 'when workflow fails to start' do
+        let(:error_message) { 'Workflow start failed' }
+        let(:create_and_start_service) do
+          instance_double(
+            ::Ai::DuoWorkflows::CreateAndStartWorkflowService,
+            execute: ServiceResponse.error(message: error_message)
+          )
+        end
+
+        it 'resets review state and destroys progress note' do
+          expect_next_instance_of(
+            MergeRequests::UpdateReviewerStateService,
+            project: project,
+            current_user: duo_code_review_bot
+          ) do |service|
+            expect(service).to receive(:execute).with(merge_request, 'review_started')
+            expect(service).to receive(:execute).with(merge_request, 'reviewed')
+          end
+
+          expect { completion.execute }
+            .to change { Note.exists?(progress_note.id) }.from(true).to(false)
+        end
+
+        it 'does not schedule timeout cleanup job' do
+          expect(::Ai::DuoWorkflows::CodeReview::TimeoutWorker)
+            .not_to receive(:perform_in)
+
+          completion.execute
+        end
+
+        it 'returns the error result' do
+          result = completion.execute
+          expect(result.success?).to be false
+          expect(result.message).to eq(error_message)
+        end
       end
     end
   end
