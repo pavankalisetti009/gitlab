@@ -14,6 +14,7 @@ import {
   pipelineHeaderSuccess,
   pipelineHeaderMergeTrain,
   mockPipelineStatusResponse,
+  pipelineHeaderFailed,
 } from '../mock_data';
 
 Vue.use(VueApollo);
@@ -26,6 +27,8 @@ describe('Pipeline header', () => {
   const runningHandler = jest.fn().mockResolvedValue(pipelineHeaderRunning);
   const mergeTrainHandler = jest.fn().mockResolvedValue(pipelineHeaderMergeTrain);
   const subscriptionHandler = jest.fn().mockResolvedValue(mockPipelineStatusResponse);
+  const failedHandler = jest.fn().mockResolvedValue(pipelineHeaderFailed);
+  const findDuoWorkflowAction = () => wrapper.find('duo-workflow-action-stub');
 
   const findComputeMinutes = () => wrapper.findByTestId('compute-minutes');
   const findMergeTrainsLink = () => wrapper.findComponent(HeaderMergeTrainsLink);
@@ -45,6 +48,7 @@ describe('Pipeline header', () => {
     paths: {
       pipelinesPath: '/namespace/my-project/-/pipelines',
       fullProject: '/namespace/my-project',
+      mergeRequestPath: '',
     },
   };
 
@@ -131,6 +135,129 @@ describe('Pipeline header', () => {
       await createComponent();
 
       expect(findMergeTrainsLink().exists()).toBe(false);
+    });
+  });
+
+  describe('Duo workflow action', () => {
+    beforeEach(() => {
+      global.gon = {
+        gitlab_url: 'https://gitlab.example.com',
+      };
+    });
+
+    it('displays Duo workflow action for failed pipelines with ref', async () => {
+      await createComponent({
+        handlers: [
+          [getPipelineDetailsQuery, failedHandler],
+          [pipelineHeaderStatusUpdatedSubscription, subscriptionHandler],
+        ],
+      });
+
+      const duoAction = findDuoWorkflowAction();
+      expect(duoAction.exists()).toBe(true);
+      expect(duoAction.props()).toMatchObject({
+        projectPath: defaultProvideOptions.paths.fullProject,
+        workflowDefinition: 'fix_pipeline/v1',
+        goal: expect.stringContaining('https://gitlab.example.com'),
+        size: 'medium',
+        sourceBranch: 'master',
+        agentPrivileges: [1, 2, 3, 5],
+      });
+
+      expect(duoAction.props('additionalContext')).toEqual([
+        {
+          Category: 'pipeline',
+          Content: JSON.stringify({
+            source_branch: 'master',
+          }),
+        },
+        {
+          Category: 'merge_request',
+          Content: JSON.stringify({
+            url: '',
+          }),
+        },
+      ]);
+    });
+
+    it('includes merge request path in additional context when provided', async () => {
+      const mergeRequestPath =
+        'https://gitlab.example.com/namespace/my-project/-/merge_requests/123';
+
+      await createComponent({
+        handlers: [
+          [getPipelineDetailsQuery, failedHandler],
+          [pipelineHeaderStatusUpdatedSubscription, subscriptionHandler],
+        ],
+        provideOptions: {
+          paths: {
+            pipelinesPath: '/namespace/my-project/-/pipelines',
+            fullProject: '/namespace/my-project',
+            mergeRequestPath,
+          },
+        },
+      });
+
+      const duoAction = findDuoWorkflowAction();
+      expect(duoAction.props('additionalContext')).toEqual([
+        {
+          Category: 'pipeline',
+          Content: JSON.stringify({
+            source_branch: 'master',
+          }),
+        },
+        {
+          Category: 'merge_request',
+          Content: JSON.stringify({
+            url: mergeRequestPath,
+          }),
+        },
+      ]);
+    });
+
+    it('does not display Duo workflow action when pipeline has no branch reference', async () => {
+      const failedNoBranchHandler = jest.fn().mockResolvedValue({
+        data: {
+          project: {
+            pipeline: {
+              ...pipelineHeaderFailed.data.project.pipeline,
+              ref: null,
+              merge_request: null,
+            },
+          },
+        },
+      });
+
+      await createComponent({
+        handlers: [
+          [getPipelineDetailsQuery, failedNoBranchHandler],
+          [pipelineHeaderStatusUpdatedSubscription, subscriptionHandler],
+        ],
+      });
+
+      expect(findDuoWorkflowAction().exists()).toBe(false);
+    });
+
+    it('does not display Duo workflow action for successful pipelines', async () => {
+      await createComponent({
+        handlers: [
+          [getPipelineDetailsQuery, successHandler],
+          [pipelineHeaderStatusUpdatedSubscription, subscriptionHandler],
+        ],
+      });
+
+      expect(findDuoWorkflowAction().exists()).toBe(false);
+    });
+
+    it('does not display Duo workflow action for running pipelines', async () => {
+      await createComponent({
+        handlers: [
+          [getPipelineDetailsQuery, runningHandler],
+          [pipelineHeaderStatusUpdatedSubscription, subscriptionHandler],
+        ],
+      });
+
+      expect(findDuoWorkflowAction().exists()).toBe(false);
     });
   });
 });

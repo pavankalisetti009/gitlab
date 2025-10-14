@@ -33,7 +33,8 @@ module EE
           identity_verification_path: identity_verification_path,
           merge_trains_available: project.licensed_feature_available?(:merge_trains).to_s,
           can_read_merge_train: can?(current_user, :read_merge_train, project).to_s,
-          merge_trains_path: project_merge_trains_path(project)
+          merge_trains_path: project_merge_trains_path(project),
+          merge_request_path: merge_request_path_for_pipeline(project, pipeline)
         )
       end
 
@@ -90,6 +91,12 @@ module EE
 
       def sbom_reports_errors(pipeline)
         pipeline.sbom_report_ingestion_errors || []
+      end
+
+      def merge_request_path_for_pipeline(project, pipeline)
+        return unless pipeline&.merge_request
+
+        project_merge_request_path(project, pipeline.merge_request.iid)
       end
     end
   end
