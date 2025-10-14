@@ -6,7 +6,8 @@ module MergeRequests
     include ::Gitlab::Utils::StrongMemoize
     include Gitlab::InternalEventsTracking
 
-    feature_category :code_review_workflow
+    feature_category :code_suggestions
+
     urgency :low
     data_consistency :sticky
     worker_has_external_dependencies!

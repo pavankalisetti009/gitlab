@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe Gitlab::Llm::Utils::CodeSuggestionFormatter, feature_category: :code_review_workflow do
+RSpec.describe Gitlab::Llm::Utils::CodeSuggestionFormatter, feature_category: :code_suggestions do
   let(:body) { nil }
 
   describe '#append_prompt' do

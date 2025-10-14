@@ -9,7 +9,7 @@ module API
 
         allow_access_with_scope :ai_workflows
 
-        feature_category :code_review_workflow
+        feature_category :code_suggestions
 
         before do
           authenticate!

@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe Ai::DuoWorkflows::CodeReview::TimeoutWorker, feature_category: :code_review_workflow do
+RSpec.describe Ai::DuoWorkflows::CodeReview::TimeoutWorker, feature_category: :code_suggestions do
   subject(:worker) { described_class.new }
 
   let_it_be(:duo_code_review_bot) { create(:user, :duo_code_review_bot) }

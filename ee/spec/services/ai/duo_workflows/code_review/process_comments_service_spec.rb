@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe Ai::DuoWorkflows::CodeReview::ProcessCommentsService, feature_category: :code_review_workflow do
+RSpec.describe Ai::DuoWorkflows::CodeReview::ProcessCommentsService, feature_category: :code_suggestions do
   let_it_be(:user) { create(:user) }
   let_it_be(:project) { create(:project, :repository) }
   let_it_be(:merge_request) { create(:merge_request, source_project: project) }

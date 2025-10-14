@@ -10,7 +10,7 @@ module Ai
         idempotent!
         worker_resource_boundary :cpu
         urgency :low
-        feature_category :code_review_workflow
+        feature_category :code_suggestions
         data_consistency :always
         defer_on_database_health_signal :gitlab_main
 

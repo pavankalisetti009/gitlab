@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe API::DuoCodeReview, feature_category: :code_review_workflow do
+RSpec.describe API::DuoCodeReview, feature_category: :code_suggestions do
   let_it_be(:authorized_user) { create(:user) }
   let_it_be(:unauthorized_user) { build(:user) }
 
