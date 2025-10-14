@@ -755,11 +755,10 @@ export default {
           v-if="userModelSelectionEnabled"
           v-gl-tooltip
           :title="modelSelectionDisabledTooltipText"
-          class="gl-mb-2 gl-mt-5 gl-flex"
+          class="gl-mb-2 gl-mt-5 gl-min-w-0 gl-grow"
           data-testid="model-dropdown-container"
         >
           <model-select-dropdown
-            class="gl-max-w-31"
             with-default-model-tooltip
             :disabled="isModelSelectionDisabled"
             :is-loading="$apollo.queries.availableModels.loading"

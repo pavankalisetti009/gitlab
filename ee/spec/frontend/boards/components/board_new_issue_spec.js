@@ -83,7 +83,13 @@ describe('Issue boards new issue form', () => {
   });
 
   it('fetches current iteration and cadence when board scope is set to current iteration without a cadence', async () => {
-    wrapper = createComponent({ boardQueryHandler: currentIterationBoardQueryHandlerSuccess });
+    wrapper = createComponent({
+      boardQueryHandler: currentIterationBoardQueryHandlerSuccess,
+      data: {
+        selectedProject: mockGroupProjects[0],
+        board: { iteration: { id: 'gid://gitlab/Iteration/-4' }, iterationCadence: {} },
+      },
+    });
 
     await waitForPromises();
     findBoardNewItem().vm.$emit('form-submit', { title: 'Foo' });
