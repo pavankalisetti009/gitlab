@@ -23,14 +23,6 @@ class GroupWikiRepository < ApplicationRecord
 
   scope :available_verifiables, -> { joins(:group_wiki_repository_state) }
 
-  scope :checksummed, -> {
-    joins(:group_wiki_repository_state).where.not(group_wiki_repository_states: { verification_checksum: nil })
-  }
-
-  scope :not_checksummed, -> {
-    joins(:group_wiki_repository_state).where(group_wiki_repository_states: { verification_checksum: nil })
-  }
-
   scope :with_verification_state, ->(state) {
     joins(:group_wiki_repository_state)
       .where(group_wiki_repository_states: { verification_state: verification_state_value(state) })

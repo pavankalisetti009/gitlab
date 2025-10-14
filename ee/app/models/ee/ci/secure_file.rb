@@ -31,16 +31,6 @@ module EE
                                             }
                                           )
                                         }
-        scope :checksummed, -> {
-                              joins(:ci_secure_file_state).where.not(
-                                ci_secure_file_states: { verification_checksum: nil }
-                              )
-                            }
-        scope :not_checksummed, -> {
-                                  joins(:ci_secure_file_state).where(
-                                    ci_secure_file_states: { verification_checksum: nil }
-                                  )
-                                }
 
         scope :available_verifiables, -> { joins(:ci_secure_file_state) }
 

@@ -20,6 +20,12 @@ RSpec.describe SnippetRepository, :geo, type: :model, feature_category: :geo_rep
     end
   end
 
+  include_examples 'a verifiable model for verification state' do
+    let(:verifiable_model_record) do
+      build(:snippet_repository, snippet: create(:project_snippet, project: create(:project, group: create(:group))))
+    end
+  end
+
   context 'with 3 groups, 2 projects, and 5 snippets' do
     let(:group_1) { create(:group) }
     let(:group_2) { create(:group) }

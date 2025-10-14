@@ -14,7 +14,7 @@ RSpec.describe Projects::WikiRepository, feature_category: :wiki do
       end
     end
 
-    include_examples 'a verifiable model with a separate table for verification state' do
+    include_examples 'a verifiable model for verification state' do
       let(:verifiable_model_record) { build(:project_wiki_repository) }
       let(:unverifiable_model_record) { nil }
     end
