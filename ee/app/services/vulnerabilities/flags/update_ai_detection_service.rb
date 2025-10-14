@@ -5,6 +5,8 @@ module Vulnerabilities
     class UpdateAiDetectionService
       include Gitlab::Allowable
 
+      AI_SAST_FP_DETECTION_ORIGIN = 'ai_sast_fp_detection'
+
       def initialize(user, vulnerability, params)
         @user = user
         @vulnerability = vulnerability
@@ -17,8 +19,7 @@ module Vulnerabilities
         return ServiceResponse.error(message: 'Unauthorized') unless authorized?
         return ServiceResponse.error(message: 'No current finding available') unless current_finding
 
-        flag = find_or_initialize_flag
-        update_flag(flag)
+        update_flag
       end
 
       private
@@ -38,22 +39,24 @@ module Vulnerabilities
         # rubocop:disable CodeReuse/ActiveRecord -- Need to instantiate a new record here if none exist yet
         current_finding.vulnerability_flags.find_or_initialize_by(
           flag_type: :false_positive,
-          origin: 'ai_sast_fp_detection'
+          origin: AI_SAST_FP_DETECTION_ORIGIN
         )
         # rubocop:enable CodeReuse/ActiveRecord
       end
 
-      def update_flag(flag)
+      def flag
+        @flag ||= find_or_initialize_flag
+      end
+
+      def update_flag
         flag.assign_attributes(
           description: params[:description] || flag.description,
           confidence_score: normalize_confidence_score(params[:confidence_score]),
           project_id: project.id
         )
 
-        new_flag = !flag.persisted?
-
         if flag.save
-          ServiceResponse.success(payload: { flag: flag, new_flag: new_flag })
+          ServiceResponse.success(payload: { flag: flag, is_new_flag: flag.saved_change_to_id? })
         else
           ServiceResponse.error(message: flag.errors.full_messages.join(', '))
         end
