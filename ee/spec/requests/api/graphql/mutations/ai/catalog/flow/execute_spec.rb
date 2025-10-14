@@ -92,7 +92,7 @@ RSpec.describe Mutations::Ai::Catalog::Flow::Execute, :aggregate_failures, featu
 
     project.project_setting.update!(duo_features_enabled: true, duo_remote_flows_enabled: true)
 
-    allow_next_instance_of(::Ai::DuoWorkflows::TokenGenerationService) do |service|
+    allow_next_instance_of(::Ai::DuoWorkflows::WorkflowContextGenerationService) do |service|
       allow(service).to receive_messages(
         generate_oauth_token_with_composite_identity_support:
           ServiceResponse.success(payload: oauth_token),

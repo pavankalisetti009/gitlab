@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe Ai::DuoWorkflows::TokenGenerationService, :aggregate_failures, feature_category: :workflow_catalog do
+RSpec.describe Ai::DuoWorkflows::WorkflowContextGenerationService, :aggregate_failures, feature_category: :workflow_catalog do
   let_it_be(:user) { create(:user) }
   let_it_be(:container) { create(:project) }
   let(:workflow_definition) { 'software_development' }

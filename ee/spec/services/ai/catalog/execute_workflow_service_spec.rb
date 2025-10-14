@@ -109,7 +109,7 @@ RSpec.describe Ai::Catalog::ExecuteWorkflowService, :aggregate_failures, feature
       allow(user).to receive(:allowed_to_use?).and_return(true)
       project.project_setting.update!(duo_features_enabled: true, duo_remote_flows_enabled: true)
 
-      allow_next_instance_of(::Ai::DuoWorkflows::TokenGenerationService) do |service|
+      allow_next_instance_of(::Ai::DuoWorkflows::WorkflowContextGenerationService) do |service|
         allow(service).to receive_messages(
           generate_oauth_token_with_composite_identity_support:
             ServiceResponse.success(payload: oauth_token),
@@ -180,7 +180,7 @@ RSpec.describe Ai::Catalog::ExecuteWorkflowService, :aggregate_failures, feature
 
       context 'when oauth token creation fails' do
         before do
-          allow_next_instance_of(::Ai::DuoWorkflows::TokenGenerationService) do |service|
+          allow_next_instance_of(::Ai::DuoWorkflows::WorkflowContextGenerationService) do |service|
             allow(service).to receive(:generate_oauth_token_with_composite_identity_support)
               .and_return(ServiceResponse.error(message: 'OAuth token creation failed'))
           end
@@ -191,7 +191,7 @@ RSpec.describe Ai::Catalog::ExecuteWorkflowService, :aggregate_failures, feature
 
       context 'when workflow token creation fails' do
         before do
-          allow_next_instance_of(::Ai::DuoWorkflows::TokenGenerationService) do |service|
+          allow_next_instance_of(::Ai::DuoWorkflows::WorkflowContextGenerationService) do |service|
             allow(service).to receive_messages(
               generate_oauth_token_with_composite_identity_support:
                 ServiceResponse.success(payload: oauth_token),
