@@ -11,6 +11,7 @@ import {
 } from '@gitlab/ui';
 import { s__ } from '~/locale';
 import { convertToGraphQLId } from '~/graphql_shared/utils';
+import { scrollTo } from '~/lib/utils/common_utils';
 import { TYPENAME_PROJECT } from '~/graphql_shared/constants';
 import UserSelect from '~/vue_shared/components/user_select/user_select.vue';
 import ErrorsAlert from '~/vue_shared/components/errors_alert.vue';
@@ -173,11 +174,14 @@ export default {
       if (newValue.length === 0) {
         return;
       }
-      window.scrollTo({
-        top: 0,
-        left: 0,
-        behavior: 'smooth',
-      });
+      scrollTo(
+        {
+          top: 0,
+          left: 0,
+          behavior: 'smooth',
+        },
+        this.$el,
+      );
     },
   },
   methods: {

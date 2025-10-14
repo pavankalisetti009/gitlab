@@ -13,6 +13,7 @@ import {
 import { isEmpty } from 'lodash';
 // eslint-disable-next-line no-restricted-imports
 import { mapState, mapActions } from 'vuex';
+import { scrollTo } from '~/lib/utils/common_utils';
 import { __, s__ } from '~/locale';
 import ProjectSelector from '~/vue_shared/components/project_selector/project_selector.vue';
 import PageHeading from '~/vue_shared/components/page_heading.vue';
@@ -117,7 +118,7 @@ export default {
   },
   watch: {
     currentPage() {
-      window.scrollTo(0, 0);
+      scrollTo({ top: 0, left: 0 }, this.$el);
     },
   },
   created() {
