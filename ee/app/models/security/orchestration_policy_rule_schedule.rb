@@ -11,6 +11,8 @@ module Security
     self.limit_name = 'security_policy_scan_execution_schedules'
     self.limit_scope = :security_orchestration_policy_configuration
 
+    attribute :policy_type, :integer, limit: 2
+
     belongs_to :owner, class_name: 'User', foreign_key: 'user_id'
     belongs_to :security_orchestration_policy_configuration,
       class_name: 'Security::OrchestrationPolicyConfiguration',
