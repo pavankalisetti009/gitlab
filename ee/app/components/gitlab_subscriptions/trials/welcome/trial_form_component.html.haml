@@ -1,4 +1,10 @@
 - content_for(:hide_empty_navbar, true)
+- content_for :page_specific_javascripts do
+  = render "layouts/google_tag_manager_head"
+  = render "layouts/one_trust"
+  = render "layouts/bizible"
+= render "layouts/google_tag_manager_body"
+
 
 = render Pajamas::CardComponent.new(card_options: { class: 'gl-max-w-2xl gl-mx-auto gl-rounded-lg gl-mt-6'}, body_options: { class: 'gl-p-8' }, footer_options: { class: 'gl-rounded-b-lg' }) do |c|
   - c.with_body do
