@@ -7,6 +7,9 @@ module Search
         @query = query
         @current_user = current_user
         @options = options
+        @use_traversal_id_queries = ::Search::Zoekt.feature_available?(
+          :traversal_id_search, current_user, group_id: options[:group_id], project_id: options[:project_id]
+        )
       end
 
       def as_json
@@ -43,7 +46,8 @@ module Search
           search_level: search_level.as_sym,
           group_id: options[:group_id],
           project_id: options[:project_id],
-          filters: options[:filters]
+          filters: options[:filters],
+          use_traversal_id_queries: use_traversal_id_queries?
         }
 
         nodes.map do |node|
@@ -60,7 +64,12 @@ module Search
           node = ::Search::Zoekt::Node.find_by_id(node_id)
           next if node.nil?
 
-          CodeQueryBuilder.build(query: query, options: { repo_ids: repo_ids }).tap do |payload|
+          builder_options = {
+            repo_ids: repo_ids,
+            use_traversal_id_queries: use_traversal_id_queries?
+          }
+
+          CodeQueryBuilder.build(query: query, options: builder_options).tap do |payload|
             payload[:endpoint] = node.search_base_url
           end
         end
@@ -97,9 +106,7 @@ module Search
       end
 
       def use_traversal_id_queries?
-        ::Search::Zoekt.feature_available?(
-          :traversal_id_search, current_user, group_id: options[:group_id], project_id: options[:project_id]
-        )
+        @use_traversal_id_queries
       end
 
       def search_level
