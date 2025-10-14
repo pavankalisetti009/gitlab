@@ -3,6 +3,7 @@ query aiCatalogProjectUserPermissions($fullPath: ID!) {
     id
     userPermissions {
       adminAiCatalogItemConsumer
+      adminAiCatalogItem
     }
   }
 }
