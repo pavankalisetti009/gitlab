@@ -18,7 +18,7 @@ RSpec.describe Analytics::AiAnalytics::UsageEventsCounterService, feature_catego
     let_it_be(:namespace) { create(:namespace) }
     let_it_be(:user) { create(:user) }
 
-    let_it_be(:timestamp) { Time.current }
+    let_it_be(:timestamp) { Time.current.beginning_of_day }
 
     context 'when there are no events to process' do
       it 'returns finished with the original cursor' do
@@ -125,8 +125,7 @@ RSpec.describe Analytics::AiAnalytics::UsageEventsCounterService, feature_catego
         ]
       end
 
-      it 'creates separate aggregations for each unique combination of namespace, user, event, and date',
-        quarantine: 'https://gitlab.com/gitlab-org/gitlab/-/issues/575730' do
+      it 'creates separate aggregations for each unique combination of namespace, user, event, and date' do
         expect { service.execute }.to change { Ai::EventsCount.count }.by(5)
 
         counts = Ai::EventsCount.pluck(:namespace_id, :user_id, :event, :events_date, :total_occurrences)
