@@ -16,6 +16,10 @@ RSpec.describe Ai::DuoWorkflows::Workflow, feature_category: :agent_foundations 
     it { is_expected.to belong_to(:namespace).optional }
     it { is_expected.to belong_to(:ai_catalog_item_version).optional }
     it { is_expected.to belong_to(:ai_catalog_item_version).class_name('Ai::Catalog::ItemVersion') }
+
+    it 'validates vulnerability triggered workflow association' do
+      is_expected.to have_many(:vulnerability_triggered_workflows).class_name('::Vulnerabilities::TriggeredWorkflow')
+    end
   end
 
   describe '.for_user_with_id!' do
