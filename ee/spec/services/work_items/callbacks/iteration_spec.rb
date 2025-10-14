@@ -140,14 +140,6 @@ RSpec.describe WorkItems::Callbacks::Iteration, feature_category: :team_planning
           it_behaves_like "does not update children"
         end
 
-        context "when the feature flag is disable" do
-          before do
-            stub_feature_flags(work_item_children_iteration_change: false)
-          end
-
-          it_behaves_like "does not update children"
-        end
-
         context 'when child work item is not in the previous iteration' do
           before do
             child_work_item.update!(iteration: create(:iteration, group: group))

@@ -15,6 +15,13 @@ export default {
   components: {
     GlButton,
   },
+  props: {
+    canAdmin: {
+      type: Boolean,
+      required: false,
+      default: true, // this will change when we remove the ability to create item from Explore level
+    },
+  },
   computed: {
     buttonProps() {
       switch (this.$route.name) {
@@ -44,7 +51,7 @@ export default {
 <template>
   <div class="gl-flex gl-items-center">
     <gl-button
-      v-if="$options.isLoggedIn() && buttonProps.route"
+      v-if="$options.isLoggedIn() && canAdmin && buttonProps.route"
       :to="{ name: buttonProps.route }"
       variant="confirm"
     >

@@ -10,6 +10,12 @@ module Geo
     included do
       validates :verification_failure, length: { maximum: 255 }
 
+      scope :after_cursor, ->(cursor) { where("#{primary_key} > ?", cursor) if cursor }
+      scope :keyset_order, ->(attributes) { order(Gitlab::Pagination::Keyset::Order.build(attributes)) }
+      scope :verification_state_not_pending, -> {
+        where.not(verification_state: VerificationState::VERIFICATION_STATE_VALUES[:verification_pending])
+      }
+
       state_machine :verification_state, initial: :verification_pending do
         state :verification_pending, value: VerificationState::VERIFICATION_STATE_VALUES[:verification_pending]
         state :verification_started, value: VerificationState::VERIFICATION_STATE_VALUES[:verification_started]

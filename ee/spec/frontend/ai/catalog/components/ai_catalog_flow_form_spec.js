@@ -1,5 +1,5 @@
 import { nextTick } from 'vue';
-import { GlFormFields } from '@gitlab/ui';
+import { GlForm } from '@gitlab/ui';
 import ErrorsAlert from '~/vue_shared/components/errors_alert.vue';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import AiCatalogFlowForm from 'ee/ai/catalog/components/ai_catalog_flow_form.vue';
@@ -9,13 +9,14 @@ import FormFlowType from 'ee/ai/catalog/components/form_flow_type.vue';
 import FormProjectDropdown from 'ee/ai/catalog/components/form_project_dropdown.vue';
 import FormFlowDefinition from 'ee/ai/catalog/components/form_flow_definition.vue';
 import VisibilityLevelRadioGroup from 'ee/ai/catalog/components//visibility_level_radio_group.vue';
+import FormGroup from 'ee/ai/catalog/components/form_group.vue';
 import { VISIBILITY_LEVEL_PRIVATE, VISIBILITY_LEVEL_PUBLIC } from 'ee/ai/catalog/constants';
 
 describe('AiCatalogFlowForm', () => {
   let wrapper;
 
   const findErrorAlert = () => wrapper.findComponent(ErrorsAlert);
-  const findFormFields = () => wrapper.findComponent(GlFormFields);
+  const findForm = () => wrapper.findComponent(GlForm);
   const findFlowType = () => wrapper.findComponent(FormFlowType);
   const findProjectDropdown = () => wrapper.findComponent(FormProjectDropdown);
   const findVisibilityLevelRadioGroup = () => wrapper.findComponent(VisibilityLevelRadioGroup);
@@ -25,6 +26,12 @@ describe('AiCatalogFlowForm', () => {
   const findStepsEditor = () => wrapper.findComponent(AiCatalogStepsEditor);
   const findDefinition = () => wrapper.findComponent(FormFlowDefinition);
   const findSidePanel = () => wrapper.findComponent(AiCatalogFormSidePanel);
+
+  const submitForm = async () => {
+    await findForm().vm.$emit('submit', {
+      preventDefault: jest.fn(),
+    });
+  };
 
   const defaultProps = {
     mode: 'create',
@@ -60,7 +67,8 @@ describe('AiCatalogFlowForm', () => {
         },
       },
       stubs: {
-        GlFormFields,
+        GlForm,
+        FormGroup,
       },
     });
   };
@@ -101,8 +109,8 @@ describe('AiCatalogFlowForm', () => {
         createWrapper({ props: { mode: 'edit' } });
       });
 
-      it('does not render project dropdown', () => {
-        expect(findProjectDropdown().exists()).toBe(false);
+      it('renders project dropdown as disabled when in edit mode', () => {
+        expect(findProjectDropdown().props('disabled')).toBe(true);
       });
 
       it('renders flow type as disabled', () => {
@@ -233,7 +241,7 @@ describe('AiCatalogFlowForm', () => {
     it('emits form values when user clicks submit', async () => {
       createWrapper({ props: { initialValues } });
 
-      await findFormFields().vm.$emit('submit');
+      await submitForm();
 
       expect(wrapper.emitted('submit')).toEqual([[expectedValues]]);
     });
@@ -249,7 +257,7 @@ describe('AiCatalogFlowForm', () => {
 
       createWrapper({ props: { initialValues: formValuesWithRandomSpaces } });
 
-      await findFormFields().vm.$emit('submit');
+      await submitForm();
 
       expect(wrapper.emitted('submit')).toEqual([[expectedValues]]);
     });
@@ -279,7 +287,7 @@ describe('AiCatalogFlowForm', () => {
           },
         });
 
-        await findFormFields().vm.$emit('submit');
+        await submitForm();
 
         expect(wrapper.emitted('submit')).toEqual([[expectedValuesThirdPartyFlow]]);
       });

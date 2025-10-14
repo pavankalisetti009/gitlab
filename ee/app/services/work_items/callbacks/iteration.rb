@@ -16,7 +16,6 @@ module WorkItems
       end
 
       def after_update_commit
-        return unless Feature.enabled?(:work_item_children_iteration_change, work_item.namespace.root_ancestor)
         return unless work_item.sprint_id_previously_changed?
 
         previous_iteration_id = work_item.sprint_id_before_last_save

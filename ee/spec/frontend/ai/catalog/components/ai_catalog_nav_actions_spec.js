@@ -18,10 +18,12 @@ describe('AiCatalogNavTabs', () => {
   const createComponent = ({
     routeName = AI_CATALOG_AGENTS_ROUTE,
     isLoggedInValue = true,
+    props = {},
   } = {}) => {
     isLoggedIn.mockReturnValue(isLoggedInValue);
 
     wrapper = shallowMountExtended(AiCatalogNavActions, {
+      propsData: props,
       mocks: {
         $route: {
           name: routeName,
@@ -48,6 +50,16 @@ describe('AiCatalogNavTabs', () => {
     describe('when user is not authenticated', () => {
       beforeEach(() => {
         createComponent({ isLoggedInValue: false });
+      });
+
+      it('does not render button', () => {
+        expect(findButton().exists()).toBe(false);
+      });
+    });
+
+    describe('when user does not have permission to create an item', () => {
+      beforeEach(() => {
+        createComponent({ props: { canAdmin: false } });
       });
 
       it('does not render button', () => {

@@ -1,10 +1,10 @@
 <script>
 import { GlForm, GlFormFields, GlFormTextarea } from '@gitlab/ui';
-import { s__ } from '~/locale';
+import { formValidators } from '@gitlab/ui/src/utils';
+import { s__, sprintf } from '~/locale';
 import { MAX_LENGTH_PROMPT, FORM_ID_TEST_RUN } from 'ee/ai/catalog/constants';
 import ClipboardButton from '~/vue_shared/components/clipboard_button.vue';
 import glFeatureFlagsMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
-import { createFieldValidators } from '../utils';
 
 export default {
   name: 'AiCatalogAgentRunForm',
@@ -37,10 +37,18 @@ export default {
   },
   fields: {
     userPrompt: {
-      validators: createFieldValidators({
-        requiredLabel: s__('AICatalog|User prompt is required.'),
-        maxLength: MAX_LENGTH_PROMPT,
-      }),
+      validators: [
+        formValidators.required(s__('AICatalog|User prompt is required.')),
+        formValidators.factory(
+          sprintf(
+            s__('AICatalog|Input cannot exceed %{value} characters. Please shorten your input.'),
+            {
+              value: MAX_LENGTH_PROMPT,
+            },
+          ),
+          (value) => (value?.length || 0) <= MAX_LENGTH_PROMPT,
+        ),
+      ],
     },
   },
 };
