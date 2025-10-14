@@ -34,7 +34,7 @@ Patches can be applied to dependencies with [`patch-package`](https://github.com
 Dependencies should only be patched as a last resort, as they are technical
 debt. Here are some acceptable reasons for patching a dependency:
 
-- it is unmaintained, so there won't be an upstream version which will include the change;
+- it is unmaintained, so there isn't an upstream version which includes the change;
 - there is a vulnerability identified that we cannot wait for upstream to fix;
 - to change aspects that are specific to GitLab and would or could not be changed upstream.
 
@@ -55,7 +55,7 @@ Patches are specific to the particular version of the dependency. When that depe
 
 If the patch applies cleanly:
 
-1. Run `yarn patch-package <package-name>` to update the patch to apply to the new version. This will rename the patch.
+1. Run `yarn patch-package <package-name>` to rename the patch to apply to the new version.
 1. Run `git add patches/`.
 1. Commit as usual.
 
