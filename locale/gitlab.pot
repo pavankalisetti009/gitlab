@@ -24751,12 +24751,6 @@ msgstr ""
 msgid "DuoAgenticChat|Duo Agent"
 msgstr ""
 
-msgid "DuoAgenticChat|Duo is your general development assistant"
-msgstr ""
-
-msgid "DuoAgenticChat|GitLab Duo Agent"
-msgstr ""
-
 msgid "DuoAgenticChat|GitLab Duo Agentic Chat"
 msgstr ""
 

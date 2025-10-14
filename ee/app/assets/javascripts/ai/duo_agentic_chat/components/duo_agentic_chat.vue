@@ -5,6 +5,7 @@ import { WebAgenticDuoChat } from '@gitlab/duo-ui';
 import { GlToggle, GlTooltipDirective } from '@gitlab/ui';
 import getUserWorkflows from 'ee/ai/graphql/get_user_workflow.query.graphql';
 import getConfiguredAgents from 'ee/ai/graphql/get_configured_agents.query.graphql';
+import getFoundationalChatAgents from 'ee/ai/graphql/get_foundational_chat_agents.graphql';
 import getAgentFlowConfig from 'ee/ai/graphql/get_agent_flow_config.query.graphql';
 import { renderGFM } from '~/behaviors/markdown/render_gfm';
 import { getCookie } from '~/lib/utils/common_utils';
@@ -191,6 +192,20 @@ export default {
         this.onError(err);
       },
     },
+    foundationalAgents: {
+      query: getFoundationalChatAgents,
+      update(data) {
+        return (
+          data?.aiFoundationalChatAgents.nodes.map((agent) => ({
+            ...agent,
+            foundational: true,
+          })) || []
+        );
+      },
+      error(err) {
+        this.onError(err);
+      },
+    },
     agentConfig: {
       query: getAgentFlowConfig,
       variables() {
@@ -229,6 +244,8 @@ export default {
       selectedModel: null,
       catalogAgents: [],
       aiCatalogItemVersionId: '',
+      foundationalAgents: [],
+      selectedFoundationalAgent: null,
       agentDeletedError: '',
       isChatAvailable: true,
       isEmbedded: this.chatConfiguration?.defaultProps?.isEmbedded ?? false,
@@ -311,13 +328,10 @@ export default {
       },
     },
     agents() {
-      return [
-        {
-          name: s__('DuoAgenticChat|GitLab Duo Agent'),
-          description: s__('DuoAgenticChat|Duo is your general development assistant'),
-        },
-        ...this.catalogAgents,
-      ].map((agent) => ({ ...agent, text: agent.name }));
+      return [...this.foundationalAgents, ...this.catalogAgents].map((agent) => ({
+        ...agent,
+        text: agent.name,
+      }));
     },
     websocketUrl() {
       return buildWebsocketUrl({
@@ -330,13 +344,21 @@ export default {
       });
     },
     dynamicTitle() {
-      if (!this.aiCatalogItemVersionId) {
+      if (!this.aiCatalogItemVersionId && !this.selectedFoundationalAgent) {
         return this.duoChatTitle;
       }
 
-      const activeAgent = this.catalogAgents.find((agent) =>
-        agent.versions.nodes.some((version) => version.id === this.aiCatalogItemVersionId),
-      );
+      let activeAgent = null;
+
+      if (this.aiCatalogItemVersionId) {
+        activeAgent = this.catalogAgents.find((agent) =>
+          agent.versions.nodes.some((version) => version.id === this.aiCatalogItemVersionId),
+        );
+      } else {
+        activeAgent = this.foundationalAgents.find(
+          (agent) => agent.id === this.selectedFoundationalAgent.id,
+        );
+      }
 
       return activeAgent ? activeAgent.name : this.duoChatTitle;
     },
@@ -452,6 +474,7 @@ export default {
 
       const startRequest = buildStartRequest({
         workflowId: this.workflowId,
+        workflowDefinition: this.selectedFoundationalAgent?.referenceWithVersion,
         goal,
         approval,
         additionalContext,
@@ -652,12 +675,20 @@ export default {
         return;
       }
 
-      if (agent?.id) {
-        this.aiCatalogItemVersionId = agent.versions.nodes.find(({ released }) => released)?.id;
+      let selectedFoundationalAgent = null;
+      let aiCatalogItemVersionId = '';
+
+      if (agent?.foundational) {
+        selectedFoundationalAgent = agent;
+        this.agentConfig = null;
+      } else if (agent?.id) {
+        aiCatalogItemVersionId = agent.versions.nodes.find(({ released }) => released)?.id;
       } else {
-        this.aiCatalogItemVersionId = '';
         this.agentConfig = null;
       }
+
+      this.aiCatalogItemVersionId = aiCatalogItemVersionId;
+      this.selectedFoundationalAgent = selectedFoundationalAgent;
 
       // Reset agent validation state
       this.isChatAvailable = true;

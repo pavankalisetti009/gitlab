@@ -119,6 +119,28 @@ describe('workflow_socket_utils', () => {
       });
     });
 
+    describe('when workflowDefinition is not null', () => {
+      it('builds start request with required fields', () => {
+        const request = buildStartRequest({
+          workflowId: '123',
+          goal: 'test goal',
+          metadata: 'test metadata',
+          workflowDefinition: 'agent/v1',
+        });
+
+        expect(request).toEqual({
+          startRequest: {
+            workflowID: '123',
+            clientVersion: '1.0',
+            workflowDefinition: 'agent/v1',
+            workflowMetadata: 'test metadata',
+            goal: 'test goal',
+            approval: {},
+          },
+        });
+      });
+    });
+
     describe('when additionalContext is provided', () => {
       it('includes additionalContext in request', () => {
         const additionalContext = [{ content: 'context data' }];
