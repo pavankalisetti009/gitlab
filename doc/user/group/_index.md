@@ -133,10 +133,7 @@ This page shows groups that you are a member of through:
 
 {{< /history >}}
 
-A group is inactive when:
-
-- It is pending deletion.
-- It has been archived.
+A group is inactive when it is either pending deletion or it has been archived.
 
 To view all inactive groups:
 
@@ -144,13 +141,15 @@ To view all inactive groups:
 1. Select **View all my groups**.
 1. Select the **Inactive** tab.
 
-Each group in the list shows:
+Each inactive group in the list displays a badge to indicate that the group is either 
+archived or pending deletion.
 
-- A badge indicating that the group is archived or marked for deletion.
-  If the group is marked for deletion, the list also shows:
-  - The time the group was marked for deletion.
-  - The time the group is scheduled for final deletion.
-  - A **Restore** action to stop the group being eventually deleted.
+If the group is pending deletion, the list also shows:
+
+- The time the group is scheduled for final deletion.
+- A **Restore** action. When you restore a group:
+  - The **Pending deletion** label is removed. The group is no longer scheduled for deletion.
+  - The group is removed from the **Inactive** tab.
 
 ## View a group
 
@@ -291,7 +290,7 @@ To delete a group and its contents:
 1. Select **Settings** > **General**.
 1. Expand the **Advanced** section.
 1. In the **Delete group** section, select **Delete**.
-1. On the confirmation dialog, type the group name and select **Confirm**.
+1. On the confirmation dialog, enter the group name and select **Confirm**.
 
 You can also delete a group from the groups dashboard:
 
@@ -299,7 +298,7 @@ You can also delete a group from the groups dashboard:
 1. Select **View all my groups**.
 1. Select ({{< icon name="ellipsis_v" >}}) for the group you want to delete.
 1. Select **Delete**.
-1. On the confirmation dialog, type the group name and select **Confirm**.
+1. On the confirmation dialog, enter the group name and select **Confirm**.
 
 This action adds a background job to mark a group for deletion. On GitLab.com, the group is deleted after 30 days. On GitLab Self-Managed,
 you can modify the retention period through the [instance settings](../../administration/settings/visibility_and_access_controls.md#deletion-protection).
@@ -326,7 +325,7 @@ If the user who scheduled the group deletion regains Owner role or administrator
 {{< alert type="warning" >}}
 
 On GitLab.com and GitLab Dedicated, after a group is deleted, its data is retained for 30 days, and immediate deletion is not available.
-If you really need to delete a group immediately on GitLab.com, you can open a [support ticket](https://about.gitlab.com/support/).
+If you must delete a group immediately on GitLab.com, you can open a [support ticket](https://about.gitlab.com/support/).
 
 {{< /alert >}}
 

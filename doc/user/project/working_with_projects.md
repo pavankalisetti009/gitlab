@@ -137,10 +137,7 @@ You can also view your starred and personal projects from your personal profile:
 
 {{< /history >}}
 
-A project is inactive when:
-
-- It is pending deletion.
-- It has been archived.
+A project is inactive when it is either pending deletion or it has been archived.
 
 To view all inactive projects:
 
@@ -149,13 +146,15 @@ To view all inactive projects:
    - **Explore**, to filter all projects you can access.
 1. Select the **Inactive** tab.
 
-Each project in the list shows:
+Each inactive project in the list displays a badge to indicate that the project is either 
+archived or pending deletion.
 
-- A badge indicating that the project is archived or marked for deletion.
-  If the project is marked for deletion, the list also shows:
-  - The time the project was marked for deletion.
-  - The time the project is scheduled for final deletion.
-  - A **Restore** action to stop the project being eventually deleted.
+If the project is pending deletion, the list also shows:
+
+- The time the project is scheduled for final deletion.
+- A **Restore** action. When you restore a project:
+  - The **Pending deletion** label is removed. The project is no longer scheduled for deletion.
+  - The project is removed from the **Inactive** tab. 
 
 ### View only projects you own
 
@@ -379,26 +378,27 @@ You can also [delete projects using the Rails console](troubleshooting.md#delete
 {{< alert type="warning" >}}
 
 On GitLab.com and GitLab Dedicated, after a project is deleted, its data is retained for 30 days, and immediate deletion is not available.
-If you really need to delete a project immediately on GitLab.com, you can open a [support ticket](https://about.gitlab.com/support/).
+If you must delete a project immediately on GitLab.com, you can open a [support ticket](https://about.gitlab.com/support/).
 
 {{< /alert >}}
 
-If you don't want to wait, you can delete a project immediately.
+If you do not want to wait for the configured retention period to delete a project,
+you can delete the project immediately.
 
 Prerequisites:
 
 - You must have the Owner role for a project.
-- You have [marked the project for deletion](#delete-a-project).
+- You have [scheduled the project for deletion](#delete-a-project).
 
-To immediately delete a project marked for deletion:
+To immediately delete a project scheduled for deletion:
 
 1. On the left sidebar, select **Search or go to** and find your project.
-1. Select **Settings > General**.
+1. Select **Settings** > **General**.
 1. Expand **Advanced**.
 1. In the **Delete project** section, select **Delete immediately**.
-1. Confirm the action when asked to.
+1. On the confirmation dialog, enter the project name and select **Confirm**.
 
-This action deletes the group, its subgroups, projects, and all related resources, including issues and merge requests.
+This action deletes the project and all related resources, including issues and merge requests.
 
 ### Restore a project
 
