@@ -58,8 +58,8 @@ module API
             not_found! if disabled
           end
 
-          def start_workflow_params(workflow_id)
-            token_service = token_generation_service
+          def start_workflow_params(workflow_id, container:)
+            token_service = token_generation_service(container: container)
 
             oauth_token_result = token_service.generate_oauth_token_with_composite_identity_support
             if oauth_token_result.error?
@@ -83,11 +83,13 @@ module API
             }
           end
 
-          def token_generation_service
+          # container is not available in the context of `/direct_access` endpoint
+          def token_generation_service(container: nil)
             ::Ai::DuoWorkflows::TokenGenerationService.new(
               current_user: current_user,
-              organization: ::Current.organization,
-              workflow_definition: params[:workflow_definition]
+              organization: container&.organization || ::Current.organization,
+              workflow_definition: params[:workflow_definition],
+              container: container
             )
           end
 
@@ -360,7 +362,7 @@ module API
                 if params[:start_workflow].present?
                   response = ::Ai::DuoWorkflows::StartWorkflowService.new(
                     workflow: result[:workflow],
-                    params: start_workflow_params(result[:workflow].id)
+                    params: start_workflow_params(result[:workflow].id, container: container)
                   ).execute
 
                   workload_id = response.payload && response.payload[:workload_id]
