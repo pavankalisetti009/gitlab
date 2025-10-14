@@ -94,6 +94,28 @@ RSpec.describe MergeRequests::CreatePipelineService, :clean_gitlab_redis_shared_
       end
     end
 
+    context 'when mergeability status changes after the ref is updated' do
+      before do
+        allow_next_instance_of(::MergeRequests::MergeabilityCheckService) do |service|
+          allow(service).to(receive(:reload_merge_head_diff)).and_wrap_original do |original|
+            # update the merge request via a different record to simulate external race
+            MergeRequest.find(merge_request.id).mark_as_unchecked
+            original.call
+          end
+        end
+      end
+
+      it_behaves_like 'merged result pipeline'
+
+      context 'when feature flag merged_results_pipeline_ignore_target_branch_race is disabled' do
+        before do
+          stub_feature_flags(merged_results_pipeline_ignore_target_branch_race: false)
+        end
+
+        it_behaves_like 'detached merge request pipeline'
+      end
+    end
+
     context 'when merge request is a draft' do
       before do
         merge_request.update!(title: merge_request.draft_title)

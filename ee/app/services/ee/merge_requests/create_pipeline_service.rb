@@ -14,12 +14,14 @@ module EE
         super
       end
 
+      private
+
       def create_merged_result_pipeline_for(merge_request)
         return cannot_create_pipeline_error unless can_create_merged_result_pipeline_for?(merge_request)
 
         result = ::MergeRequests::MergeabilityCheckService.new(merge_request).execute(recheck: true)
 
-        if result.success?
+        if result.success? || merge_status_race?(merge_request, result)
           ref_payload = result.payload.fetch(:merge_ref_head)
 
           ::Ci::CreatePipelineService
@@ -41,6 +43,11 @@ module EE
         return false unless can_create_pipeline_in_target_project?(merge_request)
 
         can_create_pipeline_for?(merge_request)
+      end
+
+      def merge_status_race?(merge_request, result)
+        ::Feature.enabled?(:merged_results_pipeline_ignore_target_branch_race, merge_request.project) &&
+          result.reason == :merge_status_race
       end
     end
   end
