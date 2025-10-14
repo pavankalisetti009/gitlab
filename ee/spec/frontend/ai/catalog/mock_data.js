@@ -553,6 +553,7 @@ export const mockUserPermissionsResponse = {
       id: 'gid://gitlab/Project/1000000',
       userPermissions: {
         adminAiCatalogItemConsumer: true,
+        adminAiCatalogItem: true,
         __typename: TYPENAME_PROJECT_PERMISSIONS,
       },
       __typename: TYPENAME_PROJECT,

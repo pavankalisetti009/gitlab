@@ -24,6 +24,11 @@ export default {
       required: false,
       default: undefined,
     },
+    canAdmin: {
+      type: Boolean,
+      required: false,
+      default: true, // this will change when we remove the ability to create item from Explore level
+    },
   },
   computed: {
     title() {
@@ -48,7 +53,7 @@ export default {
     </page-heading>
     <div v-if="isGlobal" class="gl-border-b gl-flex">
       <ai-catalog-nav-tabs />
-      <ai-catalog-nav-actions />
+      <ai-catalog-nav-actions :can-admin="canAdmin" />
     </div>
   </div>
 </template>
