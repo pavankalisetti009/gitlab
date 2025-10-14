@@ -18,6 +18,12 @@ RSpec.describe Terraform::StateVersion, feature_category: :infrastructure_as_cod
     end
   end
 
+  include_examples 'a verifiable model for verification state' do
+    let(:verifiable_model_record) do
+      build(:terraform_state_version, terraform_state: create(:terraform_state, project: project))
+    end
+  end
+
   describe '.replicables_for_current_secondary' do
     where(:selective_sync_enabled, :object_storage_sync_enabled, :terraform_object_storage_enabled, :synced_states) do
       true  | true  | true  | 5

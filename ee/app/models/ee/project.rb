@@ -428,14 +428,6 @@ module EE
 
       scope :available_verifiables, -> { joins(:project_state) }
 
-      scope :checksummed, -> {
-        joins(:project_state).where.not(project_states: { verification_checksum: nil })
-      }
-
-      scope :not_checksummed, -> {
-        joins(:project_state).where(project_states: { verification_checksum: nil })
-      }
-
       scope :with_verification_state, ->(state) {
         joins(:project_state)
           .where(project_states: { verification_state: verification_state_value(state) })

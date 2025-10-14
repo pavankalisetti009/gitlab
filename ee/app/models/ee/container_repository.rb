@@ -22,8 +22,6 @@ module EE
       has_one :container_repository_state, autosave: false, inverse_of: :container_repository, class_name: 'Geo::ContainerRepositoryState'
 
       scope :with_verification_state, ->(state) { joins(:container_repository_state).where(container_repository_states: { verification_state: verification_state_value(state) }) }
-      scope :checksummed, -> { joins(:container_repository_state).where.not(container_repository_states: { verification_checksum: nil }) }
-      scope :not_checksummed, -> { joins(:container_repository_state).where(container_repository_states: { verification_checksum: nil }) }
 
       scope :available_verifiables, -> { joins(:container_repository_state) }
 

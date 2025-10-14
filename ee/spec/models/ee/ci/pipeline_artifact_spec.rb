@@ -9,6 +9,12 @@ RSpec.describe Ci::PipelineArtifact, feature_category: :geo_replication do
     it { is_expected.to have_one(:pipeline_artifact_state).class_name('Geo::PipelineArtifactState').inverse_of(:pipeline_artifact) }
   end
 
+  include_examples 'a verifiable model for verification state' do
+    let(:verifiable_model_record) do
+      build(:ci_pipeline_artifact, pipeline: create(:ci_pipeline, project: create(:project)))
+    end
+  end
+
   describe '.replicables_for_current_secondary' do
     using RSpec::Parameterized::TableSyntax
 

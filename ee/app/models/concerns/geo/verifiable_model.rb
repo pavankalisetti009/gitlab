@@ -16,13 +16,21 @@ module Geo
       # We need lazy loaded states when querying the model for the data management
       # endpoint `api/v4/admin/data_management/{model} to avoid N+1 queries
       scope :with_state_details, -> do
-        return includes(:merge_request_diff_detail) if klass == MergeRequestDiff
+        return unless separate_verification_state_table?
 
-        state_association = reflect_on_all_associations(:has_one).detect do |association|
-          association.klass.include?(::Geo::VerificationStateDefinition)
-        end
+        includes(active_record_state_association.name)
+      end
+      scope :checksummed, -> do
+        return where.not(verification_checksum: nil) unless separate_verification_state_table?
 
-        includes(state_association.name) if state_association
+        association = active_record_state_association.name
+        joins(association).where.not(association => { verification_checksum: nil })
+      end
+      scope :not_checksummed, -> do
+        return where(verification_checksum: nil) unless separate_verification_state_table?
+
+        association = active_record_state_association.name
+        joins(association).where(association => { verification_checksum: nil })
       end
 
       def save_verification_details
@@ -89,6 +97,12 @@ module Geo
         verification_state_table_class
           .where(verification_state_model_key => primary_keys)
           .delete_all
+      end
+
+      def active_record_state_association
+        @active_record_state_association ||= reflect_on_all_associations(:has_one).detect do |association|
+          association.klass == verification_state_table_class
+        end
       end
     end
   end

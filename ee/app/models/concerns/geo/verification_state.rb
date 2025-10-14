@@ -50,8 +50,6 @@ module Geo
       scope :verification_not_pending, -> {
         available_verifiables.where.not(verification_state: verification_state_value(:verification_pending))
       }
-      scope :checksummed, -> { where.not(verification_checksum: nil) }
-      scope :not_checksummed, -> { where(verification_checksum: nil) }
       scope :verification_timed_out, -> {
         available_verifiables.where(verification_arel_table[:verification_state].eq(1))
           .where(verification_arel_table[:verification_started_at].lt(VERIFICATION_TIMEOUT.ago))

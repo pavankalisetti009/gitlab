@@ -5,7 +5,7 @@ require 'spec_helper'
 RSpec.describe Ci::SecureFile, feature_category: :geo_replication do
   include EE::GeoHelpers
 
-  include_examples 'a verifiable model with a separate table for verification state' do
+  include_examples 'a verifiable model for verification state' do
     let(:project) { create(:project) }
     let(:verifiable_model_record) { build(:ci_secure_file, project: project) }
 

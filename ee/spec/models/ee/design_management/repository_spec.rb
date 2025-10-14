@@ -16,7 +16,7 @@ RSpec.describe DesignManagement::Repository, feature_category: :design_managemen
       end
     end
 
-    include_examples 'a verifiable model with a separate table for verification state' do
+    include_examples 'a verifiable model for verification state' do
       let(:skip_unverifiable_model_record_tests) { true }
       let_it_be(:project) { create(:project) }
       let(:verifiable_model_record) do
