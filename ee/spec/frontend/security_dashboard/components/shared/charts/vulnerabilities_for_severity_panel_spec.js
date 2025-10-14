@@ -1,5 +1,5 @@
 import { shallowMount } from '@vue/test-utils';
-import { GlDashboardPanel, GlLink } from '@gitlab/ui';
+import { GlDashboardPanel, GlLink, GlSprintf } from '@gitlab/ui';
 import { GlSingleStat } from '@gitlab/ui/src/charts';
 import VulnerabilitiesForSeverityPanel from 'ee/security_dashboard/components/shared/charts/vulnerabilities_for_severity_panel.vue';
 import { SEVERITY_CLASS_NAME_MAP } from 'ee/vue_shared/security_reports/components/constants';
@@ -32,6 +32,9 @@ describe('VulnerabilitiesForSeverityPanel', () => {
       },
       provide: {
         securityVulnerabilitiesPath,
+      },
+      stubs: {
+        GlSprintf,
       },
     });
   };
@@ -69,7 +72,7 @@ describe('VulnerabilitiesForSeverityPanel', () => {
 
         it('shows the correct info popover', () => {
           expect(findDashboardPanel().text()).toContain(
-            `Total count of ${expectedTitle} vulnerabilities. Click View to see these vulnerabilities in the vulnerability report.`,
+            `Total count of open ${expectedTitle} vulnerabilities. Click View to see these vulnerabilities in the vulnerability report.`,
           );
         });
       },
