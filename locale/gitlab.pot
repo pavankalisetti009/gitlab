@@ -29672,6 +29672,9 @@ msgstr ""
 msgid "Geo|Missing on Primary!"
 msgstr ""
 
+msgid "Geo|Model ID"
+msgstr ""
+
 msgid "Geo|Model record: %{modelRecordId}"
 msgstr ""
 
@@ -29856,6 +29859,9 @@ msgid "Geo|Reverify all failed %{type}"
 msgstr ""
 
 msgid "Geo|Review replication status, and resynchronize and reverify items with the primary site."
+msgstr ""
+
+msgid "Geo|Review stored data and data health within your instance."
 msgstr ""
 
 msgid "Geo|Scheduled %{name} for %{actionName}."
