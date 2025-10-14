@@ -1,5 +1,5 @@
 <script>
-import { GlDashboardPanel, GlLink } from '@gitlab/ui';
+import { GlDashboardPanel, GlLink, GlSprintf } from '@gitlab/ui';
 import { GlSingleStat } from '@gitlab/ui/src/charts';
 import { s__, sprintf } from '~/locale';
 import { SEVERITY_CLASS_NAME_MAP } from 'ee/vue_shared/security_reports/components/constants';
@@ -12,6 +12,7 @@ export default {
     GlDashboardPanel,
     GlSingleStat,
     GlLink,
+    GlSprintf,
   },
   inject: ['securityVulnerabilitiesPath'],
   props: {
@@ -75,7 +76,7 @@ export default {
     infoPopover() {
       return sprintf(
         s__(
-          'SecurityReports|Total count of %{severity} vulnerabilities. Click View to see these vulnerabilities in the vulnerability report.',
+          'SecurityReports|Total count of %{boldStart}open%{boldEnd} %{severity} vulnerabilities. Click View to see these vulnerabilities in the vulnerability report.',
         ),
         { severity: this.title },
       );
@@ -101,7 +102,11 @@ export default {
       <p v-else>{{ __('Something went wrong. Please try again.') }}</p>
     </template>
     <template #info-popover-content>
-      {{ infoPopover }}
+      <gl-sprintf :message="infoPopover">
+        <template #bold="{ content }"
+          ><strong>{{ content }}</strong></template
+        >
+      </gl-sprintf>
     </template>
   </gl-dashboard-panel>
 </template>
