@@ -3,7 +3,6 @@ import { mount } from '@vue/test-utils';
 import { GlCollapsibleListbox } from '@gitlab/ui';
 import ModelSelectDropdown from 'ee/ai/shared/feature_settings/model_select_dropdown.vue';
 import { extendedWrapper } from 'helpers/vue_test_utils_helper';
-import { SELF_HOSTED_ROUTE_NAMES } from 'ee/ai/duo_self_hosted/constants';
 import { GITLAB_DEFAULT_MODEL } from 'ee/ai/model_selection/constants';
 import { mockListItems as mockSelfHostedModelsItems } from '../../duo_self_hosted/self_hosted_models/mock_data';
 import { mockListItems as mockModelSelectionItems } from '../../model_selection/mock_data';
@@ -30,7 +29,6 @@ describe('ModelSelectDropdown', () => {
   const findModelSelectDropdown = () => wrapper.findComponent(ModelSelectDropdown);
   const findGLCollapsibleListbox = () => wrapper.findComponent(GlCollapsibleListbox);
   const findDropdownListItems = () => wrapper.findAllByRole('option');
-  const findAddModelButton = () => wrapper.findByTestId('add-self-hosted-model-button');
   const findDropdownToggleText = () => wrapper.findByTestId('dropdown-toggle-text');
   const findBetaModelSelectedBadge = () => wrapper.findByTestId('beta-model-selected-badge');
   const findBetaModelDropdownBadges = () => wrapper.findAllByTestId('beta-model-dropdown-badge');
@@ -110,30 +108,6 @@ describe('ModelSelectDropdown', () => {
     it('disables the dropdown toggle', () => {
       createComponent({ props: { disabled: true } });
       expect(findToggleButton().props('disabled')).toBe(true);
-    });
-  });
-
-  describe('when isFeatureSettingDropdown is true', () => {
-    beforeEach(() => {
-      createComponent({ props: { isFeatureSettingDropdown: true } });
-    });
-
-    it('renders compatible models header-text', () => {
-      expect(findGLCollapsibleListbox().props('headerText')).toBe('Compatible models');
-    });
-
-    it('renders a button to add a self-hosted model', () => {
-      expect(findAddModelButton().text()).toBe('Add self-hosted model');
-      expect(findAddModelButton().props('to')).toEqual({ name: SELF_HOSTED_ROUTE_NAMES.NEW });
-    });
-  });
-
-  describe('when isFeatureSettingDropdown is false', () => {
-    it('does not render feature setting elements', () => {
-      createComponent();
-
-      expect(findGLCollapsibleListbox().props('headerText')).toBe(null);
-      expect(findAddModelButton().exists()).toBe(false);
     });
   });
 

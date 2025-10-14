@@ -1,10 +1,11 @@
 <script>
+import { GlButton } from '@gitlab/ui';
 import { s__, sprintf } from '~/locale';
 import { createAlert } from '~/alert';
 import ModelSelectDropdown from 'ee/ai/shared/feature_settings/model_select_dropdown.vue';
 import { getTypeFromGraphQLId } from '~/graphql_shared/utils';
 import { TYPENAME_AI_SELF_HOSTED_MODEL } from 'ee_else_ce/graphql_shared/constants';
-import { RELEASE_STATES } from '../../constants';
+import { RELEASE_STATES, SELF_HOSTED_ROUTE_NAMES } from '../../constants';
 import updateAiFeatureSetting from '../graphql/mutations/update_ai_feature_setting.mutation.graphql';
 import getAiFeatureSettingsQuery from '../graphql/queries/get_ai_feature_settings.query.graphql';
 import getSelfHostedModelsQuery from '../../self_hosted_models/graphql/queries/get_self_hosted_models.query.graphql';
@@ -14,6 +15,7 @@ import GitlabManagedModelsDisclaimerModal from './gitlab_managed_models_disclaim
 export default {
   name: 'ModelSelector',
   components: {
+    GlButton,
     ModelSelectDropdown,
     GitlabManagedModelsDisclaimerModal,
   },
@@ -239,6 +241,7 @@ export default {
       });
     },
   },
+  SELF_HOSTED_ROUTE_NAMES,
 };
 </script>
 <template>
@@ -246,12 +249,26 @@ export default {
     <gitlab-managed-models-disclaimer-modal ref="disclaimerModal" @confirm="updateSelectedModel" />
     <model-select-dropdown
       class="gl-w-34 lg:gl-w-48"
+      :header-text="s__('AdminAIPoweredFeatures|Compatible models')"
       :selected-option="selectedOption"
       :items="listItems"
       :placeholder-dropdown-text="s__('AdminAIPoweredFeatures|Select a model')"
       :is-loading="isSaving || batchUpdateIsSaving"
-      :is-feature-setting-dropdown="!isDedicatedInstance"
       @select="onSelect"
-    />
+    >
+      <template v-if="!isDedicatedInstance" #footer>
+        <div class="gl-border-t-1 gl-border-t-dropdown !gl-p-2 gl-border-t-solid">
+          <gl-button
+            data-testid="add-self-hosted-model-button"
+            category="tertiary"
+            block
+            class="!gl-justify-start"
+            :to="{ name: $options.SELF_HOSTED_ROUTE_NAMES.NEW }"
+          >
+            {{ s__('AdminAIPoweredFeatures|Add self-hosted model') }}
+          </gl-button>
+        </div>
+      </template>
+    </model-select-dropdown>
   </div>
 </template>
