@@ -56,6 +56,7 @@ module Gitlab
                   totalCredits
                   creditsUsed
                   poolCreditsUsed
+                  overageCreditsUsed
                 }
               }
             }
