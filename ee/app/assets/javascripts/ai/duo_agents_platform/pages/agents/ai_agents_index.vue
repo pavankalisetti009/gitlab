@@ -157,7 +157,7 @@ export default {
 
 <template>
   <div>
-    <ai-catalog-list-header />
+    <ai-catalog-list-header :heading="s__('AICatalog|Agents')" />
 
     <errors-alert class="gl-mt-5" :errors="errors" @dismiss="errors = []" />
     <ai-catalog-list
