@@ -331,28 +331,40 @@ RSpec.describe ApplicationSettings::UpdateService, feature_category: :shared do
       end
     end
 
-    context 'when updating duo_features_enabled' do
-      let(:params) { { duo_features_enabled: true } }
+    shared_examples 'when updating duo settings' do |setting_key, setting_val|
+      let(:params) { { setting_key => setting_val } }
       let(:service) { described_class.new(setting, user, params) }
 
-      before do
-        setting.update!(duo_features_enabled: false)
-      end
-
-      it 'triggers the CascadeDuoFeaturesEnabledWorker with correct arguments' do
-        expect(AppConfig::CascadeDuoFeaturesEnabledWorker).to receive(:perform_async)
-          .with(params[:duo_features_enabled])
+      it 'triggers the CascadeDuoSettingsWorker with correct arguments' do
+        expect(AppConfig::CascadeDuoSettingsWorker).to receive(:perform_async)
+          .with(params)
 
         service.execute
       end
 
-      it 'updates the duo_features_enabled setting' do
+      it 'updates the setting' do
         result = service.execute
 
         expect(result).to be_truthy
 
-        expect(setting.reload.duo_features_enabled).to be(true)
+        expect(setting.reload.send(setting_key)).to be(setting_val)
       end
+    end
+
+    context 'when updating duo_features_enabled' do
+      before do
+        setting.update!(duo_features_enabled: false)
+      end
+
+      it_behaves_like 'when updating duo settings', :duo_features_enabled, true
+    end
+
+    context 'when updating duo_remote_flows_enabled' do
+      before do
+        setting.update!(duo_remote_flows_enabled: true)
+      end
+
+      it_behaves_like 'when updating duo settings', :duo_remote_flows_enabled, false
     end
 
     context 'when updating auto_duo_code_review_enabled' do

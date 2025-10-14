@@ -17,9 +17,12 @@ module Namespaces
     def perform(*args)
       group_id = args[0]
       group = Group.find(group_id)
-      duo_features_enabled = group.namespace_settings.duo_features_enabled
+      setting_attribute_name = :duo_features_enabled
+      setting_attribute_value = group.namespace_settings.duo_features_enabled
 
-      ::Ai::CascadeDuoFeaturesEnabledService.new(duo_features_enabled).cascade_for_group(group)
+      ::Ai::CascadeDuoSettingsService.new({
+        setting_attribute_name => setting_attribute_value
+      }).cascade_for_group(group)
     end
   end
 end

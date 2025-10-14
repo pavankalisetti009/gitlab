@@ -580,10 +580,10 @@ RSpec.describe Groups::UpdateService, '#execute', feature_category: :groups_and_
     end
   end
 
-  context 'when updating duo_features_enabled' do
+  shared_examples 'when updating duo settings' do |setting_key, setting_val|
     let_it_be_with_reload(:user) { create(:user) }
     let_it_be_with_reload(:group) { create(:group, :public) }
-    let(:params) { { duo_features_enabled: false } }
+    let(:params) { { setting_key => setting_val } }
 
     context 'as a normal user' do
       before_all do
@@ -592,7 +592,7 @@ RSpec.describe Groups::UpdateService, '#execute', feature_category: :groups_and_
 
       it 'does not change settings' do
         expect { update_group(group, user, params) }
-          .not_to(change { group.namespace_settings.duo_features_enabled })
+          .not_to(change { group.namespace_settings.public_send(setting_key) })
       end
     end
 
@@ -603,21 +603,29 @@ RSpec.describe Groups::UpdateService, '#execute', feature_category: :groups_and_
 
       it 'changes settings' do
         expect { update_group(group, user, params) }
-          .to(change { group.namespace_settings.duo_features_enabled }.to(false))
+          .to(change { group.namespace_settings.public_send(setting_key) }.to(setting_val))
       end
 
       context 'group has subgroups' do
         let(:subgroup) { create(:group, parent: group) }
 
         it 'runs worker that sets subgroup duo_features_enabled to match group', :sidekiq_inline do
-          subgroup.namespace_settings.update!(duo_features_enabled: true)
+          subgroup.namespace_settings.update!(setting_key => setting_val)
 
           update_group(group, user, params)
 
-          expect(subgroup.reload.namespace_settings.reload.duo_features_enabled).to eq false
+          expect(subgroup.reload.namespace_settings.reload.send(setting_key)).to eq(setting_val)
         end
       end
     end
+  end
+
+  context 'when updating duo_features_enabled' do
+    it_behaves_like 'when updating duo settings', :duo_features_enabled, false
+  end
+
+  context 'when updating duo_remote_flows_enabled' do
+    it_behaves_like 'when updating duo settings', :duo_remote_flows_enabled, false
   end
 
   context 'when updating lock_duo_features_enabled' do

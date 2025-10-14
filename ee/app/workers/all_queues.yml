@@ -1573,6 +1573,16 @@
   :idempotent: true
   :tags: []
   :queue_namespace:
+- :name: app_config_cascade_duo_settings
+  :worker_name: AppConfig::CascadeDuoSettingsWorker
+  :feature_category: :ai_abstraction_layer
+  :has_external_dependencies: false
+  :urgency: :low
+  :resource_boundary: :memory
+  :weight: 1
+  :idempotent: true
+  :tags: []
+  :queue_namespace:
 - :name: app_sec_container_scanning_scan_image
   :worker_name: AppSec::ContainerScanning::ScanImageWorker
   :feature_category: :software_composition_analysis
@@ -2895,6 +2905,16 @@
   :queue_namespace:
 - :name: namespaces_cascade_duo_features_enabled
   :worker_name: Namespaces::CascadeDuoFeaturesEnabledWorker
+  :feature_category: :ai_abstraction_layer
+  :has_external_dependencies: false
+  :urgency: :low
+  :resource_boundary: :memory
+  :weight: 1
+  :idempotent: true
+  :tags: []
+  :queue_namespace:
+- :name: namespaces_cascade_duo_settings
+  :worker_name: Namespaces::CascadeDuoSettingsWorker
   :feature_category: :ai_abstraction_layer
   :has_external_dependencies: false
   :urgency: :low
