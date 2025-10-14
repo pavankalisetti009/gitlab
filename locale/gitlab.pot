@@ -7227,9 +7227,6 @@ msgstr ""
 msgid "Almost there…"
 msgstr ""
 
-msgid "Alpha"
-msgstr ""
-
 msgid "Already blocked"
 msgstr ""
 
