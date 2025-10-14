@@ -3,7 +3,7 @@
 require 'spec_helper'
 
 RSpec.describe ContainerRepository, feature_category: :geo_replication do
-  include_examples 'a verifiable model with a separate table for verification state' do
+  include_examples 'a verifiable model for verification state' do
     let(:verifiable_model_record) { build(:container_repository) }
     let(:unverifiable_model_record) { nil }
   end

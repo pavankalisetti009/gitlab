@@ -27,6 +27,12 @@ RSpec.describe Geo::VerifiableModel, feature_category: :geo_replication do
       end
     end
 
+    describe '.active_record_state_association' do
+      it 'returns the association for the state table' do
+        expect(subject.class.active_record_state_association.name).to eq(:_test_dummy_model_state)
+      end
+    end
+
     describe '#in_verifiables?' do
       it 'returns true when the verifiables scope includes the instance' do
         subject.save!
@@ -77,6 +83,12 @@ RSpec.describe Geo::VerifiableModel, feature_category: :geo_replication do
 
       it 'returns false when the verifiables scope does not include the instance' do
         expect(subject.in_verifiables?).to eq(false)
+      end
+    end
+
+    describe '.active_record_state_association' do
+      it 'returns nil' do
+        expect(subject.class.active_record_state_association).to be_nil
       end
     end
   end

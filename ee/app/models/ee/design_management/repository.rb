@@ -37,17 +37,6 @@ module EE
 
         scope :available_verifiables, -> { joins(:design_management_repository_state) }
 
-        scope :checksummed, -> {
-          joins(:design_management_repository_state)
-            .where
-              .not(design_management_repository_states: { verification_checksum: nil })
-        }
-
-        scope :not_checksummed, -> {
-          joins(:design_management_repository_state)
-            .where(design_management_repository_states: { verification_checksum: nil })
-        }
-
         scope :with_verification_state, ->(state) {
           joins(:design_management_repository_state)
             .where(design_management_repository_states: { verification_state: verification_state_value(state) })

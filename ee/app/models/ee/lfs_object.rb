@@ -23,8 +23,6 @@ module EE
       has_one :lfs_object_state, autosave: false, inverse_of: :lfs_object, class_name: 'Geo::LfsObjectState'
 
       scope :with_verification_state, ->(state) { joins(:lfs_object_state).where(lfs_object_states: { verification_state: verification_state_value(state) }) }
-      scope :checksummed, -> { joins(:lfs_object_state).where.not(lfs_object_states: { verification_checksum: nil }) }
-      scope :not_checksummed, -> { joins(:lfs_object_state).where(lfs_object_states: { verification_checksum: nil }) }
 
       scope :available_verifiables, -> { joins(:lfs_object_state) }
 

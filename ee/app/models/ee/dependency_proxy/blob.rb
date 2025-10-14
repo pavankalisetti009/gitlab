@@ -23,14 +23,6 @@ module EE
           joins(:dependency_proxy_blob_state)
             .where(dependency_proxy_blob_states: { verification_state: verification_state_value(state) })
         end
-        scope :checksummed,
-          -> do
-            joins(:dependency_proxy_blob_state).where.not(dependency_proxy_blob_states: { verification_checksum: nil })
-          end
-        scope :not_checksummed,
-          -> do
-            joins(:dependency_proxy_blob_state).where(dependency_proxy_blob_states: { verification_checksum: nil })
-          end
 
         scope :available_verifiables, -> { joins(:dependency_proxy_blob_state) }
 

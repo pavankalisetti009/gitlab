@@ -5,6 +5,12 @@ require 'spec_helper'
 RSpec.describe Packages::PackageFile, feature_category: :geo_replication do
   include ::EE::GeoHelpers
 
+  include_examples 'a verifiable model for verification state' do
+    let(:verifiable_model_record) do
+      build(:package_file)
+    end
+  end
+
   describe '.replicables_for_current_secondary' do
     subject(:replicables) { described_class.replicables_for_current_secondary(1..described_class.last.id) }
 

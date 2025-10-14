@@ -9,7 +9,7 @@
 # - unverifiable_model_record: should be such that it will not be included in
 #                              the scope available_verifiables
 
-RSpec.shared_examples 'a verifiable model with a separate table for verification state' do
+RSpec.shared_examples 'a verifiable model for verification state' do
   include EE::GeoHelpers
 
   before do
@@ -67,6 +67,12 @@ RSpec.shared_examples 'a verifiable model with a separate table for verification
     describe '#save_verification_details' do
       let(:verification_state_table_class) { verifiable_model_class.verification_state_table_class }
       let(:replicator_class) { verifiable_model_class.replicator_class }
+
+      before do
+        next if verifiable_model_class.separate_verification_state_table?
+
+        skip "Skipping because the #{verifiable_model_class} states are not saved in a different table"
+      end
 
       shared_examples 'does not create verification details' do
         it 'does not create verification details' do
