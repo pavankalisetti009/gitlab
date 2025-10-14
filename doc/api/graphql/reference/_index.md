@@ -46354,6 +46354,7 @@ four standard [pagination arguments](#pagination-arguments):
 | <a id="workitemupdatedat"></a>`updatedAt` | [`Time!`](#time) | Timestamp of when the work item was last updated. |
 | <a id="workitemuserdiscussionscount"></a>`userDiscussionsCount` | [`Int!`](#int) | Number of user discussions in the work item. |
 | <a id="workitemuserpermissions"></a>`userPermissions` | [`WorkItemPermissions!`](#workitempermissions) | Permissions for the current user on the resource. |
+| <a id="workitemwebpath"></a>`webPath` | [`String`](#string) | Web path of the object. |
 | <a id="workitemweburl"></a>`webUrl` | [`String`](#string) | URL of the object. |
 | <a id="workitemworkitemtype"></a>`workItemType` | [`WorkItemType!`](#workitemtype) | Type assigned to the work item. |
 

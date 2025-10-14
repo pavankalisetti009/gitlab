@@ -28780,6 +28780,25 @@ CREATE SEQUENCE vulnerability_statistics_id_seq
 
 ALTER SEQUENCE vulnerability_statistics_id_seq OWNED BY vulnerability_statistics.id;
 
+CREATE TABLE vulnerability_triggered_workflows (
+    id bigint NOT NULL,
+    created_at timestamp with time zone NOT NULL,
+    updated_at timestamp with time zone NOT NULL,
+    vulnerability_occurrence_id bigint NOT NULL,
+    workflow_id bigint NOT NULL,
+    project_id bigint NOT NULL,
+    workflow_name smallint DEFAULT 0 NOT NULL
+);
+
+CREATE SEQUENCE vulnerability_triggered_workflows_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+ALTER SEQUENCE vulnerability_triggered_workflows_id_seq OWNED BY vulnerability_triggered_workflows.id;
+
 CREATE TABLE vulnerability_user_mentions (
     id bigint NOT NULL,
     vulnerability_id bigint NOT NULL,
@@ -31799,6 +31818,8 @@ ALTER TABLE ONLY vulnerability_severity_overrides ALTER COLUMN id SET DEFAULT ne
 ALTER TABLE ONLY vulnerability_state_transitions ALTER COLUMN id SET DEFAULT nextval('vulnerability_state_transitions_id_seq'::regclass);
 
 ALTER TABLE ONLY vulnerability_statistics ALTER COLUMN id SET DEFAULT nextval('vulnerability_statistics_id_seq'::regclass);
+
+ALTER TABLE ONLY vulnerability_triggered_workflows ALTER COLUMN id SET DEFAULT nextval('vulnerability_triggered_workflows_id_seq'::regclass);
 
 ALTER TABLE ONLY vulnerability_user_mentions ALTER COLUMN id SET DEFAULT nextval('vulnerability_user_mentions_id_seq'::regclass);
 
@@ -35534,6 +35555,9 @@ ALTER TABLE ONLY vulnerability_state_transitions
 
 ALTER TABLE ONLY vulnerability_statistics
     ADD CONSTRAINT vulnerability_statistics_pkey PRIMARY KEY (id);
+
+ALTER TABLE ONLY vulnerability_triggered_workflows
+    ADD CONSTRAINT vulnerability_triggered_workflows_pkey PRIMARY KEY (id);
 
 ALTER TABLE ONLY vulnerability_user_mentions
     ADD CONSTRAINT vulnerability_user_mentions_pkey PRIMARY KEY (id);
@@ -43095,9 +43119,15 @@ CREATE INDEX index_vulnerability_statistics_on_letter_grade ON vulnerability_sta
 
 CREATE UNIQUE INDEX index_vulnerability_statistics_on_unique_project_id ON vulnerability_statistics USING btree (project_id);
 
+CREATE INDEX index_vulnerability_triggered_workflows_on_project_id ON vulnerability_triggered_workflows USING btree (project_id);
+
+CREATE INDEX index_vulnerability_triggered_workflows_on_workflow_id ON vulnerability_triggered_workflows USING btree (workflow_id);
+
 CREATE UNIQUE INDEX index_vulnerability_user_mentions_on_note_id ON vulnerability_user_mentions USING btree (note_id) WHERE (note_id IS NOT NULL);
 
 CREATE INDEX index_vulnerability_user_mentions_on_project_id ON vulnerability_user_mentions USING btree (project_id);
+
+CREATE INDEX index_vulnerability_workflows_on_vuln_occurrence_id ON vulnerability_triggered_workflows USING btree (vulnerability_occurrence_id);
 
 CREATE UNIQUE INDEX index_vulns_user_mentions_on_vulnerability_id ON vulnerability_user_mentions USING btree (vulnerability_id) WHERE (note_id IS NULL);
 
@@ -50587,6 +50617,9 @@ ALTER TABLE ONLY design_management_designs
 
 ALTER TABLE ONLY issue_metrics
     ADD CONSTRAINT fk_rails_4bb543d85d FOREIGN KEY (issue_id) REFERENCES issues(id) ON DELETE CASCADE;
+
+ALTER TABLE ONLY vulnerability_triggered_workflows
+    ADD CONSTRAINT fk_rails_4c3e45a9b7 FOREIGN KEY (vulnerability_occurrence_id) REFERENCES vulnerability_occurrences(id) ON DELETE CASCADE;
 
 ALTER TABLE ONLY project_metrics_settings
     ADD CONSTRAINT fk_rails_4c6037ee4f FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE CASCADE;

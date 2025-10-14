@@ -19,6 +19,7 @@ module Ai
       has_many :events, class_name: 'Ai::DuoWorkflows::Event'
       has_many :workflows_workloads, class_name: 'Ai::DuoWorkflows::WorkflowsWorkload'
       has_many :workloads, through: :workflows_workloads, disable_joins: true
+      has_many :vulnerability_triggered_workflows, class_name: '::Vulnerabilities::TriggeredWorkflow'
 
       validates :status, presence: true
       validates :goal, length: { maximum: 16_384 }

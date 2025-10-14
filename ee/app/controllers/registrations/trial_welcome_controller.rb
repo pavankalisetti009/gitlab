@@ -3,6 +3,10 @@
 module Registrations
   class TrialWelcomeController < ApplicationController
     include ::Onboarding::SetRedirect
+    include OneTrustCSP
+    include GoogleAnalyticsCSP
+    include GoogleSyndicationCSP
+    include BizibleCSP
 
     before_action :verify_onboarding_enabled!
     before_action :enable_dark_mode
