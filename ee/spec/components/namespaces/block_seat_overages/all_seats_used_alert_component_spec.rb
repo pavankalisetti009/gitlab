@@ -2,95 +2,53 @@
 
 require "spec_helper"
 
-RSpec.describe Namespaces::BlockSeatOverages::AllSeatsUsedAlertComponent, type: :component, feature_category: :consumables_cost_management do
-  include ReactiveCachingHelpers
+RSpec.describe Namespaces::BlockSeatOverages::AllSeatsUsedAlertComponent, :saas, feature_category: :seat_cost_management do
+  let(:user) { build(:user) }
+  let(:namespace) { build(:group) }
 
-  let_it_be(:current_user) { build(:user) }
-  let_it_be(:namespace) { build(:group, namespace_settings: build(:namespace_settings, seat_control: :block_overages)) }
+  let(:element) { find_by_testid('bso-all-seats-used-alert') }
 
-  let(:billable_members_count) { 2 }
-  let(:permission_owner) { true }
+  subject(:component) do
+    described_class.new(
+      context: namespace,
+      current_user: user
+    )
+  end
 
   before do
-    allow(namespace).to receive(:billable_members_count).and_return(billable_members_count)
-    allow(Ability).to receive(:allowed?).with(current_user, :owner_access, namespace).and_return(permission_owner)
+    allow(user).to receive(:dismissed_callout_for_group?).and_return(false)
 
-    build(:gitlab_subscription, namespace: namespace, plan_code: Plan::ULTIMATE, seats: 2)
+    render_inline(component)
   end
 
-  describe '#render?' do
-    subject { component.render? }
+  it 'renders a warning alert' do
+    expect(element).to match_css('.gl-alert.gl-alert-warning')
+  end
 
+  it 'shows a title' do
+    expect(element).to have_text "No more seats in subscription"
+  end
+
+  it 'shows an info text' do
+    expect(element).to have_text "Your namespace has used all the seats in your subscription " \
+      "and users can no longer be invited or added to the namespace."
+  end
+
+  it 'contains the correct links' do
+    expect(element).to have_link 'Purchase more seats', href:
+      help_page_path('subscriptions/manage_users_and_seats.md', anchor: 'buy-more-seats')
+  end
+
+  context 'when user has dismissed alert' do
     before do
-      allow(current_user).to receive(:dismissed_callout_for_group?).and_return(false)
+      allow(user).to receive(:dismissed_callout_for_group?).and_return(true)
     end
 
-    context 'in a saas environment', :saas do
-      context 'with a reactive cache hit' do
-        before do
-          synchronous_reactive_cache(namespace)
-        end
+    it 'does not render the alert' do
+      render_inline(component)
 
-        describe 'when user has dismissed alert' do
-          before do
-            allow(current_user).to receive(:dismissed_callout_for_group?).and_return(true)
-          end
-
-          it { is_expected.to be false }
-        end
-
-        describe 'when namespace has no paid plan' do
-          before do
-            build(:gitlab_subscription, namespace: namespace, plan_code: Plan::FREE)
-          end
-
-          it { is_expected.to be false }
-        end
-
-        describe 'when user is not a owner' do
-          let(:permission_owner) { false }
-
-          it { is_expected.to be false }
-        end
-
-        describe 'when block seats overages is disabled' do
-          let_it_be(:namespace) { build(:group, namespace_settings: build(:namespace_settings, seat_control: :off)) }
-
-          it { is_expected.to be false }
-        end
-
-        describe 'with no billable members' do
-          let(:billable_members_count) { 0 }
-
-          it { is_expected.to be false }
-        end
-
-        describe 'with more billable members than seats' do
-          let(:billable_members_count) { 3 }
-
-          it { is_expected.to be true }
-        end
-
-        describe 'when namespace is personal' do
-          let_it_be(:namespace) { build(:user, :with_namespace).namespace }
-
-          it { is_expected.to be false }
-        end
-
-        it { is_expected.to be true }
-      end
-
-      context 'with a reactive cache miss' do
-        before do
-          stub_reactive_cache(namespace, nil)
-        end
-
-        it { is_expected.to be false }
-      end
+      expect(page).not_to have_content('No more seats in subscription')
+      expect(page).not_to have_content('Your namespace has used all the seats')
     end
-  end
-
-  def component(context = namespace)
-    described_class.new(context: context, content_class: '', current_user: current_user)
   end
 end

@@ -1,10 +1,8 @@
-- all_seats_used_component = Namespaces::AllSeatsUsedAlertComponent.new(context: context, content_class: '', current_user: current_user)
-- bso_all_seats_used_component = Namespaces::BlockSeatOverages::AllSeatsUsedAlertComponent.new(context: context, content_class: full_content_class, current_user: current_user)
+- seats_usage_notification_component = Namespaces::SeatsUsageNotificationComponent.new(context: context, current_user: current_user)
 
-- if all_seats_used_component.render?
-  = render all_seats_used_component
-- elsif bso_all_seats_used_component.render?
-  = render bso_all_seats_used_component
+-# Will soon be removed with https://gitlab.com/gitlab-org/gitlab/-/merge_requests/206653
+- if seats_usage_notification_component.render?
+  = render seats_usage_notification_component
 - elsif show_seat_count_alert?
   = render Pajamas::AlertComponent.new(alert_options: { class: 'js-approaching-seat-count-threshold',
     data: { dismiss_endpoint: group_callouts_path,
