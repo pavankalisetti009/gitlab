@@ -32,7 +32,8 @@ RSpec.describe Search::Zoekt::CodeQueryBuilder, feature_category: :global_search
           features: 'repository',
           group_ids: [],
           project_id: 1,
-          search_level: :project
+          search_level: :project,
+          use_traversal_id_queries: true
         }
       end
 
@@ -62,7 +63,8 @@ RSpec.describe Search::Zoekt::CodeQueryBuilder, feature_category: :global_search
           features: 'repository',
           current_user: current_user,
           group_id: group.id,
-          search_level: :group
+          search_level: :group,
+          use_traversal_id_queries: true
         }
       end
 
@@ -113,6 +115,40 @@ RSpec.describe Search::Zoekt::CodeQueryBuilder, feature_category: :global_search
         expect(result).to eq(expected_extracted_result)
       end
 
+      context 'when traversal id search is disabled' do
+        let(:extracted_result_path) { 'search_group_repo_ids.json' }
+        let(:options) do
+          {
+            features: 'repository',
+            current_user: current_user,
+            group_id: group.id,
+            use_traversal_id_queries: false,
+            repo_ids: repo_ids
+            # No search level needed when using repo ids
+          }
+        end
+
+        before do
+          stub_feature_flags(zoekt_search_meta_project_ids: false)
+        end
+
+        context 'and repo ids are not provided' do
+          let(:repo_ids) { nil }
+
+          it 'raises an ArgumentError' do
+            expect { result }.to raise_error(ArgumentError, 'Repo ids cannot be empty')
+          end
+        end
+
+        context 'and repo ids are provided' do
+          let(:repo_ids) { [1, 2, 3, 4, 5, 6] }
+
+          it 'builds the correct object' do
+            expect(result).to eq(expected_extracted_result)
+          end
+        end
+      end
+
       context 'when zoekt_search_meta_project_ids is disabled' do
         let(:extracted_result_path) { 'search_group_user_access.json' }
 
@@ -133,7 +169,8 @@ RSpec.describe Search::Zoekt::CodeQueryBuilder, feature_category: :global_search
         {
           features: 'repository',
           current_user: current_user,
-          search_level: :global
+          search_level: :global,
+          use_traversal_id_queries: true
         }
       end
 
@@ -214,7 +251,8 @@ RSpec.describe Search::Zoekt::CodeQueryBuilder, feature_category: :global_search
           features: 'repository',
           group_ids: [],
           project_id: 1,
-          search_level: :unrecognized
+          search_level: :unrecognized,
+          use_traversal_id_queries: true
         }
       end
 

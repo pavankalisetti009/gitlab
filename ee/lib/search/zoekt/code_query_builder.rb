@@ -59,9 +59,7 @@ module Search
       end
 
       def use_zoekt_traversal_id_query?
-        ::Search::Zoekt.feature_available?(
-          :traversal_id_search, current_user, project_id: project_id, group_id: group_id
-        )
+        options.fetch(:use_traversal_id_queries)
       end
 
       def use_meta_project_ids?
