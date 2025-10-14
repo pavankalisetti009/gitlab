@@ -123,6 +123,14 @@ RSpec.describe API::Wikis, feature_category: :wiki do
         include_examples 'wikis API returns list of wiki pages'
       end
     end
+
+    it_behaves_like 'authorizing granular token permissions', :read_wiki do
+      let(:user) { create(:user) }
+      let(:group) { create(:group, :internal, :wiki_repo) }
+      let(:boundary_object) { group }
+      let!(:group_setup) { group.add_developer(user) }
+      let(:request) { get api(url, personal_access_token: pat) }
+    end
   end
 
   describe 'GET /groups/:id/wikis/:slug' do
@@ -258,6 +266,14 @@ RSpec.describe API::Wikis, feature_category: :wiki do
         end
       end
     end
+
+    it_behaves_like 'authorizing granular token permissions', :read_wiki do
+      let(:user) { create(:user) }
+      let(:group) { create(:group, :internal, :wiki_repo) }
+      let(:boundary_object) { group }
+      let!(:group_setup) { group.add_developer(user) }
+      let(:request) { get api(url, personal_access_token: pat) }
+    end
   end
 
   describe 'POST /groups/:id/wikis' do
@@ -348,6 +364,15 @@ RSpec.describe API::Wikis, feature_category: :wiki do
 
         include_examples 'wikis API creates wiki page'
       end
+    end
+
+    it_behaves_like 'authorizing granular token permissions', :create_wiki do
+      let(:user) { create(:user) }
+      let(:group) { create(:group, :internal, :wiki_repo) }
+      let(:boundary_object) { group }
+      let(:payload) { { title: "wiki-#{SecureRandom.hex(4)}", content: 'granular tokens content' } }
+      let!(:group_setup) { group.add_developer(user) }
+      let(:request) { post api(url, personal_access_token: pat), params: payload }
     end
   end
 
@@ -490,6 +515,14 @@ RSpec.describe API::Wikis, feature_category: :wiki do
 
       include_examples 'wikis API updates wiki page'
     end
+
+    it_behaves_like 'authorizing granular token permissions', :update_wiki do
+      let(:user) { create(:user) }
+      let(:group) { create(:group, :internal, :wiki_repo) }
+      let(:boundary_object) { group }
+      let!(:group_setup) { group.add_developer(user) }
+      let(:request) { put api(url, personal_access_token: pat), params: payload }
+    end
   end
 
   describe 'DELETE /groups/:id/wikis/:slug' do
@@ -609,6 +642,14 @@ RSpec.describe API::Wikis, feature_category: :wiki do
 
       include_examples 'wiki API 204 No Content'
     end
+
+    it_behaves_like 'authorizing granular token permissions', :delete_wiki do
+      let(:user) { create(:user) }
+      let(:group) { create(:group, :internal, :wiki_repo) }
+      let(:boundary_object) { group }
+      let!(:group_setup) { group.add_maintainer(user) } # Note: maintainer for delete
+      let(:request) { delete api(url, personal_access_token: pat) }
+    end
   end
 
   describe 'POST /groups/:id/wikis/attachments' do
@@ -712,6 +753,14 @@ RSpec.describe API::Wikis, feature_category: :wiki do
 
         include_examples 'wiki API uploads wiki attachment'
       end
+    end
+
+    it_behaves_like 'authorizing granular token permissions', :upload_wiki_attachment do
+      let(:user) { create(:user) }
+      let(:group) { create(:group, :internal, :wiki_repo) }
+      let(:boundary_object) { group }
+      let!(:group_setup) { group.add_developer(user) }
+      let(:request) { post api(url, personal_access_token: pat), params: payload }
     end
   end
 end
