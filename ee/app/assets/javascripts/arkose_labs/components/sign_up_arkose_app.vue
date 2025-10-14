@@ -3,6 +3,7 @@ import { uniqueId } from 'lodash';
 import { logError } from '~/lib/logger';
 import { createAlert } from '~/alert';
 import DomElementListener from '~/vue_shared/components/dom_element_listener.vue';
+import { scrollTo } from '~/lib/utils/common_utils';
 import { initArkoseLabsChallenge } from '../init_arkose_labs';
 import {
   VERIFICATION_LOADING_MESSAGE,
@@ -76,7 +77,7 @@ export default {
       }
 
       this.errorAlert = createAlert({ message });
-      window.scrollTo({ top: 0 });
+      scrollTo({ top: 0 }, this.$el);
     },
     onArkoseLabsIframeShown() {
       this.arkoseLabsIframeShown = true;
