@@ -367,7 +367,6 @@ RSpec.describe 'Project', feature_category: :source_code_management do
 
           expect(page).not_to have_button('Delete immediately')
           expect(page).to have_content("This project is pending deletion, and will be deleted on #{permanent_deletion_date_formatted(project_aimed_for_deletion)}. Repository and other project resources are read-only.")
-          expect(page).to have_link("How do I immediately delete a project?", href: help_page_path('user/project/working_with_projects.md', anchor: 'delete-a-project-immediately'))
         end
       end
     end

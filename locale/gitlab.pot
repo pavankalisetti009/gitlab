@@ -32408,9 +32408,6 @@ msgstr ""
 msgid "GroupSelect|Select a group"
 msgstr ""
 
-msgid "GroupSettings|%{link_start}How do I immediately delete a group?%{link_end}"
-msgstr ""
-
 msgid "GroupSettings|Add additional webhook triggers for group access token expiration"
 msgstr ""
 
@@ -51522,9 +51519,6 @@ msgid "ProjectService|Trigger event when an incident is created."
 msgstr ""
 
 msgid "ProjectService|Trigger event when an issue is created, updated, or closed."
-msgstr ""
-
-msgid "ProjectSettings|%{link_start}How do I immediately delete a project?%{link_end}"
 msgstr ""
 
 msgid "ProjectSettings|%{link_start}What are description templates?%{link_end}"

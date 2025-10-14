@@ -12,10 +12,7 @@
       #js-project-delete-button{ data: project_delete_immediately_button_data(@project) }
     - elsif @project.scheduled_for_deletion_in_hierarchy_chain?
       -# Immediate deletion not available: either because of ancestor, or instance setting
-      - help_page_link = link_to('', help_page_path('user/project/working_with_projects.md', anchor: 'delete-a-project-immediately'), target: '_blank', rel: 'noopener noreferrer')
       %p.gl-m-0
         = self_or_ancestors_deletion_in_progress_or_scheduled_message(@project)
-        - if @project.self_deletion_scheduled?
-          = safe_format(s_('ProjectSettings|%{link_start}How do I immediately delete a project?%{link_end}'), tag_pair(help_page_link, :link_start, :link_end))
     - else
       = render 'delete_delayed'

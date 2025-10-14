@@ -486,7 +486,6 @@ RSpec.describe 'Edit group settings', :with_current_organization, feature_catego
 
           expect(page).not_to have_button('Delete immediately')
           expect(page).to have_content "This group and its subgroups and projects are pending deletion, and will be deleted on #{permanent_deletion_date_formatted(group)}."
-          expect(page).to have_link("How do I immediately delete a group?", href: help_page_path('user/group/_index.md', anchor: 'delete-a-group-immediately'))
         end
       end
     end
