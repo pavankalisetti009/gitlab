@@ -236,6 +236,25 @@ RSpec.describe "User with admin_runners custom role", feature_category: :runner 
         expect(response).to have_gitlab_http_status(:no_content)
       end.to change { ::Ci::Runner.count }.by(-1)
     end
+
+    describe 'POST /projects/:id/runners', :request_store do
+      let_it_be(:private_project) { create(:project, :private) }
+
+      let_it_be(:runner_in_private_project) do
+        create(:ci_runner, :project, projects: [private_project])
+      end
+
+      context 'when user tries to assign runner created in another private project' do
+        let(:path) { "/projects/#{project.id}/runners" }
+        let(:params) { { runner_id: runner_in_private_project.id } }
+
+        it 'returns forbidden' do
+          post api(path, user), params: params
+
+          expect(response).to have_gitlab_http_status(:forbidden)
+        end
+      end
+    end
   end
 
   describe API::Groups do
