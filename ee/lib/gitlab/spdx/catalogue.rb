@@ -17,7 +17,7 @@ module Gitlab
 
       def each
         licenses.each do |license|
-          yield license if license.id.present?
+          yield license
         end
       end
 
