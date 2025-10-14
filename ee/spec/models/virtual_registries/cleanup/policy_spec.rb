@@ -83,4 +83,16 @@ RSpec.describe VirtualRegistries::Cleanup::Policy, feature_category: :virtual_re
 
     it { is_expected.to eq(policy) }
   end
+
+  describe 'scopes' do
+    describe '.for_group' do
+      let_it_be(:group) { create(:group) }
+      let_it_be(:policy) { create(:virtual_registries_cleanup_policy, group:) }
+      let_it_be(:other_policy) { create(:virtual_registries_cleanup_policy) }
+
+      subject { described_class.for_group(group) }
+
+      it { is_expected.to contain_exactly(policy) }
+    end
+  end
 end
