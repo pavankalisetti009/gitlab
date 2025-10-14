@@ -136,6 +136,8 @@ RSpec.describe 'User edits iteration', feature_category: :team_planning do
             find(dropdown_selector).click
             click_link_or_button('Edit')
 
+            wait_for_requests
+
             expect(find_field("Description").value).to eq(iteration.description)
             expect(page).to have_current_path(edit_iteration_page)
           end
