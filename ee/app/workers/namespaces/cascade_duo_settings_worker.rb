@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
-module AppConfig
-  class CascadeDuoFeaturesEnabledWorker
+module Namespaces
+  class CascadeDuoSettingsWorker
     include ApplicationWorker
     extend ActiveSupport::Concern
 
@@ -13,10 +13,12 @@ module AppConfig
     data_consistency :delayed
     loggable_arguments 0
     worker_resource_boundary :memory
+    defer_on_database_health_signal :gitlab_main, [:namespace_settings, :project_settings], 1.minute
 
-    def perform(duo_features_enabled)
-      setting_attributes = { duo_features_enabled: duo_features_enabled }
-      ::Ai::CascadeDuoSettingsService.new(setting_attributes).cascade_for_instance
+    def perform(group_id, setting_attributes)
+      group = Group.find_by_id(group_id)
+
+      ::Ai::CascadeDuoSettingsService.new(setting_attributes).cascade_for_group(group)
     end
   end
 end

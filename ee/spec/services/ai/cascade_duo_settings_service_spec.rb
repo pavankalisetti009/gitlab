@@ -2,8 +2,8 @@
 
 require 'spec_helper'
 
-RSpec.describe Ai::CascadeDuoFeaturesEnabledService, type: :service, feature_category: :ai_abstraction_layer do
-  let(:duo_features_enabled) { true }
+RSpec.describe Ai::CascadeDuoSettingsService, feature_category: :ai_abstraction_layer do
+  let(:setting_attributes) { { 'duo_features_enabled' => true } }
   let_it_be_with_reload(:group) { create(:group) }
   let_it_be_with_reload(:subgroup) { create(:group, parent: group) }
   let_it_be_with_reload(:project) { create(:project, :repository, group: group) }
@@ -11,9 +11,19 @@ RSpec.describe Ai::CascadeDuoFeaturesEnabledService, type: :service, feature_cat
   let_it_be_with_reload(:subgroup2) { create(:group, parent: group2) }
   let_it_be_with_reload(:project2) { create(:project, :repository, group: group2) }
 
-  subject(:service) { described_class.new(duo_features_enabled) }
+  subject(:service) { described_class.new(setting_attributes) }
 
   describe '#cascade_for_group' do
+    context 'when updating invalid setting value' do
+      let(:setting_attributes) do
+        { 'invalid_setting_key' => 'invalid_setting_value', 'duo_remote_flows_enabled' => true }
+      end
+
+      it 'raises ArgumentError' do
+        expect { service }.to raise_error(ArgumentError)
+      end
+    end
+
     context 'when duo_features_enabled is true' do
       it 'updates subgroups and projects for given group to true' do
         # Initialize with duo_features_enabled: false
@@ -36,9 +46,9 @@ RSpec.describe Ai::CascadeDuoFeaturesEnabledService, type: :service, feature_cat
     end
 
     context 'when duo_features_enabled is false' do
-      let(:duo_features_enabled) { false }
+      let(:setting_attributes) { { duo_features_enabled: false } }
 
-      subject(:service) { described_class.new(duo_features_enabled) }
+      subject(:service) { described_class.new(setting_attributes) }
 
       it 'updates subgroups and projects for given groups to false' do
         # Initialize with duo_features_enabled: true
@@ -62,9 +72,9 @@ RSpec.describe Ai::CascadeDuoFeaturesEnabledService, type: :service, feature_cat
 
   describe '#cascade_for_instance' do
     context 'when duo_features_enabled is true' do
-      let(:duo_features_enabled) { true }
+      let(:setting_attributes) { { 'duo_features_enabled' => true } }
 
-      subject(:service) { described_class.new(duo_features_enabled) }
+      subject(:service) { described_class.new(setting_attributes) }
 
       it 'updates all root groups, subgroups, and projects' do
         # Initialize with duo_features_enabled: false
@@ -86,9 +96,9 @@ RSpec.describe Ai::CascadeDuoFeaturesEnabledService, type: :service, feature_cat
     end
 
     context 'when duo_features_enabled is false' do
-      let(:duo_features_enabled) { false }
+      let(:setting_attributes) { { 'duo_features_enabled' => false } }
 
-      subject(:service) { described_class.new(duo_features_enabled) }
+      subject(:service) { described_class.new(setting_attributes) }
 
       it 'updates all root groups, subgroups, and projects' do
         # Initialize with duo_features_enabled: true

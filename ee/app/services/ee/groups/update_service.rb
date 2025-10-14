@@ -166,8 +166,16 @@ module EE
       def update_cascading_settings
         previous_changes = group.namespace_settings.previous_changes
 
-        if previous_changes.include?(:duo_features_enabled)
-          ::Namespaces::CascadeDuoFeaturesEnabledWorker.perform_async(group.id)
+        cascading_ai_settings = [:duo_features_enabled, :duo_remote_flows_enabled]
+        # Collect all changed AI settings and their values
+        changed_ai_settings = cascading_ai_settings.filter_map do |setting|
+          if previous_changes.include?(setting)
+            [setting, group.namespace_settings.attributes[setting.to_s]]
+          end
+        end.to_h
+
+        if changed_ai_settings.any?
+          ::Namespaces::CascadeDuoSettingsWorker.perform_async(group.id, changed_ai_settings)
         end
 
         if previous_changes.include?(:web_based_commit_signing_enabled)

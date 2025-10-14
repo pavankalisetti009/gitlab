@@ -33,7 +33,7 @@ module EE
           update_elasticsearch_containers(ElasticsearchIndexedProject, elasticsearch_project_ids)
           update_elasticsearch_index_settings(number_of_replicas: elasticsearch_replicas, number_of_shards: elasticsearch_shards)
 
-          cascade_duo_features_settings if duo_features_changed?
+          cascade_duo_features_settings
 
           # There are cases when current user is passed as nil like in elastic.rake
           # we should not log audit events in such cases
@@ -94,14 +94,17 @@ module EE
         params.delete(:auto_duo_code_review_enabled)
       end
 
-      def duo_features_changed?
-        application_setting.previous_changes.include?(:duo_features_enabled)
-      end
-
       def cascade_duo_features_settings
-        duo_features_enabled = application_setting.duo_features_enabled
+        previous_changes = application_setting.previous_changes
+        cascading_ai_settings = [:duo_features_enabled, :duo_remote_flows_enabled]
 
-        ::AppConfig::CascadeDuoFeaturesEnabledWorker.perform_async(duo_features_enabled)
+        # Collect all changed AI settings and their values
+        changed_ai_settings = cascading_ai_settings.filter_map do |setting|
+          [setting, application_setting.attributes[setting.to_s]] if previous_changes.include?(setting)
+        end.to_h
+        return if changed_ai_settings.empty?
+
+        ::AppConfig::CascadeDuoSettingsWorker.perform_async(changed_ai_settings)
       end
 
       def should_auto_approve_blocked_users?

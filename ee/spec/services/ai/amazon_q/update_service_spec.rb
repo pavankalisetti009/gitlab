@@ -212,7 +212,7 @@ RSpec.describe Ai::AmazonQ::UpdateService, feature_category: :ai_agents do
         end
 
         it 'triggers cascading worker to update all groups and projects', :sidekiq_inline do
-          expect(AppConfig::CascadeDuoFeaturesEnabledWorker).to receive(:perform_async).with(true)
+          expect(AppConfig::CascadeDuoSettingsWorker).to receive(:perform_async).with({ duo_features_enabled: true })
 
           instance.execute
         end
