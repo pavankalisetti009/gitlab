@@ -2880,9 +2880,6 @@ msgstr ""
 msgid "AICatalog|Visibility"
 msgstr ""
 
-msgid "AICatalog|Visibility level is required."
-msgstr ""
-
 msgid "AICatalog|You are an expert in [domain]. Your communication style is [style]. When helping users, you should always... Your key strengths include... You approach problems by..."
 msgstr ""
 
