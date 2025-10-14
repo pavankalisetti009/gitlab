@@ -48,7 +48,7 @@ describe('AiFlows', () => {
     .fn()
     .mockResolvedValue(mockAiCatalogItemConsumerDeleteResponse);
 
-  const createComponent = ({ $route = { query: {} } } = {}) => {
+  const createComponent = ({ provide = {}, $route = { query: {} } } = {}) => {
     mockApollo = createMockApollo([
       [aiCatalogConfiguredItemsQuery, mockConfiguredFlowsQueryHandler],
       [aiCatalogProjectUserPermissionsQuery, mockUserPermissionsQueryHandler],
@@ -61,6 +61,11 @@ describe('AiFlows', () => {
       provide: {
         projectId: mockProjectId,
         exploreAiCatalogPath: '/explore/ai-catalog',
+        glFeatures: {
+          aiCatalogFlows: true,
+          aiCatalogThirdPartyFlows: true,
+        },
+        ...provide,
       },
       mocks: {
         $router: mockRouter,
@@ -115,14 +120,68 @@ describe('AiFlows', () => {
   });
 
   describe('Apollo queries', () => {
-    it('fetches list data', () => {
-      expect(mockConfiguredFlowsQueryHandler).toHaveBeenCalledWith({
-        itemType: 'FLOW',
-        projectId: `gid://gitlab/Project/${mockProjectId}`,
-        after: null,
-        before: null,
-        first: 20,
-        last: null,
+    describe('when both aiCatalogFlows and aiCatalogThirdPartyFlows are enabled', () => {
+      beforeEach(() => {
+        createComponent();
+      });
+
+      it('fetches list data with itemTypes', () => {
+        expect(mockConfiguredFlowsQueryHandler).toHaveBeenCalledWith({
+          itemTypes: ['FLOW', 'THIRD_PARTY_FLOW'],
+          projectId: `gid://gitlab/Project/${mockProjectId}`,
+          after: null,
+          before: null,
+          first: 20,
+          last: null,
+        });
+      });
+    });
+
+    describe('when only aiCatalogThirdPartyFlows is enabled', () => {
+      beforeEach(() => {
+        createComponent({
+          provide: {
+            glFeatures: {
+              aiCatalogFlows: false,
+              aiCatalogThirdPartyFlows: true,
+            },
+          },
+        });
+      });
+
+      it('fetches list data with itemType THIRD_PARTY_FLOW', () => {
+        expect(mockConfiguredFlowsQueryHandler).toHaveBeenCalledWith({
+          itemType: 'THIRD_PARTY_FLOW',
+          projectId: `gid://gitlab/Project/${mockProjectId}`,
+          after: null,
+          before: null,
+          first: 20,
+          last: null,
+        });
+      });
+    });
+
+    describe('when only aiCatalogFlows is enabled', () => {
+      beforeEach(() => {
+        createComponent({
+          provide: {
+            glFeatures: {
+              aiCatalogFlows: true,
+              aiCatalogThirdPartyFlows: false,
+            },
+          },
+        });
+      });
+
+      it('fetches list data with itemType FLOW', () => {
+        expect(mockConfiguredFlowsQueryHandler).toHaveBeenCalledWith({
+          itemType: 'FLOW',
+          projectId: `gid://gitlab/Project/${mockProjectId}`,
+          after: null,
+          before: null,
+          first: 20,
+          last: null,
+        });
       });
     });
 
@@ -198,7 +257,7 @@ describe('AiFlows', () => {
     it('refetches query with correct variables when paging backward', () => {
       findAiCatalogList().vm.$emit('prev-page');
       expect(mockConfiguredFlowsQueryHandler).toHaveBeenCalledWith({
-        itemType: 'FLOW',
+        itemTypes: ['FLOW', 'THIRD_PARTY_FLOW'],
         projectId: `gid://gitlab/Project/${mockProjectId}`,
         after: null,
         before: 'eyJpZCI6IjUxIn0',
@@ -210,7 +269,7 @@ describe('AiFlows', () => {
     it('refetches query with correct variables when paging forward', () => {
       findAiCatalogList().vm.$emit('next-page');
       expect(mockConfiguredFlowsQueryHandler).toHaveBeenCalledWith({
-        itemType: 'FLOW',
+        itemTypes: ['FLOW', 'THIRD_PARTY_FLOW'],
         projectId: `gid://gitlab/Project/${mockProjectId}`,
         after: 'eyJpZCI6IjM1In0',
         before: null,

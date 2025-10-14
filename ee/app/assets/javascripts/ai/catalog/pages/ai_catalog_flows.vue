@@ -8,6 +8,7 @@ import {
   VISIBILITY_LEVEL_PRIVATE_STRING,
 } from '~/visibility_level/constants';
 import * as Sentry from '~/sentry/sentry_browser_wrapper';
+import glFeatureFlagsMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
 import ErrorsAlert from '~/vue_shared/components/errors_alert.vue';
 import { InternalEvents } from '~/tracking';
 import aiCatalogFlowsQuery from '../graphql/queries/ai_catalog_flows.query.graphql';
@@ -21,6 +22,8 @@ import {
   AI_CATALOG_FLOWS_DUPLICATE_ROUTE,
 } from '../router/constants';
 import {
+  AI_CATALOG_TYPE_FLOW,
+  AI_CATALOG_TYPE_THIRD_PARTY_FLOW,
   FLOW_TYPE_APOLLO_CONFIG,
   FLOW_VISIBILITY_LEVEL_DESCRIPTIONS,
   PAGE_SIZE,
@@ -36,12 +39,13 @@ export default {
     AiCatalogItemConsumerModal,
     ErrorsAlert,
   },
-  mixins: [InternalEvents.mixin()],
+  mixins: [glFeatureFlagsMixin(), InternalEvents.mixin()],
   apollo: {
     aiCatalogFlows: {
       query: aiCatalogFlowsQuery,
       variables() {
         return {
+          ...this.itemTypes,
           before: null,
           after: null,
           first: PAGE_SIZE,
@@ -64,6 +68,21 @@ export default {
     };
   },
   computed: {
+    isFlowsAvailable() {
+      return this.glFeatures.aiCatalogFlows;
+    },
+    isThirdPartyFlowsAvailable() {
+      return this.glFeatures.aiCatalogThirdPartyFlows;
+    },
+    itemTypes() {
+      if (this.isThirdPartyFlowsAvailable && this.isFlowsAvailable) {
+        return { itemTypes: [AI_CATALOG_TYPE_FLOW, AI_CATALOG_TYPE_THIRD_PARTY_FLOW] };
+      }
+      if (this.isThirdPartyFlowsAvailable) {
+        return { itemType: AI_CATALOG_TYPE_THIRD_PARTY_FLOW };
+      }
+      return { itemType: AI_CATALOG_TYPE_FLOW };
+    },
     isLoading() {
       return this.$apollo.queries.aiCatalogFlows.loading;
     },
