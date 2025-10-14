@@ -14,6 +14,12 @@ RSpec.describe ::Ai::DuoWorkflows::WorkflowCheckpointEventPresenter, feature_cat
     end
   end
 
+  describe 'thread_ts' do
+    it 'returns the checkpoint thread_ts' do
+      expect(presenter.thread_ts).to eq(checkpoint.thread_ts)
+    end
+  end
+
   describe 'parent_timestamp' do
     it 'returns nil if the checkpoint has no parent ts' do
       checkpoint.parent_ts = nil
@@ -22,6 +28,17 @@ RSpec.describe ::Ai::DuoWorkflows::WorkflowCheckpointEventPresenter, feature_cat
 
     it 'returns the checkpoint parent_ts' do
       expect(presenter.parent_timestamp).to eq(checkpoint.parent_ts)
+    end
+  end
+
+  describe 'parent_ts' do
+    it 'returns nil if the checkpoint has no parent ts' do
+      checkpoint.parent_ts = nil
+      expect(presenter.parent_ts).to be_nil
+    end
+
+    it 'returns the checkpoint parent_ts' do
+      expect(presenter.parent_ts).to eq(checkpoint.parent_ts)
     end
   end
 

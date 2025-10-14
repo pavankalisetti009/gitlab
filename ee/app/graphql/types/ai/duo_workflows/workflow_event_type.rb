@@ -30,17 +30,27 @@ module Types
 
         field :timestamp, GraphQL::Types::String,
           scopes: [:api, :read_api, :ai_features, :ai_workflows],
-          description: 'UUID v7 timestamp identifier for the conversation thread/session in LangGraph state management.'
+          description: 'UUID v7 timestamp identifier for the conversation thread in LangGraph state management.',
+          deprecated: { reason: 'Use `threadTs` instead', milestone: '18.6' }
 
         field :parent_timestamp, GraphQL::Types::String,
           scopes: [:api, :read_api, :ai_features, :ai_workflows],
-          description: 'UUID v7 timestamp identifier of the parent message for branched conversations or responses.'
+          description: 'UUID v7 timestamp identifier of the parent message for branched conversations or responses.',
+          deprecated: { reason: 'Use `parentTs` instead', milestone: '18.6' }
 
         field :errors, [GraphQL::Types::String],
           scopes: [:api, :read_api, :ai_features, :ai_workflows],
           null: true, description: 'Message errors.'
 
-        # rubocop:disable GraphQL/ExtractType -- no need to extract two fields into a separate field
+        field :thread_ts, GraphQL::Types::String,
+          scopes: [:api, :read_api, :ai_features, :ai_workflows],
+          description: 'UUID v7 timestamp identifier for the conversation thread/session in LangGraph state management.'
+
+        # rubocop:disable GraphQL/ExtractType -- no need to extract fields into a separate field
+        field :parent_ts, GraphQL::Types::String,
+          scopes: [:api, :read_api, :ai_features, :ai_workflows],
+          description: 'UUID v7 timestamp identifier of the parent message for branched conversations or responses.'
+
         field :workflow_goal, GraphQL::Types::String,
           description: 'Goal of the session.'
 
