@@ -103,7 +103,10 @@ module Ai
           DUO_WORKFLOW_SOURCE_BRANCH: @params.fetch(:source_branch, nil),
           DUO_WORKFLOW_WORKFLOW_ID: String(@params[:workflow_id]),
           GITLAB_OAUTH_TOKEN: @params[:workflow_oauth_token],
-          DUO_WORKFLOW_SERVICE_SERVER: Gitlab::DuoWorkflow::Client.url(user: @current_user),
+          DUO_WORKFLOW_SERVICE_SERVER: Gitlab::DuoWorkflow::Client.url_for(
+            feature_setting: feature_setting,
+            user: @current_user
+          ),
           DUO_WORKFLOW_SERVICE_TOKEN: @params[:workflow_service_token],
           DUO_WORKFLOW_SERVICE_REALM: ::CloudConnector.gitlab_realm,
           DUO_WORKFLOW_GLOBAL_USER_ID: Gitlab::GlobalAnonymousId.user_id(@current_user),
@@ -154,18 +157,8 @@ module Ai
         @workflow.project
       end
 
-      def root_namespace
-        project&.root_namespace
-      end
-
-      def ai_feature
-        :duo_agent_platform
-      end
-
       def feature_setting
-        ::Ai::FeatureSettingSelectionService
-            .new(@current_user, ai_feature, root_namespace)
-            .execute.payload
+        @params.fetch(:duo_agent_platform_feature_setting, nil)
       end
 
       def agent_platform_model_metadata_json

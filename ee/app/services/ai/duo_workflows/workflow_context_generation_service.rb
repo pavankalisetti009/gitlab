@@ -3,6 +3,8 @@
 module Ai
   module DuoWorkflows
     class WorkflowContextGenerationService
+      include ::Gitlab::Utils::StrongMemoize
+
       def initialize(current_user:, organization:, workflow_definition: nil, container: nil)
         @current_user = current_user
         @container = container
@@ -27,7 +29,10 @@ module Ai
 
       def generate_workflow_token
         ::Ai::DuoWorkflow::DuoWorkflowService::Client.new(
-          duo_workflow_service_url: Gitlab::DuoWorkflow::Client.url(user: current_user),
+          duo_workflow_service_url: Gitlab::DuoWorkflow::Client.url_for(
+            feature_setting: duo_agent_platform_feature_setting,
+            user: current_user
+          ),
           current_user: current_user,
           secure: Gitlab::DuoWorkflow::Client.secure?
         ).generate_token
@@ -45,12 +50,23 @@ module Ai
         composite_identity_enabled?
       end
 
+      def duo_agent_platform_feature_setting
+        ::Ai::FeatureSettingSelectionService
+          .new(current_user, ai_feature, container&.root_namespace)
+          .execute.payload
+      end
+      strong_memoize_attr :duo_agent_platform_feature_setting
+
       private
 
       attr_reader :current_user, :container, :organization, :workflow_definition
 
       def composite_identity_enabled?
         Feature.enabled?(:duo_workflow_use_composite_identity, current_user)
+      end
+
+      def ai_feature
+        :duo_agent_platform
       end
     end
   end

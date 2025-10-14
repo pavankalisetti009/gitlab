@@ -79,7 +79,8 @@ module API
               source_branch: params[:source_branch],
               additional_context: params[:additional_context],
               workflow_metadata: Gitlab::DuoWorkflow::Client.metadata(current_user).to_json,
-              shallow_clone: params.fetch(:shallow_clone, true)
+              shallow_clone: params.fetch(:shallow_clone, true),
+              duo_agent_platform_feature_setting: workflow_context_service.duo_agent_platform_feature_setting
             }
           end
 

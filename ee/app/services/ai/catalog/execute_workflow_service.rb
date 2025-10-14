@@ -106,7 +106,8 @@ module Ai
           workflow_service_token: workflow_token_result.payload[:token],
           use_service_account: workflow_context_service.use_service_account?,
           source_branch: nil,
-          workflow_metadata: Gitlab::DuoWorkflow::Client.metadata(current_user).to_json
+          workflow_metadata: Gitlab::DuoWorkflow::Client.metadata(current_user).to_json,
+          duo_agent_platform_feature_setting: workflow_context_service.duo_agent_platform_feature_setting
         }
       end
 
