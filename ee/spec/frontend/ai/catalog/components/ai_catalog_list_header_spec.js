@@ -9,13 +9,14 @@ describe('AiCatalogListHeader', () => {
 
   const findPageHeading = () => wrapper.findComponent(PageHeading);
 
-  const createComponent = ({ isGlobal = true, props = {} } = {}) => {
+  const createComponent = ({ props = {}, provide = {} } = {}) => {
     wrapper = shallowMountExtended(AiCatalogListHeader, {
       propsData: {
         ...props,
       },
       provide: {
-        isGlobal,
+        isGlobal: true,
+        ...provide,
       },
     });
   };
@@ -36,9 +37,16 @@ describe('AiCatalogListHeader', () => {
     expect(wrapper.findComponent(AiCatalogNavActions).exists()).toBe(true);
   });
 
-  describe('when isGlobal is false', () => {
+  describe('when isGlobal is false and feature flag is enabled', () => {
     beforeEach(() => {
-      createComponent({ isGlobal: false });
+      createComponent({
+        provide: {
+          isGlobal: false,
+          glFeatures: {
+            aiCatalogItemProjectCuration: true,
+          },
+        },
+      });
     });
 
     it('does not renders AiCatalogNavTabs component', () => {

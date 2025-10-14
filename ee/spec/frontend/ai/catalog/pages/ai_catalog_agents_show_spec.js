@@ -22,6 +22,12 @@ describe('AiCatalogAgentsShow', () => {
       propsData: {
         ...defaultProps,
       },
+      provide: {
+        isGlobal: false,
+        glFeatures: {
+          aiCatalogItemProjectCuration: true,
+        },
+      },
       mocks: {
         $route: {
           params: routeParams,

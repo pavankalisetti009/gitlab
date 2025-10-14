@@ -147,7 +147,22 @@ export const createRouter = (base, namespace) => {
                   ],
                 },
               ]
-            : []),
+            : [
+                {
+                  path: ':id(\\d+)',
+                  component: AiCatalogAgent,
+                  meta: {
+                    useId: true,
+                  },
+                  children: [
+                    {
+                      name: AI_CATALOG_AGENTS_SHOW_ROUTE,
+                      path: '',
+                      component: AiCatalogAgentsShow,
+                    },
+                  ],
+                },
+              ]),
           { path: '*', redirect: '/agents' },
         ],
       },
