@@ -47,8 +47,7 @@ export default {
     },
     filteredSearchOptionLabel: {
       type: String,
-      required: false,
-      default: '',
+      required: true,
     },
     showActions: {
       type: Boolean,

@@ -25,15 +25,15 @@ RSpec.describe Gitlab::AiGateway, feature_category: :system_access do
         ai_setting.update!(ai_gateway_url: nil)
       end
 
-      context 'when AI_GATEWAY_URL environment variable is set' do
+      context 'when DEVELOPMENT_AI_GATEWAY_URL environment variable is set' do
         it 'returns the env var' do
-          stub_env('AI_GATEWAY_URL', url)
+          stub_env('DEVELOPMENT_AI_GATEWAY_URL', url)
 
           expect(described_class.url).to eq(url)
         end
       end
 
-      context 'when AI_GATEWAY_URL is not set' do
+      context 'when DEVELOPMENT_AI_GATEWAY_URL is not set' do
         it 'returns the cloud connector url' do
           allow(::CloudConnector::Config).to receive(:base_url).and_return(url)
 
@@ -44,14 +44,12 @@ RSpec.describe Gitlab::AiGateway, feature_category: :system_access do
   end
 
   describe '.cloud_connector_url' do
-    context 'when AI_GATEWAY_URL environment variable is not set' do
-      let(:url) { 'http:://example.com' }
+    let(:url) { 'http:://example.com' }
 
-      it 'returns the cloud connector url' do
-        allow(::CloudConnector::Config).to receive(:base_url).and_return(url)
+    it 'returns the cloud connector url' do
+      allow(::CloudConnector::Config).to receive(:base_url).and_return(url)
 
-        expect(described_class.cloud_connector_url).to eq("#{url}/ai")
-      end
+      expect(described_class.cloud_connector_url).to eq("#{url}/ai")
     end
   end
 
@@ -59,18 +57,17 @@ RSpec.describe Gitlab::AiGateway, feature_category: :system_access do
     context 'when the ai_gateway_url setting is set' do
       it 'returns the the setting value' do
         ai_setting.update!(ai_gateway_url: url)
-        stub_env('AI_GATEWAY_URL', nil)
+        stub_env('DEVELOPMENT_AI_GATEWAY_URL', nil)
 
         expect(described_class.self_hosted_url).to eq(url)
       end
     end
 
     context 'when the ai_gateway_url setting is not set' do
-      it 'returns the AI_GATEWAY_URL env var value' do
+      it 'returns nil' do
         ai_setting.update!(ai_gateway_url: nil)
-        stub_env('AI_GATEWAY_URL', url)
 
-        expect(described_class.self_hosted_url).to eq(url)
+        expect(described_class.self_hosted_url).to be_nil
       end
     end
   end
