@@ -3,6 +3,7 @@
 
 query aiCatalogConfiguredItems(
   $itemType: AiCatalogItemType
+  $itemTypes: [AiCatalogItemType!]
   $projectId: ProjectID!
   $before: String
   $after: String
@@ -11,6 +12,7 @@ query aiCatalogConfiguredItems(
 ) {
   aiCatalogConfiguredItems(
     itemType: $itemType
+    itemTypes: $itemTypes
     projectId: $projectId
     before: $before
     after: $after

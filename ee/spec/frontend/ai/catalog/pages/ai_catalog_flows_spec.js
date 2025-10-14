@@ -51,7 +51,7 @@ describe('AiCatalogFlows', () => {
 
   const { bindInternalEventDocument } = useMockInternalEventsTracking();
 
-  const createComponent = () => {
+  const createComponent = ({ provide = {} } = {}) => {
     isLoggedIn.mockReturnValue(true);
 
     mockApollo = createMockApollo([
@@ -62,6 +62,13 @@ describe('AiCatalogFlows', () => {
 
     wrapper = shallowMountExtended(AiCatalogFlows, {
       apolloProvider: mockApollo,
+      provide: {
+        glFeatures: {
+          aiCatalogFlows: true,
+          aiCatalogThirdPartyFlows: true,
+        },
+        ...provide,
+      },
       mocks: {
         $toast: mockToast,
         $router: mockRouter,
@@ -95,16 +102,65 @@ describe('AiCatalogFlows', () => {
   });
 
   describe('Apollo queries', () => {
-    beforeEach(() => {
-      createComponent();
+    describe('when both aiCatalogFlows and aiCatalogThirdPartyFlows are enabled', () => {
+      beforeEach(() => {
+        createComponent();
+      });
+
+      it('fetches list data with itemTypes', () => {
+        expect(mockCatalogItemsQueryHandler).toHaveBeenCalledWith({
+          itemTypes: ['FLOW', 'THIRD_PARTY_FLOW'],
+          after: null,
+          before: null,
+          first: 20,
+          last: null,
+        });
+      });
     });
 
-    it('fetches list data', () => {
-      expect(mockCatalogItemsQueryHandler).toHaveBeenCalledWith({
-        after: null,
-        before: null,
-        first: 20,
-        last: null,
+    describe('when only aiCatalogThirdPartyFlows is enabled', () => {
+      beforeEach(() => {
+        createComponent({
+          provide: {
+            glFeatures: {
+              aiCatalogFlows: false,
+              aiCatalogThirdPartyFlows: true,
+            },
+          },
+        });
+      });
+
+      it('fetches list data with itemType THIRD_PARTY_FLOW', () => {
+        expect(mockCatalogItemsQueryHandler).toHaveBeenCalledWith({
+          itemType: 'THIRD_PARTY_FLOW',
+          after: null,
+          before: null,
+          first: 20,
+          last: null,
+        });
+      });
+    });
+
+    describe('when only aiCatalogFlows is enabled', () => {
+      beforeEach(() => {
+        createComponent({
+          provide: {
+            glFeatures: {
+              aiCatalogFlows: true,
+              aiCatalogThirdPartyFlows: false,
+            },
+          },
+        });
+      });
+
+      it('fetches list data with itemType FLOW', () => {
+        expect(mockCatalogItemsQueryHandler).toHaveBeenCalledWith({
+          itemType: 'FLOW',
+          after: null,
+          before: null,
+          first: 20,
+          last: null,
+        });
       });
     });
   });
@@ -178,6 +234,7 @@ describe('AiCatalogFlows', () => {
     it('refetches query with correct variables when paging backward', () => {
       findAiCatalogList().vm.$emit('prev-page');
       expect(mockCatalogItemsQueryHandler).toHaveBeenCalledWith({
+        itemTypes: ['FLOW', 'THIRD_PARTY_FLOW'],
         after: null,
         before: 'eyJpZCI6IjUxIn0',
         first: null,
@@ -188,6 +245,7 @@ describe('AiCatalogFlows', () => {
     it('refetches query with correct variables when paging forward', () => {
       findAiCatalogList().vm.$emit('next-page');
       expect(mockCatalogItemsQueryHandler).toHaveBeenCalledWith({
+        itemTypes: ['FLOW', 'THIRD_PARTY_FLOW'],
         after: 'eyJpZCI6IjM1In0',
         before: null,
         first: 20,

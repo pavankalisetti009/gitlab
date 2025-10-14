@@ -5,6 +5,7 @@ import { __, s__, sprintf } from '~/locale';
 import { convertToGraphQLId, getIdFromGraphQLId } from '~/graphql_shared/utils';
 import { fetchPolicies } from '~/lib/graphql';
 import * as Sentry from '~/sentry/sentry_browser_wrapper';
+import glFeatureFlagsMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
 import ErrorsAlert from '~/vue_shared/components/errors_alert.vue';
 import PageHeading from '~/vue_shared/components/page_heading.vue';
 import ResourceListsEmptyState from '~/vue_shared/components/resource_lists/empty_state.vue';
@@ -14,7 +15,11 @@ import aiCatalogConfiguredItemsQuery from 'ee/ai/catalog/graphql/queries/ai_cata
 import aiCatalogProjectUserPermissionsQuery from 'ee/ai/catalog/graphql/queries/ai_catalog_project_user_permissions.query.graphql';
 import aiCatalogFlowQuery from 'ee/ai/catalog/graphql/queries/ai_catalog_flow.query.graphql';
 import deleteAiCatalogItemConsumer from 'ee/ai/catalog/graphql/mutations/delete_ai_catalog_item_consumer.mutation.graphql';
-import { AI_CATALOG_TYPE_FLOW, PAGE_SIZE } from 'ee/ai/catalog/constants';
+import {
+  AI_CATALOG_TYPE_FLOW,
+  AI_CATALOG_TYPE_THIRD_PARTY_FLOW,
+  PAGE_SIZE,
+} from 'ee/ai/catalog/constants';
 import { TYPENAME_PROJECT } from '~/graphql_shared/constants';
 import { TYPENAME_AI_CATALOG_ITEM } from 'ee/graphql_shared/constants';
 import {
@@ -34,6 +39,7 @@ export default {
     AiCatalogList,
     AiCatalogItemDrawer,
   },
+  mixins: [glFeatureFlagsMixin()],
   inject: {
     projectId: {
       default: null,
@@ -50,7 +56,7 @@ export default {
       query: aiCatalogConfiguredItemsQuery,
       variables() {
         return {
-          itemType: AI_CATALOG_TYPE_FLOW,
+          ...this.itemTypes,
           projectId: convertToGraphQLId(TYPENAME_PROJECT, this.projectId),
           before: null,
           after: null,
@@ -105,6 +111,21 @@ export default {
     };
   },
   computed: {
+    isFlowsAvailable() {
+      return this.glFeatures.aiCatalogFlows;
+    },
+    isThirdPartyFlowsAvailable() {
+      return this.glFeatures.aiCatalogThirdPartyFlows;
+    },
+    itemTypes() {
+      if (this.isThirdPartyFlowsAvailable && this.isFlowsAvailable) {
+        return { itemTypes: [AI_CATALOG_TYPE_FLOW, AI_CATALOG_TYPE_THIRD_PARTY_FLOW] };
+      }
+      if (this.isThirdPartyFlowsAvailable) {
+        return { itemType: AI_CATALOG_TYPE_THIRD_PARTY_FLOW };
+      }
+      return { itemType: AI_CATALOG_TYPE_FLOW };
+    },
     isLoading() {
       return this.$apollo.queries.aiFlows.loading;
     },
