@@ -337,5 +337,25 @@ RSpec.describe Projects::PipelineHelper, feature_category: :pipeline_composition
         it { is_expected.to eq(result.to_s) }
       end
     end
+
+    context 'when pipeline has a merge request' do
+      let_it_be(:merge_request) { create(:merge_request, source_project: project) }
+      let_it_be(:raw_pipeline) { create(:ci_pipeline, project: project, ref: 'master', sha: project.commit.id, merge_request: merge_request) }
+      let_it_be(:pipeline) { Ci::PipelinePresenter.new(raw_pipeline, current_user: user) }
+
+      it 'includes merge request path' do
+        expect(pipeline_header_data).to include({
+          merge_request_path: project_merge_request_path(project, merge_request.iid)
+        })
+      end
+    end
+
+    context 'when pipeline does not have a merge request' do
+      it 'returns nil for merge request path' do
+        expect(pipeline_header_data).to include({
+          merge_request_path: nil
+        })
+      end
+    end
   end
 end
