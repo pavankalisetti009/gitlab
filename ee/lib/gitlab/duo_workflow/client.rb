@@ -24,6 +24,14 @@ module Gitlab
         "duo-workflow-svc#{subdomain}.runway.gitlab.net:#{::CloudConnector::Config.port}"
       end
 
+      def self.url_for(feature_setting:, user:)
+        if feature_setting&.self_hosted?
+          self_hosted_url
+        else
+          cloud_connected_url(user: user)
+        end
+      end
+
       def self.self_hosted_url
         ::Ai::Setting.instance&.duo_agent_platform_service_url.presence
       end
