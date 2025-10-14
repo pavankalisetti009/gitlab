@@ -46,7 +46,7 @@ panels:
     visualization: merge_requests_throughput_table
     gridAttributes:
       width: 12
-      height: 12
+      height: 13
       yPos: 2
       xPos: 4
     queryOverrides: {}
