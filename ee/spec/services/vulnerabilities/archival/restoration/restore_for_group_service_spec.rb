@@ -135,6 +135,10 @@ RSpec.describe Vulnerabilities::Archival::Restoration::RestoreForGroupService, f
       end
     end
 
+    it_behaves_like 'sync vulnerabilities changes to ES' do
+      let(:expected_vulnerabilities) { [vulnerability] }
+    end
+
     context 'when the owner project moves to a different group' do
       let(:previous_traversal_ids_value) { [non_existing_record_id] }
 
