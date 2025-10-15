@@ -1,19 +1,16 @@
 import { GlProgressBar, GlSprintf } from '@gitlab/ui';
 import CurrentUsageCard from 'ee/usage_quotas/usage_billing/components/current_usage_card.vue';
+import HumanTimeframeWithDaysRemaining from 'ee/usage_quotas/usage_billing/components/human_timeframe_with_days_remaining.vue';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 
-import { useFakeDate } from 'helpers/fake_date';
-import HumanTimeframe from '~/vue_shared/components/datetime/human_timeframe.vue';
-
 describe('CurrentUsageCard', () => {
+  /** @type {import('helpers/vue_test_utils_helper').ExtendedWrapper} */
   let wrapper;
 
-  // September 7th, 2025
-  useFakeDate(2025, 8, 7);
   const defaultProps = {
-    currentOverage: 1,
-    totalCreditsUsed: 7800,
-    totalCredits: 10000,
+    overageCreditsUsed: 1,
+    poolCreditsUsed: 7800,
+    poolTotalCredits: 10000,
     monthStartDate: '2025-09-01',
     monthEndDate: '2025-09-30',
   };
@@ -26,7 +23,6 @@ describe('CurrentUsageCard', () => {
       },
       stubs: {
         GlSprintf,
-        HumanTimeframe,
       },
     });
   };
@@ -45,13 +41,14 @@ describe('CurrentUsageCard', () => {
     });
 
     it('renders formatted total credits', () => {
-      expect(wrapper.findByTestId('total-credits').text()).toMatchInterpolatedText('/ 10k');
+      expect(wrapper.findByTestId('pool-total-credits').text()).toMatchInterpolatedText('/ 10k');
     });
 
     it('renders the formatted date range', () => {
-      expect(wrapper.findByTestId('date-range').text()).toMatchInterpolatedText(
-        'Sep 1 – 30, 2025 - 23 days remaining',
-      );
+      expect(wrapper.findComponent(HumanTimeframeWithDaysRemaining).props()).toMatchObject({
+        monthStartDate: '2025-09-01',
+        monthEndDate: '2025-09-30',
+      });
     });
   });
 
@@ -73,8 +70,8 @@ describe('CurrentUsageCard', () => {
         ['danger', 120, 100],
       ])(
         'renders progress bar with "%s" variant when usagePercentage is %d',
-        (variant, totalCreditsUsed, totalCredits) => {
-          createComponent({ totalCreditsUsed, totalCredits });
+        (variant, poolCreditsUsed, poolTotalCredits) => {
+          createComponent({ poolCreditsUsed, poolTotalCredits });
 
           const progressBar = wrapper.findComponent(GlProgressBar);
 
@@ -98,15 +95,19 @@ describe('CurrentUsageCard', () => {
         '2.2k pool credits remaining',
       );
     });
+  });
 
+  describe('overage', () => {
     it('renders correct current overage value', () => {
-      expect(wrapper.findByTestId('current-overage').text()).toBe('Current overage 1');
+      createComponent();
+
+      expect(wrapper.findByTestId('overage-credits-used').text()).toBe('1');
     });
   });
 
   describe('when total credits is 0', () => {
     beforeEach(() => {
-      createComponent({ totalCredits: 0 });
+      createComponent({ poolTotalCredits: 0 });
     });
 
     it('renders correct utilized credits percentage', () => {

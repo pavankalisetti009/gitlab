@@ -608,17 +608,50 @@ export const usageDataWithPool = {
   data: {
     subscriptionUsage: {
       poolUsage: {
+        creditsUsed: 50,
         totalCredits: 300,
+      },
+      overage: {
+        creditsUsed: 0,
+      },
+    },
+  },
+};
+
+export const usageDataWithPoolWithOverage = {
+  data: {
+    subscriptionUsage: {
+      poolUsage: {
+        creditsUsed: 300,
+        totalCredits: 300,
+      },
+      overage: {
+        isAllowed: true,
         creditsUsed: 50,
       },
     },
   },
 };
 
-export const usageDataWithoutPool = {
+export const usageDataNoPoolNoOverage = {
   data: {
     subscriptionUsage: {
       poolUsage: null,
+      overage: {
+        isAllowed: false,
+      },
+    },
+  },
+};
+
+export const usageDataNoPoolWithOverage = {
+  data: {
+    subscriptionUsage: {
+      poolUsage: null,
+      overage: {
+        isAllowed: true,
+        creditsUsed: 50,
+      },
     },
   },
 };
