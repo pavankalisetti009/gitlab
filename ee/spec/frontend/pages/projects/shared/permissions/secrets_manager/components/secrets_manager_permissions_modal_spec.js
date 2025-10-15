@@ -267,7 +267,7 @@ describe('SecretsManagerPermissionsModal', () => {
       expect(mockCreatePermission).toHaveBeenCalledTimes(1);
       expect(wrapper.emitted('hide')).toHaveLength(1);
       expect(mockToastShow).toHaveBeenCalledWith(
-        'Secret Manager permissions were successfully updated.',
+        'Secrets manager permissions were successfully updated.',
       );
     });
   });
@@ -298,7 +298,7 @@ describe('SecretsManagerPermissionsModal', () => {
       await submitPermission();
 
       expect(createAlert).toHaveBeenCalledWith({
-        message: 'Failed to create Secrets manager permission. Please try again.',
+        message: 'Failed to create secrets manager permission. Please try again.',
         captureError: true,
         error,
       });

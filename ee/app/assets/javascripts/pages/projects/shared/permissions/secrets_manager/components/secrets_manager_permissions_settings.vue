@@ -55,7 +55,7 @@ export default {
       error(error) {
         createAlert({
           message: s__(
-            'Secrets|Failed to fetch secrets manager permissions. Please try again later.',
+            'SecretsManagerPermissions|Failed to fetch secrets manager permissions. Please try again later.',
           ),
           captureError: true,
           error,
@@ -80,7 +80,9 @@ export default {
       }
 
       return sprintf(
-        s__('Secrets|Are you sure you want to remove permissions for %{principalName}?'),
+        s__(
+          'SecretsManagerPermissions|Are you sure you want to remove permissions for %{principalName}?',
+        ),
         { principalName },
       );
     },
@@ -152,10 +154,12 @@ export default {
         }
 
         this.refetchPermissions();
-        this.$toast.show(s__('Secrets|Permissions for secrets manager removed.'));
+        this.$toast.show(s__('SecretsManagerPermissions|Permissions for secrets manager removed.'));
       } catch (e) {
         createAlert({
-          message: s__('Secrets|Failed to delete secrets manager permission. Please try again.'),
+          message: s__(
+            'SecretsManagerPermissions|Failed to delete secrets manager permissions. Please try again.',
+          ),
           captureError: true,
           error: e,
         });
@@ -206,7 +210,7 @@ export default {
     />
     <gl-modal
       :visible="showDeleteModal"
-      :title="s__('Secrets|Remove secrets manager permission?')"
+      :title="s__('SecretsManagerPermissions|Remove secrets manager permissions?')"
       :action-primary="deleteModalOptions.actionPrimary"
       :action-secondary="deleteModalOptions.actionSecondary"
       modal-id="delete-permission-modal"
@@ -220,7 +224,10 @@ export default {
         <p>{{ deleteModalDescription }}</p>
       </div>
     </gl-modal>
-    <crud-component :title="s__('Secrets|Secrets manager user permissions')" class="gl-mt-5">
+    <crud-component
+      :title="s__('SecretsManagerPermissions|Secrets manager user permissions')"
+      class="gl-mt-5"
+    >
       <template #actions>
         <gl-collapsible-listbox
           v-if="canManageSecretsManager"
