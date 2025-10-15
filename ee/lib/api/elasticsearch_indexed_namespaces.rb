@@ -20,8 +20,10 @@ module API
         END
       end
       params do
-        requires :percentage, type: Integer, values: 0..100
-        requires :plan, type: String, values: Plan::PAID_HOSTED_PLANS
+        requires :percentage, type: Integer, values: 0..100,
+          desc: 'Percentage of namespaces to rollout Elasticsearch for'
+        requires :plan, type: String, values: Plan::PAID_HOSTED_PLANS,
+          desc: 'Subscription tier to rollout Elasticsearch for'
       end
       put 'rollout' do
         ElasticNamespaceRolloutWorker.perform_async(params[:plan], params[:percentage], ElasticNamespaceRolloutWorker::ROLLOUT) # rubocop:disable CodeReuse/Worker
@@ -37,8 +39,10 @@ module API
         END
       end
       params do
-        requires :percentage, type: Integer, values: 0..100
-        requires :plan, type: String, values: Plan::PAID_HOSTED_PLANS
+        requires :percentage, type: Integer, values: 0..100,
+          desc: 'Percentage of namespaces to rollout Elasticsearch for'
+        requires :plan, type: String, values: Plan::PAID_HOSTED_PLANS,
+          desc: 'Subscription tier to rollout Elasticsearch for'
       end
       put 'rollback' do
         ElasticNamespaceRolloutWorker.perform_async(params[:plan], params[:percentage], ElasticNamespaceRolloutWorker::ROLLBACK) # rubocop:disable CodeReuse/Worker
