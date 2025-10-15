@@ -32750,12 +32750,6 @@ msgstr ""
 msgid "GroupsEmptyState|A group is a collection of several projects"
 msgstr ""
 
-msgid "GroupsEmptyState|Create project"
-msgstr ""
-
-msgid "GroupsEmptyState|Create subgroup"
-msgstr ""
-
 msgid "GroupsEmptyState|If you organize your projects under a group, it works like a folder. You can manage your group member's permissions and access to each project in the group."
 msgstr ""
 

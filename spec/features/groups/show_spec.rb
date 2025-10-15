@@ -101,7 +101,7 @@ RSpec.describe 'Group show page', :with_current_organization, feature_category: 
         it 'shows `Create subgroup` link' do
           link = new_group_path(parent_id: group.id, anchor: 'create-group-pane')
 
-          expect(page_content).to have_link(s_('GroupsEmptyState|Create subgroup'), href: link)
+          expect(page_content).to have_link('Create subgroup', href: link)
         end
 
         context 'when current Organization does not have scoped paths' do
@@ -111,7 +111,7 @@ RSpec.describe 'Group show page', :with_current_organization, feature_category: 
 
           it 'shows `Create project` link' do
             expect(page_content)
-              .to have_link(s_('GroupsEmptyState|Create project'), href: new_project_path(namespace_id: group.id))
+              .to have_link('Create project', href: new_project_path(namespace_id: group.id))
           end
         end
 
@@ -126,7 +126,7 @@ RSpec.describe 'Group show page', :with_current_organization, feature_category: 
               organization_path: current_organization.path
             )
             expect(page_content)
-              .to have_link(s_('GroupsEmptyState|Create project'), href: expected_path)
+              .to have_link('Create project', href: expected_path)
           end
         end
       end
@@ -141,12 +141,12 @@ RSpec.describe 'Group show page', :with_current_organization, feature_category: 
 
       it 'does not show `Create subgroup` link' do
         expect(page)
-          .not_to have_link(s_('GroupsEmptyState|Create subgroup'), href: new_group_path(parent_id: group.id))
+          .not_to have_link('Create subgroup', href: new_group_path(parent_id: group.id))
       end
 
       it 'does not show `Create project` link' do
         expect(page)
-          .not_to have_link(s_('GroupsEmptyState|Create project'), href: new_project_path(namespace_id: group.id))
+          .not_to have_link('Create project', href: new_project_path(namespace_id: group.id))
       end
 
       it 'shows empty state' do

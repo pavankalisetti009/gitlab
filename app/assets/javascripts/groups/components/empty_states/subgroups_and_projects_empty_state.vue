@@ -63,7 +63,7 @@ export default {
           variant="confirm"
           category="primary"
         >
-          {{ s__('GroupsEmptyState|Create project') }}
+          {{ __('Create project') }}
         </gl-button>
         <gl-button
           v-if="canCreateSubgroups"
@@ -72,7 +72,7 @@ export default {
           :variant="canCreateProjects ? 'default' : 'confirm'"
           :category="canCreateProjects ? 'secondary' : 'primary'"
         >
-          {{ s__('GroupsEmptyState|Create subgroup') }}
+          {{ __('Create subgroup') }}
         </gl-button>
       </div>
     </template>
