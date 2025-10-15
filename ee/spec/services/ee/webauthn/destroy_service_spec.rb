@@ -5,7 +5,7 @@ require 'spec_helper'
 RSpec.describe Webauthn::DestroyService, feature_category: :system_access do
   let_it_be(:user) { create(:user, :two_factor_via_webauthn, registrations_count: 1) }
   let_it_be(:current_user) { user }
-  let(:webauthn_registration) { user.webauthn_registrations.first }
+  let(:webauthn_registration) { user.second_factor_webauthn_registrations.first }
   let(:webauthn_id) { webauthn_registration.id }
   let(:webauthn_name) { webauthn_registration.name }
 
@@ -45,7 +45,7 @@ RSpec.describe Webauthn::DestroyService, feature_category: :system_access do
               end
 
               let(:user) { current_user }
-              let(:webauthn_registration) { user.webauthn_registrations.first }
+              let(:webauthn_registration) { user.second_factor_webauthn_registrations.first }
               let(:webauthn_id) { webauthn_registration.id }
               let(:webauthn_name) { webauthn_registration.name }
 
