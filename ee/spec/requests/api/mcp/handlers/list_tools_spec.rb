@@ -299,8 +299,8 @@ RSpec.describe API::Mcp, 'List tools request', feature_category: :mcp_server do
                   "(e.g.: 'authentication middleware', 'database connection logic', or 'API error handling')."
               },
               "project_id" => {
-                "type" => "integer",
-                "description" => "Numeric project ID to search in."
+                "type" => "string",
+                "description" => "Either a project id or project path."
               },
               "directory_path" => {
                 "type" => "string",
