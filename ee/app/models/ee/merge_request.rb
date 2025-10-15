@@ -649,10 +649,6 @@ module EE
         .order('t.ord')
     end
 
-    def rebase_commit_is_different?(newrev)
-      rebase_commit_sha != newrev
-    end
-
     def merge_train
       target_project.merge_train_for(target_branch)
     end
