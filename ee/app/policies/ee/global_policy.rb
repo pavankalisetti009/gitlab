@@ -81,18 +81,6 @@ module EE
         ::Feature.enabled?(:duo_agentic_chat, @user)
       end
 
-      condition(:instance_with_self_hosted_duo) do
-        ::Ai::Setting.self_hosted?
-      end
-
-      condition(:agentic_chat_on_self_hosted_duo_not_configured_via_feature_setting) do
-        Ai::FeatureSetting.duo_agent_platform.self_hosted.empty?
-      end
-
-      condition(:agentic_chat_on_self_hosted_duo_feature_flag_disabled) do
-        ::Feature.disabled?(:self_hosted_agent_platform, :instance)
-      end
-
       condition(:user_belongs_to_paid_namespace) do
         next false unless @user
 

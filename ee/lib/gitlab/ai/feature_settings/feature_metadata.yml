@@ -233,7 +233,7 @@ review_merge_request:
     - review_merge_request
 duo_agent_platform:
   title: GitLab Duo Agent Platform - all agents
-  release_state: EXPERIMENT
+  release_state: GA
   main_feature: GitLab Duo Agent Platform
   compatible_llms:
     - claude_3
