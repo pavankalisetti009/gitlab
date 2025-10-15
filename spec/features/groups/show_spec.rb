@@ -154,7 +154,7 @@ RSpec.describe 'Group show page', :with_current_organization, feature_category: 
                      'or project in this group. Please contact an owner of this group to create a ' \
                      'new subgroup or project.')
 
-        expect(page).to have_content(s_('GroupsEmptyState|Organize your work with projects and subgroups'))
+        expect(page).to have_content(s_('GroupsEmptyState|There are no subgroups or projects in this group'))
         expect(page).to have_content(content)
       end
     end
