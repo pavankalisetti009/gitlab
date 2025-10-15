@@ -387,6 +387,8 @@ module MergeRequests
     end
 
     def measure_duration(operation_name)
+      return yield unless log_refresh_service_duration_enabled?
+
       start_time = current_monotonic_time
       result = yield
       duration = (current_monotonic_time - start_time).round(Gitlab::InstrumentationHelper::DURATION_PRECISION)
@@ -396,6 +398,12 @@ module MergeRequests
 
     def duration_statistics
       @duration_statisic ||= {}
+    end
+
+    def log_refresh_service_duration_enabled?
+      strong_memoize(:log_refresh_service_duration_enabled) do
+        Feature.enabled?(:log_refresh_service_duration, @current_user)
+      end
     end
 
     def log_hash_metadata_on_done(hash)
