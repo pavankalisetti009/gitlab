@@ -297,7 +297,7 @@ describe('SecretsManagerPermissionsSettings', () => {
         await deletePermission();
 
         expect(createAlert).toHaveBeenCalledWith({
-          message: 'Failed to delete secrets manager permission. Please try again.',
+          message: 'Failed to delete secrets manager permissions. Please try again.',
           captureError: true,
           error,
         });
