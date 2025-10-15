@@ -7,6 +7,7 @@ import DependencyVulnerabilities from 'ee/dependencies/components/dependency_vul
 import DependencyLocationCount from 'ee/dependencies/components/dependency_location_count.vue';
 import DependencyProjectCount from 'ee/dependencies/components/dependency_project_count.vue';
 import DependencyLocation from 'ee/dependencies/components/dependency_location.vue';
+import VulnerabilitiesPopover from 'ee/dependencies/components/vulnerabilities_popover.vue';
 import { DEPENDENCIES_TABLE_I18N } from 'ee/dependencies/constants';
 import stubChildren from 'helpers/stub_children';
 import waitForPromises from 'helpers/wait_for_promises';
@@ -52,8 +53,7 @@ describe('DependenciesTable component', () => {
   const findDependencyPathDrawer = () => wrapper.findComponent(DependencyPathDrawer);
   const findDependencyLicenseLinks = (licenseCell) =>
     licenseCell.findComponent(DependencyLicenseLinks);
-  const findVulnerabilityInfoIcon = () => wrapper.find('#vulnerabilities-info');
-  const findVulnerabilityInfoPopover = () => wrapper.findByTestId('vulnerability-info-popover');
+  const findVulnerabilityPopover = () => wrapper.findComponent(VulnerabilitiesPopover);
   const normalizeWhitespace = (string) => string.replace(/\s+/g, ' ');
   const loadingIcon = () => wrapper.findComponent(GlLoadingIcon);
   const sharedExpectations = (rowWrapper, dependency) => {
@@ -176,15 +176,8 @@ describe('DependenciesTable component', () => {
         });
       });
 
-      it('renders vulnerability info icon and popover', () => {
-        expect(findVulnerabilityInfoIcon().exists()).toBe(true);
-        expect(findVulnerabilityInfoPopover().exists()).toBe(true);
-        expect(findVulnerabilityInfoPopover().props('title')).toBe(
-          DEPENDENCIES_TABLE_I18N.vulnerabilityInfoTitle,
-        );
-        expect(findVulnerabilityInfoPopover().text()).toBe(
-          DEPENDENCIES_TABLE_I18N.vulnerabilityInfoBody,
-        );
+      it('renders vulnerability popover', () => {
+        expect(findVulnerabilityPopover().exists()).toBe(true);
       });
 
       it('renders a message that there are no records to show', () => {

@@ -22670,6 +22670,9 @@ msgstr ""
 msgid "Dependencies|Direct dependents"
 msgstr ""
 
+msgid "Dependencies|Don't show again"
+msgstr ""
+
 msgid "Dependencies|Enter at least 2 characters to view available components."
 msgstr ""
 

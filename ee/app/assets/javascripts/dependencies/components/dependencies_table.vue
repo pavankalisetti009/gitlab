@@ -18,6 +18,7 @@ import DependencyLocationCount from './dependency_location_count.vue';
 import DependencyProjectCount from './dependency_project_count.vue';
 import DependencyVulnerabilities from './dependency_vulnerabilities.vue';
 import DependencyPathDrawer from './dependency_path_drawer.vue';
+import VulnerabilitiesPopover from './vulnerabilities_popover.vue';
 
 const tdClass =
   (defaultClasses = []) =>
@@ -55,6 +56,7 @@ export default {
     DependencyLocationCount,
     DependencyProjectCount,
     DependencyPathDrawer,
+    VulnerabilitiesPopover,
     GlBadge,
     GlIcon,
     GlButton,
@@ -215,16 +217,7 @@ export default {
 
       <template #head(isVulnerable)="data">
         {{ data.label }}
-        <gl-icon id="vulnerabilities-info" name="information-o" class="gl-ml-2" variant="info" />
-        <gl-popover
-          placement="bottom"
-          boundary="viewport"
-          target="vulnerabilities-info"
-          data-testid="vulnerability-info-popover"
-          :title="$options.i18n.vulnerabilityInfoTitle"
-        >
-          <p class="gl-mb-0">{{ $options.i18n.vulnerabilityInfoBody }}</p>
-        </gl-popover>
+        <vulnerabilities-popover />
       </template>
 
       <!-- toggleDetails and detailsShowing are scoped slot props provided by

@@ -27,4 +27,5 @@ export const DEPENDENCIES_TABLE_I18N = {
   vulnerabilityInfoBody: s__(
     'Dependencies|The dependency list shows only active, currently detected issues. Vulnerabilities that are no longer detected are filtered out.',
   ),
+  vulnerabilityInfoDismissButtonText: s__("Dependencies|Don't show again"),
 };
