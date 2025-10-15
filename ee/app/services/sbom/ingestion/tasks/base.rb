@@ -6,6 +6,7 @@ module Sbom
       class Base
         include Gitlab::Utils::StrongMemoize
         include Gitlab::Ingestion::BulkInsertableTask
+        extend ::Gitlab::Utils::Override
 
         def self.execute(pipeline, occurrence_maps)
           new(pipeline, occurrence_maps).execute
@@ -21,6 +22,53 @@ module Sbom
         attr_reader :pipeline, :occurrence_maps
 
         delegate :project, to: :pipeline, private: true
+
+        # Override bulk operations to disable ActiveRecord validations for performance.
+        # We perform manual validation filtering in #filter_invalid_objects before
+        # bulk operations to ensure only valid objects reach the database while
+        # avoiding redundant validation passes during bulk insert/upsert.
+        override :bulk_insert
+        def bulk_insert
+          klass.bulk_insert!(insert_objects, skip_duplicates: true, returns: uses, validate: false)
+        end
+
+        override :bulk_upsert
+        def bulk_upsert
+          klass.bulk_upsert!(insert_objects, unique_by: unique_by, returns: uses, validate: false) do |attr|
+            slice_attributes(attr)
+          end
+        end
+
+        override :insert_objects
+        def insert_objects
+          filter_invalid_objects(super)
+        end
+
+        def filter_invalid_objects(objects)
+          valid_objects, invalid_objects = objects.partition(&:valid?)
+          log_invalid_objects(invalid_objects) if invalid_objects.any?
+
+          valid_objects
+        end
+
+        def log_invalid_objects(invalid_objects)
+          errors = invalid_objects.flat_map do |obj|
+            obj.errors.map do |error|
+              {
+                model: obj.class.name,
+                error: error.full_message,
+                attribute_name: error.attribute.to_s,
+                attribute_value: obj[error.attribute]
+              }
+            end
+          end.uniq
+
+          ::Gitlab::AppLogger.warn(
+            message: "Components failed validation during SBoM ingestion",
+            project_id: project.id,
+            errors: errors
+          )
+        end
 
         def organization_id
           project.namespace.organization_id
