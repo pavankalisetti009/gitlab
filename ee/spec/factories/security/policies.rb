@@ -116,6 +116,12 @@ FactoryBot.define do
       end
     end
 
+    trait :enforcement_type_enforce do
+      content do
+        { enforcement_type: 'enforce' }
+      end
+    end
+
     trait :with_approval_settings do
       content { { approval_settings: { prevent_approval_by_author: true } } }
     end
