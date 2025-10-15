@@ -63,6 +63,12 @@ module Security
     scope :prevent_pushing_and_force_pushing, -> do
       where("project_approval_settings->>'prevent_pushing_and_force_pushing' = 'true'")
     end
+    scope :without_warn_mode_policy, -> do
+      left_joins(approval_policy_rule: :security_policy)
+        .where(
+          "approval_policy_rule_id IS NULL OR (security_policies.content->>'enforcement_type' IS DISTINCT FROM ?)",
+          Security::Policy::ENFORCEMENT_TYPE_WARN)
+    end
 
     def fail_open?
       fallback_behavior["fail"] == FALLBACK_BEHAVIORS[:open]
