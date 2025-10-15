@@ -149,7 +149,8 @@ RSpec.describe Mutations::Ai::Catalog::ThirdPartyFlow::Update, feature_category:
           injectGatewayToken: false,
           image: 'example/new_image:latest',
           commands: ['/bin/newcmd'],
-          variables: ['NEWVAR1']
+          variables: ['NEWVAR1'],
+          yaml_definition: params[:definition]
         }.stringify_keys
       )
 
@@ -161,18 +162,10 @@ RSpec.describe Mutations::Ai::Catalog::ThirdPartyFlow::Update, feature_category:
           latest_version: a_graphql_entity_for(
             latest_version,
             released: true,
-            definition: a_kind_of(String)
+            definition: params[:definition]
           )
         )
       )
-
-      expect(YAML.load(graphql_data_at(:ai_catalog_third_party_flow_update, :item, :latestVersion, :definition)))
-        .to match(
-          'injectGatewayToken' => false,
-          'image' => 'example/new_image:latest',
-          'commands' => ['/bin/newcmd'],
-          'variables' => ['NEWVAR1']
-        )
 
       expect(graphql_dig_at(mutation_response, :errors)).to be_empty
     end

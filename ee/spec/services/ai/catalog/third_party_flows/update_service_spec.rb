@@ -47,7 +47,8 @@ RSpec.describe Ai::Catalog::ThirdPartyFlows::UpdateService, feature_category: :w
         'injectGatewayToken' => false,
         'image' => 'example/new_image:latest',
         'commands' => ['/bin/newcmd'],
-        'variables' => ['NEWVAR1']
+        'variables' => ['NEWVAR1'],
+        'yaml_definition' => params[:definition]
       }
     end
 

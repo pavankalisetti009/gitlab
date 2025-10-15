@@ -42,7 +42,7 @@ module Ai
         strong_memoize_attr def definition_parsed
           return unless params[:definition].present?
 
-          YAML.safe_load(params[:definition])
+          YAML.safe_load(params[:definition]).merge(yaml_definition: params[:definition])
         end
       end
     end

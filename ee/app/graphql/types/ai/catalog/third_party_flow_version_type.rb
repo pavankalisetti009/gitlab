@@ -13,7 +13,7 @@ module Types
         field :definition, GraphQL::Types::String, null: false, description: 'YAML definition of the third party flow.'
 
         def definition
-          object.definition.to_yaml
+          object.definition['yaml_definition'] || object.definition.to_yaml
         end
       end
     end
