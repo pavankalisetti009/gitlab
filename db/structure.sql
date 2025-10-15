@@ -49628,7 +49628,7 @@ ALTER TABLE ONLY user_achievements
     ADD CONSTRAINT fk_d7653ef780 FOREIGN KEY (revoked_by_user_id) REFERENCES users(id) ON DELETE SET NULL;
 
 ALTER TABLE ONLY timelogs
-    ADD CONSTRAINT fk_d774bdf1ae FOREIGN KEY (namespace_id) REFERENCES namespaces(id) ON DELETE CASCADE NOT VALID;
+    ADD CONSTRAINT fk_d774bdf1ae FOREIGN KEY (namespace_id) REFERENCES namespaces(id) ON DELETE CASCADE;
 
 ALTER TABLE ONLY dependency_proxy_manifest_states
     ADD CONSTRAINT fk_d79f184865 FOREIGN KEY (group_id) REFERENCES namespaces(id) ON DELETE CASCADE;
