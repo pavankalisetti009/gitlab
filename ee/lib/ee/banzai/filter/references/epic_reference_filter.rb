@@ -34,7 +34,7 @@ module EE
 
           def data_attributes_for(text, group, object, link_content: false, link_reference: false)
             {
-              original: escape_html_entities(text),
+              original: text,
               link: link_content,
               link_reference: link_reference,
               group: group.id,
