@@ -423,6 +423,8 @@ RSpec.describe GitlabSubscriptions::SubscriptionUsage, feature_category: :consum
   end
 
   describe '#users_usage' do
+    subject(:users_usage) { subscription_usage.users_usage }
+
     context 'when subscription_target is :namespace' do
       let(:subscription_usage) do
         described_class.new(
@@ -465,6 +467,57 @@ RSpec.describe GitlabSubscriptions::SubscriptionUsage, feature_category: :consum
 
         it 'returns empty collection' do
           expect(subscription_usage.users_usage.users).to be_empty
+        end
+      end
+
+      context 'with user stats' do
+        before do
+          allow(subscription_usage_client).to receive(:get_users_usage_stats).and_return(client_response)
+        end
+
+        context 'when the client returns a successful response' do
+          let(:client_response) do
+            {
+              success: true,
+              usersUsage: {
+                totalUsersUsingCredits: 3,
+                totalUsersUsingPool: 2,
+                totalUsersUsingOverage: 1
+              }
+            }
+          end
+
+          it 'returns the expected data' do
+            expect(users_usage).to have_attributes(
+              total_users_using_credits: 3,
+              total_users_using_pool: 2,
+              total_users_using_overage: 1
+            )
+          end
+        end
+
+        context 'when the client returns an unsuccessful response' do
+          let(:client_response) { { success: false } }
+
+          it 'returns nil' do
+            expect(users_usage).to have_attributes(
+              total_users_using_credits: nil,
+              total_users_using_pool: nil,
+              total_users_using_overage: nil
+            )
+          end
+        end
+
+        context 'when the client response is missing the data' do
+          let(:client_response) { { success: true, usersUsage: nil } }
+
+          it 'returns nil' do
+            expect(users_usage).to have_attributes(
+              total_users_using_credits: nil,
+              total_users_using_pool: nil,
+              total_users_using_overage: nil
+            )
+          end
         end
       end
     end

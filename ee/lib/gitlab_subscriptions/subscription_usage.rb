@@ -6,7 +6,19 @@ module GitlabSubscriptions
 
     PoolUsage = Struct.new(:total_credits, :credits_used, :daily_usage, :declarative_policy_subject)
     DailyUsage = Struct.new(:date, :credits_used, :declarative_policy_subject)
-    UsersUsage = Struct.new(:users, :declarative_policy_subject)
+    UsersUsage = Struct.new(:usage_stats, :users, :declarative_policy_subject) do
+      def total_users_using_credits
+        usage_stats.call[:totalUsersUsingCredits]
+      end
+
+      def total_users_using_pool
+        usage_stats.call[:totalUsersUsingPool]
+      end
+
+      def total_users_using_overage
+        usage_stats.call[:totalUsersUsingOverage]
+      end
+    end
 
     def initialize(
       subscription_target:,
@@ -53,6 +65,7 @@ module GitlabSubscriptions
 
     def users_usage
       UsersUsage.new(
+        usage_stats: -> { users_usage_stats },
         users: all_users,
         declarative_policy_subject: self
       )
@@ -83,8 +96,13 @@ module GitlabSubscriptions
     end
 
     def usage_metadata
-      subscription_usage_client.get_metadata.fetch(:subscriptionUsage, {})
+      subscription_usage_client.get_metadata[:subscriptionUsage] || {}
     end
     strong_memoize_attr :usage_metadata
+
+    def users_usage_stats
+      subscription_usage_client.get_users_usage_stats[:usersUsage] || {}
+    end
+    strong_memoize_attr :users_usage_stats
   end
 end

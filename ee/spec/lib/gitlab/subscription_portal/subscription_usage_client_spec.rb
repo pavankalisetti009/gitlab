@@ -271,4 +271,46 @@ RSpec.describe Gitlab::SubscriptionPortal::SubscriptionUsageClient, feature_cate
       end
     end
   end
+
+  describe '#get_users_usage_stats' do
+    context 'when the subscription portal response is successful' do
+      let(:request) { client.get_users_usage_stats }
+      let(:query) { described_class::GET_USERS_USAGE_STATS_QUERY }
+      let(:portal_response) do
+        {
+          success: true,
+          data: {
+            subscription: {
+              gitlabCreditsUsage: {
+                usersUsage: {
+                  totalUsersUsingCredits: 3,
+                  totalUsersUsingPool: 2,
+                  totalUsersUsingOverage: 1
+                }
+              }
+            }
+          }
+        }
+      end
+
+      let(:expected_response) do
+        {
+          success: true,
+          usersUsage: {
+            totalUsersUsingCredits: 3,
+            totalUsersUsingPool: 2,
+            totalUsersUsingOverage: 1
+          }
+        }
+      end
+
+      include_context 'for self-managed request' do
+        let(:variables) { { licenseKey: license_key, startDate: start_date, endDate: end_date } }
+      end
+
+      include_context 'for gitlab.com request' do
+        let(:variables) { { namespaceId: namespace_id, startDate: start_date, endDate: end_date } }
+      end
+    end
+  end
 end
