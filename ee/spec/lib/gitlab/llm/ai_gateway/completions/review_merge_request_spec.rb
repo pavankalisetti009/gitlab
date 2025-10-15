@@ -188,6 +188,72 @@ RSpec.describe Gitlab::Llm::AiGateway::Completions::ReviewMergeRequest, feature_
       end
     end
 
+    context 'when deciding between DAP and legacy flow' do
+      let(:combined_review_response) { '<review></review>' }
+
+      before do
+        allow(merge_request).to receive(:ai_reviewable_diff_files).and_return([])
+        stub_feature_flags(duo_code_review_on_agent_platform: true)
+      end
+
+      context 'with SaaS configuration' do
+        before do
+          allow(::Ai::FeatureSetting).to receive(:find_by_feature)
+            .with('review_merge_request')
+            .and_return(nil)
+          allow(::Ai::DuoWorkflows::CreateAndStartWorkflowService).to receive(:new).and_return(
+            instance_double(::Ai::DuoWorkflows::CreateAndStartWorkflowService, execute: ServiceResponse.success)
+          )
+          allow(::Ai::DuoWorkflows::CodeReview::TimeoutWorker).to receive(:perform_in)
+        end
+
+        it 'uses DAP flow' do
+          expect(completion).to receive(:execute_duo_agent_platform_flow).and_call_original
+          expect(completion).not_to receive(:execute_legacy_flow)
+
+          completion.execute
+        end
+      end
+
+      context 'with self-hosted configuration' do
+        let(:feature_setting) { instance_double(::Ai::FeatureSetting, self_hosted?: true) }
+
+        before do
+          allow(::Ai::FeatureSetting).to receive(:find_by_feature)
+            .with('review_merge_request')
+            .and_return(feature_setting)
+        end
+
+        context 'when DWS URL is configured' do
+          before do
+            allow(::Gitlab::DuoWorkflow::Client).to receive(:self_hosted_url).and_return('https://dws.example.com')
+            allow(::Ai::DuoWorkflows::CreateAndStartWorkflowService).to receive(:new).and_return(
+              instance_double(::Ai::DuoWorkflows::CreateAndStartWorkflowService, execute: ServiceResponse.success)
+            )
+            allow(::Ai::DuoWorkflows::CodeReview::TimeoutWorker).to receive(:perform_in)
+          end
+
+          it 'uses DAP flow' do
+            expect(completion).to receive(:execute_duo_agent_platform_flow).and_call_original
+            completion.execute
+          end
+        end
+
+        context 'when DWS URL is not configured' do
+          before do
+            allow(::Gitlab::DuoWorkflow::Client).to receive(:self_hosted_url).and_return(nil)
+          end
+
+          it 'falls back to legacy flow' do
+            expect(completion).to receive(:execute_legacy_flow).and_call_original
+            expect(completion).not_to receive(:execute_duo_agent_platform_flow)
+
+            completion.execute
+          end
+        end
+      end
+    end
+
     context 'when passing file contents to ai_prompt_class' do
       let(:combined_review_response) { '<review></review>' }
       let(:updated_file_content) { "existing line 1\nexisting line 2\n" }
