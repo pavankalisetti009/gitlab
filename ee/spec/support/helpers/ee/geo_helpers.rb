@@ -270,6 +270,10 @@ module EE
           foreign_key: :_test_dummy_model_with_separate_state_id
 
         scope :available_verifiables, -> { joins(:_test_dummy_model_state) }
+        scope :with_verification_state, ->(state) {
+          available_verifiables
+            .where(_test_dummy_model_states: { verification_state: verification_state_value(state) })
+        }
 
         def verification_state_object
           _test_dummy_model_state

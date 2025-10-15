@@ -45,13 +45,15 @@ module Geo
       scope :verification_failed, -> { available_verifiables.with_verification_state(:verification_failed) }
       scope :verification_disabled, -> { available_verifiables.with_verification_state(:verification_disabled) }
       scope :verification_not_disabled, -> {
-        available_verifiables.where.not(verification_state: verification_state_value(:verification_disabled))
+        available_verifiables
+          .where.not(verification_arel_table[:verification_state].eq(verification_state_value(:verification_disabled)))
       }
       scope :verification_not_pending, -> {
-        available_verifiables.where.not(verification_state: verification_state_value(:verification_pending))
+        available_verifiables
+          .where.not(verification_arel_table[:verification_state].eq(verification_state_value(:verification_pending)))
       }
       scope :verification_timed_out, -> {
-        available_verifiables.where(verification_arel_table[:verification_state].eq(1))
+        verification_started
           .where(verification_arel_table[:verification_started_at].lt(VERIFICATION_TIMEOUT.ago))
       }
       scope :verification_retry_due, -> {
