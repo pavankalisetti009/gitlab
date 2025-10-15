@@ -4,7 +4,9 @@ description: Total count of renders lead page
 product_group: acquisition
 performance_indicator_type: []
 value_type: number
-status: active
+status: removed
+milestone_removed: '18.5'
+removed_by_url: https://gitlab.com/gitlab-org/gitlab/-/merge_requests/207475
 milestone: '17.9'
 introduced_by_url: https://gitlab.com/gitlab-org/gitlab/-/merge_requests/179844
 time_frame: all

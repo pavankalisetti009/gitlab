@@ -12845,9 +12845,6 @@ msgstr ""
 msgid "Can't update snippet: %{err}"
 msgstr ""
 
-msgid "Canada"
-msgstr ""
-
 msgid "Canary"
 msgstr ""
 
@@ -25429,12 +25426,6 @@ msgstr ""
 msgid "DuoProDiscover|Write secure code faster and save time with Code Suggestions in more than 20 languages, available in your favorite IDE."
 msgstr ""
 
-msgid "DuoProTrial|Activate my trial"
-msgstr ""
-
-msgid "DuoProTrial|Apply your GitLab Duo Pro trial to an existing group"
-msgstr ""
-
 msgid "DuoProTrial|Chat within the IDE"
 msgstr ""
 
@@ -25459,13 +25450,7 @@ msgstr ""
 msgid "DuoProTrial|Sign in with a different account"
 msgstr ""
 
-msgid "DuoProTrial|Start your free Duo Pro trial"
-msgstr ""
-
 msgid "DuoProTrial|Start your free GitLab Duo Pro trial"
-msgstr ""
-
-msgid "DuoProTrial|Start your free GitLab Duo Pro trial on %{group_name}"
 msgstr ""
 
 msgid "DuoProTrial|Test Generation"
@@ -29149,9 +29134,6 @@ msgstr ""
 msgid "Frameworks"
 msgstr ""
 
-msgid "France"
-msgstr ""
-
 msgid "Free"
 msgstr ""
 
@@ -30135,9 +30117,6 @@ msgid "Geo|primary"
 msgstr ""
 
 msgid "Geo|secondary"
-msgstr ""
-
-msgid "Germany"
 msgstr ""
 
 msgid "Get a support subscription"
@@ -67702,9 +67681,6 @@ msgstr ""
 msgid "This title already exists."
 msgstr ""
 
-msgid "This trial is for"
-msgstr ""
-
 msgid "This user"
 msgstr ""
 
@@ -69903,12 +69879,6 @@ msgid "Unique identifier for the target message thread (topic in a forum supergr
 msgstr ""
 
 msgid "Unique identifier for the target room (in the format `!qPKKM111FFKKsfoCVy:matrix.org`)."
-msgstr ""
-
-msgid "United Kingdom"
-msgstr ""
-
-msgid "United States of America"
 msgstr ""
 
 msgid "Units|d"
