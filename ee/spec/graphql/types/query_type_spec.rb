@@ -14,6 +14,7 @@ RSpec.describe GitlabSchema.types['Query'], feature_category: :shared do
       :ai_catalog_item_consumer,
       :ai_catalog_item,
       :ai_catalog_items,
+      :ai_foundational_chat_agents,
       :ai_messages,
       :ai_conversation_threads,
       :ai_chat_available_models,
@@ -101,6 +102,14 @@ RSpec.describe GitlabSchema.types['Query'], feature_category: :shared do
 
   describe 'aiCatalogBuiltInTools field' do
     subject(:field) { described_class.fields['aiCatalogBuiltInTools'] }
+
+    it 'has custom max_page_size' do
+      expect(field.max_page_size).to eq(1000)
+    end
+  end
+
+  describe 'aiFoundationalChatAgents field' do
+    subject(:field) { described_class.fields['aiFoundationalChatAgents'] }
 
     it 'has custom max_page_size' do
       expect(field.max_page_size).to eq(1000)
