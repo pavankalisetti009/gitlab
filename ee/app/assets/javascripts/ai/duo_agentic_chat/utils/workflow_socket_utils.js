@@ -53,6 +53,7 @@ export function buildWebsocketUrl({
 
 export function buildStartRequest({
   workflowId,
+  workflowDefinition,
   goal,
   approval = {},
   additionalContext,
@@ -63,7 +64,7 @@ export function buildStartRequest({
     startRequest: {
       workflowID: workflowId,
       clientVersion: DUO_WORKFLOW_CLIENT_VERSION,
-      workflowDefinition: DUO_WORKFLOW_CHAT_DEFINITION,
+      workflowDefinition: workflowDefinition || DUO_WORKFLOW_CHAT_DEFINITION,
       workflowMetadata: metadata,
       goal,
       approval,

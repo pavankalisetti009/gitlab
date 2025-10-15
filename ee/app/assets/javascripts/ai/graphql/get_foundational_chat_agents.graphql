@@ -1,0 +1,10 @@
+query getFoundationalChatAgents {
+  aiFoundationalChatAgents {
+    nodes {
+      id
+      name
+      description
+      referenceWithVersion
+    }
+  }
+}
