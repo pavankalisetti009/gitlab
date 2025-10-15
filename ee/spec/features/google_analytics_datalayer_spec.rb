@@ -50,29 +50,4 @@ RSpec.describe 'GitLab.com Google Analytics DataLayer', :with_trial_types, :saas
       end
     end
   end
-
-  context 'on duo pro trial group select page' do
-    include ListboxHelpers
-
-    before do
-      create(:gitlab_subscription_add_on_purchase, :duo_pro)
-    end
-
-    it 'tracks create group events' do
-      group = create(:group_with_plan, plan: :premium_plan, owners: user)
-
-      sign_in user
-      visit new_trials_duo_pro_path(step: GitlabSubscriptions::Trials::CreateDuoProService::TRIAL)
-
-      prevent_submit_for('.js-saas-duo-pro-trial-group')
-
-      select_from_listbox group.name, from: 'Select a group'
-      click_button 'Activate my trial'
-
-      data_layer = execute_script('return window.dataLayer')
-      last_event_in_data_layer = data_layer[-1]
-
-      expect(last_event_in_data_layer['event']).to eq('saasDuoProTrialGroup')
-    end
-  end
 end

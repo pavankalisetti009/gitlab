@@ -1,21 +1,3 @@
-.legacy-duo-pro-trials {
-  .bg-decorations {
-    @include gl-container-width-up(md, panel) {
-      background-image: url('illustrations/bg-decorations.svg');
-      background-position: top 30% right -40px;
-    }
-  }
-}
-
-.legacy-duo-enterprise-trials {
-  .bg-decorations {
-    @include gl-container-width-up(md, panel) {
-      background-image: url('illustrations/bg-decorations.svg');
-      background-position: top 85% left 200px;
-    }
-  }
-}
-
 .duo-trials {
   .bg-decorations {
     @include gl-container-width-up(md, panel) {
