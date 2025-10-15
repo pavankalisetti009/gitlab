@@ -1,19 +1,17 @@
 <script>
 import EMPTY_SVG_URL from '@gitlab/svgs/dist/illustrations/empty-state/empty-ai-catalog-md.svg?url';
-import { GlButton, GlExperimentBadge } from '@gitlab/ui';
+import { GlButton } from '@gitlab/ui';
 import { __, s__, sprintf } from '~/locale';
-import { convertToGraphQLId, getIdFromGraphQLId } from '~/graphql_shared/utils';
+import { convertToGraphQLId } from '~/graphql_shared/utils';
 import { fetchPolicies } from '~/lib/graphql';
 import * as Sentry from '~/sentry/sentry_browser_wrapper';
 import glFeatureFlagsMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
 import ErrorsAlert from '~/vue_shared/components/errors_alert.vue';
-import PageHeading from '~/vue_shared/components/page_heading.vue';
 import ResourceListsEmptyState from '~/vue_shared/components/resource_lists/empty_state.vue';
 import AiCatalogList from 'ee/ai/catalog/components/ai_catalog_list.vue';
-import AiCatalogItemDrawer from 'ee/ai/catalog/components/ai_catalog_item_drawer.vue';
+import AiCatalogListHeader from 'ee/ai/catalog/components/ai_catalog_list_header.vue';
 import aiCatalogConfiguredItemsQuery from 'ee/ai/catalog/graphql/queries/ai_catalog_configured_items.query.graphql';
 import aiCatalogProjectUserPermissionsQuery from 'ee/ai/catalog/graphql/queries/ai_catalog_project_user_permissions.query.graphql';
-import aiCatalogFlowQuery from 'ee/ai/catalog/graphql/queries/ai_catalog_flow.query.graphql';
 import deleteAiCatalogItemConsumer from 'ee/ai/catalog/graphql/mutations/delete_ai_catalog_item_consumer.mutation.graphql';
 import {
   AI_CATALOG_TYPE_FLOW,
@@ -21,23 +19,19 @@ import {
   PAGE_SIZE,
 } from 'ee/ai/catalog/constants';
 import { TYPENAME_PROJECT } from '~/graphql_shared/constants';
-import { TYPENAME_AI_CATALOG_ITEM } from 'ee/graphql_shared/constants';
 import {
-  AI_CATALOG_FLOWS_EDIT_ROUTE,
+  AI_CATALOG_FLOWS_SHOW_ROUTE,
   AI_CATALOG_FLOWS_ROUTE,
-  AI_CATALOG_SHOW_QUERY_PARAM,
 } from 'ee/ai/catalog/router/constants';
 
 export default {
   name: 'AiFlows',
   components: {
     GlButton,
-    GlExperimentBadge,
-    PageHeading,
     ResourceListsEmptyState,
     ErrorsAlert,
     AiCatalogList,
-    AiCatalogItemDrawer,
+    AiCatalogListHeader,
   },
   mixins: [glFeatureFlagsMixin()],
   inject: {
@@ -80,31 +74,10 @@ export default {
       fetchPolicy: fetchPolicies.CACHE_AND_NETWORK,
       update: (data) => data.project?.userPermissions || {},
     },
-    aiCatalogFlow: {
-      query: aiCatalogFlowQuery,
-      skip() {
-        return !this.isItemSelected;
-      },
-      variables() {
-        const iid = this.$route.query[AI_CATALOG_SHOW_QUERY_PARAM];
-        return { id: convertToGraphQLId(TYPENAME_AI_CATALOG_ITEM, iid) };
-      },
-      update(data) {
-        return data?.aiCatalogItem || {};
-      },
-      error(error) {
-        if (this.$route.query[AI_CATALOG_SHOW_QUERY_PARAM]) {
-          this.closeDrawer();
-        }
-        this.errors = [error.message];
-        Sentry.captureException(error);
-      },
-    },
   },
   data() {
     return {
       aiFlows: [],
-      aiCatalogFlow: {},
       userPermissions: {},
       errors: [],
       pageInfo: {},
@@ -132,12 +105,6 @@ export default {
     exploreHref() {
       return `${this.exploreAiCatalogPath}${AI_CATALOG_FLOWS_ROUTE}`;
     },
-    isItemDetailsLoading() {
-      return this.$apollo.queries.aiCatalogFlow.loading;
-    },
-    isItemSelected() {
-      return Boolean(this.$route.query[AI_CATALOG_SHOW_QUERY_PARAM]);
-    },
     items() {
       return this.aiFlows.map((flow) => {
         const { item, ...itemConsumerData } = flow;
@@ -149,53 +116,16 @@ export default {
     },
     itemTypeConfig() {
       return {
-        actionItems: (item) => {
-          if (!item.userPermissions?.adminAiCatalogItem) {
-            return [];
-          }
-
-          return [
-            {
-              text: s__('AICatalog|Edit'),
-              to: {
-                name: AI_CATALOG_FLOWS_EDIT_ROUTE,
-                params: { id: getIdFromGraphQLId(item.itemConsumer?.id) },
-              },
-              icon: 'pencil',
-            },
-          ];
-        },
+        actionItems: () => [],
         deleteActionItem: {
           showActionItem: () => this.userPermissions?.adminAiCatalogItemConsumer || false,
           text: __('Remove'),
         },
+        showRoute: AI_CATALOG_FLOWS_SHOW_ROUTE,
       };
-    },
-    activeFlow() {
-      if (!this.isItemDetailsLoading) return this.aiCatalogFlow;
-
-      // Returns the fully-loaded flow if available from aiFlows
-      const iid = this.$route.query[AI_CATALOG_SHOW_QUERY_PARAM];
-      if (!iid) return {};
-
-      const fromList = this.aiFlows.find(
-        (n) => this.formatId(n.item.id).toString() === String(iid),
-      );
-      return fromList?.item || { iid };
     },
   },
   methods: {
-    formatId(id) {
-      return getIdFromGraphQLId(id);
-    },
-    closeDrawer() {
-      const { show, ...otherQuery } = this.$route.query;
-
-      this.$router.push({
-        path: this.$route.path,
-        query: otherQuery,
-      });
-    },
     async deleteFlow(item) {
       const { id } = item.itemConsumer;
 
@@ -242,22 +172,16 @@ export default {
       });
     },
   },
-  editRoute: AI_CATALOG_FLOWS_EDIT_ROUTE,
   EMPTY_SVG_URL,
 };
 </script>
 
 <template>
   <div>
-    <page-heading>
-      <template #heading>
-        <div class="gl-flex">
-          <span>{{ s__('AICatalog|Flows') }}</span>
-          <gl-experiment-badge class="gl-self-center" />
-        </div>
-      </template>
-    </page-heading>
-
+    <ai-catalog-list-header
+      :heading="s__('AICatalog|Flows')"
+      :can-admin="userPermissions.adminAiCatalogItem"
+    />
     <errors-alert class="gl-mt-5" :errors="errors" @dismiss="errors = []" />
     <ai-catalog-list
       :is-loading="isLoading"
@@ -284,12 +208,5 @@ export default {
         </resource-lists-empty-state>
       </template>
     </ai-catalog-list>
-    <ai-catalog-item-drawer
-      :is-open="isItemSelected"
-      :is-item-details-loading="isItemDetailsLoading"
-      :active-item="activeFlow"
-      :edit-route="$options.editRoute"
-      @close="closeDrawer"
-    />
   </div>
 </template>

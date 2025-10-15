@@ -9,5 +9,3 @@ export const AI_CATALOG_FLOWS_SHOW_ROUTE = '/flows/:id';
 export const AI_CATALOG_FLOWS_EDIT_ROUTE = '/flows/:id/edit';
 export const AI_CATALOG_FLOWS_NEW_ROUTE = '/flows/new';
 export const AI_CATALOG_FLOWS_DUPLICATE_ROUTE = '/flows/:id/duplicate';
-
-export const AI_CATALOG_SHOW_QUERY_PARAM = 'show';

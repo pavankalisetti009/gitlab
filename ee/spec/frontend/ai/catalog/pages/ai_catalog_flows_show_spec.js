@@ -52,6 +52,12 @@ describe('AiCatalogFlowsShow', () => {
         ...defaultProps,
         ...props,
       },
+      provide: {
+        isGlobal: false,
+        glFeatures: {
+          aiCatalogItemProjectCuration: true,
+        },
+      },
       mocks: {
         $route: {
           params: routeParams,

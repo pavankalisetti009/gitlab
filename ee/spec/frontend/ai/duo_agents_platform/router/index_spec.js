@@ -6,12 +6,17 @@ import {
   AI_CATALOG_AGENTS_EDIT_ROUTE,
   AI_CATALOG_AGENTS_NEW_ROUTE,
   AI_CATALOG_AGENTS_DUPLICATE_ROUTE,
+  AI_CATALOG_FLOWS_ROUTE,
+  AI_CATALOG_FLOWS_NEW_ROUTE,
+  AI_CATALOG_FLOWS_SHOW_ROUTE,
+  AI_CATALOG_FLOWS_EDIT_ROUTE,
+  AI_CATALOG_FLOWS_DUPLICATE_ROUTE,
 } from 'ee/ai/catalog/router/constants';
 
 describe('Agents Platform Router', () => {
   let router;
   const baseRoute = '/test-project/-/agents';
-  const agentId = 1;
+  const id = 1;
 
   beforeEach(() => {
     gon.features = {
@@ -95,12 +100,12 @@ describe('Agents Platform Router', () => {
 
       describe('Agent child routes', () => {
         it.each`
-          testName              | path                              | expectedRouteName
-          ${'agents index'}     | ${'/agents'}                      | ${AI_CATALOG_AGENTS_ROUTE}
-          ${'agents new'}       | ${'/agents/new'}                  | ${AI_CATALOG_AGENTS_NEW_ROUTE}
-          ${'agents show'}      | ${`/agents/${agentId}`}           | ${AI_CATALOG_AGENTS_SHOW_ROUTE}
-          ${'agents edit'}      | ${`/agents/${agentId}/edit`}      | ${AI_CATALOG_AGENTS_EDIT_ROUTE}
-          ${'agents duplicate'} | ${`/agents/${agentId}/duplicate`} | ${AI_CATALOG_AGENTS_DUPLICATE_ROUTE}
+          testName              | path                         | expectedRouteName
+          ${'agents index'}     | ${'/agents'}                 | ${AI_CATALOG_AGENTS_ROUTE}
+          ${'agents new'}       | ${'/agents/new'}             | ${AI_CATALOG_AGENTS_NEW_ROUTE}
+          ${'agents show'}      | ${`/agents/${id}`}           | ${AI_CATALOG_AGENTS_SHOW_ROUTE}
+          ${'agents edit'}      | ${`/agents/${id}/edit`}      | ${AI_CATALOG_AGENTS_EDIT_ROUTE}
+          ${'agents duplicate'} | ${`/agents/${id}/duplicate`} | ${AI_CATALOG_AGENTS_DUPLICATE_ROUTE}
         `('renders $testName child route', async ({ path, expectedRouteName }) => {
           await router.push(path);
 
@@ -180,6 +185,32 @@ describe('Agents Platform Router', () => {
         await router.push('/flows/invalid');
 
         expect(router.currentRoute.path).toBe('/flows');
+      });
+
+      describe('when aiCatalogItemProjectCuration enabled', () => {
+        beforeEach(() => {
+          gon.features = {
+            aiCatalogFlows: true,
+            aiCatalogThirdPartyFlows: true,
+            aiCatalogItemProjectCuration: true,
+          };
+          router = createRouter(baseRoute, 'project');
+        });
+
+        describe('Flow child routes', () => {
+          it.each`
+            testName             | path                        | expectedRouteName
+            ${'flows index'}     | ${'/flows'}                 | ${AI_CATALOG_FLOWS_ROUTE}
+            ${'flows new'}       | ${'/flows/new'}             | ${AI_CATALOG_FLOWS_NEW_ROUTE}
+            ${'flows show'}      | ${`/flows/${id}`}           | ${AI_CATALOG_FLOWS_SHOW_ROUTE}
+            ${'flows edit'}      | ${`/flows/${id}/edit`}      | ${AI_CATALOG_FLOWS_EDIT_ROUTE}
+            ${'flows duplicate'} | ${`/flows/${id}/duplicate`} | ${AI_CATALOG_FLOWS_DUPLICATE_ROUTE}
+          `('renders $testName child route', async ({ path, expectedRouteName }) => {
+            await router.push(path);
+
+            expect(router.currentRoute.name).toBe(expectedRouteName);
+          });
+        });
       });
     });
 

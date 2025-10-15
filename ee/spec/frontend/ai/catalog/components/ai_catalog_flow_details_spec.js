@@ -51,7 +51,9 @@ describe('AiCatalogFlowDetails', () => {
 
   it('renders "Access rights" details', () => {
     const accessRightsDetails = findAllFieldsForSection(1);
-    expect(accessRightsDetails.at(0).props()).toMatchObject({
+    expect(accessRightsDetails.at(0).props('title')).toBe('Visibility');
+    expect(accessRightsDetails.at(0).text()).toContain('Public');
+    expect(accessRightsDetails.at(1).props()).toMatchObject({
       title: 'Source project',
       value: mockFlow.project.nameWithNamespace,
     });

@@ -1,10 +1,7 @@
 import { GlDisclosureDropdown, GlDisclosureDropdownItem, GlIcon } from '@gitlab/ui';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import AiCatalogListItem from 'ee/ai/catalog/components/ai_catalog_list_item.vue';
-import {
-  AI_CATALOG_AGENTS_EDIT_ROUTE,
-  AI_CATALOG_SHOW_QUERY_PARAM,
-} from 'ee/ai/catalog/router/constants';
+import { AI_CATALOG_AGENTS_EDIT_ROUTE } from 'ee/ai/catalog/router/constants';
 import {
   VISIBILITY_TYPE_ICON,
   VISIBILITY_LEVEL_PUBLIC_STRING,
@@ -62,6 +59,7 @@ describe('AiCatalogListItem', () => {
     deleteActionItem: {
       showActionItem: () => true,
     },
+    showRoute: '/items/:id',
     visibilityTooltip: {
       public: publicTooltip,
       private: privateTooltip,
@@ -231,7 +229,8 @@ describe('AiCatalogListItem', () => {
       listItem.vm.$emit('click-avatar', mockEvent);
 
       expect(mockRouter.push).toHaveBeenCalledWith({
-        query: { [AI_CATALOG_SHOW_QUERY_PARAM]: mockId },
+        name: defaultItemTypeConfig.showRoute,
+        params: { id: mockId },
       });
     });
   });
