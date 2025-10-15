@@ -24,7 +24,7 @@ RSpec.describe Ai::DuoWorkflows::Event, type: :model, feature_category: :agent_f
     subject(:event) do
       build(:duo_workflows_event,
         workflow: workflow,
-        project: project,
+        project: workflow.project,
         correlation_id_value: correlation_id_value
       )
     end
@@ -56,14 +56,17 @@ RSpec.describe Ai::DuoWorkflows::Event, type: :model, feature_category: :agent_f
 
     context 'when correlation_id_value already exists' do
       let(:correlation_id_value) { valid_uuid }
+      let(:event1) { create(:duo_workflows_event, correlation_id_value: correlation_id_value, workflow: workflow) }
 
-      before do
-        create(:duo_workflows_event, correlation_id_value: valid_uuid)
+      it 'an event with the same uuid in same project is invalid due to uniqueness validation' do
+        event2 = build(:duo_workflows_event, correlation_id_value: correlation_id_value, workflow: event1.workflow)
+        expect(event2).not_to be_valid
+        expect(event2.errors[:correlation_id_value]).to include('has already been taken')
       end
 
-      it 'is invalid due to uniqueness constraint' do
-        expect(event).not_to be_valid
-        expect(event.errors[:correlation_id_value]).to include('has already been taken')
+      it 'an event with the same uuid in different projects is valid' do
+        event2 = build(:duo_workflows_event, correlation_id_value: correlation_id_value)
+        expect(event2).to be_valid
       end
     end
 

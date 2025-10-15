@@ -26,7 +26,7 @@ RSpec.describe Banzai::Filter::References::LabelReferenceFilter do
         expect(doc.at_css('.gl-label-scoped a').attr('data-html')).to eq('true')
       end
 
-      it "escapes HTML in the label's title" do
+      it "doesn't unescape HTML in the label's title" do
         expect(doc.at_css('.gl-label-scoped a').attr('title')).to include('xss  &lt;svg id="svgId"&gt;')
       end
     end

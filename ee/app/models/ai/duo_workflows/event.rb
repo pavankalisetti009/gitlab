@@ -15,7 +15,7 @@ module Ai
 
       validates :event_type, presence: true
       validates :event_status, presence: true
-      validates :correlation_id_value, uniqueness: true, allow_nil: true,
+      validates :correlation_id_value, uniqueness: { scope: :project_id }, allow_nil: true,
         format: { with: UUID_REGEXP, message: 'must be a valid UUID', if: :correlation_id_value? }
 
       alias_attribute :correlation_id, :correlation_id_value
