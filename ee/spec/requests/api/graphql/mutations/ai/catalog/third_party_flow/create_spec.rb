@@ -132,7 +132,8 @@ RSpec.describe Mutations::Ai::Catalog::ThirdPartyFlow::Create, feature_category:
         injectGatewayToken: true,
         image: 'example/image:latest',
         commands: ['/bin/bash'],
-        variables: %w[VAL1 VAL2]
+        variables: %w[VAL1 VAL2],
+        yaml_definition: params[:definition]
       }.stringify_keys
     )
   end
@@ -147,16 +148,8 @@ RSpec.describe Mutations::Ai::Catalog::ThirdPartyFlow::Create, feature_category:
       'public' => true,
       'latestVersion' => {
         'released' => true,
-        'definition' => a_kind_of(String)
+        'definition' => params[:definition]
       }
     )
-
-    expect(YAML.load(graphql_data_at(:ai_catalog_third_party_flow_create, :item, :latestVersion, :definition)))
-      .to match(
-        'injectGatewayToken' => true,
-        'image' => 'example/image:latest',
-        'commands' => ['/bin/bash'],
-        'variables' => %w[VAL1 VAL2]
-      )
   end
 end
