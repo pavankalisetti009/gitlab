@@ -80,7 +80,7 @@ describe('SubgroupsAndProjectsEmptyState', () => {
       createComponent({ provide: { canCreateSubgroups: false, canCreateProjects: false } });
 
       expect(findEmptyState().props()).toMatchObject({
-        title: 'Organize your work with projects and subgroups',
+        title: 'There are no subgroups or projects in this group',
         description:
           'You do not have necessary permissions to create a subgroup or project in this group. Please contact an owner of this group to create a new subgroup or project.',
         search: '',

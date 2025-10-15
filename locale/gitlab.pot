@@ -19975,6 +19975,9 @@ msgstr ""
 msgid "Create snippet"
 msgstr ""
 
+msgid "Create subgroup"
+msgstr ""
+
 msgid "Create testing scenarios by defining project conditions in your development platform."
 msgstr ""
 
@@ -32778,6 +32781,9 @@ msgid "GroupsEmptyState|Subgroups and projects that are archived or pending dele
 msgstr ""
 
 msgid "GroupsEmptyState|There are no inactive subgroups or projects in this group"
+msgstr ""
+
+msgid "GroupsEmptyState|There are no subgroups or projects in this group"
 msgstr ""
 
 msgid "GroupsEmptyState|This group has not been invited to any other groups."

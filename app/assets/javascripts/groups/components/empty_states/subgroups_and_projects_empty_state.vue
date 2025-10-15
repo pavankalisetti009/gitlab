@@ -11,6 +11,7 @@ export default {
   groupsEmptyStateIllustration,
   i18n: {
     title: s__('GroupsEmptyState|Organize your work with projects and subgroups'),
+    noPermissionsTitle: s__('GroupsEmptyState|There are no subgroups or projects in this group'),
     description: s__(
       'GroupsEmptyState|Use projects to store Git repositories and collaborate on issues. Use subgroups as folders to organize related projects and manage team access.',
     ),
@@ -35,13 +36,16 @@ export default {
         ? this.$options.i18n.description
         : this.$options.i18n.noPermissionsDescription;
     },
+    title() {
+      return this.hasActions ? this.$options.i18n.title : this.$options.i18n.noPermissionsTitle;
+    },
   },
 };
 </script>
 
 <template>
   <resource-lists-empty-state
-    :title="$options.i18n.title"
+    :title="title"
     :svg-path="$options.groupsEmptyStateIllustration"
     :description="description"
     :search="search"
