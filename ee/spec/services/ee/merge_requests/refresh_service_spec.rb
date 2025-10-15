@@ -1016,6 +1016,12 @@ RSpec.describe MergeRequests::RefreshService, feature_category: :code_review_wor
 
         execute
       end
+
+      it 'keeps duration_statistics empty' do
+        execute
+
+        expect(service.send(:duration_statistics)).to be_empty
+      end
     end
 
     context 'when parent class does not respond to log_hash_metadata_on_done' do
