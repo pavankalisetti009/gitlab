@@ -54,14 +54,6 @@ module GitlabSubscriptions
         params.permit(:namespace_id, :step)
       end
 
-      def lead_params
-        params.permit(
-          *::Onboarding::StatusPresenter::GLM_PARAMS,
-          :company_name, :first_name, :last_name, :phone_number,
-          :country, :state
-        ).to_h
-      end
-
       def success_doc_link
         assign_doc_url = helpers.help_page_path(
           'subscriptions/subscription-add-ons.md', anchor: 'assign-gitlab-duo-seats'
