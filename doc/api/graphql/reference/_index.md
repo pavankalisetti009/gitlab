@@ -414,6 +414,21 @@ four standard [pagination arguments](#pagination-arguments):
 | ---- | ---- | ----------- |
 | <a id="queryaifeaturesettingsselfhostedmodelid"></a>`selfHostedModelId` | [`AiSelfHostedModelID`](#aiselfhostedmodelid) | Global ID of the self-hosted model. |
 
+### `Query.aiFoundationalChatAgents`
+
+{{< details >}}
+**Introduced** in GitLab 18.6.
+**Status**: Experiment.
+{{< /details >}}
+
+Core agents in GitLab.
+
+Returns [`AiFoundationalChatAgentConnection!`](#aifoundationalchatagentconnection).
+
+This field returns a [connection](#connections). It accepts the
+four standard [pagination arguments](#pagination-arguments):
+`before: String`, `after: String`, `first: Int`, and `last: Int`.
+
 ### `Query.aiMessages`
 
 {{< details >}}
@@ -15584,6 +15599,29 @@ The edge type for [`AiFlowTriggerType`](#aiflowtriggertype).
 | <a id="aiflowtriggertypeedgecursor"></a>`cursor` | [`String!`](#string) | A cursor for use in pagination. |
 | <a id="aiflowtriggertypeedgenode"></a>`node` | [`AiFlowTriggerType`](#aiflowtriggertype) | The item at the end of the edge. |
 
+#### `AiFoundationalChatAgentConnection`
+
+The connection type for [`AiFoundationalChatAgent`](#aifoundationalchatagent).
+
+##### Fields
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="aifoundationalchatagentconnectionedges"></a>`edges` | [`[AiFoundationalChatAgentEdge]`](#aifoundationalchatagentedge) | A list of edges. |
+| <a id="aifoundationalchatagentconnectionnodes"></a>`nodes` | [`[AiFoundationalChatAgent]`](#aifoundationalchatagent) | A list of nodes. |
+| <a id="aifoundationalchatagentconnectionpageinfo"></a>`pageInfo` | [`PageInfo!`](#pageinfo) | Information to aid in pagination. |
+
+#### `AiFoundationalChatAgentEdge`
+
+The edge type for [`AiFoundationalChatAgent`](#aifoundationalchatagent).
+
+##### Fields
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="aifoundationalchatagentedgecursor"></a>`cursor` | [`String!`](#string) | A cursor for use in pagination. |
+| <a id="aifoundationalchatagentedgenode"></a>`node` | [`AiFoundationalChatAgent`](#aifoundationalchatagent) | The item at the end of the edge. |
+
 #### `AiMessageConnection`
 
 The connection type for [`AiMessage`](#aimessage).
@@ -23985,6 +24023,21 @@ Represents an AI flow trigger.
 | <a id="aiflowtriggertypeproject"></a>`project` | [`Project!`](#project) | Project of the flow trigger. |
 | <a id="aiflowtriggertypeupdatedat"></a>`updatedAt` | [`Time!`](#time) | Timestamp of when the flow trigger was last updated. |
 | <a id="aiflowtriggertypeuser"></a>`user` | [`UserCore`](#usercore) | User who created the flow trigger. |
+
+### `AiFoundationalChatAgent`
+
+Core Agent available for GitLab features.
+
+#### Fields
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="aifoundationalchatagentdescription"></a>`description` | [`String!`](#string) | Description of the agent. |
+| <a id="aifoundationalchatagentid"></a>`id` | [`AiFoundationalChatAgentID!`](#aifoundationalchatagentid) | Global ID of the foundational chat agent. |
+| <a id="aifoundationalchatagentname"></a>`name` | [`String!`](#string) | Name of the agent. |
+| <a id="aifoundationalchatagentreference"></a>`reference` | [`String!`](#string) | Reference ID of the agent. |
+| <a id="aifoundationalchatagentreferencewithversion"></a>`referenceWithVersion` | [`String`](#string) | Versioned reference of the agent. |
+| <a id="aifoundationalchatagentversion"></a>`version` | [`String`](#string) | Version of the agent. |
 
 ### `AiMessage`
 
@@ -51875,6 +51928,12 @@ An example `AiDuoWorkflowsWorkflowID` is: `"gid://gitlab/Ai::DuoWorkflows::Workf
 A `AiFlowTriggerID` is a global ID. It is encoded as a string.
 
 An example `AiFlowTriggerID` is: `"gid://gitlab/Ai::FlowTrigger/1"`.
+
+### `AiFoundationalChatAgentID`
+
+A `AiFoundationalChatAgentID` is a global ID. It is encoded as a string.
+
+An example `AiFoundationalChatAgentID` is: `"gid://gitlab/Ai::FoundationalChatAgent/1"`.
 
 ### `AiModelID`
 
