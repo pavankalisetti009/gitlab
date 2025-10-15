@@ -310,18 +310,13 @@ describe('View branch rules in enterprise edition', () => {
       await createComponent({ editBranchRules: true }, { showCodeOwners: true }, mockResponse);
     });
 
-    it('does not render delete rule button', () => {
+    it('filters out a group level rule from display and renders empty state', () => {
+      expect(wrapper.text()).toBe('No data to display');
       expect(findDeleteRuleButton().exists()).toBe(false);
-    });
-
-    it('passes isGroupLevel prop to protection components', () => {
-      expect(findAllowedToMerge().props('isGroupLevel')).toBe(true);
-      expect(findAllowedToPush().props('isGroupLevel')).toBe(true);
-      expect(findAllowForcePushToggle().props('isGroupLevel')).toBe(true);
-    });
-
-    it('passes isGroupLevel prop to code owners protection toggle component', () => {
-      expect(findCodeOwnersToggle().props('isGroupLevel')).toBe(true);
+      expect(findAllowedToMerge().exists()).toBe(false);
+      expect(findAllowedToPush().exists()).toBe(false);
+      expect(findAllowForcePushToggle().exists()).toBe(false);
+      expect(findCodeOwnersToggle().exists()).toBe(false);
     });
   });
 });
