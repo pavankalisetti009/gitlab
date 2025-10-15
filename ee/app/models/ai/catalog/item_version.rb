@@ -3,7 +3,6 @@
 module Ai
   module Catalog
     class ItemVersion < ApplicationRecord
-      include SafelyChangeColumnDefault
       include ::Ai::Catalog::Concerns::FlowVersion
 
       AGENT_SCHEMA_VERSION = 1
@@ -17,8 +16,6 @@ module Ai
       VERSION_BUMP_OPTIONS = [VERSION_BUMP_MAJOR, VERSION_BUMP_MINOR, VERSION_BUMP_PATCH].freeze
 
       self.table_name = "ai_catalog_item_versions"
-
-      columns_changing_default :definition
 
       validates :definition, :schema_version, :version, presence: true
 
