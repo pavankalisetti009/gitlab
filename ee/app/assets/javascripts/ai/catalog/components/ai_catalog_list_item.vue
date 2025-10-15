@@ -18,7 +18,6 @@ import {
   TIMESTAMP_TYPE_UPDATED_AT,
   TIMESTAMP_TYPE_CREATED_AT,
 } from '~/vue_shared/components/resource_lists/constants';
-import { AI_CATALOG_SHOW_QUERY_PARAM } from '../router/constants';
 
 export default {
   name: 'AiCatalogListItem',
@@ -56,15 +55,9 @@ export default {
       return getIdFromGraphQLId(this.item.id);
     },
     showItemRoute() {
-      if (this.itemTypeConfig.showRoute)
-        return {
-          name: this.itemTypeConfig.showRoute,
-          params: { id: this.formattedItemId },
-        };
-
       return {
-        name: this.$route.name,
-        query: { [AI_CATALOG_SHOW_QUERY_PARAM]: this.formattedItemId },
+        name: this.itemTypeConfig.showRoute,
+        params: { id: this.formattedItemId },
       };
     },
     formattedItem() {

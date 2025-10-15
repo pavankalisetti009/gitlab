@@ -16,6 +16,7 @@ RSpec.describe GitlabSubscriptions::BaseDiscoverComponent, :aggregate_failures, 
         define_method(:trial_active?) { true } unless method_name == :trial_active?
         define_method(:text_page_title) { 'title' } unless method_name == :text_page_title
         define_method(:hero_logo) { 'logo' } unless method_name == :hero_logo
+        define_method(:hero_logo_dark) { 'logo' } unless method_name == :hero_logo_dark
         define_method(:hero_header_text) { 'hero_text' } unless method_name == :hero_header_text
         define_method(:buy_now_link) { 'some/link' } unless method_name == :buy_now_link
         define_method(:cta_button_text) { 'Buy now' } unless method_name == :cta_button_text
@@ -48,6 +49,7 @@ RSpec.describe GitlabSubscriptions::BaseDiscoverComponent, :aggregate_failures, 
           :trial_active?,
           :text_page_title,
           :hero_logo,
+          :hero_logo_dark,
           :hero_header_text,
           :buy_now_link,
           :cta_button_text,

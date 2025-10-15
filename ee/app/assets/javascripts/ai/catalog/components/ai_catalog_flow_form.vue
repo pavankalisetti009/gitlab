@@ -14,6 +14,8 @@ import {
   VISIBILITY_LEVEL_PUBLIC,
   FLOW_VISIBILITY_LEVEL_DESCRIPTIONS,
 } from 'ee/ai/catalog/constants';
+import { TYPENAME_PROJECT } from '~/graphql_shared/constants';
+import { convertToGraphQLId } from '~/graphql_shared/utils';
 import { __, s__ } from '~/locale';
 import glFeatureFlagsMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
 import ErrorsAlert from '~/vue_shared/components/errors_alert.vue';
@@ -46,6 +48,14 @@ export default {
     VisibilityLevelRadioGroup,
   },
   mixins: [glFeatureFlagsMixin()],
+  inject: {
+    projectId: {
+      default: null,
+    },
+    isGlobal: {
+      default: false,
+    },
+  },
   props: {
     mode: {
       type: String,
@@ -81,6 +91,10 @@ export default {
     return {
       formValues: {
         ...this.initialValues,
+        projectId:
+          !this.isGlobal && this.projectId
+            ? convertToGraphQLId(TYPENAME_PROJECT, this.projectId)
+            : this.initialValues.projectId,
         visibilityLevel: this.initialValues.public
           ? VISIBILITY_LEVEL_PUBLIC
           : VISIBILITY_LEVEL_PRIVATE,
@@ -341,7 +355,7 @@ export default {
             <form-project-dropdown
               :id="$options.fields.projectId.id"
               v-model="formValues.projectId"
-              :disabled="isEditMode"
+              :disabled="isEditMode || !isGlobal"
               @error="onError"
             />
           </form-group>

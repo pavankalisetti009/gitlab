@@ -55,6 +55,8 @@ describe('AiCatalogFlowForm', () => {
         ...props,
       },
       provide: {
+        projectId: '2000000',
+        isGlobal: true,
         glFeatures: {
           aiCatalogFlows: true,
           aiCatalogThirdPartyFlows: true,
@@ -86,7 +88,19 @@ describe('AiCatalogFlowForm', () => {
       expect(findStepsEditor().props('steps')).toEqual(initialValues.steps);
     });
 
-    it('renders the form with default values when no props are provided', () => {
+    it('renders the form with default values when no props are provided and form is not global', () => {
+      createWrapper({ provide: { isGlobal: false } });
+
+      expect(findProjectDropdown().props('value')).toBe('gid://gitlab/Project/2000000');
+      expect(findFlowType().props('value')).toBe('FLOW');
+      expect(findNameField().props('value')).toBe('');
+      expect(findDescriptionField().props('value')).toBe('');
+      expect(findVisibilityLevelRadioGroup().props('initialValue')).toBe(false);
+      expect(findVisibilityLevelRadioGroup().props('value')).toBe(VISIBILITY_LEVEL_PRIVATE);
+      expect(findStepsEditor().props('steps')).toEqual([]);
+    });
+
+    it('renders the form with default values when no props are provided and form is global', () => {
       createWrapper();
 
       expect(findProjectDropdown().props('value')).toBe(null);
