@@ -143,51 +143,60 @@ module EE
                 params do
                   requires :vulnerability, type: Hash,
                     desc: 'Vulnerability details matching the `vulnerability` object on the security report schema' do
-                    requires :name, type: String
-                    requires :severity, type: String, coerce_with: ->(s) { s.downcase }
-                    optional :confidence, type: String, coerce_with: ->(c) { c.downcase }
+                    requires :name, type: String, desc: 'Name of the security vulnerability'
+                    requires :severity, type: String, desc: 'Severity level of the vulnerability',
+                      coerce_with: ->(s) { s.downcase }
+                    optional :confidence, type: String, desc: 'Confidence level of the vulnerability detection',
+                      coerce_with: ->(c) { c.downcase }
 
-                    requires :location, type: Hash do
-                      requires :image, type: String
+                    requires :location, type: Hash, desc: 'Object that contains location information for the
+                      vulnerability' do
+                      requires :image, type: String, desc: 'Container image where the vulnerability was found'
 
-                      requires :dependency, type: Hash do
-                        requires :package, type: Hash do
-                          requires :name, type: String
+                      requires :dependency, type: Hash, desc: 'Object that contains dependency information for the
+                        vulnerable component' do
+                        requires :package, type: Hash, desc: 'Object that contains package details of the vulnerable
+                          dependency' do
+                          requires :name, type: String, desc: 'Name of the vulnerable package'
                         end
 
-                        optional :version, type: String
+                        optional :version, type: String, desc: 'Version of the vulnerable dependency'
                       end
 
-                      requires :kubernetes_resource, type: Hash do
-                        requires :namespace, type: String
-                        requires :name, type: String
-                        requires :kind, type: String
-                        requires :container_name, type: String
-                        requires :agent_id, type: String
+                      requires :kubernetes_resource, type: Hash, desc: 'Object that contains Kubernetes resource
+                        information where the vulnerability exists' do
+                        requires :namespace, type: String, desc: 'Kubernetes namespace of the resource'
+                        requires :name, type: String, desc: 'Name of the Kubernetes resource'
+                        requires :kind, type: String, desc: 'Type of Kubernetes resource'
+                        requires :container_name, type: String, desc: 'Name of the container within the
+                          Kubernetes resource'
+                        requires :agent_id, type: String, desc: 'ID of the agent that detected the vulnerability'
                       end
 
-                      optional :operating_system, type: String
+                      optional :operating_system, type: String, desc: 'Operating system where the vulnerability
+                        was detected'
                     end
 
-                    requires :identifiers, type: Array do
-                      requires :type, type: String
-                      requires :name, type: String
-                      optional :value, type: String
-                      optional :url, type: String
+                    requires :identifiers, type: Array, desc: 'Array of vulnerability identifier objects' do
+                      requires :type, type: String, desc: 'Type of vulnerability identifier'
+                      requires :name, type: String, desc: 'Name of the vulnerability identifier'
+                      optional :value, type: String, desc: 'Value of the vulnerability identifier'
+                      optional :url, type: String, desc: 'URL reference for the vulnerability identifier'
                     end
 
-                    optional :message, type: String
-                    optional :description, type: String
-                    optional :solution, type: String
-                    optional :links, type: Array
+                    optional :message, type: String, desc: 'Vulnerability message or summary'
+                    optional :description, type: String, desc: 'Detailed description of the vulnerability'
+                    optional :solution, type: String, desc: 'Recommended solution for the vulnerability'
+                    optional :links, type: Array, desc: 'Array that contains reference links
+                      related to the vulnerability'
                   end
 
                   requires :scanner, type: Hash,
                     desc: 'Scanner details matching the `.scan.scanner` field on the security report schema' do
-                    requires :id, type: String
-                    requires :name, type: String
-                    requires :vendor, type: Hash do
-                      requires :name, type: String
+                    requires :id, type: String, desc: 'ID of the scanner'
+                    requires :name, type: String, desc: 'Name of the security scanner'
+                    requires :vendor, type: Hash, desc: 'Object that contains vendor information for the scanner' do
+                      requires :name, type: String, desc: 'Name of the scanner vendor'
                     end
                   end
                 end

@@ -124,7 +124,8 @@ module EE
           end
 
           params do
-            optional :data, type: Hash do
+            optional :data, type: Hash, desc: 'Object that contains status information
+              and replication metrics for the Geo node' do
               requires :geo_node_id, type: Integer, desc: 'Geo Node ID to look up its status'
               optional :db_replication_lag_seconds, type: Integer, desc: 'DB replication lag in seconds'
               optional :last_event_id, type: Integer, desc: 'Last event ID'
@@ -138,7 +139,8 @@ module EE
               optional :replication_slots_max_retained_wal_bytes, type: Integer, desc: 'Maximum number of bytes retained in the WAL on the primary'
               optional :version, type: String, desc: 'Gitlab version'
               optional :revision, type: String, desc: 'Gitlab revision'
-              optional :status, type: Hash do
+              optional :status, type: Hash, desc: 'Object that contains information on replication and verification
+                status metrics for GitLab resources on Geo nodes' do
                 # GeoNodeStatus::RESOURCE_STATUS_FIELDS
                 optional :projects_count, type: Integer, desc: 'Projects count'
                 optional :container_repositories_replication_enabled, type: Grape::API::Boolean, desc: 'Container repositories replication enabled'
@@ -290,7 +292,7 @@ module EE
 
             desc 'Responsible for making HTTP GET /repo.git/info/refs?service=git-upload-pack
                   request from secondary gitlab-shell to primary' do
-              summary 'Internal endpoint that returns info refs upload pack for git clone/pull'
+              summary 'Internal endpoint that returns info refs upload pack for clone or pull operations'
               success code: 200
               failure [{ code: 401, message: '401 Unauthorized' }]
               tags %w[geo]
@@ -298,9 +300,9 @@ module EE
 
             params do
               requires :secret_token, type: String, desc: 'Secret token to authenticate by gitlab shell'
-              requires :data, type: Hash do
-                requires :gl_id, type: String, desc: 'GitLab identifier of user that initiated the clone/pull'
-                requires :primary_repo, type: String, desc: 'Primary repository to clone/pull'
+              requires :data, type: Hash, desc: 'Object that contains the payload data for the Geo operation' do
+                requires :gl_id, type: String, desc: 'ID of the user performing the operation'
+                requires :primary_repo, type: String, desc: 'Primary repository to clone or pull from'
               end
             end
 
@@ -316,17 +318,18 @@ module EE
 
             desc 'Responsible for making HTTP POST /repo.git/git-upload-pack
                   request from secondary gitlab-shell to primary' do
-              summary 'Internal endpoint that posts git-upload-pack for git clone/pull'
+              summary 'Internal endpoint that posts git-upload-pack for clone or pull operations'
               success code: 200
               failure [{ code: 401, message: '401 Unauthorized' }]
               tags %w[geo]
             end
 
             params do
-              requires :secret_token, type: String
-              requires :data, type: Hash do
-                requires :gl_id, type: String
-                requires :primary_repo, type: String
+              requires :secret_token, type: String, desc: 'Secret token used to authenticate requests from gitlab-shell
+                to Geo proxy endpoints'
+              requires :data, type: Hash, desc: 'Object that contains the payload data for the Geo operation' do
+                requires :gl_id, type: String, desc: 'ID of the user performing the operation'
+                requires :primary_repo, type: String, desc: 'Primary repository to clone or pull from'
               end
               requires :output, type: String, desc: 'Output from git-upload-pack'
             end
@@ -352,10 +355,11 @@ module EE
             end
 
             params do
-              requires :secret_token, type: String
-              requires :data, type: Hash do
-                requires :gl_id, type: String
-                requires :primary_repo, type: String
+              requires :secret_token, type: String, desc: 'Secret token used to authenticate requests from gitlab-shell
+                to Geo proxy endpoints'
+              requires :data, type: Hash, desc: 'Object that contains the payload data for the Geo operation' do
+                requires :gl_id, type: String, desc: 'ID of the user performing the operation'
+                requires :primary_repo, type: String, desc: 'Primary repository to push to'
               end
             end
 
@@ -377,10 +381,11 @@ module EE
             end
 
             params do
-              requires :secret_token, type: String
-              requires :data, type: Hash do
-                requires :gl_id, type: String
-                requires :primary_repo, type: String
+              requires :secret_token, type: String, desc: 'Secret token used to authenticate requests from gitlab-shell
+                to Geo proxy endpoints'
+              requires :data, type: Hash, desc: 'Object that contains the payload data for the Geo operation' do
+                requires :gl_id, type: String, desc: 'ID of the user performing the operation'
+                requires :primary_repo, type: String, desc: 'Primary repository to push to'
               end
               requires :output, type: String, desc: 'Output from git-receive-pack'
             end

@@ -111,8 +111,18 @@ module Security
       strong_memoize_attr :fail_open_policies
 
       def warn_mode_policies
-        violations.select(&:warn_mode).filter_map(&:security_policy)
+        warn_mode_violations.filter_map(&:security_policy)
       end
+
+      def warn_mode_violations
+        violations.select(&:warn_mode)
+      end
+      strong_memoize_attr :warn_mode_violations
+
+      def enforced_violations
+        violations.reject(&:warn_mode)
+      end
+      strong_memoize_attr :enforced_violations
 
       def new_scan_finding_violations
         uuids = extract_from_violation_data(%w[violations scan_finding uuids newly_detected])
@@ -120,11 +130,55 @@ module Security
       end
       strong_memoize_attr :new_scan_finding_violations
 
+      def new_warn_mode_scan_finding_violations
+        return [] if warn_mode_violations.empty?
+
+        uuids = extract_from_violation_data(
+          %w[violations scan_finding uuids newly_detected],
+          warn_mode_violations)
+
+        newly_detected_violations(uuids, extract_from_violation_data(%w[context pipeline_ids]))
+      end
+      strong_memoize_attr :new_warn_mode_scan_finding_violations
+
+      def new_enforced_scan_finding_violations
+        return [] if enforced_violations.empty?
+
+        uuids = extract_from_violation_data(
+          %w[violations scan_finding uuids newly_detected],
+          enforced_violations)
+
+        newly_detected_violations(uuids, extract_from_violation_data(%w[context pipeline_ids]))
+      end
+      strong_memoize_attr :new_enforced_scan_finding_violations
+
       def previous_scan_finding_violations
         uuids = extract_from_violation_data(%w[violations scan_finding uuids previously_existing])
         previously_existing_violations(uuids)
       end
       strong_memoize_attr :previous_scan_finding_violations
+
+      def previous_warn_mode_scan_finding_violations
+        return [] if warn_mode_violations.empty?
+
+        uuids = extract_from_violation_data(
+          %w[violations scan_finding uuids previously_existing],
+          warn_mode_violations)
+
+        previously_existing_violations(uuids)
+      end
+      strong_memoize_attr :previous_warn_mode_scan_finding_violations
+
+      def previous_enforced_scan_finding_violations
+        return [] if enforced_violations.empty?
+
+        uuids = extract_from_violation_data(
+          %w[violations scan_finding uuids previously_existing],
+          enforced_violations)
+
+        previously_existing_violations(uuids)
+      end
+      strong_memoize_attr :previous_enforced_scan_finding_violations
 
       def license_scanning_violations
         merged_by_license = violations.each_with_object({}) do |violation, result|

@@ -18,6 +18,7 @@ module Security
       MORE_VIOLATIONS_DETECTED = 'More violations have been detected in addition to the list above.'
       VIOLATIONS_BLOCKING_TITLE = ':warning: **Violations blocking this merge request**'
       VIOLATIONS_DETECTED_TITLE = ':warning: **Violations detected in this merge request**'
+      VIOLATIONS_BYPASSABLE_TITLE = ':construction: **Bypassable violations from warn mode policies**'
 
       attr_reader :reports, :optional_approval_reports, :existing_comment, :merge_request
 
@@ -90,8 +91,9 @@ module Security
 
         [
           summary,
-          newly_introduced_violations,
-          previously_existing_violations,
+          (violations_overview if warn_mode_enabled?),
+          (newly_introduced_violations unless warn_mode_enabled?),
+          (previously_existing_violations unless warn_mode_enabled?),
           any_merge_request_commits,
           license_scanning_violations,
           error_messages,
@@ -132,7 +134,7 @@ module Security
         }
 
         #{
-          if [newly_introduced_violations, previously_existing_violations, any_merge_request_commits].any?(&:present?)
+          if !warn_mode_enabled? && [newly_introduced_violations, previously_existing_violations, any_merge_request_commits].any?(&:present?)
             blocking_violations? ? VIOLATIONS_BLOCKING_TITLE : VIOLATIONS_DETECTED_TITLE
           else
             ''
@@ -166,6 +168,102 @@ module Security
         array_to_list(summary)
       end
 
+      def violations_overview
+        <<~MARKDOWN
+        #{enforced_violations_overview}
+        #{warn_mode_violations_overview}
+        MARKDOWN
+      end
+      strong_memoize_attr :violations_overview
+
+      def enforced_violations_overview
+        return if details.enforced_violations.empty?
+
+        <<~MARKDOWN
+        ### #{VIOLATIONS_BLOCKING_TITLE}
+        #{enforced_scan_finding_violations}
+        ---
+        MARKDOWN
+      end
+
+      def enforced_scan_finding_violations
+        if details.new_enforced_scan_finding_violations.empty? &&
+            details.previous_enforced_scan_finding_violations.empty?
+          return
+        end
+
+        <<~MARKDOWN
+        #{new_enforced_scan_finding_violations}
+        #{previous_enforced_scan_finding_violations}
+        MARKDOWN
+      end
+
+      def new_enforced_scan_finding_violations
+        violations = details.new_enforced_scan_finding_violations
+
+        return if violations.empty?
+
+        <<~MARKDOWN
+        #### Newly detected enforced `scan_finding` violations
+        #{scan_finding_violations(violations)}
+        MARKDOWN
+      end
+
+      def previous_enforced_scan_finding_violations
+        violations = details.previous_enforced_scan_finding_violations
+
+        return if violations.empty?
+
+        <<~MARKDOWN
+        #### Previously existing enforced `scan_finding` violations
+        #{scan_finding_violations(violations)}
+        MARKDOWN
+      end
+
+      def warn_mode_violations_overview
+        return if details.warn_mode_violations.empty?
+
+        <<~MARKDOWN
+        ### #{VIOLATIONS_BYPASSABLE_TITLE}
+        #{warn_mode_scan_finding_violations}
+        ---
+        MARKDOWN
+      end
+
+      def warn_mode_scan_finding_violations
+        if details.new_warn_mode_scan_finding_violations.empty? &&
+            details.previous_warn_mode_scan_finding_violations.empty?
+          return
+        end
+
+        <<~MARKDOWN
+        #{new_warn_mode_scan_finding_violations}
+        #{previous_warn_mode_scan_finding_violations}
+        MARKDOWN
+      end
+
+      def new_warn_mode_scan_finding_violations
+        violations = details.new_warn_mode_scan_finding_violations
+
+        return if violations.empty?
+
+        <<~MARKDOWN
+        #### Newly detected bypassable `scan_finding` violations
+        #{scan_finding_violations(violations)}
+        MARKDOWN
+      end
+
+      def previous_warn_mode_scan_finding_violations
+        violations = details.previous_warn_mode_scan_finding_violations
+
+        return if violations.empty?
+
+        <<~MARKDOWN
+        #### Previously existing bypassable `scan_finding` violations
+        #{scan_finding_violations(violations)}
+        MARKDOWN
+      end
+
       def newly_introduced_violations
         scan_finding_violations(details.new_scan_finding_violations, 'This merge request introduces these violations')
       end
@@ -176,16 +274,16 @@ module Security
       end
       strong_memoize_attr :previously_existing_violations
 
-      def scan_finding_violations(violations, title)
+      def scan_finding_violations(violations, title = nil)
         list = violations.map do |violation|
           build_scan_finding_violation_line(violation)
         end
         return if list.empty?
 
         <<~MARKDOWN
-        ---
+        #{'---' unless warn_mode_enabled?}
 
-        #{title}:
+        #{title if !warn_mode_enabled? && title}
 
         #{violations_list(list)}
         MARKDOWN
@@ -259,7 +357,7 @@ module Security
       end
 
       def additional_info
-        return unless Feature.enabled?(:security_policy_approval_warn_mode, project) && details.warn_mode_policies.any?
+        return unless warn_mode_enabled? && details.warn_mode_policies.any?
 
         <<~MARKDOWN
         :information: **Additional information**
@@ -340,7 +438,7 @@ module Security
       end
 
       def warn_mode_summary
-        return unless Feature.enabled?(:security_policy_approval_warn_mode, project) && details.warn_mode_policies.any?
+        return unless warn_mode_enabled? && details.warn_mode_policies.any?
 
         warn_mode_policy_names = details.warn_mode_policies.map(&:name).sort
 
@@ -351,6 +449,11 @@ module Security
       def array_to_list(array)
         array.map { |item| "- #{item}" }.join("\n")
       end
+
+      def warn_mode_enabled?
+        Feature.enabled?(:security_policy_approval_warn_mode, project)
+      end
+      strong_memoize_attr :warn_mode_enabled?
     end
   end
 end

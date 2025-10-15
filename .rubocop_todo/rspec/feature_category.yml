@@ -1,7 +1,7 @@
 ---
 RSpec/FeatureCategory:
   Exclude:
-    - 'ee/spec/controllers/autocomplete_controller_spec.rb'
+    - 'ee/spec/controllers/ee/autocomplete_controller_spec.rb'
     - 'ee/spec/controllers/ee/dashboard_controller_spec.rb'
     - 'ee/spec/controllers/projects/pipelines_controller_spec.rb'
     - 'ee/spec/controllers/users_controller_spec.rb'
