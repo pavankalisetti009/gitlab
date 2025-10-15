@@ -46,7 +46,7 @@ module Gitlab
             # Progress note may not exist for existing jobs so we create one if we can
             @progress_note = find_progress_note || create_progress_note
 
-            if ::Feature.enabled?(:duo_code_review_on_agent_platform, user)
+            if should_use_duo_agent_platform?
               update_review_state('review_started') if merge_request
               execute_duo_agent_platform_flow
             else
@@ -152,6 +152,16 @@ module Gitlab
 
           def user
             prompt_message.user
+          end
+
+          def should_use_duo_agent_platform?
+            return false unless Feature.enabled?(:duo_code_review_on_agent_platform, user)
+
+            # SaaS customers always use DAP
+            return true unless feature_setting&.self_hosted?
+
+            # Self-hosted customers need DWS configured to use DAP
+            ::Gitlab::DuoWorkflow::Client.self_hosted_url.present?
           end
 
           def perform_review
