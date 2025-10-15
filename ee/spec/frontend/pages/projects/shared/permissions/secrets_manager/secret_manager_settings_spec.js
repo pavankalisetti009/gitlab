@@ -229,7 +229,7 @@ describe('SecretManagerSettings', () => {
       await pollNextStatus(activeResponse);
 
       expect(showToast).toHaveBeenCalledWith(
-        'Secrets Manager has been provisioned for this project.',
+        'Secrets manager has been provisioned for this project.',
       );
     });
   });

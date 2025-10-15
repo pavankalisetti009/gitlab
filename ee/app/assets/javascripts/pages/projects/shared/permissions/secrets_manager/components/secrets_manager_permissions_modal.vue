@@ -171,10 +171,14 @@ export default {
         }
 
         this.$emit('refetch');
-        this.$toast.show(s__('Secrets|Secret Manager permissions were successfully updated.'));
+        this.$toast.show(
+          s__('SecretsManagerPermissions|Secrets manager permissions were successfully updated.'),
+        );
       } catch (e) {
         createAlert({
-          message: s__('Secrets|Failed to create Secrets manager permission. Please try again.'),
+          message: s__(
+            'SecretsManagerPermissions|Failed to create secrets manager permission. Please try again.',
+          ),
           captureError: true,
           error: e,
         });
@@ -301,7 +305,7 @@ export default {
         :label="__('Scopes')"
         :label-description="
           s__(
-            'Secrets|Select the access scopes to grant to this user for the Secret Manager and related API endpoints.',
+            'SecretsManagerPermissions|Select the access scopes to grant to this user for the secrets manager and related API endpoints.',
           )
         "
       >
@@ -309,27 +313,31 @@ export default {
           {{ __('Read') }}
           <p class="gl-text-subtle">
             {{
-              s__('Secrets|Can authenticate with the Secrets Manager and related API endpoints.')
+              s__(
+                'SecretsManagerPermissions|Can authenticate with the secrets manager and related API endpoints.',
+              )
             }}
-            {{ s__('Secrets|Can read secret metadata but not the secret value.') }}
+            {{
+              s__('SecretsManagerPermissions|Can read secret metadata but not the secret value.')
+            }}
           </p>
         </gl-form-checkbox>
         <gl-form-checkbox v-model="scope.create" class="-gl-mb-4" :disabled="!scope.read">
           {{ __('Create') }}
           <p class="gl-text-subtle">
-            {{ s__('Secrets|Can add new secrets') }}
+            {{ s__('SecretsManagerPermissions|Can add new secrets') }}
           </p>
         </gl-form-checkbox>
         <gl-form-checkbox v-model="scope.update" class="-gl-mb-4" :disabled="!scope.read">
           {{ __('Update') }}
           <p class="gl-text-subtle">
-            {{ s__('Secrets|Can update details of existing secrets.') }}
+            {{ s__('SecretsManagerPermissions|Can update details of existing secrets.') }}
           </p>
         </gl-form-checkbox>
         <gl-form-checkbox v-model="scope.delete" class="-gl-mb-4" :disabled="!scope.read">
           {{ __('Delete') }}
           <p class="gl-text-subtle">
-            {{ s__('Secrets|Can permanently delete secrets.') }}
+            {{ s__('SecretsManagerPermissions|Can permanently delete secrets.') }}
           </p>
         </gl-form-checkbox>
       </gl-form-group>

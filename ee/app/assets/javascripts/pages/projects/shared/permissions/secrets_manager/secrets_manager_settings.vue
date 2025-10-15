@@ -62,7 +62,9 @@ export default {
         }
 
         if (this.isEnablingSecretsManager && newStatus === SECRET_MANAGER_STATUS_ACTIVE) {
-          this.$toast.show(s__('Secrets|Secrets Manager has been provisioned for this project.'));
+          this.$toast.show(
+            s__('SecretsManagerPermissions|Secrets manager has been provisioned for this project.'),
+          );
         }
 
         return newStatus;
@@ -71,7 +73,9 @@ export default {
         this.$apollo.queries.secretManagerStatus.stopPolling(POLL_INTERVAL);
         this.errorMessage =
           e.graphQLErrors?.[0]?.message ||
-          s__('Secrets|An error occurred while fetching the Secret manager status.');
+          s__(
+            'SecretsManagerPermissions|An error occurred while fetching the secrets manager status.',
+          );
 
         if (this.isEnablingSecretsManager) {
           this.secretManagerStatus = SECRET_MANAGER_STATUS_INACTIVE;
@@ -137,7 +141,8 @@ export default {
         this.$apollo.queries.secretManagerStatus.startPolling(POLL_INTERVAL);
       } catch (error) {
         this.errorMessage =
-          error?.message || s__('Secrets|An error occurred while enabling the Secrets Manager.');
+          error?.message ||
+          s__('SecretsManagerPermissions|An error occurred while enabling the secrets manager.');
       }
     },
     onToggleSecretManager() {
@@ -154,12 +159,12 @@ export default {
 <template>
   <div data-testid="secret-manager">
     <label class="gl-mb-1 gl-mr-3">
-      {{ s__('Secrets|Secrets Manager') }}
+      {{ s__('SecretsManagerPermissions|Secrets manager') }}
     </label>
     <p class="gl-mb-2">
       {{
         s__(
-          'Secrets|Enable the Secrets Manager to securely store and manage sensitive information for this project.',
+          'SecretsManagerPermissions|Enable the secrets manager to securely store and manage sensitive information for this project.',
         )
       }}
       <gl-link :href="$options.LEARN_MORE_LINK">
@@ -168,7 +173,7 @@ export default {
     </p>
     <gl-toggle
       :value="isActive"
-      :label="s__('Secrets|Secrets Manager')"
+      :label="s__('SecretsManagerPermissions|Secrets manager')"
       :disabled="isToggleDisabled"
       :is-loading="isToggleLoading"
       label-position="hidden"
