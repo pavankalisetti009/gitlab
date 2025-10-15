@@ -9,7 +9,9 @@ import {
   mockUsageDataWithOverage,
   mockUsersUsageDataWithOverage,
   usageDataWithPool,
-  usageDataWithoutPool,
+  usageDataNoPoolNoOverage,
+  usageDataNoPoolWithOverage,
+  usageDataWithPoolWithOverage,
 } from 'ee_jest/usage_quotas/usage_billing/mock_data';
 import { createMockClient } from 'helpers/mock_apollo_helper';
 import axios from '~/lib/utils/axios_utils';
@@ -92,13 +94,12 @@ export const Default = {
   render: createTemplate(),
 };
 
-export const NoCommitment = {
+export const PoolWithOverage = {
   render: (...args) => {
-    const restUsageDataHandler = () => Promise.resolve([200, mockUsageDataWithoutPool]);
+    const restUsageDataHandler = () => Promise.resolve([200, mockUsageDataWithOverage]);
     const getSubscriptionUsersUsageQueryHandler = () =>
-      Promise.resolve(mockUsersUsageDataWithoutPool);
-
-    const getSubscriptionUsageQueryHandler = () => Promise.resolve(usageDataWithoutPool);
+      Promise.resolve(mockUsersUsageDataWithOverage);
+    const getSubscriptionUsageQueryHandler = () => Promise.resolve(usageDataWithPoolWithOverage);
 
     return createTemplate({
       restUsageDataHandler,
@@ -108,15 +109,34 @@ export const NoCommitment = {
   },
 };
 
-export const WithOverage = {
+export const NoPoolWithOverage = {
   render: (...args) => {
-    const restUsageDataHandler = () => Promise.resolve([200, mockUsageDataWithOverage]);
+    const restUsageDataHandler = () => Promise.resolve([200, mockUsageDataWithoutPool]);
     const getSubscriptionUsersUsageQueryHandler = () =>
-      Promise.resolve(mockUsersUsageDataWithOverage);
+      Promise.resolve(mockUsersUsageDataWithoutPool);
+
+    const getSubscriptionUsageQueryHandler = () => Promise.resolve(usageDataNoPoolWithOverage);
 
     return createTemplate({
       restUsageDataHandler,
       getSubscriptionUsersUsageQueryHandler,
+      getSubscriptionUsageQueryHandler,
+    })(...args);
+  },
+};
+
+export const NoPoolNoOverage = {
+  render: (...args) => {
+    const restUsageDataHandler = () => Promise.resolve([200, mockUsageDataWithoutPool]);
+    const getSubscriptionUsersUsageQueryHandler = () =>
+      Promise.resolve(mockUsersUsageDataWithoutPool);
+
+    const getSubscriptionUsageQueryHandler = () => Promise.resolve(usageDataNoPoolNoOverage);
+
+    return createTemplate({
+      restUsageDataHandler,
+      getSubscriptionUsersUsageQueryHandler,
+      getSubscriptionUsageQueryHandler,
     })(...args);
   },
 };

@@ -1,34 +1,29 @@
 <script>
 import { GlCard, GlProgressBar, GlSprintf } from '@gitlab/ui';
 import { numberToMetricPrefix } from '~/lib/utils/number_utils';
-import { getDayDifference } from '~/lib/utils/datetime/date_calculation_utility';
-import { newDate } from '~/lib/utils/datetime_utility';
-import HumanTimeframe from '~/vue_shared/components/datetime/human_timeframe.vue';
 import { USAGE_DANGER_THRESHOLD, USAGE_WARNING_THRESHOLD } from '../constants';
+import HumanTimeframeWithDaysRemaining from './human_timeframe_with_days_remaining.vue';
 
 export default {
-  name: 'CurrentMonthUsageCard',
+  name: 'CurrentUsageCard',
   components: {
     GlCard,
     GlProgressBar,
     GlSprintf,
-    HumanTimeframe,
+    HumanTimeframeWithDaysRemaining,
   },
   props: {
-    currentOverage: {
+    poolCreditsUsed: {
       type: Number,
-      required: false,
-      default: 0,
+      required: true,
     },
-    totalCreditsUsed: {
+    poolTotalCredits: {
       type: Number,
-      required: false,
-      default: 0,
+      required: true,
     },
-    totalCredits: {
+    overageCreditsUsed: {
       type: Number,
-      required: false,
-      default: 0,
+      required: true,
     },
     monthStartDate: {
       type: String,
@@ -40,12 +35,15 @@ export default {
     },
   },
   computed: {
-    usagePercentage() {
-      if (this.totalCredits === 0) return 0;
-      return ((this.totalCreditsUsed / this.totalCredits) * 100).toFixed(1);
+    totalCreditsUsed() {
+      return this.poolCreditsUsed + this.overageCreditsUsed;
     },
-    usageRemaining() {
-      return Math.max(0, this.totalCredits - this.totalCreditsUsed);
+    usagePercentage() {
+      if (this.poolTotalCredits === 0) return 0;
+      return ((this.totalCreditsUsed / this.poolTotalCredits) * 100).toFixed(1);
+    },
+    poolCreditsRemaining() {
+      return this.poolTotalCredits - this.poolCreditsUsed;
     },
     progressBarVariant() {
       if (this.usagePercentage >= USAGE_DANGER_THRESHOLD) {
@@ -58,19 +56,11 @@ export default {
 
       return 'primary';
     },
-    daysOfMonthRemaining() {
-      const today = new Date();
-      const endDate = newDate(this.monthEndDate);
-      const diffDays = getDayDifference(today, endDate);
-
-      return Math.max(0, diffDays);
-    },
   },
   methods: {
     numberToMetricPrefix,
   },
   totalCreditsSeparator: '/ ',
-  daysRemainingSeparator: ' - ',
 };
 </script>
 <template>
@@ -78,24 +68,19 @@ export default {
     <h2 class="gl-font-heading gl-my-3 gl-text-size-h2">
       {{ s__('UsageBilling|Current month usage') }}
     </h2>
-    <p data-testid="date-range">
-      <human-timeframe :from="monthStartDate" :till="monthEndDate" />
-      <span>
-        {{ $options.daysRemainingSeparator }}
-        <gl-sprintf
-          :message="n__('%{days} day remaining', '%{days} days remaining', daysOfMonthRemaining)"
-        >
-          <template #days>{{ daysOfMonthRemaining }}</template>
-        </gl-sprintf>
-      </span>
+    <p>
+      <human-timeframe-with-days-remaining
+        :month-start-date="monthStartDate"
+        :month-end-date="monthEndDate"
+      />
     </p>
     <div class="gl-flex gl-flex-row gl-justify-between">
       <span class="gl-text-size-h2 gl-font-bold" data-testid="total-credits-used">
         {{ numberToMetricPrefix(totalCreditsUsed) }}
       </span>
-      <span class="gl-text-size-h2 gl-font-bold gl-text-gray-500" data-testid="total-credits">
+      <span class="gl-text-size-h2 gl-font-bold gl-text-gray-500" data-testid="pool-total-credits">
         {{ $options.totalCreditsSeparator }}
-        {{ numberToMetricPrefix(totalCredits) }}
+        {{ numberToMetricPrefix(poolTotalCredits) }}
       </span>
     </div>
     <gl-progress-bar
@@ -118,17 +103,21 @@ export default {
               n__(
                 'UsageBilling|%{poolCreditsRemaining} pool credit remaining',
                 'UsageBilling|%{poolCreditsRemaining} pool credits remaining',
-                usageRemaining,
+                poolCreditsRemaining,
               )
             "
           >
-            <template #poolCreditsRemaining>{{ numberToMetricPrefix(usageRemaining) }}</template>
+            <template #poolCreditsRemaining>{{
+              numberToMetricPrefix(poolCreditsRemaining)
+            }}</template>
           </gl-sprintf>
         </span>
       </div>
-      <div class="gl-flex gl-flex-row gl-justify-between" data-testid="current-overage">
+      <div class="gl-flex gl-flex-row gl-justify-between">
         <span>{{ s__('UsageBilling|Current overage') }}</span>
-        <span>{{ currentOverage }}</span>
+        <span data-testid="overage-credits-used">{{
+          numberToMetricPrefix(overageCreditsUsed)
+        }}</span>
       </div>
     </div>
   </gl-card>
