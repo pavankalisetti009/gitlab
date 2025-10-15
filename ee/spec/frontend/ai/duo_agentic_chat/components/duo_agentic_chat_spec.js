@@ -15,6 +15,7 @@ import getAiChatContextPresets from 'ee/ai/graphql/get_ai_chat_context_presets.q
 import getAiChatAvailableModels from 'ee/ai/graphql/get_ai_chat_available_models.query.graphql';
 import getConfiguredAgents from 'ee/ai/graphql/get_configured_agents.query.graphql';
 import getAgentFlowConfig from 'ee/ai/graphql/get_agent_flow_config.query.graphql';
+import getFoundationalChatAgents from 'ee/ai/graphql/get_foundational_chat_agents.graphql';
 import DuoAgenticChatApp from 'ee/ai/duo_agentic_chat/components/duo_agentic_chat.vue';
 import { ApolloUtils } from 'ee/ai/duo_agentic_chat/utils/apollo_utils';
 import { WorkflowUtils } from 'ee/ai/duo_agentic_chat/utils/workflow_utils';
@@ -47,6 +48,11 @@ import {
   MOCK_AI_CHAT_AVAILABLE_MODELS_RESPONSE,
   MOCK_MODEL_LIST_ITEMS,
   MOCK_GITLAB_DEFAULT_MODEL_ITEM,
+  MOCK_CONFIGURED_AGENTS_RESPONSE,
+  MOCK_FOUNDATIONAL_CHAT_AGENTS_RESPONSE,
+  MOCK_FLOW_CONFIG_RESPONSE,
+  MOCK_FETCHED_FOUNDATIONAL_AGENT,
+  MOCK_FLOW_AGENT_CONFIG,
 } from './mock_data';
 
 const mockSocketManager = {
@@ -136,35 +142,6 @@ const MOCK_USER_WORKFLOWS_RESPONSE = {
   },
 };
 
-const MOCK_CONFIGURED_AGENTS_RESPONSE = {
-  data: {
-    aiCatalogConfiguredItems: {
-      nodes: [
-        {
-          id: 'Configured Item 5',
-          item: {
-            id: 'Agent 5',
-            name: 'My Custom Agent',
-            description: 'This is my custom agent',
-            versions: {
-              nodes: [
-                {
-                  id: 'AgentVersion 6',
-                  released: false,
-                },
-                {
-                  id: 'AgentVersion 5',
-                  released: true,
-                },
-              ],
-            },
-          },
-        },
-      ],
-    },
-  },
-};
-
 const MOCK_WORKFLOW_EVENTS_RESPONSE = {
   duoWorkflowEvents: {
     nodes: [
@@ -187,8 +164,6 @@ const MOCK_TRANSFORMED_MESSAGES = [
     message_type: 'agent',
   },
 ];
-
-const MOCK_FLOW_CONFIG = 'components:\n  - name: test\n    type: agent';
 
 const MOCK_PARSED_FLOW_CONFIG = { components: [{ name: 'test', type: 'agent' }] };
 
@@ -273,9 +248,10 @@ describe('Duo Agentic Chat', () => {
     .fn()
     .mockResolvedValue(MOCK_AI_CHAT_AVAILABLE_MODELS_RESPONSE);
   const configuredAgentsQueryMock = jest.fn().mockResolvedValue(MOCK_CONFIGURED_AGENTS_RESPONSE);
-  const agentFlowConfigQueryMock = jest
+  const aiFoundationalChatAgentsQueryMock = jest
     .fn()
-    .mockResolvedValue({ data: { aiCatalogAgentFlowConfig: MOCK_FLOW_CONFIG } });
+    .mockResolvedValue(MOCK_FOUNDATIONAL_CHAT_AGENTS_RESPONSE);
+  const agentFlowConfigQueryMock = jest.fn().mockResolvedValue(MOCK_FLOW_CONFIG_RESPONSE);
 
   const findDuoChat = () => wrapper.findComponent(WebAgenticDuoChat);
   const getLastSocketCall = () => {
@@ -307,6 +283,7 @@ describe('Duo Agentic Chat', () => {
       [getUserWorkflows, userWorkflowsQueryHandlerMock],
       [getAiChatContextPresets, contextPresetsQueryHandlerMock],
       [getConfiguredAgents, configuredAgentsQueryMock],
+      [getFoundationalChatAgents, aiFoundationalChatAgentsQueryMock],
       [getAgentFlowConfig, agentFlowConfigQueryMock],
       ...apolloHandlers,
     ]);
@@ -1507,11 +1484,14 @@ describe('Duo Agentic Chat', () => {
       await waitForPromises();
     });
 
-    it('shows a default option', () => {
+    it('displays the GitLab Duo Agent as the first option', () => {
       expect(findDuoChat().props('agents')).toContainEqual({
+        id: 'gid://gitlab/Ai::FoundationalChatAgent/chat',
         name: 'GitLab Duo Agent',
-        text: 'GitLab Duo Agent',
         description: 'Duo is your general development assistant',
+        referenceWithVersion: 'chat',
+        foundational: true,
+        text: 'GitLab Duo Agent',
       });
     });
 
@@ -1530,7 +1510,65 @@ describe('Duo Agentic Chat', () => {
         agentVersionId: agent.versions.nodes[1].id,
       });
 
+      expect(WorkflowSocketUtils.buildStartRequest).toHaveBeenCalledWith(
+        expect.objectContaining({
+          agentConfig: MOCK_FLOW_AGENT_CONFIG,
+        }),
+      );
+
       expect(mockSocketManager.connect).toHaveBeenCalled();
+    });
+
+    it('uses workflow definition when foundational chat is selected', async () => {
+      await findDuoChat().vm.$emit('new-chat', MOCK_FETCHED_FOUNDATIONAL_AGENT);
+      await waitForPromises();
+
+      findDuoChat().vm.$emit('send-chat-prompt', MOCK_USER_MESSAGE.content);
+      await waitForPromises();
+
+      expect(agentFlowConfigQueryMock).not.toHaveBeenCalled();
+      expect(WorkflowSocketUtils.buildStartRequest).toHaveBeenCalledWith(
+        expect.objectContaining({
+          workflowDefinition: 'agent/v1',
+          agentConfig: null,
+        }),
+      );
+
+      expect(mockSocketManager.connect).toHaveBeenCalled();
+    });
+
+    describe('switching from a foundational agent to a catalog agent', () => {
+      it('fetches agent flow config and sends agent version id', async () => {
+        findDuoChat().vm.$emit('new-chat', MOCK_FETCHED_FOUNDATIONAL_AGENT);
+        await waitForPromises();
+
+        findDuoChat().vm.$emit('send-chat-prompt', MOCK_USER_MESSAGE.content);
+        await waitForPromises();
+
+        expect(WorkflowSocketUtils.buildStartRequest).toHaveBeenLastCalledWith(
+          expect.objectContaining({
+            workflowDefinition: 'agent/v1',
+            agentConfig: null,
+          }),
+        );
+
+        await findDuoChat().vm.$emit('new-chat', agent);
+        findDuoChat().vm.$emit('send-chat-prompt', MOCK_USER_MESSAGE.content);
+
+        await waitForPromises();
+
+        expect(agentFlowConfigQueryMock).toHaveBeenCalledWith({
+          agentVersionId: agent.versions.nodes[1].id,
+        });
+
+        expect(WorkflowSocketUtils.buildStartRequest).toHaveBeenLastCalledWith(
+          expect.objectContaining({
+            workflowDefinition: undefined,
+          }),
+        );
+
+        expect(mockSocketManager.connect).toHaveBeenCalled();
+      });
     });
 
     it('re-uses the selected flow config when /new is used to start a new thread', async () => {
@@ -1637,6 +1675,15 @@ describe('Duo Agentic Chat', () => {
       await waitForPromises();
 
       expect(findDuoChat().props('title')).toBe('My Custom Agent');
+    });
+
+    it('passes the agent name as title when a foundational agent is selected', async () => {
+      createComponent();
+
+      await findDuoChat().vm.$emit('new-chat', MOCK_FETCHED_FOUNDATIONAL_AGENT);
+      await waitForPromises();
+
+      expect(findDuoChat().props('title')).toBe(MOCK_FETCHED_FOUNDATIONAL_AGENT.name);
     });
   });
 
