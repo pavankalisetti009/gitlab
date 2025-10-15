@@ -28,6 +28,10 @@ module Ai
 
         attr_reader :item
 
+        def allowed?
+          super && Ability.allowed?(current_user, :admin_ai_catalog_item, item)
+        end
+
         def valid?
           !!item
         end
