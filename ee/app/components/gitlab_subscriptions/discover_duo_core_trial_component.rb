@@ -129,6 +129,11 @@ module GitlabSubscriptions
       'gitlab/logo.svg'
     end
 
+    override :hero_logo_dark
+    def hero_logo_dark
+      'gitlab/logo-dark.svg'
+    end
+
     override :hero_header_text
     def hero_header_text
       s_(
