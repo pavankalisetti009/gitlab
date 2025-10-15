@@ -1202,7 +1202,10 @@ module EE
       end
 
       condition(:secret_push_protection_available) do
-        @subject.licensed_feature_available?(:secret_push_protection)
+        @subject.licensed_feature_available?(:secret_push_protection) ||
+          (::Gitlab::Saas.feature_available?(:auto_enable_secret_push_protection_public_projects) &&
+          ::Feature.enabled?(:auto_spp_public_com_projects, @subject) &&
+          @subject.public?)
       end
 
       rule { secret_push_protection_available & can?(:maintainer_access) }.policy do

@@ -15,7 +15,7 @@ module Gitlab
           #   5. if protocol is not http/ssh,
           #      or with web protocol, if gitaly_context['enable_secrets_check'] is not passed
           #   6. if options are passed for us to skip the check
-          return false unless license_available?
+          return false unless spp_feature_available?
           return false unless secret_push_protection_available?
           return false if includes_full_revision_history?
           return false unless use_diff_scan?
@@ -37,8 +37,18 @@ module Gitlab
 
         private
 
+        def spp_feature_available?
+          license_available? || public_com_project_eligible?
+        end
+
         def license_available?
           project.licensed_feature_available?(:secret_push_protection)
+        end
+
+        def public_com_project_eligible?
+          Gitlab::Saas.feature_available?(:auto_enable_secret_push_protection_public_projects) &&
+            Feature.enabled?(:auto_spp_public_com_projects, project) &&
+            project.public?
         end
 
         def secret_push_protection_available?

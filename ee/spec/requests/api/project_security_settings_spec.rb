@@ -91,4 +91,72 @@ RSpec.describe API::ProjectSecuritySettings, :aggregate_failures, feature_catego
       end
     end
   end
+
+  describe 'license and visibility checks' do
+    let(:url) { "/projects/#{project.id}/security_settings" }
+
+    context 'with Ultimate license' do
+      before do
+        stub_licensed_features(secret_push_protection: true)
+        project.add_developer(user)
+      end
+
+      it 'allows access for public project' do
+        get api(url, user)
+        expect(response).to have_gitlab_http_status(:ok)
+      end
+
+      it 'allows access for private project' do
+        project.update!(visibility_level: Gitlab::VisibilityLevel::PRIVATE)
+
+        get api(url, user)
+        expect(response).to have_gitlab_http_status(:ok)
+      end
+    end
+
+    context 'without Ultimate license' do
+      before do
+        stub_licensed_features(secret_push_protection: false)
+        project.add_developer(user)
+      end
+
+      context 'for public .com project' do
+        before do
+          project.update!(visibility_level: Gitlab::VisibilityLevel::PUBLIC)
+          stub_saas_features(auto_enable_secret_push_protection_public_projects: true)
+          stub_feature_flags(auto_spp_public_com_projects: true)
+        end
+
+        it 'allows access' do
+          get api(url, user)
+          expect(response).to have_gitlab_http_status(:ok)
+        end
+      end
+
+      context 'for private project' do
+        before do
+          project.update!(visibility_level: Gitlab::VisibilityLevel::PRIVATE)
+          stub_saas_features(auto_enable_secret_push_protection_public_projects: true)
+          stub_feature_flags(auto_spp_public_com_projects: true)
+        end
+
+        it 'returns 403 Forbidden' do
+          get api(url, user)
+          expect(response).to have_gitlab_http_status(:forbidden)
+        end
+      end
+
+      context 'when feature flag is disabled' do
+        before do
+          stub_saas_features(auto_enable_secret_push_protection_public_projects: true)
+          stub_feature_flags(auto_spp_public_com_projects: false)
+        end
+
+        it 'returns 403 Forbidden' do
+          get api(url, user)
+          expect(response).to have_gitlab_http_status(:forbidden)
+        end
+      end
+    end
+  end
 end
