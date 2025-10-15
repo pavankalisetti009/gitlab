@@ -31,7 +31,7 @@ import { createWebSocket, closeSocket } from '~/lib/utils/websocket_utils';
 import { fetchPolicies } from '~/lib/graphql';
 import { GITLAB_DEFAULT_MODEL } from 'ee/ai/model_selection/constants';
 import { s__ } from '~/locale';
-import { WIDTH_OFFSET, DUO_AGENTIC_MODE_COOKIE } from '../../tanuki_bot/constants';
+import { DUO_AGENTIC_MODE_COOKIE } from '../../tanuki_bot/constants';
 import { WorkflowUtils } from '../utils/workflow_utils';
 import { ApolloUtils } from '../utils/apollo_utils';
 import {
@@ -46,6 +46,7 @@ import {
   buildStartRequest,
   processWorkflowMessage,
 } from '../utils/workflow_socket_utils';
+import { getInitialDimensions, calculateDimensions } from '../utils/resize_utils';
 
 export default {
   name: 'DuoAgenticChatApp',
@@ -213,15 +214,7 @@ export default {
     return {
       agentConfig: null,
       duoChatGlobalState,
-      width: 550,
-      height: window.innerHeight,
-      minWidth: 550,
-      minHeight: 400,
-      // Explicitly initializing the props as null to ensure Vue makes it reactive.
-      left: null,
-      top: null,
-      maxHeight: null,
-      maxWidth: null,
+      ...getInitialDimensions(),
       contextPresets: [],
       availableModels: [],
       pinnedModel: null,
@@ -430,13 +423,14 @@ export default {
       this.updateDimensions();
     },
     updateDimensions(width, height) {
-      this.maxWidth = window.innerWidth - WIDTH_OFFSET;
-      this.maxHeight = window.innerHeight;
+      const newDimensions = calculateDimensions({
+        width,
+        height,
+        currentWidth: this.width,
+        currentHeight: this.height,
+      });
 
-      this.width = Math.min(width || this.width, this.maxWidth);
-      this.height = Math.min(height || this.height, this.maxHeight);
-      this.top = window.innerHeight - this.height;
-      this.left = window.innerWidth - this.width;
+      Object.assign(this, newDimensions);
     },
     onChatResize(e) {
       this.$emit('chat-resize');

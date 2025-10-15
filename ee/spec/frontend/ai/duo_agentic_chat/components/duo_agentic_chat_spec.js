@@ -26,6 +26,7 @@ import {
   isModelSelectionDisabled as checkModelSelectionDisabled,
 } from 'ee/ai/duo_agentic_chat/utils/model_selection_utils';
 import * as WorkflowSocketUtils from 'ee/ai/duo_agentic_chat/utils/workflow_socket_utils';
+import * as ResizeUtils from 'ee/ai/duo_agentic_chat/utils/resize_utils';
 import ModelSelectDropdown from 'ee/ai/shared/feature_settings/model_select_dropdown.vue';
 import {
   GENIE_CHAT_RESET_MESSAGE,
@@ -221,6 +222,8 @@ const MOCK_UTILS_SETUP = () => {
     },
   });
   jest.spyOn(WorkflowSocketUtils, 'processWorkflowMessage');
+
+  jest.spyOn(ResizeUtils, 'calculateDimensions');
 };
 
 const expectedAdditionalContext = [
@@ -1050,34 +1053,24 @@ describe('Duo Agentic Chat', () => {
       createComponent();
     });
 
-    it('initializes dimensions correctly on mount', () => {
-      expect(wrapper.vm.width).toBe(550);
-      expect(wrapper.vm.height).toBe(window.innerHeight);
-      expect(wrapper.vm.maxWidth).toBe(window.innerWidth - WIDTH_OFFSET);
-      expect(wrapper.vm.maxHeight).toBe(window.innerHeight);
-    });
-
     it('updates dimensions correctly when `chat-resize` event is emitted', async () => {
       const newWidth = 600;
       const newHeight = 500;
       const chat = findDuoChat();
+      const initialWidth = wrapper.vm.width;
+      const initialHeight = wrapper.vm.height;
+
       chat.vm.$emit('chat-resize', { width: newWidth, height: newHeight });
       await nextTick();
 
+      expect(ResizeUtils.calculateDimensions).toHaveBeenLastCalledWith({
+        width: newWidth,
+        height: newHeight,
+        currentWidth: initialWidth,
+        currentHeight: initialHeight,
+      });
       expect(wrapper.vm.width).toBe(newWidth);
       expect(wrapper.vm.height).toBe(newHeight);
-    });
-
-    it('ensures dimensions do not exceed maxWidth or maxHeight', async () => {
-      const newWidth = window.innerWidth + 100;
-      const newHeight = window.innerHeight + 100;
-      const chat = findDuoChat();
-
-      chat.vm.$emit('chat-resize', { width: newWidth, height: newHeight });
-      await nextTick();
-
-      expect(wrapper.vm.width).toBe(window.innerWidth - WIDTH_OFFSET);
-      expect(wrapper.vm.height).toBe(window.innerHeight);
     });
 
     it('updates dimensions when the window is resized', async () => {
@@ -1085,12 +1078,19 @@ describe('Duo Agentic Chat', () => {
       const originalInnerHeight = window.innerHeight;
 
       try {
+        const initialWidth = wrapper.vm.width;
+        const initialHeight = wrapper.vm.height;
+
         window.innerWidth = 1200;
         window.innerHeight = 800;
 
         window.dispatchEvent(new Event('resize'));
         await nextTick();
 
+        expect(ResizeUtils.calculateDimensions).toHaveBeenLastCalledWith({
+          currentWidth: initialWidth,
+          currentHeight: initialHeight,
+        });
         expect(wrapper.vm.maxWidth).toBe(1200 - WIDTH_OFFSET);
         expect(wrapper.vm.maxHeight).toBe(800);
       } finally {
