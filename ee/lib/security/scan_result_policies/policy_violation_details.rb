@@ -194,6 +194,12 @@ module Security
       end
       strong_memoize_attr :comparison_pipelines
 
+      def enforced_security_policies
+        project
+          .security_policies
+          .reject(&:warn_mode?)
+      end
+
       private
 
       attr_accessor :merge_request

@@ -275,7 +275,8 @@ module Security
 
         overrides = ::Security::ScanResultPolicies::ApprovalSettingsOverrides.new(
           project: merge_request.target_project,
-          security_policies: details.warn_mode_policies
+          warn_mode_policies: details.warn_mode_policies,
+          enforced_policies: details.enforced_security_policies
         ).all
 
         return if overrides.empty?
@@ -284,8 +285,9 @@ module Security
         :lock: **Warn-mode policies set more restrictive approval settings**
 
         Some security policies set `approval_settings` that are more restrictive than this
-        project's merge request approval settings. When the following policies
-        get strictly enforced, their approval settings will take precedence:
+        project's merge request effective approval settings, taking into account the `approval_settings`
+        of enforced policies. When the following warn-mode policies get strictly enforced,
+        their approval settings will take precedence:
 
         #{overrides.map { |override| warn_mode_approval_settings_overrides(override) }.join("\n")}
         MARKDOWN

@@ -7,10 +7,13 @@ module Security
 
       Override = Data.define(:attribute, :security_policies)
 
-      def initialize(project:, security_policies:)
+      def initialize(project:, warn_mode_policies:, enforced_policies:)
         @project = project
-        @security_policies = security_policies
-        @policy_settings_index = {}
+        @warn_mode_policies = warn_mode_policies
+        @enforced_policies = enforced_policies
+        @warn_mode_settings_index = {}
+
+        index_warn_mode_policies!
       end
 
       def all
@@ -18,18 +21,22 @@ module Security
           # If the project setting is restrictive, it can't be overridden.
           next if val
 
-          # Does a policy override the attribute?
-          next unless policies_approval_settings[attr]
+          # Does a warn-mode policy override the attribute?
+          next unless warn_mode_approval_settings[attr]
 
-          Override.new(attr, policy_settings_index.fetch(attr))
+          # Does an enforced policy already set the attribute?
+          next if enforced_approval_settings[attr]
+
+          Override.new(attr, warn_mode_settings_index.fetch(attr))
         end
       end
 
       private
 
       attr_reader :project,
-        :security_policies,
-        :policy_settings_index
+        :warn_mode_policies,
+        :enforced_policies,
+        :warn_mode_settings_index
 
       def project_settings
         {
@@ -40,16 +47,21 @@ module Security
         }
       end
 
-      def policies_approval_settings
-        security_policies.reduce({}) do |acc, policy|
-          settings = policy
-                       .content
-                       .fetch("approval_settings", {})
-                       .symbolize_keys
+      def warn_mode_approval_settings
+        aggregate_approval_settings(warn_mode_policies)
+      end
+      strong_memoize_attr :warn_mode_approval_settings
+
+      def enforced_approval_settings
+        aggregate_approval_settings(enforced_policies)
+      end
+      strong_memoize_attr :enforced_approval_settings
+
+      def aggregate_approval_settings(policies)
+        policies.reduce({}) do |acc, policy|
+          settings = approval_settings(policy)
 
           next acc unless settings.present?
-
-          index_policy(policy, settings)
 
           # If there are multiple policies with a conflicting property,
           # eg. {true, false}, then the aggregate property is determined by
@@ -57,13 +69,21 @@ module Security
           acc.merge(settings) { |_key, old_val, new_val| old_val || new_val }
         end
       end
-      strong_memoize_attr :policies_approval_settings
 
-      def index_policy(policy, settings)
-        settings.each do |attr, val|
-          next unless val # permissive?
+      def approval_settings(policy)
+        policy
+          .content
+          .fetch("approval_settings", {})
+          .symbolize_keys
+      end
 
-          (policy_settings_index[attr] ||= Set.new) << policy
+      def index_warn_mode_policies!
+        warn_mode_policies.each do |policy|
+          approval_settings(policy).each do |(attr, val)|
+            next unless val # permissive?
+
+            (warn_mode_settings_index[attr] ||= Set.new) << policy
+          end
         end
       end
     end
