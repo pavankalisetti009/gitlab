@@ -965,6 +965,27 @@ RSpec.describe Security::ScanResultPolicies::PolicyViolationDetails, feature_cat
     end
   end
 
+  describe '#enforced_security_policies' do
+    subject(:enforced_security_policies) { details.enforced_security_policies }
+
+    let_it_be(:enforced_policy) do
+      create(:security_policy, policy_index: 4, name: 'Enforced Policy',
+        security_orchestration_policy_configuration: security_orchestration_policy_configuration)
+    end
+
+    let_it_be(:warn_mode_policy) do
+      create(:security_policy, :warn_mode, policy_index: 5, name: 'Warn mode',
+        security_orchestration_policy_configuration: security_orchestration_policy_configuration)
+    end
+
+    before_all do
+      create(:security_policy_project_link, project: project, security_policy: enforced_policy)
+      create(:security_policy_project_link, project: project, security_policy: warn_mode_policy)
+    end
+
+    it { is_expected.to contain_exactly(enforced_policy) }
+  end
+
   describe '#violations_count' do
     before do
       build_violation_details(policy3, violations: { any_merge_request: { commits: true } })

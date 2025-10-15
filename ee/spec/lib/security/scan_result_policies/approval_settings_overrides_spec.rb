@@ -6,9 +6,12 @@ RSpec.describe Security::ScanResultPolicies::ApprovalSettingsOverrides, '#all', 
   let_it_be_with_reload(:project) { create(:project) }
   let_it_be(:security_configuration) { create(:security_orchestration_policy_configuration) }
 
+  let(:warn_mode_policies) { [] }
+  let(:enforced_policies) { [] }
+
   subject(:overrides) do
     described_class
-      .new(project: project, security_policies: Security::Policy.all)
+      .new(project: project, warn_mode_policies: warn_mode_policies, enforced_policies: enforced_policies)
       .all
     .map do |override|
       { attribute: override.attribute, policies: override.security_policies.to_a }
@@ -38,6 +41,8 @@ RSpec.describe Security::ScanResultPolicies::ApprovalSettingsOverrides, '#all', 
     let!(:policy_c) { security_policy(3, remove_approvals_with_new_commit: true) }
     let!(:policy_d) { security_policy(4, require_password_to_approve: true) }
 
+    let(:warn_mode_policies) { [policy_a, policy_b, policy_c, policy_d] }
+
     it { is_expected.to be_empty }
   end
 
@@ -51,6 +56,8 @@ RSpec.describe Security::ScanResultPolicies::ApprovalSettingsOverrides, '#all', 
     end
 
     let!(:policy_a) { security_policy(1, prevent_approval_by_author: true) }
+
+    let(:warn_mode_policies) { [policy_a] }
 
     specify do
       expect(overrides).to match_array([
@@ -71,6 +78,8 @@ RSpec.describe Security::ScanResultPolicies::ApprovalSettingsOverrides, '#all', 
     let!(:policy_a) { security_policy(1, prevent_approval_by_author: true) }
     let!(:policy_b) { security_policy(2, prevent_approval_by_author: false) }
 
+    let(:warn_mode_policies) { [policy_a, policy_b] }
+
     specify do
       expect(overrides).to match_array([
         { attribute: :prevent_approval_by_author, policies: [policy_a] }
@@ -87,17 +96,42 @@ RSpec.describe Security::ScanResultPolicies::ApprovalSettingsOverrides, '#all', 
         require_password_to_approve: false)
     end
 
-    let!(:policy_1) { security_policy(1, prevent_approval_by_author: true, prevent_approval_by_commit_author: true) }
-    let!(:policy_2) { security_policy(2, prevent_approval_by_author: true, remove_approvals_with_new_commit: true) }
-    let!(:policy_3) { security_policy(3, prevent_approval_by_commit_author: true, require_password_to_approve: true) }
-    let!(:policy_4) { security_policy(4, prevent_approval_by_author: false, require_password_to_approve: true) }
-    let!(:policy_5) { security_policy(5, remove_approvals_with_new_commit: false) }
+    let!(:policy_a) { security_policy(1, prevent_approval_by_author: true, prevent_approval_by_commit_author: true) }
+    let!(:policy_b) { security_policy(2, prevent_approval_by_author: true, remove_approvals_with_new_commit: true) }
+    let!(:policy_c) { security_policy(3, prevent_approval_by_commit_author: true, require_password_to_approve: true) }
+    let!(:policy_d) { security_policy(4, prevent_approval_by_author: false, require_password_to_approve: true) }
+    let!(:policy_e) { security_policy(5, remove_approvals_with_new_commit: false) }
+
+    let(:warn_mode_policies) { [policy_a, policy_b, policy_c, policy_d, policy_e] }
 
     specify do
       expect(overrides).to match_array([
-        { attribute: :prevent_approval_by_author, policies: match_array([policy_1, policy_2]) },
-        { attribute: :prevent_approval_by_commit_author, policies: match_array([policy_1, policy_3]) },
-        { attribute: :require_password_to_approve, policies: match_array([policy_3, policy_4]) }
+        { attribute: :prevent_approval_by_author, policies: match_array([policy_a, policy_b]) },
+        { attribute: :prevent_approval_by_commit_author, policies: match_array([policy_a, policy_c]) },
+        { attribute: :require_password_to_approve, policies: match_array([policy_c, policy_d]) }
+      ])
+    end
+  end
+
+  context 'with enforced policies' do
+    before do
+      project_settings!(
+        prevent_approval_by_author: false,
+        prevent_approval_by_commit_author: false,
+        remove_approvals_with_new_commit: false,
+        require_password_to_approve: false)
+    end
+
+    let!(:policy_a) { security_policy(1, prevent_approval_by_author: true, require_password_to_approve: false) }
+    let!(:policy_b) { security_policy(2, prevent_approval_by_author: false, require_password_to_approve: true) }
+    let!(:policy_c) { security_policy(3, prevent_approval_by_author: true) }
+
+    let(:warn_mode_policies) { [policy_a, policy_b] }
+    let(:enforced_policies) { [policy_c] }
+
+    specify do
+      expect(overrides).to match_array([
+        { attribute: :require_password_to_approve, policies: match_array([policy_b]) }
       ])
     end
   end
