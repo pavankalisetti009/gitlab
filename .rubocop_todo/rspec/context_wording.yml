@@ -224,7 +224,7 @@ RSpec/ContextWording:
     - 'ee/spec/graphql/types/global_id_type_spec.rb'
     - 'ee/spec/graphql/types/incident_management/escalation_rule_input_type_spec.rb'
     - 'ee/spec/graphql/types/incident_management/oncall_rotation_date_input_type_spec.rb'
-    - 'ee/spec/graphql/types/issue_type_spec.rb'
+    - 'ee/spec/graphql/ee/types/issue_type_spec.rb'
     - 'ee/spec/graphql/types/project_type_spec.rb'
     - 'ee/spec/graphql/types/vulnerability_request_response_header_type_spec.rb'
     - 'ee/spec/graphql/types/vulnerability_request_type_spec.rb'
