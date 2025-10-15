@@ -51,7 +51,16 @@ FactoryBot.define do
           'injectGatewayToken' => true,
           'image' => 'node:22-slim',
           'commands' => ['/bin/bash'],
-          'variables' => %w[VAL1 VAL2]
+          'variables' => %w[VAL1 VAL2],
+          'yaml_definition' => <<~YAML
+            injectGatewayToken: true
+            image: node:22-slim
+            commands:
+              - /bin/bash
+            variables:
+              - VAL1
+              - VAL2
+          YAML
         }
       end
     end

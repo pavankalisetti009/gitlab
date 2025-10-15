@@ -75,7 +75,8 @@ RSpec.describe Ai::Catalog::ThirdPartyFlows::CreateService, feature_category: :w
           injectGatewayToken: true,
           image: 'example/image:latest',
           commands: ['/bin/bash'],
-          variables: %w[VAL1 VAL2]
+          variables: %w[VAL1 VAL2],
+          yaml_definition: params[:definition]
         }.stringify_keys
       )
     end

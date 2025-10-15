@@ -15,7 +15,7 @@ module Ai
           )
 
           begin
-            definition = YAML.safe_load(params[:definition])
+            definition = YAML.safe_load(params[:definition]).merge(yaml_definition: params[:definition])
           rescue Psych::SyntaxError
             return error('definition does not have a valid YAML syntax')
           end
