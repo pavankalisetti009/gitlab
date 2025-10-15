@@ -396,14 +396,19 @@ module MergeRequests
       result
     end
 
-    def log_refresh_details
-      total_duration = @duration_statistics.values.sum
-
-      Gitlab::AppJsonLogger.info(
-        event: 'merge_requests_refresh_service',
-        refresh_service_total_duration_s: total_duration,
-        **@duration_statistics
-      )
+    def log_hash_metadata_on_done(hash)
+      total_duration = hash.values.sum
+      hash_with_total = hash.merge(refresh_service_total_duration_s: total_duration)
+      
+      # Delegate to worker if available, otherwise log directly
+      if defined?(super)
+        super(hash_with_total)
+      else
+        Gitlab::AppJsonLogger.info(
+          event: 'merge_requests_refresh_service',
+          **hash_with_total
+        )
+      end
     end
 
     def current_monotonic_time

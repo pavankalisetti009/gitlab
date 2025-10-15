@@ -26,7 +26,7 @@ module EE
           sync_unenforceable_approval_rules
         end
 
-        log_refresh_details if ::Feature.enabled?(:log_refresh_service_duration, current_user)
+        log_hash_metadata_on_done(@duration_statistics) if ::Feature.enabled?(:log_refresh_service_duration, current_user)
       end
 
       override :execute_async_workers
