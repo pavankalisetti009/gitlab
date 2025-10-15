@@ -345,8 +345,6 @@ module MergeRequestsHelper
   end
 
   def merge_request_dashboard_show_drafts?
-    return true if Feature.disabled?(:mr_dashboard_drafts_toggle, current_user)
-
     current_user.merge_request_dashboard_show_drafts
   end
 
