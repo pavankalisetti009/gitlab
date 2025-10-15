@@ -33,9 +33,8 @@ RSpec.describe Mutations::Security::Attributes::ProjectUpdate, feature_category:
 
   describe '#resolve' do
     context 'when user does not have permission' do
-      before_all do
+      before do
         stub_feature_flags(security_categories_and_attributes: true)
-        project.add_developer(current_user)
       end
 
       it_behaves_like 'a mutation that returns a top-level access error'
@@ -237,8 +236,10 @@ RSpec.describe Mutations::Security::Attributes::ProjectUpdate, feature_category:
       end
 
       describe 'adding attributes by template type' do
-        context 'when predefined service creates default categories successfully' do
-          let(:arguments) { mutation_args(attribute_template_types: ['MISSION_CRITICAL']) }
+        let(:template_gid) { "gid://gitlab/Security::Attribute/business_critical" }
+
+        context 'when using template-based Global IDs' do
+          let(:arguments) { mutation_args(add_attribute_ids: [template_gid]) }
 
           it 'adds attributes by template type successfully' do
             expect(Security::Attributes::UpdateProjectAttributesService).to receive(:new)
@@ -247,7 +248,7 @@ RSpec.describe Mutations::Security::Attributes::ProjectUpdate, feature_category:
                 current_user: current_user,
                 params: {
                   attributes: {
-                    add_attribute_ids: all(be_an(Integer)),
+                    add_attribute_ids: [a_kind_of(Numeric)],
                     remove_attribute_ids: []
                   }
                 }
@@ -255,33 +256,83 @@ RSpec.describe Mutations::Security::Attributes::ProjectUpdate, feature_category:
               .and_call_original
 
             post_graphql_mutation(mutation, current_user: current_user)
+            expect(response).to have_gitlab_http_status(:success)
+          end
+        end
+
+        context 'when fails to create predefined attributes' do
+          let(:arguments) { mutation_args(add_attribute_ids: [template_gid]) }
+          let(:error_message) { 'Failed to create predefined categories' }
+
+          before do
+            allow(Security::Categories::CreatePredefinedService).to receive(:new)
+              .with(namespace: root_namespace, current_user: current_user)
+              .and_return(instance_double(Security::Categories::CreatePredefinedService,
+                execute: ServiceResponse.error(message: error_message)))
+          end
+
+          it 'returns predefined service error' do
+            post_graphql_mutation(mutation, current_user: current_user)
 
             expect(response).to have_gitlab_http_status(:success)
-            expect(mutation_result['addedCount']).to eq(1)
+            expect(mutation_result['errors']).to include(error_message)
+            expect(mutation_result['project']).to be_nil
           end
         end
       end
 
-      describe 'argument validation' do
-        context 'when both add_attribute_ids and attribute_template_types are provided' do
-          let_it_be(:category) { create_category("validation_test") }
-          let_it_be(:attribute1) { create_attribute(category, "TestAttr") }
+      describe 'mixing persisted ids and template type ids' do
+        let_it_be(:category) { create_category("mixed_test") }
+        let_it_be(:existing_attr) { create_attribute(category, "ExistingAttr") }
+        let_it_be(:critical_attr) do
+          create(:security_attribute, security_category: category, name: 'Business Critical', namespace: root_namespace,
+            template_type: :business_critical)
+        end
 
+        let(:template_gid) { "gid://gitlab/Security::Attribute/business_critical" }
+
+        context 'when using both persisted id and template-based id' do
           let(:arguments) do
-            mutation_args(
-              add_attribute_ids: [attribute1.to_global_id.to_s],
-              attribute_template_types: ['MISSION_CRITICAL']
-            )
+            mutation_args(add_attribute_ids: [existing_attr.to_global_id.to_s, template_gid])
           end
 
-          it 'prioritizes add_attribute_ids over attribute_template_types' do
+          it 'processes both persisted and template attributes' do
             expect(Security::Attributes::UpdateProjectAttributesService).to receive(:new)
               .with(
                 project: project,
                 current_user: current_user,
                 params: {
                   attributes: {
-                    add_attribute_ids: [attribute1.id.to_s],
+                    add_attribute_ids: an_array_matching([existing_attr.id, critical_attr.id]),
+                    remove_attribute_ids: []
+                  }
+                }
+              )
+              .and_call_original
+
+            post_graphql_mutation(mutation, current_user: current_user)
+            expect(response).to have_gitlab_http_status(:success)
+          end
+        end
+
+        context 'when same attribute comes from both persisted ID and template' do
+          let(:arguments) do
+            mutation_args(add_attribute_ids: [existing_attr.to_global_id.to_s, template_gid])
+          end
+
+          before do
+            allow(Security::Attribute).to receive_message_chain(:by_namespace, :by_template_type, :pluck_id)
+              .and_return([existing_attr.id])
+          end
+
+          it 'removes duplicates after processing templates' do
+            expect(Security::Attributes::UpdateProjectAttributesService).to receive(:new)
+              .with(
+                project: project,
+                current_user: current_user,
+                params: {
+                  attributes: {
+                    add_attribute_ids: [existing_attr.id],
                     remove_attribute_ids: []
                   }
                 }
@@ -293,11 +344,13 @@ RSpec.describe Mutations::Security::Attributes::ProjectUpdate, feature_category:
             expect(response).to have_gitlab_http_status(:success)
           end
         end
+      end
 
+      describe 'argument validation' do
         context 'when no attributes arguments are provided' do
           let(:arguments) { mutation_args }
 
-          it 'succeeds with empty arrays' do
+          it 'returns validation error' do
             post_graphql_mutation(mutation, current_user: current_user)
 
             expect(response).to have_gitlab_http_status(:success)
@@ -309,7 +362,10 @@ RSpec.describe Mutations::Security::Attributes::ProjectUpdate, feature_category:
       end
 
       describe 'service error handling' do
-        let(:arguments) { mutation_args(attribute_template_types: ['MISSION_CRITICAL']) }
+        let_it_be(:category) { create_category("TestCategory") }
+        let_it_be(:test_attr) { create_attribute(category, "TestAttr") }
+
+        let(:arguments) { mutation_args(add_attribute_ids: [test_attr.to_global_id.to_s]) }
         let(:error_message) { 'Service failed unexpectedly' }
 
         before do
