@@ -7,7 +7,14 @@ module API
 
     helpers do
       def check_feature_availability
-        forbidden! unless ::License.feature_available?(:secret_push_protection)
+        forbidden! unless spp_available_for_project?(user_project)
+      end
+
+      def spp_available_for_project?(project)
+        ::License.feature_available?(:secret_push_protection) ||
+          (::Gitlab::Saas.feature_available?(:auto_enable_secret_push_protection_public_projects) &&
+          ::Feature.enabled?(:auto_spp_public_com_projects, project) &&
+          project.public?)
       end
     end
 

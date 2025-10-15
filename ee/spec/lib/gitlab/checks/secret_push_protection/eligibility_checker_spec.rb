@@ -19,12 +19,36 @@ RSpec.describe Gitlab::Checks::SecretPushProtection::EligibilityChecker, feature
       end
     end
 
+    shared_examples 'performs the push check' do
+      it 'returns true' do
+        expect(validator.should_scan?).to be(true)
+      end
+    end
+
     context 'when application setting is disabled' do
       before do
         Gitlab::CurrentSettings.update!(secret_push_protection_available: false)
       end
 
-      it_behaves_like 'skips the push check'
+      context 'when project has Ultimate license' do
+        before do
+          stub_licensed_features(secret_push_protection: true)
+          project.security_setting.update!(secret_push_protection_enabled: true)
+        end
+
+        it_behaves_like 'skips the push check'
+      end
+
+      context 'when project is public on .com with feature flag enabled' do
+        before do
+          project.update!(visibility_level: Gitlab::VisibilityLevel::PUBLIC)
+          stub_saas_features(auto_enable_secret_push_protection_public_projects: true)
+          stub_feature_flags(auto_spp_public_com_projects: true)
+          project.security_setting.update!(secret_push_protection_enabled: true)
+        end
+
+        it_behaves_like 'skips the push check'
+      end
     end
 
     context 'when application setting is enabled' do
@@ -37,7 +61,23 @@ RSpec.describe Gitlab::Checks::SecretPushProtection::EligibilityChecker, feature
           project.security_setting.update!(secret_push_protection_enabled: false)
         end
 
-        it_behaves_like 'skips the push check'
+        context 'when project has Ultimate license' do
+          before do
+            stub_licensed_features(secret_push_protection: true)
+          end
+
+          it_behaves_like 'skips the push check'
+        end
+
+        context 'when project is public on .com' do
+          before do
+            project.update!(visibility_level: Gitlab::VisibilityLevel::PUBLIC)
+            stub_saas_features(auto_enable_secret_push_protection_public_projects: true)
+            stub_feature_flags(auto_spp_public_com_projects: true)
+          end
+
+          it_behaves_like 'skips the push check'
+        end
       end
 
       context 'when project setting is enabled' do
@@ -45,11 +85,53 @@ RSpec.describe Gitlab::Checks::SecretPushProtection::EligibilityChecker, feature
           project.security_setting.update!(secret_push_protection_enabled: true)
         end
 
-        context 'when license is not ultimate' do
-          it_behaves_like 'skips the push check'
+        context 'when project does not have Ultimate license' do
+          context 'when project is private' do
+            before do
+              project.update!(visibility_level: Gitlab::VisibilityLevel::PRIVATE)
+            end
+
+            it_behaves_like 'skips the push check'
+          end
+
+          context 'when project is public' do
+            before do
+              project.update!(visibility_level: Gitlab::VisibilityLevel::PUBLIC)
+            end
+
+            context 'when not on .com' do
+              before do
+                stub_saas_features(auto_enable_secret_push_protection_public_projects: false)
+              end
+
+              it_behaves_like 'skips the push check'
+            end
+
+            context 'when on .com' do
+              before do
+                stub_saas_features(auto_enable_secret_push_protection_public_projects: true)
+              end
+
+              context 'when auto_spp_public_com_projects feature flag is disabled' do
+                before do
+                  stub_feature_flags(auto_spp_public_com_projects: false)
+                end
+
+                it_behaves_like 'skips the push check'
+              end
+
+              context 'when auto_spp_public_com_projects feature flag is enabled' do
+                before do
+                  stub_feature_flags(auto_spp_public_com_projects: true)
+                end
+
+                it_behaves_like 'performs the push check'
+              end
+            end
+          end
         end
 
-        context 'when license is ultimate' do
+        context 'when project has Ultimate license' do
           before do
             stub_licensed_features(secret_push_protection: true)
           end
@@ -92,9 +174,7 @@ RSpec.describe Gitlab::Checks::SecretPushProtection::EligibilityChecker, feature
           end
 
           context 'when all checks pass' do
-            it 'returns true' do
-              expect(validator.should_scan?).to be(true)
-            end
+            it_behaves_like 'performs the push check'
           end
         end
       end
