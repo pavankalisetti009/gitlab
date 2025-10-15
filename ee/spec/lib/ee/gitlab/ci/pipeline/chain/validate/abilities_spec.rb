@@ -26,7 +26,7 @@ RSpec.describe Gitlab::Ci::Pipeline::Chain::Validate::Abilities, feature_categor
     context 'when triggering builds for project mirrors is disabled' do
       it 'returns an error' do
         allow(command)
-          .to receive(:allow_mirror_update)
+          .to receive(:mirror_update)
           .and_return(true)
 
         allow(project)

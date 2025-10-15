@@ -14,7 +14,7 @@ module EE
                 # We check for `builds_enabled?` here so that this error does
                 # not get produced before the "pipelines are disabled" error.
                 if project.builds_enabled? &&
-                    (command.allow_mirror_update && !project.mirror_trigger_builds?)
+                    (command.mirror_update && !project.mirror_trigger_builds?)
                   return error('Pipeline is disabled for mirror updates')
                 end
 
