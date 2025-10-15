@@ -6,9 +6,11 @@ module Ai
       include ActiveRecord::Sanitization::ClassMethods
       include Gitlab::SQL::Pattern
 
-      # Items owned by https://gitlab.com/gitlab-org/modelops/applied-ml/code-suggestions/ai-assist
-      # TODO: https://gitlab.com/gitlab-org/gitlab/-/issues/557843
-      GITLAB_ITEM_IDS = [104, 105, 107, 348].freeze
+      # Temporarily pin certain items to the first page of the catalog.
+      # This is to be a temporary method that can be replaced by an improved
+      # feature such as:
+      # https://gitlab.com/groups/gitlab-org/-/epics/19577
+      GITLAB_ITEM_IDS = [104, 105, 107, 348, 356].freeze
 
       self.table_name = "ai_catalog_items"
 
