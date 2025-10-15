@@ -22,11 +22,6 @@ module Mutations
           description: 'Global IDs of the security attributes to remove from the project.',
           prepare: ->(gids, _) { GitlabSchema.parse_gids(gids, expected_type: ::Security::Attribute).map(&:model_id) }
 
-        argument :attribute_template_types, [Types::Security::AttributeTemplateTypeEnum],
-          required: false,
-          description: 'Types of predefined security attributes to add to the project. ' \
-            'Will be used only if no addAttributeIds are provided.'
-
         field :added_count, GraphQL::Types::Int,
           null: true,
           description: 'Number of attributes added.'
@@ -39,18 +34,18 @@ module Mutations
           null: true,
           description: 'Number of attributes removed.'
 
-        def resolve(project_id:, add_attribute_ids: [], remove_attribute_ids: [], attribute_template_types: [])
+        def resolve(project_id:, add_attribute_ids: [], remove_attribute_ids: [])
           project = authorized_find!(id: project_id)
           validate_feature_flag(project)
 
-          add_ids = resolve_attribute_ids_to_add(add_attribute_ids, attribute_template_types, project)
-          return error_response(add_ids[:errors]) if add_ids[:errors].present?
+          parsed_add_ids = parse_attribute_ids(add_attribute_ids, project)
+          return error_response(parsed_add_ids[:errors]) if parsed_add_ids[:errors].present?
 
-          if no_attributes_to_process?(add_ids[:attribute_ids], remove_attribute_ids)
+          if no_attributes_to_process?(parsed_add_ids[:attribute_ids], remove_attribute_ids)
             return error_response(['No attributes found for addition or removal'])
           end
 
-          execute_update_service(project, add_ids[:attribute_ids], remove_attribute_ids)
+          execute_update_service(project, parsed_add_ids[:attribute_ids], remove_attribute_ids)
         end
 
         private
@@ -61,18 +56,28 @@ module Mutations
           raise_resource_not_available_error!
         end
 
-        def resolve_attribute_ids_to_add(add_attribute_ids, attribute_template_types, project)
-          return { attribute_ids: add_attribute_ids, errors: [] } if add_attribute_ids.present?
-          return { attribute_ids: [], errors: [] } if attribute_template_types.blank?
+        def parse_attribute_ids(add_attribute_ids, project)
+          return { attribute_ids: [], errors: [] } if add_attribute_ids.blank?
 
-          process_attribute_template_types(attribute_template_types, project.namespace.root_ancestor)
+          valid_template_types = Enums::Security.attributes_template_types.keys.map(&:to_s)
+          persisted_ids, template_types = add_attribute_ids.partition { |id| valid_template_types.exclude?(id) }
+          all_attribute_ids = persisted_ids.map(&:to_i)
+
+          if template_types.present?
+            template_result = process_template_types(template_types, project.namespace.root_ancestor)
+            return template_result if template_result[:errors].present?
+
+            all_attribute_ids.concat(template_result[:attribute_ids])
+          end
+
+          { attribute_ids: all_attribute_ids.uniq, errors: [] }
         end
 
-        def process_attribute_template_types(attribute_template_types, namespace)
+        def process_template_types(template_types, namespace)
           predefined_result = create_predefined_attributes(namespace)
           return { attribute_ids: [], errors: [predefined_result.message] } unless predefined_result.success?
 
-          attribute_ids = fetch_attribute_ids_by_template_types(attribute_template_types, namespace)
+          attribute_ids = fetch_attribute_ids_by_template_types(template_types, namespace)
           { attribute_ids: attribute_ids, errors: [] }
         end
 
@@ -80,8 +85,8 @@ module Mutations
           ::Security::Categories::CreatePredefinedService.new(namespace: namespace, current_user: current_user).execute
         end
 
-        def fetch_attribute_ids_by_template_types(attribute_template_types, namespace)
-          ::Security::Attribute.by_namespace(namespace.id).by_template_type(attribute_template_types).pluck_id
+        def fetch_attribute_ids_by_template_types(template_types, namespace)
+          ::Security::Attribute.by_namespace(namespace.id).by_template_type(template_types).pluck_id
         end
 
         def no_attributes_to_process?(add_ids, remove_ids)
