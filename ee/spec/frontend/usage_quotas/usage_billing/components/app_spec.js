@@ -2,19 +2,26 @@ import Vue from 'vue';
 import { GlAlert, GlTab } from '@gitlab/ui';
 import VueApollo from 'vue-apollo';
 import MockAdapter from 'axios-mock-adapter';
+import CurrentUsageCard from 'ee/usage_quotas/usage_billing/components/current_usage_card.vue';
+import CurrentUsageNoPoolCard from 'ee/usage_quotas/usage_billing/components/current_usage_no_pool_card.vue';
+import PurchaseCommitmentCard from 'ee/usage_quotas/usage_billing/components/purchase_commitment_card.vue';
 import getSubscriptionUsageQuery from 'ee/usage_quotas/usage_billing/graphql/get_subscription_usage.query.graphql';
 import createMockApollo from 'helpers/mock_apollo_helper';
 import UsageBillingApp from 'ee/usage_quotas/usage_billing/components/app.vue';
 import UsageByUserTab from 'ee/usage_quotas/usage_billing/components/usage_by_user_tab.vue';
+import UsageTrendsChart from 'ee/usage_quotas/usage_billing/components/usage_trends_chart.vue';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import waitForPromises from 'helpers/wait_for_promises';
 import { logError } from '~/lib/logger';
 import axios from '~/lib/utils/axios_utils';
 import { captureException } from '~/sentry/sentry_browser_wrapper';
-import PurchaseCommitmentCard from 'ee/usage_quotas/usage_billing/components/purchase_commitment_card.vue';
-import UsageTrendsChart from 'ee/usage_quotas/usage_billing/components/usage_trends_chart.vue';
-import CurrentUsageCard from 'ee/usage_quotas/usage_billing/components/current_usage_card.vue';
-import { mockUsageDataWithPool, usageDataWithPool, usageDataWithoutPool } from '../mock_data';
+import {
+  mockUsageDataWithoutPool,
+  mockUsageDataWithPool,
+  usageDataNoPoolNoOverage,
+  usageDataNoPoolWithOverage,
+  usageDataWithPool,
+} from '../mock_data';
 
 jest.mock('~/lib/logger');
 jest.mock('~/sentry/sentry_browser_wrapper');
@@ -74,9 +81,9 @@ describe('UsageBillingApp', () => {
 
     it('renders current-usage-card', () => {
       expect(wrapper.findComponent(CurrentUsageCard).props()).toMatchObject({
-        currentOverage: 0,
-        totalCredits: 300,
-        totalCreditsUsed: 50,
+        poolCreditsUsed: 50,
+        poolTotalCredits: 300,
+        overageCreditsUsed: 0,
         monthStartDate: '2024-01-01',
         monthEndDate: '2024-01-31',
       });
@@ -118,15 +125,65 @@ describe('UsageBillingApp', () => {
     });
   });
 
-  describe('no commitment state', () => {
+  describe('no pool with overage state', () => {
     beforeEach(async () => {
       mockAxios.onGet(API_ENDPOINT).reply(200, mockUsageDataWithPool);
-      createComponent({ mockQueryHandler: jest.fn().mockResolvedValue(usageDataWithoutPool) });
+      createComponent({
+        mockQueryHandler: jest.fn().mockResolvedValue(usageDataNoPoolWithOverage),
+      });
       await waitForPromises();
     });
 
     it('will not render current-usage-card', () => {
       const currentUsageCard = wrapper.findComponent(CurrentUsageCard);
+
+      expect(currentUsageCard.exists()).toBe(false);
+    });
+
+    it('will render current_usage_no_pool summary card', () => {
+      const currentUsageNoPoolCard = wrapper.findComponent(CurrentUsageNoPoolCard);
+
+      expect(currentUsageNoPoolCard.exists()).toBe(true);
+      expect(currentUsageNoPoolCard.props()).toMatchObject({
+        // NOTE: this is a temporary disabled while we're stubbing `overage` field.
+        // This should be enabled again once the field is added in https://gitlab.com/gitlab-org/gitlab/-/issues/567987
+        // overageCreditsUsed: 50,
+        monthStartDate: '2024-01-01',
+        monthEndDate: '2024-01-31',
+      });
+    });
+
+    it('will pass hasComitment to purchase-commitment-card', () => {
+      const purchaseCommitmentCard = wrapper.findComponent(PurchaseCommitmentCard);
+
+      expect(purchaseCommitmentCard.props('hasCommitment')).toBe(false);
+    });
+
+    it('will pass hasComitment to usage-by-user-tab', () => {
+      const usageByUserTab = wrapper.findComponent(UsageByUserTab);
+
+      expect(usageByUserTab.props('hasCommitment')).toBe(false);
+    });
+  });
+
+  describe('no pool no overage state', () => {
+    beforeEach(async () => {
+      mockAxios.onGet(API_ENDPOINT).reply(200, mockUsageDataWithoutPool);
+      createComponent({ mockQueryHandler: jest.fn().mockResolvedValue(usageDataNoPoolNoOverage) });
+      await waitForPromises();
+    });
+
+    it('will not render current-usage-card', () => {
+      const currentUsageCard = wrapper.findComponent(CurrentUsageCard);
+
+      expect(currentUsageCard.exists()).toBe(false);
+    });
+
+    // NOTE: this is a temporary disabled while we're stubbing `overage` field.
+    // This should be enabled again once the field is added in https://gitlab.com/gitlab-org/gitlab/-/issues/567987
+    // eslint-disable-next-line jest/no-disabled-tests
+    it.skip('will not render current-usage-no-pool-card', () => {
+      const currentUsageCard = wrapper.findComponent(CurrentUsageNoPoolCard);
 
       expect(currentUsageCard.exists()).toBe(false);
     });

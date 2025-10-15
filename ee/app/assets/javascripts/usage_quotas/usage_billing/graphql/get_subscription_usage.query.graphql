@@ -1,8 +1,12 @@
-query getSubscriptionUsage($namespacePath: ID, $startDate: ISO8601Date, $endDate: ISO8601Date) {
-  subscriptionUsage(namespacePath: $namespacePath, startDate: $startDate, endDate: $endDate) {
+query getSubscriptionUsage($namespacePath: ID) {
+  subscriptionUsage(namespacePath: $namespacePath) {
     poolUsage {
       totalCredits
       creditsUsed
     }
+    # overage {
+    #   isAllowed
+    #   creditsUsed
+    # }
   }
 }

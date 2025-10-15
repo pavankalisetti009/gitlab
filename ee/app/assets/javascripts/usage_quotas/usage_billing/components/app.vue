@@ -10,6 +10,7 @@ import PurchaseCommitmentCard from './purchase_commitment_card.vue';
 import UsageTrendsChart from './usage_trends_chart.vue';
 import UsageByUserTab from './usage_by_user_tab.vue';
 import CurrentUsageCard from './current_usage_card.vue';
+import CurrentUsageNoPoolCard from './current_usage_no_pool_card.vue';
 
 export default {
   name: 'UsageBillingApp',
@@ -22,6 +23,7 @@ export default {
     UsageTrendsChart,
     UsageByUserTab,
     CurrentUsageCard,
+    CurrentUsageNoPoolCard,
   },
   apollo: {
     subscriptionUsage: {
@@ -29,12 +31,23 @@ export default {
       variables() {
         return {
           namespacePath: this.namespacePath,
-          startDate: '2025-09-01',
-          endDate: '2025-09-30',
         };
       },
-      update(data) {
-        return data.subscriptionUsage;
+      update({ subscriptionUsage }) {
+        // NOTE: this is a temporary injection to stub `overage` field.
+        // This should be removed once the field is added in https://gitlab.com/gitlab-org/gitlab/-/issues/567987
+        if (subscriptionUsage) {
+          // eslint-disable-next-line no-param-reassign
+          subscriptionUsage = {
+            ...subscriptionUsage,
+            overage: {
+              isAllowed: true,
+              creditsUsed: 0,
+            },
+          };
+        }
+
+        return subscriptionUsage;
       },
       error(error) {
         logError(error);
@@ -56,14 +69,23 @@ export default {
     };
   },
   computed: {
+    poolIsAvailable() {
+      return Boolean(this.poolTotalCredits);
+    },
+    poolCreditsUsed() {
+      return this.subscriptionUsage?.poolUsage?.creditsUsed ?? 0;
+    },
+    poolTotalCredits() {
+      return this.subscriptionUsage?.poolUsage?.totalCredits ?? 0;
+    },
+    overageIsAllowed() {
+      return Boolean(this.subscriptionUsage?.overage?.isAllowed);
+    },
+    overageCreditsUsed() {
+      return this.subscriptionUsage?.overage?.creditsUsed ?? 0;
+    },
     gitlabCreditsUsage() {
       return this.subscriptionData.gitlabCreditsUsage;
-    },
-    poolUsage() {
-      return this.subscriptionUsage.poolUsage;
-    },
-    hasCommitment() {
-      return Boolean(this.poolUsage?.totalCredits);
     },
     trend() {
       return (
@@ -90,9 +112,6 @@ export default {
     },
     isLoading() {
       return this.isFetchingData || this.$apollo.queries.subscriptionUsage.loading;
-    },
-    threshold() {
-      return this.poolUsage?.totalCredits ?? 0;
     },
   },
   async mounted() {
@@ -160,15 +179,22 @@ export default {
     <template v-else>
       <section class="gl-flex gl-flex-col gl-gap-5 @md/panel:gl-flex-row">
         <current-usage-card
-          v-if="hasCommitment"
-          :total-credits="poolUsage.totalCredits"
-          :total-credits-used="poolUsage.creditsUsed"
-          :current-overage="gitlabCreditsUsage.overageCredits"
+          v-if="poolIsAvailable"
+          :pool-total-credits="poolTotalCredits"
+          :pool-credits-used="poolCreditsUsed"
+          :overage-credits-used="overageCreditsUsed"
           :month-start-date="gitlabCreditsUsage.startDate"
           :month-end-date="gitlabCreditsUsage.endDate"
         />
 
-        <purchase-commitment-card :has-commitment="hasCommitment" />
+        <current-usage-no-pool-card
+          v-else-if="overageIsAllowed"
+          :overage-credits-used="overageCreditsUsed"
+          :month-start-date="gitlabCreditsUsage.startDate"
+          :month-end-date="gitlabCreditsUsage.endDate"
+        />
+
+        <purchase-commitment-card :has-commitment="poolIsAvailable" />
       </section>
       <gl-tabs class="gl-mt-5" lazy>
         <gl-tab :title="s__('UsageBilling|Usage trends')">
@@ -179,11 +205,11 @@ export default {
             :trend="trend"
             :daily-peak="dailyPeak"
             :daily-average="dailyAverage"
-            :threshold="threshold"
+            :threshold="poolTotalCredits"
           />
         </gl-tab>
         <gl-tab :title="s__('UsageBilling|Usage by user')">
-          <usage-by-user-tab :has-commitment="hasCommitment" />
+          <usage-by-user-tab :has-commitment="poolIsAvailable" />
         </gl-tab>
       </gl-tabs>
     </template>
