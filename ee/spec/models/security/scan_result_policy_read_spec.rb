@@ -232,6 +232,33 @@ RSpec.describe Security::ScanResultPolicyRead, feature_category: :security_polic
         ).to be_empty
       end
     end
+
+    describe '.without_warn_mode_policy' do
+      let_it_be(:read_without_approval_policy_rule) do
+        create(:scan_result_policy_read)
+      end
+
+      let_it_be(:read_default) do
+        create(:scan_result_policy_read,
+          approval_policy_rule: create(:approval_policy_rule, security_policy: create(:security_policy)))
+      end
+
+      let_it_be(:read_warn_mode) do
+        create(:scan_result_policy_read,
+          approval_policy_rule: create(:approval_policy_rule,
+            security_policy: create(:security_policy, :enforcement_type_warn)))
+      end
+
+      let_it_be(:read_default_mode) do
+        create(:scan_result_policy_read,
+          approval_policy_rule: create(:approval_policy_rule,
+            security_policy: create(:security_policy, :enforcement_type_enforce)))
+      end
+
+      subject(:without_warn_mode_policy) { described_class.without_warn_mode_policy }
+
+      it { is_expected.to contain_exactly(read_without_approval_policy_rule, read_default, read_default_mode) }
+    end
   end
 
   describe '#newly_detected?' do

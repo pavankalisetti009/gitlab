@@ -47,15 +47,63 @@ RSpec.describe ProtectedBranches::UpdateService, feature_category: :compliance_m
         create(:security_orchestration_policy_configuration, project: project)
       end
 
-      include_context 'with approval policy blocking protected branches'
-
-      before do
+      let!(:policy_read) do
         create(:scan_result_policy_read, :blocking_protected_branches, project: project,
           security_orchestration_policy_configuration: policy_configuration)
       end
 
+      include_context 'with approval policy blocking protected branches'
+
       it 'raises' do
         expect { service.execute(protected_branch) }.to raise_error(::Gitlab::Access::AccessDeniedError)
+      end
+
+      context 'when policy is in warn mode' do
+        let!(:security_policy) { create(:security_policy, :enforcement_type_warn) }
+        let!(:approval_policy_rule) { create(:approval_policy_rule, security_policy: security_policy) }
+        let!(:policy_read) do
+          create(:scan_result_policy_read, :blocking_protected_branches, project: project,
+            security_orchestration_policy_configuration: policy_configuration,
+            approval_policy_rule: approval_policy_rule)
+        end
+
+        it 'does not raise' do
+          expect { service.execute(protected_branch) }.not_to raise_error
+        end
+
+        context 'with feature disabled' do
+          before do
+            stub_feature_flags(security_policy_approval_warn_mode: false)
+          end
+
+          it 'raises' do
+            expect { service.execute(protected_branch) }.to raise_error(::Gitlab::Access::AccessDeniedError)
+          end
+        end
+
+        context 'when attempting to toggle force-pushing' do
+          let(:params) { { name: branch_name, allow_force_push: true } }
+
+          let!(:policy_read) do
+            create(:scan_result_policy_read, :prevent_pushing_and_force_pushing, project: project,
+              security_orchestration_policy_configuration: policy_configuration,
+              approval_policy_rule: approval_policy_rule)
+          end
+
+          it 'does not raise' do
+            expect { service.execute(protected_branch) }.not_to raise_error
+          end
+
+          context 'with feature disabled' do
+            before do
+              stub_feature_flags(security_policy_approval_warn_mode: false)
+            end
+
+            it 'raises' do
+              expect { service.execute(protected_branch) }.to raise_error(::Gitlab::Access::AccessDeniedError)
+            end
+          end
+        end
       end
     end
 

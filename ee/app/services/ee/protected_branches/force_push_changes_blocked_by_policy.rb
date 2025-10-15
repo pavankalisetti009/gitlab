@@ -27,11 +27,16 @@ module EE
         def blocked?(protected_branch)
           return false unless protected_branch.project_level?
 
-          protected_branch
+          blocking_reads = protected_branch
             .project
             .scan_result_policy_reads
             .prevent_pushing_and_force_pushing
-            .exists?
+
+          if ::Feature.disabled?(:security_policy_approval_warn_mode, protected_branch.project)
+            return blocking_reads.exists?
+          end
+
+          blocking_reads.without_warn_mode_policy.exists?
         end
       end
 

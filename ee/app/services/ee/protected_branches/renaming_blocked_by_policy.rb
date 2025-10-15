@@ -25,7 +25,13 @@ module EE
         def blocking_branch_modification?(project)
           return false unless project&.licensed_feature_available?(:security_orchestration_policies)
 
-          project.scan_result_policy_reads.blocking_branch_modification.exists?
+          blocking_reads = project
+            .scan_result_policy_reads
+            .blocking_branch_modification
+
+          return blocking_reads.exists? if ::Feature.disabled?(:security_policy_approval_warn_mode, project)
+
+          blocking_reads.without_warn_mode_policy.exists?
         end
 
         def blocking_group_branch_modification?(group)
