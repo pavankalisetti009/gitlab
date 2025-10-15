@@ -7,15 +7,13 @@ import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 
 import AiFlows from 'ee/ai/duo_agents_platform/pages/flows/ai_flows.vue';
 import AiCatalogList from 'ee/ai/catalog/components/ai_catalog_list.vue';
+import AiCatalogListHeader from 'ee/ai/catalog/components/ai_catalog_list_header.vue';
 import ErrorsAlert from '~/vue_shared/components/errors_alert.vue';
-import PageHeading from '~/vue_shared/components/page_heading.vue';
 import ResourceListsEmptyState from '~/vue_shared/components/resource_lists/empty_state.vue';
 import aiCatalogConfiguredItemsQuery from 'ee/ai/catalog/graphql/queries/ai_catalog_configured_items.query.graphql';
-import aiCatalogFlowQuery from 'ee/ai/catalog/graphql/queries/ai_catalog_flow.query.graphql';
 import aiCatalogProjectUserPermissionsQuery from 'ee/ai/catalog/graphql/queries/ai_catalog_project_user_permissions.query.graphql';
 import deleteAiCatalogItemConsumer from 'ee/ai/catalog/graphql/mutations/delete_ai_catalog_item_consumer.mutation.graphql';
 import {
-  mockAiCatalogFlowResponse,
   mockBaseFlow,
   mockBaseItemConsumer,
   mockConfiguredFlowsResponse,
@@ -43,7 +41,6 @@ describe('AiFlows', () => {
   const mockProjectId = 1;
   const mockConfiguredFlowsQueryHandler = jest.fn().mockResolvedValue(mockConfiguredFlowsResponse);
   const mockUserPermissionsQueryHandler = jest.fn().mockResolvedValue(mockUserPermissionsResponse);
-  const mockFlowQueryHandler = jest.fn().mockResolvedValue(mockAiCatalogFlowResponse);
   const deleteItemConsumerMutationHandler = jest
     .fn()
     .mockResolvedValue(mockAiCatalogItemConsumerDeleteResponse);
@@ -52,7 +49,6 @@ describe('AiFlows', () => {
     mockApollo = createMockApollo([
       [aiCatalogConfiguredItemsQuery, mockConfiguredFlowsQueryHandler],
       [aiCatalogProjectUserPermissionsQuery, mockUserPermissionsQueryHandler],
-      [aiCatalogFlowQuery, mockFlowQueryHandler],
       [deleteAiCatalogItemConsumer, deleteItemConsumerMutationHandler],
     ]);
 
@@ -84,8 +80,8 @@ describe('AiFlows', () => {
   });
 
   describe('component rendering', () => {
-    it('renders PageHeading component', () => {
-      expect(wrapper.findComponent(PageHeading).exists()).toBe(true);
+    it('renders AiCatalogListHeader component', () => {
+      expect(wrapper.findComponent(AiCatalogListHeader).exists()).toBe(true);
     });
 
     it('renders AiCatalogList component', async () => {

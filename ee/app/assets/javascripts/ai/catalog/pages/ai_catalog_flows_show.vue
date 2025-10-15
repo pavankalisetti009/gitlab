@@ -2,6 +2,7 @@
 import { s__, sprintf } from '~/locale';
 import { InternalEvents } from '~/tracking';
 import * as Sentry from '~/sentry/sentry_browser_wrapper';
+import glFeatureFlagsMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
 import PageHeading from '~/vue_shared/components/page_heading.vue';
 import {
   FLOW_TYPE_APOLLO_CONFIG,
@@ -26,7 +27,12 @@ export default {
     AiCatalogFlowDetails,
     AiCatalogItemActions,
   },
-  mixins: [InternalEvents.mixin()],
+  mixins: [glFeatureFlagsMixin(), InternalEvents.mixin()],
+  inject: {
+    isGlobal: {
+      default: false,
+    },
+  },
   props: {
     aiCatalogFlow: {
       type: Object,
@@ -42,6 +48,9 @@ export default {
   computed: {
     flowName() {
       return this.aiCatalogFlow.name;
+    },
+    showActions() {
+      return this.isGlobal || this.glFeatures.aiCatalogItemProjectCuration;
     },
   },
   mounted() {
@@ -140,6 +149,7 @@ export default {
       </template>
       <template #actions>
         <ai-catalog-item-actions
+          v-if="showActions"
           :item="aiCatalogFlow"
           :item-routes="$options.itemRoutes"
           :delete-fn="deleteFlow"
