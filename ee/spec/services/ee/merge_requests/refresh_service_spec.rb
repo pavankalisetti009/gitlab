@@ -990,11 +990,9 @@ RSpec.describe MergeRequests::RefreshService, feature_category: :code_review_wor
   end
 
   describe 'timing logging' do
-    it 'logs duration metrics with non-zero values' do
-      expect(Gitlab::AppJsonLogger).to receive(:info).with(
+    it 'calls log_hash_metadata_on_done with duration metrics' do
+      expect(service).to receive(:log_hash_metadata_on_done).with(
         hash_including(
-          event: 'merge_requests_refresh_service',
-          refresh_service_total_duration_s: be >= 0,
           find_new_commits_duration_s: be >= 0,
           close_upon_missing_source_branch_ref_duration_s: be >= 0,
           post_merge_manually_merged_duration_s: be >= 0,
@@ -1003,7 +1001,7 @@ RSpec.describe MergeRequests::RefreshService, feature_category: :code_review_wor
           remove_requested_changes_duration_s: be >= 0,
           other_method_calls_duration_s: be >= 0
         )
-      )
+      ).and_call_original
 
       execute
     end
@@ -1013,8 +1011,8 @@ RSpec.describe MergeRequests::RefreshService, feature_category: :code_review_wor
         stub_feature_flags(log_refresh_service_duration: false)
       end
 
-      it 'does not log duration metrics' do
-        expect(Gitlab::AppJsonLogger).not_to receive(:info)
+      it 'does not call log_hash_metadata_on_done' do
+        expect(service).not_to receive(:log_hash_metadata_on_done)
 
         execute
       end
