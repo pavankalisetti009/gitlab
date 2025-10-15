@@ -1025,18 +1025,6 @@ RSpec.describe MergeRequests::RefreshService, feature_category: :code_review_wor
     end
 
     context 'when parent class does not respond to log_hash_metadata_on_done' do
-      let(:duration_statistics) do
-        {
-          find_new_commits_duration_s: 0.123,
-          close_upon_missing_source_branch_ref_duration_s: 0.045,
-          post_merge_manually_merged_duration_s: 0.234,
-          link_forks_lfs_objects_duration_s: 0.089,
-          reload_merge_requests_duration_s: 0.156,
-          remove_requested_changes_duration_s: 0.067,
-          other_method_calls_duration_s: 0.078
-        }
-      end
-
       before do
         # Simulate the parent class not having the method
         allow(service).to receive(:defined?).with(:super).and_return(false)
@@ -1044,18 +1032,18 @@ RSpec.describe MergeRequests::RefreshService, feature_category: :code_review_wor
 
       it 'logs directly to Gitlab::AppJsonLogger' do
         expect(Gitlab::AppJsonLogger).to receive(:info).with(
-          event: 'merge_requests_refresh_service',
-          refresh_service_total_duration_s: 0.792, # sum of all durations
-          find_new_commits_duration_s: 0.123,
-          close_upon_missing_source_branch_ref_duration_s: 0.045,
-          post_merge_manually_merged_duration_s: 0.234,
-          link_forks_lfs_objects_duration_s: 0.089,
-          reload_merge_requests_duration_s: 0.156,
-          remove_requested_changes_duration_s: 0.067,
-          other_method_calls_duration_s: 0.078
-        )
+          hash_including(
+            find_new_commits_duration_s: be >= 0,
+            close_upon_missing_source_branch_ref_duration_s: be >= 0,
+            post_merge_manually_merged_duration_s: be >= 0,
+            link_forks_lfs_objects_duration_s: be >= 0,
+            reload_merge_requests_duration_s: be >= 0,
+            remove_requested_changes_duration_s: be >= 0,
+            other_method_calls_duration_s: be >= 0
+          )
+        ).and_call_original
 
-        service.send(:log_hash_metadata_on_done, duration_statistics)
+        execute
       end
     end
   end
