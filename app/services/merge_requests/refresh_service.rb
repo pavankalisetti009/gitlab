@@ -16,8 +16,6 @@ module MergeRequests
     private
 
     def refresh_merge_requests!
-      @duration_statistics = {}
-
       # n + 1: https://gitlab.com/gitlab-org/gitlab-foss/issues/60289
       measure_duration(:find_new_commits) do
         Gitlab::GitalyClient.allow_n_plus_1_calls { find_new_commits }
@@ -392,14 +390,18 @@ module MergeRequests
       start_time = current_monotonic_time
       result = yield
       duration = (current_monotonic_time - start_time).round(Gitlab::InstrumentationHelper::DURATION_PRECISION)
-      @duration_statistics[:"#{operation_name}_duration_s"] = duration
+      duration_statistics[:"#{operation_name}_duration_s"] = duration
       result
+    end
+
+    def duration_statistics
+      @duration_statisic ||= {}
     end
 
     def log_hash_metadata_on_done(hash)
       total_duration = hash.values.sum
       hash_with_total = hash.merge(refresh_service_total_duration_s: total_duration)
-      
+
       # Delegate to worker if available, otherwise log directly
       if defined?(super)
         super(hash_with_total)

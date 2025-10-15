@@ -1033,7 +1033,7 @@ RSpec.describe MergeRequests::RefreshService, feature_category: :code_review_wor
 
       before do
         # Simulate the parent class not having the method
-        allow(service).to receive(:respond_to?).with(:super).and_return(false)
+        allow(service).to receive(:defined?).with(:super).and_return(false)
       end
 
       it 'logs directly to Gitlab::AppJsonLogger' do
