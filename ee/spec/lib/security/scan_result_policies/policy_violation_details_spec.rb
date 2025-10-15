@@ -395,6 +395,56 @@ RSpec.describe Security::ScanResultPolicies::PolicyViolationDetails, feature_cat
       end
     end
 
+    describe '#warn_mode_violations' do
+      subject(:warn_mode_violations) { details.warn_mode_violations }
+
+      let(:normal_db_policy) do
+        create(:security_policy, policy_index: 1,
+          security_orchestration_policy_configuration: security_orchestration_policy_configuration)
+      end
+
+      let(:normal_policy_rule) { create(:approval_policy_rule, security_policy: normal_db_policy) }
+
+      let!(:warn_mode_violation) do
+        create(:scan_result_policy_violation, project: project, merge_request: merge_request,
+          scan_result_policy_read: policy1, approval_policy_rule: warn_mode_policy_rule)
+      end
+
+      let!(:normal_violation) do
+        create(:scan_result_policy_violation, project: project, merge_request: merge_request,
+          scan_result_policy_read: policy2, approval_policy_rule: normal_policy_rule)
+      end
+
+      it 'returns only warn mode violations' do
+        expect(warn_mode_violations.pluck(:security_policy)).to contain_exactly(warn_mode_db_policy)
+      end
+    end
+
+    describe '#enforced_violations' do
+      subject(:enforced_violations) { details.enforced_violations }
+
+      let(:normal_db_policy) do
+        create(:security_policy, policy_index: 1,
+          security_orchestration_policy_configuration: security_orchestration_policy_configuration)
+      end
+
+      let(:normal_policy_rule) { create(:approval_policy_rule, security_policy: normal_db_policy) }
+
+      let!(:warn_mode_violation) do
+        create(:scan_result_policy_violation, project: project, merge_request: merge_request,
+          scan_result_policy_read: policy1, approval_policy_rule: warn_mode_policy_rule)
+      end
+
+      let!(:normal_violation) do
+        create(:scan_result_policy_violation, project: project, merge_request: merge_request,
+          scan_result_policy_read: policy2, approval_policy_rule: normal_policy_rule)
+      end
+
+      it 'returns only non-warn mode violations' do
+        expect(enforced_violations.pluck(:security_policy)).to contain_exactly(normal_db_policy)
+      end
+    end
+
     context 'when there are multiple warn mode policies' do
       let(:another_warn_mode_db_policy) do
         create(:security_policy, :warn_mode, policy_index: 2,
@@ -525,6 +575,66 @@ RSpec.describe Security::ScanResultPolicies::PolicyViolationDetails, feature_cat
           expect(violation.path).to be_nil
           expect(violation.location).to be_nil
         end
+      end
+    end
+
+    describe '#previous_warn_mode_scan_finding_violations' do
+      subject(:previous_warn_mode_scan_finding_violations) { details.previous_warn_mode_scan_finding_violations }
+
+      let(:normal_db_policy) do
+        create(:security_policy, policy_index: 1,
+          security_orchestration_policy_configuration: security_orchestration_policy_configuration)
+      end
+
+      let(:normal_policy_rule) { create(:approval_policy_rule, security_policy: normal_db_policy) }
+
+      before do
+        policy1_violation.update!(approval_policy_rule: warn_mode_policy_rule)
+
+        create(:scan_result_policy_violation, project: project, merge_request: merge_request,
+          scan_result_policy_read: policy2,
+          approval_policy_rule: normal_policy_rule,
+          violation_data: {
+            'context' => { 'pipeline_ids' => [pipeline.id] },
+            'violations' => { 'scan_finding' => { 'uuids' => { 'previously_existing' => [uuid] } } }
+          })
+      end
+
+      it 'returns only previously existing violations from warn mode policies' do
+        expect(previous_warn_mode_scan_finding_violations).to contain_exactly(
+          have_attributes(name: policy1_vulnerability_finding.name,
+            report_type: policy1_vulnerability_finding.report_type,
+            severity: policy1_vulnerability_finding.severity))
+      end
+    end
+
+    describe '#previous_enforced_scan_finding_violations' do
+      subject(:previous_enforced_scan_finding_violations) { details.previous_enforced_scan_finding_violations }
+
+      let(:normal_db_policy) do
+        create(:security_policy, policy_index: 1,
+          security_orchestration_policy_configuration: security_orchestration_policy_configuration)
+      end
+
+      let(:normal_policy_rule) { create(:approval_policy_rule, security_policy: normal_db_policy) }
+
+      before do
+        policy1_violation.update!(approval_policy_rule: warn_mode_policy_rule)
+
+        create(:scan_result_policy_violation, project: project, merge_request: merge_request,
+          scan_result_policy_read: policy2,
+          approval_policy_rule: normal_policy_rule,
+          violation_data: {
+            'context' => { 'pipeline_ids' => [pipeline.id] },
+            'violations' => { 'scan_finding' => { 'uuids' => { 'previously_existing' => [uuid_previous] } } }
+          })
+      end
+
+      it 'returns only previously existing violations from enforced (non-warn mode) policies' do
+        expect(previous_enforced_scan_finding_violations).to contain_exactly(
+          have_attributes(name: policy1_vulnerability_finding.name,
+            report_type: policy1_vulnerability_finding.report_type,
+            severity: policy1_vulnerability_finding.severity))
       end
     end
 
