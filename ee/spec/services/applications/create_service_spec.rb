@@ -135,4 +135,24 @@ RSpec.describe ::Applications::CreateService, feature_category: :system_access d
       end
     end
   end
+
+  describe '.disable_ropc_for_all_applications?' do
+    subject { described_class.disable_ropc_for_all_applications? }
+
+    context 'when disable_ropc_for_all_applications SaaS feature is enabled' do
+      before do
+        stub_saas_features(disable_ropc_for_all_applications: true)
+      end
+
+      it { is_expected.to be true }
+    end
+
+    context 'when disable_ropc_for_all_applications SaaS feature is disabled' do
+      before do
+        stub_saas_features(disable_ropc_for_all_applications: false)
+      end
+
+      it { is_expected.to be false }
+    end
+  end
 end

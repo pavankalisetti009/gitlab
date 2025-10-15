@@ -54,27 +54,22 @@ module EE
       CONFIG_FILE_ROOT = 'ee/config/saas_features'
 
       class_methods do
-        extend ::Gitlab::Utils::Override
-
-        override :feature_available?
         def feature_available?(feature)
+          # Do not shim or create this method in FOSS
+          # see: https://gitlab.com/gitlab-org/gitlab/-/issues/575615
           raise MissingFeatureError, 'Feature does not exist' unless FEATURES.include?(feature)
 
-          enabled? || super
+          enabled?
         end
 
-        override :enabled?
         def enabled?
           # Use existing checks initially. We can allow it only in this place and remove it anywhere else.
           # eventually we can change its implementation like using an ENV variable for each instance
           # or any other method that people can't mess with.
-          ::Gitlab.com? || super # rubocop:disable Gitlab/AvoidGitlabInstanceChecks  -- See above comment
+          ::Gitlab.com? # rubocop:disable Gitlab/AvoidGitlabInstanceChecks  -- See above comment
         end
 
-        override :feature_file_path
         def feature_file_path(feature)
-          return super if feature.nil?
-
           Rails.root.join(CONFIG_FILE_ROOT, "#{feature}.yml")
         end
       end
