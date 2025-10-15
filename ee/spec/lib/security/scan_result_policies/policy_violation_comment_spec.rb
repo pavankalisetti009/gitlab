@@ -144,6 +144,142 @@ RSpec.describe Security::ScanResultPolicies::PolicyViolationComment, feature_cat
         comment.add_report_type('scan_finding', report_requires_approval)
       end
 
+      describe 'violations overview' do
+        let_it_be(:pipeline) do
+          create(:ee_ci_pipeline, :success, :with_dependency_scanning_report, project: project,
+            ref: merge_request.source_branch, sha: merge_request.diff_head_sha,
+            merge_requests_as_head_pipeline: [merge_request])
+        end
+
+        let_it_be(:uuid_new) { SecureRandom.uuid }
+        let_it_be(:uuid_existing) { SecureRandom.uuid }
+
+        let_it_be(:scanner) { create(:vulnerabilities_scanner, project: project) }
+
+        let_it_be(:policy) do
+          create(:scan_result_policy_read, project: project,
+            security_orchestration_policy_configuration: security_orchestration_policy_configuration)
+        end
+
+        let_it_be(:normal_db_policy) do
+          create(:security_policy, policy_index: 1,
+            security_orchestration_policy_configuration: security_orchestration_policy_configuration)
+        end
+
+        let_it_be(:warn_mode_db_policy) do
+          create(:security_policy, :warn_mode, policy_index: 2,
+            security_orchestration_policy_configuration: security_orchestration_policy_configuration)
+        end
+
+        let_it_be(:normal_policy_rule) { create(:approval_policy_rule, security_policy: normal_db_policy) }
+        let_it_be(:warn_mode_policy_rule) { create(:approval_policy_rule, security_policy: warn_mode_db_policy) }
+
+        let_it_be(:ci_build) { pipeline.builds.first }
+        let_it_be(:pipeline_scan) do
+          create(:security_scan, :succeeded, build: ci_build, scan_type: 'dependency_scanning')
+        end
+
+        let_it_be(:new_security_finding) do
+          create(:security_finding, :with_finding_data, scan: pipeline_scan, scanner: scanner, severity: 'high',
+            uuid: uuid_new)
+        end
+
+        let_it_be(:new_vulnerability_finding) do
+          create(:vulnerabilities_finding, :with_secret_detection, project: project, scanner: scanner, uuid: uuid_new,
+            name: 'New vulnerability')
+        end
+
+        let_it_be(:existing_security_finding) do
+          create(:security_finding, :with_finding_data, scan: pipeline_scan, scanner: scanner, severity: 'medium',
+            uuid: uuid_existing)
+        end
+
+        let_it_be(:existing_vulnerability_finding) do
+          create(:vulnerabilities_finding, :with_secret_detection, project: project, scanner: scanner,
+            uuid: uuid_existing, name: 'Existing vulnerability')
+        end
+
+        context 'with only enforced violations' do
+          before do
+            build_violation_details(:scan_finding,
+              {
+                context: { pipeline_ids: [pipeline.id] },
+                violations: { scan_finding: { uuids: { newly_detected: [uuid_new] } } }
+              },
+              policy_rule: normal_policy_rule)
+          end
+
+          it { is_expected.to include(described_class::VIOLATIONS_BLOCKING_TITLE) }
+          it { is_expected.to exclude(described_class::VIOLATIONS_BYPASSABLE_TITLE) }
+          it { is_expected.to include('Newly detected enforced `scan_finding` violations') }
+          it { is_expected.to include('Test finding') }
+        end
+
+        context 'with only bypassable violations' do
+          before do
+            build_violation_details(:scan_finding,
+              {
+                context: { pipeline_ids: [pipeline.id] },
+                violations: { scan_finding: { uuids: { newly_detected: [uuid_new] } } }
+              },
+              policy_rule: warn_mode_policy_rule)
+          end
+
+          it { is_expected.to exclude(described_class::VIOLATIONS_BLOCKING_TITLE) }
+          it { is_expected.to include(described_class::VIOLATIONS_BYPASSABLE_TITLE) }
+          it { is_expected.to include('Newly detected bypassable `scan_finding` violations') }
+        end
+
+        context 'with both enforced and bypassable violations' do
+          let_it_be(:policy2) do
+            create(:scan_result_policy_read, project: project,
+              security_orchestration_policy_configuration: security_orchestration_policy_configuration)
+          end
+
+          before do
+            build_violation_details(:scan_finding,
+              {
+                context: { pipeline_ids: [pipeline.id] },
+                violations: { scan_finding: { uuids: { newly_detected: [uuid_new] } } }
+              },
+              policy_read: policy,
+              policy_rule: normal_policy_rule)
+
+            build_violation_details(:scan_finding,
+              {
+                context: { pipeline_ids: [pipeline.id] },
+                violations: { scan_finding: { uuids: { previously_existing: [uuid_existing] } } }
+              },
+              policy_read: policy2,
+              policy_rule: warn_mode_policy_rule,
+              name: 'Warn Policy')
+          end
+
+          it { is_expected.to include(described_class::VIOLATIONS_BLOCKING_TITLE) }
+          it { is_expected.to include(described_class::VIOLATIONS_BYPASSABLE_TITLE) }
+          it { is_expected.to include('Newly detected enforced `scan_finding` violations') }
+          it { is_expected.to include('Previously existing bypassable `scan_finding` violations') }
+        end
+
+        context 'with feature disabled' do
+          before do
+            stub_feature_flags(security_policy_approval_warn_mode: false)
+
+            build_violation_details(:scan_finding,
+              {
+                context: { pipeline_ids: [pipeline.id] },
+                violations: { scan_finding: { uuids: { newly_detected: [uuid_new] } } }
+              },
+              policy_rule: warn_mode_policy_rule)
+          end
+
+          it { is_expected.to exclude('Newly detected enforced `scan_finding` violations') }
+          it { is_expected.to exclude('Newly detected bypassable `scan_finding` violations') }
+          it { is_expected.to exclude(described_class::VIOLATIONS_BYPASSABLE_TITLE) }
+          it { is_expected.to include('This merge request introduces these violations') }
+        end
+      end
+
       describe 'summary' do
         let_it_be(:policy1) { create(:scan_result_policy_read, project: project) }
         let_it_be(:policy2) { create(:scan_result_policy_read, project: project) }
@@ -436,14 +572,6 @@ RSpec.describe Security::ScanResultPolicies::PolicyViolationComment, feature_cat
             name: 'AWS API key')
         end
 
-        def build_violation_details(report_type, data, policy_read: policy, name: 'Policy', policy_rule: nil)
-          project_rule = create(:approval_project_rule, project: project, scan_result_policy_read: policy_read)
-          create(:report_approver_rule, report_type, merge_request: merge_request, approval_project_rule: project_rule,
-            scan_result_policy_read: policy_read, name: name)
-          create(:scan_result_policy_violation, project: project, merge_request: merge_request,
-            scan_result_policy_read: policy_read, violation_data: data, approval_policy_rule: policy_rule)
-        end
-
         it { is_expected.not_to include described_class::VIOLATIONS_BLOCKING_TITLE }
         it { is_expected.not_to include described_class::VIOLATIONS_DETECTED_TITLE }
 
@@ -454,8 +582,14 @@ RSpec.describe Security::ScanResultPolicies::PolicyViolationComment, feature_cat
           context 'when approvals are optional' do
             let(:report_requires_approval) { false }
 
-            it { is_expected.not_to include described_class::VIOLATIONS_BLOCKING_TITLE }
-            it { is_expected.to include described_class::VIOLATIONS_DETECTED_TITLE }
+            context 'with warn mode disabled' do
+              before do
+                stub_feature_flags(security_policy_approval_warn_mode: false)
+              end
+
+              it { is_expected.not_to include described_class::VIOLATIONS_BLOCKING_TITLE }
+              it { is_expected.to include described_class::VIOLATIONS_DETECTED_TITLE }
+            end
           end
         end
 
@@ -738,5 +872,15 @@ RSpec.describe Security::ScanResultPolicies::PolicyViolationComment, feature_cat
         end
       end
     end
+  end
+
+  private
+
+  def build_violation_details(report_type, data, policy_read: policy, name: 'Policy', policy_rule: nil)
+    project_rule = create(:approval_project_rule, project: project, scan_result_policy_read: policy_read)
+    create(:report_approver_rule, report_type, merge_request: merge_request, approval_project_rule: project_rule,
+      scan_result_policy_read: policy_read, name: name)
+    create(:scan_result_policy_violation, project: project, merge_request: merge_request,
+      scan_result_policy_read: policy_read, violation_data: data, approval_policy_rule: policy_rule)
   end
 end
