@@ -35,8 +35,8 @@ module Mcp
                 "(e.g.: 'authentication middleware', 'database connection logic', or 'API error handling')."
             },
             project_id: {
-              type: 'integer',
-              description: 'Numeric project ID to search in.'
+              type: 'string',
+              description: 'Either a project id or project path.'
             },
             directory_path: {
               type: 'string',
@@ -75,8 +75,10 @@ module Mcp
         project_id = arguments[:project_id]
         directory_path = arguments[:directory_path]
 
+        project = find_project(project_id)
+
         result = codebase_query(semantic_query).filter(
-          project_id: project_id,
+          project_id: project.id,
           path: directory_path,
           knn_count: knn,
           limit: limit
