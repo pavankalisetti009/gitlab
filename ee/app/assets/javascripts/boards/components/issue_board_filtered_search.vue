@@ -79,7 +79,8 @@ export default {
           const fieldAllowedOnWorkItem = field.workItemTypes.some(
             (type) =>
               type.name === TYPENAME_ISSUE ||
-              (this.glFeatures.workItemsBeta && type.name === TYPENAME_TASK),
+              ((this.glFeatures.workItemsBeta || this.glFeatures.workItemTasksOnBoards) &&
+                type.name === TYPENAME_TASK),
           );
 
           return fieldTypeAllowed && fieldAllowedOnWorkItem;
