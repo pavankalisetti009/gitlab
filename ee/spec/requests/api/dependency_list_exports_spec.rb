@@ -466,7 +466,9 @@ RSpec.describe API::DependencyListExports, feature_category: :dependency_managem
           download_dependency_list_export
 
           expect(response).to have_gitlab_http_status(:ok)
-          expect(json_response).to eq(Gitlab::Json.parse(dependency_list_export.file.read))
+
+          json = Gitlab::Json.parse(File.read(response.headers['X-Sendfile']))
+          expect(json).to eq(Gitlab::Json.parse(dependency_list_export.file.read))
         end
 
         context 'with dependency list export not finished' do

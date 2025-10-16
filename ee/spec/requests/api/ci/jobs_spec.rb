@@ -15,8 +15,8 @@ RSpec.describe API::Ci::Jobs, feature_category: :continuous_integration do
 
   let(:download_headers) do
     { 'Content-Transfer-Encoding' => 'binary',
-      'Content-Disposition' =>
-    %(attachment; filename="#{job.artifacts_file.filename}"; filename*=UTF-8''#{job.artifacts_file.filename}) }
+      'Content-Disposition' => %(attachment; filename="#{job.artifacts_file.filename}"; filename*=UTF-8''#{job.artifacts_file.filename}),
+      'X-Sendfile' => job.artifacts_file.file.path }
   end
 
   before do
@@ -40,7 +40,6 @@ RSpec.describe API::Ci::Jobs, feature_category: :continuous_integration do
 
             expect(response).to have_gitlab_http_status(:ok)
             expect(response.headers.to_h).to include(download_headers)
-            expect(response.body).to match_file(job.artifacts_file.file.file)
           end
         end
 
@@ -121,7 +120,6 @@ RSpec.describe API::Ci::Jobs, feature_category: :continuous_integration do
 
               expect(response).to have_gitlab_http_status(:ok)
               expect(response.headers.to_h).to include(download_headers)
-              expect(response.body).to match_file(job.artifacts_file.file.file)
             end
           end
 
