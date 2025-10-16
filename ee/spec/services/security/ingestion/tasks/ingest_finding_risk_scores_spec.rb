@@ -27,7 +27,6 @@ RSpec.describe Security::Ingestion::Tasks::IngestFindingRiskScores, feature_cate
 
     let_it_be(:security_finding_critical) { create(:security_finding, severity: :critical) }
     let_it_be(:security_finding_medium) { create(:security_finding, severity: :medium) }
-    let_it_be(:security_finding_low) { create(:security_finding, severity: :low) }
 
     let_it_be(:report_finding_critical) do
       create(:ci_reports_security_finding, identifiers: [security_identifier_critical])
@@ -35,10 +34,6 @@ RSpec.describe Security::Ingestion::Tasks::IngestFindingRiskScores, feature_cate
 
     let_it_be(:report_finding_medium) do
       create(:ci_reports_security_finding, identifiers: [security_identifier_medium])
-    end
-
-    let_it_be(:report_finding_low) do
-      create(:ci_reports_security_finding)
     end
 
     let_it_be(:finding_map_critical) do
@@ -51,54 +46,48 @@ RSpec.describe Security::Ingestion::Tasks::IngestFindingRiskScores, feature_cate
         report_finding: report_finding_medium, pipeline: pipeline)
     end
 
+    let_it_be(:low_vulnerability) { create(:vulnerability, :with_finding, severity: :low) }
+
+    let_it_be(:finding_map_low) do
+      create(:finding_map,
+        finding: low_vulnerability.finding,
+        vulnerability: low_vulnerability
+      )
+    end
+
+    let_it_be(:finding_risk_score) do
+      create(:vulnerability_finding_risk_score, finding: low_vulnerability.finding)
+    end
+
     subject(:ingest_risk_scores) { described_class.new(pipeline, finding_maps).execute }
 
     context "when vulnerability_finding_risk_score FF is enabled" do
-      context("when adding new vulnerabilities") do
-        let(:finding_map_low) do
-          create(:finding_map, :new_record, security_finding: security_finding_low, report_finding: report_finding_low,
-            pipeline: pipeline)
-        end
+      let(:finding_maps) { [finding_map_critical, finding_map_medium, finding_map_low] }
 
-        let(:finding_maps) { [finding_map_critical, finding_map_medium, finding_map_low] }
+      it "creates risk scores for all vulnerabilities" do
+        expected_scores = {
+          finding_map_critical.finding_id => Vulnerabilities::RiskScore.new(
+            severity: finding_map_critical.severity,
+            epss_score: cve_enrichment_critical.epss_score,
+            is_known_exploit: cve_enrichment_critical.is_known_exploit
+          ).score,
+          finding_map_medium.finding_id => Vulnerabilities::RiskScore.new(
+            severity: finding_map_medium.severity,
+            epss_score: cve_enrichment_medium.epss_score,
+            is_known_exploit: cve_enrichment_medium.is_known_exploit
+          ).score,
+          finding_map_low.finding_id => Vulnerabilities::RiskScore.new(
+            severity: finding_map_low.severity,
+            epss_score: 0.0,
+            is_known_exploit: false
+          ).score
+        }
 
-        it "creates risk scores for all vulnerabilities" do
-          ingest_risk_scores
-          expected_scores = {
-            finding_map_critical.finding_id => Vulnerabilities::RiskScore.new(
-              severity: finding_map_critical.severity,
-              epss_score: cve_enrichment_critical.epss_score,
-              is_known_exploit: cve_enrichment_critical.is_known_exploit
-            ).score,
-            finding_map_medium.finding_id => Vulnerabilities::RiskScore.new(
-              severity: finding_map_medium.severity,
-              epss_score: cve_enrichment_medium.epss_score,
-              is_known_exploit: cve_enrichment_medium.is_known_exploit
-            ).score,
-            finding_map_low.finding_id => Vulnerabilities::RiskScore.new(
-              severity: finding_map_low.severity,
-              epss_score: 0.0,
-              is_known_exploit: false
-            ).score
-          }
+        expect { ingest_risk_scores }.to change { Vulnerabilities::FindingRiskScore.count }.by(2)
 
-          expected_scores.each do |finding_id, expected_risk_score|
-            finding_risk_score = Vulnerabilities::FindingRiskScore.find_by(finding_id: finding_id)
-            expect(finding_risk_score.risk_score).to eq(expected_risk_score)
-          end
-        end
-      end
-
-      context("when vulnerability already exists") do
-        let(:finding_map_low) do
-          create(:finding_map, security_finding: security_finding_low, report_finding: report_finding_low,
-            pipeline: pipeline)
-        end
-
-        let(:finding_maps) { [finding_map_critical, finding_map_medium, finding_map_low] }
-
-        it "does not add risk score for existing vulnerabilities" do
-          expect { ingest_risk_scores }.to change { Vulnerabilities::FindingRiskScore.count }.by(2)
+        expected_scores.each do |finding_id, expected_risk_score|
+          finding_risk_score = Vulnerabilities::FindingRiskScore.find_by(finding_id: finding_id)
+          expect(finding_risk_score.risk_score).to eq(expected_risk_score)
         end
       end
     end
