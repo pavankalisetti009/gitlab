@@ -91,7 +91,6 @@ module Ai
       def start_workflow_params(workflow)
         {
           goal: goal,
-          workflow_definition: workflow_definition,
           workflow_id: workflow.id,
           workflow_oauth_token: workflow_oauth_token,
           workflow_service_token: workflow_service_token,

@@ -71,7 +71,6 @@ module API
 
             {
               goal: params[:goal],
-              workflow_definition: params[:workflow_definition],
               workflow_id: workflow_id,
               workflow_oauth_token: oauth_token_result[:oauth_access_token].plaintext_token,
               workflow_service_token: workflow_token_result[:token],
