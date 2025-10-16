@@ -11,6 +11,7 @@ import TimeAgoTooltip from '~/vue_shared/components/time_ago_tooltip.vue';
 import { FINDING_MODAL_ERROR_CONTAINER_ID } from 'ee/security_dashboard/constants';
 import refreshFindingTokenStatusMutation from 'ee/vulnerabilities/graphql/mutations/refresh_finding_token_status.mutation.graphql';
 import refreshSecurityFindingTokenStatusMutation from 'ee/security_dashboard/graphql/mutations/refresh_security_finding_token_status.mutation.graphql';
+import { useMockInternalEventsTracking } from 'helpers/tracking_internal_events_helper';
 
 Vue.use(VueApollo);
 
@@ -163,10 +164,25 @@ describe('ValidityCheck', () => {
     });
 
     describe('with successful response', () => {
+      const { bindInternalEventDocument } = useMockInternalEventsTracking();
+
       beforeEach(() => {
         createWrapperWithApollo({
           mutationResolver: jest.fn().mockResolvedValue(successResponse),
         });
+      });
+
+      it('calls trackEvent method for click_refresh_token_status_button', () => {
+        const { trackEventSpy } = bindInternalEventDocument(wrapper.element);
+        findRecheckButton().vm.$emit('click');
+
+        expect(trackEventSpy).toHaveBeenCalledWith(
+          'click_refresh_token_status_button',
+          {
+            label: 'VulnerabilityDetails',
+          },
+          undefined,
+        );
       });
 
       it('updates the last checked timestamp', async () => {

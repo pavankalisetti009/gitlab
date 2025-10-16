@@ -1,5 +1,6 @@
 <script>
 import { GlButton, GlTooltip } from '@gitlab/ui';
+import { InternalEvents } from '~/tracking';
 import TimeAgoTooltip from '~/vue_shared/components/time_ago_tooltip.vue';
 import { convertToGraphQLId } from '~/graphql_shared/utils';
 import { createAlert } from '~/alert';
@@ -19,7 +20,7 @@ export default {
     TokenValidityBadge,
     GlTooltip,
   },
-  mixins: [glFeatureFlagMixin()],
+  mixins: [glFeatureFlagMixin(), InternalEvents.mixin()],
   props: {
     findingTokenStatus: {
       type: Object,
@@ -54,6 +55,9 @@ export default {
     isVulnerabilityDetailsPage() {
       return Boolean(this.vulnerabilityId);
     },
+    parentPageType() {
+      return this.isVulnerabilityDetailsPage ? 'VulnerabilityDetails' : 'SecurityDashboard';
+    },
     mutation() {
       if (this.isVulnerabilityDetailsPage) {
         return refreshFindingTokenStatusMutation;
@@ -80,6 +84,9 @@ export default {
       this.isLoading = true;
 
       try {
+        this.trackEvent('click_refresh_token_status_button', {
+          label: this.parentPageType,
+        });
         const { data } = await this.$apollo.mutate({
           mutation: this.mutation,
           variables: this.mutationVariables,
