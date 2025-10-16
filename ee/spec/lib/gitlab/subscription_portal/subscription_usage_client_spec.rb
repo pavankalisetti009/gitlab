@@ -136,17 +136,20 @@ RSpec.describe Gitlab::SubscriptionPortal::SubscriptionUsageClient, feature_cate
     include_examples 'returns error on unsuccessful subscription portal response'
   end
 
-  describe '#get_last_updated' do
+  describe '#get_metadata' do
     context 'when the subscription portal response is successful' do
-      let(:request) { client.get_last_updated }
-      let(:query) { described_class::GET_LAST_UPDATED_QUERY }
+      let(:request) { client.get_metadata }
+      let(:query) { described_class::GET_METADATA_QUERY }
       let(:portal_response) do
         {
           success: true,
           data: {
             subscription: {
               gitlabCreditsUsage: {
-                lastUpdated: "2025-10-01T16:19:59Z"
+                startDate: "2025-10-01",
+                endDate: "2025-10-31",
+                lastUpdated: "2025-10-01T16:19:59Z",
+                purchaseCreditsPath: '/mock/path'
               }
             }
           }
@@ -156,7 +159,12 @@ RSpec.describe Gitlab::SubscriptionPortal::SubscriptionUsageClient, feature_cate
       let(:expected_response) do
         {
           success: true,
-          lastUpdated: "2025-10-01T16:19:59Z"
+          subscriptionUsage: {
+            startDate: "2025-10-01",
+            endDate: "2025-10-31",
+            lastUpdated: "2025-10-01T16:19:59Z",
+            purchaseCreditsPath: '/mock/path'
+          }
         }
       end
 

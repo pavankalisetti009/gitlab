@@ -5,14 +5,17 @@ module Gitlab
     class SubscriptionUsageClient < Client
       ResponseError = Class.new(StandardError)
 
-      GET_LAST_UPDATED_QUERY = <<~GQL
+      GET_METADATA_QUERY = <<~GQL
         query subscriptionUsage(
           $namespaceId: ID,
           $licenseKey: String
         ) {
           subscription(namespaceId: $namespaceId, licenseKey: $licenseKey) {
             gitlabCreditsUsage {
+              startDate
+              endDate
               lastUpdated
+              purchaseCreditsPath
             }
           }
         }
@@ -82,18 +85,18 @@ module Gitlab
         @license_key = license_key
       end
 
-      def get_last_updated
+      def get_metadata
         response = execute_graphql_query(
-          query: GET_LAST_UPDATED_QUERY,
+          query: GET_METADATA_QUERY,
           variables: default_variables
         )
 
         if unsuccessful_response?(response)
-          error(GET_LAST_UPDATED_QUERY, response)
+          error(GET_METADATA_QUERY, response)
         else
           {
             success: true,
-            lastUpdated: response.dig(:data, :subscription, :gitlabCreditsUsage, :lastUpdated)
+            subscriptionUsage: response.dig(:data, :subscription, :gitlabCreditsUsage)
           }
         end
       end
