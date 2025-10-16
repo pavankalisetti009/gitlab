@@ -7,7 +7,17 @@ import tailwindcss from '@tailwindcss/vite';
 const watchEnabled = process.env.WATCH === '1';
 
 export default defineConfig({
-  plugins: [vue() as Plugin<Api>, tailwindcss() as Plugin[]],
+  plugins: [
+    vue({
+      customElement: true,
+      template: {
+        compilerOptions: {
+          isCustomElement: (tag) => tag.startsWith('fe-island-'),
+        },
+      },
+    }) as Plugin<Api>,
+    tailwindcss() as Plugin[],
+  ],
   define: {
     __VUE_OPTIONS_API__: JSON.stringify(true), // set per your usage
     __VUE_PROD_DEVTOOLS__: JSON.stringify(false),
@@ -30,10 +40,12 @@ export default defineConfig({
     },
     target: 'es2019',
     // Enable rollup watch when requested. (Using CLI --watch also works.)
-    watch: watchEnabled ? {
-      include: ['src/**'],
-      exclude: ['node_modules/**', 'dist/**']
-    } : null
+    watch: watchEnabled
+      ? {
+          include: ['src/**'],
+          exclude: ['node_modules/**', 'dist/**'],
+        }
+      : null,
   },
   resolve: {
     alias: {
