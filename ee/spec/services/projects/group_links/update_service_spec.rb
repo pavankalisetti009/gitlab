@@ -123,7 +123,7 @@ profile expires_at from nil to #{expiry_date}",
     let_it_be(:current_member_role) { create(:member_role, namespace: project.root_ancestor) }
     let_it_be(:new_member_role) { create(:member_role, namespace: project.root_ancestor) }
 
-    let_it_be(:link) do
+    let_it_be_with_reload(:link) do
       create(:project_group_link, project: project, group: group, group_access: current_member_role.base_access_level,
         member_role: current_member_role)
     end
@@ -146,6 +146,51 @@ profile expires_at from nil to #{expiry_date}",
       expect { execute_update_service }.to change {
         link.reload.member_role_id
       }.from(current_member_role.id).to(new_member_role.id)
+    end
+
+    describe "Authz::UserProjectMemberRole records of the invited group's members" do
+      shared_examples 'enqueues UpdateForSharedProjectWorker job' do
+        it 'enqueues an ::Authz::UserProjectMemberRoles::UpdateForSharedProjectWorker job' do
+          expect(::Authz::UserProjectMemberRoles::UpdateForSharedProjectWorker)
+            .to receive(:perform_async).with(link.id)
+
+          execute_update_service
+        end
+      end
+
+      shared_examples 'does not enqueue an ::Authz::UserProjectMemberRoles::UpdateForSharedProjectWorker job' do
+        it 'does not enqueue an ::Authz::UserProjectMemberRoles::UpdateForSharedProjectWorker job' do
+          expect(::Authz::UserProjectMemberRoles::UpdateForSharedProjectWorker).not_to receive(:perform_async)
+
+          execute_update_service
+        end
+      end
+
+      it_behaves_like 'enqueues UpdateForSharedProjectWorker job'
+
+      context 'when only access level was updated' do
+        let(:group_link_params) { { group_access: Gitlab::Access::GUEST } }
+
+        before do
+          link.update!(member_role: nil)
+        end
+
+        it_behaves_like 'enqueues UpdateForSharedProjectWorker job'
+      end
+
+      context 'when neither member role nor access level was updated' do
+        let(:group_link_params) { { expires_at: expiry_date } }
+
+        it_behaves_like 'does not enqueue an ::Authz::UserProjectMemberRoles::UpdateForSharedProjectWorker job'
+      end
+
+      context 'when cache_user_project_member_roles feature flag is disabled' do
+        before do
+          stub_feature_flags(cache_user_project_member_roles: false)
+        end
+
+        it_behaves_like 'does not enqueue an ::Authz::UserProjectMemberRoles::UpdateForSharedProjectWorker job'
+      end
     end
 
     context 'when assign_custom_roles_to_project_links_saas feature flag is disabled' do

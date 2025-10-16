@@ -250,6 +250,29 @@ RSpec.describe Projects::GroupLinks::CreateService, '#execute', feature_category
 
       it_behaves_like 'does not assign the member role'
     end
+
+    describe "Authz::UserProjectMemberRole records of the invited group's members" do
+      it 'enqueues an ::Authz::UserProjectMemberRoles::UpdateForSharedProjectWorker job' do
+        allow(::Authz::UserProjectMemberRoles::UpdateForSharedProjectWorker).to receive(:perform_async)
+
+        link_id = service.execute[:link][:id]
+
+        expect(::Authz::UserProjectMemberRoles::UpdateForSharedProjectWorker)
+          .to have_received(:perform_async).with(link_id)
+      end
+
+      context 'when cache_user_project_member_roles feature flag is disabled' do
+        before do
+          stub_feature_flags(cache_user_project_member_roles: false)
+        end
+
+        it 'does not enqueue an ::Authz::UserProjectMemberRoles::UpdateForSharedProjectWorker job' do
+          expect(::Authz::UserProjectMemberRoles::UpdateForSharedProjectWorker).not_to receive(:perform_async)
+
+          service.execute
+        end
+      end
+    end
   end
 
   context 'with the licensed feature for disable_invite_members' do

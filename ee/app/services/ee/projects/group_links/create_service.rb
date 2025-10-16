@@ -25,6 +25,7 @@ module EE
           super
 
           send_audit_event
+          update_user_project_member_roles
         end
 
         def allowed_to_be_shared_with?
@@ -68,6 +69,12 @@ module EE
           link.tap do |l|
             l.member_role_id = params[:member_role_id] if custom_role_for_project_link_enabled?(project)
           end
+        end
+
+        def update_user_project_member_roles
+          return if ::Feature.disabled?(:cache_user_project_member_roles, link.project.root_ancestor)
+
+          ::Authz::UserProjectMemberRoles::UpdateForSharedProjectWorker.perform_async(link.id)
         end
       end
     end

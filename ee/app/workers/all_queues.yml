@@ -1773,6 +1773,16 @@
   :idempotent: true
   :tags: []
   :queue_namespace:
+- :name: authz_user_project_member_roles_update_for_shared_project
+  :worker_name: Authz::UserProjectMemberRoles::UpdateForSharedProjectWorker
+  :feature_category: :permissions
+  :has_external_dependencies: false
+  :urgency: :high
+  :resource_boundary: :unknown
+  :weight: 1
+  :idempotent: true
+  :tags: []
+  :queue_namespace:
 - :name: ci_runners_export_usage_csv
   :worker_name: Ci::Runners::ExportUsageCsvWorker
   :feature_category: :fleet_visibility
