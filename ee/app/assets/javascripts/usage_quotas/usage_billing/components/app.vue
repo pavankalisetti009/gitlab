@@ -5,6 +5,8 @@ import { logError } from '~/lib/logger';
 import axios from '~/lib/utils/axios_utils';
 import { captureException } from '~/sentry/sentry_browser_wrapper';
 import PageHeading from '~/vue_shared/components/page_heading.vue';
+import UserDate from '~/vue_shared/components/user_date.vue';
+import { LONG_DATE_FORMAT_WITH_TZ } from '~/vue_shared/constants';
 import getSubscriptionUsageQuery from '../graphql/get_subscription_usage.query.graphql';
 import PurchaseCommitmentCard from './purchase_commitment_card.vue';
 import UsageTrendsChart from './usage_trends_chart.vue';
@@ -24,6 +26,7 @@ export default {
     UsageByUserTab,
     CurrentUsageCard,
     CurrentUsageNoPoolCard,
+    UserDate,
   },
   apollo: {
     subscriptionUsage: {
@@ -135,6 +138,7 @@ export default {
       }
     },
   },
+  LONG_DATE_FORMAT_WITH_TZ,
 };
 </script>
 <template>
@@ -142,6 +146,13 @@ export default {
     <page-heading>
       <template #heading>
         <span data-testid="usage-billing-title">{{ s__('UsageBilling|Usage Billing') }}</span>
+      </template>
+      <template v-if="subscriptionUsage.lastUpdated" #description>
+        {{ s__('UsageBilling|Last updated:') }}
+        <user-date
+          :date="subscriptionUsage.lastUpdated"
+          :date-format="$options.LONG_DATE_FORMAT_WITH_TZ"
+        />
       </template>
     </page-heading>
 
