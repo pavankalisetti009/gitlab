@@ -10,12 +10,12 @@ RSpec.shared_examples Ai::Catalog::Items::BaseDestroyService do
   describe '#execute' do
     subject(:execute_service) { service.execute }
 
-    shared_examples 'returns item not found error' do
-      it 'returns item not found error' do
+    shared_examples 'returns insufficient permissions error' do
+      it 'returns insufficient permissions error' do
         result = execute_service
 
         expect(result).to be_error
-        expect(result.errors).to contain_exactly(not_found_error)
+        expect(result.errors).to contain_exactly('You have insufficient permissions')
       end
 
       it 'does not destroy any items' do
@@ -23,7 +23,7 @@ RSpec.shared_examples Ai::Catalog::Items::BaseDestroyService do
       end
     end
 
-    context 'when item is invalid' do
+    context 'when user has permissions' do
       before_all do
         project.add_maintainer(user)
       end
@@ -31,13 +31,7 @@ RSpec.shared_examples Ai::Catalog::Items::BaseDestroyService do
       context 'when item is nil' do
         let(:params) { { item: nil } }
 
-        it_behaves_like 'returns item not found error'
-      end
-    end
-
-    context 'when user has permissions' do
-      before_all do
-        project.add_maintainer(user)
+        it_behaves_like 'returns insufficient permissions error'
       end
 
       context 'when item exists' do
@@ -178,16 +172,7 @@ RSpec.shared_examples Ai::Catalog::Items::BaseDestroyService do
         project.add_developer(user)
       end
 
-      it 'returns permission error' do
-        result = execute_service
-
-        expect(result).to be_error
-        expect(result.errors).to contain_exactly('You have insufficient permissions')
-      end
-
-      it 'does not destroy the item' do
-        expect { execute_service }.not_to change { Ai::Catalog::Item.count }
-      end
+      it_behaves_like 'returns insufficient permissions error'
     end
 
     if described_class < Ai::Catalog::Items::BaseDestroyService

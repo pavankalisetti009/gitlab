@@ -269,6 +269,14 @@ RSpec.shared_examples Ai::Catalog::Items::BaseUpdateService do
           end
         end
       end
+
+      describe 'when the item is soft-deleted' do
+        before do
+          item.update!(deleted_at: Time.current)
+        end
+
+        it_behaves_like 'an error response', 'You have insufficient permissions'
+      end
     end
   end
 end
