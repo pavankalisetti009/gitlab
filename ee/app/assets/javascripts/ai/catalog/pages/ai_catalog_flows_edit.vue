@@ -74,14 +74,14 @@ export default {
             return;
           }
 
-          this.$toast.show(s__('AICatalog|Flow updated successfully.'));
+          this.$toast.show(s__('AICatalog|Flow updated.'));
           this.$router.push({
             name: AI_CATALOG_FLOWS_SHOW_ROUTE,
             params: { id: this.$route.params.id },
           });
         }
       } catch (error) {
-        this.errors = [s__('AICatalog|The flow could not be updated. Try again.')];
+        this.errors = [s__('AICatalog|Could not update flow. Try again.')];
         Sentry.captureException(error);
       } finally {
         this.isSubmitting = false;

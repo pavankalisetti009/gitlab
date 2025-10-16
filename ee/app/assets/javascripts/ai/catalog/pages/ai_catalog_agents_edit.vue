@@ -64,14 +64,14 @@ export default {
             return;
           }
 
-          this.$toast.show(s__('AICatalog|Agent updated successfully.'));
+          this.$toast.show(s__('AICatalog|Agent updated.'));
           this.$router.push({
             name: AI_CATALOG_AGENTS_SHOW_ROUTE,
             params: { id: this.$route.params.id },
           });
         }
       } catch (error) {
-        this.errors = [s__('AICatalog|The agent could not be updated. Try again.')];
+        this.errors = [s__('AICatalog|Could not update agent. Try again.')];
         Sentry.captureException(error);
       } finally {
         this.isSubmitting = false;

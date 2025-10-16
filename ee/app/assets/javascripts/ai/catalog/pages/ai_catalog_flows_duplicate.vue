@@ -80,14 +80,14 @@ export default {
           }
 
           const newFlowId = getIdFromGraphQLId(item.id);
-          this.$toast.show(s__('AICatalog|Flow created successfully.'));
+          this.$toast.show(s__('AICatalog|Flow created.'));
           this.$router.push({
             name: AI_CATALOG_FLOWS_SHOW_ROUTE,
             params: { id: newFlowId },
           });
         }
       } catch (error) {
-        this.errors = [s__('AICatalog|The flow could not be created. Try again.')];
+        this.errors = [s__('AICatalog|Could not create flow. Try again.')];
         Sentry.captureException(error);
       } finally {
         this.isSubmitting = false;

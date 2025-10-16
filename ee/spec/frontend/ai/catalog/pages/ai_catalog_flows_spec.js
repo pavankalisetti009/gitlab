@@ -189,7 +189,7 @@ describe('AiCatalogFlows', () => {
         await waitForPromises();
 
         expect(mockCatalogItemsQueryHandler).toHaveBeenCalledTimes(2);
-        expect(mockToast.show).toHaveBeenCalledWith('Flow deleted successfully.');
+        expect(mockToast.show).toHaveBeenCalledWith('Flow deleted.');
       });
     });
 
@@ -303,7 +303,7 @@ describe('AiCatalogFlows', () => {
             createConsumer();
             await waitForPromises();
 
-            expect(mockToast.show).toHaveBeenCalledWith('Flow added successfully to Test.');
+            expect(mockToast.show).toHaveBeenCalledWith('Flow enabled in Test.');
           });
         });
 
@@ -317,7 +317,7 @@ describe('AiCatalogFlows', () => {
             await waitForPromises();
 
             expect(findErrorsAlert().props('errors')).toEqual([
-              `Flow could not be added: ${mockFlow.name}`,
+              `Could not enable flow: ${mockFlow.name}`,
               'Item already configured.',
             ]);
           });
@@ -331,7 +331,7 @@ describe('AiCatalogFlows', () => {
             await waitForPromises();
 
             expect(findErrorsAlert().props('errors')).toEqual([
-              'The flow could not be added to the project. Try again. Error: Request failed',
+              'Could not enable flow in the project. Try again. Error: Request failed',
             ]);
             expect(Sentry.captureException).toHaveBeenCalledWith(expect.any(Error));
           });

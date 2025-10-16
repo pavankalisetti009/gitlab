@@ -97,7 +97,7 @@ export default {
 
           const items = [
             {
-              text: s__('AICatalog|Add to project'),
+              text: s__('AICatalog|Enable in project'),
               action: () => this.setAiCatalogFlowToBeAdded(item),
               icon: 'plus',
             },
@@ -173,7 +173,7 @@ export default {
           return;
         }
 
-        this.$toast.show(s__('AICatalog|Flow deleted successfully.'));
+        this.$toast.show(s__('AICatalog|Flow deleted.'));
       } catch (error) {
         this.errors = [sprintf(s__('AICatalog|Failed to delete flow. %{error}'), { error })];
         Sentry.captureException(error);
@@ -202,7 +202,7 @@ export default {
           if (errors.length > 0) {
             // TODO: Once we have a project selector, we could add the project name in this message.
             this.errors = [
-              sprintf(s__('AICatalog|Flow could not be added: %{flowName}'), {
+              sprintf(s__('AICatalog|Could not enable flow: %{flowName}'), {
                 flowName: flow.name,
               }),
               ...errors,
@@ -212,14 +212,13 @@ export default {
 
           const name = data.aiCatalogItemConsumerCreate.itemConsumer.project?.name || '';
 
-          this.$toast.show(sprintf(s__('AICatalog|Flow added successfully to %{name}.'), { name }));
+          this.$toast.show(sprintf(s__('AICatalog|Flow enabled in %{name}.'), { name }));
         }
       } catch (error) {
         this.errors = [
-          sprintf(
-            s__('AICatalog|The flow could not be added to the project. Try again. %{error}'),
-            { error },
-          ),
+          sprintf(s__('AICatalog|Could not enable flow in the project. Try again. %{error}'), {
+            error,
+          }),
         ];
         Sentry.captureException(error);
       }

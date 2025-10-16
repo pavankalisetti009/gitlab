@@ -99,7 +99,7 @@ describe('AiCatalogItemActions', () => {
         expect(findTestButton().exists()).toBe(testBtn);
       });
 
-      it(`${addBtn ? 'renders' : 'does not render'} "Add to project" button`, () => {
+      it(`${addBtn ? 'renders' : 'does not render'} "Enable in project" button`, () => {
         expect(findAddToProjectButton().exists()).toBe(addBtn);
       });
 
