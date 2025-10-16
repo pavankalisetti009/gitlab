@@ -14865,7 +14865,8 @@ CREATE TABLE commit_user_mentions (
     mentioned_projects_ids bigint[],
     mentioned_groups_ids bigint[],
     commit_id character varying NOT NULL,
-    note_id bigint NOT NULL
+    note_id bigint NOT NULL,
+    namespace_id bigint
 );
 
 CREATE SEQUENCE commit_user_mentions_id_seq
@@ -33277,6 +33278,9 @@ ALTER TABLE work_item_custom_statuses
 ALTER TABLE packages_packages
     ADD CONSTRAINT check_d6301aedeb CHECK ((char_length(status_message) <= 255)) NOT VALID;
 
+ALTER TABLE commit_user_mentions
+    ADD CONSTRAINT check_ddd6f289f4 CHECK ((namespace_id IS NOT NULL)) NOT VALID;
+
 ALTER TABLE sprints
     ADD CONSTRAINT check_df3816aed7 CHECK ((due_date IS NOT NULL)) NOT VALID;
 
@@ -39438,6 +39442,8 @@ CREATE INDEX index_clusters_on_organization_id ON clusters USING btree (organiza
 CREATE INDEX index_clusters_on_project_id ON clusters USING btree (project_id);
 
 CREATE INDEX index_clusters_on_user_id ON clusters USING btree (user_id);
+
+CREATE INDEX index_commit_user_mentions_on_namespace_id ON commit_user_mentions USING btree (namespace_id);
 
 CREATE UNIQUE INDEX index_commit_user_mentions_on_note_id ON commit_user_mentions USING btree (note_id);
 
@@ -46943,6 +46949,8 @@ CREATE TRIGGER projects_loose_fk_trigger AFTER DELETE ON projects REFERENCING OL
 
 CREATE TRIGGER push_rules_loose_fk_trigger AFTER DELETE ON push_rules REFERENCING OLD TABLE AS old_table FOR EACH STATEMENT EXECUTE FUNCTION insert_into_loose_foreign_keys_deleted_records();
 
+CREATE TRIGGER set_sharding_key_for_commit_user_mentions_on_insert_and_update BEFORE INSERT OR UPDATE ON commit_user_mentions FOR EACH ROW EXECUTE FUNCTION sync_sharding_key_with_notes_table();
+
 CREATE TRIGGER set_sharding_key_for_suggestions_on_insert_and_update BEFORE INSERT OR UPDATE ON suggestions FOR EACH ROW EXECUTE FUNCTION sync_sharding_key_with_notes_table();
 
 CREATE TRIGGER set_sharding_key_for_system_note_metadata_on_insert BEFORE INSERT ON system_note_metadata FOR EACH ROW EXECUTE FUNCTION get_sharding_key_from_notes_table();
@@ -47894,6 +47902,9 @@ ALTER TABLE ONLY issuable_slas
 
 ALTER TABLE ONLY work_item_dates_sources
     ADD CONSTRAINT fk_283fb4ad36 FOREIGN KEY (start_date_sourcing_milestone_id) REFERENCES milestones(id) ON DELETE SET NULL;
+
+ALTER TABLE ONLY commit_user_mentions
+    ADD CONSTRAINT fk_2840265c3f FOREIGN KEY (namespace_id) REFERENCES namespaces(id) ON DELETE CASCADE NOT VALID;
 
 ALTER TABLE ONLY resource_milestone_events
     ADD CONSTRAINT fk_2867e9284c FOREIGN KEY (namespace_id) REFERENCES namespaces(id) ON DELETE CASCADE;
