@@ -8,6 +8,13 @@ module EE
 
       private
 
+      override :preloads
+      def preloads
+        super.merge(
+          promoted_to_epic_url: :work_item_transition
+        )
+      end
+
       override :widget_preloads
       def widget_preloads
         super.merge(

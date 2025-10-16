@@ -5,7 +5,8 @@ require 'spec_helper'
 RSpec.describe WorkItemPresenter, feature_category: :team_planning do
   let(:user) { build_stubbed(:user) }
   let(:group) { build_stubbed(:group, :private) }
-  let(:work_item) { build_stubbed(:work_item) }
+  let(:work_item_transition) { build_stubbed(:work_item_transition) }
+  let(:work_item) { build_stubbed(:work_item, work_item_transition: work_item_transition) }
   let(:epic) { build_stubbed(:epic, group: group) }
   let(:epic_url) { Gitlab::UrlBuilder.build(epic) }
 
@@ -21,7 +22,8 @@ RSpec.describe WorkItemPresenter, feature_category: :team_planning do
     it { is_expected.to be_nil }
 
     context 'when promoted_to is set' do
-      let(:work_item) { build_stubbed(:work_item, promoted_to_epic: epic) }
+      let(:work_item_transition) { build_stubbed(:work_item_transition, promoted_to_epic: epic) }
+      let(:work_item) { build_stubbed(:work_item, promoted_to_epic: epic, work_item_transition: work_item_transition) }
 
       context 'when anonymous' do
         let(:user) { nil }

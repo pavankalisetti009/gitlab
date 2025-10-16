@@ -126,21 +126,14 @@ RSpec.describe IssuablesHelper, feature_category: :team_planning do
         end
 
         context 'when issue is promoted' do
-          before do
-            allow(issue).to receive(:promoted?).and_return(true)
-            allow(issue).to receive(:promoted_to_epic).and_return(epic)
-          end
+          let(:issue) { create(:issue, promoted_to_epic: epic, author: user) }
 
           it 'returns url' do
-            expect(helper.issuable_initial_data(issue)[:promotedToEpicUrl]).to be_truthy
+            expect(helper.issuable_initial_data(issue)[:promotedToEpicUrl]).to eq(group_epic_url(epic.group, epic))
           end
         end
 
         context 'when issue is not promoted' do
-          before do
-            allow(issue).to receive(:promoted?).and_return(false)
-          end
-
           it 'returns nil' do
             expect(helper.issuable_initial_data(issue)[:promotedToEpicUrl]).to be_nil
           end

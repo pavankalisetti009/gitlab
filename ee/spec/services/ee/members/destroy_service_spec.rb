@@ -371,6 +371,14 @@ RSpec.describe Members::DestroyService, feature_category: :groups_and_projects d
 
           it_behaves_like 'enqueues a DestroyForGroupWorker job'
         end
+
+        context 'when Authz::UserProjectMemberRole records exists for the user through member.source' do
+          before do
+            create(:user_project_member_role, user: member.user, shared_with_group: member.source)
+          end
+
+          it_behaves_like 'enqueues a DestroyForGroupWorker job'
+        end
       end
     end
   end

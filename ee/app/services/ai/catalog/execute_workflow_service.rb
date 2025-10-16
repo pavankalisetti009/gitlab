@@ -98,7 +98,6 @@ module Ai
 
         {
           goal: goal,
-          workflow_definition: determine_workflow_definition,
           flow_config: json_config,
           flow_config_schema_version: FLOW_CONFIG_VERSION,
           workflow_id: workflow.id,

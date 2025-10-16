@@ -870,6 +870,7 @@ RSpec.describe Notes::QuickActionsService, feature_category: :team_planning do
           expect { service.execute(note) }.to change { Epic.count }.by(1)
 
           expect(noteable.reload.promoted_to_epic).to be_present
+          expect(noteable.work_item_transition.reload.promoted_to_epic).to be_present
         end
       end
 
@@ -899,6 +900,7 @@ RSpec.describe Notes::QuickActionsService, feature_category: :team_planning do
           _content, _update_params, message, _ = service.execute(note)
 
           expect(noteable.reload.promoted_to_epic).to be_nil
+          expect(noteable.work_item_transition.reload.promoted_to_epic).to be_nil
           expect(message).to eq "Failed to promote this work item: Work item reached maximum depth."
         end
       end
