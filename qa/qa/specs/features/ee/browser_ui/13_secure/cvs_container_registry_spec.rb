@@ -4,7 +4,11 @@ module QA
   RSpec.describe 'Secure', :secure_container_reg_cvs,
     feature_category: :software_composition_analysis,
     only: { pipeline: %i[staging staging-canary] },
-    feature_flag: { name: 'cvs_for_container_scanning', scope: :project } do
+    feature_flag: { name: 'cvs_for_container_scanning', scope: :project },
+    quarantine: {
+      issue: 'https://gitlab.com/gitlab-org/quality/test-failure-issues/-/issues/12',
+      type: :investigating
+    } do
     describe 'Continuous Vulnerability Scanning' do
       let(:image_tag) { 'alpine:3.10.0' }
       let(:registry_password_token) { ENV.fetch('GITLAB_QA_ACCESS_TOKEN') { raise 'GITLAB_QA_ACCESS_TOKEN required' } }
