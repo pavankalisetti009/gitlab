@@ -124,7 +124,10 @@ RSpec.describe ::Ai::ModelSelection::FetchModelDefinitionsService, feature_categ
           end
 
           it 'caches and returns the response' do
-            expect(Rails.cache).to receive(:fetch).with(cache_key, expires_in: 1.hour)
+            expect(Rails.cache).to receive(:fetch).with(
+              cache_key,
+              expires_in: described_class::RESPONSE_CACHE_EXPIRATION
+            )
 
             expect(service).to be_success
             expect(service.payload).to include(model_definitions)
@@ -210,7 +213,10 @@ RSpec.describe ::Ai::ModelSelection::FetchModelDefinitionsService, feature_categ
 
           it 'uses local endpoint and skips cache even when cache exists' do
             allow(Rails.cache).to receive(:exist?).with(cache_key).and_return(true)
-            expect(Rails.cache).to receive(:fetch).with(cache_key, expires_in: 1.hour).and_return(model_definitions)
+            expect(Rails.cache).to receive(:fetch).with(
+              cache_key,
+              expires_in: described_class::RESPONSE_CACHE_EXPIRATION
+            ).and_return(model_definitions)
 
             expect(Gitlab::HTTP).to receive(:get).with(
               local_endpoint_url,

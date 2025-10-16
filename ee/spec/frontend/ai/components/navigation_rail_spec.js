@@ -1,7 +1,12 @@
 import { GlButton } from '@gitlab/ui';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import { createMockDirective } from 'helpers/vue_mock_directive';
+import { shouldDisableShortcuts } from '~/behaviors/shortcuts/shortcuts_toggle';
+import { keysFor, DUO_CHAT } from '~/behaviors/shortcuts/keybindings';
 import NavigationRail from 'ee/ai/components/navigation_rail.vue';
+
+jest.mock('~/behaviors/shortcuts/shortcuts_toggle');
+jest.mock('~/behaviors/shortcuts/keybindings');
 
 describe('NavigationRail', () => {
   let wrapper;
@@ -23,6 +28,9 @@ describe('NavigationRail', () => {
   const findSessionsToggle = () => wrapper.findByTestId('ai-sessions-toggle');
 
   beforeEach(() => {
+    shouldDisableShortcuts.mockReturnValue(false);
+    keysFor.mockReturnValue([DUO_CHAT]);
+
     createComponent();
   });
 
@@ -43,5 +51,13 @@ describe('NavigationRail', () => {
     await findChatToggle().trigger('click');
 
     expect(wrapper.emitted('handleTabToggle')).toEqual([['chat']]);
+  });
+
+  it('does not show keyshortcuts when shortcuts are disabled', () => {
+    shouldDisableShortcuts.mockReturnValue(true);
+
+    createComponent();
+
+    expect(findChatToggle().attributes('aria-keyshortcuts')).toBeUndefined();
   });
 });

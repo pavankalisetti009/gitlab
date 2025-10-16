@@ -4,6 +4,8 @@ module Gitlab
   module Scim
     module Group
       class ReprovisioningService
+        include GitlabSubscriptions::MemberManagement::SeatAwareProvisioning
+
         attr_reader :identity
 
         delegate :user, :group, to: :identity
@@ -22,7 +24,8 @@ module Gitlab
         private
 
         def add_member
-          group.add_member(user, default_membership_role, member_role_id: member_role_id)
+          adjusted_access_level = calculate_adjusted_access_level(group, user, default_membership_role)
+          group.add_member(user, adjusted_access_level, member_role_id: member_role_id)
         end
 
         def default_membership_role
