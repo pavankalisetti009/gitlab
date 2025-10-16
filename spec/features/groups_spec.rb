@@ -469,8 +469,8 @@ RSpec.describe 'Group', :with_current_organization, feature_category: :groups_an
         visit group_path(group)
 
         within_testid 'group-buttons' do
-          expect(page).to have_link('Create subgroup')
-          expect(page).not_to have_link('Create project')
+          expect(page).to have_link(_('Create subgroup'))
+          expect(page).not_to have_link(_('Create project'))
         end
       end
     end
@@ -486,8 +486,8 @@ RSpec.describe 'Group', :with_current_organization, feature_category: :groups_an
 
         visit group_path(group)
         within_testid 'group-buttons' do
-          expect(page).to have_link('Create project')
-          expect(page).not_to have_link('Create subgroup')
+          expect(page).to have_link(_('Create project'))
+          expect(page).not_to have_link(_('Create subgroup'))
         end
       end
     end
@@ -499,8 +499,8 @@ RSpec.describe 'Group', :with_current_organization, feature_category: :groups_an
         visit group_path(group)
 
         within_testid 'group-buttons' do
-          expect(page).to have_link('Create subgroup')
-          expect(page).to have_link('Create project')
+          expect(page).to have_link(_('Create subgroup'))
+          expect(page).to have_link(_('Create project'))
         end
       end
     end
@@ -526,7 +526,7 @@ RSpec.describe 'Group', :with_current_organization, feature_category: :groups_an
           visit group_path(group)
 
           within_testid 'group-buttons' do
-            expect(page).not_to have_link('Create project')
+            expect(page).not_to have_link(_('Create project'))
           end
         end
 
@@ -534,7 +534,7 @@ RSpec.describe 'Group', :with_current_organization, feature_category: :groups_an
           visit group_path(group)
 
           within_testid 'group-buttons' do
-            expect(page).not_to have_link('Create subgroup')
+            expect(page).not_to have_link(_('Create subgroup'))
           end
         end
       end
