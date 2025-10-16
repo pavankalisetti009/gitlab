@@ -30,7 +30,7 @@ module EE
           null: false,
           experiment: { milestone: '18.2' },
           description: 'List of AI Catalog items.'
-        field :ai_foundational_chat_agents, ::Types::Ai::FoundationalChatAgentType.connection_type,
+        field :ai_foundational_chat_agents, resolver: ::Resolvers::Ai::FoundationalChatAgentsResolver,
           null: false,
           description: "Core agents in GitLab.",
           max_page_size: 1_000,
@@ -487,10 +487,6 @@ module EE
         return [] unless ::Feature.enabled?(:global_ai_catalog, current_user)
 
         ::Ai::Catalog::BuiltInTool.all.sort_by(&:name)
-      end
-
-      def ai_foundational_chat_agents
-        ::Ai::FoundationalChatAgent.all.sort_by(&:id)
       end
 
       def maven_virtual_registry(id:)
