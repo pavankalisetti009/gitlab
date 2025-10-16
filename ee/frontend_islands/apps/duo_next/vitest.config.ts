@@ -1,3 +1,4 @@
+import path from 'node:path';
 import vue, { type Api } from '@vitejs/plugin-vue';
 import { defineConfig, type Plugin } from 'vitest/config';
 
@@ -5,6 +6,11 @@ const inCI = !!process.env.CI;
 
 export default defineConfig({
   plugins: [vue() as Plugin<Api>],
+  resolve: {
+    alias: {
+      '@': path.resolve(__dirname, './src'),
+    },
+  },
   test: {
     globals: true,
     environment: 'jsdom',

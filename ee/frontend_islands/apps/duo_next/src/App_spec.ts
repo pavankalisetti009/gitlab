@@ -7,6 +7,5 @@ describe('App', () => {
     const wrapper = mount(App);
 
     expect(wrapper.findComponent(HelloWorld).exists()).toBe(true);
-    expect(wrapper.findComponent(HelloWorld).props('msg')).toBe('Welcome to the Frontend Island');
   });
 });

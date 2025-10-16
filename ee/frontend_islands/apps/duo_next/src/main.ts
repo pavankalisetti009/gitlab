@@ -1,8 +1,8 @@
 import { defineCustomElement } from 'vue';
-import App from './App.vue';
+import CommunicationLayer from './CommunicationLayer.vue';
 import tailwind from './style.css?inline';
 
-const DuoNextElement = defineCustomElement(App, {
+const DuoNextElement = defineCustomElement(CommunicationLayer, {
   styles: [tailwind],
 });
 

@@ -14,6 +14,7 @@ import { duoChatGlobalState } from '~/super_sidebar/constants';
 import { clearDuoChatCommands, setAgenticMode } from 'ee/ai/utils';
 import { parseGid, convertToGraphQLId } from '~/graphql_shared/utils';
 import { TYPENAME_AI_DUO_WORKFLOW } from '~/graphql_shared/constants';
+import glFeatureFlagsMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
 import {
   GENIE_CHAT_RESET_MESSAGE,
   GENIE_CHAT_CLEAR_MESSAGE,
@@ -30,6 +31,7 @@ import getAiChatAvailableModels from 'ee/ai/graphql/get_ai_chat_available_models
 import ModelSelectDropdown from 'ee/ai/shared/feature_settings/model_select_dropdown.vue';
 import { createWebSocket, closeSocket } from '~/lib/utils/websocket_utils';
 import { fetchPolicies } from '~/lib/graphql';
+import { logError } from '~/lib/logger';
 import { GITLAB_DEFAULT_MODEL } from 'ee/ai/model_selection/constants';
 import { s__ } from '~/locale';
 import { DUO_AGENTIC_MODE_COOKIE } from '../../tanuki_bot/constants';
@@ -59,6 +61,7 @@ export default {
   directives: {
     GlTooltip: GlTooltipDirective,
   },
+  mixins: [glFeatureFlagsMixin()],
   inject: {
     chatConfiguration: {
       default: () => ({
@@ -362,6 +365,9 @@ export default {
 
       return activeAgent ? activeAgent.name : this.duoChatTitle;
     },
+    window() {
+      return window;
+    },
   },
   watch: {
     'duoChatGlobalState.isAgenticChatShown': {
@@ -400,6 +406,7 @@ export default {
       window.addEventListener('resize', this.onWindowResize);
     }
     this.switchMode(this.mode);
+    this.loadDuoNextIfNeeded();
   },
   beforeDestroy() {
     // Remove the event listener when the component is destroyed
@@ -410,7 +417,15 @@ export default {
   },
   methods: {
     ...mapActions(['addDuoChatMessage', 'setMessages', 'setLoading']),
-
+    async loadDuoNextIfNeeded() {
+      if (this.glFeatures.duoUiNext) {
+        try {
+          await import('fe_islands/duo_next/dist/duo_next');
+        } catch (err) {
+          logError('Failed to load frontend islands duo_next module', err);
+        }
+      }
+    },
     switchMode(mode) {
       if (mode === 'active') {
         this.hydrateActiveThread();
@@ -734,66 +749,83 @@ export default {
 </script>
 
 <template>
-  <web-agentic-duo-chat
-    id="duo-chat"
-    :title="dynamicTitle"
-    :messages="messages.length > 0 ? messages : chatMessageHistory"
-    :is-loading="loading"
-    :predefined-prompts="predefinedPrompts"
-    :thread-list="agenticWorkflows"
-    :multi-threaded-view="multithreadedView"
-    :active-thread-id="activeThread"
-    :is-multithreaded="true"
-    :enable-code-insertion="false"
-    :should-render-resizable="!isEmbedded"
-    :with-feedback="false"
-    :show-header="true"
-    :show-studio-header="isEmbedded"
-    :session-id="workflowId"
-    badge-type="beta"
-    :dimensions="dimensions"
-    :is-tool-approval-processing="isProcessingToolApproval"
-    :agents="agents"
-    :is-chat-available="isChatAvailable"
-    :error="multithreadedView === 'chat' ? agentDeletedError : ''"
-    class="gl-h-full gl-w-full"
-    @new-chat="onNewChat"
-    @send-chat-prompt="onSendChatPrompt"
-    @chat-cancel="onChatCancel"
-    @chat-hidden="onChatClose"
-    @chat-resize="onChatResize"
-    @approve-tool="handleApproveToolCall"
-    @deny-tool="handleDenyToolCall"
-    @thread-selected="onThreadSelected"
-    @back-to-list="onBackToList"
-    @delete-thread="onDeleteThread"
-    ><template #footer-controls>
-      <div :class="{ 'gl-flex gl-justify-between': userModelSelectionEnabled }">
-        <div class="gl-flex gl-px-4 gl-pb-2 gl-pt-5">
-          <gl-toggle
-            v-model="duoAgenticModePreference"
-            :label="s__('DuoChat|Agentic mode (Beta)')"
-            label-position="left"
-          />
+  <div>
+    <div v-if="glFeatures.duoUiNext" class="gl-border-l gl-absolute gl-bg-white">
+      <!--
+        In order to correctly pass data down to the <next-chat> Custom Element, follow the following principle:
+        - as an **attribute** for primitives (string/number)
+        - as a **DOM property with a `.prop` modifier** for complex data structures like objects/arrays/functions/etc
+      -->
+      <fe-island-duo-next
+        :avatar-url="window.gon ? window.gon.current_user_avatar_url : null"
+        :user-name="window.gon ? window.gon.current_user_fullname : null"
+        :models.prop="availableModels"
+        @change-model="({ detail: models }) => window.alert(models[0])"
+      />
+    </div>
+    <web-agentic-duo-chat
+      v-else
+      id="duo-chat"
+      :title="dynamicTitle"
+      :messages="messages.length > 0 ? messages : chatMessageHistory"
+      :is-loading="loading"
+      :predefined-prompts="predefinedPrompts"
+      :thread-list="agenticWorkflows"
+      :multi-threaded-view="multithreadedView"
+      :active-thread-id="activeThread"
+      :is-multithreaded="true"
+      :enable-code-insertion="false"
+      :should-render-resizable="!isEmbedded"
+      :with-feedback="false"
+      :show-header="true"
+      :show-studio-header="isEmbedded"
+      :session-id="workflowId"
+      badge-type="beta"
+      :dimensions="dimensions"
+      :is-tool-approval-processing="isProcessingToolApproval"
+      :agents="agents"
+      :is-chat-available="isChatAvailable"
+      :error="multithreadedView === 'chat' ? agentDeletedError : ''"
+      class="gl-h-full gl-w-full"
+      @new-chat="onNewChat"
+      @send-chat-prompt="onSendChatPrompt"
+      @chat-cancel="onChatCancel"
+      @chat-hidden="onChatClose"
+      @chat-resize="onChatResize"
+      @approve-tool="handleApproveToolCall"
+      @deny-tool="handleDenyToolCall"
+      @thread-selected="onThreadSelected"
+      @back-to-list="onBackToList"
+      @delete-thread="onDeleteThread"
+      ><template #footer-controls>
+        <div :class="{ 'gl-flex gl-justify-between': userModelSelectionEnabled }">
+          <div class="gl-flex gl-px-4 gl-pb-2 gl-pt-5">
+            <gl-toggle
+              v-model="duoAgenticModePreference"
+              :label="s__('DuoChat|Agentic mode (Beta)')"
+              label-position="left"
+            />
+          </div>
+          <div
+            v-if="userModelSelectionEnabled"
+            v-gl-tooltip
+            :title="modelSelectionDisabledTooltipText"
+            class="gl-mb-2 gl-mt-5 gl-flex"
+            data-testid="model-dropdown-container"
+          >
+            <model-select-dropdown
+              class="gl-max-w-31"
+              with-default-model-tooltip
+              :disabled="isModelSelectionDisabled"
+              :is-loading="$apollo.queries.availableModels.loading"
+              :items="availableModels"
+              :selected-option="currentModel"
+              :placeholder-dropdown-text="s__('ModelSelection|Select a model')"
+              @select="onModelSelect"
+            />
+          </div>
         </div>
-        <div
-          v-if="userModelSelectionEnabled"
-          v-gl-tooltip
-          :title="modelSelectionDisabledTooltipText"
-          class="gl-mb-2 gl-mt-5 gl-min-w-0 gl-grow"
-          data-testid="model-dropdown-container"
-        >
-          <model-select-dropdown
-            with-default-model-tooltip
-            :disabled="isModelSelectionDisabled"
-            :is-loading="$apollo.queries.availableModels.loading"
-            :items="availableModels"
-            :selected-option="currentModel"
-            :placeholder-dropdown-text="s__('ModelSelection|Select a model')"
-            @select="onModelSelect"
-          />
-        </div>
-      </div>
-    </template>
-  </web-agentic-duo-chat>
+      </template>
+    </web-agentic-duo-chat>
+  </div>
 </template>
