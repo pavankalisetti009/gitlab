@@ -68,7 +68,19 @@ fragment WorkItemHierarchy on WorkItem {
           webUrl
           reference(full: true)
           widgets(
-            onlyTypes: [HIERARCHY, ASSIGNEES, LABELS, LINKED_ITEMS, MILESTONE, START_AND_DUE_DATE]
+            onlyTypes: [
+              HIERARCHY
+              ASSIGNEES
+              LABELS
+              LINKED_ITEMS
+              MILESTONE
+              HEALTH_STATUS
+              ITERATION
+              START_AND_DUE_DATE
+              STATUS
+              PROGRESS
+              WEIGHT
+            ]
           ) {
             ... on WorkItemWidgetHierarchy {
               type
