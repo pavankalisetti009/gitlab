@@ -25804,7 +25804,7 @@ CREATE TABLE security_policy_dismissals (
     updated_at timestamp with time zone NOT NULL,
     project_id bigint NOT NULL,
     merge_request_id bigint NOT NULL,
-    security_policy_id bigint NOT NULL,
+    security_policy_id bigint,
     user_id bigint,
     security_findings_uuids text[] DEFAULT '{}'::text[],
     dismissal_types smallint[] DEFAULT '{}'::smallint[] NOT NULL,
@@ -49327,7 +49327,7 @@ ALTER TABLE ONLY packages_packages
     ADD CONSTRAINT fk_c188f0dba4 FOREIGN KEY (creator_id) REFERENCES users(id) ON DELETE SET NULL;
 
 ALTER TABLE ONLY security_policy_dismissals
-    ADD CONSTRAINT fk_c2379f1e97 FOREIGN KEY (security_policy_id) REFERENCES security_policies(id) ON DELETE CASCADE;
+    ADD CONSTRAINT fk_c2379f1e97_new FOREIGN KEY (security_policy_id) REFERENCES security_policies(id) ON DELETE SET NULL;
 
 ALTER TABLE ONLY sbom_occurrences
     ADD CONSTRAINT fk_c2a5562923 FOREIGN KEY (source_id) REFERENCES sbom_sources(id) ON DELETE CASCADE;
