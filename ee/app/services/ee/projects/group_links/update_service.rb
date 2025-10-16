@@ -10,6 +10,7 @@ module EE
         override :execute
         def execute(group_link_params)
           super.tap do
+            update_user_project_member_roles
             send_audit_event
           end
         end
@@ -63,6 +64,17 @@ module EE
           end
 
           ["Changed project group link #{changes.join(' ')}", details]
+        end
+
+        def update_user_project_member_roles
+          return if ::Feature.disabled?(:cache_user_project_member_roles, group_link.project.root_ancestor)
+
+          member_role_changed = group_link.saved_changes['member_role_id'].present?
+          access_level_changed = group_link.saved_changes['group_access'].present?
+
+          return unless member_role_changed || access_level_changed
+
+          ::Authz::UserProjectMemberRoles::UpdateForSharedProjectWorker.perform_async(group_link.id)
         end
       end
     end
