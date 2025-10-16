@@ -80,6 +80,10 @@ module Gitlab
                 totalUsersUsingCredits
                 totalUsersUsingPool
                 totalUsersUsingOverage
+                dailyUsage {
+                  date
+                  creditsUsed
+                }
               }
             }
           }

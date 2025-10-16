@@ -20,6 +20,11 @@ module Types
           description: 'Total number of users consuming overage.'
         # rubocop:enable GraphQL/ExtractType
 
+        field :daily_usage,
+          [DailyUsageType],
+          null: true,
+          description: 'Array of daily usage of GitLab Credits.'
+
         field :users, UsersType.connection_type,
           null: true,
           description: 'List of users with their usage data.'

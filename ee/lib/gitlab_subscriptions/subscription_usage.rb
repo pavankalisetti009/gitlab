@@ -7,6 +7,16 @@ module GitlabSubscriptions
     PoolUsage = Struct.new(:total_credits, :credits_used, :daily_usage, :declarative_policy_subject)
     DailyUsage = Struct.new(:date, :credits_used, :declarative_policy_subject)
     UsersUsage = Struct.new(:usage_stats, :users, :declarative_policy_subject) do
+      def daily_usage
+        usage_stats.call[:dailyUsage].to_a.map do |usage|
+          DailyUsage.new(
+            date: usage[:date],
+            credits_used: usage[:creditsUsed],
+            declarative_policy_subject: declarative_policy_subject
+          )
+        end
+      end
+
       def total_users_using_credits
         usage_stats.call[:totalUsersUsingCredits]
       end

@@ -435,11 +435,11 @@ RSpec.describe GitlabSubscriptions::SubscriptionUsage, feature_category: :consum
       end
 
       it 'includes namespace users in the users field' do
-        expect(subscription_usage.users_usage.users).to match_array(users.first(2))
+        expect(users_usage.users).to match_array(users.first(2))
       end
 
       it 'sets declarative_policy_subject to SubscriptionUsage' do
-        expect(subscription_usage.users_usage.declarative_policy_subject).to eq(subscription_usage)
+        expect(users_usage.declarative_policy_subject).to eq(subscription_usage)
       end
 
       context 'when namespace is nil' do
@@ -451,7 +451,7 @@ RSpec.describe GitlabSubscriptions::SubscriptionUsage, feature_category: :consum
         end
 
         it 'raises an error when trying to get users' do
-          expect { subscription_usage.users_usage.users }.to raise_error(NoMethodError)
+          expect { users_usage.users }.to raise_error(NoMethodError)
         end
       end
 
@@ -466,7 +466,7 @@ RSpec.describe GitlabSubscriptions::SubscriptionUsage, feature_category: :consum
         end
 
         it 'returns empty collection' do
-          expect(subscription_usage.users_usage.users).to be_empty
+          expect(users_usage.users).to be_empty
         end
       end
 
@@ -482,7 +482,8 @@ RSpec.describe GitlabSubscriptions::SubscriptionUsage, feature_category: :consum
               usersUsage: {
                 totalUsersUsingCredits: 3,
                 totalUsersUsingPool: 2,
-                totalUsersUsingOverage: 1
+                totalUsersUsingOverage: 1,
+                dailyUsage: [{ date: '2025-10-01', creditsUsed: 321 }]
               }
             }
           end
@@ -492,6 +493,14 @@ RSpec.describe GitlabSubscriptions::SubscriptionUsage, feature_category: :consum
               total_users_using_credits: 3,
               total_users_using_pool: 2,
               total_users_using_overage: 1
+            )
+
+            expect(users_usage.daily_usage).to be_a(Array)
+            expect(users_usage.daily_usage.first).to be_a(GitlabSubscriptions::SubscriptionUsage::DailyUsage)
+            expect(users_usage.daily_usage.first).to have_attributes(
+              date: '2025-10-01',
+              credits_used: 321,
+              declarative_policy_subject: subscription_usage
             )
           end
         end
@@ -503,7 +512,8 @@ RSpec.describe GitlabSubscriptions::SubscriptionUsage, feature_category: :consum
             expect(users_usage).to have_attributes(
               total_users_using_credits: nil,
               total_users_using_pool: nil,
-              total_users_using_overage: nil
+              total_users_using_overage: nil,
+              daily_usage: []
             )
           end
         end
@@ -515,7 +525,8 @@ RSpec.describe GitlabSubscriptions::SubscriptionUsage, feature_category: :consum
             expect(users_usage).to have_attributes(
               total_users_using_credits: nil,
               total_users_using_pool: nil,
-              total_users_using_overage: nil
+              total_users_using_overage: nil,
+              daily_usage: []
             )
           end
         end
@@ -531,11 +542,11 @@ RSpec.describe GitlabSubscriptions::SubscriptionUsage, feature_category: :consum
       end
 
       it 'includes all users in the users field' do
-        expect(subscription_usage.users_usage.users).to match_array(users)
+        expect(users_usage.users).to match_array(users)
       end
 
       it 'sets declarative_policy_subject to self' do
-        expect(subscription_usage.users_usage.declarative_policy_subject).to eq(subscription_usage)
+        expect(users_usage.declarative_policy_subject).to eq(subscription_usage)
       end
     end
 
@@ -548,7 +559,7 @@ RSpec.describe GitlabSubscriptions::SubscriptionUsage, feature_category: :consum
       end
 
       it 'returns nil for unknown subscription target' do
-        expect(subscription_usage.users_usage.users).to be_nil
+        expect(users_usage.users).to be_nil
       end
     end
   end
