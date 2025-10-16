@@ -134,10 +134,7 @@ export default {
       );
     },
     selectedTools() {
-      return this.formValues.tools.map((toolId) => ({
-        id: toolId,
-        name: this.availableTools.find((tool) => tool.id === toolId)?.name,
-      }));
+      return this.availableTools.filter((tool) => this.formValues.tools.includes(tool.id));
     },
   },
   methods: {
