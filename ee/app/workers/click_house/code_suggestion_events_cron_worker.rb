@@ -4,6 +4,7 @@ module ClickHouse # rubocop:disable Gitlab/BoundedContexts -- this file will be 
   # Alias worker class. Remove after 17.8 release so scheduled cron jobs can work-off properly
   class CodeSuggestionEventsCronWorker < DumpAllWriteBuffersCronWorker
     idempotent!
+    tags :clickhouse
 
     def perform
       # no-op

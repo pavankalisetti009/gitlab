@@ -9,6 +9,7 @@ module ClickHouse
     queue_namespace :cronjob
     data_consistency :delayed
     feature_category :value_stream_management
+    tags :clickhouse
 
     def perform
       result = ::ClickHouse::SyncStrategies::EventSyncStrategy.new.execute
