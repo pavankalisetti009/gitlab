@@ -37,7 +37,7 @@ RSpec.describe GitlabSubscriptions::HandRaiseLeadsController, feature_category: 
       end
     end
 
-    context 'when authenticated' do
+    context 'when authenticated', :saas do
       before do
         sign_in(user)
       end

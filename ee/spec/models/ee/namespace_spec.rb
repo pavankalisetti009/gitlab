@@ -668,7 +668,7 @@ RSpec.describe Namespace, feature_category: :groups_and_projects do
     subject(:update_namespace) { namespace.update!(attributes) }
 
     before do
-      allow(Gitlab).to receive(:com?).and_return(true)
+      stub_saas_features(gitlab_com_subscriptions: true)
       allow(owner).to receive(:privatized_by_abuse_automation?)
         .and_return(privatized_by_abuse_automation)
       allow(::Gitlab::ApplicationRateLimiter).to receive(:peek).and_call_original
@@ -711,9 +711,9 @@ RSpec.describe Namespace, feature_category: :groups_and_projects do
         allow(namespace).to receive(:skip_sync_with_customers_dot).and_return(false)
       end
 
-      context 'when not on Gitlab.com?' do
+      context 'when gitlab_com_subscriptions saas feature is not available' do
         before do
-          allow(Gitlab).to receive(:com?).and_return(false)
+          stub_saas_features(gitlab_com_subscriptions: false)
         end
 
         include_examples 'no sync'
@@ -755,10 +755,9 @@ RSpec.describe Namespace, feature_category: :groups_and_projects do
           include_examples 'no sync'
         end
 
-        context 'when the root namespace is on a paid plan' do
-          before do
-            allow(namespace.actual_plan).to receive(:paid?).and_return(true)
-            namespace.parent = nil
+        context 'when the root namespace is on a paid plan', :saas do
+          let_it_be(:namespace, reload: true) do
+            create(:group_with_plan, plan: :ultimate_plan, organization: organization)
           end
 
           context 'when the owner is privatized by abuse automation' do
@@ -773,12 +772,9 @@ RSpec.describe Namespace, feature_category: :groups_and_projects do
         end
       end
 
-      context 'when non-free user namespace' do
-        let(:namespace) { create(:namespace, owner: owner) }
-
-        before do
-          allow(namespace.actual_plan).to receive(:paid?).and_return(true)
-          namespace.parent = nil
+      context 'when non-free user namespace', :saas do
+        let(:namespace) do
+          create(:namespace_with_plan, plan: :ultimate_plan, owner: owner)
         end
 
         context 'when the owner is privatized by abuse automation' do
@@ -818,10 +814,8 @@ RSpec.describe Namespace, feature_category: :groups_and_projects do
       end
     end
 
-    describe 'multiple name updates' do
-      before do
-        allow(namespace.actual_plan).to receive(:paid?).and_return(true)
-      end
+    describe 'multiple name updates', :saas do
+      let_it_be(:namespace, reload: true) { create(:group_with_plan, plan: :ultimate_plan, organization: organization) }
 
       context 'when two name updates for the same namespace happen during the same minute' do
         it 'does not trigger a CustomersDot update the second time around' do
@@ -1169,13 +1163,13 @@ RSpec.describe Namespace, feature_category: :groups_and_projects do
       end
     end
 
-    context 'when running on Gitlab.com' do
+    context 'when gitlab_com_subscriptions saas feature is available' do
       before do
-        allow(Gitlab).to receive(:com?).and_return(true)
+        stub_saas_features(gitlab_com_subscriptions: true)
       end
 
       context 'for personal namespaces' do
-        context 'when namespace has a subscription associated' do
+        context 'when namespace has a subscription associated', :saas do
           before do
             create(:gitlab_subscription, namespace: namespace, hosted_plan: ultimate_plan)
           end
@@ -1217,7 +1211,7 @@ RSpec.describe Namespace, feature_category: :groups_and_projects do
             end
           end
 
-          context 'when parent group has a subscription associated' do
+          context 'when parent group has a subscription associated', :saas do
             before do
               create(:gitlab_subscription, namespace: parent, hosted_plan: ultimate_plan)
             end
@@ -1950,8 +1944,8 @@ RSpec.describe Namespace, feature_category: :groups_and_projects do
       end
     end
 
-    context 'when in namespace enforcement' do
-      let(:namespace) { build(:namespace) }
+    context 'when in namespace enforcement', :saas do
+      let(:namespace) { build(:namespace, gitlab_subscription: build(:gitlab_subscription)) }
       let(:enforceable_storage_limit) { 500 }
 
       before do
@@ -2235,16 +2229,16 @@ RSpec.describe Namespace, feature_category: :groups_and_projects do
     let_it_be(:namespace) { create(:group) }
     let_it_be(:subgroup) {  create(:group, parent: namespace) }
 
-    let(:gitlab_com?) { true }
+    let(:gitlab_com_subscriptions_enabled) { true }
 
     subject(:user_cap_available?) { namespace.user_cap_available? }
 
     before do
-      allow(::Gitlab).to receive(:com?).and_return(gitlab_com?)
+      stub_saas_features(gitlab_com_subscriptions: gitlab_com_subscriptions_enabled)
     end
 
     context 'when not on Gitlab.com' do
-      let(:gitlab_com?) { false }
+      let(:gitlab_com_subscriptions_enabled) { false }
 
       it { is_expected.to be false }
     end

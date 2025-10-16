@@ -11,7 +11,7 @@ RSpec.describe ProjectStatistics, feature_category: :source_code_management do
     let(:other_sizes) { 3 }
     let(:uploads_size) { 5 }
 
-    context 'when gitlab_com_subscriptions saas feature is available' do
+    context 'when gitlab_com_subscriptions saas feature is available', :saas do
       before do
         stub_saas_features(gitlab_com_subscriptions: true)
       end

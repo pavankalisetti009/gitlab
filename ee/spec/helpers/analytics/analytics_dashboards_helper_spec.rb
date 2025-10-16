@@ -311,7 +311,7 @@ RSpec.describe Analytics::AnalyticsDashboardsHelper, feature_category: :product_
 
     describe 'can_select_gitlab_managed_provider' do
       where(:is_project,
-        :gitlab_com,
+        :gitlab_com_subscriptions_enabled,
         :product_analytics_billing,
         :expected_value) do
         true  | true  | true  | true
@@ -323,7 +323,7 @@ RSpec.describe Analytics::AnalyticsDashboardsHelper, feature_category: :product_
 
       with_them do
         before do
-          allow(Gitlab::CurrentSettings).to receive(:should_check_namespace_plan?).and_return(gitlab_com)
+          stub_saas_features(gitlab_com_subscriptions: gitlab_com_subscriptions_enabled)
           stub_feature_flags(product_analytics_billing: product_analytics_billing, product_analytics_features: true)
         end
 

@@ -121,6 +121,8 @@ module EE
           store.subscribe ::Vulnerabilities::ProcessTransferEventsWorker, to: ::Projects::ProjectTransferedEvent
           store.subscribe ::Vulnerabilities::ProcessTransferEventsWorker, to: ::Groups::GroupTransferedEvent
           store.subscribe ::Vulnerabilities::ProcessArchivedEventsWorker, to: ::Projects::ProjectArchivedEvent
+          store.subscribe ::Vulnerabilities::ProcessGroupArchivedEventsWorker,
+            to: ::Namespaces::Groups::GroupArchivedEvent
           store.subscribe ::Vulnerabilities::ProcessBulkDismissedEventsWorker, to: ::Vulnerabilities::BulkDismissedEvent
           store.subscribe ::Vulnerabilities::ProcessBulkRedetectedEventsWorker,
             to: ::Vulnerabilities::BulkRedetectedEvent

@@ -127,7 +127,11 @@ RSpec.describe Namespaces::ServiceAccounts::CreateService, feature_category: :us
 
           it_behaves_like 'service account creation failure'
 
-          context 'when saas', :saas do
+          context 'when gitlab_com_subscriptions saas feature is available' do
+            before do
+              stub_saas_features(gitlab_com_subscriptions: true)
+            end
+
             it_behaves_like 'service account creation failure'
           end
         end
@@ -141,7 +145,13 @@ RSpec.describe Namespaces::ServiceAccounts::CreateService, feature_category: :us
             let(:username_prefix) { "service_account_group_#{group.id}" }
           end
 
-          context 'when saas', :saas do
+          context 'when gitlab_com_subscriptions saas feature is available', :saas do
+            let_it_be(:group) { create(:group_with_plan, owners: current_user) }
+
+            before do
+              stub_saas_features(gitlab_com_subscriptions: true)
+            end
+
             it_behaves_like 'service account creation success' do
               let(:username_prefix) { "service_account_group_#{group.id}" }
             end
@@ -153,7 +163,11 @@ RSpec.describe Namespaces::ServiceAccounts::CreateService, feature_category: :us
 
             it_behaves_like 'service account creation failure'
 
-            context 'when saas', :saas do
+            context 'when gitlab_com_subscriptions saas feature is available' do
+              before do
+                stub_saas_features(gitlab_com_subscriptions: true)
+              end
+
               it_behaves_like 'service account creation failure'
             end
           end

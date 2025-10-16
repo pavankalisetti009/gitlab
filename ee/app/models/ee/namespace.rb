@@ -326,7 +326,7 @@ module EE
     override :actual_plan
     def actual_plan
       ::Gitlab::SafeRequestStore.fetch(actual_plan_store_key) do
-        next ::Plan.default unless ::Gitlab.com?
+        next ::Plan.default unless ::Gitlab::Saas.feature_available?(:gitlab_com_subscriptions)
 
         if parent_id
           # remove safe navigation and `::Plan.free` with https://gitlab.com/gitlab-org/gitlab/-/issues/508611
@@ -598,7 +598,7 @@ module EE
 
     def user_cap_available?
       return false unless group_namespace?
-      return false unless ::Gitlab.com?
+      return false unless ::Gitlab::Saas.feature_available?(:gitlab_com_subscriptions)
 
       true
     end
@@ -692,7 +692,7 @@ module EE
     end
 
     def domain_verification_available?
-      ::Gitlab.com? && root? && licensed_feature_available?(:domain_verification)
+      ::Gitlab.com? && root? && licensed_feature_available?(:domain_verification) # rubocop:todo Gitlab/AvoidGitlabInstanceChecks -- Needs resolved with a new saas feature
     end
 
     def any_enterprise_users?
@@ -825,7 +825,7 @@ module EE
 
     def sync_name_with_customers_dot
       return if skip_sync_with_customers_dot
-      return unless ::Gitlab.com?
+      return unless ::Gitlab::Saas.feature_available?(:gitlab_com_subscriptions)
       return if user_namespace? && owner.privatized_by_abuse_automation?
       return unless root? && (trial? || actual_plan&.paid?)
       return if update_to_customerdot_blocked?
@@ -838,7 +838,7 @@ module EE
 
       globally_available = License.feature_available?(feature)
 
-      if ::Gitlab::CurrentSettings.should_check_namespace_plan?
+      if ::Gitlab::CurrentSettings.should_check_namespace_plan? # rubocop:disable Gitlab/AvoidGitlabInstanceChecks -- Correct use of this feature
         globally_available && feature_available_in_plan?(feature)
       else
         globally_available

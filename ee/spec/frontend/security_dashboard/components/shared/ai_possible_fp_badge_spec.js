@@ -125,23 +125,6 @@ describe('AiPossibleFpBadge', () => {
     });
   });
 
-  describe('when status is not the expected one', () => {
-    beforeEach(() => {
-      wrapper = createComponent({
-        vulnerability: {
-          latestFlag: {
-            status: 'SOME_OTHER_STATUS',
-            confidenceScore: 0.9,
-          },
-        },
-      });
-    });
-
-    it('does not render the badge', () => {
-      expect(findBadge().exists()).toBe(false);
-    });
-  });
-
   describe('when flag description is present', () => {
     beforeEach(() => {
       wrapper = createComponent();

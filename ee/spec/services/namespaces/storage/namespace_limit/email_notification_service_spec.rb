@@ -11,13 +11,13 @@ RSpec.describe Namespaces::Storage::NamespaceLimit::EmailNotificationService,
     let(:mailer) { ::Namespaces::Storage::NamespaceLimitMailer }
     let(:action_mailer) { instance_double(ActionMailer::MessageDelivery) }
 
-    before do
-      enforce_namespace_storage_limit(group)
-    end
-
     context 'in a saas environment', :saas do
       let_it_be(:group, refind: true) { create(:group_with_plan, plan: :ultimate_plan) }
       let_it_be(:owner) { create(:user) }
+
+      before do
+        enforce_namespace_storage_limit(group)
+      end
 
       before_all do
         create(:namespace_root_storage_statistics, namespace: group)

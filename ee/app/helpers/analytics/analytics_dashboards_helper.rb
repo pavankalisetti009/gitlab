@@ -95,9 +95,7 @@ module Analytics
       return false unless project?(project)
       return false unless ::Feature.enabled?(:product_analytics_billing, project.root_ancestor)
 
-      # rubocop:disable Gitlab/AvoidGitlabInstanceChecks -- GitLab-managed provider is currently ONLY available on .com
-      Gitlab::CurrentSettings.should_check_namespace_plan?
-      # rubocop:enable Gitlab/AvoidGitlabInstanceChecks
+      ::Gitlab::Saas.feature_available?(:gitlab_com_subscriptions)
     end
 
     def managed_cluster_purchased?(project)

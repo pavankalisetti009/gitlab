@@ -9,6 +9,17 @@ module Types
 
         authorize :read_subscription_usage
 
+        # rubocop: disable GraphQL/ExtractType -- no value for now
+        field :total_users_using_credits, GraphQL::Types::Int, null: true,
+          description: 'Total number of users consuming GitLab Credits.'
+
+        field :total_users_using_pool, GraphQL::Types::Int, null: true,
+          description: 'Total number of users consuming pool GitLab Credits.'
+
+        field :total_users_using_overage, GraphQL::Types::Int, null: true,
+          description: 'Total number of users consuming overage.'
+        # rubocop:enable GraphQL/ExtractType
+
         field :users, UsersType.connection_type,
           null: true,
           description: 'List of users with their usage data.'

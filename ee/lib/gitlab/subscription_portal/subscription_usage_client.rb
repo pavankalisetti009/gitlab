@@ -67,6 +67,25 @@ module Gitlab
         }
       GQL
 
+      GET_USERS_USAGE_STATS_QUERY = <<~GQL
+        query subscriptionUsageUsersStats(
+          $namespaceId: ID,
+          $licenseKey: String,
+          $startDate: ISO8601Date,
+          $endDate: ISO8601Date
+        ) {
+          subscription(namespaceId: $namespaceId, licenseKey: $licenseKey) {
+            gitlabCreditsUsage(startDate: $startDate, endDate:$endDate) {
+              usersUsage {
+                totalUsersUsingCredits
+                totalUsersUsingPool
+                totalUsersUsingOverage
+              }
+            }
+          }
+        }
+      GQL
+
       # Initialize the client with the provided parameters that will be used later
       # to make API calls to the subscription portal
       #
@@ -130,6 +149,22 @@ module Gitlab
           {
             success: true,
             usersUsage: response.dig(:data, :subscription, :gitlabCreditsUsage, :usersUsage, :users)
+          }
+        end
+      end
+
+      def get_users_usage_stats
+        response = execute_graphql_query(
+          query: GET_USERS_USAGE_STATS_QUERY,
+          variables: default_variables.merge(startDate: start_date, endDate: end_date)
+        )
+
+        if unsuccessful_response?(response)
+          error(GET_USERS_USAGE_STATS_QUERY, response)
+        else
+          {
+            success: true,
+            usersUsage: response.dig(:data, :subscription, :gitlabCreditsUsage, :usersUsage)
           }
         end
       end
