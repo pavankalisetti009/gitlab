@@ -295,20 +295,25 @@ module API
                                   .new(current_user, :duo_agent_platform, root_namespace)
                                   .execute.payload
 
-              headers = Gitlab::DuoWorkflow::Client.cloud_connector_headers(user: current_user).merge(
+              grpc_headers = Gitlab::DuoWorkflow::Client.cloud_connector_headers(user: current_user).merge(
                 'x-gitlab-oauth-token' => gitlab_oauth_token.plaintext_token,
                 'x-gitlab-unidirectional-streaming' => 'enabled'
               ).merge(model_metadata_headers)
 
-              headers['x-gitlab-project-id'] ||= params[:project_id].presence
-              headers['x-gitlab-root-namespace-id'] = root_namespace&.id&.to_s
-              headers['x-gitlab-namespace-id'] ||= params[:namespace_id].presence ||
-                headers['X-Gitlab-Namespace-Id'].presence ||
-                headers['x-gitlab-root-namespace-id']
+              grpc_headers['x-gitlab-project-id'] ||= params[:project_id].presence
+              grpc_headers['x-gitlab-root-namespace-id'] = root_namespace&.id&.to_s
+              grpc_headers['x-gitlab-namespace-id'] ||= params[:namespace_id].presence ||
+                grpc_headers['X-Gitlab-Namespace-Id'].presence ||
+                grpc_headers['x-gitlab-root-namespace-id']
+
+              if headers['X-Gitlab-Language-Server-Version'].present?
+                grpc_headers['x-gitlab-language-server-version'] =
+                  headers['X-Gitlab-Language-Server-Version']
+              end
 
               {
                 DuoWorkflow: {
-                  Headers: headers,
+                  Headers: grpc_headers,
                   ServiceURI: Gitlab::DuoWorkflow::Client.url_for(feature_setting: feature_setting, user: current_user),
                   Secure: Gitlab::DuoWorkflow::Client.secure?
                 }
