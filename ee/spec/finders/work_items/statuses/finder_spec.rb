@@ -15,20 +15,24 @@ RSpec.describe WorkItems::Statuses::Finder, feature_category: :team_planning do
 
     shared_examples 'returns system-defined status' do
       it 'returns system-defined status' do
-        expect(finder).to be_a(WorkItems::Statuses::SystemDefined::Status)
-        expect(finder.id).to eq(1)
+        expect(finder).to contain_exactly(
+          have_attributes(
+            class: WorkItems::Statuses::SystemDefined::Status,
+            id: 1
+          )
+        )
       end
     end
 
     shared_examples 'returns custom status' do
       it 'returns custom status' do
-        expect(finder).to eq(custom_status)
+        expect(finder).to contain_exactly(custom_status)
       end
     end
 
-    shared_examples 'returns nil' do
-      it 'returns nil' do
-        expect(finder).to be_nil
+    shared_examples 'returns empty collection' do
+      it 'returns empty collection' do
+        expect(finder).to be_empty
       end
     end
 
@@ -40,7 +44,7 @@ RSpec.describe WorkItems::Statuses::Finder, feature_category: :team_planning do
       context 'when status is not found' do
         let(:params) { { 'system_defined_status_identifier' => 999 } }
 
-        it_behaves_like 'returns nil'
+        it_behaves_like 'returns empty collection'
       end
     end
 
@@ -53,7 +57,7 @@ RSpec.describe WorkItems::Statuses::Finder, feature_category: :team_planning do
       context 'when status is not found' do
         let(:params) { { 'custom_status_id' => other_custom_status.id } }
 
-        it_behaves_like 'returns nil'
+        it_behaves_like 'returns empty collection'
       end
     end
 
@@ -79,14 +83,14 @@ RSpec.describe WorkItems::Statuses::Finder, feature_category: :team_planning do
           let(:params) { { 'name' => '🐞🧨' } }
 
           it 'returns the emoji status' do
-            expect(finder).to eq(custom_status_with_emoji)
+            expect(finder).to contain_exactly(custom_status_with_emoji)
           end
 
           context 'when name has surrounding quotes' do
             let(:params) { { 'name' => '"🐞🧨"' } }
 
             it 'returns the emoji status' do
-              expect(finder).to eq(custom_status_with_emoji)
+              expect(finder).to contain_exactly(custom_status_with_emoji)
             end
           end
         end
@@ -94,19 +98,25 @@ RSpec.describe WorkItems::Statuses::Finder, feature_category: :team_planning do
         context 'when name has double surrounding quotes' do
           let(:params) { { 'name' => '""To do""' } }
 
-          it_behaves_like 'returns nil' # because "To do" doesn't exist
+          it_behaves_like 'returns empty collection' # because "To do" doesn't exist
         end
 
         context 'when status only exists as system-defined' do
           let(:params) { { 'name' => 'Done' } }
 
-          it_behaves_like 'returns nil'
+          it_behaves_like 'returns empty collection'
         end
 
         context 'when status is not found' do
           let(:params) { { 'name' => 'Invalid' } }
 
-          it_behaves_like 'returns nil'
+          it_behaves_like 'returns empty collection'
+        end
+
+        context 'when status name is blank' do
+          let(:params) { { 'name' => '' } }
+
+          it_behaves_like 'returns empty collection'
         end
       end
 
@@ -116,7 +126,13 @@ RSpec.describe WorkItems::Statuses::Finder, feature_category: :team_planning do
         context 'when status is not found' do
           let(:params) { { 'name' => 'Invalid' } }
 
-          it_behaves_like 'returns nil'
+          it_behaves_like 'returns empty collection'
+        end
+
+        context 'when status name is blank' do
+          let(:params) { { 'name' => '' } }
+
+          it_behaves_like 'returns empty collection'
         end
       end
 
@@ -132,8 +148,8 @@ RSpec.describe WorkItems::Statuses::Finder, feature_category: :team_planning do
         context 'when no matching statuses are found' do
           let(:params) { { 'name' => 'Invalid' } }
 
-          it 'returns nil' do
-            expect(finder).to be_nil
+          it 'returns empty collection' do
+            expect(finder).to be_empty
           end
         end
       end
@@ -142,7 +158,28 @@ RSpec.describe WorkItems::Statuses::Finder, feature_category: :team_planning do
     context 'with no status params' do
       let(:params) { {} }
 
-      it_behaves_like 'returns nil'
+      it_behaves_like 'returns empty collection'
+    end
+  end
+
+  describe '#find_single_status' do
+    subject(:find_single_status) { described_class.new(namespace, params).find_single_status }
+
+    context 'when execute returns results' do
+      let_it_be(:custom_status) { create(:work_item_custom_status, namespace: group) }
+      let(:params) { { 'custom_status_id' => custom_status.id } }
+
+      it 'returns the first status' do
+        expect(find_single_status).to eq(custom_status)
+      end
+    end
+
+    context 'when execute returns empty array' do
+      let(:params) { { 'custom_status_id' => 999 } }
+
+      it 'returns nil' do
+        expect(find_single_status).to be_nil
+      end
     end
   end
 end

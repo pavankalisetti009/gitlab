@@ -12,14 +12,20 @@ module WorkItems
       end
 
       def execute
-        if params.key?('system_defined_status_identifier')
-          find_system_defined_status_by_id
-        elsif params.key?('custom_status_id')
-          find_custom_status_by_id
-        elsif params.key?('name')
-          name = params['name']
-          find_status_by_name(name) || find_status_without_quotes(name)
-        end
+        result = if params.key?('system_defined_status_identifier')
+                   find_system_defined_status_by_id
+                 elsif params.key?('custom_status_id')
+                   find_custom_status_by_id
+                 elsif params.key?('name')
+                   name = params['name']
+                   find_status_by_name(name).presence || find_status_without_quotes(name)
+                 end
+
+        Array(result)
+      end
+
+      def find_single_status
+        execute.first
       end
 
       private
@@ -45,24 +51,26 @@ module WorkItems
       end
 
       def find_status_by_name(name)
-        return if name.blank?
+        return [] if name.blank?
 
         namespace ? find_status_in_namespace(name) : find_statuses_across_namespaces(name)
       end
 
       def find_status_in_namespace(name)
-        if namespace&.custom_statuses&.exists?
-          ::WorkItems::Statuses::Custom::Status.find_by_namespace_and_name(namespace, name)
-        else
-          ::WorkItems::Statuses::SystemDefined::Status.find_by_name(name)
-        end
+        status = if namespace&.custom_statuses&.exists?
+                   ::WorkItems::Statuses::Custom::Status.find_by_namespace_and_name(namespace, name)
+                 else
+                   ::WorkItems::Statuses::SystemDefined::Status.find_by_name(name)
+                 end
+
+        Array(status)
       end
 
       def find_statuses_across_namespaces(name)
-        return unless current_user
+        return [] unless current_user
 
         group_ids = current_user.authorized_root_ancestor_ids
-        return if group_ids.empty?
+        return [] if group_ids.empty?
 
         custom_statuses = ::WorkItems::Statuses::Custom::Status.find_by_name_across_namespaces(name, group_ids)
 
@@ -71,7 +79,7 @@ module WorkItems
         system_defined_status = ::WorkItems::Statuses::SystemDefined::Status.find_by_name(name)
         statuses << system_defined_status if system_defined_status
 
-        statuses.presence
+        statuses
       end
     end
   end

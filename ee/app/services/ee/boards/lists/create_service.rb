@@ -104,7 +104,7 @@ module EE
 
         def find_status(board)
           namespace = board.resource_parent.root_ancestor
-          ::WorkItems::Statuses::Finder.new(namespace, params).execute
+          ::WorkItems::Statuses::Finder.new(namespace, params).find_single_status
         end
 
         def milestone_finder(board)
