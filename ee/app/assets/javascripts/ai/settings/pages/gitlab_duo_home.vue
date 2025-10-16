@@ -116,7 +116,7 @@ export default {
 </script>
 
 <template>
-  <div>
+  <div class="gl-grid gl-gap-y-5 gl-pb-5">
     <code-suggestions-usage
       v-if="shouldShowCodeSuggestionsUsage"
       :title="$options.i18n.gitlabDuoHomeTitle"
@@ -127,31 +127,33 @@ export default {
         <health-check-list v-if="!isSaaS" />
       </template>
       <template #duo-card="{ totalValue, usageValue, activeDuoTier, addOnPurchases }">
-        <section class="gl-grid gl-gap-5 gl-pb-5 @md/panel:gl-grid-cols-2">
-          <duo-core-upgrade-card v-if="shouldShowDuoCoreUpgradeCard(activeDuoTier)" />
-          <duo-seat-utilization-info-card
-            v-if="shouldShowSeatUtilizationInfoCard(activeDuoTier)"
-            data-testid="duo-seat-utilization-info-card"
-            :total-value="totalValue"
-            :usage-value="usageValue"
-            :active-duo-tier="activeDuoTier"
-            :add-on-purchases="addOnPurchases"
-          />
-          <duo-configuration-settings-info-card
-            data-testid="duo-configuration-settings-info-card"
-            :active-duo-tier="activeDuoTier"
-          />
-        </section>
-        <section class="gl-flex gl-flex-col gl-gap-5">
-          <duo-models-configuration-info-card
-            v-if="showDuoModelsConfigurationCard"
-            :duo-models-configuration-props="duoModelsConfigurationProps"
-          />
-          <duo-usage-analytics-card
-            v-if="usageDashboardPath"
-            :dashboard-path="usageDashboardPath"
-          />
-        </section>
+        <div class="gl-grid gl-gap-y-5">
+          <section class="gl-grid gl-gap-5 @md/panel:gl-grid-cols-2">
+            <duo-core-upgrade-card v-if="shouldShowDuoCoreUpgradeCard(activeDuoTier)" />
+            <duo-seat-utilization-info-card
+              v-if="shouldShowSeatUtilizationInfoCard(activeDuoTier)"
+              data-testid="duo-seat-utilization-info-card"
+              :total-value="totalValue"
+              :usage-value="usageValue"
+              :active-duo-tier="activeDuoTier"
+              :add-on-purchases="addOnPurchases"
+            />
+            <duo-configuration-settings-info-card
+              data-testid="duo-configuration-settings-info-card"
+              :active-duo-tier="activeDuoTier"
+            />
+          </section>
+          <section class="gl-flex gl-flex-col gl-gap-5">
+            <duo-models-configuration-info-card
+              v-if="showDuoModelsConfigurationCard"
+              :duo-models-configuration-props="duoModelsConfigurationProps"
+            />
+            <duo-usage-analytics-card
+              v-if="usageDashboardPath"
+              :dashboard-path="usageDashboardPath"
+            />
+          </section>
+        </div>
       </template>
     </code-suggestions-usage>
     <duo-workflow-settings
