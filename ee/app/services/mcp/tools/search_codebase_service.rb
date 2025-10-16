@@ -77,11 +77,15 @@ module Mcp
 
         project = find_project(project_id)
 
+        exclude_fields = %w[id source type embeddings_v1 reindexing]
+
         result = codebase_query(semantic_query).filter(
           project_id: project.id,
           path: directory_path,
           knn_count: knn,
-          limit: limit
+          limit: limit,
+          exclude_fields: exclude_fields,
+          extract_source_segments: true
         )
 
         lines = result.map.with_index(1) do |hit, idx|

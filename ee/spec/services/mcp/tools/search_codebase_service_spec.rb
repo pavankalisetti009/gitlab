@@ -60,14 +60,19 @@ RSpec.describe Mcp::Tools::SearchCodebaseService, feature_category: :mcp_server 
     context 'with valid arguments' do
       let(:query_obj) { instance_double(::Ai::ActiveContext::Queries::Code) }
 
-      let(:result_payload) do
-        {
-          items: [
-            { "path" => "app/services/foo/bar.rb", "content" => "class X\n  def y; end  \n" },
-            { "path" => "app/models/z.rb", "content" => "  module Z  \n end" }
-          ],
-          metadata: { count: 2, has_more: false }
-        }
+      let(:raw_hit) do
+        [
+          {
+            'project_id' => 1000000,
+            'path' => 'ruby/server.rb',
+            'content' => "require 'webrick'",
+            'name' => 'server.rb',
+            'blob_id' => '3a99909a7fa51ffd3fe6f9de3ab47dfbf2f59a9d',
+            'start_line' => 0,
+            'start_byte' => 0,
+            'language' => 'ruby'
+          }
+        ]
       end
 
       before do
@@ -95,18 +100,39 @@ RSpec.describe Mcp::Tools::SearchCodebaseService, feature_category: :mcp_server 
 
           expect(query_obj)
             .to receive(:filter)
-            .with(project_id: project.id, path: 'app/services/', knn_count: 64, limit: 20)
-            .and_return(result_payload[:items])
+            .with(
+              project_id: project.id,
+              path: 'app/services/',
+              knn_count: 64,
+              limit: 20,
+              exclude_fields: %w[id source type embeddings_v1 reindexing],
+              extract_source_segments: true)
+            .and_return(raw_hit)
 
           response = service.execute(request: nil, params: arguments)
 
           expect(response[:isError]).to be false
           expect(response[:content]).to be_an(Array)
           expect(response[:content].first[:type]).to eq('text')
-          expect(response[:content].first[:text]).to eq(
-            "1. app/services/foo/bar.rb\n   class X\n  def y; end  \n\n2. app/models/z.rb\n     module Z  \n end"
+
+          expect(response[:content].first[:text]).to eq("1. ruby/server.rb\n   require 'webrick'")
+
+          structured = response[:structuredContent]
+          expect(structured).to be_a(Hash)
+          expect(structured[:metadata]).to eq({ count: 1, has_more: false })
+          item = structured[:items].first
+          expect(item).to eq(
+            {
+              'project_id' => 1_000_000,
+              'path' => 'ruby/server.rb',
+              'content' => "require 'webrick'",
+              'name' => 'server.rb',
+              'language' => 'ruby',
+              'blob_id' => '3a99909a7fa51ffd3fe6f9de3ab47dfbf2f59a9d',
+              'start_line' => 0,
+              'start_byte' => 0
+            }
           )
-          expect(response[:structuredContent]).to eq(result_payload)
         end
       end
 
@@ -129,18 +155,39 @@ RSpec.describe Mcp::Tools::SearchCodebaseService, feature_category: :mcp_server 
 
           expect(query_obj)
             .to receive(:filter)
-            .with(project_id: project.id, path: 'app/services/', knn_count: 64, limit: 20)
-            .and_return(result_payload[:items])
+            .with(
+              project_id: project.id,
+              path: 'app/services/',
+              knn_count: 64,
+              limit: 20,
+              exclude_fields: %w[id source type embeddings_v1 reindexing],
+              extract_source_segments: true)
+            .and_return(raw_hit)
 
           response = service.execute(request: nil, params: arguments)
 
           expect(response[:isError]).to be false
           expect(response[:content]).to be_an(Array)
           expect(response[:content].first[:type]).to eq('text')
-          expect(response[:content].first[:text]).to eq(
-            "1. app/services/foo/bar.rb\n   class X\n  def y; end  \n\n2. app/models/z.rb\n     module Z  \n end"
+
+          expect(response[:content].first[:text]).to eq("1. ruby/server.rb\n   require 'webrick'")
+
+          structured = response[:structuredContent]
+          expect(structured).to be_a(Hash)
+          expect(structured[:metadata]).to eq({ count: 1, has_more: false })
+          item = structured[:items].first
+          expect(item).to eq(
+            {
+              'project_id' => 1_000_000,
+              'path' => 'ruby/server.rb',
+              'content' => "require 'webrick'",
+              'name' => 'server.rb',
+              'language' => 'ruby',
+              'blob_id' => '3a99909a7fa51ffd3fe6f9de3ab47dfbf2f59a9d',
+              'start_line' => 0,
+              'start_byte' => 0
+            }
           )
-          expect(response[:structuredContent]).to eq(result_payload)
         end
       end
     end

@@ -58,11 +58,44 @@ RSpec.describe Ai::ActiveContext::Queries::Code, feature_category: :code_suggest
       let(:elasticsearch_docs) do
         {
           project.id => [
-            { '_source' => { 'id' => 1, 'project_id' => project.id, 'content' => "test content 1-1" } },
-            { '_source' => { 'id' => 1, 'project_id' => project.id, 'content' => "test content 1-2" } }
+            {
+              '_source' => {
+                'id' => 1,
+                'project_id' => project.id,
+                'content' => "test content 1-1",
+                'path' => 'some/path/to/test.rb',
+                'name' => 'test.rb',
+                'language' => 'ruby',
+                'source' => 'a99909a7fa51ffd3fe6f9de3ab47dfbf2f59a9d1::0:546::0',
+                'embeddings_v1' => Array.new(768, 0.0)
+              }
+            },
+            {
+              '_source' => {
+                'id' => 1,
+                'project_id' => project.id,
+                'content' => "test content 1-2",
+                'path' => 'some/path/to/test.rb',
+                'name' => 'test.rb',
+                'language' => 'ruby',
+                'source' => 'a99909a7fa51ffd3fe6f9de3ab47dfbf2f5910d1::600:546::10',
+                'embeddings_v1' => Array.new(768, 0.0)
+              }
+            }
           ],
           project_2.id => [
-            { '_source' => { 'id' => 2, 'project_id' => project_2.id, 'content' => "test content 2-1" } }
+            {
+              '_source' => {
+                'id' => 2,
+                'project_id' => project_2.id,
+                'content' => "test content 2-1",
+                'path' => 'some/path/to/test.rb',
+                'name' => 'test.rb',
+                'language' => 'ruby',
+                'source' => 'a99909a7fa51ffd3fe6f9de3ab47dfbf2f5911d1::0:546::0',
+                'embeddings_v1' => Array.new(768, 0.0)
+              }
+            }
           ]
         }
       end
@@ -89,10 +122,56 @@ RSpec.describe Ai::ActiveContext::Queries::Code, feature_category: :code_suggest
         expect(project_2_results.each.to_a).to eq(elasticsearch_docs[project_2.id].pluck('_source'))
       end
 
+      context 'when exclude_fields and extract_source_segments is provided' do
+        it 'returns the expected results' do
+          project_1_results = codebase_query.filter(
+            project_id: project.id,
+            exclude_fields: %w[id source type embeddings_v1 reindexing],
+            extract_source_segments: true
+          )
+
+          expect(project_1_results).to match_array([
+            {
+              'project_id' => project.id,
+              'path' => 'some/path/to/test.rb',
+              'name' => 'test.rb',
+              'language' => 'ruby',
+              'content' => "test content 1-1",
+              'blob_id' => "a99909a7fa51ffd3fe6f9de3ab47dfbf2f59a9d1",
+              'start_byte' => 0,
+              'length' => 546,
+              'start_line' => 0
+            },
+            {
+              'project_id' => project.id,
+              'path' => 'some/path/to/test.rb',
+              'name' => 'test.rb',
+              'language' => 'ruby',
+              'content' => "test content 1-2",
+              'blob_id' => 'a99909a7fa51ffd3fe6f9de3ab47dfbf2f5910d1',
+              'start_byte' => 600,
+              'length' => 546,
+              'start_line' => 10
+            }
+          ])
+        end
+      end
+
       context 'when filtering by path' do
         let(:project_es_docs_in_path) do
           [
-            { '_source' => { 'id' => 1, 'project_id' => project.id, 'content' => "test content in path" } }
+            {
+              '_source' => {
+                'id' => 1,
+                'project_id' => project.id,
+                'content' => "test content in path",
+                'path' => 'some/path/to/test.rb',
+                'name' => 'test.rb',
+                'language' => 'ruby',
+                'source' => 'a99909a7fa51ffd3fe6f9de3ab47dfbf2f59a9d::0:546::0',
+                'embeddings_v1' => Array.new(768, 0.0)
+              }
+            }
           ]
         end
 

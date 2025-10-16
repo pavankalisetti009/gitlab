@@ -15,13 +15,14 @@ module Ai
           @user = user
         end
 
-        def filter(project_id:, path: nil, knn_count: KNN_COUNT, limit: SEARCH_RESULTS_LIMIT)
-          if no_collection_record?
-            raise(
-              NoCollectionRecordError,
-              "A Code collection record is required."
-            )
-          end
+        def filter(
+          project_id:,
+          path: nil,
+          knn_count: KNN_COUNT,
+          limit: SEARCH_RESULTS_LIMIT,
+          exclude_fields: [],
+          extract_source_segments: false)
+          raise(NoCollectionRecordError, "A Code collection record is required.") if no_collection_record?
 
           query = if path.nil?
                     repository_query(project_id, knn_count, limit)
@@ -29,12 +30,37 @@ module Ai
                     directory_query(project_id, path, knn_count, limit)
                   end
 
-          COLLECTION_CLASS.search(query: query, user: user)
+          results = COLLECTION_CLASS.search(query: query, user: user)
+
+          present_results(results, exclude_fields: exclude_fields, extract_source_segments: extract_source_segments)
         end
 
         private
 
         attr_reader :user, :search_term
+
+        def present_results(results, exclude_fields: [], extract_source_segments: false)
+          results.map do |hit|
+            item = hit.except(*exclude_fields)
+
+            # The source is defined here:
+            # https://gitlab.com/gitlab-org/gitlab-elasticsearch-indexer/-/blob/main/internal/mode/chunk/chunker/types.go
+            # eg, fmt.Sprintf("%s::%d:%d::%d", c.OID, c.StartByte, c.Length, c.StartLine)
+            if extract_source_segments
+              src = hit['source']
+              src_matched_segments = src.is_a?(String) && src.match(/\A([0-9a-f]{40})::(\d+):(\d+)::(\d+)\z/i)
+
+              if src_matched_segments
+                item['blob_id'] = src_matched_segments[1]
+                item['start_byte'] = src_matched_segments[2].to_i
+                item['length'] = src_matched_segments[3].to_i
+                item['start_line'] = src_matched_segments[4].to_i
+              end
+            end
+
+            item
+          end
+        end
 
         def repository_query(project_id, knn_count, limit)
           ::ActiveContext::Query.filter(
