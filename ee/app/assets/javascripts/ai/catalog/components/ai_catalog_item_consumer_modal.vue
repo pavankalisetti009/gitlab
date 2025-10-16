@@ -31,7 +31,7 @@ export default {
   data() {
     return {
       isOpen: this.open,
-      targetId: this.item?.public ? null : this.item?.project?.id || null,
+      targetId: this.item.public ? null : this.item.project?.id || null,
       isDirty: false,
       error: null,
     };

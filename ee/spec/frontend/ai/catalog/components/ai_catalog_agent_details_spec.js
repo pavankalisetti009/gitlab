@@ -3,9 +3,7 @@ import { GlBadge } from '@gitlab/ui';
 import AiCatalogAgentDetails from 'ee/ai/catalog/components/ai_catalog_agent_details.vue';
 import AiCatalogItemField from 'ee/ai/catalog/components/ai_catalog_item_field.vue';
 import FormSection from 'ee/ai/catalog/components/form_section.vue';
-import { mockAgent, mockAgentVersion } from '../mock_data';
-
-const TOOLS = ['A Tool', 'Another Tool'];
+import { mockAgent, mockAgentVersion, mockToolsTitles } from '../mock_data';
 
 describe('AiCatalogAgentDetails', () => {
   let wrapper;
@@ -16,7 +14,7 @@ describe('AiCatalogAgentDetails', () => {
       latestVersion: {
         ...mockAgentVersion,
         tools: {
-          nodes: TOOLS.map((t) => ({ title: t })),
+          nodes: mockToolsTitles.map((t) => ({ title: t })),
         },
       },
     },
@@ -110,11 +108,11 @@ describe('AiCatalogAgentDetails', () => {
     expect(promptsDetails.at(0).find('pre').text()).toBe(mockAgent.latestVersion.systemPrompt);
   });
 
-  it('renders "Tools" details', () => {
+  it('renders "Tools" details with sorted values', () => {
     const toolsDetails = findAllFieldsForSection(3);
     expect(toolsDetails.at(0).props()).toMatchObject({
       title: 'Tools',
-      value: TOOLS.join(', '),
+      value: 'Ci Linter, Gitlab Blob Search, Run Git Command',
     });
   });
 });

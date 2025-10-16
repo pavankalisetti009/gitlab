@@ -11,7 +11,7 @@ import FormProjectDropdown from 'ee/ai/catalog/components/form_project_dropdown.
 import FormGroup from 'ee/ai/catalog/components/form_group.vue';
 import VisibilityLevelRadioGroup from 'ee/ai/catalog/components//visibility_level_radio_group.vue';
 import { VISIBILITY_LEVEL_PRIVATE, VISIBILITY_LEVEL_PUBLIC } from 'ee/ai/catalog/constants';
-import { mockToolQueryResponse, toolTitles } from '../mock_data';
+import { mockToolsIds, mockToolsQueryResponse } from '../mock_data';
 
 Vue.use(VueApollo);
 
@@ -27,11 +27,10 @@ describe('AiCatalogAgentForm', () => {
   const findDescriptionField = () => wrapper.findByTestId('agent-form-textarea-description');
   const findSystemPromptField = () => wrapper.findByTestId('agent-form-textarea-system-prompt');
   const findToolsField = () => wrapper.findByTestId('agent-form-token-selector-tools');
-  const findToolOptions = () =>
+  const findToolsOptions = () =>
     findToolsField()
       .props('dropdownItems')
-      .map((t) => t.name)
-      .join(', ');
+      .map((t) => t.name);
   const findSubmitButton = () => wrapper.findByTestId('agent-form-submit-button');
 
   const defaultProps = {
@@ -49,10 +48,10 @@ describe('AiCatalogAgentForm', () => {
     tools: [],
   };
 
-  const mockToolQueryHandler = jest.fn().mockResolvedValue(mockToolQueryResponse);
+  const mockToolsQueryHandler = jest.fn().mockResolvedValue(mockToolsQueryResponse);
 
   const createWrapper = ({ props = {}, projectId = '1000000', isGlobal = false } = {}) => {
-    mockApollo = createMockApollo([[aiCatalogBuiltInToolsQuery, mockToolQueryHandler]]);
+    mockApollo = createMockApollo([[aiCatalogBuiltInToolsQuery, mockToolsQueryHandler]]);
 
     wrapper = shallowMountExtended(AiCatalogAgentForm, {
       apolloProvider: mockApollo,
@@ -117,26 +116,51 @@ describe('AiCatalogAgentForm', () => {
     });
   });
 
-  describe('Tool selection', () => {
+  describe('Tools selection', () => {
     beforeEach(async () => {
       createWrapper();
       await waitForPromises();
     });
 
     it('renders tools selector and fetches list data', () => {
-      expect(findToolsField().exists()).toBe(true);
-      expect(mockToolQueryHandler).toHaveBeenCalled();
+      expect(findToolsField().props('selectedTokens')).toEqual([]);
+      expect(mockToolsQueryHandler).toHaveBeenCalled();
     });
 
     it('lists all available tools', () => {
-      expect(findToolOptions()).toStrictEqual(toolTitles.join(', '));
+      expect(findToolsOptions()).toStrictEqual([
+        'Ci Linter',
+        'Gitlab Blob Search',
+        'Run Git Command',
+      ]);
     });
 
     it('filters available tools based on the search query', async () => {
-      findToolsField().vm.$emit('text-input', 'blob');
+      findToolsField().vm.$emit('text-input', 'git');
       await nextTick();
 
-      expect(findToolOptions()).toStrictEqual('Gitlab Blob Search');
+      expect(findToolsOptions()).toStrictEqual(['Gitlab Blob Search', 'Run Git Command']);
+    });
+
+    describe('when initialValues has tools', () => {
+      beforeEach(async () => {
+        createWrapper({
+          props: {
+            initialValues: {
+              ...initialValues,
+              tools: mockToolsIds,
+            },
+          },
+        });
+        await waitForPromises();
+      });
+
+      it('renders tools selector with sorted pre-selected tools', () => {
+        const selectedTools = findToolsField()
+          .props('selectedTokens')
+          .map((t) => t.name);
+        expect(selectedTools).toStrictEqual(['Ci Linter', 'Gitlab Blob Search', 'Run Git Command']);
+      });
     });
   });
 
@@ -148,7 +172,7 @@ describe('AiCatalogAgentForm', () => {
     });
 
     it('does not show the button with loading icon when the loading property is false', () => {
-      createWrapper({ isLoading: false });
+      createWrapper({ props: { isLoading: false } });
 
       expect(findSubmitButton().props('loading')).toBe(false);
     });
