@@ -20,7 +20,7 @@ module Ai
     end
 
     def to_global_id
-      "#{reference}-#{version}"
+      reference_with_version.sub('/', '-')
     end
 
     class << self

@@ -18,7 +18,7 @@ RSpec.describe Ai::FoundationalChatAgent, feature_category: :workflow_catalog do
   end
 
   describe '.count' do
-    it 'returns the correct count of tools' do
+    it 'returns the correct count of agents' do
       expect(described_class.count).to eq(described_class::ITEMS.size)
     end
   end
@@ -62,7 +62,7 @@ RSpec.describe Ai::FoundationalChatAgent, feature_category: :workflow_catalog do
       it 'returns reference with blank version' do
         agent = described_class.new(reference: 'chat', version: '')
 
-        expect(agent.to_global_id).to eq('chat-')
+        expect(agent.to_global_id).to eq('chat')
       end
     end
 
@@ -70,7 +70,7 @@ RSpec.describe Ai::FoundationalChatAgent, feature_category: :workflow_catalog do
       it 'returns reference with blank version' do
         agent = described_class.new(reference: 'chat', version: nil)
 
-        expect(agent.to_global_id).to eq('chat-')
+        expect(agent.to_global_id).to eq('chat')
       end
     end
   end
