@@ -6,6 +6,10 @@ module Security
       class HooksExecution < AbstractTask
         def execute
           new_vulnerabilities.each(&:execute_hooks)
+
+          context.run_after_sec_commit do
+            new_vulnerabilities.each(&:trigger_false_positive_detection)
+          end
         end
 
         private
