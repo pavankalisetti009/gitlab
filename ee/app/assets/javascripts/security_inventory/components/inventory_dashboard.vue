@@ -280,7 +280,7 @@ export default {
       if (!groupData) return;
 
       const newProjects = this.hasSearch
-        ? getData(groupData, 'namespaceSecurityProjects.edges', [])
+        ? getData(data, 'namespaceSecurityProjects.edges', []).map((e) => e.node)
         : getData(groupData, 'projects.nodes', []);
       this.projectsPageInfo = this.hasSearch
         ? getPageInfo(data, 'namespaceSecurityProjects.pageInfo')
