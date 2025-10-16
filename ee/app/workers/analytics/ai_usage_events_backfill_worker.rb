@@ -7,6 +7,7 @@ module Analytics
 
     data_consistency :sticky
     feature_category :value_stream_management
+    tags :clickhouse
     urgency :low
     idempotent!
     defer_on_database_health_signal :gitlab_main
