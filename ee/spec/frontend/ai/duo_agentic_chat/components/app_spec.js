@@ -6,12 +6,6 @@ import { duoChatGlobalState } from '~/super_sidebar/constants';
 import DuoAgenticLayoutApp from 'ee/ai/duo_agentic_chat/components/app.vue';
 import { WIDTH_OFFSET } from 'ee/ai/tanuki_bot/constants';
 
-Vue.config.ignoredElements = ['fe-island-duo-next'];
-
-jest.mock('fe_islands/duo_next/dist/duo_next', () => ({}), {
-  virtual: true,
-});
-
 describe('DuoAgenticLayoutApp', () => {
   let wrapper;
 
@@ -22,7 +16,6 @@ describe('DuoAgenticLayoutApp', () => {
 
   const findDuoLayout = () => wrapper.findComponent(DuoLayout);
   const findSideRail = () => wrapper.findComponent(SideRail);
-  const findDuoNext = () => wrapper.find('fe-island-duo-next');
 
   const mockRouter = {
     push: jest.fn(),
@@ -43,7 +36,6 @@ describe('DuoAgenticLayoutApp', () => {
       provide: {
         glFeatures: {
           duoSideRail: false,
-          duoUiNext: false,
         },
         ...provideOptions,
       },
@@ -116,33 +108,6 @@ describe('DuoAgenticLayoutApp', () => {
 
     it('navigates to /current route on mount', () => {
       expect(mockRouter.push).toHaveBeenCalledWith('/current');
-    });
-
-    describe('Duo UI Next', () => {
-      describe('without the flag', () => {
-        it('does not render the DuoNext component by default', () => {
-          expect(findDuoNext().exists()).toBe(false);
-        });
-      });
-
-      describe('with the flag', () => {
-        beforeEach(async () => {
-          duoChatGlobalState.isAgenticChatShown = true;
-          wrapper = await createWrapper(
-            {},
-            {
-              glFeatures: {
-                duoUiNext: true,
-              },
-            },
-          );
-        });
-
-        it('renders the DuoNext component if the flag is enabled', () => {
-          expect(findDuoNext().exists()).toBe(true);
-          expect(findDuoLayout().exists()).toBe(false);
-        });
-      });
     });
   });
 
