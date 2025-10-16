@@ -299,24 +299,23 @@ reports can be downloaded from the pipeline details page. If necessary, you can 
 the report artifacts in a job.
 
 GitLab uses the [`dotenv` gem](https://github.com/bkeepers/dotenv) for handling dotenv files,
-which already handles dotenv files differently than [the original dotenv rules](https://github.com/motdotla/dotenv?tab=readme-ov-file#what-rules-does-the-parsing-engine-follow).
-GitLab applies additional restrictions:
+but applies additional restrictions beyond both [the original dotenv rules](https://github.com/motdotla/dotenv?tab=readme-ov-file#what-rules-does-the-parsing-engine-follow) and the gem's implementation:
 
 - The maximum size of the dotenv file is 5 KB.
   This limit [can be changed on GitLab Self-Managed](../../administration/instance_limits.md#limit-dotenv-file-size).
 - On GitLab.com, [the maximum number of inherited variables](../../user/gitlab_com/_index.md#cicd)
-  is 50 for Free, 100 for Premium and 150 for Ultimate. The default for
-  GitLab Self-Managed is 20, and can be changed by changing the
+  is 50 for Free, 100 for Premium, and 150 for Ultimate. The default for
+  GitLab Self-Managed is 20, and can be changed with the
   `dotenv_variables` [application limit](../../administration/instance_limits.md#limit-dotenv-variables).
 - Only UTF-8 encoding is [supported](../jobs/job_artifacts_troubleshooting.md#error-message-fatal-invalid-argument-when-uploading-a-dotenv-artifact-on-a-windows-runner).
-- The dotenv file can't have empty lines or comments (starting with `#`).
-- The variable name may only consist of ASCII letters (`A-Za-z`) , digits (`0-9`), and underscores (`_`).
-- The dotenv file does not support quoting; single or double quotes are preserved as-is and cannot be used for escaping.
+- The dotenv file cannot contain empty lines or comments (starting with `#`).
+- The variable name can contain only ASCII letters (`A-Za-z`), digits (`0-9`), and underscores (`_`).
+- The dotenv file does not support quoting. Single or double quotes are preserved as-is and cannot be used for escaping.
   - [Multiline values in the dotenv file](https://github.com/motdotla/dotenv#multiline-values) are not supported.
-    GitLab will reject the dotenv file on upload.
+    GitLab rejects the dotenv file on upload.
   - Leading and trailing spaces or newline characters (`\n`) are stripped.
 - Variable substitution (`${var}`) in the dotenv file is not supported.
-  GitLab resolves all of them to the empty string when the file is processed.
+  GitLab resolves variable substitutions to empty strings when the file is processed.
 
 ## `artifacts:reports:junit`
 
