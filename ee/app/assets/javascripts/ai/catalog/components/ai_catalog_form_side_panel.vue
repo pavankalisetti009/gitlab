@@ -157,7 +157,7 @@ export default {
 </script>
 
 <template>
-  <div class="gl-border gl-flex gl-flex-col gl-justify-between">
+  <div class="gl-border gl-flex gl-flex-col gl-justify-between gl-rounded-base gl-bg-subtle">
     <div class="gl-p-4">
       <label
         for="agent-select-listbox"

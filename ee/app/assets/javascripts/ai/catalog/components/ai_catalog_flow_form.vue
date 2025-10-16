@@ -295,7 +295,7 @@ export default {
 <template>
   <div>
     <errors-alert :errors="allErrors" @dismiss="dismissErrors" />
-    <div class="gl-flex gl-flex-row gl-gap-8">
+    <div class="gl-flex gl-flex-row gl-gap-5">
       <gl-form :id="formId" class="gl-flex gl-flex-col gl-gap-5" @submit.prevent="handleSubmit">
         <form-section :title="s__('AICatalog|Basic information')">
           <form-group
@@ -390,27 +390,28 @@ export default {
             />
           </form-group>
         </form-section>
-        <ai-catalog-form-buttons :is-disabled="isLoading" :cancel-route="cancelRoute">
-          <gl-button
-            class="js-no-auto-disable gl-w-full @sm/panel:gl-w-auto"
-            type="submit"
-            variant="confirm"
-            category="primary"
-            data-testid="flow-form-submit-button"
-            :loading="isLoading"
-          >
-            {{ submitButtonText }}
-          </gl-button>
-        </ai-catalog-form-buttons>
       </gl-form>
       <ai-catalog-form-side-panel
         v-show="isAgentPanelVisible && !isThirdPartyFlow"
         v-model="formValues.steps"
-        class="gl-grow"
+        class="gl-shrink-0"
         :active-step-index="activeStepIndex"
         :is-flow-public="isPublic"
         @close="resetAgentPanel"
       />
     </div>
+    <ai-catalog-form-buttons :is-disabled="isLoading" :cancel-route="cancelRoute" class="gl-mt-5">
+      <gl-button
+        :form="formId"
+        :loading="isLoading"
+        class="js-no-auto-disable gl-w-full @sm/panel:gl-w-auto"
+        type="submit"
+        variant="confirm"
+        category="primary"
+        data-testid="flow-form-submit-button"
+      >
+        {{ submitButtonText }}
+      </gl-button>
+    </ai-catalog-form-buttons>
   </div>
 </template>
