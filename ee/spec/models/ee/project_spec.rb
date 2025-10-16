@@ -5022,61 +5022,6 @@ RSpec.describe Project, feature_category: :groups_and_projects do
     end
   end
 
-  describe '#product_analytics_events_used' do
-    let_it_be(:setting) { create(:project_setting, :with_product_analytics_configured) }
-    let_it_be(:project) { create(:project, project_setting: setting) }
-
-    subject { project.product_analytics_events_used }
-
-    context 'when product analytics is enabled' do
-      before do
-        allow_next_instance_of(ProductAnalytics::Settings) do |settings|
-          allow(settings).to receive(:enabled?).and_return(true)
-        end
-      end
-
-      context 'when project is onboarded with product analytics' do
-        before do
-          project.project_setting.update!(product_analytics_instrumentation_key: 'abc-123')
-        end
-
-        context 'when month and year is overridden' do
-          subject { project.product_analytics_events_used(year: 2025, month: 10) }
-
-          it 'queries the ProjectUsageData for the project' do
-            expect_next_instance_of(Analytics::ProductAnalytics::ProjectUsageData) do |instance|
-              expect(instance).to receive(:events_stored_count).with(month: 10, year: 2025).once
-            end
-
-            subject
-          end
-        end
-
-        context 'when using default time period' do
-          it 'queries the ProjectUsageData for the project' do
-            expect_next_instance_of(Analytics::ProductAnalytics::ProjectUsageData) do |instance|
-              expect(instance).to receive(:events_stored_count).once
-            end
-
-            subject
-          end
-        end
-      end
-
-      context 'when project is not onboarded with product analytics' do
-        before do
-          project.project_setting.update!(product_analytics_instrumentation_key: nil)
-        end
-
-        it { is_expected.to be_nil }
-      end
-    end
-
-    context 'when product analytics is not enabled' do
-      it { is_expected.to be_nil }
-    end
-  end
-
   describe '#github_external_pull_request_pipelines_available?' do
     let_it_be(:project) { create(:project, :mirror) }
 

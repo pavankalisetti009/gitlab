@@ -77,7 +77,7 @@ module EE
           params['custom_status_id'] = gid.model_id
         end
 
-        status = ::WorkItems::Statuses::Finder.new(parent.root_ancestor, params).execute
+        status = ::WorkItems::Statuses::Finder.new(parent.root_ancestor, params).find_single_status
 
         raise ArgumentError, _('Status not found for given params') unless status
 

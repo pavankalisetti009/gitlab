@@ -139,27 +139,27 @@ RSpec.describe GitlabSchema.types['Epic'], feature_category: :portfolio_manageme
     end
   end
 
-  describe 'use work item logic to present dates', :freeze_time do
+  describe 'use work item logic to present dates' do
     using RSpec::Parameterized::TableSyntax
 
     let_it_be(:epic) do
       build_stubbed(
         :epic,
-        start_date: 1.day.ago,
-        start_date_fixed: 2.days.ago,
+        start_date: Date.new(2024, 1, 15),
+        start_date_fixed: Date.new(2024, 1, 10),
         start_date_is_fixed: true,
-        due_date: 3.days.from_now,
-        due_date_fixed: 4.days.from_now,
+        due_date: Date.new(2024, 2, 15),
+        due_date_fixed: Date.new(2024, 2, 20),
         due_date_is_fixed: false
       )
     end
 
     where(:field, :result) do
-      :start_date | 2.days.ago.to_date
-      :start_date_fixed | 2.days.ago.to_date
+      :start_date | Date.new(2024, 1, 10)
+      :start_date_fixed | Date.new(2024, 1, 10)
       :start_date_is_fixed | true
-      :due_date | 4.days.from_now.to_date
-      :due_date_fixed | 4.days.from_now.to_date
+      :due_date | Date.new(2024, 2, 20)
+      :due_date_fixed | Date.new(2024, 2, 20)
       :due_date_is_fixed | true
     end
 

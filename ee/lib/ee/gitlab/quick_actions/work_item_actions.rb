@@ -42,7 +42,7 @@ module EE
           end
           parse_params do |status_name|
             namespace = quick_action_target.resource_parent&.root_ancestor
-            status = ::WorkItems::Statuses::Finder.new(namespace, { 'name' => status_name.strip }).execute
+            status = ::WorkItems::Statuses::Finder.new(namespace, { 'name' => status_name.strip }).find_single_status
             [status, status_name]
           end
           command :status do |status, status_name|

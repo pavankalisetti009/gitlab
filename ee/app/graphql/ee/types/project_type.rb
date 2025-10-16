@@ -508,12 +508,6 @@ module EE
           method: :prevent_merge_without_jira_issue?,
           description: 'Indicates if an associated issue from Jira is required.'
 
-        field :product_analytics_events_stored, [::Types::ProductAnalytics::MonthlyUsageType],
-          null: true,
-          resolver: ::Resolvers::ProductAnalytics::ProjectUsageDataResolver,
-          description: 'Count of all events used, broken down by month',
-          experiment: { milestone: '16.7' }
-
         field :dependency_proxy_packages_setting,
           ::Types::DependencyProxy::Packages::SettingType,
           null: true,
