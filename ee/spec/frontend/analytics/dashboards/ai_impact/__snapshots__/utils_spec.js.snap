@@ -297,6 +297,13 @@ exports[`AI impact Dashboard utils generateSkeletonTableData returns the skeleto
     },
     "trendStyle": "ASC",
   },
+  {
+    "metric": {
+      "identifier": "duo_used_count",
+      "value": "Duo features usage",
+    },
+    "trendStyle": "ASC",
+  },
 ]
 `;
 

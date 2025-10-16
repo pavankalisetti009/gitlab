@@ -10,12 +10,14 @@ export const SUPPORTED_AI_METRICS = [
   AI_METRICS.CODE_SUGGESTIONS_ACCEPTANCE_RATE,
   AI_METRICS.DUO_CHAT_USAGE_RATE,
   AI_METRICS.DUO_RCA_USAGE_RATE,
+  AI_METRICS.DUO_USED_COUNT,
 ];
 export const HIDE_METRIC_DRILL_DOWN = [
   AI_METRICS.CODE_SUGGESTIONS_USAGE_RATE,
   AI_METRICS.CODE_SUGGESTIONS_ACCEPTANCE_RATE,
   AI_METRICS.DUO_CHAT_USAGE_RATE,
   AI_METRICS.DUO_RCA_USAGE_RATE,
+  AI_METRICS.DUO_USED_COUNT,
 ];
 
 // The AI impact metrics supported for over time tiles
@@ -43,6 +45,10 @@ export const AI_IMPACT_USAGE_METRICS = {
   [AI_METRICS.DUO_RCA_USAGE_RATE]: {
     label: s__('AiImpactAnalytics|Duo RCA usage'),
     units: UNITS.PERCENT,
+  },
+  [AI_METRICS.DUO_USED_COUNT]: {
+    label: s__('AiImpactAnalytics|Duo features usage'),
+    units: UNITS.COUNT,
   },
 };
 

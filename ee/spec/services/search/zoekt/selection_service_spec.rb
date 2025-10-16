@@ -19,9 +19,9 @@ RSpec.describe Search::Zoekt::SelectionService, feature_category: :global_search
 
     context 'with enabled namespaces selection' do
       let_it_be(:eligible_namespace) { create(:zoekt_enabled_namespace, namespace: ns_1) }
-      let_it_be(:ineligible_namespace) { create(:zoekt_enabled_namespace, namespace: ns_2) }
+      let_it_be(:big_namespace) { create(:zoekt_enabled_namespace, namespace: ns_2) }
       let_it_be(:ns_3) { create(:group) }
-      let_it_be(:ineligible_namespace2) do
+      let_it_be(:failed_namespace) do
         create(:zoekt_enabled_namespace, namespace: ns_3, last_rollout_failed_at: Time.current.iso8601)
       end
 
@@ -30,36 +30,48 @@ RSpec.describe Search::Zoekt::SelectionService, feature_category: :global_search
         create(:zoekt_enabled_namespace, namespace: ns_4, last_rollout_failed_at: 2.days.ago.iso8601)
       end
 
+      let_it_be(:eligible_namespace_ancestor) { ::Namespace.where(id: ns_1.id) }
+      let_it_be(:big_namespace_ancestor) { ::Namespace.where(id: ns_2.id) }
+      let_it_be(:eligible_namespace2_ancestor) { ::Namespace.where(id: ns_4.id) }
+
       before do
-        # For the eligible namespace, the project count will be low (default).
-        # For the ineligible namespace, stub its associated namespace so that
-        # project_namespaces.count returns more than MAX_PROJECTS_PER_NAMESPACE
         allow(::Namespace).to receive(:by_root_id)
           .with(eligible_namespace.root_namespace_id)
-          .and_return(::Namespace.where(id: eligible_namespace.root_namespace_id))
+          .and_return(eligible_namespace_ancestor)
 
         allow(::Namespace).to receive(:by_root_id)
           .with(eligible_namespace2.root_namespace_id)
-          .and_return(::Namespace.where(id: eligible_namespace2.root_namespace_id))
+          .and_return(eligible_namespace2_ancestor)
 
         allow(::Namespace).to receive(:by_root_id)
-          .with(ineligible_namespace.root_namespace_id)
-          .and_return(::Namespace.where(id: ineligible_namespace.root_namespace_id))
-
-        allow(ineligible_namespace.namespace)
-          .to receive_message_chain(:project_namespaces, :count)
-          .and_return(described_class::MAX_PROJECTS_PER_NAMESPACE.next)
-
-        allow(::Namespace).to receive(:by_root_id)
-          .with(ineligible_namespace.root_namespace_id)
-          .and_return(ineligible_namespace.namespace.root_ancestor)
+          .with(big_namespace.root_namespace_id)
+          .and_return(big_namespace_ancestor)
       end
 
       # eligible namespaces are for which last_rollout_failed_at is nil or older than zoekt_rollout_retry_interval
-      # project_count is less than the MAX_PROJECTS_PER_NAMESPACE
       it 'includes all eligible namespaces' do
-        expect(resource_pool.enabled_namespaces).to include(eligible_namespace)
-        expect(resource_pool.enabled_namespaces).not_to include(ineligible_namespace, ineligible_namespace2)
+        expect(resource_pool.enabled_namespaces).to include(eligible_namespace, big_namespace)
+        expect(resource_pool.enabled_namespaces).not_to include(failed_namespace)
+      end
+
+      context 'when on self managed instance' do
+        before do
+          allow(::Gitlab::Saas).to receive(:feature_available?).with(:exact_code_search).and_return(false)
+
+          allow(big_namespace_ancestor).to receive_message_chain(:project_namespaces, :limit, :count)
+            .and_return(40_000)
+
+          allow(eligible_namespace_ancestor).to receive_message_chain(:project_namespaces, :limit, :count)
+            .and_return(10)
+
+          allow(eligible_namespace2_ancestor).to receive_message_chain(:project_namespaces, :limit, :count)
+            .and_return(10)
+        end
+
+        it 'excludes namespaces over the project limit' do
+          expect(resource_pool.enabled_namespaces).to include(eligible_namespace, eligible_namespace2)
+          expect(resource_pool.enabled_namespaces).not_to include(big_namespace)
+        end
       end
 
       it 'excludes namespaces with rollout blocked flag' do
@@ -68,20 +80,20 @@ RSpec.describe Search::Zoekt::SelectionService, feature_category: :global_search
 
         # Verify that the namespace with last_rollout_failed_at is excluded
         result = described_class.execute
-        expect(result.enabled_namespaces).not_to include(ineligible_namespace2)
+        expect(result.enabled_namespaces).not_to include(failed_namespace)
       end
 
       context 'when testing specific scopes' do
         it 'with_rollout_blocked scope finds namespaces with last_rollout_failed_at' do
           namespaces = Search::Zoekt::EnabledNamespace.with_rollout_blocked
-          expect(namespaces).to include(ineligible_namespace2)
-          expect(namespaces).not_to include(eligible_namespace, ineligible_namespace)
+          expect(namespaces).to include(failed_namespace)
+          expect(namespaces).not_to include(eligible_namespace)
         end
 
         it 'with_rollout_allowed scope finds namespaces without last_rollout_failed_at' do
           namespaces = Search::Zoekt::EnabledNamespace.with_rollout_allowed
-          expect(namespaces).to include(eligible_namespace, ineligible_namespace)
-          expect(namespaces).not_to include(ineligible_namespace2)
+          expect(namespaces).to include(eligible_namespace)
+          expect(namespaces).not_to include(failed_namespace)
         end
       end
     end
@@ -117,15 +129,8 @@ RSpec.describe Search::Zoekt::SelectionService, feature_category: :global_search
 
     context 'when no eligible namespaces exist' do
       before do
-        # Create namespaces but stub each so that project_namespaces.count returns more than MAX_PROJECTS_PER_NAMESPACE.
-        create_list(:zoekt_enabled_namespace, 2).each do |ns|
-          allow(ns.namespace.root_ancestor)
-            .to receive_message_chain(:project_namespaces, :count)
-            .and_return(described_class::MAX_PROJECTS_PER_NAMESPACE.next)
-          allow(::Namespace).to receive(:by_root_id)
-            .with(ns.root_namespace_id)
-            .and_return(ns.namespace.root_ancestor)
-        end
+        # Create list of failed namespaces only
+        create_list(:zoekt_enabled_namespace, 2, last_rollout_failed_at: Time.current.iso8601)
       end
 
       it 'returns an empty array for namespaces' do

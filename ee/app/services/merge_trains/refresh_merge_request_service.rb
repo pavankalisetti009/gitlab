@@ -19,7 +19,7 @@ module MergeTrains
 
       log_running_security_scans
 
-      merge! if merge_train_car.mergeable?
+      merge! if merge_train_car.merge_ready_pipeline?
 
       success(pipeline_created: pipeline_created.present?)
     rescue ProcessError => e

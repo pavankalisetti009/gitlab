@@ -44,6 +44,7 @@ export const extractGraphqlAiData = ({
   duoChatContributorsCount = null,
   rootCauseAnalysisUsersCount = null,
   duoAssignedUsersCount = null,
+  duoUsedCount = null,
 } = {}) => {
   const codeSuggestionsUsageRate = calculateRate({
     numerator: codeSuggestionsContributorsCount,
@@ -97,6 +98,10 @@ export const extractGraphqlAiData = ({
         numerator: rootCauseAnalysisUsersCount,
         denominator: duoAssignedUsersCount,
       }),
+    },
+    [AI_METRICS.DUO_USED_COUNT]: {
+      identifier: AI_METRICS.DUO_USED_COUNT,
+      value: duoUsedCount ?? '-',
     },
   };
 };

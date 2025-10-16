@@ -15,12 +15,15 @@ import waitForPromises from 'helpers/wait_for_promises';
 import { logError } from '~/lib/logger';
 import axios from '~/lib/utils/axios_utils';
 import { captureException } from '~/sentry/sentry_browser_wrapper';
+import PageHeading from '~/vue_shared/components/page_heading.vue';
+import UserDate from '~/vue_shared/components/user_date.vue';
 import {
   mockUsageDataWithoutPool,
   mockUsageDataWithPool,
   usageDataNoPoolNoOverage,
   usageDataNoPoolWithOverage,
   usageDataWithPool,
+  usageDataWithoutLastUpdated,
 } from '../mock_data';
 
 jest.mock('~/lib/logger');
@@ -50,6 +53,7 @@ describe('UsageBillingApp', () => {
   const findAlert = () => wrapper.findComponent(GlAlert);
   const findSkeletonLoaders = () => wrapper.findByTestId('skeleton-loaders');
   const findTabs = () => wrapper.findAllComponents(GlTab);
+  const findPageHeading = () => wrapper.findComponent(PageHeading);
 
   beforeEach(() => {
     mockAxios = new MockAdapter(axios);
@@ -77,6 +81,13 @@ describe('UsageBillingApp', () => {
     beforeEach(async () => {
       createComponent();
       await waitForPromises();
+    });
+
+    it('renders the page title with its description', () => {
+      const pageHeading = findPageHeading();
+      expect(pageHeading.text()).toContain('Usage Billing');
+      expect(pageHeading.text()).toContain('Last updated:');
+      expect(pageHeading.findComponent(UserDate).exists()).toBe(true);
     });
 
     it('renders current-usage-card', () => {
@@ -121,6 +132,20 @@ describe('UsageBillingApp', () => {
       expect(usageByUserTab.exists()).toBe(true);
       expect(usageByUserTab.props()).toMatchObject({
         hasCommitment: true,
+      });
+    });
+
+    describe('when lastUpdated is not provided', () => {
+      beforeEach(async () => {
+        createComponent({
+          mockQueryHandler: jest.fn().mockResolvedValue(usageDataWithoutLastUpdated),
+        });
+        await waitForPromises();
+      });
+
+      it('does not renders the page heading description', () => {
+        expect(findPageHeading().text()).not.toContain('Last updated:');
+        expect(findPageHeading().findComponent(UserDate).exists()).toBe(false);
       });
     });
   });

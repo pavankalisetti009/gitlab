@@ -1,7 +1,6 @@
 export const mockUsageDataWithoutPool = {
   subscription: {
     gitlabCreditsUsage: {
-      lastUpdated: '2024-01-15T10:30:00Z',
       // boundaries
       startDate: '2024-01-01',
       endDate: '2024-01-31',
@@ -59,6 +58,7 @@ export const mockUsageDataWithoutPool = {
 export const mockUsersUsageDataWithoutPool = {
   data: {
     subscriptionUsage: {
+      lastUpdated: '2024-01-15T10:30:00Z',
       usersUsage: {
         // overall statistics
         totalUsers: 50,
@@ -147,7 +147,6 @@ export const mockUsersUsageDataWithoutPool = {
 export const mockUsageDataWithPool = {
   subscription: {
     gitlabCreditsUsage: {
-      lastUpdated: '2024-01-15T10:30:00Z',
       // boundaries
       startDate: '2024-01-01',
       endDate: '2024-01-31',
@@ -208,6 +207,7 @@ export const mockUsageDataWithPool = {
 export const mockUsersUsageDataWithPool = {
   data: {
     subscriptionUsage: {
+      lastUpdated: '2025-10-14T07:41:59Z',
       usersUsage: {
         // overall statistics
         totalUsers: 50,
@@ -330,8 +330,6 @@ export const mockUsersUsageDataWithPool = {
 export const mockUsageDataWithOverage = {
   subscription: {
     gitlabCreditsUsage: {
-      lastUpdated: '2024-01-15T10:30:00Z',
-
       startDate: '2024-01-01',
       endDate: '2024-01-31',
 
@@ -385,6 +383,7 @@ export const mockUsageDataWithOverage = {
 export const mockUsersUsageDataWithOverage = {
   data: {
     subscriptionUsage: {
+      lastUpdated: '2025-10-14T07:41:59Z',
       usersUsage: {
         totalUsers: 50,
         totalUsersUsingAllocation: 35,
@@ -506,7 +505,6 @@ export const mockUsersUsageDataWithOverage = {
 export const mockUsageDataWithZeroAllocation = {
   subscription: {
     gitlabCreditsUsage: {
-      lastUpdated: '2024-01-15T10:30:00Z',
       startDate: '2024-01-01',
       endDate: '2024-01-31',
 
@@ -523,6 +521,7 @@ export const mockUsageDataWithZeroAllocation = {
 export const mockUsersUsageDataWithZeroAllocation = {
   data: {
     subscriptionUsage: {
+      lastUpdated: '2025-10-14T07:41:59Z',
       usersUsage: {
         totalUsers: 5,
         totalUsersUsingAllocation: 2,
@@ -607,12 +606,24 @@ export const mockUsersUsageDataWithZeroAllocation = {
 export const usageDataWithPool = {
   data: {
     subscriptionUsage: {
+      lastUpdated: '2025-10-14T07:41:59Z',
       poolUsage: {
         creditsUsed: 50,
         totalCredits: 300,
       },
       overage: {
         creditsUsed: 0,
+      },
+    },
+  },
+};
+
+export const usageDataWithoutLastUpdated = {
+  data: {
+    subscriptionUsage: {
+      poolUsage: {
+        creditsUsed: 50,
+        totalCredits: 300,
       },
     },
   },
@@ -636,6 +647,7 @@ export const usageDataWithPoolWithOverage = {
 export const usageDataNoPoolNoOverage = {
   data: {
     subscriptionUsage: {
+      lastUpdated: '2024-01-15T10:30:00Z',
       poolUsage: null,
       overage: {
         isAllowed: false,
@@ -647,6 +659,7 @@ export const usageDataNoPoolNoOverage = {
 export const usageDataNoPoolWithOverage = {
   data: {
     subscriptionUsage: {
+      lastUpdated: '2024-01-15T10:30:00Z',
       poolUsage: null,
       overage: {
         isAllowed: true,

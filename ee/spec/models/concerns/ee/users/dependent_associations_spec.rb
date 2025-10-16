@@ -7,7 +7,8 @@ RSpec.describe EE::Users::DependentAssociations, feature_category: :user_managem
     let(:user) { create(:user) }
     let(:associations_with_nullify) do
       {
-        security_policy_dismissals: { class_name: 'Security::PolicyDismissal' }
+        security_policy_dismissals: { class_name: 'Security::PolicyDismissal' },
+        approval_policy_merge_request_bypass_events: { class_name: 'Security::ApprovalPolicyMergeRequestBypassEvent' }
       }
     end
 
@@ -79,6 +80,15 @@ RSpec.describe EE::Users::DependentAssociations, feature_category: :user_managem
 
         dismissal.reload
         expect(dismissal.user_id).to be_nil
+      end
+
+      it 'nullifies approval_policy_merge_request_bypass_events when user is destroyed' do
+        bypass_event = create(:approval_policy_merge_request_bypass_event, user: user)
+
+        user.destroy!
+
+        bypass_event.reload
+        expect(bypass_event.user_id).to be_nil
       end
     end
 
