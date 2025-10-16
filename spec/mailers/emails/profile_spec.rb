@@ -555,7 +555,7 @@ RSpec.describe Emails::Profile, feature_category: :user_profile do
 
         include_examples 'valid use case'
 
-        it_behaves_like 'has the correct subject', /Your SSH key is expiring soon/
+        it_behaves_like 'has the correct subject', /Your SSH key expires soon/
         it_behaves_like 'has the correct body text', /SSH keys with the following fingerprints are scheduled to expire soon/
       end
 
