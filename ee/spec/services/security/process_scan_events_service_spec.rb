@@ -389,7 +389,6 @@ RSpec.describe Security::ProcessScanEventsService, feature_category: :vulnerabil
           }],
           ['collect_ds_analyzer_scan_java_sr_coverage_metrics_from_pipeline', {
             property: 'e1552d18-eb8b-4e3e-bd15-a286ad1bc0f4',
-            label: 'maven.graph.json',
             value: 95
           }],
           ['collect_ds_analyzer_scan_non_default_config_metrics_from_pipeline', {
