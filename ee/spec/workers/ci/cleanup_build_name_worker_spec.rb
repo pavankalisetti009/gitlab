@@ -48,18 +48,6 @@ RSpec.describe Ci::CleanupBuildNameWorker, feature_category: :continuous_integra
         worker.perform
       end
 
-      context 'when feature flag is disabled' do
-        before do
-          stub_feature_flags(truncate_build_names: false)
-        end
-
-        it 'does not perform any truncation' do
-          expect(Ci::ApplicationRecord.connection).not_to receive(:execute)
-
-          worker.perform
-        end
-      end
-
       context 'when no old partitions exist' do
         before do
           old_partition_1.destroy!
