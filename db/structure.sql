@@ -5559,6 +5559,7 @@ CREATE TABLE p_ai_active_context_code_repositories (
     indexed_at timestamp with time zone,
     created_at timestamp with time zone NOT NULL,
     updated_at timestamp with time zone NOT NULL,
+    last_queried_at timestamp with time zone,
     CONSTRAINT check_b253d453c7 CHECK ((char_length(last_commit) <= 64))
 )
 PARTITION BY RANGE (project_id);
@@ -41259,6 +41260,8 @@ CREATE INDEX index_organizations_on_name_trigram ON organizations USING gin (nam
 CREATE INDEX index_organizations_on_path_trigram ON organizations USING gin (path gin_trgm_ops);
 
 CREATE UNIQUE INDEX index_organizations_on_unique_name_per_group ON customer_relations_organizations USING btree (group_id, lower(name), id);
+
+CREATE INDEX index_p_ai_active_context_code_repositories_on_last_queried_at ON ONLY p_ai_active_context_code_repositories USING btree (last_queried_at);
 
 CREATE INDEX index_p_catalog_resource_sync_events_on_id_where_pending ON ONLY p_catalog_resource_sync_events USING btree (id) WHERE (status = 1);
 
