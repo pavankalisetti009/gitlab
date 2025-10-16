@@ -8,9 +8,6 @@ import {
 import { s__ } from '~/locale';
 import { createAlert } from '~/alert';
 
-// comes from VulnerabilityFalsePositiveDetectionStatus
-export const EXPECTED_STATUS = 'DETECTED_AS_FP';
-
 export const VULNERABILITY_UNTRIAGED_STATUS = VULNERABILITY_STATE_OBJECTS.detected.searchParamValue;
 
 export default {
@@ -46,10 +43,7 @@ export default {
       return this.flag.confidenceScore >= CONFIDENCE_SCORES.LIKELY_FALSE_POSITIVE;
     },
     shouldRenderBadge() {
-      return (
-        this.flag?.status === EXPECTED_STATUS &&
-        this.flag.confidenceScore > CONFIDENCE_SCORES.MINIMAL
-      );
+      return this.flag?.confidenceScore > CONFIDENCE_SCORES.MINIMAL;
     },
     badgeText() {
       return this.isLikelyFalsePositive
