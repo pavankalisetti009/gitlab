@@ -4375,6 +4375,16 @@
   :idempotent: true
   :tags: []
   :queue_namespace:
+- :name: vulnerabilities_namespace_statistics_recalculate_namespace_statistics
+  :worker_name: Vulnerabilities::NamespaceStatistics::RecalculateNamespaceStatisticsWorker
+  :feature_category: :vulnerability_management
+  :has_external_dependencies: false
+  :urgency: :low
+  :resource_boundary: :unknown
+  :weight: 1
+  :idempotent: true
+  :tags: []
+  :queue_namespace:
 - :name: vulnerabilities_process_archived_events
   :worker_name: Vulnerabilities::ProcessArchivedEventsWorker
   :feature_category: :vulnerability_management
@@ -4397,6 +4407,16 @@
   :queue_namespace:
 - :name: vulnerabilities_process_bulk_redetected_events
   :worker_name: Vulnerabilities::ProcessBulkRedetectedEventsWorker
+  :feature_category: :vulnerability_management
+  :has_external_dependencies: false
+  :urgency: :low
+  :resource_boundary: :unknown
+  :weight: 1
+  :idempotent: true
+  :tags: []
+  :queue_namespace:
+- :name: vulnerabilities_process_group_archived_events
+  :worker_name: Vulnerabilities::ProcessGroupArchivedEventsWorker
   :feature_category: :vulnerability_management
   :has_external_dependencies: false
   :urgency: :low
@@ -4447,6 +4467,16 @@
   :queue_namespace:
 - :name: vulnerabilities_update_archived_attribute_of_vulnerability_reads
   :worker_name: Vulnerabilities::UpdateArchivedAttributeOfVulnerabilityReadsWorker
+  :feature_category: :vulnerability_management
+  :has_external_dependencies: false
+  :urgency: :low
+  :resource_boundary: :memory
+  :weight: 1
+  :idempotent: true
+  :tags: []
+  :queue_namespace:
+- :name: vulnerabilities_update_archived_attribute_of_vulnerability_statistics
+  :worker_name: Vulnerabilities::UpdateArchivedAttributeOfVulnerabilityStatisticsWorker
   :feature_category: :vulnerability_management
   :has_external_dependencies: false
   :urgency: :low
