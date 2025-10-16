@@ -201,7 +201,7 @@ describe('AiCatalogAgents', () => {
             createConsumer();
             await waitForPromises();
 
-            expect(mockToast.show).toHaveBeenCalledWith('Agent added successfully to Test.');
+            expect(mockToast.show).toHaveBeenCalledWith('Agent enabled in Test.');
           });
         });
 
@@ -215,7 +215,7 @@ describe('AiCatalogAgents', () => {
             await waitForPromises();
 
             expect(findErrorsAlert().props('errors')).toEqual([
-              `Agent could not be added: ${mockAgent.name}`,
+              `Could not enable agent: ${mockAgent.name}`,
               'Item already configured.',
             ]);
           });
@@ -229,7 +229,7 @@ describe('AiCatalogAgents', () => {
             await waitForPromises();
 
             expect(findErrorsAlert().props('errors')).toEqual([
-              'The agent could not be added to the project. Check that the project meets the <a href="/help/user/duo_agent_platform/ai_catalog#view-the-ai-catalog" target="_blank">prerequisites</a> and try again.',
+              'Could not enable agent in the project. Check that the project meets the <a href="/help/user/duo_agent_platform/ai_catalog#view-the-ai-catalog" target="_blank">prerequisites</a> and try again.',
             ]);
             expect(Sentry.captureException).toHaveBeenCalledWith(expect.any(Error));
           });
@@ -262,7 +262,7 @@ describe('AiCatalogAgents', () => {
         await waitForPromises();
 
         expect(mockCatalogItemsQueryHandler).toHaveBeenCalledTimes(2);
-        expect(mockToast.show).toHaveBeenCalledWith('Agent deleted successfully.');
+        expect(mockToast.show).toHaveBeenCalledWith('Agent deleted.');
       });
     });
 

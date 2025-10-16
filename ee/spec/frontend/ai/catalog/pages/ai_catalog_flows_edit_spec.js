@@ -138,7 +138,7 @@ describe('AiCatalogFlowsEdit', () => {
       });
 
       it('shows toast', () => {
-        expect(mockToast.show).toHaveBeenCalledWith('Flow updated successfully.');
+        expect(mockToast.show).toHaveBeenCalledWith('Flow updated.');
       });
 
       it('navigates to flows show page', async () => {
@@ -158,7 +158,7 @@ describe('AiCatalogFlowsEdit', () => {
       });
 
       it('sets error messages and captures exception', () => {
-        expect(findForm().props('errors')).toEqual(['The flow could not be updated. Try again.']);
+        expect(findForm().props('errors')).toEqual(['Could not update flow. Try again.']);
         expect(Sentry.captureException).toHaveBeenCalledWith(expect.any(Error));
         expect(findForm().props('isLoading')).toBe(false);
       });

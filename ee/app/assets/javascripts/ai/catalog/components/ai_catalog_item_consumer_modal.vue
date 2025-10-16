@@ -44,7 +44,7 @@ export default {
       return AI_CATALOG_ITEM_LABELS[this.item.itemType];
     },
     title() {
-      return sprintf(s__('AICatalog|Add this %{itemType} to a project'), {
+      return sprintf(s__('AICatalog|Enable %{itemType} in a project'), {
         itemType: this.itemTypeLabel,
       });
     },
@@ -75,7 +75,7 @@ export default {
   },
   modal: {
     actionPrimary: {
-      text: __('Add'),
+      text: __('Enable'),
       attributes: {
         variant: 'confirm',
         type: 'submit',
@@ -119,7 +119,7 @@ export default {
       <gl-sprintf
         :message="
           s__(
-            'AICatalog|This %{itemType} is private and can only be added to the project it was created in. Duplicate the agent to use the same configuration in other projects.',
+            'AICatalog|This %{itemType} is private and can only be enabled in the project it was created in. Duplicate the agent to use the same configuration in other projects.',
           )
         "
       >
