@@ -6,7 +6,7 @@ vi.mock('vue', () => ({
 }));
 
 // Mock the App component
-vi.mock('./App.vue', () => ({
+vi.mock('./CommunicationLayer.vue', () => ({
   default: {},
 }));
 

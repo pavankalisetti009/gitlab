@@ -55,6 +55,8 @@ import {
   MOCK_FLOW_AGENT_CONFIG,
 } from './mock_data';
 
+Vue.config.ignoredElements = ['fe-island-duo-next'];
+
 const mockSocketManager = {
   connect: jest.fn(),
   send: jest.fn(),
@@ -62,6 +64,10 @@ const mockSocketManager = {
   isConnected: jest.fn().mockReturnValue(true),
   getState: jest.fn().mockReturnValue('OPEN'),
 };
+
+jest.mock('fe_islands/duo_next/dist/duo_next', () => ({}), {
+  virtual: true,
+});
 
 jest.mock('yaml');
 
@@ -254,6 +260,8 @@ describe('Duo Agentic Chat', () => {
   const agentFlowConfigQueryMock = jest.fn().mockResolvedValue(MOCK_FLOW_CONFIG_RESPONSE);
 
   const findDuoChat = () => wrapper.findComponent(WebAgenticDuoChat);
+  const findDuoNext = () => wrapper.find('fe-island-duo-next');
+
   const getLastSocketCall = () => {
     const { calls } = createWebSocket.mock;
     if (calls.length === 0) {
@@ -311,6 +319,7 @@ describe('Duo Agentic Chat', () => {
           userId: null,
         },
       },
+      duoUiNext: false,
       ...provide,
     };
 
@@ -2000,6 +2009,32 @@ describe('Duo Agentic Chat', () => {
           expect(wrapper.emitted('switch-to-active-tab')?.length > 0).toBe(true);
           expect(wrapper.emitted('switch-to-active-tab')).toHaveLength(1);
         });
+      });
+    });
+  });
+
+  describe('Duo UI Next', () => {
+    describe('when the feature flag is disabled', () => {
+      it('does not render the DuoNext component by default', () => {
+        createComponent();
+        expect(findDuoNext().exists()).toBe(false);
+      });
+    });
+
+    describe('when the feature flag is enabled', () => {
+      beforeEach(() => {
+        createComponent({
+          provide: {
+            glFeatures: {
+              duoUiNext: true,
+            },
+          },
+        });
+      });
+
+      it('renders the DuoNext component if the flag is enabled', () => {
+        expect(findDuoNext().exists()).toBe(true);
+        expect(findDuoChat().exists()).toBe(false);
       });
     });
   });

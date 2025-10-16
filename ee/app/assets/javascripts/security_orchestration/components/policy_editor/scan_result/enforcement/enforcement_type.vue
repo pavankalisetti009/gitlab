@@ -43,7 +43,7 @@ export default {
     alertText() {
       if (this.isWarnMode) {
         return s__(
-          'SecurityOrchestration|In warn mode, project settings are checked and violations are reported, but fixes for the violations are not mandatory. License scanning is not supported in warn mode. %{linkStart}Learn more%{linkEnd}',
+          'SecurityOrchestration|In warn mode, project approval settings are not overridden by policy and violations are reported, but fixes for the violations are not mandatory. License scanning is not supported in warn mode. %{linkStart}Learn more%{linkEnd}',
         );
       }
 

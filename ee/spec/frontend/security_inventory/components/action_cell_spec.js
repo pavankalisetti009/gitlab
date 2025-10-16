@@ -15,11 +15,17 @@ describe('ActionCell', () => {
   const mockProject = subgroupsAndProjects.data.namespaceSecurityProjects.edges[0].node;
   const mockGroup = subgroupsAndProjects.data.group.descendantGroups.nodes[0];
 
-  const createComponent = (props = {}) => {
+  const createComponent = (props = {}, features = {}) => {
     wrapper = shallowMount(ActionCell, {
       propsData: {
         item: {},
         ...props,
+      },
+      provide: {
+        glFeatures: {
+          securityContextLabels: false,
+          ...features,
+        },
       },
     });
   };
@@ -48,7 +54,7 @@ describe('ActionCell', () => {
 
     it('renders correct dropdown items', () => {
       const items = findDropdown().props('items');
-      const expectedLength = showToolCoverage ? 4 : 2;
+      const expectedLength = showToolCoverage ? 3 : 2;
 
       expect(items).toHaveLength(expectedLength);
 
@@ -68,6 +74,29 @@ describe('ActionCell', () => {
           href: securityConfigPath(item),
         });
       }
+    });
+  });
+
+  describe('when securityContextLabels feature flag is true', () => {
+    beforeEach(() => {
+      createComponent({ item: mockProject }, { securityContextLabels: true });
+    });
+
+    it('renders correct dropdown items including "Edit security attributes"', () => {
+      const items = findDropdown().props('items');
+
+      expect(items).toHaveLength(4);
+
+      expect(items[3]).toMatchObject({
+        text: 'Edit security attributes',
+      });
+    });
+
+    it('emits "openAttributesDrawer" when "Edit security attributes" is clicked', () => {
+      const items = findDropdown().props('items');
+      items[3].action();
+
+      expect(wrapper.emitted('openAttributesDrawer')).toEqual([[mockProject]]);
     });
   });
 });

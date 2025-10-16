@@ -1,6 +1,7 @@
 <script>
 import { GlDisclosureDropdown } from '@gitlab/ui';
 import { s__ } from '~/locale';
+import glFeatureFlagMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
 import { isSubGroup } from '../utils';
 import {
   PROJECT_SECURITY_CONFIGURATION_PATH,
@@ -12,6 +13,7 @@ export default {
   components: {
     GlDisclosureDropdown,
   },
+  mixins: [glFeatureFlagMixin()],
   props: {
     item: {
       type: Object,
@@ -47,16 +49,16 @@ export default {
       ];
 
       if (!isGroup) {
-        items.push(
-          {
-            text: s__('SecurityInventory|Manage tool coverage'),
-            href: this.toolCoveragePath(item),
-          },
-          {
+        items.push({
+          text: s__('SecurityInventory|Manage tool coverage'),
+          href: this.toolCoveragePath(item),
+        });
+        if (this.glFeatures.securityContextLabels) {
+          items.push({
             text: s__('SecurityInventory|Edit security attributes'),
             action: () => this.$emit('openAttributesDrawer', item),
-          },
-        );
+          });
+        }
       }
 
       return items;

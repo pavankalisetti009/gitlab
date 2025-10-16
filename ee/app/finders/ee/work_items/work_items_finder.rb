@@ -28,7 +28,7 @@ module EE
         ::Issues::ConfidentialityFilter.new(
           current_user: current_user,
           params: original_params,
-          parent: root_ancestor_group,
+          parent: ancestor_group,
           assignee_filter: assignee_filter,
           related_groups: related_groups
         ).filter(items)
@@ -37,6 +37,7 @@ module EE
       override :by_parent
       def by_parent(items)
         return super unless include_group_work_items?
+        return super if use_namespace_traversal_ids_filtering?
 
         relations = [group_namespace_ids, project_namespace_ids].compact
 
@@ -71,9 +72,7 @@ module EE
 
         # If the user is an admin or a member of the root group, they will have read access to all
         # work items in the subgroups so we can skip the expensive permissions check
-        if Ability.allowed?(current_user, :read_all_resources) || root_ancestor_group.member?(current_user)
-          return related_groups
-        end
+        return related_groups if user_can_access_subgroup_work_items?
 
         ::Group.id_in(
           ::Group.groups_user_can(related_groups, current_user, :read_work_item, same_root: true)
@@ -92,10 +91,6 @@ module EE
         end
       end
       strong_memoize_attr :related_groups
-
-      def root_ancestor_group
-        include_ancestors? ? params.group.root_ancestor : params.group
-      end
 
       def include_group_work_items?
         return false unless params.group?
