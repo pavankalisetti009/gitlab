@@ -8,5 +8,9 @@ FactoryBot.define do
     user
     dismissal_types { Security::PolicyDismissal::DISMISSAL_TYPES.values.sample(2) }
     security_findings_uuids { [SecureRandom.uuid] }
+
+    trait :preserved do
+      status { 1 }
+    end
   end
 end

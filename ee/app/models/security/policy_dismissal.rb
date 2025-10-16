@@ -25,6 +25,7 @@ module Security
     scope :for_security_findings_uuids, ->(security_findings_uuids) do
       where("security_findings_uuids && ARRAY[?]::text[]", security_findings_uuids)
     end
+    scope :pluck_security_findings_uuid, -> { pluck(Arel.sql('DISTINCT unnest(security_findings_uuids)')) } # rubocop: disable Database/AvoidUsingPluckWithoutLimit -- pluck limited to batch size in ee/lib/search/elastic/references/vulnerability.rb#preload_indexing_data
     scope :including_merge_request_and_user, -> { includes(:user, :merge_request) }
 
     state_machine :status, initial: :open do
