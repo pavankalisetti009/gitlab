@@ -19,6 +19,7 @@ data:
         - code_suggestions_acceptance_rate
         - duo_chat_usage_rate
         - duo_rca_usage_rate
+        - duo_used_count
         - pipeline_count
         - pipeline_success_rate
         - pipeline_failed_rate
