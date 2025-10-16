@@ -80,6 +80,7 @@ module Gitlab
 
           logger.log_timed(LOG_MESSAGES[:secrets_check]) do
             payloads = payload_processor.standardize_payloads
+            break unless payloads
 
             thread = Thread.new do
               # This is to help identify the thread in case of a crash

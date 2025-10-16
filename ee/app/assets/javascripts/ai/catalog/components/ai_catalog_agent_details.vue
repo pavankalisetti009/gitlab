@@ -35,7 +35,10 @@ export default {
       return this.item.latestVersion?.systemPrompt;
     },
     tools() {
-      return this.item.latestVersion?.tools?.nodes.map((t) => t.title).join(', ');
+      return this.item.latestVersion?.tools?.nodes
+        .map((t) => t.title)
+        .sort()
+        .join(', ');
     },
   },
   VISIBILITY_LEVEL_LABELS,

@@ -20,7 +20,7 @@ export default {
       const { id } = this.$route.params;
       const matchedRoutes = (this.$route?.matched || [])
         .map((route) => {
-          const useRouteId = Boolean(route?.meta?.useId);
+          const useRouteId = Boolean(route.meta?.useId);
           const text = useRouteId && id ? String(id) : route.meta?.text;
 
           // Skip routes without text

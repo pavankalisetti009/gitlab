@@ -21,12 +21,21 @@ module GitlabSubscriptions
 
     attr_reader :namespace, :subscription_usage_client
 
-    def last_updated
-      last_updated_response = subscription_usage_client.get_last_updated
-
-      last_updated_response[:lastUpdated] if last_updated_response[:success]
+    def start_date
+      usage_metadata[:startDate]
     end
-    strong_memoize_attr :last_updated
+
+    def end_date
+      usage_metadata[:endDate]
+    end
+
+    def last_updated
+      usage_metadata[:lastUpdated]
+    end
+
+    def purchase_credits_path
+      usage_metadata[:purchaseCreditsPath]
+    end
 
     def pool_usage
       pool_usage_response = subscription_usage_client.get_pool_usage
@@ -72,5 +81,10 @@ module GitlabSubscriptions
         )
       end
     end
+
+    def usage_metadata
+      subscription_usage_client.get_metadata.fetch(:subscriptionUsage, {})
+    end
+    strong_memoize_attr :usage_metadata
   end
 end

@@ -25,12 +25,12 @@ module Resolvers
 
         license_key = License.current&.data if subscription_target == :instance
 
-        subscription_usage_client = ::Gitlab::SubscriptionPortal::SubscriptionUsageClient.new(
+        subscription_usage_client = ::Gitlab::SubscriptionPortal::SubscriptionUsageClient.new(**{
           start_date: args[:start_date],
           end_date: args[:end_date],
           license_key: license_key,
           namespace_id: namespace&.id
-        )
+        }.compact)
 
         context[:subscription_usage_client] = subscription_usage_client
 

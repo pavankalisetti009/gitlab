@@ -78,14 +78,29 @@ export const mockEmptyProjectsResponse = {
   },
 };
 
-export const toolTitles = ['Gitlab Blob Search', 'Ci Linter', 'Run Git Command'];
+export const mockToolsIds = [
+  'gid://gitlab/Ai::Catalog::BuiltInTool/1',
+  'gid://gitlab/Ai::Catalog::BuiltInTool/2',
+  'gid://gitlab/Ai::Catalog::BuiltInTool/3',
+];
+export const mockToolsTitles = ['Run Git Command', 'Gitlab Blob Search', 'Ci Linter'];
 
-const aiCatalogBuiltInToolsNodes = [0, 1, 2].map((number) => ({
-  id: `gid://gitlab/Ai::Catalog::BuiltInTool/${number}`,
-  title: toolTitles[number],
-}));
+const aiCatalogBuiltInToolsNodes = [
+  {
+    id: `gid://gitlab/Ai::Catalog::BuiltInTool/3`,
+    title: 'Ci Linter',
+  },
+  {
+    id: `gid://gitlab/Ai::Catalog::BuiltInTool/2`,
+    title: 'Gitlab Blob Search',
+  },
+  {
+    id: `gid://gitlab/Ai::Catalog::BuiltInTool/1`,
+    title: 'Run Git Command',
+  },
+];
 
-export const mockToolQueryResponse = {
+export const mockToolsQueryResponse = {
   data: {
     aiCatalogBuiltInTools: {
       nodes: aiCatalogBuiltInToolsNodes,
