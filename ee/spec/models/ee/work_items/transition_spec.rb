@@ -5,15 +5,30 @@ require 'spec_helper'
 RSpec.describe ::WorkItems::Transition, feature_category: :team_planning do
   let_it_be(:group) { create(:group) }
   let_it_be(:project) { create(:project, group: group) }
+  let_it_be(:epic) { create(:epic, group: group) }
 
   describe 'associations' do
     it { is_expected.to belong_to(:promoted_to_epic).class_name('Epic') }
   end
 
+  describe '#promoted?' do
+    subject { work_item_transition.promoted? }
+
+    context 'when promoted to epic' do
+      let(:work_item_transition) { build(:work_item_transition, promoted_to_epic: epic) }
+
+      it { is_expected.to be_truthy }
+    end
+
+    context 'when not promoted to epic' do
+      let(:work_item_transition) { build(:work_item_transition) }
+
+      it { is_expected.to be_falsey }
+    end
+  end
+
   # Syncing via `trigger_sync_issues_dates_with_work_item_dates_sources`
   describe 'syncs to work_item_transition from issue' do
-    let_it_be(:epic) { create(:epic, group: group) }
-
     it 'syncs promoted_to_epic_id' do
       work_item = create(:work_item, :issue, project: project, promoted_to_epic: epic)
 

@@ -5,10 +5,12 @@ module EE
     extend ActiveSupport::Concern
 
     def promoted_to_epic_url
-      return unless work_item.promoted?
-      return unless Ability.allowed?(current_user, :read_epic, work_item.promoted_to_epic)
+      work_item_transition = work_item.work_item_transition
 
-      ::Gitlab::UrlBuilder.build(work_item.promoted_to_epic)
+      return unless work_item_transition.promoted?
+      return unless Ability.allowed?(current_user, :read_epic, work_item_transition.promoted_to_epic)
+
+      ::Gitlab::UrlBuilder.build(work_item_transition.promoted_to_epic)
     end
   end
 end

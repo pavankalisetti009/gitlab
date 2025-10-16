@@ -75,9 +75,11 @@ module EE
     override :issue_header_data
     def issue_header_data(issuable)
       super.tap do |data|
-        if issuable.promoted? && can?(current_user, :read_epic, issuable.promoted_to_epic)
-          data[:promotedToEpicUrl] =
-            url_for([issuable.promoted_to_epic.group, issuable.promoted_to_epic, { only_path: false }])
+        transition = issuable.work_item_transition
+        if transition.promoted? && can?(current_user, :read_epic, transition.promoted_to_epic)
+          data[:promotedToEpicUrl] = url_for(
+            [transition.promoted_to_epic.group, transition.promoted_to_epic, { only_path: false }]
+          )
         end
       end
     end

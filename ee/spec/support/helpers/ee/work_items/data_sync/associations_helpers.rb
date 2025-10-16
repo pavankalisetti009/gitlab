@@ -6,7 +6,7 @@ module EE
       module AssociationsHelpers
         BASE_ASSOCIATIONS = {
           base_associations: [
-            :promoted_to_epic, :synced_epic, :sync_object
+            :synced_epic, :sync_object
           ]
         }.freeze
 
