@@ -1475,13 +1475,6 @@ module EE
       security_policy_bots.take
     end
 
-    def product_analytics_events_used(year: Time.current.year, month: Time.current.month)
-      return unless ::ProductAnalytics::Settings.new(project: self).enabled? && self.project_setting&.product_analytics_instrumentation_key.present?
-
-      ::Analytics::ProductAnalytics::ProjectUsageData.new(project_id: id)
-                                                     .events_stored_count(year: year, month: month)
-    end
-
     override :allows_multiple_merge_request_assignees?
     def allows_multiple_merge_request_assignees?
       feature_available?(:multiple_merge_request_assignees)

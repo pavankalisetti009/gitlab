@@ -632,7 +632,6 @@ RSpec/NamedSubject:
     - 'ee/spec/requests/api/graphql/project/environments_spec.rb'
     - 'ee/spec/requests/api/graphql/project/pipeline/dast_profile_spec.rb'
     - 'ee/spec/requests/api/graphql/project/pipelines/dast_profile_spec.rb'
-    - 'ee/spec/requests/api/graphql/project/product_analytics/events_stored_spec.rb'
     - 'ee/spec/requests/api/graphql/project/sbom/dependencies_spec.rb'
     - 'ee/spec/requests/api/graphql/project/vulnerability_severities_count_spec.rb'
     - 'ee/spec/requests/api/graphql/projects/compliance_frameworks_spec.rb'
