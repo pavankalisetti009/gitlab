@@ -5,7 +5,7 @@ require 'spec_helper'
 RSpec.describe Profiles::BillingsController, feature_category: :subscription_management do
   let_it_be(:user) { create(:user) }
 
-  describe 'GET #index' do
+  describe 'GET #index', :saas do
     before do
       sign_in(user)
       stub_saas_features(gitlab_com_subscriptions: true)

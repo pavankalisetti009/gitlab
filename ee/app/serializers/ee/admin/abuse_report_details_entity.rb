@@ -14,9 +14,7 @@ module EE
           end
 
           expose :plan do |report|
-            if ::Gitlab::CurrentSettings.current_application_settings.try(:should_check_namespace_plan?)
-              report.user.namespace&.actual_plan&.title
-            end
+            report.user.namespace&.actual_plan&.title if ::Gitlab::Saas.feature_available?(:gitlab_com_subscriptions)
           end
         end
       end

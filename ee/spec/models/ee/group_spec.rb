@@ -3899,7 +3899,6 @@ RSpec.describe Group, feature_category: :groups_and_projects do
       true  | :user_cap       | 1   | false
       true  | :block_overages | nil | true
       false | :off            | nil | false
-      false | :user_cap       | 1   | false
       false | :block_overages | nil | false
     end
 
