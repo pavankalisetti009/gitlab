@@ -25055,7 +25055,8 @@ CREATE TABLE resource_label_events (
     created_at timestamp with time zone NOT NULL,
     reference text,
     imported_from smallint DEFAULT 0 NOT NULL,
-    namespace_id bigint NOT NULL
+    namespace_id bigint NOT NULL,
+    CONSTRAINT check_614704e750 CHECK ((num_nonnulls(epic_id, issue_id, merge_request_id) = 1))
 );
 
 CREATE SEQUENCE resource_label_events_id_seq
@@ -25838,7 +25839,7 @@ CREATE TABLE security_policy_dismissals (
     updated_at timestamp with time zone NOT NULL,
     project_id bigint NOT NULL,
     merge_request_id bigint NOT NULL,
-    security_policy_id bigint NOT NULL,
+    security_policy_id bigint,
     user_id bigint,
     security_findings_uuids text[] DEFAULT '{}'::text[],
     dismissal_types smallint[] DEFAULT '{}'::smallint[] NOT NULL,
@@ -48425,6 +48426,9 @@ ALTER TABLE ONLY project_access_tokens
 ALTER TABLE ONLY issue_metrics
     ADD CONSTRAINT fk_5fc5653bb3 FOREIGN KEY (namespace_id) REFERENCES namespaces(id) ON DELETE CASCADE;
 
+ALTER TABLE ONLY resource_label_events
+    ADD CONSTRAINT fk_60a3881b58 FOREIGN KEY (namespace_id) REFERENCES namespaces(id) ON DELETE CASCADE;
+
 ALTER TABLE ONLY user_achievements
     ADD CONSTRAINT fk_60b12fcda3 FOREIGN KEY (awarded_by_user_id) REFERENCES users(id) ON DELETE SET NULL;
 
@@ -49371,7 +49375,7 @@ ALTER TABLE ONLY packages_packages
     ADD CONSTRAINT fk_c188f0dba4 FOREIGN KEY (creator_id) REFERENCES users(id) ON DELETE SET NULL;
 
 ALTER TABLE ONLY security_policy_dismissals
-    ADD CONSTRAINT fk_c2379f1e97 FOREIGN KEY (security_policy_id) REFERENCES security_policies(id) ON DELETE CASCADE;
+    ADD CONSTRAINT fk_c2379f1e97_new FOREIGN KEY (security_policy_id) REFERENCES security_policies(id) ON DELETE SET NULL;
 
 ALTER TABLE ONLY sbom_occurrences
     ADD CONSTRAINT fk_c2a5562923 FOREIGN KEY (source_id) REFERENCES sbom_sources(id) ON DELETE CASCADE;

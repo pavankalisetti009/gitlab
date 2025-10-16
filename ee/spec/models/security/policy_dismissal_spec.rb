@@ -6,7 +6,7 @@ RSpec.describe Security::PolicyDismissal, feature_category: :security_policy_man
   describe 'associations' do
     it { is_expected.to belong_to(:project).required }
     it { is_expected.to belong_to(:merge_request).required }
-    it { is_expected.to belong_to(:security_policy).required }
+    it { is_expected.to belong_to(:security_policy).optional }
     it { is_expected.to belong_to(:user).optional }
   end
 
