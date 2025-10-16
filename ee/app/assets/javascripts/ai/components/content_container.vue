@@ -11,7 +11,7 @@ export default {
     GlTooltip: GlTooltipDirective,
   },
   i18n: {
-    collapseButtonLabel: __('Collapse GitLab Duo panel'),
+    collapseButtonLabel: __('Collapse panel'),
   },
   props: {
     activeTab: {
@@ -73,7 +73,7 @@ export default {
       return __('Go back');
     },
     maximizeButtonLabel() {
-      return this.isMaximized ? __('Minimize Duo panel') : __('Maximize Duo panel');
+      return this.isMaximized ? __('Minimize panel') : __('Maximize panel');
     },
   },
   methods: {
@@ -100,12 +100,12 @@ export default {
     class="ai-panel !gl-left-auto gl-flex gl-h-full gl-w-[var(--ai-panel-width)] gl-grow gl-flex-col gl-overflow-hidden gl-rounded-[1rem] gl-bg-default [contain:strict]"
     :class="{ 'ai-panel-maximized': isMaximized }"
   >
-    <div class="ai-panel-header gl-flex gl-items-center gl-justify-between">
+    <div class="ai-panel-header gl-flex gl-h-[3.0625rem] gl-items-center gl-justify-between">
       <div
         class="gl-flex gl-max-w-17/20 gl-flex-1 gl-shrink-0 gl-items-center gl-justify-start gl-gap-2 gl-overflow-hidden gl-truncate gl-text-ellipsis gl-whitespace-nowrap"
       >
         <gl-button
-          v-gl-tooltip
+          v-gl-tooltip.bottom
           class="lg:gl-flex"
           :class="{ '!gl-hidden': !showBackButton }"
           icon="go-back"
@@ -124,26 +124,28 @@ export default {
         </h3>
       </div>
 
-      <div class="ai-panel-header-actions gl-flex">
+      <div class="ai-panel-header-actions gl-flex gl-gap-x-2 gl-pr-3">
         <gl-button
-          v-gl-tooltip
-          class="gl-hidden lg:gl-flex"
-          :icon="isMaximized ? 'minimize' : 'maximize'"
-          category="tertiary"
-          :aria-label="maximizeButtonLabel"
-          :title="maximizeButtonLabel"
-          data-testid="content-container-maximize-button"
-          @click="toggleIsMaximized"
-        />
-        <gl-button
-          v-gl-tooltip
+          v-gl-tooltip.bottom
           icon="dash"
           category="tertiary"
+          size="small"
           :aria-label="$options.i18n.collapseButtonLabel"
           :title="$options.i18n.collapseButtonLabel"
           aria-expanded
           data-testid="content-container-collapse-button"
           @click="$emit('closePanel', false)"
+        />
+        <gl-button
+          v-gl-tooltip.bottom
+          class="gl-hidden lg:gl-flex"
+          :icon="isMaximized ? 'minimize' : 'maximize'"
+          category="tertiary"
+          size="small"
+          :aria-label="maximizeButtonLabel"
+          :title="maximizeButtonLabel"
+          data-testid="content-container-maximize-button"
+          @click="toggleIsMaximized"
         />
       </div>
     </div>
