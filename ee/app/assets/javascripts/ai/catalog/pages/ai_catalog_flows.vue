@@ -1,4 +1,5 @@
 <script>
+import { GlFilteredSearch } from '@gitlab/ui';
 import { s__, sprintf } from '~/locale';
 import { getIdFromGraphQLId } from '~/graphql_shared/utils';
 import { fetchPolicies } from '~/lib/graphql';
@@ -10,6 +11,7 @@ import {
 import * as Sentry from '~/sentry/sentry_browser_wrapper';
 import glFeatureFlagsMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
 import ErrorsAlert from '~/vue_shared/components/errors_alert.vue';
+import { FILTERED_SEARCH_TERM } from '~/vue_shared/components/filtered_search_bar/constants';
 import { InternalEvents } from '~/tracking';
 import aiCatalogFlowsQuery from '../graphql/queries/ai_catalog_flows.query.graphql';
 import createAiCatalogItemConsumer from '../graphql/mutations/create_ai_catalog_item_consumer.mutation.graphql';
@@ -38,6 +40,7 @@ export default {
     AiCatalogListHeader,
     AiCatalogItemConsumerModal,
     ErrorsAlert,
+    GlFilteredSearch,
   },
   mixins: [glFeatureFlagsMixin(), InternalEvents.mixin()],
   apollo: {
@@ -50,6 +53,7 @@ export default {
           after: null,
           first: PAGE_SIZE,
           last: null,
+          search: this.searchTerm,
         };
       },
       fetchPolicy: fetchPolicies.CACHE_AND_NETWORK,
@@ -65,6 +69,7 @@ export default {
       aiCatalogFlowToBeAdded: null,
       errors: [],
       pageInfo: {},
+      searchTerm: '',
     };
   },
   computed: {
@@ -139,6 +144,14 @@ export default {
             FLOW_VISIBILITY_LEVEL_DESCRIPTIONS[VISIBILITY_LEVEL_PRIVATE_STRING],
         },
       };
+    },
+    filteredSearchValue() {
+      return [
+        {
+          type: FILTERED_SEARCH_TERM,
+          value: { data: this.searchTerm },
+        },
+      ];
     },
   },
   mounted() {
@@ -241,6 +254,12 @@ export default {
         last: PAGE_SIZE,
       });
     },
+    handleSearch(filters) {
+      [this.searchTerm] = filters;
+    },
+    handleClearSearch() {
+      this.searchTerm = '';
+    },
   },
 };
 </script>
@@ -249,6 +268,15 @@ export default {
   <div>
     <ai-catalog-list-header />
     <errors-alert class="gl-mt-5" :errors="errors" @dismiss="errors = []" />
+
+    <div class="gl-border-b gl-bg-subtle gl-p-5">
+      <gl-filtered-search
+        :value="filteredSearchValue"
+        @submit="handleSearch"
+        @clear="handleClearSearch"
+      />
+    </div>
+
     <ai-catalog-list
       :is-loading="isLoading"
       :items="aiCatalogFlows"
@@ -257,6 +285,7 @@ export default {
       :delete-confirm-message="s__('AICatalog|Are you sure you want to delete flow %{name}?')"
       :delete-fn="deleteFlow"
       :page-info="pageInfo"
+      :search="searchTerm"
       @next-page="handleNextPage"
       @prev-page="handlePrevPage"
     />

@@ -8,6 +8,7 @@ query aiCatalogFlows(
   $after: String
   $first: Int
   $last: Int
+  $search: String
 ) {
   aiCatalogItems(
     itemType: $itemType
@@ -16,6 +17,7 @@ query aiCatalogFlows(
     after: $after
     first: $first
     last: $last
+    search: $search
   ) {
     nodes {
       ...BaseAiCatalogItem

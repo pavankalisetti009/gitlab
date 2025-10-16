@@ -1,5 +1,6 @@
 import VueApollo from 'vue-apollo';
 import Vue, { nextTick } from 'vue';
+import { GlFilteredSearch } from '@gitlab/ui';
 import { isLoggedIn } from '~/lib/utils/common_utils';
 import * as Sentry from '~/sentry/sentry_browser_wrapper';
 import ErrorsAlert from '~/vue_shared/components/errors_alert.vue';
@@ -77,6 +78,7 @@ describe('AiCatalogFlows', () => {
   };
 
   const findErrorsAlert = () => wrapper.findComponent(ErrorsAlert);
+  const findFilteredSearch = () => wrapper.findComponent(GlFilteredSearch);
   const findAiCatalogList = () => wrapper.findComponent(AiCatalogList);
   const findAiCatalogItemConsumerModal = () => wrapper.findComponent(AiCatalogItemConsumerModal);
 
@@ -99,6 +101,10 @@ describe('AiCatalogFlows', () => {
       expect(catalogList.props('items')).toEqual(mockFlows);
       expect(catalogList.props('isLoading')).toBe(false);
     });
+
+    it('renders filter search', () => {
+      expect(findFilteredSearch().exists()).toBe(true);
+    });
   });
 
   describe('Apollo queries', () => {
@@ -114,6 +120,7 @@ describe('AiCatalogFlows', () => {
           before: null,
           first: 20,
           last: null,
+          search: '',
         });
       });
     });
@@ -137,6 +144,7 @@ describe('AiCatalogFlows', () => {
           before: null,
           first: 20,
           last: null,
+          search: '',
         });
       });
     });
@@ -160,6 +168,7 @@ describe('AiCatalogFlows', () => {
           before: null,
           first: 20,
           last: null,
+          search: '',
         });
       });
     });
@@ -239,6 +248,7 @@ describe('AiCatalogFlows', () => {
         before: 'eyJpZCI6IjUxIn0',
         first: null,
         last: 20,
+        search: '',
       });
     });
 
@@ -250,6 +260,28 @@ describe('AiCatalogFlows', () => {
         before: null,
         first: 20,
         last: null,
+        search: '',
+      });
+    });
+  });
+
+  describe('search', () => {
+    beforeEach(async () => {
+      createComponent();
+      await waitForPromises();
+    });
+
+    it('passes search param to agents query on search', async () => {
+      findFilteredSearch().vm.$emit('submit', ['foo']);
+      await waitForPromises();
+
+      expect(mockCatalogItemsQueryHandler).toHaveBeenCalledWith({
+        itemTypes: ['FLOW', 'THIRD_PARTY_FLOW'],
+        after: null,
+        before: null,
+        first: 20,
+        last: null,
+        search: 'foo',
       });
     });
   });
