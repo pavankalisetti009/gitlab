@@ -22424,9 +22424,6 @@ msgstr ""
 msgid "Delete group"
 msgstr ""
 
-msgid "Delete group immediately"
-msgstr ""
-
 msgid "Delete group immediately?"
 msgstr ""
 
@@ -22452,9 +22449,6 @@ msgid "Delete pipeline"
 msgstr ""
 
 msgid "Delete project"
-msgstr ""
-
-msgid "Delete project immediately"
 msgstr ""
 
 msgid "Delete release"
@@ -32458,6 +32452,12 @@ msgid "GroupSettings|Customize this group's badges."
 msgstr ""
 
 msgid "GroupSettings|Default to Auto DevOps pipeline for all projects within this group"
+msgstr ""
+
+msgid "GroupSettings|Delete group"
+msgstr ""
+
+msgid "GroupSettings|Delete immediately"
 msgstr ""
 
 msgid "GroupSettings|Disable personal access tokens"
@@ -51598,6 +51598,12 @@ msgid "ProjectSettings|Cube API URL"
 msgstr ""
 
 msgid "ProjectSettings|Data sources"
+msgstr ""
+
+msgid "ProjectSettings|Delete immediately"
+msgstr ""
+
+msgid "ProjectSettings|Delete project"
 msgstr ""
 
 msgid "ProjectSettings|Determine what happens to the commit history when you merge a merge request."
