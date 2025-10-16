@@ -36918,18 +36918,6 @@ Version of a machine learning model.
 | <a id="mlmodelversionpackageid"></a>`packageId` | [`PackagesPackageID!`](#packagespackageid) | Package for model version artifacts. |
 | <a id="mlmodelversionversion"></a>`version` | [`String!`](#string) | Name of the version. |
 
-### `MonthlyUsage`
-
-Product analytics events for a specific month and year.
-
-#### Fields
-
-| Name | Type | Description |
-| ---- | ---- | ----------- |
-| <a id="monthlyusagecount"></a>`count` | [`Int`](#int) | Count of product analytics events. |
-| <a id="monthlyusagemonth"></a>`month` | [`Int!`](#int) | Month of the data. |
-| <a id="monthlyusageyear"></a>`year` | [`Int!`](#int) | Year of the data. |
-
 ### `Namespace`
 
 #### Fields
@@ -41036,23 +41024,6 @@ four standard [pagination arguments](#pagination-arguments):
 | <a id="projectpipelinesupdatedafter"></a>`updatedAfter` | [`Time`](#time) | Pipelines updated after the date. |
 | <a id="projectpipelinesupdatedbefore"></a>`updatedBefore` | [`Time`](#time) | Pipelines updated before the date. |
 | <a id="projectpipelinesusername"></a>`username` | [`String`](#string) | Filter pipelines by the user that triggered the pipeline. |
-
-##### `Project.productAnalyticsEventsStored`
-
-{{< details >}}
-**Introduced** in GitLab 16.7.
-**Status**: Experiment.
-{{< /details >}}
-
-Count of all events used, broken down by month.
-
-Returns [`[MonthlyUsage!]`](#monthlyusage).
-
-###### Arguments
-
-| Name | Type | Description |
-| ---- | ---- | ----------- |
-| <a id="projectproductanalyticseventsstoredmonthselection"></a>`monthSelection` | [`[MonthSelectionInput!]!`](#monthselectioninput) | Selection for the period to return. |
 
 ##### `Project.projectMembers`
 
@@ -55391,17 +55362,6 @@ Defines which user roles, users, or groups can merge into a protected branch.
 | <a id="mergerequestsresolvernegatedparamsreviewerusername"></a>`reviewerUsername` | [`String`](#string) | Filters merge requests to those not reviewed by the given user. |
 | <a id="mergerequestsresolvernegatedparamssourcebranches"></a>`sourceBranches` | [`[String!]`](#string) | Filters merge requests to exclude the source branch names provided in the given array. |
 | <a id="mergerequestsresolvernegatedparamstargetbranches"></a>`targetBranches` | [`[String!]`](#string) | Filters merge requests to exclude the target branch names provided in the given array. |
-
-### `MonthSelectionInput`
-
-A year and month input for querying product analytics usage data.
-
-#### Arguments
-
-| Name | Type | Description |
-| ---- | ---- | ----------- |
-| <a id="monthselectioninputmonth"></a>`month` | [`Int!`](#int) | Month of the period to return. |
-| <a id="monthselectioninputyear"></a>`year` | [`Int!`](#int) | Year of the period to return. |
 
 ### `NegatedBoardIssueInput`
 
