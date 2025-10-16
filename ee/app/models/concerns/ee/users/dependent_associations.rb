@@ -51,6 +51,11 @@ module EE
           class_name: 'Security::OrchestrationPolicyRuleSchedule',
           inverse_of: :owner,
           dependent: :destroy
+
+        has_many :approval_policy_merge_request_bypass_events,
+          class_name: 'Security::ApprovalPolicyMergeRequestBypassEvent',
+          inverse_of: :user,
+          dependent: :nullify
         # rubocop:enable Cop/ActiveRecordDependent -- we need to destroy/nullify records after each user delete.
       end
     end
