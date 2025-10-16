@@ -342,8 +342,8 @@ RSpec.describe MergeTrains::Car, feature_category: :merge_trains do
     end
   end
 
-  describe '#mergeable?' do
-    subject { train_car.mergeable? }
+  describe '#merge_ready_pipeline?' do
+    subject { train_car.merge_ready_pipeline? }
 
     let(:train_car) { merge_request.merge_train_car }
     let!(:merge_request) { create_merge_request_on_train }
