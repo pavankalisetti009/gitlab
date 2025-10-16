@@ -14,7 +14,7 @@ module Security
 
     belongs_to :project, class_name: 'Project', optional: false
     belongs_to :merge_request, class_name: 'MergeRequest', optional: false
-    belongs_to :security_policy, class_name: 'Security::Policy', optional: false
+    belongs_to :security_policy, class_name: 'Security::Policy', optional: true
     belongs_to :user, class_name: 'User', optional: true
 
     validates :merge_request_id, uniqueness: { scope: :security_policy_id }
