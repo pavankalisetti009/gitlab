@@ -11,6 +11,7 @@ module EE
             description 'Represents the upstream registries of a Maven virtual registry.'
 
             authorize :read_virtual_registry
+            connection_type_class ::Types::CountableConnectionType
 
             field :id, GraphQL::Types::ID, null: false,
               description: 'ID of the upstream registry.',
@@ -40,6 +41,11 @@ module EE
               description: 'Description of the upstream registry.',
               experiment: { milestone: '18.1' }
 
+            field :registries_count, GraphQL::Types::Int,
+              null: false,
+              experiment: { milestone: '18.6' },
+              description: 'Number of registries using the upstream.'
+
             field :registries,
               EE::Types::VirtualRegistries::Packages::Maven::MavenVirtualRegistryType.connection_type,
               null: false,
@@ -52,6 +58,16 @@ module EE
               description: 'Represents the upstream registry for the upstream ' \
                 'which contains the position data.',
               experiment: { milestone: '18.2' }
+
+            def registries_count
+              BatchLoader::GraphQL.for(object.id)
+                .batch(key: 'vregs-maven-upstreams-registries-count') do |upstream_ids, loader|
+                counts = ::VirtualRegistries::Packages::Maven::RegistryUpstream
+                  .registries_count_by_upstream_ids(upstream_ids)
+
+                upstream_ids.each { |id| loader.call(id, counts[id] || 0) }
+              end
+            end
           end
         end
       end

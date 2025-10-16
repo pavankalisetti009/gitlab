@@ -17,6 +17,7 @@ RSpec.describe 'Querying a maven upstream registry', feature_category: :virtual_
         mavenUpstreamRegistry(id: "#{global_id}") {
           id
           name
+          registriesCount
           registries {
             nodes {
               id
@@ -33,6 +34,8 @@ RSpec.describe 'Querying a maven upstream registry', feature_category: :virtual_
     graphql_data['mavenUpstreamRegistry']
   end
 
+  let(:virtual_registry_available) { false }
+
   shared_examples 'returns null for mavenUpstreamRegistry' do
     it 'returns null for the mavenUpstreamRegistry field' do
       expect(maven_upstream_response).to be_nil
@@ -40,7 +43,8 @@ RSpec.describe 'Querying a maven upstream registry', feature_category: :virtual_
   end
 
   before do
-    setup_default_configuration
+    allow(::VirtualRegistries::Packages::Maven).to receive(:virtual_registry_available?)
+      .and_return(virtual_registry_available)
   end
 
   context 'when user does not have access' do
@@ -52,62 +56,61 @@ RSpec.describe 'Querying a maven upstream registry', feature_category: :virtual_
       group.add_member(current_user, Gitlab::Access::GUEST)
     end
 
-    context 'when upstream exists' do
-      it 'returns upstream for the mavenUpstreamRegistry field' do
-        expect(maven_upstream_response['name']).to eq('name')
-      end
-
-      it 'returns registries for the mavenUpstreamRegistry field' do
-        expect(maven_upstream_response['registries']['nodes'][0]['name']).to eq('test registry')
-      end
-
-      context 'when dependency proxy config is disabled' do
-        before do
-          stub_config(dependency_proxy: { enabled: false })
-        end
-
-        it_behaves_like 'returns null for mavenUpstreamRegistry'
-      end
-
-      context 'when licensed feature packages_virtual_registry is disabled' do
-        before do
-          stub_licensed_features(packages_virtual_registry: false)
-        end
-
-        it_behaves_like 'returns null for mavenUpstreamRegistry'
-      end
-
-      context 'with the maven virtual registry feature flag turned off' do
-        before do
-          stub_feature_flags(maven_virtual_registry: false)
-        end
-
-        it_behaves_like 'returns null for mavenUpstreamRegistry'
-      end
-
-      context 'when the virtual registries setting enabled is false' do
-        before do
-          allow(VirtualRegistries::Setting).to receive(:cached_for_group).with(group).and_return(build_stubbed(
-            :virtual_registries_setting, :disabled, group: group))
-        end
-
-        it_behaves_like 'returns null for mavenUpstreamRegistry'
-      end
-    end
-
-    context 'when upstream does not exist' do
-      let(:global_id) { "gid://gitlab/VirtualRegistries::Packages::Maven::Upstream/#{non_existing_record_id}" }
-
+    context 'when virtual registry is unavailable' do
       it_behaves_like 'returns null for mavenUpstreamRegistry'
     end
-  end
 
-  private
+    context 'when virtual registry is available' do
+      let(:virtual_registry_available) { true }
 
-  def setup_default_configuration
-    stub_config(dependency_proxy: { enabled: true })
-    stub_licensed_features(packages_virtual_registry: true)
-    allow(VirtualRegistries::Setting).to receive(:cached_for_group).with(group).and_return(build_stubbed(
-      :virtual_registries_setting, group: group))
+      context 'when upstream exists' do
+        it 'returns upstream for the mavenUpstreamRegistry field' do
+          expect(maven_upstream_response['name']).to eq('name')
+        end
+
+        it 'returns registries count for the mavenUpstreamRegistry field' do
+          expect(maven_upstream_response['registriesCount']).to eq(1)
+        end
+
+        it 'returns registries for the mavenUpstreamRegistry field' do
+          expect(maven_upstream_response['registries']['nodes'][0]['name']).to eq('test registry')
+        end
+
+        context 'when multiple registries exist' do
+          let_it_be(:first_user) { create(:user) }
+          let_it_be(:second_user) { create(:user) }
+
+          before_all do
+            group.add_guest(first_user)
+            group.add_guest(second_user)
+          end
+
+          it 'avoids N+1 queries' do
+            control_count = ActiveRecord::QueryRecorder.new do
+              post_graphql(query, current_user: first_user)
+            end
+
+            create(:virtual_registries_packages_maven_registry, group: upstream.group, name: 'other').tap do |registry|
+              create(:virtual_registries_packages_maven_registry_upstream, registry:, upstream:)
+            end
+
+            create(:virtual_registries_packages_maven_registry, group: upstream.group, name: 'test').tap do |registry|
+              create(:virtual_registries_packages_maven_registry_upstream, registry:, upstream:)
+            end
+
+            expect do
+              post_graphql(query, current_user: second_user)
+            end.not_to exceed_query_limit(control_count)
+            expect_graphql_errors_to_be_empty
+          end
+        end
+      end
+
+      context 'when upstream does not exist' do
+        let(:global_id) { "gid://gitlab/VirtualRegistries::Packages::Maven::Upstream/#{non_existing_record_id}" }
+
+        it_behaves_like 'returns null for mavenUpstreamRegistry'
+      end
+    end
   end
 end
