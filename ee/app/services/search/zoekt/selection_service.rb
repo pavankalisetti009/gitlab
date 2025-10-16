@@ -6,7 +6,7 @@ module Search
       attr_reader :max_batch_size
 
       ResourcePool = Struct.new(:enabled_namespaces, :nodes)
-      MAX_PROJECTS_PER_NAMESPACE = 40_000
+      SM_MAX_PROJECTS_PER_NAMESPACE = 40_000
 
       def self.execute(**kwargs)
         new(**kwargs).execute
@@ -28,7 +28,7 @@ module Search
       def fetch_enabled_namespace_for_indexing
         [].tap do |batch|
           ::Search::Zoekt::EnabledNamespace.with_missing_indices.with_rollout_allowed.find_each do |ns|
-            next if ::Namespace.by_root_id(ns.root_namespace_id).project_namespaces.count > MAX_PROJECTS_PER_NAMESPACE
+            next if namespace_over_project_limit?(ns.root_namespace_id)
 
             batch << ns
             break if batch.count >= max_batch_size
@@ -38,6 +38,16 @@ module Search
 
       def fetch_available_nodes
         ::Search::Zoekt::Node.for_search.online.order_by_unclaimed_space_desc
+      end
+
+      def namespace_over_project_limit?(root_namespace_id)
+        self_managed_zoekt? && ::Namespace.by_root_id(
+          root_namespace_id
+        ).project_namespaces.limit(SM_MAX_PROJECTS_PER_NAMESPACE).count >= SM_MAX_PROJECTS_PER_NAMESPACE
+      end
+
+      def self_managed_zoekt?
+        !::Gitlab::Saas.feature_available?(:exact_code_search)
       end
     end
   end
