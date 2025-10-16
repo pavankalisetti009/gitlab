@@ -885,6 +885,78 @@ RSpec.describe ::Ai::DuoWorkflows::StartWorkflowService, feature_category: :agen
     end
   end
 
+  describe 'DUO_WORKFLOW_GIT_USER_EMAIL variable' do
+    before do
+      allow(::Gitlab::Llm::StageCheck).to receive(:available?).with(project, :duo_workflow).and_return(true)
+      project.project_setting.update!(duo_features_enabled: true, duo_remote_flows_enabled: true)
+      allow(maintainer).to receive(:allowed_to_use?).and_return(true)
+      workflow.update!(user: maintainer)
+    end
+
+    context 'when workload user has commit_email' do
+      before do
+        allow(maintainer).to receive_messages(
+          commit_email: 'commit@example.com'
+        )
+      end
+
+      it 'uses the commit_email in environment variables' do
+        expect(Ci::Workloads::RunWorkloadService)
+          .to receive(:new).and_wrap_original do |method, **kwargs|
+          workload_definition = kwargs[:workload_definition]
+          variables = workload_definition.variables
+
+          expect(variables[:DUO_WORKFLOW_GIT_USER_EMAIL]).to eq('commit@example.com')
+          method.call(**kwargs)
+        end
+
+        expect(execute).to be_success
+      end
+    end
+
+    context 'when workload user has no commit_email' do
+      before do
+        allow(maintainer).to receive_messages(
+          commit_email: nil,
+          email: "email@example.com"
+        )
+      end
+
+      it 'uses the email in environment variables' do
+        expect(Ci::Workloads::RunWorkloadService)
+          .to receive(:new).and_wrap_original do |method, **kwargs|
+          workload_definition = kwargs[:workload_definition]
+          variables = workload_definition.variables
+
+          expect(variables[:DUO_WORKFLOW_GIT_USER_EMAIL]).to eq('email@example.com')
+          method.call(**kwargs)
+        end
+
+        expect(execute).to be_success
+      end
+    end
+
+    context 'when workload user does not respond to commit_email_or_default' do
+      before do
+        allow(maintainer).to receive(:respond_to?).and_call_original
+        allow(maintainer).to receive(:respond_to?).with(:commit_email_or_default).and_return(false)
+      end
+
+      it 'sets DUO_WORKFLOW_GIT_USER_EMAIL to empty string' do
+        expect(Ci::Workloads::RunWorkloadService)
+          .to receive(:new).and_wrap_original do |method, **kwargs|
+          workload_definition = kwargs[:workload_definition]
+          variables = workload_definition.variables
+
+          expect(variables[:DUO_WORKFLOW_GIT_USER_EMAIL]).to eq("")
+          method.call(**kwargs)
+        end
+
+        expect(execute).to be_success
+      end
+    end
+  end
+
   context 'when shallow_clone is empty', :aggregate_failures do
     include_context 'with Duo enabled'
 

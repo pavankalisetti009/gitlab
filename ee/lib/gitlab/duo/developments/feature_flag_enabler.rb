@@ -10,7 +10,6 @@ module Gitlab
           code_completion_opt_out_fireworks
           incident_fail_over_completion_provider
           incident_fail_over_generation_provider
-          duo_workflow_use_composite_identity
           duo_ui_next # Breaks Chat UI still WIP
 
           # Model-specific feature flags disabled by default as they require specific configuration

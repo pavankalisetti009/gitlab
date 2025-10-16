@@ -29703,8 +29703,10 @@ Events that describe the history and progress of a GitLab Duo Agent Platform ses
 | <a id="duoworkfloweventerrors"></a>`errors` | [`[String!]`](#string) | Message errors. |
 | <a id="duoworkfloweventexecutionstatus"></a>`executionStatus` {{< icon name="warning-solid" >}} | [`String!`](#string) | **Introduced** in GitLab 17.10. **Status**: Experiment. Granular status of the session's execution. |
 | <a id="duoworkfloweventmetadata"></a>`metadata` | [`JsonString`](#jsonstring) | Metadata associated with the event. |
-| <a id="duoworkfloweventparenttimestamp"></a>`parentTimestamp` | [`String`](#string) | UUID v7 timestamp identifier of the parent message for branched conversations or responses. |
-| <a id="duoworkfloweventtimestamp"></a>`timestamp` | [`String`](#string) | UUID v7 timestamp identifier for the conversation thread/session in LangGraph state management. |
+| <a id="duoworkfloweventparenttimestamp"></a>`parentTimestamp` {{< icon name="warning-solid" >}} | [`String`](#string) | **Deprecated** in GitLab 18.6. Use `parentTs` instead. |
+| <a id="duoworkfloweventparentts"></a>`parentTs` | [`String`](#string) | UUID v7 timestamp identifier of the parent message for branched conversations or responses. |
+| <a id="duoworkfloweventthreadts"></a>`threadTs` | [`String`](#string) | UUID v7 timestamp identifier for the conversation thread/session in LangGraph state management. |
+| <a id="duoworkfloweventtimestamp"></a>`timestamp` {{< icon name="warning-solid" >}} | [`String`](#string) | **Deprecated** in GitLab 18.6. Use `threadTs` instead. |
 | <a id="duoworkfloweventworkflowdefinition"></a>`workflowDefinition` | [`String`](#string) | GitLab Duo Agent Platform flow type based on its capabilities. |
 | <a id="duoworkfloweventworkflowgoal"></a>`workflowGoal` | [`String`](#string) | Goal of the session. |
 | <a id="duoworkfloweventworkflowstatus"></a>`workflowStatus` | [`DuoWorkflowStatus`](#duoworkflowstatus) | Status of the session. |
@@ -30961,6 +30963,7 @@ Describes the usage of consumables for a user under the subscription.
 | Name | Type | Description |
 | ---- | ---- | ----------- |
 | <a id="gitlabsubscriptionusageuserusagecreditsused"></a>`creditsUsed` | [`Float`](#float) | GitLab Credits used by the user. |
+| <a id="gitlabsubscriptionusageuserusageoveragecreditsused"></a>`overageCreditsUsed` | [`Float`](#float) | Overage GitLab Credits used by the user. |
 | <a id="gitlabsubscriptionusageuserusagepoolcreditsused"></a>`poolCreditsUsed` | [`Float`](#float) | GitLab Credits from the subscription pool used by the user. |
 | <a id="gitlabsubscriptionusageuserusagetotalcredits"></a>`totalCredits` | [`Float`](#float) | Total GitLab Credits available for the user. |
 
@@ -30976,6 +30979,7 @@ Describes the user with their usage data.
 | <a id="gitlabsubscriptionusageusersid"></a>`id` | [`UserID!`](#userid) | Global ID of the user. |
 | <a id="gitlabsubscriptionusageusersname"></a>`name` | [`String!`](#string) | Human-readable name of the user. |
 | <a id="gitlabsubscriptionusageusersusage"></a>`usage` | [`GitlabSubscriptionUsageUserUsage`](#gitlabsubscriptionusageuserusage) | Usage of consumables for a user under the subscription. |
+| <a id="gitlabsubscriptionusageusersusername"></a>`username` | [`String!`](#string) | Username of the user. Unique within the instance of GitLab. |
 
 ### `GitlabSubscriptionUsageUsersUsage`
 

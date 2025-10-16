@@ -23,7 +23,7 @@ module Ai
             reason: :feature_unavailable)
         end
 
-        workload_user = @current_user
+        @workload_user = @current_user
 
         use_service_account = @params.fetch(:use_service_account, false)
         if use_service_account
@@ -31,12 +31,12 @@ module Ai
           return ServiceResponse.error(message: response.message, reason: :service_account_error) if response.error?
 
           link_composite_identity
-          workload_user = duo_workflow_service_account
+          @workload_user = duo_workflow_service_account
         end
 
         service = ::Ci::Workloads::RunWorkloadService.new(
           project: project,
-          current_user: workload_user,
+          current_user: @workload_user,
           source: :duo_workflow,
           workload_definition: workload_definition,
           create_branch: true,
@@ -113,6 +113,7 @@ module Ai
           DUO_WORKFLOW_GIT_HTTP_BASE_URL: Gitlab.config.gitlab.url,
           DUO_WORKFLOW_GIT_HTTP_PASSWORD: @params[:workflow_oauth_token],
           DUO_WORKFLOW_GIT_HTTP_USER: "oauth",
+          DUO_WORKFLOW_GIT_USER_EMAIL: git_user_email(@workload_user),
           DUO_WORKFLOW_METADATA: @params[:workflow_metadata],
           GITLAB_BASE_URL: Gitlab.config.gitlab.url,
           AGENT_PLATFORM_GITLAB_VERSION: Gitlab.version_info.to_s,
@@ -191,6 +192,12 @@ module Ai
         return "[]" unless @params[:additional_context].present?
 
         ::Gitlab::Json.dump(@params[:additional_context])
+      end
+
+      def git_user_email(user)
+        return "" unless user.respond_to?(:commit_email_or_default)
+
+        user.commit_email_or_default
       end
     end
   end
