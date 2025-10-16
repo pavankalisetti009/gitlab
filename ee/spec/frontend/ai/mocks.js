@@ -10,9 +10,11 @@ export const mockAgentFlowEdges = [
       project: {
         id: 'gid://gitlab/Project/1',
         name: 'Test Project',
+        webUrl: 'https://gitlab.com/gitlab-org/test-project',
         namespace: {
           id: 'gid://gitlab/Group/1',
           name: 'gitlab-org',
+          webUrl: 'https://gitlab.com/gitlab-org',
         },
       },
     },
@@ -28,9 +30,11 @@ export const mockAgentFlowEdges = [
       project: {
         id: 'gid://gitlab/Project/2',
         name: 'Another Project',
+        webUrl: 'https://gitlab.com/gitlab-org/another-project',
         namespace: {
           id: 'gid://gitlab/Group/1',
           name: 'gitlab-org',
+          webUrl: 'https://gitlab.com/gitlab-org',
         },
       },
     },
@@ -46,9 +50,11 @@ export const mockAgentFlowEdges = [
       project: {
         id: 'gid://gitlab/Project/3',
         name: 'Chat Project',
+        webUrl: 'https://gitlab.com/test-group/chat-project',
         namespace: {
           id: 'gid://gitlab/Group/2',
           name: 'test-group',
+          webUrl: 'https://gitlab.com/test-group',
         },
       },
     },
@@ -102,9 +108,11 @@ export const mockGetAgentFlowResponse = {
             project: {
               id: 'gid://gitlab/Project/1',
               name: 'Test Project',
+              webUrl: 'https://gitlab.com/gitlab-org/test-project',
               namespace: {
                 id: 'gid://gitlab/Group/1',
                 name: 'gitlab-org',
+                webUrl: 'https://gitlab.com/gitlab-org',
               },
             },
           },

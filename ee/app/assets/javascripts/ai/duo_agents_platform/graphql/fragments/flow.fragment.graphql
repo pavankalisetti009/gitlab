@@ -7,9 +7,11 @@ fragment FlowFragment on DuoWorkflow {
   project {
     id
     name
+    webUrl
     namespace {
       id
       name
+      webUrl
     }
   }
 }
