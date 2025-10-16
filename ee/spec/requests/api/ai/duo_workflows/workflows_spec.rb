@@ -924,6 +924,25 @@ RSpec.describe API::Ai::DuoWorkflows::Workflows, :with_current_organization, fea
         end
       end
 
+      context 'when X-Gitlab-Language-Server-Version header is provided' do
+        it 'includes x-gitlab-language-server-version header' do
+          get api(path, user), headers: workhorse_headers.merge('X-Gitlab-Language-Server-Version': "8.22.0"),
+            params: { project_id: project.id }
+
+          expect(response).to have_gitlab_http_status(:ok)
+          expect(json_response['DuoWorkflow']['Headers']).to include(
+            'x-gitlab-language-server-version' => "8.22.0"
+          )
+        end
+
+        it 'does not include x-gitlab-language-server-version header when header is not provided' do
+          get api(path, user), headers: workhorse_headers, params: { project_id: project.id }
+
+          expect(response).to have_gitlab_http_status(:ok)
+          expect(json_response['DuoWorkflow']['Headers']['x-gitlab-language-server-version']).to be_nil
+        end
+      end
+
       context 'when namespace_id parameter is provided' do
         it 'includes x-gitlab-namespace-id header' do
           get api(path, user), headers: workhorse_headers, params: { namespace_id: group.id }
