@@ -110,7 +110,7 @@ describe('AiCatalogAgentsNew', () => {
 
       it('sets error messages and captures exception', () => {
         expect(findForm().props('errors')).toEqual([
-          'The agent could not be added to the project. Check that the project meets the <a href="/help/user/duo_agent_platform/ai_catalog#view-the-ai-catalog" target="_blank">prerequisites</a> and try again.',
+          'Could not create agent in the project. Check that the project meets the <a href="/help/user/duo_agent_platform/ai_catalog#view-the-ai-catalog" target="_blank">prerequisites</a> and try again.',
         ]);
         expect(Sentry.captureException).toHaveBeenCalledWith(expect.any(Error));
         expect(findForm().props('isLoading')).toBe(false);
@@ -145,7 +145,7 @@ describe('AiCatalogAgentsNew', () => {
       });
 
       it('shows toast', () => {
-        expect(mockToast.show).toHaveBeenCalledWith('Agent created successfully.');
+        expect(mockToast.show).toHaveBeenCalledWith('Agent created.');
       });
 
       it('navigates to agents show page', async () => {

@@ -76,7 +76,7 @@ export default {
         if (data) {
           const { errors } = data.aiCatalogItemConsumerCreate;
           if (errors.length > 0) {
-            this.errorTitle = sprintf(s__('AICatalog|Flow could not be added: %{flowName}'), {
+            this.errorTitle = sprintf(s__('AICatalog|Could not enable flow: %{flowName}'), {
               flowName: this.aiCatalogFlow.name,
             });
             this.errors = errors;
@@ -85,14 +85,13 @@ export default {
 
           const name = data.aiCatalogItemConsumerCreate.itemConsumer.project?.name || '';
 
-          this.$toast.show(sprintf(s__('AICatalog|Flow added successfully to %{name}.'), { name }));
+          this.$toast.show(sprintf(s__('AICatalog|Flow enabled in %{name}.'), { name }));
         }
       } catch (error) {
         this.errors = [
-          sprintf(
-            s__('AICatalog|The flow could not be added to the project. Try again. %{error}'),
-            { error },
-          ),
+          sprintf(s__('AICatalog|Could not enable flow in the project. Try again. %{error}'), {
+            error,
+          }),
         ];
         Sentry.captureException(error);
       }
@@ -119,7 +118,7 @@ export default {
           return;
         }
 
-        this.$toast.show(s__('AICatalog|Flow deleted successfully.'));
+        this.$toast.show(s__('AICatalog|Flow deleted.'));
         this.$router.push({
           name: AI_CATALOG_FLOWS_ROUTE,
         });

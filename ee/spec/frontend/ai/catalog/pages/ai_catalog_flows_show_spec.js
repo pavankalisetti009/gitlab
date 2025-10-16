@@ -133,7 +133,7 @@ describe('AiCatalogFlowsShow', () => {
         deleteFlow();
         await waitForPromises();
 
-        expect(mockToast.show).toHaveBeenCalledWith('Flow deleted successfully.');
+        expect(mockToast.show).toHaveBeenCalledWith('Flow deleted.');
       });
     });
 

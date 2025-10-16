@@ -132,7 +132,7 @@ describe('AiCatalogFlowsNew', () => {
       });
 
       it('shows toast', () => {
-        expect(mockToast.show).toHaveBeenCalledWith('Flow created successfully.');
+        expect(mockToast.show).toHaveBeenCalledWith('Flow created.');
       });
 
       it('navigates to flows show page', async () => {
@@ -152,7 +152,7 @@ describe('AiCatalogFlowsNew', () => {
       });
 
       it('sets error messages and captures exception', () => {
-        expect(findForm().props('errors')).toEqual(['The flow could not be added. Try again.']);
+        expect(findForm().props('errors')).toEqual(['Could not create flow. Try again.']);
         expect(Sentry.captureException).toHaveBeenCalledWith(expect.any(Error));
         expect(findForm().props('isLoading')).toBe(false);
       });

@@ -60,7 +60,7 @@ export default {
           }
 
           const newAgentId = getIdFromGraphQLId(data.aiCatalogAgentCreate.item.id);
-          this.$toast.show(s__('AICatalog|Agent created successfully.'));
+          this.$toast.show(s__('AICatalog|Agent created.'));
           this.$router.push({
             name: AI_CATALOG_AGENTS_SHOW_ROUTE,
             params: { id: newAgentId },
@@ -70,7 +70,7 @@ export default {
         this.errorMessages = [
           sprintf(
             s__(
-              'AICatalog|The agent could not be added to the project. Check that the project meets the %{link_start}prerequisites%{link_end} and try again.',
+              'AICatalog|Could not create agent in the project. Check that the project meets the %{link_start}prerequisites%{link_end} and try again.',
             ),
             {
               link_start: `<a href="${helpPagePath('user/duo_agent_platform/ai_catalog', {

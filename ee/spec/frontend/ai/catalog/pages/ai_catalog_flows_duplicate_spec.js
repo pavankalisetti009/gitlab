@@ -1,5 +1,6 @@
 import Vue from 'vue';
 import VueApollo from 'vue-apollo';
+import * as Sentry from '~/sentry/sentry_browser_wrapper';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import waitForPromises from 'helpers/wait_for_promises';
 import createMockApollo from 'helpers/mock_apollo_helper';
@@ -154,7 +155,7 @@ describe('AiCatalogFlowsDuplicate', () => {
       });
 
       it('shows toast', () => {
-        expect(mockToast.show).toHaveBeenCalledWith('Flow created successfully.');
+        expect(mockToast.show).toHaveBeenCalledWith('Flow created.');
       });
 
       it('navigates to flows show page', async () => {
@@ -171,6 +172,12 @@ describe('AiCatalogFlowsDuplicate', () => {
         createAiCatalogFlowMock.mockRejectedValue(new Error());
         submitForm();
         await waitForPromises();
+      });
+
+      it('sets error messages and captures exception', () => {
+        expect(findForm().props('errors')).toEqual(['Could not create flow. Try again.']);
+        expect(Sentry.captureException).toHaveBeenCalledWith(expect.any(Error));
+        expect(findForm().props('isLoading')).toBe(false);
       });
 
       it('allows user to dismiss errors', async () => {

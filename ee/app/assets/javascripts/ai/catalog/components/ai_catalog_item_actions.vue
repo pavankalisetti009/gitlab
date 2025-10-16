@@ -118,7 +118,7 @@ export default {
       category="primary"
       data-testid="add-to-project-button"
     >
-      {{ s__('AICatalog|Add to project') }}
+      {{ s__('AICatalog|Enable in project') }}
     </gl-button>
     <gl-disclosure-dropdown
       v-if="canAdmin || canUse"

@@ -84,7 +84,7 @@ export default {
 
           const items = [
             {
-              text: s__('AICatalog|Add to project'),
+              text: s__('AICatalog|Enable in project'),
               action: () => this.setAiCatalogAgentToBeAdded(item),
               icon: 'plus',
             },
@@ -163,7 +163,7 @@ export default {
           return;
         }
 
-        this.$toast.show(s__('AICatalog|Agent deleted successfully.'));
+        this.$toast.show(s__('AICatalog|Agent deleted.'));
       } catch (error) {
         this.errors = [sprintf(s__('AICatalog|Failed to delete agent. %{error}'), { error })];
         Sentry.captureException(error);
@@ -195,7 +195,7 @@ export default {
           if (errors.length > 0) {
             // TODO: Once we have a project selector, we could add the project name in this message.
             this.errors = [
-              sprintf(s__('AICatalog|Agent could not be added: %{agentName}'), {
+              sprintf(s__('AICatalog|Could not enable agent: %{agentName}'), {
                 agentName: agent.name,
               }),
               ...errors,
@@ -205,15 +205,13 @@ export default {
 
           const name = data.aiCatalogItemConsumerCreate.itemConsumer.project?.name || '';
 
-          this.$toast.show(
-            sprintf(s__('AICatalog|Agent added successfully to %{name}.'), { name }),
-          );
+          this.$toast.show(sprintf(s__('AICatalog|Agent enabled in %{name}.'), { name }));
         }
       } catch (error) {
         this.errors = [
           sprintf(
             s__(
-              'AICatalog|The agent could not be added to the project. Check that the project meets the %{link_start}prerequisites%{link_end} and try again.',
+              'AICatalog|Could not enable agent in the project. Check that the project meets the %{link_start}prerequisites%{link_end} and try again.',
             ),
             {
               link_start: `<a href="${helpPagePath('user/duo_agent_platform/ai_catalog', {

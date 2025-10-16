@@ -40,7 +40,7 @@ describe('AiCatalogItemConsumerModal', () => {
 
   describe('component rendering', () => {
     it('renders modal and item name', () => {
-      expect(findModal().props('title')).toBe('Add this agent to a project');
+      expect(findModal().props('title')).toBe('Enable agent in a project');
       expect(findModal().find('dt').text()).toBe('Selected agent');
       expect(findModal().find('dd').text()).toBe(agent.name);
     });
