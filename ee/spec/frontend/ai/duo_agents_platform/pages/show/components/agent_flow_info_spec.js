@@ -39,9 +39,11 @@ describe('AgentFlowInfo', () => {
           id: 'gid://gitlab/Project/1',
           name: 'Test Project',
           fullPath: 'gitlab-org/test-project',
+          webUrl: 'https://gitlab.com/gitlab-org/test-project',
           namespace: {
             id: 'gid://gitlab/Group/1',
             name: 'gitlab-org',
+            webUrl: 'https://gitlab.com/gitlab-org',
           },
         },
         ...props,
@@ -96,6 +98,7 @@ describe('AgentFlowInfo', () => {
         'Flow',
         'software_development',
         '4545',
+        '123',
       ];
 
       expectedData.forEach((expectedText, index) => {
@@ -113,7 +116,7 @@ describe('AgentFlowInfo', () => {
         'Last updated',
         'Type',
         'Flow',
-        'ID',
+        'Session ID',
         'Executor ID',
       ];
 
@@ -122,15 +125,16 @@ describe('AgentFlowInfo', () => {
       });
     });
 
-    it('renders the executor Id as a link', () => {
-      const listItems = findListItems();
-      const executorIdLink = listItems.at(8).findComponent(GlLink);
-
-      expect(executorIdLink.exists()).toBe(true);
-      expect(executorIdLink.attributes('href')).toBe(
-        'https://gitlab.com/gitlab-org/gitlab/-/pipelines/123',
-      );
-      expect(executorIdLink.text()).toBe('123');
+    it.each`
+      index | href                                                                           | text
+      ${1}  | ${'https://gitlab.com/gitlab-org/test-project'}                                | ${'Test Project'}
+      ${2}  | ${'https://gitlab.com/gitlab-org'}                                             | ${'gitlab-org'}
+      ${7}  | ${'https://gitlab.com/gitlab-org/test-project/-/automate/agent-sessions/4545'} | ${'4545'}
+      ${8}  | ${'https://gitlab.com/gitlab-org/gitlab/-/pipelines/123'}                      | ${'123'}
+    `('renders links for project, group, session ID, and executor ID', ({ index, href, text }) => {
+      const link = findListItems().at(index).findComponent(GlLink);
+      expect(link.attributes('href')).toBe(href);
+      expect(link.text()).toBe(text);
     });
 
     describe('when project information is missing', () => {
@@ -144,6 +148,12 @@ describe('AgentFlowInfo', () => {
         expect(findListItems().at(1).text()).toContain('N/A'); // Project name
         expect(findListItems().at(2).text()).toContain('N/A'); // Group name
       });
+
+      it('does not display links for project, group, and sessionId', () => {
+        expect(findListItems().at(1).findComponent(GlLink).exists()).toBe(false); // Project link
+        expect(findListItems().at(2).findComponent(GlLink).exists()).toBe(false); // Group link
+        expect(findListItems().at(7).findComponent(GlLink).exists()).toBe(false); // SessionId link
+      });
     });
 
     describe('when project namespace is missing', () => {
@@ -153,6 +163,7 @@ describe('AgentFlowInfo', () => {
             id: 'gid://gitlab/Project/1',
             name: 'Test Project',
             fullPath: 'gitlab-org/test-project',
+            webUrl: 'https://gitlab.com/gitlab-org/test-project',
           },
         });
       });
@@ -160,6 +171,39 @@ describe('AgentFlowInfo', () => {
       it('displays N/A for missing namespace information', () => {
         expect(findListItems().at(1).text()).toContain('Test Project'); // Project name should still show
         expect(findListItems().at(2).text()).toContain('N/A'); // Group name should be N/A
+      });
+
+      it('does not display group link', () => {
+        expect(findListItems().at(2).findComponent(GlLink).exists()).toBe(false); // Group link
+      });
+
+      it('displays project and sessionId links', () => {
+        expect(findListItems().at(1).findComponent(GlLink).exists()).toBe(true); // Project link
+        expect(findListItems().at(7).findComponent(GlLink).exists()).toBe(true); // SessionId link
+      });
+    });
+
+    describe('when executor URL is invalid', () => {
+      beforeEach(() => {
+        createComponent({
+          executorUrl: 'https://gitlab.com/invalid-url',
+        });
+      });
+
+      it('displays N/A for invalid executor ID', () => {
+        expect(findListItems().at(8).text()).toContain('N/A'); // Executor ID
+      });
+    });
+
+    describe('when executor URL is empty', () => {
+      beforeEach(() => {
+        createComponent({
+          executorUrl: '',
+        });
+      });
+
+      it('displays N/A for empty executor URL', () => {
+        expect(findListItems().at(8).text()).toContain('N/A'); // Executor ID
       });
     });
 

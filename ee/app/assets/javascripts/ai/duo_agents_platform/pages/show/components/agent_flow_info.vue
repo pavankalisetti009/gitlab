@@ -2,6 +2,9 @@
 import { GlLink, GlSkeletonLoader } from '@gitlab/ui';
 import { __, s__ } from '~/locale';
 import { localeDateFormat } from '~/lib/utils/datetime/locale_dateformat';
+import { joinPaths } from '~/lib/utils/url_utility';
+
+const AGENT_SESSIONS_PATH = '/-/automate/agent-sessions';
 
 export default {
   components: {
@@ -49,6 +52,14 @@ export default {
       }
       return id;
     },
+    projectAgentSessionsUrl() {
+      const sessionId = this.$route.params.id;
+      const projectUrl = this.project?.webUrl;
+
+      return sessionId && projectUrl
+        ? joinPaths(projectUrl, `${AGENT_SESSIONS_PATH}/${sessionId}`)
+        : '';
+    },
     payload() {
       return [
         {
@@ -58,10 +69,12 @@ export default {
         {
           key: __('Project'),
           value: this.project?.name,
+          link: this.project?.webUrl,
         },
         {
           key: __('Group'),
           value: this.project?.namespace?.name,
+          link: this.project?.namespace?.webUrl,
         },
         {
           key: __('Started'),
@@ -82,6 +95,7 @@ export default {
         {
           key: s__('DuoAgentPlatform|Session ID'),
           value: this.$route.params.id,
+          link: this.projectAgentSessionsUrl,
         },
         {
           key: s__('DuoAgentPlatform|Executor ID'),
