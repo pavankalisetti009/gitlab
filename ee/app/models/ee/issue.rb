@@ -116,7 +116,6 @@ module EE
 
       has_one :epic_issue
       has_one :epic, through: :epic_issue
-      belongs_to :promoted_to_epic, class_name: 'Epic'
 
       has_one :status_page_published_incident, class_name: 'StatusPage::PublishedIncident', inverse_of: :issue
       has_one :issuable_sla
@@ -159,6 +158,8 @@ module EE
       before_destroy :set_old_epic_id
       after_save :set_epic_id_to_update_cache
 
+      delegate :promoted_to_epic, to: :work_item_transition, allow_nil: true
+
       Dora::Watchers.mount(self)
     end
 
@@ -180,6 +181,10 @@ module EE
       def supported_keyset_orderings
         super.merge(weight: [:asc, :desc])
       end
+    end
+
+    def promoted_to_epic=(epic)
+      self.promoted_to_epic_id = epic&.id
     end
 
     # override
@@ -264,12 +269,8 @@ module EE
       return false unless user
       return false unless group
 
-      persisted? && supports_epic? && !promoted? &&
+      persisted? && supports_epic? && !work_item_transition.promoted? &&
         user.can?(:admin_issue, project) && user.can?(:create_epic, group)
-    end
-
-    def promoted?
-      !!promoted_to_epic_id
     end
 
     override :clear_closure_reason_references

@@ -121,8 +121,9 @@ RSpec.describe WorkItems::LegacyEpics::IssuePromoteService, :aggregate_failures,
           end
 
           it 'marks the old issue as promoted' do
-            expect(issue.reload).to be_promoted
-            expect(issue.promoted_to_epic).to eq(epic)
+            expect(issue.work_item_transition.promoted?).to be(true)
+            expect(issue.reload.promoted_to_epic).to eq(epic)
+            expect(issue.work_item_transition.reload.promoted_to_epic).to eq(epic)
           end
 
           context 'when issue description has mentions and has notes with mentions' do
