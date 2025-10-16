@@ -20,7 +20,7 @@ RSpec.describe 'getting AI foundational chat agents', feature_category: :workflo
 
     first_node = nodes.first
 
-    expect(first_node["id"]).to eq("gid://gitlab/Ai::FoundationalChatAgent/chat-")
+    expect(first_node["id"]).to eq("gid://gitlab/Ai::FoundationalChatAgent/chat")
     expect(first_node["name"]).to eq("GitLab Duo Agent")
     expect(first_node["reference"]).to eq("chat")
     expect(first_node["referenceWithVersion"]).to eq("chat")
