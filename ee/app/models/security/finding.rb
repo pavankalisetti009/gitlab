@@ -283,7 +283,7 @@ module Security
     # by `Vulnerabilities::FindingEntity`.
     ATTRIBUTES_DELEGATED_TO_FINDING_DATA.each do |delegated_attribute|
       define_method(delegated_attribute) do
-        symbolized_finding_data.fetch(delegated_attribute)
+        symbolized_finding_data[delegated_attribute]
       end
     end
 

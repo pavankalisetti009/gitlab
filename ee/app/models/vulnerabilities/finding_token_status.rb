@@ -2,6 +2,8 @@
 
 module Vulnerabilities
   class FindingTokenStatus < ::SecApplicationRecord
+    include Gitlab::InternalEventsTracking
+
     self.table_name = 'secret_detection_token_statuses'
     self.primary_key = 'vulnerability_occurrence_id'
 
@@ -22,7 +24,24 @@ module Vulnerabilities
 
     scope :with_vulnerability_occurrence_ids, ->(ids) { where(vulnerability_occurrence_id: ids) }
 
+    after_create :track_token_verification
+
     private
+
+    def track_token_verification
+      return unless finding&.token_type
+
+      track_internal_event(
+        'secret_detection_token_verified',
+        project: finding.project,
+        namespace: finding.project&.namespace,
+        additional_properties: {
+          label: finding.token_type
+        }
+      )
+    rescue StandardError => e
+      Gitlab::ErrorTracking.track_exception(e, finding_id: finding&.id)
+    end
 
     def set_project_id
       self.project_id = finding.project_id

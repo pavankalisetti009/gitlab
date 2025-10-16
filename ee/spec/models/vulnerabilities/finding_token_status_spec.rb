@@ -79,4 +79,47 @@ RSpec.describe Vulnerabilities::FindingTokenStatus, feature_category: :secret_de
       expect(status.status_inactive?).to be false
     end
   end
+
+  describe 'internal event tracking' do
+    let_it_be(:project) { create(:project) }
+    let_it_be(:finding) { create(:vulnerabilities_finding, :with_secret_detection, project: project) }
+
+    it 'tracks event on create with correct parameters' do
+      expect { create(:finding_token_status, finding: finding) }
+        .to trigger_internal_events('secret_detection_token_verified')
+        .with(
+          project: project,
+          namespace: project.namespace,
+          additional_properties: { label: 'AWS' }
+        )
+    end
+
+    context 'when finding has no token_type' do
+      before do
+        allow(finding).to receive(:token_type).and_return(nil)
+      end
+
+      it 'does not track event' do
+        expect { create(:finding_token_status, finding: finding) }
+          .not_to trigger_internal_events('secret_detection_token_verified')
+      end
+    end
+
+    context 'when tracking fails' do
+      before do
+        allow_next_instance_of(described_class) do |instance|
+          allow(instance).to receive(:track_internal_event)
+            .and_raise(StandardError, 'Tracking error')
+        end
+      end
+
+      it 'tracks exception but does not raise' do
+        expect(Gitlab::ErrorTracking).to receive(:track_exception)
+          .with(instance_of(StandardError), hash_including(finding_id: finding.id))
+
+        expect { create(:finding_token_status, finding: finding) }
+          .not_to raise_error
+      end
+    end
+  end
 end
