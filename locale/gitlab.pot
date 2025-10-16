@@ -33667,10 +33667,10 @@ msgstr ""
 msgid "IMPORTANT: Use this setting only for VERY strict auditing purposes. When turned on, nobody will be able to remove the label from any merge requests after they are merged. In addition, nobody will be able to turn off this setting or delete this label."
 msgstr ""
 
-msgid "INFO: Your SSH key has expired. Please generate a new key."
+msgid "INFO: Your SSH key expires soon. Please generate a new key."
 msgstr ""
 
-msgid "INFO: Your SSH key is expiring soon. Please generate a new key."
+msgid "INFO: Your SSH key has expired. Please generate a new key."
 msgstr ""
 
 msgid "IP '%{value}' is not a valid CIDR: %{message}"
@@ -77223,10 +77223,10 @@ msgstr ""
 msgid "Your Projects' Activity"
 msgstr ""
 
-msgid "Your SSH key has expired"
+msgid "Your SSH key expires soon"
 msgstr ""
 
-msgid "Your SSH key is expiring soon."
+msgid "Your SSH key has expired"
 msgstr ""
 
 msgid "Your SSH key was deleted"

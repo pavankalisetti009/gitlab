@@ -199,7 +199,7 @@ module Emails
       @fingerprints = fingerprints
       @target_url = user_settings_ssh_keys_url
 
-      mail_with_locale(to: @user.notification_email_or_default, subject: subject(_("Your SSH key is expiring soon.")))
+      mail_with_locale(to: @user.notification_email_or_default, subject: subject(_("Your SSH key expires soon")))
     end
 
     def unknown_sign_in_email(user, ip, time, request_info = {})
