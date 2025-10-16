@@ -53,6 +53,8 @@ module VirtualRegistries
         scope :search_by_relative_path, ->(query) do
           fuzzy_search(query, [:relative_path], use_minimum_char_limit: false)
         end
+        scope :for_group, ->(group) { where(group: group) }
+        scope :for_upstream, ->(upstream) { where(upstream:) }
 
         # create or update a cached response identified by the upstream, group_id and relative_path
         # Given that we have chances that this function is not executed in isolation, we can't use
@@ -80,6 +82,14 @@ module VirtualRegistries
             relative_path: "#{relative_path}/deleted/#{SecureRandom.uuid}",
             updated_at: Time.current
           )
+        end
+
+        def stale?
+          return true unless upstream
+
+          return false if upstream.cache_validity_hours == 0
+
+          (upstream_checked_at + upstream.cache_validity_hours.hours).past?
         end
 
         def filename

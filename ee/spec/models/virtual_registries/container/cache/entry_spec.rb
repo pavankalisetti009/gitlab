@@ -68,6 +68,10 @@ RSpec.describe VirtualRegistries::Container::Cache::Entry, feature_category: :vi
   end
 
   describe 'scopes' do
+    let_it_be(:first_entry) { create(:virtual_registries_container_cache_entry, created_at: 3.days.ago) }
+    let_it_be(:second_entry) { create(:virtual_registries_container_cache_entry, created_at: 2.days.ago) }
+    let_it_be(:third_entry) { create(:virtual_registries_container_cache_entry, created_at: 1.day.ago) }
+
     describe '.requiring_cleanup' do
       let(:n_days_to_keep) { 30 }
       let_it_be(:old_downloaded_entry) do
@@ -88,13 +92,9 @@ RSpec.describe VirtualRegistries::Container::Cache::Entry, feature_category: :vi
     end
 
     describe '.order_created_desc' do
-      let_it_be(:oldest_entry) { create(:virtual_registries_container_cache_entry, created_at: 3.days.ago) }
-      let_it_be(:newest_entry) { create(:virtual_registries_container_cache_entry, created_at: 1.day.ago) }
-      let_it_be(:middle_entry) { create(:virtual_registries_container_cache_entry, created_at: 2.days.ago) }
-
       subject { described_class.order_created_desc }
 
-      it { is_expected.to eq([newest_entry, middle_entry, oldest_entry]).and be_a(ActiveRecord::Relation) }
+      it { is_expected.to eq([third_entry, second_entry, first_entry]).and be_a(ActiveRecord::Relation) }
 
       context 'when no records exist' do
         before do
@@ -121,6 +121,22 @@ RSpec.describe VirtualRegistries::Container::Cache::Entry, feature_category: :vi
 
         it { is_expected.to contain_exactly(cache_entry) }
       end
+    end
+
+    describe '.for_group' do
+      let(:groups) { [third_entry.group, first_entry.group] }
+
+      subject { described_class.for_group(groups) }
+
+      it { is_expected.to contain_exactly(third_entry, first_entry) }
+    end
+
+    describe '.for_upstream' do
+      let(:upstreams) { [third_entry.upstream, second_entry.upstream] }
+
+      subject { described_class.for_upstream(upstreams) }
+
+      it { is_expected.to contain_exactly(third_entry, second_entry) }
     end
   end
 
@@ -276,6 +292,56 @@ RSpec.describe VirtualRegistries::Container::Cache::Entry, feature_category: :vi
     wait_for_it = false
     threads.each(&:join)
   end
+
+  describe '#stale?' do
+    let(:threshold) { cache_entry.upstream_checked_at + cache_entry.upstream.cache_validity_hours.hours }
+    let(:cache_entry) do
+      build(:virtual_registries_container_cache_entry, upstream_checked_at: 10.hours.ago)
+    end
+
+    subject { cache_entry.stale? }
+
+    context 'with no upstream' do
+      before do
+        cache_entry.upstream = nil
+      end
+
+      it { is_expected.to be(true) }
+    end
+
+    context 'when before the threshold' do
+      before do
+        travel_to(threshold - 1.hour)
+      end
+
+      it { is_expected.to be(false) }
+    end
+
+    context 'when on the threshold' do
+      before do
+        travel_to(threshold)
+      end
+
+      it { is_expected.to be(false) }
+    end
+
+    context 'when after the threshold' do
+      before do
+        travel_to(threshold + 1.hour)
+      end
+
+      it { is_expected.to be(true) }
+    end
+
+    context 'with 0 cache validity hours' do
+      before do
+        cache_entry.upstream.cache_validity_hours = 0
+      end
+
+      it { is_expected.to be(false) }
+    end
+  end
+
   describe '#mark_as_pending_destruction' do
     let(:cache_entry) { create(:virtual_registries_container_cache_entry) }
 
