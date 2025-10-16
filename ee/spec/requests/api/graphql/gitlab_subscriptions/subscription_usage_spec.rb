@@ -33,8 +33,9 @@ RSpec.describe 'Query.subscriptionUsage', feature_category: :consumables_cost_ma
           query_graphql_field(:nodes, {}, [
             :id,
             :name,
+            :username,
             :avatar_url,
-            query_graphql_field(:usage, {}, [:total_credits, :credits_used, :pool_credits_used])
+            query_graphql_field(:usage, {}, [:total_credits, :credits_used, :pool_credits_used, :overage_credits_used])
           ])
         ])
       ])
@@ -85,7 +86,8 @@ RSpec.describe 'Query.subscriptionUsage', feature_category: :consumables_cost_ma
         userId: user.id,
         totalCredits: user.id,
         creditsUsed: user.id * 10,
-        poolCreditsUsed: user.id * 100
+        poolCreditsUsed: user.id * 100,
+        overageCreditsUsed: user.id * 2
       }
     end
 
@@ -131,11 +133,13 @@ RSpec.describe 'Query.subscriptionUsage', feature_category: :consumables_cost_ma
               {
                 id: u.to_global_id.to_s,
                 name: u.name,
+                username: u.username,
                 avatarUrl: u.avatar_url,
                 usage: {
                   totalCredits: u.id,
                   creditsUsed: u.id * 10,
-                  poolCreditsUsed: u.id * 100
+                  poolCreditsUsed: u.id * 100,
+                  overageCreditsUsed: u.id * 2
                 }
               }.with_indifferent_access
             end
@@ -186,11 +190,13 @@ RSpec.describe 'Query.subscriptionUsage', feature_category: :consumables_cost_ma
                 {
                   id: u.to_global_id.to_s,
                   name: u.name,
+                  username: u.username,
                   avatarUrl: u.avatar_url,
                   usage: {
                     totalCredits: u.id,
                     creditsUsed: u.id * 10,
-                    poolCreditsUsed: u.id * 100
+                    poolCreditsUsed: u.id * 100,
+                    overageCreditsUsed: u.id * 2
                   }
                 }.with_indifferent_access
               end

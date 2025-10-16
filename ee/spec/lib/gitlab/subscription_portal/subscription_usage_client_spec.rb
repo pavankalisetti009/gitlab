@@ -231,13 +231,15 @@ RSpec.describe Gitlab::SubscriptionPortal::SubscriptionUsageClient, feature_cate
             userId: 123,
             totalCredits: 100,
             creditsUsed: 500,
-            poolCreditsUsed: 400
+            poolCreditsUsed: 400,
+            overageCreditsUsed: 50
           },
           {
             userId: 321,
             totalCredits: 100,
             creditsUsed: 50,
-            poolCreditsUsed: 0
+            poolCreditsUsed: 0,
+            overageCreditsUsed: 0
           }
         ]
       end

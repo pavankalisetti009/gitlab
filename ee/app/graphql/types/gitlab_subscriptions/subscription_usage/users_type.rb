@@ -26,11 +26,16 @@ module Types
           type: UserUsageType,
           null: true,
           description: 'Usage of consumables for a user under the subscription.'
+        field :username,
+          type: GraphQL::Types::String,
+          null: false,
+          description: 'Username of the user. Unique within the instance of GitLab.'
 
         UserUsage = Struct.new(
           :total_credits,
           :credits_used,
           :pool_credits_used,
+          :overage_credits_used,
           :declarative_policy_subject
         )
 
@@ -54,6 +59,7 @@ module Types
                 total_credits: usage[:totalCredits],
                 credits_used: usage[:creditsUsed],
                 pool_credits_used: usage[:poolCreditsUsed],
+                overage_credits_used: usage[:overageCreditsUsed],
                 declarative_policy_subject: object
               )
             )
