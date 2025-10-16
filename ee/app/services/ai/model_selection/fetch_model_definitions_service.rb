@@ -6,7 +6,7 @@ module Ai
       include ::Gitlab::Llm::Concerns::Logger
 
       DEFAULT_TIMEOUT = 5.seconds
-      RESPONSE_CACHE_EXPIRATION = 1.hour
+      RESPONSE_CACHE_EXPIRATION = 30.minutes
       RESPONSE_CACHE_NAME = 'ai_offered_model_definitions'
 
       def initialize(user, model_selection_scope:)
@@ -14,11 +14,11 @@ module Ai
         @model_selection_scope = model_selection_scope
       end
 
-      def execute(force_api_call: false)
+      def execute
         return ServiceResponse.success(payload: nil) unless duo_features_enabled?
         return ServiceResponse.success(payload: nil) if ::License.current&.offline_cloud_license?
 
-        return cached_response if use_cached_response? && !force_api_call
+        return cached_response if use_cached_response?
 
         fetch_model_definitions
       rescue StandardError => e
@@ -71,7 +71,7 @@ module Ai
       end
 
       def cache_response(response_body)
-        Rails.cache.fetch(RESPONSE_CACHE_NAME, expires_in: 1.hour) do
+        Rails.cache.fetch(RESPONSE_CACHE_NAME, expires_in: RESPONSE_CACHE_EXPIRATION) do
           response_body
         end
       end
