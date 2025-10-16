@@ -26,6 +26,8 @@ RSpec.describe 'Querying a maven virtual registry', feature_category: :virtual_r
     graphql_data['mavenVirtualRegistry']
   end
 
+  let(:virtual_registry_available) { false }
+
   shared_examples 'returns null for mavenVirtualRegistry' do
     it 'returns null for the mavenVirtualRegistry field' do
       expect(maven_registry_response).to be_nil
@@ -33,13 +35,12 @@ RSpec.describe 'Querying a maven virtual registry', feature_category: :virtual_r
   end
 
   before do
-    setup_default_configuration
+    allow(::VirtualRegistries::Packages::Maven).to receive(:virtual_registry_available?)
+      .and_return(virtual_registry_available)
   end
 
   context 'when user does not have access' do
-    it 'returns null for the mavenVirtualRegistry field' do
-      expect(maven_registry_response).to be_nil
-    end
+    it_behaves_like 'returns null for mavenVirtualRegistry'
   end
 
   context 'when user has access' do
@@ -47,58 +48,24 @@ RSpec.describe 'Querying a maven virtual registry', feature_category: :virtual_r
       group.add_member(current_user, Gitlab::Access::GUEST)
     end
 
-    context 'when registry exists' do
-      it 'returns registry for the mavenVirtualRegistry field' do
-        expect(maven_registry_response['name']).to eq('name')
-      end
-
-      context 'when dependency proxy config is disabled' do
-        before do
-          stub_config(dependency_proxy: { enabled: false })
-        end
-
-        it_behaves_like 'returns null for mavenVirtualRegistry'
-      end
-
-      context 'when licensed feature packages_virtual_registry is disabled' do
-        before do
-          stub_licensed_features(packages_virtual_registry: false)
-        end
-
-        it_behaves_like 'returns null for mavenVirtualRegistry'
-      end
-
-      context 'with the maven virtual registry feature flag turned off' do
-        before do
-          stub_feature_flags(maven_virtual_registry: false)
-        end
-
-        it_behaves_like 'returns null for mavenVirtualRegistry'
-      end
-
-      context 'when the virtual registries setting enabled is false' do
-        before do
-          allow(VirtualRegistries::Setting).to receive(:cached_for_group).with(group).and_return(build_stubbed(
-            :virtual_registries_setting, :disabled, group: group))
-        end
-
-        it_behaves_like 'returns null for mavenVirtualRegistry'
-      end
-    end
-
-    context 'when registry does not exist' do
-      let(:global_id) { "gid://gitlab/VirtualRegistries::Packages::Maven::Registry/#{non_existing_record_id}" }
-
+    context 'when virtual registry is unavailable' do
       it_behaves_like 'returns null for mavenVirtualRegistry'
     end
-  end
 
-  private
+    context 'when virtual registry is available' do
+      let(:virtual_registry_available) { true }
 
-  def setup_default_configuration
-    stub_config(dependency_proxy: { enabled: true })
-    stub_licensed_features(packages_virtual_registry: true)
-    allow(VirtualRegistries::Setting).to receive(:cached_for_group).with(group).and_return(build_stubbed(
-      :virtual_registries_setting, group: group))
+      context 'when registry exists' do
+        it 'returns registry for the mavenVirtualRegistry field' do
+          expect(maven_registry_response['name']).to eq('name')
+        end
+      end
+
+      context 'when registry does not exist' do
+        let(:global_id) { "gid://gitlab/VirtualRegistries::Packages::Maven::Registry/#{non_existing_record_id}" }
+
+        it_behaves_like 'returns null for mavenVirtualRegistry'
+      end
+    end
   end
 end

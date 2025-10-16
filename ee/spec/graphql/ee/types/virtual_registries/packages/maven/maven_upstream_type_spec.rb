@@ -9,7 +9,11 @@ RSpec.describe GitlabSchema.types['MavenUpstream'], feature_category: :virtual_r
 
   let_it_be(:fields) do
     %i[id name description url cacheValidityHours metadataCacheValidityHours username registry_upstreams
-      registries]
+      registries registriesCount]
+  end
+
+  it 'uses CountableConnectionType' do
+    expect(described_class.connection_type_class).to eq(::Types::CountableConnectionType)
   end
 
   it { is_expected.to require_graphql_authorizations(:read_virtual_registry) }

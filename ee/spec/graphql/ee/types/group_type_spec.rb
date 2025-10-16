@@ -61,6 +61,7 @@ RSpec.describe GitlabSchema.types['Group'], feature_category: :groups_and_projec
   it { expect(described_class).to have_graphql_field(:project_compliance_violations) }
   it { expect(described_class).to have_graphql_field(:compliance_frameworks_needing_attention) }
   it { expect(described_class).to have_graphql_field(:web_based_commit_signing_enabled) }
+  it { expect(described_class).to have_graphql_field(:virtual_registries_packages_maven_upstreams) }
 
   describe 'components' do
     let_it_be(:guest) { create(:user) }
@@ -498,68 +499,26 @@ RSpec.describe GitlabSchema.types['Group'], feature_category: :groups_and_projec
     it { is_expected.to include_graphql_arguments(:component_name) }
   end
 
-  describe 'maven virtual registries' do
-    let_it_be(:current_user) { create(:user) }
-    let_it_be(:group) { create(:group, :private) }
-    let_it_be(:registry) { create(:virtual_registries_packages_maven_registry, group: group) }
-    let_it_be(:query) do
-      %(
-        query {
-          group(fullPath: "#{group.full_path}") {
-            mavenVirtualRegistries {
-              nodes {
-                id
-                name
-              }
-            }
-          }
-        }
+  describe 'maven_virtual_registries' do
+    subject { described_class.fields['mavenVirtualRegistries'] }
+
+    it 'has connection type class' do
+      is_expected.to have_nullable_graphql_type(
+        EE::Types::VirtualRegistries::Packages::Maven::MavenVirtualRegistryType.connection_type
+      )
+    end
+  end
+
+  describe 'virtual_registries_packages_maven_upstreams' do
+    subject { described_class.fields['virtualRegistriesPackagesMavenUpstreams'] }
+
+    it 'has connection type class' do
+      is_expected.to have_nullable_graphql_type(
+        EE::Types::VirtualRegistries::Packages::Maven::MavenUpstreamType.connection_type
       )
     end
 
-    subject(:query_result) { GitlabSchema.execute(query, context: { current_user: current_user }).as_json }
-
-    before do
-      group.add_member(current_user, Gitlab::Access::MAINTAINER)
-      stub_config(dependency_proxy: { enabled: true })
-      stub_licensed_features(packages_virtual_registry: true)
-    end
-
-    context 'with the maven virtual registry feature flag turned off' do
-      before do
-        stub_feature_flags(maven_virtual_registry: false)
-      end
-
-      it 'returns null for the maven registries field' do
-        maven_registries = query_result.dig(*%w[data group mavenVirtualRegistries])
-
-        expect(maven_registries).to be_nil
-      end
-    end
-
-    context 'with dependency proxy config disabled' do
-      before do
-        stub_config(dependency_proxy: { enabled: false })
-      end
-
-      it 'returns null for the maven registries field' do
-        maven_registries = query_result.dig(*%w[data group mavenVirtualRegistries])
-
-        expect(maven_registries).to be_nil
-      end
-    end
-
-    context 'when package license is not available' do
-      before do
-        stub_licensed_features(packages_virtual_registry: false)
-      end
-
-      it 'returns null for the maven registries field' do
-        maven_registries = query_result.dig(*%w[data group mavenVirtualRegistries])
-
-        expect(maven_registries).to be_nil
-      end
-    end
+    it { is_expected.to have_graphql_resolver(::Resolvers::VirtualRegistries::Packages::Maven::UpstreamsResolver) }
   end
 
   describe 'virtual registries setting' do

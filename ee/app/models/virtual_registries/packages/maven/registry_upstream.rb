@@ -32,6 +32,14 @@ module VirtualRegistries
             .update_all(position: Arel.sql('position - 1'))
         end
 
+        def self.registries_count_by_upstream_ids(upstream_ids)
+          return {} if upstream_ids.blank?
+
+          where(upstream_id: upstream_ids)
+            .group(:upstream_id)
+            .count
+        end
+
         def sync_higher_positions
           return if position == MAX_UPSTREAMS_COUNT
 
