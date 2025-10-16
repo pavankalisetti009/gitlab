@@ -96,7 +96,7 @@ module Ai
         git_clone_variables.merge(
           DUO_WORKFLOW_ADDITIONAL_CONTEXT_CONTENT: serialized_flow_additional_context,
           DUO_WORKFLOW_BASE_PATH: './',
-          DUO_WORKFLOW_DEFINITION: @params[:workflow_definition],
+          DUO_WORKFLOW_DEFINITION: @workflow.workflow_definition,
           DUO_WORKFLOW_FLOW_CONFIG: serialized_duo_flow_config,
           DUO_WORKFLOW_FLOW_CONFIG_SCHEMA_VERSION: @params[:flow_config_schema_version],
           DUO_WORKFLOW_GOAL: @params[:goal],
