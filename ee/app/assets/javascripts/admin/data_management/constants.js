@@ -6,6 +6,10 @@ export const GEO_TROUBLESHOOTING_LINK = helpPagePath(
   'administration/geo/replication/troubleshooting/_index.md',
 );
 
+export const TOKEN_TYPES = {
+  MODEL: 'model_name',
+};
+
 const SORT_OPTIONS = {
   ID: {
     text: s__('Geo|Model ID'),
