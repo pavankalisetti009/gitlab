@@ -28,12 +28,21 @@ module Ai
           item = Ai::Catalog::Item.new(item_params)
           item.build_new_version(version_params)
 
-          if save_item(item)
-            track_ai_item_events('create_ai_catalog_item', { label: item.item_type })
-            return ServiceResponse.success(payload: { item: item })
+          return error_creating(item) unless save_item(item)
+
+          track_ai_item_events('create_ai_catalog_item', { label: item.item_type })
+
+          if params[:add_to_project_when_created]
+            service_response = ::Ai::Catalog::ItemConsumers::CreateService.new(
+              container: project,
+              current_user: current_user,
+              params: { item: item }
+            ).execute
+
+            return error(service_response.errors, payload: { item: item }) if service_response.error?
           end
 
-          error_creating(item)
+          ServiceResponse.success(payload: { item: item })
         end
 
         private
