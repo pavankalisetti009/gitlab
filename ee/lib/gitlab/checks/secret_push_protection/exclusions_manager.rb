@@ -17,12 +17,16 @@ module Gitlab
         end
 
         def active_exclusions
-          @active_exclusions ||= project
-            .security_exclusions
-            .by_scanner(:secret_push_protection)
-            .active
-            .select(:type, :value)
-            .group_by { |exclusion| exclusion.type.to_sym }
+          exclusions_relation = if exclusions_available?
+                                  project.security_exclusions
+                                    .by_scanner(:secret_push_protection)
+                                    .active
+                                    .select(:type, :value)
+                                else
+                                  ::Security::ProjectSecurityExclusion.none
+                                end
+
+          @active_exclusions ||= exclusions_relation.group_by { |exclusion| exclusion.type.to_sym }
         end
 
         def matches_excluded_path?(path)
@@ -41,7 +45,14 @@ module Gitlab
 
               audit_logger.log_exclusion_audit_event(exclusion) if matches
               matches
-            end
+            end || false
+        end
+
+        private
+
+        # Exclusions are still Ultimate only, even though SPP is available for public .com projects
+        def exclusions_available?
+          project.licensed_feature_available?(:secret_push_protection)
         end
       end
     end
