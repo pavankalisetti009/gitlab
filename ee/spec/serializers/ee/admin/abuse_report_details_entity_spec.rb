@@ -74,7 +74,7 @@ RSpec.describe Admin::AbuseReportDetailsEntity, feature_category: :insider_threa
 
   describe 'user\'s plan', :saas do
     before do
-      stub_ee_application_setting(should_check_namespace_plan: true)
+      stub_saas_features(gitlab_com_subscriptions: true)
       create(:gitlab_subscription, :bronze, namespace: user.namespace)
     end
 

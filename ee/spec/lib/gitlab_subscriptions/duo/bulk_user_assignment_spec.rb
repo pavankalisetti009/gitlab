@@ -105,7 +105,7 @@ RSpec.describe GitlabSubscriptions::Duo::BulkUserAssignment, feature_category: :
       end
     end
 
-    context 'on Gitlab.com' do
+    context 'on Gitlab.com', :saas do
       before do
         stub_saas_features(gitlab_com_subscriptions: true)
       end

@@ -618,7 +618,7 @@ module EE
       def suggested_reviewers_available?
         strong_memoize(:suggested_reviewers_available) do
           ::Feature.disabled?(:hide_suggested_reviewers, self, type: :beta) &&
-            ::Gitlab.com? &&
+            ::Gitlab.com? && # rubocop:todo Gitlab/AvoidGitlabInstanceChecks -- Should be resolved in future
             licensed_feature_available?(:suggested_reviewers)
         end
       end
@@ -779,7 +779,7 @@ module EE
 
       override :inactive
       def inactive
-        return super unless ::Gitlab.com?
+        return super unless ::Gitlab::Saas.feature_available?(:gitlab_com_subscriptions)
 
         statistics = ::ProjectStatistics.arel_table
         minimum_size_mb = ::Gitlab::CurrentSettings.inactive_projects_min_size_mb.megabytes
@@ -1426,7 +1426,7 @@ module EE
 
     override :inactive?
     def inactive?
-      ::Gitlab.com? && root_namespace.paid? ? false : super
+      ::Gitlab::Saas.feature_available?(:gitlab_com_subscriptions) && root_namespace.paid? ? false : super
     end
 
     def epic_ids_referenced_by_issues
@@ -1677,7 +1677,7 @@ module EE
       return false unless globally_available
       return false if ::GitlabSubscriptions::Features::GROUP_ONLY_LICENSED_FEATURES.include?(feature) && namespace&.user_namespace?
 
-      if ::Gitlab::CurrentSettings.should_check_namespace_plan? && namespace
+      if ::Gitlab::CurrentSettings.should_check_namespace_plan? && namespace # rubocop:disable Gitlab/AvoidGitlabInstanceChecks -- Correct use of this feature
         namespace.feature_available_in_plan?(feature) || open_source_license_granted?
       else
         true
@@ -1687,7 +1687,7 @@ module EE
     def open_source_license_granted?
       public? &&
         namespace.public? &&
-        (!::Gitlab.com? || project_setting.legacy_open_source_license_available?)
+        (!::Gitlab::Saas.feature_available?(:gitlab_com_subscriptions) || project_setting.legacy_open_source_license_available?)
     end
 
     def user_defined_rules

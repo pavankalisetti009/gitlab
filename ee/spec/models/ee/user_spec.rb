@@ -2421,13 +2421,7 @@ RSpec.describe User, feature_category: :system_access do
         stub_licensed_features(minimal_access_role: true)
       end
 
-      context 'feature turned on for all groups' do
-        before do
-          allow(Gitlab::CurrentSettings)
-            .to receive(:should_check_namespace_plan?)
-                  .and_return(false)
-        end
-
+      context 'when the feature is turned on for all groups' do
         it { is_expected.to contain_exactly private_group, project_group, minimal_access_group }
 
         it 'ignores groups with minimal access if with_minimal_access=false' do
@@ -2435,11 +2429,9 @@ RSpec.describe User, feature_category: :system_access do
         end
       end
 
-      context 'feature available for specific groups only', :saas do
+      context 'when the feature is available for specific groups only', :saas do
         before do
-          allow(Gitlab::CurrentSettings)
-            .to receive(:should_check_namespace_plan?)
-                  .and_return(true)
+          stub_saas_features(gitlab_com_subscriptions: true)
           create(:gitlab_subscription, :ultimate, namespace: minimal_access_group)
           create(:group_member, :minimal_access, user: user, source: create(:group))
         end

@@ -6,7 +6,7 @@ RSpec.describe ProjectPresenter, feature_category: :consumables_cost_management 
   let(:user) { build_stubbed(:user) }
   let_it_be(:root_project) { create(:project, :public) } # rubocop:disable RSpec/FactoryBot/AvoidCreate
 
-  describe '#storage_anchor_text' do
+  describe '#storage_anchor_text', :saas do
     let(:presenter) { described_class.new(project, current_user: user) }
 
     before do

@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe GitlabSubscriptions::UserAddOnAssignments::Saas::CreateService, feature_category: :seat_cost_management do
+RSpec.describe GitlabSubscriptions::UserAddOnAssignments::Saas::CreateService, :saas, feature_category: :seat_cost_management do
   let_it_be(:namespace) { create(:group) }
   let_it_be(:add_on) { create(:gitlab_subscription_add_on) }
   let_it_be(:add_on_purchase) { create(:gitlab_subscription_add_on_purchase, namespace: namespace, add_on: add_on) }

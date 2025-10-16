@@ -64,7 +64,7 @@ module Namespaces
       end
 
       def saas?
-        namespace && ::Gitlab::CurrentSettings.should_check_namespace_plan?
+        namespace && ::Gitlab::Saas.feature_available?(:gitlab_com_subscriptions)
       end
       strong_memoize_attr :saas?
     end

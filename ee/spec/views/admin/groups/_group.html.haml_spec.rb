@@ -12,13 +12,13 @@ RSpec.describe 'admin/groups/_group', feature_category: :system_access do
     allow(view).to receive(:current_user).and_return(user)
   end
 
-  context 'for namespace plan badge' do
+  context 'for namespace plan badge', :saas do
     context 'when gitlab_com_subscriptions SaaS feature is available' do
       before do
         stub_saas_features(gitlab_com_subscriptions: true)
       end
 
-      context 'when namespace is paid', :saas do
+      context 'when namespace is paid' do
         before do
           build(:gitlab_subscription, :ultimate, namespace: group)
         end
@@ -44,7 +44,7 @@ RSpec.describe 'admin/groups/_group', feature_category: :system_access do
         stub_saas_features(gitlab_com_subscriptions: false)
       end
 
-      context 'when namespace is paid', :saas do
+      context 'when namespace is paid' do
         before do
           build(:gitlab_subscription, :ultimate, namespace: group)
         end
