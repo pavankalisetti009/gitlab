@@ -65,6 +65,7 @@ describe('EE WorkItemDetail component', () => {
         fullPath: 'group/project',
         groupPath: 'group',
         reportAbusePath: '/report/abuse/path',
+        isGroup: true,
         ...provide,
       },
       mocks: {
