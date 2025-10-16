@@ -109,4 +109,56 @@ RSpec.describe Security::FindingTokenStatus, feature_category: :secret_detection
       expect(status.status_inactive?).to be false
     end
   end
+
+  describe 'internal event tracking' do
+    let_it_be(:project) { create(:project) }
+    let_it_be(:pipeline) { create(:ci_pipeline, project: project) }
+    let_it_be(:scan) { create(:security_scan, pipeline: pipeline, project: project) }
+    let_it_be(:finding) do
+      create(:security_finding,
+        :with_finding_data,
+        :with_token_data,
+        token_type_value: 'AWS',
+        scan: scan)
+    end
+
+    it 'tracks event on create with correct parameters' do
+      expect { create(:security_finding_token_status, security_finding: finding) }
+        .to trigger_internal_events('secret_detection_token_verified')
+        .with(
+          project: project,
+          namespace: project.namespace,
+          additional_properties: { label: 'AWS' }
+        )
+        .and increment_usage_metrics('counts.count_total_secret_detection_token_verified')
+    end
+
+    context 'when finding has no token_type' do
+      before do
+        allow(finding).to receive(:token_type).and_return(nil)
+      end
+
+      it 'does not track event' do
+        expect { create(:security_finding_token_status, security_finding: finding) }
+          .not_to trigger_internal_events('secret_detection_token_verified')
+      end
+    end
+
+    context 'when tracking fails' do
+      before do
+        allow_next_instance_of(described_class) do |instance|
+          allow(instance).to receive(:track_internal_event)
+            .and_raise(StandardError, 'Tracking error')
+        end
+      end
+
+      it 'tracks exception but does not raise' do
+        expect(Gitlab::ErrorTracking).to receive(:track_exception)
+          .with(instance_of(StandardError), hash_including(finding_id: finding.id))
+
+        expect { create(:security_finding_token_status, security_finding: finding) }
+          .not_to raise_error
+      end
+    end
+  end
 end
