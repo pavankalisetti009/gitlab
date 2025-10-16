@@ -29,92 +29,29 @@ RSpec.describe Sidebars::Groups::Menus::PackagesRegistriesMenu, feature_category
 
     describe 'Virtual Registry' do
       let(:item_id) { :virtual_registry }
+      let(:virtual_registry_available) { false }
 
-      context 'when user can read virtual registry' do
-        before do
-          stub_config(dependency_proxy: { enabled: true })
-          stub_licensed_features(packages_virtual_registry: true)
-          allow(VirtualRegistries::Setting).to receive(:cached_for_group).with(group).and_return(build_stubbed(
-            :virtual_registries_setting, group: group))
-        end
-
-        context 'when all conditions are met' do
-          it { is_expected.not_to be_nil }
-        end
-
-        context 'when ui_for_virtual_registries feature flag is disabled' do
-          before do
-            stub_feature_flags(ui_for_virtual_registries: false)
-          end
-
-          it { is_expected.to be_nil }
-        end
-
-        context 'when maven_virtual_registry feature flag is disabled' do
-          before do
-            stub_feature_flags(maven_virtual_registry: false)
-          end
-
-          it { is_expected.to be_nil }
-        end
-
-        context 'when dependency proxy is disabled' do
-          before do
-            stub_config(dependency_proxy: { enabled: false })
-          end
-
-          it { is_expected.to be_nil }
-        end
-
-        context 'when licensed feature is not available' do
-          before do
-            stub_licensed_features(packages_virtual_registry: false)
-          end
-
-          it { is_expected.to be_nil }
-        end
-
-        context 'when virtual registries setting enabled is false' do
-          before do
-            allow(VirtualRegistries::Setting).to receive(:cached_for_group).with(group).and_return(build_stubbed(
-              :virtual_registries_setting, :disabled, group: group))
-          end
-
-          it { is_expected.to be_nil }
-        end
+      before do
+        allow(::VirtualRegistries::Packages::Maven).to receive(:virtual_registry_available?)
+          .and_return(virtual_registry_available)
       end
 
-      context 'when user cannot read virtual registry' do
+      context 'when user does not have access' do
         let(:user) { nil }
 
-        before do
-          stub_config(dependency_proxy: { enabled: true })
-          stub_licensed_features(packages_virtual_registry: true)
-        end
-
         it { is_expected.to be_nil }
       end
 
-      context 'when user has limited permissions' do
-        let(:user) { create(:user) }
-
-        before do
-          stub_config(dependency_proxy: { enabled: true })
-          stub_licensed_features(packages_virtual_registry: true)
+      context 'when user has access' do
+        context 'when maven virtual registry is unavailable' do
+          it { is_expected.to be_nil }
         end
 
-        it { is_expected.to be_nil }
-      end
+        context 'when maven virtual registry is available' do
+          let(:virtual_registry_available) { true }
 
-      context 'when group is not root' do
-        let(:group) { create(:group, parent: create(:group)) }
-
-        before do
-          stub_config(dependency_proxy: { enabled: true })
-          stub_licensed_features(packages_virtual_registry: true)
+          it { is_expected.not_to be_nil }
         end
-
-        it { is_expected.to be_nil }
       end
     end
   end

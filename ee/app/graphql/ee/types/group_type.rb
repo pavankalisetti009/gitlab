@@ -468,6 +468,15 @@ module EE
           description: 'Indicates whether web-based commit signing is enabled for the group.',
           experiment: { milestone: '18.2' }
 
+        field :virtual_registries_packages_maven_upstreams,
+          EE::Types::VirtualRegistries::Packages::Maven::MavenUpstreamType.connection_type,
+          null: true,
+          skip_type_authorization: :read_virtual_registry,
+          description: 'Maven upstream registries registered to the group. ' \
+            'Returns null if the `maven_virtual_registry` feature flag is disabled.',
+          resolver: ::Resolvers::VirtualRegistries::Packages::Maven::UpstreamsResolver,
+          experiment: { milestone: '18.6' }
+
         def epics_enabled
           object.licensed_feature_available?(:epics)
         end

@@ -10,8 +10,8 @@ module Groups
       private
 
       def ensure_feature!
-        render_404 unless ::VirtualRegistries::Packages::Maven.virtual_registry_available?(@group, current_user)
         render_404 unless ::Feature.enabled?(:ui_for_virtual_registries, @group)
+        render_404 unless ::VirtualRegistries::Packages::Maven.virtual_registry_available?(@group, current_user)
       end
 
       def verify_read_virtual_registry!

@@ -124,4 +124,22 @@ RSpec.describe GitlabSchema.types['Query'], feature_category: :shared do
       end
     end
   end
+
+  describe 'mavenVirtualRegistry field' do
+    subject { described_class.fields['mavenVirtualRegistry'] }
+
+    it 'finds a maven virtual registry by its gid' do
+      is_expected.to have_graphql_arguments(:id)
+      is_expected.to have_graphql_type(EE::Types::VirtualRegistries::Packages::Maven::MavenVirtualRegistryType)
+    end
+  end
+
+  describe 'mavenUpstreamRegistry field' do
+    subject { described_class.fields['mavenUpstreamRegistry'] }
+
+    it 'finds a maven upstream registry by its gid' do
+      is_expected.to have_graphql_arguments(:id)
+      is_expected.to have_graphql_type(EE::Types::VirtualRegistries::Packages::Maven::MavenUpstreamType)
+    end
+  end
 end

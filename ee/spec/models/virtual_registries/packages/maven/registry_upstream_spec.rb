@@ -245,6 +245,45 @@ RSpec.describe VirtualRegistries::Packages::Maven::RegistryUpstream, type: :mode
     end
   end
 
+  describe '.registries_count_by_upstream_ids' do
+    let_it_be(:upstream1) { create(:virtual_registries_packages_maven_upstream) }
+    let_it_be(:upstream2) { create(:virtual_registries_packages_maven_upstream) }
+    let_it_be(:upstream3) { create(:virtual_registries_packages_maven_upstream) }
+
+    let_it_be(:registry1) { create(:virtual_registries_packages_maven_registry) }
+    let_it_be(:registry2) { create(:virtual_registries_packages_maven_registry) }
+
+    let_it_be(:registry_upstream1) do
+      create(:virtual_registries_packages_maven_registry_upstream, registry: registry1, upstream: upstream1)
+    end
+
+    let_it_be(:registry_upstream2) do
+      create(:virtual_registries_packages_maven_registry_upstream, registry: registry2, upstream: upstream1)
+    end
+
+    let_it_be(:registry_upstream3) do
+      create(:virtual_registries_packages_maven_registry_upstream, registry: registry1, upstream: upstream2)
+    end
+
+    it 'returns count of registries grouped by upstream_id' do
+      result = described_class.registries_count_by_upstream_ids([upstream1.id, upstream2.id, upstream3.id])
+
+      expect(result).to eq(upstream1.id => 3, upstream2.id => 2, upstream3.id => 1)
+    end
+
+    it 'returns empty hash when no upstream_ids match' do
+      result = described_class.registries_count_by_upstream_ids([999])
+
+      expect(result).to eq({})
+    end
+
+    it 'returns empty hash when upstream_ids array is empty' do
+      result = described_class.registries_count_by_upstream_ids([])
+
+      expect(result).to eq({})
+    end
+  end
+
   def reload_positions(registry = registry_upstreams[0].registry)
     described_class.where(registry:).pluck(:id, :position).to_h
   end
