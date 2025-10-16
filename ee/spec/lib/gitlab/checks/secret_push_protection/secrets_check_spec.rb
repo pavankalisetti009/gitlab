@@ -199,6 +199,17 @@ RSpec.describe Gitlab::Checks::SecretPushProtection::SecretsCheck, feature_categ
               stub_licensed_features(secret_push_protection: true)
             end
 
+            context 'when payload processor returns nil' do
+              before do
+                allow_next_instance_of(Gitlab::Checks::SecretPushProtection::PayloadProcessor) do |processor|
+                  allow(processor).to receive(:standardize_payloads).and_return(nil)
+                end
+              end
+
+              it_behaves_like 'does not call SDS'
+              it_behaves_like 'skips the push check'
+            end
+
             context 'when SDS should be called (on SaaS)' do
               before do
                 stub_saas_features(secret_detection_service: true)
@@ -264,12 +275,7 @@ RSpec.describe Gitlab::Checks::SecretPushProtection::SecretsCheck, feature_categ
                 expect(::Gitlab::ErrorTracking).to receive(:track_exception).with(instance_of(::GRPC::InvalidArgument))
                 expect(secret_detection_logger).to receive(:error)
                   .once
-                  .with(
-                    hash_including(
-                      "message" => error_messages[:invalid_input_error],
-                      "class" => "Gitlab::Checks::SecretPushProtection::ResponseHandler"
-                    )
-                  )
+                  .with(a_string_starting_with("diff_blobs_with_raw_info Gitaly call failed with args:"))
 
                 allow(secret_detection_logger).to receive(:info)
                 expect { secrets_check.validate! }.not_to raise_error
@@ -284,14 +290,6 @@ RSpec.describe Gitlab::Checks::SecretPushProtection::SecretsCheck, feature_categ
                   expect(repository).to receive(:diff_blobs).and_raise(::GRPC::InvalidArgument)
                   expect(::Gitlab::ErrorTracking).to receive(:track_exception)
                     .with(instance_of(::GRPC::InvalidArgument))
-                  expect(secret_detection_logger).to receive(:error)
-                    .once
-                    .with(
-                      hash_including(
-                        "message" => error_messages[:invalid_input_error],
-                        "class" => "Gitlab::Checks::SecretPushProtection::ResponseHandler"
-                      )
-                    )
 
                   allow(secret_detection_logger).to receive(:info)
                   expect { secrets_check.validate! }.not_to raise_error
