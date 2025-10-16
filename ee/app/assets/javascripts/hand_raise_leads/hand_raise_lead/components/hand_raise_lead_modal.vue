@@ -208,6 +208,8 @@ export default {
       this.ctaTracking = ctaTracking;
       this.glmContent = glmContent;
 
+      this.skipCountryStateQueries = false;
+
       this.$root.$emit(BV_SHOW_MODAL, this.$options.modalId);
       this.track('hand_raise_form_viewed');
     },
@@ -302,7 +304,6 @@ export default {
         <gl-form-textarea v-model="formValues.comment" no-resize />
       </template>
     </gl-form-fields>
-
     <p class="gl-text-subtle">
       {{ $options.i18n.modalFooterText }}
     </p>

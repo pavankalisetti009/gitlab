@@ -6,12 +6,43 @@ import statesQuery from 'ee/subscriptions/graphql/queries/states.query.graphql';
  * Mixin for components that uses gl-form-fields that need country and state selection functionality.
  * Provides common data, computed properties, Apollo queries, and methods
  * for handling country/state selection with proper state management.
+ *
+ * ## Performance Considerations
+ *
+ * By default, this mixin skips GraphQL queries to prevent unnecessary network requests
+ * on components that may not immediately need country/state data (like modals).
+ *
+ * ### Enabling Query Execution
+ *
+ * To enable queries when you need the data, set `skipCountryStateQueries` to `false`:
+ *
+ * ```javascript
+ * export default {
+ *   mixins: [countryStateMixin],
+ *   data() {
+ *     return {
+ *       skipCountryStateQueries: false, // Enable queries immediately
+ *       // ... other data
+ *     };
+ *   },
+ *   // OR enable them dynamically:
+ *   methods: {
+ *     showCountryFields() {
+ *       this.skipCountryStateQueries = false; // Enable queries when needed
+ *     }
+ *   }
+ * }
+ * ```
+ *
+ * This approach ensures optimal performance by default and requires explicit opt-in
+ * for components that need immediate country/state data loading.
  */
 export default {
   data() {
     return {
       countries: [],
       states: [],
+      skipCountryStateQueries: true,
     };
   },
   computed: {
@@ -38,6 +69,9 @@ export default {
   apollo: {
     countries: {
       query: countriesQuery,
+      skip() {
+        return this.skipCountryStateQueries;
+      },
       update(data) {
         return data.countries.map((country) => ({
           value: country.id,
@@ -54,7 +88,7 @@ export default {
         }));
       },
       skip() {
-        return !this.formValues.country;
+        return !this.formValues.country || this.skipCountryStateQueries;
       },
       variables() {
         return {
