@@ -15673,9 +15673,6 @@ msgstr ""
 msgid "Collapse %{section} merge requests"
 msgstr ""
 
-msgid "Collapse GitLab Duo panel"
-msgstr ""
-
 msgid "Collapse all files"
 msgstr ""
 
@@ -15701,6 +15698,9 @@ msgid "Collapse merge request reports"
 msgstr ""
 
 msgid "Collapse milestones"
+msgstr ""
+
+msgid "Collapse panel"
 msgstr ""
 
 msgid "Collapse replies"
@@ -39824,7 +39824,7 @@ msgstr ""
 msgid "Max size of this project's repository. %{repository_size_limit_link}."
 msgstr ""
 
-msgid "Maximize Duo panel"
+msgid "Maximize panel"
 msgstr ""
 
 msgid "Maximum 20 characters"
@@ -41589,7 +41589,7 @@ msgstr ""
 msgid "Minimal Access"
 msgstr ""
 
-msgid "Minimize Duo panel"
+msgid "Minimize panel"
 msgstr ""
 
 msgid "Minimum GitLab Language Server client version"
