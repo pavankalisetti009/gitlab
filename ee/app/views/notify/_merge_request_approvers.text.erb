@@ -1,3 +1,0 @@
-<%- presenter = local_assigns.fetch(:presenter) -%>
-<%- return unless presenter.suggested_approvers.any? -%>
-Approvers: <%= render_items_list(presenter.suggested_approvers.map(&:name)) %>
