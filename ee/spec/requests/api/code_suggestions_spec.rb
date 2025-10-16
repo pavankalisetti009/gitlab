@@ -360,7 +360,7 @@ RSpec.describe API::CodeSuggestions, feature_category: :code_suggestions do
             post_api
             expected_body = body.merge(
               'model_provider' => 'anthropic',
-              'model_name' => 'claude-3-5-sonnet-20240620',
+              'model_name' => 'claude-sonnet-4-20250514',
               'prompt_version' => 3,
               'prompt' => [
                 {
