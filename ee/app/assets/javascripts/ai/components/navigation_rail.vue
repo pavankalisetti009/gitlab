@@ -1,7 +1,10 @@
 <script>
 import { GlButton, GlTooltipDirective } from '@gitlab/ui';
 import { BV_HIDE_TOOLTIP } from '~/lib/utils/constants';
+import { keysFor, DUO_CHAT } from '~/behaviors/shortcuts/keybindings';
+import { shouldDisableShortcuts } from '~/behaviors/shortcuts/shortcuts_toggle';
 import { __ } from '~/locale';
+import { sanitize } from '~/lib/dompurify';
 
 export default {
   name: 'NavigationRail',
@@ -30,6 +33,18 @@ export default {
       default: true,
     },
   },
+  computed: {
+    duoShortcutKey() {
+      return shouldDisableShortcuts() ? null : keysFor(DUO_CHAT);
+    },
+    formattedDuoShortcutTooltip() {
+      const description = this.$options.i18n.duoChatLabel;
+      const key = keysFor(DUO_CHAT);
+      return shouldDisableShortcuts()
+        ? description
+        : sanitize(`${description} <kbd class="flat gl-ml-1" aria-hidden=true>${key}</kbd>`);
+    },
+  },
   methods: {
     toggleTab(tab) {
       this.$emit('handleTabToggle', tab);
@@ -49,15 +64,18 @@ export default {
     aria-orientation="vertical"
   >
     <gl-button
-      v-gl-tooltip.left
+      v-gl-tooltip.left="{
+        title: formattedDuoShortcutTooltip,
+        html: true,
+      }"
       icon="comment"
-      class="!gl-rounded-lg"
+      class="js-tanuki-bot-chat-toggle !gl-rounded-lg"
       :class="['ai-nav-icon', { 'ai-nav-icon-active': activeTab === 'chat' }]"
       category="tertiary"
       :aria-selected="activeTab === 'chat'"
       :aria-expanded="isExpanded"
+      :aria-keyshortcuts="duoShortcutKey"
       :aria-label="$options.i18n.duoChatLabel"
-      :title="$options.i18n.duoChatLabel"
       data-testid="ai-chat-toggle"
       @mouseout="hideTooltips"
       @click="toggleTab('chat')"
