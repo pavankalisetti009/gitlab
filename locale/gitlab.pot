@@ -38520,6 +38520,9 @@ msgstr ""
 msgid "Learn more about X.509 signed commits"
 msgstr ""
 
+msgid "Learn more about authentication requirements: "
+msgstr ""
+
 msgid "Learn more about custom project templates"
 msgstr ""
 
@@ -64346,6 +64349,15 @@ msgstr ""
 msgid "Step 4."
 msgstr ""
 
+msgid "Step-up authentication already completed"
+msgstr ""
+
+msgid "Step-up authentication required"
+msgstr ""
+
+msgid "Step-up authentication required."
+msgstr ""
+
 msgid "Still loading…"
 msgstr ""
 
@@ -67276,6 +67288,9 @@ msgid "This group is scheduled for deletion on %{date}. This action will permane
 msgstr ""
 
 msgid "This group is scheduled to be deleted on %{date}. You are about to delete this group, including its subgroups and projects, immediately. This action cannot be undone."
+msgstr ""
+
+msgid "This group requires additional authentication. Please sign in with your OAuth provider to continue."
 msgstr ""
 
 msgid "This group will be deleted on %{date} because its parent group is scheduled for deletion."
