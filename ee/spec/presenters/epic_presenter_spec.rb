@@ -95,28 +95,28 @@ RSpec.describe EpicPresenter, feature_category: :portfolio_management do
     end
   end
 
-  describe 'use work item logic to present dates', :freeze_time do
+  describe 'use work item logic to present dates' do
     using RSpec::Parameterized::TableSyntax
 
     let_it_be(:epic) do
       build_stubbed(
         :epic,
         :with_synced_work_item,
-        start_date: 1.day.ago,
-        start_date_fixed: 2.days.ago,
+        start_date: Date.new(2025, 10, 14),
+        start_date_fixed: Date.new(2025, 10, 13),
         start_date_is_fixed: true,
-        due_date: 3.days.from_now,
-        due_date_fixed: 4.days.from_now,
+        due_date: Date.new(2025, 10, 18),
+        due_date_fixed: Date.new(2025, 10, 19),
         due_date_is_fixed: false
       )
     end
 
     where(:field, :result) do
-      :start_date | 2.days.ago.to_date
-      :start_date_fixed | 2.days.ago.to_date
+      :start_date | Date.new(2025, 10, 13)
+      :start_date_fixed | Date.new(2025, 10, 13)
       :start_date_is_fixed? | true
-      :due_date | 4.days.from_now.to_date
-      :due_date_fixed | 4.days.from_now.to_date
+      :due_date | Date.new(2025, 10, 19)
+      :due_date_fixed | Date.new(2025, 10, 19)
       :due_date_is_fixed? | true
     end
 
