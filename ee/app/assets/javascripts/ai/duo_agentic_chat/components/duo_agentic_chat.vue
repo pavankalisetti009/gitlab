@@ -204,6 +204,12 @@ export default {
           })) || []
         );
       },
+      variables() {
+        return {
+          projectId: this.projectId,
+          namespaceId: this.namespaceId,
+        };
+      },
       error(err) {
         this.onError(err);
       },
