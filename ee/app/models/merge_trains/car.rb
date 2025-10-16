@@ -169,7 +169,7 @@ module MergeTrains
       has_pipeline? && pipeline.complete? && !pipeline.success?
     end
 
-    def mergeable?
+    def merge_ready_pipeline?
       has_pipeline? && pipeline&.success? && first_car?
     end
 
