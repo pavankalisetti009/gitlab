@@ -20,6 +20,9 @@ RSpec.describe 'Query.subscriptionUsage', feature_category: :consumables_cost_ma
   let(:query_fields) do
     [
       :last_updated,
+      :start_date,
+      :end_date,
+      :purchase_credits_path,
       query_graphql_field(:pool_usage, {}, [
         :total_credits,
         :credits_used,
@@ -67,7 +70,15 @@ RSpec.describe 'Query.subscriptionUsage', feature_category: :consumables_cost_ma
   before do
     stub_feature_flags(usage_billing_dev: true)
 
-    last_updated = { success: true, lastUpdated: "2025-10-01T16:19:59Z" }
+    metadata = {
+      success: true,
+      subscriptionUsage: {
+        startDate: "2025-10-01",
+        endDate: "2025-10-31",
+        lastUpdated: "2025-10-01T16:19:59Z",
+        purchaseCreditsPath: '/mock/path'
+      }
+    }
 
     users_usage = User.all.map do |user|
       {
@@ -89,7 +100,7 @@ RSpec.describe 'Query.subscriptionUsage', feature_category: :consumables_cost_ma
 
     allow_next_instance_of(Gitlab::SubscriptionPortal::SubscriptionUsageClient) do |client|
       allow(client).to receive_messages(
-        get_last_updated: last_updated,
+        get_metadata: metadata,
         get_pool_usage: pool_usage,
         get_usage_for_user_ids: { success: true, usersUsage: users_usage }
       )
@@ -105,6 +116,9 @@ RSpec.describe 'Query.subscriptionUsage', feature_category: :consumables_cost_ma
           post_graphql(query, current_user: admin)
 
           expect(graphql_data_at(:subscription_usage, :lastUpdated)).to eq("2025-10-01T16:19:59Z")
+          expect(graphql_data_at(:subscription_usage, :startDate)).to eq("2025-10-01")
+          expect(graphql_data_at(:subscription_usage, :endDate)).to eq("2025-10-31")
+          expect(graphql_data_at(:subscription_usage, :purchaseCreditsPath)).to eq("/mock/path")
 
           expect(graphql_data_at(:subscription_usage, :poolUsage)).to eq({
             totalCredits: 1000,
@@ -157,6 +171,9 @@ RSpec.describe 'Query.subscriptionUsage', feature_category: :consumables_cost_ma
             post_graphql(query, current_user: owner)
 
             expect(graphql_data_at(:subscription_usage, :lastUpdated)).to eq("2025-10-01T16:19:59Z")
+            expect(graphql_data_at(:subscription_usage, :startDate)).to eq("2025-10-01")
+            expect(graphql_data_at(:subscription_usage, :endDate)).to eq("2025-10-31")
+            expect(graphql_data_at(:subscription_usage, :purchaseCreditsPath)).to eq("/mock/path")
 
             expect(graphql_data_at(:subscription_usage, :poolUsage)).to eq({
               totalCredits: 1000,

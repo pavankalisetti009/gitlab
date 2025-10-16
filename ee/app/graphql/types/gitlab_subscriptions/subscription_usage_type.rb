@@ -12,6 +12,18 @@ module Types
         null: true,
         description: 'Date and time when the usage data was last updated.'
 
+      field :start_date, GraphQL::Types::ISO8601Date,
+        null: true,
+        description: 'Start date of the period covered by the usage data.'
+
+      field :end_date, GraphQL::Types::ISO8601Date,
+        null: true,
+        description: 'End date of the period covered by the usage data.'
+
+      field :purchase_credits_path, GraphQL::Types::String,
+        null: true,
+        description: 'URL to purchase GitLab Credits.'
+
       field :pool_usage, SubscriptionUsage::PoolUsageType,
         null: true,
         description: 'Consumption usage for the subscription shared pool.'

@@ -7,11 +7,11 @@ RSpec.describe GitlabSubscriptions::SubscriptionUsage, feature_category: :consum
   let_it_be(:group) { create(:group, developers: users.first(2)) }
   let(:subscription_usage_client) { instance_double(Gitlab::SubscriptionPortal::SubscriptionUsageClient) }
 
-  describe '#last_updated' do
-    subject(:last_updated) { subscription_usage.last_updated }
+  describe '#start_date' do
+    subject(:start_date) { subscription_usage.start_date }
 
     before do
-      allow(subscription_usage_client).to receive(:get_last_updated).and_return(client_response)
+      allow(subscription_usage_client).to receive(:get_metadata).and_return(client_response)
     end
 
     context 'when subscription_target is :namespace' do
@@ -24,7 +24,223 @@ RSpec.describe GitlabSubscriptions::SubscriptionUsage, feature_category: :consum
       end
 
       context 'when the client returns a successful response' do
-        let(:client_response) { { success: true, lastUpdated: "2025-10-01T16:19:59Z" } }
+        let(:client_response) { { success: true, subscriptionUsage: { startDate: "2025-10-01" } } }
+
+        it 'returns the start date' do
+          expect(start_date).to be("2025-10-01")
+        end
+      end
+
+      context 'when the client returns an unsuccessful response' do
+        let(:client_response) { { success: false } }
+
+        it 'returns nil' do
+          expect(start_date).to be_nil
+        end
+      end
+
+      context 'when the client response is missing startDate' do
+        let(:client_response) { { success: true, subscriptionUsage: { startDate: nil } } }
+
+        it 'returns nil' do
+          expect(start_date).to be_nil
+        end
+      end
+    end
+
+    context 'when subscription_target is :instance' do
+      let(:subscription_usage) do
+        described_class.new(
+          subscription_target: :instance,
+          subscription_usage_client: subscription_usage_client
+        )
+      end
+
+      let(:license) { build_stubbed(:license) }
+      let(:client_response) { { success: true, subscriptionUsage: { startDate: "2025-10-01" } } }
+
+      before do
+        allow(License).to receive(:current).and_return(license)
+      end
+
+      it 'returns the start date' do
+        expect(start_date).to be("2025-10-01")
+      end
+
+      context 'when License.current is nil' do
+        before do
+          allow(License).to receive(:current).and_return(nil)
+        end
+
+        it 'handles nil license gracefully' do
+          expect { start_date }.not_to raise_error
+        end
+      end
+    end
+  end
+
+  describe '#end_date' do
+    subject(:end_date) { subscription_usage.end_date }
+
+    before do
+      allow(subscription_usage_client).to receive(:get_metadata).and_return(client_response)
+    end
+
+    context 'when subscription_target is :namespace' do
+      let(:subscription_usage) do
+        described_class.new(
+          subscription_target: :namespace,
+          subscription_usage_client: subscription_usage_client,
+          namespace: group
+        )
+      end
+
+      context 'when the client returns a successful response' do
+        let(:client_response) { { success: true, subscriptionUsage: { endDate: "2025-10-31" } } }
+
+        it 'returns the end date' do
+          expect(end_date).to be("2025-10-31")
+        end
+      end
+
+      context 'when the client returns an unsuccessful response' do
+        let(:client_response) { { success: false } }
+
+        it 'returns nil' do
+          expect(end_date).to be_nil
+        end
+      end
+
+      context 'when the client response is missing endDate' do
+        let(:client_response) { { success: true, subscriptionUsage: { endDate: nil } } }
+
+        it 'returns nil' do
+          expect(end_date).to be_nil
+        end
+      end
+    end
+
+    context 'when subscription_target is :instance' do
+      let(:subscription_usage) do
+        described_class.new(
+          subscription_target: :instance,
+          subscription_usage_client: subscription_usage_client
+        )
+      end
+
+      let(:license) { build_stubbed(:license) }
+      let(:client_response) { { success: true, subscriptionUsage: { endDate: "2025-10-31" } } }
+
+      before do
+        allow(License).to receive(:current).and_return(license)
+      end
+
+      it 'returns the end date' do
+        expect(end_date).to be("2025-10-31")
+      end
+
+      context 'when License.current is nil' do
+        before do
+          allow(License).to receive(:current).and_return(nil)
+        end
+
+        it 'handles nil license gracefully' do
+          expect { end_date }.not_to raise_error
+        end
+      end
+    end
+  end
+
+  describe '#purchase_credits_path' do
+    subject(:purchase_credits_path) { subscription_usage.purchase_credits_path }
+
+    before do
+      allow(subscription_usage_client).to receive(:get_metadata).and_return(client_response)
+    end
+
+    context 'when subscription_target is :namespace' do
+      let(:subscription_usage) do
+        described_class.new(
+          subscription_target: :namespace,
+          subscription_usage_client: subscription_usage_client,
+          namespace: group
+        )
+      end
+
+      context 'when the client returns a successful response' do
+        let(:client_response) { { success: true, subscriptionUsage: { purchaseCreditsPath: "/mock/path" } } }
+
+        it 'returns the end date' do
+          expect(purchase_credits_path).to be("/mock/path")
+        end
+      end
+
+      context 'when the client returns an unsuccessful response' do
+        let(:client_response) { { success: false } }
+
+        it 'returns nil' do
+          expect(purchase_credits_path).to be_nil
+        end
+      end
+
+      context 'when the client response is missing purchaseCreditsPath' do
+        let(:client_response) { { success: true, subscriptionUsage: { purchaseCreditsPath: nil } } }
+
+        it 'returns nil' do
+          expect(purchase_credits_path).to be_nil
+        end
+      end
+    end
+
+    context 'when subscription_target is :instance' do
+      let(:subscription_usage) do
+        described_class.new(
+          subscription_target: :instance,
+          subscription_usage_client: subscription_usage_client
+        )
+      end
+
+      let(:license) { build_stubbed(:license) }
+      let(:client_response) { { success: true, subscriptionUsage: { purchaseCreditsPath: "/mock/path" } } }
+
+      before do
+        allow(License).to receive(:current).and_return(license)
+      end
+
+      it 'returns the end date' do
+        expect(purchase_credits_path).to be("/mock/path")
+      end
+
+      context 'when License.current is nil' do
+        before do
+          allow(License).to receive(:current).and_return(nil)
+        end
+
+        it 'handles nil license gracefully' do
+          expect { purchase_credits_path }.not_to raise_error
+        end
+      end
+    end
+  end
+
+  describe '#last_updated' do
+    subject(:last_updated) { subscription_usage.last_updated }
+
+    before do
+      allow(subscription_usage_client).to receive(:get_metadata).and_return(client_response)
+    end
+
+    context 'when subscription_target is :namespace' do
+      let(:subscription_usage) do
+        described_class.new(
+          subscription_target: :namespace,
+          subscription_usage_client: subscription_usage_client,
+          namespace: group
+        )
+      end
+
+      context 'when the client returns a successful response' do
+        let(:client_response) { { success: true, subscriptionUsage: { lastUpdated: "2025-10-01T16:19:59Z" } } }
 
         it 'returns the last updated time' do
           expect(last_updated).to be("2025-10-01T16:19:59Z")
@@ -40,7 +256,7 @@ RSpec.describe GitlabSubscriptions::SubscriptionUsage, feature_category: :consum
       end
 
       context 'when the client response is missing lastUpdated' do
-        let(:client_response) { { success: true, lastUpdated: nil } }
+        let(:client_response) { { success: true, subscriptionUsage: { lastUpdated: nil } } }
 
         it 'returns nil' do
           expect(last_updated).to be_nil
@@ -57,7 +273,7 @@ RSpec.describe GitlabSubscriptions::SubscriptionUsage, feature_category: :consum
       end
 
       let(:license) { build_stubbed(:license) }
-      let(:client_response) { { success: true, lastUpdated: "2025-10-01T16:19:59Z" } }
+      let(:client_response) { { success: true, subscriptionUsage: { lastUpdated: "2025-10-01T16:19:59Z" } } }
 
       before do
         allow(License).to receive(:current).and_return(license)
