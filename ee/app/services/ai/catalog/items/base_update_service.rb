@@ -36,6 +36,10 @@ module Ai
 
         attr_reader :item
 
+        def allowed?
+          super && Ability.allowed?(current_user, :admin_ai_catalog_item, item)
+        end
+
         def prepare_item_to_update
           item_params = params.slice(*ITEM_ATTRIBUTES)
           item.assign_attributes(item_params)
