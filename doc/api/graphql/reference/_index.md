@@ -25894,6 +25894,19 @@ CI/CD variables for a group.
 | <a id="cigroupvariablevalue"></a>`value` | [`String`](#string) | Value of the variable. |
 | <a id="cigroupvariablevariabletype"></a>`variableType` | [`CiVariableType`](#civariabletype) | Type of the variable. |
 
+### `CiInputsCondition`
+
+Condition node in rule expression tree.
+
+#### Fields
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="ciinputsconditionchildren"></a>`children` | [`[CiInputsCondition!]`](#ciinputscondition) | Child conditions for AND/OR nodes. |
+| <a id="ciinputsconditionfield"></a>`field` | [`String`](#string) | Input field name for comparison nodes. |
+| <a id="ciinputsconditionoperator"></a>`operator` | [`String!`](#string) | Operator type: equals, not_equals, AND, OR. |
+| <a id="ciinputsconditionvalue"></a>`value` | [`String`](#string) | Expected value for comparison nodes. |
+
 ### `CiInputsField`
 
 CI input saved for a pipeline schedule.
@@ -25904,6 +25917,19 @@ CI input saved for a pipeline schedule.
 | ---- | ---- | ----------- |
 | <a id="ciinputsfieldname"></a>`name` | [`String!`](#string) | Name of the input. |
 | <a id="ciinputsfieldvalue"></a>`value` | [`CiInputsValue`](#ciinputsvalue) | Value of the input. |
+
+### `CiInputsRule`
+
+Conditional rule for dynamic input options.
+
+#### Fields
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="ciinputsruleconditiontree"></a>`conditionTree` | [`CiInputsCondition`](#ciinputscondition) | Parsed condition tree for frontend eval. |
+| <a id="ciinputsruledefault"></a>`default` | [`String`](#string) | Default value when rule matches. |
+| <a id="ciinputsruleif"></a>`if` | [`String`](#string) | Condition expression. |
+| <a id="ciinputsruleoptions"></a>`options` | [`[String!]`](#string) | Available options when rule matches. |
 
 ### `CiInputsSpec`
 
@@ -25919,6 +25945,7 @@ Input for pipeline creation.
 | <a id="ciinputsspecoptions"></a>`options` | [`CiInputsValue`](#ciinputsvalue) | Possible values that the input can take, if provided. |
 | <a id="ciinputsspecregex"></a>`regex` | [`String`](#string) | Regular expression pattern that the input value must match if provided. |
 | <a id="ciinputsspecrequired"></a>`required` | [`Boolean!`](#boolean) | Indicates whether the input is required. |
+| <a id="ciinputsspecrules"></a>`rules` {{< icon name="warning-solid" >}} | [`[CiInputsRule!]`](#ciinputsrule) | **Introduced** in GitLab 18.6. **Status**: Experiment. Conditional rules for dynamic input options. |
 | <a id="ciinputsspectype"></a>`type` | [`CiInputsType!`](#ciinputstype) | Input data type. |
 
 ### `CiInstanceVariable`
