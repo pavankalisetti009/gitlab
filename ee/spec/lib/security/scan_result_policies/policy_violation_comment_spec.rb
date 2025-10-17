@@ -278,6 +278,177 @@ RSpec.describe Security::ScanResultPolicies::PolicyViolationComment, feature_cat
           it { is_expected.to exclude(described_class::VIOLATIONS_BYPASSABLE_TITLE) }
           it { is_expected.to include('This merge request introduces these violations') }
         end
+
+        # rubocop:disable RSpec/MultipleMemoizedHelpers -- required for test setup
+        context 'with any_merge_request violations' do
+          let_it_be(:any_mr_policy) do
+            create(:scan_result_policy_read, project: project,
+              security_orchestration_policy_configuration: security_orchestration_policy_configuration)
+          end
+
+          let_it_be(:any_mr_normal_db_policy) do
+            create(:security_policy, policy_index: 3,
+              security_orchestration_policy_configuration: security_orchestration_policy_configuration)
+          end
+
+          let_it_be(:any_mr_warn_mode_db_policy) do
+            create(:security_policy, :warn_mode, policy_index: 4,
+              security_orchestration_policy_configuration: security_orchestration_policy_configuration)
+          end
+
+          let_it_be(:any_mr_normal_policy_rule) do
+            create(:approval_policy_rule, security_policy: any_mr_normal_db_policy)
+          end
+
+          let_it_be(:any_mr_warn_mode_policy_rule) do
+            create(:approval_policy_rule, security_policy: any_mr_warn_mode_db_policy)
+          end
+
+          let(:commit_sha1) { 'a' * 40 }
+          let(:commit_sha2) { 'b' * 40 }
+          let(:commit_sha3) { 'c' * 40 }
+
+          context 'with enforced any_merge_request violations' do
+            context 'when commits is an array' do
+              before do
+                build_violation_details(:any_merge_request,
+                  {
+                    violations: { any_merge_request: { commits: [commit_sha1, commit_sha2] } }
+                  },
+                  policy_read: any_mr_policy,
+                  policy_rule: any_mr_normal_policy_rule,
+                  name: 'MR Policy')
+              end
+
+              it { is_expected.to include(described_class::VIOLATIONS_BLOCKING_TITLE) }
+              it { is_expected.to include('Enforced `any_merge_request` violations') }
+              it { is_expected.to include('The following policies require approval:') }
+              it { is_expected.to include('* MR Policy: any unsigned commits') }
+              it { is_expected.to include('Unsigned commits:') }
+
+              it 'includes commit SHA' do
+                is_expected.to include("[`#{commit_sha1}`](#{project_commit_url(project, commit_sha1)})")
+              end
+
+              it 'includes commit SHA' do
+                is_expected.to include("[`#{commit_sha2}`](#{project_commit_url(project, commit_sha2)})")
+              end
+            end
+
+            context 'when commits is true' do
+              before do
+                build_violation_details(:any_merge_request,
+                  {
+                    violations: { any_merge_request: { commits: true } }
+                  },
+                  policy_read: any_mr_policy,
+                  policy_rule: any_mr_normal_policy_rule,
+                  name: 'Any Commit Policy')
+              end
+
+              it { is_expected.to include('Enforced `any_merge_request` violations') }
+              it { is_expected.to include('The following policies require approval:') }
+              it { is_expected.to include('* Any Commit Policy: any commits') }
+              it { is_expected.not_to include('Unsigned commits:') }
+            end
+          end
+
+          context 'with bypassable any_merge_request violations' do
+            context 'when commits is an array' do
+              before do
+                build_violation_details(:any_merge_request,
+                  {
+                    violations: { any_merge_request: { commits: [commit_sha3] } }
+                  },
+                  policy_read: any_mr_policy,
+                  policy_rule: any_mr_warn_mode_policy_rule,
+                  name: 'Warn MR Policy')
+              end
+
+              it { is_expected.to include(described_class::VIOLATIONS_BYPASSABLE_TITLE) }
+              it { is_expected.to include('Bypassable `any_merge_request` violations') }
+              it { is_expected.to include('The following policies require approval or need to be bypassed:') }
+              it { is_expected.to include('* Warn MR Policy: any unsigned commits') }
+              it { is_expected.to include('Unsigned commits:') }
+
+              it 'includes commit SHA' do
+                is_expected.to include("[`#{commit_sha3}`](#{project_commit_url(project, commit_sha3)})")
+              end
+            end
+
+            context 'when commits is true' do
+              before do
+                build_violation_details(:any_merge_request,
+                  {
+                    violations: { any_merge_request: { commits: true } }
+                  },
+                  policy_read: any_mr_policy,
+                  policy_rule: any_mr_warn_mode_policy_rule,
+                  name: 'Warn Any Commit Policy')
+              end
+
+              it { is_expected.to include('Bypassable `any_merge_request` violations') }
+              it { is_expected.to include('The following policies require approval or need to be bypassed:') }
+              it { is_expected.to include('* Warn Any Commit Policy: any commits') }
+              it { is_expected.not_to include('Unsigned commits:') }
+            end
+          end
+
+          context 'with both enforced and bypassable any_merge_request violations' do
+            before do
+              build_violation_details(:any_merge_request,
+                {
+                  violations: { any_merge_request: { commits: [commit_sha1] } }
+                },
+                policy_read: any_mr_policy,
+                policy_rule: any_mr_normal_policy_rule,
+                name: 'Enforced MR Policy')
+
+              build_violation_details(:any_merge_request,
+                {
+                  violations: { any_merge_request: { commits: true } }
+                },
+                policy_read: create(:scan_result_policy_read, project: project,
+                  security_orchestration_policy_configuration: security_orchestration_policy_configuration),
+                policy_rule: any_mr_warn_mode_policy_rule,
+                name: 'Bypassable MR Policy')
+            end
+
+            it { is_expected.to include(described_class::VIOLATIONS_BLOCKING_TITLE) }
+            it { is_expected.to include(described_class::VIOLATIONS_BYPASSABLE_TITLE) }
+            it { is_expected.to include('Enforced `any_merge_request` violations') }
+            it { is_expected.to include('Bypassable `any_merge_request` violations') }
+            it { is_expected.to include('* Enforced MR Policy: any unsigned commits') }
+            it { is_expected.to include('* Bypassable MR Policy: any commits') }
+          end
+
+          context 'with mixed scan_finding and any_merge_request violations' do
+            before do
+              build_violation_details(:scan_finding,
+                {
+                  context: { pipeline_ids: [pipeline.id] },
+                  violations: { scan_finding: { uuids: { newly_detected: [uuid_new] } } }
+                },
+                policy_rule: normal_policy_rule)
+
+              build_violation_details(:any_merge_request,
+                {
+                  violations: { any_merge_request: { commits: [commit_sha1, commit_sha2] } }
+                },
+                policy_read: any_mr_policy,
+                policy_rule: any_mr_warn_mode_policy_rule,
+                name: 'MR Warn Policy')
+            end
+
+            it { is_expected.to include(described_class::VIOLATIONS_BLOCKING_TITLE) }
+            it { is_expected.to include(described_class::VIOLATIONS_BYPASSABLE_TITLE) }
+            it { is_expected.to include('Newly detected enforced `scan_finding` violations') }
+            it { is_expected.to include('Bypassable `any_merge_request` violations') }
+            it { is_expected.to include('* MR Warn Policy: any unsigned commits') }
+            it { is_expected.to include('Unsigned commits:') }
+          end
+        end
+        # rubocop:enable RSpec/MultipleMemoizedHelpers
       end
 
       describe 'summary' do
@@ -635,7 +806,7 @@ RSpec.describe Security::ScanResultPolicies::PolicyViolationComment, feature_cat
 
             it 'includes the section and a linked commit' do
               expect(body).to include 'Unsigned commits',
-                "[`abcd1234`](#{Gitlab::Routing.url_helpers.project_commit_url(project, 'abcd1234')})"
+                "[`abcd1234`](#{project_commit_url(project, 'abcd1234')})"
             end
 
             it { is_expected.not_to include described_class::MORE_VIOLATIONS_DETECTED }
@@ -685,7 +856,7 @@ RSpec.describe Security::ScanResultPolicies::PolicyViolationComment, feature_cat
           end
 
           def pipeline_id_with_link(id)
-            "[##{id}](#{Gitlab::Routing.url_helpers.project_pipeline_url(project, id)})"
+            "[##{id}](#{project_pipeline_url(project, id)})"
           end
 
           context 'when pipeline ids of one report_type are present' do
@@ -875,6 +1046,8 @@ RSpec.describe Security::ScanResultPolicies::PolicyViolationComment, feature_cat
   end
 
   private
+
+  delegate :project_commit_url, :project_pipeline_url, to: 'Gitlab::Routing.url_helpers'
 
   def build_violation_details(report_type, data, policy_read: policy, name: 'Policy', policy_rule: nil)
     project_rule = create(:approval_project_rule, project: project, scan_result_policy_read: policy_read)

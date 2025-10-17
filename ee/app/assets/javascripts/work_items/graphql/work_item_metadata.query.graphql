@@ -36,6 +36,7 @@ query workItemMetadataEE($fullPath: ID!) {
     }
     userPermissions {
       createWorkItem
+      adminLabel
     }
   }
 }

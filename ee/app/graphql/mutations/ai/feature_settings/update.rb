@@ -25,8 +25,8 @@ module Mutations
           description: 'Identifier of the selected model for the feature.'
 
         def resolve(**args)
-          return raise_resource_not_available_error! if args[:ai_self_hosted_model_id] && !self_hosted_models?
-          return raise_resource_not_available_error! if args[:offered_model_ref] && !gitlab_models?
+          raise_argument_not_available_if!(args, :ai_self_hosted_model_id) { !self_hosted_models? }
+          raise_argument_not_available_if!(args, :offered_model_ref) { !gitlab_models? }
 
           return { ai_feature_settings: [], errors: ['At least one feature is required'] } if args[:features].empty?
 
@@ -77,6 +77,13 @@ module Mutations
                       .execute
 
           ::Gitlab::Ai::ModelSelection::ModelDefinitionResponseParser.new(response.payload)
+        end
+
+        def raise_argument_not_available_if!(args, attribute)
+          return unless args[attribute] && yield
+
+          raise ::Gitlab::Graphql::Errors::ArgumentError,
+            format(s_("You don't have permission to update the setting %{attribute}."), attribute: attribute)
         end
       end
     end

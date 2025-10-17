@@ -94,7 +94,7 @@ module Security
           (violations_overview if warn_mode_enabled?),
           (newly_introduced_violations unless warn_mode_enabled?),
           (previously_existing_violations unless warn_mode_enabled?),
-          any_merge_request_commits,
+          (any_merge_request_commits(details.any_merge_request_violations) unless warn_mode_enabled?),
           license_scanning_violations,
           error_messages,
           comparison_pipelines,
@@ -134,7 +134,7 @@ module Security
         }
 
         #{
-          if !warn_mode_enabled? && [newly_introduced_violations, previously_existing_violations, any_merge_request_commits].any?(&:present?)
+          if !warn_mode_enabled? && [newly_introduced_violations, previously_existing_violations, any_merge_request_commits(details.any_merge_request_violations)].any?(&:present?)
             blocking_violations? ? VIOLATIONS_BLOCKING_TITLE : VIOLATIONS_DETECTED_TITLE
           else
             ''
@@ -182,6 +182,7 @@ module Security
         <<~MARKDOWN
         ### #{VIOLATIONS_BLOCKING_TITLE}
         #{enforced_scan_finding_violations}
+        #{enforced_any_merge_request_violations}
         ---
         MARKDOWN
       end
@@ -195,6 +196,30 @@ module Security
         <<~MARKDOWN
         #{new_enforced_scan_finding_violations}
         #{previous_enforced_scan_finding_violations}
+        MARKDOWN
+      end
+
+      def enforced_any_merge_request_violations
+        violations = details.enforced_any_merge_request_violations
+
+        return if violations.empty?
+
+        <<~MARKDOWN
+        #### Enforced `any_merge_request` violations
+        #{any_merge_request_overview(violations)}
+        #{any_merge_request_commits(violations)}
+        MARKDOWN
+      end
+
+      def warn_mode_any_merge_request_violations
+        violations = details.warn_mode_any_merge_request_violations
+
+        return if violations.empty?
+
+        <<~MARKDOWN
+        #### Bypassable `any_merge_request` violations
+        #{any_merge_request_overview(violations, bypassable: true)}
+        #{any_merge_request_commits(violations)}
         MARKDOWN
       end
 
@@ -226,6 +251,7 @@ module Security
         <<~MARKDOWN
         ### #{VIOLATIONS_BYPASSABLE_TITLE}
         #{warn_mode_scan_finding_violations}
+        #{warn_mode_any_merge_request_violations}
         ---
         MARKDOWN
       end
@@ -320,8 +346,31 @@ module Security
         line
       end
 
-      def any_merge_request_commits
-        list = details.any_merge_request_violations.flat_map do |violation|
+      def any_merge_request_overview(violations, bypassable: false)
+        list = violations.sort_by(&:name).map do |violation|
+          description = case violation.commits
+                        when Array then s_("ScanResultPolicy|any unsigned commits")
+                        when true then s_("ScanResultPolicy|any commits")
+                        else next
+                        end
+
+          "* #{violation.name}: #{description}"
+        end
+
+        description = case bypassable
+                      when true then "The following policies require approval or need to be bypassed"
+                      else "The following policies require approval"
+                      end
+
+        <<~MARKDOWN
+        #{description}:
+
+        #{list.join("\n")}
+        MARKDOWN
+      end
+
+      def any_merge_request_commits(violations)
+        list = violations.flat_map do |violation|
           next unless violation.commits.is_a?(Array)
 
           violation.commits.map { |commit| "1. [`#{commit}`](#{project_commit_url(project, commit)})" }
@@ -329,14 +378,13 @@ module Security
         return if list.empty?
 
         <<~MARKDOWN
-        ---
+          #{'---' unless warn_mode_enabled?}
 
-        Unsigned commits:
+          Unsigned commits:
 
-        #{violations_list(list)}
+          #{violations_list(list)}
         MARKDOWN
       end
-      strong_memoize_attr :any_merge_request_commits
 
       def violations_list(list)
         [
