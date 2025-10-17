@@ -111,6 +111,14 @@ RSpec.describe Gitlab::Elastic::ProjectSearchResults, :elastic, feature_category
 
       context 'for merge_requests' do
         let(:scope) { 'merge_requests' }
+        let!(:note_merge_request) do
+          create(:merge_request, source_project: project, source_branch: 'open-1', title: 'Hello world, here I am!')
+        end
+
+        let!(:note) do
+          create(:note_on_merge_request, note: 'Goodbye foo', noteable: note_merge_request,
+            project: note_merge_request.project)
+        end
 
         let_it_be(:opened_result) { create(:merge_request, :opened, source_project: project, title: 'foo opened') }
         let_it_be(:closed_result) { create(:merge_request, :closed, source_project: project, title: 'foo closed') }
@@ -122,6 +130,13 @@ RSpec.describe Gitlab::Elastic::ProjectSearchResults, :elastic, feature_category
         end
 
         include_examples 'search results filtered by state'
+        context 'on self hosted' do
+          include_examples 'searching notable entries in merge requests'
+        end
+
+        context 'on SAAS', :saas do
+          include_examples 'searching notable entries in merge requests'
+        end
       end
 
       context 'for blobs' do
@@ -232,14 +247,14 @@ RSpec.describe Gitlab::Elastic::ProjectSearchResults, :elastic, feature_category
     end
 
     allowed_scopes = %w[notes blobs wiki_blobs commits merge_requests milestones users]
-    scopes_with_notes_query = %w[issues]
+    scopes_with_notes_query = %w[issues merge_requests]
 
     include_examples 'calls Elasticsearch the expected number of times',
       scopes: (allowed_scopes - scopes_with_notes_query), scopes_with_multiple: scopes_with_notes_query
 
-    context 'when search_work_item_queries_notes flag is false' do
+    context 'when flags for searching notes of Notable items are false' do
       before do
-        stub_feature_flags(search_work_item_queries_notes: false)
+        stub_feature_flags(search_work_item_queries_notes: false, search_merge_request_queries_notes: false)
       end
 
       include_examples 'calls Elasticsearch the expected number of times', scopes: allowed_scopes,
