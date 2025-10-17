@@ -58,6 +58,19 @@ RSpec.describe Authz::AdminRole, feature_category: :permissions do
           ['Unknown permission: unknown1', 'Unknown permission: unknown2']
         )
       end
+
+      context 'when the permission is disabled by a feature flag' do
+        before do
+          stub_feature_flag_definition("custom_ability_read_admin_users")
+          stub_feature_flags(custom_ability_read_admin_users: false)
+        end
+
+        it 'returns an error' do
+          admin_role = build(:admin_role)
+          expect(admin_role).not_to be_valid
+          expect(admin_role.errors.first.message).to eq('Unknown permission: read_admin_users')
+        end
+      end
     end
   end
 

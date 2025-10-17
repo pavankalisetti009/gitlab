@@ -4,6 +4,7 @@ require 'spec_helper'
 
 RSpec.describe 'Issues > Bulk edit issues', feature_category: :team_planning do
   include ListboxHelpers
+  include Features::IterationHelpers
 
   let_it_be(:user) { create(:user) }
   let_it_be(:group) { create(:group, :public) }
@@ -24,58 +25,16 @@ RSpec.describe 'Issues > Bulk edit issues', feature_category: :team_planning do
     # we won't need the tests for the issues listing page, since we'll be using
     # the work items listing page.
     stub_feature_flags(work_item_planning_view: false)
-    stub_feature_flags(work_items_group_issues_list: false)
   end
 
   shared_examples 'bulk edit option in sidebar' do |context|
     it 'is present when bulk edit is enabled' do
       enable_bulk_update(context)
-      expect(page).to have_css('aside[aria-label="Bulk update"]')
+      expect(page).to have_button('Bulk edit', disabled: true)
     end
 
     it 'is not present when bulk edit is disabled' do
-      expect(page).not_to have_css('aside[aria-label="Bulk update"]')
-    end
-  end
-
-  shared_examples 'bulk edit epic' do |context|
-    before do
-      enable_bulk_update(context)
-      # TODO: remove threshold after epic-work item sync
-      # issue: https://gitlab.com/gitlab-org/gitlab/-/issues/438295
-      allow(Gitlab::QueryLimiting::Transaction).to receive(:threshold).and_return(250)
-    end
-
-    context 'epic', :js do
-      context 'to all issues' do
-        before do
-          check 'Select all'
-          click_button 'Select epic'
-          wait_for_requests
-          click_button epic.title
-          update_issues
-        end
-
-        it 'updates with selected epic', :aggregate_failures do
-          expect(issue1.reload.epic.title).to eq epic.title
-          expect(issue2.reload.epic.title).to eq epic.title
-        end
-      end
-
-      context 'to a issue' do
-        before do
-          check issue1.title
-          click_button 'Select epic'
-          wait_for_requests
-          click_button epic.title
-          update_issues
-        end
-
-        it 'updates with selected epic', :aggregate_failures do
-          expect(issue1.reload.epic.title).to eq epic.title
-          expect(issue2.reload.epic).to eq nil
-        end
-      end
+      expect(page).not_to have_button('Bulk edit')
     end
   end
 
@@ -124,7 +83,7 @@ RSpec.describe 'Issues > Bulk edit issues', feature_category: :team_planning do
           check 'Select all'
           click_button 'Select iteration'
           wait_for_requests
-          select_listbox_item('Iteration 1')
+          select_listbox_item(iteration_period(iteration, use_thin_space: false))
           update_issues
         end
 
@@ -188,14 +147,12 @@ RSpec.describe 'Issues > Bulk edit issues', feature_category: :team_planning do
       end
 
       it_behaves_like 'bulk edit option in sidebar', :group
-      it_behaves_like 'bulk edit epic', :group
       it_behaves_like 'bulk edit health status', :group
       it_behaves_like 'bulk edit iteration', :group
     end
 
     context 'at project level' do
       it_behaves_like 'bulk edit option in sidebar', :project
-      it_behaves_like 'bulk edit epic', :project
       it_behaves_like 'bulk edit health status', :project
       it_behaves_like 'bulk edit iteration', :project
       it_behaves_like 'cannot find iterations when project does not have a group', :project_without_group
@@ -243,6 +200,7 @@ RSpec.describe 'Issues > Bulk edit issues', feature_category: :team_planning do
       visit issues_group_path(group)
     end
 
+    expect(page).to have_button('Bulk edit')
     wait_for_requests
 
     click_button 'Bulk edit'

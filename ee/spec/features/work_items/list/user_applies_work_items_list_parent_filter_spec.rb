@@ -29,6 +29,7 @@ RSpec.describe 'User applies parent filter', :js, feature_category: :team_planni
         let(:parent_item) { parent_epic }
         let(:child_item) { child_epic }
         let(:work_item_2) { epic_without_parent }
+        let(:expected_count) { 5 }
       end
     end
 
@@ -43,6 +44,7 @@ RSpec.describe 'User applies parent filter', :js, feature_category: :team_planni
         let(:parent_item) { parent_epic }
         let(:child_item) { child_epic }
         let(:work_item_2) { epic_without_parent }
+        let(:expected_count) { 5 }
       end
     end
   end

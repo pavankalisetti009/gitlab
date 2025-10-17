@@ -5126,9 +5126,17 @@ RSpec.describe GroupPolicy, feature_category: :groups_and_projects do
 
   describe 'AI catalog abilities' do
     let(:stage_check_available) { true }
+    let(:duo_features_enabled) { true }
 
     shared_examples 'no permissions when StageCheck is not available' do
       let(:stage_check_available) { false }
+
+      it { is_expected.to be_disallowed(:admin_ai_catalog_item_consumer) }
+      it { is_expected.to be_disallowed(:read_ai_catalog_item_consumer) }
+    end
+
+    shared_examples 'no permissions when Duo features are not available' do
+      let(:duo_features_enabled) { false }
 
       it { is_expected.to be_disallowed(:admin_ai_catalog_item_consumer) }
       it { is_expected.to be_disallowed(:read_ai_catalog_item_consumer) }
@@ -5145,6 +5153,7 @@ RSpec.describe GroupPolicy, feature_category: :groups_and_projects do
 
     before do
       allow(::Gitlab::Llm::StageCheck).to receive(:available?).with(group, :ai_catalog).and_return(stage_check_available)
+      group.namespace_settings.duo_features_enabled = duo_features_enabled
     end
 
     context 'when maintainer' do
@@ -5154,6 +5163,7 @@ RSpec.describe GroupPolicy, feature_category: :groups_and_projects do
       it { is_expected.to be_allowed(:read_ai_catalog_item_consumer) }
 
       it_behaves_like 'no permissions when StageCheck is not available'
+      it_behaves_like 'no permissions when Duo features are not available'
       it_behaves_like 'no permissions when global_ai_catalog feature flag is disabled'
     end
 
@@ -5164,11 +5174,26 @@ RSpec.describe GroupPolicy, feature_category: :groups_and_projects do
       it { is_expected.to be_allowed(:read_ai_catalog_item_consumer) }
 
       it_behaves_like 'no permissions when StageCheck is not available'
+      it_behaves_like 'no permissions when Duo features are not available'
       it_behaves_like 'no permissions when global_ai_catalog feature flag is disabled'
     end
 
     context 'when reporter' do
       let(:current_user) { reporter }
+
+      it { is_expected.to be_disallowed(:admin_ai_catalog_item_consumer) }
+      it { is_expected.to be_disallowed(:read_ai_catalog_item_consumer) }
+    end
+
+    context 'when guest' do
+      let(:current_user) { guest }
+
+      it { is_expected.to be_disallowed(:admin_ai_catalog_item_consumer) }
+      it { is_expected.to be_disallowed(:read_ai_catalog_item_consumer) }
+    end
+
+    context 'when anonymous' do
+      let(:current_user) { anonymous }
 
       it { is_expected.to be_disallowed(:admin_ai_catalog_item_consumer) }
       it { is_expected.to be_disallowed(:read_ai_catalog_item_consumer) }
