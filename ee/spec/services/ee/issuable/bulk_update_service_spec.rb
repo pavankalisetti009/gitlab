@@ -239,11 +239,11 @@ RSpec.describe Issuable::BulkUpdateService, feature_category: :team_planning do
         end
 
         context "when status param is a system defined status" do
-          it 'succeeds but does not create a current status' do
+          it 'succeeds and creates a current status with default custom status' do
             expect(subject.success?).to be_truthy
             expect(subject.payload[:count]).to eq(issuables.count)
             issuables.each do |issuable|
-              expect(issuable.reload.current_status).to be_nil
+              expect(issuable.reload.current_status.status).to eq(custom_lifecycle.default_open_status)
             end
           end
         end

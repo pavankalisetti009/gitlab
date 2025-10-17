@@ -469,7 +469,16 @@ RSpec.describe 'Bulk update work items', feature_category: :team_planning do
             end
 
             context 'with system-defined status' do
-              it_behaves_like 'does not update work item statuses'
+              it 'updates work items with default statuses' do
+                expect do
+                  post_graphql_mutation(mutation, current_user: current_user)
+                end.to change { work_item1.reload.current_status&.status }.from(nil).to(lifecycle.default_open_status)
+                  .and change { work_item2.reload.current_status&.status }.from(nil).to(lifecycle.default_open_status)
+                  .and not_change { work_item3.reload.current_status&.status }
+                  .and not_change { work_item4.reload.current_status&.status }
+
+                expect(mutation_response).to include('updatedWorkItemCount' => 2)
+              end
             end
           end
 
