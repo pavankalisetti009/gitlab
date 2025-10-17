@@ -10,19 +10,19 @@ RSpec.describe AuditEvents::ProjectAuditEventFinder, feature_category: :audit_ev
   let_it_be(:project_2) { create(:project) }
 
   let_it_be(:project_audit_event_1) do
-    create(:audit_events_project_audit_event, project_id: project_1.id, author_id: user_1.id, created_at: 2.days.ago)
+    create(:audit_events_project_audit_event, project_id: project_1.id, author_id: user_1.id, created_at: 5.days.ago)
   end
 
   let_it_be(:project_audit_event_2) do
-    create(:audit_events_project_audit_event, project_id: project_1.id, author_id: user_2.id, created_at: 4.days.ago)
+    create(:audit_events_project_audit_event, project_id: project_1.id, author_id: user_2.id, created_at: 3.days.ago)
   end
 
   let_it_be(:project_audit_event_3) do
-    create(:audit_events_project_audit_event, project_id: project_2.id, author_id: user_2.id, created_at: 4.days.ago)
+    create(:audit_events_project_audit_event, project_id: project_2.id, author_id: user_2.id, created_at: 2.days.ago)
   end
 
   let_it_be(:project_audit_event_4) do
-    create(:audit_events_project_audit_event, project_id: project_2.id, author_id: user_3.id, created_at: 4.days.ago)
+    create(:audit_events_project_audit_event, project_id: project_2.id, author_id: user_3.id, created_at: 1.day.ago)
   end
 
   let(:params) { {} }
@@ -56,28 +56,28 @@ RSpec.describe AuditEvents::ProjectAuditEventFinder, feature_category: :audit_ev
 
     context 'when filtering by created_at' do
       context 'when filtering by created_after' do
-        let(:params) { { created_after: project_audit_event_1.created_at } }
+        let(:params) { { created_after: project_audit_event_2.created_at } }
 
         it 'returns events created on or after the given date' do
-          expect(execute).to contain_exactly(project_audit_event_1)
+          expect(execute).to contain_exactly(project_audit_event_2)
         end
       end
 
       context 'when filtering by created_before' do
-        let(:params) { { created_before: project_audit_event_2.created_at } }
+        let(:params) { { created_before: project_audit_event_1.created_at } }
 
         it 'returns events created on or before the given date' do
-          expect(execute).to contain_exactly(project_audit_event_2)
+          expect(execute).to contain_exactly(project_audit_event_1)
         end
       end
 
       context 'when both created_after and created_before are passed' do
         let(:params) do
-          { created_after: project_audit_event_2.created_at, created_before: project_audit_event_1.created_at }
+          { created_after: project_audit_event_1.created_at, created_before: project_audit_event_2.created_at }
         end
 
         it 'returns events created between the given dates' do
-          expect(execute).to contain_exactly(project_audit_event_2, project_audit_event_1)
+          expect(execute).to contain_exactly(project_audit_event_1, project_audit_event_2)
         end
       end
     end

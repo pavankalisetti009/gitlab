@@ -40,7 +40,7 @@ module AuditEvents
     end
 
     def sort(audit_events)
-      audit_events.order_by(params[:sort])
+      audit_events.order_by(params[:sort], use_created_at: true)
     end
 
     def valid_author_id?
