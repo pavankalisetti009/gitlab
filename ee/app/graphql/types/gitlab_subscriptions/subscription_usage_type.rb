@@ -28,6 +28,10 @@ module Types
         null: true,
         description: 'Consumption usage for the subscription shared pool.'
 
+      field :overage, SubscriptionUsage::OverageType,
+        null: true,
+        description: 'Overage statistics.'
+
       field :users_usage, SubscriptionUsage::UsersUsageType,
         null: true,
         description: 'Consumption usage for users under the subscription.'

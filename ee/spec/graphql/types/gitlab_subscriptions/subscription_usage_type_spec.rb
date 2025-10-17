@@ -13,6 +13,7 @@ RSpec.describe GitlabSchema.types['GitlabSubscriptionUsage'], feature_category: 
       :end_date,
       :purchase_credits_path,
       :pool_usage,
+      :overage,
       :users_usage
     ])
   end

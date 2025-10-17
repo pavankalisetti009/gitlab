@@ -43,6 +43,28 @@ module Gitlab
         }
       GQL
 
+      GET_OVERAGE_USAGE_QUERY = <<~GQL
+        query subscriptionUsage(
+          $namespaceId: ID,
+          $licenseKey: String,
+          $startDate: ISO8601Date,
+          $endDate: ISO8601Date
+        ) {
+          subscription(namespaceId: $namespaceId, licenseKey: $licenseKey) {
+            gitlabCreditsUsage(startDate: $startDate, endDate: $endDate) {
+              overage {
+                isAllowed
+                creditsUsed
+                dailyUsage {
+                  date
+                  creditsUsed
+                }
+              }
+            }
+          }
+        }
+      GQL
+
       GET_USERS_USAGE_QUERY = <<~GQL
         query subscriptionUsageForUserIds(
           $userIds: [Int!]!,
@@ -133,6 +155,22 @@ module Gitlab
           {
             success: true,
             poolUsage: response.dig(:data, :subscription, :gitlabCreditsUsage, :poolUsage)
+          }
+        end
+      end
+
+      def get_overage_usage
+        response = execute_graphql_query(
+          query: GET_OVERAGE_USAGE_QUERY,
+          variables: default_variables.merge(startDate: start_date, endDate: end_date)
+        )
+
+        if unsuccessful_response?(response)
+          error(GET_OVERAGE_USAGE_QUERY, response)
+        else
+          {
+            success: true,
+            overage: response.dig(:data, :subscription, :gitlabCreditsUsage, :overage)
           }
         end
       end

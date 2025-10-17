@@ -5,6 +5,7 @@ module GitlabSubscriptions
     include ::Gitlab::Utils::StrongMemoize
 
     PoolUsage = Struct.new(:total_credits, :credits_used, :daily_usage, :declarative_policy_subject)
+    Overage = Struct.new(:is_allowed, :credits_used, :daily_usage, :declarative_policy_subject)
     DailyUsage = Struct.new(:date, :credits_used, :declarative_policy_subject)
     UsersUsage = Struct.new(:usage_stats, :users, :declarative_policy_subject) do
       def total_users_using_credits
@@ -62,6 +63,20 @@ module GitlabSubscriptions
       )
     end
     strong_memoize_attr :pool_usage
+
+    def overage
+      overage_usage_response = subscription_usage_client.get_overage_usage
+
+      return unless overage_usage_response[:success]
+
+      Overage.new(
+        is_allowed: overage_usage_response.dig(:overage, :isAllowed),
+        credits_used: overage_usage_response.dig(:overage, :creditsUsed),
+        daily_usage: build_daily_usage(overage_usage_response.dig(:overage, :dailyUsage)),
+        declarative_policy_subject: self
+      )
+    end
+    strong_memoize_attr :overage
 
     def users_usage
       UsersUsage.new(

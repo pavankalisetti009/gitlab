@@ -422,6 +422,133 @@ RSpec.describe GitlabSubscriptions::SubscriptionUsage, feature_category: :consum
     end
   end
 
+  describe '#overage' do
+    subject(:overage) { subscription_usage.overage }
+
+    before do
+      allow(subscription_usage_client).to receive(:get_overage_usage).and_return(client_response)
+    end
+
+    context 'when subscription_target is :namespace' do
+      let(:subscription_usage) do
+        described_class.new(
+          subscription_target: :namespace,
+          subscription_usage_client: subscription_usage_client,
+          namespace: group
+        )
+      end
+
+      context 'when the client returns a successful response' do
+        let(:client_response) do
+          {
+            success: true,
+            overage: {
+              isAllowed: true,
+              creditsUsed: 750,
+              dailyUsage: [{ date: '2025-10-01', creditsUsed: 750 }]
+            }
+          }
+        end
+
+        it 'returns an Overage struct with correct data' do
+          expect(overage).to be_a(GitlabSubscriptions::SubscriptionUsage::Overage)
+          expect(overage).to have_attributes(
+            is_allowed: true,
+            credits_used: 750,
+            declarative_policy_subject: subscription_usage
+          )
+
+          expect(overage.daily_usage).to be_a(Array)
+          expect(overage.daily_usage.first).to be_a(GitlabSubscriptions::SubscriptionUsage::DailyUsage)
+          expect(overage.daily_usage.first).to have_attributes(
+            date: '2025-10-01',
+            credits_used: 750,
+            declarative_policy_subject: subscription_usage
+          )
+        end
+      end
+
+      context 'when the client returns an unsuccessful response' do
+        let(:client_response) { { success: false } }
+
+        it 'returns nil' do
+          expect(overage).to be_nil
+        end
+      end
+
+      context 'when the client response is missing overage data' do
+        let(:client_response) do
+          {
+            success: true,
+            overage: nil
+          }
+        end
+
+        it 'returns an Overage struct with no values' do
+          expect(overage).to be_a(GitlabSubscriptions::SubscriptionUsage::Overage)
+          expect(overage).to have_attributes(
+            is_allowed: nil,
+            credits_used: nil,
+            daily_usage: [],
+            declarative_policy_subject: subscription_usage
+          )
+        end
+      end
+    end
+
+    context 'when subscription_target is :instance' do
+      let(:subscription_usage) do
+        described_class.new(
+          subscription_target: :instance,
+          subscription_usage_client: subscription_usage_client
+        )
+      end
+
+      let(:license) { build_stubbed(:license) }
+      let(:client_response) do
+        {
+          success: true,
+          overage: {
+            isAllowed: true,
+            creditsUsed: 1500,
+            dailyUsage: [{ date: '2025-10-01', creditsUsed: 1500 }]
+          }
+        }
+      end
+
+      before do
+        allow(License).to receive(:current).and_return(license)
+      end
+
+      it 'returns an Overage struct with correct data' do
+        expect(overage).to be_a(GitlabSubscriptions::SubscriptionUsage::Overage)
+        expect(overage).to have_attributes(
+          is_allowed: true,
+          credits_used: 1500,
+          declarative_policy_subject: subscription_usage
+        )
+
+        expect(overage.daily_usage).to be_a(Array)
+        expect(overage.daily_usage.first).to be_a(GitlabSubscriptions::SubscriptionUsage::DailyUsage)
+        expect(overage.daily_usage.first).to have_attributes(
+          date: '2025-10-01',
+          credits_used: 1500,
+          declarative_policy_subject: subscription_usage
+        )
+      end
+
+      context 'when License.current is nil' do
+        before do
+          allow(License).to receive(:current).and_return(nil)
+        end
+
+        it 'handles nil license gracefully' do
+          expect { overage }.not_to raise_error
+        end
+      end
+    end
+  end
+
   describe '#users_usage' do
     subject(:users_usage) { subscription_usage.users_usage }
 

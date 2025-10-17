@@ -220,6 +220,48 @@ RSpec.describe Gitlab::SubscriptionPortal::SubscriptionUsageClient, feature_cate
     end
   end
 
+  describe '#get_overage_usage' do
+    context 'when the subscription portal response is successful' do
+      let(:request) { client.get_overage_usage }
+      let(:query) { described_class::GET_OVERAGE_USAGE_QUERY }
+      let(:overage) do
+        {
+          isAllowed: true,
+          creditsUsed: 250,
+          dailyUsage: [{ date: '2025-10-01', creditsUsed: 250 }]
+        }
+      end
+
+      let(:portal_response) do
+        {
+          success: true,
+          data: {
+            subscription: {
+              gitlabCreditsUsage: {
+                overage: overage
+              }
+            }
+          }
+        }
+      end
+
+      let(:expected_response) do
+        {
+          success: true,
+          overage: overage
+        }
+      end
+
+      include_context 'for self-managed request' do
+        let(:variables) { { licenseKey: license_key, startDate: start_date, endDate: end_date } }
+      end
+
+      include_context 'for gitlab.com request' do
+        let(:variables) { { namespaceId: namespace_id, startDate: start_date, endDate: end_date } }
+      end
+    end
+  end
+
   describe '#get_usage_for_user_ids' do
     context 'when the subscription portal response is successful' do
       let(:user_ids) { [123, 321] }
