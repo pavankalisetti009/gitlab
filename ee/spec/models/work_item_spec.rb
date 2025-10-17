@@ -1823,34 +1823,74 @@ RSpec.describe WorkItem, :elastic_helpers, feature_category: :team_planning do
 
       context 'when current_status does not exist' do
         context 'when state is open' do
+          let_it_be(:non_converted_default_open_status) do
+            create(:work_item_custom_status, :without_conversion_mapping, namespace: reusable_group)
+          end
+
           before do
             work_item.state = :opened
           end
 
-          it 'returns the converted default open status' do
+          it 'returns the default open status' do
             expect(status_with_fallback.class).to eq(WorkItems::Statuses::Custom::Status)
             expect(status_with_fallback.id).to eq(lifecycle.default_open_status_id)
+          end
+
+          context 'when using non-converted default status' do
+            it 'returns the default open status' do
+              lifecycle.update!(default_open_status: non_converted_default_open_status)
+
+              expect(status_with_fallback.class).to eq(WorkItems::Statuses::Custom::Status)
+              expect(status_with_fallback.id).to eq(non_converted_default_open_status.id)
+            end
           end
         end
 
         context 'when state is closed' do
+          let_it_be(:non_converted_default_closed_status) do
+            create(:work_item_custom_status, :without_conversion_mapping, category: :done, namespace: reusable_group)
+          end
+
           before do
             work_item.state = :closed
           end
 
-          it 'returns the converted default closed status' do
+          it 'returns the default closed status' do
             expect(status_with_fallback.class).to eq(WorkItems::Statuses::Custom::Status)
             expect(status_with_fallback.id).to eq(lifecycle.default_closed_status_id)
           end
 
+          context 'when using non-converted default status' do
+            it 'returns the default open status' do
+              lifecycle.update!(default_closed_status: non_converted_default_closed_status)
+
+              expect(status_with_fallback.class).to eq(WorkItems::Statuses::Custom::Status)
+              expect(status_with_fallback.id).to eq(non_converted_default_closed_status.id)
+            end
+          end
+
           context 'when work item is a duplicate' do
+            let_it_be(:non_converted_default_duplicate_status) do
+              create(:work_item_custom_status, :without_conversion_mapping, category: :canceled,
+                namespace: reusable_group)
+            end
+
             before do
               work_item.duplicated_to = build_stubbed(:work_item)
             end
 
-            it 'returns the converted default duplicated status' do
+            it 'returns the default duplicated status' do
               expect(status_with_fallback.class).to eq(WorkItems::Statuses::Custom::Status)
               expect(status_with_fallback.id).to eq(lifecycle.default_duplicate_status_id)
+            end
+
+            context 'when using non-converted default status' do
+              it 'returns the default duplicate status' do
+                lifecycle.update!(default_duplicate_status: non_converted_default_duplicate_status)
+
+                expect(status_with_fallback.class).to eq(WorkItems::Statuses::Custom::Status)
+                expect(status_with_fallback.id).to eq(non_converted_default_duplicate_status.id)
+              end
             end
           end
         end

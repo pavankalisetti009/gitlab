@@ -60,7 +60,7 @@ module WorkItems
             # we need to find the status in the old lifecycle and convert it to a new status in the new lifecycle
             # through status mapping as the root ancestor has already changed in the transfer process
             current_status = work_item.current_status_with_fallback
-            old_status = determine_status_from_old_lifecycle(current_status)
+            old_status = determine_status_from_old_lifecycle(current_status, work_item)
             new_status = status_mapping[old_status]
 
             next unless new_status
@@ -70,15 +70,19 @@ module WorkItems
           end
         end
 
-        def determine_status_from_old_lifecycle(current_status)
-          # As the namespace is already changed, we can not use status_with_fallback or current_status.status,
-          # as it will point to the new lifecycle. We need to fetch the old status based on the old lifecycle
+        def determine_status_from_old_lifecycle(current_status, work_item)
+          return reverse_map_to_old_lifecycle(work_item) if current_status.new_record?
+
           if old_lifecycle.custom?
             current_status.custom_status ||
               current_status.system_defined_status.converted_status_in_namespace(old_lifecycle.namespace)
           else
             current_status.system_defined_status
           end
+        end
+
+        def reverse_map_to_old_lifecycle(work_item)
+          old_lifecycle.default_status_for_work_item(work_item)
         end
       end
     end

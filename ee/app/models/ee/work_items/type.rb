@@ -69,7 +69,7 @@ module EE
         return unless namespace_id
 
         ::WorkItems::Statuses::Custom::Lifecycle
-          .includes(:statuses)
+          .includes(:statuses, :default_open_status, :default_closed_status, :default_duplicate_status)
           .joins(:type_custom_lifecycles)
           .find_by(
             namespace_id: namespace_id,
