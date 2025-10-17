@@ -1405,11 +1405,11 @@ DELETE /groups/:id
 
 Parameters:
 
-| Attribute | Type           | Required | Description |
-|-----------|----------------|----------|-------------|
+| Attribute            | Type              | Required | Description |
+|----------------------|-------------------|----------|-------------|
 | `id`                 | integer or string | yes      | The ID or [URL-encoded path](rest/_index.md#namespaced-paths) of the group. |
-| `permanently_remove` | boolean/string | no       | If `true`, immediately deletes a subgroup that is already marked for deletion. Cannot delete top-level groups. Disabled on GitLab.com and Dedicated. |
-| `full_path`          | string         | no       | The full path to the subgroup. Used to confirm deletion of the subgroup. If `permanently_remove` is `true`, this attribute is required. To find the subgroup path, see the [group details](groups.md#get-a-single-group). |
+| `permanently_remove` | boolean/string    | no       | If `true`, immediately deletes a subgroup that is already marked for deletion. Cannot delete top-level groups. Disabled on GitLab.com and Dedicated. |
+| `full_path`          | string            | no       | The full path to the subgroup. Used to confirm deletion of the subgroup. If `permanently_remove` is `true`, this attribute is required. To find the subgroup path, see the [group details](groups.md#get-a-single-group). |
 
 The response is `202 Accepted` if the user has authorization.
 
@@ -1469,9 +1469,9 @@ POST /groups/:id/archive
 
 Parameters:
 
-| Attribute                             | Type              | Required | Description |
-| ------------------------------------- | ----------------- | -------- | ---------- |
-| `id`                                  | integer or string | yes      | The ID or [URL-encoded path](rest/_index.md#namespaced-paths) of the group owned by the authenticated user. |
+| Attribute | Type              | Required | Description |
+|-----------|-------------------|----------|-------------|
+| `id`      | integer or string | yes      | The ID or [URL-encoded path](rest/_index.md#namespaced-paths) of the group owned by the authenticated user. |
 
 Example response:
 
@@ -1569,9 +1569,9 @@ POST /groups/:id/unarchive
 
 Parameters:
 
-| Attribute                             | Type              | Required | Description |
-| ------------------------------------- | ----------------- | -------- | ---------- |
-| `id`                                  | integer or string | yes      | The ID or [URL-encoded path](rest/_index.md#namespaced-paths) of the group owned by the authenticated user. |
+| Attribute | Type              | Required | Description |
+|-----------|-------------------|----------|-------------|
+| `id`      | integer or string | yes      | The ID or [URL-encoded path](rest/_index.md#namespaced-paths) of the group owned by the authenticated user. |
 
 Example response:
 
@@ -1751,11 +1751,15 @@ Creates a group invitation that adds a target group to a specified group.
 POST /groups/:id/share
 ```
 
-| `id`           | integer or string | yes      | The ID or [URL-encoded path of the target group](rest/_index.md#namespaced-paths). |
-| `group_id`     | integer        | yes      | The ID of the group to invite. |
-| `group_access` | integer        | yes      | The default [role (`access_level`)](members.md#roles) to assign to the invited group. |
-| `expires_at`   | date (ISO 8601) | no       | The date the group invitation expires. |
-| `member_role_id`   | integer         | no       | The ID of a [custom role](../user/custom_roles/_index.md#assign-a-custom-role-to-an-invited-group) to assign to the invited group. If defined, `group_access` must match the base role used to create the custom role. |
+Parameters:
+
+| Attribute        | Type              | Required | Description |
+|------------------|-------------------|----------|-------------|
+| `id`             | integer or string | yes      | The ID or [URL-encoded path of the target group](rest/_index.md#namespaced-paths). |
+| `group_id`       | integer           | yes      | The ID of the group to invite. |
+| `group_access`   | integer           | yes      | The default [role (`access_level`)](members.md#roles) to assign to the invited group. |
+| `expires_at`     | date (ISO 8601)   | no       | The date the group invitation expires. |
+| `member_role_id` | integer           | no       | The ID of a [custom role](../user/custom_roles/_index.md#assign-a-custom-role-to-an-invited-group) to assign to the invited group. If defined, `group_access` must match the base role used to create the custom role. |
 
 Returns `200` and the group details on success.
 
