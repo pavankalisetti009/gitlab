@@ -52,7 +52,9 @@ RSpec.describe Sidebars::Projects::Panel, feature_category: :navigation do
 
       context 'when control variant' do
         before do
-          stub_experiments(legacy_onboarding: :control)
+          allow_next_instance_of(Gitlab::Experiment) do |experiment|
+            allow(experiment).to receive(:run).and_return(true)
+          end
         end
 
         it 'contains the GetStarted menu' do
@@ -66,7 +68,9 @@ RSpec.describe Sidebars::Projects::Panel, feature_category: :navigation do
 
       context 'when candidate variant' do
         before do
-          stub_experiments(legacy_onboarding: :candidate)
+          allow_next_instance_of(Gitlab::Experiment) do |experiment|
+            allow(experiment).to receive(:run).and_return(false)
+          end
         end
 
         it 'does not contain the GetStarted menu' do
