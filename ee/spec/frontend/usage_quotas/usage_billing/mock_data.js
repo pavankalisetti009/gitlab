@@ -59,6 +59,7 @@ export const mockUsersUsageDataWithoutPool = {
   data: {
     subscriptionUsage: {
       lastUpdated: '2024-01-15T10:30:00Z',
+      purchaseCreditsPath: '/purchase-credits-path',
       usersUsage: {
         // overall statistics
         totalUsers: 50,
@@ -208,6 +209,7 @@ export const mockUsersUsageDataWithPool = {
   data: {
     subscriptionUsage: {
       lastUpdated: '2025-10-14T07:41:59Z',
+      purchaseCreditsPath: '/purchase-credits-path',
       usersUsage: {
         // overall statistics
         totalUsers: 50,
@@ -384,6 +386,7 @@ export const mockUsersUsageDataWithOverage = {
   data: {
     subscriptionUsage: {
       lastUpdated: '2025-10-14T07:41:59Z',
+      purchaseCreditsPath: '/purchase-credits-path',
       usersUsage: {
         totalUsers: 50,
         totalUsersUsingAllocation: 35,
@@ -522,6 +525,7 @@ export const mockUsersUsageDataWithZeroAllocation = {
   data: {
     subscriptionUsage: {
       lastUpdated: '2025-10-14T07:41:59Z',
+      purchaseCreditsPath: '/purchase-credits-path',
       usersUsage: {
         totalUsers: 5,
         totalUsersUsingAllocation: 2,
@@ -607,6 +611,7 @@ export const usageDataWithPool = {
   data: {
     subscriptionUsage: {
       lastUpdated: '2025-10-14T07:41:59Z',
+      purchaseCreditsPath: '/purchase-credits-path',
       poolUsage: {
         creditsUsed: 50,
         totalCredits: 300,
@@ -632,6 +637,7 @@ export const usageDataWithoutLastUpdated = {
 export const usageDataWithPoolWithOverage = {
   data: {
     subscriptionUsage: {
+      purchaseCreditsPath: '/purchase-credits-path',
       poolUsage: {
         creditsUsed: 300,
         totalCredits: 300,
@@ -648,6 +654,7 @@ export const usageDataNoPoolNoOverage = {
   data: {
     subscriptionUsage: {
       lastUpdated: '2024-01-15T10:30:00Z',
+      purchaseCreditsPath: '/purchase-credits-path',
       poolUsage: null,
       overage: {
         isAllowed: false,
@@ -660,6 +667,7 @@ export const usageDataNoPoolWithOverage = {
   data: {
     subscriptionUsage: {
       lastUpdated: '2024-01-15T10:30:00Z',
+      purchaseCreditsPath: '/purchase-credits-path',
       poolUsage: null,
       overage: {
         isAllowed: true,

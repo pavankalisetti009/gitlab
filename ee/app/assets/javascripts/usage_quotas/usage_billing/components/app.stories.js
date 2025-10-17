@@ -73,7 +73,6 @@ const createTemplate = (config = {}) => {
       UsageBillingApp: () => Promise.resolve(UsageBillingApp),
     },
     provide: {
-      purchaseCommitmentUrl: '/url-to-purchase-monthly/commitment',
       userUsagePath: '/gitlab_duo/users/:id',
       fetchUsageDataApiUrl: '/admin/gitlab_duo/usage/data',
     },
