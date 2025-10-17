@@ -203,6 +203,21 @@ describe('SubscriptionGroupSelector component', () => {
       expect(visitUrl).toHaveBeenCalledWith(expectedUrl);
     });
 
+    it('includes promo_code in purchase URL when provided', async () => {
+      const promoCode = 'TESTPROMO';
+
+      wrapper.destroy();
+      createComponent({ promoCode });
+
+      const selectedGroupId = eligibleGroups[2].id;
+      const expectedUrl = `${plansData.purchaseLink.href}&gl_namespace_id=${selectedGroupId}&promo_code=${promoCode}`;
+
+      await selectGroup(selectedGroupId);
+      await submitForm();
+
+      expect(visitUrl).toHaveBeenCalledWith(expectedUrl);
+    });
+
     it('does not call create group API when continuing with existing group', async () => {
       await selectGroup(eligibleGroups[2].id);
       await submitForm();
@@ -451,6 +466,30 @@ describe('SubscriptionGroupSelector component', () => {
         it('redirects to purchase page', () => {
           expect(visitUrl).toHaveBeenCalledWith(
             `${plansData.purchaseLink.href}&gl_namespace_id=123`,
+          );
+        });
+      });
+
+      describe('when group creation is successful with promo code', () => {
+        const promoCode = 'NEWPROMO';
+
+        beforeEach(async () => {
+          wrapper.destroy();
+
+          mockUnavailableGroupPathResponse(['unique-path-promo']);
+          createComponent({ promoCode });
+          await showNewGroupForm();
+          await changeGroupName('test group');
+
+          subscriptionsCreateGroup.mockResolvedValueOnce({ data: { id: 456 } });
+
+          await submitForm();
+          await waitForPromises();
+        });
+
+        it('includes promo_code in purchase URL', () => {
+          expect(visitUrl).toHaveBeenCalledWith(
+            `${plansData.purchaseLink.href}&gl_namespace_id=456&promo_code=${promoCode}`,
           );
         });
       });

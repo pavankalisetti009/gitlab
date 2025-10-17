@@ -7,7 +7,7 @@ export default () => {
 
   if (!el) return null;
 
-  const { rootUrl } = el.dataset;
+  const { rootUrl, promoCode } = el.dataset;
   const plansData = convertObjectPropsToCamelCase(JSON.parse(el.dataset.plansData), { deep: true });
   const eligibleGroups = convertObjectPropsToCamelCase(JSON.parse(el.dataset.eligibleGroups), {
     deep: true,
@@ -22,6 +22,7 @@ export default () => {
       return createElement(App, {
         props: {
           rootUrl,
+          promoCode,
           plansData,
           eligibleGroups,
         },
