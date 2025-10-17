@@ -36,6 +36,15 @@ RSpec.describe SecretsManagement::ProjectSecretsManagers::ProvisionService, :git
       expect(jwt_role).to be_present
       expect(jwt_role["token_policies"]).to include(*secrets_manager.ci_auth_literal_policies)
       expect(jwt_role["bound_claims"]["project_id"].to_i).to eq(project.id)
+      expect(jwt_role["bound_claims"]["secrets_manager_scope"]).to eq('pipeline')
+      expect(jwt_role["claim_mappings"]).to eq(
+        {
+          "correlation_id" => "correlation_id",
+          "namespace_id" => "namespace_id",
+          "project_id" => "project_id",
+          "user_id" => "user_id"
+        }
+      )
       expect(jwt_role["bound_audiences"]).to include(SecretsManagement::ProjectSecretsManager.server_url)
       expect(jwt_role["user_claim"]).to eq("project_id")
       expect(jwt_role["token_type"]).to eq("service")
@@ -265,7 +274,8 @@ RSpec.describe SecretsManagement::ProjectSecretsManagers::ProvisionService, :git
           user_id: user.id.to_s,
           sub: "user:#{user.username}",
           member_role_id: '7',
-          role_id: 'deploy'
+          role_id: 'deploy',
+          secrets_manager_scope: 'user'
         }
       )
 
@@ -325,6 +335,7 @@ RSpec.describe SecretsManagement::ProjectSecretsManagers::ProvisionService, :git
             project_id: project.id.to_s,
             groups: [101, 102, 103],
             sub: "user:#{user.username}",
+            secrets_manager_scope: 'user',
             user_id: ""
           }
         )
@@ -351,6 +362,7 @@ RSpec.describe SecretsManagement::ProjectSecretsManagers::ProvisionService, :git
             project_id: project.id.to_s,
             groups: [101, 102, 103],
             user_id: user.id.to_s,
+            secrets_manager_scope: 'user',
             sub: ""
           }
         )
@@ -368,6 +380,80 @@ RSpec.describe SecretsManagement::ProjectSecretsManagers::ProvisionService, :git
       end
     end
 
+    context 'when sub is invalid' do
+      it 'fails to authenticate via CEL', :aggregate_failures do
+        result
+        jwt = sign_test_jwt(
+          {
+            project_id: project.id.to_s,
+            groups: [101, 102, 103],
+            user_id: user.id.to_s,
+            secrets_manager_scope: 'user',
+            sub: "invalid-subject"
+          }
+        )
+        expect do
+          client = secrets_manager_client.with_namespace(secrets_manager.full_project_namespace_path)
+          client.cel_login_jwt(
+            mount_path: secrets_manager.user_auth_mount,
+            role: secrets_manager.user_auth_role,
+            jwt: jwt
+          )
+        end.to raise_error(
+          SecretsManagement::SecretsManagerClient::ApiError,
+          /blocked authorization with message: invalid subject for user authentication/
+        )
+      end
+    end
+
+    context 'when secrets_manager_scope is missing' do
+      it 'fails to authenticate via CEL', :aggregate_failures do
+        result
+        jwt = sign_test_jwt(
+          { project_id: project.id.to_s,
+            groups: [101, 102, 103],
+            user_id: user.id.to_s,
+            sub: "user:#{user.username}",
+            secrets_manager_scope: "" }
+        )
+        expect do
+          client = secrets_manager_client.with_namespace(secrets_manager.full_project_namespace_path)
+          client.cel_login_jwt(
+            mount_path: secrets_manager.user_auth_mount,
+            role: secrets_manager.user_auth_role,
+            jwt: jwt
+          )
+        end.to raise_error(
+          SecretsManagement::SecretsManagerClient::ApiError,
+          /blocked authorization with message: missing secrets_manager_scope/
+        )
+      end
+    end
+
+    context 'when secrets_manager_scope is invalid' do
+      it 'fails to authenticate via CEL', :aggregate_failures do
+        result
+        jwt = sign_test_jwt(
+          { project_id: project.id.to_s,
+            groups: [101, 102, 103],
+            user_id: user.id.to_s,
+            sub: "user:#{user.username}",
+            secrets_manager_scope: "invalid-scope" }
+        )
+        expect do
+          client = secrets_manager_client.with_namespace(secrets_manager.full_project_namespace_path)
+          client.cel_login_jwt(
+            mount_path: secrets_manager.user_auth_mount,
+            role: secrets_manager.user_auth_role,
+            jwt: jwt
+          )
+        end.to raise_error(
+          SecretsManagement::SecretsManagerClient::ApiError,
+          /blocked authorization with message: invalid secrets_manager_scope/
+        )
+      end
+    end
+
     it 'assign groups more than 25 groups' do
       result
 
@@ -376,6 +462,7 @@ RSpec.describe SecretsManagement::ProjectSecretsManagers::ProvisionService, :git
         project_id: project.id.to_s,
         user_id: user.id.to_s,
         sub: "user:#{user.username}",
+        secrets_manager_scope: 'user',
         groups: many
       )
 

@@ -3,7 +3,7 @@
 module SecretsManagement
   class TestJwt < SecretsManagerJwt
     # Defaults are nil so these claims are omitted unless explicitly provided.
-    def initialize(project_id: nil, aud: nil, user_id: nil, user_name: nil, scope: :user, **_)
+    def initialize(project_id: nil, aud: nil, user_id: nil, user_name: nil, scope: :global, **_)
       super()
       @test_project_id = project_id
       @test_aud        = aud
@@ -18,9 +18,25 @@ module SecretsManagement
         project_id: @test_project_id,
         user_login: 'test-system',
         aud: @test_aud,
-        namespace_id: '0',
-        sub: sub
+        namespace_id: '0'
       }.compact
+    end
+
+    def payload
+      claims = super
+      claims[:sub] = sub
+      claims[:secrets_manager_scope] = secrets_manager_scope
+      claims
+    end
+
+    private
+
+    def secrets_manager_scope
+      if @scope == :user
+        'user'
+      elsif @scope == :global
+        'privileged'
+      end
     end
 
     def sub

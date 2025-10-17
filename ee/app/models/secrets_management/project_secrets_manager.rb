@@ -141,7 +141,7 @@ module SecretsManagement
 
     def ci_jwt(build)
       track_ci_jwt_generation(build)
-      Gitlab::Ci::JwtV2.for_build(build, aud: aud)
+      SecretsManagement::PipelineJwt.for_build(build, aud: aud)
     end
 
     def ci_policy_name(environment, branch)
@@ -366,7 +366,18 @@ module SecretsManagement
           { name: "who",   expression: %q(uid != "" ? "gitlab-user:" + uid : "gitlab-user:anonymous") },
           { name: "aud",   expression: %q(('aud' in claims) ? claims['aud'] : "") },
           { name: "expected_aud", expression: %("#{aud}") },
-          { name: "sub", expression: %q(('sub' in claims) ? claims['sub'] : "") }
+          { name: "sub", expression: %q(('sub' in claims) ? claims['sub'] : "") },
+          { name: "secrets_manager_scope",
+            expression: %q(('secrets_manager_scope' in claims) ? string(claims['secrets_manager_scope']) : "") },
+          # Add metadata variables
+          {
+            name: "correlation_id",
+            expression: %q(('correlation_id' in claims) ? string(claims['correlation_id']) : "")
+          },
+          {
+            name: "namespace_id",
+            expression: %q(('namespace_id' in claims) ? string(claims['namespace_id']) : "")
+          }
         ],
         expression: <<~'CEL'.strip
           pid == "" ? "missing project_id" :
@@ -375,6 +386,8 @@ module SecretsManagement
           aud != expected_aud ? "audience validation failed" :
           sub == "" ? "missing subject" :
           !sub.startsWith("user:") ? "invalid subject for user authentication" :
+          secrets_manager_scope == "" ? "missing secrets_manager_scope" :
+          secrets_manager_scope != "user" ? "invalid secrets_manager_scope" :
           uid == "" ? "missing user_id" :
           pb.Auth{
             display_name: who,
@@ -383,7 +396,13 @@ module SecretsManagement
               (uid  != "" ? [base + "/direct/user_"        + uid]  : []) +
               (mrid != "" ? [base + "/direct/member_role_" + mrid] : []) +
               grps.map(g, base + "/direct/group_" + string(g)) +
-              (rid  != "" ? [base + "/roles/"              + rid]  : [])
+              (rid  != "" ? [base + "/roles/"              + rid]  : []),
+            metadata: {
+              "correlation_id": correlation_id,
+              "project_id": pid,
+              "namespace_id": namespace_id,
+              "user_id": uid
+            }
           }
         CEL
       }

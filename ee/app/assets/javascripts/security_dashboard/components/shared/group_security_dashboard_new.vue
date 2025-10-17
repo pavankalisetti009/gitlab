@@ -6,7 +6,7 @@ import { markRaw } from '~/lib/utils/vue3compat/mark_raw';
 import FilteredSearch from 'ee/security_dashboard/components/shared/security_dashboard_filtered_search/filtered_search.vue';
 import ProjectToken from 'ee/security_dashboard/components/shared/filtered_search/tokens/project_token.vue';
 import ReportTypeToken from 'ee/security_dashboard/components/shared/filtered_search/tokens/report_type_token.vue';
-import GroupVulnerabilitiesOverTimePanel from 'ee/security_dashboard/components/shared/group_vulnerabilities_over_time_panel.vue';
+import VulnerabilitiesOverTimePanel from 'ee/security_dashboard/components/shared/vulnerabilities_over_time_panel.vue';
 import GroupRiskScorePanel from 'ee/security_dashboard/components/shared/group_risk_score_panel.vue';
 import GroupVulnerabilitiesForSeverityPanel from 'ee/security_dashboard/components/shared/group_vulnerabilities_for_severity_panel.vue';
 import { OPERATORS_OR } from '~/vue_shared/components/filtered_search_bar/constants';
@@ -83,8 +83,9 @@ export default {
             : []),
           {
             id: 'vulnerabilities-over-time',
-            component: markRaw(GroupVulnerabilitiesOverTimePanel),
+            component: markRaw(VulnerabilitiesOverTimePanel),
             componentProps: {
+              scope: 'group',
               filters: this.filters,
             },
             gridAttributes: {
