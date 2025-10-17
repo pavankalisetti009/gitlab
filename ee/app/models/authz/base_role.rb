@@ -24,6 +24,8 @@ module Authz
       end
     end
 
+    private
+
     def validate_permissions
       self.permissions = permissions.select { |_, enabled| enabled }
 
@@ -32,18 +34,23 @@ module Authz
         return
       end
 
-      available_permissions = if admin_related_role?
-                                self.class.all_customizable_admin_permissions
-                              else
-                                self.class.all_customizable_standard_permissions
-                              end
-
+      allowed_permissions = available_permissions
       permissions.each_key do |permission|
-        next if available_permissions.include?(permission.to_sym)
+        next if allowed_permissions.include?(permission.to_sym)
 
         message = format(s_('MemberRole|Unknown permission: %{permission}'), permission: permission)
         errors.add(:base, message)
       end
+    end
+
+    def available_permissions
+      available = if admin_related_role?
+                    self.class.all_customizable_admin_permissions
+                  else
+                    self.class.all_customizable_standard_permissions
+                  end
+
+      available.select { |permission| self.class.permission_enabled?(permission) }
     end
   end
 end

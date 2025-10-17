@@ -129,6 +129,19 @@ RSpec.describe ::MemberRole, feature_category: :system_access do
         member_role.validate
         expect(member_role.errors.first.message).to eq('Unknown permission: read_admin_users')
       end
+
+      context 'when the permission is disabled by a feature flag' do
+        before do
+          stub_feature_flag_definition("custom_ability_read_code")
+          stub_feature_flags(custom_ability_read_code: false)
+        end
+
+        it 'returns an error' do
+          member_role = build(:member_role, :guest, :read_code)
+          expect(member_role).not_to be_valid
+          expect(member_role.errors.first.message).to eq('Unknown permission: read_code')
+        end
+      end
     end
 
     context 'for json schema' do
