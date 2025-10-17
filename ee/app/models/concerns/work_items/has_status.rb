@@ -233,10 +233,30 @@ module WorkItems
       def current_status_with_fallback
         return current_status if current_status.present?
 
-        lifecycle = work_item_type.system_defined_lifecycle
+        lifecycle = find_lifecycle
         return unless lifecycle
 
-        build_current_status(system_defined_status: lifecycle.default_status_for_work_item(self))
+        default_status = lifecycle.default_status_for_work_item(self)
+        return unless default_status
+
+        if lifecycle.custom?
+          build_current_status(custom_status: default_status)
+        else
+          build_current_status(system_defined_status: default_status)
+        end
+      end
+
+      def find_lifecycle
+        root_namespace_id = namespace&.traversal_ids&.first
+        return work_item_type.system_defined_lifecycle unless root_namespace_id
+
+        cache_key = "work_item_custom_lifecycle_#{root_namespace_id}_#{work_item_type_id}"
+
+        custom_lifecycle = Gitlab::SafeRequestStore.fetch(cache_key) do
+          work_item_type.custom_lifecycle_for(root_namespace_id)
+        end
+
+        custom_lifecycle || work_item_type.system_defined_lifecycle
       end
     end
   end

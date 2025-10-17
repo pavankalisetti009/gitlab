@@ -4,6 +4,9 @@ require 'spec_helper'
 
 RSpec.describe Mcp::Tools::SearchCodebaseService, feature_category: :mcp_server do
   let(:service) { described_class.new(name: 'get_code_context') }
+  let(:current_user) { create(:user) }
+  let(:project) { create :project, :repository }
+  let_it_be(:oauth_token) { 'test_token_123' }
 
   describe '#description' do
     it 'returns the correct description' do
@@ -48,11 +51,6 @@ RSpec.describe Mcp::Tools::SearchCodebaseService, feature_category: :mcp_server 
   end
 
   describe '#execute' do
-    let_it_be(:oauth_token) { 'test_token_123' }
-    let_it_be(:current_user) { build(:user) }
-    let_it_be(:namespace) { create(:group) }
-    let_it_be(:project) { create(:project, :public, namespace: namespace) }
-
     before do
       service.set_cred(current_user: current_user, access_token: oauth_token)
     end
@@ -79,6 +77,7 @@ RSpec.describe Mcp::Tools::SearchCodebaseService, feature_category: :mcp_server 
         allow(::Ai::ActiveContext::Queries::Code)
           .to receive(:new)
           .and_return(query_obj)
+        project.add_developer(current_user)
       end
 
       context 'with project ID' do
@@ -193,6 +192,10 @@ RSpec.describe Mcp::Tools::SearchCodebaseService, feature_category: :mcp_server 
     end
 
     context 'with missing required field' do
+      before do
+        project.add_developer(current_user)
+      end
+
       it 'returns validation error when semantic_query is missing' do
         arguments = { arguments: { project_id: project.id.to_s } }
         result = service.execute(request: nil, params: arguments)
@@ -206,11 +209,16 @@ RSpec.describe Mcp::Tools::SearchCodebaseService, feature_category: :mcp_server 
         result = service.execute(request: nil, params: arguments)
 
         expect(result[:isError]).to be true
-        expect(result[:content].first[:text]).to eq("Validation error: project_id is missing")
+        expect(result[:content].first[:text]).to eq("Tool execution failed: get_code_context: project not " \
+          "found, the params received: {:arguments=>{:semantic_query=>\"foo\"}}")
       end
     end
 
     context 'with blank/invalid required field' do
+      before do
+        project.add_developer(current_user)
+      end
+
       it 'returns validation error when semantic_query is blank' do
         arguments = { arguments: { semantic_query: '', project_id: project.id.to_s } }
         result = service.execute(request: nil, params: arguments)
@@ -235,12 +243,13 @@ RSpec.describe Mcp::Tools::SearchCodebaseService, feature_category: :mcp_server 
         expect(result[:content].first[:text]).to eq("Validation error: directory_path is invalid")
       end
 
-      it 'returns validation error when project_id is not an string' do
+      it 'returns Tool execution failed validation error when project_id is not an string' do
         arguments = { arguments: { semantic_query: 'foo', project_id: 1 } }
         result = service.execute(request: nil, params: arguments)
 
         expect(result[:isError]).to be true
-        expect(result[:content].first[:text]).to eq("Validation error: project_id is invalid")
+        expect(result[:content].first[:text]).to eq("Tool execution failed: Validation error: " \
+          "project_id must be a string")
       end
 
       it 'returns validation error when limit is too big' do
@@ -251,20 +260,20 @@ RSpec.describe Mcp::Tools::SearchCodebaseService, feature_category: :mcp_server 
         expect(result[:content].first[:text]).to eq("Validation error: limit is invalid")
       end
 
-      it 'returns validation error when knn is too small' do
-        arguments = { arguments: { semantic_query: 'foo', project_id: project.id.to_s, knn: 0 } }
-        result = service.execute(request: nil, params: arguments)
-
-        expect(result[:isError]).to be true
-        expect(result[:content].first[:text]).to eq("Validation error: knn is invalid")
-      end
-
       it 'returns validation error when project id not found' do
         arguments = { arguments: { semantic_query: 'foo', project_id: '-1' } }
         result = service.execute(request: nil, params: arguments)
 
         expect(result[:isError]).to be true
         expect(result[:content].first[:text]).to eq("Tool execution failed: Project '-1' not found or inaccessible")
+      end
+
+      it 'returns validation error when knn is too small' do
+        arguments = { arguments: { semantic_query: 'foo', project_id: project.id.to_s, knn: 0 } }
+        result = service.execute(request: nil, params: arguments)
+
+        expect(result[:isError]).to be true
+        expect(result[:content].first[:text]).to eq("Validation error: knn is invalid")
       end
 
       it 'returns validation error when project path not found' do
@@ -274,6 +283,30 @@ RSpec.describe Mcp::Tools::SearchCodebaseService, feature_category: :mcp_server 
         expect(result[:isError]).to be true
         expect(result[:content].first[:text]).to eq(
           "Tool execution failed: Project '/not/a/valid/path' not found or inaccessible"
+        )
+      end
+    end
+
+    context 'when authorization failed' do
+      let(:arguments) do
+        {
+          arguments: {
+            semantic_query: 'Add raise Exception for protected type usage',
+            project_id: project.id.to_s,
+            directory_path: 'app/services/'
+          }
+        }
+      end
+
+      it 'returns authorization error' do
+        response = service.execute(request: nil, params: arguments)
+
+        expect(response[:isError]).to be true
+        expect(response[:content]).to be_an(Array)
+        expect(response[:content].first[:type]).to eq('text')
+        expect(response[:content].first[:text]).to eq(
+          "Tool execution failed: CustomService: User #{current_user.id} does " \
+            "not have permission to read_code for target #{project.id}"
         )
       end
     end
