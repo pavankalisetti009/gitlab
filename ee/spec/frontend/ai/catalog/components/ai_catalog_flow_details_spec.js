@@ -1,6 +1,7 @@
 import { shallowMount } from '@vue/test-utils';
 import AiCatalogFlowDetails from 'ee/ai/catalog/components/ai_catalog_flow_details.vue';
 import AiCatalogItemField from 'ee/ai/catalog/components/ai_catalog_item_field.vue';
+import AiCatalogItemVisibilityField from 'ee/ai/catalog/components/ai_catalog_item_visibility_field.vue';
 import FormFlowDefinition from 'ee/ai/catalog/components/form_flow_definition.vue';
 import FormSection from 'ee/ai/catalog/components/form_section.vue';
 import { mockFlow, mockFlowVersion, mockThirdPartyFlow } from '../mock_data';
@@ -18,6 +19,9 @@ describe('AiCatalogFlowDetails', () => {
         ...defaultProps,
         ...props,
       },
+      stubs: {
+        AiCatalogItemVisibilityField,
+      },
     });
   };
 
@@ -33,7 +37,7 @@ describe('AiCatalogFlowDetails', () => {
   it('renders sections', () => {
     expect(findAllSections()).toHaveLength(3);
     expect(findSection(0).attributes('title')).toBe('Basic information');
-    expect(findSection(1).attributes('title')).toBe('Access rights');
+    expect(findSection(1).attributes('title')).toBe('Visibility & access');
     expect(findSection(2).attributes('title')).toBe('Steps');
   });
 
@@ -49,7 +53,7 @@ describe('AiCatalogFlowDetails', () => {
     });
   });
 
-  it('renders "Access rights" details', () => {
+  it('renders "Visibility & access" details', () => {
     const accessRightsDetails = findAllFieldsForSection(1);
     expect(accessRightsDetails.at(0).props('title')).toBe('Visibility');
     expect(accessRightsDetails.at(0).text()).toContain('Public');
@@ -77,7 +81,7 @@ describe('AiCatalogFlowDetails', () => {
     it('renders sections', () => {
       expect(findAllSections()).toHaveLength(3);
       expect(findSection(0).attributes('title')).toBe('Basic information');
-      expect(findSection(1).attributes('title')).toBe('Access rights');
+      expect(findSection(1).attributes('title')).toBe('Visibility & access');
       expect(findSection(2).attributes('title')).toBe('Configuration');
     });
 

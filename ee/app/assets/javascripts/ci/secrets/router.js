@@ -22,7 +22,7 @@ export default (base, props) => {
           return { fullPath };
         },
         meta: {
-          getBreadcrumbText: () => s__('Secrets|Secrets'),
+          getBreadcrumbText: () => s__('SecretsManager|Secrets'),
           isRoot: true,
         },
       },
@@ -34,7 +34,7 @@ export default (base, props) => {
           return { entity, fullPath };
         },
         meta: {
-          getBreadcrumbText: () => s__('Secrets|New secret'),
+          getBreadcrumbText: () => s__('SecretsManager|New secret'),
         },
       },
       {

@@ -30,6 +30,7 @@ describe('SecretDetailsWrapper component', () => {
   };
 
   const defaultProps = {
+    fullPath: '/path/to/project',
     secretName: 'SECRET_KEY',
   };
 

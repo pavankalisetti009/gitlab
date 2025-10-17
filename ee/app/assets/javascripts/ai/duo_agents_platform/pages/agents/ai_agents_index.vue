@@ -12,8 +12,16 @@ import AiCatalogListHeader from 'ee/ai/catalog/components/ai_catalog_list_header
 import aiCatalogConfiguredItemsQuery from 'ee/ai/catalog/graphql/queries/ai_catalog_configured_items.query.graphql';
 import aiCatalogProjectUserPermissionsQuery from 'ee/ai/catalog/graphql/queries/ai_catalog_project_user_permissions.query.graphql';
 import deleteAiCatalogItemConsumer from 'ee/ai/catalog/graphql/mutations/delete_ai_catalog_item_consumer.mutation.graphql';
-import { AI_CATALOG_TYPE_AGENT, PAGE_SIZE } from 'ee/ai/catalog/constants';
+import {
+  AI_CATALOG_TYPE_AGENT,
+  AGENT_VISIBILITY_LEVEL_DESCRIPTIONS,
+  PAGE_SIZE,
+} from 'ee/ai/catalog/constants';
 import { TYPENAME_PROJECT } from '~/graphql_shared/constants';
+import {
+  VISIBILITY_LEVEL_PRIVATE_STRING,
+  VISIBILITY_LEVEL_PUBLIC_STRING,
+} from '~/visibility_level/constants';
 import {
   AI_CATALOG_AGENTS_ROUTE,
   AI_CATALOG_AGENTS_SHOW_ROUTE,
@@ -101,6 +109,12 @@ export default {
           text: __('Remove'),
         },
         showRoute: AI_CATALOG_AGENTS_SHOW_ROUTE,
+        visibilityTooltip: {
+          [VISIBILITY_LEVEL_PUBLIC_STRING]:
+            AGENT_VISIBILITY_LEVEL_DESCRIPTIONS[VISIBILITY_LEVEL_PUBLIC_STRING],
+          [VISIBILITY_LEVEL_PRIVATE_STRING]:
+            AGENT_VISIBILITY_LEVEL_DESCRIPTIONS[VISIBILITY_LEVEL_PRIVATE_STRING],
+        },
       };
     },
   },

@@ -52,5 +52,5 @@ export const SECRET_ROTATION_STATUS = {
 export const POLL_INTERVAL = 2000;
 
 export const FAILED_TO_LOAD_ERROR_MESSAGE = s__(
-  'Secrets|Failed to load secret. Please try again later.',
+  'SecretsManager|Failed to load secret. Please try again later.',
 );
