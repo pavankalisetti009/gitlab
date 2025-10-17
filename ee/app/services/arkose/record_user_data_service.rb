@@ -61,10 +61,7 @@ module Arkose
     end
 
     def store_risk_scores
-      return if Feature.enabled?(:remove_trust_scores, user)
-
-      AntiAbuse::TrustScoreWorker.perform_async(user.id, :arkose_global_score, response.global_score.to_f)
-      AntiAbuse::TrustScoreWorker.perform_async(user.id, :arkose_custom_score, response.custom_score.to_f)
+      # nop
     end
 
     def logger

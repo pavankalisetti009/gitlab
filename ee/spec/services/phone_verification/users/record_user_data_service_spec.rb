@@ -35,28 +35,11 @@ RSpec.describe PhoneVerification::Users::RecordUserDataService, feature_category
       expect(phone_verification_record).not_to be_persisted
     end
 
-    it 'executes the abuse trust score worker' do
-      stub_feature_flags(remove_trust_scores: false)
-
-      expect(AntiAbuse::TrustScoreWorker).to receive(:perform_async).once.with(user.id, :telesign,
-        low_risk_score.to_f)
-
-      service.execute
-    end
-
     context 'when the risk score is 0' do
       let(:risk_score) { 0 }
 
       it 'changes the phone validation record risk score to 1' do
         expect { service.execute }.to change { phone_verification_record.risk_score }.from(0).to(1)
-      end
-
-      it 'executes the abuse trust score worker with a risk score of 1.0' do
-        stub_feature_flags(remove_trust_scores: false)
-
-        expect(AntiAbuse::TrustScoreWorker).to receive(:perform_async).once.with(user.id, :telesign, 1.0)
-
-        service.execute
       end
     end
 
