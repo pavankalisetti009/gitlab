@@ -3,6 +3,7 @@ import ExtendedDashboardPanel from '~/vue_shared/components/customizable_dashboa
 import { s__ } from '~/locale';
 import { formatDate, getDateInPast } from '~/lib/utils/datetime_utility';
 import VulnerabilitiesOverTimeChart from 'ee/security_dashboard/components/shared/charts/open_vulnerabilities_over_time.vue';
+import projectVulnerabilitiesOverTime from 'ee/security_dashboard/graphql/queries/project_vulnerabilities_over_time.query.graphql';
 import groupVulnerabilitiesOverTime from 'ee/security_dashboard/graphql/queries/group_vulnerabilities_over_time.query.graphql';
 import { formatVulnerabilitiesOverTimeData } from 'ee/security_dashboard/utils/chart_utils';
 import OverTimeSeverityFilter from './over_time_severity_filter.vue';
@@ -15,8 +16,21 @@ const TIME_PERIODS = {
   NINETY_DAYS: { key: 'ninetyDays', startDays: 90, endDays: 61 },
 };
 
+const SCOPE_CONFIG = {
+  project: {
+    query: projectVulnerabilitiesOverTime,
+    pathKey: 'projectFullPath',
+    pageLevelFilters: ['reportType'],
+  },
+  group: {
+    query: groupVulnerabilitiesOverTime,
+    pathKey: 'groupFullPath',
+    pageLevelFilters: ['reportType', 'projectId'],
+  },
+};
+
 export default {
-  name: 'GroupVulnerabilitiesOverTimePanel',
+  name: 'VulnerabilitiesOverTimePanel',
   components: {
     ExtendedDashboardPanel,
     VulnerabilitiesOverTimeChart,
@@ -24,8 +38,16 @@ export default {
     OverTimeSeverityFilter,
     OverTimePeriodSelector,
   },
-  inject: ['groupFullPath'],
+  inject: {
+    projectFullPath: { default: '' },
+    groupFullPath: { default: '' },
+  },
   props: {
+    scope: {
+      type: String,
+      required: true,
+      validator: (value) => Object.keys(SCOPE_CONFIG).includes(value),
+    },
     filters: {
       type: Object,
       required: true,
@@ -48,6 +70,12 @@ export default {
     };
   },
   computed: {
+    config() {
+      return SCOPE_CONFIG[this.scope];
+    },
+    fullPath() {
+      return this[this.config.pathKey];
+    },
     combinedFilters() {
       return {
         ...this.filters,
@@ -67,14 +95,20 @@ export default {
       return formatVulnerabilitiesOverTimeData(selectedChartData, this.groupedBy);
     },
     baseQueryVariables() {
-      return {
-        reportType: this.filters.reportType,
+      const baseVariables = {
         severity: this.panelLevelFilters.severity,
         includeBySeverity: this.groupedBy === 'severity',
         includeByReportType: this.groupedBy === 'reportType',
-        fullPath: this.groupFullPath,
-        projectId: this.filters.projectId,
+        fullPath: this.fullPath,
       };
+
+      this.config.pageLevelFilters
+        .filter((filterKey) => this.filters[filterKey] !== undefined)
+        .forEach((filterKey) => {
+          baseVariables[filterKey] = this.filters[filterKey];
+        });
+
+      return baseVariables;
     },
     selectedTimePeriods() {
       return Object.values(TIME_PERIODS).filter(
@@ -115,7 +149,7 @@ export default {
       const endDate = formatDate(getDateInPast(new Date(), endDays), 'isoDate');
 
       const result = await this.$apollo.query({
-        query: groupVulnerabilitiesOverTime,
+        query: this.config.query,
         variables: {
           ...this.baseQueryVariables,
           startDate,
@@ -124,7 +158,7 @@ export default {
       });
 
       this.chartData[key] =
-        result.data.group?.securityMetrics?.vulnerabilitiesOverTime?.nodes || [];
+        result.data.namespace?.securityMetrics?.vulnerabilitiesOverTime?.nodes || [];
     },
   },
   tooltip: {
