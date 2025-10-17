@@ -16,9 +16,14 @@ import deleteAiCatalogItemConsumer from 'ee/ai/catalog/graphql/mutations/delete_
 import {
   AI_CATALOG_TYPE_FLOW,
   AI_CATALOG_TYPE_THIRD_PARTY_FLOW,
+  FLOW_VISIBILITY_LEVEL_DESCRIPTIONS,
   PAGE_SIZE,
 } from 'ee/ai/catalog/constants';
 import { TYPENAME_PROJECT } from '~/graphql_shared/constants';
+import {
+  VISIBILITY_LEVEL_PRIVATE_STRING,
+  VISIBILITY_LEVEL_PUBLIC_STRING,
+} from '~/visibility_level/constants';
 import {
   AI_CATALOG_FLOWS_SHOW_ROUTE,
   AI_CATALOG_FLOWS_ROUTE,
@@ -122,6 +127,12 @@ export default {
           text: __('Remove'),
         },
         showRoute: AI_CATALOG_FLOWS_SHOW_ROUTE,
+        visibilityTooltip: {
+          [VISIBILITY_LEVEL_PUBLIC_STRING]:
+            FLOW_VISIBILITY_LEVEL_DESCRIPTIONS[VISIBILITY_LEVEL_PUBLIC_STRING],
+          [VISIBILITY_LEVEL_PRIVATE_STRING]:
+            FLOW_VISIBILITY_LEVEL_DESCRIPTIONS[VISIBILITY_LEVEL_PRIVATE_STRING],
+        },
       };
     },
   },

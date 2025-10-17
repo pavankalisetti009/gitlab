@@ -2491,9 +2491,6 @@ msgstr ""
 msgid "AICatalog|AI Catalog"
 msgstr ""
 
-msgid "AICatalog|Access rights"
-msgstr ""
-
 msgid "AICatalog|Agent configuration"
 msgstr ""
 
@@ -2522,18 +2519,6 @@ msgid "AICatalog|Agents"
 msgstr ""
 
 msgid "AICatalog|Always use latest version"
-msgstr ""
-
-msgid "AICatalog|Anyone can view and use the agent without authorization. Only maintainers and owners of this project can edit or delete the agent."
-msgstr ""
-
-msgid "AICatalog|Anyone can view and use the flow without authorization. Only maintainers and owners of this project can edit or delete the flow."
-msgstr ""
-
-msgid "AICatalog|Anyone in your organization can view and use agents unless you make it private. Private agents can only be viewed and run in their source project."
-msgstr ""
-
-msgid "AICatalog|Anyone in your organization can view and use flows unless you make it private. Private flows can only be viewed in their source project."
 msgstr ""
 
 msgid "AICatalog|Are you sure you want to delete agent %{name}?"
@@ -2578,12 +2563,6 @@ msgstr ""
 msgid "AICatalog|Choose a memorable name for your AI flow."
 msgstr ""
 
-msgid "AICatalog|Choose who can view and interact with this agent after it is published to the public AI Catalog."
-msgstr ""
-
-msgid "AICatalog|Choose who can view and interact with this flow after it is published to the public AI Catalog."
-msgstr ""
-
 msgid "AICatalog|Configuration"
 msgstr ""
 
@@ -2591,6 +2570,12 @@ msgid "AICatalog|Configuration is required."
 msgstr ""
 
 msgid "AICatalog|Connect AI agents to automate complicated tasks."
+msgstr ""
+
+msgid "AICatalog|Control who can discover and use this agent."
+msgstr ""
+
+msgid "AICatalog|Control who can discover and use this flow."
 msgstr ""
 
 msgid "AICatalog|Copy YAML configuration"
@@ -2770,13 +2755,13 @@ msgstr ""
 msgid "AICatalog|Nodes run sequentially."
 msgstr ""
 
+msgid "AICatalog|Only members of this project can view this agent. This agent can't be shared with other projects."
+msgstr ""
+
+msgid "AICatalog|Only members of this project can view this flow. This flow can't be shared with other projects."
+msgstr ""
+
 msgid "AICatalog|Only public agents can be used in public flows."
-msgstr ""
-
-msgid "AICatalog|Only this project can use the agent. Only developers, maintainers and owners of this project can view the agent. Only maintainers and owners of this project can edit or delete the agent."
-msgstr ""
-
-msgid "AICatalog|Only this project can use the flow. Only developers, maintainers and owners of this project can view the flow. Only maintainers and owners of this project can edit or delete the flow."
 msgstr ""
 
 msgid "AICatalog|Please consider my background in... When explaining concepts, use... My preferred format for responses is... Always include..."
@@ -2894,6 +2879,15 @@ msgid "AICatalog|Version"
 msgstr ""
 
 msgid "AICatalog|Visibility"
+msgstr ""
+
+msgid "AICatalog|Visibility & access"
+msgstr ""
+
+msgid "AICatalog|Visible to all users. Anyone can enable this agent on their projects and view its configuration."
+msgstr ""
+
+msgid "AICatalog|Visible to all users. Anyone can enable this flow on their projects and view its configuration."
 msgstr ""
 
 msgid "AICatalog|You are an expert in [domain]. Your communication style is [style]. When helping users, you should always... Your key strengths include... You approach problems by..."

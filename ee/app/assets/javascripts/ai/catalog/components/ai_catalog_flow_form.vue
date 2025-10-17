@@ -257,9 +257,7 @@ export default {
       id: 'flow-form-visibility-level',
       label: __('Visibility'),
       groupAttrs: {
-        labelDescription: s__(
-          'AICatalog|Choose who can view and interact with this flow after it is published to the public AI Catalog.',
-        ),
+        labelDescription: s__('AICatalog|Control who can discover and use this flow.'),
       },
     },
     type: {
@@ -334,7 +332,7 @@ export default {
             />
           </form-group>
         </form-section>
-        <form-section :title="s__('AICatalog|Access rights')">
+        <form-section :title="s__('AICatalog|Visibility & access')">
           <form-group
             :field="$options.fields.visibilityLevel"
             :field-value="formValues.visibilityLevel"
