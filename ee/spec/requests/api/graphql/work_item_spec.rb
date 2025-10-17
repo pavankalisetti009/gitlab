@@ -1220,8 +1220,6 @@ RSpec.describe 'Query.work_item(id)', feature_category: :team_planning do
             [other_group, other_group2, other_group3, other_project2].each do |container|
               container.add_guest(current_user)
             end
-
-            stub_feature_flags(use_cached_rolled_up_weights: false)
           end
 
           it 'executes limited N+1 queries', :use_sql_query_cache, quarantine: incident_url do
@@ -1248,7 +1246,6 @@ RSpec.describe 'Query.work_item(id)', feature_category: :team_planning do
             fields_threshold = {
               rolled_up_counts_by_type: 3,
               depth_limit_reached_by_type: 12,
-              rolled_up_weight: 3, # can be deleted when removing `use_cached_rolled_up_weights` FF
               rolled_up_health_status: 4
             }
 

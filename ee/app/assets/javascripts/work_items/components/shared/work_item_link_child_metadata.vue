@@ -12,7 +12,6 @@ import {
   WIDGET_TYPE_WEIGHT,
   WIDGET_TYPE_ITERATION,
   WIDGET_TYPE_START_AND_DUE_DATE,
-  WORK_ITEM_TYPE_NAME_EPIC,
 } from '~/work_items/constants';
 import { humanTimeframe, isInPast, localeDateFormat, newDate } from '~/lib/utils/datetime_utility';
 import timeagoMixin from '~/vue_shared/mixins/timeago';
@@ -43,15 +42,6 @@ export default {
       type: Object,
       required: false,
       default: () => ({}),
-    },
-    showWeight: {
-      type: Boolean,
-      required: false,
-      default: true,
-    },
-    workItemType: {
-      type: String,
-      required: true,
     },
     isChildItemOpen: {
       type: Boolean,
@@ -87,9 +77,6 @@ export default {
     workItemWeight() {
       return this.rolledUpWeight || this.weight;
     },
-    shouldShowWeight() {
-      return this.showWeight && Boolean(this.workItemWeight);
-    },
     iteration() {
       return this.hasIterationsFeature && this.metadataWidgets[WIDGET_TYPE_ITERATION]?.iteration;
     },
@@ -104,16 +91,6 @@ export default {
     },
     workItemTimeframe() {
       return humanTimeframe(newDate(this.startDate), newDate(this.dueDate));
-    },
-    weightTooltip() {
-      if (
-        !this.glFeatures.useCachedRolledUpWeights &&
-        this.workItemType === WORK_ITEM_TYPE_NAME_EPIC
-      ) {
-        return __('Issue weight');
-      }
-
-      return __('Weight');
     },
     isOverdue() {
       if (!this.dueDate) {
@@ -143,7 +120,7 @@ export default {
   <work-item-link-child-metadata :reference="reference" :metadata-widgets="metadataWidgets">
     <template #weight-metadata>
       <work-item-attribute
-        v-if="shouldShowWeight"
+        v-if="workItemWeight"
         anchor-id="item-weight"
         wrapper-component="div"
         wrapper-component-class="gl-flex gl-cursor-help gl-items-center gl-gap-2"
@@ -153,7 +130,7 @@ export default {
       >
         <template #tooltip-text>
           <span data-testid="weight-tooltip" class="gl-font-bold">
-            {{ weightTooltip }}
+            {{ __('Weight') }}
           </span>
         </template>
       </work-item-attribute>

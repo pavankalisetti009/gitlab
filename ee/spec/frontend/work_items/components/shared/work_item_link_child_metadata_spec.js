@@ -15,23 +15,17 @@ describe('WorkItemLinkChildMetadataEE', () => {
 
   const createComponent = ({
     metadataWidgets = workItemObjectiveMetadataWidgetsEE,
-    showWeight = true,
-    workItemType = 'Task',
     isChildItemOpen = true,
     hasIterationsFeature = false,
-    useCachedRolledUpWeights = false,
   } = {}) => {
     wrapper = shallowMountExtended(WorkItemLinkChildMetadata, {
       provide: {
         hasIterationsFeature,
-        glFeatures: { useCachedRolledUpWeights },
       },
       propsData: {
         iid: '1',
         reference: 'test-project-path#1',
         metadataWidgets,
-        showWeight,
-        workItemType,
         isChildItemOpen,
       },
       stubs: {
@@ -44,7 +38,6 @@ describe('WorkItemLinkChildMetadataEE', () => {
     createComponent();
   });
 
-  const findWeight = () => wrapper.findByTestId('item-weight');
   const findWeightTooltip = () => wrapper.findByTestId('weight-tooltip');
   const findRolledUpHealthStatus = () => wrapper.findComponent(WorkItemRolledUpHealthStatus);
   const findWorkItemAttribute = () => wrapper.findAllComponents(WorkItemAttribute);
@@ -115,33 +108,8 @@ describe('WorkItemLinkChildMetadataEE', () => {
       );
     });
 
-    it('does not render item weight on `showWeight` is false', () => {
-      createComponent({
-        showWeight: false,
-      });
-
-      expect(findWeight().exists()).toBe(false);
-    });
-
     it('renders tooltip', () => {
       createComponent();
-
-      expect(findWeightTooltip().text()).toBe('Weight');
-    });
-
-    it('shows `Issue weight` in the tooltip when the parent is an Epic', () => {
-      createComponent({
-        workItemType: 'Epic',
-      });
-
-      expect(findWeightTooltip().text()).toBe('Issue weight');
-    });
-
-    it('shows `Weight` in the tooltip when useCachedRolledUpWeights is true', () => {
-      createComponent({
-        workItemType: 'Epic',
-        useCachedRolledUpWeights: true,
-      });
 
       expect(findWeightTooltip().text()).toBe('Weight');
     });

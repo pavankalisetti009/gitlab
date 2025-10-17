@@ -28,12 +28,6 @@ RSpec.describe Groups::EpicsController, feature_category: :portfolio_management 
         expect(response).to have_gitlab_http_status(:not_found)
       end
     end
-
-    it 'pushes the use_cached_rolled_up_weights feature flag' do
-      get_index
-
-      expect(response.body).to have_pushed_frontend_feature_flags(useCachedRolledUpWeights: true)
-    end
   end
 
   describe 'GET #new' do
@@ -102,12 +96,6 @@ RSpec.describe Groups::EpicsController, feature_category: :portfolio_management 
           expect(response.body).not_to have_pushed_frontend_feature_flags(summarizeComments: true)
         end
       end
-    end
-
-    it 'pushes the use_cached_rolled_up_weights feature flag' do
-      get group_epic_path(group, epic)
-
-      expect(response.body).to have_pushed_frontend_feature_flags(useCachedRolledUpWeights: true)
     end
   end
 end

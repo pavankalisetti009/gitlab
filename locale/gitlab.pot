@@ -36104,9 +36104,6 @@ msgstr ""
 msgid "Issue was closed by %{name} with merge request %{link}"
 msgstr ""
 
-msgid "Issue weight"
-msgstr ""
-
 msgid "IssueAnalytics|Age"
 msgstr ""
 
@@ -75813,9 +75810,6 @@ msgid "WorkItem|is blocked by"
 msgstr ""
 
 msgid "WorkItem|issue"
-msgstr ""
-
-msgid "WorkItem|issue weight completed"
 msgstr ""
 
 msgid "WorkItem|item"
