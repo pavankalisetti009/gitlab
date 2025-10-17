@@ -546,7 +546,7 @@ RSpec.describe API::Ai::DuoWorkflows::Workflows, :with_current_organization, fea
 
       context 'when OAuth token creation fails' do
         before do
-          allow_next_instance_of(::Ai::DuoWorkflows::TokenGenerationService) do |service|
+          allow_next_instance_of(::Ai::DuoWorkflows::WorkflowContextGenerationService) do |service|
             allow(service).to receive(:generate_oauth_token_with_composite_identity_support)
               .and_return(ServiceResponse.error(message: 'OAuth token creation failed', http_status: :forbidden)) # rubocop:disable Gitlab/ServiceResponse -- Preserve the actual behavior of the service response.
           end
@@ -561,7 +561,7 @@ RSpec.describe API::Ai::DuoWorkflows::Workflows, :with_current_organization, fea
 
       context 'when workflow token creation fails' do
         before do
-          allow_next_instance_of(::Ai::DuoWorkflows::TokenGenerationService) do |service|
+          allow_next_instance_of(::Ai::DuoWorkflows::WorkflowContextGenerationService) do |service|
             allow(service).to receive(:generate_workflow_token)
               .and_return(ServiceResponse.error(message: 'workflow token creation failed'))
           end

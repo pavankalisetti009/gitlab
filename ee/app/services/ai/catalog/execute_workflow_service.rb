@@ -88,12 +88,12 @@ module Ai
       end
 
       def build_start_workflow_params(workflow)
-        token_service = token_generation_service
+        workflow_context_service = workflow_context_generation_service
 
-        oauth_token_result = token_service.generate_oauth_token_with_composite_identity_support
+        oauth_token_result = workflow_context_service.generate_oauth_token_with_composite_identity_support
         return oauth_token_result if oauth_token_result.error?
 
-        workflow_token_result = token_service.generate_workflow_token
+        workflow_token_result = workflow_context_service.generate_workflow_token
         return workflow_token_result if workflow_token_result.error?
 
         {
@@ -103,14 +103,14 @@ module Ai
           workflow_id: workflow.id,
           workflow_oauth_token: oauth_token_result.payload[:oauth_access_token].plaintext_token,
           workflow_service_token: workflow_token_result.payload[:token],
-          use_service_account: token_service.use_service_account?,
+          use_service_account: workflow_context_service.use_service_account?,
           source_branch: nil,
           workflow_metadata: Gitlab::DuoWorkflow::Client.metadata(current_user).to_json
         }
       end
 
-      def token_generation_service
-        ::Ai::DuoWorkflows::TokenGenerationService.new(
+      def workflow_context_generation_service
+        ::Ai::DuoWorkflows::WorkflowContextGenerationService.new(
           current_user: current_user,
           organization: container.organization,
           container: container,
