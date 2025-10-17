@@ -12,7 +12,7 @@ import {
 import FilteredSearch from 'ee/security_dashboard/components/shared/security_dashboard_filtered_search/filtered_search.vue';
 import ProjectSecurityDashboardNew from 'ee/security_dashboard/components/shared/project_security_dashboard_new.vue';
 import ReportTypeToken from 'ee/security_dashboard/components/shared/filtered_search/tokens/report_type_token.vue';
-import ProjectVulnerabilitiesOverTimePanel from 'ee/security_dashboard/components/shared/project_vulnerabilities_over_time_panel.vue';
+import VulnerabilitiesOverTimePanel from 'ee/security_dashboard/components/shared/vulnerabilities_over_time_panel.vue';
 import ProjectVulnerabilitiesForSeverityPanel from 'ee/security_dashboard/components/shared/project_vulnerabilities_for_severity_panel.vue';
 
 jest.mock('~/alert');
@@ -61,7 +61,8 @@ describe('Project Security Dashboard (new version) - Component', () => {
     it('renders the vulnerabilities over time panel with the correct configuration', () => {
       const vulnerabilitiesOverTimePanel = getVulnerabilitiesOverTimePanel();
 
-      expect(vulnerabilitiesOverTimePanel.component).toBe(ProjectVulnerabilitiesOverTimePanel);
+      expect(vulnerabilitiesOverTimePanel.component).toBe(VulnerabilitiesOverTimePanel);
+      expect(vulnerabilitiesOverTimePanel.componentProps.scope).toBe('project');
       expect(vulnerabilitiesOverTimePanel.componentProps.filters).toEqual({});
       expect(vulnerabilitiesOverTimePanel.gridAttributes).toEqual({
         width: 6,

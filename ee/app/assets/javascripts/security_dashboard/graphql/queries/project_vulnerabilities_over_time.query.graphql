@@ -7,7 +7,7 @@ query projectVulnerabilitiesOverTime(
   $includeByReportType: Boolean!
   $severity: [VulnerabilitySeverity!]
 ) {
-  project(fullPath: $fullPath) {
+  namespace: project(fullPath: $fullPath) {
     id
     securityMetrics(reportType: $reportType) {
       vulnerabilitiesOverTime(startDate: $startDate, endDate: $endDate, severity: $severity) {

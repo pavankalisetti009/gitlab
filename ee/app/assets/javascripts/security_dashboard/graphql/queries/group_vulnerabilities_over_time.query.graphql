@@ -8,7 +8,7 @@ query groupVulnerabilitiesOverTime(
   $includeByReportType: Boolean!
   $severity: [VulnerabilitySeverity!]
 ) {
-  group(fullPath: $fullPath) {
+  namespace: group(fullPath: $fullPath) {
     id
     securityMetrics(projectId: $projectId, reportType: $reportType) {
       vulnerabilitiesOverTime(startDate: $startDate, endDate: $endDate, severity: $severity) {
