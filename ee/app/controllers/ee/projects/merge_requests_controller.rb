@@ -13,7 +13,6 @@ module EE
           push_frontend_feature_flag(:merge_trains_skip_train, @project)
           push_frontend_feature_flag(:vulnerability_partial_scans, @project)
           push_frontend_feature_flag(:security_policy_approval_warn_mode, @project)
-          push_frontend_feature_flag(:security_policies_bypass_options_mr_widget, @project)
           push_frontend_ability(ability: :resolve_vulnerability_with_ai, resource: @project, user: current_user)
           push_frontend_ability(ability: :measure_comment_temperature, resource: merge_request, user: current_user)
           push_frontend_feature_flag(:ai_duo_agent_fix_pipeline_button, project)

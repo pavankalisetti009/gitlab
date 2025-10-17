@@ -9,7 +9,6 @@ describe('PolicyExceptionsSelector', () => {
     wrapper = shallowMountExtended(PolicyExceptionsSelector, {
       provide: {
         glFeatures: {
-          securityPoliciesBypassOptionsGroupRoles: true,
           ...glFeatures,
         },
       },
@@ -17,7 +16,6 @@ describe('PolicyExceptionsSelector', () => {
   };
 
   const findPolicyExceptionSelectors = () => wrapper.findAllByTestId('exception-type');
-  const findHeaders = () => wrapper.findAllByTestId('exception-type-header');
 
   describe('all features', () => {
     beforeEach(() => {
@@ -32,22 +30,6 @@ describe('PolicyExceptionsSelector', () => {
       findPolicyExceptionSelectors().at(1).findComponent(GlButton).vm.$emit('click');
 
       expect(wrapper.emitted('select')).toEqual([['groups']]);
-    });
-  });
-
-  describe('reduced number of features', () => {
-    it('renders partial options list when securityPoliciesBypassOptionsGroupRoles is disabled', () => {
-      createComponent({
-        glFeatures: {
-          securityPoliciesBypassOptionsGroupRoles: false,
-        },
-      });
-
-      const headers = findHeaders();
-      expect(findPolicyExceptionSelectors()).toHaveLength(3);
-      expect(headers.at(0).text()).toBe('Service Account');
-      expect(headers.at(1).text()).toBe('Access Token');
-      expect(headers.at(2).text()).toBe('Source Branch Patterns');
     });
   });
 });
