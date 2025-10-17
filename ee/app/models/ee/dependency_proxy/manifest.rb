@@ -24,8 +24,6 @@ module EE
             .where(dependency_proxy_manifest_states: { verification_state: verification_state_value(state) })
         end
 
-        scope :available_verifiables, -> { joins(:dependency_proxy_manifest_state) }
-
         scope :group_id_in, ->(ids) { joins(:group).merge(::Namespace.id_in(ids)) }
 
         def verification_state_object

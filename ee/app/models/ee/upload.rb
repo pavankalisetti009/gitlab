@@ -21,8 +21,6 @@ module EE
       scope :with_verification_state, ->(state) { joins(:upload_state).where(upload_states: { verification_state: verification_state_value(state) }) }
       scope :by_checksum, ->(value) { where(checksum: value) }
 
-      scope :available_verifiables, -> { joins(:upload_state) }
-
       has_one :upload_state,
         autosave: false,
         inverse_of: :upload,

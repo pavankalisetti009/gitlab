@@ -57,7 +57,7 @@ exports[`DiscussionNote rendering renders with correct timeline structure 1`] = 
             size="medium"
             textsronly="true"
             title="More actions"
-            toggleid="dropdown-toggle-btn-11"
+            toggleid="dropdown-toggle-btn-10"
             toggletext="More actions"
             variant="default"
           >

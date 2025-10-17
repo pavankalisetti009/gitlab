@@ -74,6 +74,7 @@ module EE
           end
 
           params_ee << :disable_personal_access_tokens if current_group&.disable_personal_access_tokens_available?
+          params_ee << :disable_ssh_keys if current_group&.disable_ssh_keys_available?
 
           if current_group&.can_manage_extensions_marketplace_for_enterprise_users?
             params_ee << :enterprise_users_extensions_marketplace_enabled

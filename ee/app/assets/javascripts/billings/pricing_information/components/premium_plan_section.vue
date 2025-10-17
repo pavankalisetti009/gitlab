@@ -34,7 +34,7 @@ export default {
     </div>
 
     <div class="gl-mb-5 gl-text-subtle">
-      <p class="gl-text-md gl-mb-4 gl-font-normal">
+      <p class="gl-mb-4 gl-text-md gl-font-normal">
         {{ s__('Billings|Everything from Free, plus:') }}
       </p>
 

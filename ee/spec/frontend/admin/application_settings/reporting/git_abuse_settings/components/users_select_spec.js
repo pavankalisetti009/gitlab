@@ -32,7 +32,7 @@ describe('Users Select component', () => {
 
   const findUserSelector = () => wrapper.findComponent(GlTokenSelector);
   const findUserSelectorInput = () => findUserSelector().find('input[type="text"]');
-  const findUserSelectorDropdown = () => findUserSelector().find('[role="menu"]');
+  const findUserSelectorDropdown = () => findUserSelector().find('[role="listbox"]');
 
   const setUserSelectorInputValue = (value) => {
     const searchInput = findUserSelectorInput();

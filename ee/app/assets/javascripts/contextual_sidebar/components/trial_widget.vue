@@ -108,7 +108,7 @@ export default {
     <div data-testid="trial-widget-menu" class="gl-flex gl-w-full gl-flex-col gl-items-stretch">
       <div v-if="isTrialActive">
         <div class="gl-flex-column gl-w-full">
-          <div data-testid="widget-title" class="gl-text-md gl-mb-4 gl-font-bold gl-text-default">
+          <div data-testid="widget-title" class="gl-mb-4 gl-text-md gl-font-bold gl-text-default">
             {{ widgetTitle }}
           </div>
           <gl-progress-bar

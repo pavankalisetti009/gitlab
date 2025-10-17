@@ -31,6 +31,10 @@ module EE
       def allowed_access_namespace?
         # Verify namespace access only on initial call from Gitlab Shell and Workhorse
         return true unless changes == ::Gitlab::GitAccess::ANY
+
+        # Check if SSH keys are disabled for enterprise users
+        return false if ssh_keys_disabled_for_user?
+
         # Return early if ssh certificate feature is not enabled for namespace
         # If allowed_namespace_path is passed anyway, we return false
         # It may happen, when a user authenticates via SSH certificate and tries accessing to personal namespace
@@ -41,6 +45,17 @@ module EE
 
         allowed_namespace = ::Namespace.find_by_full_path(allowed_namespace_path)
         allowed_namespace.present? && namespace.root_ancestor.id == allowed_namespace.id
+      end
+
+      # Verify that SSH keys are disabled for enterprise users and the
+      # actor is a Key
+      # Deploy keys are allowed anyway
+      def ssh_keys_disabled_for_user?
+        return false unless actor.instance_of?(::Key)
+        return false unless user&.enterprise_user?
+        return false unless user.enterprise_group&.disable_ssh_keys?
+
+        user.human?
       end
 
       # Verify that enabled_git_access_protocol is ssh_certificates and the

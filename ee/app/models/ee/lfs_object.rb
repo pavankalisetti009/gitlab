@@ -24,8 +24,6 @@ module EE
 
       scope :with_verification_state, ->(state) { joins(:lfs_object_state).where(lfs_object_states: { verification_state: verification_state_value(state) }) }
 
-      scope :available_verifiables, -> { joins(:lfs_object_state) }
-
       def verification_state_object
         lfs_object_state
       end
