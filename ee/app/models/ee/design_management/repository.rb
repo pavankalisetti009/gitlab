@@ -35,8 +35,6 @@ module EE
           end
         end
 
-        scope :available_verifiables, -> { joins(:design_management_repository_state) }
-
         scope :with_verification_state, ->(state) {
           joins(:design_management_repository_state)
             .where(design_management_repository_states: { verification_state: verification_state_value(state) })

@@ -21,8 +21,6 @@ class GroupWikiRepository < ApplicationRecord
   delegate :create_wiki, :repository_storage, to: :group
   delegate(*::Geo::VerificationState::VERIFICATION_METHODS, to: :group_wiki_repository_state)
 
-  scope :available_verifiables, -> { joins(:group_wiki_repository_state) }
-
   scope :with_verification_state, ->(state) {
     joins(:group_wiki_repository_state)
       .where(group_wiki_repository_states: { verification_state: verification_state_value(state) })

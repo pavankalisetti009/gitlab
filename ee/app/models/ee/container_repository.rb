@@ -23,8 +23,6 @@ module EE
 
       scope :with_verification_state, ->(state) { joins(:container_repository_state).where(container_repository_states: { verification_state: verification_state_value(state) }) }
 
-      scope :available_verifiables, -> { joins(:container_repository_state) }
-
       def verification_state_object
         container_repository_state
       end

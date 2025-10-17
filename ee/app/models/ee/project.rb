@@ -426,8 +426,6 @@ module EE
         end
       end
 
-      scope :available_verifiables, -> { joins(:project_state) }
-
       scope :with_verification_state, ->(state) {
         joins(:project_state)
           .where(project_states: { verification_state: verification_state_value(state) })

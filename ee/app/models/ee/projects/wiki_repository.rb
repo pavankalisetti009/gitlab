@@ -37,9 +37,6 @@ module EE
             replicables
           end
         end
-
-        scope :available_verifiables, -> { joins(:wiki_repository_state) }
-
         scope :with_verification_state, ->(state) {
           joins(:wiki_repository_state)
             .where(wiki_repository_states: { verification_state: verification_state_value(state) })

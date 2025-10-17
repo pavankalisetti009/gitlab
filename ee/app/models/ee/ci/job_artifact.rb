@@ -48,8 +48,6 @@ module EE
 
       scope :with_verification_state, ->(state) { joins(:job_artifact_state).where(verification_arel_table[:verification_state].eq(verification_state_value(state))) }
 
-      scope :available_verifiables, -> { joins(:job_artifact_state) }
-
       scope :repository_xray_reports, -> { with_file_types(%w[repository_xray]) }
 
       skip_callback :commit, :after, :geo_create_event!, if: :store_after_commit?
