@@ -1480,6 +1480,68 @@ describe('Duo Agentic Chat', () => {
     });
   });
 
+  describe('catalogAgents query variables', () => {
+    beforeEach(() => {
+      duoChatGlobalState.isAgenticChatShown = true;
+    });
+
+    it('passes only projectId when both projectId and namespaceId are provided', async () => {
+      createComponent({
+        propsData: {
+          projectId: MOCK_PROJECT_ID,
+          namespaceId: MOCK_NAMESPACE_ID,
+          resourceId: MOCK_RESOURCE_ID,
+        },
+      });
+      await waitForPromises();
+
+      expect(configuredAgentsQueryMock).toHaveBeenCalledWith({
+        projectId: MOCK_PROJECT_ID,
+      });
+    });
+
+    it('passes only projectId when only projectId is provided', async () => {
+      createComponent({
+        propsData: {
+          projectId: MOCK_PROJECT_ID,
+          resourceId: MOCK_RESOURCE_ID,
+        },
+      });
+      await waitForPromises();
+
+      expect(configuredAgentsQueryMock).toHaveBeenCalledWith({
+        projectId: MOCK_PROJECT_ID,
+      });
+    });
+
+    it('passes only groupId when only namespaceId is provided', async () => {
+      createComponent({
+        propsData: {
+          namespaceId: MOCK_NAMESPACE_ID,
+          resourceId: MOCK_RESOURCE_ID,
+        },
+      });
+      await waitForPromises();
+
+      expect(configuredAgentsQueryMock).toHaveBeenCalledWith({
+        groupId: MOCK_NAMESPACE_ID,
+      });
+    });
+
+    it('passes groupId when neither projectId nor namespaceId are provided', async () => {
+      createComponent({
+        propsData: {
+          resourceId: MOCK_RESOURCE_ID,
+        },
+      });
+      await waitForPromises();
+
+      expect(configuredAgentsQueryMock).toHaveBeenCalledWith({
+        groupId: null,
+      });
+    });
+  });
+
   describe('agent selection', () => {
     let agent;
 
