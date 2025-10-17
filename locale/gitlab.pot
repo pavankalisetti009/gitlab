@@ -13488,7 +13488,16 @@ msgstr ""
 msgid "CiCatalog|Back to the CI/CD Catalog"
 msgstr ""
 
+msgid "CiCatalog|CI/CD Catalog"
+msgstr ""
+
+msgid "CiCatalog|CI/CD Catalog (unpublished)"
+msgstr ""
+
 msgid "CiCatalog|CI/CD Catalog project"
+msgstr ""
+
+msgid "CiCatalog|Catalog project (unpublished)"
 msgstr ""
 
 msgid "CiCatalog|Component ID not found, or you do not have permission to access component."
@@ -13606,6 +13615,9 @@ msgid "CiCatalog|This project is no longer a CI/CD Catalog project."
 msgstr ""
 
 msgid "CiCatalog|This project is now a CI/CD Catalog project."
+msgstr ""
+
+msgid "CiCatalog|This project is set as a Catalog project, but has not yet been published. Publish this project to the Catalog to make it available. %{linkStart}Learn how to publish a new release%{linkEnd}"
 msgstr ""
 
 msgid "CiCatalog|To publish CI/CD components to the Catalog, you must use the %{linkStart}release%{linkEnd} keyword in a CI/CD job."
