@@ -387,4 +387,62 @@ RSpec.describe Gitlab::GitAccessProject do
       end
     end
   end
+
+  describe 'SSH key access control', feature_category: :system_access do
+    let_it_be_with_reload(:enterprise_group) { create(:group) }
+    let_it_be(:project) { create(:project, :repository, namespace: enterprise_group) }
+    let_it_be_with_reload(:enterprise_user) { create(:user, enterprise_group_id: enterprise_group.id) }
+    let_it_be(:key) { create(:key, user: enterprise_user) }
+
+    before do
+      stub_licensed_features(disable_ssh_keys: true)
+      stub_saas_features(disable_ssh_keys: true)
+      stub_feature_flags(enterprise_disable_ssh_keys: true)
+      project.add_developer(enterprise_user)
+      enterprise_group.namespace_settings.update!(disable_ssh_keys: true)
+    end
+
+    def git_access_with_key(user_key)
+      described_class.new(
+        user_key,
+        project,
+        'ssh',
+        authentication_abilities: %i[read_project download_code push_code],
+        repository_path: "#{project.full_path}.git"
+      )
+    end
+
+    it 'blocks SSH access for enterprise users' do
+      access = git_access_with_key(key)
+
+      expect { access.check('git-upload-pack', '_any') }.to raise_error(
+        Gitlab::GitAccess::ForbiddenError,
+        'You are not allowed to access projects in this namespace.'
+      )
+    end
+
+    it 'allows deploy key access' do
+      deploy_key = create(:deploy_key)
+      project.deploy_keys << deploy_key
+      access = git_access_with_key(deploy_key)
+
+      expect { access.check('git-upload-pack', '_any') }.not_to raise_error
+    end
+
+    it 'allows non-enterprise users' do
+      non_enterprise_user = create(:user)
+      non_enterprise_key = create(:key, user: non_enterprise_user)
+      project.add_developer(non_enterprise_user)
+      access = git_access_with_key(non_enterprise_key)
+
+      expect { access.check('git-upload-pack', '_any') }.not_to raise_error
+    end
+
+    it 'allows access when group setting is disabled' do
+      enterprise_group.namespace_settings.update!(disable_ssh_keys: false)
+      access = git_access_with_key(key)
+
+      expect { access.check('git-upload-pack', '_any') }.not_to raise_error
+    end
+  end
 end

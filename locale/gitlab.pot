@@ -32487,6 +32487,9 @@ msgstr ""
 msgid "GroupSettings|Delete immediately"
 msgstr ""
 
+msgid "GroupSettings|Disable SSH Keys"
+msgstr ""
+
 msgid "GroupSettings|Disable personal access tokens"
 msgstr ""
 
@@ -32557,6 +32560,9 @@ msgid "GroupSettings|Hide email address from public profile"
 msgstr ""
 
 msgid "GroupSettings|How do I manage group SSH certificates?"
+msgstr ""
+
+msgid "GroupSettings|If enabled, enterprise users cannot use SSH Keys. %{learn_more_link}."
 msgstr ""
 
 msgid "GroupSettings|If enabled, enterprise users cannot use personal access tokens. %{learn_more_link}."

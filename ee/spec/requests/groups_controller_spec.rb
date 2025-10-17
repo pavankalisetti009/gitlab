@@ -618,6 +618,44 @@ RSpec.describe GroupsController, :aggregate_failures, type: :request, feature_ca
       end
     end
 
+    context 'setting disable_ssh_keys', :saas do
+      let(:params) { { group: { disable_ssh_keys: true } } }
+
+      before do
+        stub_licensed_features(disable_ssh_keys: true)
+        stub_saas_features(disable_ssh_keys: true)
+        stub_feature_flags(enterprise_disable_ssh_keys: true)
+      end
+
+      context 'when user is a group owner' do
+        before do
+          group.add_owner(user)
+        end
+
+        it 'successfully updates the setting' do
+          expect { request }.to change {
+            group.reload.namespace_settings.disable_ssh_keys?
+          }.from(false).to(true)
+
+          expect(response).to have_gitlab_http_status(:found)
+        end
+      end
+
+      context 'when user is not a group owner' do
+        before do
+          group.add_maintainer(user)
+        end
+
+        it 'does not change the setting and returns not found' do
+          expect { request }.not_to change {
+            group.reload.namespace_settings.disable_ssh_keys?
+          }.from(false)
+
+          expect(response).to have_gitlab_http_status(:not_found)
+        end
+      end
+    end
+
     context 'when setting hide_email_on_profile' do
       let(:params) { { group: { hide_email_on_profile: true } } }
 

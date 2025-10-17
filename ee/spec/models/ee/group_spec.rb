@@ -3113,6 +3113,87 @@ RSpec.describe Group, feature_category: :groups_and_projects do
       end
     end
 
+    describe '#disable_ssh_keys?' do
+      before do
+        group.update!(disable_ssh_keys: true)
+      end
+
+      context 'when not licensed' do
+        it 'returns false even if the database value is true' do
+          expect(group.disable_ssh_keys?).to be_falsey
+        end
+      end
+
+      context 'when licensed' do
+        before do
+          stub_licensed_features(disable_ssh_keys: true)
+        end
+
+        it 'returns false even if the database value is true' do
+          expect(group.disable_ssh_keys?).to be_falsey
+        end
+
+        context 'on SaaS', :saas do
+          before do
+            stub_saas_features(disable_ssh_keys: true)
+            stub_feature_flags(enterprise_disable_ssh_keys: true)
+          end
+
+          it 'returns true' do
+            expect(group.disable_ssh_keys?).to be_truthy
+          end
+
+          context 'for a subgroup' do
+            let(:subgroup) { create(:group, parent: group) }
+
+            it 'returns false even if the database value is true' do
+              subgroup.update!(disable_ssh_keys: true)
+
+              expect(subgroup.disable_ssh_keys?).to be_falsey
+            end
+          end
+        end
+      end
+    end
+
+    describe '#disable_ssh_keys_available?' do
+      context 'when all requirements met (licensed, SaaS, root group)', :saas do
+        before do
+          stub_licensed_features(disable_ssh_keys: true)
+          stub_saas_features(disable_ssh_keys: true)
+          stub_feature_flags(enterprise_disable_ssh_keys: true)
+        end
+
+        it 'returns true for root group' do
+          expect(group.disable_ssh_keys_available?).to be_truthy
+        end
+
+        it 'returns false for subgroup' do
+          subgroup = create(:group, parent: group)
+          expect(subgroup.disable_ssh_keys_available?).to be_falsey
+        end
+      end
+
+      context 'when requirements not met' do
+        it 'returns false when not licensed' do
+          expect(group.disable_ssh_keys_available?).to be_falsey
+        end
+
+        it 'returns false when licensed but not SaaS' do
+          stub_licensed_features(disable_ssh_keys: true)
+          expect(group.disable_ssh_keys_available?).to be_falsey
+        end
+
+        it 'returns false when feature flag is disabled', :saas do
+          stub_licensed_features(disable_ssh_keys: true)
+          stub_saas_features(disable_ssh_keys: true)
+          stub_feature_flags(enterprise_disable_ssh_keys: false)
+
+          expect(group.disable_ssh_keys_available?).to be_falsey
+        end
+      end
+    end
+
     describe '#hide_email_on_profile?' do
       it 'returns false by default' do
         expect(group.hide_email_on_profile?).to be_falsey
