@@ -100,7 +100,10 @@ export default {
     class="ai-panel !gl-left-auto gl-flex gl-h-full gl-w-[var(--ai-panel-width)] gl-grow gl-flex-col gl-overflow-hidden gl-rounded-[1rem] gl-bg-default [contain:strict]"
     :class="{ 'ai-panel-maximized': isMaximized }"
   >
-    <div class="ai-panel-header gl-flex gl-h-[3.0625rem] gl-items-center gl-justify-between">
+    <div
+      class="ai-panel-header gl-flex gl-h-[3.0625rem] gl-items-center gl-justify-between"
+      :class="{ 'gl-min-h-[3.0625rem]': typeof activeTab.component === 'string' }"
+    >
       <div
         class="gl-flex gl-max-w-17/20 gl-flex-1 gl-shrink-0 gl-items-center gl-justify-start gl-gap-2 gl-overflow-hidden gl-truncate gl-text-ellipsis gl-whitespace-nowrap"
       >

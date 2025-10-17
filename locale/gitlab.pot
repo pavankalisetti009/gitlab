@@ -13275,6 +13275,9 @@ msgstr ""
 msgid "Characters over limit"
 msgstr ""
 
+msgid "Chat is not available."
+msgstr ""
+
 msgid "ChatMessage|%{project_link}: Pipeline %{pipeline_link} of %{ref_type} %{ref_link} by %{user_combined_name} %{humanized_status} in %{duration}"
 msgstr ""
 
@@ -14043,9 +14046,6 @@ msgid "CiVariable|Variable %{key} has been successfully added."
 msgstr ""
 
 msgid "CiVariable|Variable %{key} has been updated."
-msgstr ""
-
-msgid "Classic Chat Placeholder"
 msgstr ""
 
 msgid "Classification Label (optional)"

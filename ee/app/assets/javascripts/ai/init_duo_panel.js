@@ -27,6 +27,8 @@ export function initDuoPanel() {
     chatTitle,
   } = el.dataset;
 
+  const isAgenticAvailable = parseBoolean(agenticAvailable);
+
   const router = createRouter('/', 'user');
   Vue.use(VueApollo);
 
@@ -36,9 +38,9 @@ export function initDuoPanel() {
 
   // Configure chat-specific values in a single configuration object
   const chatConfiguration = {
-    component: agenticAvailable ? DuoAgenticChat : __('Classic Chat Placeholder'),
+    component: isAgenticAvailable ? DuoAgenticChat : __('Chat is not available.'),
     title: chatTitle || __('GitLab Duo Agentic Chat'),
-    isAgenticAvailable: agenticAvailable,
+    isAgenticAvailable,
     defaultProps: {
       isEmbedded: true,
     },
