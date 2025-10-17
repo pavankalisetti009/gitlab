@@ -3,6 +3,7 @@
 module SystemAccess
   class BaseSaasGroupSyncWorker # rubocop:disable Scalability/IdempotentWorker
     include ::Gitlab::Utils::StrongMemoize
+    include GitlabSubscriptions::MemberManagement::SeatAwareProvisioning
 
     private
 
@@ -38,7 +39,8 @@ module SystemAccess
       return false if top_level_group.max_member_access_for_user(user) == default_membership_role
 
       default_member_role_id = top_level_group.saml_provider.member_role_id
-      top_level_group.add_member(user, default_membership_role, member_role_id: default_member_role_id)
+      adjusted_access_level = calculate_adjusted_access_level(top_level_group, user, default_membership_role)
+      top_level_group.add_member(user, adjusted_access_level, member_role_id: default_member_role_id)
     end
 
     # rubocop: disable CodeReuse/ActiveRecord
