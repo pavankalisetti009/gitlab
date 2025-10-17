@@ -56,7 +56,7 @@ exports[`Project Header matches the snapshot 1`] = `
       textsronly="true"
       title="More actions"
       toggleclass="gl-flex gl-items-center !gl-px-3 gl-bg-transparent !gl-shadow-none"
-      toggleid="dropdown-toggle-btn-2"
+      toggleid="dropdown-toggle-btn-1"
       toggletext="More actions"
       variant="default"
     >

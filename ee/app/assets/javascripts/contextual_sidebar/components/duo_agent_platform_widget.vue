@@ -246,7 +246,7 @@ export default {
 <template>
   <div id="duo-agent-platform-sidebar-widget" class="duo-agent-platform-sidebar-widget">
     <div data-testid="duo-agent-platform-widget-menu">
-      <div data-testid="widget-title" class="gl-text-md -gl-ml-2 gl-flex gl-items-center gl-gap-2">
+      <div data-testid="widget-title" class="-gl-ml-2 gl-flex gl-items-center gl-gap-2 gl-text-md">
         <gl-icon :variant="iconVariant" name="status_created_borderless" :size="24" />
         <span class="gl-font-monospace">{{ title }}</span>
       </div>

@@ -18,7 +18,7 @@ export default {
     </h3>
 
     <div class="gl-mb-6 gl-text-subtle">
-      <p class="gl-text-md gl-mb-4 gl-font-normal">
+      <p class="gl-mb-4 gl-text-md gl-font-normal">
         {{ s__('Billings|Features included:') }}
       </p>
 

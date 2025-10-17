@@ -143,7 +143,7 @@ export default {
                   </span>
                   <span
                     :class="{
-                      'gl-break-all gl-text-sm gl-font-monospace':
+                      'gl-break-all gl-font-monospace gl-text-sm':
                         rule.type === $options.CODE_OWNERS,
                     }"
                   >
