@@ -57,7 +57,7 @@ export default {
   <div class="gl-border-b gl-bg-subtle gl-p-5 @lg/panel:gl-flex">
     <div class="gl-flex gl-items-center" data-testid="pipeline">
       <span class="gl-mr-3 gl-font-bold">{{ $options.i18n.lastUpdated }}</span
-      ><span class="gl-whitespace-nowrap">
+      ><span class="gl-flex gl-items-center gl-whitespace-nowrap">
         <time-ago-tooltip class="gl-pr-3" :time="pipeline.createdAt" /><gl-link
           :href="pipeline.path"
           >#{{ pipeline.id }}</gl-link
@@ -73,8 +73,14 @@ export default {
       </div>
     </div>
 
-    <template v-if="showSbomPipelineStatus">
-      <div class="gl-mx-3 gl-hidden @lg/panel:gl-block" data-testid="pipeline-divider">•</div>
+    <div v-if="showSbomPipelineStatus" class="gl-flex gl-items-center">
+      <div
+        class="gl-mx-3 gl-hidden @lg/panel:gl-block"
+        data-testid="pipeline-divider"
+        aria-hidden="true"
+      >
+        •
+      </div>
 
       <div
         class="gl-mt-5 gl-items-center @md/panel:gl-flex @lg/panel:gl-mt-0"
@@ -98,6 +104,6 @@ export default {
           <gl-icon name="warning" class="gl-mr-3" />{{ sbomParsingStatusMessage }}
         </div>
       </div>
-    </template>
+    </div>
   </div>
 </template>
