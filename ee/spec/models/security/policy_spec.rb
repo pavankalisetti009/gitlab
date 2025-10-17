@@ -1528,14 +1528,6 @@ RSpec.describe Security::Policy, feature_category: :security_policy_management d
 
     subject(:merge_request_bypassed?) { policy.merge_request_bypassed?(merge_request) }
 
-    context 'when feature flag is disabled' do
-      before do
-        stub_feature_flags(security_policies_bypass_options_mr_widget: false)
-      end
-
-      it { is_expected.to be false }
-    end
-
     context 'when policy is not an approval policy' do
       let(:policy) { create(:security_policy, :scan_execution_policy) }
 
@@ -1597,14 +1589,6 @@ RSpec.describe Security::Policy, feature_category: :security_policy_management d
     let_it_be(:policy) { create(:security_policy, :approval_policy) }
 
     subject(:merge_request_bypass_allowed?) { policy.merge_request_bypass_allowed?(merge_request, user) }
-
-    context 'when feature flag is disabled' do
-      before do
-        stub_feature_flags(security_policies_bypass_options_mr_widget: false)
-      end
-
-      it { is_expected.to be false }
-    end
 
     context 'when bypass_settings is empty' do
       let(:policy) do

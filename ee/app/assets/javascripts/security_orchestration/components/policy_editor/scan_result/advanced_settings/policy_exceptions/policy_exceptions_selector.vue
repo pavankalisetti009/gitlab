@@ -2,8 +2,10 @@
 import { GlButton } from '@gitlab/ui';
 import { __ } from '~/locale';
 import glFeatureFlagsMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
-import { mapOptions } from 'ee/security_orchestration/components/policy_editor/scan_result/advanced_settings/constants';
-import { renderOptionsList } from 'ee/security_orchestration/components/policy_editor/scan_result/advanced_settings/utils';
+import {
+  mapOptions,
+  EXCEPTIONS_FULL_OPTIONS_MAP,
+} from 'ee/security_orchestration/components/policy_editor/scan_result/advanced_settings/constants';
 
 export default {
   name: 'PolicyExceptionsSelector',
@@ -19,15 +21,8 @@ export default {
     },
   },
   computed: {
-    hasBypassOptionsGroupsRoles() {
-      return this.glFeatures.securityPoliciesBypassOptionsGroupRoles;
-    },
     availableOptions() {
-      const options = renderOptionsList({
-        securityPoliciesBypassOptionsGroupRoles: this.hasBypassOptionsGroupsRoles,
-      });
-
-      return mapOptions(options);
+      return mapOptions(EXCEPTIONS_FULL_OPTIONS_MAP);
     },
     hasMultipleOptions() {
       return this.availableOptions.length > 1;

@@ -60,8 +60,6 @@ module Security
       end
 
       def bypass_with_user?
-        return false if Feature.disabled?(:security_policies_bypass_options_group_roles, project)
-
         user_bypass_scope = UserBypassChecker.new(
           security_policy: security_policy, project: project, current_user: user
         ).bypass_scope
