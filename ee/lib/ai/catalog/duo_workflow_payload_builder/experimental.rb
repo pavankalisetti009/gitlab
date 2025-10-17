@@ -13,7 +13,7 @@ module Ai
         ].freeze
         LLM_MODEL_CLASS_PROVIDER = 'anthropic'
         LLM_MODEL_CLASS_NAME = 'claude-sonnet-4-5-20250929'
-        MAX_TOKEN_SIZE = 8_192
+        MAX_TOKEN_SIZE = 32_768
         DUO_FLOW_TIMEOUT = 30
         PLACEHOLDER_VALUE = 'history'
 
