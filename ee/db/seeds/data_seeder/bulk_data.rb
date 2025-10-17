@@ -6,6 +6,7 @@ class DataSeeder
     work_item_type
     widget_definition
     cycle_analytics_value_stream_setting
+    security_training_provider
   ].freeze
 
   def initialize(quiet = false)
