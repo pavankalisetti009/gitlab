@@ -39,10 +39,6 @@ $badge-height: $gl-spacing-scale-7;
   .card {
     margin-bottom: 0;
 
-    &-active {
-      background-color: var(--gl-background-color-subtle);
-    }
-
     .card-body {
       .price-description {
         align-items: center;
@@ -68,6 +64,10 @@ $badge-height: $gl-spacing-scale-7;
       }
     }
   }
+
+  .card-active {
+    background-color: var(--gl-background-color-subtle);
+  }
 }
 
 @include gl-container-width-up(md, panel) {
@@ -83,13 +83,13 @@ $badge-height: $gl-spacing-scale-7;
     .card-wrapper {
       margin-bottom: $gutter-small;
       width: calc(50% - #{$gutter-small} / 2);
+    }
 
-      &-has-badge {
-        padding-top: 0;
+    .card-wrapper-has-badge {
+      padding-top: 0;
 
-        .card {
-          height: calc(100% - #{$badge-height});
-        }
+      .card {
+        height: calc(100% - #{$badge-height});
       }
     }
 
