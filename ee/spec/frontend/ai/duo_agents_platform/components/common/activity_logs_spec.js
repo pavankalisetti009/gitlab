@@ -44,10 +44,12 @@ describe('ActivityLogs', () => {
     it('renders the expected content', () => {
       const markdownContent = findAllMarkdownRenderComponent();
       expect(findAllListItems()).toHaveLength(3);
-      // Content
-      expect(markdownContent.at(0).props().markdown).toContain('Starting workflow');
-      expect(markdownContent.at(1).props().markdown).toContain('Processing data');
-      expect(markdownContent.at(2).props().markdown).toContain('Workflow completed');
+      expect(findAllMarkdownRenderComponent()).toHaveLength(2);
+      // First item is always filtered out as its the user set goal
+      expect(findAllListItems().at(0).text()).toContain('Starting workflow');
+      // Markdown Content
+      expect(markdownContent.at(0).props().markdown).toContain('Processing data');
+      expect(markdownContent.at(1).props().markdown).toContain('Workflow completed');
     });
 
     it('renders the updated session triggered title', () => {
@@ -69,6 +71,7 @@ describe('ActivityLogs', () => {
     describe('when timestamp is required', () => {
       it('renders timestamps with timeago format in the DOM', () => {
         expect(findAllTimestamps()).toHaveLength(3);
+
         expect(getTimeago).toHaveBeenCalled();
         expect(mockTimeago.format).toHaveBeenCalledWith('2023-01-01T10:00:00Z');
         expect(mockTimeago.format).toHaveBeenCalledWith('2023-01-01T10:05:00Z');
@@ -84,6 +87,63 @@ describe('ActivityLogs', () => {
     describe('when filepath is not present', () => {
       it('does not render code elements', () => {
         expect(findAllCodeElements()).toHaveLength(0);
+      });
+    });
+  });
+
+  describe('markdown decision logic', () => {
+    describe('when message is at index 0', () => {
+      it.each(['user', 'agent', 'tool', 'workflow_end', 'unknown'])(
+        'does not render markdown with type %s',
+        ({ messageType }) => {
+          wrapper = createWrapper({
+            items: [
+              {
+                id: 0,
+                content: 'New workflow item',
+                message_type: messageType,
+                status: 'success',
+                timestamp: '2023-01-01T10:15:00Z',
+              },
+            ],
+          });
+
+          expect(findAllListItems()).toHaveLength(1);
+          expect(findAllMarkdownRenderComponent()).toHaveLength(0);
+        },
+      );
+    });
+
+    describe('when message is higher than index 0', () => {
+      it.each`
+        messageType       | isMarkdown
+        ${'user'}         | ${false}
+        ${'agent'}        | ${true}
+        ${'tool'}         | ${true}
+        ${'workflow_end'} | ${true}
+        ${'unknown'}      | ${true}
+      `('does not render markdown with type $messageType', ({ messageType, isMarkdown }) => {
+        wrapper = createWrapper({
+          items: [
+            {
+              id: 0,
+              content: 'initialmessage',
+              message_type: 'agent',
+              status: 'success',
+              timestamp: '2023-01-01T10:15:00Z',
+            },
+            {
+              id: 1,
+              content: 'New workflow item',
+              message_type: messageType,
+              status: 'success',
+              timestamp: '2023-01-01T10:15:00Z',
+            },
+          ],
+        });
+
+        expect(findAllListItems()).toHaveLength(2);
+        expect(findAllMarkdownRenderComponent()).toHaveLength(isMarkdown ? 1 : 0);
       });
     });
   });
@@ -182,9 +242,11 @@ describe('ActivityLogs', () => {
 
     it('updates the rendered content', async () => {
       expect(findAllListItems()).toHaveLength(3);
-      expect(findAllMarkdownRenderComponent().at(0).props().markdown).toBe('Starting workflow');
+      expect(findAllMarkdownRenderComponent()).toHaveLength(2);
+      expect(findAllMarkdownRenderComponent().at(0).props().markdown).toBe('Processing data');
 
       const newItems = [
+        ...mockItems,
         {
           id: 4,
           content: 'New workflow item',
@@ -196,8 +258,9 @@ describe('ActivityLogs', () => {
 
       await wrapper.setProps({ items: newItems });
 
-      expect(findAllListItems()).toHaveLength(1);
-      expect(findAllMarkdownRenderComponent().at(0).props().markdown).toBe('New workflow item');
+      expect(findAllListItems()).toHaveLength(4);
+      expect(findAllMarkdownRenderComponent()).toHaveLength(3);
+      expect(findAllMarkdownRenderComponent().at(2).props().markdown).toBe('New workflow item');
     });
 
     describe('when items change', () => {
