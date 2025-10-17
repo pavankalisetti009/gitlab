@@ -120,7 +120,6 @@ describe('HandRaiseLeadModal', () => {
 
       expectedFields.forEach(({ key, name }) => {
         expect(fieldsProps()).toHaveProperty(key);
-
         if (name !== undefined) {
           expect(fieldsProps()[key].inputAttrs).toHaveProperty('name', name);
         }
@@ -172,7 +171,7 @@ describe('HandRaiseLeadModal', () => {
     describe('country field', () => {
       it('does not show country field when Apollo is loading countries', async () => {
         wrapper = await createComponent({ countriesLoading: true });
-
+        await triggerOpenModal();
         await nextTick();
 
         expect(fieldsProps()).not.toHaveProperty('country');
@@ -180,7 +179,8 @@ describe('HandRaiseLeadModal', () => {
 
       it('shows country field when Apollo is not loading countries', async () => {
         wrapper = await createComponent();
-
+        await triggerOpenModal();
+        await waitForPromises();
         await nextTick();
 
         expect(fieldsProps()).toHaveProperty('country');
@@ -190,6 +190,7 @@ describe('HandRaiseLeadModal', () => {
     describe('state field', () => {
       it('does not show state field when Apollo is loading states', async () => {
         wrapper = await createComponent({ statesLoading: true });
+        await triggerOpenModal();
 
         await nextTick();
 
@@ -198,6 +199,7 @@ describe('HandRaiseLeadModal', () => {
 
       it('shows state field when country requires state', async () => {
         wrapper = await createComponent();
+        await triggerOpenModal();
 
         const updatedValues = {
           ...wrapper.vm.formValues,
@@ -212,6 +214,7 @@ describe('HandRaiseLeadModal', () => {
 
       it('does not show state field when country does not require state', async () => {
         wrapper = await createComponent();
+        await triggerOpenModal();
 
         const updatedValues = {
           ...wrapper.vm.formValues,
@@ -329,18 +332,55 @@ describe('HandRaiseLeadModal', () => {
     });
   });
 
+  describe('GraphQL query behavior', () => {
+    it('loads countries only after modal is opened', async () => {
+      const mockResolvers = {
+        Query: {
+          countries: jest.fn().mockReturnValue(COUNTRIES),
+          states: jest.fn().mockReturnValue(STATES),
+        },
+      };
+
+      wrapper = shallowMountExtended(HandRaiseLeadModal, {
+        apolloProvider: createMockApollo([], mockResolvers),
+        propsData: {
+          submitPath: CREATE_HAND_RAISE_LEAD_PATH,
+          user: USER,
+        },
+        stubs: {
+          ListboxInput,
+        },
+      });
+
+      await nextTick();
+
+      expect(mockResolvers.Query.countries).not.toHaveBeenCalled();
+      expect(mockResolvers.Query.states).not.toHaveBeenCalled();
+
+      await triggerOpenModal();
+      await waitForPromises();
+
+      expect(mockResolvers.Query.countries).toHaveBeenCalled();
+    });
+  });
+
   describe('country and state field behavior', () => {
     beforeEach(async () => {
       wrapper = await createComponent();
     });
 
     it('renders country field after countries are loaded', async () => {
+      // Enable queries and wait for them to load
+      await triggerOpenModal();
+      await waitForPromises();
       await nextTick();
 
       expect(findCountrySelect().props('items').length).toBeGreaterThan(1);
     });
 
     it('renders state field after selecting a country that requires states', async () => {
+      await triggerOpenModal();
+      await waitForPromises();
       await nextTick();
 
       const updatedValues = {
@@ -356,6 +396,8 @@ describe('HandRaiseLeadModal', () => {
     });
 
     it('has the proper state show and hide logic based on the selected country', async () => {
+      await triggerOpenModal();
+      await waitForPromises();
       await nextTick();
 
       const updatedValuesNL = {

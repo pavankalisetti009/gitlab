@@ -71,6 +71,8 @@ export default {
   data() {
     return {
       formValues: {},
+      // eslint-disable-next-line vue/no-unused-properties
+      skipCountryStateQueries: false, // used by mixin
     };
   },
   computed: {
@@ -183,7 +185,6 @@ export default {
     },
     onCompanyNameChange(input, text) {
       input(text);
-
       this.formValues.group_name = `${text}-${this.$options.i18n.group}`;
       this.formValues.project_name = `${text}-${this.$options.i18n.project}`;
     },
@@ -215,7 +216,6 @@ export default {
     data-testid="trial-form"
   >
     <input :value="$options.csrf.token" type="hidden" name="authenticity_token" />
-
     <gl-form-fields
       v-model="formValues"
       :form-id="$options.formId"
@@ -233,7 +233,6 @@ export default {
           @blur="blur"
         />
       </template>
-
       <template #input(country)="{ value, input }">
         <listbox-input
           :selected="value"
@@ -246,7 +245,6 @@ export default {
           @select="onCountrySelect($event, input)"
         />
       </template>
-
       <template #input(state)="{ value, input }">
         <listbox-input
           :selected="value"
@@ -259,7 +257,6 @@ export default {
           @select="(val) => input && input(val)"
         />
       </template>
-
       <template #input(group_name)="{ id, value = '', input = () => {}, blur = () => {} }">
         <div class="gl-flex">
           <gl-form-group
@@ -286,7 +283,6 @@ export default {
           </div>
         </div>
       </template>
-
       <template #input(project_name)="{ id, value, input = () => {}, blur = () => {} }">
         <div class="gl-flex">
           <gl-form-group
@@ -310,12 +306,10 @@ export default {
           </div>
         </div>
       </template>
-
       <template #input(namespace_id)="{ value }">
         <input type="hidden" :value="value" name="namespace_id" />
       </template>
     </gl-form-fields>
-
     <gl-button
       type="submit"
       variant="confirm"
@@ -324,7 +318,6 @@ export default {
     >
       {{ $options.i18n.buttonText }}
     </gl-button>
-
     <div class="gl-mt-4">
       <gl-sprintf :message="$options.i18n.termsText">
         <template #buttonText>{{ $options.i18n.buttonText }}</template>
