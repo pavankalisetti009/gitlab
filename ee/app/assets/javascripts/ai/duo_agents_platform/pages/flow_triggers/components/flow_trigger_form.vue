@@ -11,7 +11,7 @@ import {
 } from '@gitlab/ui';
 import { s__ } from '~/locale';
 import { convertToGraphQLId } from '~/graphql_shared/utils';
-import { scrollTo } from '~/lib/utils/common_utils';
+import { scrollTo } from '~/lib/utils/scroll_utils';
 import { TYPENAME_PROJECT } from '~/graphql_shared/constants';
 import UserSelect from '~/vue_shared/components/user_select/user_select.vue';
 import ErrorsAlert from '~/vue_shared/components/errors_alert.vue';
