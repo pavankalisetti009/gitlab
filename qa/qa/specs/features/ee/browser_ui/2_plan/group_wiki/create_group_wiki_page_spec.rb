@@ -1,7 +1,11 @@
 # frozen_string_literal: true
 
 module QA
-  RSpec.describe 'Plan', feature_category: :wiki do
+  RSpec.describe 'Plan', feature_category: :wiki, quarantine: {
+    issue: 'https://gitlab.com/gitlab-org/gitlab/-/issues/577600',
+    only: { job: "gdk-instance-project-studio" },
+    type: :bug
+  } do
     describe 'Creating pages in group wikis' do
       let(:wiki_title) { 'New Wiki page' }
       let(:wiki_content) { 'New Wiki content' }
