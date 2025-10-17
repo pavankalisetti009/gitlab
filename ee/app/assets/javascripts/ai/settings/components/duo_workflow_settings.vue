@@ -161,11 +161,7 @@ export default {
     <crud-component
       :title="s__('AiPowered|GitLab Duo Agent Platform')"
       :class="{ 'gl-mt-5': shouldDisplayPageHeader }"
-      :description="
-        s__(
-          'AiPowered|GitLab Duo Agent Platform is an AI-native coding agent in the Visual Studio Code (VS Code) IDE.',
-        )
-      "
+      :description="s__('AiPowered|GitLab Duo Agent Platform is an AI-native coding agent.')"
     >
       <template #default>
         <h3 class="gl-mb-3">

@@ -6589,7 +6589,7 @@ msgstr ""
 msgid "AiPowered|GitLab Duo Agent Platform has successfully been turned off."
 msgstr ""
 
-msgid "AiPowered|GitLab Duo Agent Platform is an AI-native coding agent in the Visual Studio Code (VS Code) IDE."
+msgid "AiPowered|GitLab Duo Agent Platform is an AI-native coding agent."
 msgstr ""
 
 msgid "AiPowered|GitLab Duo Agent Platform is now on for the instance and the service account (%{accountId}) was created. To use Agent Platform in your groups, you must turn on AI features for specific groups."
