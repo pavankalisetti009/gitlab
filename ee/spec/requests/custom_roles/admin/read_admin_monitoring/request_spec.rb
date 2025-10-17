@@ -3,6 +3,12 @@
 require 'spec_helper'
 
 RSpec.describe 'User with read_admin_monitoring', :enable_admin_mode, feature_category: :permissions do
+  around do |example|
+    Gitlab::ExclusiveLease.skipping_transaction_check do
+      example.run
+    end
+  end
+
   let!(:current_user) { create(:user) }
   let!(:permission) { :read_admin_monitoring }
   let!(:role) { create(:admin_member_role, permission, user: current_user) }
@@ -13,13 +19,13 @@ RSpec.describe 'User with read_admin_monitoring', :enable_admin_mode, feature_ca
   end
 
   describe Admin::BackgroundMigrationsController do
-    it "GET #index", quarantine: 'https://gitlab.com/gitlab-org/gitlab/-/issues/570211' do
+    it "GET #index" do
       get admin_background_migrations_path
 
       expect(response).to have_gitlab_http_status(:ok)
     end
 
-    it "GET #show", quarantine: 'https://gitlab.com/gitlab-org/gitlab/-/issues/570212' do
+    it "GET #show" do
       migration = create(:batched_background_migration_job)
       get admin_background_migration_path(migration)
 
@@ -72,7 +78,7 @@ RSpec.describe 'User with read_admin_monitoring', :enable_admin_mode, feature_ca
 
   describe Admin::DashboardController do
     describe "#index" do
-      it 'user has access via a custom role', quarantine: 'https://gitlab.com/gitlab-org/gitlab/-/issues/570209' do
+      it 'user has access via a custom role' do
         get admin_root_path
 
         expect(response).to have_gitlab_http_status(:ok)
