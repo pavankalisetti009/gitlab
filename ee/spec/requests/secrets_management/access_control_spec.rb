@@ -93,20 +93,18 @@ RSpec.describe 'Secrets Manager Access Control', :gitlab_secrets_manager, featur
       # ---------+----------------------------------+------------+-----------------|------------------------------------------------------------------------------------------------
       :global    | :same_project                    | :global    | :success        | nil
       :global    | :same_project                    | :user      | :rejected       | 'blocked authorization with message: invalid subject for user authentication'
-      :global    | :same_project                    | :pipeline  | :rejected       | 'failed to perform inline authentication: failed to template policy'
+      :global    | :same_project                    | :pipeline  | :rejected       | 'error validating claims: claim "secrets_manager_scope" does not match any associated bound claim values'
       # ---------+----------------------------------+------------+-----------------|-----------------------------------------------------------------------------------------------
       # ---------+----------------------------------+------------+-----------------|-----------------------------------------------------------------------------------------------
       :user      | :same_project                    | :user      | :success        | nil
-      # TODO: Uncomment the test below when we tackle this issue - https://gitlab.com/gitlab-org/gitlab/-/issues/576434
-      # :user    | :same_project                    | :global    | :rejected       | 'error validating token: invalid subject (sub) claim'
-      :user      | :same_project                    | :pipeline  | :rejected       | 'failed to perform inline authentication: failed to template policy'
+      :user      | :same_project                    | :global    | :rejected       | 'error validating token: invalid subject (sub) claim'
+      :user      | :same_project                    | :pipeline  | :rejected       | 'error validating claims: claim "secrets_manager_scope" does not match any associated bound claim values'
       :user      | :project_in_same_namespace       | :user      | :rejected       | 'blocked authorization with message: token project_id does not match role base'
       :user      | :project_in_different_namespace  | :user      | :rejected       | 'blocked authorization with message: token project_id does not match role base'
       # ---------+----------------------------------+------------+-----------------|------------------------------------------------------------------------------------------------
       # ---------+----------------------------------+------------+-----------------|------------------------------------------------------------------------------------------------
       :pipeline  | :same_project                    | :pipeline  | :success        | nil
-      # TODO: Uncomment the test below when we tackle this issue - https://gitlab.com/gitlab-org/gitlab/-/issues/576434
-      # :pipeline| :same_project                    | :global    | :rejected       | 'error validating token: invalid subject (sub) claim'
+      :pipeline  | :same_project                    | :global    | :rejected       | 'error validating token: invalid subject (sub) claim'
       :pipeline  | :same_project                    | :user      | :rejected       | 'blocked authorization with message: invalid subject for user authentication'
       :pipeline  | :project_in_same_namespace       | :pipeline  | :rejected       | 'error validating claims: claim "project_id" does not match any associated bound claim values'
       :pipeline  | :project_in_different_namespace  | :pipeline  | :rejected       | 'error validating claims: claim "project_id" does not match any associated bound claim values'
@@ -217,6 +215,16 @@ RSpec.describe 'Secrets Manager Access Control', :gitlab_secrets_manager, featur
       )
     end
 
+    let(:project_pipeline_client_with_user_defined_jwt) do
+      SecretsManagement::TestClient.new(
+        jwt: Gitlab::Ci::JwtV2.for_build(project_build, aud: project_secrets_manager.class.server_url),
+        auth_mount: project_secrets_manager.ci_auth_mount,
+        role: project_secrets_manager.ci_auth_role,
+        auth_namespace: project_secrets_manager.full_project_namespace_path,
+        namespace: project_secrets_manager.full_project_namespace_path
+      )
+    end
+
     let(:pipeline_client_of_project_in_same_namespace) do
       SecretsManagement::TestClient.new(
         jwt: secrets_manager_of_project_in_same_namespace.ci_jwt(build_of_project_in_same_namespace),
@@ -287,6 +295,22 @@ RSpec.describe 'Secrets Manager Access Control', :gitlab_secrets_manager, featur
           )
 
           expect(value).to eq("my_value")
+        end
+      end
+
+      context 'when using a custom user defined pipeline_jwt of same project' do
+        subject(:read_secret) do
+          project_pipeline_client_with_user_defined_jwt.read_kv_secret_value(
+            project_secrets_manager.ci_secrets_mount_path,
+            project_secrets_manager.ci_data_path("my_secret_one")
+          )
+        end
+
+        it 'fails to read the secret value with pipeline_jwt that does not have secrets_manager_scope claim' do
+          expect { read_secret }.to raise_error do |error|
+            expect(error).to be_a SecretsManagement::SecretsManagerClient::AuthenticationError
+            expect(error.message).to include("error validating claims: claim \"secrets_manager_scope\" is missing")
+          end
         end
       end
 

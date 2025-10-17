@@ -930,7 +930,8 @@ RSpec.describe SecretsManagement::SecretsManagerClient, :gitlab_secrets_manager,
         project_id: project_id,
         user_id: user_id,
         aud: server_aud,
-        user_name: user_name
+        user_name: user_name,
+        scope: :user
       ).encoded
     end
 
