@@ -64,7 +64,7 @@ RSpec.describe Ai::Catalog::DuoWorkflowPayloadBuilder::Experimental, feature_cat
       expect(described_class::AGENT_COMPONENT_TYPE).to eq('AgentComponent')
       expect(described_class::LLM_MODEL_CLASS_PROVIDER).to eq('anthropic')
       expect(described_class::LLM_MODEL_CLASS_NAME).to eq('claude-sonnet-4-5-20250929')
-      expect(described_class::MAX_TOKEN_SIZE).to eq(8_192)
+      expect(described_class::MAX_TOKEN_SIZE).to eq(32_768)
       expect(described_class::DUO_FLOW_TIMEOUT).to eq(30)
       expect(described_class::PLACEHOLDER_VALUE).to eq('history')
     end
