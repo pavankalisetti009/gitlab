@@ -16,14 +16,14 @@ RSpec.describe Gitlab::Elastic::SearchResults, 'query performance', feature_cate
     let(:results) { described_class.new(user, query, limit_project_ids) }
 
     allowed_scopes = %w[projects notes blobs wiki_blobs issues commits merge_requests epics milestones notes users]
-    scopes_with_notes_query = %w[issues]
+    scopes_with_notes_query = %w[issues merge_requests]
 
     include_examples 'calls Elasticsearch the expected number of times',
       scopes: (allowed_scopes - scopes_with_notes_query), scopes_with_multiple: scopes_with_notes_query
 
-    context 'when search_work_item_queries_notes flag is false' do
+    context 'when flags for searching notes of Notable items are false' do
       before do
-        stub_feature_flags(search_work_item_queries_notes: false)
+        stub_feature_flags(search_work_item_queries_notes: false, search_merge_request_queries_notes: false)
       end
 
       include_examples 'calls Elasticsearch the expected number of times', scopes: allowed_scopes,
