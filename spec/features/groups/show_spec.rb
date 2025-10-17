@@ -140,13 +140,11 @@ RSpec.describe 'Group show page', :with_current_organization, feature_category: 
       end
 
       it 'does not show `Create subgroup` link' do
-        expect(page)
-          .not_to have_link(_('Create subgroup'), href: new_group_path(parent_id: group.id))
+        expect(page).not_to have_link _('Create subgroup')
       end
 
       it 'does not show `Create project` link' do
-        expect(page)
-          .not_to have_link('Create project', href: new_project_path(namespace_id: group.id))
+        expect(page).not_to have_link _('Create project')
       end
 
       it 'shows empty state' do
