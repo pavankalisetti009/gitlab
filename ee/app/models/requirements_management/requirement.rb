@@ -137,10 +137,6 @@ module RequirementsManagement
       errors.add(:project_id, _('must belong to same project of the work item.')) if requirement_issue.project_id != project_id
     end
 
-    def requirement_issue_sync_error!(invalid_issue:)
-      self.invalid_requirement_issue = invalid_issue
-    end
-
     def state
       return unless requirement_issue&.work_item_type&.requirement?
 
