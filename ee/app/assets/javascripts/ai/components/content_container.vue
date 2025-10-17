@@ -167,6 +167,7 @@ export default {
         :metadata="metadata"
         :user-model-selection-enabled="userModelSelectionEnabled"
         v-bind="activeTab.props"
+        class="gl-h-full"
         @switch-to-active-tab="onSwitchToActiveTab"
         @change-title="handleTitleChange"
       />
