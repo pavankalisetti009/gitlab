@@ -941,8 +941,6 @@ RSpec.describe Project, feature_category: :groups_and_projects do
 
   describe 'update callbacks' do
     describe '.update_legacy_open_source_license_available' do
-      using RSpec::Parameterized::TableSyntax
-
       where(:visibility_level, :new_visibility_level) do
         Gitlab::VisibilityLevel::PUBLIC | Gitlab::VisibilityLevel::INTERNAL
         Gitlab::VisibilityLevel::PUBLIC | Gitlab::VisibilityLevel::PRIVATE
@@ -2297,20 +2295,20 @@ RSpec.describe Project, feature_category: :groups_and_projects do
   describe '#ai_catalog_available?' do
     subject(:ai_catalog_available) { project.ai_catalog_available? }
 
-    before do
-      allow(::Gitlab::Llm::StageCheck).to receive(:available?).with(project, :ai_catalog).and_return(stage_check_available)
+    where(:stage_check_available, :duo_features_enabled, :expectation) do
+      true  | true | true
+      true  | false | false
+      false | true | false
+      false | false | false
     end
 
-    context 'when stage check availability passes' do
-      let(:stage_check_available) { true }
+    with_them do
+      before do
+        allow(::Gitlab::Llm::StageCheck).to receive(:available?).with(project, :ai_catalog).and_return(stage_check_available)
+        project.duo_features_enabled = duo_features_enabled
+      end
 
-      it { is_expected.to be true }
-    end
-
-    context 'when stage check availability fails' do
-      let(:stage_check_available) { false }
-
-      it { is_expected.to be false }
+      it { is_expected.to be expectation }
     end
   end
 
@@ -4668,8 +4666,6 @@ RSpec.describe Project, feature_category: :groups_and_projects do
       let_it_be_with_reload(:project) { create(:project, group: subgroup) }
 
       shared_examples '[configuration](inherit_group_setting: bool) and [configuration]_locked?' do |attribute|
-        using RSpec::Parameterized::TableSyntax
-
         where(:group_attr, :subgroup_attr, :project_attr, :group_with_inherit_attr?, :group_without_inherit_attr?, :group_locked?, :subgroup_with_inherit_attr?, :subgroup_without_inherit_attr?, :subgroup_locked?, :project_with_inherit_attr?, :project_without_inherit_attr?, :project_locked?) do
           true  | true  | true      | true  | true  | false     | true  | true  | true      | true  | true  | true
           true  | true  | false     | true  | true  | false     | true  | true  | true      | true  | false | true

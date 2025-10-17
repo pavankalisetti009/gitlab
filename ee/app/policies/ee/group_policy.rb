@@ -338,7 +338,7 @@ module EE
       end
 
       condition(:ai_catalog_available, scope: :subject) do
-        ::Gitlab::Llm::StageCheck.available?(@subject, :ai_catalog)
+        @subject.duo_features_enabled && ::Gitlab::Llm::StageCheck.available?(@subject, :ai_catalog)
       end
 
       rule { user_banned_from_namespace }.prevent_all
