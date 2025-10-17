@@ -379,14 +379,12 @@ module Security
     end
 
     def merge_request_bypassed?(merge_request)
-      return false if ::Feature.disabled?(:security_policies_bypass_options_mr_widget, merge_request.project)
       return false unless type_approval_policy?
 
       approval_policy_merge_request_bypass_events.where(merge_request: merge_request).exists?
     end
 
     def merge_request_bypass_allowed?(merge_request, user)
-      return false if ::Feature.disabled?(:security_policies_bypass_options_mr_widget, merge_request.project)
       return false unless type_approval_policy?
       return false if bypass_settings.users_and_groups_empty?
 

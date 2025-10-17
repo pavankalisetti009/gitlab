@@ -89,7 +89,7 @@ export default {
       return Boolean(this.activeWarnPolicies.length);
     },
     hasBypassFeatureFlags() {
-      return this.warnModeEnabled || this.bypassOptionsEnabled;
+      return this.warnModeEnabled;
     },
     hasBypassPolicies() {
       return this.bypassPolicies.length > 0;
@@ -136,9 +136,6 @@ export default {
     },
     warnModeEnabled() {
       return this.glFeatures.securityPolicyApprovalWarnMode;
-    },
-    bypassOptionsEnabled() {
-      return this.glFeatures.securityPoliciesBypassOptionsMrWidget;
     },
   },
   methods: {

@@ -103,6 +103,19 @@ RSpec.describe GitlabSubscriptions::GroupsController, feature_category: :subscri
 
           expect(assigns(:plan_data)).to eq plan_data
         end
+
+        context 'when promo_code is provided' do
+          subject(:get_new) do
+            get new_gitlab_subscriptions_group_path, params: { plan_id: 'plan-id', promo_code: 'promo_code' }
+            response
+          end
+
+          it 'assigns the promo code' do
+            get_new
+
+            expect(assigns(:promo_code)).to eq 'promo_code'
+          end
+        end
       end
     end
   end

@@ -12,7 +12,7 @@ import { getCookie } from '~/lib/utils/common_utils';
 import { getStorageValue, saveStorageValue } from '~/lib/utils/local_storage';
 import { duoChatGlobalState } from '~/super_sidebar/constants';
 import { clearDuoChatCommands, setAgenticMode } from 'ee/ai/utils';
-import { parseGid, convertToGraphQLId } from '~/graphql_shared/utils';
+import { convertToGraphQLId } from '~/graphql_shared/utils';
 import { TYPENAME_AI_DUO_WORKFLOW } from '~/graphql_shared/constants';
 import glFeatureFlagsMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
 import {
@@ -50,6 +50,8 @@ import {
   processWorkflowMessage,
 } from '../utils/workflow_socket_utils';
 import { getInitialDimensions, calculateDimensions } from '../utils/resize_utils';
+import { validateAgentExists as validateAgent, prepareAgentSelection } from '../utils/agent_utils';
+import { parseThreadForSelection, resetThreadContent } from '../utils/thread_utils';
 
 export default {
   name: 'DuoAgenticChatApp',
@@ -599,12 +601,14 @@ export default {
       );
     },
     async onThreadSelected(thread) {
-      this.activeThread = thread.id;
+      const { activeThread, workflowId } = parseThreadForSelection(thread);
+
+      this.activeThread = activeThread;
+      this.workflowId = workflowId;
       this.multithreadedView = DUO_CHAT_VIEWS.CHAT;
       this.chatMessageHistory = [];
       this.setMessages([]);
       this.cleanupState(false);
-      this.workflowId = parseGid(thread.id).id;
 
       await this.hydrateActiveThread();
 
@@ -677,34 +681,17 @@ export default {
     async onNewChat(agent, reuseAgent) {
       clearDuoChatCommands();
       this.setMessages([]);
-      this.activeThread = undefined;
-      this.chatMessageHistory = [];
-      this.multithreadedView = DUO_CHAT_VIEWS.CHAT;
+
+      const threadContent = resetThreadContent();
+      Object.assign(this, threadContent);
+
       this.cleanupState();
       this.$emit('change-title');
 
-      if (reuseAgent) {
-        return;
+      const agentState = prepareAgentSelection(agent, reuseAgent);
+      if (agentState) {
+        Object.assign(this, agentState);
       }
-
-      let selectedFoundationalAgent = null;
-      let aiCatalogItemVersionId = '';
-
-      if (agent?.foundational) {
-        selectedFoundationalAgent = agent;
-        this.agentConfig = null;
-      } else if (agent?.id) {
-        aiCatalogItemVersionId = agent.versions.nodes.find(({ released }) => released)?.id;
-      } else {
-        this.agentConfig = null;
-      }
-
-      this.aiCatalogItemVersionId = aiCatalogItemVersionId;
-      this.selectedFoundationalAgent = selectedFoundationalAgent;
-
-      // Reset agent validation state
-      this.isChatAvailable = true;
-      this.agentDeletedError = '';
     },
     onModelSelect(selectedModelValue) {
       const model = getModel(this.availableModels, selectedModelValue);
@@ -716,30 +703,15 @@ export default {
       }
     },
     validateAgentExists() {
-      if (!this.aiCatalogItemVersionId) {
-        // No specific agent selected, using default - chat should be available
-        this.isChatAvailable = true;
-        this.agentDeletedError = '';
-        return true;
-      }
-
-      const agentExists = this.catalogAgents.some((agent) =>
-        agent.versions?.nodes?.some((version) => version.id === this.aiCatalogItemVersionId),
+      const { isAvailable, errorMessage } = validateAgent(
+        this.aiCatalogItemVersionId,
+        this.catalogAgents,
       );
 
-      if (!agentExists) {
-        // Disable chat and show error when agent is deleted
-        this.isChatAvailable = false;
-        this.agentDeletedError = s__(
-          'DuoAgenticChat|The agent associated with this conversation is no longer available. You can view the conversation history but cannot send new messages.',
-        );
-      } else {
-        // Agent exists - ensure chat is available and clear any error
-        this.isChatAvailable = true;
-        this.agentDeletedError = '';
-      }
+      this.isChatAvailable = isAvailable;
+      this.agentDeletedError = errorMessage;
 
-      return agentExists;
+      return isAvailable;
     },
   },
 };

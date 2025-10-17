@@ -2,9 +2,7 @@ import { uniqueId, get } from 'lodash';
 import {
   CUSTOM_ROLES,
   EXCEPTIONS_FULL_OPTIONS_MAP,
-  GROUPS,
   ROLES,
-  USERS,
 } from 'ee/security_orchestration/components/policy_editor/scan_result/advanced_settings/constants';
 
 export const createSourceBranchPatternObject = ({ id = '', source = {}, target = {} } = {}) => ({
@@ -32,33 +30,13 @@ export const isValidServiceAccount = (item) => item && Boolean(item.name) && Boo
 export const removeIds = (items = []) => {
   return items.map(({ id, ...item }) => ({ ...item }));
 };
-
-export const renderOptionsList = ({ securityPoliciesBypassOptionsGroupRoles = false }) => {
-  const allOptions = { ...EXCEPTIONS_FULL_OPTIONS_MAP };
-
-  if (!securityPoliciesBypassOptionsGroupRoles) {
-    delete allOptions[ROLES];
-    delete allOptions[CUSTOM_ROLES];
-    delete allOptions[GROUPS];
-    delete allOptions[USERS];
-  }
-
-  return allOptions;
-};
-
 /**
  * Filter out invalid exceptions keys
  * @param keys
  * @returns {string[]};
  */
 export const onlyValidKeys = (keys) => {
-  const { securityPoliciesBypassOptionsGroupRoles } = window.gon?.features || {};
-
-  const validKeys = Object.keys(
-    renderOptionsList({
-      securityPoliciesBypassOptionsGroupRoles,
-    }),
-  );
+  const validKeys = Object.keys(EXCEPTIONS_FULL_OPTIONS_MAP);
   return keys.filter((key) => validKeys.includes(key));
 };
 

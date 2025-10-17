@@ -81,7 +81,6 @@ describe('SecurityPolicyViolations merge checks component', () => {
     status = 'SUCCESS',
     securityPoliciesPath = null,
     warnModeEnabled = false,
-    securityPoliciesBypassOptionsMrWidget = false,
     policies = defaultPolicies,
   } = {}) {
     wrapper = mountExtended(SecurityPolicyViolations, {
@@ -100,7 +99,6 @@ describe('SecurityPolicyViolations merge checks component', () => {
       provide: {
         glFeatures: {
           securityPolicyApprovalWarnMode: warnModeEnabled,
-          securityPoliciesBypassOptionsMrWidget,
         },
       },
       stubs: { ActionButtons },
@@ -233,7 +231,6 @@ describe('SecurityPolicyViolations merge checks component', () => {
       createComponent({
         warnModeEnabled: true,
         securityPoliciesPath,
-        securityPoliciesBypassOptionsMrWidget: true,
       });
       await waitForPromises();
 
@@ -278,7 +275,6 @@ describe('SecurityPolicyViolations merge checks component', () => {
 
     it('enables bypass button for bypass statuses', async () => {
       createComponent({
-        securityPoliciesBypassOptionsMrWidget: true,
         allowBypass: true,
         securityPoliciesPath: policiesPath,
         warnModeEnabled: true,
@@ -302,7 +298,6 @@ describe('SecurityPolicyViolations merge checks component', () => {
 
     it('refetches the policies when policies are bypassed', async () => {
       createComponent({
-        securityPoliciesBypassOptionsMrWidget: true,
         allowBypass: true,
         bypassed: true,
         securityPoliciesPath: policiesPath,
@@ -320,10 +315,10 @@ describe('SecurityPolicyViolations merge checks component', () => {
 
     it('disables bypass button after policies bypassed by user', async () => {
       createComponent({
-        securityPoliciesBypassOptionsMrWidget: true,
         securityPoliciesPath: policiesPath,
         allowBypass: true,
         policies: [],
+        warnModeEnabled: true,
       });
       await waitForPromises();
       expect(resolver).toHaveBeenCalledTimes(1);
@@ -342,7 +337,6 @@ describe('SecurityPolicyViolations merge checks component', () => {
         createComponent({
           warnModeEnabled: true,
           securityPoliciesPath: policiesPath,
-          securityPoliciesBypassOptionsMrWidget: true,
           allowBypass: true,
         });
         await waitForPromises();
@@ -376,7 +370,6 @@ describe('SecurityPolicyViolations merge checks component', () => {
             allowBypass: allowException,
             bypassed: exceptionPolicyBypassed,
             policies,
-            securityPoliciesBypassOptionsMrWidget: true,
             securityPoliciesPath: policiesPath,
             warnModeEnabled: true,
           });

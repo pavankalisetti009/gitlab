@@ -171,14 +171,6 @@ RSpec.describe Security::ScanResultPolicies::PolicyBypassChecker, feature_catego
         security_policy.update!(content: { bypass_settings: { users: [{ id: normal_user.id }] } })
       end
 
-      context 'when the feature flag is disabled' do
-        before do
-          stub_feature_flags(security_policies_bypass_options_group_roles: false)
-        end
-
-        it_behaves_like 'bypass is not allowed and audit log is not created'
-      end
-
       context 'when user is a project bot' do
         let_it_be(:user_access) { Gitlab::UserAccess.new(user, container: project) }
 
@@ -242,14 +234,6 @@ RSpec.describe Security::ScanResultPolicies::PolicyBypassChecker, feature_catego
       before do
         group.add_member(normal_user, Gitlab::Access::DEVELOPER)
         security_policy.update!(content: { bypass_settings: { groups: [{ id: group.id }] } })
-      end
-
-      context 'when the feature flag is disabled' do
-        before do
-          stub_feature_flags(security_policies_bypass_options_group_roles: false)
-        end
-
-        it_behaves_like 'bypass is not allowed and audit log is not created'
       end
 
       context 'when user is not a member of the allowed group' do
