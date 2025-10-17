@@ -58259,100 +58259,88 @@ msgstr ""
 msgid "SecretsManagerPermissions|Select the access scopes to grant to this user for the secrets manager and related API endpoints."
 msgstr ""
 
-msgid "Secrets|Add a description for the secret"
+msgid "SecretsManager|Add a description for the secret"
 msgstr ""
 
-msgid "Secrets|Add a new secret to the group by following the instructions in the form below."
+msgid "SecretsManager|Add a new secret to the group by following the instructions in the form below."
 msgstr ""
 
-msgid "Secrets|Add a new secret to the project by following the instructions in the form below."
+msgid "SecretsManager|Add a new secret to the project by following the instructions in the form below."
 msgstr ""
 
-msgid "Secrets|Add secret"
+msgid "SecretsManager|Add secret"
 msgstr ""
 
-msgid "Secrets|An error occurred while fetching secrets. Please make sure you have the proper permissions, or try again."
+msgid "SecretsManager|An error occurred while fetching secrets. Please make sure you have the proper permissions, or try again."
 msgstr ""
 
-msgid "Secrets|An error occurred while fetching the Secret manager status. Please try again."
+msgid "SecretsManager|An error occurred while fetching the secrets manager status. Please try again."
 msgstr ""
 
-msgid "Secrets|Are you sure you want to delete secret %{secretName}? This action cannot be undone, and the secret cannot be recovered."
+msgid "SecretsManager|Are you sure you want to delete secret %{secretName}? This action cannot be undone, and the secret cannot be recovered."
 msgstr ""
 
-msgid "Secrets|Are you sure you want to update secret %{secretName}? Saving these changes can cause disruptions, such as loss of access to connected services or failed deployments."
+msgid "SecretsManager|Are you sure you want to update secret %{secretName}? Saving these changes could cause disruptions, such as loss of access to connected services or failed deployments, if the value is rejected by the services."
 msgstr ""
 
-msgid "Secrets|Created"
+msgid "SecretsManager|Delete secret"
 msgstr ""
 
-msgid "Secrets|Delete Secret"
+msgid "SecretsManager|Edit %{name}"
 msgstr ""
 
-msgid "Secrets|Delete secret"
+msgid "SecretsManager|Enter a new value to update secret"
 msgstr ""
 
-msgid "Secrets|Edit %{name}"
+msgid "SecretsManager|Enter a value for the secret"
 msgstr ""
 
-msgid "Secrets|Enter a new value to update secret"
+msgid "SecretsManager|Failed to load secret. Please try again later."
 msgstr ""
 
-msgid "Secrets|Enter a value for the secret"
+msgid "SecretsManager|GitLab Secrets Manager"
 msgstr ""
 
-msgid "Secrets|Expires"
+msgid "SecretsManager|Maximum 200 characters."
 msgstr ""
 
-msgid "Secrets|Failed to load secret. Please try again later."
+msgid "SecretsManager|New secret"
 msgstr ""
 
-msgid "Secrets|Last used"
+msgid "SecretsManager|Please wait while the secrets manager is provisioned. You can refresh at any time."
 msgstr ""
 
-msgid "Secrets|Maximum 200 characters."
+msgid "SecretsManager|Provisioning in progress"
 msgstr ""
 
-msgid "Secrets|Name"
+msgid "SecretsManager|Secret %{secretName} has been deleted."
 msgstr ""
 
-msgid "Secrets|New secret"
+msgid "SecretsManager|Secret %{secretName} was successfully updated."
 msgstr ""
 
-msgid "Secrets|Please wait while we provision the Secrets Manager for you. Refresh at will."
+msgid "SecretsManager|Secrets"
 msgstr ""
 
-msgid "Secrets|Provisioning in progress"
+msgid "SecretsManager|Secrets can be items like API tokens, database credentials, or private keys. Unlike CI/CD variables, secrets must be explicitly requested by a job."
 msgstr ""
 
-msgid "Secrets|Secret %{secretName} has been deleted."
+msgid "SecretsManager|Secure your sensitive information"
 msgstr ""
 
-msgid "Secrets|Secret %{secretName} was successfully updated."
+msgid "SecretsManager|Stored secrets"
 msgstr ""
 
-msgid "Secrets|Secrets"
+msgid "SecretsManager|The name should be unique within this project."
 msgstr ""
 
-msgid "Secrets|Secrets can be items like API tokens, database credentials, or private keys. Unlike CI/CD variables, secrets must be explicitly requested by a job."
+msgid "SecretsManager|This field is required and must be 200 characters or less."
 msgstr ""
 
-msgid "Secrets|Secure your sensitive information"
+msgid "SecretsManager|To confirm, enter %{secretName}:"
 msgstr ""
 
-msgid "Secrets|Stored secrets"
-msgstr ""
-
-msgid "Secrets|The name should be unique within this project."
-msgstr ""
-
-msgid "Secrets|This field is required and must be 200 characters or less."
-msgstr ""
-
-msgid "Secrets|To confirm, enter %{secretName}:"
-msgstr ""
-
-msgid "Secrets|Use the Secrets Manager to store your sensitive credentials, and then safely use them in your processes."
+msgid "SecretsManager|Use the secrets manager to store your sensitive credentials, and then safely use them in your processes."
 msgstr ""
 
 msgid "Secure Code Warrior"

@@ -42,7 +42,7 @@ export default {
       error(error) {
         createAlert({
           message: s__(
-            'Secrets|An error occurred while fetching the Secret manager status. Please try again.',
+            'SecretsManager|An error occurred while fetching the secrets manager status. Please try again.',
           ),
         });
         captureException(error);
@@ -76,12 +76,14 @@ export default {
     <div class="gl-flex gl-items-center gl-justify-center">
       <gl-loading-icon class="gl-mr-3 gl-mt-1" />
       <p class="gl-mb-0 gl-inline gl-text-size-h1 gl-font-semibold">
-        {{ s__('Secrets|Provisioning in progress') }}
+        {{ s__('SecretsManager|Provisioning in progress') }}
       </p>
     </div>
     <p class="gl-mt-4 gl-text-secondary">
       {{
-        s__('Secrets|Please wait while we provision the Secrets Manager for you. Refresh at will.')
+        s__(
+          'SecretsManager|Please wait while the secrets manager is provisioned. You can refresh at any time.',
+        )
       }}
     </p>
   </div>

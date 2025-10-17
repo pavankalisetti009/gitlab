@@ -120,14 +120,14 @@ export default {
       return getDateInFuture(today, 1);
     },
     submitButtonText() {
-      return this.isEditing ? __('Save changes') : s__('Secrets|Add secret');
+      return this.isEditing ? __('Save changes') : s__('SecretsManager|Add secret');
     },
     valueFieldPlaceholder() {
       if (this.isEditing) {
-        return s__('Secrets|Enter a new value to update secret');
+        return s__('SecretsManager|Enter a new value to update secret');
       }
 
-      return s__('Secrets|Enter a value for the secret');
+      return s__('SecretsManager|Enter a value for the secret');
     },
   },
   methods: {
@@ -207,9 +207,12 @@ export default {
         : rotationValue;
     },
     showUpdateToastMessage() {
-      const toastMessage = sprintf(s__('Secrets|Secret %{secretName} was successfully updated.'), {
-        secretName: this.secret.name,
-      });
+      const toastMessage = sprintf(
+        s__('SecretsManager|Secret %{secretName} was successfully updated.'),
+        {
+          secretName: this.secret.name,
+        },
+      );
 
       this.$emit('show-secrets-toast', toastMessage);
     },
@@ -244,7 +247,7 @@ export default {
         data-testid="secret-name-field-group"
         label-for="secret-name"
         :label="__('Name')"
-        :description="s__('Secrets|The name should be unique within this project.')"
+        :description="s__('SecretsManager|The name should be unique within this project.')"
         :invalid-feedback="$options.i18n.fieldRequired"
         :state="secret.name === undefined || isNameValid"
       >
@@ -279,16 +282,16 @@ export default {
         :label="__('Description')"
         data-testid="secret-description-field-group"
         label-for="secret-description"
-        :description="s__('Secrets|Maximum 200 characters.')"
+        :description="s__('SecretsManager|Maximum 200 characters.')"
         :invalid-feedback="
-          s__('Secrets|This field is required and must be 200 characters or less.')
+          s__('SecretsManager|This field is required and must be 200 characters or less.')
         "
       >
         <gl-form-input
           id="secret-description"
           v-model.trim="secret.description"
           data-testid="secret-description"
-          :placeholder="s__('Secrets|Add a description for the secret')"
+          :placeholder="s__('SecretsManager|Add a description for the secret')"
           :state="secret.description === undefined || isDescriptionValid"
         />
       </gl-form-group>
@@ -387,7 +390,7 @@ export default {
         <gl-sprintf
           :message="
             s__(
-              `Secrets|Are you sure you want to update secret %{secretName}? Saving these changes can cause disruptions, such as loss of access to connected services or failed deployments.`,
+              `SecretsManager|Are you sure you want to update secret %{secretName}? Saving these changes could cause disruptions, such as loss of access to connected services or failed deployments, if the value is rejected by the services.`,
             )
           "
         >

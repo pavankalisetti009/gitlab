@@ -15,12 +15,12 @@ import SecretForm from './secret_form.vue';
 
 const i18n = {
   descriptionGroup: s__(
-    'Secrets|Add a new secret to the group by following the instructions in the form below.',
+    'SecretsManager|Add a new secret to the group by following the instructions in the form below.',
   ),
   descriptionProject: s__(
-    'Secrets|Add a new secret to the project by following the instructions in the form below.',
+    'SecretsManager|Add a new secret to the project by following the instructions in the form below.',
   ),
-  titleNew: s__('Secrets|New secret'),
+  titleNew: s__('SecretsManager|New secret'),
 };
 
 export default {
@@ -114,7 +114,7 @@ export default {
     },
     pageTitle() {
       if (this.isEditing) {
-        return sprintf(s__('Secrets|Edit %{name}'), { name: this.secretName });
+        return sprintf(s__('SecretsManager|Edit %{name}'), { name: this.secretName });
       }
 
       return this.$options.i18n.titleNew;

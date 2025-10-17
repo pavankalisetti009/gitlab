@@ -94,7 +94,7 @@ export default {
       error(e) {
         createAlert({
           message: s__(
-            'Secrets|An error occurred while fetching secrets. Please make sure you have the proper permissions, or try again.',
+            'SecretsManager|An error occurred while fetching secrets. Please make sure you have the proper permissions, or try again.',
           ),
           captureError: true,
           error: e,
@@ -182,19 +182,19 @@ export default {
   fields: [
     {
       key: 'name',
-      label: s__('Secrets|Name'),
+      label: __('Name'),
     },
     {
       key: 'lastAccessed',
-      label: s__('Secrets|Last used'),
+      label: __('Last used'),
     },
     {
       key: 'expiration',
-      label: s__('Secrets|Expires'),
+      label: __('Expires'),
     },
     {
       key: 'createdAt',
-      label: s__('Secrets|Created'),
+      label: __('Created'),
     },
     {
       key: 'actions',
@@ -211,12 +211,12 @@ export default {
 <template>
   <div>
     <h1 class="page-title gl-text-size-h-display">
-      {{ s__('Secrets|Secrets') }}
+      {{ s__('SecretsManager|GitLab Secrets Manager') }}
     </h1>
     <p>
       {{
         s__(
-          'Secrets|Secrets can be items like API tokens, database credentials, or private keys. Unlike CI/CD variables, secrets must be explicitly requested by a job.',
+          'SecretsManager|Secrets can be items like API tokens, database credentials, or private keys. Unlike CI/CD variables, secrets must be explicitly requested by a job.',
         )
       }}
       <gl-link :href="$options.LEARN_MORE_LINK">
@@ -226,28 +226,28 @@ export default {
     <gl-loading-icon v-if="isLoading" size="lg" class="gl-mt-5" />
     <gl-empty-state
       v-else-if="showEmptyState"
-      :title="s__('Secrets|Secure your sensitive information')"
+      :title="s__('SecretsManager|Secure your sensitive information')"
       :description="
         s__(
-          'Secrets|Use the Secrets Manager to store your sensitive credentials, and then safely use them in your processes.',
+          'SecretsManager|Use the secrets manager to store your sensitive credentials, and then safely use them in your processes.',
         )
       "
       :svg-path="$options.EmptySecretsSvg"
     >
       <template #actions>
         <gl-button :to="$options.NEW_ROUTE_NAME">
-          {{ s__('Secrets|New secret') }}
+          {{ s__('SecretsManager|New secret') }}
         </gl-button>
       </template>
     </gl-empty-state>
-    <crud-component v-else :title="s__('Secrets|Stored secrets')">
+    <crud-component v-else :title="s__('SecretsManager|Stored secrets')">
       <secrets-alert-banner
         v-if="secretsNeedingRotation.length"
         :secrets-to-rotate="secretsNeedingRotation"
       />
       <template #actions>
         <gl-button size="small" :to="$options.NEW_ROUTE_NAME" data-testid="new-secret-button">
-          {{ s__('Secrets|New secret') }}
+          {{ s__('SecretsManager|New secret') }}
         </gl-button>
       </template>
 
