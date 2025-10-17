@@ -2,6 +2,8 @@
 import { GlTable, GlLabel, GlButton, GlEmptyState } from '@gitlab/ui';
 import EMPTY_ATTRIBUTE_SVG from '@gitlab/svgs/dist/illustrations/empty-state/empty-labels-md.svg?url';
 import { s__, sprintf } from '~/locale';
+import * as Sentry from '~/sentry/sentry_browser_wrapper';
+import { createAlert } from '~/alert';
 import { InternalEvents } from '~/tracking';
 import getProjectSecurityAttributesQuery from 'ee_component/security_configuration/graphql/project_security_attributes.query.graphql';
 import ProjectSecurityAttributesUpdateMutation from '../../graphql/project_security_attributes_update.mutation.graphql';
@@ -67,6 +69,16 @@ export default {
             },
           );
           this.$toast.show(toastMsg);
+        })
+        .catch((error) => {
+          Sentry.captureException(error);
+          createAlert({
+            message: s__(
+              'SecurityAttributes|An error has occurred while removing the security attribute.',
+            ),
+          });
+        })
+        .finally(() => {
           this.$apollo.queries.project.refetch();
         });
     },
