@@ -648,7 +648,7 @@ export default {
         this.workflowStatus = parsedWorkflowData?.workflowStatus;
         this.aiCatalogItemVersionId = workflow?.aiCatalogItemVersionId;
         this.chatMessageHistory = messages;
-        this.$emit('change-title', parsedWorkflowData.workflowGoal);
+        this.$emit('change-title', parsedWorkflowData?.workflowGoal);
       } catch (err) {
         this.onError(err);
       } finally {

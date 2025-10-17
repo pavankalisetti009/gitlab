@@ -1317,6 +1317,19 @@ describe('Duo Agentic Chat', () => {
         );
         expect(actionSpies.setLoading).toHaveBeenCalledWith(expect.anything(), false);
       });
+
+      it('handles missing workflowGoal gracefully when fetching workflow events', async () => {
+        const mockThread = { id: MOCK_WORKFLOW_ID, aiCatalogItemVersionId: null };
+
+        WorkflowUtils.parseWorkflowData.mockReturnValue(undefined);
+        WorkflowUtils.transformChatMessages.mockReturnValue(MOCK_TRANSFORMED_MESSAGES);
+
+        findDuoChat().vm.$emit('thread-selected', mockThread);
+        await waitForPromises();
+
+        expect(wrapper.emitted('change-title')).toEqual([[undefined]]);
+        expect(findDuoChat().props('multiThreadedView')).toBe(DUO_CHAT_VIEWS.CHAT);
+      });
     });
 
     describe('@back-to-list', () => {
