@@ -183,10 +183,7 @@ export default {
     catalogAgents: {
       query: getConfiguredAgents,
       variables() {
-        return {
-          projectId: this.projectId,
-          groupId: this.namespaceId,
-        };
+        return this.projectId ? { projectId: this.projectId } : { groupId: this.namespaceId };
       },
       update(data) {
         return (data?.aiCatalogConfiguredItems.nodes || []).map((agent) => agent.item);
