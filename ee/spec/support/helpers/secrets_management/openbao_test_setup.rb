@@ -69,11 +69,26 @@ module SecretsManagement
 
         # Update role configuration
         role = SecretsManagerClient::DEFAULT_JWT_ROLE
-        system(%(#{bin_path} write #{opts} auth/#{jwt_path}/role/#{role} \
-                role_type=jwt \
-                bound_audiences=#{SERVER_ADDRESS_WITH_HTTP} \
-                user_claim=user_id \
-                token_policies=secrets_manager >/dev/null 2>&1))
+        # Quoting from Openbao docs below:
+        # If a role parameter (e.g. bound_claims) requires a map value
+        # it can't be set individually using the OpenBao CLI.
+        # In these cases the best approach is to write the entire configuration as a single JSON object:
+        system(%(#{bin_path} write #{opts} auth/#{jwt_path}/role/#{role} -<<EOF
+          {
+            "role_type": "jwt",
+            "bound_audiences": "#{SERVER_ADDRESS_WITH_HTTP}",
+            "bound_claims": { "secrets_manager_scope": "privileged" },
+            "claim_mappings": {
+              "correlation_id": "correlation_id",
+              "user_id": "user_id",
+              "project_id": "project_id",
+              "namespace_id": "namespace_id"
+            },
+            "bound_subject": "gitlab_secrets_manager",
+            "user_claim": "user_id",
+            "token_policies": "secrets_manager"
+          }
+        EOF >/dev/null 2>&1))
 
         # Update policy configuration
         system(%(#{bin_path} policy write #{opts} secrets_manager #{policy_path} >/dev/null 2>&1))

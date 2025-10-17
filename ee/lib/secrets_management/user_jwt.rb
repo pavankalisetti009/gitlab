@@ -9,6 +9,7 @@ module SecretsManagement
       claims[:member_role_id] = member_role_id
       claims[:groups] = group_ids
       claims[:role_id] = role_id
+      claims[:secrets_manager_scope] = 'user'
       claims
     end
 

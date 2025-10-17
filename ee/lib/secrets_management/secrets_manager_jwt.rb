@@ -24,6 +24,7 @@ module SecretsManagement
         jti: SecureRandom.uuid,
         aud: aud,
         sub: 'gitlab_secrets_manager',
+        secrets_manager_scope: 'privileged',
         correlation_id: Labkit::Correlation::CorrelationId.current_id
       }.merge(project_claims)
     end

@@ -55,7 +55,7 @@ module SecretsManagement
         # configure pipeline auth
         pipeline_jwt_exists = enable_auth_engine(secrets_manager.ci_auth_mount, secrets_manager.ci_auth_type)
         configure_jwt(secrets_manager.ci_auth_mount) unless pipeline_jwt_exists
-        configure_auth
+        configure_pipeline_auth
 
         # configure user auth
         user_jwt_exists = enable_auth_engine(secrets_manager.user_auth_mount, secrets_manager.user_auth_type)
@@ -91,7 +91,7 @@ module SecretsManagement
         )
       end
 
-      def configure_auth
+      def configure_pipeline_auth
         project_secrets_manager_client.update_jwt_role(
           secrets_manager.ci_auth_mount,
           secrets_manager.ci_auth_role,
@@ -99,7 +99,14 @@ module SecretsManagement
           token_policies_template_claims: true,
           token_policies: secrets_manager.ci_auth_literal_policies,
           bound_claims: {
-            project_id: secrets_manager.project.id.to_s
+            project_id: secrets_manager.project.id.to_s,
+            secrets_manager_scope: 'pipeline'
+          },
+          claim_mappings: {
+            correlation_id: 'correlation_id',
+            user_id: 'user_id',
+            project_id: 'project_id',
+            namespace_id: 'namespace_id'
           },
           bound_audiences: bound_audiences,
           user_claim: "project_id",
