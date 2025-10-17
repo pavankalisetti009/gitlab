@@ -30,7 +30,7 @@ import {
 } from 'ee/ai/catalog/router/constants';
 
 export default {
-  name: 'AiFlows',
+  name: 'AiFlowsIndex',
   components: {
     GlButton,
     ResourceListsEmptyState,
