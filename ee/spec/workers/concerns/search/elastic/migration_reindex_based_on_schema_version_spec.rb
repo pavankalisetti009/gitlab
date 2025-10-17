@@ -207,92 +207,86 @@ RSpec.describe Search::Elastic::MigrationReindexBasedOnSchemaVersion, feature_ca
           allow(client).to receive(:search).and_return(scroll_response)
         end
 
-        # TODO: move from shared_examples back to regular specs when search_scroll_api_increase_throughput is removed
-        shared_examples 'a scroll api migration helper' do
-          it 'initializes scroll search when no scroll_id exists' do
-            expect(client).to receive(:search).with(
-              hash_including(
-                index: 'test-index',
-                scroll: described_class::SCROLL_TIMEOUT,
-                body: hash_including(
-                  query: instance_of(Hash),
-                  size: instance_of(Integer),
-                  sort: [{ 'id' => { order: 'asc' } }]
-                )
+        it 'initializes scroll search when no scroll_id exists' do
+          expect(client).to receive(:search).with(
+            hash_including(
+              index: 'test-index',
+              scroll: described_class::SCROLL_TIMEOUT,
+              body: hash_including(
+                query: instance_of(Hash),
+                size: instance_of(Integer),
+                sort: [{ 'id' => { order: 'asc' } }]
               )
+            )
+          )
+
+          migration.send(:process_batch!)
+        end
+
+        it 'updates migration state with scroll_id and last_processed_id' do
+          expect(migration).to receive(:set_migration_state).with(scroll_id: 'scroll_123', last_processed_id: 2)
+
+          migration.send(:process_batch!)
+        end
+
+        context 'when continuing existing scroll' do
+          before do
+            allow(migration).to receive(:current_scroll_id).and_return('existing_scroll_123')
+            allow(client).to receive(:scroll).and_return(scroll_response)
+          end
+
+          it 'continues with existing scroll' do
+            expect(client).to receive(:scroll).with(
+              body: { scroll_id: 'existing_scroll_123' },
+              scroll: described_class::SCROLL_TIMEOUT
             )
 
             migration.send(:process_batch!)
           end
 
-          it 'updates migration state with scroll_id and last_processed_id' do
-            expect(migration).to receive(:set_migration_state).with(scroll_id: 'scroll_123',
-              last_processed_id: 2)
-
-            migration.send(:process_batch!)
-          end
-
-          context 'when continuing existing scroll' do
+          context 'when the scroll_id has expired' do
             before do
-              allow(migration).to receive(:current_scroll_id).and_return('existing_scroll_123')
-              allow(client).to receive(:scroll).and_return(scroll_response)
+              allow(client).to receive(:scroll).and_raise(Elasticsearch::Transport::Transport::Errors::NotFound)
             end
 
-            it 'continues with existing scroll' do
-              expect(client).to receive(:scroll).with(
-                body: { scroll_id: 'existing_scroll_123' },
-                scroll: described_class::SCROLL_TIMEOUT
-              )
+            it 'handles expired scroll_id gracefully' do
+              expect(migration).to receive(:log_warn)
+                .with('scroll_id expired, will restart scroll in next migration run',
+                  hash_including(:exception_class, :exception_message, :scroll_id))
 
-              migration.send(:process_batch!)
+              expect { migration.send(:process_batch!) }.not_to raise_exception
             end
 
-            context 'when the scroll_id has expired' do
-              before do
-                allow(client).to receive(:scroll).and_raise(Elasticsearch::Transport::Transport::Errors::NotFound)
-              end
-
-              it 'handles expired scroll_id gracefully' do
-                expect(migration).to receive(:log_warn)
-                  .with('scroll_id expired, will restart scroll in next migration run',
-                    hash_including(:exception_class, :exception_message, :scroll_id))
-
-                expect { migration.send(:process_batch!) }.not_to raise_exception
-              end
-
-              it 'returns empty response when scroll expires' do
-                result = migration.send(:process_batch!)
-                expect(result).to be_empty
-              end
-            end
-          end
-
-          context 'when no more results' do
-            let(:empty_scroll_response) do
-              {
-                '_scroll_id' => 'scroll_123',
-                'hits' => { 'hits' => [] }
-              }
-            end
-
-            before do
-              allow(client).to receive(:search).and_return(empty_scroll_response)
-              allow(migration).to receive(:cleanup_scroll)
-            end
-
-            it 'cleans up scroll and resets state' do
-              expect(migration).to receive(:cleanup_scroll).with('scroll_123')
-              expect(migration).to receive(:set_migration_state).with(
-                scroll_id: nil,
-                last_processed_id: nil
-              )
-
-              migration.send(:process_batch!)
+            it 'returns empty response when scroll expires' do
+              result = migration.send(:process_batch!)
+              expect(result).to be_empty
             end
           end
         end
 
-        it_behaves_like 'a scroll api migration helper'
+        context 'when no more results' do
+          let(:empty_scroll_response) do
+            {
+              '_scroll_id' => 'scroll_123',
+              'hits' => { 'hits' => [] }
+            }
+          end
+
+          before do
+            allow(client).to receive(:search).and_return(empty_scroll_response)
+            allow(migration).to receive(:cleanup_scroll)
+          end
+
+          it 'cleans up scroll and resets state' do
+            expect(migration).to receive(:cleanup_scroll).with('scroll_123')
+            expect(migration).to receive(:set_migration_state).with(
+              scroll_id: nil,
+              last_processed_id: nil
+            )
+
+            migration.send(:process_batch!)
+          end
+        end
 
         context 'when processing multiple batches within threshold' do
           let(:batch_hits_1) do

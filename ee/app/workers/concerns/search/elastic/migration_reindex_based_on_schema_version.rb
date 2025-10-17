@@ -78,9 +78,8 @@ module Search
 
       def process_batch!
         return process_batch_with_search! unless use_scroll_api?
-        return process_batch_with_scroll! unless Feature.enabled?(:search_scroll_api_increase_throughput, :instance)
 
-        optimized_process_batch_with_scroll!
+        process_batch_with_scroll!
       end
 
       def process_batch_with_search!
@@ -90,27 +89,6 @@ module Search
       end
 
       def process_batch_with_scroll!
-        document_references = []
-        scroll_id = current_scroll_id
-
-        response = fetch_scroll_response(scroll_id)
-
-        scroll_id = response['_scroll_id']
-
-        hits = response&.dig('hits', 'hits') || []
-
-        if hits.any?
-          document_references = process_hits(hits)
-          set_migration_state(scroll_id: scroll_id, last_processed_id: get_last_processed_id(hits))
-        else
-          cleanup_scroll(scroll_id)
-          set_migration_state(scroll_id: nil, last_processed_id: nil)
-        end
-
-        document_references
-      end
-
-      def optimized_process_batch_with_scroll!
         document_references = []
         scroll_id = current_scroll_id
         total_processed = 0
