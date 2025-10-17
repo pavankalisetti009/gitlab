@@ -56,6 +56,8 @@ export default {
   data() {
     return {
       formValues: {},
+      // eslint-disable-next-line vue/no-unused-properties
+      skipCountryStateQueries: false, // used by mixin
     };
   },
   computed: {

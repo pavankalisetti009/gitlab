@@ -74,6 +74,8 @@ export default {
     return {
       serverValidations: { new_group_name: this.namespaceData.createErrors },
       formValues: {},
+      // eslint-disable-next-line vue/no-unused-properties
+      skipCountryStateQueries: false, // used by mixin
     };
   },
   computed: {
@@ -206,7 +208,6 @@ export default {
             if (!val || val.trim() === '') {
               return true;
             }
-
             return /^\+?[0-9\-\s]+$/.test(val);
           }),
         ],
@@ -267,7 +268,6 @@ export default {
     data-testid="trial-form"
   >
     <input :value="$options.csrf.token" type="hidden" name="authenticity_token" />
-
     <gl-form-fields
       v-model="formValues"
       :form-id="$options.formId"
@@ -306,7 +306,6 @@ export default {
           </template>
         </listbox-input>
       </template>
-
       <template #input(new_group_name)="{ id, value, input, validation }">
         <gl-form-input
           :id="id"
@@ -318,7 +317,6 @@ export default {
           @input="input"
         />
       </template>
-
       <template v-if="!userData.showNameFields" #after(company_name)>
         <input
           type="hidden"
@@ -366,7 +364,6 @@ export default {
     >
       {{ $options.i18n.buttonText }}
     </gl-button>
-
     <div class="gl-mt-4">
       <gl-sprintf :message="$options.i18n.termsText">
         <template #buttonText>{{ $options.i18n.buttonText }}</template>

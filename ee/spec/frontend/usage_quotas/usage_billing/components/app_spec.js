@@ -148,6 +148,27 @@ describe('UsageBillingApp', () => {
         expect(findPageHeading().findComponent(UserDate).exists()).toBe(false);
       });
     });
+
+    describe('without purchase-credits-path', () => {
+      beforeEach(async () => {
+        const usageDataWithoutPurchaseCreditsPath = {
+          data: {
+            subscriptionUsage: {
+              purchaseCreditsPath: null,
+            },
+          },
+        };
+
+        createComponent({
+          mockQueryHandler: jest.fn().mockResolvedValue(usageDataWithoutPurchaseCreditsPath),
+        });
+        await waitForPromises();
+      });
+
+      it('does not render purchase-commitment-card', () => {
+        expect(wrapper.findComponent(PurchaseCommitmentCard).exists()).toBe(false);
+      });
+    });
   });
 
   describe('no pool with overage state', () => {
@@ -213,13 +234,13 @@ describe('UsageBillingApp', () => {
       expect(currentUsageCard.exists()).toBe(false);
     });
 
-    it('will pass hasComitment to purchase-commitment-card', () => {
+    it('will pass hasCommitment to purchase-commitment-card', () => {
       const purchaseCommitmentCard = wrapper.findComponent(PurchaseCommitmentCard);
 
       expect(purchaseCommitmentCard.props('hasCommitment')).toBe(false);
     });
 
-    it('will pass hasComitment to usage-by-user-tab', () => {
+    it('will pass hasCommitment to usage-by-user-tab', () => {
       const usageByUserTab = wrapper.findComponent(UsageByUserTab);
 
       expect(usageByUserTab.props('hasCommitment')).toBe(false);

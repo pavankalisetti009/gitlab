@@ -7,11 +7,14 @@ export default {
     GlCard,
     GlButton,
   },
-  inject: ['purchaseCommitmentUrl'],
   props: {
     hasCommitment: {
       required: true,
       type: Boolean,
+    },
+    purchaseCreditsPath: {
+      required: true,
+      type: String,
     },
   },
 };
@@ -31,7 +34,7 @@ export default {
         }}
       </p>
       <div class="gl-mt-auto">
-        <gl-button variant="confirm" :href="purchaseCommitmentUrl">
+        <gl-button variant="confirm" :href="purchaseCreditsPath">
           {{ s__('UsageBilling|Increase monthly commitment') }}
         </gl-button>
       </div>
@@ -47,7 +50,7 @@ export default {
       </p>
 
       <div class="gl-mt-auto">
-        <gl-button variant="confirm" :href="purchaseCommitmentUrl">
+        <gl-button variant="confirm" :href="purchaseCreditsPath">
           {{ s__('UsageBilling|Purchase monthly commitment') }}
         </gl-button>
       </div>

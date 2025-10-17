@@ -205,7 +205,11 @@ export default {
           :month-end-date="gitlabCreditsUsage.endDate"
         />
 
-        <purchase-commitment-card :has-commitment="poolIsAvailable" />
+        <purchase-commitment-card
+          v-if="subscriptionUsage.purchaseCreditsPath"
+          :has-commitment="poolIsAvailable"
+          :purchase-credits-path="subscriptionUsage.purchaseCreditsPath"
+        />
       </section>
       <gl-tabs class="gl-mt-5" lazy>
         <gl-tab :title="s__('UsageBilling|Usage trends')">
