@@ -241,9 +241,7 @@ export default {
       id: 'agent-form-visibility-level',
       label: __('Visibility'),
       groupAttrs: {
-        labelDescription: s__(
-          'AICatalog|Choose who can view and interact with this agent after it is published to the public AI Catalog.',
-        ),
+        labelDescription: s__('AICatalog|Control who can discover and use this agent.'),
       },
     },
     tools: {
@@ -299,7 +297,7 @@ export default {
           />
         </form-group>
       </form-section>
-      <form-section :title="s__('AICatalog|Access rights')">
+      <form-section :title="s__('AICatalog|Visibility & access')">
         <form-group
           :field="$options.fields.visibilityLevel"
           :field-value="formValues.visibilityLevel"

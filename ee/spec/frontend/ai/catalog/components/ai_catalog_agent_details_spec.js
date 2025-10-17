@@ -2,6 +2,7 @@ import { shallowMount } from '@vue/test-utils';
 import { GlBadge } from '@gitlab/ui';
 import AiCatalogAgentDetails from 'ee/ai/catalog/components/ai_catalog_agent_details.vue';
 import AiCatalogItemField from 'ee/ai/catalog/components/ai_catalog_item_field.vue';
+import AiCatalogItemVisibilityField from 'ee/ai/catalog/components/ai_catalog_item_visibility_field.vue';
 import FormSection from 'ee/ai/catalog/components/form_section.vue';
 import { mockAgent, mockAgentVersion, mockToolsTitles } from '../mock_data';
 
@@ -25,6 +26,9 @@ describe('AiCatalogAgentDetails', () => {
       propsData: {
         ...props,
       },
+      stubs: {
+        AiCatalogItemVisibilityField,
+      },
     });
   };
 
@@ -41,7 +45,7 @@ describe('AiCatalogAgentDetails', () => {
   it('renders sections', () => {
     expect(findAllSections()).toHaveLength(4);
     expect(findSection(0).attributes('title')).toBe('Basic information');
-    expect(findSection(1).attributes('title')).toBe('Access rights');
+    expect(findSection(1).attributes('title')).toBe('Visibility & access');
     expect(findSection(2).attributes('title')).toBe('Prompts');
     expect(findSection(3).attributes('title')).toBe('Available tools');
   });
@@ -58,7 +62,7 @@ describe('AiCatalogAgentDetails', () => {
     });
   });
 
-  describe('renders "Access rights" details', () => {
+  describe('renders "Visibility & access" details', () => {
     let accessRightsDetails;
     beforeEach(() => {
       accessRightsDetails = findAllFieldsForSection(1);
