@@ -6,12 +6,12 @@ describe('PurchaseCommitmentCard', () => {
   /** @type {import('helpers/vue_test_utils_helper').ExtendedWrapper} */
   let wrapper;
 
-  const createComponent = (propsData) => {
+  const createComponent = (propsData = {}) => {
     wrapper = shallowMountExtended(PurchaseCommitmentCard, {
-      provide: {
-        purchaseCommitmentUrl: 'url-to-purchase-monthly-commitment',
+      propsData: {
+        purchaseCreditsPath: 'url-to-purchase-monthly-commitment',
+        ...propsData,
       },
-      propsData,
     });
   };
 
