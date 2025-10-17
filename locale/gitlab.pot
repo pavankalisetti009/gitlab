@@ -25889,6 +25889,9 @@ msgstr ""
 msgid "Edit your search filter and try again."
 msgstr ""
 
+msgid "Edit your search or add a filter."
+msgstr ""
+
 msgid "Edit, lint, and visualize your pipeline."
 msgstr ""
 
@@ -69402,6 +69405,9 @@ msgid "Too many projects enabled. Manage them through the console or the API."
 msgstr ""
 
 msgid "Too many references. Quick actions are limited to at most %{max_count} user references"
+msgstr ""
+
+msgid "Too many results to display"
 msgstr ""
 
 msgid "Too many results to display. Edit your search or add a filter."
