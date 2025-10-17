@@ -24,7 +24,6 @@ RSpec.describe 'Filter issues by custom fields', :js, feature_category: :team_pl
     # we won't need the tests for the issues listing page, since we'll be using
     # the work items listing page.
     stub_feature_flags(work_item_planning_view: false)
-    stub_feature_flags(work_items_group_issues_list: false)
 
     sign_in(user)
   end
