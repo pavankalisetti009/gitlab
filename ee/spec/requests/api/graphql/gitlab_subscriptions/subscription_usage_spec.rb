@@ -28,6 +28,11 @@ RSpec.describe 'Query.subscriptionUsage', feature_category: :consumables_cost_ma
         :credits_used,
         query_graphql_field(:daily_usage, {}, [:date, :credits_used])
       ]),
+      query_graphql_field(:overage, {}, [
+        :is_allowed,
+        :credits_used,
+        query_graphql_field(:daily_usage, {}, [:date, :credits_used])
+      ]),
       query_graphql_field(:users_usage, {}, [
         :total_users_using_credits,
         :total_users_using_pool,
@@ -114,10 +119,20 @@ RSpec.describe 'Query.subscriptionUsage', feature_category: :consumables_cost_ma
       }
     }
 
+    overage_usage = {
+      success: true,
+      overage: {
+        isAllowed: true,
+        creditsUsed: 150,
+        dailyUsage: [{ date: '2025-10-01', creditsUsed: 150 }]
+      }
+    }
+
     allow_next_instance_of(Gitlab::SubscriptionPortal::SubscriptionUsageClient) do |client|
       allow(client).to receive_messages(
         get_metadata: metadata,
         get_pool_usage: pool_usage,
+        get_overage_usage: overage_usage,
         get_usage_for_user_ids: { success: true, usersUsage: users_usage },
         get_users_usage_stats: get_users_usage_stats
       )
@@ -141,6 +156,12 @@ RSpec.describe 'Query.subscriptionUsage', feature_category: :consumables_cost_ma
             totalCredits: 1000,
             creditsUsed: 250,
             dailyUsage: [{ date: '2025-10-01', creditsUsed: 250 }]
+          }.with_indifferent_access)
+
+          expect(graphql_data_at(:subscription_usage, :overage)).to eq({
+            isAllowed: true,
+            creditsUsed: 150,
+            dailyUsage: [{ date: '2025-10-01', creditsUsed: 150 }]
           }.with_indifferent_access)
 
           expect(graphql_data_at(:subscription_usage, :usersUsage, :totalUsersUsingCredits)).to eq(3)
@@ -204,6 +225,12 @@ RSpec.describe 'Query.subscriptionUsage', feature_category: :consumables_cost_ma
               totalCredits: 1000,
               creditsUsed: 250,
               dailyUsage: [{ date: '2025-10-01', creditsUsed: 250 }]
+            }.with_indifferent_access)
+
+            expect(graphql_data_at(:subscription_usage, :overage)).to eq({
+              isAllowed: true,
+              creditsUsed: 150,
+              dailyUsage: [{ date: '2025-10-01', creditsUsed: 150 }]
             }.with_indifferent_access)
 
             expect(graphql_data_at(:subscription_usage, :usersUsage, :totalUsersUsingCredits)).to eq(3)
