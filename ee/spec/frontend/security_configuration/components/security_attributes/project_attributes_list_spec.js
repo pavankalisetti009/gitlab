@@ -1,6 +1,8 @@
 import Vue, { nextTick } from 'vue';
 import VueApollo from 'vue-apollo';
 import { GlTable, GlButton, GlLabel } from '@gitlab/ui';
+import * as Sentry from '~/sentry/sentry_browser_wrapper';
+import { createAlert } from '~/alert';
 import { shallowMountExtended, mountExtended } from 'helpers/vue_test_utils_helper';
 import createMockApollo from 'helpers/mock_apollo_helper';
 import waitForPromises from 'helpers/wait_for_promises';
@@ -14,10 +16,18 @@ import { mockSecurityAttributeCategories, mockSecurityAttributesWithCategories }
 
 Vue.use(VueApollo);
 
+jest.mock('~/sentry/sentry_browser_wrapper');
+jest.mock('~/alert');
+
 describe('ProjectAttributesList', () => {
   let wrapper;
   let projectQueryHandler;
-  let updateMutationHandler;
+
+  let updateMutationHandler = jest.fn().mockResolvedValue({
+    data: {
+      securityAttributeProjectUpdate: { removedCount: 1, addedCount: 1, errors: [] },
+    },
+  });
 
   const groupCategoriesQueryHandler = jest.fn().mockResolvedValue({
     data: {
@@ -35,12 +45,6 @@ describe('ProjectAttributesList', () => {
           id: 'gid://gitlab/Project/1',
           securityAttributes: { nodes: mockSecurityAttributesWithCategories },
         },
-      },
-    });
-
-    updateMutationHandler = jest.fn().mockResolvedValue({
-      data: {
-        securityAttributeProjectUpdate: { removedCount: 1, addedCount: 1, errors: [] },
       },
     });
 
@@ -132,12 +136,10 @@ describe('ProjectAttributesList', () => {
   });
 
   describe('attribute removal', () => {
-    beforeEach(async () => {
+    it('removes an attribute and shows a toast notification', async () => {
       createComponent(mountExtended);
       await waitForPromises();
-    });
 
-    it('removes an attribute and shows a toast notification', async () => {
       const firstRow = findTableRows().at(0);
       const removeButton = firstRow.findAllComponents(GlButton).at(0);
       const expectedAttribute = mockSecurityAttributesWithCategories[0];
@@ -157,6 +159,22 @@ describe('ProjectAttributesList', () => {
       expect(wrapper.vm.$toast.show).toHaveBeenCalledWith(
         `Successfully removed "${expectedAttribute.name}" security attribute from this project`,
       );
+    });
+
+    it('calls sentry and creates an alert on error', async () => {
+      updateMutationHandler = jest.fn().mockRejectedValue(new Error());
+      createComponent(mountExtended);
+      await waitForPromises();
+
+      const firstRow = findTableRows().at(0);
+      const removeButton = firstRow.findAllComponents(GlButton).at(0);
+      await removeButton.trigger('click');
+      await waitForPromises();
+
+      expect(Sentry.captureException).toHaveBeenCalled();
+      expect(createAlert).toHaveBeenCalledWith({
+        message: 'An error has occurred while removing the security attribute.',
+      });
     });
   });
 });

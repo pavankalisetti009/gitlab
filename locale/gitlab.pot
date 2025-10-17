@@ -58517,10 +58517,16 @@ msgstr ""
 msgid "SecurityAttributes|All changes saved"
 msgstr ""
 
+msgid "SecurityAttributes|An error has occurred while applying security attributes."
+msgstr ""
+
 msgid "SecurityAttributes|An error has occurred while deleting the security attribute."
 msgstr ""
 
 msgid "SecurityAttributes|An error has occurred while deleting the security category."
+msgstr ""
+
+msgid "SecurityAttributes|An error has occurred while removing the security attribute."
 msgstr ""
 
 msgid "SecurityAttributes|An error has occurred while saving the security attribute."
