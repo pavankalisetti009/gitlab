@@ -72,7 +72,7 @@ RSpec.describe GlobalPolicy, :aggregate_failures, feature_category: :shared do
   end
 
   it { is_expected.to be_disallowed(:read_licenses) }
-  it { is_expected.to be_disallowed(:destroy_licenses) }
+  it { is_expected.to be_disallowed(:delete_license) }
   it { is_expected.to be_disallowed(:read_all_geo) }
   it { is_expected.to be_disallowed(:read_all_workspaces) }
   it { is_expected.to be_disallowed(:manage_subscription) }
@@ -83,7 +83,7 @@ RSpec.describe GlobalPolicy, :aggregate_failures, feature_category: :shared do
 
   context 'when admin mode enabled', :enable_admin_mode do
     it { expect(described_class.new(admin, [user])).to be_allowed(:read_licenses) }
-    it { expect(described_class.new(admin, [user])).to be_allowed(:destroy_licenses) }
+    it { expect(described_class.new(admin, [user])).to be_allowed(:delete_license) }
     it { expect(described_class.new(admin, [user])).to be_allowed(:read_all_geo) }
     it { expect(described_class.new(admin, [user])).to be_allowed(:read_all_workspaces) }
     it { expect(described_class.new(admin, [user])).to be_allowed(:manage_subscription) }
@@ -95,7 +95,7 @@ RSpec.describe GlobalPolicy, :aggregate_failures, feature_category: :shared do
 
   context 'when admin mode disabled' do
     it { expect(described_class.new(admin, [user])).to be_disallowed(:read_licenses) }
-    it { expect(described_class.new(admin, [user])).to be_disallowed(:destroy_licenses) }
+    it { expect(described_class.new(admin, [user])).to be_disallowed(:delete_license) }
     it { expect(described_class.new(admin, [user])).to be_disallowed(:read_all_geo) }
     it { expect(described_class.new(admin, [user])).to be_disallowed(:read_all_workspaces) }
     it { expect(described_class.new(admin, [user])).to be_disallowed(:manage_subscription) }

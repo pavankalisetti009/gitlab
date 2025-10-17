@@ -172,7 +172,7 @@ module EE
       end
 
       rule { admin }.policy do
-        enable :destroy_licenses
+        enable :delete_license
         enable :manage_subscription
         enable :read_admin_subscription
         enable :read_admin_data_management
