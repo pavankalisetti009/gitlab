@@ -40,7 +40,15 @@ RSpec.describe 'Updating an AI Feature setting', feature_category: :"self-hosted
         end
 
         it_behaves_like 'performs the right authorization'
-        it_behaves_like 'a mutation that returns a top-level access error'
+
+        it 'returns an error about the missing permission' do
+          request
+
+          expect(graphql_errors).to be_present
+          expect(graphql_errors.pluck('message')).to match_array(
+            "You don't have permission to update the setting ai_self_hosted_model_id."
+          )
+        end
       end
 
       context "for gitlab managed models" do
@@ -59,7 +67,14 @@ RSpec.describe 'Updating an AI Feature setting', feature_category: :"self-hosted
           request
         end
 
-        it_behaves_like 'a mutation that returns a top-level access error'
+        it 'returns an error about the missing permission' do
+          request
+
+          expect(graphql_errors).to be_present
+          expect(graphql_errors.pluck('message')).to match_array(
+            "You don't have permission to update the setting offered_model_ref."
+          )
+        end
       end
     end
 
