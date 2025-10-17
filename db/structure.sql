@@ -26603,7 +26603,8 @@ CREATE TABLE subscriptions (
     subscribed boolean,
     created_at timestamp without time zone,
     updated_at timestamp without time zone,
-    project_id bigint
+    project_id bigint,
+    CONSTRAINT check_285574a00a CHECK ((user_id IS NOT NULL))
 );
 
 CREATE SEQUENCE subscriptions_id_seq
@@ -33236,9 +33237,6 @@ ALTER TABLE epic_issues
 
 ALTER TABLE badges
     ADD CONSTRAINT check_22ac1b6d3a CHECK ((num_nonnulls(group_id, project_id) = 1)) NOT VALID;
-
-ALTER TABLE subscriptions
-    ADD CONSTRAINT check_285574a00a CHECK ((user_id IS NOT NULL)) NOT VALID;
 
 ALTER TABLE workspaces
     ADD CONSTRAINT check_2a89035b04 CHECK ((personal_access_token_id IS NOT NULL)) NOT VALID;
@@ -48926,7 +48924,7 @@ ALTER TABLE ONLY secret_detection_token_statuses
     ADD CONSTRAINT fk_928017ddbc FOREIGN KEY (vulnerability_occurrence_id) REFERENCES vulnerability_occurrences(id) ON DELETE CASCADE;
 
 ALTER TABLE ONLY subscriptions
-    ADD CONSTRAINT fk_933bdff476 FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE NOT VALID;
+    ADD CONSTRAINT fk_933bdff476 FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE;
 
 ALTER TABLE ONLY workspaces_agent_configs
     ADD CONSTRAINT fk_94660551c8 FOREIGN KEY (cluster_agent_id) REFERENCES cluster_agents(id) ON DELETE CASCADE;
