@@ -6,6 +6,21 @@ module Mcp
     class SearchCodebaseService < CustomService
       extend ::Gitlab::Utils::Override
 
+      REQUIRED_ABILITY = :read_code
+      override :ability
+      def auth_ability
+        REQUIRED_ABILITY
+      end
+
+      override :auth_target
+      def auth_target(params)
+        project_id = params.dig(:arguments, :project_id)
+
+        raise ArgumentError, "#{name}: project not found, the params received: #{params.inspect}" if project_id.nil?
+
+        find_project(project_id)
+      end
+
       override :description
       def description
         desc = <<~DESC
