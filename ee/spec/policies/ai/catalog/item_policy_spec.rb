@@ -9,7 +9,7 @@ RSpec.describe Ai::Catalog::ItemPolicy, :with_current_organization, feature_cate
   let_it_be(:maintainer) { create(:user) }
   let_it_be(:reporter) { create(:user) }
   let_it_be(:guest) { create(:user) }
-  let_it_be(:private_project) do
+  let_it_be_with_reload(:private_project) do
     create(:project, :private, guests: guest, reporters: reporter, developers: developer, maintainers: maintainer)
   end
 
@@ -18,10 +18,12 @@ RSpec.describe Ai::Catalog::ItemPolicy, :with_current_organization, feature_cate
   let_it_be_with_reload(:public_item) { create(:ai_catalog_item, project: private_project, public: true) }
 
   let(:stage_check) { true }
+  let(:duo_features_enabled) { true }
 
   before do
     Current.organization = current_organization
     allow(::Gitlab::Llm::StageCheck).to receive(:available?).with(private_project, :ai_catalog).and_return(stage_check)
+    private_project.update!(duo_features_enabled: duo_features_enabled)
   end
 
   shared_examples 'no permissions' do
@@ -35,6 +37,7 @@ RSpec.describe Ai::Catalog::ItemPolicy, :with_current_organization, feature_cate
 
     it_behaves_like 'no permissions with global_ai_catalog feature flag disabled'
     it_behaves_like 'no permissions with project stage check false, unless item is public'
+    it_behaves_like 'no permissions when project Duo features disabled, unless item is public'
     it_behaves_like 'read-only permissions with deleted item'
   end
 
@@ -44,6 +47,7 @@ RSpec.describe Ai::Catalog::ItemPolicy, :with_current_organization, feature_cate
 
     it_behaves_like 'no permissions with global_ai_catalog feature flag disabled'
     it_behaves_like 'no permissions with project stage check false, unless item is public'
+    it_behaves_like 'no permissions when project Duo features disabled, unless item is public'
     it_behaves_like 'read-only permissions with deleted item'
   end
 
@@ -66,6 +70,18 @@ RSpec.describe Ai::Catalog::ItemPolicy, :with_current_organization, feature_cate
 
   shared_examples 'no permissions with project stage check false, unless item is public' do
     let(:stage_check) { false }
+
+    it { is_expected.to be_disallowed(:admin_ai_catalog_item) }
+
+    it 'is expected not to allow read_ai_catalog_item, unless item is public' do
+      allowed = item.public?
+
+      expect(policy.allowed?(:read_ai_catalog_item)).to eq(allowed)
+    end
+  end
+
+  shared_examples 'no permissions when project Duo features disabled, unless item is public' do
+    let(:duo_features_enabled) { false }
 
     it { is_expected.to be_disallowed(:admin_ai_catalog_item) }
 
