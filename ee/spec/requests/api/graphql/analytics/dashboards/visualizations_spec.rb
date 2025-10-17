@@ -72,7 +72,7 @@ RSpec.describe 'Query.project(id).dashboards.panels(id).visualization', feature_
         4 | 'AiImpactTable' | 'Duo usage metrics for the %{namespaceName} %{namespaceType}'
         5 | 'AiImpactTable' | 'Development metrics for the %{namespaceName} %{namespaceType}'
         6 | 'AiImpactTable' | 'Pipeline metrics for the %{namespaceName} %{namespaceType}'
-        7 | 'BarChart' | 'Code suggestions acceptance rate by language (Last 30 days)'
+        7 | 'BarChart' | 'Code Suggestions acceptance rate by language (Last 30 days)'
         8 | 'AreaChart' | 'Code generation volume trends (Last 180 days)'
       end
 
