@@ -116,6 +116,7 @@ module EE
       delegate :user_cap_enabled?, to: :namespace_settings
 
       delegate :disable_personal_access_tokens=, to: :namespace_settings
+      delegate :disable_ssh_keys=, to: :namespace_settings
       delegate :hide_email_on_profile=, to: :namespace_settings
       delegate :hide_email_on_profile?, to: :namespace_settings
       delegate :allow_personal_snippets, to: :namespace_settings
@@ -1072,6 +1073,19 @@ module EE
     def disable_personal_access_tokens?
       disable_personal_access_tokens_available? &&
         namespace_settings.disable_personal_access_tokens?
+    end
+
+    def disable_ssh_keys_available?
+      root? &&
+        ::Feature.enabled?(:enterprise_disable_ssh_keys, self, type: :gitlab_com_derisk) &&
+        ::Gitlab::Saas.feature_available?(:disable_ssh_keys) &&
+        licensed_feature_available?(:disable_ssh_keys)
+    end
+
+    # Disable SSH Keys for enterprise users of this group
+    def disable_ssh_keys?
+      disable_ssh_keys_available? &&
+        namespace_settings.disable_ssh_keys?
     end
 
     def extended_grat_expiry_webhooks_execute?

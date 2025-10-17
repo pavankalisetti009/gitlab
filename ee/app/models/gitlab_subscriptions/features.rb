@@ -120,6 +120,7 @@ module GitlabSubscriptions
       disable_extensions_marketplace_for_enterprise_users
       disable_name_update_for_users
       disable_personal_access_tokens
+      disable_ssh_keys
       domain_verification
       epic_colors
       epics

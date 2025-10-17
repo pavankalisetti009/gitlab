@@ -18,6 +18,7 @@ module Namespaces
       service_access_tokens_expiration_enforced: 'service_access_tokens_expiration_enforced_updated',
       enforce_ssh_certificates: 'enforce_ssh_certificates_updated',
       disable_personal_access_tokens: 'disable_personal_access_tokens_updated',
+      disable_ssh_keys: 'disable_ssh_keys_updated',
       remove_dormant_members: 'remove_dormant_members_updated',
       remove_dormant_members_period: 'remove_dormant_members_period_updated',
       prevent_sharing_groups_outside_hierarchy: 'prevent_sharing_groups_outside_hierarchy_updated',
