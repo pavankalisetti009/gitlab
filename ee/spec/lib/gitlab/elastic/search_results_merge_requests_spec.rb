@@ -106,6 +106,43 @@ RSpec.describe Gitlab::Elastic::SearchResults, 'merge_requests', feature_categor
       expect(results.merge_requests_count).to eq 0
     end
 
+    describe 'merge requests with notes', :elastic_delete_by_query do
+      let(:query) { 'Goodbye moon' }
+      let_it_be(:limit_project_ids) { user.authorized_projects.pluck_primary_key }
+      let_it_be(:merge_request) do
+        create(:merge_request, source_project: project_1, source_branch: 'open-1', title: 'Hello world, here I am!')
+      end
+
+      let_it_be(:note) do
+        create(:note_on_merge_request, note: 'Goodbye moon', noteable: merge_request, project: merge_request.project)
+      end
+
+      let(:results) { described_class.new(user, query, limit_project_ids, public_and_internal_projects: true) }
+
+      before do
+        Elastic::ProcessInitialBookkeepingService.track!(merge_request, note)
+        ensure_elasticsearch_index!
+      end
+
+      subject(:merge_requests) { results.objects('merge_requests') }
+
+      it 'returns the merge request when searching with note text' do
+        expect(merge_requests).to contain_exactly(merge_request)
+        expect(results.merge_requests_count).to eq 1
+      end
+
+      context 'when search_merge_request_queries_notes is false' do
+        before do
+          stub_feature_flags(search_merge_request_queries_notes: false)
+        end
+
+        it 'does not return the merge request when searching with note text' do
+          expect(merge_requests).to be_empty
+          expect(results.merge_requests_count).to eq 0
+        end
+      end
+    end
+
     describe 'filtering' do
       let_it_be(:unarchived_project) { create(:project, :public) }
       let_it_be(:archived_project) { create(:project, :public, :archived) }

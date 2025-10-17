@@ -124,3 +124,25 @@ RSpec.shared_examples_for 'a paginated object' do |object_type|
     expect(objects.offset_value).to eq(4)
   end
 end
+
+RSpec.shared_examples_for 'searching notable entries in merge requests' do
+  let(:query) { 'Goodbye' }
+
+  before do
+    ensure_elasticsearch_index!
+  end
+
+  it 'finds the merge_request' do
+    expect(results.objects('merge_requests')).to match_array([note_merge_request])
+  end
+
+  context 'when Merge Request feature flag is disabled' do
+    before do
+      stub_feature_flags(search_merge_request_queries_notes: false)
+    end
+
+    it 'does not find the merge_request' do
+      expect(results.objects('merge_requests')).to be_empty
+    end
+  end
+end

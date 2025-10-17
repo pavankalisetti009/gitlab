@@ -11,6 +11,7 @@ module Search
 
       def build
         options[:fields] = options[:fields].presence || FIELDS
+        options[:related_ids] = related_ids
 
         query_hash = build_query_hash(query: query, options: options)
         query_hash = ::Search::Elastic::Filters.by_project_authorization(query_hash: query_hash, options: options)
@@ -31,6 +32,17 @@ module Search
       end
 
       private
+
+      def related_ids
+        return [] unless options[:related_ids].present?
+        return [] unless Feature.enabled?(:search_merge_request_queries_notes, options[:current_user])
+
+        # related_ids are used to search for related notes on noteable records
+        # this is not enabled on GitLab.com for global searches
+        return [] if options[:search_level].to_sym == :global && ::Gitlab::Saas.feature_available?(:advanced_search)
+
+        options[:related_ids]
+      end
 
       override :extra_options
       def extra_options

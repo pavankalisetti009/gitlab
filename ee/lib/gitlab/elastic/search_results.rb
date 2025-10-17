@@ -337,20 +337,29 @@ module Gitlab
         }
       end
 
+      def add_related_ids(options, name)
+        search_feature_enabled = case name
+                                 when MergeRequest.name
+                                   Feature.enabled?(:search_merge_request_queries_notes, current_user)
+                                 when Issue.name
+                                   Feature.enabled?(:search_work_item_queries_notes, current_user)
+                                 end
+
+        if search_feature_enabled && !::Gitlab::Saas.feature_available?(:advanced_search)
+          options[:related_ids] = related_ids_for_notes(name)
+        end
+
+        options
+      end
+
       def scope_options(scope)
         case scope
         when :projects, :notes, :commits
           base_options.merge(filters.slice(:include_archived))
         when :work_items # issues
-          options = work_item_scope_options
-          if !::Gitlab::Saas.feature_available?(:advanced_search) &&
-              Feature.enabled?(:search_work_item_queries_notes, current_user)
-            options[:related_ids] = related_ids_for_notes(Issue.name)
-          end
-
-          options
+          add_related_ids(work_item_scope_options, Issue.name)
         when :merge_requests
-          base_options.merge(merge_request_scope_options)
+          base_options.merge(add_related_ids(merge_request_scope_options, MergeRequest.name))
         when :issues
           base_options.merge(
             filters.slice(:order_by, :sort, :confidential, :state, :label_name, :include_archived), klass: Issue)

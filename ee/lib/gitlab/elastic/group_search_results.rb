@@ -47,6 +47,13 @@ module Gitlab
           end
 
           options
+        when :merge_requests
+          options = super
+          if Feature.enabled?(:search_merge_request_queries_notes, current_user)
+            options[:related_ids] = related_ids_for_notes(MergeRequest.name)
+          end
+
+          options
         else
           super
         end
