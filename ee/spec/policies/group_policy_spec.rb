@@ -4055,11 +4055,9 @@ RSpec.describe GroupPolicy, feature_category: :groups_and_projects do
     let(:current_user) { guest }
 
     def create_member_role(member, abilities = member_role_abilities)
-      params = abilities.merge(namespace: parent_group)
+      params = abilities.merge(namespace: parent_group, members: [member])
 
-      create(:member_role, :guest, params).tap do |role|
-        role.members << member
-      end
+      create(:member_role, :guest, params)
     end
 
     shared_examples 'custom roles abilities' do
@@ -4159,17 +4157,7 @@ RSpec.describe GroupPolicy, feature_category: :groups_and_projects do
       context 'admin_service_account_member' do
         let_it_be(:guest) { create(:user) }
         let_it_be(:group) { create(:group) }
-
-        let_it_be(:group_member_guest) do
-          create(
-            :group_member,
-            user: guest,
-            source: group,
-            access_level: Gitlab::Access::GUEST
-          )
-        end
-
-        let(:role) do
+        let_it_be(:role) do
           create(
             :member_role,
             :guest,
@@ -4178,8 +4166,17 @@ RSpec.describe GroupPolicy, feature_category: :groups_and_projects do
           )
         end
 
+        let_it_be(:group_member_guest) do
+          create(
+            :group_member,
+            user: guest,
+            source: group,
+            access_level: Gitlab::Access::GUEST,
+            member_role: role
+          )
+        end
+
         before do
-          role.members << group_member_guest
           stub_licensed_features(custom_roles: true)
         end
 
