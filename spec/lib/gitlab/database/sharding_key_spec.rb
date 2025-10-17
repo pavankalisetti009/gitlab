@@ -153,7 +153,9 @@ RSpec.describe 'new tables missing sharding_key', feature_category: :organizatio
       sharding_key.each do |column_name, referenced_table_name|
         expect(column_exists?(table_name, column_name)).to eq(true),
           "Could not find sharding key column #{table_name}.#{column_name}"
-        expect(referenced_table_name).to be_in(allowed_sharding_key_referenced_tables)
+        expect(referenced_table_name).to be_in(allowed_sharding_key_referenced_tables),
+          "#{table_name} uses an incorrect sharding_key (#{referenced_table_name}). " \
+            "Allowed values: #{allowed_sharding_key_referenced_tables.to_sentence}"
 
         if allowed_to_be_missing_foreign_key.include?("#{table_name}.#{column_name}")
           expect(has_foreign_key?(table_name, column_name)).to eq(false),

@@ -47,8 +47,8 @@ RSpec.describe ::Ai::DuoWorkflows::CreateAndStartWorkflowService, feature_catego
   end
 
   before do
-    allow_next_instance_of(::Ai::DuoWorkflows::TokenGenerationService) do |token_generation_service|
-      allow(token_generation_service)
+    allow_next_instance_of(::Ai::DuoWorkflows::WorkflowContextGenerationService) do |service|
+      allow(service)
         .to receive_messages(
           generate_workflow_token: workflow_service_token_result,
           generate_oauth_token_with_composite_identity_support: workflow_oauth_token_result

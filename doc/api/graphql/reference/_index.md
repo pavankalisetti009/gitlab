@@ -30991,6 +30991,7 @@ Describes the usage of consumables by users under the subscription.
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
+| <a id="gitlabsubscriptionusageusersusagedailyusage"></a>`dailyUsage` | [`[GitlabSubscriptionDailyUsage!]`](#gitlabsubscriptiondailyusage) | Array of daily usage of GitLab Credits. |
 | <a id="gitlabsubscriptionusageusersusagetotalusersusingcredits"></a>`totalUsersUsingCredits` | [`Int`](#int) | Total number of users consuming GitLab Credits. |
 | <a id="gitlabsubscriptionusageusersusagetotalusersusingoverage"></a>`totalUsersUsingOverage` | [`Int`](#int) | Total number of users consuming overage. |
 | <a id="gitlabsubscriptionusageusersusagetotalusersusingpool"></a>`totalUsersUsingPool` | [`Int`](#int) | Total number of users consuming pool GitLab Credits. |

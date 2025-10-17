@@ -69,15 +69,15 @@ module Ai
         ServiceResponse.error(message: message, reason: reason, payload: payload)
       end
 
-      def token_generation_service
-        ::Ai::DuoWorkflows::TokenGenerationService.new(
+      def workflow_context_generation_service
+        ::Ai::DuoWorkflows::WorkflowContextGenerationService.new(
           current_user: current_user,
           organization: container.organization,
           container: container,
           workflow_definition: workflow_definition
         )
       end
-      strong_memoize_attr :token_generation_service
+      strong_memoize_attr :workflow_context_generation_service
 
       def create_workflow_params
         workflow_params
@@ -94,14 +94,14 @@ module Ai
           workflow_id: workflow.id,
           workflow_oauth_token: workflow_oauth_token,
           workflow_service_token: workflow_service_token,
-          use_service_account: token_generation_service.use_service_account?,
+          use_service_account: workflow_context_generation_service.use_service_account?,
           source_branch: source_branch,
           workflow_metadata: Gitlab::DuoWorkflow::Client.metadata(current_user).to_json
         }
       end
 
       def workflow_service_token
-        workflow_token_result = token_generation_service.generate_workflow_token
+        workflow_token_result = workflow_context_generation_service.generate_workflow_token
         return if workflow_token_result.error?
 
         workflow_token_result.payload.fetch(:token)
@@ -112,7 +112,7 @@ module Ai
       strong_memoize_attr :workflow_service_token
 
       def workflow_oauth_token
-        oauth_token_result = token_generation_service.generate_oauth_token_with_composite_identity_support
+        oauth_token_result = workflow_context_generation_service.generate_oauth_token_with_composite_identity_support
         return if oauth_token_result.error?
 
         oauth_token_result.payload.fetch(:oauth_access_token).plaintext_token

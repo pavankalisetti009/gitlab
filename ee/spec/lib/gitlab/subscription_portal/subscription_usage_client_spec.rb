@@ -287,7 +287,8 @@ RSpec.describe Gitlab::SubscriptionPortal::SubscriptionUsageClient, feature_cate
                 usersUsage: {
                   totalUsersUsingCredits: 3,
                   totalUsersUsingPool: 2,
-                  totalUsersUsingOverage: 1
+                  totalUsersUsingOverage: 1,
+                  dailyUsage: [{ date: '2025-10-01', creditsUsed: 321 }]
                 }
               }
             }
@@ -301,7 +302,8 @@ RSpec.describe Gitlab::SubscriptionPortal::SubscriptionUsageClient, feature_cate
           usersUsage: {
             totalUsersUsingCredits: 3,
             totalUsersUsingPool: 2,
-            totalUsersUsingOverage: 1
+            totalUsersUsingOverage: 1,
+            dailyUsage: [{ date: '2025-10-01', creditsUsed: 321 }]
           }
         }
       end

@@ -59,14 +59,14 @@ module API
           end
 
           def start_workflow_params(workflow_id, container:)
-            token_service = token_generation_service(container: container)
+            workflow_context_service = workflow_context_generation_service(container: container)
 
-            oauth_token_result = token_service.generate_oauth_token_with_composite_identity_support
+            oauth_token_result = workflow_context_service.generate_oauth_token_with_composite_identity_support
             if oauth_token_result.error?
               render_api_error!(oauth_token_result[:message], oauth_token_result[:http_status] || :forbidden)
             end
 
-            workflow_token_result = token_service.generate_workflow_token
+            workflow_token_result = workflow_context_service.generate_workflow_token
             bad_request!(workflow_token_result[:message]) if workflow_token_result.error?
 
             {
@@ -74,7 +74,7 @@ module API
               workflow_id: workflow_id,
               workflow_oauth_token: oauth_token_result[:oauth_access_token].plaintext_token,
               workflow_service_token: workflow_token_result[:token],
-              use_service_account: token_service.use_service_account?,
+              use_service_account: workflow_context_service.use_service_account?,
               source_branch: params[:source_branch],
               additional_context: params[:additional_context],
               workflow_metadata: Gitlab::DuoWorkflow::Client.metadata(current_user).to_json,
@@ -83,8 +83,8 @@ module API
           end
 
           # container is not available in the context of `/direct_access` endpoint
-          def token_generation_service(container: nil)
-            ::Ai::DuoWorkflows::TokenGenerationService.new(
+          def workflow_context_generation_service(container: nil)
+            ::Ai::DuoWorkflows::WorkflowContextGenerationService.new(
               current_user: current_user,
               organization: container&.organization || ::Current.organization,
               workflow_definition: params[:workflow_definition],
@@ -93,8 +93,8 @@ module API
           end
 
           def gitlab_oauth_token
-            token_service = token_generation_service
-            oauth_token_result = token_service.generate_oauth_token
+            workflow_context_service = workflow_context_generation_service
+            oauth_token_result = workflow_context_service.generate_oauth_token
 
             if oauth_token_result.error?
               render_api_error!(oauth_token_result[:message], oauth_token_result[:http_status] || :forbidden)
@@ -104,8 +104,8 @@ module API
           end
 
           def duo_workflow_token
-            token_service = token_generation_service
-            workflow_token_result = token_service.generate_workflow_token
+            workflow_context_service = workflow_context_generation_service
+            workflow_token_result = workflow_context_service.generate_workflow_token
             bad_request!(workflow_token_result[:message]) if workflow_token_result.error?
 
             workflow_token_result

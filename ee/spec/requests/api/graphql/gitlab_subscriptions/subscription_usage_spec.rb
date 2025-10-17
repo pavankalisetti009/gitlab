@@ -32,6 +32,7 @@ RSpec.describe 'Query.subscriptionUsage', feature_category: :consumables_cost_ma
         :total_users_using_credits,
         :total_users_using_pool,
         :total_users_using_overage,
+        query_graphql_field(:daily_usage, {}, [:date, :credits_used]),
         query_graphql_field(:users, {}, [
           query_graphql_field(:nodes, {}, [
             :id,
@@ -99,7 +100,8 @@ RSpec.describe 'Query.subscriptionUsage', feature_category: :consumables_cost_ma
       usersUsage: {
         totalUsersUsingCredits: 3,
         totalUsersUsingPool: 2,
-        totalUsersUsingOverage: 1
+        totalUsersUsingOverage: 1,
+        dailyUsage: [{ date: '2025-10-01', creditsUsed: 321 }]
       }
     }
 
@@ -144,6 +146,9 @@ RSpec.describe 'Query.subscriptionUsage', feature_category: :consumables_cost_ma
           expect(graphql_data_at(:subscription_usage, :usersUsage, :totalUsersUsingCredits)).to eq(3)
           expect(graphql_data_at(:subscription_usage, :usersUsage, :totalUsersUsingPool)).to eq(2)
           expect(graphql_data_at(:subscription_usage, :usersUsage, :totalUsersUsingOverage)).to eq(1)
+          expect(graphql_data_at(:subscription_usage, :usersUsage, :dailyUsage))
+              .to match_array([{ date: '2025-10-01', creditsUsed: 321 }.with_indifferent_access])
+
           expect(graphql_data_at(:subscription_usage, :usersUsage, :users, :nodes)).to match_array(
             User.all.map do |u|
               {
@@ -204,6 +209,9 @@ RSpec.describe 'Query.subscriptionUsage', feature_category: :consumables_cost_ma
             expect(graphql_data_at(:subscription_usage, :usersUsage, :totalUsersUsingCredits)).to eq(3)
             expect(graphql_data_at(:subscription_usage, :usersUsage, :totalUsersUsingPool)).to eq(2)
             expect(graphql_data_at(:subscription_usage, :usersUsage, :totalUsersUsingOverage)).to eq(1)
+            expect(graphql_data_at(:subscription_usage, :usersUsage, :dailyUsage))
+              .to match_array([{ date: '2025-10-01', creditsUsed: 321 }.with_indifferent_access])
+
             expect(graphql_data_at(:subscription_usage, :usersUsage, :users, :nodes)).to match_array(
               root_group.users.map do |u|
                 {

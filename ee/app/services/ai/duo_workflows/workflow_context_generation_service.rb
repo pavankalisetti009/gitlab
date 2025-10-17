@@ -2,7 +2,7 @@
 
 module Ai
   module DuoWorkflows
-    class TokenGenerationService
+    class WorkflowContextGenerationService
       def initialize(current_user:, organization:, workflow_definition: nil, container: nil)
         @current_user = current_user
         @container = container
