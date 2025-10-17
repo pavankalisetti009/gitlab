@@ -21,7 +21,8 @@ RSpec.describe Mutations::Ai::Catalog::Flow::Create, feature_category: :workflow
       :public,
       :release,
       :steps,
-      :client_mutation_id
+      :client_mutation_id,
+      :add_to_project_when_created
     )
   end
 end

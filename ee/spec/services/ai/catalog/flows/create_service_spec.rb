@@ -124,9 +124,9 @@ RSpec.describe Ai::Catalog::Flows::CreateService, feature_category: :workflow_ca
       end
 
       context 'when the prefix is not valid' do
-        let(:params) { super().merge(steps: [{ agent: agent, pinned_version_prefix: '2' }]) }
+        let(:params) { super().merge(steps: [{ agent: agent, pinned_version_prefix: '999' }]) }
 
-        it_behaves_like 'an error response', ['Step 1: Unable to resolve version with prefix 2']
+        it_behaves_like 'an error response', ['Step 1: Unable to resolve version with prefix 999']
       end
     end
 
@@ -209,6 +209,29 @@ RSpec.describe Ai::Catalog::Flows::CreateService, feature_category: :workflow_ca
 
       it 'does not create the item version' do
         expect { response }.to raise_error("Dummy error").and not_change { Ai::Catalog::Item.count }
+      end
+    end
+  end
+
+  context 'when add_to_project_when_created is true' do
+    let(:params) { super().merge(add_to_project_when_created: true) }
+
+    it 'adds the created item to project' do
+      expect(response).to be_success
+
+      item = response.payload[:item]
+      item_consumer = ::Ai::Catalog::ItemConsumer.for_item(item.id).first
+      expect(item_consumer.project).to eq(project)
+    end
+
+    context 'and ItemConsumer fails to be created' do
+      it 'returns a success with errors from item consumer creation' do
+        allow_next_instance_of(::Ai::Catalog::ItemConsumers::CreateService) do |instance|
+          expect(instance).to receive(:execute).and_return(ServiceResponse.error(message: 'Failure!'))
+        end
+
+        expect(response.payload[:item]).to be_kind_of(Ai::Catalog::Item)
+        expect(response.message).to eq(['Failure!'])
       end
     end
   end
