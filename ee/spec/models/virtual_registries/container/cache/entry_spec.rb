@@ -27,7 +27,7 @@ RSpec.describe VirtualRegistries::Container::Cache::Entry, feature_category: :vi
       end
 
       it { is_expected.to validate_uniqueness_of(:relative_path).scoped_to(:upstream_id, :status) }
-      it { is_expected.to validate_uniqueness_of(:object_storage_key).scoped_to(:relative_path) }
+      it { is_expected.to validate_uniqueness_of(:object_storage_key).scoped_to(:relative_path, :group_id) }
 
       context 'with a similar cached response in a different status' do
         let!(:cache_entry_in_error) do
