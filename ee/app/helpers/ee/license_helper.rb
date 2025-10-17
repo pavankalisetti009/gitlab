@@ -56,7 +56,7 @@ module EE
         customers_portal_url: subscription_portal_manage_url,
         free_trial_path: self_managed_new_trial_url,
         has_active_license: (has_active_license? ? 'true' : 'false'),
-        license_remove_path: (current_user.can?(:destroy_licenses) ? admin_license_path : ''),
+        license_remove_path: (current_user.can?(:delete_license) ? admin_license_path : ''),
         subscription_sync_path: sync_seat_link_admin_license_path,
         congratulation_svg_path: image_path('illustrations/cloud-check-sm.svg'),
         license_usage_file_path: admin_license_usage_export_path(format: :csv),

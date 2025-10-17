@@ -143,10 +143,10 @@ RSpec.describe LicenseHelper, feature_category: :subscription_management do
       end
     end
 
-    context 'when the current user cannot destroy licenses' do
+    context 'when the current user cannot delete licenses' do
       before do
         allow(current_user).to receive(:can?).and_call_original
-        allow(current_user).to receive(:can?).with(:destroy_licenses).and_return(false)
+        allow(current_user).to receive(:can?).with(:delete_license).and_return(false)
       end
 
       it 'returns the data for the view without the license_remove_path set' do

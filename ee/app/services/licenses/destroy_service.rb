@@ -7,7 +7,7 @@ module Licenses
     override :execute
     def execute
       raise ActiveRecord::RecordNotFound unless license
-      raise Gitlab::Access::AccessDeniedError unless can?(user, :destroy_licenses)
+      raise Gitlab::Access::AccessDeniedError unless can?(user, :delete_license)
 
       clear_future_subscriptions
       license.destroy
