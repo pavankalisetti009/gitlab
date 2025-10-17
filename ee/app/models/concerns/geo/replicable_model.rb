@@ -42,20 +42,6 @@ module Geo
         end
       end
 
-      # When storing verification details in the same table as the model,
-      # the scope `available_verifiables` returns only those records
-      # that are eligible for verification, i.e. the same as the scope
-      # `verifiables`.
-
-      # When using a separate table to store verification details,
-      # the scope `available_verifiables` should return all records
-      # from the separate table because the separate table will
-      # always only have records corresponding to replicables that are verifiable.
-      # For this, override the scope in the replicable model, e.g. like so in
-      # `MergeRequestDiff`,
-      # `scope :available_verifiables, -> { joins(:merge_request_diff_detail) }`
-      scope :available_verifiables, -> { verifiables }
-
       # The method is tested but undercoverage task doesn't detect it.
       # :nocov:
       def geo_create_event!

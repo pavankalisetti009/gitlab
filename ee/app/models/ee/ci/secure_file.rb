@@ -32,8 +32,6 @@ module EE
                                           )
                                         }
 
-        scope :available_verifiables, -> { joins(:ci_secure_file_state) }
-
         def verification_state_object
           ci_secure_file_state
         end

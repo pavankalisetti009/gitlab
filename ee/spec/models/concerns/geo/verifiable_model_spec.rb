@@ -44,6 +44,39 @@ RSpec.describe Geo::VerifiableModel, feature_category: :geo_replication do
         expect(subject.in_verifiables?).to eq(false)
       end
     end
+
+    describe '.available_verifiables' do
+      before do
+        stub_primary_site
+        allow(Gitlab::Geo::Replicator).to receive_messages(verification_enabled?: true, replication_enabled?: true)
+
+        subject.save!
+      end
+
+      it 'returns records that have verification state records' do
+        expect(subject.class.available_verifiables).to include(subject)
+      end
+
+      it 'joins the state table' do
+        expect(subject.class.available_verifiables.to_sql)
+          .to include('JOIN "_test_dummy_model_states"')
+      end
+
+      it 'is chainable with other scopes' do
+        expect { subject.class.available_verifiables.where(id: 1) }
+          .not_to raise_error
+      end
+
+      context 'when no state records exist' do
+        before do
+          subject.class.delete_all
+        end
+
+        it 'returns empty relation' do
+          expect(subject.class.available_verifiables).to be_empty
+        end
+      end
+    end
   end
 
   context 'when separate table is not used for verification state' do
@@ -89,6 +122,40 @@ RSpec.describe Geo::VerifiableModel, feature_category: :geo_replication do
     describe '.active_record_state_association' do
       it 'returns nil' do
         expect(subject.class.active_record_state_association).to be_nil
+      end
+    end
+
+    describe '.available_verifiables' do
+      before do
+        stub_primary_site
+        allow(Gitlab::Geo::Replicator).to receive_messages(verification_enabled?: true, replication_enabled?: true)
+
+        subject.save!
+      end
+
+      it 'returns verifiable records' do
+        expect(subject.class).to receive(:verifiables).and_call_original
+        expect(subject.class.available_verifiables).to include(subject)
+      end
+
+      it 'does not join the state table' do
+        expect(subject.class.available_verifiables.to_sql)
+          .not_to include('JOIN')
+      end
+
+      it 'is chainable with other scopes' do
+        expect { subject.class.available_verifiables.where(id: 1) }
+          .not_to raise_error
+      end
+
+      context 'when no state records exist' do
+        before do
+          subject.class.delete_all
+        end
+
+        it 'returns empty relation' do
+          expect(subject.class.available_verifiables).to be_empty
+        end
       end
     end
   end

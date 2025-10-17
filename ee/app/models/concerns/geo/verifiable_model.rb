@@ -33,6 +33,16 @@ module Geo
         joins(association).where(association => { verification_checksum: nil })
       end
 
+      # When storing verification details in the same table as the model,
+      # the scope `available_verifiables` returns only those records
+      # that are eligible for verification, i.e. the same as the scope
+      # `verifiables`.
+      scope :available_verifiables, -> {
+        return verifiables unless separate_verification_state_table?
+
+        joins(active_record_state_association.name)
+      }
+
       def save_verification_details
         return unless Gitlab::Geo.primary?
         return unless self.class.replicator_class.verification_enabled?
