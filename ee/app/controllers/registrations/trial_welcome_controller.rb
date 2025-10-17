@@ -41,11 +41,10 @@ module Registrations
         render GitlabSubscriptions::Trials::Welcome::TrialFormComponent.new(user: current_user,
           params: resubmit_params(result))
       else
-        render :resubmit, locals: {
+        render GitlabSubscriptions::Trials::Welcome::ResubmitComponent.new(
           hidden_fields: result.payload,
-          content: result.message,
           submit_path: users_sign_up_trial_welcome_path(**glm_params)
-        }
+        ).with_content(result.message)
       end
     end
 
