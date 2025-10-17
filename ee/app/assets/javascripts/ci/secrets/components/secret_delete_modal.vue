@@ -39,7 +39,7 @@ export default {
     modalOptions() {
       return {
         actionPrimary: {
-          text: s__('Secrets|Delete secret'),
+          text: s__('SecretsManager|Delete secret'),
           attributes: {
             disabled: !this.canDeleteSecret,
             variant: 'danger',
@@ -64,7 +64,7 @@ export default {
       this.$emit('hide');
     },
     showToastMessage() {
-      const toastMessage = sprintf(s__('Secrets|Secret %{secretName} has been deleted.'), {
+      const toastMessage = sprintf(s__('SecretsManager|Secret %{secretName} has been deleted.'), {
         secretName: this.secretName,
       });
 
@@ -105,7 +105,7 @@ export default {
 <template>
   <gl-modal
     :visible="showModal"
-    :title="s__('Secrets|Delete Secret')"
+    :title="s__('SecretsManager|Delete secret')"
     :action-primary="modalOptions.actionPrimary"
     :action-secondary="modalOptions.actionSecondary"
     modal-id="delete-secret-modal"
@@ -118,7 +118,7 @@ export default {
       <gl-sprintf
         :message="
           s__(
-            `Secrets|Are you sure you want to delete secret %{secretName}? This action cannot be undone, and the secret cannot be recovered.`,
+            `SecretsManager|Are you sure you want to delete secret %{secretName}? This action cannot be undone, and the secret cannot be recovered.`,
           )
         "
       >
@@ -128,7 +128,7 @@ export default {
       </gl-sprintf>
     </p>
     <p data-testid="secret-delete-modal-confirm-text">
-      <gl-sprintf :message="s__(`Secrets|To confirm, enter %{secretName}:`)">
+      <gl-sprintf :message="s__(`SecretsManager|To confirm, enter %{secretName}:`)">
         <template #secretName>
           <code>{{ secretName }}</code>
         </template>

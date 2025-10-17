@@ -167,7 +167,7 @@ describe('SecretsApp', () => {
 
     it('renders an error message', () => {
       expect(createAlert).toHaveBeenCalledWith({
-        message: 'An error occurred while fetching the Secret manager status. Please try again.',
+        message: 'An error occurred while fetching the secrets manager status. Please try again.',
       });
     });
 
