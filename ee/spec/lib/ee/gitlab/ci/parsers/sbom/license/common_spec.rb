@@ -15,9 +15,9 @@ RSpec.describe Gitlab::Ci::Parsers::Sbom::License::Common, feature_category: :de
       { "license" => { "id" => "card-verifier", "name" => "Card Verifier", "url" => "https://card-verifier.com" } } |
         { spdx_identifier: "card-verifier", name: "Card Verifier", url: "https://card-verifier.com" }
       { "license" => { "name" => "EPL-2.0" } } |
-        {}
+        { spdx_identifier: "EPL-2.0" }
       { "license" => { "name" => "BSD-2-Clause-NetBSD" } } |
-        {}
+        { name: "BSD-2-Clause-NetBSD" }
       { "expression" => "EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0" } |
         {}
     end
