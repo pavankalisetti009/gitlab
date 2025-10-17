@@ -342,7 +342,9 @@ module Gitlab
                                  when MergeRequest.name
                                    Feature.enabled?(:search_merge_request_queries_notes, current_user)
                                  when Issue.name
-                                   Feature.enabled?(:search_work_item_queries_notes, current_user)
+                                   true
+                                 else
+                                   false
                                  end
 
         if search_feature_enabled && !::Gitlab::Saas.feature_available?(:advanced_search)

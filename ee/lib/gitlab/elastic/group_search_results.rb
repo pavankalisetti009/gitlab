@@ -40,13 +40,7 @@ module Gitlab
         when :users
           super.except(:group_ids) # User uses group_id for namespace_query
         when :work_items
-          options = super.merge(root_ancestor_ids: [group.root_ancestor.id])
-
-          if Feature.enabled?(:search_work_item_queries_notes, current_user)
-            options[:related_ids] = related_ids_for_notes(Issue.name)
-          end
-
-          options
+          super.merge(root_ancestor_ids: [group.root_ancestor.id], related_ids: related_ids_for_notes(Issue.name))
         when :merge_requests
           options = super
           if Feature.enabled?(:search_merge_request_queries_notes, current_user)

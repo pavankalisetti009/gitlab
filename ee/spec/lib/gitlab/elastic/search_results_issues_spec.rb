@@ -426,16 +426,5 @@ RSpec.describe Gitlab::Elastic::SearchResults, 'issues', feature_category: :glob
         expect(results.issues_count).to eq 0
       end
     end
-
-    context 'when search_work_item_queries_notes is false' do
-      before do
-        stub_feature_flags(search_work_item_queries_notes: false)
-      end
-
-      it 'does not return the issue when searching with note text' do
-        expect(issues).to be_empty
-        expect(results.issues_count).to eq 0
-      end
-    end
   end
 end

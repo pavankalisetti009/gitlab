@@ -85,27 +85,15 @@ RSpec.describe ::Search::Elastic::WorkItemQueryBuilder, :elastic_helpers, featur
 
       describe 'related id query' do
         context 'for global search' do
-          context 'when search_work_item_queries_notes is false' do
-            before do
-              stub_feature_flags(search_work_item_queries_notes: false)
-            end
-
+          context 'when on saas', :saas do
             it 'does not contain work_item:related:ids in query' do
               assert_names_in_query(build, without: %w[work_item:related:ids])
             end
           end
 
-          context 'when search_work_item_queries_notes is true' do
-            context 'when on saas', :saas do
-              it 'does not contain work_item:related:ids in query' do
-                assert_names_in_query(build, without: %w[work_item:related:ids])
-              end
-            end
-
-            context 'when not on saas' do
-              it 'contains work_item:related:ids in query' do
-                assert_names_in_query(build, with: %w[work_item:related:ids])
-              end
+          context 'when not on saas' do
+            it 'contains work_item:related:ids in query' do
+              assert_names_in_query(build, with: %w[work_item:related:ids])
             end
           end
         end
@@ -129,18 +117,6 @@ RSpec.describe ::Search::Elastic::WorkItemQueryBuilder, :elastic_helpers, featur
         context 'when options[:related_ids] is not sent' do
           let(:options) do
             base_options.tap { |hash| hash.delete(:related_ids) }
-          end
-
-          it 'returns the expected query' do
-            assert_names_in_query(build,
-              with: %w[work_item:multi_match:and:search_terms work_item:multi_match_phrase:search_terms],
-              without: %w[work_item:match:search_terms work_item:related:ids])
-          end
-        end
-
-        context 'when search_work_item_queries_notes flag is false' do
-          before do
-            stub_feature_flags(search_work_item_queries_notes: false)
           end
 
           it 'returns the expected query' do

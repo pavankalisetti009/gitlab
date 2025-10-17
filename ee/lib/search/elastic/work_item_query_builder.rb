@@ -88,7 +88,6 @@ module Search
 
       def related_ids
         return [] unless options[:related_ids].present?
-        return [] unless Feature.enabled?(:search_work_item_queries_notes, options[:current_user])
 
         # related_ids are used to search for related notes on noteable records
         # this is not enabled on GitLab.com for global searches
