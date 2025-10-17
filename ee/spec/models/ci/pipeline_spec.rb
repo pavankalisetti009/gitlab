@@ -451,16 +451,6 @@ RSpec.describe Ci::Pipeline, feature_category: :continuous_integration do
           expect(subject.metrics.count).to eq(3)
         end
       end
-
-      context 'when ff show_child_reports_in_mr_page is disabled' do
-        before do
-          stub_feature_flags(show_child_reports_in_mr_page: false)
-        end
-
-        it 'does not return the metrics report of the child pipeline' do
-          expect(subject.metrics).to be_empty
-        end
-      end
     end
   end
 
