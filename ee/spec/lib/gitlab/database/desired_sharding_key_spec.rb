@@ -9,10 +9,10 @@ RSpec.describe 'new tables missing sharding_key', feature_category: :organizatio
   let(:allowed_to_be_missing_foreign_key) do
     [
       'ci_job_artifact_states.job_artifact_id',
-
       # below table will get a foreign key after its partitioning backfill
       # finishes, before the application begins using it.
       #
+      'spam_logs.user_id',
       'merge_request_diff_files_99208b8fac.merge_request_diff_id'
     ]
   end
@@ -24,6 +24,7 @@ RSpec.describe 'new tables missing sharding_key', feature_category: :organizatio
       'design_management_versions.issue_id', # https://gitlab.com/gitlab-org/gitlab/-/issues/461330
       'requirements_management_test_reports.issue_id', # https://gitlab.com/gitlab-org/gitlab/-/issues/383031
       # We nullify the FK once the parent is deleted and remove entries using a cleanup worker.
+      'spam_logs.user_id',
       'packages_nuget_symbols.package_id'
     ]
   end
