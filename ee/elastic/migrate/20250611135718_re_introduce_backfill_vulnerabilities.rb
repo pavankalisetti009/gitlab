@@ -37,3 +37,5 @@ class ReIntroduceBackfillVulnerabilities < Elastic::Migration
 
   delegate :sass_with_es?, :dedicated_with_es?, to: :class
 end
+
+ReIntroduceBackfillVulnerabilities.prepend ::Search::Elastic::MigrationObsolete
