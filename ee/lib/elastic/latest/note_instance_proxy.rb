@@ -91,8 +91,6 @@ module Elastic
       end
 
       def build_traversal_ids
-        return {} unless ::Elastic::DataMigrationService.migration_has_finished?(:add_traversal_ids_to_notes)
-
         namespace = noteable.try(:namespace) ||
           noteable.try(:project)&.try(:namespace) ||
           noteable.try(:target_project)&.try(:namespace)
@@ -111,8 +109,6 @@ module Elastic
       end
 
       def schema_version
-        return 23_08 unless ::Elastic::DataMigrationService.migration_has_finished?(:add_traversal_ids_to_notes)
-
         SCHEMA_VERSION
       end
     end

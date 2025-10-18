@@ -35,10 +35,6 @@ RSpec.describe Elastic::Latest::NoteInstanceProxy, feature_category: :global_sea
       }.with_indifferent_access
     end
 
-    before do
-      set_elasticsearch_migration_to(:add_traversal_ids_to_notes, including: true)
-    end
-
     shared_examples 'does not error when note and noteable has no namespace or project' do
       before do
         allow(note).to receive_messages(project: nil, namespace: nil)
@@ -47,16 +43,6 @@ RSpec.describe Elastic::Latest::NoteInstanceProxy, feature_category: :global_sea
 
       it 'does not raise an error' do
         expect { as_indexed_json }.not_to raise_error
-      end
-    end
-
-    context 'when add_traversal_ids_to_notes migration is not finished' do
-      before do
-        set_elasticsearch_migration_to(:add_traversal_ids_to_notes, including: false)
-      end
-
-      it 'contains the previous schema version' do
-        expect(as_indexed_json['schema_version']).to eq(23_08)
       end
     end
 
