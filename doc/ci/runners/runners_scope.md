@@ -59,7 +59,7 @@ To create an instance runner:
 
 1. On the left sidebar, at the bottom, select **Admin**.
 1. Select **CI/CD > Runners**.
-1. Select **New instance runner**.
+1. Select **Create instance runner**.
 1. Select the operating system where GitLab Runner is installed.
 1. In the **Tags** section, in the **Tags** field, enter the job tags to specify jobs the runner can run.
    If there are no job tags for this runner, select **Run untagged**.
@@ -269,7 +269,7 @@ To create a group runner:
 
 1. On the left sidebar, select **Search or go to** and find your group.
 1. Select **Build** > **Runners**.
-1. Select **New group runner**.
+1. Select **Create group runner**.
 1. In the **Tags** section, in the **Tags** field, enter the job tags to specify jobs the runner can run.
    If there are no job tags for this runner, select **Run untagged**.
 1. Optional. In the **Runner description** field, add a runner description
@@ -524,7 +524,7 @@ To create a project runner:
 1. On the left sidebar, select **Search or go to** and find your project.
 1. Select **Settings** > **CI/CD**.
 1. Expand the **Runners** section.
-1. Select **New project runner**.
+1. Select **Create project runner**.
 1. Select the operating system where GitLab Runner is installed.
 1. In the **Tags** section, in the **Tags** field, enter the job tags to specify jobs the runner can run.
    If there are no job tags for this runner, select **Run untagged**.
