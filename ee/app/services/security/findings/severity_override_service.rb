@@ -52,8 +52,10 @@ module Security
           create_severity_override_record(vulnerability)
           vulnerability.update!(severity: @severity)
           vulnerability.finding.update!(severity: @severity)
+
+          Vulnerabilities::StatisticsUpdateService.update_for(vulnerability)
+          Vulnerabilities::Reads::UpsertService.new(vulnerability, { severity: @severity }, projects: @project).execute
         end
-        Vulnerabilities::StatisticsUpdateService.update_for(vulnerability)
       end
 
       def create_severity_override_record(vulnerability)

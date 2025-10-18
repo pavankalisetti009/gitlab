@@ -123,7 +123,7 @@ RSpec.describe Vulnerabilities::AutoResolveService, feature_category: :vulnerabi
       end
 
       it 'triggers webhook events for resolved vulnerabilities' do
-        expect_next_found_instance_of(Vulnerability) do |vulnerability|
+        expect_any_instance_of(Vulnerability) do |vulnerability|
           expect(vulnerability).to receive(:trigger_webhook_event)
         end
 
@@ -263,6 +263,67 @@ RSpec.describe Vulnerabilities::AutoResolveService, feature_category: :vulnerabi
         ordered_vulnerabilities = Vulnerability.where(id: vulnerability_ids).order(:auto_resolved)
         expect(ordered_vulnerabilities[0]).not_to be_auto_resolved
         expect(ordered_vulnerabilities[1]).to be_auto_resolved
+      end
+    end
+
+    context 'when resolving vulnerabilities' do
+      it 'updates the vulnerability read records with correct state and auto_resolved flag' do
+        vulnerability_read = Vulnerabilities::Read.find_by(vulnerability_id: vulnerability.id) ||
+          create(:vulnerability_read,
+            vulnerability: vulnerability,
+            state: 'detected',
+            auto_resolved: false)
+
+        vulnerability_read.update!(state: 'detected', auto_resolved: false)
+
+        service.execute
+
+        vulnerability_read.reload
+        expect(vulnerability_read.state).to eq('resolved')
+        expect(vulnerability_read.auto_resolved).to be(true)
+      end
+
+      it 'updates multiple vulnerability read records when resolving multiple vulnerabilities' do
+        vulnerabilities = create_list(:vulnerability, 2, :with_findings, :detected, project: project)
+        vulnerability_ids = vulnerabilities.map(&:id)
+
+        vulnerability_reads = vulnerabilities.map do |vuln|
+          read = Vulnerabilities::Read.find_by(vulnerability_id: vuln.id) ||
+            create(:vulnerability_read, vulnerability: vuln)
+
+          read.update!(state: 'detected', auto_resolved: false)
+          read
+        end
+
+        described_class.new(pipeline, vulnerability_ids, budget).execute
+
+        vulnerability_reads.each do |read|
+          read.reload
+          expect(read.state).to eq('resolved')
+          expect(read.auto_resolved).to be(true)
+        end
+      end
+
+      it 'respects the budget when updating vulnerability reads' do
+        vulnerabilities = create_list(:vulnerability, 3, :with_findings, :detected, project: project)
+        vulnerability_ids = vulnerabilities.map(&:id)
+
+        vulnerability_reads = vulnerabilities.map do |vuln|
+          read = Vulnerabilities::Read.find_by(vulnerability_id: vuln.id) ||
+            create(:vulnerability_read, vulnerability: vuln)
+
+          read.update!(state: 'detected', auto_resolved: false)
+          read
+        end
+
+        described_class.new(pipeline, vulnerability_ids, 2).execute
+
+        updated_reads = vulnerability_reads.select { |read| read.reload.state == 'resolved' }
+        expect(updated_reads.count).to eq(2)
+
+        updated_reads.each do |read|
+          expect(read.auto_resolved).to be(true)
+        end
       end
     end
   end

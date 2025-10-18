@@ -15,7 +15,7 @@ RSpec.describe Vulnerabilities::DismissService, feature_category: :vulnerability
   let!(:pipeline) { create(:ee_ci_pipeline, :with_dast_report, :success, project: project) }
   let!(:build) { create(:ee_ci_build, :sast, pipeline: pipeline) }
   let(:state) { :detected }
-  let(:vulnerability) { create(:vulnerability, state, :with_findings, project: project) }
+  let(:vulnerability) { create(:vulnerability, state, :with_finding, project: project) }
   let(:state_transition) { create(:vulnerability_state_transition, vulnerability: vulnerability) }
   let(:dismiss_findings) { true }
   let(:comment) { nil }
@@ -37,7 +37,7 @@ RSpec.describe Vulnerabilities::DismissService, feature_category: :vulnerability
     end
 
     context 'when a vulnerability read record does not exist' do
-      let(:vulnerability) { create(:vulnerability, :detected, :with_findings, project: project, present_on_default_branch: false) }
+      let(:vulnerability) { create(:vulnerability, :detected, :with_finding, project: project, present_on_default_branch: false) }
       let(:vulnerability_read) { vulnerability.vulnerability_read }
 
       it 'does not fail' do

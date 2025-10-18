@@ -160,6 +160,9 @@ RSpec.describe Vulnerabilities::ManuallyCreateService, feature_category: :vulner
         expect(finding.raw_metadata).to eq("{}")
         expect(vulnerability.finding_id).to eq(finding.id)
 
+        expect(vulnerability.vulnerability_read.state).to eq(params.dig(:vulnerability, :state))
+        expect(vulnerability.vulnerability_read.severity).to eq(params.dig(:vulnerability, :severity))
+
         scanner = finding.scanner
         expect(scanner.name).to eq(params.dig(:vulnerability, :scanner, :name))
 

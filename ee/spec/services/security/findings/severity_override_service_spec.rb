@@ -69,6 +69,7 @@ RSpec.describe Security::Findings::SeverityOverrideService, feature_category: :v
           expect { execute }.to change { Vulnerability.count }.by(1)
           .and change { Vulnerabilities::Finding.count }.by(1)
           .and not_change { Vulnerabilities::SeverityOverride.count }
+          .and not_change { Vulnerabilities::Read.count }
         end
 
         it 'doesnt create audit event' do
@@ -84,6 +85,7 @@ RSpec.describe Security::Findings::SeverityOverrideService, feature_category: :v
             expect { execute }.to change { Vulnerability.count }.by(1)
               .and change { Vulnerabilities::Finding.count }.by(1)
               .and change { Vulnerabilities::SeverityOverride.count }.by(1)
+              .and not_change { Vulnerabilities::Read.count }
 
             expect(security_finding.reload.vulnerability.severity).to eq(new_severity)
             expect(security_finding.vulnerability.finding.severity).to eq(new_severity)
@@ -141,6 +143,14 @@ RSpec.describe Security::Findings::SeverityOverrideService, feature_category: :v
                 vulnerability: security_finding.vulnerability
               )
             end
+          end
+
+          it 'updates the vulnerability read record with the new severity' do
+            vulnerability = security_finding.reload.vulnerability
+            vulnerability_read = Vulnerabilities::Read.find_by(vulnerability_id: vulnerability.id) ||
+              create(:vulnerability_read, vulnerability: vulnerability, severity: previous_severity)
+
+            expect { execute }.to change { vulnerability_read.reload.severity }.from(previous_severity).to(new_severity)
           end
 
           it_behaves_like 'creates project audit event'

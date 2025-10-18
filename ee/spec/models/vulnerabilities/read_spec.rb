@@ -28,7 +28,6 @@ RSpec.describe Vulnerabilities::Read, type: :model, feature_category: :vulnerabi
     it { is_expected.to validate_length_of(:location_image).is_at_most(2048) }
 
     it { is_expected.to validate_uniqueness_of(:vulnerability_id) }
-    it { is_expected.to validate_uniqueness_of(:uuid).case_insensitive }
   end
 
   describe 'triggers' do

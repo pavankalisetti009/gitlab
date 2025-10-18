@@ -28,7 +28,6 @@ module Vulnerabilities
             author: @user
           )
 
-          Vulnerabilities::Read.by_vulnerabilities(@vulnerability).update(dismissal_reason: @dismissal_reason)
         rescue ActiveRecord::RecordInvalid => invalid
           errors = invalid.record.errors
           messages = errors.full_messages.join
@@ -44,6 +43,9 @@ module Vulnerabilities
           end
         end
       end
+
+      Vulnerabilities::Reads::UpsertService.new(@vulnerability,
+        { state: :dismissed, dismissal_reason: @dismissal_reason }, projects: @project).execute
 
       @vulnerability
     end

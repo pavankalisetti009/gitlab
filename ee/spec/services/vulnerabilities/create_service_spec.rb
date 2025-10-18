@@ -75,6 +75,19 @@ RSpec.describe Vulnerabilities::CreateService, feature_category: :vulnerability_
         ))
     end
 
+    it 'creates vulnerability read record when present_on_default_branch is true' do
+      expect { subject }.to change { Vulnerabilities::Read.count }.by(1)
+
+      vulnerability_read = Vulnerabilities::Read.last
+      expect(vulnerability_read).to have_attributes(
+        vulnerability_id: vulnerability.id,
+        project_id: project.id,
+        severity: finding.severity,
+        state: finding.state,
+        report_type: finding.report_type
+      )
+    end
+
     it_behaves_like 'creates a vulnerability state transition record with note'
 
     it 'creates a vulnerability_finding_risk_scores record' do
@@ -95,6 +108,19 @@ RSpec.describe Vulnerabilities::CreateService, feature_category: :vulnerability_
             expect(vulnerability.dismissed_at).to be_like_time(Time.current)
             expect(vulnerability.dismissed_by_id).to eq(user.id)
           end
+        end
+
+        it 'creates vulnerability read record with dismissed state' do
+          expect { subject }.to change { Vulnerabilities::Read.count }.by(1)
+
+          vulnerability_read = Vulnerabilities::Read.last
+          expect(vulnerability_read).to have_attributes(
+            vulnerability_id: vulnerability.id,
+            project_id: project.id,
+            severity: finding.severity,
+            state: 'dismissed',
+            report_type: finding.report_type
+          )
         end
       end
     end

@@ -16,6 +16,9 @@ module Vulnerabilities
 
     declarative_enum DismissalReasonEnum
 
+    # Included after scopes and relationships to avoid the warning
+    include BulkInsertSafe
+
     SEVERITY_COUNT_LIMIT = 1001
     OWASP_TOP_10_DEFAULT = -1
 
@@ -42,7 +45,7 @@ module Vulnerabilities
     validates :report_type, presence: true
     validates :severity, presence: true
     validates :state, presence: true
-    validates :uuid, uniqueness: { case_sensitive: false }, presence: true
+    validates :uuid, presence: true
 
     validates :location_image, length: { maximum: 2048 }
     validates :has_issues, inclusion: { in: [true, false], message: N_('must be a boolean value') }

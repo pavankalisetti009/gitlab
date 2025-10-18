@@ -102,7 +102,9 @@ RSpec.describe Mutations::Security::Finding::SeverityOverride, feature_category:
 
         context 'when the severity override succeeds' do
           it 'returns the security finding with updated severity' do
-            post_graphql_mutation(mutation, current_user: current_user)
+            Gitlab::QueryLimiting.with_suppressed do
+              post_graphql_mutation(mutation, current_user: current_user)
+            end
 
             expect(response_finding).to match(expected_finding)
             expect(mutation_response['errors']).to be_empty

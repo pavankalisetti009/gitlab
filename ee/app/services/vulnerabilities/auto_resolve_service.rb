@@ -99,6 +99,11 @@ module Vulnerabilities
           Vulnerabilities::BulkEsOperationService.new(vulnerabilities_to_update).execute(&:itself)
           trigger_webhook_events(vulnerabilities_to_update)
         end
+
+        Vulnerabilities::Reads::UpsertService.new(vulnerabilities_to_update,
+          { state: :resolved, auto_resolved: true },
+          projects: project
+        ).execute
       end
 
       Note.transaction do
