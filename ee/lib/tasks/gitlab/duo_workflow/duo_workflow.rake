@@ -51,13 +51,18 @@ namespace :gitlab do
             "ui_chat_log" => [
               {
                 "status" => "success",
-                "content" => "Starting workflow with goal: #{workflow_goal}
-                \ for file file_path_that_is_super_long/another_directory_
-                \ that_hopefully_ends_someday_andasinglewordthatsjustsolongitshouldwrap",
                 "timestamp" => timestamp,
                 "tool_info" => nil,
                 "message_type" => "tool",
-                "correlation_id" => nil
+                "correlation_id" => nil,
+                "content" => <<~MARKDOWN
+                Starting workflow with goal: #{workflow_goal}. This should always be escaped because goals can come from users!
+                 Test user content that should be escaped
+                 <img src="https://en.wikipedia.org/wiki/Wikipedia#/media/File:Wikipedia-logo-v2.svg">
+                 <h1>My own markdown!!!!</h1>
+                 <pre>Tons of stuff</pre>
+                 for file file_path_that_is_super_long/another_directoryandasinglewordthatsjustsolongitshouldwrap
+                MARKDOWN
               },
               {
                 "status" => "success",
@@ -112,6 +117,16 @@ namespace :gitlab do
                   **Issue ID:** #569671
 
                   **Epic:** Part of epic #18912 "Prevent write permissions when the group is archived"
+                MARKDOWN
+              },
+              {
+                "status" => "success",
+                "message_type" => "user",
+                "content" => <<~MARKDOWN
+                 Test user content that should be escaped
+                 <img src="https://en.wikipedia.org/wiki/Wikipedia#/media/File:Wikipedia-logo-v2.svg">
+                 <h1>My own markdown!!!!</h1>
+                 <pre>Tons of stuff</pre>
                 MARKDOWN
               },
               {

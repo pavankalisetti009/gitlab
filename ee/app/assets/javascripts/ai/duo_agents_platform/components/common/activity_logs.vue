@@ -59,6 +59,9 @@ export default {
     filePath(item) {
       return item.tool_info?.args?.file_path;
     },
+    isMarkdown(item, index) {
+      return item.message_type !== 'user' && index > 0;
+    },
     title(message, index) {
       if (index === 0) {
         return this.$options.startMessage.title;
@@ -99,10 +102,15 @@ export default {
           <strong class="gl-mb-1 gl-text-strong">{{ title(item, index) }}</strong>
           <span class="gl-text-subtle">{{ timeAgo(item) }}</span>
         </div>
+
         <non-gfm-markdown
+          v-if="isMarkdown(item, index)"
           :markdown="item.content"
           class="gl-m-0 gl-flex-1 gl-py-2 gl-wrap-anywhere"
         />
+        <div v-else class="gl-m-0 gl-flex-1 gl-py-2">
+          {{ item.content }}
+        </div>
         <code v-if="filePath(item)" class="gl-break-all">{{ filePath(item) }}</code>
       </div>
     </li>
