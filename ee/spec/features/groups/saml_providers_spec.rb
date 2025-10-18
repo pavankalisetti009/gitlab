@@ -22,6 +22,9 @@ RSpec.describe 'SAML provider settings', feature_category: :system_access do
     page.within('.saml_provider') do
       click_button('Save changes')
     end
+
+    expect(page).to have_content 'SAML Single Sign On'
+    wait_for_requests
   end
 
   def test_sso

@@ -58,7 +58,12 @@ RSpec.describe 'Project mirror', :js, feature_category: :source_code_management 
           end
 
           Sidekiq::Testing.fake! do
-            expect { find('.js-force-update-mirror').click }
+            expect do
+              find('.js-force-update-mirror').click
+
+              # wait for UI message to ensure job is created
+              expect(page).to have_content('repository is being updated')
+            end
               .to change { UpdateAllMirrorsWorker.jobs.size }
               .by(1)
           end
@@ -125,12 +130,14 @@ RSpec.describe 'Project mirror', :js, feature_category: :source_code_management 
           fill_in 'Password', with: password
           click_without_sidekiq 'Mirror repository'
         end
+
+        # Waiting for page to load to ensure changes to mirror saved in the backend
+        expect(page).to have_content('successfully updated')
+        wait_for_requests
       end
 
       it 'can be set up' do
         add_mirror
-
-        expect(page).to have_content('Mirroring settings were successfully updated')
 
         project.reload
         expect(project.mirror?).to be_truthy
@@ -143,8 +150,6 @@ RSpec.describe 'Project mirror', :js, feature_category: :source_code_management 
 
         it 'will be ignored' do
           add_mirror
-
-          expect(page).to have_content('Mirroring settings were successfully updated')
 
           project.reload
           expect(project.mirror?).to be_truthy
@@ -281,6 +286,10 @@ RSpec.describe 'Project mirror', :js, feature_category: :source_code_management 
 
           click_without_sidekiq 'Mirror repository'
         end
+
+        # Waiting for page to load to ensure changes to mirror saved in the backend
+        expect(page).to have_content('successfully updated')
+        wait_for_requests
         project.reload
 
         expect(page).to have_content('Mirroring settings were successfully updated')
@@ -305,6 +314,10 @@ RSpec.describe 'Project mirror', :js, feature_category: :source_code_management 
 
             click_without_sidekiq 'Mirror repository'
           end
+
+          # Waiting for page to load to ensure changes to mirror saved in the backend
+          expect(page).to have_content('successfully updated')
+          wait_for_requests
           project.reload
           expect(project.username_only_import_url).to eq('ssh://example.com')
           expect(import_data.auth_method).to eq('ssh_public_key')

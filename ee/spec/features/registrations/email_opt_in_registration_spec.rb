@@ -2,7 +2,9 @@
 
 require 'spec_helper'
 
-RSpec.describe 'Registration with the email opt in value', :js, :saas_registration, :with_current_organization, feature_category: :onboarding do
+# Spec quarantined with Chrome 138
+RSpec.describe 'Registration with the email opt in value', :js, :saas_registration, :with_current_organization,
+  feature_category: :onboarding, quarantine: 'https://gitlab.com/gitlab-org/gitlab/-/issues/569358' do
   shared_examples 'toggles email opt-in checkbox', :with_trial_types do
     it 'toggles the omniauth form actions' do
       visit path
