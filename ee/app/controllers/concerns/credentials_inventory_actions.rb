@@ -53,30 +53,12 @@ module CredentialsInventoryActions
 
   def filter_credentials
     if show_personal_access_tokens?
-      if Feature.enabled?(:optimize_credentials_inventory, group || :instance)
-        PersonalAccessTokensFinder.new(pat_params(group: group, user_types: [:human, :service_account])).execute
-      else
-        ::Authn::CredentialsInventoryPersonalAccessTokensFinder.new(
-          pat_params(
-            users: users,
-            owner_type: pat_owner_type,
-            group: revocable
-          )
-        ).execute
-      end
+      PersonalAccessTokensFinder.new(pat_params(group: group, user_types: [:human, :service_account])).execute
     elsif show_ssh_keys?
       ::KeysFinder.new({ users: users, key_type: 'ssh' }).execute
     elsif show_resource_access_tokens?
-      if Feature.enabled?(:optimize_credentials_inventory, group || :instance)
-        PersonalAccessTokensFinder.new(pat_params(group: group, user_types: [:project_bot])).execute
-      else
-        ::PersonalAccessTokensFinder.new(pat_params(users: bot_users)).execute.project_access_token
-      end
+      PersonalAccessTokensFinder.new(pat_params(group: group, user_types: [:project_bot])).execute
     end
-  end
-
-  def pat_owner_type
-    params[:owner_type]
   end
 
   def pat_params(options)

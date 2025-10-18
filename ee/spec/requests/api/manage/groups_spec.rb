@@ -47,42 +47,6 @@ RSpec.describe API::Manage::Groups, :aggregate_failures, feature_category: :syst
     end
   end
 
-  shared_examples 'a /manage/PAT GET endpoint using the credentials inventory PAT finder' do
-    context 'when the :credentials_inventory_pat_finder is enabled' do
-      before do
-        stub_feature_flags(credentials_inventory_pat_finder: true)
-      end
-
-      it 'uses the InOperatorOptimization::QueryBuilder module' do
-        expect(::Gitlab::Pagination::Keyset::InOperatorOptimization::QueryBuilder)
-          .to receive(:new).and_call_original
-
-        get_request
-      end
-    end
-
-    context 'when the :credentials_inventory_pat_finder is disabled' do
-      before do
-        stub_feature_flags(credentials_inventory_pat_finder: false)
-      end
-
-      it 'does not use the InOperatorOptimization::QueryBuilder module' do
-        expect(::Gitlab::Pagination::Keyset::InOperatorOptimization::QueryBuilder)
-          .not_to receive(:new).and_call_original
-
-        get_request
-      end
-
-      it 'uses the standard PersonalAccessTokensFinder' do
-        expect_next_instance_of(::PersonalAccessTokensFinder) do |original_pat_finder|
-          expect(original_pat_finder).to receive(:execute).and_call_original
-        end
-
-        get_request
-      end
-    end
-  end
-
   shared_examples 'feature is not available to non saas versions' do |request_type|
     context 'when it is self-managed instance', saas: false do
       it "returns not found error" do
@@ -332,28 +296,6 @@ RSpec.describe API::Manage::Groups, :aggregate_failures, feature_category: :syst
         ))
 
         expect(response).to have_gitlab_http_status(:not_found)
-      end
-
-      context 'when optimize_credentials_inventory FF is disabled' do
-        before do
-          stub_feature_flags(optimize_credentials_inventory: false)
-          stub_feature_flags(credentials_inventory_pat_finder: false)
-        end
-
-        it_behaves_like 'a /manage/PAT GET endpoint using the credentials inventory PAT finder'
-
-        it_behaves_like 'an access token GET API with access token params'
-
-        it_behaves_like 'a manage groups GET endpoint'
-
-        it 'returns 404 for non-existing group' do
-          get(api(
-            "/groups/#{non_existing_record_id}/manage/personal_access_tokens",
-            personal_access_token: personal_access_token
-          ))
-
-          expect(response).to have_gitlab_http_status(:not_found)
-        end
       end
     end
   end
@@ -992,69 +934,6 @@ RSpec.describe API::Manage::Groups, :aggregate_failures, feature_category: :syst
         expect do
           get(api(path, personal_access_token: personal_access_token), headers: dpop_header_val)
         end.not_to exceed_all_query_limit(control)
-      end
-
-      context 'when optimize_credentials_inventory FF is disabled' do
-        before do
-          stub_feature_flags(optimize_credentials_inventory: false)
-        end
-
-        it_behaves_like 'an access token GET API with access token params'
-        it_behaves_like 'a manage groups GET endpoint'
-
-        it 'returns 404 for non-existing group' do
-          get(api(
-            "/groups/#{non_existing_record_id}/manage/resource_access_tokens",
-            personal_access_token: personal_access_token
-          ), headers: dpop_headers_for(current_user))
-
-          expect(response).to have_gitlab_http_status(:not_found)
-        end
-
-        it 'returns the expected response for group tokens' do
-          get api(path, personal_access_token: personal_access_token), params: { sort: 'created_at_desc' },
-            headers: dpop_headers_for(current_user)
-
-          expect(response).to have_gitlab_http_status(:ok)
-          expect(response).to match_response_schema('public_api/v4/resource_access_tokens')
-          expect(json_response[0]['id']).to eq(last_used_2_months_ago_token.id)
-          expect(json_response[0]['resource_type']).to eq('group')
-          expect(json_response[0]['resource_id']).to eq(group.id)
-        end
-
-        it 'returns the expected response for project tokens' do
-          get(
-            api(
-              path,
-              personal_access_token: personal_access_token
-            ),
-            params: { sort: 'created_at_asc' },
-            headers: dpop_headers_for(current_user)
-          )
-
-          expect(response).to have_gitlab_http_status(:ok)
-          expect(response).to match_response_schema('public_api/v4/resource_access_tokens')
-          expect(json_response[0]['id']).to eq(created_2_days_ago_token.id)
-          expect(json_response[0]['resource_type']).to eq('project')
-          expect(json_response[0]['resource_id']).to eq(project.id)
-        end
-
-        it 'avoids N+1 queries' do
-          dpop_header_val = dpop_headers_for(current_user)
-
-          get(api(path, personal_access_token: personal_access_token), headers: dpop_header_val)
-
-          control = ActiveRecord::QueryRecorder.new(skip_cached: false) do
-            get(api(path, personal_access_token: personal_access_token), headers: dpop_header_val)
-          end
-
-          other_bot = create(:user, :project_bot, bot_namespace: group, developer_of: group)
-          create(:personal_access_token, user: other_bot)
-
-          expect do
-            get(api(path, personal_access_token: personal_access_token), headers: dpop_header_val)
-          end.not_to exceed_all_query_limit(control)
-        end
       end
     end
   end

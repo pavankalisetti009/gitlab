@@ -30,28 +30,6 @@ module API
           params[:sort] || 'created_asc'
         end
 
-        def pat_finder_params
-          declared(
-            params,
-            include_missing: false).merge(
-              {
-                users: users,
-                impersonation: false,
-                group: user_group,
-                sort: sort_order
-              }
-            )
-        end
-
-        def bot_users
-          User.by_bot_namespace_ids(user_group.self_and_descendants(skope: Namespace).as_ids)
-        end
-
-        def rat_finder_params
-          declared(params, include_missing: false)
-            .merge({ users: bot_users, impersonation: false })
-        end
-
         def bot_resource(token)
           member = token.user.members.first
 
@@ -86,32 +64,20 @@ module API
             detail 'This feature was introduced in GitLab 17.8.'
           end
           get do
-            if Feature.enabled?(:optimize_credentials_inventory, user_group || :instance)
-              tokens = PersonalAccessTokensFinder.new(
-                declared(
-                  params,
-                  include_missing: false).merge(
-                    {
-                      group: user_group,
-                      user_types: [:human, :service_account],
-                      impersonation: false,
-                      sort: sort_order
-                    }
-                  )
-              ).execute.preload_users
+            tokens = PersonalAccessTokensFinder.new(
+              declared(
+                params,
+                include_missing: false).merge(
+                  {
+                    group: user_group,
+                    user_types: [:human, :service_account],
+                    impersonation: false,
+                    sort: sort_order
+                  }
+                )
+            ).execute.preload_users
 
-              present paginate(tokens, skip_default_order: true), with: Entities::PersonalAccessToken
-            elsif Feature.enabled?(:credentials_inventory_pat_finder, user_group || :instance)
-              tokens = ::Authn::CredentialsInventoryPersonalAccessTokensFinder.new(pat_finder_params)
-                                                                                    .execute.preload_users
-
-              # The optimization breaks if re-ordered
-              present paginate(tokens, skip_default_order: true), with: Entities::PersonalAccessToken
-            else
-              tokens = PersonalAccessTokensFinder.new(pat_finder_params).execute.preload_users
-
-              present paginate(tokens), with: Entities::PersonalAccessToken
-            end
+            present paginate(tokens, skip_default_order: true), with: Entities::PersonalAccessToken
           end
 
           desc 'Revoke a personal access token for the group' do
@@ -167,16 +133,10 @@ module API
           # rubocop:disable CodeReuse/ActiveRecord -- Specific to this endpoint
           get do
             tokens =
-              if Feature.enabled?(:optimize_credentials_inventory, user_group || :instance)
-                PersonalAccessTokensFinder.new(
-                  declared(params, include_missing: false)
-                  .merge({ group: user_group, user_types: [:project_bot], impersonation: false, sort: sort_order })
-                ).execute.includes(user: [:members, { user_detail: :bot_namespace }])
-              else
-                PersonalAccessTokensFinder.new(rat_finder_params)
-                                          .execute
-                                          .includes(user: [:members, { user_detail: :bot_namespace }])
-              end
+              PersonalAccessTokensFinder.new(
+                declared(params, include_missing: false)
+                .merge({ group: user_group, user_types: [:project_bot], impersonation: false, sort: sort_order })
+              ).execute.includes(user: [:members, { user_detail: :bot_namespace }])
 
             present paginate(tokens, skip_default_order: true), with: Entities::ResourceAccessToken
           end

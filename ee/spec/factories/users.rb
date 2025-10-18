@@ -21,14 +21,6 @@ FactoryBot.modify do
       user_type { :service_user }
     end
 
-    trait :service_account do
-      name { 'Service account user' }
-      user_type { :service_account }
-      skip_confirmation { true }
-      email { "#{User::SERVICE_ACCOUNT_PREFIX}_#{generate(:username)}@#{User::NOREPLY_EMAIL_DOMAIN}" }
-      association :provisioned_by_group, factory: :group
-    end
-
     trait :low_risk do
       after(:create) do |user|
         create(:user_custom_attribute,
