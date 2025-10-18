@@ -50,6 +50,7 @@ RSpec.describe Security::Ingestion::MarkAsResolvedService, feature_category: :vu
           command.execute
 
           expect_vulnerability_to_be_resolved(vulnerability.reload)
+          expect(vulnerability.vulnerability_read.resolved_on_default_branch).to be_truthy
         end
 
         context 'when there is a no longer detected vulnerability' do
@@ -139,6 +140,8 @@ RSpec.describe Security::Ingestion::MarkAsResolvedService, feature_category: :vu
             # Finally, check that both vulnerabilities are still resolved_on_default_branch as before.
             expect(vulnerability.reload).to be_resolved_on_default_branch
             expect(second_vulnerability.reload).to be_resolved_on_default_branch
+            expect(vulnerability.vulnerability_read.resolved_on_default_branch).to be_truthy
+            expect(second_vulnerability.vulnerability_read.resolved_on_default_branch).to be_truthy
           end
 
           context 'when AutoResolveService returns an error' do
@@ -195,6 +198,8 @@ RSpec.describe Security::Ingestion::MarkAsResolvedService, feature_category: :vu
           command.execute
 
           expect(vulnerability.reload).to be_resolved_on_default_branch
+          expect(vulnerability.vulnerability_read.resolved_on_default_branch).to be_truthy
+
           representation_info = Vulnerabilities::RepresentationInformation
                                   .find_or_initialize_by(vulnerability_id: vulnerability.id)
           representation_info.update!(

@@ -17,14 +17,11 @@ module Vulnerabilities
       return if vulnerability_attrs.empty?
 
       db_attributes = db_attributes_for(vulnerability_attrs)
+      projects = selected_vulnerabilities.with_projects.map(&:project).uniq
 
       SecApplicationRecord.transaction do
-        update_support_tables(selected_vulnerabilities, db_attributes)
+        update_support_tables(selected_vulnerabilities, db_attributes, projects)
         selected_vulnerabilities.update_all(db_attributes[:vulnerabilities])
-
-        SecApplicationRecord.current_transaction.after_commit do
-          ::Vulnerabilities::BulkEsOperationService.new(selected_vulnerabilities).execute(&:itself)
-        end
       end
 
       attrs = vulnerability_attrs.map do |id, _, project_id, namespace_id|
@@ -45,14 +42,11 @@ module Vulnerabilities
       Vulnerability.id_in(ids)
     end
 
-    def update_support_tables(vulnerabilities, db_attributes)
+    def update_support_tables(vulnerabilities, db_attributes, project)
       Vulnerabilities::StateTransition.insert_all!(db_attributes[:state_transitions])
-      # The `insert_or_update_vulnerability_reads` database trigger does not
-      # update the dismissal_reason and we are moving away from using
-      # database triggers to keep tables up to date.
-      Vulnerabilities::Read
-        .by_vulnerabilities(vulnerabilities)
-        .update_all(dismissal_reason: dismissal_reason, auto_resolved: false)
+
+      Vulnerabilities::Reads::UpsertService.new(vulnerabilities, { dismissal_reason: dismissal_reason },
+        projects: project).execute
     end
 
     def vulnerabilities_attributes(vulnerabilities)

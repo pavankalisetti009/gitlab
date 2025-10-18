@@ -47,6 +47,7 @@ RSpec.describe Vulnerabilities::FindOrCreateFromSecurityFindingService, '#execut
     let_it_be(:security_finding) { create(:security_finding) }
 
     context 'when vulnerability is present on default branch' do
+      let(:present_on_default_branch) { true }
       let!(:vulnerability) do
         create(
           :vulnerability,

@@ -195,6 +195,16 @@ RSpec.describe Vulnerabilities::BulkSeverityOverrideService, feature_category: :
         expect(result.payload[:vulnerabilities].count).to eq(vulnerability_ids.count)
       end
 
+      it 'updates vulnerability read records with the new severity' do
+        vulnerability_read = Vulnerabilities::Read.find_by(vulnerability_id: vulnerability.id) ||
+          create(:vulnerability_read, vulnerability: vulnerability, severity: original_severity)
+
+        service.execute
+
+        vulnerability_read.reload
+        expect(vulnerability_read.severity).to eq(new_severity)
+      end
+
       it 'creates audit events for each vulnerability', :request_store do
         expect { service.execute }.to change { AuditEvent.count }.by(1)
 

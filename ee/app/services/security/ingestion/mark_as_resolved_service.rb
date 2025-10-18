@@ -91,6 +91,11 @@ module Security
           relation.update_all(resolved_on_default_branch: true)
         end
 
+        Vulnerabilities::Reads::UpsertService.new(vulnerabilities_relation,
+          { resolved_on_default_branch: true },
+          projects: project
+        ).execute
+
         CreateVulnerabilityRepresentationInformation.execute(pipeline, no_longer_detected_vulnerability_ids)
 
         track_no_longer_detected_vulnerabilities(no_longer_detected_vulnerability_ids.count)

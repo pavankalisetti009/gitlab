@@ -18,9 +18,15 @@ module Vulnerabilities
     def execute
       raise Gitlab::Access::AccessDeniedError unless can?(author, :admin_vulnerability, project)
 
-      vulnerability.update!(vulnerability_params)
-      Vulnerabilities::StatisticsUpdateService.update_for(vulnerability)
-      Vulnerabilities::Findings::RiskScoreCalculationService.calculate_for(vulnerability)
+      Vulnerability.transaction do
+        vulnerability.update!(vulnerability_params)
+        attributes = {}
+        attributes[:resolved_on_default_branch] = resolved_on_default_branch if @resolved_on_default_branch
+
+        Vulnerabilities::Reads::UpsertService.new(vulnerability, attributes, projects: project).execute
+        Vulnerabilities::StatisticsUpdateService.update_for(vulnerability)
+        Vulnerabilities::Findings::RiskScoreCalculationService.calculate_for(vulnerability)
+      end
 
       vulnerability
     end

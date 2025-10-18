@@ -48,7 +48,7 @@ module Vulnerabilities
     end
 
     def update_state_for(vulnerability)
-      vulnerability.transaction do
+      Vulnerability.transaction do
         state_transition_params = {
           vulnerability: vulnerability,
           from_state: vulnerability.state,
@@ -57,7 +57,9 @@ module Vulnerabilities
         }
 
         state_transition_params[:comment] = params[:comment] if params[:comment]
-        state_transition_params[:dismissal_reason] = params[:dismissal_reason] if params[:dismissal_reason]
+
+        dismissal_reason = params[:dismissal_reason] if params[:dismissal_reason]
+        state_transition_params[:dismissal_reason] = dismissal_reason
 
         Vulnerabilities::StateTransition.create!(state_transition_params)
 
@@ -67,7 +69,8 @@ module Vulnerabilities
         vulnerability.update!(update_params)
 
         if params[:dismissal_reason]
-          vulnerability.vulnerability_read&.update!(dismissal_reason: params[:dismissal_reason])
+          Vulnerabilities::Reads::UpsertService.new(vulnerability,
+            { dismissal_reason: dismissal_reason, state: @state }, projects: @project).execute
         end
 
         create_system_note(vulnerability, @current_user)
@@ -84,11 +87,12 @@ module Vulnerabilities
       state_transition = vulnerability.state_transitions.by_to_states(:dismissed).last
       return unless state_transition && (params[:comment] || params[:dismissal_reason])
 
-      vulnerability.transaction do
+      Vulnerability.transaction do
         state_transition.update!(params.slice(:comment, :dismissal_reason).compact)
 
-        if params[:dismissal_reason]
-          vulnerability.vulnerability_read&.update!(dismissal_reason: params[:dismissal_reason])
+        if @present_on_default_branch && params[:dismissal_reason]
+          Vulnerabilities::Reads::UpsertService.new(vulnerability,
+            { dismissal_reason: params[:dismissal_reason] }, projects: @project).execute
         end
       end
     end

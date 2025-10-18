@@ -40,8 +40,15 @@ module Vulnerabilities
       end
 
       if vulnerability.persisted?
+        attributes = {}
+        attributes[:dismissal_reason] = @dismissal_reason if @dismissal_reason
+
         Vulnerabilities::StatisticsUpdateService.update_for(vulnerability)
         Vulnerabilities::Findings::RiskScoreCalculationService.calculate_for(vulnerability)
+
+        if @present_on_default_branch
+          Vulnerabilities::Reads::UpsertService.new(vulnerability, attributes, projects: @project).execute
+        end
       end
 
       vulnerability

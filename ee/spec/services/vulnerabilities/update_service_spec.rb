@@ -65,14 +65,25 @@ RSpec.describe Vulnerabilities::UpdateService, feature_category: :vulnerability_
     context 'when the `resolved_on_default_branch` kwarg is provided' do
       let(:resolved_on_default_branch) { true }
 
-      it 'updates the resolved_on_default_branch attribute of vulnerability' do
+      it 'updates the resolved_on_default_branch attribute of vulnerability and its read record' do
+        vulnerability_read = Vulnerabilities::Read.find_by(vulnerability_id: vulnerability.id) ||
+          create(:vulnerability_read, vulnerability: vulnerability, resolved_on_default_branch: false)
+
         expect { subject }.to change { vulnerability[:resolved_on_default_branch] }.from(false).to(true)
+
+        vulnerability_read.reload
+        expect(vulnerability_read.resolved_on_default_branch).to be(true)
       end
     end
 
     context 'when the `resolved_on_default_branch` kwarg is not provided' do
       it 'does not update the resolved_on_default_branch attribute of vulnerability' do
+        vulnerability_read = Vulnerabilities::Read.find_by(vulnerability_id: vulnerability.id) ||
+          create(:vulnerability_read, vulnerability: vulnerability, resolved_on_default_branch: false)
+
         expect { subject }.not_to change { vulnerability[:resolved_on_default_branch] }
+        vulnerability_read.reload
+        expect(vulnerability_read.resolved_on_default_branch).to be(false)
       end
     end
 
