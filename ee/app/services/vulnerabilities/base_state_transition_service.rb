@@ -21,21 +21,21 @@ module Vulnerabilities
           )
 
           update_vulnerability!
-          update_vulnerability_reads!
           update_risk_score
+
+          # the dismiss_service does not inherit from the
+          # BaseStateTransitionService so this check is a
+          # redundant safety check
+          if to_state != :dismissed
+            Vulnerabilities::Reads::UpsertService.new(@vulnerability,
+              { state: to_state, dismissal_reason: nil },
+              projects: @project
+            ).execute
+          end
         end
       end
 
       @vulnerability
-    end
-
-    def update_vulnerability_reads!
-      # the dismiss_service does not inherit from the
-      # BaseStateTransitionService so this check is a
-      # redundant safety check
-      return if to_state == :dismissed
-
-      Vulnerabilities::Read.by_vulnerabilities(@vulnerability).update(dismissal_reason: nil)
     end
 
     def update_risk_score

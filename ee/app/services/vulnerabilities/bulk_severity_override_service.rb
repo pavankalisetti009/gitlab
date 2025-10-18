@@ -30,12 +30,14 @@ module Vulnerabilities
       attributes = vulnerabilities_attributes(vulnerabilities)
       db_attributes = db_attributes_for(attributes)
 
-      SecApplicationRecord.transaction do
-        update_support_tables(vulnerabilities, db_attributes)
+      vulnerability_ids_to_be_updated = vulnerabilities.map(&:id)
+      projects = vulnerabilities.with_projects.map(&:project).uniq
 
+      SecApplicationRecord.transaction do
         vulnerability_ids = vulnerabilities.map(&:id)
 
         vulnerabilities.update_all(db_attributes[:vulnerabilities])
+        update_support_tables(Vulnerability.by_ids(vulnerability_ids_to_be_updated), db_attributes, projects)
 
         SecApplicationRecord.current_transaction.after_commit do
           vulnerabilities_to_sync = Vulnerability.id_in(vulnerability_ids)
@@ -183,9 +185,11 @@ module Vulnerabilities
       }
     end
 
-    def update_support_tables(vulnerabilities, db_attributes)
+    def update_support_tables(vulnerabilities, db_attributes, projects)
       Vulnerabilities::Finding.by_vulnerability(vulnerabilities).update_all(severity: @new_severity, updated_at: now)
       Vulnerabilities::SeverityOverride.insert_all!(db_attributes[:severity_overrides])
+      Vulnerabilities::Reads::UpsertService.new(vulnerabilities, { severity: @new_severity },
+        projects: projects).execute
     end
 
     def system_note_metadata_action

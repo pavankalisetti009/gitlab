@@ -24,6 +24,9 @@ module Vulnerabilities
           namespace: @vulnerability.project.namespace,
           project: @vulnerability.project
         )
+
+        Vulnerabilities::Reads::UpsertService.new(@vulnerability,
+          { state: :resolved, auto_resolved: @auto_resolved }, projects: @project).execute
       end
     end
 
