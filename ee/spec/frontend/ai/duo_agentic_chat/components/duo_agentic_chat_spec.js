@@ -1088,7 +1088,7 @@ describe('Duo Agentic Chat', () => {
 
   describe('Global state watchers', () => {
     describe('duoChatGlobalState.isAgenticChatShown', () => {
-      describe('when there is an workflowId registered in localStorage', () => {
+      describe('when there is a workflowId and activeThread registered in localStorage', () => {
         beforeEach(() => {
           getStorageValue.mockReset();
           getStorageValue.mockReturnValueOnce({
@@ -1138,13 +1138,34 @@ describe('Duo Agentic Chat', () => {
             await waitForPromises();
           });
 
-          it('starts the workflow', () => {
+          it('does not start the workflow', () => {
             expect(mockSocketManager.connect).not.toHaveBeenCalled();
           });
         });
       });
 
-      describe('when there is no activeThread registered in localStorage', () => {
+      describe('when there is a workflowId but no activeThread', () => {
+        beforeEach(() => {
+          getStorageValue.mockReset();
+          getStorageValue.mockReturnValueOnce({
+            exists: true,
+            value: { workflowId: '456', activeThread: undefined },
+          });
+          duoChatGlobalState.isAgenticChatShown = false;
+
+          createComponent();
+        });
+
+        it('does not load messages for active thread', async () => {
+          duoChatGlobalState.isAgenticChatShown = true;
+          await waitForPromises();
+
+          expect(ApolloUtils.fetchWorkflowEvents).not.toHaveBeenCalled();
+          expect(findDuoChat().props().messages).toHaveLength(0);
+        });
+      });
+
+      describe('when there is no workflowId or activeThread registered in localStorage', () => {
         beforeEach(() => {
           getStorageValue.mockReset();
           getStorageValue.mockReturnValueOnce({
