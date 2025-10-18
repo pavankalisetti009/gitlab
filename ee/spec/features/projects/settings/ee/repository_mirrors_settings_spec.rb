@@ -137,9 +137,11 @@ RSpec.describe 'Project settings > [EE] repository', feature_category: :source_c
           click_button 'Mirror repository'
         end
 
+        # Ensure changes have been saved to the database before reloading
+        expect(page).to have_content('Mirroring settings were successfully updated')
+        wait_for_requests
         project.reload
 
-        expect(page).to have_content('Mirroring settings were successfully updated')
         expect(project.remote_mirrors.first.only_protected_branches).to eq(false)
         expect(project.remote_mirrors.first.mirror_branch_regex).to be_nil
       end
@@ -156,9 +158,11 @@ RSpec.describe 'Project settings > [EE] repository', feature_category: :source_c
           click_button 'Mirror repository'
         end
 
+        # Ensure changes have been saved to the database before reloading
+        expect(page).to have_content('Mirroring settings were successfully updated')
+        wait_for_requests
         project.reload
 
-        expect(page).to have_content('Mirroring settings were successfully updated')
         expect(project.remote_mirrors.first.only_protected_branches).to eq(true)
       end
 
@@ -175,9 +179,11 @@ RSpec.describe 'Project settings > [EE] repository', feature_category: :source_c
           click_button 'Mirror repository'
         end
 
+        # Ensure changes have been saved to the database before reloading
+        expect(page).to have_content('Mirroring settings were successfully updated')
+        wait_for_requests
         project.reload
 
-        expect(page).to have_content('Mirroring settings were successfully updated')
         expect(project.remote_mirrors.first.only_protected_branches).to be_falsey
         expect(project.remote_mirrors.first.mirror_branch_regex).to eq('text')
       end
@@ -203,9 +209,11 @@ RSpec.describe 'Project settings > [EE] repository', feature_category: :source_c
           click_button 'Mirror repository'
         end
 
+        # Ensure changes have been saved to the database before reloading
+        expect(page).to have_content('Mirroring settings were successfully updated')
+        wait_for_requests
         project.reload
 
-        expect(page).to have_content('Mirroring settings were successfully updated')
         expect(project.mirror_branches_setting).to eq('all')
         expect(project.mirror_branch_regex).to be_nil
       end
@@ -222,9 +230,11 @@ RSpec.describe 'Project settings > [EE] repository', feature_category: :source_c
           click_button 'Mirror repository'
         end
 
+        # Ensure changes have been saved to the database before reloading
+        expect(page).to have_content('Mirroring settings were successfully updated')
+        wait_for_requests
         project.reload
 
-        expect(page).to have_content('Mirroring settings were successfully updated')
         expect(project.only_mirror_protected_branches).to eq(true)
       end
 
@@ -241,9 +251,11 @@ RSpec.describe 'Project settings > [EE] repository', feature_category: :source_c
           click_button 'Mirror repository'
         end
 
+        # Ensure changes have been saved to the database before reloading
+        expect(page).to have_content('Mirroring settings were successfully updated')
+        wait_for_requests
         project.reload
 
-        expect(page).to have_content('Mirroring settings were successfully updated')
         expect(page).to have_css('.badge[title="text"]', text: 'Specific branches')
         expect(project.mirror_branches_setting).to eq('regex')
         expect(project.mirror_branch_regex).to eq('text')
@@ -263,9 +275,11 @@ RSpec.describe 'Project settings > [EE] repository', feature_category: :source_c
             click_button 'Mirror repository'
           end
 
+          # Ensure changes have been saved to the database before reloading
+          expect(page).to have_content('Mirroring settings were successfully updated')
+          wait_for_requests
           project.reload
 
-          expect(page).to have_content('Mirroring settings were successfully updated')
           expect(project.mirror_branches_setting).to eq('all')
           expect(project.mirror_branch_regex).to be_nil
           expect(project.only_mirror_protected_branches).to be_falsey

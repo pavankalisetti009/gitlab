@@ -101,6 +101,10 @@ RSpec.describe 'Admin updates EE-only settings', :with_current_organization, fea
         click_button 'Save changes'
       end
 
+      # Waiting for page to load to ensure changes are saved in the backend
+      expect(page).to have_content 'Application settings saved successfully'
+      wait_for_requests
+
       aggregate_failures do
         expect(current_settings.elasticsearch_indexing).to be_truthy
         expect(current_settings.elasticsearch_search).to be_truthy
@@ -123,7 +127,6 @@ RSpec.describe 'Admin updates EE-only settings', :with_current_organization, fea
         expect(current_settings.elasticsearch_max_bulk_size_mb).to eq(17)
         expect(current_settings.elasticsearch_max_bulk_concurrency).to eq(23)
         expect(current_settings.elasticsearch_client_request_timeout).to eq(30)
-        expect(page).to have_content 'Application settings saved successfully'
       end
     end
 
@@ -154,6 +157,10 @@ RSpec.describe 'Admin updates EE-only settings', :with_current_organization, fea
 
         click_button 'Save changes'
       end
+
+      # Waiting for page to load to ensure changes are saved in the backend
+      expect(page).to have_content 'Application settings saved successfully'
+      wait_for_requests
 
       expect(current_settings.elasticsearch_limit_indexing).to be_truthy
       expect(ElasticsearchIndexedNamespace.exists?(namespace_id: namespace.id)).to be_truthy
@@ -186,9 +193,12 @@ RSpec.describe 'Admin updates EE-only settings', :with_current_organization, fea
         click_button 'Save changes'
       end
 
+      # Waiting for page to load to ensure changes are saved in the backend
+      expect(page).to have_content 'Application settings saved successfully'
+      wait_for_requests
+
       expect(ElasticsearchIndexedNamespace.count).to eq(0)
       expect(ElasticsearchIndexedProject.count).to eq(0)
-      expect(page).to have_content 'Application settings saved successfully'
     end
 
     it 'zero-downtime reindexing shows popup', :js do
@@ -278,7 +288,10 @@ RSpec.describe 'Admin updates EE-only settings', :with_current_organization, fea
         click_button _('Save changes')
       end
 
-      expect(page).to have_content _('Application settings saved successfully')
+      # Waiting for page to load to ensure changes are saved in the backend
+      expect(page).to have_content 'Application settings saved successfully'
+      wait_for_requests
+
       expect(find('#application_setting_disable_personal_access_tokens')).not_to be_checked
       expect(current_settings.disable_personal_access_tokens).to be(false)
     end
@@ -301,7 +314,10 @@ RSpec.describe 'Admin updates EE-only settings', :with_current_organization, fea
         click_button _('Save changes')
       end
 
-      expect(page).to have_content _('Application settings saved successfully')
+      # Waiting for page to load to ensure changes are saved in the backend
+      expect(page).to have_content 'Application settings saved successfully'
+      wait_for_requests
+
       expect(current_settings.disable_personal_access_tokens).to be(false)
     end
   end
@@ -405,9 +421,13 @@ RSpec.describe 'Admin updates EE-only settings', :with_current_organization, fea
         fill_in 'application_setting[new_user_signups_cap]', with: 5
 
         click_button 'Save changes'
-
-        expect(current_settings.new_user_signups_cap).to eq(5)
       end
+
+      # Waiting for page to load to ensure changes are saved in the backend
+      expect(page).to have_content 'Application settings saved successfully'
+      wait_for_requests
+
+      expect(current_settings.new_user_signups_cap).to eq(5)
     end
 
     context 'with a user cap assigned' do
@@ -425,9 +445,13 @@ RSpec.describe 'Admin updates EE-only settings', :with_current_organization, fea
           find_by_testid("seat-control-open-access").click
 
           click_button 'Save changes'
-
-          expect(current_settings.new_user_signups_cap).to be_nil
         end
+
+        # Waiting for page to load to ensure changes are saved in the backend
+        expect(page).to have_content 'Application settings saved successfully'
+        wait_for_requests
+
+        expect(current_settings.new_user_signups_cap).to be_nil
       end
 
       context 'with pending users' do
@@ -634,6 +658,10 @@ RSpec.describe 'Admin updates EE-only settings', :with_current_organization, fea
           click_button _('Save changes')
         end
 
+        # Waiting for page to load to ensure changes are saved in the backend
+        expect(page).to have_content 'Application settings saved successfully'
+        wait_for_requests
+
         expect(page).to have_field(s_('GitAbuse|Number of repositories'), with: 5)
         expect(page).to have_field(s_('GitAbuse|Reporting time period (seconds)'), with: 300)
         expect(page).to have_content(user.name)
@@ -724,7 +752,10 @@ RSpec.describe 'Admin updates EE-only settings', :with_current_organization, fea
 
         click_button 'Save changes'
 
+        # Waiting for page to load to ensure changes are saved in the backend
         expect(page).to have_content 'Application settings saved successfully'
+        wait_for_requests
+
         expect(page).to have_field 'Cost factor for forks of projects', with: '0.008'
       end
 
