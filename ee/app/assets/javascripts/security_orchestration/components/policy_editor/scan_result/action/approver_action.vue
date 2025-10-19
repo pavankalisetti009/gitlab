@@ -1,12 +1,10 @@
 <script>
 import { isNumber } from 'lodash';
-import { GlSprintf, GlIcon, GlFormInput, GlPopover, GlButton } from '@gitlab/ui';
+import { GlSprintf, GlFormInput, GlButton } from '@gitlab/ui';
 import SectionLayout from 'ee/security_orchestration/components/policy_editor/section_layout.vue';
 import {
   getDefaultHumanizedTemplate,
   WARN_TEMPLATE,
-  WARN_TEMPLATE_HELP_TITLE,
-  WARN_TEMPLATE_HELP_DESCRIPTION,
   ADD_APPROVER_LABEL,
   APPROVER_TYPE_LIST_ITEMS,
 } from 'ee/security_orchestration/components/policy_editor/scan_result/lib';
@@ -18,17 +16,13 @@ export default {
   WARN_ID: 'warn-help-text',
   i18n: {
     WARN_TEMPLATE,
-    WARN_TEMPLATE_HELP_TITLE,
-    WARN_TEMPLATE_HELP_DESCRIPTION,
     ADD_APPROVER_LABEL,
   },
   name: 'ApproverAction',
   components: {
     GlButton,
     ApproverSelect,
-    GlIcon,
     GlFormInput,
-    GlPopover,
     GlSprintf,
     SectionLayout,
   },
@@ -203,11 +197,6 @@ export default {
             <strong>{{ content }}</strong>
           </template>
         </gl-sprintf>
-        <gl-icon :id="$options.WARN_ID" name="information-o" variant="info" class="gl-ml-3" />
-        <gl-popover :target="$options.WARN_ID" placement="bottom">
-          <template #title>{{ $options.i18n.WARN_TEMPLATE_HELP_TITLE }}</template>
-          {{ $options.i18n.WARN_TEMPLATE_HELP_DESCRIPTION }}
-        </gl-popover>
       </div>
 
       <div class="gl-mb-3 gl-ml-5 gl-flex gl-items-center">
