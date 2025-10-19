@@ -53,6 +53,8 @@ RSpec.describe 'getting an AI catalog item', :with_current_organization, feature
           name
           public
           project { id }
+          softDeleted
+          softDeletedAt
           latestVersion {
             ...VersionFragment
           }
@@ -83,6 +85,8 @@ RSpec.describe 'getting an AI catalog item', :with_current_organization, feature
           'description' => catalog_item.description,
           'itemType' => 'AGENT',
           'public' => catalog_item.public,
+          'softDeleted' => catalog_item.deleted?,
+          'softDeletedAt' => catalog_item.deleted_at&.iso8601,
           'latestVersion' => a_graphql_entity_for(latest_version),
           'versions' => hash_including(
             'count' => 1,

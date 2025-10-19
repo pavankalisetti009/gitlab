@@ -22,6 +22,10 @@ module Types
 
         field :created_at, ::Types::TimeType, null: false, description: 'Timestamp of when the item was created.'
         field :updated_at, ::Types::TimeType, null: false, description: 'Timestamp of when the item was updated.'
+        field :soft_deleted_at, ::Types::TimeType, method: :deleted_at, null: true,
+          description: 'Timestamp of when the item was soft deleted.'
+        field :soft_deleted, GraphQL::Types::Boolean, method: :deleted?, null: true,
+          description: 'Indicates if the item has been soft deleted.'
         field :description, GraphQL::Types::String, null: false, description: 'Description of the item.'
         field :id, GraphQL::Types::ID, null: false, description: 'ID of the item.'
         field :item_type,
