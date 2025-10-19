@@ -59,13 +59,7 @@ export const actionHasType = (action, type) => {
 };
 
 export const WARN_TEMPLATE = s__(
-  'SecurityOrchestration|%{requireStart}Warn users with a bot comment%{requireEnd} and select users as security consultants that developers may contact for support in addressing violations.',
-);
-
-export const WARN_TEMPLATE_HELP_TITLE = s__('SecurityOrchestration|Who is a consultant?');
-
-export const WARN_TEMPLATE_HELP_DESCRIPTION = s__(
-  'SecurityOrchestration|A consultant will show up in the bot comment and developers should ask them for help if needed.',
+  'SecurityOrchestration|%{requireStart}Warn users with a bot comment%{requireEnd} and select approvers. The approvers are required unless developers dismiss the warn mode policy. After dismissal, approvers become optional.',
 );
 
 export const getDefaultHumanizedTemplate = (numOfApproversRequired, isWarnType) => {

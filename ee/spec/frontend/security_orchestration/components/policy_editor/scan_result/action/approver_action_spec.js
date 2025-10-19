@@ -158,16 +158,9 @@ describe('ApproverAction', () => {
 
     it('renders the message', () => {
       expect(findSectionLayout().text()).toContain(
-        'Warn users with a bot comment and select users as security consultants that developers may contact for support in addressing violations.',
+        'Warn users with a bot comment and select approvers. The approvers are required unless developers dismiss the warn mode policy. After dismissal, approvers become optional.',
       );
       expect(findSectionLayout().text()).toContain('Developers may dismiss findings to proceed');
-    });
-
-    it('renders the popover', () => {
-      expect(findPopover().exists()).toBe(true);
-      expect(findPopover().text()).toBe(
-        'A consultant will show up in the bot comment and developers should ask them for help if needed.',
-      );
     });
   });
 
