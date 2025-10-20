@@ -41623,12 +41623,6 @@ CREATE INDEX index_pats_on_group_id_and_user_type_and_expires_at_and_id ON perso
 
 CREATE INDEX index_pats_on_group_id_and_user_type_and_last_used_at_and_id ON personal_access_tokens USING btree (group_id, user_type, last_used_at, id) WHERE (impersonation = false);
 
-CREATE INDEX index_pats_on_user_id_and_created_at_and_pat_id ON personal_access_tokens USING btree (user_id, created_at, id) WHERE (impersonation = false);
-
-CREATE INDEX index_pats_on_user_id_and_expires_at_and_pat_id ON personal_access_tokens USING btree (user_id, expires_at, id DESC) WHERE (impersonation = false);
-
-CREATE INDEX index_pats_on_user_id_and_last_used_at_and_pat_id ON personal_access_tokens USING btree (user_id, last_used_at, id) WHERE (impersonation = false);
-
 CREATE INDEX index_pe_approval_rules_on_required_approvals_and_created_at ON protected_environment_approval_rules USING btree (required_approvals, created_at);
 
 CREATE INDEX index_pep_policy_config_links_security_policy_id ON security_pipeline_execution_policy_config_links USING btree (security_policy_id);
