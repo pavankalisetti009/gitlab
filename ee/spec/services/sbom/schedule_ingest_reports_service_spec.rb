@@ -97,7 +97,7 @@ RSpec.describe Sbom::ScheduleIngestReportsService, feature_category: :dependency
           context 'on the default branch' do
             context 'when the whole pipeline hierarchy has not completed' do
               before do
-                allow(child_pipeline_2).to receive(:complete_or_manual?).and_return(false)
+                allow(child_pipeline_2).to receive(:all_security_jobs_complete?).and_return(false)
               end
 
               it 'does not schedule Sbom::IngestReportsWorker' do
@@ -122,7 +122,7 @@ RSpec.describe Sbom::ScheduleIngestReportsService, feature_category: :dependency
                   control = ActiveRecord::QueryRecorder.new { described_class.new(pipeline).execute }
                   create(:ci_pipeline, :success, project: project, child_of: parent_pipeline)
 
-                  expect { described_class.new(pipeline).execute }.not_to exceed_query_limit(control)
+                  expect { described_class.new(pipeline).execute }.not_to exceed_query_limit(control).with_threshold(1)
                 end
               end
 

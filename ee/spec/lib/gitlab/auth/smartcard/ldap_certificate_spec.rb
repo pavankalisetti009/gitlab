@@ -9,7 +9,9 @@ RSpec.describe Gitlab::Auth::Smartcard::LdapCertificate, feature_category: :syst
   let(:certificate_header) { 'certificate' }
   let(:openssl_certificate_store) { instance_double(OpenSSL::X509::Store) }
   let(:user_build_service) { instance_double(Users::BuildService) }
-  let(:subject_ldap_dn) { 'subject_ldap_dn' }
+  let(:subject_ldap_dn_string_raw) { 'CN=subject_ldap_dn/OU=authority_department/O=authority_name' }
+  let(:subject_ldap_dn_string) { 'CN=subject_ldap_dn,OU=authority_department,O=authority_name' }
+  let(:reverse_subject_ldap_dn_string) { 'O=authority_name,OU=authority_department,CN=subject_ldap_dn' }
   let(:issuer_string) { 'CN=generating_tool,OU=authority_department,O=authority_name' }
   let(:reverse_issuer_string) { 'O=authority_name,OU=authority_department,CN=generating_tool' }
   let(:issuer) do
@@ -21,6 +23,19 @@ RSpec.describe Gitlab::Auth::Smartcard::LdapCertificate, feature_category: :syst
         ['CN', 'generating_tool', 12]
       ]
     )
+  end
+
+  let(:subject_ldap_dn) do
+    instance_double(OpenSSL::X509::Name,
+      to_a: [
+        ['O', 'authority_name', 19],
+        ['OU', 'authority_department', 12],
+        ['CN', 'subject_ldap_dn', 12]
+      ]
+    ).tap do |subject_dn_double|
+      allow(subject_dn_double).to receive(:to_s).and_return(subject_ldap_dn_string_raw)
+      allow(subject_dn_double).to receive(:to_s).with(OpenSSL::X509::Name::RFC2253).and_return(subject_ldap_dn_string)
+    end
   end
 
   let(:openssl_certificate) do
@@ -36,7 +51,7 @@ RSpec.describe Gitlab::Auth::Smartcard::LdapCertificate, feature_category: :syst
   let(:ldap_person_email) { 'john.doe@example.com' }
   let(:ldap_entry) do
     Net::LDAP::Entry.new.tap do |entry|
-      entry['dn'] = subject_ldap_dn
+      entry['dn'] = subject_ldap_dn_string
       entry['uid'] = 'john doe'
       entry['cn'] = ldap_person_name
       entry['mail'] = ldap_person_email
@@ -73,7 +88,7 @@ RSpec.describe Gitlab::Auth::Smartcard::LdapCertificate, feature_category: :syst
 
       before do
         create(:identity, { provider: ldap_provider,
-                            extern_uid: subject_ldap_dn,
+                            extern_uid: subject_ldap_dn_string,
                             user: user })
       end
 
@@ -150,6 +165,7 @@ RSpec.describe Gitlab::Auth::Smartcard::LdapCertificate, feature_category: :syst
           ).at_least(:once)
         end
 
+        # rubocop:disable RSpec/MultipleMemoizedHelpers -- we are testing many formats, no cleaner way to write specs
         context 'when smartcard_ad_cert_format is specified' do
           using RSpec::Parameterized::TableSyntax
 
@@ -161,22 +177,54 @@ RSpec.describe Gitlab::Auth::Smartcard::LdapCertificate, feature_category: :syst
             "X509:<I>#{reverse_issuer_string}<SR>2a"
           end
 
+          let(:principal_name) do
+            "X509:<PN>#{subject_ldap_dn_string_raw}"
+          end
+
+          let(:rfc822_name) do
+            "X509:<RFC822>#{subject_ldap_dn_string_raw}"
+          end
+
+          let(:issuer_and_subject_legacy_formatted) do
+            "X509:<I>#{issuer_string}<S>#{subject_ldap_dn_string_raw}"
+          end
+
           let(:issuer_and_subject_formatted) do
-            "X509:<I>#{issuer_string}<S>subject_ldap_dn"
+            "X509:<I>#{issuer_string}<S>#{subject_ldap_dn_string}"
           end
 
           let(:reverse_issuer_and_subject_formatted) do
-            "X509:<I>#{reverse_issuer_string}<S>subject_ldap_dn"
+            "X509:<I>#{reverse_issuer_string}<S>#{subject_ldap_dn_string}"
           end
 
-          where(:ad_format, :result) do
-            'issuer_and_serial_number'         | ref(:issuer_and_serial_number_formatted)
-            'reverse_issuer_and_serial_number' | ref(:reverse_issuer_and_serial_number_formatted)
-            'principal_name'                   | 'X509:<PN>subject_ldap_dn'
-            'rfc822_name'                      | 'X509:<RFC822>subject_ldap_dn'
-            'issuer_and_subject'               | ref(:issuer_and_subject_formatted)
-            'reverse_issuer_and_subject'       | ref(:reverse_issuer_and_subject_formatted)
-            'subject'                          | 'X509:<S>subject_ldap_dn'
+          let(:reverse_issuer_and_subject_legacy_formatted) do
+            "X509:<I>#{reverse_issuer_string}<S>#{subject_ldap_dn_string_raw}"
+          end
+
+          let(:reverse_issuer_and_reverse_subject_formatted) do
+            "X509:<I>#{reverse_issuer_string}<S>#{reverse_subject_ldap_dn_string}"
+          end
+
+          let(:subject_string) do
+            "X509:<S>#{subject_ldap_dn_string}"
+          end
+
+          let(:subject_string_legacy) do
+            "X509:<S>#{subject_ldap_dn_string_raw}"
+          end
+
+          where(:ad_format, :smartcard_ad_formats_v2, :result) do
+            'issuer_and_serial_number'           | true   | ref(:issuer_and_serial_number_formatted)
+            'reverse_issuer_and_serial_number'   | true   | ref(:reverse_issuer_and_serial_number_formatted)
+            'principal_name'                     | true   | ref(:principal_name)
+            'rfc822_name'                        | true   | ref(:rfc822_name)
+            'issuer_and_subject'                 | true   | ref(:issuer_and_subject_formatted)
+            'issuer_and_subject'                 | false  | ref(:issuer_and_subject_legacy_formatted)
+            'reverse_issuer_and_subject'         | true   | ref(:reverse_issuer_and_subject_formatted)
+            'reverse_issuer_and_subject'         | false  | ref(:reverse_issuer_and_subject_legacy_formatted)
+            'reverse_issuer_and_reverse_subject' | true   | ref(:reverse_issuer_and_reverse_subject_formatted)
+            'subject'                            | true   | ref(:subject_string)
+            'subject'                            | false  | ref(:subject_string_legacy)
           end
 
           with_them do
@@ -186,6 +234,8 @@ RSpec.describe Gitlab::Auth::Smartcard::LdapCertificate, feature_category: :syst
                 smartcard_ad_cert_field: smartcard_ad_cert_field,
                 smartcard_ad_cert_format: ad_format
               )
+
+              stub_feature_flags(smartcard_ad_formats_v2: smartcard_ad_formats_v2)
 
               expect { find_or_create_user }.to change { User.count }.from(0).to(1)
 
@@ -197,6 +247,7 @@ RSpec.describe Gitlab::Auth::Smartcard::LdapCertificate, feature_category: :syst
             end
           end
         end
+        # rubocop:enable RSpec/MultipleMemoizedHelpers
 
         context 'with unknown cert format' do
           let(:smartcard_ad_cert_format) { 'not a real format' }
@@ -257,7 +308,7 @@ RSpec.describe Gitlab::Auth::Smartcard::LdapCertificate, feature_category: :syst
       it 'creates identity with correct attributes' do
         subject
 
-        identity = Identity.find_by(provider: ldap_provider, extern_uid: subject_ldap_dn)
+        identity = Identity.find_by(provider: ldap_provider, extern_uid: subject_ldap_dn_string.downcase)
 
         expect(identity).not_to be_nil
       end
@@ -266,7 +317,7 @@ RSpec.describe Gitlab::Auth::Smartcard::LdapCertificate, feature_category: :syst
         user_params = { name: ldap_person_name,
                         username: 'johndoe',
                         email: ldap_person_email,
-                        extern_uid: 'subject_ldap_dn',
+                        extern_uid: subject_ldap_dn_string.downcase,
                         provider: ldap_provider,
                         password_automatically_set: true,
                         skip_confirmation: true }
