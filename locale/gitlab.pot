@@ -58481,6 +58481,9 @@ msgstr ""
 msgid "SecurityAttributes|An error has occurred while saving the security category."
 msgstr ""
 
+msgid "SecurityAttributes|At least one attribute is required"
+msgstr ""
+
 msgid "SecurityAttributes|Attribute"
 msgstr ""
 

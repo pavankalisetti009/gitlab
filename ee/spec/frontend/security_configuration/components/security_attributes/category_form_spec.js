@@ -43,6 +43,18 @@ describe('Category form', () => {
 
   const findPopover = () => wrapper.findComponent(GlPopover);
 
+  const addAnAttribute = async () => {
+    // uses setProps because attributes are handled by the parent component
+    wrapper.setProps({
+      selectedCategory: {
+        ...category,
+        id: undefined,
+        securityAttributes: [{ name: 'purple attribute', description: 'purple', color: '#9400d3' }],
+      },
+    });
+    await nextTick();
+  };
+
   describe.each`
     description                  | id           | editableState                  | multipleSelection | expectedBadge
     ${'locked category'}         | ${1}         | ${CATEGORY_LOCKED}             | ${false}          | ${'Category locked'}
@@ -185,6 +197,7 @@ describe('Category form', () => {
           id: undefined,
           name: '',
           multipleSelection: null,
+          securityAttributes: [],
         },
       });
     });
@@ -215,19 +228,36 @@ describe('Category form', () => {
       expect(wrapper.findByTestId('selection-type-group').attributes('state')).toBe('true');
     });
 
+    it('requires at least one attribute', async () => {
+      wrapper.findByTestId('save-button').vm.$emit('click');
+      await nextTick();
+
+      expect(wrapper.findByTestId('attributes-group').attributes('state')).toBe(undefined);
+
+      await addAnAttribute();
+      wrapper.findByTestId('save-button').vm.$emit('click');
+
+      expect(wrapper.findByTestId('attributes-group').attributes('state')).toBe('true');
+    });
+
     it('resets validation state when the selected category changes', async () => {
       wrapper.findByTestId('save-button').vm.$emit('click');
       await nextTick();
 
       expect(wrapper.findByTestId('category-name-group').attributes('state')).toBe(undefined);
+      expect(wrapper.findByTestId('selection-type-group').attributes('state')).toBe(undefined);
+      expect(wrapper.findByTestId('attributes-group').attributes('state')).toBe(undefined);
 
       wrapper.setProps({ selectedCategory: category });
       await nextTick();
 
       expect(wrapper.findByTestId('category-name-group').attributes('state')).toBe('true');
+      expect(wrapper.findByTestId('selection-type-group').attributes('state')).toBe('true');
+      expect(wrapper.findByTestId('attributes-group').attributes('state')).toBe('true');
     });
 
-    it('emits saveCategory on save when valid', () => {
+    it('emits saveCategory on save when valid', async () => {
+      await addAnAttribute();
       wrapper.findByTestId('category-name-input').vm.$emit('input', 'Category name');
       wrapper.findByTestId('selection-type-input').vm.$emit('input', false);
       wrapper.findByTestId('save-button').vm.$emit('click');
