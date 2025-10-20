@@ -142,7 +142,7 @@ module Security
     end
 
     def has_sbom_reports?
-      pipeline.has_sbom_reports?
+      pipeline.self_and_project_descendants.any?(&:has_sbom_reports?)
     end
 
     def schedule_sbom_records
