@@ -3,6 +3,7 @@
 module Ai
   module DuoWorkflows
     class Workflow < ::ApplicationRecord
+      include Gitlab::SQL::Pattern
       include FromUnion
       include EachBatch
       include Sortable
@@ -40,7 +41,18 @@ module Ai
       scope :with_workflow_definition, ->(definition) { where(workflow_definition: definition) }
       scope :without_workflow_definition, ->(definition) { where.not(workflow_definition: definition) }
       scope :with_environment, ->(environment) { where(environment: environment) }
-      scope :from_pipeline, -> { where.not(workflow_definition: :chat).with_environment(:web) }
+      scope :from_pipeline, -> { where.not(workflow_definition: :chat).with_environment([:web, :ambient]) }
+      scope :in_status_group, ->(status_group) do
+        statuses_in_group = GROUPED_STATUSES.fetch(status_group.to_sym, [])
+
+        if statuses_in_group.empty?
+          none
+        else
+          state_machine_states = state_machines[:status].states
+          status_db_values = statuses_in_group.map { |status| state_machine_states[status.to_sym].value }
+          where(status: status_db_values)
+        end
+      end
       scope :order_by_status, ->(direction) do
         status_order_expression = Arel::Nodes::NamedFunction.new(
           'ARRAY_POSITION',
@@ -95,7 +107,7 @@ module Ai
         awaiting_input: [:input_required, :plan_approval_required, :tool_call_approval_required],
         completed: [:finished],
         failed: [:failed],
-        cancelled: [:stopped]
+        canceled: [:stopped]
       }.freeze
 
       class AgentPrivileges
@@ -199,6 +211,12 @@ module Ai
         return true if resource_parent.root_ancestor.duo_workflow_mcp_enabled
 
         false
+      end
+
+      def status_group
+        GROUPED_STATUSES.find do |_group, statuses|
+          statuses.include?(status_name)
+        end&.first
       end
 
       private

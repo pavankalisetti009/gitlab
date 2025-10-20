@@ -9,11 +9,11 @@ RSpec.describe 'Merge request > User sees security policy rules license complian
 
   include_context 'with policy sync state'
 
-  let_it_be(:project) { create(:project, :repository) }
+  let!(:project) { create(:project, :repository) }
   let(:policy_management_project) { create(:project, :repository, creator: user, namespace: project.namespace) }
-  let_it_be(:user) { create(:user, developer_of: project) }
-  let_it_be(:approver) { create(:user, maintainer_of: project) }
-  let_it_be(:approver_roles) { ['maintainer'] }
+  let!(:user) { create(:user, developer_of: project) }
+  let!(:approver) { create(:user, maintainer_of: project) }
+  let!(:approver_roles) { ['maintainer'] }
 
   before do
     allow(Gitlab::QueryLimiting::Transaction).to receive(:threshold).and_return(125)
@@ -22,7 +22,7 @@ RSpec.describe 'Merge request > User sees security policy rules license complian
   end
 
   context 'with license compliance' do
-    let_it_be(:ee_merge_request) do
+    let!(:ee_merge_request) do
       create(:ee_merge_request, :with_cyclonedx_reports, source_project: project,
         source_branch: 'feature', target_branch: 'master')
     end

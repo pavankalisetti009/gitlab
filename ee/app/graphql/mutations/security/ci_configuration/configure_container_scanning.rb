@@ -6,7 +6,7 @@ module Mutations
       class ConfigureContainerScanning < BaseSecurityAnalyzer
         graphql_name 'ConfigureContainerScanning'
         description <<~DESC
-          Configure Container Scanning for a project by enabling Container Scanning in a new or modified
+          Configure container scanning for a project by adding it to a new or modified
           `.gitlab-ci.yml` file in a new branch. The new branch and a URL to
           create a merge request are part of the response.
         DESC

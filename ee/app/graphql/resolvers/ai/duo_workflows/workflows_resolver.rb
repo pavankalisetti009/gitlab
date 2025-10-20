@@ -33,6 +33,14 @@ module Resolvers
           required: false,
           description: 'Flow ID to filter by.'
 
+        argument :search, GraphQL::Types::String,
+          required: false,
+          description: 'Flow title or goal to search for.'
+
+        argument :status_group, Types::Ai::DuoWorkflows::WorkflowStatusGroupEnum,
+          required: false,
+          description: 'Status group to filter flow sessions by.'
+
         def resolve(**args)
           return [] unless current_user
 
@@ -48,7 +56,9 @@ module Resolvers
             type: args[:type],
             exclude_types: args[:exclude_types],
             environment: args[:environment],
-            sort: args[:sort]
+            sort: args[:sort],
+            search: args[:search],
+            status_group: args[:status_group]
           ).results
         end
 

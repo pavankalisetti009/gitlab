@@ -4,7 +4,7 @@ require 'spec_helper'
 
 RSpec.describe Ai::DuoWorkflows::WorkflowContextGenerationService, :aggregate_failures, feature_category: :workflow_catalog do
   let_it_be(:user) { create(:user) }
-  let_it_be(:container) { create(:project) }
+  let_it_be(:container) { create(:project, namespace: create(:group)) }
   let(:workflow_definition) { 'software_development' }
   let(:service) do
     described_class.new(
@@ -131,6 +131,78 @@ RSpec.describe Ai::DuoWorkflows::WorkflowContextGenerationService, :aggregate_fa
         expect(result.message).to eq('Workflow token generation failed')
       end
     end
+
+    context 'for duo_workflow_service_url' do
+      let(:cloud_connector_url) { 'cloud.staging.gitlab.com:443' }
+      let(:self_hosted_url) { 'self-hosted-dap-service-url:50052' }
+
+      before do
+        allow(Gitlab::DuoWorkflow::Client).to receive_messages(self_hosted_url: self_hosted_url,
+          cloud_connected_url: cloud_connector_url)
+        allow(workflow_client).to receive(:generate_token).and_return(
+          ServiceResponse.success(payload: { token: 't', expires_at: 1.hour.from_now })
+        )
+      end
+
+      shared_examples 'initializes client with expected service url' do
+        it 'passes expected duo_workflow_service_url to client' do
+          expect(Ai::DuoWorkflow::DuoWorkflowService::Client).to receive(:new).with(
+            hash_including(
+              duo_workflow_service_url: expected_service_server_url,
+              current_user: user,
+              secure: ::Gitlab::DuoWorkflow::Client.secure?
+            )
+          ).and_return(workflow_client)
+
+          result = service.generate_workflow_token
+
+          expect(result).to be_success
+        end
+      end
+
+      context 'when self-hosted feature setting exists' do
+        let(:expected_service_server_url) { self_hosted_url }
+
+        let_it_be(:model) do
+          create(:ai_self_hosted_model, model: :claude_3, identifier: 'claude-3-7-sonnet-20250219')
+        end
+
+        let_it_be(:duo_agent_platform_feature_setting) do
+          create(:ai_feature_setting, :duo_agent_platform, self_hosted_model: model)
+        end
+
+        it_behaves_like 'initializes client with expected service url'
+      end
+
+      context 'when instance level model selection exists' do
+        let(:expected_service_server_url) { cloud_connector_url }
+
+        let_it_be(:duo_agent_platform_feature_setting) do
+          create(:instance_model_selection_feature_setting, feature: :duo_agent_platform)
+        end
+
+        it_behaves_like 'initializes client with expected service url'
+      end
+
+      context 'when namespace level model selection exists', :saas do
+        let(:expected_service_server_url) { cloud_connector_url }
+
+        let_it_be(:duo_agent_platform_feature_setting) do
+          create(:ai_namespace_feature_setting,
+            namespace: container.namespace,
+            feature: :duo_agent_platform,
+            offered_model_ref: 'claude_sonnet_3_7_20250219')
+        end
+
+        it_behaves_like 'initializes client with expected service url'
+      end
+
+      context 'when no feature setting exists' do
+        let(:expected_service_server_url) { cloud_connector_url }
+
+        it_behaves_like 'initializes client with expected service url'
+      end
+    end
   end
 
   describe '#generate_oauth_token_with_composite_identity_support' do
@@ -169,6 +241,45 @@ RSpec.describe Ai::DuoWorkflows::WorkflowContextGenerationService, :aggregate_fa
 
       it 'returns false' do
         expect(service.use_service_account?).to be(false)
+      end
+    end
+  end
+
+  describe '#duo_agent_platform_feature_setting' do
+    context 'when self-hosted feature setting exists' do
+      let_it_be(:model) do
+        create(:ai_self_hosted_model, model: :claude_3, identifier: 'claude-3-7-sonnet-20250219')
+      end
+
+      let_it_be(:duo_agent_platform_feature_setting) do
+        create(:ai_feature_setting, :duo_agent_platform, self_hosted_model: model)
+      end
+
+      it 'returns the self-hosted feature setting' do
+        expect(service.duo_agent_platform_feature_setting).to eq(duo_agent_platform_feature_setting)
+      end
+    end
+
+    context 'when instance level model selection exists' do
+      let_it_be(:duo_agent_platform_feature_setting) do
+        create(:instance_model_selection_feature_setting, feature: :duo_agent_platform)
+      end
+
+      it 'returns the instance level feature setting' do
+        expect(service.duo_agent_platform_feature_setting).to eq(duo_agent_platform_feature_setting)
+      end
+    end
+
+    context 'when namespace level model selection exists', :saas do
+      let_it_be(:duo_agent_platform_feature_setting) do
+        create(:ai_namespace_feature_setting,
+          namespace: container.namespace,
+          feature: :duo_agent_platform,
+          offered_model_ref: 'claude_sonnet_3_7_20250219')
+      end
+
+      it 'returns the namespace level feature setting' do
+        expect(service.duo_agent_platform_feature_setting).to eq(duo_agent_platform_feature_setting)
       end
     end
   end

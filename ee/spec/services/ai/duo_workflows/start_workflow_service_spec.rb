@@ -12,6 +12,7 @@ RSpec.describe ::Ai::DuoWorkflows::StartWorkflowService, feature_category: :agen
   let(:image) { 'example.com/example-image:latest' }
   let(:workflow) { create(:duo_workflows_workflow, user: maintainer, image: image, **container_params) }
   let(:container_params) { { project: project } }
+  let(:duo_agent_platform_feature_setting) { nil }
 
   let(:params) do
     {
@@ -19,7 +20,8 @@ RSpec.describe ::Ai::DuoWorkflows::StartWorkflowService, feature_category: :agen
       workflow: workflow,
       workflow_oauth_token: 'test-oauth-token',
       workflow_service_token: 'test-service-token',
-      workflow_metadata: { key: 'val' }.to_json
+      workflow_metadata: { key: 'val' }.to_json,
+      duo_agent_platform_feature_setting: duo_agent_platform_feature_setting
     }
   end
 
@@ -463,7 +465,7 @@ RSpec.describe ::Ai::DuoWorkflows::StartWorkflowService, feature_category: :agen
       expect(Ci::Workloads::RunWorkloadService)
         .to receive(:new).and_wrap_original do |method, **kwargs|
         variables = kwargs[:workload_definition].variables
-        expect(variables[:AGENT_PLATFORM_MODEL_METADATA]).to eq(expected_model_metadata.to_json)
+        expect(variables[:AGENT_PLATFORM_MODEL_METADATA]).to eq(expected_model_metadata)
         method.call(**kwargs)
       end
 
@@ -476,8 +478,6 @@ RSpec.describe ::Ai::DuoWorkflows::StartWorkflowService, feature_category: :agen
       allow(::Gitlab::Llm::StageCheck).to receive(:available?).with(project, :duo_workflow).and_return(true)
       allow(maintainer).to receive(:allowed_to_use?).and_return(true)
       project.project_setting.update!(duo_features_enabled: true, duo_remote_flows_enabled: true)
-      allow(Gitlab::DuoWorkflow::Client).to receive_messages(self_hosted_url: 'gdk.test:50052',
-        cloud_connected_url: 'cloud.staging.gitlab.com:443')
     end
 
     context 'when self-hosted feature setting exists' do
@@ -488,11 +488,14 @@ RSpec.describe ::Ai::DuoWorkflows::StartWorkflowService, feature_category: :agen
           endpoint: 'http://localhost:11434/v1',
           api_key: 'token',
           identifier: 'claude-3-7-sonnet-20250219'
-        }
+        }.to_json
       end
 
-      before do
-        model = create(:ai_self_hosted_model, model: :claude_3, identifier: 'claude-3-7-sonnet-20250219')
+      let_it_be(:model) do
+        create(:ai_self_hosted_model, model: :claude_3, identifier: 'claude-3-7-sonnet-20250219')
+      end
+
+      let_it_be(:duo_agent_platform_feature_setting) do
         create(:ai_feature_setting, :duo_agent_platform, self_hosted_model: model)
       end
 
@@ -505,10 +508,10 @@ RSpec.describe ::Ai::DuoWorkflows::StartWorkflowService, feature_category: :agen
           provider: 'gitlab',
           feature_setting: 'duo_agent_platform',
           identifier: 'claude-3-7-sonnet-20250219'
-        }
+        }.to_json
       end
 
-      before do
+      let_it_be(:duo_agent_platform_feature_setting) do
         create(:instance_model_selection_feature_setting, feature: :duo_agent_platform)
       end
 
@@ -521,10 +524,10 @@ RSpec.describe ::Ai::DuoWorkflows::StartWorkflowService, feature_category: :agen
           provider: 'gitlab',
           feature_setting: 'duo_agent_platform',
           identifier: 'claude_sonnet_3_7_20250219'
-        }
+        }.to_json
       end
 
-      before do
+      let_it_be(:duo_agent_platform_feature_setting) do
         create(:ai_namespace_feature_setting,
           namespace: project.namespace,
           feature: :duo_agent_platform,
@@ -535,15 +538,78 @@ RSpec.describe ::Ai::DuoWorkflows::StartWorkflowService, feature_category: :agen
     end
 
     context 'when no feature setting exists' do
-      let(:expected_model_metadata) do
-        {
-          provider: 'gitlab',
-          feature_setting: 'duo_agent_platform',
-          identifier: nil
-        }
-      end
+      let(:expected_model_metadata) { nil }
 
       it_behaves_like 'sets AGENT_PLATFORM_MODEL_METADATA'
+    end
+  end
+
+  shared_examples 'sets DUO_WORKFLOW_SERVICE_SERVER' do
+    it 'sets the correct service server URL' do
+      expect(Ci::Workloads::RunWorkloadService)
+        .to receive(:new).and_wrap_original do |method, **kwargs|
+        variables = kwargs[:workload_definition].variables
+        expect(variables[:DUO_WORKFLOW_SERVICE_SERVER]).to eq(expected_service_server_url)
+        method.call(**kwargs)
+      end
+
+      expect(execute).to be_success
+    end
+  end
+
+  context 'for DUO_WORKFLOW_SERVICE_SERVER' do
+    let(:cloud_connector_url) { 'cloud.staging.gitlab.com:443' }
+    let(:self_hosted_url) { 'self-hosted-dap-service-url:50052' }
+
+    before do
+      allow(::Gitlab::Llm::StageCheck).to receive(:available?).with(project, :duo_workflow).and_return(true)
+      allow(maintainer).to receive(:allowed_to_use?).and_return(true)
+      project.project_setting.update!(duo_features_enabled: true, duo_remote_flows_enabled: true)
+      allow(Gitlab::DuoWorkflow::Client).to receive_messages(self_hosted_url: self_hosted_url,
+        cloud_connected_url: cloud_connector_url)
+    end
+
+    context 'when self-hosted feature setting exists' do
+      let(:expected_service_server_url) { self_hosted_url }
+
+      let_it_be(:model) do
+        create(:ai_self_hosted_model, model: :claude_3, identifier: 'claude-3-7-sonnet-20250219')
+      end
+
+      let_it_be(:duo_agent_platform_feature_setting) do
+        create(:ai_feature_setting, :duo_agent_platform, self_hosted_model: model)
+      end
+
+      it_behaves_like 'sets DUO_WORKFLOW_SERVICE_SERVER'
+    end
+
+    context 'when instance level model selection exists' do
+      let(:expected_service_server_url) { cloud_connector_url }
+
+      let_it_be(:duo_agent_platform_feature_setting) do
+        create(:instance_model_selection_feature_setting, feature: :duo_agent_platform)
+      end
+
+      it_behaves_like 'sets DUO_WORKFLOW_SERVICE_SERVER'
+    end
+
+    context 'when namespace level model selection exists', :saas do
+      let(:expected_service_server_url) { cloud_connector_url }
+
+      let_it_be(:duo_agent_platform_feature_setting) do
+        create(:ai_namespace_feature_setting,
+          namespace: project.namespace,
+          feature: :duo_agent_platform,
+          offered_model_ref: "claude_sonnet_3_7_20250219")
+      end
+
+      it_behaves_like 'sets DUO_WORKFLOW_SERVICE_SERVER'
+    end
+
+    context 'when no feature setting exists' do
+      let(:expected_service_server_url) { cloud_connector_url }
+
+      it_behaves_like 'sets DUO_WORKFLOW_SERVICE_SERVER'
     end
   end
 
