@@ -30,10 +30,12 @@ module Security
           save_result(finding, result)
         end
 
-        def save_result(finding, result)
-          return unless enabled_for_project?(finding.project)
+        def save_result(findings, result)
+          findings = Array(findings)
+          return if findings.empty?
+          return unless enabled_for_project?(findings.first.project)
 
-          save_to_database(finding, result.status, result.metadata[:verified_at])
+          save_to_database(findings, result.status, result.metadata[:verified_at])
         end
 
         def partner_token?(token_type)
@@ -59,9 +61,11 @@ module Security
           Feature.enabled?(:secret_detection_partner_token_verification, project)
         end
 
-        def save_to_database(finding, status, verified_at)
-          token_status_model.upsert(
-            build_attributes(finding, status, verified_at),
+        def save_to_database(findings, status, verified_at)
+          attributes = findings.map { |finding| build_attributes(finding, status, verified_at) }
+
+          token_status_model.upsert_all(
+            attributes,
             unique_by: unique_by_column,
             update_only: [:status, :last_verified_at]
           )

@@ -3,62 +3,92 @@
 require 'spec_helper'
 
 RSpec.describe Security::SecretDetection::Security::PartnerTokenService, feature_category: :secret_detection do
-  subject(:service) { described_class.new }
-
   let_it_be(:project) { create(:project) }
+  let_it_be(:pipeline) { create(:ci_pipeline, project: project) }
+  let_it_be(:scan) { create(:security_scan, pipeline: pipeline, scan_type: :secret_detection, project: project) }
 
-  def expect_token_status_to_match(token_status, status)
-    expect(token_status).to have_attributes(
-      security_finding_id: security_finding.id,
-      project_id: security_finding.project.id,
-      status: status,
-      last_verified_at: Time.zone.now
-    )
-  end
+  # Helpers for shared examples
+  let_it_be(:findings) { create_list(:security_finding, 3, scan: scan) }
+  let_it_be(:finding) { create(:security_finding, scan: scan) }
+  let(:expected_finding_type) { :security }
+  let(:expected_token_status_model) { ::Security::FindingTokenStatus }
+  let(:expected_unique_by_column) { :security_finding_id }
 
-  describe '#save_result', :freeze_time do
-    let_it_be(:security_finding) { create(:security_finding, :with_finding_data) }
-    let(:verified_at) { Time.zone.now }
+  it_behaves_like 'partner token service'
+
+  describe '.save_result' do
+    let(:uuid) { SecureRandom.uuid }
+    let(:security_finding) { create(:security_finding, scan: scan, uuid: uuid) }
     let(:result) do
-      instance_double(Security::SecretDetection::PartnerTokens::BaseClient::TokenStatus,
-        status: :active,
-        metadata: { verified_at: verified_at })
+      Security::SecretDetection::PartnerTokens::BaseClient::TokenStatus.new(
+        status: 'active',
+        metadata: { verified_at: Time.current }
+      )
     end
 
-    it 'creates token status record' do
-      expect { service.save_result(security_finding, result) }
-        .to change { Security::FindingTokenStatus.count }.by(1)
-
-      token_status = Security::FindingTokenStatus.find_by(security_finding_id: security_finding.id)
-      expect_token_status_to_match(token_status, 'active')
-    end
-
-    context 'when token status already exists' do
-      let!(:existing_status) do
-        create(:security_finding_token_status,
-          security_finding: security_finding,
-          status: :unknown,
-          last_verified_at: 1.day.ago)
+    context 'with associated vulnerability findings' do
+      let(:vulnerability) { create(:vulnerability, project: project) }
+      let(:vuln_finding) do
+        create(:vulnerabilities_finding,
+          project: project,
+          vulnerability: vulnerability,
+          uuid: security_finding.uuid
+        )
       end
 
-      it 'updates existing record' do
-        expect { service.save_result(security_finding, result) }
-          .not_to change { Security::FindingTokenStatus.count }
-
-        existing_status.reload
-        expect_token_status_to_match(existing_status, 'active')
-      end
-    end
-
-    context 'when save fails' do
       before do
-        allow(Security::FindingTokenStatus).to receive(:upsert)
-          .and_raise(ActiveRecord::RecordInvalid.new(Security::FindingTokenStatus.new))
+        security_finding.update!(vulnerability_finding: vuln_finding)
       end
 
-      it 'allows the error to bubble up' do
-        expect { service.save_result(security_finding, result) }
-          .to raise_error(ActiveRecord::RecordInvalid)
+      it 'creates token status for both security and vulnerability findings' do
+        expect { described_class.save_result(security_finding, result) }
+          .to change { Security::FindingTokenStatus.count }.by(1)
+          .and change { Vulnerabilities::FindingTokenStatus.count }.by(1)
+
+        expect(security_finding.reload.token_status).to have_attributes(
+          status: 'active',
+          project_id: project.id
+        )
+
+        expect(vuln_finding.reload.finding_token_status).to have_attributes(
+          status: 'active',
+          project_id: project.id
+        )
+      end
+    end
+
+    context 'with multiple related findings and vulnerability findings' do
+      let(:another_scan) { create(:security_scan, pipeline: pipeline, scan_type: :secret_detection, project: project) }
+      let!(:related_finding) { create(:security_finding, scan: another_scan, uuid: uuid) }
+      let(:vulnerability) { create(:vulnerability, project: project) }
+      let(:vuln_finding) do
+        create(:vulnerabilities_finding,
+          project: project,
+          vulnerability: vulnerability,
+          uuid: uuid
+        )
+      end
+
+      before do
+        security_finding.update!(vulnerability_finding: vuln_finding)
+      end
+
+      it 'creates token status for all security and vulnerability findings' do
+        expect { described_class.save_result(security_finding, result) }
+          .to change { Security::FindingTokenStatus.count }.by(2)
+          .and change { Vulnerabilities::FindingTokenStatus.count }.by(1)
+
+        [security_finding, related_finding].each do |finding|
+          expect(finding.reload.token_status).to have_attributes(
+            status: 'active',
+            project_id: project.id
+          )
+        end
+
+        expect(vuln_finding.reload.finding_token_status).to have_attributes(
+          status: 'active',
+          project_id: project.id
+        )
       end
     end
   end

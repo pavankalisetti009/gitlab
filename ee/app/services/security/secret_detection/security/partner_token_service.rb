@@ -3,26 +3,43 @@
 module Security
   module SecretDetection
     module Security
-      class PartnerTokenService
-        def save_result(finding, result)
-          save_to_database(finding, result.status, result.metadata[:verified_at])
-        end
+      class PartnerTokenService < PartnerTokenServiceBase
+        class << self
+          def finding_type
+            :security
+          end
 
-        private
+          def token_status_model
+            ::Security::FindingTokenStatus
+          end
 
-        def save_to_database(finding, status, verified_at)
-          attributes = {
-            security_finding_id: finding.id,
-            project_id: finding.project.id,
-            status: status,
-            last_verified_at: verified_at
-          }
+          def unique_by_column
+            :security_finding_id
+          end
 
-          ::Security::FindingTokenStatus.upsert(
-            attributes,
-            unique_by: :security_finding_id,
-            update_only: [:status, :last_verified_at]
-          )
+          def save_result(finding, result)
+            related_findings = get_related_security_findings(finding)
+
+            # Batch save all security findings
+            super(related_findings, result)
+
+            # Batch save vulnerability findings
+            save_vulnerability_findings(related_findings, result)
+          end
+
+          private
+
+          def save_vulnerability_findings(security_findings, result)
+            vuln_findings = security_findings.filter_map { |sf| sf.vulnerability&.finding }.uniq
+            Vulnerabilities::PartnerTokenService.save_result(vuln_findings, result) if vuln_findings.any?
+          end
+
+          def get_related_security_findings(finding)
+            partition = [finding.partition_number].compact
+            ::Security::Finding
+              .by_project_id_and_uuid(finding.project_id, partition, finding.uuid)
+              .with_vulnerability
+          end
         end
       end
     end
