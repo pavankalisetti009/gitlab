@@ -805,7 +805,6 @@ Layout/LineLength:
     - 'ee/lib/ee/sidebars/groups/panel.rb'
     - 'ee/lib/elastic/latest/custom_language_analyzers.rb'
     - 'ee/lib/elastic/latest/git_instance_proxy.rb'
-    - 'ee/lib/elastic/latest/note_class_proxy.rb'
     - 'ee/lib/elastic/latest/repository_class_proxy.rb'
     - 'ee/lib/elastic/latest/repository_instance_proxy.rb'
     - 'ee/lib/elastic/metrics_update_service.rb'
