@@ -68,6 +68,7 @@ describe('AiCatalogAgentsDuplicate', () => {
         systemPrompt: mockAgent.latestVersion.systemPrompt,
         tools: mockAgent.latestVersion.tools.nodes.map((t) => t.id),
         public: false,
+        release: true,
       };
 
       expect(findForm().props('initialValues')).toEqual(expectedInitialValues);

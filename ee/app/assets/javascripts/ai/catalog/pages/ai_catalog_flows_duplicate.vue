@@ -46,6 +46,7 @@ export default {
         type: this.aiCatalogFlow.itemType,
         name: `${s__('AICatalog|Copy of')} ${this.flowName}`,
         public: false,
+        release: true,
         description: this.aiCatalogFlow.description,
         ...configurationField,
       };
