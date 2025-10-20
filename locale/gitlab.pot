@@ -41317,6 +41317,12 @@ msgstr ""
 msgid "Merged %{timeAgo} by"
 msgstr ""
 
+msgid "Merged after"
+msgstr ""
+
+msgid "Merged before"
+msgstr ""
+
 msgid "Merged branches are being deleted. This can take some time depending on the number of branches. Please refresh the page to see changes."
 msgstr ""
 
