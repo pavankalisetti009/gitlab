@@ -15,5 +15,10 @@ FactoryBot.define do
     after(:build) do |entry, _|
       entry.registry_upstreams.each { |registry_upstream| registry_upstream.group = entry.group }
     end
+
+    trait :without_credentials do
+      username { nil }
+      password { nil }
+    end
   end
 end

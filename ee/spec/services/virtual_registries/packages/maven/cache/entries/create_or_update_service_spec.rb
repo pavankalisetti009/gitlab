@@ -85,7 +85,7 @@ RSpec.describe VirtualRegistries::Packages::Maven::Cache::Entries::CreateOrUpdat
       end
     end
 
-    context 'with a User' do
+    context 'with a User', :sidekiq_inline do
       it_behaves_like 'returning a service response success response'
 
       context 'with an existing cache entry' do
@@ -98,7 +98,7 @@ RSpec.describe VirtualRegistries::Packages::Maven::Cache::Entries::CreateOrUpdat
           )
         end
 
-        it 'updates it', :freeze_time, :sidekiq_inline do
+        it 'updates it', :freeze_time do
           last_cache_entry = upstream.cache_entries.last
 
           expect { execute }.to not_change { upstream.cache_entries.count }
