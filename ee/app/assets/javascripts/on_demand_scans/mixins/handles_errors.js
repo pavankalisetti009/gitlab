@@ -1,5 +1,5 @@
 import * as Sentry from '~/sentry/sentry_browser_wrapper';
-import { scrollToElement } from '~/lib/utils/common_utils';
+import { scrollToElement } from '~/lib/utils/scroll_utils';
 
 export default {
   data() {

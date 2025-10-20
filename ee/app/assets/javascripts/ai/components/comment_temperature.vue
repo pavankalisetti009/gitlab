@@ -5,7 +5,7 @@ import aiActionMutation from 'ee/graphql_shared/mutations/ai_action.mutation.gra
 import aiResponseSubscription from 'ee/graphql_shared/subscriptions/ai_completion_response.subscription.graphql';
 import { InternalEvents } from '~/tracking';
 import { convertToGraphQLId, isGid } from '~/graphql_shared/utils';
-import { scrollToElement } from '~/lib/utils/common_utils';
+import { scrollToElement } from '~/lib/utils/scroll_utils';
 import { TYPENAME_USER } from '~/graphql_shared/constants';
 import { fetchPolicies } from '~/lib/graphql';
 import { logError } from '~/lib/logger';

@@ -33,7 +33,7 @@ import {
   UNASSIGN_SEATS_BULK_ACTION,
 } from 'ee/usage_quotas/code_suggestions/constants';
 import ErrorAlert from 'ee/vue_shared/components/error_alert/error_alert.vue';
-import { scrollToElement } from '~/lib/utils/common_utils';
+import { scrollToElement } from '~/lib/utils/scroll_utils';
 import { isKnownErrorCode } from '~/lib/utils/error_utils';
 import { InternalEvents } from '~/tracking';
 import CodeSuggestionsAddonAssignment from 'ee/usage_quotas/code_suggestions/components/code_suggestions_addon_assignment.vue';
