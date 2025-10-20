@@ -8,6 +8,10 @@ FactoryBot.define do
     severity { :critical }
     uuid { SecureRandom.uuid }
 
+    after(:build) do |finding|
+      finding.project_id ||= finding.scan&.project_id
+    end
+
     transient do
       false_positive { false }
     end
