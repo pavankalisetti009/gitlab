@@ -18,7 +18,7 @@ RSpec.describe Search::GlobalService, '#confidentiality', feature_category: :glo
     let_it_be(:term) { 'hello' }
     let_it_be(:search) { term }
 
-    context 'for issues', skip: 'skipped temporarily until project query is fixed' do
+    context 'for issues' do
       let(:scope) { 'issues' }
 
       let_it_be(:non_confidential) { create :work_item, project: project, title: term }

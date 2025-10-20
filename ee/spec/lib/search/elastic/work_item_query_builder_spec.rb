@@ -60,7 +60,7 @@ RSpec.describe ::Search::Elastic::WorkItemQueryBuilder, :elastic_helpers, featur
       filters:confidentiality:projects:confidential
       filters:confidentiality:projects:confidential:as_author
       filters:confidentiality:projects:confidential:as_assignee
-      filters:confidentiality:projects:project:member
+      filters:confidentiality:projects:private:project:member
     ])
   end
 
@@ -282,7 +282,7 @@ RSpec.describe ::Search::Elastic::WorkItemQueryBuilder, :elastic_helpers, featur
         filters:confidentiality:projects:confidential
         filters:confidentiality:projects:confidential:as_author
         filters:confidentiality:projects:confidential:as_assignee
-        filters:confidentiality:projects:project:member
+        filters:confidentiality:projects:private:project:member
       ]
 
       knn_filter = query[:knn][:filter]
@@ -359,7 +359,7 @@ RSpec.describe ::Search::Elastic::WorkItemQueryBuilder, :elastic_helpers, featur
     it_behaves_like 'a query filtered by state'
 
     it_behaves_like 'a query filtered by confidentiality' do
-      let(:query_name_project_membership) { 'filters:confidentiality:projects:project:member' }
+      let(:query_name_project_membership) { 'filters:confidentiality:projects:private:project:member' }
     end
 
     context 'when search_project_confidentiality_use_traversal_ids is false' do

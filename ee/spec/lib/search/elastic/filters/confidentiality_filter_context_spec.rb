@@ -169,4 +169,18 @@ RSpec.describe Search::Elastic::Filters::ConfidentialityFilterContext, feature_c
       end
     end
   end
+
+  describe '#project_id_field' do
+    it 'returns the default PROJECT_ID_FIELD when project_id_field not provided' do
+      expect(filter_context.project_id_field).to eq(Search::Elastic::Filters::PROJECT_ID_FIELD)
+    end
+
+    context 'when project_id_field is provided in options' do
+      let(:options) { super().merge(project_id_field: 'custom_project_id_field') }
+
+      it 'returns the custom project_id_field' do
+        expect(filter_context.project_id_field).to eq('custom_project_id_field')
+      end
+    end
+  end
 end

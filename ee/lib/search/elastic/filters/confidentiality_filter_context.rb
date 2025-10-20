@@ -34,6 +34,10 @@ module Search
           options.fetch(:min_access_level_confidential_public_internal)
         end
 
+        def project_id_field
+          options.fetch(:project_id_field, Search::Elastic::Filters::PROJECT_ID_FIELD)
+        end
+
         def traversal_ids_field
           options.fetch(:traversal_ids_prefix, Search::Elastic::Filters::TRAVERSAL_IDS_FIELD)
         end

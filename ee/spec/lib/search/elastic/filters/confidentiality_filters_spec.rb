@@ -610,15 +610,12 @@ RSpec.describe ::Search::Elastic::Filters::ConfidentialityFilters, :elastic_help
         expect(filter).to be_present
 
         assert_names_in_query(filter,
-          with: %w[
-            filters:confidentiality:projects:non_confidential
+          with: %w[filters:confidentiality:projects:non_confidential
             filters:confidentiality:projects:confidential
-            filters:confidentiality:projects:confidential:as_author
-            filters:confidentiality:projects:project:member
-            filters:confidentiality:projects:confidential:as_assignee
-          ],
-          without: %w[filters:confidentiality:groups:non_confidential]
-        )
+            filters:confidentiality:projects:private:project:member],
+          without: %w[filters:confidentiality:groups:non_confidential
+            filters:confidentiality:groups:confidential
+            filters:confidentiality:groups:private:ancestry_filter:descendants])
       end
     end
 
@@ -654,7 +651,9 @@ RSpec.describe ::Search::Elastic::Filters::ConfidentialityFilters, :elastic_help
         expect(filter).to be_present
 
         assert_names_in_query(filter,
-          with: %w[filters:confidentiality:groups:non_confidential],
+          with: %w[filters:confidentiality:groups:non_confidential
+            filters:confidentiality:groups:confidential
+            filters:confidentiality:groups:private:ancestry_filter:descendants],
           without: %w[
             filters:confidentiality:projects:non_confidential
             filters:confidentiality:projects:confidential
@@ -698,10 +697,10 @@ RSpec.describe ::Search::Elastic::Filters::ConfidentialityFilters, :elastic_help
         assert_names_in_query(filter, with: %w[
           filters:confidentiality:projects:non_confidential
           filters:confidentiality:projects:confidential
-          filters:confidentiality:projects:confidential:as_author
-          filters:confidentiality:projects:project:member
-          filters:confidentiality:projects:confidential:as_assignee
+          filters:confidentiality:projects:private:project:member
           filters:confidentiality:groups:non_confidential
+          filters:confidentiality:groups:confidential
+          filters:confidentiality:groups:private:ancestry_filter:descendants
         ])
       end
     end

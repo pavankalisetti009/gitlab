@@ -4,6 +4,7 @@
       "filter": [
         {
           "bool": {
+            "minimum_should_match": 1,
             "should": [
               {
                 "term": {
@@ -25,15 +26,8 @@
                       }
                     }
                   ],
+                  "minimum_should_match": 1,
                   "should": [
-                    {
-                      "term": {
-                        "author_id": {
-                          "_name": "filters:confidentiality:projects:confidential:as_author",
-                          "value": __USER_ID__
-                        }
-                      }
-                    },
                     {
                       "term": {
                         "assignee_id": {
@@ -41,13 +35,39 @@
                           "value": __USER_ID__
                         }
                       }
+                    },
+                    {
+                      "bool": {
+                        "filter": [
+                          {
+                            "term": {
+                              "author_id": {
+                                "_name": "filters:confidentiality:projects:confidential:as_author",
+                                "value": __USER_ID__
+                              }
+                            }
+                          }
+                        ],
+                        "minimum_should_match": 1,
+                        "should": [
+                          {
+                            "bool": {
+                              "must_not": [
+                                {
+                                  "term": {
+                                    "namespace_visibility_level": 0
+                                  }
+                                }
+                              ]
+                            }
+                          }
+                        ]
+                      }
                     }
-                  ],
-                  "minimum_should_match": 1
+                  ]
                 }
               }
-            ],
-            "minimum_should_match": 1
+            ]
           }
         }
       ],
