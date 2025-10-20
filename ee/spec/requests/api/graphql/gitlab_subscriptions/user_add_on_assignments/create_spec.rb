@@ -167,7 +167,7 @@ RSpec.describe 'UserAddOnAssignmentCreate', feature_category: :seat_cost_managem
 
   let(:queried_purchase_ids) { prepare_variables([add_on_purchase_id]) }
 
-  context 'on Gitlab.com/Saas', :saas do
+  context 'on Gitlab.com/Saas' do
     before do
       stub_saas_features(gitlab_com_subscriptions: true)
     end

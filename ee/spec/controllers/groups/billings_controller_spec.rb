@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe Groups::BillingsController, :saas, feature_category: :subscription_management do
+RSpec.describe Groups::BillingsController, feature_category: :subscription_management do
   let_it_be(:owner) { create(:user) }
   let_it_be(:auditor) { create(:auditor) }
   let_it_be(:developer) { create(:user) }
@@ -107,7 +107,7 @@ RSpec.describe Groups::BillingsController, :saas, feature_category: :subscriptio
     end
   end
 
-  describe 'POST refresh_seats' do
+  describe 'POST refresh_seats', :saas do
     let_it_be(:gitlab_subscription) do
       create(:gitlab_subscription, namespace: group)
     end

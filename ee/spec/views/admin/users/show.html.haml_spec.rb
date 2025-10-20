@@ -41,13 +41,13 @@ RSpec.describe 'admin/users/show.html.haml', feature_category: :system_access do
         stub_saas_features(gitlab_com_subscriptions: true)
       end
 
-      it 'includes the plan info', :saas do
+      it 'includes the plan info' do
         render
 
         expect(rendered).to have_text('Plan:')
       end
 
-      context 'when namespace is not paid', :saas do
+      context 'when namespace is not paid' do
         it 'indicates there is no plan' do
           render
 

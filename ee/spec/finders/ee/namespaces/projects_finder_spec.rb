@@ -281,7 +281,7 @@ RSpec.describe Namespaces::ProjectsFinder, feature_category: :groups_and_project
       end
     end
 
-    describe 'sorting', :saas do
+    describe 'sorting' do
       let(:sort) { nil }
       let(:params) { { sort: sort, include_subgroups: true } }
 

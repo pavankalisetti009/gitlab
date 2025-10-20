@@ -166,7 +166,7 @@ RSpec.describe EE::NamespacesHelper, feature_category: :groups_and_projects do
     let(:minutes_usage) { user_group.ci_minutes_usage }
     let(:minutes_usage_presenter) { ::Ci::Minutes::UsagePresenter.new(minutes_usage) }
 
-    context 'when gitlab_com_subscriptions saas feature is available', :saas do
+    context 'when gitlab_com_subscriptions saas feature is available' do
       before do
         stub_saas_features(gitlab_com_subscriptions: true)
       end
@@ -235,7 +235,7 @@ RSpec.describe EE::NamespacesHelper, feature_category: :groups_and_projects do
   describe '#storage_usage_app_data', :saas, feature_category: :consumables_cost_management do
     using RSpec::Parameterized::TableSyntax
 
-    let_it_be(:namespace) { create(:namespace) }
+    let_it_be(:namespace) { create(:namespace_with_plan) }
     let_it_be(:admin) { create(:user, namespace: namespace) }
 
     let(:repository_size_limit) { 1000 }

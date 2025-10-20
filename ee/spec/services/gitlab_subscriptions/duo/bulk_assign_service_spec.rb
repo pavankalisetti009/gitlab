@@ -146,7 +146,7 @@ RSpec.describe GitlabSubscriptions::Duo::BulkAssignService, feature_category: :s
             expect(response[:users].map(&:id)).to eq(user_ids)
           end
 
-          it 'calls the iterable triggers worker', :saas, :sidekiq_inline do
+          it 'calls the iterable triggers worker', :sidekiq_inline do
             worker_params = { 'product_interaction' => 'duo_pro_add_on_seat_assigned' }
 
             expect(::Onboarding::AddOnSeatAssignmentIterableTriggerWorker)
