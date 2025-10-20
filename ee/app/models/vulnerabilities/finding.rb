@@ -177,6 +177,7 @@ module Vulnerabilities
     scope :with_project, -> { includes(:project) }
     scope :with_token_status, -> { preload(:finding_token_status) }
     scope :with_cve_enrichments, -> { includes(:cve_enrichments) }
+    scope :with_risk_score, -> { preload(:finding_risk_score) }
 
     scope :all_preloaded, -> do
       preload(:scanner, :identifiers, :feedbacks, project: [:namespace, :project_feature])
@@ -466,7 +467,7 @@ module Vulnerabilities
     end
 
     def risk_score
-      Vulnerabilities::RiskScore.from_finding(self).score
+      finding_risk_score&.risk_score || 0.0
     end
 
     alias_method :==, :eql?
