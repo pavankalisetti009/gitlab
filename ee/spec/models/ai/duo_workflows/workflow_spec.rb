@@ -126,6 +126,20 @@ RSpec.describe Ai::DuoWorkflows::Workflow, feature_category: :agent_foundations 
     end
   end
 
+  describe '.in_status_group' do
+    context 'when the status group exists' do
+      it 'returns the workflows that match the status group' do
+        expect(described_class.in_status_group(:active)).to include(workflow)
+      end
+    end
+
+    context 'when the status group does not exist' do
+      it 'returns an empty relation' do
+        expect(described_class.in_status_group(:nonexistent)).to be_empty
+      end
+    end
+  end
+
   describe 'validations' do
     it { is_expected.to validate_presence_of(:status) }
     it { is_expected.to validate_length_of(:goal).is_at_most(16_384) }
@@ -516,6 +530,32 @@ RSpec.describe Ai::DuoWorkflows::Workflow, feature_category: :agent_foundations 
       end
 
       it { is_expected.to be(false) }
+    end
+  end
+
+  describe '#status_group' do
+    using RSpec::Parameterized::TableSyntax
+
+    let(:states) { described_class.state_machine(:status).states }
+
+    where(:group, :status) do
+      :active          | :created
+      :active          | :running
+      :paused          | :paused
+      :awaiting_input  | :input_required
+      :awaiting_input  | :plan_approval_required
+      :awaiting_input  | :tool_call_approval_required
+      :completed       | :finished
+      :failed          | :failed
+      :canceled        | :stopped
+    end
+
+    with_them do
+      it 'returns the correct status group' do
+        owned_workflow.status = states[status].value
+
+        expect(owned_workflow.status_group).to eq(group)
+      end
     end
   end
 end

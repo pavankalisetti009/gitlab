@@ -1048,7 +1048,7 @@ RSpec.describe GitlabSchema.types['Project'], feature_category: :shared do
 
     it { is_expected.to have_graphql_type(Types::Ai::DuoWorkflows::WorkflowType.connection_type) }
     it { is_expected.to have_graphql_resolver(Resolvers::Ai::DuoWorkflows::WorkflowsResolver) }
-    it { is_expected.to have_graphql_arguments(:project_path, :sort, :type, :workflow_id, :environment, :exclude_types) }
+    it { is_expected.to have_graphql_arguments(:project_path, :sort, :type, :workflow_id, :environment, :exclude_types, :search, :status_group) }
   end
 
   describe 'duo_workflow_events field' do

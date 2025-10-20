@@ -87,6 +87,10 @@ module Types
           scopes: [:api, :read_api, :ai_features, :ai_workflows],
           description: 'Status name of the session.'
 
+        field :status_group, Types::Ai::DuoWorkflows::WorkflowStatusGroupEnum, # rubocop: disable GraphQL/ExtractType -- does not make sense
+          scopes: [:api, :read_api, :ai_features, :ai_workflows],
+          description: 'Status group of the flow session.'
+
         field :first_checkpoint, Types::Ai::DuoWorkflows::WorkflowEventType,
           scopes: [:api, :read_api, :ai_features, :ai_workflows],
           description: "First checkpoint of the session."

@@ -870,7 +870,9 @@ four standard [pagination arguments](#pagination-arguments):
 | <a id="queryduoworkflowworkflowsenvironment"></a>`environment` | [`WorkflowEnvironment`](#workflowenvironment) | Environment, for example, IDE or web. |
 | <a id="queryduoworkflowworkflowsexcludetypes"></a>`excludeTypes` | [`[String!]`](#string) | Types of flows to exclude (for example, ["software_development", "chat"]). |
 | <a id="queryduoworkflowworkflowsprojectpath"></a>`projectPath` | [`ID`](#id) | Full path of the project that contains the flows. |
+| <a id="queryduoworkflowworkflowssearch"></a>`search` | [`String`](#string) | Flow title or goal to search for. |
 | <a id="queryduoworkflowworkflowssort"></a>`sort` | [`DuoWorkflowsWorkflowSort`](#duoworkflowsworkflowsort) | Sort flows by the criteria. |
+| <a id="queryduoworkflowworkflowsstatusgroup"></a>`statusGroup` | [`DuoWorkflowStatusGroup`](#duoworkflowstatusgroup) | Status group to filter flow sessions by. |
 | <a id="queryduoworkflowworkflowstype"></a>`type` | [`String`](#string) | Type of flow to filter by (for example, software_development). |
 | <a id="queryduoworkflowworkflowsworkflowid"></a>`workflowId` | [`AiDuoWorkflowsWorkflowID`](#aiduoworkflowsworkflowid) | Flow ID to filter by. |
 
@@ -29672,6 +29674,7 @@ GitLab Duo Agent Platform session.
 | <a id="duoworkflowprojectid"></a>`projectId` | [`ProjectID`](#projectid) | ID of the project. |
 | <a id="duoworkflowstalled"></a>`stalled` | [`Boolean`](#boolean) | Workflow got created but has no checkpoints. |
 | <a id="duoworkflowstatus"></a>`status` | [`DuoWorkflowStatus`](#duoworkflowstatus) | Status of the session. |
+| <a id="duoworkflowstatusgroup"></a>`statusGroup` | [`DuoWorkflowStatusGroup`](#duoworkflowstatusgroup) | Status group of the flow session. |
 | <a id="duoworkflowstatusname"></a>`statusName` | [`String`](#string) | Status name of the session. |
 | <a id="duoworkflowupdatedat"></a>`updatedAt` | [`Time!`](#time) | Timestamp of when the session was last updated. |
 | <a id="duoworkflowuserid"></a>`userId` | [`UserID!`](#userid) | ID of the user. |
@@ -40175,7 +40178,9 @@ four standard [pagination arguments](#pagination-arguments):
 | <a id="projectduoworkflowworkflowsenvironment"></a>`environment` | [`WorkflowEnvironment`](#workflowenvironment) | Environment, for example, IDE or web. |
 | <a id="projectduoworkflowworkflowsexcludetypes"></a>`excludeTypes` | [`[String!]`](#string) | Types of flows to exclude (for example, ["software_development", "chat"]). |
 | <a id="projectduoworkflowworkflowsprojectpath"></a>`projectPath` | [`ID`](#id) | Full path of the project that contains the flows. |
+| <a id="projectduoworkflowworkflowssearch"></a>`search` | [`String`](#string) | Flow title or goal to search for. |
 | <a id="projectduoworkflowworkflowssort"></a>`sort` | [`DuoWorkflowsWorkflowSort`](#duoworkflowsworkflowsort) | Sort flows by the criteria. |
+| <a id="projectduoworkflowworkflowsstatusgroup"></a>`statusGroup` | [`DuoWorkflowStatusGroup`](#duoworkflowstatusgroup) | Status group to filter flow sessions by. |
 | <a id="projectduoworkflowworkflowstype"></a>`type` | [`String`](#string) | Type of flow to filter by (for example, software_development). |
 | <a id="projectduoworkflowworkflowsworkflowid"></a>`workflowId` | [`AiDuoWorkflowsWorkflowID`](#aiduoworkflowsworkflowid) | Flow ID to filter by. |
 
@@ -48941,6 +48946,19 @@ The status of the workflow.
 | <a id="duoworkflowstatusrunning"></a>`RUNNING` | The workflow is running. |
 | <a id="duoworkflowstatusstopped"></a>`STOPPED` | The workflow is stopped. |
 | <a id="duoworkflowstatustool_call_approval_required"></a>`TOOL_CALL_APPROVAL_REQUIRED` | The workflow is tool_call_approval_required. |
+
+### `DuoWorkflowStatusGroup`
+
+The status group of the flow session.
+
+| Value | Description |
+| ----- | ----------- |
+| <a id="duoworkflowstatusgroupactive"></a>`ACTIVE` | Flow sessions with a status group of active. |
+| <a id="duoworkflowstatusgroupawaiting_input"></a>`AWAITING_INPUT` | Flow sessions with a status group of awaiting_input. |
+| <a id="duoworkflowstatusgroupcanceled"></a>`CANCELED` | Flow sessions with a status group of canceled. |
+| <a id="duoworkflowstatusgroupcompleted"></a>`COMPLETED` | Flow sessions with a status group of completed. |
+| <a id="duoworkflowstatusgroupfailed"></a>`FAILED` | Flow sessions with a status group of failed. |
+| <a id="duoworkflowstatusgrouppaused"></a>`PAUSED` | Flow sessions with a status group of paused. |
 
 ### `DuoWorkflowsWorkflowSort`
 
