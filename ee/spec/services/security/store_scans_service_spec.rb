@@ -331,8 +331,11 @@ RSpec.describe Security::StoreScansService, feature_category: :vulnerability_man
                     allow(pipeline).to receive_message_chain(:job_artifacts, :security_reports,
                       :group_by).and_return({})
                     allow(Sbom::ScheduleIngestReportsService).to receive_message_chain(:new, :execute)
-                    allow(pipeline).to receive_messages(default_branch?: is_default_branch,
-                      has_sbom_reports?: has_sbom_reports)
+                    allow(pipeline).to receive_messages(
+                      default_branch?: is_default_branch,
+                      self_and_project_descendants: [pipeline],
+                      has_sbom_reports?: has_sbom_reports
+                    )
                   end
 
                   where(:is_default_branch, :has_sbom_reports, :receives_call) do
