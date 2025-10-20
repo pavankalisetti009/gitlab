@@ -1,0 +1,10 @@
+---
+name: smartcard_ad_formats_v2
+description:
+feature_issue_url: https://gitlab.com/gitlab-org/gitlab/-/issues/554639
+introduced_by_url: https://gitlab.com/gitlab-org/gitlab/-/merge_requests/208209
+rollout_issue_url: https://gitlab.com/gitlab-org/gitlab/-/issues/577375
+milestone: '18.6'
+group: group::authentication
+type: beta
+default_enabled: true
