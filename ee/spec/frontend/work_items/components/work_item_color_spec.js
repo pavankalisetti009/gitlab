@@ -8,7 +8,6 @@ import { epicType } from 'jest/work_items/mock_data';
 import WorkItemColor from 'ee/work_items/components/work_item_color.vue';
 import SidebarColorView from '~/sidebar/components/sidebar_color_view.vue';
 import SidebarColorPicker from '~/sidebar/components/sidebar_color_picker.vue';
-import { DEFAULT_COLOR } from '~/vue_shared/components/color_select_dropdown/constants';
 import WorkItemSidebarWidget from '~/work_items/components/shared/work_item_sidebar_widget.vue';
 import updateWorkItemMutation from '~/work_items/graphql/update_work_item.mutation.graphql';
 import {
@@ -27,7 +26,7 @@ describe('WorkItemColor component', () => {
   const mockWorkItem = workItemByIidResponseFactory({
     workItemType: epicType,
     colorWidgetPresent: true,
-    color: DEFAULT_COLOR.color,
+    color: '#1068bf',
   }).data.workspace.workItem;
   const mockSelectedColorWorkItem = workItemByIidResponseFactory({
     workItemType: epicType,

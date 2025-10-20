@@ -8,10 +8,9 @@ import {
 } from 'ee/sidebar/constants';
 import { createMockDirective, getBinding } from 'helpers/vue_mock_directive';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
-import { mockIssue1 } from '../mock_data';
 
 describe('IssueHealthStatus', () => {
-  const { healthStatus } = mockIssue1;
+  const healthStatus = 'onTrack';
   let wrapper;
 
   const createComponent = ({
