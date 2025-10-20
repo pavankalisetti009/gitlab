@@ -93,6 +93,7 @@ RSpec.describe Geo::Secondary::RegistryConsistencyWorker, :geo, feature_category
       dependency_proxy_manifest = create(:dependency_proxy_manifest)
       project_wiki_repository = create(:project_wiki_repository, project: project)
       design_management_repository = create(:design_management_repository, project: project)
+      nuget_symbol = create(:nuget_symbol)
 
       expect(Geo::ContainerRepositoryRegistry.where(container_repository_id: container_repository.id).count).to eq(0)
       expect(Geo::DesignManagementRepositoryRegistry.where(design_management_repository_id: design_management_repository.id).count).to eq(0)
@@ -110,6 +111,7 @@ RSpec.describe Geo::Secondary::RegistryConsistencyWorker, :geo, feature_category
       expect(Geo::DependencyProxyManifestRegistry.where(dependency_proxy_manifest: dependency_proxy_manifest.id).count).to eq(0)
       expect(Geo::ProjectWikiRepositoryRegistry.where(project_wiki_repository: project_wiki_repository.id).count).to eq(0)
       expect(Geo::ProjectRepositoryRegistry.where(project_id: project.id).count).to eq(0)
+      expect(Geo::PackagesNugetSymbolRegistry.where(packages_nuget_symbol_id: nuget_symbol.id).count).to eq(0)
 
       subject.perform
 
@@ -128,6 +130,7 @@ RSpec.describe Geo::Secondary::RegistryConsistencyWorker, :geo, feature_category
       expect(Geo::DependencyProxyManifestRegistry.where(dependency_proxy_manifest: dependency_proxy_manifest.id).count).to eq(1)
       expect(Geo::ProjectWikiRepositoryRegistry.where(project_wiki_repository: project_wiki_repository.id).count).to eq(1)
       expect(Geo::ProjectRepositoryRegistry.where(project_id: project.id).count).to eq(1)
+      expect(Geo::PackagesNugetSymbolRegistry.where(packages_nuget_symbol_id: nuget_symbol.id).count).to eq(1)
     end
 
     context 'when the current Geo node is disabled or primary' do

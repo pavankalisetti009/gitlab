@@ -29643,6 +29643,12 @@ msgstr ""
 msgid "Geo|Nothing to verify"
 msgstr ""
 
+msgid "Geo|NuGet Symbol"
+msgstr ""
+
+msgid "Geo|NuGet Symbols"
+msgstr ""
+
 msgid "Geo|Object Storage replication"
 msgstr ""
 
