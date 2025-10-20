@@ -18775,8 +18775,10 @@ CREATE TABLE jira_connect_installations (
     base_url character varying,
     instance_url text,
     organization_id bigint,
+    display_url text,
     CONSTRAINT check_4c6abed669 CHECK ((char_length(instance_url) <= 255)),
-    CONSTRAINT check_dc0d039821 CHECK ((organization_id IS NOT NULL))
+    CONSTRAINT check_dc0d039821 CHECK ((organization_id IS NOT NULL)),
+    CONSTRAINT check_fb61e0d5f7 CHECK ((char_length(display_url) <= 255))
 );
 
 CREATE SEQUENCE jira_connect_installations_id_seq
