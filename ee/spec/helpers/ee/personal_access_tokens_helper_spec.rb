@@ -156,11 +156,11 @@ RSpec.describe EE::PersonalAccessTokensHelper, feature_category: :system_access 
   describe '#max_personal_access_token_lifetime_in_days' do
     subject { helper.max_personal_access_token_lifetime_in_days }
 
-    context 'when feature flag is enable' do
+    context 'when `buffered_token_expiration_limit` feature flag is enabled' do
       it { is_expected.to eq(400) }
     end
 
-    context 'with `personal_access_token_expiration_policy` not licensed' do
+    context 'when `buffered_token_expiration_limit` feature flag is disabled' do
       before do
         stub_feature_flags(buffered_token_expiration_limit: false)
       end
