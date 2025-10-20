@@ -12,6 +12,70 @@ RSpec.describe Plan, feature_category: :subscription_management do
       )
   end
 
+  describe '.free' do
+    subject(:free) { described_class.free }
+
+    context 'when gitlab_com_subscriptions feature is not available' do
+      before do
+        stub_saas_features(gitlab_com_subscriptions: false)
+      end
+
+      it { is_expected.to be_nil }
+    end
+
+    context 'when gitlab_com_subscriptions feature is available' do
+      before do
+        stub_saas_features(gitlab_com_subscriptions: true)
+      end
+
+      context 'when free plan exists in database' do
+        let_it_be(:existing_plan) { create(:plan, name: described_class::FREE) }
+
+        it { is_expected.to eq(existing_plan) }
+
+        it 'caches the result in SafeRequestStore', :request_store do
+          first_result = described_class.free
+          second_result = described_class.free
+
+          expect(first_result).to eq(second_result)
+          expect(first_result).to be(second_result)
+        end
+      end
+
+      context 'when free plan does not exist in database' do
+        it 'creates a new free plan' do
+          expect { free }.to change { described_class.count }.by(1)
+
+          expect(free.name).to eq(described_class::FREE)
+          expect(free).to be_persisted
+        end
+
+        it 'returns the created plan on subsequent calls' do
+          first_call = free
+          second_call = described_class.free
+
+          expect(first_call).to eq(second_call)
+          expect(described_class.where(name: described_class::FREE).count).to eq(1)
+        end
+      end
+
+      context 'for caching behavior' do
+        it 'only creates one record even with multiple calls' do
+          expect { 3.times { free } }.to change { described_class.count }.by(1)
+        end
+
+        it 'uses cached result for subsequent calls within same request', :request_store do
+          first_result = free
+
+          expect(described_class).not_to receive(:find_by)
+          second_result = described_class.free
+
+          expect(first_result).to be(second_result)
+        end
+      end
+    end
+  end
+
   describe '#paid?' do
     subject { plan.paid? }
 

@@ -73,7 +73,7 @@ module Security
         ::Gitlab::AppJsonLogger.warn(
           build_structured_payload(
             security_orchestration_policy_configuration_id: schedule&.security_orchestration_policy_configuration&.id,
-            user_id: current_user.id,
+            Labkit::Fields::GL_USER_ID => current_user.id,
             message: message
           )
         )
