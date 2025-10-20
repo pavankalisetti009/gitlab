@@ -743,6 +743,14 @@ RSpec.describe Security::SecretDetection::UpdateTokenStatusService, feature_cate
                 project.security_setting.update!(validity_checks_enabled: true)
               end
 
+              it 'calls PartnerTokenService.process_finding_async with the findings batch' do
+                expect(
+                  Security::SecretDetection::Security::PartnerTokenService
+                ).to receive(:process_finding_async).once
+
+                execute
+              end
+
               it 'tracks number_of_tokens_processed_by_token_status_service event' do
                 expect { execute }
                   .to trigger_internal_events('number_of_tokens_processed_by_token_status_service')
@@ -812,6 +820,14 @@ RSpec.describe Security::SecretDetection::UpdateTokenStatusService, feature_cate
           context 'when validity_checks_security_finding_status FF is enabled' do
             before do
               stub_feature_flags(validity_checks_security_finding_status: true)
+            end
+
+            it 'calls PartnerTokenService.process_partner_finding with the findings batch' do
+              expect(
+                Security::SecretDetection::Security::PartnerTokenService
+              ).to receive(:process_partner_finding).once
+
+              execute
             end
 
             context 'when validity checks is disabled for the project' do

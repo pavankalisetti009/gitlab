@@ -49,6 +49,7 @@ module Security
         track_count = 0
         relation.each_batch(of: DEFAULT_BATCH_SIZE) do |batch|
           process_findings_batch(batch, :security)
+          Security::PartnerTokenService.process_finding_async(batch, project)
           track_count += batch.size
         end
 
@@ -81,6 +82,7 @@ module Security
         security_finding = ::Security::Finding.find_by_id(security_finding_id)
         return unless security_finding
 
+        Security::PartnerTokenService.process_partner_finding(security_finding)
         execute_for_gitlab_security_finding(security_finding)
       end
 
