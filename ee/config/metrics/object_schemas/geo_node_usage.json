@@ -415,6 +415,46 @@
         "description": "Package files verified count",
         "type": "number"
       },
+      "packages_nuget_symbols_checksum_failed_count": {
+        "description": "Packages nuget symbols checksum failed count",
+        "type": "number"
+      },
+      "packages_nuget_symbols_checksum_total_count": {
+        "description": "Packages nuget symbols checksum total count",
+        "type": "number"
+      },
+      "packages_nuget_symbols_checksummed_count": {
+        "description": "Packages nuget symbols checksummed count",
+        "type": "number"
+      },
+      "packages_nuget_symbols_count": {
+        "description": "Packages nuget symbols count",
+        "type": "number"
+      },
+      "packages_nuget_symbols_failed_count": {
+        "description": "Packages nuget symbols failed count",
+        "type": "number"
+      },
+      "packages_nuget_symbols_registry_count": {
+        "description": "Packages nuget symbols registry count",
+        "type": "number"
+      },
+      "packages_nuget_symbols_synced_count": {
+        "description": "Packages nuget symbols synced count",
+        "type": "number"
+      },
+      "packages_nuget_symbols_verification_failed_count": {
+        "description": "Packages nuget symbols verification failed count",
+        "type": "number"
+      },
+      "packages_nuget_symbols_verification_total_count": {
+        "description": "Packages nuget symbols verification total count",
+        "type": "number"
+      },
+      "packages_nuget_symbols_verified_count": {
+        "description": "Packages nuget symbols verified count",
+        "type": "number"
+      },
       "pages_deployments_checksum_failed_count": {
         "description": "Pages deployments checksum failed count",
         "type": "number"
