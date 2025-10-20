@@ -62,7 +62,7 @@ module EE
 
       # This always returns an object if running on GitLab.com
       def free
-        return unless ::Gitlab.com?
+        return unless ::Gitlab::Saas.feature_available?(:gitlab_com_subscriptions)
 
         ::Gitlab::SafeRequestStore.fetch(:plan_free) do
           # find_by allows us to find object (cheaply) against replica DB
