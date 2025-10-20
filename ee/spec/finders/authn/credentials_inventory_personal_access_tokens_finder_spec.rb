@@ -35,8 +35,10 @@ RSpec.describe Authn::CredentialsInventoryPersonalAccessTokensFinder, :enable_ad
 
         describe 'by revoked state' do
           where(:by_revoked_state, :expected_tokens) do
-            true  | [:revoked]
-            false | [:active, :expired]
+            true    | [:revoked]
+            'true'  | [:revoked]
+            false   | [:active, :expired]
+            'false' | [:active, :expired]
           end
 
           with_them do
