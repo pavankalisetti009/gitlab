@@ -5,9 +5,15 @@ module VirtualRegistries
     module Maven
       class Upstream < ApplicationRecord
         include Gitlab::SQL::Pattern
+        include Gitlab::Utils::StrongMemoize
 
         TEST_PATH = 'com/company/app/maven-metadata.xml'
         MAVEN_CENTRAL_URL = 'https://repo1.maven.org/maven2'
+
+        SAME_URL_AND_CREDENTIALS_ERROR = 'already has a remote upstream with the same url and credentials'
+        SAME_LOCAL_PROJECT_OR_GROUP_ERROR = 'already has a local upstream with the same target project or group'
+
+        ALLOWED_GLOBAL_ID_CLASSES = [::Project, ::Group].freeze
 
         belongs_to :group
         has_many :registry_upstreams,
@@ -22,24 +28,30 @@ module VirtualRegistries
         encrypts :username, :password
 
         validates :group, top_level_group: true, presence: true
-        validates :url,
-          addressable_url: {
-            allow_localhost: false,
-            allow_local_network: false,
-            dns_rebind_protection: true,
-            enforce_sanitization: true
-          },
-          presence: true
-        validates :username, presence: true, if: :password?
-        validates :password, presence: true, if: :username?
-        validates :url, length: { maximum: 255 }
+        validates :url, presence: true, length: { maximum: 255 }
         validates :username, :password, length: { maximum: 510 }
         validates :cache_validity_hours, numericality: { greater_than_or_equal_to: 0, only_integer: true }
         validates :metadata_cache_validity_hours, numericality: { greater_than: 0, only_integer: true }
         validates :name, presence: true, length: { maximum: 255 }
         validates :description, length: { maximum: 1024 }
-
         validate :credentials_uniqueness_for_group, if: -> { %i[url username password].any? { |f| changes.key?(f) } }
+
+        # remote validations
+        validates :url, addressable_url: {
+          allow_localhost: false,
+          allow_local_network: false,
+          dns_rebind_protection: true,
+          enforce_sanitization: true
+        }, if: :remote?
+        validates :username, presence: true, if: -> { remote? && password? }
+        validates :password, presence: true, if: -> { remote? && username? }
+
+        # local validations
+        with_options if: :local? do
+          validates :username, absence: true
+          validates :password, absence: true
+          validate :ensure_local_project_or_local_group
+        end
 
         before_validation :set_cache_validity_hours_for_maven_central, if: :url?, on: :create
         after_validation :reset_credentials, if: -> { persisted? && url_changed? }
@@ -57,6 +69,8 @@ module VirtualRegistries
         scope :search_by_name, ->(query) { fuzzy_search(query, [:name], use_minimum_char_limit: false) }
 
         def url_for(path)
+          return unless remote?
+
           full_url = File.join(url, path)
           Addressable::URI.parse(full_url).to_s
         end
@@ -74,6 +88,8 @@ module VirtualRegistries
         end
 
         def object_storage_key
+          return unless remote?
+
           hash = Digest::SHA2.hexdigest(SecureRandom.uuid)
           Gitlab::HashedPath.new(
             'virtual_registries',
@@ -96,6 +112,8 @@ module VirtualRegistries
         end
 
         def test
+          return { success: true } if local? # local upstreams can't be tested so they always pass the test
+
           relative_path = new_record? ? TEST_PATH : (default_cache_entries.pick(:relative_path) || TEST_PATH)
 
           response = Gitlab::HTTP.head(
@@ -111,6 +129,38 @@ module VirtualRegistries
           end
         rescue *::Gitlab::HTTP::HTTP_ERRORS => e
           { success: false, result: "Error: #{e.message}" }
+        end
+
+        def local_project
+          return unless local?
+          return unless global_id_url&.model_class == Project
+
+          GlobalID::Locator.locate(url)
+        end
+        strong_memoize_attr :local_project
+
+        def local_group
+          return unless local?
+          return unless global_id_url&.model_class == Group
+
+          GlobalID::Locator.locate(url)
+        end
+        strong_memoize_attr :local_group
+
+        def url=(value)
+          super
+
+          clear_memoization(:global_id_url)
+          clear_memoization(:local_project)
+          clear_memoization(:local_group)
+        end
+
+        def local?
+          url&.start_with?('gid://')
+        end
+
+        def remote?
+          !local?
         end
 
         private
@@ -137,8 +187,25 @@ module VirtualRegistries
             .where(url:)
             .none? { |u| u.username == username && Rack::Utils.secure_compare(u.password.to_s, password.to_s) }
 
-          errors.add(:group, 'already has an upstream with the same credentials')
+          errors.add(:group, remote? ? SAME_URL_AND_CREDENTIALS_ERROR : SAME_LOCAL_PROJECT_OR_GROUP_ERROR)
         end
+
+        def ensure_local_project_or_local_group
+          return errors.add(:url, 'is invalid') unless global_id_url
+
+          unless global_id_url.model_class.in?(ALLOWED_GLOBAL_ID_CLASSES)
+            return errors.add(:url, 'should point to a Project or Group')
+          end
+
+          return if global_id_url.model_class.exists?(global_id_url.model_id)
+
+          errors.add(:url, "should point to an existing #{global_id_url.model_class.name}")
+        end
+
+        def global_id_url
+          GlobalID.parse(url)
+        end
+        strong_memoize_attr :global_id_url
       end
     end
   end

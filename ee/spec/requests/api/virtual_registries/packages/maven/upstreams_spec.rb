@@ -416,7 +416,7 @@ RSpec.describe API::VirtualRegistries::Packages::Maven::Upstreams, :aggregate_fa
 
       it_behaves_like 'returning response status with message',
         status: :bad_request,
-        message: { 'group' => ['already has an upstream with the same credentials'] }
+        message: { 'group' => [::VirtualRegistries::Packages::Maven::Upstream::SAME_URL_AND_CREDENTIALS_ERROR] }
     end
   end
 
@@ -559,7 +559,7 @@ RSpec.describe API::VirtualRegistries::Packages::Maven::Upstreams, :aggregate_fa
 
       it_behaves_like 'returning response status with message',
         status: :bad_request,
-        message: { 'group' => ['already has an upstream with the same credentials'] }
+        message: { 'group' => [::VirtualRegistries::Packages::Maven::Upstream::SAME_URL_AND_CREDENTIALS_ERROR] }
     end
   end
 
