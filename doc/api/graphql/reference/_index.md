@@ -4715,7 +4715,7 @@ Input type: `CommitCreateInput`
 
 ### `Mutation.configureContainerScanning`
 
-Configure Container Scanning for a project by enabling Container Scanning in a new or modified
+Configure container scanning for a project by adding it to a new or modified
 `.gitlab-ci.yml` file in a new branch. The new branch and a URL to
 create a merge request are part of the response.
 
@@ -12259,7 +12259,7 @@ Input type: `SecurityTrainingUpdateInput`
 
 ### `Mutation.setContainerScanningForRegistry`
 
-Enable/disable Container Scanning on container registry for the given project.
+Enable/disable Container Scanning for Registry for the given project.
 
 Input type: `SetContainerScanningForRegistryInput`
 
@@ -12268,7 +12268,7 @@ Input type: `SetContainerScanningForRegistryInput`
 | Name | Type | Description |
 | ---- | ---- | ----------- |
 | <a id="mutationsetcontainerscanningforregistryclientmutationid"></a>`clientMutationId` | [`String`](#string) | A unique identifier for the client performing the mutation. |
-| <a id="mutationsetcontainerscanningforregistryenable"></a>`enable` | [`Boolean!`](#boolean) | Desired status for Container Scanning on container registry feature. |
+| <a id="mutationsetcontainerscanningforregistryenable"></a>`enable` | [`Boolean!`](#boolean) | Desired status for Container Scanning for Registry feature. |
 | <a id="mutationsetcontainerscanningforregistrynamespacepath"></a>`namespacePath` | [`ID!`](#id) | Full path of the namespace (project). |
 
 #### Fields
