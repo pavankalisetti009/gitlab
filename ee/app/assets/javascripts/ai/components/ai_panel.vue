@@ -184,6 +184,7 @@ export default {
     <navigation-rail
       :is-expanded="Boolean(currentTabComponent)"
       :active-tab="activeTab"
+      :show-suggestions-tab="false"
       @handleTabToggle="handleTabToggle"
     />
   </div>

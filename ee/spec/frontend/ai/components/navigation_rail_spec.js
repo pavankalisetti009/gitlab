@@ -11,9 +11,13 @@ jest.mock('~/behaviors/shortcuts/keybindings');
 describe('NavigationRail', () => {
   let wrapper;
 
-  const createComponent = ({ activeTab = 'chat', isExpanded = true } = {}) => {
+  const createComponent = ({
+    activeTab = 'chat',
+    isExpanded = true,
+    showSuggestionsTab = true,
+  } = {}) => {
     wrapper = shallowMountExtended(NavigationRail, {
-      propsData: { activeTab, isExpanded },
+      propsData: { activeTab, isExpanded, showSuggestionsTab },
       directives: {
         GlTooltip: createMockDirective('gl-tooltip'),
       },
@@ -59,5 +63,11 @@ describe('NavigationRail', () => {
     createComponent();
 
     expect(findChatToggle().attributes('aria-keyshortcuts')).toBeUndefined();
+  });
+
+  it('does not render suggestions tab when showSuggestionsTab is false', () => {
+    createComponent({ showSuggestionsTab: false });
+
+    expect(findSuggestionsToggle().exists()).toBe(false);
   });
 });
