@@ -22725,6 +22725,29 @@ The edge type for [`VulnerabilityStateTransitionType`](#vulnerabilitystatetransi
 | <a id="vulnerabilitystatetransitiontypeedgecursor"></a>`cursor` | [`String!`](#string) | A cursor for use in pagination. |
 | <a id="vulnerabilitystatetransitiontypeedgenode"></a>`node` | [`VulnerabilityStateTransitionType`](#vulnerabilitystatetransitiontype) | The item at the end of the edge. |
 
+#### `WebhookEventConnection`
+
+The connection type for [`WebhookEvent`](#webhookevent).
+
+##### Fields
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="webhookeventconnectionedges"></a>`edges` | [`[WebhookEventEdge]`](#webhookeventedge) | A list of edges. |
+| <a id="webhookeventconnectionnodes"></a>`nodes` | [`[WebhookEvent]`](#webhookevent) | A list of nodes. |
+| <a id="webhookeventconnectionpageinfo"></a>`pageInfo` | [`PageInfo!`](#pageinfo) | Information to aid in pagination. |
+
+#### `WebhookEventEdge`
+
+The edge type for [`WebhookEvent`](#webhookevent).
+
+##### Fields
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="webhookeventedgecursor"></a>`cursor` | [`String!`](#string) | A cursor for use in pagination. |
+| <a id="webhookeventedgenode"></a>`node` | [`WebhookEvent`](#webhookevent) | The item at the end of the edge. |
+
 #### `WorkItemClosingMergeRequestConnection`
 
 The connection type for [`WorkItemClosingMergeRequest`](#workitemclosingmergerequest).
@@ -32937,6 +32960,23 @@ Returns [`VulnerabilitySeveritiesCount`](#vulnerabilityseveritiescount).
 | <a id="groupvulnerabilityseveritiescountstate"></a>`state` | [`[VulnerabilityState!]`](#vulnerabilitystate) | Filter vulnerabilities by state. |
 | <a id="groupvulnerabilityseveritiescountvaliditycheck"></a>`validityCheck` {{< icon name="warning-solid" >}} | [`[VulnerabilityFindingTokenStatusState!]`](#vulnerabilityfindingtokenstatusstate) | **Introduced** in GitLab 18.5. **Status**: Experiment. Filter vulnerabilities by token status. |
 
+##### `Group.webhook`
+
+{{< details >}}
+**Introduced** in GitLab 18.5.
+**Status**: Experiment.
+{{< /details >}}
+
+A single group webhook.
+
+Returns [`GroupHook`](#grouphook).
+
+###### Arguments
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="groupwebhookid"></a>`id` | [`GroupHookID!`](#grouphookid) | ID of the group webhook. |
+
 ##### `Group.workItem`
 
 {{< details >}}
@@ -33257,6 +33297,77 @@ four standard [pagination arguments](#pagination-arguments):
 | <a id="groupdoraprojectswithissuesenabled"></a>`withIssuesEnabled` | [`Boolean`](#boolean) | Return only projects with issues enabled. |
 | <a id="groupdoraprojectswithmergerequestsenabled"></a>`withMergeRequestsEnabled` | [`Boolean`](#boolean) | Return only projects with merge requests enabled. |
 | <a id="groupdoraprojectswithnamespacedomainpages"></a>`withNamespaceDomainPages` | [`Boolean`](#boolean) | Return only projects that use the namespace domain for pages projects. |
+
+### `GroupHook`
+
+#### Fields
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="grouphookalertstatus"></a>`alertStatus` | [`WebhookAlertStatus!`](#webhookalertstatus) | Auto-disabling status of the webhook. |
+| <a id="grouphookbranchfilterstrategy"></a>`branchFilterStrategy` | [`WebhookBranchFilterStrategy!`](#webhookbranchfilterstrategy) | Strategy for filtering push events by branch name. |
+| <a id="grouphookconfidentialissuesevents"></a>`confidentialIssuesEvents` | [`Boolean!`](#boolean) | Whether the webhook is triggered on confidential issues events. |
+| <a id="grouphookconfidentialnoteevents"></a>`confidentialNoteEvents` | [`Boolean!`](#boolean) | Whether the webhook is triggered on confidential note events. |
+| <a id="grouphookcreatedat"></a>`createdAt` | [`Time!`](#time) | Timestamp of when the webhook was created. |
+| <a id="grouphookcustomheaders"></a>`customHeaders` | [`[WebhookCustomHeader!]`](#webhookcustomheader) | List of custom header names for the webhook. |
+| <a id="grouphookcustomwebhooktemplate"></a>`customWebhookTemplate` | [`String`](#string) | Custom payload template for the webhook request body. |
+| <a id="grouphookdeploymentevents"></a>`deploymentEvents` | [`Boolean!`](#boolean) | Whether the webhook is triggered on deployment events. |
+| <a id="grouphookdescription"></a>`description` | [`String`](#string) | Description of the webhook. |
+| <a id="grouphookdisableduntil"></a>`disabledUntil` | [`Time`](#time) | Timestamp when the webhook will be automatically re-enabled if temporarily disabled. |
+| <a id="grouphookemojievents"></a>`emojiEvents` | [`Boolean!`](#boolean) | Whether the webhook is triggered on emoji events. |
+| <a id="grouphookenablesslverification"></a>`enableSslVerification` | [`Boolean`](#boolean) | Whether SSL verification is done when triggering the webhook. |
+| <a id="grouphookfeatureflagevents"></a>`featureFlagEvents` | [`Boolean!`](#boolean) | Whether the webhook is triggered on feature flag events. |
+| <a id="grouphookid"></a>`id` | [`GroupHookID!`](#grouphookid) | ID of the webhook. |
+| <a id="grouphookissuesevents"></a>`issuesEvents` | [`Boolean!`](#boolean) | Whether the webhook is triggered on issues events. |
+| <a id="grouphookjobevents"></a>`jobEvents` | [`Boolean!`](#boolean) | Whether the webhook is triggered on job events. |
+| <a id="grouphookmemberevents"></a>`memberEvents` | [`Boolean!`](#boolean) | Whether the webhook is triggered on member events. |
+| <a id="grouphookmergerequestsevents"></a>`mergeRequestsEvents` | [`Boolean!`](#boolean) | Whether the webhook is triggered on merge request events. |
+| <a id="grouphookmilestoneevents"></a>`milestoneEvents` | [`Boolean!`](#boolean) | Whether the webhook is triggered on milestone events. |
+| <a id="grouphookname"></a>`name` | [`String`](#string) | Name of the webhook. |
+| <a id="grouphooknoteevents"></a>`noteEvents` | [`Boolean!`](#boolean) | Whether the webhook is triggered on note events. |
+| <a id="grouphookpipelineevents"></a>`pipelineEvents` | [`Boolean!`](#boolean) | Whether the webhook is triggered on pipeline events. |
+| <a id="grouphookprojectevents"></a>`projectEvents` | [`Boolean!`](#boolean) | Whether the webhook is triggered on project events. |
+| <a id="grouphookpushevents"></a>`pushEvents` | [`Boolean!`](#boolean) | Whether the webhook is triggered on push events. |
+| <a id="grouphookpusheventsbranchfilter"></a>`pushEventsBranchFilter` | [`String`](#string) | Trigger hook on push events for matching branches only. |
+| <a id="grouphookreleasesevents"></a>`releasesEvents` | [`Boolean!`](#boolean) | Whether the webhook is triggered on releases events. |
+| <a id="grouphookresourceaccesstokenevents"></a>`resourceAccessTokenEvents` | [`Boolean!`](#boolean) | Whether the webhook is triggered on resource access token events. |
+| <a id="grouphooksubgroupevents"></a>`subgroupEvents` | [`Boolean!`](#boolean) | Whether the webhook is triggered on subgroup events. |
+| <a id="grouphooktagpushevents"></a>`tagPushEvents` | [`Boolean!`](#boolean) | Whether the webhook is triggered on tag push events. |
+| <a id="grouphookurl"></a>`url` | [`String!`](#string) | URL of the webhook. |
+| <a id="grouphookurlvariables"></a>`urlVariables` | [`[WebhookUrlVariable!]`](#webhookurlvariable) | List of URL variable masks to hide sensitive portions of the webhook URL. |
+| <a id="grouphookvulnerabilityevents"></a>`vulnerabilityEvents` | [`Boolean!`](#boolean) | Whether the webhook is triggered on vulnerability events. |
+| <a id="grouphookwikipageevents"></a>`wikiPageEvents` | [`Boolean!`](#boolean) | Whether the webhook is triggered on wiki page events. |
+
+#### Fields with arguments
+
+##### `GroupHook.webhookEvent`
+
+A single webhook event.
+
+Returns [`WebhookEvent`](#webhookevent).
+
+###### Arguments
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="grouphookwebhookeventid"></a>`id` | [`WebHookLogID!`](#webhooklogid) | ID of the webhook event. |
+| <a id="grouphookwebhookeventtimestamprange"></a>`timestampRange` | [`TimestampRange`](#timestamprange) | Filter for webhook events within a range of timestamps. Defaults to events within the last seven days. |
+
+##### `GroupHook.webhookEvents`
+
+List of recent webhook events. This field can only be resolved for one webhook in any single request.
+
+Returns [`WebhookEventConnection`](#webhookeventconnection).
+
+This field returns a [connection](#connections). It accepts the
+four standard [pagination arguments](#pagination-arguments):
+`before: String`, `after: String`, `first: Int`, and `last: Int`.
+
+###### Arguments
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="grouphookwebhookeventstimestamprange"></a>`timestampRange` | [`TimestampRange`](#timestamprange) | Filter for webhook events within a range of timestamps. Defaults to events within the last seven days. |
 
 ### `GroupMember`
 
@@ -41703,6 +41814,23 @@ Returns [`VulnerabilitySeveritiesCount`](#vulnerabilityseveritiescount).
 | <a id="projectvulnerabilityseveritiescountstate"></a>`state` | [`[VulnerabilityState!]`](#vulnerabilitystate) | Filter vulnerabilities by state. |
 | <a id="projectvulnerabilityseveritiescountvaliditycheck"></a>`validityCheck` {{< icon name="warning-solid" >}} | [`[VulnerabilityFindingTokenStatusState!]`](#vulnerabilityfindingtokenstatusstate) | **Introduced** in GitLab 18.5. **Status**: Experiment. Filter vulnerabilities by token status. |
 
+##### `Project.webhook`
+
+{{< details >}}
+**Introduced** in GitLab 18.5.
+**Status**: Experiment.
+{{< /details >}}
+
+A single project webhook.
+
+Returns [`ProjectHook`](#projecthook).
+
+###### Arguments
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="projectwebhookid"></a>`id` | [`ProjectHookID!`](#projecthookid) | ID of the project webhook. |
+
 ##### `Project.workItemStateCounts`
 
 {{< details >}}
@@ -41949,6 +42077,74 @@ Represents the access level required by the user to access a project feature.
 | ---- | ---- | ----------- |
 | <a id="projectfeatureaccessintegervalue"></a>`integerValue` | [`Int`](#int) | Integer representation of access level. |
 | <a id="projectfeatureaccessstringvalue"></a>`stringValue` | [`ProjectFeatureAccessLevel`](#projectfeatureaccesslevel) | String representation of access level. |
+
+### `ProjectHook`
+
+#### Fields
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="projecthookalertstatus"></a>`alertStatus` | [`WebhookAlertStatus!`](#webhookalertstatus) | Auto-disabling status of the webhook. |
+| <a id="projecthookbranchfilterstrategy"></a>`branchFilterStrategy` | [`WebhookBranchFilterStrategy!`](#webhookbranchfilterstrategy) | Strategy for filtering push events by branch name. |
+| <a id="projecthookconfidentialissuesevents"></a>`confidentialIssuesEvents` | [`Boolean!`](#boolean) | Whether the webhook is triggered on confidential issues events. |
+| <a id="projecthookconfidentialnoteevents"></a>`confidentialNoteEvents` | [`Boolean!`](#boolean) | Whether the webhook is triggered on confidential note events. |
+| <a id="projecthookcreatedat"></a>`createdAt` | [`Time!`](#time) | Timestamp of when the webhook was created. |
+| <a id="projecthookcustomheaders"></a>`customHeaders` | [`[WebhookCustomHeader!]`](#webhookcustomheader) | List of custom header names for the webhook. |
+| <a id="projecthookcustomwebhooktemplate"></a>`customWebhookTemplate` | [`String`](#string) | Custom payload template for the webhook request body. |
+| <a id="projecthookdeploymentevents"></a>`deploymentEvents` | [`Boolean!`](#boolean) | Whether the webhook is triggered on deployment events. |
+| <a id="projecthookdescription"></a>`description` | [`String`](#string) | Description of the webhook. |
+| <a id="projecthookdisableduntil"></a>`disabledUntil` | [`Time`](#time) | Timestamp when the webhook will be automatically re-enabled if temporarily disabled. |
+| <a id="projecthookemojievents"></a>`emojiEvents` | [`Boolean!`](#boolean) | Whether the webhook is triggered on emoji events. |
+| <a id="projecthookenablesslverification"></a>`enableSslVerification` | [`Boolean`](#boolean) | Whether SSL verification is done when triggering the webhook. |
+| <a id="projecthookfeatureflagevents"></a>`featureFlagEvents` | [`Boolean!`](#boolean) | Whether the webhook is triggered on feature flag events. |
+| <a id="projecthookid"></a>`id` | [`ProjectHookID!`](#projecthookid) | ID of the webhook. |
+| <a id="projecthookissuesevents"></a>`issuesEvents` | [`Boolean!`](#boolean) | Whether the webhook is triggered on issues events. |
+| <a id="projecthookjobevents"></a>`jobEvents` | [`Boolean!`](#boolean) | Whether the webhook is triggered on job events. |
+| <a id="projecthookmergerequestsevents"></a>`mergeRequestsEvents` | [`Boolean!`](#boolean) | Whether the webhook is triggered on merge request events. |
+| <a id="projecthookmilestoneevents"></a>`milestoneEvents` | [`Boolean!`](#boolean) | Whether the webhook is triggered on milestone events. |
+| <a id="projecthookname"></a>`name` | [`String`](#string) | Name of the webhook. |
+| <a id="projecthooknoteevents"></a>`noteEvents` | [`Boolean!`](#boolean) | Whether the webhook is triggered on note events. |
+| <a id="projecthookpipelineevents"></a>`pipelineEvents` | [`Boolean!`](#boolean) | Whether the webhook is triggered on pipeline events. |
+| <a id="projecthookpushevents"></a>`pushEvents` | [`Boolean!`](#boolean) | Whether the webhook is triggered on push events. |
+| <a id="projecthookpusheventsbranchfilter"></a>`pushEventsBranchFilter` | [`String`](#string) | Trigger hook on push events for matching branches only. |
+| <a id="projecthookreleasesevents"></a>`releasesEvents` | [`Boolean!`](#boolean) | Whether the webhook is triggered on releases events. |
+| <a id="projecthookresourceaccesstokenevents"></a>`resourceAccessTokenEvents` | [`Boolean!`](#boolean) | Whether the webhook is triggered on resource access token events. |
+| <a id="projecthooktagpushevents"></a>`tagPushEvents` | [`Boolean!`](#boolean) | Whether the webhook is triggered on tag push events. |
+| <a id="projecthookurl"></a>`url` | [`String!`](#string) | URL of the webhook. |
+| <a id="projecthookurlvariables"></a>`urlVariables` | [`[WebhookUrlVariable!]`](#webhookurlvariable) | List of URL variable masks to hide sensitive portions of the webhook URL. |
+| <a id="projecthookvulnerabilityevents"></a>`vulnerabilityEvents` | [`Boolean!`](#boolean) | Whether the webhook is triggered on vulnerability events. |
+| <a id="projecthookwikipageevents"></a>`wikiPageEvents` | [`Boolean!`](#boolean) | Whether the webhook is triggered on wiki page events. |
+
+#### Fields with arguments
+
+##### `ProjectHook.webhookEvent`
+
+A single webhook event.
+
+Returns [`WebhookEvent`](#webhookevent).
+
+###### Arguments
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="projecthookwebhookeventid"></a>`id` | [`WebHookLogID!`](#webhooklogid) | ID of the webhook event. |
+| <a id="projecthookwebhookeventtimestamprange"></a>`timestampRange` | [`TimestampRange`](#timestamprange) | Filter for webhook events within a range of timestamps. Defaults to events within the last seven days. |
+
+##### `ProjectHook.webhookEvents`
+
+List of recent webhook events. This field can only be resolved for one webhook in any single request.
+
+Returns [`WebhookEventConnection`](#webhookeventconnection).
+
+This field returns a [connection](#connections). It accepts the
+four standard [pagination arguments](#pagination-arguments):
+`before: String`, `after: String`, `first: Int`, and `last: Int`.
+
+###### Arguments
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="projecthookwebhookeventstimestamprange"></a>`timestampRange` | [`TimestampRange`](#timestamprange) | Filter for webhook events within a range of timestamps. Defaults to events within the last seven days. |
 
 ### `ProjectMember`
 
@@ -46323,6 +46519,50 @@ Represents vulnerability letter grades with associated projects.
 | <a id="vulnerableprojectsbygradecount"></a>`count` | [`Int!`](#int) | Number of projects within the grade. |
 | <a id="vulnerableprojectsbygradegrade"></a>`grade` | [`VulnerabilityGrade!`](#vulnerabilitygrade) | Grade based on the highest severity vulnerability present. |
 | <a id="vulnerableprojectsbygradeprojects"></a>`projects` | [`ProjectConnection!`](#projectconnection) | Projects within the grade. (see [Connections](#connections)) |
+
+### `WebhookCustomHeader`
+
+#### Fields
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="webhookcustomheaderkey"></a>`key` | [`String!`](#string) | Custom header name. |
+
+### `WebhookEvent`
+
+#### Fields
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="webhookeventcreatedat"></a>`createdAt` | [`Time!`](#time) | Webhook request time. |
+| <a id="webhookeventexecutionduration"></a>`executionDuration` | [`Float`](#float) | Webhook execution duration in seconds. |
+| <a id="webhookeventid"></a>`id` | [`WebHookLogID!`](#webhooklogid) | Global ID of the webhook event. |
+| <a id="webhookeventinternalerrormessage"></a>`internalErrorMessage` | [`String`](#string) | Internal error message that occurred while executing the webhook. |
+| <a id="webhookeventoversize"></a>`oversize` | [`Boolean!`](#boolean) | Whether request data was too large to be executed. |
+| <a id="webhookeventrequestdata"></a>`requestData` | [`String`](#string) | Data sent in the webhook request. |
+| <a id="webhookeventrequestheaders"></a>`requestHeaders` | [`[WebhookEventHeaderType!]`](#webhookeventheadertype) | HTTP Headers used in the webhook request. |
+| <a id="webhookeventresponsebody"></a>`responseBody` | [`String`](#string) | Body of the webhook response. |
+| <a id="webhookeventresponseheaders"></a>`responseHeaders` | [`[WebhookEventHeaderType!]`](#webhookeventheadertype) | HTTP Headers from the webhook response. |
+| <a id="webhookeventresponsestatus"></a>`responseStatus` | [`String`](#string) | HTTP status of the webhook response. |
+| <a id="webhookeventtrigger"></a>`trigger` | [`String`](#string) | Trigger that caused webhook execution. |
+| <a id="webhookeventurl"></a>`url` | [`String`](#string) | URL used in webhook request. |
+
+### `WebhookEventHeaderType`
+
+#### Fields
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="webhookeventheadertypename"></a>`name` | [`String!`](#string) | HTTP response header name. |
+| <a id="webhookeventheadertypevalue"></a>`value` | [`String!`](#string) | HTTP response header value. |
+
+### `WebhookUrlVariable`
+
+#### Fields
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="webhookurlvariablekey"></a>`key` | [`String!`](#string) | URL variable mask that will appear in a masked webhook url in place of its sensitive portion. |
 
 ### `WikiPage`
 
@@ -51614,6 +51854,26 @@ The state of the vulnerability.
 | <a id="vulnerabilitystatedismissed"></a>`DISMISSED` | For details, see [vulnerability status values](https://docs.gitlab.com/user/application_security/vulnerabilities/#vulnerability-status-values). |
 | <a id="vulnerabilitystateresolved"></a>`RESOLVED` | For details, see [vulnerability status values](https://docs.gitlab.com/user/application_security/vulnerabilities/#vulnerability-status-values). |
 
+### `WebhookAlertStatus`
+
+Webhook auto-disabling alert status.
+
+| Value | Description |
+| ----- | ----------- |
+| <a id="webhookalertstatusdisabled"></a>`DISABLED` | Webhook has been permanently disabled and will not be automatically re-enabled. |
+| <a id="webhookalertstatusexecutable"></a>`EXECUTABLE` | Webhook is executable. |
+| <a id="webhookalertstatustemporarily_disabled"></a>`TEMPORARILY_DISABLED` | Webhook has been temporarily disabled and will be automatically re-enabled. |
+
+### `WebhookBranchFilterStrategy`
+
+Strategy for filtering push events by branch name.
+
+| Value | Description |
+| ----- | ----------- |
+| <a id="webhookbranchfilterstrategyall_branches"></a>`ALL_BRANCHES` | Receive push events from all branches. |
+| <a id="webhookbranchfilterstrategyregex"></a>`REGEX` | Receive push events from branches that match a regular expression (regex). |
+| <a id="webhookbranchfilterstrategywildcard"></a>`WILDCARD` | Receive push events from branches that match a wildcard pattern. |
+
 ### `WeightWildcardId`
 
 Weight ID wildcard values.
@@ -52542,6 +52802,12 @@ Represents a Google Cloud Compute region.
 
 Represents a Google Cloud Compute zone.
 
+### `GroupHookID`
+
+A `GroupHookID` is a global ID. It is encoded as a string.
+
+An example `GroupHookID` is: `"gid://gitlab/GroupHook/1"`.
+
 ### `GroupID`
 
 A `GroupID` is a global ID. It is encoded as a string.
@@ -52896,6 +53162,12 @@ An example `PathLockID` is: `"gid://gitlab/PathLock/1"`.
 
 String or integer.
 
+### `ProjectHookID`
+
+A `ProjectHookID` is a global ID. It is encoded as a string.
+
+An example `ProjectHookID` is: `"gid://gitlab/ProjectHook/1"`.
+
 ### `ProjectID`
 
 A `ProjectID` is a global ID. It is encoded as a string.
@@ -53123,6 +53395,12 @@ An example `VulnerabilitiesStateTransitionID` is: `"gid://gitlab/Vulnerabilities
 A `VulnerabilityID` is a global ID. It is encoded as a string.
 
 An example `VulnerabilityID` is: `"gid://gitlab/Vulnerability/1"`.
+
+### `WebHookLogID`
+
+A `WebHookLogID` is a global ID. It is encoded as a string.
+
+An example `WebHookLogID` is: `"gid://gitlab/WebHookLog/1"`.
 
 ### `WikiPageMetaID`
 
@@ -55773,6 +56051,17 @@ A time-frame defined as a closed inclusive range of two dates.
 | ---- | ---- | ----------- |
 | <a id="timeframeend"></a>`end` | [`Date!`](#date) | End of the range. |
 | <a id="timeframestart"></a>`start` | [`Date!`](#date) | Start of the range. |
+
+### `TimestampRange`
+
+A closed, inclusive range of two timestamps.
+
+#### Arguments
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="timestamprangeend"></a>`end` | [`Time!`](#time) | End of the range. |
+| <a id="timestamprangestart"></a>`start` | [`Time!`](#time) | Start of the range. |
 
 ### `TrackingEventInput`
 

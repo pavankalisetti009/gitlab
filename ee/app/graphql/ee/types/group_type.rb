@@ -477,6 +477,12 @@ module EE
           resolver: ::Resolvers::VirtualRegistries::Packages::Maven::UpstreamsResolver,
           experiment: { milestone: '18.6' }
 
+        field :webhook, ::Types::WebHooks::GroupHookType,
+          null: true,
+          resolver: ::Resolvers::WebHooks::GroupHooksResolver.single,
+          experiment: { milestone: '18.5' },
+          description: 'A single group webhook.'
+
         def epics_enabled
           object.licensed_feature_available?(:epics)
         end
