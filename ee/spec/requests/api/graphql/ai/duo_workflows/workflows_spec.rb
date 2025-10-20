@@ -104,6 +104,7 @@ RSpec.describe 'Querying Duo Workflows Workflows', feature_category: :agent_foun
         updatedAt,
         status,
         statusName,
+        statusGroup,
         agentPrivilegesNames,
         preApprovedAgentPrivilegesNames,
         mcpEnabled
@@ -225,6 +226,7 @@ RSpec.describe 'Querying Duo Workflows Workflows', feature_category: :agent_foun
                             end
           expect(returned_workflow['status']).to eq(expected_status)
           expect(returned_workflow['statusName']).to eq(matching_workflow.status_name.to_s)
+          expect(returned_workflow['statusGroup']).to eq(matching_workflow.status_group.to_s.upcase)
           expect(returned_workflow['agentPrivilegesNames']).to eq(["read_write_files"])
           expect(returned_workflow['preApprovedAgentPrivilegesNames']).to eq([])
           expect(returned_workflow['mcpEnabled']).to eq(matching_workflow.mcp_enabled?)
@@ -487,6 +489,40 @@ RSpec.describe 'Querying Duo Workflows Workflows', feature_category: :agent_foun
 
           returned_workflows.each do |returned_workflow|
             expect(returned_workflow['workflowDefinition']).to eq('software_development')
+          end
+        end
+      end
+
+      context 'with the search argument' do
+        let(:variables) { { search: 'soft devel' } }
+
+        it 'returns only workflows matching the seach criteria', :aggregate_failures do
+          post_graphql(query, current_user: current_user)
+
+          expect(response).to have_gitlab_http_status(:success)
+          expect(graphql_errors).to be_nil
+
+          expect(returned_workflows).not_to be_empty
+
+          returned_workflows.each do |returned_workflow|
+            expect(returned_workflow['workflowDefinition']).to eq('software_development')
+          end
+        end
+      end
+
+      context 'with the status_group argument' do
+        let(:variables) { { statusGroup: :ACTIVE } }
+
+        it 'returns only workflows with in that status group', :aggregate_failures do
+          post_graphql(query, current_user: current_user)
+
+          expect(response).to have_gitlab_http_status(:success)
+          expect(graphql_errors).to be_nil
+
+          expect(returned_workflows).not_to be_empty
+
+          returned_workflows.each do |returned_workflow|
+            expect(returned_workflow['statusGroup']).to eq('ACTIVE')
           end
         end
       end

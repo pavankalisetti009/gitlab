@@ -102,6 +102,14 @@ module Ai
         end
       end
 
+      def resolve_search(term)
+        query.fuzzy_search(term, [:workflow_definition, :goal])
+      end
+
+      def resolve_status_group(status_group)
+        query.in_status_group(status_group)
+      end
+
       private
 
       attr_accessor :query
