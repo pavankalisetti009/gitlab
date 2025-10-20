@@ -116,12 +116,11 @@ export default {
         </gl-button>
       </template>
     </page-heading>
-    <div class="top-area">
+    <div :class="{ 'top-area': isSelfHostedModelsTab }">
       <gl-tabs
         v-model="currentTabIndex"
         data-testid="self-hosted-duo-config-tabs"
         class="gl-flex gl-grow"
-        nav-class="gl-border-b-0"
       >
         <div v-for="tab in tabs" :key="tab.id">
           <gl-tab v-if="tab.show" :data-testid="`${tab.id}-tab`" @click="onTabClick(tab.id)">

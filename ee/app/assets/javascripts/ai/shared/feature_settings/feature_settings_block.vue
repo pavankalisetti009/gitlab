@@ -29,7 +29,7 @@ export default {
 };
 </script>
 <template>
-  <div class="gl-mt-5 gl-border-t-1 gl-border-subtle gl-pt-5 gl-border-t-solid">
+  <div class="gl-border-t-1 gl-border-subtle gl-pb-5 gl-pt-5 gl-border-t-solid">
     <settings-block :id="id" :title="title" :expanded="expanded" @toggle-expand="toggleExpanded">
       <template #description>
         <slot name="description"></slot>
