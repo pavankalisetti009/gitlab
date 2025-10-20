@@ -13,14 +13,14 @@ import createMockApollo from 'helpers/mock_apollo_helper';
 import onDemandScansQuery from 'ee/on_demand_scans/graphql/on_demand_scans.query.graphql';
 import { createRouter } from 'ee/on_demand_scans/router';
 import waitForPromises from 'helpers/wait_for_promises';
-import { scrollToElement } from '~/lib/utils/common_utils';
+import { scrollToElement } from '~/lib/utils/scroll_utils';
 import { getIdFromGraphQLId } from '~/graphql_shared/utils';
 import { BASE_TABS_TABLE_FIELDS, PIPELINES_POLL_INTERVAL } from 'ee/on_demand_scans/constants';
 import * as sharedGraphQLUtils from '~/graphql_shared/utils';
 import * as graphQlUtils from '~/ci/pipeline_details/graph/utils';
 import { PROJECT_ON_DEMAND_SCAN_COUNTS_ETAG_MOCK } from '../../mocks';
 
-jest.mock('~/lib/utils/common_utils');
+jest.mock('~/lib/utils/scroll_utils');
 
 Vue.use(VueApollo);
 

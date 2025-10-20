@@ -23,7 +23,7 @@ import {
 } from 'ee_jest/usage_quotas/code_suggestions/mock_data';
 import { extendedWrapper } from 'helpers/vue_test_utils_helper';
 import { ADD_ON_ERROR_DICTIONARY } from 'ee/usage_quotas/error_constants';
-import { scrollToElement } from '~/lib/utils/common_utils';
+import { scrollToElement } from '~/lib/utils/scroll_utils';
 import Tracking from '~/tracking';
 import AddOnBulkActionConfirmationModal from 'ee/usage_quotas/code_suggestions/components/add_on_bulk_action_confirmation_modal.vue';
 import { DUO_PRO, DUO_ENTERPRISE, DUO_AMAZON_Q } from 'ee/constants/duo';
@@ -37,13 +37,8 @@ import { PROMO_URL } from '~/constants';
 
 Vue.use(VueApollo);
 
-jest.mock('~/lib/utils/common_utils');
 jest.mock('~/sentry/sentry_browser_wrapper');
-jest.mock('~/lib/utils/common_utils', () => ({
-  convertObjectPropsToLowerCase: jest.requireActual('~/lib/utils/common_utils')
-    .convertObjectPropsToLowerCase,
-  scrollToElement: jest.fn(),
-}));
+jest.mock('~/lib/utils/scroll_utils');
 
 describe('Add On Eligible User List', () => {
   let wrapper;
