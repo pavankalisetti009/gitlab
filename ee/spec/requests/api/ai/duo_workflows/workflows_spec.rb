@@ -943,6 +943,25 @@ RSpec.describe API::Ai::DuoWorkflows::Workflows, :with_current_organization, fea
         end
       end
 
+      context 'when X-Gitlab-Client-Type header is provided' do
+        it 'includes x-gitlab-client-type header' do
+          get api(path, user), headers: workhorse_headers.merge('X-Gitlab-Client-Type': "node-websocket"),
+            params: { project_id: project.id }
+
+          expect(response).to have_gitlab_http_status(:ok)
+          expect(json_response['DuoWorkflow']['Headers']).to include(
+            'x-gitlab-client-type' => "node-websocket"
+          )
+        end
+
+        it 'does not include x-gitlab-client-type header when header is not provided' do
+          get api(path, user), headers: workhorse_headers, params: { project_id: project.id }
+
+          expect(response).to have_gitlab_http_status(:ok)
+          expect(json_response['DuoWorkflow']['Headers']['x-gitlab-client-type']).to be_nil
+        end
+      end
+
       context 'when namespace_id parameter is provided' do
         it 'includes x-gitlab-namespace-id header' do
           get api(path, user), headers: workhorse_headers, params: { namespace_id: group.id }

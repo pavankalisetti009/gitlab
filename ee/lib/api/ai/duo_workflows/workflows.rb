@@ -7,6 +7,8 @@ module API
         include PaginationParams
         include APIGuard
 
+        HEADERS_TO_FORWARD_AS_GRPC_METADATA = %w[X-Gitlab-Language-Server-Version X-Gitlab-Client-Type].freeze
+
         helpers ::API::Helpers::DuoWorkflowHelpers
 
         feature_category :agent_foundations
@@ -306,9 +308,10 @@ module API
                 grpc_headers['X-Gitlab-Namespace-Id'].presence ||
                 grpc_headers['x-gitlab-root-namespace-id']
 
-              if headers['X-Gitlab-Language-Server-Version'].present?
-                grpc_headers['x-gitlab-language-server-version'] =
-                  headers['X-Gitlab-Language-Server-Version']
+              HEADERS_TO_FORWARD_AS_GRPC_METADATA.each do |header|
+                header_value = headers[header]
+
+                grpc_headers[header.downcase] = header_value if header_value.present?
               end
 
               {
