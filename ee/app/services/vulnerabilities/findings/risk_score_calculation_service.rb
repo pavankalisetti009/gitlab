@@ -24,7 +24,7 @@ module Vulnerabilities
             {
               finding_id: finding.id,
               project_id: finding.project_id,
-              risk_score: finding.risk_score
+              risk_score: Vulnerabilities::RiskScore.from_finding(finding).score
             }
           end
 

@@ -833,6 +833,38 @@ RSpec.describe Vulnerabilities::Finding, feature_category: :vulnerability_manage
       end
     end
 
+    describe '.with_risk_score' do
+      let_it_be(:finding_with_risk_score) { create(:vulnerabilities_finding) }
+      let_it_be(:risk_score) do
+        create(:vulnerability_finding_risk_score, finding: finding_with_risk_score, risk_score: 0.5)
+      end
+
+      let_it_be(:finding_without_risk_score) { create(:vulnerabilities_finding) }
+
+      subject(:scope) { described_class.with_risk_score }
+
+      context 'when a risk_score exists' do
+        it 'returns the finding with its risk score' do
+          expect(scope.first.risk_score).to eq(0.5)
+        end
+      end
+
+      context 'when a risk score does not exist' do
+        it 'returns 0.0 by default' do
+          expect(scope.last.risk_score).to eq(0.0)
+        end
+      end
+
+      it 'avoids n+1 queries' do
+        control = ActiveRecord::QueryRecorder.new { scope.to_a }
+
+        additional_finding_with_risk_score = create(:vulnerabilities_finding)
+        create(:vulnerability_finding_risk_score, finding: additional_finding_with_risk_score, risk_score: 0.4)
+
+        expect { scope.to_a }.not_to exceed_query_limit(control)
+      end
+    end
+
     describe '#false_positive?' do
       let_it_be(:finding) { create(:vulnerabilities_finding) }
       let_it_be(:finding_with_fp) { create(:vulnerabilities_finding, vulnerability_flags: [create(:vulnerabilities_flag)]) }
@@ -1625,6 +1657,24 @@ RSpec.describe Vulnerabilities::Finding, feature_category: :vulnerability_manage
 
         it 'returns UNKNOWN by default' do
           expect(finding.token_status).to eq(::Security::TokenStatus::UNKNOWN)
+        end
+      end
+    end
+
+    describe '#risk_score' do
+      let_it_be_with_reload(:finding) { create(:vulnerabilities_finding) }
+
+      context 'when a risk score exists' do
+        let_it_be(:_risk_score) { create(:vulnerability_finding_risk_score, finding: finding, risk_score: 0.45) }
+
+        it 'returns the stored score' do
+          expect(finding.risk_score).to eq(0.45)
+        end
+      end
+
+      context 'when no risk score exists' do
+        it 'returns 0.0 by default' do
+          expect(finding.risk_score).to eq(0.0)
         end
       end
     end

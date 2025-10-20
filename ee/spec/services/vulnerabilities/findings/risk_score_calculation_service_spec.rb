@@ -43,7 +43,7 @@ RSpec.describe Vulnerabilities::Findings::RiskScoreCalculationService, feature_c
           {
             finding_id: finding.id,
             project_id: finding.project_id,
-            risk_score: finding.risk_score
+            risk_score: Vulnerabilities::RiskScore.from_finding(finding).score
           }
         end
 
@@ -111,7 +111,7 @@ RSpec.describe Vulnerabilities::Findings::RiskScoreCalculationService, feature_c
             {
               finding_id: finding.id,
               project_id: finding.project_id,
-              risk_score: finding.risk_score
+              risk_score: Vulnerabilities::RiskScore.from_finding(finding).score
             }
           end
 
