@@ -103,6 +103,17 @@ module Gitlab
           @subject ||= @certificate.subject.to_s
         end
 
+        def subject_dn
+          @certificate.subject.to_s(OpenSSL::X509::Name::RFC2253)
+        end
+        strong_memoize_attr :subject_dn
+
+        def reverse_subject_dn
+          reverse_subject = @certificate.subject.to_a.reverse
+          OpenSSL::X509::Name.new(reverse_subject).to_s(OpenSSL::X509::Name::RFC2253)
+        end
+        strong_memoize_attr :reverse_subject_dn
+
         # adapter.config.active_directory defaults to true even for non-AD providers
         # for legacy reasons. We check for opt-in for AD-specific cert behavior using the
         # smartcard_ad_cert_format config field
@@ -126,17 +137,43 @@ module Gitlab
           when 'rfc822_name'
             "X509:<RFC822>#{subject}"
           when 'issuer_and_subject'
-            "X509:<I>#{issuer_dn}<S>#{subject}"
+            issuer_and_subject
           when 'reverse_issuer_and_subject'
-            "X509:<I>#{reverse_issuer_dn}<S>#{subject}"
+            reverse_issuer_and_subject
+          when 'reverse_issuer_and_reverse_subject'
+            "X509:<I>#{reverse_issuer_dn}<S>#{reverse_subject_dn}"
           when 'subject'
-            "X509:<S>#{subject}"
+            subject_alt_security_id
           when 'issuer_and_serial_number'
             "X509:<I>#{issuer_dn}<SR>#{reverse_serial}"
           when 'reverse_issuer_and_serial_number'
             "X509:<I>#{reverse_issuer_dn}<SR>#{reverse_serial}"
           else
             raise _('Missing or invalid configuration field: :smartcard_ad_cert_format')
+          end
+        end
+
+        def issuer_and_subject
+          if Feature.enabled?(:smartcard_ad_formats_v2, :instance)
+            "X509:<I>#{issuer_dn}<S>#{subject_dn}"
+          else
+            "X509:<I>#{issuer_dn}<S>#{subject}"
+          end
+        end
+
+        def reverse_issuer_and_subject
+          if Feature.enabled?(:smartcard_ad_formats_v2, :instance)
+            "X509:<I>#{reverse_issuer_dn}<S>#{subject_dn}"
+          else
+            "X509:<I>#{reverse_issuer_dn}<S>#{subject}"
+          end
+        end
+
+        def subject_alt_security_id
+          if Feature.enabled?(:smartcard_ad_formats_v2, :instance)
+            "X509:<S>#{subject_dn}"
+          else
+            "X509:<S>#{subject}"
           end
         end
 
