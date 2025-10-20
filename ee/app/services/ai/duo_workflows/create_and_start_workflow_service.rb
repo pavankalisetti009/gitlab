@@ -96,7 +96,8 @@ module Ai
           workflow_service_token: workflow_service_token,
           use_service_account: workflow_context_generation_service.use_service_account?,
           source_branch: source_branch,
-          workflow_metadata: Gitlab::DuoWorkflow::Client.metadata(current_user).to_json
+          workflow_metadata: Gitlab::DuoWorkflow::Client.metadata(current_user).to_json,
+          duo_agent_platform_feature_setting: workflow_context_generation_service.duo_agent_platform_feature_setting
         }
       end
 
