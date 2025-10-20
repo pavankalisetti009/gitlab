@@ -52,6 +52,95 @@ RSpec.describe Gitlab::RackAttack, :aggregate_failures, feature_category: :rate_
       expect(fake_rack_attack).to have_received(:throttled_responder=).with(an_instance_of(Proc))
     end
 
+    describe 'throttled_responder' do
+      let(:request) { instance_double(Rack::Request, env: env) }
+      let(:env) do
+        {
+          'rack.attack.matched' => 'throttle_unauthenticated',
+          'rack.attack.match_data' => { some: 'data' }
+        }
+      end
+
+      let(:responder) do
+        captured_proc = nil
+        allow(fake_rack_attack).to receive(:throttled_responder=) do |proc|
+          captured_proc = proc
+        end
+        described_class.configure(fake_rack_attack)
+        captured_proc
+      end
+
+      context 'when RequestThrottleData.from_rack_attack returns valid data' do
+        let(:throttle_data) { instance_double(described_class::RequestThrottleData) }
+        let(:headers) do
+          {
+            'RateLimit-Name' => 'throttle_unauthenticated',
+            'RateLimit-Limit' => '60',
+            'Retry-After' => '1830'
+          }
+        end
+
+        before do
+          allow(described_class::RequestThrottleData).to receive(:from_rack_attack)
+            .with('throttle_unauthenticated', { some: 'data' })
+            .and_return(throttle_data)
+          allow(throttle_data).to receive(:throttled_response_headers).and_return(headers)
+        end
+
+        it 'returns 429 status with rate limit headers' do
+          status, response_headers, body = responder.call(request)
+
+          expect(status).to eq(429)
+          expect(response_headers).to include(headers)
+          expect(response_headers['Content-Type']).to eq('text/plain')
+          expect(body).to eq([Gitlab::Throttle.rate_limiting_response_text])
+        end
+      end
+
+      context 'when RequestThrottleData.from_rack_attack returns nil' do
+        before do
+          allow(described_class::RequestThrottleData).to receive(:from_rack_attack)
+            .with('throttle_unauthenticated', { some: 'data' })
+            .and_return(nil)
+        end
+
+        it 'returns 429 status without rate limit headers' do
+          status, response_headers, body = responder.call(request)
+
+          expect(status).to eq(429)
+          expect(response_headers).to eq({ 'Content-Type' => 'text/plain' })
+          expect(response_headers).not_to have_key('RateLimit-Name')
+          expect(response_headers).not_to have_key('Retry-After')
+          expect(body).to eq([Gitlab::Throttle.rate_limiting_response_text])
+        end
+      end
+
+      context 'when feature rate_limiting_headers_for_unthrottled_requests is disabled' do
+        let(:headers) do
+          {
+            'RateLimit-Name' => 'throttle_unauthenticated',
+            'RateLimit-Limit' => '60',
+            'Retry-After' => '1830'
+          }
+        end
+
+        before do
+          stub_feature_flags(rate_limiting_headers_for_unthrottled_requests: false)
+
+          allow(described_class).to receive(:throttled_response_headers).and_return(headers)
+        end
+
+        it 'returns 429 status with rate limit headers' do
+          status, response_headers, body = responder.call(request)
+
+          expect(status).to eq(429)
+          expect(response_headers).to include(headers)
+          expect(response_headers['Content-Type']).to eq('text/plain')
+          expect(body).to eq([Gitlab::Throttle.rate_limiting_response_text])
+        end
+      end
+    end
+
     it 'configures the safelist' do
       described_class.configure(fake_rack_attack)
 
@@ -119,8 +208,174 @@ RSpec.describe Gitlab::RackAttack, :aggregate_failures, feature_category: :rate_
     end
   end
 
-  describe '.throttled_response_headers' do
-    where(:matched, :match_data, :headers) do
+  describe 'RequestThrottleData' do
+    let(:throttle_data) do
+      described_class::RequestThrottleData.new(
+        name: 'throttle_unauthenticated',
+        period: 3600,
+        limit: 3600,
+        observed: 3700,
+        now: Time.utc(2021, 1, 5, 10, 29, 30).to_i
+      )
+    end
+
+    describe '#rounded_limit' do
+      it 'normalizes limit to 60-second window' do
+        expect(throttle_data.rounded_limit).to eq(60)
+      end
+
+      context 'with different periods' do
+        it 'rounds up correctly for 120-second period' do
+          data = described_class::RequestThrottleData.new(
+            name: 'test',
+            period: 120,
+            limit: 100,
+            observed: 0,
+            now: Time.now.to_i
+          )
+          expect(data.rounded_limit).to eq(50)
+        end
+
+        it 'rounds up correctly for 15-second period' do
+          data = described_class::RequestThrottleData.new(
+            name: 'test',
+            period: 15,
+            limit: 10,
+            observed: 0,
+            now: Time.now.to_i
+          )
+          expect(data.rounded_limit).to eq(40)
+        end
+      end
+    end
+
+    describe '#remaining' do
+      it 'calculates remaining quota when under limit' do
+        data = described_class::RequestThrottleData.new(
+          name: 'test',
+          period: 60,
+          limit: 100,
+          observed: 30,
+          now: Time.now.to_i
+        )
+        expect(data.remaining).to eq(70)
+      end
+
+      it 'returns 0 when at limit' do
+        data = described_class::RequestThrottleData.new(
+          name: 'test',
+          period: 60,
+          limit: 100,
+          observed: 100,
+          now: Time.now.to_i
+        )
+        expect(data.remaining).to eq(0)
+      end
+
+      it 'returns 0 when over limit' do
+        expect(throttle_data.remaining).to eq(0)
+      end
+    end
+
+    describe '#retry_after' do
+      it 'calculates seconds until reset' do
+        expect(throttle_data.retry_after).to eq(1830) # 30 minutes 30 seconds
+      end
+
+      it 'returns full period at start of window' do
+        data = described_class::RequestThrottleData.new(
+          name: 'test',
+          period: 3600,
+          limit: 100,
+          observed: 50,
+          now: Time.utc(2021, 1, 5, 10, 0, 0).to_i
+        )
+        expect(data.retry_after).to eq(3600)
+      end
+
+      it 'returns 1 second at end of window' do
+        data = described_class::RequestThrottleData.new(
+          name: 'test',
+          period: 3600,
+          limit: 100,
+          observed: 50,
+          now: Time.utc(2021, 1, 5, 10, 59, 59).to_i
+        )
+        expect(data.retry_after).to eq(1)
+      end
+    end
+
+    describe '#reset_time' do
+      it 'calculates correct reset time' do
+        expect(throttle_data.reset_time).to eq(Time.utc(2021, 1, 5, 11, 0, 0))
+      end
+    end
+
+    describe '.from_rack_attack' do
+      let(:match_data) do
+        {
+          discriminator: '127.0.0.1',
+          count: 3700,
+          period: 1.hour,
+          limit: 3600,
+          epoch_time: Time.utc(2021, 1, 5, 10, 29, 30).to_i
+        }
+      end
+
+      it 'creates ThrottleRequestData from Rack::Attack data' do
+        data = described_class::RequestThrottleData.from_rack_attack('throttle_unauthenticated', match_data)
+
+        expect(data.name).to eq('throttle_unauthenticated')
+        expect(data.period).to eq(3600)
+        expect(data.limit).to eq(3600)
+        expect(data.observed).to eq(3700)
+        expect(data.now).to eq(Time.utc(2021, 1, 5, 10, 29, 30).to_i)
+      end
+    end
+
+    describe '#common_response_headers' do
+      it 'generates all common headers' do
+        headers = throttle_data.common_response_headers
+
+        expect(headers).to eq({
+          'RateLimit-Name' => 'throttle_unauthenticated',
+          'RateLimit-Limit' => '60',
+          'RateLimit-Observed' => '3700',
+          'RateLimit-Remaining' => '0',
+          'RateLimit-Reset' => '1609844400'
+        })
+      end
+
+      it 'does not include Retry-After' do
+        headers = throttle_data.common_response_headers
+        expect(headers).not_to have_key('Retry-After')
+      end
+
+      it 'does not include RateLimit-ResetTime' do
+        headers = throttle_data.common_response_headers
+        expect(headers).not_to have_key('RateLimit-ResetTime')
+      end
+    end
+
+    describe '#throttled_response_headers' do
+      it 'includes all headers including Retry-After' do
+        headers = throttle_data.throttled_response_headers
+
+        expect(headers).to eq({
+          'RateLimit-Name' => 'throttle_unauthenticated',
+          'RateLimit-Limit' => '60',
+          'RateLimit-Observed' => '3700',
+          'RateLimit-Remaining' => '0',
+          'RateLimit-Reset' => '1609844400',
+          'RateLimit-ResetTime' => 'Tue, 05 Jan 2021 11:00:00 GMT',
+          'Retry-After' => '1830'
+        })
+      end
+    end
+  end
+
+  describe '.throttled_response_headers (deprecated)' do
+    where(:matched, :match_data, :expected_headers) do
       [
         [
           'throttle_unauthenticated',
@@ -316,8 +571,9 @@ RSpec.describe Gitlab::RackAttack, :aggregate_failures, feature_category: :rate_
     end
 
     with_them do
-      it 'generates accurate throttled headers' do
-        expect(described_class.throttled_response_headers(matched, match_data)).to eql(headers)
+      it 'generates accurate common rate limit headers' do
+        headers = Gitlab::RackAttack.throttled_response_headers(matched, match_data)
+        expect(headers).to include(expected_headers)
       end
     end
   end

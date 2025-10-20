@@ -13,10 +13,19 @@ module Gitlab
 
       # This is Rack::Attack::DEFAULT_THROTTLED_RESPONSE, modified to allow a custom response
       rack_attack.throttled_responder = ->(request) do
-        throttled_headers = Gitlab::RackAttack.throttled_response_headers(
-          request.env['rack.attack.matched'], request.env['rack.attack.match_data']
-        )
-        [429, { 'Content-Type' => 'text/plain' }.merge(throttled_headers), [Gitlab::Throttle.rate_limiting_response_text]]
+        if Feature.enabled?(:rate_limiting_headers_for_unthrottled_requests, Feature.current_request)
+          throttled_headers = Gitlab::RackAttack::RequestThrottleData.from_rack_attack(
+            request.env['rack.attack.matched'], request.env['rack.attack.match_data']
+          )&.throttled_response_headers
+          [429, { 'Content-Type' => 'text/plain' }.merge(throttled_headers || {}), [Gitlab::Throttle.rate_limiting_response_text]]
+        else
+          # We retain the old code path with the intention to remove it along with the deprecated
+          # method when we cleanup the feature flag.
+          throttled_headers = Gitlab::RackAttack.throttled_response_headers(
+            request.env['rack.attack.matched'], request.env['rack.attack.match_data']
+          )
+          [429, { 'Content-Type' => 'text/plain' }.merge(throttled_headers), [Gitlab::Throttle.rate_limiting_response_text]]
+        end
       end
 
       rack_attack.cache.store = Gitlab::RackAttack::Store.new
@@ -48,6 +57,7 @@ module Gitlab
     #
     #   - RateLimit-ResetTime: the point of time that the request quota is reset, in HTTP date format
     #
+    # @deprecated Use Gitlab::RackAttack::RequestThrottleData#throttled_response_headers instead
     def self.throttled_response_headers(matched, match_data)
       # Match data example:
       # {:discriminator=>"127.0.0.1", :count=>12, :period=>60 seconds, :limit=>1, :epoch_time=>1609833930}
@@ -68,6 +78,96 @@ module Gitlab
         'RateLimit-ResetTime' => reset_time.httpdate,
         'Retry-After' => retry_after.to_s
       }
+    end
+
+    # Struct to represent throttle information for a request. This is typically populated from RackAttack data.
+    RequestThrottleData = Struct.new(:name, :period, :limit, :observed, :now) do
+      # The total request quota associated to the client in 60 seconds.
+      def rounded_limit
+        (limit.to_f * 1.minute / period).ceil
+      end
+
+      # The remaining quota within the time window (until reset)
+      def remaining
+        (limit > observed ? limit - observed : 0)
+      end
+
+      # The remaining seconds until the window resets
+      def retry_after
+        period - (now % period)
+      end
+
+      # The time when the window resets
+      def reset_time
+        Time.at(now + retry_after) # rubocop:disable Rails/TimeZone -- Unix epoch based calculation
+      end
+
+      # Populate the struct using data from RackAttack annotations
+      # Note: This may return nil if the given arguments don't match expectations
+      def self.from_rack_attack(name, data)
+        # Match data example:
+        # {:discriminator=>"127.0.0.1", :count=>12, :period=>60 seconds, :limit=>1, :epoch_time=>1609833930}
+        # Source: https://github.com/rack/rack-attack/blob/v6.3.0/lib/rack/attack/throttle.rb#L33
+
+        return unless name
+        return unless %i[count epoch_time period limit].all? { |key| data.key?(key) }
+
+        new(
+          name: name.to_s,
+          observed: data[:count].to_i,
+          now: data[:epoch_time].to_i,
+          period: data[:period].to_i,
+          limit: data[:limit].to_i
+        )
+      end
+
+      # Return common response headers for all requests, whether throttled or not
+      #
+      # Rate Limit HTTP headers are not standardized anywhere. This is the latest draft submitted to IETF:
+      # https://github.com/ietf-wg-httpapi/ratelimit-headers/blob/main/draft-ietf-httpapi-ratelimit-headers.md
+      #
+      # This method implement the most viable parts of the headers.
+      # Those headers will be sent back to the client when it gets throttled.
+      #
+      #   - RateLimit-Limit: indicates the request quota associated to the client in 60 seconds.
+      #     The time window for the quota here is supposed to be mirrored to throttle_*_period_in_seconds application settings.
+      #     However, our HAProxy as well as some ecosystem libraries are using a fixed 60-second window.
+      #     Therefore, the returned limit is approximately rounded up to fit into that window.
+      #
+      #   - RateLimit-Observed: indicates the current request amount associated to the client within the time window.
+      #
+      #   - RateLimit-Remaining: indicates the remaining quota within the time window.
+      #     It is the result of RateLimit-Limit - RateLimit-Observed
+      #
+      #   - RateLimit-Reset: the point of time that the request quota is reset, in Unix time
+      #
+      def common_response_headers
+        {
+          'RateLimit-Name' => name.to_s,
+          'RateLimit-Limit' => rounded_limit.to_s,
+          'RateLimit-Observed' => observed.to_i.to_s,
+          'RateLimit-Remaining' => remaining.to_i.to_s,
+          'RateLimit-Reset' => reset_time.to_i.to_s
+        }
+      end
+
+      # When a request is throttled, we add below response headers in addition to headers
+      # from .common_response_headers.
+      #
+      #   - Retry-After: the remaining duration in seconds until the quota is reset.
+      #     This is a standardized HTTP header: https://www.rfc-editor.org/rfc/rfc7231#page-69
+      #
+      #   - RateLimit-ResetTime: the point of time that the request quota is reset, in HTTP date format
+      #
+      def throttled_response_headers
+        # For a throttled request, we additionally indicate when it can be retried the earliest
+        common_response_headers.merge(
+          {
+            'Retry-After' => retry_after.to_s,
+            'RateLimit-ResetTime' => reset_time.httpdate
+          }
+        )
+      end
     end
 
     def self.configure_user_allowlist
