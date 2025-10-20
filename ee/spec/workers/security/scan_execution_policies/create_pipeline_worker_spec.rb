@@ -129,7 +129,7 @@ RSpec.describe Security::ScanExecutionPolicies::CreatePipelineWorker, feature_ca
           expect(::Gitlab::AppJsonLogger).to receive(:warn).with({
             'class' => 'Security::ScanExecutionPolicies::CreatePipelineWorker',
             'security_orchestration_policy_configuration_id' => security_orchestration_policy_configuration.id,
-            'user_id' => current_user.id,
+            Labkit::Fields::GL_USER_ID => current_user.id,
             'message' => 'message'
           })
           run_worker
