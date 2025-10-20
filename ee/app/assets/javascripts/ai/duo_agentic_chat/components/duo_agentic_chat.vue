@@ -748,6 +748,7 @@ export default {
       :with-feedback="false"
       :show-header="true"
       :show-studio-header="isEmbedded"
+      :is-embedded="isEmbedded"
       :session-id="workflowId"
       badge-type="beta"
       :dimensions="dimensions"
