@@ -80,6 +80,7 @@ export default async (el, dashboardType) => {
         './components/shared/group_security_dashboard_new.vue'
       );
       provide.securityVulnerabilitiesPath = groupSecurityVulnerabilitiesPath;
+      provide.fullPath = groupFullPath;
       component = GroupSecurityDashboardNew;
     } else {
       component = SecurityDashboard;
@@ -103,6 +104,7 @@ export default async (el, dashboardType) => {
       component = ReportNotConfiguredProject;
     } else if (isProjectSecurityDashboardNewEnabled && hasAccessAdvancedVulnerabilityManagement) {
       provide.securityVulnerabilitiesPath = projectSecurityVulnerabilitiesPath;
+      provide.fullPath = projectFullPath;
       const { default: ProjectSecurityDashboardNew } = await import(
         './components/shared/project_security_dashboard_new.vue'
       );
