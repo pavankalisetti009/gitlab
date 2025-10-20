@@ -77,6 +77,7 @@ describe('AiCatalogFlowsDuplicate', () => {
         description: mockFlow.description,
         steps: mapSteps(mockFlow.latestVersion.steps),
         public: false,
+        release: true,
       };
 
       expect(findForm().props('initialValues')).toEqual(expectedInitialValues);
@@ -91,6 +92,7 @@ describe('AiCatalogFlowsDuplicate', () => {
       projectId: project.id,
       steps: mapSteps(mockFlow.latestVersion.steps),
       public: true,
+      release: true,
     };
 
     const submitForm = () => findForm().vm.$emit('submit', formValues);
