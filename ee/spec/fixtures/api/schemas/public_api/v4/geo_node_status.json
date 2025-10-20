@@ -116,6 +116,18 @@
     "package_files_verification_total_count",
     "package_files_verified_count",
     "package_files_verified_in_percentage",
+    "packages_nuget_symbols_count",
+    "packages_nuget_symbols_checksum_total_count",
+    "packages_nuget_symbols_checksummed_count",
+    "packages_nuget_symbols_checksum_failed_count",
+    "packages_nuget_symbols_synced_count",
+    "packages_nuget_symbols_failed_count",
+    "packages_nuget_symbols_registry_count",
+    "packages_nuget_symbols_verification_total_count",
+    "packages_nuget_symbols_verified_count",
+    "packages_nuget_symbols_verification_failed_count",
+    "packages_nuget_symbols_synced_in_percentage",
+    "packages_nuget_symbols_verified_in_percentage",
     "pages_deployments_count",
     "pages_deployments_checksum_failed_count",
     "pages_deployments_checksum_total_count",
@@ -851,6 +863,72 @@
       ]
     },
     "package_files_verified_in_percentage": {
+      "type": "string"
+    },
+    "packages_nuget_symbols_count": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "packages_nuget_symbols_checksummed_count": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "packages_nuget_symbols_checksum_failed_count": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "packages_nuget_symbols_checksum_total_count": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "packages_nuget_symbols_registry_count": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "packages_nuget_symbols_failed_count": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "packages_nuget_symbols_synced_count": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "packages_nuget_symbols_synced_in_percentage": {
+      "type": "string"
+    },
+    "packages_nuget_symbols_verification_failed_count": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "packages_nuget_symbols_verification_total_count": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "packages_nuget_symbols_verified_count": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "packages_nuget_symbols_verified_in_percentage": {
       "type": "string"
     },
     "pages_deployments_count": {
