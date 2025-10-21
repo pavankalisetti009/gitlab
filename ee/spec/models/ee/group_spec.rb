@@ -987,6 +987,14 @@ RSpec.describe Group, feature_category: :groups_and_projects do
       it 'returns false when email format is invalid' do
         expect(group.owner_of_email?('invalid_email_format')).to eq(false)
       end
+
+      it 'returns false when email format is invalid with spaces' do
+        expect(group.owner_of_email?('invalid email format')).to eq(false)
+      end
+
+      it 'returns false when email is nil' do
+        expect(group.owner_of_email?(nil)).to eq(false)
+      end
     end
 
     context 'when domain_verification feature is not licensed' do

@@ -40,8 +40,6 @@ module EE
         return if params[:skip_confirmation] # Explicit skip confirmation passed as param
         return unless provider_or_service_account_allowed_to_skip_confirmation?
 
-        return unless params[:email] && ValidateEmail.valid?(params[:email])
-
         params[:skip_confirmation] = true if group&.owner_of_email?(params[:email])
       end
 
