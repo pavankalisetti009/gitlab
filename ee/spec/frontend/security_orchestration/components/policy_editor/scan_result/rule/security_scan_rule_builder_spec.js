@@ -11,6 +11,7 @@ import AgeFilter from 'ee/security_orchestration/components/policy_editor/scan_r
 import AttributeFilters from 'ee/security_orchestration/components/policy_editor/scan_result/rule/scan_filters/attribute_filters.vue';
 import ScanTypeSelect from 'ee/security_orchestration/components/policy_editor/scan_result/rule/scan_type_select.vue';
 import ScanFilterSelector from 'ee/security_orchestration/components/policy_editor/scan_filter_selector.vue';
+import KevFilter from 'ee/security_orchestration/components/policy_editor/scan_result/rule/scan_filters/kev_filter.vue';
 import { NAMESPACE_TYPES } from 'ee/security_orchestration/constants';
 import { SEVERITY_LEVELS } from 'ee/security_dashboard/constants';
 import {
@@ -88,6 +89,7 @@ describe('SecurityScanRuleBuilder', () => {
   const findScanTypeSelect = () => wrapper.findComponent(ScanTypeSelect);
   const findAgeFilter = () => wrapper.findComponent(AgeFilter);
   const findBranchExceptionSelector = () => wrapper.findComponent(BranchExceptionSelector);
+  const findKevFilter = () => wrapper.findComponent(KevFilter);
 
   beforeEach(() => {
     jest
@@ -517,5 +519,49 @@ describe('SecurityScanRuleBuilder', () => {
     findScanTypeSelect().vm.$emit('select', SCAN_FINDING);
 
     expect(wrapper.emitted('set-scan-type')).toEqual([[getDefaultRule(SCAN_FINDING)]]);
+  });
+
+  describe('kev filter', () => {
+    it('does not render kev filter with feature flag disabled', () => {
+      factory();
+      expect(findKevFilter().exists()).toBe(false);
+    });
+
+    it('renders kev filter with feature flag enabled', () => {
+      factory({}, { glFeatures: { securityPoliciesKevFilter: true } });
+
+      expect(findKevFilter().exists()).toBe(true);
+      expect(findKevFilter().props('selected')).toEqual(false);
+    });
+
+    it('enables kev filter', () => {
+      factory({}, { glFeatures: { securityPoliciesKevFilter: true } });
+      expect(findKevFilter().props('selected')).toEqual(false);
+
+      findKevFilter().vm.$emit('select', true);
+
+      expect(wrapper.emitted('changed')).toEqual([
+        [
+          {
+            ...securityScanBuildRule(),
+            vulnerabilities: { vulnerability_attributes: { known_exploited: true } },
+          },
+        ],
+      ]);
+    });
+
+    it('renders kev filter selected', () => {
+      factory(
+        {
+          initRule: {
+            ...securityScanBuildRule(),
+            vulnerabilities: { vulnerability_attributes: { known_exploited: true } },
+          },
+        },
+        { glFeatures: { securityPoliciesKevFilter: true } },
+      );
+
+      expect(findKevFilter().props('selected')).toBe(true);
+    });
   });
 });
