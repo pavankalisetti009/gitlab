@@ -167,6 +167,14 @@ FactoryBot.define do
       end
     end
 
+    trait :with_invalid_cyclonedx_report do
+      status { :success }
+
+      after(:build) do |pipeline, evaluator|
+        pipeline.builds << build(:ee_ci_build, :with_invalid_cyclonedx_report, pipeline: pipeline, project: pipeline.project)
+      end
+    end
+
     trait :with_cyclonedx_container_scanning do
       status { :success }
 

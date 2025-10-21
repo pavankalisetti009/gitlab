@@ -33,7 +33,7 @@ module Dependencies
         end
 
         def merged_report
-          ::Sbom::MergeReportsService.new(pipeline.sbom_reports.reports).execute
+          ::Sbom::MergeReportsService.new(pipeline.sbom_reports.valid_reports).execute
         end
 
         def record_failed_status(errors)
