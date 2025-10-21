@@ -1691,6 +1691,51 @@ RSpec.describe QuickActions::InterpretService, feature_category: :team_planning 
     end
 
     it_behaves_like 'quick actions that change work item type ee'
+
+    context 'with scope_validator' do
+      let(:scope_validator) { instance_double(Gitlab::Auth::ScopeValidator) }
+      let(:service) do
+        described_class.new(container: project, current_user: current_user, params: { scope_validator: scope_validator })
+      end
+
+      context 'when permit_quick_actions? is true' do
+        let(:scope_validator) { instance_double(Gitlab::Auth::ScopeValidator, permit_quick_actions?: true) }
+
+        it 'allows quick actions' do
+          expect do
+            service.execute('/label ~bug', issue)
+          end.not_to raise_error
+        end
+      end
+
+      context 'when permit_quick_actions? is false' do
+        let(:scope_validator) { instance_double(Gitlab::Auth::ScopeValidator, permit_quick_actions?: false) }
+
+        it 'raises QuickActionsNotAllowedError if quick actions are used' do
+          expect do
+            service.execute('/label ~bug', issue)
+          end.to raise_error(
+            QuickActions::InterpretService::QuickActionsNotAllowedError,
+            'Quick actions cannot be used with AI workflows.'
+          )
+        end
+
+        it 'does not raise if no quick actions are present' do
+          expect do
+            service.execute('Just a regular comment', issue)
+          end.not_to raise_error
+        end
+
+        it 'raises if multiple quick actions are used' do
+          expect do
+            service.execute("/close\n/label ~bug", issue)
+          end.to raise_error(
+            QuickActions::InterpretService::QuickActionsNotAllowedError,
+            'Quick actions cannot be used with AI workflows.'
+          )
+        end
+      end
+    end
   end
 
   describe '#explain' do

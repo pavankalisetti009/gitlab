@@ -699,6 +699,16 @@ RSpec.describe API::Issues, :mailer, :aggregate_failures, feature_category: :tea
     it_behaves_like 'with epic parameter' do
       let(:request) { post api("/projects/#{target_project.id}/issues", user), params: params }
     end
+
+    context 'when authenticated with a token that has the ai_workflows scope' do
+      it_behaves_like 'forbids quick actions for ai_workflows scope' do
+        let(:method) { :post }
+        let(:url) { "/projects/#{project.id}/issues" }
+        let(:field) { :description }
+        let(:params) { { title: 'My issue' } }
+        let(:success_status) { :created }
+      end
+    end
   end
 
   describe 'PUT /projects/:id/issues/:issue_iid to update weight' do
@@ -757,6 +767,15 @@ RSpec.describe API::Issues, :mailer, :aggregate_failures, feature_category: :tea
         expect(response).to have_gitlab_http_status(:ok)
         expect(json_response['weight']).to be_nil
         expect(issue.reload.read_attribute(:weight)).to be_nil
+      end
+    end
+
+    context 'when authenticated with a token that has the ai_workflows scope' do
+      it_behaves_like 'forbids quick actions for ai_workflows scope' do
+        let(:method) { :put }
+        let(:url) { "/projects/#{project.id}/issues/#{issue.iid}" }
+        let(:field) { :description }
+        let(:success_status) { :ok }
       end
     end
   end

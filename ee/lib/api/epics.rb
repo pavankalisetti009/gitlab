@@ -225,18 +225,22 @@ module API
 
         # Setting created_at is allowed only for admins and owners
         params.delete(:created_at) unless current_user.can?(:set_epic_created_at, user_group)
-
-        create_params = declared_params(include_missing: false)
+        validator = ::Gitlab::Auth::ScopeValidator.new(current_user, Gitlab::Auth::RequestAuthenticator.new(request))
+        create_params = declared_params(include_missing: false).merge(scope_validator: validator)
 
         # Backward compatibility for deprecated fields "start_date" and "end_date"
         create_params[:start_date_fixed] ||= create_params.delete(:start_date) if create_params.key?(:start_date)
         create_params[:due_date_fixed] ||= create_params.delete(:end_date) if create_params.key?(:end_date)
 
-        epic = ::WorkItems::LegacyEpics::CreateService.new(
-          group: user_group,
-          current_user: current_user,
-          params: create_params
-        ).execute
+        begin
+          epic = ::WorkItems::LegacyEpics::CreateService.new(
+            group: user_group,
+            current_user: current_user,
+            params: create_params
+          ).execute
+        rescue QuickActions::InterpretService::QuickActionsNotAllowedError => error
+          forbidden!(error.message)
+        end
 
         if epic.errors.empty? && epic.valid?
           present epic, epic_options
@@ -328,12 +332,18 @@ module API
         # Backward compatibility for deprecated fields "start_date" and "end_date"
         update_params[:start_date_fixed] ||= update_params.delete(:start_date) if update_params.key?(:start_date)
         update_params[:due_date_fixed] ||= update_params.delete(:end_date) if update_params.key?(:end_date)
+        validator = ::Gitlab::Auth::ScopeValidator.new(current_user, Gitlab::Auth::RequestAuthenticator.new(request))
+        update_params[:scope_validator] ||= validator
 
-        result = ::WorkItems::LegacyEpics::UpdateService.new(
-          group: user_group,
-          current_user: current_user,
-          params: update_params
-        ).execute(epic)
+        begin
+          result = ::WorkItems::LegacyEpics::UpdateService.new(
+            group: user_group,
+            current_user: current_user,
+            params: update_params
+          ).execute(epic)
+        rescue QuickActions::InterpretService::QuickActionsNotAllowedError => error
+          forbidden!(error.message)
+        end
 
         if result.valid?
           present result, epic_options
