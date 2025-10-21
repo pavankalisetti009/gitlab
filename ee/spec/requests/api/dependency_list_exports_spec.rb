@@ -218,6 +218,105 @@ RSpec.describe API::DependencyListExports, feature_category: :dependency_managem
           expect(json_response['export_type']).to eq('sbom')
         end
       end
+
+      describe 'export content', :sidekiq_inline do
+        let_it_be(:pipeline) { create(:ee_ci_pipeline, :with_cyclonedx_report, project: project) }
+        let(:raw_file) { ::Dependencies::DependencyListExport.find(json_response['id']).file.read }
+
+        subject(:sbom) { Gitlab::Json.parse(raw_file) }
+
+        before do
+          post api(request_path, user), params: params
+        end
+
+        RSpec::Matchers.define :be_valid_cyclonedx_json do
+          match do |actual|
+            (@validator = Gitlab::Ci::Parsers::Sbom::Validators::CyclonedxSchemaValidator.new(actual)).valid?
+          end
+
+          failure_message do
+            "expected to be a valid CycloneDX document but failed with errors: #{@validator.errors.join("\n")}"
+          end
+        end
+
+        it 'passes schema validation' do
+          expect(sbom).to be_valid_cyclonedx_json
+        end
+
+        it 'outputs a CyloneDX SBoM' do
+          expect(sbom['bomFormat']).to eq('CycloneDX')
+          expect(sbom['specVersion']).to eq('1.4')
+          expect(sbom['serialNumber']).to match(/^urn:uuid:\h{8}-\h{4}-\h{4}-\h{4}-\h{12}$/)
+          expect(sbom['version']).to eq(1)
+        end
+
+        describe 'metadata' do
+          let(:metadata) { sbom['metadata'] }
+
+          it 'has correct author data' do
+            expect(metadata['authors']).to match_array([{ 'name' => 'GitLab', 'email' => 'support@gitlab.com' }])
+          end
+
+          describe 'properties' do
+            let(:properties) { metadata['properties'] }
+
+            it 'has correct property data' do
+              expect(properties).to include({ 'name' => 'gitlab:meta:schema_version', 'value' => '1' })
+              expect(properties).to include({ 'name' => 'gitlab:dependency_scanning:package_manager',
+                'value' => 'bundler' })
+              expect(properties).to include({ 'name' => 'gitlab:dependency_scanning:package_manager:name',
+          'value' => 'go' })
+              expect(properties).to include({ 'name' => 'gitlab:dependency_scanning:package_manager:name',
+          'value' => 'npm' })
+            end
+          end
+
+          describe 'tools' do
+            let(:tools) { metadata['tools'] }
+
+            it 'has correct tools data' do
+              expect(tools).to include({ 'vendor' => 'GitLab', 'name' => 'Gemnasium', 'version' => '2.34.0' })
+              expect(tools).to include({ 'vendor' => 'CycloneDX', 'name' => 'cyclonedx-gradle-plugin',
+          'version' => '1.7.3' })
+            end
+          end
+        end
+
+        context 'with a container scanning sbom' do
+          let_it_be(:pipeline) { create(:ee_ci_pipeline, :with_cyclonedx_container_scanning, project: project) }
+
+          it 'passes schema validation' do
+            expect(sbom).to be_valid_cyclonedx_json
+          end
+
+          it 'does not put license name in the id field' do
+            component = sbom['components'].find do |component|
+              component['name'] == 'component-with-license-name'
+            end
+
+            expect(component['licenses']).to eq([
+              {
+                'license' => {
+                  'name' => 'not-an-spdx-license'
+                }
+              }
+            ])
+          end
+        end
+
+        context 'when pipeline contains invalid reports' do
+          let_it_be(:pipeline) do
+            create(:ee_ci_pipeline, :with_cyclonedx_report, :with_invalid_cyclonedx_report, project: project)
+          end
+
+          it 'filters out invalid reports' do
+            expect(sbom['metadata']['tools'].size).to be > 1
+            expect(sbom['components'].size).to be > 1
+            expect(sbom['metadata']['tools']).not_to include(hash_including('name' => 'Invalid Tool'))
+            expect(sbom['components']).not_to include(hash_including('name' => 'duplicate'))
+          end
+        end
+      end
     end
   end
 
@@ -367,8 +466,7 @@ RSpec.describe API::DependencyListExports, feature_category: :dependency_managem
           download_dependency_list_export
 
           expect(response).to have_gitlab_http_status(:ok)
-          expect(json_response).to have_key('report')
-          expect(json_response).to have_key('dependencies')
+          expect(json_response).to eq(Gitlab::Json.parse(dependency_list_export.file.read))
         end
 
         context 'with dependency list export not finished' do
