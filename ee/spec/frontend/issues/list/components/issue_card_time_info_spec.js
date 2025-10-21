@@ -1,6 +1,6 @@
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import IssueCardTimeInfoEE from 'ee/issues/list/components/issue_card_time_info.vue';
-import IssueHealthStatus from 'ee/related_items_tree/components/issue_health_status.vue';
+import IssueHealthStatus from 'ee/issues/components/issue_health_status.vue';
 import WorkItemIterationAttribute from 'ee/work_items/components/shared/work_item_iteration_attribute.vue';
 import IssueCardTimeInfo from '~/issues/list/components/issue_card_time_info.vue';
 import { stubComponent } from 'helpers/stub_component';

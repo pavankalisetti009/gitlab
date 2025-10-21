@@ -1,7 +1,7 @@
 import { GlIcon, GlTooltip } from '@gitlab/ui';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import { localeDateFormat, newDate } from '~/lib/utils/datetime_utility';
-import IssueHealthStatus from 'ee/related_items_tree/components/issue_health_status.vue';
+import IssueHealthStatus from 'ee/issues/components/issue_health_status.vue';
 import WorkItemRolledUpHealthStatus from 'ee/work_items/components/work_item_links/work_item_rolled_up_health_status.vue';
 import WorkItemLinkChildMetadata from 'ee/work_items/components/shared/work_item_link_child_metadata.vue';
 import WorkItemIterationAttribute from 'ee/work_items/components/shared/work_item_iteration_attribute.vue';

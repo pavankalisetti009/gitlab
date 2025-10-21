@@ -5,7 +5,7 @@ import { createAlert } from '~/alert';
 import { STATUS_OPEN, STATUS_REOPENED } from '~/issues/constants';
 import { s__, sprintf } from '~/locale';
 import SidebarEditableItem from '~/sidebar/components/sidebar_editable_item.vue';
-import IssueHealthStatus from 'ee/related_items_tree/components/issue_health_status.vue';
+import IssueHealthStatus from 'ee/issues/components/issue_health_status.vue';
 import Tracking from '~/tracking';
 import {
   HEALTH_STATUS_I18N_FETCH_ERROR,
