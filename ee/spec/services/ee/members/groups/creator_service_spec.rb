@@ -148,24 +148,23 @@ RSpec.describe Members::Groups::CreatorService, feature_category: :groups_and_pr
 
       context 'when current user has admin_group_member custom permission' do
         let_it_be(:current_user) { create(:user) }
-        let_it_be(:root_ancestor, reload: true) { create(:group) }
+        let_it_be(:root_ancestor) { create(:group) }
         let_it_be(:subgroup) { create(:group, parent: root_ancestor) }
-        let_it_be(:member, reload: true) { create(:group_member, group: root_ancestor, user: current_user) }
-        let_it_be(:member_role, reload: true) do
-          create(:member_role, namespace: root_ancestor, admin_group_member: true)
-        end
 
         let(:params) { { member_role_id: member_role.id, current_user: current_user } }
 
         shared_examples 'adding members using custom permission' do
-          subject(:add_member) do
-            described_class.add_member(group, user, role, **params)
+          let_it_be(:member_role) do
+            create(:member_role, base_access_level: current_role, namespace: root_ancestor, admin_group_member: true)
           end
 
-          before do
-            member_role.base_access_level = current_role
-            member_role.save!(validate: false)
-            member.update!(access_level: current_role, member_role: member_role)
+          let_it_be(:member) do
+            create(:group_member, access_level: current_role, group: root_ancestor, user: current_user,
+              member_role: member_role)
+          end
+
+          subject(:add_member) do
+            described_class.add_member(group, user, role, **params)
           end
 
           context 'when custom_roles feature is enabled' do
@@ -212,29 +211,29 @@ RSpec.describe Members::Groups::CreatorService, feature_category: :groups_and_pr
 
         shared_examples 'adding members using custom permission to a group' do
           context 'for guest member role' do
-            let(:current_role) { Gitlab::Access::GUEST }
-            let(:higher_role) { Gitlab::Access::REPORTER }
+            let_it_be(:current_role) { Gitlab::Access::GUEST }
+            let_it_be(:higher_role) { Gitlab::Access::REPORTER }
 
             it_behaves_like 'adding members using custom permission'
           end
 
           context 'for reporter member role' do
-            let(:current_role) { Gitlab::Access::REPORTER }
-            let(:higher_role) { Gitlab::Access::DEVELOPER }
+            let_it_be(:current_role) { Gitlab::Access::REPORTER }
+            let_it_be(:higher_role) { Gitlab::Access::DEVELOPER }
 
             it_behaves_like 'adding members using custom permission'
           end
 
           context 'for developer member role' do
-            let(:current_role) { Gitlab::Access::DEVELOPER }
-            let(:higher_role) { Gitlab::Access::MAINTAINER }
+            let_it_be(:current_role) { Gitlab::Access::DEVELOPER }
+            let_it_be(:higher_role) { Gitlab::Access::MAINTAINER }
 
             it_behaves_like 'adding members using custom permission'
           end
 
           context 'for maintainer member role' do
-            let(:current_role) { Gitlab::Access::MAINTAINER }
-            let(:higher_role) { Gitlab::Access::OWNER }
+            let_it_be(:current_role) { Gitlab::Access::MAINTAINER }
+            let_it_be(:higher_role) { Gitlab::Access::OWNER }
 
             it_behaves_like 'adding members using custom permission'
           end

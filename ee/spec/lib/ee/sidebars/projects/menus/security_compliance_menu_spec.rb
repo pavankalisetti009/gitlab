@@ -55,9 +55,8 @@ RSpec.describe Sidebars::Projects::Menus::SecurityComplianceMenu, feature_catego
           security_dashboard: true, audit_events: true, dependency_scanning: true, custom_roles: true, license_scanning: true
         )
 
-        create(:member_role, :guest, :read_vulnerability, namespace: project.group).tap do |role|
-          role.members << create(:group_member, :guest, user: guest, source: project.group)
-        end
+        role = create(:member_role, :guest, :read_vulnerability, namespace: project.group)
+        create(:group_member, :guest, user: guest, source: project.group, member_role: role)
       end
 
       let(:guest) { create(:user) }

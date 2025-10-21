@@ -55,34 +55,30 @@ RSpec.describe Members::ApproveAccessRequestService, feature_category: :groups_a
 
   context 'when current user has admin_group_member custom permission' do
     let_it_be(:current_user) { create(:user) }
-    let_it_be(:group, reload: true) { create(:group) }
+    let_it_be(:group) { create(:group) }
     let_it_be(:access_requester_user) { create(:user) }
-    let_it_be(:member_role, reload: true) do
-      create(:member_role, namespace: group, admin_group_member: true)
-    end
 
-    let_it_be(:current_member, reload: true) do
-      create(:group_member, :guest, group: group, user: current_user)
-    end
-
-    let(:custom_access_level) { Gitlab::Access::MAINTAINER }
     let(:params) { { access_level: role } }
 
     let(:access_requester) { group.requesters.find_by!(user_id: access_requester_user.id) }
 
     before do
       group.request_access(access_requester_user)
-
-      # it is more efficient to change the base_access_level than to create a new member_role
-      member_role.base_access_level = current_role
-      member_role.save!(validate: false)
-
-      current_member.update!(access_level: current_role, member_role: member_role)
       stub_licensed_features(custom_roles: true)
     end
 
     subject(:approve_access_request) do
       described_class.new(current_user, params).execute(access_requester)
+    end
+
+    shared_context 'with member role in group' do
+      let_it_be(:member_role) do
+        create(:member_role, base_access_level: current_role, namespace: group, admin_group_member: true)
+      end
+
+      let_it_be(:current_member) do
+        create(:group_member, access_level: current_role, group: group, user: current_user, member_role: member_role)
+      end
     end
 
     shared_examples 'updating members using custom permission' do
@@ -114,8 +110,10 @@ RSpec.describe Members::ApproveAccessRequestService, feature_category: :groups_a
     end
 
     context 'for guest member role' do
-      let(:current_role) { Gitlab::Access::GUEST }
-      let(:higher_role) { Gitlab::Access::REPORTER }
+      let_it_be(:current_role) { Gitlab::Access::GUEST }
+      let_it_be(:higher_role) { Gitlab::Access::REPORTER }
+
+      include_context 'with member role in group'
 
       it_behaves_like 'updating members using custom permission'
 
@@ -129,8 +127,10 @@ RSpec.describe Members::ApproveAccessRequestService, feature_category: :groups_a
     end
 
     context 'for planner member role' do
-      let(:current_role) { Gitlab::Access::PLANNER }
-      let(:higher_role) { Gitlab::Access::REPORTER }
+      let_it_be(:current_role) { Gitlab::Access::PLANNER }
+      let_it_be(:higher_role) { Gitlab::Access::REPORTER }
+
+      include_context 'with member role in group'
 
       it_behaves_like 'updating members using custom permission'
 
@@ -144,8 +144,10 @@ RSpec.describe Members::ApproveAccessRequestService, feature_category: :groups_a
     end
 
     context 'for reporter member role' do
-      let(:current_role) { Gitlab::Access::REPORTER }
-      let(:higher_role) { Gitlab::Access::DEVELOPER }
+      let_it_be(:current_role) { Gitlab::Access::REPORTER }
+      let_it_be(:higher_role) { Gitlab::Access::DEVELOPER }
+
+      include_context 'with member role in group'
 
       it_behaves_like 'updating members using custom permission'
 
@@ -159,8 +161,10 @@ RSpec.describe Members::ApproveAccessRequestService, feature_category: :groups_a
     end
 
     context 'for developer member role' do
-      let(:current_role) { Gitlab::Access::DEVELOPER }
-      let(:higher_role) { Gitlab::Access::MAINTAINER }
+      let_it_be(:current_role) { Gitlab::Access::DEVELOPER }
+      let_it_be(:higher_role) { Gitlab::Access::MAINTAINER }
+
+      include_context 'with member role in group'
 
       it_behaves_like 'updating members using custom permission'
 
@@ -174,8 +178,10 @@ RSpec.describe Members::ApproveAccessRequestService, feature_category: :groups_a
     end
 
     context 'for maintainer member role' do
-      let(:current_role) { Gitlab::Access::MAINTAINER }
-      let(:higher_role) { Gitlab::Access::OWNER }
+      let_it_be(:current_role) { Gitlab::Access::MAINTAINER }
+      let_it_be(:higher_role) { Gitlab::Access::OWNER }
+
+      include_context 'with member role in group'
 
       it_behaves_like 'updating members using custom permission'
 
