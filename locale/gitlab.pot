@@ -43300,6 +43300,15 @@ msgstr ""
 msgid "NewFramework|Why scope policies?"
 msgstr ""
 
+msgid "NewMergeRequest|No changes between source and target branches"
+msgstr ""
+
+msgid "NewMergeRequest|Source branch not available"
+msgstr ""
+
+msgid "NewMergeRequest|Target branch not available"
+msgstr ""
+
 msgid "Newest first"
 msgstr ""
 

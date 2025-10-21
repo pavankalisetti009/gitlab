@@ -23,6 +23,22 @@ module EE
       ::Llm::DescriptionComposerService.new(user, merge_request).valid?.to_s
     end
 
+    override :summarize_new_merge_request_disabled_reason
+    def summarize_new_merge_request_disabled_reason(merge_request)
+      source_head_sha = merge_request.source_branch_sha
+      target_head_sha = merge_request.target_branch_sha
+
+      if source_head_sha.nil?
+        s_('NewMergeRequest|Source branch not available')
+      elsif target_head_sha.nil?
+        s_('NewMergeRequest|Target branch not available')
+      elsif !merge_request.has_diffs?
+        s_('NewMergeRequest|No changes between source and target branches')
+      else
+        super
+      end
+    end
+
     override :diffs_tab_pane_data
     def diffs_tab_pane_data(project, merge_request, params)
       data = {
