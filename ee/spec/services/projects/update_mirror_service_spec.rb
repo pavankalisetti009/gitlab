@@ -39,6 +39,18 @@ RSpec.describe Projects::UpdateMirrorService, feature_category: :source_code_man
       service.execute
     end
 
+    it 'injects "pull-mirror-update" => true into the gitaly_context of every Gitaly call', :request_store, :aggregate_failures do
+      service
+
+      expect(Gitlab::GitalyClient).to receive(:request_kwargs).at_least(:once).and_wrap_original do |original, *args, **kwargs|
+        original.call(*args, **kwargs).tap do |result|
+          expect(Gitlab::Json.parse(result.dig(:metadata, 'gitaly-client-context-bin'))).to include('pull-mirror-update' => true)
+        end
+      end
+
+      service.execute
+    end
+
     it 'runs project housekeeping' do
       stub_fetch_mirror(project)
 

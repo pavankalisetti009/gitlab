@@ -24,19 +24,41 @@ RSpec.describe Gitlab::Ci::Pipeline::Chain::Validate::Abilities, feature_categor
     end
 
     context 'when triggering builds for project mirrors is disabled' do
-      it 'returns an error' do
-        allow(command)
-          .to receive(:mirror_update)
-          .and_return(true)
+      before do
+        allow(project).to receive(:mirror_trigger_builds?).and_return(false)
+      end
 
-        allow(project)
-          .to receive(:mirror_trigger_builds?)
-          .and_return(false)
+      context 'when the gitaly_context includes "pull-mirror-update" => true' do
+        let(:command) do
+          Gitlab::Ci::Pipeline::Chain::Command
+            .new(
+              project: project,
+              current_user: user,
+              origin_ref: ref,
+              gitaly_context: { 'pull-mirror-update' => true }
+            )
+        end
 
-        step.perform!
+        it 'returns an error' do
+          step.perform!
 
-        expect(pipeline.errors.to_a)
-          .to include('Pipeline is disabled for mirror updates')
+          expect(pipeline.errors.to_a)
+            .to include('Pipeline is disabled for mirror updates')
+        end
+      end
+
+      context 'when mirror_update is true' do
+        let(:command) do
+          Gitlab::Ci::Pipeline::Chain::Command
+            .new(project: project, current_user: user, origin_ref: ref, mirror_update: true)
+        end
+
+        it 'returns an error' do
+          step.perform!
+
+          expect(pipeline.errors.to_a)
+            .to include('Pipeline is disabled for mirror updates')
+        end
       end
     end
 
