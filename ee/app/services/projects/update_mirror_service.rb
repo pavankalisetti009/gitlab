@@ -9,6 +9,10 @@ module Projects
 
     MAX_NUMBER_TO_PROCESS_SPECIFIC_REVISIONS = 100
 
+    # WARNING: Changing GITALY_CONTEXT_KEY can cause undesirable side effects
+    # during a GitLab upgrade, such as unwanted CI pipelines.
+    GITALY_CONTEXT_KEY = 'pull-mirror-update'
+
     def execute
       return error("The import URL is invalid.") if import_url_invalid?
 
@@ -28,16 +32,18 @@ module Projects
         return error("The mirror user is not allowed to push code to all branches on this project.")
       end
 
-      fetch_result = update_tags do
-        project.fetch_mirror(forced: true)
+      track_pull_mirror_update_across_post_receive do
+        fetch_result = update_tags do
+          project.fetch_mirror(forced: true)
+        end
+
+        update_lfs_objects_and_branches(fetch_result)
+
+        # Running git fetch in the repository creates loose objects in the same
+        # way running git push *to* the repository does, so ensure we run regular
+        # garbage collection
+        run_housekeeping
       end
-
-      update_lfs_objects_and_branches(fetch_result)
-
-      # Running git fetch in the repository creates loose objects in the same
-      # way running git push *to* the repository does, so ensure we run regular
-      # garbage collection
-      run_housekeeping
 
       success
     rescue Gitlab::Shell::Error, Gitlab::Git::BaseError, UpdateError => e
@@ -51,6 +57,14 @@ module Projects
     end
 
     private
+
+    def track_pull_mirror_update_across_post_receive(&block)
+      # Set a context flag that will be preserved across the post-receive
+      # boundary. This allows us to identify mirror-triggered operations later.
+      # For example in the pipeline validation chain, preventing unwanted CI
+      # pipelines when the project setting `mirror_trigger_builds` is `false`
+      ::Gitlab::GitalyClient.with_context(GITALY_CONTEXT_KEY => true, &block)
+    end
 
     def update_lfs_objects
       return unless project.lfs_enabled?
