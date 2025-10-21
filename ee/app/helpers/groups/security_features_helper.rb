@@ -57,6 +57,7 @@ module Groups::SecurityFeaturesHelper
 
   def group_security_configuration_data(group)
     {
+      namespace_id: group.root_ancestor.id,
       group_full_path: group.full_path
     }
   end
