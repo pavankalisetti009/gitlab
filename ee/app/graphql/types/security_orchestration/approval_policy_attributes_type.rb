@@ -20,6 +20,8 @@ module Types
       field :deprecated_properties, [::GraphQL::Types::String], null: true,
         description: 'All deprecated properties in the policy.',
         experiment: { milestone: '16.10' }
+      field :enforcement_type, ::Types::SecurityOrchestration::PolicyEnforcementTypeEnum, null: true,
+        description: 'Enforcement type of the policy. Can be "enforce" or "warn".'
       field :role_approvers, [::Types::MemberAccessLevelNameEnum],
         null: true,
         description: 'Approvers of the role type. Users belonging to these role(s) alone will be approvers.'

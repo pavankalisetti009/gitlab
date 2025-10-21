@@ -8,7 +8,8 @@ end
 
 RSpec.shared_context 'with approval policy specific fields' do
   let(:type_specific_fields) do
-    %i[source action_approvers user_approvers all_group_approvers role_approvers custom_roles deprecatedProperties]
+    %i[source action_approvers user_approvers all_group_approvers role_approvers custom_roles deprecatedProperties
+      enforcement_type]
   end
 end
 

@@ -27,7 +27,8 @@ RSpec.describe 'Query.project(fullPath).scanResultPolicies', feature_category: :
         fallback_behavior: policy[:fallback_behavior],
         metadata: policy[:metadata],
         policy_tuning: policy[:policy_tuning],
-        bypass_settings: policy[:bypass_settings]
+        bypass_settings: policy[:bypass_settings],
+        enforcement_type: policy[:enforcement_type]
       }.compact.deep_stringify_keys)
     end
 
@@ -79,7 +80,8 @@ RSpec.describe 'Query.project(fullPath).scanResultPolicies', feature_category: :
         fallback_behavior: policy[:fallback_behavior],
         metadata: policy[:metadata],
         policy_tuning: policy[:policy_tuning],
-        bypass_settings: policy[:bypass_settings]
+        bypass_settings: policy[:bypass_settings],
+        enforcement_type: policy[:enforcement_type]
       }.compact.deep_stringify_keys)
     end
 

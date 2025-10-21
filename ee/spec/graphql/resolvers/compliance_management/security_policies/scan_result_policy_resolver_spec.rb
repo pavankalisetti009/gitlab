@@ -58,7 +58,8 @@ RSpec.describe Resolvers::ComplianceManagement::SecurityPolicies::ScanResultPoli
               fallback_behavior: policy[:fallback_behavior],
               metadata: policy[:metadata],
               policy_tuning: policy[:policy_tuning],
-              bypass_settings: policy[:bypass_settings]
+              bypass_settings: policy[:bypass_settings],
+              enforcement_type: policy[:enforcement_type]
             }.compact.deep_stringify_keys),
             updated_at: policy_configuration.policy_last_updated_at,
             action_approvers: [{ all_groups: [], groups: [], roles: [], users: [], custom_roles: [] }],
@@ -67,6 +68,7 @@ RSpec.describe Resolvers::ComplianceManagement::SecurityPolicies::ScanResultPoli
             deprecated_properties: [],
             role_approvers: [],
             custom_roles: [],
+            enforcement_type: policy[:enforcement_type],
             source: {
               inherited: false,
               namespace: nil,
