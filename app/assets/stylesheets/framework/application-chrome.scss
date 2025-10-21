@@ -484,7 +484,6 @@
       }
     }
 
-
     // Project sidebar
     @include media-breakpoint-up(lg) {
       .project-page-indicator:not(.hidden) + .project-page-layout .project-page-sidebar {
@@ -516,7 +515,6 @@
 
     // Commits diff file tree header
     .diff-file .file-title-flex-parent {
-
       @include media-breakpoint-up(md) {
         &.is-commit,
         &.is-compare,
