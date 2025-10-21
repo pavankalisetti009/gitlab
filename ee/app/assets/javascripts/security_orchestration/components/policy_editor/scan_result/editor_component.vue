@@ -54,6 +54,7 @@ import {
   PERMITTED_INVALID_SETTINGS_KEY,
   REQUIRE_APPROVAL_TYPE,
   LICENSE_FINDING,
+  WARN_TYPE,
 } from './lib';
 import { ENFORCE_VALUE, WARN_VALUE } from './lib/enforcement';
 
@@ -374,12 +375,13 @@ export default {
       }
 
       switch (type) {
-        case REQUIRE_APPROVAL_TYPE:
-          this.addApproverAction();
-          break;
         case BOT_MESSAGE_TYPE:
-        default:
           this.addBotAction();
+          break;
+        case WARN_TYPE:
+        case REQUIRE_APPROVAL_TYPE:
+        default:
+          this.addApproverAction();
           break;
       }
 
@@ -511,7 +513,7 @@ export default {
       }
     },
     shouldDisableActionSelector(filter) {
-      if (this.isWarnMode) {
+      if ((this.isWarnMode && filter !== WARN_TYPE) || (!this.isWarnMode && filter === WARN_TYPE)) {
         return true;
       }
 
@@ -533,6 +535,10 @@ export default {
         return s__(
           'SecurityOrchestration|Merge request approval policies allow a maximum 1 bot message action.',
         );
+      }
+
+      if (filter.value === WARN_TYPE) {
+        return s__('SecurityOrchestration|Only allowed in warn mode.');
       }
 
       return s__(

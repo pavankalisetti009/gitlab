@@ -107,10 +107,8 @@ module Search
         def schema_version
           if ::Elastic::DataMigrationService.migration_has_finished?(:index_work_items_milestone_state)
             SCHEMA_VERSION
-          elsif ::Elastic::DataMigrationService.migration_has_finished?(:add_extra_fields_to_work_items)
-            25_27
           else
-            25_22 # Previous stable version until migration completes
+            25_27 # Previous stable version until migration completes
           end
         end
 
@@ -166,10 +164,6 @@ module Search
             type: model_klass.es_type
           }
 
-          unless ::Elastic::DataMigrationService.migration_has_finished?(:add_extra_fields_to_work_items)
-            return extra_data
-          end
-
           extra_data['closed_at'] = target.closed_at
           extra_data['weight'] = target.weight
           extra_data['health_status'] = target.health_status_for_database
@@ -203,10 +197,8 @@ module Search
             milestone_id: target.milestone_id
           }
 
-          if ::Elastic::DataMigrationService.migration_has_finished?(:add_extra_fields_to_work_items)
-            milestone_data['milestone_start_date'] = target.milestone&.start_date
-            milestone_data['milestone_due_date'] = target.milestone&.due_date
-          end
+          milestone_data['milestone_start_date'] = target.milestone&.start_date
+          milestone_data['milestone_due_date'] = target.milestone&.due_date
 
           if ::Elastic::DataMigrationService.migration_has_finished?(:index_work_items_milestone_state)
             milestone_data['milestone_state'] = target.milestone&.state

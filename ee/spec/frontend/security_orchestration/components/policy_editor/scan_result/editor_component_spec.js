@@ -22,12 +22,13 @@ import {
   BOT_MESSAGE_TYPE,
   buildApprovalAction,
   buildBotMessageAction,
-  DISABLED_BOT_MESSAGE_ACTION,
-  SCAN_FINDING,
-  getInvalidBranches,
-  REQUIRE_APPROVAL_TYPE,
   DEFAULT_SCAN_RESULT_POLICY,
   DEFAULT_SCAN_RESULT_POLICY_WITH_SCOPE_WITH_GROUP_SETTINGS,
+  DISABLED_BOT_MESSAGE_ACTION,
+  getInvalidBranches,
+  REQUIRE_APPROVAL_TYPE,
+  SCAN_FINDING,
+  WARN_TYPE,
 } from 'ee/security_orchestration/components/policy_editor/scan_result/lib';
 import EditorComponent from 'ee/security_orchestration/components/policy_editor/scan_result/editor_component.vue';
 import PolicyExceptions from 'ee/security_orchestration/components/policy_editor/scan_result/advanced_settings/policy_exceptions/policy_exceptions.vue';
@@ -297,10 +298,22 @@ describe('EditorComponent', () => {
             expect(findWarnTypeAction().exists()).toBe(false);
             expect(findEnforcementSection().props('hasLegacyWarnAction')).toBe(true);
           });
+
+          it('shows the correct scan filter selector options', () => {
+            factory({ provide: { glFeatures: { securityPolicyApprovalWarnMode: true } } });
+            expect(findAllActionSections()).toHaveLength(1);
+            expect(
+              findScanFilterSelector().props('shouldDisableFilter')(REQUIRE_APPROVAL_TYPE),
+            ).toBe(false);
+            expect(findScanFilterSelector().props('shouldDisableFilter')(BOT_MESSAGE_TYPE)).toBe(
+              true,
+            );
+            expect(findScanFilterSelector().props('shouldDisableFilter')(WARN_TYPE)).toBe(true);
+          });
         });
 
         describe('enforcement is "warn"', () => {
-          it('disables scan filter selector', async () => {
+          it('shows the correct scan filter selector options', async () => {
             factoryWithExistingPolicy({
               provide: { glFeatures: { securityPolicyApprovalWarnMode: true } },
               policy: mockWarnActionScanResultObject,
@@ -309,13 +322,12 @@ describe('EditorComponent', () => {
             expect(findWarnTypeAction().exists()).toBe(true);
             expect(findAllActionSections()).toHaveLength(1);
             expect(
-              findScanFilterSelector().props('shouldDisableFilter')({
-                value: REQUIRE_APPROVAL_TYPE,
-              }),
+              findScanFilterSelector().props('shouldDisableFilter')(REQUIRE_APPROVAL_TYPE),
             ).toBe(true);
-            expect(
-              findScanFilterSelector().props('shouldDisableFilter')({ value: BOT_MESSAGE_TYPE }),
-            ).toBe(true);
+            expect(findScanFilterSelector().props('shouldDisableFilter')(BOT_MESSAGE_TYPE)).toBe(
+              true,
+            );
+            expect(findScanFilterSelector().props('shouldDisableFilter')(WARN_TYPE)).toBe(false);
           });
 
           it('does not display the bot comment action', async () => {

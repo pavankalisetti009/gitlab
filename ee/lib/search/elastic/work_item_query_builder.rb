@@ -44,12 +44,10 @@ module Search
           query_hash = ::Search::Elastic::Filters.by_milestone_state(query_hash: query_hash, options: options)
         end
 
-        if ::Elastic::DataMigrationService.migration_has_finished?(:add_extra_fields_to_work_items)
-          query_hash = ::Search::Elastic::Filters.by_label_names(query_hash: query_hash, options: options)
-          query_hash = ::Search::Elastic::Filters.by_weight(query_hash: query_hash, options: options)
-          query_hash = ::Search::Elastic::Filters.by_health_status(query_hash: query_hash, options: options)
-          query_hash = ::Search::Elastic::Filters.by_closed_at(query_hash: query_hash, options: options)
-        end
+        query_hash = ::Search::Elastic::Filters.by_label_names(query_hash: query_hash, options: options)
+        query_hash = ::Search::Elastic::Filters.by_weight(query_hash: query_hash, options: options)
+        query_hash = ::Search::Elastic::Filters.by_health_status(query_hash: query_hash, options: options)
+        query_hash = ::Search::Elastic::Filters.by_closed_at(query_hash: query_hash, options: options)
 
         query_hash = ::Search::Elastic::Filters.by_created_at(query_hash: query_hash, options: options)
         query_hash = ::Search::Elastic::Filters.by_updated_at(query_hash: query_hash, options: options)

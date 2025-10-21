@@ -34,3 +34,5 @@ class AddExtraFieldsToWorkItems < Elastic::Migration
     }
   end
 end
+
+AddExtraFieldsToWorkItems.prepend ::Search::Elastic::MigrationObsolete

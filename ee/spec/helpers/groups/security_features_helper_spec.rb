@@ -183,6 +183,7 @@ RSpec.describe Groups::SecurityFeaturesHelper, feature_category: :user_managemen
 
     it 'builds correct hash' do
       expect(group_security_configuration_data).to eq({
+        namespace_id: group.root_ancestor.id,
         group_full_path: group.full_path
       })
     end

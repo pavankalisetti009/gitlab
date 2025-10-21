@@ -120,7 +120,7 @@ describe('Configure attributes', () => {
       },
     });
     wrapper = shallowMount(ConfigureAttributes, {
-      provide: { groupFullPath: 'path/to/group' },
+      provide: { groupFullPath: 'path/to/group', namespaceId: 'namespace_id' },
       mocks: {
         $toast: {
           show: jest.fn(),

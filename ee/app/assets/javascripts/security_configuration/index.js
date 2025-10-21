@@ -11,7 +11,7 @@ export const initSecurityConfiguration = (el) => {
     return null;
   }
 
-  const { groupFullPath } = el.dataset;
+  const { groupFullPath, namespaceId } = el.dataset;
 
   return new Vue({
     el,
@@ -21,6 +21,7 @@ export const initSecurityConfiguration = (el) => {
     }),
     provide: {
       groupFullPath,
+      namespaceId,
     },
     render(createElement) {
       return createElement(SecurityConfigurationApp);

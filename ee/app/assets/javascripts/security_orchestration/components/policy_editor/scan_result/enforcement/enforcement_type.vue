@@ -5,7 +5,6 @@ import { helpPagePath } from '~/helpers/help_page_helper';
 import { ENFORCEMENT_OPTIONS } from '../lib';
 
 export default {
-  ENFORCEMENT_OPTIONS,
   WARN_MODE_HELP_PATH: helpPagePath(
     'user/application_security/policies/merge_request_approval_policies',
     {
@@ -52,7 +51,7 @@ export default {
       );
     },
     options() {
-      return this.$options.ENFORCEMENT_OPTIONS.map((option) => ({
+      return ENFORCEMENT_OPTIONS.map((option) => ({
         ...option,
         disabled: this.disabledEnforcementOptions.includes(option.value),
       }));

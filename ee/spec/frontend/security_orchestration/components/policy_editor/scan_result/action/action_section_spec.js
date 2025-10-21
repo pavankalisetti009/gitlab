@@ -22,7 +22,7 @@ describe('ActionSection', () => {
     });
   };
 
-  const findActionSeperator = () => wrapper.findByTestId('action-and-label');
+  const findActionSeparator = () => wrapper.findByTestId('action-and-label');
   const findRemoveButton = () => wrapper.findByTestId('remove-action');
   const findApproverAction = () => wrapper.findComponent(ApproverAction);
   const findBotCommentAction = () => wrapper.findComponent(BotCommentAction);
@@ -33,17 +33,12 @@ describe('ActionSection', () => {
       factory();
       expect(findApproverAction().exists()).toBe(true);
       expect(findBotCommentAction().exists()).toBe(false);
-      expect(findActionSeperator().exists()).toBe(false);
+      expect(findActionSeparator().exists()).toBe(false);
     });
 
-    it('renders the action seperator when the action index is > 0', () => {
+    it('renders the action separator when the action index is > 0', () => {
       factory({ props: { actionIndex: 1 } });
-      expect(findActionSeperator().exists()).toBe(true);
-    });
-
-    it('does not render the remove button when the action type is warn', () => {
-      factory({ props: { isWarnType: true } });
-      expect(findRemoveButton().exists()).toBe(false);
+      expect(findActionSeparator().exists()).toBe(true);
     });
   });
 

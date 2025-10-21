@@ -105,10 +105,6 @@ describe('UsageByUserTab', () => {
             key: 'totalCreditsUsed',
             label: 'Total credits used',
           },
-          {
-            key: 'status',
-            label: 'Status',
-          },
         ]);
       });
 
@@ -119,8 +115,8 @@ describe('UsageByUserTab', () => {
         });
 
         describe.each`
-          userId | userName           | allocationUsed | allocationUsedPercent | poolUsed | totalCreditsUsed | status
-          ${'1'} | ${'Alice Johnson'} | ${'450 / 500'} | ${90}                 | ${'0'}   | ${'450'}         | ${'Unknown'}
+          userId | userName           | allocationUsed | allocationUsedPercent | poolUsed | totalCreditsUsed
+          ${'1'} | ${'Alice Johnson'} | ${'450 / 500'} | ${90}                 | ${'0'}   | ${'450'}
         `(
           'rendering $userId: $userName',
           ({
@@ -130,7 +126,6 @@ describe('UsageByUserTab', () => {
             allocationUsedPercent,
             poolUsed,
             totalCreditsUsed,
-            status,
           }) => {
             describe('user cell', () => {
               it('renders user avatar with link to the user details page', () => {
@@ -168,12 +163,6 @@ describe('UsageByUserTab', () => {
               const cell = findCell(4);
 
               expect(cell.text()).toBe(totalCreditsUsed);
-            });
-
-            it('renders status cell', () => {
-              const cell = findCell(5);
-
-              expect(cell.text()).toBe(status);
             });
           },
         );
@@ -281,10 +270,6 @@ describe('UsageByUserTab', () => {
         {
           key: 'totalCreditsUsed',
           label: 'Total credits used',
-        },
-        {
-          key: 'status',
-          label: 'Status',
         },
       ]);
     });

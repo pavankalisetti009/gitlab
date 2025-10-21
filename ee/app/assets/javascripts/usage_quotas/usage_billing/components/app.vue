@@ -37,19 +37,6 @@ export default {
         };
       },
       update({ subscriptionUsage }) {
-        // NOTE: this is a temporary injection to stub `overage` field.
-        // This should be removed once the field is added in https://gitlab.com/gitlab-org/gitlab/-/issues/567987
-        if (subscriptionUsage) {
-          // eslint-disable-next-line no-param-reassign
-          subscriptionUsage = {
-            ...subscriptionUsage,
-            overage: {
-              isAllowed: true,
-              creditsUsed: 0,
-            },
-          };
-        }
-
         return subscriptionUsage;
       },
       error(error) {

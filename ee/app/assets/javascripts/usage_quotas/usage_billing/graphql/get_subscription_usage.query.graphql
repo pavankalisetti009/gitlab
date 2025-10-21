@@ -6,9 +6,9 @@ query getSubscriptionUsage($namespacePath: ID) {
       totalCredits
       creditsUsed
     }
-    # overage {
-    #   isAllowed
-    #   creditsUsed
-    # }
+    overage {
+      isAllowed
+      creditsUsed
+    }
   }
 }
