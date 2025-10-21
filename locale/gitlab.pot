@@ -72400,6 +72400,9 @@ msgstr ""
 msgid "VirtualRegistry|Connection successful."
 msgstr ""
 
+msgid "VirtualRegistry|Copy virtual registry ID: %{id}"
+msgstr ""
+
 msgid "VirtualRegistry|Create Maven registry"
 msgstr ""
 
@@ -72664,6 +72667,9 @@ msgid "VirtualRegistry|Virtual Registry"
 msgstr ""
 
 msgid "VirtualRegistry|Virtual registry"
+msgstr ""
+
+msgid "VirtualRegistry|Virtual registry ID copied to clipboard."
 msgstr ""
 
 msgid "VirtualRegistry|When you enable this feature, you accept the %{linkStart}GitLab Testing Agreement.%{linkEnd}"

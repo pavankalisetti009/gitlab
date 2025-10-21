@@ -1,4 +1,4 @@
-import { GlButton } from '@gitlab/ui';
+import { GlButton, GlDisclosureDropdown, GlDisclosureDropdownItem } from '@gitlab/ui';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import TitleArea from '~/vue_shared/components/registry/title_area.vue';
 import MetadataItem from '~/vue_shared/components/registry/metadata_item.vue';
@@ -19,6 +19,11 @@ describe('MavenRegistryDetailsHeader', () => {
   const findTitleArea = () => wrapper.findComponent(TitleArea);
   const findMetadataItem = () => wrapper.findComponent(MetadataItem);
   const findDescription = () => wrapper.findByTestId('description');
+  const findDropdown = () => wrapper.findComponent(GlDisclosureDropdown);
+  const findDropdownItem = () => wrapper.findComponent(GlDisclosureDropdownItem);
+  const mockToast = {
+    show: jest.fn(),
+  };
 
   const createComponent = ({ provide = {} } = {}) => {
     wrapper = shallowMountExtended(MavenRegistryDetailsHeader, {
@@ -28,6 +33,9 @@ describe('MavenRegistryDetailsHeader', () => {
       },
       stubs: {
         TitleArea,
+      },
+      mocks: {
+        $toast: mockToast,
       },
     });
   };
@@ -57,6 +65,51 @@ describe('MavenRegistryDetailsHeader', () => {
     it('renders sub-header with upstreams limit information', () => {
       expect(wrapper.text()).toContain('You can add up to 20 upstreams per registry.');
     });
+
+    it('renders dropdown with correct props', () => {
+      expect(findDropdown().props()).toMatchObject({
+        category: 'tertiary',
+        icon: 'ellipsis_v',
+        noCaret: true,
+        toggleText: 'More actions',
+        textSrOnly: true,
+      });
+    });
+
+    it('renders dropdown item with copy ID functionality', () => {
+      const dropdownItem = findDropdownItem();
+      expect(dropdownItem.text()).toBe('Copy virtual registry ID: 1');
+      expect(dropdownItem.attributes('data-clipboard-text')).toBe('1');
+    });
+
+    describe('dropdown tooltip behavior', () => {
+      it('shows tooltip initially', () => {
+        expect(findDropdown().attributes('title')).toBe('More actions');
+      });
+
+      it('removes tooltip when dropdown is shown', async () => {
+        const dropdown = findDropdown();
+        await dropdown.vm.$emit('shown');
+
+        expect(dropdown.attributes('title')).toBe('');
+      });
+
+      it('restores tooltip when dropdown is hidden', async () => {
+        const dropdown = findDropdown();
+        await dropdown.vm.$emit('shown');
+        await dropdown.vm.$emit('hidden');
+
+        expect(dropdown.attributes('title')).toBe('More actions');
+      });
+    });
+
+    describe('copy ID action', () => {
+      it('shows toast message when copy action is triggered', async () => {
+        await findDropdownItem().vm.$emit('action');
+
+        expect(mockToast.show).toHaveBeenCalledWith('Virtual registry ID copied to clipboard.');
+      });
+    });
   });
 
   describe('when user has ability to edit', () => {
@@ -75,6 +128,10 @@ describe('MavenRegistryDetailsHeader', () => {
       expect(findEditButton().text()).toBe('Edit');
       expect(findEditButton().props('href')).toBe('registry_edit_path');
     });
+
+    it('renders `More actions` dropdown', () => {
+      expect(findDropdown().exists()).toBe(true);
+    });
   });
 
   describe('when user has ability to edit but registryEditPath is empty', () => {
@@ -90,6 +147,21 @@ describe('MavenRegistryDetailsHeader', () => {
 
     it('does not render Edit button', () => {
       expect(findEditButton().exists()).toBe(false);
+    });
+  });
+
+  describe('when registry has no ID', () => {
+    beforeEach(() => {
+      createComponent({
+        provide: {
+          registry: {},
+          registryEditPath: 'registry_edit_path',
+        },
+      });
+    });
+
+    it('does not render dropdown', () => {
+      expect(findDropdown().exists()).toBe(false);
     });
   });
 });
