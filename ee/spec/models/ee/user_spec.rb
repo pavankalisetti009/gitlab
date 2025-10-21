@@ -210,6 +210,32 @@ RSpec.describe User, feature_category: :system_access do
                 expect(user.errors.full_messages).to include("Email must be owned by the user's enterprise group")
               end
             end
+
+            context 'when new email has invalid format with spaces' do
+              let(:new_email) { 'invalid email format' }
+
+              it 'is applied and makes user record invalid' do
+                user.email = new_email
+
+                expect(user).to receive(:enterprise_user_email_change).and_call_original
+
+                expect(user).to be_invalid
+                expect(user.errors.full_messages).to include("Email must be owned by the user's enterprise group")
+              end
+            end
+
+            context 'when new email is nil' do
+              let(:new_email) { nil }
+
+              it 'is applied and makes user record invalid' do
+                user.email = new_email
+
+                expect(user).to receive(:enterprise_user_email_change).and_call_original
+
+                expect(user).to be_invalid
+                expect(user.errors.full_messages).to include("Email must be owned by the user's enterprise group")
+              end
+            end
           end
 
           context 'when new email is owned by the enterprise group' do

@@ -409,14 +409,14 @@ module EE
           experiment: { milestone: '18.1' }
 
         field :maven_virtual_registries,
-          EE::Types::VirtualRegistries::Packages::Maven::MavenVirtualRegistryType.connection_type,
+          ::Types::VirtualRegistries::Packages::Maven::RegistryType.connection_type,
           null: true,
           description: 'Maven virtual registries registered to the group. ' \
             'Returns null if the `maven_virtual_registry` feature flag is disabled.',
           experiment: { milestone: '18.1' }
 
         field :virtual_registries_setting,
-          Types::VirtualRegistries::SettingType,
+          ::Types::VirtualRegistries::SettingType,
           null: true,
           description: 'Virtual registries settings for the group. ' \
             'Returns null if the `maven_virtual_registry` feature flag is disabled.',
@@ -469,7 +469,7 @@ module EE
           experiment: { milestone: '18.2' }
 
         field :virtual_registries_packages_maven_upstreams,
-          EE::Types::VirtualRegistries::Packages::Maven::MavenUpstreamType.connection_type,
+          ::Types::VirtualRegistries::Packages::Maven::UpstreamType.connection_type,
           null: true,
           skip_type_authorization: :read_virtual_registry,
           description: 'Maven upstream registries registered to the group. ' \

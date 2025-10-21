@@ -10954,6 +10954,9 @@ msgstr ""
 msgid "BlobViewer|If you delete the file, it will be removed from the branch %{branch}."
 msgstr ""
 
+msgid "BlobViewer|Open in a new window"
+msgstr ""
+
 msgid "BlobViewer|Open raw"
 msgstr ""
 

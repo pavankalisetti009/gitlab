@@ -31,7 +31,7 @@ RSpec.describe Resolvers::VirtualRegistries::Packages::Maven::UpstreamsResolver,
 
   specify do
     expect(described_class).to have_nullable_graphql_type(
-      EE::Types::VirtualRegistries::Packages::Maven::MavenUpstreamType.connection_type
+      ::Types::VirtualRegistries::Packages::Maven::UpstreamType.connection_type
     )
   end
 

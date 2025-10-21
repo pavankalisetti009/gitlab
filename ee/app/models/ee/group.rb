@@ -585,6 +585,8 @@ module EE
     end
 
     def owner_of_email?(email)
+      return false unless ValidateEmail.valid?(email)
+
       return false unless domain_verification_available?
 
       email_domain = Mail::Address.new(email).domain&.downcase

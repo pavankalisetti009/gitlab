@@ -24,7 +24,7 @@ RSpec.describe ::Search::Zoekt::TaskSerializerService, feature_category: :global
     let(:empty_repo) { false }
 
     before do
-      allow(project).to receive(:archived?).and_return(true)
+      allow(project).to receive(:self_or_ancestors_archived?).and_return(true)
       allow(::Search::Zoekt).to receive(:missing_repo?).with(project).and_return(empty_repo)
     end
 

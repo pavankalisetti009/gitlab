@@ -505,7 +505,7 @@ RSpec.describe GitlabSchema.types['Group'], feature_category: :groups_and_projec
 
     it 'has connection type class' do
       is_expected.to have_nullable_graphql_type(
-        EE::Types::VirtualRegistries::Packages::Maven::MavenVirtualRegistryType.connection_type
+        ::Types::VirtualRegistries::Packages::Maven::RegistryType.connection_type
       )
     end
   end
@@ -515,7 +515,7 @@ RSpec.describe GitlabSchema.types['Group'], feature_category: :groups_and_projec
 
     it 'has connection type class' do
       is_expected.to have_nullable_graphql_type(
-        EE::Types::VirtualRegistries::Packages::Maven::MavenUpstreamType.connection_type
+        ::Types::VirtualRegistries::Packages::Maven::UpstreamType.connection_type
       )
     end
 

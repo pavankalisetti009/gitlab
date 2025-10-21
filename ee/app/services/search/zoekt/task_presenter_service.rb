@@ -40,7 +40,7 @@ module Search
       end
 
       def zoekt_tasks(delete_only)
-        rel = node.tasks
+        rel = node.tasks.preload_namespace_settings
         return rel.none if ::Gitlab::CurrentSettings.zoekt_indexing_paused?
         return rel.delete_repo if delete_only
 
@@ -48,7 +48,7 @@ module Search
       end
 
       def knowledge_graph_tasks(delete_only)
-        rel = node.knowledge_graph_tasks
+        rel = node.knowledge_graph_tasks.preload_namespace_settings
         return rel.delete_graph_repo if delete_only
 
         rel
