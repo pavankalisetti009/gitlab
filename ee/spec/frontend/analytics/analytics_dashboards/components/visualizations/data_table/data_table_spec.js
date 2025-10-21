@@ -35,7 +35,7 @@ describe('DataTable Visualization', () => {
       createWrapper();
 
       expect(findTable().attributes()).toMatchObject({
-        responsive: '',
+        responsive: 'true',
         hover: '',
       });
     });
@@ -265,6 +265,36 @@ describe('DataTable Visualization', () => {
           expect(headers.at(index).text()).toBe(field);
           expect(rowCells.at(index).text()).toBe(value);
         });
+      });
+
+      it('can disable the default responsive table layout', () => {
+        createWrapper(shallowMount, {
+          options: {
+            responsive: false,
+          },
+        });
+
+        expect(findTable().attributes().responsive).toBeUndefined();
+      });
+
+      it('can set a fixed table layout', () => {
+        createWrapper(shallowMount, {
+          options: {
+            fixed: true,
+          },
+        });
+
+        expect(findTable().attributes().fixed).toBe('true');
+      });
+
+      it('can set a stacked table layout', () => {
+        createWrapper(shallowMount, {
+          options: {
+            stacked: 'md',
+          },
+        });
+
+        expect(findTable().attributes().stacked).toBe('md');
       });
 
       it('can customize column labels', () => {

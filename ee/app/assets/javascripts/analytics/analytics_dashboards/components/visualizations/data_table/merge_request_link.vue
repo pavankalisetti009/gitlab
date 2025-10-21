@@ -80,28 +80,30 @@ export default {
 </script>
 <template>
   <div class="gl-flex gl-grow gl-flex-col">
-    <div class="gl-str-truncated">
+    <div class="str-truncated-100">
       <gl-link :href="webUrl" target="_blank" class="gl-font-bold gl-text-default">{{
         title
       }}</gl-link>
-      <ul class="horizontal-list gl-mb-0 gl-mt-2 gl-flex gl-items-center gl-gap-3">
-        <li data-testid="mr-iid">{{ iidWithPrefix }}</li>
-        <li v-if="pipelineIcon">
+      <div
+        class="gl-mb-0 gl-mt-2 gl-flex gl-items-center gl-justify-end gl-gap-3 @md/panel:gl-justify-start"
+      >
+        <div data-testid="mr-iid">{{ iidWithPrefix }}</div>
+        <div v-if="pipelineIcon">
           <gl-icon v-bind="pipelineIcon" data-testid="pipeline-icon" />
-        </li>
-        <li :class="{ 'gl-opacity-5': !labelsCount }" data-testid="labels-count">
+        </div>
+        <div :class="{ 'gl-opacity-5': !labelsCount }" data-testid="labels-count">
           <gl-icon name="label" class="gl-mr-1" />
           <span>{{ labelsCount }}</span>
-        </li>
-        <li :class="{ 'gl-opacity-5': !userNotesCount }" data-testid="user-notes-count">
+        </div>
+        <div :class="{ 'gl-opacity-5': !userNotesCount }" data-testid="user-notes-count">
           <gl-icon name="comments" class="gl-mr-2" />
           <span>{{ userNotesCount }}</span>
-        </li>
-        <li v-if="approvalCount" class="gl-text-success" data-testid="approval-count">
+        </div>
+        <div v-if="approvalCount" class="gl-text-success" data-testid="approval-count">
           <gl-icon name="approval" class="gl-mr-2" variant="success" />
           <span>{{ n__('%d Approval', '%d Approvals', approvalCount) }}</span>
-        </li>
-      </ul>
+        </div>
+      </div>
     </div>
   </div>
 </template>
