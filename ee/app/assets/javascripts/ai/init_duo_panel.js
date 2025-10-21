@@ -5,6 +5,7 @@ import { parseBoolean } from '~/lib/utils/common_utils';
 import { __ } from '~/locale';
 import { createRouter } from 'ee/ai/duo_agents_platform/router/ai_panel_router';
 import DuoAgenticChat from 'ee/ai/duo_agentic_chat/components/duo_agentic_chat.vue';
+import { activeWorkItemIds } from '~/work_items/utils';
 import store from './tanuki_bot/store';
 import AIPanel from './components/ai_panel.vue';
 
@@ -56,6 +57,7 @@ export function initDuoPanel() {
       chatConfiguration,
     },
     render(createElement) {
+      const latestActiveWorkItemId = activeWorkItemIds.value[activeWorkItemIds.value.length - 1];
       return createElement(AIPanel, {
         props: {
           name: 'AiPanel',
@@ -63,7 +65,7 @@ export function initDuoPanel() {
           projectId,
           namespaceId,
           rootNamespaceId,
-          resourceId,
+          resourceId: latestActiveWorkItemId ?? resourceId,
           metadata,
           userModelSelectionEnabled: parseBoolean(userModelSelectionEnabled),
         },
