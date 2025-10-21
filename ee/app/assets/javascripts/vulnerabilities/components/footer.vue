@@ -132,7 +132,7 @@ export default {
       };
     },
     mergeRequest() {
-      return this.vulnerability.mergeRequestLinks.at(-1);
+      return this.vulnerability.mergeRequestLinks.filter((m) => m.state !== 'closed').at(-1);
     },
   },
   watch: {
