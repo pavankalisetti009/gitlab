@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe Ai::FlowTriggers::UpdateService, feature_category: :agent_foundations do
+RSpec.describe Ai::FlowTriggers::UpdateService, feature_category: :duo_agent_platform do
   let_it_be(:project) { create(:project, :in_group) }
   let_it_be(:different_group) { create(:group) }
   let_it_be(:human_user) { create(:user, owner_of: [project.group, different_group]) }

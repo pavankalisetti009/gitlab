@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe Ai::DuoWorkflows::WorkflowPolicy, feature_category: :agent_foundations do
+RSpec.describe Ai::DuoWorkflows::WorkflowPolicy, feature_category: :duo_agent_platform do
   using RSpec::Parameterized::TableSyntax
 
   subject(:policy) { described_class.new(current_user, workflow) }

@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe Ai::DuoWorkflows::WorkflowsFinder, feature_category: :agent_foundations do
+RSpec.describe Ai::DuoWorkflows::WorkflowsFinder, feature_category: :duo_agent_platform do
   let_it_be(:ai_settings) { create(:namespace_ai_settings, duo_workflow_mcp_enabled: true) }
   let_it_be(:group) { create(:group, ai_settings: ai_settings) }
   let_it_be(:project) { create(:project, :public, group: group) }

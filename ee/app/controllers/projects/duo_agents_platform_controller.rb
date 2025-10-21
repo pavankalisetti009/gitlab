@@ -2,7 +2,7 @@
 
 module Projects
   class DuoAgentsPlatformController < Projects::ApplicationController
-    feature_category :agent_foundations
+    feature_category :duo_agent_platform
     before_action :check_access
     before_action do
       push_frontend_feature_flag(:ai_catalog_flows, current_user)

@@ -3,7 +3,7 @@
 require 'spec_helper'
 
 # rubocop:disable RSpec/MultipleMemoizedHelpers -- Many cases to deal with here.
-RSpec.describe 'Querying Duo Workflows Workflows', feature_category: :agent_foundations do
+RSpec.describe 'Querying Duo Workflows Workflows', feature_category: :duo_agent_platform do
   include GraphqlHelpers
 
   let_it_be(:ai_settings) { create(:namespace_ai_settings, duo_workflow_mcp_enabled: true) }

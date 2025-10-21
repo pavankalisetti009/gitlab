@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 require 'spec_helper'
-RSpec.describe ::Ai::DuoWorkflows::RevokeTokenService, feature_category: :agent_foundations do
+RSpec.describe ::Ai::DuoWorkflows::RevokeTokenService, feature_category: :duo_agent_platform do
   describe '#execute' do
     let_it_be(:user) { create(:user) }
     let_it_be(:another_user) { create(:user) }

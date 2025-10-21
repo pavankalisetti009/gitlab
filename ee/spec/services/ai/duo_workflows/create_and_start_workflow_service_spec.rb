@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe ::Ai::DuoWorkflows::CreateAndStartWorkflowService, feature_category: :agent_foundations do
+RSpec.describe ::Ai::DuoWorkflows::CreateAndStartWorkflowService, feature_category: :duo_agent_platform do
   subject(:result) { service.execute }
 
   let_it_be(:group) { create(:group) }

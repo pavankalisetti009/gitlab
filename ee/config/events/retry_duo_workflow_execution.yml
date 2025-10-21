@@ -14,7 +14,7 @@ additional_properties:
   workflow_id:
     description: The ID for the workflow
 product_categories:
-- agent_foundations
+- duo_agent_platform
 milestone: '17.8'
 introduced_by_url: https://gitlab.com/gitlab-org/gitlab/-/merge_requests/177070
 tiers:

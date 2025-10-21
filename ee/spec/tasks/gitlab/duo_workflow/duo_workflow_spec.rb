@@ -2,7 +2,7 @@
 
 require 'rake_helper'
 
-RSpec.describe 'gitlab:duo_workflow rake tasks', :silence_stdout, feature_category: :agent_foundations do
+RSpec.describe 'gitlab:duo_workflow rake tasks', :silence_stdout, feature_category: :duo_agent_platform do
   before do
     Rake.application.rake_require 'tasks/gitlab/duo_workflow/duo_workflow'
   end

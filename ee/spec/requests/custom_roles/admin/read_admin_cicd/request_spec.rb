@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe 'User with read_admin_cicd', :enable_admin_mode, feature_category: :runner do
+RSpec.describe 'User with read_admin_cicd', :enable_admin_mode, feature_category: :runner_core do
   let_it_be(:current_user) { create(:user) }
   let_it_be(:permission) { :read_admin_cicd }
   let_it_be(:role) { create(:admin_member_role, permission, user: current_user) }

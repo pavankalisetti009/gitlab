@@ -5,7 +5,7 @@ module API
     class ThirdPartyAgents < ::API::Base
       include APIGuard
 
-      feature_category :agent_foundations
+      feature_category :duo_agent_platform
 
       allow_access_with_scope [:ai_features, :api]
 

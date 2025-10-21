@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe API::Ai::ThirdPartyAgents, feature_category: :agent_foundations do
+RSpec.describe API::Ai::ThirdPartyAgents, feature_category: :duo_agent_platform do
   include WorkhorseHelpers
 
   let_it_be(:authorized_user) { create(:user) }

@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe ::Ai::DuoWorkflows::UpdateWorkflowStatusService, feature_category: :agent_foundations do
+RSpec.describe ::Ai::DuoWorkflows::UpdateWorkflowStatusService, feature_category: :duo_agent_platform do
   describe '#execute' do
     subject(:result) { described_class.new(workflow: workflow, current_user: user, status_event: "finish").execute }
 

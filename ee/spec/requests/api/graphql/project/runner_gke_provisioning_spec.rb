@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe 'RunnerGkeProvisioning', feature_category: :runner do
+RSpec.describe 'RunnerGkeProvisioning', feature_category: :runner_core do
   include GraphqlHelpers
   using RSpec::Parameterized::TableSyntax
 

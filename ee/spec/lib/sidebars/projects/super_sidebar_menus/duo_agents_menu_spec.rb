@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe Sidebars::Projects::SuperSidebarMenus::DuoAgentsMenu, feature_category: :agent_foundations do
+RSpec.describe Sidebars::Projects::SuperSidebarMenus::DuoAgentsMenu, feature_category: :duo_agent_platform do
   let_it_be(:project) { build(:project) }
   let_it_be(:user) { build(:user) }
   let(:context) { Sidebars::Projects::Context.new(current_user: user, container: project) }

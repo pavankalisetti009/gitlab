@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe 'AI Sidepanel', :js, feature_category: :agent_foundations do
+RSpec.describe 'AI Sidepanel', :js, feature_category: :duo_agent_platform do
   let_it_be(:project) { create(:project, :repository) }
   let_it_be(:user) { create(:user, :with_namespace) }
   let(:ai_sidepanel_selector) { '.paneled-view.ai-panels' }

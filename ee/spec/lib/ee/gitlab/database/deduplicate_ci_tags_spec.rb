@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe Gitlab::Database::DeduplicateCiTags, :aggregate_failures, feature_category: :runner do
+RSpec.describe Gitlab::Database::DeduplicateCiTags, :aggregate_failures, feature_category: :runner_core do
   let_it_be(:sec_connection) { ::SecApplicationRecord.connection }
   let_it_be(:ci_connection) { ::Ci::ApplicationRecord.connection }
   let_it_be(:project_id) { 1 }

@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe Gitlab::DuoWorkflow::Client, feature_category: :agent_foundations do
+RSpec.describe Gitlab::DuoWorkflow::Client, feature_category: :duo_agent_platform do
   let_it_be(:user) { create(:user) }
 
   before do

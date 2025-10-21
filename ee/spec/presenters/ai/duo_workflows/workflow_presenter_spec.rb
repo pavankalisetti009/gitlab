@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe ::Ai::DuoWorkflows::WorkflowPresenter, feature_category: :agent_foundations do
+RSpec.describe ::Ai::DuoWorkflows::WorkflowPresenter, feature_category: :duo_agent_platform do
   let(:workflow) { build_stubbed(:duo_workflows_workflow) }
   let_it_be(:user) { build_stubbed(:user) }
 
