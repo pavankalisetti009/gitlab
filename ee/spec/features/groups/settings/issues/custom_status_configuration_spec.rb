@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe 'Groups > Settings > Work items', :js, feature_category: :team_planning do
+RSpec.describe 'Groups > Settings > Issues', :js, feature_category: :team_planning do
   let_it_be(:group) { create(:group) }
   let_it_be(:subgroup) { create(:group, parent: group) }
   let_it_be(:maintainer) { create(:user, maintainer_of: [group, subgroup]) }
@@ -11,7 +11,6 @@ RSpec.describe 'Groups > Settings > Work items', :js, feature_category: :team_pl
 
   before do
     stub_licensed_features(work_item_status: true)
-    stub_feature_flags(work_item_status_mvc2: false)
   end
 
   shared_examples 'prevents access' do
@@ -75,7 +74,7 @@ RSpec.describe 'Groups > Settings > Work items', :js, feature_category: :team_pl
           click_button('Save')
         end
 
-        within_testid('lifecycle-container') do
+        within_testid('lifecycle-detail') do
           expect(page).to have_text('Triage custom status')
           expect(page).to have_text('To do custom status')
           expect(page).to have_text('In progress custom status')
@@ -94,7 +93,7 @@ RSpec.describe 'Groups > Settings > Work items', :js, feature_category: :team_pl
           click_button('Save')
         end
 
-        within_testid('lifecycle-container') do
+        within_testid('lifecycle-detail') do
           expect(page).to have_text('Edit me')
         end
 
@@ -107,7 +106,7 @@ RSpec.describe 'Groups > Settings > Work items', :js, feature_category: :team_pl
         end
         click_button('Close', match: :first)
 
-        within_testid('lifecycle-container') do
+        within_testid('lifecycle-detail') do
           expect(page).not_to have_text('Edit me')
           expect(page).to have_text('Delete me')
         end
@@ -120,7 +119,7 @@ RSpec.describe 'Groups > Settings > Work items', :js, feature_category: :team_pl
         click_button('Remove')
         click_button('Close', match: :first)
 
-        within_testid('lifecycle-container') do
+        within_testid('lifecycle-detail') do
           expect(page).not_to have_text('Edit me')
           expect(page).not_to have_text('Delete me')
         end
