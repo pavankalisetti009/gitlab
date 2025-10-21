@@ -14,14 +14,12 @@ RSpec.describe Security::Categories::FindOrCreateService, feature_category: :sec
   let(:service) do
     described_class.new(
       category_id: category_id,
-      template_type: template_type,
       namespace: namespace,
       current_user: current_user
     )
   end
 
   let(:category_id) { nil }
-  let(:template_type) { nil }
   let(:namespace) { root_group }
   let(:current_user) { user }
 
@@ -59,6 +57,8 @@ RSpec.describe Security::Categories::FindOrCreateService, feature_category: :sec
       end
 
       context 'when CreatePredefinedService returns an error' do
+        let(:category_id) { 'business_impact' }
+
         before do
           allow_next_instance_of(Security::Categories::CreatePredefinedService) do |service|
             allow(service).to receive(:execute).and_return(
@@ -73,78 +73,23 @@ RSpec.describe Security::Categories::FindOrCreateService, feature_category: :sec
         end
       end
 
-      context 'when CreatePredefinedService succeeds' do
-        before do
-          allow_next_instance_of(Security::Categories::CreatePredefinedService) do |service|
-            allow(service).to receive(:execute).and_return(ServiceResponse.success)
-          end
+      context 'when finding by persisted category_id' do
+        let(:category_id) { existing_category.id }
+
+        it 'returns the existing category' do
+          expect(execute).to be_success
+          expect(execute.payload[:category]).to eq(existing_category)
         end
 
-        context 'when finding by category_id' do
-          let(:category_id) { existing_category.id }
+        it 'does not call CreatePredefinedService' do
+          expect(Security::Categories::CreatePredefinedService).not_to receive(:new)
 
-          it 'returns the existing category' do
-            expect(execute).to be_success
-            expect(execute.payload[:category]).to eq(existing_category)
-          end
-
-          it 'calls CreatePredefinedService' do
-            expect_next_instance_of(Security::Categories::CreatePredefinedService) do |service|
-              expect(service).to receive(:execute).once.and_call_original
-            end
-
-            execute
-          end
-
-          context 'when category does not exist' do
-            let(:category_id) { non_existing_record_id }
-
-            it 'returns an error' do
-              expect(execute).to be_error
-              expect(execute.message).to eq('Category not found')
-            end
-          end
+          execute
         end
 
-        context 'when finding by template_type' do
-          let(:template_type) { predefined_category.template_type }
+        context 'when category does not exist' do
+          let(:category_id) { non_existing_record_id }
 
-          it 'returns the predefined category' do
-            expect(execute).to be_success
-            expect(execute.payload[:category]).to eq(predefined_category)
-          end
-
-          context 'when template_type category does not exist' do
-            let(:template_type) { 'exposure' }
-
-            it 'returns an error' do
-              expect(execute).to be_error
-              expect(execute.message).to eq('Category not found')
-            end
-          end
-
-          context 'when namespace is missing' do
-            let(:namespace) { nil }
-            let(:template_type) { 'business_impact' }
-
-            it 'returns namespace not found error' do
-              expect(execute).to be_error
-              expect(execute.message).to eq('Namespace not found')
-            end
-          end
-        end
-
-        context 'when both category_id and template_type are provided' do
-          let(:category_id) { existing_category.id }
-          let(:template_type) { 'business_impact' }
-
-          it 'prioritizes category_id over template_type' do
-            expect(execute).to be_success
-            expect(execute.payload[:category]).to eq(existing_category)
-          end
-        end
-
-        context 'when neither category_id nor template_type are provided' do
           it 'returns an error' do
             expect(execute).to be_error
             expect(execute.message).to eq('Category not found')
@@ -152,8 +97,8 @@ RSpec.describe Security::Categories::FindOrCreateService, feature_category: :sec
         end
       end
 
-      context 'when namespace is a subgroup' do
-        let(:namespace) { subgroup }
+      context 'when finding by template_type string' do
+        let(:category_id) { 'business_impact' }
 
         before do
           allow_next_instance_of(Security::Categories::CreatePredefinedService) do |service|
@@ -161,15 +106,62 @@ RSpec.describe Security::Categories::FindOrCreateService, feature_category: :sec
           end
         end
 
-        context 'when finding by template_type' do
-          let(:template_type) { 'business_impact' }
+        it 'returns the predefined category' do
+          expect(execute).to be_success
+          expect(execute.payload[:category]).to eq(predefined_category)
+        end
 
-          it 'searches in root_ancestor namespace' do
-            expect(::Security::Category).to receive(:by_namespace_and_template_type)
-              .with(root_group, template_type).and_call_original
-
-            execute
+        it 'calls CreatePredefinedService' do
+          expect_next_instance_of(Security::Categories::CreatePredefinedService) do |service|
+            expect(service).to receive(:execute).once.and_call_original
           end
+
+          execute
+        end
+
+        context 'when template_type category does not exist' do
+          let(:category_id) { 'exposure' }
+
+          it 'returns an error' do
+            expect(execute).to be_error
+            expect(execute.message).to eq('Category not found')
+          end
+        end
+
+        context 'when namespace is missing' do
+          let(:namespace) { nil }
+          let(:category_id) { 'business_impact' }
+
+          it 'returns namespace not found error' do
+            expect(execute).to be_error
+            expect(execute.message).to eq('Namespace not found')
+          end
+        end
+      end
+
+      context 'when category_id is not provided' do
+        let(:category_id) { nil }
+
+        it 'returns an error' do
+          expect(execute).to be_error
+          expect(execute.message).to eq('Category not found')
+        end
+      end
+
+      context 'when namespace is a subgroup' do
+        let(:namespace) { subgroup }
+        let(:category_id) { 'business_impact' }
+
+        before do
+          allow_next_instance_of(Security::Categories::CreatePredefinedService) do |service|
+            allow(service).to receive(:execute).and_return(ServiceResponse.success)
+          end
+        end
+
+        it 'searches in root_ancestor namespace' do
+          expect(::Security::Category).to receive(:by_namespace_and_template_type)
+            .with(root_group, category_id).and_call_original
+          execute
         end
       end
     end

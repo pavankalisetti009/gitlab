@@ -18,7 +18,7 @@
         html: { class: '!gl-w-full js-users-signup-welcome',
                 'aria-live' => 'assertive',
                 data: { testid: 'welcome-form' } }) do |f|
-        = render Pajamas::CardComponent.new( card_options: { class: 'gl-rounded-none' }, body_options: { class: 'gl-bg-default gl-p-6' }) do |c|
+        = render Pajamas::CardComponent.new( card_options: { class: 'gl-border-1 gl-border-solid gl-border-default gl-rounded-none' }, body_options: { class: 'gl-bg-default gl-p-6' }) do |c|
           - c.with_body do
             .devise-errors
               = render 'devise/shared/error_messages', resource: current_user
