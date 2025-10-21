@@ -934,6 +934,16 @@ RSpec.describe API::Epics, :aggregate_failures, feature_category: :portfolio_man
         expect(json_response['description']).to include 'epic description'
         expect(json_response['labels']).to be_empty
       end
+
+      context 'when authenticated with a token that has the ai_workflows scope' do
+        it_behaves_like 'forbids quick actions for ai_workflows scope' do
+          let(:method) { :post }
+          let(:url) { "/groups/#{group.path}/epics" }
+          let(:field) { :description }
+          let(:params) { { title: 'My epic' } }
+          let(:success_status) { :created }
+        end
+      end
     end
   end
 
@@ -1188,10 +1198,40 @@ RSpec.describe API::Epics, :aggregate_failures, feature_category: :portfolio_man
           end
         end
 
-        it_behaves_like 'ai_workflows scope' do
-          subject(:epic_action) { put api(url, oauth_access_token: oauth_token), params: { title: 'updated epic' } }
+        context 'when authenticated with a token that has the ai_workflows scope' do
+          it_behaves_like 'ai_workflows scope' do
+            subject(:epic_action) { put api(url, oauth_access_token: oauth_token), params: { title: 'updated epic' } }
 
-          let(:expected_status) { :ok }
+            let(:expected_status) { :ok }
+          end
+
+          it_behaves_like 'forbids quick actions for ai_workflows scope' do
+            let(:method) { :put }
+            let(:url) { "/groups/#{group.path}/epics/#{epic.iid}" }
+            let(:field) { :description }
+            let(:success_status) { :ok }
+          end
+        end
+
+        context 'when update service returns an invalid epic' do
+          before do
+            epic.errors.add(:base, "Something went wrong")
+
+            allow_next_instance_of(::WorkItems::LegacyEpics::UpdateService) do |service|
+              allow(service).to receive(:execute).and_return(epic)
+            end
+
+            allow(epic).to receive(:valid?).and_return(false)
+          end
+
+          it 'returns 400 with validation error' do
+            put api(url, user), params: { title: 'Title' }
+
+            expect(response).to have_gitlab_http_status(:bad_request)
+
+            json = Gitlab::Json.parse(response.body)
+            expect(json['message']['base']).to include("Something went wrong")
+          end
         end
       end
     end

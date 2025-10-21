@@ -80,6 +80,15 @@ RSpec.describe API::Notes, :aggregate_failures, feature_category: :portfolio_man
         end
       end
     end
+
+    context 'when authenticated with a token that has the ai_workflows scope' do
+      it_behaves_like 'forbids quick actions for ai_workflows scope' do
+        let(:method) { :post }
+        let(:url) { "/groups/#{group.id}/epics/#{epic.id}/notes" }
+        let(:field) { :body }
+        let(:success_status) { :created }
+      end
+    end
   end
 
   context "when noteable is a WikiPage::Meta for a group wiki" do
@@ -104,5 +113,27 @@ RSpec.describe API::Notes, :aggregate_failures, feature_category: :portfolio_man
     let!(:issue_note) { create(:note, noteable: issue, project: project, author: user) }
 
     it_behaves_like "composite identity attribution"
+
+    context 'when authenticated with a token that has the ai_workflows scope' do
+      it_behaves_like 'forbids quick actions for ai_workflows scope' do
+        let(:method) { :post }
+        let(:url) { "/projects/#{project.id}/issues/#{issue.iid}/notes" }
+        let(:field) { :body }
+        let(:success_status) { :created }
+      end
+    end
+  end
+
+  context "when noteable is an Merge Request" do
+    let!(:merge_request) { create(:merge_request, source_project: project, target_project: project, author: user) }
+
+    context 'when authenticated with a token that has the ai_workflows scope' do
+      it_behaves_like 'forbids quick actions for ai_workflows scope' do
+        let(:method) { :post }
+        let(:url) { "/projects/#{project.id}/merge_requests/#{merge_request.iid}/notes" }
+        let(:field) { :body }
+        let(:success_status) { :created }
+      end
+    end
   end
 end

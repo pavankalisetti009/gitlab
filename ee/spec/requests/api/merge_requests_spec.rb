@@ -276,6 +276,15 @@ RSpec.describe API::MergeRequests, feature_category: :code_review_workflow do
         expect(merge_request.approval_rules.first.approvals_required).to eq(2)
       end
     end
+
+    context 'when authenticated with a token that has the ai_workflows scope' do
+      it_behaves_like 'forbids quick actions for ai_workflows scope' do
+        let(:method) { :put }
+        let(:url) { "/projects/#{project.id}/merge_requests/#{merge_request.iid}" }
+        let(:field) { :description }
+        let(:success_status) { :ok }
+      end
+    end
   end
 
   describe 'POST /projects/:id/create_ci_config' do
@@ -511,6 +520,18 @@ RSpec.describe API::MergeRequests, feature_category: :code_review_workflow do
         expect(merge_request_approval_rules).to include(a_hash_including('name' => regular_rule.name, 'rule_type' => 'regular', 'approvals_required' => 3))
 
         expect(merge_request.approval_rules.map(&:user_ids)).to match_array([[], project_approvers.map(&:id)])
+      end
+    end
+
+    context 'when authenticated with a token that has the ai_workflows scope' do
+      it_behaves_like 'forbids quick actions for ai_workflows scope' do
+        let(:method) { :post }
+        let(:url) { "/projects/#{project.id}/merge_requests" }
+        let(:success_status) { :created }
+        let(:field) { :description }
+        let(:params) do
+          { title: 'Test merge request', source_branch: 'feature_conflict', target_branch: 'master' }
+        end
       end
     end
   end

@@ -17,6 +17,27 @@ module EE
         include EE::Gitlab::QuickActions::AmazonQActions
         # rubocop: enable Cop/InjectEnterpriseEditionModule
       end
+
+      def execute(content, quick_action_target, only: nil)
+        result = super
+
+        check_quick_actions_availability(result.last)
+        result
+      end
+
+      private
+
+      def check_quick_actions_availability(commands)
+        return if quick_actions_check_not_needed?(commands)
+        return if params[:scope_validator].permit_quick_actions?
+
+        message = 'Quick actions cannot be used with AI workflows.'
+        raise ::QuickActions::InterpretService::QuickActionsNotAllowedError, message
+      end
+
+      def quick_actions_check_not_needed?(commands)
+        commands.blank? || params[:scope_validator].blank?
+      end
     end
   end
 end
