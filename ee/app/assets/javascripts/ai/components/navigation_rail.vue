@@ -32,6 +32,11 @@ export default {
       required: false,
       default: true,
     },
+    showSuggestionsTab: {
+      type: Boolean,
+      required: false,
+      default: true,
+    },
   },
   computed: {
     duoShortcutKey() {
@@ -127,6 +132,7 @@ export default {
       @click="toggleTab('sessions')"
     />
     <gl-button
+      v-if="showSuggestionsTab"
       v-gl-tooltip.left
       icon="suggestion-ai"
       class="!gl-rounded-lg max-lg:gl-ml-auto lg:gl-mt-auto"
