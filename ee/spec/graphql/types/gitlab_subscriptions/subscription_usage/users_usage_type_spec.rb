@@ -15,4 +15,8 @@ RSpec.describe GitlabSchema.types['GitlabSubscriptionUsageUsersUsage'], feature_
       :users
     ])
   end
+
+  it 'sets max_page_size of 20 to users field' do
+    expect(described_class.fields['users'].max_page_size).to eq(20)
+  end
 end

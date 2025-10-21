@@ -3,7 +3,7 @@
 module Types
   module GitlabSubscriptions
     module SubscriptionUsage
-      class UsersType < BaseObject
+      class UserType < BaseObject
         graphql_name 'GitlabSubscriptionUsageUsers'
         description 'Describes the user with their usage data'
 

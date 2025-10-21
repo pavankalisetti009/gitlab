@@ -31045,7 +31045,24 @@ Describes the usage of consumables by users under the subscription.
 | <a id="gitlabsubscriptionusageusersusagetotalusersusingcredits"></a>`totalUsersUsingCredits` | [`Int`](#int) | Total number of users consuming GitLab Credits. |
 | <a id="gitlabsubscriptionusageusersusagetotalusersusingoverage"></a>`totalUsersUsingOverage` | [`Int`](#int) | Total number of users consuming overage. |
 | <a id="gitlabsubscriptionusageusersusagetotalusersusingpool"></a>`totalUsersUsingPool` | [`Int`](#int) | Total number of users consuming pool GitLab Credits. |
-| <a id="gitlabsubscriptionusageusersusageusers"></a>`users` | [`GitlabSubscriptionUsageUsersConnection`](#gitlabsubscriptionusageusersconnection) | List of users with their usage data. (see [Connections](#connections)) |
+
+#### Fields with arguments
+
+##### `GitlabSubscriptionUsageUsersUsage.users`
+
+List of users with their usage data.
+
+Returns [`GitlabSubscriptionUsageUsersConnection`](#gitlabsubscriptionusageusersconnection).
+
+This field returns a [connection](#connections). It accepts the
+four standard [pagination arguments](#pagination-arguments):
+`before: String`, `after: String`, `first: Int`, and `last: Int`.
+
+###### Arguments
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="gitlabsubscriptionusageusersusageusersusername"></a>`username` | [`String`](#string) | Username of the User. |
 
 ### `GoogleCloudArtifactRegistryDockerImage`
 

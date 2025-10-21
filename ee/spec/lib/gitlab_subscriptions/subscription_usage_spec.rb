@@ -550,144 +550,18 @@ RSpec.describe GitlabSubscriptions::SubscriptionUsage, feature_category: :consum
   end
 
   describe '#users_usage' do
-    subject(:users_usage) { subscription_usage.users_usage }
-
-    context 'when subscription_target is :namespace' do
-      let(:subscription_usage) do
-        described_class.new(
-          subscription_target: :namespace,
-          subscription_usage_client: subscription_usage_client,
-          namespace: group
-        )
-      end
-
-      it 'includes namespace users in the users field' do
-        expect(users_usage.users).to match_array(users.first(2))
-      end
-
-      it 'sets declarative_policy_subject to SubscriptionUsage' do
-        expect(users_usage.declarative_policy_subject).to eq(subscription_usage)
-      end
-
-      context 'when namespace is nil' do
-        let(:subscription_usage) do
-          described_class.new(
-            subscription_target: :namespace,
-            subscription_usage_client: subscription_usage_client
-          )
-        end
-
-        it 'raises an error when trying to get users' do
-          expect { users_usage.users }.to raise_error(NoMethodError)
-        end
-      end
-
-      context 'when namespace has no users' do
-        let(:no_members_namespace) { create(:group) }
-        let(:subscription_usage) do
-          described_class.new(
-            subscription_target: :namespace,
-            subscription_usage_client: subscription_usage_client,
-            namespace: no_members_namespace
-          )
-        end
-
-        it 'returns empty collection' do
-          expect(users_usage.users).to be_empty
-        end
-      end
-
-      context 'with user stats' do
-        before do
-          allow(subscription_usage_client).to receive(:get_users_usage_stats).and_return(client_response)
-        end
-
-        context 'when the client returns a successful response' do
-          let(:client_response) do
-            {
-              success: true,
-              usersUsage: {
-                totalUsersUsingCredits: 3,
-                totalUsersUsingPool: 2,
-                totalUsersUsingOverage: 1,
-                dailyUsage: [{ date: '2025-10-01', creditsUsed: 321 }]
-              }
-            }
-          end
-
-          it 'returns the expected data' do
-            expect(users_usage).to have_attributes(
-              total_users_using_credits: 3,
-              total_users_using_pool: 2,
-              total_users_using_overage: 1
-            )
-
-            expect(users_usage.daily_usage).to be_a(Array)
-            expect(users_usage.daily_usage.first).to be_a(GitlabSubscriptions::SubscriptionUsage::DailyUsage)
-            expect(users_usage.daily_usage.first).to have_attributes(
-              date: '2025-10-01',
-              credits_used: 321,
-              declarative_policy_subject: subscription_usage
-            )
-          end
-        end
-
-        context 'when the client returns an unsuccessful response' do
-          let(:client_response) { { success: false } }
-
-          it 'returns nil' do
-            expect(users_usage).to have_attributes(
-              total_users_using_credits: nil,
-              total_users_using_pool: nil,
-              total_users_using_overage: nil,
-              daily_usage: []
-            )
-          end
-        end
-
-        context 'when the client response is missing the data' do
-          let(:client_response) { { success: true, usersUsage: nil } }
-
-          it 'returns nil' do
-            expect(users_usage).to have_attributes(
-              total_users_using_credits: nil,
-              total_users_using_pool: nil,
-              total_users_using_overage: nil,
-              daily_usage: []
-            )
-          end
-        end
-      end
+    let(:subscription_usage) do
+      described_class.new(
+        subscription_target: :instance,
+        subscription_usage_client: subscription_usage_client
+      )
     end
 
-    context 'when subscription_target is :instance' do
-      let(:subscription_usage) do
-        described_class.new(
-          subscription_target: :instance,
-          subscription_usage_client: subscription_usage_client
-        )
-      end
+    it 'initiates a UserUsage object with the correct params' do
+      expect(GitlabSubscriptions::SubscriptionsUsage::UserUsage).to receive(:new)
+        .with(subscription_usage: subscription_usage)
 
-      it 'includes all users in the users field' do
-        expect(users_usage.users).to match_array(users)
-      end
-
-      it 'sets declarative_policy_subject to self' do
-        expect(users_usage.declarative_policy_subject).to eq(subscription_usage)
-      end
-    end
-
-    context 'when subscription_target is unknown' do
-      let(:subscription_usage) do
-        described_class.new(
-          subscription_target: :unknown,
-          subscription_usage_client: subscription_usage_client
-        )
-      end
-
-      it 'returns nil for unknown subscription target' do
-        expect(users_usage.users).to be_nil
-      end
+      subscription_usage.users_usage
     end
   end
 end
