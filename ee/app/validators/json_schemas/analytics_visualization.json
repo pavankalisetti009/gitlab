@@ -132,6 +132,15 @@
         "includeLegendAvgMax": {
           "type": "boolean"
         },
+        "responsive": {
+          "type": "boolean"
+        },
+        "fixed": {
+          "type": "boolean"
+        },
+        "stacked": {
+          "type": "string"
+        },
         "fields": {
           "type": "array",
           "items": {

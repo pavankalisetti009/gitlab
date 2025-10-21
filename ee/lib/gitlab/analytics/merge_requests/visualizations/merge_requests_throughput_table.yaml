@@ -6,6 +6,9 @@ data:
   query:
     dateRange: 365d
 options:
+  responsive: false
+  fixed: true
+  stacked: md
   fields:
     - key: link
       label: Merge Request
@@ -13,6 +16,7 @@ options:
       thClass: gl-w-1/4
     - key: dateMerged
       label: Date Merged
+      thClass: gl-w-1/8
       component: FormatTime
     - key: timeToMerge
       label: Time to merge

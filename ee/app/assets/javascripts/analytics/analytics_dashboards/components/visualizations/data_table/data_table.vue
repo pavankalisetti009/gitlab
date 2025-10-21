@@ -55,8 +55,14 @@ export default {
         tdClass: 'gl-truncate gl-max-w-0',
       }));
     },
-    fields() {
-      return this.options.fields || this.derivedFields;
+    sanitizedOptions() {
+      const { responsive, fixed, stacked, fields } = this.options;
+      return {
+        responsive: responsive ?? true,
+        fixed: fixed ?? false,
+        stacked: stacked ?? false,
+        fields: fields || this.derivedFields,
+      };
     },
     showPaginationControls() {
       return Boolean(this.pageInfo.hasPreviousPage || this.pageInfo.hasNextPage);
@@ -97,7 +103,15 @@ export default {
 
 <template>
   <div>
-    <gl-table-lite :fields="fields" :items="nodes" hover responsive class="gl-mt-4">
+    <gl-table-lite
+      :fields="sanitizedOptions.fields"
+      :responsive="sanitizedOptions.responsive"
+      :fixed="sanitizedOptions.fixed"
+      :stacked="sanitizedOptions.stacked"
+      :items="nodes"
+      hover
+      class="gl-mt-4"
+    >
       <template #cell()="{ value, field }">
         <component :is="field.component" v-if="field.component" v-bind="value" />
         <gl-link v-else-if="isLink(value)" :href="value.href"
