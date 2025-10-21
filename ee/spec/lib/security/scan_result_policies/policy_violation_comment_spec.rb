@@ -451,6 +451,38 @@ RSpec.describe Security::ScanResultPolicies::PolicyViolationComment, feature_cat
         # rubocop:enable RSpec/MultipleMemoizedHelpers
       end
 
+      context 'with enforced license_finding violations' do
+        let_it_be(:policy2) do
+          create(:scan_result_policy_read, project: project,
+            security_orchestration_policy_configuration: security_orchestration_policy_configuration)
+        end
+
+        let_it_be(:normal_db_policy_2) do
+          create(:security_policy, policy_index: 5,
+            security_orchestration_policy_configuration: security_orchestration_policy_configuration)
+        end
+
+        let_it_be(:normal_policy_rule_2) { create(:approval_policy_rule, security_policy: normal_db_policy_2) }
+
+        before do
+          comment.add_report_type('license_scanning', true)
+
+          build_violation_details(:license_scanning,
+            {
+              violations: { license_scanning: { 'MIT' => %w[package-a package-b] } }
+            },
+            policy_read: policy2,
+            policy_rule: normal_policy_rule_2,
+            name: 'License Policy')
+        end
+
+        it { is_expected.to include(described_class::VIOLATIONS_BLOCKING_TITLE) }
+        it { is_expected.to include('Enforced `license_finding` violations') }
+        it { is_expected.to include('Out-of-policy licenses:') }
+        it { is_expected.to include('MIT') }
+        it { is_expected.to include('Used by package-a, package-b') }
+      end
+
       describe 'summary' do
         let_it_be(:policy1) { create(:scan_result_policy_read, project: project) }
         let_it_be(:policy2) { create(:scan_result_policy_read, project: project) }
