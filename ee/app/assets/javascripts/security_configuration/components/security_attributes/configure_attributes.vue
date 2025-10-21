@@ -4,6 +4,8 @@ import { s__, sprintf } from '~/locale';
 import * as Sentry from '~/sentry/sentry_browser_wrapper';
 import { createAlert } from '~/alert';
 import { confirmAction } from '~/lib/utils/confirm_via_gl_modal/confirm_via_gl_modal';
+import { convertToGraphQLId } from '~/graphql_shared/utils';
+import { TYPENAME_NAMESPACE } from '~/graphql_shared/constants';
 import getSecurityAttributesQuery from '../../graphql/security_attributes.query.graphql';
 import createSecurityCategoryMutation from '../../graphql/security_category_create.mutation.graphql';
 import updateSecurityCategoryMutation from '../../graphql/security_category_update.mutation.graphql';
@@ -23,7 +25,7 @@ export default {
     AttributeDrawer,
   },
   mixins: [InternalEvents.mixin()],
-  inject: ['groupFullPath'],
+  inject: ['groupFullPath', 'namespaceId'],
   data() {
     return {
       group: {
@@ -48,6 +50,11 @@ export default {
           this.selectCategory(data.group.securityCategories[0]);
         }
       },
+    },
+  },
+  computed: {
+    graphqlNamespaceId() {
+      return convertToGraphQLId(TYPENAME_NAMESPACE, this.namespaceId);
     },
   },
   mounted() {
@@ -78,7 +85,7 @@ export default {
         const categoryResult = await this.$apollo.mutate({
           mutation: id ? updateSecurityCategoryMutation : createSecurityCategoryMutation,
           variables: {
-            namespaceId: this.group.id,
+            namespaceId: this.graphqlNamespaceId,
             id,
             name,
             description,
@@ -96,6 +103,7 @@ export default {
               const attributesResult = await this.$apollo.mutate({
                 mutation: createSecurityAttributesMutation,
                 variables: {
+                  namespaceId: this.graphqlNamespaceId,
                   categoryId: createdCategory.id,
                   attributes: this.unsavedAttributes,
                 },
@@ -178,6 +186,7 @@ export default {
             .mutate({
               mutation: createSecurityAttributesMutation,
               variables: {
+                namespaceId: this.graphqlNamespaceId,
                 categoryId: this.selectedCategory.id,
                 attributes: [attribute],
               },
