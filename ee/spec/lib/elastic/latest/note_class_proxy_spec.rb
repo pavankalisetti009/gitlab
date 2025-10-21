@@ -45,7 +45,7 @@ RSpec.describe Elastic::Latest::NoteClassProxy, feature_category: :global_search
       ensure_elasticsearch_index!
     end
 
-    # remove shared_examples when search_notes_use_membership_filter is removed
+    # move out of shared_examples when backfill_traversal_ids_in_notes migration is made obsolete
     shared_examples 'search at all levels' do
       describe 'global search' do
         let(:search_level) { :global }
@@ -174,22 +174,16 @@ RSpec.describe Elastic::Latest::NoteClassProxy, feature_category: :global_search
       end
     end
 
-    context 'when search_notes_use_membership_filter is true' do
-      before do
-        stub_feature_flags(search_notes_use_membership_filter: true)
-      end
-
-      it_behaves_like 'search at all levels' do
-        let(:issues_context_name) { "filters:permissions:#{search_level}:issues_access_level:enabled" }
-        let(:merge_requests_context_name) { "filters:permissions:#{search_level}:merge_requests_access_level:enabled" }
-        let(:repository_context_name) { "filters:permissions:#{search_level}:repository_level:enabled" }
-        let(:snippets_context_name) { "filters:permissions:#{search_level}:snippets_access_level:enabled" }
-      end
+    it_behaves_like 'search at all levels' do
+      let(:issues_context_name) { "filters:permissions:#{search_level}:issues_access_level:enabled" }
+      let(:merge_requests_context_name) { "filters:permissions:#{search_level}:merge_requests_access_level:enabled" }
+      let(:repository_context_name) { "filters:permissions:#{search_level}:repository_level:enabled" }
+      let(:snippets_context_name) { "filters:permissions:#{search_level}:snippets_access_level:enabled" }
     end
 
-    context 'when search_notes_use_membership_filter is false' do
+    context 'when backfill_traversal_ids_in_notes migration is not complete' do
       before do
-        stub_feature_flags(search_notes_use_membership_filter: false)
+        set_elasticsearch_migration_to(:backfill_traversal_ids_in_notes, including: false)
       end
 
       it_behaves_like 'search at all levels' do

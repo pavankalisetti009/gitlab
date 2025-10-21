@@ -176,21 +176,6 @@ RSpec.describe Note, :elastic_delete_by_query, feature_category: :global_search 
     let(:record2) { create(:note, note: 'test-note', project: issue2.project, noteable: issue2) }
   end
 
-  # the behavior after the flag is removed till blocks cross project search but does not rely upon
-  # the project_ids being passed to the search service
-  context 'when search_notes_use_membership_filter ff is false' do
-    before do
-      stub_feature_flags(search_notes_use_membership_filter: false)
-    end
-
-    it_behaves_like 'no results when the user cannot read cross project' do
-      let(:issue1) { create(:issue, project: project) }
-      let(:issue2) { create(:issue, project: project2) }
-      let(:record1) { create(:note, note: 'test-note', project: issue1.project, noteable: issue1) }
-      let(:record2) { create(:note, note: 'test-note', project: issue2.project, noteable: issue2) }
-    end
-  end
-
   def create_notes_for(issue, note)
     create(:note, note: note, project: issue.project, noteable: issue)
     create(:note, project: issue.project, noteable: issue)

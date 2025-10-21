@@ -3,6 +3,7 @@ import { xor } from 'lodash';
 import { GlSprintf } from '@gitlab/ui';
 import { s__ } from '~/locale';
 import { SEVERITY_LEVELS, REPORT_TYPES_DEFAULT } from 'ee/security_dashboard/constants';
+import glFeatureFlagsMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
 import BranchExceptionSelector from '../../branch_exception_selector.vue';
 import {
   ANY_OPERATOR,
@@ -19,6 +20,7 @@ import { buildFiltersFromRule, getDefaultRule, groupVulnerabilityStatesWithDefau
 import BranchSelection from '../../branch_selection.vue';
 import SeverityFilter from './scan_filters/severity_filter.vue';
 import AgeFilter from './scan_filters/age_filter.vue';
+import KevFilter from './scan_filters/kev_filter.vue';
 import StatusFilters from './scan_filters/status_filters.vue';
 import AttributeFilters from './scan_filters/attribute_filters.vue';
 import {
@@ -37,6 +39,7 @@ import {
 } from './scan_filters/constants';
 import NumberRangeSelect from './number_range_select.vue';
 import ScanTypeSelect from './scan_type_select.vue';
+import { buildVulnerabilitiesPayload, getVulnerabilityAttribute } from './utils';
 
 export default {
   FILTERS,
@@ -51,6 +54,7 @@ export default {
   ),
   components: {
     BranchExceptionSelector,
+    KevFilter,
     SectionLayout,
     GlSprintf,
     BranchSelection,
@@ -63,6 +67,7 @@ export default {
     AttributeFilters,
     NumberRangeSelect,
   },
+  mixins: [glFeatureFlagsMixin()],
   inject: ['namespaceType'],
   props: {
     disabledRuleTypes: {
@@ -81,6 +86,12 @@ export default {
     };
   },
   computed: {
+    hasKevFilterEnabled() {
+      return this.glFeatures.securityPoliciesKevFilter;
+    },
+    kevFilterValue() {
+      return getVulnerabilityAttribute(this.initRule, 'known_exploited');
+    },
     severityLevels: {
       get() {
         const { severity_levels: severityLevels = [] } = this.initRule;
@@ -207,6 +218,11 @@ export default {
     },
     setBranchType(value) {
       this.$emit('changed', value);
+    },
+    setKevFilter(value) {
+      this.$emit('changed', {
+        ...buildVulnerabilitiesPayload(this.initRule, 'known_exploited', value),
+      });
     },
     isFilterSelected(filter) {
       return Boolean(this.filters[filter]);
@@ -393,6 +409,8 @@ export default {
 
     <section-layout class="gl-pr-0 gl-pt-3" :show-remove-button="false">
       <template #content>
+        <kev-filter v-if="hasKevFilterEnabled" :selected="kevFilterValue" @select="setKevFilter" />
+
         <severity-filter
           :selected="severityLevels"
           class="!gl-bg-default"
