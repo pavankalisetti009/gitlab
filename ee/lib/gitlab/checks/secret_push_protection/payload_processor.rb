@@ -244,6 +244,32 @@ module Gitlab
           # -- TODO: pass changed paths with diff blob objects and move this exclusion process into the gem.
           paths.reject! { |changed_path| exclusions_manager.matches_excluded_path?(changed_path.path) }
 
+          begin
+            paths_breakdown = paths.each_with_object(Hash.new(0)) do |changed_path, count|
+              if changed_path.status.nil?
+                count['unknown'] += 1
+              else
+                status = changed_path.status.to_s.downcase
+
+                count[status] += 1
+              end
+            end
+
+            secret_detection_logger.info(
+              build_structured_payload(
+                message: 'secret_push_protection_number_of_changed_paths',
+                total_changed_paths: paths.size,
+                paths_breakdown: paths_breakdown
+              )
+            )
+          rescue StandardError => e
+            ::Gitlab::ErrorTracking.track_exception(
+              e,
+              project_id: project.id,
+              extra: { context: 'number_of_changed_paths_calculation' }
+            )
+          end
+
           # Make multiple DiffBlobsRequests with smaller batch sizes to prevent timeout when generating diffs
           paths.each_slice(PATHS_BATCH_SIZE) do |paths_slice|
             diff_slice = if Feature.enabled?(:secret_detection_transition_to_raw_info_gitaly_endpoint, project)
