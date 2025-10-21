@@ -89,6 +89,31 @@ module API
         end
       end
 
+      desc 'Modify an enterprise user' do
+        success ::API::Entities::UserPublic
+      end
+      params do
+        requires :user_id, type: Integer, desc: 'ID of user account.'
+        optional :name, type: String, desc: 'Name of the user account.'
+        optional :email, type: String, desc: 'Email address of the user account. Must be from a verified group domain.'
+      end
+      patch ":id/enterprise_users/:user_id" do
+        user = user_group.enterprise_users.find(declared_params[:user_id])
+
+        result = ::Users::UpdateService.new(
+          current_user,
+          declared_params(include_missing: false).except(:user_id).merge(user: user, force_name_change: true)
+        ).execute do |user|
+          user.skip_reconfirmation! if user.enterprise_group.owner_of_email?(declared_params[:email])
+        end
+
+        if result[:status] == :success
+          present user, with: ::API::Entities::UserPublic
+        else
+          render_api_error!(result[:message], result[:reason] || :bad_request)
+        end
+      end
+
       desc 'Delete an enterprise user'
       params do
         requires :user_id, type: Integer, desc: 'ID of user account.'
