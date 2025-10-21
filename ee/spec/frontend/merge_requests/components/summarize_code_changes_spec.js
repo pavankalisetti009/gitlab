@@ -27,7 +27,7 @@ let aiActionMutationHandler;
 
 const { bindInternalEventDocument } = useMockInternalEventsTracking();
 
-function createComponent() {
+function createComponent(props = {}) {
   aiResponseSubscriptionHandler = createMockSubscription();
   aiActionMutationHandler = jest.fn().mockResolvedValue({ data: { aiAction: { errors: [] } } });
   const mockApollo = createMockApollo([[aiActionMutation, aiActionMutationHandler]]);
@@ -38,6 +38,9 @@ function createComponent() {
   );
 
   wrapper = mountExtended(SummarizeCodeChanges, {
+    propsData: {
+      ...props,
+    },
     apolloProvider: mockApollo,
     provide: {
       projectId: '1',
@@ -177,6 +180,31 @@ describe('Merge request summarize code changes', () => {
       findButton().trigger('click');
 
       expect(trackEventSpy).toHaveBeenCalledWith('click_summarize_code_changes', {}, undefined);
+    });
+  });
+
+  describe('when disabled reason is set', () => {
+    const disabledReason = 'No changes between source and target branches';
+
+    beforeEach(() => {
+      createComponent({
+        disabledReason,
+      });
+    });
+
+    it('disables the button', () => {
+      expect(findButton().props('disabled')).toBe(true);
+    });
+
+    it('sets the tooltip', () => {
+      expect(wrapper.attributes('title')).toEqual(disabledReason);
+    });
+  });
+
+  describe('when disabled reason is not set', () => {
+    it('does not set the tooltip', () => {
+      createComponent();
+      expect(wrapper.attributes('title')).toBeUndefined();
     });
   });
 });

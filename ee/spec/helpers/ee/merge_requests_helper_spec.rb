@@ -205,4 +205,51 @@ RSpec.describe EE::MergeRequestsHelper, feature_category: :code_review_workflow 
       end
     end
   end
+
+  describe '#summarize_new_merge_request_disabled_reason' do
+    subject(:summarize_new_merge_request_disabled_reason) do
+      helper.summarize_new_merge_request_disabled_reason(merge_request)
+    end
+
+    let(:project) { build_stubbed(:project) }
+    let(:merge_request) { build_stubbed(:merge_request, project: project) }
+    let(:source_branch_sha) { 'abc' }
+    let(:target_branch_sha) { 'def' }
+    let(:diff_collection) { instance_double(Gitlab::Git::DiffCollection, any?: true) }
+
+    before do
+      allow(merge_request).to receive_messages(
+        source_branch_sha: source_branch_sha,
+        target_branch_sha: target_branch_sha
+      )
+
+      allow_next_instance_of(Gitlab::Git::Compare) do |compare|
+        allow(compare).to receive(:diffs).and_return(diff_collection)
+      end
+    end
+
+    context 'when no source branch' do
+      let(:source_branch_sha) { nil }
+
+      it { is_expected.to eq('Source branch not available') }
+    end
+
+    context 'when no target branch' do
+      let(:target_branch_sha) { nil }
+
+      it { is_expected.to eq('Target branch not available') }
+    end
+
+    context 'when diff between source and target branches is empty' do
+      let(:diff_collection) { instance_double(Gitlab::Git::DiffCollection, any?: false) }
+
+      it { is_expected.to eq('No changes between source and target branches') }
+    end
+
+    context 'when diff between source and target branches is not empty' do
+      let(:diff_collection) { instance_double(Gitlab::Git::DiffCollection, any?: true) }
+
+      it { is_expected.to be_nil }
+    end
+  end
 end
