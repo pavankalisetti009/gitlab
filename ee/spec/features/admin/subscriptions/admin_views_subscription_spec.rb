@@ -46,7 +46,7 @@ RSpec.describe 'Admin views Subscription', :js, feature_category: :plan_provisio
         allow(Gitlab).to receive(:com?).and_return(true)
       end
 
-      it 'shows a message with a warning affecting all customers' do
+      it 'shows a message with a warning affecting all customers', quarantine: 'https://gitlab.com/gitlab-org/gitlab/-/issues/560778' do
         visit(admin_subscription_path)
 
         click_button 'Remove license'
