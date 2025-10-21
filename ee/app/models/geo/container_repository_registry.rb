@@ -7,9 +7,6 @@ module Geo
     include ::Geo::VerifiableRegistry
     extend ::Gitlab::Utils::Override
 
-    MODEL_CLASS = ::ContainerRepository
-    MODEL_FOREIGN_KEY = :container_repository_id
-
     belongs_to :container_repository
 
     ### Remove it after data migration
@@ -38,6 +35,14 @@ module Geo
     class << self
       include Delay
       extend ::Gitlab::Utils::Override
+
+      def model_class
+        ::ContainerRepository
+      end
+
+      def model_foreign_key
+        :container_repository_id
+      end
 
       ### Remove it after data migration
       # Issue: https://gitlab.com/gitlab-org/gitlab/-/issues/371667

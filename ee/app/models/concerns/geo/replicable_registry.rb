@@ -20,7 +20,7 @@ module Geo
       end
 
       def for_model_record_id(id)
-        find_or_initialize_by(self::MODEL_FOREIGN_KEY => id)
+        find_or_initialize_by(model_foreign_key => id)
       end
 
       def declarative_policy_class
@@ -178,7 +178,7 @@ module Geo
         # If state is set to pending that means that pending! was called
         # during the sync so we need to reschedule new sync
         num_rows = self.class
-                       .where(self.class::MODEL_FOREIGN_KEY => model_record_id)
+                       .where(self.class.model_foreign_key => model_record_id)
                        .with_state(:started)
                        .update_all(state: Geo::ReplicableRegistry::STATE_VALUES[:synced])
 

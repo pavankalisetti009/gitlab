@@ -78,7 +78,7 @@ module EE
     end
 
     def model_class_factory_name(registry_class)
-      factory_name(registry_class::MODEL_CLASS)
+      factory_name(registry_class.model_class)
     end
 
     def registry_factory_name(registry_class)

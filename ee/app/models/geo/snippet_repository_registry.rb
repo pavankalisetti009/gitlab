@@ -5,9 +5,14 @@ module Geo
     include ::Geo::ReplicableRegistry
     include ::Geo::VerifiableRegistry
 
-    MODEL_CLASS = ::SnippetRepository
-    MODEL_FOREIGN_KEY = :snippet_repository_id
-
     belongs_to :snippet_repository, class_name: 'SnippetRepository'
+
+    def self.model_class
+      ::SnippetRepository
+    end
+
+    def self.model_foreign_key
+      :snippet_repository_id
+    end
   end
 end

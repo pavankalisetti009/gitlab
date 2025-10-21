@@ -10,7 +10,7 @@ module Geo
 
     def initialize(registry_class, batch_size:)
       @registry_class = registry_class
-      @model_class = registry_class::MODEL_CLASS
+      @model_class = registry_class.model_class
       @batch_size = batch_size
     end
 

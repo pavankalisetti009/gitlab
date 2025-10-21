@@ -5,9 +5,14 @@ module Geo
     include Geo::ReplicableRegistry
     include ::Geo::VerifiableRegistry
 
-    MODEL_CLASS = ::Terraform::StateVersion
-    MODEL_FOREIGN_KEY = :terraform_state_version_id
-
     belongs_to :terraform_state_version, class_name: 'Terraform::StateVersion'
+
+    def self.model_class
+      ::Terraform::StateVersion
+    end
+
+    def self.model_foreign_key
+      :terraform_state_version_id
+    end
   end
 end

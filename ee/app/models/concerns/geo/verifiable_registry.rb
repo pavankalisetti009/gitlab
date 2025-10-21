@@ -17,7 +17,7 @@ module Geo
       # Replicators.
       override :verification_state_model_key
       def verification_state_model_key
-        self::MODEL_FOREIGN_KEY
+        model_foreign_key
       end
     end
 

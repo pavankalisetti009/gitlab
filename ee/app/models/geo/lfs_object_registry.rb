@@ -5,12 +5,17 @@ module Geo
     include ::Geo::ReplicableRegistry
     include ::Geo::VerifiableRegistry
 
-    MODEL_CLASS = ::LfsObject
-    MODEL_FOREIGN_KEY = :lfs_object_id
-
     belongs_to :lfs_object, class_name: 'LfsObject'
 
     scope :for_synced_lfs_objects, ->(lfs_object_ids) { synced.where(lfs_object_id: lfs_object_ids) }
+
+    def self.model_class
+      ::LfsObject
+    end
+
+    def self.model_foreign_key
+      :lfs_object_id
+    end
 
     # @return [Boolean] true if all given oids are synced
     def self.oids_synced?(oids)
