@@ -1,11 +1,7 @@
 # frozen_string_literal: true
 
 module QA
-  RSpec.describe 'Plan', feature_category: :wiki, quarantine: {
-    issue: 'https://gitlab.com/gitlab-org/gitlab/-/issues/577600',
-    only: { job: "gdk-instance-project-studio" },
-    type: :bug
-  } do
+  RSpec.describe 'Plan', feature_category: :wiki do
     describe 'Testing group wiki file upload' do
       let(:initial_wiki) { create(:group_wiki_page) }
       let(:page_title) { 'Content Editor Page' }
@@ -23,6 +19,7 @@ module QA
         EE::Page::Group::Wiki::Show.perform(&:click_new_page)
 
         EE::Page::Group::Wiki::Edit.perform do |edit|
+          edit.close_sidebar
           edit.set_title(page_title)
           edit.use_new_editor
           edit.add_heading('Heading 1', heading_text)

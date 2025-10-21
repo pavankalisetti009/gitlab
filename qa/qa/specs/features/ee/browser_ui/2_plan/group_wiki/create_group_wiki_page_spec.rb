@@ -1,11 +1,7 @@
 # frozen_string_literal: true
 
 module QA
-  RSpec.describe 'Plan', feature_category: :wiki, quarantine: {
-    issue: 'https://gitlab.com/gitlab-org/gitlab/-/issues/577600',
-    only: { job: "gdk-instance-project-studio" },
-    type: :bug
-  } do
+  RSpec.describe 'Plan', feature_category: :wiki do
     describe 'Creating pages in group wikis' do
       let(:wiki_title) { 'New Wiki page' }
       let(:wiki_content) { 'New Wiki content' }
@@ -25,6 +21,7 @@ module QA
           EE::Page::Group::Wiki::Show.perform(&:click_create_your_first_page)
 
           EE::Page::Group::Wiki::Edit.perform do |edit|
+            edit.close_sidebar
             edit.set_title(wiki_title)
             edit.set_content(wiki_content)
             edit.click_submit
@@ -47,6 +44,7 @@ module QA
           EE::Page::Group::Wiki::Show.perform(&:click_new_page)
 
           EE::Page::Group::Wiki::Edit.perform do |edit|
+            edit.close_sidebar
             edit.set_title(wiki_title)
             edit.set_content(wiki_content)
             edit.click_submit
