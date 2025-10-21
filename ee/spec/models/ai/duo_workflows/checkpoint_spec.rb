@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe Ai::DuoWorkflows::Checkpoint, feature_category: :agent_foundations do
+RSpec.describe Ai::DuoWorkflows::Checkpoint, feature_category: :duo_agent_platform do
   def microsecond_precision_timestamp(time)
     time.change(nsec: (time.nsec / 1000) * 1000)
   end

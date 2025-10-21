@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe Ai::FlowTriggers::CreateNoteService, feature_category: :agent_foundations do
+RSpec.describe Ai::FlowTriggers::CreateNoteService, feature_category: :duo_agent_platform do
   let_it_be_with_refind(:project) { create(:project, :repository) }
   let_it_be(:author) { create(:service_account, maintainer_of: project) }
   let_it_be(:resource) { create(:issue, project: project) }

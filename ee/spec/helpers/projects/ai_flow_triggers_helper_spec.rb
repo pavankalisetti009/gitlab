@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe Projects::AiFlowTriggersHelper, feature_category: :agent_foundations do
+RSpec.describe Projects::AiFlowTriggersHelper, feature_category: :duo_agent_platform do
   describe '#ai_flow_triggers_event_type_options' do
     it 'returns formatted options for all event types' do
       stub_const('::Ai::FlowTrigger::EVENT_TYPES', {

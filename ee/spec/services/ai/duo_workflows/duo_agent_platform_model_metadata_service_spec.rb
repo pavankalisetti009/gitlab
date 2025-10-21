@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe Ai::DuoWorkflows::DuoAgentPlatformModelMetadataService, feature_category: :agent_foundations do
+RSpec.describe Ai::DuoWorkflows::DuoAgentPlatformModelMetadataService, feature_category: :duo_agent_platform do
   let_it_be(:group) { create(:group) }
   let_it_be(:user) { create(:user) }
   let_it_be(:user_selected_model_identifier) { nil }

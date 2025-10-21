@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe Projects::AiFeatures, feature_category: :agent_foundations do
+RSpec.describe Projects::AiFeatures, feature_category: :duo_agent_platform do
   let_it_be(:project) { create(:project) }
 
   subject(:ai_features) { described_class.new(project) }

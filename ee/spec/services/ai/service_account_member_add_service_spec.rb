@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe Ai::ServiceAccountMemberAddService, feature_category: :agent_foundations do
+RSpec.describe Ai::ServiceAccountMemberAddService, feature_category: :duo_agent_platform do
   let_it_be(:service_account) { create(:user, :service_account, composite_identity_enforced: true) }
   let_it_be(:project) { create(:project) }
   let(:service) { described_class.new(project, service_account) }

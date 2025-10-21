@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe ::Ai::DuoWorkflows::WorkflowCheckpointEventPresenter, feature_category: :agent_foundations do
+RSpec.describe ::Ai::DuoWorkflows::WorkflowCheckpointEventPresenter, feature_category: :duo_agent_platform do
   let(:checkpoint) { build_stubbed(:duo_workflows_checkpoint) }
   let_it_be(:user) { build_stubbed(:user) }
 

@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe Ai::DuoWorkflows::UpdateWorkflowStatusEventWorker, feature_category: :agent_foundations do
+RSpec.describe Ai::DuoWorkflows::UpdateWorkflowStatusEventWorker, feature_category: :duo_agent_platform do
   let_it_be(:project) { create(:project) }
   let_it_be(:pipeline) { create(:ci_pipeline, project: project) }
   let_it_be(:workload) { create(:ci_workload, project: project, pipeline: pipeline) }

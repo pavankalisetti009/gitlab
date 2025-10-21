@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe Ai::ServiceAccountMemberRemoveService, feature_category: :agent_foundations do
+RSpec.describe Ai::ServiceAccountMemberRemoveService, feature_category: :duo_agent_platform do
   let_it_be(:current_user) { create(:user) }
   let_it_be(:service_account) { create(:user) }
   let_it_be_with_reload(:group) { create(:group) }

@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe Ai::DuoWorkflows::FailStuckWorkflowsWorker, feature_category: :agent_foundations do
+RSpec.describe Ai::DuoWorkflows::FailStuckWorkflowsWorker, feature_category: :duo_agent_platform do
   subject(:worker) { described_class.new }
 
   describe '#perform' do

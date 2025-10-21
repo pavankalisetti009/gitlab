@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe ::Ci::Runners::UnregisterRunnerService, '#execute', feature_category: :runner do
+RSpec.describe ::Ci::Runners::UnregisterRunnerService, '#execute', feature_category: :runner_core do
   let_it_be(:group) { create(:group) }
 
   let(:current_user) { nil }

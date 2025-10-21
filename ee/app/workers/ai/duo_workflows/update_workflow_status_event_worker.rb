@@ -6,7 +6,7 @@ module Ai
     class UpdateWorkflowStatusEventWorker
       include Gitlab::EventStore::Subscriber
 
-      feature_category :agent_foundations
+      feature_category :duo_agent_platform
       data_consistency :delayed
 
       def handle_event(event)

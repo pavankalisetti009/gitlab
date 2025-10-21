@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe Mutations::Ai::FlowTriggers::Create, feature_category: :agent_foundations do
+RSpec.describe Mutations::Ai::FlowTriggers::Create, feature_category: :duo_agent_platform do
   include GraphqlHelpers
 
   subject(:mutation) { described_class }

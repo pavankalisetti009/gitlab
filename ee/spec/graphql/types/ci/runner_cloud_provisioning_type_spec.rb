@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe GitlabSchema.types['CiRunnerCloudProvisioning'], feature_category: :runner do
+RSpec.describe GitlabSchema.types['CiRunnerCloudProvisioning'], feature_category: :runner_core do
   it 'returns all possible types' do
     expect(described_class.possible_types).to include(
       ::Types::Ci::RunnerGoogleCloudProvisioningType

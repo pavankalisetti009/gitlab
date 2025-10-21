@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe Ai::DuoWorkflows::WorkflowsWorkload, feature_category: :agent_foundations do
+RSpec.describe Ai::DuoWorkflows::WorkflowsWorkload, feature_category: :duo_agent_platform do
   subject(:workflows_workload) { create(:duo_workflows_workload) }
 
   it { is_expected.to belong_to(:workflow) }
