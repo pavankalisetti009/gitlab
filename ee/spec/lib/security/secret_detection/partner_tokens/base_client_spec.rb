@@ -200,4 +200,90 @@ RSpec.describe Security::SecretDetection::PartnerTokens::BaseClient, feature_cat
       end
     end
   end
+
+  describe 'metrics recording' do
+    let(:token_value) { 'test-token' }
+
+    before do
+      allow(client).to receive_messages(valid_format?: true,
+        verify_partner_token: client.send(:token_response, :active))
+    end
+
+    it 'records API duration on successful verification' do
+      expect(Gitlab::Metrics::SecretDetection::PartnerTokens)
+        .to receive(:observe_api_duration)
+        .with(instance_of(Float), hash_including(partner: anything))
+
+      client.verify_token(token_value)
+    end
+
+    it 'records successful API requests' do
+      expect(Gitlab::Metrics::SecretDetection::PartnerTokens)
+        .to receive(:increment_api_requests)
+        .with(partner: anything, status: 'success')
+
+      client.verify_token(token_value)
+    end
+
+    context 'when network error occurs' do
+      before do
+        allow(client).to receive(:verify_partner_token)
+          .and_raise(described_class::NetworkError, 'Connection failed')
+      end
+
+      it 'records network error metric' do
+        expect(Gitlab::Metrics::SecretDetection::PartnerTokens)
+          .to receive(:increment_network_errors)
+          .with(partner: anything, error_class: 'NetworkError')
+
+        expect { client.verify_token(token_value) }
+          .to raise_error(described_class::NetworkError)
+      end
+
+      it 'records failed API request' do
+        expect(Gitlab::Metrics::SecretDetection::PartnerTokens)
+          .to receive(:increment_api_requests)
+          .with(partner: anything, status: 'failure', error_type: 'network_error')
+
+        expect { client.verify_token(token_value) }
+          .to raise_error(described_class::NetworkError)
+      end
+    end
+
+    context 'when rate limit is hit' do
+      before do
+        allow(client).to receive(:verify_partner_token)
+          .and_raise(described_class::RateLimitError, 'Rate limited')
+      end
+
+      it 'records rate limit failure' do
+        expect(Gitlab::Metrics::SecretDetection::PartnerTokens)
+          .to receive(:increment_api_requests)
+          .with(partner: anything, status: 'failure', error_type: 'rate_limit')
+
+        expect { client.verify_token(token_value) }
+          .to raise_error(described_class::RateLimitError)
+      end
+    end
+
+    context 'when response error occurs' do
+      before do
+        allow(client).to receive(:verify_partner_token)
+          .and_raise(described_class::ResponseError, 'Invalid response')
+      end
+
+      it 'records response error' do
+        expect(Gitlab::Metrics::SecretDetection::PartnerTokens)
+          .to receive(:increment_api_requests)
+          .with(partner: anything, status: 'failure', error_type: 'response_error')
+
+        client.verify_token(token_value)
+      end
+
+      it 'returns unknown token status' do
+        result = client.verify_token(token_value)
+        expect(result.status).to eq(:unknown)
+      end
+    end
+  end
 end

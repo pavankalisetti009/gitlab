@@ -13,10 +13,17 @@ module Security
       end
 
       def rate_limited?
-        ::Gitlab::ApplicationRateLimiter.throttled?(
+        limited = ::Gitlab::ApplicationRateLimiter.throttled?(
           partner_config[:rate_limit_key],
           scope: [project]
         )
+
+        if limited
+          record_rate_limit_hit
+          log_rate_limit('Rate limit exceeded for partner token verification')
+        end
+
+        limited
       end
 
       def valid_config?
@@ -31,6 +38,25 @@ module Security
         PartnerTokens::Registry.partner_for(token_type)
       end
       strong_memoize_attr :partner_config
+
+      private
+
+      def record_rate_limit_hit
+        ::Gitlab::Metrics::SecretDetection::PartnerTokens.increment_rate_limit_hits(
+          limit_type: partner_config[:rate_limit_key].to_s
+        )
+      end
+
+      def log_rate_limit(message)
+        Gitlab::AppLogger.warn(
+          message: message,
+          finding_id: finding.id,
+          project_id: project.id,
+          project_path: project.full_path,
+          token_type: token_type,
+          rate_limit_key: partner_config[:rate_limit_key]
+        )
+      end
     end
   end
 end

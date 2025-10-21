@@ -106,6 +106,19 @@ RSpec.describe Security::SecretDetection::PartnerTokensClient, feature_category:
         .with(expected_rate_limit_key, scope: [finding.project])
         .and_return(true)
 
+      expect(Gitlab::Metrics::SecretDetection::PartnerTokens)
+        .to receive(:increment_rate_limit_hits)
+        .with(limit_type: expected_rate_limit_key.to_s)
+
+      expect(Gitlab::AppLogger).to receive(:warn).with(
+        message: 'Rate limit exceeded for partner token verification',
+        finding_id: finding.id,
+        project_id: finding.project.id,
+        project_path: finding.project.full_path,
+        token_type: token_type,
+        rate_limit_key: expected_rate_limit_key
+      )
+
       expect(client.rate_limited?).to be true
     end
   end

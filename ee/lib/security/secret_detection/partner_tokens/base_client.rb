@@ -21,14 +21,23 @@ module Security
         def verify_token(token_value)
           return token_response(:unknown) unless valid_format?(token_value)
 
-          verify_partner_token(token_value)
+          result = nil
+          duration = Benchmark.realtime do
+            result = verify_partner_token(token_value)
+          end
 
-        rescue RateLimitError, NetworkError => e
-          # Let the worker handle rate limit retries
+          record_api_success(duration)
+          result
+
+        rescue RateLimitError => e
+          record_rate_limit_error
+          raise e
+        rescue NetworkError => e
+          record_network_error(e)
           raise e
         rescue ResponseError => e
           ::Gitlab::ErrorTracking.log_exception(e)
-          # Response parsing errors typically don't benefit from retry
+          record_api_failure('response_error')
           token_response(:unknown)
         end
 
@@ -95,6 +104,41 @@ module Security
           @partner_name ||= self.class.name.demodulize.sub('Client', '').downcase
         end
         strong_memoize_attr :partner_name
+
+        def record_api_success(duration)
+          ::Gitlab::Metrics::SecretDetection::PartnerTokens.observe_api_duration(
+            duration,
+            partner: partner_name
+          )
+
+          ::Gitlab::Metrics::SecretDetection::PartnerTokens.increment_api_requests(
+            partner: partner_name,
+            status: 'success'
+          )
+        end
+
+        def record_api_failure(error_type)
+          ::Gitlab::Metrics::SecretDetection::PartnerTokens.increment_api_requests(
+            partner: partner_name,
+            status: 'failure',
+            error_type: error_type
+          )
+        end
+
+        def record_network_error(exception)
+          error_class = exception.class.name.demodulize
+
+          ::Gitlab::Metrics::SecretDetection::PartnerTokens.increment_network_errors(
+            partner: partner_name,
+            error_class: error_class
+          )
+
+          record_api_failure('network_error')
+        end
+
+        def record_rate_limit_error
+          record_api_failure('rate_limit')
+        end
       end
     end
   end
