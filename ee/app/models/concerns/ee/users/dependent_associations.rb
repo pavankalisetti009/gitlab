@@ -86,6 +86,18 @@ module EE
           foreign_key: 'updated_by_id',
           dependent: :nullify,
           inverse_of: :updated_by
+
+        has_many :created_statuses,
+          class_name: 'WorkItems::Statuses::Custom::Status',
+          foreign_key: 'created_by_id',
+          dependent: :nullify,
+          inverse_of: :created_by
+
+        has_many :updated_statuses,
+          class_name: 'WorkItems::Statuses::Custom::Status',
+          foreign_key: 'updated_by_id',
+          dependent: :nullify,
+          inverse_of: :updated_by
         # rubocop:enable Cop/ActiveRecordDependent -- we need to destroy/nullify records after each user delete.
       end
     end

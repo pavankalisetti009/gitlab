@@ -12,7 +12,9 @@ RSpec.describe EE::Users::DependentAssociations, feature_category: :user_managem
         created_custom_fields: { class_name: 'Issuables::CustomField' },
         updated_custom_fields: { class_name: 'Issuables::CustomField' },
         created_lifecycles: { class_name: 'WorkItems::Statuses::Custom::Lifecycle' },
-        updated_lifecycles: { class_name: 'WorkItems::Statuses::Custom::Lifecycle' }
+        updated_lifecycles: { class_name: 'WorkItems::Statuses::Custom::Lifecycle' },
+        created_statuses: { class_name: 'WorkItems::Statuses::Custom::Status' },
+        updated_statuses: { class_name: 'WorkItems::Statuses::Custom::Status' }
       }
     end
 
