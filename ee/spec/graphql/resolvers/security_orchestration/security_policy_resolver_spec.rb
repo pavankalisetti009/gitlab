@@ -117,6 +117,7 @@ RSpec.describe Resolvers::SecurityOrchestration::SecurityPolicyResolver, feature
           all_group_approvers: [],
           custom_roles: [],
           deprecated_properties: [],
+          enforcement_type: approval_policy[:enforcement_type],
           role_approvers: [],
           source: {
             inherited: false,
@@ -147,7 +148,8 @@ RSpec.describe Resolvers::SecurityOrchestration::SecurityPolicyResolver, feature
           fallback_behavior: approval_policy[:fallback_behavior],
           metadata: approval_policy[:metadata],
           policy_tuning: approval_policy[:policy_tuning],
-          bypass_settings: approval_policy[:bypass_settings]
+          bypass_settings: approval_policy[:bypass_settings],
+          enforcement_type: approval_policy[:enforcement_type]
         }.compact.deep_stringify_keys)
       }]
     end

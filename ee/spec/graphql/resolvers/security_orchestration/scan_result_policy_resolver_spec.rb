@@ -25,6 +25,7 @@ RSpec.describe Resolvers::SecurityOrchestration::ScanResultPolicyResolver, featu
           project, id: CGI.escape(policy[:name]), type: 'approval_policy'
         ),
         enabled: true,
+        enforcement_type: policy[:enforcement_type],
         policy_scope: {
           compliance_frameworks: [],
           including_projects: [],
@@ -43,7 +44,8 @@ RSpec.describe Resolvers::SecurityOrchestration::ScanResultPolicyResolver, featu
           fallback_behavior: policy[:fallback_behavior],
           metadata: policy[:metadata],
           policy_tuning: policy[:policy_tuning],
-          bypass_settings: policy[:bypass_settings]
+          bypass_settings: policy[:bypass_settings],
+          enforcement_type: policy[:enforcement_type]
         }.compact.deep_stringify_keys),
         updated_at: policy_last_updated_at,
         action_approvers: action_approvers,

@@ -26,7 +26,8 @@ RSpec.describe 'Query.group(fullPath).approvalPolicies', feature_category: :secu
       fallback_behavior: policy[:fallback_behavior],
       metadata: policy[:metadata],
       policy_tuning: policy[:policy_tuning],
-      bypass_settings: policy[:bypass_settings]
+      bypass_settings: policy[:bypass_settings],
+      enforcement_type: 'enforce'
     }.compact.deep_stringify_keys)
   end
 
