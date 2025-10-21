@@ -19,12 +19,10 @@ const TIME_PERIODS = {
 const SCOPE_CONFIG = {
   project: {
     query: projectVulnerabilitiesOverTime,
-    pathKey: 'projectFullPath',
     pageLevelFilters: ['reportType'],
   },
   group: {
     query: groupVulnerabilitiesOverTime,
-    pathKey: 'groupFullPath',
     pageLevelFilters: ['reportType', 'projectId'],
   },
 };
@@ -39,8 +37,10 @@ export default {
     OverTimePeriodSelector,
   },
   inject: {
-    projectFullPath: { default: '' },
-    groupFullPath: { default: '' },
+    fullPath: {
+      type: String,
+      required: true,
+    },
   },
   props: {
     scope: {
@@ -72,9 +72,6 @@ export default {
   computed: {
     config() {
       return SCOPE_CONFIG[this.scope];
-    },
-    fullPath() {
-      return this[this.config.pathKey];
     },
     combinedFilters() {
       return {
@@ -180,7 +177,7 @@ export default {
       <over-time-group-by v-model="groupedBy" />
     </template>
     <template #body>
-      <!-- resetting the z-index to 0 to make sure the the chart's tooltip is below any filter dropdowns, etc. -->
+      <!-- resetting the z-index to 0 to make sure the chart's tooltip is below any filter dropdowns, etc. -->
       <vulnerabilities-over-time-chart
         v-if="!fetchError && hasChartData"
         class="gl-z-0 gl-h-full gl-overflow-hidden gl-p-2"
