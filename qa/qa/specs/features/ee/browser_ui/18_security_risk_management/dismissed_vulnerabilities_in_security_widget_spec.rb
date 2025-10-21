@@ -8,7 +8,7 @@ module QA
 
       let!(:project) do
         create(:project,
-          name: 'project-with-vulnerabilities',
+          name: "project-with-vulnerabilities-#{SecureRandom.hex(4)}",
           description: 'To test dismissed vulnerabilities in MR widget')
       end
 
@@ -17,7 +17,8 @@ module QA
       end
 
       let!(:runner) do
-        create(:project_runner, project: project, name: "runner-for-#{project.name}", tags: ['secure_report'])
+        create(:project_runner, project: project, name: "runner-for-#{project.name}-#{SecureRandom.hex(4)}",
+          tags: ['secure_report'])
       end
 
       let!(:repository) do
@@ -35,17 +36,17 @@ module QA
       let(:source_mr_repository) do
         create(:commit,
           project: project,
-          branch: 'test-dismissed-vulnerabilities',
+          branch: "test-dismissed-vulnerabilities-#{SecureRandom.hex(4)}",
           start_branch: project.default_branch,
           commit_message: 'new secret detection findings report in yml file',
           actions: [ci_file(secret_detection_report_mr).merge(action: 'update')])
       end
 
-      let(:merge_request) do
+      let!(:merge_request) do
         create(:merge_request,
           project: project,
           source: source_mr_repository,
-          source_branch: 'test-dismissed-vulnerabilities',
+          source_branch: source_mr_repository.branch,
           target_branch: project.default_branch)
       end
 
@@ -59,11 +60,7 @@ module QA
       end
 
       it 'checks that dismissed vulnerabilities do not show up',
-        testcase: 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/415291',
-        quarantine: {
-          issue: 'https://gitlab.com/gitlab-org/quality/e2e-test-issues/-/issues/1413',
-          type: :stale
-        } do
+        testcase: 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/415291' do
         Flow::Pipeline.wait_for_pipeline_creation_via_api(project: project)
         Flow::Pipeline.wait_for_latest_pipeline_to_have_status(project: project, status: 'success')
 
@@ -75,12 +72,11 @@ module QA
           security_dashboard.change_state('dismissed', 'not_applicable')
         end
 
-        merge_request.project.visit! # Hoping that the merge_request object will be fully fabricated before visit!
-        wait_for_mr_pipeline_success
         merge_request.visit!
+        wait_for_mr_pipeline_success
 
         Page::MergeRequest::Show.perform do |merge_request|
-          expect(merge_request).to have_vulnerability_report
+          expect(merge_request).to have_vulnerability_report(timeout: 120)
           merge_request.expand_vulnerability_report
           expect(merge_request).to have_vulnerability_count(2)
           expect(merge_request).to have_secret_detection_vulnerability_count_of(2)
@@ -90,10 +86,11 @@ module QA
       private
 
       def wait_for_mr_pipeline_success
-        Support::Retrier.retry_until(max_duration: 10, message: "Waiting for MR pipeline to complete",
-          sleep_interval: 2) do
+        merge_request
+        Support::Retrier.retry_until(max_duration: 120, message: "Waiting for MR pipeline to complete",
+          sleep_interval: 5) do
           pipeline = project.pipelines.find { |item| item[:source] == "merge_request_event" }
-          pipeline[:status] == "success" if pipeline
+          pipeline&.dig(:status) == "success"
         end
       end
 
@@ -116,6 +113,7 @@ module QA
               artifacts:
                 reports:
                   secret_detection: #{report_name}
+              allow_failure: false
           YAML
         }
       end

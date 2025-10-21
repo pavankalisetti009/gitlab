@@ -22,8 +22,8 @@ module ClickHouse
           id: :id,
           path: :path,
           author_id: :author_id,
-          target_id: :target_id,
-          target_type: :target_type,
+          target_id: :raw_target_id,
+          target_type: :raw_target_type,
           action: :raw_action,
           created_at: :casted_created_at,
           updated_at: :casted_updated_at
@@ -35,8 +35,8 @@ module ClickHouse
           :id,
           PATH_COLUMN,
           :author_id,
-          :target_id,
-          :target_type,
+          'target_id AS raw_target_id',
+          'target_type AS raw_target_type',
           'action AS raw_action',
           'EXTRACT(epoch FROM created_at) AS casted_created_at',
           'EXTRACT(epoch FROM updated_at) AS casted_updated_at'
