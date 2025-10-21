@@ -2799,11 +2799,8 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
       end
 
       def create_member_role(member, abilities = member_role_abilities)
-        params = abilities.merge(namespace: project.group)
-
-        create(:member_role, :guest, params).tap do |role|
-          role.members << member
-        end
+        params = abilities.merge(namespace: project.group, members: [member])
+        create(:member_role, :guest, params)
       end
 
       shared_examples 'custom roles abilities' do
