@@ -59,13 +59,11 @@ RSpec.describe Milestone, :elastic_helpers, feature_category: :shared do
           },
           {
             association_name: :issues,
-            on_change: :due_date,
-            depends_on_finished_migration: :add_extra_fields_to_work_items
+            on_change: :due_date
           },
           {
             association_name: :issues,
-            on_change: :start_date,
-            depends_on_finished_migration: :add_extra_fields_to_work_items
+            on_change: :start_date
           },
           {
             association_name: :issues,
@@ -99,15 +97,9 @@ RSpec.describe Milestone, :elastic_helpers, feature_category: :shared do
           allow(Gitlab::CurrentSettings).to receive(:elasticsearch_indexing?).and_return(true)
         end
 
-        context 'when add_extra_fields_to_work_items migration finished' do
-          before do
-            set_elasticsearch_migration_to(:add_extra_fields_to_work_items, including: true)
-          end
-
-          include_examples 'tracks ES changes', :start_date, Date.tomorrow
-          include_examples 'tracks ES changes', :due_date, 1.week.from_now
-          include_examples 'does not track ES changes', :description, 'new description'
-        end
+        include_examples 'tracks ES changes', :start_date, Date.tomorrow
+        include_examples 'tracks ES changes', :due_date, 1.week.from_now
+        include_examples 'does not track ES changes', :description, 'new description'
 
         context 'when index_work_items_milestone_state migration finished' do
           before do
@@ -127,15 +119,6 @@ RSpec.describe Milestone, :elastic_helpers, feature_category: :shared do
         include_examples 'does not track ES changes', :start_date, Date.tomorrow
         include_examples 'does not track ES changes', :due_date, 1.week.from_now
         include_examples 'does not track ES changes', :state, 'closed'
-      end
-
-      context 'when add_extra_fields_to_work_items migration has not finished' do
-        before do
-          set_elasticsearch_migration_to(:add_extra_fields_to_work_items, including: false)
-        end
-
-        include_examples 'does not track ES changes', :start_date, Date.tomorrow
-        include_examples 'does not track ES changes', :due_date, 1.week.from_now
       end
     end
   end

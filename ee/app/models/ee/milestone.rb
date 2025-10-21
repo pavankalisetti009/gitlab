@@ -13,8 +13,7 @@ module EE
       elastic_index_dependant_association :issues, on_change: :title
 
       elastic_index_dependant_association :issues,
-        on_change: [:due_date, :start_date],
-        depends_on_finished_migration: :add_extra_fields_to_work_items
+        on_change: [:due_date, :start_date]
 
       elastic_index_dependant_association :issues,
         on_change: :state,
