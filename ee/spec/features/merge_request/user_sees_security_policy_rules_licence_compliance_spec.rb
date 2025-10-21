@@ -74,7 +74,8 @@ RSpec.describe 'Merge request > User sees security policy rules license complian
           let(:license_type) { 'MIT' }
           let(:license_states) { %w[newly_detected] }
 
-          it 'requires approval', :aggregate_failures do
+          it 'requires approval', :aggregate_failures,
+            quarantine: 'https://gitlab.com/gitlab-org/gitlab/-/issues/570722' do
             visit(ee_merge_request_path)
             wait_for_requests
 
@@ -117,7 +118,7 @@ RSpec.describe 'Merge request > User sees security policy rules license complian
 
         let(:pipeline_report) { create(:ci_reports_license_scanning_report) }
         let(:sbom_scanner) do
-          instance_double('Gitlab::LicenseScanning::SbomScanner',
+          instance_double(Gitlab::LicenseScanning::SbomScanner,
             report: pipeline_report, results_available?: true, has_data?: true)
         end
 

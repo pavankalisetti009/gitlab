@@ -268,6 +268,12 @@ FactoryBot.define do
       end
     end
 
+    trait :with_invalid_cyclonedx_report do
+      after(:build) do |build|
+        build.job_artifacts << build(:ee_ci_job_artifact, :invalid_cyclonedx, job: build)
+      end
+    end
+
     trait :execution_policy_job do
       options do
         {

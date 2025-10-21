@@ -4,7 +4,7 @@ require 'spec_helper'
 require_relative '../../../../lib/tasks/gitlab/custom_roles/compile_docs_task'
 require_relative '../../../../lib/tasks/gitlab/custom_roles/check_docs_task'
 
-RSpec.describe Tasks::Gitlab::CustomRoles::CheckDocsTask, feature_category: :permissions do
+RSpec.describe Tasks::Gitlab::CustomRoles::CheckDocsTask, feature_category: :permissions, quarantine: 'https://gitlab.com/gitlab-org/gitlab/-/issues/525070' do
   let(:docs_dir) { Rails.root.join("tmp/tests/doc/administration/custom_roles") }
   let(:docs_path) { Rails.root.join(docs_dir, 'abilities.md') }
   let(:template_erb_path) { Rails.root.join("tooling/custom_roles/docs/templates/custom_abilities.md.erb") }

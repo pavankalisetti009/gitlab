@@ -572,6 +572,17 @@ FactoryBot.define do
       end
     end
 
+    trait :invalid_cyclonedx do
+      file_format { :gzip }
+      file_type { :cyclonedx }
+
+      after(:build) do |artifact, _|
+        artifact.file = fixture_file_upload(
+          Rails.root.join('ee/spec/fixtures/sbom/gl-sbom-invalid.cdx.json.gz'),
+          'application/x-gzip')
+      end
+    end
+
     trait :repository_xray do
       file_format { :gzip }
       file_type { :repository_xray }
