@@ -17,6 +17,10 @@ RSpec.describe Ai::Catalog::ItemPolicy, :with_current_organization, feature_cate
   let_it_be_with_reload(:private_item) { create(:ai_catalog_item, project: private_project, public: false) }
   let_it_be_with_reload(:public_item) { create(:ai_catalog_item, project: private_project, public: true) }
 
+  let_it_be_with_reload(:flow_item) do
+    create(:ai_catalog_flow, project: private_project, public: true)
+  end
+
   let(:stage_check) { true }
   let(:duo_features_enabled) { true }
 
@@ -103,6 +107,36 @@ RSpec.describe Ai::Catalog::ItemPolicy, :with_current_organization, feature_cate
 
     context 'with public item' do
       let(:item) { public_item }
+
+      it_behaves_like 'read-write permissions'
+    end
+  end
+
+  context 'when flow' do
+    let(:current_user) { maintainer }
+    let(:item) { flow_item }
+
+    it_behaves_like 'read-write permissions'
+
+    context 'with ai_catalog_flows is disabled' do
+      before do
+        stub_feature_flags(ai_catalog_flows: false)
+      end
+
+      it_behaves_like 'no permissions'
+    end
+  end
+
+  context 'when not flow' do
+    let(:current_user) { maintainer }
+    let(:item) { public_item }
+
+    it_behaves_like 'read-write permissions'
+
+    context 'with ai_catalog_flows is disabled' do
+      before do
+        stub_feature_flags(ai_catalog_flows: false)
+      end
 
       it_behaves_like 'read-write permissions'
     end

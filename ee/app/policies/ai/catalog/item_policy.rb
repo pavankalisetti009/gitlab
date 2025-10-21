@@ -7,6 +7,10 @@ module Ai
         ::Feature.enabled?(:global_ai_catalog, @user)
       end
 
+      condition(:flows_enabled, scope: :user) do
+        ::Feature.enabled?(:ai_catalog_flows, @user)
+      end
+
       condition(:project_ai_catalog_available, scope: :subject) do
         @subject.project && @subject.project.ai_catalog_available?
       end
@@ -25,6 +29,10 @@ module Ai
 
       condition(:deleted_item, scope: :subject, score: 0) do
         @subject.deleted?
+      end
+
+      condition(:flow) do
+        @subject.flow?
       end
 
       rule { public_item | developer_access }.policy do
@@ -49,6 +57,11 @@ module Ai
       end
 
       rule { ~project_ai_catalog_available }.policy do
+        prevent :admin_ai_catalog_item
+      end
+
+      rule { flow & ~flows_enabled }.policy do
+        prevent :read_ai_catalog_item
         prevent :admin_ai_catalog_item
       end
     end
