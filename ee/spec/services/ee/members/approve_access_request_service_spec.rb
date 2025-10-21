@@ -360,4 +360,75 @@ RSpec.describe Members::ApproveAccessRequestService, feature_category: :groups_a
       expect(access_requester.reload.requested_at).to be_nil
     end
   end
+
+  context 'when membership is locked' do
+    let_it_be_with_refind(:locked_group) { create(:group, :public, membership_lock: true) }
+    let_it_be_with_refind(:locked_project) { create(:project, :public, group: locked_group) }
+    let_it_be_with_refind(:unlocked_group) { create(:group, :public, membership_lock: false) }
+    let_it_be_with_refind(:unlocked_project) { create(:project, :public, group: unlocked_group) }
+
+    before_all do
+      locked_group.add_owner(current_user)
+      unlocked_group.add_owner(current_user)
+    end
+
+    context 'for a project with locked group membership' do
+      let(:access_requester) do
+        locked_project.requesters.create!(
+          user: access_requester_user,
+          access_level: Gitlab::Access::DEVELOPER,
+          requested_at: Time.current
+        )
+      end
+
+      it 'returns an error when trying to approve' do
+        result = described_class.new(current_user, params).execute(access_requester, **opts)
+
+        expect(result[:status]).to eq(:error)
+        expect(result[:message]).to include('Membership is locked')
+      end
+
+      it 'does not approve the access request' do
+        described_class.new(current_user, params).execute(access_requester, **opts)
+
+        expect(access_requester.reload.request_accepted_at).to be_nil
+      end
+    end
+
+    context 'for a group with locked membership' do
+      let(:access_requester) { locked_group.requesters.find_by!(user_id: access_requester_user.id) }
+
+      before do
+        locked_group.request_access(access_requester_user)
+      end
+
+      it 'successfully approves the access request' do
+        expect do
+          described_class.new(current_user, params).execute(access_requester, **opts)
+        end.to change { access_requester.reload.request_accepted_at }.from(nil)
+      end
+
+      it 'creates an audit event' do
+        expect(::Gitlab::Audit::Auditor).to receive(:audit).with(
+          hash_including(name: "member_created")
+        ).and_call_original
+
+        described_class.new(current_user, params).execute(access_requester, **opts)
+      end
+    end
+
+    context 'for a project without locked group membership' do
+      let(:access_requester) { unlocked_project.requesters.find_by!(user_id: access_requester_user.id) }
+
+      before do
+        unlocked_project.request_access(access_requester_user)
+      end
+
+      it 'successfully approves the access request' do
+        expect do
+          described_class.new(current_user, params).execute(access_requester, **opts)
+        end.to change { unlocked_project.requesters.count }.by(-1)
+      end
+    end
+  end
 end

@@ -66,4 +66,32 @@ RSpec.describe Members::RequestAccessService, feature_category: :groups_and_proj
       end
     end
   end
+
+  context 'when membership is locked' do
+    shared_examples 'a service denying access request' do
+      it 'raises Gitlab::Access::AccessDeniedError' do
+        expect { described_class.new(user).execute(source) }.to raise_error(Gitlab::Access::AccessDeniedError)
+      end
+    end
+
+    context 'for a project with locked group membership' do
+      it_behaves_like 'a service denying access request' do
+        let_it_be(:locked_group) { create(:group, :public, membership_lock: true) }
+        let_it_be(:source) { create(:project, :public, group: locked_group) }
+      end
+    end
+
+    context 'for a group with locked membership' do
+      it_behaves_like 'a service creating a developer access request' do
+        let_it_be(:source) { create(:group, :public, membership_lock: true) }
+      end
+    end
+
+    context 'for a project with unlocked group membership' do
+      it_behaves_like 'a service creating a developer access request' do
+        let_it_be(:unlocked_group) { create(:group, :public, membership_lock: false) }
+        let_it_be(:source) { create(:project, :public, group: unlocked_group) }
+      end
+    end
+  end
 end
