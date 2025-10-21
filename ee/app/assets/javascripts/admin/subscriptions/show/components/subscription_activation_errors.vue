@@ -75,7 +75,7 @@ export const links = Object.freeze({
   silentModeDocsLink: `${DOCS_URL_IN_EE_DIR}/ee/administration/silent_mode`,
   subscriptionActivationHelpLink: helpPagePath('administration/license.html'),
   troubleshootingHelpLink: helpPagePath('/administration/license.html', {
-    anchor: 'cannot-activate-instance-due-to-connectivity-error',
+    anchor: 'error-cannot-activate-instance-due-to-a-connectivity-issue',
   }),
   addSeats: `${DOCS_URL_IN_EE_DIR}/subscriptions/self_managed/#buy-seats-for-a-subscription`,
   deactivateUser: `${DOCS_URL_IN_EE_DIR}/administration/moderate_users.html#deactivate-a-user`,
