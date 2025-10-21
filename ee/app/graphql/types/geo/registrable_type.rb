@@ -24,7 +24,8 @@ module Types
         ::Geo::SnippetRepositoryRegistry => Types::Geo::SnippetRepositoryRegistryType,
         ::Geo::TerraformStateVersionRegistry => Types::Geo::TerraformStateVersionRegistryType,
         ::Geo::UploadRegistry => Types::Geo::UploadRegistryType,
-        ::Geo::GroupWikiRepositoryRegistry => Types::Geo::GroupWikiRepositoryRegistryType
+        ::Geo::GroupWikiRepositoryRegistry => Types::Geo::GroupWikiRepositoryRegistryType,
+        ::Geo::PackagesNugetSymbolRegistry => Types::Geo::PackagesNugetSymbolRegistryType
       }.freeze
 
       possible_types(*GEO_REGISTRY_TYPES.values)

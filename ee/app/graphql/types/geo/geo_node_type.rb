@@ -56,6 +56,12 @@ module Types
         null: true,
         resolver: ::Resolvers::Geo::PackageFileRegistriesResolver,
         description: 'Package file registries of the GeoNode.'
+      field :packages_nuget_symbol_registries, ::Types::Geo::PackagesNugetSymbolRegistryType.connection_type,
+        null: true,
+        resolver: ::Resolvers::Geo::PackagesNugetSymbolRegistriesResolver,
+        description: 'Find Packages::Nuget::Symbols registries on this Geo node. ' \
+                     'Ignored if `geo_packages_nuget_symbol_replication` feature flag is disabled.',
+        experiment: { milestone: '18.6' }
       field :pages_deployment_registries, ::Types::Geo::PagesDeploymentRegistryType.connection_type,
         null: true,
         resolver: ::Resolvers::Geo::PagesDeploymentRegistriesResolver,

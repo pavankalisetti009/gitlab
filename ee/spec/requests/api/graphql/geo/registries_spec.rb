@@ -107,4 +107,11 @@ RSpec.describe 'Gets registries', feature_category: :geo_replication do
     registry_factory: :geo_project_repository_registry,
     registry_foreign_key_field_name: 'projectId'
   }
+
+  it_behaves_like 'gets registries for', {
+    field_name: 'packagesNugetSymbolRegistries',
+    registry_class_name: 'PackagesNugetSymbolRegistry',
+    registry_factory: :geo_packages_nuget_symbol_registry,
+    registry_foreign_key_field_name: 'packagesNugetSymbolId'
+  }
 end
