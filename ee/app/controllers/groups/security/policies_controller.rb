@@ -17,6 +17,7 @@ module Groups
         push_frontend_feature_flag(:scheduled_pipeline_execution_policies, group)
         push_frontend_feature_flag(:flexible_scan_execution_policy, group)
         push_frontend_feature_flag(:security_policies_combined_list, group)
+        push_frontend_feature_flag(:security_policies_kev_filter, group)
       end
 
       feature_category :security_policy_management
