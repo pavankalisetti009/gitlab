@@ -14,6 +14,13 @@ module Ai
       scope :for_partition, ->(partition) { where(partition_id: partition) }
       scope :with_namespace, -> { includes(knowledge_graph_replica: { knowledge_graph_enabled_namespace: :namespace }) }
       scope :for_namespace, ->(namespace) { where(knowledge_graph_replica: namespace.replicas) }
+      scope :preload_namespace_settings, -> do
+        includes(knowledge_graph_replica: {
+          knowledge_graph_enabled_namespace: [
+            { namespace: %i[namespace_settings namespace_settings_with_ancestors_inherited_settings] }
+          ]
+        })
+      end
 
       enum :task_type, {
         index_graph_repo: 0,

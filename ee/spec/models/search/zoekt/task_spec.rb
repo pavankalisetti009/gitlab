@@ -29,6 +29,19 @@ RSpec.describe ::Search::Zoekt::Task, feature_category: :global_search do
       end
     end
 
+    describe '.preload_namespace_settings' do
+      let_it_be(:task) { create(:zoekt_task) }
+
+      it 'eager loads the namespace_settings and avoids N+1 queries' do
+        task = described_class.preload_namespace_settings.first
+        recorder = ActiveRecord::QueryRecorder.new do
+          task.zoekt_repository.project.namespace.namespace_settings
+          task.zoekt_repository.project.namespace.namespace_settings_with_ancestors_inherited_settings
+        end
+        expect(recorder.count).to be_zero
+      end
+    end
+
     describe '.perform_now' do
       let_it_be(:task) { create(:zoekt_task, perform_at: 1.day.ago) }
       let_it_be(:task2) { create(:zoekt_task, perform_at: 1.day.from_now) }
@@ -90,7 +103,7 @@ RSpec.describe ::Search::Zoekt::Task, feature_category: :global_search do
       recorder = ActiveRecord::QueryRecorder.new { task.zoekt_repository.project }
 
       expect(recorder.count).to be_zero
-      expect(task.association(:zoekt_repository).loaded?).to eq(true)
+      expect(task.association(:zoekt_repository).loaded?).to be(true)
     end
   end
 
@@ -337,7 +350,7 @@ RSpec.describe ::Search::Zoekt::Task, feature_category: :global_search do
       subject(:value) { described_class.partitioning_strategy.next_partition_if.call(active_partition) }
 
       context 'when the partition is empty' do
-        it { is_expected.to eq(false) }
+        it { is_expected.to be(false) }
       end
 
       context 'when the partition has records' do
@@ -347,14 +360,14 @@ RSpec.describe ::Search::Zoekt::Task, feature_category: :global_search do
           create(:zoekt_task, state: :failed)
         end
 
-        it { is_expected.to eq(false) }
+        it { is_expected.to be(false) }
 
         context 'when the first record of the partition is older than PARTITION_DURATION' do
           before do
             described_class.first.update!(created_at: (described_class::PARTITION_DURATION + 1.day).ago)
           end
 
-          it { is_expected.to eq(true) }
+          it { is_expected.to be(true) }
         end
       end
     end
@@ -367,17 +380,17 @@ RSpec.describe ::Search::Zoekt::Task, feature_category: :global_search do
       context 'when the partition contains pending records' do
         let!(:task) { create(:zoekt_task, state: :pending) }
 
-        it { is_expected.to eq(false) }
+        it { is_expected.to be(false) }
       end
 
       context 'when the partition is empty' do
-        it { is_expected.to eq(true) }
+        it { is_expected.to be(true) }
       end
 
       context 'when the partition contains processing records' do
         let!(:task) { create(:zoekt_task, state: :processing) }
 
-        it { is_expected.to eq(false) }
+        it { is_expected.to be(false) }
       end
 
       context 'when the newest record of the partition is older than PARTITION_CLEANUP_THRESHOLD' do
@@ -388,13 +401,13 @@ RSpec.describe ::Search::Zoekt::Task, feature_category: :global_search do
         let_it_be(:task_orphaned) { create(:zoekt_task, state: :orphaned, created_at: created_at) }
 
         context 'when the partition does not contain pending or processing records' do
-          it { is_expected.to eq(true) }
+          it { is_expected.to be(true) }
         end
 
         context 'when there are pending or processing records' do
           let_it_be(:task_pending) { create(:zoekt_task, state: :pending, created_at: created_at) }
 
-          it { is_expected.to eq(false) }
+          it { is_expected.to be(false) }
         end
 
         context 'when there are pending or processing records for orphaned node' do
@@ -402,7 +415,7 @@ RSpec.describe ::Search::Zoekt::Task, feature_category: :global_search do
             create(:zoekt_task, state: :pending, created_at: created_at, zoekt_node_id: non_existing_record_id)
           end
 
-          it { is_expected.to eq(true) }
+          it { is_expected.to be(true) }
         end
       end
     end

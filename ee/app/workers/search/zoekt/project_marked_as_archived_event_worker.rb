@@ -16,17 +16,7 @@ module Search
       def handle_event(event)
         return unless ::Search::Zoekt.licensed_and_indexing_enabled?
 
-        project_id = event.data[:project_id]
-        return unless project_id.present?
-
-        begin
-          ::Search::Zoekt::Repository.for_project_id(project_id).create_bulk_tasks(task_type: :force_index_repo)
-        rescue StandardError => e
-          Gitlab::ErrorTracking.track_exception(e, project_id: project_id)
-          raise
-        end
-
-        log_extra_metadata_on_done(:project_id_archived_and_reindexed, project_id)
+        ::Search::Zoekt::Repository.for_project_id(event.data[:project_id]).create_bulk_tasks
       end
     end
   end
