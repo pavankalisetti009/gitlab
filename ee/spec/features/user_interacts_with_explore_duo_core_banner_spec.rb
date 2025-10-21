@@ -7,6 +7,8 @@ RSpec.describe "User interacts with explore duo core banner", :js, feature_categ
     it 'dismisses the banner when clicking the close button' do
       expect(page).to have_content(banner_content)
 
+      close_promotion_popover
+
       page.within('.explore-duo-core-banner') do
         find('.gl-banner-close').click
         # Need to wait for requests or else the queries from this request will get
@@ -19,6 +21,8 @@ RSpec.describe "User interacts with explore duo core banner", :js, feature_categ
 
     it 'dismisses the banner when clicking the CTA' do
       expect(page).to have_content(banner_content)
+
+      close_promotion_popover
 
       page.within('.explore-duo-core-banner') do
         click_link 'Explore GitLab Duo Core'
@@ -50,7 +54,8 @@ RSpec.describe "User interacts with explore duo core banner", :js, feature_categ
     project.add_developer(user)
   end
 
-  context 'for self-managed' do
+  # Banner not showing for self-managed
+  context 'for self-managed', quarantine: 'https://gitlab.com/gitlab-org/gitlab/-/issues/577871' do
     before do
       stub_licensed_features(code_suggestions: true, ai_chat: true)
       ::Ai::Setting.instance.update!(duo_core_features_enabled: true)
@@ -77,5 +82,11 @@ RSpec.describe "User interacts with explore duo core banner", :js, feature_categ
     end
 
     it_behaves_like 'dismissals'
+  end
+
+  def close_promotion_popover
+    within_testid('duo-chat-promo-callout-popover') do
+      find_by_testid('close-button').click
+    end
   end
 end
