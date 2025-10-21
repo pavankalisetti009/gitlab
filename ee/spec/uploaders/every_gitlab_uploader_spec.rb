@@ -65,6 +65,7 @@ RSpec.describe 'Every GitLab uploader' do
         Packages::Npm::MetadataCacheUploader => "This feature is not yet released. We do want to replicate this, see https://gitlab.com/gitlab-org/gitlab/-/issues/408278.",
         Packages::Helm::MetadataCacheUploader => "This feature is not yet released. We do want to replicate this, see https://gitlab.com/gitlab-org/gitlab/-/issues/545919.",
         Packages::Nuget::SymbolUploader => 'This feature is not yet released. We do want to replicate this, see https://gitlab.com/gitlab-org/gitlab/-/issues/422929.',
+        Packages::Npm::PackageFileUploader => 'Used to force workhorse to pass an upload as a local file to rails. No direct interactions with object storage.',
         VirtualRegistries::Cache::EntryUploader => 'This feature is not yet released. We do want to replicate this, see https://gitlab.com/gitlab-org/gitlab/-/issues/473033',
         Security::VulnerabilityScanning::SbomScanUploader => "Used to store ephemeral security scans. We don't want to replicate these files as they are only short living (usually, less than a couple of minutes)",
         SupplyChain::AttestationUploader => 'This feature is not yet released. We do want to replicate this, see https://gitlab.com/gitlab-org/gitlab/-/issues/571772.'
