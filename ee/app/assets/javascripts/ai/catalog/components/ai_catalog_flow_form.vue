@@ -293,8 +293,12 @@ export default {
 <template>
   <div>
     <errors-alert :errors="allErrors" @dismiss="dismissErrors" />
-    <div class="gl-flex gl-flex-row gl-gap-5">
-      <gl-form :id="formId" class="gl-flex gl-flex-col gl-gap-5" @submit.prevent="handleSubmit">
+    <div class="gl-flex gl-gap-5">
+      <gl-form
+        :id="formId"
+        class="gl-flex gl-grow gl-flex-col gl-gap-5"
+        @submit.prevent="handleSubmit"
+      >
         <form-section :title="s__('AICatalog|Basic information')">
           <form-group
             #default="{ state, blur }"
@@ -392,7 +396,7 @@ export default {
       <ai-catalog-form-side-panel
         v-show="isAgentPanelVisible && !isThirdPartyFlow"
         v-model="formValues.steps"
-        class="gl-shrink-0"
+        class="gl-shrink-0 gl-grow"
         :active-step-index="activeStepIndex"
         :is-flow-public="isPublic"
         @close="resetAgentPanel"
