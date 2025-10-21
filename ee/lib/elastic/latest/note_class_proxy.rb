@@ -201,7 +201,8 @@ module Elastic
           should_filter = {
             bool: {
               must: [
-                { term: { noteable_type: { _name: context.name(:noteable, :is_a, noteable_type), value: noteable_type } } }
+                { term: { noteable_type: { _name: context.name(:noteable, :is_a, noteable_type),
+                                           value: noteable_type } } }
               ]
             }
           }
@@ -232,18 +233,20 @@ module Elastic
       # Appends `noteable_type` (which will be removed in project_ids_filter)
       # for base model filtering.
       override :pick_projects_by_membership
-      def pick_projects_by_membership(project_ids, user, no_join_project, features: nil, project_id_field: nil)
+      def pick_projects_by_membership(project_ids, user, _no_join_project, features: nil, project_id_field: nil)
         noteable_type_to_feature.map do |noteable_type, feature|
           context.name(feature) do
             condition =
               if project_ids == :any
                 { term: { visibility_level: { _name: context.name(:any), value: Project::PRIVATE } } }
               else
-                { terms: { _name: context.name(:membership, :id), project_id_field => filter_ids_by_feature(project_ids, user, feature) } }
+                { terms: { _name: context.name(:membership, :id),
+                           project_id_field => filter_ids_by_feature(project_ids, user, feature) } }
               end
 
             limit =
-              { terms: { _name: context.name(:enabled_or_private), "#{feature}_access_level" => [::ProjectFeature::ENABLED, ::ProjectFeature::PRIVATE] } }
+              { terms: { _name: context.name(:enabled_or_private),
+                         "#{feature}_access_level" => [::ProjectFeature::ENABLED, ::ProjectFeature::PRIVATE] } }
 
             { bool: { _name: context.name, filter: [condition, limit] }, noteable_type: noteable_type }
           end
@@ -259,9 +262,11 @@ module Elastic
           context.name(feature) do
             limit =
               if include_members_only
-                { terms: { _name: context.name(:enabled_or_private), "#{feature}_access_level" => [::ProjectFeature::ENABLED, ::ProjectFeature::PRIVATE] } }
+                { terms: { _name: context.name(:enabled_or_private),
+                           "#{feature}_access_level" => [::ProjectFeature::ENABLED, ::ProjectFeature::PRIVATE] } }
               else
-                { term: { "#{feature}_access_level" => { _name: context.name(:enabled), value: ::ProjectFeature::ENABLED } } }
+                { term: { "#{feature}_access_level" => { _name: context.name(:enabled),
+                                                         value: ::ProjectFeature::ENABLED } } }
               end
 
             { bool: { _name: context.name, filter: [condition, limit] }, noteable_type: noteable_type }

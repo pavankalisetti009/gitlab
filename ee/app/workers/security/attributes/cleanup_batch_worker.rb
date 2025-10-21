@@ -10,7 +10,7 @@ module Security
       feature_category :security_asset_inventories
 
       def perform(project_ids, new_root_namespace_id)
-        Security::Attributes::CleanupProjectConnectionsService.execute(
+        Security::Attributes::UpdateProjectConnectionsService.execute(
           project_ids: project_ids,
           new_root_namespace_id: new_root_namespace_id
         )

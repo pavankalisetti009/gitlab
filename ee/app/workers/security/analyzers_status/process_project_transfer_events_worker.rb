@@ -15,7 +15,9 @@ module Security
         return unless project
 
         UpdateProjectAncestorsStatusesService.execute(project)
-        project.analyzer_statuses.update_all(traversal_ids: project.namespace.traversal_ids)
+        namespace_traversal_ids = project.namespace.traversal_ids
+        project.analyzer_statuses.update_all(traversal_ids: namespace_traversal_ids)
+        project.project_to_security_attributes.update_all(traversal_ids: namespace_traversal_ids)
         update_inventory_filter(project)
       end
 

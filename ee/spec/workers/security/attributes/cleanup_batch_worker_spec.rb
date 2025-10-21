@@ -10,16 +10,16 @@ RSpec.describe Security::Attributes::CleanupBatchWorker, feature_category: :secu
   subject(:perform) { worker.perform(project_ids, new_root_namespace_id) }
 
   describe '#perform' do
-    let(:cleanup_service) { Security::Attributes::CleanupProjectConnectionsService }
+    let(:update_service) { Security::Attributes::UpdateProjectConnectionsService }
 
     before do
-      allow(cleanup_service).to receive(:execute)
+      allow(update_service).to receive(:execute)
     end
 
-    it 'calls the cleanup service with correct parameters' do
+    it 'calls the update service with correct parameters' do
       perform
 
-      expect(cleanup_service).to have_received(:execute).with(
+      expect(update_service).to have_received(:execute).with(
         project_ids: project_ids,
         new_root_namespace_id: new_root_namespace_id
       )

@@ -17,17 +17,19 @@ module Security
         return unless moved_group && old_root_namespace_id
 
         new_root_namespace_id = moved_group.root_ancestor.id
-        return if old_root_namespace_id == new_root_namespace_id
+        new_root_namespace_id = nil if old_root_namespace_id == new_root_namespace_id
 
-        schedule_cleanup_batches(moved_group, new_root_namespace_id)
+        schedule_update_batches(moved_group, new_root_namespace_id)
       end
 
       private
 
-      def schedule_cleanup_batches(moved_group, new_root_namespace_id)
+      def schedule_update_batches(moved_group, new_root_namespace_id)
         project_ids = Gitlab::Database::NamespaceProjectIdsEachBatch.new(
           group_id: moved_group.id
         ).execute
+
+        return if project_ids.empty?
 
         project_ids.each_slice(PROJECTS_BATCH_SIZE) do |project_ids_batch|
           Security::Attributes::CleanupBatchWorker.perform_async(

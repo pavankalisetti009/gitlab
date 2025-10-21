@@ -33,10 +33,23 @@ RSpec.describe Security::Attributes::CleanupScheduleWorker, feature_category: :s
       let(:old_root_namespace_id) { new_root_namespace.id }
       let(:new_root_namespace_id) { new_root_namespace.id }
 
-      it 'does not schedule any workers' do
-        handle_event
+      context 'when no projects exist under the group' do
+        it 'does not schedule the workers' do
+          handle_event
 
-        expect(cleanup_batch_worker).not_to have_received(:perform_async)
+          expect(cleanup_batch_worker).not_to have_received(:perform_async)
+        end
+      end
+
+      context 'when projects exist under the group' do
+        let_it_be(:projects_same_ns) { create_list(:project, 2, group: moved_group) }
+        let(:project_ids_same_ns) { projects_same_ns.pluck(:id) }
+
+        it 'schedules workers with nil new_root_namespace_id to update traversal_ids only' do
+          handle_event
+
+          expect(cleanup_batch_worker).to have_received(:perform_async).with(project_ids_same_ns, nil)
+        end
       end
     end
 
@@ -63,7 +76,7 @@ RSpec.describe Security::Attributes::CleanupScheduleWorker, feature_category: :s
         let_it_be(:projects) { create_list(:project, 3, group: moved_group) }
         let(:project_ids) { projects.map(&:id) }
 
-        it 'schedules cleanup batch workers' do
+        it 'schedules update batch workers' do
           handle_event
 
           expect(cleanup_batch_worker).to have_received(:perform_async).with(project_ids, new_root_namespace.id)
