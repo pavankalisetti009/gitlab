@@ -625,7 +625,7 @@ export default {
       }
     },
     async hydrateActiveThread() {
-      if (this.workflowId && !this.messages?.length) {
+      if (this.workflowId && this.activeThread && !this.messages?.length) {
         await this.loadActiveThread();
 
         // Check if the thread's agent still exists after loading (for page load scenarios)
