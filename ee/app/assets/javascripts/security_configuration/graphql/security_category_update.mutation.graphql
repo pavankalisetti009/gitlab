@@ -1,5 +1,5 @@
 mutation updateSecurityCategory(
-  $id: SecurityCategoryID
+  $id: SecurityCategoryID!
   $namespaceId: NamespaceID!
   $name: String!
   $description: String

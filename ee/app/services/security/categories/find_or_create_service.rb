@@ -3,10 +3,9 @@
 module Security
   module Categories
     class FindOrCreateService < BaseService
-      def initialize(namespace:, current_user:, category_id: nil, template_type: nil)
+      def initialize(namespace:, current_user:, category_id: nil)
         @namespace = namespace&.root_ancestor
         @category_id = category_id
-        @template_type = template_type
         @current_user = current_user
       end
 
@@ -15,10 +14,14 @@ module Security
         raise Gitlab::Access::AccessDeniedError unless Feature.enabled?(:security_categories_and_attributes, namespace)
         return UnauthorizedError unless permitted?
 
-        predefined_result = CreatePredefinedService.new(namespace: namespace, current_user: current_user).execute
-        return predefined_result if predefined_result.error?
+        parsed_category = parse_category_id
 
-        category = find_category
+        if parsed_category[:template_type].present?
+          predefined_result = CreatePredefinedService.new(namespace: namespace, current_user: current_user).execute
+          return predefined_result if predefined_result.error?
+        end
+
+        category = find_category(parsed_category[:category_id], parsed_category[:template_type])
         if category
           ServiceResponse.success(payload: { category: category })
         else
@@ -28,13 +31,21 @@ module Security
 
       private
 
-      attr_reader :category_id, :template_type, :namespace, :current_user
+      attr_reader :category_id, :namespace, :current_user
 
-      def find_category
-        if category_id
-          ::Security::Category.find_by_id(category_id)
-        elsif template_type && namespace
-          ::Security::Category.by_namespace_and_template_type(namespace.root_ancestor, template_type).first
+      def parse_category_id
+        valid_template_types = Enums::Security.categories_template_types.keys.map(&:to_s)
+
+        return { category_id: nil, template_type: category_id } if valid_template_types.include?(category_id)
+
+        { category_id: category_id, template_type: nil }
+      end
+
+      def find_category(parsed_category_id, parsed_template_type)
+        if parsed_category_id
+          ::Security::Category.find_by_id(parsed_category_id)
+        elsif parsed_template_type && namespace
+          ::Security::Category.by_namespace_and_template_type(namespace.root_ancestor, parsed_template_type).first
         end
       end
 
