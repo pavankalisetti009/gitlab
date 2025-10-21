@@ -1,70 +1,57 @@
 <script>
-import { GlButton, GlIcon, GlPopover } from '@gitlab/ui';
-import LocalStorageSync from '~/vue_shared/components/local_storage_sync.vue';
+import { GlIcon, GlPopover } from '@gitlab/ui';
+import UserCalloutDismisser from '~/vue_shared/components/user_callout_dismisser.vue';
 import { __, s__ } from '~/locale';
 
 export default {
   name: 'VulnerabilitiesPopover',
   components: {
-    LocalStorageSync,
-    GlButton,
+    UserCalloutDismisser,
     GlIcon,
     GlPopover,
   },
   props: {},
   data() {
     return {
-      popoverDismissed: false,
+      showPopover: false,
     };
   },
-  computed: {
-    showPopover() {
-      return !this.popoverDismissed;
-    },
-  },
-  methods: {
-    setPopoverDismissed(value) {
-      this.popoverDismissed = value;
-    },
+  mounted() {
+    setTimeout(() => {
+      this.showPopover = true;
+    }, 1000);
   },
 };
 </script>
 
 <template>
-  <local-storage-sync
-    :value="popoverDismissed"
-    storage-key="dl-shown-vulnerabilities-popover-disabled"
-    @input="setPopoverDismissed"
+  <user-callout-dismisser
+    v-if="showPopover"
+    ref="calloutDismisser"
+    feature-name="focused_vulnerability_reporting"
   >
-    <div>
-      <gl-icon id="vulnerabilities-info" name="information-o" class="gl-ml-2" variant="info" />
-      <gl-popover
-        placement="bottom"
-        boundary="viewport"
-        target="vulnerabilities-info"
-        data-testid="vulnerability-info-popover"
-        :show="showPopover"
-        :title="s__('Dependencies|Focused vulnerability reporting')"
-      >
-        <p class="gl-mb-0">
-          {{
-            s__(
-              'Dependencies|The dependency list shows only active, currently detected issues. Vulnerabilities that are no longer detected are filtered out.',
-            )
-          }}
-        </p>
-        <div class="gl-text-righ t gl-mt-3">
-          <gl-button
-            v-if="showPopover"
-            data-testid="dismiss-button"
-            category="primary"
-            variant="confirm"
-            @click="setPopoverDismissed(true)"
-          >
-            {{ __("Don't show again") }}
-          </gl-button>
-        </div>
-      </gl-popover>
-    </div>
-  </local-storage-sync>
+    <template #default="{ dismiss, shouldShowCallout }">
+      <div>
+        <gl-icon id="vulnerabilities-info" name="information-o" class="gl-ml-2" variant="info" />
+        <gl-popover
+          placement="bottom"
+          boundary="viewport"
+          target="vulnerabilities-info"
+          data-testid="vulnerability-info-popover"
+          show-close-button
+          :show="shouldShowCallout"
+          :title="s__('Dependencies|Focused vulnerability reporting')"
+          @close-button-clicked="dismiss"
+        >
+          <p class="gl-mb-0">
+            {{
+              s__(
+                'Dependencies|The dependency list shows only active, currently detected issues. Vulnerabilities that are no longer detected are filtered out.',
+              )
+            }}
+          </p>
+        </gl-popover>
+      </div>
+    </template>
+  </user-callout-dismisser>
 </template>

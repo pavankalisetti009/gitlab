@@ -1,14 +1,22 @@
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import VulnerabilitiesPopover from 'ee/dependencies/components/vulnerabilities_popover.vue';
+import { makeMockUserCalloutDismisser } from 'helpers/mock_user_callout_dismisser';
 
 describe('VulnerabilitiesPopover component', () => {
   let wrapper;
+  let userCalloutDismissSpy;
 
-  const createWrapper = ({ propsData } = {}) =>
+  const createWrapper = ({ propsData, shouldShowCallout = true } = {}) =>
     shallowMountExtended(VulnerabilitiesPopover, {
       propsData: {
         popoverDismissed: false,
         ...propsData,
+      },
+      mocks: {
+        UserCalloutDismisser: makeMockUserCalloutDismisser({
+          dismiss: userCalloutDismissSpy,
+          shouldShowCallout,
+        }),
       },
     });
 
@@ -24,10 +32,9 @@ describe('VulnerabilitiesPopover component', () => {
     expect(findVulnerabilityInfoIcon().exists()).toBe(true);
     expect(findVulnerabilityInfoPopover().exists()).toBe(true);
     expect(findVulnerabilityInfoPopover().props('title')).toBe('Focused vulnerability reporting');
-    expect(findVulnerabilityInfoPopover().text()).toContain(
+    expect(findVulnerabilityInfoPopover().text()).toBe(
       'The dependency list shows only active, currently detected issues. Vulnerabilities that are no longer detected are filtered out.',
     );
-    expect(findVulnerabilityInfoPopover().text()).toContain("Don't show again");
   });
 
   it('shows popover and dismiss button', () => {
@@ -37,7 +44,7 @@ describe('VulnerabilitiesPopover component', () => {
 
   describe('when popover has been dismissed', () => {
     beforeEach(() => {
-      wrapper = createWrapper({ popoverDismissed: true });
+      wrapper = createWrapper({ shouldShowCallout: false });
     });
 
     it('does not show popover or dismiss button', () => {
