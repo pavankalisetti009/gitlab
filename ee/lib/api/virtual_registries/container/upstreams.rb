@@ -68,8 +68,10 @@ module API
               optional :upstream_name, type: String, desc: 'Return upstreams with this name'
             end
             get do
-              upstreams = ::VirtualRegistries::Container::UpstreamsFinder.new(
-                group, declared_params.slice(:upstream_name)
+              upstreams = ::VirtualRegistries::UpstreamsFinder.new(
+                upstream_class: ::VirtualRegistries::Container::Upstream,
+                group: group,
+                params: declared_params.slice(:upstream_name)
               ).execute
 
               present paginate(upstreams), with: Entities::VirtualRegistries::Container::Upstream
