@@ -1,5 +1,5 @@
 <script>
-import { GlAlert, GlKeysetPagination, GlCard, GlTable, GlBadge, GlProgressBar } from '@gitlab/ui';
+import { GlAlert, GlKeysetPagination, GlCard, GlTable, GlProgressBar } from '@gitlab/ui';
 import UserAvatarLink from '~/vue_shared/components/user_avatar/user_avatar_link.vue';
 import { s__, __ } from '~/locale';
 import { getIdFromGraphQLId } from '~/graphql_shared/utils';
@@ -23,7 +23,6 @@ export default {
     GlAlert,
     GlCard,
     GlTable,
-    GlBadge,
     GlProgressBar,
     GlKeysetPagination,
   },
@@ -56,7 +55,7 @@ export default {
       query: getSubscriptionUsersUsageQuery,
       variables() {
         return {
-          // Note: namespacePath will be present on SaaS only, indicating a root group.
+          // NOTE: namespacePath will be present on SaaS only, indicating a root group.
           // SM would pass null in this variable, requesting instance-level data.
           namespacePath: this.namespacePath,
           first: this.pageInfo.first,
@@ -94,10 +93,6 @@ export default {
           key: 'totalCreditsUsed',
           label: s__('UsageBilling|Total credits used'),
         },
-        {
-          key: 'status',
-          label: s__('UsageBilling|Status'),
-        },
       ].filter(Boolean);
     },
     usersList() {
@@ -114,9 +109,6 @@ export default {
     },
   },
   methods: {
-    getStatusBadge() {
-      return { variant: 'neutral', label: s__('UsageBilling|Unknown') };
-    },
     /** @param { Usage } usage */
     getTotalUsage(usage) {
       return usage.creditsUsed + usage.poolCreditsUsed + usage.overageCreditsUsed;
@@ -220,7 +212,7 @@ export default {
       class="gl-w-full"
     >
       <template #cell(user)="{ item: user }">
-        <div class="gl-display-flex gl-align-items-center">
+        <div class="gl-flex gl-items-center">
           <user-avatar-link
             :username="user.name"
             :link-href="getUserUsagePath(user.id)"
@@ -234,36 +226,27 @@ export default {
       </template>
 
       <template #cell(allocationUsed)="{ item }">
-        <div class="gl-display-flex gl-flex-direction-column">
+        <div class="gl-flex gl-min-h-7 gl-items-center gl-justify-between gl-gap-3">
           <span class="gl-font-weight-semibold gl-text-gray-900">
             {{ formatAllocationUsed(item.usage.creditsUsed, item.usage.totalCredits) }}
           </span>
-          <gl-progress-bar :value="getProgressBarValue(item.usage)" class="gl-mt-1" />
+          <gl-progress-bar
+            :value="getProgressBarValue(item.usage)"
+            class="gl-h-3 gl-max-w-[160px] gl-flex-1"
+          />
         </div>
       </template>
 
       <template #cell(poolCreditsUsed)="{ item }">
-        <span class="gl-font-weight-semibold gl-text-gray-900">
+        <span class="gl-font-weight-semibold gl-min-h-7 gl-text-gray-900">
           {{ item.usage.poolCreditsUsed }}
         </span>
       </template>
 
-      <template #cell(overageCreditsUsed)="{ item }">
-        <span class="gl-font-weight-semibold gl-text-gray-900">
-          {{ item.usage.overageCreditsUsed }}
-        </span>
-      </template>
-
       <template #cell(totalCreditsUsed)="{ item }">
-        <span class="gl-font-weight-semibold gl-text-gray-900">
+        <div class="gl-font-weight-semibold gl-flex gl-min-h-7 gl-items-center gl-text-gray-900">
           {{ getTotalUsage(item.usage) }}
-        </span>
-      </template>
-
-      <template #cell(status)="{ item }">
-        <gl-badge :variant="getStatusBadge(item.usage).variant" size="sm">
-          {{ getStatusBadge(item.usage).label }}
-        </gl-badge>
+        </div>
       </template>
 
       <template #empty>

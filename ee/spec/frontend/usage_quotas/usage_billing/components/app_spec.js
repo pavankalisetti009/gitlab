@@ -191,9 +191,7 @@ describe('UsageBillingApp', () => {
 
       expect(currentUsageNoPoolCard.exists()).toBe(true);
       expect(currentUsageNoPoolCard.props()).toMatchObject({
-        // NOTE: this is a temporary disabled while we're stubbing `overage` field.
-        // This should be enabled again once the field is added in https://gitlab.com/gitlab-org/gitlab/-/issues/567987
-        // overageCreditsUsed: 50,
+        overageCreditsUsed: 50,
         monthStartDate: '2024-01-01',
         monthEndDate: '2024-01-31',
       });
@@ -225,10 +223,7 @@ describe('UsageBillingApp', () => {
       expect(currentUsageCard.exists()).toBe(false);
     });
 
-    // NOTE: this is a temporary disabled while we're stubbing `overage` field.
-    // This should be enabled again once the field is added in https://gitlab.com/gitlab-org/gitlab/-/issues/567987
-    // eslint-disable-next-line jest/no-disabled-tests
-    it.skip('will not render current-usage-no-pool-card', () => {
+    it('will not render current-usage-no-pool-card', () => {
       const currentUsageCard = wrapper.findComponent(CurrentUsageNoPoolCard);
 
       expect(currentUsageCard.exists()).toBe(false);
