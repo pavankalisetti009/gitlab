@@ -14,8 +14,78 @@ RSpec.describe Gitlab::Checks::SecretPushProtection::PayloadProcessor, feature_c
     )
   end
 
+  shared_examples 'logs changed paths breakdown' do
+    it 'logs unknown status when changed_path.status is nil' do
+      changed_path = instance_double(
+        Gitlab::Git::ChangedPath,
+        status: nil,
+        path: 'unknown.txt',
+        old_mode: '100644',
+        new_mode: '100644',
+        old_blob_id: '0000000000000000000000000000000000000000',
+        new_blob_id: 'abc123def456',
+        old_path: 'unknown.txt'
+      )
+
+      # We stub the other two RPC calls in order to make this work properly.
+      allow(project.repository).to receive_messages(
+        find_changed_paths: [changed_path],
+        diff_blobs_with_raw_info: [],
+        diff_blobs: []
+      )
+
+      expect(secret_detection_logger).to receive(:info) do |payload|
+        expect(payload).to include(
+          'class' => 'Gitlab::Checks::SecretPushProtection::PayloadProcessor',
+          'message' => 'secret_push_protection_number_of_changed_paths',
+          'total_changed_paths' => 1,
+          'paths_breakdown' => {
+            'unknown' => 1
+          }
+        )
+      end
+
+      payload_processor.standardize_payloads
+    end
+
+    it 'logs the number and breakdown of changed paths' do
+      expect(secret_detection_logger).to receive(:info) do |payload|
+        expect(payload).to include(
+          'class' => 'Gitlab::Checks::SecretPushProtection::PayloadProcessor',
+          'message' => 'secret_push_protection_number_of_changed_paths',
+          'total_changed_paths' => 3,
+          'paths_breakdown' => {
+            'added' => 1,
+            'modified' => 1,
+            'renamed' => 1
+          }
+        )
+      end
+
+      payload_processor.standardize_payloads
+    end
+
+    it 'tracks any exception raised while logging the breakdown' do
+      error = StandardError.new('log failure')
+
+      allow(secret_detection_logger).to receive(:info).and_raise(error)
+
+      expect(::Gitlab::ErrorTracking).to receive(:track_exception).with(
+        error,
+        project_id: project.id,
+        extra: {
+          context: "number_of_changed_paths_calculation"
+        }
+      )
+
+      payload_processor.standardize_payloads
+    end
+  end
+
   describe '#standardize_payloads' do
     context 'with a valid diff blob' do
+      include_examples 'logs changed paths breakdown'
+
       it 'returns a single GRPC payload built from the diff blob' do
         expect(project.repository).to receive(:diff_blobs_with_raw_info)
           .and_wrap_original do |method, raw_info, **kwargs|
@@ -80,6 +150,8 @@ RSpec.describe Gitlab::Checks::SecretPushProtection::PayloadProcessor, feature_c
       end
 
       context 'with a valid diff blob' do
+        include_examples 'logs changed paths breakdown'
+
         it 'returns a single GRPC payload built from the diff blob' do
           expect(project.repository).to receive(:diff_blobs).and_wrap_original do |method, blob_pairs, **kwargs|
             expect(blob_pairs).to be_an(Array)
