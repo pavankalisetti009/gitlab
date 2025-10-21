@@ -1,0 +1,10 @@
+---
+name: duo_workflow_compress_checkpoint
+description: This controls whether the checkpoint payload between Duo Workflow Service and GitLab monolith is compressed using zlib and encoded using base64 to decrease payload size. This helps reduce network bandwidth usage and improve data transfer speeds for large checkpoint payloads.
+feature_issue_url: https://gitlab.com/gitlab-org/gitlab/-/issues/571913
+introduced_by_url: https://gitlab.com/gitlab-org/gitlab/-/merge_requests/209299
+rollout_issue_url: https://gitlab.com/gitlab-org/gitlab/-/issues/577674
+milestone: '18.6'
+group: group::agent foundations
+type: gitlab_com_derisk
+default_enabled: false
