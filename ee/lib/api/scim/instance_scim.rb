@@ -160,10 +160,6 @@ module API
 
         resource :Groups do
           helpers do
-            def check_groups_feature_enabled!
-              not_found! unless Feature.enabled?(:self_managed_scim_group_sync, :instance)
-            end
-
             def find_group_link(scim_group_uid)
               # We only need one group link since they'll all have the same name and SCIM ID.
               # Multiple links can exist if the same SAML group is linked to different GitLab groups.
@@ -175,7 +171,6 @@ module API
           end
 
           before do
-            check_groups_feature_enabled!
             check_instance_requirements!
           end
 

@@ -15,7 +15,6 @@ module Authn
     BATCH_SIZE = 1000
 
     def perform(scim_group_uid)
-      return unless Feature.enabled?(:self_managed_scim_group_sync, :instance)
       return if scim_group_uid.blank?
 
       Authn::ScimGroupMembership.by_scim_group_uid(scim_group_uid).each_batch(of: BATCH_SIZE) do |batch|
