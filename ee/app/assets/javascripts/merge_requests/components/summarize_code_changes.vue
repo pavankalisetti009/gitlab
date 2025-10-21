@@ -1,6 +1,6 @@
 <script>
 import { v4 as uuidv4 } from 'uuid';
-import { GlButton, GlBadge } from '@gitlab/ui';
+import { GlButton, GlBadge, GlTooltipDirective } from '@gitlab/ui';
 import { InternalEvents } from '~/tracking';
 import { CONTENT_EDITOR_PASTE } from '~/vue_shared/constants';
 import { updateText } from '~/lib/utils/text_markdown';
@@ -17,8 +17,18 @@ export default {
     GlButton,
     GlBadge,
   },
+  directives: {
+    GlTooltip: GlTooltipDirective,
+  },
   mixins: [InternalEvents.mixin()],
   inject: ['projectId', 'sourceBranch', 'targetBranch'],
+  props: {
+    disabledReason: {
+      type: String,
+      required: false,
+      default: null,
+    },
+  },
   apollo: {
     $subscribe: {
       // eslint-disable-next-line @gitlab/vue-no-undef-apollo-properties
@@ -66,6 +76,9 @@ export default {
     userId() {
       return convertToGraphQLId(TYPENAME_USER, gon.current_user_id);
     },
+    disabled() {
+      return Boolean(this.disabledReason);
+    },
   },
   mounted() {
     this.trackEvent('render_summarize_code_changes');
@@ -95,15 +108,18 @@ export default {
 </script>
 
 <template>
-  <gl-button
-    icon="tanuki-ai"
-    category="tertiary"
-    size="small"
-    :loading="loading"
-    data-testid="summarize-button"
-    @click="onClick"
-  >
-    {{ __('Summarize code changes') }}
-    <gl-badge variants="neutral" class="gl-ml-2">{{ __('Beta') }}</gl-badge>
-  </gl-button>
+  <span v-gl-tooltip :title="disabledReason">
+    <gl-button
+      icon="tanuki-ai"
+      category="tertiary"
+      size="small"
+      :disabled="disabled"
+      :loading="loading"
+      data-testid="summarize-button"
+      @click="onClick"
+    >
+      {{ __('Summarize code changes') }}
+      <gl-badge variants="neutral" class="gl-ml-2">{{ __('Beta') }}</gl-badge>
+    </gl-button>
+  </span>
 </template>

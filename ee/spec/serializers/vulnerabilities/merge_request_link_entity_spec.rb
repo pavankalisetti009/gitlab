@@ -26,7 +26,12 @@ RSpec.describe Vulnerabilities::MergeRequestLinkEntity, feature_category: :vulne
       it 'are present' do
         expect(serialized_merge_request_link).to include(:merge_request_iid)
         expect(serialized_merge_request_link).to include(:author)
+        expect(serialized_merge_request_link).to include(:state)
       end
+    end
+
+    it 'exposes the merge request state' do
+      expect(serialized_merge_request_link[:state]).to eq(merge_request.state)
     end
 
     context 'when the request is not nil' do

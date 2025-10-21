@@ -2977,6 +2977,9 @@ msgstr ""
 msgid "AI|GitLab Duo"
 msgstr ""
 
+msgid "AI|GitLab Duo has generated a merge request with a suggested solution."
+msgstr ""
+
 msgid "AI|GitLab Duo is unable to suggest a fix for this type of vulnerability."
 msgstr ""
 
@@ -3050,6 +3053,9 @@ msgid "AI|Use GitLab Duo to generate a merge request with a suggested solution."
 msgstr ""
 
 msgid "AI|Use GitLab Duo to provide insights about the vulnerability and suggested solutions."
+msgstr ""
+
+msgid "AI|View AI generated fix"
 msgstr ""
 
 msgid "AI|What does the selected code mean?"
@@ -43297,6 +43303,15 @@ msgstr ""
 msgid "NewFramework|Why scope policies?"
 msgstr ""
 
+msgid "NewMergeRequest|No changes between source and target branches"
+msgstr ""
+
+msgid "NewMergeRequest|Source branch not available"
+msgstr ""
+
+msgid "NewMergeRequest|Target branch not available"
+msgstr ""
+
 msgid "Newest first"
 msgstr ""
 
@@ -78021,6 +78036,9 @@ msgstr ""
 msgid "ciReport|%{scanner}: Loading resulted in an error"
 msgstr ""
 
+msgid "ciReport|A merge request with a suggested solution has been created."
+msgstr ""
+
 msgid "ciReport|API Fuzzing"
 msgstr ""
 
@@ -78298,6 +78316,9 @@ msgid "ciReport|View all pipeline findings"
 msgstr ""
 
 msgid "ciReport|View full report"
+msgstr ""
+
+msgid "ciReport|View merge request"
 msgstr ""
 
 msgid "ciReport|View vulnerabilities"

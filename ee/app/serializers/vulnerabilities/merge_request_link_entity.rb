@@ -4,6 +4,10 @@ module Vulnerabilities
   class MergeRequestLinkEntity < Grape::Entity
     include RequestAwareEntity
 
+    class AuthorEntity < UserEntity
+      expose :human?, as: :human, documentation: { type: 'boolean', example: true }
+    end
+
     expose :merge_request_iid do |merge_request_link|
       merge_request_link.merge_request.iid
     end
@@ -12,7 +16,11 @@ module Vulnerabilities
       project_merge_request_path(merge_request_link.vulnerability.project, merge_request_link.merge_request)
     end
 
-    expose :author, using: UserEntity
+    expose :state do |merge_request_link|
+      merge_request_link.merge_request.state
+    end
+
+    expose :author, using: AuthorEntity
     expose :created_at
 
     alias_method :merge_request_link, :object
