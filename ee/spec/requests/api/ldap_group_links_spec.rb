@@ -252,6 +252,38 @@ RSpec.describe API::LdapGroupLinks, :api, feature_category: :system_access do
         end
       end
     end
+
+    it 'allows creating Minimal Access group access LDAP group links' do
+      expect do
+        post(
+          api("/groups/#{group_with_ldap_links.id}/ldap_group_links", owner),
+          params: {
+            cn: 'ldap-group',
+            group_access: ::Gitlab::Access::MINIMAL_ACCESS,
+            provider: 'ldap2'
+          }
+        )
+      end.to change { group_with_ldap_links.ldap_group_links.count }.by(1)
+
+      expect(response).to have_gitlab_http_status(:created)
+      expect(json_response['group_access']).to eq(::Gitlab::Access::MINIMAL_ACCESS)
+    end
+
+    it 'denies creating random group access LDAP group links' do
+      expect do
+        post(
+          api("/groups/#{group_with_ldap_links.id}/ldap_group_links", owner),
+          params: {
+            cn: 'ldap-group',
+            group_access: 111,
+            provider: 'ldap2'
+          }
+        )
+      end.not_to change { group_with_ldap_links.ldap_group_links.count }
+
+      expect(response).to have_gitlab_http_status(:bad_request)
+      expect(json_response['error']).to eq('group_access does not have a valid value')
+    end
   end
 
   describe 'DELETE /groups/:id/ldap_group_links/:cn' do

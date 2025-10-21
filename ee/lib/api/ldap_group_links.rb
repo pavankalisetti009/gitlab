@@ -45,7 +45,7 @@ module API
       params do
         optional 'cn', type: String, desc: 'The CN of a LDAP group'
         optional 'filter', type: String, desc: 'The LDAP filter for the group'
-        requires 'group_access', type: Integer, values: Gitlab::Access.all_values,
+        requires 'group_access', type: Integer, values: Gitlab::Access.values_with_minimal_access,
           desc: 'Access level for members of the LDAP group'
         requires 'provider', type: String, desc: 'LDAP provider for the LDAP group link'
         optional 'member_role_id', type: Integer, desc: 'The ID of the Member Role for members of the LDAP group'
