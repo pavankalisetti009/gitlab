@@ -253,7 +253,7 @@ You can export a wiki page as a PDF file:
 1. On the left sidebar, select **Search or go to** and find your project or group.
 1. Select **Plan** > **Wiki**.
 1. Go to the page you want to export.
-1. On the top right, select **Wiki actions** ({{< icon name="ellipsis_v" >}}), then select **Print as PDF**.
+1. On the upper right, select **Wiki actions** ({{< icon name="ellipsis_v" >}}), then select **Print as PDF**.
 
 A PDF of the wiki page is created.
 
@@ -326,7 +326,7 @@ You can subscribe to specific wiki pages to receive notifications when someone:
 ### Subscribe to a wiki page
 
 1. Open the wiki page you want to follow.
-1. In the top-right corner, next to the **Edit**, select the bell icon ({{< icon name="notifications" >}}).
+1. In the upper-right corner, next to the **Edit**, select the bell icon ({{< icon name="notifications" >}}).
 1. Select the bell icon ({{< icon name="notifications-off" >}}) again to unsubscribe.
 
 When you change your subscription status, GitLab shows a confirmation message:
