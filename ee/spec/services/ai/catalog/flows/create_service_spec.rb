@@ -168,6 +168,14 @@ RSpec.describe Ai::Catalog::Flows::CreateService, feature_category: :workflow_ca
 
       it_behaves_like 'an error response', Ai::Catalog::Flows::FlowHelper::MAX_STEPS_ERROR
     end
+
+    context 'when ai_catalog_third_party_flows feature flag is disabled' do
+      before do
+        stub_feature_flags(ai_catalog_flows: false)
+      end
+
+      it_behaves_like 'an error response', 'You have insufficient permissions'
+    end
   end
 
   describe 'dependency tracking' do
