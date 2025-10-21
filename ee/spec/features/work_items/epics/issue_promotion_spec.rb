@@ -14,6 +14,7 @@ RSpec.describe 'Issue promotion', :js, feature_category: :portfolio_management d
   let(:user) { create(:user) }
 
   before do
+    stub_feature_flags(work_item_view_for_issues: true)
     sign_in(user)
   end
 
@@ -21,7 +22,11 @@ RSpec.describe 'Issue promotion', :js, feature_category: :portfolio_management d
     it 'does not promote the issue' do
       visit project_issue_path(project, issue)
 
-      expect(page).not_to have_content 'Promoted issue to an epic.'
+      fill_in 'Add a reply', with: '/promote_to Epic'
+      click_button 'Comment'
+
+      expect(page).to have_testid('success-alert',
+        text: 'Failed to promote this work item: Provided type is not supported.')
 
       expect(issue.reload).to be_open
       expect(Epic.count).to eq(1)
@@ -39,7 +44,11 @@ RSpec.describe 'Issue promotion', :js, feature_category: :portfolio_management d
       end
 
       it 'does not promote the issue' do
-        expect(page).not_to have_content 'Promoted issue to an epic.'
+        fill_in 'Add a reply', with: '/promote_to Epic'
+        click_button 'Comment'
+
+        expect(page).to have_testid('success-alert',
+          text: 'Failed to promote this work item: Provided type is not supported.')
 
         expect(issue.reload).to be_open
         expect(Epic.count).to eq(1)
@@ -52,18 +61,14 @@ RSpec.describe 'Issue promotion', :js, feature_category: :portfolio_management d
         visit project_issue_path(project, issue)
       end
 
-      it 'displays description' do
-        fill_in 'Comment', with: '/promote'
-
-        expect(find_autocomplete_menu).to have_text 'Promote issue to an epic'
-      end
-
       it 'promotes the issue' do
-        add_note('/promote')
+        fill_in 'Add a reply', with: '/promote_to Epic'
+        click_button 'Comment'
 
         epic = Epic.last
 
-        expect(page).to have_content 'Promoted issue to an epic.'
+        expect(page).to have_testid('success-alert', text: 'Promoted successfully.')
+        expect(page).to have_text('Closed ( promoted )')
         expect(issue.reload).to be_closed
         expect(epic.title).to eq(issue.title)
         expect(epic.description).to eq(issue.description)
@@ -78,11 +83,13 @@ RSpec.describe 'Issue promotion', :js, feature_category: :portfolio_management d
         end
 
         it 'promotes the issue' do
-          add_note('/promote')
+          fill_in 'Add a reply', with: '/promote_to Epic'
+          click_button 'Comment'
 
           epic = Epic.last
 
-          expect(page).to have_content 'Promoted issue to an epic.'
+          expect(page).to have_testid('success-alert', text: 'Promoted successfully.')
+          expect(page).to have_text('Closed ( promoted )')
           expect(issue.reload).to be_closed
           expect(epic.title).to eq(issue.title)
           expect(epic.description).to eq(issue.description)

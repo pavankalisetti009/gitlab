@@ -19,14 +19,10 @@ RSpec.describe 'Incidents > User uses EE quick actions', :js, feature_category: 
     end
 
     before do
+      stub_feature_flags(work_item_view_for_issues: true)
       project.add_developer(user)
       sign_in(user)
       visit project_issue_path(project, incident)
-      wait_for_all_requests
-    end
-
-    after do
-      wait_for_requests
     end
 
     it_behaves_like 'zoom quick actions ee'
