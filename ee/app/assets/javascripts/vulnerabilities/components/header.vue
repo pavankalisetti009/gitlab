@@ -96,7 +96,7 @@ export default {
       return this.vulnerability.remediations?.[0]?.diff?.length > 0;
     },
     mergeRequest() {
-      return this.vulnerability.mergeRequestLinks.at(-1);
+      return this.vulnerability.mergeRequestLinks.filter((m) => m.state !== 'closed').at(-1);
     },
     canCreateMergeRequest() {
       return !this.mergeRequest && this.vulnerability.createMrUrl && this.hasRemediation;
@@ -426,6 +426,7 @@ export default {
           :show-explain-with-ai="canExplainWithAi"
           :ai-resolution-enabled="vulnerability.aiResolutionEnabled"
           :show-public-project-warning="vulnerability.belongsToPublicProject"
+          :merge-requests="vulnerability.mergeRequestLinks"
           @create-merge-request="createMergeRequest"
           @download-patch="downloadPatch"
           @explain-vulnerability="explainVulnerability"
