@@ -182,7 +182,7 @@ module QA
           end
 
           def has_vulnerability_report?(timeout: 60)
-            wait_until(reload: true, max_duration: timeout, sleep_interval: 1) do
+            wait_until(reload: true, max_duration: timeout, sleep_interval: 2) do
               has_element?('vulnerability-report-grouped', wait: 10)
             end
             find_element('vulnerability-report-grouped').has_no_content?("is loading")

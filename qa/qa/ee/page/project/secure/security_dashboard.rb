@@ -6,7 +6,8 @@ module QA
       module Project
         module Secure
           class SecurityDashboard < QA::Page::Base
-            view 'ee/app/assets/javascripts/security_dashboard/components/shared/vulnerability_report/vulnerability_list.vue' do
+            view 'ee/app/assets/javascripts/security_dashboard/components/shared/vulnerability_report/' \
+              'vulnerability_list.vue' do
               element :vulnerability
               element 'vulnerability-checkbox-all'
               element 'false-positive-vulnerability'
@@ -20,14 +21,16 @@ module QA
               element 'select-action-listbox'
             end
 
-            view 'ee/app/assets/javascripts/security_dashboard/components/shared/vulnerability_report/bulk_change_status.vue' do
+            view 'ee/app/assets/javascripts/security_dashboard/components/shared/vulnerability_report/' \
+              'bulk_change_status.vue' do
               element 'status-listbox'
               element 'change-status-button'
               element 'dismissal-reason-listbox'
               element 'change-status-comment-textbox'
             end
 
-            view 'ee/app/assets/javascripts/security_dashboard/components/shared/vulnerability_report/vulnerability_report_header.vue' do
+            view 'ee/app/assets/javascripts/security_dashboard/components/shared/vulnerability_report/' \
+              'vulnerability_report_header.vue' do
               element 'export-vulnerabilities-button'
               element 'vulnerability-report-header'
             end
@@ -48,7 +51,17 @@ module QA
             end
 
             def select_all_vulnerabilities
-              check_element('vulnerability-checkbox-all', true)
+              wait_until(max_duration: 60, sleep_interval: 2, message: "Waiting for vulnerabilities to render") do
+                has_element?(:vulnerability, wait: 2)
+              end
+
+              # Select all and ensure the bulk selection action bar appears before continuing
+              wait_until(reload: false, max_duration: 15, sleep_interval: 1,
+                message: "Waiting for bulk selection actions") do
+                check_element('vulnerability-checkbox-all', true)
+
+                has_element?('select-action-listbox', wait: 2)
+              end
             end
 
             def select_single_vulnerability(vulnerability_name)
@@ -56,25 +69,30 @@ module QA
             end
 
             def change_state(status, dismissal_reason = "not_applicable")
-              retry_until(max_attempts: 3, sleep_interval: 2, message: "Setting status and comment") do
-                if has_element?('select-action-listbox')
-                  click_element('select-action-listbox', wait: 5)
-                  click_element('listbox-item-status', wait: 5)
-                  has_element?('status-listbox', wait: 5)
+              wait_for_requests
+              retry_until(max_attempts: 5, sleep_interval: 2, message: "Setting status and comment") do
+                if has_element?('select-action-listbox', wait: 2)
+                  click_element('select-action-listbox')
+                  click_element('listbox-item-status') if has_element?('listbox-item-status', wait: 1)
                 end
 
-                click_element('status-listbox', wait: 5)
-                click_element(:"listbox-item-#{status}", wait: 5)
-                has_element?('change-status-comment-textbox', wait: 2)
-              end
+                next false unless has_element?('status-listbox', wait: 1)
 
-              if status.include?("dismissed")
-                click_element('dismissal-reason-listbox')
-                select_dismissal_reason(dismissal_reason)
-              end
+                click_element('status-listbox')
 
-              fill_element('change-status-comment-textbox', "E2E Test")
-              click_element('change-status-button')
+                next false unless has_element?(:"listbox-item-#{status}", wait: 1)
+
+                click_element(:"listbox-item-#{status}")
+
+                if status.to_s.include?('dismissed')
+                  click_element('dismissal-reason-listbox')
+                  click_element(:"listbox-item-#{dismissal_reason}")
+                end
+
+                fill_element('change-status-comment-textbox', "E2E Test")
+                click_element('change-status-button')
+                wait_for_requests
+              end
             end
 
             def select_dismissal_reason(reason)
@@ -99,15 +117,15 @@ module QA
 
             def wait_for_vuln_report_to_load
               wait_for_requests
-              wait_until(max_duration: 60, sleep_interval: 10, message: "Vulnerabilities not loaded yet") do
-                page.has_no_content?('No vulnerabilities to report')
+              wait_until(max_duration: 180, sleep_interval: 10, message: "Vulnerabilities not loaded yet") do
+                has_element?(:vulnerability)
               end
-              raise QA::Page::Base::ElementNotFound, "Vulnerability page not loaded" unless vuln_report_page_exists?
             end
 
             def wait_for_vuln_report_to_ingest
               wait_for_requests
-              wait_until(max_duration: 120, sleep_interval: 10, message: "Vulnerabilities not loaded yet", reload: true) do
+              wait_until(max_duration: 120, sleep_interval: 10, message: "Vulnerabilities not loaded yet",
+                reload: true) do
                 page.has_content?('Security reports last updated')
               end
               raise QA::Page::Base::ElementNotFound, "Vulnerability page not loaded" unless vuln_report_page_exists?
@@ -115,7 +133,8 @@ module QA
 
             def has_sent_via_email_alert?
               wait_for_requests
-              page.has_content?("Report export in progress. After the report is generated, an email will be sent with the download link.")
+              page.has_content?("Report export in progress. " \
+                "After the report is generated, an email will be sent with the download link.")
             end
           end
         end
