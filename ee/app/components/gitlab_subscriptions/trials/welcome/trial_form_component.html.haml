@@ -6,7 +6,7 @@
 = render "layouts/google_tag_manager_body"
 
 
-= render Pajamas::CardComponent.new(card_options: { class: 'gl-max-w-2xl gl-mx-auto gl-rounded-lg gl-mt-6'}, body_options: { class: 'gl-p-8' }, footer_options: { class: 'gl-rounded-b-lg' }) do |c|
+= render Pajamas::CardComponent.new(card_options: { class: 'gl-max-w-2xl gl-mx-auto gl-rounded-none gl-mt-6 gl-border-1 gl-border-solid gl-border-default'}, body_options: { class: 'gl-p-8' }, footer_options: { class: 'gl-rounded-none' }) do |c|
   - c.with_body do
     .gl-text-center.gl-mb-6
       = image_tag 'illustrations/gitlab_logo.svg', class: 'gl-h-9', alt: 'GitLab'
