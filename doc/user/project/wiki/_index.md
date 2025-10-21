@@ -376,6 +376,7 @@ You can see the changes made in a version of a wiki page, similar to versioned d
 
 - Searching by title in the sidebar [introduced](https://gitlab.com/gitlab-org/gitlab/-/merge_requests/156054) in GitLab 17.1.
 - Limit of 15 items in the sidebar [removed](https://gitlab.com/gitlab-org/gitlab/-/merge_requests/158084) in GitLab 17.2.
+- Sidebar [moved](https://gitlab.com/gitlab-org/gitlab/-/issues/569910) from the upper right to the upper left of the page in GitLab 18.6.
 
 {{< /history >}}
 

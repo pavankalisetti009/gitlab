@@ -636,6 +636,36 @@
 }
 
 /*
+ * Duo chat
+ */
+
+ :where(.application-chrome) {
+
+  // Your messages
+  .duo-chat-message-container:has(.duo-chat-message .gl-avatar) {
+    @apply gl-justify-end;
+
+    .duo-chat-message {
+      background-color: rgb(from var(--theme-accent-color) r g b / 15%);
+      @apply gl-rounded-bl-[1rem] gl-rounded-br-none;
+    }
+  }
+
+  &.gl-dark .duo-chat-message-container:has(.duo-chat-message.gl-text-feedback-info) {
+    .duo-chat-message:not(:has(.error-icon)) {
+      background-color: rgb(from var(--theme-accent-color) r g b / 30%);
+    }
+  }
+
+  .duo-chat-message-container {
+    .duo-chat-message:has(.error-icon) {
+      @apply gl-bg-subtle;
+    }
+  }
+
+}
+
+/*
  * Themes
  */
 
