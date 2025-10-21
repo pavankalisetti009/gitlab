@@ -106,7 +106,7 @@ RSpec.describe 'Mutation.securityCategoryUpdate', feature_category: :security_as
     context 'when updating by template type' do
       let(:arguments) do
         {
-          template_type: 'BUSINESS_UNIT',
+          id: 'gid://gitlab/Security::Category/business_unit',
           namespace_id: namespace.to_global_id.to_s,
           name: name
         }
@@ -129,38 +129,10 @@ RSpec.describe 'Mutation.securityCategoryUpdate', feature_category: :security_as
       end
     end
 
-    context 'when validating arguments' do
-      context 'when neither id nor template_type is provided' do
-        let(:arguments) do
-          {
-            namespace_id: namespace.to_global_id.to_s,
-            name: name
-          }
-        end
-
-        it_behaves_like 'a mutation that returns top-level errors',
-          errors: ['Either categoryId or templateType must be provided']
-      end
-
-      context 'when both id and template_type are provided' do
-        let(:arguments) do
-          {
-            id: existing_category.to_global_id.to_s,
-            template_type: 'BUSINESS_IMPACT',
-            namespace_id: namespace.to_global_id.to_s,
-            name: name
-          }
-        end
-
-        it_behaves_like 'a mutation that returns top-level errors',
-          errors: ['Only one of id or templateType should be provided']
-      end
-    end
-
     context 'when namespace does not exist' do
       let(:arguments) do
         {
-          template_type: 'BUSINESS_UNIT',
+          id: 'gid://gitlab/Security::Category/business_unit',
           namespace_id: "gid://gitlab/Group/#{non_existing_record_id}",
           name: name
         }

@@ -13,40 +13,33 @@ module Mutations
           description: 'Attributes to create.'
 
         argument :category_id, ::Types::GlobalIDType[::Security::Category],
-          required: false,
+          required: true,
           description: 'Global ID of the security category.'
 
         argument :namespace_id, ::Types::GlobalIDType[::Namespace],
-          required: false,
-          description: 'Global ID of the namespace. Will be used if no Category ID is given.'
-
-        argument :template_type, Types::Security::CategoryTemplateTypeEnum,
-          required: false,
-          description: 'Template type for predefined categories. Will be used if no Category ID is given.'
+          required: true,
+          description: 'Global ID of the namespace.'
 
         field :security_attributes, [Types::Security::AttributeType],
           null: true,
           description: 'Created security attributes.'
 
-        def resolve(attributes:, category_id: nil, template_type: nil, namespace_id: nil)
-          validate_arguments(category_id, template_type, namespace_id)
-
-          category = category_id ? authorized_find!(id: category_id) : nil
-          namespace = namespace_id ? authorized_find!(id: namespace_id) : category&.namespace
+        def resolve(attributes:, category_id:, namespace_id: nil)
+          namespace = authorized_find!(id: namespace_id)
 
           unless Feature.enabled?(:security_categories_and_attributes, namespace.root_ancestor)
             raise_resource_not_available_error!
           end
 
           category_result = ::Security::Categories::FindOrCreateService.new(
-            category_id: category&.id,
-            template_type: template_type,
+            category_id: GitlabSchema.parse_gid(category_id, expected_type: ::Security::Category).model_id,
             namespace: namespace,
             current_user: current_user
           ).execute
-          return { errors: category_result.errors } if category_result.error?
-
           category = category_result.payload[:category]
+          raise_resource_not_available_error! unless category
+          return { security_attributes: nil, errors: category_result.errors } if category_result.error?
+
           validate_category_attribute_limit(category, attributes.length)
 
           result = ::Security::Attributes::CreateService.new(
@@ -63,18 +56,6 @@ module Mutations
         end
 
         private
-
-        def validate_arguments(category_id, template_type, namespace_id)
-          if category_id.present?
-            if namespace_id.present? || template_type.present?
-              raise Gitlab::Graphql::Errors::ArgumentError,
-                'When categoryId is provided, namespaceId and templateType should not be specified'
-            end
-          elsif namespace_id.blank? || template_type.blank?
-            raise Gitlab::Graphql::Errors::ArgumentError,
-              'When categoryId is not provided, both namespaceId and templateType must be specified'
-          end
-        end
 
         def validate_category_attribute_limit(category, new_attributes_count)
           return unless category

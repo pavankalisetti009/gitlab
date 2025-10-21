@@ -27,6 +27,7 @@ RSpec.describe 'Mutation.securityAttributeCreate', feature_category: :security_a
   let(:arguments) do
     {
       category_id: category.to_global_id.to_s,
+      namespace_id: namespace.to_global_id.to_s,
       attributes: attributes_input
     }
   end
@@ -85,6 +86,7 @@ RSpec.describe 'Mutation.securityAttributeCreate', feature_category: :security_a
         let(:arguments) do
           {
             category_id: "gid://gitlab/Security::Category/#{non_existing_record_id}",
+            namespace_id: namespace.to_global_id.to_s,
             attributes: attributes_input
           }
         end
@@ -98,6 +100,7 @@ RSpec.describe 'Mutation.securityAttributeCreate', feature_category: :security_a
         let(:arguments) do
           {
             category_id: locked_category.to_global_id.to_s,
+            namespace_id: namespace.to_global_id.to_s,
             attributes: attributes_input
           }
         end
@@ -112,11 +115,11 @@ RSpec.describe 'Mutation.securityAttributeCreate', feature_category: :security_a
       end
     end
 
-    context 'when creating with template_type and namespace_id' do
+    context 'when creating with template_type embedded in category_id' do
       let(:arguments) do
         {
+          category_id: "gid://gitlab/Security::Category/application",
           namespace_id: namespace.to_global_id.to_s,
-          template_type: 'APPLICATION',
           attributes: attributes_input
         }
       end
@@ -152,66 +155,14 @@ RSpec.describe 'Mutation.securityAttributeCreate', feature_category: :security_a
       context 'when namespace does not exist' do
         let(:arguments) do
           {
+            category_id: "gid://gitlab/Security::Category/application",
             namespace_id: "gid://gitlab/Group/#{non_existing_record_id}",
-            template_type: 'APPLICATION',
             attributes: attributes_input
           }
         end
 
         it_behaves_like 'a mutation that returns top-level errors',
           errors: [Gitlab::Graphql::Authorize::AuthorizeResource::RESOURCE_ACCESS_ERROR]
-      end
-    end
-
-    context 'when validating arguments' do
-      context 'when category_id is provided with namespace_id' do
-        let(:arguments) do
-          {
-            category_id: category.to_global_id.to_s,
-            namespace_id: namespace.to_global_id.to_s,
-            attributes: attributes_input
-          }
-        end
-
-        it_behaves_like 'a mutation that returns top-level errors',
-          errors: ['When categoryId is provided, namespaceId and templateType should not be specified']
-      end
-
-      context 'when category_id is provided with template_type' do
-        let(:arguments) do
-          {
-            category_id: category.to_global_id.to_s,
-            template_type: 'APPLICATION',
-            attributes: attributes_input
-          }
-        end
-
-        it_behaves_like 'a mutation that returns top-level errors',
-          errors: ['When categoryId is provided, namespaceId and templateType should not be specified']
-      end
-
-      context 'when category_id is not provided but namespace_id is missing' do
-        let(:arguments) do
-          {
-            template_type: 'APPLICATION',
-            attributes: attributes_input
-          }
-        end
-
-        it_behaves_like 'a mutation that returns top-level errors',
-          errors: ['When categoryId is not provided, both namespaceId and templateType must be specified']
-      end
-
-      context 'when category_id is not provided but template_type is missing' do
-        let(:arguments) do
-          {
-            namespace_id: namespace.to_global_id.to_s,
-            attributes: attributes_input
-          }
-        end
-
-        it_behaves_like 'a mutation that returns top-level errors',
-          errors: ['When categoryId is not provided, both namespaceId and templateType must be specified']
       end
     end
 
