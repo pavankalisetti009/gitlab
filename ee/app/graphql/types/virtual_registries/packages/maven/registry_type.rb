@@ -1,0 +1,40 @@
+# frozen_string_literal: true
+
+module Types
+  module VirtualRegistries
+    module Packages
+      module Maven
+        class RegistryType < ::Types::BaseObject
+          graphql_name 'MavenRegistry'
+          description 'Represents a Maven virtual registry'
+
+          authorize :read_virtual_registry
+
+          alias_method :registry, :object
+
+          field :id, GraphQL::Types::ID, null: false,
+            description: 'ID of the virtual registry.'
+
+          field :name, GraphQL::Types::String, null: false,
+            description: 'Name of the virtual registry.'
+
+          field :description, GraphQL::Types::String, null: true,
+            description: 'Description of the virtual registry.'
+
+          field :updated_at, ::Types::TimeType, null: true,
+            description: 'Timestamp of when the virtual registry was updated.'
+
+          field :upstreams,
+            [::Types::VirtualRegistries::Packages::Maven::UpstreamType],
+            null: true,
+            description: 'List of upstream registries for the Maven virtual registry.',
+            experiment: { milestone: '18.1' }
+
+          def upstreams
+            ::VirtualRegistries::Packages::Maven::Upstream.eager_load_registry_upstream(registry: registry)
+          end
+        end
+      end
+    end
+  end
+end

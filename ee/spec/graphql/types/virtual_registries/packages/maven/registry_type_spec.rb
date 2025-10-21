@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe GitlabSchema.types['MavenVirtualRegistry'], feature_category: :virtual_registry do
+RSpec.describe GitlabSchema.types['MavenRegistry'], feature_category: :virtual_registry do
   include GraphqlHelpers
 
   subject { described_class }

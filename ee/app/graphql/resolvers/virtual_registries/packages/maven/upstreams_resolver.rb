@@ -7,7 +7,7 @@ module Resolvers
         class UpstreamsResolver < BaseResolver
           include LooksAhead
 
-          type EE::Types::VirtualRegistries::Packages::Maven::MavenUpstreamType.connection_type, null: true
+          type ::Types::VirtualRegistries::Packages::Maven::UpstreamType.connection_type, null: true
 
           argument :upstream_name, GraphQL::Types::String,
             required: false,
