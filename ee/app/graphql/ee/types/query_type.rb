@@ -389,7 +389,7 @@ module EE
             description: 'Global ID of the project compliance violation.'
         end
 
-        field :maven_virtual_registry, EE::Types::VirtualRegistries::Packages::Maven::MavenVirtualRegistryType,
+        field :maven_virtual_registry, ::Types::VirtualRegistries::Packages::Maven::RegistryType,
           null: true,
           description: 'Find a Maven virtual registry. ' \
             'Returns null if the `maven_virtual_registry` feature flag is disabled.',
@@ -406,7 +406,7 @@ module EE
           description: 'Security-filtered projects for a namespace',
           resolver: ::Resolvers::Security::NamespaceSecurityProjectsResolver
 
-        field :maven_upstream_registry, EE::Types::VirtualRegistries::Packages::Maven::MavenUpstreamType,
+        field :maven_upstream_registry, ::Types::VirtualRegistries::Packages::Maven::UpstreamType,
           null: true,
           description: 'Find a Maven upstream registry. ' \
             'Returns null if the `maven_virtual_registry` feature flag is disabled.',

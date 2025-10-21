@@ -22,7 +22,7 @@ module Mutations
           description: 'Enable or disable the virtual registries.'
 
         field :virtual_registries_setting,
-          EE::Types::VirtualRegistries::SettingType,
+          ::Types::VirtualRegistries::SettingType,
           null: true,
           description: 'Virtual registries settings after mutation.'
 
