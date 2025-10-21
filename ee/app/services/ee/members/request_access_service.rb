@@ -8,6 +8,11 @@ module EE
 
       private
 
+      override :can_request_access?
+      def can_request_access?(source)
+        super && !membership_locked?(source)
+      end
+
       override :default_access_level
       def default_access_level
         if member_promotion_management_enabled? && non_billable_user?(current_user)

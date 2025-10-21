@@ -7,11 +7,12 @@ module EE
       include ::GitlabSubscriptions::MemberManagement::PromotionManagementUtils
 
       NoSeatError = Class.new(StandardError)
+      MembershipLockedError = Class.new(StandardError)
 
       override :execute
       def execute(access_requester, skip_authorization: false, skip_log_audit_event: false)
         super
-      rescue NoSeatError => e
+      rescue NoSeatError, MembershipLockedError => e
         error(e.message)
       end
 
@@ -25,6 +26,10 @@ module EE
 
       override :handle_request_acceptance
       def handle_request_acceptance(access_requester)
+        if membership_locked?(access_requester.source)
+          raise MembershipLockedError, _('Membership is locked for this group')
+        end
+
         raise NoSeatError, _('No seat available') unless seat_available_for?(access_requester)
 
         super
