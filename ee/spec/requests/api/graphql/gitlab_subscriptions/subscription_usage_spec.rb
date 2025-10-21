@@ -17,6 +17,7 @@ RSpec.describe 'Query.subscriptionUsage', feature_category: :consumables_cost_ma
     "The resource that you are attempting to access does not exist or you don't have permission to perform this action"
   end
 
+  let(:user_arguments) { {} }
   let(:query_fields) do
     [
       :last_updated,
@@ -38,7 +39,7 @@ RSpec.describe 'Query.subscriptionUsage', feature_category: :consumables_cost_ma
         :total_users_using_pool,
         :total_users_using_overage,
         query_graphql_field(:daily_usage, {}, [:date, :credits_used]),
-        query_graphql_field(:users, {}, [
+        query_graphql_field(:users, user_arguments, [
           query_graphql_field(:nodes, {}, [
             :id,
             :name,
@@ -144,9 +145,11 @@ RSpec.describe 'Query.subscriptionUsage', feature_category: :consumables_cost_ma
 
     context 'with admin user' do
       context 'when feature flag is enabled' do
-        it 'returns subscription usage for instance' do
+        before do
           post_graphql(query, current_user: admin)
+        end
 
+        it 'returns subscription usage for instance' do
           expect(graphql_data_at(:subscription_usage, :lastUpdated)).to eq("2025-10-01T16:19:59Z")
           expect(graphql_data_at(:subscription_usage, :startDate)).to eq("2025-10-01")
           expect(graphql_data_at(:subscription_usage, :endDate)).to eq("2025-10-31")
@@ -187,6 +190,35 @@ RSpec.describe 'Query.subscriptionUsage', feature_category: :consumables_cost_ma
             end
           )
         end
+
+        context 'when filtering users by username' do
+          let(:user_arguments) { { username: maintainer.username } }
+
+          it 'returns user data for the specified user only' do
+            expect(graphql_data_at(:subscription_usage, :usersUsage, :users, :nodes)).to match_array([
+              {
+                id: maintainer.to_global_id.to_s,
+                name: maintainer.name,
+                username: maintainer.username,
+                avatarUrl: maintainer.avatar_url,
+                usage: {
+                  totalCredits: maintainer.id,
+                  creditsUsed: maintainer.id * 10,
+                  poolCreditsUsed: maintainer.id * 100,
+                  overageCreditsUsed: maintainer.id * 2
+                }
+              }.with_indifferent_access
+            ])
+          end
+        end
+
+        context 'when filtering non-existent username' do
+          let(:user_arguments) { { username: 'non-existent' } }
+
+          it 'returns empty for user data' do
+            expect(graphql_data_at(:subscription_usage, :usersUsage, :users, :nodes)).to be_empty
+          end
+        end
       end
 
       context 'when feature flag is disabled' do
@@ -213,9 +245,11 @@ RSpec.describe 'Query.subscriptionUsage', feature_category: :consumables_cost_ma
 
       context 'when user is group owner' do
         context 'when feature flag is enabled' do
-          it 'returns subscription usage for the group' do
+          before do
             post_graphql(query, current_user: owner)
+          end
 
+          it 'returns subscription usage for the group' do
             expect(graphql_data_at(:subscription_usage, :lastUpdated)).to eq("2025-10-01T16:19:59Z")
             expect(graphql_data_at(:subscription_usage, :startDate)).to eq("2025-10-01")
             expect(graphql_data_at(:subscription_usage, :endDate)).to eq("2025-10-31")
@@ -255,6 +289,43 @@ RSpec.describe 'Query.subscriptionUsage', feature_category: :consumables_cost_ma
                 }.with_indifferent_access
               end
             )
+          end
+
+          context 'when filtering users by username' do
+            let(:user_arguments) { { username: maintainer.username } }
+
+            it 'returns user data for the specified user only' do
+              expect(graphql_data_at(:subscription_usage, :usersUsage, :users, :nodes)).to match_array([
+                {
+                  id: maintainer.to_global_id.to_s,
+                  name: maintainer.name,
+                  username: maintainer.username,
+                  avatarUrl: maintainer.avatar_url,
+                  usage: {
+                    totalCredits: maintainer.id,
+                    creditsUsed: maintainer.id * 10,
+                    poolCreditsUsed: maintainer.id * 100,
+                    overageCreditsUsed: maintainer.id * 2
+                  }
+                }.with_indifferent_access
+              ])
+            end
+          end
+
+          context 'when filtering a username that is not a group member' do
+            let(:user_arguments) { { username: admin.username } }
+
+            it 'returns empty for user data' do
+              expect(graphql_data_at(:subscription_usage, :usersUsage, :users, :nodes)).to be_empty
+            end
+          end
+
+          context 'when filtering non-existent username' do
+            let(:user_arguments) { { username: 'non-existent' } }
+
+            it 'returns empty for user data' do
+              expect(graphql_data_at(:subscription_usage, :usersUsage, :users, :nodes)).to be_empty
+            end
           end
         end
 

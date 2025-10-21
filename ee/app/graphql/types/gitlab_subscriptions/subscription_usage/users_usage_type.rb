@@ -25,9 +25,14 @@ module Types
           null: true,
           description: 'Array of daily usage of GitLab Credits.'
 
-        field :users, UsersType.connection_type,
+        field :users, UserType.connection_type,
           null: true,
-          description: 'List of users with their usage data.'
+          max_page_size: 20,
+          description: 'List of users with their usage data.' do
+            argument :username, GraphQL::Types::String,
+              required: false,
+              description: 'Username of the User.'
+          end
       end
     end
   end
