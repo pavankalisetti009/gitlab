@@ -16,6 +16,7 @@ RSpec.shared_context 'with geo registries shared context' do
     Geo::PackageFileRegistry                | Types::Geo::PackageFileRegistryType                | :geo_package_file_registry
     Geo::PagesDeploymentRegistry            | Types::Geo::PagesDeploymentRegistryType            | :geo_pages_deployment_registry
     Geo::PipelineArtifactRegistry           | Types::Geo::PipelineArtifactRegistryType           | :geo_pipeline_artifact_registry
+    Geo::ProjectRepositoryRegistry          | Types::Geo::ProjectRepositoryRegistryType          | :geo_project_repository_registry
     Geo::ProjectWikiRepositoryRegistry      | Types::Geo::ProjectWikiRepositoryRegistryType      | :geo_project_wiki_repository_registry
     Geo::SnippetRepositoryRegistry          | Types::Geo::SnippetRepositoryRegistryType          | :geo_snippet_repository_registry
     Geo::TerraformStateVersionRegistry      | Types::Geo::TerraformStateVersionRegistryType      | :geo_terraform_state_version_registry

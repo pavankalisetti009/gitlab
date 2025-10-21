@@ -19,6 +19,7 @@ module Types
         ::Geo::PackageFileRegistry => Types::Geo::PackageFileRegistryType,
         ::Geo::PagesDeploymentRegistry => Types::Geo::PagesDeploymentRegistryType,
         ::Geo::PipelineArtifactRegistry => Types::Geo::PipelineArtifactRegistryType,
+        ::Geo::ProjectRepositoryRegistry => Types::Geo::ProjectRepositoryRegistryType,
         ::Geo::ProjectWikiRepositoryRegistry => Types::Geo::ProjectWikiRepositoryRegistryType,
         ::Geo::SnippetRepositoryRegistry => Types::Geo::SnippetRepositoryRegistryType,
         ::Geo::TerraformStateVersionRegistry => Types::Geo::TerraformStateVersionRegistryType,

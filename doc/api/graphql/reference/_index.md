@@ -53663,6 +53663,7 @@ One of:
 - [`PackageFileRegistry`](#packagefileregistry)
 - [`PagesDeploymentRegistry`](#pagesdeploymentregistry)
 - [`PipelineArtifactRegistry`](#pipelineartifactregistry)
+- [`ProjectRepositoryRegistry`](#projectrepositoryregistry)
 - [`ProjectWikiRepositoryRegistry`](#projectwikirepositoryregistry)
 - [`SnippetRepositoryRegistry`](#snippetrepositoryregistry)
 - [`TerraformStateVersionRegistry`](#terraformstateversionregistry)
