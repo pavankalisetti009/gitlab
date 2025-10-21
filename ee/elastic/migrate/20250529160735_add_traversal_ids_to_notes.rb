@@ -15,3 +15,5 @@ class AddTraversalIdsToNotes < Elastic::Migration
     }
   end
 end
+
+AddTraversalIdsToNotes.prepend ::Search::Elastic::MigrationObsolete
