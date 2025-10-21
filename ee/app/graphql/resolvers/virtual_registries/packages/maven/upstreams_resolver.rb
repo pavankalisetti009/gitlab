@@ -17,8 +17,10 @@ module Resolvers
           def resolve_with_lookahead(**args)
             return unless ::VirtualRegistries::Packages::Maven.virtual_registry_available?(object, current_user)
 
-            result = ::VirtualRegistries::Packages::Maven::UpstreamsFinder.new(
-              object, upstream_name: args[:upstream_name]
+            result = ::VirtualRegistries::UpstreamsFinder.new(
+              upstream_class: ::VirtualRegistries::Packages::Maven::Upstream,
+              group: object,
+              params: args.slice(:upstream_name)
             ).execute
 
             apply_lookahead(result)

@@ -69,8 +69,10 @@ module API
                 optional :upstream_name, type: String, desc: 'Return upstreams with this name'
               end
               get do
-                upstreams = ::VirtualRegistries::Packages::Maven::UpstreamsFinder.new(
-                  group, declared_params.slice(:upstream_name)
+                upstreams = ::VirtualRegistries::UpstreamsFinder.new(
+                  upstream_class: ::VirtualRegistries::Packages::Maven::Upstream,
+                  group: group,
+                  params: declared_params.slice(:upstream_name)
                 ).execute
 
                 present paginate(upstreams), with: Entities::VirtualRegistries::Packages::Maven::Upstream

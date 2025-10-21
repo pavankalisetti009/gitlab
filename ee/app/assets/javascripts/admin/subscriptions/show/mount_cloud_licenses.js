@@ -31,7 +31,7 @@ export default () => {
     isAdmin,
   } = el.dataset;
   const connectivityHelpURL = helpPagePath('/administration/license.html', {
-    anchor: 'cannot-activate-instance-due-to-connectivity-error',
+    anchor: 'error-cannot-activate-instance-due-to-a-connectivity-issue',
   });
 
   return new Vue({
