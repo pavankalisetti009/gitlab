@@ -1,7 +1,7 @@
 <script>
 import { GlButton, GlIcon, GlPopover } from '@gitlab/ui';
 import LocalStorageSync from '~/vue_shared/components/local_storage_sync.vue';
-import { DEPENDENCIES_TABLE_I18N } from '../constants';
+import { __, s__ } from '~/locale';
 
 export default {
   name: 'VulnerabilitiesPopover',
@@ -27,7 +27,6 @@ export default {
       this.popoverDismissed = value;
     },
   },
-  i18n: DEPENDENCIES_TABLE_I18N,
 };
 </script>
 
@@ -45,10 +44,16 @@ export default {
         target="vulnerabilities-info"
         data-testid="vulnerability-info-popover"
         :show="showPopover"
-        :title="$options.i18n.vulnerabilityInfoTitle"
+        :title="s__('Dependencies|Focused vulnerability reporting')"
       >
-        <p class="gl-mb-0">{{ $options.i18n.vulnerabilityInfoBody }}</p>
-        <div class="gl-mt-3 gl-text-right">
+        <p class="gl-mb-0">
+          {{
+            s__(
+              'Dependencies|The dependency list shows only active, currently detected issues. Vulnerabilities that are no longer detected are filtered out.',
+            )
+          }}
+        </p>
+        <div class="gl-text-righ t gl-mt-3">
           <gl-button
             v-if="showPopover"
             data-testid="dismiss-button"
@@ -56,7 +61,7 @@ export default {
             variant="confirm"
             @click="setPopoverDismissed(true)"
           >
-            {{ $options.i18n.vulnerabilityInfoDismissButtonText }}
+            {{ __("Don't show again") }}
           </gl-button>
         </div>
       </gl-popover>

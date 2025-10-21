@@ -1,6 +1,5 @@
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import VulnerabilitiesPopover from 'ee/dependencies/components/vulnerabilities_popover.vue';
-import { DEPENDENCIES_TABLE_I18N } from 'ee/dependencies/constants';
 
 describe('VulnerabilitiesPopover component', () => {
   let wrapper;
@@ -24,12 +23,11 @@ describe('VulnerabilitiesPopover component', () => {
   it('renders vulnerability info icon and popover', () => {
     expect(findVulnerabilityInfoIcon().exists()).toBe(true);
     expect(findVulnerabilityInfoPopover().exists()).toBe(true);
-    expect(findVulnerabilityInfoPopover().props('title')).toBe(
-      DEPENDENCIES_TABLE_I18N.vulnerabilityInfoTitle,
-    );
+    expect(findVulnerabilityInfoPopover().props('title')).toBe('Focused vulnerability reporting');
     expect(findVulnerabilityInfoPopover().text()).toContain(
-      DEPENDENCIES_TABLE_I18N.vulnerabilityInfoBody,
+      'The dependency list shows only active, currently detected issues. Vulnerabilities that are no longer detected are filtered out.',
     );
+    expect(findVulnerabilityInfoPopover().text()).toContain("Don't show again");
   });
 
   it('shows popover and dismiss button', () => {
