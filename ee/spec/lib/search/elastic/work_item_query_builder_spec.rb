@@ -588,10 +588,6 @@ RSpec.describe ::Search::Elastic::WorkItemQueryBuilder, :elastic_helpers, featur
     end
 
     describe 'label names' do
-      before do
-        set_elasticsearch_migration_to(:add_extra_fields_to_work_items, including: true)
-      end
-
       it 'does not apply label filters by default' do
         assert_names_in_query(build,
           without: %w[
@@ -701,10 +697,6 @@ RSpec.describe ::Search::Elastic::WorkItemQueryBuilder, :elastic_helpers, featur
     end
 
     describe 'weight' do
-      before do
-        set_elasticsearch_migration_to(:add_extra_fields_to_work_items, including: true)
-      end
-
       it 'does not apply weight filters by default' do
         assert_names_in_query(build,
           without: %w[
@@ -749,10 +741,6 @@ RSpec.describe ::Search::Elastic::WorkItemQueryBuilder, :elastic_helpers, featur
     end
 
     describe 'health_status' do
-      before do
-        set_elasticsearch_migration_to(:add_extra_fields_to_work_items, including: true)
-      end
-
       it 'does not apply health_status filters by default' do
         assert_names_in_query(build,
           without: %w[
@@ -797,10 +785,6 @@ RSpec.describe ::Search::Elastic::WorkItemQueryBuilder, :elastic_helpers, featur
     end
 
     describe 'closed_at' do
-      before do
-        set_elasticsearch_migration_to(:add_extra_fields_to_work_items, including: true)
-      end
-
       it 'does not apply closed_at filters by default' do
         assert_names_in_query(build,
           without: %w[
@@ -832,24 +816,6 @@ RSpec.describe ::Search::Elastic::WorkItemQueryBuilder, :elastic_helpers, featur
 
         it 'applies both filters' do
           assert_names_in_query(build, with: %w[filters:closed_after filters:closed_before])
-        end
-      end
-
-      context 'when migration is not finished' do
-        before do
-          set_elasticsearch_migration_to(:add_extra_fields_to_work_items, including: false)
-        end
-
-        let(:options) do
-          base_options.merge(closed_after: '2025-01-01T00:00:00Z', closed_before: '2025-12-31T23:59:59Z')
-        end
-
-        it 'does not apply closed_at filters' do
-          assert_names_in_query(build,
-            without: %w[
-              filters:closed_after
-              filters:closed_before
-            ])
         end
       end
     end
