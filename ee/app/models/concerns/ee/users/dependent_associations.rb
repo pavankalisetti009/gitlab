@@ -56,6 +56,10 @@ module EE
           class_name: 'Security::ApprovalPolicyMergeRequestBypassEvent',
           inverse_of: :user,
           dependent: :nullify
+
+        has_many :duo_workflows_workflows,
+          class_name: 'Ai::DuoWorkflows::Workflow',
+          dependent: :destroy
         # rubocop:enable Cop/ActiveRecordDependent -- we need to destroy/nullify records after each user delete.
       end
     end

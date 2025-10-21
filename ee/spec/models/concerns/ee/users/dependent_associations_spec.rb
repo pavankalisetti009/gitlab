@@ -21,6 +21,7 @@ RSpec.describe EE::Users::DependentAssociations, feature_category: :user_managem
           { class_name: 'ApprovalRules::ApprovalMergeRequestRulesApprovedApprover' },
         approval_merge_request_rules_users: {},
         approval_project_rules_users: {},
+        duo_workflows_workflows: { class_name: 'Ai::DuoWorkflows::Workflow' },
         merge_requests_approval_rules_approver_users: { class_name: 'MergeRequests::ApprovalRulesApproverUser' },
         targeted_message_dismissals: {},
         boards_epic_list_user_preferences: { class_name: 'Boards::EpicListUserPreference' },
