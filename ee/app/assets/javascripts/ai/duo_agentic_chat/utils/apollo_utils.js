@@ -40,6 +40,11 @@ export const ApolloUtils = {
       },
     });
 
+    const errors = result?.data?.aiDuoWorkflowCreate?.errors;
+    if (errors && errors.length > 0) {
+      throw new Error(errors.join(', '));
+    }
+
     const workflow = result?.data?.aiDuoWorkflowCreate?.workflow || {};
 
     return {

@@ -22,7 +22,7 @@ module Ai
 
         workflow = Ai::DuoWorkflows::Workflow.new(workflow_attributes)
 
-        return error(workflow.errors.full_messages, :bad_request) unless workflow.save
+        return error(workflow.errors.full_messages.join(', '), :bad_request) unless workflow.save
 
         track_workflow_event("agent_platform_session_created", workflow)
 
