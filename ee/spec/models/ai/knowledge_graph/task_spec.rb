@@ -42,6 +42,20 @@ RSpec.describe ::Ai::KnowledgeGraph::Task, feature_category: :global_search do
       end
     end
 
+    describe '.preload_namespace_settings' do
+      let_it_be(:task) { create(:knowledge_graph_task, knowledge_graph_replica: replica) }
+
+      it 'eager loads the namespace_settings and avoids N+1 queries' do
+        task = described_class.preload_namespace_settings.first
+        recorder = ActiveRecord::QueryRecorder.new do
+          namespace = task.knowledge_graph_replica.knowledge_graph_enabled_namespace.namespace
+          namespace.namespace_settings
+          namespace.namespace_settings_with_ancestors_inherited_settings
+        end
+        expect(recorder.count).to be_zero
+      end
+    end
+
     describe '.for_namespace' do
       let_it_be(:replica2) do
         create(:knowledge_graph_replica, knowledge_graph_enabled_namespace: replica.knowledge_graph_enabled_namespace)

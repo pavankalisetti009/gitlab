@@ -286,7 +286,7 @@ module Search
         return Project.all if projects == :any
 
         filtered_projects = projects.without_order
-        filtered_projects = filtered_projects.non_archived unless filters[:include_archived]
+        filtered_projects = filtered_projects.self_and_ancestors_non_archived unless filters[:include_archived]
 
         # default behavior is to exclude forks
         if filters[:exclude_forks].nil? || (filters[:exclude_forks] == true)

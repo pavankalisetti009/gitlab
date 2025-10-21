@@ -13,6 +13,11 @@ module Search
       before_validation :set_project_identifier
 
       scope :with_project, -> { includes(zoekt_repository: :project) }
+      scope :preload_namespace_settings, -> do
+        includes(zoekt_repository: {
+          project: [{ namespace: %i[namespace_settings namespace_settings_with_ancestors_inherited_settings] }]
+        })
+      end
 
       enum :task_type, {
         index_repo: 0,

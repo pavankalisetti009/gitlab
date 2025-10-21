@@ -66,7 +66,7 @@ module Search
             visibility_level: project.visibility_level,
             repository_access_level: project.repository_access_level,
             forked: project.forked? ? "t" : "f",
-            archived: project.archived? ? "t" : "f"
+            archived: project.self_or_ancestors_archived? ? "t" : "f"
           }.transform_values(&:to_s)
         )
       end

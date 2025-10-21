@@ -231,6 +231,9 @@ module EE
           store.subscribe ::Search::Zoekt::ProjectMarkedAsArchivedEventWorker,
             to: ::Projects::ProjectArchivedEvent
 
+          store.subscribe ::Search::Zoekt::GroupArchivedEventWorker,
+            to: ::Namespaces::Groups::GroupArchivedEvent
+
           store.subscribe ::Search::Zoekt::ProjectFeaturesChangedEventWorker,
             to: ::Projects::ProjectFeaturesChangedEvent
 
