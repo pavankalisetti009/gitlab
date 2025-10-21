@@ -36,87 +36,92 @@ RSpec.describe 'epic boards', :sidekiq_inline, :js, feature_category: :portfolio
       stub_licensed_features(epics: true)
       group.add_maintainer(user)
       sign_in(user)
-      visit_epic_boards_page
     end
 
-    it 'displays default lists and a label list' do
-      lists = %w[Open Label1 Closed]
-
-      wait_for_requests
-
-      expect(page).to have_selector('.board-header', count: 3)
-
-      page.all('.board-header').each_with_index do |list, i|
-        expect(list.find('.board-title')).to have_content(lists[i])
+    context 'default' do
+      before do
+        visit_epic_boards_page
       end
-    end
 
-    it 'displays two epics in Open list' do
-      expect(list_header(backlog_list)).to have_content('2')
+      it 'displays default lists and a label list' do
+        lists = %w[Open Label1 Closed]
 
-      page.within("[data-board-type='backlog']") do
-        expect(page).to have_selector('.board-card', count: 2)
-        page.within(first('.board-card')) do
-          expect(page).to have_content('Epic3')
-        end
+        wait_for_requests
 
-        page.within('.board-card:nth-child(2)') do
-          expect(page).to have_content('Epic2')
+        expect(page).to have_selector('.board-header', count: 3)
+
+        page.all('.board-header').each_with_index do |list, i|
+          expect(list.find('.board-title')).to have_content(lists[i])
         end
       end
-    end
 
-    it 'displays one epic in Label list' do
-      expect(list_header(label_list)).to have_content('1')
+      it 'displays two epics in Open list' do
+        expect(list_header(backlog_list)).to have_content('2')
 
-      page.within("[data-board-type='label']") do
-        expect(page).to have_selector('.board-card', count: 1)
-        page.within(first('.board-card')) do
-          expect(page).to have_content('Epic1')
+        page.within("[data-board-type='backlog']") do
+          expect(page).to have_selector('.board-card', count: 2)
+          page.within(first('.board-card')) do
+            expect(page).to have_content('Epic3')
+          end
+
+          page.within('.board-card:nth-child(2)') do
+            expect(page).to have_content('Epic2')
+          end
         end
       end
-    end
 
-    it 'creates new column for label containing labeled epic' do
-      click_button 'New list'
-      wait_for_all_requests
+      it 'displays one epic in Label list' do
+        expect(list_header(label_list)).to have_content('1')
 
-      click_button 'Select a label'
-
-      within_testid('board-add-new-column') do
-        find('label', text: label2.title).click
+        page.within("[data-board-type='label']") do
+          expect(page).to have_selector('.board-card', count: 1)
+          page.within(first('.board-card')) do
+            expect(page).to have_content('Epic1')
+          end
+        end
       end
 
-      click_button 'Add to board'
+      it 'creates new column for label containing labeled epic' do
+        click_button 'New list'
+        wait_for_all_requests
 
-      wait_for_all_requests
+        click_button 'Select a label'
 
-      expect(page).to have_selector('.board', text: label2.title)
-      expect(find('[data-testid="board-list"]:nth-child(3) .board-card')).to have_content(epic3.title)
-    end
+        within_testid('board-add-new-column') do
+          find('label', text: label2.title).click
+        end
 
-    it 'moves to the bottom of another list' do
-      expect(find_board_list(1)).to have_content(epic3.title)
+        click_button 'Add to board'
 
-      drag(list_from_index: 0, list_to_index: 1, to_index: 1)
-      wait_for_all_requests
+        wait_for_all_requests
 
-      expect(find_board_list(1)).not_to have_content(epic3.title)
-      page.within(find_board_list(2)) do
-        expect(all('.board-card')[1]).to have_content(epic3.title)
+        expect(page).to have_selector('.board', text: label2.title)
+        expect(find('[data-testid="board-list"]:nth-child(3) .board-card')).to have_content(epic3.title)
       end
-    end
 
-    it 'moves to the top of another list' do
-      expect(find_board_list(1)).to have_content(epic3.title)
+      it 'moves to the bottom of another list' do
+        expect(find_board_list(1)).to have_content(epic3.title)
 
-      drag(list_from_index: 0, list_to_index: 1, to_index: 0)
-      wait_for_all_requests
+        drag(list_from_index: 0, list_to_index: 1, to_index: 1)
+        wait_for_all_requests
 
-      expect(find_board_list(1)).not_to have_content(epic3.title)
+        expect(find_board_list(1)).not_to have_content(epic3.title)
+        page.within(find_board_list(2)) do
+          expect(all('.board-card')[1]).to have_content(epic3.title)
+        end
+      end
 
-      page.within(find_board_list(2)) do
-        expect(all('.board-card')[0]).to have_content(epic3.title)
+      it 'moves to the top of another list' do
+        expect(find_board_list(1)).to have_content(epic3.title)
+
+        drag(list_from_index: 0, list_to_index: 1, to_index: 0)
+        wait_for_all_requests
+
+        expect(find_board_list(1)).not_to have_content(epic3.title)
+
+        page.within(find_board_list(2)) do
+          expect(all('.board-card')[0]).to have_content(epic3.title)
+        end
       end
     end
 
@@ -169,7 +174,6 @@ RSpec.describe 'epic boards', :sidekiq_inline, :js, feature_category: :portfolio
 
       before do
         visit_epic_boards_page
-        wait_for_requests
       end
 
       it 'moves to end of list' do
@@ -202,6 +206,10 @@ RSpec.describe 'epic boards', :sidekiq_inline, :js, feature_category: :portfolio
 
     context 'lists' do
       let_it_be(:label_list2) { create(:epic_list, epic_board: epic_board, label: label2, position: 1) }
+
+      before do
+        visit_epic_boards_page
+      end
 
       it 'changes position of list' do
         expect(find_board_list(2)).to have_content(label.title)
@@ -414,7 +422,6 @@ RSpec.describe 'epic boards', :sidekiq_inline, :js, feature_category: :portfolio
 
   context "when user is navigating via keyboard" do
     before do
-      stub_feature_flags(epics_list_drawer: false)
       stub_licensed_features(epics: true)
       group.add_guest(user)
       sign_in(user)
