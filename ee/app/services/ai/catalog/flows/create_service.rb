@@ -50,6 +50,10 @@ module Ai
 
         private
 
+        def allowed?
+          super && Feature.enabled?(:ai_catalog_flows, current_user)
+        end
+
         def save_item(item)
           Ai::Catalog::Item.transaction do
             item.save!
