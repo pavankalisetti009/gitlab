@@ -2188,11 +2188,28 @@ RSpec.describe MergeRequest, feature_category: :code_review_workflow do
 
     subject { merge_request.synchronize_approval_rules_from_target_project }
 
+    before do
+      stub_licensed_features(security_orchestration_policies: true)
+    end
+
     it 'resets security rules approvals but keeps code_coverage rule approvals' do
       subject
 
       expect(merge_request.approval_rules.map { |rule| [rule.report_type, rule.approvals_required] })
         .to match_array([['license_scanning', 0], ['code_coverage', 2], ['scan_finding', 0], ['any_merge_request', 0]])
+    end
+
+    context 'when the security orchestration policies feature not available' do
+      before do
+        stub_licensed_features(security_orchestration_policies: false)
+      end
+
+      it 'does not create approval rules from scan result policies' do
+        subject
+
+        expect(merge_request.approval_rules.map { |rule| [rule.report_type, rule.approvals_required] })
+          .to match_array([['code_coverage', 2]])
+      end
     end
   end
 

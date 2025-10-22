@@ -12,7 +12,7 @@ RSpec.describe MergeRequests::SyncReportApproverApprovalRules, feature_category:
     using RSpec::Parameterized::TableSyntax
 
     before do
-      stub_licensed_features(report_approver_rules: true)
+      stub_licensed_features(report_approver_rules: true, security_orchestration_policies: true)
     end
 
     where(:default_name, :report_type) do
@@ -113,6 +113,21 @@ RSpec.describe MergeRequests::SyncReportApproverApprovalRules, feature_category:
         expect { service.execute }
           .not_to change { merge_request.approval_rules.count }
       end
+    end
+
+    context 'when security_orchestration_policies feature is not available' do
+      let!(:license_compliance_project_rule) { create(:approval_project_rule, :license_scanning, project: merge_request.target_project) }
+      let!(:coverage_project_rule) { create(:approval_project_rule, :code_coverage, project: merge_request.target_project) }
+
+      before do
+        stub_licensed_features(report_approver_rules: true, security_orchestration_policies: false)
+
+        service.execute
+      end
+
+      specify { expect(merge_request.reload.approval_rules.count).to be(1) }
+      specify { expect(merge_request.reload.approval_rules.coverage.count).to be(1) }
+      specify { expect(merge_request.reload.approval_rules.license_compliance.count).to be(0) }
     end
 
     context 'when coverage_check_approval_rule is disabled' do
