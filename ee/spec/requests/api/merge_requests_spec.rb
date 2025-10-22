@@ -497,7 +497,7 @@ RSpec.describe API::MergeRequests, feature_category: :code_review_workflow do
       end
     end
 
-    context 'when the project has approval rules' do
+    context 'when the project has approval rules', quarantine: 'https://gitlab.com/gitlab-org/gitlab/-/issues/450233' do
       let(:project_approvers) { create_list(:user, 3) }
       let!(:any_approver_rule) { create(:approval_project_rule, :any_approver_rule, project: project, approvals_required: 1) }
       let!(:regular_rule) { create(:approval_project_rule, project: project, users: project_approvers, approvals_required: 3) }
