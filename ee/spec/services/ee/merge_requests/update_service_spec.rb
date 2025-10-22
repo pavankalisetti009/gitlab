@@ -553,6 +553,10 @@ RSpec.describe MergeRequests::UpdateService, :mailer, feature_category: :code_re
           approvals_required: 0)
       end
 
+      before do
+        stub_licensed_features(security_orchestration_policies: true)
+      end
+
       context 'with target branch change' do
         let(:opts) { { target_branch: 'feature-2' } }
 

@@ -472,6 +472,9 @@ module EE
       project_rules = target_project.approval_rules.report_approver.includes(:users, :groups)
 
       project_rules.find_each do |project_rule|
+        next if !project.licensed_feature_available?(:security_orchestration_policies) &&
+          project_rule.from_scan_result_policy?
+
         project_rule.apply_report_approver_rules_to(self) do |rule_attributes|
           rule_attributes[:approvals_required] = 0 if project_rule.from_scan_result_policy?
         end
