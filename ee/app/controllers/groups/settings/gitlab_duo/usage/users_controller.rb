@@ -11,7 +11,7 @@ module Groups
           feature_category :consumables_cost_management
 
           def show
-            @user_id = params.permit(:user_id)[:user_id]
+            @username = params.permit(:username)[:username]
           end
 
           private

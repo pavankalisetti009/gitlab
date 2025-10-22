@@ -25,7 +25,7 @@ describe('UsageBillingUserDashboardApp', () => {
 
   const MOCK_USER = mockDataWithPool.data.subscriptionUsage.usersUsage.users.nodes[0];
   const MOCK_USAGE = MOCK_USER.usage;
-  const USER_ID = MOCK_USER.id;
+  const USERNAME = MOCK_USER.username;
 
   /** @type {jest.Mock} */
   let mockQueryHandler;
@@ -34,7 +34,7 @@ describe('UsageBillingUserDashboardApp', () => {
     wrapper = mountFn(UsageBillingUserDashboardApp, {
       apolloProvider: createMockApollo([[getUserSubscriptionUsageQuery, mockQueryHandler]]),
       provide: {
-        userId: USER_ID,
+        username: USERNAME,
         namespacePath: null,
       },
     });
@@ -74,7 +74,7 @@ describe('UsageBillingUserDashboardApp', () => {
     it('calls the API with username', () => {
       expect(mockQueryHandler).toHaveBeenCalledWith(
         expect.objectContaining({
-          username: USER_ID,
+          username: USERNAME,
           first: PAGE_SIZE,
           last: null,
           after: null,
@@ -91,7 +91,7 @@ describe('UsageBillingUserDashboardApp', () => {
 
       it('renders user info', () => {
         expect(wrapper.text()).toContain(MOCK_USER.name);
-        expect(wrapper.text()).toContain(`@${MOCK_USER.username}`);
+        expect(wrapper.text()).toContain(`@${USERNAME}`);
       });
     });
 

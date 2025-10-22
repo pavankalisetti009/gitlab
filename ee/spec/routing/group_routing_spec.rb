@@ -190,11 +190,11 @@ RSpec.describe 'Group routing', "routing" do
 
   describe Groups::Settings::GitlabDuo::Usage::UsersController, 'routing', feature_category: :consumables_cost_management do
     it 'routes / to #show' do
-      expect(get('/groups/gitlabhq/-/settings/gitlab_duo/usage/users/123')).to route_to(
+      expect(get('/groups/gitlabhq/-/settings/gitlab_duo/usage/users/john_doe')).to route_to(
         controller: 'groups/settings/gitlab_duo/usage/users',
         action: 'show',
         group_id: 'gitlabhq',
-        user_id: '123'
+        username: 'john_doe'
       )
     end
   end

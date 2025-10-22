@@ -12,8 +12,8 @@ RSpec.describe Groups::Settings::GitlabDuo::Usage::UsersController, feature_cate
     stub_feature_flags(usage_billing_dev: usage_billing_dev_enabled)
   end
 
-  describe 'GET /groups/*group_id/-/settings/gitlab_duo/usage/users/:user_id' do
-    subject(:request) { get group_settings_gitlab_duo_usage_user_path(group, user_id: user) }
+  describe 'GET /groups/*group_id/-/settings/gitlab_duo/usage/users/:username' do
+    subject(:request) { get group_settings_gitlab_duo_usage_user_path(group, username: user) }
 
     context 'when user is an owner' do
       before_all do

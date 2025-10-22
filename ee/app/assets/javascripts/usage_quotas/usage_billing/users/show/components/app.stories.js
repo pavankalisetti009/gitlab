@@ -44,7 +44,7 @@ const createTemplate = (config = {}) => {
     },
     apolloProvider,
     provide: {
-      userId: '42',
+      username: 'john_doe',
       namespacePath: 'gitlab',
     },
     props: Object.keys(argTypes),

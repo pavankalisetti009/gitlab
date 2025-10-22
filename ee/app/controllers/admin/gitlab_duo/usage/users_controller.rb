@@ -10,7 +10,7 @@ module Admin
         before_action :ensure_feature_available!
 
         def show
-          @user_id = params.permit(:user_id)[:user_id]
+          @username = params.permit(:username)[:username]
         end
 
         private

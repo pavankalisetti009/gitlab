@@ -14,7 +14,7 @@ query getSubscriptionUsersUsage(
         nodes {
           id
           name
-          # username
+          username
           avatarUrl
           usage {
             creditsUsed
