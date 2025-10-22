@@ -150,7 +150,7 @@ module Ci
     end
 
     def self.fabricate(attrs)
-      new(attrs).tap do |build|
+      new(attrs.except(*::Ci::JobDefinition::CONFIG_ATTRIBUTES)).tap do |build|
         job_definition = ::Ci::JobDefinition.fabricate(
           config: attrs,
           project_id: build.project_id,
