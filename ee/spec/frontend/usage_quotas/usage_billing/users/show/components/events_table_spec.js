@@ -60,7 +60,7 @@ describe('EventsTable', () => {
       const tableFields = findTable().props('fields');
 
       expect(tableFields).toEqual([
-        { key: 'timestamp', label: 'Date and time' },
+        { key: 'timestamp', label: 'Date/Time' },
         { key: 'eventType', label: 'Action' },
         { key: 'location', label: 'Location' },
         { key: 'creditsUsed', label: 'Credit amount' },

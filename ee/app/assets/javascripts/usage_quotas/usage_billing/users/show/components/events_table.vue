@@ -20,7 +20,7 @@ export default {
   computed: {
     tableFields() {
       return [
-        { key: 'timestamp', label: s__('UsageBilling|Date and time') },
+        { key: 'timestamp', label: s__('UsageBilling|Date/Time') },
         { key: 'eventType', label: s__('UsageBilling|Action') },
         { key: 'location', label: s__('UsageBilling|Location') },
         { key: 'creditsUsed', label: s__('UsageBilling|Credit amount') },

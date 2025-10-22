@@ -22,14 +22,14 @@ export default {
   >
     <template #header>
       <h2 class="gl-heading-3 gl-mb-3 gl-font-bold">
-        {{ s__('AiPowered|See GitLab usage analytics') }}
+        {{ s__('AiPowered|GitLab Credit usage analytics') }}
       </h2>
     </template>
     <template #default>
       <p class="gl-mb-0 gl-pb-0 gl-text-subtle">
         {{
           s__(
-            'AiPowered|Explore usage metrics and performance insights for GitLab Duo AI assistant features across your organization.',
+            'AiPowered|Track credit consumption across your users and monitor usage trends. View breakdowns by user to understand how your team utilizes GitLab Duo.',
           )
         }}
       </p>
@@ -37,7 +37,7 @@ export default {
     <template #footer>
       <div>
         <gl-button :to="dashboardPath" category="primary" variant="confirm">
-          {{ s__('AiPowered|See dashboard') }}
+          {{ s__('AiPowered|View usage dashboard') }}
         </gl-button>
       </div>
     </template>

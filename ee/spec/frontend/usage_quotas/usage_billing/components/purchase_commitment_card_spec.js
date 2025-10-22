@@ -1,4 +1,4 @@
-import { GlButton } from '@gitlab/ui';
+import { GlButton, GlSprintf } from '@gitlab/ui';
 import PurchaseCommitmentCard from 'ee/usage_quotas/usage_billing/components/purchase_commitment_card.vue';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 
@@ -12,6 +12,9 @@ describe('PurchaseCommitmentCard', () => {
         purchaseCreditsPath: 'url-to-purchase-monthly-commitment',
         ...propsData,
       },
+      stubs: {
+        GlSprintf,
+      },
     });
   };
 
@@ -21,12 +24,12 @@ describe('PurchaseCommitmentCard', () => {
     });
 
     it('renders card title', () => {
-      expect(wrapper.find('h2').text()).toBe('Purchase a monthly commitment');
+      expect(wrapper.find('h2').text()).toBe('Increase monthly credit commitment');
     });
 
     it('renders card body', () => {
-      expect(wrapper.find('p').text()).toBe(
-        'You can increase your commitment amount to extend your monthly allocation of credits.',
+      expect(wrapper.find('p').text()).toMatchInterpolatedText(
+        'Increase your commitment to unlock deeper discounts. Pool GitLab Credits across your namespace for flexibility and predictable monthly costs. GitLab Credit pricing.',
       );
     });
 
@@ -34,7 +37,7 @@ describe('PurchaseCommitmentCard', () => {
       const button = wrapper.findComponent(GlButton);
 
       expect(button.props('href')).toBe('url-to-purchase-monthly-commitment');
-      expect(button.text()).toBe('Increase monthly commitment');
+      expect(button.text()).toBe('Purchase monthly commitment');
     });
   });
 
@@ -44,12 +47,12 @@ describe('PurchaseCommitmentCard', () => {
     });
 
     it('renders card title', () => {
-      expect(wrapper.find('h2').text()).toBe('Purchase a monthly commitment');
+      expect(wrapper.find('h2').text()).toBe('Save on GitLab Credits with monthly commitment');
     });
 
     it('renders card body', () => {
-      expect(wrapper.find('p').text()).toBe(
-        'You can purchase a monthly allocation of GitLab Credits to be shared across users.',
+      expect(wrapper.find('p').text()).toMatchInterpolatedText(
+        'Monthly commitments offer significant discounts off list price. Share GitLab Credits across your namespace for flexibility and predictable monthly costs. Learn more about GitLab Credit pricing.',
       );
     });
 

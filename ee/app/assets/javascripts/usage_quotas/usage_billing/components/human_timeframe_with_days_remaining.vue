@@ -32,7 +32,7 @@ export default {
 };
 </script>
 <template>
-  <span>
+  <span class="gl-text-gray-600">
     <gl-sprintf
       :message="
         n__(
