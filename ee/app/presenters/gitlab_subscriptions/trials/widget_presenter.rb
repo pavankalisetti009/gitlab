@@ -3,44 +3,51 @@
 module GitlabSubscriptions
   module Trials
     class WidgetPresenter < Gitlab::View::Presenter::Simple
-      presents ::Namespace, as: :namespace
-
       def initialize(namespace, user:)
-        super
-
-        @widget_presenter = GitlabSubscriptions::Trials::StatusWidgetPresenter.new(namespace, user: user) # rubocop:disable CodeReuse/Presenter -- we use it in this coordinator class
-        @duo_enterprise_presenter = DuoEnterpriseStatusWidgetPresenter.new(namespace, user: user) # rubocop:disable CodeReuse/Presenter -- we use it in this coordinator class
+        @namespace = namespace
+        @user = user
       end
 
-      def attributes
-        return {} unless eligible?
-
-        presenter.attributes
-      end
+      delegate :attributes, to: :presenter
 
       private
 
-      attr_reader :widget_presenter, :duo_enterprise_presenter
-
-      def eligible?
-        eligible_for_widget? && presenter.eligible_for_widget?
-      end
+      attr_reader :user, :namespace
 
       def presenter
-        @presenter ||=
-          if widget_presenter.eligible_for_widget?
-            widget_presenter
-          elsif duo_enterprise_presenter.eligible_for_widget?
-            duo_enterprise_presenter
-          else
-            DuoProStatusWidgetPresenter.new(namespace, user: user) # rubocop:disable CodeReuse/Presenter -- we use it in this coordinator class
-          end
+        if authorized_self_managed?
+          SelfManaged::StatusWidgetPresenter.new # rubocop:disable CodeReuse/Presenter -- we use it in this coordinator class
+        elsif authorized_gitlab_com?
+          gitlab_com_presenter
+        else
+          {}.tap { |h| h.define_singleton_method(:attributes) { self } }
+        end
       end
 
-      def eligible_for_widget?
+      def authorized_self_managed?
+        !::Gitlab::Saas.feature_available?(:subscriptions_trials) && Ability.allowed?(user, :admin_all_resources)
+      end
+
+      def authorized_gitlab_com?
         namespace.present? &&
           ::Gitlab::Saas.feature_available?(:subscriptions_trials) &&
           Ability.allowed?(user, :admin_namespace, namespace)
+      end
+
+      def gitlab_com_presenter
+        widget_presenter = GitlabCom::StatusWidgetPresenter.new(namespace, user: user) # rubocop:disable CodeReuse/Presenter -- we use it in this coordinator class
+        duo_enterprise_presenter = DuoEnterpriseStatusWidgetPresenter.new(namespace, user: user) # rubocop:disable CodeReuse/Presenter -- we use it in this coordinator class
+        duo_pro_presenter = DuoProStatusWidgetPresenter.new(namespace, user: user) # rubocop:disable CodeReuse/Presenter -- we use it in this coordinator class
+
+        if widget_presenter.eligible_for_widget?
+          widget_presenter
+        elsif duo_enterprise_presenter.eligible_for_widget?
+          duo_enterprise_presenter
+        elsif duo_pro_presenter.eligible_for_widget?
+          duo_pro_presenter
+        else
+          {}.tap { |h| h.define_singleton_method(:attributes) { self } }
+        end
       end
     end
   end
