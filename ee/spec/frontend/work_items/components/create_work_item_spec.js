@@ -13,6 +13,7 @@ import WorkItemDates from 'ee/work_items/components/work_item_dates.vue';
 import WorkItemStatus from 'ee/work_items/components/work_item_status.vue';
 import WorkItemParent from '~/work_items/components/work_item_parent.vue';
 import WorkItemCustomFields from 'ee/work_items/components/work_item_custom_fields.vue';
+import WorkItemNamespaceListbox from '~/work_items/components/shared/work_item_namespace_listbox.vue';
 import {
   CREATION_CONTEXT_LIST_ROUTE,
   WORK_ITEM_TYPE_NAME_EPIC,
@@ -69,6 +70,7 @@ describe('EE Create work item component', () => {
   const findCustomFieldsWidget = () => wrapper.findComponent(WorkItemCustomFields);
   const findParentWidget = () => wrapper.findComponent(WorkItemParent);
   const findStatusWidget = () => wrapper.findComponent(WorkItemStatus);
+  const findGroupProjectSelector = () => wrapper.findComponent(WorkItemNamespaceListbox);
 
   const updateWorkItemTitle = async (title = 'Test title') => {
     findTitleInput().vm.$emit('updateDraft', title);
@@ -86,7 +88,6 @@ describe('EE Create work item component', () => {
     mutationHandler = createWorkItemSuccessHandler,
     namespaceHandler = namespaceWorkItemTypesHandler,
     preselectedWorkItemType = WORK_ITEM_TYPE_NAME_EPIC,
-    workItemPlanningViewEnabled = false,
   } = {}) => {
     mockApollo = createMockApollo(
       [
@@ -111,7 +112,6 @@ describe('EE Create work item component', () => {
         hasIterationsFeature: true,
         hasIssueWeightsFeature: true,
         hasStatusFeature: true,
-        workItemPlanningViewEnabled,
         issuesSettings: '/groups/twitter/-/settings/issues',
       },
       stubs: {
@@ -313,6 +313,17 @@ describe('EE Create work item component', () => {
           ],
         }),
       });
+    });
+  });
+
+  describe('Group/project selector', () => {
+    it('does not render when initiated from epics list', async () => {
+      createComponent({
+        props: { isGroup: true, isEpicsList: true },
+      });
+      await waitForPromises();
+
+      expect(findGroupProjectSelector().exists()).toBe(false);
     });
   });
 });
