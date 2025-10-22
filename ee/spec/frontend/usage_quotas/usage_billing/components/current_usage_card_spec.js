@@ -33,7 +33,7 @@ describe('CurrentUsageCard', () => {
     });
 
     it('renders card title', () => {
-      expect(wrapper.find('h2').text()).toBe('Current month usage');
+      expect(wrapper.find('h2').text()).toBe('GitLab Credits - Monthly committed pool');
     });
 
     it('renders formatted total credits used', () => {
@@ -90,10 +90,8 @@ describe('CurrentUsageCard', () => {
       expect(wrapper.findByTestId('percentage-utilized').text()).toBe('78.0% utilized');
     });
 
-    it('renders correct pool credits remaining', () => {
-      expect(wrapper.findByTestId('pool-credits-remaining').text()).toBe(
-        '2.2k pool credits remaining',
-      );
+    it('renders correct credits remaining', () => {
+      expect(wrapper.findByTestId('pool-credits-remaining').text()).toBe('2.2k credits remaining');
     });
   });
 

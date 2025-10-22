@@ -65,8 +65,8 @@ export default {
 </script>
 <template>
   <gl-card class="gl-flex-1 gl-bg-transparent">
-    <h2 class="gl-font-heading gl-my-3 gl-text-size-h2">
-      {{ s__('UsageBilling|Current month usage') }}
+    <h2 class="gl-my-3 gl-text-size-h2">
+      {{ s__('UsageBilling|GitLab Credits - Monthly committed pool') }}
     </h2>
     <p>
       <human-timeframe-with-days-remaining
@@ -86,23 +86,23 @@ export default {
     <gl-progress-bar
       :value="usagePercentage"
       :variant="progressBarVariant"
-      class="gl-mb-5 gl-mt-1 gl-h-5"
+      class="gl-mb-5 gl-mt-1 gl-h-3"
     />
     <div class="gl-font-sm gl-flex gl-flex-col gl-gap-3">
       <div class="gl-flex gl-flex-row gl-justify-between">
-        <span data-testid="percentage-utilized">
+        <span data-testid="percentage-utilized" class="gl-text-gray-600">
           <gl-sprintf :message="s__('UsageBilling|%{percentage}%{percentSymbol} utilized')">
             <template #percentage>{{ usagePercentage }}</template>
             <template #percentSymbol>%</template>
           </gl-sprintf>
         </span>
 
-        <span data-testid="pool-credits-remaining">
+        <span data-testid="pool-credits-remaining" class="gl-text-gray-600">
           <gl-sprintf
             :message="
               n__(
-                'UsageBilling|%{poolCreditsRemaining} pool credit remaining',
-                'UsageBilling|%{poolCreditsRemaining} pool credits remaining',
+                'UsageBilling|%{poolCreditsRemaining} credit remaining',
+                'UsageBilling|%{poolCreditsRemaining} credits remaining',
                 poolCreditsRemaining,
               )
             "

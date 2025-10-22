@@ -34,7 +34,6 @@ describe('UsageBillingUserDashboardApp', () => {
   const findAlert = () => wrapper.findComponent(GlAlert);
   const findLoadingIcon = () => wrapper.findComponent(GlLoadingIcon);
   const findUserAvatar = () => wrapper.findComponent(GlAvatar);
-  const findExportButton = () => wrapper.findByTestId('export-usage-data-button');
   const findMonthSummaryCard = () => wrapper.findByTestId('month-summary-card');
   const findMonthPoolCard = () => wrapper.findByTestId('month-pool-card');
   const findTotalUsageCard = () => wrapper.findByTestId('total-usage-card');
@@ -73,10 +72,6 @@ describe('UsageBillingUserDashboardApp', () => {
       it('renders user info', () => {
         expect(wrapper.text()).toContain(MOCK_USER.name);
         expect(wrapper.text()).toContain(`@${MOCK_USER.username}`);
-      });
-
-      it('renders export usage data button', () => {
-        expect(findExportButton().exists()).toBe(true);
       });
     });
 

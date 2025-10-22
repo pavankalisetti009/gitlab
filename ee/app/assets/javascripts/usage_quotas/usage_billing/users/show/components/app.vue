@@ -1,5 +1,5 @@
 <script>
-import { GlAlert, GlAvatar, GlButton, GlCard, GlLoadingIcon } from '@gitlab/ui';
+import { GlAlert, GlAvatar, GlCard, GlLoadingIcon } from '@gitlab/ui';
 import UserDate from '~/vue_shared/components/user_date.vue';
 import { mockDataWithPool } from 'ee_jest/usage_quotas/usage_billing/users/show/mock_data';
 import { logError } from '~/lib/logger';
@@ -16,7 +16,6 @@ export default {
     GlLoadingIcon,
     GlAlert,
     GlAvatar,
-    GlButton,
     UserDate,
     HumanTimeframe,
     EventsTable,
@@ -91,17 +90,8 @@ export default {
 
             <div>
               <h1 class="gl-heading-1 gl-my-0">{{ user.name }}</h1>
-              <p class="gl-my-0 gl-text-subtle">@{{ user.username }}</p>
+              <p class="gl-my-0 gl-font-bold gl-text-subtle">@{{ user.username }}</p>
             </div>
-          </div>
-
-          <div>
-            <gl-button
-              category="secondary"
-              variant="default"
-              data-testid="export-usage-data-button"
-              >{{ s__('UsageBilling|Export usage data') }}</gl-button
-            >
           </div>
         </div>
 
@@ -116,7 +106,7 @@ export default {
 
       <dl class="gl-my-5 gl-flex gl-flex-col gl-gap-5 @md/panel:gl-flex-row">
         <gl-card data-testid="month-summary-card" class="gl-flex-1 gl-bg-transparent">
-          <dd class="gl-font-heading gl-heading-scale-400 gl-mb-3">
+          <dd class="gl-heading-scale-400 gl-mb-3">
             {{ userUsage.allocationUsed }} / {{ userUsage.allocationTotal }}
           </dd>
           <dt>
@@ -137,7 +127,7 @@ export default {
           data-testid="month-pool-card"
           class="gl-flex-1 gl-bg-transparent"
         >
-          <dd class="gl-font-heading gl-heading-scale-400 gl-mb-3">{{ userUsage.poolUsed }}</dd>
+          <dd class="gl-heading-scale-400 gl-mb-3">{{ userUsage.poolUsed }}</dd>
           <dt>
             <p class="gl-my-0">{{ s__('UsageBilling|Credits used from pool this month') }}</p>
             <p class="gl-my-0 gl-text-sm gl-text-subtle">
@@ -150,7 +140,7 @@ export default {
         </gl-card>
 
         <gl-card data-testid="total-usage-card" class="gl-flex-1 gl-bg-transparent">
-          <dd class="gl-font-heading gl-heading-scale-400 gl-mb-3">
+          <dd class="gl-heading-scale-400 gl-mb-3">
             {{ userUsage.totalCreditsUsed }}
           </dd>
           <dt>

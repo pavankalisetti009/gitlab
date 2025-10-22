@@ -25,11 +25,11 @@ describe('DuoUsageAnalyticsCard', () => {
 
   it('renders info card and correct copy', () => {
     expect(findCard().exists()).toBe(true);
-    expect(findInfoCardHeader().text()).toContain('See GitLab usage analytics');
+    expect(findInfoCardHeader().text()).toContain('GitLab Credit usage analytics');
   });
 
   it('renders a CTA button', () => {
-    expect(findConfigurationButton().text()).toBe('See dashboard');
+    expect(findConfigurationButton().text()).toBe('View usage dashboard');
     expect(findConfigurationButton().attributes('to')).toBe('/admin/gitlab_duo/usage');
   });
 });
