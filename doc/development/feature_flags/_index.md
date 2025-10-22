@@ -33,7 +33,7 @@ For an [overview of the feature flag lifecycle](https://handbook.gitlab.com/hand
 
 ## When to use feature flags
 
-Moved to the ["When to use feature flags"](https://handbook.gitlab.com/handbook/product-development-flow/feature-flag-lifecycle/#when-to-use-feature-flags) section in the handbook.
+Moved to the ["When to use feature flags"](https://handbook.gitlab.com/handbook/product-development/how-we-work/product-development-flow/feature-flag-lifecycle/#when-to-use-feature-flags) section in the handbook.
 
 ### Do not use feature flags for long lived settings
 
