@@ -101,11 +101,18 @@ RSpec.describe Security::SecurityOrchestrationPolicies::PersistPolicyService, '#
         persist
       end
 
-      it 'calls EventPublisher with created policies',
-        quarantine: 'https://gitlab.com/gitlab-org/gitlab/-/issues/545645' do
+      it 'calls EventPublisher with created policies' do
         expect(Security::SecurityOrchestrationPolicies::EventPublisher).to receive(:new).with({
-          db_policies: policy_configuration.security_policies.reload.type_approval_policy.undeleted,
-          created_policies: policy_configuration.security_policies.reload.type_approval_policy,
+          db_policies: contain_exactly(
+            have_attributes(name: scan_finding_policy[:name]),
+            have_attributes(name: license_finding_policy[:name]),
+            have_attributes(name: any_merge_request_policy[:name])
+          ),
+          created_policies: contain_exactly(
+            have_attributes(name: scan_finding_policy[:name]),
+            have_attributes(name: license_finding_policy[:name]),
+            have_attributes(name: any_merge_request_policy[:name])
+          ),
           policies_changes: [],
           deleted_policies: [],
           force_resync: false
@@ -334,7 +341,9 @@ RSpec.describe Security::SecurityOrchestrationPolicies::PersistPolicyService, '#
 
         it 'calls EventPublisher with deleted policies' do
           expect(Security::SecurityOrchestrationPolicies::EventPublisher).to receive(:new).with({
-            db_policies: policy_configuration.security_policies.reload.type_approval_policy.undeleted,
+            db_policies: contain_exactly(
+              have_attributes(name: license_finding_policy[:name])
+            ),
             created_policies: [],
             policies_changes: [],
             deleted_policies: [Security::Policy.first],
@@ -358,7 +367,9 @@ RSpec.describe Security::SecurityOrchestrationPolicies::PersistPolicyService, '#
 
           it 'calls EventPublisher with force_resync set to true' do
             expect(Security::SecurityOrchestrationPolicies::EventPublisher).to receive(:new).with({
-              db_policies: policy_configuration.security_policies.reload.type_approval_policy.undeleted,
+              db_policies: contain_exactly(
+                have_attributes(name: license_finding_policy[:name])
+              ),
               created_policies: [],
               policies_changes: [],
               deleted_policies: [Security::Policy.first],
@@ -454,7 +465,9 @@ RSpec.describe Security::SecurityOrchestrationPolicies::PersistPolicyService, '#
 
         it 'calls EventPublisher with deleted policies' do
           expect(Security::SecurityOrchestrationPolicies::EventPublisher).to receive(:new).with({
-            db_policies: policy_configuration.security_policies.reload.type_approval_policy.undeleted,
+            db_policies: contain_exactly(
+              have_attributes(name: policy_before[:name])
+            ),
             created_policies: [],
             policies_changes: [an_instance_of(Security::SecurityOrchestrationPolicies::PolicyComparer)],
             deleted_policies: [],
@@ -478,7 +491,9 @@ RSpec.describe Security::SecurityOrchestrationPolicies::PersistPolicyService, '#
 
           it 'calls EventPublisher with force_resync set to true' do
             expect(Security::SecurityOrchestrationPolicies::EventPublisher).to receive(:new).with({
-              db_policies: policy_configuration.security_policies.reload.type_approval_policy.undeleted,
+              db_policies: contain_exactly(
+                have_attributes(name: policy_before[:name])
+              ),
               created_policies: [],
               policies_changes: [an_instance_of(Security::SecurityOrchestrationPolicies::PolicyComparer)],
               deleted_policies: [],
