@@ -104,7 +104,7 @@ RSpec.describe Security::ScanResultPolicies::CleanupMergeRequestViolationsWorker
       it 'preserves security policy dismissals' do
         policy_dismissal = create(:policy_dismissal, merge_request: merge_request)
 
-        expect { perform }.to change { policy_dismissal.reload.status }.from(0).to(1)
+        expect { perform }.to change { policy_dismissal.reload.status }.from('open').to('preserved')
       end
 
       context 'when there are multiple policy dismissals with different statuses' do
@@ -113,8 +113,8 @@ RSpec.describe Security::ScanResultPolicies::CleanupMergeRequestViolationsWorker
         let_it_be(:preserved_dismissal) { create(:policy_dismissal, merge_request: merge_request, status: 1) }
 
         it 'only preserves open policy dismissals' do
-          expect { perform }.to change { open_dismissal_1.reload.status }.from(0).to(1)
-                            .and change { open_dismissal_2.reload.status }.from(0).to(1)
+          expect { perform }.to change { open_dismissal_1.reload.status }.from('open').to('preserved')
+                            .and change { open_dismissal_2.reload.status }.from('open').to('preserved')
                             .and not_change { preserved_dismissal.reload.status }
         end
       end

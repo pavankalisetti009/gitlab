@@ -3824,8 +3824,8 @@ RSpec.describe MergeRequest, feature_category: :code_review_workflow do
 
         it 'preserves all open policy dismissals' do
           expect { preserve_open_policy_dismissals }
-            .to change { open_dismissal_1.reload.status }.from(0).to(1)
-            .and change { open_dismissal_2.reload.status }.from(0).to(1)
+            .to change { open_dismissal_1.reload.status }.from('open').to('preserved')
+            .and change { open_dismissal_2.reload.status }.from('open').to('preserved')
             .and not_change { preserved_dismissal.reload.status }
         end
       end
