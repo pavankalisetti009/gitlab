@@ -56,9 +56,19 @@ RSpec.describe Mcp::Tools::SearchCodebaseService, feature_category: :mcp_server 
     end
 
     context 'with valid arguments' do
+      let(:arguments) do
+        {
+          arguments: {
+            semantic_query: 'Add raise Exception for protected type usage',
+            project_id: project_id,
+            directory_path: 'app/services/'
+          }
+        }
+      end
+
       let(:query_obj) { instance_double(::Ai::ActiveContext::Queries::Code) }
 
-      let(:raw_hit) do
+      let(:raw_hits) do
         [
           {
             'project_id' => 1000000,
@@ -73,6 +83,13 @@ RSpec.describe Mcp::Tools::SearchCodebaseService, feature_category: :mcp_server 
         ]
       end
 
+      let(:query_result) do
+        ::Ai::ActiveContext::Queries::Result.new(
+          success: true,
+          hits: raw_hits
+        )
+      end
+
       before do
         allow(::Ai::ActiveContext::Queries::Code)
           .to receive(:new)
@@ -80,17 +97,7 @@ RSpec.describe Mcp::Tools::SearchCodebaseService, feature_category: :mcp_server 
         project.add_developer(current_user)
       end
 
-      context 'with project ID' do
-        let(:arguments) do
-          {
-            arguments: {
-              semantic_query: 'Add raise Exception for protected type usage',
-              project_id: project.id.to_s,
-              directory_path: 'app/services/'
-            }
-          }
-        end
-
+      shared_examples 'tool executed with expected response' do
         it 'initializes the code query with search term and current_user and filters with expected params' do
           expect(::Ai::ActiveContext::Queries::Code)
             .to receive(:new)
@@ -106,7 +113,7 @@ RSpec.describe Mcp::Tools::SearchCodebaseService, feature_category: :mcp_server 
               limit: 20,
               exclude_fields: %w[id source type embeddings_v1 reindexing],
               extract_source_segments: true)
-            .and_return(raw_hit)
+            .and_return(query_result)
 
           response = service.execute(request: nil, params: arguments)
 
@@ -132,62 +139,75 @@ RSpec.describe Mcp::Tools::SearchCodebaseService, feature_category: :mcp_server 
               'start_byte' => 0
             }
           )
+        end
+
+        context 'when the given project has no code embeddings' do
+          let(:query_result) do
+            ::Ai::ActiveContext::Queries::Result.new(
+              success: false,
+              error_code: ::Ai::ActiveContext::Queries::Result::ERROR_NO_EMBEDDINGS
+            )
+          end
+
+          it 'returns an error response' do
+            allow(::Ai::ActiveContext::Queries::Code)
+              .to receive(:new)
+              .with(search_term: 'Add raise Exception for protected type usage', user: current_user)
+              .and_return(query_obj)
+
+            allow(query_obj)
+              .to receive(:filter)
+              .and_return(query_result)
+
+            response = service.execute(request: nil, params: arguments)
+
+            expect(response[:isError]).to be true
+
+            expected_error_message = "Unable to perform semantic search, project '#{project_id}' has no Code Embeddings"
+            expect(response[:content].first[:text]).to eq("Tool execution failed: #{expected_error_message}")
+            expect(response[:structuredContent][:error]).to eq(expected_error_message)
+          end
+        end
+
+        context 'with an unknown error' do
+          let(:query_result) do
+            ::Ai::ActiveContext::Queries::Result.new(
+              success: false,
+              error_code: :some_error
+            )
+          end
+
+          it 'returns an error response' do
+            allow(::Ai::ActiveContext::Queries::Code)
+              .to receive(:new)
+              .with(search_term: 'Add raise Exception for protected type usage', user: current_user)
+              .and_return(query_obj)
+
+            allow(query_obj)
+              .to receive(:filter)
+              .and_return(query_result)
+
+            response = service.execute(request: nil, params: arguments)
+
+            expect(response[:isError]).to be true
+
+            expected_error_message = "Unknown error"
+            expect(response[:content].first[:text]).to eq("Tool execution failed: #{expected_error_message}")
+            expect(response[:structuredContent][:error]).to eq(expected_error_message)
+          end
         end
       end
 
+      context 'with project ID' do
+        let(:project_id) { project.id.to_s }
+
+        it_behaves_like 'tool executed with expected response'
+      end
+
       context 'with project full path' do
-        let(:arguments) do
-          {
-            arguments: {
-              semantic_query: 'Add raise Exception for protected type usage',
-              project_id: project.full_path,
-              directory_path: 'app/services/'
-            }
-          }
-        end
+        let(:project_id) { project.full_path }
 
-        it 'initializes the code query with search term and current_user and filters with expected params' do
-          expect(::Ai::ActiveContext::Queries::Code)
-            .to receive(:new)
-            .with(search_term: 'Add raise Exception for protected type usage', user: current_user)
-            .and_return(query_obj)
-
-          expect(query_obj)
-            .to receive(:filter)
-            .with(
-              project_id: project.id,
-              path: 'app/services/',
-              knn_count: 64,
-              limit: 20,
-              exclude_fields: %w[id source type embeddings_v1 reindexing],
-              extract_source_segments: true)
-            .and_return(raw_hit)
-
-          response = service.execute(request: nil, params: arguments)
-
-          expect(response[:isError]).to be false
-          expect(response[:content]).to be_an(Array)
-          expect(response[:content].first[:type]).to eq('text')
-
-          expect(response[:content].first[:text]).to eq("1. ruby/server.rb\n   require 'webrick'")
-
-          structured = response[:structuredContent]
-          expect(structured).to be_a(Hash)
-          expect(structured[:metadata]).to eq({ count: 1, has_more: false })
-          item = structured[:items].first
-          expect(item).to eq(
-            {
-              'project_id' => 1_000_000,
-              'path' => 'ruby/server.rb',
-              'content' => "require 'webrick'",
-              'name' => 'server.rb',
-              'language' => 'ruby',
-              'blob_id' => '3a99909a7fa51ffd3fe6f9de3ab47dfbf2f59a9d',
-              'start_line' => 0,
-              'start_byte' => 0
-            }
-          )
-        end
+        it_behaves_like 'tool executed with expected response'
       end
     end
 

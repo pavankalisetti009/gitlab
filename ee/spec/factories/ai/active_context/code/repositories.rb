@@ -5,5 +5,9 @@ FactoryBot.define do
     association :project
     association :enabled_namespace, factory: :ai_active_context_code_enabled_namespace
     connection_id { enabled_namespace.connection_id }
+
+    trait :ready do
+      state { :ready }
+    end
   end
 end

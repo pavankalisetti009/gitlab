@@ -21,8 +21,12 @@ module Ai
           knn_count: KNN_COUNT,
           limit: SEARCH_RESULTS_LIMIT,
           exclude_fields: [],
-          extract_source_segments: false)
-          raise(NoCollectionRecordError, "A Code collection record is required.") if no_collection_record?
+          extract_source_segments: false
+        )
+          raise_no_collection_record_error if collection_record.nil?
+
+          ac_repository = find_active_context_repository(project_id)
+          return no_ready_active_context_repository_result unless ac_repository&.ready?
 
           query = if path.nil?
                     repository_query(project_id, knn_count, limit)
@@ -30,17 +34,22 @@ module Ai
                     directory_query(project_id, path, knn_count, limit)
                   end
 
-          results = COLLECTION_CLASS.search(query: query, user: user)
+          search_hits = COLLECTION_CLASS.search(query: query, user: user)
 
-          present_results(results, exclude_fields: exclude_fields, extract_source_segments: extract_source_segments)
+          Result.new(
+            success: true,
+            hits: prepare_hits(
+              search_hits, exclude_fields: exclude_fields, extract_source_segments: extract_source_segments
+            )
+          )
         end
 
         private
 
         attr_reader :user, :search_term
 
-        def present_results(results, exclude_fields: [], extract_source_segments: false)
-          results.map do |hit|
+        def prepare_hits(search_hits, exclude_fields: [], extract_source_segments: false)
+          search_hits.map do |hit|
             item = hit.except(*exclude_fields)
 
             # The source is defined here:
@@ -61,6 +70,29 @@ module Ai
             item
           end
         end
+
+        def raise_no_collection_record_error
+          raise(
+            NoCollectionRecordError,
+            "A Code collection record is required."
+          )
+        end
+
+        def no_ready_active_context_repository_result
+          Result.new(
+            success: false,
+            error_code: Result::ERROR_NO_EMBEDDINGS
+          )
+        end
+
+        # rubocop: disable CodeReuse/ActiveRecord -- no need to redefine a scope for the built-in method
+        def find_active_context_repository(project_id)
+          Ai::ActiveContext::Code::Repository.find_by(
+            project_id: project_id,
+            connection_id: collection_record.connection_id
+          )
+        end
+        # rubocop: enable CodeReuse/ActiveRecord
 
         def repository_query(project_id, knn_count, limit)
           ::ActiveContext::Query.filter(
@@ -91,10 +123,6 @@ module Ai
           path.ends_with?("/") ? path : "#{path}/"
         end
 
-        def no_collection_record?
-          COLLECTION_CLASS.collection_record.nil?
-        end
-
         def target_embeddings
           @target_embeddings ||= generate_target_embeddings
         end
@@ -117,6 +145,10 @@ module Ai
 
         def current_embeddings_field
           current_embeddings_version[:field]
+        end
+
+        def collection_record
+          @collection_record ||= COLLECTION_CLASS.collection_record
         end
       end
     end
