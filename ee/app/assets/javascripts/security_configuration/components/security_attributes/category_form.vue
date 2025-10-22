@@ -72,6 +72,7 @@ export default {
       formErrors: {
         name: null,
         multipleSelection: null,
+        attributes: null,
       },
       originalCategory: {},
     };
@@ -132,6 +133,7 @@ export default {
 
       this.formErrors.name = null;
       this.formErrors.multipleSelection = null;
+      this.formErrors.attributes = null;
     },
   },
   mounted() {
@@ -146,7 +148,12 @@ export default {
         this.category.multipleSelection === null
           ? s__('SecurityAttributes|Selection type is required')
           : null;
-      return !this.formErrors.name && !this.formErrors.multipleSelection;
+      this.formErrors.attributes = !this.attributes.length
+        ? s__('SecurityAttributes|At least one attribute is required')
+        : null;
+      return (
+        !this.formErrors.name && !this.formErrors.multipleSelection && !this.formErrors.attributes
+      );
     },
     handleSubmit() {
       if (!this.isFormValid()) return;
@@ -299,6 +306,7 @@ export default {
           :description="s__('SecurityAttributes|View the attributes available in this category')"
           :state="formErrors.attributes === null"
           :invalid-feedback="formErrors.attributes"
+          data-testid="attributes-group"
         >
           <template #label>
             {{ s__('SecurityAttributes|Attributes') }}
