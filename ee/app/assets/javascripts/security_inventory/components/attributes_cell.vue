@@ -10,6 +10,7 @@ export default {
     GlPopover,
     GlButton,
   },
+  inject: ['canManageAttributes'],
   props: {
     item: {
       type: Object,
@@ -65,7 +66,7 @@ export default {
         class="gl-m-1"
       />
     </span>
-    <span v-else
+    <span v-else-if="canManageAttributes"
       ><gl-button variant="link" @click="addSecurityAttributes">{{
         s__('SecurityAttributes|+ Add attributes')
       }}</gl-button></span

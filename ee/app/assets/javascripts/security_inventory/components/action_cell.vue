@@ -14,6 +14,7 @@ export default {
     GlDisclosureDropdown,
   },
   mixins: [glFeatureFlagMixin()],
+  inject: ['canManageAttributes'],
   props: {
     item: {
       type: Object,
@@ -53,7 +54,7 @@ export default {
           text: s__('SecurityInventory|Manage tool coverage'),
           href: this.toolCoveragePath(item),
         });
-        if (this.glFeatures.securityContextLabels) {
+        if (this.glFeatures.securityContextLabels && this.canManageAttributes) {
           items.push({
             text: s__('SecurityInventory|Edit security attributes'),
             action: () => this.$emit('openAttributesDrawer', item),
