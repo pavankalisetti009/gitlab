@@ -1713,7 +1713,7 @@ RSpec.describe WorkItem, :elastic_helpers, feature_category: :team_planning do
     let_it_be(:group) { create(:group) }
     let_it_be(:project) { create(:project, group: group) }
 
-    let_it_be_with_reload(:work_item) { create(:work_item, :task, project: project) }
+    let_it_be_with_reload(:work_item) { create(:work_item, :task, project: project, created_at: 2.days.ago) }
 
     before do
       stub_licensed_features(work_item_status: true)
@@ -1892,6 +1892,42 @@ RSpec.describe WorkItem, :elastic_helpers, feature_category: :team_planning do
                 expect(status_with_fallback.id).to eq(non_converted_default_duplicate_status.id)
               end
             end
+          end
+        end
+
+        context 'when expired status mapping exists' do
+          let!(:old_custom_status) { lifecycle.default_open_status }
+          let!(:new_custom_status) { create(:work_item_custom_status, namespace: group, lifecycles: [lifecycle]) }
+          let!(:status_mapping) do
+            create(:work_item_custom_status_mapping,
+              namespace: group,
+              work_item_type: work_item.work_item_type,
+              old_status: old_custom_status,
+              new_status: new_custom_status,
+              valid_until: 3.days.ago
+            )
+          end
+
+          it 'returns the default status' do
+            expect(status_with_fallback).to eq(old_custom_status)
+          end
+        end
+
+        context 'when valid status mapping exists' do
+          let!(:old_custom_status) { lifecycle.default_open_status }
+          let!(:new_custom_status) { create(:work_item_custom_status, namespace: group, lifecycles: [lifecycle]) }
+          let!(:status_mapping) do
+            create(:work_item_custom_status_mapping,
+              namespace: group,
+              work_item_type: work_item.work_item_type,
+              old_status: old_custom_status,
+              new_status: new_custom_status,
+              valid_from: 3.days.ago
+            )
+          end
+
+          it 'returns the mapped status' do
+            expect(status_with_fallback).to eq(new_custom_status)
           end
         end
       end
