@@ -9,6 +9,7 @@ module ComplianceManagement
       include ::Awardable
 
       self.table_name = 'project_compliance_violations'
+
       belongs_to :project
       belongs_to :namespace
       belongs_to :compliance_control,
@@ -33,8 +34,10 @@ module ComplianceManagement
       validate :audit_event_has_valid_entity_association
       validate :validate_audit_event_presence
 
+      attribute :status, :integer, limit: 2
       enum :status, ::Enums::ComplianceManagement::Projects::ComplianceViolation.status
 
+      attribute :audit_event_table_name, :integer, limit: 2
       enum :audit_event_table_name, {
         project_audit_events: 0,
         group_audit_events: 1,
