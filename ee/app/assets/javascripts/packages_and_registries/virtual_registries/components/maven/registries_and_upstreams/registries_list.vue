@@ -1,11 +1,12 @@
 <script>
 import { GlAlert, GlEmptyState, GlKeysetPagination, GlSkeletonLoader } from '@gitlab/ui';
+import emptyStateIllustrationUrl from '@gitlab/svgs/dist/illustrations/empty-state/empty-radar-md.svg?url';
 import { s__ } from '~/locale';
 import { setUrlParams, updateHistory, queryToObject } from '~/lib/utils/url_utility';
 import { getPageParams } from '~/packages_and_registries/shared/utils';
-import MavenRegistryItem from 'ee/packages_and_registries/virtual_registries/components/maven/registries_and_upstreams/registry_item.vue';
 import getMavenVirtualRegistries from '../../../graphql/queries/get_maven_virtual_registries.query.graphql';
 import { captureException } from '../../../sentry_utils';
+import RegistriesTable from './registries_table.vue';
 
 const PAGE_SIZE = 20;
 const INITIAL_VALUE = {
@@ -20,7 +21,7 @@ export default {
     GlEmptyState,
     GlKeysetPagination,
     GlSkeletonLoader,
-    MavenRegistryItem,
+    RegistriesTable,
   },
   inject: ['fullPath'],
   data() {
@@ -117,6 +118,7 @@ export default {
       });
     },
   },
+  emptyStateIllustrationUrl,
 };
 </script>
 
@@ -126,15 +128,14 @@ export default {
   </gl-alert>
   <gl-skeleton-loader v-else-if="isLoading" :lines="2" :width="500" />
   <div v-else-if="hasRegistries">
-    <ul class="gl-p-0">
-      <maven-registry-item v-for="registry in registries" :key="registry.id" :registry="registry" />
-    </ul>
+    <registries-table :registries="registries" />
     <div class="gl-flex gl-justify-center">
       <gl-keyset-pagination v-bind="pageInfo" @next="handleNextPage" @prev="handlePreviousPage" />
     </div>
   </div>
   <gl-empty-state
     v-else
+    :svg-path="$options.emptyStateIllustrationUrl"
     :title="s__('VirtualRegistry|There are no maven virtual registries yet')"
   />
 </template>
