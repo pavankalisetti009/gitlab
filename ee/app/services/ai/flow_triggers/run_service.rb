@@ -3,6 +3,8 @@
 module Ai
   module FlowTriggers
     class RunService
+      include ::Gitlab::Utils::StrongMemoize
+
       def initialize(project:, current_user:, resource:, flow_trigger:)
         @project = project
         @current_user = current_user
@@ -16,7 +18,7 @@ module Ai
       end
 
       def execute(params)
-        return ServiceResponse.error(message: 'cannot be triggered by non-human users') unless current_user.human?
+        return validation_error if validation_error
 
         note_service = ::Ai::FlowTriggers::CreateNoteService.new(
           project: project, resource: resource, author: flow_trigger_user, discussion: params[:discussion]
@@ -32,6 +34,14 @@ module Ai
       end
 
       private
+
+      strong_memoize_attr def validation_error
+        return ServiceResponse.error(message: 'cannot be triggered by non-human users') unless current_user.human?
+
+        return unless catalog_item&.third_party_flow? && Feature.disabled?(:ai_catalog_third_party_flows, current_user)
+
+        ServiceResponse.error(message: 'ai_catalog_third_party_flows feature flag is not enabled')
+      end
 
       attr_reader :project, :current_user, :resource, :flow_trigger, :flow_trigger_user,
         :catalog_item, :catalog_item_pinned_version

@@ -11,6 +11,10 @@ module Ai
         ::Feature.enabled?(:ai_catalog_flows, @user)
       end
 
+      condition(:third_party_flows_enabled, scope: :user) do
+        ::Feature.enabled?(:ai_catalog_third_party_flows, @user)
+      end
+
       condition(:project_ai_catalog_available, scope: :subject) do
         @subject.project && @subject.project.ai_catalog_available?
       end
@@ -33,6 +37,10 @@ module Ai
 
       condition(:flow) do
         @subject.flow?
+      end
+
+      condition(:third_party_flow) do
+        @subject.third_party_flow?
       end
 
       rule { public_item | developer_access }.policy do
@@ -61,6 +69,11 @@ module Ai
       end
 
       rule { flow & ~flows_enabled }.policy do
+        prevent :read_ai_catalog_item
+        prevent :admin_ai_catalog_item
+      end
+
+      rule { third_party_flow & ~third_party_flows_enabled }.policy do
         prevent :read_ai_catalog_item
         prevent :admin_ai_catalog_item
       end
