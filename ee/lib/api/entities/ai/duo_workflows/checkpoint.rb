@@ -5,7 +5,8 @@ module API
     module Ai
       module DuoWorkflows
         class Checkpoint < BasicCheckpoint
-          expose :checkpoint
+          expose :checkpoint, if: ->(object) { object.compressed_checkpoint.blank? }
+          expose :compressed_checkpoint, if: ->(object) { object.compressed_checkpoint.present? }
           expose :checkpoint_writes, using: 'API::Entities::Ai::DuoWorkflows::CheckpointWrite'
           expose :metadata
         end

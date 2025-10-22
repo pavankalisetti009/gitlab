@@ -8,6 +8,8 @@ module Ai
       include ::Ai::DuoWorkflows::SyncWorkflowAttributes
       include PartitionedTable
 
+      attr_accessor :compressed_checkpoint
+
       partitioned_by :created_at, strategy: :daily, retain_for: CHECKPOINT_RETENTION_DAYS.days
       self.table_name = :p_duo_workflows_checkpoints
 
