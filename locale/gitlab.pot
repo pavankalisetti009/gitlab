@@ -32229,9 +32229,6 @@ msgstr ""
 msgid "GroupSAML|Generate a SCIM token to set up your System for Cross-Domain Identity Management."
 msgstr ""
 
-msgid "GroupSAML|Identifier"
-msgstr ""
-
 msgid "GroupSAML|Identity Provider"
 msgstr ""
 
@@ -32275,6 +32272,9 @@ msgid "GroupSAML|SAML Group Name"
 msgstr ""
 
 msgid "GroupSAML|SAML Group Name: %{saml_group_name}"
+msgstr ""
+
+msgid "GroupSAML|SAML Identifier"
 msgstr ""
 
 msgid "GroupSAML|SAML Name ID and email address do not match your user account. Contact an administrator."

@@ -23,7 +23,7 @@ export default {
     },
     {
       key: 'identity',
-      label: s__('GroupSAML|Identifier'),
+      label: s__('GroupSAML|SAML Identifier'),
     },
     {
       key: 'scim_identity',
