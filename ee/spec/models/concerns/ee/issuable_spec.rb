@@ -309,6 +309,57 @@ RSpec.describe EE::Issuable, feature_category: :team_planning do
         end
       end
     end
+
+    context 'approval rules webhook payload' do
+      let_it_be(:merge_request) { create(:merge_request, source_project: project) }
+      let_it_be(:approval_rule) { create(:approval_merge_request_rule, merge_request: merge_request) }
+
+      before do
+        stub_licensed_features(merge_request_approvers: true)
+      end
+
+      context 'when MR is updated without changing approval rules' do
+        it 'does not include false approval rule changes' do
+          # Capture current approval rules state (simulating what IssuableBaseService does)
+          current_approval_rules = merge_request.approval_rules.map(&:hook_attrs)
+
+          expect(Gitlab::DataBuilder::Issuable).to receive(:new).with(merge_request).and_return(builder)
+          expect(builder).to receive(:build).with(
+            user: user,
+            changes: hash_excluding('approval_rules'),
+            action: 'update'
+          )
+
+          merge_request.to_hook_data(
+            user,
+            old_associations: { approval_rules: current_approval_rules },
+            action: 'update'
+          )
+        end
+      end
+    end
+
+    context 'when approval_rules missing from old_associations (fallback scenario)' do
+      let_it_be(:merge_request) { create(:merge_request, source_project: project) }
+      let_it_be(:approval_rule) { create(:approval_merge_request_rule, merge_request: merge_request) }
+
+      before do
+        stub_licensed_features(merge_request_approvers: true)
+      end
+
+      it 'falls back to current approval_rules hook_attrs without showing false changes' do
+        # This directly tests the old_approval_rules method fix
+        # Before fix: would return approval_rules (ActiveRecord proxy)
+        # After fix: returns approval_rules.map(&:hook_attrs) (array of hook attributes)
+
+        # Call hook_association_changes with empty old_associations
+        changes = merge_request.send(:hook_association_changes, {})
+
+        # When :approval_rules is missing from old_associations, the fallback uses current approval_rules
+        # Since old (fallback) and current are the same, there should be no change
+        expect(changes).not_to have_key('approval_rules')
+      end
+    end
   end
 
   describe '#allows_scoped_labels?' do

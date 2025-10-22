@@ -101,7 +101,7 @@ module EE
     private
 
     def old_approval_rules(assoc)
-      @_old_approval_rules ||= assoc.fetch(:approval_rules, approval_rules)
+      @_old_approval_rules ||= assoc.fetch(:approval_rules) { approval_rules.map(&:hook_attrs) }
     end
 
     def old_current_status(assoc)
