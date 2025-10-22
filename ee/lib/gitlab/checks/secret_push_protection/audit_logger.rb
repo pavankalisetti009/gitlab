@@ -12,6 +12,8 @@ module Gitlab
         end
 
         def log_skip_secret_push_protection(skip_method)
+          return unless should_log_audit_events?
+
           branch_name = changes_access.single_change_accesses.first.branch_name
           message = "#{_('Secret push protection skipped via')} #{skip_method} on branch #{branch_name}"
           audit_context = {
@@ -27,6 +29,8 @@ module Gitlab
         end
 
         def log_exclusion_audit_event(exclusion)
+          return unless should_log_audit_events?
+
           audit_context = {
             name: 'project_security_exclusion_applied',
             author: @user,
@@ -40,6 +44,8 @@ module Gitlab
         end
 
         def log_applied_exclusions_audit_events(applied_exclusions)
+          return unless should_log_audit_events?
+
           applied_exclusions.each do |exclusion|
             project_security_exclusion = get_project_security_exclusion_from_sds_exclusion(exclusion)
             log_exclusion_audit_event(project_security_exclusion) unless project_security_exclusion.nil?
@@ -116,6 +122,10 @@ module Gitlab
         end
 
         private
+
+        def should_log_audit_events?
+          project.licensed_feature_available?(:audit_events)
+        end
 
         def generate_target_details
           changes = changes_access.changes
