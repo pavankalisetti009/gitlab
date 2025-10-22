@@ -70386,25 +70386,21 @@ msgstr ""
 msgid "UsageBilling|Total credits used"
 msgstr ""
 
-msgid "UsageBilling|Total users (active users)"
-msgstr ""
-
 msgid "UsageBilling|Usage Billing"
-msgstr ""
-
-msgid "UsageBilling|Usage by user"
 msgstr ""
 
 msgid "UsageBilling|Usage trend"
 msgstr ""
 
-msgid "UsageBilling|Usage trends"
+msgid "UsageBilling|total users (active users)"
 msgstr ""
 
-msgid "UsageBilling|Users blocked"
-msgstr ""
+msgid "UsageBilling|user is blocked"
+msgid_plural "UsageBilling|users are blocked"
+msgstr[0] ""
+msgstr[1] ""
 
-msgid "UsageBilling|Users using allocation"
+msgid "UsageBilling|users using included GitLab Credits"
 msgstr ""
 
 msgid "UsageQuotas|(of %{totalStorageSize})"

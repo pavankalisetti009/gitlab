@@ -1,5 +1,5 @@
 <script>
-import { GlAlert, GlTab, GlTabs } from '@gitlab/ui';
+import { GlAlert } from '@gitlab/ui';
 import { mockUsageDataWithPool } from 'ee_jest/usage_quotas/usage_billing/mock_data';
 import { logError } from '~/lib/logger';
 import axios from '~/lib/utils/axios_utils';
@@ -9,7 +9,6 @@ import UserDate from '~/vue_shared/components/user_date.vue';
 import { LONG_DATE_FORMAT_WITH_TZ } from '~/vue_shared/constants';
 import getSubscriptionUsageQuery from '../graphql/get_subscription_usage.query.graphql';
 import PurchaseCommitmentCard from './purchase_commitment_card.vue';
-import UsageTrendsChart from './usage_trends_chart.vue';
 import UsageByUserTab from './usage_by_user_tab.vue';
 import CurrentUsageCard from './current_usage_card.vue';
 import CurrentUsageNoPoolCard from './current_usage_no_pool_card.vue';
@@ -18,11 +17,8 @@ export default {
   name: 'UsageBillingApp',
   components: {
     GlAlert,
-    GlTabs,
-    GlTab,
     PageHeading,
     PurchaseCommitmentCard,
-    UsageTrendsChart,
     UsageByUserTab,
     CurrentUsageCard,
     CurrentUsageNoPoolCard,
@@ -76,29 +72,6 @@ export default {
     },
     gitlabCreditsUsage() {
       return this.subscriptionData.gitlabCreditsUsage;
-    },
-    trend() {
-      return (
-        this.gitlabCreditsUsage.poolUsage?.usageTrend ||
-        this.gitlabCreditsUsage.seatUsage?.usageTrend
-      );
-    },
-    dailyUsage() {
-      return (
-        this.gitlabCreditsUsage.poolUsage?.dailyUsage ||
-        this.gitlabCreditsUsage.seatUsage?.dailyUsage
-      );
-    },
-    dailyPeak() {
-      return (
-        this.gitlabCreditsUsage.poolUsage?.peakUsage || this.gitlabCreditsUsage.seatUsage?.peakUsage
-      );
-    },
-    dailyAverage() {
-      return (
-        this.gitlabCreditsUsage.poolUsage?.dailyAverage ||
-        this.gitlabCreditsUsage.seatUsage?.dailyAverage
-      );
     },
     isLoading() {
       return this.isFetchingData || this.$apollo.queries.subscriptionUsage.loading;
@@ -198,22 +171,7 @@ export default {
           :purchase-credits-path="subscriptionUsage.purchaseCreditsPath"
         />
       </section>
-      <gl-tabs class="gl-mt-5" lazy>
-        <gl-tab :title="s__('UsageBilling|Usage trends')">
-          <usage-trends-chart
-            :usage-data="dailyUsage"
-            :month-start-date="gitlabCreditsUsage.startDate"
-            :month-end-date="gitlabCreditsUsage.endDate"
-            :trend="trend"
-            :daily-peak="dailyPeak"
-            :daily-average="dailyAverage"
-            :threshold="poolTotalCredits"
-          />
-        </gl-tab>
-        <gl-tab :title="s__('UsageBilling|Usage by user')">
-          <usage-by-user-tab :has-commitment="poolIsAvailable" />
-        </gl-tab>
-      </gl-tabs>
+      <usage-by-user-tab :has-commitment="poolIsAvailable" />
     </template>
   </section>
 </template>

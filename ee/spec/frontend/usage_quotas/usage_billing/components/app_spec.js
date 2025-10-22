@@ -1,5 +1,5 @@
 import Vue from 'vue';
-import { GlAlert, GlTab } from '@gitlab/ui';
+import { GlAlert } from '@gitlab/ui';
 import VueApollo from 'vue-apollo';
 import MockAdapter from 'axios-mock-adapter';
 import CurrentUsageCard from 'ee/usage_quotas/usage_billing/components/current_usage_card.vue';
@@ -9,7 +9,6 @@ import getSubscriptionUsageQuery from 'ee/usage_quotas/usage_billing/graphql/get
 import createMockApollo from 'helpers/mock_apollo_helper';
 import UsageBillingApp from 'ee/usage_quotas/usage_billing/components/app.vue';
 import UsageByUserTab from 'ee/usage_quotas/usage_billing/components/usage_by_user_tab.vue';
-import UsageTrendsChart from 'ee/usage_quotas/usage_billing/components/usage_trends_chart.vue';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import waitForPromises from 'helpers/wait_for_promises';
 import { logError } from '~/lib/logger';
@@ -52,7 +51,7 @@ describe('UsageBillingApp', () => {
 
   const findAlert = () => wrapper.findComponent(GlAlert);
   const findSkeletonLoaders = () => wrapper.findByTestId('skeleton-loaders');
-  const findTabs = () => wrapper.findAllComponents(GlTab);
+  const findUsageByUserTab = () => wrapper.findAllComponents(UsageByUserTab);
   const findPageHeading = () => wrapper.findComponent(PageHeading);
 
   beforeEach(() => {
@@ -72,7 +71,7 @@ describe('UsageBillingApp', () => {
 
     it('shows only a loading icon when fetching data', () => {
       expect(findSkeletonLoaders().exists()).toBe(true);
-      expect(findTabs().exists()).toBe(false);
+      expect(findUsageByUserTab().exists()).toBe(false);
       expect(findAlert().exists()).toBe(false);
     });
   });
@@ -107,23 +106,8 @@ describe('UsageBillingApp', () => {
       expect(purchaseCommitmentCard.props('hasCommitment')).toBe(true);
     });
 
-    it('renders the correct tabs', () => {
-      const tabs = findTabs();
-
-      expect(tabs.at(0).attributes('title')).toBe('Usage trends');
-      expect(tabs.at(1).attributes('title')).toBe('Usage by user');
-    });
-
-    it('renders usage trends chart with correct props', () => {
-      const usageTrendsChart = wrapper.findComponent(UsageTrendsChart);
-
-      expect(usageTrendsChart.props()).toMatchObject({
-        monthStartDate: '2024-01-01',
-        monthEndDate: '2024-01-31',
-        trend: 0.12,
-        threshold: 300,
-      });
-      expect(usageTrendsChart.props('usageData')).toHaveLength(30);
+    it('renders usage by user tab', () => {
+      expect(findUsageByUserTab().exists()).toBe(true);
     });
 
     it('renders users table tab with correct props', () => {
