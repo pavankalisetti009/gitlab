@@ -19,3 +19,5 @@ end
 def helper
   @helper ||= Gitlab::Elastic::Helper.default
 end
+
+ReindexWorkItemsForKnnEngine.prepend ::Search::Elastic::MigrationObsolete
