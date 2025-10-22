@@ -271,6 +271,13 @@ exports[`AI impact Dashboard utils generateSkeletonTableData returns the skeleto
   },
   {
     "metric": {
+      "identifier": "duo_used_count",
+      "value": "Duo features usage",
+    },
+    "trendStyle": "ASC",
+  },
+  {
+    "metric": {
       "identifier": "code_suggestions_usage_rate",
       "value": "Code Suggestions usage",
     },
@@ -294,13 +301,6 @@ exports[`AI impact Dashboard utils generateSkeletonTableData returns the skeleto
     "metric": {
       "identifier": "duo_rca_usage_rate",
       "value": "Duo RCA usage",
-    },
-    "trendStyle": "ASC",
-  },
-  {
-    "metric": {
-      "identifier": "duo_used_count",
-      "value": "Duo features usage",
     },
     "trendStyle": "ASC",
   },
