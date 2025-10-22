@@ -179,26 +179,36 @@ export default {
     <dl class="gl-my-3 gl-grid gl-grid-cols-1 gl-gap-5 gl-py-5 @lg/panel:gl-grid-cols-3">
       <gl-card class="gl-bg-transparent gl-p-3">
         <div class="gl-flex gl-flex-col">
-          <dd class="gl-font-weight-bold gl-heading-scale-500">{{ usersUsage.totalUsers }}</dd>
-          <dt class="gl-font-normal">{{ s__('UsageBilling|Total users (active users)') }}</dt>
+          <dd class="gl-heading-scale-700">{{ usersUsage.totalUsers }}</dd>
+          <dt class="gl-font-normal">{{ s__('UsageBilling|total users (active users)') }}</dt>
         </div>
       </gl-card>
 
       <gl-card class="gl-bg-transparent gl-p-3">
         <div class="gl-flex gl-flex-col">
-          <dd class="gl-font-weight-bold gl-heading-scale-500">
+          <dd class="gl-heading-scale-700">
             {{ usersUsage.totalUsersUsingAllocation }}
           </dd>
-          <dt class="gl-font-normal">{{ s__('UsageBilling|Users using allocation') }}</dt>
+          <dt class="gl-font-normal">
+            {{ s__('UsageBilling|users using included GitLab Credits') }}
+          </dt>
         </div>
       </gl-card>
 
       <gl-card class="gl-bg-transparent gl-p-3">
         <div class="gl-flex gl-flex-col">
-          <dd class="gl-font-weight-bold gl-heading-scale-500">
+          <dd class="gl-heading-scale-700">
             {{ usersUsage.totalUsersBlocked }}
           </dd>
-          <dt class="gl-font-normal">{{ s__('UsageBilling|Users blocked') }}</dt>
+          <dt class="gl-font-normal">
+            {{
+              n__(
+                'UsageBilling|user is blocked',
+                'UsageBilling|users are blocked',
+                usersUsage.totalUsersBlocked,
+              )
+            }}
+          </dt>
         </div>
       </gl-card>
     </dl>
