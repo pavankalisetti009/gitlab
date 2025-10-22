@@ -21,7 +21,8 @@ import {
   zeroActionsScanResultManifest,
   mockProjectPolicyTuningScanResultManifest,
   allowDenyScanResultLicenseNonEmptyManifest,
-  mockWarnActionScanResultManifest,
+  mockLegacyWarnTypeScanResultManifest,
+  mockWarnTypeScanResultManifest,
   denyScanResultLicenseNonEmptyManifest,
   mockPolicyExceptionsScanResultManifest,
 } from 'ee_jest/security_orchestration/mocks/mock_scan_result_policy_data';
@@ -148,19 +149,54 @@ describe('DetailsDrawer component', () => {
       });
 
       describe('warn mode', () => {
-        it('renders', () => {
+        it('renders correctly with the feature flag on', () => {
           factory({
             props: {
               policy: {
                 ...mockProjectWithAllApproverTypesScanResultPolicy,
-                yaml: mockWarnActionScanResultManifest,
+                yaml: mockWarnTypeScanResultManifest,
               },
+            },
+            provide: {
+              glFeatures: { securityPolicyApprovalWarnMode: true },
             },
           });
           expect(findPolicyApprovals().exists()).toBe(true);
           expect(findPolicyApprovals().props('isLastItem')).toBe(false);
           expect(findPolicyApprovals().props('isWarnMode')).toBe(true);
           expect(findBotMessage().exists()).toBe(false);
+        });
+
+        it('renders correctly with the feature flag off', () => {
+          factory({
+            props: {
+              policy: {
+                ...mockProjectWithAllApproverTypesScanResultPolicy,
+                yaml: mockWarnTypeScanResultManifest,
+              },
+            },
+          });
+          expect(findPolicyApprovals().exists()).toBe(true);
+          expect(findPolicyApprovals().props('isLastItem')).toBe(false);
+          expect(findPolicyApprovals().props('isWarnMode')).toBe(false);
+          expect(findBotMessage().exists()).toBe(true);
+        });
+      });
+
+      describe('legacy warn mode', () => {
+        it('renders correctly', () => {
+          factory({
+            props: {
+              policy: {
+                ...mockProjectWithAllApproverTypesScanResultPolicy,
+                yaml: mockLegacyWarnTypeScanResultManifest,
+              },
+            },
+          });
+          expect(findPolicyApprovals().exists()).toBe(true);
+          expect(findPolicyApprovals().props('isLastItem')).toBe(false);
+          expect(findPolicyApprovals().props('isWarnMode')).toBe(false);
+          expect(findBotMessage().exists()).toBe(true);
         });
       });
     });

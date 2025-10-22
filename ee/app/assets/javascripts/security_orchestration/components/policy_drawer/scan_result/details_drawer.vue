@@ -1,12 +1,17 @@
 <script>
 import { GlSprintf } from '@gitlab/ui';
 import { isEmpty } from 'lodash';
+import glFeatureFlagMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
 import { s__ } from '~/locale';
 import { capitalizeFirstCharacter } from '~/lib/utils/text_utility';
 import { parseAllowDenyLicenseList } from 'ee/security_orchestration/components/policy_editor/utils';
 import { POLICY_TYPE_COMPONENT_OPTIONS } from 'ee/security_orchestration/components/constants';
 import { fromYaml } from 'ee/security_orchestration/components/utils';
-import { BOT_MESSAGE_TYPE, REQUIRE_APPROVAL_TYPE } from '../../policy_editor/scan_result/lib';
+import {
+  BOT_MESSAGE_TYPE,
+  REQUIRE_APPROVAL_TYPE,
+  WARN_VALUE,
+} from '../../policy_editor/scan_result/lib';
 import { SUMMARY_TITLE } from '../constants';
 import InfoRow from '../info_row.vue';
 import DrawerLayout from '../drawer_layout.vue';
@@ -37,6 +42,7 @@ export default {
     PolicyExceptions,
     Settings,
   },
+  mixins: [glFeatureFlagMixin()],
   props: {
     policy: {
       type: Object,
@@ -88,8 +94,8 @@ export default {
     },
     isWarnMode() {
       return (
-        this.requireApprovals.some((action) => action.approvals_required === 0) &&
-        this.hasBotMessage
+        this.glFeatures.securityPolicyApprovalWarnMode &&
+        this.parsedYaml?.enforcement_type === WARN_VALUE
       );
     },
     requireApprovals() {

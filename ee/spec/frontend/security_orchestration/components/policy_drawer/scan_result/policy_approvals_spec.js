@@ -102,7 +102,7 @@ describe('PolicyApprovals component', () => {
       });
       const text = wrapper.text();
       expect(text).toContain(
-        'Warn users with a bot comment and contact the following users as security consultants for support',
+        'Warn users with a bot comment and require users to either dismiss the policy or obtain',
       );
       expect(text).toContain('grouppath2,');
       expect(text).toContain('username1 and');
