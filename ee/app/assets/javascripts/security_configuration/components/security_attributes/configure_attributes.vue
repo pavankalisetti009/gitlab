@@ -95,8 +95,11 @@ export default {
 
         if (categoryResult.data) {
           if (!id && categoryResult.data.securityCategoryCreate) {
+            if (categoryResult.data.securityCategoryCreate.errors.length) {
+              throw new Error(categoryResult.data.securityCategoryCreate.errors[0]);
+            }
+
             const createdCategory = categoryResult.data.securityCategoryCreate.securityCategory;
-            this.selectedCategory = createdCategory;
 
             // save unsaved attributes now that we have category id
             if (this.unsavedAttributes.length) {
@@ -116,6 +119,8 @@ export default {
                 };
                 this.unsavedAttributes = [];
               }
+            } else {
+              this.selectedCategory = createdCategory;
             }
           }
           this.$apollo.queries.group.refetch();

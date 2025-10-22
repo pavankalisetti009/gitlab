@@ -2,6 +2,7 @@ import Vue, { nextTick } from 'vue';
 import VueApollo from 'vue-apollo';
 import { shallowMount } from '@vue/test-utils';
 import { mockSecurityAttributeCategories } from 'ee/security_configuration/security_attributes/graphql/resolvers';
+import { createAlert } from '~/alert';
 import { confirmAction } from '~/lib/utils/confirm_via_gl_modal/confirm_via_gl_modal';
 import ConfigureAttributes from 'ee/security_configuration/components/security_attributes/configure_attributes.vue';
 import CategoryList from 'ee/security_configuration/components/security_attributes/category_list.vue';
@@ -17,9 +18,11 @@ import updateSecurityAttributeMutation from 'ee/security_configuration/graphql/s
 import deleteSecurityAttributeMutation from 'ee/security_configuration/graphql/security_attribute_delete.mutation.graphql';
 import waitForPromises from 'helpers/wait_for_promises';
 import { useMockInternalEventsTracking } from 'helpers/tracking_internal_events_helper';
+import { mockFailedCategoryCreateResponse } from './mock_data';
 
 jest.mock('~/vue_shared/plugins/global_toast');
 jest.mock('~/lib/utils/confirm_via_gl_modal/confirm_via_gl_modal');
+jest.mock('~/alert');
 
 Vue.use(VueApollo);
 
@@ -202,6 +205,29 @@ describe('Configure attributes', () => {
     );
   });
 
+  it.each([
+    jest.fn().mockResolvedValue(mockFailedCategoryCreateResponse),
+    jest.fn().mockRejectedValue(),
+  ])('shows an alert when category creation fails', async (handler) => {
+    createComponent([
+      [getSecurityAttributesQuery, handlers.getSecurityAttributesQuery],
+      [createSecurityCategoryMutation, handler],
+      [updateSecurityCategoryMutation, handlers.updateSecurityCategoryMutation],
+      [deleteSecurityCategoryMutation, handlers.deleteSecurityCategoryMutation],
+      [createSecurityAttributesMutation, handlers.createSecurityAttributesMutation],
+      [updateSecurityAttributeMutation, handlers.updateSecurityAttributeMutation],
+      [deleteSecurityAttributeMutation, handlers.deleteSecurityAttributeMutation],
+    ]);
+
+    const category = { name: 'Category' };
+    wrapper.findComponent(CategoryForm).vm.$emit('saveCategory', category);
+    await waitForPromises();
+
+    expect(createAlert).toHaveBeenCalledWith({
+      message: 'An error has occurred while saving the security category.',
+    });
+  });
+
   it('queues attributes for a new category and saves them once the category is saved', async () => {
     const category = { name: 'Category' };
     const attribute = { name: 'Attribute' };
@@ -253,6 +279,26 @@ describe('Configure attributes', () => {
         attributes: [attribute],
       }),
     );
+  });
+
+  it('shows an alert when attribute creation fails', async () => {
+    createComponent([
+      [getSecurityAttributesQuery, handlers.getSecurityAttributesQuery],
+      [createSecurityCategoryMutation, handlers.createSecurityCategoryMutation],
+      [updateSecurityCategoryMutation, handlers.updateSecurityCategoryMutation],
+      [deleteSecurityCategoryMutation, handlers.deleteSecurityCategoryMutation],
+      [createSecurityAttributesMutation, jest.fn().mockRejectedValue()],
+      [updateSecurityAttributeMutation, handlers.updateSecurityAttributeMutation],
+      [deleteSecurityAttributeMutation, handlers.deleteSecurityAttributeMutation],
+    ]);
+
+    const attribute = { name: 'Attribute' };
+    wrapper.findComponent(AttributeDrawer).vm.$emit('saveAttribute', attribute);
+    await nextTick();
+
+    expect(createAlert).toHaveBeenCalledWith({
+      message: 'An error has occurred while saving the security attribute.',
+    });
   });
 
   it('calls the attribute update mutation on saveAttribute with id', async () => {
