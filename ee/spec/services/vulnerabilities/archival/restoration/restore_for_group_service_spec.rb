@@ -22,6 +22,7 @@ RSpec.describe Vulnerabilities::Archival::Restoration::RestoreForGroupService, f
     let!(:user_mention) { create_with_project(:vulnerability_user_mention, vulnerability: vulnerability) }
     let!(:identifier) { create_with_project(:vulnerabilities_finding_identifier, finding: finding) }
     let!(:vulnerability_read) { vulnerability.vulnerability_read }
+    let!(:risk_score) { create(:vulnerability_finding_risk_score, finding: finding) }
     let(:previous_traversal_ids_value) { project.namespace.traversal_ids }
 
     before do
@@ -69,6 +70,7 @@ RSpec.describe Vulnerabilities::Archival::Restoration::RestoreForGroupService, f
                         .and change { Vulnerabilities::StateTransition.count }.by(1)
                         .and change { VulnerabilityUserMention.count }.by(1)
                         .and change { Vulnerabilities::Read.count }.by(1)
+                        .and change { Vulnerabilities::FindingRiskScore.count }.by(1)
     end
 
     it 'deletes the backups' do
@@ -108,6 +110,7 @@ RSpec.describe Vulnerabilities::Archival::Restoration::RestoreForGroupService, f
         state_transition.reload
         user_mention.reload
         vulnerability_read.reload
+        risk_score.reload
       end.to not_change { finding.as_json }
          .and not_change { vulnerability.as_json(except: :updated_at) }
          .and not_change { identifier.as_json }
@@ -123,6 +126,7 @@ RSpec.describe Vulnerabilities::Archival::Restoration::RestoreForGroupService, f
          .and not_change { state_transition.as_json }
          .and not_change { user_mention.as_json }
          .and not_change { vulnerability_read.as_json }
+         .and not_change { risk_score.as_json(except: [:created_at, :updated_at]) }
     end
 
     it 'changes the `updated_at` value of vulnerabilities' do
