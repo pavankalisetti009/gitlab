@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe ::Ai::DuoWorkflows::CreateOauthAccessTokenService, feature_category: :agent_foundations do
+RSpec.describe ::Ai::DuoWorkflows::CreateOauthAccessTokenService, feature_category: :duo_agent_platform do
   describe '#execute' do
     let_it_be(:organization) { create(:organization) }
     let_it_be(:user) { create(:user, organizations: [organization]) }

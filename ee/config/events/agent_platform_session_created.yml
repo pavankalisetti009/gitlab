@@ -17,7 +17,7 @@ additional_properties:
     description: Session id
 product_group: agent_foundations
 product_categories:
-- agent_foundations
+- duo_agent_platform
 milestone: '18.3'
 introduced_by_url: https://gitlab.com/gitlab-org/gitlab/-/merge_requests/201505
 tiers:

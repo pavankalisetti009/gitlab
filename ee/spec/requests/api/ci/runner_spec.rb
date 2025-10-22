@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe API::Ci::Runner, feature_category: :runner do
+RSpec.describe API::Ci::Runner, feature_category: :runner_core do
   let_it_be_with_reload(:project) { create(:project, :repository, :in_group, :allow_runner_registration_token) }
 
   let_it_be_with_reload(:user) { create(:user, developer_of: project) }
@@ -395,7 +395,7 @@ RSpec.describe API::Ci::Runner, feature_category: :runner do
     end
   end
 
-  describe '/api/v4/runners', feature_category: :runner do
+  describe '/api/v4/runners', feature_category: :runner_core do
     describe 'POST /api/v4/runners' do
       let(:params) { { token: project.runners_token } }
 

@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe ::Gitlab::DuoWorkflow::Executor, feature_category: :agent_foundations do
+RSpec.describe ::Gitlab::DuoWorkflow::Executor, feature_category: :duo_agent_platform do
   before do
     stub_config(
       duo_workflow: {

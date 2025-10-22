@@ -969,7 +969,7 @@ RSpec.describe GitlabSchema.types['Project'], feature_category: :shared do
     it { is_expected.to have_graphql_resolver(Resolvers::Ai::Agents::FindAgentResolver) }
   end
 
-  describe 'runnerCloudProvisioning', feature_category: :runner do
+  describe 'runnerCloudProvisioning', feature_category: :runner_core do
     subject { described_class.fields['runnerCloudProvisioning'] }
 
     it { is_expected.to have_graphql_type(::Types::Ci::RunnerCloudProvisioningType) }

@@ -2,7 +2,7 @@
 
 require "spec_helper"
 
-RSpec.describe "User with admin_runners custom role", feature_category: :runner do
+RSpec.describe "User with admin_runners custom role", feature_category: :runner_core do
   let_it_be(:user) { create(:user) }
   let_it_be(:project) { create(:project, :in_group) }
   let_it_be_with_reload(:group) { project.group }

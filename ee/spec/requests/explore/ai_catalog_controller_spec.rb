@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe Explore::AiCatalogController, feature_category: :agent_foundations do
+RSpec.describe Explore::AiCatalogController, feature_category: :duo_agent_platform do
   let_it_be(:user) { create(:user) }
 
   describe 'GET #index' do

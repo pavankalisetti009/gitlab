@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe 'projects/duo_agents_platform/show', type: :view, feature_category: :agent_foundations do
+RSpec.describe 'projects/duo_agents_platform/show', type: :view, feature_category: :duo_agent_platform do
   let_it_be(:project) { build_stubbed(:project) }
 
   before do

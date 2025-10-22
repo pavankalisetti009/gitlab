@@ -9,7 +9,7 @@ module Ai
       idempotent!
       worker_resource_boundary :cpu
       urgency :low
-      feature_category :agent_foundations
+      feature_category :duo_agent_platform
       data_consistency :sticky
 
       def perform

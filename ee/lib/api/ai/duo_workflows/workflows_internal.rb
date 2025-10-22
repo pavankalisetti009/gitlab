@@ -16,7 +16,7 @@ module API
 
         allow_access_with_scope :ai_workflows
 
-        feature_category :agent_foundations
+        feature_category :duo_agent_platform
 
         before { authenticate! }
 

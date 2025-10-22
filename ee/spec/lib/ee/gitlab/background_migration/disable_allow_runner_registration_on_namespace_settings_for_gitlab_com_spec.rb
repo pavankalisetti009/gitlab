@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe Gitlab::BackgroundMigration::DisableAllowRunnerRegistrationOnNamespaceSettingsForGitlabCom, feature_category: :runner do
+RSpec.describe Gitlab::BackgroundMigration::DisableAllowRunnerRegistrationOnNamespaceSettingsForGitlabCom, feature_category: :runner_core do
   let!(:namespace_table) { table(:namespaces) }
   let!(:namespace_settings_table) { table(:namespace_settings) }
 

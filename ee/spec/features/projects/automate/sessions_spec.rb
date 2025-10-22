@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe 'Automate Agent Sessions', :js, feature_category: :agent_foundations do
+RSpec.describe 'Automate Agent Sessions', :js, feature_category: :duo_agent_platform do
   let_it_be(:project) { create(:project, :repository) }
   let(:agent_sessions_path) { project_automate_agent_sessions_path(project) }
   let_it_be(:user) { create(:user) }

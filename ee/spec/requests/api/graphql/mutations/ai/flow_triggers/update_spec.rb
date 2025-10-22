@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe Mutations::Ai::FlowTriggers::Update, feature_category: :agent_foundations do
+RSpec.describe Mutations::Ai::FlowTriggers::Update, feature_category: :duo_agent_platform do
   include GraphqlHelpers
 
   let_it_be(:project) { create(:project, :repository, :in_group, maintainers: [service_account]) }

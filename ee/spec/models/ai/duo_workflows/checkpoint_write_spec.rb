@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe Ai::DuoWorkflows::CheckpointWrite, feature_category: :agent_foundations do
+RSpec.describe Ai::DuoWorkflows::CheckpointWrite, feature_category: :duo_agent_platform do
   it { is_expected.to validate_presence_of(:workflow) }
   it { is_expected.to validate_presence_of(:thread_ts) }
   it { is_expected.to validate_presence_of(:task) }

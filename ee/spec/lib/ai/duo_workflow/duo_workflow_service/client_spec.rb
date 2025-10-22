@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe Ai::DuoWorkflow::DuoWorkflowService::Client, feature_category: :agent_foundations do
+RSpec.describe Ai::DuoWorkflow::DuoWorkflowService::Client, feature_category: :duo_agent_platform do
   let_it_be(:current_user) { create(:user) }
   let(:duo_workflow_service_url) { 'example.com:443' }
   let(:secure) { true }

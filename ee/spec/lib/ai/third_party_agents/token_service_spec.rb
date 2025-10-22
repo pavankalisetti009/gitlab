@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe Ai::ThirdPartyAgents::TokenService, feature_category: :agent_foundations do
+RSpec.describe Ai::ThirdPartyAgents::TokenService, feature_category: :duo_agent_platform do
   let_it_be(:user) { create(:user) }
 
   let(:ai_gateway_headers) { { 'header' => 'value' } }

@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe Gitlab::Llm::AiGateway::AgentPlatform::ModelMetadata, feature_category: :agent_foundations do
+RSpec.describe Gitlab::Llm::AiGateway::AgentPlatform::ModelMetadata, feature_category: :duo_agent_platform do
   let(:feature_setting) { build(:ai_feature_setting, :duo_agent_platform) }
   let(:service) { described_class.new(feature_setting: feature_setting) }
 

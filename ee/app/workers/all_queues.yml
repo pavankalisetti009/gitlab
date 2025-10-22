@@ -66,7 +66,7 @@
   :queue_namespace: :cronjob
 - :name: cronjob:ai_duo_workflows_fail_stuck_workflows
   :worker_name: Ai::DuoWorkflows::FailStuckWorkflowsWorker
-  :feature_category: :agent_foundations
+  :feature_category: :duo_agent_platform
   :has_external_dependencies: false
   :urgency: :low
   :resource_boundary: :cpu
@@ -1485,7 +1485,7 @@
   :queue_namespace:
 - :name: ai_duo_workflows_update_workflow_status_event
   :worker_name: Ai::DuoWorkflows::UpdateWorkflowStatusEventWorker
-  :feature_category: :agent_foundations
+  :feature_category: :duo_agent_platform
   :has_external_dependencies: false
   :urgency: :low
   :resource_boundary: :unknown

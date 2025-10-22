@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe Ai::DuoWorkflows::CleanStuckWorkflowsService, feature_category: :agent_foundations do
+RSpec.describe Ai::DuoWorkflows::CleanStuckWorkflowsService, feature_category: :duo_agent_platform do
   subject(:execute) { described_class.new.execute }
 
   describe '#execute' do

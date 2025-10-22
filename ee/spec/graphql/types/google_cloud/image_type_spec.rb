@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe GitlabSchema.types['GoogleCloudImage'], feature_category: :runner do
+RSpec.describe GitlabSchema.types['GoogleCloudImage'], feature_category: :runner_core do
   using RSpec::Parameterized::TableSyntax
 
   specify { expect(described_class.graphql_name).to eq('GoogleCloudImage') }

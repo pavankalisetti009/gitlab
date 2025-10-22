@@ -3,7 +3,7 @@
 require 'spec_helper'
 require_relative './ci_shared_runner_alerts_shared_examples'
 
-RSpec.describe 'CI shared runner limits', :with_trial_types, feature_category: :runner do
+RSpec.describe 'CI shared runner limits', :with_trial_types, feature_category: :runner_core do
   include UsageQuotasHelpers
   include ::Ci::MinutesHelpers
 

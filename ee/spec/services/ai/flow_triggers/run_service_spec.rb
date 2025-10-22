@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe Ai::FlowTriggers::RunService, feature_category: :agent_foundations do
+RSpec.describe Ai::FlowTriggers::RunService, feature_category: :duo_agent_platform do
   let_it_be_with_refind(:project) { create(:project, :repository) }
   let_it_be_with_reload(:service_account) { create(:service_account, maintainer_of: project) }
 

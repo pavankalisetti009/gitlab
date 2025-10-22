@@ -11,7 +11,7 @@ module API
 
         helpers ::API::Helpers::DuoWorkflowHelpers
 
-        feature_category :agent_foundations
+        feature_category :duo_agent_platform
 
         before do
           authenticate!
