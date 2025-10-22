@@ -2,8 +2,6 @@
 
 module Security
   class PolicyDismissal < ApplicationRecord
-    include AfterCommitQueue
-
     self.table_name = 'security_policy_dismissals'
     DISMISSAL_TYPES = {
       policy_false_positive: 0,
@@ -28,22 +26,17 @@ module Security
     scope :pluck_security_findings_uuid, -> { pluck(Arel.sql('DISTINCT unnest(security_findings_uuids)')) } # rubocop: disable Database/AvoidUsingPluckWithoutLimit -- pluck limited to batch size in ee/lib/search/elastic/references/vulnerability.rb#preload_indexing_data
     scope :including_merge_request_and_user, -> { includes(:user, :merge_request) }
 
-    state_machine :status, initial: :open do
-      state :open, value: 0
-      state :preserved, value: 1
+    enum :status, { open: 0, preserved: 1 }
 
-      event :preserve do
-        transition any - [:preserved] => :preserved
-      end
+    def preserve!
+      return destroy! unless applicable_for_all_violations?
 
-      after_transition open: :preserved do |dismissal, _|
-        next dismissal.destroy! unless dismissal.applicable_for_all_violations?
+      update!(status: :preserved)
 
-        dismissal.run_after_commit do
-          event = Security::PolicyDismissalPreservedEvent.new(data: { security_policy_dismissal_id: dismissal.id })
-          ::Gitlab::EventStore.publish(event)
-        end
-      end
+      event = Security::PolicyDismissalPreservedEvent.new(data: {
+        security_policy_dismissal_id: id
+      })
+      ::Gitlab::EventStore.publish(event)
     end
 
     def applicable_for_findings?(finding_uuids)

@@ -56,7 +56,7 @@ module Projects
           .policy_dismissals
           .including_merge_request_and_user
           .for_security_findings_uuids(finding_uuid)
-          .with_status(:preserved)
+          .preserved
       end
 
       alias_method :issuable, :vulnerability

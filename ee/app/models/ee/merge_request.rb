@@ -757,7 +757,7 @@ module EE
     def preserve_open_policy_dismissals!
       return unless merged?
 
-      policy_dismissals.with_status(:open).find_each(&:preserve!)
+      policy_dismissals.open.find_each(&:preserve!)
     end
 
     private

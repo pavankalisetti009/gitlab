@@ -374,7 +374,7 @@ RSpec.describe Security::PolicyDismissal, feature_category: :security_policy_man
       end
 
       it 'changes status to preserved and publishes event', :aggregate_failures do
-        expect { preserve }.to change { policy_dismissal.reload.status }.from(0).to(1)
+        expect { preserve }.to change { policy_dismissal.reload.status }.from('open').to('preserved')
 
         expect(Gitlab::EventStore).to have_received(:publish) do |event|
           expect(event).to be_a(Security::PolicyDismissalPreservedEvent)
