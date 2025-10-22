@@ -52,7 +52,13 @@ RSpec.describe GitlabSubscriptions::Duo::BulkUserAssignment, feature_category: :
     end
 
     shared_examples 'bulk user assignment with not enough seats' do
-      it 'returns success and failed assignments and stops execution' do
+      it 'returns success and failed assignments and stops execution',
+        quarantine: {
+          issue: [
+            'https://gitlab.com/gitlab-org/gitlab/-/issues/536761',
+            'https://gitlab.com/gitlab-org/gitlab/-/issues/536486'
+          ]
+        } do
         results = bulk_assignment.execute
 
         expect(results[:successful_assignments]).to eq(

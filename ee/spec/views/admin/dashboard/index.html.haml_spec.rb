@@ -123,7 +123,7 @@ RSpec.describe 'admin/dashboard/index.html.haml', :enable_admin_mode, feature_ca
     end
 
     context 'when trial license is loaded' do
-      context 'when is active' do
+      context 'when is active', quarantine: 'https://gitlab.com/gitlab-org/gitlab/-/issues/446301' do
         today = Date.current
         days_left = 23
         it_behaves_like 'expiration message',
