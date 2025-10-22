@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe API::Ai::DuoWorkflows::WorkflowsInternal, feature_category: :duo_agent_platform do
+RSpec.describe API::Ai::DuoWorkflows::WorkflowsInternal, :aggregate_failures, feature_category: :duo_agent_platform do
   include HttpBasicAuthHelpers
 
   let_it_be(:ai_settings) { create(:namespace_ai_settings, duo_workflow_mcp_enabled: true) }
@@ -66,6 +66,52 @@ RSpec.describe API::Ai::DuoWorkflows::WorkflowsInternal, feature_category: :duo_
       })
     end
 
+    context 'with compressed checkpoint' do
+      let(:checkpoint_data) { { 'key' => 'value', 'nested' => { 'data' => 'test' } } }
+      let(:compressed_checkpoint) { 'eJyrVspOrVSyUipLzClNVdJRykstLklNUbKqVkpJLEkESpQABZRqawENlQ1i' }
+      let(:params) do
+        {
+          thread_ts: thread_ts,
+          compressed_checkpoint: compressed_checkpoint,
+          parent_ts: parent_ts,
+          metadata: metadata
+        }
+      end
+
+      it 'successfully creates a checkpoint with compressed data' do
+        expect do
+          post api(path, user), params: params
+          expect(response).to have_gitlab_http_status(:created)
+        end.to change { workflow.reload.checkpoints.count }.by(1)
+
+        checkpoint = Ai::DuoWorkflows::Checkpoint.last
+        expect(checkpoint.checkpoint).to eq(checkpoint_data)
+      end
+
+      context 'with invalid compressed data' do
+        let(:compressed_checkpoint) { 'invalid-zlib-base64' }
+
+        it 'fails to create a checkpoint with error' do
+          post api(path, user), params: params
+          expect(response).to have_gitlab_http_status(:bad_request)
+          expect(response.body)
+            .to eq({ message: "400 Bad request - Invalid compressed checkpoint data: invalid base64" }.to_json)
+        end
+      end
+    end
+
+    context 'with uncompressed checkpoint' do
+      it 'successfully creates a checkpoint with uncompressed data' do
+        expect do
+          post api(path, user), params: params
+          expect(response).to have_gitlab_http_status(:created)
+        end.to change { workflow.reload.checkpoints.count }.by(1)
+
+        checkpoint = Ai::DuoWorkflows::Checkpoint.last
+        expect(checkpoint.checkpoint).to eq({ 'key' => 'value' })
+      end
+    end
+
     context 'with namespace-level chat workflow' do
       let(:workflow_definition) { 'chat' }
       let(:container_params) { { namespace_id: group.id } }
@@ -123,7 +169,43 @@ RSpec.describe API::Ai::DuoWorkflows::WorkflowsInternal, feature_category: :duo_
       expect(json_response.pluck('thread_ts')).to eq([checkpoint2.thread_ts, checkpoint1.thread_ts])
       expect(json_response.pluck('parent_ts')).to eq([checkpoint2.parent_ts, checkpoint1.parent_ts])
       expect(json_response[0]).to have_key('checkpoint')
+      expect(json_response[0]).not_to have_key('compressed_checkpoint')
       expect(json_response[0]).to have_key('metadata')
+    end
+
+    context 'with accept_compressed parameter' do
+      it 'returns compressed checkpoints when accept_compressed is true' do
+        checkpoint = create(:duo_workflows_checkpoint, workflow: workflow)
+        workflow.checkpoints << checkpoint
+
+        get api(path, user), params: { accept_compressed: true }
+        expect(response).to have_gitlab_http_status(:ok)
+
+        compressed_data = json_response[0]['compressed_checkpoint']
+        expect(compressed_data).to eq('eJyrVspOrVSyUipLzClNVaoFAChMBSE=')
+        decompressed = ::Gitlab::Json.parse(Zlib::Inflate.inflate(Base64.strict_decode64(compressed_data)))
+        expect(decompressed).to eq(checkpoint.checkpoint)
+        expect(json_response[0]).not_to have_key('checkpoint')
+      end
+
+      it 'returns uncompressed checkpoints when accept_compressed is false' do
+        checkpoint = create(:duo_workflows_checkpoint, workflow: workflow)
+        workflow.checkpoints << checkpoint
+
+        get api(path, user), params: { accept_compressed: false }
+        expect(response).to have_gitlab_http_status(:ok)
+        expect(json_response[0]['checkpoint']).to eq(checkpoint.checkpoint)
+        expect(json_response[0]).not_to have_key('compressed_checkpoint')
+      end
+
+      it 'returns uncompressed checkpoints by default' do
+        checkpoint = create(:duo_workflows_checkpoint, workflow: workflow)
+        workflow.checkpoints << checkpoint
+
+        get api(path, user)
+        expect(response).to have_gitlab_http_status(:ok)
+        expect(json_response[0]['checkpoint']).to eq(checkpoint.checkpoint)
+      end
     end
   end
 
@@ -142,6 +224,7 @@ RSpec.describe API::Ai::DuoWorkflows::WorkflowsInternal, feature_category: :duo_
       expect(json_response).to have_key('checkpoint')
       expect(json_response).to have_key('metadata')
       expect(json_response['checkpoint_writes'][0]['id']).to eq(checkpoint_write.id)
+      expect(json_response).not_to have_key('compressed_checkpoint')
     end
 
     context 'when a checkpoint from a workflow belongs to a different user' do
@@ -154,6 +237,33 @@ RSpec.describe API::Ai::DuoWorkflows::WorkflowsInternal, feature_category: :duo_
         get api(path, user)
 
         expect(response).to have_gitlab_http_status(:not_found)
+      end
+    end
+
+    context 'with accept_compressed parameter' do
+      it 'returns compressed checkpoint when accept_compressed is true' do
+        checkpoint = create(:duo_workflows_checkpoint, workflow: workflow)
+        create(:duo_workflows_checkpoint_write, thread_ts: checkpoint.thread_ts, workflow: checkpoint.workflow)
+        path = "/ai/duo_workflows/workflows/#{workflow.id}/checkpoints/#{checkpoint.id.first}"
+
+        get api(path, user), params: { accept_compressed: true }
+        expect(response).to have_gitlab_http_status(:ok)
+
+        compressed_data = json_response['compressed_checkpoint']
+        decompressed = ::Gitlab::Json.parse(Zlib::Inflate.inflate(Base64.strict_decode64(compressed_data)))
+        expect(decompressed).to eq(checkpoint.checkpoint)
+        expect(json_response['checkpoint_writes']).to be_present
+        expect(json_response).not_to have_key('checkpoint')
+      end
+
+      it 'returns uncompressed checkpoint when accept_compressed is false' do
+        checkpoint = create(:duo_workflows_checkpoint, workflow: workflow)
+        path = "/ai/duo_workflows/workflows/#{workflow.id}/checkpoints/#{checkpoint.id.first}"
+
+        get api(path, user), params: { accept_compressed: false }
+        expect(response).to have_gitlab_http_status(:ok)
+        expect(json_response['checkpoint']).to eq(checkpoint.checkpoint)
+        expect(json_response).not_to have_key('compressed_checkpoint')
       end
     end
   end

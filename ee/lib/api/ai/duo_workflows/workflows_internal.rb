@@ -12,6 +12,8 @@ module API
         include PaginationParams
         include APIGuard
 
+        COMPRESS_LEVEL = 6 # Fast and good zlib compression
+
         helpers ::API::Helpers::DuoWorkflowHelpers
 
         allow_access_with_scope :ai_workflows
@@ -43,6 +45,16 @@ module API
             else
               render_api_error!(response.message, response.reason)
             end
+          end
+
+          def compress_checkpoint(checkpoint_data)
+            Base64.strict_encode64(Zlib::Deflate.deflate(checkpoint_data.to_json, COMPRESS_LEVEL))
+          end
+
+          def uncompress_checkpoint(compressed_data)
+            ::Gitlab::Json.parse(Zlib::Inflate.inflate(Base64.strict_decode64(compressed_data)))
+          rescue ArgumentError, Zlib::Error, JSON::ParserError => e
+            bad_request!("Invalid compressed checkpoint data: #{e.message}")
           end
         end
 
@@ -106,12 +118,25 @@ module API
                     requires :id, type: Integer, desc: 'The ID of the workflow'
                     requires :thread_ts, type: String, desc: 'The thread ts'
                     optional :parent_ts, type: String, desc: 'The parent ts'
-                    requires :checkpoint, type: Hash, desc: "Checkpoint content"
+                    optional :checkpoint, type: Hash, desc: "Checkpoint content"
+                    optional :compressed_checkpoint, type: String,
+                      desc: "Checkpoint content zlib compressed and base64 encoded"
                     requires :metadata, type: Hash, desc: "Checkpoint metadata"
                   end
                   post do
                     workflow = find_workflow!(params[:id])
-                    checkpoint_params = declared_params(include_missing: false).except(:id)
+                    checkpoint = if params[:checkpoint].present?
+                                   params[:checkpoint]
+                                 elsif params[:compressed_checkpoint].present?
+                                   uncompress_checkpoint(params[:compressed_checkpoint])
+                                 end
+
+                    bad_request!('Either checkpoint or compressed_checkpoint must be provided') unless checkpoint
+
+                    checkpoint_params = declared_params(include_missing: false)
+                                          .except(:id)
+                                          .merge(checkpoint: checkpoint)
+
                     service = ::Ai::DuoWorkflows::CreateCheckpointService.new(
                       workflow: workflow, params: checkpoint_params)
                     result = service.execute
@@ -121,22 +146,35 @@ module API
                     present result[:checkpoint], with: ::API::Entities::Ai::DuoWorkflows::BasicCheckpoint
                   end
 
+                  params do
+                    optional :accept_compressed, type: Boolean, default: false, desc: "Return compressed checkpoints"
+                  end
                   get do
                     workflow = find_workflow!(params[:id])
                     checkpoints = workflow.checkpoints.ordered_with_writes
-                    present paginate(checkpoints), with: ::API::Entities::Ai::DuoWorkflows::Checkpoint
+                    checkpoints = paginate(checkpoints)
+                    if params[:accept_compressed]
+                      checkpoints.each { |cp| cp.compressed_checkpoint = compress_checkpoint(cp.checkpoint) }
+                    end
+
+                    present checkpoints, with: ::API::Entities::Ai::DuoWorkflows::Checkpoint
                   end
 
                   namespace '/:checkpoint_id' do
                     params do
                       requires :checkpoint_id, type: Integer, desc: 'The ID of the checkpoint',
                         documentation: { example: 1 }
+                      optional :accept_compressed, type: Boolean, default: false, desc: "Return compressed checkpoint"
                     end
                     get do
                       workflow = find_workflow!(params[:id])
                       checkpoint = workflow.checkpoints.with_checkpoint_writes.find_by_id(params[:checkpoint_id])
 
                       not_found! unless checkpoint
+
+                      if params[:accept_compressed]
+                        checkpoint.compressed_checkpoint = compress_checkpoint(checkpoint.checkpoint)
+                      end
 
                       present checkpoint, with: ::API::Entities::Ai::DuoWorkflows::Checkpoint
                     end
