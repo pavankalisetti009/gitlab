@@ -39,13 +39,11 @@ RSpec.describe API::ProjectApprovals, :aggregate_failures, feature_category: :so
       end
     end
 
-    it 'only shows approver groups that are visible to the user' do
-      private_group = create(:group, :private)
-      create(:approval_project_rule, project: project, users: [approver], groups: [private_group])
-
+    it 'only returns empty approvers and approver groups' do
       get api(url, user)
 
       expect(response).to match_response_schema('public_api/v4/project_approvers', dir: 'ee')
+      expect(json_response["approvers"]).to be_empty
       expect(json_response["approver_groups"]).to be_empty
     end
 
@@ -141,14 +139,12 @@ RSpec.describe API::ProjectApprovals, :aggregate_failures, feature_category: :so
           expect(json_response.symbolize_keys).to include(settings)
         end
 
-        it 'only shows approver groups that are visible to the current user' do
-          private_group = create(:group, :private)
-          project.approver_groups.create!(group: private_group)
-
+        it 'only returns empty approvers and approver groups' do
           post api(url, current_user, admin_mode: admin_mode), params: { approvals_before_merge: 3 }
 
           expect(response).to match_response_schema('public_api/v4/project_approvers', dir: 'ee')
-          expect(json_response["approver_groups"].size).to eq(visible_approver_groups_count)
+          expect(json_response["approvers"]).to be_empty
+          expect(json_response["approver_groups"]).to be_empty
         end
       end
     end
@@ -211,7 +207,6 @@ RSpec.describe API::ProjectApprovals, :aggregate_failures, feature_category: :so
     context 'as a project admin' do
       it_behaves_like 'a user with access' do
         let(:current_user) { user }
-        let(:visible_approver_groups_count) { 0 }
       end
     end
 
@@ -221,7 +216,6 @@ RSpec.describe API::ProjectApprovals, :aggregate_failures, feature_category: :so
       it_behaves_like 'a user with access' do
         let(:current_user) { admin }
         let(:admin_mode) { true }
-        let(:visible_approver_groups_count) { 0 }
       end
 
       context 'updates merge requests settings' do
@@ -245,20 +239,6 @@ RSpec.describe API::ProjectApprovals, :aggregate_failures, feature_category: :so
           let(:permission) { :modify_merge_request_author_setting }
           let(:setting) { :merge_requests_author_approval }
         end
-      end
-    end
-
-    context 'as a global admin and deprecate_approver_and_approver_group FF turned off' do
-      let_it_be(:admin_mode) { true }
-
-      before do
-        stub_feature_flags(deprecate_approver_and_approver_group: false)
-      end
-
-      it_behaves_like 'a user with access' do
-        let(:current_user) { admin }
-        let(:admin_mode) { true }
-        let(:visible_approver_groups_count) { 1 }
       end
     end
 
