@@ -28,10 +28,43 @@ RSpec.describe MergeRequest, feature_category: :code_review_workflow do
     it { is_expected.to have_many(:approval_policy_merge_request_bypass_events) }
     it { is_expected.to have_many(:approval_merge_request_rule_sources).through(:approval_rules) }
     it { is_expected.to have_many(:approval_project_rules).through(:approval_merge_request_rule_sources) }
-    it { is_expected.to have_many(:status_check_responses).class_name('MergeRequests::StatusCheckResponse').inverse_of(:merge_request) }
-    it { is_expected.to have_many(:scan_result_policy_reads_through_violations).through(:scan_result_policy_violations).class_name('Security::ScanResultPolicyRead') }
-    it { is_expected.to have_many(:scan_result_policy_reads_through_approval_rules).through(:approval_rules).class_name('Security::ScanResultPolicyRead') }
-    it { is_expected.to have_many(:security_policies_through_violations).through(:scan_result_policy_violations).class_name('Security::Policy') }
+
+    it do
+      is_expected
+        .to(
+          have_many(:status_check_responses)
+            .class_name('MergeRequests::StatusCheckResponse')
+            .inverse_of(:merge_request)
+        )
+    end
+
+    it do
+      is_expected
+        .to(
+          have_many(:scan_result_policy_reads_through_violations)
+            .through(:scan_result_policy_violations)
+            .class_name('Security::ScanResultPolicyRead')
+        )
+    end
+
+    it do
+      is_expected
+        .to(
+          have_many(:scan_result_policy_reads_through_approval_rules)
+            .through(:approval_rules)
+            .class_name('Security::ScanResultPolicyRead')
+        )
+    end
+
+    it do
+      is_expected
+        .to(
+          have_many(:security_policies_through_violations)
+            .through(:scan_result_policy_violations)
+            .class_name('Security::Policy')
+        )
+    end
+
     it { is_expected.to have_many(:change_requesters).through(:requested_changes) }
     it { is_expected.to have_many(:policy_dismissals) }
 
@@ -103,7 +136,9 @@ RSpec.describe MergeRequest, feature_category: :code_review_workflow do
 
         context 'when there are associated source rules' do
           let!(:source_rule) { create(:approval_project_rule, project: merge_request.target_project) }
-          let!(:rule) { create(:approval_merge_request_rule, merge_request: merge_request, approval_project_rule: source_rule) }
+          let!(:rule) do
+            create(:approval_merge_request_rule, merge_request: merge_request, approval_project_rule: source_rule)
+          end
 
           context 'and rule is not modified_from_project_rule' do
             before do
@@ -147,7 +182,10 @@ RSpec.describe MergeRequest, feature_category: :code_review_workflow do
           end
 
           context 'and rule is overridden but not modified_from_project_rule' do
-            let!(:rule) { create(:approval_merge_request_rule, name: 'test', merge_request: merge_request, approval_project_rule: source_rule) }
+            let!(:rule) do
+              create(:approval_merge_request_rule, name: 'test', merge_request: merge_request,
+                approval_project_rule: source_rule)
+            end
 
             it_behaves_like 'with applicable rules to specified branch'
 
@@ -398,7 +436,9 @@ RSpec.describe MergeRequest, feature_category: :code_review_workflow do
 
       describe '#policy_approval_settings' do
         let_it_be(:security_policy) { create(:security_policy) }
-        let_it_be(:approval_policy_rule, reload: true) { create(:approval_policy_rule, security_policy: security_policy) }
+        let_it_be(:approval_policy_rule, reload: true) do
+          create(:approval_policy_rule, security_policy: security_policy)
+        end
 
         let(:project_approval_settings) do
           { prevent_approval_by_author: true,
@@ -671,11 +711,12 @@ RSpec.describe MergeRequest, feature_category: :code_review_workflow do
 
         it 'constructs policy object as key' do
           first_policy = overriding_policies.each_key.first
+          expected_configuration_id = scan_result_policy_read.security_orchestration_policy_configuration_id
           expect(first_policy).to be_a(Security::Policy)
           expect(first_policy)
             .to have_attributes(
               name: nil,
-              security_orchestration_policy_configuration_id: scan_result_policy_read.security_orchestration_policy_configuration_id,
+              security_orchestration_policy_configuration_id: expected_configuration_id,
               policy_index: scan_result_policy_read.orchestration_policy_idx
             )
         end
@@ -699,10 +740,11 @@ RSpec.describe MergeRequest, feature_category: :code_review_workflow do
           end
 
           it 'returns results by policy' do
+            expected_configuration_id = other_scan_result_policy_read.security_orchestration_policy_configuration_id
             expect(overriding_policies.keys.size).to eq(2)
             expect(overriding_policies.keys.last).to have_attributes(
               name: nil,
-              security_orchestration_policy_configuration_id: other_scan_result_policy_read.security_orchestration_policy_configuration_id,
+              security_orchestration_policy_configuration_id: expected_configuration_id,
               policy_index: other_scan_result_policy_read.orchestration_policy_idx
             )
           end
@@ -909,6 +951,7 @@ RSpec.describe MergeRequest, feature_category: :code_review_workflow do
   end
 
   describe '#enabled_reports' do
+    # rubocop:disable Layout/LineLength -- Table syntax
     where(:report_type, :with_reports, :feature, :artifact_report) do
       :sast                | [:with_sast_reports]                | :sast                | :sast_feature_branch
       :container_scanning  | [:with_container_scanning_reports]  | :container_scanning  | :container_scanning_feature_branch
@@ -920,6 +963,7 @@ RSpec.describe MergeRequest, feature_category: :code_review_workflow do
       :secret_detection    | [:with_secret_detection_reports]    | :secret_detection    | :secret_detection_feature_branch
       :api_fuzzing         | [:with_api_fuzzing_reports]         | :api_fuzzing         | :api_fuzzing_report
     end
+    # rubocop:enable Layout/LineLength
 
     with_them do
       subject { merge_request.enabled_reports[report_type] }
@@ -940,7 +984,11 @@ RSpec.describe MergeRequest, feature_category: :code_review_workflow do
         it { is_expected.to be_falsy }
 
         context "but the child pipeline has reports" do
-          let(:pipeline) { create(:ee_ci_pipeline, :success, sha: merge_request.diff_head_sha, merge_requests_as_head_pipeline: [merge_request]) }
+          let(:pipeline) do
+            create(:ee_ci_pipeline, :success, sha: merge_request.diff_head_sha,
+              merge_requests_as_head_pipeline: [merge_request])
+          end
+
           let(:child_pipeline) { create(:ee_ci_pipeline, :success, child_of: pipeline) }
           let!(:child_build) { create(:ee_ci_build, artifact_report, pipeline: child_pipeline) }
 
@@ -990,12 +1038,19 @@ RSpec.describe MergeRequest, feature_category: :code_review_workflow do
   shared_examples_for 'security reports in child pipelines' do |report_type|
     context 'when the child pipeline has reports' do
       let_it_be(:merge_request) { create(:ee_merge_request, source_project: project) }
-      let_it_be(:pipeline) { create(:ee_ci_pipeline, :success, sha: merge_request.diff_head_sha, merge_requests_as_head_pipeline: [merge_request]) }
+      let_it_be(:pipeline) do
+        create(:ee_ci_pipeline, :success, sha: merge_request.diff_head_sha,
+          merge_requests_as_head_pipeline: [merge_request])
+      end
+
       let_it_be(:child_pipeline) { create(:ee_ci_pipeline, :success, child_of: pipeline) }
       let_it_be(:child_build) { create(:ee_ci_build, report_type, pipeline: child_pipeline) }
 
       context 'when the pipeline is still running' do
-        let_it_be(:pipeline) { create(:ee_ci_pipeline, :running, sha: merge_request.diff_head_sha, merge_requests_as_head_pipeline: [merge_request]) }
+        let_it_be(:pipeline) do
+          create(:ee_ci_pipeline, :running, sha: merge_request.diff_head_sha,
+            merge_requests_as_head_pipeline: [merge_request])
+        end
 
         it 'returns false if head pipeline is running' do
           expect(subject).to eq(false)
@@ -1505,7 +1560,8 @@ RSpec.describe MergeRequest, feature_category: :code_review_workflow do
               .to receive(:execute).with(base_pipeline, head_pipeline).and_call_original
 
             expect(subject[:key].last).to include("software_license_policies/query-")
-            expect(subject[:data]['existing_licenses'].last.dig('classification', 'approval_status')).to eq('unclassified')
+            expect(subject[:data]['existing_licenses'].last.dig('classification',
+              'approval_status')).to eq('unclassified')
           end
         end
 
@@ -1561,7 +1617,11 @@ RSpec.describe MergeRequest, feature_category: :code_review_workflow do
       end
 
       with_them do
-        let!(:head_pipeline) { create(:ci_pipeline, pipeline_status, project: project, ref: merge_request.source_branch, sha: merge_request.diff_head_sha, builds: builds) }
+        let!(:head_pipeline) do
+          create(:ci_pipeline, pipeline_status, project: project, ref: merge_request.source_branch,
+            sha: merge_request.diff_head_sha, builds: builds)
+        end
+
         let(:builds) { build_types.map { |build_type| create(:ee_ci_build, build_type) } }
 
         before do
@@ -1858,7 +1918,9 @@ RSpec.describe MergeRequest, feature_category: :code_review_workflow do
 
       context 'with a rule' do
         let(:approver) { create(:user) }
-        let!(:rule) { create(:approval_merge_request_rule, merge_request: merge_request, approvals_required: 1, users: [approver]) }
+        let!(:rule) do
+          create(:approval_merge_request_rule, merge_request: merge_request, approvals_required: 1, users: [approver])
+        end
 
         context 'that has been approved' do
           it 'includes variable CI_MERGE_REQUEST_APPROVED=true' do
@@ -1919,7 +1981,8 @@ RSpec.describe MergeRequest, feature_category: :code_review_workflow do
 
     let(:options) { { auto_merge_strategy: auto_merge_strategy } }
 
-    where(:auto_merge_strategy, :skip_approved_check, :skip_draft_check, :skip_blocked_check, :skip_discussions_check, :skip_external_status_check, :skip_locked_paths_check) do
+    where(:auto_merge_strategy, :skip_approved_check, :skip_draft_check, :skip_blocked_check, :skip_discussions_check,
+      :skip_external_status_check, :skip_locked_paths_check) do
       ''                                                      | false | false | false | false | false | false
       AutoMergeService::STRATEGY_MERGE_WHEN_CHECKS_PASS       | true | true | true | true | true | true
     end
@@ -1938,7 +2001,9 @@ RSpec.describe MergeRequest, feature_category: :code_review_workflow do
 
     let(:params) { {} }
     let(:project_with_approver) { create(:project, :repository) }
-    let(:merge_request) { create(:merge_request, source_project: project_with_approver, target_project: project_with_approver) }
+    let(:merge_request) do
+      create(:merge_request, source_project: project_with_approver, target_project: project_with_approver)
+    end
 
     let_it_be(:user) { create(:user) }
 
@@ -1967,7 +2032,9 @@ RSpec.describe MergeRequest, feature_category: :code_review_workflow do
 
     context 'when validating jira associations' do
       let_it_be_with_reload(:project_jira) { create(:project, :repository, :with_jira_integration) }
-      let_it_be_with_reload(:merge_request) { create(:merge_request, source_project: project_jira, target_project: project_jira) }
+      let_it_be_with_reload(:merge_request) do
+        create(:merge_request, source_project: project_jira, target_project: project_jira)
+      end
 
       before do
         allow(merge_request.project).to receive(:prevent_merge_without_jira_issue?).and_return(true)
@@ -2169,7 +2236,10 @@ RSpec.describe MergeRequest, feature_category: :code_review_workflow do
   end
 
   describe '#synchronize_approval_rules_from_target_project' do
-    let_it_be_with_reload(:merge_request) { create(:ee_merge_request, target_project: project, source_project: project) }
+    let_it_be_with_reload(:merge_request) do
+      create(:ee_merge_request, target_project: project, source_project: project)
+    end
+
     let_it_be(:code_coverage_project_approval_rule) do
       create(:approval_project_rule, :code_coverage, project: project, approvals_required: 2)
     end
@@ -2222,7 +2292,8 @@ RSpec.describe MergeRequest, feature_category: :code_review_workflow do
     it 'does not create approval rules for other configuration' do
       subject
 
-      expect(merge_request.approval_rules.map(&:approval_project_rule)).not_to include(project_approval_rule_without_configuration)
+      expect(merge_request.approval_rules.map(&:approval_project_rule))
+        .not_to include(project_approval_rule_without_configuration)
     end
 
     context 'when mr approval rules already exist' do
@@ -2286,7 +2357,8 @@ RSpec.describe MergeRequest, feature_category: :code_review_workflow do
     it 'does not create approval rules for other configuration' do
       subject
 
-      expect(merge_request.approval_rules.map(&:approval_project_rule)).not_to include(project_approval_rule_without_policy_rule)
+      expect(merge_request.approval_rules.map(&:approval_project_rule))
+        .not_to include(project_approval_rule_without_policy_rule)
     end
 
     context 'when mr approval rules already exist' do
@@ -2347,7 +2419,9 @@ RSpec.describe MergeRequest, feature_category: :code_review_workflow do
 
     context 'when the merge request is not merged' do
       it 'deletes approval rules for the given policy configuration' do
-        expect { delete_approval_rules_for_policy_configuration }.to change { ApprovalMergeRequestRule.count }.from(2).to(1)
+        expect { delete_approval_rules_for_policy_configuration }.to change {
+          ApprovalMergeRequestRule.count
+        }.from(2).to(1)
       end
     end
 
@@ -2381,8 +2455,13 @@ RSpec.describe MergeRequest, feature_category: :code_review_workflow do
 
     context 'with another comment from the security bot' do
       before do
-        create(:note, project: merge_request.project, noteable: merge_request, author: Users::Internal.for_organization(merge_request.project.organization).security_bot,
-          note: 'Other note')
+        create(
+          :note,
+          project: merge_request.project,
+          noteable: merge_request,
+          author: Users::Internal.for_organization(merge_request.project.organization).security_bot,
+          note: 'Other note'
+        )
       end
 
       it { is_expected.to be_nil }
@@ -2477,7 +2556,8 @@ RSpec.describe MergeRequest, feature_category: :code_review_workflow do
       let(:locked_merge_request) { create(:merge_request, :locked) }
 
       it 'returns everything except the merged mr' do
-        expect(described_class.not_merged).to contain_exactly(merge_request, merge_request_with_head_pipeline, opened_merge_request, closed_merge_request, locked_merge_request)
+        expect(described_class.not_merged).to contain_exactly(merge_request, merge_request_with_head_pipeline,
+          opened_merge_request, closed_merge_request, locked_merge_request)
       end
     end
 
@@ -2559,7 +2639,8 @@ RSpec.describe MergeRequest, feature_category: :code_review_workflow do
       end
 
       let_it_be(:compliance_violation) do
-        create(:compliance_violation, :approved_by_committer, severity_level: :low, merge_request: merge_request, title: 'old MR title')
+        create(:compliance_violation, :approved_by_committer, severity_level: :low, merge_request: merge_request,
+          title: 'old MR title')
       end
 
       it "calls sync_merge_request_compliance_violation when the MR title is updated" do
@@ -3283,7 +3364,8 @@ RSpec.describe MergeRequest, feature_category: :code_review_workflow do
 
     describe 'when merge request has changes requested' do
       before do
-        create(:merge_request_requested_changes, merge_request: merge_request, project: merge_request.project, user: create(:user))
+        create(:merge_request_requested_changes, merge_request: merge_request, project: merge_request.project,
+          user: create(:user))
       end
 
       it { expect(merge_request.has_changes_requested?).to be_truthy }
@@ -3294,7 +3376,9 @@ RSpec.describe MergeRequest, feature_category: :code_review_workflow do
     let_it_be(:user) { create(:user) }
 
     it 'creates a merge request requested changes' do
-      expect { merge_request.create_requested_changes(user) }.to change { merge_request.requested_changes.count }.from(0).to(1)
+      expect { merge_request.create_requested_changes(user) }.to change {
+        merge_request.requested_changes.count
+      }.from(0).to(1)
     end
   end
 
@@ -3306,7 +3390,9 @@ RSpec.describe MergeRequest, feature_category: :code_review_workflow do
     end
 
     it 'destroys a merge request requested changes' do
-      expect { merge_request.destroy_requested_changes(user) }.to change { merge_request.requested_changes.count }.from(1).to(0)
+      expect { merge_request.destroy_requested_changes(user) }.to change {
+        merge_request.requested_changes.count
+      }.from(1).to(0)
     end
   end
 
@@ -3318,7 +3404,8 @@ RSpec.describe MergeRequest, feature_category: :code_review_workflow do
     end
 
     before do
-      create(:merge_request_requested_changes, merge_request: merge_request, project: merge_request.project, user: create(:user))
+      create(:merge_request_requested_changes, merge_request: merge_request, project: merge_request.project,
+        user: create(:user))
     end
 
     it 'returns requested changes for user IDs' do
@@ -3442,10 +3529,14 @@ RSpec.describe MergeRequest, feature_category: :code_review_workflow do
     end
 
     context 'when the target branch exact matches a protected branch' do
-      let_it_be_with_refind(:protected_branch) { create(:protected_branch, name: target_branch, project_id: project.id) }
+      let_it_be_with_refind(:protected_branch) do
+        create(:protected_branch, name: target_branch, project_id: project.id)
+      end
 
       context 'and the protected branch has a defined squash_option' do
-        let_it_be(:squash_option) { create(:branch_rule_squash_option, protected_branch: protected_branch, project: project) }
+        let_it_be(:squash_option) do
+          create(:branch_rule_squash_option, protected_branch: protected_branch, project: project)
+        end
 
         it { is_expected.to eq(squash_option) }
       end
@@ -3611,11 +3702,15 @@ RSpec.describe MergeRequest, feature_category: :code_review_workflow do
       create(:approval_policy_rule, security_policy: security_policy_no_bypass_key)
     end
 
-    let_it_be_with_refind(:merge_request) { create(:merge_request, source_project: project, target_project: project, source_branch: 'feature', target_branch: 'main') }
+    let_it_be_with_refind(:merge_request) do
+      create(:merge_request, source_project: project, target_project: project, source_branch: 'feature',
+        target_branch: 'main')
+    end
 
     context 'when merge request has approval rules with security policies that have bypass settings' do
       let_it_be(:approval_rule_with_bypass) do
-        create(:approval_merge_request_rule, merge_request: merge_request, approval_policy_rule: approval_policy_rule_with_bypass)
+        create(:approval_merge_request_rule, merge_request: merge_request,
+          approval_policy_rule: approval_policy_rule_with_bypass)
       end
 
       it 'returns security policies with bypass settings' do
@@ -3625,11 +3720,13 @@ RSpec.describe MergeRequest, feature_category: :code_review_workflow do
 
     context 'when merge request has approval rules with security policies without bypass settings' do
       let_it_be(:approval_rule_without_bypass) do
-        create(:approval_merge_request_rule, merge_request: merge_request, approval_policy_rule: approval_policy_rule_without_bypass)
+        create(:approval_merge_request_rule, merge_request: merge_request,
+          approval_policy_rule: approval_policy_rule_without_bypass)
       end
 
       let_it_be(:approval_rule_no_bypass_key) do
-        create(:approval_merge_request_rule, merge_request: merge_request, approval_policy_rule: approval_policy_rule_no_bypass_key)
+        create(:approval_merge_request_rule, merge_request: merge_request,
+          approval_policy_rule: approval_policy_rule_no_bypass_key)
       end
 
       it 'returns empty collection' do
@@ -3655,11 +3752,13 @@ RSpec.describe MergeRequest, feature_category: :code_review_workflow do
 
     context 'when merge request has mixed approval rules' do
       let_it_be(:approval_rule_with_bypass) do
-        create(:approval_merge_request_rule, merge_request: merge_request, approval_policy_rule: approval_policy_rule_with_bypass)
+        create(:approval_merge_request_rule, merge_request: merge_request,
+          approval_policy_rule: approval_policy_rule_with_bypass)
       end
 
       let_it_be(:approval_rule_without_bypass) do
-        create(:approval_merge_request_rule, merge_request: merge_request, approval_policy_rule: approval_policy_rule_without_bypass)
+        create(:approval_merge_request_rule, merge_request: merge_request,
+          approval_policy_rule: approval_policy_rule_without_bypass)
       end
 
       let_it_be(:approval_rule_without_policy) do
@@ -3691,7 +3790,9 @@ RSpec.describe MergeRequest, feature_category: :code_review_workflow do
       let(:user) { merge_request.author }
 
       context 'when project can override approvers' do
-        let(:project) { create(:project, :public, :merge_requests_private, disable_overriding_approvers_per_merge_request: false) }
+        let(:project) do
+          create(:project, :public, :merge_requests_private, disable_overriding_approvers_per_merge_request: false)
+        end
 
         context 'when the merge request can be updated' do
           context 'when the user is the assignee or author' do
@@ -3820,7 +3921,9 @@ RSpec.describe MergeRequest, feature_category: :code_review_workflow do
       context 'when there are open policy dismissals' do
         let_it_be(:open_dismissal_1) { create(:policy_dismissal, merge_request: merge_request, project: project) }
         let_it_be(:open_dismissal_2) { create(:policy_dismissal, merge_request: merge_request, project: project) }
-        let_it_be(:preserved_dismissal) { create(:policy_dismissal, merge_request: merge_request, project: project, status: 1) }
+        let_it_be(:preserved_dismissal) do
+          create(:policy_dismissal, merge_request: merge_request, project: project, status: 1)
+        end
 
         it 'preserves all open policy dismissals' do
           expect { preserve_open_policy_dismissals }
@@ -3852,11 +3955,13 @@ RSpec.describe MergeRequest, feature_category: :code_review_workflow do
     end
 
     let_it_be(:diff_base_pipeline) do
-      create(:ci_pipeline, :success, project: project, ref: merge_request.target_branch, sha: merge_request.diff_base_sha)
+      create(:ci_pipeline, :success, project: project, ref: merge_request.target_branch,
+        sha: merge_request.diff_base_sha)
     end
 
     let_it_be(:target_branch_sha_pipeline) do
-      create(:ci_pipeline, :success, project: project, ref: merge_request.target_branch, sha: merge_request.target_branch_sha)
+      create(:ci_pipeline, :success, project: project, ref: merge_request.target_branch,
+        sha: merge_request.target_branch_sha)
     end
 
     let_it_be(:other_ref_pipeline) do
@@ -3864,7 +3969,8 @@ RSpec.describe MergeRequest, feature_category: :code_review_workflow do
     end
 
     it 'returns only pipelines on the target branch' do
-      expect(merge_request.all_target_branch_pipelines).to contain_exactly(diff_base_pipeline, target_branch_sha_pipeline)
+      expect(merge_request.all_target_branch_pipelines).to contain_exactly(diff_base_pipeline,
+        target_branch_sha_pipeline)
     end
   end
 
@@ -3875,19 +3981,23 @@ RSpec.describe MergeRequest, feature_category: :code_review_workflow do
     end
 
     let_it_be(:base_old) do
-      create(:ci_pipeline, :success, project: project, ref: merge_request.target_branch, sha: merge_request.diff_base_sha)
+      create(:ci_pipeline, :success, project: project, ref: merge_request.target_branch,
+        sha: merge_request.diff_base_sha)
     end
 
     let_it_be(:base_new) do
-      create(:ci_pipeline, :success, project: project, ref: merge_request.target_branch, sha: merge_request.diff_base_sha)
+      create(:ci_pipeline, :success, project: project, ref: merge_request.target_branch,
+        sha: merge_request.diff_base_sha)
     end
 
     let_it_be(:start_old) do
-      create(:ci_pipeline, :success, project: project, ref: merge_request.target_branch, sha: merge_request.diff_start_sha)
+      create(:ci_pipeline, :success, project: project, ref: merge_request.target_branch,
+        sha: merge_request.diff_start_sha)
     end
 
     let_it_be(:start_new) do
-      create(:ci_pipeline, :success, project: project, ref: merge_request.target_branch, sha: merge_request.diff_start_sha)
+      create(:ci_pipeline, :success, project: project, ref: merge_request.target_branch,
+        sha: merge_request.diff_start_sha)
     end
 
     it 'returns pipelines matching shas' do
@@ -3897,7 +4007,8 @@ RSpec.describe MergeRequest, feature_category: :code_review_workflow do
     end
 
     it 'only includes pipelines for the target branch shas' do
-      unrelated = create(:ci_pipeline, :success, project: project, ref: merge_request.target_branch, sha: project.commit.id)
+      unrelated = create(:ci_pipeline, :success, project: project, ref: merge_request.target_branch,
+        sha: project.commit.id)
 
       list = merge_request.approval_policy_comparison_pipelines.to_a
 
