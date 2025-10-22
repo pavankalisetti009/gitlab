@@ -45,8 +45,12 @@ RSpec.describe Elastic::Latest::NoteClassProxy, feature_category: :global_search
       ensure_elasticsearch_index!
     end
 
-    # move out of shared_examples when backfill_traversal_ids_in_notes migration is made obsolete
-    shared_examples 'search at all levels' do
+    context 'when searching at all levels' do
+      let(:issues_context_name) { "filters:permissions:#{search_level}:issues_access_level:enabled" }
+      let(:merge_requests_context_name) { "filters:permissions:#{search_level}:merge_requests_access_level:enabled" }
+      let(:repository_context_name) { "filters:permissions:#{search_level}:repository_level:enabled" }
+      let(:snippets_context_name) { "filters:permissions:#{search_level}:snippets_access_level:enabled" }
+
       describe 'global search' do
         let(:search_level) { :global }
         let(:project_ids) { [] }
@@ -171,26 +175,6 @@ RSpec.describe Elastic::Latest::NoteClassProxy, feature_category: :global_search
               without: %W[#{merge_requests_context_name} #{repository_context_name} #{snippets_context_name}])
           end
         end
-      end
-    end
-
-    it_behaves_like 'search at all levels' do
-      let(:issues_context_name) { "filters:permissions:#{search_level}:issues_access_level:enabled" }
-      let(:merge_requests_context_name) { "filters:permissions:#{search_level}:merge_requests_access_level:enabled" }
-      let(:repository_context_name) { "filters:permissions:#{search_level}:repository_level:enabled" }
-      let(:snippets_context_name) { "filters:permissions:#{search_level}:snippets_access_level:enabled" }
-    end
-
-    context 'when backfill_traversal_ids_in_notes migration is not complete' do
-      before do
-        set_elasticsearch_migration_to(:backfill_traversal_ids_in_notes, including: false)
-      end
-
-      it_behaves_like 'search at all levels' do
-        let(:issues_context_name) { 'note:authorized:project:issues' }
-        let(:merge_requests_context_name) { 'note:authorized:project:merge_requests' }
-        let(:repository_context_name) { 'note:authorized:project:repository' }
-        let(:snippets_context_name) { 'note:authorized:project:snippets' }
       end
     end
   end

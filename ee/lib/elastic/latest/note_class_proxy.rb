@@ -57,12 +57,9 @@ module Elastic
       attr_reader :noteable_type_to_feature
 
       def get_authorization_filter(query_hash, options)
-        if ::Elastic::DataMigrationService.migration_has_finished?(:backfill_traversal_ids_in_notes)
-          ::Search::Elastic::Filters.by_search_level_and_membership(
-            query_hash: query_hash, options: options.merge(features: noteable_type_to_feature.values))
-        else
-          context.name(:authorized) { project_ids_filter(query_hash, options) }
-        end
+        ::Search::Elastic::Filters.by_search_level_and_membership(
+          query_hash: query_hash, options: options.merge(features: noteable_type_to_feature.values)
+        )
       end
 
       def confidentiality_filter(query_hash, options)

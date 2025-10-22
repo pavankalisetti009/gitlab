@@ -11,3 +11,5 @@ class BackfillTraversalIdsInNotes < Elastic::Migration
   NEW_SCHEMA_VERSION = 25_24
   QUEUE_THRESHOLD = 30_000
 end
+
+BackfillTraversalIdsInNotes.prepend ::Search::Elastic::MigrationObsolete
