@@ -7,22 +7,91 @@ RSpec.shared_examples Ai::Catalog::Items::BaseDestroyService do
   let(:params) { { item: item } }
   let(:service) { described_class.new(project: project, current_user: user, params: params) }
 
-  describe '#execute' do
-    subject(:execute_service) { service.execute }
+  subject(:execute_service) { service.execute }
 
-    shared_examples 'returns insufficient permissions error' do
-      it 'returns insufficient permissions error' do
-        result = execute_service
+  shared_examples 'returns insufficient permissions error' do
+    it 'returns insufficient permissions error' do
+      result = execute_service
 
-        expect(result).to be_error
-        expect(result.errors).to contain_exactly('You have insufficient permissions')
-      end
-
-      it 'does not destroy any items' do
-        expect { execute_service }.not_to change { Ai::Catalog::Item.count }
-      end
+      expect(result).to be_error
+      expect(result.errors).to contain_exactly('You have insufficient permissions')
     end
 
+    it 'does not destroy any items' do
+      expect { execute_service }.not_to change { Ai::Catalog::Item.count }
+    end
+  end
+
+  shared_examples 'hard deletes the item' do
+    it 'destroys the item successfully' do
+      expect { execute_service }.to change { Ai::Catalog::Item.count }.by(-1)
+    end
+
+    it 'destroys item versions' do
+      expect { execute_service }.to change { Ai::Catalog::ItemVersion.count }.by(-1)
+    end
+
+    it 'triggers delete_ai_catalog_item', :clean_gitlab_redis_shared_state do
+      expect { execute_service }
+        .to trigger_internal_events('delete_ai_catalog_item')
+        .with(user: user, project: project, additional_properties: { label: item.item_type })
+        .and increment_usage_metrics('counts.count_total_delete_ai_catalog_item')
+    end
+
+    it 'returns success response' do
+      result = execute_service
+
+      expect(result.success?).to be(true)
+    end
+  end
+
+  shared_examples 'soft deletes the item' do
+    it 'soft deletes the item' do
+      expect { execute_service }.to change { item.deleted_at }.from(nil)
+    end
+
+    it 'does not destroy the item' do
+      expect { execute_service }.not_to change { Ai::Catalog::Item.count }
+    end
+
+    it 'does not destroy item versions' do
+      expect { execute_service }.not_to change { Ai::Catalog::ItemVersion.count }
+    end
+
+    it 'triggers delete_ai_catalog_item', :clean_gitlab_redis_shared_state do
+      expect { execute_service }
+        .to trigger_internal_events('delete_ai_catalog_item')
+        .with(user: user, project: project, additional_properties: { label: item.item_type })
+    end
+
+    it 'returns success response' do
+      result = execute_service
+
+      expect(result.success?).to be(true)
+    end
+  end
+
+  shared_examples 'a successful request' do
+    it_behaves_like 'hard deletes the item'
+
+    context 'when item is only being used by the project' do
+      before do
+        create(:ai_catalog_item_consumer, item: item, project: project)
+      end
+
+      it_behaves_like 'hard deletes the item'
+    end
+
+    context 'when item is being used by other projects' do
+      before do
+        create(:ai_catalog_item_consumer, item: item, project: create(:project))
+      end
+
+      it_behaves_like 'soft deletes the item'
+    end
+  end
+
+  describe '#execute' do
     context 'when user has permissions' do
       before_all do
         project.add_maintainer(user)
@@ -35,72 +104,7 @@ RSpec.shared_examples Ai::Catalog::Items::BaseDestroyService do
       end
 
       context 'when item exists' do
-        shared_examples 'hard deletes the item' do
-          it 'destroys the item successfully' do
-            expect { execute_service }.to change { Ai::Catalog::Item.count }.by(-1)
-          end
-
-          it 'destroys item versions' do
-            expect { execute_service }.to change { Ai::Catalog::ItemVersion.count }.by(-1)
-          end
-
-          it 'triggers delete_ai_catalog_item', :clean_gitlab_redis_shared_state do
-            expect { execute_service }
-              .to trigger_internal_events('delete_ai_catalog_item')
-              .with(user: user, project: project, additional_properties: { label: item.item_type })
-              .and increment_usage_metrics('counts.count_total_delete_ai_catalog_item')
-          end
-
-          it 'returns success response' do
-            result = execute_service
-
-            expect(result.success?).to be(true)
-          end
-        end
-
-        shared_examples 'soft deletes the item' do
-          it 'soft deletes the item' do
-            expect { execute_service }.to change { item.deleted_at }.from(nil)
-          end
-
-          it 'does not destroy the item' do
-            expect { execute_service }.not_to change { Ai::Catalog::Item.count }
-          end
-
-          it 'does not destroy item versions' do
-            expect { execute_service }.not_to change { Ai::Catalog::ItemVersion.count }
-          end
-
-          it 'triggers delete_ai_catalog_item', :clean_gitlab_redis_shared_state do
-            expect { execute_service }
-              .to trigger_internal_events('delete_ai_catalog_item')
-              .with(user: user, project: project, additional_properties: { label: item.item_type })
-          end
-
-          it 'returns success response' do
-            result = execute_service
-
-            expect(result.success?).to be(true)
-          end
-        end
-
-        it_behaves_like 'hard deletes the item'
-
-        context 'when item is only being used by the project' do
-          before do
-            create(:ai_catalog_item_consumer, item: item, project: project)
-          end
-
-          it_behaves_like 'hard deletes the item'
-        end
-
-        context 'when item is being used by other projects' do
-          before do
-            create(:ai_catalog_item_consumer, item: item, project: create(:project))
-          end
-
-          it_behaves_like 'soft deletes the item'
-        end
+        it_behaves_like 'a successful request'
 
         context 'when item is being used by both the project and another project' do
           let_it_be(:other_project) { create(:project) }

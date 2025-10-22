@@ -713,6 +713,18 @@ RSpec.describe Ai::FlowTriggers::RunService, feature_category: :agent_foundation
         service.execute(params)
       end
 
+      context 'when ai_catalog_third_party_flows feature flag is disabled' do
+        before do
+          stub_feature_flags(ai_catalog_third_party_flows: false)
+        end
+
+        it 'calls Ai::Catalog::Flows::ExecuteService' do
+          expect(::Ai::Catalog::Flows::ExecuteService).to receive(:new)
+
+          service.execute(params)
+        end
+      end
+
       it 'creates a new workflow' do
         expect { service.execute(params) }.to change { ::Ai::DuoWorkflows::Workflow.count }
 
@@ -772,6 +784,20 @@ RSpec.describe Ai::FlowTriggers::RunService, feature_category: :agent_foundation
             'variables' => ['API_TOKEN'],
             'injectGatewayToken' => true
           }
+        end
+
+        context 'when ai_catalog_third_party_flows feature flag is disabled' do
+          before do
+            stub_feature_flags(ai_catalog_third_party_flows: false)
+          end
+
+          it 'returns an error response' do
+            expect(::Ai::Catalog::Flows::ExecuteService).not_to receive(:new)
+
+            response = service.execute(params)
+            expect(response).to be_error
+            expect(response.message).to eq('ai_catalog_third_party_flows feature flag is not enabled')
+          end
         end
 
         it 'creates workload with third party flow definition' do
