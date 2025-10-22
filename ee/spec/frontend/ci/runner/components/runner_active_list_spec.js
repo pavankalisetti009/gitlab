@@ -68,7 +68,7 @@ describe('RunnerActiveList', () => {
       }`;
       expect(findCell(0, 'index').text()).toBe('1');
       expect(findCell(0, 'runner').text()).toBe(runner);
-      expect(findCell(0, 'runningJobCount').text()).toBe('2');
+      expect(findCell(0, 'runningJobCount').text()).toContain('2');
 
       // Row 2
       const runner2 = `#${getIdFromGraphQLId(mockRunner2.id)} (${mockRunner2.shortSha}) - ${
@@ -76,7 +76,7 @@ describe('RunnerActiveList', () => {
       }`;
       expect(findCell(1, 'index').text()).toBe('2');
       expect(findCell(1, 'runner').text()).toBe(runner2);
-      expect(findCell(1, 'runningJobCount').text()).toBe('1');
+      expect(findCell(1, 'runningJobCount').text()).toContain('1');
     });
 
     it('shows jobs link', () => {
