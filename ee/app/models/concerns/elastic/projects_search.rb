@@ -27,6 +27,8 @@ module Elastic
 
       override :maintain_elasticsearch_create
       def maintain_elasticsearch_create
+        # Call CommitIndexerWorker to create an IndexStatus record for an empty repo
+        ::Search::Elastic::CommitIndexerWorker.perform_async(id) if empty_repo?
         ::Elastic::ProcessInitialBookkeepingService.track!(self)
       end
 

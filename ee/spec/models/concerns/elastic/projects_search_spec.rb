@@ -28,14 +28,58 @@ RSpec.describe Elastic::ProjectsSearch, feature_category: :global_search do
       def root_namespace
         Namespace.new
       end
+
+      def empty_repo?
+        false
+      end
     end.new
   end
 
   describe '#maintain_elasticsearch_create' do
     it 'calls track!' do
+      expect(::Search::Elastic::CommitIndexerWorker).not_to receive(:perform_async)
       expect(::Elastic::ProcessInitialBookkeepingService).to receive(:track!).and_return(true)
 
       projects_search.maintain_elasticsearch_create
+    end
+
+    context 'when project is empty_repo' do
+      subject(:projects_search) do
+        Class.new do
+          include Elastic::ProjectsSearch
+
+          def id
+            1
+          end
+
+          def es_id
+            1
+          end
+
+          def pending_delete?
+            false
+          end
+
+          def project_feature
+            ProjectFeature.new
+          end
+
+          def root_namespace
+            Namespace.new
+          end
+
+          def empty_repo?
+            true
+          end
+        end.new
+      end
+
+      it 'calls track! and CommitIndexerWorker' do
+        expect(::Search::Elastic::CommitIndexerWorker).to receive(:perform_async).with(1)
+        expect(::Elastic::ProcessInitialBookkeepingService).to receive(:track!).and_return(true)
+
+        projects_search.maintain_elasticsearch_create
+      end
     end
   end
 

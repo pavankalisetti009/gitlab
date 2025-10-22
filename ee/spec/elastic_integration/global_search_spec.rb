@@ -26,12 +26,12 @@ RSpec.describe 'GlobalSearch', :elastic_clean, :clean_gitlab_redis_shared_state,
     enable_admin_mode!(admin_with_admin_mode)
   end
 
-  context "Respect feature visibility levels", :aggregate_failures do
-    context "Private projects" do
+  describe 'respect feature visibility levels', :aggregate_failures, :sidekiq_inline do
+    context 'for private projects' do
       let(:project) { create(:project, :private, :repository, :wiki_repo) }
 
       # The feature can be disabled but the data may actually exist
-      it "does not find items if features are disabled" do
+      it 'does not find items if features are disabled' do
         create_items(project, feature_settings(:disabled))
 
         expect_no_items_to_be_found(admin_with_admin_mode)
@@ -45,7 +45,7 @@ RSpec.describe 'GlobalSearch', :elastic_clean, :clean_gitlab_redis_shared_state,
         expect_no_items_to_be_found(nil)
       end
 
-      it "shows items to member only if features are enabled" do
+      it 'shows items to member only if features are enabled' do
         create_items(project, feature_settings(:enabled))
 
         expect_items_to_be_found(admin_with_admin_mode)
@@ -60,11 +60,11 @@ RSpec.describe 'GlobalSearch', :elastic_clean, :clean_gitlab_redis_shared_state,
       end
     end
 
-    context "Internal projects" do
+    context 'for internal projects' do
       let(:project) { create(:project, :internal, :repository, :wiki_repo) }
 
       # The feature can be disabled but the data may actually exist
-      it "does not find items if features are disabled" do
+      it 'does not find items if features are disabled' do
         create_items(project, feature_settings(:disabled))
 
         expect_no_items_to_be_found(admin_with_admin_mode)
@@ -78,7 +78,7 @@ RSpec.describe 'GlobalSearch', :elastic_clean, :clean_gitlab_redis_shared_state,
         expect_no_items_to_be_found(nil)
       end
 
-      it "shows items to member only if features are enabled" do
+      it 'shows items to member only if features are enabled' do
         create_items(project, feature_settings(:enabled))
 
         expect_items_to_be_found(admin_with_admin_mode)
@@ -92,7 +92,7 @@ RSpec.describe 'GlobalSearch', :elastic_clean, :clean_gitlab_redis_shared_state,
         expect_no_items_to_be_found(nil)
       end
 
-      it "shows items to member only if features are private" do
+      it 'shows items to member only if features are private' do
         create_items(project, feature_settings(:private))
 
         expect_items_to_be_found(admin_with_admin_mode)
@@ -107,11 +107,11 @@ RSpec.describe 'GlobalSearch', :elastic_clean, :clean_gitlab_redis_shared_state,
       end
     end
 
-    context "Public projects" do
+    context 'for public projects' do
       let(:project) { create(:project, :public, :repository, :wiki_repo) }
 
       # The feature can be disabled but the data may actually exist
-      it "does not find items if features are disabled" do
+      it 'does not find items if features are disabled' do
         create_items(project, feature_settings(:disabled))
 
         expect_no_items_to_be_found(admin_with_admin_mode)
@@ -125,7 +125,7 @@ RSpec.describe 'GlobalSearch', :elastic_clean, :clean_gitlab_redis_shared_state,
         expect_no_items_to_be_found(nil)
       end
 
-      it "finds items if features are enabled" do
+      it 'finds items if features are enabled' do
         create_items(project, feature_settings(:enabled))
 
         expect_items_to_be_found(admin_with_admin_mode)
@@ -139,7 +139,7 @@ RSpec.describe 'GlobalSearch', :elastic_clean, :clean_gitlab_redis_shared_state,
         expect_items_to_be_found(nil)
       end
 
-      it "shows items to member only if features are private", :aggregate_failures do
+      it 'shows items to member only if features are private', :aggregate_failures do
         create_items(project, feature_settings(:private))
 
         expect_items_to_be_found(admin_with_admin_mode)
