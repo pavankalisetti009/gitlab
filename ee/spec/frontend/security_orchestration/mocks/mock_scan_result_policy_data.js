@@ -11,6 +11,40 @@
 import { POLICY_SCOPE_MOCK } from 'ee_jest/security_orchestration/mocks/mock_apollo';
 import { actionId, ruleId } from './mock_data';
 
+export const zeroActionsScanResultManifest = `type: approval_policy
+name: critical vulnerability CS approvals
+description: This policy enforces critical vulnerability CS approvals
+enabled: true
+rules:
+  - type: scan_finding
+    branches: []
+    scanners:
+      - container_scanning
+    vulnerabilities_allowed: 1
+    severity_levels:
+      - critical
+    vulnerability_states:
+      - newly_detected
+`;
+
+export const zeroActionsScanResultObject = {
+  type: 'approval_policy',
+  name: 'critical vulnerability CS approvals',
+  description: 'This policy enforces critical vulnerability CS approvals',
+  enabled: true,
+  rules: [
+    {
+      type: 'scan_finding',
+      branches: [],
+      scanners: ['container_scanning'],
+      vulnerabilities_allowed: 1,
+      severity_levels: ['critical'],
+      vulnerability_states: ['newly_detected'],
+      id: ruleId,
+    },
+  ],
+};
+
 export const mockNoFallbackScanResultManifest = `type: approval_policy
 name: critical vulnerability CS approvals
 description: This policy enforces critical vulnerability CS approvals
@@ -156,8 +190,33 @@ export const mockDefaultBranchesScanResultObject = {
 };
 
 export const mockWarnTypeScanResultObject = {
-  ...mockDefaultBranchesScanResultManifest,
+  ...mockDefaultBranchesScanResultObject,
   enforcement_type: 'warn',
+};
+
+export const mockWarnTypeScanResultManifest =
+  mockDefaultBranchesScanResultManifest.concat(`enforcement_type: warn
+`);
+
+export const mockLegacyWarnTypeScanResultManifest = zeroActionsScanResultManifest.concat(`actions:
+  - type: require_approval
+    approvals_required: 0
+    role_approvers:
+      - owner
+  - type: send_bot_message
+    enabled: true
+`);
+
+export const mockLegacyWarnTypeScanResultObject = {
+  ...mockDefaultBranchesScanResultObject,
+  actions: [
+    {
+      type: 'require_approval',
+      approvals_required: 0,
+      id: actionId,
+    },
+    { type: 'send_bot_message', enabled: true, id: `action_0` },
+  ],
 };
 
 export const mockDefaultBranchesScanResultObjectWithoutBotAction = {
@@ -194,40 +253,6 @@ export const mockDeprecatedScanResultManifest = `approval_policy:
     fallback_behavior:
       fail: open
 `;
-
-export const zeroActionsScanResultManifest = `type: approval_policy
-name: critical vulnerability CS approvals
-description: This policy enforces critical vulnerability CS approvals
-enabled: true
-rules:
-  - type: scan_finding
-    branches: []
-    scanners:
-      - container_scanning
-    vulnerabilities_allowed: 1
-    severity_levels:
-      - critical
-    vulnerability_states:
-      - newly_detected
-`;
-
-export const zeroActionsScanResultObject = {
-  type: 'approval_policy',
-  name: 'critical vulnerability CS approvals',
-  description: 'This policy enforces critical vulnerability CS approvals',
-  enabled: true,
-  rules: [
-    {
-      type: 'scan_finding',
-      branches: [],
-      scanners: ['container_scanning'],
-      vulnerabilities_allowed: 1,
-      severity_levels: ['critical'],
-      vulnerability_states: ['newly_detected'],
-      id: ruleId,
-    },
-  ],
-};
 
 export const multipleApproverActionsScanResultManifest = zeroActionsScanResultManifest.concat(`
 actions:
@@ -665,27 +690,6 @@ export const mockGroupApprovalSettingsScanResultObject = {
     },
     prevent_pushing_and_force_pushing: true,
   },
-};
-
-export const mockWarnActionScanResultManifest = zeroActionsScanResultManifest.concat(`actions:
-  - type: require_approval
-    approvals_required: 0
-    role_approvers:
-      - owner
-  - type: send_bot_message
-    enabled: true
-`);
-
-export const mockWarnActionScanResultObject = {
-  ...mockDefaultBranchesScanResultObject,
-  actions: [
-    {
-      type: 'require_approval',
-      approvals_required: 0,
-      id: actionId,
-    },
-    { type: 'send_bot_message', enabled: true, id: `action_0` },
-  ],
 };
 
 const defaultScanResultPolicy = {

@@ -43,7 +43,7 @@ import {
   mockDefaultBranchesScanResultObjectWithoutBotAction,
   mockDeprecatedScanResultManifest,
   mockDeprecatedScanResultObject,
-  mockWarnActionScanResultObject,
+  mockLegacyWarnTypeScanResultObject,
   mockWarnTypeScanResultObject,
   mockFallbackInvalidScanResultManifest,
   mockDefaultBranchesScanResultManifestNewFormat,
@@ -293,7 +293,7 @@ describe('EditorComponent', () => {
           it('does not display the warn action for legacy warn policies', () => {
             factoryWithExistingPolicy({
               provide: { glFeatures: { securityPolicyApprovalWarnMode: true } },
-              policy: mockWarnActionScanResultObject,
+              policy: mockLegacyWarnTypeScanResultObject,
             });
             expect(findWarnTypeAction().exists()).toBe(false);
             expect(findEnforcementSection().props('hasLegacyWarnAction')).toBe(true);
@@ -316,7 +316,7 @@ describe('EditorComponent', () => {
           it('shows the correct scan filter selector options', async () => {
             factoryWithExistingPolicy({
               provide: { glFeatures: { securityPolicyApprovalWarnMode: true } },
-              policy: mockWarnActionScanResultObject,
+              policy: mockLegacyWarnTypeScanResultObject,
             });
             await findEnforcementSection().vm.$emit('change', 'warn');
             expect(findWarnTypeAction().exists()).toBe(true);
@@ -421,7 +421,7 @@ describe('EditorComponent', () => {
         });
 
         it('does not display the warn action with the feature flag off', () => {
-          factoryWithExistingPolicy({ policy: mockWarnActionScanResultObject });
+          factoryWithExistingPolicy({ policy: mockLegacyWarnTypeScanResultObject });
           expect(findWarnTypeAction().exists()).toBe(false);
         });
       });

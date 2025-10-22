@@ -15,7 +15,7 @@ export default {
     and: __(' and '),
     comma: __(', '),
     warnModeText: s__(
-      'SecurityOrchestration|Warn users with a bot comment and contact the following users as security consultants for support: %{approvers}',
+      'SecurityOrchestration|Warn users with a bot comment and require users to either dismiss the policy or obtain %{approvals} %{plural} from %{approvers}',
     ),
   },
   components: {
