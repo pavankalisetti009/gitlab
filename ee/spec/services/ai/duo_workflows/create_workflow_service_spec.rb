@@ -121,7 +121,7 @@ RSpec.describe ::Ai::DuoWorkflows::CreateWorkflowService, feature_category: :duo
 
       it 'returns an error' do
         expect(execute[:status]).to eq(:error)
-        expect(execute[:message]).to include('Something bad')
+        expect(execute[:message]).to eq('Something bad')
       end
     end
 

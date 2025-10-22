@@ -85,6 +85,42 @@ describe('ApolloUtils', () => {
       expect(duoWorkflowMutationHandlerMock).toHaveBeenCalledWith(expectedCallVariables);
       expect(parseGid).toHaveBeenCalledWith(MOCK_WORKFLOW_ID);
     });
+
+    describe('error handling', () => {
+      it.each`
+        description             | errors                               | shouldThrow | expectedError
+        ${'multiple errors'}    | ${['Error 1', 'Error 2', 'Error 3']} | ${true}     | ${'Error 1, Error 2, Error 3'}
+        ${'single error'}       | ${['Single error message']}          | ${true}     | ${'Single error message'}
+        ${'empty errors array'} | ${[]}                                | ${false}    | ${null}
+        ${'null errors'}        | ${null}                              | ${false}    | ${null}
+      `('handles $description correctly', async ({ errors, shouldThrow, expectedError }) => {
+        const response = {
+          data: {
+            aiDuoWorkflowCreate: {
+              errors,
+              workflow: {
+                id: MOCK_WORKFLOW_ID,
+                threadId: MOCK_ACTIVE_THREAD,
+              },
+            },
+          },
+        };
+
+        duoWorkflowMutationHandlerMock.mockResolvedValue(response);
+
+        const promise = ApolloUtils.createWorkflow(apolloProvider.defaultClient, {
+          goal: MOCK_GOAL,
+          activeThread: MOCK_ACTIVE_THREAD,
+          projectId: MOCK_PROJECT_ID,
+        });
+
+        if (shouldThrow) {
+          await expect(promise).rejects.toThrow(expectedError);
+        } else {
+          await expect(promise).resolves.not.toThrow();
+        }
+      });
+    });
   });
 
   describe('deleteWorkflow', () => {
