@@ -39,29 +39,6 @@ module Security
           AND analyzer_project_statuses.traversal_ids < namespace_data.next_traversal_id
         GROUP BY namespace_data.traversal_ids, namespace_id, analyzer_project_statuses.analyzer_type
         HAVING count(analyzer_project_statuses.analyzer_type) > 0
-
-        UNION ALL
-
-        -- Handle case where all projects are archived: return 0 counts for existing analyzer types
-        SELECT DISTINCT
-          analyzer_namespace_statuses.analyzer_type,
-          0 AS success,
-          0 AS failure,
-          namespace_data.traversal_ids,
-          namespace_data.namespace_id,
-          now() AS created_at,
-          now() AS updated_at
-        FROM namespace_data
-        CROSS JOIN analyzer_namespace_statuses
-        WHERE analyzer_namespace_statuses.namespace_id = namespace_data.namespace_id
-        AND NOT EXISTS (
-          SELECT 1
-          FROM analyzer_project_statuses
-          WHERE analyzer_project_statuses.archived = FALSE
-          AND analyzer_project_statuses.analyzer_type = analyzer_namespace_statuses.analyzer_type
-          AND analyzer_project_statuses.traversal_ids >= namespace_data.traversal_ids
-          AND analyzer_project_statuses.traversal_ids < namespace_data.next_traversal_id
-        )
       SQL
 
       SELECT_NEW_VALUES_SQL = <<~SQL
