@@ -11,8 +11,9 @@ describe('AttributesCell', () => {
   const mockProject = subgroupsAndProjects.data.namespaceSecurityProjects.edges[0].node;
   const mockGroup = subgroupsAndProjects.data.group.descendantGroups.nodes[0];
 
-  const createComponent = (props = {}) => {
+  const createComponent = (props = {}, provide = { canManageAttributes: false }) => {
     wrapper = shallowMountExtended(AttributesCell, {
+      provide,
       propsData: {
         ...props,
       },
@@ -73,6 +74,27 @@ describe('AttributesCell', () => {
         expect(findOverflowAttribute().exists()).toBe(false);
         expect(findAllAttributes().exists()).toBe(false);
       });
+    });
+
+    it.each`
+      description                                | canManageAttributes
+      ${'renders add attributes action'}         | ${true}
+      ${'does not render add attributes action'} | ${false}
+    `('$description with canManageAttributes $canManageAttributes', ({ canManageAttributes }) => {
+      createComponent(
+        {
+          item: {
+            ...mockProject,
+            securityAttributes: {
+              nodes: [],
+            },
+          },
+          index: 0,
+        },
+        { canManageAttributes },
+      );
+
+      expect(wrapper.text().includes('+ Add attributes')).toBe(canManageAttributes);
     });
   });
 

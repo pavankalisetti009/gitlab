@@ -15,18 +15,16 @@ describe('ActionCell', () => {
   const mockProject = subgroupsAndProjects.data.namespaceSecurityProjects.edges[0].node;
   const mockGroup = subgroupsAndProjects.data.group.descendantGroups.nodes[0];
 
-  const createComponent = (props = {}, features = {}) => {
+  const createComponent = (
+    props = {},
+    provide = { glFeatures: { securityContextLabels: false }, canManageAttributes: false },
+  ) => {
     wrapper = shallowMount(ActionCell, {
       propsData: {
         item: {},
         ...props,
       },
-      provide: {
-        glFeatures: {
-          securityContextLabels: false,
-          ...features,
-        },
-      },
+      provide,
     });
   };
 
@@ -77,9 +75,12 @@ describe('ActionCell', () => {
     });
   });
 
-  describe('when securityContextLabels feature flag is true', () => {
+  describe('when securityContextLabels feature flag is true and user has permission', () => {
     beforeEach(() => {
-      createComponent({ item: mockProject }, { securityContextLabels: true });
+      createComponent(
+        { item: mockProject },
+        { glFeatures: { securityContextLabels: true }, canManageAttributes: true },
+      );
     });
 
     it('renders correct dropdown items including "Edit security attributes"', () => {

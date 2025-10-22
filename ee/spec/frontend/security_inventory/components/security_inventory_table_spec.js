@@ -17,7 +17,7 @@ describe('SecurityInventoryTable', () => {
   let wrapper;
 
   const createComponentFactory = ({ mountFn = shallowMount } = {}) => {
-    return ({ props = {}, stubs = {}, provide = {} } = {}) => {
+    return ({ props = {}, stubs = {}, provide = { canManageAttributes: false } } = {}) => {
       wrapper = mountFn(SecurityInventoryTable, {
         propsData: {
           items,

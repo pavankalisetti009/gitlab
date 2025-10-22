@@ -65,6 +65,7 @@ describe('InventoryDashboard', () => {
 
   const defaultProvide = {
     groupFullPath: 'group/project',
+    canManageAttributes: false,
     groupId: '33',
     newProjectPath: '/new',
   };
