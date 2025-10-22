@@ -50,7 +50,7 @@ export const createRouter = (base, namespace) => {
         component: NestedRouteApp,
         path: '/agent-sessions',
         meta: {
-          text: s__('DuoAgentsPlatform|Agent sessions'),
+          text: s__('DuoAgentsPlatform|Sessions'),
         },
         children: [
           {

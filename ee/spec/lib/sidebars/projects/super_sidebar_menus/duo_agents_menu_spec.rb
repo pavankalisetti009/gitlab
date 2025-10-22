@@ -107,10 +107,10 @@ RSpec.describe Sidebars::Projects::SuperSidebarMenus::DuoAgentsMenu, feature_cat
       menu.configure_menu_items
     end
 
-    let(:menu_item) { menu.renderable_items.first }
+    let(:menu_item) { menu.renderable_items.last }
 
     it 'has correct title' do
-      expect(menu_item.title).to eq('Agent sessions')
+      expect(menu_item.title).to eq('Sessions')
     end
 
     it 'has correct link' do

@@ -10,10 +10,10 @@ module Sidebars
             context.project.duo_features_enabled &&
             (show_agents_runs_menu_items? || show_flow_triggers_menu_items? || show_flows_menu_item?)
 
-          add_item(duo_agents_runs_menu_item) if show_agents_runs_menu_items?
           add_item(ai_catalog_agents_menu_item) if show_agents_menu_item?
           add_item(duo_flow_triggers_menu_item) if show_flow_triggers_menu_items?
           add_item(ai_catalog_flows_menu_item) if show_flows_menu_item?
+          add_item(duo_agents_runs_menu_item) if show_agents_runs_menu_items?
 
           true
         end
@@ -55,7 +55,7 @@ module Sidebars
 
         def duo_agents_runs_menu_item
           ::Sidebars::MenuItem.new(
-            title: s_('DuoAgentsPlatform|Agent sessions'),
+            title: s_('DuoAgentsPlatform|Sessions'),
             link: project_automate_agent_sessions_path(context.project),
             active_routes: nil,
             item_id: :agents_runs

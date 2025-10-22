@@ -152,7 +152,7 @@ export default {
     <page-heading v-if="!isSidePanelView">
       <template #heading>
         <div class="gl-flex">
-          <span>{{ s__('DuoAgentsPlatform|Agent sessions') }}</span>
+          <span>{{ s__('DuoAgentsPlatform|Sessions') }}</span>
           <gl-experiment-badge type="beta" class="gl-self-center" />
         </div>
       </template>

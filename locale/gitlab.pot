@@ -24770,9 +24770,6 @@ msgstr ""
 msgid "DuoAgentsPlatform|Agent session"
 msgstr ""
 
-msgid "DuoAgentsPlatform|Agent sessions"
-msgstr ""
-
 msgid "DuoAgentsPlatform|An error occurred while fetching flows configured for this project."
 msgstr ""
 
@@ -24981,6 +24978,9 @@ msgid "DuoAgentsPlatform|Select user"
 msgstr ""
 
 msgid "DuoAgentsPlatform|Service account user"
+msgstr ""
+
+msgid "DuoAgentsPlatform|Sessions"
 msgstr ""
 
 msgid "DuoAgentsPlatform|Software Development"
