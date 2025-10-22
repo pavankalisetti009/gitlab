@@ -1077,7 +1077,7 @@ module EE
 
       rule { can?(:admin_group) & group_model_selection_enabled }.enable :admin_group_model_selection
 
-      rule { archived & archive_group_enabled }.policy do
+      rule { archived }.policy do
         prevent :admin_custom_field
         prevent :admin_epic
         prevent :admin_epic_board
@@ -1108,7 +1108,7 @@ module EE
         prevent :update_wiki
       end
 
-      rule { archived & archive_group_enabled & ~group_scheduled_for_deletion }.policy do
+      rule { archived & ~group_scheduled_for_deletion }.policy do
         prevent :destroy_epic
         prevent :destroy_saved_replies
         prevent :destroy_wiki
