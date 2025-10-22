@@ -32,17 +32,13 @@ export const MAX_LENGTH_PROMPT = 1000000;
 export const VISIBILITY_LEVEL_PRIVATE = 0;
 export const VISIBILITY_LEVEL_PUBLIC = 20;
 export const AGENT_VISIBILITY_LEVEL_DESCRIPTIONS = {
-  [VISIBILITY_LEVEL_PUBLIC_STRING]: s__(
-    'AICatalog|Visible to all users. Anyone can enable this agent in their projects.',
-  ),
+  [VISIBILITY_LEVEL_PUBLIC_STRING]: s__('AICatalog|Anyone can view and use the agent.'),
   [VISIBILITY_LEVEL_PRIVATE_STRING]: s__(
     "AICatalog|Only members of this project can view this agent. This agent can't be shared with other projects.",
   ),
 };
 export const FLOW_VISIBILITY_LEVEL_DESCRIPTIONS = {
-  [VISIBILITY_LEVEL_PUBLIC_STRING]: s__(
-    'AICatalog|Visible to all users. Anyone can enable this flow in their projects.',
-  ),
+  [VISIBILITY_LEVEL_PUBLIC_STRING]: s__('AICatalog|Anyone can view and use the flow.'),
   [VISIBILITY_LEVEL_PRIVATE_STRING]: s__(
     "AICatalog|Only members of this project can view this flow. This flow can't be shared with other projects.",
   ),

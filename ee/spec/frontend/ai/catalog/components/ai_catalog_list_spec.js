@@ -114,7 +114,7 @@ describe('AiCatalogList', () => {
       it('renders default empty state with correct props', () => {
         expect(findEmptyState().props()).toMatchObject({
           title: 'Get started with the AI Catalog',
-          description: 'Build AI agents and flows to automate repetitive tasks and processes.',
+          description: 'Build agents and flows to automate tasks and solve complex problems.',
         });
       });
 
@@ -125,7 +125,7 @@ describe('AiCatalogList', () => {
 
         expect(findEmptyState().props()).toMatchObject({
           title: 'Get started with the AI Catalog',
-          description: 'Build AI agents and flows to automate repetitive tasks and processes.',
+          description: 'Build agents and flows to automate tasks and solve complex problems.',
           search: '',
         });
       });

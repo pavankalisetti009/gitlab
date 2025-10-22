@@ -117,7 +117,7 @@ export default {
         <resource-lists-empty-state
           :title="s__('AICatalog|Get started with the AI Catalog')"
           :description="
-            s__('AICatalog|Build AI agents and flows to automate repetitive tasks and processes.')
+            s__('AICatalog|Build agents and flows to automate tasks and solve complex problems.')
           "
           :svg-path="$options.EMPTY_SVG_URL"
           :search="search"

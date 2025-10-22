@@ -30,7 +30,7 @@ RSpec.describe 'AI Catalog', :js, feature_category: :workflow_catalog do
 
     it 'displays an empty list of agents' do
       expect(page).to have_content('Get started with the AI Catalog')
-      expect(page).to have_content('Build AI agents and flows to automate repetitive tasks and processes.')
+      expect(page).to have_content('Build agents and flows to automate tasks and solve complex problems.')
 
       agents = page.all('[data-testid="ai-catalog-item"]')
       expect(agents.length).to be(0)

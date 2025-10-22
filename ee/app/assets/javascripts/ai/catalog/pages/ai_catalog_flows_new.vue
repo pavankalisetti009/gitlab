@@ -80,7 +80,7 @@ export default {
     <page-heading :heading="s__('AICatalog|New flow')">
       <template #description>
         <div class="gl-border-b gl-pb-3">
-          {{ s__('AICatalog|Connect AI agents to automate complicated tasks.') }}
+          {{ s__('AICatalog|Connect an agent to automate complex tasks') }}
         </div>
       </template>
     </page-heading>
