@@ -17,6 +17,8 @@ RSpec.describe Types::Ai::Catalog::ItemInterface, feature_category: :workflow_ca
       latest_version
       project
       public
+      soft_deleted
+      soft_deleted_at
       updated_at
       user_permissions
       versions
