@@ -83,21 +83,19 @@ export default {
       >
         <div class="gl-flex">
           <span id="duo-flow-checkbox-label">{{ $options.i18n.checkboxLabel }}</span>
-
-          <gl-form-checkbox
+          <span
             v-if="disabledCheckbox"
             v-tooltip="
               s__(
                 'AiPowered|This setting requires GitLab Duo availability to be on or off by default.',
               )
             "
-            class="gl-ml-2 gl-border-0 gl-bg-transparent gl-p-0 gl-leading-0"
+            class="gl-ml-2"
             :aria-label="s__('AiPowered|Lock tooltip icon')"
-            variant="subtle"
             data-testid="duo-flow-feature-checkbox-locked"
           >
             <gl-icon name="lock" />
-          </gl-form-checkbox>
+          </span>
           <cascading-lock-icon
             v-if="showCascadingButton"
             class="gl-relative gl--inset-y-3"
