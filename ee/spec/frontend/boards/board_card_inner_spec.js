@@ -5,7 +5,7 @@ import { mountExtended } from 'helpers/vue_test_utils_helper';
 import createMockApollo from 'helpers/mock_apollo_helper';
 import waitForPromises from 'helpers/wait_for_promises';
 import IssueWeight from 'ee_component/issues/components/issue_weight.vue';
-import IssueHealthStatus from 'ee/related_items_tree/components/issue_health_status.vue';
+import IssueHealthStatus from 'ee/issues/components/issue_health_status.vue';
 import WorkItemStatusBadge from 'ee/work_items/components/shared/work_item_status_badge.vue';
 import EpicCountables from 'ee/vue_shared/components/epic_countables/epic_countables.vue';
 import BoardCardInner from '~/boards/components/board_card_inner.vue';

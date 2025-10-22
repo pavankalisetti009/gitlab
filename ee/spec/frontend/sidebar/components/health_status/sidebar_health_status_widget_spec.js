@@ -4,7 +4,7 @@ import VueApollo from 'vue-apollo';
 import * as Sentry from '~/sentry/sentry_browser_wrapper';
 import { createAlert } from '~/alert';
 import SidebarEditableItem from '~/sidebar/components/sidebar_editable_item.vue';
-import IssueHealthStatus from 'ee/related_items_tree/components/issue_health_status.vue';
+import IssueHealthStatus from 'ee/issues/components/issue_health_status.vue';
 import HealthStatusDropdown from 'ee/sidebar/components/health_status/health_status_dropdown.vue';
 import SidebarHealthStatusWidget from 'ee/sidebar/components/health_status/sidebar_health_status_widget.vue';
 import {

@@ -1,6 +1,6 @@
 <script>
 import * as Sentry from '~/sentry/sentry_browser_wrapper';
-import IssueHealthStatus from 'ee/related_items_tree/components/issue_health_status.vue';
+import IssueHealthStatus from 'ee/issues/components/issue_health_status.vue';
 import {
   HEALTH_STATUS_I18N_HEALTH_STATUS,
   HEALTH_STATUS_I18N_SELECT_HEALTH_STATUS,

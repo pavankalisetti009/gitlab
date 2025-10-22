@@ -1,5 +1,5 @@
 import { GlBadge, GlIcon } from '@gitlab/ui';
-import IssueHealthStatus from 'ee/related_items_tree/components/issue_health_status.vue';
+import IssueHealthStatus from 'ee/issues/components/issue_health_status.vue';
 import {
   healthStatusColorMap,
   healthStatusIconMap,

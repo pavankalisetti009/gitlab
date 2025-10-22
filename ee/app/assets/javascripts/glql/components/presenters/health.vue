@@ -1,5 +1,5 @@
 <script>
-import IssueHealthStatus from 'ee/related_items_tree/components/issue_health_status.vue';
+import IssueHealthStatus from 'ee/issues/components/issue_health_status.vue';
 import NullPresenter from '~/glql/components/presenters/null.vue';
 
 export default {
