@@ -3,6 +3,8 @@
 module Gitlab
   module SubscriptionPortal
     class SubscriptionUsageClient < Client
+      include ::Gitlab::Utils::StrongMemoize
+
       ResponseError = Class.new(StandardError)
 
       GET_METADATA_QUERY = <<~GQL
@@ -58,6 +60,33 @@ module Gitlab
                 dailyUsage {
                   date
                   creditsUsed
+                }
+              }
+            }
+          }
+        }
+      GQL
+
+      GET_USER_EVENTS_QUERY = <<~GQL
+        query subscriptionUsageForUserIds(
+          $userIds: [Int!]!,
+          $page: Int,
+          $namespaceId: ID,
+          $licenseKey: String,
+          $startDate: ISO8601Date,
+          $endDate: ISO8601Date
+        ) {
+          subscription(namespaceId: $namespaceId, licenseKey: $licenseKey) {
+            gitlabCreditsUsage(startDate: $startDate, endDate:$endDate) {
+              usersUsage {
+                users(userIds: $userIds) {
+                  events(page: $page) {
+                    timestamp
+                    eventType
+                    projectId
+                    namespaceId
+                    creditsUsed
+                  }
                 }
               }
             }
@@ -146,6 +175,7 @@ module Gitlab
           }
         end
       end
+      strong_memoize_attr :get_metadata
 
       def get_pool_usage
         response = execute_graphql_query(
@@ -162,6 +192,7 @@ module Gitlab
           }
         end
       end
+      strong_memoize_attr :get_pool_usage
 
       def get_overage_usage
         response = execute_graphql_query(
@@ -178,20 +209,43 @@ module Gitlab
           }
         end
       end
+      strong_memoize_attr :get_overage_usage
+
+      def get_events_for_user_id(user_id, page)
+        strong_memoize_with(:get_events_for_user_id, user_id, page) do
+          response = execute_graphql_query(
+            query: GET_USER_EVENTS_QUERY,
+            variables: default_variables.merge(startDate: start_date, endDate: end_date, userIds: [user_id], page: page)
+          )
+
+          if unsuccessful_response?(response)
+            error(GET_USER_EVENTS_QUERY, response)
+          else
+            user_events = response.dig(:data, :subscription, :gitlabCreditsUsage, :usersUsage, :users)
+              .to_a.first&.fetch(:events)
+            {
+              success: true,
+              userEvents: user_events
+            }
+          end
+        end
+      end
 
       def get_usage_for_user_ids(user_ids)
-        response = execute_graphql_query(
-          query: GET_USERS_USAGE_QUERY,
-          variables: default_variables.merge(startDate: start_date, endDate: end_date, userIds: user_ids)
-        )
+        strong_memoize_with(:get_usage_for_user_ids, user_ids) do
+          response = execute_graphql_query(
+            query: GET_USERS_USAGE_QUERY,
+            variables: default_variables.merge(startDate: start_date, endDate: end_date, userIds: user_ids)
+          )
 
-        if unsuccessful_response?(response)
-          error(GET_USERS_USAGE_QUERY, response)
-        else
-          {
-            success: true,
-            usersUsage: response.dig(:data, :subscription, :gitlabCreditsUsage, :usersUsage, :users)
-          }
+          if unsuccessful_response?(response)
+            error(GET_USERS_USAGE_QUERY, response)
+          else
+            {
+              success: true,
+              usersUsage: response.dig(:data, :subscription, :gitlabCreditsUsage, :usersUsage, :users)
+            }
+          end
         end
       end
 
@@ -210,6 +264,7 @@ module Gitlab
           }
         end
       end
+      strong_memoize_attr :get_users_usage_stats
 
       attr_reader :start_date, :end_date, :namespace_id, :license_key
 

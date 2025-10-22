@@ -262,6 +262,67 @@ RSpec.describe Gitlab::SubscriptionPortal::SubscriptionUsageClient, feature_cate
     end
   end
 
+  describe '#get_events_for_user_id' do
+    context 'when the subscription portal response is successful' do
+      let(:user_id) { 123 }
+      let(:page) { 1 }
+      let(:request) { client.get_events_for_user_id(user_id, page) }
+      let(:query) { described_class::GET_USER_EVENTS_QUERY }
+      let(:user_events) do
+        [
+          {
+            timestamp: "2025-10-01T16:25:28Z",
+            eventType: "ai_token_usage",
+            projectId: nil,
+            namespaceId: nil,
+            creditsUsed: 100
+          },
+          {
+            timestamp: "2025-10-01T16:30:12Z",
+            eventType: "workflow_execution",
+            projectId: "19",
+            namespaceId: "99",
+            creditsUsed: 200
+          }
+        ]
+      end
+
+      let(:portal_response) do
+        {
+          success: true,
+          data: {
+            subscription: {
+              gitlabCreditsUsage: {
+                usersUsage: {
+                  users: [{ events: user_events }]
+                }
+              }
+            }
+          }
+        }
+      end
+
+      let(:expected_response) do
+        {
+          success: true,
+          userEvents: user_events
+        }
+      end
+
+      include_context 'for self-managed request' do
+        let(:variables) do
+          { licenseKey: license_key, startDate: start_date, endDate: end_date, userIds: [user_id], page: page }
+        end
+      end
+
+      include_context 'for gitlab.com request' do
+        let(:variables) do
+          { namespaceId: namespace_id, startDate: start_date, endDate: end_date, userIds: [user_id], page: page }
+        end
+      end
+    end
+  end
+
   describe '#get_usage_for_user_ids' do
     context 'when the subscription portal response is successful' do
       let(:user_ids) { [123, 321] }

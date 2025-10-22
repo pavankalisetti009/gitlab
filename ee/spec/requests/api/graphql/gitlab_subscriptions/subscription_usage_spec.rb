@@ -6,15 +6,44 @@ RSpec.describe 'Query.subscriptionUsage', feature_category: :consumables_cost_ma
   include GraphqlHelpers
 
   let_it_be(:admin) { create(:admin) }
-  let_it_be(:owner) { create(:user) }
+  let_it_be(:owner) { create(:user, :with_namespace) }
   let_it_be(:maintainer) { create(:user) }
   let_it_be(:root_group) { create(:group, owners: owner, maintainers: maintainer) }
   let_it_be(:subgroup) { create(:group, parent: root_group, owners: owner) }
-  let_it_be(:project_namespace) { create(:project_namespace, owner: owner) }
+  let_it_be(:project) { create(:project, namespace: owner.namespace) }
   let_it_be(:user_namespace) { create(:user_namespace, owner: owner) }
 
   let(:error_message) do
     "The resource that you are attempting to access does not exist or you don't have permission to perform this action"
+  end
+
+  let(:user_events) do
+    [
+      {
+        timestamp: "2025-10-01T16:25:28Z",
+        eventType: "ai_token_usage",
+        location: nil,
+        creditsUsed: 12.5
+      },
+      {
+        timestamp: "2025-10-01T16:30:12Z",
+        eventType: "workflow_execution",
+        location: { fullPath: project.full_path },
+        creditsUsed: 25.32
+      },
+      {
+        timestamp: "2025-10-01T16:52:28Z",
+        eventType: "ai_token_usage",
+        location: { fullPath: root_group.full_path },
+        creditsUsed: 13.33
+      },
+      {
+        timestamp: "2025-10-01T22:30:12Z",
+        eventType: "workflow_execution",
+        location: { fullPath: project.full_path },
+        creditsUsed: 1
+      }
+    ]
   end
 
   let(:user_arguments) { {} }
@@ -45,7 +74,16 @@ RSpec.describe 'Query.subscriptionUsage', feature_category: :consumables_cost_ma
             :name,
             :username,
             :avatar_url,
-            query_graphql_field(:usage, {}, [:total_credits, :credits_used, :pool_credits_used, :overage_credits_used])
+            query_graphql_field(:usage, {}, [:total_credits, :credits_used, :pool_credits_used, :overage_credits_used]),
+            query_graphql_field(:events, {}, [
+              :timestamp,
+              :event_type,
+              query_graphql_field(:location, {}, [
+                '... on Group { fullPath }',
+                '... on Project { fullPath }'
+              ]),
+              :credits_used
+            ])
           ])
         ])
       ])
@@ -91,6 +129,37 @@ RSpec.describe 'Query.subscriptionUsage', feature_category: :consumables_cost_ma
       }
     }
 
+    events_for_user_id = [
+      {
+        timestamp: "2025-10-01T16:25:28Z",
+        eventType: "ai_token_usage",
+        projectId: nil,
+        namespaceId: nil,
+        creditsUsed: 12.5
+      },
+      {
+        timestamp: "2025-10-01T16:30:12Z",
+        eventType: "workflow_execution",
+        projectId: project.id,
+        namespaceId: nil,
+        creditsUsed: 25.32
+      },
+      {
+        timestamp: "2025-10-01T16:52:28Z",
+        eventType: "ai_token_usage",
+        projectId: nil,
+        namespaceId: root_group.id,
+        creditsUsed: 13.33
+      },
+      {
+        timestamp: "2025-10-01T22:30:12Z",
+        eventType: "workflow_execution",
+        projectId: project.id,
+        namespaceId: root_group.id,
+        creditsUsed: 1
+      }
+    ]
+
     users_usage = User.all.map do |user|
       {
         userId: user.id,
@@ -134,6 +203,7 @@ RSpec.describe 'Query.subscriptionUsage', feature_category: :consumables_cost_ma
         get_metadata: metadata,
         get_pool_usage: pool_usage,
         get_overage_usage: overage_usage,
+        get_events_for_user_id: { success: true, userEvents: events_for_user_id },
         get_usage_for_user_ids: { success: true, usersUsage: users_usage },
         get_users_usage_stats: get_users_usage_stats
       )
@@ -185,7 +255,8 @@ RSpec.describe 'Query.subscriptionUsage', feature_category: :consumables_cost_ma
                   creditsUsed: u.id * 10,
                   poolCreditsUsed: u.id * 100,
                   overageCreditsUsed: u.id * 2
-                }
+                },
+                events: nil
               }.with_indifferent_access
             end
           )
@@ -206,7 +277,8 @@ RSpec.describe 'Query.subscriptionUsage', feature_category: :consumables_cost_ma
                   creditsUsed: maintainer.id * 10,
                   poolCreditsUsed: maintainer.id * 100,
                   overageCreditsUsed: maintainer.id * 2
-                }
+                },
+                events: user_events
               }.with_indifferent_access
             ])
           end
@@ -285,7 +357,8 @@ RSpec.describe 'Query.subscriptionUsage', feature_category: :consumables_cost_ma
                     creditsUsed: u.id * 10,
                     poolCreditsUsed: u.id * 100,
                     overageCreditsUsed: u.id * 2
-                  }
+                  },
+                  events: nil
                 }.with_indifferent_access
               end
             )
@@ -306,7 +379,8 @@ RSpec.describe 'Query.subscriptionUsage', feature_category: :consumables_cost_ma
                     creditsUsed: maintainer.id * 10,
                     poolCreditsUsed: maintainer.id * 100,
                     overageCreditsUsed: maintainer.id * 2
-                  }
+                  },
+                  events: user_events
                 }.with_indifferent_access
               ])
             end
@@ -357,7 +431,7 @@ RSpec.describe 'Query.subscriptionUsage', feature_category: :consumables_cost_ma
     end
 
     context 'with project namespace' do
-      let(:namespace_path) { project_namespace.full_path }
+      let(:namespace_path) { project.namespace.full_path }
 
       include_examples 'empty response' do
         let(:current_user) { owner }
