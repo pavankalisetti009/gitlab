@@ -254,11 +254,11 @@ RSpec.describe Gitlab::Elastic::ProjectSearchResults, :elastic, feature_category
 
     context 'when flags for searching notes of Notable items are false' do
       before do
-        stub_feature_flags(search_work_item_queries_notes: false, search_merge_request_queries_notes: false)
+        stub_feature_flags(search_merge_request_queries_notes: false)
       end
 
-      include_examples 'calls Elasticsearch the expected number of times', scopes: allowed_scopes,
-        scopes_with_multiple: []
+      include_examples 'calls Elasticsearch the expected number of times',
+        scopes: allowed_scopes, scopes_with_multiple: %w[issues]
     end
 
     allowed_scopes_and_index_names = [
