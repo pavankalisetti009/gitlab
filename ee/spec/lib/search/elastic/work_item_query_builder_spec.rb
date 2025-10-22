@@ -377,78 +377,45 @@ RSpec.describe ::Search::Elastic::WorkItemQueryBuilder, :elastic_helpers, featur
     context 'with milestones' do
       let_it_be(:milestone) { create(:milestone, project: authorized_project) }
 
-      context 'when backfill_work_item_milestone_data has finished' do
-        before do
-          set_elasticsearch_migration_to(:backfill_work_item_milestone_data, including: true)
-        end
+      it 'does not apply milestone filters by default' do
+        assert_names_in_query(build,
+          without: %w[
+            filters:milestone_title
+            filters:not_milestone_title
+            filters:none_milestones
+            filters:any_milestones
+          ])
+      end
 
-        it 'does not apply milestone filters by default' do
-          assert_names_in_query(build,
-            without: %w[
-              filters:milestone_title
-              filters:not_milestone_title
-              filters:none_milestones
-              filters:any_milestones
-            ])
-        end
+      context 'when milestone_title option is provided' do
+        let(:options) { base_options.merge(milestone_title: milestone.title) }
 
-        context 'when milestone_title option is provided' do
-          let(:options) { base_options.merge(milestone_title: milestone.title) }
-
-          it 'applies the filter' do
-            assert_names_in_query(build, with: %w[filters:milestone_title])
-          end
-        end
-
-        context 'when not_milestone_title option is provided' do
-          let(:options) { base_options.merge(not_milestone_title: milestone.title) }
-
-          it 'applies the filter' do
-            assert_names_in_query(build, with: %w[filters:not_milestone_title])
-          end
-        end
-
-        context 'when none_milestones option is provided' do
-          let(:options) { base_options.merge(none_milestones: true) }
-
-          it 'applies the filter' do
-            assert_names_in_query(build, with: %w[filters:none_milestones])
-          end
-        end
-
-        context 'when any_milestones option is provided' do
-          let(:options) { base_options.merge(any_milestones: true) }
-
-          it 'applies the filter' do
-            assert_names_in_query(build, with: %w[filters:any_milestones])
-          end
+        it 'applies the filter' do
+          assert_names_in_query(build, with: %w[filters:milestone_title])
         end
       end
 
-      context 'when backfill_work_item_milestone_data has not finished' do
-        before do
-          set_elasticsearch_migration_to(:backfill_work_item_milestone_data, including: false)
+      context 'when not_milestone_title option is provided' do
+        let(:options) { base_options.merge(not_milestone_title: milestone.title) }
+
+        it 'applies the filter' do
+          assert_names_in_query(build, with: %w[filters:not_milestone_title])
         end
+      end
 
-        context 'when all milestone options are provided' do
-          let(:options) do
-            base_options.merge(
-              milestone_title: milestone.title,
-              not_milestone_title: milestone.title,
-              none_milestones: true,
-              any_milestones: true
-            )
-          end
+      context 'when none_milestones option is provided' do
+        let(:options) { base_options.merge(none_milestones: true) }
 
-          it 'does not apply any milestone filters' do
-            assert_names_in_query(build,
-              without: %w[
-                filters:milestone_title
-                filters:not_milestone_title
-                filters:none_milestones
-                filters:any_milestones
-              ])
-          end
+        it 'applies the filter' do
+          assert_names_in_query(build, with: %w[filters:none_milestones])
+        end
+      end
+
+      context 'when any_milestones option is provided' do
+        let(:options) { base_options.merge(any_milestones: true) }
+
+        it 'applies the filter' do
+          assert_names_in_query(build, with: %w[filters:any_milestones])
         end
       end
 
