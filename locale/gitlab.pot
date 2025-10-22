@@ -48260,6 +48260,9 @@ msgstr ""
 msgid "PipelineSource|API"
 msgstr ""
 
+msgid "PipelineSource|Agent Session"
+msgstr ""
+
 msgid "PipelineSource|Any source"
 msgstr ""
 
@@ -49142,6 +49145,9 @@ msgid "Pipeline|What is a merged results pipeline?"
 msgstr ""
 
 msgid "Pipeline|You're about to stop pipeline #%{pipelineId}."
+msgstr ""
+
+msgid "Pipeline|agent session"
 msgstr ""
 
 msgid "Pipeline|api"
@@ -67567,6 +67573,9 @@ msgid "This pipeline makes use of a predefined CI/CD configuration enabled by %{
 msgstr ""
 
 msgid "This pipeline makes use of a predefined CI/CD configuration enabled by Auto DevOps."
+msgstr ""
+
+msgid "This pipeline ran for an agent session"
 msgstr ""
 
 msgid "This pipeline was created by a schedule"
