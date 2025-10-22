@@ -608,6 +608,18 @@ RSpec.describe ::Search::Zoekt::SchedulingService, :clean_gitlab_redis_shared_st
         expect { execute_task }.to publish_event(Search::Zoekt::LostNodeEvent).with({ zoekt_node_id: lost_node.id })
       end
     end
+
+    context 'when all search nodes are lost' do
+      before do
+        # Mark all existing nodes as lost
+        Search::Zoekt::Node.update_all(last_seen_at: 1.day.ago)
+        allow(Search::Zoekt::Node).to receive(:marking_lost_enabled?).and_return true
+      end
+
+      it 'does not publish LostNodeEvent when all nodes are lost' do
+        expect { execute_task }.not_to publish_event(Search::Zoekt::LostNodeEvent)
+      end
+    end
   end
 
   describe '#repo_to_index_check' do

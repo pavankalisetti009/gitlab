@@ -43,12 +43,15 @@ module Search
         lost_nodes_check: {
           period: 10.minutes,
           if: -> {
-            !Rails.env.development? && Node.marking_lost_enabled? && Node.lost.exists?
+            !Rails.env.development? &&
+              Node.marking_lost_enabled? &&
+              Node.for_search.lost.exists? &&
+              Node.for_search.online.exists?
           },
           dispatch: {
             event: LostNodeEvent,
             data: -> {
-              { zoekt_node_id: Node.lost.limit(1).select(:id).last.id }
+              { zoekt_node_id: Node.for_search.lost.limit(1).select(:id).last.id }
             }
           }
         },
@@ -243,7 +246,7 @@ module Search
 
       def node_with_negative_unclaimed_storage_bytes_check
         execute_every 1.hour do
-          Search::Zoekt::Node.negative_unclaimed_storage_bytes.each_batch do |batch|
+          Search::Zoekt::Node.for_search.negative_unclaimed_storage_bytes.each_batch do |batch|
             dispatch NodeWithNegativeUnclaimedStorageEvent do
               { node_ids: batch.pluck_primary_key }
             end
