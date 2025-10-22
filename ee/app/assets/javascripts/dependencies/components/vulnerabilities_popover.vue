@@ -1,7 +1,6 @@
 <script>
 import { GlIcon, GlPopover } from '@gitlab/ui';
 import UserCalloutDismisser from '~/vue_shared/components/user_callout_dismisser.vue';
-import { __, s__ } from '~/locale';
 
 export default {
   name: 'VulnerabilitiesPopover',
@@ -10,37 +9,23 @@ export default {
     GlIcon,
     GlPopover,
   },
-  props: {},
-  data() {
-    return {
-      showPopover: false,
-    };
-  },
-  mounted() {
-    setTimeout(() => {
-      this.showPopover = true;
-    }, 1000);
-  },
 };
 </script>
 
 <template>
-  <user-callout-dismisser
-    v-if="showPopover"
-    ref="calloutDismisser"
-    feature-name="focused_vulnerability_reporting"
-  >
+  <user-callout-dismisser ref="calloutDismisser" feature-name="focused_vulnerability_reporting">
     <template #default="{ dismiss, shouldShowCallout }">
       <div>
         <gl-icon id="vulnerabilities-info" name="information-o" class="gl-ml-2" variant="info" />
         <gl-popover
+          :show="shouldShowCallout"
+          :title="s__('Dependencies|Focused vulnerability reporting')"
           placement="bottom"
           boundary="viewport"
           target="vulnerabilities-info"
-          data-testid="vulnerability-info-popover"
+          triggers="manual"
           show-close-button
-          :show="shouldShowCallout"
-          :title="s__('Dependencies|Focused vulnerability reporting')"
+          data-testid="vulnerability-info-popover"
           @close-button-clicked="dismiss"
         >
           <p class="gl-mb-0">
