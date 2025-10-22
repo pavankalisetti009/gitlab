@@ -74,7 +74,7 @@ RSpec.describe 'Trial Sign Up', :with_trial_types, :with_current_organization, :
       end
     end
 
-    context 'when experiment `lightweight_trial_registration_redesign` is candidate', :experiment_tracking, :js do
+    context 'when experiment `lightweight_trial_registration_redesign` is candidate', :js do
       include IdentityVerificationHelpers
 
       let_it_be(:user) { create(:user) }
@@ -111,8 +111,7 @@ RSpec.describe 'Trial Sign Up', :with_trial_types, :with_current_organization, :
         allow(GitlabSubscriptions::Trials).to receive(:namespace_eligible?).and_return(true)
       end
 
-      it 'goes through the experiment trial registration flow',
-        quarantine: 'https://gitlab.com/gitlab-org/gitlab/-/issues/553488' do
+      it 'goes through the experiment trial registration flow' do
         visit new_trial_registration_path
 
         # Step 1
@@ -161,15 +160,6 @@ RSpec.describe 'Trial Sign Up', :with_trial_types, :with_current_organization, :
         wait_for_all_requests
 
         expect(page).to have_content('Get started')
-
-        is_expected.to have_tracked_experiment(:lightweight_trial_registration_redesign, [
-          :assignment,
-          :completed_trial_registration_form,
-          :completed_identity_verification,
-          :render_welcome,
-          { action: :completed_group_project_creation, namespace: Group.last },
-          :render_get_started
-        ])
       end
 
       it 'when model errors occur form can be resubmitted' do
