@@ -6,6 +6,8 @@ module Mcp
     class SearchCodebaseService < CustomService
       extend ::Gitlab::Utils::Override
 
+      ACTIVE_CONTEXT_QUERY = ::Ai::ActiveContext::Queries
+
       REQUIRED_ABILITY = :read_code
       override :ability
       def auth_ability
@@ -103,6 +105,8 @@ module Mcp
           extract_source_segments: true
         )
 
+        return failure_response(result, project_id) unless result.success?
+
         lines = result.map.with_index(1) do |hit, idx|
           snippet = hit['content']
           "#{idx}. #{hit['path']}\n   #{snippet}"
@@ -110,11 +114,27 @@ module Mcp
 
         formatted_content = [{ type: 'text', text: lines.join("\n") }]
 
-        ::Mcp::Tools::Response.success(formatted_content, result)
+        ::Mcp::Tools::Response.success(formatted_content, result.to_a)
+      end
+
+      private
+
+      def failure_response(result, project_id)
+        error_message = case result.error_code
+                        when ACTIVE_CONTEXT_QUERY::Result::ERROR_NO_EMBEDDINGS
+                          "Unable to perform semantic search, project '#{project_id}' has no Code Embeddings"
+                        else
+                          "Unknown error"
+                        end
+
+        ::Mcp::Tools::Response.error(
+          "Tool execution failed: #{error_message}",
+          error_message
+        )
       end
 
       def codebase_query(semantic_query)
-        @codebase_query ||= ::Ai::ActiveContext::Queries::Code.new(search_term: semantic_query, user: current_user)
+        @codebase_query ||= ACTIVE_CONTEXT_QUERY::Code.new(search_term: semantic_query, user: current_user)
       end
     end
   end

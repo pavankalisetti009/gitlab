@@ -9,13 +9,11 @@ RSpec.describe Ai::ActiveContext::Queries::Code, feature_category: :code_suggest
   subject(:codebase_query) { described_class.new(search_term: search_term, user: user) }
 
   describe '#filter' do
-    let_it_be(:project) { create(:project, owners: [user]) }
-
     context 'when code collection record does not exist' do
       let(:expected_error_class) { Ai::ActiveContext::Queries::Code::NoCollectionRecordError }
 
       it 'raises the expected error' do
-        expect { codebase_query.filter(project_id: project.id) }.to raise_error(
+        expect { codebase_query.filter(project_id: 123) }.to raise_error(
           expected_error_class, "A Code collection record is required."
         )
       end
@@ -23,17 +21,6 @@ RSpec.describe Ai::ActiveContext::Queries::Code, feature_category: :code_suggest
 
     context 'when a code collection record exists' do
       before do
-        # We get the embeddings version and details from Ai::ActiveContext::Collections::Code::MODELS
-        embeddings_version = 1
-        embeddings_version_details = Ai::ActiveContext::Collections::Code::MODELS[1]
-
-        create(
-          :ai_active_context_collection,
-          name: Ai::ActiveContext::Collections::Code.collection_name,
-          search_embedding_version: embeddings_version,
-          include_ref_fields: false
-        )
-
         # mock the call to embeddings generation
         allow(ActiveContext::Embeddings).to receive(:generate_embeddings)
           .with(
@@ -51,7 +38,38 @@ RSpec.describe Ai::ActiveContext::Queries::Code, feature_category: :code_suggest
         end
       end
 
-      let_it_be(:project_2) { create(:project, developers: [user]) }
+      # We get the embeddings version and details from Ai::ActiveContext::Collections::Code::MODELS
+      let_it_be(:embeddings_version) { 1 }
+      let_it_be(:embeddings_version_details) { Ai::ActiveContext::Collections::Code::MODELS[embeddings_version] }
+
+      let_it_be(:collection) do
+        create(
+          :ai_active_context_collection,
+          name: Ai::ActiveContext::Collections::Code.collection_name,
+          search_embedding_version: embeddings_version,
+          include_ref_fields: false
+        )
+      end
+
+      let_it_be(:group) { create(:group) }
+      let_it_be(:enabled_namespace) do
+        create(
+          :ai_active_context_code_enabled_namespace,
+          active_context_connection: collection.connection
+        )
+      end
+
+      let_it_be(:project) do
+        create(:project, owners: [user]).tap do |p|
+          attach_active_context_repository(project: p, collection: collection, enabled_namespace: enabled_namespace)
+        end
+      end
+
+      let_it_be(:project_2) do
+        create(:project, developers: [user]).tap do |p|
+          attach_active_context_repository(project: p, collection: collection, enabled_namespace: enabled_namespace)
+        end
+      end
 
       let(:target_embeddings) { [1, 2, 3] }
 
@@ -115,22 +133,26 @@ RSpec.describe Ai::ActiveContext::Queries::Code, feature_category: :code_suggest
       end
 
       it 'returns the expected results' do
-        project_1_results = codebase_query.filter(project_id: project.id)
-        expect(project_1_results.each.to_a).to eq(elasticsearch_docs[project.id].pluck('_source'))
+        project_1_result = codebase_query.filter(project_id: project.id)
+        expect(project_1_result.success?).to be(true)
+        expect(project_1_result.to_a).to eq(elasticsearch_docs[project.id].pluck('_source'))
 
-        project_2_results = codebase_query.filter(project_id: project_2.id)
-        expect(project_2_results.each.to_a).to eq(elasticsearch_docs[project_2.id].pluck('_source'))
+        project_2_result = codebase_query.filter(project_id: project_2.id)
+        expect(project_2_result.success?).to be(true)
+        expect(project_2_result.to_a).to eq(elasticsearch_docs[project_2.id].pluck('_source'))
       end
 
       context 'when exclude_fields and extract_source_segments is provided' do
         it 'returns the expected results' do
-          project_1_results = codebase_query.filter(
+          project_1_result = codebase_query.filter(
             project_id: project.id,
             exclude_fields: %w[id source type embeddings_v1 reindexing],
             extract_source_segments: true
           )
 
-          expect(project_1_results).to match_array([
+          expect(project_1_result.success?).to be(true)
+
+          expect(project_1_result).to match_array([
             {
               'project_id' => project.id,
               'path' => 'some/path/to/test.rb',
@@ -191,11 +213,39 @@ RSpec.describe Ai::ActiveContext::Queries::Code, feature_category: :code_suggest
             build_es_query_result(project_es_docs_in_path)
           end
 
-          results = codebase_query.filter(project_id: project.id, path: 'some/path')
-          expect(results.each.to_a).to eq(project_es_docs_in_path.pluck('_source'))
+          result = codebase_query.filter(project_id: project.id, path: 'some/path')
+          expect(result.success?).to be(true)
+          expect(result.each.to_a).to eq(project_es_docs_in_path.pluck('_source'))
+        end
+      end
+
+      context 'when a project has no code embeddings' do
+        before do
+          project.ready_active_context_code_repository.destroy!
+          project_2.ready_active_context_code_repository.pending!
+        end
+
+        it 'returns a failure response' do
+          project_1_result = codebase_query.filter(project_id: project.id)
+          expect(project_1_result.success?).to be_falsey
+          expect(project_1_result.error_code).to eq(Ai::ActiveContext::Queries::Result::ERROR_NO_EMBEDDINGS)
+
+          project_2_result = codebase_query.filter(project_id: project_2.id)
+          expect(project_2_result.success?).to be_falsey
+          expect(project_2_result.error_code).to eq(Ai::ActiveContext::Queries::Result::ERROR_NO_EMBEDDINGS)
         end
       end
     end
+  end
+
+  def attach_active_context_repository(project:, collection:, enabled_namespace:)
+    create(
+      :ai_active_context_code_repository,
+      :ready,
+      project: project,
+      enabled_namespace: enabled_namespace,
+      connection_id: collection.connection_id
+    )
   end
 
   def build_es_query_result(es_docs)
