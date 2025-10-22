@@ -62,6 +62,7 @@ module Vulnerabilities
 
     scope :by_uuid, ->(uuids) { where(uuid: uuids) }
     scope :by_vulnerabilities, ->(vulnerabilities) { where(vulnerability: vulnerabilities) }
+    scope :excluding_vulnerabilities, ->(vulnerabilities) { where.not(vulnerability: vulnerabilities) }
 
     class << self
       alias_method :by_vulnerability, :by_vulnerabilities

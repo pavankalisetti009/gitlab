@@ -45,7 +45,7 @@ module Vulnerabilities
           next unless attributes.any?
 
           vulnerability_read_batch = Vulnerabilities::Read.by_vulnerabilities(vulnerability_batch)
-                                                          .id_not_in(new_read_ids)
+                                                          .excluding_vulnerabilities(new_read_ids)
 
           vulnerability_read_batch.update_all(attributes)
 
@@ -118,8 +118,10 @@ module Vulnerabilities
         ::Vulnerabilities::Read.bulk_upsert!(
           vulnerability_reads_for_insert,
           unique_by: %i[uuid],
-          returns: :ids
-        )
+          returns: [:vulnerability_id]
+        ) do |item_attrs|
+          item_attrs.delete('id') # `id` is an auto-generated sequence
+        end
       end
 
       def build_vulnerability_read(vulnerability)
