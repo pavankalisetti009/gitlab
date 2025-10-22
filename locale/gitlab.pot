@@ -48613,6 +48613,9 @@ msgstr ""
 msgid "Pipelines|More Information"
 msgstr ""
 
+msgid "Pipelines|New pipeline"
+msgstr ""
+
 msgid "Pipelines|No merge trains"
 msgstr ""
 
