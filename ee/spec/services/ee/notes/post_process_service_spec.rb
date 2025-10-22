@@ -148,7 +148,6 @@ RSpec.describe Notes::PostProcessService, feature_category: :team_planning do
       let_it_be(:mentioned_user) { create(:service_account) }
       let_it_be(:issue) { create(:issue, project: project) }
       let_it_be(:note) { create(:note, project: project, noteable: issue, author: user) }
-      let_it_be(:subscription_purchase) { create(:gitlab_subscription_add_on_purchase, :duo_enterprise, :self_managed) }
 
       let_it_be(:flow_trigger) do
         create(:ai_flow_trigger, project: project, user: mentioned_user)
@@ -157,6 +156,10 @@ RSpec.describe Notes::PostProcessService, feature_category: :team_planning do
       subject(:execute) { described_class.new(note).execute }
 
       before do
+        allow(::Gitlab::Llm::StageCheck).to receive(:available?).with(project, :duo_workflow).and_return(true)
+        stub_ee_application_setting(duo_features_enabled: true)
+        allow(user).to receive(:allowed_to_use?).with(:duo_agent_platform).and_return(true)
+
         allow(note).to receive_messages({
           mentioned_users: [mentioned_user],
           note: "Test note content"
@@ -171,10 +174,6 @@ RSpec.describe Notes::PostProcessService, feature_category: :team_planning do
       end
 
       context 'when author can trigger AI flow' do
-        let_it_be(:subscription_assignment) do
-          create(:gitlab_subscription_user_add_on_assignment, user: user, add_on_purchase: subscription_purchase)
-        end
-
         context 'when there is a matching flow trigger' do
           it 'calls Ai::FlowTriggers::RunService with correct parameters' do
             service_instance = instance_double('Ai::FlowTriggers::RunService')
@@ -315,6 +314,10 @@ RSpec.describe Notes::PostProcessService, feature_category: :team_planning do
       end
 
       context 'when author cannot trigger AI flow' do
+        before do
+          allow(user).to receive(:allowed_to_use?).with(:duo_agent_platform).and_return(false)
+        end
+
         it_behaves_like 'not running AI flow trigger service'
       end
     end

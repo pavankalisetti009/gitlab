@@ -935,18 +935,16 @@ RSpec.describe MergeRequests::UpdateService, :mailer, feature_category: :code_re
         create(:ai_flow_trigger, project: project, event_types: [1], user: service_account)
       end
 
+      let_it_be(:subscription_purchase) { create(:gitlab_subscription_add_on_purchase, :duo_core, :self_managed) }
+
       let(:run_service) { instance_double(::Ai::FlowTriggers::RunService) }
 
       before do
         project.add_developer(service_account)
 
-        allow(GitlabSubscriptions::AddOnPurchase).to receive_message_chain(
-          :for_duo_enterprise,
-          :active,
-          :by_namespace,
-          :assigned_to_user,
-          :exists?
-        ).and_return(true)
+        allow(::Gitlab::Llm::StageCheck).to receive(:available?).and_return(true)
+        stub_ee_application_setting(duo_features_enabled: true)
+        ::Ai::Setting.instance.update!(duo_core_features_enabled: true)
       end
 
       context 'when requesting review from this account', :sidekiq_inline do
