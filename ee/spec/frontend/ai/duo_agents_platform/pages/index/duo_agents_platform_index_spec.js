@@ -56,7 +56,7 @@ describe('AgentsPlatformIndex', () => {
 
     it('loads the page heading and experiment badge', () => {
       expect(findPageHeading().exists()).toBe(true);
-      expect(findPageHeading().text()).toContain('Agent sessions');
+      expect(findPageHeading().text()).toContain('Sessions');
 
       expect(findExperimentBadge().exists()).toBe(true);
       expect(findExperimentBadge().props('type')).toBe('beta');

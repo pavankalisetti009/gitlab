@@ -125,9 +125,9 @@ RSpec.describe 'Project navbar', :js, feature_category: :navigation do
           new_nav_item: {
             nav_item: _('Automate'),
             nav_sub_items: [
-              _('Agent sessions'),
               s_('AICatalog|Agents'),
-              s_('AICatalog|Flows')
+              s_('AICatalog|Flows'),
+              s_('DuoAgentsPlatform|Sessions')
             ]
           }
         )
