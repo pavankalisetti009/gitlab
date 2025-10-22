@@ -752,6 +752,13 @@ module EE
       ::Group.where(id: contributed_group_ids).not_aimed_for_deletion
     end
 
+    override :allow_user_to_create_group_and_project?
+    def allow_user_to_create_group_and_project?
+      return false unless GitlabSubscriptions::MemberManagement::BlockSeatOverages.seat_upgrade_allowed?(id)
+
+      super
+    end
+
     protected
 
     override :password_required?

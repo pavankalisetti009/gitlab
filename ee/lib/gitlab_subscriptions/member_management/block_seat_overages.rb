@@ -50,6 +50,14 @@ module GitlabSubscriptions
           ::License.current.seats >= (billable_ids.count + new_invites.count)
         end
 
+        def seat_upgrade_allowed?(user_id)
+          return true if gitlab_com_subscriptions?
+          return true unless block_seat_overages_for_self_managed?
+          return true if seats_available_for_self_managed?([user_id], Gitlab::Access::OWNER, nil)
+
+          false
+        end
+
         private
 
         def saas_non_billable_member?(root_namespace, access_level, member_role_id)

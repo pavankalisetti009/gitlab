@@ -142,7 +142,7 @@ export default {
           {{ s__('ApplicationSettings|Restricted access') }}
           <template #help>{{
             s__(
-              'ApplicationSettings|Prevent the billable user count from exceeding the number of seats in the license.',
+              'ApplicationSettings|Prevent the billable user count from exceeding the number of seats in the license, for example, when non-billable users create their own groups and projects.',
             )
           }}</template>
         </gl-form-radio>

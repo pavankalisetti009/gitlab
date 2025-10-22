@@ -359,4 +359,52 @@ RSpec.describe GitlabSubscriptions::MemberManagement::BlockSeatOverages, feature
       end
     end
   end
+
+  describe '.seat_upgrade_allowed?' do
+    subject(:seat_upgrade_allowed) { described_class.seat_upgrade_allowed?(user_id) }
+
+    let(:user_id) { build_stubbed(:user).id }
+
+    context 'when on GitLab.com', :saas do
+      it { is_expected.to be true }
+    end
+
+    context 'when on Self-Managed' do
+      let(:license) { create(:license, plan: License::PREMIUM_PLAN) }
+      let(:seats) { 1000 }
+
+      before do
+        allow(License).to receive(:current).and_return(license)
+        allow(license).to receive(:seats).and_return(seats)
+      end
+
+      context 'when block seat overages is disabled' do
+        before do
+          stub_application_setting(seat_control: 0)
+        end
+
+        it { is_expected.to be true }
+      end
+
+      context 'when block seat overages is enabled and seats are available' do
+        let(:seats) { User.count + 1 }
+
+        before do
+          stub_application_setting(seat_control: 2)
+        end
+
+        it { is_expected.to be true }
+      end
+
+      context 'when block seat overages is enabled and seats are not available' do
+        let(:seats) { User.count }
+
+        before do
+          stub_application_setting(seat_control: 2)
+        end
+
+        it { is_expected.to be false }
+      end
+    end
+  end
 end
