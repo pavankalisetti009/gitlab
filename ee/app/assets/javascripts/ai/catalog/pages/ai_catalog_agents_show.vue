@@ -1,7 +1,6 @@
 <script>
 import { s__, sprintf } from '~/locale';
 import { InternalEvents } from '~/tracking';
-import { helpPagePath } from '~/helpers/help_page_helper';
 import * as Sentry from '~/sentry/sentry_browser_wrapper';
 import glFeatureFlagsMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
 import PageHeading from '~/vue_shared/components/page_heading.vue';
@@ -16,6 +15,7 @@ import {
   AI_CATALOG_AGENTS_DUPLICATE_ROUTE,
   AI_CATALOG_AGENTS_EDIT_ROUTE,
 } from '../router/constants';
+import { prerequisitesError } from '../utils';
 
 export default {
   name: 'AiCatalogAgentsShow',
@@ -87,17 +87,10 @@ export default {
         }
       } catch (error) {
         this.errors = [
-          sprintf(
+          prerequisitesError(
             s__(
-              'AICatalog|Could not enable agent in the project. Check that the project meets the %{link_start}prerequisites%{link_end} and try again.',
+              'AICatalog|Could not enable agent in the project. Check that the project meets the %{linkStart}prerequisites%{linkEnd} and try again.',
             ),
-            {
-              link_start: `<a href="${helpPagePath('user/duo_agent_platform/ai_catalog', {
-                anchor: 'view-the-ai-catalog',
-              })}" target="_blank">`,
-              link_end: '</a>',
-            },
-            false,
           ),
         ];
         Sentry.captureException(error);

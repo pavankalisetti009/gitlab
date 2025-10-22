@@ -1,5 +1,6 @@
 import Vue from 'vue';
 import VueApollo from 'vue-apollo';
+import { createAlert } from '~/alert';
 import * as Sentry from '~/sentry/sentry_browser_wrapper';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import waitForPromises from 'helpers/wait_for_promises';
@@ -13,9 +14,11 @@ import {
   mockAgent,
   mockCreateAiCatalogAgentSuccessMutation,
   mockCreateAiCatalogAgentErrorMutation,
+  mockCreateAiCatalogAgentSuccessWithEnableFailureMutation,
 } from '../mock_data';
 
 Vue.use(VueApollo);
+jest.mock('~/alert');
 jest.mock('~/sentry/sentry_browser_wrapper');
 
 describe('AiCatalogAgentsNew', () => {
@@ -89,7 +92,7 @@ describe('AiCatalogAgentsNew', () => {
 
       expect(createAiCatalogAgentMock).toHaveBeenCalledTimes(1);
       expect(createAiCatalogAgentMock).toHaveBeenCalledWith({
-        input: formValues,
+        input: { ...formValues, addToProjectWhenCreated: true },
       });
     });
 
@@ -120,6 +123,34 @@ describe('AiCatalogAgentsNew', () => {
         await findForm().vm.$emit('dismiss-errors');
 
         expect(findForm().props('errors')).toEqual([]);
+      });
+    });
+
+    describe('when request succeeds but fails to enable the agent', () => {
+      beforeEach(async () => {
+        createAiCatalogAgentMock.mockResolvedValue(
+          mockCreateAiCatalogAgentSuccessWithEnableFailureMutation,
+        );
+        submitForm();
+        await waitForPromises();
+      });
+
+      it('calls createAlert', () => {
+        expect(createAlert).toHaveBeenCalledWith({
+          message:
+            'Could not enable agent in the project. Check that the project meets the %{linkStart}prerequisites%{linkEnd} and try again.',
+          messageLinks: {
+            link: '/help/user/duo_agent_platform/ai_catalog#view-the-ai-catalog',
+          },
+        });
+      });
+
+      it('navigates to agents show page', async () => {
+        await waitForPromises();
+        expect(mockRouter.push).toHaveBeenCalledWith({
+          name: AI_CATALOG_AGENTS_SHOW_ROUTE,
+          params: { id: 1 },
+        });
       });
     });
 

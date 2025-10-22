@@ -5,7 +5,6 @@ import { s__, sprintf } from '~/locale';
 import { getIdFromGraphQLId } from '~/graphql_shared/utils';
 import { fetchPolicies } from '~/lib/graphql';
 import { InternalEvents } from '~/tracking';
-import { helpPagePath } from '~/helpers/help_page_helper';
 import { isLoggedIn } from '~/lib/utils/common_utils';
 import {
   VISIBILITY_LEVEL_PUBLIC_STRING,
@@ -30,6 +29,7 @@ import {
   TRACK_EVENT_VIEW_AI_CATALOG_ITEM_INDEX,
   TRACK_EVENT_TYPE_AGENT,
 } from '../constants';
+import { prerequisitesError } from '../utils';
 
 export default {
   name: 'AiCatalogAgents',
@@ -209,17 +209,10 @@ export default {
         }
       } catch (error) {
         this.errors = [
-          sprintf(
+          prerequisitesError(
             s__(
-              'AICatalog|Could not enable agent in the project. Check that the project meets the %{link_start}prerequisites%{link_end} and try again.',
+              'AICatalog|Could not enable agent in the project. Check that the project meets the %{linkStart}prerequisites%{linkEnd} and try again.',
             ),
-            {
-              link_start: `<a href="${helpPagePath('user/duo_agent_platform/ai_catalog', {
-                anchor: 'view-the-ai-catalog',
-              })}" target="_blank">`,
-              link_end: '</a>',
-            },
-            false,
           ),
         ];
         Sentry.captureException(error);

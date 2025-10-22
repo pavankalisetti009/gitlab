@@ -363,7 +363,7 @@ describe('AiCatalogFlows', () => {
             await waitForPromises();
 
             expect(findErrorsAlert().props('errors')).toEqual([
-              'Could not enable flow in the project. Try again. Error: Request failed',
+              'Could not enable flow in the project. Check that the project meets the <a href="/help/user/duo_agent_platform/ai_catalog#view-the-ai-catalog" target="_blank">prerequisites</a> and try again.',
             ]);
             expect(Sentry.captureException).toHaveBeenCalledWith(expect.any(Error));
           });

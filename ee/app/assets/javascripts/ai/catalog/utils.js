@@ -1,3 +1,6 @@
+import { sprintf } from '~/locale';
+import { helpPagePath } from '~/helpers/help_page_helper';
+
 export const mapSteps = (steps) =>
   steps.nodes.map((s) => ({
     id: s.agent.id,
@@ -5,3 +8,17 @@ export const mapSteps = (steps) =>
     versions: s.agent.versions,
     versionName: s.pinnedVersionPrefix,
   }));
+
+export const prerequisitesPath = helpPagePath('user/duo_agent_platform/ai_catalog', {
+  anchor: 'view-the-ai-catalog',
+});
+export const prerequisitesError = (message) => {
+  return sprintf(
+    message,
+    {
+      linkStart: `<a href="${prerequisitesPath}" target="_blank">`,
+      linkEnd: '</a>',
+    },
+    false,
+  );
+};

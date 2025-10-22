@@ -1,13 +1,14 @@
 <script>
-import { s__, sprintf } from '~/locale';
+import { s__ } from '~/locale';
+import { createAlert } from '~/alert';
 import { getIdFromGraphQLId } from '~/graphql_shared/utils';
-import { helpPagePath } from '~/helpers/help_page_helper';
 import PageHeading from '~/vue_shared/components/page_heading.vue';
 import glFeatureFlagsMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
 import * as Sentry from '~/sentry/sentry_browser_wrapper';
 import createAiCatalogAgent from '../graphql/mutations/create_ai_catalog_agent.mutation.graphql';
 import { AI_CATALOG_AGENTS_SHOW_ROUTE } from '../router/constants';
 import AiCatalogAgentForm from '../components/ai_catalog_agent_form.vue';
+import { prerequisitesPath, prerequisitesError } from '../utils';
 
 export default {
   name: 'AiCatalogAgentsNew',
@@ -39,18 +40,32 @@ export default {
         const { data } = await this.$apollo.mutate({
           mutation: createAiCatalogAgent,
           variables: {
-            input,
+            input: {
+              ...input,
+              addToProjectWhenCreated: true,
+            },
           },
         });
 
         if (data) {
-          const { errors } = data.aiCatalogAgentCreate;
-          if (errors.length > 0) {
+          const { errors, item } = data.aiCatalogAgentCreate;
+          if (errors.length > 0 && item !== null) {
+            // created but not added to the project
+            createAlert({
+              message: s__(
+                'AICatalog|Could not enable agent in the project. Check that the project meets the %{linkStart}prerequisites%{linkEnd} and try again.',
+              ),
+              messageLinks: {
+                link: prerequisitesPath,
+              },
+            });
+          } else if (errors.length > 0 && item === null) {
+            // neither created nor added to the project
             this.errors = errors;
             return;
           }
 
-          const newAgentId = getIdFromGraphQLId(data.aiCatalogAgentCreate.item.id);
+          const newAgentId = getIdFromGraphQLId(item.id);
           this.$toast.show(s__('AICatalog|Agent created.'));
           this.$router.push({
             name: AI_CATALOG_AGENTS_SHOW_ROUTE,
@@ -59,17 +74,10 @@ export default {
         }
       } catch (error) {
         this.errors = [
-          sprintf(
+          prerequisitesError(
             s__(
-              'AICatalog|Could not create agent in the project. Check that the project meets the %{link_start}prerequisites%{link_end} and try again.',
+              'AICatalog|Could not create agent in the project. Check that the project meets the %{linkStart}prerequisites%{linkEnd} and try again.',
             ),
-            {
-              link_start: `<a href="${helpPagePath('user/duo_agent_platform/ai_catalog', {
-                anchor: 'view-the-ai-catalog',
-              })}" target="_blank">`,
-              link_end: '</a>',
-            },
-            false,
           ),
         ];
         Sentry.captureException(error);
