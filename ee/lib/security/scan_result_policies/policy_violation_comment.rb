@@ -95,7 +95,7 @@ module Security
           (newly_introduced_violations unless warn_mode_enabled?),
           (previously_existing_violations unless warn_mode_enabled?),
           (any_merge_request_commits(details.any_merge_request_violations) unless warn_mode_enabled?),
-          license_scanning_violations,
+          (license_scanning_violations unless warn_mode_enabled?),
           error_messages,
           comparison_pipelines,
           additional_info,
@@ -183,6 +183,7 @@ module Security
         ### #{VIOLATIONS_BLOCKING_TITLE}
         #{enforced_scan_finding_violations}
         #{enforced_any_merge_request_violations}
+        #{enforced_license_finding_violations}
         ---
         MARKDOWN
       end
@@ -242,6 +243,18 @@ module Security
         <<~MARKDOWN
         #### Previously existing enforced `scan_finding` violations
         #{scan_finding_violations(violations)}
+        MARKDOWN
+      end
+
+      def enforced_license_finding_violations
+        return if details.license_scanning_violations.empty?
+
+        <<~MARKDOWN
+        #### Enforced `license_finding` violations
+
+        Out-of-policy licenses:
+
+        #{violations_list(license_scanning_violations_list)}
         MARKDOWN
       end
 
@@ -316,19 +329,22 @@ module Security
       end
 
       def license_scanning_violations
-        list = details.license_scanning_violations.map do |violation|
+        return if license_scanning_violations_list.empty?
+
+        <<~MARKDOWN
+        :warning: **Out-of-policy licenses:**
+
+        #{violations_list(license_scanning_violations_list)}
+        MARKDOWN
+      end
+
+      def license_scanning_violations_list
+        details.license_scanning_violations.map do |violation|
           dependencies = violation.dependencies
           "1. #{violation.url.present? ? "[#{violation.license}](#{violation.url})" : violation.license}: " \
             "Used by #{dependencies.first(Security::ScanResultPolicyViolation::MAX_VIOLATIONS).join(', ')}" \
             "#{dependencies.size > Security::ScanResultPolicyViolation::MAX_VIOLATIONS ? ', …and more' : ''}"
         end
-        return if list.empty?
-
-        <<~MARKDOWN
-        :warning: **Out-of-policy licenses:**
-
-        #{violations_list(list)}
-        MARKDOWN
       end
 
       def build_scan_finding_violation_line(violation)
