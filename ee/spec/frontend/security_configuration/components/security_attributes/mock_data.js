@@ -106,6 +106,10 @@ export const mockSecurityAttributeCategories = [
   },
 ];
 
+export const mockFailedCategoryCreateResponse = {
+  data: { securityCategoryCreate: { errors: ['Failed to create security category'] } },
+};
+
 export const expectedAttributes = [
   {
     id: 3,
