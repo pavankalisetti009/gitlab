@@ -7,7 +7,7 @@ module Gitlab
     module AiTracking
       extend AiUsageEventsRegistryDsl
 
-      register do
+      register_feature(:code_suggestions) do
         deprecated_events(code_suggestions_requested: 1) # old data
 
         events(
@@ -22,9 +22,13 @@ module Gitlab
         end
 
         deprecated_events(code_suggestion_direct_access_token_refresh: 5) # old data
+      end
 
+      register_feature(:chat) do
         events(request_duo_chat_response: 6)
+      end
 
+      register_feature(:troubleshoot_job) do
         events(troubleshoot_job: 7) do |context|
           {
             job_id: context['job'].id,
@@ -33,7 +37,9 @@ module Gitlab
             merge_request_id: context['job'].pipeline&.merge_request_id
           }
         end
+      end
 
+      register_feature(:agentic_chat) do
         events(
           agent_platform_session_created: 8,
           agent_platform_session_started: 9,
@@ -47,7 +53,9 @@ module Gitlab
             environment: context['property']
           }
         end
+      end
 
+      register_feature(:code_review) do
         events(
           encounter_duo_code_review_error_during_review: 10,
           find_no_issues_duo_code_review_after_review: 11,
@@ -59,8 +67,8 @@ module Gitlab
           request_review_duo_code_review_on_mr_by_non_author: 17,
           excluded_files_from_duo_code_review: 18
         )
-        # Current highest event ID: 21, next available: 22
       end
+      # Current highest event ID: 21, next available: 22
 
       class << self
         def track_event(event_name, **context_hash)

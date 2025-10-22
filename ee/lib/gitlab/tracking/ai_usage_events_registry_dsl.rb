@@ -4,24 +4,40 @@ module Gitlab
   module Tracking
     # rubocop:disable Gitlab/ModuleWithInstanceVariables -- it's a class level DSL. It's intended to be a module.
     module AiUsageEventsRegistryDsl
-      def register(&block)
+      def register_feature(name, &block)
+        guard_absent_feature!
         @registered_events ||= {}.with_indifferent_access
+        @current_feature = name
         instance_eval(&block)
+        @current_feature = nil
       end
 
       def events(names_with_ids, &event_transformation)
+        guard_present_feature!
+
         names_with_ids.each do |name, id|
           guard_internal_event_existence!(name)
           guard_duplicated_event!(name, id)
-          @registered_events[name] = { id: id, transformations: [] }
+          @registered_events[name] = {
+            id: id,
+            transformations: [],
+            feature: @current_feature
+          }
           transformation(name, &event_transformation)
         end
       end
 
       def deprecated_events(names_with_ids)
+        guard_present_feature!
+
         names_with_ids.each do |name, id|
           guard_duplicated_event!(name, id)
-          @registered_events[name] = { id: id, transformations: [], deprecated: true }
+          @registered_events[name] = {
+            id: id,
+            transformations: [],
+            deprecated: true,
+            feature: @current_feature
+          }
         end
       end
 
@@ -51,6 +67,12 @@ module Gitlab
         @registered_events[event_name][:deprecated]
       end
 
+      def registered_features
+        return [] unless @registered_events
+
+        @registered_events.values.pluck(:feature).uniq.compact # rubocop:disable CodeReuse/ActiveRecord -- it's a hash.
+      end
+
       private
 
       def guard_internal_event_existence!(event_name)
@@ -62,6 +84,18 @@ module Gitlab
       def guard_duplicated_event!(name, id)
         raise "Event with name `#{name}` was already registered" if @registered_events[name]
         raise "Event with id `#{id}` was already registered" if @registered_events.detect { |_n, e| e[:id] == id }
+      end
+
+      def guard_present_feature!
+        return if @current_feature
+
+        raise "Cannot register events outside of a feature context. Use register_feature method."
+      end
+
+      def guard_absent_feature!
+        return unless @current_feature
+
+        raise "Nested features are not supported. Use register_feature method on top level."
       end
     end
     # rubocop:enable Gitlab/ModuleWithInstanceVariables
