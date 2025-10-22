@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe GitlabSubscriptions::Trials::StatusWidgetPresenter, :saas, feature_category: :acquisition do
+RSpec.describe GitlabSubscriptions::Trials::GitlabCom::StatusWidgetPresenter, :saas, feature_category: :acquisition do
   include Rails.application.routes.url_helpers
 
   let(:user) { build(:user) }
