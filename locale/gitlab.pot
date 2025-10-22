@@ -8492,7 +8492,7 @@ msgstr ""
 msgid "ApplicationSettings|Open access"
 msgstr ""
 
-msgid "ApplicationSettings|Prevent the billable user count from exceeding the number of seats in the license."
+msgid "ApplicationSettings|Prevent the billable user count from exceeding the number of seats in the license, for example, when non-billable users create their own groups and projects."
 msgstr ""
 
 msgid "ApplicationSettings|Proceed"

@@ -4133,4 +4133,35 @@ RSpec.describe User, feature_category: :system_access do
       end
     end
   end
+
+  describe '#allow_user_to_create_group_and_project?', :sidekiq_inline do
+    subject(:user) { create(:user) }
+
+    let(:group) { create(:group) }
+    let(:license) { create(:license, plan: License::PREMIUM_PLAN) }
+
+    before do
+      group.add_guest(user)
+      stub_application_setting(allow_project_creation_for_guest_and_below: false)
+    end
+
+    context 'with block seat overage and no seats available' do
+      before do
+        allow(License).to receive(:current).and_return(license)
+        allow(license).to receive(:seats).and_return(1) # One billable user already exists
+
+        stub_application_setting(seat_control: 2)
+      end
+
+      it { is_expected.not_to be_allow_user_to_create_group_and_project }
+    end
+
+    context 'with enabled configuration' do
+      before do
+        stub_application_setting(allow_project_creation_for_guest_and_below: true)
+      end
+
+      it { is_expected.to be_allow_user_to_create_group_and_project }
+    end
+  end
 end
