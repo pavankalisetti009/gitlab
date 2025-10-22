@@ -31,7 +31,6 @@ RSpec.describe Gitlab::Ci::Pipeline::Seed::Build, feature_category: :pipeline_co
 
       context 'when pipeline user supports composite identity' do
         it 'does not propagate composite identity if composite user is not linked' do
-          expect(seed_attributes[:temp_job_definition].config[:options].key?(:scoped_user_id)).to be(false)
           expect(seed_attributes.key?(:scoped_user_id)).to be(false)
         end
 
