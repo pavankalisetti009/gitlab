@@ -10,3 +10,5 @@ class BackfillNewFieldsInWorkItems < Elastic::Migration
   DOCUMENT_TYPE = WorkItem
   NEW_SCHEMA_VERSION = 25_23
 end
+
+BackfillNewFieldsInWorkItems.prepend ::Search::Elastic::MigrationObsolete
