@@ -1,5 +1,6 @@
 <script>
 import { s__ } from '~/locale';
+import { createAlert } from '~/alert';
 import { getIdFromGraphQLId } from '~/graphql_shared/utils';
 import glFeatureFlagsMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
 import PageHeading from '~/vue_shared/components/page_heading.vue';
@@ -11,6 +12,7 @@ import {
   AI_CATALOG_TYPE_THIRD_PARTY_FLOW,
 } from '../constants';
 import AiCatalogFlowForm from '../components/ai_catalog_flow_form.vue';
+import { prerequisitesPath, prerequisitesError } from '../utils';
 
 export default {
   name: 'AiCatalogFlowsNew',
@@ -42,19 +44,33 @@ export default {
         const { data } = await this.$apollo.mutate({
           mutation: config.mutation,
           variables: {
-            input,
+            input: {
+              ...input,
+              addToProjectWhenCreated: true,
+            },
           },
         });
 
         if (data) {
           const createResponse = data[config.responseKey];
-          const { errors } = createResponse;
-          if (errors.length > 0) {
+          const { errors, item } = createResponse;
+          if (errors.length > 0 && item !== null) {
+            // created but not added to the project
+            createAlert({
+              message: s__(
+                'AICatalog|Could not enable flow in the project. Check that the project meets the %{linkStart}prerequisites%{linkEnd} and try again.',
+              ),
+              messageLinks: {
+                link: prerequisitesPath,
+              },
+            });
+          } else if (errors.length > 0 && item === null) {
+            // neither created nor added to the project
             this.errors = errors;
             return;
           }
 
-          const newFlowId = getIdFromGraphQLId(createResponse.item.id);
+          const newFlowId = getIdFromGraphQLId(item.id);
           this.$toast.show(s__('AICatalog|Flow created.'));
           this.$router.push({
             name: AI_CATALOG_FLOWS_SHOW_ROUTE,
@@ -62,7 +78,13 @@ export default {
           });
         }
       } catch (error) {
-        this.errors = [s__('AICatalog|Could not create flow. Try again.')];
+        this.errors = [
+          prerequisitesError(
+            s__(
+              'AICatalog|Could not create flow in the project. Check that the project meets the %{linkStart}prerequisites%{linkEnd} and try again.',
+            ),
+          ),
+        ];
         Sentry.captureException(error);
       } finally {
         this.isSubmitting = false;

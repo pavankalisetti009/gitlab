@@ -32,6 +32,7 @@ import {
   TRACK_EVENT_VIEW_AI_CATALOG_ITEM_INDEX,
   TRACK_EVENT_TYPE_FLOW,
 } from '../constants';
+import { prerequisitesError } from '../utils';
 
 export default {
   name: 'AiCatalogFlows',
@@ -229,9 +230,11 @@ export default {
         }
       } catch (error) {
         this.errors = [
-          sprintf(s__('AICatalog|Could not enable flow in the project. Try again. %{error}'), {
-            error,
-          }),
+          prerequisitesError(
+            s__(
+              'AICatalog|Could not enable flow in the project. Check that the project meets the %{linkStart}prerequisites%{linkEnd} and try again.',
+            ),
+          ),
         ];
         Sentry.captureException(error);
       }

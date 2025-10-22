@@ -7,7 +7,7 @@ import * as Sentry from '~/sentry/sentry_browser_wrapper';
 import { AI_CATALOG_TYPE_THIRD_PARTY_FLOW } from 'ee/ai/catalog/constants';
 import createAiCatalogFlow from '../graphql/mutations/create_ai_catalog_flow.mutation.graphql';
 import createAiCatalogThirdPartyFlow from '../graphql/mutations/create_ai_catalog_third_party_flow.mutation.graphql';
-import { mapSteps } from '../utils';
+import { mapSteps, prerequisitesError } from '../utils';
 import { AI_CATALOG_FLOWS_SHOW_ROUTE } from '../router/constants';
 import AiCatalogFlowForm from '../components/ai_catalog_flow_form.vue';
 
@@ -66,7 +66,10 @@ export default {
         const { data } = await this.$apollo.mutate({
           mutation: createQuery,
           variables: {
-            input,
+            input: {
+              ...input,
+              addToProjectWhenCreated: true,
+            },
           },
         });
 
@@ -88,7 +91,13 @@ export default {
           });
         }
       } catch (error) {
-        this.errors = [s__('AICatalog|Could not create flow. Try again.')];
+        this.errors = [
+          prerequisitesError(
+            s__(
+              'AICatalog|Could not create flow in the project. Check that the project meets the %{linkStart}prerequisites%{linkEnd} and try again.',
+            ),
+          ),
+        ];
         Sentry.captureException(error);
       } finally {
         this.isSubmitting = false;

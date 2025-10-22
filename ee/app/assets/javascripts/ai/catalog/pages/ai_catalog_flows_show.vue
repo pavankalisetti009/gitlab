@@ -18,6 +18,7 @@ import {
   AI_CATALOG_FLOWS_EDIT_ROUTE,
   AI_CATALOG_FLOWS_ROUTE,
 } from '../router/constants';
+import { prerequisitesError } from '../utils';
 
 export default {
   name: 'AiCatalogFlowsShow',
@@ -89,9 +90,11 @@ export default {
         }
       } catch (error) {
         this.errors = [
-          sprintf(s__('AICatalog|Could not enable flow in the project. Try again. %{error}'), {
-            error,
-          }),
+          prerequisitesError(
+            s__(
+              'AICatalog|Could not enable flow in the project. Check that the project meets the %{linkStart}prerequisites%{linkEnd} and try again.',
+            ),
+          ),
         ];
         Sentry.captureException(error);
       }

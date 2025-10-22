@@ -106,7 +106,7 @@ describe('AiCatalogFlowsDuplicate', () => {
 
       expect(createAiCatalogFlowMock).toHaveBeenCalledTimes(1);
       expect(createAiCatalogFlowMock).toHaveBeenCalledWith({
-        input: formValues,
+        input: { ...formValues, addToProjectWhenCreated: true },
       });
     });
 
@@ -145,7 +145,7 @@ describe('AiCatalogFlowsDuplicate', () => {
         expect(createAiCatalogFlowMock).not.toHaveBeenCalled();
         expect(createAiCatalogThirdPartyFlowMock).toHaveBeenCalledTimes(1);
         expect(createAiCatalogThirdPartyFlowMock).toHaveBeenCalledWith({
-          input: thirdPartyFlowFormValues,
+          input: { ...thirdPartyFlowFormValues, addToProjectWhenCreated: true },
         });
       });
     });
@@ -177,7 +177,9 @@ describe('AiCatalogFlowsDuplicate', () => {
       });
 
       it('sets error messages and captures exception', () => {
-        expect(findForm().props('errors')).toEqual(['Could not create flow. Try again.']);
+        expect(findForm().props('errors')).toEqual([
+          'Could not create flow in the project. Check that the project meets the <a href="/help/user/duo_agent_platform/ai_catalog#view-the-ai-catalog" target="_blank">prerequisites</a> and try again.',
+        ]);
         expect(Sentry.captureException).toHaveBeenCalledWith(expect.any(Error));
         expect(findForm().props('isLoading')).toBe(false);
       });
