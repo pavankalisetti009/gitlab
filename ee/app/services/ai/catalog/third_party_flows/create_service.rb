@@ -40,6 +40,10 @@ module Ai
 
         private
 
+        def allowed?
+          super && Feature.enabled?(:ai_catalog_third_party_flows, current_user)
+        end
+
         def error_creating(item)
           error(item.errors.full_messages.presence || 'Failed to create third party flow')
         end

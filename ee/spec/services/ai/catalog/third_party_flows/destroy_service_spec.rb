@@ -13,5 +13,21 @@ RSpec.describe Ai::Catalog::ThirdPartyFlows::DestroyService, feature_category: :
     let_it_be_with_reload(:incorrect_item_type) { create(:ai_catalog_flow, project: project) }
     let!(:item) { create(:ai_catalog_third_party_flow, public: true, project: project) }
     let(:not_found_error) { 'Third Party Flow not found' }
+
+    describe 'ai_catalog_third_party_flows feature flag' do
+      before do
+        project.add_maintainer(user)
+      end
+
+      it_behaves_like 'a successful request'
+
+      context 'when ai_catalog_third_party_flows feature flag is disabled' do
+        before do
+          stub_feature_flags(ai_catalog_third_party_flows: false)
+        end
+
+        it_behaves_like 'returns insufficient permissions error'
+      end
+    end
   end
 end

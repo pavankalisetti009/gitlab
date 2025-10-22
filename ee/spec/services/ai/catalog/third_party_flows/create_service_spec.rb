@@ -133,5 +133,13 @@ RSpec.describe Ai::Catalog::ThirdPartyFlows::CreateService, feature_category: :w
 
       it_behaves_like 'an error response', 'You have insufficient permissions'
     end
+
+    context 'when ai_catalog_third_party_flows feature flag is disabled' do
+      before do
+        stub_feature_flags(ai_catalog_third_party_flows: false)
+      end
+
+      it_behaves_like 'an error response', 'You have insufficient permissions'
+    end
   end
 end

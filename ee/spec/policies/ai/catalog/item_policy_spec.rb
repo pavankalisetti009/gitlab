@@ -21,6 +21,10 @@ RSpec.describe Ai::Catalog::ItemPolicy, :with_current_organization, feature_cate
     create(:ai_catalog_flow, project: private_project, public: true)
   end
 
+  let_it_be_with_reload(:third_party_flow_item) do
+    create(:ai_catalog_third_party_flow, project: private_project, public: true)
+  end
+
   let(:stage_check) { true }
   let(:duo_features_enabled) { true }
 
@@ -136,6 +140,36 @@ RSpec.describe Ai::Catalog::ItemPolicy, :with_current_organization, feature_cate
     context 'with ai_catalog_flows is disabled' do
       before do
         stub_feature_flags(ai_catalog_flows: false)
+      end
+
+      it_behaves_like 'read-write permissions'
+    end
+  end
+
+  context 'when third_party_flow' do
+    let(:current_user) { maintainer }
+    let(:item) { third_party_flow_item }
+
+    it_behaves_like 'read-write permissions'
+
+    context 'with ai_catalog_third_party_flow is disabled' do
+      before do
+        stub_feature_flags(ai_catalog_third_party_flows: false)
+      end
+
+      it_behaves_like 'no permissions'
+    end
+  end
+
+  context 'when not third_party_flow' do
+    let(:current_user) { maintainer }
+    let(:item) { public_item }
+
+    it_behaves_like 'read-write permissions'
+
+    context 'with ai_catalog_third_party_flows is disabled' do
+      before do
+        stub_feature_flags(ai_catalog_third_party_flows: false)
       end
 
       it_behaves_like 'read-write permissions'
