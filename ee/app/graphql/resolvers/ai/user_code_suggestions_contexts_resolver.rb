@@ -33,15 +33,12 @@ module Resolvers
 
       def open_tabs_enabled?
         # On the GitLab Language Server (client), open_tabs context is checked against
-        # the FFs `advanced_context_resolver` and `code_suggestions_context`.
-        # These Feature Flags are not specific to Open Tabs.
+        # the FF `advanced_context_resolver`.
+        # This Feature Flag is not specific to Open Tabs.
         # `advanced_context_resolver` was introduced solely for the Language Server
         #   to check whether it should gather Code Suggestions additional contexts
         #   (MR: https://gitlab.com/gitlab-org/gitlab/-/merge_requests/154935)
-        # `code_suggestions_context` was introduced for the `/code_suggestions/completions` API
-        #   to check whether it should accept a `context` param
-        #   (MR: https://gitlab.com/gitlab-org/gitlab/-/merge_requests/153264)
-        # The Language Server always checks these 2 feature flags
+        # The Language Server always checks this feature flag
         #   before it gathers additional context and send that in the Code Completion request.
         # The open_tabs context itself does not have its own Feature Flag,
         #   and in effect will always be true from the Rails (server) perspective
