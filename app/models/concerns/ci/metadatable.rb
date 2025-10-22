@@ -163,6 +163,32 @@ module Ci
       write_attribute(:exit_code, safe_value)
     end
 
+    # Should be removed when the column is dropped from p_ci_builds
+    def options=(value)
+      raise ActiveRecord::ReadonlyAttributeError, 'This data is read only' unless value.nil?
+
+      super
+    end
+
+    # Should be removed when the column is dropped from p_ci_builds
+    def yaml_variables=(value)
+      raise ActiveRecord::ReadonlyAttributeError, 'This data is read only' unless value.nil?
+
+      super
+    end
+
+    def interruptible=(_value)
+      raise ActiveRecord::ReadonlyAttributeError, 'This data is read only'
+    end
+
+    def id_tokens=(_value)
+      raise ActiveRecord::ReadonlyAttributeError, 'This data is read only'
+    end
+
+    def secrets=(_value)
+      raise ActiveRecord::ReadonlyAttributeError, 'This data is read only'
+    end
+
     private
 
     def read_metadata_attribute(legacy_key, metadata_key, job_definition_key, default_value = nil)

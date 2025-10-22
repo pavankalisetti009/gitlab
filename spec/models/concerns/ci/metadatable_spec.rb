@@ -469,4 +469,42 @@ RSpec.describe Ci::Metadatable, feature_category: :continuous_integration do
       end
     end
   end
+
+  describe '#options=' do
+    it 'raises an error when overriding data' do
+      expect { processable.options = { a: :b } }.to raise_error ActiveRecord::ReadonlyAttributeError
+    end
+
+    it 'allows nullifying data' do
+      expect { processable.options = nil }.not_to raise_error
+    end
+  end
+
+  describe '#yaml_variables=' do
+    it 'raises an error when overriding data' do
+      expect { processable.yaml_variables = { a: :b } }.to raise_error ActiveRecord::ReadonlyAttributeError
+    end
+
+    it 'allows nullifying data' do
+      expect { processable.yaml_variables = nil }.not_to raise_error
+    end
+  end
+
+  describe '#interruptible=' do
+    it 'raises an error when overriding data' do
+      expect { processable.interruptible = true }.to raise_error ActiveRecord::ReadonlyAttributeError
+    end
+  end
+
+  describe '#id_tokens=' do
+    it 'raises an error when overriding data' do
+      expect { processable.id_tokens = { a: :b } }.to raise_error ActiveRecord::ReadonlyAttributeError
+    end
+  end
+
+  describe '#secrets=' do
+    it 'raises an error when overriding data' do
+      expect { processable.secrets = { a: :b } }.to raise_error ActiveRecord::ReadonlyAttributeError
+    end
+  end
 end
