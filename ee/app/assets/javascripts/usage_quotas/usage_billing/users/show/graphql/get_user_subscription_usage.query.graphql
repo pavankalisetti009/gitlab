@@ -1,0 +1,49 @@
+query getUserSubscriptionUsage($namespacePath: ID, $username: String) {
+  subscriptionUsage(namespacePath: $namespacePath) {
+    lastUpdated
+
+    startDate
+    endDate
+
+    overage {
+      isAllowed
+    }
+
+    poolUsage {
+      totalCredits
+    }
+
+    usersUsage {
+      users(username: $username) {
+        nodes {
+          id
+          name
+          username
+          avatarUrl
+
+          usage {
+            totalCredits
+            creditsUsed
+            poolCreditsUsed
+            overageCreditsUsed
+          }
+
+          # events(first: $first, last: $last, after: $after, before: $before) {
+          #   nodes {
+          #     timestamp
+          #     eventType
+          #     location {
+          #       name
+          #       webUrl
+          #     }
+          #     creditsUsed
+          #   }
+          #   pageInfo {
+          #     ...PageInfo
+          #   }
+          # }
+        }
+      }
+    }
+  }
+}

@@ -38,7 +38,7 @@ export default {
       </template>
 
       <template #cell(location)="{ item }">
-        <gl-link v-if="item.location" :href="item.location.web_url">
+        <gl-link v-if="item.location" :href="item.location.webUrl">
           {{ item.location.name }}
         </gl-link>
       </template>

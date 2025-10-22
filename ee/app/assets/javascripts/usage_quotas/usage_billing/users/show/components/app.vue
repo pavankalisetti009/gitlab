@@ -1,12 +1,12 @@
 <script>
-import { GlAlert, GlAvatar, GlCard, GlLoadingIcon } from '@gitlab/ui';
+import { GlKeysetPagination, GlAlert, GlAvatar, GlCard, GlLoadingIcon } from '@gitlab/ui';
 import UserDate from '~/vue_shared/components/user_date.vue';
-import { mockDataWithPool } from 'ee_jest/usage_quotas/usage_billing/users/show/mock_data';
 import { logError } from '~/lib/logger';
-import axios from '~/lib/utils/axios_utils';
 import { captureException } from '~/sentry/sentry_browser_wrapper';
 import { SHORT_DATE_FORMAT_WITH_TIME } from '~/vue_shared/constants';
 import HumanTimeframe from '~/vue_shared/components/datetime/human_timeframe.vue';
+import { PAGE_SIZE } from '../../../constants';
+import getUserSubscriptionUsageQuery from '../graphql/get_user_subscription_usage.query.graphql';
 import EventsTable from './events_table.vue';
 
 export default {
@@ -16,48 +16,96 @@ export default {
     GlLoadingIcon,
     GlAlert,
     GlAvatar,
+    GlKeysetPagination,
     UserDate,
     HumanTimeframe,
     EventsTable,
   },
-  inject: ['userId', 'fetchUserUsageDataApiUrl'],
+  inject: {
+    userId: 'userId',
+    namespacePath: {
+      default: null,
+    },
+  },
   data() {
     return {
       isError: false,
-      isLoading: true,
-      gitlabCreditsUsage: null,
+      subscriptionUsage: null,
+      pagination: {
+        after: null,
+        before: null,
+        first: PAGE_SIZE,
+        last: null,
+      },
     };
   },
-  computed: {
-    userUsage() {
-      return this.gitlabCreditsUsage.userUsage;
-    },
-    user() {
-      return this.userUsage.user;
-    },
-    hasCommitment() {
-      return Boolean(this.gitlabCreditsUsage?.totalCredits);
-    },
-  },
-  async mounted() {
-    await this.fetchUsageData();
-  },
-  methods: {
-    async fetchUsageData() {
-      try {
-        this.isLoading = true;
-        const response = await axios.get(this.fetchUserUsageDataApiUrl);
-        this.gitlabCreditsUsage = response?.data?.subscription?.gitlabCreditsUsage;
-      } catch (error) {
+  apollo: {
+    subscriptionUsage: {
+      query: getUserSubscriptionUsageQuery,
+      variables() {
+        return {
+          // Note: namespacePath will be present on SaaS only, indicating a root group.
+          // SM would pass null in this variable, requesting instance-level data.
+          namespacePath: this.namespacePath,
+          username: this.userId,
+          first: this.pagination.first,
+          last: this.pagination.last,
+          after: this.pagination.after,
+          before: this.pagination.before,
+        };
+      },
+      error(error) {
         this.isError = true;
         logError(error);
         captureException(error);
-
-        // TODO: this fallback will be removed once we integrate with actual BE
-        this.gitlabCreditsUsage = mockDataWithPool.subscription.gitlabCreditsUsage;
-      } finally {
-        this.isLoading = false;
-      }
+      },
+      update(data) {
+        return data.subscriptionUsage;
+      },
+    },
+  },
+  computed: {
+    hasCommitment() {
+      return Boolean(this.subscriptionUsage?.poolUsage?.totalCredits);
+    },
+    user() {
+      return this.subscriptionUsage?.usersUsage?.users?.nodes?.[0];
+    },
+    usage() {
+      return {
+        creditsUsed: 0,
+        totalCredits: 0,
+        poolCreditsUsed: 0,
+        overageCreditsUsed: 0,
+        ...this.user?.usage,
+      };
+    },
+    totalCreditsUsed() {
+      return this.usage.creditsUsed + this.usage.poolCreditsUsed + this.usage.overageCreditsUsed;
+    },
+    events() {
+      return this.user?.events?.nodes ?? [];
+    },
+    pageInfo() {
+      return this.user?.events?.pageInfo;
+    },
+  },
+  methods: {
+    onNextPage(item) {
+      this.pagination = {
+        first: PAGE_SIZE,
+        after: item,
+        last: null,
+        before: null,
+      };
+    },
+    onPrevPage(item) {
+      this.pagination = {
+        first: null,
+        after: null,
+        last: PAGE_SIZE,
+        before: item,
+      };
     },
   },
   SHORT_DATE_FORMAT_WITH_TIME,
@@ -65,11 +113,11 @@ export default {
 </script>
 <template>
   <section>
-    <gl-alert v-if="isError" class="gl-my-3">
+    <gl-alert v-if="isError" variant="danger" class="gl-my-3">
       {{ s__('UsageBilling|An error occurred while fetching data') }}
     </gl-alert>
 
-    <div v-if="isLoading">
+    <div v-else-if="$apollo.queries.subscriptionUsage.loading">
       <gl-loading-icon />
     </div>
 
@@ -82,7 +130,7 @@ export default {
             <gl-avatar
               :title="user.name"
               :alt="user.name"
-              :src="user.avatar_url"
+              :src="user.avatarUrl"
               :entity-name="user.name"
               :size="64"
               class="gl-mr-3"
@@ -98,7 +146,7 @@ export default {
         <div class="gl-text-sm gl-text-subtle">
           {{ s__('UsageBilling|Last updated:') }}
           <user-date
-            :date="gitlabCreditsUsage.lastUpdated"
+            :date="subscriptionUsage.lastUpdated"
             :date-format="$options.SHORT_DATE_FORMAT_WITH_TIME"
           />
         </div>
@@ -107,7 +155,7 @@ export default {
       <dl class="gl-my-5 gl-flex gl-flex-col gl-gap-5 @md/panel:gl-flex-row">
         <gl-card data-testid="month-summary-card" class="gl-flex-1 gl-bg-transparent">
           <dd class="gl-heading-scale-400 gl-mb-3">
-            {{ userUsage.allocationUsed }} / {{ userUsage.allocationTotal }}
+            {{ usage.creditsUsed }} / {{ usage.totalCredits }}
           </dd>
           <dt>
             <p class="gl-my-0">
@@ -115,8 +163,8 @@ export default {
             </p>
             <p class="gl-my-0 gl-text-sm gl-text-subtle">
               (<human-timeframe
-                :from="gitlabCreditsUsage.startDate"
-                :till="gitlabCreditsUsage.endDate"
+                :from="subscriptionUsage.startDate"
+                :till="subscriptionUsage.endDate"
               />)
             </p>
           </dt>
@@ -127,13 +175,13 @@ export default {
           data-testid="month-pool-card"
           class="gl-flex-1 gl-bg-transparent"
         >
-          <dd class="gl-heading-scale-400 gl-mb-3">{{ userUsage.poolUsed }}</dd>
+          <dd class="gl-heading-scale-400 gl-mb-3">{{ usage.poolCreditsUsed }}</dd>
           <dt>
             <p class="gl-my-0">{{ s__('UsageBilling|Credits used from pool this month') }}</p>
             <p class="gl-my-0 gl-text-sm gl-text-subtle">
               (<human-timeframe
-                :from="gitlabCreditsUsage.startDate"
-                :till="gitlabCreditsUsage.endDate"
+                :from="subscriptionUsage.startDate"
+                :till="subscriptionUsage.endDate"
               />)
             </p>
           </dt>
@@ -141,21 +189,27 @@ export default {
 
         <gl-card data-testid="total-usage-card" class="gl-flex-1 gl-bg-transparent">
           <dd class="gl-heading-scale-400 gl-mb-3">
-            {{ userUsage.totalCreditsUsed }}
+            {{ totalCreditsUsed }}
           </dd>
           <dt>
             <p class="gl-my-0">{{ s__('UsageBilling|Total credits used') }}</p>
             <p class="gl-my-0 gl-text-sm gl-text-subtle">
               (<human-timeframe
-                :from="gitlabCreditsUsage.startDate"
-                :till="gitlabCreditsUsage.endDate"
+                :from="subscriptionUsage.startDate"
+                :till="subscriptionUsage.endDate"
               />)
             </p>
           </dt>
         </gl-card>
       </dl>
 
-      <events-table :events="userUsage.events" />
+      <section>
+        <events-table :events="events" />
+
+        <div v-if="pageInfo" class="gl-mt-5 gl-flex gl-justify-center">
+          <gl-keyset-pagination v-bind="pageInfo" @prev="onPrevPage" @next="onNextPage" />
+        </div>
+      </section>
     </template>
   </section>
 </template>

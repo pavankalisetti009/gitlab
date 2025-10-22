@@ -1,11 +1,11 @@
-// eslint-disable-next-line import/no-extraneous-dependencies
-import MockAdapter from 'axios-mock-adapter';
+import VueApollo from 'vue-apollo';
+import { createMockClient } from 'helpers/mock_apollo_helper';
 import {
   mockDataWithPool,
   mockDataWithoutPool,
   mockEmptyData,
 } from 'ee_jest/usage_quotas/usage_billing/users/show/mock_data';
-import axios from '~/lib/utils/axios_utils';
+import getUserSubscriptionUsageQuery from '../graphql/get_user_subscription_usage.query.graphql';
 import UsageBillingUserDashboardApp from './app.vue';
 
 const meta = {
@@ -21,29 +21,34 @@ export default meta;
  * @param {Function} [config.mockHandler]
  */
 const createTemplate = (config = {}) => {
-  let { mockHandler } = config;
-  let mockAdapter;
+  let { getUserSubscriptionUsageQueryHandler } = config;
+
+  // Apollo
+  let defaultClient = config.apollo?.defaultClient;
+  if (!defaultClient) {
+    if (!getUserSubscriptionUsageQueryHandler) {
+      getUserSubscriptionUsageQueryHandler = () => Promise.resolve(mockDataWithPool);
+    }
+
+    const requestHandlers = [[getUserSubscriptionUsageQuery, getUserSubscriptionUsageQueryHandler]];
+    defaultClient = createMockClient(requestHandlers);
+  }
+
+  const apolloProvider = new VueApollo({
+    defaultClient,
+  });
 
   return (args, { argTypes }) => ({
     components: {
-      // NOTE: we have to make the component async,
-      // to delay it's mounting, to have an opportunity to stub Axios
-      UsageBillingUserDashboardApp: () => Promise.resolve(UsageBillingUserDashboardApp),
+      UsageBillingUserDashboardApp,
     },
+    apolloProvider,
     provide: {
       userId: '42',
-      fetchUserUsageDataApiUrl: '/gitlab_duo/users/42/data',
+      namespacePath: 'gitlab',
     },
     props: Object.keys(argTypes),
     template: `<usage-billing-user-dashboard-app />`,
-    mounted() {
-      mockAdapter = new MockAdapter(axios);
-      mockHandler ??= () => Promise.resolve([200, mockDataWithPool]);
-      mockAdapter.onGet('/gitlab_duo/users/42/data').replyOnce(mockHandler);
-    },
-    destroyed() {
-      mockAdapter.restore();
-    },
   });
 };
 
@@ -53,20 +58,20 @@ export const Default = {
 
 export const NoCommitment = {
   render: (...args) => {
-    const mockHandler = () => Promise.resolve([200, mockDataWithoutPool]);
+    const getUserSubscriptionUsageQueryHandler = () => Promise.resolve(mockDataWithoutPool);
 
     return createTemplate({
-      mockHandler,
+      getUserSubscriptionUsageQueryHandler,
     })(...args);
   },
 };
 
 export const EmptyState = {
   render: (...args) => {
-    const mockHandler = () => Promise.resolve([200, mockEmptyData]);
+    const getUserSubscriptionUsageQueryHandler = () => Promise.resolve(mockEmptyData);
 
     return createTemplate({
-      mockHandler,
+      getUserSubscriptionUsageQueryHandler,
     })(...args);
   },
 };
@@ -74,20 +79,21 @@ export const EmptyState = {
 export const LoadingState = {
   render: (...args) => {
     // Never resolved
-    const mockHandler = () => new Promise(() => {});
+    const getUserSubscriptionUsageQueryHandler = () => new Promise(() => {});
 
     return createTemplate({
-      mockHandler,
+      getUserSubscriptionUsageQueryHandler,
     })(...args);
   },
 };
 
 export const ErrorState = {
   render: (...args) => {
-    const mockHandler = () => Promise.reject(new Error('Failed to fetch usage data'));
+    const getUserSubscriptionUsageQueryHandler = () =>
+      Promise.reject(new Error('Failed to fetch usage data'));
 
     return createTemplate({
-      mockHandler,
+      getUserSubscriptionUsageQueryHandler,
     })(...args);
   },
 };

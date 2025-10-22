@@ -13,7 +13,7 @@ describe('EventsTable', () => {
       eventType: 'Code Completion',
       location: {
         name: 'gitlab-org/gitlab',
-        web_url: 'https://gitlab.com/gitlab-org/gitlab',
+        webUrl: 'https://gitlab.com/gitlab-org/gitlab',
       },
       creditsUsed: 150,
     },
@@ -22,7 +22,7 @@ describe('EventsTable', () => {
       eventType: 'Code Generation',
       location: {
         name: 'gitlab-org/gitlabhq',
-        web_url: 'https://gitlab.com/gitlab-org/gitlabhq',
+        webUrl: 'https://gitlab.com/gitlab-org/gitlabhq',
       },
       creditsUsed: 75,
     },
@@ -90,7 +90,7 @@ describe('EventsTable', () => {
         it('renders location', () => {
           const locationLink = firstRowCells.at(2).findComponent(GlLink);
           expect(locationLink.exists()).toBe(true);
-          expect(locationLink.attributes('href')).toBe(mockEvents[0].location.web_url);
+          expect(locationLink.attributes('href')).toBe(mockEvents[0].location.webUrl);
           expect(locationLink.text()).toBe(mockEvents[0].location.name);
         });
 
