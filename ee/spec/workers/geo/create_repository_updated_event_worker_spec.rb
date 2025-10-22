@@ -17,6 +17,7 @@ RSpec.describe Geo::CreateRepositoryUpdatedEventWorker, feature_category: :geo_r
   context 'on a Geo primary site' do
     before do
       stub_current_geo_node(primary_site)
+      stub_feature_flags(geo_project_repository_replication_v2: false)
     end
 
     it_behaves_like 'subscribes to event'

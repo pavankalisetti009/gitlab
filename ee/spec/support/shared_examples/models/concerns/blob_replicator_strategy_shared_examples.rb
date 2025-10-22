@@ -18,6 +18,11 @@ RSpec.shared_examples 'a blob replicator' do
   subject(:replicator) { model_record.replicator }
 
   before do
+    # These tests create projects and expect the Geo::Event counts to change
+    # including project creation related events.
+    # Disabling this flag will allow project repository replication V1 to
+    # work, as these tests expect.
+    stub_feature_flags(geo_project_repository_replication_v2: false)
     stub_current_geo_node(primary)
   end
 

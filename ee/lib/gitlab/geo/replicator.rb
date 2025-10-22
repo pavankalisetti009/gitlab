@@ -353,6 +353,8 @@ module Gitlab
 
       protected
 
+      # This method can be overriden in a replicator class to add other
+      # conditionals for accepting events
       def should_publish_replication_event?
         self.class.replication_enabled?
       end

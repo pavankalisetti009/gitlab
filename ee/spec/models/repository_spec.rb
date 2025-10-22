@@ -8,6 +8,7 @@ RSpec.describe Repository, feature_category: :source_code_management do
 
   before do
     stub_const('TestBlob', Struct.new(:path))
+    stub_feature_flags(geo_project_repository_replication_v2: false)
   end
 
   let_it_be(:primary_node)   { create(:geo_node, :primary) }
