@@ -7,7 +7,7 @@ import setWindowLocation from 'helpers/set_window_location_helper';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import waitForPromises from 'helpers/wait_for_promises';
 import MavenRegistriesList from 'ee/packages_and_registries/virtual_registries/components/maven/registries_and_upstreams/registries_list.vue';
-import MavenRegistryItem from 'ee/packages_and_registries/virtual_registries/components/maven/registries_and_upstreams/registry_item.vue';
+import RegistriesTable from 'ee/packages_and_registries/virtual_registries/components/maven/registries_and_upstreams/registries_table.vue';
 import * as urlUtils from '~/lib/utils/url_utility';
 import { TEST_HOST } from 'spec/test_constants';
 import { captureException } from 'ee/packages_and_registries/virtual_registries/sentry_utils';
@@ -44,7 +44,7 @@ describe('MavenRegistriesList', () => {
   const findSkeletonLoader = () => wrapper.findComponent(GlSkeletonLoader);
   const findAlert = () => wrapper.findComponent(GlAlert);
   const findEmptyState = () => wrapper.findComponent(GlEmptyState);
-  const findRegistryItems = () => wrapper.findAllComponents(MavenRegistryItem);
+  const findRegistriesTable = () => wrapper.findComponent(RegistriesTable);
   const findPagination = () => wrapper.findComponent(GlKeysetPagination);
 
   const mavenRegistriesHandler = jest.fn().mockResolvedValue(mockMavenRegistries);
@@ -77,7 +77,7 @@ describe('MavenRegistriesList', () => {
       expect(findSkeletonLoader().exists()).toBe(true);
       expect(findAlert().exists()).toBe(false);
       expect(findEmptyState().exists()).toBe(false);
-      expect(findRegistryItems()).toHaveLength(0);
+      expect(findRegistriesTable().exists()).toBe(false);
     });
 
     describe('when the API returns data', () => {
@@ -88,8 +88,8 @@ describe('MavenRegistriesList', () => {
         expect(findAlert().exists()).toBe(false);
         expect(findEmptyState().exists()).toBe(false);
 
-        expect(findRegistryItems().at(0).props('registry')).toEqual(
-          groupVirtualRegistries.group.mavenVirtualRegistries.nodes[0],
+        expect(findRegistriesTable().props('registries')).toEqual(
+          groupVirtualRegistries.group.mavenVirtualRegistries.nodes,
         );
 
         const { __typename, ...pageInfo } =
@@ -118,7 +118,7 @@ describe('MavenRegistriesList', () => {
       expect(findAlert().exists()).toBe(false);
 
       expect(findEmptyState().exists()).toBe(true);
-      expect(findRegistryItems()).toHaveLength(0);
+      expect(findRegistriesTable().exists()).toBe(false);
     });
   });
 
@@ -130,7 +130,7 @@ describe('MavenRegistriesList', () => {
 
       expect(findSkeletonLoader().exists()).toBe(false);
       expect(findEmptyState().exists()).toBe(false);
-      expect(findRegistryItems()).toHaveLength(0);
+      expect(findRegistriesTable().exists()).toBe(false);
 
       expect(findAlert().text()).toBe('GraphQL error');
       expect(captureException).toHaveBeenCalledWith({
