@@ -4,7 +4,7 @@ module Types
   module GitlabSubscriptions
     module SubscriptionUsage
       class UserType < BaseObject
-        graphql_name 'GitlabSubscriptionUsageUsers'
+        graphql_name 'GitlabSubscriptionUsageUser'
         description 'Describes the user with their usage data'
 
         authorize :read_user
@@ -13,6 +13,15 @@ module Types
           type: GraphQL::Types::String,
           null: true,
           description: "URL of the user's avatar."
+        field :events,
+          type: [EventType],
+          null: true,
+          description: 'Billable events from the user.' do
+            argument :page, GraphQL::Types::Int,
+              required: false,
+              default_value: 1,
+              description: 'Page number to fetch the events.'
+          end
         field :id,
           type: GlobalIDType[::User],
           null: false,
@@ -39,6 +48,21 @@ module Types
           :declarative_policy_subject
         )
 
+        UserEvent = Struct.new(
+          :timestamp,
+          :event_type,
+          :project_id,
+          :namespace_id,
+          :credits_used,
+          :declarative_policy_subject
+        )
+
+        def events(page: 1)
+          BatchLoader::GraphQL.for(object.id).batch do |user_ids, loader|
+            load_users_events(user_ids, page, loader)
+          end
+        end
+
         def usage
           BatchLoader::GraphQL.for(object.id).batch do |user_ids, loader|
             load_users_usage(user_ids, loader)
@@ -64,6 +88,28 @@ module Types
               )
             )
           end
+        end
+
+        def load_users_events(user_ids, page, loader)
+          # We only resolve events if only one user was resolved to avoid overaloading CustomersDot API
+          return unless user_ids.length == 1
+
+          result = context[:subscription_usage_client].get_events_for_user_id(user_ids.first, page)
+
+          return unless result[:userEvents]
+
+          user_events = result[:userEvents].map do |event|
+            UserEvent.new(
+              timestamp: event[:timestamp],
+              event_type: event[:eventType],
+              project_id: event[:projectId],
+              namespace_id: event[:namespaceId],
+              credits_used: event[:creditsUsed],
+              declarative_policy_subject: object
+            )
+          end
+
+          loader.call(user_ids.first, user_events)
         end
       end
     end
