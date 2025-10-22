@@ -3,7 +3,7 @@ import { GlAlert, GlTab } from '@gitlab/ui';
 import VueApollo from 'vue-apollo';
 import MockAdapter from 'axios-mock-adapter';
 import CurrentUsageCard from 'ee/usage_quotas/usage_billing/components/current_usage_card.vue';
-import CurrentUsageNoPoolCard from 'ee/usage_quotas/usage_billing/components/current_usage_no_pool_card.vue';
+import CurrentOverageUsageCard from 'ee/usage_quotas/usage_billing/components/current_overage_usage_card.vue';
 import PurchaseCommitmentCard from 'ee/usage_quotas/usage_billing/components/purchase_commitment_card.vue';
 import getSubscriptionUsageQuery from 'ee/usage_quotas/usage_billing/graphql/get_subscription_usage.query.graphql';
 import createMockApollo from 'helpers/mock_apollo_helper';
@@ -94,7 +94,6 @@ describe('UsageBillingApp', () => {
       expect(wrapper.findComponent(CurrentUsageCard).props()).toMatchObject({
         poolCreditsUsed: 50,
         poolTotalCredits: 300,
-        overageCreditsUsed: 0,
         monthStartDate: '2024-01-01',
         monthEndDate: '2024-01-31',
       });
@@ -186,11 +185,11 @@ describe('UsageBillingApp', () => {
       expect(currentUsageCard.exists()).toBe(false);
     });
 
-    it('will render current_usage_no_pool summary card', () => {
-      const currentUsageNoPoolCard = wrapper.findComponent(CurrentUsageNoPoolCard);
+    it('will render current overage usage card', () => {
+      const currentOverageUsageCard = wrapper.findComponent(CurrentOverageUsageCard);
 
-      expect(currentUsageNoPoolCard.exists()).toBe(true);
-      expect(currentUsageNoPoolCard.props()).toMatchObject({
+      expect(currentOverageUsageCard.exists()).toBe(true);
+      expect(currentOverageUsageCard.props()).toMatchObject({
         overageCreditsUsed: 50,
         monthStartDate: '2024-01-01',
         monthEndDate: '2024-01-31',
@@ -223,10 +222,10 @@ describe('UsageBillingApp', () => {
       expect(currentUsageCard.exists()).toBe(false);
     });
 
-    it('will not render current-usage-no-pool-card', () => {
-      const currentUsageCard = wrapper.findComponent(CurrentUsageNoPoolCard);
+    it('will not render render current overage usage card', () => {
+      const currentOverageUsageCard = wrapper.findComponent(CurrentOverageUsageCard);
 
-      expect(currentUsageCard.exists()).toBe(false);
+      expect(currentOverageUsageCard.exists()).toBe(false);
     });
 
     it('will pass hasCommitment to purchase-commitment-card', () => {

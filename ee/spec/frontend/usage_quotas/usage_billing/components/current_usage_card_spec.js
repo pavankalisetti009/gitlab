@@ -8,7 +8,6 @@ describe('CurrentUsageCard', () => {
   let wrapper;
 
   const defaultProps = {
-    overageCreditsUsed: 1,
     poolCreditsUsed: 7800,
     poolTotalCredits: 10000,
     monthStartDate: '2025-09-01',
@@ -92,14 +91,6 @@ describe('CurrentUsageCard', () => {
 
     it('renders correct credits remaining', () => {
       expect(wrapper.findByTestId('pool-credits-remaining').text()).toBe('2.2k credits remaining');
-    });
-  });
-
-  describe('overage', () => {
-    it('renders correct current overage value', () => {
-      createComponent();
-
-      expect(wrapper.findByTestId('overage-credits-used').text()).toBe('1');
     });
   });
 
