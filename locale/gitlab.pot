@@ -29517,6 +29517,9 @@ msgstr ""
 msgid "Geo|CI Secure Files"
 msgstr ""
 
+msgid "Geo|Checksum status"
+msgstr ""
+
 msgid "Geo|Checksum: %{verificationChecksum}"
 msgstr ""
 

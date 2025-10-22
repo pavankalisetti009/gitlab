@@ -31,5 +31,17 @@ describe('DataManagementApp', () => {
 
       await expect(getModels(model)).resolves.toMatchObject({ data: { data: models } });
     });
+
+    it('passes params to request', async () => {
+      const model = 'snippet_repository';
+      const params = { page: 1, per_page: 20, checksum_state: 'verified' };
+      const expectedUrl = `${mockUrlRoot}/api/${mockApiVersion}/admin/data_management/${model}`;
+
+      mock.onGet(expectedUrl).reply(HTTP_STATUS_OK, { data: models });
+
+      await getModels(model, params);
+
+      expect(mock.history.get[0].params).toEqual(params);
+    });
   });
 });
