@@ -12,7 +12,7 @@ module Gitlab
             DESCRIPTION = 'Performs a semantic search on the codebase'
             EXAMPLE = 'Codebase Search Tool example'
 
-            ACTIVE_CONTEXT_QUERY_CLASS = ::Ai::ActiveContext::Queries::Code
+            ACTIVE_CONTEXT_QUERY = ::Ai::ActiveContext::Queries
 
             PROJECT_GLOBAL_ID_PATTERN = %r{gid://gitlab/Project/(\d+)}
 
@@ -106,14 +106,32 @@ module Gitlab
 
               return "" if category == 'directory' && path.blank?
 
-              results = codebase_query.filter(project_id: project_id, path: path)
+              result = codebase_query.filter(project_id: project_id, path: path)
 
+              return failed_search_result_context(result, category, project_id) unless result.success?
+
+              successful_search_result_context(result, category)
+            end
+
+            def failed_search_result_context(result, category, project_id)
+              error_message = case result.error_code
+                              when ACTIVE_CONTEXT_QUERY::Result::ERROR_NO_EMBEDDINGS
+                                "Project with ID #{project_id} has no Code Embeddings"
+                              else
+                                "Unknown error"
+                              end
+
+              "\n\nA semantic search was attempted on the #{category}, " \
+                "but there was an error:\n#{error_message}."
+            end
+
+            def successful_search_result_context(result, category)
               sr_context = "\n\n" \
                 "A semantic search has been performed on the #{category}. " \
                 "The results are listed below enclosed in <search_result></search_result>. " \
                 "Each result has a file_path and content. The content may be a snippet " \
                 "within the file or the full file content.\n\n"
-              sr_context += results.map do |r|
+              sr_context += result.map do |r|
                 "<search_result>\n" \
                   "<file_path>#{r['path']}</file_path>\n" \
                   "<content>#{r['content']}</content>\n" \
@@ -124,7 +142,7 @@ module Gitlab
             end
 
             def codebase_query
-              @codebase_query ||= ACTIVE_CONTEXT_QUERY_CLASS.new(
+              @codebase_query ||= ACTIVE_CONTEXT_QUERY::Code.new(
                 search_term: options[:input],
                 user: context.current_user
               )

@@ -275,6 +275,57 @@ RSpec.describe Gitlab::Llm::Chain::Tools::CodebaseSearch::Executor, feature_cate
             execute_tool
           end
 
+          context 'when the search on a project has an accepted failure' do
+            before do
+              allow(codebase_query).to receive(:filter).with(project_id: project_2.id, path: nil)
+                .and_return(search_failed_result)
+            end
+
+            let(:search_failed_result) do
+              Ai::ActiveContext::Queries::Result.new(
+                success: false,
+                error_code: Ai::ActiveContext::Queries::Result::ERROR_NO_EMBEDDINGS
+              )
+            end
+
+            it 'runs successfully but indicates the error' do
+              answer = execute_tool
+              expect(answer.status).to eq(:ok)
+
+              project_2_ac = gitlab_context.additional_context.find do |ac|
+                ac['category'] == 'repository' &&
+                  ac['id'] == "gid://gitlab/Project/#{project_2.id}"
+              end
+              expect(project_2_ac['content']).to include(
+                "A semantic search was attempted on the repository, " \
+                  "but there was an error:\nProject with ID #{project_2.id} has no Code Embeddings."
+              )
+            end
+
+            context 'with an unknown error' do
+              let(:search_failed_result) do
+                Ai::ActiveContext::Queries::Result.new(
+                  success: false,
+                  error_code: :some_error
+                )
+              end
+
+              it 'indicates the error as unknown error' do
+                answer = execute_tool
+                expect(answer.status).to eq(:ok)
+
+                project_2_ac = gitlab_context.additional_context.find do |ac|
+                  ac['category'] == 'repository' &&
+                    ac['id'] == "gid://gitlab/Project/#{project_2.id}"
+                end
+                expect(project_2_ac['content']).to include(
+                  "A semantic search was attempted on the repository, " \
+                    "but there was an error:\nUnknown error."
+                )
+              end
+            end
+          end
+
           context 'when the directory additional context does not have the required metadata' do
             # only setup 1 repository additional context to make the test simpler
             let(:repository_additional_contexts) do
@@ -368,12 +419,15 @@ RSpec.describe Gitlab::Llm::Chain::Tools::CodebaseSearch::Executor, feature_cate
   def build_es_query_result(es_docs)
     return unless es_docs
 
-    es_hits = { 'hits' => { 'total' => { 'value' => 1 }, 'hits' => es_docs } }
-
-    ActiveContext::Databases::Elasticsearch::QueryResult.new(
-      result: es_hits,
+    hits = ActiveContext::Databases::Elasticsearch::QueryResult.new(
+      result: { 'hits' => { 'total' => { 'value' => 1 }, 'hits' => es_docs } },
       collection: Ai::ActiveContext::Collections::Code,
       user: user
+    )
+
+    Ai::ActiveContext::Queries::Result.new(
+      success: true,
+      hits: hits
     )
   end
 end
