@@ -1,9 +1,9 @@
 import { GlSprintf } from '@gitlab/ui';
-import CurrentUsageNoPoolCard from 'ee/usage_quotas/usage_billing/components/current_usage_no_pool_card.vue';
+import CurrentOverageUsageCard from 'ee/usage_quotas/usage_billing/components/current_overage_usage_card.vue';
 import HumanTimeframeWithDaysRemaining from 'ee/usage_quotas/usage_billing/components/human_timeframe_with_days_remaining.vue';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 
-describe('CurrentUsageNoPoolCard', () => {
+describe('CurrentOverageUsageCard', () => {
   /** @type {import('helpers/vue_test_utils_helper').ExtendedWrapper} */
   let wrapper;
 
@@ -14,7 +14,7 @@ describe('CurrentUsageNoPoolCard', () => {
   };
 
   const createComponent = (props) => {
-    wrapper = shallowMountExtended(CurrentUsageNoPoolCard, {
+    wrapper = shallowMountExtended(CurrentOverageUsageCard, {
       propsData: {
         ...defaultProps,
         ...props,
@@ -31,7 +31,7 @@ describe('CurrentUsageNoPoolCard', () => {
     });
 
     it('renders card title', () => {
-      expect(wrapper.find('h2').text()).toBe('Current month on demand usage');
+      expect(wrapper.find('h2').text()).toBe('On-demand credits used this billable month');
     });
 
     it('renders the formatted date range', () => {

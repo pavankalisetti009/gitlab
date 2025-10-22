@@ -21,10 +21,6 @@ export default {
       type: Number,
       required: true,
     },
-    overageCreditsUsed: {
-      type: Number,
-      required: true,
-    },
     monthStartDate: {
       type: String,
       required: true,
@@ -35,12 +31,9 @@ export default {
     },
   },
   computed: {
-    totalCreditsUsed() {
-      return this.poolCreditsUsed + this.overageCreditsUsed;
-    },
     usagePercentage() {
       if (this.poolTotalCredits === 0) return 0;
-      return ((this.totalCreditsUsed / this.poolTotalCredits) * 100).toFixed(1);
+      return ((this.poolCreditsUsed / this.poolTotalCredits) * 100).toFixed(1);
     },
     poolCreditsRemaining() {
       return this.poolTotalCredits - this.poolCreditsUsed;
@@ -76,7 +69,7 @@ export default {
     </p>
     <div class="gl-flex gl-flex-row gl-justify-between">
       <span class="gl-text-size-h2 gl-font-bold" data-testid="total-credits-used">
-        {{ numberToMetricPrefix(totalCreditsUsed) }}
+        {{ numberToMetricPrefix(poolCreditsUsed) }}
       </span>
       <span class="gl-text-size-h2 gl-font-bold gl-text-gray-500" data-testid="pool-total-credits">
         {{ $options.totalCreditsSeparator }}
@@ -112,12 +105,6 @@ export default {
             }}</template>
           </gl-sprintf>
         </span>
-      </div>
-      <div class="gl-flex gl-flex-row gl-justify-between">
-        <span>{{ s__('UsageBilling|Current overage') }}</span>
-        <span data-testid="overage-credits-used">{{
-          numberToMetricPrefix(overageCreditsUsed)
-        }}</span>
       </div>
     </div>
   </gl-card>

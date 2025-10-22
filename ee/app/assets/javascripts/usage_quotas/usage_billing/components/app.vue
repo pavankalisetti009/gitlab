@@ -11,7 +11,7 @@ import getSubscriptionUsageQuery from '../graphql/get_subscription_usage.query.g
 import PurchaseCommitmentCard from './purchase_commitment_card.vue';
 import UsageByUserTab from './usage_by_user_tab.vue';
 import CurrentUsageCard from './current_usage_card.vue';
-import CurrentUsageNoPoolCard from './current_usage_no_pool_card.vue';
+import CurrentOverageUsageCard from './current_overage_usage_card.vue';
 
 export default {
   name: 'UsageBillingApp',
@@ -21,7 +21,7 @@ export default {
     PurchaseCommitmentCard,
     UsageByUserTab,
     CurrentUsageCard,
-    CurrentUsageNoPoolCard,
+    CurrentOverageUsageCard,
     UserDate,
   },
   apollo: {
@@ -153,13 +153,12 @@ export default {
           v-if="poolIsAvailable"
           :pool-total-credits="poolTotalCredits"
           :pool-credits-used="poolCreditsUsed"
-          :overage-credits-used="overageCreditsUsed"
           :month-start-date="gitlabCreditsUsage.startDate"
           :month-end-date="gitlabCreditsUsage.endDate"
         />
 
-        <current-usage-no-pool-card
-          v-else-if="overageIsAllowed"
+        <current-overage-usage-card
+          v-if="overageIsAllowed"
           :overage-credits-used="overageCreditsUsed"
           :month-start-date="gitlabCreditsUsage.startDate"
           :month-end-date="gitlabCreditsUsage.endDate"

@@ -70335,12 +70335,6 @@ msgstr ""
 msgid "UsageBilling|Credits used this month"
 msgstr ""
 
-msgid "UsageBilling|Current month on demand usage"
-msgstr ""
-
-msgid "UsageBilling|Current overage"
-msgstr ""
-
 msgid "UsageBilling|Daily average use"
 msgstr ""
 
@@ -70362,6 +70356,9 @@ msgstr ""
 msgid "UsageBilling|Last updated:"
 msgstr ""
 
+msgid "UsageBilling|Learn more about %{helpLinkStart}GitLab Credit pricing%{helpLinkEnd}."
+msgstr ""
+
 msgid "UsageBilling|Location"
 msgstr ""
 
@@ -70369,6 +70366,9 @@ msgid "UsageBilling|Monthly commitments offer significant discounts off list pri
 msgstr ""
 
 msgid "UsageBilling|No user data available"
+msgstr ""
+
+msgid "UsageBilling|On-demand credits used this billable month"
 msgstr ""
 
 msgid "UsageBilling|Peak daily use"
@@ -70381,6 +70381,9 @@ msgid "UsageBilling|Purchase monthly commitment"
 msgstr ""
 
 msgid "UsageBilling|Save on GitLab Credits with monthly commitment"
+msgstr ""
+
+msgid "UsageBilling|These are credits consumed beyond your users included credits, charged at standard on-demand rates."
 msgstr ""
 
 msgid "UsageBilling|Total credits used"
