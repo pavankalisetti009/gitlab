@@ -499,7 +499,7 @@ RSpec.shared_examples 'a deployable job' do
 
     context 'when options does not include deployment_tier' do
       let(:options) { { environment: { name: 'production' } } }
-      let(:job) { described_class.new(options: options, environment: 'production', project: project) }
+      let(:job) { FactoryBot.build(factory_type, options: options, environment: 'production', project: project) }
 
       it 'uses tier from environment' do
         is_expected.to eq('development')
