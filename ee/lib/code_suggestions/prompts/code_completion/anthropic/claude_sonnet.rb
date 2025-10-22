@@ -5,7 +5,7 @@ module CodeSuggestions
     module CodeCompletion
       module Anthropic
         class ClaudeSonnet < Base
-          MODEL_NAME = 'claude-3-5-sonnet-20240620'
+          MODEL_NAME = 'claude-sonnet-4-20250514'
         end
       end
     end

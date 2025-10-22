@@ -46,7 +46,7 @@ RSpec.describe CodeSuggestions::Tasks::CodeCompletion, feature_category: :code_s
     )
   end
 
-  let(:anthropic_model_name) { 'claude-3-5-sonnet-20240620' }
+  let(:anthropic_model_name) { 'claude-sonnet-4-20250514' }
 
   let(:anthropic_prompt) do
     [
