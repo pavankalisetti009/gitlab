@@ -135,7 +135,7 @@ RSpec.describe SearchController, feature_category: :global_search do
       end
 
       context 'for project scope' do
-        let(:creation_traits) { [:public] }
+        let(:creation_traits) { [:public, :with_namespace_settings] }
         let(:object) { :project }
         let(:creation_args) { { name: 'foo' } }
         let(:params) { { search: 'foo', scope: 'projects' } }
