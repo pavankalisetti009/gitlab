@@ -22,17 +22,17 @@ module QA
           end
 
           def has_empty_workspace?
-            has_element?('new-workspace-button', skip_finished_loading_check: true)
+            has_element?('new-workspace-button')
           end
 
           def create_workspace(agent, project)
             existing_workspaces = []
 
             if has_empty_workspace?
-              click_element('new-workspace-button', skip_finished_loading_check: true)
+              click_element('new-workspace-button')
             else
               existing_workspaces = get_workspaces_list(tab: :active)
-              click_element('list-new-workspace-button', skip_finished_loading_check: true)
+              click_element('list-new-workspace-button')
             end
 
             QA::EE::Page::Workspace::New.perform do |new|
@@ -60,21 +60,21 @@ module QA
           end
 
           def get_workspaces_list(tab:)
-            within_element("workspace-tab-#{tab}".to_sym, skip_finished_loading_check: true) do
-              all_elements('workspace-name', minimum: 0, skip_finished_loading_check: true)
+            within_element("workspace-tab-#{tab}".to_sym) do
+              all_elements('workspace-name', minimum: 0)
                 .map { |element| element.text.strip }
             end
           end
 
           def wait_for_workspaces_creation(workspace)
-            within_element("#{workspace}-action".to_sym, skip_finished_loading_check: true) do
-              Support::WaitForRequests.wait_for_requests(skip_finished_loading_check: false, spinner_wait: 180)
+            within_element("#{workspace}-action".to_sym) do
+              Support::WaitForRequests.wait_for_requests
             end
           end
 
           def has_workspace_state?(workspace, state)
-            within_element(workspace.to_s.to_sym, skip_finished_loading_check: true) do
-              has_element?('workspace-state-indicator', title: state, skip_finished_loading_check: true, wait: 360)
+            within_element(workspace.to_s.to_sym) do
+              has_element?('workspace-state-indicator', title: state, wait: 360)
             end
           end
         end

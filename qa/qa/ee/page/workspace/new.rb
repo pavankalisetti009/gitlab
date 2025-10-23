@@ -38,7 +38,7 @@ module QA
           end
 
           def save_workspace
-            click_element('create-workspace', skip_finished_loading_check: true)
+            click_element('create-workspace')
           end
         end
       end

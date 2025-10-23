@@ -27,7 +27,7 @@ module QA
               end
 
               def wait_for_sdk_containers
-                has_element?('sdk-application-id-container', skip_finished_loading_check: true, wait: 120)
+                has_element?('sdk-application-id-container', wait: 120)
               end
 
               def sdk_application_id

@@ -15,10 +15,10 @@ module QA
           end
 
           def click_workspace_action(workspace, action)
-            within_element("#{workspace}-action".to_sym, skip_finished_loading_check: true) do
-              click_element("base-dropdown-toggle", skip_finished_loading_check: true)
+            within_element("#{workspace}-action".to_sym) do
+              click_element("base-dropdown-toggle")
 
-              click_element("workspace-#{action}-button", skip_finished_loading_check: true)
+              click_element("workspace-#{action}-button")
             end
           end
         end

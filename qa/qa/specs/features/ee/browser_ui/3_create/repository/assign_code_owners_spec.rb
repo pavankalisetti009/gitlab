@@ -57,9 +57,7 @@ module QA
           merge_request.no_preparation = true
         end
 
-        # TODO: remove `skip_finished_loading_check: true` when the following issue is resolved
-        # https://gitlab.com/gitlab-org/gitlab/-/issues/398559
-        mr.visit!(skip_finished_loading_check: true)
+        mr.visit!
 
         # Check that the merge request assigns the original code owner as an
         # approver (because the current CODEOWNERS file in the default branch
