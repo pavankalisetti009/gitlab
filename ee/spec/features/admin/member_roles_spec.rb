@@ -85,7 +85,11 @@ RSpec.describe 'Instance-level Member Roles', feature_category: :permissions do
       end
 
       it_behaves_like 'creates a new custom role'
-      it_behaves_like 'deletes a custom role'
+
+      context 'with quarantine',
+        quarantine: 'https://gitlab.com/gitlab-org/quality/test-failure-issues/-/issues/3423' do
+        it_behaves_like 'deletes a custom role'
+      end
     end
 
     context 'when on SaaS' do
