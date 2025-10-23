@@ -34,9 +34,20 @@ RSpec.describe DesignManagement::Repository, feature_category: :design_managemen
       let_it_be(:project_2) { create(:project, group: nested_group_1) }
       let_it_be(:project_3) { create(:project, :broken_storage, group: group_2) }
 
-      let_it_be(:replicable_1) { create(:design_management_repository, project: project_1) }
-      let_it_be(:replicable_2) { create(:design_management_repository, project: project_2) }
-      let_it_be(:replicable_3) { create(:design_management_repository, project: project_3) }
+      # Design management for the root group
+      let_it_be(:first_replicable_and_in_selective_sync) do
+        create(:design_management_repository, project: project_1)
+      end
+
+      # Design management for a subgroup
+      let_it_be(:second_replicable_and_in_selective_sync) do
+        create(:design_management_repository, project: project_2)
+      end
+
+      # Design management in a shard name that doesn't actually exist
+      let_it_be(:last_replicable_and_not_in_selective_sync) do
+        create(:design_management_repository, project: project_3)
+      end
 
       let_it_be_with_refind(:secondary) { create(:geo_node, :secondary) }
 
