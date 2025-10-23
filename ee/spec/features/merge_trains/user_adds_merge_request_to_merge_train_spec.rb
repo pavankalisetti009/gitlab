@@ -107,7 +107,13 @@ RSpec.describe 'User adds a merge request to a merge train', :sidekiq_inline, :j
       end
     end
 
-    context 'when the merge request is not the first queue on the train' do
+    context 'when the merge request is not the first queue on the train',
+      quarantine: {
+        issue: [
+          'https://gitlab.com/gitlab-org/gitlab/-/issues/571354',
+          'https://gitlab.com/gitlab-org/gitlab/-/issues/498518'
+        ]
+      } do
       before do
         create(:merge_request, :on_train,
           source_project: project, source_branch: 'signed-commits',
@@ -136,7 +142,8 @@ RSpec.describe 'User adds a merge request to a merge train', :sidekiq_inline, :j
       expect(page).to have_content('Add to merge train when all merge checks pass')
     end
 
-    context 'when merge_trains EEP license is not available' do
+    context 'when merge_trains EEP license is not available',
+      quarantine: 'https://gitlab.com/gitlab-org/gitlab/-/issues/572684' do
       before do
         stub_licensed_features(merge_trains: false)
       end
@@ -148,7 +155,8 @@ RSpec.describe 'User adds a merge request to a merge train', :sidekiq_inline, :j
       end
     end
 
-    context "when user clicks 'Add to merge train when all merge checks pass' button" do
+    context "when user clicks 'Add to merge train when all merge checks pass' button",
+      quarantine: 'https://gitlab.com/gitlab-org/gitlab/-/issues/571356' do
       before do
         visit project_merge_request_path(project, merge_request)
         click_button 'Set to auto-merge'

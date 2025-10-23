@@ -48,7 +48,11 @@ module QA
 
       it(
         'merge request can be merged immediately',
-        testcase: 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/348034'
+        testcase: 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/348034',
+        quarantine: {
+          issue: 'https://gitlab.com/gitlab-org/gitlab/-/issues/574241',
+          type: 'flaky'
+        }
       ) do
         merge_request.visit!
 
