@@ -4,8 +4,18 @@ module Gitlab
   module Usage
     module Metrics
       module Instrumentations
-        class CountGroupsDuoAvailabilityMetric < GenericMetric
+        class CountGroupsDuoAvailabilityMetric < DatabaseMetric
           DUO_SETTINGS_VALUES = %w[default_on default_off never_on].freeze
+
+          operation :count
+          relation { ::Group }
+          start { ::Group.minimum(:id) }
+          finish { ::Group.maximum(:id) }
+          metric_options do
+            {
+              batch_size: 10_000
+            }
+          end
 
           def initialize(metric_definition)
             super
@@ -16,12 +26,12 @@ module Gitlab
               "Unknown parameters: duo_settings_value:#{options[:duo_settings_value]}"
           end
 
-          def value
-            Group.joins(:namespace_settings)
-              .where(namespace_settings: duo_settings_to_settings_filter(options[:duo_settings_value])).count
-          end
-
           private
+
+          def relation
+            super.joins(:namespace_settings)
+            .where(namespace_settings: duo_settings_to_settings_filter(options[:duo_settings_value]))
+          end
 
           def duo_settings_to_settings_filter(duo_settings_value)
             # The default_off scenario will have both values set to false and is assigned implicitly
