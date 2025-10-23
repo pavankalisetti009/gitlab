@@ -1332,7 +1332,11 @@ describeSkipVue3(skipReason, () => {
       `('calls setAgenticMode with $description and saveCookie=true', ({ value }) => {
         wrapper.vm.duoAgenticModePreference = value;
 
-        expect(setAgenticMode).toHaveBeenCalledWith({ agenticMode: value, saveCookie: true });
+        expect(setAgenticMode).toHaveBeenCalledWith({
+          agenticMode: value,
+          saveCookie: true,
+          isEmbedded: false,
+        });
       });
     });
   });
@@ -1386,7 +1390,11 @@ describeSkipVue3(skipReason, () => {
       toggle.vm.$emit('change', true);
       await nextTick();
 
-      expect(setAgenticMode).toHaveBeenCalledWith({ agenticMode: true, saveCookie: true });
+      expect(setAgenticMode).toHaveBeenCalledWith({
+        agenticMode: true,
+        saveCookie: true,
+        isEmbedded: false,
+      });
     });
 
     it('updates the toggle value when duoAgenticModePreference changes', async () => {

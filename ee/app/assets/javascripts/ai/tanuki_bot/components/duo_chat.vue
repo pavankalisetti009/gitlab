@@ -102,6 +102,11 @@ export default {
       required: false,
       default: 'default',
     },
+    isEmbedded: {
+      type: Boolean,
+      required: false,
+      default: false,
+    },
   },
   apollo: {
     // eslint-disable-next-line @gitlab/vue-no-undef-apollo-properties
@@ -113,7 +118,7 @@ export default {
         };
       },
       skip() {
-        return !this.duoChatGlobalState.isShown;
+        return this.shouldSkipQueries;
       },
       fetchPolicy: fetchPolicies.NETWORK_ONLY,
       result({ data }) {
@@ -128,7 +133,7 @@ export default {
     aiConversationThreads: {
       query: getAiConversationThreads,
       skip() {
-        return !this.duoChatGlobalState.isShown;
+        return this.shouldSkipQueries;
       },
       update(data) {
         return data?.aiConversationThreads?.nodes || [];
@@ -140,7 +145,7 @@ export default {
     aiSlashCommands: {
       query: getAiSlashCommands,
       skip() {
-        return !this.duoChatGlobalState.isShown;
+        return this.shouldSkipQueries;
       },
       variables() {
         return {
@@ -157,7 +162,7 @@ export default {
     contextPresets: {
       query: getAiChatContextPresets,
       skip() {
-        return !this.duoChatGlobalState.isShown;
+        return this.shouldSkipQueries;
       },
       variables() {
         return {
@@ -201,12 +206,16 @@ export default {
   },
   computed: {
     ...mapState(['loading', 'messages']),
+    shouldSkipQueries() {
+      // In embedded mode, always load; in drawer mode, only load when shown
+      return this.isEmbedded ? false : !this.duoChatGlobalState.isShown;
+    },
     duoAgenticModePreference: {
       get() {
         return getCookie(DUO_AGENTIC_MODE_COOKIE) === 'true';
       },
       set(value) {
-        setAgenticMode({ agenticMode: value, saveCookie: true });
+        setAgenticMode({ agenticMode: value, saveCookie: true, isEmbedded: this.isEmbedded });
       },
     },
     computedResourceId() {
@@ -217,6 +226,11 @@ export default {
       return this.resourceId || this.userId;
     },
     dimensions() {
+      // Only return dimensions for drawer mode; embedded mode doesn't need them
+      if (this.isEmbedded) {
+        return {};
+      }
+
       return {
         width: this.width,
         height: this.height,
@@ -268,13 +282,22 @@ export default {
     },
   },
   mounted() {
-    this.setDimensions();
-    window.addEventListener('resize', this.onWindowResize);
+    // Only manage dimensions and resize when not isEmbedded
+    if (!this.isEmbedded) {
+      this.setDimensions();
+      window.addEventListener('resize', this.onWindowResize);
+    }
     this.switchMode(this.mode);
   },
   beforeDestroy() {
     // Remove the event listener when the component is destroyed
-    window.removeEventListener('resize', this.onWindowResize);
+    if (!this.isEmbedded) {
+      window.removeEventListener('resize', this.onWindowResize);
+    }
+    // Clear messages when component is destroyed to prevent state leaking
+    // between mode switches (classic <-> agentic)
+    this.setMessages([]);
+    this.setLoading(false);
   },
   methods: {
     ...mapActions(['addDuoChatMessage', 'setMessages', 'setLoading']),
@@ -444,7 +467,11 @@ export default {
         });
     },
     onChatClose() {
-      this.duoChatGlobalState.isShown = false;
+      // Only manage global state when not isEmbedded
+      // When isEmbedded, the parent container (AI Panel) manages the visibility
+      if (!this.isEmbedded) {
+        this.duoChatGlobalState.isShown = false;
+      }
     },
     onCalloutDismissed() {
       this.duoChatGlobalState.isShown = true;
@@ -515,7 +542,7 @@ export default {
 
 <template>
   <div class="gl-grow-1 gl-flex gl-w-full">
-    <div v-if="duoChatGlobalState.isShown" class="gl-w-full">
+    <div v-if="isEmbedded || duoChatGlobalState.isShown" class="gl-w-full">
       <!-- Renderless component for subscriptions -->
       <tanuki-bot-subscriptions
         :user-id="userId"
@@ -541,12 +568,12 @@ export default {
         :messages="messages"
         :error="error"
         :is-loading="loading"
-        :should-render-resizable="true"
+        :should-render-resizable="!isEmbedded"
         :predefined-prompts="predefinedPrompts"
         :badge-type="null"
         :tool-name="toolName"
         :canceled-request-ids="cancelledRequestIds"
-        class="duo-chat-container gl-h-full"
+        :class="isEmbedded ? 'gl-h-full gl-w-full' : 'duo-chat-container gl-h-full'"
         @thread-selected="onThreadSelected"
         @new-chat="onNewChat"
         @back-to-list="onBackToList"

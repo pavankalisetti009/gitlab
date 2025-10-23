@@ -4,6 +4,8 @@ import { createMockDirective } from 'helpers/vue_mock_directive';
 import { shouldDisableShortcuts } from '~/behaviors/shortcuts/shortcuts_toggle';
 import { keysFor, DUO_CHAT } from '~/behaviors/shortcuts/keybindings';
 import NavigationRail from 'ee/ai/components/navigation_rail.vue';
+import { CHAT_MODES } from 'ee/ai/tanuki_bot/constants';
+import { duoChatGlobalState } from '~/super_sidebar/constants';
 
 jest.mock('~/behaviors/shortcuts/shortcuts_toggle');
 jest.mock('~/behaviors/shortcuts/keybindings');
@@ -30,10 +32,13 @@ describe('NavigationRail', () => {
   const findChatToggle = () => wrapper.findByTestId('ai-chat-toggle');
   const findSuggestionsToggle = () => wrapper.findByTestId('ai-suggestions-toggle');
   const findSessionsToggle = () => wrapper.findByTestId('ai-sessions-toggle');
+  const findDivider = () => wrapper.find('[name="divider"]');
 
   beforeEach(() => {
     shouldDisableShortcuts.mockReturnValue(false);
     keysFor.mockReturnValue([DUO_CHAT]);
+    // Reset global state before each test
+    duoChatGlobalState.chatMode = CHAT_MODES.AGENTIC;
 
     createComponent();
   });
@@ -69,5 +74,23 @@ describe('NavigationRail', () => {
     createComponent({ showSuggestionsTab: false });
 
     expect(findSuggestionsToggle().exists()).toBe(false);
+  });
+
+  describe('sessions button visibility', () => {
+    it('shows sessions button when in agentic mode', () => {
+      duoChatGlobalState.chatMode = CHAT_MODES.AGENTIC;
+      createComponent();
+
+      expect(findSessionsToggle().exists()).toBe(true);
+      expect(findDivider().exists()).toBe(true);
+    });
+
+    it('hides sessions button when in classic mode', () => {
+      duoChatGlobalState.chatMode = CHAT_MODES.CLASSIC;
+      createComponent();
+
+      expect(findSessionsToggle().exists()).toBe(false);
+      expect(findDivider().exists()).toBe(false);
+    });
   });
 });

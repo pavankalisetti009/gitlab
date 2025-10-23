@@ -3,6 +3,8 @@ import { GlButton, GlTooltipDirective } from '@gitlab/ui';
 import { BV_HIDE_TOOLTIP } from '~/lib/utils/constants';
 import { keysFor, DUO_CHAT } from '~/behaviors/shortcuts/keybindings';
 import { shouldDisableShortcuts } from '~/behaviors/shortcuts/shortcuts_toggle';
+import { duoChatGlobalState } from '~/super_sidebar/constants';
+import { CHAT_MODES } from 'ee/ai/tanuki_bot/constants';
 import { __ } from '~/locale';
 import { sanitize } from '~/lib/dompurify';
 
@@ -16,6 +18,7 @@ export default {
   },
   i18n: {
     duoChatLabel: __('Active GitLab Duo Chat'),
+    currentChatLabel: __('Current GitLab Duo Chat'),
     newLabel: __('New GitLab Duo Chat'),
     historyLabel: __('GitLab Duo Chat history'),
     suggestionsLabel: __('GitLab Duo suggestions'),
@@ -38,12 +41,25 @@ export default {
       default: true,
     },
   },
+  data() {
+    return {
+      duoChatGlobalState,
+    };
+  },
   computed: {
+    isAgenticMode() {
+      return this.duoChatGlobalState.chatMode === CHAT_MODES.AGENTIC;
+    },
+    showSessionsButton() {
+      return this.isAgenticMode;
+    },
     duoShortcutKey() {
       return shouldDisableShortcuts() ? null : keysFor(DUO_CHAT);
     },
     formattedDuoShortcutTooltip() {
-      const description = this.$options.i18n.duoChatLabel;
+      const description = this.isAgenticMode
+        ? this.$options.i18n.currentChatLabel
+        : this.$options.i18n.duoChatLabel;
       const key = keysFor(DUO_CHAT);
       return shouldDisableShortcuts()
         ? description
@@ -113,24 +129,26 @@ export default {
       @mouseout="hideTooltips"
       @click="toggleTab('history')"
     />
-    <div
-      class="gl-my-4 gl-h-5 gl-w-1 gl-border-0 gl-border-r-1 gl-border-solid gl-border-[#7759C233] lg:gl-mx-auto lg:gl-h-1 lg:gl-w-5 lg:gl-border-r-0 lg:gl-border-t-1"
-      name="divider"
-    ></div>
-    <gl-button
-      v-gl-tooltip.left
-      icon="session-ai"
-      class="!gl-rounded-lg"
-      :class="['ai-nav-icon', { 'ai-nav-icon-active': activeTab === 'sessions' }]"
-      category="tertiary"
-      :aria-selected="activeTab === 'sessions'"
-      :aria-expanded="isExpanded"
-      :aria-label="$options.i18n.sessionsLabel"
-      :title="$options.i18n.sessionsLabel"
-      data-testid="ai-sessions-toggle"
-      @mouseout="hideTooltips"
-      @click="toggleTab('sessions')"
-    />
+    <template v-if="showSessionsButton">
+      <div
+        class="gl-my-4 gl-h-5 gl-w-1 gl-border-0 gl-border-r-1 gl-border-solid gl-border-[#7759C233] lg:gl-mx-auto lg:gl-h-1 lg:gl-w-5 lg:gl-border-r-0 lg:gl-border-t-1"
+        name="divider"
+      ></div>
+      <gl-button
+        v-gl-tooltip.left
+        icon="session-ai"
+        class="!gl-rounded-lg"
+        :class="['ai-nav-icon', { 'ai-nav-icon-active': activeTab === 'sessions' }]"
+        category="tertiary"
+        :aria-selected="activeTab === 'sessions'"
+        :aria-expanded="isExpanded"
+        :aria-label="$options.i18n.sessionsLabel"
+        :title="$options.i18n.sessionsLabel"
+        data-testid="ai-sessions-toggle"
+        @mouseout="hideTooltips"
+        @click="toggleTab('sessions')"
+      />
+    </template>
     <gl-button
       v-if="showSuggestionsTab"
       v-gl-tooltip.left

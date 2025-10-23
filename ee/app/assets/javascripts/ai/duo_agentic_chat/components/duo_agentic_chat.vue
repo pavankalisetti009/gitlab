@@ -419,6 +419,10 @@ export default {
       window.removeEventListener('resize', this.onWindowResize);
     }
     this.cleanupSocket();
+    // Clear messages when component is destroyed to prevent state leaking
+    // between mode switches (classic <-> agentic)
+    this.setMessages([]);
+    this.setLoading(false);
   },
   methods: {
     ...mapActions(['addDuoChatMessage', 'setMessages', 'setLoading']),

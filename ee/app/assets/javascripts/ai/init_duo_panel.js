@@ -5,6 +5,7 @@ import { parseBoolean } from '~/lib/utils/common_utils';
 import { __ } from '~/locale';
 import { createRouter } from 'ee/ai/duo_agents_platform/router/ai_panel_router';
 import DuoAgenticChat from 'ee/ai/duo_agentic_chat/components/duo_agentic_chat.vue';
+import DuoChat from 'ee/ai/tanuki_bot/components/duo_chat.vue';
 import { activeWorkItemIds } from '~/work_items/utils';
 import store from './tanuki_bot/store';
 import AIPanel from './components/ai_panel.vue';
@@ -28,8 +29,6 @@ export function initDuoPanel() {
     chatTitle,
   } = el.dataset;
 
-  const isAgenticAvailable = parseBoolean(agenticAvailable);
-
   const router = createRouter('/', 'user');
   Vue.use(VueApollo);
 
@@ -39,11 +38,21 @@ export function initDuoPanel() {
 
   // Configure chat-specific values in a single configuration object
   const chatConfiguration = {
-    component: isAgenticAvailable ? DuoAgenticChat : __('Chat is not available.'),
-    title: chatTitle || __('GitLab Duo Agentic Chat'),
-    isAgenticAvailable,
+    agenticComponent: DuoAgenticChat,
+    classicComponent: DuoChat,
+    agenticTitle: chatTitle || __('GitLab Duo Agentic Chat'),
+    classicTitle: __('GitLab Duo Chat'),
     defaultProps: {
       isEmbedded: true,
+      userId,
+      projectId,
+      namespaceId,
+      rootNamespaceId,
+      resourceId,
+      metadata,
+      userModelSelectionEnabled: parseBoolean(userModelSelectionEnabled),
+      agenticAvailable: parseBoolean(agenticAvailable),
+      chatTitle,
     },
   };
 

@@ -1192,7 +1192,7 @@ describe('Duo Agentic Chat', () => {
       jest.clearAllMocks();
     });
 
-    it('cleans up socket on component destroy', () => {
+    it('cleans up socket and clears state on component destroy', () => {
       duoChatGlobalState.isAgenticChatShown = true;
       createComponent();
       wrapper.vm.socketManager = mockSocketManager;
@@ -1200,6 +1200,8 @@ describe('Duo Agentic Chat', () => {
       wrapper.destroy();
 
       expect(closeSocket).toHaveBeenCalledWith(mockSocketManager);
+      expect(actionSpies.setMessages).toHaveBeenCalledWith(expect.anything(), []);
+      expect(actionSpies.setLoading).toHaveBeenCalledWith(expect.anything(), false);
     });
 
     it('sets isProcessingToolApproval to false on socket close when not waiting for approval', async () => {

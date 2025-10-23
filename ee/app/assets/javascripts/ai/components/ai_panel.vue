@@ -4,7 +4,9 @@ import { __ } from '~/locale';
 import AgentSessionsRoot from '~/vue_shared/spa/components/spa_root.vue';
 import { AGENTS_PLATFORM_SHOW_ROUTE } from 'ee/ai/duo_agents_platform/router/constants';
 import { formatAgentFlowName } from 'ee/ai/duo_agents_platform/utils';
+import { CHAT_MODES } from 'ee/ai/tanuki_bot/constants';
 import Cookies from '~/lib/utils/cookies';
+import { duoChatGlobalState } from '~/super_sidebar/constants';
 import AiContentContainer from './content_container.vue';
 import NavigationRail from './navigation_rail.vue';
 
@@ -55,30 +57,51 @@ export default {
     },
   },
   data() {
+    // Initialize global state from cookie if not already set
+    if (duoChatGlobalState.activeTab === null) {
+      duoChatGlobalState.activeTab = Cookies.get(ACTIVE_TAB_KEY) || undefined;
+    }
+
     return {
-      activeTab: Cookies.get(ACTIVE_TAB_KEY),
       isDesktop: GlBreakpointInstance.isDesktop(),
+      duoChatGlobalState,
     };
   },
   computed: {
+    activeTab() {
+      return this.duoChatGlobalState.activeTab;
+    },
+    isAgenticMode() {
+      return this.duoChatGlobalState.chatMode === CHAT_MODES.AGENTIC;
+    },
+    currentChatComponent() {
+      return this.isAgenticMode
+        ? this.chatConfiguration.agenticComponent
+        : this.chatConfiguration.classicComponent;
+    },
+    currentChatTitle() {
+      return this.isAgenticMode
+        ? this.chatConfiguration.agenticTitle
+        : this.chatConfiguration.classicTitle;
+    },
     currentTabComponent() {
       switch (this.activeTab) {
         case 'chat':
           return {
-            title: this.chatConfiguration.title,
-            component: this.chatConfiguration.component,
+            title: this.currentChatTitle,
+            component: this.currentChatComponent,
             props: { mode: 'active', ...this.chatConfiguration.defaultProps },
           };
         case 'new':
           return {
             title: __('New Chat'),
-            component: this.chatConfiguration.component,
+            component: this.currentChatComponent,
             props: { mode: 'new', ...this.chatConfiguration.defaultProps },
           };
         case 'history':
           return {
             title: __('History'),
-            component: this.chatConfiguration.component,
+            component: this.currentChatComponent,
             props: { mode: 'history', ...this.chatConfiguration.defaultProps },
           };
         case 'suggestions':
@@ -124,7 +147,9 @@ export default {
       }
     },
     setActiveTab(value) {
-      this.activeTab = value;
+      // Update global state (will trigger Vue reactivity)
+      this.duoChatGlobalState.activeTab = value;
+      // Also update cookie for persistence across page loads
       if (value) {
         Cookies.set(ACTIVE_TAB_KEY, value);
       } else {

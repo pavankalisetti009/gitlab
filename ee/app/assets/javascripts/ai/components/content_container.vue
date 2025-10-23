@@ -1,5 +1,6 @@
 <script>
 import { GlButton, GlTooltipDirective } from '@gitlab/ui';
+import { duoChatGlobalState } from '~/super_sidebar/constants';
 import { __ } from '~/locale';
 
 export default {
@@ -10,6 +11,7 @@ export default {
   directives: {
     GlTooltip: GlTooltipDirective,
   },
+  inject: ['chatConfiguration'],
   i18n: {
     collapseButtonLabel: __('Collapse panel'),
   },
@@ -66,6 +68,7 @@ export default {
     return {
       isMaximized: false,
       currentTitle: null,
+      duoChatGlobalState,
     };
   },
   computed: {
@@ -74,6 +77,12 @@ export default {
     },
     maximizeButtonLabel() {
       return this.isMaximized ? __('Minimize panel') : __('Maximize panel');
+    },
+    componentKey() {
+      // Include chatMode in the key to force component recreation when switching
+      // between modes, ensuring state doesn't persist
+      const componentName = this.activeTab.component?.name || 'component';
+      return `${componentName}-${this.duoChatGlobalState.chatMode}`;
     },
   },
   methods: {
@@ -162,6 +171,7 @@ export default {
       <component
         :is="activeTab.component"
         v-else
+        :key="componentKey"
         :user-id="userId"
         :project-id="projectId"
         :namespace-id="namespaceId"
