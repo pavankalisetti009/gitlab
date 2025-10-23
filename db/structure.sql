@@ -18941,7 +18941,8 @@ CREATE TABLE label_links (
     target_type character varying,
     created_at timestamp without time zone,
     updated_at timestamp without time zone,
-    namespace_id bigint
+    namespace_id bigint,
+    CONSTRAINT check_3853a1e8ed CHECK ((namespace_id IS NOT NULL))
 );
 
 CREATE TABLE label_links_archived (
@@ -48996,7 +48997,7 @@ ALTER TABLE ONLY user_group_callouts
     ADD CONSTRAINT fk_9dc8b9d4b2 FOREIGN KEY (group_id) REFERENCES namespaces(id) ON DELETE CASCADE;
 
 ALTER TABLE ONLY label_links
-    ADD CONSTRAINT fk_9de5c65cb0 FOREIGN KEY (namespace_id) REFERENCES namespaces(id) ON DELETE CASCADE NOT VALID;
+    ADD CONSTRAINT fk_9de5c65cb0 FOREIGN KEY (namespace_id) REFERENCES namespaces(id) ON DELETE CASCADE;
 
 ALTER TABLE ONLY ci_unit_test_failures
     ADD CONSTRAINT fk_9e0fc58930_p FOREIGN KEY (partition_id, build_id) REFERENCES p_ci_builds(partition_id, id) ON UPDATE CASCADE ON DELETE CASCADE;
