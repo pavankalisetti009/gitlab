@@ -1,5 +1,5 @@
 <script>
-import { GlBreakpointInstance } from '@gitlab/ui/src/utils';
+import { GlBreakpointInstance } from '@gitlab/ui/src/utils'; // eslint-disable-line no-restricted-syntax -- GlBreakpointInstance is used intentionally here. In this case we must obtain viewport breakpoints
 import { __ } from '~/locale';
 import AgentSessionsRoot from '~/vue_shared/spa/components/spa_root.vue';
 import { AGENTS_PLATFORM_SHOW_ROUTE } from 'ee/ai/duo_agents_platform/router/constants';

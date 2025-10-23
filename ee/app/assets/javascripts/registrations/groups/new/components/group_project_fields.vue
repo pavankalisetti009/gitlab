@@ -1,10 +1,8 @@
 <script>
 import { GlFormGroup, GlFormInput, GlTooltipDirective, GlFormCheckbox } from '@gitlab/ui';
-
-import { GlBreakpointInstance } from '@gitlab/ui/src/utils';
+import { GlBreakpointInstance } from '@gitlab/ui/src/utils'; // eslint-disable-line no-restricted-syntax -- Pending to migrate to PanelBreakpointInstance
 import { debounce } from 'lodash';
-// eslint-disable-next-line no-restricted-imports
-import { mapState, mapActions } from 'vuex';
+import { mapState, mapActions } from 'vuex'; // eslint-disable-line no-restricted-imports
 import { createAlert } from '~/alert';
 import { getGroupPathAvailability } from '~/rest_api';
 import { __, s__ } from '~/locale';
