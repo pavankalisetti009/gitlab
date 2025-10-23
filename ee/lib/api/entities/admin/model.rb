@@ -34,7 +34,7 @@ module API
           if: ->(model) { verification_enabled?(model) } do
           expose :verification_checksum, as: :checksum
           expose :verified_at, as: :last_checksum
-          expose :verification_state, as: :checksum_state
+          expose :verification_state_name_no_prefix, as: :checksum_state
           expose :verification_retry_count, as: :checksum_retry_count
           expose :verification_retry_at, as: :checksum_retry_at
           expose :verification_failure, as: :checksum_failure

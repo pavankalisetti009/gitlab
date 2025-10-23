@@ -20,7 +20,9 @@ module Geo
     }.freeze
 
     VERIFICATION_TIMEOUT = 8.hours
-    VERIFICATION_METHODS = [:verification_retry_at, :verification_retry_at=,
+    VERIFICATION_METHODS = [
+      :verification_state_name_no_prefix,
+      :verification_retry_at, :verification_retry_at=,
       :verified_at, :verified_at=, :verification_failed?,
       :verification_checksum, :verification_checksum=,
       :verification_failure, :verification_failure=,
@@ -34,7 +36,8 @@ module Geo
       :verification_succeeded?, :verification_failed,
       :verification_pending, :verification_disabled,
       :verification_disabled!, :verification_disabled?,
-      :verification_pending?].freeze
+      :verification_pending?
+    ].freeze
 
     included do
       sha_attribute :verification_checksum

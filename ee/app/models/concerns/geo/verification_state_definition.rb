@@ -132,5 +132,9 @@ module Geo
         result: transition.result
       }
     end
+
+    def verification_state_name_no_prefix
+      verification_state_name.to_s.gsub('verification_', '')
+    end
   end
 end
