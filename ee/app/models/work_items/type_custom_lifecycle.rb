@@ -11,7 +11,7 @@ module WorkItems
     before_validation :copy_namespace_from_lifecycle
 
     validates :namespace, :work_item_type, :lifecycle, presence: true
-    validates :lifecycle, uniqueness: { scope: [:namespace_id, :work_item_type_id] }
+    validates :work_item_type, uniqueness: { scope: :namespace_id }
     validate :validate_status_widget_availability
 
     private

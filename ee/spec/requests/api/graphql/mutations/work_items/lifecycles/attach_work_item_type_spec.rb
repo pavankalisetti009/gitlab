@@ -174,6 +174,19 @@ RSpec.describe 'Attaching a work item type to a custom lifecycle', feature_categ
       end
     end
 
+    context 'when target lifecycle is the same as current lifecycle' do
+      let(:lifecycle_id) { current_lifecycle.to_gid }
+
+      it 'returns error' do
+        post_graphql_mutation(mutation, current_user: user)
+
+        expect(response).to have_gitlab_http_status(:success)
+        expect(mutation_response['errors']).to include(
+          'Work item type is already attached to this lifecycle.'
+        )
+      end
+    end
+
     context 'when work item type does not support the status feature' do
       let(:work_item_type_id) { requirement_work_item_type.to_gid }
 
@@ -183,21 +196,6 @@ RSpec.describe 'Attaching a work item type to a custom lifecycle', feature_categ
         expect(response).to have_gitlab_http_status(:success)
         expect(mutation_response['errors']).to include(
           "Work item type doesn't support the status widget."
-        )
-      end
-    end
-
-    context 'when work item type is already attached' do
-      before do
-        target_lifecycle.work_item_types << work_item_type
-      end
-
-      it 'returns error' do
-        post_graphql_mutation(mutation, current_user: user)
-
-        expect(response).to have_gitlab_http_status(:success)
-        expect(mutation_response['errors']).to include(
-          'Work item type is already attached to this lifecycle.'
         )
       end
     end
