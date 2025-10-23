@@ -33,7 +33,7 @@
                                 chat_disabled_reason: chat_disabled_reason },
                                 aria: { label: label, disabled: "true" }, disabled: true })
 
-- elsif !project_studio_enabled?
+- else
   - duo_button_description = _('Open GitLab Duo Chat')
   - duo_button_shortcut = 'd'
   - duo_button_title = "#{duo_button_description} <kbd class='flat !gl-ml-2' aria-hidden=true>#{duo_button_shortcut}</kbd>"

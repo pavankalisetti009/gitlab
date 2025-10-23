@@ -12,7 +12,7 @@ module EE
     end
 
     def top_bar_duo_button_enabled?
-      ::Gitlab::Llm::TanukiBot.show_breadcrumbs_entry_point?(user: current_user)
+      ::Gitlab::Llm::TanukiBot.show_breadcrumbs_entry_point?(user: current_user) && !project_studio_enabled?
     end
 
     override :page_has_markdown?
