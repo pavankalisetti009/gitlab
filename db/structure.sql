@@ -10834,6 +10834,7 @@ CREATE TABLE appearance_uploads (
     mount_point text,
     secret text,
     CONSTRAINT check_2849dedce7 CHECK ((char_length(path) <= 511)),
+    CONSTRAINT check_84e287699b CHECK ((num_nonnulls(namespace_id, organization_id, project_id) = 0)),
     CONSTRAINT check_b888b1df14 CHECK ((char_length(checksum) <= 64))
 );
 
