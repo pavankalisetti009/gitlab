@@ -16,8 +16,27 @@ module Gitlab
             gitlabCreditsUsage {
               startDate
               endDate
-              lastUpdated
+              lastEventTransactionAt
               purchaseCreditsPath
+            }
+          }
+        }
+      GQL
+
+      GET_ONE_TIME_CREDITS_QUERY = <<~GQL
+        query subscriptionUsage(
+          $namespaceId: ID,
+          $licenseKey: String,
+          $startDate: ISO8601Date,
+          $endDate: ISO8601Date
+        ) {
+          subscription(namespaceId: $namespaceId, licenseKey: $licenseKey) {
+            gitlabCreditsUsage(startDate: $startDate, endDate: $endDate) {
+              oneTimeCredits {
+                creditsUsed
+                totalCredits
+                totalCreditsRemaining
+              }
             }
           }
         }
@@ -131,6 +150,7 @@ module Gitlab
                 totalUsersUsingCredits
                 totalUsersUsingPool
                 totalUsersUsingOverage
+                creditsUsed
                 dailyUsage {
                   date
                   creditsUsed
@@ -176,6 +196,22 @@ module Gitlab
         end
       end
       strong_memoize_attr :get_metadata
+
+      def get_one_time_credits
+        response = execute_graphql_query(
+          query: GET_ONE_TIME_CREDITS_QUERY,
+          variables: default_variables.merge(startDate: start_date, endDate: end_date)
+        )
+
+        if unsuccessful_response?(response)
+          error(GET_ONE_TIME_CREDITS_QUERY, response)
+        else
+          {
+            success: true,
+            oneTimeCredits: response.dig(:data, :subscription, :gitlabCreditsUsage, :oneTimeCredits)
+          }
+        end
+      end
 
       def get_pool_usage
         response = execute_graphql_query(

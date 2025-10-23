@@ -146,7 +146,7 @@ export default {
         <div class="gl-text-sm gl-text-subtle">
           {{ s__('UsageBilling|Last updated:') }}
           <user-date
-            :date="subscriptionUsage.lastUpdated"
+            :date="subscriptionUsage.lastEventTransactionAt"
             :date-format="$options.SHORT_DATE_FORMAT_WITH_TIME"
           />
         </div>

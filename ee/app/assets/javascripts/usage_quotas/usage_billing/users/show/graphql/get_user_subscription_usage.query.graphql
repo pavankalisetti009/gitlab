@@ -1,6 +1,6 @@
 query getUserSubscriptionUsage($namespacePath: ID, $username: String) {
   subscriptionUsage(namespacePath: $namespacePath) {
-    lastUpdated
+    lastEventTransactionAt
 
     startDate
     endDate
