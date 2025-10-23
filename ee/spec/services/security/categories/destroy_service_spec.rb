@@ -107,6 +107,21 @@ RSpec.describe Security::Categories::DestroyService, feature_category: :security
           let(:test_category) { category }
 
           include_examples 'successful category deletion'
+
+          it 'creates an audit event' do
+            expect { execute }.to change { AuditEvent.count }.by(1)
+
+            audit_event = AuditEvent.last
+
+            expect(audit_event.details).to include(
+              event_name: 'security_category_deleted',
+              author_name: user.name,
+              custom_message: "Deleted security category #{category.name}",
+              category_name: category.name,
+              category_description: category.description,
+              attributes_count: 1
+            )
+          end
         end
 
         context 'when deletion fails due to database error' do

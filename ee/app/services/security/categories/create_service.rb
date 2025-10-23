@@ -30,6 +30,7 @@ module Security
         )
         return error unless category.save
 
+        create_audit_event
         success
       end
 
@@ -47,6 +48,24 @@ module Security
 
       def error
         ServiceResponse.error(message: _('Failed to create security category'), payload: category.errors)
+      end
+
+      def create_audit_event
+        audit_context = {
+          name: 'security_category_created',
+          author: current_user,
+          scope: root_namespace,
+          target: category,
+          message: "Created security category #{category.name}",
+          additional_details: {
+            category_name: category.name,
+            category_description: category.description,
+            multiple_selection: category.multiple_selection,
+            template_type: category.template_type
+          }
+        }
+
+        ::Gitlab::Audit::Auditor.audit(audit_context)
       end
     end
   end

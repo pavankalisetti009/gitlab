@@ -3,6 +3,8 @@
 module Security
   module Attributes
     class DestroyService < BaseService
+      AUDIT_EVENT_NAME = 'security_attribute_deleted'
+
       def initialize(attribute:, current_user:)
         @attribute = attribute
         @current_user = current_user
@@ -17,8 +19,12 @@ module Security
 
         deleted_attribute_gid = attribute.to_global_id
 
-        attribute.destroy ? success(deleted_attribute_gid) : deletion_failed_error("Failed to delete attribute")
-
+        if attribute.destroy
+          create_audit_event
+          success(deleted_attribute_gid)
+        else
+          deletion_failed_error("Failed to delete attribute")
+        end
       rescue ActiveRecord::RecordNotDestroyed => e
         deletion_failed_error(e.message)
       end
@@ -55,6 +61,25 @@ module Security
 
       def deletion_failed_error(error_message)
         error_response("Failed to delete attributes: #{error_message}")
+      end
+
+      def create_audit_event
+        root_namespace = attribute.security_category.namespace&.root_ancestor
+
+        audit_context = {
+          name: AUDIT_EVENT_NAME,
+          author: current_user,
+          scope: root_namespace,
+          target: attribute,
+          message: "Deleted security attribute #{attribute.name}",
+          additional_details: {
+            attribute_name: attribute.name,
+            attribute_description: attribute.description,
+            category_name: attribute.security_category.name
+          }
+        }
+
+        ::Gitlab::Audit::Auditor.audit(audit_context)
       end
     end
   end

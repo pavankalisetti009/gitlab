@@ -81,6 +81,25 @@ RSpec.describe Security::Attributes::DestroyService, feature_category: :security
             execute
           end
 
+          it 'creates an audit event' do
+            expect { execute }.to change { AuditEvent.count }.by(1)
+
+            audit_event = AuditEvent.last
+            expect(audit_event.details).to include(
+              event_name: 'security_attribute_deleted',
+              author_name: user.name,
+              custom_message: "Deleted security attribute #{attribute.name}",
+              attribute_name: attribute.name,
+              attribute_description: attribute.description,
+              category_name: category.name
+            )
+          end
+
+          it 'does not create an audit event when deletion fails' do
+            allow(attribute).to receive(:destroy).and_return(false)
+            expect { execute }.not_to change { AuditEvent.count }
+          end
+
           it 'does not enqueue worker when deletion fails' do
             allow(attribute).to receive(:destroy).and_return(false)
 

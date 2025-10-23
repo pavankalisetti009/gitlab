@@ -20,6 +20,7 @@ module Security
         update_params = params.except(:namespace, :editable_state, :template_type, :multiple_selection)
         return error unless update_params.present? && category.update(update_params)
 
+        create_audit_event(update_params)
         success
       end
 
@@ -43,6 +44,22 @@ module Security
         message = 'Failed to update security category'
         message += ": #{category.errors.full_messages.join(', ')}" if category.errors.present?
         ServiceResponse.error(message: message, payload: category.errors)
+      end
+
+      def create_audit_event(update_params)
+        audit_context = {
+          name: 'security_category_updated',
+          author: current_user,
+          scope: category.namespace,
+          target: category,
+          message: "Updated security category #{category.name}",
+          additional_details: {
+            category_name: category.name,
+            updated_fields: update_params.keys
+          }.merge(update_params)
+        }
+
+        ::Gitlab::Audit::Auditor.audit(audit_context)
       end
     end
   end

@@ -82,6 +82,44 @@ RSpec.describe Security::Attributes::CreateService, feature_category: :security_
           expect(execute).to be_success
         end
 
+        it 'creates audit events for each attribute', :request_store do
+          expect(::Gitlab::Audit::Auditor).to receive(:audit).with({
+            author: user,
+            scope: namespace,
+            target: namespace,
+            name: 'security_attribute_created'
+          }).and_call_original
+
+          expect(::Gitlab::Audit::EventQueue).to receive(:push).twice.with(
+            satisfy { |event| security_attribute_created_event?(event) }
+          ).and_call_original
+
+          expect { execute }.to change { AuditEvent.count }.by(2)
+
+          audit_events = AuditEvent.last(2)
+          audit_events.each do |audit_event|
+            expect(audit_event.details).to include(
+              event_name: 'security_attribute_created',
+              author_name: user.name,
+              category_name: category.name
+            )
+          end
+
+          expect(audit_events.first.details).to include(
+            custom_message: 'Created security attribute Critical',
+            attribute_name: 'Critical',
+            attribute_description: 'Critical security level',
+            attribute_color: '#FF0000'
+          )
+
+          expect(audit_events.second.details).to include(
+            custom_message: 'Created security attribute High',
+            attribute_name: 'High',
+            attribute_description: 'High security level',
+            attribute_color: '#FF8C00'
+          )
+        end
+
         context 'when attribute validation fails' do
           let(:params) { { attributes: [{ name: '', description: 'Test description', color: '#FF0000' }] } }
 
@@ -172,7 +210,50 @@ RSpec.describe Security::Attributes::CreateService, feature_category: :security_
             expect(execute.message).to include("Description can't be blank")
           end
         end
+
+        context 'when category is not editable' do
+          before do
+            category.update!(editable_state: :locked)
+          end
+
+          it 'returns non-editable error' do
+            expect(execute).to be_error
+            expect(execute.message).to eq("You can not edit this category's attributes.")
+          end
+        end
+
+        context 'when category save fails' do
+          before do
+            # Mock the category to fail validation but allow other methods
+            allow(category).to receive_messages(valid?: true, save: false)
+            allow(category.errors).to receive(:full_messages).and_return(['Category validation failed'])
+          end
+
+          it 'returns error with category errors' do
+            expect(execute).to be_error
+            expect(execute.message).to include('Failed to create security attributes')
+            expect(execute.message).to include('Category validation failed')
+          end
+        end
+
+        context 'when no attributes are provided' do
+          let(:params) { { attributes: [] } }
+
+          it 'succeeds with empty attributes' do
+            expect(execute).to be_success
+            expect(execute.payload[:attributes]).to be_empty
+          end
+
+          it 'does not create audit events when no attributes' do
+            expect(::Gitlab::Audit::Auditor).not_to receive(:audit)
+            expect(execute).to be_success
+          end
+        end
       end
     end
+  end
+
+  def security_attribute_created_event?(event)
+    event.is_a?(AuditEvent) && event.details[:event_name] == 'security_attribute_created'
   end
 end

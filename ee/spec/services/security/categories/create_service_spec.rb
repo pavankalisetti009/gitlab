@@ -174,6 +174,20 @@ RSpec.describe Security::Categories::CreateService, feature_category: :security_
 
       execute
     end
+
+    it 'creates an audit event' do
+      expect { execute }.to change { AuditEvent.count }.by(1)
+
+      audit_event = AuditEvent.last
+      expect(audit_event.details).to include(
+        event_name: 'security_category_created',
+        author_name: current_user.name,
+        custom_message: "Created security category #{params[:name]}",
+        category_name: params[:name],
+        category_description: params[:description],
+        multiple_selection: params[:multiple_selection]
+      )
+    end
   end
 
   context 'when name already exists in the same namespace' do

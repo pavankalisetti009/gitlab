@@ -66,6 +66,26 @@ RSpec.describe Security::Attributes::UpdateService, feature_category: :security_
           expect(attribute.color).to eq(::Gitlab::Color.of('#00FF00'))
         end
 
+        it 'creates an audit event' do
+          expect { execute }.to change { AuditEvent.count }.by(1)
+
+          audit_event = AuditEvent.last
+          expect(audit_event.details).to include(
+            event_name: 'security_attribute_updated',
+            author_name: user.name,
+            custom_message: "Updated security attribute Updated Name",
+            attribute_name: 'Updated Name',
+            attribute_description: 'Updated Description',
+            attribute_color: '#00FF00',
+            category_name: category.name,
+            previous_values: {
+              name: 'Original Name',
+              description: 'Original Description',
+              color: '#FF0000'
+            }
+          )
+        end
+
         context 'when attribute is not editable' do
           let(:attribute) do
             create(:security_attribute, security_category: category, namespace: namespace, editable_state: :locked)
