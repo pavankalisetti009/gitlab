@@ -51165,9 +51165,6 @@ ALTER TABLE ONLY virtual_registries_packages_maven_registry_upstreams
 ALTER TABLE ONLY dependency_list_export_parts
     ADD CONSTRAINT fk_rails_83f26c0e6f FOREIGN KEY (dependency_list_export_id) REFERENCES dependency_list_exports(id) ON DELETE CASCADE;
 
-ALTER TABLE ONLY security_trainings
-    ADD CONSTRAINT fk_rails_84c7951d72 FOREIGN KEY (provider_id) REFERENCES security_training_providers(id) ON DELETE CASCADE;
-
 ALTER TABLE ONLY zentao_tracker_data
     ADD CONSTRAINT fk_rails_84efda7be0 FOREIGN KEY (integration_id) REFERENCES integrations(id) ON DELETE CASCADE;
 
