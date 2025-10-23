@@ -217,9 +217,8 @@ export const SCAN_EXECUTION_BRANCH_TYPE_OPTIONS = ({
     SPECIFIC_BRANCHES,
   ];
 
-  // Feature flag dependent options
-  if (window.gon?.features?.flexibleScanExecutionPolicy && includeTargetTypes) {
-    // Additional options when feature flag is enabled
+  // Additional options when it is a pipeline scan
+  if (includeTargetTypes) {
     const additionalOptions = [
       TARGET_PROTECTED_BRANCHES,
       isGroupNamespace ? GROUP_TARGET_DEFAULT_BRANCHES : PROJECT_TARGET_DEFAULT_BRANCH,

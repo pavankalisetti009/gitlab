@@ -1,3 +1,5 @@
+import { SCAN_EXECUTION_DEFAULT } from '../mocks/mocks';
+
 export const mockScanExecutionActionManifest = `scan_execution_policy:
   - name: ''
     description: ''
@@ -6,32 +8,18 @@ export const mockScanExecutionActionManifest = `scan_execution_policy:
       compliance_frameworks:
         - id: 1
         - id: 2
-    rules:
-      - type: pipeline
-        branches:
-          - '*'
-    actions:
-      - scan: secret_detection
-        variables:
-          SECURE_ENABLE_LOCAL_CONFIGURATION: 'false'
-    skip_ci:
-      allowed: true
+${SCAN_EXECUTION_DEFAULT.rules}
+${SCAN_EXECUTION_DEFAULT.actions}
+${SCAN_EXECUTION_DEFAULT.skip}
 `;
 
 export const mockScanExecutionActionProjectManifest = `scan_execution_policy:
   - name: ''
     description: ''
     enabled: true
-    rules:
-      - type: pipeline
-        branches:
-          - '*'
-    actions:
-      - scan: secret_detection
-        variables:
-          SECURE_ENABLE_LOCAL_CONFIGURATION: 'false'
-    skip_ci:
-      allowed: true
+${SCAN_EXECUTION_DEFAULT.rules}
+${SCAN_EXECUTION_DEFAULT.actions}
+${SCAN_EXECUTION_DEFAULT.skip}
     policy_scope:
       compliance_frameworks:
         - id: 1
@@ -120,16 +108,9 @@ export const EXCLUDING_PROJECTS_MOCKS = {
         excluding:
           - id: 1
           - id: 2
-    rules:
-      - type: pipeline
-        branches:
-          - '*'
-    actions:
-      - scan: secret_detection
-        variables:
-          SECURE_ENABLE_LOCAL_CONFIGURATION: 'false'
-    skip_ci:
-      allowed: true
+${SCAN_EXECUTION_DEFAULT.rules}
+${SCAN_EXECUTION_DEFAULT.actions}
+${SCAN_EXECUTION_DEFAULT.skip}
 `,
   PIPELINE_EXECUTION: `name: ''
 description: ''
@@ -179,16 +160,9 @@ export const EXCLUDING_PROJECTS_PROJECTS_LEVEL_MOCKS = {
   - name: ''
     description: ''
     enabled: true
-    rules:
-      - type: pipeline
-        branches:
-          - '*'
-    actions:
-      - scan: secret_detection
-        variables:
-          SECURE_ENABLE_LOCAL_CONFIGURATION: 'false'
-    skip_ci:
-      allowed: true
+${SCAN_EXECUTION_DEFAULT.rules}
+${SCAN_EXECUTION_DEFAULT.actions}
+${SCAN_EXECUTION_DEFAULT.skip}
     policy_scope:
       projects:
         excluding:
@@ -268,16 +242,9 @@ export const INCLUDING_GROUPS_WITH_EXCEPTIONS_MOCKS = {
           - id: 2
       projects:
         excluding: []
-    rules:
-      - type: pipeline
-        branches:
-          - '*'
-    actions:
-      - scan: secret_detection
-        variables:
-          SECURE_ENABLE_LOCAL_CONFIGURATION: 'false'
-    skip_ci:
-      allowed: true
+${SCAN_EXECUTION_DEFAULT.rules}
+${SCAN_EXECUTION_DEFAULT.actions}
+${SCAN_EXECUTION_DEFAULT.skip}
 `,
   PIPELINE_EXECUTION: `pipeline_execution_policy:
   - name: ''
@@ -343,16 +310,9 @@ export const INCLUDING_GROUPS_MOCKS = {
           - id: 2
       projects:
         excluding: []
-    rules:
-      - type: pipeline
-        branches:
-          - '*'
-    actions:
-      - scan: secret_detection
-        variables:
-          SECURE_ENABLE_LOCAL_CONFIGURATION: 'false'
-    skip_ci:
-      allowed: true
+${SCAN_EXECUTION_DEFAULT.rules}
+${SCAN_EXECUTION_DEFAULT.actions}
+${SCAN_EXECUTION_DEFAULT.skip}
 `,
   PIPELINE_EXECUTION: `pipeline_execution_policy:
   - name: ''

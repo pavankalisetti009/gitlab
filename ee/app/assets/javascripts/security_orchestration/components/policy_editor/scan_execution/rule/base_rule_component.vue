@@ -87,9 +87,6 @@ export default {
     pipelineSources() {
       return this.initRule.pipeline_sources || {};
     },
-    hasFlexibleScanExecutionPolicyFeatureFlag() {
-      return this.glFeatures.flexibleScanExecutionPolicy;
-    },
     rulesListBoxItems() {
       return Object.entries(this.$options.SCAN_EXECUTION_RULES_LABELS).map(([value, text]) => ({
         value,
@@ -118,18 +115,9 @@ export default {
         );
       }
 
-      // Handle flexible scan execution policy with target branches
-      const hasFlexiblePolicy = this.hasFlexibleScanExecutionPolicyFeatureFlag;
-
-      if (hasFlexiblePolicy) {
-        return s__(
-          'ScanExecutionPolicy|%{rules} every time a pipeline runs that %{scopes} %{branches} using %{sources} %{branchExceptions} %{agents} %{namespaces}',
-        );
-      }
-
       // Default pipeline rule
       return s__(
-        'ScanExecutionPolicy|%{rules} every time a pipeline runs for %{scopes} %{branches} %{branchExceptions} %{agents} %{namespaces}',
+        'ScanExecutionPolicy|%{rules} every time a pipeline runs that %{scopes} %{branches} using %{sources} %{branchExceptions} %{agents} %{namespaces}',
       );
     },
     showAllPipelineSources() {

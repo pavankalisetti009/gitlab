@@ -95,12 +95,21 @@ export const SCAN_EXECUTION_DEFAULT_POLICY = {
   name: '',
   description: '',
   enabled: true,
-  rules: [{ type: 'pipeline', branches: ['*'], id: 'rule_0' }],
   actions: [
     {
-      scan: 'secret_detection',
       id: 'action_0',
+      scan: 'secret_detection',
+      template: 'latest',
       variables: { SECURE_ENABLE_LOCAL_CONFIGURATION: 'false' },
+    },
+  ],
+  rules: [
+    { type: 'pipeline', branch_type: 'default', id: 'rule_1' },
+    {
+      id: 'rule_2',
+      type: 'pipeline',
+      branch_type: 'target_default',
+      pipeline_sources: { including: ['merge_request_event'] },
     },
   ],
   skip_ci: DEFAULT_SKIP_SI_CONFIGURATION,

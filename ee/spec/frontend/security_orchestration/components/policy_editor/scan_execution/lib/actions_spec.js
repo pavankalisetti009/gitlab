@@ -14,9 +14,9 @@ import {
   REPORT_TYPE_API_FUZZING,
 } from '~/vue_shared/security_reports/constants';
 import {
-  DEFAULT_SCAN_EXECUTION_POLICY_WITH_SCOPE,
-  DEFAULT_SCAN_EXECUTION_POLICY_WITH_SCOPE_WITH_DEFAULT_VARIABLES,
-} from 'ee/security_orchestration/components/policy_editor/scan_execution/lib';
+  mockCustomScanExecutionManifest,
+  mockCustomScanExecutionWithDefaultVariablesManifest,
+} from 'ee_jest/security_orchestration/mocks/mock_scan_execution_policy_data';
 
 const actionId = 'action_0';
 jest.mock('lodash/uniqueId', () => jest.fn().mockReturnValue(actionId));
@@ -93,8 +93,10 @@ describe('addDefaultVariablesToPolicy', () => {
 describe('addDefaultVariablesToManifest', () => {
   it('adds default variable to a policy manifest with specific scanners', () => {
     expect(
-      addDefaultVariablesToManifest({ manifest: DEFAULT_SCAN_EXECUTION_POLICY_WITH_SCOPE }),
-    ).toBe(DEFAULT_SCAN_EXECUTION_POLICY_WITH_SCOPE_WITH_DEFAULT_VARIABLES);
+      addDefaultVariablesToManifest({
+        manifest: mockCustomScanExecutionManifest,
+      }),
+    ).toBe(mockCustomScanExecutionWithDefaultVariablesManifest);
   });
 });
 

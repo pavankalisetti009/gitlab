@@ -5,6 +5,7 @@ import {
   EDITOR_MODE_YAML,
 } from 'ee/security_orchestration/components/policy_editor/constants';
 import YamlEditor from 'ee/security_orchestration/components/yaml_editor.vue';
+import { SELECTION_CONFIG_CUSTOM } from 'ee/security_orchestration/components/policy_editor/scan_execution/constants';
 
 export const switchRuleMode = async (wrapper, mode, awaitPromise = true) => {
   await wrapper.findComponent(GlSegmentedControl).vm.$emit('input', mode);
@@ -55,3 +56,7 @@ export const createSppSubscriptionHandler = () =>
 
 export const removeGroupSetting = (yaml) =>
   yaml.replace('  block_group_branch_modification: true\n', '');
+
+export const navigateToCustomMode = async (wrapper) => {
+  await wrapper.findByTestId('enforcement-selection').vm.$emit('input', SELECTION_CONFIG_CUSTOM);
+};

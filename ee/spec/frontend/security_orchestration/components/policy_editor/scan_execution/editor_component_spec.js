@@ -1,6 +1,6 @@
-import Vue, { nextTick } from 'vue';
+import Vue from 'vue';
 import VueApollo from 'vue-apollo';
-import { GlEmptyState, GlToggle } from '@gitlab/ui';
+import { GlEmptyState, GlFormRadioGroup, GlToggle } from '@gitlab/ui';
 import { uniqueId } from 'lodash';
 import EditorComponent from 'ee/security_orchestration/components/policy_editor/scan_execution/editor_component.vue';
 import RuleSection from 'ee/security_orchestration/components/policy_editor/scan_execution/rule/rule_section.vue';
@@ -18,29 +18,26 @@ import {
   ASSIGNED_POLICY_PROJECT,
 } from 'ee_jest/security_orchestration/mocks/mock_data';
 import {
-  DEFAULT_SCAN_EXECUTION_POLICY_WITH_SCOPE,
   buildScannerAction,
   buildDefaultScheduleRule,
-  DEFAULT_SCAN_EXECUTION_POLICY_WITH_SCOPE_WITH_DEFAULT_VARIABLES,
 } from 'ee/security_orchestration/components/policy_editor/scan_execution/lib';
-import {
-  DEFAULT_ASSIGNED_POLICY_PROJECT,
-  NAMESPACE_TYPES,
-} from 'ee/security_orchestration/constants';
+
+import { NAMESPACE_TYPES } from 'ee/security_orchestration/constants';
 import {
   mockDastScanExecutionManifest,
   mockDastScanExecutionObject,
   mockInvalidActionScanExecutionObject,
   mockInvalidRuleScanExecutionObject,
   mockScheduledTemplateScanExecutionObject,
+  mockScanExecutionWithDefaultVariablesManifest,
+  mockCustomScanExecutionWithDefaultVariablesManifest,
+  mockCustomScanExecutionObject,
 } from 'ee_jest/security_orchestration/mocks/mock_scan_execution_policy_data';
 
 import {
   ACTION_SECTION_DISABLE_ERROR,
   CONDITION_SECTION_DISABLE_ERROR,
   SECURITY_POLICY_ACTIONS,
-  EDITOR_MODE_RULE,
-  EDITOR_MODE_YAML,
 } from 'ee/security_orchestration/components/policy_editor/constants';
 import {
   DEFAULT_CONDITION_STRATEGY,
@@ -50,6 +47,7 @@ import {
   POLICY_ACTION_BUILDER_DAST_PROFILES_ERROR_KEY,
   RUNNER_TAGS_PARSING_ERROR,
   DAST_SCANNERS_PARSING_ERROR,
+  SELECTION_CONFIG_CUSTOM,
 } from 'ee/security_orchestration/components/policy_editor/scan_execution/constants';
 import { RULE_KEY_MAP } from 'ee/security_orchestration/components/policy_editor/scan_execution/lib/rules';
 import {
@@ -92,7 +90,6 @@ describe('EditorComponent', () => {
     wrapper = shallowMountExtended(EditorComponent, {
       apolloProvider: createMockApolloProvider(handler),
       propsData: {
-        assignedPolicyProject: DEFAULT_ASSIGNED_POLICY_PROJECT,
         selectedPolicyType: POLICY_TYPE_COMPONENT_OPTIONS.scanExecution.urlParameter,
         errorSources: [],
         isCreating: false,
@@ -139,49 +136,73 @@ describe('EditorComponent', () => {
   const findDisabledAction = () => wrapper.findByTestId('disabled-action');
   const findDisabledRule = () => wrapper.findByTestId('disabled-rule');
   const findSkipCiSelector = () => wrapper.findComponent(SkipCiSelector);
-  const findActionBuilderDefaultConfig = () => wrapper.findByTestId('default-action-config');
-  const findActionBuilderDefaultConfigRadioButton = () =>
-    wrapper.findByTestId('default-action-config-radio-button');
-  const findActionBuilderCustomConfig = () => wrapper.findByTestId('custom-action-config');
-  const findActionBuilderCustomConfigRadioButton = () =>
-    wrapper.findByTestId('default-action-config-radio-button');
   const findOptimizedScanSelector = () => wrapper.findComponent(OptimizedScanSelector);
   const findRuleStrategySelector = () => wrapper.findComponent(RuleStrategySelector);
   const findConfigurationSelection = () => wrapper.findByTestId('configuration-selection');
+  const findRadioFormGroup = () => wrapper.findComponent(GlFormRadioGroup);
+  const findActionBuilderCustomConfig = () => wrapper.findByTestId('custom-action-config');
+  const findActionBuilderDefaultConfig = () => wrapper.findByTestId('default-action-config');
+  const findActionBuilderDefaultConfigRadioButton = () => findRadioFormGroup().props('options')[0];
 
   const selectScheduleRule = async () => {
     await findRuleSection().vm.$emit('changed', buildDefaultScheduleRule());
   };
 
+  const navigateToCustomMode = async () => {
+    await findRadioFormGroup().vm.$emit('input', SELECTION_CONFIG_CUSTOM);
+  };
+
   beforeEach(() => {
-    uniqueId.mockImplementation(jest.fn((prefix) => `${prefix}0`));
+    uniqueId
+      .mockImplementationOnce(jest.fn((prefix) => `${prefix}0`))
+      .mockImplementationOnce(jest.fn((prefix) => `${prefix}1`))
+      .mockImplementationOnce(jest.fn((prefix) => `${prefix}2`));
   });
 
   describe('default', () => {
-    beforeEach(() => {
-      factory();
-    });
     describe('scope', () => {
       it.each`
-        namespaceType              | manifest
+        namespaceType              | expected
         ${NAMESPACE_TYPES.GROUP}   | ${SCAN_EXECUTION_DEFAULT_POLICY_WITH_SCOPE}
         ${NAMESPACE_TYPES.PROJECT} | ${SCAN_EXECUTION_DEFAULT_POLICY}
-      `('should render default policy for a $namespaceType', ({ namespaceType, manifest }) => {
+      `('renders default policy for a $namespaceType', ({ namespaceType, expected }) => {
         factory({ provide: { namespaceType } });
 
-        expect(findPolicyEditorLayout().props('policy')).toEqual(manifest);
+        expect(findPolicyEditorLayout().props('policy')).toEqual(expected);
         expect(findSkipCiSelector().exists()).toBe(true);
       });
     });
 
-    it('should render correctly', () => {
-      expect(findDisabledAction().props()).toEqual({
-        disabled: false,
-        error: ACTION_SECTION_DISABLE_ERROR,
+    describe('policy', () => {
+      it('renders default and custom selections', () => {
+        factory();
+        expect(findConfigurationSelection().exists()).toBe(true);
       });
-      expect(findDisabledRule().props()).toEqual({
-        disabled: false,
-        error: CONDITION_SECTION_DISABLE_ERROR,
+
+      it('renders optimized scanner by default', () => {
+        factory();
+        expect(findRadioFormGroup().attributes('checked')).toBe('default');
+        expect(findActionBuilderDefaultConfigRadioButton().disabled).toBe(false);
+      });
+
+      it('does not show custom configuration section', () => {
+        factory();
+        expect(findActionBuilderDefaultConfig().exists()).toBe(true);
+        expect(findActionBuilderCustomConfig().exists()).toBe(false);
+      });
+
+      it('disables default configuration when the policy is incompatible', async () => {
+        factory();
+        await navigateToCustomMode();
+
+        // Add a DAST scan action, but there are many reasons the policy may be invalid for
+        // optimized scans. See the getConfiguration method in
+        // ee/app/assets/javascripts/security_orchestration/components/policy_editor/scan_execution/lib/index.js
+        // for more info
+        const dastAction = { scan: 'dast' };
+        await findActionBuilder().vm.$emit('changed', dastAction);
+
+        expect(findRadioFormGroup().props('options')[0].disabled).toBe(true);
       });
     });
   });
@@ -189,7 +210,7 @@ describe('EditorComponent', () => {
   describe('modifying a policy', () => {
     it.each`
       status                           | action                            | event              | factoryFn                    | yamlEditorValue
-      ${'creating a new policy'}       | ${undefined}                      | ${'save-policy'}   | ${factory}                   | ${policyBodyToYaml(fromYaml({ manifest: DEFAULT_SCAN_EXECUTION_POLICY_WITH_SCOPE_WITH_DEFAULT_VARIABLES, type: POLICY_TYPE_COMPONENT_OPTIONS.scanExecution.urlParameter }))}
+      ${'creating a new policy'}       | ${undefined}                      | ${'save-policy'}   | ${factory}                   | ${policyBodyToYaml(fromYaml({ manifest: mockScanExecutionWithDefaultVariablesManifest, type: POLICY_TYPE_COMPONENT_OPTIONS.scanExecution.urlParameter }))}
       ${'updating an existing policy'} | ${undefined}                      | ${'save-policy'}   | ${factoryWithExistingPolicy} | ${mockDastScanExecutionManifest}
       ${'deleting an existing policy'} | ${SECURITY_POLICY_ACTIONS.REMOVE} | ${'remove-policy'} | ${factoryWithExistingPolicy} | ${mockDastScanExecutionManifest}
     `('emits "save" when $status', async ({ action, event, factoryFn, yamlEditorValue }) => {
@@ -201,9 +222,8 @@ describe('EditorComponent', () => {
   });
 
   describe('when a user is not an owner of the project', () => {
-    it('displays the empty state with the appropriate properties', async () => {
+    it('displays the empty state with the appropriate properties', () => {
       factory({ provide: { disableScanPolicyUpdate: true } });
-      await nextTick();
       const emptyState = findEmptyState();
 
       expect(emptyState.props('primaryButtonLink')).toMatch(scanPolicyDocumentationPath);
@@ -215,20 +235,18 @@ describe('EditorComponent', () => {
   describe('yaml mode', () => {
     beforeEach(factory);
 
+    it('renders yaml mode properties correctly', () => {
+      expect(findPolicyEditorLayout().props()).toMatchObject({
+        parsingError: '',
+        yamlEditorValue: mockScanExecutionWithDefaultVariablesManifest,
+      });
+    });
+
     it('updates the yaml and policy object when "update-yaml" is emitted', async () => {
       const newManifest = `name: test
 enabled: true`;
+      await findPolicyEditorLayout().vm.$emit('update-yaml', newManifest);
 
-      expect(findPolicyEditorLayout().props()).toMatchObject({
-        parsingError: '',
-        policy: fromYaml({
-          manifest: DEFAULT_SCAN_EXECUTION_POLICY_WITH_SCOPE,
-          type: POLICY_TYPE_COMPONENT_OPTIONS.scanExecution.urlParameter,
-        }),
-        yamlEditorValue: DEFAULT_SCAN_EXECUTION_POLICY_WITH_SCOPE_WITH_DEFAULT_VARIABLES,
-      });
-      findPolicyEditorLayout().vm.$emit('update-yaml', newManifest);
-      await nextTick();
       expect(findPolicyEditorLayout().props()).toMatchObject({
         parsingError: '',
         policy: expect.objectContaining({ enabled: true }),
@@ -248,8 +266,7 @@ enabled: true`;
           `${component}: ${oldValue}`,
         );
 
-        findPolicyEditorLayout().vm.$emit('update-property', component, newValue);
-        await nextTick();
+        await findPolicyEditorLayout().vm.$emit('update-property', component, newValue);
 
         expect(findPolicyEditorLayout().props('policy')[component]).toBe(newValue);
         expect(findPolicyEditorLayout().props('yamlEditorValue')).toMatch(
@@ -281,140 +298,11 @@ enabled: true`;
       uniqueId.mockRestore();
     });
 
-    it('should add new rule', async () => {
-      factory();
-
-      const initialValue = [RULE_KEY_MAP[SCAN_EXECUTION_PIPELINE_RULE]()];
-      expect(findPolicyEditorLayout().props('policy').rules).toStrictEqual(initialValue);
-      expect(
-        fromYaml({
-          manifest: findPolicyEditorLayout().props('yamlEditorValue'),
-          type: POLICY_TYPE_COMPONENT_OPTIONS.scanExecution.urlParameter,
-        }).rules,
-      ).toStrictEqual(initialValue);
-      expect(findAllRuleSections()).toHaveLength(1);
-
-      findAddRuleButton().vm.$emit('click');
-      await nextTick();
-
-      const finalValue = [
-        RULE_KEY_MAP[SCAN_EXECUTION_PIPELINE_RULE](),
-        RULE_KEY_MAP[SCAN_EXECUTION_PIPELINE_RULE](),
-      ];
-      expect(findPolicyEditorLayout().props('policy').rules).toStrictEqual(finalValue);
-      expect(
-        fromYaml({
-          manifest: findPolicyEditorLayout().props('yamlEditorValue'),
-          type: POLICY_TYPE_COMPONENT_OPTIONS.scanExecution.urlParameter,
-        }).rules,
-      ).toStrictEqual(finalValue);
-      expect(findAllRuleSections()).toHaveLength(2);
-    });
-
-    it('should add a new rule if the rule property does not exist', async () => {
-      factory({ propsData: { existingPolicy: { name: 'test' }, isEditing: true } });
-      expect(findAllRuleSections()).toHaveLength(0);
-      findAddRuleButton().vm.$emit('click');
-      await nextTick();
-      expect(findAllRuleSections()).toHaveLength(1);
-    });
-
-    it('should update rule', async () => {
-      factory();
-      const initialValue = [RULE_KEY_MAP[SCAN_EXECUTION_PIPELINE_RULE]()];
-      expect(findPolicyEditorLayout().props('policy').rules).toStrictEqual(initialValue);
-      expect(
-        fromYaml({
-          manifest: findPolicyEditorLayout().props('yamlEditorValue'),
-          type: POLICY_TYPE_COMPONENT_OPTIONS.scanExecution.urlParameter,
-        }).rules,
-      ).toStrictEqual(initialValue);
-
-      const finalValue = [{ ...RULE_KEY_MAP[SCAN_EXECUTION_PIPELINE_RULE](), branches: ['main'] }];
-      findRuleSection().vm.$emit('changed', finalValue[0]);
-      await nextTick();
-
-      expect(findPolicyEditorLayout().props('policy').rules).toStrictEqual(finalValue);
-      expect(
-        fromYaml({
-          manifest: findPolicyEditorLayout().props('yamlEditorValue'),
-          type: POLICY_TYPE_COMPONENT_OPTIONS.scanExecution.urlParameter,
-        }).rules,
-      ).toStrictEqual(finalValue);
-    });
-
-    it('should remove rule', async () => {
-      factory();
-      findAddRuleButton().vm.$emit('click');
-      await nextTick();
-
-      expect(findAllRuleSections()).toHaveLength(2);
-      expect(findPolicyEditorLayout().props('policy').rules).toHaveLength(2);
-      expect(
-        fromYaml({
-          manifest: findPolicyEditorLayout().props('yamlEditorValue'),
-          type: POLICY_TYPE_COMPONENT_OPTIONS.scanExecution.urlParameter,
-        }).rules,
-      ).toHaveLength(2);
-
-      findRuleSection().vm.$emit('remove', 1);
-      await nextTick();
-
-      expect(findAllRuleSections()).toHaveLength(1);
-      expect(findPolicyEditorLayout().props('policy').rules).toHaveLength(1);
-      expect(
-        fromYaml({
-          manifest: findPolicyEditorLayout().props('yamlEditorValue'),
-          type: POLICY_TYPE_COMPONENT_OPTIONS.scanExecution.urlParameter,
-        }).rules,
-      ).toHaveLength(1);
-    });
-  });
-
-  describe('action builder', () => {
-    const glFeatures = { flexibleScanExecutionPolicy: true };
-
-    beforeEach(() => {
-      uniqueId.mockRestore();
-      window.gon = { features: glFeatures };
-    });
-
-    afterAll(() => {
-      window.gon = { features: {} };
-    });
-
-    describe('default', () => {
-      it('shows default and custom selections', () => {
-        factory({
-          provide: { glFeatures },
-        });
-        expect(findConfigurationSelection().exists()).toBe(true);
-      });
-
-      it('checks optimized scanner by default', () => {
-        factory({
-          provide: { glFeatures },
-        });
-        expect(findActionBuilderDefaultConfigRadioButton().props('checked')).toBe('default');
-        expect(findActionBuilderDefaultConfigRadioButton().attributes().disabled).toBe(undefined);
-      });
-    });
-
     describe('default configuration', () => {
-      it('does not show custom configuration section', () => {
-        factory({
-          provide: { glFeatures },
-        });
-        expect(findActionBuilderDefaultConfig().exists()).toBe(true);
-        expect(findActionBuilderCustomConfig().exists()).toBe(false);
-      });
-
       describe('rule strategy selector', () => {
         it('updates the rules when a change is emitted', async () => {
           const rules = [{ branch_type: 'all' }];
-          factory({
-            provide: { glFeatures },
-          });
+          factory();
           expect(findRuleStrategySelector().props('strategy')).toBe(DEFAULT_CONDITION_STRATEGY);
           await findRuleStrategySelector().vm.$emit('changed', {
             strategy: 'any',
@@ -425,19 +313,95 @@ enabled: true`;
         });
 
         it('selects the pre-defined strategy for an existing policy', () => {
-          factoryWithExistingPolicy({
-            provide: { glFeatures },
-            policy: mockScheduledTemplateScanExecutionObject,
-          });
+          factoryWithExistingPolicy({ policy: mockScheduledTemplateScanExecutionObject });
           expect(findRuleStrategySelector().props('strategy')).toBe('scheduled');
         });
       });
+    });
 
+    describe('custom configuration', () => {
+      it('should add new rule', async () => {
+        factory();
+        await navigateToCustomMode();
+        await findAddRuleButton().vm.$emit('click');
+
+        expect(findPolicyEditorLayout().props('policy').rules).toStrictEqual([
+          { branch_type: 'default', id: undefined, type: 'pipeline' },
+          {
+            branch_type: 'target_default',
+            id: undefined,
+            pipeline_sources: { including: ['merge_request_event'] },
+            type: 'pipeline',
+          },
+          { branches: ['*'], id: undefined, type: 'pipeline' },
+        ]);
+        expect(findAllRuleSections()).toHaveLength(3);
+      });
+
+      it('should add a new rule if there are zero rules', async () => {
+        await factory({
+          propsData: { existingPolicy: { name: 'test', rules: [] }, isEditing: true },
+        });
+        expect(findAllRuleSections()).toHaveLength(0);
+        await findAddRuleButton().vm.$emit('click');
+        expect(findAllRuleSections()).toHaveLength(1);
+      });
+
+      it('should update rule', async () => {
+        factory();
+        await navigateToCustomMode();
+        await findRuleSection().vm.$emit('changed', {
+          ...RULE_KEY_MAP[SCAN_EXECUTION_PIPELINE_RULE](),
+          branches: ['main'],
+        });
+        expect(findPolicyEditorLayout().props('policy').rules).toStrictEqual([
+          { branches: ['main'], id: undefined, type: 'pipeline' },
+          {
+            branch_type: 'target_default',
+            id: undefined,
+            pipeline_sources: { including: ['merge_request_event'] },
+            type: 'pipeline',
+          },
+        ]);
+      });
+
+      it('should remove rule', async () => {
+        factory();
+        await navigateToCustomMode();
+        await findAddRuleButton().vm.$emit('click');
+
+        expect(findAllRuleSections()).toHaveLength(3);
+        expect(findPolicyEditorLayout().props('policy').rules).toHaveLength(3);
+        expect(
+          fromYaml({
+            manifest: findPolicyEditorLayout().props('yamlEditorValue'),
+            type: POLICY_TYPE_COMPONENT_OPTIONS.scanExecution.urlParameter,
+          }).rules,
+        ).toHaveLength(3);
+
+        await findRuleSection().vm.$emit('remove', 1);
+
+        expect(findAllRuleSections()).toHaveLength(2);
+        expect(findPolicyEditorLayout().props('policy').rules).toHaveLength(2);
+        expect(
+          fromYaml({
+            manifest: findPolicyEditorLayout().props('yamlEditorValue'),
+            type: POLICY_TYPE_COMPONENT_OPTIONS.scanExecution.urlParameter,
+          }).rules,
+        ).toHaveLength(2);
+      });
+    });
+  });
+
+  describe('action builder', () => {
+    beforeEach(() => {
+      uniqueId.mockRestore();
+    });
+
+    describe('default configuration', () => {
       describe('optimized scan selector', () => {
         it('renders optimized scan selector', () => {
-          factory({
-            provide: { glFeatures },
-          });
+          factory();
           expect(findOptimizedScanSelector().exists()).toBe(true);
           expect(findOptimizedScanSelector().props()).toEqual({
             disabled: false,
@@ -446,9 +410,7 @@ enabled: true`;
         });
 
         it('adds new action when selected', async () => {
-          factory({
-            provide: { glFeatures },
-          });
+          factory();
           await findOptimizedScanSelector().vm.$emit('change', {
             scanner: 'sast',
             enabled: true,
@@ -471,9 +433,7 @@ enabled: true`;
         });
 
         it('removes action when deselected', async () => {
-          factory({
-            provide: { glFeatures },
-          });
+          factory();
           await findOptimizedScanSelector().vm.$emit('change', {
             scanner: 'secret_detection',
             enabled: false,
@@ -485,29 +445,6 @@ enabled: true`;
               type: POLICY_TYPE_COMPONENT_OPTIONS.scanExecution.urlParameter,
             }).actions,
           ).toStrictEqual([]);
-        });
-
-        it('is disabled when the policy is incompatible', async () => {
-          factory({
-            provide: { glFeatures },
-          });
-
-          // Switch to custom config first
-          await findActionBuilderCustomConfigRadioButton().vm.$emit('input');
-
-          // Add a DAST scan action, but there are many reasons the policy may be invalid for
-          // optimized scans. See the getConfiguration method in
-          // ee/app/assets/javascripts/security_orchestration/components/policy_editor/scan_execution/lib/index.js
-          // for more info
-          const dastAction = { scan: 'dast' };
-          findActionBuilder().vm.$emit('changed', dastAction);
-          await nextTick();
-
-          // Switch to YAML mode and back to rule mode to trigger recalculation
-          await findPolicyEditorLayout().vm.$emit('editor-mode-changed', EDITOR_MODE_YAML);
-          await findPolicyEditorLayout().vm.$emit('editor-mode-changed', EDITOR_MODE_RULE);
-
-          expect(findActionBuilderDefaultConfigRadioButton().attributes().disabled).toBe('true');
         });
       });
     });
@@ -521,17 +458,15 @@ enabled: true`;
         },
       ];
       it('does not show default configuration section', async () => {
-        factory({
-          provide: { glFeatures },
-        });
-        await findActionBuilderCustomConfigRadioButton().vm.$emit('input');
+        factory();
+        await navigateToCustomMode();
         expect(findActionBuilderDefaultConfig().exists()).toBe(false);
         expect(findActionBuilderCustomConfig().exists()).toBe(true);
       });
 
       it('adds new action', async () => {
-        factory({ provide: { glFeatures } });
-        await findActionBuilderCustomConfigRadioButton().vm.$emit('input');
+        factory();
+        await navigateToCustomMode();
 
         expect(findPolicyEditorLayout().props('policy').actions).toEqual(
           expect.objectContaining(newActions),
@@ -543,8 +478,7 @@ enabled: true`;
           }).actions,
         ).toEqual(expect.objectContaining(newActions));
 
-        findAddActionButton().vm.$emit('click');
-        await nextTick();
+        await findAddActionButton().vm.$emit('click');
 
         const finalValue = [
           buildScannerAction({
@@ -567,22 +501,20 @@ enabled: true`;
       it('adds a new action if the action property does not exist', async () => {
         factory({
           propsData: { existingPolicy: { name: 'test' }, isEditing: true },
-          provide: { glFeatures },
         });
-        await findActionBuilderCustomConfigRadioButton().vm.$emit('input');
+        await navigateToCustomMode();
 
         expect(findAllActionBuilders()).toHaveLength(0);
 
-        findAddActionButton().vm.$emit('click');
-        await nextTick();
+        await findAddActionButton().vm.$emit('click');
 
         expect(findAddActionButtonWrapper().attributes('title')).toBe('');
         expect(findAllActionBuilders()).toHaveLength(1);
       });
 
       it('updates action', async () => {
-        factory({ provide: { glFeatures } });
-        await findActionBuilderCustomConfigRadioButton().vm.$emit('input');
+        factory();
+        await navigateToCustomMode();
 
         const initialValue = [
           buildScannerAction({
@@ -604,8 +536,7 @@ enabled: true`;
         ).toEqual(expect.objectContaining(newActions));
 
         const finalValue = [buildScannerAction({ scanner: 'sast', withDefaultVariables: true })];
-        findActionBuilder().vm.$emit('changed', finalValue[0]);
-        await nextTick();
+        await findActionBuilder().vm.$emit('changed', finalValue[0]);
 
         expect(findPolicyEditorLayout().props('policy').actions).toStrictEqual(finalValue);
         expect(
@@ -617,10 +548,9 @@ enabled: true`;
       });
 
       it('removes action', async () => {
-        factory({ provide: { glFeatures } });
-        await findActionBuilderCustomConfigRadioButton().vm.$emit('input');
-        findAddActionButton().vm.$emit('click');
-        await nextTick();
+        factory();
+        await navigateToCustomMode();
+        await findAddActionButton().vm.$emit('click');
 
         expect(findAllActionBuilders()).toHaveLength(2);
         expect(findPolicyEditorLayout().props('policy').actions).toHaveLength(2);
@@ -631,8 +561,7 @@ enabled: true`;
           }).actions,
         ).toHaveLength(2);
 
-        findActionBuilder().vm.$emit('remove', 1);
-        await nextTick();
+        await findActionBuilder().vm.$emit('remove', 1);
 
         expect(findAllActionBuilders()).toHaveLength(1);
         expect(findPolicyEditorLayout().props('policy').actions).toHaveLength(1);
@@ -646,13 +575,8 @@ enabled: true`;
 
       it('limits number of actions', async () => {
         const MAX_ACTIONS = 3;
-        factory({
-          provide: {
-            maxScanExecutionPolicyActions: MAX_ACTIONS,
-            glFeatures,
-          },
-        });
-        await findActionBuilderCustomConfigRadioButton().vm.$emit('input');
+        factory({ provide: { maxScanExecutionPolicyActions: MAX_ACTIONS } });
+        await navigateToCustomMode();
 
         expect(findAddActionButton().attributes().disabled).toBeUndefined();
         expect(findAllActionBuilders()).toHaveLength(1);
@@ -670,130 +594,6 @@ enabled: true`;
     });
   });
 
-  describe('action builder without flexibleScanExecutionPolicy feature flag', () => {
-    beforeEach(() => {
-      uniqueId.mockRestore();
-    });
-
-    it('does not show configuration selection', () => {
-      factory();
-      expect(findConfigurationSelection().exists()).toBe(false);
-    });
-
-    it('should add new action', async () => {
-      factory();
-      const initialValue = [
-        buildScannerAction({ scanner: DEFAULT_SCANNER, withDefaultVariables: true }),
-      ];
-      expect(findPolicyEditorLayout().props('policy').actions).toStrictEqual(initialValue);
-      expect(
-        fromYaml({
-          manifest: findPolicyEditorLayout().props('yamlEditorValue'),
-          type: POLICY_TYPE_COMPONENT_OPTIONS.scanExecution.urlParameter,
-        }).actions,
-      ).toStrictEqual(initialValue);
-
-      findAddActionButton().vm.$emit('click');
-      await nextTick();
-
-      const finalValue = [
-        buildScannerAction({ scanner: DEFAULT_SCANNER, withDefaultVariables: true }),
-        buildScannerAction({ scanner: DEFAULT_SCANNER, withDefaultVariables: true }),
-      ];
-
-      expect(findPolicyEditorLayout().props('policy').actions).toStrictEqual(finalValue);
-      expect(
-        fromYaml({
-          manifest: findPolicyEditorLayout().props('yamlEditorValue'),
-          type: POLICY_TYPE_COMPONENT_OPTIONS.scanExecution.urlParameter,
-        }).actions,
-      ).toStrictEqual(finalValue);
-    });
-
-    it('should add a new action if the action property does not exist', async () => {
-      factory({ propsData: { existingPolicy: { name: 'test' }, isEditing: true } });
-      expect(findAllActionBuilders()).toHaveLength(0);
-      findAddActionButton().vm.$emit('click');
-      await nextTick();
-      expect(findAddActionButtonWrapper().attributes('title')).toBe('');
-      expect(findAllActionBuilders()).toHaveLength(1);
-    });
-
-    it('should update action', async () => {
-      factory();
-      const initialValue = [
-        buildScannerAction({ scanner: DEFAULT_SCANNER, withDefaultVariables: true }),
-      ];
-      expect(findPolicyEditorLayout().props('policy').actions).toStrictEqual(initialValue);
-      expect(
-        fromYaml({
-          manifest: findPolicyEditorLayout().props('yamlEditorValue'),
-          type: POLICY_TYPE_COMPONENT_OPTIONS.scanExecution.urlParameter,
-        }).actions,
-      ).toStrictEqual(initialValue);
-
-      const finalValue = [buildScannerAction({ scanner: 'sast', withDefaultVariables: true })];
-      findActionBuilder().vm.$emit('changed', finalValue[0]);
-      await nextTick();
-
-      expect(findPolicyEditorLayout().props('policy').actions).toStrictEqual(finalValue);
-      expect(
-        fromYaml({
-          manifest: findPolicyEditorLayout().props('yamlEditorValue'),
-          type: POLICY_TYPE_COMPONENT_OPTIONS.scanExecution.urlParameter,
-        }).actions,
-      ).toStrictEqual(finalValue);
-    });
-
-    it('should remove action', async () => {
-      factory();
-      findAddActionButton().vm.$emit('click');
-      await nextTick();
-
-      expect(findAllActionBuilders()).toHaveLength(2);
-      expect(findPolicyEditorLayout().props('policy').actions).toHaveLength(2);
-      expect(
-        fromYaml({
-          manifest: findPolicyEditorLayout().props('yamlEditorValue'),
-          type: POLICY_TYPE_COMPONENT_OPTIONS.scanExecution.urlParameter,
-        }).actions,
-      ).toHaveLength(2);
-
-      findActionBuilder().vm.$emit('remove', 1);
-      await nextTick();
-
-      expect(findAllActionBuilders()).toHaveLength(1);
-      expect(findPolicyEditorLayout().props('policy').actions).toHaveLength(1);
-      expect(
-        fromYaml({
-          manifest: findPolicyEditorLayout().props('yamlEditorValue'),
-          type: POLICY_TYPE_COMPONENT_OPTIONS.scanExecution.urlParameter,
-        }).actions,
-      ).toHaveLength(1);
-    });
-
-    it('should limit number of actions', async () => {
-      factory({
-        provide: {
-          maxScanExecutionPolicyActions: 3,
-        },
-      });
-
-      expect(findAddActionButton().attributes().disabled).toBeUndefined();
-      expect(findAllActionBuilders()).toHaveLength(1);
-
-      await findAddActionButton().vm.$emit('click');
-      await findAddActionButton().vm.$emit('click');
-      await findAddActionButton().vm.$emit('click');
-
-      expect(findAddActionButton().attributes().disabled).toBe('true');
-      expect(findAddActionButtonWrapper().attributes('title')).toBe(
-        'Policy has reached the maximum of 3 actions',
-      );
-      expect(findAllActionBuilders()).toHaveLength(3);
-    });
-  });
-
   describe('parsing errors', () => {
     it.each`
       name               | errorKey                                         | error
@@ -801,8 +601,8 @@ enabled: true`;
       ${'DAST profiles'} | ${POLICY_ACTION_BUILDER_DAST_PROFILES_ERROR_KEY} | ${DAST_SCANNERS_PARSING_ERROR}
     `('disables action section when parsing of $name fails', async ({ errorKey, error }) => {
       factory();
-      findActionBuilder().vm.$emit('parsing-error', errorKey);
-      await nextTick();
+      await navigateToCustomMode();
+      await findActionBuilder().vm.$emit('parsing-error', errorKey);
       expect(findDisabledAction().props()).toEqual({ disabled: true, error });
       expect(findDisabledRule().props()).toEqual({
         disabled: false,
@@ -832,8 +632,7 @@ enabled: true`;
         disabled: true,
         error: CONDITION_SECTION_DISABLE_ERROR,
       });
-      findActionBuilder().vm.$emit('parsing-error', POLICY_ACTION_BUILDER_TAGS_ERROR_KEY);
-      await nextTick();
+      await findActionBuilder().vm.$emit('parsing-error', POLICY_ACTION_BUILDER_TAGS_ERROR_KEY);
       expect(findDisabledRule().props()).toEqual({
         disabled: true,
         error: CONDITION_SECTION_DISABLE_ERROR,
@@ -844,8 +643,9 @@ enabled: true`;
   describe('performance warning modal', () => {
     describe('group', () => {
       describe('performance threshold not reached', () => {
-        beforeEach(() => {
+        beforeEach(async () => {
           factory();
+          await navigateToCustomMode();
         });
 
         it('saves policy when performance threshold is not reached', async () => {
@@ -887,6 +687,7 @@ enabled: true`;
           });
 
           await waitForPromises();
+          await navigateToCustomMode();
         });
 
         it('shows the warning when performance threshold is reached but schedule rules were selected', async () => {
@@ -993,6 +794,7 @@ enabled: true`;
         });
 
         await waitForPromises();
+        await navigateToCustomMode();
       });
 
       it('does not show the warning when performance threshold is reached but schedule rules were selected for a project', async () => {
@@ -1036,33 +838,24 @@ enabled: true`;
     });
 
     it('renders existing default skip ci configuration when it is removed from yaml', async () => {
-      factoryWithExistingPolicy({
-        policy: {
-          skip_ci: skipCi,
-        },
-      });
+      factoryWithExistingPolicy({ policy: { skip_ci: skipCi } });
 
       expect(findSkipCiSelector().props('skipCiConfiguration')).toEqual(skipCi);
       await findPolicyEditorLayout().vm.$emit('update-yaml', mockDastScanExecutionManifest);
-
-      expect(findSkipCiSelector().findComponent(GlToggle).props('value')).toBe(
-        !DEFAULT_SKIP_SI_CONFIGURATION.allowed,
-      );
+      expect(findSkipCiSelector().props('skipCiConfiguration')).toBe(undefined);
     });
   });
 
   describe('new yaml format with type as a wrapper', () => {
-    beforeEach(() => {
-      factory();
-    });
-
     it('renders default yaml in new format', () => {
+      factoryWithExistingPolicy({ policy: mockCustomScanExecutionObject });
       expect(findPolicyEditorLayout().props('yamlEditorValue')).toBe(
-        DEFAULT_SCAN_EXECUTION_POLICY_WITH_SCOPE_WITH_DEFAULT_VARIABLES,
+        mockCustomScanExecutionWithDefaultVariablesManifest,
       );
     });
 
     it('converts new policy format to old policy format when saved', async () => {
+      factory();
       findPolicyEditorLayout().vm.$emit('save-policy');
       await waitForPromises();
 
@@ -1078,10 +871,15 @@ policy_scope:
     excluding: []
 rules:
   - type: pipeline
-    branches:
-      - '*'
+    branch_type: default
+  - type: pipeline
+    branch_type: target_default
+    pipeline_sources:
+      including:
+        - merge_request_event
 actions:
   - scan: secret_detection
+    template: latest
     variables:
       SECURE_ENABLE_LOCAL_CONFIGURATION: 'false'
 skip_ci:

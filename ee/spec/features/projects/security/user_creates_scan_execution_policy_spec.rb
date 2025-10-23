@@ -18,7 +18,6 @@ RSpec.describe "User creates scan execution policy", :js, feature_category: :sec
   before do
     sign_in(owner)
     stub_feature_flags(security_policies_split_view: false)
-    stub_feature_flags(flexible_scan_execution_policy: false)
   end
 
   it_behaves_like 'creating scan execution policy with valid properties'
