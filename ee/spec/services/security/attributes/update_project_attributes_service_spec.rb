@@ -176,6 +176,43 @@ RSpec.describe Security::Attributes::UpdateProjectAttributesService, feature_cat
         expect(execute.payload[:added_count]).to eq(2)
         expect(execute.payload[:removed_count]).to eq(0)
       end
+
+      it 'creates audit events for attached attributes', :request_store do
+        expect(::Gitlab::Audit::Auditor).to receive(:audit).with({
+          author: user,
+          scope: project,
+          target: project,
+          name: 'security_attribute_attached_to_project'
+        }).and_call_original
+
+        expect(::Gitlab::Audit::EventQueue).to receive(:push).twice.with(
+          satisfy { |event| security_attribute_attached_event?(event) }
+        ).and_call_original
+
+        expect { execute }.to change { AuditEvent.count }.by(2)
+
+        audit_events = AuditEvent.last(2)
+        audit_events.each do |audit_event|
+          expect(audit_event.details).to include(
+            event_name: 'security_attribute_attached_to_project',
+            author_name: user.name,
+            project_name: project.name,
+            project_path: project.full_path
+          )
+        end
+
+        expect(audit_events.first.details).to include(
+          custom_message: "Attached security attribute #{attribute1.name} to project #{project.name}",
+          attribute_name: attribute1.name,
+          category_name: single_selection_category.name
+        )
+
+        expect(audit_events.second.details).to include(
+          custom_message: "Attached security attribute #{other_attribute.name} to project #{project.name}",
+          attribute_name: other_attribute.name,
+          category_name: other_category.name
+        )
+      end
     end
 
     context 'when removing attributes' do
@@ -195,6 +232,32 @@ RSpec.describe Security::Attributes::UpdateProjectAttributesService, feature_cat
         expect(execute).to be_success
         expect(execute.payload[:added_count]).to eq(0)
         expect(execute.payload[:removed_count]).to eq(1)
+      end
+
+      it 'creates audit event for detached attribute', :request_store do
+        expect(::Gitlab::Audit::Auditor).to receive(:audit).with({
+          author: user,
+          scope: project,
+          target: project,
+          name: 'security_attribute_detached_from_project'
+        }).and_call_original
+
+        expect(::Gitlab::Audit::EventQueue).to receive(:push).once.with(
+          satisfy { |event| security_attribute_detached_event?(event) }
+        ).and_call_original
+
+        expect { execute }.to change { AuditEvent.count }.by(1)
+
+        audit_event = AuditEvent.last
+        expect(audit_event.details).to include(
+          event_name: 'security_attribute_detached_from_project',
+          author_name: user.name,
+          custom_message: "Detached security attribute #{other_attribute.name} from project #{project.name}",
+          attribute_name: other_attribute.name,
+          category_name: other_category.name,
+          project_name: project.name,
+          project_path: project.full_path
+        )
       end
     end
 
@@ -389,5 +452,13 @@ RSpec.describe Security::Attributes::UpdateProjectAttributesService, feature_cat
 
       it_behaves_like 'does not change project security attributes count'
     end
+  end
+
+  def security_attribute_attached_event?(event)
+    event.is_a?(AuditEvent) && event.details[:event_name] == 'security_attribute_attached_to_project'
+  end
+
+  def security_attribute_detached_event?(event)
+    event.is_a?(AuditEvent) && event.details[:event_name] == 'security_attribute_detached_from_project'
   end
 end

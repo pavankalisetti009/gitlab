@@ -126,6 +126,22 @@ RSpec.describe Security::Categories::UpdateService, feature_category: :security_
       result = execute
       expect(result.payload[:category]).to eq(category)
     end
+
+    it 'creates an audit event' do
+      expect { execute }.to change { AuditEvent.count }.by(1)
+
+      audit_event = AuditEvent.last
+
+      expect(audit_event.details).to include(
+        event_name: 'security_category_updated',
+        author_name: current_user.name,
+        custom_message: "Updated security category #{params[:name]}",
+        category_name: params[:name],
+        updated_fields: %i[name description],
+        name: params[:name],
+        description: params[:description]
+      )
+    end
   end
 
   context 'when updating only specific fields' do

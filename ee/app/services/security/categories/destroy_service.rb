@@ -19,6 +19,8 @@ module Security
           [attribute.id, attribute.to_global_id]
         end
 
+        create_audit_event
+
         Security::Category.transaction do
           category.security_attributes.destroy_all # rubocop:disable Cop/DestroyAll -- Need destroy callbacks to trigger worker for project association cleanup
           category.destroy
@@ -65,6 +67,23 @@ module Security
 
       def deletion_failed_error(error_message)
         error_response("Failed to delete category: #{error_message}")
+      end
+
+      def create_audit_event
+        audit_context = {
+          name: 'security_category_deleted',
+          author: current_user,
+          scope: category.namespace,
+          target: category,
+          message: "Deleted security category #{category.name}",
+          additional_details: {
+            category_name: category.name,
+            category_description: category.description,
+            attributes_count: category.security_attributes.count
+          }
+        }
+
+        ::Gitlab::Audit::Auditor.audit(audit_context)
       end
     end
   end

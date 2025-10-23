@@ -7,6 +7,8 @@ module Security
 
       MAX_PROJECT_ATTRIBUTES = 20
       MAX_ATTRIBUTES = MAX_PROJECT_ATTRIBUTES * 2
+      ATTACHED_AUDIT_EVENT_NAME = 'security_attribute_attached_to_project'
+      DETACHED_AUDIT_EVENT_NAME = 'security_attribute_detached_from_project'
 
       def initialize(project:, current_user:, params:)
         @project = project
@@ -28,6 +30,7 @@ module Security
         return error_response('Invalid attributes', errors: validation_errors) if validation_errors.present?
 
         apply_changes
+        create_audit_events
 
         ServiceResponse.success(payload: {
           project: project.reset,
@@ -171,6 +174,80 @@ module Security
         return unless category_already_present
 
         validation_errors << "Cannot add multiple attributes from the same category #{category_id}"
+      end
+
+      def create_audit_events
+        if associations_to_create.any?
+          ::Gitlab::Audit::Auditor.audit(attached_audit_context) do
+            associations_to_create.each do |association|
+              event = build_attached_audit_event(association)
+              ::Gitlab::Audit::EventQueue.push(event)
+            end
+          end
+        end
+
+        return if associations_to_destroy.none?
+
+        ::Gitlab::Audit::Auditor.audit(detached_audit_context) do
+          associations_to_destroy.each do |association|
+            event = build_detached_audit_event(association)
+            ::Gitlab::Audit::EventQueue.push(event)
+          end
+        end
+      end
+
+      def attached_audit_context
+        {
+          author: current_user,
+          scope: project,
+          target: project,
+          name: ATTACHED_AUDIT_EVENT_NAME
+        }
+      end
+
+      def detached_audit_context
+        {
+          author: current_user,
+          scope: project,
+          target: project,
+          name: DETACHED_AUDIT_EVENT_NAME
+        }
+      end
+
+      def build_attached_audit_event(association)
+        attribute = association.security_attribute
+        AuditEvents::BuildService.new(
+          author: current_user,
+          scope: project,
+          target: attribute,
+          created_at: now,
+          message: "Attached security attribute #{attribute.name} to project #{project.name}",
+          additional_details: {
+            event_name: ATTACHED_AUDIT_EVENT_NAME,
+            attribute_name: attribute.name,
+            category_name: attribute.security_category.name,
+            project_name: project.name,
+            project_path: project.full_path
+          }
+        ).execute
+      end
+
+      def build_detached_audit_event(association)
+        attribute = association.security_attribute
+        AuditEvents::BuildService.new(
+          author: current_user,
+          scope: project,
+          target: attribute,
+          created_at: now,
+          message: "Detached security attribute #{attribute.name} from project #{project.name}",
+          additional_details: {
+            event_name: DETACHED_AUDIT_EVENT_NAME,
+            attribute_name: attribute.name,
+            category_name: attribute.security_category.name,
+            project_name: project.name,
+            project_path: project.full_path
+          }
+        ).execute
       end
     end
   end
