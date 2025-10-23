@@ -4,11 +4,9 @@ module Gitlab
   module Elastic
     class Helper
       ES_SEPARATE_CLASSES = [
-        Issue,
         Note,
         MergeRequest,
         Commit,
-        Epic,
         User,
         Wiki,
         Project,
@@ -364,9 +362,11 @@ module Gitlab
       def klass_to_alias_name(klass:)
         return target_name if klass == Repository
 
-        proxy_klass = self.class.type_class(klass) || ::Elastic::Latest::ApplicationClassProxy.new(klass,
-          use_separate_indices: true)
-        proxy_klass.index_name
+        # If klass is already a proxy object, just return its index_name
+        return klass.index_name if klass.is_a?(::Elasticsearch::Model::Proxy::ClassMethodsProxy)
+
+        (self.class.type_class(klass) || ::Elastic::Latest::ApplicationClassProxy.new(klass,
+          use_separate_indices: true)).index_name
       end
 
       # handles unreachable hosts and any other exceptions that may be raised

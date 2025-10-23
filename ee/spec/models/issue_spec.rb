@@ -743,6 +743,12 @@ RSpec.describe Issue, feature_category: :team_planning do
       stub_ee_application_setting(elasticsearch_indexing: true)
     end
 
+    describe '.es_type' do
+      it 'returns the work_item document type' do
+        expect(described_class.es_type).to eq('work_item')
+      end
+    end
+
     context 'when updating an Issue' do
       let_it_be(:project) { create(:project, :public) }
       let_it_be(:issue) { create(:issue, project: project, confidential: true) }

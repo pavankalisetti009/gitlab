@@ -568,7 +568,7 @@ RSpec.describe Gitlab::Elastic::Helper, :request_store, feature_category: :globa
     end
 
     context 'when target_classes is provided' do
-      let(:target_classes) { [Issue] }
+      let(:target_classes) { [WorkItem] }
 
       it 'creates proxies for only the target classes' do
         expect(standalone_indices_proxies.count).to eq(1)
@@ -904,7 +904,7 @@ RSpec.describe Gitlab::Elastic::Helper, :request_store, feature_category: :globa
     end
 
     context 'when index_name is provided' do
-      let(:index_name) { 'gitlab-test-issues' }
+      let(:index_name) { 'gitlab-test-work_items' }
 
       it 'refreshes a single index' do
         expect(helper.client.indices).to receive(:refresh).with(index: index_name)

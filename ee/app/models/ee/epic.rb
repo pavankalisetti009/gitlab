@@ -370,11 +370,6 @@ module EE
         fuzzy_search(query, [:title, :description])
       end
 
-      override :use_separate_indices?
-      def use_separate_indices?
-        true
-      end
-
       def ids_for_base_and_decendants(epic_ids)
         ::Gitlab::ObjectHierarchy.new(self.id_in(epic_ids)).base_and_descendants.pluck(:id)
       end

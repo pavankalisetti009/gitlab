@@ -89,9 +89,9 @@ RSpec.describe ::Search::Elastic::ClusterReindexingService, :elastic, :clean_git
   end
 
   context 'for state: indexing_paused' do
-    let(:issues_alias) { Issue.__elasticsearch__.index_name }
-    let(:issues_old_index_name) { "#{issues_alias}-1" }
-    let(:issues_new_index_name) { "#{issues_alias}-reindex" }
+    let(:notes_alias) { Note.__elasticsearch__.index_name }
+    let(:notes_old_index_name) { "#{notes_alias}-1" }
+    let(:notes_new_index_name) { "#{notes_alias}-reindex" }
 
     let(:main_alias) { Repository.__elasticsearch__.index_name }
     let(:main_old_index_name) { "#{main_alias}-1" }
@@ -103,14 +103,14 @@ RSpec.describe ::Search::Elastic::ClusterReindexingService, :elastic, :clean_git
       before do
         allow(helper).to receive(:target_index_names) { |options| { "#{options[:target]}-1" => true } }
         allow(helper).to receive_messages(
-          create_standalone_indices: { issues_new_index_name => issues_alias },
+          create_standalone_indices: { notes_new_index_name => notes_alias },
           create_empty_index: { main_new_index_name => main_alias }
         )
         allow(helper).to receive(:reindex) { |options| "#{options[:to]}_task_id" }
         allow(helper).to receive(:get_settings) do |options|
           number_of_shards = case options[:index_name]
                              when main_old_index_name then 10
-                             when issues_old_index_name then 3
+                             when notes_old_index_name then 1
                              else
                                1
                              end
@@ -133,13 +133,13 @@ RSpec.describe ::Search::Elastic::ClusterReindexingService, :elastic, :clean_git
         expect(slice_1.elastic_task).to eq("#{main_new_index_name}_task_id")
         expect(slice_1.elastic_slice).to eq(0)
 
-        subtask_2 = subtasks.find { |subtask| subtask.alias_name == issues_alias }
+        subtask_2 = subtasks.find { |subtask| subtask.alias_name == notes_alias }
         slice_2 = subtask_2.slices.last
-        expect(subtask_2.index_name_to).to eq(issues_new_index_name)
-        expect(subtask_2.slices.count).to eq(6)
-        expect(slice_2.elastic_max_slice).to eq(6)
-        expect(slice_2.elastic_task).to eq("#{issues_new_index_name}_task_id")
-        expect(slice_2.elastic_slice).to eq(5)
+        expect(subtask_2.index_name_to).to eq(notes_new_index_name)
+        expect(subtask_2.slices.count).to eq(2)
+        expect(slice_2.elastic_max_slice).to eq(2)
+        expect(slice_2.elastic_task).to eq("#{notes_new_index_name}_task_id")
+        expect(slice_2.elastic_slice).to eq(1)
       end
     end
 
@@ -150,8 +150,8 @@ RSpec.describe ::Search::Elastic::ClusterReindexingService, :elastic, :clean_git
         allow(helper).to receive(:target_index_names) { |options| { "#{options[:target]}-1" => true } }
       end
 
-      context 'when targets set to issue and repository' do
-        let(:targets) { %w[Issue Repository] }
+      context 'when targets set to note and repository' do
+        let(:targets) { %w[Note Repository] }
 
         it 'creates multiple indices' do
           expect(helper).to receive(:create_empty_index).and_return(main_new_index_name => main_alias)
@@ -159,8 +159,8 @@ RSpec.describe ::Search::Elastic::ClusterReindexingService, :elastic, :clean_git
           is_expected.to receive(:launch_subtasks).with(
             array_including(
               {
-                alias_name: issues_alias,
-                index_name_from: issues_old_index_name,
+                alias_name: notes_alias,
+                index_name_from: notes_old_index_name,
                 index_name_to: anything
               },
               {
@@ -176,15 +176,15 @@ RSpec.describe ::Search::Elastic::ClusterReindexingService, :elastic, :clean_git
       end
 
       context 'when targets do not include repository' do
-        let(:targets) { %w[Issue] }
+        let(:targets) { %w[Note] }
 
         it 'does not create the main index' do
           expect(helper).not_to receive(:create_empty_index)
           is_expected.to receive(:launch_subtasks).with(
             array_including(
               hash_including(
-                alias_name: issues_alias,
-                index_name_from: issues_old_index_name,
+                alias_name: notes_alias,
+                index_name_from: notes_old_index_name,
                 index_name_to: anything
               )
             ))

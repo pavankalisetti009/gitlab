@@ -49,8 +49,12 @@ RSpec.describe 'gitlab:elastic namespace rake tasks', :silence_stdout, feature_c
     include_examples 'rake task executor task', :index_users
   end
 
-  describe 'gitlab:elastic:index_epics' do
-    include_examples 'rake task executor task', :index_epics
+  describe 'gitlab:elastic:index_work_items' do
+    include_examples 'rake task executor task', :index_work_items
+  end
+
+  describe 'gitlab:elastic:index_namespaces' do
+    include_examples 'rake task executor task', :index_namespaces
   end
 
   describe 'gitlab:elastic:index_group_wikis' do

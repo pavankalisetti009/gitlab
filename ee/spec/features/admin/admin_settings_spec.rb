@@ -83,8 +83,6 @@ RSpec.describe 'Admin updates EE-only settings', :with_current_organization, fea
 
         fill_in 'application_setting_elasticsearch_shards[gitlab-test]', with: '120'
         fill_in 'application_setting_elasticsearch_replicas[gitlab-test]', with: '2'
-        fill_in 'application_setting_elasticsearch_shards[gitlab-test-issues]', with: '10'
-        fill_in 'application_setting_elasticsearch_replicas[gitlab-test-issues]', with: '3'
         fill_in 'application_setting_elasticsearch_shards[gitlab-test-notes]', with: '20'
         fill_in 'application_setting_elasticsearch_replicas[gitlab-test-notes]', with: '4'
         fill_in 'application_setting_elasticsearch_shards[gitlab-test-merge_requests]', with: '15'
@@ -113,8 +111,6 @@ RSpec.describe 'Admin updates EE-only settings', :with_current_organization, fea
         expect(current_settings.elasticsearch_replicas).to eq(2)
         expect(Elastic::IndexSetting['gitlab-test'].number_of_shards).to eq(120)
         expect(Elastic::IndexSetting['gitlab-test'].number_of_replicas).to eq(2)
-        expect(Elastic::IndexSetting['gitlab-test-issues'].number_of_shards).to eq(10)
-        expect(Elastic::IndexSetting['gitlab-test-issues'].number_of_replicas).to eq(3)
         expect(Elastic::IndexSetting['gitlab-test-notes'].number_of_shards).to eq(20)
         expect(Elastic::IndexSetting['gitlab-test-notes'].number_of_replicas).to eq(4)
         expect(Elastic::IndexSetting['gitlab-test-merge_requests'].number_of_shards).to eq(15)
