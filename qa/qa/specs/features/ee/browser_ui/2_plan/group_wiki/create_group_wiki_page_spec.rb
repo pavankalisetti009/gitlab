@@ -53,6 +53,7 @@ module QA
           EE::Page::Group::Wiki::Show.perform do |wiki|
             expect(wiki).to have_title(wiki_title)
             expect(wiki).to have_content(wiki_content)
+            wiki.expand_sidebar_if_collapsed
             expect(wiki).to have_page_listed('Home')
           end
         end
