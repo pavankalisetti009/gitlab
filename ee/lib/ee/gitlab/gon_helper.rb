@@ -34,7 +34,7 @@ module EE
 
       def push_frontend_feature_flags
         push_frontend_feature_flag(:advanced_context_resolver, current_user)
-        push_frontend_feature_flag(:vulnerability_report_type_scanner_filter, current_user)
+
         push_frontend_feature_flag(:duo_ui_next, current_user)
       end
 

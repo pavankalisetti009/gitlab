@@ -18,7 +18,6 @@ module Groups
         push_frontend_feature_flag(:hide_vulnerability_severity_override, @group.root_ancestor, type: :ops)
         push_frontend_feature_flag(:existing_jira_issue_attachment_from_vulnerability_bulk_action, @project, type: :wip)
         push_frontend_ability(ability: :resolve_vulnerability_with_ai, resource: @group, user: current_user)
-        push_frontend_feature_flag(:vulnerability_report_type_scanner_filter, @group, type: :beta)
         push_frontend_feature_flag(:security_policy_approval_warn_mode, @group, type: :wip)
         push_frontend_feature_flag(:ai_experiment_sast_fp_detection, @group, type: :wip)
         push_frontend_ability(ability: :access_advanced_vulnerability_management, resource: @group, user: current_user)

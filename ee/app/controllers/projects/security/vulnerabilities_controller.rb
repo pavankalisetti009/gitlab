@@ -12,7 +12,6 @@ module Projects
       before_action :authorize_read_vulnerability!, except: [:new]
 
       before_action do
-        push_frontend_feature_flag(:vulnerability_report_type_scanner_filter, project)
         push_frontend_feature_flag(:hide_vulnerability_severity_override, project)
         push_frontend_feature_flag(:validity_checks, project)
         push_frontend_feature_flag(:secret_detection_validity_checks_refresh_token, project)
