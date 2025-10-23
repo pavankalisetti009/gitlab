@@ -56,17 +56,30 @@ const fetchAllCodeSuggestionsLanguagesMetrics = async (variables) => {
   return { successfulLanguages, failedLanguages };
 };
 
-const extractAcceptanceMetricsByLanguage = (results = []) =>
-  results
+const extractAcceptanceMetricsByLanguage = (results = []) => {
+  const extractedResults = results
     .map((result) => {
       const { codeSuggestions: { acceptedCount, shownCount, languages = [] } = {} } =
         extractAiMetricsResponse(result);
       const acceptanceRate = shownCount > 0 ? acceptedCount / shownCount : null;
       const [languageId] = languages ?? [];
+      const language = getLanguageDisplayName(languageId);
 
-      return [acceptanceRate, getLanguageDisplayName(languageId)];
+      return { acceptanceRate, language, acceptedCount, shownCount };
     })
-    .sort((a, b) => a[0] - b[0]);
+    .filter(({ acceptanceRate }) => acceptanceRate !== null)
+    .sort((a, b) => a.acceptanceRate - b.acceptanceRate);
+
+  return extractedResults.reduce(
+    (acc, { acceptanceRate, language, acceptedCount, shownCount }) => {
+      acc.chartData.push([acceptanceRate, language]);
+      acc.contextualData[language] = { acceptedCount, shownCount };
+
+      return acc;
+    },
+    { chartData: [], contextualData: {} },
+  );
+};
 
 export default async function fetch({
   namespace,
@@ -88,9 +101,9 @@ export default async function fetch({
     endDate: startOfTomorrow,
   });
 
-  const acceptanceRatesByLanguage = extractAcceptanceMetricsByLanguage(successfulLanguages);
+  const { chartData, contextualData } = extractAcceptanceMetricsByLanguage(successfulLanguages);
 
-  if (!acceptanceRatesByLanguage.some(([value]) => value)) return {};
+  if (!chartData.some(([value]) => value)) return {};
 
   if (failedLanguages.length > 0) {
     const languages = failedLanguages
@@ -126,6 +139,7 @@ export default async function fetch({
   });
 
   return {
-    [s__('CodeSuggestionsAcceptanceByLanguageChart|Acceptance rate')]: acceptanceRatesByLanguage,
+    [s__('CodeSuggestionsAcceptanceByLanguageChart|Acceptance rate')]: chartData,
+    contextualData,
   };
 }

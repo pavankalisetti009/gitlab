@@ -1,11 +1,13 @@
 <script>
-import { GlBarChart } from '@gitlab/ui/src/charts';
+import { GlBarChart, GlChartSeriesLabel } from '@gitlab/ui/src/charts';
+import { isEmpty, omit } from 'lodash';
 import { formatChartTooltipTitle, humanizeChartTooltipValue } from './utils';
 
 export default {
   name: 'BarChart',
   components: {
     GlBarChart,
+    GlChartSeriesLabel,
   },
   props: {
     data: {
@@ -19,6 +21,14 @@ export default {
       default: () => ({}),
     },
   },
+  computed: {
+    chartData() {
+      return omit(this.data, 'contextualData');
+    },
+    contextualData() {
+      return this.data.contextualData ?? {};
+    },
+  },
   methods: {
     formatTooltipTitle(title, params) {
       const { chartTooltip: { titleFormatter: formatter } = {} } = this.options;
@@ -26,10 +36,45 @@ export default {
 
       return formatChartTooltipTitle({ title, value: yAxisValue, formatter });
     },
-    formatTooltipValue(value) {
-      const { chartTooltip: { valueUnit: unit } = {} } = this.options;
+    getPrimaryTooltipData(seriesData) {
+      const { chartTooltip: { valueUnit } = {} } = this.options;
 
-      return humanizeChartTooltipValue({ unit, value });
+      return seriesData.map(({ seriesId, seriesName, color, value: [value] }) => ({
+        seriesId,
+        seriesName,
+        color,
+        value: humanizeChartTooltipValue({ unit: valueUnit, value }),
+      }));
+    },
+    getContextualTooltipData(seriesData) {
+      const { chartTooltip: { contextualData: contextualDataConfig } = {} } = this.options;
+      const { contextualData } = this;
+
+      if (isEmpty(contextualDataConfig) || isEmpty(contextualData)) return [];
+
+      const yAxisValue = seriesData[0].value[1];
+      const data = contextualData[yAxisValue];
+
+      if (!data) return [];
+
+      return contextualDataConfig.reduce((acc, { key, label, unit }) => {
+        if (key in data) {
+          const value = humanizeChartTooltipValue({ unit, value: data[key] });
+          acc.push({ seriesId: key, seriesName: label, color: 'transparent', value });
+        }
+
+        return acc;
+      }, []);
+    },
+    tooltipContent(params) {
+      if (!params?.seriesData?.length) return [];
+
+      const { seriesData } = params;
+
+      return [
+        ...this.getPrimaryTooltipData(seriesData),
+        ...this.getContextualTooltipData(seriesData),
+      ];
     },
   },
 };
@@ -37,7 +82,7 @@ export default {
 
 <template>
   <gl-bar-chart
-    :data="data"
+    :data="chartData"
     :option="options"
     :x-axis-title="options.xAxis.name"
     :y-axis-title="options.yAxis.name"
@@ -47,7 +92,23 @@ export default {
     responsive
     tabindex="0"
   >
-    <template #tooltip-title="{ title, params }">{{ formatTooltipTitle(title, params) }}</template>
-    <template #tooltip-value="{ value }">{{ formatTooltipValue(value) }}</template>
+    <template #tooltip-title="{ title, params }"
+      ><span data-testid="chart-tooltip-title">{{
+        formatTooltipTitle(title, params)
+      }}</span></template
+    >
+    <template #tooltip-content="{ params }">
+      <div
+        v-for="{ seriesId, seriesName, color, value } in tooltipContent(params)"
+        :key="seriesId"
+        data-testid="chart-tooltip-item"
+        class="gl-flex gl-min-w-28 gl-justify-between gl-leading-20"
+      >
+        <gl-chart-series-label class="gl-mr-7 gl-text-sm" :color="color">{{
+          seriesName
+        }}</gl-chart-series-label>
+        <span class="gl-font-bold" data-testid="chart-tooltip-value">{{ value }}</span>
+      </div>
+    </template>
   </gl-bar-chart>
 </template>
