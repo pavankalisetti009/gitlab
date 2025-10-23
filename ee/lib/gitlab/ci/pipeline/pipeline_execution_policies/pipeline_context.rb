@@ -158,13 +158,12 @@ module Gitlab
           end
 
           def job_options
-            return {} unless creating_policy_pipeline?
+            return unless creating_policy_pipeline?
 
             {
-              execution_policy_job: true,
-              execution_policy_name: current_policy.name,
-              execution_policy_variables_override: current_policy.variables_override_strategy,
-              execution_policy_pre_succeeds: current_policy.experiment_enabled?(:ensure_pipeline_policy_pre_succeeds)
+              name: current_policy.name,
+              variables_override: current_policy.variables_override_strategy,
+              pre_succeeds: current_policy.experiment_enabled?(:ensure_pipeline_policy_pre_succeeds)
             }.compact_blank
           end
 

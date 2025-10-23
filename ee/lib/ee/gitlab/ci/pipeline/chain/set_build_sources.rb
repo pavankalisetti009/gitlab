@@ -10,7 +10,7 @@ module EE
 
             override :pipeline_execution_policy_build?
             def pipeline_execution_policy_build?(build)
-              build.options&.dig(:execution_policy_job)
+              build.options&.dig(:policy).present?
             end
 
             override :scan_execution_policy_build?

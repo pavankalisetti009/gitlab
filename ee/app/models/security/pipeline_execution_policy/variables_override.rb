@@ -5,8 +5,7 @@ module Security
     class VariablesOverride
       def initialize(project:, job_options:)
         @project = project
-        @override_settings = job_options&.dig(:execution_policy_variables_override)
-        @policy_job = job_options&.dig(:execution_policy_job)
+        extract_job_options(job_options)
       end
 
       # This is the original way of enforcing policy variables.
@@ -31,6 +30,18 @@ module Security
       private
 
       attr_reader :project, :override_settings, :policy_job
+
+      def extract_job_options(job_options)
+        policy_options = job_options&.dig(:policy)
+        if policy_options
+          @policy_job = true
+          @override_settings = policy_options&.dig(:variables_override)
+        else
+          # TODO: Remove with https://gitlab.com/gitlab-org/gitlab/-/issues/577272
+          @policy_job = job_options&.dig(:execution_policy_job)
+          @override_settings = job_options&.dig(:execution_policy_variables_override)
+        end
+      end
 
       def policy_job?
         !!policy_job

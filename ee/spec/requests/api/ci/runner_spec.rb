@@ -212,6 +212,26 @@ RSpec.describe API::Ci::Runner, feature_category: :runner do
                 }))
               end
             end
+
+            # TODO: Remove with https://gitlab.com/gitlab-org/gitlab/-/issues/577272
+            context 'when job options are created from the old version' do
+              let!(:ci_build) do
+                create(:ee_ci_build, :pending, :queued, pipeline: pipeline,
+                  options: { execution_policy_job: true, execution_policy_name: 'My policy',
+                             execution_policy_variables_override: { allowed: false, exceptions: %w[TEST_VAR] } })
+              end
+
+              it 'includes correct policy_options' do
+                request_job
+
+                expect(json_response).to match(a_hash_including('policy_options' => {
+                  'execution_policy_job' => true,
+                  'policy_name' => 'My policy',
+                  'policy_variables_override_allowed' => false,
+                  'policy_variables_override_exceptions' => %w[TEST_VAR]
+                }))
+              end
+            end
           end
         end
       end

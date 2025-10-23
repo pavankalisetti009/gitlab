@@ -46,7 +46,8 @@ module Ci
 
       def experiment_enabled?
         reserved_pre_stage.statuses.any? do |job|
-          !!job.options[:execution_policy_pre_succeeds]
+          # TODO: Remove support for `execution_policy_pre_succeeds` with https://gitlab.com/gitlab-org/gitlab/-/issues/577272
+          !!job.options.dig(:policy, :pre_succeeds) || !!job.options[:execution_policy_pre_succeeds]
         end
       end
       strong_memoize_attr :experiment_enabled?

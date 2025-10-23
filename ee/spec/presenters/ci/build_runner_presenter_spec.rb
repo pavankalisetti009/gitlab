@@ -576,5 +576,22 @@ RSpec.describe Ci::BuildRunnerPresenter, feature_category: :secrets_management d
         end
       end
     end
+
+    # TODO: Remove with https://gitlab.com/gitlab-org/gitlab/-/issues/577272
+    context 'when policy options use an old format' do
+      let(:ci_build) do
+        build(:ee_ci_build, options: { execution_policy_job: true, execution_policy_name: 'My policy',
+                                       execution_policy_variables_override: { allowed: false, exceptions: %w[TEST_VAR] } })
+      end
+
+      it 'includes policy-specific options' do
+        expect(policy_options).to eq(
+          execution_policy_job: true,
+          policy_name: 'My policy',
+          policy_variables_override_allowed: false,
+          policy_variables_override_exceptions: ['TEST_VAR']
+        )
+      end
+    end
   end
 end

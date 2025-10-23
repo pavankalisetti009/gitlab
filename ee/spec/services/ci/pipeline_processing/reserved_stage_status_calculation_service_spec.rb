@@ -49,7 +49,7 @@ RSpec.describe Ci::PipelineProcessing::ReservedStageStatusCalculationService, '#
             name: 'policy_job',
             pipeline: pipeline,
             ci_stage: reserved_pre_stage,
-            options: { execution_policy_pre_succeeds: experiment_enabled })
+            options: { policy: { pre_succeeds: experiment_enabled } })
         end
 
         context 'when job is on the reserved pre stage' do
@@ -74,6 +74,19 @@ RSpec.describe Ci::PipelineProcessing::ReservedStageStatusCalculationService, '#
           end
 
           it { is_expected.to eq(result) }
+
+          # TODO: Remove with https://gitlab.com/gitlab-org/gitlab/-/issues/577272
+          context 'when the policy job uses options in the old format' do
+            let!(:policy_job) do
+              create(:ci_build, :created,
+                name: 'policy_job',
+                pipeline: pipeline,
+                ci_stage: reserved_pre_stage,
+                options: { execution_policy_pre_succeeds: experiment_enabled })
+            end
+
+            it { is_expected.to eq(result) }
+          end
         end
       end
     end
