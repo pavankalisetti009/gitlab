@@ -494,16 +494,6 @@ RSpec.describe WorkItems::Lifecycles::AttachWorkItemTypeService, feature_categor
       it_behaves_like 'lifecycle service returns validation error'
     end
 
-    context 'when work item type is already attached' do
-      before do
-        target_lifecycle.work_item_types << work_item_type
-      end
-
-      let(:expected_error_message) { 'Work item type is already attached to this lifecycle.' }
-
-      it_behaves_like 'lifecycle service returns validation error'
-    end
-
     context 'when work item type does not support the status feature' do
       let(:work_item_type_id) { requirement_work_item_type.to_gid }
 

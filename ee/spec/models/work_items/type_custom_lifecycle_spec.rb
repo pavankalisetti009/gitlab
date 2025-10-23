@@ -32,7 +32,7 @@ RSpec.describe WorkItems::TypeCustomLifecycle, feature_category: :team_planning 
         create(:work_item_type_custom_lifecycle, lifecycle: lifecycle, work_item_type: work_item_type)
       end
 
-      it { is_expected.to validate_uniqueness_of(:lifecycle).scoped_to([:namespace_id, :work_item_type_id]) }
+      it { is_expected.to validate_uniqueness_of(:work_item_type).scoped_to(:namespace_id) }
     end
   end
 
