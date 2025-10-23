@@ -64,51 +64,19 @@ RSpec.describe ProjectPresenter, feature_category: :consumables_cost_management 
 
   describe '#approvers' do
     let(:presenter) { described_class.new(root_project, current_user: user) }
-    let(:approvers) { [user] }
 
-    before do
-      allow(root_project).to receive(:approvers).and_return(approvers)
-    end
-
-    context 'when deprecate_approver_and_approver_group FF set to true' do
-      it 'returns empty approvers' do
-        expect(presenter.approvers).to eq([])
-      end
-    end
-
-    context 'when deprecate_approver_and_approver_group FF set to false' do
-      before do
-        stub_feature_flags(deprecate_approver_and_approver_group: false)
-      end
-
-      it 'returns expected approvers' do
-        expect(presenter.approvers).to eq(approvers)
-      end
+    it 'returns empty array for approvers' do
+      expect(root_project).not_to receive(:approvers)
+      expect(presenter.approvers).to eq([])
     end
   end
 
   describe '#approver_groups' do
     let(:presenter) { described_class.new(root_project, current_user: user) }
-    let(:approver_groups) { [build_stubbed(:approver_group)] }
 
-    before do
-      allow(::ApproverGroup).to receive(:filtered_approver_groups).and_return(approver_groups)
-    end
-
-    context 'when deprecate_approver_and_approver_group FF set to true' do
-      it 'returns empty approver_groups' do
-        expect(presenter.approver_groups).to eq([])
-      end
-    end
-
-    context 'when deprecate_approver_and_approver_group FF set to false' do
-      before do
-        stub_feature_flags(deprecate_approver_and_approver_group: false)
-      end
-
-      it 'returns expected approver_groups' do
-        expect(presenter.approver_groups).to eq(approver_groups)
-      end
+    it 'returns empty array for approver_groups' do
+      expect(root_project).not_to receive(:approver_groups)
+      expect(presenter.approver_groups).to eq([])
     end
   end
 end
