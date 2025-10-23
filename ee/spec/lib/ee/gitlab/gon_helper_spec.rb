@@ -56,7 +56,6 @@ RSpec.describe EE::Gitlab::GonHelper do
       end
 
       it_behaves_like 'pushes frontend feature flag', :advanced_context_resolver
-      it_behaves_like 'pushes frontend feature flag', :vulnerability_report_type_scanner_filter
     end
 
     context 'when GitLab.com' do
@@ -65,7 +64,6 @@ RSpec.describe EE::Gitlab::GonHelper do
       end
 
       it_behaves_like 'pushes frontend feature flag', :advanced_context_resolver
-      it_behaves_like 'pushes frontend feature flag', :vulnerability_report_type_scanner_filter
 
       it 'includes CustomersDot variables' do
         expect(gon).to receive(:subscriptions_url=).with(::Gitlab::Routing.url_helpers.subscription_portal_url)

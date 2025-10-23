@@ -1115,9 +1115,6 @@ msgstr ""
 msgid "%{labelStart}Severity:%{labelEnd} %{severity}"
 msgstr ""
 
-msgid "%{labelStart}Tool:%{labelEnd} %{reportType}"
-msgstr ""
-
 msgid "%{labelStart}URL:%{labelEnd} %{url}"
 msgstr ""
 
