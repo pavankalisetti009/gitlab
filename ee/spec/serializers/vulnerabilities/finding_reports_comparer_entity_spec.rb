@@ -15,7 +15,7 @@ RSpec.describe Vulnerabilities::FindingReportsComparerEntity, feature_category: 
     let(:head_combined_reports) { build_list(:ci_reports_security_report, 1, created_at: 2.days.ago) }
     let(:head_report) { build(:ci_reports_security_aggregated_reports, reports: head_combined_reports, findings: head_findings) }
 
-    let(:comparer) { Gitlab::Ci::Reports::Security::VulnerabilityReportsComparer.new(project, base_report, head_report) }
+    let(:comparer) { Gitlab::Ci::Reports::Security::SecurityFindingsReportsComparer.new(project, base_report: base_report, head_report: head_report) }
 
     let(:request) { double('request') }
 
