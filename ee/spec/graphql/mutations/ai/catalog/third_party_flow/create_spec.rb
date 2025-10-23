@@ -15,6 +15,7 @@ RSpec.describe Mutations::Ai::Catalog::ThirdPartyFlow::Create, feature_category:
 
   it 'has expected arguments' do
     is_expected.to have_graphql_arguments(
+      :add_to_project_when_created,
       :description,
       :name,
       :project_id,
