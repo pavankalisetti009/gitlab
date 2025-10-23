@@ -767,30 +767,33 @@ export default {
       @thread-selected="onThreadSelected"
       @back-to-list="onBackToList"
       @delete-thread="onDeleteThread"
-      ><template #footer-controls>
+    >
+      <template #agentic-model>
+        <div
+          v-if="userModelSelectionEnabled"
+          v-gl-tooltip
+          :title="modelSelectionDisabledTooltipText"
+          data-testid="model-dropdown-container"
+        >
+          <model-select-dropdown
+            class="gl-max-w-31"
+            with-default-model-tooltip
+            :disabled="isModelSelectionDisabled"
+            :is-loading="$apollo.queries.availableModels.loading"
+            :items="availableModels"
+            :selected-option="currentModel"
+            :placeholder-dropdown-text="s__('ModelSelection|Select a model')"
+            @select="onModelSelect"
+          />
+        </div>
+      </template>
+      <template #footer-controls>
         <div :class="{ 'gl-flex gl-justify-between': userModelSelectionEnabled }">
           <div class="gl-flex gl-px-4 gl-pb-2 gl-pt-5">
             <gl-toggle
               v-model="duoAgenticModePreference"
               :label="s__('DuoChat|Agentic mode (Beta)')"
               label-position="left"
-            />
-          </div>
-          <div
-            v-if="userModelSelectionEnabled"
-            v-gl-tooltip
-            :title="modelSelectionDisabledTooltipText"
-            class="gl-mb-2 gl-mt-5 gl-block gl-min-w-0"
-            data-testid="model-dropdown-container"
-          >
-            <model-select-dropdown
-              with-default-model-tooltip
-              :disabled="isModelSelectionDisabled"
-              :is-loading="$apollo.queries.availableModels.loading"
-              :items="availableModels"
-              :selected-option="currentModel"
-              :placeholder-dropdown-text="s__('ModelSelection|Select a model')"
-              @select="onModelSelect"
             />
           </div>
         </div>

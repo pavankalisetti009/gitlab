@@ -1462,6 +1462,18 @@ describe('Duo Agentic Chat', () => {
         });
       });
 
+      it('renders `ModelSelectDropdown` in the correct slot', () => {
+        expect(findModelSelectDropdown().exists()).toBe(true);
+        const slot = findDuoChat().vm.$slots['agentic-model'];
+        const vnode = typeof slot === 'function' ? slot()[0] : slot[0];
+
+        const testId = vnode.props
+          ? vnode.props['data-testid'] // Vue 3
+          : vnode.data.attrs['data-testid']; // Vue 2
+
+        expect(testId).toBe('model-dropdown-container');
+      });
+
       it('renders `ModelSelectDropdown`', () => {
         expect(findModelSelectDropdown().exists()).toBe(true);
       });
