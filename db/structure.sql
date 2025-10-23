@@ -27113,7 +27113,7 @@ CREATE TABLE timelogs (
     summary text,
     note_id bigint,
     timelog_category_id bigint,
-    namespace_id bigint DEFAULT 0 NOT NULL,
+    namespace_id bigint NOT NULL,
     CONSTRAINT check_271d321699 CHECK ((char_length(summary) <= 255)),
     CONSTRAINT check_3b0344e3b6 CHECK ((num_nonnulls(issue_id, merge_request_id) = 1))
 );
