@@ -97,18 +97,33 @@ module EE
       end
     end
 
+    # Avoid duplicating "Work Items" on the frontend now that
+    # :group_issue_list and :group_epic_list are translated in the frontend.
+    override :pinned_items
+    def pinned_items(user, panel_type, group: nil)
+      items = super
+
+      return items unless group&.work_items_consolidated_list_enabled?
+
+      if items.include?("group_issue_list") && items.include?("group_epic_list")
+        items.excluding("group_epic_list")
+      else
+        items
+      end
+    end
+
     override :project_default_pins
     def project_default_pins(user)
       return super unless user_in_experiment(user)
 
-      %i[files pipelines members project_merge_request_list project_issue_list]
+      %w[files pipelines members project_merge_request_list project_issue_list]
     end
 
     override :group_default_pins
     def group_default_pins(user)
-      return super + [:group_epic_list] unless user_in_experiment(user)
+      return super + %w[group_epic_list] unless user_in_experiment(user)
 
-      %i[members group_issue_list group_merge_request_list group_epic_list]
+      %w[members group_issue_list group_merge_request_list group_epic_list]
     end
   end
 end
