@@ -562,7 +562,14 @@ RSpec.describe Search::Elastic::MigrationReindexBasedOnSchemaVersion, feature_ca
       context 'when records exist with old schema' do
         before do
           # make sure new indexed records get the correct schema_version
+          # We need to stub both SCHEMA_VERSIONS hash and the derived SCHEMA_VERSION constant
+          new_schema_versions = ::Search::Elastic::References::WorkItem::SCHEMA_VERSIONS.dup
+          new_schema_versions[current_schema_version + 1] = :test_migration
+          stub_const('Search::Elastic::References::WorkItem::SCHEMA_VERSIONS', new_schema_versions)
           stub_const('Search::Elastic::References::WorkItem::SCHEMA_VERSION', current_schema_version + 1)
+
+          allow(::Elastic::DataMigrationService).to receive(:migration_has_finished?)
+            .with(:test_migration).and_return(true)
         end
 
         context 'when using search API' do

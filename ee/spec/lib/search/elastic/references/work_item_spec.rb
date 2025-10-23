@@ -195,14 +195,144 @@ RSpec.describe ::Search::Elastic::References::WorkItem, :elastic_helpers, featur
         set_elasticsearch_migration_to(:index_work_items_milestone_state, including: false)
       end
 
-      it 'returns the current schema version' do
-        expect(work_item_reference.schema_version).to eq(2527)
+      it 'returns the baseline schema version' do
+        expect(work_item_reference.schema_version).to eq(25_27)
       end
     end
 
-    context 'when there are finished migrations' do
-      it 'returns the new schema version for that migration' do
-        expect(work_item_reference.schema_version).to eq(described_class::SCHEMA_VERSION)
+    context 'when index_work_items_milestone_state migration is finished' do
+      it 'returns the latest schema version' do
+        expect(work_item_reference.schema_version).to eq(25_43)
+      end
+    end
+
+    context 'with SCHEMA_VERSIONS hash validation' do
+      it 'SCHEMA_VERSION constant returns the maximum version dynamically' do
+        max_version = described_class::SCHEMA_VERSIONS.keys.max
+        expect(described_class::SCHEMA_VERSION).to eq(max_version)
+      end
+
+      it 'ensures nil migration is always the lowest schema version' do
+        nil_versions = described_class::SCHEMA_VERSIONS.select { |_version, migration| migration.nil? }
+        expect(nil_versions).not_to be_empty, 'SCHEMA_VERSIONS should have at least one nil migration for baseline'
+
+        lowest_version = described_class::SCHEMA_VERSIONS.keys.min
+        expect(described_class::SCHEMA_VERSIONS[lowest_version]).to be_nil,
+          'The lowest schema version should always have nil migration (baseline)'
+      end
+
+      it 'ensures schema versions align with migration chronological order' do
+        versioned_migrations = described_class::SCHEMA_VERSIONS.reject { |_version, migration| migration.nil? }
+
+        next if versioned_migrations.size < 2
+
+        migration_versions = {}
+        versioned_migrations.each do |schema_version, migration_name|
+          migration_record = ::Elastic::DataMigrationService.find_by_name(migration_name)
+          expect(migration_record).not_to be_nil, "Migration '#{migration_name}' not found in DataMigrationService"
+          migration_versions[schema_version] = migration_record.version
+        end
+
+        sorted_by_schema_version = migration_versions.sort_by { |schema_version, _migration_version| schema_version }
+        sorted_by_migration_version = migration_versions.sort_by do |_schema_version, migration_version|
+          migration_version
+        end
+
+        expect(sorted_by_schema_version.map(&:first)).to eq(sorted_by_migration_version.map(&:first)),
+          'Schema versions must increase with migration chronological order. ' \
+            "Schema order: #{sorted_by_schema_version.map { |s, m| "#{s}(migration:#{m})" }}, " \
+            "Migration order: #{sorted_by_migration_version.map { |s, m| "#{s}(migration:#{m})" }}"
+      end
+    end
+
+    context 'with custom SCHEMA_VERSIONS scenarios' do
+      let(:original_schema_versions) { described_class::SCHEMA_VERSIONS }
+
+      before do
+        stub_const("#{described_class}::SCHEMA_VERSIONS", custom_schema_versions)
+        # Simulate different migration states
+        allow(::Elastic::DataMigrationService).to receive(:migration_has_finished?).and_return(false)
+        allow(::Elastic::DataMigrationService).to receive(:migration_has_finished?)
+          .with(:index_work_items_milestone_state).and_return(true)
+        allow(::Elastic::DataMigrationService).to receive(:migration_has_finished?)
+          .with(:intermediate_migration).and_return(true)
+      end
+
+      after do
+        stub_const("#{described_class}::SCHEMA_VERSIONS", original_schema_versions)
+      end
+
+      context 'with multiple migrations in different states' do
+        let(:custom_schema_versions) do
+          {
+            25_50 => :future_migration,
+            25_43 => :index_work_items_milestone_state,
+            25_30 => :intermediate_migration,
+            25_27 => nil
+          }
+        end
+
+        it 'returns the highest version with finished or nil migration' do
+          expect(work_item_reference.schema_version).to eq(25_43)
+        end
+      end
+
+      context 'when only baseline migration (nil) is available' do
+        let(:custom_schema_versions) do
+          {
+            25_50 => :future_migration,
+            25_27 => nil
+          }
+        end
+
+        before do
+          stub_const("#{described_class}::SCHEMA_VERSIONS", custom_schema_versions)
+          allow(::Elastic::DataMigrationService).to receive(:migration_has_finished?).and_return(false)
+        end
+
+        it 'falls back to baseline version' do
+          expect(work_item_reference.schema_version).to eq(25_27)
+        end
+      end
+
+      context 'with intermediate migration finished but not the latest' do
+        let(:custom_schema_versions) do
+          {
+            25_50 => :future_migration,
+            25_40 => :intermediate_migration,
+            25_27 => nil
+          }
+        end
+
+        before do
+          stub_const("#{described_class}::SCHEMA_VERSIONS", custom_schema_versions)
+          allow(::Elastic::DataMigrationService).to receive(:migration_has_finished?).and_return(false)
+          allow(::Elastic::DataMigrationService).to receive(:migration_has_finished?)
+            .with(:intermediate_migration).and_return(true)
+        end
+
+        it 'returns the highest finished migration version' do
+          expect(work_item_reference.schema_version).to eq(25_40)
+        end
+      end
+
+      context 'when all migrations are finished' do
+        let(:custom_schema_versions) do
+          {
+            25_50 => :latest_migration,
+            25_43 => :index_work_items_milestone_state,
+            25_27 => nil
+          }
+        end
+
+        before do
+          stub_const("#{described_class}::SCHEMA_VERSIONS", custom_schema_versions)
+          allow(::Elastic::DataMigrationService).to receive(:migration_has_finished?).and_return(true)
+        end
+
+        it 'returns the highest schema version' do
+          expect(work_item_reference.schema_version).to eq(25_50)
+        end
       end
     end
   end
