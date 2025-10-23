@@ -42,6 +42,11 @@ export default {
       required: false,
       default: false,
     },
+    showTreeToggle: {
+      type: Boolean,
+      required: false,
+      default: false,
+    },
   },
   computed: {
     isTree() {
@@ -66,6 +71,9 @@ export default {
     fileRouterUrl() {
       return this.fileUrl || `/project${this.file.url}`;
     },
+    chevronIcon() {
+      return this.file.opened ? 'chevron-down' : 'chevron-right';
+    },
   },
   watch: {
     'file.active': function fileActiveWatch(active) {
@@ -82,6 +90,10 @@ export default {
   methods: {
     toggleTreeOpen(path) {
       this.$emit('toggleTreeOpen', path);
+    },
+    onChevronClick(event) {
+      event.stopPropagation();
+      this.$emit('clickTree', this.file.path);
     },
     clickFile() {
       this.trackEvent('click_file_tree_browser_on_repository_page');
@@ -158,6 +170,16 @@ export default {
       data-testid="file-row-name-container"
       :class="[fileClasses, { 'str-truncated': !truncateMiddle, 'gl-min-w-0': truncateMiddle }]"
     >
+      <gl-button
+        v-if="isTree && showTreeToggle"
+        category="tertiary"
+        size="small"
+        :icon="chevronIcon"
+        class="-gl-ml-2 gl-mr-1"
+        :aria-label="file.opened ? __('Collapse directory') : __('Expand directory')"
+        @click="onChevronClick"
+      />
+
       <gl-icon
         v-if="file.linked"
         v-gl-tooltip="

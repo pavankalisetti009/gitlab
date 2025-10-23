@@ -15787,6 +15787,9 @@ msgstr ""
 msgid "Collapse all files"
 msgstr ""
 
+msgid "Collapse directory"
+msgstr ""
+
 msgid "Collapse eligible approvers"
 msgstr ""
 
@@ -27544,6 +27547,9 @@ msgid "Expand all files"
 msgstr ""
 
 msgid "Expand all lines"
+msgstr ""
+
+msgid "Expand directory"
 msgstr ""
 
 msgid "Expand eligible approvers"

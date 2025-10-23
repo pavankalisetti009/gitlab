@@ -396,4 +396,35 @@ describe('Tree List', () => {
       );
     });
   });
+
+  describe('Tree toggle', () => {
+    it('passes show-tree-toggle="true" prop to all FileRow components', () => {
+      findFileRows().wrappers.forEach((fileRow) =>
+        expect(fileRow.props('showTreeToggle')).toBe(true),
+      );
+    });
+
+    it('fetches directory contents when chevron is clicked', async () => {
+      const subdirResponse = cloneDeep(mockResponse);
+      subdirResponse.data.project.repository.paginatedTree.nodes[0].blobs.nodes = [
+        {
+          id: 'gid://file1',
+          name: 'subfile.txt',
+          path: 'dir_1/dir_2/subfile.txt',
+          sha: 'xyz789',
+          webPath: 'dir_1/dir_2/subfile.txt',
+        },
+      ];
+      getQueryHandlerSuccess.mockResolvedValueOnce(subdirResponse);
+
+      const treeFileRow = findFileRows().at(0); // First row is the tree based on mockResponse
+      treeFileRow.vm.$emit('clickTree', treeFileRow.props('file').path);
+
+      await waitForPromises();
+
+      expect(getQueryHandlerSuccess).toHaveBeenLastCalledWith(
+        expect.objectContaining({ path: 'dir_1/dir_2' }),
+      );
+    });
+  });
 });

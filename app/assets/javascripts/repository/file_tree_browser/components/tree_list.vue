@@ -413,6 +413,7 @@ export default {
           :level="item.level"
           :opened="item.opened"
           :loading="item.loading"
+          :show-tree-toggle="true"
           :tabindex="item.loading ? -1 : 0"
           :aria-current="isCurrentPath(item.path)"
           role="treeitem"

@@ -250,4 +250,49 @@ describe('File row component', () => {
       expect(findShowMoreButton().props('loading')).toBe(true);
     });
   });
+
+  describe('Tree toggle chevron button', () => {
+    const findChevronButton = () => wrapper.findComponent(GlButton);
+    const folderPath = 'path/to/folder';
+    const mockFile = { ...file(folderPath), type: 'tree', opened: false };
+
+    beforeEach(() => {
+      createComponent({
+        file: mockFile,
+        level: 0,
+        showTreeToggle: true,
+      });
+    });
+
+    it('renders chevron button with correct icon and text text', () => {
+      expect(findChevronButton().props()).toMatchObject({
+        category: 'tertiary',
+        size: 'small',
+        icon: 'chevron-right',
+      });
+
+      expect(findChevronButton().attributes('aria-label')).toBe('Expand directory');
+
+      // Ensure correct icon and aria-label when folder is expanded
+      createComponent({ file: { ...mockFile, opened: true }, level: 0, showTreeToggle: true });
+      expect(findChevronButton().props('icon')).toBe('chevron-down');
+      expect(findChevronButton().attributes('aria-label')).toBe('Collapse directory');
+    });
+
+    it('renders chevron button for trees and emits clickTree when clicked', () => {
+      findChevronButton().vm.$emit('click', { stopPropagation: jest.fn() });
+
+      expect(wrapper.emitted('clickTree')[0][0]).toBe(folderPath);
+    });
+
+    it('does not render when showTreeToggle is false', () => {
+      createComponent({
+        file: mockFile,
+        level: 0,
+        showTreeToggle: false,
+      });
+
+      expect(findChevronButton().exists()).toBe(false);
+    });
+  });
 });
