@@ -3976,6 +3976,26 @@
   :idempotent: true
   :tags: []
   :queue_namespace:
+- :name: security_scan_result_policies_create_project_warn_mode_audit_events
+  :worker_name: Security::ScanResultPolicies::CreateProjectWarnModeAuditEventsWorker
+  :feature_category: :security_policy_management
+  :has_external_dependencies: false
+  :urgency: :low
+  :resource_boundary: :unknown
+  :weight: 1
+  :idempotent: false
+  :tags: []
+  :queue_namespace:
+- :name: security_scan_result_policies_create_warn_mode_audit_events
+  :worker_name: Security::ScanResultPolicies::CreateWarnModeAuditEventsWorker
+  :feature_category: :security_policy_management
+  :has_external_dependencies: false
+  :urgency: :low
+  :resource_boundary: :unknown
+  :weight: 1
+  :idempotent: true
+  :tags: []
+  :queue_namespace:
 - :name: security_scan_result_policies_delete_scan_result_policy_reads
   :worker_name: Security::ScanResultPolicies::DeleteScanResultPolicyReadsWorker
   :feature_category: :security_policy_management

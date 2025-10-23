@@ -5,6 +5,7 @@ module Security
     class PolicyViolationComment
       include Rails.application.routes.url_helpers
       include Gitlab::Utils::StrongMemoize
+      include Security::ScanResultPolicies::HumanizationHelpers
 
       MESSAGE_HEADER = '<!-- policy_violation_comment -->'
       VIOLATED_REPORTS_HEADER_PATTERN = /<!-- violated_reports: ([a-z_,]+)/
@@ -456,18 +457,6 @@ module Security
       end
 
       def warn_mode_approval_settings_overrides(override)
-        label = case override.attribute
-                when :prevent_approval_by_author
-                  s_("ApprovalSettings|Prevent approval by merge request creator")
-                when :prevent_approval_by_commit_author
-                  s_("ApprovalSettings|Prevent approvals by users who add commits")
-                when :require_password_to_approve
-                  s_("ApprovalSettings|Require user re-authentication (password or SAML) to approve")
-                when :remove_approvals_with_new_commit
-                  "#{s_('ApprovalSettings|When a commit is added:')} #{s_('ApprovalSettings|Remove all approvals')}"
-                else return
-                end
-
         policy_names = override
                          .security_policies
                          .pluck(:name) # rubocop:disable CodeReuse/ActiveRecord -- false positive: `Enumerable#pluck`
@@ -475,7 +464,7 @@ module Security
                          .map { |name| "`#{name}`" }
                          .join(", ")
 
-        "* __#{label}__: #{policy_names}"
+        "* __#{humanized_approval_setting(override.attribute)}__: #{policy_names}"
       end
 
       def comparison_pipelines
