@@ -174,7 +174,7 @@ RSpec.shared_examples 'gets registries for' do |args|
       'verificationFailure' => registry.verification_failure,
       'verificationRetryCount' => registry.verification_retry_count,
       'verificationStartedAt' => registry.verification_started_at,
-      'verificationState' => registry.verification_state_name.to_s.gsub('verification_', '').upcase
+      'verificationState' => registry.verification_state_name_no_prefix.upcase
     }
 
     return data unless verification_enabled

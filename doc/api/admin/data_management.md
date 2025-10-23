@@ -95,7 +95,7 @@ Example response:
     "checksum_information": {
       "checksum": "<object checksum>",
       "last_checksum": "2025-07-24T14:22:18.643Z",
-      "checksum_state": 2,
+      "checksum_state": "succeeded",
       "checksum_retry_count": 0,
       "checksum_retry_at": null,
       "checksum_failure": null
@@ -109,7 +109,7 @@ Example response:
     "checksum_information": {
       "checksum": "<object checksum>",
       "last_checksum": "2025-07-24T14:22:18.214Z",
-      "checksum_state": 2,
+      "checksum_state": "succeeded",
       "checksum_retry_count": 0,
       "checksum_retry_at": null,
       "checksum_failure": null
@@ -155,7 +155,7 @@ Example response:
   "checksum_information": {
     "checksum": "<object checksum>",
     "last_checksum": "2025-07-24T14:22:18.643Z",
-    "checksum_state": 2,
+    "checksum_state": "succeeded",
     "checksum_retry_count": 0,
     "checksum_retry_at": null,
     "checksum_failure": null
@@ -187,7 +187,7 @@ Example response:
   "checksum_information": {
     "checksum": "<sha256 or md5 string>",
     "last_checksum": "2025-07-24T14:22:18.643Z",
-    "checksum_state": 2,
+    "checksum_state": "succeeded",
     "checksum_retry_count": 0,
     "checksum_retry_at": null,
     "checksum_failure": null

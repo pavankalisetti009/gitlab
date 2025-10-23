@@ -35,7 +35,7 @@ module Types
         field :verified_at, Types::TimeType, null: true, description: "Timestamp of the most recent successful verification of the #{graphql_name}"
 
         def verification_state_name_value
-          object.verification_state_name.to_s.gsub('verification_', '')
+          object.verification_state_name_no_prefix
         end
       end
     end

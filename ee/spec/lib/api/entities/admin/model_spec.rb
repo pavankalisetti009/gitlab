@@ -28,9 +28,9 @@ RSpec.describe API::Entities::Admin::Model, feature_category: :geo_replication d
             expect(result[:record_identifier]).to eq(model.id)
             expect(result[:model_class]).to eq(model_classes.name)
             expect(result[:created_at]).to eq(model.respond_to?(:created_at) ? model.created_at : nil)
-
-            expect(result.dig(:checksum_information, :checksum_state)).to eq(model.verification_state)
             expect(result[:file_size]).to eq(model.attributes.has_key?('size') ? model.size : nil)
+            expect(result.dig(:checksum_information, :checksum_state))
+              .to eq(model.verification_state_name_no_prefix)
           end
         end
 
