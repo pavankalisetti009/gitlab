@@ -312,11 +312,18 @@ describe('checkForPerformanceRisk', () => {
   describe('extractPolicyContent', () => {
     const defaultPayload = {};
     const extractedPolicyContent = {
-      actions: [{ scan: 'secret_detection' }],
+      actions: [{ scan: 'secret_detection', template: 'latest' }],
       description: '',
       enabled: true,
       name: '',
-      rules: [{ branches: ['*'], type: 'pipeline' }],
+      rules: [
+        { branch_type: 'default', type: 'pipeline' },
+        {
+          branch_type: 'target_default',
+          pipeline_sources: { including: ['merge_request_event'] },
+          type: 'pipeline',
+        },
+      ],
       skip_ci: {
         allowed: true,
       },

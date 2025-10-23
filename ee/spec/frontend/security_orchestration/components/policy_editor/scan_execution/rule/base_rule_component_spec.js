@@ -294,7 +294,6 @@ describe('BaseRuleComponent', () => {
               branch_type: ALL_PROTECTED_BRANCHES,
             },
           },
-          provide: { glFeatures: { flexibleScanExecutionPolicy: true } },
         });
 
         expect(findPipelineSourceSelector().exists()).toBe(true);
@@ -312,7 +311,6 @@ describe('BaseRuleComponent', () => {
               branch_type: TARGET_DEFAULT,
             },
           },
-          provide: { glFeatures: { flexibleScanExecutionPolicy: true } },
         });
 
         expect(findPipelineSourceSelector().exists()).toBe(true);
@@ -332,7 +330,6 @@ describe('BaseRuleComponent', () => {
               branch_type: TARGET_DEFAULT,
             },
           },
-          provide: { glFeatures: { flexibleScanExecutionPolicy: true } },
         });
         const pipelineSources = { pipeline_sources: { including: ['web', 'api'] } };
         await findPipelineSourceSelector().vm.$emit('select', pipelineSources);
@@ -350,26 +347,9 @@ describe('BaseRuleComponent', () => {
           props: {
             initRule: { ...pipelineRule, pipeline_sources: { including: ['api'] } },
           },
-          provide: { glFeatures: { flexibleScanExecutionPolicy: true } },
         });
         findPipelineSourceSelector().vm.$emit('remove');
         expect(wrapper.emitted('changed')).toEqual([[{ ...pipelineRule }]]);
-      });
-    });
-
-    describe('with feature flag disabled', () => {
-      it('does not show when feature flag is disabled', () => {
-        createComponent({
-          props: {
-            initRule: {
-              type: SCAN_EXECUTION_RULES_PIPELINE_KEY,
-              branch_type: TARGET_DEFAULT,
-            },
-          },
-          provide: { glFeatures: { flexibleScanExecutionPolicy: false } },
-        });
-
-        expect(findPipelineSourceSelector().exists()).toBe(false);
       });
     });
   });

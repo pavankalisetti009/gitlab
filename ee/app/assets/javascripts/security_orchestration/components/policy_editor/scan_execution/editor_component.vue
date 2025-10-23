@@ -2,7 +2,7 @@
 import {
   GlButton,
   GlEmptyState,
-  GlFormRadio,
+  GlFormRadioGroup,
   GlIcon,
   GlLink,
   GlSprintf,
@@ -116,7 +116,7 @@ export default {
     EditorLayout,
     GlButton,
     GlEmptyState,
-    GlFormRadio,
+    GlFormRadioGroup,
     GlIcon,
     GlLink,
     GlSprintf,
@@ -203,9 +203,6 @@ export default {
     isDefaultConfig() {
       return this.configType === SELECTION_CONFIG_DEFAULT;
     },
-    hasFlexibleScanExecutionPolicy() {
-      return this.glFeatures.flexibleScanExecutionPolicy;
-    },
     hasNewSplitView() {
       return this.glFeatures.securityPoliciesSplitView;
     },
@@ -246,6 +243,20 @@ export default {
     },
     isValidOptimizedPolicy() {
       return getConfiguration(this.policy) === SELECTION_CONFIG_DEFAULT;
+    },
+    configurationOptions() {
+      return [
+        {
+          value: SELECTION_CONFIG_DEFAULT,
+          disabled: !this.isValidOptimizedPolicy,
+          text: s__('SecurityOrchestration|Template'),
+        },
+        {
+          value: SELECTION_CONFIG_CUSTOM,
+          disabled: !this.isValidOptimizedPolicy,
+          text: s__('SecurityOrchestration|Custom'),
+        },
+      ];
     },
   },
   methods: {
@@ -344,6 +355,9 @@ export default {
 
       this.$emit('save', { action, policy: policyBodyToYaml(policy) });
     },
+    updateConfigType(value) {
+      this.configType = value;
+    },
     updateOptimizedAction({ enabled, scanner }) {
       if (enabled) {
         this.addAction({ scanner, isOptimized: true });
@@ -390,77 +404,8 @@ export default {
     @update-yaml="updateYaml"
     @update-editor-mode="changeEditorMode"
   >
-    <template #rules>
-      <disabled-section
-        v-if="!hasFlexibleScanExecutionPolicy"
-        :disabled="parsingError.rules"
-        :error="$options.i18n.CONDITION_SECTION_DISABLE_ERROR"
-        data-testid="disabled-rule"
-      >
-        <template #title>
-          <h4>{{ $options.i18n.CONDITIONS_LABEL }}</h4>
-        </template>
-
-        <rule-section
-          v-for="(rule, index) in policy.rules"
-          :key="rule.id"
-          :data-testid="`rule-${index}`"
-          class="gl-mb-4"
-          :init-rule="rule"
-          :rule-index="index"
-          @changed="updateActionOrRule($options.RULE, index, $event)"
-          @remove="removeActionOrRule($options.RULE, index)"
-        />
-
-        <div class="gl-mb-5 gl-rounded-base gl-bg-subtle gl-p-5">
-          <gl-button variant="link" data-testid="add-rule" @click="addRule">
-            {{ $options.i18n.ADD_CONDITION_LABEL }}
-          </gl-button>
-        </div>
-      </disabled-section>
-    </template>
-
-    <template #actions-first>
-      <disabled-section
-        v-if="!hasFlexibleScanExecutionPolicy"
-        :disabled="parsingError.actions"
-        :error="actionSectionError"
-        data-testid="disabled-action"
-      >
-        <template #title>
-          <h4>{{ $options.i18n.ACTIONS_LABEL }}</h4>
-        </template>
-
-        <scan-action
-          v-for="(action, index) in actions"
-          :key="action.id"
-          :data-testid="`action-${index}`"
-          class="gl-mb-4"
-          :init-action="action"
-          :action-index="index"
-          :error-sources="errorSources"
-          @changed="updateActionOrRule($options.ACTION, index, $event)"
-          @remove="removeActionOrRule($options.ACTION, index)"
-          @parsing-error="handleActionBuilderParsingError"
-        />
-
-        <div class="gl-mb-5 gl-rounded-base gl-bg-subtle gl-p-5">
-          <span v-gl-tooltip :title="addActionButtonTitle" data-testid="add-action-wrapper">
-            <gl-button
-              :disabled="addActionButtonDisabled"
-              variant="link"
-              data-testid="add-action"
-              @click="addAction"
-            >
-              {{ $options.i18n.ADD_ACTION_LABEL }}
-            </gl-button>
-          </span>
-        </div>
-      </disabled-section>
-    </template>
-
     <template #actions>
-      <div v-if="hasFlexibleScanExecutionPolicy" class="gl-mt-5">
+      <div class="gl-mt-5">
         <h4>{{ s__('SecurityOrchestration|Scan execution configuration') }}</h4>
         <div class="gl-mb-5">
           <gl-sprintf
@@ -480,23 +425,12 @@ export default {
         </div>
         <div data-testid="configuration-selection">
           <h5>{{ s__('SecurityOrchestration|Configuration type') }}</h5>
-          <gl-form-radio
-            v-model="configType"
-            :value="$options.SELECTION_CONFIG_DEFAULT"
-            :disabled="!isValidOptimizedPolicy"
-            class="gl-mt-3"
-            data-testid="default-action-config-radio-button"
-          >
-            {{ s__('SecurityOrchestration|Template') }}
-          </gl-form-radio>
-          <gl-form-radio
-            v-model="configType"
-            :value="$options.SELECTION_CONFIG_CUSTOM"
-            class="gl-mb-0"
-            data-testid="custom-action-config-radio-button"
-          >
-            {{ s__('SecurityOrchestration|Custom') }}
-          </gl-form-radio>
+          <gl-form-radio-group
+            :checked="configType"
+            :options="configurationOptions"
+            data-testid="enforcement-selection"
+            @input="updateConfigType"
+          />
         </div>
         <section-layout class="gl-pt-0" :show-remove-button="false">
           <template #content>

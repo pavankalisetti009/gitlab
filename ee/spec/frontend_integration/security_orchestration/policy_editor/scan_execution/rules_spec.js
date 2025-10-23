@@ -5,9 +5,10 @@ import { DEFAULT_ASSIGNED_POLICY_PROJECT } from 'ee/security_orchestration/const
 import BaseRuleComponent from 'ee/security_orchestration/components/policy_editor/scan_execution/rule/base_rule_component.vue';
 import ScheduleRuleComponent from 'ee/security_orchestration/components/policy_editor/scan_execution/rule/schedule_rule_component.vue';
 import { SCAN_EXECUTION_SCHEDULE_RULE } from 'ee/security_orchestration/components/policy_editor/scan_execution/constants';
+import BranchTypeSelector from 'ee/security_orchestration/components/policy_editor/scan_execution/rule/branch_type_selector.vue';
 import { DEFAULT_PROVIDE } from '../mocks/mocks';
-import { verify } from '../utils';
-import { mockScheduleScanExecutionManifest, mockScanExecutionManifest } from './mocks';
+import { navigateToCustomMode, verify } from '../utils';
+import { mockScheduleScanExecutionManifest, mockAllBranchesScanExecutionManifest } from './mocks';
 
 describe('Scan execution policy rules', () => {
   let wrapper;
@@ -39,12 +40,14 @@ describe('Scan execution policy rules', () => {
   });
 
   const findBaseRuleComponent = () => wrapper.findComponent(BaseRuleComponent);
+  const findBranchTypeSelector = () => wrapper.findComponent(BranchTypeSelector);
   const findScheduleRuleComponent = () => wrapper.findComponent(ScheduleRuleComponent);
   const findDisabledRuleSection = () => wrapper.findByTestId('disabled-rule');
 
   describe('pipeline', () => {
-    beforeEach(() => {
-      createWrapper();
+    beforeEach(async () => {
+      await createWrapper();
+      await navigateToCustomMode(wrapper);
     });
 
     it('parses pipeline rule', async () => {
@@ -54,8 +57,9 @@ describe('Scan execution policy rules', () => {
         expect(findDisabledRuleSection().props('disabled')).toBe(false);
       };
 
+      await findBranchTypeSelector().vm.$emit('set-branch-type', 'all');
       await verify({
-        manifest: mockScanExecutionManifest,
+        manifest: mockAllBranchesScanExecutionManifest,
         verifyRuleMode,
         wrapper,
       });
@@ -63,8 +67,9 @@ describe('Scan execution policy rules', () => {
   });
 
   describe('schedule rule', () => {
-    beforeEach(() => {
-      createWrapper();
+    beforeEach(async () => {
+      await createWrapper();
+      await navigateToCustomMode(wrapper);
     });
 
     it('parses schedule rule', async () => {

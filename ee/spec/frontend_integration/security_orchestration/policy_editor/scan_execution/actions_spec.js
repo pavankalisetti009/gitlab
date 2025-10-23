@@ -1,5 +1,5 @@
-import { mountExtended } from 'helpers/vue_test_utils_helper';
 import * as urlUtils from '~/lib/utils/url_utility';
+import { mountExtended } from 'helpers/vue_test_utils_helper';
 import App from 'ee/security_orchestration/components/policy_editor/app.vue';
 import GroupDastProfileSelector from 'ee/security_orchestration/components/policy_editor/scan_execution/action/scan_filters/group_dast_profile_selector.vue';
 import ProjectDastProfileSelector from 'ee/security_orchestration/components/policy_editor/scan_execution/action/scan_filters/project_dast_profile_selector.vue';
@@ -16,7 +16,7 @@ import {
   REPORT_TYPE_SECRET_DETECTION,
 } from '~/vue_shared/security_reports/constants';
 import { DEFAULT_PROVIDE } from '../mocks/mocks';
-import { verify } from '../utils';
+import { navigateToCustomMode, verify } from '../utils';
 import {
   createScanActionScanExecutionManifest,
   mockDastActionScanExecutionManifest,
@@ -53,36 +53,17 @@ describe('Scan execution policy actions', () => {
   });
 
   const findCiVariablesSelectors = () => wrapper.findComponent(CiVariablesSelectors);
-  const findScanTypeSelector = () => wrapper.findByTestId('scan-type-selector');
+  const findDisabledActionSection = () => wrapper.findByTestId('disabled-action');
   const findGroupDastProfileSelector = () => wrapper.findComponent(GroupDastProfileSelector);
   const findProjectDastProfileSelector = () => wrapper.findComponent(ProjectDastProfileSelector);
   const findRunnerTagsList = () => wrapper.findComponent(RunnerTagsList);
   const findScanFilterButton = () => wrapper.findByTestId('add-variable-button');
-  const findDisabledActionSection = () => wrapper.findByTestId('disabled-action');
+  const findScanTypeSelector = () => wrapper.findByTestId('scan-type-selector');
 
-  describe('secret detection', () => {
-    beforeEach(() => {
-      createWrapper();
-    });
-
-    it('selects secret detection scan as action', async () => {
-      const verifyRuleMode = () => {
-        expect(findScanTypeSelector().exists()).toBe(true);
-        expect(findRunnerTagsList().exists()).toBe(true);
-        expect(findDisabledActionSection().props('disabled')).toBe(false);
-      };
-
-      await verify({
-        manifest: createScanActionScanExecutionManifest(REPORT_TYPE_SECRET_DETECTION),
-        verifyRuleMode,
-        wrapper,
-      });
-    });
-  });
-
-  describe('non dast scanners', () => {
-    beforeEach(() => {
-      createWrapper();
+  describe('non-dast scanners', () => {
+    beforeEach(async () => {
+      await createWrapper();
+      await navigateToCustomMode(wrapper);
     });
 
     it.each`
@@ -115,7 +96,8 @@ describe('Scan execution policy actions', () => {
     `(
       'selects secret detection dast as action',
       async ({ namespaceType, findDastSelector, manifest }) => {
-        createWrapper({ provide: { namespaceType } });
+        await createWrapper({ provide: { namespaceType } });
+        await navigateToCustomMode(wrapper);
 
         const verifyRuleMode = () => {
           expect(findScanTypeSelector().exists()).toBe(true);
@@ -132,8 +114,9 @@ describe('Scan execution policy actions', () => {
   });
 
   describe('actions filters', () => {
-    beforeEach(() => {
-      createWrapper();
+    beforeEach(async () => {
+      await createWrapper();
+      await navigateToCustomMode(wrapper);
     });
 
     it('selects variables filter', async () => {
@@ -144,7 +127,9 @@ describe('Scan execution policy actions', () => {
         expect(findDisabledActionSection().props('disabled')).toBe(false);
       };
 
+      await findScanTypeSelector().vm.$emit('select', REPORT_TYPE_SECRET_DETECTION);
       await findScanFilterButton().vm.$emit('click');
+      await findCiVariablesSelectors().vm.$emit('input', { variables: { a: 'b' } });
       await verify({
         manifest: mockActionsVariablesScanExecutionManifest,
         verifyRuleMode,

@@ -57,6 +57,70 @@ export const mockScanExecutionWithConfigurationManifest = `scan_execution_policy
       allowed: true
 `;
 
+export const mockCustomScanExecutionManifest = `scan_execution_policy:
+  - name: ''
+    description: ''
+    enabled: true
+    rules:
+      - type: pipeline
+        branches:
+          - '*'
+    actions:
+      - scan: secret_detection
+    skip_ci:
+      allowed: true
+`;
+
+export const mockCustomScanExecutionObject = {
+  type: 'scan_execution_policy',
+  name: '',
+  description: '',
+  enabled: true,
+  rules: [{ type: 'pipeline', branches: ['*'] }],
+  actions: [{ scan: 'secret_detection' }],
+  skip_ci: { allowed: true },
+};
+
+export const mockCustomScanExecutionWithDefaultVariablesManifest = `scan_execution_policy:
+  - name: ''
+    description: ''
+    enabled: true
+    rules:
+      - type: pipeline
+        branches:
+          - '*'
+    actions:
+      - scan: secret_detection
+        variables:
+          SECURE_ENABLE_LOCAL_CONFIGURATION: 'false'
+    skip_ci:
+      allowed: true
+`;
+
+export const mockScanExecutionWithDefaultVariablesManifest = `scan_execution_policy:
+  - name: ''
+    description: ''
+    enabled: true
+    policy_scope:
+      projects:
+        excluding: []
+    rules:
+      - type: pipeline
+        branch_type: default
+      - type: pipeline
+        branch_type: target_default
+        pipeline_sources:
+          including:
+            - merge_request_event
+    actions:
+      - scan: secret_detection
+        template: latest
+        variables:
+          SECURE_ENABLE_LOCAL_CONFIGURATION: 'false'
+    skip_ci:
+      allowed: true
+`;
+
 export const mockScheduleScanExecutionManifest = defaultMockScanExecutionManifest.concat(`
 rules:
   - type: schedule

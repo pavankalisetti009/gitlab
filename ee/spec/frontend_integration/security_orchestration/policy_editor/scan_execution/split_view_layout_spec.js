@@ -7,6 +7,7 @@ import { DEFAULT_ASSIGNED_POLICY_PROJECT } from 'ee/security_orchestration/const
 import { POLICY_TYPE_COMPONENT_OPTIONS } from 'ee/security_orchestration/components/constants';
 import { REPORT_TYPE_DAST } from '~/vue_shared/security_reports/constants';
 import EditorLayout from 'ee/security_orchestration/components/policy_editor/editor_layout.vue';
+import { navigateToCustomMode } from '../utils';
 import { DEFAULT_PROVIDE } from '../mocks/mocks';
 import { mockDastActionScanExecutionManifest } from './mocks';
 
@@ -39,14 +40,15 @@ describe('Split View', () => {
 
   describe('rendering', () => {
     let createPolicyObjectMock;
-    beforeEach(() => {
-      createWrapper({
+    beforeEach(async () => {
+      await createWrapper({
         provide: {
           glFeatures: { securityPoliciesSplitView: true },
           policyEditorEnabled: true,
           namespaceType: 'group',
         },
       });
+      await navigateToCustomMode(wrapper);
 
       findAdvancedEditorToggle().vm.$emit('enable-advanced-editor', true);
 

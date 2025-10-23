@@ -35,3 +35,23 @@ export const DEFAULT_PROVIDE = {
 export const SCAN_EXECUTION_POLICY = 'scan_execution_policy';
 export const PIPELINE_EXECUTION_POLICY = 'pipeline_execution_policy';
 export const APPROVAL_POLICY = 'approval_policy';
+
+export const SCAN_EXECUTION_DEFAULT = {
+  rules: `    rules:
+      - type: pipeline
+        branch_type: default
+      - type: pipeline
+        branch_type: target_default
+        pipeline_sources:
+          including:
+            - merge_request_event`,
+
+  actions: `    actions:
+      - scan: secret_detection
+        template: latest
+        variables:
+          SECURE_ENABLE_LOCAL_CONFIGURATION: 'false'`,
+
+  skip: `    skip_ci:
+      allowed: true`,
+};
