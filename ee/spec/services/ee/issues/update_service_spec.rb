@@ -1089,13 +1089,9 @@ RSpec.describe Issues::UpdateService, feature_category: :team_planning do
         project.add_developer(service_account_3)
         project.add_developer(regular_user)
 
-        allow(GitlabSubscriptions::AddOnPurchase).to receive_message_chain(
-          :for_duo_enterprise,
-          :active,
-          :by_namespace,
-          :assigned_to_user,
-          :exists?
-        ).and_return(true)
+        allow(::Gitlab::Llm::StageCheck).to receive(:available?).with(project, :duo_workflow).and_return(true)
+        stub_ee_application_setting(duo_features_enabled: true)
+        allow(user).to receive(:allowed_to_use?).with(:duo_agent_platform).and_return(true)
       end
 
       context 'when assigning multiple users with flow triggers' do

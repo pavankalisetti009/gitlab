@@ -88,13 +88,10 @@ RSpec.describe ::MergeRequests::RequestReviewService, feature_category: :code_re
     before do
       merge_request.project.add_developer(service_account)
 
-      allow(GitlabSubscriptions::AddOnPurchase).to receive_message_chain(
-        :for_duo_enterprise,
-        :active,
-        :by_namespace,
-        :assigned_to_user,
-        :exists?
-      ).and_return(true)
+      allow(::Gitlab::Llm::StageCheck).to receive(:available?).with(merge_request.project,
+        :duo_workflow).and_return(true)
+      stub_ee_application_setting(duo_features_enabled: true)
+      allow(current_user).to receive(:allowed_to_use?).with(:duo_agent_platform).and_return(true)
     end
 
     context 'when requesting review from this account' do

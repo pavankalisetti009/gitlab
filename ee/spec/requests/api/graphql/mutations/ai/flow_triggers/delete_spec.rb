@@ -8,6 +8,7 @@ RSpec.describe Mutations::Ai::FlowTriggers::Delete, feature_category: :duo_agent
   let_it_be(:maintainer) { create(:user) }
   let_it_be(:project) { create(:project, maintainers: maintainer) }
   let_it_be_with_reload(:trigger) { create(:ai_flow_trigger, project: project) }
+  let_it_be(:subscription_purchase) { create(:gitlab_subscription_add_on_purchase, :duo_core, :self_managed) }
 
   let(:current_user) { maintainer }
   let(:mutation) { graphql_mutation(:ai_flow_trigger_delete, params) }
@@ -20,13 +21,9 @@ RSpec.describe Mutations::Ai::FlowTriggers::Delete, feature_category: :duo_agent
   subject(:execute) { post_graphql_mutation(mutation, current_user: current_user) }
 
   before do
-    allow(GitlabSubscriptions::AddOnPurchase).to receive_message_chain(
-      :for_duo_enterprise,
-      :active,
-      :by_namespace,
-      :assigned_to_user,
-      :exists?
-    ).and_return(true)
+    allow(::Gitlab::Llm::StageCheck).to receive(:available?).and_return(true)
+    stub_ee_application_setting(duo_features_enabled: true)
+    ::Ai::Setting.instance.update!(duo_core_features_enabled: true)
   end
 
   shared_examples 'an authorization failure' do

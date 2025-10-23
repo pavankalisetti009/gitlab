@@ -729,6 +729,7 @@ module EE
         enable :admin_vulnerability
         enable :admin_ai_catalog_item
         enable :admin_ai_catalog_item_consumer
+        enable :manage_ai_flow_triggers
       end
 
       rule { ~runner_performance_insights_available }.prevent :read_runner_usage
@@ -1178,11 +1179,10 @@ module EE
         ::Feature.enabled?(:ai_flow_triggers, @user)
       end
 
-      rule { ai_flow_triggers_enabled & (amazon_q_enabled | assigned_to_duo_enterprise) & can?(:admin_project) }.policy do
-        enable :manage_ai_flow_triggers
-      end
+      rule { ~ai_flow_triggers_enabled }.prevent :manage_ai_flow_triggers
+      rule { ~(amazon_q_enabled | duo_workflow_available) }.prevent :manage_ai_flow_triggers
 
-      rule { ai_flow_triggers_enabled & (amazon_q_enabled | assigned_to_duo_enterprise) & can?(:developer_access) & can?(:create_pipeline) }.policy do
+      rule { ai_flow_triggers_enabled & (amazon_q_enabled | duo_workflow_available) & can?(:developer_access) & can?(:create_pipeline) }.policy do
         enable :trigger_ai_flow
       end
 
@@ -1245,7 +1245,6 @@ module EE
         ::Feature.enabled?(:duo_workflow, @user)
       end
 
-      with_scope :subject
       condition(:duo_workflow_available) do
         @subject.duo_features_enabled &&
           ::Gitlab::Llm::StageCheck.available?(@subject, :duo_workflow) &&

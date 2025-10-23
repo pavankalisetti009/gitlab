@@ -10,6 +10,8 @@ RSpec.describe Resolvers::Ai::FlowTriggersResolver, :with_current_organization, 
   let_it_be(:triggers) { create_list(:ai_flow_trigger, 3, project: project) }
   let_it_be(:other_project) { create(:project, maintainers: maintainer) }
   let_it_be(:other_trigger) { create(:ai_flow_trigger, project: other_project) }
+  let_it_be(:subscription_purchase) { create(:gitlab_subscription_add_on_purchase, :duo_core, :self_managed) }
+
   let(:nodes) { graphql_data_at(:project, :ai_flow_triggers, :nodes) }
   let(:current_user) { maintainer }
   let(:args) { '' }
@@ -29,13 +31,9 @@ RSpec.describe Resolvers::Ai::FlowTriggersResolver, :with_current_organization, 
   end
 
   before do
-    allow(GitlabSubscriptions::AddOnPurchase).to receive_message_chain(
-      :for_duo_enterprise,
-      :active,
-      :by_namespace,
-      :assigned_to_user,
-      :exists?
-    ).and_return(true)
+    allow(::Gitlab::Llm::StageCheck).to receive(:available?).and_return(true)
+    ::Ai::Setting.instance.update!(duo_core_features_enabled: true)
+    stub_ee_application_setting(duo_features_enabled: true)
   end
 
   context 'when developer' do

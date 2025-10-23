@@ -8,6 +8,7 @@ RSpec.describe Mutations::Ai::FlowTriggers::Create, feature_category: :duo_agent
   let_it_be(:project) { create(:project, :repository, :in_group, maintainers: [service_account]) }
   let_it_be(:group_owner) { create(:user, owner_of: project.group) }
   let_it_be(:service_account) { create(:service_account, provisioned_by_group: project.root_ancestor) }
+  let_it_be(:subscription_purchase) { create(:gitlab_subscription_add_on_purchase, :duo_core, :self_managed) }
 
   let(:current_user) { group_owner }
   let(:mutation) { graphql_mutation(:ai_flow_trigger_create, params) }
@@ -26,15 +27,11 @@ RSpec.describe Mutations::Ai::FlowTriggers::Create, feature_category: :duo_agent
   subject(:execute) { post_graphql_mutation(mutation, current_user: current_user) }
 
   before do
-    allow(GitlabSubscriptions::AddOnPurchase).to receive_message_chain(
-      :for_duo_enterprise,
-      :active,
-      :by_namespace,
-      :assigned_to_user,
-      :exists?
-    ).and_return(true)
+    allow(::Gitlab::Llm::StageCheck).to receive(:available?).and_return(true)
+    ::Ai::Setting.instance.update!(duo_core_features_enabled: true)
 
-    stub_ee_application_setting(allow_top_level_group_owners_to_create_service_accounts: true)
+    stub_ee_application_setting(allow_top_level_group_owners_to_create_service_accounts: true,
+      duo_features_enabled: true)
     stub_licensed_features(service_accounts: true)
   end
 
