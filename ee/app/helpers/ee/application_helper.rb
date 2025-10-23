@@ -84,7 +84,6 @@ module EE
       enabled_for_vulnerabilities = object.feature_available?(:security_dashboard)
       {
         epics: epics_group_autocomplete_sources_path(object),
-        epicsAlternative: epics_group_autocomplete_sources_path(object),
         iterations: object.feature_available?(:iterations) ? iterations_group_autocomplete_sources_path(object) : nil,
         vulnerabilities: enabled_for_vulnerabilities ? vulnerabilities_group_autocomplete_sources_path(object) : nil,
         wikis: object.feature_available?(:wiki, current_user) ? wikis_group_autocomplete_sources_path(object) : nil
@@ -95,7 +94,6 @@ module EE
       enabled_for_vulnerabilities = object.feature_available?(:security_dashboard)
       {
         epics: object.group&.feature_available?(:epics) ? epics_project_autocomplete_sources_path(object) : nil,
-        epicsAlternative: object.group&.feature_available?(:epics),
         iterations: object.group&.feature_available?(:iterations) ? iterations_project_autocomplete_sources_path(object) : nil,
         vulnerabilities: enabled_for_vulnerabilities ? vulnerabilities_project_autocomplete_sources_path(object) : nil
       }.compact

@@ -18,6 +18,7 @@ import { MERGE_REQUEST_NOTEABLE_TYPE } from '~/notes/constants';
 export {
   escape,
   defaultAutocompleteConfig,
+  getEnableGFMType,
   membersBeforeSave,
   highlighter,
   CONTACT_STATE_ACTIVE,

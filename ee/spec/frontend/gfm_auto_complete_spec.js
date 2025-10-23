@@ -62,7 +62,6 @@ const mockSpriteIcons = '/icons.svg';
 describe('GfmAutoCompleteEE', () => {
   const dataSources = {
     epics: `${TEST_HOST}/autocomplete_sources/epics`,
-    epicsAlternative: `${TEST_HOST}/autocomplete_sources/epics`,
     labels: `${TEST_HOST}/autocomplete_sources/labels`,
     iterations: `${TEST_HOST}/autocomplete_sources/iterations`,
   };

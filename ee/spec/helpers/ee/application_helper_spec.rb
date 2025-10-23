@@ -266,7 +266,7 @@ RSpec.describe ApplicationHelper do
     end
 
     context 'group' do
-      let(:autocomplete_data_sources) { [:members, :issues, :issuesAlternative, :workItems, :mergeRequests, :labels, :commands, :milestones, :epics, :epicsAlternative, :wikis] }
+      let(:autocomplete_data_sources) { [:members, :issues, :mergeRequests, :labels, :commands, :milestones, :epics, :wikis] }
       let(:object) { create(:group) }
       let(:noteable_type) { Epic }
 
@@ -292,7 +292,7 @@ RSpec.describe ApplicationHelper do
     end
 
     context 'project' do
-      let(:autocomplete_data_sources) { [:members, :issues, :issuesAlternative, :workItems, :mergeRequests, :labels, :commands, :milestones, :snippets, :contacts, :wikis] }
+      let(:autocomplete_data_sources) { [:members, :issues, :mergeRequests, :labels, :commands, :milestones, :snippets, :contacts, :wikis] }
       let(:object) { create(:project) }
       let(:noteable_type) { Issue }
 
@@ -308,7 +308,7 @@ RSpec.describe ApplicationHelper do
         it 'returns paths for autocomplete_sources_controller including epics, iterations and vulnerabilities for group projects' do
           object.update!(group: create(:group))
 
-          expect_autocomplete_data_sources(object, noteable_type, autocomplete_data_sources + [:epics, :epicsAlternative, :iterations, :vulnerabilities])
+          expect_autocomplete_data_sources(object, noteable_type, autocomplete_data_sources + [:epics, :iterations, :vulnerabilities])
         end
       end
 
