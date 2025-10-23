@@ -375,6 +375,121 @@ RSpec.describe API::Admin::DataManagement, :aggregate_failures, :request_store, 
     end
   end
 
+  describe 'PUT /admin/data_management/:model_name/checksum' do
+    context 'with feature flag enabled' do
+      let_it_be(:node) { create(:geo_node) }
+      let_it_be(:api_path) { "/admin/data_management/merge_request_diff/checksum" }
+
+      before do
+        stub_current_geo_node(node)
+        stub_primary_site
+      end
+
+      context 'when authenticated as admin' do
+        context 'when not on primary site' do
+          before do
+            allow(Gitlab::Geo).to receive(:primary?).and_return(false)
+          end
+
+          it 'returns 400 bad request' do
+            put api(api_path, admin, admin_mode: true)
+
+            expect(response).to have_gitlab_http_status(:bad_request)
+            expect(json_response['message']).to eq('400 Bad request - Endpoint only available on primary site.')
+          end
+        end
+
+        context 'with valid model name' do
+          it 'returns service result' do
+            expect(::Geo::BulkPrimaryVerificationService).to receive(:new).with('merge_request_diff').and_call_original
+
+            put api(api_path, admin, admin_mode: true)
+
+            expect(response).to have_gitlab_http_status(:ok)
+            expect(json_response).to include('status' => 'success')
+          end
+
+          context 'when service returns an error' do
+            before do
+              allow(::Geo::BulkPrimaryVerificationService).to receive_message_chain(:new, :async_execute)
+                                                                .and_return(ServiceResponse.error(message: 'Error'))
+            end
+
+            it 'returns error message' do
+              put api(api_path, admin, admin_mode: true)
+
+              expect(response).to have_gitlab_http_status(:ok)
+              expect(json_response).to include('status' => 'error')
+            end
+          end
+        end
+
+        context 'with invalid model names' do
+          # Edge cases - invalid inputs
+          it 'returns 400 for non-existent model name' do
+            put api('/admin/data_management/non_existent_model/checksum', admin, admin_mode: true)
+
+            expect(response).to have_gitlab_http_status(:bad_request)
+          end
+
+          it 'returns 404 for empty model name' do
+            put api('/admin/data_management/checksum', admin, admin_mode: true)
+
+            expect(response).to have_gitlab_http_status(:not_found)
+          end
+        end
+
+        context 'with URL encoding' do
+          # Edge cases - URL encoded characters
+          it 'handles URL encoded model names' do
+            put api('/admin/data_management/lfs%5Fobject/checksum', admin, admin_mode: true)
+
+            expect(response).to have_gitlab_http_status(:ok)
+          end
+
+          it 'handles URL encoded special characters' do
+            put api('/admin/data_management/lfs%40object/checksum', admin, admin_mode: true)
+
+            expect(response).to have_gitlab_http_status(:bad_request)
+          end
+        end
+      end
+
+      context 'when not authenticated as admin' do
+        # Security boundary tests
+        it 'denies access for regular users' do
+          put api(api_path, user)
+
+          expect(response).to have_gitlab_http_status(:forbidden)
+        end
+
+        it 'denies access for unauthenticated requests' do
+          put api(api_path)
+
+          expect(response).to have_gitlab_http_status(:unauthorized)
+        end
+
+        it 'denies access for admin without admin mode' do
+          put api(api_path, admin)
+
+          expect(response).to have_gitlab_http_status(:forbidden)
+        end
+      end
+    end
+
+    context 'with feature flag disabled' do
+      before do
+        Feature.disable(:geo_primary_verification_view)
+      end
+
+      it 'returns 404' do
+        put api("/admin/data_management/terraform_state_version/checksum", admin, admin_mode: true)
+
+        expect(response).to have_gitlab_http_status(:not_found)
+      end
+    end
+  end
+
   describe 'GET /admin/data_management/:model_name/:record_identifier' do
     context 'with feature flag enabled' do
       context 'with valid model name' do
