@@ -104,14 +104,6 @@ RSpec.describe 'Automate Agent Sessions', :js, feature_category: :duo_agent_plat
       end
     end
 
-    context 'when duo features are disabled' do
-      before do
-        project.project_setting.update!(duo_features_enabled: false)
-      end
-
-      include_examples 'returns 404 page'
-    end
-
     context 'when duo remote flows are disabled' do
       before do
         project.project_setting.update!(duo_remote_flows_enabled: false)
@@ -138,8 +130,7 @@ RSpec.describe 'Automate Agent Sessions', :js, feature_category: :duo_agent_plat
 
     context 'when user does not have duo_workflow permission' do
       before do
-        allow(user).to receive(:can?).and_call_original
-        allow(user).to receive(:can?).with(:duo_workflow, project).and_return(false)
+        allow(Ability).to receive(:allowed?).with(user, :duo_workflow, anything).and_return(false)
       end
 
       include_examples 'returns 404 page'

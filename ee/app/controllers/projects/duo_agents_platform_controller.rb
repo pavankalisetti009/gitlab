@@ -15,7 +15,7 @@ module Projects
     private
 
     def check_access
-      return render_404 unless project&.duo_features_enabled && current_user.can?(:duo_workflow, project)
+      return render_404 unless Ability.allowed?(current_user, :duo_workflow, project)
 
       if specific_vueroute?
         render_404 unless authorized_for_route?
