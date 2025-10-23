@@ -25,13 +25,13 @@ panels:
       yPos: 6
       xPos: 0
       width: 12
-      height: 3
+      height: 4
     options: {}
   - visualization: vsd_security_metrics_table
     title: 'Security metrics for the %{namespaceName} %{namespaceType}'
     gridAttributes:
-      yPos: 9
+      yPos: 10
       xPos: 0
       width: 12
-      height: 2
+      height: 3
     options: {}

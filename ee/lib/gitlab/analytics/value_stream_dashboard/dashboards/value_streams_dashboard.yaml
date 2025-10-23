@@ -25,20 +25,20 @@ panels:
       yPos: 6
       xPos: 0
       width: 12
-      height: 3
+      height: 4
     options: {}
   - visualization: vsd_security_metrics_table
     title: 'Security metrics for the %{namespaceName} %{namespaceType}'
     gridAttributes:
-      yPos: 9
+      yPos: 10
       xPos: 0
       width: 12
-      height: 2
+      height: 3
     options: {}
   - visualization: dora_performers_score
     title: DORA performers score for the %{namespaceName} %{namespaceType} (Last full calendar month)
     gridAttributes:
-      yPos: 11
+      yPos: 13
       xPos: 0
       width: 12
       height: 4
@@ -46,7 +46,7 @@ panels:
   - visualization: dora_projects_comparison
     title: Projects by DORA metric (Last full calendar month)
     gridAttributes:
-      yPos: 15
+      yPos: 17
       xPos: 0
       width: 12
       height: 4
