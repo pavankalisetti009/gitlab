@@ -16,7 +16,22 @@ RSpec.describe GitlabSubscriptions::Duo::BulkUserAssignment, feature_category: :
 
   describe '#execute' do
     let_it_be(:add_on) { create(:gitlab_subscription_add_on) }
-    let(:usernames) { User.pluck(:username) + ['code_suggestions_not_found_username'] }
+    # The tests are dependent on the order of usernames in this list.
+    # Do not reorder without updating the corresponding test expectations.
+    let_it_be(:usernames) do
+      %w[
+        code_suggestions_active_user1
+        code_suggestions_active_user2
+        code_suggestions_active_user3
+        code_suggestions_extra_user1
+        code_suggestions_extra_user2
+        code_suggestions_blocked_user
+        code_suggestions_banned_user
+        code_suggestions_bot_user
+        code_suggestions_ghost_user
+        code_suggestions_not_found_username
+      ]
+    end
 
     subject(:bulk_assignment) { described_class.new(usernames, add_on_purchase) }
 
@@ -52,13 +67,7 @@ RSpec.describe GitlabSubscriptions::Duo::BulkUserAssignment, feature_category: :
     end
 
     shared_examples 'bulk user assignment with not enough seats' do
-      it 'returns success and failed assignments and stops execution',
-        quarantine: {
-          issue: [
-            'https://gitlab.com/gitlab-org/gitlab/-/issues/536761',
-            'https://gitlab.com/gitlab-org/gitlab/-/issues/536486'
-          ]
-        } do
+      it 'returns success and failed assignments and stops execution' do
         results = bulk_assignment.execute
 
         expect(results[:successful_assignments]).to eq(
