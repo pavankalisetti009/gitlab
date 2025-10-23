@@ -7,19 +7,24 @@ module Geo
 
     extend ::Gitlab::Utils::Override
 
-    MODEL_CLASS = ::Upload
-    MODEL_FOREIGN_KEY = :file_id
-
     self.table_name = 'file_registry'
 
     belongs_to :upload, foreign_key: :file_id
 
     scope :fresh, -> { order(created_at: :desc) }
 
+    def self.model_class
+      ::Upload
+    end
+
+    def self.model_foreign_key
+      :file_id
+    end
+
     def self.find_registry_differences(range)
       source =
-        self::MODEL_CLASS.replicables_for_current_secondary(range)
-            .pluck(self::MODEL_CLASS.arel_table[:id])
+        model_class.replicables_for_current_secondary(range)
+            .pluck(model_class.arel_table[:id])
 
       tracked =
         model_id_in(range)

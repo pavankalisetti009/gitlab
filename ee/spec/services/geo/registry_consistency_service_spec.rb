@@ -19,16 +19,16 @@ RSpec.describe Geo::RegistryConsistencyService,
   shared_examples 'registry consistency service' do |klass|
     let(:registry_class) { klass }
     let(:registry_class_factory) { registry_factory_name(registry_class) }
-    let(:model_class) { registry_class::MODEL_CLASS }
+    let(:model_class) { registry_class.model_class }
     let(:model_class_factory) { model_class_factory_name(registry_class) }
-    let(:model_foreign_key) { registry_class::MODEL_FOREIGN_KEY }
+    let(:model_foreign_key) { registry_class.model_foreign_key }
     let(:batch_size) { 2 }
 
     subject { described_class.new(registry_class, batch_size: batch_size) }
 
     describe 'registry_class interface' do
-      it 'defines a MODEL_CLASS constant' do
-        expect(registry_class::MODEL_CLASS).not_to be_nil
+      it 'defines a model_class' do
+        expect(registry_class.model_class).not_to be_nil
       end
 
       it 'responds to .name' do

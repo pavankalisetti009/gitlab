@@ -5,9 +5,14 @@ module Geo
     include ::Geo::ReplicableRegistry
     include ::Geo::VerifiableRegistry
 
-    MODEL_CLASS = ::Packages::PackageFile
-    MODEL_FOREIGN_KEY = :package_file_id
-
     belongs_to :package_file, class_name: 'Packages::PackageFile'
+
+    def self.model_class
+      ::Packages::PackageFile
+    end
+
+    def self.model_foreign_key
+      :package_file_id
+    end
   end
 end

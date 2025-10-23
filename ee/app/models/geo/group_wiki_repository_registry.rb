@@ -5,9 +5,14 @@ module Geo
     include ::Geo::ReplicableRegistry
     include ::Geo::VerifiableRegistry
 
-    MODEL_CLASS = ::GroupWikiRepository
-    MODEL_FOREIGN_KEY = :group_wiki_repository_id
-
     belongs_to :group_wiki_repository, class_name: 'GroupWikiRepository'
+
+    def self.model_class
+      ::GroupWikiRepository
+    end
+
+    def self.model_foreign_key
+      :group_wiki_repository_id
+    end
   end
 end

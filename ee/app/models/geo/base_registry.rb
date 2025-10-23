@@ -10,19 +10,19 @@ module Geo
     include GlobalID::Identification
 
     def self.pluck_model_ids_in_range(range)
-      where(self::MODEL_FOREIGN_KEY => range).pluck(self::MODEL_FOREIGN_KEY)
+      where(model_foreign_key => range).pluck(model_foreign_key)
     end
 
     def self.pluck_model_foreign_key
-      where(nil).pluck(self::MODEL_FOREIGN_KEY)
+      where(nil).pluck(model_foreign_key)
     end
 
     def self.model_id_in(ids)
-      where(self::MODEL_FOREIGN_KEY => ids)
+      where(model_foreign_key => ids)
     end
 
     def self.model_id_not_in(ids)
-      where.not(self::MODEL_FOREIGN_KEY => ids)
+      where.not(model_foreign_key => ids)
     end
 
     def self.ordered_by_id
@@ -56,7 +56,7 @@ module Geo
 
     def self.insert_for_model_ids(ids)
       records = ids.map do |id|
-        new(self::MODEL_FOREIGN_KEY => id, created_at: Time.zone.now)
+        new(model_foreign_key => id, created_at: Time.zone.now)
       end
 
       bulk_insert!(records, returns: :ids)
@@ -73,15 +73,15 @@ module Geo
     end
 
     def self.replicator_class
-      self::MODEL_CLASS.replicator_class
+      model_class.replicator_class
     end
 
     def self.find_registry_differences(range)
-      model_primary_key = self::MODEL_CLASS.primary_key.to_sym
+      model_primary_key = model_class.primary_key.to_sym
 
-      source_ids = self::MODEL_CLASS
+      source_ids = model_class
                     .replicables_for_current_secondary(range)
-                    .pluck(self::MODEL_CLASS.arel_table[model_primary_key])
+                    .pluck(model_class.arel_table[model_primary_key])
 
       tracked_ids = pluck_model_ids_in_range(range)
 
@@ -119,11 +119,11 @@ module Geo
     def self.with_search(query)
       return all if query.empty?
 
-      where(self::MODEL_FOREIGN_KEY => self::MODEL_CLASS.search(query).limit(1000).pluck_primary_key)
+      where(model_foreign_key => model_class.search(query).limit(1000).pluck_primary_key)
     end
 
     def model_record_id
-      read_attribute(self.class::MODEL_FOREIGN_KEY)
+      read_attribute(self.class.model_foreign_key)
     end
   end
 end

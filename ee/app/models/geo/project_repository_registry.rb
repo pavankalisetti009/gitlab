@@ -6,10 +6,15 @@ module Geo
     include ::Geo::VerifiableRegistry
     extend ::Gitlab::Geo::LogHelpers
 
-    MODEL_CLASS = ::Project
-    MODEL_FOREIGN_KEY = :project_id
-
     belongs_to :project, class_name: 'Project'
+
+    def self.model_class
+      ::Project
+    end
+
+    def self.model_foreign_key
+      :project_id
+    end
 
     # Returns whether the project repository is out-of-date on this site
     #

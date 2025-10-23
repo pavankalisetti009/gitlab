@@ -5,9 +5,14 @@ module Geo
     include ::Geo::ReplicableRegistry
     include ::Geo::VerifiableRegistry
 
-    MODEL_CLASS = ::DependencyProxy::Blob
-    MODEL_FOREIGN_KEY = :dependency_proxy_blob_id
-
     belongs_to :dependency_proxy_blob, class_name: 'DependencyProxy::Blob'
+
+    def self.model_class
+      ::DependencyProxy::Blob
+    end
+
+    def self.model_foreign_key
+      :dependency_proxy_blob_id
+    end
   end
 end

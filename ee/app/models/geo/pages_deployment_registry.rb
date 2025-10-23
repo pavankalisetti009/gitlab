@@ -5,9 +5,14 @@ module Geo
     include ::Geo::ReplicableRegistry
     include ::Geo::VerifiableRegistry
 
-    MODEL_CLASS = ::PagesDeployment
-    MODEL_FOREIGN_KEY = :pages_deployment_id
-
     belongs_to :pages_deployment, class_name: 'PagesDeployment'
+
+    def self.model_class
+      ::PagesDeployment
+    end
+
+    def self.model_foreign_key
+      :pages_deployment_id
+    end
   end
 end
