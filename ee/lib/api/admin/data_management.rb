@@ -56,54 +56,19 @@ module API
         rescue ArgumentError, TypeError => e
           bad_request!(e)
         end
+
+        def find_verifiable_model_class
+          model_class = Gitlab::Geo::ModelMapper.find_from_name(params[:model_name])
+          not_found!(params[:model_name]) unless model_class
+          bad_request!("#{model_class} is not a verifiable model.") unless verifiable?(model_class)
+
+          model_class
+        end
       end
 
       resource :admin do
         resource :data_management do
-          route_param :model_name, type: String, desc: 'The name of the model being managed' do
-            # Example request:
-            #   GET /admin/data_management/:model_name
-            desc 'Get a list of model data' do
-              summary 'Retrieve all records of the requested model'
-              detail 'This feature is experimental.'
-              success code: 200, model: Entities::Admin::Model
-              failure [
-                { code: 400, message: '400 Bad request' },
-                { code: 401, message: '401 Unauthorized' },
-                { code: 403, message: '403 Forbidden' },
-                { code: 404, message: '404 Model Not Found' }
-              ]
-              is_array true
-              tags %w[data_management]
-            end
-            params do
-              use :pagination
-              requires :model_name, type: String, values: AVAILABLE_MODEL_NAMES
-              optional :identifiers, types: [Array[Integer], Array[String]], desc: 'The record identifiers to filter by'
-              optional :checksum_state,
-                type: String,
-                desc: 'The checksum status of the records to filter by',
-                values: VERIFICATION_STATES
-            end
-            get do
-              model_class = Gitlab::Geo::ModelMapper.find_from_name(params[:model_name])
-              not_found!(params[:model_name]) unless model_class
-
-              relation = model_class.respond_to?(:with_state_details) ? model_class.with_state_details : model_class
-              if params[:identifiers]&.compact.present?
-                relation = find_models_from_record_identifier_array(params[:identifiers], relation)
-              end
-
-              if params[:checksum_state].present?
-                bad_request!("#{model_class} is not a verifiable model.") unless verifiable?(model_class)
-                relation = relation.with_verification_state("verification_#{params[:checksum_state]}")
-              end
-
-              relation = relation.order_by_primary_key
-
-              present paginate(relation.all, without_count: true), with: Entities::Admin::Model
-            end
-
+          route_param :model_name, type: String, desc: 'The name of the model being requested' do
             route_param :record_identifier,
               types: [Integer, String],
               desc: 'The identifier of the model being requested' do
@@ -158,10 +123,7 @@ module API
               put 'checksum' do
                 bad_request!('Endpoint only available on primary site.') unless ::Gitlab::Geo.primary?
 
-                model_class = Gitlab::Geo::ModelMapper.find_from_name(params[:model_name])
-                not_found!(params[:model_name]) unless model_class
-                bad_request!("#{model_class} is not a verifiable model.") unless verifiable?(model_class)
-
+                model_class = find_verifiable_model_class
                 model = find_model_from_record_identifier(params[:record_identifier], model_class)
                 not_found!(params[:record_identifier]) unless model
 
@@ -170,6 +132,80 @@ module API
 
                 present model, with: Entities::Admin::Model
               end
+            end
+
+            # Example request:
+            #   GET /admin/data_management/:model_name
+            desc 'Get a list of model data' do
+              summary 'Retrieve all records of the requested model'
+              detail 'This feature is experimental.'
+              success code: 200, model: Entities::Admin::Model
+              failure [
+                { code: 400, message: '400 Bad request' },
+                { code: 401, message: '401 Unauthorized' },
+                { code: 403, message: '403 Forbidden' },
+                { code: 404, message: '404 Model Not Found' }
+              ]
+              is_array true
+              tags %w[data_management]
+            end
+            params do
+              use :pagination
+              requires :model_name, type: String, values: AVAILABLE_MODEL_NAMES
+              optional :identifiers, types: [Array[Integer], Array[String]], desc: 'The record identifiers to filter by'
+              optional :checksum_state,
+                type: String,
+                desc: 'The checksum status of the records to filter by',
+                values: VERIFICATION_STATES
+            end
+            get do
+              model_class = Gitlab::Geo::ModelMapper.find_from_name(params[:model_name])
+              not_found!(params[:model_name]) unless model_class
+
+              relation = model_class.respond_to?(:with_state_details) ? model_class.with_state_details : model_class
+              if params[:identifiers]&.compact.present?
+                relation = find_models_from_record_identifier_array(params[:identifiers], relation)
+              end
+
+              if params[:checksum_state].present?
+                bad_request!("#{model_class} is not a verifiable model.") unless verifiable?(model_class)
+                relation = relation.with_verification_state("verification_#{params[:checksum_state]}")
+              end
+
+              relation = relation.order_by_primary_key
+
+              present paginate(relation.all, without_count: true), with: Entities::Admin::Model
+            end
+
+            # Example request:
+            #   PUT /admin/data_management/:model_name/checksum
+            desc 'Recalculate the checksum of a all records for a model' do
+              summary 'Marks all records from a given model for checksum recalculation'
+              detail 'This feature is experimental.'
+              success code: 200, model: Entities::Admin::Model
+              failure [
+                { code: 400, message: '400 Bad request' },
+                { code: 401, message: '401 Unauthorized' },
+                { code: 403, message: '403 Forbidden' },
+                { code: 404, message: '404 Model Not Found' }
+              ]
+              tags %w[data_management]
+            end
+            params do
+              requires :model_name, type: String, values: AVAILABLE_MODEL_NAMES
+            end
+            put 'checksum' do
+              bad_request!('Endpoint only available on primary site.') unless ::Gitlab::Geo.primary?
+              find_verifiable_model_class
+
+              service_result = ::Geo::BulkPrimaryVerificationService.new(params[:model_name]).async_execute
+              result = if service_result.success?
+                         { status: 'success', message: service_result.message }
+                       else
+                         { status: 'error', message: service_result.message }
+                       end
+
+              present result
             end
           end
         end
