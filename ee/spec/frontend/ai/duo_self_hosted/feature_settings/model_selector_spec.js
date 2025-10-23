@@ -12,6 +12,7 @@ import updateAiFeatureSetting from 'ee/ai/duo_self_hosted/feature_settings/graph
 import getAiFeatureSettingsQuery from 'ee/ai/duo_self_hosted/feature_settings/graphql/queries/get_ai_feature_settings.query.graphql';
 import getSelfHostedModelsQuery from 'ee/ai/duo_self_hosted/self_hosted_models/graphql/queries/get_self_hosted_models.query.graphql';
 import { PROVIDERS, GITLAB_DEFAULT_MODEL } from 'ee/ai/duo_self_hosted/feature_settings/constants';
+import { SELF_HOSTED_ROUTE_NAMES } from 'ee/ai/duo_self_hosted/constants';
 import { createAlert } from '~/alert';
 import { extendedWrapper } from 'helpers/vue_test_utils_helper';
 import {
@@ -178,6 +179,7 @@ describe('ModelSelector', () => {
     const modelOptions = findModelSelectDropdown().props('items');
     return modelOptions.find((option) => option.value === PROVIDERS.VENDORED);
   };
+  const findAddModelButton = () => wrapper.findByTestId('add-self-hosted-model-button');
   const findDisclaimerModal = () => wrapper.findComponent(GitlabManagedModelsDisclaimerModal);
 
   it('renders the component', () => {
@@ -186,10 +188,18 @@ describe('ModelSelector', () => {
     expect(findModelSelector().exists()).toBe(true);
   });
 
+  it('renders compatible models header-text', () => {
+    createComponent();
+
+    expect(findModelSelectDropdown().props('headerText')).toBe('Compatible models');
+  });
+
   describe('.listItems', () => {
-    it('renders model selector dropdown footer', () => {
+    it('renders a button to add a self-hosted model', () => {
       createComponent();
-      expect(findModelSelectDropdown().props('isFeatureSettingDropdown')).toBe(true);
+
+      expect(findAddModelButton().text()).toBe('Add self-hosted model');
+      expect(findAddModelButton().props('to')).toEqual({ name: SELF_HOSTED_ROUTE_NAMES.NEW });
     });
 
     describe('with Dedicated instance', () => {
@@ -202,7 +212,7 @@ describe('ModelSelector', () => {
       });
 
       it('does not render model dropdown footer', () => {
-        expect(findModelSelectDropdown().props('isFeatureSettingDropdown')).toBe(false);
+        expect(findAddModelButton().exists()).toBe(false);
       });
     });
   });

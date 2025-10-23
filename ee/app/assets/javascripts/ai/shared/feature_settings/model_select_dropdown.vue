@@ -8,7 +8,6 @@ import {
   GlTooltipDirective,
 } from '@gitlab/ui';
 import { s__ } from '~/locale';
-import { SELF_HOSTED_ROUTE_NAMES } from 'ee/ai/duo_self_hosted/constants';
 import { GITLAB_DEFAULT_MODEL } from 'ee/ai/model_selection/constants';
 import { RELEASE_STATES } from './constants';
 
@@ -39,10 +38,10 @@ export default {
       required: false,
       default: '',
     },
-    isFeatureSettingDropdown: {
-      type: Boolean,
+    headerText: {
+      type: String,
       required: false,
-      default: false,
+      default: '',
     },
     isLoading: {
       type: Boolean,
@@ -60,16 +59,13 @@ export default {
       default: false,
     },
   },
-  SELF_HOSTED_ROUTE_NAMES,
+
   computed: {
     selected() {
       return this.selectedOption?.value || GITLAB_DEFAULT_MODEL;
     },
     dropdownToggleText() {
       return this.selectedOption?.text || this.placeholderDropdownText;
-    },
-    headerText() {
-      return this.isFeatureSettingDropdown ? s__('AdminAIPoweredFeatures|Compatible models') : null;
     },
     defaultModelTooltipText() {
       return this.withDefaultModelTooltip ? s__('AdminAIPoweredFeatures|GitLab default model') : '';
@@ -159,18 +155,8 @@ export default {
       </div>
     </template>
 
-    <template v-if="isFeatureSettingDropdown" #footer>
-      <div class="gl-border-t-1 gl-border-t-dropdown !gl-p-2 gl-border-t-solid">
-        <gl-button
-          data-testid="add-self-hosted-model-button"
-          category="tertiary"
-          block
-          class="!gl-justify-start"
-          :to="{ name: $options.SELF_HOSTED_ROUTE_NAMES.NEW }"
-        >
-          {{ s__('AdminAIPoweredFeatures|Add self-hosted model') }}
-        </gl-button>
-      </div>
+    <template #footer>
+      <slot name="footer"></slot>
     </template>
   </gl-collapsible-listbox>
 </template>
