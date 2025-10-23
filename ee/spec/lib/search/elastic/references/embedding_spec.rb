@@ -6,8 +6,8 @@ RSpec.describe ::Search::Elastic::References::Embedding, :elastic_helpers, featu
   let_it_be(:project) { create(:project) }
   let_it_be(:issue) { create(:issue, project: project) }
   let(:routing) { issue.es_parent }
-  let(:embedding_ref) { described_class.new(Issue, issue.id, routing) }
-  let(:embedding_ref_serialized) { "Embedding|Issue|#{issue.id}|#{routing}" }
+  let(:embedding_ref) { described_class.new(WorkItem, issue.id, routing) }
+  let(:embedding_ref_serialized) { "Embedding|WorkItem|#{issue.id}|#{routing}" }
   let(:work_item_embedding_ref) { described_class.new(WorkItem, issue.id, routing) }
 
   before do
@@ -29,7 +29,7 @@ RSpec.describe ::Search::Elastic::References::Embedding, :elastic_helpers, featu
       ref = described_class.ref(issue)
 
       expect(ref).to be_an_instance_of(described_class)
-      expect(ref.model_klass).to eq(Issue)
+      expect(ref.model_klass).to eq(WorkItem)
       expect(ref.identifier).to eq(issue.id)
       expect(ref.routing).to eq(routing)
     end
@@ -40,7 +40,7 @@ RSpec.describe ::Search::Elastic::References::Embedding, :elastic_helpers, featu
       ref = described_class.instantiate(embedding_ref_serialized)
 
       expect(ref).to be_an_instance_of(described_class)
-      expect(ref.model_klass).to eq(Issue)
+      expect(ref.model_klass).to eq(WorkItem)
       expect(ref.identifier).to eq(issue.id)
       expect(ref.routing).to eq(routing)
     end
@@ -50,7 +50,7 @@ RSpec.describe ::Search::Elastic::References::Embedding, :elastic_helpers, featu
     let_it_be(:project2) { create(:project) }
     let_it_be(:issue2) { create(:issue, project: project2) }
     let(:embedding_ref2) { described_class.new(WorkItem, issue2.id, "project_#{project2.id}") }
-    let(:embedding_ref3) { described_class.new(Issue, issue2.id, "project_#{project2.id}") }
+    let(:embedding_ref3) { described_class.new(WorkItem, issue2.id, "project_#{project2.id}") }
     let(:embedding_ref4) { described_class.new(WorkItem, issue.id, "project_#{project.id}") }
 
     it 'preloads database records to avoid N+1 queries' do
@@ -71,16 +71,15 @@ RSpec.describe ::Search::Elastic::References::Embedding, :elastic_helpers, featu
         database_records = described_class.preload_indexing_data(refs).map(&:database_record)
       end.not_to exceed_query_limit(control)
 
-      expect(database_records[0]).to eq(issue)
-      expect(database_records[2]).to eq(issue2)
+      expect(database_records[0].id).to eq(issue.id)
+      expect(database_records[2].id).to eq(issue2.id)
     end
 
     it 'calls preload in batches not to overload the database' do
       stub_const('Search::Elastic::Concerns::DatabaseClassReference::BATCH_SIZE', 1)
       refs = [embedding_ref, embedding_ref2]
 
-      expect(Issue).to receive(:preload_indexing_data).and_call_original.once
-      expect(WorkItem).to receive(:preload_indexing_data).and_call_original.once
+      expect(WorkItem).to receive(:preload_indexing_data).and_call_original.twice
 
       described_class.preload_indexing_data(refs)
     end
@@ -188,14 +187,8 @@ RSpec.describe ::Search::Elastic::References::Embedding, :elastic_helpers, featu
   end
 
   describe '#index_name' do
-    it 'is equal to proxy index name' do
-      expect(embedding_ref.index_name).to eq('gitlab-test-issues')
-    end
-
-    context 'if type class exists' do
-      it 'is equal type class index name' do
-        expect(work_item_embedding_ref.index_name).to eq('gitlab-test-work_items')
-      end
+    it 'is equal type class index name' do
+      expect(embedding_ref.index_name).to eq('gitlab-test-work_items')
     end
   end
 end

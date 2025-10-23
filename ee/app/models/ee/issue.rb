@@ -173,13 +173,12 @@ module EE
       end
 
       # override
-      def use_separate_indices?
-        true
-      end
-
-      # override
       def supported_keyset_orderings
         super.merge(weight: [:asc, :desc])
+      end
+
+      def es_type
+        ::Search::Elastic::References::WorkItem::DOC_TYPE
       end
     end
 

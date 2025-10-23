@@ -14,7 +14,6 @@ module Elastic
       # use_separate_indices check is needed to load custom mappings for AR and non-AR classes
       # For example, Issue and Commit
       const_name = use_separate_indices ? "#{target.base_class}Config" : 'Config'
-
       config = version_namespace.const_get(const_name, false)
 
       @index_name = config.index_name

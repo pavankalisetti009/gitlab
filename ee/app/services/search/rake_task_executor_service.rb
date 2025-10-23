@@ -14,7 +14,6 @@ module Search
       estimate_cluster_size
       estimate_shard_sizes
       index_and_search_validation
-      index_epics
       index_work_items
       index_group_entities
       index_group_wikis
@@ -386,28 +385,10 @@ module Search
       logger.info(" #{marker} (#{count})")
     end
 
-    def index_epics
-      logger.info('Indexing epics...')
-
-      groups = if ::Gitlab::CurrentSettings.elasticsearch_limit_indexing?
-                 ::Gitlab::CurrentSettings.elasticsearch_limited_namespaces.group_namespaces
-               else
-                 Group.all
-               end
-
-      groups.each_batch do |batch|
-        ::Elastic::ProcessInitialBookkeepingService.maintain_indexed_namespace_associations!(*batch,
-          associations_to_index: [:epics])
-      end
-
-      logger.info("Indexing epics... #{Rainbow('done').green}")
-    end
-
     def index_group_entities
       raise 'This task cannot be run on GitLab.com' if ::Gitlab::Saas.feature_available?(:advanced_search)
 
       logger.info('Enqueuing Group level entities…')
-      index_epics
       index_work_items
       index_group_wikis
     end

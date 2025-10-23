@@ -256,7 +256,8 @@ RSpec.describe ::Search::RakeTaskExecutorService, :elastic_helpers, :silence_std
   end
 
   describe '#estimate_shard_sizes' do
-    let(:db_counts) { [400, 1500, 10_000_000, 50_000_000, 100_000_000, 4_000, 5_000, 5_000] }
+    # DB_CLASSES = [Note, MergeRequest, User, Project, WorkItem, Vulnerability]
+    let(:db_counts) { [400, 1500, 10_000_000, 4_000, 5_000, 6_000] }
 
     before do
       allow(logger).to receive(:info)
@@ -269,46 +270,25 @@ RSpec.describe ::Search::RakeTaskExecutorService, :elastic_helpers, :silence_std
     end
 
     it 'outputs shard size estimates' do
-      expected_work_items = <<~ESTIMATE
-        - gitlab-test-work_items:
-          recommended shards: 5
-          recommended replicas: 1
-          document count: 5,000
-      ESTIMATE
-
-      expected_issues = <<~ESTIMATE
-        - gitlab-test-issues:
-          recommended shards: 5
-          recommended replicas: 1
-          document count: 400
-      ESTIMATE
-
       expected_notes = <<~ESTIMATE.chomp
         - gitlab-test-notes:
           recommended shards: 5
           recommended replicas: 1
-          document count: 1,500
+          document count: 400
       ESTIMATE
 
       expected_merge_requests = <<~ESTIMATE.chomp
         - gitlab-test-merge_requests:
           recommended shards: 5
           recommended replicas: 1
-          document count: 10,000,000
-      ESTIMATE
-
-      expected_epics = <<~ESTIMATE.chomp
-        - gitlab-test-epics:
-          recommended shards: 10
-          recommended replicas: 1
-          document count: 50,000,000
+          document count: 1,500
       ESTIMATE
 
       expected_users = <<~ESTIMATE.chomp
         - gitlab-test-users:
-          recommended shards: 20
+          recommended shards: 5
           recommended replicas: 1
-          document count: 100,000,000
+          document count: 10,000,000
       ESTIMATE
 
       expected_projects = <<~ESTIMATE.chomp
@@ -318,11 +298,18 @@ RSpec.describe ::Search::RakeTaskExecutorService, :elastic_helpers, :silence_std
           document count: 4,000
       ESTIMATE
 
+      expected_work_items = <<~ESTIMATE.chomp
+        - gitlab-test-work_items:
+          recommended shards: 5
+          recommended replicas: 1
+          document count: 5,000
+      ESTIMATE
+
       expected_vulnerabilities = <<~ESTIMATE.chomp
         - gitlab-test-vulnerabilities:
           recommended shards: 5
           recommended replicas: 1
-          document count: 5,000
+          document count: 6,000
       ESTIMATE
 
       expected_main_index = <<~ESTIMATE.chomp
@@ -343,10 +330,8 @@ RSpec.describe ::Search::RakeTaskExecutorService, :elastic_helpers, :silence_std
           recommended replicas: 1
       ESTIMATE
 
-      expect(logger).to receive(:info).with(/#{expected_issues}/)
       expect(logger).to receive(:info).with(/#{expected_notes}/)
       expect(logger).to receive(:info).with(/#{expected_merge_requests}/)
-      expect(logger).to receive(:info).with(/#{expected_epics}/)
       expect(logger).to receive(:info).with(/#{expected_users}/)
       expect(logger).to receive(:info).with(/#{expected_projects}/)
       expect(logger).to receive(:info).with(/#{expected_work_items}/)
@@ -714,51 +699,6 @@ RSpec.describe ::Search::RakeTaskExecutorService, :elastic_helpers, :silence_std
     end
   end
 
-  describe '#index_epics' do
-    let!(:epic) { create(:epic) }
-
-    it 'calls maintain_indexed_namespace_associations for groups' do
-      expect(logger).to receive(:info).with(/Indexing epics/).twice
-      expect(Elastic::ProcessInitialBookkeepingService).to receive(:maintain_indexed_namespace_associations!)
-        .with(epic.group, associations_to_index: [:epics])
-
-      service.execute(:index_epics)
-    end
-
-    it 'avoids N+1 queries', :use_sql_query_cache do
-      control = ActiveRecord::QueryRecorder.new(skip_cached: false) { service.execute(:index_epics) }
-
-      create_list(:epic, 3)
-
-      expect(Elastic::ProcessInitialBookkeepingService).to receive(:maintain_indexed_namespace_associations!)
-
-      expect { service.execute(:index_epics) }.to issue_same_number_of_queries_as(control)
-    end
-
-    context 'with limited indexing enabled' do
-      let!(:group1) { create(:group) }
-      let!(:group2) { create(:group) }
-      let!(:group3) { create(:group) }
-
-      before do
-        create(:elasticsearch_indexed_namespace, namespace: group1)
-        create(:elasticsearch_indexed_namespace, namespace: group3)
-
-        stub_ee_application_setting(elasticsearch_limit_indexing: true)
-      end
-
-      it 'does not call maintain_indexed_namespace_associations for groups that should not be indexed' do
-        expect(logger).to receive(:info).with(/Indexing epics/).twice
-        expect(Elastic::ProcessBookkeepingService).to receive(:maintain_indexed_namespace_associations!) do |*params|
-          expect(params.count).to eq(3)
-          expect([params[0], params[1]]).to contain_exactly(group1, group3)
-          expect(params[2]).to eq(associations_to_index: [:epics])
-        end
-        service.execute(:index_epics)
-      end
-    end
-  end
-
   describe '#projects_not_indexed' do
     let_it_be(:project) { create(:project, :repository) }
     let_it_be(:project_no_repository) { create(:project) }
@@ -898,7 +838,7 @@ RSpec.describe ::Search::RakeTaskExecutorService, :elastic_helpers, :silence_std
     end
 
     it 'calls other tasks in order' do
-      expect(service).to receive(:index_epics).ordered
+      expect(service).to receive(:index_work_items).ordered
       expect(service).to receive(:index_group_wikis).ordered
 
       index_group_entities

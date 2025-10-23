@@ -70,6 +70,8 @@ module Search
           any_health_status
         ].freeze
 
+        DOC_TYPE = 'work_item'
+
         override :serialize
         def self.serialize(record)
           new(record.id, record.es_parent).serialize

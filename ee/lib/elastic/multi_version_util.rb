@@ -13,7 +13,6 @@ module Elastic
     # @params version [String, Module] can be a string "V12p1" or module (Elastic::V12p1)
     def version(version)
       version = Elastic.const_get(version, false) if version.is_a?(String)
-
       proxy_class = if version.const_defined?(proxy_class_name, false)
                       version.const_get(proxy_class_name, false)
                     else

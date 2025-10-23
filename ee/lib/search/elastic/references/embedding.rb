@@ -20,7 +20,8 @@ module Search
         end
 
         def self.ref(record)
-          new(record.class, record.id, record.es_parent)
+          klass = record.instance_of?(::Issue) ? ::WorkItem : record.class
+          new(klass, record.id, record.es_parent)
         end
 
         override :instantiate

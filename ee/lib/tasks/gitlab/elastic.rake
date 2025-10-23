@@ -67,9 +67,14 @@ namespace :gitlab do
       Search::RakeTask::Elastic.task_executor_service.execute(:index_users)
     end
 
-    desc 'GitLab | Elasticsearch | Index epics'
-    task index_epics: :environment do
-      Search::RakeTask::Elastic.task_executor_service.execute(:index_epics)
+    desc 'GitLab | Elasticsearch | Index work items'
+    task index_work_items: :environment do
+      Search::RakeTask::Elastic.task_executor_service.execute(:index_work_items)
+    end
+
+    desc 'GitLab | Elasticsearch | Index namespaces'
+    task index_namespaces: :environment do
+      Search::RakeTask::Elastic.task_executor_service.execute(:index_namespaces)
     end
 
     desc 'GitLab | Elasticsearch | Index group wikis'

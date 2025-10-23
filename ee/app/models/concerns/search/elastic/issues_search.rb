@@ -24,6 +24,10 @@ module Search
           track_embedding! if (updated_attributes.map(&:to_sym) & EMBEDDING_TRACKED_FIELDS).any? && track_embedding?
         end
 
+        def es_id
+          ::Gitlab::Elastic::Helper.build_es_id(es_type: es_type, target_id: id)
+        end
+
         private
 
         # rubocop: disable Gitlab/FeatureFlagWithoutActor -- global flags

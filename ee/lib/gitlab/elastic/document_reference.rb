@@ -145,7 +145,7 @@ module Gitlab
       private
 
       def index_operation
-        return :upsert if klass == Issue
+        return :upsert if [Issue, Epic, WorkItem].include?(klass)
 
         :index
       end
