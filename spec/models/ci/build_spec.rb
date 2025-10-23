@@ -6033,4 +6033,31 @@ RSpec.describe Ci::Build, feature_category: :continuous_integration, factory_def
       it { is_expected.to eq(expected_token) }
     end
   end
+
+  describe '.fabricate' do
+    let(:tag_list) { %w[ruby docker postgres] }
+    let(:build_attributes) do
+      {
+        options: { script: ['echo'] },
+        tag_list: tag_list,
+        project_id: 1,
+        partition_id: 99
+      }
+    end
+
+    subject(:fabricate) { described_class.fabricate(build_attributes) }
+
+    it 'initializes with temp_job_definition' do
+      expect(fabricate).to have_attributes(
+        temp_job_definition: instance_of(Ci::JobDefinition),
+        job_definition: nil,
+        tag_list: tag_list
+      )
+      definition = fabricate.temp_job_definition
+
+      expect(definition.config).to eq({ options: build_attributes[:options], tag_list: tag_list })
+      expect(definition.project_id).to eq(build_attributes[:project_id])
+      expect(definition.partition_id).to eq(build_attributes[:partition_id])
+    end
+  end
 end
