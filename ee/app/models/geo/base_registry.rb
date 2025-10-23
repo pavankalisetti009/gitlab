@@ -13,10 +13,6 @@ module Geo
       where(model_foreign_key => range).pluck(model_foreign_key)
     end
 
-    def self.pluck_model_foreign_key
-      where(nil).pluck(model_foreign_key)
-    end
-
     def self.model_id_in(ids)
       where(model_foreign_key => ids)
     end
