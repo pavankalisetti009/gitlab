@@ -164,6 +164,7 @@ module Ci
     end
 
     # Should be removed when the column is dropped from p_ci_builds
+    # allows deleting data for `degenerate!`
     def options=(value)
       raise ActiveRecord::ReadonlyAttributeError, 'This data is read only' unless value.nil?
 
@@ -171,6 +172,7 @@ module Ci
     end
 
     # Should be removed when the column is dropped from p_ci_builds
+    # allows deleting data for `degenerate!`
     def yaml_variables=(value)
       raise ActiveRecord::ReadonlyAttributeError, 'This data is read only' unless value.nil?
 
