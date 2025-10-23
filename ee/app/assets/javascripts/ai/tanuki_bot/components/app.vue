@@ -97,7 +97,6 @@ export default {
   beforeDestroy() {
     // Remove the event listener when the component is destroyed
     window.removeEventListener('resize', this.onWindowResize);
-    this.cleanupSocket();
   },
   methods: {
     setDimensions() {
