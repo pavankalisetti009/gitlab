@@ -240,9 +240,9 @@ module WorkItems
         return unless default_status
 
         if lifecycle.custom?
-          build_current_status(custom_status: default_status)
+          build_current_status(custom_status: default_status, updated_at: created_at)
         else
-          build_current_status(system_defined_status: default_status)
+          build_current_status(system_defined_status: default_status, updated_at: created_at)
         end
       end
 
