@@ -29,7 +29,7 @@ RSpec.describe 'Navigation menu item pinning', :js, feature_category: :navigatio
       visit group_path(group)
 
       within_testid 'pinned-nav-items' do
-        nav_ids = %i[members group_issue_list group_merge_request_list group_epic_list]
+        nav_ids = %i[members group_issue_list group_merge_request_list]
         nav_ids.each { |nav_id| expect(page).to have_css("a[data-track-label='#{nav_id}']") }
       end
     end
@@ -39,7 +39,7 @@ RSpec.describe 'Navigation menu item pinning', :js, feature_category: :navigatio
       visit group_path(group)
 
       within_testid 'pinned-nav-items' do
-        nav_ids = %i[group_issue_list group_merge_request_list group_epic_list]
+        nav_ids = %i[group_issue_list group_merge_request_list]
         nav_ids.each { |nav_id| expect(page).to have_css("a[data-track-label='#{nav_id}']") }
       end
     end

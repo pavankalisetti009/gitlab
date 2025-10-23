@@ -6,6 +6,7 @@ RSpec.describe ::SidebarsHelper, feature_category: :navigation do
   include Devise::Test::ControllerHelpers
 
   describe '#super_sidebar_context' do
+    let(:group) { build_stubbed(:group) }
     let(:user_namespace) { build_stubbed(:namespace) }
     let(:user) { build_stubbed(:user, namespace: user_namespace) }
     let(:panel) { {} }
@@ -305,8 +306,65 @@ RSpec.describe ::SidebarsHelper, feature_category: :navigation do
       end
     end
 
+    context 'when user pinned multiple work items types' do
+      using RSpec::Parameterized::TableSyntax
+
+      let_it_be(:panel_type) { 'group' }
+
+      context 'when work_item_planning_view feature flag is disabled' do
+        it 'ensure permits epics and issues on the side menu' do
+          stub_feature_flags(work_item_planning_view: false)
+
+          pinned_items = %w[group_issue_list group_epic_list]
+
+          user = build_stubbed(
+            :user,
+            namespace: user_namespace,
+            pinned_nav_items: { panel_type => pinned_items }
+          )
+
+          sidebar = helper.super_sidebar_logged_in_context(
+            user,
+            group: group,
+            project: nil,
+            panel: panel,
+            panel_type: panel_type
+          )
+
+          expect(sidebar[:pinned_items]).to eq(pinned_items)
+        end
+      end
+
+      where(:pinned_items, :result) do
+        nil | %w[group_issue_list group_merge_request_list]
+        %w[group_issue_list] | %w[group_issue_list]
+        %w[group_epic_list] | %w[group_epic_list]
+        %w[group_issue_list group_epic_list] | %w[group_issue_list]
+      end
+
+      with_them do
+        it 'ensure to avoid duplicated work items on pinned menu' do
+          user = build_stubbed(
+            :user,
+            namespace: user_namespace,
+            pinned_nav_items: { panel_type => pinned_items }
+          )
+
+          sidebar = helper.super_sidebar_logged_in_context(
+            user,
+            group: group,
+            project: nil,
+            panel: panel,
+            panel_type: panel_type
+          )
+
+          expect(sidebar[:pinned_items]).to eq(result)
+        end
+      end
+    end
+
     describe '#super_sidebar_default_pins', :experiment do
-      let_it_be(:user) do
+      let(:user) do
         build(:user) do |u|
           u.user_detail.update!(onboarding_status: {
             registration_type: 'trial',
@@ -325,10 +383,10 @@ RSpec.describe ::SidebarsHelper, feature_category: :navigation do
         it 'returns "group" default pins' do
           panel_type = 'group'
 
-          result = helper.super_sidebar_logged_in_context(user, group: nil, project: nil, panel: panel,
+          result = helper.super_sidebar_logged_in_context(user, group: group, project: nil, panel: panel,
             panel_type: panel_type)
 
-          expect(result).to include(pinned_items: %i[group_issue_list group_merge_request_list group_epic_list])
+          expect(result).to include(pinned_items: %w[group_issue_list group_merge_request_list])
         end
 
         it 'returns "project" default pins' do
@@ -337,7 +395,7 @@ RSpec.describe ::SidebarsHelper, feature_category: :navigation do
           result = helper.super_sidebar_logged_in_context(user, group: nil, project: nil, panel: panel,
             panel_type: panel_type)
 
-          expect(result).to include(pinned_items: %i[project_issue_list project_merge_request_list])
+          expect(result).to include(pinned_items: %w[project_issue_list project_merge_request_list])
         end
       end
 
@@ -351,10 +409,10 @@ RSpec.describe ::SidebarsHelper, feature_category: :navigation do
         it 'returns "group" default pins' do
           panel_type = 'group'
 
-          result = helper.super_sidebar_logged_in_context(user, group: nil, project: nil, panel: panel,
+          result = helper.super_sidebar_logged_in_context(user, group: group, project: nil, panel: panel,
             panel_type: panel_type)
 
-          expect(result).to include(pinned_items: %i[members group_issue_list group_merge_request_list group_epic_list])
+          expect(result).to include(pinned_items: %w[members group_issue_list group_merge_request_list])
         end
 
         it 'returns "project" default pins' do
@@ -363,7 +421,7 @@ RSpec.describe ::SidebarsHelper, feature_category: :navigation do
           result = helper.super_sidebar_logged_in_context(user, group: nil, project: nil, panel: panel,
             panel_type: panel_type)
 
-          expect(result).to include(pinned_items: %i[files pipelines members project_merge_request_list
+          expect(result).to include(pinned_items: %w[files pipelines members project_merge_request_list
             project_issue_list])
         end
       end
@@ -386,10 +444,10 @@ RSpec.describe ::SidebarsHelper, feature_category: :navigation do
         it 'returns control "group" pins' do
           panel_type = 'group'
 
-          result = helper.super_sidebar_logged_in_context(user, group: nil, project: nil, panel: panel,
+          result = helper.super_sidebar_logged_in_context(user, group: group, project: nil, panel: panel,
             panel_type: panel_type)
 
-          expect(result).to include(pinned_items: %i[group_issue_list group_merge_request_list group_epic_list])
+          expect(result).to include(pinned_items: %w[group_issue_list group_merge_request_list])
         end
 
         it 'returns control "project" pins' do
@@ -398,7 +456,7 @@ RSpec.describe ::SidebarsHelper, feature_category: :navigation do
           result = helper.super_sidebar_logged_in_context(user, group: nil, project: nil, panel: panel,
             panel_type: panel_type)
 
-          expect(result).to include(pinned_items: %i[project_issue_list project_merge_request_list])
+          expect(result).to include(pinned_items: %w[project_issue_list project_merge_request_list])
         end
       end
     end
