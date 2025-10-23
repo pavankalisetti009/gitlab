@@ -6,7 +6,6 @@ import glFeatureFlagMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
 import FilteredSearch from 'ee/security_dashboard/components/shared/security_dashboard_filtered_search/filtered_search.vue';
 import ReportTypeToken from 'ee/security_dashboard/components/shared/filtered_search/tokens/report_type_token.vue';
 import VulnerabilitiesOverTimePanel from 'ee/security_dashboard/components/shared/vulnerabilities_over_time_panel.vue';
-import ProjectVulnerabilitiesForSeverityPanel from 'ee/security_dashboard/components/shared/project_vulnerabilities_for_severity_panel.vue';
 import { generateVulnerabilitiesForSeverityPanels } from 'ee/security_dashboard/utils/chart_generators';
 import { OPERATORS_OR } from '~/vue_shared/components/filtered_search_bar/constants';
 import {
@@ -50,7 +49,7 @@ export default {
         ),
         panels: [
           ...generateVulnerabilitiesForSeverityPanels({
-            panelComponent: ProjectVulnerabilitiesForSeverityPanel,
+            scope: 'project',
             filters: this.filters,
           }),
           {
