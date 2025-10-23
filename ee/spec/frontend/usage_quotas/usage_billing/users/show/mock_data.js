@@ -1,7 +1,7 @@
 export const mockDataWithPool = {
   data: {
     subscriptionUsage: {
-      lastUpdated: '2025-02-02T18:45:32Z',
+      lastEventTransactionAt: '2025-02-02T18:45:32Z',
 
       startDate: '2025-08-01',
       endDate: '2025-08-31',

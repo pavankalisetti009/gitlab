@@ -49,9 +49,14 @@ RSpec.describe 'Query.subscriptionUsage', feature_category: :consumables_cost_ma
   let(:user_arguments) { {} }
   let(:query_fields) do
     [
-      :last_updated,
+      :last_event_transaction_at,
       :start_date,
       :end_date,
+      query_graphql_field(:one_time_credits, {}, [
+        :credits_used,
+        :total_credits,
+        :total_credits_remaining
+      ]),
       :purchase_credits_path,
       query_graphql_field(:pool_usage, {}, [
         :total_credits,
@@ -67,6 +72,7 @@ RSpec.describe 'Query.subscriptionUsage', feature_category: :consumables_cost_ma
         :total_users_using_credits,
         :total_users_using_pool,
         :total_users_using_overage,
+        :credits_used,
         query_graphql_field(:daily_usage, {}, [:date, :credits_used]),
         query_graphql_field(:users, user_arguments, [
           query_graphql_field(:nodes, {}, [
@@ -124,7 +130,7 @@ RSpec.describe 'Query.subscriptionUsage', feature_category: :consumables_cost_ma
       subscriptionUsage: {
         startDate: "2025-10-01",
         endDate: "2025-10-31",
-        lastUpdated: "2025-10-01T16:19:59Z",
+        lastEventTransactionAt: "2025-10-01T16:19:59Z",
         purchaseCreditsPath: '/mock/path'
       }
     }
@@ -176,7 +182,17 @@ RSpec.describe 'Query.subscriptionUsage', feature_category: :consumables_cost_ma
         totalUsersUsingCredits: 3,
         totalUsersUsingPool: 2,
         totalUsersUsingOverage: 1,
+        creditsUsed: 123.45,
         dailyUsage: [{ date: '2025-10-01', creditsUsed: 321 }]
+      }
+    }
+
+    one_time_credits = {
+      success: true,
+      oneTimeCredits: {
+        creditsUsed: 15.32,
+        totalCredits: 1000,
+        totalCreditsRemaining: 984.68
       }
     }
 
@@ -201,6 +217,7 @@ RSpec.describe 'Query.subscriptionUsage', feature_category: :consumables_cost_ma
     allow_next_instance_of(Gitlab::SubscriptionPortal::SubscriptionUsageClient) do |client|
       allow(client).to receive_messages(
         get_metadata: metadata,
+        get_one_time_credits: one_time_credits,
         get_pool_usage: pool_usage,
         get_overage_usage: overage_usage,
         get_events_for_user_id: { success: true, userEvents: events_for_user_id },
@@ -220,10 +237,16 @@ RSpec.describe 'Query.subscriptionUsage', feature_category: :consumables_cost_ma
         end
 
         it 'returns subscription usage for instance' do
-          expect(graphql_data_at(:subscription_usage, :lastUpdated)).to eq("2025-10-01T16:19:59Z")
+          expect(graphql_data_at(:subscription_usage, :lastEventTransactionAt)).to eq("2025-10-01T16:19:59Z")
           expect(graphql_data_at(:subscription_usage, :startDate)).to eq("2025-10-01")
           expect(graphql_data_at(:subscription_usage, :endDate)).to eq("2025-10-31")
           expect(graphql_data_at(:subscription_usage, :purchaseCreditsPath)).to eq("/mock/path")
+
+          expect(graphql_data_at(:subscription_usage, :oneTimeCredits)).to eq({
+            creditsUsed: 15.32,
+            totalCredits: 1000,
+            totalCreditsRemaining: 984.68
+          }.with_indifferent_access)
 
           expect(graphql_data_at(:subscription_usage, :poolUsage)).to eq({
             totalCredits: 1000,
@@ -240,6 +263,7 @@ RSpec.describe 'Query.subscriptionUsage', feature_category: :consumables_cost_ma
           expect(graphql_data_at(:subscription_usage, :usersUsage, :totalUsersUsingCredits)).to eq(3)
           expect(graphql_data_at(:subscription_usage, :usersUsage, :totalUsersUsingPool)).to eq(2)
           expect(graphql_data_at(:subscription_usage, :usersUsage, :totalUsersUsingOverage)).to eq(1)
+          expect(graphql_data_at(:subscription_usage, :usersUsage, :creditsUsed)).to eq(123.45)
           expect(graphql_data_at(:subscription_usage, :usersUsage, :dailyUsage))
               .to match_array([{ date: '2025-10-01', creditsUsed: 321 }.with_indifferent_access])
 
@@ -322,10 +346,16 @@ RSpec.describe 'Query.subscriptionUsage', feature_category: :consumables_cost_ma
           end
 
           it 'returns subscription usage for the group' do
-            expect(graphql_data_at(:subscription_usage, :lastUpdated)).to eq("2025-10-01T16:19:59Z")
+            expect(graphql_data_at(:subscription_usage, :lastEventTransactionAt)).to eq("2025-10-01T16:19:59Z")
             expect(graphql_data_at(:subscription_usage, :startDate)).to eq("2025-10-01")
             expect(graphql_data_at(:subscription_usage, :endDate)).to eq("2025-10-31")
             expect(graphql_data_at(:subscription_usage, :purchaseCreditsPath)).to eq("/mock/path")
+
+            expect(graphql_data_at(:subscription_usage, :oneTimeCredits)).to eq({
+              creditsUsed: 15.32,
+              totalCredits: 1000,
+              totalCreditsRemaining: 984.68
+            }.with_indifferent_access)
 
             expect(graphql_data_at(:subscription_usage, :poolUsage)).to eq({
               totalCredits: 1000,
@@ -342,6 +372,7 @@ RSpec.describe 'Query.subscriptionUsage', feature_category: :consumables_cost_ma
             expect(graphql_data_at(:subscription_usage, :usersUsage, :totalUsersUsingCredits)).to eq(3)
             expect(graphql_data_at(:subscription_usage, :usersUsage, :totalUsersUsingPool)).to eq(2)
             expect(graphql_data_at(:subscription_usage, :usersUsage, :totalUsersUsingOverage)).to eq(1)
+            expect(graphql_data_at(:subscription_usage, :usersUsage, :creditsUsed)).to eq(123.45)
             expect(graphql_data_at(:subscription_usage, :usersUsage, :dailyUsage))
               .to match_array([{ date: '2025-10-01', creditsUsed: 321 }.with_indifferent_access])
 

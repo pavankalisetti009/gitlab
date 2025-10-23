@@ -1,6 +1,6 @@
 query getSubscriptionUsage($namespacePath: ID) {
   subscriptionUsage(namespacePath: $namespacePath) {
-    lastUpdated
+    lastEventTransactionAt
     purchaseCreditsPath
     poolUsage {
       totalCredits

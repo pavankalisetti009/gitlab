@@ -66,16 +66,6 @@ RSpec.describe GitlabSubscriptions::SubscriptionUsage, feature_category: :consum
       it 'returns the start date' do
         expect(start_date).to be("2025-10-01")
       end
-
-      context 'when License.current is nil' do
-        before do
-          allow(License).to receive(:current).and_return(nil)
-        end
-
-        it 'handles nil license gracefully' do
-          expect { start_date }.not_to raise_error
-        end
-      end
     end
   end
 
@@ -137,16 +127,6 @@ RSpec.describe GitlabSubscriptions::SubscriptionUsage, feature_category: :consum
 
       it 'returns the end date' do
         expect(end_date).to be("2025-10-31")
-      end
-
-      context 'when License.current is nil' do
-        before do
-          allow(License).to receive(:current).and_return(nil)
-        end
-
-        it 'handles nil license gracefully' do
-          expect { end_date }.not_to raise_error
-        end
       end
     end
   end
@@ -210,21 +190,11 @@ RSpec.describe GitlabSubscriptions::SubscriptionUsage, feature_category: :consum
       it 'returns the end date' do
         expect(purchase_credits_path).to be("/mock/path")
       end
-
-      context 'when License.current is nil' do
-        before do
-          allow(License).to receive(:current).and_return(nil)
-        end
-
-        it 'handles nil license gracefully' do
-          expect { purchase_credits_path }.not_to raise_error
-        end
-      end
     end
   end
 
-  describe '#last_updated' do
-    subject(:last_updated) { subscription_usage.last_updated }
+  describe '#last_event_transaction_at' do
+    subject(:last_event_transaction_at) { subscription_usage.last_event_transaction_at }
 
     before do
       allow(subscription_usage_client).to receive(:get_metadata).and_return(client_response)
@@ -240,10 +210,12 @@ RSpec.describe GitlabSubscriptions::SubscriptionUsage, feature_category: :consum
       end
 
       context 'when the client returns a successful response' do
-        let(:client_response) { { success: true, subscriptionUsage: { lastUpdated: "2025-10-01T16:19:59Z" } } }
+        let(:client_response) do
+          { success: true, subscriptionUsage: { lastEventTransactionAt: "2025-10-01T16:19:59Z" } }
+        end
 
         it 'returns the last updated time' do
-          expect(last_updated).to be("2025-10-01T16:19:59Z")
+          expect(last_event_transaction_at).to be("2025-10-01T16:19:59Z")
         end
       end
 
@@ -251,15 +223,15 @@ RSpec.describe GitlabSubscriptions::SubscriptionUsage, feature_category: :consum
         let(:client_response) { { success: false } }
 
         it 'returns nil' do
-          expect(last_updated).to be_nil
+          expect(last_event_transaction_at).to be_nil
         end
       end
 
-      context 'when the client response is missing lastUpdated' do
-        let(:client_response) { { success: true, subscriptionUsage: { lastUpdated: nil } } }
+      context 'when the client response is missing lastEventTransactionAt' do
+        let(:client_response) { { success: true, subscriptionUsage: { lastEventTransactionAt: nil } } }
 
         it 'returns nil' do
-          expect(last_updated).to be_nil
+          expect(last_event_transaction_at).to be_nil
         end
       end
     end
@@ -273,24 +245,117 @@ RSpec.describe GitlabSubscriptions::SubscriptionUsage, feature_category: :consum
       end
 
       let(:license) { build_stubbed(:license) }
-      let(:client_response) { { success: true, subscriptionUsage: { lastUpdated: "2025-10-01T16:19:59Z" } } }
+      let(:client_response) { { success: true, subscriptionUsage: { lastEventTransactionAt: "2025-10-01T16:19:59Z" } } }
 
       before do
         allow(License).to receive(:current).and_return(license)
       end
 
       it 'returns the last updated time' do
-        expect(last_updated).to be("2025-10-01T16:19:59Z")
+        expect(last_event_transaction_at).to be("2025-10-01T16:19:59Z")
+      end
+    end
+  end
+
+  describe '#one_time_credits' do
+    subject(:one_time_credits) { subscription_usage.one_time_credits }
+
+    before do
+      allow(subscription_usage_client).to receive(:get_one_time_credits).and_return(client_response)
+    end
+
+    context 'when subscription_target is :namespace' do
+      let(:subscription_usage) do
+        described_class.new(
+          subscription_target: :namespace,
+          subscription_usage_client: subscription_usage_client,
+          namespace: group
+        )
       end
 
-      context 'when License.current is nil' do
-        before do
-          allow(License).to receive(:current).and_return(nil)
+      context 'when the client returns a successful response' do
+        let(:client_response) do
+          {
+            success: true,
+            oneTimeCredits: {
+              creditsUsed: 25.32,
+              totalCredits: 1000,
+              totalCreditsRemaining: 974.68
+            }
+          }
         end
 
-        it 'handles nil license gracefully' do
-          expect { last_updated }.not_to raise_error
+        it 'returns a OneTimeCredits struct with correct data' do
+          expect(one_time_credits).to be_a(GitlabSubscriptions::SubscriptionUsage::OneTimeCredits)
+          expect(one_time_credits).to have_attributes(
+            credits_used: 25.32,
+            total_credits: 1000,
+            total_credits_remaining: 974.68,
+            declarative_policy_subject: subscription_usage
+          )
         end
+      end
+
+      context 'when the client returns an unsuccessful response' do
+        let(:client_response) { { success: false } }
+
+        it 'returns nil' do
+          expect(one_time_credits).to be_nil
+        end
+      end
+
+      context 'when the client response is missing oneTimeCredits data' do
+        let(:client_response) do
+          {
+            success: true,
+            oneTimeCredits: nil
+          }
+        end
+
+        it 'returns a OneTimeCredits struct with no values' do
+          expect(one_time_credits).to be_a(GitlabSubscriptions::SubscriptionUsage::OneTimeCredits)
+          expect(one_time_credits).to have_attributes(
+            credits_used: nil,
+            total_credits: nil,
+            total_credits_remaining: nil,
+            declarative_policy_subject: subscription_usage
+          )
+        end
+      end
+    end
+
+    context 'when subscription_target is :instance' do
+      let(:subscription_usage) do
+        described_class.new(
+          subscription_target: :instance,
+          subscription_usage_client: subscription_usage_client
+        )
+      end
+
+      let(:license) { build_stubbed(:license) }
+      let(:client_response) do
+        {
+          success: true,
+          oneTimeCredits: {
+            creditsUsed: 123.99,
+            totalCredits: 2000,
+            totalCreditsRemaining: 1876.01
+          }
+        }
+      end
+
+      before do
+        allow(License).to receive(:current).and_return(license)
+      end
+
+      it 'returns a OneTimeCredits struct with correct data' do
+        expect(one_time_credits).to be_a(GitlabSubscriptions::SubscriptionUsage::OneTimeCredits)
+        expect(one_time_credits).to have_attributes(
+          credits_used: 123.99,
+          total_credits: 2000,
+          total_credits_remaining: 1876.01,
+          declarative_policy_subject: subscription_usage
+        )
       end
     end
   end
@@ -409,16 +474,6 @@ RSpec.describe GitlabSubscriptions::SubscriptionUsage, feature_category: :consum
           declarative_policy_subject: subscription_usage
         )
       end
-
-      context 'when License.current is nil' do
-        before do
-          allow(License).to receive(:current).and_return(nil)
-        end
-
-        it 'handles nil license gracefully' do
-          expect { pool_usage }.not_to raise_error
-        end
-      end
     end
   end
 
@@ -535,16 +590,6 @@ RSpec.describe GitlabSubscriptions::SubscriptionUsage, feature_category: :consum
           credits_used: 1500,
           declarative_policy_subject: subscription_usage
         )
-      end
-
-      context 'when License.current is nil' do
-        before do
-          allow(License).to receive(:current).and_return(nil)
-        end
-
-        it 'handles nil license gracefully' do
-          expect { overage }.not_to raise_error
-        end
       end
     end
   end

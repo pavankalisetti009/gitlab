@@ -8,9 +8,9 @@ module Types
 
       authorize :read_subscription_usage
 
-      field :last_updated, GraphQL::Types::ISO8601DateTime,
+      field :last_event_transaction_at, GraphQL::Types::ISO8601DateTime,
         null: true,
-        description: 'Date and time when the usage data was last updated.'
+        description: 'Date and time when the last usage event resulted in a wallet transaction.'
 
       field :start_date, GraphQL::Types::ISO8601Date,
         null: true,
@@ -23,6 +23,10 @@ module Types
       field :purchase_credits_path, GraphQL::Types::String,
         null: true,
         description: 'URL to purchase GitLab Credits.'
+
+      field :one_time_credits, SubscriptionUsage::OneTimeCreditsType,
+        null: true,
+        description: 'One time credits usage for the subscription.'
 
       field :pool_usage, SubscriptionUsage::PoolUsageType,
         null: true,

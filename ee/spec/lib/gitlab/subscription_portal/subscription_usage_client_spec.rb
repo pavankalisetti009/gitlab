@@ -137,287 +137,317 @@ RSpec.describe Gitlab::SubscriptionPortal::SubscriptionUsageClient, feature_cate
   end
 
   describe '#get_metadata' do
-    context 'when the subscription portal response is successful' do
-      let(:request) { client.get_metadata }
-      let(:query) { described_class::GET_METADATA_QUERY }
-      let(:portal_response) do
-        {
-          success: true,
-          data: {
-            subscription: {
-              gitlabCreditsUsage: {
-                startDate: "2025-10-01",
-                endDate: "2025-10-31",
-                lastUpdated: "2025-10-01T16:19:59Z",
-                purchaseCreditsPath: '/mock/path'
-              }
+    let(:request) { client.get_metadata }
+    let(:query) { described_class::GET_METADATA_QUERY }
+    let(:portal_response) do
+      {
+        success: true,
+        data: {
+          subscription: {
+            gitlabCreditsUsage: {
+              startDate: "2025-10-01",
+              endDate: "2025-10-31",
+              lastEventTransactionAt: "2025-10-01T16:19:59Z",
+              purchaseCreditsPath: '/mock/path'
             }
           }
         }
-      end
+      }
+    end
 
-      let(:expected_response) do
-        {
-          success: true,
-          subscriptionUsage: {
-            startDate: "2025-10-01",
-            endDate: "2025-10-31",
-            lastUpdated: "2025-10-01T16:19:59Z",
-            purchaseCreditsPath: '/mock/path'
+    let(:expected_response) do
+      {
+        success: true,
+        subscriptionUsage: {
+          startDate: "2025-10-01",
+          endDate: "2025-10-31",
+          lastEventTransactionAt: "2025-10-01T16:19:59Z",
+          purchaseCreditsPath: '/mock/path'
+        }
+      }
+    end
+
+    include_context 'for self-managed request' do
+      let(:variables) { { licenseKey: license_key } }
+    end
+
+    include_context 'for gitlab.com request' do
+      let(:variables) { { namespaceId: namespace_id } }
+    end
+  end
+
+  describe '#get_one_time_credits' do
+    let(:request) { client.get_one_time_credits }
+    let(:query) { described_class::GET_ONE_TIME_CREDITS_QUERY }
+    let(:one_time_credits) do
+      {
+        creditsUsed: 12.25,
+        totalCredits: 1000,
+        totalCreditsRemaining: 987.75
+      }
+    end
+
+    let(:portal_response) do
+      {
+        success: true,
+        data: {
+          subscription: {
+            gitlabCreditsUsage: {
+              oneTimeCredits: one_time_credits
+            }
           }
         }
-      end
+      }
+    end
 
-      include_context 'for self-managed request' do
-        let(:variables) { { licenseKey: license_key } }
-      end
+    let(:expected_response) do
+      {
+        success: true,
+        oneTimeCredits: one_time_credits
+      }
+    end
 
-      include_context 'for gitlab.com request' do
-        let(:variables) { { namespaceId: namespace_id } }
-      end
+    include_context 'for self-managed request' do
+      let(:variables) { { licenseKey: license_key, startDate: start_date, endDate: end_date } }
+    end
+
+    include_context 'for gitlab.com request' do
+      let(:variables) { { namespaceId: namespace_id, startDate: start_date, endDate: end_date } }
     end
   end
 
   describe '#get_pool_usage' do
-    context 'when the subscription portal response is successful' do
-      let(:request) { client.get_pool_usage }
-      let(:query) { described_class::GET_POOL_USAGE_QUERY }
-      let(:pool_usage) do
-        {
-          totalCredits: 1000,
-          creditsUsed: 250,
-          dailyUsage: [{ date: '2025-10-01', creditsUsed: 250 }]
-        }
-      end
+    let(:request) { client.get_pool_usage }
+    let(:query) { described_class::GET_POOL_USAGE_QUERY }
+    let(:pool_usage) do
+      {
+        totalCredits: 1000,
+        creditsUsed: 250,
+        dailyUsage: [{ date: '2025-10-01', creditsUsed: 250 }]
+      }
+    end
 
-      let(:portal_response) do
-        {
-          success: true,
-          data: {
-            subscription: {
-              gitlabCreditsUsage: {
-                poolUsage: pool_usage
-              }
+    let(:portal_response) do
+      {
+        success: true,
+        data: {
+          subscription: {
+            gitlabCreditsUsage: {
+              poolUsage: pool_usage
             }
           }
         }
-      end
+      }
+    end
 
-      let(:expected_response) do
-        {
-          success: true,
-          poolUsage: pool_usage
-        }
-      end
+    let(:expected_response) do
+      {
+        success: true,
+        poolUsage: pool_usage
+      }
+    end
 
-      include_context 'for self-managed request' do
-        let(:variables) { { licenseKey: license_key, startDate: start_date, endDate: end_date } }
-      end
+    include_context 'for self-managed request' do
+      let(:variables) { { licenseKey: license_key, startDate: start_date, endDate: end_date } }
+    end
 
-      include_context 'for gitlab.com request' do
-        let(:variables) { { namespaceId: namespace_id, startDate: start_date, endDate: end_date } }
-      end
+    include_context 'for gitlab.com request' do
+      let(:variables) { { namespaceId: namespace_id, startDate: start_date, endDate: end_date } }
     end
   end
 
   describe '#get_overage_usage' do
-    context 'when the subscription portal response is successful' do
-      let(:request) { client.get_overage_usage }
-      let(:query) { described_class::GET_OVERAGE_USAGE_QUERY }
-      let(:overage) do
-        {
-          isAllowed: true,
-          creditsUsed: 250,
-          dailyUsage: [{ date: '2025-10-01', creditsUsed: 250 }]
-        }
-      end
+    let(:request) { client.get_overage_usage }
+    let(:query) { described_class::GET_OVERAGE_USAGE_QUERY }
+    let(:overage) do
+      {
+        isAllowed: true,
+        creditsUsed: 250,
+        dailyUsage: [{ date: '2025-10-01', creditsUsed: 250 }]
+      }
+    end
 
-      let(:portal_response) do
-        {
-          success: true,
-          data: {
-            subscription: {
-              gitlabCreditsUsage: {
-                overage: overage
-              }
+    let(:portal_response) do
+      {
+        success: true,
+        data: {
+          subscription: {
+            gitlabCreditsUsage: {
+              overage: overage
             }
           }
         }
-      end
+      }
+    end
 
-      let(:expected_response) do
-        {
-          success: true,
-          overage: overage
-        }
-      end
+    let(:expected_response) do
+      {
+        success: true,
+        overage: overage
+      }
+    end
 
-      include_context 'for self-managed request' do
-        let(:variables) { { licenseKey: license_key, startDate: start_date, endDate: end_date } }
-      end
+    include_context 'for self-managed request' do
+      let(:variables) { { licenseKey: license_key, startDate: start_date, endDate: end_date } }
+    end
 
-      include_context 'for gitlab.com request' do
-        let(:variables) { { namespaceId: namespace_id, startDate: start_date, endDate: end_date } }
-      end
+    include_context 'for gitlab.com request' do
+      let(:variables) { { namespaceId: namespace_id, startDate: start_date, endDate: end_date } }
     end
   end
 
   describe '#get_events_for_user_id' do
-    context 'when the subscription portal response is successful' do
-      let(:user_id) { 123 }
-      let(:page) { 1 }
-      let(:request) { client.get_events_for_user_id(user_id, page) }
-      let(:query) { described_class::GET_USER_EVENTS_QUERY }
-      let(:user_events) do
-        [
-          {
-            timestamp: "2025-10-01T16:25:28Z",
-            eventType: "ai_token_usage",
-            projectId: nil,
-            namespaceId: nil,
-            creditsUsed: 100
-          },
-          {
-            timestamp: "2025-10-01T16:30:12Z",
-            eventType: "workflow_execution",
-            projectId: "19",
-            namespaceId: "99",
-            creditsUsed: 200
-          }
-        ]
-      end
-
-      let(:portal_response) do
+    let(:user_id) { 123 }
+    let(:page) { 1 }
+    let(:request) { client.get_events_for_user_id(user_id, page) }
+    let(:query) { described_class::GET_USER_EVENTS_QUERY }
+    let(:user_events) do
+      [
         {
-          success: true,
-          data: {
-            subscription: {
-              gitlabCreditsUsage: {
-                usersUsage: {
-                  users: [{ events: user_events }]
-                }
+          timestamp: "2025-10-01T16:25:28Z",
+          eventType: "ai_token_usage",
+          projectId: nil,
+          namespaceId: nil,
+          creditsUsed: 100
+        },
+        {
+          timestamp: "2025-10-01T16:30:12Z",
+          eventType: "workflow_execution",
+          projectId: "19",
+          namespaceId: "99",
+          creditsUsed: 200
+        }
+      ]
+    end
+
+    let(:portal_response) do
+      {
+        success: true,
+        data: {
+          subscription: {
+            gitlabCreditsUsage: {
+              usersUsage: {
+                users: [{ events: user_events }]
               }
             }
           }
         }
-      end
+      }
+    end
 
-      let(:expected_response) do
-        {
-          success: true,
-          userEvents: user_events
-        }
-      end
+    let(:expected_response) do
+      {
+        success: true,
+        userEvents: user_events
+      }
+    end
 
-      include_context 'for self-managed request' do
-        let(:variables) do
-          { licenseKey: license_key, startDate: start_date, endDate: end_date, userIds: [user_id], page: page }
-        end
+    include_context 'for self-managed request' do
+      let(:variables) do
+        { licenseKey: license_key, startDate: start_date, endDate: end_date, userIds: [user_id], page: page }
       end
+    end
 
-      include_context 'for gitlab.com request' do
-        let(:variables) do
-          { namespaceId: namespace_id, startDate: start_date, endDate: end_date, userIds: [user_id], page: page }
-        end
+    include_context 'for gitlab.com request' do
+      let(:variables) do
+        { namespaceId: namespace_id, startDate: start_date, endDate: end_date, userIds: [user_id], page: page }
       end
     end
   end
 
   describe '#get_usage_for_user_ids' do
-    context 'when the subscription portal response is successful' do
-      let(:user_ids) { [123, 321] }
-      let(:request) { client.get_usage_for_user_ids(user_ids) }
-      let(:query) { described_class::GET_USERS_USAGE_QUERY }
-      let(:users_usage) do
-        [
-          {
-            userId: 123,
-            totalCredits: 100,
-            creditsUsed: 500,
-            poolCreditsUsed: 400,
-            overageCreditsUsed: 50
-          },
-          {
-            userId: 321,
-            totalCredits: 100,
-            creditsUsed: 50,
-            poolCreditsUsed: 0,
-            overageCreditsUsed: 0
-          }
-        ]
-      end
-
-      let(:portal_response) do
+    let(:user_ids) { [123, 321] }
+    let(:request) { client.get_usage_for_user_ids(user_ids) }
+    let(:query) { described_class::GET_USERS_USAGE_QUERY }
+    let(:users_usage) do
+      [
         {
-          success: true,
-          data: {
-            subscription: {
-              gitlabCreditsUsage: {
-                usersUsage: { users: users_usage }
-              }
+          userId: 123,
+          totalCredits: 100,
+          creditsUsed: 500,
+          poolCreditsUsed: 400,
+          overageCreditsUsed: 50
+        },
+        {
+          userId: 321,
+          totalCredits: 100,
+          creditsUsed: 50,
+          poolCreditsUsed: 0,
+          overageCreditsUsed: 0
+        }
+      ]
+    end
+
+    let(:portal_response) do
+      {
+        success: true,
+        data: {
+          subscription: {
+            gitlabCreditsUsage: {
+              usersUsage: { users: users_usage }
             }
           }
         }
-      end
+      }
+    end
 
-      let(:expected_response) do
-        {
-          success: true,
-          usersUsage: users_usage
-        }
-      end
+    let(:expected_response) do
+      {
+        success: true,
+        usersUsage: users_usage
+      }
+    end
 
-      include_context 'for self-managed request' do
-        let(:variables) { { licenseKey: license_key, startDate: start_date, endDate: end_date, userIds: user_ids } }
-      end
+    include_context 'for self-managed request' do
+      let(:variables) { { licenseKey: license_key, startDate: start_date, endDate: end_date, userIds: user_ids } }
+    end
 
-      include_context 'for gitlab.com request' do
-        let(:variables) { { namespaceId: namespace_id, startDate: start_date, endDate: end_date, userIds: user_ids } }
-      end
+    include_context 'for gitlab.com request' do
+      let(:variables) { { namespaceId: namespace_id, startDate: start_date, endDate: end_date, userIds: user_ids } }
     end
   end
 
   describe '#get_users_usage_stats' do
-    context 'when the subscription portal response is successful' do
-      let(:request) { client.get_users_usage_stats }
-      let(:query) { described_class::GET_USERS_USAGE_STATS_QUERY }
-      let(:portal_response) do
-        {
-          success: true,
-          data: {
-            subscription: {
-              gitlabCreditsUsage: {
-                usersUsage: {
-                  totalUsersUsingCredits: 3,
-                  totalUsersUsingPool: 2,
-                  totalUsersUsingOverage: 1,
-                  dailyUsage: [{ date: '2025-10-01', creditsUsed: 321 }]
-                }
+    let(:request) { client.get_users_usage_stats }
+    let(:query) { described_class::GET_USERS_USAGE_STATS_QUERY }
+    let(:portal_response) do
+      {
+        success: true,
+        data: {
+          subscription: {
+            gitlabCreditsUsage: {
+              usersUsage: {
+                totalUsersUsingCredits: 3,
+                totalUsersUsingPool: 2,
+                totalUsersUsingOverage: 1,
+                creditsUsed: 123.45,
+                dailyUsage: [{ date: '2025-10-01', creditsUsed: 321 }]
               }
             }
           }
         }
-      end
+      }
+    end
 
-      let(:expected_response) do
-        {
-          success: true,
-          usersUsage: {
-            totalUsersUsingCredits: 3,
-            totalUsersUsingPool: 2,
-            totalUsersUsingOverage: 1,
-            dailyUsage: [{ date: '2025-10-01', creditsUsed: 321 }]
-          }
+    let(:expected_response) do
+      {
+        success: true,
+        usersUsage: {
+          totalUsersUsingCredits: 3,
+          totalUsersUsingPool: 2,
+          totalUsersUsingOverage: 1,
+          creditsUsed: 123.45,
+          dailyUsage: [{ date: '2025-10-01', creditsUsed: 321 }]
         }
-      end
+      }
+    end
 
-      include_context 'for self-managed request' do
-        let(:variables) { { licenseKey: license_key, startDate: start_date, endDate: end_date } }
-      end
+    include_context 'for self-managed request' do
+      let(:variables) { { licenseKey: license_key, startDate: start_date, endDate: end_date } }
+    end
 
-      include_context 'for gitlab.com request' do
-        let(:variables) { { namespaceId: namespace_id, startDate: start_date, endDate: end_date } }
-      end
+    include_context 'for gitlab.com request' do
+      let(:variables) { { namespaceId: namespace_id, startDate: start_date, endDate: end_date } }
     end
   end
 end

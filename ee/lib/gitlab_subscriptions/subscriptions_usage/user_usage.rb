@@ -32,6 +32,10 @@ module GitlabSubscriptions
         usage_stats[:totalUsersUsingOverage]
       end
 
+      def credits_used
+        usage_stats[:creditsUsed]
+      end
+
       def users(username: nil)
         strong_memoize_with(:users, username) do
           case subscription_usage.subscription_target

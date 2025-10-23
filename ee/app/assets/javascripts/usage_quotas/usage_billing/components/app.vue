@@ -107,10 +107,10 @@ export default {
       <template #heading>
         <span data-testid="usage-billing-title">{{ s__('UsageBilling|Usage Billing') }}</span>
       </template>
-      <template v-if="subscriptionUsage.lastUpdated" #description>
+      <template v-if="subscriptionUsage.lastEventTransactionAt" #description>
         {{ s__('UsageBilling|Last updated:') }}
         <user-date
-          :date="subscriptionUsage.lastUpdated"
+          :date="subscriptionUsage.lastEventTransactionAt"
           :date-format="$options.LONG_DATE_FORMAT_WITH_TZ"
         />
       </template>

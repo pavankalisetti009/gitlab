@@ -22,7 +22,7 @@ import {
   usageDataNoPoolNoOverage,
   usageDataNoPoolWithOverage,
   usageDataWithPool,
-  usageDataWithoutLastUpdated,
+  usageDataWithoutLastEventTransactionAt,
 } from '../mock_data';
 
 jest.mock('~/lib/logger');
@@ -118,10 +118,10 @@ describe('UsageBillingApp', () => {
       });
     });
 
-    describe('when lastUpdated is not provided', () => {
+    describe('when lastEventTransactionAt is not provided', () => {
       beforeEach(async () => {
         createComponent({
-          mockQueryHandler: jest.fn().mockResolvedValue(usageDataWithoutLastUpdated),
+          mockQueryHandler: jest.fn().mockResolvedValue(usageDataWithoutLastEventTransactionAt),
         });
         await waitForPromises();
       });

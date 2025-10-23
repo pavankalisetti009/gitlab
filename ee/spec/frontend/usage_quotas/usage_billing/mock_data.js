@@ -63,7 +63,7 @@ export const mockUsageDataWithoutPool = {
 export const mockUsersUsageDataWithoutPool = {
   data: {
     subscriptionUsage: {
-      lastUpdated: '2024-01-15T10:30:00Z',
+      lastEventTransactionAt: '2024-01-15T10:30:00Z',
       purchaseCreditsPath: '/purchase-credits-path',
       usersUsage: {
         // overall statistics
@@ -218,7 +218,7 @@ export const mockUsageDataWithPool = {
 export const mockUsersUsageDataWithPool = {
   data: {
     subscriptionUsage: {
-      lastUpdated: '2025-10-14T07:41:59Z',
+      lastEventTransactionAt: '2025-10-14T07:41:59Z',
       purchaseCreditsPath: '/purchase-credits-path',
       usersUsage: {
         // overall statistics
@@ -400,7 +400,7 @@ export const mockUsageDataWithOverage = {
 export const mockUsersUsageDataWithOverage = {
   data: {
     subscriptionUsage: {
-      lastUpdated: '2025-10-14T07:41:59Z',
+      lastEventTransactionAt: '2025-10-14T07:41:59Z',
       purchaseCreditsPath: '/purchase-credits-path',
       usersUsage: {
         totalUsers: 50,
@@ -544,7 +544,7 @@ export const mockUsageDataWithZeroAllocation = {
 export const mockUsersUsageDataWithZeroAllocation = {
   data: {
     subscriptionUsage: {
-      lastUpdated: '2025-10-14T07:41:59Z',
+      lastEventTransactionAt: '2025-10-14T07:41:59Z',
       purchaseCreditsPath: '/purchase-credits-path',
       usersUsage: {
         totalUsers: 5,
@@ -630,7 +630,7 @@ export const mockUsersUsageDataWithZeroAllocation = {
 export const usageDataWithPool = {
   data: {
     subscriptionUsage: {
-      lastUpdated: '2025-10-14T07:41:59Z',
+      lastEventTransactionAt: '2025-10-14T07:41:59Z',
       purchaseCreditsPath: '/purchase-credits-path',
       poolUsage: {
         creditsUsed: 50,
@@ -644,7 +644,7 @@ export const usageDataWithPool = {
   },
 };
 
-export const usageDataWithoutLastUpdated = {
+export const usageDataWithoutLastEventTransactionAt = {
   data: {
     subscriptionUsage: {
       poolUsage: {
@@ -659,7 +659,7 @@ export const usageDataWithPoolWithOverage = {
   data: {
     subscriptionUsage: {
       purchaseCreditsPath: '/purchase-credits-path',
-      lastUpdated: '2025-10-14T07:41:59Z',
+      lastEventTransactionAt: '2025-10-14T07:41:59Z',
       poolUsage: {
         creditsUsed: 300,
         totalCredits: 300,
@@ -675,7 +675,7 @@ export const usageDataWithPoolWithOverage = {
 export const usageDataNoPoolNoOverage = {
   data: {
     subscriptionUsage: {
-      lastUpdated: '2024-01-15T10:30:00Z',
+      lastEventTransactionAt: '2024-01-15T10:30:00Z',
       purchaseCreditsPath: '/purchase-credits-path',
       poolUsage: null,
       overage: {
@@ -689,7 +689,7 @@ export const usageDataNoPoolNoOverage = {
 export const usageDataNoPoolWithOverage = {
   data: {
     subscriptionUsage: {
-      lastUpdated: '2024-01-15T10:30:00Z',
+      lastEventTransactionAt: '2024-01-15T10:30:00Z',
       purchaseCreditsPath: '/purchase-credits-path',
       poolUsage: null,
       overage: {

@@ -4,6 +4,7 @@ module GitlabSubscriptions
   class SubscriptionUsage
     include ::Gitlab::Utils::StrongMemoize
 
+    OneTimeCredits = Struct.new(:credits_used, :total_credits, :total_credits_remaining, :declarative_policy_subject)
     PoolUsage = Struct.new(:total_credits, :credits_used, :daily_usage, :declarative_policy_subject)
     Overage = Struct.new(:is_allowed, :credits_used, :daily_usage, :declarative_policy_subject)
     DailyUsage = Struct.new(:date, :credits_used, :declarative_policy_subject)
@@ -28,13 +29,27 @@ module GitlabSubscriptions
       usage_metadata[:endDate]
     end
 
-    def last_updated
-      usage_metadata[:lastUpdated]
+    def last_event_transaction_at
+      usage_metadata[:lastEventTransactionAt]
     end
 
     def purchase_credits_path
       usage_metadata[:purchaseCreditsPath]
     end
+
+    def one_time_credits
+      one_time_credits_response = subscription_usage_client.get_one_time_credits
+
+      return unless one_time_credits_response[:success]
+
+      OneTimeCredits.new(
+        credits_used: one_time_credits_response.dig(:oneTimeCredits, :creditsUsed),
+        total_credits: one_time_credits_response.dig(:oneTimeCredits, :totalCredits),
+        total_credits_remaining: one_time_credits_response.dig(:oneTimeCredits, :totalCreditsRemaining),
+        declarative_policy_subject: self
+      )
+    end
+    strong_memoize_attr :one_time_credits
 
     def pool_usage
       pool_usage_response = subscription_usage_client.get_pool_usage

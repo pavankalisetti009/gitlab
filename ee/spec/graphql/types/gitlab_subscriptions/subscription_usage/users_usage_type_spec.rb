@@ -11,6 +11,7 @@ RSpec.describe GitlabSchema.types['GitlabSubscriptionUsageUsersUsage'], feature_
       :total_users_using_credits,
       :total_users_using_pool,
       :total_users_using_overage,
+      :credits_used,
       :daily_usage,
       :users
     ])

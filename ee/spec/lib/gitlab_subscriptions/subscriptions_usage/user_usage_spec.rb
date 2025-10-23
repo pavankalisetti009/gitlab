@@ -14,6 +14,7 @@ RSpec.describe GitlabSubscriptions::SubscriptionsUsage::UserUsage, feature_categ
         totalUsersUsingCredits: 3,
         totalUsersUsingPool: 2,
         totalUsersUsingOverage: 1,
+        creditsUsed: 123.45,
         dailyUsage: [{ date: '2025-10-01', creditsUsed: 321 }]
       }
     }
@@ -154,6 +155,36 @@ RSpec.describe GitlabSubscriptions::SubscriptionsUsage::UserUsage, feature_categ
 
       it 'returns nil' do
         expect(user_usage.total_users_using_overage).to be_nil
+      end
+    end
+  end
+
+  describe "#credits_used" do
+    before do
+      allow(subscription_usage_client).to receive(:get_users_usage_stats).and_return(client_response)
+    end
+
+    context 'when the client returns a successful response' do
+      let(:client_response) { { success: true, usersUsage: { creditsUsed: 123.45 } } }
+
+      it 'returns the correct data' do
+        expect(user_usage.credits_used).to eq(123.45)
+      end
+    end
+
+    context 'when the client returns an unsuccessful response' do
+      let(:client_response) { { success: false } }
+
+      it 'returns nil' do
+        expect(user_usage.credits_used).to be_nil
+      end
+    end
+
+    context 'when the client response is missing the data' do
+      let(:client_response) { { success: true, usersUsage: nil } }
+
+      it 'returns nil' do
+        expect(user_usage.credits_used).to be_nil
       end
     end
   end
