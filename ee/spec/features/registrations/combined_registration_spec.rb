@@ -29,8 +29,6 @@ RSpec.describe 'Registration group and project creation flow', :with_current_org
   end
 
   it 'A user can create a group and project' do
-    stub_feature_flags(streamlined_first_product_experience: false)
-
     expect(find_by_testid('group-name').value).to eq("#{user.username}-group")
     expect(find_by_testid('project-name').value).to eq("#{user.username}-project")
 

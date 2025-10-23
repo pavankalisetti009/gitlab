@@ -42,7 +42,6 @@ RSpec.describe 'Trial flow for user picking company and creating a project', :js
 
   context 'for the legacy_onboarding experiment' do
     it 'registers the user and creates a group and project reaching onboarding', :sidekiq_inline do
-      stub_feature_flags(streamlined_first_product_experience: false)
       stub_experiments(legacy_onboarding: :candidate)
 
       trial_registration_sign_up(glm_params)

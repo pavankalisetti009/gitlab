@@ -10,10 +10,6 @@ RSpec.describe 'Project > Unlimited members alert', :js, :saas, feature_category
   let_it_be(:project) { create(:project, group: group) }
   let_it_be(:user) { create(:user) }
 
-  before do
-    stub_feature_flags(streamlined_first_product_experience: false)
-  end
-
   context 'when group not in trial' do
     it 'does not display alert' do
       group.add_owner(user)

@@ -161,24 +161,10 @@ RSpec.describe Registrations::GroupsController, feature_category: :onboarding do
       end
 
       context 'with the cookie for confetti for learn gitlab' do
-        context 'when feature `streamlined_first_product_experience` is enabled' do
-          it 'does not set the cookie' do
-            post_create
+        it 'does not set the cookie' do
+          post_create
 
-            expect(cookies[:confetti_post_signup]).to be_nil
-          end
-        end
-
-        context 'when feature `streamlined_first_product_experience` is disabled' do
-          before do
-            stub_feature_flags(streamlined_first_product_experience: false)
-          end
-
-          it 'sets the cookie' do
-            post_create
-
-            expect(cookies[:confetti_post_signup].to_s).to eq('true')
-          end
+          expect(cookies[:confetti_post_signup]).to be_nil
         end
       end
 

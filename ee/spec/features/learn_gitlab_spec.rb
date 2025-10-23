@@ -15,7 +15,7 @@ RSpec.describe 'Learn Gitlab concerns', :feature, :js, :saas, feature_category: 
       # TODO: When removing the feature flag,
       # we won't need the tests for the issues listing page, since we'll be using
       # the work items listing page.
-      stub_feature_flags(work_item_planning_view: false, streamlined_first_product_experience: true)
+      stub_feature_flags(work_item_planning_view: false)
     end
 
     before_all do
@@ -198,8 +198,6 @@ RSpec.describe 'Learn Gitlab concerns', :feature, :js, :saas, feature_category: 
       context 'when onboarding progress is more than one day' do
         before do
           group.onboarding_progress.update!(created_at: 1.day.ago)
-
-          stub_feature_flags(streamlined_first_product_experience: false)
         end
 
         it 'does render the unlimited members during trial alert' do
