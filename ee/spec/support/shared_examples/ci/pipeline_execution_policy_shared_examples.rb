@@ -31,7 +31,11 @@ RSpec.shared_context 'with pipeline policy context' do
 
   let_it_be(:project) { create(:project, :repository) }
   let(:creating_policy_pipeline) { false }
-  let(:current_policy) { FactoryBot.build(:pipeline_execution_policy_config) }
+  let(:current_policy) do
+    FactoryBot.build(:pipeline_execution_policy_config,
+      policy: FactoryBot.build(:pipeline_execution_policy, name: 'Policy'))
+  end
+
   let(:execution_policy_pipelines) { [] }
 
   before do

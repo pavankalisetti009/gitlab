@@ -31,13 +31,13 @@ RSpec.describe Gitlab::Ci::Pipeline::Chain::SetBuildSources, feature_category: :
         [
           instance_double(Ci::Stage, statuses: [
             build_double(name: "build", options: {}),
-            build_double(name: "namespace_policy_job", options: { execution_policy_job: true })
+            build_double(name: "namespace_policy_job", options: { policy: { name: 'Policy 1' } })
           ]),
           instance_double(Ci::Stage, statuses: [
             build_double(name: "rspec", options: {}),
             build_double(name: "secret-detection-0", options: {}),
-            build_double(name: "project_policy_job", options: { execution_policy_job: true }),
-            build_double(name: "secret-detection-1", options: { execution_policy_job: true }),
+            build_double(name: "project_policy_job", options: { policy: { name: 'Policy 2' } }),
+            build_double(name: "secret-detection-1", options: { policy: { name: 'Policy 3' } }),
             build_double(name: "arbitrary-job-name", options: {})
           ])
         ]

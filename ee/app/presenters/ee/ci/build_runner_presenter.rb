@@ -18,14 +18,27 @@ module EE
       end
 
       def policy_options
-        return unless options[:execution_policy_job]
+        policy_options = options[:policy]
 
-        {
-          execution_policy_job: options[:execution_policy_job],
-          policy_name: options[:execution_policy_name],
-          policy_variables_override_allowed: options.dig(:execution_policy_variables_override, :allowed),
-          policy_variables_override_exceptions: options.dig(:execution_policy_variables_override, :exceptions).presence
-        }.compact
+        # New structure
+        if policy_options.present?
+          {
+            execution_policy_job: true,
+            policy_name: policy_options[:name],
+            policy_variables_override_allowed: policy_options.dig(:variables_override, :allowed),
+            policy_variables_override_exceptions: policy_options.dig(:variables_override,
+              :exceptions).presence
+          }.compact
+        # Old structure for backwards compatibility: https://gitlab.com/gitlab-org/gitlab/-/issues/577272
+        elsif options[:execution_policy_job]
+          {
+            execution_policy_job: true,
+            policy_name: options[:execution_policy_name],
+            policy_variables_override_allowed: options.dig(:execution_policy_variables_override, :allowed),
+            policy_variables_override_exceptions: options.dig(:execution_policy_variables_override,
+              :exceptions).presence
+          }
+        end
       end
 
       private

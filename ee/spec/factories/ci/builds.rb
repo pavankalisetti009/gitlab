@@ -277,8 +277,9 @@ FactoryBot.define do
     trait :execution_policy_job do
       options do
         {
-          execution_policy_job: true,
-          execution_policy_name: 'My policy'
+          policy: {
+            name: 'My policy'
+          }
         }
       end
     end
@@ -291,8 +292,8 @@ FactoryBot.define do
       end
 
       after(:build) do |build, evaluator|
-        updated_options = build.options.merge(
-          execution_policy_variables_override: { allowed: false, exceptions: evaluator.variables_override_exceptions }
+        updated_options = build.options.deep_merge(
+          policy: { variables_override: { allowed: false, exceptions: evaluator.variables_override_exceptions } }
         )
 
         # TODO: Remove this when FF `stop_writing_builds_metadata` is removed.

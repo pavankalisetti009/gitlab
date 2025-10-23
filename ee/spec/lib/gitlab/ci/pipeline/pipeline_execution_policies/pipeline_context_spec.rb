@@ -649,8 +649,7 @@ RSpec.describe Gitlab::Ci::Pipeline::PipelineExecutionPolicies::PipelineContext,
       end
 
       it 'includes policy-specific options' do
-        expect(job_options).to eq(execution_policy_job: true, execution_policy_name: 'My policy',
-          execution_policy_variables_override: { allowed: false })
+        expect(job_options).to eq(name: 'My policy', variables_override: { allowed: false })
       end
 
       describe 'experiments' do
@@ -658,13 +657,13 @@ RSpec.describe Gitlab::Ci::Pipeline::PipelineExecutionPolicies::PipelineContext,
           allow(current_policy)
             .to receive(:experiment_enabled?).with(:ensure_pipeline_policy_pre_succeeds).and_return(true)
 
-          expect(job_options).to match(a_hash_including(execution_policy_pre_succeeds: true))
+          expect(job_options).to match(a_hash_including(pre_succeeds: true))
         end
       end
     end
 
     context 'when building project pipeline' do
-      it { is_expected.to eq({}) }
+      it { is_expected.to be_nil }
     end
   end
 
