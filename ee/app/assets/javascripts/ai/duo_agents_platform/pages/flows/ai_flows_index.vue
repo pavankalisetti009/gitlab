@@ -208,7 +208,7 @@ export default {
       <template #empty-state>
         <resource-lists-empty-state
           :title="s__('AICatalog|Use flows in your project.')"
-          :description="s__('AICatalog|Automate tasks and processes using flows.')"
+          :description="s__('AICatalog|Flows use multiple agents to complete tasks automatically.')"
           :svg-path="$options.EMPTY_SVG_URL"
         >
           <template #actions>

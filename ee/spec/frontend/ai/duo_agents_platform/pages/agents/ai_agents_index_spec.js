@@ -109,7 +109,7 @@ describe('AiAgentsIndex', () => {
       it('renders empty state with correct props', () => {
         expect(findEmptyState().props()).toMatchObject({
           title: 'Use agents in your project.',
-          description: 'Automate tasks and processes using agents.',
+          description: 'Use agents to automate tasks and answer questions.',
         });
       });
     });
@@ -149,9 +149,7 @@ describe('AiAgentsIndex', () => {
           await waitForPromises();
 
           expect(mockConfiguredAgentsQueryHandler).toHaveBeenCalledTimes(2);
-          expect(mockToast.show).toHaveBeenCalledWith(
-            'Agent removed successfully from this project.',
-          );
+          expect(mockToast.show).toHaveBeenCalledWith('Agent removed from this project.');
         });
       });
 

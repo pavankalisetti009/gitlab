@@ -108,7 +108,7 @@ describe('AiFlowsIndex', () => {
       it('renders empty state with correct props', () => {
         expect(findEmptyState().props()).toMatchObject({
           title: 'Use flows in your project.',
-          description: 'Automate tasks and processes using flows.',
+          description: 'Flows use multiple agents to complete tasks automatically.',
         });
       });
     });

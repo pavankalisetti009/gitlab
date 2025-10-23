@@ -237,7 +237,7 @@ export default {
         placeholder: s__('AICatalog|e.g., Research Assistant, Creative Writer, Code Helper'),
       },
       groupAttrs: {
-        labelDescription: s__('AICatalog|Choose a memorable name for your AI flow.'),
+        labelDescription: s__('AICatalog|Name your flow.'),
       },
     },
     description: {
@@ -248,16 +248,14 @@ export default {
         maxLength: MAX_LENGTH_DESCRIPTION,
       },
       groupAttrs: {
-        labelDescription: s__(
-          'AICatalog|Briefly describe what this flow is designed to do and its key capabilities.',
-        ),
+        labelDescription: s__('AICatalog|Provide a brief description.'),
       },
     },
     visibilityLevel: {
       id: 'flow-form-visibility-level',
       label: __('Visibility'),
       groupAttrs: {
-        labelDescription: s__('AICatalog|Control who can discover and use this flow.'),
+        labelDescription: s__('AICatalog|Choose who can view and interact with this flow.'),
       },
     },
     type: {

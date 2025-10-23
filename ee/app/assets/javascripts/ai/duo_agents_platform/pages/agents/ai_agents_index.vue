@@ -140,7 +140,7 @@ export default {
           return;
         }
 
-        this.$toast.show(s__('AICatalog|Agent removed successfully from this project.'));
+        this.$toast.show(s__('AICatalog|Agent removed from this project.'));
       } catch (error) {
         this.errors = [sprintf(s__('AICatalog|Failed to remove agent. %{error}'), { error })];
         Sentry.captureException(error);
@@ -191,7 +191,7 @@ export default {
       <template #empty-state>
         <resource-lists-empty-state
           :title="s__('AICatalog|Use agents in your project.')"
-          :description="s__('AICatalog|Automate tasks and processes using agents.')"
+          :description="s__('AICatalog|Use agents to automate tasks and answer questions.')"
           :svg-path="$options.EMPTY_SVG_URL"
         >
           <template #actions>
