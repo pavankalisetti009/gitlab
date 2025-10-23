@@ -20,8 +20,7 @@ module Namespaces
       attr_reader :namespace, :user, :wrapper_class, :hide_invite_members_button, :hide_explore_paid_plans_button
 
       def render?
-        !Feature.enabled?(:streamlined_first_product_experience, :instance) &&
-          ::Namespaces::FreeUserCap::Enforcement.new(namespace).qualified_namespace? &&
+        ::Namespaces::FreeUserCap::Enforcement.new(namespace).qualified_namespace? &&
           ::Namespaces::FreeUserCap.owner_access?(user: user, namespace: namespace) &&
           namespace.trial_active? &&
           !::Onboarding::Progress.completed?(namespace, :user_added)

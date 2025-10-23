@@ -72,8 +72,6 @@ module Registrations
       else
         track_project_registration_submission(payload[:project])
 
-        cookies[:confetti_post_signup] = true unless Feature.enabled?(:streamlined_first_product_experience, :instance)
-
         redirect_to learn_gitlab_path(payload[:project])
       end
     end

@@ -8,10 +8,6 @@ RSpec.describe 'Group > Unlimited members alert', :with_trial_types, :js, :saas,
   let_it_be(:subgroup) { create(:group, :private, parent: group, name: 'subgroup') }
   let_it_be(:user) { create(:user) }
 
-  before do
-    stub_feature_flags(streamlined_first_product_experience: false)
-  end
-
   context 'when group not in trial' do
     it 'does not display alert' do
       group.add_owner(user)

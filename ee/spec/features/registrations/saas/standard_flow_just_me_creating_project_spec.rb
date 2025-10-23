@@ -14,8 +14,6 @@ RSpec.describe 'Standard flow for user picking just me and creating a project', 
 
   with_them do
     it 'registers the user and creates a group and project reaching onboarding', :sidekiq_inline do
-      stub_feature_flags(streamlined_first_product_experience: false)
-
       sign_up_method.call
 
       expect_to_see_welcome_form
@@ -35,8 +33,6 @@ RSpec.describe 'Standard flow for user picking just me and creating a project', 
 
   context 'when template was selected' do
     it 'creates a project from given template', :sidekiq_inline do
-      stub_feature_flags(streamlined_first_product_experience: false)
-
       regular_sign_up
 
       expect_to_see_welcome_form
