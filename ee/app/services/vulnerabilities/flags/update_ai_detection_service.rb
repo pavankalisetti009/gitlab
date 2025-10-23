@@ -27,7 +27,7 @@ module Vulnerabilities
       attr_reader :user, :vulnerability, :params, :project
 
       def authorized?
-        project && can?(user, :admin_vulnerability, project)
+        project && can?(user, :read_vulnerability, project)
       end
 
       def current_finding

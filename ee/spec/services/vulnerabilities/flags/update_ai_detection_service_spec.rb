@@ -24,7 +24,7 @@ RSpec.describe Vulnerabilities::Flags::UpdateAiDetectionService, feature_categor
   describe '#execute' do
     context 'when user is authorized' do
       before_all do
-        project.add_maintainer(user)
+        project.add_developer(user)
       end
 
       context 'when creating a new flag' do
@@ -172,7 +172,7 @@ RSpec.describe Vulnerabilities::Flags::UpdateAiDetectionService, feature_categor
       subject(:service) { described_class.new(user, vulnerability_without_findings, params) }
 
       before_all do
-        project.add_maintainer(user)
+        project.add_developer(user)
       end
 
       it 'returns a no current finding error' do
@@ -187,7 +187,7 @@ RSpec.describe Vulnerabilities::Flags::UpdateAiDetectionService, feature_categor
       let(:params) { { description: 'Test description' } }
 
       before_all do
-        project.add_maintainer(user)
+        project.add_developer(user)
       end
 
       it 'handles nil confidence_score gracefully' do
