@@ -37,3 +37,5 @@ class BackfillReachabilityInVulnerabilities < Elastic::Migration
 
   delegate :sass_with_es?, :dedicated_with_es?, to: :class
 end
+
+BackfillReachabilityInVulnerabilities.prepend ::Search::Elastic::MigrationObsolete
