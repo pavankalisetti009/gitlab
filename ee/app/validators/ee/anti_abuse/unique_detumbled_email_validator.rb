@@ -18,7 +18,7 @@ module EE
 
         email_domain = Mail::Address.new(email).domain.downcase
 
-        return true if email_domain == ::Gitlab::Saas.root_domain
+        return true if email_domain == ::Gitlab.root_domain
 
         root_group = ::PagesDomain.verified.find_by_domain_case_insensitive(email_domain)&.root_group
 
