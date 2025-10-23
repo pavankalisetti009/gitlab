@@ -11,10 +11,12 @@ import { setCookie } from '~/lib/utils/common_utils';
 import {
   DUO_AGENTIC_MODE_COOKIE,
   DUO_AGENTIC_MODE_COOKIE_EXPIRATION,
+  CHAT_MODES,
 } from 'ee/ai/tanuki_bot/constants';
 
 jest.mock('~/lib/utils/common_utils', () => ({
   setCookie: jest.fn(),
+  getCookie: jest.fn(),
 }));
 
 describe('AI Utils', () => {
@@ -251,12 +253,14 @@ describe('AI Utils', () => {
     beforeEach(() => {
       duoChatGlobalState.isShown = false;
       duoChatGlobalState.isAgenticChatShown = false;
+      duoChatGlobalState.chatMode = CHAT_MODES.CLASSIC;
       jest.clearAllMocks();
     });
 
     afterEach(() => {
       duoChatGlobalState.isShown = false;
       duoChatGlobalState.isAgenticChatShown = false;
+      duoChatGlobalState.chatMode = CHAT_MODES.CLASSIC;
     });
 
     describe('when agenticMode is true', () => {
@@ -352,6 +356,118 @@ describe('AI Utils', () => {
           expect(duoChatGlobalState.isAgenticChatShown).toBe(expectedIsAgenticChatShown);
         },
       );
+    });
+
+    describe('chatMode', () => {
+      it('sets chatMode to AGENTIC when agenticMode is true', () => {
+        setAgenticMode({ agenticMode: true });
+
+        expect(duoChatGlobalState.chatMode).toBe(CHAT_MODES.AGENTIC);
+      });
+
+      it('sets chatMode to CLASSIC when agenticMode is false', () => {
+        setAgenticMode({ agenticMode: false });
+
+        expect(duoChatGlobalState.chatMode).toBe(CHAT_MODES.CLASSIC);
+      });
+    });
+
+    describe('isEmbedded parameter', () => {
+      it('updates isShown and isAgenticChatShown when isEmbedded is false', () => {
+        setAgenticMode({ agenticMode: true, isEmbedded: false });
+
+        expect(duoChatGlobalState.isShown).toBe(false);
+        expect(duoChatGlobalState.isAgenticChatShown).toBe(true);
+        expect(duoChatGlobalState.chatMode).toBe(CHAT_MODES.AGENTIC);
+      });
+
+      it('does not update isShown and isAgenticChatShown when isEmbedded is true', () => {
+        duoChatGlobalState.isShown = true;
+        duoChatGlobalState.isAgenticChatShown = false;
+
+        setAgenticMode({ agenticMode: true, isEmbedded: true });
+
+        // Legacy properties should not be touched in embedded mode
+        expect(duoChatGlobalState.isShown).toBe(true);
+        expect(duoChatGlobalState.isAgenticChatShown).toBe(false);
+        // But chatMode should still be updated
+        expect(duoChatGlobalState.chatMode).toBe(CHAT_MODES.AGENTIC);
+      });
+
+      it('defaults isEmbedded to false', () => {
+        setAgenticMode({ agenticMode: false });
+
+        expect(duoChatGlobalState.isShown).toBe(true);
+        expect(duoChatGlobalState.isAgenticChatShown).toBe(false);
+      });
+    });
+  });
+
+  describe('sendDuoChatCommand with embedded mode', () => {
+    let originalRequestIdleCallback;
+    let originalGon;
+
+    beforeEach(() => {
+      originalRequestIdleCallback = window.requestIdleCallback;
+      window.requestIdleCallback = (callback) => callback();
+      originalGon = window.gon;
+
+      duoChatGlobalState.isShown = false;
+      duoChatGlobalState.isAgenticChatShown = false;
+      duoChatGlobalState.activeTab = null;
+      duoChatGlobalState.chatMode = CHAT_MODES.AGENTIC;
+      duoChatGlobalState.commands = [];
+
+      jest.clearAllMocks();
+    });
+
+    afterEach(() => {
+      window.requestIdleCallback = originalRequestIdleCallback;
+      window.gon = originalGon;
+      duoChatGlobalState.isShown = false;
+      duoChatGlobalState.activeTab = null;
+      duoChatGlobalState.chatMode = CHAT_MODES.CLASSIC;
+    });
+
+    describe('when projectStudioEnabled is false (drawer mode)', () => {
+      beforeEach(() => {
+        window.gon = { features: { projectStudioEnabled: false } };
+      });
+
+      it('opens drawer mode chat', () => {
+        sendDuoChatCommand({ question: '/help', resourceId: '123' });
+
+        expect(duoChatGlobalState.isShown).toBe(true);
+        expect(duoChatGlobalState.isAgenticChatShown).toBe(false);
+        expect(duoChatGlobalState.activeTab).toBeNull();
+      });
+
+      it('forces classic mode', () => {
+        sendDuoChatCommand({ question: '/help', resourceId: '123' });
+
+        expect(duoChatGlobalState.chatMode).toBe(CHAT_MODES.CLASSIC);
+      });
+    });
+
+    describe('when projectStudioEnabled is true (embedded mode)', () => {
+      beforeEach(() => {
+        window.gon = { features: { projectStudioEnabled: true } };
+      });
+
+      it('opens embedded panel to chat tab', () => {
+        sendDuoChatCommand({ question: '/help', resourceId: '123' });
+
+        expect(duoChatGlobalState.activeTab).toBe('chat');
+        // Legacy drawer properties should not be touched
+        expect(duoChatGlobalState.isShown).toBe(false);
+        expect(duoChatGlobalState.isAgenticChatShown).toBe(false);
+      });
+
+      it('forces classic mode', () => {
+        sendDuoChatCommand({ question: '/help', resourceId: '123' });
+
+        expect(duoChatGlobalState.chatMode).toBe(CHAT_MODES.CLASSIC);
+      });
     });
   });
 });

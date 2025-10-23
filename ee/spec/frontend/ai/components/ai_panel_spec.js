@@ -6,8 +6,11 @@ import AiContentContainer from 'ee/ai/components/content_container.vue';
 import NavigationRail from 'ee/ai/components/navigation_rail.vue';
 import AgentSessionsRoot from '~/vue_shared/spa/components/spa_root.vue';
 import DuoAgenticChat from 'ee/ai/duo_agentic_chat/components/duo_agentic_chat.vue';
+import DuoChat from 'ee/ai/tanuki_bot/components/duo_chat.vue';
 import { AGENTS_PLATFORM_SHOW_ROUTE } from 'ee/ai/duo_agents_platform/router/constants';
+import { CHAT_MODES } from 'ee/ai/tanuki_bot/constants';
 import Cookies from '~/lib/utils/cookies';
+import { duoChatGlobalState } from '~/super_sidebar/constants';
 
 const aiPanelStateCookie = 'ai_panel_active_tab';
 
@@ -41,8 +44,10 @@ describe('AiPanel', () => {
         isAgenticAvailable: true,
         chatTitle: null,
         chatConfiguration: {
-          title: 'GitLab Duo Agentic Chat',
-          component: DuoAgenticChat,
+          agenticTitle: 'GitLab Duo Agentic Chat',
+          classicTitle: 'GitLab Duo Chat',
+          agenticComponent: DuoAgenticChat,
+          classicComponent: DuoChat,
           defaultProps: {
             isAgenticAvailable: true,
             isEmbedded: true,
@@ -72,6 +77,9 @@ describe('AiPanel', () => {
 
   beforeEach(() => {
     Cookies.remove(aiPanelStateCookie);
+    // Reset global state before each test
+    duoChatGlobalState.chatMode = CHAT_MODES.AGENTIC;
+    duoChatGlobalState.activeTab = null;
   });
 
   it('renders initial collapsed state', () => {
@@ -453,6 +461,129 @@ describe('AiPanel', () => {
           isEmbedded: true,
           showStudioHeader: true,
         },
+      });
+    });
+  });
+
+  describe('chat mode switching', () => {
+    describe('component switching based on chat mode', () => {
+      it('renders agentic chat component when in agentic mode', async () => {
+        duoChatGlobalState.chatMode = CHAT_MODES.AGENTIC;
+        createComponent();
+        findNavigationRail().vm.$emit('handleTabToggle', 'chat');
+        await nextTick();
+
+        expect(findContentContainer().props('activeTab')).toEqual({
+          title: 'GitLab Duo Agentic Chat',
+          component: DuoAgenticChat,
+          props: {
+            mode: 'active',
+            isAgenticAvailable: true,
+            isEmbedded: true,
+            showStudioHeader: true,
+          },
+        });
+      });
+
+      it('renders classic chat component when in classic mode', async () => {
+        duoChatGlobalState.chatMode = CHAT_MODES.CLASSIC;
+        createComponent();
+        findNavigationRail().vm.$emit('handleTabToggle', 'chat');
+        await nextTick();
+
+        expect(findContentContainer().props('activeTab')).toEqual({
+          title: 'GitLab Duo Chat',
+          component: DuoChat,
+          props: {
+            mode: 'active',
+            isAgenticAvailable: true,
+            isEmbedded: true,
+            showStudioHeader: true,
+          },
+        });
+      });
+
+      it('switches component when chat mode changes from agentic to classic', async () => {
+        duoChatGlobalState.chatMode = CHAT_MODES.AGENTIC;
+        createComponent();
+        findNavigationRail().vm.$emit('handleTabToggle', 'chat');
+        await nextTick();
+
+        expect(findContentContainer().props('activeTab').component).toBe(DuoAgenticChat);
+        expect(findContentContainer().props('activeTab').title).toBe('GitLab Duo Agentic Chat');
+
+        duoChatGlobalState.chatMode = CHAT_MODES.CLASSIC;
+        await nextTick();
+
+        expect(findContentContainer().props('activeTab').component).toBe(DuoChat);
+        expect(findContentContainer().props('activeTab').title).toBe('GitLab Duo Chat');
+      });
+
+      it('applies classic mode to all chat tabs (active, new, history)', async () => {
+        duoChatGlobalState.chatMode = CHAT_MODES.CLASSIC;
+        createComponent();
+
+        findNavigationRail().vm.$emit('handleTabToggle', 'chat');
+        await nextTick();
+        expect(findContentContainer().props('activeTab').component).toBe(DuoChat);
+
+        findNavigationRail().vm.$emit('handleTabToggle', 'new');
+        await nextTick();
+        expect(findContentContainer().props('activeTab').component).toBe(DuoChat);
+        expect(findContentContainer().props('activeTab').title).toBe('New Chat');
+
+        findNavigationRail().vm.$emit('handleTabToggle', 'history');
+        await nextTick();
+        expect(findContentContainer().props('activeTab').component).toBe(DuoChat);
+        expect(findContentContainer().props('activeTab').title).toBe('History');
+      });
+
+      it('applies agentic mode to all chat tabs (active, new, history)', async () => {
+        duoChatGlobalState.chatMode = CHAT_MODES.AGENTIC;
+        createComponent();
+
+        findNavigationRail().vm.$emit('handleTabToggle', 'chat');
+        await nextTick();
+        expect(findContentContainer().props('activeTab').component).toBe(DuoAgenticChat);
+
+        findNavigationRail().vm.$emit('handleTabToggle', 'new');
+        await nextTick();
+        expect(findContentContainer().props('activeTab').component).toBe(DuoAgenticChat);
+        expect(findContentContainer().props('activeTab').title).toBe('New Chat');
+
+        findNavigationRail().vm.$emit('handleTabToggle', 'history');
+        await nextTick();
+        expect(findContentContainer().props('activeTab').component).toBe(DuoAgenticChat);
+        expect(findContentContainer().props('activeTab').title).toBe('History');
+      });
+    });
+
+    describe('activeTab reactivity with global state', () => {
+      it('opens panel when global state activeTab changes externally', async () => {
+        createComponent();
+        expect(findContentContainer().exists()).toBe(false);
+
+        // Simulate external trigger (e.g., from sendDuoChatCommand)
+        duoChatGlobalState.activeTab = 'chat';
+        await nextTick();
+
+        expect(findContentContainer().exists()).toBe(true);
+        expect(findContentContainer().props('activeTab').component).toBe(DuoAgenticChat);
+      });
+
+      it('clears global state and cookie when panel is closed', async () => {
+        createComponent();
+
+        findNavigationRail().vm.$emit('handleTabToggle', 'chat');
+        await nextTick();
+        expect(duoChatGlobalState.activeTab).toBe('chat');
+
+        findContentContainer().vm.$emit('closePanel');
+        await nextTick();
+
+        expect(duoChatGlobalState.activeTab).toBeUndefined();
+        expect(Cookies.get(aiPanelStateCookie)).toBeUndefined();
+        expect(findContentContainer().exists()).toBe(false);
       });
     });
   });

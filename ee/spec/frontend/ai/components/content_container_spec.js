@@ -3,9 +3,14 @@ import { GlButton } from '@gitlab/ui';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import { createMockDirective } from 'helpers/vue_mock_directive';
 import AiContentContainer from 'ee/ai/components/content_container.vue';
+import { CHAT_MODES } from 'ee/ai/tanuki_bot/constants';
+import { duoChatGlobalState } from '~/super_sidebar/constants';
+import DuoAgenticChat from 'ee/ai/duo_agentic_chat/components/duo_agentic_chat.vue';
+import DuoChat from 'ee/ai/tanuki_bot/components/duo_chat.vue';
 
 describe('AiContentContainer', () => {
   let wrapper;
+  let mockStore;
 
   const activeTabMock = {
     title: 'Test Tab Title',
@@ -16,7 +21,12 @@ describe('AiContentContainer', () => {
     activeTab = activeTabMock,
     showBackButton = false,
     propsData = {},
+    provide = {},
   } = {}) => {
+    mockStore = {
+      dispatch: jest.fn(),
+    };
+
     wrapper = shallowMountExtended(AiContentContainer, {
       directives: {
         GlTooltip: createMockDirective('gl-tooltip'),
@@ -33,6 +43,19 @@ describe('AiContentContainer', () => {
         userModelSelectionEnabled: false,
         ...propsData,
       },
+      provide: {
+        chatConfiguration: {
+          agenticTitle: 'GitLab Duo Agentic Chat',
+          classicTitle: 'GitLab Duo Chat',
+          agenticComponent: DuoAgenticChat,
+          classicComponent: DuoChat,
+          defaultProps: {},
+        },
+        ...provide,
+      },
+      mocks: {
+        $store: mockStore,
+      },
       stubs: {
         GlButton,
       },
@@ -45,6 +68,8 @@ describe('AiContentContainer', () => {
   const findBackButton = () => wrapper.findByTestId('content-container-back-button');
 
   beforeEach(() => {
+    // Reset global state before each test
+    duoChatGlobalState.chatMode = CHAT_MODES.AGENTIC;
     createComponent();
   });
 
@@ -175,6 +200,34 @@ describe('AiContentContainer', () => {
       expect(() => {
         createComponent({ activeTab: tabWithoutProps });
       }).not.toThrow();
+    });
+  });
+
+  describe('chat component key', () => {
+    const agenticTabMock = {
+      title: 'Agentic Chat',
+      component: DuoAgenticChat,
+      props: { mode: 'active' },
+    };
+
+    it('recreates component when chatMode changes', async () => {
+      duoChatGlobalState.chatMode = CHAT_MODES.AGENTIC;
+      createComponent({ activeTab: agenticTabMock });
+
+      // Get the initial component instance
+      const initialComponent = wrapper.findComponent(DuoAgenticChat);
+      expect(initialComponent.exists()).toBe(true);
+
+      // Switch to classic mode - this should destroy and recreate the component
+      duoChatGlobalState.chatMode = CHAT_MODES.CLASSIC;
+      await nextTick();
+
+      // Get the component instance after mode switch
+      const newComponent = wrapper.findComponent(DuoAgenticChat);
+      expect(newComponent.exists()).toBe(true);
+
+      // Verify the component was recreated (different Vue instance)
+      expect(newComponent.vm).not.toBe(initialComponent.vm);
     });
   });
 });

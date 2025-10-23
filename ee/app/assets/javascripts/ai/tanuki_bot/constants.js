@@ -1,5 +1,6 @@
 import { s__ } from '~/locale';
 import { GENIE_CHAT_MODEL_ROLES } from 'ee/ai/constants';
+import { CHAT_MODES } from '~/super_sidebar/constants';
 
 export const MESSAGE_TYPES = {
   USER: GENIE_CHAT_MODEL_ROLES.user,
@@ -33,3 +34,6 @@ export const MULTI_THREADED_CONVERSATION_TYPE = 'DUO_CHAT';
 
 export const DUO_AGENTIC_MODE_COOKIE = 'duo_agentic_mode_on';
 export const DUO_AGENTIC_MODE_COOKIE_EXPIRATION = 365 * 10;
+
+// Re-export CHAT_MODES for backward compatibility
+export { CHAT_MODES };

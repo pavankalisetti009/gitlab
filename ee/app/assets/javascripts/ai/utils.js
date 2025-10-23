@@ -1,9 +1,18 @@
 import { duoChatGlobalState } from '~/super_sidebar/constants';
-import { setCookie } from '~/lib/utils/common_utils';
+import { setCookie, getCookie } from '~/lib/utils/common_utils';
 import {
   DUO_AGENTIC_MODE_COOKIE,
   DUO_AGENTIC_MODE_COOKIE_EXPIRATION,
+  CHAT_MODES,
 } from 'ee/ai/tanuki_bot/constants';
+
+// Initialize chatMode from cookie on module load
+const savedMode = getCookie(DUO_AGENTIC_MODE_COOKIE);
+if (savedMode === 'true') {
+  duoChatGlobalState.chatMode = CHAT_MODES.AGENTIC;
+} else {
+  duoChatGlobalState.chatMode = CHAT_MODES.CLASSIC;
+}
 
 export const concatStreamedChunks = (arr) => {
   if (!arr) return '';
@@ -28,7 +37,7 @@ export const saveDuoAgenticModePreference = (isAgenticMode) => {
 };
 
 /**
- * Swith duo chat based on agenticMode value and save to cookie based on
+ * Switch duo chat based on agenticMode value and save to cookie based on
  * saveCookie value.
  *
  * @param {Object} params - The parameters object.
@@ -43,6 +52,10 @@ export const setAgenticMode = ({
   saveCookie = false,
   isEmbedded = false,
 } = {}) => {
+  // Update the single source of truth for chat mode
+  duoChatGlobalState.chatMode = agenticMode ? CHAT_MODES.AGENTIC : CHAT_MODES.CLASSIC;
+
+  // For drawer mode, also update the legacy isShown/isAgenticChatShown properties
   if (!isEmbedded) {
     duoChatGlobalState.isShown = !agenticMode;
     duoChatGlobalState.isAgenticChatShown = agenticMode;
@@ -57,6 +70,9 @@ export const setAgenticMode = ({
  * Sends a command to DuoChat to execute on. This should be use for
  * a single command.
  *
+ * External triggers always force classic mode and open the chat in whatever
+ * UI mode is currently active (drawer or embedded).
+ *
  * @param {question} String - Prompt to send to the chat endpoint
  * @param {resourceId} String - Unique ID to bind the streaming
  * @param {variables} Object - Additional variables to pass to graphql chat mutation
@@ -65,7 +81,21 @@ export const sendDuoChatCommand = ({ question, resourceId, variables = {} } = {}
   if (!question || !resourceId) {
     throw new Error('Both arguments `question` and `resourceId` are required');
   }
-  setAgenticMode({ agenticMode: false, saveCookie: true });
+
+  // Check if project studio (new design with embedded panel) is enabled
+  const isEmbedded = window.gon?.features?.projectStudioEnabled === true;
+
+  // External triggers always force classic mode
+  setAgenticMode({ agenticMode: false, saveCookie: true, isEmbedded });
+
+  if (isEmbedded) {
+    // Embedded mode: Open the AI panel to chat tab
+    duoChatGlobalState.activeTab = 'chat';
+  } else {
+    // Drawer mode: Open classic chat
+    duoChatGlobalState.isShown = true;
+    duoChatGlobalState.isAgenticChatShown = false;
+  }
 
   window.requestIdleCallback(() => {
     duoChatGlobalState.commands.push({
