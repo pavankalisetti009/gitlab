@@ -5,7 +5,7 @@ query groupVulnerabilitiesPerSeverity(
   $projectId: [ID!]
   $reportType: [VulnerabilityReportType!]
 ) {
-  group(fullPath: $fullPath) {
+  namespace: group(fullPath: $fullPath) {
     id
     securityMetrics(projectId: $projectId, reportType: $reportType) {
       vulnerabilitiesPerSeverity {

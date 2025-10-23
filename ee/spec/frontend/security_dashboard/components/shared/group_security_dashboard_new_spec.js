@@ -65,10 +65,6 @@ describe('Group Security Dashboard (new version) - Component', () => {
       );
     });
 
-    it.each(SEVERITY_LEVELS_KEYS)('renders the %s severity panel', (severity) => {
-      expect(findPanelWithId(severity)).not.toBe(undefined);
-    });
-
     it('renders the risk score panel with the correct configuration', () => {
       const riskScorePanel = getRiskScorePanel();
 
@@ -92,6 +88,24 @@ describe('Group Security Dashboard (new version) - Component', () => {
         height: 4,
         xPos: 5,
         yPos: 0,
+      });
+    });
+
+    it('renders the severity panels with the correct configuration', () => {
+      SEVERITY_LEVELS_KEYS.forEach((severity, index) => {
+        const severityPanel = findPanelWithId(severity);
+
+        expect(severityPanel.componentProps).toMatchObject({
+          scope: 'group',
+          severity,
+          filters: {},
+        });
+        expect(severityPanel.gridAttributes).toEqual({
+          width: 2,
+          height: 1,
+          yPos: 0,
+          xPos: 2 * index,
+        });
       });
     });
   });

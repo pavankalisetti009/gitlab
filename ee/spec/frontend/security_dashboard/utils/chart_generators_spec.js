@@ -1,21 +1,23 @@
 import { generateVulnerabilitiesForSeverityPanels } from 'ee/security_dashboard/utils/chart_generators';
+import VulnerabilitiesForSeverityWrapper from 'ee/security_dashboard/components/shared/vulnerabilities_for_severity_wrapper.vue';
 import { markRaw } from '~/lib/utils/vue3compat/mark_raw';
 
 describe('Security Dashboard - Chart Utils', () => {
   const severities = ['Critical', 'High', 'Medium', 'Low', 'Info', 'Unknown'];
 
   describe('generateVulnerabilitiesForSeverityPanels', () => {
-    const mockComponent = { name: 'MockComponent', template: '<div>Mock Component</div>' };
     const filters = {
       reportType: ['SAST'],
       projectId: ['1'],
     };
+    const scope = 'project';
     const widthConstant = 2;
 
     const expected = severities.map((severity, index) => ({
       id: severity.toLowerCase(),
-      component: markRaw(mockComponent),
+      component: markRaw(VulnerabilitiesForSeverityWrapper),
       componentProps: {
+        scope,
         severity: severity.toLowerCase(),
         filters,
       },
@@ -29,7 +31,7 @@ describe('Security Dashboard - Chart Utils', () => {
 
     it('returns array with panels config for each severity', () => {
       const panels = generateVulnerabilitiesForSeverityPanels({
-        panelComponent: mockComponent,
+        scope,
         filters,
       });
 

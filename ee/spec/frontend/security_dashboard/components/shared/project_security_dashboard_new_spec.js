@@ -13,7 +13,6 @@ import FilteredSearch from 'ee/security_dashboard/components/shared/security_das
 import ProjectSecurityDashboardNew from 'ee/security_dashboard/components/shared/project_security_dashboard_new.vue';
 import ReportTypeToken from 'ee/security_dashboard/components/shared/filtered_search/tokens/report_type_token.vue';
 import VulnerabilitiesOverTimePanel from 'ee/security_dashboard/components/shared/vulnerabilities_over_time_panel.vue';
-import ProjectVulnerabilitiesForSeverityPanel from 'ee/security_dashboard/components/shared/project_vulnerabilities_for_severity_panel.vue';
 
 jest.mock('~/alert');
 
@@ -54,10 +53,6 @@ describe('Project Security Dashboard (new version) - Component', () => {
       );
     });
 
-    it.each(SEVERITY_LEVELS_KEYS)('renders the %s severity panel', (severity) => {
-      expect(findPanelWithId(severity)).not.toBe(undefined);
-    });
-
     it('renders the vulnerabilities over time panel with the correct configuration', () => {
       const vulnerabilitiesOverTimePanel = getVulnerabilitiesOverTimePanel();
 
@@ -76,9 +71,11 @@ describe('Project Security Dashboard (new version) - Component', () => {
       SEVERITY_LEVELS_KEYS.forEach((severity, index) => {
         const severityPanel = findPanelWithId(severity);
 
-        expect(severityPanel.component).toBe(ProjectVulnerabilitiesForSeverityPanel);
-        expect(severityPanel.componentProps.severity).toBe(severity);
-        expect(severityPanel.componentProps.filters).toEqual({});
+        expect(severityPanel.componentProps).toMatchObject({
+          scope: 'project',
+          severity,
+          filters: {},
+        });
         expect(severityPanel.gridAttributes).toEqual({
           width: 2,
           height: 1,

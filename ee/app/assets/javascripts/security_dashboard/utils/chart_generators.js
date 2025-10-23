@@ -1,4 +1,5 @@
 import { markRaw } from '~/lib/utils/vue3compat/mark_raw';
+import VulnerabilitiesForSeverityWrapper from '../components/shared/vulnerabilities_for_severity_wrapper.vue';
 import { SEVERITY_LEVELS_KEYS } from '../constants';
 
 const DEFAULT_PANEL_WIDTH = 2;
@@ -11,15 +12,16 @@ const DEFAULT_PANEL_HEIGHT = 1;
  * with each panel positioned sequentially from left to right.
  *
  * @param {Object} options - Configuration options
- * @param {Object} options.panelComponent - Vue component to be used for the panel
+ * @param {Object} options.scope - Scope to be used for the panel
  * @param {Object} options.filters - GraphQL query filters
  * @returns {Array<Object>} Array of panel configuration objects
  */
-export const generateVulnerabilitiesForSeverityPanels = ({ panelComponent, filters }) => {
+export const generateVulnerabilitiesForSeverityPanels = ({ scope, filters }) => {
   return SEVERITY_LEVELS_KEYS.map((severity, index) => ({
     id: severity,
-    component: markRaw(panelComponent),
+    component: markRaw(VulnerabilitiesForSeverityWrapper),
     componentProps: {
+      scope,
       severity,
       filters,
     },
