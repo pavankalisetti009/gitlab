@@ -173,6 +173,11 @@ module ApprovalRuleLike
     approval_policy_rule&.security_policy&.warn_mode? || false
   end
 
+  def scanners_with_default_fallback
+    # `scanners: []` means that all supported scanners are used
+    scanners.presence || ApprovalProjectRule::SUPPORTED_SCANNERS
+  end
+
   private
 
   def relation_exists?(relation, column:, value:)

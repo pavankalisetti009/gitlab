@@ -50,6 +50,14 @@ module QA
         end
       end
 
+      let(:target_branch_report_commit) do
+        create_commit(branch_name: project.default_branch, actions: [
+          ci_file(report_name: premade_report_name, action: 'create'),
+          report_file(report_name: premade_report_name, report_path: premade_report_path, severity: 'High',
+            action: 'create')
+        ])
+      end
+
       before do
         project.add_member(approver)
         QA::Support::Waiter.wait_until(sleep_interval: 1,
@@ -62,6 +70,10 @@ module QA
         end
 
         Flow::Login.sign_in
+
+        # Create a target branch report for the approval policy to match against
+        target_branch_report_commit
+
         project.visit!
       end
 
@@ -81,8 +93,10 @@ module QA
 
         create_scan_result_policy
         # Create a branch and a commit to trigger a pipeline to generate container scanning findings
-        create_commit(branch_name: commit_branch, report_name: premade_report_name,
-          report_path: premade_report_path, severity: "Critical")
+        create_commit(branch_name: commit_branch, actions: [
+          report_file(report_name: premade_report_name, report_path: premade_report_path,
+            severity: 'Critical', action: 'update')
+        ])
 
         merge_request = create_test_mr
         Flow::Pipeline.wait_for_latest_pipeline(status: 'Passed', wait: 90)
@@ -103,8 +117,10 @@ module QA
         create_scan_result_policy
 
         # Create a branch and a commit to trigger a pipeline to generate container scanning findings
-        create_commit(branch_name: commit_branch, report_name: premade_report_name,
-          report_path: premade_report_path, severity: "High")
+        create_commit(branch_name: commit_branch, actions: [
+          report_file(report_name: premade_report_name, report_path: premade_report_path,
+            severity: 'Medium', action: 'update')
+        ])
 
         merge_request = create_test_mr
         Flow::Pipeline.wait_for_latest_pipeline(status: 'Passed')
@@ -116,9 +132,9 @@ module QA
         end
       end
 
-      def ci_file(report_name)
+      def ci_file(report_name:, action:)
         {
-          action: 'create',
+          action: action,
           file_path: '.gitlab-ci.yml',
           content: <<~YAML
             include:
@@ -156,31 +172,29 @@ module QA
           source_branch: commit_branch)
       end
 
-      def report_file(report_name:, report_path:, severity:)
+      def report_file(report_name:, report_path:, severity:, action:)
         {
-          action: 'create',
+          action: action,
           file_path: report_name.to_s,
           content: container_scanning_report_content(report_path, severity)
         }
       end
 
       def container_scanning_report_content(report_path, severity)
-        if severity == "High"
+        if severity != "Critical"
           File.read(report_path.to_s).gsub("Critical", severity)
         else
           File.read(report_path.to_s)
         end
       end
 
-      def create_commit(branch_name:, report_name:, report_path:, severity:)
+      def create_commit(branch_name:, actions:)
         create(:commit,
           project: project,
           start_branch: project.default_branch,
           branch: branch_name,
           commit_message: 'Add premade container scanning report',
-          actions: [
-            ci_file(report_name), report_file(report_name: report_name, report_path: report_path, severity: severity)
-          ])
+          actions: actions)
       end
     end
   end

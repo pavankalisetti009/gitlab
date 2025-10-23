@@ -974,6 +974,20 @@ RSpec.describe Security::ScanResultPolicies::PolicyViolationDetails, feature_cat
       end
     end
 
+    context 'with TARGET_SCAN_MISSING error' do
+      let_it_be(:violation1) do
+        build_violation_with_error(policy1,
+          Security::ScanResultPolicyViolation::ERRORS[:target_scan_missing], 'missing_scans' => %w[secret_detection])
+      end
+
+      it 'returns associated error messages' do
+        expect(errors.pluck(:message)).to contain_exactly(
+          'The enforced scans could not be found in the target pipelines. ' \
+            'The following scans are missing: Secret detection'
+        )
+      end
+    end
+
     context 'with TARGET_PIPELINE_MISSING error' do
       let_it_be(:violation1) do
         build_violation_with_error(policy1, Security::ScanResultPolicyViolation::ERRORS[:target_pipeline_missing])

@@ -1,0 +1,10 @@
+---
+name: approval_policies_enforce_target_scans
+description:
+feature_issue_url: https://gitlab.com/gitlab-org/gitlab/-/issues/514201
+introduced_by_url: https://gitlab.com/gitlab-org/gitlab/-/merge_requests/209314
+rollout_issue_url: https://gitlab.com/gitlab-org/gitlab/-/issues/577681
+milestone: '18.6'
+group: group::security policies
+type: gitlab_com_derisk
+default_enabled: false

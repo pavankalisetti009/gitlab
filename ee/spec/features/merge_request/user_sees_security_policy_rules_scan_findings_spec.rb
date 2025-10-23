@@ -32,7 +32,6 @@ RSpec.describe 'Merge request > User sees security policy with scan finding rule
   let_it_be(:approver) { create(:user, maintainer_of: project) }
   let_it_be(:approver_roles) { ['maintainer'] }
   let!(:protected_branch) { create(:protected_branch, project: project, name: merge_request.target_branch) }
-  let!(:pipeline) { nil }
   let(:vuln_states) { [] }
   let(:policy_rule) do
     {
@@ -64,6 +63,15 @@ RSpec.describe 'Merge request > User sees security policy with scan finding rule
         pipeline_scan = create(:security_scan, :succeeded, project: project, pipeline: p, scan_type: 'sast')
         create(:security_finding, severity: 'high', scan: pipeline_scan)
       end
+    end
+
+    let!(:target_pipeline) do
+      create(:ee_ci_pipeline, :success, :with_sast_report,
+        project: project, ref: project.default_branch, sha: merge_request.diff_base_sha)
+    end
+
+    let!(:target_pipeline_scan) do
+      create(:security_scan, :succeeded, project: project, pipeline: target_pipeline, scan_type: 'sast')
     end
 
     before do

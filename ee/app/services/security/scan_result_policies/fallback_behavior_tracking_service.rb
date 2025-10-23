@@ -60,7 +60,7 @@ module Security
         # * there can't be any security scans
         # * the rule relates to a security scan present for the target branch, but absent for the source branch
         return true unless head_pipeline&.can_store_security_reports?
-        return true if approval_rule.scan_finding? && update_approvals_service.scan_removed?(approval_rule)
+        return true if approval_rule.scan_finding? && update_approvals_service.scan_missing?(approval_rule)
 
         false
       end

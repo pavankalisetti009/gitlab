@@ -20,6 +20,8 @@ module Security
         'UNKNOWN' => 'Unknown error: %{error}',
         'SCAN_REMOVED' => 'There is a mismatch between the scans of the source and target pipelines. ' \
                           'The following scans are missing: %{scans}',
+        'TARGET_SCAN_MISSING' => 'The enforced scans could not be found in the target pipelines. ' \
+                          'The following scans are missing: %{scans}',
         'TARGET_PIPELINE_MISSING' => 'Pipeline configuration error: SBOM reports required by policy `%{policy}` ' \
           'could not be found on the target branch.',
         'ARTIFACTS_MISSING' => {
@@ -40,6 +42,7 @@ module Security
       # These messages correspond to the possible errors above and are shown when a policy is configured to fail open
       FAIL_OPEN_MESSAGES = {
         'SCAN_REMOVED' => 'Confirm that all scanners from the target branch are present on the source branch.',
+        'TARGET_SCAN_MISSING' => 'Confirm that all enforced scanners are present on the target branch.',
         'TARGET_PIPELINE_MISSING' => 'Confirm that dependency scanning is properly configured on the target branch ' \
           'pipeline and is producing results. License scanning depends on SBOM reports.',
         'ARTIFACTS_MISSING' => {
@@ -336,7 +339,7 @@ module Security
       def error_message(violation, error)
         error_key = error['error']
         params = case error_key
-                 when 'SCAN_REMOVED'
+                 when 'SCAN_REMOVED', 'TARGET_SCAN_MISSING'
                    { scans: error['missing_scans']&.map(&:humanize)&.join(', ') }
                  when 'ARTIFACTS_MISSING'
                    { policy: violation.name, report_type: violation.report_type }

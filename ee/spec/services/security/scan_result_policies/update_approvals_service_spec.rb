@@ -124,6 +124,20 @@ RSpec.describe Security::ScanResultPolicies::UpdateApprovalsService, feature_cat
       end
     end
 
+    RSpec.shared_examples_for 'persists error in violation details' do
+      let(:expected_context) { { 'pipeline_ids' => [pipeline.id], 'target_pipeline_ids' => [target_pipeline.id] } }
+
+      it 'persists violation details' do
+        execute
+
+        expect(last_violation.violation_data)
+          .to match(
+            'errors' => [expected_error],
+            'context' => expected_context
+          )
+      end
+    end
+
     context 'without persisted policy' do
       let!(:report_approver_rule) { create(:report_approver_rule, :scan_finding, merge_request: merge_request) }
 
@@ -214,16 +228,13 @@ RSpec.describe Security::ScanResultPolicies::UpdateApprovalsService, feature_cat
           execute
         end
 
-        it 'persists the error in violation data' do
-          execute
-
-          expect(last_violation.violation_data)
-            .to eq('errors' => [{
+        it_behaves_like 'persists error in violation details' do
+          let(:expected_error) do
+            {
               'error' => Security::ScanResultPolicyViolation::ERRORS[:scan_removed],
               'missing_scans' => ['dependency_scanning']
-            }], 'context' => {
-              'pipeline_ids' => [pipeline.id], 'target_pipeline_ids' => [target_pipeline.id]
-            })
+            }
+          end
         end
 
         context 'when policy fails open' do
@@ -299,6 +310,14 @@ RSpec.describe Security::ScanResultPolicies::UpdateApprovalsService, feature_cat
 
       context 'when scan type does not match the approval rule scanners' do
         let(:scanners) { %w[container_scanning] }
+
+        let_it_be(:target_scan_container_scanning) do
+          create(:security_scan, :succeeded,
+            project: project,
+            pipeline: target_pipeline,
+            scan_type: 'container_scanning'
+          )
+        end
 
         it_behaves_like 'sets approvals_required to 0'
         it_behaves_like 'triggers policy bot comment', false
@@ -383,31 +402,28 @@ RSpec.describe Security::ScanResultPolicies::UpdateApprovalsService, feature_cat
 
       it_behaves_like 'does not update approvals_required'
       it_behaves_like 'triggers policy bot comment', true
-      it_behaves_like 'persists violation details' do
-        let(:expected_violations) { { 'newly_detected' => array_including(uuids) } }
+      it_behaves_like 'persists error in violation details' do
         let(:expected_context) { { 'pipeline_ids' => [pipeline.id], 'target_pipeline_ids' => [] } }
+        let(:expected_error) do
+          {
+            'error' => Security::ScanResultPolicyViolation::ERRORS[:target_scan_missing],
+            'missing_scans' => ['dependency_scanning']
+          }
+        end
       end
 
-      context 'when there are no newly detected findings' do
-        let_it_be_with_refind(:pipeline) do
-          create(:ee_ci_pipeline, :with_dependency_scanning_report,
-            project: project,
-            ref: merge_request.source_branch,
-            sha: merge_request.diff_head_sha)
-        end
-
+      context 'when feature flag "approval_policies_enforce_target_scans" is disabled' do
         before do
-          create(:security_scan, :succeeded,
-            project: project,
-            pipeline: pipeline,
-            scan_type: 'dependency_scanning'
-          )
+          stub_feature_flags(approval_policies_enforce_target_scans: false)
         end
 
-        it_behaves_like 'sets approvals_required to 0'
+        it_behaves_like 'persists violation details' do
+          let(:expected_context) { { 'pipeline_ids' => [pipeline.id], 'target_pipeline_ids' => [] } }
+          let(:expected_violations) { { 'newly_detected' => array_including(uuids) } }
+        end
       end
 
-      context 'with missing scan' do
+      context 'with missing scan in the source pipeline' do
         before do
           report_approver_rule.update!(scanners: %i[container_scanning])
         end
@@ -415,16 +431,14 @@ RSpec.describe Security::ScanResultPolicies::UpdateApprovalsService, feature_cat
         it_behaves_like 'does not update approvals_required'
         it_behaves_like 'triggers policy bot comment', true
 
-        it 'persists the error in violation data' do
-          execute
-
-          expect(last_violation.violation_data)
-            .to eq('errors' => [{
+        it_behaves_like 'persists error in violation details' do
+          let(:expected_context) { { 'pipeline_ids' => [pipeline.id], 'target_pipeline_ids' => [] } }
+          let(:expected_error) do
+            {
               'error' => Security::ScanResultPolicyViolation::ERRORS[:scan_removed],
               'missing_scans' => ['container_scanning']
-            }],
-              'context' => { 'pipeline_ids' => [pipeline.id], 'target_pipeline_ids' => [] }
-            )
+            }
+          end
         end
       end
     end
@@ -842,16 +856,32 @@ RSpec.describe Security::ScanResultPolicies::UpdateApprovalsService, feature_cat
       end
 
       context 'when target pipeline is nil' do
-        let_it_be(:merge_request) do
+        let_it_be_with_refind(:merge_request) do
           create(:merge_request, source_project: project, target_project: project,
             source_branch: 'feature', target_branch: 'target-branch')
         end
 
         it_behaves_like 'does not update approvals_required'
         it_behaves_like 'triggers policy bot comment', true
-        it_behaves_like 'persists violation details' do
-          let(:expected_violations) { { 'newly_detected' => array_including(uuids) } }
+        it_behaves_like 'persists error in violation details' do
           let(:expected_context) { { 'pipeline_ids' => [pipeline.id], 'target_pipeline_ids' => [] } }
+          let(:expected_error) do
+            {
+              'error' => Security::ScanResultPolicyViolation::ERRORS[:target_scan_missing],
+              'missing_scans' => ['dependency_scanning']
+            }
+          end
+        end
+
+        context 'when feature flag "approval_policies_enforce_target_scans" is disabled' do
+          before do
+            stub_feature_flags(approval_policies_enforce_target_scans: false)
+          end
+
+          it_behaves_like 'persists violation details' do
+            let(:expected_violations) { { 'newly_detected' => array_including(uuids) } }
+            let(:expected_context) { { 'pipeline_ids' => [pipeline.id], 'target_pipeline_ids' => [] } }
+          end
         end
       end
     end
@@ -979,12 +1009,13 @@ RSpec.describe Security::ScanResultPolicies::UpdateApprovalsService, feature_cat
         create(:scan_result_policy_read, project: project, vulnerability_attributes: { fix_available: true })
       end
 
-      let_it_be(:approval_rule) do
-        create(:approval_project_rule, :scan_finding, project: project, scan_result_policy_read: policy)
+      let!(:approval_rule) do
+        create(:approval_project_rule, :scan_finding, project: project, scanners: scanners,
+          scan_result_policy_read: policy)
       end
 
-      let_it_be(:mr_rule) do
-        create(:approval_merge_request_rule, :scan_finding, merge_request: merge_request,
+      let!(:mr_rule) do
+        create(:approval_merge_request_rule, :scan_finding, scanners: scanners, merge_request: merge_request,
           approval_project_rule: approval_rule)
       end
 
@@ -1013,6 +1044,92 @@ RSpec.describe Security::ScanResultPolicies::UpdateApprovalsService, feature_cat
           execute
         end
       end
+    end
+  end
+
+  describe '#scan_missing?' do
+    let(:scanners) { %w[dependency_scanning] }
+
+    let_it_be(:project) { create(:project, :repository) }
+    let_it_be_with_refind(:merge_request) { create(:merge_request, source_project: project) }
+    let_it_be(:pipeline) do
+      create(:ee_ci_pipeline, :success, :with_dependency_scanning_report, project: project,
+        ref: merge_request.source_branch, sha: merge_request.diff_head_sha)
+    end
+
+    let_it_be_with_refind(:target_pipeline) do
+      create(:ee_ci_pipeline, :success, :with_dependency_scanning_report, project: project,
+        ref: merge_request.target_branch, sha: merge_request.diff_base_sha)
+    end
+
+    let_it_be_with_refind(:source_scan) do
+      create(:security_scan, :succeeded, project: project, pipeline: pipeline, scan_type: 'dependency_scanning')
+    end
+
+    let_it_be_with_refind(:target_scan) do
+      create(:security_scan, :succeeded,
+        project: project,
+        pipeline: target_pipeline,
+        scan_type: 'dependency_scanning')
+    end
+
+    let!(:approval_rule) do
+      create(:report_approver_rule, :scan_finding, merge_request: merge_request, scanners: scanners)
+    end
+
+    subject(:scan_missing?) do
+      described_class.new(merge_request: merge_request, pipeline: pipeline).scan_missing?(approval_rule)
+    end
+
+    context 'with both source and target pipeline scans present' do
+      it { is_expected.to be(false) }
+    end
+
+    context 'with only source pipeline scan' do
+      before do
+        target_scan.destroy!
+      end
+
+      it { is_expected.to be(true) }
+
+      context 'when feature flag "approval_policies_enforce_target_scans" is disabled' do
+        before do
+          stub_feature_flags(approval_policies_enforce_target_scans: false)
+        end
+
+        it { is_expected.to be(false) }
+      end
+    end
+
+    context 'with only target pipeline scan' do
+      before do
+        source_scan.destroy!
+      end
+
+      it { is_expected.to be(true) }
+    end
+
+    context 'when more scanners are enforced' do
+      let(:scanners) { %w[dependency_scanning container_scanning] }
+
+      it { is_expected.to be(true) }
+
+      context 'when feature flag "approval_policies_enforce_target_scans" is disabled' do
+        before do
+          stub_feature_flags(approval_policies_enforce_target_scans: false)
+        end
+
+        it { is_expected.to be(false) }
+      end
+    end
+
+    context 'without any scans in the source or target pipeline' do
+      before do
+        target_scan.destroy!
+        source_scan.destroy!
+      end
+
+      it { is_expected.to be(true) }
     end
   end
 

@@ -31,8 +31,8 @@ module Security
         evaluation.save
       end
 
-      def scan_removed?(approval_rule)
-        missing_scans(approval_rule).any?
+      def scan_missing?(approval_rule)
+        target_scans_missing_in_source(approval_rule).any? || missing_target_scans(approval_rule).any?
       end
 
       private
@@ -62,34 +62,17 @@ module Security
         log_update_approval_rule('Evaluating scan_finding rules from approval policies', **validation_context)
 
         approval_rules.each do |merge_request_approval_rule|
+          next if enforce_scans_presence!(merge_request_approval_rule)
+
           approval_rule = merge_request_approval_rule.try(:source_rule) || merge_request_approval_rule
-
-          if scan_removed?(approval_rule)
-            unless fail_open?(approval_rule)
-              log_update_approval_rule(
-                'Updating MR approval rule',
-                reason: 'Scanner removed by MR',
-                approval_rule_id: approval_rule.id,
-                approval_rule_name: approval_rule.name,
-                missing_scans: missing_scans(approval_rule)
-              )
-            end
-
-            evaluation.error!(
-              merge_request_approval_rule, :scan_removed,
-              context: validation_context(approval_rule), missing_scans: missing_scans(approval_rule)
-            )
-            next true
-          end
-
           violation_result = violates_approval_rule?(approval_rule)
 
           if violation_result.violated
             log_update_approval_rule(
               'Updating MR approval rule',
               reason: 'scan_finding rule violated',
-              approval_rule_id: approval_rule.id,
-              approval_rule_name: approval_rule.name
+              approval_rule_id: merge_request_approval_rule.id,
+              approval_rule_name: merge_request_approval_rule.name
             )
             fail_evaluation_with_data!(merge_request_approval_rule,
               newly_detected: violation_result.newly_detected,
@@ -99,6 +82,42 @@ module Security
             evaluation.pass!(merge_request_approval_rule)
           end
         end
+      end
+
+      def enforce_scans_presence!(approval_rule)
+        source_scans_diff = target_scans_missing_in_source(approval_rule)
+        if source_scans_diff.any?
+          handle_scanner_mismatch_error(
+            approval_rule, :scan_removed, 'Scanner removed by MR', source_scans_diff
+          )
+          return true
+        end
+
+        target_scans_diff = missing_target_scans(approval_rule)
+        if target_scans_diff.any?
+          handle_scanner_mismatch_error(
+            approval_rule, :target_scan_missing, 'Enforced scanner missing on target branch', target_scans_diff
+          )
+          return true
+        end
+
+        false
+      end
+
+      def handle_scanner_mismatch_error(approval_rule, reason, reason_msg, missing_scans)
+        unless fail_open?(approval_rule)
+          log_update_approval_rule(
+            'Updating MR approval rule',
+            reason: reason_msg,
+            approval_rule_id: approval_rule.id,
+            approval_rule_name: approval_rule.name,
+            missing_scans: missing_scans
+          )
+        end
+
+        evaluation.error!(
+          approval_rule, reason, context: validation_context(approval_rule), missing_scans: missing_scans
+        )
       end
 
       def log_update_approval_rule(message, **attributes)
@@ -142,15 +161,22 @@ module Security
         )
       end
 
-      def missing_scans(approval_rule)
-        scanners = approval_rule.scanners
+      def target_scans_missing_in_source(approval_rule)
+        scanners = approval_rule.scanners_with_default_fallback
+        # No target pipeline, report specified scanners that are not on the source branch as missing
         return (scanners - pipeline_security_scan_types) unless target_pipeline(approval_rule)
 
+        # Target pipeline has scans, but some may be missing on the source branch
         scan_types_diff = target_pipeline_security_scan_types(approval_rule) - pipeline_security_scan_types
-
-        return scan_types_diff if scanners.empty?
-
+        # Return the diff for specified scanners
         scan_types_diff & scanners
+      end
+
+      def missing_target_scans(approval_rule)
+        return [] if ::Feature.disabled?(:approval_policies_enforce_target_scans, project)
+
+        scanners = approval_rule.scanners_with_default_fallback
+        scanners - target_pipeline_security_scan_types(approval_rule)
       end
 
       def pipeline_security_scan_types

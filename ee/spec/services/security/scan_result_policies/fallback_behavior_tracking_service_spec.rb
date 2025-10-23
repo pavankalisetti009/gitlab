@@ -3,7 +3,7 @@
 require 'spec_helper'
 
 RSpec.describe Security::ScanResultPolicies::FallbackBehaviorTrackingService, "#execute", feature_category: :security_policy_management do
-  let_it_be(:project) { create(:project) }
+  let_it_be(:project) { create(:project, :repository) }
   let(:service) { described_class.new(merge_request) }
   let_it_be(:merge_request) { create(:merge_request, source_project: project) }
   let_it_be(:user) { create(:user) }
@@ -49,17 +49,27 @@ RSpec.describe Security::ScanResultPolicies::FallbackBehaviorTrackingService, "#
   end
 
   shared_context "with report" do
-    let_it_be(:pipeline) do
+    let_it_be(:source_pipeline) do
       create(:ee_ci_pipeline,
         :success,
         :with_dependency_scanning_report,
         project: project,
         ref: merge_request.source_branch,
+        sha: merge_request.diff_head_sha,
         merge_requests_as_head_pipeline: [merge_request])
     end
 
-    let_it_be(:scan) do
-      create(:security_scan, scan_type: 'dependency_scanning', pipeline: pipeline)
+    let_it_be_with_refind(:target_pipeline) do
+      create(:ee_ci_pipeline, :success, :with_dependency_scanning_report, project: project,
+        ref: merge_request.target_branch, sha: merge_request.diff_base_sha)
+    end
+
+    let_it_be(:source_scan) do
+      create(:security_scan, scan_type: 'dependency_scanning', pipeline: source_pipeline)
+    end
+
+    let_it_be(:target_scan) do
+      create(:security_scan, scan_type: 'dependency_scanning', pipeline: target_pipeline)
     end
 
     before do
@@ -144,7 +154,7 @@ RSpec.describe Security::ScanResultPolicies::FallbackBehaviorTrackingService, "#
 
       before do
         allow_next_instance_of(Security::ScanResultPolicies::UpdateApprovalsService) do |service|
-          allow(service).to receive(:scan_removed?).with(rule).and_return(true)
+          allow(service).to receive(:scan_missing?).with(rule).and_return(true)
         end
       end
 
