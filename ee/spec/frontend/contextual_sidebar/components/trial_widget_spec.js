@@ -1,17 +1,14 @@
 import { GlProgressBar } from '@gitlab/ui';
-import MockAdapter from 'axios-mock-adapter';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import TrialWidget from 'ee/contextual_sidebar/components/trial_widget.vue';
-import * as Sentry from '~/sentry/sentry_browser_wrapper';
-import axios from '~/lib/utils/axios_utils';
-import { HTTP_STATUS_OK, HTTP_STATUS_BAD_REQUEST } from '~/lib/utils/http_status';
-import waitForPromises from 'helpers/wait_for_promises';
 import { useMockInternalEventsTracking } from 'helpers/tracking_internal_events_helper';
+import { makeMockUserGroupCalloutDismisser } from 'helpers/mock_user_group_callout_dismisser';
 
 jest.mock('~/sentry/sentry_browser_wrapper');
 
 describe('TrialWidget component', () => {
   let wrapper;
+  let userGroupCalloutDismissSpy;
 
   const findRootElement = () => wrapper.findByTestId('trial-widget-root-element');
   const findWidgetTitle = () => wrapper.findByTestId('widget-title');
@@ -27,15 +24,22 @@ describe('TrialWidget component', () => {
     trialDiscoverPagePath: '/discover',
     groupId: '1',
     featureId: '2',
-    dismissEndpoint: '/dismiss',
     purchaseNowUrl: '/purchase',
   };
 
-  const createComponent = (providers = {}) => {
+  const createComponent = (providers = {}, calloutOptions = {}) => {
+    userGroupCalloutDismissSpy = jest.fn();
     wrapper = shallowMountExtended(TrialWidget, {
       provide: {
         ...provide,
         ...providers,
+      },
+      stubs: {
+        UserGroupCalloutDismisser: makeMockUserGroupCalloutDismisser({
+          dismiss: userGroupCalloutDismissSpy,
+          shouldShowCallout: true,
+          ...calloutOptions,
+        }),
       },
     });
   };
@@ -56,6 +60,12 @@ describe('TrialWidget component', () => {
     it('does not render the dismiss button during active trial', () => {
       createComponent({ percentageComplete: 50 });
       expect(findDismissButton().exists()).toBe(false);
+    });
+
+    it('does not render when callout is dismissed', () => {
+      createComponent({}, { shouldShowCallout: false });
+
+      expect(findRootElement().exists()).toBe(false);
     });
 
     describe('when trial is active', () => {
@@ -117,39 +127,6 @@ describe('TrialWidget component', () => {
         });
 
         describe('dismissal', () => {
-          let mockAxios;
-
-          beforeEach(() => {
-            mockAxios = new MockAdapter(axios);
-          });
-
-          afterEach(() => {
-            mockAxios.restore();
-          });
-
-          it('should close the widget when dismiss is clicked', async () => {
-            mockAxios.onPost(provide.dismissEndpoint).replyOnce(HTTP_STATUS_OK);
-            expect(findRootElement().exists()).toBe(true);
-            findDismissButton().vm.$emit('click');
-
-            await waitForPromises();
-            expect(findRootElement().exists()).toBe(false);
-          });
-
-          it('should close the widget and send sentry the exception on backend persistence failure', async () => {
-            mockAxios
-              .onPost(provide.dismissEndpoint)
-              .replyOnce(HTTP_STATUS_BAD_REQUEST, { message: 'bad_request' });
-            expect(findRootElement().exists()).toBe(true);
-            findDismissButton().vm.$emit('click');
-
-            await waitForPromises();
-            expect(findRootElement().exists()).toBe(false);
-            expect(Sentry.captureException).toHaveBeenCalledWith(
-              new Error('Request failed with status code 400'),
-            );
-          });
-
           it('should track the dismiss event', () => {
             const { trackEventSpy } = bindInternalEventDocument(wrapper.element);
 
@@ -162,6 +139,12 @@ describe('TrialWidget component', () => {
               },
               undefined,
             );
+          });
+
+          it('calls the dismiss function when dismiss button is clicked', () => {
+            findDismissButton().vm.$emit('click');
+
+            expect(userGroupCalloutDismissSpy).toHaveBeenCalled();
           });
         });
       });

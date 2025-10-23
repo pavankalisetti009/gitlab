@@ -2,9 +2,8 @@
 import { GlProgressBar, GlButton } from '@gitlab/ui';
 import { snakeCase } from 'lodash';
 import { sprintf } from '~/locale';
-import axios from '~/lib/utils/axios_utils';
-import * as Sentry from '~/sentry/sentry_browser_wrapper';
 import { InternalEvents } from '~/tracking';
+import UserGroupCalloutDismisser from '~/vue_shared/components/user_group_callout_dismisser.vue';
 import {
   TRIAL_WIDGET_REMAINING_DAYS,
   TRIAL_WIDGET_SEE_UPGRADE_OPTIONS,
@@ -23,6 +22,7 @@ export default {
     GlProgressBar,
     GlButton,
     TrialWidgetButtons,
+    UserGroupCalloutDismisser,
   },
 
   mixins: [InternalEvents.mixin()],
@@ -33,7 +33,6 @@ export default {
     percentageComplete: { default: 0 },
     groupId: { default: '' },
     featureId: { default: '' },
-    dismissEndpoint: { default: '' },
   },
 
   trialWidget: {
@@ -44,12 +43,6 @@ export default {
   },
 
   handRaiseLeadAttributes: HAND_RAISE_LEAD_ATTRIBUTES,
-
-  data() {
-    return {
-      isDismissed: false,
-    };
-  },
 
   computed: {
     currentTrialType() {
@@ -70,7 +63,7 @@ export default {
       return this.daysRemaining > 0;
     },
     isDismissable() {
-      return this.groupId && this.featureId && this.dismissEndpoint;
+      return this.groupId && this.featureId;
     },
     trackingLabel() {
       return snakeCase(this.currentTrialType.name.toLowerCase());
@@ -78,17 +71,8 @@ export default {
   },
 
   methods: {
-    handleDismiss() {
-      axios
-        .post(this.dismissEndpoint, {
-          feature_name: this.featureId,
-          group_id: this.groupId,
-        })
-        .catch((error) => {
-          Sentry.captureException(error);
-        });
-
-      this.isDismissed = true;
+    handleDismiss(dismissFn) {
+      dismissFn();
 
       this.trackEvent(TRIAL_WIDGET_CLICK_DISMISS, {
         label: this.trackingLabel,
@@ -99,56 +83,63 @@ export default {
 </script>
 
 <template>
-  <div
-    v-if="!isDismissed"
-    :id="$options.trialWidget.containerId"
-    class="gl-m-2 !gl-items-start gl-rounded-tl-base gl-bg-default gl-pt-4 gl-shadow"
-    data-testid="trial-widget-root-element"
-  >
-    <div data-testid="trial-widget-menu" class="gl-flex gl-w-full gl-flex-col gl-items-stretch">
-      <div v-if="isTrialActive">
-        <div class="gl-flex-column gl-w-full">
-          <div data-testid="widget-title" class="gl-mb-4 gl-text-md gl-font-bold gl-text-default">
-            {{ widgetTitle }}
+  <user-group-callout-dismisser :feature-name="featureId" :group-id="groupId" skip-query>
+    <template #default="{ dismiss, shouldShowCallout }">
+      <div
+        v-if="shouldShowCallout"
+        :id="$options.trialWidget.containerId"
+        class="gl-m-2 !gl-items-start gl-rounded-tl-base gl-bg-default gl-pt-4 gl-shadow"
+        data-testid="trial-widget-root-element"
+      >
+        <div data-testid="trial-widget-menu" class="gl-flex gl-w-full gl-flex-col gl-items-stretch">
+          <div v-if="isTrialActive">
+            <div class="gl-flex-column gl-w-full">
+              <div
+                data-testid="widget-title"
+                class="gl-mb-4 gl-text-md gl-font-bold gl-text-default"
+              >
+                {{ widgetTitle }}
+              </div>
+              <gl-progress-bar
+                :value="percentageComplete"
+                class="custom-gradient-progress gl-mb-4 gl-bg-status-brand dark:gl-bg-purple-900"
+                aria-hidden="true"
+              />
+              <div class="gl-flex gl-w-full gl-justify-between">
+                <span class="gl-text-sm gl-text-subtle">
+                  {{ widgetRemainingDays }}
+                </span>
+              </div>
+              <trial-widget-buttons data-testid="widget-cta" />
+            </div>
           </div>
-          <gl-progress-bar
-            :value="percentageComplete"
-            class="custom-gradient-progress gl-mb-4 gl-bg-status-brand dark:gl-bg-purple-900"
-            aria-hidden="true"
-          />
-          <div class="gl-flex gl-w-full gl-justify-between">
-            <span class="gl-text-sm gl-text-subtle">
-              {{ widgetRemainingDays }}
-            </span>
+          <div v-else class="gl-flex gl-w-full gl-gap-4 gl-px-2">
+            <div class="gl-w-full">
+              <div data-testid="widget-title" class="gl-w-9/10 gl-text-sm gl-text-subtle">
+                {{ expiredWidgetTitleText }}
+              </div>
+              <div class="gl-mt-4 gl-text-center">
+                <gl-progress-bar
+                  :value="100"
+                  class="custom-gradient-progress gl-mb-4"
+                  aria-hidden="true"
+                />
+                <trial-widget-buttons data-testid="widget-cta" />
+              </div>
+            </div>
           </div>
-          <trial-widget-buttons data-testid="widget-cta" />
         </div>
+        <gl-button
+          v-if="isDismissable && !isTrialActive"
+          class="gl-absolute gl-right-0 gl-top-0 gl-mr-2 gl-mt-2"
+          size="small"
+          icon="close"
+          category="tertiary"
+          data-testid="dismiss-btn"
+          :aria-label="$options.trialWidget.dismissLabel"
+          @click="handleDismiss(dismiss)"
+        />
       </div>
-      <div v-else class="gl-flex gl-w-full gl-gap-4 gl-px-2">
-        <div class="gl-w-full">
-          <div data-testid="widget-title" class="gl-w-9/10 gl-text-sm gl-text-subtle">
-            {{ expiredWidgetTitleText }}
-          </div>
-          <div class="gl-mt-4 gl-text-center">
-            <gl-progress-bar
-              :value="100"
-              class="custom-gradient-progress gl-mb-4"
-              aria-hidden="true"
-            />
-            <trial-widget-buttons data-testid="widget-cta" />
-          </div>
-        </div>
-      </div>
-    </div>
-    <gl-button
-      v-if="isDismissable && !isTrialActive"
-      class="gl-absolute gl-right-0 gl-top-0 gl-mr-2 gl-mt-2"
-      size="small"
-      icon="close"
-      category="tertiary"
-      data-testid="dismiss-btn"
-      :aria-label="$options.trialWidget.dismissLabel"
-      @click="handleDismiss"
-    />
-  </div>
+    </template>
+  </user-group-callout-dismisser>
 </template>
