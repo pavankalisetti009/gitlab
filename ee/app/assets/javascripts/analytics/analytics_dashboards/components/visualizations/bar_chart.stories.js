@@ -57,7 +57,7 @@ const multiSeriesData = {
 
 const defaultArgs = {
   data: {
-    SuggestionsViewed,
+    'Suggestions viewed': SuggestionsViewed,
   },
   options: {
     xAxis: { type: 'value', name: 'Suggestions' },
@@ -94,6 +94,43 @@ WithCustomTooltip.args = {
     chartTooltip: {
       titleFormatter: CHART_TOOLTIP_TITLE_FORMATTERS.VALUE_ONLY,
       valueUnit: UNITS.COUNT,
+    },
+  },
+};
+
+export const WithContextualTooltipData = Template.bind({});
+WithContextualTooltipData.args = {
+  data: {
+    ...defaultArgs.data,
+    contextualData: {
+      JavaScript: { acceptedCount: 875, rejectedCount: 365 },
+      Python: { acceptedCount: 720, rejectedCount: 260 },
+      Java: { acceptedCount: 640, rejectedCount: 120 },
+      TypeScript: { acceptedCount: 580, rejectedCount: 70 },
+      'C++': { acceptedCount: 490, rejectedCount: 130 },
+      Go: { acceptedCount: 385, rejectedCount: 55 },
+      Rust: { acceptedCount: 320, rejectedCount: 40 },
+      Swift: { acceptedCount: 275, rejectedCount: 55 },
+      Kotlin: { acceptedCount: 195, rejectedCount: 35 },
+    },
+  },
+  options: {
+    ...defaultArgs.options,
+    chartTooltip: {
+      titleFormatter: CHART_TOOLTIP_TITLE_FORMATTERS.VALUE_ONLY,
+      valueUnit: UNITS.COUNT,
+      contextualData: [
+        {
+          key: 'acceptedCount',
+          label: 'Accepted',
+          unit: UNITS.COUNT,
+        },
+        {
+          key: 'rejectedCount',
+          label: 'Rejected',
+          unit: UNITS.COUNT,
+        },
+      ],
     },
   },
 };

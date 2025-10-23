@@ -243,6 +243,16 @@
       ],
       "title": "Link"
     },
+    "ValueUnit": {
+      "enum": [
+        "COUNT",
+        "DAYS",
+        "PER_DAY",
+        "PERCENT",
+        "TIME_INTERVAL"
+      ],
+      "title": "ValueUnit"
+    },
     "ChartTooltip": {
       "type": "object",
       "additionalProperties": false,
@@ -255,13 +265,30 @@
           ]
         },
         "valueUnit": {
-          "enum": [
-            "COUNT",
-            "DAYS",
-            "PER_DAY",
-            "PERCENT",
-            "TIME_INTERVAL"
-          ]
+          "$ref": "#/definitions/ValueUnit"
+        },
+        "contextualData": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "key": {
+                "type": "string"
+              },
+              "label": {
+                "type": "string"
+              },
+              "unit": {
+                "$ref": "#/definitions/ValueUnit"
+              }
+            },
+            "required": [
+              "key",
+              "label",
+              "unit"
+            ]
+          }
         }
       },
       "title": "ChartTooltip"

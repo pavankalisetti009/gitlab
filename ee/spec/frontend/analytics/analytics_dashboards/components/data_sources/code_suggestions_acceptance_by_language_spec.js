@@ -79,12 +79,16 @@ describe('`Code suggestion acceptance rate by language` Data Source', () => {
         expectQueryWithVariables({ ...variables, languages: 'ruby' });
       });
 
-      it('returns code suggestion acceptance rates by language in ascending order', () => {
+      it('returns code suggestion acceptance metrics by language in ascending order', () => {
         expect(res).toEqual({
           'Acceptance rate': [
             [0.5, 'Ruby'],
             [0.75, 'JavaScript'],
           ],
+          contextualData: {
+            JavaScript: { acceptedCount: 3, shownCount: 4 },
+            Ruby: { acceptedCount: 5, shownCount: 10 },
+          },
         });
       });
 
@@ -143,7 +147,7 @@ describe('`Code suggestion acceptance rate by language` Data Source', () => {
     });
 
     describe('with invalid data', () => {
-      it('returns `null` acceptance rate when `shownCount` is 0', async () => {
+      it('filters out `null` acceptance rate when `shownCount` is 0', async () => {
         mockResolvedCodeSuggestionsLanguagesQuery(['ts', 'cpp'])
           .mockResolvedValueOnce(
             mockCodeSuggestionsResponse({ acceptedCount: 1, shownCount: 0, languages: ['ts'] }),
@@ -159,10 +163,10 @@ describe('`Code suggestion acceptance rate by language` Data Source', () => {
         await fetch();
 
         expect(res).toEqual({
-          'Acceptance rate': [
-            [null, 'TypeScript'],
-            [0.5, 'C++'],
-          ],
+          'Acceptance rate': [[0.5, 'C++']],
+          contextualData: {
+            'C++': { acceptedCount: 50, shownCount: 100 },
+          },
         });
       });
     });
@@ -239,6 +243,10 @@ describe('`Code suggestion acceptance rate by language` Data Source', () => {
               [0.2, 'Rust'],
               [0.3, 'Python'],
             ],
+            contextualData: {
+              Rust: { acceptedCount: 1, shownCount: 5 },
+              Python: { acceptedCount: 3, shownCount: 10 },
+            },
           });
         });
 

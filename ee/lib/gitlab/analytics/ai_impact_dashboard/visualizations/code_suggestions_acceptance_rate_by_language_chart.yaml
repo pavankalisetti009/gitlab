@@ -15,3 +15,11 @@ options:
   chartTooltip:
     titleFormatter: VALUE_ONLY
     valueUnit: PERCENT
+    contextualData:
+      - key: acceptedCount
+        label: "Suggestions accepted"
+        unit: COUNT
+      - key: shownCount
+        label: "Suggestions shown"
+        unit: COUNT
+
