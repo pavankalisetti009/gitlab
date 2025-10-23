@@ -6,12 +6,20 @@ module Search
       class WorkItem < Reference
         include Search::Elastic::Concerns::DatabaseReference
 
-        # Latest schema version - format is Date.today.strftime('%y_%w')
-        # Update this when changing the document schema.
-        # Only applies after migration completes to prevent indexing documents
-        # with new schema before data migration finishes, which would result in
-        # documents not being indexed properly and missing data.
-        SCHEMA_VERSION = 25_29
+        # Schema version mappings - format is Date.today.strftime('%y_%w')
+        # Maps schema versions to their corresponding migration names.
+        # Set migration to nil for baseline versions that don't require migration completion.
+        # The schema_version method dynamically selects the highest version whose migration
+        # has completed (or nil), preventing indexing with incomplete schema changes.
+        SCHEMA_VERSIONS = {
+          25_43 => :index_work_items_milestone_state,
+          25_27 => nil
+        }.freeze
+
+        # Backwards compatibility constant - returns the latest schema version available.
+        # This maintains compatibility with existing code that references SCHEMA_VERSION.
+        SCHEMA_VERSION = SCHEMA_VERSIONS.keys.max
+
         DEFAULT_INDEX_ATTRIBUTES = %i[
           id
           iid
@@ -105,10 +113,8 @@ module Search
         end
 
         def schema_version
-          if ::Elastic::DataMigrationService.migration_has_finished?(:index_work_items_milestone_state)
-            SCHEMA_VERSION
-          else
-            25_27 # Previous stable version until migration completes
+          SCHEMA_VERSIONS.sort.reverse_each do |version, migration|
+            break version if migration.nil? || ::Elastic::DataMigrationService.migration_has_finished?(migration)
           end
         end
 
