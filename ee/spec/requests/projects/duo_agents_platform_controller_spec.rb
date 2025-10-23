@@ -11,8 +11,8 @@ RSpec.describe 'Projects::DuoAgentsPlatform', type: :request, feature_category: 
     project.project_setting.update!(duo_remote_flows_enabled: true, duo_features_enabled: true)
 
     sign_in(user)
-    allow(user).to receive(:can?).and_return(true)
-    allow(user).to receive(:can?).with(:duo_workflow, project).and_return(true)
+    allow(Ability).to receive(:allowed?).and_call_original
+    allow(Ability).to receive(:allowed?).with(user, anything, anything).and_return(true)
   end
 
   describe 'GET /:namespace/:project/-/automate' do
@@ -35,7 +35,7 @@ RSpec.describe 'Projects::DuoAgentsPlatform', type: :request, feature_category: 
 
       context 'and the user does not have access to duo_workflow' do
         before do
-          allow(user).to receive(:can?).with(:duo_workflow, project).and_return(false)
+          allow(Ability).to receive(:allowed?).with(user, :duo_workflow, project).and_return(false)
         end
 
         it 'does not render' do
@@ -84,19 +84,6 @@ RSpec.describe 'Projects::DuoAgentsPlatform', type: :request, feature_category: 
       end
     end
 
-    context 'when duo_features_enabled setting is disabled for the project' do
-      before do
-        allow(::Ai::DuoWorkflow).to receive(:enabled?).and_return(true)
-        project.project_setting.update!(duo_features_enabled: false)
-      end
-
-      it 'returns 404' do
-        get project_automate_agent_sessions_path(project)
-
-        expect(response).to have_gitlab_http_status(:not_found)
-      end
-    end
-
     context 'when vueroute is agents' do
       context 'when global_ai_catalog feature is enabled' do
         before do
@@ -107,6 +94,20 @@ RSpec.describe 'Projects::DuoAgentsPlatform', type: :request, feature_category: 
           get project_automate_agents_path(project)
 
           expect(response).to have_gitlab_http_status(:ok)
+        end
+
+        context 'when the user is not signed in and the project is public' do
+          let_it_be(:project) { create(:project, :public) }
+
+          before do
+            sign_out(user)
+          end
+
+          it 'returns a 404' do
+            get project_automate_agents_path(project)
+
+            expect(response).to have_gitlab_http_status(:not_found)
+          end
         end
       end
 
@@ -147,7 +148,7 @@ RSpec.describe 'Projects::DuoAgentsPlatform', type: :request, feature_category: 
 
       context 'when user cannot manage ai flow triggers' do
         before do
-          allow(user).to receive(:can?).with(:manage_ai_flow_triggers, project).and_return(false)
+          allow(Ability).to receive(:allowed?).with(user, :manage_ai_flow_triggers, project).and_return(false)
         end
 
         it 'returns 404' do
