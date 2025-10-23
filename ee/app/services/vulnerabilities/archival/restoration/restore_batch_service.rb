@@ -63,6 +63,7 @@ module Vulnerabilities
           restore_records_scoped_to_findings
           restore_records_scoped_to_vulnerabilities
           adjust_vulnerability_reads_attributes
+          restore_with_on_the_fly_computations
           remove_archived_records
         end
 
@@ -121,6 +122,10 @@ module Vulnerabilities
 
         def restored_vulnerability_ids
           vulnerability_backups_to_restore.map(&:original_record_identifier)
+        end
+
+        def restore_with_on_the_fly_computations
+          ::Vulnerabilities::Findings::RiskScoreCalculationService.new(restored_vulnerability_ids).execute
         end
 
         def vulnerability_backups_to_restore
