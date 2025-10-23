@@ -51,7 +51,9 @@ RSpec.describe 'Query.project(fullPath).dependencies', feature_category: :depend
 
   subject { post_graphql(query, current_user: current_user, variables: variables) }
 
-  it_behaves_like 'sbom dependency node'
+  context 'with quarantine', quarantine: 'https://gitlab.com/gitlab-org/gitlab/-/issues/545088' do
+    it_behaves_like 'sbom dependency node'
+  end
 
   it 'returns the expected dependency data with all fields' do
     subject
@@ -161,7 +163,7 @@ RSpec.describe 'Query.project(fullPath).dependencies', feature_category: :depend
       FIELDS
     end
 
-    it 'avoids N+1 database queries' do
+    it 'avoids N+1 database queries', quarantine: 'https://gitlab.com/gitlab-org/gitlab/-/issues/567758' do
       parent = occurrences.first
 
       # create 1 occurrence and 1 graph path
