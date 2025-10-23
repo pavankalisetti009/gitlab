@@ -201,6 +201,7 @@ class Groups::OmniauthCallbacksController < OmniauthCallbacksController
       target: user,
       message: "Signed in with #{provider.upcase} authentication",
       authentication_event: true,
+      organization: Current.organization,
       authentication_provider: provider,
       additional_details: {
         with: provider,

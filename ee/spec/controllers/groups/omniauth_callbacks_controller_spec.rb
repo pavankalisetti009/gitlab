@@ -179,6 +179,7 @@ RSpec.describe Groups::OmniauthCallbacksController, :with_current_organization, 
             scope: group,
             target: user,
             message: "Signed in with #{provider.upcase} authentication",
+            organization: user.organization,
             authentication_event: true,
             authentication_provider: provider,
             additional_details: {
