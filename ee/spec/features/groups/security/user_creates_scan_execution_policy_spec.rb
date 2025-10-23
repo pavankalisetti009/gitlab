@@ -26,5 +26,13 @@ RSpec.describe "User creates scan execution policy", :js, feature_category: :sec
 
   it_behaves_like 'creating scan execution policy with valid properties'
 
-  it_behaves_like 'creating scan execution policy with invalid properties'
+  context 'with quarantine', quarantine: {
+    issue: [
+      'https://gitlab.com/gitlab-org/quality/test-failure-issues/-/issues/6887',
+      'https://gitlab.com/gitlab-org/quality/test-failure-issues/-/issues/6886',
+      'https://gitlab.com/gitlab-org/quality/test-failure-issues/-/issues/6885'
+    ]
+  } do
+    it_behaves_like 'creating scan execution policy with invalid properties'
+  end
 end

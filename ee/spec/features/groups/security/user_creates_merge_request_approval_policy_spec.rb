@@ -21,7 +21,18 @@ RSpec.describe "User creates merge request approval policy", :js, feature_catego
     stub_feature_flags(security_policies_split_view: false)
   end
 
-  it_behaves_like 'creating merge request approval policy with valid properties'
+  context 'with quarantine', quarantine: 'https://gitlab.com/gitlab-org/quality/test-failure-issues/-/issues/6920' do
+    it_behaves_like 'creating merge request approval policy with valid properties'
+  end
 
-  it_behaves_like 'creating merge request approval policy with invalid properties'
+  context 'with quarantine', quarantine: {
+    issue: [
+      'https://gitlab.com/gitlab-org/quality/test-failure-issues/-/issues/6930',
+      'https://gitlab.com/gitlab-org/quality/test-failure-issues/-/issues/6929',
+      'https://gitlab.com/gitlab-org/quality/test-failure-issues/-/issues/6928',
+      'https://gitlab.com/gitlab-org/quality/test-failure-issues/-/issues/6925'
+    ]
+  } do
+    it_behaves_like 'creating merge request approval policy with invalid properties'
+  end
 end

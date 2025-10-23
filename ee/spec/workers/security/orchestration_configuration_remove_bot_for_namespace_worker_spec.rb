@@ -5,7 +5,14 @@ require 'spec_helper'
 RSpec.describe Security::OrchestrationConfigurationRemoveBotForNamespaceWorker, feature_category: :security_policy_management do
   let(:management_worker) { Security::OrchestrationConfigurationRemoveBotWorker }
 
-  it_behaves_like 'bot management worker examples'
+  context 'with quarantine', quarantine: {
+    issue: [
+      'https://gitlab.com/gitlab-org/quality/test-failure-issues/-/issues/5435',
+      'https://gitlab.com/gitlab-org/quality/test-failure-issues/-/issues/5436'
+    ]
+  } do
+    it_behaves_like 'bot management worker examples'
+  end
 
   describe 'delete_configuration' do
     context 'with valid project_id' do
