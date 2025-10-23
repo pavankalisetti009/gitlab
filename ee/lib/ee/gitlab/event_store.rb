@@ -97,6 +97,11 @@ module EE
           store.subscribe ::Security::SyncPolicyWorker, to: ::Security::PolicyUpdatedEvent
           store.subscribe ::Security::SyncPolicyWorker, to: ::Security::PolicyResyncEvent
 
+          store.subscribe ::Security::ScanResultPolicies::CreateWarnModeAuditEventsWorker,
+            to: ::Security::PolicyCreatedEvent
+          store.subscribe ::Security::ScanResultPolicies::CreateWarnModeAuditEventsWorker,
+            to: ::Security::PolicyUpdatedEvent
+
           store.subscribe ::Security::SyncPolicyEventWorker, to: ::Repositories::ProtectedBranchCreatedEvent
           store.subscribe ::Security::SyncPolicyEventWorker, to: ::Repositories::ProtectedBranchDestroyedEvent
           store.subscribe ::Security::SyncPolicyEventWorker, to: ::Repositories::DefaultBranchChangedEvent
