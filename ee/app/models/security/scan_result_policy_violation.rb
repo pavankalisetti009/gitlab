@@ -54,6 +54,7 @@ module Security
 
     ERRORS = {
       scan_removed: 'SCAN_REMOVED',
+      target_scan_missing: 'TARGET_SCAN_MISSING',
       target_pipeline_missing: 'TARGET_PIPELINE_MISSING',
       artifacts_missing: 'ARTIFACTS_MISSING',
       evaluation_skipped: 'EVALUATION_SKIPPED',

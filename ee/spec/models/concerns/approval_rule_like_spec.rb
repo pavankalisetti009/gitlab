@@ -399,6 +399,22 @@ RSpec.describe ApprovalRuleLike, feature_category: :source_code_management do
       end
     end
 
+    describe '#scanners_with_default_fallback' do
+      let(:specified_scanners) { %w[dependency_scanning secret_detection] }
+
+      before do
+        subject.scanners = specified_scanners
+      end
+
+      it { expect(subject.scanners_with_default_fallback).to eq(specified_scanners) }
+
+      context 'when scanners are empty' do
+        let(:specified_scanners) { [] }
+
+        it { expect(subject.scanners_with_default_fallback).to eq(ApprovalProjectRule::SUPPORTED_SCANNERS) }
+      end
+    end
+
     describe 'validation' do
       context 'when value is too big' do
         it 'is invalid' do
