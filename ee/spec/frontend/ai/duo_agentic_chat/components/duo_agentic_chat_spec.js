@@ -1576,6 +1576,36 @@ describe('Duo Agentic Chat', () => {
     });
   });
 
+  describe('Fetching foundational agents', () => {
+    describe('when project and namespace are available', () => {
+      it('passes project_id and namespace_id', async () => {
+        createComponent({
+          propsData: { projectId: MOCK_PROJECT_ID, namespaceId: MOCK_NAMESPACE_ID },
+        });
+
+        await waitForPromises();
+
+        expect(aiFoundationalChatAgentsQueryMock).toHaveBeenCalledWith({
+          namespaceId: MOCK_NAMESPACE_ID,
+          projectId: MOCK_PROJECT_ID,
+        });
+      });
+    });
+
+    describe('when project and namespace are not available', () => {
+      it('does not pass project_id and namespace_id', async () => {
+        createComponent({ propsData: {} });
+
+        await waitForPromises();
+
+        expect(aiFoundationalChatAgentsQueryMock).toHaveBeenCalledWith({
+          namespaceId: null,
+          projectId: null,
+        });
+      });
+    });
+  });
+
   describe('agent selection', () => {
     let agent;
 

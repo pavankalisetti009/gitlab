@@ -1,5 +1,5 @@
-query getFoundationalChatAgents {
-  aiFoundationalChatAgents {
+query getFoundationalChatAgents($projectId: ProjectID, $namespaceId: NamespaceID) {
+  aiFoundationalChatAgents(projectId: $projectId, namespaceId: $namespaceId) {
     nodes {
       id
       name
