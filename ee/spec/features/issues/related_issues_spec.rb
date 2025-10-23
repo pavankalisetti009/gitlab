@@ -93,7 +93,8 @@ RSpec.describe 'Related issues', :js, feature_category: :team_planning do
           end
         end
 
-        context 'when clicking the bottom `Close issue` button below the comment textarea', :aggregate_failures do
+        context 'when clicking the bottom `Close issue` button below the comment textarea', :aggregate_failures,
+          quarantine: 'https://gitlab.com/gitlab-org/quality/test-failure-issues/-/issues/6924' do
           it 'shows a modal to confirm closing the issue' do
             within_testid('work-item-relationships') do
               add_linked_issue(issue_b, "is blocked by")

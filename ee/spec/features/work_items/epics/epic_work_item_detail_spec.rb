@@ -55,9 +55,21 @@ RSpec.describe 'Epic work item detail', :js, feature_category: :team_planning do
     it_behaves_like 'work items assignees'
     it_behaves_like 'work items labels', 'group'
     it_behaves_like 'work items rolled up dates'
-    it_behaves_like 'work items health status'
+
+    context 'with quarantine', quarantine: {
+      issue: [
+        'https://gitlab.com/gitlab-org/quality/test-failure-issues/-/issues/2929',
+        'https://gitlab.com/gitlab-org/quality/test-failure-issues/-/issues/2924'
+      ]
+    } do
+      it_behaves_like 'work items health status'
+    end
+
     it_behaves_like 'work items color'
-    it_behaves_like 'work items time tracking'
+
+    context 'with quarantine', quarantine: 'https://gitlab.com/gitlab-org/quality/test-failure-issues/-/issues/5429' do
+      it_behaves_like 'work items time tracking'
+    end
 
     describe 'work item hierarchy' do
       let(:child1) { create(:work_item, :epic_with_legacy_epic, namespace: group, title: 'Child 1') }
@@ -105,7 +117,8 @@ RSpec.describe 'Epic work item detail', :js, feature_category: :team_planning do
     end
   end
 
-  context 'without epics license' do
+  context 'without epics license',
+    quarantine: 'https://gitlab.com/gitlab-org/quality/test-failure-issues/-/issues/6964' do
     before do
       stub_licensed_features(epics: false)
       sign_in(user)

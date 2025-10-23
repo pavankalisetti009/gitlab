@@ -1763,7 +1763,10 @@ RSpec.describe 'Query.work_item(id)', feature_category: :team_planning do
           )
         end
 
-        it_behaves_like 'avoids N+1 queries for processing participants'
+        context 'with quarantine',
+          quarantine: 'https://gitlab.com/gitlab-org/quality/test-failure-issues/-/issues/2153' do
+          it_behaves_like 'avoids N+1 queries for processing participants'
+        end
       end
 
       describe 'participants widget' do
