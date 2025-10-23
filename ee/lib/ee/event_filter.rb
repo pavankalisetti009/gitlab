@@ -32,6 +32,8 @@ module EE
       end
     end
 
+    private
+
     override :filters
     def filters
       super << EPIC
