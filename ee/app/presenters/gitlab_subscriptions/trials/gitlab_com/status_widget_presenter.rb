@@ -27,8 +27,7 @@ module GitlabSubscriptions
               group_id: namespace.id,
               trial_discover_page_path: group_discover_path(namespace),
               purchase_now_url: group_billings_path(namespace),
-              feature_id: EXPIRED_TRIAL_WIDGET,
-              dismiss_endpoint: group_callouts_path
+              feature_id: EXPIRED_TRIAL_WIDGET
             }
           }
         end

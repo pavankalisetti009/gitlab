@@ -36,8 +36,7 @@ RSpec.describe GitlabSubscriptions::Trials::DuoProStatusWidgetPresenter, :saas, 
             group_id: group.id,
             trial_discover_page_path: group_add_ons_discover_duo_pro_path(group),
             purchase_now_url: ::Gitlab::Routing.url_helpers.subscription_portal_add_saas_duo_pro_seats_url(group.id),
-            feature_id: described_class::EXPIRED_TRIAL_WIDGET,
-            dismiss_endpoint: group_callouts_path
+            feature_id: described_class::EXPIRED_TRIAL_WIDGET
           }
         )
       end
