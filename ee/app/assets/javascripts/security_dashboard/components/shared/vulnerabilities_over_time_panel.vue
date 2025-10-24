@@ -2,6 +2,7 @@
 import ExtendedDashboardPanel from '~/vue_shared/components/customizable_dashboard/extended_dashboard_panel.vue';
 import { s__ } from '~/locale';
 import { formatDate, getDateInPast } from '~/lib/utils/datetime_utility';
+import { readFromUrl, writeToUrl } from 'ee/security_dashboard/utils/panel_state_url_sync';
 import VulnerabilitiesOverTimeChart from 'ee/security_dashboard/components/shared/charts/open_vulnerabilities_over_time.vue';
 import projectVulnerabilitiesOverTime from 'ee/security_dashboard/graphql/queries/project_vulnerabilities_over_time.query.graphql';
 import groupVulnerabilitiesOverTime from 'ee/security_dashboard/graphql/queries/group_vulnerabilities_over_time.query.graphql';
@@ -15,6 +16,10 @@ const TIME_PERIODS = {
   SIXTY_DAYS: { key: 'sixtyDays', startDays: 60, endDays: 31 },
   NINETY_DAYS: { key: 'ninetyDays', startDays: 90, endDays: 61 },
 };
+
+const PANEL_ID = 'vulnerabilitiesOverTime';
+const GROUP_BY_DEFAULT = 'severity';
+const TIME_PERIOD_DEFAULT = 30;
 
 const SCOPE_CONFIG = {
   project: {
@@ -56,16 +61,26 @@ export default {
   data() {
     return {
       fetchError: false,
-      groupedBy: 'severity',
-      selectedTimePeriod: 30,
+      groupedBy: readFromUrl({
+        panelId: PANEL_ID,
+        paramName: 'groupBy',
+        defaultValue: GROUP_BY_DEFAULT,
+      }),
+      selectedTimePeriod: readFromUrl({
+        panelId: PANEL_ID,
+        paramName: 'timePeriod',
+        defaultValue: TIME_PERIOD_DEFAULT,
+      }),
+      severity: readFromUrl({
+        panelId: PANEL_ID,
+        paramName: 'severity',
+        defaultValue: [],
+      }),
       isLoading: false,
       chartData: {
         thirtyDays: [],
         sixtyDays: [],
         ninetyDays: [],
-      },
-      panelLevelFilters: {
-        severity: [],
       },
     };
   },
@@ -76,7 +91,7 @@ export default {
     combinedFilters() {
       return {
         ...this.filters,
-        ...this.panelLevelFilters,
+        severity: this.severity,
       };
     },
     hasChartData() {
@@ -93,7 +108,7 @@ export default {
     },
     baseQueryVariables() {
       const baseVariables = {
-        severity: this.panelLevelFilters.severity,
+        severity: this.severity,
         includeBySeverity: this.groupedBy === 'severity',
         includeByReportType: this.groupedBy === 'reportType',
         fullPath: this.fullPath,
@@ -121,8 +136,30 @@ export default {
       deep: true,
       immediate: true,
     },
-    selectedTimePeriod() {
+    selectedTimePeriod(value) {
+      writeToUrl({
+        panelId: PANEL_ID,
+        paramName: 'timePeriod',
+        value,
+        defaultValue: TIME_PERIOD_DEFAULT,
+      });
       this.fetchChartData();
+    },
+    groupedBy(value) {
+      writeToUrl({
+        panelId: PANEL_ID,
+        paramName: 'groupBy',
+        value,
+        defaultValue: GROUP_BY_DEFAULT,
+      });
+    },
+    severity(value) {
+      writeToUrl({
+        panelId: PANEL_ID,
+        paramName: 'severity',
+        value,
+        defaultValue: [],
+      });
     },
   },
   methods: {
@@ -173,7 +210,7 @@ export default {
   >
     <template #filters>
       <over-time-period-selector v-model="selectedTimePeriod" class="gl-ml-3 gl-mr-2" />
-      <over-time-severity-filter v-model="panelLevelFilters.severity" class="gl-mr-2" />
+      <over-time-severity-filter v-model="severity" class="gl-mr-2" />
       <over-time-group-by v-model="groupedBy" />
     </template>
     <template #body>

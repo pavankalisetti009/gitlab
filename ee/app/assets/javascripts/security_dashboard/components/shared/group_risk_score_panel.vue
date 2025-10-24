@@ -1,11 +1,17 @@
 <script>
 import { GlDashboardPanel, GlBadge, GlTooltipDirective } from '@gitlab/ui';
 import { sprintf, s__ } from '~/locale';
+import { readFromUrl, writeToUrl } from 'ee/security_dashboard/utils/panel_state_url_sync';
 import groupTotalRiskScore from 'ee/security_dashboard/graphql/queries/group_total_risk_score.query.graphql';
 import TotalRiskScore from './charts/total_risk_score.vue';
 import RiskScoreByProject from './charts/risk_score_by_project.vue';
 import RiskScoreGroupBy from './risk_score_group_by.vue';
 import RiskScoreTooltip from './risk_score_tooltip.vue';
+
+const PANEL_ID = 'riskScore';
+const GROUP_BY_PARAM_NAME = 'groupBy';
+const GROUP_BY_DEFAULT = 'default';
+const GROUP_BY_PROJECT = 'project';
 
 export default {
   name: 'GroupRiskScorePanel',
@@ -32,7 +38,11 @@ export default {
       riskScore: 0,
       projects: [],
       hasFetchError: false,
-      groupedBy: 'default',
+      groupedBy: readFromUrl({
+        panelId: PANEL_ID,
+        paramName: GROUP_BY_PARAM_NAME,
+        defaultValue: GROUP_BY_DEFAULT,
+      }),
       isOverProjectCountThreshold: false,
     };
   },
@@ -43,8 +53,8 @@ export default {
         return {
           fullPath: this.groupFullPath,
           projectId: this.filters.projectId,
-          includeByDefault: this.groupedBy === 'default',
-          includeByProject: this.groupedBy === 'project',
+          includeByDefault: this.groupedBy === GROUP_BY_DEFAULT,
+          includeByProject: this.groupedBy === GROUP_BY_PROJECT,
           projectCount: this.$options.projectCountThreshold,
         };
       },
@@ -67,7 +77,7 @@ export default {
   },
   computed: {
     shouldShowMaxProjectsBadge() {
-      return this.groupedBy === 'project' && this.isOverProjectCountThreshold;
+      return this.groupedBy === GROUP_BY_PROJECT && this.isOverProjectCountThreshold;
     },
     maxProjectsTooltipTitle() {
       return sprintf(
@@ -76,6 +86,16 @@ export default {
         ),
         { count: this.$options.projectCountThreshold },
       );
+    },
+  },
+  watch: {
+    groupedBy(value) {
+      writeToUrl({
+        panelId: PANEL_ID,
+        paramName: GROUP_BY_PARAM_NAME,
+        value,
+        defaultValue: GROUP_BY_DEFAULT,
+      });
     },
   },
   projectCountThreshold: 96,

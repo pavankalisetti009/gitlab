@@ -1,6 +1,7 @@
 import { nextTick } from 'vue';
 import { GlFilteredSearch } from '@gitlab/ui';
 import { markRaw } from '~/lib/utils/vue3compat/mark_raw';
+import * as urlUtils from '~/lib/utils/url_utility';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import setWindowLocation from 'helpers/set_window_location_helper';
 import FilteredSearch from 'ee/security_dashboard/components/shared/security_dashboard_filtered_search/filtered_search.vue';
@@ -54,8 +55,8 @@ describe('Security Dashboard Filtered Search', () => {
     await nextTick();
   };
 
-  const expectUrlToBe = (expectedUrl) => {
-    expect(window.history.pushState).toHaveBeenCalledWith({}, '', expectedUrl);
+  const expectUrlToBe = (url) => {
+    expect(urlUtils.updateHistory).toHaveBeenCalledWith({ url, replace: true });
   };
 
   const getLastEmittedFilters = () => {
@@ -63,7 +64,7 @@ describe('Security Dashboard Filtered Search', () => {
   };
 
   beforeEach(() => {
-    jest.spyOn(window.history, 'pushState');
+    jest.spyOn(urlUtils, 'updateHistory');
   });
 
   afterEach(() => {
@@ -194,7 +195,7 @@ describe('Security Dashboard Filtered Search', () => {
       setWindowLocation('?tokenA=5,10');
       createWrapper();
 
-      expect(window.history.pushState).not.toHaveBeenCalled();
+      expect(urlUtils.updateHistory).not.toHaveBeenCalled();
     });
   });
 
@@ -207,14 +208,14 @@ describe('Security Dashboard Filtered Search', () => {
     it('preserves existing URL parameters when adding filter', async () => {
       await updateToken('tokenA', ['5', '10']);
 
-      expectUrlToBe('/?tab=test&tokenA=5%2C10');
+      expectUrlToBe('http://test.host/?tab=test&tokenA=5,10');
     });
 
     it('handles multiple tokens in URL', async () => {
       await updateToken('tokenA', ['5']);
       await updateToken('tokenB', ['15', '20']);
 
-      expectUrlToBe('/?tab=test&tokenA=5&tokenB=15%2C20');
+      expectUrlToBe('http://test.host/?tab=test&tokenA=5&tokenB=15,20');
     });
 
     it('removes token parameter on destroy while preserving others', async () => {
@@ -222,7 +223,7 @@ describe('Security Dashboard Filtered Search', () => {
       await updateToken('tokenB', ['15']);
       await destroyToken('tokenA');
 
-      expectUrlToBe('/?tab=test&tokenB=15');
+      expectUrlToBe('http://test.host/?tab=test&tokenB=15');
     });
 
     it('removes all filter parameters on clear', async () => {
@@ -230,7 +231,7 @@ describe('Security Dashboard Filtered Search', () => {
       await updateToken('tokenB', ['15']);
       await clearFilters();
 
-      expectUrlToBe('/?tab=test');
+      expectUrlToBe('http://test.host/?tab=test');
     });
   });
 });

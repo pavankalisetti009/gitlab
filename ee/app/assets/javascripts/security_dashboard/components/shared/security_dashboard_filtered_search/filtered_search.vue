@@ -2,6 +2,7 @@
 import { nextTick } from 'vue';
 import { GlFilteredSearch } from '@gitlab/ui';
 import { isEqual } from 'lodash';
+import { setUrlParams, updateHistory } from '~/lib/utils/url_utility';
 import { ALL_ID } from 'ee/security_dashboard/components/shared/filters/constants';
 
 export default {
@@ -26,7 +27,7 @@ export default {
     const { initialValue, newFilters } = this.tokens.reduce(
       (acc, token) => {
         const paramValue = params.get(token.type);
-        const data = paramValue?.split(',').filter(Boolean);
+        const data = paramValue?.split(',').filter((i) => i !== '');
 
         if (data?.length > 0) {
           acc.newFilters[token.type] = data;
@@ -62,17 +63,16 @@ export default {
       const params = this.tokens.reduce((acc, { type }) => {
         const filterValue = this.filters[type];
         if (filterValue?.length > 0) {
-          acc.set(type, filterValue.join(','));
+          acc[type] = filterValue.join(',');
         } else {
-          acc.delete(type);
+          acc[type] = undefined;
         }
         return acc;
-      }, new URLSearchParams(window.location.search));
+      }, {});
+      // Passing true for last param to make sure params are decoded
+      const url = setUrlParams(params, window.location.href, false, false, true);
 
-      const newUrl = params.toString()
-        ? `${window.location.pathname}?${params.toString()}`
-        : window.location.pathname;
-      window.history.pushState({}, '', newUrl);
+      updateHistory({ url, replace: true });
     },
     async handleTokenComplete({ type }) {
       // Need to wait for `this.value` to have been updated
