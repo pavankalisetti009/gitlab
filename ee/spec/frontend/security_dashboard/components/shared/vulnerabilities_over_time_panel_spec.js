@@ -1,7 +1,9 @@
-import Vue from 'vue';
+import Vue, { nextTick } from 'vue';
 import VueApollo from 'vue-apollo';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
+import setWindowLocation from 'helpers/set_window_location_helper';
 import ExtendedDashboardPanel from '~/vue_shared/components/customizable_dashboard/extended_dashboard_panel.vue';
+import * as panelStateUrlSync from 'ee/security_dashboard/utils/panel_state_url_sync';
 import VulnerabilitiesOverTimeChart from 'ee/security_dashboard/components/shared/charts/open_vulnerabilities_over_time.vue';
 import VulnerabilitiesOverTimePanel from 'ee/security_dashboard/components/shared/vulnerabilities_over_time_panel.vue';
 import OverTimeGroupBy from 'ee/security_dashboard/components/shared/over_time_group_by.vue';
@@ -252,6 +254,26 @@ describe('VulnerabilitiesOverTimePanel', () => {
         }),
       );
     });
+
+    it('initializes time period if URL parameter is set', () => {
+      setWindowLocation('?vulnerabilitiesOverTime.timePeriod=60');
+      createComponent();
+
+      expect(findOverTimePeriodSelector().props('value')).toEqual(60);
+    });
+
+    it('calls writeToUrl when time period is set', async () => {
+      jest.spyOn(panelStateUrlSync, 'writeToUrl');
+      createComponent();
+
+      await findOverTimePeriodSelector().vm.$emit('input', 90);
+      expect(panelStateUrlSync.writeToUrl).toHaveBeenCalledWith({
+        panelId: 'vulnerabilitiesOverTime',
+        paramName: 'timePeriod',
+        value: 90,
+        defaultValue: 30,
+      });
+    });
   });
 
   describe('filters', () => {
@@ -271,6 +293,76 @@ describe('VulnerabilitiesOverTimePanel', () => {
           severity: appliedFilters,
         }),
       );
+    });
+
+    it('initializes severity if URL parameter is set', () => {
+      setWindowLocation('?vulnerabilitiesOverTime.severity=HIGH%2CLOW');
+      createComponent();
+
+      expect(findSeverityFilter().props('value')).toMatchObject(['HIGH', 'LOW']);
+    });
+
+    it('calls writeToUrl when severity is set', async () => {
+      jest.spyOn(panelStateUrlSync, 'writeToUrl');
+      createComponent();
+
+      await findSeverityFilter().vm.$emit('input', ['CRITICAL', 'MEDIUM']);
+      expect(panelStateUrlSync.writeToUrl).toHaveBeenCalledWith({
+        panelId: 'vulnerabilitiesOverTime',
+        paramName: 'severity',
+        value: ['CRITICAL', 'MEDIUM'],
+        defaultValue: [],
+      });
+    });
+  });
+
+  describe('group by functionality', () => {
+    beforeEach(() => {
+      createComponent();
+    });
+
+    it('switches to report type grouping when report type button is clicked', async () => {
+      await waitForPromises();
+      const overTimeGroupBy = findOverTimeGroupBy();
+
+      await overTimeGroupBy.vm.$emit('input', 'reportType');
+      await nextTick();
+
+      expect(overTimeGroupBy.props('value')).toBe('reportType');
+    });
+
+    it('switches back to severity grouping when severity button is clicked', async () => {
+      await waitForPromises();
+      const overTimeGroupBy = findOverTimeGroupBy();
+
+      await overTimeGroupBy.vm.$emit('input', 'reportType');
+      await nextTick();
+
+      await overTimeGroupBy.vm.$emit('input', 'severity');
+      await nextTick();
+
+      expect(overTimeGroupBy.props('value')).toBe('severity');
+    });
+
+    it('initializes with report type grouping if URL parameter is set', () => {
+      setWindowLocation('?vulnerabilitiesOverTime.groupBy=reportType');
+      createComponent();
+
+      expect(findOverTimeGroupBy().props('value')).toBe('reportType');
+    });
+
+    it('calls writeToUrl when grouping is set to report type', async () => {
+      jest.spyOn(panelStateUrlSync, 'writeToUrl');
+
+      findOverTimeGroupBy().vm.$emit('input', 'reportType');
+      await nextTick();
+
+      expect(panelStateUrlSync.writeToUrl).toHaveBeenCalledWith({
+        panelId: 'vulnerabilitiesOverTime',
+        paramName: 'groupBy',
+        value: 'reportType',
+        defaultValue: 'severity',
+      });
     });
   });
 

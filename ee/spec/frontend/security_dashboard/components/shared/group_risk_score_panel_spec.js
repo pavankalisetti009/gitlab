@@ -5,6 +5,8 @@ import { GlDashboardPanel, GlBadge } from '@gitlab/ui';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import createMockApollo from 'helpers/mock_apollo_helper';
 import waitForPromises from 'helpers/wait_for_promises';
+import setWindowLocation from 'helpers/set_window_location_helper';
+import * as panelStateUrlSync from 'ee/security_dashboard/utils/panel_state_url_sync';
 import GroupRiskScorePanel from 'ee/security_dashboard/components/shared/group_risk_score_panel.vue';
 import TotalRiskScore from 'ee/security_dashboard/components/shared/charts/total_risk_score.vue';
 import RiskScoreByProject from 'ee/security_dashboard/components/shared/charts/risk_score_by_project.vue';
@@ -97,6 +99,10 @@ describe('GroupRiskScorePanel', () => {
     createComponent();
   });
 
+  afterEach(() => {
+    setWindowLocation('');
+  });
+
   describe('component rendering', () => {
     it('sets the correct title for the dashboard panel', () => {
       expect(findDashboardPanel().props('title')).toBe('Risk score');
@@ -158,6 +164,27 @@ describe('GroupRiskScorePanel', () => {
       await nextTick();
 
       expect(riskScoreGroupBy.props('value')).toBe('default');
+    });
+
+    it('initializes with project grouping if URL parameter is set', () => {
+      setWindowLocation('?riskScore.groupBy=project');
+      createComponent();
+
+      expect(findRiskScoreGroupBy().props('value')).toBe('project');
+    });
+
+    it('calls writeToUrl when grouping is set to project', async () => {
+      jest.spyOn(panelStateUrlSync, 'writeToUrl');
+
+      findRiskScoreGroupBy().vm.$emit('input', 'project');
+      await nextTick();
+
+      expect(panelStateUrlSync.writeToUrl).toHaveBeenCalledWith({
+        panelId: 'riskScore',
+        paramName: 'groupBy',
+        value: 'project',
+        defaultValue: 'default',
+      });
     });
   });
 
