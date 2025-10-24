@@ -55,7 +55,8 @@ RSpec.describe "Merge request > User sees security widget",
     end
   end
 
-  context "when vulnerabilities in an MR have already been detected on main" do
+  context "when vulnerabilities in an MR have already been detected on main",
+    quarantine: 'https://gitlab.com/gitlab-org/quality/test-failure-issues/-/issues/7074' do
     let!(:ci_pipeline) do
       create(
         :ci_pipeline,
