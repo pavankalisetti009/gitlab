@@ -74,6 +74,7 @@ RSpec.describe 'Query.project(id).dashboards.panels(id).visualization', feature_
         6 | 'AiImpactTable' | 'Pipeline metrics for the %{namespaceName} %{namespaceType}'
         7 | 'BarChart' | 'Code Suggestions acceptance rate by language (Last 30 days)'
         8 | 'AreaChart' | 'Code generation volume trends (Last 180 days)'
+        9 | 'DataTable' | 'Code Suggestions accepted by user'
       end
 
       with_them do

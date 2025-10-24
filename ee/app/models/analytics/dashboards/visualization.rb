@@ -70,6 +70,7 @@ module Analytics
         pipeline_metrics_table
         code_suggestions_acceptance_rate_by_language_chart
         code_generation_volume_trends_chart
+        user_metrics_table
       ].freeze
 
       CONTRIBUTIONS_DASHBOARD_PATH = 'ee/lib/gitlab/analytics/contributions_dashboard/visualizations'

@@ -1,0 +1,16 @@
+---
+version: 1
+type: DataTable
+data:
+  type: user_ai_usage_data
+  query: {}
+options:
+  fields:
+    - key: 'user'
+      component: 'UserLink'
+    - key: 'user.lastDuoActivityOn'
+      label: 'Last duo activity'
+    - key: 'codeSuggestionsAcceptedCount'
+      label: 'Code suggestions accepted'
+      thClass: "gl-text-right"
+      tdClass: "gl-text-right"

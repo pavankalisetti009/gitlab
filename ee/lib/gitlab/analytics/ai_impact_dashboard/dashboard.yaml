@@ -74,3 +74,10 @@ panels:
       width: 12
       height: 4
     options: {}
+  - title: 'Code Suggestions accepted by user'
+    visualization: user_metrics_table
+    gridAttributes:
+      yPos: 20
+      xPos: 0
+      width: 12
+      height: 12
