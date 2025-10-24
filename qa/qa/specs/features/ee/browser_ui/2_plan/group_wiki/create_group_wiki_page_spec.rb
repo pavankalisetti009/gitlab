@@ -14,7 +14,10 @@ module QA
         let(:group) { create(:group) }
 
         it 'creates a new page',
-          testcase: 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/347689' do
+          testcase: 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/347689', quarantine: {
+            type: :broken,
+            issue: 'https://gitlab.com/gitlab-org/gitlab/-/issues/578123'
+          } do
           group.visit!
 
           Page::Group::Menu.perform(&:go_to_wiki)
@@ -38,7 +41,10 @@ module QA
         let(:wiki) { create(:group_wiki_page) }
 
         it 'adds a second page',
-          testcase: 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/347693' do
+          testcase: 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/347693', quarantine: {
+            type: :broken,
+            issue: 'https://gitlab.com/gitlab-org/gitlab/-/issues/578123'
+          } do
           wiki.visit!
 
           EE::Page::Group::Wiki::Show.perform(&:click_new_page)
