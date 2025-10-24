@@ -7,7 +7,13 @@ FactoryBot.define do
     trait :trial do
       block_changes_at { nil }
       restrictions do
-        { trial: true }
+        seats_attrs = seats ? { active_user_count: seats } : {}
+        {
+          add_ons: { 'GitLab_FileLocks' => 1, 'GitLab_Auditor_User' => 1 },
+          plan: plan,
+          subscription_id: '0000',
+          trial: true
+        }.merge(seats_attrs)
       end
     end
 

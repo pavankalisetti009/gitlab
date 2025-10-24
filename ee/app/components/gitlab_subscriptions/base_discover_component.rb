@@ -102,6 +102,10 @@ module GitlabSubscriptions
       )
     end
 
+    def show_hand_raise_lead?
+      true
+    end
+
     def hand_raise_lead_data
       {
         namespace_id: namespace.id,

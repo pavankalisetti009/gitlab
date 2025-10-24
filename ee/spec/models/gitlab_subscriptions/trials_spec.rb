@@ -166,6 +166,26 @@ RSpec.describe GitlabSubscriptions::Trials, feature_category: :subscription_mana
     end
   end
 
+  describe '.self_managed_ultimate_trial?' do
+    let(:license) { build(:license, :ultimate_trial) }
+
+    subject { described_class.self_managed_ultimate_trial?(license) }
+
+    it { is_expected.to be(true) }
+
+    context 'when plan is not ultimate' do
+      let(:license) { build(:license, :trial) }
+
+      it { is_expected.to be(false) }
+    end
+
+    context 'when it is not trial' do
+      let(:license) { build(:license, :ultimate) }
+
+      it { is_expected.to be(false) }
+    end
+  end
+
   describe '.namespace_with_mid_trial_premium?', :saas do
     let_it_be(:free_namespace) { create(:group) }
     let_it_be(:premium_namespace) { create(:group_with_plan, plan: :premium_plan) }

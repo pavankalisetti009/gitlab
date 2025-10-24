@@ -20,5 +20,18 @@ FactoryBot.define do
 
     # Disable validations when creating an expired license key
     to_create { |instance| instance.save!(validate: !expired) }
+
+    trait :trial do
+      trial { true }
+    end
+
+    trait :ultimate do
+      plan { License::ULTIMATE_PLAN }
+    end
+
+    trait :ultimate_trial do
+      ultimate
+      trial
+    end
   end
 end

@@ -17,7 +17,8 @@
           category: :primary, variant: :confirm,
           button_options: { data: { testid: 'buy-now-top', track_action: 'click_buy_now', track_label: trial_status_cta_label } }) do
           = cta_button_text
-      .js-hand-raise-lead-trigger{ data: hand_raise_lead_data }
+      - if show_hand_raise_lead?
+        .js-hand-raise-lead-trigger{ data: hand_raise_lead_data }
   = link_to hero_video, target: '_blank' do
     = image_tag(hero_thumbnail, class: 'gl-w-full gl-rounded-lg')
 
@@ -56,4 +57,5 @@
       button_options: { class: 'gl-w-full gl-mb-3 @sm/panel:gl-w-auto @sm/panel:gl-mr-3 @sm/panel:gl-mb-0',
       data: { testid: 'buy-now-bottom', track_action: 'click_buy_now', track_label: trial_status_cta_label } }) do
       = cta_button_text
-  .js-hand-raise-lead-trigger{ data: hand_raise_lead_data }
+  - if show_hand_raise_lead?
+    .js-hand-raise-lead-trigger{ data: hand_raise_lead_data }

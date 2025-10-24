@@ -52,5 +52,9 @@ module GitlabSubscriptions
         trial_starts_on
       ).exists?
     end
+
+    def self.self_managed_ultimate_trial?(license)
+      license.ultimate? && !!license.trial?
+    end
   end
 end
