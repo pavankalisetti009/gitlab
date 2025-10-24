@@ -5,12 +5,8 @@ import {
   GlDisclosureDropdown,
   GlDisclosureDropdownItem,
 } from '@gitlab/ui';
-import { __, s__ } from '~/locale';
-import {
-  CREATION_CONTEXT_LIST_ROUTE,
-  sprintfWorkItem,
-  WORK_ITEM_TYPE_NAME_OBJECTIVE,
-} from '~/work_items/constants';
+import { __ } from '~/locale';
+import { CREATION_CONTEXT_LIST_ROUTE, WORK_ITEM_TYPE_NAME_OBJECTIVE } from '~/work_items/constants';
 
 export default {
   CREATION_CONTEXT_LIST_ROUTE,
@@ -18,7 +14,6 @@ export default {
   i18n: {
     newIssueLabel: __('New issue'),
     toggleSrText: __('Issue type'),
-    newObjectiveLabel: sprintfWorkItem(s__('WorkItem|New %{workItemType}')),
   },
   components: {
     GlDisclosureDropdown,

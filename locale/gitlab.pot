@@ -74621,15 +74621,39 @@ msgstr ""
 msgid "WorkItems|Your preferences"
 msgstr ""
 
-msgid "WorkItem| %{workItemType}s closed"
-msgstr ""
-
 msgid "WorkItem|%d item"
 msgid_plural "WorkItem|%d items"
 msgstr[0] ""
 msgstr[1] ""
 
+msgid "WorkItem|%{count} epics closed"
+msgstr ""
+
+msgid "WorkItem|%{count} incidents closed"
+msgstr ""
+
+msgid "WorkItem|%{count} issues closed"
+msgstr ""
+
+msgid "WorkItem|%{count} key results closed"
+msgstr ""
+
 msgid "WorkItem|%{count} more assignees"
+msgstr ""
+
+msgid "WorkItem|%{count} objectives closed"
+msgstr ""
+
+msgid "WorkItem|%{count} requirements closed"
+msgstr ""
+
+msgid "WorkItem|%{count} tasks closed"
+msgstr ""
+
+msgid "WorkItem|%{count} test cases closed"
+msgstr ""
+
+msgid "WorkItem|%{count} tickets closed"
 msgstr ""
 
 msgid "WorkItem|%{invalidWorkItemsList} cannot be added: Cannot assign a non-confidential %{childWorkItemType} to a confidential parent %{parentWorkItemType}. Make the selected %{childWorkItemType} confidential and try again."
@@ -75275,6 +75299,9 @@ msgid "WorkItem|New %{workItemType}"
 msgstr ""
 
 msgid "WorkItem|New custom field"
+msgstr ""
+
+msgid "WorkItem|New item"
 msgstr ""
 
 msgid "WorkItem|New related %{workItemType}"
