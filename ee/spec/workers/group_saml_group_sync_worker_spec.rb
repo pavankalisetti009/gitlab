@@ -210,6 +210,52 @@ RSpec.describe GroupSamlGroupSyncWorker, feature_category: :user_management do
             expect(top_level_member_access_level).to eq(Gitlab::Access::GUEST)
           end
         end
+
+        context 'with BSO (Block Seat Overages) enabled for default membership' do
+          before do
+            stub_saas_features(gitlab_com_subscriptions: true)
+            stub_feature_flags(bso_minimal_access_fallback: true)
+            stub_licensed_features(group_saml: true, saml_group_sync: true, minimal_access_role: true)
+
+            top_level_group.namespace_settings.update!(seat_control: :block_overages)
+          end
+
+          context 'without available seats' do
+            before do
+              allow(GitlabSubscriptions::MemberManagement::BlockSeatOverages)
+                .to receive(:seats_available_for?).and_return(false)
+            end
+
+            it 'adds user with MINIMAL_ACCESS for default membership when reverting' do
+              top_level_group.add_member(user, Gitlab::Access::MAINTAINER)
+
+              expect_metadata_logging_call({ added: 0, updated: 1, removed: 0 })
+
+              perform([group_link.id])
+
+              member = top_level_group.all_group_members.find_by(user: user)
+              expect(member&.access_level).to eq(Gitlab::Access::MINIMAL_ACCESS)
+            end
+          end
+
+          context 'with available seats' do
+            before do
+              allow(GitlabSubscriptions::MemberManagement::BlockSeatOverages)
+                .to receive(:seats_available_for?).and_return(true)
+            end
+
+            it 'adds user with the original default membership role' do
+              top_level_group.add_member(user, Gitlab::Access::MAINTAINER)
+
+              expect_metadata_logging_call({ added: 0, updated: 1, removed: 0 })
+
+              perform([group_link.id])
+
+              member = top_level_group.all_group_members.find_by(user: user)
+              expect(member&.access_level).to eq(Gitlab::Access::GUEST)
+            end
+          end
+        end
       end
     end
 

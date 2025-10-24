@@ -131,6 +131,73 @@ RSpec.describe Gitlab::Auth::GroupSaml::MembershipUpdater, feature_category: :sy
     it_behaves_like 'not enqueueing Microsoft Group Sync worker'
   end
 
+  context 'with BSO (Block Seat Overages) enabled', :saas do
+    let_it_be(:auth_hash) { {} }
+
+    before do
+      stub_feature_flags(bso_minimal_access_fallback: true)
+      stub_licensed_features(minimal_access_role: true)
+    end
+
+    context 'without available seats' do
+      before do
+        group.namespace_settings.update!(seat_control: :block_overages)
+
+        allow(GitlabSubscriptions::MemberManagement::BlockSeatOverages)
+          .to receive(:seats_available_for?).and_return(false)
+      end
+
+      it 'adds user with MINIMAL_ACCESS instead of the desired access level' do
+        expect { update_membership }.to change { group.all_group_members.count }.by(1)
+
+        member = group.all_group_members.find_by(user: user)
+        expect(member).not_to be_nil
+        expect(member.access_level).to eq(Gitlab::Access::MINIMAL_ACCESS)
+      end
+
+      it 'logs BSO adjustment when access level is downgraded' do
+        expect(Gitlab::AppLogger).to receive(:info).with(
+          hash_including(
+            message: 'Group membership access level adjusted due to BSO seat limits',
+            group_id: group.id,
+            group_path: group.full_path,
+            user_id: user.id,
+            requested_access_level: Gitlab::Access::DEVELOPER,
+            adjusted_access_level: Gitlab::Access::MINIMAL_ACCESS,
+            feature_flag: 'bso_minimal_access_fallback'
+          )
+        )
+
+        update_membership
+      end
+    end
+
+    context 'with available seats' do
+      before do
+        group.namespace_settings.update!(seat_control: :block_overages)
+
+        allow(GitlabSubscriptions::MemberManagement::BlockSeatOverages)
+          .to receive(:seats_available_for?).and_return(true)
+      end
+
+      it 'adds user with the original desired access level' do
+        expect { update_membership }.to change { group.members.count }.by(1)
+
+        member = group.member(user)
+        expect(member).not_to be_nil
+        expect(member.access_level).to eq(Gitlab::Access::DEVELOPER)
+      end
+
+      it 'does not log BSO adjustment' do
+        expect(Gitlab::AppLogger).not_to receive(:info).with(
+          hash_including(message: 'Group membership access level adjusted due to BSO seat limits')
+        )
+
+        update_membership
+      end
+    end
+  end
+
   context 'when SAML group links exist' do
     let!(:group_link) { create(:saml_group_link, saml_group_name: 'Owners', group: group) }
     let!(:subgroup_link) { create(:saml_group_link, saml_group_name: 'Developers', group: create(:group, parent: group)) }

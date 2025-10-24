@@ -5,6 +5,7 @@ module Gitlab
     module GroupSaml
       class MembershipUpdater
         include Gitlab::Utils::StrongMemoize
+        include GitlabSubscriptions::MemberManagement::SeatAwareProvisioning
 
         attr_reader :user, :saml_provider, :auth_hash
 
@@ -29,7 +30,8 @@ module Gitlab
         def add_default_membership
           return if group.member?(user)
 
-          member = group.add_member(user, default_membership_role, member_role_id: member_role_id)
+          adjusted_access_level = calculate_adjusted_access_level(group, user, default_membership_role)
+          member = group.add_member(user, adjusted_access_level, member_role_id: member_role_id)
 
           log_audit_event(member: member) if member&.persisted?
         end
