@@ -631,7 +631,7 @@ RSpec.describe Projects::UpdateMirrorService, feature_category: :source_code_man
 
                 context 'with threshold' do
                   before do
-                    stub_const('Gitlab::Repositories::Mirror::LocalRemoteBranchComparator::MAX_NUMBER_TO_PROCESS_SPECIFIC_REVISIONS', 1)
+                    stub_const('Projects::UpdateMirrorService::MAX_NUMBER_TO_PROCESS_SPECIFIC_REVISIONS', 1)
                   end
 
                   context 'when the changes are over threshold' do
