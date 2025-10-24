@@ -184,7 +184,7 @@ export default {
           :purchase-credits-path="subscriptionUsage.purchaseCreditsPath"
         />
       </section>
-      <usage-by-user-tab :has-commitment="poolIsAvailable" />
+      <usage-by-user-tab />
     </template>
   </section>
 </template>

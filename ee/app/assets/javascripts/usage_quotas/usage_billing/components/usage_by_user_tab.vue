@@ -31,12 +31,6 @@ export default {
       default: null,
     },
   },
-  props: {
-    hasCommitment: {
-      required: true,
-      type: Boolean,
-    },
-  },
   data() {
     return {
       isError: false,
@@ -83,10 +77,6 @@ export default {
         {
           key: 'allocationUsed',
           label: s__('UsageBilling|Allocation used'),
-        },
-        this.hasCommitment && {
-          key: 'poolCreditsUsed',
-          label: s__('UsageBilling|Pool used'),
         },
         {
           key: 'totalCreditsUsed',
@@ -243,12 +233,6 @@ export default {
             class="gl-h-3 gl-max-w-[160px] gl-flex-1"
           />
         </div>
-      </template>
-
-      <template #cell(poolCreditsUsed)="{ item }">
-        <span class="gl-font-weight-semibold gl-min-h-7 gl-text-gray-900">
-          {{ item.usage.poolCreditsUsed }}
-        </span>
       </template>
 
       <template #cell(totalCreditsUsed)="{ item }">
