@@ -1245,6 +1245,7 @@ module EE
         ::Feature.enabled?(:duo_workflow, @user)
       end
 
+      with_scope :subject
       condition(:duo_workflow_available) do
         @subject.duo_features_enabled &&
           ::Gitlab::Llm::StageCheck.available?(@subject, :duo_workflow) &&
