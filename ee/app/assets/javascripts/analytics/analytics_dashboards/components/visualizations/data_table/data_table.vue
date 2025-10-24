@@ -23,6 +23,7 @@ export default {
     ChangePercentageIndicator: () => import('./change_percentage_indicator.vue'),
     MetricLabel: () => import('./metric_label.vue'),
     TrendLine: () => import('./trend_line.vue'),
+    UserLink: () => import('./user_link.vue'),
   },
   props: {
     data: {

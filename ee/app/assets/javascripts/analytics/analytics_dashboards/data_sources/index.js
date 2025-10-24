@@ -49,4 +49,5 @@ export default {
   code_suggestions_acceptance_by_language: () =>
     import('./code_suggestions_acceptance_by_language'),
   code_generation_volume_over_time: () => import('./code_generation_volume_over_time'),
+  user_ai_usage_data: () => import('./user_ai_usage_data'),
 };
