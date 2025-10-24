@@ -48475,6 +48475,9 @@ msgstr ""
 msgid "Pipelines|An error occurred while loading pipelines"
 msgstr ""
 
+msgid "Pipelines|An error occurred while loading pipelines count"
+msgstr ""
+
 msgid "Pipelines|An error occurred while trying to fetch the active merge train."
 msgstr ""
 
