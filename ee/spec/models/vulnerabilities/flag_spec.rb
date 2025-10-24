@@ -12,7 +12,7 @@ RSpec.describe Vulnerabilities::Flag, feature_category: :vulnerability_managemen
     subject { build(:vulnerabilities_flag) }
 
     it { is_expected.to validate_length_of(:origin).is_at_most(255) }
-    it { is_expected.to validate_length_of(:description).is_at_most(10000) }
+    it { is_expected.to validate_length_of(:description).is_at_most(100000) }
     it { is_expected.to validate_presence_of(:flag_type) }
     it { is_expected.to validate_uniqueness_of(:flag_type).scoped_to(:vulnerability_occurrence_id, :origin).ignoring_case_sensitivity }
     it { is_expected.to validate_inclusion_of(:confidence_score).in_range(0.0..1.0) }

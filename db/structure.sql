@@ -28352,9 +28352,9 @@ CREATE TABLE vulnerability_flags (
     workflow_id bigint,
     status smallint DEFAULT 0 NOT NULL,
     CONSTRAINT check_36177ddefa CHECK ((project_id IS NOT NULL)),
-    CONSTRAINT check_45e743349f CHECK ((char_length(description) <= 10000)),
     CONSTRAINT check_49c1d00032 CHECK ((char_length(origin) <= 255)),
-    CONSTRAINT check_9a1e4742ac CHECK (((confidence_score >= (0)::double precision) AND (confidence_score <= (1)::double precision)))
+    CONSTRAINT check_9a1e4742ac CHECK (((confidence_score >= (0)::double precision) AND (confidence_score <= (1)::double precision))),
+    CONSTRAINT check_vulnerability_flags_description_length CHECK ((char_length(description) <= 100000))
 );
 
 CREATE SEQUENCE vulnerability_flags_id_seq
