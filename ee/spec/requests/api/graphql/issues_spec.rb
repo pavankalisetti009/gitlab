@@ -32,21 +32,30 @@ RSpec.describe 'getting an issue list at root level', feature_category: :team_pl
     QUERY
   end
 
-  # All new specs should be added to the shared example if the change also
-  # affects the `issues` query at the project level of the API.
-  # Shared example also used in ee/spec/requests/api/graphql/project/issues_spec.rb
-  it_behaves_like 'graphql issue list request spec EE' do
-    let(:issue_nodes_path) { %w[issues nodes] }
+  context 'with quarantine', quarantine: {
+    issue: [
+      'https://gitlab.com/gitlab-org/gitlab/-/issues/517908',
+      'https://gitlab.com/gitlab-org/gitlab/-/issues/450283',
+      'https://gitlab.com/gitlab-org/gitlab/-/issues/448509',
+      'https://gitlab.com/gitlab-org/gitlab/-/issues/448396'
+    ]
+  } do
+    # All new specs should be added to the shared example if the change also
+    # affects the `issues` query at the project level of the API.
+    # Shared example also used in ee/spec/requests/api/graphql/project/issues_spec.rb
+    it_behaves_like 'graphql issue list request spec EE' do
+      let(:issue_nodes_path) { %w[issues nodes] }
 
-    # sorting
-    let(:data_path) { [:issues] }
+      # sorting
+      let(:data_path) { [:issues] }
 
-    def pagination_query(params)
-      graphql_query_for(
-        :issues,
-        base_params.merge(**issue_filter_params).merge(**params.to_h),
-        "#{page_info} nodes { id }"
-      )
+      def pagination_query(params)
+        graphql_query_for(
+          :issues,
+          base_params.merge(**issue_filter_params).merge(**params.to_h),
+          "#{page_info} nodes { id }"
+        )
+      end
     end
   end
 
