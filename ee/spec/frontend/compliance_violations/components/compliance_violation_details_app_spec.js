@@ -12,9 +12,22 @@ import SystemNote from '~/work_items/components/notes/system_note.vue';
 import DiscussionNote from 'ee/compliance_violations/components/discussion_note.vue';
 import FixSuggestionSection from 'ee/compliance_violations/components/fix_suggestion_section.vue';
 import RelatedIssues from 'ee/compliance_violations/components/related_issues.vue';
+import ComplianceViolationCommentForm from 'ee/compliance_violations/components/compliance_violation_comment_form.vue';
 import { ComplianceViolationStatusDropdown } from 'ee/vue_shared/compliance';
 import complianceViolationQuery from 'ee/compliance_violations/graphql/compliance_violation.query.graphql';
 import updateProjectComplianceViolation from 'ee/compliance_violations/graphql/mutations/update_project_compliance_violation.mutation.graphql';
+import {
+  violationId,
+  complianceCenterPath,
+  mockComplianceViolation,
+  mockComplianceViolationData,
+  mockUpdateResponseData,
+  mockGraphQlError,
+  mockDataWithoutAuditEvent,
+  mockDataWithoutNotes,
+  mockDataWithNullNotes,
+  mockDataWithOnlyNonSystemNotes,
+} from './mock_data';
 
 Vue.use(VueApollo);
 Vue.use(GlToast);
@@ -27,201 +40,11 @@ describe('ComplianceViolationDetailsApp', () => {
   let queryHandler;
   let mutationHandler;
 
-  const violationId = '123';
-  const complianceCenterPath = 'mock/compliance-center';
-
-  const mockComplianceViolationData = {
-    data: {
-      projectComplianceViolation: {
-        id: `gid://gitlab/ComplianceManagement::Projects::ComplianceViolation/${violationId}`,
-        status: 'IN_REVIEW',
-        createdAt: '2025-06-16T02:20:41Z',
-        complianceControl: {
-          id: 'gid://gitlab/ComplianceManagement::ComplianceControl/1',
-          name: 'Test Control',
-          complianceRequirement: {
-            id: 'gid://gitlab/ComplianceManagement::ComplianceRequirement/1',
-            name: 'Test Requirement',
-            framework: {
-              id: 'gid://gitlab/ComplianceManagement::Framework/1',
-              color: '#1f75cb',
-              default: false,
-              name: 'Test Framework',
-              description: 'Test framework description',
-            },
-          },
-        },
-        issues: {
-          nodes: [
-            {
-              id: '1',
-              iid: '1',
-              reference: '#1',
-              referencePath: 'gitlab-org/gitlab-test#1',
-              state: 'opened',
-              title: 'Test',
-              webUrl: 'https://localhost:3000/gitlab/org/gitlab-test/-/issues/1',
-            },
-          ],
-        },
-        project: {
-          id: 'gid://gitlab/Project/2',
-          nameWithNamespace: 'GitLab.org / GitLab Test',
-          fullPath: '/gitlab/org/gitlab-test',
-          webUrl: 'https://localhost:3000/gitlab/org/gitlab-test',
-          __typename: 'Project',
-        },
-        auditEvent: {
-          id: 'gid://gitlab/AuditEvents::ProjectAuditEvent/467',
-          eventName: 'merge_request_merged',
-          targetId: '2',
-          targetType: 'MergeRequest',
-          details: '{}',
-          ipAddress: '123.1.1.9',
-          entityPath: 'gitlab-org/gitlab-test',
-          entityId: '2',
-          entityType: 'Project',
-          createdAt: '2023-01-01T00:00:00Z',
-          author: {
-            id: 'gid://gitlab/User/1',
-            name: 'John Doe',
-          },
-          project: {
-            id: 'gid://gitlab/Project/2',
-            name: 'Test project',
-            fullPath: 'gitlab-org/gitlab-test',
-            webUrl: 'https://localhost:3000/gitlab/org/gitlab-test',
-          },
-          group: null,
-          user: {
-            id: 'gid://gitlab/User/1',
-            name: 'John Doe',
-          },
-        },
-        notes: {
-          nodes: [
-            {
-              id: 'gid://gitlab/Note/1',
-              body: 'Status changed to resolved',
-              bodyHtml: '<p>Status changed to resolved</p>',
-              createdAt: '2025-06-17T10:00:00Z',
-              author: {},
-              discussion: {
-                id: 'gid://gitlab/Discussion/1',
-              },
-              systemNoteIconName: 'status',
-              system: true,
-              internal: false,
-            },
-            {
-              id: 'gid://gitlab/Note/2',
-              body: 'Violation reviewed',
-              bodyHtml: '<p>Violation reviewed</p>',
-              createdAt: '2025-06-16T15:30:00Z',
-              author: {},
-              discussion: {
-                id: 'gid://gitlab/Discussion/2',
-              },
-              systemNoteIconName: null,
-              system: false,
-              internal: false,
-            },
-          ],
-        },
-        __typename: 'ComplianceManagement::Projects::ComplianceViolation',
-      },
-    },
-  };
-
-  const mockUpdateResponseData = {
-    data: {
-      updateProjectComplianceViolation: {
-        clientMutationId: null,
-        errors: [],
-        complianceViolation: {
-          status: 'RESOLVED',
-          __typename: 'ComplianceManagement::Projects::ComplianceViolation',
-        },
-        __typename: 'UpdateProjectComplianceViolationPayload',
-      },
-    },
-  };
-
-  const mockGraphQlError = jest.fn().mockRejectedValue(new Error('GraphQL error'));
-
-  const mockComplianceViolation = mockComplianceViolationData.data.projectComplianceViolation;
-
-  const mockDataWithoutAuditEvent = {
-    data: {
-      projectComplianceViolation: {
-        ...mockComplianceViolation,
-        auditEvent: null,
-      },
-    },
-  };
-
-  const mockDataWithoutNotes = {
-    data: {
-      projectComplianceViolation: {
-        ...mockComplianceViolation,
-        notes: {
-          nodes: [],
-        },
-      },
-    },
-  };
-
-  const mockDataWithNullNotes = {
-    data: {
-      projectComplianceViolation: {
-        ...mockComplianceViolation,
-        notes: null,
-      },
-    },
-  };
-
-  const mockDataWithOnlyNonSystemNotes = {
-    data: {
-      projectComplianceViolation: {
-        ...mockComplianceViolation,
-        notes: {
-          nodes: [
-            {
-              id: 'gid://gitlab/Note/3',
-              body: 'Regular comment',
-              bodyHtml: '<p>Regular comment</p>',
-              createdAt: '2025-06-16T12:00:00Z',
-              author: {},
-              discussion: {
-                id: 'gid://gitlab/Discussion/3',
-              },
-              systemNoteIconName: null,
-              system: false,
-              internal: false,
-            },
-            {
-              id: 'gid://gitlab/Note/4',
-              body: 'Another regular comment',
-              bodyHtml: '<p>Another regular comment</p>',
-              createdAt: '2025-06-16T13:00:00Z',
-              author: {},
-              discussion: {
-                id: 'gid://gitlab/Discussion/4',
-              },
-              systemNoteIconName: null,
-              system: false,
-              internal: false,
-            },
-          ],
-        },
-      },
-    },
-  };
-
   const createComponent = ({
     props = {},
     mockQueryHandler = jest.fn().mockResolvedValue(mockComplianceViolationData),
     mockMutationHandler = jest.fn().mockResolvedValue(mockUpdateResponseData),
+    provide = {},
   } = {}) => {
     queryHandler = mockQueryHandler;
     mutationHandler = mockMutationHandler;
@@ -237,6 +60,12 @@ describe('ComplianceViolationDetailsApp', () => {
         violationId,
         complianceCenterPath,
         ...props,
+      },
+      provide: {
+        glFeatures: {
+          complianceViolationCommentsUi: false,
+        },
+        ...provide,
       },
     });
   };
@@ -254,6 +83,7 @@ describe('ComplianceViolationDetailsApp', () => {
   const findDiscussionNotes = () => wrapper.findAllComponents(DiscussionNote);
   const findActivitySection = () => wrapper.find('.issuable-discussion');
   const findActivityHeader = () => wrapper.find('.issuable-discussion h2');
+  const findCommentForm = () => wrapper.findComponent(ComplianceViolationCommentForm);
 
   beforeEach(() => {
     jest.clearAllMocks();
@@ -385,6 +215,7 @@ describe('ComplianceViolationDetailsApp', () => {
       beforeEach(async () => {
         createComponent();
         await waitForPromises();
+        await nextTick();
       });
 
       it('renders the activity section', () => {
@@ -435,6 +266,7 @@ describe('ComplianceViolationDetailsApp', () => {
           mockQueryHandler: jest.fn().mockResolvedValue(mockDataWithOnlyNonSystemNotes),
         });
         await waitForPromises();
+        await nextTick();
       });
 
       it('renders the activity section when there are discussion notes', () => {
@@ -456,6 +288,7 @@ describe('ComplianceViolationDetailsApp', () => {
           mockQueryHandler: jest.fn().mockResolvedValue(mockDataWithoutNotes),
         });
         await waitForPromises();
+        await nextTick();
       });
 
       it('does not render the activity section', () => {
@@ -473,6 +306,7 @@ describe('ComplianceViolationDetailsApp', () => {
           mockQueryHandler: jest.fn().mockResolvedValue(mockDataWithNullNotes),
         });
         await waitForPromises();
+        await nextTick();
       });
 
       it('does not render the activity section', () => {
@@ -545,6 +379,60 @@ describe('ComplianceViolationDetailsApp', () => {
 
         await waitForPromises();
         expect(dropdown.props('loading')).toBe(false);
+      });
+    });
+  });
+
+  describe('comment form', () => {
+    describe('when complianceViolationCommentsUi feature flag is disabled', () => {
+      beforeEach(async () => {
+        createComponent({
+          provide: {
+            glFeatures: {
+              complianceViolationCommentsUi: false,
+            },
+          },
+        });
+        await waitForPromises();
+        await nextTick();
+      });
+
+      it('does not render the comment form', () => {
+        expect(findCommentForm().exists()).toBe(false);
+      });
+    });
+
+    describe('when complianceViolationCommentsUi feature flag is enabled', () => {
+      beforeEach(async () => {
+        createComponent({
+          provide: {
+            glFeatures: {
+              complianceViolationCommentsUi: true,
+            },
+          },
+        });
+        await waitForPromises();
+        await nextTick();
+      });
+
+      it('renders the comment form with correct props', () => {
+        const commentForm = findCommentForm();
+        expect(commentForm.exists()).toBe(true);
+      });
+
+      it('shows error toast when comment form emits error event', async () => {
+        const mockToast = { show: jest.fn() };
+        wrapper.vm.$toast = mockToast;
+
+        const errorMessage = 'Failed to submit comment';
+        const commentForm = findCommentForm();
+
+        commentForm.vm.$emit('error', errorMessage);
+        await nextTick();
+
+        expect(mockToast.show).toHaveBeenCalledWith(errorMessage, {
+          variant: 'danger',
+        });
       });
     });
   });

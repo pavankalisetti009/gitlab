@@ -1,6 +1,7 @@
 <script>
 import { GlLoadingIcon, GlToast, GlAlert } from '@gitlab/ui';
 import Vue from 'vue';
+import glFeatureFlagsMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
 import { s__, __, sprintf } from '~/locale';
 import * as Sentry from '~/sentry/sentry_browser_wrapper';
 import { ComplianceViolationStatusDropdown } from 'ee/vue_shared/compliance';
@@ -8,6 +9,7 @@ import SystemNote from '~/work_items/components/notes/system_note.vue';
 import updateProjectComplianceViolation from '../graphql/mutations/update_project_compliance_violation.mutation.graphql';
 import complianceViolationQuery from '../graphql/compliance_violation.query.graphql';
 import AuditEvent from './audit_event.vue';
+import ComplianceViolationCommentForm from './compliance_violation_comment_form.vue';
 import DiscussionNote from './discussion_note.vue';
 import FixSuggestionSection from './fix_suggestion_section.vue';
 import RelatedIssues from './related_issues.vue';
@@ -19,6 +21,7 @@ export default {
   name: 'ComplianceViolationDetailsApp',
   components: {
     AuditEvent,
+    ComplianceViolationCommentForm,
     ComplianceViolationStatusDropdown,
     DiscussionNote,
     FixSuggestionSection,
@@ -28,6 +31,7 @@ export default {
     ViolationSection,
     SystemNote,
   },
+  mixins: [glFeatureFlagsMixin()],
   props: {
     violationId: {
       type: String,
@@ -118,6 +122,11 @@ export default {
     handleNoteDeleted() {
       this.$apollo.queries.projectComplianceViolation.refetch();
     },
+    handleCommentError(errorMessage) {
+      this.$toast.show(errorMessage, {
+        variant: 'danger',
+      });
+    },
   },
   i18n: {
     status: s__('ComplianceReport|Status'),
@@ -194,5 +203,10 @@ export default {
         </template>
       </ul>
     </section>
+    <compliance-violation-comment-form
+      v-if="glFeatures.complianceViolationCommentsUi"
+      :violation-id="graphqlViolationId"
+      @error="handleCommentError"
+    />
   </div>
 </template>
