@@ -45,6 +45,8 @@ namespace :admin do
   resource :subscription, only: [:show]
   resources :role_promotion_requests, only: :index
 
+  resource :discover_premium, only: [:show]
+
   resource :gitlab_duo, only: [:show], controller: 'gitlab_duo'
   namespace :gitlab_duo do
     resources :seat_utilization, only: [:index]

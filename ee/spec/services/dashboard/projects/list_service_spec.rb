@@ -70,7 +70,7 @@ RSpec.describe Dashboard::Projects::ListService, feature_category: :groups_and_p
       where(:plan, :trial, :expired, :available) do
         License::ULTIMATE_PLAN  | false | false | true
         License::ULTIMATE_PLAN  | false | true  | true
-        License::ULTIMATE_PLAN  | true  | false | false
+        License::ULTIMATE_PLAN  | true  | false | true
         License::ULTIMATE_PLAN  | true  | true  | false
         License::PREMIUM_PLAN   | false | false | true
         nil                     | false | false | false

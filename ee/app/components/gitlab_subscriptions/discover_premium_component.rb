@@ -1,0 +1,31 @@
+# frozen_string_literal: true
+
+module GitlabSubscriptions
+  class DiscoverPremiumComponent < DiscoverDuoCoreTrialComponent
+    extend ::Gitlab::Utils::Override
+
+    override :initialize
+    def initialize(license:)
+      @license = license
+    end
+
+    private
+
+    attr_reader :license
+
+    override :trial_active?
+    def trial_active?
+      GitlabSubscriptions::Trials.self_managed_ultimate_trial?(license)
+    end
+
+    override :buy_now_link
+    def buy_now_link
+      promo_pricing_url(query: { deployment: 'self-managed' })
+    end
+
+    override :show_hand_raise_lead?
+    def show_hand_raise_lead?
+      false
+    end
+  end
+end
