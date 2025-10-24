@@ -12,6 +12,7 @@ import {
   VISIBILITY_LEVEL_PRIVATE,
   VISIBILITY_LEVEL_PUBLIC,
   AGENT_VISIBILITY_LEVEL_DESCRIPTIONS,
+  AI_CATALOG_TYPE_AGENT,
 } from 'ee/ai/catalog/constants';
 import { TYPENAME_PROJECT } from '~/graphql_shared/constants';
 
@@ -251,6 +252,7 @@ export default {
       },
     },
   },
+  AI_CATALOG_TYPE_AGENT,
 };
 </script>
 
@@ -305,6 +307,7 @@ export default {
             v-model="formValues.visibilityLevel"
             :is-edit-mode="isEditMode"
             :initial-value="initialValues.public"
+            :item-type="$options.AI_CATALOG_TYPE_AGENT"
             :texts="$options.visibilityLevelTexts"
           />
         </form-group>

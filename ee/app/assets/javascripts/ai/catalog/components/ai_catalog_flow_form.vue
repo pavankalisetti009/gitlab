@@ -344,6 +344,7 @@ export default {
               v-model="formValues.visibilityLevel"
               :is-edit-mode="isEditMode"
               :initial-value="initialValues.public"
+              :item-type="formValues.type"
               :texts="$options.visibilityLevelTexts"
             />
           </form-group>
