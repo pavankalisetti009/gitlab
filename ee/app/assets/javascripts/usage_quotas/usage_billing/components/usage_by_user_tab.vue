@@ -2,7 +2,6 @@
 import { GlAlert, GlKeysetPagination, GlCard, GlTable, GlProgressBar } from '@gitlab/ui';
 import UserAvatarLink from '~/vue_shared/components/user_avatar/user_avatar_link.vue';
 import { s__, __ } from '~/locale';
-import { getIdFromGraphQLId } from '~/graphql_shared/utils';
 import { logError } from '~/lib/logger';
 import { captureException } from '~/sentry/sentry_browser_wrapper';
 import getSubscriptionUsersUsageQuery from '../graphql/get_subscription_users_usage.query.graphql';
@@ -116,9 +115,8 @@ export default {
     formatAllocationUsed(allocationUsed, allocationTotal) {
       return `${allocationUsed} / ${allocationTotal}`;
     },
-    getUserUsagePath(userId) {
-      const id = getIdFromGraphQLId(userId);
-      return this.userUsagePath.replace(':id', id);
+    getUserUsagePath(username) {
+      return this.userUsagePath.replace(':username', username);
     },
     /** @param { Usage } usage */
     getProgressBarValue(usage) {
@@ -225,7 +223,7 @@ export default {
         <div class="gl-flex gl-items-center">
           <user-avatar-link
             :username="user.name"
-            :link-href="getUserUsagePath(user.id)"
+            :link-href="getUserUsagePath(user.username)"
             :img-alt="user.name"
             :img-src="user.avatarUrl"
             :img-size="32"

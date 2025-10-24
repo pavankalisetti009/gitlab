@@ -3,7 +3,4 @@
 - breadcrumb_title title_text
 - add_to_breadcrumbs(_('GitLab Duo'), admin_gitlab_duo_path)
 
--# TODO: fetch_usage_data_url should be replaced once the API endpoint is ready
--# https://gitlab.com/gitlab-org/gitlab/-/issues/568055
-#js-instance-usage-billing-dashboard{ data: { user_usage_path: admin_gitlab_duo_usage_user_path(':id'),
-  fetch_usage_data_api_url: '/admin/gitlab_duo/usage/data' } }
+#js-instance-usage-billing-dashboard{ data: { user_usage_path: admin_gitlab_duo_usage_user_path(':username') } }

@@ -12,7 +12,7 @@ export function initUsageBillingUserDashboard(el) {
   }
 
   // NOTE: namespacePath is only provided on SaaS for group usage billing dashboard page
-  const { userId, namespacePath } = el.dataset;
+  const { username, namespacePath } = el.dataset;
 
   Vue.use(VueApollo);
   const apolloProvider = new VueApollo({ defaultClient: createApolloClient() });
@@ -21,7 +21,7 @@ export function initUsageBillingUserDashboard(el) {
     el,
     name: 'UsageBillingUserDashboardRoot',
     apolloProvider,
-    provide: { userId, namespacePath },
+    provide: { username, namespacePath },
     render(createElement) {
       return createElement(UsageBillingUserDashboardApp);
     },

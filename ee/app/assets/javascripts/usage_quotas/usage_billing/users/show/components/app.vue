@@ -22,7 +22,7 @@ export default {
     EventsTable,
   },
   inject: {
-    userId: 'userId',
+    username: 'username',
     namespacePath: {
       default: null,
     },
@@ -47,7 +47,7 @@ export default {
           // Note: namespacePath will be present on SaaS only, indicating a root group.
           // SM would pass null in this variable, requesting instance-level data.
           namespacePath: this.namespacePath,
-          username: this.userId,
+          username: this.username,
           first: this.pagination.first,
           last: this.pagination.last,
           after: this.pagination.after,

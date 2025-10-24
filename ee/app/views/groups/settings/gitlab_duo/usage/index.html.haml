@@ -3,9 +3,7 @@
 - breadcrumb_title title_text
 - add_to_breadcrumbs(_('GitLab Duo'), group_settings_gitlab_duo_path(@group))
 
-#js-group-usage-billing-dashboard{ data: { user_usage_path: group_settings_gitlab_duo_usage_user_path(@group, ':id'),
-  # TODO: the next url will be replaced with the actual API endpoint when it's ready
-  # https://gitlab.com/gitlab-org/gitlab/-/issues/568055
-  fetch_usage_data_api_url: '/groups/gitlab_duo/usage/data',
+#js-group-usage-billing-dashboard{ data: {
+  user_usage_path: group_settings_gitlab_duo_usage_user_path(@group, ':username'),
   namespace_path: @group.full_path
  } }

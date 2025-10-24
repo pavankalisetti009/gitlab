@@ -39,7 +39,7 @@ describe('UsageByUserTab', () => {
       propsData: { hasCommitment: true, ...propsData },
       provide: {
         namespacePath: null,
-        userUsagePath: '/path/to/user/:id',
+        userUsagePath: '/path/to/user/:username',
         ...provide,
       },
     });
@@ -115,13 +115,13 @@ describe('UsageByUserTab', () => {
         });
 
         describe.each`
-          userId | userName           | allocationUsed | allocationUsedPercent | poolUsed | totalCreditsUsed
-          ${'1'} | ${'Alice Johnson'} | ${'450 / 500'} | ${90}                 | ${'0'}   | ${'450'}
+          username      | displayName        | allocationUsed | allocationUsedPercent | poolUsed | totalCreditsUsed
+          ${'ajohnson'} | ${'Alice Johnson'} | ${'450 / 500'} | ${90}                 | ${'0'}   | ${'450'}
         `(
-          'rendering $userId: $userName',
+          'rendering $userName $username',
           ({
-            userId,
-            userName,
+            username,
+            displayName,
             allocationUsed,
             allocationUsedPercent,
             poolUsed,
@@ -130,12 +130,12 @@ describe('UsageByUserTab', () => {
             describe('user cell', () => {
               it('renders user avatar with link to the user details page', () => {
                 const userAvatar = findCell(1).findComponent(UserAvatarLink);
-                expect(userAvatar.props('linkHref')).toBe(`/path/to/user/${userId}`);
+                expect(userAvatar.props('linkHref')).toBe(`/path/to/user/${username}`);
               });
 
-              it('renders user avatar pointing to the correct path', () => {
+              it('renders user name', () => {
                 const cell = findCell(1);
-                expect(cell.text()).toBe(userName);
+                expect(cell.text()).toBe(displayName);
               });
             });
 

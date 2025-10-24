@@ -30,7 +30,7 @@ constraints(::Constraints::GroupUrlConstrainer.new) do
 
         scope :usage do
           get '/', action: :index, controller: 'usage', as: :usage
-          resources :users, only: [:show], controller: 'usage/users', param: :user_id, as: :usage_users
+          resources :users, only: [:show], controller: 'usage/users', param: :username, as: :usage_users
         end
       end
 
