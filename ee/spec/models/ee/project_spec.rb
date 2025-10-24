@@ -496,16 +496,6 @@ RSpec.describe Project, feature_category: :groups_and_projects do
       end
     end
 
-    describe '.with_active_prometheus_integration' do
-      it 'returns the correct project' do
-        project_with_active_prometheus_integration = create(:project, :with_prometheus_integration)
-        project_without_active_prometheus_integration = create(:project)
-
-        expect(described_class.with_active_prometheus_integration).to include(project_with_active_prometheus_integration)
-        expect(described_class.with_active_prometheus_integration).not_to include(project_without_active_prometheus_integration)
-      end
-    end
-
     describe '.has_vulnerabilities' do
       let_it_be(:project_1) { create(:project) }
       let_it_be(:project_2) { create(:project) }

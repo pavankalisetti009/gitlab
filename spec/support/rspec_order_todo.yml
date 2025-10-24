@@ -5225,7 +5225,6 @@
 - './spec/lib/gitlab/project_stats_refresh_conflicts_logger_spec.rb'
 - './spec/lib/gitlab/project_template_spec.rb'
 - './spec/lib/gitlab/project_transfer_spec.rb'
-- './spec/lib/gitlab/prometheus/adapter_spec.rb'
 - './spec/lib/gitlab/prometheus_client_spec.rb'
 - './spec/lib/gitlab/prometheus/internal_spec.rb'
 - './spec/lib/gitlab/protocol_access_spec.rb'
