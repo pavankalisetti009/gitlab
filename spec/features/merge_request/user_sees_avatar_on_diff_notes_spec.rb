@@ -136,7 +136,7 @@ RSpec.describe 'Merge request > User sees avatars on diff notes', :js, feature_c
         end
       end
 
-      it 'adds avatar when commenting' do
+      it 'adds avatar when commenting', quarantine: 'https://gitlab.com/gitlab-org/quality/test-failure-issues/-/issues/5899' do
         find_by_scrolling('[data-discussion-id]', match: :first)
         find_field('Reply…', match: :first).click
 
