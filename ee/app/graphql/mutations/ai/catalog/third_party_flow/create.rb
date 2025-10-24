@@ -32,6 +32,10 @@ module Mutations
             required: false,
             description: 'Whether to release the latest version of the Flow.'
 
+          argument :add_to_project_when_created, GraphQL::Types::Boolean,
+            required: false,
+            description: 'Whether to add to the project upon creation.'
+
           argument :definition, GraphQL::Types::String,
             required: true,
             description: 'YAML definition for the Flow.'
