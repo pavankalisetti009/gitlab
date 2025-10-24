@@ -2077,6 +2077,11 @@ The docs should match the case in the UI, and the page name should be bold. For 
 
 - On the **Test cases** page, ...
 
+## panel
+
+For guidance about the paneled UI while it is in development, see
+[Names for external communication](https://design.gitlab.com/product-foundations/layout/#names-for-external-communication) in Pajamas.
+
 ## parent
 
 Always use as a compound noun.
@@ -2524,6 +2529,11 @@ Do not confuse **set up** with [**configure**](#configure).
 
 1. Set up your installation.
 1. Configure your installation.
+
+## sidebar
+
+For guidance about the paneled UI while it is in development, see
+[Names for external communication](https://design.gitlab.com/product-foundations/layout/#names-for-external-communication) in Pajamas.
 
 ## sign in, sign-in
 
