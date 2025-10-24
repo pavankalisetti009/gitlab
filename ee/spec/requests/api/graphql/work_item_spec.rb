@@ -1806,7 +1806,9 @@ RSpec.describe 'Query.work_item(id)', feature_category: :team_planning do
           )
         end
 
-        it_behaves_like 'avoids N+1 queries for processing participants'
+        context 'with quarantine', quarantine: 'https://gitlab.com/gitlab-org/gitlab/-/issues/480907' do
+          it_behaves_like 'avoids N+1 queries for processing participants'
+        end
       end
 
       describe 'custom fields widget' do

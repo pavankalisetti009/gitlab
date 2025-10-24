@@ -192,7 +192,10 @@ RSpec.describe 'Work Items List Drawer', :js, feature_category: :team_planning d
 
         it_behaves_like 'work item drawer on the list page'
 
-        include_examples 'updates weight of a work item on the list'
+        context 'with quarantine', quarantine: 'https://gitlab.com/gitlab-org/gitlab/-/issues/570546' do
+          include_examples 'updates weight of a work item on the list'
+        end
+
         include_examples 'updates health status of a work item on the list'
         include_examples 'updates iteration of a work item on the list'
       end

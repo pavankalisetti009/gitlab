@@ -153,7 +153,9 @@ RSpec.describe 'Filter issues by iteration', :js, feature_category: :team_planni
 
     it_behaves_like 'filters by iteration'
 
-    it_behaves_like 'shows iterations when using iteration token'
+    context 'with quarantine', quarantine: 'https://gitlab.com/gitlab-org/gitlab/-/issues/558141' do
+      it_behaves_like 'shows iterations when using iteration token'
+    end
   end
 
   context 'project board' do
