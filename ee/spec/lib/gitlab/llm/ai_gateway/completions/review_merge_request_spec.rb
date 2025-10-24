@@ -1955,15 +1955,9 @@ RSpec.describe Gitlab::Llm::AiGateway::Completions::ReviewMergeRequest, feature_
           .with(
             container: merge_request.project,
             current_user: user,
-            workflow_definition: 'code_review/v1',
+            workflow_definition: ::Ai::DuoWorkflows::WorkflowDefinition['code_review/v1'],
             goal: merge_request.iid,
-            source_branch: source_branch,
-            workflow_params: {
-              agent_privileges: required_privileges,
-              pre_approved_agent_privileges: required_privileges,
-              allow_agent_to_request_user: false,
-              environment: 'ambient'
-            }
+            source_branch: source_branch
           ).and_return(create_and_start_service)
 
         merge_request.merge_request_reviewers.create!(reviewer: duo_code_review_bot)

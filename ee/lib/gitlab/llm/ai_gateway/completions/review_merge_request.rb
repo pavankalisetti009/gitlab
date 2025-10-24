@@ -92,24 +92,12 @@ module Gitlab
           end
 
           def execute_duo_agent_platform_flow
-            required_privileges = [
-              ::Ai::DuoWorkflows::Workflow::AgentPrivileges::READ_WRITE_GITLAB,
-              ::Ai::DuoWorkflows::Workflow::AgentPrivileges::RUN_COMMANDS,
-              ::Ai::DuoWorkflows::Workflow::AgentPrivileges::USE_GIT
-            ]
-
             result = ::Ai::DuoWorkflows::CreateAndStartWorkflowService.new(
               container: merge_request.project,
               current_user: user,
-              workflow_definition: 'code_review/v1',
+              workflow_definition: ::Ai::DuoWorkflows::WorkflowDefinition['code_review/v1'],
               goal: merge_request.iid,
-              source_branch: merge_request.source_branch,
-              workflow_params: {
-                agent_privileges: required_privileges,
-                pre_approved_agent_privileges: required_privileges,
-                allow_agent_to_request_user: false,
-                environment: 'ambient'
-              }
+              source_branch: merge_request.source_branch
             ).execute
 
             # If workflow fails to start, reset review state immediately
