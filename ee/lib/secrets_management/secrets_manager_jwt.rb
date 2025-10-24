@@ -26,10 +26,13 @@ module SecretsManagement
         sub: 'gitlab_secrets_manager',
         secrets_manager_scope: 'privileged',
         correlation_id: Labkit::Correlation::CorrelationId.current_id
-      }.merge(project_claims)
+      }.merge(user_project_claims)
+      # we include the user and project claims to support
+      # detailed context in the audits for every request to Openbao
+      # to track every action to a specific user and project
     end
 
-    def project_claims
+    def user_project_claims
       ::JSONWebToken::UserProjectTokenClaims
         .new(project: project, user: current_user)
         .generate
