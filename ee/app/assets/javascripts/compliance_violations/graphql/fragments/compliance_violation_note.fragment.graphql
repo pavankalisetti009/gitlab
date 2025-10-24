@@ -1,0 +1,17 @@
+#import "~/graphql_shared/fragments/user.fragment.graphql"
+
+fragment ComplianceViolationNote on Note {
+  id
+  body
+  bodyHtml
+  createdAt
+  system
+  internal
+  systemNoteIconName
+  author {
+    ...User
+  }
+  discussion {
+    id
+  }
+}

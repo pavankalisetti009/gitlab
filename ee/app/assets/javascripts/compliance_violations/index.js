@@ -1,6 +1,7 @@
 import Vue from 'vue';
 import VueApollo from 'vue-apollo';
 import createDefaultClient from '~/lib/graphql';
+import ZenMode from '~/zen_mode';
 import ViolationDetailsApp from './components/compliance_violation_details_app.vue';
 
 Vue.use(VueApollo);
@@ -15,6 +16,9 @@ export const initDetailsApp = () => {
   if (!el) {
     return false;
   }
+
+  // Initialize ZenMode for fullscreen markdown editor functionality
+  new ZenMode(); // eslint-disable-line no-new
 
   const { violationId, complianceCenterPath } = el.dataset;
 

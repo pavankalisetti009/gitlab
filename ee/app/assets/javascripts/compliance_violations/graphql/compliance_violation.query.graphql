@@ -1,4 +1,5 @@
 #import "~/graphql_shared/fragments/user.fragment.graphql"
+#import "./fragments/compliance_violation_note.fragment.graphql"
 
 query getComplianceViolation($id: ComplianceManagementProjectsComplianceViolationID!) {
   projectComplianceViolation(id: $id) {
@@ -71,19 +72,7 @@ query getComplianceViolation($id: ComplianceManagementProjectsComplianceViolatio
     }
     notes {
       nodes {
-        id
-        author {
-          ...User
-        }
-        body
-        bodyHtml
-        system
-        internal
-        systemNoteIconName
-        createdAt
-        discussion {
-          id
-        }
+        ...ComplianceViolationNote
       }
     }
   }
