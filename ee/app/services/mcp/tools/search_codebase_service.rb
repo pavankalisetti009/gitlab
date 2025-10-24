@@ -9,39 +9,16 @@ module Mcp
       ACTIVE_CONTEXT_QUERY = ::Ai::ActiveContext::Queries
 
       REQUIRED_ABILITY = :read_code
-      override :ability
-      def auth_ability
-        REQUIRED_ABILITY
-      end
 
-      override :auth_target
-      def auth_target(params)
-        project_id = params.dig(:arguments, :project_id)
-
-        raise ArgumentError, "#{name}: project not found, the params received: #{params.inspect}" if project_id.nil?
-
-        find_project(project_id)
-      end
-
-      override :description
-      def description
-        desc = <<~DESC
-          Performs semantic code search across project files using vector similarity.
-
-          Returns ranked code snippets with file paths and content matches based on natural language queries.
-
-          Use this tool for questions about a project's codebase.
-          For example: "how something works" or "code that does X", or finding specific implementations.
-
-          This tool supports directory scoping and configurable result limits for targeted code discovery and analysis.
-        DESC
-
-        desc.strip
-      end
-
-      override :input_schema
-      def input_schema
-        {
+      # Register version 0.1.0
+      register_version '0.1.0', {
+        description: "Performs semantic code search across project files using vector similarity.\n\n" \
+          "Returns ranked code snippets with file paths and content matches based on natural language queries.\n\n" \
+          "Use this tool for questions about a project's codebase.\n" \
+          "For example: \"how something works\" or \"code that does X\", or finding specific implementations.\n\n" \
+          "This tool supports directory scoping and configurable result limits for targeted code discovery and " \
+          "analysis.",
+        input_schema: {
           type: 'object',
           properties: {
             semantic_query: {
@@ -80,12 +57,26 @@ module Mcp
           required: %w[semantic_query project_id],
           additionalProperties: false
         }
+      }
+
+      override :ability
+      def auth_ability
+        REQUIRED_ABILITY
+      end
+
+      override :auth_target
+      def auth_target(params)
+        project_id = params.dig(:arguments, :project_id)
+
+        raise ArgumentError, "#{name}: project not found, the params received: #{params.inspect}" if project_id.nil?
+
+        find_project(project_id)
       end
 
       protected
 
-      override :perform
-      def perform(arguments = {}, query = {}) # rubocop:disable Lint/UnusedMethodArgument -- `query` is required by the contract
+      # Version 0.1.0 implementation
+      def perform_0_1_0(arguments = {})
         limit = arguments[:limit] || 20
         knn = arguments[:knn] || 64
         semantic_query = arguments[:semantic_query]
@@ -115,6 +106,12 @@ module Mcp
         formatted_content = [{ type: 'text', text: lines.join("\n") }]
 
         ::Mcp::Tools::Response.success(formatted_content, result.to_a)
+      end
+
+      # Fallback to 0.1.0 behavior for any unimplemented versions
+      override :perform_default
+      def perform_default(arguments = {})
+        perform_0_1_0(arguments)
       end
 
       private
