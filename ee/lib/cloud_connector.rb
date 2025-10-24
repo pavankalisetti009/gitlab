@@ -3,11 +3,19 @@
 module CloudConnector
   extend self
 
+  GITLAB_REALM_COM = '.com'
   GITLAB_REALM_SAAS = 'saas'
   GITLAB_REALM_SELF_MANAGED = 'self-managed'
+  GITLAB_REALM_DEDICATED = 'dedicated'
 
   def gitlab_realm
     gitlab_realm_saas? ? GITLAB_REALM_SAAS : GITLAB_REALM_SELF_MANAGED
+  end
+
+  def deployment_type
+    return GITLAB_REALM_DEDICATED if ::Gitlab::CurrentSettings.gitlab_dedicated_instance?
+
+    gitlab_realm_saas? ? GITLAB_REALM_COM : GITLAB_REALM_SELF_MANAGED
   end
 
   def headers(user)
