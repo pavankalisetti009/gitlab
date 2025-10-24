@@ -209,7 +209,10 @@ RSpec.describe 'Protected Branches', :js, :disable_rate_limiter, feature_categor
         stub_licensed_features(protected_refs_for_users: false)
       end
 
-      it_behaves_like 'protected branches > access control > CE'
+      context 'with quarantine',
+        quarantine: 'https://gitlab.com/gitlab-org/quality/test-failure-issues/-/issues/5424' do
+        it_behaves_like 'protected branches > access control > CE'
+      end
 
       context 'with existing access levels' do
         let(:protected_branch) { create(:protected_branch, project: project) }
