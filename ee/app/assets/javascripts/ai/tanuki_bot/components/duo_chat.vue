@@ -584,7 +584,7 @@ export default {
         @track-feedback="onTrackFeedback"
         @chat-resize="onChatResize"
         ><template v-if="agenticAvailable" #footer-controls>
-          <div class="gl-flex gl-px-4 gl-pb-2 gl-pt-5">
+          <div class="gl-flex gl-px-4 gl-pb-0 gl-pt-5">
             <gl-toggle
               v-model="duoAgenticModePreference"
               :label="s__('DuoChat|Agentic mode (Beta)')"
