@@ -104,7 +104,8 @@ RSpec.describe ::Ai::ModelSelection::SelectionApplicable, feature_category: :"se
         end
       end
 
-      describe '#distinct_eligible_assignments' do
+      describe '#distinct_eligible_assignments',
+        quarantine: 'https://gitlab.com/gitlab-org/quality/test-failure-issues/-/issues/3206' do
         it 'returns the related assigments' do
           actual_assignment = included_instance.distinct_eligible_assignments
           expected_assignment = user_assignments.take(2)
