@@ -711,7 +711,26 @@ RSpec.describe API::GroupServiceAccounts, :with_current_organization, :aggregate
           group.add_owner(user)
         end
 
-        context 'when the service_account is provisioned_by the group' do
+        context 'when the service_account is provisioned_by the group',
+          quarantine: {
+            issue: [
+              'https://gitlab.com/gitlab-org/quality/test-failure-issues/-/issues/2088',
+              'https://gitlab.com/gitlab-org/quality/test-failure-issues/-/issues/2087',
+              'https://gitlab.com/gitlab-org/quality/test-failure-issues/-/issues/2086',
+              'https://gitlab.com/gitlab-org/quality/test-failure-issues/-/issues/2085',
+              'https://gitlab.com/gitlab-org/quality/test-failure-issues/-/issues/1934',
+              'https://gitlab.com/gitlab-org/quality/test-failure-issues/-/issues/1930',
+              'https://gitlab.com/gitlab-org/quality/test-failure-issues/-/issues/1922',
+              'https://gitlab.com/gitlab-org/quality/test-failure-issues/-/issues/1916',
+              'https://gitlab.com/gitlab-org/quality/test-failure-issues/-/issues/1907',
+              'https://gitlab.com/gitlab-org/quality/test-failure-issues/-/issues/1902',
+              'https://gitlab.com/gitlab-org/quality/test-failure-issues/-/issues/1900',
+              'https://gitlab.com/gitlab-org/quality/test-failure-issues/-/issues/1897',
+              'https://gitlab.com/gitlab-org/quality/test-failure-issues/-/issues/1893',
+              'https://gitlab.com/gitlab-org/quality/test-failure-issues/-/issues/1883',
+              'https://gitlab.com/gitlab-org/quality/test-failure-issues/-/issues/1879'
+            ]
+          } do
           let_it_be(:current_user) { user }
           let_it_be(:active_token1) { create(:personal_access_token, user: service_account_user) }
           let_it_be(:active_token2) { create(:personal_access_token, user: service_account_user) }
