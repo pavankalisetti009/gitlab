@@ -12,8 +12,6 @@ module Vulnerabilities
     include ::Gitlab::SQL::Pattern
     include ::Elastic::ApplicationVersionedSearch
 
-    ignore_column :namespace_id, remove_with: '17.7', remove_after: '2024-11-21'
-
     declarative_enum DismissalReasonEnum
 
     # Included after scopes and relationships to avoid the warning
