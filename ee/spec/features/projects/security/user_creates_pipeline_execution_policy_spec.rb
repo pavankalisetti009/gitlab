@@ -41,7 +41,8 @@ RSpec.describe "User creates pipeline execution policy", :js, feature_category: 
     expect(page).to have_current_path(project_merge_request_path(policy_management_project, 1))
   end
 
-  it "fails validation for an invalid policy and stays on the page" do
+  it "fails validation for an invalid policy and stays on the page",
+    quarantine: 'https://gitlab.com/gitlab-org/quality/test-failure-issues/-/issues/7036' do
     fill_in _('Name'), with: 'Run custom pipeline jobs'
     click_button _('Configure with a merge request')
     expect(page).to have_current_path(path_to_specific_policy_editor)
