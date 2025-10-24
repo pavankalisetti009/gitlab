@@ -9,15 +9,7 @@ FactoryBot.define do
     end
 
     after(:build) do |build, evaluator|
-      if evaluator.secrets
-        # TODO: Remove this when FF `stop_writing_builds_metadata` is removed.
-        # https://gitlab.com/gitlab-org/gitlab/-/issues/552065
-        if Feature.disabled?(:stop_writing_builds_metadata, build.project)
-          build.metadata.write_attribute(:secrets, evaluator.secrets)
-        end
-
-        Ci::JobFactoryHelpers.mutate_temp_job_definition(build, secrets: evaluator.secrets)
-      end
+      Ci::JobFactoryHelpers.mutate_temp_job_definition(build, secrets: evaluator.secrets) if evaluator.secrets
     end
 
     trait :protected_environment_failure do
@@ -295,12 +287,6 @@ FactoryBot.define do
         updated_options = build.options.deep_merge(
           policy: { variables_override: { allowed: false, exceptions: evaluator.variables_override_exceptions } }
         )
-
-        # TODO: Remove this when FF `stop_writing_builds_metadata` is removed.
-        # https://gitlab.com/gitlab-org/gitlab/-/issues/552065
-        if Feature.disabled?(:stop_writing_builds_metadata, build.project)
-          build.metadata.write_attribute(:config_options, updated_options)
-        end
 
         Ci::JobFactoryHelpers.mutate_temp_job_definition(build, options: updated_options)
       end
