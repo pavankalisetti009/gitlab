@@ -25295,6 +25295,24 @@ CREATE SEQUENCE sbom_graph_paths_id_seq
 
 ALTER SEQUENCE sbom_graph_paths_id_seq OWNED BY sbom_graph_paths.id;
 
+CREATE TABLE sbom_occurrence_refs (
+    id bigint NOT NULL,
+    project_id bigint NOT NULL,
+    sbom_occurrence_id bigint NOT NULL,
+    security_project_tracked_context_id bigint NOT NULL,
+    commit_sha bytea NOT NULL,
+    pipeline_id bigint
+);
+
+CREATE SEQUENCE sbom_occurrence_refs_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+ALTER SEQUENCE sbom_occurrence_refs_id_seq OWNED BY sbom_occurrence_refs.id;
+
 CREATE TABLE sbom_occurrences (
     id bigint NOT NULL,
     created_at timestamp with time zone NOT NULL,
@@ -31544,6 +31562,8 @@ ALTER TABLE ONLY sbom_components ALTER COLUMN id SET DEFAULT nextval('sbom_compo
 
 ALTER TABLE ONLY sbom_graph_paths ALTER COLUMN id SET DEFAULT nextval('sbom_graph_paths_id_seq'::regclass);
 
+ALTER TABLE ONLY sbom_occurrence_refs ALTER COLUMN id SET DEFAULT nextval('sbom_occurrence_refs_id_seq'::regclass);
+
 ALTER TABLE ONLY sbom_occurrences ALTER COLUMN id SET DEFAULT nextval('sbom_occurrences_id_seq'::regclass);
 
 ALTER TABLE ONLY sbom_occurrences_vulnerabilities ALTER COLUMN id SET DEFAULT nextval('sbom_occurrences_vulnerabilities_id_seq'::regclass);
@@ -35057,6 +35077,9 @@ ALTER TABLE ONLY sbom_components
 ALTER TABLE ONLY sbom_graph_paths
     ADD CONSTRAINT sbom_graph_paths_pkey PRIMARY KEY (id);
 
+ALTER TABLE ONLY sbom_occurrence_refs
+    ADD CONSTRAINT sbom_occurrence_refs_pkey PRIMARY KEY (id);
+
 ALTER TABLE ONLY sbom_occurrences
     ADD CONSTRAINT sbom_occurrences_pkey PRIMARY KEY (id);
 
@@ -38229,6 +38252,10 @@ CREATE INDEX idx_sbom_graph_paths_project_created ON sbom_graph_paths USING btre
 CREATE INDEX idx_sbom_graph_paths_project_path_length_created ON sbom_graph_paths USING btree (project_id, path_length, created_at);
 
 CREATE INDEX idx_sbom_occurr_on_project_component_version_input_file_path ON sbom_occurrences USING btree (project_id, component_version_id, input_file_path);
+
+CREATE INDEX idx_sbom_occurrence_refs_on_occurrence_id ON sbom_occurrence_refs USING btree (sbom_occurrence_id);
+
+CREATE INDEX idx_sbom_occurrence_refs_on_sec_prj_trck_cnxt_id ON sbom_occurrence_refs USING btree (security_project_tracked_context_id);
 
 CREATE INDEX idx_sbom_occurrences_on_project_id_and_source_id ON sbom_occurrences USING btree (project_id, source_id);
 
@@ -42213,6 +42240,10 @@ CREATE INDEX index_sbom_graph_paths_on_project_id_and_descendant_id ON sbom_grap
 CREATE INDEX index_sbom_graph_paths_on_project_id_and_id ON sbom_graph_paths USING btree (project_id, id);
 
 CREATE INDEX index_sbom_occurr_on_project_id_and_component_version_id_and_id ON sbom_occurrences USING btree (project_id, component_version_id, id);
+
+CREATE INDEX index_sbom_occurrence_refs_on_pipeline_id ON sbom_occurrence_refs USING btree (pipeline_id);
+
+CREATE INDEX index_sbom_occurrence_refs_on_project_id ON sbom_occurrence_refs USING btree (project_id);
 
 CREATE INDEX index_sbom_occurrences_on_component_id_and_id ON sbom_occurrences USING btree (component_id, id);
 
@@ -47821,6 +47852,9 @@ ALTER TABLE ONLY packages_nuget_metadata
 ALTER TABLE ONLY merge_request_user_mentions
     ADD CONSTRAINT fk_217c683366 FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE CASCADE;
 
+ALTER TABLE ONLY sbom_occurrence_refs
+    ADD CONSTRAINT fk_217f4c9833 FOREIGN KEY (sbom_occurrence_id) REFERENCES sbom_occurrences(id) ON DELETE CASCADE;
+
 ALTER TABLE ONLY security_pipeline_execution_project_schedules
     ADD CONSTRAINT fk_21a3dca413 FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE CASCADE;
 
@@ -48657,6 +48691,9 @@ ALTER TABLE ONLY system_note_metadata
 
 ALTER TABLE ONLY todos
     ADD CONSTRAINT fk_78558e5d74 FOREIGN KEY (organization_id) REFERENCES organizations(id) ON DELETE CASCADE NOT VALID;
+
+ALTER TABLE ONLY sbom_occurrence_refs
+    ADD CONSTRAINT fk_7892e301be FOREIGN KEY (security_project_tracked_context_id) REFERENCES security_project_tracked_contexts(id) ON DELETE CASCADE;
 
 ALTER TABLE ONLY analytics_devops_adoption_snapshots
     ADD CONSTRAINT fk_78c9eac821 FOREIGN KEY (namespace_id) REFERENCES namespaces(id) ON DELETE CASCADE;

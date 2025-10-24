@@ -14,6 +14,7 @@ module EE
         has_many :downstream_bridges, class_name: '::Ci::Bridge', foreign_key: :upstream_pipeline_id
         has_many :security_scans, class_name: 'Security::Scan', inverse_of: :pipeline
         has_many :security_findings, class_name: 'Security::Finding', through: :security_scans, source: :findings
+        has_many :sbom_occurrence_refs, class_name: 'Sbom::OccurrenceRef', foreign_key: :pipeline_id, inverse_of: :pipeline
 
         has_one :dast_profiles_pipeline, class_name: 'Dast::ProfilesPipeline', foreign_key: :ci_pipeline_id
         has_one :dast_profile, class_name: 'Dast::Profile', through: :dast_profiles_pipeline, disable_joins: true

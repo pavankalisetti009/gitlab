@@ -202,6 +202,10 @@ module EE
       has_many :vulnerability_hooks_integrations, -> { vulnerability_hooks }, class_name: 'Integration'
 
       has_many :sbom_occurrences, inverse_of: :project, class_name: 'Sbom::Occurrence'
+      has_many :sbom_occurrence_refs,
+        class_name: 'Sbom::OccurrenceRef',
+        foreign_key: :project_id,
+        inverse_of: :project
 
       has_one :analytics_dashboards_pointer, class_name: 'Analytics::Dashboards::DashboardsPointer', foreign_key: :project_id
       accepts_nested_attributes_for :analytics_dashboards_pointer, allow_destroy: true
