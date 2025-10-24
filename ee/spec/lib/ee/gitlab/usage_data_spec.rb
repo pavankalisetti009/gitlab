@@ -403,7 +403,6 @@ RSpec.describe Gitlab::UsageData, feature_category: :service_ping do
         user    = create(:user, dashboard: 'operations')
         project = create(:project, creator: user)
         create(:users_ops_dashboard_project, user: user)
-        create(:prometheus_integration, project: project)
         create(:project_incident_management_setting, :sla_enabled, project: project)
       end
 

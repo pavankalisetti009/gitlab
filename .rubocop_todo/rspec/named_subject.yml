@@ -1994,7 +1994,6 @@ RSpec/NamedSubject:
     - 'spec/lib/gitlab/plantuml_spec.rb'
     - 'spec/lib/gitlab/popen/runner_spec.rb'
     - 'spec/lib/gitlab/process_memory_cache/helper_spec.rb'
-    - 'spec/lib/gitlab/prometheus/adapter_spec.rb'
     - 'spec/lib/gitlab/prometheus_client_spec.rb'
     - 'spec/lib/gitlab/puma/error_handler_spec.rb'
     - 'spec/lib/gitlab/puma_logging/json_formatter_spec.rb'

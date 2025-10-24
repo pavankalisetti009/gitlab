@@ -52664,21 +52664,6 @@ msgstr ""
 msgid "Project|already in use"
 msgstr ""
 
-msgid "PrometheusService|Active"
-msgstr ""
-
-msgid "PrometheusService|Monitor application health with Prometheus metrics and dashboards"
-msgstr ""
-
-msgid "PrometheusService|Select this checkbox to override the auto configuration settings with your own settings."
-msgstr ""
-
-msgid "PrometheusService|The Prometheus API base URL."
-msgstr ""
-
-msgid "PrometheusService|https://prometheus.example.com/"
-msgstr ""
-
 msgid "Promote"
 msgstr ""
 
