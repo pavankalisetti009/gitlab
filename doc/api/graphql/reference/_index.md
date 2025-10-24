@@ -39866,6 +39866,7 @@ Returns [`[CiConfigVariable!]`](#ciconfigvariable).
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
+| <a id="projectciconfigvariablesfailoncachemiss"></a>`failOnCacheMiss` | [`Boolean`](#boolean) | Whether to throw an error if cache is not ready. |
 | <a id="projectciconfigvariablesref"></a>`ref` | [`String!`](#string) | Ref. |
 
 ##### `Project.ciPipelineCreationInputs`
