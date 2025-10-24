@@ -15,6 +15,26 @@ RSpec.describe ::CloudConnector, feature_category: :system_access do
     end
   end
 
+  describe '.deployment_type' do
+    subject { described_class.deployment_type }
+
+    context 'when the current instance is gitlab.com', :saas do
+      it { is_expected.to eq(described_class::GITLAB_REALM_COM) }
+    end
+
+    context 'when the current instance is not saas' do
+      it { is_expected.to eq(described_class::GITLAB_REALM_SELF_MANAGED) }
+    end
+
+    context 'when the current instance is dedicated' do
+      before do
+        stub_application_setting(gitlab_dedicated_instance?: true)
+      end
+
+      it { is_expected.to eq(described_class::GITLAB_REALM_DEDICATED) }
+    end
+  end
+
   shared_examples 'building HTTP headers' do
     let(:expected_headers) do
       {
