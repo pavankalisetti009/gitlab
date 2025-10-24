@@ -1,3 +1,5 @@
+#import "~/graphql_shared/fragments/page_info.fragment.graphql"
+
 query getSubscriptionUsersUsage(
   $namespacePath: ID
   $first: Int
@@ -22,10 +24,7 @@ query getSubscriptionUsersUsage(
           }
         }
         pageInfo {
-          hasNextPage
-          hasPreviousPage
-          startCursor
-          endCursor
+          ...PageInfo
         }
       }
     }

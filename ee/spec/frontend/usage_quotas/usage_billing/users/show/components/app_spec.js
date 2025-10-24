@@ -96,6 +96,7 @@ describe('UsageBillingUserDashboardApp', () => {
     describe('usage cards', () => {
       it('renders included credits card with correct values', () => {
         const card = findIncludedCreditsCard();
+
         expect(card.exists()).toBe(true);
         expect(card.text()).toMatchInterpolatedText(`1k / 1k included credits used this month`);
       });
@@ -108,9 +109,7 @@ describe('UsageBillingUserDashboardApp', () => {
       });
     });
 
-    // NOTE: temporarily disabling specs for we don't have events field yet
-    // eslint-disable-next-line jest/no-disabled-tests
-    describe.skip('events', () => {
+    describe('events', () => {
       it('renders the events table', () => {
         const eventsTable = findEventsTable();
 

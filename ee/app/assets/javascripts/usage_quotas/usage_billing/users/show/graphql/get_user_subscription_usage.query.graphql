@@ -1,4 +1,13 @@
-query getUserSubscriptionUsage($namespacePath: ID, $username: String) {
+#import "~/graphql_shared/fragments/page_info.fragment.graphql"
+
+query getUserSubscriptionUsage(
+  $namespacePath: ID
+  $username: String
+  $first: Int
+  $last: Int
+  $after: String
+  $before: String
+) {
   subscriptionUsage(namespacePath: $namespacePath) {
     lastEventTransactionAt
 
@@ -21,20 +30,29 @@ query getUserSubscriptionUsage($namespacePath: ID, $username: String) {
             overageCreditsUsed
           }
 
-          # events(first: $first, last: $last, after: $after, before: $before) {
-          #   nodes {
-          #     timestamp
-          #     eventType
-          #     location {
-          #       name
-          #       webUrl
-          #     }
-          #     creditsUsed
-          #   }
-          #   pageInfo {
-          #     ...PageInfo
-          #   }
-          # }
+          events(first: $first, last: $last, after: $after, before: $before) {
+            nodes {
+              timestamp
+              eventType
+              location {
+                __typename
+                ... on Project {
+                  id
+                  name
+                  webUrl
+                }
+                ... on Group {
+                  id
+                  name
+                  webUrl
+                }
+              }
+              creditsUsed
+            }
+            pageInfo {
+              ...PageInfo
+            }
+          }
         }
       }
     }

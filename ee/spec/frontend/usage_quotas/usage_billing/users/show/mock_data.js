@@ -29,6 +29,8 @@ export const mockDataWithPool = {
                     timestamp: '2025-01-21T16:42:38Z',
                     eventType: 'Duo Workflow - Code Generation',
                     location: {
+                      __typename: 'Project',
+                      id: '1',
                       name: 'frontend-app',
                       webUrl: 'http://localhost:3000/frontend-app',
                     },
@@ -38,6 +40,8 @@ export const mockDataWithPool = {
                     timestamp: '2025-01-21T16:41:15Z',
                     eventType: 'Duo Chat - Extended Session',
                     location: {
+                      __typename: 'Group',
+                      id: '2',
                       name: 'group-app',
                       webUrl: 'http://localhost:3000/group-app',
                     },
@@ -47,6 +51,8 @@ export const mockDataWithPool = {
                     timestamp: '2025-01-21T16:40:22Z',
                     eventType: 'Code Suggestions - Completion',
                     location: {
+                      __typename: 'Project',
+                      id: '1',
                       name: 'frontend-app',
                       webUrl: 'http://localhost:3000/frontend-app',
                     },
@@ -56,6 +62,8 @@ export const mockDataWithPool = {
                     timestamp: '2025-01-21T16:39:45Z',
                     eventType: 'Duo Workflow - Test Generation',
                     location: {
+                      __typename: 'Group',
+                      id: '2',
                       name: 'group-app',
                       webUrl: 'http://localhost:3000/group-app',
                     },
@@ -65,6 +73,8 @@ export const mockDataWithPool = {
                     timestamp: '2025-01-21T16:38:12Z',
                     eventType: 'Code Review Assistant',
                     location: {
+                      __typename: 'Project',
+                      id: '1',
                       name: 'frontend-app',
                       webUrl: 'http://localhost:3000/frontend-app',
                     },
@@ -80,6 +90,8 @@ export const mockDataWithPool = {
                     timestamp: '2025-01-21T16:36:58Z',
                     eventType: 'Code Suggestions - Refactoring',
                     location: {
+                      __typename: 'Project',
+                      id: '1',
                       name: 'frontend-app',
                       webUrl: 'http://localhost:3000/frontend-app',
                     },
@@ -89,6 +101,8 @@ export const mockDataWithPool = {
                     timestamp: '2025-01-21T16:35:41Z',
                     eventType: 'Vulnerability Explanation',
                     location: {
+                      __typename: 'Group',
+                      id: '2',
                       name: 'group-app',
                       webUrl: 'http://localhost:3000/group-app',
                     },
@@ -98,6 +112,8 @@ export const mockDataWithPool = {
                     timestamp: '2025-01-21T16:34:27Z',
                     eventType: 'Duo Workflow - Code Generation',
                     location: {
+                      __typename: 'Project',
+                      id: '1',
                       name: 'frontend-app',
                       webUrl: 'http://localhost:3000/frontend-app',
                     },
@@ -107,6 +123,8 @@ export const mockDataWithPool = {
                     timestamp: '2025-01-21T16:33:05Z',
                     eventType: 'Duo Workflow - Code Generation',
                     location: {
+                      __typename: 'Project',
+                      id: '1',
                       name: 'frontend-app',
                       webUrl: 'http://localhost:3000/frontend-app',
                     },
@@ -116,6 +134,8 @@ export const mockDataWithPool = {
                     timestamp: '2025-01-21T16:31:52Z',
                     eventType: 'Duo Workflow - Code Generation',
                     location: {
+                      __typename: 'Project',
+                      id: '1',
                       name: 'frontend-app',
                       webUrl: 'http://localhost:3000/frontend-app',
                     },
@@ -144,6 +164,7 @@ export const mockDataWithoutPool = {
       ...mockDataWithPool.data.subscriptionUsage,
 
       monthlyCommitment: {
+        creditsUsed: 0,
         totalCredits: 0,
       },
 
@@ -155,7 +176,7 @@ export const mockDataWithoutPool = {
               ...mockDataWithPool.data.subscriptionUsage.usersUsage.users.nodes[0],
               usage: {
                 ...mockDataWithPool.data.subscriptionUsage.usersUsage.users.nodes[0].usage,
-                poolCreditsUsed: 0,
+                monthlyCommitmentCreditsUsed: 0,
               },
             },
           ],
@@ -171,6 +192,7 @@ export const mockEmptyData = {
       ...mockDataWithPool.data.subscriptionUsage,
 
       monthlyCommitment: {
+        creditsUsed: 0,
         totalCredits: 1000,
       },
 
@@ -184,7 +206,7 @@ export const mockEmptyData = {
               usage: {
                 creditsUsed: 0,
                 totalCredits: 0,
-                poolCreditsUsed: 0,
+                monthlyCommitmentCreditsUsed: 0,
                 oneTimeCreditsUsed: 0,
                 overageCreditsUsed: 0,
               },
