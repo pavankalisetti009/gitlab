@@ -12,6 +12,7 @@ import {
   usageDataNoPoolNoOverage,
   usageDataNoPoolWithOverage,
   usageDataWithPoolWithOverage,
+  usageDataWithOtcCredits,
 } from 'ee_jest/usage_quotas/usage_billing/mock_data';
 import { createMockClient } from 'helpers/mock_apollo_helper';
 import axios from '~/lib/utils/axios_utils';
@@ -131,6 +132,21 @@ export const NoPoolNoOverage = {
       Promise.resolve(mockUsersUsageDataWithoutPool);
 
     const getSubscriptionUsageQueryHandler = () => Promise.resolve(usageDataNoPoolNoOverage);
+
+    return createTemplate({
+      restUsageDataHandler,
+      getSubscriptionUsersUsageQueryHandler,
+      getSubscriptionUsageQueryHandler,
+    })(...args);
+  },
+};
+
+export const WithOtcCredits = {
+  render: (...args) => {
+    const restUsageDataHandler = () => Promise.resolve([200, mockUsageDataWithoutPool]);
+    const getSubscriptionUsersUsageQueryHandler = () => Promise.resolve(usageDataWithOtcCredits);
+
+    const getSubscriptionUsageQueryHandler = () => Promise.resolve(usageDataWithOtcCredits);
 
     return createTemplate({
       restUsageDataHandler,

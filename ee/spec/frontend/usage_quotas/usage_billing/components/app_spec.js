@@ -4,6 +4,7 @@ import VueApollo from 'vue-apollo';
 import MockAdapter from 'axios-mock-adapter';
 import CurrentUsageCard from 'ee/usage_quotas/usage_billing/components/current_usage_card.vue';
 import CurrentOverageUsageCard from 'ee/usage_quotas/usage_billing/components/current_overage_usage_card.vue';
+import OneTimeCreditsCard from 'ee/usage_quotas/usage_billing/components/one_time_credits_card.vue';
 import PurchaseCommitmentCard from 'ee/usage_quotas/usage_billing/components/purchase_commitment_card.vue';
 import getSubscriptionUsageQuery from 'ee/usage_quotas/usage_billing/graphql/get_subscription_usage.query.graphql';
 import createMockApollo from 'helpers/mock_apollo_helper';
@@ -23,6 +24,7 @@ import {
   usageDataNoPoolWithOverage,
   usageDataWithPool,
   usageDataWithoutLastEventTransactionAt,
+  usageDataWithOtcCredits,
 } from '../mock_data';
 
 jest.mock('~/lib/logger');
@@ -126,7 +128,7 @@ describe('UsageBillingApp', () => {
         await waitForPromises();
       });
 
-      it('does not renders the page heading description', () => {
+      it('does not render the page heading description', () => {
         expect(findPageHeading().text()).not.toContain('Last updated:');
         expect(findPageHeading().findComponent(UserDate).exists()).toBe(false);
       });
@@ -150,6 +152,26 @@ describe('UsageBillingApp', () => {
 
       it('does not render purchase-commitment-card', () => {
         expect(wrapper.findComponent(PurchaseCommitmentCard).exists()).toBe(false);
+      });
+    });
+
+    it('does not render one-time-credits-card', () => {
+      expect(wrapper.findComponent(OneTimeCreditsCard).exists()).toBe(false);
+    });
+
+    describe('with one-time credits data', () => {
+      beforeEach(async () => {
+        const mockQueryHandler = jest.fn().mockResolvedValue(usageDataWithOtcCredits);
+
+        createComponent({ mockQueryHandler });
+        await waitForPromises();
+      });
+
+      it('renders one-time-credits-card', () => {
+        expect(wrapper.findComponent(OneTimeCreditsCard).props()).toMatchObject({
+          remainingCredits: 500,
+          usedCredits: 2500,
+        });
       });
     });
   });

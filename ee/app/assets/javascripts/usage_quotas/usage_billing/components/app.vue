@@ -12,6 +12,7 @@ import PurchaseCommitmentCard from './purchase_commitment_card.vue';
 import UsageByUserTab from './usage_by_user_tab.vue';
 import CurrentUsageCard from './current_usage_card.vue';
 import CurrentOverageUsageCard from './current_overage_usage_card.vue';
+import OneTimeCreditsCard from './one_time_credits_card.vue';
 
 export default {
   name: 'UsageBillingApp',
@@ -23,6 +24,7 @@ export default {
     CurrentUsageCard,
     CurrentOverageUsageCard,
     UserDate,
+    OneTimeCreditsCard,
   },
   apollo: {
     subscriptionUsage: {
@@ -75,6 +77,12 @@ export default {
     },
     isLoading() {
       return this.isFetchingData || this.$apollo.queries.subscriptionUsage.loading;
+    },
+    otcRemainingCredits() {
+      return this.subscriptionUsage?.oneTimeCredits?.totalCreditsRemaining;
+    },
+    otcUsedCredits() {
+      return this.subscriptionUsage?.oneTimeCredits?.creditsUsed;
     },
   },
   async mounted() {
@@ -149,6 +157,12 @@ export default {
     </div>
     <template v-else>
       <section class="gl-flex gl-flex-col gl-gap-5 @md/panel:gl-flex-row">
+        <one-time-credits-card
+          v-if="otcUsedCredits"
+          :remaining-credits="otcRemainingCredits"
+          :used-credits="otcUsedCredits"
+        />
+
         <current-usage-card
           v-if="poolIsAvailable"
           :pool-total-credits="poolTotalCredits"
