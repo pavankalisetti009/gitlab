@@ -125,6 +125,47 @@ RSpec.describe Gitlab::RackAttack::RequestThrottleData, feature_category: :rate_
       expect(data.observed).to eq(3700)
       expect(data.now).to eq(Time.utc(2021, 1, 5, 10, 29, 30).to_i)
     end
+
+    context 'when name is nil' do
+      it 'returns nil and logs a warning' do
+        expect(Gitlab::AppLogger).to receive(:warn).with(
+          class: 'Gitlab::RackAttack::RequestThrottleData',
+          message: '.from_rack_attack called with nil throttle name'
+        )
+
+        result = described_class.from_rack_attack(nil, match_data)
+
+        expect(result).to be_nil
+      end
+    end
+
+    context 'when required keys are missing' do
+      it 'returns nil and logs a warning when count is missing' do
+        incomplete_data = match_data.except(:count)
+
+        expect(Gitlab::AppLogger).to receive(:warn).with(
+          class: 'Gitlab::RackAttack::RequestThrottleData',
+          message: /.from_rack_attack called with incomplete data/
+        )
+
+        result = described_class.from_rack_attack('throttle_unauthenticated', incomplete_data)
+
+        expect(result).to be_nil
+      end
+
+      it 'returns nil and logs a warning when multiple keys are missing' do
+        incomplete_data = match_data.except(:count, :limit, :epoch_time)
+
+        expect(Gitlab::AppLogger).to receive(:warn).with(
+          class: 'Gitlab::RackAttack::RequestThrottleData',
+          message: /.from_rack_attack called with incomplete data/
+        )
+
+        result = described_class.from_rack_attack('throttle_unauthenticated', incomplete_data)
+
+        expect(result).to be_nil
+      end
+    end
   end
 
   describe '#common_response_headers' do

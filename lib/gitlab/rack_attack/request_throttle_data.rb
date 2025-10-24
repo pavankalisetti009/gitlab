@@ -37,9 +37,24 @@ module Gitlab
         # Match data example:
         # {:discriminator=>"127.0.0.1", :count=>12, :period=>60 seconds, :limit=>1, :epoch_time=>1609833930}
         # Source: https://github.com/rack/rack-attack/blob/v6.3.0/lib/rack/attack/throttle.rb#L33
+        unless name
+          Gitlab::AppLogger.warn(
+            class: self.name.to_s,
+            message: '.from_rack_attack called with nil throttle name'
+          )
+          return
+        end
 
-        return unless name
-        return unless %i[count epoch_time period limit].all? { |key| data.key?(key) }
+        required_keys = %i[count epoch_time period limit]
+        missing_keys = required_keys.reject { |key| data.key?(key) }
+
+        if missing_keys.any?
+          Gitlab::AppLogger.warn(
+            class: self.name.to_s,
+            message: ".from_rack_attack called with incomplete data for throttle #{name} (#{missing_keys.join(', ')}"
+          )
+          return
+        end
 
         new(
           name: name.to_s,
