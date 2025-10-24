@@ -3,7 +3,7 @@
 module Vulnerabilities
   module Findings
     class RiskScoreCalculationService
-      attr_reader :vulnerabilities
+      attr_reader :vulnerability_ids
 
       BATCH_SIZE = 1000
 
@@ -16,7 +16,7 @@ module Vulnerabilities
       end
 
       def execute
-        findings = Vulnerabilities::Finding.with_cve_enrichments.by_vulnerability(@vulnerability_ids)
+        findings = Vulnerabilities::Finding.with_cve_enrichments.by_vulnerability(vulnerability_ids)
         findings_to_update = filter_findings_by_feature_flag(findings)
 
         findings_to_update.each_slice(BATCH_SIZE) do |findings_batch|
@@ -36,8 +36,9 @@ module Vulnerabilities
             update_only: [:risk_score]
           )
 
-          log_updates
+          log_updates(findings_to_update.map(&:vulnerability_id))
         end
+        sync_elasticsearch
       end
 
       private
@@ -64,13 +65,17 @@ module Vulnerabilities
         @timestamp ||= Time.current
       end
 
-      def log_updates
+      def log_updates(ids)
         Gitlab::AppLogger.info(
           class: self.class.name,
           message: "Vulnerability finding risk scores updated",
-          vulnerability_ids: @vulnerability_ids,
+          vulnerability_ids: ids,
           timestamp: timestamp
         )
+      end
+
+      def sync_elasticsearch
+        Vulnerabilities::EsHelper.sync_elasticsearch(vulnerability_ids)
       end
     end
   end

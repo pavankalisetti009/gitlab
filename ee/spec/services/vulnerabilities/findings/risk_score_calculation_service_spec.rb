@@ -89,6 +89,13 @@ RSpec.describe Vulnerabilities::Findings::RiskScoreCalculationService, feature_c
         service.execute
       end
 
+      it "syncs to elasticsearch" do
+        expect(Vulnerabilities::EsHelper).to receive(:sync_elasticsearch)
+          .with(vulnerability_ids)
+
+        service.execute
+      end
+
       context "with findings from different groups" do
         let_it_be(:project_2) { create(:project) }
         let_it_be(:vulnerability_list_2) { create_list(:vulnerability, 2, project: project_2) }
