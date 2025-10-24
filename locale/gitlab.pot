@@ -48994,7 +48994,7 @@ msgstr ""
 msgid "Pipelines|Try test template"
 msgstr ""
 
-msgid "Pipelines|Unable to create pipeline"
+msgid "Pipelines|Unable to run pipeline"
 msgstr ""
 
 msgid "Pipelines|Unable to validate CI/CD configuration. See the %{linkStart}GitLab CI/CD troubleshooting guide%{linkEnd} for more details."
