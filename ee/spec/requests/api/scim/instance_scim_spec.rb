@@ -526,24 +526,6 @@ RSpec.describe API::Scim::InstanceScim, feature_category: :system_access do
   end
 
   describe 'resource :Groups' do
-    before do
-      stub_feature_flags(self_managed_scim_group_sync: true)
-    end
-
-    shared_examples 'Groups feature flag check' do
-      context 'when self_managed_scim_group_sync feature flag is disabled' do
-        before do
-          stub_feature_flags(self_managed_scim_group_sync: false)
-        end
-
-        it 'returns not found' do
-          api_request
-
-          expect(response).to have_gitlab_http_status(:not_found)
-        end
-      end
-    end
-
     shared_context 'with BSO (block seat overages) enabled', :sidekiq_inline do
       before do
         stub_feature_flags(bso_minimal_access_fallback: true)
@@ -623,7 +605,6 @@ RSpec.describe API::Scim::InstanceScim, feature_category: :system_access do
         post api('scim/v2/application/Groups', user, version: '', access_token: scim_token), params: post_params
       end
 
-      it_behaves_like 'Groups feature flag check'
       it_behaves_like 'Not available to SaaS customers'
       it_behaves_like 'Instance level SCIM license required'
       it_behaves_like 'SCIM token authenticated'
@@ -721,7 +702,6 @@ RSpec.describe API::Scim::InstanceScim, feature_category: :system_access do
         get api("scim/v2/application/Groups/#{scim_group_uid}", user, version: '', access_token: scim_token)
       end
 
-      it_behaves_like 'Groups feature flag check'
       it_behaves_like 'Not available to SaaS customers'
       it_behaves_like 'Instance level SCIM license required'
       it_behaves_like 'SCIM token authenticated'
@@ -826,16 +806,11 @@ RSpec.describe API::Scim::InstanceScim, feature_category: :system_access do
         get api(url, user, version: '', access_token: scim_token)
       end
 
-      before do
-        stub_feature_flags(self_managed_scim_group_sync: true)
-      end
-
       it_behaves_like 'Not available to SaaS customers'
       it_behaves_like 'Instance level SCIM license required'
       it_behaves_like 'SCIM token authenticated'
       it_behaves_like 'SAML SSO must be enabled'
       it_behaves_like 'sets current organization'
-      it_behaves_like 'Groups feature flag check'
 
       context 'with groups' do
         before do
@@ -945,7 +920,6 @@ RSpec.describe API::Scim::InstanceScim, feature_category: :system_access do
           params: patch_params
       end
 
-      it_behaves_like 'Groups feature flag check'
       it_behaves_like 'Not available to SaaS customers'
       it_behaves_like 'Instance level SCIM license required'
       it_behaves_like 'SCIM token authenticated'
@@ -1323,7 +1297,6 @@ RSpec.describe API::Scim::InstanceScim, feature_category: :system_access do
           params: put_params
       end
 
-      it_behaves_like 'Groups feature flag check'
       it_behaves_like 'Not available to SaaS customers'
       it_behaves_like 'Instance level SCIM license required'
       it_behaves_like 'SCIM token authenticated'
@@ -1499,7 +1472,6 @@ RSpec.describe API::Scim::InstanceScim, feature_category: :system_access do
         delete api("scim/v2/application/Groups/#{scim_group_uid}", user, version: '', access_token: scim_token)
       end
 
-      it_behaves_like 'Groups feature flag check'
       it_behaves_like 'Not available to SaaS customers'
       it_behaves_like 'Instance level SCIM license required'
       it_behaves_like 'SCIM token authenticated'

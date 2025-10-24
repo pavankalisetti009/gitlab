@@ -31,17 +31,5 @@ RSpec.describe Authn::CleanupScimGroupMembershipsWorker, feature_category: :syst
         worker.perform(nil)
       end
     end
-
-    context 'when the self_managed_scim_group_sync feature flag is disabled' do
-      before do
-        stub_feature_flags(self_managed_scim_group_sync: false)
-      end
-
-      it 'returns early' do
-        expect(Authn::ScimGroupMembership).not_to receive(:by_scim_group_uid)
-
-        worker.perform(scim_group_uid)
-      end
-    end
   end
 end
