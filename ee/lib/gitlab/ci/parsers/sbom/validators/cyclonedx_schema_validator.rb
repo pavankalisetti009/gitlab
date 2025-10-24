@@ -8,7 +8,7 @@ module Gitlab
           class CyclonedxSchemaValidator
             SUPPORTED_SPEC_VERSIONS = %w[1.4 1.5 1.6].freeze
 
-            SCHEMA_BASE_PATH = Rails.root.join('app', 'validators', 'json_schemas', 'cyclonedx').freeze
+            SCHEMA_BASE_PATH = Rails.root.join("ee/app/validators/json_schemas/cyclonedx").freeze
 
             def initialize(report_data)
               @report_data = report_data

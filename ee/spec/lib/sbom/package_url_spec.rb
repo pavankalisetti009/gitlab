@@ -33,7 +33,7 @@ RSpec.describe Sbom::PackageUrl, feature_category: :dependency_management do
   include NextInstanceOf
 
   describe '#initialize' do
-    subject do
+    subject(:init) do
       described_class.new(
         type: type,
         namespace: namespace,
@@ -48,7 +48,7 @@ RSpec.describe Sbom::PackageUrl, feature_category: :dependency_management do
       include_context 'with valid purl examples'
 
       with_them do
-        it do
+        it 'has correct attributes' do
           is_expected.to have_attributes(
             type: type,
             namespace: namespace,
@@ -70,7 +70,7 @@ RSpec.describe Sbom::PackageUrl, feature_category: :dependency_management do
 
       with_them do
         it 'raises an ArgumentError' do
-          expect { subject }.to raise_error(ArgumentError)
+          expect { init }.to raise_error(ArgumentError)
         end
       end
     end
@@ -123,7 +123,7 @@ RSpec.describe Sbom::PackageUrl, feature_category: :dependency_management do
     include_context 'with valid purl examples'
 
     with_them do
-      it do
+      it 'has correct attributes' do
         is_expected.to eq(
           {
             scheme: 'pkg',

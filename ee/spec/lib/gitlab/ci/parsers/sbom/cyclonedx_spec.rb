@@ -24,8 +24,7 @@ RSpec.describe Gitlab::Ci::Parsers::Sbom::Cyclonedx, feature_category: :dependen
 
   before do
     allow_next_instance_of(Gitlab::Ci::Parsers::Sbom::Validators::CyclonedxSchemaValidator) do |validator|
-      allow(validator).to receive(:valid?).and_return(report_valid?)
-      allow(validator).to receive(:errors).and_return(validator_errors)
+      allow(validator).to receive_messages(valid?: report_valid?, errors: validator_errors)
     end
 
     allow(SecureRandom).to receive(:uuid).and_return(uuid)

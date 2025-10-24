@@ -13,6 +13,7 @@ module EE
               dependency_scanning: ::Gitlab::Ci::Parsers::Security::DependencyScanning,
               container_scanning: ::Gitlab::Ci::Parsers::Security::ContainerScanning,
               cluster_image_scanning: ::Gitlab::Ci::Parsers::Security::ClusterImageScanning,
+              cyclonedx: ::Gitlab::Ci::Parsers::Sbom::Cyclonedx,
               dast: ::Gitlab::Ci::Parsers::Security::Dast,
               api_fuzzing: ::Gitlab::Ci::Parsers::Security::Dast,
               coverage_fuzzing: ::Gitlab::Ci::Parsers::Security::CoverageFuzzing,

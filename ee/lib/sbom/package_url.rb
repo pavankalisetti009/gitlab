@@ -46,6 +46,32 @@ module Sbom
     # @see #parse
     InvalidPackageUrl = Class.new(ArgumentError)
 
+    # Creates a new PackageUrl from a string.
+    # @param [String] string The package URL string.
+    # @raise [InvalidPackageUrl] If the string is not a valid package URL.
+    # @return [PackageUrl]
+    def self.parse(string)
+      Decoder.new(string).decode!
+    end
+
+    # Constructs a package URL from its components
+    # @param type [String] The package type or protocol.
+    # @param namespace [String] A name prefix, specific to the type of package.
+    # @param name [String] The name of the package.
+    # @param version [String] The version of the package.
+    # @param qualifiers [Hash] Extra qualifying data for a package, specific to the type of package.
+    # @param subpath [String] An extra subpath within a package, relative to the package root.
+    def initialize(type:, name:, namespace: nil, version: nil, qualifiers: nil, subpath: nil)
+      @type = type&.downcase
+      @namespace = namespace
+      @name = name
+      @version = version
+      @qualifiers = qualifiers
+      @subpath = subpath
+
+      ArgumentValidator.new(self).validate!
+    end
+
     # The URL scheme, which has a constant value of `"pkg"`.
     def scheme
       'pkg'
@@ -70,32 +96,6 @@ module Sbom
 
     # An extra subpath within a package, relative to the package root.
     attr_reader :subpath
-
-    # Constructs a package URL from its components
-    # @param type [String] The package type or protocol.
-    # @param namespace [String] A name prefix, specific to the type of package.
-    # @param name [String] The name of the package.
-    # @param version [String] The version of the package.
-    # @param qualifiers [Hash] Extra qualifying data for a package, specific to the type of package.
-    # @param subpath [String] An extra subpath within a package, relative to the package root.
-    def initialize(type:, name:, namespace: nil, version: nil, qualifiers: nil, subpath: nil)
-      @type = type&.downcase
-      @namespace = namespace
-      @name = name
-      @version = version
-      @qualifiers = qualifiers
-      @subpath = subpath
-
-      ArgumentValidator.new(self).validate!
-    end
-
-    # Creates a new PackageUrl from a string.
-    # @param [String] string The package URL string.
-    # @raise [InvalidPackageUrl] If the string is not a valid package URL.
-    # @return [PackageUrl]
-    def self.parse(string)
-      Decoder.new(string).decode!
-    end
 
     # Returns a hash containing the
     # scheme, type, namespace, name, version, qualifiers, and subpath components

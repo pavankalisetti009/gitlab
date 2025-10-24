@@ -34,7 +34,7 @@ RSpec.describe ::Sbom::Exporters::Cyclonedx::V16JsonService, feature_category: :
   end
 
   describe 'schema' do
-    let(:schema) { JSONSchemer.schema(Pathname.new('app/validators/json_schemas/cyclonedx/bom-1.6.schema.json')) }
+    let(:schema) { JSONSchemer.schema(Pathname.new('ee/app/validators/json_schemas/cyclonedx/bom-1.6.schema.json')) }
     let(:errors) { schema.validate(output).map { |e| JSONSchemer::Errors.pretty(e) } }
 
     it 'conforms to specification version 1.6' do
