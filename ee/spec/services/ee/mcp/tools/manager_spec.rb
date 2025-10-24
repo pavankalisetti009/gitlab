@@ -3,16 +3,23 @@
 require 'spec_helper'
 
 RSpec.describe Mcp::Tools::Manager, feature_category: :ai_agents do
-  let(:get_mcp_server_version_service) { Mcp::Tools::GetServerVersionService.new(name: 'get_mcp_server_version') }
-  let(:semantic_code_search_service) { Mcp::Tools::SearchCodebaseService.new(name: 'semantic_code_search') }
+  let(:api_double) { class_double(API::API) }
 
   before do
-    stub_const("#{described_class}::CUSTOM_TOOLS", { 'get_mcp_server_version' => get_mcp_server_version_service })
-    stub_const("EE::#{described_class}::EE_CUSTOM_TOOLS", { 'semantic_code_search' => semantic_code_search_service })
+    # Stub the CE CUSTOM_TOOLS with only CE tools
+    ce_custom_tools = {
+      'get_mcp_server_version' => Mcp::Tools::GetServerVersionService
+    }
+    stub_const("#{described_class}::CUSTOM_TOOLS", ce_custom_tools)
+
+    # Stub the EE_CUSTOM_TOOLS with EE tools
+    ee_custom_tools = {
+      'semantic_code_search' => Mcp::Tools::SearchCodebaseService
+    }
+    stub_const("EE::#{described_class}::EE_CUSTOM_TOOLS", ee_custom_tools)
   end
 
   describe '#initialize' do
-    let(:api_double) { class_double(API::API) }
     let(:routes) { [] }
 
     before do
@@ -24,7 +31,6 @@ RSpec.describe Mcp::Tools::Manager, feature_category: :ai_agents do
       it 'initializes with only custom tools' do
         manager = described_class.new
 
-        expect(manager.tools).to eq(described_class::CUSTOM_TOOLS.merge(described_class::EE_CUSTOM_TOOLS))
         expect(manager.tools.keys).to contain_exactly('get_mcp_server_version', 'semantic_code_search')
       end
     end
@@ -35,16 +41,16 @@ RSpec.describe Mcp::Tools::Manager, feature_category: :ai_agents do
       let(:route1) { instance_double(Grape::Router::Route, app: app1) }
       let(:route2) { instance_double(Grape::Router::Route, app: app2) }
       let(:routes) { [route1, route2] }
-      let(:mcp_settings1) { { tool_name: :create_user, params: [:name, :email] } }
-      let(:mcp_settings2) { { tool_name: :delete_user, params: [:id] } }
+      let(:mcp_settings1) { { tool_name: :create_user, params: [:name, :email], version: '1.0.0' } }
+      let(:mcp_settings2) { { tool_name: :delete_user, params: [:id], version: '1.1.0' } }
       let(:api_tool1) { instance_double(Mcp::Tools::ApiTool) }
       let(:api_tool2) { instance_double(Mcp::Tools::ApiTool) }
 
       before do
         allow(app1).to receive(:route_setting).with(:mcp).and_return(mcp_settings1)
         allow(app2).to receive(:route_setting).with(:mcp).and_return(mcp_settings2)
-        allow(Mcp::Tools::ApiTool).to receive(:new).with(route1).and_return(api_tool1)
-        allow(Mcp::Tools::ApiTool).to receive(:new).with(route2).and_return(api_tool2)
+        allow(Mcp::Tools::ApiTool).to receive(:new).with(name: 'create_user', route: route1).and_return(api_tool1)
+        allow(Mcp::Tools::ApiTool).to receive(:new).with(name: 'delete_user', route: route2).and_return(api_tool2)
       end
 
       it 'creates ApiTool instances for routes with MCP settings' do
@@ -53,8 +59,8 @@ RSpec.describe Mcp::Tools::Manager, feature_category: :ai_agents do
         expect(manager.tools).to include(
           'create_user' => api_tool1,
           'delete_user' => api_tool2,
-          'get_mcp_server_version' => get_mcp_server_version_service,
-          'semantic_code_search' => semantic_code_search_service
+          'get_mcp_server_version' => be_a(Mcp::Tools::GetServerVersionService),
+          'semantic_code_search' => be_a(Mcp::Tools::SearchCodebaseService)
         )
         expect(manager.tools.size).to eq(4)
       end
@@ -82,7 +88,7 @@ RSpec.describe Mcp::Tools::Manager, feature_category: :ai_agents do
         allow(app1).to receive(:route_setting).with(:mcp).and_return(mcp_settings1)
         allow(app2).to receive(:route_setting).with(:mcp).and_return(nil)
         allow(app3).to receive(:route_setting).with(:mcp).and_return({})
-        allow(Mcp::Tools::ApiTool).to receive(:new).with(route1).and_return(api_tool1)
+        allow(Mcp::Tools::ApiTool).to receive(:new).with(name: 'valid_tool', route: route1).and_return(api_tool1)
       end
 
       it 'skips routes with blank MCP settings' do
@@ -90,46 +96,105 @@ RSpec.describe Mcp::Tools::Manager, feature_category: :ai_agents do
 
         expect(manager.tools).to include(
           'valid_tool' => api_tool1,
-          'get_mcp_server_version' => get_mcp_server_version_service,
-          'semantic_code_search' => semantic_code_search_service
+          'get_mcp_server_version' => be_a(Mcp::Tools::GetServerVersionService),
+          'semantic_code_search' => be_a(Mcp::Tools::SearchCodebaseService)
         )
         expect(manager.tools.size).to eq(3)
-        expect(Mcp::Tools::ApiTool).to have_received(:new).once.with(route1)
-        expect(Mcp::Tools::ApiTool).not_to have_received(:new).with(route2)
-        expect(Mcp::Tools::ApiTool).not_to have_received(:new).with(route3)
+        expect(Mcp::Tools::ApiTool).to have_received(:new).once.with(name: 'valid_tool', route: route1)
+        expect(Mcp::Tools::ApiTool).not_to have_received(:new).with('route2', route2)
+        expect(Mcp::Tools::ApiTool).not_to have_received(:new).with('route3', route3)
+      end
+    end
+  end
+
+  describe '#list_tools' do
+    it 'returns the tools hash' do
+      manager = described_class.new
+
+      expect(manager.list_tools).to eq(manager.tools)
+    end
+  end
+
+  describe '#get_tool' do
+    let(:manager) { described_class.new }
+
+    context 'with custom tool' do
+      context 'when requesting specific version' do
+        it 'returns the correct version' do
+          tool = manager.get_tool(name: 'get_mcp_server_version', version: '0.1.0')
+
+          expect(tool).to be_a(Mcp::Tools::GetServerVersionService)
+          expect(tool.version).to eq('0.1.0')
+        end
+      end
+
+      context 'when requesting latest version' do
+        it 'returns the latest version' do
+          tool = manager.get_tool(name: 'get_mcp_server_version')
+
+          expect(tool).to be_a(Mcp::Tools::GetServerVersionService)
+          expect(tool.version).to eq('0.1.0')
+        end
+      end
+
+      context 'when requesting non-existent version' do
+        it 'raises VersionNotFoundError' do
+          expect { manager.get_tool(name: 'get_mcp_server_version', version: '99.99.99') }
+            .to raise_error(described_class::VersionNotFoundError) do |error|
+              expect(error.tool_name).to eq('get_mcp_server_version')
+              expect(error.requested_version).to eq('99.99.99')
+              expect(error.available_versions).to eq(['0.1.0'])
+            end
+        end
       end
     end
 
-    context 'with mixed mcp and non-mcp routes' do
-      let(:app1) { instance_double(Grape::Endpoint) }
-      let(:app2) { instance_double(Grape::Endpoint) }
-      let(:app3) { instance_double(Grape::Endpoint) }
-      let(:route1) { instance_double(Grape::Router::Route, app: app1) }
-      let(:route2) { instance_double(Grape::Router::Route, app: app2) }
-      let(:route3) { instance_double(Grape::Router::Route, app: app3) }
-      let(:routes) { [route1, route2, route3] }
-      let(:mcp_settings1) { { tool_name: :first_tool, params: [:param1] } }
-      let(:mcp_settings3) { { tool_name: :third_tool, params: [:param3] } }
-      let(:api_tool1) { instance_double(Mcp::Tools::ApiTool) }
-      let(:api_tool3) { instance_double(Mcp::Tools::ApiTool) }
+    context 'with EE custom tool' do
+      context 'when requesting specific version' do
+        it 'returns the correct version' do
+          tool = manager.get_tool(name: 'semantic_code_search', version: '0.1.0')
 
-      before do
-        allow(app1).to receive(:route_setting).with(:mcp).and_return(mcp_settings1)
-        allow(app2).to receive(:route_setting).with(:mcp).and_return(nil)
-        allow(app3).to receive(:route_setting).with(:mcp).and_return(mcp_settings3)
-        allow(Mcp::Tools::ApiTool).to receive(:new).with(route1).and_return(api_tool1)
-        allow(Mcp::Tools::ApiTool).to receive(:new).with(route3).and_return(api_tool3)
+          expect(tool).to be_a(Mcp::Tools::SearchCodebaseService)
+          expect(tool.version).to eq('0.1.0')
+        end
       end
 
-      it 'only processes valid routes and merges with custom tools' do
-        manager = described_class.new
+      context 'when requesting latest version' do
+        it 'returns the latest version' do
+          tool = manager.get_tool(name: 'semantic_code_search')
 
-        expect(manager.tools).to eq(
-          'first_tool' => api_tool1,
-          'third_tool' => api_tool3,
-          'get_mcp_server_version' => get_mcp_server_version_service,
-          'semantic_code_search' => semantic_code_search_service
-        )
+          expect(tool).to be_a(Mcp::Tools::SearchCodebaseService)
+          expect(tool.version).to eq('0.1.0')
+        end
+      end
+
+      context 'when requesting non-existent version' do
+        it 'raises VersionNotFoundError' do
+          expect { manager.get_tool(name: 'semantic_code_search', version: '99.99.99') }
+            .to raise_error(::Mcp::Tools::Manager::VersionNotFoundError) do |error|
+              expect(error.tool_name).to eq('semantic_code_search')
+              expect(error.requested_version).to eq('99.99.99')
+              expect(error.available_versions).to eq(['0.1.0'])
+            end
+        end
+      end
+    end
+
+    context 'with non-existent tool' do
+      it 'raises ToolNotFoundError' do
+        expect { manager.get_tool(name: 'non_existent_tool') }
+          .to raise_error(described_class::ToolNotFoundError) do |error|
+            expect(error.tool_name).to eq('non_existent_tool')
+          end
+      end
+    end
+
+    context 'with invalid version format' do
+      it 'raises InvalidVersionFormatError' do
+        expect { manager.get_tool(name: 'get_mcp_server_version', version: 'invalid-version') }
+          .to raise_error(described_class::InvalidVersionFormatError) do |error|
+            expect(error.version).to eq('invalid-version')
+          end
       end
     end
   end

@@ -3,14 +3,115 @@
 require 'spec_helper'
 
 RSpec.describe Mcp::Tools::SearchCodebaseService, feature_category: :mcp_server do
-  let(:service) { described_class.new(name: 'get_code_context') }
+  let(:service_name) { 'get_code_context' }
   let(:current_user) { create(:user) }
   let(:project) { create :project, :repository }
   let_it_be(:oauth_token) { 'test_token_123' }
 
+  let(:service) { described_class.new(name: service_name, version: '0.1.0') }
+
+  describe 'version registration' do
+    it 'registers version 0.1.0' do
+      expect(described_class.version_exists?('0.1.0')).to be true
+    end
+
+    it 'has 0.1.0 as the latest version' do
+      expect(described_class.latest_version).to eq('0.1.0')
+    end
+
+    it 'returns available versions in order' do
+      expect(described_class.available_versions).to eq(['0.1.0'])
+    end
+  end
+
+  describe 'version metadata' do
+    describe 'version 0.1.0' do
+      let(:metadata) { described_class.version_metadata('0.1.0') }
+
+      it 'has correct description' do
+        expect(metadata[:description]).to eq <<~DESC.strip
+          Performs semantic code search across project files using vector similarity.
+
+          Returns ranked code snippets with file paths and content matches based on natural language queries.
+
+          Use this tool for questions about a project's codebase.
+          For example: "how something works" or "code that does X", or finding specific implementations.
+
+          This tool supports directory scoping and configurable result limits for targeted code discovery and analysis.
+        DESC
+      end
+
+      it 'has correct input schema' do
+        expect(metadata[:input_schema]).to eq({
+          type: 'object',
+          properties: {
+            semantic_query: {
+              type: 'string',
+              minLength: 1,
+              maxLength: 1000,
+              description: "A brief natural language query about the code you want to find in the project " \
+                "(e.g.: 'authentication middleware', 'database connection logic', or 'API error handling')."
+            },
+            project_id: {
+              type: 'string',
+              description: 'Either a project id or project path.'
+            },
+            directory_path: {
+              type: 'string',
+              minLength: 1,
+              maxLength: 100,
+              description: 'Optional directory path to scope the search (e.g., "app/services/").'
+            },
+            knn: {
+              type: 'integer',
+              default: 64,
+              minimum: 1,
+              maximum: 100,
+              description: 'Number of nearest neighbors used internally. ' \
+                "This controls search precision vs. speed - higher values find more diverse results but take longer."
+            },
+            limit: {
+              type: 'integer',
+              default: 20,
+              minimum: 1,
+              maximum: 100,
+              description: 'Maximum number of results to return.'
+            }
+          },
+          required: %w[semantic_query project_id],
+          additionalProperties: false
+        })
+      end
+    end
+  end
+
+  describe 'initialization' do
+    context 'when no version is specified' do
+      it 'uses the latest version' do
+        service = described_class.new(name: service_name)
+        expect(service.version).to eq('0.1.0')
+      end
+    end
+
+    context 'when version 0.1.0 is specified' do
+      it 'uses version 0.1.0' do
+        service = described_class.new(name: service_name, version: '0.1.0')
+        expect(service.version).to eq('0.1.0')
+      end
+    end
+
+    context 'when invalid version is specified' do
+      it 'raises ArgumentError' do
+        expect { described_class.new(name: service_name, version: '1.0.0') }
+          .to raise_error(ArgumentError, 'Version 1.0.0 not found. Available: 0.1.0')
+      end
+    end
+  end
+
   describe '#description' do
     it 'returns the correct description' do
-      expected_description = <<~DESC
+      service = described_class.new(name: service_name, version: '0.1.0')
+      expect(service.description).to eq <<~DESC.strip
         Performs semantic code search across project files using vector similarity.
 
         Returns ranked code snippets with file paths and content matches based on natural language queries.
@@ -20,33 +121,51 @@ RSpec.describe Mcp::Tools::SearchCodebaseService, feature_category: :mcp_server 
 
         This tool supports directory scoping and configurable result limits for targeted code discovery and analysis.
       DESC
-
-      expect(service.description).to eq(expected_description.strip)
     end
   end
 
   describe '#input_schema' do
     it 'returns the expected JSON schema' do
-      schema = service.input_schema
-
-      expect(schema[:type]).to eq('object')
-      expect(schema[:required]).to match_array(%w[semantic_query project_id])
-      expect(schema[:additionalProperties]).to be false
-
-      expect(schema[:properties][:semantic_query][:type]).to eq('string')
-      expect(schema[:properties][:semantic_query][:minLength]).to eq(1)
-
-      expect(schema[:properties][:project_id][:type]).to eq('string')
-
-      expect(schema[:properties][:directory_path][:type]).to eq('string')
-
-      expect(schema[:properties][:knn][:type]).to eq('integer')
-      expect(schema[:properties][:knn][:default]).to eq(64)
-      expect(schema[:properties][:knn][:minimum]).to eq(1)
-
-      expect(schema[:properties][:limit][:type]).to eq('integer')
-      expect(schema[:properties][:limit][:default]).to eq(20)
-      expect(schema[:properties][:limit][:minimum]).to eq(1)
+      service = described_class.new(name: service_name, version: '0.1.0')
+      expect(service.input_schema).to eq({
+        type: 'object',
+        properties: {
+          semantic_query: {
+            type: 'string',
+            minLength: 1,
+            maxLength: 1000,
+            description: "A brief natural language query about the code you want to find in the project " \
+              "(e.g.: 'authentication middleware', 'database connection logic', or 'API error handling')."
+          },
+          project_id: {
+            type: 'string',
+            description: 'Either a project id or project path.'
+          },
+          directory_path: {
+            type: 'string',
+            minLength: 1,
+            maxLength: 100,
+            description: 'Optional directory path to scope the search (e.g., "app/services/").'
+          },
+          knn: {
+            type: 'integer',
+            default: 64,
+            minimum: 1,
+            maximum: 100,
+            description: 'Number of nearest neighbors used internally. ' \
+              "This controls search precision vs. speed - higher values find more diverse results but take longer."
+          },
+          limit: {
+            type: 'integer',
+            default: 20,
+            minimum: 1,
+            maximum: 100,
+            description: 'Maximum number of results to return.'
+          }
+        },
+        required: %w[semantic_query project_id],
+        additionalProperties: false
+      })
     end
   end
 
