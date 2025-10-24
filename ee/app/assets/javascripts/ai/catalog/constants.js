@@ -21,6 +21,11 @@ export const AI_CATALOG_ITEM_LABELS = {
   [AI_CATALOG_TYPE_FLOW]: s__('AICatalog|flow'),
   [AI_CATALOG_TYPE_THIRD_PARTY_FLOW]: s__('AICatalog|flow'),
 };
+export const AI_CATALOG_ITEM_PLURAL_LABELS = {
+  [AI_CATALOG_TYPE_AGENT]: s__('AICatalog|agents'),
+  [AI_CATALOG_TYPE_FLOW]: s__('AICatalog|flows'),
+  [AI_CATALOG_TYPE_THIRD_PARTY_FLOW]: s__('AICatalog|flows'),
+};
 
 export const PAGE_SIZE = 20;
 
