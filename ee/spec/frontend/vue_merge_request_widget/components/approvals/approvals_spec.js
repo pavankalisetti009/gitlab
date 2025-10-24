@@ -1,11 +1,14 @@
 import Vue, { nextTick } from 'vue';
 import VueApollo from 'vue-apollo';
 import { GlButton, GlSprintf } from '@gitlab/ui';
+import { createTestingPinia } from '@pinia/testing';
+import { PiniaVuePlugin } from 'pinia';
 import { createMockSubscription as createMockApolloSubscription } from 'mock-apollo-client';
 import approvedByCurrentUser from 'test_fixtures/graphql/merge_requests/approvals/approvals.query.graphql.json';
 import createMockApollo from 'helpers/mock_apollo_helper';
 import waitForPromises from 'helpers/wait_for_promises';
 import { mountExtended } from 'helpers/vue_test_utils_helper';
+import { globalAccessorPlugin } from '~/pinia/plugins';
 import { getIdFromGraphQLId } from '~/graphql_shared/utils';
 import { createAlert } from '~/alert';
 import Approvals from 'ee/vue_merge_request_widget/components/approvals/approvals.vue';
@@ -17,8 +20,12 @@ import { createCanApproveResponse } from 'jest/approvals/mock_data';
 import { HTTP_STATUS_UNAUTHORIZED } from '~/lib/utils/http_status';
 import mergeRequestApprovalStateUpdated from 'ee/vue_merge_request_widget/components/approvals/queries/approval_rules.subscription.graphql';
 import userPermissionsQuery from '~/merge_requests/components/reviewers/queries/user_permissions.query.graphql';
+import { useLegacyDiffs } from '~/diffs/stores/legacy_diffs';
+import { useNotes } from '~/notes/store/legacy_notes';
+import { useBatchComments } from '~/batch_comments/store';
 
 Vue.use(VueApollo);
+Vue.use(PiniaVuePlugin);
 
 const mockAlertDismiss = jest.fn();
 jest.mock('~/alert', () => ({
@@ -55,6 +62,7 @@ describe('MRWidget approvals', () => {
   let wrapper;
   let service;
   let mr;
+  let pinia;
 
   const createComponent = (props = {}, response = approvedByCurrentUser) => {
     const mockedSubscription = createMockApolloSubscription();
@@ -86,6 +94,7 @@ describe('MRWidget approvals', () => {
         service,
         ...props,
       },
+      pinia,
       stubs: {
         GlSprintf,
       },
@@ -128,6 +137,17 @@ describe('MRWidget approvals', () => {
       targetProjectFullPath: 'gitlab-org/gitlab',
       iid: '1',
     };
+
+    pinia = createTestingPinia({
+      plugins: [globalAccessorPlugin],
+    });
+    useLegacyDiffs().projectPath = 'gitlab-org/gitlab';
+    useNotes().noteableData.id = 1;
+    useNotes().noteableData.preview_note_path = '/preview';
+    useNotes().noteableData.noteableType = 'merge_request';
+    useNotes().notesData.markdownDocsPath = '/markdown/docs';
+    useNotes().notesData.quickActionsDocsPath = '/quickactions/docs';
+    useBatchComments();
 
     jest.spyOn(eventHub, '$emit').mockImplementation(() => {});
 
@@ -273,6 +293,7 @@ describe('MRWidget approvals', () => {
               jest
                 .spyOn(service, 'approveMergeRequestWithAuth')
                 .mockRejectedValue({ response: { status: HTTP_STATUS_UNAUTHORIZED } });
+
               findApprovalsAuth().vm.$emit('approve', TEST_PASSWORD);
             });
 
