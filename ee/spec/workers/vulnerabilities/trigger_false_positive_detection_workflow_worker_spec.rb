@@ -9,6 +9,7 @@ RSpec.describe Vulnerabilities::TriggerFalsePositiveDetectionWorkflowWorker, fea
 
   let(:worker) { described_class.new }
   let(:vulnerability_id) { vulnerability.id }
+  let(:workflow_definition) { ::Ai::DuoWorkflows::WorkflowDefinition['sast_fp_detection/v1'] }
 
   describe '#perform' do
     let(:workflow_service) { instance_double(::Ai::DuoWorkflows::CreateAndStartWorkflowService) }
@@ -42,15 +43,9 @@ RSpec.describe Vulnerabilities::TriggerFalsePositiveDetectionWorkflowWorker, fea
           expect(::Ai::DuoWorkflows::CreateAndStartWorkflowService).to receive(:new).with(
             container: project,
             current_user: user,
-            workflow_definition: 'sast_fp_detection/v1',
+            workflow_definition: workflow_definition,
             goal: vulnerability_id.to_s,
-            source_branch: project.default_branch,
-            workflow_params: {
-              agent_privileges: [1, 2, 3, 4, 5],
-              pre_approved_agent_privileges: [1, 2, 3, 4, 5],
-              allow_agent_to_request_user: false,
-              environment: 'web'
-            }
+            source_branch: project.default_branch
           )
 
           worker.perform(vulnerability_id)

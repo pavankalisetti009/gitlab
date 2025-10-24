@@ -13,16 +13,19 @@ RSpec.describe ::Ai::DuoWorkflows::CreateAndStartWorkflowService, feature_catego
 
   let(:goal) { 'Custom goal' }
   let(:source_branch) { 'feature/add-workflow' }
-  let(:workflow_definition) { 'flow_name/experimental' }
-  let(:workflow_params) { {} }
+  let(:workflow_definition) do
+    ::Ai::DuoWorkflows::WorkflowDefinition.new(
+      name: 'flow_name/experimental'
+    )
+  end
+
   let(:service) do
     described_class.new(
       container: project,
       current_user: current_user,
       goal: goal,
       source_branch: source_branch,
-      workflow_definition: workflow_definition,
-      workflow_params: workflow_params
+      workflow_definition: workflow_definition
     )
   end
 

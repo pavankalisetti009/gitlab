@@ -10,14 +10,6 @@ module Vulnerabilities
     idempotent!
     concurrency_limit -> { 100 }
 
-    AGENT_PRIVILEGES = [
-      ::Ai::DuoWorkflows::Workflow::AgentPrivileges::READ_WRITE_FILES,
-      ::Ai::DuoWorkflows::Workflow::AgentPrivileges::READ_ONLY_GITLAB,
-      ::Ai::DuoWorkflows::Workflow::AgentPrivileges::READ_WRITE_GITLAB,
-      ::Ai::DuoWorkflows::Workflow::AgentPrivileges::RUN_COMMANDS,
-      ::Ai::DuoWorkflows::Workflow::AgentPrivileges::USE_GIT
-    ].freeze
-
     def perform(vulnerability_id)
       vulnerability = find_vulnerability(vulnerability_id)
       return unless vulnerability
@@ -40,20 +32,10 @@ module Vulnerabilities
       ::Ai::DuoWorkflows::CreateAndStartWorkflowService.new(
         container: vulnerability.project,
         current_user: vulnerability.author,
-        workflow_definition: 'sast_fp_detection/v1',
+        workflow_definition: ::Ai::DuoWorkflows::WorkflowDefinition['sast_fp_detection/v1'],
         goal: vulnerability.id.to_s,
-        source_branch: vulnerability.project.default_branch,
-        workflow_params: build_workflow_params
+        source_branch: vulnerability.project.default_branch
       ).execute
-    end
-
-    def build_workflow_params
-      {
-        agent_privileges: AGENT_PRIVILEGES,
-        pre_approved_agent_privileges: AGENT_PRIVILEGES,
-        allow_agent_to_request_user: false,
-        environment: 'web'
-      }
     end
 
     def handle_error(result, vulnerability)

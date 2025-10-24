@@ -10,19 +10,12 @@ module Ai
       MISSING_WORKFLOW_DEFINITION_ERROR = 'Workflow definition cannot be blank'
       MISSING_SOURCE_BRANCH_ERROR = 'Source branch cannot be blank'
 
-      DEFAULT_ENVIRONMENT = 'web'
-      DEFAULT_WORKFLOW_PARAMS = {
-        environment: DEFAULT_ENVIRONMENT,
-        allow_agent_to_request_user: false
-      }.freeze
-
-      def initialize(container:, current_user:, goal:, source_branch:, workflow_definition:, workflow_params: {})
+      def initialize(container:, current_user:, goal:, source_branch:, workflow_definition:)
         @container = container
         @current_user = current_user
         @goal = goal
         @source_branch = source_branch
         @workflow_definition = workflow_definition
-        @workflow_params = workflow_params
       end
 
       def execute
@@ -53,7 +46,7 @@ module Ai
 
       private
 
-      attr_reader :container, :current_user, :workflow_definition, :goal, :source_branch, :workflow_params
+      attr_reader :container, :current_user, :workflow_definition, :goal, :source_branch
 
       def validation
         return error(MISSING_WORKFLOW_DEFINITION_ERROR, :invalid_workflow_definition) if workflow_definition.blank?
@@ -74,18 +67,13 @@ module Ai
           current_user: current_user,
           organization: container.organization,
           container: container,
-          workflow_definition: workflow_definition
+          workflow_definition: workflow_definition.name
         )
       end
       strong_memoize_attr :workflow_context_generation_service
 
       def create_workflow_params
-        workflow_params
-          .reverse_merge(
-            goal: goal,
-            workflow_definition: workflow_definition,
-            **DEFAULT_WORKFLOW_PARAMS
-          ).compact
+        workflow_definition.as_json.merge(goal: goal)
       end
 
       def start_workflow_params(workflow)
