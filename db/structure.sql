@@ -42399,7 +42399,7 @@ CREATE INDEX index_slsa_attestations_on_build_id ON slsa_attestations USING btre
 
 CREATE UNIQUE INDEX index_slsa_attestations_on_digest_project_predicate_uniq ON slsa_attestations USING btree (subject_digest, project_id, predicate_kind);
 
-CREATE INDEX index_slsa_attestations_on_project_id_iid ON slsa_attestations USING btree (project_id, iid);
+CREATE UNIQUE INDEX index_slsa_attestations_on_project_id_iid ON slsa_attestations USING btree (project_id, iid);
 
 CREATE UNIQUE INDEX index_smartcard_identities_on_subject_and_issuer ON smartcard_identities USING btree (subject, issuer);
 
