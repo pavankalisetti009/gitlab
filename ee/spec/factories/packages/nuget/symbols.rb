@@ -5,6 +5,13 @@ FactoryBot.modify do
     trait :verification_succeeded do
       verification_checksum { 'abc' }
       verification_state { ::Packages::Nuget::Symbol.verification_state_value(:verification_succeeded) }
+
+      after(:create) do |instance, _|
+        instance.verification_failure = nil
+        instance.verification_state = ::Packages::Nuget::Symbol.verification_state_value(:verification_started)
+        instance.packages_nuget_symbol_state.packages_nuget_symbol = instance
+        instance.verification_succeeded!
+      end
     end
 
     trait :verification_failed do
@@ -18,6 +25,7 @@ FactoryBot.modify do
       # because save_verification_details is returning early.
       after(:create) do |instance, evaluator|
         instance.verification_failure = evaluator.verification_failure
+        instance.packages_nuget_symbol_state.packages_nuget_symbol = instance
         instance.verification_failed!
       end
     end
