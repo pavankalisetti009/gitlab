@@ -147,14 +147,24 @@ export const calculateChange = (current, previous) => {
  * @param {String} identifier - ID of the metric to create a table row for.
  * @param {String} units - The type of units used for this metric (ex. days, /day, count)
  * @param {Array} timePeriods - Array of the metrics for different time periods
+ * @param {Object} valueLimit - Object representing the maximum value of a metric, mask that replaces the value if the limit is reached and a description to be used in a tooltip.
  * @returns {Object} The metric data formatted as a table row.
  */
-const buildTableRow = ({ identifier, units, timePeriods }) => {
+const buildTableRow = ({ identifier, units, timePeriods, valueLimit }) => {
   const row = timePeriods.reduce((acc, timePeriod) => {
     const metric = timePeriod[identifier];
+    const hasValue = metric && metric.value !== '-';
+
+    const valueLimitMessage =
+      hasValue && metric.value >= valueLimit?.max ? valueLimit.description : undefined;
+
+    const formattedMetric = hasValue ? formatMetric(metric.value, units) : '-';
+    const value = valueLimitMessage ? valueLimit?.mask : formattedMetric;
+
     return Object.assign(acc, {
       [timePeriod.key]: {
-        value: metric?.value !== '-' ? formatMetric(metric.value, units) : '-',
+        value,
+        valueLimitMessage,
         tooltip: metric?.tooltip,
       },
     });
@@ -189,7 +199,7 @@ const buildTableRow = ({ identifier, units, timePeriods }) => {
  * @returns {Object} object containing the same data, formatted for the table
  */
 export const generateTableRows = (timePeriods) =>
-  Object.entries(AI_IMPACT_TABLE_METRICS).reduce((acc, [identifier, { units }]) => {
+  Object.entries(AI_IMPACT_TABLE_METRICS).reduce((acc, [identifier, { units, valueLimit }]) => {
     if (!isMetricInTimePeriods(identifier, timePeriods)) return acc;
 
     return Object.assign(acc, {
@@ -197,6 +207,7 @@ export const generateTableRows = (timePeriods) =>
         identifier,
         units,
         timePeriods,
+        valueLimit,
       }),
     });
   }, {});

@@ -60,6 +60,7 @@ import {
   mockTableLargeValues,
   mockTableBlankValues,
   mockTableZeroValues,
+  mockTableMaxLimitValues,
   mockTableAndChartValues,
 } from '../mock_data';
 
@@ -431,6 +432,34 @@ describe('Metric table', () => {
 
       expect(metricCell.findComponent(GlTooltip).exists()).toBe(false);
       expect(metricValue.classes().some((c) => hoverClasses.includes(c))).toBe(false);
+    });
+  });
+
+  describe('when value has exceeded maximum value', () => {
+    beforeEach(() => {
+      return createWrapper([FLOW_METRICS.ISSUES_COMPLETED], {
+        apolloProvider: createMockApolloProvider({
+          flowMetricsRequest: mockFlowMetricsResponse(mockTableMaxLimitValues),
+        }),
+      });
+    });
+
+    it('displays correct value', () => {
+      const metricCell = findValueTableCells(FLOW_METRICS.ISSUES_COMPLETED).at(0);
+      const metricValue = metricCell.find('[data-testid="formatted-metric-value"]');
+
+      expect(metricValue.text()).toBe('10000+');
+    });
+
+    it(`should render value limit info icon with tooltip`, () => {
+      const metricCell = findValueTableCells(FLOW_METRICS.ISSUES_COMPLETED).at(0);
+
+      const metricIcon = metricCell.find('[data-testid="metric-max-value-info-icon"]');
+      expect(metricIcon.exists()).toBe(true);
+      expect(getBinding(metricIcon.element, 'gl-tooltip')).toBeDefined();
+      expect(metricIcon.attributes('title')).toBe(
+        'This is a lower-bound approximation. Your group has too many issues and MRs to calculate in real time.',
+      );
     });
   });
 

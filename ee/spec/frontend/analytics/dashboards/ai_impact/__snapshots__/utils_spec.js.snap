@@ -511,22 +511,27 @@ exports[`AI impact Dashboard utils generateTableRows returns the data formatted 
     "1-months-ago": {
       "tooltip": undefined,
       "value": "7.5%",
+      "valueLimitMessage": undefined,
     },
     "2-months-ago": {
       "tooltip": undefined,
       "value": "0.0%",
+      "valueLimitMessage": undefined,
     },
     "3-months-ago": {
       "tooltip": undefined,
       "value": "0.0%",
+      "valueLimitMessage": undefined,
     },
     "4-months-ago": {
       "tooltip": undefined,
       "value": "5.6%",
+      "valueLimitMessage": undefined,
     },
     "5-months-ago": {
       "tooltip": undefined,
       "value": "8.9%",
+      "valueLimitMessage": undefined,
     },
     "change": {
       "value": -0.15730337078651688,
@@ -559,28 +564,34 @@ exports[`AI impact Dashboard utils generateTableRows returns the data formatted 
     "this-month": {
       "tooltip": undefined,
       "value": "4.0%",
+      "valueLimitMessage": undefined,
     },
   },
   "code_suggestions_usage_rate": {
     "1-months-ago": {
       "tooltip": "5/10",
       "value": "50.0%",
+      "valueLimitMessage": undefined,
     },
     "2-months-ago": {
       "tooltip": "10/11",
       "value": "90.9%",
+      "valueLimitMessage": undefined,
     },
     "3-months-ago": {
       "tooltip": "2/10",
       "value": "20.0%",
+      "valueLimitMessage": undefined,
     },
     "4-months-ago": {
       "tooltip": "10/10",
       "value": "100.0%",
+      "valueLimitMessage": undefined,
     },
     "5-months-ago": {
       "tooltip": "0/0",
       "value": "0.0%",
+      "valueLimitMessage": undefined,
     },
     "change": {
       "tooltip": "Value can't be calculated due to division by zero.",
@@ -614,28 +625,34 @@ exports[`AI impact Dashboard utils generateTableRows returns the data formatted 
     "this-month": {
       "tooltip": "8/9",
       "value": "88.9%",
+      "valueLimitMessage": undefined,
     },
   },
   "deployment_frequency": {
     "1-months-ago": {
       "tooltip": undefined,
       "value": "-",
+      "valueLimitMessage": undefined,
     },
     "2-months-ago": {
       "tooltip": undefined,
       "value": "30.0/d",
+      "valueLimitMessage": undefined,
     },
     "3-months-ago": {
       "tooltip": undefined,
       "value": "0.0/d",
+      "valueLimitMessage": undefined,
     },
     "4-months-ago": {
       "tooltip": undefined,
       "value": "15.0/d",
+      "valueLimitMessage": undefined,
     },
     "5-months-ago": {
       "tooltip": undefined,
       "value": "10.0/d",
+      "valueLimitMessage": undefined,
     },
     "change": {
       "tooltip": "Value can't be calculated due to insufficient data.",
@@ -669,6 +686,68 @@ exports[`AI impact Dashboard utils generateTableRows returns the data formatted 
     "this-month": {
       "tooltip": undefined,
       "value": "30.0/d",
+      "valueLimitMessage": undefined,
+    },
+  },
+  "issues_completed": {
+    "1-months-ago": {
+      "tooltip": undefined,
+      "value": "-",
+      "valueLimitMessage": undefined,
+    },
+    "2-months-ago": {
+      "tooltip": undefined,
+      "value": "-",
+      "valueLimitMessage": undefined,
+    },
+    "3-months-ago": {
+      "tooltip": undefined,
+      "value": "-",
+      "valueLimitMessage": undefined,
+    },
+    "4-months-ago": {
+      "tooltip": undefined,
+      "value": "-",
+      "valueLimitMessage": undefined,
+    },
+    "5-months-ago": {
+      "tooltip": undefined,
+      "value": "10000+",
+      "valueLimitMessage": "This is a lower-bound approximation. Your group has too many issues and MRs to calculate in real time.",
+    },
+    "change": {
+      "tooltip": "Value can't be calculated due to insufficient data.",
+      "value": "n/a",
+    },
+    "chart": {
+      "data": [
+        [
+          "Oct 1 – 31",
+          999999,
+        ],
+        [
+          "Nov 1 – 30",
+          0,
+        ],
+        [
+          "Dec 1 – 31",
+          0,
+        ],
+        [
+          "Jan 1 – 31",
+          0,
+        ],
+        [
+          "Feb 1 – 29",
+          0,
+        ],
+      ],
+      "tooltipLabel": undefined,
+    },
+    "this-month": {
+      "tooltip": undefined,
+      "value": "-",
+      "valueLimitMessage": undefined,
     },
   },
 }
