@@ -2,13 +2,37 @@
 
 module Gitlab
   module RackAttack
-    # Class to represent throttle information for a request.
-    # This is typically populated from RackAttack data.
+    # Represents throttle information for a request, typically populated from Rack::Attack data.
+    #
+    # This class encapsulates rate limit state for a specific throttle, including the limit,
+    # current observation count, and time window. It provides methods to calculate remaining
+    # quota and generate standardized rate limit HTTP headers.
+    #
+    # @example Creating from Rack::Attack data
+    #   data = {
+    #     discriminator: '127.0.0.1',
+    #     count: 50,
+    #     period: 3600,
+    #     limit: 100,
+    #     epoch_time: Time.now.to_i
+    #   }
+    #   throttle_data = RequestThrottleData.from_rack_attack('throttle_unauthenticated_api', data)
+    #   throttle_data.remaining # => 50
+    #   throttle_data.common_response_headers # => { 'RateLimit-Limit' => '100', ... }
+    #
+    # @see https://github.com/rack/rack-attack Rack::Attack gem
     class RequestThrottleData
       attr_reader :name, :period, :limit, :observed, :now
 
-      # Populate the class using data from RackAttack annotations
-      # Note: This may return nil if the given arguments don't match expectations
+      # Creates a RequestThrottleData instance from Rack::Attack throttle data
+      #
+      # @param name [String, Symbol] The name of the throttle (e.g. 'throttle_unauthenticated_api')
+      # @param data [Hash] The match data from Rack::Attack containing :count, :epoch_time, :period, and :limit
+      # @return [RequestThrottleData, nil] A new instance, or nil if required data is missing
+      #
+      # @example
+      #   data = { count: 50, period: 60, limit: 100, epoch_time: 1609833930 }
+      #   RequestThrottleData.from_rack_attack('throttle_api', data)
       def self.from_rack_attack(name, data)
         # Match data example:
         # {:discriminator=>"127.0.0.1", :count=>12, :period=>60 seconds, :limit=>1, :epoch_time=>1609833930}
@@ -41,27 +65,21 @@ module Gitlab
         @now = now
       end
 
-      # Return common response headers for all requests, whether throttled or not
+      # Returns common rate limit headers for all requests (both throttled and unthrottled)
       #
-      # Rate Limit HTTP headers are not standardized anywhere. This is the latest draft submitted to IETF:
-      # https://github.com/ietf-wg-httpapi/ratelimit-headers/blob/main/draft-ietf-httpapi-ratelimit-headers.md
+      # These headers follow the IETF draft specification for rate limit headers.
+      # The limit is normalized (and approximately rounded up) to a 60-second window for
+      # compatibility with HAProxy and ecosystem libraries that expect this convention.
       #
-      # This method implement the most viable parts of the headers.
-      # Those headers will be sent back to the client when it gets throttled.
+      # @return [Hash<String, String>] A hash of HTTP headers with the following keys:
+      #   - 'RateLimit-Name': The name of the throttle
+      #   - 'RateLimit-Limit': Request quota per 60 seconds (normalized from the actual period). See #rounded_limit.
+      #   - 'RateLimit-Observed': Current request count in the time window
+      #   - 'RateLimit-Remaining': Remaining requests allowed (Limit - Observed, minimum 0)
+      #   - 'RateLimit-Reset': Unix timestamp when the quota resets
       #
-      #   - RateLimit-Limit: indicates the request quota associated to the client in 60 seconds.
-      #     The time window for the quota here is supposed to be mirrored to
-      #     throttle_*_period_in_seconds application settings.
-      #     However, our HAProxy as well as some ecosystem libraries are using a fixed 60-second window.
-      #     Therefore, the returned limit is approximately rounded up to fit into that window.
-      #
-      #   - RateLimit-Observed: indicates the current request amount associated to the client within the time window.
-      #
-      #   - RateLimit-Remaining: indicates the remaining quota within the time window.
-      #     It is the result of RateLimit-Limit - RateLimit-Observed
-      #
-      #   - RateLimit-Reset: the point of time that the request quota is reset, in Unix time
-      #
+      # @see https://github.com/ietf-wg-httpapi/ratelimit-headers/blob/main/draft-ietf-httpapi-ratelimit-headers.md
+      #   IETF Rate Limit Headers Draft
       def common_response_headers
         {
           'RateLimit-Name' => name.to_s,
@@ -72,16 +90,18 @@ module Gitlab
         }
       end
 
-      # When a request is throttled, we add below response headers in addition to headers
-      # from .common_response_headers.
+      # Returns rate limit headers for throttled requests (HTTP 429 responses)
       #
-      #   - Retry-After: the remaining duration in seconds until the quota is reset.
-      #     This is a standardized HTTP header: https://www.rfc-editor.org/rfc/rfc7231#page-69
+      # Includes all headers from {#common_response_headers} plus additional headers
+      # to indicate when the client can retry.
       #
-      #   - RateLimit-ResetTime: the point of time that the request quota is reset, in HTTP date format
+      # @return [Hash<String, String>] A hash containing all common headers plus:
+      #   - 'Retry-After': Seconds until quota resets (RFC 7231 standard header)
+      #   - 'RateLimit-ResetTime': Reset time in HTTP date format (e.g. 'Tue, 05 Jan 2021 11:00:00 GMT')
       #
+      # @see #common_response_headers
+      # @see https://www.rfc-editor.org/rfc/rfc7231#page-69 RFC 7231 - Retry-After header
       def throttled_response_headers
-        # For a throttled request, we additionally indicate when it can be retried the earliest
         common_response_headers.merge(
           {
             'Retry-After' => retry_after.to_s,
@@ -90,22 +110,37 @@ module Gitlab
         )
       end
 
-      # The total request quota associated to the client in 60 seconds.
+      # Calculates the request limit normalized to a 60-second window
+      #
+      # Since HAProxy and many ecosystem libraries expect rate limits expressed as
+      # requests per 60 seconds, this method converts the actual limit to that convention.
+      #
+      # @return [Integer] The limit rounded up to the nearest whole number for a 60-second period
+      #
+      # @example With a 120-second period
+      #   data = RequestThrottleData.new(name: 'test', period: 120, limit: 100, observed: 0, now: Time.now.to_i)
+      #   data.rounded_limit # => 50 (100 requests per 120 seconds = 50 per 60 seconds)
       def rounded_limit
         (limit.to_f * 1.minute / period).ceil
       end
 
-      # The remaining quota within the time window (until reset)
+      # Calculates the remaining request quota in the current time window
+      #
+      # @return [Integer] Number of remaining requests, or 0 if the limit has been reached or exceeded
       def remaining
         (limit > observed ? limit - observed : 0)
       end
 
-      # The remaining seconds until the window resets
+      # Calculates seconds remaining until the rate limit window resets
+      #
+      # @return [Integer] Seconds until the quota resets
       def retry_after
         period - (now % period)
       end
 
-      # The time when the window resets
+      # Calculates the time when the rate limit window will reset
+      #
+      # @return [Time] The reset time as a Time object
       def reset_time
         Time.at(now + retry_after) # rubocop:disable Rails/TimeZone -- Unix epoch based calculation
       end
