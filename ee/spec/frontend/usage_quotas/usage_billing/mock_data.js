@@ -14,6 +14,11 @@ export const mockUsageDataWithoutPool = {
         creditsUsed: 0,
       },
 
+      oneTimeCredits: {
+        totalCreditsRemaining: 0,
+        creditsUsed: 0,
+      },
+
       // pool allocation statistics (commitment)
       poolUsage: null,
 
@@ -163,6 +168,11 @@ export const mockUsageDataWithPool = {
 
       overage: {
         isAllowed: true,
+        creditsUsed: 0,
+      },
+
+      oneTimeCredits: {
+        totalCreditsRemaining: 0,
         creditsUsed: 0,
       },
 
@@ -352,6 +362,11 @@ export const mockUsageDataWithOverage = {
       overage: {
         isAllowed: true,
         creditsUsed: 50,
+      },
+
+      oneTimeCredits: {
+        totalCreditsRemaining: 0,
+        creditsUsed: 0,
       },
 
       poolUsage: {
@@ -640,6 +655,11 @@ export const usageDataWithPool = {
         isAllowed: true,
         creditsUsed: 0,
       },
+
+      oneTimeCredits: {
+        totalCreditsRemaining: 0,
+        creditsUsed: 0,
+      },
     },
   },
 };
@@ -668,6 +688,11 @@ export const usageDataWithPoolWithOverage = {
         isAllowed: true,
         creditsUsed: 50,
       },
+
+      oneTimeCredits: {
+        totalCreditsRemaining: 0,
+        creditsUsed: 0,
+      },
     },
   },
 };
@@ -680,6 +705,11 @@ export const usageDataNoPoolNoOverage = {
       poolUsage: null,
       overage: {
         isAllowed: false,
+        creditsUsed: 0,
+      },
+
+      oneTimeCredits: {
+        totalCreditsRemaining: 0,
         creditsUsed: 0,
       },
     },
@@ -695,6 +725,41 @@ export const usageDataNoPoolWithOverage = {
       overage: {
         isAllowed: true,
         creditsUsed: 50,
+      },
+
+      oneTimeCredits: {
+        totalCreditsRemaining: 0,
+        creditsUsed: 0,
+      },
+    },
+  },
+};
+
+export const usageDataWithOtcCredits = {
+  data: {
+    subscriptionUsage: {
+      lastEventTransactionAt: '2025-10-14T07:41:59Z',
+      purchaseCreditsPath: '/purchase-credits-path',
+      usersUsage: {
+        // overall statistics
+        totalUsers: 50,
+        users: {
+          nodes: [],
+        },
+      },
+      poolUsage: {
+        creditsUsed: 50,
+        totalCredits: 300,
+      },
+
+      overage: {
+        isAllowed: true,
+        creditsUsed: 0,
+      },
+
+      oneTimeCredits: {
+        totalCreditsRemaining: 500,
+        creditsUsed: 2500,
       },
     },
   },
