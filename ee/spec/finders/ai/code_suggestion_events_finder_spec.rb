@@ -40,27 +40,6 @@ RSpec.describe Ai::CodeSuggestionEventsFinder, :click_house, feature_category: :
 
   describe '#execute' do
     let_it_be(:user) { create(:user, :with_self_managed_duo_enterprise_seat) }
-    let_it_be(:event_1) do
-      create(:event, :pushed, project: project, author: user_contributor_1, target: nil, created_at: 3.days.ago)
-    end
-
-    let_it_be(:event_2) do
-      create(:event, :pushed, project: project, author: user_contributor_2, target: nil, created_at: 1.day.ago)
-    end
-
-    let_it_be(:event_3) do
-      create(:event, :pushed, project: project, author: user_contributor_only_on_ch, target: nil,
-        created_at: 1.month.ago)
-    end
-
-    let_it_be(:event_4) do
-      create(:event, :created, :for_issue, project: project, author: user_not_contributor, target: nil,
-        created_at: 1.day.ago)
-    end
-
-    let_it_be(:event_5) do
-      create(:event, :pushed, project: project, author: user_contributor_3, target: project, created_at: 1.day.ago)
-    end
 
     before_all do
       group.add_reporter(user)
@@ -82,29 +61,19 @@ RSpec.describe Ai::CodeSuggestionEventsFinder, :click_house, feature_category: :
       end
     end
 
-    context 'and CH is enabled', :click_house do
+    context 'without contributors' do
       before do
-        allow(Gitlab::ClickHouse).to receive(:enabled_for_analytics?).and_return(true)
-        insert_events_into_click_house
+        stub_feature_flags(use_ai_events_namespace_path_filter: false)
       end
 
-      let(:expected_suggestion_events) do
-        [code_suggestion_event_1, code_suggestion_event_2, code_suggestion_event_3, code_suggestion_event_4]
-      end
-
-      it_behaves_like 'fetch code suggestion events', true
-
-      context 'when fetch_contributions_data_from_new_tables is disabled' do
-        it_behaves_like 'fetch code suggestion events', false
-      end
-
-      context 'when use_ai_events_namespace_path_filter is disabled' do
+      context 'and CH is enabled', :click_house do
         before do
-          stub_feature_flags(use_ai_events_namespace_path_filter: false)
+          allow(Gitlab::ClickHouse).to receive(:enabled_for_analytics?).and_return(true)
+          insert_events_into_click_house
         end
 
         let(:expected_suggestion_events) do
-          [code_suggestion_event_1, code_suggestion_event_2, code_suggestion_event_4]
+          []
         end
 
         it_behaves_like 'fetch code suggestion events', true
@@ -113,23 +82,89 @@ RSpec.describe Ai::CodeSuggestionEventsFinder, :click_house, feature_category: :
           it_behaves_like 'fetch code suggestion events', false
         end
       end
+
+      context 'and CH is disabled' do
+        it_behaves_like 'fetch code suggestion events' do
+          let(:expected_suggestion_events) do
+            []
+          end
+        end
+      end
     end
 
-    context 'and CH is disabled' do
-      it_behaves_like 'fetch code suggestion events' do
+    context 'with contributors' do
+      let_it_be(:event_1) do
+        create(:event, :pushed, project: project, author: user_contributor_1, target: nil, created_at: 3.days.ago)
+      end
+
+      let_it_be(:event_2) do
+        create(:event, :pushed, project: project, author: user_contributor_2, target: nil, created_at: 1.day.ago)
+      end
+
+      let_it_be(:event_3) do
+        create(:event, :pushed, project: project, author: user_contributor_only_on_ch, target: nil,
+          created_at: 1.month.ago)
+      end
+
+      let_it_be(:event_4) do
+        create(:event, :created, :for_issue, project: project, author: user_not_contributor, target: nil,
+          created_at: 1.day.ago)
+      end
+
+      let_it_be(:event_5) do
+        create(:event, :pushed, project: project, author: user_contributor_3, target: project,
+          created_at: 1.day.ago)
+      end
+
+      context 'and CH is enabled', :click_house do
+        before do
+          allow(Gitlab::ClickHouse).to receive(:enabled_for_analytics?).and_return(true)
+          insert_events_into_click_house
+        end
+
         let(:expected_suggestion_events) do
           [code_suggestion_event_1, code_suggestion_event_2, code_suggestion_event_3, code_suggestion_event_4]
         end
-      end
 
-      context 'when use_ai_events_namespace_path_filter is disabled' do
-        before do
-          stub_feature_flags(use_ai_events_namespace_path_filter: false)
+        it_behaves_like 'fetch code suggestion events', true
+
+        context 'when fetch_contributions_data_from_new_tables is disabled' do
+          it_behaves_like 'fetch code suggestion events', false
         end
 
+        context 'when use_ai_events_namespace_path_filter is disabled' do
+          before do
+            stub_feature_flags(use_ai_events_namespace_path_filter: false)
+          end
+
+          let(:expected_suggestion_events) do
+            [code_suggestion_event_1, code_suggestion_event_2, code_suggestion_event_4]
+          end
+
+          it_behaves_like 'fetch code suggestion events', true
+
+          context 'when fetch_contributions_data_from_new_tables is disabled' do
+            it_behaves_like 'fetch code suggestion events', false
+          end
+        end
+      end
+
+      context 'and CH is disabled' do
         it_behaves_like 'fetch code suggestion events' do
           let(:expected_suggestion_events) do
-            [code_suggestion_event_1, code_suggestion_event_2]
+            [code_suggestion_event_1, code_suggestion_event_2, code_suggestion_event_3, code_suggestion_event_4]
+          end
+        end
+
+        context 'when use_ai_events_namespace_path_filter is disabled' do
+          before do
+            stub_feature_flags(use_ai_events_namespace_path_filter: false)
+          end
+
+          it_behaves_like 'fetch code suggestion events' do
+            let(:expected_suggestion_events) do
+              [code_suggestion_event_1, code_suggestion_event_2]
+            end
           end
         end
       end
