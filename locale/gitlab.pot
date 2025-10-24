@@ -3214,6 +3214,9 @@ msgstr ""
 msgid "Abort"
 msgstr ""
 
+msgid "About"
+msgstr ""
+
 msgid "About GitLab"
 msgstr ""
 

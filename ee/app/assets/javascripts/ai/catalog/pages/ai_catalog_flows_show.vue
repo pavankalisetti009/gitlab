@@ -10,6 +10,8 @@ import {
   TRACK_EVENT_VIEW_AI_CATALOG_ITEM,
 } from 'ee/ai/catalog/constants';
 import ErrorsAlert from '~/vue_shared/components/errors_alert.vue';
+import { prerequisitesError } from '../utils';
+import AiCatalogItemMetadata from '../components/ai_catalog_item_metadata.vue';
 import AiCatalogFlowDetails from '../components/ai_catalog_flow_details.vue';
 import AiCatalogItemActions from '../components/ai_catalog_item_actions.vue';
 import createAiCatalogItemConsumer from '../graphql/mutations/create_ai_catalog_item_consumer.mutation.graphql';
@@ -18,13 +20,13 @@ import {
   AI_CATALOG_FLOWS_EDIT_ROUTE,
   AI_CATALOG_FLOWS_ROUTE,
 } from '../router/constants';
-import { prerequisitesError } from '../utils';
 
 export default {
   name: 'AiCatalogFlowsShow',
   components: {
     ErrorsAlert,
     PageHeading,
+    AiCatalogItemMetadata,
     AiCatalogFlowDetails,
     AiCatalogItemActions,
   },
@@ -161,6 +163,9 @@ export default {
         />
       </template>
     </page-heading>
-    <ai-catalog-flow-details :item="aiCatalogFlow" />
+    <div class="gl-flex gl-flex-col gl-gap-5 @md:gl-flex-row">
+      <ai-catalog-flow-details :item="aiCatalogFlow" class="gl-grow" />
+      <ai-catalog-item-metadata :item="aiCatalogFlow" class="gl-shrink-0" />
+    </div>
   </div>
 </template>
