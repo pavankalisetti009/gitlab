@@ -1,6 +1,6 @@
 <script>
 import { GlDashboardPanel, GlBadge, GlTooltipDirective } from '@gitlab/ui';
-import { sprintf, s__ } from '~/locale';
+import { sprintf, s__, n__ } from '~/locale';
 import { readFromUrl, writeToUrl } from 'ee/security_dashboard/utils/panel_state_url_sync';
 import groupTotalRiskScore from 'ee/security_dashboard/graphql/queries/group_total_risk_score.query.graphql';
 import TotalRiskScore from './charts/total_risk_score.vue';
@@ -43,7 +43,7 @@ export default {
         paramName: GROUP_BY_PARAM_NAME,
         defaultValue: GROUP_BY_DEFAULT,
       }),
-      isOverProjectCountThreshold: false,
+      projectCount: 0,
     };
   },
   apollo: {
@@ -55,20 +55,21 @@ export default {
           projectId: this.filters.projectId,
           includeByDefault: this.groupedBy === GROUP_BY_DEFAULT,
           includeByProject: this.groupedBy === GROUP_BY_PROJECT,
-          projectCount: this.$options.projectCountThreshold,
+          first: this.$options.projectCountThreshold,
         };
       },
       update(data) {
         return data?.group?.securityMetrics?.riskScore?.score || 0;
       },
       result({ data }) {
-        const { byProject } = data?.group?.securityMetrics?.riskScore || {};
+        const { riskScore } = data?.group?.securityMetrics || {};
+        const { byProject } = riskScore || {};
 
         const projectNodes = [...(byProject?.nodes || [])];
         projectNodes.sort((a, b) => b.score - a.score);
         this.projects = projectNodes;
 
-        this.isOverProjectCountThreshold = byProject?.pageInfo?.hasNextPage || false;
+        this.projectCount = riskScore?.projectCount;
       },
       error() {
         this.hasFetchError = true;
@@ -76,13 +77,26 @@ export default {
     },
   },
   computed: {
-    shouldShowMaxProjectsBadge() {
-      return this.groupedBy === GROUP_BY_PROJECT && this.isOverProjectCountThreshold;
+    projectsNotShown() {
+      return Math.max(0, this.projectCount - this.$options.projectCountThreshold);
+    },
+    showProjectsNotShownBadge() {
+      return this.groupedBy === GROUP_BY_PROJECT && this.projectsNotShown > 0;
+    },
+    projectsNotShownLabel() {
+      return sprintf(
+        n__(
+          'SecurityReports|%{count} project not shown',
+          'SecurityReports|%{count} projects not shown',
+          this.projectsNotShown,
+        ),
+        { count: this.projectsNotShown },
+      );
     },
     maxProjectsTooltipTitle() {
       return sprintf(
         s__(
-          'SecurityReports|Only %{count} projects with the highest risk scores are shown. Use the filter at the top of the dashboard to narrow down your results.',
+          'SecurityReports|Only the top %{count} projects with the highest risk scores are shown. Use the filter at the top of the dashboard to narrow down your results.',
         ),
         { count: this.$options.projectCountThreshold },
       );
@@ -117,13 +131,13 @@ export default {
     </template>
     <template #filters>
       <gl-badge
-        v-if="shouldShowMaxProjectsBadge"
+        v-if="showProjectsNotShownBadge"
         v-gl-tooltip
         variant="neutral"
         class="gl-mr-3"
         :title="maxProjectsTooltipTitle"
       >
-        {{ s__('SecurityReports|Max project limit reached') }}
+        {{ projectsNotShownLabel }}
       </gl-badge>
       <risk-score-group-by v-model="groupedBy" />
     </template>
