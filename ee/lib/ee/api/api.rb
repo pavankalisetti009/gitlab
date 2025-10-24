@@ -104,6 +104,7 @@ module EE
         mount ::API::Internal::Search::Zoekt
         mount ::API::Internal::Ai::XRay::Scan
         mount ::API::Internal::Observability
+        mount ::API::Internal::SecretsManager
 
         mount ::GitlabSubscriptions::API::Internal::API
       end

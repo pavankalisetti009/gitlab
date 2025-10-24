@@ -12,7 +12,7 @@ module SecretsManagement
       @scope = scope
     end
 
-    def project_claims
+    def user_project_claims
       {
         user_id: @test_user_id || '0',
         project_id: @test_project_id,
