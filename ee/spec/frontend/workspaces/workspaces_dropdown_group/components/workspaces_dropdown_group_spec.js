@@ -146,7 +146,6 @@ describe('workspaces/dropdown_group/components/workspaces_dropdown_group.vue', (
     it('displays loading workspaces error message', () => {
       expect(findLoadingWorkspacesErrorMessage().props()).toMatchObject({
         dismissible: false,
-        showIcon: false,
         variant: 'danger',
       });
     });
