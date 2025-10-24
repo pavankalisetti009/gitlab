@@ -2013,10 +2013,6 @@ describe('Duo Agentic Chat', () => {
         expect(findDuoChat().props('showHeader')).toBe(true);
       });
 
-      it('shows studio header', () => {
-        expect(findDuoChat().props('showStudioHeader')).toBe(true);
-      });
-
       it('disables resizing', () => {
         expect(findDuoChat().props('shouldRenderResizable')).toBe(false);
       });
