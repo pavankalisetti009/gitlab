@@ -7,4 +7,4 @@ rollout_issue_url:
 milestone: '18.4'
 group: group::activation
 type: ops
-default_enabled: true
+default_enabled: false
