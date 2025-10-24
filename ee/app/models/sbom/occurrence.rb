@@ -32,6 +32,11 @@ module Sbom
       class_name: 'Sbom::GraphPath',
       inverse_of: :ancestor
 
+    has_many :occurrence_refs,
+      foreign_key: :sbom_occurrence_id,
+      class_name: 'Sbom::OccurrenceRef',
+      inverse_of: :occurrence
+
     enum :highest_severity, ::Enums::Vulnerability.severity_levels
     enum :reachability, ::Enums::Sbom.reachability_types, suffix: true
 

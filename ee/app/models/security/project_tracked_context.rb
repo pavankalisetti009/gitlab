@@ -17,6 +17,11 @@ module Security
 
     belongs_to :project, inverse_of: :security_project_tracked_contexts
 
+    has_many :sbom_occurrence_refs,
+      class_name: 'Sbom::OccurrenceRef',
+      foreign_key: 'security_project_tracked_context_id',
+      inverse_of: :tracked_context
+
     validates :context_name, presence: true, length: { maximum: 1024 }
     validates :context_type, presence: true
     validates :context_name, uniqueness: { scope: [:project_id, :context_type] }
