@@ -12,7 +12,7 @@ RSpec.describe Sbom::PackageUrl::Decoder, feature_category: :dependency_manageme
     include_context 'with valid purl examples'
 
     with_them do
-      it do
+      it 'has correct attributes' do
         is_expected.to have_attributes(
           type: type,
           namespace: namespace,
@@ -58,7 +58,7 @@ RSpec.describe Sbom::PackageUrl::Decoder, feature_category: :dependency_manageme
     context 'when name contains an encoded slash' do
       let(:purl) { 'pkg:golang/google.org/golang%2fgenproto#googleapis/api/annotations' }
 
-      it do
+      it 'has correct attributes' do
         is_expected.to have_attributes(
           type: 'golang',
           namespace: 'google.org',

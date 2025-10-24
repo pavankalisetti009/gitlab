@@ -17,7 +17,7 @@ RSpec.describe Gitlab::Ci::Reports::Sbom::Source, feature_category: :dependency_
 
   shared_examples_for 'it has correct attributes' do
     it 'has correct type and data' do
-      expect(subject).to have_attributes(
+      is_expected.to have_attributes(
         source_type: type,
         data: attributes[:data]
       )
@@ -37,25 +37,25 @@ RSpec.describe Gitlab::Ci::Reports::Sbom::Source, feature_category: :dependency_
 
     describe '#source_file_path' do
       it 'returns the correct source_file_path' do
-        expect(subject.source_file_path).to eq('package.json')
+        expect(source.source_file_path).to eq('package.json')
       end
     end
 
     describe '#input_file_path' do
       it 'returns the correct input_file_path' do
-        expect(subject.input_file_path).to eq("package-lock.json")
+        expect(source.input_file_path).to eq("package-lock.json")
       end
     end
 
     describe '#packager' do
       it 'returns the correct package manager name' do
-        expect(subject.packager).to eq("npm")
+        expect(source.packager).to eq("npm")
       end
     end
 
     describe '#language' do
       it 'returns the correct language' do
-        expect(subject.language).to eq("JavaScript")
+        expect(source.language).to eq("JavaScript")
       end
     end
   end

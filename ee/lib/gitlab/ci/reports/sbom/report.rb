@@ -6,7 +6,6 @@ module Gitlab
       module Sbom
         class Report
           # This represents the attributes defined in cycloneDX Schema
-          # https://gitlab.com/gitlab-org/gitlab/-/blob/master/app/validators/json_schemas/cyclonedx_report.json#L7
           BOM_FORMAT = 'CycloneDX'
           SPEC_VERSION = '1.4'
           VERSION = 1
