@@ -786,7 +786,7 @@ export default {
           data-testid="model-dropdown-container"
         >
           <model-select-dropdown
-            class="gl-max-w-31"
+            class="-gl-m-2"
             with-default-model-tooltip
             :disabled="isModelSelectionDisabled"
             :is-loading="$apollo.queries.availableModels.loading"
@@ -799,7 +799,7 @@ export default {
       </template>
       <template #footer-controls>
         <div :class="{ 'gl-flex gl-justify-between': userModelSelectionEnabled }">
-          <div class="gl-flex gl-px-4 gl-pb-2 gl-pt-5">
+          <div class="gl-flex gl-px-4 gl-pb-0 gl-pt-4">
             <gl-toggle
               v-model="duoAgenticModePreference"
               :label="s__('DuoChat|Agentic mode (Beta)')"
