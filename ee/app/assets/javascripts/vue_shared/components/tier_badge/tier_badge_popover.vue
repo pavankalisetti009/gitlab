@@ -12,8 +12,8 @@ export default {
   mixins: [Tracking.mixin({ label: 'tier_badge' })],
   inject: ['primaryCtaLink', 'secondaryCtaLink', 'isProject', 'trialDuration'],
   props: {
-    popoverId: {
-      type: String,
+    target: {
+      type: HTMLElement,
       required: true,
     },
     tier: {
@@ -57,7 +57,7 @@ export default {
 </script>
 
 <template>
-  <gl-popover :title="$options.i18n.title" :target="popoverId" placement="bottom">
+  <gl-popover :title="$options.i18n.title" :target="target" placement="bottom">
     <div class="gl-mb-3">
       {{ copyText }}
     </div>

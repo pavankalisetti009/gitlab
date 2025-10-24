@@ -1,3 +1,6 @@
+import { GlBadge } from '@gitlab/ui';
+import { mount } from '@vue/test-utils';
+import { nextTick } from 'vue';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import TierBadge from 'ee/vue_shared/components/tier_badge/tier_badge.vue';
 import { mockTracking } from 'helpers/tracking_helper';
@@ -5,6 +8,12 @@ import { mockTracking } from 'helpers/tracking_helper';
 describe('TierBadge', () => {
   let wrapper;
 
+  const mockProvide = {
+    primaryCtaLink: '/primary',
+    secondaryCtaLink: '/secondary',
+    isProject: true,
+    trialDuration: 30,
+  };
   const findBadge = () => wrapper.findByTestId('tier-badge');
   const createComponent = ({ props = {} } = {}) => {
     wrapper = shallowMountExtended(TierBadge, {
@@ -44,6 +53,30 @@ describe('TierBadge', () => {
       createComponent({ props: { tier: 'Ultimate' } });
 
       expect(wrapper.text()).toBe('Ultimate');
+    });
+  });
+
+  describe('multiple instances', () => {
+    it('creates two tier badge instances and verifies popover works for both', async () => {
+      const wrapper1 = mount(TierBadge, { propsData: { tier: 'Premium' }, provide: mockProvide });
+      const wrapper2 = mount(TierBadge, { propsData: { tier: 'Ultimate' }, provide: mockProvide });
+
+      await nextTick();
+
+      expect(wrapper1.text()).toContain('Premium');
+      expect(wrapper2.text()).toContain('Ultimate');
+
+      const popover1 = wrapper1.findComponent({ name: 'TierBadgePopover' });
+      const popover2 = wrapper2.findComponent({ name: 'TierBadgePopover' });
+
+      expect(popover1.exists()).toBe(true);
+      expect(popover2.exists()).toBe(true);
+
+      expect(popover1.props('tier')).toBe('Premium');
+      expect(popover2.props('tier')).toBe('Ultimate');
+
+      expect(popover1.props('target')).toBe(wrapper1.findComponent(GlBadge).element);
+      expect(popover2.props('target')).toBe(wrapper2.findComponent(GlBadge).element);
     });
   });
 });

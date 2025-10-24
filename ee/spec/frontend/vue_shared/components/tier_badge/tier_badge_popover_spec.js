@@ -26,7 +26,7 @@ describe('TierBadgePopover', () => {
         ...provide,
       },
       propsData: {
-        popoverId: '1',
+        target: document.createElement('div'),
         tier: 'Free',
         ...props,
       },
