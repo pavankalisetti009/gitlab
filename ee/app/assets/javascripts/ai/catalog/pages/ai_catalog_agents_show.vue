@@ -6,6 +6,8 @@ import glFeatureFlagsMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
 import PageHeading from '~/vue_shared/components/page_heading.vue';
 import { TRACK_EVENT_TYPE_AGENT, TRACK_EVENT_VIEW_AI_CATALOG_ITEM } from 'ee/ai/catalog/constants';
 import ErrorsAlert from '~/vue_shared/components/errors_alert.vue';
+import { prerequisitesError } from '../utils';
+import AiCatalogItemMetadata from '../components/ai_catalog_item_metadata.vue';
 import AiCatalogAgentDetails from '../components/ai_catalog_agent_details.vue';
 import AiCatalogItemActions from '../components/ai_catalog_item_actions.vue';
 import createAiCatalogItemConsumer from '../graphql/mutations/create_ai_catalog_item_consumer.mutation.graphql';
@@ -15,13 +17,13 @@ import {
   AI_CATALOG_AGENTS_DUPLICATE_ROUTE,
   AI_CATALOG_AGENTS_EDIT_ROUTE,
 } from '../router/constants';
-import { prerequisitesError } from '../utils';
 
 export default {
   name: 'AiCatalogAgentsShow',
   components: {
     ErrorsAlert,
     PageHeading,
+    AiCatalogItemMetadata,
     AiCatalogAgentDetails,
     AiCatalogItemActions,
   },
@@ -155,6 +157,9 @@ export default {
         />
       </template>
     </page-heading>
-    <ai-catalog-agent-details :item="aiCatalogAgent" />
+    <div class="gl-flex gl-flex-col gl-gap-5 @md:gl-flex-row">
+      <ai-catalog-agent-details :item="aiCatalogAgent" class="gl-grow" />
+      <ai-catalog-item-metadata :item="aiCatalogAgent" class="gl-shrink-0" />
+    </div>
   </div>
 </template>

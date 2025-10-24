@@ -12,6 +12,7 @@ export const mapSteps = (steps) =>
 export const prerequisitesPath = helpPagePath('user/duo_agent_platform/ai_catalog', {
   anchor: 'view-the-ai-catalog',
 });
+
 export const prerequisitesError = (message) => {
   return sprintf(
     message,
@@ -21,4 +22,10 @@ export const prerequisitesError = (message) => {
     },
     false,
   );
+};
+
+export const getLatestUpdatedAt = (item) => {
+  return item.latestVersion.updatedAt > item.updatedAt
+    ? item.latestVersion.updatedAt
+    : item.updatedAt;
 };
