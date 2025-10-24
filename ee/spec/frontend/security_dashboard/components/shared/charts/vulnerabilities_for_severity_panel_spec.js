@@ -66,7 +66,7 @@ describe('VulnerabilitiesForSeverityPanel', () => {
 
         it('constructs the correct link to the vulnerability report', () => {
           expect(findViewLink().props('href')).toBe(
-            `${securityVulnerabilitiesPath}?activity=ALL&state=CONFIRMED%2CDETECTED&severity=${severity.toUpperCase()}&reportType=SAST`,
+            `${securityVulnerabilitiesPath}?state=CONFIRMED%2CDETECTED&severity=${severity.toUpperCase()}&reportType=SAST`,
           );
         });
 

@@ -172,6 +172,7 @@ export const constructVulnerabilitiesReportWithFiltersPath = ({
   securityVulnerabilitiesPath,
   seriesId,
   filterKey,
+  includeAllActivity = false,
   additionalFilters = {},
 }) => {
   const SPECIAL_LINK_CASES = {
@@ -184,7 +185,7 @@ export const constructVulnerabilitiesReportWithFiltersPath = ({
   const params = new URLSearchParams();
 
   // Add default parameters
-  params.set('activity', ACTIVITY_FILTERS.ALL);
+  if (includeAllActivity) params.set('activity', ACTIVITY_FILTERS.ALL);
   params.set('state', `${STATE_FILTERS.CONFIRMED},${STATE_FILTERS.DETECTED}`);
 
   const specialCase = SPECIAL_LINK_CASES[seriesId];
