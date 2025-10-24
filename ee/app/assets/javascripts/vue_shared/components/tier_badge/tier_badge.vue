@@ -17,8 +17,10 @@ export default {
       default: s__('TierBadge|Free'),
     },
   },
+  data: () => ({ target: undefined }),
   mounted() {
     this.trackRender();
+    this.target = this.$refs.badge?.$el;
   },
   methods: {
     trackRender() {
@@ -28,18 +30,13 @@ export default {
       this.track('render_flyout');
     },
   },
-  popoverTriggerId: 'tier-badge-trigger-id',
 };
 </script>
 <template>
   <span class="gl-ml-2 gl-flex gl-items-center" @mouseover="trackHover">
-    <gl-badge :id="$options.popoverTriggerId" data-testid="tier-badge" variant="tier">
+    <gl-badge ref="badge" data-testid="tier-badge" variant="tier">
       {{ tier }}
     </gl-badge>
-    <tier-badge-popover
-      :popover-id="$options.popoverTriggerId"
-      triggers="hover focus manual"
-      :tier="tier"
-    />
+    <tier-badge-popover v-if="target" :target="target" triggers="hover focus manual" :tier="tier" />
   </span>
 </template>
