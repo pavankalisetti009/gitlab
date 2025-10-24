@@ -62,7 +62,9 @@ RSpec.describe 'OKR', :js, feature_category: :portfolio_management do
     it_behaves_like 'work items comments', :objective
     it_behaves_like 'work items toggle status button'
 
-    it_behaves_like 'work items todos'
+    context 'with quarantine', quarantine: 'https://gitlab.com/gitlab-org/quality/test-failure-issues/-/issues/2657' do
+      it_behaves_like 'work items todos'
+    end
 
     it_behaves_like 'work items assignees'
     it_behaves_like 'work items labels', 'project'

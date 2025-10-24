@@ -194,7 +194,8 @@ RSpec.describe 'Requirements list', :js, feature_category: :requirements_managem
         end
       end
 
-      it 'updates requirement using edit form' do
+      it 'updates requirement using edit form',
+        quarantine: 'https://gitlab.com/gitlab-org/quality/test-failure-issues/-/issues/3080' do
         requirement_title = 'Foobar'
         requirement_description = 'Baz'
 

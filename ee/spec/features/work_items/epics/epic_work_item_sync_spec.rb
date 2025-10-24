@@ -80,7 +80,13 @@ RSpec.describe 'Epic Work Item sync', :js, feature_category: :portfolio_manageme
       expect(Gitlab::EpicWorkItemSync::Diff.new(epic, epic.work_item, strict_equal: true).attributes).to be_empty
     end
 
-    it 'updates the legacy epic when the work item is updated', :sidekiq_inline do
+    it 'updates the legacy epic when the work item is updated', :sidekiq_inline,
+      quarantine: {
+        issue: [
+          'https://gitlab.com/gitlab-org/quality/test-failure-issues/-/issues/2480',
+          'https://gitlab.com/gitlab-org/quality/test-failure-issues/-/issues/3181'
+        ]
+      } do
       create_epic_work_item
       wait_for_requests
 
