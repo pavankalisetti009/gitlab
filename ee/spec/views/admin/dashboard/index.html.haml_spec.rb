@@ -70,6 +70,8 @@ RSpec.describe 'admin/dashboard/index.html.haml', :enable_admin_mode, feature_ca
   end
 
   describe 'license expirations' do
+    today = DateTime.parse("2025-08-09 12:00:00 UTC")
+
     shared_examples_for 'expiration message' do |start_date:, expire_date:, is_trial:, message:|
       before do
         assign(
@@ -88,14 +90,15 @@ RSpec.describe 'admin/dashboard/index.html.haml', :enable_admin_mode, feature_ca
       end
 
       it "shows '#{message}'" do
-        render
-        expect(rendered).to have_content message.to_s
+        travel_to(today) do
+          render
+          expect(rendered).to have_content message.to_s
+        end
       end
     end
 
     context 'when paid license is loaded' do
       context 'when is active' do
-        today = Date.current
         it_behaves_like 'expiration message',
           start_date: today - 30.days,
           expire_date: today + 30.days,
@@ -104,7 +107,6 @@ RSpec.describe 'admin/dashboard/index.html.haml', :enable_admin_mode, feature_ca
       end
 
       context 'when is expired' do
-        today = Date.current
         it_behaves_like 'expiration message',
           start_date: today - 60.days,
           expire_date: today - 30.days,
@@ -113,7 +115,6 @@ RSpec.describe 'admin/dashboard/index.html.haml', :enable_admin_mode, feature_ca
       end
 
       context 'when never expires' do
-        today = Date.current
         it_behaves_like 'expiration message',
           start_date: today - 30.days,
           expire_date: nil,
@@ -123,8 +124,7 @@ RSpec.describe 'admin/dashboard/index.html.haml', :enable_admin_mode, feature_ca
     end
 
     context 'when trial license is loaded' do
-      context 'when is active', quarantine: 'https://gitlab.com/gitlab-org/gitlab/-/issues/446301' do
-        today = Date.current
+      context 'when is active' do
         days_left = 23
         it_behaves_like 'expiration message',
           start_date: today - 30.days,
@@ -134,7 +134,6 @@ RSpec.describe 'admin/dashboard/index.html.haml', :enable_admin_mode, feature_ca
       end
 
       context 'when is expired' do
-        today = Date.current
         it_behaves_like 'expiration message',
           start_date: today - 60.days,
           expire_date: today - 30.days,
@@ -143,7 +142,6 @@ RSpec.describe 'admin/dashboard/index.html.haml', :enable_admin_mode, feature_ca
       end
 
       context 'when never expires' do
-        today = Date.current
         it_behaves_like 'expiration message',
           start_date: today - 30.days,
           expire_date: nil,
