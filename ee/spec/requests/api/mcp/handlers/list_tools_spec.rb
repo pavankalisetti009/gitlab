@@ -16,11 +16,13 @@ RSpec.describe API::Mcp, 'List tools request', feature_category: :mcp_server do
       }
     end
 
-    before do
+    def post_list_tools
       post api('/mcp', user, oauth_access_token: access_token), params: params
     end
 
     it 'returns success' do
+      post_list_tools
+
       expect(response).to have_gitlab_http_status(:ok)
       expect(json_response['jsonrpc']).to eq(params[:jsonrpc])
       expect(json_response['id']).to eq(params[:id])
@@ -28,6 +30,8 @@ RSpec.describe API::Mcp, 'List tools request', feature_category: :mcp_server do
     end
 
     it 'returns tools' do
+      post_list_tools
+
       expect(json_response['result']['tools']).to contain_exactly(
         {
           "name" => "get_pipeline_jobs",
@@ -281,54 +285,6 @@ RSpec.describe API::Mcp, 'List tools request', feature_category: :mcp_server do
           }
         },
         {
-          "name" => "semantic_code_search",
-          "description" => "Performs semantic code search across project files using vector similarity.\n\n" \
-            "Returns ranked code snippets with file paths and content matches based on natural language queries.\n\n" \
-            "Use this tool for questions about a project's codebase.\n" \
-            "For example: \"how something works\" or \"code that does X\", or finding specific implementations.\n\n" \
-            "This tool supports directory scoping and configurable result limits for " \
-            "targeted code discovery and analysis.",
-          "inputSchema" => {
-            "type" => "object",
-            "properties" => {
-              "semantic_query" => {
-                "type" => "string",
-                "minLength" => 1,
-                "maxLength" => 1000,
-                "description" => "A brief natural language query about the code you want to find in the project " \
-                  "(e.g.: 'authentication middleware', 'database connection logic', or 'API error handling')."
-              },
-              "project_id" => {
-                "type" => "string",
-                "description" => "Either a project id or project path."
-              },
-              "directory_path" => {
-                "type" => "string",
-                "minLength" => 1,
-                "maxLength" => 100,
-                "description" => "Optional directory path to scope the search (e.g., \"app/services/\")."
-              },
-              "knn" => {
-                "type" => "integer",
-                "default" => 64,
-                "minimum" => 1,
-                "maximum" => 100,
-                "description" => "Number of nearest neighbors used internally. " \
-                  "This controls search precision vs. speed - higher values find more diverse results but take longer."
-              },
-              "limit" => {
-                "type" => "integer",
-                "default" => 20,
-                "minimum" => 1,
-                "maximum" => 100,
-                "description" => "Maximum number of results to return."
-              }
-            },
-            "required" => %w[semantic_query project_id],
-            "additionalProperties" => false
-          }
-        },
-        {
           "name" => "get_mcp_server_version",
           "description" => "Get the current version of MCP server.",
           "inputSchema" => {
@@ -340,14 +296,80 @@ RSpec.describe API::Mcp, 'List tools request', feature_category: :mcp_server do
       )
     end
 
-    context 'when feature flag code_snippet_search_graphqlapi is disabled' do
+    context 'when semantic code search is available' do
       before do
-        stub_feature_flags(code_snippet_search_graphqlapi: false)
-        post api('/mcp', user, oauth_access_token: access_token), params: params
+        # We have to use `allow_any_instance_of` since this tool is initialized
+        # *on class definition time* in EE::Mcp::Tools::Manager
+        allow_any_instance_of(Mcp::Tools::SearchCodebaseService).to receive(:available?).and_return(true) # rubocop: disable RSpec/AnyInstanceOf -- see explanation above
       end
 
-      it 'does not return semantic_code_search' do
-        expect(json_response['result']['tools'].pluck('name')).not_to include('semantic_code_search')
+      it 'returns the semantic_code_search in the tools list' do
+        post_list_tools
+
+        tools = json_response['result']['tools']
+        semantic_code_search = tools.find { |tool| tool['name'] == 'semantic_code_search' }
+
+        expect(semantic_code_search).not_to be_nil
+
+        tool_description = <<~DESC.strip
+          Performs semantic code search across project files using vector similarity.
+
+          Returns ranked code snippets with file paths and content matches based on natural language queries.
+
+          Use this tool for questions about a project's codebase.
+          For example: "how something works" or "code that does X", or finding specific implementations.
+
+          This tool supports directory scoping and configurable result limits for targeted code discovery and analysis.
+        DESC
+
+        expect(semantic_code_search).to eq(
+          {
+            "name" => "semantic_code_search",
+            "description" => tool_description,
+            "inputSchema" => {
+              "type" => "object",
+              "properties" => {
+                "semantic_query" => {
+                  "type" => "string",
+                  "minLength" => 1,
+                  "maxLength" => 1000,
+                  "description" => "" \
+                    "A brief natural language query about the code you want to find in the project " \
+                    "(e.g.: 'authentication middleware', 'database connection logic', or 'API error handling')."
+                },
+                "project_id" => {
+                  "type" => "string",
+                  "description" => "Either a project id or project path."
+                },
+                "directory_path" => {
+                  "type" => "string",
+                  "minLength" => 1,
+                  "maxLength" => 100,
+                  "description" => "Optional directory path to scope the search (e.g., \"app/services/\")."
+                },
+                "knn" => {
+                  "type" => "integer",
+                  "default" => 64,
+                  "minimum" => 1,
+                  "maximum" => 100,
+                  "description" => "" \
+                    "Number of nearest neighbors used internally. " \
+                    "This controls search precision vs. speed - " \
+                    "higher values find more diverse results but take longer."
+                },
+                "limit" => {
+                  "type" => "integer",
+                  "default" => 20,
+                  "minimum" => 1,
+                  "maximum" => 100,
+                  "description" => "Maximum number of results to return."
+                }
+              },
+              "required" => %w[semantic_query project_id],
+              "additionalProperties" => false
+            }
+          }
+        )
       end
     end
   end

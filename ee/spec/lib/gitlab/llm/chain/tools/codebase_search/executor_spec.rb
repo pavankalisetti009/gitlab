@@ -129,8 +129,8 @@ RSpec.describe Gitlab::Llm::Chain::Tools::CodebaseSearch::Executor, feature_cate
         context 'when a collection record does not exist' do
           let(:expected_error_message) do
             "Error in semantic search: " \
-              "#{Ai::ActiveContext::Queries::Code::NoCollectionRecordError} " \
-              "A Code collection record is required."
+              "#{Ai::ActiveContext::Queries::Code::NotAvailable} " \
+              "Semantic search on Code collection is not available."
           end
 
           it_behaves_like 'tool returns an error' do

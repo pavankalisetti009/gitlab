@@ -7,7 +7,6 @@ module Mcp
       extend ::Gitlab::Utils::Override
 
       ACTIVE_CONTEXT_QUERY = ::Ai::ActiveContext::Queries
-
       REQUIRED_ABILITY = :read_code
 
       # Register version 0.1.0
@@ -58,6 +57,14 @@ module Mcp
           additionalProperties: false
         }
       }
+
+      def available?
+        return false unless ACTIVE_CONTEXT_QUERY::Code.available?
+
+        return false unless current_user
+
+        Feature.enabled?(:code_snippet_search_graphqlapi, current_user)
+      end
 
       override :ability
       def auth_ability
