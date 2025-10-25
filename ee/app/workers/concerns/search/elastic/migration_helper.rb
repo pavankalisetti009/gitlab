@@ -15,6 +15,13 @@ module Search
         number_of_shards.to_i <= 1 ? 2 : number_of_shards
       end
 
+      def remove_standalone_index(index_name:)
+        return false unless helper.index_exists?(index_name: index_name)
+
+        log 'Removing standalone index', index_name: index_name
+        helper.delete_index(index_name: index_name)
+      end
+
       private
 
       def default_index_name
