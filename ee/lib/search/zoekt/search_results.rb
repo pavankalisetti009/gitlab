@@ -24,7 +24,7 @@ module Search
         @current_user = current_user
         @query = query
         @source = options[:source]&.to_sym
-        @filters = options.fetch(:filters, {})
+        @filters = options.fetch(:filters, {}.with_indifferent_access)
         @projects = filtered_projects(projects)
         @node_id = options[:node_id]
         @order_by = options[:order_by]
@@ -230,6 +230,7 @@ module Search
           group_id: options[:group_id],
           max_per_page: DEFAULT_PER_PAGE * 2,
           search_mode: search_mode,
+          filters: filters,
           multi_match: multi_match
         )
 
@@ -298,12 +299,7 @@ module Search
 
       def zoekt_targets
         sha = OpenSSL::Digest.hexdigest('SHA256', limit_project_ids.sort.join(','))
-        cache_key = [
-          self.class.name,
-          :zoekt_targets,
-          current_user&.id,
-          sha
-        ]
+        cache_key = [self.class.name, :zoekt_targets, current_user&.id, sha]
 
         Rails.cache.fetch(cache_key, expires_in: ZOEKT_TARGETS_CACHE_EXPIRES_IN) do
           ::Search::Zoekt::RoutingService.execute(projects)

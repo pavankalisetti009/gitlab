@@ -69,7 +69,8 @@ RSpec.describe ::Search::Zoekt::SearchResults, :zoekt_cache_disabled, :zoekt_set
             project_id: nil,
             group_id: nil,
             search_mode: :regex,
-            multi_match: nil
+            multi_match: nil,
+            filters: {}
           ).and_call_original
 
           objects
@@ -89,7 +90,8 @@ RSpec.describe ::Search::Zoekt::SearchResults, :zoekt_cache_disabled, :zoekt_set
             project_id: nil,
             group_id: nil,
             search_mode: :regex,
-            multi_match: an_instance_of(Search::Zoekt::MultiMatch)
+            multi_match: an_instance_of(Search::Zoekt::MultiMatch),
+            filters: {}
           ).and_call_original
 
           objects
