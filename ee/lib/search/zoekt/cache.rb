@@ -8,9 +8,6 @@ module Search
       MAX_PAGES = 10
       EXPIRES_IN = 5.minutes
 
-      attr_reader :current_user, :query, :project_id, :group_id, :per_page, :current_page, :max_per_page, :search_mode,
-        :multi_match
-
       def self.humanize_expires_in
         parts = EXPIRES_IN.parts
         unit = parts.each_key.first
@@ -28,12 +25,7 @@ module Search
         @max_per_page = options.fetch(:max_per_page)
         @search_mode = options.fetch(:search_mode)
         @multi_match = options.fetch(:multi_match, false)
-      end
-
-      def enabled?
-        return false unless Gitlab::CurrentSettings.zoekt_cache_response?
-
-        (project_id.present? || group_id.present?) && per_page <= max_per_page
+        @filters = options.fetch(:filters)
       end
 
       def fetch
@@ -50,13 +42,22 @@ module Search
         [search_results, total_count, file_count]
       end
 
+      private
+
+      attr_reader :current_user, :query, :project_id, :group_id, :per_page, :current_page, :max_per_page, :search_mode,
+        :multi_match, :filters
+
+      def enabled?
+        return false unless Gitlab::CurrentSettings.zoekt_cache_response?
+
+        (project_id.present? || group_id.present?) && per_page <= max_per_page
+      end
+
       def cache_key(page: current_page)
         user_id = current_user&.id || 0
         # We need to use {user_id} as part of the key for Redis Cluster support
         "cache:zoekt:{#{user_id}}/#{search_fingerprint}/#{per_page}/#{page}"
       end
-
-      private
 
       def with_redis(&block)
         Gitlab::Redis::Cache.with(&block) # rubocop:disable CodeReuse/ActiveRecord -- this has nothing to do with AR
@@ -70,10 +71,9 @@ module Search
 
       def search_fingerprint
         scope_key = "g#{group_id}-p#{project_id}"
-        multi_match_key = multi_match.present? ? multi_match.max_chunks_size : 'false'
-
-        OpenSSL::Digest.hexdigest('SHA256',
-          "#{query}-#{scope_key}-#{search_mode}-#{multi_match_key}")
+        multi_match_key = multi_match.present? ? multi_match.max_chunks_size : 'f'
+        data = "#{query}-#{scope_key}-#{search_mode}-#{multi_match_key}-#{Gitlab::Json.generate(filters.sort)}"
+        OpenSSL::Digest.hexdigest('SHA256', data)
       end
 
       def read_cache
