@@ -31,7 +31,7 @@ describe('CurrentOverageUsageCard', () => {
     });
 
     it('renders card title', () => {
-      expect(wrapper.find('h2').text()).toBe('On-demand credits used this billable month');
+      expect(wrapper.find('h2').text()).toBe('GitLab Credits - On Demand');
     });
 
     it('renders the formatted date range', () => {

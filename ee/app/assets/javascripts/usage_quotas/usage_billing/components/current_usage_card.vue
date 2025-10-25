@@ -57,8 +57,8 @@ export default {
 };
 </script>
 <template>
-  <gl-card class="gl-flex-1 gl-bg-transparent">
-    <h2 class="gl-my-3 gl-text-size-h2">
+  <gl-card class="gl-flex-1 gl-bg-transparent" body-class="gl-p-5">
+    <h2 class="gl-heading-scale-400 gl-mb-3">
       {{ s__('UsageBilling|GitLab Credits - Monthly committed pool') }}
     </h2>
     <p>
@@ -67,11 +67,14 @@ export default {
         :month-end-date="monthEndDate"
       />
     </p>
-    <div class="gl-flex gl-flex-row gl-justify-between">
-      <span class="gl-text-size-h2 gl-font-bold" data-testid="total-credits-used">
+    <div class="gl-mb-3 gl-flex">
+      <span class="gl-heading-scale-600 gl-mr-3 gl-font-bold" data-testid="total-credits-used">
         {{ numberToMetricPrefix(poolCreditsUsed) }}
       </span>
-      <span class="gl-text-size-h2 gl-font-bold gl-text-gray-500" data-testid="pool-total-credits">
+      <span
+        class="gl-heading-scale-600 gl-font-bold gl-text-subtle"
+        data-testid="pool-total-credits"
+      >
         {{ $options.totalCreditsSeparator }}
         {{ numberToMetricPrefix(poolTotalCredits) }}
       </span>
@@ -79,18 +82,18 @@ export default {
     <gl-progress-bar
       :value="usagePercentage"
       :variant="progressBarVariant"
-      class="gl-mb-5 gl-mt-1 gl-h-3"
+      class="gl-mb-3 gl-mt-1 gl-h-3"
     />
     <div class="gl-font-sm gl-flex gl-flex-col gl-gap-3">
       <div class="gl-flex gl-flex-row gl-justify-between">
-        <span data-testid="percentage-utilized" class="gl-text-gray-600">
+        <span data-testid="percentage-utilized" class="gl-text-subtle">
           <gl-sprintf :message="s__('UsageBilling|%{percentage}%{percentSymbol} utilized')">
             <template #percentage>{{ usagePercentage }}</template>
             <template #percentSymbol>%</template>
           </gl-sprintf>
         </span>
 
-        <span data-testid="pool-credits-remaining" class="gl-text-gray-600">
+        <span data-testid="pool-credits-remaining" class="gl-text-subtle">
           <gl-sprintf
             :message="
               n__(

@@ -33,9 +33,9 @@ export default {
 };
 </script>
 <template>
-  <gl-card class="gl-flex-1 gl-bg-transparent">
-    <h2 class="gl-font-heading gl-my-3 gl-text-size-h2">
-      {{ s__('UsageBilling|On-demand credits used this billable month') }}
+  <gl-card class="gl-flex-1 gl-bg-transparent" body-class="gl-p-5">
+    <h2 class="gl-heading-scale-400 gl-mb-3">
+      {{ s__('UsageBilling|GitLab Credits - On Demand') }}
     </h2>
     <p>
       <human-timeframe-with-days-remaining
@@ -44,13 +44,13 @@ export default {
       />
     </p>
 
-    <div>
-      <span class="gl-text-size-h2 gl-font-bold" data-testid="overage-credits-used">
+    <div class="gl-mb-3">
+      <span class="gl-heading-scale-600 gl-font-bold" data-testid="overage-credits-used">
         {{ numberToMetricPrefix(overageCreditsUsed) }}
       </span>
     </div>
 
-    <p class="gl-mt-auto">
+    <p class="gl-border-t gl-mb-0 gl-mt-auto gl-pt-3 gl-text-sm gl-text-subtle">
       {{
         s__(
           'UsageBilling|These are credits consumed beyond your users included credits, charged at standard on-demand rates.',
