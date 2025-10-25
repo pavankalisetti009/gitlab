@@ -3975,6 +3975,9 @@ msgstr ""
 msgid "Achievements|%{namespace_link} awarded you the %{bold_start}%{achievement_name}%{bold_end} achievement!"
 msgstr ""
 
+msgid "Achievements|%{userCount} awarded users"
+msgstr ""
+
 msgid "Achievements|Achievement description cannot be longer than %{length} characters."
 msgstr ""
 
