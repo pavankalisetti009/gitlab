@@ -2,7 +2,10 @@
 
 require 'spec_helper'
 
+# rubocop:disable RSpec/MultipleMemoizedHelpers -- This is pentest suite with so many combination scenarios
 RSpec.describe 'Secrets Manager Access Control', :gitlab_secrets_manager, feature_category: :secrets_management do
+  include ProjectForksHelper
+
   let_it_be(:namespace_one) { create(:namespace) }
   let_it_be(:namespace_two) { create(:namespace) }
 
@@ -11,9 +14,17 @@ RSpec.describe 'Secrets Manager Access Control', :gitlab_secrets_manager, featur
   let_it_be_with_reload(:project_in_different_namespace) { create(:project, :repository, namespace: namespace_two) }
 
   let_it_be(:project_owner) { create(:user, owner_of: project) }
+  let_it_be(:forked_project_owner) { project_owner }
   let_it_be(:project_developer) { create(:user, developer_of: project) }
   let_it_be(:owner_of_project_in_same_namespace) { create(:user, owner_of: project_in_same_namespace) }
   let_it_be(:owner_of_project_in_different_namespace) { create(:user, owner_of: project_in_different_namespace) }
+
+  let_it_be(:forked_project) { fork_project(project, project_owner, repository: true) }
+
+  let_it_be(:merge_request) do
+    create(:merge_request, source_project: forked_project, source_branch: 'feature', target_project: project,
+      target_branch: 'master')
+  end
 
   let_it_be_with_refind(:project_secrets_manager) { create(:project_secrets_manager, project: project) }
   let_it_be_with_refind(:secrets_manager_of_project_in_same_namespace) do
@@ -22,6 +33,10 @@ RSpec.describe 'Secrets Manager Access Control', :gitlab_secrets_manager, featur
 
   let_it_be_with_refind(:secrets_manager_of_project_in_different_namespace) do
     create(:project_secrets_manager, project: project_in_different_namespace)
+  end
+
+  let_it_be_with_refind(:secrets_manager_of_forked_project) do
+    create(:project_secrets_manager, project: forked_project)
   end
 
   let_it_be_with_refind(:project_pipeline) do
@@ -57,6 +72,30 @@ RSpec.describe 'Secrets Manager Access Control', :gitlab_secrets_manager, featur
     )
   end
 
+  let_it_be_with_refind(:merge_request_pipeline_from_forked_project_running_in_original_project) do
+    create(
+      :ci_pipeline,
+      source: :merge_request_event,
+      merge_request: merge_request,
+      project: project,
+      ref: merge_request.ref_path,
+      status: 'success',
+      user: project_owner
+    )
+  end
+
+  let_it_be_with_refind(:merge_request_pipeline_from_forked_project_running_in_forked_project) do
+    create(
+      :ci_pipeline,
+      source: :merge_request_event,
+      merge_request: merge_request,
+      project: forked_project,
+      ref: merge_request.ref_path,
+      status: 'success',
+      user: project_owner
+    )
+  end
+
   let(:project_build) { create(:ee_ci_build, pipeline: project_pipeline, user: project_developer) }
   let(:build_of_project_in_same_namespace) do
     create(:ee_ci_build, pipeline: pipeline_of_project_in_same_namespace, user: owner_of_project_in_same_namespace)
@@ -65,6 +104,16 @@ RSpec.describe 'Secrets Manager Access Control', :gitlab_secrets_manager, featur
   let(:build_of_project_in_different_namespace) do
     create(:ee_ci_build, pipeline: pipeline_of_project_in_different_namespace,
       user: owner_of_project_in_different_namespace)
+  end
+
+  let(:forked_project_build_running_in_original_project) do
+    create(:ee_ci_build, pipeline: merge_request_pipeline_from_forked_project_running_in_original_project,
+      user: project_owner)
+  end
+
+  let(:forked_project_build_running_in_forked_project) do
+    create(:ee_ci_build, pipeline: merge_request_pipeline_from_forked_project_running_in_forked_project,
+      user: project_owner)
   end
 
   def build_secrets_manager_jwt(user:, project:)
@@ -85,6 +134,7 @@ RSpec.describe 'Secrets Manager Access Control', :gitlab_secrets_manager, featur
         owner_of_project_in_same_namespace)
       provision_project_secrets_manager(secrets_manager_of_project_in_different_namespace,
         owner_of_project_in_different_namespace)
+      provision_project_secrets_manager(secrets_manager_of_forked_project, forked_project_owner)
     end
 
     where(:jwt_type, :jwt_scope, :auth_mount, :expected_result, :errror_message) do
@@ -101,6 +151,7 @@ RSpec.describe 'Secrets Manager Access Control', :gitlab_secrets_manager, featur
       :user      | :same_project                    | :pipeline  | :rejected       | 'error validating claims: claim "secrets_manager_scope" does not match any associated bound claim values'
       :user      | :project_in_same_namespace       | :user      | :rejected       | 'blocked authorization with message: token project_id does not match role base'
       :user      | :project_in_different_namespace  | :user      | :rejected       | 'blocked authorization with message: token project_id does not match role base'
+      :user      | :forked_project                  | :user      | :rejected       | 'blocked authorization with message: token project_id does not match role base'
       # ---------+----------------------------------+------------+-----------------|------------------------------------------------------------------------------------------------
       # ---------+----------------------------------+------------+-----------------|------------------------------------------------------------------------------------------------
       :pipeline  | :same_project                    | :pipeline  | :success        | nil
@@ -108,6 +159,8 @@ RSpec.describe 'Secrets Manager Access Control', :gitlab_secrets_manager, featur
       :pipeline  | :same_project                    | :user      | :rejected       | 'blocked authorization with message: invalid subject for user authentication'
       :pipeline  | :project_in_same_namespace       | :pipeline  | :rejected       | 'error validating claims: claim "project_id" does not match any associated bound claim values'
       :pipeline  | :project_in_different_namespace  | :pipeline  | :rejected       | 'error validating claims: claim "project_id" does not match any associated bound claim values'
+      :pipeline  | :forked_project                  | :pipeline  | :rejected       | 'error validating claims: claim "project_id" does not match any associated bound claim values'
+      :pipeline  | :forked_project_with_pipeline_running_in_parent_project | :pipeline | :rejected | 'error validating claims: claim "project_id" does not match any associated bound claim values'
       # rubocop:enable Layout/LineLength
     end
 
@@ -140,6 +193,20 @@ RSpec.describe 'Secrets Manager Access Control', :gitlab_secrets_manager, featur
             secrets_manager_of_project_in_different_namespace.ci_jwt(build_of_project_in_different_namespace)
           when :global
             build_secrets_manager_jwt(user: project_owner, project: project_in_different_namespace)
+          end
+        when :forked_project
+          case jwt_type
+          when :user
+            build_user_jwt(user: project_owner, project: forked_project)
+          when :pipeline
+            secrets_manager_of_forked_project.ci_jwt(forked_project_build_running_in_forked_project)
+          when :global
+            build_secrets_manager_jwt(user: project_owner, project: forked_project)
+          end
+        when :forked_project_with_pipeline_running_in_parent_project
+          case jwt_type
+          when :pipeline
+            secrets_manager_of_forked_project.ci_jwt(forked_project_build_running_in_original_project)
           end
         end
       end
@@ -235,6 +302,26 @@ RSpec.describe 'Secrets Manager Access Control', :gitlab_secrets_manager, featur
       )
     end
 
+    let(:pipeline_client_of_forked_project_running_in_forked_project) do
+      SecretsManagement::TestClient.new(
+        jwt: secrets_manager_of_forked_project.ci_jwt(forked_project_build_running_in_forked_project),
+        auth_mount: secrets_manager_of_forked_project.ci_auth_mount,
+        role: secrets_manager_of_forked_project.ci_auth_role,
+        auth_namespace: secrets_manager_of_forked_project.full_project_namespace_path,
+        namespace: secrets_manager_of_forked_project.full_project_namespace_path
+      )
+    end
+
+    let(:pipeline_client_of_forked_project_running_in_original_project) do
+      SecretsManagement::TestClient.new(
+        jwt: secrets_manager_of_forked_project.ci_jwt(forked_project_build_running_in_original_project),
+        auth_mount: secrets_manager_of_forked_project.ci_auth_mount,
+        role: secrets_manager_of_forked_project.ci_auth_role,
+        auth_namespace: secrets_manager_of_forked_project.full_project_namespace_path,
+        namespace: secrets_manager_of_forked_project.full_project_namespace_path
+      )
+    end
+
     let(:global_secrets_manager_client) do
       SecretsManagement::SecretsManagerClient.new(
         jwt: build_secrets_manager_jwt(user: project_owner, project: project)
@@ -283,6 +370,7 @@ RSpec.describe 'Secrets Manager Access Control', :gitlab_secrets_manager, featur
         provision_project_secrets_manager(project_secrets_manager, project_owner)
         provision_project_secrets_manager(secrets_manager_of_project_in_same_namespace,
           owner_of_project_in_same_namespace)
+        provision_project_secrets_manager(secrets_manager_of_forked_project, forked_project_owner)
         create_project_secret(user: project_owner, project: project, name: 'my_secret_one', branch: 'master',
           environment: '*', value: 'my_value')
       end
@@ -328,6 +416,28 @@ RSpec.describe 'Secrets Manager Access Control', :gitlab_secrets_manager, featur
       context 'when using user_jwt of project owner' do
         subject do
           project_owner_client.read_kv_secret_value(
+            project_secrets_manager.ci_secrets_mount_path,
+            project_secrets_manager.ci_data_path("my_secret_one")
+          )
+        end
+
+        it_behaves_like 'permission denied'
+      end
+
+      context 'when using pipeline_jwt of forked project' do
+        subject do
+          pipeline_client_of_forked_project_running_in_forked_project.read_kv_secret_value(
+            project_secrets_manager.ci_secrets_mount_path,
+            project_secrets_manager.ci_data_path("my_secret_one")
+          )
+        end
+
+        it_behaves_like 'permission denied'
+      end
+
+      context 'when using pipeline_jwt of forked project running in original project' do
+        subject do
+          pipeline_client_of_forked_project_running_in_original_project.read_kv_secret_value(
             project_secrets_manager.ci_secrets_mount_path,
             project_secrets_manager.ci_data_path("my_secret_one")
           )
@@ -387,3 +497,4 @@ RSpec.describe 'Secrets Manager Access Control', :gitlab_secrets_manager, featur
     end
   end
 end
+# rubocop:enable RSpec/MultipleMemoizedHelpers
