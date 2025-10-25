@@ -37,7 +37,7 @@ describe('PurchaseCommitmentCard', () => {
       const button = wrapper.findComponent(GlButton);
 
       expect(button.props('href')).toBe('url-to-purchase-monthly-commitment');
-      expect(button.text()).toBe('Purchase monthly commitment');
+      expect(button.text()).toBe('Increase monthly commitment');
     });
   });
 

@@ -70452,7 +70452,13 @@ msgstr ""
 msgid "UsageBilling|GitLab Credits - Monthly committed pool"
 msgstr ""
 
+msgid "UsageBilling|GitLab Credits - On Demand"
+msgstr ""
+
 msgid "UsageBilling|GitLab Credits - One-Time Waiver"
+msgstr ""
+
+msgid "UsageBilling|Increase monthly commitment"
 msgstr ""
 
 msgid "UsageBilling|Increase monthly credit commitment"
@@ -70474,9 +70480,6 @@ msgid "UsageBilling|Monthly commitments offer significant discounts off list pri
 msgstr ""
 
 msgid "UsageBilling|No user data available"
-msgstr ""
-
-msgid "UsageBilling|On-demand credits used this billable month"
 msgstr ""
 
 msgid "UsageBilling|One-Time Waiver credits remaining"

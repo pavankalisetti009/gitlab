@@ -24,7 +24,7 @@ export default {
 };
 </script>
 <template>
-  <gl-card class="gl-flex-1 gl-bg-subtle" body-class="gl-flex gl-flex-col gl-h-full">
+  <gl-card class="gl-flex-1 gl-bg-subtle" body-class="gl-flex gl-flex-col gl-h-full gl-p-5">
     <template v-if="hasCommitment">
       <h2 class="gl-heading-scale-400 gl-mb-3">
         {{ s__('UsageBilling|Increase monthly credit commitment') }}
@@ -44,7 +44,7 @@ export default {
       </p>
       <div class="gl-mt-auto">
         <gl-button variant="confirm" :href="purchaseCreditsPath">
-          {{ s__('UsageBilling|Purchase monthly commitment') }}
+          {{ s__('UsageBilling|Increase monthly commitment') }}
         </gl-button>
       </div>
     </template>
