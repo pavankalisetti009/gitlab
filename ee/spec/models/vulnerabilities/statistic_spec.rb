@@ -16,6 +16,9 @@ RSpec.describe Vulnerabilities::Statistic, feature_category: :vulnerability_mana
     it { is_expected.to validate_numericality_of(:low).is_greater_than_or_equal_to(0) }
     it { is_expected.to validate_numericality_of(:unknown).is_greater_than_or_equal_to(0) }
     it { is_expected.to validate_numericality_of(:info).is_greater_than_or_equal_to(0) }
+    it { is_expected.to validate_presence_of(:traversal_ids) }
+    it { is_expected.to validate_length_of(:traversal_ids).is_at_least(1) }
+
     it { is_expected.to define_enum_for(:letter_grade).with_values(%i[a b c d f]) }
   end
 

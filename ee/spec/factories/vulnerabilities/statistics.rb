@@ -3,11 +3,11 @@
 FactoryBot.define do
   factory :vulnerability_statistic, class: 'Vulnerabilities::Statistic' do
     project
+    traversal_ids { project.namespace.traversal_ids }
     initialize_with { Vulnerabilities::Statistic.find_or_initialize_by(project_id: project.id) }
 
     after(:build) do |vulnerability_statistic, _|
       vulnerability_statistic.archived = vulnerability_statistic.project&.archived
-      vulnerability_statistic.traversal_ids = vulnerability_statistic.project&.namespace&.traversal_ids
       vulnerability_statistic.total = [
         vulnerability_statistic.low,
         vulnerability_statistic.medium,

@@ -36,6 +36,7 @@ module Vulnerabilities
     validates :low, numericality: { greater_than_or_equal_to: 0 }
     validates :unknown, numericality: { greater_than_or_equal_to: 0 }
     validates :info, numericality: { greater_than_or_equal_to: 0 }
+    validates :traversal_ids, presence: true, length: { minimum: 1 }
 
     before_save :assign_letter_grade
 
