@@ -18,7 +18,7 @@ RSpec.describe ::Ai::DuoWorkflows::RevokeTokenService, feature_category: :duo_ag
       result = described_class.new(token: token.plaintext_token, current_user: user).execute
 
       expect(result[:status]).to eq(:error)
-      expect(result[:reason]).to eq(:forbidden)
+      expect(result[:reason]).to eq(:invalid_token_ownership)
       expect(token.reload.revoked?).to be(false)
     end
 
@@ -28,7 +28,7 @@ RSpec.describe ::Ai::DuoWorkflows::RevokeTokenService, feature_category: :duo_ag
       result = described_class.new(token: token.plaintext_token, current_user: user).execute
 
       expect(result[:status]).to eq(:error)
-      expect(result[:reason]).to eq(:forbidden)
+      expect(result[:reason]).to eq(:insufficient_token_scope)
       expect(token.reload.revoked?).to be(false)
     end
 
@@ -41,7 +41,7 @@ RSpec.describe ::Ai::DuoWorkflows::RevokeTokenService, feature_category: :duo_ag
       result = described_class.new(token: token.plaintext_token, current_user: user).execute
 
       expect(result[:status]).to eq(:error)
-      expect(result[:reason]).to eq(:unprocessable_entity)
+      expect(result[:reason]).to eq(:failed_to_revoke)
       expect(token.reload.revoked?).to be(false)
     end
 

@@ -667,23 +667,61 @@ RSpec.describe API::Ai::DuoWorkflows::WorkflowsInternal, :aggregate_failures, fe
   describe 'POST /ai/duo_workflows/revoke_token' do
     let(:path) { "/ai/duo_workflows/revoke_token" }
 
-    it 'returns error when service response is error' do
-      allow_next_instance_of(::Ai::DuoWorkflows::RevokeTokenService) do |service|
-        allow(service).to receive(:execute).and_return(ServiceResponse.error(reason: :bad_request,
-          message: 'Cannot revoke token'))
-      end
+    context 'when service returns an error with :invalid_token_ownership reason' do
+      it 'returns forbidden status' do
+        allow_next_instance_of(::Ai::DuoWorkflows::RevokeTokenService) do |service|
+          allow(service).to receive(:execute).and_return(ServiceResponse.error(
+            reason: :invalid_token_ownership,
+            message: 'Invalid token ownership'
+          ))
+        end
 
-      post api(path, oauth_access_token: ai_workflows_oauth_token), params: { token: ai_workflows_oauth_token.token }
-      expect(response).to have_gitlab_http_status(:bad_request)
+        post api(path, oauth_access_token: ai_workflows_oauth_token), params: { token: ai_workflows_oauth_token.token }
+        expect(response).to have_gitlab_http_status(:forbidden)
+        expect(json_response['message']).to eq('Invalid token ownership')
+      end
     end
 
-    it 'returns success when service response is success' do
-      allow_next_instance_of(::Ai::DuoWorkflows::RevokeTokenService) do |service|
-        allow(service).to receive(:execute).and_return(ServiceResponse.success(message: 'Token revoked'))
-      end
+    context 'when service returns an error with :insufficient_token_scope reason' do
+      it 'returns forbidden status' do
+        allow_next_instance_of(::Ai::DuoWorkflows::RevokeTokenService) do |service|
+          allow(service).to receive(:execute).and_return(ServiceResponse.error(
+            reason: :insufficient_token_scope,
+            message: 'Insufficient token scope'
+          ))
+        end
 
-      post api(path, oauth_access_token: ai_workflows_oauth_token), params: { token: ai_workflows_oauth_token.token }
-      expect(response).to have_gitlab_http_status(:success)
+        post api(path, oauth_access_token: ai_workflows_oauth_token), params: { token: ai_workflows_oauth_token.token }
+        expect(response).to have_gitlab_http_status(:forbidden)
+        expect(json_response['message']).to eq('Insufficient token scope')
+      end
+    end
+
+    context 'when service returns an error with :failed_to_revoke reason' do
+      it 'returns unprocessable entity status' do
+        allow_next_instance_of(::Ai::DuoWorkflows::RevokeTokenService) do |service|
+          allow(service).to receive(:execute).and_return(ServiceResponse.error(
+            reason: :failed_to_revoke,
+            message: 'Could not revoke token'
+          ))
+        end
+
+        post api(path, oauth_access_token: ai_workflows_oauth_token), params: { token: ai_workflows_oauth_token.token }
+        expect(response).to have_gitlab_http_status(:unprocessable_entity)
+        expect(json_response['message']).to eq('Could not revoke token')
+      end
+    end
+
+    context 'when service returns success' do
+      it 'returns ok status with the response payload' do
+        allow_next_instance_of(::Ai::DuoWorkflows::RevokeTokenService) do |service|
+          allow(service).to receive(:execute).and_return(ServiceResponse.success(payload: {}, message: 'Token revoked'))
+        end
+
+        post api(path, oauth_access_token: ai_workflows_oauth_token), params: { token: ai_workflows_oauth_token.token }
+        expect(response).to have_gitlab_http_status(:ok)
+        expect(json_response).to eq({})
+      end
     end
   end
 end
