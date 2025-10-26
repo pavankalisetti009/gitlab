@@ -28,6 +28,16 @@ module Elastic
       false
     end
 
+    class << self
+      def saas_with_es?
+        Gitlab::Saas.feature_available?(:advanced_search)
+      end
+
+      def dedicated_with_es?
+        Gitlab::CurrentSettings.gitlab_dedicated_instance?
+      end
+    end
+
     private
 
     class << self
