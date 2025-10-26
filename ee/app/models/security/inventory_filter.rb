@@ -30,6 +30,7 @@ module Security
 
     scope :by_project_id, ->(project_id) { where(project_id: project_id) }
     scope :order_by_project_id_asc, -> { order(project_id: :asc) }
+    scope :unarchived, -> { where(archived: false) }
     scope :by_severity_count, ->(severity, operator, count) do
       return none unless Enums::Vulnerability.severity_levels.key?(severity)
 
