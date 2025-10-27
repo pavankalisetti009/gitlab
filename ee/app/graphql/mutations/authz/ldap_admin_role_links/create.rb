@@ -43,7 +43,7 @@ module Mutations
         def resolve(admin_member_role_id:, **args)
           admin_member_role = find_admin_member_role(admin_member_role_id)
 
-          params = args.merge(member_role: admin_member_role)
+          params = args.merge(member_role: admin_member_role, organization_id: Current.organization.id)
 
           result = ::Authz::LdapAdminRoleLinks::CreateService.new(current_user, params).execute
 

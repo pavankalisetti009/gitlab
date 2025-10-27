@@ -3,6 +3,7 @@
 FactoryBot.define do
   factory :ldap_admin_role_link, class: 'Authz::LdapAdminRoleLink' do
     member_role { association(:member_role) }
+    organization { association(:common_organization) }
     provider { 'ldapmain' }
     cn { 'group1' }
 

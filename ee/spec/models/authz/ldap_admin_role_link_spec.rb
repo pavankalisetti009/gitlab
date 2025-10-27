@@ -11,6 +11,7 @@ RSpec.describe Authz::LdapAdminRoleLink, feature_category: :system_access do
 
   describe 'associations' do
     it { is_expected.to belong_to(:member_role) }
+    it { is_expected.to belong_to(:organization).required }
   end
 
   describe 'validations' do
