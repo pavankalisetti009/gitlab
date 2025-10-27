@@ -755,6 +755,7 @@ module EE
 
     def preserve_open_policy_dismissals!
       return unless merged?
+      return unless target_branch == target_project.default_branch
 
       policy_dismissals.open.find_each(&:preserve!)
     end
