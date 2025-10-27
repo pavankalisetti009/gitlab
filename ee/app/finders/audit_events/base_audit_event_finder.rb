@@ -40,7 +40,8 @@ module AuditEvents
     end
 
     def sort(audit_events)
-      audit_events.order_by(params[:sort], use_created_at: true)
+      use_created_at = params[:pagination] != 'keyset' # Keyset must use ID-only ordering for cursor compatibility
+      audit_events.order_by(params[:sort], use_created_at: use_created_at)
     end
 
     def valid_author_id?

@@ -145,6 +145,59 @@ RSpec.describe AuditEvents::GroupAuditEventFinder, feature_category: :audit_even
         end
       end
     end
+
+    context 'when using keyset pagination' do
+      let(:params) { { pagination: 'keyset', sort: 'created_desc' } }
+
+      it 'orders by id only, not created_at' do
+        result = finder.execute
+
+        expect(result.to_sql).not_to include('created_at')
+        expect(result.to_sql).to include('ORDER BY')
+        expect(result.to_sql).to include('"group_audit_events"."id" DESC')
+      end
+
+      it 'does not raise error when generating keyset cursor' do
+        result = finder.execute.limit(1)
+
+        expect do
+          Gitlab::Pagination::Keyset::Paginator.new(scope: result).cursor_for_next_page
+        end.not_to raise_error
+      end
+
+      context 'with created_asc sort' do
+        let(:params) { { pagination: 'keyset', sort: 'created_asc' } }
+
+        it 'orders by id asc only' do
+          result = finder.execute
+
+          expect(result.to_sql).not_to include('created_at')
+          expect(result.to_sql).to include('"group_audit_events"."id" ASC')
+        end
+      end
+    end
+
+    context 'when using offset pagination (default)' do
+      let(:params) { { sort: 'created_desc' } }
+
+      it 'orders by created_at and id' do
+        result = finder.execute
+
+        expect(result.to_sql).to include('created_at')
+        expect(result.to_sql).to include('"group_audit_events"."id" DESC')
+      end
+
+      context 'with created_asc sort' do
+        let(:params) { { sort: 'created_asc' } }
+
+        it 'orders by created_at asc and id asc' do
+          result = finder.execute
+
+          expect(result.to_sql).to include('"group_audit_events"."created_at" ASC')
+          expect(result.to_sql).to include('"group_audit_events"."id" ASC')
+        end
+      end
+    end
   end
 
   describe '#find_by!' do
