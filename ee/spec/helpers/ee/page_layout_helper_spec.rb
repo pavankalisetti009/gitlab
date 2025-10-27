@@ -150,4 +150,94 @@ RSpec.describe EE::PageLayoutHelper, feature_category: :shared do
       end
     end
   end
+
+  describe '#agentic_unavailable_message' do
+    let(:user) { build(:user) }
+    let(:container) { build(:project) }
+    let(:allowed) { false }
+    let(:enablement_type) { nil }
+    let(:duo_response) do
+      instance_double(Ai::UserAuthorizable::Response, enablement_type: enablement_type, allowed?: allowed)
+    end
+
+    def expect_generic_message(result)
+      expect(result).to eq(
+        "You don't currently have access to Duo Chat, please contact your GitLab administrator."
+      )
+    end
+
+    before do
+      allow(user).to receive(:allowed_to_use).with(:duo_chat).and_return(duo_response)
+    end
+
+    context 'when agentic is available' do
+      it 'returns nil' do
+        result = helper.agentic_unavailable_message(user, container, true)
+
+        expect(result).to be_nil
+      end
+    end
+
+    context 'when agentic is not available' do
+      context 'when under SaaS', :saas do
+        context 'when container is present' do
+          let(:allowed) { false }
+
+          it 'returns access denied message' do
+            result = helper.agentic_unavailable_message(user, container, false)
+
+            expect_generic_message(result)
+          end
+        end
+
+        context 'when container is nil' do
+          let(:allowed) { true }
+
+          context 'with duo_pro enablement' do
+            let(:enablement_type) { 'duo_pro' }
+
+            it 'links to preference page' do
+              result = helper.agentic_unavailable_message(user, nil, false)
+
+              expect(result).to include('Duo Agentic Chat is not available at the moment in this page.')
+              expect(result).to include('Default GitLab Duo namespace')
+              expect(result).to include(
+                '/-/profile/preferences#user_user_preference_attributes_default_duo_add_on_assignment_id'
+              )
+            end
+          end
+
+          context 'with duo_core enablement' do
+            let(:enablement_type) { 'duo_core' }
+            let(:message) do
+              'Duo Agentic Chat is not available in this page, ' \
+                'please visit a project page to have access to chat.'
+            end
+
+            it 'returns project page message' do
+              result = helper.agentic_unavailable_message(user, nil, false)
+
+              expect(result).to eq(message)
+            end
+          end
+
+          context 'when user is not allowed chat at all' do
+            it 'returns generic message' do
+              result = helper.agentic_unavailable_message(user, nil, false)
+
+              expect_generic_message(result)
+            end
+          end
+        end
+      end
+
+      context 'when under self-managed' do
+        it 'returns nil' do
+          result = helper.agentic_unavailable_message(user, nil, false)
+
+          expect(result).to be_nil
+        end
+      end
+    end
+  end
 end
