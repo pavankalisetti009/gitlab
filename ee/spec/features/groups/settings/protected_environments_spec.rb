@@ -111,8 +111,8 @@ RSpec.describe 'Protected Environments', :js, feature_category: :environment_man
         wait_for_requests
 
         click_button('Select users')
-        click_button('developer-group')                 # Select developer-group
-        click_button('1 group')                         # Close the access level dropdown
+        click_button('developer-group') # Select developer-group
+        send_keys(:escape) # Close the access level dropdown
 
         click_button('Save')
         wait_for_requests
