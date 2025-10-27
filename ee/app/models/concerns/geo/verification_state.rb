@@ -17,7 +17,7 @@ module Geo
       verification_succeeded: 2,
       verification_failed: 3,
       verification_disabled: 4
-    }.freeze
+    }.with_indifferent_access.freeze
 
     VERIFICATION_TIMEOUT = 8.hours
     VERIFICATION_METHODS = [
@@ -81,8 +81,8 @@ module Geo
       include Delay
       include Gitlab::Geo::LogHelpers
 
-      def verification_state_value(state_string)
-        VERIFICATION_STATE_VALUES[state_string]
+      def verification_state_value(state_key)
+        VERIFICATION_STATE_VALUES[state_key]
       end
 
       # Returns IDs of records that are pending verification.

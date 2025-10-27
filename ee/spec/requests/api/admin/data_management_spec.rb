@@ -185,25 +185,31 @@ RSpec.describe API::Admin::DataManagement, :aggregate_failures, :request_store, 
           context 'with filtering based on status' do
             context 'with valid status' do
               let_it_be(:node) { create(:geo_node) }
-              let_it_be(:succeeded_record) { create(:snippet_repository, :verification_succeeded) }
-              let_it_be(:failed_record) { create(:snippet_repository, :verification_failed) }
-              let_it_be(:pending_record) { create_record_for_given_state(:verification_pending) }
-              let_it_be(:started_record) { create_record_for_given_state(:verification_started) }
-              let_it_be(:disabled_record) { create_record_for_given_state(:verification_disabled) }
+              let(:succeeded_record) { build(:upload, :verification_succeeded) }
+              let(:failed_record) { build(:upload, :verification_failed) }
+              let(:pending_record) { build_record_for_given_state(:verification_pending) }
+              let(:started_record) { build_record_for_given_state(:verification_started) }
+              let(:disabled_record) { build_record_for_given_state(:verification_disabled) }
 
-              def create_record_for_given_state(state)
-                create(:snippet_repository, verification_state: SnippetRepository.verification_state_value(state))
+              def build_record_for_given_state(state)
+                build(:upload, verification_state: Upload.verification_state_value(state))
               end
 
               before do
                 stub_current_geo_node(node)
                 stub_primary_site
+
+                succeeded_record.save!
+                failed_record.save!
+                pending_record.save!
+                started_record.save!
+                disabled_record.save!
               end
 
               where(status: %w[pending started succeeded failed disabled])
               with_them do
                 it 'returns matching object data' do
-                  get api("/admin/data_management/snippet_repository?checksum_state=#{status}", admin, admin_mode: true)
+                  get api("/admin/data_management/upload?checksum_state=#{status}", admin, admin_mode: true)
 
                   expect(response).to have_gitlab_http_status(:ok)
                   expect(json_response.first).to include('record_identifier' => send(:"#{status}_record").id)
