@@ -167,7 +167,7 @@ describe('Security Dashboard - Chart Utils', () => {
       });
 
       expect(result).toBe(
-        `${securityVulnerabilitiesPath}?activity=ALL&state=CONFIRMED%2CDETECTED&report_type=SAST`,
+        `${securityVulnerabilitiesPath}?state=CONFIRMED%2CDETECTED&report_type=SAST`,
       );
     });
 
@@ -179,7 +179,7 @@ describe('Security Dashboard - Chart Utils', () => {
         });
 
         expect(result).toBe(
-          `${securityVulnerabilitiesPath}?activity=ALL&state=CONFIRMED%2CDETECTED&tab=OPERATIONAL`,
+          `${securityVulnerabilitiesPath}?state=CONFIRMED%2CDETECTED&tab=OPERATIONAL`,
         );
       });
     });
@@ -196,7 +196,7 @@ describe('Security Dashboard - Chart Utils', () => {
         });
 
         expect(result).toBe(
-          `${securityVulnerabilitiesPath}?activity=ALL&state=CONFIRMED%2CDETECTED&severity=CRITICAL&projectId=123`,
+          `${securityVulnerabilitiesPath}?state=CONFIRMED%2CDETECTED&severity=CRITICAL&projectId=123`,
         );
       });
 
@@ -212,7 +212,7 @@ describe('Security Dashboard - Chart Utils', () => {
         });
 
         expect(result).toBe(
-          `${securityVulnerabilitiesPath}?activity=ALL&state=CONFIRMED%2CDETECTED&severity=CRITICAL&reportType=SAST%2CDAST&projectId=123`,
+          `${securityVulnerabilitiesPath}?state=CONFIRMED%2CDETECTED&severity=CRITICAL&reportType=SAST%2CDAST&projectId=123`,
         );
       });
 
@@ -230,7 +230,7 @@ describe('Security Dashboard - Chart Utils', () => {
         });
 
         expect(result).toBe(
-          `${securityVulnerabilitiesPath}?activity=ALL&state=CONFIRMED%2CDETECTED&severity=CRITICAL&reportType=SAST`,
+          `${securityVulnerabilitiesPath}?state=CONFIRMED%2CDETECTED&severity=CRITICAL&reportType=SAST`,
         );
       });
 
@@ -246,7 +246,20 @@ describe('Security Dashboard - Chart Utils', () => {
         });
 
         expect(result).toBe(
-          `${securityVulnerabilitiesPath}?activity=ALL&state=CONFIRMED%2CDETECTED&severity=CRITICAL`,
+          `${securityVulnerabilitiesPath}?state=CONFIRMED%2CDETECTED&severity=CRITICAL`,
+        );
+      });
+
+      it('adds ALL activity filter if `includeAllActivity` is true', () => {
+        const result = constructVulnerabilitiesReportWithFiltersPath({
+          seriesId: 'SAST',
+          filterKey: 'report_type',
+          securityVulnerabilitiesPath,
+          includeAllActivity: true,
+        });
+
+        expect(result).toBe(
+          `${securityVulnerabilitiesPath}?activity=ALL&state=CONFIRMED%2CDETECTED&report_type=SAST`,
         );
       });
     });

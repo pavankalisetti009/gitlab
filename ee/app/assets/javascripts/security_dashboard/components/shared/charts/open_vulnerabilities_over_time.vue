@@ -104,6 +104,7 @@ export default {
         securityVulnerabilitiesPath: this.securityVulnerabilitiesPath,
         seriesId,
         filterKey: this.groupedBy,
+        includeAllActivity: true,
         additionalFilters: this.filters,
       });
     },
