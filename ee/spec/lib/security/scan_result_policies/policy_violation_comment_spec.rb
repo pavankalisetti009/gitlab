@@ -721,7 +721,8 @@ RSpec.describe Security::ScanResultPolicies::PolicyViolationComment, feature_cat
               )
             end
 
-            it 'lists more restrictive policies' do
+            it 'lists more restrictive policies',
+              quarantine: 'https://gitlab.com/gitlab-org/quality/test-failure-issues/-/issues/9622' do
               expect(body).to include(
                 <<~MARKDOWN
                 * __Prevent approval by merge request creator__: `#{warn_mode_policy_3.name}`, `#{warn_mode_policy_4.name}`
