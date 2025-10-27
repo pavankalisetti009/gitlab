@@ -108,7 +108,7 @@ export const seatsInUseLink = helpPagePath('subscriptions/manage_users_and_seats
   anchor: 'gitlabcom-billing-and-usage',
 });
 export const seatsOwedLink = helpPagePath('subscriptions/manage_users_and_seats', {
-  anchor: 'seats-owed',
+  anchor: 'users-over-subscription-limit',
 });
 export const seatsUsedLink = helpPagePath('subscriptions/manage_subscription', {
   anchor: 'view-subscription',
