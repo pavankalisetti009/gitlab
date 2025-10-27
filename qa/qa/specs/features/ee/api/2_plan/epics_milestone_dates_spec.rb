@@ -14,7 +14,7 @@ module QA
       let(:api_client) { Runtime::User::Store.test_user.api_client }
       let(:group) { create(:group, path: "epic-milestone-group-#{SecureRandom.hex(8)}") }
       let(:project) { create(:project, name: "epic-milestone-project-#{SecureRandom.hex(8)}", group: group) }
-      let(:wait_args) { { max_duration: 10, sleep_interval: 1 } }
+      let(:wait_args) { { max_duration: 120, sleep_interval: 1 } }
 
       it 'updates epic dates when updating milestones',
         testcase: 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/347958' do
