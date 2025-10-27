@@ -38,7 +38,7 @@ export default {
   fields: {
     userPrompt: {
       validators: [
-        formValidators.required(s__('AICatalog|User prompt is required.')),
+        formValidators.required(s__('AICatalog|Instructions required.')),
         formValidators.factory(
           sprintf(
             s__('AICatalog|Input cannot exceed %{value} characters. Please shorten your input.'),
