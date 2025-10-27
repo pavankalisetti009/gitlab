@@ -30,19 +30,6 @@ RSpec.describe Arkose::RecordUserDataService, feature_category: :instance_resili
       expect(user.custom_attributes.find_by(key: 'arkose_custom_score').value).to eq('0')
     end
 
-    it 'executes abuse trust score workers' do
-      stub_feature_flags(remove_trust_scores: false)
-
-      expect(AntiAbuse::TrustScoreWorker).to receive(:perform_async).once.ordered.with(
-        user.id, :arkose_global_score, 0.0
-      )
-      expect(AntiAbuse::TrustScoreWorker).to receive(:perform_async).once.ordered.with(
-        user.id, :arkose_custom_score, 0.0
-      )
-
-      service.execute
-    end
-
     it 'logs user risk band assignment event' do
       init_args = { session_token: nil, user: user, verify_response: response }
       expect_next_instance_of(::Arkose::Logger, init_args) do |logger|
@@ -69,21 +56,6 @@ RSpec.describe Arkose::RecordUserDataService, feature_category: :instance_resili
 
       it 'does not add any custom attributes' do
         expect { service.execute }.not_to change { user.custom_attributes.count }
-      end
-
-      it 'does not store the arkose risk scores in abuse trust scores' do
-        stub_feature_flags(remove_trust_scores: false)
-
-        # Create and store initial scores
-        create(:abuse_trust_score, user: user, score: 13.0, source: :arkose_global_score)
-        create(:abuse_trust_score, user: user, score: 11.0, source: :arkose_custom_score)
-        service.execute
-
-        # Due to failed verification, there are no returned scores in arkose_verify_response,
-        # we should expect `arkose_global_score` and `arkose_custom_score` not to be overwritten
-        # and remain as the initial scores
-        expect(user_scores.arkose_global_score).to eq(13.0)
-        expect(user_scores.arkose_custom_score).to eq(11.0)
       end
 
       it 'does not create a Users::ArkoseSession for the user' do
