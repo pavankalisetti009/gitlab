@@ -12,7 +12,6 @@ describe('AgentActivityLogs', () => {
   // Finders
   const findActivityLogs = () => wrapper.findComponent(ActivityLogs);
   const findCollapsibleListbox = () => wrapper.findComponent(GlCollapsibleListbox);
-  const findLogLevelLabel = () => wrapper.find('label[for="log-level"]');
   const findSkeletonLoader = () => wrapper.findAllComponents(GlSkeletonLoader);
   const findEmptyState = () => wrapper.findComponent(GlEmptyState);
 
@@ -114,11 +113,6 @@ describe('AgentActivityLogs', () => {
           expect(findCollapsibleListbox().exists()).toBe(true);
         });
 
-        it('renders Detail level label', () => {
-          expect(findLogLevelLabel().exists()).toBe(true);
-          expect(findLogLevelLabel().text()).toBe('Detail level');
-        });
-
         describe('when Full filter is selected', () => {
           beforeEach(() => {
             wrapper = createWrapper({ agentFlowCheckpoint: validCheckpoint });
@@ -129,7 +123,7 @@ describe('AgentActivityLogs', () => {
           });
 
           it('sets correct toggle text for Full filter', () => {
-            expect(findCollapsibleListbox().props('toggleText')).toBe('Full');
+            expect(findCollapsibleListbox().props('toggleText')).toBe('Full view');
           });
         });
 
@@ -143,7 +137,7 @@ describe('AgentActivityLogs', () => {
             await findCollapsibleListbox().vm.$emit('select', 'important');
 
             expect(findActivityLogs().props('items')).toHaveLength(1);
-            expect(findCollapsibleListbox().props('toggleText')).toBe('Concise');
+            expect(findCollapsibleListbox().props('toggleText')).toBe('Concise view');
           });
         });
 
@@ -157,13 +151,13 @@ describe('AgentActivityLogs', () => {
 
             expect(listbox.attributes('id')).toBe('log-level');
             expect(listbox.props('items')).toEqual([
-              { value: 'verbose', text: 'Full' },
-              { value: 'important', text: 'Concise' },
+              { value: 'verbose', text: 'Full view' },
+              { value: 'important', text: 'Concise view' },
             ]);
           });
 
           it('has default selected filter as Full', () => {
-            expect(findCollapsibleListbox().props('toggleText')).toBe('Full');
+            expect(findCollapsibleListbox().props('toggleText')).toBe('Full view');
           });
         });
 
