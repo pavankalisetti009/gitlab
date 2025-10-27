@@ -16,6 +16,7 @@ module EE
             push_force_frontend_feature_flag(:vulnerability_archival, project.vulnerability_archival_enabled?)
             push_frontend_feature_flag(:validity_checks, project)
             push_frontend_feature_flag(:security_context_labels, project&.root_ancestor)
+            push_frontend_feature_flag(:vulnerabilities_across_contexts, project)
             push_licensed_feature(:security_attributes, project&.root_ancestor)
           end
 
