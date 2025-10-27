@@ -69,9 +69,10 @@ RSpec.describe Vulnerabilities::Findings::FindOrCreateFromSecurityFindingService
   end
 
   context 'when there is an existing vulnerability and vulnerability finding for the security finding' do
+    let_it_be(:security_finding) { sast_security_findings.first }
     let_it_be(:finding) do
       create(:vulnerabilities_finding, :detected,
-        report_type: :sast, project: project, uuid: sast_security_findings.first.uuid)
+        report_type: :sast, project: project, uuid: security_finding.uuid)
     end
 
     let_it_be(:vulnerability) do
@@ -81,6 +82,10 @@ RSpec.describe Vulnerabilities::Findings::FindOrCreateFromSecurityFindingService
     it 'returns the existing Vulnerability::Finding with the existing vulnerability id' do
       expect(subject).to be_success
       expect(subject.payload[:vulnerability_finding].vulnerability_id).to eq(vulnerability.id)
+    end
+
+    it 'returns the security finding' do
+      expect(subject.payload[:security_finding]).to eq(security_finding)
     end
   end
 

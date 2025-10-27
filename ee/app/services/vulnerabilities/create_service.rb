@@ -9,20 +9,17 @@ module Vulnerabilities
       project,
       author,
       finding_id:,
-      state: nil,
-      present_on_default_branch: true,
-      comment: nil,
-      dismissal_reason: nil,
-      skip_permission_check: false
+      **params
     )
       @project = project
       @author = author
       @finding_id = finding_id
-      @state = state
-      @present_on_default_branch = present_on_default_branch
-      @comment = comment
-      @dismissal_reason = dismissal_reason
-      @skip_permission_check = skip_permission_check
+      @state = params[:state]
+      @present_on_default_branch = params.fetch(:present_on_default_branch, true)
+      @comment = params[:comment]
+      @dismissal_reason = params[:dismissal_reason]
+      @skip_permission_check = params.fetch(:skip_permission_check, false)
+      @solution = params[:solution]
     end
 
     def execute
@@ -64,6 +61,7 @@ module Vulnerabilities
         project: @project,
         title: finding.name.truncate(::Issuable::TITLE_LENGTH_MAX),
         state: @state || finding.state,
+        solution: @solution,
         severity: finding.severity,
         severity_overridden: false,
         report_type: finding.report_type,

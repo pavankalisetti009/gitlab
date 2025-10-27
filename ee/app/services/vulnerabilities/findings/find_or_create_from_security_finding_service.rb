@@ -14,7 +14,10 @@ module Vulnerabilities
           return ServiceResponse.error(message: vulnerability_finding_creation_error_msg)
         end
 
-        ServiceResponse.success(payload: { vulnerability_finding: vulnerability_finding })
+        ServiceResponse.success(payload: {
+          vulnerability_finding: vulnerability_finding,
+          security_finding: security_finding
+        })
       end
 
       private

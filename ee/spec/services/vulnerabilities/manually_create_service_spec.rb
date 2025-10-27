@@ -149,7 +149,7 @@ RSpec.describe Vulnerabilities::ManuallyCreateService, feature_category: :vulner
         expect(vulnerability.severity).to eq(params.dig(:vulnerability, :severity))
         expect(vulnerability.description).to eq(params.dig(:vulnerability, :description))
         expect(vulnerability.finding_description).to eq(params.dig(:vulnerability, :description))
-        expect(vulnerability.solution).to eq(params.dig(:vulnerability, :solution))
+        expect(vulnerability[:solution]).to eq(params.dig(:vulnerability, :solution))
 
         finding = vulnerability.finding
         expect(finding.report_type).to eq("generic")

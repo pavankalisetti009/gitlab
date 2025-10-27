@@ -44,6 +44,7 @@ module Vulnerabilities
       attributes = vulnerability_hash
         .slice(*%i[
           description
+          solution
           state
           severity
           detected_at

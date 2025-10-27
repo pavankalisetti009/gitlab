@@ -18,7 +18,7 @@ RSpec.describe Vulnerabilities::FindOrCreateFromSecurityFindingService, '#execut
   let_it_be(:artifact) { create(:ee_ci_job_artifact, :dast, job: build) }
   let_it_be(:report) { create(:ci_reports_security_report, pipeline: pipeline, type: :dast) }
   let_it_be(:scan) { create(:security_scan, :latest_successful, scan_type: :dast, build: artifact.job) }
-  let_it_be(:security_findings) { [] }
+  let_it_be(:security_findings) { insert_security_findings }
   let_it_be(:state) { 'dismissed' }
   let(:params) { { security_finding_uuid: security_finding_uuid } }
   let(:service) do
@@ -32,14 +32,6 @@ RSpec.describe Vulnerabilities::FindOrCreateFromSecurityFindingService, '#execut
   end
 
   let(:present_on_default_branch) { false }
-
-  before_all do
-    dast_content = File.read(artifact.file.path)
-    Gitlab::Ci::Parsers::Security::Dast.parse!(dast_content, report)
-    report.merge!(report)
-
-    security_findings.push(*insert_security_findings)
-  end
 
   subject { service.execute }
 
@@ -244,16 +236,20 @@ RSpec.describe Vulnerabilities::FindOrCreateFromSecurityFindingService, '#execut
   end
 
   context 'when there is no vulnerability for the security finding' do
-    let_it_be(:security_finding_uuid) { security_findings.last.uuid }
+    let_it_be(:security_finding) { security_findings.last }
+    let_it_be(:security_finding_uuid) { security_finding.uuid }
 
     it 'creates a new Vulnerability' do
       expect { subject }.to change(Vulnerability, :count).by(1)
     end
 
-    it 'returns a vulnerability with the given state and present_on_default_branch' do
+    it 'returns a vulnerability with exepected attributes' do
+      vulnerability = subject.payload[:vulnerability]
+
       expect(subject).to be_success
-      expect(subject.payload[:vulnerability].state).to eq("dismissed")
-      expect(subject.payload[:vulnerability].present_on_default_branch).to eq(present_on_default_branch)
+      expect(vulnerability.state).to eq("dismissed")
+      expect(vulnerability.present_on_default_branch).to eq(present_on_default_branch)
+      expect(vulnerability.solution).to eq(security_finding.solution)
     end
   end
 
@@ -277,9 +273,15 @@ RSpec.describe Vulnerabilities::FindOrCreateFromSecurityFindingService, '#execut
   end
 
   def insert_security_findings
+    dast_content = File.read(artifact.file.path)
+    Gitlab::Ci::Parsers::Security::Dast.parse!(dast_content, report)
+    report.merge!(report)
+
     report.findings.map do |finding|
       create(
         :security_finding,
+        :with_finding_data,
+        solution: finding.solution,
         severity: finding.severity,
         uuid: finding.uuid,
         scan: scan
