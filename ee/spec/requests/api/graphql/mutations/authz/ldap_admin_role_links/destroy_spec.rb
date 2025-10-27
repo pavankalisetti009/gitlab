@@ -6,7 +6,8 @@ RSpec.describe 'Destroying an LDAP admin role link', feature_category: :permissi
   include GraphqlHelpers
 
   let_it_be(:current_user) { create(:admin) }
-  let_it_be(:ldap_admin_role_link) { create(:ldap_admin_role_link, :skip_validate) }
+  let_it_be(:organization) { create(:common_organization) }
+  let_it_be(:ldap_admin_role_link) { create(:ldap_admin_role_link, :skip_validate, organization_id: organization.id) }
 
   let(:input) { { id: GitlabSchema.id_from_object(ldap_admin_role_link).to_s } }
   let(:mutation) { graphql_mutation(:ldap_admin_role_link_destroy, input) }

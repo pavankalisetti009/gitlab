@@ -9,6 +9,7 @@ module Authz
     self.table_name = 'ldap_admin_role_links'
 
     belongs_to :member_role
+    belongs_to :organization, class_name: 'Organizations::Organization', optional: false
 
     enum :sync_status, {
       never_synced: 0,

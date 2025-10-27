@@ -4,6 +4,7 @@ require 'spec_helper'
 
 RSpec.describe Authz::LdapAdminRoleLinks::CreateService, :enable_admin_mode, feature_category: :permissions do
   describe '#execute' do
+    let_it_be(:organization) { create(:common_organization) }
     let_it_be(:admin_member_role) { create(:member_role, :admin, name: 'Admin role') }
     let_it_be(:user) { create(:admin) }
 
@@ -11,6 +12,7 @@ RSpec.describe Authz::LdapAdminRoleLinks::CreateService, :enable_admin_mode, fea
       {
         provider: 'ldap',
         cn: 'cn',
+        organization_id: organization.id,
         member_role: admin_member_role
       }
     end
