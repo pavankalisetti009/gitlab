@@ -19409,6 +19409,9 @@ msgstr ""
 msgid "Copied reference."
 msgstr ""
 
+msgid "Copied to clipboard."
+msgstr ""
+
 msgid "Copy"
 msgstr ""
 
