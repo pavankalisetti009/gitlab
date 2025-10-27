@@ -27,8 +27,8 @@ export default {
 };
 </script>
 <template>
-  <gl-card class="gl-flex-1 gl-bg-transparent">
-    <h2 class="gl-heading-scale-400 gl-mb-3">
+  <gl-card class="gl-flex-1 gl-bg-transparent" body-class="gl-p-5">
+    <h2 class="gl-heading-scale-400 gl-mb-2">
       {{ s__('UsageBilling|GitLab Credits - One-Time Waiver') }}
     </h2>
     <div class="gl-mb-4 gl-text-sm gl-text-subtle">

@@ -34,15 +34,15 @@ export default {
 </script>
 <template>
   <gl-card class="gl-flex-1 gl-bg-transparent" body-class="gl-p-5">
-    <h2 class="gl-heading-scale-400 gl-mb-3">
+    <h2 class="gl-heading-scale-400 gl-mb-2">
       {{ s__('UsageBilling|GitLab Credits - On Demand') }}
     </h2>
-    <p>
+    <div class="gl-mb-4 gl-text-sm gl-text-subtle">
       <human-timeframe-with-days-remaining
         :month-start-date="monthStartDate"
         :month-end-date="monthEndDate"
       />
-    </p>
+    </div>
 
     <div class="gl-mb-3">
       <span class="gl-heading-scale-600 gl-font-bold" data-testid="overage-credits-used">
