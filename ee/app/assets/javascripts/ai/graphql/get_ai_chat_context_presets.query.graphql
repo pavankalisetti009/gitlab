@@ -11,6 +11,5 @@ query getAiChatContextPresets(
     questionCount: $questionCount
   ) {
     questions
-    aiResourceData
   }
 }
