@@ -38,6 +38,8 @@ query workItemMetadataEE($fullPath: ID!) {
     userPermissions {
       createWorkItem
       adminLabel
+      createProjects
+      bulkAdminEpic
     }
   }
 }
