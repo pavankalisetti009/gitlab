@@ -1433,6 +1433,16 @@
   :idempotent: false
   :tags: []
   :queue_namespace:
+- :name: ai_active_context_code_ad_hoc_indexing
+  :worker_name: Ai::ActiveContext::Code::AdHocIndexingWorker
+  :feature_category: :global_search
+  :has_external_dependencies: false
+  :urgency: :low
+  :resource_boundary: :unknown
+  :weight: 1
+  :idempotent: true
+  :tags: []
+  :queue_namespace:
 - :name: ai_active_context_code_mark_repository_as_ready_event
   :worker_name: Ai::ActiveContext::Code::MarkRepositoryAsReadyEventWorker
   :feature_category: :global_search

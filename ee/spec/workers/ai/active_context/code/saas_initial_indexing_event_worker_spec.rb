@@ -99,7 +99,7 @@ RSpec.describe Ai::ActiveContext::Code::SaasInitialIndexingEventWorker, feature_
       it 'behaves as expected' do
         if expected_outcome
           expect(Ai::ActiveContext::Code::EnabledNamespace).to receive(:insert_all).with(
-            [{ namespace_id: namespace.id, connection_id: connection.id }],
+            [{ namespace_id: namespace.id, connection_id: connection.id, state: 'ready' }],
             { unique_by: %w[connection_id namespace_id] }
           )
         else
