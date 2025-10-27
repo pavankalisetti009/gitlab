@@ -51,7 +51,8 @@ RSpec.describe 'admin Geo Sidebar', :js, :geo, feature_category: :geo_replicatio
       stub_secondary_node
     end
 
-    describe 'visiting geo replicables' do
+    describe 'visiting geo replicables',
+      quarantine: 'https://gitlab.com/gitlab-org/quality/test-failure-issues/-/issues/8638' do
       Gitlab::Geo.replication_enabled_replicator_classes.each do |replicator_class|
         it_behaves_like 'active sidebar link', 'Sites' do
           let(:path) { admin_geo_replicables_path(replicable_name_plural: replicator_class.replicable_name_plural) }
