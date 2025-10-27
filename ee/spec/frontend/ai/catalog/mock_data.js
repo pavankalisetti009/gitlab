@@ -28,7 +28,7 @@ const mockProjectFactory = (overrides = {}) => ({
   ...overrides,
 });
 
-const mockProjectWithNamespace = mockProjectFactory({
+export const mockProjectWithNamespace = mockProjectFactory({
   nameWithNamespace: 'Group / Project 1',
 });
 
@@ -546,6 +546,10 @@ export const mockAiCatalogItemConsumerCreateSuccessProjectResponse = {
         id: 'gid://gitlab/Ai::Catalog::ItemConsumer/1',
         project: {
           id: 'gid://gitlab/Project/1',
+          name: 'Test',
+        },
+        group: {
+          id: 'gid://gitlab/Group/1',
           name: 'Test',
         },
       },

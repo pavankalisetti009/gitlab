@@ -13,12 +13,13 @@ export const prerequisitesPath = helpPagePath('user/duo_agent_platform/ai_catalo
   anchor: 'view-the-ai-catalog',
 });
 
-export const prerequisitesError = (message) => {
+export const prerequisitesError = (message, params = {}) => {
   return sprintf(
     message,
     {
       linkStart: `<a href="${prerequisitesPath}" target="_blank">`,
       linkEnd: '</a>',
+      ...params,
     },
     false,
   );

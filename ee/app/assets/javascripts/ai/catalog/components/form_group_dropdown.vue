@@ -4,15 +4,14 @@ import { debounce } from 'lodash';
 import produce from 'immer';
 import { DEFAULT_DEBOUNCE_AND_THROTTLE_MS } from '~/lib/utils/constants';
 import { __ } from '~/locale';
-import { ACCESS_LEVEL_MAINTAINER_STRING } from '~/access_level/constants';
-import getProjects from '~/graphql_shared/queries/get_users_projects.query.graphql';
+import getGroups from '~/graphql_shared/queries/get_users_groups.query.graphql';
 import { AVATAR_SHAPE_OPTION_RECT } from '~/vue_shared/constants';
 
 const MINIMUM_QUERY_LENGTH = 3;
-const PROJECTS_PER_PAGE = 20;
+const GROUPS_PER_PAGE = 20;
 
 export default {
-  name: 'FormProjectDropdown',
+  name: 'FormGroupDropdown',
   components: {
     GlAvatarLabeled,
     GlCollapsibleListbox,
@@ -43,13 +42,13 @@ export default {
     return {
       isLoadingInitial: true,
       isLoadingMore: false,
-      projects: [],
+      groups: [],
       searchTerm: '',
     };
   },
   apollo: {
-    projects: {
-      query: getProjects,
+    groups: {
+      query: getGroups,
       variables() {
         return {
           ...this.queryVariables,
@@ -59,7 +58,7 @@ export default {
         return this.isSearchQueryTooShort;
       },
       update(data) {
-        return data?.projects || [];
+        return data?.groups || [];
       },
       result() {
         this.isLoadingInitial = false;
@@ -72,14 +71,15 @@ export default {
   computed: {
     queryVariables() {
       return {
-        first: PROJECTS_PER_PAGE,
-        minAccessLevel: ACCESS_LEVEL_MAINTAINER_STRING,
+        topLevelOnly: true,
+        ownedOnly: true,
         search: this.searchTerm,
+        first: GROUPS_PER_PAGE,
         sort: 'similarity',
       };
     },
     isLoading() {
-      return this.$apollo.queries.projects.loading && !this.isLoadingMore;
+      return this.$apollo.queries.groups.loading && !this.isLoadingMore;
     },
     isSearchQueryTooShort() {
       return this.searchTerm && this.searchTerm.length < MINIMUM_QUERY_LENGTH;
@@ -89,25 +89,25 @@ export default {
         ? __('Enter at least three characters to search')
         : __('No results found');
     },
-    selectedProject() {
-      return this.projects?.nodes?.find((project) => this.value === project.id);
+    selectedGroup() {
+      return this.groups?.nodes?.find((group) => this.value === group.id);
     },
-    projectDropdownText() {
-      return this.selectedProject?.nameWithNamespace || __('Select a project');
+    dropdownText() {
+      return this.selectedGroup?.fullName || __('Select a group');
     },
-    projectList() {
+    groupList() {
       if (this.isSearchQueryTooShort) {
         return [];
       }
 
-      return (this.projects?.nodes || []).map((project) => ({
-        ...project,
-        text: project.nameWithNamespace,
-        value: String(project.id),
+      return (this.groups?.nodes || []).map((group) => ({
+        ...group,
+        text: group.fullName,
+        value: String(group.id),
       }));
     },
     hasNextPage() {
-      return this.projects?.pageInfo?.hasNextPage;
+      return this.groups?.pageInfo?.hasNextPage;
     },
   },
   methods: {
@@ -117,17 +117,14 @@ export default {
       this.isLoadingMore = true;
 
       try {
-        await this.$apollo.queries.projects.fetchMore({
+        await this.$apollo.queries.groups.fetchMore({
           variables: {
             ...this.queryVariables,
-            after: this.projects.pageInfo?.endCursor,
+            after: this.groups.pageInfo?.endCursor,
           },
           updateQuery: (previousResult, { fetchMoreResult }) => {
             return produce(fetchMoreResult, (draftData) => {
-              draftData.projects.nodes = [
-                ...previousResult.projects.nodes,
-                ...draftData.projects.nodes,
-              ];
+              draftData.groups.nodes = [...previousResult.groups.nodes, ...draftData.groups.nodes];
             });
           },
         });
@@ -138,13 +135,13 @@ export default {
       }
     },
     onError() {
-      this.$emit('error', __('Failed to load projects'));
+      this.$emit('error', __('Failed to load groups.'));
     },
     onSearch: debounce(function debouncedSearch(query) {
       this.searchTerm = query;
     }, DEFAULT_DEBOUNCE_AND_THROTTLE_MS),
-    onProjectSelect(projectId) {
-      this.$emit('input', projectId);
+    onGroupSelect(groupId) {
+      this.$emit('input', groupId);
     },
   },
   AVATAR_SHAPE_OPTION_RECT,
@@ -154,11 +151,11 @@ export default {
 <template>
   <gl-collapsible-listbox
     :selected="value"
-    :items="projectList"
+    :items="groupList"
     :toggle-id="id"
-    :toggle-text="projectDropdownText"
+    :toggle-text="dropdownText"
     :toggle-class="{ 'gl-shadow-inner-1-red-500': !isValid }"
-    :header-text="__('Select a project')"
+    :header-text="__('Select a group')"
     :loading="isLoadingInitial"
     searchable
     :searching="isLoading"
@@ -169,20 +166,20 @@ export default {
     :infinite-scroll="hasNextPage"
     :infinite-scroll-loading="isLoadingMore"
     :disabled="disabled"
-    data-testid="project-select"
+    data-testid="group-select"
     @bottom-reached="onBottomReached"
     @search="onSearch"
-    @select="onProjectSelect"
+    @select="onGroupSelect"
   >
-    <template #list-item="{ item: project }">
+    <template #list-item="{ item: group }">
       <gl-avatar-labeled
-        v-if="project"
+        v-if="group"
         :shape="$options.AVATAR_SHAPE_OPTION_RECT"
         :size="32"
-        :src="project.avatarUrl"
-        :label="project.name"
-        :entity-name="project.name"
-        :sub-label="project.nameWithNamespace"
+        :src="group.avatarUrl"
+        :label="group.name"
+        :entity-name="group.name"
+        :sub-label="group.fullPath"
       />
     </template>
   </gl-collapsible-listbox>

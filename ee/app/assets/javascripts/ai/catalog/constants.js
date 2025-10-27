@@ -1,5 +1,5 @@
 import { uniqueId } from 'lodash';
-import { s__ } from '~/locale';
+import { __, s__ } from '~/locale';
 
 import {
   VISIBILITY_LEVEL_PUBLIC_STRING,
@@ -25,6 +25,13 @@ export const AI_CATALOG_ITEM_PLURAL_LABELS = {
   [AI_CATALOG_TYPE_AGENT]: s__('AICatalog|agents'),
   [AI_CATALOG_TYPE_FLOW]: s__('AICatalog|flows'),
   [AI_CATALOG_TYPE_THIRD_PARTY_FLOW]: s__('AICatalog|flows'),
+};
+
+export const AI_CATALOG_CONSUMER_TYPE_GROUP = 'group';
+export const AI_CATALOG_CONSUMER_TYPE_PROJECT = 'project';
+export const AI_CATALOG_CONSUMER_LABELS = {
+  [AI_CATALOG_CONSUMER_TYPE_GROUP]: __('group'),
+  [AI_CATALOG_CONSUMER_TYPE_PROJECT]: __('project'),
 };
 
 export const PAGE_SIZE = 20;

@@ -20,6 +20,7 @@ import {
   TRACK_EVENT_TYPE_FLOW,
 } from 'ee/ai/catalog/constants';
 import {
+  mockProjectWithNamespace,
   mockFlow,
   mockCatalogFlowsResponse,
   mockCatalogFlowDeleteResponse,
@@ -324,7 +325,10 @@ describe('AiCatalogFlows', () => {
       });
 
       describe('and the form is submitted', () => {
-        const createConsumer = () => findAiCatalogItemConsumerModal().vm.$emit('submit');
+        const createConsumer = () =>
+          findAiCatalogItemConsumerModal().vm.$emit('submit', {
+            projectId: mockProjectWithNamespace.id,
+          });
 
         describe('when adding to project request succeeds', () => {
           it('shows a toast message', async () => {
@@ -348,10 +352,10 @@ describe('AiCatalogFlows', () => {
             createConsumer();
             await waitForPromises();
 
-            expect(findErrorsAlert().props('errors')).toEqual([
-              `Could not enable flow: ${mockFlow.name}`,
-              'Item already configured.',
-            ]);
+            expect(findErrorsAlert().props()).toMatchObject({
+              title: `Could not enable flow: ${mockFlow.name}`,
+              errors: ['Item already configured.'],
+            });
           });
         });
 
