@@ -1,9 +1,0 @@
----
-name: include_csp_frameworks
-feature_issue_url: https://gitlab.com/gitlab-org/gitlab/-/issues/556290
-introduced_by_url: https://gitlab.com/gitlab-org/gitlab/-/merge_requests/198195
-rollout_issue_url: https://gitlab.com/gitlab-org/gitlab/-/issues/556785
-milestone: '18.3'
-type: beta
-group: group::compliance
-default_enabled: true

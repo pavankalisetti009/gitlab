@@ -16,8 +16,6 @@ module ComplianceManagement
     private
 
     def framework_belongs_to_csp(framework)
-      return false unless Feature.enabled?(:include_csp_frameworks, framework.namespace)
-
       framework.namespace_id == csp_namespace_id(framework)
     end
 
