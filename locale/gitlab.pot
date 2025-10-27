@@ -48886,6 +48886,12 @@ msgstr ""
 msgid "Pipelines|The branch or tag does not exist"
 msgstr ""
 
+msgid "Pipelines|The pipeline could not be canceled."
+msgstr ""
+
+msgid "Pipelines|The pipeline could not be retried."
+msgstr ""
+
 msgid "Pipelines|The pipeline will run with these inputs:"
 msgstr ""
 
