@@ -62,7 +62,7 @@ module Ai
             next if Feature.disabled?(:active_context_saas_initial_indexing_namespace, namespace)
             next unless namespace_has_duo_features_enabled?(namespace)
 
-            records << { namespace_id: namespace.id, connection_id: active_connection.id }
+            records << { namespace_id: namespace.id, connection_id: active_connection.id, state: 'ready' }
           end
 
           records

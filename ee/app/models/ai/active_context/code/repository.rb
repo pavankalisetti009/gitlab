@@ -56,6 +56,7 @@ module Ai
         }
 
         scope :ready_with_active_connection, -> { ready.with_active_connection }
+        scope :for_project, ->(project_id) { with_active_connection.where(project_id: project_id) }
 
         def empty?
           project.empty_repo?
