@@ -174,6 +174,7 @@ RSpec.describe Users::RegistrationsIdentityVerificationController, :clean_gitlab
 
       before do
         stub_session(session_data: { verification_user_id: user.id })
+        allow(::AntiAbuse::IdentityVerification::Settings).to receive(:arkose_enabled?).and_return(true)
       end
 
       it 'returns verification methods and state', quarantine: 'https://gitlab.com/gitlab-org/gitlab/-/issues/463198' do
@@ -215,6 +216,14 @@ RSpec.describe Users::RegistrationsIdentityVerificationController, :clean_gitlab
           end
 
           it { is_expected.to match_array(methods_requiring_challenge) }
+
+          context 'when Arkose is disabled' do
+            before do
+              allow(::AntiAbuse::IdentityVerification::Settings).to receive(:arkose_enabled?).and_return(false)
+            end
+
+            it { is_expected.to be_empty }
+          end
         end
       end
     end

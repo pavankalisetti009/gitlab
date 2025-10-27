@@ -103,6 +103,10 @@ RSpec.describe Users::IdentityVerificationController, :with_organization_url_hel
   describe 'GET verification_state' do
     subject(:do_request) { get verification_state_identity_verification_path }
 
+    before do
+      allow(::AntiAbuse::IdentityVerification::Settings).to receive(:arkose_enabled?).and_return(true)
+    end
+
     it_behaves_like 'it requires a signed-in verified user'
     it_behaves_like 'it redirects to root_path when user is already verified'
     it_behaves_like 'it sets poll interval header'
@@ -115,6 +119,20 @@ RSpec.describe Users::IdentityVerificationController, :with_organization_url_hel
         'verification_state' => { "phone" => false },
         'methods_requiring_arkose_challenge' => ["phone"]
       })
+    end
+
+    describe 'methods_requiring_arkose_challenge' do
+      context 'when Arkose is disabled' do
+        before do
+          allow(::AntiAbuse::IdentityVerification::Settings).to receive(:arkose_enabled?).and_return(false)
+        end
+
+        it 'is empty' do
+          do_request
+
+          expect(json_response['methods_requiring_arkose_challenge']).to be_empty
+        end
+      end
     end
   end
 
