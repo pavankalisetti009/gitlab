@@ -26,6 +26,9 @@ import {
 import {
   AI_CATALOG_TYPE_FLOW,
   AI_CATALOG_TYPE_THIRD_PARTY_FLOW,
+  AI_CATALOG_CONSUMER_TYPE_GROUP,
+  AI_CATALOG_CONSUMER_TYPE_PROJECT,
+  AI_CATALOG_CONSUMER_LABELS,
   FLOW_TYPE_APOLLO_CONFIG,
   FLOW_VISIBILITY_LEVEL_DESCRIPTIONS,
   PAGE_SIZE,
@@ -69,6 +72,7 @@ export default {
       aiCatalogFlows: [],
       aiCatalogFlowToBeAdded: null,
       errors: [],
+      errorTitle: null,
       pageInfo: {},
       searchTerm: '',
     };
@@ -103,7 +107,7 @@ export default {
 
           const items = [
             {
-              text: s__('AICatalog|Enable in project'),
+              text: s__('AICatalog|Enable in project or group'),
               action: () => this.setAiCatalogFlowToBeAdded(item),
               icon: 'plus',
             },
@@ -200,6 +204,10 @@ export default {
         itemId: flow.id,
         target,
       };
+      const targetType = target.groupId
+        ? AI_CATALOG_CONSUMER_TYPE_GROUP
+        : AI_CATALOG_CONSUMER_TYPE_PROJECT;
+      const targetTypeLabel = AI_CATALOG_CONSUMER_LABELS[targetType];
 
       this.setAiCatalogFlowToBeAdded(null);
 
@@ -214,17 +222,14 @@ export default {
         if (data) {
           const { errors } = data.aiCatalogItemConsumerCreate;
           if (errors.length > 0) {
-            // TODO: Once we have a project selector, we could add the project name in this message.
-            this.errors = [
-              sprintf(s__('AICatalog|Could not enable flow: %{flowName}'), {
-                flowName: flow.name,
-              }),
-              ...errors,
-            ];
+            this.errorTitle = sprintf(s__('AICatalog|Could not enable flow: %{flowName}'), {
+              flowName: flow.name,
+            });
+            this.errors = errors;
             return;
           }
 
-          const name = data.aiCatalogItemConsumerCreate.itemConsumer.project?.name || '';
+          const name = data.aiCatalogItemConsumerCreate.itemConsumer[targetType]?.name || '';
 
           this.$toast.show(sprintf(s__('AICatalog|Flow enabled in %{name}.'), { name }));
         }
@@ -232,8 +237,11 @@ export default {
         this.errors = [
           prerequisitesError(
             s__(
-              'AICatalog|Could not enable flow in the project. Check that the project meets the %{linkStart}prerequisites%{linkEnd} and try again.',
+              'AICatalog|Could not enable flow in the %{target}. Check that the %{target} meets the %{linkStart}prerequisites%{linkEnd} and try again.',
             ),
+            {
+              target: targetTypeLabel,
+            },
           ),
         ];
         Sentry.captureException(error);
@@ -263,6 +271,10 @@ export default {
     handleClearSearch() {
       this.searchTerm = '';
     },
+    dismissErrors() {
+      this.errors = [];
+      this.errorTitle = null;
+    },
   },
 };
 </script>
@@ -270,7 +282,7 @@ export default {
 <template>
   <div>
     <ai-catalog-list-header />
-    <errors-alert class="gl-mt-5" :errors="errors" @dismiss="errors = []" />
+    <errors-alert class="gl-mt-5" :title="errorTitle" :errors="errors" @dismiss="dismissErrors" />
 
     <div class="gl-border-b gl-bg-subtle gl-p-5">
       <gl-filtered-search
@@ -295,6 +307,7 @@ export default {
     <ai-catalog-item-consumer-modal
       v-if="aiCatalogFlowToBeAdded"
       :item="aiCatalogFlowToBeAdded"
+      show-add-to-group
       open
       @submit="addFlowToTarget"
       @hide="setAiCatalogFlowToBeAdded(null)"

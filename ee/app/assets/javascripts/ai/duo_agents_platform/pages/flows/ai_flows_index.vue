@@ -19,7 +19,7 @@ import {
   FLOW_VISIBILITY_LEVEL_DESCRIPTIONS,
   PAGE_SIZE,
 } from 'ee/ai/catalog/constants';
-import { TYPENAME_PROJECT } from '~/graphql_shared/constants';
+import { TYPENAME_GROUP, TYPENAME_PROJECT } from '~/graphql_shared/constants';
 import {
   VISIBILITY_LEVEL_PRIVATE_STRING,
   VISIBILITY_LEVEL_PUBLIC_STRING,
@@ -40,6 +40,9 @@ export default {
   },
   mixins: [glFeatureFlagsMixin()],
   inject: {
+    groupId: {
+      default: null,
+    },
     projectId: {
       default: null,
     },
@@ -56,7 +59,7 @@ export default {
       variables() {
         return {
           ...this.itemTypes,
-          projectId: convertToGraphQLId(TYPENAME_PROJECT, this.projectId),
+          ...this.namespaceVariables,
           before: null,
           after: null,
           first: PAGE_SIZE,
@@ -71,6 +74,9 @@ export default {
     },
     userPermissions: {
       query: aiCatalogProjectUserPermissionsQuery,
+      skip() {
+        return !this.projectId;
+      },
       variables() {
         return {
           fullPath: this.projectPath,
@@ -103,6 +109,17 @@ export default {
         return { itemType: AI_CATALOG_TYPE_THIRD_PARTY_FLOW };
       }
       return { itemType: AI_CATALOG_TYPE_FLOW };
+    },
+    namespaceVariables() {
+      if (this.groupId) {
+        return {
+          groupId: convertToGraphQLId(TYPENAME_GROUP, this.groupId),
+        };
+      }
+      return {
+        projectId: convertToGraphQLId(TYPENAME_PROJECT, this.projectId),
+        includeInherited: false,
+      };
     },
     isLoading() {
       return this.$apollo.queries.aiFlows.loading;

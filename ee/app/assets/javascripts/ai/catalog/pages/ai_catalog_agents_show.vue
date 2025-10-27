@@ -153,7 +153,7 @@ export default {
           :delete-fn="deleteAgent"
           :delete-confirm-title="s__('AICatalog|Delete agent')"
           :delete-confirm-message="s__('AICatalog|Are you sure you want to delete agent %{name}?')"
-          @add-to-project="addToProject"
+          @add-to-target="addToProject"
         />
       </template>
     </page-heading>

@@ -4,7 +4,8 @@
 query aiCatalogConfiguredItems(
   $itemType: AiCatalogItemType
   $itemTypes: [AiCatalogItemType!]
-  $projectId: ProjectID!
+  $groupId: GroupID
+  $projectId: ProjectID
   $before: String
   $after: String
   $first: Int
@@ -13,6 +14,7 @@ query aiCatalogConfiguredItems(
   aiCatalogConfiguredItems(
     itemType: $itemType
     itemTypes: $itemTypes
+    groupId: $groupId
     projectId: $projectId
     before: $before
     after: $after

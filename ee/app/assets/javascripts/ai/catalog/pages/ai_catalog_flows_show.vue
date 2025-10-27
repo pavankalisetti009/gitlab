@@ -5,6 +5,9 @@ import * as Sentry from '~/sentry/sentry_browser_wrapper';
 import glFeatureFlagsMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
 import PageHeading from '~/vue_shared/components/page_heading.vue';
 import {
+  AI_CATALOG_CONSUMER_TYPE_GROUP,
+  AI_CATALOG_CONSUMER_TYPE_PROJECT,
+  AI_CATALOG_CONSUMER_LABELS,
   FLOW_TYPE_APOLLO_CONFIG,
   TRACK_EVENT_TYPE_FLOW,
   TRACK_EVENT_VIEW_AI_CATALOG_ITEM,
@@ -62,11 +65,15 @@ export default {
     });
   },
   methods: {
-    async addToProject(target) {
+    async addFlowToTarget(target) {
       const input = {
         itemId: this.aiCatalogFlow.id,
         target,
       };
+      const targetType = target.groupId
+        ? AI_CATALOG_CONSUMER_TYPE_GROUP
+        : AI_CATALOG_CONSUMER_TYPE_PROJECT;
+      const targetTypeLabel = AI_CATALOG_CONSUMER_LABELS[targetType];
 
       try {
         const { data } = await this.$apollo.mutate({
@@ -86,7 +93,7 @@ export default {
             return;
           }
 
-          const name = data.aiCatalogItemConsumerCreate.itemConsumer.project?.name || '';
+          const name = data.aiCatalogItemConsumerCreate.itemConsumer[targetType]?.name || '';
 
           this.$toast.show(sprintf(s__('AICatalog|Flow enabled in %{name}.'), { name }));
         }
@@ -94,8 +101,11 @@ export default {
         this.errors = [
           prerequisitesError(
             s__(
-              'AICatalog|Could not enable flow in the project. Check that the project meets the %{linkStart}prerequisites%{linkEnd} and try again.',
+              'AICatalog|Could not enable flow in the %{target}. Check that the %{target} meets the %{linkStart}prerequisites%{linkEnd} and try again.',
             ),
+            {
+              target: targetTypeLabel,
+            },
           ),
         ];
         Sentry.captureException(error);
@@ -159,7 +169,7 @@ export default {
           :delete-fn="deleteFlow"
           :delete-confirm-title="s__('AICatalog|Delete flow')"
           :delete-confirm-message="s__('AICatalog|Are you sure you want to delete flow %{name}?')"
-          @add-to-project="addToProject"
+          @add-to-target="addFlowToTarget"
         />
       </template>
     </page-heading>

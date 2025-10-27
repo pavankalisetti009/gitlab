@@ -10,7 +10,11 @@ import {
 import { s__ } from '~/locale';
 import { isLoggedIn } from '~/lib/utils/common_utils';
 import ConfirmActionModal from '~/vue_shared/components/confirm_action_modal.vue';
-import { AI_CATALOG_TYPE_AGENT } from '../constants';
+import {
+  AI_CATALOG_TYPE_AGENT,
+  AI_CATALOG_TYPE_FLOW,
+  AI_CATALOG_TYPE_THIRD_PARTY_FLOW,
+} from '../constants';
 import AiCatalogItemConsumerModal from './ai_catalog_item_consumer_modal.vue';
 import AiCatalogTestRunModal from './ai_catalog_test_run_modal.vue';
 
@@ -59,7 +63,7 @@ export default {
       default: null,
     },
   },
-  emits: ['add-to-project'],
+  emits: ['add-to-target'],
   data() {
     return {
       showDeleteModal: false,
@@ -77,6 +81,12 @@ export default {
     },
     showAddToProject() {
       return this.canUse && this.isGlobal;
+    },
+    showAddToProjectOrGroup() {
+      return (
+        this.showAddToProject &&
+        [AI_CATALOG_TYPE_FLOW, AI_CATALOG_TYPE_THIRD_PARTY_FLOW].includes(this.item.itemType)
+      );
     },
     duplicateItemProps() {
       return {
@@ -112,7 +122,16 @@ export default {
       {{ s__('AICatalog|Test') }}
     </gl-button>
     <gl-button
-      v-if="showAddToProject"
+      v-if="showAddToProjectOrGroup"
+      v-gl-modal="'add-item-consumer-modal'"
+      variant="confirm"
+      category="primary"
+      data-testid="add-to-project-or-group-button"
+    >
+      {{ s__('AICatalog|Enable in project or group') }}
+    </gl-button>
+    <gl-button
+      v-else-if="showAddToProject"
       v-gl-modal="'add-item-consumer-modal'"
       variant="confirm"
       category="primary"
@@ -174,7 +193,8 @@ export default {
     <ai-catalog-item-consumer-modal
       v-if="canUse"
       :item="item"
-      @submit="$emit('add-to-project', $event)"
+      :show-add-to-group="showAddToProjectOrGroup"
+      @submit="$emit('add-to-target', $event)"
     />
   </div>
 </template>

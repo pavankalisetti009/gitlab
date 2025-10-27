@@ -124,6 +124,7 @@ describe('AiFlowsIndex', () => {
         expect(mockConfiguredFlowsQueryHandler).toHaveBeenCalledWith({
           itemTypes: ['FLOW', 'THIRD_PARTY_FLOW'],
           projectId: `gid://gitlab/Project/${mockProjectId}`,
+          includeInherited: false,
           after: null,
           before: null,
           first: 20,
@@ -148,6 +149,7 @@ describe('AiFlowsIndex', () => {
         expect(mockConfiguredFlowsQueryHandler).toHaveBeenCalledWith({
           itemType: 'THIRD_PARTY_FLOW',
           projectId: `gid://gitlab/Project/${mockProjectId}`,
+          includeInherited: false,
           after: null,
           before: null,
           first: 20,
@@ -172,6 +174,7 @@ describe('AiFlowsIndex', () => {
         expect(mockConfiguredFlowsQueryHandler).toHaveBeenCalledWith({
           itemType: 'FLOW',
           projectId: `gid://gitlab/Project/${mockProjectId}`,
+          includeInherited: false,
           after: null,
           before: null,
           first: 20,
@@ -254,6 +257,7 @@ describe('AiFlowsIndex', () => {
       expect(mockConfiguredFlowsQueryHandler).toHaveBeenCalledWith({
         itemTypes: ['FLOW', 'THIRD_PARTY_FLOW'],
         projectId: `gid://gitlab/Project/${mockProjectId}`,
+        includeInherited: false,
         after: null,
         before: 'eyJpZCI6IjUxIn0',
         first: null,
@@ -266,6 +270,7 @@ describe('AiFlowsIndex', () => {
       expect(mockConfiguredFlowsQueryHandler).toHaveBeenCalledWith({
         itemTypes: ['FLOW', 'THIRD_PARTY_FLOW'],
         projectId: `gid://gitlab/Project/${mockProjectId}`,
+        includeInherited: false,
         after: 'eyJpZCI6IjM1In0',
         before: null,
         first: 20,

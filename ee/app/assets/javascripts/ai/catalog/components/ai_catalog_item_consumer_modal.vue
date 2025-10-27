@@ -1,8 +1,14 @@
 <script>
 import { uniqueId } from 'lodash';
-import { GlAlert, GlForm, GlFormGroup, GlModal, GlSprintf } from '@gitlab/ui';
+import { GlAlert, GlForm, GlFormGroup, GlFormRadioGroup, GlModal, GlSprintf } from '@gitlab/ui';
 import { __, s__, sprintf } from '~/locale';
-import { AI_CATALOG_ITEM_LABELS } from '../constants';
+import {
+  AI_CATALOG_ITEM_LABELS,
+  AI_CATALOG_CONSUMER_TYPE_GROUP,
+  AI_CATALOG_CONSUMER_TYPE_PROJECT,
+  AI_CATALOG_CONSUMER_LABELS,
+} from '../constants';
+import FormGroupDropdown from './form_group_dropdown.vue';
 import FormProjectDropdown from './form_project_dropdown.vue';
 
 const formId = uniqueId('ai-catalog-item-consumer-form-');
@@ -10,10 +16,12 @@ const formId = uniqueId('ai-catalog-item-consumer-form-');
 export default {
   name: 'AiCatalogItemConsumerModal',
   components: {
+    FormGroupDropdown,
     FormProjectDropdown,
     GlAlert,
     GlForm,
     GlFormGroup,
+    GlFormRadioGroup,
     GlModal,
     GlSprintf,
   },
@@ -21,6 +29,11 @@ export default {
     item: {
       type: Object,
       required: true,
+    },
+    showAddToGroup: {
+      type: Boolean,
+      required: false,
+      default: false,
     },
     open: {
       type: Boolean,
@@ -32,6 +45,10 @@ export default {
     return {
       isOpen: this.open,
       targetId: this.item.public ? null : this.item.project?.id || null,
+      targetType:
+        this.item.public && this.showAddToGroup
+          ? AI_CATALOG_CONSUMER_TYPE_GROUP
+          : AI_CATALOG_CONSUMER_TYPE_PROJECT,
       isDirty: false,
       error: null,
     };
@@ -43,8 +60,17 @@ export default {
     itemTypeLabel() {
       return AI_CATALOG_ITEM_LABELS[this.item.itemType];
     },
+    targetTypeLabel() {
+      return AI_CATALOG_CONSUMER_LABELS[this.targetType];
+    },
     title() {
-      return sprintf(s__('AICatalog|Enable %{itemType} in a project'), {
+      return sprintf(s__('AICatalog|Enable %{itemType} in a %{targetType}'), {
+        itemType: this.itemTypeLabel,
+        targetType: this.targetTypeLabel,
+      });
+    },
+    groupLabelDescription() {
+      return sprintf(s__('AICatalog|Allows %{itemType} to be enabled in projects.'), {
         itemType: this.itemTypeLabel,
       });
     },
@@ -56,8 +82,14 @@ export default {
     isPrivateItem() {
       return !this.item.public;
     },
-    isProjectValid() {
+    canAddToGroup() {
+      return this.item.public && this.showAddToGroup;
+    },
+    isTargetValid() {
       return !this.isDirty || this.targetId !== null;
+    },
+    isTargetTypeGroup() {
+      return this.targetType === AI_CATALOG_CONSUMER_TYPE_GROUP;
     },
   },
   methods: {
@@ -66,13 +98,26 @@ export default {
     },
     handleSubmit() {
       this.isDirty = true;
-      if (!this.isProjectValid) {
+      if (!this.isTargetValid) {
         return;
       }
       this.isOpen = false;
-      this.$emit('submit', { projectId: this.targetId });
+      const target = this.isTargetTypeGroup
+        ? { groupId: this.targetId }
+        : { projectId: this.targetId };
+      this.$emit('submit', target);
     },
   },
+  targetTypes: [
+    {
+      value: AI_CATALOG_CONSUMER_TYPE_GROUP,
+      text: __('Group'),
+    },
+    {
+      value: AI_CATALOG_CONSUMER_TYPE_PROJECT,
+      text: __('Project'),
+    },
+  ],
   modal: {
     actionPrimary: {
       text: __('Enable'),
@@ -137,30 +182,51 @@ export default {
     </dl>
 
     <gl-form :id="formId" @submit.prevent="handleSubmit">
-      <gl-form-group
-        v-if="item.public"
-        :label="s__('AICatalog|Project')"
-        :label-description="projectLabelDescription"
-        label-for="target-id"
-        :state="isProjectValid"
-        :invalid-feedback="s__('AICatalog|Project is required.')"
-      >
-        <form-project-dropdown
-          id="target-id"
-          v-model="targetId"
-          :is-valid="isProjectValid"
-          @error="onError"
-        />
+      <gl-form-group v-if="canAddToGroup" :label="s__('AICatalog|Enable in')">
+        <gl-form-radio-group v-model="targetType" :options="$options.targetTypes" />
       </gl-form-group>
+      <div v-if="isTargetTypeGroup">
+        <gl-form-group
+          :label="__('Group')"
+          :label-description="groupLabelDescription"
+          label-for="group-id"
+          :state="isTargetValid"
+          :invalid-feedback="s__('AICatalog|Group is required.')"
+        >
+          <form-group-dropdown
+            id="group-id"
+            v-model="targetId"
+            :is-valid="isTargetValid"
+            @error="onError"
+          />
+        </gl-form-group>
+      </div>
+      <div v-else>
+        <gl-form-group
+          v-if="item.public"
+          :label="__('Project')"
+          :label-description="projectLabelDescription"
+          label-for="project-id"
+          :state="isTargetValid"
+          :invalid-feedback="s__('AICatalog|Project is required.')"
+        >
+          <form-project-dropdown
+            id="project-id"
+            v-model="targetId"
+            :is-valid="isTargetValid"
+            @error="onError"
+          />
+        </gl-form-group>
 
-      <dl v-else>
-        <dt class="gl-mb-2 gl-font-bold">
-          {{ s__('AICatalog|Project') }}
-        </dt>
-        <dd>
-          {{ item.project.nameWithNamespace }}
-        </dd>
-      </dl>
+        <dl v-else>
+          <dt class="gl-mb-2 gl-font-bold">
+            {{ s__('AICatalog|Project') }}
+          </dt>
+          <dd>
+            {{ item.project.nameWithNamespace }}
+          </dd>
+        </dl>
+      </div>
     </gl-form>
   </gl-modal>
 </template>
