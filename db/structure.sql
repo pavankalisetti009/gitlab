@@ -23075,7 +23075,7 @@ ALTER SEQUENCE personal_access_tokens_id_seq OWNED BY personal_access_tokens.id;
 
 CREATE TABLE snippet_repositories (
     snippet_id bigint NOT NULL,
-    shard_id bigint NOT NULL,
+    shard_id bigint,
     disk_path character varying(80) NOT NULL,
     verification_retry_count smallint,
     verification_retry_at timestamp with time zone,
