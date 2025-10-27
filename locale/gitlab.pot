@@ -4080,9 +4080,6 @@ msgstr ""
 msgid "Activate Service Desk"
 msgstr ""
 
-msgid "Activate large-scale search optimizations after this many projects (experimental)"
-msgstr ""
-
 msgid "Activated"
 msgstr ""
 

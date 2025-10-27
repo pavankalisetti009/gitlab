@@ -166,26 +166,6 @@ RSpec.describe 'Getting a collection of blobs', :zoekt_settings_enabled, :zoekt_
         zoekt_ensure_project_indexed!(archived_project)
       end
 
-      context 'when traversal id feature flag is disabled' do
-        before do
-          stub_feature_flags(zoekt_traversal_id_queries: false)
-        end
-
-        it_behaves_like 'does not return archived projects'
-
-        context 'when include_archived is true' do
-          let(:arguments) { { search: 'test', group_id: "gid://gitlab/Group/#{group.id}", include_archived: true } }
-
-          it_behaves_like 'returns archived projects'
-        end
-
-        context 'when include_archived is false' do
-          let(:arguments) { { search: 'test', group_id: "gid://gitlab/Group/#{group.id}", include_archived: false } }
-
-          it_behaves_like 'does not return archived projects'
-        end
-      end
-
       it_behaves_like 'does not return archived projects'
 
       context 'when include_archived is true' do
@@ -210,32 +190,6 @@ RSpec.describe 'Getting a collection of blobs', :zoekt_settings_enabled, :zoekt_
 
       before_all do
         zoekt_ensure_project_indexed!(forked_project)
-      end
-
-      context 'when traversal id feature flag is disabled' do
-        before do
-          stub_feature_flags(zoekt_traversal_id_queries: false)
-        end
-
-        context 'when exclude_forks is false' do
-          let(:arguments) { { search: 'test', group_id: "gid://gitlab/Group/#{group2.id}", exclude_forks: false } }
-
-          it 'returns forked projects' do
-            post_graphql(query, current_user: current_user)
-            expect(graphql_data_at(:blobSearch, :fileCount)).to be > 0
-            expect(graphql_data_at(:blobSearch, :files)).not_to be_empty
-          end
-        end
-
-        context 'when exclude_forks is true' do
-          let(:arguments) { { search: 'test', group_id: "gid://gitlab/Group/#{group2.id}", exclude_forks: true } }
-
-          it 'does not return forked projects' do
-            post_graphql(query, current_user: current_user)
-            expect(graphql_data_at(:blobSearch, :fileCount)).to eq(0)
-            expect(graphql_data_at(:blobSearch, :files)).to be_empty
-          end
-        end
       end
 
       it 'does not return forked projects by default' do

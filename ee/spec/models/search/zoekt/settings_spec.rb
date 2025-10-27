@@ -11,8 +11,7 @@ RSpec.describe Search::Zoekt::Settings, feature_category: :global_search do
         :zoekt_indexing_paused,
         :zoekt_auto_index_root_namespace,
         :zoekt_lost_node_threshold,
-        :zoekt_cpu_to_tasks_ratio,
-        :zoekt_minimum_projects_for_traversal_id_search
+        :zoekt_cpu_to_tasks_ratio
       )
     end
 
@@ -81,7 +80,6 @@ RSpec.describe Search::Zoekt::Settings, feature_category: :global_search do
       expected_list = %i[
         zoekt_cpu_to_tasks_ratio zoekt_indexing_parallelism zoekt_rollout_batch_size zoekt_indexing_timeout
         zoekt_maximum_files zoekt_rollout_retry_interval zoekt_lost_node_threshold
-        zoekt_minimum_projects_for_traversal_id_search
       ]
 
       input_settings = described_class.input_settings
@@ -224,18 +222,6 @@ RSpec.describe Search::Zoekt::Settings, feature_category: :global_search do
 
         described_class.lost_node_threshold
       end
-    end
-  end
-
-  describe '.minimum_projects_for_traversal_id_search' do
-    before do
-      allow(ApplicationSetting).to receive_message_chain(
-        :current, :zoekt_minimum_projects_for_traversal_id_search
-      ).and_return(123)
-    end
-
-    it 'returns the correct value' do
-      expect(described_class.minimum_projects_for_traversal_id_search).to eq(123)
     end
   end
 end

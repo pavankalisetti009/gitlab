@@ -18,7 +18,6 @@ module Search
       DEFAULT_INDEXING_TIMEOUT = '30m'
       DEFAULT_ROLLOUT_RETRY_INTERVAL = '1d'
       DEFAULT_LOST_NODE_THRESHOLD = '12h'
-      DEFAULT_MIN_PROJECTS_FOR_TRAVERSAL_ID_SEARCH = 6_000
       DEFAULT_MAXIMUM_FILES = 500_000
       DISABLED_VALUE = '0'
       DURATION_BASE_REGEX = %r{([1-9]\d*)([mhd])}
@@ -106,12 +105,6 @@ module Search
               val: DISABLED_VALUE)
           },
           input_type: :text_field
-        },
-        zoekt_minimum_projects_for_traversal_id_search: {
-          type: :integer,
-          default: DEFAULT_MIN_PROJECTS_FOR_TRAVERSAL_ID_SEARCH,
-          label: -> { _('Activate large-scale search optimizations after this many projects (experimental)') },
-          input_type: :number_field
         }
       }.freeze
 
@@ -156,10 +149,6 @@ module Search
 
       def self.lost_node_threshold
         parse_duration(ApplicationSetting.current&.zoekt_lost_node_threshold, DEFAULT_LOST_NODE_THRESHOLD)
-      end
-
-      def self.minimum_projects_for_traversal_id_search
-        ApplicationSetting.current&.zoekt_minimum_projects_for_traversal_id_search.to_i
       end
     end
   end

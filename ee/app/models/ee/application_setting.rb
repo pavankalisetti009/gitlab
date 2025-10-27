@@ -39,8 +39,6 @@ module EE
         zoekt_cpu_to_tasks_ratio: [:float, { default: 1.0 }],
         zoekt_indexing_parallelism: [:integer, { default: 1 }],
         zoekt_rollout_batch_size: [:integer, { default: 32 }],
-        zoekt_minimum_projects_for_traversal_id_search: [:integer,
-          { default: ::Search::Zoekt::Settings::DEFAULT_MIN_PROJECTS_FOR_TRAVERSAL_ID_SEARCH }],
         zoekt_indexing_timeout: [:text, { default: ::Search::Zoekt::Settings::DEFAULT_INDEXING_TIMEOUT }],
         zoekt_maximum_files: [:integer, { default: ::Search::Zoekt::Settings::DEFAULT_MAXIMUM_FILES }],
         zoekt_rollout_retry_interval: [:text, { default: ::Search::Zoekt::Settings::DEFAULT_ROLLOUT_RETRY_INTERVAL }],
