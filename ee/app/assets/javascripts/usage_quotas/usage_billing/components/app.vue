@@ -84,6 +84,9 @@ export default {
     otcUsedCredits() {
       return this.subscriptionUsage?.oneTimeCredits?.creditsUsed;
     },
+    shouldShowOtcCard() {
+      return this.otcRemainingCredits || this.otcUsedCredits;
+    },
   },
   async mounted() {
     await this.fetchUsageData();
@@ -158,7 +161,7 @@ export default {
     <template v-else>
       <section class="gl-flex gl-flex-col gl-gap-5 @md/panel:gl-flex-row">
         <one-time-credits-card
-          v-if="otcUsedCredits"
+          v-if="shouldShowOtcCard"
           :remaining-credits="otcRemainingCredits"
           :used-credits="otcUsedCredits"
         />
