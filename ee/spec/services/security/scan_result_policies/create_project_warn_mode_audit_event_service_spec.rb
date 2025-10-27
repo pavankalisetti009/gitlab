@@ -68,6 +68,18 @@ RSpec.describe Security::ScanResultPolicies::CreateProjectWarnModeAuditEventServ
     include_examples 'does not create audit event'
   end
 
+  context 'when policy is out of scope' do
+    let_it_be(:warn_mode_policy_out_of_scope) do
+      create_policy(4, true, :warn_mode).tap do |policy|
+        policy.update!(scope: { projects: { excluding: [{ id: project.id }] } })
+      end
+    end
+
+    let(:policy) { warn_mode_policy_out_of_scope }
+
+    include_examples 'does not create audit event'
+  end
+
   private
 
   def create_policy(policy_index, prevent_approval_by_author, *traits)

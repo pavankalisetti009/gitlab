@@ -14,7 +14,9 @@ module Security
       end
 
       def execute
-        ::Gitlab::Audit::Auditor.audit(audit_context) if policy.warn_mode? && overrides.any?
+        return unless policy.warn_mode? && overrides.any? && policy.scope_applicable?(project)
+
+        ::Gitlab::Audit::Auditor.audit(audit_context)
       end
 
       def audit_context
