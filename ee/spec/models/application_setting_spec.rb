@@ -51,6 +51,7 @@ RSpec.describe ApplicationSetting, feature_category: :shared, type: :model do
         allow_group_owners_to_manage_ldap: true,
         allowed_integrations: [],
         anonymous_searches_allowed: true,
+        default_search_scope: 'system default',
         arkose_labs_data_exchange_enabled: true,
         arkose_labs_enabled: true,
         auto_ban_user_on_excessive_projects_download: false,
@@ -291,6 +292,30 @@ RSpec.describe ApplicationSetting, feature_category: :shared, type: :model do
         it { is_expected.to allow_value(es_settings.merge(field => 'string')).for(:elasticsearch) }
 
         it { is_expected.not_to allow_value(es_settings.merge(field => 1)).for(:elasticsearch) }
+      end
+
+      describe 'default_search_scope validation' do
+        let(:setting) { build(:application_setting) }
+
+        it 'allows epics scope on EE' do
+          setting.default_search_scope = 'epics'
+
+          expect(setting).to be_valid
+        end
+
+        it 'allows code scope on EE' do
+          setting.default_search_scope = 'code'
+
+          expect(setting).to be_valid
+        end
+
+        it 'allows all CE scopes on EE' do
+          %w[projects issues merge_requests milestones users snippet_titles].each do |scope|
+            setting.default_search_scope = scope
+
+            expect(setting).to be_valid, "expected #{scope} to be valid on EE"
+          end
+        end
       end
     end
 
