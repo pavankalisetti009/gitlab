@@ -26,7 +26,7 @@ module Security
       attr_reader :namespace, :params
 
       def base_scope
-        Security::InventoryFilter.within(namespace.traversal_ids)
+        Security::InventoryFilter.within(namespace.traversal_ids).unarchived
       end
 
       def build_filtered_scope

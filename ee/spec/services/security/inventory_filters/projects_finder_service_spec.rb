@@ -8,6 +8,7 @@ RSpec.describe Security::InventoryFilters::ProjectsFinderService, feature_catego
   let_it_be(:project1) { create(:project, namespace: group, name: "Project 1111") }
   let_it_be(:project2) { create(:project, namespace: group, name: "Project 2222") }
   let_it_be(:project3) { create(:project, namespace: subgroup, name: "Project 3333") }
+  let_it_be(:archived_project) { create(:project, :archived, namespace: group, name: "Archived Project") }
   let_it_be(:other_project) { create(:project) }
 
   let_it_be(:inventory_filter1) do
@@ -52,6 +53,21 @@ RSpec.describe Security::InventoryFilters::ProjectsFinderService, feature_catego
     )
   end
 
+  let_it_be(:archived_filter) do
+    create(:security_inventory_filters,
+      archived: true,
+      project: archived_project,
+      traversal_ids: group.traversal_ids,
+      critical: 3,
+      high: 7,
+      medium: 5,
+      low: 1,
+      sast: :success,
+      secret_detection: :success,
+      dependency_scanning: :failed
+    )
+  end
+
   let_it_be(:other_inventory_filter) do
     create(:security_inventory_filters,
       project: other_project,
@@ -87,6 +103,11 @@ RSpec.describe Security::InventoryFilters::ProjectsFinderService, feature_catego
       it 'does not include projects outside the namespace' do
         result = execute
         expect(result[:ids]).not_to include(other_project.id)
+      end
+
+      it 'does not include archived projects' do
+        result = execute
+        expect(result[:ids]).not_to include(archived_project.id)
       end
     end
 
