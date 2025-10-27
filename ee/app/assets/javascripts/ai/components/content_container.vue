@@ -1,5 +1,6 @@
 <script>
 import { GlButton, GlTooltipDirective } from '@gitlab/ui';
+import SafeHtmlDirective from '~/vue_shared/directives/safe_html';
 import { duoChatGlobalState } from '~/super_sidebar/constants';
 import { __ } from '~/locale';
 
@@ -10,6 +11,7 @@ export default {
   },
   directives: {
     GlTooltip: GlTooltipDirective,
+    SafeHtml: SafeHtmlDirective,
   },
   inject: ['chatConfiguration'],
   i18n: {
@@ -165,9 +167,11 @@ export default {
       class="ai-panel-body gl-grow gl-flex-wrap gl-justify-center gl-overflow-auto gl-text-secondary"
       :class="{ 'gl-flex gl-min-h-full': typeof activeTab.component === 'string' }"
     >
-      <div v-if="typeof activeTab.component === 'string'" class="gl-self-center">
-        {{ activeTab.component }}
-      </div>
+      <div
+        v-if="typeof activeTab.component === 'string'"
+        v-safe-html="activeTab.component"
+        class="gl-self-center gl-p-5"
+      ></div>
       <component
         :is="activeTab.component"
         v-else

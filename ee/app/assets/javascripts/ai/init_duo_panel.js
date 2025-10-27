@@ -26,6 +26,7 @@ export function initDuoPanel() {
     metadata,
     userModelSelectionEnabled,
     agenticAvailable,
+    agenticUnavailableMessage,
     chatTitle,
   } = el.dataset;
 
@@ -38,7 +39,9 @@ export function initDuoPanel() {
 
   // Configure chat-specific values in a single configuration object
   const chatConfiguration = {
-    agenticComponent: DuoAgenticChat,
+    agenticComponent: parseBoolean(agenticAvailable)
+      ? DuoAgenticChat
+      : agenticUnavailableMessage || __('Chat is not available.'),
     classicComponent: DuoChat,
     agenticTitle: chatTitle || __('GitLab Duo Agentic Chat'),
     classicTitle: __('GitLab Duo Chat'),
