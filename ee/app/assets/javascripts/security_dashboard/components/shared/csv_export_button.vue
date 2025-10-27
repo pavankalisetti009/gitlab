@@ -2,7 +2,9 @@
 import { GlButton, GlTooltipDirective } from '@gitlab/ui';
 import { createAlert, VARIANT_DANGER } from '~/alert';
 import axios from '~/lib/utils/axios_utils';
+import { convertObjectPropsToSnakeCase } from '~/lib/utils/common_utils';
 import { s__ } from '~/locale';
+import { filters } from './vulnerability_report/store';
 
 export default {
   name: 'CsvExportButton',
@@ -18,12 +20,20 @@ export default {
       isPreparingCsvExport: false,
     };
   },
+  computed: {
+    filterParameters() {
+      return convertObjectPropsToSnakeCase(filters.value);
+    },
+  },
   methods: {
     async initiateCsvExport() {
       this.isPreparingCsvExport = true;
 
       try {
-        await axios.post(this.vulnerabilitiesExportEndpoint, { send_email: true });
+        await axios.post(this.vulnerabilitiesExportEndpoint, {
+          send_email: true,
+          filters: this.filterParameters,
+        });
         this.notifyUserReportWillBeEmailed();
       } catch (error) {
         this.notifyUserOfExportError(error);
