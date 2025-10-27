@@ -118,11 +118,14 @@ module EE
 
         next false if ::Gitlab::CurrentSettings.gitlab_dedicated_instance?
 
+        next false if ::Ai::AmazonQ.connected?
+
         true
       end
 
       condition(:instance_model_selection_available) do
         next false unless ::Feature.enabled?(:instance_level_model_selection, :instance)
+        next false if ::Ai::AmazonQ.connected?
 
         !::License.current&.offline_cloud_license?
       end

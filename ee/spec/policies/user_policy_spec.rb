@@ -342,6 +342,7 @@ RSpec.describe UserPolicy, feature_category: :user_management do
 
         let(:default_duo_namespace_enabled) { true }
         let(:duo_features_enabled) { true }
+        let(:amazon_q_enabled) { false }
 
         before do
           default_duo_namespace = default_duo_namespace_enabled ? current_user : false
@@ -349,6 +350,8 @@ RSpec.describe UserPolicy, feature_category: :user_management do
           stub_feature_flags(ai_user_default_duo_namespace: default_duo_namespace)
 
           stub_application_setting(duo_features_enabled: duo_features_enabled)
+
+          allow(::Ai::AmazonQ).to receive(:connected?).and_return(amazon_q_enabled)
         end
 
         context 'with seats assigned to user' do
@@ -357,11 +360,12 @@ RSpec.describe UserPolicy, feature_category: :user_management do
           # Since this policy work with logical AND operator
           # We only need to test when one variable is false and the rest is true to validate it works correctly
           # This make this test more intelligible
-          where(:default_duo_namespace_enabled, :duo_features_enabled, :allowed?) do
-            false | true  | false
-            true  | false | false
-            false | false | false
-            true  | true  | true
+          where(:amazon_q_enabled, :default_duo_namespace_enabled, :duo_features_enabled, :allowed?) do
+            false | false | true  | false
+            false | true  | false | false
+            false | false | false | false
+            true  | true  | true  | false
+            false | true  | true  | true
           end
 
           with_them do

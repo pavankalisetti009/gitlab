@@ -1066,6 +1066,7 @@ module EE
         next false unless subject.root?
         next false if ::Ai::Setting.self_hosted?
         next false unless ::Feature.enabled?(:ai_model_switching, subject)
+        next false if ::Ai::AmazonQ.connected?
 
         subject.namespace_settings&.duo_features_enabled?
       end

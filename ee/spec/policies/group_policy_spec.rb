@@ -4940,10 +4940,12 @@ RSpec.describe GroupPolicy, feature_category: :groups_and_projects do
     let(:feature_flags_enabled) { true }
     let(:namespace_duo_enabled) { true }
     let(:with_self_hosted) { false }
+    let(:amazon_q_enabled) { false }
 
     before do
       stub_feature_flags(ai_model_switching: feature_flags_enabled)
       allow(::Ai::Setting).to receive(:self_hosted?).and_return(with_self_hosted)
+      allow(::Ai::AmazonQ).to receive(:connected?).and_return(amazon_q_enabled)
 
       group.namespace_settings.update!(duo_features_enabled: namespace_duo_enabled)
     end
@@ -4965,14 +4967,15 @@ RSpec.describe GroupPolicy, feature_category: :groups_and_projects do
     context 'when user can admin the group' do
       let(:current_user) { owner }
 
-      where(:feature_flags_enabled, :namespace_duo_enabled, :with_self_hosted, :enabled_for_user) do
-        false | false | false | be_disallowed(:admin_group_model_selection)
-        false | false | true | be_disallowed(:admin_group_model_selection)
-        true | false | false | be_disallowed(:admin_group_model_selection)
-        true | false | true | be_disallowed(:admin_group_model_selection)
-        false  | true  | false | be_disallowed(:admin_group_model_selection)
-        true   | true  | false | be_allowed(:admin_group_model_selection)
-        true | true | true | be_disallowed(:admin_group_model_selection)
+      where(:amazon_q_enabled, :feature_flags_enabled, :namespace_duo_enabled, :with_self_hosted, :enabled_for_user) do
+        false | false | false | false | be_disallowed(:admin_group_model_selection)
+        false | false | false | true  | be_disallowed(:admin_group_model_selection)
+        false | true  | false | false | be_disallowed(:admin_group_model_selection)
+        false | true  | false | true  | be_disallowed(:admin_group_model_selection)
+        false | false | true  | false | be_disallowed(:admin_group_model_selection)
+        false | true  | true  | true  | be_disallowed(:admin_group_model_selection)
+        true  | true  | true  | false | be_disallowed(:admin_group_model_selection)
+        false | true  | true  | false | be_allowed(:admin_group_model_selection)
       end
 
       with_them do
