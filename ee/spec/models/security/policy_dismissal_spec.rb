@@ -36,6 +36,27 @@ RSpec.describe Security::PolicyDismissal, feature_category: :security_policy_man
         expect(policy_dismissal).to be_valid
       end
     end
+
+    context 'when validating licenses' do
+      it { is_expected.not_to allow_value('string').for(:licenses) }
+      it { is_expected.to allow_value({}).for(:licenses) }
+
+      context 'with a single license' do
+        it { is_expected.to allow_value({ 'MIT License' => ['rack'] }).for(:licenses) }
+        it { is_expected.to allow_value({ 'MIT License' => %w[rack bundler] }).for(:licenses) }
+        it { is_expected.not_to allow_value({ '' => ['rack'] }).for(:licenses) }
+      end
+
+      context 'with multiple licenses' do
+        it { is_expected.to allow_value({ 'MIT License' => ['rack'], 'Ruby License' => ['json'] }).for(:licenses) }
+        it { is_expected.not_to allow_value({ 'MIT License' => ['rack'], '' => ['json'] }).for(:licenses) }
+
+        it 'allows multiple components per license' do
+          is_expected.to allow_value({ 'MIT License' => %w[rack bundler],
+                                       'Apache License 2.0' => %w[aws-sdk-s3 aws-sdk-core] }).for(:licenses)
+        end
+      end
+    end
   end
 
   describe 'scopes' do

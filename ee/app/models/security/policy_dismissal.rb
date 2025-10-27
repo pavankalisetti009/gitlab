@@ -18,6 +18,8 @@ module Security
     validates :merge_request_id, uniqueness: { scope: :security_policy_id }
     validates :comment, length: { maximum: 255 }, allow_nil: true
     validate  :dismissal_types_are_valid
+    validates :licenses, json_schema: { filename: 'policy_dismissal_licenses', size_limit: 64.kilobytes },
+      allow_blank: true
 
     scope :for_projects, ->(project_ids) { where(project_id: project_ids) }
     scope :for_security_findings_uuids, ->(security_findings_uuids) do
