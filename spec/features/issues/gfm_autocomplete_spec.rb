@@ -232,7 +232,7 @@ RSpec.describe 'GFM autocomplete', :js, feature_category: :text_editors do
     end
 
     context 'if a selected value has special characters' do
-      it 'wraps the result in double quotes' do
+      it 'wraps the result in double quotes', quarantine: 'https://gitlab.com/gitlab-org/quality/test-failure-issues/-/issues/4070' do
         fill_in 'Add a reply', with: "~#{label.title[0..2]}"
 
         find_highlighted_autocomplete_item.click
