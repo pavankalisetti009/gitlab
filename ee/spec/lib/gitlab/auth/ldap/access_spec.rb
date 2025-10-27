@@ -380,6 +380,21 @@ RSpec.describe Gitlab::Auth::Ldap::Access, feature_category: :system_access do
         stub_ldap_config(sync_ssh_keys: ssh_key_attribute_name, sync_ssh_keys?: true)
       end
 
+      context 'when the user has a ssh key with security key type' do
+        let(:ssh_key) { build(:ed25519_sk_key_256).public_key.key_text }
+
+        it 'adds the SSH key' do
+          stub_ldap_person_find_by_dn(entry, provider)
+
+          expect { access.update_user }.to change(user.keys, :count).from(0).to(1)
+
+          new_key = user.keys.last
+          ssh_key_without_suffix = ssh_key.split(' ')[0..1].join(' ')
+
+          expect(new_key.public_key.key_text).to eq(ssh_key_without_suffix)
+        end
+      end
+
       it 'adds a SSH key if it is in LDAP but not in gitlab' do
         stub_ldap_person_find_by_dn(entry, provider)
 
