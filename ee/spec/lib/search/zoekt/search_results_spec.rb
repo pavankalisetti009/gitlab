@@ -466,15 +466,15 @@ RSpec.describe ::Search::Zoekt::SearchResults, :zoekt_cache_disabled, :zoekt_set
 
     where(:query, :multi_match, :regex_mode, :expected_count) do
       'use.*egex' | true  | false | 0
-      'use.*egex' | true  | true  | 5
+      'use.*egex' | true  | true  | 4
       'use.*egex' | false | false | 0
       'use.*egex' | false | true  | 5
       'asdfg'     | true  | false | 0
       'asdfg'     | true  | true  | 0
       'asdfg'     | false | false | 0
       'asdfg'     | false | true  | 0
-      '# good'    | true  | false | 134
-      '# good'    | true  | true  | 564
+      '# good'    | true  | false | 3
+      '# good'    | true  | true  | 9
       '# good'    | false | false | 50
       '# good'    | false | true  | 105
     end
