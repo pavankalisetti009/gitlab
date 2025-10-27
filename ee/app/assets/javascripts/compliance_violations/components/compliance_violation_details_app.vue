@@ -9,7 +9,7 @@ import SystemNote from '~/work_items/components/notes/system_note.vue';
 import updateProjectComplianceViolation from '../graphql/mutations/update_project_compliance_violation.mutation.graphql';
 import complianceViolationQuery from '../graphql/compliance_violation.query.graphql';
 import AuditEvent from './audit_event.vue';
-import ComplianceViolationCommentForm from './compliance_violation_comment_form.vue';
+import CreateCommentForm from './create_comment_form.vue';
 import DiscussionNote from './discussion_note.vue';
 import FixSuggestionSection from './fix_suggestion_section.vue';
 import RelatedIssues from './related_issues.vue';
@@ -21,8 +21,8 @@ export default {
   name: 'ComplianceViolationDetailsApp',
   components: {
     AuditEvent,
-    ComplianceViolationCommentForm,
     ComplianceViolationStatusDropdown,
+    CreateCommentForm,
     DiscussionNote,
     FixSuggestionSection,
     GlAlert,
@@ -203,9 +203,10 @@ export default {
         </template>
       </ul>
     </section>
-    <compliance-violation-comment-form
+    <create-comment-form
       v-if="glFeatures.complianceViolationCommentsUi"
       :violation-id="graphqlViolationId"
+      :numeric-violation-id="violationId"
       @error="handleCommentError"
     />
   </div>
