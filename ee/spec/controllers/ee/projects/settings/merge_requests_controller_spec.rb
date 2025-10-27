@@ -14,28 +14,6 @@ RSpec.describe Projects::Settings::MergeRequestsController, feature_category: :c
   end
 
   describe 'PUT #update' do
-    it 'updates Merge Request Approvers attributes' do
-      params = {
-        approvals_before_merge: 50,
-        approver_group_ids: create(:group).id,
-        approver_ids: create(:user).id,
-        reset_approvals_on_push: false
-      }
-
-      put :update,
-        params: {
-          namespace_id: project.namespace,
-          project_id: project,
-          project: params
-        }
-
-      project.reload
-
-      expect(response).to have_gitlab_http_status(:found)
-      expect(project.approver_groups.pluck(:group_id)).to contain_exactly(params[:approver_group_ids])
-      expect(project.approvers.pluck(:user_id)).to contain_exactly(params[:approver_ids])
-    end
-
     it 'updates Issuable Default Templates attributes' do
       params = {
         merge_requests_template: 'I got tissues'

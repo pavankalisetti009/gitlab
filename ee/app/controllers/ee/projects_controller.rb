@@ -86,8 +86,6 @@ module EE
     def project_params_ee
       attrs = %i[
         approvals_before_merge
-        approver_group_ids
-        approver_ids
         issues_template
         merge_requests_template
         repository_size_limit

@@ -224,7 +224,6 @@ RSpec.describe Projects::MergeRequestsController, feature_category: :code_review
 
       context 'disabled' do
         let(:new_approver) { create(:user) }
-        let(:new_approver_group) { create(:approver_group) }
 
         before do
           project.add_developer(new_approver)
@@ -235,18 +234,6 @@ RSpec.describe Projects::MergeRequestsController, feature_category: :code_review
           update_merge_request(approvals_before_merge: 2)
 
           expect(merge_request.reload.approvals_before_merge).to eq(nil)
-        end
-
-        it 'does not update approver_ids' do
-          update_merge_request(approver_ids: [new_approver].map(&:id).join(','))
-
-          expect(merge_request.reload.approver_ids).to be_empty
-        end
-
-        it 'does not update approver_group_ids' do
-          update_merge_request(approver_group_ids: [new_approver_group].map(&:id).join(','))
-
-          expect(merge_request.reload.approver_group_ids).to be_empty
         end
 
         it 'does not create approval rules' do

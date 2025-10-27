@@ -28,8 +28,6 @@ module EE
             :remove_hidden_blocking_merge_requests,
             approval_rule_attributes,
             :approvals_before_merge,
-            :approver_group_ids,
-            :approver_ids,
             :reset_approval_rules_to_defaults
           )
         end
