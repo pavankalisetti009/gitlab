@@ -310,6 +310,25 @@ RSpec.describe Vulnerabilities::Archival::Restoration::RestoreForGroupService, f
       end
     end
 
+    describe 'partition reading' do
+      before do
+        delete_partitions_from(ApplicationRecord.connection)
+        delete_partitions_from(Ci::ApplicationRecord.connection)
+      end
+
+      it 'uses the correct database connection while reading data from partitions directly' do
+        expect { restore }.to change { Vulnerability.count }.by(1)
+      end
+
+      def delete_partitions_from(connection)
+        Gitlab::Database::SharedModel.using_connection(connection) do
+          Gitlab::Database::PostgresPartition.for_parent_table(:backup_vulnerabilities).each do |partition|
+            connection.execute("DROP TABLE #{partition.identifier}")
+          end
+        end
+      end
+    end
+
     def create_with_project(factory, **extra)
       create(factory, **extra, project_id: project.id)
     end
