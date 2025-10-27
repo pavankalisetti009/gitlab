@@ -112,7 +112,6 @@ const MOCK_USER_MESSAGE = {
   role: 'user',
   requestId: `${MOCK_WORKFLOW_ID}-0`,
 };
-const MOCK_AI_RESOURCE_DATA = JSON.stringify({ type: 'issue', id: 789, title: 'Test Issue' });
 const MOCK_CONTEXT_PRESETS_RESPONSE = {
   data: {
     aiChatContextPresets: {
@@ -122,7 +121,6 @@ const MOCK_CONTEXT_PRESETS_RESPONSE = {
         'How do I set up a workflow for my project?',
         'What are the advantages of using GitLab CI/CD?',
       ],
-      aiResourceData: MOCK_AI_RESOURCE_DATA,
     },
   },
 };
@@ -209,7 +207,8 @@ const MOCK_UTILS_SETUP = () => {
 
 const expectedAdditionalContext = [
   {
-    content: MOCK_AI_RESOURCE_DATA,
+    content: `<current_gitlab_page_url>http://test.host/</current_gitlab_page_url>
+<current_gitlab_page_title></current_gitlab_page_title>`,
     category: DUO_WORKFLOW_ADDITIONAL_CONTEXT_REPOSITORY,
     metadata: JSON.stringify({}),
   },

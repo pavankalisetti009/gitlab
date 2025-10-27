@@ -312,13 +312,17 @@ export default {
       return this.contextPresets.questions || [];
     },
     additionalContext() {
-      if (!this.contextPresets.aiResourceData) {
-        return null;
-      }
+      // Build page context with current URL and title for base context
+      const contextParts = [
+        `<current_gitlab_page_url>${typeof window !== 'undefined' && window.location ? window.location.href : ''}</current_gitlab_page_url>`,
+        `<current_gitlab_page_title>${typeof document !== 'undefined' ? document.title : ''}</current_gitlab_page_title>`,
+      ];
+
+      const pageContext = contextParts.join('\n');
 
       return [
         {
-          content: this.contextPresets.aiResourceData,
+          content: pageContext,
           // This field depends on INCLUDE_{CATEGORY}_CONTEXT unit primitive:
           // https://gitlab.com/gitlab-org/cloud-connector/gitlab-cloud-connector/-/blob/main/src/python/gitlab_cloud_connector/data_model/gitlab_unit_primitives.py?ref_type=heads#L37-47
           // Since there is no unit primitives for all resource types and there is no a general one, let's use the one for repository
