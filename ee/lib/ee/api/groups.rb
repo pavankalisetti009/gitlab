@@ -97,7 +97,7 @@ module EE
 
           def audit_event_finder_params
             params
-              .slice(:created_after, :created_before)
+              .slice(:created_after, :created_before, :pagination)
               .then { |params| filter_by_author(params) }
           end
 
