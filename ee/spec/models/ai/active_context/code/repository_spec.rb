@@ -225,4 +225,12 @@ RSpec.describe Ai::ActiveContext::Code::Repository, feature_category: :code_sugg
       end
     end
   end
+
+  describe '#update_last_queried_timestamp' do
+    it 'sets the last_queried_at field to the current time', :freeze_time do
+      expect { repository.update_last_queried_timestamp }.to change {
+        repository.reload.last_queried_at
+      }.to(Time.current)
+    end
+  end
 end
