@@ -17,10 +17,10 @@ describe('initGeoSites', () => {
     mock.onGet(/api\/(.*)\/geo_sites\/status/).reply(HTTP_STATUS_OK, apiMocks.statusRes);
   };
 
-  const createAppWrapper = (fixture, apiMocks) => {
+  const createAppWrapper = async (apiMocks) => {
     mockAPI(apiMocks);
-    setHTMLFixture(fixture);
     wrapper = createWrapper(initGeoSites());
+    await waitForPromises();
   };
 
   afterEach(() => {
@@ -28,37 +28,42 @@ describe('initGeoSites', () => {
     mock.restore();
   });
 
-  describe.each`
-    description                            | fixture                    | link
-    ${'with no geo elements'}              | ${'<div></div>'}           | ${{ href: '', expected: undefined }}
-    ${'with #js-geo-sites and valid data'} | ${GEO_SITE_W_DATA_FIXTURE} | ${{ href: 'admin/geo/sites/new', expected: true }}
-  `('Add Site Link: $description', ({ fixture, link }) => {
-    beforeEach(() => {
-      createAppWrapper(fixture, { res: MOCK_SITES_RES, statusRes: MOCK_SITE_STATUSES_RES });
-    });
+  const findImgWithSrc = (src) => {
+    // Vue 3 doesn't set the src attribute on images, so we must find the image by the src property.
+    const imgWrapper = wrapper.findAll('img').wrappers.find((w) => w.element.src === src);
+    // If we didn't find an image, return an empty wrapper.
+    return imgWrapper ?? wrapper.find('img-does-not-exist');
+  };
 
-    it(`does${link.expected ? '' : ' not'} render with the correct URL`, async () => {
-      await waitForPromises();
-
-      expect(wrapper.vm && wrapper.find(`a[href="${link.href}"`).exists()).toBe(link.expected);
+  describe('with no geo elements', () => {
+    it('does not return Vue component', () => {
+      mockAPI({ res: MOCK_SITES_RES, statusRes: MOCK_SITE_STATUSES_RES });
+      setHTMLFixture('<div></div>');
+      expect(initGeoSites()).toBe(false);
     });
   });
 
-  describe.each`
-    description                            | fixture                    | emptyState
-    ${'with no geo elements'}              | ${'<div></div>'}           | ${{ src: '', expected: undefined }}
-    ${'with #js-geo-sites and valid data'} | ${GEO_SITE_W_DATA_FIXTURE} | ${{ src: 'geo/sites/empty-state.svg', expected: true }}
-  `('Empty State: $description', ({ fixture, emptyState }) => {
+  describe('with #js-geo-sites and valid data', () => {
     beforeEach(() => {
-      createAppWrapper(fixture, { res: [], statusRes: [] });
+      setHTMLFixture(GEO_SITE_W_DATA_FIXTURE);
     });
 
-    it(`does${emptyState.expected ? '' : ' not'} render the correct empty state SVG`, async () => {
-      await waitForPromises();
+    it('renders a link with the correct URL', async () => {
+      await createAppWrapper({
+        res: MOCK_SITES_RES,
+        statusRes: MOCK_SITE_STATUSES_RES,
+      });
 
-      expect(wrapper.vm && wrapper.find(`img[src="${emptyState.src}"`).exists()).toBe(
-        emptyState.expected,
-      );
+      expect(wrapper.find('a[href="admin/geo/sites/new"').exists()).toBe(true);
+    });
+
+    it('renders the correct empty state SVG', async () => {
+      await createAppWrapper({
+        res: [],
+        statusRes: [],
+      });
+
+      expect(findImgWithSrc('geo/sites/empty-state.svg').exists()).toBe(true);
     });
   });
 });
