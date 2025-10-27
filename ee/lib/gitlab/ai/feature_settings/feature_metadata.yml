@@ -67,6 +67,7 @@ duo_chat_explain_code:
     - mixtral
     - claude_3
     - gpt
+    - codestral
     - llama3
     - general
   unit_primitives:
