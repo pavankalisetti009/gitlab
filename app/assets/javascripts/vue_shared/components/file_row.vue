@@ -62,6 +62,7 @@ export default {
         folder: this.isTree,
         'is-open': this.file.opened,
         'is-linked': this.file.linked,
+        'pl-3': !this.isTree && this.showTreeToggle,
       };
     },
     textForTitle() {
@@ -152,62 +153,73 @@ export default {
   >
     {{ __('Show more') }}
   </gl-button>
-  <button
-    v-else
-    :class="fileClass"
-    :title="textForTitle"
-    :data-level="level"
-    class="file-row"
-    :aria-expanded="file.type === 'tree' ? file.opened.toString() : undefined"
-    :aria-label="file.name"
-    @click="clickFile"
-  >
-    <span
-      ref="textOutput"
-      class="file-row-name"
-      :title="file.name"
-      :data-qa-file-name="file.name"
-      data-testid="file-row-name-container"
-      :class="[fileClasses, { 'str-truncated': !truncateMiddle, 'gl-min-w-0': truncateMiddle }]"
-    >
-      <gl-button
-        v-if="isTree && showTreeToggle"
-        category="tertiary"
-        size="small"
-        :icon="chevronIcon"
-        class="-gl-ml-2 gl-mr-1"
-        :aria-label="file.opened ? __('Collapse directory') : __('Expand directory')"
-        @click="onChevronClick"
-      />
 
-      <gl-icon
-        v-if="file.linked"
-        v-gl-tooltip="
-          __('This file was linked in the page URL and will appear as the first one in the list')
-        "
-        name="link"
-        :size="16"
-      />
-      <file-icon
-        class="gl-mr-2"
-        :class="{ 'gl-text-subtle': file.type === 'tree' }"
-        :file-name="file.name"
-        :loading="file.loading"
-        :folder="isTree"
-        :opened="file.opened"
-        :size="16"
-        :submodule="file.submodule"
-      />
-      <gl-truncate
-        v-if="truncateMiddle"
-        :text="file.name"
-        position="middle"
-        class="gl-items-center gl-pr-7"
-      />
-      <template v-else>{{ file.name }}</template>
-    </span>
-    <slot></slot>
-  </button>
+  <div v-else class="gl-flex gl-items-center">
+    <gl-button
+      v-if="isTree && showTreeToggle"
+      category="tertiary"
+      size="small"
+      :icon="chevronIcon"
+      data-testid="tree-toggle-button"
+      class="file-row-indentation -gl-ml-2 gl-mr-1 gl-shrink-0"
+      :aria-label="file.opened ? __('Collapse directory') : __('Expand directory')"
+      @click="onChevronClick"
+    />
+
+    <button
+      :class="fileClass"
+      :title="textForTitle"
+      :data-level="level"
+      class="file-row gl-flex-grow-1"
+      data-testid="file-row"
+      :aria-expanded="file.type === 'tree' ? file.opened.toString() : undefined"
+      :aria-label="file.name"
+      @click="clickFile"
+    >
+      <span
+        ref="textOutput"
+        class="file-row-name"
+        :title="file.name"
+        :data-qa-file-name="file.name"
+        data-testid="file-row-name-container"
+        :class="[
+          fileClasses,
+          {
+            'str-truncated': !truncateMiddle,
+            'gl-min-w-0': truncateMiddle,
+            'file-row-indentation': !(isTree && showTreeToggle),
+          },
+        ]"
+      >
+        <gl-icon
+          v-if="file.linked"
+          v-gl-tooltip="
+            __('This file was linked in the page URL and will appear as the first one in the list')
+          "
+          name="link"
+          :size="16"
+        />
+        <file-icon
+          class="gl-mr-2"
+          :class="{ 'gl-text-subtle': file.type === 'tree' }"
+          :file-name="file.name"
+          :loading="file.loading"
+          :folder="isTree"
+          :opened="file.opened"
+          :size="16"
+          :submodule="file.submodule"
+        />
+        <gl-truncate
+          v-if="truncateMiddle"
+          :text="file.name"
+          position="middle"
+          class="gl-items-center gl-pr-7"
+        />
+        <template v-else>{{ file.name }}</template>
+      </span>
+      <slot></slot>
+    </button>
+  </div>
 </template>
 
 <style>
@@ -231,6 +243,10 @@ export default {
   overflow: visible;
 }
 
+.file-row-indentation {
+  margin-left: calc(var(--level) * var(--file-row-level-padding, 16px));
+}
+
 .file-row-name {
   display: flex;
   align-items: center;
@@ -239,6 +255,5 @@ export default {
   line-height: 1rem;
   text-overflow: ellipsis;
   white-space: nowrap;
-  margin-left: calc(var(--level) * var(--file-row-level-padding, 16px));
 }
 </style>

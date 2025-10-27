@@ -78,8 +78,7 @@ RSpec.describe 'Repository file tree browser', :js, feature_category: :source_co
         expect(ruby_folder[:class]).to include('is-open')
 
         # Should highlight the current file
-        popen_row = find_button('popen.rb')
-        expect(popen_row['aria-current']).to eq('true')
+        expect(find('[aria-current="true"]')).to be_present
       end
     end
   end

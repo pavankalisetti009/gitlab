@@ -1,6 +1,6 @@
-import { shallowMount } from '@vue/test-utils';
 import { GlIcon, GlButton } from '@gitlab/ui';
 import { nextTick } from 'vue';
+import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import { file } from 'jest/ide/helpers';
 import { useMockInternalEventsTracking } from 'helpers/tracking_internal_events_helper';
 
@@ -15,7 +15,7 @@ describe('File row component', () => {
   let wrapper;
 
   function createComponent(propsData, $router = undefined) {
-    wrapper = shallowMount(FileRow, {
+    wrapper = shallowMountExtended(FileRow, {
       propsData,
       mocks: {
         $router,
@@ -24,6 +24,8 @@ describe('File row component', () => {
   }
 
   const { bindInternalEventDocument } = useMockInternalEventsTracking();
+
+  const findFileButton = () => wrapper.findByTestId('file-row');
 
   it('renders name', () => {
     const fileName = 't4';
@@ -62,7 +64,7 @@ describe('File row component', () => {
       level: 1,
     });
 
-    expect(wrapper.element.title.trim()).toEqual('path/to/file/with a very long folder name/');
+    expect(findFileButton().attributes('title')).toBe('path/to/file/with a very long folder name/');
   });
 
   it('does not render a title attribute if no tree present', () => {
@@ -84,7 +86,7 @@ describe('File row component', () => {
       level: 0,
     });
 
-    wrapper.element.click();
+    findFileButton().trigger('click');
 
     expect(wrapper.emitted('toggleTreeOpen')[0][0]).toEqual(fileName);
   });
@@ -96,7 +98,7 @@ describe('File row component', () => {
     const filePath = 'path/to/folder';
     createComponent({ file: { ...file(fileName), type: 'tree', path: filePath }, level: 0 });
 
-    wrapper.element.click();
+    findFileButton().trigger('click');
 
     expect(wrapper.emitted('clickTree')[0][0]).toEqual(filePath);
     expect(trackEventSpy).toHaveBeenCalledWith(
@@ -119,7 +121,7 @@ describe('File row component', () => {
       level: 1,
     });
 
-    wrapper.element.click();
+    findFileButton().trigger('click');
 
     expect(wrapper.emitted('clickFile')[0][0]).toEqual(fileProp);
     expect(trackEventSpy).toHaveBeenCalledWith(
@@ -252,7 +254,7 @@ describe('File row component', () => {
   });
 
   describe('Tree toggle chevron button', () => {
-    const findChevronButton = () => wrapper.findComponent(GlButton);
+    const findChevronButton = () => wrapper.findByTestId('tree-toggle-button');
     const folderPath = 'path/to/folder';
     const mockFile = { ...file(folderPath), type: 'tree', opened: false };
 
