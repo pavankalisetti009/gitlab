@@ -66634,9 +66634,6 @@ msgstr ""
 msgid "The project-group link could not be removed."
 msgstr ""
 
-msgid "The provided params did not update the note."
-msgstr ""
-
 msgid "The related CI build failed."
 msgstr ""
 
