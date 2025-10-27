@@ -16,19 +16,19 @@ module Ai
 
         # Ensure token belongs to the authenticated user
         unless doorkeeper_token.resource_owner == @current_user
-          return ServiceResponse.error(message: "Invalid token ownership", reason: :forbidden)
+          return ServiceResponse.error(message: "Invalid token ownership", reason: :invalid_token_ownership)
         end
 
         # This service should only revoke ai_workflows scoped tokens
         unless doorkeeper_token.acceptable?("ai_workflows")
-          return ServiceResponse.error(message: "Insufficient token scope", reason: :forbidden)
+          return ServiceResponse.error(message: "Insufficient token scope", reason: :insufficient_token_scope)
         end
 
         revoked = doorkeeper_token.revoke
 
         return ServiceResponse.success(payload: {}, message: "Token revoked") if revoked
 
-        ServiceResponse.error(message: "Could not revoke token", reason: :unprocessable_entity)
+        ServiceResponse.error(message: "Could not revoke token", reason: :failed_to_revoke)
       end
     end
   end

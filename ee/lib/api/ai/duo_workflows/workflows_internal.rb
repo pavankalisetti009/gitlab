@@ -43,8 +43,19 @@ module API
               status :ok
               response.payload
             else
-              render_api_error!(response.message, response.reason)
+              status_code = error_status_for(response.reason)
+              render_api_error!(response.message, status_code)
             end
+          end
+
+          def error_status_for(reason)
+            {
+              not_found: :not_found,
+              unauthorized: :unauthorized,
+              invalid_token_ownership: :forbidden,
+              insufficient_token_scope: :forbidden,
+              failed_to_revoke: :unprocessable_entity
+            }.fetch(reason, :bad_request)
           end
 
           def compress_checkpoint(checkpoint_data)
