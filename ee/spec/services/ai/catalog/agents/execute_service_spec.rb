@@ -110,7 +110,7 @@ RSpec.describe Ai::Catalog::Agents::ExecuteService, :aggregate_failures, feature
     context 'when user_prompt is not provided' do
       let(:service_params) { super().merge({ user_prompt: nil }) }
 
-      it_behaves_like 'returns error response', 'User prompt is required'
+      it_behaves_like 'returns error response', 'Instructions required'
     end
 
     context 'when execute_workflow is false' do

@@ -52,7 +52,7 @@ module Ai
 
           return error('Agent version must belong to the agent') unless agent_version.item == agent
 
-          return error('User prompt is required') unless user_prompt.present?
+          return error('Instructions required') unless user_prompt.present?
 
           return error('Agent must have a project') if execute_workflow && !agent.project
 

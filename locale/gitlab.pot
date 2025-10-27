@@ -2749,6 +2749,9 @@ msgstr ""
 msgid "AICatalog|Instructions"
 msgstr ""
 
+msgid "AICatalog|Instructions required."
+msgstr ""
+
 msgid "AICatalog|Is visible only to users with at least the Developer role in this project."
 msgstr ""
 
@@ -2918,9 +2921,6 @@ msgid "AICatalog|Use agents with GitLab Duo Chat to complete tasks and answer co
 msgstr ""
 
 msgid "AICatalog|Use flows in your project."
-msgstr ""
-
-msgid "AICatalog|User prompt is required."
 msgstr ""
 
 msgid "AICatalog|Version"
