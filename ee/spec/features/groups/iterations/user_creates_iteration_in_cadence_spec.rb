@@ -13,7 +13,7 @@ RSpec.describe 'User creates iteration in a cadence', :js, feature_category: :te
   before do
     stub_licensed_features(iterations: true)
     sign_in(user)
-
+    page.current_window.resize_to(1200, 2400)
     visit new_group_iteration_cadence_iteration_path(group, iteration_cadence_id: cadence.id)
   end
 

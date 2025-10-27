@@ -36,7 +36,11 @@ RSpec.describe 'Epic boards sidebar', :js, feature_category: :portfolio_manageme
 
     expect(page).to have_testid('work-item-drawer')
 
-    click_button 'Close drawer'
+    if Users::ProjectStudio.enabled_for_user?(user) # rubocop:disable RSpec/AvoidConditionalStatements -- temporary Project Studio rollout
+      click_button 'Close panel'
+    else
+      click_button 'Close drawer'
+    end
 
     expect(page).not_to have_testid('work-item-drawer')
   end

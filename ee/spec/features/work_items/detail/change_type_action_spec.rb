@@ -64,7 +64,7 @@ RSpec.describe 'Change type action', :js, feature_category: :portfolio_managemen
             select_listbox_item(milestone.title)
           end
 
-          trigger_change_type('Key Result')
+          trigger_change_type('Key result')
 
           expect(page).to have_button('Change type', disabled: false)
 

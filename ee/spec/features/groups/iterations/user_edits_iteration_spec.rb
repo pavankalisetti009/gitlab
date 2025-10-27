@@ -19,6 +19,7 @@ RSpec.describe 'User edits iteration', feature_category: :team_planning do
 
     before do
       stub_licensed_features(iterations: true)
+      page.current_window.resize_to(1200, 2400)
     end
 
     context 'as authorized user' do
@@ -73,6 +74,8 @@ RSpec.describe 'User edits iteration', feature_category: :team_planning do
           it 'prefills fields and updates URL' do
             find(dropdown_selector).click
             click_link_or_button('Edit')
+
+            wait_for_requests
 
             aggregate_failures do
               expect(find_field('Title').value).to eq(iteration.title)
