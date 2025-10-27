@@ -68,18 +68,6 @@ RSpec.describe ComplianceManagement::ComplianceFramework::ProjectSetting::AddFra
             stub_csp_group(csp_group)
           end
 
-          context 'and the feature flag is disabled' do
-            before do
-              stub_feature_flags(include_csp_frameworks: false)
-            end
-
-            it 'does not create a new project setting record' do
-              expect { service.execute }.not_to change {
-                ComplianceManagement::ComplianceFramework::ProjectSettings.count
-              }
-            end
-          end
-
           it 'creates the project setting with the correct attributes' do
             service.execute
 

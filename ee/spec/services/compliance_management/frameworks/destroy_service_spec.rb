@@ -75,19 +75,6 @@ RSpec.describe ComplianceManagement::Frameworks::DestroyService, feature_categor
             subject.execute
           end
         end
-
-        context 'when include_csp_frameworks is disabled' do
-          before_all do
-            stub_feature_flags(include_csp_frameworks: false)
-          end
-
-          it 'does not enqueue the ProjectSettingsDestroyWorker' do
-            expect(ComplianceManagement::ProjectSettingsDestroyWorker)
-              .not_to receive(:perform_async)
-
-            subject.execute
-          end
-        end
       end
     end
 

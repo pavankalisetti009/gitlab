@@ -1204,26 +1204,6 @@ RSpec.describe Security::SecurityOrchestrationPolicies::ValidatePolicyService, f
             stub_csp_group(csp_group)
           end
 
-          context 'when include_csp_frameworks feature flag is disabled' do
-            before do
-              stub_feature_flags(include_csp_frameworks: false)
-            end
-
-            context 'when using framework IDs that exist in CSP namespace' do
-              let(:policy_scope) do
-                {
-                  compliance_frameworks: [
-                    { id: csp_framework_1.id }
-                  ]
-                }
-              end
-
-              it { expect(result[:status]).to eq(:error) }
-
-              it_behaves_like 'sets validation errors', field: :compliance_frameworks, message: 'Invalid Compliance Framework ID(s)'
-            end
-          end
-
           context 'when CSP namespace is nil' do
             before do
               stub_csp_group(nil)

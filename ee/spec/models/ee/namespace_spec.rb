@@ -3095,16 +3095,6 @@ RSpec.describe Namespace, feature_category: :groups_and_projects do
       stub_csp_group(csp_group)
     end
 
-    context 'when include_csp_frameworks feature flag is disabled' do
-      before do
-        stub_feature_flags(include_csp_frameworks: false)
-      end
-
-      it 'returns only direct compliance framework IDs' do
-        expect(framework_ids_with_csp).to contain_exactly(direct_framework.id)
-      end
-    end
-
     context 'when CSP namespace has frameworks along with the current group' do
       it 'returns combined compliance framework IDs from both namespaces' do
         csp_framework = create(:compliance_framework, namespace: csp_group)

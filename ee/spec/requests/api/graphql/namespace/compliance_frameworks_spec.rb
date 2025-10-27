@@ -43,47 +43,41 @@ RSpec.describe 'getting a list of compliance frameworks for a namespace', featur
       )
     end
 
-    context 'when the include_csp_frameworks feature is enabled' do
-      before_all do
-        stub_feature_flags(include_csp_frameworks: true)
+    context 'and there is no configured csp' do
+      it 'returns the groups compliance frameworks' do
+        post_graphql(query, current_user: current_user)
+
+        expect(graphql_data_at(*path)).to contain_exactly(
+          a_graphql_entity_for(compliance_framework_1),
+          a_graphql_entity_for(compliance_framework_2)
+        )
+      end
+    end
+
+    context 'and a csp group is configured' do
+      let_it_be(:csp_namespace) { create(:group, organization: namespace.organization) }
+
+      let_it_be(:csp_compliance_framework_1) do
+        create(:compliance_framework, namespace: csp_namespace, name: 'CSP Test1', updated_at: 1.day.ago)
       end
 
-      context 'and there is no configured csp' do
-        it 'returns the groups compliance frameworks' do
-          post_graphql(query, current_user: current_user)
-
-          expect(graphql_data_at(*path)).to contain_exactly(
-            a_graphql_entity_for(compliance_framework_1),
-            a_graphql_entity_for(compliance_framework_2)
-          )
-        end
+      let_it_be(:csp_compliance_framework_2) do
+        create(:compliance_framework, namespace: csp_namespace, name: 'CSP Test2', updated_at: 5.days.ago)
       end
 
-      context 'and a csp group is configured' do
-        let_it_be(:csp_namespace) { create(:group, organization: namespace.organization) }
+      before do
+        create(:security_policy_settings, organization: namespace.organization, csp_namespace: csp_namespace)
+      end
 
-        let_it_be(:csp_compliance_framework_1) do
-          create(:compliance_framework, namespace: csp_namespace, name: 'CSP Test1', updated_at: 1.day.ago)
-        end
+      it 'returns the groups compliance frameworks alongside the CSP frameworks' do
+        post_graphql(query, current_user: current_user)
 
-        let_it_be(:csp_compliance_framework_2) do
-          create(:compliance_framework, namespace: csp_namespace, name: 'CSP Test2', updated_at: 5.days.ago)
-        end
-
-        before do
-          create(:security_policy_settings, organization: namespace.organization, csp_namespace: csp_namespace)
-        end
-
-        it 'returns the groups compliance frameworks alongside the CSP frameworks' do
-          post_graphql(query, current_user: current_user)
-
-          expect(graphql_data_at(*path)).to contain_exactly(
-            a_graphql_entity_for(csp_compliance_framework_1),
-            a_graphql_entity_for(csp_compliance_framework_2),
-            a_graphql_entity_for(compliance_framework_1),
-            a_graphql_entity_for(compliance_framework_2)
-          )
-        end
+        expect(graphql_data_at(*path)).to contain_exactly(
+          a_graphql_entity_for(csp_compliance_framework_1),
+          a_graphql_entity_for(csp_compliance_framework_2),
+          a_graphql_entity_for(compliance_framework_1),
+          a_graphql_entity_for(compliance_framework_2)
+        )
       end
     end
 

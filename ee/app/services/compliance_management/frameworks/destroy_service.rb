@@ -26,9 +26,7 @@ module ComplianceManagement
       def success
         audit_destroy
 
-        if Feature.enabled?(:include_csp_frameworks, framework.namespace) && framework_belongs_to_csp_group?
-          enqueue_project_settings_deletion_worker
-        end
+        enqueue_project_settings_deletion_worker if framework_belongs_to_csp_group?
 
         ServiceResponse.success(message: _('Framework successfully deleted'))
       end

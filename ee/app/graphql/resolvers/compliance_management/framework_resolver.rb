@@ -57,10 +57,8 @@ module Resolvers
 
       def fetch_namespace_ids
         ids = [object.root_ancestor.id]
-        if Feature.enabled?(:include_csp_frameworks, object.root_ancestor)
-          csp_namespace = ::Security::PolicySetting.for_organization(object.root_ancestor.organization)&.csp_namespace
-          ids << csp_namespace.id if csp_namespace
-        end
+        csp_namespace = ::Security::PolicySetting.for_organization(object.root_ancestor.organization)&.csp_namespace
+        ids << csp_namespace.id if csp_namespace
 
         ids
       end
