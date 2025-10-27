@@ -76,6 +76,24 @@ export const LoadingState = {
     })(...args);
   },
 };
+LoadingState.parameters = {
+  a11y: {
+    config: {
+      rules: [
+        {
+          id: 'color-contrast',
+          enabled: false,
+        },
+      ],
+    },
+  },
+  docs: {
+    description: {
+      story:
+        'Loading state table uses `:busy` prop from BootstrapVue `BTable` component. Apart from suppressing interaction, it also adds `opacity: 0.6` to the whole table.',
+    },
+  },
+};
 
 export const ErrorState = {
   render: (...args) => {
