@@ -21,7 +21,6 @@ module EE
       scope :with_expires_at_after, ->(max_lifetime) { where(revoked: false).where('expires_at > ?', max_lifetime) }
       scope :expires_in, ->(within) { not_revoked.where('expires_at > CURRENT_DATE AND expires_at <= ?', within) }
       scope :created_on_or_after, ->(date) { active.where('created_at >= ?', date) }
-      scope :owner_is_service_account, -> { includes(:user).references(:user).merge(::User.service_account) }
 
       with_options if: :expiration_policy_enabled? do
         validate :expires_at_before_max_expiry_date
