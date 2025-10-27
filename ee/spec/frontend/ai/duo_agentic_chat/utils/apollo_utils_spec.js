@@ -52,39 +52,44 @@ describe('ApolloUtils', () => {
 
   describe('createWorkflow', () => {
     it.each`
-      description                            | projectId          | namespaceId
-      ${'projectId only'}                    | ${MOCK_PROJECT_ID} | ${undefined}
-      ${'namespaceId only'}                  | ${undefined}       | ${MOCK_NAMESPACE_ID}
-      ${'both projectId and namespaceId'}    | ${MOCK_PROJECT_ID} | ${MOCK_NAMESPACE_ID}
-      ${'neither projectId nor namespaceId'} | ${undefined}       | ${undefined}
-    `('creates workflow with $description', async ({ projectId, namespaceId }) => {
-      const params = {
-        goal: MOCK_GOAL,
-        activeThread: MOCK_ACTIVE_THREAD,
-        aiCatalogItemVersionId: 5,
-      };
+      description                            | projectId          | namespaceId          | workflowDefinition
+      ${'projectId only'}                    | ${MOCK_PROJECT_ID} | ${undefined}         | ${undefined}
+      ${'namespaceId only'}                  | ${undefined}       | ${MOCK_NAMESPACE_ID} | ${undefined}
+      ${'both projectId and namespaceId'}    | ${MOCK_PROJECT_ID} | ${MOCK_NAMESPACE_ID} | ${undefined}
+      ${'neither projectId nor namespaceId'} | ${undefined}       | ${undefined}         | ${undefined}
+      ${'with workflow definition'}          | ${undefined}       | ${undefined}         | ${'some_agent/v1'}
+    `(
+      'creates workflow with $description',
+      async ({ projectId, namespaceId, workflowDefinition }) => {
+        const params = {
+          goal: MOCK_GOAL,
+          activeThread: MOCK_ACTIVE_THREAD,
+          aiCatalogItemVersionId: 5,
+        };
 
-      if (projectId) params.projectId = projectId;
-      if (namespaceId) params.namespaceId = namespaceId;
+        if (projectId) params.projectId = projectId;
+        if (namespaceId) params.namespaceId = namespaceId;
+        if (workflowDefinition) params.workflowDefinition = workflowDefinition;
 
-      await ApolloUtils.createWorkflow(apolloProvider.defaultClient, params);
+        await ApolloUtils.createWorkflow(apolloProvider.defaultClient, params);
 
-      const expectedCallVariables = {
-        goal: MOCK_GOAL,
-        workflowDefinition: DUO_WORKFLOW_CHAT_DEFINITION,
-        agentPrivileges: DUO_WORKFLOW_AGENT_PRIVILEGES,
-        preApprovedAgentPrivileges: DUO_WORKFLOW_PRE_APPROVED_AGENT_PRIVILEGES,
-        threadId: MOCK_ACTIVE_THREAD,
-        conversationType: MULTI_THREADED_CONVERSATION_TYPE,
-        aiCatalogItemVersionId: 5,
-      };
+        const expectedCallVariables = {
+          goal: MOCK_GOAL,
+          workflowDefinition: workflowDefinition || DUO_WORKFLOW_CHAT_DEFINITION,
+          agentPrivileges: DUO_WORKFLOW_AGENT_PRIVILEGES,
+          preApprovedAgentPrivileges: DUO_WORKFLOW_PRE_APPROVED_AGENT_PRIVILEGES,
+          threadId: MOCK_ACTIVE_THREAD,
+          conversationType: MULTI_THREADED_CONVERSATION_TYPE,
+          aiCatalogItemVersionId: 5,
+        };
 
-      if (projectId) expectedCallVariables.projectId = projectId;
-      if (namespaceId) expectedCallVariables.namespaceId = namespaceId;
+        if (projectId) expectedCallVariables.projectId = projectId;
+        if (namespaceId) expectedCallVariables.namespaceId = namespaceId;
 
-      expect(duoWorkflowMutationHandlerMock).toHaveBeenCalledWith(expectedCallVariables);
-      expect(parseGid).toHaveBeenCalledWith(MOCK_WORKFLOW_ID);
-    });
+        expect(duoWorkflowMutationHandlerMock).toHaveBeenCalledWith(expectedCallVariables);
+        expect(parseGid).toHaveBeenCalledWith(MOCK_WORKFLOW_ID);
+      },
+    );
 
     describe('error handling', () => {
       it.each`

@@ -14,11 +14,11 @@ import { MULTI_THREADED_CONVERSATION_TYPE } from '../../tanuki_bot/constants';
 export const ApolloUtils = {
   async createWorkflow(
     apollo,
-    { projectId, namespaceId, goal, activeThread, aiCatalogItemVersionId },
+    { projectId, workflowDefinition, namespaceId, goal, activeThread, aiCatalogItemVersionId },
   ) {
     const variables = {
       goal,
-      workflowDefinition: DUO_WORKFLOW_CHAT_DEFINITION,
+      workflowDefinition: workflowDefinition || DUO_WORKFLOW_CHAT_DEFINITION,
       agentPrivileges: DUO_WORKFLOW_AGENT_PRIVILEGES,
       preApprovedAgentPrivileges: DUO_WORKFLOW_PRE_APPROVED_AGENT_PRIVILEGES,
       threadId: activeThread,
