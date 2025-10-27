@@ -169,12 +169,12 @@ module API
 
               if params[:checksum_state].present?
                 bad_request!("#{model_class} is not a verifiable model.") unless verifiable?(model_class)
-                relation = relation.with_verification_state("verification_#{params[:checksum_state]}")
+                relation = relation.with_verification_state(:"verification_#{params[:checksum_state]}")
               end
 
               relation = relation.order_by_primary_key
 
-              present paginate(relation.all, without_count: true), with: Entities::Admin::Model
+              present paginate(relation, without_count: true), with: Entities::Admin::Model
             end
 
             # Example request:
