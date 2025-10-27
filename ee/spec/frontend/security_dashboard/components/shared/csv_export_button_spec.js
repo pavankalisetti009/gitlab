@@ -3,6 +3,7 @@ import { shallowMount } from '@vue/test-utils';
 import MockAdapter from 'axios-mock-adapter';
 import { nextTick } from 'vue';
 import CsvExportButton from 'ee/security_dashboard/components/shared/csv_export_button.vue';
+import { filters as currentFilters } from 'ee/security_dashboard/components/shared/vulnerability_report/store';
 import { TEST_HOST } from 'helpers/test_constants';
 import { createAlert } from '~/alert';
 import axios from '~/lib/utils/axios_utils';
@@ -14,6 +15,9 @@ import {
 
 jest.mock('~/alert');
 jest.mock('~/lib/utils/downloader');
+jest.mock('ee/security_dashboard/components/shared/vulnerability_report/store', () => ({
+  filters: { value: {} },
+}));
 
 const vulnerabilitiesExportEndpoint = `${TEST_HOST}/vulnerability_findings.csv`;
 
@@ -32,7 +36,9 @@ describe('CsvExportButton', () => {
   };
 
   const mockAsyncExportRequest = (status = HTTP_STATUS_OK, response = {}) => {
-    mock.onPost(vulnerabilitiesExportEndpoint, { send_email: true }).reply(status, response);
+    mock
+      .onPost(vulnerabilitiesExportEndpoint, { send_email: true, filters: {} })
+      .reply(status, response);
   };
 
   beforeEach(() => {
@@ -54,7 +60,7 @@ describe('CsvExportButton', () => {
       findButton().vm.$emit('click');
       await axios.waitForAll();
 
-      expect(mock.history.post[0].data).toBe(JSON.stringify({ send_email: true }));
+      expect(mock.history.post[0].data).toEqual(JSON.stringify({ send_email: true, filters: {} }));
       expect(createAlert).toHaveBeenCalledWith({
         message:
           'Report export in progress. After the report is generated, an email will be sent with the download link.',
@@ -91,6 +97,50 @@ describe('CsvExportButton', () => {
         message: 'There was an error while generating the report.',
         variant: 'danger',
         dismissible: true,
+      });
+    });
+  });
+
+  describe('filter parameters in export request', () => {
+    beforeEach(() => {
+      createComponent();
+    });
+
+    it('passes the currently applied filters as snake-cased parameters to the post request', async () => {
+      currentFilters.value = {
+        reportType: ['SAST'],
+        scannerId: ['123'],
+        state: 'CONFIRMED',
+      };
+
+      mock.onPost(vulnerabilitiesExportEndpoint).reply(HTTP_STATUS_OK);
+
+      findButton().vm.$emit('click');
+      await axios.waitForAll();
+
+      const requestData = JSON.parse(mock.history.post[0].data);
+      expect(requestData).toEqual({
+        send_email: true,
+        filters: {
+          report_type: ['SAST'],
+          scanner_id: ['123'],
+          state: 'CONFIRMED',
+        },
+      });
+    });
+
+    it('sends only send_email when no filters are set', async () => {
+      currentFilters.value = {};
+
+      mock.onPost(vulnerabilitiesExportEndpoint).reply(HTTP_STATUS_OK);
+
+      findButton().vm.$emit('click');
+      await axios.waitForAll();
+
+      const requestData = JSON.parse(mock.history.post[0].data);
+      expect(requestData).toEqual({
+        send_email: true,
+        filters: {},
       });
     });
   });
