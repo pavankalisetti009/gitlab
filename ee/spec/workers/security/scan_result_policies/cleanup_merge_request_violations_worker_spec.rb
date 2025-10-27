@@ -3,7 +3,10 @@
 require 'spec_helper'
 
 RSpec.describe Security::ScanResultPolicies::CleanupMergeRequestViolationsWorker, '#perform', feature_category: :security_policy_management do
-  let_it_be(:merge_request) { create(:merge_request, :merged) }
+  let_it_be(:project) { create(:project, :repository) }
+  let_it_be(:merge_request) do
+    create(:merge_request, :merged, source_branch: 'feature-branch', target_branch: project.default_branch)
+  end
 
   let_it_be_with_reload(:merge_request_violation) do
     create(:scan_result_policy_violation, :running, merge_request: merge_request)

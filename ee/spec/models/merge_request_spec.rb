@@ -3929,8 +3929,18 @@ RSpec.describe MergeRequest, feature_category: :code_review_workflow do
   end
 
   describe '#preserve_open_policy_dismissals!' do
-    let_it_be(:project) { create(:project) }
-    let_it_be(:merge_request) { create(:merge_request, :merged, source_project: project, target_project: project) }
+    let_it_be(:project) { create(:project, :repository) }
+    let_it_be(:merge_request) do
+      create(
+        :merge_request,
+        :merged,
+        source_project:
+        project,
+        target_project: project,
+        source_branch: 'feature-branch',
+        target_branch: project.default_branch
+      )
+    end
 
     subject(:preserve_open_policy_dismissals) { merge_request.preserve_open_policy_dismissals! }
 
@@ -3957,6 +3967,19 @@ RSpec.describe MergeRequest, feature_category: :code_review_workflow do
       before do
         allow(merge_request).to receive(:merged?).and_return(false)
       end
+
+      it 'returns early without processing dismissals' do
+        expect { preserve_open_policy_dismissals }
+          .not_to change { open_dismissal.reload.status }
+      end
+    end
+
+    context 'when merge request was not merged into the default branch' do
+      let_it_be(:merge_request) do
+        create(:merge_request, :merged, source_project: project, target_project: project, target_branch: 'feature')
+      end
+
+      let_it_be(:open_dismissal) { create(:policy_dismissal, merge_request: merge_request, project: project) }
 
       it 'returns early without processing dismissals' do
         expect { preserve_open_policy_dismissals }
