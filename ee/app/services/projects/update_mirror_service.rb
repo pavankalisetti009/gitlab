@@ -7,8 +7,6 @@ module Projects
     Error = Class.new(StandardError)
     UpdateError = Class.new(Error)
 
-    MAX_NUMBER_TO_PROCESS_SPECIFIC_REVISIONS = 100
-
     # WARNING: Changing GITALY_CONTEXT_KEY can cause undesirable side effects
     # during a GitLab upgrade, such as unwanted CI pipelines.
     GITALY_CONTEXT_KEY = 'pull-mirror-update'
@@ -70,8 +68,7 @@ module Projects
       return unless project.lfs_enabled?
 
       if Feature.enabled?(:mirroring_lfs_optimization, project)
-        @local_branches = get_local_branches
-        updated_revisions = get_updated_revisions
+        updated_revisions = branch_changes_calculator.calculate_changed_revisions
         return if updated_revisions.nil?
 
         result = Projects::LfsPointers::LfsImportService.new(project, current_user, { updated_revisions: updated_revisions }).execute
@@ -87,52 +84,6 @@ module Projects
       else
         Gitlab::Metrics::Lfs.update_objects_error_rate.increment(error: false, labels: {})
       end
-    end
-
-    def get_updated_revisions
-      return ['--all'] if @local_branches.empty?
-
-      changed_revisions = calculate_changed_revisions
-      return if changed_revisions.empty?
-
-      if changed_revisions.size > MAX_NUMBER_TO_PROCESS_SPECIFIC_REVISIONS
-        return ['--all']
-      end
-
-      changed_revisions
-    end
-
-    def calculate_changed_revisions
-      get_remote_branches.filter_map do |name, remote_sha|
-        next if skip_branch?(name)
-
-        local_sha = @local_branches[name]
-
-        if local_sha.nil?
-          "refs/remotes/upstream/#{name}"
-        elsif local_sha != remote_sha
-          "#{local_sha}..#{remote_sha}"
-        else
-          nil
-        end
-      end
-    end
-
-    def map_branches_to_targets(branch_collection)
-      branches = {}
-      branch_collection.each do |branch|
-        branches[branch.name.to_s] = branch.target
-      end
-      branches
-    end
-
-    def get_remote_branches
-      # Not calling upstream_branches to avoid memoization overhead
-      map_branches_to_targets(project.repository.remote_branches(::Repository::MIRROR_REMOTE))
-    end
-
-    def get_local_branches
-      map_branches_to_targets(project.repository.branches)
     end
 
     def import_url_invalid?
@@ -274,20 +225,16 @@ module Projects
       repository.tags.select(&:dereferenced_target)
     end
 
-    def skip_mismatched_branch?(name)
-      project.mirror_branch_regex.present? && !branch_regex.match?(name)
-    end
-
-    def branch_regex
-      @branch_regex ||= Gitlab::UntrustedRegexp.new(project.mirror_branch_regex)
-    end
-
-    def skip_unprotected_branch?(name)
-      project.only_mirror_protected_branches && !ProtectedBranch.protected?(project, name)
-    end
-
     def skip_branch?(name)
-      skip_unprotected_branch?(name) || skip_mismatched_branch?(name)
+      branch_filter.skip_branch?(name)
+    end
+
+    def branch_filter
+      @branch_filter ||= Gitlab::Repositories::Mirror::BranchSkipFilter.new(project)
+    end
+
+    def branch_changes_calculator
+      @branch_changes_calculator ||= Gitlab::Repositories::Mirror::LocalRemoteBranchComparator.new(project, branch_filter: branch_filter)
     end
 
     def service_logger
