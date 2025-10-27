@@ -316,6 +316,8 @@ RSpec.describe ::SystemNotes::IssuablesService, feature_category: :team_planning
   describe '#cross_reference' do
     let(:mentioned_in) { create(:issue, project: project) }
 
+    let(:new_note) { service.cross_reference(mentioned_in) }
+
     subject { service.cross_reference(mentioned_in) }
 
     context 'when noteable is an epic' do
@@ -330,6 +332,35 @@ RSpec.describe ::SystemNotes::IssuablesService, feature_category: :team_planning
           .with(author: author, namespace: group)
 
         subject
+      end
+    end
+
+    context 'with project and group having the same path name' do
+      using RSpec::Parameterized::TableSyntax
+
+      let_it_be(:root_group) { create(:group, path: 'same-path') }
+      let_it_be(:sub_group) { create(:group, path: 'same-path', parent: root_group) }
+      let_it_be(:sub_project) { create(:project, path: 'same-path', group: sub_group) }
+
+      let_it_be(:root_epic) { create(:work_item, :epic, namespace: root_group, iid: 100) }
+      let_it_be(:sub_epic) { create(:work_item, :epic, namespace: sub_group, iid: 100) }
+      let_it_be(:sub_project_issue) { create(:issue, project: sub_project, iid: 100) }
+
+      where(:container, :mentioned_in, :noteable) do
+        ref(:root_group) | ref(:root_epic) | ref(:sub_epic)
+        ref(:sub_group) | ref(:sub_epic) | ref(:root_epic)
+        ref(:root_group) | ref(:root_epic) | ref(:sub_project_issue)
+        ref(:sub_project) | ref(:sub_project_issue) | ref(:root_epic)
+        ref(:sub_group) | ref(:sub_epic) | ref(:sub_project_issue)
+        ref(:sub_project) | ref(:sub_project_issue) | ref(:sub_epic)
+      end
+
+      with_them do
+        let(:service) { described_class.new(noteable: noteable, container: container, author: author) }
+
+        it 'has the correct link' do
+          expect(new_note.note_html).to include(::Gitlab::UrlBuilder.build(mentioned_in, only_path: true))
+        end
       end
     end
 
