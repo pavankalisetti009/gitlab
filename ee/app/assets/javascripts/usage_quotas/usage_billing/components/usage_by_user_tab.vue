@@ -1,5 +1,5 @@
 <script>
-import { GlAlert, GlKeysetPagination, GlCard, GlTable, GlProgressBar } from '@gitlab/ui';
+import { GlAlert, GlKeysetPagination, GlTable, GlProgressBar } from '@gitlab/ui';
 import UserAvatarLink from '~/vue_shared/components/user_avatar/user_avatar_link.vue';
 import { s__, __ } from '~/locale';
 import { logError } from '~/lib/logger';
@@ -20,7 +20,6 @@ export default {
   components: {
     UserAvatarLink,
     GlAlert,
-    GlCard,
     GlTable,
     GlProgressBar,
     GlKeysetPagination,
@@ -174,50 +173,13 @@ export default {
   </gl-alert>
 
   <section v-else>
-    <dl class="gl-my-3 gl-grid gl-grid-cols-1 gl-gap-5 gl-py-5 @lg/panel:gl-grid-cols-3">
-      <gl-card class="gl-bg-transparent gl-p-3">
-        <div class="gl-flex gl-flex-col">
-          <dd class="gl-heading-scale-700">{{ usersUsage.totalUsers }}</dd>
-          <dt class="gl-font-normal">{{ s__('UsageBilling|total users (active users)') }}</dt>
-        </div>
-      </gl-card>
-
-      <gl-card class="gl-bg-transparent gl-p-3">
-        <div class="gl-flex gl-flex-col">
-          <dd class="gl-heading-scale-700">
-            {{ usersUsage.totalUsersUsingAllocation }}
-          </dd>
-          <dt class="gl-font-normal">
-            {{ s__('UsageBilling|users using included GitLab Credits') }}
-          </dt>
-        </div>
-      </gl-card>
-
-      <gl-card class="gl-bg-transparent gl-p-3">
-        <div class="gl-flex gl-flex-col">
-          <dd class="gl-heading-scale-700">
-            {{ usersUsage.totalUsersBlocked }}
-          </dd>
-          <dt class="gl-font-normal">
-            {{
-              n__(
-                'UsageBilling|user is blocked',
-                'UsageBilling|users are blocked',
-                usersUsage.totalUsersBlocked,
-              )
-            }}
-          </dt>
-        </div>
-      </gl-card>
-    </dl>
-
     <gl-table
       :items="usersList"
       :fields="tableFields"
       :busy="false"
       show-empty
       stacked="md"
-      class="gl-w-full"
+      class="gl-mt-5 gl-w-full"
     >
       <template #cell(user)="{ item: user }">
         <div class="gl-flex gl-items-center">

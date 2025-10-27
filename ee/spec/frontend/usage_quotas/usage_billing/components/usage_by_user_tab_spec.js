@@ -1,6 +1,6 @@
 import Vue, { nextTick } from 'vue';
 import VueApollo from 'vue-apollo';
-import { GlTable, GlCard, GlProgressBar, GlAlert, GlKeysetPagination } from '@gitlab/ui';
+import { GlTable, GlProgressBar, GlAlert, GlKeysetPagination } from '@gitlab/ui';
 import { mountExtended, shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import waitForPromises from 'helpers/wait_for_promises';
 import UsageByUserTab from 'ee/usage_quotas/usage_billing/components/usage_by_user_tab.vue';
@@ -46,7 +46,6 @@ describe('UsageByUserTab', () => {
   };
 
   const findTable = () => wrapper.findComponent(GlTable);
-  const findCards = () => wrapper.findAllComponents(GlCard);
   const findProgressBars = () => wrapper.findAllComponents(GlProgressBar);
   const findAlert = () => wrapper.findComponent(GlAlert);
 
@@ -57,24 +56,6 @@ describe('UsageByUserTab', () => {
   describe('normal state', () => {
     beforeEach(() => {
       getSubscriptionUsersUsageQueryHandler.mockResolvedValue(mockUsersUsageDataWithPool);
-    });
-
-    // NOTE: with limited GraphQL API, we can't test this functionality at the moment
-    // TODO: tests to be restored within https://gitlab.com/gitlab-org/gitlab/-/issues/573644
-    /* eslint-disable jest/no-disabled-tests */
-    describe.skip('rendering cards', () => {
-      beforeEach(async () => {
-        createComponent();
-        await waitForPromises();
-      });
-
-      it('renders total users card', () => {
-        const cards = findCards();
-
-        expect(cards.at(0).text()).toMatchInterpolatedText('50 Total users (active users)');
-        expect(cards.at(1).text()).toMatchInterpolatedText('35 Users using allocation');
-        expect(cards.at(2).text()).toMatchInterpolatedText('10 Users blocked');
-      });
     });
 
     describe('rendering table', () => {

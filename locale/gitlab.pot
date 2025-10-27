@@ -70556,17 +70556,6 @@ msgstr ""
 msgid "UsageBilling|Used this billing period"
 msgstr ""
 
-msgid "UsageBilling|total users (active users)"
-msgstr ""
-
-msgid "UsageBilling|user is blocked"
-msgid_plural "UsageBilling|users are blocked"
-msgstr[0] ""
-msgstr[1] ""
-
-msgid "UsageBilling|users using included GitLab Credits"
-msgstr ""
-
 msgid "UsageQuotas|(of %{totalStorageSize})"
 msgstr ""
 
