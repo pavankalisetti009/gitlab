@@ -569,6 +569,7 @@ export default {
             namespaceId: this.namespaceId,
             goal: question,
             activeThread: this.activeThread,
+            workflowDefinition: this.selectedFoundationalAgent?.referenceWithVersion,
             aiCatalogItemVersionId: this.aiCatalogItemVersionId,
           });
 
@@ -662,6 +663,13 @@ export default {
 
         this.workflowStatus = parsedWorkflowData?.workflowStatus;
         this.aiCatalogItemVersionId = workflow?.aiCatalogItemVersionId;
+
+        if (workflow?.workflowDefinition) {
+          this.selectedFoundationalAgent = this.foundationalAgents.find(
+            (agent) => agent.referenceWithVersion === workflow.workflowDefinition,
+          );
+        }
+
         this.chatMessageHistory = messages;
         this.$emit('change-title', parsedWorkflowData?.workflowGoal);
       } catch (err) {

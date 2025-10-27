@@ -160,6 +160,26 @@ const MOCK_WORKFLOW_EVENTS_RESPONSE = {
   },
 };
 
+const MOCK_WORKFLOW_EVENTS_RESPONSE_WITH_FOUNDATIONAL_AGENT = {
+  duoWorkflowEvents: {
+    nodes: [
+      {
+        id: 'event-1',
+        checkpoint: '{"channel_values": {"ui_chat_log": []}}',
+      },
+    ],
+  },
+  duoWorkflowWorkflows: {
+    nodes: [
+      {
+        id: 'workflow-1',
+        aiCatalogItemVersionId: '',
+        workflowDefinition: MOCK_FETCHED_FOUNDATIONAL_AGENT.referenceWithVersion,
+      },
+    ],
+  },
+};
+
 const MOCK_TRANSFORMED_MESSAGES = [
   {
     content: 'Hello, how can I help?',
@@ -1351,6 +1371,27 @@ describe('Duo Agentic Chat', () => {
 
         expect(wrapper.emitted('change-title')).toEqual([[undefined]]);
         expect(findDuoChat().props('multiThreadedView')).toBe(DUO_CHAT_VIEWS.CHAT);
+      });
+
+      it('handles UI updates when thread is for foundational agent', async () => {
+        ApolloUtils.fetchWorkflowEvents.mockResolvedValue(
+          MOCK_WORKFLOW_EVENTS_RESPONSE_WITH_FOUNDATIONAL_AGENT,
+        );
+
+        const mockThread = { id: MOCK_WORKFLOW_ID, aiCatalogItemVersionId: null };
+
+        WorkflowUtils.parseWorkflowData.mockReturnValue(undefined);
+        WorkflowUtils.transformChatMessages.mockReturnValue(MOCK_TRANSFORMED_MESSAGES);
+
+        findDuoChat().vm.$emit('thread-selected', mockThread);
+        await waitForPromises();
+
+        expect(ApolloUtils.fetchWorkflowEvents).toHaveBeenCalledWith(
+          expect.anything(),
+          MOCK_WORKFLOW_ID,
+        );
+
+        expect(findDuoChat().props('title')).toEqual(MOCK_FETCHED_FOUNDATIONAL_AGENT.name);
       });
     });
 
