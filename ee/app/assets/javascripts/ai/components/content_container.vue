@@ -128,7 +128,7 @@ export default {
           @click="handleGoBack"
         />
         <h3
-          class="gl-m-0 gl-text-sm"
+          class="gl-m-0 gl-truncate gl-text-sm"
           :class="{ 'gl-ml-4': !showBackButton }"
           data-testid="content-container-title"
         >
