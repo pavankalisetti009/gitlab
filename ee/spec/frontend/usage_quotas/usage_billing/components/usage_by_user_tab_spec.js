@@ -10,11 +10,7 @@ import { createMockClient } from 'helpers/mock_apollo_helper';
 import { logError } from '~/lib/logger';
 import { captureException } from '~/sentry/sentry_browser_wrapper';
 import { PAGE_SIZE } from 'ee/usage_quotas/usage_billing/constants';
-import {
-  mockUsersUsageDataWithPool,
-  mockUsersUsageDataWithoutPool,
-  mockUsersUsageDataWithZeroAllocation,
-} from '../mock_data';
+import { mockUsersUsageDataWithPool, mockUsersUsageDataWithZeroAllocation } from '../mock_data';
 
 Vue.use(VueApollo);
 jest.mock('~/sentry/sentry_browser_wrapper');
@@ -94,8 +90,8 @@ describe('UsageByUserTab', () => {
             label: 'User',
           },
           {
-            key: 'allocationUsed',
-            label: 'Allocation used',
+            key: 'includedCredits',
+            label: 'Included used',
           },
           {
             key: 'totalCreditsUsed',
@@ -111,11 +107,17 @@ describe('UsageByUserTab', () => {
         });
 
         describe.each`
-          username      | displayName        | allocationUsed | allocationUsedPercent | totalCreditsUsed
-          ${'ajohnson'} | ${'Alice Johnson'} | ${'450 / 500'} | ${90}                 | ${'450'}
+          username      | displayName        | includedCreditsUsed | includedCreditsUsedPercent | totalCreditsUsed
+          ${'ajohnson'} | ${'Alice Johnson'} | ${'450 / 500'}      | ${90}                      | ${'473'}
         `(
           'rendering $userName $username',
-          ({ username, displayName, allocationUsed, allocationUsedPercent, totalCreditsUsed }) => {
+          ({
+            username,
+            displayName,
+            includedCreditsUsed,
+            includedCreditsUsedPercent,
+            totalCreditsUsed,
+          }) => {
             describe('user cell', () => {
               it('renders user avatar with link to the user details page', () => {
                 const userAvatar = findCell(1).findComponent(UserAvatarLink);
@@ -128,17 +130,17 @@ describe('UsageByUserTab', () => {
               });
             });
 
-            describe('allocation used cell', () => {
-              it('renders the allocation usage values', () => {
+            describe('included credits used cell', () => {
+              it('renders the included usage values', () => {
                 const cell = findCell(2);
-                expect(cell.text()).toBe(allocationUsed);
+                expect(cell.text()).toBe(includedCreditsUsed);
               });
 
-              it('renders the progress bars for allocation', () => {
+              it('renders the progress bars for included credits', () => {
                 const cell = findCell(2);
                 const progressBar = cell.findComponent(GlProgressBar);
 
-                expect(progressBar.props('value')).toBe(allocationUsedPercent);
+                expect(progressBar.props('value')).toBe(includedCreditsUsedPercent);
               });
             });
 
@@ -230,31 +232,6 @@ describe('UsageByUserTab', () => {
           }),
         );
       });
-    });
-  });
-
-  describe('no commitment state', () => {
-    beforeEach(async () => {
-      getSubscriptionUsersUsageQueryHandler.mockResolvedValue(mockUsersUsageDataWithoutPool);
-      createComponent({ propsData: { hasCommitment: false } });
-      await waitForPromises();
-    });
-
-    it('renders the table with correct props', () => {
-      expect(findTable().props('fields')).toEqual([
-        {
-          key: 'user',
-          label: 'User',
-        },
-        {
-          key: 'allocationUsed',
-          label: 'Allocation used',
-        },
-        {
-          key: 'totalCreditsUsed',
-          label: 'Total credits used',
-        },
-      ]);
     });
   });
 

@@ -53,7 +53,7 @@ describe('UsageBillingApp', () => {
 
   const findAlert = () => wrapper.findComponent(GlAlert);
   const findSkeletonLoaders = () => wrapper.findByTestId('skeleton-loaders');
-  const findUsageByUserTab = () => wrapper.findAllComponents(UsageByUserTab);
+  const findUsageByUserTab = () => wrapper.findComponent(UsageByUserTab);
   const findPageHeading = () => wrapper.findComponent(PageHeading);
 
   beforeEach(() => {

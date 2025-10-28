@@ -12,6 +12,7 @@ import { PAGE_SIZE } from '../constants';
  * @property { number } totalCredits
  * @property { number } creditsUsed
  * @property { number } poolCreditsUsed
+ * @property { number } oneTimeCreditsUsed
  * @property { number } overageCreditsUsed
  */
 
@@ -68,42 +69,41 @@ export default {
     },
   },
   computed: {
-    tableFields() {
-      return [
-        {
-          key: 'user',
-          label: __('User'),
-        },
-        {
-          key: 'allocationUsed',
-          label: s__('UsageBilling|Allocation used'),
-        },
-        {
-          key: 'totalCreditsUsed',
-          label: s__('UsageBilling|Total credits used'),
-        },
-      ].filter(Boolean);
-    },
     usersList() {
-      return this.usersUsage.users.nodes.map((user) => ({
-        ...user,
-        usage: {
-          totalCredits: 0,
-          creditsUsed: 0,
-          poolCreditsUsed: 0,
-          overageCreditsUsed: 0,
-          ...user.usage,
-        },
-      }));
+      return this.usersUsage.users.nodes.map((user) => {
+        const {
+          creditsUsed = 0,
+          totalCredits = 0,
+          poolCreditsUsed = 0,
+          oneTimeCreditsUsed = 0,
+          overageCreditsUsed = 0,
+        } = user?.usage ?? {};
+
+        return {
+          ...user,
+          usage: {
+            creditsUsed,
+            totalCredits,
+            poolCreditsUsed,
+            oneTimeCreditsUsed,
+            overageCreditsUsed,
+          },
+        };
+      });
     },
   },
   methods: {
     /** @param { Usage } usage */
-    getTotalUsage(usage) {
-      return usage.creditsUsed + usage.poolCreditsUsed + usage.overageCreditsUsed;
+    getTotalCreditsUsed(usage) {
+      return (
+        usage.creditsUsed +
+        usage.poolCreditsUsed +
+        usage.oneTimeCreditsUsed +
+        usage.overageCreditsUsed
+      );
     },
-    formatAllocationUsed(allocationUsed, allocationTotal) {
-      return `${allocationUsed} / ${allocationTotal}`;
+    formatIncludedCredits(includedCreditsUsed, includedTotalCredits) {
+      return `${includedCreditsUsed} / ${includedTotalCredits}`;
     },
     getUserUsagePath(username) {
       return this.userUsagePath.replace(':username', username);
@@ -133,6 +133,20 @@ export default {
       };
     },
   },
+  tableFields: [
+    {
+      key: 'user',
+      label: __('User'),
+    },
+    {
+      key: 'includedCredits',
+      label: s__('UsageBilling|Included used'),
+    },
+    {
+      key: 'totalCreditsUsed',
+      label: s__('UsageBilling|Total credits used'),
+    },
+  ],
 };
 </script>
 
@@ -203,7 +217,7 @@ export default {
 
     <gl-table
       :items="usersList"
-      :fields="tableFields"
+      :fields="$options.tableFields"
       :busy="false"
       show-empty
       stacked="md"
@@ -223,21 +237,21 @@ export default {
         </div>
       </template>
 
-      <template #cell(allocationUsed)="{ item }">
+      <template #cell(includedCredits)="{ item: user }">
         <div class="gl-flex gl-min-h-7 gl-items-center gl-justify-between gl-gap-3">
           <span class="gl-font-weight-semibold gl-text-gray-900">
-            {{ formatAllocationUsed(item.usage.creditsUsed, item.usage.totalCredits) }}
+            {{ formatIncludedCredits(user.usage.creditsUsed, user.usage.totalCredits) }}
           </span>
           <gl-progress-bar
-            :value="getProgressBarValue(item.usage)"
+            :value="getProgressBarValue(user.usage)"
             class="gl-h-3 gl-max-w-[160px] gl-flex-1"
           />
         </div>
       </template>
 
-      <template #cell(totalCreditsUsed)="{ item }">
+      <template #cell(totalCreditsUsed)="{ item: user }">
         <div class="gl-font-weight-semibold gl-flex gl-min-h-7 gl-items-center gl-text-gray-900">
-          {{ getTotalUsage(item.usage) }}
+          {{ getTotalCreditsUsed(user.usage) }}
         </div>
       </template>
 

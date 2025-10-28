@@ -7,9 +7,6 @@ query getSubscriptionUsersUsage(
 ) {
   subscriptionUsage(namespacePath: $namespacePath) {
     usersUsage {
-      # totalUsersUsingCredits
-      # totalUsersUsingPool
-      # totalUsersUsingOverage
       users(first: $first, last: $last, after: $after, before: $before) {
         nodes {
           id
@@ -20,7 +17,9 @@ query getSubscriptionUsersUsage(
             creditsUsed
             totalCredits
             poolCreditsUsed
-            # overageCreditsUsed
+            overageCreditsUsed
+            # TODO: this field will be integrated in https://gitlab.com/gitlab-org/gitlab/-/issues/578579
+            # oneTimeCreditsUsed
           }
         }
         pageInfo {
