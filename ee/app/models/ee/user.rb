@@ -759,6 +759,10 @@ module EE
       super
     end
 
+    def owned_free_or_trial_groups_with_limit(limit)
+      owned_groups.free_or_trial.limit(limit)
+    end
+
     protected
 
     override :password_required?
