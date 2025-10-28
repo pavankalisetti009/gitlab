@@ -105,9 +105,25 @@ RSpec.describe AutoMerge::AddToMergeTrainWhenChecksPassService, feature_category
             end
           end
 
-          context 'when merge trains not enabled' do
+          context 'when merge trains are not enabled' do
             before do
               allow(merge_request.project).to receive(:merge_trains_enabled?).and_return(false)
+            end
+
+            it 'aborts auto merge' do
+              expect(service).to receive(:abort).once.and_call_original
+
+              expect(SystemNoteService)
+                .to receive(:abort_add_to_merge_train_when_checks_pass).once
+                .with(merge_request, project, user, 'merge trains are disabled for this project.')
+
+              process
+            end
+          end
+
+          context 'when project is not licensed for merge trains' do
+            before do
+              stub_licensed_features(merge_trains: false)
             end
 
             it 'aborts auto merge' do
@@ -303,6 +319,19 @@ RSpec.describe AutoMerge::AddToMergeTrainWhenChecksPassService, feature_category
     context 'when merge trains option is disabled' do
       before do
         allow(merge_request.project).to receive(:merge_trains_enabled?).and_return(false)
+      end
+
+      it 'is unavailable and returns the correct reason' do
+        aggregate_failures do
+          expect(availability_check.available?).to be false
+          expect(availability_check.unavailable_reason).to eq :merge_trains_disabled
+        end
+      end
+    end
+
+    context 'when project is not licensed for merge trains' do
+      before do
+        stub_licensed_features(merge_trains: false)
       end
 
       it 'is unavailable and returns the correct reason' do

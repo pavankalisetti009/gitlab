@@ -414,6 +414,14 @@ RSpec.describe AutoMerge::MergeTrainService, feature_category: :merge_trains do
       it { is_expected.to be false }
     end
 
+    context 'when project is not licensed for merge trains' do
+      before do
+        stub_licensed_features(merge_trains: false)
+      end
+
+      it { is_expected.to be false }
+    end
+
     context 'when there is an open MR dependency' do
       before do
         stub_licensed_features(blocking_merge_requests: true)
