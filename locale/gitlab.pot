@@ -70519,9 +70519,6 @@ msgstr[1] ""
 msgid "UsageBilling|Action"
 msgstr ""
 
-msgid "UsageBilling|Allocation used"
-msgstr ""
-
 msgid "UsageBilling|An error occurred while fetching data"
 msgstr ""
 
@@ -70550,6 +70547,9 @@ msgid "UsageBilling|GitLab Credits - On Demand"
 msgstr ""
 
 msgid "UsageBilling|GitLab Credits - One-Time Waiver"
+msgstr ""
+
+msgid "UsageBilling|Included used"
 msgstr ""
 
 msgid "UsageBilling|Increase monthly commitment"
