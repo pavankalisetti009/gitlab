@@ -5,7 +5,7 @@ require 'spec_helper'
 RSpec.describe GitlabSubscriptions::Trials::WidgetPresenter, :saas, feature_category: :acquisition do
   describe '#attributes' do
     let(:user) { build(:user) }
-    let(:group) { build(:group) }
+    let(:group) { create(:group) } # rubocop:todo RSpec/FactoryBot/AvoidCreate -- required for premium_message_during_trial experiment
 
     let(:current_user) { user }
     let(:current_group) { group }

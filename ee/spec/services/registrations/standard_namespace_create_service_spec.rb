@@ -115,7 +115,7 @@ RSpec.describe Registrations::StandardNamespaceCreateService, :aggregate_failure
           onboarding_user_status = instance_double(::Onboarding::UserStatus)
           allow(::Onboarding::UserStatus).to receive(:new).with(user).and_return(onboarding_user_status)
           allow(onboarding_user_status).to receive_messages(
-            exclude_from_positioning_experiment?: true,
+            exclude_from_first_orders_experiments?: true,
             apply_trial?: false
           )
 
@@ -131,18 +131,18 @@ RSpec.describe Registrations::StandardNamespaceCreateService, :aggregate_failure
       context 'with experiment lightweight_trial_registration_redesign' do
         let(:experiment) { instance_double(ApplicationExperiment) }
 
-        before do
-          allow_next_instance_of(described_class) do |service|
-            allow(service).to receive(:experiment).with(:lightweight_trial_registration_redesign,
-              actor: user).and_return(experiment)
-            allow(service).to receive(:experiment).with(:premium_trial_positioning,
-              actor: user).and_call_original
-          end
-        end
-
         it 'tracks experiment assignment' do
           allow_next_instance_of(::Projects::CreateService) do |service|
             allow(service).to receive(:after_create_actions)
+          end
+
+          expect_next_instance_of(described_class) do |service|
+            expect(service).to receive(:experiment).with(:lightweight_trial_registration_redesign,
+              actor: user).and_return(experiment)
+            expect(service).to receive(:experiment).with(:premium_trial_positioning,
+              actor: user).and_call_original
+            expect(service).to receive(:experiment).with(:premium_message_during_trial,
+              namespace: an_instance_of(Group)).and_call_original
           end
 
           expect(experiment).to receive(:track).with(:assignment, namespace: an_instance_of(Group))

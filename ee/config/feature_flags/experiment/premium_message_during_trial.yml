@@ -1,0 +1,10 @@
+---
+name: premium_message_during_trial
+description:
+feature_issue_url: https://gitlab.com/gitlab-org/gitlab/-/issues/562184
+introduced_by_url: https://gitlab.com/gitlab-org/gitlab/-/merge_requests/209904
+rollout_issue_url: https://gitlab.com/gitlab-org/gitlab/-/issues/576856
+milestone: '18.6'
+group: group::acquisition
+type: experiment
+default_enabled: false

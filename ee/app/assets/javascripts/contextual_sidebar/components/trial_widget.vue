@@ -2,7 +2,7 @@
 import { GlProgressBar, GlButton } from '@gitlab/ui';
 import { snakeCase } from 'lodash';
 import { sprintf } from '~/locale';
-import { InternalEvents } from '~/tracking';
+import Tracking, { InternalEvents } from '~/tracking';
 import UserGroupCalloutDismisser from '~/vue_shared/components/user_group_callout_dismisser.vue';
 import {
   TRIAL_WIDGET_REMAINING_DAYS,
@@ -25,7 +25,7 @@ export default {
     UserGroupCalloutDismisser,
   },
 
-  mixins: [InternalEvents.mixin()],
+  mixins: [InternalEvents.mixin(), Tracking.mixin({ experiment: 'premium_message_during_trial' })],
 
   inject: {
     trialType: { default: '' },
@@ -75,6 +75,10 @@ export default {
       dismissFn();
 
       this.trackEvent(TRIAL_WIDGET_CLICK_DISMISS, {
+        label: this.trackingLabel,
+      });
+
+      this.track(TRIAL_WIDGET_CLICK_DISMISS, {
         label: this.trackingLabel,
       });
     },

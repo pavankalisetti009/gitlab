@@ -89,7 +89,7 @@ module Onboarding
       true
     end
 
-    def self.exclude_from_positioning_experiment?
+    def self.exclude_from_first_orders_experiments?
       false
     end
   end

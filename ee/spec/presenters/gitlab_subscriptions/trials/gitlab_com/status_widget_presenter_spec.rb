@@ -5,8 +5,8 @@ require 'spec_helper'
 RSpec.describe GitlabSubscriptions::Trials::GitlabCom::StatusWidgetPresenter, :saas, feature_category: :acquisition do
   include Rails.application.routes.url_helpers
 
-  let(:user) { build(:user) }
-  let(:group) { build(:group) }
+  let(:user) { build_stubbed(:user) }
+  let(:group) { build_stubbed(:group) }
   let(:trial_duration) { 60 }
 
   let(:add_on_purchase) do
@@ -87,6 +87,24 @@ RSpec.describe GitlabSubscriptions::Trials::GitlabCom::StatusWidgetPresenter, :s
   describe '#attributes' do
     subject(:attributes) { presenter.attributes }
 
+    let(:trial_type) { 'ultimate' }
+
+    let(:trial_widget_data_attrs) do
+      {
+        trial_widget_data_attrs: {
+          trial_type: trial_type,
+          trial_days_used: 1,
+          days_remaining: trial_duration,
+          percentage_complete: 1.67,
+          group_id: group.id,
+          trial_discover_page_path: group_discover_path(group),
+          purchase_now_url: group_billings_path(group),
+          feature_id: described_class::EXPIRED_TRIAL_WIDGET,
+          dismiss_endpoint: group_callouts_path
+        }
+      }
+    end
+
     before do
       build(:gitlab_subscription, :active_trial, :ultimate_trial, namespace: group,
         trial_starts_on: Date.current, trial_ends_on: trial_duration.days.from_now)
@@ -99,19 +117,21 @@ RSpec.describe GitlabSubscriptions::Trials::GitlabCom::StatusWidgetPresenter, :s
       end
 
       it 'returns ultimate type and correct discover page path for bundled trials' do
-        expect(attributes).to eq(
-          trial_widget_data_attrs: {
-            trial_type: 'ultimate',
-            trial_days_used: 1,
-            days_remaining: trial_duration,
-            percentage_complete: 1.67,
-            group_id: group.id,
-            trial_discover_page_path: group_discover_path(group),
-            purchase_now_url: group_billings_path(group),
-            feature_id: described_class::EXPIRED_TRIAL_WIDGET,
-            dismiss_endpoint: group_callouts_path
-          }
-        )
+        expect(attributes).to eq(trial_widget_data_attrs)
+      end
+
+      context 'when candidate variant' do
+        let(:trial_type) { 'ultimate_with_premium_title' }
+
+        before do
+          allow_next_instance_of(PremiumMessageDuringTrialExperiment) do |experiment|
+            allow(experiment).to receive(:run).and_return(trial_type)
+          end
+        end
+
+        it 'returns ultimate_with_premium_title type and correct discover page path for bundled trials' do
+          expect(attributes).to eq(trial_widget_data_attrs)
+        end
       end
     end
   end

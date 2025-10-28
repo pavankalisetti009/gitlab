@@ -5,6 +5,7 @@ module GitlabSubscriptions
     module GitlabCom
       class StatusWidgetPresenter < Gitlab::View::Presenter::Simple
         include Gitlab::Utils::StrongMemoize
+        include Gitlab::Experiment::Dsl
 
         presents ::Namespace, as: :namespace
 
@@ -19,7 +20,7 @@ module GitlabSubscriptions
         def attributes
           {
             trial_widget_data_attrs: {
-              trial_type: 'ultimate',
+              trial_type: trial_type,
               trial_days_used: trial_status.days_used,
               days_remaining: trial_status.days_remaining,
               percentage_complete: trial_status.percentage_complete,
@@ -69,6 +70,15 @@ module GitlabSubscriptions
 
         def user_dismissed_widget?
           user.dismissed_callout_for_group?(feature_name: EXPIRED_TRIAL_WIDGET, group: namespace)
+        end
+
+        def trial_type
+          # rubocop:disable Cop/ExperimentsTestCoverage -- covered in ee/spec/presenters/gitlab_subscriptions/trials/gitlab_com/status_widget_presenter_spec.rb
+          experiment(:premium_message_during_trial, namespace: namespace, only_assigned: true) do |e|
+            e.control { 'ultimate' }
+            e.candidate { 'ultimate_with_premium_title' }
+          end.run
+          # rubocop:enable Cop/ExperimentsTestCoverage
         end
       end
     end

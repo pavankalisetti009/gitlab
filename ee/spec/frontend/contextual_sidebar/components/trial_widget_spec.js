@@ -2,6 +2,7 @@ import { GlProgressBar } from '@gitlab/ui';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import TrialWidget from 'ee/contextual_sidebar/components/trial_widget.vue';
 import { useMockInternalEventsTracking } from 'helpers/tracking_internal_events_helper';
+import { mockTracking, unmockTracking } from 'helpers/tracking_helper';
 import { makeMockUserGroupCalloutDismisser } from 'helpers/mock_user_group_callout_dismisser';
 
 jest.mock('~/sentry/sentry_browser_wrapper');
@@ -129,6 +130,7 @@ describe('TrialWidget component', () => {
         describe('dismissal', () => {
           it('should track the dismiss event', () => {
             const { trackEventSpy } = bindInternalEventDocument(wrapper.element);
+            const trackExperimentSpy = mockTracking(undefined, wrapper.element, jest.spyOn);
 
             findDismissButton().vm.$emit('click');
 
@@ -139,6 +141,14 @@ describe('TrialWidget component', () => {
               },
               undefined,
             );
+
+            expect(trackExperimentSpy).toHaveBeenCalledWith(
+              undefined,
+              'click_dismiss_button_on_trial_widget',
+              { label: 'gitlab_duo_enterprise' },
+            );
+
+            unmockTracking();
           });
 
           it('calls the dismiss function when dismiss button is clicked', () => {

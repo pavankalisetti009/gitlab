@@ -1,7 +1,7 @@
 <script>
 import { GlLink, GlButton } from '@gitlab/ui';
 import { snakeCase } from 'lodash';
-import { InternalEvents } from '~/tracking';
+import Tracking, { InternalEvents } from '~/tracking';
 import {
   TRIAL_TYPES_CONFIG,
   TRIAL_WIDGET_CLICK_LEARN_MORE,
@@ -19,7 +19,7 @@ export default {
     GlLink,
     GlButton,
   },
-  mixins: [InternalEvents.mixin()],
+  mixins: [InternalEvents.mixin(), Tracking.mixin({ experiment: 'premium_message_during_trial' })],
   inject: {
     trialType: { default: '' },
     purchaseNowUrl: { default: '' },
@@ -35,9 +35,17 @@ export default {
       this.trackEvent(TRIAL_WIDGET_CLICK_UPGRADE, {
         label: this.trackingLabel,
       });
+
+      this.track(TRIAL_WIDGET_CLICK_UPGRADE, {
+        label: this.trackingLabel,
+      });
     },
     handleLearnMore() {
       this.trackEvent(TRIAL_WIDGET_CLICK_LEARN_MORE, {
+        label: this.trackingLabel,
+      });
+
+      this.track(TRIAL_WIDGET_CLICK_LEARN_MORE, {
         label: this.trackingLabel,
       });
     },
