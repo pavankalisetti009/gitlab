@@ -72,8 +72,7 @@ RSpec.describe GitlabSubscriptions::Trials::DuoEnterpriseStatusWidgetPresenter, 
             group_id: namespace.id,
             trial_discover_page_path: group_add_ons_discover_duo_enterprise_path(namespace),
             purchase_now_url: subscription_portal_url,
-            feature_id: described_class::EXPIRED_TRIAL_WIDGET,
-            dismiss_endpoint: group_callouts_path
+            feature_id: described_class::EXPIRED_TRIAL_WIDGET
           }
         })
       end
