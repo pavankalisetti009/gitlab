@@ -58933,6 +58933,9 @@ msgstr ""
 msgid "SecurityConfiguration|Copy code only"
 msgstr ""
 
+msgid "SecurityConfiguration|Could not fetch tracked refs. Please refresh the page, or try again later."
+msgstr ""
+
 msgid "SecurityConfiguration|Could not retrieve configuration data. Please refresh the page, or try again later."
 msgstr ""
 

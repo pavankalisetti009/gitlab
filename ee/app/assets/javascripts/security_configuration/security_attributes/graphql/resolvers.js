@@ -228,9 +228,14 @@ export default {
       };
     },
     securityTrackedRefs() {
-      return new Promise((resolve) => {
+      return new Promise((resolve, reject) => {
         // Add delay to simulate network request and see loading state
         setTimeout(() => {
+          // Simulate an error if the URL contains 'error'
+          if (document.location.search.includes('error')) {
+            reject(new Error('Failed to load tracked refs.'));
+          }
+
           resolve([
             {
               __typename: 'LocalTrackedRef',
