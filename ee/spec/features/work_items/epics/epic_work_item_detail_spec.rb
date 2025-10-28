@@ -71,7 +71,8 @@ RSpec.describe 'Epic work item detail', :js, feature_category: :team_planning do
       it_behaves_like 'work items time tracking'
     end
 
-    describe 'work item hierarchy' do
+    describe 'work item hierarchy',
+      quarantine: 'https://gitlab.com/gitlab-org/quality/test-failure-issues/-/issues/4998' do
       let(:child1) { create(:work_item, :epic_with_legacy_epic, namespace: group, title: 'Child 1') }
       let(:child2) { create(:work_item, :epic_with_legacy_epic, namespace: group, title: 'Child 2') }
       let(:child1a) { create(:work_item, :epic_with_legacy_epic, namespace: group, title: 'Child 1a') }
