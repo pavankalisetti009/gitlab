@@ -24,7 +24,7 @@ RSpec.describe 'OKR', :js, feature_category: :portfolio_management do
     sign_in(user)
 
     stub_licensed_features(okrs: true, issuable_health_status: true)
-    stub_feature_flags(work_items: true, okrs_mvc: true)
+    stub_feature_flags(okrs_mvc: true)
 
     # TODO: When removing the feature flag,
     # we won't need the tests for the issues listing page, since we'll be using
@@ -164,9 +164,9 @@ RSpec.describe 'OKR', :js, feature_category: :portfolio_management do
           find_by_testid('remove-work-item-link', match: :first).click
 
           wait_for_all_requests
-
-          expect(page).not_to have_content('Child objective 1')
         end
+
+        expect(page).not_to have_content('Child objective 1')
 
         page.within('.gl-toast') do
           expect(find('.toast-body')).to have_content(_('Child removed'))
