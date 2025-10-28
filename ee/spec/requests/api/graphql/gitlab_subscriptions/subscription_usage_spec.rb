@@ -58,7 +58,7 @@ RSpec.describe 'Query.subscriptionUsage', feature_category: :consumables_cost_ma
         :total_credits_remaining
       ]),
       :purchase_credits_path,
-      query_graphql_field(:pool_usage, {}, [
+      query_graphql_field(:monthly_commitment, {}, [
         :total_credits,
         :credits_used,
         query_graphql_field(:daily_usage, {}, [:date, :credits_used])
@@ -70,7 +70,7 @@ RSpec.describe 'Query.subscriptionUsage', feature_category: :consumables_cost_ma
       ]),
       query_graphql_field(:users_usage, {}, [
         :total_users_using_credits,
-        :total_users_using_pool,
+        :total_users_using_monthly_commitment,
         :total_users_using_overage,
         :credits_used,
         query_graphql_field(:daily_usage, {}, [:date, :credits_used]),
@@ -80,7 +80,12 @@ RSpec.describe 'Query.subscriptionUsage', feature_category: :consumables_cost_ma
             :name,
             :username,
             :avatar_url,
-            query_graphql_field(:usage, {}, [:total_credits, :credits_used, :pool_credits_used, :overage_credits_used]),
+            query_graphql_field(:usage, {}, [
+              :total_credits,
+              :credits_used,
+              :monthly_commitment_credits_used,
+              :overage_credits_used
+            ]),
             query_graphql_field(:events, {}, [
               :timestamp,
               :event_type,
@@ -171,7 +176,7 @@ RSpec.describe 'Query.subscriptionUsage', feature_category: :consumables_cost_ma
         userId: user.id,
         totalCredits: user.id,
         creditsUsed: user.id * 10,
-        poolCreditsUsed: user.id * 100,
+        monthlyCommitmentCreditsUsed: user.id * 100,
         overageCreditsUsed: user.id * 2
       }
     end
@@ -180,7 +185,7 @@ RSpec.describe 'Query.subscriptionUsage', feature_category: :consumables_cost_ma
       success: true,
       usersUsage: {
         totalUsersUsingCredits: 3,
-        totalUsersUsingPool: 2,
+        totalUsersUsingMonthlyCommitment: 2,
         totalUsersUsingOverage: 1,
         creditsUsed: 123.45,
         dailyUsage: [{ date: '2025-10-01', creditsUsed: 321 }]
@@ -196,16 +201,16 @@ RSpec.describe 'Query.subscriptionUsage', feature_category: :consumables_cost_ma
       }
     }
 
-    pool_usage = {
+    monthly_commitment = {
       success: true,
-      poolUsage: {
+      monthlyCommitment: {
         totalCredits: 1000,
         creditsUsed: 250,
         dailyUsage: [{ date: '2025-10-01', creditsUsed: 250 }]
       }
     }
 
-    overage_usage = {
+    overage = {
       success: true,
       overage: {
         isAllowed: true,
@@ -218,8 +223,8 @@ RSpec.describe 'Query.subscriptionUsage', feature_category: :consumables_cost_ma
       allow(client).to receive_messages(
         get_metadata: metadata,
         get_one_time_credits: one_time_credits,
-        get_pool_usage: pool_usage,
-        get_overage_usage: overage_usage,
+        get_monthly_commitment: monthly_commitment,
+        get_overage: overage,
         get_events_for_user_id: { success: true, userEvents: events_for_user_id },
         get_usage_for_user_ids: { success: true, usersUsage: users_usage },
         get_users_usage_stats: get_users_usage_stats
@@ -248,7 +253,7 @@ RSpec.describe 'Query.subscriptionUsage', feature_category: :consumables_cost_ma
             totalCreditsRemaining: 984.68
           }.with_indifferent_access)
 
-          expect(graphql_data_at(:subscription_usage, :poolUsage)).to eq({
+          expect(graphql_data_at(:subscription_usage, :monthlyCommitment)).to eq({
             totalCredits: 1000,
             creditsUsed: 250,
             dailyUsage: [{ date: '2025-10-01', creditsUsed: 250 }]
@@ -261,7 +266,7 @@ RSpec.describe 'Query.subscriptionUsage', feature_category: :consumables_cost_ma
           }.with_indifferent_access)
 
           expect(graphql_data_at(:subscription_usage, :usersUsage, :totalUsersUsingCredits)).to eq(3)
-          expect(graphql_data_at(:subscription_usage, :usersUsage, :totalUsersUsingPool)).to eq(2)
+          expect(graphql_data_at(:subscription_usage, :usersUsage, :totalUsersUsingMonthlyCommitment)).to eq(2)
           expect(graphql_data_at(:subscription_usage, :usersUsage, :totalUsersUsingOverage)).to eq(1)
           expect(graphql_data_at(:subscription_usage, :usersUsage, :creditsUsed)).to eq(123.45)
           expect(graphql_data_at(:subscription_usage, :usersUsage, :dailyUsage))
@@ -277,7 +282,7 @@ RSpec.describe 'Query.subscriptionUsage', feature_category: :consumables_cost_ma
                 usage: {
                   totalCredits: u.id,
                   creditsUsed: u.id * 10,
-                  poolCreditsUsed: u.id * 100,
+                  monthlyCommitmentCreditsUsed: u.id * 100,
                   overageCreditsUsed: u.id * 2
                 },
                 events: nil
@@ -299,7 +304,7 @@ RSpec.describe 'Query.subscriptionUsage', feature_category: :consumables_cost_ma
                 usage: {
                   totalCredits: maintainer.id,
                   creditsUsed: maintainer.id * 10,
-                  poolCreditsUsed: maintainer.id * 100,
+                  monthlyCommitmentCreditsUsed: maintainer.id * 100,
                   overageCreditsUsed: maintainer.id * 2
                 },
                 events: user_events
@@ -357,7 +362,7 @@ RSpec.describe 'Query.subscriptionUsage', feature_category: :consumables_cost_ma
               totalCreditsRemaining: 984.68
             }.with_indifferent_access)
 
-            expect(graphql_data_at(:subscription_usage, :poolUsage)).to eq({
+            expect(graphql_data_at(:subscription_usage, :monthlyCommitment)).to eq({
               totalCredits: 1000,
               creditsUsed: 250,
               dailyUsage: [{ date: '2025-10-01', creditsUsed: 250 }]
@@ -370,7 +375,7 @@ RSpec.describe 'Query.subscriptionUsage', feature_category: :consumables_cost_ma
             }.with_indifferent_access)
 
             expect(graphql_data_at(:subscription_usage, :usersUsage, :totalUsersUsingCredits)).to eq(3)
-            expect(graphql_data_at(:subscription_usage, :usersUsage, :totalUsersUsingPool)).to eq(2)
+            expect(graphql_data_at(:subscription_usage, :usersUsage, :totalUsersUsingMonthlyCommitment)).to eq(2)
             expect(graphql_data_at(:subscription_usage, :usersUsage, :totalUsersUsingOverage)).to eq(1)
             expect(graphql_data_at(:subscription_usage, :usersUsage, :creditsUsed)).to eq(123.45)
             expect(graphql_data_at(:subscription_usage, :usersUsage, :dailyUsage))
@@ -386,7 +391,7 @@ RSpec.describe 'Query.subscriptionUsage', feature_category: :consumables_cost_ma
                   usage: {
                     totalCredits: u.id,
                     creditsUsed: u.id * 10,
-                    poolCreditsUsed: u.id * 100,
+                    monthlyCommitmentCreditsUsed: u.id * 100,
                     overageCreditsUsed: u.id * 2
                   },
                   events: nil
@@ -408,7 +413,7 @@ RSpec.describe 'Query.subscriptionUsage', feature_category: :consumables_cost_ma
                   usage: {
                     totalCredits: maintainer.id,
                     creditsUsed: maintainer.id * 10,
-                    poolCreditsUsed: maintainer.id * 100,
+                    monthlyCommitmentCreditsUsed: maintainer.id * 100,
                     overageCreditsUsed: maintainer.id * 2
                   },
                   events: user_events

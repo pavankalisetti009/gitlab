@@ -18,7 +18,7 @@ export const mockDataWithPool = {
               usage: {
                 creditsUsed: 1000,
                 totalCredits: 1000,
-                poolCreditsUsed: 500,
+                monthlyCommitmentCreditsUsed: 500,
                 // TODO: `oneTimeCreditsUsed` field would be integrated in https://gitlab.com/gitlab-org/gitlab/-/issues/578579
                 // We'll need to update value here for better test coverage
                 oneTimeCreditsUsed: 0,
@@ -145,7 +145,7 @@ export const mockDataWithoutPool = {
     subscriptionUsage: {
       ...mockDataWithPool.data.subscriptionUsage,
 
-      poolUsage: {
+      monthlyCommitment: {
         totalCredits: 0,
       },
 
@@ -172,7 +172,7 @@ export const mockEmptyData = {
     subscriptionUsage: {
       ...mockDataWithPool.data.subscriptionUsage,
 
-      poolUsage: {
+      monthlyCommitment: {
         totalCredits: 1000,
       },
 

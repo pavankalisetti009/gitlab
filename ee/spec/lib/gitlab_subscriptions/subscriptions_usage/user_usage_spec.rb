@@ -12,7 +12,7 @@ RSpec.describe GitlabSubscriptions::SubscriptionsUsage::UserUsage, feature_categ
       success: true,
       usersUsage: {
         totalUsersUsingCredits: 3,
-        totalUsersUsingPool: 2,
+        totalUsersUsingMonthlyCommitment: 2,
         totalUsersUsingOverage: 1,
         creditsUsed: 123.45,
         dailyUsage: [{ date: '2025-10-01', creditsUsed: 321 }]
@@ -99,16 +99,16 @@ RSpec.describe GitlabSubscriptions::SubscriptionsUsage::UserUsage, feature_categ
     end
   end
 
-  describe "#total_users_using_pool" do
+  describe "#total_users_using_monthly_commitment" do
     before do
       allow(subscription_usage_client).to receive(:get_users_usage_stats).and_return(client_response)
     end
 
     context 'when the client returns a successful response' do
-      let(:client_response) { { success: true, usersUsage: { totalUsersUsingPool: 2 } } }
+      let(:client_response) { { success: true, usersUsage: { totalUsersUsingMonthlyCommitment: 2 } } }
 
       it 'returns the correct data' do
-        expect(user_usage.total_users_using_pool).to eq(2)
+        expect(user_usage.total_users_using_monthly_commitment).to eq(2)
       end
     end
 
@@ -116,7 +116,7 @@ RSpec.describe GitlabSubscriptions::SubscriptionsUsage::UserUsage, feature_categ
       let(:client_response) { { success: false } }
 
       it 'returns nil' do
-        expect(user_usage.total_users_using_pool).to be_nil
+        expect(user_usage.total_users_using_monthly_commitment).to be_nil
       end
     end
 
@@ -124,7 +124,7 @@ RSpec.describe GitlabSubscriptions::SubscriptionsUsage::UserUsage, feature_categ
       let(:client_response) { { success: true, usersUsage: nil } }
 
       it 'returns nil' do
-        expect(user_usage.total_users_using_pool).to be_nil
+        expect(user_usage.total_users_using_monthly_commitment).to be_nil
       end
     end
   end
