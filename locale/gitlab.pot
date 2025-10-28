@@ -24776,9 +24776,6 @@ msgstr ""
 msgid "DuoAgentPlatform|Access GitLab Duo features throughout this group by turning on GitLab Duo Core."
 msgstr ""
 
-msgid "DuoAgentPlatform|Access GitLab Duo features throughout this instance by turning on GitLab Duo Core."
-msgstr ""
-
 msgid "DuoAgentPlatform|Access the latest GitLab Duo features"
 msgstr ""
 
@@ -24830,9 +24827,6 @@ msgstr ""
 msgid "DuoAgentPlatform|Request has been sent to the group Owner"
 msgstr ""
 
-msgid "DuoAgentPlatform|Request has been sent to the instance Admin"
-msgstr ""
-
 msgid "DuoAgentPlatform|Session ID"
 msgstr ""
 
@@ -24843,9 +24837,6 @@ msgid "DuoAgentPlatform|Start using GitLab Duo Core"
 msgstr ""
 
 msgid "DuoAgentPlatform|The number of users in your group who have requested access to GitLab Duo Core."
-msgstr ""
-
-msgid "DuoAgentPlatform|The number of users in your instance who have requested access to GitLab Duo Core."
 msgstr ""
 
 msgid "DuoAgentPlatform|Turn on Feature Preview"

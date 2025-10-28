@@ -184,7 +184,6 @@ RSpec.describe Ai::Setting, feature_category: :ai_abstraction_layer do
     end
 
     it { is_expected.to validate_length_of(:amazon_q_role_arn).is_at_most(2048).allow_nil }
-    it { is_expected.to validate_numericality_of(:duo_agent_platform_request_count).is_greater_than_or_equal_to(0) }
   end
 
   describe 'after_commit' do

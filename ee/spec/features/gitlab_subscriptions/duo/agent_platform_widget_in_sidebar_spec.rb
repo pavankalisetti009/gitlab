@@ -50,35 +50,6 @@ RSpec.describe 'Duo GitLab Duo Core widget in Sidebar', :js, feature_category: :
     end
   end
 
-  context 'when gitlab_duo_saas_only is disabled', time_travel_to: Date.new(2025, 9, 18) do
-    let(:path) { root_path }
-
-    before_all do
-      create(:application_setting, duo_availability: 'default_off')
-      create(:ai_settings, duo_agent_platform_service_url: '', duo_core_features_enabled: false,
-        duo_agent_platform_request_count: 1)
-    end
-
-    before do
-      stub_env('IN_MEMORY_APPLICATION_SETTINGS', 'false')
-      stub_saas_features(gitlab_duo_saas_only: false)
-      stub_licensed_features(code_suggestions: true)
-      sign_in(user)
-    end
-
-    context 'when authorized', :enable_admin_mode do
-      let_it_be(:user) { create(:admin) }
-
-      it_behaves_like 'Duo GitLab Duo Core progressive enabling'
-    end
-
-    context 'when requestor' do
-      let_it_be(:user) { create(:user) }
-
-      it_behaves_like 'Duo GitLab Duo Core requestor'
-    end
-  end
-
   context 'when gitlab_duo_saas_only is enabled', :saas do
     let_it_be(:user) { create(:user) }
     let_it_be(:namespace) do

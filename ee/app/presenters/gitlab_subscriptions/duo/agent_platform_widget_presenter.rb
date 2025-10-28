@@ -19,25 +19,13 @@ module GitlabSubscriptions
       attr_reader :user, :context
 
       def presenter
-        if authorized_self_managed?
-          GitlabSubscriptions::Duo::SelfManaged::AuthorizedAgentPlatformWidgetPresenter.new(user) # rubocop:disable CodeReuse/Presenter -- we use it in this coordinator class
-        elsif self_managed?
-          GitlabSubscriptions::Duo::SelfManaged::AgentPlatformWidgetPresenter.new(user) # rubocop:disable CodeReuse/Presenter -- we use it in this coordinator class
-        elsif authorized_gitlab_com?
+        if authorized_gitlab_com?
           GitlabSubscriptions::Duo::GitlabCom::AuthorizedAgentPlatformWidgetPresenter.new(user, context) # rubocop:disable CodeReuse/Presenter -- we use it in this coordinator class
         elsif displayable_on_gitlab_com?
           GitlabSubscriptions::Duo::GitlabCom::AgentPlatformWidgetPresenter.new(user, context) # rubocop:disable CodeReuse/Presenter -- we use it in this coordinator class
         else
           {}.tap { |h| h.define_singleton_method(:attributes) { self } }
         end
-      end
-
-      def authorized_self_managed?
-        self_managed? && Ability.allowed?(user, :admin_all_resources)
-      end
-
-      def self_managed?
-        !::Gitlab::Saas.feature_available?(:gitlab_duo_saas_only)
       end
 
       def authorized_gitlab_com?

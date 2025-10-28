@@ -2,34 +2,6 @@
 
 module GitlabSubscriptions
   module Duo
-    def self.self_managed_agent_fully_enabled?
-      ::Gitlab::CurrentSettings.duo_default_on? &&
-        ::Gitlab::CurrentSettings.instance_level_ai_beta_features_enabled? &&
-        ::Ai::Setting.instance.duo_core_features_enabled?
-    end
-
-    def self.self_managed_enabled_without_beta_features?
-      ::Gitlab::CurrentSettings.duo_default_on? &&
-        !::Gitlab::CurrentSettings.instance_level_ai_beta_features_enabled? &&
-        ::Ai::Setting.instance.duo_core_features_enabled?
-    end
-
-    def self.self_managed_only_duo_default_off?
-      ::Gitlab::CurrentSettings.duo_default_off? &&
-        ::Gitlab::CurrentSettings.instance_level_ai_beta_features_enabled? &&
-        ::Ai::Setting.instance.duo_core_features_enabled?
-    end
-
-    def self.self_managed_enabled_without_core?
-      ::Gitlab::CurrentSettings.duo_default_on? &&
-        ::Gitlab::CurrentSettings.instance_level_ai_beta_features_enabled? &&
-        !::Ai::Setting.instance.duo_core_features_enabled?
-    end
-
-    def self.self_managed_requestable?
-      !::Gitlab::CurrentSettings.duo_default_on? || !::Ai::Setting.instance.duo_core_features_enabled?
-    end
-
     def self.agent_fully_enabled?(namespace)
       namespace.duo_default_on? &&
         namespace.experiment_features_enabled? &&

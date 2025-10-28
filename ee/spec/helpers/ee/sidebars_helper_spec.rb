@@ -178,31 +178,6 @@ RSpec.describe ::SidebarsHelper, feature_category: :navigation do
 
         expect(super_sidebar_context).to include(trial: trial)
       end
-
-      describe 'for Duo agent platform widget' do
-        before do
-          stub_saas_features(gitlab_duo_saas_only: false)
-        end
-
-        describe 'does not return widget data' do
-          it { is_expected.not_to include(:duoAgentWidgetProvide) }
-        end
-
-        context 'when widget is valid to show' do
-          before do
-            presenter = instance_double(
-              GitlabSubscriptions::Duo::SelfManaged::AuthorizedAgentPlatformWidgetPresenter,
-              attributes: { duoAgentWidgetProvide: {} }
-            )
-            allow(GitlabSubscriptions::Duo::AgentPlatformWidgetPresenter)
-              .to receive(:new).with(user, context: nil).and_return(presenter)
-          end
-
-          it 'returns widget data' do
-            expect(super_sidebar_context).to include(:duoAgentWidgetProvide)
-          end
-        end
-      end
     end
 
     context 'when in project scope' do

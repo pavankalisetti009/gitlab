@@ -722,14 +722,6 @@ module EE
       duo_availability == :never_on
     end
 
-    def duo_default_on?
-      duo_availability == :default_on
-    end
-
-    def duo_default_off?
-      duo_availability == :default_off
-    end
-
     def enabled_expanded_logging
       ::Ai::Setting.instance.enabled_instance_verbose_ai_logs
     end
