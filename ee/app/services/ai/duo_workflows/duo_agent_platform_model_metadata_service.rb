@@ -58,11 +58,9 @@ module Ai
         instance_setting = ::Ai::ModelSelection::InstanceModelSelectionFeatureSetting
                             .find_or_initialize_by_feature(FEATURE_NAME)
 
-        model_metadata_from_setting(instance_setting)
+        return {} unless instance_setting
 
-        # Priority 2: User model selection - handled at API level
-        # TODO: Implement when frontend integration is ready
-        # Same as GitLab.com - user can override instance defaults
+        resolve_model_metadata_with_user_selection(instance_setting, model_selection_scope: nil)
       end
 
       # GitLab.com Priority:
@@ -80,12 +78,16 @@ module Ai
 
         return {} unless namespace_setting
 
-        namespace_model_metadata = model_metadata_from_setting(namespace_setting)
+        resolve_model_metadata_with_user_selection(namespace_setting, model_selection_scope: root_namespace)
+      end
 
-        return namespace_model_metadata if do_not_consider_user_selected_model?(namespace_setting)
+      def resolve_model_metadata_with_user_selection(setting, model_selection_scope:)
+        setting_metadata = model_metadata_from_setting(setting)
+
+        return setting_metadata if do_not_consider_user_selected_model?(setting, model_selection_scope)
 
         # Priority 2: User model selection
-        user_selected_model_metadata
+        user_selected_model_metadata(model_selection_scope)
       end
 
       def model_metadata_from_setting(setting_record)
@@ -94,25 +96,25 @@ module Ai
         ).execute
       end
 
-      def do_not_consider_user_selected_model?(namespace_setting)
-        namespace_setting.pinned_model? ||
+      def do_not_consider_user_selected_model?(setting, model_selection_scope)
+        setting.pinned_model? ||
           user_model_selection_disabled? ||
-          invalid_user_selected_model_identifier?
+          invalid_user_selected_model_identifier?(model_selection_scope)
       end
 
       def user_model_selection_disabled?
         Feature.disabled?(:ai_user_model_switching, current_user)
       end
 
-      def invalid_user_selected_model_identifier?
+      def invalid_user_selected_model_identifier?(model_selection_scope)
         return true if user_selected_model_identifier.blank?
 
-        selectable_models.exclude?(user_selected_model_identifier)
+        selectable_models(model_selection_scope).exclude?(user_selected_model_identifier)
       end
 
-      def selectable_models
+      def selectable_models(model_selection_scope)
         result = ::Ai::ModelSelection::FetchModelDefinitionsService
-                    .new(current_user, model_selection_scope: root_namespace)
+                    .new(current_user, model_selection_scope: model_selection_scope)
                     .execute
 
         return [] unless result&.success?
@@ -123,18 +125,25 @@ module Ai
         parsed_response.selectable_models_for_feature(FEATURE_NAME)
       end
 
-      def user_selected_model_metadata
-        record = build_new_record_with_user_selected_model_identifier
+      def user_selected_model_metadata(model_selection_scope)
+        record = build_record_with_user_selected_model_identifier(model_selection_scope)
 
         model_metadata_from_setting(record)
       end
 
-      def build_new_record_with_user_selected_model_identifier
-        ::Ai::ModelSelection::NamespaceFeatureSetting.build(
-          namespace: root_namespace,
-          feature: FEATURE_NAME,
-          offered_model_ref: user_selected_model_identifier
-        )
+      def build_record_with_user_selected_model_identifier(model_selection_scope)
+        if model_selection_scope
+          ::Ai::ModelSelection::NamespaceFeatureSetting.build(
+            namespace: model_selection_scope,
+            feature: FEATURE_NAME,
+            offered_model_ref: user_selected_model_identifier
+          )
+        else
+          ::Ai::ModelSelection::InstanceModelSelectionFeatureSetting.build(
+            feature: FEATURE_NAME,
+            offered_model_ref: user_selected_model_identifier
+          )
+        end
       end
     end
   end
