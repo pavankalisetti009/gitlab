@@ -728,7 +728,22 @@ RSpec.describe API::GroupServiceAccounts, :with_current_organization, :aggregate
               'https://gitlab.com/gitlab-org/quality/test-failure-issues/-/issues/1897',
               'https://gitlab.com/gitlab-org/quality/test-failure-issues/-/issues/1893',
               'https://gitlab.com/gitlab-org/quality/test-failure-issues/-/issues/1883',
-              'https://gitlab.com/gitlab-org/quality/test-failure-issues/-/issues/1879'
+              'https://gitlab.com/gitlab-org/quality/test-failure-issues/-/issues/1879',
+              'https://gitlab.com/gitlab-org/gitlab/-/issues/571278',
+              'https://gitlab.com/gitlab-org/gitlab/-/issues/571277',
+              'https://gitlab.com/gitlab-org/gitlab/-/issues/571276',
+              'https://gitlab.com/gitlab-org/gitlab/-/issues/571275',
+              'https://gitlab.com/gitlab-org/gitlab/-/issues/571274',
+              'https://gitlab.com/gitlab-org/gitlab/-/issues/571273',
+              'https://gitlab.com/gitlab-org/gitlab/-/issues/571272',
+              'https://gitlab.com/gitlab-org/gitlab/-/issues/571271',
+              'https://gitlab.com/gitlab-org/gitlab/-/issues/571270',
+              'https://gitlab.com/gitlab-org/gitlab/-/issues/571269',
+              'https://gitlab.com/gitlab-org/gitlab/-/issues/571268',
+              'https://gitlab.com/gitlab-org/gitlab/-/issues/571267',
+              'https://gitlab.com/gitlab-org/gitlab/-/issues/571266',
+              'https://gitlab.com/gitlab-org/gitlab/-/issues/571265',
+              'https://gitlab.com/gitlab-org/gitlab/-/issues/571264'
             ]
           } do
           let_it_be(:current_user) { user }

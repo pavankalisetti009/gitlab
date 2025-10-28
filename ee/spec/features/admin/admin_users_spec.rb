@@ -185,7 +185,8 @@ RSpec.describe "Admin::Users", :js, feature_category: :user_management do
     end
   end
 
-  describe "GET /admin/users/:id/edit" do
+  describe "GET /admin/users/:id/edit",
+    quarantine: 'https://gitlab.com/gitlab-org/quality/test-failure-issues/-/issues/6959' do
     describe "Update user account type" do
       before do
         visit_edit_user(user.id)

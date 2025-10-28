@@ -25,7 +25,8 @@ RSpec.describe 'Member Role Promotion Management', :js, feature_category: :seat_
     visit current_path
   end
 
-  it 'asserts member role promotion `approval` flow' do
+  it 'asserts member role promotion `approval` flow',
+    quarantine: 'https://gitlab.com/gitlab-org/gitlab/-/issues/532497' do
     expect_pending_member
 
     act_on_pending_member_as_admin('Approve')
@@ -34,7 +35,8 @@ RSpec.describe 'Member Role Promotion Management', :js, feature_category: :seat_
     expect(find_member_row(developer)).to have_text('Developer')
   end
 
-  it 'asserts member role promotion `rejection` flow' do
+  it 'asserts member role promotion `rejection` flow',
+    quarantine: 'https://gitlab.com/gitlab-org/gitlab/-/issues/565905' do
     expect_pending_member
 
     act_on_pending_member_as_admin('Reject')

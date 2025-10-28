@@ -97,7 +97,7 @@ RSpec.describe 'Groups::Security::Credentials', :saas, feature_category: :user_m
           end
         end
 
-        context 'by resource access tokens' do
+        context 'by resource access tokens', quarantine: 'https://gitlab.com/gitlab-org/gitlab/-/issues/507348' do
           let(:credentials_path) do
             group_security_credentials_path(group_id: group_id, filter: 'resource_access_tokens')
           end
