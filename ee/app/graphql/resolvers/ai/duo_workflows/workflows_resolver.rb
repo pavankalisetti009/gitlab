@@ -49,7 +49,7 @@ module Resolvers
 
           return resolve_single_workflow(args[:workflow_id]) if args[:workflow_id].present?
 
-          ::Ai::DuoWorkflows::WorkflowsFinder.new(
+          workflows = ::Ai::DuoWorkflows::WorkflowsFinder.new(
             source: object,
             current_user: current_user,
             project_path: args[:project_path],
@@ -60,6 +60,8 @@ module Resolvers
             search: args[:search],
             status_group: args[:status_group]
           ).results
+
+          offset_pagination(workflows)
         end
 
         private

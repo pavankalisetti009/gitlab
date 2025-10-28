@@ -5,6 +5,22 @@ module Ai
     class WorkflowsFinder
       UnknownOptionError = Class.new(StandardError)
 
+      # Identifies possible IDs in a search term:
+      #   soft devel 123 -> 123
+      #   soft devel #123 -> 123
+      #   #123 soft devel -> 123
+      #   soft devel v1 -> ""
+      #   soft devel v12 #123 456 -> 123, 456
+      SEARCH_IDS_PATTERN = /(?<=\s|^|[^\w])\d+/
+
+      # Removes possible IDs from a search term:
+      #   soft devel 123 -> soft devel
+      #   soft devel #123 -> soft devel
+      #   #123 soft devel -> soft devel
+      #   soft devel v1 -> soft devel v1
+      #   soft devel v12 #123 456 -> soft devel v12
+      SEARCH_IDS_SANITIZER_PATTERN = /#?\s*(?<!\w)\d+\s*/
+
       class SortingCriteria
         SORTABLE_DIRECTIONS = %w[asc desc].freeze
 
@@ -103,7 +119,21 @@ module Ai
       end
 
       def resolve_search(term)
-        query.fuzzy_search(term, [:workflow_definition, :goal])
+        possible_ids = term.scan(SEARCH_IDS_PATTERN).map(&:to_i)
+        term_without_ids = term.gsub(SEARCH_IDS_SANITIZER_PATTERN, '').strip
+
+        scope = query
+
+        if term_without_ids.present?
+          # We want to match things like `v1` so we set `use_minimum_char_limit = false`.
+          scope = scope.fuzzy_search(term_without_ids, [:workflow_definition, :goal], use_minimum_char_limit: false)
+        end
+
+        if possible_ids.any?
+          scope = scope.where(id: possible_ids) # rubocop:disable CodeReuse/ActiveRecord -- Finders should be allowed
+        end
+
+        scope
       end
 
       def resolve_status_group(status_group)
