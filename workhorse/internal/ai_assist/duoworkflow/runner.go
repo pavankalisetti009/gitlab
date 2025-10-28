@@ -51,6 +51,7 @@ type runner struct {
 	rails       *api.API
 	token       string
 	originalReq *http.Request
+	marshalBuf  []byte
 	conn        websocketConn
 	wf          workflowStream
 	client      *Client
@@ -74,6 +75,7 @@ func newRunner(conn websocketConn, rails *api.API, r *http.Request, cfg *api.Duo
 		rails:       rails,
 		token:       cfg.Headers["x-gitlab-oauth-token"],
 		originalReq: r,
+		marshalBuf:  make([]byte, ActionResponseBodyLimit),
 		conn:        conn,
 		wf:          wf,
 		client:      client,
@@ -247,12 +249,13 @@ func (r *runner) handleAgentAction(ctx context.Context, action *pb.Action) error
 }
 
 func (r *runner) sendActionToWs(action *pb.Action) error {
-	message, err := marshaler.Marshal(action)
+	var err error
+	r.marshalBuf, err = marshaler.MarshalAppend(r.marshalBuf[:0], action)
 	if err != nil {
 		return fmt.Errorf("sendActionToWs: failed to unmarshal action: %v", err)
 	}
 
-	if err = r.conn.WriteMessage(websocket.BinaryMessage, message); err != nil {
+	if err = r.conn.WriteMessage(websocket.BinaryMessage, r.marshalBuf); err != nil {
 		if err != websocket.ErrCloseSent {
 			return fmt.Errorf("sendActionToWs: failed to send WS message: %v", err)
 		}
