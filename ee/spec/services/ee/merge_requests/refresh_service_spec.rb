@@ -988,4 +988,63 @@ RSpec.describe MergeRequests::RefreshService, feature_category: :code_review_wor
       it_behaves_like 'maintained merge requests for auto merges'
     end
   end
+
+  describe 'timing logging' do
+    it 'calls log_hash_metadata_on_done with duration metrics' do
+      expect(service).to receive(:log_hash_metadata_on_done).with(
+        hash_including(
+          find_new_commits_duration_s: be >= 0,
+          close_upon_missing_source_branch_ref_duration_s: be >= 0,
+          post_merge_manually_merged_duration_s: be >= 0,
+          link_forks_lfs_objects_duration_s: be >= 0,
+          reload_merge_requests_duration_s: be >= 0,
+          remove_requested_changes_duration_s: be >= 0,
+          other_method_calls_duration_s: be >= 0
+        )
+      ).and_call_original
+
+      execute
+    end
+
+    context 'when log_refresh_service_duration feature flag is disabled' do
+      before do
+        stub_feature_flags(log_refresh_service_duration: false)
+      end
+
+      it 'does not call log_hash_metadata_on_done' do
+        expect(service).not_to receive(:log_hash_metadata_on_done)
+
+        execute
+      end
+
+      it 'keeps duration_statistics empty' do
+        execute
+
+        expect(service.send(:duration_statistics)).to be_empty
+      end
+    end
+
+    context 'when parent class does not respond to log_hash_metadata_on_done' do
+      before do
+        # Simulate the parent class not having the method
+        allow(service).to receive(:defined?).with(:super).and_return(false)
+      end
+
+      it 'logs directly to Gitlab::AppJsonLogger' do
+        expect(Gitlab::AppJsonLogger).to receive(:info).with(
+          hash_including(
+            find_new_commits_duration_s: be >= 0,
+            close_upon_missing_source_branch_ref_duration_s: be >= 0,
+            post_merge_manually_merged_duration_s: be >= 0,
+            link_forks_lfs_objects_duration_s: be >= 0,
+            reload_merge_requests_duration_s: be >= 0,
+            remove_requested_changes_duration_s: be >= 0,
+            other_method_calls_duration_s: be >= 0
+          )
+        ).and_call_original
+
+        execute
+      end
+    end
+  end
 end
