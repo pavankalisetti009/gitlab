@@ -9,7 +9,9 @@ RSpec.describe Authz::UserGroupMemberRoles::UpdateForGroupService, feature_categ
 
   # Set access_level to GUEST (< group_group_link.group_access i.e. DEVELOPER)
   # so we can assert created/updated user_group_member_role.member_role == member.role
-  let_it_be_with_reload(:member) { create(:group_member, :guest, member_role: role, user: user, group: group) }
+  let_it_be_with_reload(:member) do
+    create(:group_member, :guest, member_role: role, user: user, group: group, create_user_group_member_roles: false)
+  end
 
   subject(:execute) do
     described_class.new(member).execute
@@ -28,7 +30,8 @@ RSpec.describe Authz::UserGroupMemberRoles::UpdateForGroupService, feature_categ
   def create_group_group_link(group, shared_with_group)
     # Set group_access to DEVELOPER (> member.access_level i.e. GUEST) so we can
     # assert created/updated user_group_member_role.member_role == member.role
-    create(:group_group_link, :developer, shared_group: group, shared_with_group: shared_with_group)
+    create(:group_group_link, :developer, shared_group: group, shared_with_group: shared_with_group,
+      create_user_group_member_roles: false)
   end
 
   def fetch_records(user, group, member_role)
@@ -110,7 +113,10 @@ RSpec.describe Authz::UserGroupMemberRoles::UpdateForGroupService, feature_categ
     context 'with minimal access role', :saas do
       let_it_be(:group) { create(:group_with_plan, plan: :ultimate_plan) }
       let_it_be(:role) { create(:member_role, :minimal_access, namespace: group) }
-      let_it_be(:member) { create(:group_member, :minimal_access, member_role: role, user: user, group: group) }
+      let_it_be(:member) do
+        create(:group_member, :minimal_access, member_role: role, user: user, group: group,
+          create_user_group_member_roles: false)
+      end
 
       it 'creates UserGroupMemberRole records for the user in the group and in the shared group' do
         expect { execute }.to change {

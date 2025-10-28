@@ -16,7 +16,8 @@ RSpec.describe Authz::UserGroupMemberRoles::UpdateForSharedGroupService, feature
 
   let_it_be(:role) { create(:member_role, :guest) }
   let_it_be_with_reload(:group_group_link) do
-    create(:group_group_link, :guest, shared_group: group, shared_with_group: shared_with_group, member_role: role)
+    create(:group_group_link, :guest, shared_group: group, shared_with_group: shared_with_group, member_role: role,
+      create_user_group_member_roles: false)
   end
 
   subject(:execute) do
@@ -72,11 +73,13 @@ RSpec.describe Authz::UserGroupMemberRoles::UpdateForSharedGroupService, feature
     let_it_be(:shared_with_group) { create(:group_with_plan, plan: :ultimate_plan) }
     let_it_be(:minimal_access_role) { create(:member_role, :minimal_access) }
     let_it_be(:member) do
-      create(:group_member, :minimal_access, member_role: minimal_access_role, user: user, group: shared_with_group)
+      create(:group_member, :minimal_access, member_role: minimal_access_role, user: user, group: shared_with_group,
+        create_user_group_member_roles: false)
     end
 
     let_it_be_with_reload(:group_group_link) do
-      create(:group_group_link, :guest, shared_group: group, shared_with_group: shared_with_group, member_role: role)
+      create(:group_group_link, :guest, shared_group: group, shared_with_group: shared_with_group, member_role: role,
+        create_user_group_member_roles: false)
     end
 
     it 'creates UserGroupMemberRole records for each user in group_group_link.shared_with_group' do

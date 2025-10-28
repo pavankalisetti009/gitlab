@@ -86,5 +86,13 @@ FactoryBot.define do
       read_code { false }
       read_admin_users { true }
     end
+
+    after(:create) do |member_role, _context|
+      member_role.members.each do |member|
+        next unless member.is_a?(::GroupMember)
+
+        ::Authz::UserGroupMemberRoles::UpdateForGroupService.new(member).execute
+      end
+    end
   end
 end
