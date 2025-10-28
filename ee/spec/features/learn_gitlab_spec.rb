@@ -146,6 +146,7 @@ RSpec.describe 'Learn Gitlab concerns', :feature, :js, :saas, feature_category: 
         it 'shows the duo chat promo popover after a page refresh' do
           page.refresh
 
+          find_by_testid('ai-chat-toggle').click if Users::ProjectStudio.enabled_for_user?(user) # rubocop:disable RSpec/AvoidConditionalStatements -- temporary Project Studio rollout
           expect(page).to have_selector('[data-testid="duo-chat-promo-callout-popover"]')
         end
       end
@@ -160,6 +161,8 @@ RSpec.describe 'Learn Gitlab concerns', :feature, :js, :saas, feature_category: 
         end
 
         it 'shows the duo chat promo popover' do
+          find_by_testid('ai-chat-toggle').click if Users::ProjectStudio.enabled_for_user?(user) # rubocop:disable RSpec/AvoidConditionalStatements -- temporary Project Studio rollout
+
           expect(page).to have_selector('[data-testid="duo-chat-promo-callout-popover"]')
         end
       end

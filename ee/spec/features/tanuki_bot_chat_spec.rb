@@ -33,10 +33,14 @@ RSpec.describe 'GitLab Duo Chat', :js, feature_category: :global_search do
         end
       end
 
-      context "when opening the drawer from the breadcrumbs" do
+      context "when opening the drawer from the breadcrumbs or side panel" do
         before do
-          within_testid('top-bar') do
-            click_button('GitLab Duo Chat')
+          if Users::ProjectStudio.enabled_for_user?(user) # rubocop:disable RSpec/AvoidConditionalStatements -- temporary Project Studio rollout
+            find_by_testid('ai-chat-toggle').click
+          else
+            within_testid('top-bar') do
+              click_button('GitLab Duo Chat')
+            end
           end
         end
 
@@ -69,10 +73,14 @@ RSpec.describe 'GitLab Duo Chat', :js, feature_category: :global_search do
         end
       end
 
-      context "when opening the drawer from the breadcrumbs" do
+      context "when opening the drawer from the breadcrumbs or side panel" do
         before do
-          within_testid('top-bar') do
-            click_button('GitLab Duo Chat')
+          if Users::ProjectStudio.enabled_for_user?(user) # rubocop:disable RSpec/AvoidConditionalStatements -- temporary Project Studio rollout
+            find_by_testid('ai-chat-toggle').click
+          else
+            within_testid('top-bar') do
+              click_button('GitLab Duo Chat')
+            end
           end
         end
 

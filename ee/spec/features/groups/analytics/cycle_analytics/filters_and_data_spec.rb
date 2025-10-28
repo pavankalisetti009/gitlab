@@ -78,6 +78,7 @@ RSpec.describe 'Group value stream analytics filters and data', :js, feature_cat
   end
 
   def toggle_custom_toggle_listbox(toggle_selector)
+    send_keys :escape # Dismiss tooltip so it doesn't cover listbox
     find(toggle_selector).click
   end
 
