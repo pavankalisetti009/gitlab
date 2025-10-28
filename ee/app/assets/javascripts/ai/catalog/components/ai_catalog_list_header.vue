@@ -31,6 +31,11 @@ export default {
       required: false,
       default: true, // this will change when we remove the ability to create item from Explore level
     },
+    newButtonVariant: {
+      type: String,
+      required: false,
+      default: undefined,
+    },
   },
   computed: {
     title() {
@@ -53,7 +58,9 @@ export default {
         </div>
       </template>
       <template #actions>
-        <ai-catalog-nav-actions v-if="showActionsForProject" />
+        <ai-catalog-nav-actions v-if="showActionsForProject" :new-button-variant="newButtonVariant">
+          <slot name="nav-actions"></slot>
+        </ai-catalog-nav-actions>
       </template>
     </page-heading>
     <div v-if="isGlobal" class="gl-border-b gl-flex">
