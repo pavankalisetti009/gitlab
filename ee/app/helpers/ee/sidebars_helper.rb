@@ -39,13 +39,9 @@ module EE
 
       context.merge!(
         GitlabSubscriptions::Trials::WidgetPresenter.new(root_namespace, user: current_user).attributes,
-        GitlabSubscriptions::Duo::AgentPlatformWidgetPresenter.new(user, context: project || group).attributes
+        GitlabSubscriptions::Duo::AgentPlatformWidgetPresenter.new(user, context: project || group).attributes,
+        GitlabSubscriptions::UpgradePresenter.new(user, namespace: root_namespace).attributes
       )
-
-      context[:trial] = {
-        has_start_trial: trials_allowed?(user),
-        url: new_trial_path(glm_source: 'gitlab.com', glm_content: 'top-right-dropdown')
-      }
 
       show_buy_pipeline_minutes = show_buy_pipeline_minutes?(project, group)
 

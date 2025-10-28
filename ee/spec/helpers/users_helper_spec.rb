@@ -5,59 +5,6 @@ require 'spec_helper'
 RSpec.describe UsersHelper, feature_category: :user_profile do
   let_it_be(:user) { build_stubbed(:user) }
 
-  describe '#trials_allowed?' do
-    context 'without cache concerns' do
-      using RSpec::Parameterized::TableSyntax
-
-      where(
-        belongs_to_paid_namespace?: [true, false],
-        user?: [true, false],
-        subscriptions_trials_enabled: [true, false],
-        group_without_trial?: [true, false]
-      )
-
-      with_them do
-        let(:local_user) { user? ? user : nil }
-
-        before do
-          stub_saas_features(subscriptions_trials: subscriptions_trials_enabled)
-          allow(user).to receive(:owns_group_without_trial?) { group_without_trial? }
-          allow(user).to receive(:belongs_to_paid_namespace?) { belongs_to_paid_namespace? }
-        end
-
-        let(:expected_result) do
-          !belongs_to_paid_namespace? && user? && subscriptions_trials_enabled && group_without_trial?
-        end
-
-        subject { helper.trials_allowed?(local_user) }
-
-        it { is_expected.to eq(expected_result) }
-      end
-    end
-
-    context 'with cache concerns', :use_clean_rails_redis_caching do
-      before do
-        stub_saas_features(subscriptions_trials: true)
-        allow(user).to receive(:owns_group_without_trial?).and_return(true)
-        allow(user).to receive(:belongs_to_paid_namespace?).and_return(false)
-      end
-
-      it 'uses cache for result on next running of the method same user' do
-        expect(helper.trials_allowed?(user)).to eq(true)
-
-        allow(user).to receive(:belongs_to_paid_namespace?).and_return(true)
-
-        expect(helper.trials_allowed?(user)).to eq(true)
-      end
-
-      it 'does not find a different user in cache result on next running of the method' do
-        expect(helper.trials_allowed?(user)).to eq(true)
-
-        expect(helper.trials_allowed?(build(:user))).to eq(false)
-      end
-    end
-  end
-
   describe '#user_badges_in_admin_section' do
     shared_examples 'shows admin role badge when user is assigned admin role' do
       let_it_be(:member_role) { build_stubbed(:member_role, name: 'Admin role') }

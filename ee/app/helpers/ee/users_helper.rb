@@ -38,15 +38,6 @@ module EE
       end
     end
 
-    def trials_allowed?(user)
-      return false unless user
-      return false unless ::Gitlab::Saas.feature_available?(:subscriptions_trials)
-
-      Rails.cache.fetch(['users', user.id, 'trials_allowed?'], expires_in: 10.minutes) do
-        !user.belongs_to_paid_namespace? && user.owns_group_without_trial?
-      end
-    end
-
     def user_enterprise_group_text(user)
       enterprise_group = user.user_detail&.enterprise_group
       return unless enterprise_group

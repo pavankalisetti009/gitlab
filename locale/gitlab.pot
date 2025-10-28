@@ -20609,10 +20609,10 @@ msgstr ""
 msgid "CurrentUser|Preferences"
 msgstr ""
 
-msgid "CurrentUser|Start an Ultimate trial"
+msgid "CurrentUser|Switch to GitLab Next"
 msgstr ""
 
-msgid "CurrentUser|Switch to GitLab Next"
+msgid "CurrentUser|Upgrade subscription"
 msgstr ""
 
 msgid "Currently tracked refs"

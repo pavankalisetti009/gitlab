@@ -4190,4 +4190,42 @@ RSpec.describe User, feature_category: :system_access do
       it { is_expected.to be_allow_user_to_create_group_and_project }
     end
   end
+
+  describe '#owned_free_or_trial_groups_with_limit', :saas do
+    let_it_be(:user) { create(:user) }
+
+    context 'when user has owned free or trial groups' do
+      let_it_be(:free_group) { create(:group_with_plan, plan: :free_plan, owners: user) }
+      let_it_be(:trial_group) do
+        create(:group_with_plan,
+          plan: :ultimate_trial_plan,
+          owners: user,
+          trial: true,
+          trial_starts_on: 1.day.ago,
+          trial_ends_on: 30.days.from_now)
+      end
+
+      before_all do
+        create(:group_with_plan, plan: :ultimate_plan, owners: user)
+        create(:group_with_plan, plan: :free_plan, developers: user)
+        create(:group_with_plan, plan: :free_plan)
+      end
+
+      context 'when the provided limit is more than total available groups' do
+        it 'returns all free or trial groups' do
+          outcome = user.owned_free_or_trial_groups_with_limit(5)
+          expect(outcome).to match_array([free_group, trial_group])
+          expect(outcome.size).to eq(2)
+        end
+      end
+
+      context 'when the provided limit is less than total available groups' do
+        it 'returns the limited number of free or trial groups' do
+          outcome = user.owned_free_or_trial_groups_with_limit(1)
+          expect(outcome).to match_array([free_group])
+          expect(outcome.size).to eq(1)
+        end
+      end
+    end
+  end
 end

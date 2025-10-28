@@ -170,13 +170,12 @@ RSpec.describe ::SidebarsHelper, feature_category: :navigation do
         helper.super_sidebar_context(user, group: nil, project: nil, panel: panel, panel_type: nil)
       end
 
-      it 'returns sidebar values from user', :use_clean_rails_memory_store_caching do
-        trial = {
-          has_start_trial: false,
-          url: new_trial_path(glm_source: 'gitlab.com', glm_content: 'top-right-dropdown')
-        }
+      it 'returns upgrade url' do
+        expect_next_instance_of(GitlabSubscriptions::UpgradePresenter) do |presenter|
+          expect(presenter).to receive(:attributes).and_return({ upgrade_url: '/path' })
+        end
 
-        expect(super_sidebar_context).to include(trial: trial)
+        expect(super_sidebar_context).to include(:upgrade_url)
       end
 
       describe 'for Duo agent platform widget' do
