@@ -303,6 +303,12 @@ RSpec.describe MergeRequests::ApprovalRule, type: :model, feature_category: :cod
     end
   end
 
+  describe '#warn_mode_policy?' do
+    it 'is false' do
+      expect(rule.warn_mode_policy?).to be false
+    end
+  end
+
   describe '#report_type' do
     it 'is nil' do
       expect(rule.report_type).to be_nil

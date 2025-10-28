@@ -95,6 +95,10 @@ module MergeRequests
       false
     end
 
+    def warn_mode_policy?
+      false
+    end
+
     def report_type
       nil
     end
