@@ -14,7 +14,7 @@ module Security
           # Batch schedule with context
           ::Security::SecretDetection::PartnerTokenVerificationWorker.bulk_perform_async_with_contexts(
             partner_findings,
-            arguments_proc: ->(finding) { [finding.id, finding.token_type, finding_type] },
+            arguments_proc: ->(finding) { [finding.id, finding_type] },
             context_proc: ->(_finding) { { project: project } }
           )
         end

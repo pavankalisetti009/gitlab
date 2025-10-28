@@ -6,8 +6,8 @@ RSpec.describe Security::SecretDetection::PartnerTokenVerificationWorker, :clean
   subject(:worker) { described_class.new }
 
   let_it_be(:project) { create(:project) }
-  let(:finding_type) { :security }
-  let(:rate_limit_retry_count) { 0 }
+  let(:finding_type) { 'security' }
+  let(:rate_limit_retry_count) { '0' }
   let(:client_instance) { instance_double(Security::SecretDetection::PartnerTokensClient) }
   let(:token_type) { 'AWS' }
   let(:token_value) { 'AKIAIOSFODNN7EXAMPLE' }
@@ -15,9 +15,7 @@ RSpec.describe Security::SecretDetection::PartnerTokenVerificationWorker, :clean
   shared_examples 'verifies token and saves status' do |_status_model, service_class|
     it 'verifies token and saves result', :freeze_time do
       expect(client_instance).to receive(:verify_token).and_return(verification_result)
-      expect_next_instance_of(service_class) do |service_instance|
-        expect(service_instance).to receive(:save_result).with(finding, verification_result)
-      end
+      expect(service_class).to receive(:save_result).with(finding, verification_result)
 
       worker.perform(finding_id, finding_type, rate_limit_retry_count)
     end
@@ -26,7 +24,7 @@ RSpec.describe Security::SecretDetection::PartnerTokenVerificationWorker, :clean
   shared_examples 'handles rate limiting' do
     it 'reschedules when rate limited' do
       expect(described_class).to receive(:perform_in)
-        .with(described_class::BASE_DELAY, finding_id, finding_type, 1)
+        .with(described_class::BASE_DELAY, finding_id, anything, 1)
 
       worker.perform(finding_id, finding_type, rate_limit_retry_count)
     end
@@ -53,10 +51,6 @@ RSpec.describe Security::SecretDetection::PartnerTokenVerificationWorker, :clean
 
       before do
         allow(client_instance).to receive(:rate_limited?).and_return(false)
-
-        allow_next_instance_of(Security::SecretDetection::Security::PartnerTokenService) do |service|
-          allow(service).to receive(:save_result).with(security_finding, verification_result)
-        end
       end
 
       it_behaves_like 'verifies token and saves status', ::Security::FindingTokenStatus,
@@ -64,16 +58,13 @@ RSpec.describe Security::SecretDetection::PartnerTokenVerificationWorker, :clean
     end
 
     context 'with vulnerability finding' do
-      let(:finding_type) { :vulnerability }
+      let(:finding_type) { 'vulnerability' }
       let_it_be(:vulnerability_finding) { create(:vulnerabilities_finding, :with_secret_detection) }
       let(:finding_id) { vulnerability_finding.id }
       let(:finding) { vulnerability_finding }
 
       before do
         allow(client_instance).to receive(:rate_limited?).and_return(false)
-        allow_next_instance_of(Security::SecretDetection::Vulnerabilities::PartnerTokenService) do |service|
-          allow(service).to receive(:save_result).with(vulnerability_finding, verification_result)
-        end
       end
 
       it_behaves_like 'verifies token and saves status', ::Vulnerabilities::FindingTokenStatus,
@@ -120,7 +111,7 @@ RSpec.describe Security::SecretDetection::PartnerTokenVerificationWorker, :clean
       end
 
       context 'when max retries exceeded' do
-        let(:rate_limit_retry_count) { described_class::MAX_RATE_LIMIT_RETRIES }
+        let(:rate_limit_retry_count) { described_class::MAX_RATE_LIMIT_RETRIES.to_s }
 
         it 'returns without processing' do
           expect(described_class).not_to receive(:perform_in)

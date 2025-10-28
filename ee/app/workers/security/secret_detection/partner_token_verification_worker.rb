@@ -17,6 +17,8 @@ module Security
       BASE_DELAY = 10.seconds
 
       def perform(finding_id, finding_type, rate_limit_retry_count = 0)
+        rate_limit_retry_count = rate_limit_retry_count.to_i
+
         return if rate_limit_retry_count >= MAX_RATE_LIMIT_RETRIES
 
         @finding_type = finding_type.to_sym
@@ -28,14 +30,14 @@ module Security
         return unless client.valid_config?
 
         if client.rate_limited?
-          reschedule(finding_id, finding_type, rate_limit_retry_count + 1)
+          reschedule(finding_id, finding_type.to_s, rate_limit_retry_count + 1)
           return
         end
 
         result = client.verify_token
         partner_service.save_result(finding, result)
       rescue ::Security::SecretDetection::PartnerTokens::BaseClient::RateLimitError
-        reschedule(finding_id, finding_type, rate_limit_retry_count + 1)
+        reschedule(finding_id, finding_type.to_s, rate_limit_retry_count + 1)
         nil
       end
 
@@ -53,8 +55,8 @@ module Security
 
       def partner_service
         case finding_type
-        when :vulnerability then Vulnerabilities::PartnerTokenService.new
-        when :security then Security::PartnerTokenService.new
+        when :vulnerability then Vulnerabilities::PartnerTokenService
+        when :security then Security::PartnerTokenService
         end
       end
 
