@@ -34,6 +34,7 @@ module EE
           if ::Gitlab::Geo.org_mover_extend_selective_sync_to_primary_checksumming?
             replicables.merge(selective_sync_scope(node, primary_key_in: primary_key_in, replicables: replicables))
           else
+            replicables = replicables.primary_key_in(primary_key_in) if primary_key_in
             replicables
           end
         end
@@ -54,9 +55,7 @@ module EE
 
         override :pluck_verifiable_ids_in_range
         def pluck_verifiable_ids_in_range(range)
-          verifiables(range)
-            .primary_key_in(range)
-            .pluck_primary_key
+          verifiables(range).pluck_primary_key
         end
 
         # @param primary_key_in [Range, Replicable] arg to pass to primary_key_in scope

@@ -2,95 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe Ci::PipelineArtifact, feature_category: :geo_replication do
-  include EE::GeoHelpers
-
-  describe 'associations' do
-    it { is_expected.to have_one(:pipeline_artifact_state).class_name('Geo::PipelineArtifactState').inverse_of(:pipeline_artifact) }
-  end
-
-  include_examples 'a verifiable model for verification state' do
-    let(:verifiable_model_record) do
-      build(:ci_pipeline_artifact, pipeline: create(:ci_pipeline, project: create(:project)))
-    end
-  end
-
-  describe '.replicables_for_current_secondary' do
-    using RSpec::Parameterized::TableSyntax
-
-    # Selective sync is configured relative to the pipeline artifact's project.
-    #
-    # Permutations of sync_object_storage combined with object-stored-artifacts
-    # are tested in code, because the logic is simple, and to do it in the table
-    # would quadruple its size and have too much duplication.
-    where(:selective_sync_namespaces, :selective_sync_shards, :factory, :project_factory, :include_expectation) do
-      nil                  | nil    | [:ci_pipeline_artifact]           | [:project]               | true
-      # selective sync by shard
-      nil                  | :model | [:ci_pipeline_artifact]           | [:project]               | true
-      nil                  | :other | [:ci_pipeline_artifact]           | [:project]               | false
-      # selective sync by namespace
-      :model_parent        | nil    | [:ci_pipeline_artifact]           | [:project]               | true
-      :model_parent_parent | nil    | [:ci_pipeline_artifact]           | [:project, :in_subgroup] | true
-      :other               | nil    | [:ci_pipeline_artifact]           | [:project]               | false
-      :other               | nil    | [:ci_pipeline_artifact]           | [:project, :in_subgroup] | false
-      # expired
-      nil                  | nil    | [:ci_pipeline_artifact, :expired] | [:project]               | true
-    end
-
-    with_them do
-      subject(:pipeline_artifact_included) { described_class.replicables_for_current_secondary(ci_pipeline_artifact).exists? }
-
-      let(:project) { create(*project_factory) } # rubocop: disable Rails/SaveBang
-      let(:pipeline) { create(:ci_pipeline, project: project) }
-      let(:node) do
-        create(
-          :geo_node_with_selective_sync_for,
-          model: project,
-          namespaces: selective_sync_namespaces,
-          shards: selective_sync_shards,
-          sync_object_storage: sync_object_storage
-        )
-      end
-
-      before do
-        stub_artifacts_object_storage
-        stub_current_geo_node(node)
-      end
-
-      context 'when sync object storage is enabled' do
-        let(:sync_object_storage) { true }
-
-        context 'when the pipeline artifact is locally stored' do
-          let(:ci_pipeline_artifact) { create(*factory, pipeline: pipeline) }
-
-          it { is_expected.to eq(include_expectation) }
-        end
-
-        context 'when the pipeline artifact is object stored' do
-          let(:ci_pipeline_artifact) { create(*factory, :remote_store, pipeline: pipeline) }
-
-          it { is_expected.to eq(include_expectation) }
-        end
-      end
-
-      context 'when sync object storage is disabled' do
-        let(:sync_object_storage) { false }
-
-        context 'when the pipeline artifact is locally stored' do
-          let(:ci_pipeline_artifact) { create(*factory, pipeline: pipeline) }
-
-          it { is_expected.to eq(include_expectation) }
-        end
-
-        context 'when the pipeline artifact is object stored' do
-          let(:ci_pipeline_artifact) { create(*factory, :remote_store, pipeline: pipeline) }
-
-          it { is_expected.to be_falsey }
-        end
-      end
-    end
-  end
-
+RSpec.describe Ci::PipelineArtifact, feature_category: :job_artifacts do
   describe '.search' do
     let_it_be(:project1) do
       create(:project, name: 'project_1_name', path: 'project_1_path', description: 'project_desc_1')
@@ -150,6 +62,63 @@ RSpec.describe Ci::PipelineArtifact, feature_category: :geo_replication do
           end
         end
       end
+    end
+  end
+
+  describe 'Geo replication', feature_category: :geo_replication do
+    before do
+      stub_artifacts_object_storage
+    end
+
+    describe 'associations' do
+      it 'has one verification state table class' do
+        is_expected
+          .to have_one(:pipeline_artifact_state)
+          .class_name('Geo::PipelineArtifactState')
+          .inverse_of(:pipeline_artifact)
+          .autosave(false)
+      end
+    end
+
+    include_examples 'a verifiable model for verification state' do
+      let(:verifiable_model_record) do
+        build(:ci_pipeline_artifact, pipeline: create(:ci_pipeline, project: create(:project)))
+      end
+    end
+
+    describe 'replication/verification' do
+      let_it_be(:group_1) { create(:group, organization: create(:organization)) }
+      let_it_be(:group_2) { create(:group, organization: create(:organization)) }
+      let_it_be(:nested_group_1) { create(:group, parent: group_1) }
+      let_it_be(:project_1) { create(:project, group: group_1) }
+      let_it_be(:project_2) { create(:project, group: nested_group_1) }
+      let_it_be(:project_3) { create(:project, group: group_2) }
+      let_it_be(:pipeline_1) { create(:ci_pipeline, project: project_1) }
+      let_it_be(:pipeline_2) { create(:ci_pipeline, project: project_2) }
+      let_it_be(:pipeline_3) { create(:ci_pipeline, project: project_3) }
+      let_it_be(:pipeline_4) { create(:ci_pipeline, project: project_1) }
+
+      # Pipeline artifact for the root group
+      let_it_be(:first_replicable_and_in_selective_sync) do
+        create(:ci_pipeline_artifact, pipeline: pipeline_1)
+      end
+
+      # Pipeline artifact for a subgroup
+      let_it_be(:second_replicable_and_in_selective_sync) do
+        create(:ci_pipeline_artifact, pipeline: pipeline_2)
+      end
+
+      # Pipeline artifact for a subgroup and on object storage
+      let!(:third_replicable_on_object_storage_and_in_selective_sync) do
+        create(:ci_pipeline_artifact, :remote_store, pipeline: pipeline_4)
+      end
+
+      # Pipeline artifact for a group not in selective sync
+      let_it_be(:last_replicable_and_not_in_selective_sync) do
+        create(:ci_pipeline_artifact, pipeline: pipeline_3)
+      end
+
+      include_examples 'Geo Framework selective sync behavior'
     end
   end
 end
