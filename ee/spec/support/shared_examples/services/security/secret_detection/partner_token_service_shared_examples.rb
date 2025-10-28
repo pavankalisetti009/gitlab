@@ -28,6 +28,20 @@ RSpec.shared_examples 'partner token service' do
         .to receive(:partner_for).with('AWS').and_return('AWS')
     end
 
+    it 'passes correct arguments to worker' do
+      captured_args_proc = nil
+
+      allow(Security::SecretDetection::PartnerTokenVerificationWorker)
+        .to receive(:bulk_perform_async_with_contexts) do |_findings, options|
+          captured_args_proc = options[:arguments_proc]
+        end
+
+      described_class.process_finding_async([findings.first], project)
+
+      args = captured_args_proc.call(findings.first)
+      expect(args).to match_array([findings.first.id, expected_finding_type])
+    end
+
     it 'enqueues worker for each partner token' do
       expect(Security::SecretDetection::PartnerTokenVerificationWorker)
         .to receive(:bulk_perform_async_with_contexts)
@@ -41,18 +55,6 @@ RSpec.shared_examples 'partner token service' do
         )
 
       described_class.process_finding_async(findings, project)
-    end
-
-    it 'passes correct arguments to worker' do
-      expect(Security::SecretDetection::PartnerTokenVerificationWorker)
-        .to receive(:bulk_perform_async_with_contexts)
-        .with(
-          [findings.first],
-          arguments_proc: kind_of(Proc),
-          context_proc: kind_of(Proc)
-        )
-
-      described_class.process_finding_async([findings.first], project)
     end
 
     context 'with non-partner tokens' do
