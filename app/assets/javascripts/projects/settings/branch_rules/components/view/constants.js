@@ -109,6 +109,7 @@ export const accessLevelsConfig = {
   },
 };
 
+export const SQUASH_SETTING_DEFAULT = 'DEFAULT';
 export const SQUASH_SETTING_DO_NOT_ALLOW = 'NEVER';
 export const SQUASH_SETTING_ALLOW = 'ALLOWED';
 export const SQUASH_SETTING_ENCOURAGE = 'ENCOURAGED';

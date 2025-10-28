@@ -32,6 +32,7 @@ import {
 } from 'ee_else_ce/projects/settings/branch_rules/tracking/constants';
 import deleteBranchRuleMutation from '../../mutations/branch_rule_delete.mutation.graphql';
 import editSquashOptionMutation from '../../mutations/edit_squash_option.mutation.graphql';
+import deleteSquashOptionMutation from '../../mutations/delete_squash_option.mutation.graphql';
 import BranchRuleModal from '../../../components/branch_rule_modal.vue';
 import Protection from './protection.vue';
 import AccessLevelsDrawer from './access_levels_drawer.vue';
@@ -379,14 +380,18 @@ export default {
     onEditSquashSettings(selectedOption) {
       this.isRuleUpdating = true;
       const branchRuleId = this.branchRule.id;
+      const isDelete = selectedOption === 'DEFAULT';
 
       this.$apollo
         .mutate({
-          mutation: editSquashOptionMutation,
-          variables: { input: { branchRuleId, squashOption: selectedOption } },
+          mutation: isDelete ? deleteSquashOptionMutation : editSquashOptionMutation,
+          variables: {
+            input: isDelete ? { branchRuleId } : { branchRuleId, squashOption: selectedOption },
+          },
         })
-        .then(({ data: { branchRuleSquashOptionUpdate } }) => {
-          if (branchRuleSquashOptionUpdate?.errors.length) {
+        .then(({ data }) => {
+          const result = Object.values(data)[0];
+          if (result?.errors.length) {
             createAlert({ message: this.$options.i18n.updateBranchRuleError });
             return;
           }
@@ -660,6 +665,7 @@ export default {
         :is-open="isSquashSettingsDrawerOpen"
         :is-loading="isRuleUpdating"
         :selected-option="squashOption.option"
+        :is-all-branches-rule="isAllBranchesRule"
         @submit="onEditSquashSettings"
         @close="isSquashSettingsDrawerOpen = false"
       />
