@@ -83,6 +83,11 @@ RSpec.describe 'Querying Duo Workflows Workflows', feature_category: :duo_agent_
 
   let(:fields) do
     <<~GRAPHQL
+      pageInfo {
+        hasPreviousPage
+        hasNextPage
+        endCursor
+      }
       nodes {
         id,
         userId,
@@ -496,7 +501,7 @@ RSpec.describe 'Querying Duo Workflows Workflows', feature_category: :duo_agent_
       context 'with the search argument' do
         let(:variables) { { search: 'soft devel' } }
 
-        it 'returns only workflows matching the seach criteria', :aggregate_failures do
+        it 'returns only workflows matching the search criteria', :aggregate_failures do
           post_graphql(query, current_user: current_user)
 
           expect(response).to have_gitlab_http_status(:success)
@@ -507,6 +512,25 @@ RSpec.describe 'Querying Duo Workflows Workflows', feature_category: :duo_agent_
           returned_workflows.each do |returned_workflow|
             expect(returned_workflow['workflowDefinition']).to eq('software_development')
           end
+        end
+      end
+
+      context 'with the search argument containing possible IDs' do
+        let(:variables) do
+          { search: "soft devel #{workflow_with_web_environment.id} ##{archived_workflow.id}" }
+        end
+
+        it 'returns only workflows matching the search criteria', :aggregate_failures do
+          post_graphql(query, current_user: current_user)
+
+          expect(response).to have_gitlab_http_status(:success)
+          expect(graphql_errors).to be_nil
+
+          expect(returned_workflows.length).to eq(2)
+          expect(returned_workflows[0]['workflowDefinition']).to eq('software_development')
+          expect(returned_workflows[0]['id']).to eq(workflow_with_web_environment.to_global_id.to_s)
+          expect(returned_workflows[1]['workflowDefinition']).to eq('software_development')
+          expect(returned_workflows[1]['id']).to eq(archived_workflow.to_global_id.to_s)
         end
       end
 
@@ -678,6 +702,20 @@ RSpec.describe 'Querying Duo Workflows Workflows', feature_category: :duo_agent_
           expect(returned_workflows.first['id']).to eq(stalled_workflow.to_global_id.to_s)
           expect(returned_workflows.first['archived']).to be(false)
           expect(returned_workflows.first['stalled']).to be(true)
+        end
+      end
+
+      context 'when offset pagination is needed' do
+        let(:page_info) { graphql_data.dig('duoWorkflowWorkflows', 'pageInfo') }
+        let(:variables) { { sort: :STATUS_DESC, first: 3, after: GraphQL::Schema::Base64Encoder.encode('3') } }
+
+        it 'returns the workflows ordered by status descending', :aggregate_failures do
+          post_graphql(query, current_user: current_user)
+
+          expect(returned_workflows.length).to eq(3)
+          expect(returned_workflows.pluck('status')).to eq(%w[CREATED CREATED CREATED])
+          expect(page_info['hasNextPage']).to be(true)
+          expect(page_info['hasPreviousPage']).to be(true)
         end
       end
     end

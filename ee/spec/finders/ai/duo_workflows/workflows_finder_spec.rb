@@ -85,4 +85,54 @@ RSpec.describe Ai::DuoWorkflows::WorkflowsFinder, feature_category: :duo_agent_p
       end
     end
   end
+
+  describe '#resolve_search' do
+    using RSpec::Parameterized::TableSyntax
+
+    subject(:query) { described_class.new(options).results.to_sql }
+
+    let(:options) do
+      { current_user: user, source: user, search: term }
+    end
+
+    where(:term, :filter_by_words, :filter_by_ids) do
+      '123'                     | []                  | [123]
+      '#456'                    | []                  | [456]
+      'soft devel'              | %w[soft devel]      | []
+      'soft devel v1'           | %w[soft devel v1]   | []
+      'soft devel 123'          | %w[soft devel]      | [123]
+      'soft devel #123'         | %w[soft devel]      | [123]
+      '#123 soft devel'         | %w[soft devel]      | [123]
+      'soft devel v1 #123'      | %w[soft devel v1]   | [123]
+      'soft devel v1 123 456'   | %w[soft devel v1]   | [123, 456]
+      'soft devel v1 #123 #456' | %w[soft devel v1]   | [123, 456]
+      'soft devel v13 #123 456' | %w[soft devel v13]  | [123, 456]
+    end
+
+    with_them do
+      it 'fuzzy searches all words' do
+        if filter_by_words.empty?
+          expect(query).not_to include('ILIKE')
+        else
+          expected_query = [:workflow_definition, :goal].map do |column|
+            filter_by_words.map do |word|
+              Ai::DuoWorkflows::Workflow.arel_table[column].matches("%#{word}%")
+            end.reduce(:and)
+          end.reduce(:or).to_sql
+
+          expect(query).to include(expected_query)
+        end
+      end
+
+      it 'filters by IDs' do
+        if filter_by_ids.empty?
+          expect(query).not_to include('"duo_workflows_workflows"."id"')
+        elsif filter_by_ids.many?
+          expect(query).to include(Ai::DuoWorkflows::Workflow.arel_table[:id].in(filter_by_ids).to_sql)
+        else
+          expect(query).to include(Ai::DuoWorkflows::Workflow.arel_table[:id].eq(filter_by_ids.first).to_sql)
+        end
+      end
+    end
+  end
 end
