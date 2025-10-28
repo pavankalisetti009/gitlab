@@ -164,19 +164,22 @@ export default {
         </div>
       </header>
 
-      <dl class="gl-my-5 gl-flex gl-flex-col gl-gap-5 @md/panel:gl-flex-row">
+      <div class="gl-my-5 gl-flex gl-flex-col gl-gap-5 @md/panel:gl-flex-row">
         <gl-card
           data-testid="included-credits-card"
           class="gl-flex-1 gl-bg-transparent"
           body-class="gl-p-5"
         >
-          <dd class="gl-heading-scale-600 gl-font-bold" data-testid="included-credits-card-value">
+          <div
+            class="gl-heading-scale-600 gl-mb-3 gl-font-bold"
+            data-testid="included-credits-card-value"
+          >
             {{ numberToMetricPrefix(usage.creditsUsed) }}
             <span class="gl-heading-scale-600 gl-font-bold gl-text-subtle">
               / {{ numberToMetricPrefix(usage.totalCredits) }}
             </span>
-          </dd>
-          <dt>
+          </div>
+          <div class="gl-font-bold">
             <p class="gl-my-0">
               {{ s__('UsageBillingUserDetails|included credits used this month') }}
             </p>
@@ -186,7 +189,7 @@ export default {
                 :till="subscriptionUsage.endDate"
               />
             </p>
-          </dt>
+          </div>
         </gl-card>
 
         <gl-card
@@ -194,10 +197,10 @@ export default {
           class="gl-flex-1 gl-bg-transparent"
           body-class="gl-p-5"
         >
-          <dd class="gl-heading-scale-600 gl-font-bold">
+          <div class="gl-heading-scale-600 gl-mb-3 gl-font-bold">
             {{ numberToMetricPrefix(totalCreditsUsed) }}
-          </dd>
-          <dt>
+          </div>
+          <div class="gl-font-bold">
             <p class="gl-my-0">{{ s__('UsageBillingUserDetails|total credits used') }}</p>
             <p class="gl-my-0 gl-text-sm gl-text-subtle">
               <human-timeframe
@@ -205,9 +208,9 @@ export default {
                 :till="subscriptionUsage.endDate"
               />
             </p>
-          </dt>
+          </div>
         </gl-card>
-      </dl>
+      </div>
 
       <section>
         <events-table :events="events" />
