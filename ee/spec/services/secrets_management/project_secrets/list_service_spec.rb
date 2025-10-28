@@ -64,17 +64,85 @@ RSpec.describe SecretsManagement::ProjectSecrets::ListService, :gitlab_secrets_m
           expect(secret1.description).to eq('First secret')
           expect(secret1.branch).to eq('main')
           expect(secret1.environment).to eq('production')
-          expect(secret1.metadata_version).to eq(1)
+          expect(secret1.metadata_version).to eq(2)
           expect(secret1.rotation_info).to be_nil
 
           secret2 = secrets.find { |s| s.name == 'SECRET2' }
           expect(secret2.description).to eq('Second secret')
           expect(secret2.branch).to eq('staging')
           expect(secret2.environment).to eq('staging')
-          expect(secret2.metadata_version).to eq(1)
+          expect(secret2.metadata_version).to eq(2)
 
-          rotation_info = secret_rotation_info_for_project_secret(project, secret2.name, secret2.metadata_version)
+          rotation_info = secret_rotation_info_for_project_secret(project, secret2.name, secret2.metadata_version - 1)
           expect(secret2.rotation_info).to eq(rotation_info)
+        end
+
+        context 'when status is derived from timestamps', :freeze_time do
+          let(:namespace) { project.secrets_manager.full_project_namespace_path }
+          let(:mount)     { project.secrets_manager.ci_secrets_mount_path }
+          let(:client)    { secrets_manager_client.with_namespace(namespace) }
+
+          it 'returns completed for both secrets right after creation' do
+            expect(result).to be_success
+            secrets = result.payload[:project_secrets]
+
+            secret1 = secrets.find { |s| s.name == 'SECRET1' }
+            secret2 = secrets.find { |s| s.name == 'SECRET2' }
+
+            expect(secret1.status).to eq('COMPLETED')
+            expect(secret2.status).to eq('COMPLETED')
+          end
+
+          context 'when SECRET2 has a long-running update without completion' do
+            it 'marks SECRET2 as stale and keeps SECRET1 completed' do
+              cas = 2
+              client.update_kv_secret_metadata(
+                mount,
+                project.secrets_manager.ci_data_path('SECRET2'),
+                {
+                  description: 'Second secret',
+                  environment: 'staging',
+                  branch: 'staging',
+                  update_started_at: 2.minutes.ago.utc.iso8601
+                },
+                metadata_cas: cas
+              )
+
+              refreshed = service.execute(include_rotation_info: include_rotation_info)
+              expect(refreshed).to be_success
+              secrets = refreshed.payload[:project_secrets]
+
+              secret1 = secrets.find { |s| s.name == 'SECRET1' }
+              secret2 = secrets.find { |s| s.name == 'SECRET2' }
+
+              expect(secret1.status).to eq('COMPLETED')
+              expect(secret2.status).to eq('UPDATE_STALE')
+            end
+          end
+
+          context 'when SECRET2 has a recent update with completion' do
+            it 'keeps SECRET2 completed' do
+              cas = 2
+              client.update_kv_secret_metadata(
+                mount,
+                project.secrets_manager.ci_data_path('SECRET2'),
+                {
+                  description: 'Second secret',
+                  environment: 'staging',
+                  branch: 'staging',
+                  update_started_at: 10.seconds.ago.utc.iso8601,
+                  update_completed_at: Time.current.utc.iso8601
+                },
+                metadata_cas: cas
+              )
+
+              refreshed = service.execute(include_rotation_info: include_rotation_info)
+              expect(refreshed).to be_success
+
+              secret2 = refreshed.payload[:project_secrets].find { |s| s.name == 'SECRET2' }
+              expect(secret2.status).to eq('COMPLETED')
+            end
+          end
         end
 
         context 'and include_rotation_info is false' do

@@ -24,26 +24,36 @@ module SecretsManagement
       private
 
       def build_success_response(name, secret_metadata, include_rotation_info)
+        custom_metadata = secret_metadata["custom_metadata"] || {}
+
         project_secret = ProjectSecret.new(
           name: name,
           project: project,
-          description: secret_metadata["custom_metadata"]["description"],
-          environment: secret_metadata["custom_metadata"]["environment"],
-          branch: secret_metadata["custom_metadata"]["branch"],
-          metadata_version: secret_metadata["current_metadata_version"]
+          description: custom_metadata["description"],
+          environment: custom_metadata["environment"],
+          branch: custom_metadata["branch"],
+          metadata_version: secret_metadata["current_metadata_version"],
+          create_started_at: parse_timestamp(custom_metadata["create_started_at"]),
+          create_completed_at: parse_timestamp(custom_metadata["create_completed_at"]),
+          update_started_at: parse_timestamp(custom_metadata["update_started_at"]),
+          update_completed_at: parse_timestamp(custom_metadata["update_completed_at"])
         )
 
         if include_rotation_info
-          rotation_info = SecretRotationInfo.for_project_secret(
-            project,
-            project_secret.name,
-            project_secret.metadata_version
-          )
+          current_version = project_secret.metadata_version
 
-          project_secret.rotation_info = rotation_info
+          project_secret.rotation_info =
+            SecretRotationInfo.for_project_secret(project, project_secret.name, current_version) ||
+            SecretRotationInfo.for_project_secret(project, project_secret.name, current_version - 1)
         end
 
         ServiceResponse.success(payload: { project_secret: project_secret })
+      end
+
+      def parse_timestamp(value)
+        return if value.blank?
+
+        Time.iso8601(value)
       end
 
       def inactive_response

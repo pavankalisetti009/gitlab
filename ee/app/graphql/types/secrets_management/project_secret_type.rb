@@ -42,6 +42,9 @@ module Types
         type: GraphQL::Types::Int,
         null: true,
         description: 'Current metadata version of the project secret.'
+
+      field :status, ProjectSecretStatusEnum, null: false,
+        description: 'Computed lifecycle status of the secret, based on timestamps.'
     end
   end
 end

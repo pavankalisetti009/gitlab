@@ -52,7 +52,7 @@ module SecretsManagement
       end
 
       def update_secret(project_secret, value, metadata_cas, secret_rotation_info)
-        return error_response(project_secret) unless project_secret.valid?
+        return error_response(project_secret) unless project_secret.valid_for_update?
 
         # Based on https://handbook.gitlab.com/handbook/engineering/architecture/design-documents/secret_manager/decisions/010_secret_rotation_metadata_storage/
         # we want to create/update the secret rotation info record first.
@@ -60,12 +60,15 @@ module SecretsManagement
           return secret_rotation_info_invalid_error(project_secret, secret_rotation_info)
         end
 
-        custom_metadata = {
-          environment: project_secret.environment,
-          branch: project_secret.branch,
-          description: project_secret.description,
-          secret_rotation_info_id: secret_rotation_info&.id
-        }.compact
+        update_started_at = Time.current.utc.iso8601
+        project_secret.update_started_at = update_started_at
+
+        custom_metadata = build_update_custom_metadata(
+          project_secret,
+          secret_rotation_info,
+          update_started_at: update_started_at,
+          update_completed_at: nil
+        )
 
         # NOTE: The current implementation makes two separate API calls (one for the value, one for metadata).
         # In the future, the secret value update will be handled directly in the frontend for better security,
@@ -93,6 +96,8 @@ module SecretsManagement
         project_secret.metadata_version = metadata_cas ? metadata_cas + 1 : nil
         project_secret.rotation_info = secret_rotation_info
 
+        complete_secret_update(project_secret, secret_rotation_info, update_started_at, metadata_cas)
+
         ServiceResponse.success(payload: { project_secret: project_secret })
       rescue SecretsManagerClient::ApiError => e
         raise e unless e.message.include?('metadata check-and-set parameter does not match the current version')
@@ -108,6 +113,40 @@ module SecretsManagement
         # No need to include rotation info in this case because we just want to upsert if ever
         ProjectSecrets::ReadService.new(project, current_user)
           .execute(name, include_rotation_info: false)
+      end
+
+      def complete_secret_update(project_secret, secret_rotation_info, update_started_at, metadata_cas)
+        update_completed_at = Time.current.utc.iso8601
+        project_secret.update_completed_at = update_completed_at
+
+        custom_metadata = build_update_custom_metadata(
+          project_secret,
+          secret_rotation_info,
+          update_started_at: update_started_at,
+          update_completed_at: update_completed_at
+        )
+
+        user_client.update_kv_secret_metadata(
+          secrets_manager.ci_secrets_mount_path,
+          secrets_manager.ci_data_path(project_secret.name),
+          custom_metadata,
+          metadata_cas: (metadata_cas ? metadata_cas + 1 : nil)
+        )
+      end
+
+      def build_update_custom_metadata(
+        project_secret, secret_rotation_info, update_started_at:,
+        update_completed_at: nil)
+        {
+          environment: project_secret.environment,
+          branch: project_secret.branch,
+          description: project_secret.description,
+          secret_rotation_info_id: secret_rotation_info&.id,
+          update_started_at: update_started_at,
+          update_completed_at: update_completed_at,
+          create_started_at: project_secret.create_started_at,
+          create_completed_at: project_secret.create_completed_at
+        }.compact
       end
 
       def error_response(project_secret)

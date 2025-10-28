@@ -21,7 +21,11 @@ module SecretsManagement
             description: custom_metadata["description"],
             environment: custom_metadata["environment"],
             branch: custom_metadata["branch"],
-            metadata_version: data.dig("metadata", "current_metadata_version")
+            metadata_version: data.dig("metadata", "current_metadata_version"),
+            create_started_at: custom_metadata["create_started_at"],
+            create_completed_at: custom_metadata["create_completed_at"],
+            update_started_at: custom_metadata["update_started_at"],
+            update_completed_at: custom_metadata["update_completed_at"]
           )
 
           next secret unless include_rotation_info

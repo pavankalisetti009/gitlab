@@ -48,13 +48,12 @@ RSpec.describe SecretsManagement::ProjectSecrets::ReadService, :gitlab_secrets_m
             expect(project_secret.description).to eq(description)
             expect(project_secret.branch).to eq(branch)
             expect(project_secret.environment).to eq(environment)
-            expect(project_secret.metadata_version).to eq(1)
+            expect(project_secret.metadata_version).to eq(2)
             expect(project_secret.project).to eq(project)
 
             rotation_info = secret_rotation_info_for_project_secret(
               project,
-              project_secret.name,
-              project_secret.metadata_version
+              project_secret.name
             )
 
             expect(project_secret.rotation_info).to eq(rotation_info)
@@ -67,6 +66,138 @@ RSpec.describe SecretsManagement::ProjectSecrets::ReadService, :gitlab_secrets_m
               expect(result).to be_success
               project_secret = result.payload[:project_secret]
               expect(project_secret.rotation_info).to be_nil
+            end
+          end
+
+          context 'when evaluating status', :freeze_time do
+            let(:namespace) { project.secrets_manager.full_project_namespace_path }
+            let(:mount)     { project.secrets_manager.ci_secrets_mount_path }
+            let(:path)      { project.secrets_manager.ci_data_path(name) }
+            let(:client)    { secrets_manager_client.with_namespace(namespace) }
+            let(:cas)       { 2 }
+            let(:threshold) { 30.seconds }
+
+            def iso(time)
+              time&.utc&.iso8601
+            end
+
+            shared_examples 'writes metadata and expects status' do |expected|
+              it "computes status as #{expected}" do
+                metadata = {
+                  description: description,
+                  environment: environment,
+                  branch: branch
+                }.merge(timestamps)
+
+                client.update_kv_secret_metadata(mount, path, metadata, metadata_cas: cas)
+                project_secret = service.execute(name, include_rotation_info: true).payload[:project_secret]
+                expect(project_secret.status).to eq(expected)
+              end
+            end
+
+            context 'when update timestamps are evaluated' do
+              context 'when no timestamps are present' do
+                let(:timestamps) { {} }
+
+                it_behaves_like 'writes metadata and expects status', 'CREATE_IN_PROGRESS'
+              end
+
+              context 'when update started recently and completed' do
+                let(:timestamps) do
+                  {
+                    create_started_at: iso(1.hour.ago),
+                    create_completed_at: iso(1.hour.ago),
+                    update_started_at: iso((threshold / 3).ago),
+                    update_completed_at: iso(Time.current)
+                  }
+                end
+
+                it_behaves_like 'writes metadata and expects status', 'COMPLETED'
+              end
+
+              context 'when update started long ago and completed' do
+                let(:timestamps) do
+                  {
+                    update_started_at: iso((threshold * 3).ago),
+                    update_completed_at: iso(Time.current)
+                  }
+                end
+
+                it_behaves_like 'writes metadata and expects status', 'COMPLETED'
+              end
+
+              context 'when update started long ago and not completed' do
+                let(:timestamps) do
+                  { update_started_at: iso((threshold * 2).ago) }
+                end
+
+                it_behaves_like 'writes metadata and expects status', 'UPDATE_STALE'
+              end
+
+              context 'when update timestamps are reversed and recent' do
+                let(:timestamps) do
+                  {
+                    update_started_at: iso(Time.current),
+                    update_completed_at: iso(1.minute.ago)
+                  }
+                end
+
+                it_behaves_like 'writes metadata and expects status', 'COMPLETED'
+              end
+
+              context 'when update is recent but timestamps are reversed beyond threshold' do
+                let(:timestamps) do
+                  {
+                    update_started_at: iso(Time.current),
+                    update_completed_at: iso(2.minutes.ago)
+                  }
+                end
+
+                it_behaves_like 'writes metadata and expects status', 'COMPLETED'
+              end
+            end
+
+            context 'when creation timestamps are evaluated and no updates are present' do
+              context 'when no creation timestamps are present' do
+                let(:timestamps) { {} }
+
+                it_behaves_like 'writes metadata and expects status', 'CREATE_IN_PROGRESS'
+              end
+
+              context 'when creation started recently and not completed' do
+                let(:timestamps) do
+                  { create_started_at: iso((threshold / 3).ago) }
+                end
+
+                it_behaves_like 'writes metadata and expects status', 'CREATE_IN_PROGRESS'
+              end
+
+              context 'when creation started exactly at threshold' do
+                let(:timestamps) do
+                  { create_started_at: iso(threshold.ago) }
+                end
+
+                it_behaves_like 'writes metadata and expects status', 'CREATE_STALE'
+              end
+
+              context 'when creation started long ago and not completed' do
+                let(:timestamps) do
+                  { create_started_at: iso((threshold * 2).ago) }
+                end
+
+                it_behaves_like 'writes metadata and expects status', 'CREATE_STALE'
+              end
+
+              context 'when creation started and completed normally' do
+                let(:timestamps) do
+                  {
+                    create_started_at: iso(6.minutes.ago),
+                    create_completed_at: iso(5.minutes.ago)
+                  }
+                end
+
+                it_behaves_like 'writes metadata and expects status', 'COMPLETED'
+              end
             end
           end
         end

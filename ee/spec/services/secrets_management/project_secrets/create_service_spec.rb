@@ -33,15 +33,15 @@ RSpec.describe SecretsManagement::ProjectSecrets::CreateService, :gitlab_secrets
         provision_project_secrets_manager(secrets_manager, user)
       end
 
-      it 'creates a project secret' do
-        expect(result).to be_success
+      it 'creates a project secret', :freeze_time do
+        frozen_time = Time.current.utc.iso8601
 
         secret = result.payload[:project_secret]
         expect(secret).to be_present
         expect(secret.name).to eq(name)
         expect(secret.description).to eq(description)
         expect(secret.project).to eq(project)
-        expect(secret.metadata_version).to eq(1)
+        expect(secret.metadata_version).to eq(2)
 
         expect_kv_secret_to_have_value(
           project.secrets_manager.full_project_namespace_path,
@@ -63,7 +63,7 @@ RSpec.describe SecretsManagement::ProjectSecrets::CreateService, :gitlab_secrets
           project.secrets_manager.full_project_namespace_path,
           project.secrets_manager.ci_secrets_mount_path,
           secrets_manager.ci_data_path(name),
-          rotation_info.secret_metadata_version
+          rotation_info.secret_metadata_version + 1
         )
 
         expect_kv_secret_to_have_custom_metadata(
@@ -73,7 +73,9 @@ RSpec.describe SecretsManagement::ProjectSecrets::CreateService, :gitlab_secrets
           "description" => description,
           "environment" => environment,
           "branch" => branch,
-          "secret_rotation_info_id" => rotation_info.id.to_s
+          "secret_rotation_info_id" => rotation_info.id.to_s,
+          "create_started_at" => frozen_time,
+          "create_completed_at" => frozen_time
         )
 
         # Validate correct policy has path.
@@ -364,7 +366,7 @@ RSpec.describe SecretsManagement::ProjectSecrets::CreateService, :gitlab_secrets
                 project.secrets_manager.full_project_namespace_path,
                 project.secrets_manager.ci_secrets_mount_path,
                 secrets_manager.ci_data_path(name),
-                existing_rotation_info.secret_metadata_version
+                existing_rotation_info.secret_metadata_version + 1
               )
 
               expect_kv_secret_to_have_custom_metadata(
@@ -402,7 +404,7 @@ RSpec.describe SecretsManagement::ProjectSecrets::CreateService, :gitlab_secrets
                 project.secrets_manager.full_project_namespace_path,
                 project.secrets_manager.ci_secrets_mount_path,
                 secrets_manager.ci_data_path(name),
-                1
+                2
               )
 
               expect_kv_secret_not_to_have_custom_metadata(
