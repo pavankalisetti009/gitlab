@@ -33,7 +33,7 @@ RSpec.describe 'Update project secret', :gitlab_secrets_manager, :freeze_time, f
       description: 'updated description',
       branch: 'feature',
       environment: 'staging',
-      metadata_cas: 1,
+      metadata_cas: 2,
       rotation_interval_days: 30
     }
   end
@@ -93,7 +93,7 @@ RSpec.describe 'Update project secret', :gitlab_secrets_manager, :freeze_time, f
       expect(response).to have_gitlab_http_status(:success)
       expect(mutation_response['errors']).to be_empty
 
-      new_version = 2
+      new_version = 3
       rotation_info = secret_rotation_info_for_project_secret(project, params[:name], new_version)
 
       expect(graphql_data_at(mutation_name, :project_secret))
@@ -115,13 +115,96 @@ RSpec.describe 'Update project secret', :gitlab_secrets_manager, :freeze_time, f
         ))
     end
 
+    context 'when secret is stale' do
+      let(:client) { secrets_manager_client.with_namespace(namespace) }
+      let(:mount) { project.secrets_manager.ci_secrets_mount_path }
+      let(:namespace) { project.secrets_manager.full_project_namespace_path }
+
+      shared_examples 'stale secret validation' do |expected_error|
+        before do
+          secret_path = secrets_manager.ci_data_path(project_secret_attributes[:name])
+
+          metadata = {
+            description: 'test description',
+            environment: project_secret_attributes[:environment],
+            branch: project_secret_attributes[:branch]
+          }
+
+          metadata[:create_started_at] = stale_create_started_at if stale_create_started_at
+          metadata[:create_completed_at] = stale_create_completed_at if stale_create_completed_at
+          metadata[:update_started_at] = stale_update_started_at if stale_update_started_at
+          metadata[:update_completed_at] = stale_update_completed_at if stale_update_completed_at
+
+          client.update_kv_secret_metadata(
+            mount,
+            secret_path,
+            metadata,
+            metadata_cas: stale_metadata_cas
+          )
+        end
+
+        it 'returns a validation error', :aggregate_failures do
+          post_mutation
+
+          expect(response).to have_gitlab_http_status(:success)
+          expect(mutation_response['errors']).to include(expected_error)
+        end
+
+        it_behaves_like 'internal event not tracked'
+      end
+
+      context 'when secret is stale after creation' do
+        let(:stale_create_started_at) do
+          (Time.current - SecretsManagement::ProjectSecret::STALE_THRESHOLD - 1.hour).iso8601
+        end
+
+        let(:stale_create_completed_at) { nil }
+        let(:stale_update_started_at) { nil }
+        let(:stale_update_completed_at) { nil }
+        let(:stale_metadata_cas) { 2 }
+
+        let(:params) do
+          {
+            project_path: project.full_path,
+            name: project_secret_attributes[:name],
+            description: 'updated description',
+            metadata_cas: 2
+          }
+        end
+
+        it_behaves_like 'stale secret validation', 'Secret creation did not complete and is now stale.'
+      end
+
+      context 'when secret is stale after update' do
+        let(:stale_create_started_at) { 2.days.ago.iso8601 }
+        let(:stale_create_completed_at) { 2.days.ago.iso8601 }
+        let(:stale_update_started_at) do
+          (Time.current - SecretsManagement::ProjectSecret::STALE_THRESHOLD - 1.hour).iso8601
+        end
+
+        let(:stale_update_completed_at) { nil }
+        let(:stale_metadata_cas) { 2 }
+
+        let(:params) do
+          {
+            project_path: project.full_path,
+            name: project_secret_attributes[:name],
+            description: 'updated description',
+            metadata_cas: 3
+          }
+        end
+
+        it_behaves_like 'stale secret validation', 'Secret update did not complete and is now stale.'
+      end
+    end
+
     context 'with partial updates' do
       let(:params) do
         {
           project_path: project.full_path,
           name: project_secret_attributes[:name],
           description: 'updated description',
-          metadata_cas: 1
+          metadata_cas: 2
         }
       end
 
@@ -137,7 +220,7 @@ RSpec.describe 'Update project secret', :gitlab_secrets_manager, :freeze_time, f
             description: 'updated description',
             branch: project_secret_attributes[:branch],
             environment: project_secret_attributes[:environment],
-            metadata_version: 2,
+            metadata_version: 3,
             rotation_info: nil
           ))
 
@@ -158,7 +241,7 @@ RSpec.describe 'Update project secret', :gitlab_secrets_manager, :freeze_time, f
           project_path: project.full_path,
           name: project_secret_attributes[:name],
           secret: 'new-secret-value',
-          metadata_cas: 1
+          metadata_cas: 2
         }
       end
 
@@ -170,7 +253,7 @@ RSpec.describe 'Update project secret', :gitlab_secrets_manager, :freeze_time, f
 
         expect(graphql_data_at(mutation_name, :project_secret))
           .to match(a_graphql_entity_for(
-            metadata_version: 2
+            metadata_version: 3
           ))
 
         # Can't check the value directly in GraphQL response, but we can verify it was updated
@@ -210,7 +293,7 @@ RSpec.describe 'Update project secret', :gitlab_secrets_manager, :freeze_time, f
           project_path: project.full_path,
           name: 'NON_EXISTENT_SECRET',
           description: 'updated description',
-          metadata_cas: 1
+          metadata_cas: 2
         }
       end
 

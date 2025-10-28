@@ -28,7 +28,10 @@ RSpec.describe SecretsManagement::ProjectSecrets::UpdateService, :gitlab_secrets
   let(:branch) { nil }
   let(:environment) { nil }
   let(:rotation_interval_days) { nil }
-  let(:metadata_cas) { 1 }
+  let(:initial_metadata_version) { 2 }
+  let(:metadata_cas) { initial_metadata_version }
+  let(:expected_version_after_update) { initial_metadata_version + 1 }
+  let(:version_on_create) { 1 }
 
   describe '#execute', :aggregate_failures, :freeze_time do
     context 'when the project secrets manager is active' do
@@ -95,7 +98,7 @@ RSpec.describe SecretsManagement::ProjectSecrets::UpdateService, :gitlab_secrets
         it 'updates the description only' do
           expect(result).to be_success
           expect(result.payload[:project_secret].description).to eq(new_description)
-          expect(result.payload[:project_secret].metadata_version).to eq(2)
+          expect(result.payload[:project_secret].metadata_version).to eq(initial_metadata_version + 1)
 
           # Verify metadata was updated
           expect_kv_secret_to_have_custom_metadata(
@@ -128,7 +131,7 @@ RSpec.describe SecretsManagement::ProjectSecrets::UpdateService, :gitlab_secrets
 
         it 'updates the value' do
           expect(result).to be_success
-          expect(result.payload[:project_secret].metadata_version).to eq(2)
+          expect(result.payload[:project_secret].metadata_version).to eq(expected_version_after_update)
 
           # Verify the value was updated
           expect_kv_secret_to_have_value(
@@ -159,7 +162,7 @@ RSpec.describe SecretsManagement::ProjectSecrets::UpdateService, :gitlab_secrets
           expect(result).to be_success
 
           secret = result.payload[:project_secret]
-          new_version = metadata_cas + 1
+          new_version = initial_metadata_version + 1
           rotation_info = secret_rotation_info_for_project_secret(project, name, new_version)
 
           expect(rotation_info).not_to be_nil
@@ -172,7 +175,7 @@ RSpec.describe SecretsManagement::ProjectSecrets::UpdateService, :gitlab_secrets
             project.secrets_manager.full_project_namespace_path,
             project.secrets_manager.ci_secrets_mount_path,
             secrets_manager.ci_data_path(name),
-            new_version
+            expected_version_after_update + 1
           )
 
           expect_kv_secret_to_have_custom_metadata(
@@ -194,7 +197,7 @@ RSpec.describe SecretsManagement::ProjectSecrets::UpdateService, :gitlab_secrets
           secret = result.payload[:project_secret]
 
           # Old rotation info is left untouched and will be cleaned up by the background job
-          old_rotation_info = secret_rotation_info_for_project_secret(project, name, metadata_cas)
+          old_rotation_info = secret_rotation_info_for_project_secret(project, name, version_on_create)
           expect(old_rotation_info).not_to be_nil
           expect(old_rotation_info.rotation_interval_days).to eq(original_rotation_interval_days)
 
@@ -212,7 +215,7 @@ RSpec.describe SecretsManagement::ProjectSecrets::UpdateService, :gitlab_secrets
             project.secrets_manager.full_project_namespace_path,
             project.secrets_manager.ci_secrets_mount_path,
             secrets_manager.ci_data_path(name),
-            new_version
+            new_version + 1
           )
 
           expect_kv_secret_to_have_custom_metadata(
@@ -234,7 +237,7 @@ RSpec.describe SecretsManagement::ProjectSecrets::UpdateService, :gitlab_secrets
           secret = result.payload[:project_secret]
 
           # Old rotation info is left untouched and will be cleaned up by the background job
-          old_rotation_info = secret_rotation_info_for_project_secret(project, name, metadata_cas)
+          old_rotation_info = secret_rotation_info_for_project_secret(project, name, version_on_create)
           expect(old_rotation_info).not_to be_nil
           expect(old_rotation_info.rotation_interval_days).to eq(original_rotation_interval_days)
 
@@ -252,7 +255,7 @@ RSpec.describe SecretsManagement::ProjectSecrets::UpdateService, :gitlab_secrets
             project.secrets_manager.full_project_namespace_path,
             project.secrets_manager.ci_secrets_mount_path,
             secrets_manager.ci_data_path(name),
-            new_version
+            new_version + 1
           )
 
           expect_kv_secret_to_have_custom_metadata(
@@ -264,13 +267,65 @@ RSpec.describe SecretsManagement::ProjectSecrets::UpdateService, :gitlab_secrets
         end
       end
 
+      context 'when metadata timing fields are written', :freeze_time do
+        let(:description) { new_description }
+
+        it 'sets update_started_at and update_completed_at and bumps metadata twice' do
+          frozen_iso = Time.current.utc.iso8601
+
+          expect(result).to be_success
+
+          expect_kv_secret_to_have_metadata_version(
+            project.secrets_manager.full_project_namespace_path,
+            project.secrets_manager.ci_secrets_mount_path,
+            secrets_manager.ci_data_path(name),
+            metadata_cas + 2
+          )
+
+          expect_kv_secret_to_have_custom_metadata(
+            project.secrets_manager.full_project_namespace_path,
+            project.secrets_manager.ci_secrets_mount_path,
+            secrets_manager.ci_data_path(name),
+            "update_started_at" => frozen_iso,
+            "update_completed_at" => frozen_iso
+          )
+        end
+
+        context 'when metadata_cas is not given' do
+          let(:description) { new_description }
+          let(:metadata_cas) { nil }
+
+          it 'sets both timestamps and uses previous version + 1 then + 2' do
+            frozen_iso = Time.current.utc.iso8601
+            expect(result).to be_success
+
+            expect_kv_secret_to_have_metadata_version(
+              project.secrets_manager.full_project_namespace_path,
+              project.secrets_manager.ci_secrets_mount_path,
+              secrets_manager.ci_data_path(name),
+              initial_metadata_version + 2
+            )
+
+            expect_kv_secret_to_have_custom_metadata(
+              project.secrets_manager.full_project_namespace_path,
+              project.secrets_manager.ci_secrets_mount_path,
+              secrets_manager.ci_data_path(name),
+              "update_started_at" => frozen_iso,
+              "update_completed_at" => frozen_iso
+            )
+
+            expect(result.payload[:project_secret].metadata_version).to be_nil
+          end
+        end
+      end
+
       context 'when updating environment' do
         let(:environment) { new_environment }
 
         it 'updates the environment and policies' do
           expect(result).to be_success
           expect(result.payload[:project_secret].environment).to eq(new_environment)
-          expect(result.payload[:project_secret].metadata_version).to eq(2)
+          expect(result.payload[:project_secret].metadata_version).to eq(3)
 
           # Verify metadata was updated
           expect_kv_secret_to_have_custom_metadata(
@@ -316,7 +371,7 @@ RSpec.describe SecretsManagement::ProjectSecrets::UpdateService, :gitlab_secrets
         it 'updates the branch and policies' do
           expect(result).to be_success
           expect(result.payload[:project_secret].branch).to eq(new_branch)
-          expect(result.payload[:project_secret].metadata_version).to eq(2)
+          expect(result.payload[:project_secret].metadata_version).to eq(3)
 
           # Verify metadata was updated
           expect_kv_secret_to_have_custom_metadata(
@@ -356,7 +411,7 @@ RSpec.describe SecretsManagement::ProjectSecrets::UpdateService, :gitlab_secrets
             expect(secret.description).to eq(new_description)
             expect(secret.branch).to eq(new_branch)
             expect(secret.environment).to eq(new_environment)
-            expect(secret.metadata_version).to eq(2)
+            expect(secret.metadata_version).to eq(3)
 
             # Verify rotation was added
             new_version = metadata_cas + 1
@@ -378,7 +433,7 @@ RSpec.describe SecretsManagement::ProjectSecrets::UpdateService, :gitlab_secrets
               project.secrets_manager.full_project_namespace_path,
               project.secrets_manager.ci_secrets_mount_path,
               secrets_manager.ci_data_path(name),
-              new_version
+              new_version + 1
             )
 
             expect_kv_secret_to_have_custom_metadata(
@@ -526,7 +581,7 @@ RSpec.describe SecretsManagement::ProjectSecrets::UpdateService, :gitlab_secrets
 
           # Verify rotation was added
           # When no CAS, we use previous_metadata_version + 1
-          new_version = 2
+          new_version = initial_metadata_version + 1
           rotation_info = secret_rotation_info_for_project_secret(project, name, new_version)
           expect(rotation_info).not_to be_nil
           expect(rotation_info.rotation_interval_days).to eq(new_rotation_interval_days)
@@ -545,7 +600,7 @@ RSpec.describe SecretsManagement::ProjectSecrets::UpdateService, :gitlab_secrets
             project.secrets_manager.full_project_namespace_path,
             project.secrets_manager.ci_secrets_mount_path,
             secrets_manager.ci_data_path(name),
-            new_version
+            new_version + 1
           )
 
           expect_kv_secret_to_have_custom_metadata(
@@ -565,7 +620,7 @@ RSpec.describe SecretsManagement::ProjectSecrets::UpdateService, :gitlab_secrets
         let(:value) { new_value }
         let(:branch) { new_branch }
         let(:environment) { new_environment }
-        let(:metadata_cas) { 2 }
+        let(:metadata_cas) { 3 }
 
         it 'returns an error' do
           expect(result).not_to be_success
@@ -585,7 +640,7 @@ RSpec.describe SecretsManagement::ProjectSecrets::UpdateService, :gitlab_secrets
             project.secrets_manager.full_project_namespace_path,
             project.secrets_manager.ci_secrets_mount_path,
             secrets_manager.ci_data_path(name),
-            1
+            2
           )
 
           expect_kv_secret_to_have_custom_metadata(

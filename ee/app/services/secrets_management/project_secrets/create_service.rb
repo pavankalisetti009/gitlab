@@ -63,12 +63,15 @@ module SecretsManagement
         # users can modify it in the future. Updating a secret to set missing
         # branch and environments will then allow pipelines to access the secret.
 
-        create_secret(project_secret, value, secret_rotation_info)
+        start_secret_creation!(project_secret, value, secret_rotation_info)
 
         refresh_secret_ci_policies(project_secret)
 
-        project_secret.metadata_version = 1
         project_secret.rotation_info = secret_rotation_info
+
+        complete_secret_creation!(project_secret, secret_rotation_info)
+
+        project_secret.metadata_version = 2
 
         ServiceResponse.success(payload: { project_secret: project_secret })
       rescue SecretsManagerClient::ApiError => e
@@ -90,30 +93,45 @@ module SecretsManagement
         error_response(project_secret)
       end
 
+      def kv_paths(name)
+        [secrets_manager.ci_secrets_mount_path, secrets_manager.ci_data_path(name)]
+      end
+
+      def write_secret_value!(project_secret, value, cas:)
+        mount, path = kv_paths(project_secret.name)
+        user_client.update_kv_secret(mount, path, value, cas: cas)
+      end
+
+      def update_metadata_for(project_secret, secret_rotation_info, metadata_cas:)
+        mount, path = kv_paths(project_secret.name)
+
+        custom_metadata = build_custom_metadata(
+          project_secret,
+          secret_rotation_info,
+          create_started_at: project_secret.create_started_at,
+          create_completed_at: project_secret.create_completed_at
+        )
+
+        user_client.update_kv_secret_metadata(mount, path, custom_metadata, metadata_cas: metadata_cas)
+      end
+
       # NOTE: The current implementation makes two separate API calls (one for the value, one for metadata).
       # In the future, the secret value creation will be handled directly in the frontend for better security,
       # before calling this service. However, the metadata update and policy management will still be handled
       # in this Rails backend service, as they contain essential information for access control.
-      def create_secret(project_secret, value, secret_rotation_info)
-        user_client.update_kv_secret(
-          secrets_manager.ci_secrets_mount_path,
-          secrets_manager.ci_data_path(project_secret.name),
-          value,
-          cas: 0
-        )
 
-        custom_metadata = {
-          environment: project_secret.environment,
-          branch: project_secret.branch,
-          description: project_secret.description,
-          secret_rotation_info_id: secret_rotation_info&.id
-        }.compact
+      def start_secret_creation!(project_secret, value, secret_rotation_info)
+        project_secret.create_started_at = Time.current.utc.iso8601
+        write_secret_value!(project_secret, value, cas: 0)
+        update_metadata_for(project_secret, secret_rotation_info, metadata_cas: 0)
+      end
 
-        user_client.update_kv_secret_metadata(
-          secrets_manager.ci_secrets_mount_path,
-          secrets_manager.ci_data_path(project_secret.name),
-          custom_metadata,
-          metadata_cas: 0
+      def complete_secret_creation!(project_secret, secret_rotation_info)
+        project_secret.create_completed_at = Time.current.utc.iso8601
+        update_metadata_for(
+          project_secret,
+          secret_rotation_info,
+          metadata_cas: 1
         )
       end
 
@@ -130,6 +148,17 @@ module SecretsManagement
         end
 
         error_response(project_secret)
+      end
+
+      def build_custom_metadata(project_secret, secret_rotation_info, create_started_at:, create_completed_at: nil)
+        {
+          environment: project_secret.environment,
+          branch: project_secret.branch,
+          description: project_secret.description,
+          secret_rotation_info_id: secret_rotation_info&.id,
+          create_started_at: create_started_at,
+          create_completed_at: create_completed_at
+        }.compact
       end
     end
   end

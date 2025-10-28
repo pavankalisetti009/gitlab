@@ -6,6 +6,7 @@ module SecretsManagement
     include ActiveModel::Attributes
     include ActiveModel::Validations
     include ActiveModel::Dirty
+    include SecretStatus
 
     attribute :project
 
@@ -14,6 +15,10 @@ module SecretsManagement
     attribute :branch, :string
     attribute :environment, :string
     attribute :metadata_version, :integer, default: 0
+    attribute :create_started_at
+    attribute :create_completed_at
+    attribute :update_started_at
+    attribute :update_completed_at
 
     # We only track changes for environment and branch for policy updates
     define_attribute_methods :branch, :environment

@@ -11,7 +11,9 @@ RSpec.describe SecretsManagement::ProjectSecret, feature_category: :secrets_mana
       project: project,
       name: 'TEST_SECRET',
       branch: 'main',
-      environment: 'production'
+      environment: 'production',
+      create_started_at: Time.now.iso8601,
+      create_completed_at: Time.now.iso8601
     )
   end
 
@@ -105,7 +107,9 @@ RSpec.describe SecretsManagement::ProjectSecret, feature_category: :secrets_mana
         project: project,
         name: 'TEST_SECRET',
         branch: 'main',
-        environment: 'production'
+        environment: 'production',
+        create_started_at: Time.now.iso8601,
+        create_completed_at: Time.now.iso8601
       )
     end
 
@@ -120,6 +124,136 @@ RSpec.describe SecretsManagement::ProjectSecret, feature_category: :secrets_mana
 
     it 'returns false for different object types' do
       expect(project_secret).not_to eq('not a secret')
+    end
+  end
+
+  describe '#status' do
+    subject(:status_subject) { project_secret }
+
+    let(:threshold) { described_class::STALE_THRESHOLD }
+
+    shared_examples 'status is' do |expected|
+      it "returns #{expected}" do
+        expect(status_subject.status).to eq(expected)
+      end
+    end
+
+    shared_examples 'validates status' do |expected|
+      it "validates correctly for #{expected}" do
+        expect(status_subject).to be_valid
+      end
+
+      it "validates update rules for #{expected}" do
+        if expected == 'COMPLETED'
+          expect(status_subject.valid_for_update?).to be_truthy
+        else
+          expect(status_subject.valid_for_update?).to be_falsey
+        end
+      end
+    end
+
+    context 'when creation timestamps are evaluated (no updates yet)', :freeze_time do
+      let(:update_started_at)   { nil }
+      let(:update_completed_at) { nil }
+
+      before do
+        project_secret.update_started_at   = update_started_at
+        project_secret.update_completed_at = update_completed_at
+        project_secret.create_started_at   = create_started_at
+        project_secret.create_completed_at = create_completed_at
+      end
+
+      context 'when both timestamps are nil' do
+        let(:create_started_at)   { nil }
+        let(:create_completed_at) { nil }
+
+        it_behaves_like 'status is', 'CREATE_IN_PROGRESS'
+        it_behaves_like 'validates status', 'CREATE_IN_PROGRESS'
+      end
+
+      context 'when started recently and not completed' do
+        let(:create_started_at)   { (threshold / 2).ago }
+        let(:create_completed_at) { nil }
+
+        it_behaves_like 'status is', 'CREATE_IN_PROGRESS'
+        it_behaves_like 'validates status', 'CREATE_IN_PROGRESS'
+      end
+
+      context 'when started exactly at threshold' do
+        let(:create_started_at)   { threshold.ago }
+        let(:create_completed_at) { nil }
+
+        it_behaves_like 'status is', 'CREATE_STALE'
+        it_behaves_like 'validates status', 'CREATE_STALE'
+      end
+
+      context 'when started long ago (stale)' do
+        let(:create_started_at)   { (threshold * 2).ago }
+        let(:create_completed_at) { nil }
+
+        it_behaves_like 'status is', 'CREATE_STALE'
+        it_behaves_like 'validates status', 'CREATE_STALE'
+      end
+
+      context 'when completed normally' do
+        let(:create_started_at)   { 6.minutes.ago }
+        let(:create_completed_at) { 5.minutes.ago }
+
+        it_behaves_like 'status is', 'COMPLETED'
+        it_behaves_like 'validates status', 'COMPLETED'
+      end
+    end
+
+    context 'when update timestamps are evaluated (creation completed and valid)', :freeze_time do
+      let(:create_started_at)   { 6.minutes.ago }
+      let(:create_completed_at) { 5.minutes.ago }
+
+      before do
+        project_secret.create_started_at   = create_started_at
+        project_secret.create_completed_at = create_completed_at
+        project_secret.update_started_at   = update_started_at
+        project_secret.update_completed_at = update_completed_at
+      end
+
+      context 'when update started recently and is in progress' do
+        let(:update_started_at)   { (threshold / 2).ago }
+        let(:update_completed_at) { nil }
+
+        it_behaves_like 'status is', 'UPDATE_IN_PROGRESS'
+        it_behaves_like 'validates status', 'UPDATE_IN_PROGRESS'
+      end
+
+      context 'when update started exactly at threshold' do
+        let(:update_started_at)   { threshold.ago }
+        let(:update_completed_at) { nil }
+
+        it_behaves_like 'status is', 'UPDATE_STALE'
+        it_behaves_like 'validates status', 'UPDATE_STALE'
+      end
+
+      context 'when update started long ago and not completed' do
+        let(:update_started_at)   { (threshold * 2).ago }
+        let(:update_completed_at) { nil }
+
+        it_behaves_like 'status is', 'UPDATE_STALE'
+        it_behaves_like 'validates status', 'UPDATE_STALE'
+      end
+
+      context 'when update started long ago but completed in time' do
+        let(:update_started_at)   { (threshold * 2).ago }
+        let(:update_completed_at) { ((threshold * 2) - 1.minute).ago }
+
+        it_behaves_like 'status is', 'COMPLETED'
+        it_behaves_like 'validates status', 'COMPLETED'
+      end
+
+      context 'when no update timestamps are present' do
+        let(:update_started_at)   { nil }
+        let(:update_completed_at) { nil }
+
+        it_behaves_like 'status is', 'COMPLETED'
+        it_behaves_like 'validates status', 'COMPLETED'
+      end
     end
   end
 end

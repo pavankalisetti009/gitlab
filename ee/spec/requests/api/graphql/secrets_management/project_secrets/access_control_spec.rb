@@ -166,7 +166,7 @@ RSpec.describe 'project secrets', :gitlab_secrets_manager, :freeze_time, feature
               description: secret_1.description,
               branch: secret_1.branch,
               environment: secret_1.environment,
-              metadata_version: 1,
+              metadata_version: 2,
               rotation_info: a_graphql_entity_for(
                 rotation_interval_days: rotation_info_1.rotation_interval_days,
                 status: SecretsManagement::SecretRotationInfo::STATUSES[:ok],
@@ -180,7 +180,7 @@ RSpec.describe 'project secrets', :gitlab_secrets_manager, :freeze_time, feature
               description: secret_2.description,
               branch: secret_2.branch,
               environment: secret_2.environment,
-              metadata_version: 1,
+              metadata_version: 2,
               rotation_info: a_graphql_entity_for(
                 rotation_interval_days: rotation_info_2.rotation_interval_days,
                 status: SecretsManagement::SecretRotationInfo::STATUSES[:ok],
@@ -206,7 +206,7 @@ RSpec.describe 'project secrets', :gitlab_secrets_manager, :freeze_time, feature
                 description: secret_1.description,
                 branch: secret_1.branch,
                 environment: secret_1.environment,
-                metadata_version: 1,
+                metadata_version: 2,
                 rotation_info: a_graphql_entity_for(
                   rotation_interval_days: rotation_info_1.rotation_interval_days,
                   status: SecretsManagement::SecretRotationInfo::STATUSES[:ok],
@@ -222,7 +222,7 @@ RSpec.describe 'project secrets', :gitlab_secrets_manager, :freeze_time, feature
                 description: secret_2.description,
                 branch: secret_2.branch,
                 environment: secret_2.environment,
-                metadata_version: 1,
+                metadata_version: 2,
                 rotation_info: a_graphql_entity_for(
                   rotation_interval_days: rotation_info_2.rotation_interval_days,
                   status: SecretsManagement::SecretRotationInfo::STATUSES[:ok],
@@ -232,6 +232,81 @@ RSpec.describe 'project secrets', :gitlab_secrets_manager, :freeze_time, feature
               )
             )
           )
+      end
+
+      context 'when status reflects timestamps' do
+        let(:namespace) { project.secrets_manager.full_project_namespace_path }
+        let(:mount)     { project.secrets_manager.ci_secrets_mount_path }
+        let(:path)      { project.secrets_manager.ci_data_path('MY_SECRET_1') }
+        let(:client)    { secrets_manager_client.with_namespace(namespace) }
+        let(:cas)       { 2 } # metadata version after create
+
+        def iso(datetime)
+          datetime.utc.iso8601
+        end
+
+        it 'returns completed for just created secret' do
+          get_graphql(read_query, current_user: current_user)
+          node = graphql_data_at(:project_secret)
+          expect(node['status']).to eq('COMPLETED')
+        end
+
+        it 'returns stale for old create timestamps' do
+          client.update_kv_secret_metadata(
+            mount,
+            path,
+            {
+              description: 'test description 1',
+              environment: 'review/*',
+              branch: 'dev-branch-*',
+              create_started_at: iso(2.minutes.ago)
+            },
+            metadata_cas: cas
+          )
+
+          get_graphql(read_query, current_user: current_user)
+          node = graphql_data_at(:project_secret)
+          expect(node['status']).to eq('CREATE_STALE')
+        end
+
+        it 'returns completed for recent update timestamps' do
+          client.update_kv_secret_metadata(
+            mount,
+            path,
+            {
+              description: 'test description 1',
+              environment: 'review/*',
+              branch: 'dev-branch-*',
+              create_started_at: iso(5.minutes.ago),
+              create_completed_at: iso(5.minutes.ago),
+              update_started_at: iso(10.seconds.ago),
+              update_completed_at: iso(Time.current)
+            },
+            metadata_cas: cas
+          )
+
+          get_graphql(read_query, current_user: current_user)
+          node = graphql_data_at(:project_secret)
+          expect(node['status']).to eq('COMPLETED')
+        end
+
+        it 'returns stale for old update timestamps without completion' do
+          client.update_kv_secret_metadata(
+            mount,
+            path,
+            {
+              description: 'test description 1',
+              environment: 'review/*',
+              branch: 'dev-branch-*',
+              update_started_at: iso(2.minutes.ago)
+            },
+            metadata_cas: cas
+          )
+
+          get_graphql(read_query, current_user: current_user)
+          node = graphql_data_at(:project_secret)
+          expect(node['status']).to eq('UPDATE_STALE')
+        end
       end
 
       it 'avoids N+1 queries' do
@@ -271,7 +346,7 @@ RSpec.describe 'project secrets', :gitlab_secrets_manager, :freeze_time, feature
                 description: secret_1.description,
                 branch: secret_1.branch,
                 environment: secret_1.environment,
-                metadata_version: 1,
+                metadata_version: 2,
                 rotation_info: a_graphql_entity_for(
                   rotation_interval_days: rotation_info.rotation_interval_days,
                   status: SecretsManagement::SecretRotationInfo::STATUSES[:ok],

@@ -82,7 +82,7 @@ RSpec.describe 'Create project secret', :gitlab_secrets_manager, :freeze_time, f
           description: params[:description],
           branch: params[:branch],
           environment: params[:environment],
-          metadata_version: 1,
+          metadata_version: 2,
           rotation_info: a_graphql_entity_for(
             rotation_interval_days: rotation_info.rotation_interval_days,
             status: SecretsManagement::SecretRotationInfo::STATUSES[:ok],
