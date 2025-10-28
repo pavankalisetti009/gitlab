@@ -32,12 +32,10 @@ RSpec.describe WorkItems::ReorderService, feature_category: :team_planning do
         context 'with a non-project level work item' do
           let(:params) { { move_after_id: item1.id, move_before_id: item2.id } }
 
-          it 'does not update the position' do
+          it 'reorders correctly' do
             expect { service_result }
-              .not_to change { non_project_work_item.relative_position }
-
-            expect(service_result[:errors])
-              .to eq(["Only project work items are supported at this moment"])
+              .to change { non_project_work_item.relative_position }
+              .to be_between(item1.relative_position, item2.relative_position)
           end
         end
       end
