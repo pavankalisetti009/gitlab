@@ -6,14 +6,6 @@ export const mockDataWithPool = {
       startDate: '2025-08-01',
       endDate: '2025-08-31',
 
-      overage: {
-        isAllowed: true,
-      },
-
-      poolUsage: {
-        totalCredits: 1000,
-      },
-
       usersUsage: {
         users: {
           nodes: [
@@ -27,6 +19,9 @@ export const mockDataWithPool = {
                 creditsUsed: 1000,
                 totalCredits: 1000,
                 poolCreditsUsed: 500,
+                // TODO: `oneTimeCreditsUsed` field would be integrated in https://gitlab.com/gitlab-org/gitlab/-/issues/578579
+                // We'll need to update value here for better test coverage
+                oneTimeCreditsUsed: 0,
                 overageCreditsUsed: 100,
               },
 
@@ -192,6 +187,7 @@ export const mockEmptyData = {
                 creditsUsed: 0,
                 totalCredits: 0,
                 poolCreditsUsed: 0,
+                oneTimeCreditsUsed: 0,
                 overageCreditsUsed: 0,
               },
 
