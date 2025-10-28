@@ -32,9 +32,7 @@ module Preloaders
 
       log_statistics(group_ids)
 
-      get_results(query).tap do |results|
-        track_diff(results)
-      end
+      get_results(query)
     end
 
     def build_groups_with_traversal_ids(group_ids)
@@ -75,52 +73,7 @@ module Preloaders
       end
     end
 
-    def union_query
-      union_queries = []
-
-      member = Member.select('member_roles.permissions').with_user(user)
-
-      group_member = member
-        .joins(:member_role)
-        .where(source_type: 'Namespace')
-        .where('members.source_id IN (SELECT UNNEST(namespace_ids) as ids)')
-        .to_sql
-
-      if custom_role_for_group_link_enabled?
-        group_link_join = member
-          .joins('JOIN group_group_links ON members.source_id = group_group_links.shared_with_group_id')
-          .where('group_group_links.shared_group_id IN (SELECT UNNEST(namespace_ids) as ids)')
-
-        invited_member_role = group_link_join
-          .joins('JOIN member_roles ON member_roles.id = group_group_links.member_role_id')
-          .where('access_level > group_access')
-          .to_sql
-
-        # when both roles are custom roles with the same base access level,
-        # choose the source role as the max role
-        source_member_role = group_link_join
-          .joins('JOIN member_roles ON member_roles.id = members.member_role_id')
-          .where('(access_level < group_access) OR ' \
-            '(access_level = group_access AND group_group_links.member_role_id IS NOT NULL)')
-          .to_sql
-
-        union_queries.push(invited_member_role, source_member_role)
-      end
-
-      union_queries.push(group_member)
-
-      union_queries.join(" UNION ALL ")
-    end
-
     def query
-      if use_user_group_member_roles?
-        user_group_member_roles_query
-      else
-        union_query
-      end
-    end
-
-    def user_group_member_roles_query
       query = ::Authz::UserGroupMemberRole.joins(:member_role)
           .where('user_group_member_roles.group_id IN (SELECT UNNEST(namespace_ids) as ids)')
           .where(user: user)
@@ -162,65 +115,5 @@ module Preloaders
         group_ids: group_ids.first(10)
       )
     end
-
-    # Remove when use_user_group_member_roles feature flag is removed
-    def track_diff(results)
-      return if use_user_group_member_roles?
-      return unless ::Gitlab::Saas.feature_available?(:gitlab_com_subscriptions)
-
-      group_ids = groups_with_traversal_ids.map(&:first)
-
-      # Limit diff checks to usage with <= 20 input groups. This prevents log
-      # explosion for cases where input groups count is in the hundreds (e.g.
-      # global search).
-      return if group_ids.length > 20
-
-      group_ids_with_diff = []
-      cached_permissions = []
-      uncached_permissions = []
-
-      if use_user_group_member_roles?
-        cached_results = results
-        union_query_results = get_results(union_query)
-      else
-        cached_results = get_results(user_group_member_roles_query)
-        union_query_results = results
-      end
-
-      group_ids.each do |id|
-        cached_permissions = extract_permissions(cached_results, id)
-        uncached_permissions = extract_permissions(union_query_results, id)
-
-        next if cached_permissions == uncached_permissions
-
-        group_ids_with_diff << id
-      end
-
-      return if group_ids_with_diff.empty?
-
-      log_info = { class: self.class.name, event: 'Inaccurate user_group_member_roles data', user_id: user.id,
-                   use_user_group_member_roles: use_user_group_member_roles? }
-
-      log_info = if group_ids_with_diff.length > 1
-                   log_info.merge(group_ids: group_ids_with_diff)
-                 else
-                   log_info.merge(
-                     group_id: group_ids_with_diff.first,
-                     permissions: uncached_permissions,
-                     user_group_member_roles_permissions: cached_permissions
-                   )
-                 end
-
-      ::Gitlab::AppLogger.info(**log_info)
-    end
-
-    def extract_permissions(result, group_id)
-      result.fetch(group_id, []).sort.join(', ')
-    end
-
-    def use_user_group_member_roles?
-      ::Feature.enabled?(:use_user_group_member_roles, Feature.current_request)
-    end
-    strong_memoize_attr :use_user_group_member_roles?
   end
 end

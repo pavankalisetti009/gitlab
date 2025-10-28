@@ -13,26 +13,8 @@ module MemberRoleHelpers
     MemberRole.all_customizable_permissions[ability][:requirements] || []
   end
 
-  def create_group_member(*factory_args)
-    create(:group_member, *factory_args).tap do |m|
-      if ::Feature.enabled?(:use_user_group_member_roles, Feature.current_request)
-        ::Authz::UserGroupMemberRoles::UpdateForGroupService.new(m).execute
-      end
-    end
-  end
-
-  def create_group_link(*factory_args)
-    create(:group_group_link, *factory_args).tap do |l|
-      if ::Feature.enabled?(:use_user_group_member_roles, Feature.current_request)
-        ::Authz::UserGroupMemberRoles::UpdateForSharedGroupService.new(l).execute
-      end
-    end
-  end
-
   def assign_member_role(group_member, member_role)
     group_member.update!(member_role: member_role)
-
-    return unless ::Feature.enabled?(:use_user_group_member_roles, Feature.current_request)
 
     ::Authz::UserGroupMemberRoles::UpdateForGroupService.new(group_member).execute
   end

@@ -15,12 +15,12 @@ RSpec.shared_context 'with multiple users in a group with custom roles' do
     create(:member_role, :developer, :instance, admin_vulnerability: true, read_vulnerability: true)
   end
 
-  let_it_be(:user_a) { create_group_member(:guest, source: invited_group, member_role: guest_read_runners) }
-  let_it_be(:user_b) { create_group_member(:guest, source: invited_group, member_role: guest_read_vulnerability) }
+  let_it_be(:user_a) { create(:group_member, :guest, source: invited_group, member_role: guest_read_runners) }
+  let_it_be(:user_b) { create(:group_member, :guest, source: invited_group, member_role: guest_read_vulnerability) }
   let_it_be(:user_c) { create(:group_member, :guest, source: invited_group) }
   let_it_be(:user_d) { create(:group_member, :developer, source: invited_group) }
   let_it_be(:user_e) do
-    create_group_member(:developer, source: invited_group, member_role: developer_admin_vulnerability)
+    create(:group_member, :developer, source: invited_group, member_role: developer_admin_vulnerability)
   end
 end
 
@@ -58,7 +58,7 @@ RSpec.shared_examples 'returns expected member role abilities' do
 
   with_them do
     before do
-      create_group_link(
+      create(:group_group_link,
         group_access: invited_group_access,
         member_role: invited_group_member_role,
         shared_group: group,
@@ -136,7 +136,7 @@ RSpec.shared_context 'with a user in multiple groups with custom role' do
 
   let_it_be(:member_a) { create(:group_member, :reporter, source: group_a, user: user) }
   let_it_be(:member_b) do
-    create_group_member(:reporter, source: group_b, user: user, member_role: reporter_member_role)
+    create(:group_member, :reporter, source: group_b, user: user, member_role: reporter_member_role)
   end
 end
 
@@ -151,14 +151,14 @@ RSpec.shared_examples 'returns expected member role abilities for the user' do
 
   with_them do
     before do
-      create_group_link(
+      create(:group_group_link,
         group_access: group_a_access,
         member_role: group_a_member_role,
         shared_group: group,
         shared_with_group: group_a
       )
 
-      create_group_link(
+      create(:group_group_link,
         group_access: group_b_access,
         member_role: group_b_member_role,
         shared_group: group,

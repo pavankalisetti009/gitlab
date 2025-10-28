@@ -994,7 +994,7 @@ RSpec.describe Member, type: :model, feature_category: :groups_and_projects do
       let(:group_role) { create(:member_role, base_access_level: group_access, namespace: shared_group) }
 
       let(:member) do
-        create_group_member(
+        create(:group_member,
           user: user,
           source: invited_group,
           member_role: user_role,
@@ -1003,7 +1003,7 @@ RSpec.describe Member, type: :model, feature_category: :groups_and_projects do
       end
 
       before do
-        create_group_link(
+        create(:group_group_link,
           group_access: group_access,
           shared_group: shared_group,
           shared_with_group: invited_group,
@@ -1028,7 +1028,7 @@ RSpec.describe Member, type: :model, feature_category: :groups_and_projects do
           let_it_be(:role) { create(:member_role, :developer, namespace: shared_group) }
 
           let_it_be(:direct_member) do
-            create_group_member(
+            create(:group_member,
               user: user,
               source: shared_group,
               member_role: role,
@@ -1053,14 +1053,6 @@ RSpec.describe Member, type: :model, feature_category: :groups_and_projects do
         context 'when `use_user_group_member_roles_members_page` feature flag is disabled' do
           before do
             stub_feature_flags(use_user_group_member_roles_members_page: false)
-          end
-
-          it_behaves_like 'invited group members'
-        end
-
-        context 'when `use_user_group_member_roles_members_page` feature flag is enabled' do
-          before do
-            stub_feature_flags(use_user_group_member_roles: true)
           end
 
           it_behaves_like 'invited group members'
