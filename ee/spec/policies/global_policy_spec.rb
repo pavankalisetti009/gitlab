@@ -897,14 +897,13 @@ RSpec.describe GlobalPolicy, :aggregate_failures, feature_category: :shared do
       end
 
       context 'when admin', :enable_admin_mode do
-        where(:amazon_q_enabled, :is_licensed, :is_active_add_on, :instance_level_model_selection_enabled,
-          :is_offline_license, :can_manage_instance_model_selection) do
-          false | true  | true  | true  | false | be_allowed(:manage_instance_model_selection)
-          true  | true  | true  | true  | false | be_disallowed(:manage_instance_model_selection)
-          false | true  | false | true  | false | be_disallowed(:manage_instance_model_selection)
-          false | true  | true  | false | false | be_disallowed(:manage_instance_model_selection)
-          false | true  | true  | true  | true  | be_disallowed(:manage_instance_model_selection)
-          false | false | true  | true  | false | be_disallowed(:manage_instance_model_selection)
+        where(:amazon_q_enabled, :is_licensed, :is_active_add_on, :is_offline_license,
+          :can_manage_instance_model_selection) do
+          false | true  | true  | false | be_allowed(:manage_instance_model_selection)
+          true  | true  | true  | false | be_disallowed(:manage_instance_model_selection)
+          false | true  | false | false | be_disallowed(:manage_instance_model_selection)
+          false | true  | true  | true  | be_disallowed(:manage_instance_model_selection)
+          false | false | true  | false | be_disallowed(:manage_instance_model_selection)
         end
 
         with_them do
@@ -919,8 +918,6 @@ RSpec.describe GlobalPolicy, :aggregate_failures, feature_category: :shared do
             allow(::GitlabSubscriptions::AddOnPurchase)
         .to receive_message_chain(:for_self_managed, :for_duo_enterprise, :active,
           :exists?).and_return(is_active_add_on)
-
-            stub_feature_flags(instance_level_model_selection: instance_level_model_selection_enabled)
           end
 
           it { is_expected.to can_manage_instance_model_selection }
