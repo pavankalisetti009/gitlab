@@ -28,13 +28,21 @@ export default {
       return this.requirement?.author;
     },
     createdAtFormatted() {
+      if (!this.requirement?.createdAt) {
+        return '';
+      }
+
       return sprintf(__('created %{timeAgo}'), {
-        timeAgo: getTimeago().format(this.requirement?.createdAt),
+        timeAgo: getTimeago().format(this.requirement.createdAt),
       });
     },
     updatedAtFormatted() {
+      if (!this.requirement?.updatedAt) {
+        return '';
+      }
+
       return sprintf(__('updated %{timeAgo}'), {
-        timeAgo: getTimeago().format(this.requirement?.updatedAt),
+        timeAgo: getTimeago().format(this.requirement.updatedAt),
       });
     },
     testReport() {

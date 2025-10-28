@@ -109,6 +109,27 @@ export const requirement3 = {
   workItemIid: '3',
 };
 
+export const requirement4 = {
+  id: 'req-4',
+  iid: '4',
+  title: 'Non modo carum sibi quemque, verum etiam vehementer carum esse',
+  titleHtml: 'Non modo carum sibi quemque, verum etiam vehementer carum esse',
+  description: 'verum etiam _vehementer_ carum esse.',
+  descriptionHtml: 'verum etiam <i>vehementer</i> carum esse.',
+  createdAt: null,
+  updatedAt: null,
+  state: 'OPENED',
+  userPermissions: mockUserPermissions,
+  author: mockAuthor,
+  lastTestReportState: null,
+  lastTestReportManuallyCreated: true,
+  satisfied: false,
+  testReports: {
+    nodes: [mockTestReport],
+  },
+  workItemIid: '4',
+};
+
 export const requirementArchived = {
   id: 'req-arch',
   iid: '23',
