@@ -34611,9 +34611,6 @@ msgstr ""
 msgid "Import|Reassign contributions"
 msgstr ""
 
-msgid "Import|Rescheduling placeholder user records reassignment: database health"
-msgstr ""
-
 msgid "Import|Show errors"
 msgstr ""
 
