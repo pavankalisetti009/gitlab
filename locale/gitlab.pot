@@ -70485,6 +70485,12 @@ msgstr ""
 msgid "Usage trends"
 msgstr ""
 
+msgid "UsageBillingUserDetails|included credits used this month"
+msgstr ""
+
+msgid "UsageBillingUserDetails|total credits used"
+msgstr ""
+
 msgid "UsageBilling|%{percentage}%{percentSymbol} utilized"
 msgstr ""
 
@@ -70514,12 +70520,6 @@ msgid "UsageBilling|Credits"
 msgstr ""
 
 msgid "UsageBilling|Credits used after any included user credits and monthly commitment pool have been exhausted. Learn about %{linkStart}GitLab Credit pricing%{linkEnd}."
-msgstr ""
-
-msgid "UsageBilling|Credits used from pool this month"
-msgstr ""
-
-msgid "UsageBilling|Credits used this month"
 msgstr ""
 
 msgid "UsageBilling|Daily average use"

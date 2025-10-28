@@ -24,7 +24,6 @@ describe('UsageBillingUserDashboardApp', () => {
   /** @type { MockAdapter } */
 
   const MOCK_USER = mockDataWithPool.data.subscriptionUsage.usersUsage.users.nodes[0];
-  const MOCK_USAGE = MOCK_USER.usage;
   const USERNAME = MOCK_USER.username;
 
   /** @type {jest.Mock} */
@@ -43,8 +42,7 @@ describe('UsageBillingUserDashboardApp', () => {
   const findAlert = () => wrapper.findComponent(GlAlert);
   const findLoadingIcon = () => wrapper.findComponent(GlLoadingIcon);
   const findUserAvatar = () => wrapper.findComponent(GlAvatar);
-  const findMonthSummaryCard = () => wrapper.findByTestId('month-summary-card');
-  const findMonthPoolCard = () => wrapper.findByTestId('month-pool-card');
+  const findIncludedCreditsCard = () => wrapper.findByTestId('included-credits-card');
   const findTotalUsageCard = () => wrapper.findByTestId('total-usage-card');
   const findEventsTable = () => wrapper.findComponent(EventsTable);
 
@@ -96,25 +94,17 @@ describe('UsageBillingUserDashboardApp', () => {
     });
 
     describe('usage cards', () => {
-      it('renders month summary card with correct values', () => {
-        const card = findMonthSummaryCard();
+      it('renders included credits card with correct values', () => {
+        const card = findIncludedCreditsCard();
         expect(card.exists()).toBe(true);
-        expect(card.text()).toContain(`${MOCK_USAGE.creditsUsed} / ${MOCK_USAGE.totalCredits}`);
+        expect(card.text()).toMatchInterpolatedText(`1k / 1k included credits used this month`);
       });
 
-      it('renders month pool card with correct values', () => {
-        const card = findMonthPoolCard();
-        expect(card.exists()).toBe(true);
-        expect(card.text()).toContain(`${MOCK_USAGE.poolCreditsUsed}`);
-      });
-
-      it('renders total usage card with correct values', () => {
+      it('total usage card summarizes all credits usage', () => {
         const card = findTotalUsageCard();
-        const totalCreditsUsed =
-          MOCK_USAGE.creditsUsed + MOCK_USAGE.overageCreditsUsed + MOCK_USAGE.poolCreditsUsed;
 
         expect(card.exists()).toBe(true);
-        expect(card.text()).toContain(`${totalCreditsUsed}`);
+        expect(card.text()).toContain(`1.6k`);
       });
     });
 
@@ -202,11 +192,6 @@ describe('UsageBillingUserDashboardApp', () => {
       mockQueryHandler.mockResolvedValue(mockDataWithoutPool);
       createComponent();
       await waitForPromises();
-    });
-
-    it('will not render the pool usage card', () => {
-      const card = findMonthPoolCard();
-      expect(card.exists()).toBe(false);
     });
   });
 

@@ -5,6 +5,7 @@ import { logError } from '~/lib/logger';
 import { captureException } from '~/sentry/sentry_browser_wrapper';
 import { SHORT_DATE_FORMAT_WITH_TIME } from '~/vue_shared/constants';
 import HumanTimeframe from '~/vue_shared/components/datetime/human_timeframe.vue';
+import { numberToMetricPrefix } from '~/lib/utils/number_utils';
 import { PAGE_SIZE } from '../../../constants';
 import getUserSubscriptionUsageQuery from '../graphql/get_user_subscription_usage.query.graphql';
 import EventsTable from './events_table.vue';
@@ -65,23 +66,33 @@ export default {
     },
   },
   computed: {
-    hasCommitment() {
-      return Boolean(this.subscriptionUsage?.poolUsage?.totalCredits);
-    },
     user() {
       return this.subscriptionUsage?.usersUsage?.users?.nodes?.[0];
     },
     usage() {
+      const {
+        creditsUsed = 0,
+        totalCredits = 0,
+        poolCreditsUsed = 0,
+        oneTimeCreditsUsed = 0,
+        overageCreditsUsed = 0,
+      } = this.user?.usage ?? {};
+
       return {
-        creditsUsed: 0,
-        totalCredits: 0,
-        poolCreditsUsed: 0,
-        overageCreditsUsed: 0,
-        ...this.user?.usage,
+        creditsUsed,
+        totalCredits,
+        poolCreditsUsed,
+        oneTimeCreditsUsed,
+        overageCreditsUsed,
       };
     },
     totalCreditsUsed() {
-      return this.usage.creditsUsed + this.usage.poolCreditsUsed + this.usage.overageCreditsUsed;
+      return (
+        this.usage.creditsUsed +
+        this.usage.poolCreditsUsed +
+        this.usage.oneTimeCreditsUsed +
+        this.usage.overageCreditsUsed
+      );
     },
     events() {
       return this.user?.events?.nodes ?? [];
@@ -91,6 +102,7 @@ export default {
     },
   },
   methods: {
+    numberToMetricPrefix,
     onNextPage(item) {
       this.pagination = {
         first: PAGE_SIZE,
@@ -153,51 +165,45 @@ export default {
       </header>
 
       <dl class="gl-my-5 gl-flex gl-flex-col gl-gap-5 @md/panel:gl-flex-row">
-        <gl-card data-testid="month-summary-card" class="gl-flex-1 gl-bg-transparent">
-          <dd class="gl-heading-scale-400 gl-mb-3">
-            {{ usage.creditsUsed }} / {{ usage.totalCredits }}
+        <gl-card
+          data-testid="included-credits-card"
+          class="gl-flex-1 gl-bg-transparent"
+          body-class="gl-p-5"
+        >
+          <dd class="gl-heading-scale-600 gl-font-bold" data-testid="included-credits-card-value">
+            {{ numberToMetricPrefix(usage.creditsUsed) }}
+            <span class="gl-heading-scale-600 gl-font-bold gl-text-subtle">
+              / {{ numberToMetricPrefix(usage.totalCredits) }}
+            </span>
           </dd>
           <dt>
             <p class="gl-my-0">
-              {{ s__('UsageBilling|Credits used this month') }}
+              {{ s__('UsageBillingUserDetails|included credits used this month') }}
             </p>
             <p class="gl-my-0 gl-text-sm gl-text-subtle">
-              (<human-timeframe
+              <human-timeframe
                 :from="subscriptionUsage.startDate"
                 :till="subscriptionUsage.endDate"
-              />)
+              />
             </p>
           </dt>
         </gl-card>
 
         <gl-card
-          v-if="hasCommitment"
-          data-testid="month-pool-card"
+          data-testid="total-usage-card"
           class="gl-flex-1 gl-bg-transparent"
+          body-class="gl-p-5"
         >
-          <dd class="gl-heading-scale-400 gl-mb-3">{{ usage.poolCreditsUsed }}</dd>
-          <dt>
-            <p class="gl-my-0">{{ s__('UsageBilling|Credits used from pool this month') }}</p>
-            <p class="gl-my-0 gl-text-sm gl-text-subtle">
-              (<human-timeframe
-                :from="subscriptionUsage.startDate"
-                :till="subscriptionUsage.endDate"
-              />)
-            </p>
-          </dt>
-        </gl-card>
-
-        <gl-card data-testid="total-usage-card" class="gl-flex-1 gl-bg-transparent">
-          <dd class="gl-heading-scale-400 gl-mb-3">
-            {{ totalCreditsUsed }}
+          <dd class="gl-heading-scale-600 gl-font-bold">
+            {{ numberToMetricPrefix(totalCreditsUsed) }}
           </dd>
           <dt>
-            <p class="gl-my-0">{{ s__('UsageBilling|Total credits used') }}</p>
+            <p class="gl-my-0">{{ s__('UsageBillingUserDetails|total credits used') }}</p>
             <p class="gl-my-0 gl-text-sm gl-text-subtle">
-              (<human-timeframe
+              <human-timeframe
                 :from="subscriptionUsage.startDate"
                 :till="subscriptionUsage.endDate"
-              />)
+              />
             </p>
           </dt>
         </gl-card>
