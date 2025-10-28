@@ -24,9 +24,11 @@ RSpec.describe TriggerableHooks, feature_category: :webhooks do
   end
 
   describe '.hooks_for' do
+    let_it_be(:project) { create(:project) }
+
     context 'when the model has the required trigger scope' do
       it 'returns the record' do
-        hook = TestableHook.create!(url: 'http://example.com', member_approval_events: true)
+        hook = TestableHook.create!(url: 'http://example.com', project_id: project.id, member_approval_events: true)
 
         expect(TestableHook.hooks_for(:member_approval_hooks)).to eq [hook]
       end
