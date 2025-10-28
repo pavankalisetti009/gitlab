@@ -3,7 +3,12 @@ import { shallowMount } from '@vue/test-utils';
 import { nextTick } from 'vue';
 import RequirementItem from 'ee/requirements/components/requirement_item.vue';
 import { filterState } from 'ee/requirements/constants';
-import { mockAuthor, mockTestReport, requirement1 as mockRequirement } from '../mock_data';
+import {
+  mockAuthor,
+  mockTestReport,
+  requirement1 as mockRequirement,
+  requirement4 as mockRequirementWithInvalidDate,
+} from '../mock_data';
 
 const createComponent = (requirement = mockRequirement) =>
   shallowMount(RequirementItem, {
@@ -58,6 +63,12 @@ describe('RequirementMeta Mixin', () => {
     });
 
     describe('createdAtFormatted', () => {
+      it('returns empty string if createdAt is null or undefined', () => {
+        wrapper = createComponent(mockRequirementWithInvalidDate);
+
+        expect(wrapper.vm.createdAtFormatted).toBe('');
+      });
+
       it('returns timeago-style string representing `requirement.createdAtFormatted`', () => {
         // We don't have to be accurate here as it is already covered in rspecs
         expect(wrapper.vm.createdAtFormatted).toContain('created');
@@ -66,6 +77,12 @@ describe('RequirementMeta Mixin', () => {
     });
 
     describe('updatedAtFormatted', () => {
+      it('returns empty string if updatedAt is null or undefined', () => {
+        wrapper = createComponent(mockRequirementWithInvalidDate);
+
+        expect(wrapper.vm.updatedAtFormatted).toBe('');
+      });
+
       it('returns timeago-style string representing `requirement.updatedAtFormatted`', () => {
         // We don't have to be accurate here as it is already covered in rspecs
         expect(wrapper.vm.updatedAtFormatted).toContain('updated');
