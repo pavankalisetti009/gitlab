@@ -12,7 +12,7 @@ module Search
         # The schema_version method dynamically selects the highest version whose migration
         # has completed (or nil), preventing indexing with incomplete schema changes.
         SCHEMA_VERSIONS = {
-          25_43 => :index_work_items_milestone_state,
+          25_44 => :index_work_items_milestone_state,
           25_27 => nil
         }.freeze
 

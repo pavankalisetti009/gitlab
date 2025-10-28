@@ -202,7 +202,7 @@ RSpec.describe ::Search::Elastic::References::WorkItem, :elastic_helpers, featur
 
     context 'when index_work_items_milestone_state migration is finished' do
       it 'returns the latest schema version' do
-        expect(work_item_reference.schema_version).to eq(25_43)
+        expect(work_item_reference.schema_version).to eq(25_44)
       end
     end
 
