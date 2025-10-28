@@ -13,7 +13,7 @@ describe('PaginatedDependenciesTable component', () => {
   let wrapper;
   let originalDispatch;
 
-  const factory = ({ props = {}, glFeatures = { projectDependenciesGraphql: true } } = {}) => {
+  const factory = ({ props = {}, namespaceType = 'project' } = {}) => {
     store = createStore();
 
     wrapper = shallowMount(PaginatedDependenciesTable, {
@@ -21,7 +21,7 @@ describe('PaginatedDependenciesTable component', () => {
       propsData: props,
       provide: {
         vulnerabilitiesEndpoint: TEST_HOST,
-        glFeatures,
+        namespaceType,
       },
     });
   };
@@ -227,9 +227,9 @@ describe('PaginatedDependenciesTable component', () => {
     });
   });
 
-  describe('with `projectDependenciesGraphql` feature flag disabled', () => {
+  describe('when namespaceType is group', () => {
     beforeEach(() => {
-      factory({ glFeatures: { projectDependenciesGraphql: false } });
+      factory({ namespaceType: 'group' });
       jest.spyOn(store, 'dispatch').mockImplementation();
     });
 

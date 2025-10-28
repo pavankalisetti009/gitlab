@@ -61,7 +61,7 @@ export default {
       },
     }),
     fetchDependenciesWithFeatureFlag() {
-      if (this.glFeatures.projectDependenciesGraphql) {
+      if (this.namespaceType === NAMESPACE_PROJECT) {
         this.fetchDependenciesViaGraphQL();
       } else {
         this.fetchDependencies();

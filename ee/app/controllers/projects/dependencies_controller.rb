@@ -8,7 +8,6 @@ module Projects
 
     before_action only: :index do
       push_frontend_feature_flag(:dependency_paths, project)
-      push_frontend_feature_flag(:project_dependencies_graphql, project.group)
     end
 
     before_action :authorize_read_dependency_list!

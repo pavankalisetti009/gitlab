@@ -4,6 +4,7 @@ import { mapActions, mapState } from 'vuex';
 import { GlKeysetPagination } from '@gitlab/ui';
 import TablePagination from '~/vue_shared/components/pagination/table_pagination.vue';
 import glFeatureFlagsMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
+import { NAMESPACE_PROJECT } from '../constants';
 import DependenciesTable from './dependencies_table.vue';
 
 export default {
@@ -14,7 +15,7 @@ export default {
     TablePagination,
   },
   mixins: [glFeatureFlagsMixin()],
-  inject: ['vulnerabilitiesEndpoint'],
+  inject: ['vulnerabilitiesEndpoint', 'namespaceType'],
   computed: {
     ...mapState({
       shouldShowPagination(state) {
@@ -36,6 +37,9 @@ export default {
       'isLoading',
       'pageInfo',
     ]),
+    isProjectNamespace() {
+      return this.namespaceType === NAMESPACE_PROJECT;
+    },
   },
   methods: {
     ...mapActions({
@@ -43,14 +47,14 @@ export default {
         return dispatch('fetchDependencies', { page });
       },
       fetchCursorPage(dispatch, cursor) {
-        if (this.glFeatures.projectDependenciesGraphql) {
+        if (this.isProjectNamespace) {
           return dispatch('fetchDependenciesViaGraphQL', { cursor });
         }
 
         return dispatch('fetchDependencies', { cursor });
       },
       fetchVulnerabilities(dispatch, item) {
-        if (this.glFeatures.projectDependenciesGraphql) {
+        if (this.isProjectNamespace) {
           return dispatch('fetchVulnerabilitiesViaGraphQL', { item });
         }
 

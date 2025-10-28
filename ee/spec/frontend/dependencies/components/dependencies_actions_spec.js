@@ -11,11 +11,7 @@ describe('DependenciesActions component', () => {
   let store;
   let wrapper;
 
-  const factory = ({
-    propsData,
-    provide,
-    glFeatures = { projectDependenciesGraphql: true },
-  } = {}) => {
+  const factory = ({ propsData, provide, namespaceType = 'project' } = {}) => {
     store = createStore();
     jest.spyOn(store, 'dispatch').mockImplementation();
 
@@ -25,9 +21,8 @@ describe('DependenciesActions component', () => {
         ...propsData,
       },
       provide: {
-        namespaceType: 'group',
+        namespaceType,
         ...provide,
-        glFeatures,
       },
       stubs: {
         GroupDependenciesFilteredSearch: true,
@@ -89,10 +84,10 @@ describe('DependenciesActions component', () => {
     });
   });
 
-  describe('with "projectDependenciesGraphql" feature flag disabled', () => {
+  describe('when namespaceType is group', () => {
     describe('Sorting', () => {
       beforeEach(async () => {
-        factory({ glFeatures: { projectDependenciesGraphql: false } });
+        factory({ namespaceType: 'group' });
 
         store.state.endpoint = `${TEST_HOST}/dependencies.json`;
         jest.spyOn(urlUtility, 'updateHistory');
