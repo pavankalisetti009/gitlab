@@ -33,8 +33,6 @@ RSpec.describe Authz::CustomAbility, feature_category: :permissions do
       let_it_be(:child_group) { create(:group, parent: group) }
       let_it_be(:project) { create(:project, group: group) }
       let_it_be(:child_project) { create(:project, group: child_group) }
-      let_it_be(:project_runner) { create(:ci_runner, :project, projects: [project]) }
-      let_it_be(:group_runner) { create(:ci_runner, :group, groups: [group]) }
 
       standard_abilities = Gitlab::CustomRoles::Definition.standard
 
@@ -45,21 +43,16 @@ RSpec.describe Authz::CustomAbility, feature_category: :permissions do
           ref(:root_group) | name | ref(:child_group) | attrs[:group_ability]
           ref(:root_group) | name | ref(:project) | attrs[:project_ability]
           ref(:root_group) | name | ref(:child_project) | attrs[:project_ability]
-          ref(:root_group) | name | ref(:group_runner) | attrs[:group_ability]
-          ref(:root_group) | name | ref(:project_runner) | attrs[:project_ability]
 
           ref(:group) | name | ref(:group) | attrs[:group_ability]
           ref(:group) | name | ref(:child_group) | attrs[:group_ability]
           ref(:group) | name | ref(:project) | attrs[:project_ability]
           ref(:group) | name | ref(:child_project) | attrs[:project_ability]
-          ref(:group) | name | ref(:group_runner) | attrs[:group_ability]
-          ref(:group) | name | ref(:project_runner) | attrs[:project_ability]
 
           ref(:child_group) | name | ref(:child_group) | attrs[:group_ability]
           ref(:child_group) | name | ref(:child_project) | attrs[:project_ability]
 
           ref(:project) | name | ref(:project) | attrs[:project_ability]
-          ref(:project) | name | ref(:project_runner) | attrs[:project_ability]
 
           ref(:child_project) | name | ref(:child_project) | attrs[:project_ability]
         end
@@ -105,8 +98,6 @@ RSpec.describe Authz::CustomAbility, feature_category: :permissions do
           it { is_expected.not_to be_allowed(user, ability, root_group) }
           it { is_expected.not_to be_allowed(user, ability, group) }
           it { is_expected.not_to be_allowed(user, ability, project) }
-          it { is_expected.not_to be_allowed(user, ability, group_runner) }
-          it { is_expected.not_to be_allowed(user, ability, project_runner) }
         end
 
         context 'with a membership on `project`' do
@@ -116,7 +107,6 @@ RSpec.describe Authz::CustomAbility, feature_category: :permissions do
           it { is_expected.not_to be_allowed(user, ability, group) }
           it { is_expected.not_to be_allowed(user, ability, child_group) }
           it { is_expected.not_to be_allowed(user, ability, child_project) }
-          it { is_expected.not_to be_allowed(user, ability, group_runner) }
         end
 
         context 'with a membership on `child_project`' do
@@ -128,8 +118,6 @@ RSpec.describe Authz::CustomAbility, feature_category: :permissions do
           it { is_expected.not_to be_allowed(user, ability, group) }
           it { is_expected.not_to be_allowed(user, ability, child_group) }
           it { is_expected.not_to be_allowed(user, ability, project) }
-          it { is_expected.not_to be_allowed(user, ability, group_runner) }
-          it { is_expected.not_to be_allowed(user, ability, project_runner) }
         end
 
         context 'with a user assigned to an admin custom role' do
