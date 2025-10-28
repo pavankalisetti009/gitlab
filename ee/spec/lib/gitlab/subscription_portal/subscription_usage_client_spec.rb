@@ -182,8 +182,8 @@ RSpec.describe Gitlab::SubscriptionPortal::SubscriptionUsageClient, feature_cate
     let(:one_time_credits) do
       {
         creditsUsed: 12.25,
-        totalCredits: 1000,
-        totalCreditsRemaining: 987.75
+        totalCredits: 1000.91,
+        totalCreditsRemaining: 988.66
       }
     end
 
@@ -221,9 +221,9 @@ RSpec.describe Gitlab::SubscriptionPortal::SubscriptionUsageClient, feature_cate
     let(:query) { described_class::GET_MONTHLY_COMMITMENT_QUERY }
     let(:monthly_commitment) do
       {
-        totalCredits: 1000,
-        creditsUsed: 250,
-        dailyUsage: [{ date: '2025-10-01', creditsUsed: 250 }]
+        totalCredits: 1000.91,
+        creditsUsed: 250.32,
+        dailyUsage: [{ date: '2025-10-01', creditsUsed: 250.32 }]
       }
     end
 
@@ -262,8 +262,8 @@ RSpec.describe Gitlab::SubscriptionPortal::SubscriptionUsageClient, feature_cate
     let(:overage) do
       {
         isAllowed: true,
-        creditsUsed: 250,
-        dailyUsage: [{ date: '2025-10-01', creditsUsed: 250 }]
+        creditsUsed: 250.32,
+        dailyUsage: [{ date: '2025-10-01', creditsUsed: 250.32 }]
       }
     end
 
@@ -308,14 +308,14 @@ RSpec.describe Gitlab::SubscriptionPortal::SubscriptionUsageClient, feature_cate
           eventType: "ai_token_usage",
           projectId: nil,
           namespaceId: nil,
-          creditsUsed: 100
+          creditsUsed: 100.78
         },
         {
           timestamp: "2025-10-01T16:30:12Z",
           eventType: "workflow_execution",
           projectId: "19",
           namespaceId: "99",
-          creditsUsed: 200
+          creditsUsed: 200.56
         }
       ]
     end
@@ -363,16 +363,18 @@ RSpec.describe Gitlab::SubscriptionPortal::SubscriptionUsageClient, feature_cate
       [
         {
           userId: 123,
-          totalCredits: 100,
-          creditsUsed: 500,
-          monthlyCommitmentCreditsUsed: 400,
-          overageCreditsUsed: 50
+          totalCredits: 100.12,
+          creditsUsed: 500.23,
+          monthlyCommitmentCreditsUsed: 400.45,
+          oneTimeCreditsUsed: 25.56,
+          overageCreditsUsed: 50.67
         },
         {
           userId: 321,
-          totalCredits: 100,
-          creditsUsed: 50,
+          totalCredits: 100.12,
+          creditsUsed: 50.23,
           monthlyCommitmentCreditsUsed: 0,
+          oneTimeCreditsUsed: 12.34,
           overageCreditsUsed: 0
         }
       ]
@@ -417,11 +419,11 @@ RSpec.describe Gitlab::SubscriptionPortal::SubscriptionUsageClient, feature_cate
           subscription: {
             gitlabCreditsUsage: {
               usersUsage: {
-                totalUsersUsingCredits: 3,
-                totalUsersUsingMonthlyCommitment: 2,
-                totalUsersUsingOverage: 1,
+                totalUsersUsingCredits: 9.87,
+                totalUsersUsingMonthlyCommitment: 8.76,
+                totalUsersUsingOverage: 6.54,
                 creditsUsed: 123.45,
-                dailyUsage: [{ date: '2025-10-01', creditsUsed: 321 }]
+                dailyUsage: [{ date: '2025-10-01', creditsUsed: 123.45 }]
               }
             }
           }
@@ -432,13 +434,7 @@ RSpec.describe Gitlab::SubscriptionPortal::SubscriptionUsageClient, feature_cate
     let(:expected_response) do
       {
         success: true,
-        usersUsage: {
-          totalUsersUsingCredits: 3,
-          totalUsersUsingMonthlyCommitment: 2,
-          totalUsersUsingOverage: 1,
-          creditsUsed: 123.45,
-          dailyUsage: [{ date: '2025-10-01', creditsUsed: 321 }]
-        }
+        usersUsage: portal_response[:data][:subscription][:gitlabCreditsUsage][:usersUsage]
       }
     end
 

@@ -5,7 +5,7 @@ module Types
     module SubscriptionUsage
       class OverageType < BaseObject
         graphql_name 'GitlabSubscriptionOverage'
-        description 'Describes the overage usage of consumables for the subscription'
+        description 'Describes the overage of consumables for the subscription'
 
         authorize :read_subscription_usage
 

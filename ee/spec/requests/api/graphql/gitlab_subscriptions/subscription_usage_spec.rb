@@ -84,6 +84,7 @@ RSpec.describe 'Query.subscriptionUsage', feature_category: :consumables_cost_ma
               :total_credits,
               :credits_used,
               :monthly_commitment_credits_used,
+              :one_time_credits_used,
               :overage_credits_used
             ]),
             query_graphql_field(:events, {}, [
@@ -174,10 +175,11 @@ RSpec.describe 'Query.subscriptionUsage', feature_category: :consumables_cost_ma
     users_usage = User.all.map do |user|
       {
         userId: user.id,
-        totalCredits: user.id,
-        creditsUsed: user.id * 10,
-        monthlyCommitmentCreditsUsed: user.id * 100,
-        overageCreditsUsed: user.id * 2
+        totalCredits: (user.id * 1.25).round(2),
+        creditsUsed: (user.id * 10.45).round(2),
+        monthlyCommitmentCreditsUsed: (user.id * 5.25).round(2),
+        oneTimeCreditsUsed: (user.id * 1.35).round(2),
+        overageCreditsUsed: (user.id * 2.55).round(2)
       }
     end
 
@@ -196,7 +198,7 @@ RSpec.describe 'Query.subscriptionUsage', feature_category: :consumables_cost_ma
       success: true,
       oneTimeCredits: {
         creditsUsed: 15.32,
-        totalCredits: 1000,
+        totalCredits: 1000.5,
         totalCreditsRemaining: 984.68
       }
     }
@@ -204,9 +206,9 @@ RSpec.describe 'Query.subscriptionUsage', feature_category: :consumables_cost_ma
     monthly_commitment = {
       success: true,
       monthlyCommitment: {
-        totalCredits: 1000,
-        creditsUsed: 250,
-        dailyUsage: [{ date: '2025-10-01', creditsUsed: 250 }]
+        totalCredits: 1000.89,
+        creditsUsed: 250.91,
+        dailyUsage: [{ date: '2025-10-01', creditsUsed: 250.91 }]
       }
     }
 
@@ -214,8 +216,8 @@ RSpec.describe 'Query.subscriptionUsage', feature_category: :consumables_cost_ma
       success: true,
       overage: {
         isAllowed: true,
-        creditsUsed: 150,
-        dailyUsage: [{ date: '2025-10-01', creditsUsed: 150 }]
+        creditsUsed: 150.12,
+        dailyUsage: [{ date: '2025-10-01', creditsUsed: 150.12 }]
       }
     }
 
@@ -249,20 +251,20 @@ RSpec.describe 'Query.subscriptionUsage', feature_category: :consumables_cost_ma
 
           expect(graphql_data_at(:subscription_usage, :oneTimeCredits)).to eq({
             creditsUsed: 15.32,
-            totalCredits: 1000,
+            totalCredits: 1000.5,
             totalCreditsRemaining: 984.68
           }.with_indifferent_access)
 
           expect(graphql_data_at(:subscription_usage, :monthlyCommitment)).to eq({
-            totalCredits: 1000,
-            creditsUsed: 250,
-            dailyUsage: [{ date: '2025-10-01', creditsUsed: 250 }]
+            totalCredits: 1000.89,
+            creditsUsed: 250.91,
+            dailyUsage: [{ date: '2025-10-01', creditsUsed: 250.91 }]
           }.with_indifferent_access)
 
           expect(graphql_data_at(:subscription_usage, :overage)).to eq({
             isAllowed: true,
-            creditsUsed: 150,
-            dailyUsage: [{ date: '2025-10-01', creditsUsed: 150 }]
+            creditsUsed: 150.12,
+            dailyUsage: [{ date: '2025-10-01', creditsUsed: 150.12 }]
           }.with_indifferent_access)
 
           expect(graphql_data_at(:subscription_usage, :usersUsage, :totalUsersUsingCredits)).to eq(3)
@@ -280,10 +282,11 @@ RSpec.describe 'Query.subscriptionUsage', feature_category: :consumables_cost_ma
                 username: u.username,
                 avatarUrl: u.avatar_url,
                 usage: {
-                  totalCredits: u.id,
-                  creditsUsed: u.id * 10,
-                  monthlyCommitmentCreditsUsed: u.id * 100,
-                  overageCreditsUsed: u.id * 2
+                  totalCredits: (u.id * 1.25).round(2),
+                  creditsUsed: (u.id * 10.45).round(2),
+                  monthlyCommitmentCreditsUsed: (u.id * 5.25).round(2),
+                  oneTimeCreditsUsed: (u.id * 1.35).round(2),
+                  overageCreditsUsed: (u.id * 2.55).round(2)
                 },
                 events: nil
               }.with_indifferent_access
@@ -302,10 +305,11 @@ RSpec.describe 'Query.subscriptionUsage', feature_category: :consumables_cost_ma
                 username: maintainer.username,
                 avatarUrl: maintainer.avatar_url,
                 usage: {
-                  totalCredits: maintainer.id,
-                  creditsUsed: maintainer.id * 10,
-                  monthlyCommitmentCreditsUsed: maintainer.id * 100,
-                  overageCreditsUsed: maintainer.id * 2
+                  totalCredits: (maintainer.id * 1.25).round(2),
+                  creditsUsed: (maintainer.id * 10.45).round(2),
+                  monthlyCommitmentCreditsUsed: (maintainer.id * 5.25).round(2),
+                  oneTimeCreditsUsed: (maintainer.id * 1.35).round(2),
+                  overageCreditsUsed: (maintainer.id * 2.55).round(2)
                 },
                 events: user_events
               }.with_indifferent_access
@@ -358,20 +362,20 @@ RSpec.describe 'Query.subscriptionUsage', feature_category: :consumables_cost_ma
 
             expect(graphql_data_at(:subscription_usage, :oneTimeCredits)).to eq({
               creditsUsed: 15.32,
-              totalCredits: 1000,
+              totalCredits: 1000.5,
               totalCreditsRemaining: 984.68
             }.with_indifferent_access)
 
             expect(graphql_data_at(:subscription_usage, :monthlyCommitment)).to eq({
-              totalCredits: 1000,
-              creditsUsed: 250,
-              dailyUsage: [{ date: '2025-10-01', creditsUsed: 250 }]
+              totalCredits: 1000.89,
+              creditsUsed: 250.91,
+              dailyUsage: [{ date: '2025-10-01', creditsUsed: 250.91 }]
             }.with_indifferent_access)
 
             expect(graphql_data_at(:subscription_usage, :overage)).to eq({
               isAllowed: true,
-              creditsUsed: 150,
-              dailyUsage: [{ date: '2025-10-01', creditsUsed: 150 }]
+              creditsUsed: 150.12,
+              dailyUsage: [{ date: '2025-10-01', creditsUsed: 150.12 }]
             }.with_indifferent_access)
 
             expect(graphql_data_at(:subscription_usage, :usersUsage, :totalUsersUsingCredits)).to eq(3)
@@ -389,10 +393,11 @@ RSpec.describe 'Query.subscriptionUsage', feature_category: :consumables_cost_ma
                   username: u.username,
                   avatarUrl: u.avatar_url,
                   usage: {
-                    totalCredits: u.id,
-                    creditsUsed: u.id * 10,
-                    monthlyCommitmentCreditsUsed: u.id * 100,
-                    overageCreditsUsed: u.id * 2
+                    totalCredits: (u.id * 1.25).round(2),
+                    creditsUsed: (u.id * 10.45).round(2),
+                    monthlyCommitmentCreditsUsed: (u.id * 5.25).round(2),
+                    oneTimeCreditsUsed: (u.id * 1.35).round(2),
+                    overageCreditsUsed: (u.id * 2.55).round(2)
                   },
                   events: nil
                 }.with_indifferent_access
@@ -411,10 +416,11 @@ RSpec.describe 'Query.subscriptionUsage', feature_category: :consumables_cost_ma
                   username: maintainer.username,
                   avatarUrl: maintainer.avatar_url,
                   usage: {
-                    totalCredits: maintainer.id,
-                    creditsUsed: maintainer.id * 10,
-                    monthlyCommitmentCreditsUsed: maintainer.id * 100,
-                    overageCreditsUsed: maintainer.id * 2
+                    totalCredits: (maintainer.id * 1.25).round(2),
+                    creditsUsed: (maintainer.id * 10.45).round(2),
+                    monthlyCommitmentCreditsUsed: (maintainer.id * 5.25).round(2),
+                    oneTimeCreditsUsed: (maintainer.id * 1.35).round(2),
+                    overageCreditsUsed: (maintainer.id * 2.55).round(2)
                   },
                   events: user_events
                 }.with_indifferent_access
