@@ -1502,15 +1502,18 @@ RSpec.describe QuickActions::InterpretService, feature_category: :team_planning 
     context 'unlink command' do
       let_it_be(:unlink_target) { create(:issue, project: project) }
       let(:content) { "/unlink #{unlink_target.to_reference(issue)}" }
+      let(:linked_item_reference) { unlink_target.to_reference(issue) }
+      let(:relation_reference) { unlink_target.to_reference }
+      let(:source_reference) { issue.to_reference }
 
       subject(:unlink_issues) { service.execute(content, issue) }
 
       shared_examples 'command applied successfully' do
         it 'executes command successfully' do
           expect { unlink_issues }.to change { IssueLink.count }.by(-1)
-          expect(unlink_issues[2]).to eq("Removed linked item #{unlink_target.to_reference(issue)}.")
-          expect(issue.notes.last.note).to eq("removed the relation with #{unlink_target.to_reference}")
-          expect(unlink_target.notes.last.note).to eq("removed the relation with #{issue.to_reference}")
+          expect(unlink_issues[2]).to eq("Removed linked item #{linked_item_reference}.")
+          expect(issue.notes.last.note).to eq("removed the relation with #{relation_reference}")
+          expect(unlink_target.notes.last.note).to eq("removed the relation with #{source_reference}")
         end
       end
 
@@ -1543,6 +1546,25 @@ RSpec.describe QuickActions::InterpretService, feature_category: :team_planning 
         end
 
         it_behaves_like 'command applied successfully'
+      end
+
+      context 'when target is a legacy epic reference' do
+        let_it_be(:unlink_target) { create(:epic, group: group) }
+        let_it_be(:unlink_source) { create(:work_item, project: project) }
+        let_it_be(:issue) { unlink_source }
+
+        before do
+          group.add_owner(current_user)
+          stub_licensed_features(epics: true, related_epics: true)
+
+          create(:work_item_link, source: unlink_source, target: unlink_target.work_item, link_type: 'relates_to')
+        end
+
+        it_behaves_like 'command applied successfully' do
+          let(:linked_item_reference) { unlink_target.work_item.to_reference(issue) }
+          let(:relation_reference) { unlink_target.work_item.to_reference(issue) }
+          let(:source_reference) { issue.to_reference(issue) }
+        end
       end
 
       context 'when provided issue is not linked' do
