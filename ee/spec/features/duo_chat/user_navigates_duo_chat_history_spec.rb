@@ -15,6 +15,15 @@ RSpec.describe 'Duo Chat > User navigates Duo Chat history', :js, :saas, :with_c
     end
   end
 
+  def open_duo_chat
+    find('button.js-tanuki-bot-chat-toggle').click
+    wait_for_requests
+  end
+
+  def close_popover
+    find_by_testid('close-button').click
+  end
+
   before_all do
     group.add_developer(user)
   end
@@ -27,12 +36,15 @@ RSpec.describe 'Duo Chat > User navigates Duo Chat history', :js, :saas, :with_c
 
     visit project_path(project)
 
-    # Close the popover.
-    find_by_testid('close-button').click
-
-    # Open Duo Chat.
-    find('button.js-tanuki-bot-chat-toggle').click
-    wait_for_requests
+    # rubocop:disable RSpec/AvoidConditionalStatements -- temporary Project Studio rollout
+    if Users::ProjectStudio.enabled_for_user?(user)
+      open_duo_chat
+      close_popover
+    else
+      close_popover
+      open_duo_chat
+    end
+    # rubocop:enable RSpec/AvoidConditionalStatements
   end
 
   context 'when Chat History button is clicked' do
