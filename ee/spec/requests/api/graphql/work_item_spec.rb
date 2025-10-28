@@ -1407,7 +1407,8 @@ RSpec.describe 'Query.work_item(id)', feature_category: :team_planning do
             )
           end
 
-          it 'avoids N+1 queries', :use_sql_query_cache do
+          it 'avoids N+1 queries', :use_sql_query_cache,
+            quarantine: 'https://gitlab.com/gitlab-org/quality/test-failure-issues/-/issues/9634' do
             post_graphql(query, current_user: current_user) # warmup
             control_count = ActiveRecord::QueryRecorder.new(skip_cached: false) do
               post_graphql(query, current_user: current_user)
