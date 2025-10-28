@@ -3,7 +3,7 @@
 class BackfillRiskScoreInVulnerabilities < Elastic::Migration
   include ::Search::Elastic::MigrationReindexBasedOnSchemaVersion
 
-  skip_if -> { !(saas_with_es? || dedicated_with_es?) }
+  skip_if -> { !saas_with_es? }
 
   batch_size 10_000
   batched!
