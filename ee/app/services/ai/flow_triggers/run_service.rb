@@ -131,7 +131,9 @@ module Ai
           AI_FLOW_DISCUSSION_ID: params[:discussion_id],
           AI_FLOW_EVENT: params[:event].to_s,
           AI_FLOW_GITLAB_TOKEN: composite_identity_token,
-          AI_FLOW_INPUT: params[:input]
+          AI_FLOW_INPUT: params[:input],
+          AI_FLOW_PROJECT_PATH: project.full_path,
+          AI_FLOW_GITLAB_HOSTNAME: gitlab_hostname
         }
 
         if params.key?(:token)
@@ -188,6 +190,15 @@ module Ai
 
       def serialized_resource
         ::Ai::AiResource::Wrapper.new(current_user, resource).wrap.serialize_for_ai.to_json
+      end
+
+      def gitlab_hostname
+        host = Gitlab.config.gitlab.host
+        port = Gitlab.config.gitlab.port
+
+        return host if [80, 443].include?(port)
+
+        "#{host}:#{port}"
       end
 
       # Pass the user input and the current context as a user prompt to a catalog item
