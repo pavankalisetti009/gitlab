@@ -224,17 +224,17 @@ describe('History Comment', () => {
       expect(commentEditor().props('isSaving')).toBe(true);
     });
 
-    it('emits event when mutation is successful with a callback function that resets the state', async () => {
+    it('emits event when mutation is successful and resets the state', async () => {
       createWrapper({ propsData });
 
-      const listener = jest.fn().mockImplementation((callback) => callback());
+      const listener = jest.fn();
       wrapper.vm.$on('onCommentUpdated', listener);
 
       await editAndSaveNewContent('new comment');
       expect(commentEditor().props('isSaving')).toBe(true);
       await waitForPromises();
 
-      expect(wrapper.emitted('onCommentUpdated')).toEqual([[expect.any(Function)]]);
+      expect(wrapper.emitted('onCommentUpdated')).toEqual([[]]);
       expect(listener).toHaveBeenCalled();
       expect(commentEditor().exists()).toBe(false);
     });
@@ -289,7 +289,7 @@ describe('History Comment', () => {
       expect(cancelDeleteButton().props('disabled')).toBe(true);
 
       await waitForPromises();
-      expect(wrapper.emitted().onCommentUpdated).toEqual([[expect.any(Function)]]);
+      expect(wrapper.emitted().onCommentUpdated).toEqual([[]]);
     });
 
     it('sends mutation to delete note', async () => {
