@@ -56,13 +56,14 @@ export default {
       return this.file.type === 'blob';
     },
     fileClass() {
+      const addFilePadding = !this.isTree && this.showTreeToggle;
       return {
         'file-open': this.isBlob && this.file.opened,
         'is-active': this.isBlob && this.file.active,
         folder: this.isTree,
         'is-open': this.file.opened,
         'is-linked': this.file.linked,
-        'pl-3': !this.isTree && this.showTreeToggle,
+        'pl-3': addFilePadding,
       };
     },
     textForTitle() {
@@ -161,7 +162,7 @@ export default {
       size="small"
       :icon="chevronIcon"
       data-testid="tree-toggle-button"
-      class="file-row-indentation -gl-ml-2 gl-mr-1 gl-shrink-0"
+      class="file-row-indentation gl-mr-1 gl-shrink-0"
       :aria-label="file.opened ? __('Collapse directory') : __('Expand directory')"
       @click="onChevronClick"
     />
