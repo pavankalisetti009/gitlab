@@ -1,7 +1,6 @@
 <script>
 import { s__ } from '~/locale';
 import { createAlert } from '~/alert';
-import { fetchPolicies } from '~/lib/graphql';
 import getUserAgentFlows from '../../graphql/queries/get_user_agent_flow.query.graphql';
 import DuoAgentsPlatformIndex from '../../pages/index/duo_agents_platform_index.vue';
 import { DEFAULT_AGENT_PLATFORM_PAGINATION_VARIABLES } from '../../constants';
@@ -21,7 +20,6 @@ export default {
   apollo: {
     workflows: {
       query: getUserAgentFlows,
-      fetchPolicy: fetchPolicies.CACHE_AND_NETWORK,
       pollInterval: 10000,
       variables() {
         return {
