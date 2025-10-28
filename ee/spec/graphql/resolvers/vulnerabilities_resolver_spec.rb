@@ -290,6 +290,17 @@ RSpec.describe Resolvers::VulnerabilitiesResolver, feature_category: :vulnerabil
           end
         end
       end
+
+      context 'when filtering vulnerabilities with policy_violations', :elastic do
+        let(:params) { { policy_violations: ['DISMISSED_IN_MR'] } }
+        let(:error_msg) { "Feature is not supported for InstanceSecurityDashboard" }
+
+        it 'raises an error' do
+          expect_graphql_error_to_be_created(Gitlab::Graphql::Errors::ArgumentError, s_(error_msg)) do
+            resolved
+          end
+        end
+      end
     end
 
     context 'when image is given' do
@@ -571,6 +582,64 @@ RSpec.describe Resolvers::VulnerabilitiesResolver, feature_category: :vulnerabil
 
           expect(severity_counts).to eq(expected_result)
         end
+      end
+    end
+
+    context 'when filtering vulnerabilities with policy_violations', :elastic do
+      let(:params) { { policy_violations: ['DISMISSED_IN_MR'] } }
+
+      context 'without elasticsearch' do
+        before do
+          allow(::Search::Elastic::VulnerabilityIndexingHelper).to receive(:vulnerability_indexing_allowed?).and_return(false)
+        end
+
+        it_behaves_like 'raises ES errors'
+      end
+
+      context 'with advanced_vulnerability_management FF disabled' do
+        before do
+          allow(::Search::Elastic::VulnerabilityIndexingHelper).to receive(:vulnerability_indexing_allowed?).and_return(true)
+          stub_feature_flags(advanced_vulnerability_management: false)
+        end
+
+        it_behaves_like 'raises ES errors'
+      end
+
+      shared_examples_for 'when elasticsearch is available' do
+        let_it_be(:dismissed_vulnerability_read) { create(:vulnerability_read, project: project) }
+
+        let_it_be(:non_dismissed_vulnerability_read) { create(:vulnerability_read, project: project) }
+
+        before do
+          stub_ee_application_setting(elasticsearch_search: true, elasticsearch_indexing: true)
+
+          create(:policy_dismissal, :preserved, project: project, security_findings_uuids: [dismissed_vulnerability_read.uuid])
+
+          Elastic::ProcessBookkeepingService.track!(dismissed_vulnerability_read, non_dismissed_vulnerability_read)
+          ensure_elasticsearch_index!
+
+          allow(current_user).to receive(:can?).with(:access_advanced_vulnerability_management, vulnerable).and_return(true)
+        end
+
+        it 'only returns vulnerabilities with matching policy_violations types' do
+          expect(Gitlab::Search::Client).to receive(:execute_search).and_call_original
+
+          results = resolved.to_a
+
+          expect(results).to match_array([dismissed_vulnerability_read].map(&:vulnerability))
+        end
+      end
+
+      context 'when vulnerable is a project' do
+        let(:vulnerable) { project }
+
+        it_behaves_like 'when elasticsearch is available'
+      end
+
+      context 'when vulnerable is a group' do
+        let(:vulnerable) { group }
+
+        it_behaves_like 'when elasticsearch is available'
       end
     end
 
