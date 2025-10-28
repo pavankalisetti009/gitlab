@@ -1,6 +1,6 @@
 <script>
 import EMPTY_SVG_URL from '@gitlab/svgs/dist/illustrations/empty-state/empty-ai-catalog-md.svg?url';
-import { GlButton } from '@gitlab/ui';
+import { GlButton, GlModalDirective } from '@gitlab/ui';
 import { __, s__, sprintf } from '~/locale';
 import { convertToGraphQLId } from '~/graphql_shared/utils';
 import { fetchPolicies } from '~/lib/graphql';
@@ -28,6 +28,7 @@ import {
   AI_CATALOG_FLOWS_SHOW_ROUTE,
   AI_CATALOG_FLOWS_ROUTE,
 } from 'ee/ai/catalog/router/constants';
+import AiCatalogAddFlowToProjectModal from '../../components/catalog/ai_catalog_add_flow_to_project_modal.vue';
 
 export default {
   name: 'AiFlowsIndex',
@@ -37,6 +38,10 @@ export default {
     ErrorsAlert,
     AiCatalogList,
     AiCatalogListHeader,
+    AiCatalogAddFlowToProjectModal,
+  },
+  directives: {
+    GlModal: GlModalDirective,
   },
   mixins: [glFeatureFlagsMixin()],
   inject: {
@@ -95,6 +100,9 @@ export default {
     };
   },
   computed: {
+    isProjectNamespace() {
+      return Boolean(this.projectId);
+    },
     isFlowsAvailable() {
       return this.glFeatures.aiCatalogFlows;
     },
@@ -111,15 +119,18 @@ export default {
       return { itemType: AI_CATALOG_TYPE_FLOW };
     },
     namespaceVariables() {
-      if (this.groupId) {
+      if (this.isProjectNamespace) {
         return {
-          groupId: convertToGraphQLId(TYPENAME_GROUP, this.groupId),
+          projectId: convertToGraphQLId(TYPENAME_PROJECT, this.projectId),
+          includeInherited: false,
         };
       }
       return {
-        projectId: convertToGraphQLId(TYPENAME_PROJECT, this.projectId),
-        includeInherited: false,
+        groupId: convertToGraphQLId(TYPENAME_GROUP, this.groupId),
       };
+    },
+    showAddFlow() {
+      return this.isProjectNamespace && this.userPermissions?.adminAiCatalogItemConsumer;
     },
     isLoading() {
       return this.$apollo.queries.aiFlows.loading;
@@ -209,7 +220,14 @@ export default {
     <ai-catalog-list-header
       :heading="s__('AICatalog|Flows')"
       :can-admin="userPermissions.adminAiCatalogItem"
-    />
+      new-button-variant="default"
+    >
+      <template #nav-actions>
+        <gl-button v-if="showAddFlow" v-gl-modal="'add-flow-to-project-modal'" variant="confirm">
+          {{ s__('AICatalog|Enable flow in project') }}
+        </gl-button>
+      </template>
+    </ai-catalog-list-header>
     <errors-alert class="gl-mt-5" :errors="errors" @dismiss="errors = []" />
     <ai-catalog-list
       :is-loading="isLoading"
@@ -236,5 +254,6 @@ export default {
         </resource-lists-empty-state>
       </template>
     </ai-catalog-list>
+    <ai-catalog-add-flow-to-project-modal v-if="showAddFlow" />
   </div>
 </template>

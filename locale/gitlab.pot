@@ -2494,6 +2494,9 @@ msgstr ""
 msgid "AICatalog|AI Catalog"
 msgstr ""
 
+msgid "AICatalog|Add flow triggers"
+msgstr ""
+
 msgid "AICatalog|Agent configuration"
 msgstr ""
 
@@ -2570,6 +2573,9 @@ msgid "AICatalog|Can't be made public if enabled in a project."
 msgstr ""
 
 msgid "AICatalog|Can't be shared, even within your organization."
+msgstr ""
+
+msgid "AICatalog|Choose what events in this project trigger the flow. You can change this later."
 msgstr ""
 
 msgid "AICatalog|Choose who can view and interact with this agent."
@@ -2686,6 +2692,9 @@ msgstr ""
 msgid "AICatalog|Enable %{itemType} in a %{targetType}"
 msgstr ""
 
+msgid "AICatalog|Enable flow in project"
+msgstr ""
+
 msgid "AICatalog|Enable in"
 msgstr ""
 
@@ -2798,6 +2807,9 @@ msgid "AICatalog|New flow"
 msgstr ""
 
 msgid "AICatalog|Nodes run sequentially."
+msgstr ""
+
+msgid "AICatalog|Only flows enabled in your group will be shown here."
 msgstr ""
 
 msgid "AICatalog|Only members of this project can view this agent. This agent can't be shared with other projects."
@@ -2921,6 +2933,15 @@ msgid "AICatalog|This flow specializes in... It can help you with... Best suited
 msgstr ""
 
 msgid "AICatalog|Tools"
+msgstr ""
+
+msgid "AICatalog|Trigger this flow when the service account user is assigned as a reviewer to a merge request."
+msgstr ""
+
+msgid "AICatalog|Trigger this flow when the service account user is assigned to issue or merge request."
+msgstr ""
+
+msgid "AICatalog|Trigger this flow when the service account user is mentioned in an issue or merge request."
 msgstr ""
 
 msgid "AICatalog|Use agents in flows and with GitLab Duo Chat."
@@ -40905,6 +40926,9 @@ msgid "Member|Revoke invite"
 msgstr ""
 
 msgid "Memory usage"
+msgstr ""
+
+msgid "Mention"
 msgstr ""
 
 msgid "Mentions"

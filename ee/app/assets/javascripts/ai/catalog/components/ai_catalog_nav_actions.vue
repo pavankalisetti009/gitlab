@@ -21,9 +21,17 @@ export default {
       required: false,
       default: true, // this will change when we remove the ability to create item from Explore level
     },
+    newButtonVariant: {
+      type: String,
+      required: false,
+      default: 'confirm',
+    },
   },
   computed: {
-    buttonProps() {
+    showNewButton() {
+      return isLoggedIn() && this.canAdmin && this.newButtonProps.route;
+    },
+    newButtonProps() {
       switch (this.$route.name) {
         case AI_CATALOG_INDEX_ROUTE:
         case AI_CATALOG_AGENTS_ROUTE:
@@ -44,18 +52,18 @@ export default {
       }
     },
   },
-  isLoggedIn,
 };
 </script>
 
 <template>
-  <div class="gl-flex gl-items-center">
+  <div class="gl-flex gl-items-center gl-gap-3">
     <gl-button
-      v-if="$options.isLoggedIn() && canAdmin && buttonProps.route"
-      :to="{ name: buttonProps.route }"
-      variant="confirm"
+      v-if="showNewButton"
+      :to="{ name: newButtonProps.route }"
+      :variant="newButtonVariant"
     >
-      {{ buttonProps.label }}
+      {{ newButtonProps.label }}
     </gl-button>
+    <slot></slot>
   </div>
 </template>
