@@ -361,6 +361,7 @@ module EE
         enable :create_wiki
         enable :admin_wiki
         enable :download_wiki_code
+        enable :read_security_attribute
       end
 
       rule { reporter }.policy do
@@ -368,6 +369,7 @@ module EE
         enable :view_productivity_analytics
         enable :download_wiki_code
         enable :read_customizable_dashboards
+        enable :read_security_attribute
       end
 
       rule { maintainer }.policy do
@@ -662,6 +664,12 @@ module EE
       end
 
       rule { custom_role_enables_admin_security_attributes }.enable(:admin_security_attributes)
+
+      rule { can?(:admin_security_attributes) }.policy do
+        enable :read_security_attribute
+      end
+
+      rule { custom_role_enables_read_security_attribute }.enable(:read_security_attribute)
 
       rule { ~security_inventory_available }.prevent :read_security_inventory
 

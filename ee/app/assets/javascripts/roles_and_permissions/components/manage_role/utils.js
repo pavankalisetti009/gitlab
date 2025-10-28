@@ -46,6 +46,12 @@ export const getCustomPermissionsTreeTemplate = () => [
     permissions: [{ value: 'ADMIN_CICD_VARIABLES' }],
   },
   {
+    name: s__('MemberRole|Security asset inventories'),
+    permissions: [
+      { value: 'ADMIN_SECURITY_ATTRIBUTES', children: [{ value: 'READ_SECURITY_ATTRIBUTE' }] },
+    ],
+  },
+  {
     name: s__('MemberRole|Security policy management'),
     permissions: [{ value: 'MANAGE_SECURITY_POLICY_LINK' }],
   },

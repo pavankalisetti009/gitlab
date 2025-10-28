@@ -7,7 +7,7 @@ module Resolvers
 
       type Types::Security::CategoryType.connection_type, null: true
 
-      authorize :admin_security_attributes
+      authorize :read_security_attribute
 
       description 'Resolves security categories for a group.'
 

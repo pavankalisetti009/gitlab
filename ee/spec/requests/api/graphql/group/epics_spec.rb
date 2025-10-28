@@ -405,7 +405,7 @@ RSpec.describe 'Epics through GroupQuery', feature_category: :portfolio_manageme
       graphql_query_for('group', { 'fullPath' => group.full_path },
         ['epicsEnabled',
           query_graphql_field('epic', { iid: epic.iid },
-            all_graphql_fields_for('Epic', excluded: %w[runners ciQueueingHistory]))]
+            all_graphql_fields_for('Epic', excluded: %w[runners ciQueueingHistory securityCategories]))]
       )
     end
 

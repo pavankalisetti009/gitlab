@@ -1,0 +1,10 @@
+---
+name: custom_ability_read_security_attribute
+description:
+feature_issue_url: https://gitlab.com/gitlab-org/gitlab/-/issues/567237
+introduced_by_url: https://gitlab.com/gitlab-org/gitlab/-/merge_requests/209670
+rollout_issue_url:
+milestone: '18.6'
+group: group::security platform management
+type: beta
+default_enabled: false

@@ -40565,6 +40565,9 @@ msgstr ""
 msgid "MemberRole|Secrets management"
 msgstr ""
 
+msgid "MemberRole|Security asset inventories"
+msgstr ""
+
 msgid "MemberRole|Security policy dependency"
 msgstr ""
 

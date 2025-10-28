@@ -41,7 +41,7 @@ RSpec.describe Resolvers::Security::AttributesResolver, feature_category: :secur
 
       context 'when user has permission' do
         before_all do
-          project.add_maintainer(current_user)
+          sub_group.add_maintainer(current_user)
         end
 
         context 'when project has linked attributes' do

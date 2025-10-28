@@ -389,7 +389,6 @@ module EE
         field :security_categories, [::Types::Security::CategoryType],
           null: true,
           description: 'Security categories for the group.',
-          authorize: :admin_security_attributes,
           resolver: ::Resolvers::Security::CategoryResolver
 
         field :compliance_requirement_control_coverage,
