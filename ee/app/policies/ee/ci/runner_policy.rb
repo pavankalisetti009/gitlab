@@ -12,7 +12,10 @@ module EE
         end
 
         condition(:custom_role_enables_read_runners, score: 32) do
-          ::Authz::CustomAbility.allowed?(@user, :read_runners, @subject)
+          next false if @subject.instance_type?
+
+          groups_or_projects = @subject.group_type? ? @subject.groups : @subject.projects
+          groups_or_projects.any? { |r| ::Authz::CustomAbility.allowed?(@user, :read_runners, r) }
         end
 
         rule { custom_role_enables_read_runners }.enable(:read_runner)

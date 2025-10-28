@@ -68,12 +68,6 @@ module Authz
         abilities_for_projects([resource]).fetch(resource.id, [])
       when ::Group
         abilities_for_groups([resource]).fetch(resource.id, [])
-      when Ci::Runner
-        if resource.project_type?
-          abilities_for_projects(resource.projects)
-        else
-          abilities_for_groups(resource.groups)
-        end.flat_map { |(_id, abilities)| abilities }
       else
         []
       end

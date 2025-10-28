@@ -55,6 +55,7 @@ RSpec.describe "User with read_runners custom role", feature_category: :runner_c
   end
 
   describe Projects::RunnersController do
+    let_it_be(:runner) { create(:ci_runner, :project, projects: [project]) }
     let_it_be(:membership) { create(:project_member, :guest, member_role: role, user: user, source: project) }
 
     before do
@@ -65,6 +66,24 @@ RSpec.describe "User with read_runners custom role", feature_category: :runner_c
       get project_runners_path(project)
 
       expect(response).to redirect_to(project_settings_ci_cd_path(project, anchor: 'js-runners-settings'))
+    end
+
+    describe '#show' do
+      context 'with runner owned by project where user has the custom role' do
+        it 'returns 200' do
+          get project_runner_path(project, runner)
+
+          expect(response).to have_gitlab_http_status(:ok)
+        end
+      end
+
+      context 'with runner owned by another project' do
+        it 'returns 404' do
+          get project_runner_path(project, create(:ci_runner, :project, projects: [create(:project)]))
+
+          expect(response).to have_gitlab_http_status(:not_found)
+        end
+      end
     end
 
     it "#new" do
@@ -80,27 +99,74 @@ RSpec.describe "User with read_runners custom role", feature_category: :runner_c
     end
 
     it "#register" do
-      runner = create(:ci_runner, :project, projects: [project], registration_type: :authenticated_user)
-
       get register_namespace_project_runner_path(group, project, runner)
 
       expect(response).to have_gitlab_http_status(:not_found)
     end
 
     it "#destroy" do
-      runner = create(:ci_runner, :project, projects: [project])
-
       delete project_runner_path(project, runner)
 
       expect(response).to have_gitlab_http_status(:not_found)
     end
 
     it "#pause" do
-      runner = create(:ci_runner, :project, projects: [project])
-
       post pause_project_runner_path(project, runner)
 
       expect(response).to have_gitlab_http_status(:not_found)
+    end
+  end
+
+  describe API::Ci::Runners do
+    include ApiHelpers
+
+    describe "GET /runners/:id" do
+      subject do
+        get api("/runners/#{runner.id}", user)
+        response
+      end
+
+      context 'with a group runner' do
+        let_it_be(:runner) { create(:ci_runner, :group, groups: [project.group]) }
+
+        it { is_expected.to have_gitlab_http_status(:forbidden) }
+
+        context 'when user has the custom role' do
+          before do
+            create(:group_member, :guest, member_role: role, user: user, source: project.group)
+          end
+
+          it { is_expected.to have_gitlab_http_status(:ok) }
+        end
+      end
+
+      context 'with a project runner' do
+        let_it_be(:runner) { create(:ci_runner, :project, projects: [project]) }
+
+        it { is_expected.to have_gitlab_http_status(:forbidden) }
+
+        context 'when user has the custom role' do
+          context 'with custom role in the runner\'s owner project' do
+            before do
+              create(:project_member, :guest, member_role: role, user: user, source: project)
+            end
+
+            it { is_expected.to have_gitlab_http_status(:ok) }
+          end
+
+          context 'with custom role in a project that shares the runner' do
+            let_it_be(:other_project) { create(:project, :in_group) }
+            let_it_be(:role) { create(:member_role, :guest, :read_runners, namespace: other_project.group) }
+
+            before do
+              runner.projects << other_project
+              create(:project_member, :guest, member_role: role, user: user, source: other_project)
+            end
+
+            it { is_expected.to have_gitlab_http_status(:ok) }
+          end
+        end
+      end
     end
   end
 end
