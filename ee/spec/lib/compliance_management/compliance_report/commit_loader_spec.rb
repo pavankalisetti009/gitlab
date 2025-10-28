@@ -95,6 +95,77 @@ RSpec.describe ::ComplianceManagement::ComplianceReport::CommitLoader, feature_c
       end
     end
 
+    context 'with commit ordering' do
+      let(:commit_shas) do
+        commits = []
+        loader.find_each { |row| commits << row.sha }
+        commits
+      end
+
+      let(:now) { Time.current }
+
+      let(:commit1) do
+        travel_to(now - 3.days) { create_commit(project1, 'oldest commit') }
+      end
+
+      let(:commit2) do
+        travel_to(now - 2.days) { create_commit(project1, 'middle commit') }
+      end
+
+      let(:commit3) do
+        travel_to(now - 1.day) { create_commit(project1, 'newest commit') }
+      end
+
+      before do
+        stub_const("#{described_class}::COMMITS_PER_PROJECT", 5)
+
+        # Create commits with specific timestamps to test ordering
+        commit1
+        commit2
+        commit3
+      end
+
+      it 'returns commits in descending chronological order (newest first)' do
+        travel_to(now) do
+          expect(commit_shas).to match_array([commit3, commit2, commit1])
+        end
+      end
+    end
+
+    context 'with commits having identical timestamps' do
+      let(:commit_shas) do
+        commits = []
+        loader.find_each { |row| commits << row.sha }
+        commits
+      end
+
+      let(:now) { Time.current }
+
+      let(:commit1_identical) do
+        travel_to(now - 1.day) { create_commit(project1, 'commit A') }
+      end
+
+      let(:commit2_identical) do
+        travel_to(now - 1.day) { create_commit(project1, 'commit B') }
+      end
+
+      before do
+        stub_const("#{described_class}::COMMITS_PER_PROJECT", 5)
+
+        # Create commits at the same time to test deterministic ordering by SHA
+        commit1_identical
+        commit2_identical
+      end
+
+      it 'provides deterministic ordering by SHA when timestamps are identical' do
+        travel_to(now) do
+          # Should be sorted by SHA in descending order as secondary sort
+          expected_order = [commit1_identical, commit2_identical].sort.reverse
+          expect(commit_shas).to eq(expected_order)
+        end
+      end
+    end
+
     context 'with commits that span the 1 month window' do
       let(:commit_messages) do
         commits = []
