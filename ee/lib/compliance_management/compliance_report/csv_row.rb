@@ -9,9 +9,11 @@ module ComplianceManagement
         @from = from
         @to = to
         @merge_request = options[:merge_request]
+        @committer_users = {}
       end
 
       attr_reader :from, :to, :commit, :user, :merge_request
+      attr_writer :committer_users
 
       def sha
         commit&.sha
@@ -22,11 +24,23 @@ module ComplianceManagement
       end
 
       def committer
-        commit&.committer_name
+        raw_committer_name = commit&.committer_name
+        return raw_committer_name unless raw_committer_name
+
+        # Try to find GitLab user by email for consistent name
+        if commit&.committer_email.present?
+          user = @committer_users[commit.committer_email]
+          return user.name if user
+        end
+
+        raw_committer_name
       end
 
       def committed_at
-        commit&.timestamp
+        return unless commit&.committed_date
+
+        # Ensure consistent UTC formatting with millisecond precision
+        commit.committed_date.utc.xmlschema(3)
       end
 
       def group

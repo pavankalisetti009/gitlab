@@ -5,6 +5,7 @@ module ComplianceManagement
     class CommitLoader
       COMMITS_PER_PROJECT = 1024
       COMMIT_BATCH_SIZE = 100
+      STREAMING_CHUNK_SIZE = 500
 
       def initialize(group, current_user, filter_params = {})
         raise ArgumentError, 'The group is a required argument' if group.blank?
@@ -21,7 +22,20 @@ module ComplianceManagement
       attr_reader :count
 
       def find_each(&block)
-        # find all MR related commits
+        mr_commits = build_mr_commits_hash
+
+        # Stream process projects one by one to avoid memory exhaustion
+        # Each project's commits are processed in chronological chunks
+        projects.inc_routes.find_each do |project|
+          process_project_streaming(project, mr_commits, &block)
+        end
+      end
+
+      private
+
+      attr_reader :current_user, :group, :filters, :from, :to
+
+      def build_mr_commits_hash
         mr_commits = Hash.new { |h, k| h[k] = [] }
         merge_requests.find_each.each_with_object(mr_commits) do |mr, result|
           mr.commit_shas.each { |sha| result[sha] << mr }
@@ -29,42 +43,87 @@ module ComplianceManagement
           result[mr.squash_commit_sha] << mr if mr.squash_commit_sha?
           result[mr.merge_commit_sha] << mr if mr.merge_commit_sha?
         end
+      end
 
-        # find all non-MR commits (e.g. a commit pushed directly to the project)
-        projects.inc_routes.find_each do |project|
-          commits_for_project = 0
+      def process_project_streaming(project, mr_commits, &block)
+        commits_for_project = 0
+        chunk_rows = []
 
-          while commits_for_project < COMMITS_PER_PROJECT
-            batch = batch_of_commits_for_project(project, commits_for_project, COMMIT_BATCH_SIZE)
+        while commits_for_project < COMMITS_PER_PROJECT
+          batch = batch_of_commits_for_project(project, commits_for_project, COMMIT_BATCH_SIZE)
+          break if batch.empty?
 
-            batch.each do |commit|
-              mrs = mr_commits[commit.sha]
-
-              if mrs.present?
-                mrs.each do |mr|
-                  yield CsvRow.new(commit, current_user, from, to, merge_request: mr)
-
-                  commits_for_project += 1
-                  @count += 1
-                end
-              else
-                yield CsvRow.new(commit, current_user, from, to)
-
-                commits_for_project += 1
-                @count += 1
-              end
-
-              break if commits_for_project == COMMITS_PER_PROJECT
-            end
-
-            break if batch.count < COMMIT_BATCH_SIZE
+          batch.each do |commit|
+            process_commit_to_chunk(commit, mr_commits, chunk_rows)
+            commits_for_project += 1
+            break if commits_for_project == COMMITS_PER_PROJECT
           end
+
+          # Process and stream chunk when it gets large enough or when we're done with batches
+          if chunk_rows.size >= STREAMING_CHUNK_SIZE || batch.count < COMMIT_BATCH_SIZE
+            stream_chunk_with_user_lookup(chunk_rows, &block)
+            chunk_rows = []
+          end
+
+          break if batch.count < COMMIT_BATCH_SIZE
+        end
+
+        stream_chunk_with_user_lookup(chunk_rows, &block) unless chunk_rows.empty?
+      end
+
+      def process_commit_to_chunk(commit, mr_commits, chunk_rows)
+        mrs = mr_commits[commit.sha]
+
+        if mrs.present?
+          mrs.each do |mr|
+            chunk_rows << CsvRow.new(commit, current_user, from, to, merge_request: mr)
+            @count += 1
+          end
+        else
+          chunk_rows << CsvRow.new(commit, current_user, from, to)
+          @count += 1
         end
       end
 
-      private
+      def stream_chunk_with_user_lookup(chunk_rows, &block)
+        return if chunk_rows.empty?
 
-      attr_reader :current_user, :group, :filters, :from, :to
+        committer_emails = chunk_rows.filter_map do |row|
+          row.commit&.committer_email.presence
+        end.uniq
+
+        committer_users = batch_lookup_users(committer_emails)
+
+        sorted_chunk = sort_rows_deterministically(chunk_rows)
+
+        sorted_chunk.each do |row|
+          row.committer_users = committer_users
+          yield(row)
+        end
+      end
+
+      def batch_lookup_users(emails)
+        return {} if emails.empty?
+
+        # rubocop:disable CodeReuse/ActiveRecord -- Required for performance optimization to avoid N+1 queries
+        users = User.by_any_email(emails, confirmed: false).includes(:emails)
+        # rubocop:enable CodeReuse/ActiveRecord
+
+        email_to_user = {}
+        emails.each do |email|
+          user = users.find { |u| u.any_email?(email) }
+          email_to_user[email] = user if user
+        end
+
+        email_to_user
+      end
+
+      def sort_rows_deterministically(rows)
+        rows.sort do |a, b|
+          date_comparison = b.commit.committed_date <=> a.commit.committed_date
+          date_comparison == 0 ? b.sha <=> a.sha : date_comparison
+        end
+      end
 
       def merge_requests
         MergeRequestsFinder
@@ -105,7 +164,8 @@ module ComplianceManagement
             offset: offset,
             limit: limit,
             after: from,
-            before: to
+            before: to,
+            order: 'default'
           )
         end
       rescue ::Gitlab::Git::Repository::NoRepository
