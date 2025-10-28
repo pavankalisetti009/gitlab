@@ -5,6 +5,10 @@ module Security
     self.table_name = 'security_categories'
     MAX_ATTRIBUTES = 50
 
+    def self.declarative_policy_class
+      'Security::AttributePolicy'
+    end
+
     belongs_to :namespace, optional: false
     has_many :security_attributes, class_name: 'Security::Attribute', inverse_of: :security_category
 

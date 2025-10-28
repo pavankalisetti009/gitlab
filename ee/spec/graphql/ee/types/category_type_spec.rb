@@ -18,7 +18,6 @@ RSpec.describe GitlabSchema.types['SecurityCategory'], feature_category: :securi
   end
 
   it { expect(described_class.graphql_name).to eq('SecurityCategory') }
-  it { expect(described_class).to require_graphql_authorizations(:read_security_category) }
 
   describe 'fields' do
     it { expect(described_class).to have_graphql_field(:id, resolver_method: :resolve_id) }

@@ -4494,7 +4494,7 @@ RSpec.describe GroupPolicy, feature_category: :groups_and_projects do
     end
 
     context 'for a member role with the `admin_security_attributes` ability' do
-      let(:member_role_abilities) { { admin_security_attributes: true } }
+      let(:member_role_abilities) { { admin_security_attributes: true, read_security_attribute: true } }
       let(:allowed_abilities) { [:admin_security_attributes] }
 
       it_behaves_like 'custom roles abilities'
@@ -5114,12 +5114,35 @@ RSpec.describe GroupPolicy, feature_category: :groups_and_projects do
         let(:current_user) { maintainer }
 
         it { is_expected.to be_allowed(:admin_security_attributes) }
+        it { is_expected.to be_allowed(:read_security_attribute) }
       end
 
       context 'when user is developer' do
         let(:current_user) { developer }
 
         it { is_expected.to be_disallowed(:admin_security_attributes) }
+        it { is_expected.to be_allowed(:read_security_attribute) }
+      end
+
+      context 'when user is reporter' do
+        let(:current_user) { reporter }
+
+        it { is_expected.to be_disallowed(:admin_security_attributes) }
+        it { is_expected.to be_allowed(:read_security_attribute) }
+      end
+
+      context 'when user is planner' do
+        let(:current_user) { planner }
+
+        it { is_expected.to be_disallowed(:admin_security_attributes) }
+        it { is_expected.to be_allowed(:read_security_attribute) }
+      end
+
+      context 'when user is guest' do
+        let(:current_user) { guest }
+
+        it { is_expected.to be_disallowed(:admin_security_attributes) }
+        it { is_expected.to be_disallowed(:read_security_attribute) }
       end
     end
   end

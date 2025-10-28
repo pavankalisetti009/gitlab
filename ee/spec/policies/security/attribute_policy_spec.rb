@@ -31,7 +31,7 @@ RSpec.describe Security::AttributePolicy, feature_category: :security_asset_inve
       root_group.add_developer(user)
     end
 
-    it { is_expected.to be_disallowed(:read_security_attribute) }
+    it { is_expected.to be_allowed(:read_security_attribute) }
   end
 
   context 'when user has no access to any group' do
@@ -43,6 +43,22 @@ RSpec.describe Security::AttributePolicy, feature_category: :security_asset_inve
   context 'when user is owner of subgroup' do
     before_all do
       group.add_owner(user)
+    end
+
+    it { is_expected.to be_disallowed(:read_security_attribute) }
+  end
+
+  context 'when user has reporter access to root group' do
+    before_all do
+      root_group.add_reporter(user)
+    end
+
+    it { is_expected.to be_allowed(:read_security_attribute) }
+  end
+
+  context 'when user has guest access to root group' do
+    before_all do
+      root_group.add_guest(user)
     end
 
     it { is_expected.to be_disallowed(:read_security_attribute) }

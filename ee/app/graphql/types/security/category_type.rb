@@ -2,11 +2,9 @@
 
 module Types
   module Security
-    class CategoryType < BaseObject
+    class CategoryType < BaseObject # rubocop:disable Graphql/AuthorizeTypes -- Authorization is done in resolver layer based on viewing context
       graphql_name 'SecurityCategory'
       description 'A security category'
-
-      authorize :read_security_category
 
       field :description, GraphQL::Types::String,
         null: true,

@@ -2,11 +2,9 @@
 
 module Types
   module Security
-    class AttributeType < BaseObject
+    class AttributeType < BaseObject # rubocop:disable Graphql/AuthorizeTypes -- Authorization is done in resolver layer based on viewing context
       graphql_name 'SecurityAttribute'
       description 'A security attribute'
-
-      authorize :read_security_attribute
 
       field :color, Types::ColorType,
         null: false,
