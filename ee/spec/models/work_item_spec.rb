@@ -1637,6 +1637,44 @@ RSpec.describe WorkItem, :elastic_helpers, feature_category: :team_planning do
       end
       expect(recorder.count).to be_zero
     end
+
+    context 'with unified associations (epic work items)' do
+      let_it_be(:group) { create(:group) }
+      let_it_be(:epic) { create(:epic, group: group) }
+      let_it_be(:work_item) { epic.work_item }
+
+      let_it_be(:work_item_label) { create(:group_label, group: group, title: 'work-item-label') }
+      let_it_be(:epic_label) { create(:group_label, group: group, title: 'epic-label') }
+
+      before_all do
+        work_item.labels = [work_item_label]
+        epic.labels = [epic_label]
+      end
+
+      it 'includes labels from both work item and sync object when using preload_indexing_data' do
+        expect(work_item.unified_associations?).to be_truthy
+        expect(work_item.sync_object).to eq(epic)
+
+        # Direct access should include all labels (work item + epic labels via unified associations)
+        direct_labels = work_item.reload.labels.pluck(:title)
+        expected_all_labels = [work_item_label.title, epic_label.title]
+        expect(direct_labels).to match_array(expected_all_labels)
+
+        preloaded_work_item = described_class.id_in([work_item.id]).preload_indexing_data.first
+        preloaded_labels = preloaded_work_item.labels.pluck(:title)
+
+        expect(preloaded_labels).to match_array(expected_all_labels),
+          "Bug: preloaded labels #{preloaded_labels} missing epic labels. " \
+            "Expected: #{expected_all_labels}, Missing: #{expected_all_labels - preloaded_labels}"
+      end
+
+      it 'ensures lazy_labels returns all unified labels when called directly' do
+        lazy_labels = work_item.lazy_labels.pluck(:title).uniq
+        expected_labels = [work_item_label.title, epic_label.title]
+
+        expect(lazy_labels).to match_array(expected_labels)
+      end
+    end
   end
 
   describe '#elastic_reference' do

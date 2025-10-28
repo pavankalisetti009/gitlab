@@ -41,13 +41,32 @@ module EE
           :sync_object,
           :work_item_type,
           :assignees,
-          :labels,
           :namespace,
           :milestone,
           project: :project_feature
         )
 
-        preloaded_data.each(&:lazy_labels)
+        # Separate work items into unified and regular to handle label preloading differently
+        unified_items, regular_items = preloaded_data.partition(&:sync_object)
+
+        # For unified associations (epic work items), use lazy_labels to load combined labels via BatchLoader
+        # Trigger all BatchLoaders first (without accessing results) to enable batching
+        if unified_items.any?
+          lazy_label_promises = unified_items.map { |item| [item, item.lazy_labels] }
+
+          # Now access results, which triggers batch execution for all items at once
+          lazy_label_promises.each do |item, promise|
+            labels_array = promise.to_a
+            item.association(:labels).target = labels_array
+            item.association(:labels).loaded!
+          end
+        end
+
+        # For regular work items, use standard Rails preloading to avoid N+1 queries
+        if regular_items.any?
+          ::ActiveRecord::Associations::Preloader.new(records: regular_items, associations: :labels).call
+        end
+
         ::Namespaces::Preloaders::NamespaceRootAncestorPreloader.new(preloaded_data.map(&:namespace)).execute
 
         preloaded_data

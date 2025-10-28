@@ -8,5 +8,5 @@ class ReindexLabelsInWorkItems < Elastic::Migration
   throttle_delay 15.seconds
 
   DOCUMENT_TYPE = WorkItem
-  NEW_SCHEMA_VERSION = 25_43
+  NEW_SCHEMA_VERSION = 25_44
 end

@@ -1,6 +1,6 @@
 ---
 name: ReindexLabelsInWorkItems
-version: '20251021114546'
+version: '20251024143451'
 description: Reindex work items to ensure label changes trigger Advanced Search updates
 group: group::global search
 milestone: '18.6'
