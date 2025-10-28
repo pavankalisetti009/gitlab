@@ -177,12 +177,7 @@ export default {
         </template>
         <gl-loading-icon v-if="isLoading" />
         <template v-else>
-          <gl-alert
-            v-if="loadingWorkspacesFailed"
-            variant="danger"
-            :show-icon="false"
-            :dismissible="false"
-          >
+          <gl-alert v-if="loadingWorkspacesFailed" variant="danger" :dismissible="false">
             {{ $options.i18n.loadingWorkspacesFailedMessage }}
           </gl-alert>
           <template v-else-if="hasWorkspaces">
@@ -190,7 +185,6 @@ export default {
               v-if="updateWorkspaceErrorMessage"
               data-testid="update-workspace-error-alert"
               variant="danger"
-              :show-icon="false"
               :dismissible="false"
             >
               {{ updateWorkspaceErrorMessage }}
