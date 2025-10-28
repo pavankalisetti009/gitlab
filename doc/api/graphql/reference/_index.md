@@ -27599,6 +27599,7 @@ Represents a vulnerability. The connection type is countable.
 | <a id="countablevulnerabilitymergerequest"></a>`mergeRequest` | [`MergeRequest`](#mergerequest) | Merge request that fixes the vulnerability. |
 | <a id="countablevulnerabilitymergerequests"></a>`mergeRequests` | [`MergeRequestConnection`](#mergerequestconnection) | Merge requests that are linked to fix the vulnerability. (see [Connections](#connections)) |
 | <a id="countablevulnerabilityname"></a>`name` | [`String`](#string) | Name or title of the object. |
+| <a id="countablevulnerabilitypolicyviolations"></a>`policyViolations` {{< icon name="warning-solid" >}} | [`PolicyViolations`](#policyviolations) | **Introduced** in GitLab 18.6. **Status**: Experiment. Policy violation for the vulnerability. |
 | <a id="countablevulnerabilitypresentondefaultbranch"></a>`presentOnDefaultBranch` | [`Boolean!`](#boolean) | Indicates whether the vulnerability is present on the default branch or not. |
 | <a id="countablevulnerabilityprimaryidentifier"></a>`primaryIdentifier` | [`VulnerabilityIdentifier`](#vulnerabilityidentifier) | Primary identifier of the vulnerability. |
 | <a id="countablevulnerabilityproject"></a>`project` | [`Project`](#project) | Project on which the vulnerability was found. |
@@ -45676,6 +45677,7 @@ Represents a vulnerability.
 | <a id="vulnerabilitymergerequest"></a>`mergeRequest` | [`MergeRequest`](#mergerequest) | Merge request that fixes the vulnerability. |
 | <a id="vulnerabilitymergerequests"></a>`mergeRequests` | [`MergeRequestConnection`](#mergerequestconnection) | Merge requests that are linked to fix the vulnerability. (see [Connections](#connections)) |
 | <a id="vulnerabilityname"></a>`name` | [`String`](#string) | Name or title of the object. |
+| <a id="vulnerabilitypolicyviolations"></a>`policyViolations` {{< icon name="warning-solid" >}} | [`PolicyViolations`](#policyviolations) | **Introduced** in GitLab 18.6. **Status**: Experiment. Policy violation for the vulnerability. |
 | <a id="vulnerabilitypresentondefaultbranch"></a>`presentOnDefaultBranch` | [`Boolean!`](#boolean) | Indicates whether the vulnerability is present on the default branch or not. |
 | <a id="vulnerabilityprimaryidentifier"></a>`primaryIdentifier` | [`VulnerabilityIdentifier`](#vulnerabilityidentifier) | Primary identifier of the vulnerability. |
 | <a id="vulnerabilityproject"></a>`project` | [`Project`](#project) | Project on which the vulnerability was found. |
