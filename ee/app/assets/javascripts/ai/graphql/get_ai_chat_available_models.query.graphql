@@ -1,5 +1,5 @@
-query getAiChatAvailableModels($rootNamespaceId: GroupID!) {
-  aiChatAvailableModels(rootNamespaceId: $rootNamespaceId) {
+query getAiChatAvailableModels($rootNamespaceId: GroupID!, $projectId: ProjectID) {
+  aiChatAvailableModels(rootNamespaceId: $rootNamespaceId, projectId: $projectId) {
     defaultModel {
       name
       ref

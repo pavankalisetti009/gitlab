@@ -159,6 +159,7 @@ export default {
       variables() {
         return {
           rootNamespaceId: this.rootNamespaceId,
+          projectId: this.projectId,
         };
       },
       update(data) {
