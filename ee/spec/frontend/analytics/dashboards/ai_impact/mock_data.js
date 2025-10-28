@@ -18,6 +18,10 @@ export const mockTimePeriods = [
       value: 0,
       tooltip: '0/0',
     },
+    issues_completed: {
+      identifier: 'issues_completed',
+      value: 999999,
+    },
   },
   {
     key: '4-months-ago',
@@ -502,6 +506,15 @@ export const mockTableZeroValues = [
   mockUniformTableRow(0),
   mockUniformTableRow(0),
   mockUniformTableRow(0),
+];
+
+export const mockTableMaxLimitValues = [
+  mockUniformTableRow(999999),
+  mockUniformTableRow(999999),
+  mockUniformTableRow(999999),
+  mockUniformTableRow(999999),
+  mockUniformTableRow(999999),
+  mockUniformTableRow(999999),
 ];
 
 export const mockTableAndChartValues = [...mockTableValues, ...mockTableValues];

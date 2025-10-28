@@ -7,6 +7,7 @@ import {
   GlTooltipDirective,
   GlSprintf,
   GlLink,
+  GlIcon,
 } from '@gitlab/ui';
 import { toYmd, extractQueryResponseFromNamespace } from '~/analytics/shared/utils';
 import { UNITS } from '~/analytics/shared/constants';
@@ -73,6 +74,7 @@ export default {
     GlSprintf,
     GlLink,
     GlSkeletonLoader,
+    GlIcon,
     MetricLabel,
     TrendIndicator,
     TrendLine,
@@ -367,7 +369,7 @@ export default {
 
     <template
       #cell()="{
-        value: { value, tooltip },
+        value: { value, tooltip, valueLimitMessage },
         field: { key, end },
         item: {
           metric: { identifier },
@@ -384,6 +386,14 @@ export default {
           data-testid="formatted-metric-value"
         >
           {{ formatNumber(value) }}
+          <gl-icon
+            v-if="valueLimitMessage"
+            v-gl-tooltip.hover
+            class="gl-text-blue-600"
+            name="information-o"
+            :title="valueLimitMessage"
+            data-testid="metric-max-value-info-icon"
+          />
         </span>
 
         <gl-tooltip v-if="tooltip" :target="() => $refs[`${key}-${identifier}`]">
