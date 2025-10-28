@@ -210,7 +210,7 @@ RSpec.describe ::SidebarsHelper, feature_category: :navigation do
         allow(helper).to receive(:show_buy_pipeline_minutes?).and_return(true)
       end
 
-      let(:project) { build(:project) }
+      let(:project) { create(:project) } # rubocop:todo RSpec/FactoryBot/AvoidCreate -- required for premium_message_during_trial experiment
       let(:namespace) { project.namespace }
       let(:group) { nil }
 
@@ -234,7 +234,7 @@ RSpec.describe ::SidebarsHelper, feature_category: :navigation do
         allow(helper).to receive(:show_buy_pipeline_minutes?).and_return(true)
       end
 
-      let(:group) { build(:group) }
+      let(:group) { create(:group) } # rubocop:todo RSpec/FactoryBot/AvoidCreate -- required for premium_message_during_trial experiment
       let(:namespace) { group }
       let(:project) { nil }
 

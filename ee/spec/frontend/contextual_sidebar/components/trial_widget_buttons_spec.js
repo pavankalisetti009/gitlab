@@ -1,6 +1,7 @@
 import { shallowMountExtended, mountExtended } from 'helpers/vue_test_utils_helper';
 import TrialWidgetButtons from 'ee/contextual_sidebar/components/trial_widget_buttons.vue';
 import { useMockInternalEventsTracking } from 'helpers/tracking_internal_events_helper';
+import { mockTracking, unmockTracking } from 'helpers/tracking_helper';
 
 describe('TrialWidgetButton component', () => {
   let wrapper;
@@ -66,7 +67,9 @@ describe('TrialWidgetButton component', () => {
 
   it('for duo enterprise the learn more button should track click event', async () => {
     createDeepComponent({ daysRemaining: 40 });
+
     const { trackEventSpy } = bindInternalEventDocument(wrapper.element);
+    const trackExperimentSpy = mockTracking(undefined, wrapper.element, jest.spyOn);
 
     await findLearnAboutFeaturesButton().trigger('click');
 
@@ -77,11 +80,23 @@ describe('TrialWidgetButton component', () => {
       },
       undefined,
     );
+
+    expect(trackExperimentSpy).toHaveBeenCalledWith(
+      undefined,
+      'click_learn_more_link_on_trial_widget',
+      {
+        label: 'gitlab_duo_enterprise',
+      },
+    );
+
+    unmockTracking();
   });
 
   it('for duo pro the upgrade button should track click event', async () => {
     createDeepComponent({ trialType: 'duo_pro', daysRemaining: -1 });
+
     const { trackEventSpy } = bindInternalEventDocument(wrapper.element);
+    const trackExperimentSpy = mockTracking(undefined, wrapper.element, jest.spyOn);
 
     await findUpgradeButton().trigger('click');
 
@@ -92,5 +107,15 @@ describe('TrialWidgetButton component', () => {
       },
       undefined,
     );
+
+    expect(trackExperimentSpy).toHaveBeenCalledWith(
+      undefined,
+      'click_upgrade_link_on_trial_widget',
+      {
+        label: 'gitlab_duo_pro',
+      },
+    );
+
+    unmockTracking();
   });
 });

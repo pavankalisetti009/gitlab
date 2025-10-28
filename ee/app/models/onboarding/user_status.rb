@@ -15,7 +15,7 @@ module Onboarding
     # string delegations
     delegate :product_interaction, to: :registration_type
     # predicate delegations
-    delegate :apply_trial?, :eligible_for_iterable_trigger?, :exclude_from_positioning_experiment?,
+    delegate :apply_trial?, :eligible_for_iterable_trigger?, :exclude_from_first_orders_experiments?,
       to: :registration_type
 
     def initialize(user)

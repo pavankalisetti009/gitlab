@@ -11,7 +11,7 @@ RSpec.describe Onboarding::UserStatus, feature_category: :onboarding do
     it { is_expected.to delegate_method(:product_interaction).to(:registration_type) }
     it { is_expected.to delegate_method(:apply_trial?).to(:registration_type) }
     it { is_expected.to delegate_method(:eligible_for_iterable_trigger?).to(:registration_type) }
-    it { is_expected.to delegate_method(:exclude_from_positioning_experiment?).to(:registration_type) }
+    it { is_expected.to delegate_method(:exclude_from_first_orders_experiments?).to(:registration_type) }
   end
 
   describe '#registration_type' do
@@ -107,7 +107,7 @@ RSpec.describe Onboarding::UserStatus, feature_category: :onboarding do
     end
   end
 
-  describe '#exclude_from_positioning_experiment?' do
+  describe '#exclude_from_first_orders_experiments?' do
     using RSpec::Parameterized::TableSyntax
 
     where(:registration_type, :expected_result) do
@@ -126,7 +126,7 @@ RSpec.describe Onboarding::UserStatus, feature_category: :onboarding do
       end
 
       it 'returns the expected result based on registration type' do
-        expect(described_class.new(user).exclude_from_positioning_experiment?).to eq(expected_result)
+        expect(described_class.new(user).exclude_from_first_orders_experiments?).to eq(expected_result)
       end
     end
 
@@ -140,7 +140,7 @@ RSpec.describe Onboarding::UserStatus, feature_category: :onboarding do
       end
 
       it 'excludes automatic trial users from positioning experiment' do
-        expect(described_class.new(user).exclude_from_positioning_experiment?).to be(true)
+        expect(described_class.new(user).exclude_from_first_orders_experiments?).to be(true)
       end
     end
   end

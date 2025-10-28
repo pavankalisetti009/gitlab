@@ -93,7 +93,7 @@ RSpec.describe Onboarding::TrialRegistration, type: :undefined, feature_category
     it { is_expected.to be_new_registration_design }
   end
 
-  describe '.exclude_from_positioning_experiment?' do
-    it { is_expected.not_to be_exclude_from_positioning_experiment }
+  describe '.exclude_from_first_orders_experiments?' do
+    it { is_expected.not_to be_exclude_from_first_orders_experiments }
   end
 end
