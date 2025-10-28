@@ -43,7 +43,7 @@ module Types
         UserUsage = Struct.new(
           :total_credits,
           :credits_used,
-          :pool_credits_used,
+          :monthly_commitment_credits_used,
           :overage_credits_used,
           :declarative_policy_subject
         )
@@ -82,7 +82,7 @@ module Types
               UserUsage.new(
                 total_credits: usage[:totalCredits],
                 credits_used: usage[:creditsUsed],
-                pool_credits_used: usage[:poolCreditsUsed],
+                monthly_commitment_credits_used: usage[:monthlyCommitmentCreditsUsed],
                 overage_credits_used: usage[:overageCreditsUsed],
                 declarative_policy_subject: object
               )

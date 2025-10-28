@@ -16,7 +16,7 @@ query getUserSubscriptionUsage($namespacePath: ID, $username: String) {
           usage {
             totalCredits
             creditsUsed
-            poolCreditsUsed
+            monthlyCommitmentCreditsUsed
             # TODO: this field will be integrated in https://gitlab.com/gitlab-org/gitlab/-/issues/578579
             # oneTimeCreditsUsed
             overageCreditsUsed

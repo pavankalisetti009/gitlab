@@ -28,9 +28,9 @@ module Types
         null: true,
         description: 'One time credits usage for the subscription.'
 
-      field :pool_usage, SubscriptionUsage::PoolUsageType,
+      field :monthly_commitment, SubscriptionUsage::MonthlyCommitmentType,
         null: true,
-        description: 'Consumption usage for the subscription shared pool.'
+        description: 'Consumption usage for the subscription monthly commitment.'
 
       field :overage, SubscriptionUsage::OverageType,
         null: true,

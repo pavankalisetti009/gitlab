@@ -24,8 +24,8 @@ module GitlabSubscriptions
         usage_stats[:totalUsersUsingCredits]
       end
 
-      def total_users_using_pool
-        usage_stats[:totalUsersUsingPool]
+      def total_users_using_monthly_commitment
+        usage_stats[:totalUsersUsingMonthlyCommitment]
       end
 
       def total_users_using_overage

@@ -20,7 +20,7 @@ export const mockUsageDataWithoutPool = {
       },
 
       // pool allocation statistics (commitment)
-      poolUsage: null,
+      monthlyCommitment: null,
 
       // daily seat allocation usage statistics
       seatUsage: {
@@ -74,7 +74,7 @@ export const mockUsersUsageDataWithoutPool = {
         // overall statistics
         totalUsers: 50,
         totalUsersUsingAllocation: 35,
-        totalUsersUsingPool: null, // or 0
+        totalUsersUsingMonthlyCommitment: null, // or 0
         totalUsersBlocked: 10,
         avgCreditsPerUser: 150,
 
@@ -89,7 +89,7 @@ export const mockUsersUsageDataWithoutPool = {
               usage: {
                 creditsUsed: 450,
                 totalCredits: 500,
-                poolCreditsUsed: 0,
+                monthlyCommitmentCreditsUsed: 0,
                 oneTimeCreditsUsed: 0,
                 overageCreditsUsed: 0,
               },
@@ -102,7 +102,7 @@ export const mockUsersUsageDataWithoutPool = {
               usage: {
                 creditsUsed: 500,
                 totalCredits: 500,
-                poolCreditsUsed: 0,
+                monthlyCommitmentCreditsUsed: 0,
                 oneTimeCreditsUsed: 0,
                 overageCreditsUsed: 67,
               },
@@ -115,7 +115,7 @@ export const mockUsersUsageDataWithoutPool = {
               usage: {
                 creditsUsed: 500,
                 totalCredits: 500,
-                poolCreditsUsed: 0,
+                monthlyCommitmentCreditsUsed: 0,
                 oneTimeCreditsUsed: 0,
                 overageCreditsUsed: 89,
               },
@@ -128,7 +128,7 @@ export const mockUsersUsageDataWithoutPool = {
               usage: {
                 creditsUsed: 320,
                 totalCredits: 500,
-                poolCreditsUsed: 0,
+                monthlyCommitmentCreditsUsed: 0,
                 oneTimeCreditsUsed: 0,
                 overageCreditsUsed: 42,
               },
@@ -141,7 +141,7 @@ export const mockUsersUsageDataWithoutPool = {
               usage: {
                 creditsUsed: 100,
                 totalCredits: 500,
-                poolCreditsUsed: 0,
+                monthlyCommitmentCreditsUsed: 0,
                 oneTimeCreditsUsed: 0,
                 overageCreditsUsed: 0,
               },
@@ -182,7 +182,7 @@ export const mockUsageDataWithPool = {
       },
 
       // pool allocation statistics (commitment)
-      poolUsage: {
+      monthlyCommitment: {
         // statistics
         dailyAverage: 167,
         peakUsage: 234,
@@ -239,7 +239,7 @@ export const mockUsersUsageDataWithPool = {
         // overall statistics
         totalUsers: 50,
         totalUsersUsingAllocation: 35,
-        totalUsersUsingPool: 15,
+        totalUsersUsingMonthlyCommitment: 15,
         totalUsersBlocked: 10,
 
         // per-user details
@@ -253,7 +253,7 @@ export const mockUsersUsageDataWithPool = {
               usage: {
                 creditsUsed: 450,
                 totalCredits: 500,
-                poolCreditsUsed: 0,
+                monthlyCommitmentCreditsUsed: 0,
                 oneTimeCreditsUsed: 0,
                 overageCreditsUsed: 23,
               },
@@ -266,7 +266,7 @@ export const mockUsersUsageDataWithPool = {
               usage: {
                 creditsUsed: 500,
                 totalCredits: 500,
-                poolCreditsUsed: 125,
+                monthlyCommitmentCreditsUsed: 125,
                 oneTimeCreditsUsed: 0,
                 overageCreditsUsed: 67,
               },
@@ -279,7 +279,7 @@ export const mockUsersUsageDataWithPool = {
               usage: {
                 creditsUsed: 500,
                 totalCredits: 500,
-                poolCreditsUsed: 200,
+                monthlyCommitmentCreditsUsed: 200,
                 oneTimeCreditsUsed: 0,
                 overageCreditsUsed: 89,
               },
@@ -292,7 +292,7 @@ export const mockUsersUsageDataWithPool = {
               usage: {
                 creditsUsed: 320,
                 totalCredits: 500,
-                poolCreditsUsed: 0,
+                monthlyCommitmentCreditsUsed: 0,
                 oneTimeCreditsUsed: 0,
                 overageCreditsUsed: 42,
               },
@@ -305,7 +305,7 @@ export const mockUsersUsageDataWithPool = {
               usage: {
                 creditsUsed: 500,
                 totalCredits: 500,
-                poolCreditsUsed: 75,
+                monthlyCommitmentCreditsUsed: 75,
                 oneTimeCreditsUsed: 0,
                 overageCreditsUsed: 15,
               },
@@ -318,7 +318,7 @@ export const mockUsersUsageDataWithPool = {
               usage: {
                 creditsUsed: 480,
                 totalCredits: 500,
-                poolCreditsUsed: 0,
+                monthlyCommitmentCreditsUsed: 0,
                 oneTimeCreditsUsed: 0,
                 overageCreditsUsed: 56,
               },
@@ -331,7 +331,7 @@ export const mockUsersUsageDataWithPool = {
               usage: {
                 creditsUsed: 500,
                 totalCredits: 500,
-                poolCreditsUsed: 150,
+                monthlyCommitmentCreditsUsed: 150,
                 oneTimeCreditsUsed: 0,
                 overageCreditsUsed: 91,
               },
@@ -344,7 +344,7 @@ export const mockUsersUsageDataWithPool = {
               usage: {
                 creditsUsed: 500,
                 totalCredits: 500,
-                poolCreditsUsed: 300,
+                monthlyCommitmentCreditsUsed: 300,
                 oneTimeCreditsUsed: 0,
                 overageCreditsUsed: 34,
               },
@@ -382,7 +382,7 @@ export const mockUsageDataWithOverage = {
         creditsUsed: 0,
       },
 
-      poolUsage: {
+      monthlyCommitment: {
         dailyAverage: 167,
         peakUsage: 234,
         usageTrend: 0.12,
@@ -433,7 +433,7 @@ export const mockUsersUsageDataWithOverage = {
       usersUsage: {
         totalUsers: 50,
         totalUsersUsingAllocation: 35,
-        totalUsersUsingPool: 15,
+        totalUsersUsingMonthlyCommitment: 15,
         totalUsersBlocked: 10,
 
         users: {
@@ -446,7 +446,7 @@ export const mockUsersUsageDataWithOverage = {
               usage: {
                 creditsUsed: 450,
                 totalCredits: 500,
-                poolCreditsUsed: 0,
+                monthlyCommitmentCreditsUsed: 0,
                 oneTimeCreditsUsed: 0,
                 overageCreditsUsed: 23,
               },
@@ -459,7 +459,7 @@ export const mockUsersUsageDataWithOverage = {
               usage: {
                 creditsUsed: 500,
                 totalCredits: 500,
-                poolCreditsUsed: 125,
+                monthlyCommitmentCreditsUsed: 125,
                 oneTimeCreditsUsed: 0,
                 overageCreditsUsed: 67,
               },
@@ -472,7 +472,7 @@ export const mockUsersUsageDataWithOverage = {
               usage: {
                 creditsUsed: 500,
                 totalCredits: 500,
-                poolCreditsUsed: 200,
+                monthlyCommitmentCreditsUsed: 200,
                 oneTimeCreditsUsed: 0,
                 overageCreditsUsed: 89,
               },
@@ -485,7 +485,7 @@ export const mockUsersUsageDataWithOverage = {
               usage: {
                 creditsUsed: 320,
                 totalCredits: 500,
-                poolCreditsUsed: 0,
+                monthlyCommitmentCreditsUsed: 0,
                 oneTimeCreditsUsed: 0,
                 overageCreditsUsed: 42,
               },
@@ -498,7 +498,7 @@ export const mockUsersUsageDataWithOverage = {
               usage: {
                 creditsUsed: 500,
                 totalCredits: 500,
-                poolCreditsUsed: 75,
+                monthlyCommitmentCreditsUsed: 75,
                 oneTimeCreditsUsed: 0,
                 overageCreditsUsed: 15,
               },
@@ -511,7 +511,7 @@ export const mockUsersUsageDataWithOverage = {
               usage: {
                 creditsUsed: 480,
                 totalCredits: 500,
-                poolCreditsUsed: 0,
+                monthlyCommitmentCreditsUsed: 0,
                 oneTimeCreditsUsed: 0,
                 overageCreditsUsed: 56,
               },
@@ -524,7 +524,7 @@ export const mockUsersUsageDataWithOverage = {
               usage: {
                 creditsUsed: 500,
                 totalCredits: 500,
-                poolCreditsUsed: 150,
+                monthlyCommitmentCreditsUsed: 150,
                 oneTimeCreditsUsed: 0,
                 overageCreditsUsed: 91,
               },
@@ -537,7 +537,7 @@ export const mockUsersUsageDataWithOverage = {
               usage: {
                 creditsUsed: 500,
                 totalCredits: 500,
-                poolCreditsUsed: 300,
+                monthlyCommitmentCreditsUsed: 300,
                 oneTimeCreditsUsed: 0,
                 overageCreditsUsed: 34,
               },
@@ -571,7 +571,7 @@ export const mockUsageDataWithZeroAllocation = {
         creditsUsed: 0,
       },
 
-      poolUsage: null,
+      monthlyCommitment: null,
       seatUsage: null,
     },
   },
@@ -585,7 +585,7 @@ export const mockUsersUsageDataWithZeroAllocation = {
       usersUsage: {
         totalUsers: 5,
         totalUsersUsingAllocation: 2,
-        totalUsersUsingPool: 0,
+        totalUsersUsingMonthlyCommitment: 0,
         totalUsersBlocked: 1,
 
         users: {
@@ -598,7 +598,7 @@ export const mockUsersUsageDataWithZeroAllocation = {
               usage: {
                 creditsUsed: 0,
                 totalCredits: 0,
-                poolCreditsUsed: 0,
+                monthlyCommitmentCreditsUsed: 0,
                 oneTimeCreditsUsed: 0,
                 overageCreditsUsed: 15,
               },
@@ -611,7 +611,7 @@ export const mockUsersUsageDataWithZeroAllocation = {
               usage: {
                 creditsUsed: 0,
                 totalCredits: 0,
-                poolCreditsUsed: 0,
+                monthlyCommitmentCreditsUsed: 0,
                 oneTimeCreditsUsed: 0,
                 overageCreditsUsed: 0,
               },
@@ -624,7 +624,7 @@ export const mockUsersUsageDataWithZeroAllocation = {
               usage: {
                 creditsUsed: 0,
                 totalCredits: 0,
-                poolCreditsUsed: 0,
+                monthlyCommitmentCreditsUsed: 0,
                 oneTimeCreditsUsed: 0,
                 overageCreditsUsed: 89,
               },
@@ -637,7 +637,7 @@ export const mockUsersUsageDataWithZeroAllocation = {
               usage: {
                 creditsUsed: 0,
                 totalCredits: 0,
-                poolCreditsUsed: 0,
+                monthlyCommitmentCreditsUsed: 0,
                 oneTimeCreditsUsed: 0,
                 overageCreditsUsed: 42,
               },
@@ -650,7 +650,7 @@ export const mockUsersUsageDataWithZeroAllocation = {
               usage: {
                 creditsUsed: 0,
                 totalCredits: 0,
-                poolCreditsUsed: 0,
+                monthlyCommitmentCreditsUsed: 0,
                 oneTimeCreditsUsed: 0,
                 overageCreditsUsed: 0,
               },
@@ -673,7 +673,7 @@ export const usageDataWithPool = {
     subscriptionUsage: {
       lastEventTransactionAt: '2025-10-14T07:41:59Z',
       purchaseCreditsPath: '/purchase-credits-path',
-      poolUsage: {
+      monthlyCommitment: {
         creditsUsed: 50,
         totalCredits: 300,
       },
@@ -693,7 +693,7 @@ export const usageDataWithPool = {
 export const usageDataWithoutLastEventTransactionAt = {
   data: {
     subscriptionUsage: {
-      poolUsage: {
+      monthlyCommitment: {
         creditsUsed: 50,
         totalCredits: 300,
       },
@@ -706,7 +706,7 @@ export const usageDataWithPoolWithOverage = {
     subscriptionUsage: {
       purchaseCreditsPath: '/purchase-credits-path',
       lastEventTransactionAt: '2025-10-14T07:41:59Z',
-      poolUsage: {
+      monthlyCommitment: {
         creditsUsed: 300,
         totalCredits: 300,
       },
@@ -728,7 +728,7 @@ export const usageDataNoPoolNoOverage = {
     subscriptionUsage: {
       lastEventTransactionAt: '2024-01-15T10:30:00Z',
       purchaseCreditsPath: '/purchase-credits-path',
-      poolUsage: null,
+      monthlyCommitment: null,
       overage: {
         isAllowed: false,
         creditsUsed: 0,
@@ -747,7 +747,7 @@ export const usageDataNoPoolWithOverage = {
     subscriptionUsage: {
       lastEventTransactionAt: '2024-01-15T10:30:00Z',
       purchaseCreditsPath: '/purchase-credits-path',
-      poolUsage: null,
+      monthlyCommitment: null,
       overage: {
         isAllowed: true,
         creditsUsed: 50,
@@ -773,7 +773,7 @@ export const usageDataWithOtcCredits = {
           nodes: [],
         },
       },
-      poolUsage: {
+      monthlyCommitment: {
         creditsUsed: 50,
         totalCredits: 300,
       },

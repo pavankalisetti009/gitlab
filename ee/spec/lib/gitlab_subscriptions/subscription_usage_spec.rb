@@ -360,11 +360,11 @@ RSpec.describe GitlabSubscriptions::SubscriptionUsage, feature_category: :consum
     end
   end
 
-  describe '#pool_usage' do
-    subject(:pool_usage) { subscription_usage.pool_usage }
+  describe '#monthly_commitment' do
+    subject(:monthly_commitment) { subscription_usage.monthly_commitment }
 
     before do
-      allow(subscription_usage_client).to receive(:get_pool_usage).and_return(client_response)
+      allow(subscription_usage_client).to receive(:get_monthly_commitment).and_return(client_response)
     end
 
     context 'when subscription_target is :namespace' do
@@ -380,7 +380,7 @@ RSpec.describe GitlabSubscriptions::SubscriptionUsage, feature_category: :consum
         let(:client_response) do
           {
             success: true,
-            poolUsage: {
+            monthlyCommitment: {
               totalCredits: 1000,
               creditsUsed: 750,
               dailyUsage: [{ date: '2025-10-01', creditsUsed: 750 }]
@@ -388,17 +388,17 @@ RSpec.describe GitlabSubscriptions::SubscriptionUsage, feature_category: :consum
           }
         end
 
-        it 'returns a PoolUsage struct with correct data' do
-          expect(pool_usage).to be_a(GitlabSubscriptions::SubscriptionUsage::PoolUsage)
-          expect(pool_usage).to have_attributes(
+        it 'returns a MonthlyCommitment struct with correct data' do
+          expect(monthly_commitment).to be_a(GitlabSubscriptions::SubscriptionUsage::MonthlyCommitment)
+          expect(monthly_commitment).to have_attributes(
             total_credits: 1000,
             credits_used: 750,
             declarative_policy_subject: subscription_usage
           )
 
-          expect(pool_usage.daily_usage).to be_a(Array)
-          expect(pool_usage.daily_usage.first).to be_a(GitlabSubscriptions::SubscriptionUsage::DailyUsage)
-          expect(pool_usage.daily_usage.first).to have_attributes(
+          expect(monthly_commitment.daily_usage).to be_a(Array)
+          expect(monthly_commitment.daily_usage.first).to be_a(GitlabSubscriptions::SubscriptionUsage::DailyUsage)
+          expect(monthly_commitment.daily_usage.first).to have_attributes(
             date: '2025-10-01',
             credits_used: 750,
             declarative_policy_subject: subscription_usage
@@ -410,21 +410,21 @@ RSpec.describe GitlabSubscriptions::SubscriptionUsage, feature_category: :consum
         let(:client_response) { { success: false } }
 
         it 'returns nil' do
-          expect(pool_usage).to be_nil
+          expect(monthly_commitment).to be_nil
         end
       end
 
-      context 'when the client response is missing poolUsage data' do
+      context 'when the client response is missing monthlyCommitment data' do
         let(:client_response) do
           {
             success: true,
-            poolUsage: nil
+            monthlyCommitment: nil
           }
         end
 
-        it 'returns a PoolUsage struct with no values' do
-          expect(pool_usage).to be_a(GitlabSubscriptions::SubscriptionUsage::PoolUsage)
-          expect(pool_usage).to have_attributes(
+        it 'returns a MonthlyCommitment struct with no values' do
+          expect(monthly_commitment).to be_a(GitlabSubscriptions::SubscriptionUsage::MonthlyCommitment)
+          expect(monthly_commitment).to have_attributes(
             total_credits: nil,
             credits_used: nil,
             daily_usage: [],
@@ -446,7 +446,7 @@ RSpec.describe GitlabSubscriptions::SubscriptionUsage, feature_category: :consum
       let(:client_response) do
         {
           success: true,
-          poolUsage: {
+          monthlyCommitment: {
             totalCredits: 2000,
             creditsUsed: 1500,
             dailyUsage: [{ date: '2025-10-01', creditsUsed: 1500 }]
@@ -458,17 +458,17 @@ RSpec.describe GitlabSubscriptions::SubscriptionUsage, feature_category: :consum
         allow(License).to receive(:current).and_return(license)
       end
 
-      it 'returns a PoolUsage struct with correct data' do
-        expect(pool_usage).to be_a(GitlabSubscriptions::SubscriptionUsage::PoolUsage)
-        expect(pool_usage).to have_attributes(
+      it 'returns a MonthlyCommitment struct with correct data' do
+        expect(monthly_commitment).to be_a(GitlabSubscriptions::SubscriptionUsage::MonthlyCommitment)
+        expect(monthly_commitment).to have_attributes(
           total_credits: 2000,
           credits_used: 1500,
           declarative_policy_subject: subscription_usage
         )
 
-        expect(pool_usage.daily_usage).to be_a(Array)
-        expect(pool_usage.daily_usage.first).to be_a(GitlabSubscriptions::SubscriptionUsage::DailyUsage)
-        expect(pool_usage.daily_usage.first).to have_attributes(
+        expect(monthly_commitment.daily_usage).to be_a(Array)
+        expect(monthly_commitment.daily_usage.first).to be_a(GitlabSubscriptions::SubscriptionUsage::DailyUsage)
+        expect(monthly_commitment.daily_usage.first).to have_attributes(
           date: '2025-10-01',
           credits_used: 1500,
           declarative_policy_subject: subscription_usage
@@ -481,7 +481,7 @@ RSpec.describe GitlabSubscriptions::SubscriptionUsage, feature_category: :consum
     subject(:overage) { subscription_usage.overage }
 
     before do
-      allow(subscription_usage_client).to receive(:get_overage_usage).and_return(client_response)
+      allow(subscription_usage_client).to receive(:get_overage).and_return(client_response)
     end
 
     context 'when subscription_target is :namespace' do

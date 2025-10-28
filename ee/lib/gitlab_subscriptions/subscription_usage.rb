@@ -5,7 +5,7 @@ module GitlabSubscriptions
     include ::Gitlab::Utils::StrongMemoize
 
     OneTimeCredits = Struct.new(:credits_used, :total_credits, :total_credits_remaining, :declarative_policy_subject)
-    PoolUsage = Struct.new(:total_credits, :credits_used, :daily_usage, :declarative_policy_subject)
+    MonthlyCommitment = Struct.new(:total_credits, :credits_used, :daily_usage, :declarative_policy_subject)
     Overage = Struct.new(:is_allowed, :credits_used, :daily_usage, :declarative_policy_subject)
     DailyUsage = Struct.new(:date, :credits_used, :declarative_policy_subject)
 
@@ -51,22 +51,22 @@ module GitlabSubscriptions
     end
     strong_memoize_attr :one_time_credits
 
-    def pool_usage
-      pool_usage_response = subscription_usage_client.get_pool_usage
+    def monthly_commitment
+      monthly_commitment_response = subscription_usage_client.get_monthly_commitment
 
-      return unless pool_usage_response[:success]
+      return unless monthly_commitment_response[:success]
 
-      PoolUsage.new(
-        total_credits: pool_usage_response.dig(:poolUsage, :totalCredits),
-        credits_used: pool_usage_response.dig(:poolUsage, :creditsUsed),
-        daily_usage: build_daily_usage(pool_usage_response.dig(:poolUsage, :dailyUsage)),
+      MonthlyCommitment.new(
+        total_credits: monthly_commitment_response.dig(:monthlyCommitment, :totalCredits),
+        credits_used: monthly_commitment_response.dig(:monthlyCommitment, :creditsUsed),
+        daily_usage: build_daily_usage(monthly_commitment_response.dig(:monthlyCommitment, :dailyUsage)),
         declarative_policy_subject: self
       )
     end
-    strong_memoize_attr :pool_usage
+    strong_memoize_attr :monthly_commitment
 
     def overage
-      overage_usage_response = subscription_usage_client.get_overage_usage
+      overage_usage_response = subscription_usage_client.get_overage
 
       return unless overage_usage_response[:success]
 

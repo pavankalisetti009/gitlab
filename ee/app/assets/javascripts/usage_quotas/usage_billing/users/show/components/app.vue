@@ -73,7 +73,7 @@ export default {
       const {
         creditsUsed = 0,
         totalCredits = 0,
-        poolCreditsUsed = 0,
+        monthlyCommitmentCreditsUsed = 0,
         oneTimeCreditsUsed = 0,
         overageCreditsUsed = 0,
       } = this.user?.usage ?? {};
@@ -81,7 +81,7 @@ export default {
       return {
         creditsUsed,
         totalCredits,
-        poolCreditsUsed,
+        monthlyCommitmentCreditsUsed,
         oneTimeCreditsUsed,
         overageCreditsUsed,
       };
@@ -89,7 +89,7 @@ export default {
     totalCreditsUsed() {
       return (
         this.usage.creditsUsed +
-        this.usage.poolCreditsUsed +
+        this.usage.monthlyCommitmentCreditsUsed +
         this.usage.oneTimeCreditsUsed +
         this.usage.overageCreditsUsed
       );

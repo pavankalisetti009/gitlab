@@ -14,9 +14,9 @@ module Types
           null: true,
           description: 'Total number of users consuming GitLab Credits.'
 
-        field :total_users_using_pool, GraphQL::Types::Int,
+        field :total_users_using_monthly_commitment, GraphQL::Types::Int,
           null: true,
-          description: 'Total number of users consuming pool GitLab Credits.'
+          description: 'Total number of users consuming GitLab Credits from the subscription monthly commitment.'
 
         field :total_users_using_overage, GraphQL::Types::Int,
           null: true,

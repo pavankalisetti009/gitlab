@@ -11,7 +11,7 @@ RSpec.describe GitlabSchema.types['GitlabSubscriptionUsageUserUsage'],
     expect(described_class).to have_graphql_fields([
       :credits_used,
       :overage_credits_used,
-      :pool_credits_used,
+      :monthly_commitment_credits_used,
       :total_credits
     ])
   end

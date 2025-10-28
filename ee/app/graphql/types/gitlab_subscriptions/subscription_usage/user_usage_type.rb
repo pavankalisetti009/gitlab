@@ -13,14 +13,14 @@ module Types
           type: GraphQL::Types::Float,
           null: true,
           description: 'GitLab Credits used by the user.'
+        field :monthly_commitment_credits_used,
+          type: GraphQL::Types::Float,
+          null: true,
+          description: 'GitLab Credits from the subscription monthly commitment used by the user.'
         field :overage_credits_used,
           type: GraphQL::Types::Float,
           null: true,
           description: 'Overage GitLab Credits used by the user.'
-        field :pool_credits_used,
-          type: GraphQL::Types::Float,
-          null: true,
-          description: 'GitLab Credits from the subscription pool used by the user.'
         field :total_credits,
           type: GraphQL::Types::Float,
           null: true,

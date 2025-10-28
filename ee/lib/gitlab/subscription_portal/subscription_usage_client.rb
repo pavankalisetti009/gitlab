@@ -8,7 +8,7 @@ module Gitlab
       ResponseError = Class.new(StandardError)
 
       GET_METADATA_QUERY = <<~GQL
-        query subscriptionUsage(
+        query subscriptionUsageMetadata(
           $namespaceId: ID,
           $licenseKey: String
         ) {
@@ -24,7 +24,7 @@ module Gitlab
       GQL
 
       GET_ONE_TIME_CREDITS_QUERY = <<~GQL
-        query subscriptionUsage(
+        query subscriptionUsageOneTimeCredits(
           $namespaceId: ID,
           $licenseKey: String,
           $startDate: ISO8601Date,
@@ -42,8 +42,8 @@ module Gitlab
         }
       GQL
 
-      GET_POOL_USAGE_QUERY = <<~GQL
-        query subscriptionUsage(
+      GET_MONTHLY_COMMITMENT_QUERY = <<~GQL
+        query subscriptionUsageMonthlyCommitment(
           $namespaceId: ID,
           $licenseKey: String,
           $startDate: ISO8601Date,
@@ -51,7 +51,7 @@ module Gitlab
         ) {
           subscription(namespaceId: $namespaceId, licenseKey: $licenseKey) {
             gitlabCreditsUsage(startDate: $startDate, endDate: $endDate) {
-              poolUsage {
+              monthlyCommitment {
                 totalCredits
                 creditsUsed
                 dailyUsage {
@@ -64,8 +64,8 @@ module Gitlab
         }
       GQL
 
-      GET_OVERAGE_USAGE_QUERY = <<~GQL
-        query subscriptionUsage(
+      GET_OVERAGE_QUERY = <<~GQL
+        query subscriptionUsageOverage(
           $namespaceId: ID,
           $licenseKey: String,
           $startDate: ISO8601Date,
@@ -87,7 +87,7 @@ module Gitlab
       GQL
 
       GET_USER_EVENTS_QUERY = <<~GQL
-        query subscriptionUsageForUserIds(
+        query subscriptionUsageUserEvents(
           $userIds: [Int!]!,
           $page: Int,
           $namespaceId: ID,
@@ -128,7 +128,7 @@ module Gitlab
                   userId
                   totalCredits
                   creditsUsed
-                  poolCreditsUsed
+                  monthlyCommitmentCreditsUsed
                   overageCreditsUsed
                 }
               }
@@ -148,7 +148,7 @@ module Gitlab
             gitlabCreditsUsage(startDate: $startDate, endDate:$endDate) {
               usersUsage {
                 totalUsersUsingCredits
-                totalUsersUsingPool
+                totalUsersUsingMonthlyCommitment
                 totalUsersUsingOverage
                 creditsUsed
                 dailyUsage {
@@ -213,31 +213,31 @@ module Gitlab
         end
       end
 
-      def get_pool_usage
+      def get_monthly_commitment
         response = execute_graphql_query(
-          query: GET_POOL_USAGE_QUERY,
+          query: GET_MONTHLY_COMMITMENT_QUERY,
           variables: default_variables.merge(startDate: start_date, endDate: end_date)
         )
 
         if unsuccessful_response?(response)
-          error(GET_POOL_USAGE_QUERY, response)
+          error(GET_MONTHLY_COMMITMENT_QUERY, response)
         else
           {
             success: true,
-            poolUsage: response.dig(:data, :subscription, :gitlabCreditsUsage, :poolUsage)
+            monthlyCommitment: response.dig(:data, :subscription, :gitlabCreditsUsage, :monthlyCommitment)
           }
         end
       end
-      strong_memoize_attr :get_pool_usage
+      strong_memoize_attr :get_monthly_commitment
 
-      def get_overage_usage
+      def get_overage
         response = execute_graphql_query(
-          query: GET_OVERAGE_USAGE_QUERY,
+          query: GET_OVERAGE_QUERY,
           variables: default_variables.merge(startDate: start_date, endDate: end_date)
         )
 
         if unsuccessful_response?(response)
-          error(GET_OVERAGE_USAGE_QUERY, response)
+          error(GET_OVERAGE_QUERY, response)
         else
           {
             success: true,
@@ -245,7 +245,7 @@ module Gitlab
           }
         end
       end
-      strong_memoize_attr :get_overage_usage
+      strong_memoize_attr :get_overage
 
       def get_events_for_user_id(user_id, page)
         strong_memoize_with(:get_events_for_user_id, user_id, page) do

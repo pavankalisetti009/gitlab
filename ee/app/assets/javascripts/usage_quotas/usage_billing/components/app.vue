@@ -61,10 +61,10 @@ export default {
       return Boolean(this.poolTotalCredits);
     },
     poolCreditsUsed() {
-      return this.subscriptionUsage?.poolUsage?.creditsUsed ?? 0;
+      return this.subscriptionUsage?.monthlyCommitment?.creditsUsed ?? 0;
     },
     poolTotalCredits() {
-      return this.subscriptionUsage?.poolUsage?.totalCredits ?? 0;
+      return this.subscriptionUsage?.monthlyCommitment?.totalCredits ?? 0;
     },
     overageIsAllowed() {
       return Boolean(this.subscriptionUsage?.overage?.isAllowed);
