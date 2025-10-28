@@ -1,5 +1,5 @@
 <script>
-import { xor } from 'lodash';
+import { xor, omit } from 'lodash';
 import { GlSprintf } from '@gitlab/ui';
 import { s__ } from '~/locale';
 import { SEVERITY_LEVELS, REPORT_TYPES_DEFAULT } from 'ee/security_dashboard/constants';
@@ -36,6 +36,8 @@ import {
   AGE_TOOLTIP_NO_PREVIOUSLY_EXISTING_VULNERABILITY,
   AGE_TOOLTIP_MAXIMUM_REACHED,
   DEFAULT_VULNERABILITY_STATES,
+  KNOWN_EXPLOITED,
+  EPSS,
 } from './scan_filters/constants';
 import NumberRangeSelect from './number_range_select.vue';
 import ScanTypeSelect from './scan_type_select.vue';
@@ -90,7 +92,7 @@ export default {
       return this.glFeatures.securityPoliciesKevFilter;
     },
     kevFilterValue() {
-      return getVulnerabilityAttribute(this.initRule, 'known_exploited');
+      return getVulnerabilityAttribute(this.initRule, KNOWN_EXPLOITED);
     },
     severityLevels: {
       get() {
@@ -139,6 +141,9 @@ export default {
     branchExceptions() {
       return this.initRule.branch_exceptions;
     },
+    additionalVulnerabilityAttributes() {
+      return omit(this.initRule.vulnerability_attributes, [FALSE_POSITIVE, FIX_AVAILABLE]);
+    },
     scannersToAdd: {
       get() {
         return this.initRule.scanners.length === 0
@@ -173,7 +178,7 @@ export default {
     },
     vulnerabilityAttributes: {
       get() {
-        return this.initRule.vulnerability_attributes || {};
+        return omit(this.initRule.vulnerability_attributes, [KNOWN_EXPLOITED, EPSS]);
       },
       set(value) {
         this.filters = {
@@ -181,11 +186,20 @@ export default {
           [FALSE_POSITIVE]: value[FALSE_POSITIVE] !== undefined,
           [FIX_AVAILABLE]: value[FIX_AVAILABLE] !== undefined,
         };
+
         this.updateCombinedFilters();
-        if (!Object.keys(value).length) {
+
+        const hasAttributes = Object.keys(value).length > 0;
+
+        const vulnerabilityAttributes = {
+          ...this.additionalVulnerabilityAttributes,
+          ...(hasAttributes ? value : {}),
+        };
+
+        if (Object.keys(vulnerabilityAttributes).length === 0) {
           this.removeFilterFromRule('vulnerability_attributes');
         } else {
-          this.triggerChanged({ vulnerability_attributes: value });
+          this.triggerChanged({ vulnerability_attributes: vulnerabilityAttributes });
         }
       },
     },
@@ -298,6 +312,9 @@ export default {
         return;
       }
       this.vulnerabilityAge = { ...this.vulnerabilityAge, ...ageValues };
+    },
+    setVulnerabilityAttributes(vulnerabilities) {
+      this.vulnerabilityAttributes = vulnerabilities;
     },
     removeExceptions() {
       const rule = { ...this.initRule };
@@ -437,7 +454,7 @@ export default {
           v-if="isAttributeFilterSelected"
           :selected="vulnerabilityAttributes"
           @remove="removeAttributesFilter"
-          @input="vulnerabilityAttributes = $event"
+          @input="setVulnerabilityAttributes"
         />
 
         <scan-filter-selector
