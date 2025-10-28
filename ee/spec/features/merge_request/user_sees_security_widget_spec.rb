@@ -66,7 +66,8 @@ RSpec.describe "Merge request > User sees security widget",
       )
     end
 
-    it "does not show them as new vulnerabilities" do
+    it "does not show them as new vulnerabilities",
+      quarantine: 'https://gitlab.com/gitlab-org/quality/test-failure-issues/-/issues/7074' do
       visit(merge_request_path)
 
       page.within(mr_widget_app_selector) do
