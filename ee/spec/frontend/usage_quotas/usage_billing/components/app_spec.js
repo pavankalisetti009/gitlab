@@ -111,15 +111,6 @@ describe('UsageBillingApp', () => {
       expect(findUsageByUserTab().exists()).toBe(true);
     });
 
-    it('renders users table tab with correct props', () => {
-      const usageByUserTab = wrapper.findComponent(UsageByUserTab);
-
-      expect(usageByUserTab.exists()).toBe(true);
-      expect(usageByUserTab.props()).toMatchObject({
-        hasCommitment: true,
-      });
-    });
-
     describe('when lastEventTransactionAt is not provided', () => {
       beforeEach(async () => {
         createComponent({
@@ -207,12 +198,6 @@ describe('UsageBillingApp', () => {
 
       expect(purchaseCommitmentCard.props('hasCommitment')).toBe(false);
     });
-
-    it('will pass hasComitment to usage-by-user-tab', () => {
-      const usageByUserTab = wrapper.findComponent(UsageByUserTab);
-
-      expect(usageByUserTab.props('hasCommitment')).toBe(false);
-    });
   });
 
   describe('no pool no overage state', () => {
@@ -238,12 +223,6 @@ describe('UsageBillingApp', () => {
       const purchaseCommitmentCard = wrapper.findComponent(PurchaseCommitmentCard);
 
       expect(purchaseCommitmentCard.props('hasCommitment')).toBe(false);
-    });
-
-    it('will pass hasCommitment to usage-by-user-tab', () => {
-      const usageByUserTab = wrapper.findComponent(UsageByUserTab);
-
-      expect(usageByUserTab.props('hasCommitment')).toBe(false);
     });
   });
 

@@ -79,10 +79,6 @@ describe('UsageByUserTab', () => {
             label: 'Allocation used',
           },
           {
-            key: 'poolCreditsUsed',
-            label: 'Pool used',
-          },
-          {
             key: 'totalCreditsUsed',
             label: 'Total credits used',
           },
@@ -96,18 +92,11 @@ describe('UsageByUserTab', () => {
         });
 
         describe.each`
-          username      | displayName        | allocationUsed | allocationUsedPercent | poolUsed | totalCreditsUsed
-          ${'ajohnson'} | ${'Alice Johnson'} | ${'450 / 500'} | ${90}                 | ${'0'}   | ${'450'}
+          username      | displayName        | allocationUsed | allocationUsedPercent | totalCreditsUsed
+          ${'ajohnson'} | ${'Alice Johnson'} | ${'450 / 500'} | ${90}                 | ${'450'}
         `(
           'rendering $userName $username',
-          ({
-            username,
-            displayName,
-            allocationUsed,
-            allocationUsedPercent,
-            poolUsed,
-            totalCreditsUsed,
-          }) => {
+          ({ username, displayName, allocationUsed, allocationUsedPercent, totalCreditsUsed }) => {
             describe('user cell', () => {
               it('renders user avatar with link to the user details page', () => {
                 const userAvatar = findCell(1).findComponent(UserAvatarLink);
@@ -134,14 +123,8 @@ describe('UsageByUserTab', () => {
               });
             });
 
-            it('renders pool used cell', () => {
-              const cell = findCell(3);
-
-              expect(cell.text()).toBe(poolUsed);
-            });
-
             it('renders total credits used cell', () => {
-              const cell = findCell(4);
+              const cell = findCell(3);
 
               expect(cell.text()).toBe(totalCreditsUsed);
             });
