@@ -30,6 +30,16 @@ module Elastic
 
     private
 
+    class << self
+      def saas_with_es?
+        Gitlab::Saas.feature_available?(:advanced_search)
+      end
+
+      def dedicated_with_es?
+        Gitlab::CurrentSettings.gitlab_dedicated_instance?
+      end
+    end
+
     def helper
       @helper ||= Gitlab::Elastic::Helper.default
     end
