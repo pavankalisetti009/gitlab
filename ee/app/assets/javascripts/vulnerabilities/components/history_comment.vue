@@ -123,10 +123,9 @@ export default {
           await this.insertComment(body);
         }
 
-        this.$emit('onCommentUpdated', () => {
-          this.isSavingComment = false;
-          this.cancelEditingComment();
-        });
+        this.$emit('onCommentUpdated');
+        this.isSavingComment = false;
+        this.cancelEditingComment();
       } catch {
         this.isSavingComment = false;
 
@@ -152,9 +151,8 @@ export default {
           throw data.errors;
         }
 
-        this.$emit('onCommentUpdated', () => {
-          this.isDeletingComment = false;
-        });
+        this.$emit('onCommentUpdated');
+        this.isDeletingComment = false;
       } catch {
         this.isDeletingComment = false;
 
