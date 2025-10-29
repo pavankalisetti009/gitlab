@@ -18876,7 +18876,8 @@ CREATE TABLE jira_tracker_data (
     CONSTRAINT check_214cf6a48b CHECK ((char_length(project_key) <= 255)),
     CONSTRAINT check_4cc5bbc801 CHECK ((char_length(jira_issue_prefix) <= 255)),
     CONSTRAINT check_9863a0a5fd CHECK ((char_length(jira_issue_regex) <= 255)),
-    CONSTRAINT check_b5ab881f50 CHECK ((char_length(jira_allowed_statuses_string) <= 1024))
+    CONSTRAINT check_b5ab881f50 CHECK ((char_length(jira_allowed_statuses_string) <= 1024)),
+    CONSTRAINT check_eca1fbd6bd CHECK ((num_nonnulls(group_id, organization_id, project_id) = 1))
 );
 
 CREATE SEQUENCE jira_tracker_data_id_seq
