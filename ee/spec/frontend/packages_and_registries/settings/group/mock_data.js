@@ -1,52 +1,18 @@
-import {
-  packageForwardingSettings,
-  packageSettings,
-  dependencyProxySettings,
-  dependencyProxyImageTtlPolicy,
-  groupPackageSettingsMutationMock,
-  groupPackageForwardSettingsMutationMock,
-  dependencyProxySettingMutationMock,
-  dependencyProxyUpdateTllPolicyMutationMock,
-  groupPackageSettingsMutationErrorMock,
-  mutationErrorMock,
-  npmProps,
-  pypiProps,
-  mavenProps,
-} from 'jest/packages_and_registries/settings/group/mock_data';
+import { mutationErrorMock } from 'jest/packages_and_registries/settings/group/mock_data';
 
-export {
-  packageForwardingSettings,
-  packageSettings,
-  dependencyProxySettings,
-  dependencyProxyImageTtlPolicy,
-  groupPackageSettingsMutationMock,
-  groupPackageForwardSettingsMutationMock,
-  dependencyProxySettingMutationMock,
-  dependencyProxyUpdateTllPolicyMutationMock,
-  groupPackageSettingsMutationErrorMock,
-  mutationErrorMock,
-  npmProps,
-  pypiProps,
-  mavenProps,
-};
+export { mutationErrorMock };
 
 export const virtualRegistriesSetting = (extend) => ({
   enabled: true,
   ...extend,
 });
 
-export const groupPackageSettingsMock = {
+export const groupVirtualRegistriesSettingMock = {
   data: {
     group: {
       id: '1',
       fullPath: 'foo_group_path',
-      dependencyProxySetting: dependencyProxySettings(),
-      dependencyProxyImageTtlPolicy: dependencyProxyImageTtlPolicy(),
       virtualRegistriesSetting: virtualRegistriesSetting(),
-      packageSettings: {
-        ...packageSettings,
-        __typename: 'PackageSettings',
-      },
       __typename: 'Group',
     },
   },

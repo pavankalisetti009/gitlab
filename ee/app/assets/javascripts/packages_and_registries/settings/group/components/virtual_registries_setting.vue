@@ -1,9 +1,10 @@
 <script>
 import { GlToggle, GlSprintf, GlLink, GlExperimentBadge } from '@gitlab/ui';
 import SettingsSection from '~/vue_shared/components/settings/settings_section.vue';
+import getGroupVirtualRegistriesSetting from 'ee_component/packages_and_registries/settings/group/graphql/queries/get_group_virtual_registries_setting.query.graphql';
 import updateVirtualRegistriesSetting from 'ee_component/packages_and_registries/settings/group/graphql/mutations/update_virtual_registries_setting.mutation.graphql';
 import { updateVirtualRegistriesSettingOptimisticResponse } from 'ee_component/packages_and_registries/settings/group/graphql/utils/optimistic_responses';
-import { updateGroupPackageSettings } from 'ee_component/packages_and_registries/settings/group/graphql/utils/cache_update';
+import { updateGroupVirtualRegistriesSetting } from 'ee_component/packages_and_registries/settings/group/graphql/utils/cache_update';
 
 export default {
   name: 'VirtualRegistriesSetting',
@@ -15,18 +16,31 @@ export default {
     SettingsSection,
   },
   inject: ['groupPath'],
-  props: {
-    virtualRegistriesSetting: {
-      type: Object,
-      required: true,
-    },
-    isLoading: {
-      type: Boolean,
-      required: false,
-      default: false,
+  apollo: {
+    group: {
+      query: getGroupVirtualRegistriesSetting,
+      variables() {
+        return {
+          fullPath: this.groupPath,
+        };
+      },
+      context: {
+        batchKey: 'GroupPackagesSettings',
+      },
     },
   },
+  data() {
+    return {
+      group: {},
+    };
+  },
   computed: {
+    virtualRegistriesSetting() {
+      return this.group?.virtualRegistriesSetting || {};
+    },
+    isLoading() {
+      return this.$apollo.queries.group.loading;
+    },
     enabled: {
       get() {
         return this.virtualRegistriesSetting.enabled;
@@ -61,7 +75,7 @@ export default {
       const apolloConfig = {
         mutation: updateVirtualRegistriesSetting,
         variables: this.mutationVariables(payload),
-        update: updateGroupPackageSettings(this.groupPath),
+        update: updateGroupVirtualRegistriesSetting(this.groupPath),
         optimisticResponse: updateVirtualRegistriesSettingOptimisticResponse({
           ...this.virtualRegistriesSetting,
           ...payload,
@@ -76,7 +90,7 @@ export default {
 
 <template>
   <settings-section
-    :heading="s__('VirtualRegistry|Virtual Registry')"
+    :heading="s__('VirtualRegistry|Virtual registry')"
     :description="
       s__(
         'VirtualRegistry|Manage packages across multiple sources and streamline development workflows using virtual registries.',
@@ -90,7 +104,7 @@ export default {
     >
       <template #label>
         <span class="gl-flex gl-items-center">
-          {{ s__('VirtualRegistry|Enable Virtual Registry') }}
+          {{ s__('VirtualRegistry|Enable virtual registry') }}
           <gl-experiment-badge type="beta" class="gl-ml-2" />
         </span>
       </template>
