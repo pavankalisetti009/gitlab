@@ -15,7 +15,7 @@ module QA
             end
 
             def click_new_epic
-              click_element('new-epic-button', EE::Page::Group::Epic::New)
+              click_element('new-epic-button', EE::Page::Group::Epic::New, index: 0)
             end
 
             def click_first_epic(page = nil)
