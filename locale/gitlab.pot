@@ -2551,9 +2551,6 @@ msgstr ""
 msgid "AICatalog|Are you sure you want to remove flow %{name}?"
 msgstr ""
 
-msgid "AICatalog|Ask a question or describe something you want the agent to do."
-msgstr ""
-
 msgid "AICatalog|Available tools"
 msgstr ""
 
@@ -2599,9 +2596,6 @@ msgstr ""
 msgid "AICatalog|Copy YAML configuration"
 msgstr ""
 
-msgid "AICatalog|Copy instructions"
-msgstr ""
-
 msgid "AICatalog|Copy of"
 msgstr ""
 
@@ -2630,9 +2624,6 @@ msgid "AICatalog|Could not update agent. Try again."
 msgstr ""
 
 msgid "AICatalog|Could not update flow. Try again."
-msgstr ""
-
-msgid "AICatalog|Create a session that uses this agent."
 msgstr ""
 
 msgid "AICatalog|Create agent"
@@ -2770,12 +2761,6 @@ msgstr ""
 msgid "AICatalog|Input cannot exceed %{value} characters. Please shorten your input."
 msgstr ""
 
-msgid "AICatalog|Instructions"
-msgstr ""
-
-msgid "AICatalog|Instructions required."
-msgstr ""
-
 msgid "AICatalog|Is visible only to users with at least the Developer role in this project."
 msgstr ""
 
@@ -2822,9 +2807,6 @@ msgid "AICatalog|Only public agents can be used in public flows."
 msgstr ""
 
 msgid "AICatalog|Open source projects."
-msgstr ""
-
-msgid "AICatalog|Please consider my background in... When explaining concepts, use... My preferred format for responses is... Always include..."
 msgstr ""
 
 msgid "AICatalog|Private %{itemTypePlural} are best for:"
@@ -2896,19 +2878,7 @@ msgstr ""
 msgid "AICatalog|System prompt is required."
 msgstr ""
 
-msgid "AICatalog|Test"
-msgstr ""
-
-msgid "AICatalog|Test run agent"
-msgstr ""
-
-msgid "AICatalog|Test run executed successfully, see %{linkStart}Session %{workflowId}%{linkEnd}."
-msgstr ""
-
 msgid "AICatalog|The item consumer must belong to only one organization, group, or project"
-msgstr ""
-
-msgid "AICatalog|The test run failed. %{error}"
 msgstr ""
 
 msgid "AICatalog|Third-party flow"
