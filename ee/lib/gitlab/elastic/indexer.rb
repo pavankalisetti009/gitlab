@@ -183,7 +183,7 @@ module Gitlab
 
       def build_wiki_specific_flags
         %W[--blob-type=wiki_blob --skip-commits --wiki-access-level=#{container.wiki_access_level}].tap do |c|
-          c << "--archived=#{project.archived}" if project
+          c << "--archived=#{project.self_or_ancestors_archived?}" if project
           c << "--schema-version-wiki=#{WIKI_SCHEMA_VERSION}"
         end
       end
@@ -193,7 +193,7 @@ module Gitlab
           c << "--hashed-root-namespace-id=#{project.namespace.hashed_root_namespace_id}"
           c << "--schema-version-blob=#{BLOB_SCHEMA_VERSION}"
           c << "--schema-version-commit=#{COMMIT_SCHEMA_VERSION}"
-          c << "--archived=#{project.archived}"
+          c << "--archived=#{project.self_or_ancestors_archived?}"
         end
       end
 

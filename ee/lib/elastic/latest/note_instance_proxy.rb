@@ -74,7 +74,7 @@ module Elastic
 
         {
           hashed_root_namespace_id: target.project.namespace&.hashed_root_namespace_id,
-          archived: target.project.archived
+          archived: target.project.self_or_ancestors_archived?
         }
       end
 

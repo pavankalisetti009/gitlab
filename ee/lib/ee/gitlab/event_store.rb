@@ -39,9 +39,6 @@ module EE
             to: ::MergeRequests::OverrideRequestedChangesStateEvent
           store.subscribe ::MergeRequests::ProcessAutoMergeFromEventWorker, to: ::MergeRequests::ApprovedEvent
           store.subscribe ::MergeRequests::ProcessAutoMergeFromEventWorker, to: ::MergeRequests::ViolationsUpdatedEvent
-          store.subscribe ::Search::ElasticDefaultBranchChangedWorker,
-            to: ::Repositories::DefaultBranchChangedEvent,
-            if: ->(_) { ::Gitlab::CurrentSettings.elasticsearch_indexing? }
           store.subscribe ::Search::Zoekt::DefaultBranchChangedWorker, to: ::Repositories::DefaultBranchChangedEvent
           store.subscribe ::Search::Zoekt::DeleteProjectEventWorker,
             to: ::Projects::ProjectDeletedEvent, if: ->(_) { ::Search::Zoekt.licensed_and_indexing_enabled? }
@@ -77,6 +74,7 @@ module EE
           subscribe_to_work_item_events(store)
           subscribe_to_milestone_events(store)
           subscribe_to_active_context_code_events(store)
+          subscribe_to_elastic_events(store)
           subscribe_to_zoekt_events(store)
           subscribe_to_members_added_event(store)
           subscribe_to_users_activity_events(store)
@@ -286,6 +284,16 @@ module EE
 
           store.subscribe ::Search::Zoekt::SaasRolloutEventWorker,
             to: ::Search::Zoekt::SaasRolloutEvent
+        end
+
+        def subscribe_to_elastic_events(store)
+          store.subscribe ::Search::ElasticDefaultBranchChangedWorker, to: ::Repositories::DefaultBranchChangedEvent,
+            if: ->(_) { ::Gitlab::CurrentSettings.elasticsearch_indexing? }
+          store.subscribe ::Search::Elastic::GroupArchivedEventWorker, to: ::Namespaces::Groups::GroupArchivedEvent,
+            if: ->(_) do
+              ::Gitlab::CurrentSettings.elasticsearch_indexing? &&
+                ::Feature.enabled?(:elastic_group_archived_event, ::Feature.current_request)
+            end
         end
 
         def subscribe_to_members_added_event(store)

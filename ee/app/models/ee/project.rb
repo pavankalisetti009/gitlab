@@ -468,8 +468,9 @@ module EE
       end
 
       scope :preload_for_indexing, -> do
-        includes(:mirror_user, :project_feature, :route, :catalog_resource, :fork_network,
-          :repository_languages, :group, namespace: :owner)
+        includes(:mirror_user, :project_feature, :route, :catalog_resource, :fork_network, :repository_languages,
+          :group, namespace: %i[owner namespace_settings namespace_settings_with_ancestors_inherited_settings]
+        )
       end
 
       scope :without_zoekt_repositories_for_index, ->(index_id) {
@@ -789,7 +790,7 @@ module EE
 
         for_plan_name(::Plan.default_plans)
           .joins(:statistics)
-          .where((statistics[:storage_size]).gt(minimum_size_mb))
+          .where(statistics[:storage_size].gt(minimum_size_mb))
           .where('last_activity_at < ?', last_activity_cutoff)
       end
 

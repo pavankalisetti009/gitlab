@@ -11,7 +11,9 @@ module Elastic
 
       # rubocop: disable CodeReuse/ActiveRecord -- no ActiveRecord relation
       def preload_indexing_data(relation)
-        relation.includes(:author, :assignees, :labels, target_project: [:project_feature, :namespace])
+        relation.includes(:author, :assignees, :labels, target_project: [
+          :project_feature, { namespace: %i[namespace_settings namespace_settings_with_ancestors_inherited_settings] }
+        ])
       end
       # rubocop: enable CodeReuse/ActiveRecord
     end

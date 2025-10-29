@@ -2,9 +2,8 @@
 
 module Search
   class ElasticDefaultBranchChangedWorker
-    include ApplicationWorker
-    include Search::Worker
     include Gitlab::EventStore::Subscriber
+    include Search::Worker
     prepend ::Geo::SkipSecondary
 
     data_consistency :delayed

@@ -62,9 +62,9 @@ module Elastic
       ::Elastic::ProcessBookkeepingService.track!(self)
 
       associations_to_update = associations_needing_elasticsearch_update(updated_attributes)
-      if associations_to_update.present?
-        ElasticAssociationIndexerWorker.perform_async(self.class.name, id, associations_to_update)
-      end
+      return if associations_to_update.empty?
+
+      ElasticAssociationIndexerWorker.perform_async(self.class.name, id, associations_to_update)
     end
 
     def maintain_elasticsearch_destroy

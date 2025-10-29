@@ -3236,6 +3236,16 @@
   :idempotent: true
   :tags: []
   :queue_namespace:
+- :name: search_elastic_group_archived_event
+  :worker_name: Search::Elastic::GroupArchivedEventWorker
+  :feature_category: :global_search
+  :has_external_dependencies: false
+  :urgency: :low
+  :resource_boundary: :unknown
+  :weight: 1
+  :idempotent: true
+  :tags: []
+  :queue_namespace:
 - :name: search_elastic_group_association_deletion
   :worker_name: Search::ElasticGroupAssociationDeletionWorker
   :feature_category: :global_search

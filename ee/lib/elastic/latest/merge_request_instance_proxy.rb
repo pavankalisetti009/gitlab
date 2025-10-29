@@ -34,7 +34,7 @@ module Elastic
         data['hashed_root_namespace_id'] = target_project.namespace.hashed_root_namespace_id
 
         data['hidden'] = target.hidden?
-        data['archived'] = target.project.archived?
+        data['archived'] = target.project.self_or_ancestors_archived?
 
         # Schema version. The format is Date.today.strftime('%y_%w')
         # Please update if you're changing the schema of the document

@@ -77,7 +77,7 @@ RSpec.describe ::Search::Elastic::References::WorkItem, :elastic_helpers, featur
       let(:object) { user_work_item }
       let(:expected_hash) do
         base_work_item_hash.merge(
-          archived: object.project.archived?,
+          archived: object.project.self_or_ancestors_archived?,
           traversal_ids: object.namespace.elastic_namespace_ancestry,
           project_visibility_level: object.project.visibility_level,
           issues_access_level: object.project.issues_access_level
@@ -121,7 +121,7 @@ RSpec.describe ::Search::Elastic::References::WorkItem, :elastic_helpers, featur
         base_work_item_hash.merge(
           root_namespace_id: project_work_item.namespace.root_ancestor.id,
           traversal_ids: project_work_item.namespace.elastic_namespace_ancestry,
-          archived: project.archived?,
+          archived: project.self_or_ancestors_archived?,
           project_visibility_level: project.visibility_level,
           issues_access_level: project.issues_access_level
         )
