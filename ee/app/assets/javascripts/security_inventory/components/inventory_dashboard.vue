@@ -33,7 +33,7 @@ export default {
     SecurityInventoryTable,
     InventoryDashboardFilteredSearchBar,
   },
-  inject: ['groupFullPath', 'groupId', 'newProjectPath'],
+  inject: ['groupFullPath', 'groupId', 'newProjectPath', 'canReadAttributes'],
   i18n: {
     errorFetchingChildren: s__(
       'SecurityInventory|An error occurred while fetching subgroups and projects. Please try again.',
@@ -85,6 +85,7 @@ export default {
           projectsAfter: null,
           securityAnalyzerFilters,
           vulnerabilityCountFilters,
+          canReadAttributes: this.canReadAttributes,
         };
       },
       update(data) {
@@ -248,6 +249,7 @@ export default {
           projectsAfter,
           securityAnalyzerFilters,
           vulnerabilityCountFilters,
+          canReadAttributes: this.canReadAttributes,
         },
       });
     },

@@ -17,7 +17,11 @@ describe('SecurityInventoryTable', () => {
   let wrapper;
 
   const createComponentFactory = ({ mountFn = shallowMount } = {}) => {
-    return ({ props = {}, stubs = {}, provide = { canManageAttributes: false } } = {}) => {
+    return ({
+      props = {},
+      stubs = {},
+      provide = { canManageAttributes: true, canReadAttributes: true },
+    } = {}) => {
       wrapper = mountFn(SecurityInventoryTable, {
         propsData: {
           items,
@@ -103,15 +107,37 @@ describe('SecurityInventoryTable', () => {
 
   describe('when security_context_labels feature flag is disabled', () => {
     beforeEach(() => {
-      createComponent({ provide: { glFeatures: { securityContextLabels: false } } });
+      createComponent({
+        provide: {
+          glFeatures: { securityContextLabels: false },
+          canManageAttributes: true,
+          canReadAttributes: true,
+        },
+      });
     });
-    it('passes the correct fields to GlTableLite component', () => {
-      expect(findTable().props('fields')).toEqual([
-        { key: 'name', label: 'Name', thClass: 'gl-max-w-0' },
-        { key: 'vulnerabilities', label: 'Vulnerabilities', thClass: 'gl-w-1/5' },
-        { key: 'toolCoverage', label: 'Tool Coverage', thClass: 'gl-w-1/3' },
-        { key: 'actions', label: '', thClass: 'gl-w-2/20' },
-      ]);
+
+    it('does not show the security attributes column', () => {
+      expect(findTable().props('fields')).not.toContain(
+        expect.objectContaining({ key: 'securityAttributes' }),
+      );
+    });
+  });
+
+  describe('when user does not have permission', () => {
+    beforeEach(() => {
+      createComponent({
+        provide: {
+          glFeatures: { securityContextLabels: true },
+          canManageAttributes: false,
+          canReadAttributes: false,
+        },
+      });
+    });
+
+    it('does not show the security attributes column', () => {
+      expect(findTable().props('fields')).not.toContain(
+        expect.objectContaining({ key: 'securityAttributes' }),
+      );
     });
   });
 });

@@ -39,6 +39,7 @@ module Groups::SecurityFeaturesHelper
       group_id: group.id,
       group_name: group.name,
       can_manage_attributes: can?(current_user, :admin_security_attributes, group.root_ancestor).to_s,
+      can_read_attributes: can?(current_user, :read_security_attribute, group).to_s,
       group_manage_attributes_path: group_security_configuration_path(group.root_ancestor),
       new_project_path: new_project_path(namespace_id: group.id)
     }
