@@ -3,6 +3,8 @@
 module VirtualRegistries
   module Container
     class HandleFileRequestService < ::VirtualRegistries::BaseService
+      include Gitlab::InternalEventsTracking
+
       PERMISSIONS_CACHE_TTL = 5.minutes
 
       ERRORS = BASE_ERRORS.merge(
@@ -116,6 +118,7 @@ module VirtualRegistries
       end
 
       def download_cache_entry
+        create_event(from_upstream: false)
         cache_entry.bump_downloads_count
 
         ServiceResponse.success(
@@ -131,6 +134,8 @@ module VirtualRegistries
       end
 
       def workhorse_upload_url_response(upstream:)
+        create_event(from_upstream: true)
+
         ServiceResponse.success(
           payload: {
             action: :workhorse_upload_url,
@@ -140,6 +145,15 @@ module VirtualRegistries
             }
           }
         )
+      end
+
+      def create_event(from_upstream:)
+        args = {
+          namespace: registry.group,
+          additional_properties: { label: from_upstream ? 'from_upstream' : 'from_cache' }
+        }
+        args[:user] = current_user if current_user.is_a?(User)
+        track_internal_event('pull_container_file_through_virtual_registry', **args)
       end
     end
   end
