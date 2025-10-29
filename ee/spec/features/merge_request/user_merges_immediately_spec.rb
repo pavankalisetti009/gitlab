@@ -6,7 +6,7 @@ RSpec.describe 'Merge requests > User merges immediately', :js, feature_category
   let_it_be(:project) { create(:project, :repository) }
   let_it_be(:user) { create(:user) }
 
-  let_it_be(:merge_request) do
+  let(:merge_request) do
     create(:merge_request, :with_merge_request_pipeline,
       source_project: project, source_branch: 'feature',
       target_project: project, target_branch: 'master')
@@ -19,6 +19,9 @@ RSpec.describe 'Merge requests > User merges immediately', :js, feature_category
   before_all do
     project.add_maintainer(user)
     project.update!(merge_pipelines_enabled: true, merge_trains_enabled: true, merge_trains_skip_train_allowed: true)
+  end
+
+  before do
     merge_request.all_pipelines.first.succeed!
     merge_request.update_head_pipeline
   end
