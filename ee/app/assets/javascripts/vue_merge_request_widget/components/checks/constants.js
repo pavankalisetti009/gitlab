@@ -46,7 +46,7 @@ export const POLICY_EXCEPTIONS_NEXT_STEPS = [
     'SecurityOrchestration|All policy requirements will be bypassed for this MR and can be merged immediately',
   ),
   s__(
-    'SecurityOrchestration|A formal exception record will be created and linked to this merge requests',
+    'SecurityOrchestration|A formal exception record will be created and linked to this merge request',
   ),
   s__('SecurityOrchestration|The action will be logged in the audit log with your justification'),
   s__('SecurityOrchestration|Security teams will be notified of this exception'),

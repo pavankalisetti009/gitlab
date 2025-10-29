@@ -59515,7 +59515,7 @@ msgstr ""
 msgid "SecurityOrchestration|A compliance framework is a label to identify that your project has certain compliance requirements. %{linkStart}Learn more%{linkEnd}."
 msgstr ""
 
-msgid "SecurityOrchestration|A formal exception record will be created and linked to this merge requests"
+msgid "SecurityOrchestration|A formal exception record will be created and linked to this merge request"
 msgstr ""
 
 msgid "SecurityOrchestration|A new project will be created to be used to store security policies. If a project already exists with security policies, link it via the policy list page."
