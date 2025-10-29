@@ -43,7 +43,11 @@ export default {
         </gl-sprintf>
       </p>
       <div class="gl-mt-auto">
-        <gl-button variant="confirm" :href="purchaseCreditsPath">
+        <gl-button
+          variant="confirm"
+          :href="purchaseCreditsPath"
+          referrerpolicy="no-referrer-when-downgrade"
+        >
           {{ s__('UsageBilling|Increase monthly commitment') }}
         </gl-button>
       </div>
@@ -68,7 +72,11 @@ export default {
       </p>
 
       <div class="gl-mt-auto">
-        <gl-button variant="confirm" :href="purchaseCreditsPath">
+        <gl-button
+          variant="confirm"
+          :href="purchaseCreditsPath"
+          referrerpolicy="no-referrer-when-downgrade"
+        >
           {{ s__('UsageBilling|Purchase monthly commitment') }}
         </gl-button>
       </div>

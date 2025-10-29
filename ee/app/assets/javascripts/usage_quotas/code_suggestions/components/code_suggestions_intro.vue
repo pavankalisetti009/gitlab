@@ -237,6 +237,7 @@ export default {
           :category="purchaseSeatsBtnCategory"
           class="gl-mt-3 gl-w-full @sm/panel:gl-ml-3 @sm/panel:gl-mt-0 @sm/panel:gl-w-auto"
           data-testid="duo-pro-purchase-seats-btn"
+          referrerpolicy="no-referrer-when-downgrade"
           @click="trackPurchaseSeatsClick"
         >
           {{ $options.i18n.purchaseSeats }}

@@ -121,8 +121,9 @@ export default {
         category="secondary"
         v-bind="attributes.ctaTrackingData"
         :href="attributes.ctaHref"
-        >{{ attributes.ctaLabel }}</gl-button
-      >
+        referrerpolicy="no-referrer-when-downgrade"
+        >{{ attributes.ctaLabel }}
+      </gl-button>
     </div>
   </div>
 </template>

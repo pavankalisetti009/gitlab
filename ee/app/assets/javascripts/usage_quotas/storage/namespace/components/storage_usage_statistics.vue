@@ -120,6 +120,7 @@ export default {
           category="primary"
           variant="confirm"
           data-testid="purchase-more-storage"
+          referrerpolicy="no-referrer-when-downgrade"
         >
           {{ s__('UsageQuota|Buy storage') }}
         </gl-button>

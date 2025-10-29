@@ -61,6 +61,7 @@ export default {
           :href="addDuoProHref"
           target="_blank"
           rel="noopener noreferrer"
+          referrerpolicy="no-referrer-when-downgrade"
           variant="confirm"
           category="primary"
           data-testid="duo-core-upgrade-duo-pro-action"

@@ -134,6 +134,7 @@ export default {
           category="primary"
           variant="default"
           :href="addDuoProHref"
+          referrerpolicy="no-referrer-when-downgrade"
           @click="handlePurchaseSeats"
           >{{ $options.i18n.duoPurchaseSeatsButtonText }} <gl-icon name="external-link"
         /></gl-button>

@@ -25,6 +25,7 @@ export default {
       data-testid="buy-subscription-button"
       variant="confirm"
       :href="buySubscriptionPath"
+      referrerpolicy="no-referrer-when-downgrade"
     >
       {{ $options.i18n.buttonLabel }}
     </gl-button>

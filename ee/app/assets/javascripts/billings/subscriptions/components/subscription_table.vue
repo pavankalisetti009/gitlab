@@ -202,6 +202,7 @@ export default {
         :href="button.href"
         :class="{ 'gl-ml-3': index !== 0 }"
         :data-testid="button.testId"
+        referrerpolicy="no-referrer-when-downgrade"
         size="small"
         target="_blank"
         @click="button.clickHandler"
@@ -211,6 +212,7 @@ export default {
         v-if="canRefreshSeats"
         :class="{ 'gl-ml-2': buttons.length !== 0 }"
         data-testid="refresh-seats"
+        referrerpolicy="no-referrer-when-downgrade"
         size="small"
         @click="refreshSeats"
         >{{ s__('SubscriptionTable|Refresh Seats') }}</gl-button

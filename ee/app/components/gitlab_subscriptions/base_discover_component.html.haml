@@ -55,6 +55,7 @@
     = render Pajamas::ButtonComponent.new(href: buy_now_link,
       category: :primary, variant: :confirm,
       button_options: { class: 'gl-w-full gl-mb-3 @sm/panel:gl-w-auto @sm/panel:gl-mr-3 @sm/panel:gl-mb-0',
+      referrerpolicy: 'no-referrer-when-downgrade',
       data: { testid: 'buy-now-bottom', track_action: 'click_buy_now', track_label: trial_status_cta_label } }) do
       = cta_button_text
   - if show_hand_raise_lead?

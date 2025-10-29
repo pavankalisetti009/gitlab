@@ -158,6 +158,7 @@ export default {
           variant="confirm"
           data-testid="customers-portal-btn"
           :href="customersPortalUrl"
+          referrerpolicy="no-referrer-when-downgrade"
           >{{ $options.i18n.customersPortalBtnText }}
         </gl-button>
       </template>
