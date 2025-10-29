@@ -6,7 +6,7 @@ RSpec.describe PlanLimits, feature_category: :consumables_cost_management do
   describe '#dashboard_storage_limit_enabled?' do
     using RSpec::Parameterized::TableSyntax
 
-    let_it_be(:plan_limits) { create(:plan_limits) }
+    let_it_be(:plan_limits) { create(:plan_limits, :premium_plan) }
 
     subject { plan_limits.dashboard_storage_limit_enabled? }
 

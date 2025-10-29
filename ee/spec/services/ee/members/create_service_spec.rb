@@ -31,8 +31,8 @@ RSpec.describe Members::CreateService, feature_category: :groups_and_projects do
   end
 
   context 'with group plan observing quota limits', :saas do
-    let(:plan_limits) { create(:plan_limits, daily_invites: daily_invites) }
-    let(:plan) { create(:plan, limits: plan_limits) }
+    let(:plan) { create(:free_plan) }
+    let!(:plan_limits) { create(:plan_limits, plan: plan, daily_invites: daily_invites) }
     let!(:subscription) do
       create(
         :gitlab_subscription,

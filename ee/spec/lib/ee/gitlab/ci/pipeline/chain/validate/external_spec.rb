@@ -3,6 +3,7 @@
 require 'spec_helper'
 
 RSpec.describe Gitlab::Ci::Pipeline::Chain::Validate::External, :saas do
+  let_it_be(:free_plan) { create(:free_plan) }
   let_it_be(:project) { create(:project) }
   let_it_be(:user) { create(:user) }
   let_it_be(:subscription) { create(:gitlab_subscription, :default, namespace: user.namespace) }
