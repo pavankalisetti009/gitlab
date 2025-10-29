@@ -736,6 +736,14 @@ export default {
 
       return isAvailable;
     },
+    // `focusInput` can be called by the parent component. Ideally, we would mark this as a public
+    // method via Vue's `expose` option. However, doing so would cause several tests to fail in Vue 3
+    // because we wrote some assertions directly against the `vm`, which becomes private when `expose`
+    // is defined. So we need to _not_ use `expose` and disable vue/no-unused-properties for now.
+    // eslint-disable-next-line vue/no-unused-properties
+    focusInput() {
+      this.$refs.chat.focusChatInput();
+    },
   },
 };
 </script>
@@ -758,6 +766,7 @@ export default {
     <web-agentic-duo-chat
       v-else
       id="duo-chat"
+      ref="chat"
       :title="dynamicTitle"
       :messages="messages.length > 0 ? messages : chatMessageHistory"
       :is-loading="loading"
@@ -778,6 +787,7 @@ export default {
       :agents="agents"
       :is-chat-available="isChatAvailable"
       :error="multithreadedView === 'chat' ? agentDeletedError : ''"
+      :should-auto-focus-input="!isEmbedded"
       class="gl-h-full gl-w-full"
       @new-chat="onNewChat"
       @send-chat-prompt="onSendChatPrompt"

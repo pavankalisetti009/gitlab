@@ -6,6 +6,7 @@ import { __ } from '~/locale';
 
 export default {
   name: 'AiContentContainer',
+  expose: ['getContentComponent'],
   components: {
     GlButton,
   },
@@ -100,6 +101,9 @@ export default {
     handleTitleChange(title) {
       this.currentTitle = title ?? this.activeTab.title;
     },
+    getContentComponent() {
+      return this.$refs['content-component'];
+    },
   },
 };
 </script>
@@ -175,6 +179,7 @@ export default {
       <component
         :is="activeTab.component"
         v-else
+        ref="content-component"
         :key="componentKey"
         :user-id="userId"
         :project-id="projectId"

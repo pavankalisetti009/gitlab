@@ -296,6 +296,7 @@ describe('Duo Agentic Chat', () => {
     data = {},
     apolloHandlers = [[getAiChatAvailableModels, availableModelsQueryHandlerMock]],
     provide = {},
+    stubs = {},
   } = {}) => {
     const store = new Vuex.Store({
       actions: actionSpies,
@@ -350,6 +351,7 @@ describe('Duo Agentic Chat', () => {
       mocks: {
         $router: mockRouter,
       },
+      stubs,
       data() {
         return data;
       },
@@ -2184,6 +2186,29 @@ describe('Duo Agentic Chat', () => {
 
           expect(wrapper.emitted('switch-to-active-tab')?.length > 0).toBe(true);
           expect(wrapper.emitted('switch-to-active-tab')).toHaveLength(1);
+        });
+      });
+
+      describe('`focusInput` method', () => {
+        it("calls `WebAgenticDuoChat`'s `focusChatInput` method", () => {
+          const focusChatInput = jest.fn();
+
+          createComponent({
+            stubs: {
+              WebAgenticDuoChat: {
+                template: '<div />',
+                methods: {
+                  focusChatInput,
+                },
+              },
+            },
+          });
+
+          expect(focusChatInput).not.toHaveBeenCalled();
+
+          wrapper.vm.focusInput();
+
+          expect(focusChatInput).toHaveBeenCalled();
         });
       });
     });

@@ -156,12 +156,17 @@ export default {
         Cookies.remove(ACTIVE_TAB_KEY);
       }
     },
-    handleTabToggle(tab) {
+    async handleTabToggle(tab) {
       const selected = tab === this.activeTab ? undefined : tab;
       this.setActiveTab(selected);
       if (selected && this.currentTabComponent.initialRoute) {
         // Navigate to the initial route if the tab has one (e.g., sessions)
         this.$router.push(this.currentTabComponent.initialRoute);
+      }
+
+      if (['chat', 'new'].includes(tab)) {
+        await this.$nextTick();
+        this.$refs['content-container']?.getContentComponent()?.focusInput?.();
       }
     },
     closePanel() {
@@ -193,6 +198,7 @@ export default {
   <div class="gl-flex gl-h-full gl-gap-[var(--ai-panels-gap)]">
     <ai-content-container
       v-if="currentTabComponent"
+      ref="content-container"
       :user-id="userId"
       :active-tab="currentTabComponent"
       :show-back-button="showBackButton"
