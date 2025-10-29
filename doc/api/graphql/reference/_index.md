@@ -15012,7 +15012,7 @@ Input type: `workItemsHierarchyReorderInput`
 **Status**: Experiment.
 {{< /details >}}
 
-Reorders a project level work item.
+Reorders a work item.
 
 Input type: `workItemsReorderInput`
 
@@ -15022,8 +15022,8 @@ Input type: `workItemsReorderInput`
 | ---- | ---- | ----------- |
 | <a id="mutationworkitemsreorderclientmutationid"></a>`clientMutationId` | [`String`](#string) | A unique identifier for the client performing the mutation. |
 | <a id="mutationworkitemsreorderid"></a>`id` | [`WorkItemID!`](#workitemid) | Global ID of the work item to be reordered. |
-| <a id="mutationworkitemsreordermoveafterid"></a>`moveAfterId` | [`WorkItemID`](#workitemid) | Global ID of a project’s work item that should be placed after the work item. |
-| <a id="mutationworkitemsreordermovebeforeid"></a>`moveBeforeId` | [`WorkItemID`](#workitemid) | Global ID of a project’s work item that should be placed before the work item. |
+| <a id="mutationworkitemsreordermoveafterid"></a>`moveAfterId` | [`WorkItemID`](#workitemid) | Global ID of a work item that should be placed after the work item. |
+| <a id="mutationworkitemsreordermovebeforeid"></a>`moveBeforeId` | [`WorkItemID`](#workitemid) | Global ID of a work item that should be placed before the work item. |
 
 #### Fields
 
