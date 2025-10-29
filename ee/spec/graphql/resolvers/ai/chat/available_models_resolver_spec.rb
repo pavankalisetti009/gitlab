@@ -21,61 +21,6 @@ RSpec.describe Resolvers::Ai::Chat::AvailableModelsResolver, :saas, feature_cate
         .and_return(true)
     end
 
-    shared_examples "returns model selection data" do
-      it "returns the correct structure with default and selectable models" do
-        expect(resolver).to eq(expected_result)
-      end
-    end
-
-    shared_examples "returns a ResourceNotAvailable error" do
-      it "generates an error" do
-        expect_graphql_error_to_be_created(Gitlab::Graphql::Errors::ResourceNotAvailable) do
-          resolver
-        end
-      end
-    end
-
-    describe "the resource is not authorized" do
-      context "when the resource is a root namespace" do
-        context "when the namespace does not have duo agentic chat enabled" do
-          before do
-            allow(Ability).to receive(:allowed?)
-              .with(current_user, :access_duo_agentic_chat, group)
-              .and_return(false)
-          end
-
-          include_examples "returns a ResourceNotAvailable error"
-        end
-      end
-
-      context "when the resource is a project" do
-        context "when the namespace has duo agentic chat enabled" do
-          before do
-            allow(Ability).to receive(:allowed?)
-              .with(current_user, :access_duo_agentic_chat, group)
-              .and_return(true)
-          end
-
-          context "when the child project does not have duo agentic chat enabled" do
-            let_it_be(:project) { create(:project, group: group) }
-
-            let(:args) do
-              { root_namespace_id: GitlabSchema.id_from_object(group),
-                project_id: GitlabSchema.id_from_object(project) }
-            end
-
-            before do
-              allow(Ability).to receive(:allowed?)
-                .with(current_user, :access_duo_agentic_chat, project)
-                .and_return(false)
-            end
-
-            include_examples "returns a ResourceNotAvailable error"
-          end
-        end
-      end
-    end
-
     context "when service returns successful result" do
       let(:service_result) do
         ServiceResponse.success(payload: {
@@ -96,54 +41,21 @@ RSpec.describe Resolvers::Ai::Chat::AvailableModelsResolver, :saas, feature_cate
         })
       end
 
-      let(:expected_result) do
-        {
-          default_model: { name: "Claude Sonnet 4.0 - Anthropic", ref: "claude_sonnet_4_20250514" },
-          selectable_models: [
-            { name: "Claude Sonnet 4.0 - Anthropic", ref: "claude_sonnet_4_20250514" },
-            { name: "Claude Sonnet 3.7 - Anthropic", ref: "claude_sonnet_3_7_20250219" }
-          ],
-          pinned_model: nil
-        }
-      end
-
       before do
         allow_next_instance_of(::Ai::ModelSelection::FetchModelDefinitionsService) do |service|
           allow(service).to receive(:execute).and_return(service_result)
         end
       end
 
-      context "when the resource is a root namespace" do
-        context "when the namespace has duo agentic chat enabled" do
-          include_examples "returns model selection data"
-        end
-      end
-
-      context "when the resource is a project" do
-        context "when the namespace does not have duo agentic chat enabled" do
-          before do
-            allow(Ability).to receive(:allowed?)
-              .with(current_user, :access_duo_agentic_chat, group)
-              .and_return(false)
-          end
-
-          context "when the child project has duo agentic chat enabled" do
-            let_it_be(:project) { create(:project, group: group) }
-
-            let(:args) do
-              { root_namespace_id: GitlabSchema.id_from_object(group),
-                project_id: GitlabSchema.id_from_object(project) }
-            end
-
-            before do
-              allow(Ability).to receive(:allowed?)
-                .with(current_user, :access_duo_agentic_chat, project)
-                .and_return(true)
-            end
-
-            include_examples "returns model selection data"
-          end
-        end
+      it "returns the correct structure with default and selectable models" do
+        expect(resolver).to eq({
+          default_model: { name: "Claude Sonnet 4.0 - Anthropic", ref: "claude_sonnet_4_20250514" },
+          selectable_models: [
+            { name: "Claude Sonnet 4.0 - Anthropic", ref: "claude_sonnet_4_20250514" },
+            { name: "Claude Sonnet 3.7 - Anthropic", ref: "claude_sonnet_3_7_20250219" }
+          ],
+          pinned_model: nil
+        })
       end
 
       context "when there is a pinned model" do
