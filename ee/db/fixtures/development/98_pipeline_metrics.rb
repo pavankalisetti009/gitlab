@@ -57,34 +57,35 @@ class Gitlab::Seeder::PipelineMetrics # rubocop:disable Style/ClassAndModuleChil
 
   def create_project_with_group
     Gitlab::ExclusiveLease.skipping_transaction_check do
-      Sidekiq::Testing.inline! do
-        group = Group.new(
-          name: "Pipeline metrics Group #{suffix}",
-          path: "p-metrics-group-#{suffix}",
-          description: FFaker::Lorem.sentence,
-          organization: Organizations::Organization.default_organization
-        )
+      group = Group.new(
+        name: "Pipeline metrics Group #{suffix}",
+        path: "p-metrics-group-#{suffix}",
+        description: FFaker::Lorem.sentence,
+        organization: Organizations::Organization.default_organization
+      )
 
-        group.save!
-        group.add_owner(user)
-        group.create_namespace_settings
+      group.save!
+      group.add_owner(user)
+      group.create_namespace_settings
 
-        # Set group traversal ids inline to avoid
-        # authorization issues on next steps.
-        group.update!(traversal_ids: [group.id])
+      # Set group traversal ids inline to avoid
+      # authorization issues on next steps.
+      group.update!(traversal_ids: [group.id])
 
-        ::Namespaces::ProcessSyncEventsWorker.new.perform # Ensure NamespaceMirror is created
-
-        FactoryBot.create(
-          :project,
-          :public,
-          :repository,
-          name: "Pipeline metrics Project #{suffix}",
-          path: "p-metrics-project-#{suffix}",
-          creator: user,
-          group: group
-        ).tap(&:create_repository)
+      # Ensure NamespaceMirror is created
+      group.sync_events.each do |event|
+        ::Ci::NamespaceMirror.sync!(event)
       end
+
+      FactoryBot.create(
+        :project,
+        :public,
+        :repository,
+        name: "Pipeline metrics Project #{suffix}",
+        path: "p-metrics-project-#{suffix}",
+        creator: user,
+        group: group
+      ).tap(&:create_repository)
     end
   end
 
@@ -131,9 +132,10 @@ class Gitlab::Seeder::PipelineMetrics # rubocop:disable Style/ClassAndModuleChil
 end
 
 Gitlab::Seeder.quiet do
-  feature_available = ::Gitlab::ClickHouse.globally_enabled_for_analytics?
+  # Environment variable used on CI to to allow requests to ClickHouse container
+  WebMock.allow_net_connect! if Rails.env.test? && ENV['DISABLE_WEBMOCK']
 
-  unless feature_available
+  unless ::Gitlab::ClickHouse.configured?
     puts "
     WARNING:
     To use this seed file, you need to make sure that ClickHouse is configured and enabled with your GDK.
