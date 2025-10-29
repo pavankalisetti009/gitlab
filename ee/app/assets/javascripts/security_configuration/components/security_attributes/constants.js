@@ -14,3 +14,5 @@ export const defaultCategory = {
   multipleSelection: null,
   editableState: CATEGORY_EDITABLE,
 };
+
+export const RECENTLY_SAVED_TIMEOUT = 5000; // milliseconds
