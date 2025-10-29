@@ -18,6 +18,7 @@ RSpec.describe 'Admin mode', :js, feature_category: :permissions do
         it 'can enter admin mode via admin button' do
           visit root_dashboard_path
 
+          find_by_testid('user-avatar-content').click if Users::ProjectStudio.enabled_for_user?(user) # rubocop:disable RSpec/AvoidConditionalStatements -- temporary Project Studio rollout
           click_link 'Admin'
 
           wait_for_requests
@@ -26,7 +27,7 @@ RSpec.describe 'Admin mode', :js, feature_category: :permissions do
 
           click_button 'Enter admin mode'
 
-          expect(page).to have_current_path(admin_root_path)
+          expect(page).to have_content 'Admin mode enabled'
         end
 
         context 'when in admin_mode' do
@@ -66,12 +67,10 @@ RSpec.describe 'Admin mode', :js, feature_category: :permissions do
         gitlab_sign_in(user)
       end
 
-      it 'shows no admin buttons in navbar' do
+      it 'shows no admin buttons' do
         visit root_dashboard_path
 
-        within '#super-sidebar' do
-          expect(page).not_to have_link('Admin')
-        end
+        expect(page).not_to have_link('Admin')
       end
     end
   end

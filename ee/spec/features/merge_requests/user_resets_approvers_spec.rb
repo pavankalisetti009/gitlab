@@ -41,6 +41,7 @@ RSpec.describe 'Merge Requests > User resets approvers', :js, feature_category: 
     wait_for_requests
 
     expect_avatar(find_by_testid('approvals-table-members'), project_approvers)
+    find('.gl-toast-close-button').click
 
     click_button 'Save changes'
 
