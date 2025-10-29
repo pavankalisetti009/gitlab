@@ -59,58 +59,38 @@ RSpec.describe Security::Ingestion::Tasks::IngestFindingRiskScores, feature_cate
       create(:vulnerability_finding_risk_score, finding: low_vulnerability.finding)
     end
 
+    let(:finding_maps) { [finding_map_critical, finding_map_medium, finding_map_low] }
+
     subject(:ingest_risk_scores) { described_class.new(pipeline, finding_maps).execute }
 
-    context "when vulnerability_finding_risk_score FF is enabled" do
-      let(:finding_maps) { [finding_map_critical, finding_map_medium, finding_map_low] }
+    it "creates risk scores for all vulnerabilities" do
+      expected_scores = {
+        finding_map_critical.finding_id => Vulnerabilities::RiskScore.new(
+          severity: finding_map_critical.severity,
+          epss_score: cve_enrichment_critical.epss_score,
+          is_known_exploit: cve_enrichment_critical.is_known_exploit
+        ).score,
+        finding_map_medium.finding_id => Vulnerabilities::RiskScore.new(
+          severity: finding_map_medium.severity,
+          epss_score: cve_enrichment_medium.epss_score,
+          is_known_exploit: cve_enrichment_medium.is_known_exploit
+        ).score,
+        finding_map_low.finding_id => Vulnerabilities::RiskScore.new(
+          severity: finding_map_low.severity,
+          epss_score: 0.0,
+          is_known_exploit: false
+        ).score
+      }
 
-      it "creates risk scores for all vulnerabilities" do
-        expected_scores = {
-          finding_map_critical.finding_id => Vulnerabilities::RiskScore.new(
-            severity: finding_map_critical.severity,
-            epss_score: cve_enrichment_critical.epss_score,
-            is_known_exploit: cve_enrichment_critical.is_known_exploit
-          ).score,
-          finding_map_medium.finding_id => Vulnerabilities::RiskScore.new(
-            severity: finding_map_medium.severity,
-            epss_score: cve_enrichment_medium.epss_score,
-            is_known_exploit: cve_enrichment_medium.is_known_exploit
-          ).score,
-          finding_map_low.finding_id => Vulnerabilities::RiskScore.new(
-            severity: finding_map_low.severity,
-            epss_score: 0.0,
-            is_known_exploit: false
-          ).score
-        }
+      expect { ingest_risk_scores }.to change { Vulnerabilities::FindingRiskScore.count }.by(2)
 
-        expect { ingest_risk_scores }.to change { Vulnerabilities::FindingRiskScore.count }.by(2)
-
-        expected_scores.each do |finding_id, expected_risk_score|
-          finding_risk_score = Vulnerabilities::FindingRiskScore.find_by(finding_id: finding_id)
-          expect(finding_risk_score.risk_score).to eq(expected_risk_score)
-        end
-      end
-    end
-
-    context "when vulnerability_finding_risk_score FF is disabled" do
-      before do
-        stub_feature_flags(vulnerability_finding_risk_score: false)
-      end
-
-      context("when adding new vulnerabilities") do
-        let(:finding_maps) { [finding_map_critical, finding_map_medium] }
-
-        it "does not add risk scores" do
-          expect { ingest_risk_scores }.not_to change { Vulnerabilities::FindingRiskScore.count }
-        end
+      expected_scores.each do |finding_id, expected_risk_score|
+        finding_risk_score = Vulnerabilities::FindingRiskScore.find_by(finding_id: finding_id)
+        expect(finding_risk_score.risk_score).to eq(expected_risk_score)
       end
     end
 
     describe 'N+1 queries' do
-      before do
-        stub_feature_flags(vulnerability_finding_risk_score: true)
-      end
-
       it 'does not cause N+1 queries when processing multiple findings' do
         single_finding_map = create(:finding_map, :new_record, security_finding: security_finding_critical,
           report_finding: report_finding_critical, pipeline: pipeline)
