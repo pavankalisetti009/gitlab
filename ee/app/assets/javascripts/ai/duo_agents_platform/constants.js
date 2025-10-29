@@ -7,6 +7,7 @@ export const TOOL_MESSAGE_TYPE = 'tool';
 export const AGENT_PLATFORM_INDEX_COMPONENT_NAME = 'DuoAgentPlatformIndex';
 
 export const AGENT_PLATFORM_PROJECT_PAGE = 'project';
+export const AGENT_PLATFORM_GROUP_PAGE = 'group';
 export const AGENT_PLATFORM_USER_PAGE = 'user';
 
 export const AGENT_PLATFORM_STATUS_ICON = {

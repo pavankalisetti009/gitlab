@@ -12,6 +12,15 @@ module EE
           flow_triggers_event_type_options: ai_flow_triggers_event_type_options
         }
       end
+
+      def duo_agents_group_data(group)
+        {
+          agents_platform_base_route: group_automate_path(group),
+          group_id: group.id,
+          group_path: group.full_path,
+          explore_ai_catalog_path: explore_ai_catalog_path
+        }
+      end
     end
   end
 end

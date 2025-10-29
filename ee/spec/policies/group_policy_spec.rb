@@ -4984,6 +4984,82 @@ RSpec.describe GroupPolicy, feature_category: :groups_and_projects do
     end
   end
 
+  describe 'duo_workflow' do
+    let(:policy) { :duo_workflow }
+
+    where(:duo_workflow_feature_flag, :stage_check_available, :duo_features_enabled, :current_user, :match_expected_result) do
+      true  | true  | true  | ref(:owner)      | be_allowed(:duo_workflow)
+      true  | true  | true  | ref(:maintainer) | be_allowed(:duo_workflow)
+      true  | true  | true  | ref(:developer)  | be_allowed(:duo_workflow)
+      true  | true  | true  | ref(:planner)    | be_disallowed(:duo_workflow)
+      true  | true  | true  | ref(:reporter)   | be_disallowed(:duo_workflow)
+      true  | true  | true  | ref(:guest)      | be_disallowed(:duo_workflow)
+      true  | false | true  | ref(:owner)      | be_disallowed(:duo_workflow)
+      true  | false | true  | ref(:maintainer) | be_disallowed(:duo_workflow)
+      true  | false | true  | ref(:developer)  | be_disallowed(:duo_workflow)
+      true  | false | true  | ref(:planner)    | be_disallowed(:duo_workflow)
+      true  | false | true  | ref(:reporter)   | be_disallowed(:duo_workflow)
+      true  | false | true  | ref(:guest)      | be_disallowed(:duo_workflow)
+      false | true  | true  | ref(:owner)      | be_disallowed(:duo_workflow)
+      false | true  | true  | ref(:maintainer) | be_disallowed(:duo_workflow)
+      false | true  | true  | ref(:developer)  | be_disallowed(:duo_workflow)
+      false | true  | true  | ref(:planner)    | be_disallowed(:duo_workflow)
+      false | true  | true  | ref(:reporter)   | be_disallowed(:duo_workflow)
+      false | true  | true  | ref(:guest)      | be_disallowed(:duo_workflow)
+      false | false | true  | ref(:owner)      | be_disallowed(:duo_workflow)
+      false | false | true  | ref(:maintainer) | be_disallowed(:duo_workflow)
+      false | false | true  | ref(:developer)  | be_disallowed(:duo_workflow)
+      false | false | true  | ref(:planner)    | be_disallowed(:duo_workflow)
+      false | false | true  | ref(:reporter)   | be_disallowed(:duo_workflow)
+      false | false | true  | ref(:guest)      | be_disallowed(:duo_workflow)
+      false | false | false | ref(:owner)      | be_disallowed(:duo_workflow)
+      false | false | false | ref(:maintainer) | be_disallowed(:duo_workflow)
+      false | false | false | ref(:developer)  | be_disallowed(:duo_workflow)
+      false | false | false | ref(:planner)    | be_disallowed(:duo_workflow)
+      false | false | false | ref(:reporter)   | be_disallowed(:duo_workflow)
+      false | false | false | ref(:guest)      | be_disallowed(:duo_workflow)
+      true  | false | false | ref(:owner)      | be_disallowed(:duo_workflow)
+      true  | false | false | ref(:maintainer) | be_disallowed(:duo_workflow)
+      true  | false | false | ref(:developer)  | be_disallowed(:duo_workflow)
+      true  | false | false | ref(:planner)    | be_disallowed(:duo_workflow)
+      true  | false | false | ref(:reporter)   | be_disallowed(:duo_workflow)
+      true  | false | false | ref(:guest)      | be_disallowed(:duo_workflow)
+      false | true  | false | ref(:owner)      | be_disallowed(:duo_workflow)
+      false | true  | false | ref(:maintainer) | be_disallowed(:duo_workflow)
+      false | true  | false | ref(:developer)  | be_disallowed(:duo_workflow)
+      false | true  | false | ref(:planner)    | be_disallowed(:duo_workflow)
+      false | true  | false | ref(:reporter)   | be_disallowed(:duo_workflow)
+      false | true  | false | ref(:guest)      | be_disallowed(:duo_workflow)
+      true  | true  | false | ref(:owner)      | be_disallowed(:duo_workflow)
+      true  | true  | false | ref(:maintainer) | be_disallowed(:duo_workflow)
+      true  | true  | false | ref(:developer)  | be_disallowed(:duo_workflow)
+      true  | true  | false | ref(:planner)    | be_disallowed(:duo_workflow)
+      true  | true  | false | ref(:reporter)   | be_disallowed(:duo_workflow)
+      true  | true  | false | ref(:guest)      | be_disallowed(:duo_workflow)
+    end
+
+    with_them do
+      before do
+        stub_feature_flags(duo_workflow: duo_workflow_feature_flag)
+        allow(::Gitlab::Llm::StageCheck).to receive(:available?).with(group, :duo_workflow).and_return(stage_check_available)
+        allow(group).to receive(:duo_features_enabled).and_return(duo_features_enabled)
+        allow(current_user).to receive(:allowed_to_use?).with(:duo_agent_platform).and_return(true)
+      end
+
+      it { is_expected.to match_expected_result }
+    end
+
+    context 'when user is not allowed to use duo_agent_platform' do
+      before do
+        allow(current_user).to receive(:allowed_to_use?).with(:duo_agent_platform).and_return(false)
+      end
+
+      let(:current_user) { developer }
+
+      it { is_expected.to be_disallowed(:duo_workflow) }
+    end
+  end
+
   describe 'admin_duo_workflow' do
     let(:policy) { :admin_duo_workflow }
 
