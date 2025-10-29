@@ -21,6 +21,7 @@ import (
 )
 
 const wsCloseTimeout = 5 * time.Second
+const wsStopWorkflowTimeout = 10 * time.Second
 
 var normalClosureErrCodes = []int{websocket.CloseGoingAway, websocket.CloseNormalClosure}
 
@@ -114,7 +115,7 @@ func (r *runner) handleWebSocketMessages(ctx context.Context, errCh chan<- error
 				case <-ctx.Done():
 					errCh <- nil
 					return
-				case <-time.After(wsCloseTimeout):
+				case <-time.After(wsStopWorkflowTimeout):
 					errCh <- fmt.Errorf("handleWebSocketMessages: workflow didn't stop on time")
 					return
 				}
