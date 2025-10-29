@@ -129,6 +129,7 @@ module Gitlab
                   totalCredits
                   creditsUsed
                   monthlyCommitmentCreditsUsed
+                  oneTimeCreditsUsed
                   overageCreditsUsed
                 }
               }

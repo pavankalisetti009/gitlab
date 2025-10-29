@@ -17,6 +17,10 @@ module Types
           type: GraphQL::Types::Float,
           null: true,
           description: 'GitLab Credits from the subscription monthly commitment used by the user.'
+        field :one_time_credits_used,
+          type: GraphQL::Types::Float,
+          null: true,
+          description: 'One Time GitLab Credits used by the user.'
         field :overage_credits_used,
           type: GraphQL::Types::Float,
           null: true,
