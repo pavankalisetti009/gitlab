@@ -194,7 +194,7 @@ module Vulnerabilities
 
     scope :with_fix_available, ->(fix_available) do
       remediation = ::Vulnerabilities::FindingRemediation.arel_table
-      solution_query = where(fix_available ? 'solution IS NOT NULL' : 'solution IS NULL')
+      solution_query = where(fix_available ? 'vulnerability_occurrences.solution IS NOT NULL' : 'vulnerability_occurrences.solution IS NULL')
       exist_query = where(
         fix_available ? 'EXISTS (?)' : 'NOT EXISTS (?)',
         ::Vulnerabilities::FindingRemediation.select(1).where(remediation[:vulnerability_occurrence_id].eq(arel_table[:id]))
