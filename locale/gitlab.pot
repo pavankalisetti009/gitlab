@@ -67246,6 +67246,9 @@ msgstr ""
 msgid "Third Party Advisory Link"
 msgstr ""
 
+msgid "This %{issuable} belongs to an archived project and is read-only."
+msgstr ""
+
 msgid "This %{issuable} is hidden because its author has been banned."
 msgstr ""
 
