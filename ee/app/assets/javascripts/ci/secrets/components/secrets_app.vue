@@ -3,8 +3,13 @@ import { GlLoadingIcon } from '@gitlab/ui';
 import { s__ } from '~/locale';
 import { createAlert } from '~/alert';
 import { captureException } from '~/sentry/sentry_browser_wrapper';
-import getSecretManagerStatusQuery from '../graphql/queries/get_secret_manager_status.query.graphql';
-import { POLL_INTERVAL, SECRET_MANAGER_STATUS_PROVISIONING } from '../constants';
+import getProjectSecretsManagerStatusQuery from '../graphql/queries/get_secret_manager_status.query.graphql';
+import {
+  ACCEPTED_CONTEXTS,
+  ENTITY_PROJECT,
+  POLL_INTERVAL,
+  SECRET_MANAGER_STATUS_PROVISIONING,
+} from '../constants';
 
 export default {
   name: 'SecretsApp',
@@ -12,6 +17,11 @@ export default {
     GlLoadingIcon,
   },
   props: {
+    context: {
+      type: String,
+      required: true,
+      validator: (value) => ACCEPTED_CONTEXTS.includes(value),
+    },
     fullPath: {
       type: String,
       required: true,
@@ -24,7 +34,10 @@ export default {
   },
   apollo: {
     secretManagerStatus: {
-      query: getSecretManagerStatusQuery,
+      query: getProjectSecretsManagerStatusQuery,
+      skip() {
+        return !this.isProjectContext;
+      },
       variables() {
         return {
           projectPath: this.fullPath,
@@ -51,6 +64,9 @@ export default {
     },
   },
   computed: {
+    isProjectContext() {
+      return this.context === ENTITY_PROJECT;
+    },
     isProvisioning() {
       return this.secretManagerStatus === SECRET_MANAGER_STATUS_PROVISIONING;
     },
@@ -64,12 +80,12 @@ export default {
 </script>
 <template>
   <gl-loading-icon
-    v-if="!secretManagerStatus"
+    v-if="isProjectContext && !secretManagerStatus"
     data-testid="secrets-manager-loading-status"
     class="gl-mt-5"
   />
   <div
-    v-else-if="isProvisioning"
+    v-else-if="isProjectContext && isProvisioning"
     data-testid="secrets-manager-provisioning-text"
     class="gl-mt-5 gl-text-center"
   >

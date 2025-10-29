@@ -13,8 +13,10 @@ export const UNSCOPED_LABEL_COLOR = '#DCDCDE';
 
 export const PAGE_SIZE = 10;
 
+// contexts the secrets manager page works in
 export const ENTITY_GROUP = 'group';
 export const ENTITY_PROJECT = 'project';
+export const ACCEPTED_CONTEXTS = [ENTITY_GROUP, ENTITY_PROJECT];
 
 export const ACTION_ENABLE_SECRET_MANAGER = 'ENABLE_SECRET_MANAGER';
 export const SECRET_MANAGER_STATUS_ACTIVE = 'ACTIVE';

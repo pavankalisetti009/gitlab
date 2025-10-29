@@ -22,8 +22,10 @@ import { convertEnvironmentScope } from '~/ci/common/private/ci_environments_dro
 import getProjectSecretsQuery from '../../graphql/queries/get_project_secrets.query.graphql';
 import getProjectSecretsNeedingRotation from '../../graphql/queries/get_project_secrets_needing_rotation.query.graphql';
 import {
+  ACCEPTED_CONTEXTS,
   DETAILS_ROUTE_NAME,
   EDIT_ROUTE_NAME,
+  ENTITY_PROJECT,
   NEW_ROUTE_NAME,
   PAGE_SIZE,
   SCOPED_LABEL_COLOR,
@@ -55,6 +57,11 @@ export default {
     GlTooltip: GlTooltipDirective,
   },
   props: {
+    context: {
+      type: String,
+      required: true,
+      validator: (value) => ACCEPTED_CONTEXTS.includes(value),
+    },
     fullPath: {
       type: String,
       required: true,
@@ -79,6 +86,9 @@ export default {
   apollo: {
     secrets: {
       query: getProjectSecretsQuery,
+      skip() {
+        return this.context !== ENTITY_PROJECT;
+      },
       variables() {
         return {
           projectPath: this.fullPath,
@@ -104,6 +114,9 @@ export default {
     },
     secretsNeedingRotation: {
       query: getProjectSecretsNeedingRotation,
+      skip() {
+        return this.context !== ENTITY_PROJECT;
+      },
       variables() {
         return {
           projectPath: this.fullPath,

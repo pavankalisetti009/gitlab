@@ -36,12 +36,12 @@ describe('Secrets router', () => {
   const base = '/-/secrets';
 
   const groupProps = {
-    entity: ENTITY_GROUP,
+    context: ENTITY_GROUP,
     fullPath: '/path/to/group',
   };
 
   const projectProps = {
-    entity: ENTITY_PROJECT,
+    context: ENTITY_PROJECT,
     fullPath: '/path/to/project',
   };
 

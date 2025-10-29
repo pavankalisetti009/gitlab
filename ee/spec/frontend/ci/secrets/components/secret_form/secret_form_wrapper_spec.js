@@ -34,7 +34,7 @@ describe('SecretFormWrapper component', () => {
   let mockSecretQuery;
 
   const defaultProps = {
-    entity: ENTITY_GROUP,
+    context: ENTITY_GROUP,
     fullPath: 'full/path/to/entity',
     isEditing: false,
   };
@@ -133,7 +133,7 @@ describe('SecretFormWrapper component', () => {
   describe('environments dropdown', () => {
     it('uses group environments query for group secrets app', async () => {
       await createComponent({
-        props: { entity: ENTITY_GROUP },
+        props: { context: ENTITY_GROUP },
         stubs: { SecretForm, CiEnvironmentsDropdown },
       });
 
@@ -149,7 +149,7 @@ describe('SecretFormWrapper component', () => {
 
     it('uses project environments query for project secrets app', async () => {
       await createComponent({
-        props: { entity: ENTITY_PROJECT },
+        props: { context: ENTITY_PROJECT },
         stubs: { SecretForm, CiEnvironmentsDropdown },
       });
 
