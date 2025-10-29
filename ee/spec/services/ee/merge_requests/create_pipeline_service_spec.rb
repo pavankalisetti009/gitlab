@@ -6,27 +6,29 @@ RSpec.describe MergeRequests::CreatePipelineService, :clean_gitlab_redis_shared_
   feature_category: :continuous_integration do
   include ProjectForksHelper
 
+  let_it_be(:project, refind: true) { create(:project, :repository) }
+
+  let(:service) { described_class.new(project: source_project, current_user: user, params: params) }
+  let(:user) { create(:user) }
+  let(:source_project) { project }
+  let(:source_branch) { 'feature' }
+  let(:target_project) { project }
+  let(:target_branch) { 'master' }
+  let(:params) { {} }
+
+  let(:merge_request) do
+    create(:merge_request,
+      source_project: source_project, source_branch: source_branch,
+      target_project: target_project, target_branch: target_branch,
+      merge_status: 'unchecked')
+  end
+
   describe '#execute' do
     subject { service.execute(merge_request) }
 
-    let(:service) { described_class.new(project: source_project, current_user: user, params: params) }
-    let(:project) { create(:project, :repository) }
-    let(:user) { create(:user) }
-    let(:params) { {} }
     let(:title) { 'Awesome merge request' }
     let(:merge_pipelines_enabled) { true }
     let(:merge_pipelines_license) { true }
-    let(:source_project) { project }
-    let(:source_branch) { 'feature' }
-    let(:target_project) { project }
-    let(:target_branch) { 'master' }
-
-    let(:merge_request) do
-      create(:merge_request,
-        source_project: source_project, source_branch: source_branch,
-        target_project: target_project, target_branch: target_branch,
-        merge_status: 'unchecked')
-    end
 
     let(:ci_yaml) do
       YAML.dump({
@@ -203,6 +205,45 @@ RSpec.describe MergeRequests::CreatePipelineService, :clean_gitlab_redis_shared_
       it 'responds with error', :aggregate_failures do
         expect(subject).to be_error
         expect(subject.message).to eq('Cannot create a pipeline for this merge request.')
+      end
+    end
+  end
+
+  describe '#allowed?' do
+    using RSpec::Parameterized::TableSyntax
+
+    subject(:allowed) { service.allowed?(merge_request) }
+
+    let(:user_without_permissions) { create(:user) }
+
+    where(:merged_result_pipeline_supported, :detached_mr_pipeline_supported, :user_can_run_pipeline, :result) do
+      true  | true  | true  | true
+      true  | false | true  | true
+      true  | true  | false | false
+      true  | false | false | false
+      false | true  | true  | true
+      false | true  | false | false
+      false | false | true  | false
+      false | false | false | false
+    end
+
+    with_them do
+      before do
+        allow(service)
+          .to receive(:can_create_merged_result_pipeline_for?)
+          .with(merge_request)
+          .and_return(merged_result_pipeline_supported)
+
+        allow(service)
+          .to receive(:can_create_pipeline_for?)
+          .with(merge_request)
+          .and_return(detached_mr_pipeline_supported)
+
+        project.add_developer(user) if user_can_run_pipeline
+      end
+
+      it 'matches the expected result' do
+        expect(allowed).to eq(result)
       end
     end
   end

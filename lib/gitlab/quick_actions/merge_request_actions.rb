@@ -474,6 +474,23 @@ module Gitlab
               { reviewer_text: 'reviewer'.pluralize(removed_reviewers.size), reviewer_references: removed_reviewers.map(&:to_reference).to_sentence }
           end
         end
+
+        desc { _('Ship merge request (run pipeline and set auto-merge)') }
+        explanation { _('Ship merge request by creating a pipeline and set auto-merge.') }
+        types MergeRequest
+        condition do
+          ::MergeRequests::ShipMergeRequestWorker.allowed?(
+            merge_request: quick_action_target,
+            current_user: current_user)
+        end
+        command :ship do
+          ::MergeRequests::ShipMergeRequestWorker.perform_async(
+            current_user.id,
+            quick_action_target.id
+          )
+
+          @execution_message[:ship] = _('Actions to ship this merge request have been scheduled.')
+        end
       end
 
       def reviewer_users_sentence(users)

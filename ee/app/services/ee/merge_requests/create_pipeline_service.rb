@@ -14,6 +14,10 @@ module EE
         super
       end
 
+      def allowed?(merge_request)
+        (can_create_merged_result_pipeline_for?(merge_request) && user_can_run_pipeline?(merge_request)) || super
+      end
+
       private
 
       def create_merged_result_pipeline_for(merge_request)
