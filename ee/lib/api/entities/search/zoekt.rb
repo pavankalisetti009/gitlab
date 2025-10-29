@@ -15,6 +15,7 @@ module API
             options[:zoekt_node_id]
           end
           expose :root_namespace_id, documentation: { type: :int, example: 1234 }, as: :namespace_id
+          expose :number_of_replicas_override, documentation: { type: :int, example: 2 }
         end
 
         class Node < Grape::Entity

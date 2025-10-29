@@ -17,6 +17,10 @@ module API
               'application setting zoekt_indexing_enabled is not enabled', 400
             )
           end
+
+          def update_params
+            declared(params, include_missing: false).slice(:number_of_replicas_override)
+          end
         end
 
         before do
@@ -47,6 +51,46 @@ module API
               present({ job_id: job_id }, with: ::API::Entities::Search::Zoekt::ProjectIndexSuccess)
             end
           end
+          resources 'zoekt/namespaces' do
+            desc 'Update the number of replicas override for an enabled namespace' do
+              success ::API::Entities::Search::Zoekt::IndexedNamespace
+              failure [
+                { code: 400, message: '400 Bad Request' },
+                { code: 401, message: '401 Unauthorized' },
+                { code: 403, message: '403 Forbidden' },
+                { code: 404, message: '404 Not found' }
+              ]
+            end
+            params do
+              requires :id, types: [String, Integer], desc: 'The ID or URL-encoded path of the namespace'
+              optional :number_of_replicas_override,
+                type: Integer,
+                desc: 'The number of replicas override to set (nil to unset)',
+                values: ->(v) { v.nil? || v > 0 }
+            end
+            patch ':id' do
+              ensure_zoekt_indexing_enabled!
+
+              # Find namespace by ID or path
+              namespace = find_namespace!(params[:id])
+
+              root_namespace = namespace.root_ancestor
+
+              zoekt_enabled_namespace = ::Search::Zoekt::EnabledNamespace
+                .for_root_namespace_id(root_namespace.id)
+                .first
+
+              not_found!('Zoekt::EnabledNamespace') unless zoekt_enabled_namespace
+
+              unless zoekt_enabled_namespace.update(update_params)
+                error!({ error: zoekt_enabled_namespace.errors.full_messages.join(', ') }, 400)
+              end
+
+              present zoekt_enabled_namespace,
+                with: ::API::Entities::Search::Zoekt::IndexedNamespace, zoekt_node_id: nil
+            end
+          end
+
           # TODO: at some point rename to zoekt/nodes
           # This change is part of https://gitlab.com/gitlab-org/gitlab/-/issues/424456
           resources 'zoekt/shards' do
