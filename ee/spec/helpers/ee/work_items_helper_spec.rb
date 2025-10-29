@@ -93,6 +93,68 @@ RSpec.describe EE::WorkItemsHelper, feature_category: :team_planning do
     end
   end
 
+  describe '#work_item_views_only_data' do
+    subject(:work_item_views_only_data) { helper.work_item_views_only_data(project, current_user) }
+
+    before do
+      stub_licensed_features(
+        blocked_issues: feature_available,
+        group_bulk_edit: feature_available,
+        custom_fields: feature_available,
+        work_item_status: feature_available
+      )
+      allow(helper).to receive(:can?).and_call_original
+      allow(helper).to receive(:can?).with(current_user, :bulk_admin_epic, project).and_return(feature_available)
+    end
+
+    let_it_be(:group) { build(:group) }
+    let_it_be(:project) { build(:project, group: group) }
+    let_it_be(:current_user) { build(:user, owner_of: project) }
+
+    context 'when features are available' do
+      let(:feature_available) { true }
+
+      it 'returns EE-specific properties' do
+        expect(work_item_views_only_data).to include(
+          {
+            duo_remote_flows_availability: "true",
+            has_blocked_issues_feature: "true",
+            has_group_bulk_edit_feature: "true",
+            can_bulk_edit_epics: "true",
+            epics_list_path: group_epics_path(project),
+            has_custom_fields_feature: "true"
+          }
+        )
+      end
+
+      it 'inherits CE minimal data' do
+        expect(work_item_views_only_data).to include(
+          {
+            autocomplete_award_emojis_path: autocomplete_award_emojis_path,
+            full_path: project.full_path,
+            default_branch: project.default_branch_or_main,
+            is_issue_repositioning_disabled: 'false',
+            max_attachment_size: number_to_human_size(Gitlab::CurrentSettings.max_attachment_size.megabytes)
+          }
+        )
+      end
+    end
+
+    context 'when features are not available' do
+      let(:feature_available) { false }
+
+      it 'returns false for EE features' do
+        expect(work_item_views_only_data).to include(
+          {
+            has_blocked_issues_feature: "false",
+            has_group_bulk_edit_feature: "false",
+            has_custom_fields_feature: "false"
+          }
+        )
+      end
+    end
+  end
+
   describe '#add_work_item_show_breadcrumb' do
     subject(:add_work_item_show_breadcrumb) { helper.add_work_item_show_breadcrumb(resource_parent, work_item.iid) }
 

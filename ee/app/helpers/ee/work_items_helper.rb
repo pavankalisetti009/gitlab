@@ -26,6 +26,18 @@ module EE
       )
     end
 
+    override :work_item_views_only_data
+    def work_item_views_only_data(resource_parent, current_user)
+      super.merge(
+        duo_remote_flows_availability: resource_parent.duo_remote_flows_enabled.to_s,
+        has_blocked_issues_feature: resource_parent.licensed_feature_available?(:blocked_issues).to_s,
+        has_group_bulk_edit_feature: resource_parent.licensed_feature_available?(:group_bulk_edit).to_s,
+        can_bulk_edit_epics: can?(current_user, :bulk_admin_epic, resource_parent).to_s,
+        epics_list_path: group_epics_path(resource_parent),
+        has_custom_fields_feature: resource_parent.licensed_feature_available?(:custom_fields).to_s
+      )
+    end
+
     override :add_work_item_show_breadcrumb
     def add_work_item_show_breadcrumb(resource_parent, iid)
       if resource_parent.work_items.with_work_item_type.find_by_iid(iid)&.group_epic_work_item?
