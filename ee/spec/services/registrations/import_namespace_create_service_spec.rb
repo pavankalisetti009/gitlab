@@ -24,6 +24,8 @@ RSpec.describe Registrations::ImportNamespaceCreateService, :aggregate_failures,
 
     subject(:execute) { described_class.new(user, group_params: group_params).execute }
 
+    it_behaves_like 'tracks namespace creation experiments'
+
     context 'when group can be created' do
       it 'creates a group' do
         expect do
