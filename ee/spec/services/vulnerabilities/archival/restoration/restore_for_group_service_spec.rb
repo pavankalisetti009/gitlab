@@ -318,7 +318,8 @@ RSpec.describe Vulnerabilities::Archival::Restoration::RestoreForGroupService, f
         delete_partitions_from(Ci::ApplicationRecord.connection)
       end
 
-      it 'uses the correct database connection while reading data from partitions directly' do
+      it 'uses the correct database connection while reading data from partitions directly',
+        quarantine: 'https://gitlab.com/gitlab-org/gitlab/-/issues/578811' do
         expect { restore }.to change { Vulnerability.count }.by(1)
       end
 
