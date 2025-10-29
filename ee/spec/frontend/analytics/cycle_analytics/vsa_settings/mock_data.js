@@ -88,12 +88,16 @@ export const mockLabels = [
   },
 ];
 
-export const createMockLabelsResponse = (nodes) => ({
+export const createMockLabelsResponse = (nodes, hasNextPage = false, endCursor = null) => ({
   data: {
     group: {
       id: 'gid://gitlab/Group/1',
       labels: {
         nodes,
+        pageInfo: {
+          hasNextPage,
+          endCursor,
+        },
       },
     },
   },

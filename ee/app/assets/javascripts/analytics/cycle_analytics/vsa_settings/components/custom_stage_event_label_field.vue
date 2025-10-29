@@ -50,11 +50,14 @@ export default {
     return {
       labels: [],
       searchTerm: '',
+      nextCursor: null,
+      hasNextPage: false,
+      isLoadingMore: false,
     };
   },
   computed: {
     loading() {
-      return this.$apollo.queries.labels.loading;
+      return this.$apollo.queries.labels.loading && !this.isLoadingMore;
     },
     fieldName() {
       const { eventType, index } = this;
@@ -92,14 +95,50 @@ export default {
       }) {
         return nodes;
       },
+      result({ data }) {
+        const pageInfo = data?.group?.labels?.pageInfo;
+        if (pageInfo) {
+          this.hasNextPage = pageInfo.hasNextPage;
+          this.nextCursor = pageInfo.endCursor;
+        }
+      },
       error() {
-        this.$emit('error', __('There was an error fetching label data for the selected group'));
+        this.handleError();
       },
     },
   },
   methods: {
+    handleError(message = __('There was an error fetching label data for the selected group')) {
+      this.$emit('error', message);
+    },
     onSearch(value) {
-      this.searchTerm = value.trim();
+      const newSearchTerm = value.trim();
+
+      if (this.searchTerm !== newSearchTerm) {
+        this.searchTerm = newSearchTerm;
+        this.nextCursor = null;
+        this.hasNextPage = false;
+        this.isLoadingMore = false;
+      }
+    },
+    async loadMoreLabels() {
+      if (this.isLoadingMore || !this.hasNextPage || this.loading) return;
+
+      this.isLoadingMore = true;
+
+      try {
+        await this.$apollo.queries.labels.fetchMore({
+          variables: {
+            fullPath: this.groupPath,
+            searchTerm: this.searchTerm,
+            after: this.nextCursor,
+          },
+        });
+      } catch (error) {
+        this.handleError(__('There was an error loading more labels'));
+      } finally {
+        this.isLoadingMore = false;
+      }
     },
   },
   headerText: __('Select a label'),
@@ -119,11 +158,14 @@ export default {
           v-model="selected"
           block
           searchable
+          infinite-scroll
           :name="fieldName"
           :header-text="$options.headerText"
           :searching="loading"
           :items="items"
+          :infinite-scroll-loading="isLoadingMore"
           @search="onSearch"
+          @bottom-reached="loadMoreLabels"
         >
           <template #toggle>
             <gl-button
