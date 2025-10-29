@@ -11,6 +11,7 @@ import { getSelectedOptionsText } from '~/lib/utils/listbox_helpers';
 import glAbilitiesMixin from '~/vue_shared/mixins/gl_abilities_mixin';
 import glFeatureFlagsMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
 import { DASHBOARD_TYPE_GROUP, DASHBOARD_TYPE_PROJECT } from 'ee/security_dashboard/constants';
+import { isPolicyViolationFilterEnabled } from 'ee/security_dashboard/utils';
 import { ALL_ID as ALL_ACTIVITY_VALUE } from '../../filters/constants';
 import { ITEMS as ACTIVITY_FILTER_ITEMS } from '../../filters/activity_filter.vue';
 import SearchSuggestion from '../components/search_suggestion.vue';
@@ -74,10 +75,13 @@ const setSelectedStatus = (keyWhenTrue, keyWhenFalse, selectedActivities = []) =
 
 export default {
   defaultValues: [ITEMS.STILL_DETECTED.value],
-  transformFilters: (filters) => {
-    const showAiResolutionFilter = gon?.abilities?.resolveVulnerabilityWithAi;
+  transformFilters: (filters, { dashboardType }) => {
+    const showAiResolutionFilter = window.gon?.abilities?.resolveVulnerabilityWithAi;
+    const showPolicyViolationFilter =
+      isPolicyViolationFilterEnabled() &&
+      [DASHBOARD_TYPE_GROUP, DASHBOARD_TYPE_PROJECT].includes(dashboardType);
 
-    return {
+    const transformedFilters = {
       hasResolution: setSelectedStatus('NO_LONGER_DETECTED', 'STILL_DETECTED', filters),
       hasIssues: setSelectedStatus('HAS_ISSUE', 'DOES_NOT_HAVE_ISSUE', filters),
       hasMergeRequest: setSelectedStatus(
@@ -86,15 +90,20 @@ export default {
         filters,
       ),
       hasRemediations: setSelectedStatus('HAS_SOLUTION', 'DOES_NOT_HAVE_SOLUTION', filters),
-      ...(showAiResolutionFilter
-        ? {
-            hasAiResolution: setSelectedStatus(
-              'AI_RESOLUTION_AVAILABLE',
-              'AI_RESOLUTION_UNAVAILABLE',
-            ),
-          }
-        : {}),
     };
+
+    if (showAiResolutionFilter) {
+      transformedFilters.hasAiResolution = setSelectedStatus(
+        'AI_RESOLUTION_AVAILABLE',
+        'AI_RESOLUTION_UNAVAILABLE',
+      );
+    }
+
+    if (showPolicyViolationFilter && filters.includes(ITEMS.DISMISSED_IN_MR.value)) {
+      transformedFilters.policyViolations = ITEMS.DISMISSED_IN_MR.value;
+    }
+
+    return transformedFilters;
   },
   components: {
     GlBadge,
@@ -153,7 +162,7 @@ export default {
     },
     showPolicyViolationsFilter() {
       return (
-        this.glFeatures.securityPolicyApprovalWarnMode &&
+        isPolicyViolationFilterEnabled() &&
         [DASHBOARD_TYPE_GROUP, DASHBOARD_TYPE_PROJECT].includes(this.dashboardType)
       );
     },
