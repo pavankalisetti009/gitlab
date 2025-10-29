@@ -19,8 +19,6 @@ module EE
 
           after_save :save_verification_details
 
-          scope :available_replicables, -> { all }
-          scope :available_verifiables, -> { joins(:packages_nuget_symbol_state) }
           scope :project_id_in, ->(ids) { where(project_id: ids) }
 
           scope :with_verification_state, ->(state) {
