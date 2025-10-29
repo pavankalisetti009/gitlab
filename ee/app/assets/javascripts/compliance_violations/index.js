@@ -20,14 +20,23 @@ export const initDetailsApp = () => {
   // Initialize ZenMode for fullscreen markdown editor functionality
   new ZenMode(); // eslint-disable-line no-new
 
-  const { violationId, complianceCenterPath } = el.dataset;
+  const { violationId, complianceCenterPath, uploadsPath, markdownPreviewPath } = el.dataset;
 
   return new Vue({
     el,
     name: 'ComplianceViolationDetailsRoot',
     apolloProvider,
+    provide: {
+      uploadsPath,
+      markdownPreviewPath,
+    },
     render(createElement) {
-      return createElement(ViolationDetailsApp, { props: { violationId, complianceCenterPath } });
+      return createElement(ViolationDetailsApp, {
+        props: {
+          violationId,
+          complianceCenterPath,
+        },
+      });
     },
   });
 };

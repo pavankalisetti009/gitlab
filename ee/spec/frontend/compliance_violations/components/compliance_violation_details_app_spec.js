@@ -12,7 +12,7 @@ import SystemNote from '~/work_items/components/notes/system_note.vue';
 import DiscussionNote from 'ee/compliance_violations/components/discussion_note.vue';
 import FixSuggestionSection from 'ee/compliance_violations/components/fix_suggestion_section.vue';
 import RelatedIssues from 'ee/compliance_violations/components/related_issues.vue';
-import ComplianceViolationCommentForm from 'ee/compliance_violations/components/compliance_violation_comment_form.vue';
+import CreateCommentForm from 'ee/compliance_violations/components/create_comment_form.vue';
 import { ComplianceViolationStatusDropdown } from 'ee/vue_shared/compliance';
 import complianceViolationQuery from 'ee/compliance_violations/graphql/compliance_violation.query.graphql';
 import updateProjectComplianceViolation from 'ee/compliance_violations/graphql/mutations/update_project_compliance_violation.mutation.graphql';
@@ -83,7 +83,7 @@ describe('ComplianceViolationDetailsApp', () => {
   const findDiscussionNotes = () => wrapper.findAllComponents(DiscussionNote);
   const findActivitySection = () => wrapper.find('.issuable-discussion');
   const findActivityHeader = () => wrapper.find('.issuable-discussion h2');
-  const findCommentForm = () => wrapper.findComponent(ComplianceViolationCommentForm);
+  const findCommentForm = () => wrapper.findComponent(CreateCommentForm);
 
   beforeEach(() => {
     jest.clearAllMocks();
