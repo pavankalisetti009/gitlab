@@ -317,7 +317,7 @@ module EE
     end
 
     def zoekt_settings_checkboxes(form)
-      ::Search::Zoekt::Settings.boolean_settings.map do |setting_name, config|
+      ::Search::Zoekt::Settings.boolean_settings_ui.map do |setting_name, config|
         form.gitlab_ui_checkbox_component(
           setting_name,
           instance_exec(&config[:label]),
@@ -330,7 +330,7 @@ module EE
     end
 
     def zoekt_settings_inputs(form)
-      ::Search::Zoekt::Settings.input_settings.flat_map do |setting_name, config|
+      ::Search::Zoekt::Settings.input_settings_ui.flat_map do |setting_name, config|
         options = {
           value: @application_setting.public_send(setting_name), # rubocop:disable GitlabSecurity/PublicSend -- we control `setting_name` in source code
           class: 'form-control gl-form-input'

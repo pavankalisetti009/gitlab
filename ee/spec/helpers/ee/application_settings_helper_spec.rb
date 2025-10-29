@@ -360,6 +360,24 @@ RSpec.describe EE::ApplicationSettingsHelper, feature_category: :shared do
         )
       end
     end
+
+    it 'uses boolean_settings_ui to filter checkboxes' do
+      helper.gitlab_ui_form_for(application_setting, url: search_admin_application_settings_path) do |form|
+        expect(::Search::Zoekt::Settings).to receive(:boolean_settings_ui).and_call_original
+        helper.zoekt_settings_checkboxes(form)
+      end
+    end
+
+    it 'only includes UI-visible boolean settings' do
+      allow(::Search::Zoekt::Settings).to receive(:boolean_settings_ui).and_return({
+        zoekt_indexing_enabled: Search::Zoekt::Settings::SETTINGS[:zoekt_indexing_enabled]
+      })
+
+      helper.gitlab_ui_form_for(application_setting, url: search_admin_application_settings_path) do |form|
+        result = helper.zoekt_settings_checkboxes(form)
+        expect(result.length).to eq(1)
+      end
+    end
   end
 
   describe '#zoekt_settings_inputs', feature_category: :global_search do
@@ -443,6 +461,24 @@ RSpec.describe EE::ApplicationSettingsHelper, feature_category: :shared do
           # This should execute the actual method including line 319
           expect { helper.zoekt_settings_inputs(form) }.to raise_error(ArgumentError, /Unknown input_type:/)
         end
+      end
+    end
+
+    it 'uses input_settings_ui to filter inputs' do
+      helper.gitlab_ui_form_for(application_setting, url: search_admin_application_settings_path) do |form|
+        expect(::Search::Zoekt::Settings).to receive(:input_settings_ui).and_call_original
+        helper.zoekt_settings_inputs(form)
+      end
+    end
+
+    it 'only includes UI-visible input settings' do
+      allow(::Search::Zoekt::Settings).to receive(:input_settings_ui).and_return({
+        zoekt_cpu_to_tasks_ratio: Search::Zoekt::Settings::SETTINGS[:zoekt_cpu_to_tasks_ratio]
+      })
+
+      helper.gitlab_ui_form_for(application_setting, url: search_admin_application_settings_path) do |form|
+        result = helper.zoekt_settings_inputs(form)
+        expect(result.length).to eq(2) # label and input
       end
     end
   end

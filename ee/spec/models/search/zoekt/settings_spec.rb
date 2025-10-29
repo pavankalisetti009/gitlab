@@ -224,4 +224,108 @@ RSpec.describe Search::Zoekt::Settings, feature_category: :global_search do
       end
     end
   end
+
+  describe 'FILTER_ADMIN_UI' do
+    it 'is a callable lambda' do
+      expect(described_class::FILTER_ADMIN_UI).to be_a(Proc)
+    end
+
+    it 'filters out settings with admin_ui set to false' do
+      settings = {
+        visible_setting: { admin_ui: true, type: :boolean },
+        hidden_setting: { admin_ui: false, type: :boolean },
+        default_setting: { type: :boolean }
+      }
+
+      filtered = described_class::FILTER_ADMIN_UI.call(settings)
+
+      expect(filtered.keys).to contain_exactly(:visible_setting, :default_setting)
+    end
+
+    it 'keeps settings without admin_ui key' do
+      settings = {
+        setting_without_key: { type: :boolean },
+        setting_with_true: { admin_ui: true, type: :boolean }
+      }
+
+      filtered = described_class::FILTER_ADMIN_UI.call(settings)
+
+      expect(filtered.keys).to contain_exactly(:setting_without_key, :setting_with_true)
+    end
+  end
+
+  describe '.boolean_settings_ui' do
+    it 'returns only boolean settings visible in the UI' do
+      boolean_ui_settings = described_class.boolean_settings_ui
+
+      expect(boolean_ui_settings.keys).to contain_exactly(
+        :zoekt_indexing_enabled,
+        :zoekt_search_enabled,
+        :zoekt_indexing_paused,
+        :zoekt_auto_index_root_namespace,
+        :zoekt_cache_response
+      )
+
+      boolean_ui_settings.each_value do |config|
+        expect(config[:type]).to eq(:boolean)
+        expect(config[:admin_ui]).not_to be(false)
+      end
+    end
+
+    it 'is a subset of boolean_settings' do
+      boolean_ui = described_class.boolean_settings_ui
+      all_boolean = described_class.boolean_settings
+
+      expect(all_boolean.keys).to include(*boolean_ui.keys)
+    end
+
+    it 'excludes settings with admin_ui explicitly set to false' do
+      settings_with_admin_ui_false = described_class.boolean_settings.select do |_key, config|
+        config[:admin_ui] == false
+      end
+
+      boolean_ui = described_class.boolean_settings_ui
+
+      settings_with_admin_ui_false.each_key do |key|
+        expect(boolean_ui).not_to have_key(key)
+      end
+    end
+  end
+
+  describe '.input_settings_ui' do
+    it 'returns only input settings visible in the UI' do
+      input_ui_settings = described_class.input_settings_ui
+
+      expected_list = %i[
+        zoekt_cpu_to_tasks_ratio zoekt_indexing_parallelism zoekt_rollout_batch_size zoekt_indexing_timeout
+        zoekt_maximum_files zoekt_rollout_retry_interval zoekt_lost_node_threshold
+      ]
+
+      expect(input_ui_settings.keys).to match_array(expected_list)
+
+      input_ui_settings.each_value do |config|
+        expect(config[:type]).to be_in(%i[float integer text])
+        expect(config[:admin_ui]).not_to be(false)
+      end
+    end
+
+    it 'is a subset of input_settings' do
+      input_ui = described_class.input_settings_ui
+      all_input = described_class.input_settings
+
+      expect(all_input.keys).to include(*input_ui.keys)
+    end
+
+    it 'excludes settings with admin_ui explicitly set to false' do
+      settings_with_admin_ui_false = described_class.input_settings.select do |_key, config|
+        config[:admin_ui] == false
+      end
+
+      input_ui = described_class.input_settings_ui
+
+      settings_with_admin_ui_false.each_key do |key|
+        expect(input_ui).not_to have_key(key)
+      end
+    end
+  end
 end
