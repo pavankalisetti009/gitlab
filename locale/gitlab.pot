@@ -49165,6 +49165,9 @@ msgstr ""
 msgid "Pipeline|Failed"
 msgstr ""
 
+msgid "Pipeline|Failed to retrieve CI/CD variables."
+msgstr ""
+
 msgid "Pipeline|File"
 msgstr ""
 
