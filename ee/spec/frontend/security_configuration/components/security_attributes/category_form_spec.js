@@ -270,7 +270,7 @@ describe('Category form', () => {
   });
 
   describe('unsaved changes status', () => {
-    it('shows "All changes saved" message when no unsaved changes exist', async () => {
+    it('with no changes, does not show unsaved changes warning', async () => {
       createComponent({
         selectedCategory: {
           ...category,
@@ -285,11 +285,11 @@ describe('Category form', () => {
       await nextTick();
 
       const container = wrapper.findByTestId('unsaved-changes-container');
-      expect(container.text()).toContain('All changes saved');
+      expect(container.text()).toBe('');
       expect(wrapper.findComponent({ name: 'GlPopover' }).exists()).toBe(false);
     });
 
-    it('shows unsaved changes warning and renders the popover when unsavedAttributes exist', async () => {
+    it('with changes, shows unsaved changes warning and renders the popover', async () => {
       createComponent({
         selectedCategory: {
           ...category,
@@ -308,6 +308,47 @@ describe('Category form', () => {
       expect(findPopover().exists()).toBe(true);
 
       expect(findPopover().text()).toContain('Created the attribute "New Attribute"');
+    });
+
+    it('once saved, shows "All changes saved" message', async () => {
+      createComponent({
+        selectedCategory: {
+          ...category,
+          id: 10,
+          name: 'Network',
+          description: 'Security-related category',
+          multipleSelection: false,
+        },
+        unsavedAttributes: [],
+      });
+      wrapper.findByTestId('save-button').vm.$emit('click');
+
+      await nextTick();
+
+      const container = wrapper.findByTestId('unsaved-changes-container');
+      expect(container.text()).toContain('All changes saved');
+      expect(wrapper.findComponent({ name: 'GlPopover' }).exists()).toBe(false);
+    });
+
+    it('after a delay, "All changes saved" disappears', async () => {
+      createComponent({
+        selectedCategory: {
+          ...category,
+          id: 10,
+          name: 'Network',
+          description: 'Security-related category',
+          multipleSelection: false,
+        },
+        unsavedAttributes: [],
+      });
+      wrapper.findByTestId('save-button').vm.$emit('click');
+
+      jest.runOnlyPendingTimers(); // wait for setTimeout
+      await nextTick();
+
+      const container = wrapper.findByTestId('unsaved-changes-container');
+      expect(container.text()).toBe('');
+      expect(wrapper.findComponent({ name: 'GlPopover' }).exists()).toBe(false);
     });
   });
 

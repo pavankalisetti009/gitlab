@@ -26,6 +26,7 @@ import {
   CATEGORY_EDITABLE,
   CATEGORY_PARTIALLY_EDITABLE,
   CATEGORY_LOCKED,
+  RECENTLY_SAVED_TIMEOUT,
 } from './constants';
 
 export default {
@@ -75,6 +76,7 @@ export default {
         attributes: null,
       },
       originalCategory: {},
+      recentlySaved: false,
     };
   },
   computed: {
@@ -140,6 +142,11 @@ export default {
     this.category = this.selectedCategory || defaultCategory;
     this.originalCategory = JSON.parse(JSON.stringify(this.category));
   },
+  destroyed() {
+    if (this.recentlySavedTimeout) {
+      clearTimeout(this.recentlySavedTimeout);
+    }
+  },
   methods: {
     isFormValid() {
       this.formErrors.name =
@@ -159,6 +166,13 @@ export default {
       if (!this.isFormValid()) return;
       this.$emit('saveCategory', this.category);
       this.originalCategory = JSON.parse(JSON.stringify(this.category));
+
+      // show "All changes saved" briefly like a toast
+      this.recentlySaved = true;
+      clearTimeout(this.recentlySavedTimeout);
+      this.recentlySavedTimeout = setTimeout(() => {
+        this.recentlySaved = false;
+      }, RECENTLY_SAVED_TIMEOUT);
     },
   },
   attributesTableFields: [
@@ -383,24 +397,32 @@ export default {
         data-testid="unsaved-changes-container"
         class="gl-ml-5 gl-flex gl-items-center gl-text-sm gl-text-subtle"
       >
-        <gl-icon v-if="unsavedCount === 0" name="check" variant="success" class="gl-mr-2" />
-        <gl-icon v-else name="warning" variant="warning" class="gl-mr-2" />
-        <span v-if="unsavedCount === 0">
-          {{ s__('SecurityAttributes|All changes saved') }}
-        </span>
-        <span v-else>
-          <span> {{ n__('%d unsaved change', '%d unsaved changes', unsavedCount) }}</span>
-        </span>
-        <gl-popover v-if="unsavedCount > 0" placement="top" target="unsaved-changes-container">
-          <template #title>
-            {{ s__('SecurityAttributes|Unsaved changes') }}
-          </template>
-          <ul class="gl-mb-0 gl-pl-3">
-            <li v-for="(change, index) in unsavedChanges" :key="index" class="gl-ml-2 gl-list-disc">
-              {{ change }}
-            </li>
-          </ul>
-        </gl-popover>
+        <template v-if="unsavedCount > 0">
+          <gl-icon name="warning" variant="warning" class="gl-mr-2" />
+          <span class="gl-link hover:gl-underline">
+            <span> {{ n__('%d unsaved change', '%d unsaved changes', unsavedCount) }}</span>
+          </span>
+          <gl-popover placement="top" target="unsaved-changes-container">
+            <template #title>
+              {{ s__('SecurityAttributes|Unsaved changes') }}
+            </template>
+            <ul class="gl-mb-0 gl-pl-3">
+              <li
+                v-for="(change, index) in unsavedChanges"
+                :key="index"
+                class="gl-ml-2 gl-list-disc"
+              >
+                {{ change }}
+              </li>
+            </ul>
+          </gl-popover>
+        </template>
+        <template v-if="unsavedCount === 0 && recentlySaved">
+          <gl-icon name="check" variant="success" class="gl-mr-2" />
+          <span>
+            {{ s__('SecurityAttributes|All changes saved') }}
+          </span>
+        </template>
       </div>
     </div>
   </div>
