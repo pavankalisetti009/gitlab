@@ -1,0 +1,10 @@
+---
+name: ai_gateway_allow_conversation_caching
+description: Allow full prompt caching in AIGW Prompt Registry for Duo Workflow Service
+feature_issue_url: https://gitlab.com/gitlab-org/gitlab/-/work_items/577652
+introduced_by_url: https://gitlab.com/gitlab-org/gitlab/-/merge_requests/210655
+rollout_issue_url: https://gitlab.com/gitlab-org/gitlab/-/issues/578802
+milestone: '18.6'
+group: group::duo chat
+type: gitlab_com_derisk
+default_enabled: false

@@ -297,12 +297,15 @@ module API
                                   .new(current_user, :duo_agent_platform, root_namespace)
                                   .execute.payload
 
+              model_prompt_cache_enabled = root_namespace&.model_prompt_cache_enabled || false
+
               gitlab_token = gitlab_oauth_token.plaintext_token
               mcp_config_service = ::Ai::DuoWorkflows::McpConfigService.new(current_user, gitlab_token)
               grpc_headers = Gitlab::DuoWorkflow::Client.cloud_connector_headers(user: current_user).merge(
                 'x-gitlab-oauth-token' => gitlab_token,
                 'x-gitlab-unidirectional-streaming' => 'enabled',
-                'x-gitlab-enabled-mcp-server-tools' => mcp_config_service.gitlab_enabled_tools.join(',')
+                'x-gitlab-enabled-mcp-server-tools' => mcp_config_service.gitlab_enabled_tools.join(','),
+                'x-gitlab-model-prompt-cache-enabled' => model_prompt_cache_enabled.to_s
               ).merge(model_metadata_headers)
 
               grpc_headers['x-gitlab-project-id'] ||= params[:project_id].presence
