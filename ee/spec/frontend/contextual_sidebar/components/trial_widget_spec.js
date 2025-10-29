@@ -4,6 +4,8 @@ import TrialWidget from 'ee/contextual_sidebar/components/trial_widget.vue';
 import { useMockInternalEventsTracking } from 'helpers/tracking_internal_events_helper';
 import { mockTracking, unmockTracking } from 'helpers/tracking_helper';
 import { makeMockUserGroupCalloutDismisser } from 'helpers/mock_user_group_callout_dismisser';
+import UserGroupCalloutDismisser from '~/vue_shared/components/user_group_callout_dismisser.vue';
+import UserCalloutDismisser from '~/vue_shared/components/user_callout_dismisser.vue';
 
 jest.mock('~/sentry/sentry_browser_wrapper');
 
@@ -17,6 +19,8 @@ describe('TrialWidget component', () => {
 
   const findProgressBar = () => wrapper.findComponent(GlProgressBar);
   const findDismissButton = () => wrapper.findByTestId('dismiss-btn');
+  const findUserGroupCalloutDismisser = () => wrapper.findComponent(UserGroupCalloutDismisser);
+  const findUserCalloutDismisser = () => wrapper.findComponent(UserCalloutDismisser);
 
   const provide = {
     trialType: 'duo_enterprise',
@@ -30,17 +34,20 @@ describe('TrialWidget component', () => {
 
   const createComponent = (providers = {}, calloutOptions = {}) => {
     userGroupCalloutDismissSpy = jest.fn();
+    const mockCalloutOptions = {
+      dismiss: userGroupCalloutDismissSpy,
+      shouldShowCallout: true,
+      ...calloutOptions,
+    };
+
     wrapper = shallowMountExtended(TrialWidget, {
       provide: {
         ...provide,
         ...providers,
       },
       stubs: {
-        UserGroupCalloutDismisser: makeMockUserGroupCalloutDismisser({
-          dismiss: userGroupCalloutDismissSpy,
-          shouldShowCallout: true,
-          ...calloutOptions,
-        }),
+        UserGroupCalloutDismisser: makeMockUserGroupCalloutDismisser(mockCalloutOptions),
+        UserCalloutDismisser: makeMockUserGroupCalloutDismisser(mockCalloutOptions),
       },
     });
   };
@@ -216,6 +223,71 @@ describe('TrialWidget component', () => {
     it('renders the dismiss button', () => {
       createComponent({ daysRemaining: 0, percentageComplete: 100 });
       expect(findDismissButton().exists()).toBe(true);
+    });
+  });
+
+  describe('dismisser component logic', () => {
+    describe('when groupId is provided', () => {
+      beforeEach(() => {
+        createComponent({ groupId: '123' });
+      });
+
+      it('uses UserGroupCalloutDismisser component', () => {
+        expect(findUserGroupCalloutDismisser().exists()).toBe(true);
+        expect(findUserCalloutDismisser().exists()).toBe(false);
+      });
+
+      it('passes correct attributes to UserGroupCalloutDismisser', () => {
+        expect(findUserGroupCalloutDismisser().props()).toMatchObject({
+          featureName: '2',
+          skipQuery: true,
+          groupId: '123',
+        });
+      });
+    });
+
+    describe('when groupId is not provided', () => {
+      beforeEach(() => {
+        createComponent({ groupId: '' });
+      });
+
+      it('uses UserCalloutDismisser component', () => {
+        expect(findUserCalloutDismisser().exists()).toBe(true);
+        expect(findUserGroupCalloutDismisser().exists()).toBe(false);
+      });
+
+      it('passes correct attributes to UserCalloutDismisser', () => {
+        expect(findUserCalloutDismisser().props()).toMatchObject({
+          featureName: '2',
+          skipQuery: true,
+        });
+      });
+
+      it('does not pass groupId to UserCalloutDismisser', () => {
+        expect(findUserCalloutDismisser().props().groupId).toBeUndefined();
+      });
+    });
+
+    describe('when featureId is not provided', () => {
+      beforeEach(() => {
+        createComponent({ featureId: '' });
+      });
+
+      it('passes empty featureName to dismisser', () => {
+        expect(findUserGroupCalloutDismisser().props().featureName).toBe('');
+      });
+    });
+
+    describe('when both groupId and featureId are not provided', () => {
+      beforeEach(() => {
+        createComponent({ groupId: '', featureId: '' });
+      });
+
+      it('uses UserCalloutDismisser and passes empty featureName', () => {
+        expect(findUserCalloutDismisser().exists()).toBe(true);
+        expect(findUserGroupCalloutDismisser().exists()).toBe(false);
+        expect(findUserCalloutDismisser().props().featureName).toBe('');
+      });
     });
   });
 });

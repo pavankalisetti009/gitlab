@@ -3,7 +3,7 @@
 require 'spec_helper'
 
 RSpec.describe 'Duo Pro Trial Widget in Sidebar', :saas, :js, feature_category: :acquisition do
-  include Features::HandRaiseLeadHelpers
+  include Features::TrialWidgetHelpers
 
   let_it_be(:user) { create(:user, :with_namespace, user_detail_organization: 'YMCA') }
   let_it_be(:group) { create(:group_with_plan, plan: :ultimate_plan, name: 'gitlab', owners: user) }
@@ -23,7 +23,7 @@ RSpec.describe 'Duo Pro Trial Widget in Sidebar', :saas, :js, feature_category: 
         visit group_path(group)
 
         expect_widget_title_to_be('GitLab Duo Pro Trial')
-        expect_days_remaining_to_be('45 days left in trial')
+        expect_widget_to_have_content('45 days left in trial')
       end
     end
 
@@ -33,7 +33,7 @@ RSpec.describe 'Duo Pro Trial Widget in Sidebar', :saas, :js, feature_category: 
           visit group_path(group)
 
           expect_widget_title_to_be('GitLab Duo Pro Trial')
-          expect_days_remaining_to_be('60 days left in trial')
+          expect_widget_to_have_content('60 days left in trial')
         end
       end
     end
@@ -44,7 +44,7 @@ RSpec.describe 'Duo Pro Trial Widget in Sidebar', :saas, :js, feature_category: 
           visit group_path(group)
 
           expect_widget_title_to_be('GitLab Duo Pro Trial')
-          expect_days_remaining_to_be('1 days left in trial')
+          expect_widget_to_have_content('1 days left in trial')
         end
       end
     end
@@ -62,7 +62,7 @@ RSpec.describe 'Duo Pro Trial Widget in Sidebar', :saas, :js, feature_category: 
           visit group_usage_quotas_path(group)
 
           expect_widget_title_to_be('Your trial of GitLab Duo Pro has ended')
-          expect(page).to have_content('Upgrade')
+          expect_widget_to_have_content('Upgrade')
 
           dismiss_widget
 
@@ -73,24 +73,6 @@ RSpec.describe 'Duo Pro Trial Widget in Sidebar', :saas, :js, feature_category: 
           expect(page).to have_content('Discover Duo Pro')
           expect(page).not_to have_content('Your trial of GitLab Duo Pro has ended')
         end
-      end
-    end
-
-    def expect_widget_title_to_be(widget_title)
-      within_testid('trial-widget-menu') do
-        expect(page).to have_selector('[data-testid="widget-title"]', text: widget_title)
-      end
-    end
-
-    def expect_days_remaining_to_be(days_text)
-      within_testid('trial-widget-menu') do
-        expect(page).to have_content(days_text)
-      end
-    end
-
-    def dismiss_widget
-      within_testid('trial-widget-root-element') do
-        find_by_testid('dismiss-btn').click
       end
     end
   end

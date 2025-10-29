@@ -929,6 +929,18 @@ RSpec.describe License, feature_category: :plan_provisioning do
     end
   end
 
+  describe '#active?' do
+    context 'when active' do
+      it { is_expected.to be_active }
+    end
+
+    context 'when not active' do
+      subject { build(:license, expired: true) }
+
+      it { is_expected.not_to be_active }
+    end
+  end
+
   describe "#data_filename" do
     subject { license.data_filename }
 

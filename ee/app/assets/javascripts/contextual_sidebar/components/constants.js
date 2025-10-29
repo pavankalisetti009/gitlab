@@ -4,6 +4,7 @@ export const DUO_PRO = 'duo_pro';
 export const DUO_ENTERPRISE = 'duo_enterprise';
 export const ULTIMATE_WITH_DUO = 'ultimate';
 export const ULTIMATE_WITH_DUO_AND_PREMIUM_TITLE = 'ultimate_with_premium_title';
+export const SELF_MANAGED_ULTIMATE = 'self_managed_ultimate';
 
 export const TRIAL_WIDGET_REMAINING_DAYS = s__('TrialWidget|%{daysLeft} days left in trial');
 export const TRIAL_WIDGET_LEARN_MORE = s__('TrialWidget|Learn more');
@@ -36,18 +37,18 @@ export const TRIAL_WIDGET_ULTIMATE_DUO_AND_PREMIUM_TITLE = s__(
   'TrialWidget|Upgrade to keep your Premium features',
 );
 
+export const TRIAL_WIDGET_SELF_MANAGED_ULTIMATE_TRACKING_LABEL = 'gitlab_ultimate_trial';
+export const TRIAL_WIDGET_SELF_MANAGED_ULTIMATE_TITLE = s__('TrialWidget|GitLab Ultimate trial');
+export const TRIAL_WIDGET_SELF_MANAGED_ULTIMATE_EXPIRED = s__(
+  'TrialWidget|Your trial of GitLab Ultimate has ended',
+);
+
 export const TRIAL_WIDGET_CONTAINER_ID = 'trial-sidebar-widget';
 export const TRIAL_WIDGET_UPGRADE_THRESHOLD_DAYS = 30;
 
 export const TRIAL_WIDGET_CLICK_UPGRADE = 'click_upgrade_link_on_trial_widget';
 export const TRIAL_WIDGET_CLICK_LEARN_MORE = 'click_learn_more_link_on_trial_widget';
 export const TRIAL_WIDGET_CLICK_DISMISS = 'click_dismiss_button_on_trial_widget';
-
-export const HAND_RAISE_LEAD_ATTRIBUTES = {
-  variant: 'link',
-  category: 'tertiary',
-  size: 'small',
-};
 
 export const TRIAL_TYPES_CONFIG = {
   [DUO_PRO]: {
@@ -69,5 +70,10 @@ export const TRIAL_TYPES_CONFIG = {
     name: TRIAL_WIDGET_ULTIMATE_DUO_NAME,
     widgetTitle: TRIAL_WIDGET_ULTIMATE_DUO_AND_PREMIUM_TITLE,
     widgetTitleExpiredTrial: TRIAL_WIDGET_ULTIMATE_DUO_EXPIRED,
+  },
+  [SELF_MANAGED_ULTIMATE]: {
+    name: TRIAL_WIDGET_SELF_MANAGED_ULTIMATE_TRACKING_LABEL,
+    widgetTitle: TRIAL_WIDGET_SELF_MANAGED_ULTIMATE_TITLE,
+    widgetTitleExpiredTrial: TRIAL_WIDGET_SELF_MANAGED_ULTIMATE_EXPIRED,
   },
 };

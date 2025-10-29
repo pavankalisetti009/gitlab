@@ -7,6 +7,7 @@ FactoryBot.define do
       expired { false }
       trial { false }
       seats { nil }
+      recently_expired { false }
     end
 
     data do
@@ -14,6 +15,7 @@ FactoryBot.define do
       traits << :trial if trial
       traits << :expired if expired
       traits << :cloud if cloud
+      traits << :recently_expired if recently_expired
 
       build(:gitlab_license, *traits, plan: plan, seats: seats).export
     end

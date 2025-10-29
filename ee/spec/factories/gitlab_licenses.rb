@@ -6,6 +6,8 @@ FactoryBot.define do
 
     trait :trial do
       block_changes_at { nil }
+      starts_at { Date.current }
+      expires_at { starts_at.advance(days: 30) }
       restrictions do
         seats_attrs = seats ? { active_user_count: seats } : {}
         {
@@ -19,6 +21,10 @@ FactoryBot.define do
 
     trait :expired do
       expires_at { 3.weeks.ago.to_date }
+    end
+
+    trait :recently_expired do
+      expires_at { 3.days.ago.to_date }
     end
 
     trait :legacy do

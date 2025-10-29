@@ -4,6 +4,7 @@ require 'spec_helper'
 
 RSpec.describe 'Trial Widget in Sidebar', :saas, :js, feature_category: :acquisition do
   include SubscriptionPortalHelpers
+  include Features::TrialWidgetHelpers
 
   let_it_be(:user) { create(:user, :with_namespace, user_detail_organization: 'YMCA') }
 
@@ -32,8 +33,8 @@ RSpec.describe 'Trial Widget in Sidebar', :saas, :js, feature_category: :acquisi
       freeze_time do
         visit group_path(group)
 
-        expect_widget_to_have_content('Ultimate with GitLab Duo Enterprise')
-        expect(page).to have_content('60 days left in trial')
+        expect_widget_title_to_be('Ultimate with GitLab Duo Enterprise')
+        expect_widget_to_have_content('60 days left in trial')
       end
     end
 
@@ -41,15 +42,15 @@ RSpec.describe 'Trial Widget in Sidebar', :saas, :js, feature_category: :acquisi
       travel_to(15.days.from_now) do
         visit group_path(group)
 
-        expect_widget_to_have_content('Ultimate with GitLab Duo Enterprise')
-        expect(page).to have_content('45 days left in trial')
+        expect_widget_title_to_be('Ultimate with GitLab Duo Enterprise')
+        expect_widget_to_have_content('45 days left in trial')
       end
 
       travel_to(59.days.from_now) do
         visit group_path(group)
 
-        expect_widget_to_have_content('Ultimate with GitLab Duo Enterprise')
-        expect(page).to have_content('1 days left in trial')
+        expect_widget_title_to_be('Ultimate with GitLab Duo Enterprise')
+        expect_widget_to_have_content('1 days left in trial')
       end
     end
 
@@ -78,8 +79,8 @@ RSpec.describe 'Trial Widget in Sidebar', :saas, :js, feature_category: :acquisi
         travel_to(60.days.from_now) do
           visit group_path(group_with_expired_trial)
 
-          expect_widget_to_have_content('Your trial of Ultimate with GitLab Duo Enterprise has ended')
-          expect(page).to have_content('Upgrade')
+          expect_widget_title_to_be('Your trial of Ultimate with GitLab Duo Enterprise has ended')
+          expect_widget_to_have_content('Upgrade')
         end
       end
 
@@ -87,8 +88,8 @@ RSpec.describe 'Trial Widget in Sidebar', :saas, :js, feature_category: :acquisi
         travel_to(60.days.from_now) do
           visit group_path(group_with_expired_trial)
 
-          expect_widget_to_have_content('Your trial of Ultimate with GitLab Duo Enterprise has ended')
-          expect(page).to have_content('Upgrade')
+          expect_widget_title_to_be('Your trial of Ultimate with GitLab Duo Enterprise has ended')
+          expect_widget_to_have_content('Upgrade')
 
           dismiss_widget
 
@@ -100,25 +101,5 @@ RSpec.describe 'Trial Widget in Sidebar', :saas, :js, feature_category: :acquisi
         end
       end
     end
-  end
-
-  def expect_widget_to_have_content(widget_title)
-    within_testid(widget_menu_selector) do
-      expect(page).to have_content(widget_title)
-    end
-  end
-
-  def dismiss_widget
-    within_testid(widget_root_element) do
-      find_by_testid('close-icon').click
-    end
-  end
-
-  def widget_menu_selector
-    'trial-widget-menu'
-  end
-
-  def widget_root_element
-    'trial-widget-root-element'
   end
 end
