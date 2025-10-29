@@ -43,7 +43,9 @@ module EE
           :assignees,
           :namespace,
           :milestone,
-          project: :project_feature
+          project: [
+            :project_feature, { namespace: %i[namespace_settings namespace_settings_with_ancestors_inherited_settings] }
+          ]
         )
 
         # Separate work items into unified and regular to handle label preloading differently

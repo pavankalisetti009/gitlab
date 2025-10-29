@@ -193,7 +193,7 @@ module Search
           return {} unless target.project.present?
 
           {
-            archived: target.project.archived?,
+            archived: target.project.self_or_ancestors_archived?,
             project_visibility_level: target.project.visibility_level,
             issues_access_level: target.project.issues_access_level
           }

@@ -17,7 +17,7 @@ module Elastic
         data['visibility_level'] = target.project.visibility_level
         data['merge_requests_access_level'] = safely_read_project_feature_for_elasticsearch(:merge_requests)
         data['issues_access_level'] = safely_read_project_feature_for_elasticsearch(:issues)
-        data['archived'] = target.project.archived if target.project
+        data['archived'] = target.project.self_or_ancestors_archived? if target.project
 
         data['schema_version'] = SCHEMA_VERSION
         data.merge(generic_attributes)

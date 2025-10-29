@@ -169,7 +169,7 @@ RSpec.describe Gitlab::Elastic::Indexer, feature_category: :global_search do
             "--hashed-root-namespace-id=#{project.namespace.hashed_root_namespace_id}",
             "--schema-version-blob=2308",
             "--schema-version-commit=2306",
-            "--archived=#{project.archived}",
+            "--archived=#{project.self_or_ancestors_archived?}",
             "--traversal-ids=#{project.namespace_ancestry}",
             "#{project.repository.disk_path}.git"
           ],

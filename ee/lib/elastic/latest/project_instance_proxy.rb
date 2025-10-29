@@ -28,7 +28,6 @@ module Elastic
           :namespace_id,
           :created_at,
           :updated_at,
-          :archived,
           :visibility_level,
           :last_activity_at,
           :name_with_namespace,
@@ -55,6 +54,7 @@ module Elastic
         data['forked'] = target.forked? || false
         data['owner_id'] = target.owner&.id
         data['repository_languages'] = target.repository_languages.map(&:name)
+        data['archived'] = target.self_or_ancestors_archived?
 
         data
       end

@@ -38,7 +38,11 @@ module Elastic
       def preload_indexing_data(relation)
         preloaded_data = relation
           .includes(noteable: [:assignees, :namespace, :group, { project: :namespace, target_project: :namespace }],
-            project: [:project_feature, :route, :namespace])
+            project: [
+              :project_feature, :route,
+              { namespace: %i[namespace_settings namespace_settings_with_ancestors_inherited_settings] }
+            ]
+          )
 
         project_notes, namespace_notes = preloaded_data.partition(&:for_project_noteable?)
 

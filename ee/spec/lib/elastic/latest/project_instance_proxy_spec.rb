@@ -36,7 +36,7 @@ RSpec.describe Elastic::Latest::ProjectInstanceProxy, :elastic_helpers, feature_
         namespace_id: project.namespace_id,
         created_at: project.created_at,
         updated_at: project.updated_at,
-        archived: project.archived,
+        archived: project.self_or_ancestors_archived?,
         last_activity_at: project.last_activity_at,
         name_with_namespace: project.name_with_namespace,
         path_with_namespace: project.path_with_namespace,

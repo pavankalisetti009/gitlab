@@ -26,7 +26,7 @@ RSpec.describe Elastic::Latest::NoteInstanceProxy, feature_category: :global_sea
         type: note.es_type,
         confidential: note.confidential,
         internal: note.internal,
-        archived: note.project.archived,
+        archived: note.project.self_or_ancestors_archived?,
         visibility_level: note.project.visibility_level,
         created_at: note.created_at,
         updated_at: note.updated_at,
