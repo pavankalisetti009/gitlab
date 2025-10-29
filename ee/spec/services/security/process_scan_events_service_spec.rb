@@ -241,6 +241,15 @@ RSpec.describe Security::ProcessScanEventsService, feature_category: :vulnerabil
           editcontext_api_usage: 1,
           wai_aria_usage: 1
         }
+        'collect_dast_scan_grouped_urls_similarity_from_pipeline' | {
+          property: '294f623d-b2ce-4568-8008-6fd4a5fb3330',
+          label: 'https://example.com/page/*/details',
+          value: 4,
+          median: 30,
+          ninety_percentile: 31,
+          first_quartile: 25,
+          max: 34
+        }
       end
 
       with_them do
