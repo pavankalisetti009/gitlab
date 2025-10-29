@@ -19,6 +19,7 @@ module Groups
         push_frontend_feature_flag(:existing_jira_issue_attachment_from_vulnerability_bulk_action, @project, type: :wip)
         push_frontend_ability(ability: :resolve_vulnerability_with_ai, resource: @group, user: current_user)
         push_frontend_feature_flag(:security_policy_approval_warn_mode, @group, type: :wip)
+        push_frontend_feature_flag(:policy_violations_es_filter, @group, type: :gitlab_com_derisk)
         push_frontend_feature_flag(:ai_experiment_sast_fp_detection, @group, type: :wip)
         push_frontend_ability(ability: :access_advanced_vulnerability_management, resource: @group, user: current_user)
       end
