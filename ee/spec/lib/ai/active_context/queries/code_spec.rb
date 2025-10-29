@@ -8,19 +8,56 @@ RSpec.describe Ai::ActiveContext::Queries::Code, feature_category: :code_suggest
 
   subject(:codebase_query) { described_class.new(search_term: search_term, user: user) }
 
+  describe '.available?' do
+    subject(:available) { described_class.available? }
+
+    context 'when Code indexing is disabled' do
+      before do
+        allow(::Ai::ActiveContext::Collections::Code).to receive(:indexing?).and_return(false)
+      end
+
+      it { is_expected.to be(false) }
+    end
+
+    context 'when Code indexing is enabled' do
+      before do
+        allow(::Ai::ActiveContext::Collections::Code).to receive(:indexing?).and_return(true)
+      end
+
+      context 'when code collection record does not exist' do
+        it { is_expected.to be(false) }
+      end
+
+      context 'when code collection record exists' do
+        before do
+          create(
+            :ai_active_context_collection,
+            name: Ai::ActiveContext::Collections::Code.collection_name,
+            search_embedding_version: 1,
+            include_ref_fields: false
+          )
+        end
+
+        it { is_expected.to be(true) }
+      end
+    end
+  end
+
   describe '#filter' do
-    context 'when code collection record does not exist' do
-      let(:expected_error_class) { Ai::ActiveContext::Queries::Code::NoCollectionRecordError }
+    context 'when semantic search is not available' do
+      let(:expected_error_class) { Ai::ActiveContext::Queries::Code::NotAvailable }
 
       it 'raises the expected error' do
         expect { codebase_query.filter(project_id: 123) }.to raise_error(
-          expected_error_class, "A Code collection record is required."
+          expected_error_class, "Semantic search on Code collection is not available."
         )
       end
     end
 
-    context 'when a code collection record exists' do
+    context 'when semantic search is available' do
       before do
+        allow(::Ai::ActiveContext::Collections::Code).to receive(:indexing?).and_return(true)
+
         # mock the call to embeddings generation
         allow(ActiveContext::Embeddings).to receive(:generate_embeddings)
           .with(

@@ -8,7 +8,12 @@ module Ai
         SEARCH_RESULTS_LIMIT = 10
         COLLECTION_CLASS = ::Ai::ActiveContext::Collections::Code
 
-        NoCollectionRecordError = Class.new(StandardError)
+        NotAvailable = Class.new(StandardError)
+
+        def self.available?
+          COLLECTION_CLASS.indexing? &&
+            COLLECTION_CLASS.collection_record.present?
+        end
 
         def initialize(search_term:, user:)
           @search_term = search_term
@@ -23,7 +28,7 @@ module Ai
           exclude_fields: [],
           extract_source_segments: false
         )
-          raise_no_collection_record_error if collection_record.nil?
+          check_availability
 
           ac_repository = find_active_context_repository(project_id)
           return no_ready_active_context_repository_result unless ac_repository&.ready?
@@ -71,10 +76,12 @@ module Ai
           end
         end
 
-        def raise_no_collection_record_error
+        def check_availability
+          return if self.class.available?
+
           raise(
-            NoCollectionRecordError,
-            "A Code collection record is required."
+            NotAvailable,
+            "Semantic search on Code collection is not available."
           )
         end
 

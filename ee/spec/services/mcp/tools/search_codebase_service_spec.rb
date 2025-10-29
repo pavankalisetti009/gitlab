@@ -450,4 +450,45 @@ RSpec.describe Mcp::Tools::SearchCodebaseService, feature_category: :mcp_server 
       end
     end
   end
+
+  describe '#available?' do
+    subject(:available?) { service.available? }
+
+    context 'when Code collection is indexed' do
+      it { is_expected.to be(false) }
+    end
+
+    context 'when code collection is indexed' do
+      before do
+        allow(::Ai::ActiveContext::Collections::Code).to receive(:indexing?).and_return(true)
+
+        create(
+          :ai_active_context_collection,
+          name: Ai::ActiveContext::Collections::Code.collection_name,
+          search_embedding_version: 1,
+          include_ref_fields: false
+        )
+      end
+
+      context 'when current_user is not set' do
+        it { is_expected.to be(false) }
+      end
+
+      context 'when current_user is set' do
+        before do
+          service.set_cred(current_user: current_user)
+        end
+
+        it { is_expected.to be(true) }
+
+        context 'when `code_snippet_search_graphqlapi` is disabled' do
+          before do
+            stub_feature_flags(code_snippet_search_graphqlapi: false)
+          end
+
+          it { is_expected.to be(false) }
+        end
+      end
+    end
+  end
 end
