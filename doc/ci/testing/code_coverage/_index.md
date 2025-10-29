@@ -95,11 +95,12 @@ See: https://docs.gitlab.com/user/markdown/#tables
 
 {{< tab title="Node.js" >}}
 
-| Tool | Command                              | Regex pattern |
-|------|--------------------------------------|---------------|
-| tap  | `tap --coverage-report=text-summary` | `/^Statements\s*:\s*([^%]+)/` |
-| nyc  | `nyc npm test`                       | `/All files[^\|]*\\|[^\|]*\s+([\d\.]+)/` |
-| jest | `jest --ci --coverage`               | `/All files[^\|]*\\|[^\|]*\s+([\d\.]+)/` |
+| Tool      | Command                                    | Regex pattern |
+|-----------|--------------------------------------------|---------------|
+| tap       | `tap --coverage-report=text-summary`       | `/^Statements\s*:\s*([^%]+)/` |
+| nyc       | `nyc npm test`                             | `/All files[^\|]*\\|[^\|]*\s+([\d\.]+)/` |
+| jest      | `jest --ci --coverage`                     | `/All files[^\|]*\\|[^\|]*\s+([\d\.]+)/` |
+| node:test | `node --experimental-test-coverage --test` | `/all files[^\|]*\\|[^\|]*\s+([\d\.]+)/` |
 
 {{< /tab >}}
 
