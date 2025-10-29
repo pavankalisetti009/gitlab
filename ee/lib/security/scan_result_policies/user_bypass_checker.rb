@@ -44,7 +44,7 @@ module Security
 
         return false if default_roles.blank? && custom_role_ids.blank?
 
-        levels = default_roles.filter_map { |role| Gitlab::Access.sym_options[role.to_sym] }
+        levels = default_roles.filter_map { |role| Gitlab::Access.sym_options_with_owner[role.to_sym] }
 
         project.team.user_exists_with_access_level_or_custom_roles?(
           current_user, levels: levels, member_role_ids: custom_role_ids

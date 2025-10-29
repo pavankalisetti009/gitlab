@@ -108,15 +108,11 @@ RSpec.describe Security::ScanResultPolicies::UserBypassChecker, feature_category
         security_policy.update!(content: { bypass_settings: { users: [{ id: normal_user.id }] } })
       end
 
-      it 'returns false' do
-        expect(users_can_bypass?).to be false
-      end
+      it { is_expected.to be false }
     end
 
     context 'when user_ids is blank' do
-      it 'returns false' do
-        expect(users_can_bypass?).to be false
-      end
+      it { is_expected.to be false }
     end
 
     context 'when user is not in the allowed users list' do
@@ -124,9 +120,7 @@ RSpec.describe Security::ScanResultPolicies::UserBypassChecker, feature_category
         security_policy.update!(content: { bypass_settings: { users: [{ id: create(:user).id }] } })
       end
 
-      it 'returns false' do
-        expect(users_can_bypass?).to be false
-      end
+      it { is_expected.to be false }
     end
 
     context 'when user is in the allowed users list' do
@@ -134,9 +128,7 @@ RSpec.describe Security::ScanResultPolicies::UserBypassChecker, feature_category
         security_policy.update!(content: { bypass_settings: { users: [{ id: normal_user.id }] } })
       end
 
-      it 'returns true' do
-        expect(users_can_bypass?).to be true
-      end
+      it { is_expected.to be true }
     end
   end
 
@@ -144,9 +136,7 @@ RSpec.describe Security::ScanResultPolicies::UserBypassChecker, feature_category
     subject(:groups_can_bypass?) { checker.send(:groups_can_bypass?) }
 
     context 'when group_ids is blank' do
-      it 'returns false' do
-        expect(groups_can_bypass?).to be false
-      end
+      it { is_expected.to be false }
     end
 
     context 'when user is not a member of the allowed group' do
@@ -154,9 +144,7 @@ RSpec.describe Security::ScanResultPolicies::UserBypassChecker, feature_category
         security_policy.update!(content: { bypass_settings: { groups: [{ id: group.id }] } })
       end
 
-      it 'returns false' do
-        expect(groups_can_bypass?).to be false
-      end
+      it { is_expected.to be false }
     end
 
     context 'when user is a member of the allowed group' do
@@ -165,9 +153,7 @@ RSpec.describe Security::ScanResultPolicies::UserBypassChecker, feature_category
         security_policy.update!(content: { bypass_settings: { groups: [{ id: group.id }] } })
       end
 
-      it 'returns true' do
-        expect(groups_can_bypass?).to be true
-      end
+      it { is_expected.to be true }
     end
   end
 
@@ -175,9 +161,7 @@ RSpec.describe Security::ScanResultPolicies::UserBypassChecker, feature_category
     subject(:roles_can_bypass?) { checker.send(:roles_can_bypass?) }
 
     context 'when both default_roles and custom_role_ids are blank' do
-      it 'returns false' do
-        expect(roles_can_bypass?).to be false
-      end
+      it { is_expected.to be false }
     end
 
     context 'when default_roles is provided' do
@@ -190,15 +174,29 @@ RSpec.describe Security::ScanResultPolicies::UserBypassChecker, feature_category
           create(:project_member, :maintainer, project: project, user: normal_user)
         end
 
-        it 'returns true' do
-          expect(roles_can_bypass?).to be true
-        end
+        it { is_expected.to be true }
       end
 
       context 'when user does not have the required role' do
-        it 'returns false' do
-          expect(roles_can_bypass?).to be false
+        it { is_expected.to be false }
+      end
+    end
+
+    context 'when owner role is provided' do
+      before do
+        security_policy.update!(content: { bypass_settings: { roles: ['owner'] } })
+      end
+
+      context 'when user has the owner role' do
+        before do
+          create(:project_member, :owner, project: project, user: normal_user)
         end
+
+        it { is_expected.to be true }
+      end
+
+      context 'when user does not have the owner role' do
+        it { is_expected.to be false }
       end
     end
 
@@ -224,9 +222,7 @@ RSpec.describe Security::ScanResultPolicies::UserBypassChecker, feature_category
           create(:project_member, :developer, project: project, user: normal_user)
         end
 
-        it 'returns false' do
-          expect(roles_can_bypass?).to be false
-        end
+        it { is_expected.to be false }
       end
     end
 
@@ -243,9 +239,7 @@ RSpec.describe Security::ScanResultPolicies::UserBypassChecker, feature_category
         })
       end
 
-      it 'returns true' do
-        expect(roles_can_bypass?).to be true
-      end
+      it { is_expected.to be true }
     end
   end
 end
