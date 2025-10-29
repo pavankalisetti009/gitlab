@@ -891,6 +891,7 @@ RSpec.describe API::Ai::DuoWorkflows::Workflows, :with_current_organization, fea
         expect(response).to have_gitlab_http_status(:ok)
         expect(response.media_type).to eq(Gitlab::Workhorse::INTERNAL_API_CONTENT_TYPE)
 
+        enabled_mcp_tools = ::Ai::DuoWorkflows::McpConfigService::GITLAB_ENABLED_TOOLS
         expect(json_response['DuoWorkflow']['Headers']).to include(
           'x-gitlab-oauth-token' => 'oauth_token',
           'authorization' => 'Bearer token',
@@ -898,10 +899,19 @@ RSpec.describe API::Ai::DuoWorkflows::Workflows, :with_current_organization, fea
           'x-gitlab-enabled-feature-flags' => anything,
           'x-gitlab-instance-id' => anything,
           'x-gitlab-version' => Gitlab.version_info.to_s,
-          'x-gitlab-unidirectional-streaming' => 'enabled'
+          'x-gitlab-unidirectional-streaming' => 'enabled',
+          'x-gitlab-enabled-mcp-server-tools' => enabled_mcp_tools.join(',')
         )
 
         expect(json_response['DuoWorkflow']['Secure']).to eq(true)
+        expect(json_response['DuoWorkflow']['McpServers']).to eq({
+          "gitlab" => {
+            "Headers" => {
+              "Authorization" => "Bearer oauth_token"
+            },
+            "Tools" => enabled_mcp_tools
+          }
+        })
       end
 
       it_behaves_like 'ServiceURI has the right value', false

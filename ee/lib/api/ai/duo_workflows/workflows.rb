@@ -297,9 +297,12 @@ module API
                                   .new(current_user, :duo_agent_platform, root_namespace)
                                   .execute.payload
 
+              gitlab_token = gitlab_oauth_token.plaintext_token
+              mcp_config_service = ::Ai::DuoWorkflows::McpConfigService.new(current_user, gitlab_token)
               grpc_headers = Gitlab::DuoWorkflow::Client.cloud_connector_headers(user: current_user).merge(
-                'x-gitlab-oauth-token' => gitlab_oauth_token.plaintext_token,
-                'x-gitlab-unidirectional-streaming' => 'enabled'
+                'x-gitlab-oauth-token' => gitlab_token,
+                'x-gitlab-unidirectional-streaming' => 'enabled',
+                'x-gitlab-enabled-mcp-server-tools' => mcp_config_service.gitlab_enabled_tools.join(',')
               ).merge(model_metadata_headers)
 
               grpc_headers['x-gitlab-project-id'] ||= params[:project_id].presence
@@ -318,7 +321,8 @@ module API
                 DuoWorkflow: {
                   Headers: grpc_headers,
                   ServiceURI: Gitlab::DuoWorkflow::Client.url_for(feature_setting: feature_setting, user: current_user),
-                  Secure: Gitlab::DuoWorkflow::Client.secure?
+                  Secure: Gitlab::DuoWorkflow::Client.secure?,
+                  McpServers: mcp_config_service.execute
                 }
               }
             end
