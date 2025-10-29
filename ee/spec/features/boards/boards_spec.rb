@@ -126,7 +126,8 @@ RSpec.describe 'Project issue boards', :js, feature_category: :portfolio_managem
       expect(list_weight_badge(to)).to have_content('1 2', exact: true)
     end
 
-    it 'maintains weight if null when moving to list' do
+    it 'maintains weight if null when moving to list',
+      quarantine: 'https://gitlab.com/gitlab-org/quality/test-failure-issues/-/issues/6600' do
       from = board.lists.first
       to = list
 
