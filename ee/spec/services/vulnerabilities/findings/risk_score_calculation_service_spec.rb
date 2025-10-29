@@ -95,39 +95,6 @@ RSpec.describe Vulnerabilities::Findings::RiskScoreCalculationService, feature_c
 
         service.execute
       end
-
-      context "with findings from different groups" do
-        let_it_be(:project_2) { create(:project) }
-        let_it_be(:vulnerability_list_2) { create_list(:vulnerability, 2, project: project_2) }
-
-        let_it_be(:findings_list_2) do
-          [
-            create(:vulnerabilities_finding, vulnerability: vulnerability_list_2[0], project: project_2),
-            create(:vulnerabilities_finding, vulnerability: vulnerability_list_2[1], project: project_2)
-          ]
-        end
-
-        let(:vulnerability_ids) { vulnerability_list.map(&:id) + vulnerability_list_2.map(&:id) }
-
-        before do
-          stub_feature_flags(vulnerability_finding_risk_score: project_2.namespace)
-        end
-
-        it "only updates scores for groups where vulnerability_finding_risk_score is enabled" do
-          risk_scores = findings_list_2.map do |finding|
-            {
-              finding_id: finding.id,
-              project_id: finding.project_id,
-              risk_score: Vulnerabilities::RiskScore.from_finding(finding).score
-            }
-          end
-
-          expect(Vulnerabilities::FindingRiskScore).to receive(:upsert_all)
-            .with(risk_scores, unique_by: :finding_id, update_only: [:risk_score])
-
-          service.execute
-        end
-      end
     end
   end
 end

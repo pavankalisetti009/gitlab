@@ -27,7 +27,7 @@ module Security
         def findings
           cve_by_finding, enrichments_by_cve = preload_cve_enrichments
 
-          eligible_finding_maps.map do |finding_map|
+          finding_maps.map do |finding_map|
             cve = cve_by_finding[finding_map.finding_id]
             enrichment = enrichments_by_cve[cve]
             {
@@ -40,21 +40,8 @@ module Security
           end
         end
 
-        def eligible_finding_maps
-          @eligible_finding_maps ||= begin
-            finding_map_namespaces = Namespace.id_in(finding_maps.map(&:project).map(&:namespace_id))
-            enabled_namespace_ids = finding_map_namespaces.filter_map do |namespace|
-              namespace.id if ::Feature.enabled?(:vulnerability_finding_risk_score, namespace)
-            end
-
-            finding_maps.select do |finding_map|
-              enabled_namespace_ids.include?(finding_map.project.namespace_id)
-            end
-          end
-        end
-
         def preload_cve_enrichments
-          cve_by_finding = extract_cve_values(eligible_finding_maps)
+          cve_by_finding = extract_cve_values(finding_maps)
           enrichments_by_cve = extract_cve_enrichments(cve_by_finding.values)
 
           [cve_by_finding, enrichments_by_cve]

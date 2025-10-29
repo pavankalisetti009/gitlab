@@ -17,9 +17,8 @@ module Vulnerabilities
 
       def execute
         findings = Vulnerabilities::Finding.with_cve_enrichments.by_vulnerability(vulnerability_ids)
-        findings_to_update = filter_findings_by_feature_flag(findings)
 
-        findings_to_update.each_slice(BATCH_SIZE) do |findings_batch|
+        findings.each_slice(BATCH_SIZE) do |findings_batch|
           risk_scores = findings_batch.map do |finding|
             {
               finding_id: finding.id,
@@ -36,30 +35,12 @@ module Vulnerabilities
             update_only: [:risk_score]
           )
 
-          log_updates(findings_to_update.map(&:vulnerability_id))
+          log_updates(findings_batch.map(&:vulnerability_id))
         end
         sync_elasticsearch
       end
 
       private
-
-      def filter_findings_by_feature_flag(findings)
-        associations = [project: [:namespace]]
-        ActiveRecord::Associations::Preloader.new(
-          records: findings,
-          associations: associations
-        ).call
-
-        findings_by_namespace = findings.group_by { |finding| finding.project.namespace_id }
-
-        valid_findings = []
-        findings_by_namespace.each_value do |findings|
-          namespace = findings.first&.project&.namespace
-          valid_findings += findings if ::Feature.enabled?(:vulnerability_finding_risk_score, namespace)
-        end
-
-        valid_findings
-      end
 
       def timestamp
         @timestamp ||= Time.current
