@@ -126,7 +126,7 @@ module EE
             end
           end
 
-          after_transition any => [:success, :failed] do |pipeline|
+          after_transition any => [:success, :failed, :canceled] do |pipeline|
             pipeline.run_after_commit do
               Security::PipelineAnalyzersStatusUpdateWorker.perform_async(pipeline.id) if pipeline.default_branch?
             end
