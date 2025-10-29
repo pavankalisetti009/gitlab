@@ -41,6 +41,7 @@ RSpec.describe ::CloudConnector, feature_category: :system_access do
         'x-gitlab-host-name' => Gitlab.config.gitlab.host,
         'x-gitlab-instance-id' => an_instance_of(String),
         'x-gitlab-realm' => ::CloudConnector::GITLAB_REALM_SELF_MANAGED,
+        'x-gitlab-deployment-type' => ::CloudConnector::GITLAB_REALM_SELF_MANAGED,
         'x-gitlab-version' => Gitlab.version_info.to_s
       }
     end

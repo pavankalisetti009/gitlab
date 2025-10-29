@@ -18,6 +18,7 @@ RSpec.describe API::Internal::Ai::XRay::Scan, feature_category: :code_suggestion
   let(:hostname) { "localhost" }
   let(:headers) { {} }
   let(:namespace_workhorse_headers) { {} }
+  let(:gitlab_deployment_type) { gitlab_realm }
 
   before do
     allow(Gitlab::GlobalAnonymousId).to receive(:user_id).and_return(global_user_id)
@@ -47,6 +48,7 @@ RSpec.describe API::Internal::Ai::XRay::Scan, feature_category: :code_suggestion
         "x-gitlab-instance-id" => [instance_uuid],
         "X-Gitlab-Is-Team-Member" => [gitlab_team_member.to_s],
         "x-gitlab-realm" => [gitlab_realm],
+        "x-gitlab-deployment-type" => [gitlab_deployment_type],
         "x-gitlab-global-user-id" => [global_user_id],
         "x-gitlab-user-id" => [user.id.to_s],
         "x-gitlab-version" => [Gitlab.version_info.to_s],
@@ -171,6 +173,7 @@ RSpec.describe API::Internal::Ai::XRay::Scan, feature_category: :code_suggestion
 
     context 'when on Gitlab.com instance', :saas do
       let(:gitlab_realm) { "saas" }
+      let(:gitlab_deployment_type) { ".com" }
       let(:enabled_by_namespace_ids) { [namespace.id] }
       let(:enablement_type) { 'duo_pro' }
       let(:namespace_workhorse_headers) do
@@ -390,6 +393,7 @@ RSpec.describe API::Internal::Ai::XRay::Scan, feature_category: :code_suggestion
 
     context 'when on Gitlab.com instance', :saas do
       let(:gitlab_realm) { "saas" }
+      let(:gitlab_deployment_type) { ".com" }
 
       before_all do
         create(

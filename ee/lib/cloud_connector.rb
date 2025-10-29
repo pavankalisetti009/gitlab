@@ -23,6 +23,7 @@ module CloudConnector
       'x-gitlab-host-name' => Gitlab.config.gitlab.host,
       'x-gitlab-instance-id' => Gitlab::GlobalAnonymousId.instance_id,
       'x-gitlab-realm' => ::CloudConnector.gitlab_realm,
+      'x-gitlab-deployment-type' => ::CloudConnector.deployment_type,
       'x-gitlab-version' => Gitlab.version_info.to_s
     }.tap do |result|
       result['x-gitlab-global-user-id'] = Gitlab::GlobalAnonymousId.user_id(user) if user

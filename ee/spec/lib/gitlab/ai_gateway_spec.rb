@@ -222,6 +222,7 @@ RSpec.describe Gitlab::AiGateway, feature_category: :system_access do
         'x-gitlab-global-user-id' => '123ABC',
         'x-gitlab-user-id' => '123',
         'x-gitlab-realm' => 'self-managed',
+        'x-gitlab-deployment-type' => 'self-managed',
         'x-gitlab-bersion' => '17.1.0',
         'x-gitlab-feature-enabled-by-namespace-ids' => namespace_ids.join(',')
       }

@@ -2,6 +2,7 @@
 
 require 'spec_helper'
 
+# rubocop:disable RSpec/MultipleMemoizedHelpers -- this class uses detailed tests
 RSpec.describe API::CodeSuggestions, feature_category: :code_suggestions do
   include WorkhorseHelpers
   include GitlabSubscriptions::SaasSetAssignmentHelpers
@@ -28,6 +29,7 @@ RSpec.describe API::CodeSuggestions, feature_category: :code_suggestions do
   let(:global_instance_id) { 'instance-ABC' }
   let(:global_user_id) { 'user-ABC' }
   let(:gitlab_realm) { 'saas' }
+  let(:gitlab_deployment_type) { '.com' }
   let(:unit_primitive_name) { :complete_code }
   let(:expected_prompt_version) { "2.0.0" }
   let(:unit_primitive) do
@@ -324,6 +326,7 @@ RSpec.describe API::CodeSuggestions, feature_category: :code_suggestions do
             'x-gitlab-user-id' => [current_user.id.to_s],
             'x-gitlab-host-name' => [Gitlab.config.gitlab.host],
             'x-gitlab-realm' => [gitlab_realm],
+            'x-gitlab-deployment-type' => [gitlab_deployment_type],
             'Authorization' => ["Bearer #{token}"],
             'x-gitlab-feature-enabled-by-namespace-ids' => [""],
             'Content-Type' => ['application/json'],
@@ -402,6 +405,7 @@ RSpec.describe API::CodeSuggestions, feature_category: :code_suggestions do
               'x-gitlab-user-id' => [current_user.id.to_s],
               'x-gitlab-host-name' => [Gitlab.config.gitlab.host],
               'x-gitlab-realm' => [gitlab_realm],
+              'x-gitlab-deployment-type' => [gitlab_deployment_type],
               'Authorization' => ["Bearer #{token}"],
               'x-gitlab-feature-enabled-by-namespace-ids' => [""],
               'Content-Type' => ['application/json'],
@@ -454,6 +458,7 @@ RSpec.describe API::CodeSuggestions, feature_category: :code_suggestions do
               'x-gitlab-user-id' => [current_user.id.to_s],
               'x-gitlab-host-name' => [Gitlab.config.gitlab.host],
               'x-gitlab-realm' => [gitlab_realm],
+              'x-gitlab-deployment-type' => [gitlab_deployment_type],
               'X-Gitlab-Language-Server-Version' => ['4.21.0'],
               'User-Agent' => ['Super Cool Browser 14.5.2'],
               "x-gitlab-enabled-feature-flags" => gitlab_enabled_feature_flgs
@@ -1026,6 +1031,7 @@ RSpec.describe API::CodeSuggestions, feature_category: :code_suggestions do
     context 'when the instance is Gitlab self-managed' do
       let(:is_saas) { false }
       let(:gitlab_realm) { 'self-managed' }
+      let(:gitlab_deployment_type) { 'self-managed' }
 
       let_it_be(:token) { 'stored-token' }
       let_it_be(:service_access_token) { create(:service_access_token, :active, token: token) }
@@ -1289,6 +1295,7 @@ RSpec.describe API::CodeSuggestions, feature_category: :code_suggestions do
           'x-gitlab-instance-id' => global_instance_id,
           'x-gitlab-host-name' => Gitlab.config.gitlab.host,
           'x-gitlab-realm' => gitlab_realm,
+          'x-gitlab-deployment-type' => gitlab_deployment_type,
           'x-gitlab-version' => Gitlab.version_info.to_s,
           'X-Gitlab-Authentication-Type' => 'oidc',
           'x-gitlab-feature-enabled-by-namespace-ids' => enabled_by_namespace_ids.join(','),
@@ -1454,6 +1461,7 @@ RSpec.describe API::CodeSuggestions, feature_category: :code_suggestions do
         let(:is_saas) { false }
         let(:expected_expiration) { active_token.expires_at.to_i }
         let(:gitlab_realm) { 'self-managed' }
+        let(:gitlab_deployment_type) { 'self-managed' }
 
         it_behaves_like 'user request with code suggestions allowed'
       end
@@ -1620,6 +1628,7 @@ RSpec.describe API::CodeSuggestions, feature_category: :code_suggestions do
       context 'when not SaaS' do
         let(:is_saas) { false }
         let(:gitlab_realm) { 'self-managed' }
+        let(:gitlab_deployment_type) { 'self-managed' }
 
         it_behaves_like 'user request with code suggestions allowed'
       end
@@ -1642,3 +1651,4 @@ RSpec.describe API::CodeSuggestions, feature_category: :code_suggestions do
     end
   end
 end
+# rubocop:enable RSpec/MultipleMemoizedHelpers
