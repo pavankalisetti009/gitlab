@@ -70,6 +70,7 @@ export default {
       size="small"
       variant="confirm"
       data-testid="upgrade-options-btn"
+      referrerpolicy="no-referrer-when-downgrade"
       @click.stop="handleUpgrade"
     >
       {{ s__('TrialWidget|Upgrade') }}

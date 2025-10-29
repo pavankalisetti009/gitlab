@@ -41,6 +41,7 @@ module EE
     def link_to_button_style(path:, track_property:)
       link_button_to(
         _('Renew subscription'), path, class: 'gl-mr-3 gl-mb-2', variant: :confirm,
+        referrerpolicy: 'no-referrer-when-downgrade',
         data: { track_event: 'click_text', track_label: 'subscribable_action', track_property: track_property }
       )
     end

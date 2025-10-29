@@ -50,7 +50,8 @@ export default {
       data-track-label="plan_cta"
       data-track-property="ultimate"
       :href="upgradeToUltimateUrl"
-      >{{ ctaLabel }}</gl-button
-    >
+      referrerpolicy="no-referrer-when-downgrade"
+      >{{ ctaLabel }}
+    </gl-button>
   </div>
 </template>

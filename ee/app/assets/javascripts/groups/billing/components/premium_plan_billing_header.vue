@@ -45,7 +45,8 @@ export default {
       data-track-label="plan_cta"
       data-track-property="premium"
       :href="upgradeToPremiumUrl"
-      >{{ ctaLabel }}</gl-button
-    >
+      referrerpolicy="no-referrer-when-downgrade"
+      >{{ ctaLabel }}
+    </gl-button>
   </div>
 </template>

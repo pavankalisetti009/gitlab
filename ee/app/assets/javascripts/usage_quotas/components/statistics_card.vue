@@ -127,6 +127,7 @@ export default {
           <gl-button
             v-if="purchaseButtonLink && purchaseButtonText"
             :href="purchaseButtonLink"
+            referrerpolicy="no-referrer-when-downgrade"
             category="primary"
             variant="confirm"
           >
