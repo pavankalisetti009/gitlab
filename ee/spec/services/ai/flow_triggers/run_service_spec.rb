@@ -53,6 +53,13 @@ RSpec.describe Ai::FlowTriggers::RunService, feature_category: :duo_agent_platfo
     )
   end
 
+  def expected_gitlab_hostname
+    host = Gitlab.config.gitlab.host
+    port = Gitlab.config.gitlab.port
+
+    [80, 443].include?(port) ? host : "#{host}:#{port}"
+  end
+
   before do
     # Enable necessary feature flags and settings
     stub_feature_flags(duo_workflow: true, duo_workflow_in_ci: true)
@@ -230,6 +237,8 @@ RSpec.describe Ai::FlowTriggers::RunService, feature_category: :duo_agent_platfo
           expect(variables[:AI_FLOW_INPUT]).to eq('test input')
           expect(variables[:AI_FLOW_EVENT]).to eq('mention')
           expect(variables[:AI_FLOW_DISCUSSION_ID]).to eq(existing_note.discussion_id)
+          expect(variables[:AI_FLOW_PROJECT_PATH]).to eq(project.full_path)
+          expect(variables[:AI_FLOW_GITLAB_HOSTNAME]).to eq(expected_gitlab_hostname)
 
           expect(variables[:AI_FLOW_AI_GATEWAY_TOKEN]).to eq('test-token-123')
           expect(variables[:AI_FLOW_AI_GATEWAY_HEADERS]).to eq(
@@ -378,6 +387,8 @@ RSpec.describe Ai::FlowTriggers::RunService, feature_category: :duo_agent_platfo
           expect(variables[:AI_FLOW_INPUT]).to eq('test input')
           expect(variables[:AI_FLOW_EVENT]).to eq('mention')
           expect(variables[:AI_FLOW_DISCUSSION_ID]).to eq(existing_note.discussion_id)
+          expect(variables[:AI_FLOW_PROJECT_PATH]).to eq(project.full_path)
+          expect(variables[:AI_FLOW_GITLAB_HOSTNAME]).to eq(expected_gitlab_hostname)
 
           # These should not be present
           expect(variables).not_to have_key(:AI_FLOW_AI_GATEWAY_TOKEN)
@@ -421,6 +432,8 @@ RSpec.describe Ai::FlowTriggers::RunService, feature_category: :duo_agent_platfo
           expect(variables[:AI_FLOW_INPUT]).to eq('test input')
           expect(variables[:AI_FLOW_EVENT]).to eq('mention')
           expect(variables[:AI_FLOW_DISCUSSION_ID]).to eq(existing_note.discussion_id)
+          expect(variables[:AI_FLOW_PROJECT_PATH]).to eq(project.full_path)
+          expect(variables[:AI_FLOW_GITLAB_HOSTNAME]).to eq(expected_gitlab_hostname)
 
           # These should not be present
           expect(variables).not_to have_key(:AI_FLOW_AI_GATEWAY_TOKEN)
@@ -453,6 +466,8 @@ RSpec.describe Ai::FlowTriggers::RunService, feature_category: :duo_agent_platfo
             expect(variables[:AI_FLOW_INPUT]).to eq('test input')
             expect(variables[:AI_FLOW_EVENT]).to eq('mention')
             expect(variables[:AI_FLOW_DISCUSSION_ID]).to eq(existing_note.discussion_id)
+            expect(variables[:AI_FLOW_PROJECT_PATH]).to eq(project.full_path)
+            expect(variables[:AI_FLOW_GITLAB_HOSTNAME]).to eq(expected_gitlab_hostname)
             expect(variables[:AI_FLOW_GITLAB_TOKEN]).to be_nil
 
             original_method.call(**kwargs)
@@ -486,6 +501,8 @@ RSpec.describe Ai::FlowTriggers::RunService, feature_category: :duo_agent_platfo
               expect(variables[:AI_FLOW_INPUT]).to eq('test input')
               expect(variables[:AI_FLOW_EVENT]).to eq('mention')
               expect(variables[:AI_FLOW_DISCUSSION_ID]).to eq(existing_note.discussion_id)
+              expect(variables[:AI_FLOW_PROJECT_PATH]).to eq(project.full_path)
+              expect(variables[:AI_FLOW_GITLAB_HOSTNAME]).to eq(Gitlab.config.gitlab.host)
               expect(variables[:AI_FLOW_GITLAB_TOKEN]).to be_nil
 
               original_method.call(**kwargs)
@@ -509,6 +526,8 @@ RSpec.describe Ai::FlowTriggers::RunService, feature_category: :duo_agent_platfo
             expect(variables[:AI_FLOW_INPUT]).to eq('test input')
             expect(variables[:AI_FLOW_EVENT]).to eq('mention')
             expect(variables[:AI_FLOW_DISCUSSION_ID]).to eq(existing_note.discussion_id)
+            expect(variables[:AI_FLOW_PROJECT_PATH]).to eq(project.full_path)
+            expect(variables[:AI_FLOW_GITLAB_HOSTNAME]).to eq(expected_gitlab_hostname)
             expect(variables[:AI_FLOW_GITLAB_TOKEN]).to be_present
 
             original_method.call(**kwargs)
@@ -813,6 +832,42 @@ RSpec.describe Ai::FlowTriggers::RunService, feature_category: :duo_agent_platfo
           response = service.execute(params)
           expect(response).to be_success
         end
+      end
+    end
+
+    context 'when GitLab is running on a non-default port' do
+      before do
+        allow(Gitlab.config.gitlab).to receive_messages(host: 'gitlab.example.com', port: 8080)
+      end
+
+      it 'includes port in AI_FLOW_GITLAB_HOSTNAME' do
+        expect(::Ci::Workloads::RunWorkloadService).to receive(:new).and_wrap_original do |original_method, kwargs|
+          variables = kwargs[:workload_definition].variables
+          expect(variables[:AI_FLOW_GITLAB_HOSTNAME]).to eq('gitlab.example.com:8080')
+
+          original_method.call(**kwargs)
+        end
+
+        response = service.execute(params)
+        expect(response).to be_success
+      end
+    end
+
+    context 'when GitLab is running on default HTTPS port' do
+      before do
+        allow(Gitlab.config.gitlab).to receive_messages(host: 'gitlab.example.com', port: 443)
+      end
+
+      it 'does not include port in AI_FLOW_GITLAB_HOSTNAME' do
+        expect(::Ci::Workloads::RunWorkloadService).to receive(:new).and_wrap_original do |original_method, kwargs|
+          variables = kwargs[:workload_definition].variables
+          expect(variables[:AI_FLOW_GITLAB_HOSTNAME]).to eq('gitlab.example.com')
+
+          original_method.call(**kwargs)
+        end
+
+        response = service.execute(params)
+        expect(response).to be_success
       end
     end
 
