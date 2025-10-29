@@ -155,6 +155,23 @@ FactoryBot.define do
       end
     end
 
+    trait :with_finding_risk_score do
+      after(:build) do |vulnerability|
+        finding = create(
+          :vulnerabilities_finding,
+          :identifier,
+          :with_finding_risk_score,
+          severity: vulnerability.severity,
+          description: vulnerability.description,
+          vulnerability: vulnerability,
+          report_type: vulnerability.report_type,
+          project: vulnerability.project
+        )
+
+        vulnerability.findings = [finding]
+      end
+    end
+
     trait :with_cluster_image_scanning_finding do
       transient do
         agent_id { '46357' }
