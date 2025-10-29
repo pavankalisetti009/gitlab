@@ -108,6 +108,8 @@ module Search
         }
       }.freeze
 
+      FILTER_ADMIN_UI = ->(settings) { settings.reject { |_, config| config[:admin_ui] == false } }
+
       def self.all_settings
         SETTINGS
       end
@@ -116,9 +118,17 @@ module Search
         SETTINGS.select { |_, config| config[:type] == :boolean }
       end
 
+      def self.boolean_settings_ui
+        FILTER_ADMIN_UI.call(boolean_settings)
+      end
+
       def self.input_settings
         type_values = %i[float integer text]
         SETTINGS.select { |_, config| type_values.include?(config[:type]) }
+      end
+
+      def self.input_settings_ui
+        FILTER_ADMIN_UI.call(input_settings)
       end
 
       def self.parse_duration(setting_value, default_value, allow_disabled: true)
