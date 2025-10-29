@@ -272,6 +272,7 @@ RSpec.describe Security::AnalyzersStatus::UpdateService, feature_category: :secu
 
         it 'prioritize failed jobs' do
           expect { execute }.to change { Security::AnalyzerProjectStatus.count }.from(0).to(2)
+
           expect(Security::AnalyzerProjectStatus.find_by(project: project, analyzer_type: :sast).status)
             .to eq('failed')
           expect(Security::AnalyzerProjectStatus.find_by(project: project, analyzer_type: :sast_advanced).status)
@@ -291,6 +292,112 @@ RSpec.describe Security::AnalyzersStatus::UpdateService, feature_category: :secu
         end
 
         include_examples 'calls namespace related services'
+      end
+
+      context 'when multiple retries occur' do
+        let!(:original_sast_build) { create(:ci_build, :sast, :failed, pipeline: pipeline, retried: true) }
+        let!(:first_retry_build) { create(:ci_build, :sast, :failed, pipeline: pipeline, retried: true) }
+        let!(:second_retry_build) { create(:ci_build, :sast, :success, pipeline: pipeline, retried: false) }
+
+        it 'uses only the latest (non-retried) job status' do
+          execute
+
+          expect(Security::AnalyzerProjectStatus.find_by(project: project, analyzer_type: :sast))
+            .to have_attributes(status: 'success', build_id: second_retry_build.id)
+        end
+
+        it 'calls InventoryFilters service with successful status' do
+          expect(inventory_filters_update_service).to receive(:execute).once.with(
+            [project],
+            array_including(
+              hash_including(analyzer_type: :sast, status: :success)
+            )
+          )
+
+          execute
+        end
+
+        include_examples 'calls namespace related services'
+      end
+
+      context 'with distinct secret detection jobs' do
+        context 'when both YAML and policy-based jobs exist independently' do
+          let!(:yaml_secret_detection_build) do
+            create(:ci_build, :secret_detection, :success, pipeline: pipeline, name: 'secret_detection')
+          end
+
+          let!(:policy_secret_detection_build) do
+            create(:ci_build, :secret_detection, :failed, pipeline: pipeline, name: 'secret_detection_0')
+          end
+
+          it 'processes both jobs and prioritizes failed status' do
+            execute
+
+            expect(Security::AnalyzerProjectStatus.find_by(project: project,
+              analyzer_type: :secret_detection_pipeline_based))
+              .to have_attributes(status: 'failed')
+            expect(Security::AnalyzerProjectStatus.find_by(project: project, analyzer_type: :secret_detection))
+              .to have_attributes(status: 'failed')
+          end
+
+          it 'calls InventoryFilters service with failed status' do
+            expect(inventory_filters_update_service).to receive(:execute).once.with(
+              [project],
+              array_including(
+                hash_including(analyzer_type: :secret_detection_pipeline_based, status: :failed),
+                hash_including(analyzer_type: :secret_detection, status: :failed)
+              )
+            )
+
+            execute
+          end
+
+          include_examples 'calls namespace related services'
+        end
+
+        context 'when distinct jobs have independent retries' do
+          let!(:original_yaml_build) do
+            create(:ci_build, :secret_detection, :failed, pipeline: pipeline, name: 'secret_detection', retried: true)
+          end
+
+          let!(:retried_yaml_build) do
+            create(:ci_build, :secret_detection, :success, pipeline: pipeline, name: 'secret_detection', retried: false)
+          end
+
+          let!(:original_policy_build) do
+            create(:ci_build, :secret_detection, :success, pipeline: pipeline, name: 'secret_detection_0',
+              retried: true)
+          end
+
+          let!(:retried_policy_build) do
+            create(:ci_build, :secret_detection, :failed, pipeline: pipeline, name: 'secret_detection_0',
+              retried: false)
+          end
+
+          it 'uses latest status from each distinct job and prioritizes failed' do
+            execute
+
+            expect(Security::AnalyzerProjectStatus.find_by(project: project,
+              analyzer_type: :secret_detection_pipeline_based))
+              .to have_attributes(status: 'failed')
+            expect(Security::AnalyzerProjectStatus.find_by(project: project, analyzer_type: :secret_detection))
+              .to have_attributes(status: 'failed')
+          end
+
+          it 'calls InventoryFilters service with aggregated failed status' do
+            expect(inventory_filters_update_service).to receive(:execute).once.with(
+              [project],
+              array_including(
+                hash_including(analyzer_type: :secret_detection_pipeline_based, status: :failed),
+                hash_including(analyzer_type: :secret_detection, status: :failed)
+              )
+            )
+
+            execute
+          end
+
+          include_examples 'calls namespace related services'
+        end
       end
 
       context 'with a build that has multiple security report types' do

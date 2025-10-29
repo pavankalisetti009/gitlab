@@ -43,6 +43,7 @@ module Security
         @pipeline_builds ||= ::Security::SecurityJobsFinder.new(pipeline: pipeline)
           .execute
           .with_statuses(Ci::HasStatus::COMPLETED_STATUSES)
+          .latest
           .to_a
       end
 

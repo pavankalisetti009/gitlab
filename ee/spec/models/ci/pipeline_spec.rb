@@ -650,6 +650,12 @@ RSpec.describe Ci::Pipeline, feature_category: :continuous_integration do
 
           it_behaves_like 'schedules security status update worker'
         end
+
+        context 'on pipeline cancelled' do
+          subject(:transition_pipeline) { pipeline.cancel }
+
+          it_behaves_like 'schedules security status update worker'
+        end
       end
 
       context 'on non-default branch' do
@@ -668,6 +674,16 @@ RSpec.describe Ci::Pipeline, feature_category: :continuous_integration do
 
         context 'on pipeline failed' do
           subject(:transition_pipeline) { pipeline.drop }
+
+          it 'does not schedule security status update worker' do
+            expect(Security::PipelineAnalyzersStatusUpdateWorker).not_to receive(:perform_async).with(pipeline.id)
+
+            transition_pipeline
+          end
+        end
+
+        context 'on pipeline cancelled' do
+          subject(:transition_pipeline) { pipeline.cancel }
 
           it 'does not schedule security status update worker' do
             expect(Security::PipelineAnalyzersStatusUpdateWorker).not_to receive(:perform_async).with(pipeline.id)
