@@ -6,7 +6,8 @@ module IdentityVerificationHelpers
   include ListboxHelpers
 
   def stub_arkose_token_verification(
-    risk: :low, token_verification_response: :success, challenge_shown: false, service_down: false
+    risk: :low, token_verification_response: :success, challenge_shown: false, service_down: false,
+    arkose_enabled: true
   )
     response_body = case token_verification_response
                     when :error
@@ -20,7 +21,7 @@ module IdentityVerificationHelpers
                       }
                     end
 
-    allow(::AntiAbuse::IdentityVerification::Settings).to receive(:arkose_enabled?).and_return(true)
+    allow(::AntiAbuse::IdentityVerification::Settings).to receive(:arkose_enabled?).and_return(arkose_enabled)
 
     stub_request(:post, 'https://verify-api.arkoselabs.com/api/v4/verify/')
     .to_return(

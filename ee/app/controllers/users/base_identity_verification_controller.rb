@@ -166,6 +166,8 @@ module Users
     end
 
     def arkose_challenge_required?(method:)
+      return false unless arkose_labs_enabled?(user: @user)
+
       # Require the user to solve Arkose challenge before allowing phone number
       # or credit card verification (happens after email verification).
       # Whichever comes first.

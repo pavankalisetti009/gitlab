@@ -189,6 +189,24 @@ RSpec.shared_examples 'it verifies arkose token' do |method|
       expect(response).to have_gitlab_http_status(:ok)
     end
   end
+
+  context 'when Arkose is disabled' do
+    it 'does not send a token verification request and returns a 200', :aggregate_failures do
+      # Stub ::AntiAbuse::IdentityVerification::Settings.arkose_enabled? to
+      # return false (`arkose_enabled` param) and Arkose token verification
+      # request to fail if sent.
+      stub_arkose_token_verification(arkose_enabled: false, token_verification_response: :failed)
+
+      do_request
+
+      expect(WebMock).not_to have_requested(:post, 'https://verify-api.arkoselabs.com/api/v4/verify/')
+
+      # Since Arkose is disabled, `method` (i.e. phone or credit card) will no
+      # longer require the user to solve an Arkose challenge and will proceed
+      # with the request without token verification.
+      expect(response).to have_gitlab_http_status(:ok)
+    end
+  end
 end
 
 # GET verification_state
