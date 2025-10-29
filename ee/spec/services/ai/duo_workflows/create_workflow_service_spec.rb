@@ -41,7 +41,8 @@ RSpec.describe ::Ai::DuoWorkflows::CreateWorkflowService, feature_category: :duo
                               )
     end
 
-    context 'when namespace-level workflow' do
+    context 'when namespace-level workflow',
+      skip: 'Not yet supported. See https://gitlab.com/gitlab-org/gitlab/-/issues/554952' do
       let(:container) { group }
 
       it 'creates a new workflow' do

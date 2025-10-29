@@ -34,7 +34,7 @@ export const initDuoAgentsPlatformPage = ({ namespaceDatasetProperties = [], nam
     el,
     provide: {
       exploreAiCatalogPath,
-      flowTriggersEventTypeOptions: JSON.parse(flowTriggersEventTypeOptions),
+      flowTriggersEventTypeOptions: JSON.parse(flowTriggersEventTypeOptions || '[]'),
       ...namespaceProvideData,
     },
   });

@@ -36,7 +36,7 @@ RSpec.describe Sidebars::Projects::SuperSidebarPanel, feature_category: :navigat
     )
   end
 
-  subject { described_class.new(context) }
+  subject(:panel) { described_class.new(context) }
 
   # We want to enable _all_ possible menu items for these specs
   before do
@@ -54,6 +54,23 @@ RSpec.describe Sidebars::Projects::SuperSidebarPanel, feature_category: :navigat
     project.update!(service_desk_enabled: true)
     stub_feature_flags(hide_incident_management_features: false)
     stub_feature_flags(hide_error_tracking_features: false)
+    # Needed for Duo Agent Platform menu items
+    allow(project).to receive(:duo_features_enabled).and_return(true)
+  end
+
+  describe '#renderable_menus' do
+    it 'includes DuoAgentsMenu in EE' do
+      menus = panel.instance_variable_get(:@menus).map(&:class)
+      expect(menus).to include(Sidebars::Projects::SuperSidebarMenus::DuoAgentsMenu)
+    end
+
+    it 'positions DuoAgentsMenu after PlanMenu' do
+      menus = panel.instance_variable_get(:@menus).map(&:class)
+      plan_index = menus.index(Sidebars::Projects::SuperSidebarMenus::PlanMenu)
+      duo_agents_index = menus.index(Sidebars::Projects::SuperSidebarMenus::DuoAgentsMenu)
+
+      expect(plan_index).to be < duo_agents_index
+    end
   end
 
   it_behaves_like 'a panel with uniquely identifiable menu items'
