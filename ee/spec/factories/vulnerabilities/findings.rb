@@ -804,6 +804,12 @@ FactoryBot.define do
       end
     end
 
+    trait :with_finding_risk_score do
+      after(:create) do |finding|
+        create(:vulnerability_finding_risk_score, finding: finding)
+      end
+    end
+
     ::Enums::Vulnerability.report_types.keys.each do |security_report_type|
       trait security_report_type do
         report_type { security_report_type }
