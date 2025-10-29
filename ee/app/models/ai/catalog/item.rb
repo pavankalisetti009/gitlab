@@ -10,7 +10,7 @@ module Ai
       # This is to be a temporary method that can be replaced by an improved
       # feature such as:
       # https://gitlab.com/groups/gitlab-org/-/epics/19577
-      GITLAB_ITEM_IDS = [104, 105, 107, 348, 356].freeze
+      GITLAB_ITEM_IDS = [104, 105, 348, 356].freeze
 
       self.table_name = "ai_catalog_items"
 
