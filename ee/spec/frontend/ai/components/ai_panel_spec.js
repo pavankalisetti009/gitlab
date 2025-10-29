@@ -1,6 +1,7 @@
 import { GlBreakpointInstance } from '@gitlab/ui/src/utils';
 import { nextTick } from 'vue';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
+import { stubComponent } from 'helpers/stub_component';
 import AIPanel from 'ee/ai/components/ai_panel.vue';
 import AiContentContainer from 'ee/ai/components/content_container.vue';
 import NavigationRail from 'ee/ai/components/navigation_rail.vue';
@@ -17,6 +18,8 @@ const aiPanelStateCookie = 'ai_panel_active_tab';
 describe('AiPanel', () => {
   let wrapper;
   let mockRouter;
+
+  const getContentComponentMock = jest.fn();
 
   const createComponent = ({
     routeName = 'some_route',
@@ -65,7 +68,11 @@ describe('AiPanel', () => {
         },
       },
       stubs: {
-        AiContentContainer,
+        AiContentContainer: stubComponent(AiContentContainer, {
+          methods: {
+            getContentComponent: getContentComponentMock,
+          },
+        }),
         NavigationRail,
         DuoAgenticChat,
       },
@@ -144,8 +151,13 @@ describe('AiPanel', () => {
   describe('panels', () => {
     it('chat', async () => {
       createComponent();
+
+      expect(getContentComponentMock).not.toHaveBeenCalled();
+
       findNavigationRail().vm.$emit('handleTabToggle', 'chat');
       await nextTick();
+
+      expect(getContentComponentMock).toHaveBeenCalled();
       expect(findContentContainer().props('activeTab')).toEqual({
         title: 'GitLab Duo Agentic Chat',
         component: DuoAgenticChat,
@@ -163,6 +175,8 @@ describe('AiPanel', () => {
       createComponent();
       findNavigationRail().vm.$emit('handleTabToggle', 'suggestions');
       await nextTick();
+
+      expect(getContentComponentMock).not.toHaveBeenCalled();
       expect(findContentContainer().props('activeTab')).toEqual({
         title: 'Suggestions',
         component: 'Suggestions content placeholder',
@@ -175,6 +189,8 @@ describe('AiPanel', () => {
         createComponent();
         findNavigationRail().vm.$emit('handleTabToggle', 'sessions');
         await nextTick();
+
+        expect(getContentComponentMock).not.toHaveBeenCalled();
         expect(findContentContainer().props('activeTab')).toEqual({
           title: 'Sessions',
           component: AgentSessionsRoot,
@@ -192,6 +208,7 @@ describe('AiPanel', () => {
           findNavigationRail().vm.$emit('handleTabToggle', 'sessions');
           await nextTick();
 
+          expect(getContentComponentMock).not.toHaveBeenCalled();
           expect(findContentContainer().props('activeTab').title).toBe('Agent session #123');
         });
       });
@@ -205,6 +222,7 @@ describe('AiPanel', () => {
           findNavigationRail().vm.$emit('handleTabToggle', 'sessions');
           await nextTick();
 
+          expect(getContentComponentMock).not.toHaveBeenCalled();
           expect(findContentContainer().props('activeTab').title).toBe('Sessions');
         });
       });
@@ -432,9 +450,13 @@ describe('AiPanel', () => {
 
     it('returns new chat tab with mode "new"', async () => {
       createComponent();
+
+      expect(getContentComponentMock).not.toHaveBeenCalled();
+
       findNavigationRail().vm.$emit('handleTabToggle', 'new');
       await nextTick();
 
+      expect(getContentComponentMock).toHaveBeenCalled();
       expect(findContentContainer().props('activeTab')).toEqual({
         title: 'New Chat',
         component: DuoAgenticChat,
@@ -488,6 +510,7 @@ describe('AiPanel', () => {
       it('renders classic chat component when in classic mode', async () => {
         duoChatGlobalState.chatMode = CHAT_MODES.CLASSIC;
         createComponent();
+
         findNavigationRail().vm.$emit('handleTabToggle', 'chat');
         await nextTick();
 

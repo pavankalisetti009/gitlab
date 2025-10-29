@@ -230,4 +230,22 @@ describe('AiContentContainer', () => {
       expect(newComponent.vm).not.toBe(initialComponent.vm);
     });
   });
+
+  describe('getContentComponent', () => {
+    const agenticTabMock = {
+      title: 'Agentic Chat',
+      component: DuoAgenticChat,
+      props: { mode: 'active' },
+    };
+
+    it('returns the `content-component` ref', () => {
+      createComponent({ activeTab: agenticTabMock });
+
+      expect(wrapper.vm.getContentComponent()).toEqual(
+        expect.objectContaining({
+          $el: expect.anything(),
+        }),
+      );
+    });
+  });
 });
