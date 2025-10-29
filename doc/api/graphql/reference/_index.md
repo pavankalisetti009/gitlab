@@ -10147,6 +10147,7 @@ Input type: `PipelineCancelInput`
 | ---- | ---- | ----------- |
 | <a id="mutationpipelinecancelclientmutationid"></a>`clientMutationId` | [`String`](#string) | A unique identifier for the client performing the mutation. |
 | <a id="mutationpipelinecancelerrors"></a>`errors` | [`[String!]!`](#string) | Errors encountered during the mutation. |
+| <a id="mutationpipelinecancelpipeline"></a>`pipeline` | [`Pipeline`](#pipeline) | Pipeline after mutation. |
 
 ### `Mutation.pipelineCreate`
 
