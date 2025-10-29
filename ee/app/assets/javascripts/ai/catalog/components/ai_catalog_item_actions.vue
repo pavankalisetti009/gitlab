@@ -10,13 +10,8 @@ import {
 import { s__ } from '~/locale';
 import { isLoggedIn } from '~/lib/utils/common_utils';
 import ConfirmActionModal from '~/vue_shared/components/confirm_action_modal.vue';
-import {
-  AI_CATALOG_TYPE_AGENT,
-  AI_CATALOG_TYPE_FLOW,
-  AI_CATALOG_TYPE_THIRD_PARTY_FLOW,
-} from '../constants';
+import { AI_CATALOG_TYPE_FLOW, AI_CATALOG_TYPE_THIRD_PARTY_FLOW } from '../constants';
 import AiCatalogItemConsumerModal from './ai_catalog_item_consumer_modal.vue';
-import AiCatalogTestRunModal from './ai_catalog_test_run_modal.vue';
 
 export default {
   name: 'AiCatalogItemActions',
@@ -28,7 +23,6 @@ export default {
     GlSprintf,
     ConfirmActionModal,
     AiCatalogItemConsumerModal,
-    AiCatalogTestRunModal,
   },
   directives: {
     GlModal: GlModalDirective,
@@ -76,9 +70,6 @@ export default {
     canUse() {
       return isLoggedIn();
     },
-    showRun() {
-      return this.canAdmin && this.item.itemType === AI_CATALOG_TYPE_AGENT;
-    },
     showAddToProject() {
       return this.canUse && this.isGlobal;
     },
@@ -111,15 +102,6 @@ export default {
       data-testid="edit-button"
     >
       {{ __('Edit') }}
-    </gl-button>
-    <gl-button
-      v-if="showRun"
-      v-gl-modal="'ai-catalog-test-run-modal'"
-      category="secondary"
-      icon="work-item-test-case"
-      data-testid="test-button"
-    >
-      {{ s__('AICatalog|Test') }}
     </gl-button>
     <gl-button
       v-if="showAddToProjectOrGroup"
@@ -189,7 +171,6 @@ export default {
         </template>
       </gl-sprintf>
     </confirm-action-modal>
-    <ai-catalog-test-run-modal v-if="showRun" :item="item" />
     <ai-catalog-item-consumer-modal
       v-if="canUse"
       :item="item"
