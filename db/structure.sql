@@ -41727,7 +41727,7 @@ CREATE UNIQUE INDEX index_project_deploy_tokens_on_project_id_and_deploy_token_i
 
 CREATE UNIQUE INDEX index_project_export_job_relation ON project_relation_exports USING btree (project_export_job_id, relation);
 
-CREATE UNIQUE INDEX index_project_export_jobs_on_jid ON project_export_jobs USING btree (jid);
+CREATE UNIQUE INDEX index_project_export_jobs_on_jid_and_project_id ON project_export_jobs USING btree (jid, project_id);
 
 CREATE INDEX index_project_export_jobs_on_project_id_and_jid ON project_export_jobs USING btree (project_id, jid);
 
