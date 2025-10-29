@@ -312,6 +312,8 @@ RSpec.describe Vulnerabilities::Archival::Restoration::RestoreForGroupService, f
 
     describe 'partition reading' do
       before do
+        skip_if_shared_database(:sec)
+
         delete_partitions_from(ApplicationRecord.connection)
         delete_partitions_from(Ci::ApplicationRecord.connection)
       end
