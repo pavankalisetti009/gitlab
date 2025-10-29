@@ -12,12 +12,14 @@ import { setUrlParams, visitUrl } from '~/lib/utils/url_utility';
 import { createAlert } from '~/alert';
 import { getModels } from 'ee/api/data_management_api';
 import { convertObjectPropsToCamelCase } from '~/lib/utils/common_utils';
+import DataManagementItem from 'ee/admin/data_management/components/data_management_item.vue';
 
 export default {
   name: 'AdminDataManagementApp',
   components: {
     GeoListTopBar,
     GeoList,
+    DataManagementItem,
   },
   props: {
     modelClass: {
@@ -96,11 +98,7 @@ export default {
       @listboxChange="handleListboxChange"
     />
     <geo-list :is-loading="isLoading" :has-items="hasItems" :empty-state="emptyState">
-      <ul>
-        <li v-for="modelItem in modelItems" :key="modelItem.recordIdentifier">
-          {{ modelItem.recordIdentifier }}
-        </li>
-      </ul>
+      <data-management-item v-for="item in modelItems" :key="item.recordIdentifier" :item="item" />
     </geo-list>
   </div>
 </template>
