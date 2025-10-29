@@ -365,6 +365,10 @@ class License < ApplicationRecord
     [License::STARTER_PLAN, License::PREMIUM_PLAN, License::ULTIMATE_PLAN].include?(plan)
   end
 
+  def active?
+    !expired?
+  end
+
   def started?
     starts_at <= Date.current
   end

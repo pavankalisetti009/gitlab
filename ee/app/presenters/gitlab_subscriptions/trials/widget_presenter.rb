@@ -16,7 +16,7 @@ module GitlabSubscriptions
 
       def presenter
         if authorized_self_managed?
-          SelfManaged::StatusWidgetPresenter.new # rubocop:disable CodeReuse/Presenter -- we use it in this coordinator class
+          SelfManaged::StatusWidgetPresenter.new(::License.current, user: user) # rubocop:disable CodeReuse/Presenter -- we use it in this coordinator class
         elsif authorized_gitlab_com?
           gitlab_com_presenter
         else
@@ -25,7 +25,10 @@ module GitlabSubscriptions
       end
 
       def authorized_self_managed?
-        !::Gitlab::Saas.feature_available?(:subscriptions_trials) && Ability.allowed?(user, :admin_all_resources)
+        return false if ::Gitlab::Saas.feature_available?(:subscriptions_trials)
+        return false if ::Gitlab::CurrentSettings.gitlab_dedicated_instance?
+
+        Ability.allowed?(user, :admin_all_resources)
       end
 
       def authorized_gitlab_com?

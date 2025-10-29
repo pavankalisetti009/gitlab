@@ -209,7 +209,7 @@ RSpec.describe ::SidebarsHelper, feature_category: :navigation do
         allow(helper).to receive(:show_buy_pipeline_minutes?).and_return(true)
       end
 
-      let(:project) { create(:project) } # rubocop:todo RSpec/FactoryBot/AvoidCreate -- required for premium_message_during_trial experiment
+      let(:project) { build(:project, namespace: build(:namespace, id: non_existing_record_id)) }
       let(:namespace) { project.namespace }
       let(:group) { nil }
 
@@ -233,7 +233,7 @@ RSpec.describe ::SidebarsHelper, feature_category: :navigation do
         allow(helper).to receive(:show_buy_pipeline_minutes?).and_return(true)
       end
 
-      let(:group) { create(:group) } # rubocop:todo RSpec/FactoryBot/AvoidCreate -- required for premium_message_during_trial experiment
+      let(:group) { build(:group, id: non_existing_record_id) }
       let(:namespace) { group }
       let(:project) { nil }
 
@@ -302,6 +302,29 @@ RSpec.describe ::SidebarsHelper, feature_category: :navigation do
           projects_path: '/dashboard/projects',
           groups_path: '/dashboard/groups'
         }))
+      end
+
+      context 'when subscriptions_trials feature is not available and user is admin' do
+        before do
+          allow(Ability).to receive(:allowed?).and_call_original
+          allow(Ability).to receive(:allowed?).with(user, :admin_all_resources).and_return(true)
+        end
+
+        context 'when eligible for Ultimate trial widget' do
+          before do
+            allow(License).to receive(:current).and_return(build(:license, :ultimate_trial))
+          end
+
+          it 'returns trial widget data' do
+            expect(super_sidebar_context).to include(:trial_widget_data_attrs)
+          end
+        end
+
+        context 'when not eligible for any widget' do
+          it 'does not return any trial widget data' do
+            expect(super_sidebar_context).not_to include(:trial_widget_data_attrs)
+          end
+        end
       end
     end
 

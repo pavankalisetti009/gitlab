@@ -4,6 +4,7 @@ import { snakeCase } from 'lodash';
 import { sprintf } from '~/locale';
 import Tracking, { InternalEvents } from '~/tracking';
 import UserGroupCalloutDismisser from '~/vue_shared/components/user_group_callout_dismisser.vue';
+import UserCalloutDismisser from '~/vue_shared/components/user_callout_dismisser.vue';
 import {
   TRIAL_WIDGET_REMAINING_DAYS,
   TRIAL_WIDGET_SEE_UPGRADE_OPTIONS,
@@ -11,7 +12,6 @@ import {
   TRIAL_WIDGET_CONTAINER_ID,
   TRIAL_WIDGET_UPGRADE_THRESHOLD_DAYS,
   TRIAL_WIDGET_CLICK_DISMISS,
-  HAND_RAISE_LEAD_ATTRIBUTES,
   TRIAL_TYPES_CONFIG,
 } from './constants';
 import TrialWidgetButtons from './trial_widget_buttons.vue';
@@ -23,6 +23,7 @@ export default {
     GlButton,
     TrialWidgetButtons,
     UserGroupCalloutDismisser,
+    UserCalloutDismisser,
   },
 
   mixins: [InternalEvents.mixin(), Tracking.mixin({ experiment: 'premium_message_during_trial' })],
@@ -41,8 +42,6 @@ export default {
     upgradeOptionsText: TRIAL_WIDGET_SEE_UPGRADE_OPTIONS,
     upgradeThresholdDays: TRIAL_WIDGET_UPGRADE_THRESHOLD_DAYS,
   },
-
-  handRaiseLeadAttributes: HAND_RAISE_LEAD_ATTRIBUTES,
 
   computed: {
     currentTrialType() {
@@ -63,10 +62,20 @@ export default {
       return this.daysRemaining > 0;
     },
     isDismissable() {
-      return this.groupId && this.featureId;
+      return this.featureId;
     },
     trackingLabel() {
       return snakeCase(this.currentTrialType.name.toLowerCase());
+    },
+    dismisserComponent() {
+      return this.groupId ? 'user-group-callout-dismisser' : 'user-callout-dismisser';
+    },
+    dismisserAttrs() {
+      return {
+        'feature-name': this.featureId,
+        'skip-query': true,
+        ...(this.groupId && { 'group-id': this.groupId }),
+      };
     },
   },
 
@@ -87,7 +96,7 @@ export default {
 </script>
 
 <template>
-  <user-group-callout-dismisser :feature-name="featureId" :group-id="groupId" skip-query>
+  <component :is="dismisserComponent" v-bind="dismisserAttrs">
     <template #default="{ dismiss, shouldShowCallout }">
       <div
         v-if="shouldShowCallout"
@@ -145,5 +154,5 @@ export default {
         />
       </div>
     </template>
-  </user-group-callout-dismisser>
+  </component>
 </template>
