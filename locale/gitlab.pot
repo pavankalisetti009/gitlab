@@ -73545,6 +73545,9 @@ msgstr ""
 msgid "Vulnerability|Detected"
 msgstr ""
 
+msgid "Vulnerability|Detected by a security policy"
+msgstr ""
+
 msgid "Vulnerability|Detection method"
 msgstr ""
 
@@ -73699,6 +73702,9 @@ msgid "Vulnerability|The scanner determined this vulnerability to be a false pos
 msgstr ""
 
 msgid "Vulnerability|The unmodified response is the original response that had no mutations done to the request"
+msgstr ""
+
+msgid "Vulnerability|This vulnerability was bypassed by a user in a merge request. The user accepted the risk in a security policy configured to use warn mode."
 msgstr ""
 
 msgid "Vulnerability|Tool:"
