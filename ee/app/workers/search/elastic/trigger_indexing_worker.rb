@@ -74,6 +74,7 @@ module Search
         task_executor_service.execute(:recreate_index)
         task_executor_service.execute(:clear_index_status)
         task_executor_service.execute(:clear_reindex_status)
+        task_executor_service.execute(:clear_tracking_queues)
         task_executor_service.execute(:resume_indexing)
 
         skip_tasks = Array.wrap(options[:skip]).map(&:to_sym)

@@ -7,6 +7,7 @@ module Search
     TASKS = %i[
       clear_index_status
       clear_reindex_status
+      clear_tracking_queues
       create_empty_index
       delete_index
       disable_search_with_elasticsearch
@@ -86,6 +87,14 @@ module Search
       end
 
       logger.info(Rainbow('Reindexing status has been reset').green)
+    end
+
+    def clear_tracking_queues
+      ::Elastic::ProcessBookkeepingService.clear_tracking!
+      ::Elastic::ProcessInitialBookkeepingService.clear_tracking!
+      ::Search::Elastic::ProcessEmbeddingBookkeepingService.clear_tracking!
+
+      logger.info(Rainbow('All indexing queues have been cleared').green)
     end
 
     def create_empty_index
