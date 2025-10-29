@@ -2,7 +2,7 @@
 stage: Package
 group: Container Registry
 info: To determine the technical writer assigned to the Stage/Group associated with this page, see https://handbook.gitlab.com/handbook/product/ux/technical-writing/#assignments
-title: Container registry virtual registry API
+title: Container virtual registry API
 description: Create and manage virtual registries for the container registry, and configure upstream container registries.
 ---
 
@@ -13,6 +13,12 @@ description: Create and manage virtual registries for the container registry, an
 - Status: Experiment
 
 {{< /details >}}
+
+{{< history >}}
+
+- [Introduced](https://gitlab.com/gitlab-org/gitlab/-/issues/548794) in GitLab 18.5 [with a flag](../administration/feature_flags/_index.md) named `container_virtual_registries`. Disabled by default.
+
+{{< /history >}}
 
 {{< alert type="flag" >}}
 
@@ -32,12 +38,6 @@ Use this API to:
 Use the following endpoints to create and manage virtual registries for the container registry.
 
 ### List all virtual registries
-
-{{< history >}}
-
-- [Introduced](https://gitlab.com/gitlab-org/gitlab/-/issues/548794) in GitLab 18.5 [with a flag](../administration/feature_flags/_index.md) named `container_virtual_registries`. Disabled by default.
-
-{{< /history >}}
 
 Lists all container virtual registries for a group.
 
@@ -76,12 +76,6 @@ Example response:
 
 ### Create a virtual registry
 
-{{< history >}}
-
-- [Introduced](https://gitlab.com/gitlab-org/gitlab/-/issues/548794) in GitLab 18.5 [with a flag](../administration/feature_flags/_index.md) named `container_virtual_registries`. Disabled by default.
-
-{{< /history >}}
-
 Creates a container virtual registry for a group.
 
 ```plaintext
@@ -119,12 +113,6 @@ Example response:
 ```
 
 ### Get a virtual registry
-
-{{< history >}}
-
-- [Introduced](https://gitlab.com/gitlab-org/gitlab/-/issues/548794) in GitLab 18.5 [with a flag](../administration/feature_flags/_index.md) named `container_virtual_registries`. Disabled by default.
-
-{{< /history >}}
 
 Gets a specific container virtual registry.
 
@@ -168,12 +156,6 @@ Example response:
 
 ### Update a virtual registry
 
-{{< history >}}
-
-- [Introduced](https://gitlab.com/gitlab-org/gitlab/-/issues/548794) in GitLab 18.5 [with a flag](../administration/feature_flags/_index.md) named `container_virtual_registries`. Disabled by default.
-
-{{< /history >}}
-
 Updates a specific container virtual registry.
 
 ```plaintext
@@ -206,12 +188,6 @@ If successful, returns a [`200 OK`](rest/troubleshooting.md#status-codes) status
 
 ### Delete a virtual registry
 
-{{< history >}}
-
-- [Introduced](https://gitlab.com/gitlab-org/gitlab/-/issues/548794) in GitLab 18.5 [with a flag](../administration/feature_flags/_index.md) named `container_virtual_registries`. Disabled by default.
-
-{{< /history >}}
-
 {{< alert type="warning" >}}
 
 When you delete a virtual registry, you also delete all associated upstream registries that are not shared with other virtual registries, along with their cached container images and manifests.
@@ -243,12 +219,6 @@ If successful, returns a [`204 No Content`](rest/troubleshooting.md#status-codes
 Use the following endpoints to configure and manage upstream container registries.
 
 ### List all upstream registries for a top-level group
-
-{{< history >}}
-
-- [Introduced](https://gitlab.com/gitlab-org/gitlab/-/issues/548794) in GitLab 18.5 [with a flag](../administration/feature_flags/_index.md) named `container_virtual_registries`. Disabled by default.
-
-{{< /history >}}
 
 Lists all upstream container registries for a top-level group.
 
@@ -292,12 +262,6 @@ Example response:
 ```
 
 ### List all upstream registries for a virtual registry
-
-{{< history >}}
-
-- [Introduced](https://gitlab.com/gitlab-org/gitlab/-/issues/548794) in GitLab 18.5 [with a flag](../administration/feature_flags/_index.md) named `container_virtual_registries`. Disabled by default.
-
-{{< /history >}}
 
 Lists all upstream registries for a container virtual registry.
 
@@ -343,12 +307,6 @@ Example response:
 ```
 
 ### Create an upstream registry
-
-{{< history >}}
-
-- [Introduced](https://gitlab.com/gitlab-org/gitlab/-/issues/548794) in GitLab 18.5 [with a flag](../administration/feature_flags/_index.md) named `container_virtual_registries`. Disabled by default.
-
-{{< /history >}}
 
 Adds an upstream container registry to a container virtual registry.
 
@@ -409,12 +367,6 @@ Example response:
 
 ### Get an upstream registry
 
-{{< history >}}
-
-- [Introduced](https://gitlab.com/gitlab-org/gitlab/-/issues/548794) in GitLab 18.5 [with a flag](../administration/feature_flags/_index.md) named `container_virtual_registries`. Disabled by default.
-
-{{< /history >}}
-
 Gets a specific upstream container registry for a container virtual registry.
 
 ```plaintext
@@ -460,12 +412,6 @@ Example response:
 
 ### Update an upstream registry
 
-{{< history >}}
-
-- [Introduced](https://gitlab.com/gitlab-org/gitlab/-/issues/548794) in GitLab 18.5 [with a flag](../administration/feature_flags/_index.md) named `container_virtual_registries`. Disabled by default.
-
-{{< /history >}}
-
 Updates a specific upstream container registry for a container virtual registry.
 
 ```plaintext
@@ -503,12 +449,6 @@ If successful, returns a [`200 OK`](rest/troubleshooting.md#status-codes) status
 
 ### Update an upstream registry position
 
-{{< history >}}
-
-- [Introduced](https://gitlab.com/gitlab-org/gitlab/-/issues/573284) in GitLab 18.6 [with a flag](../administration/feature_flags/_index.md) named `container_virtual_registries`. Disabled by default.
-
-{{< /history >}}
-
 Updates the position of an upstream container registry in an ordered list for a container virtual registry.
 
 ```plaintext
@@ -533,12 +473,6 @@ If successful, returns a [`200 OK`](rest/troubleshooting.md#status-codes) status
 
 ### Delete an upstream registry
 
-{{< history >}}
-
-- [Introduced](https://gitlab.com/gitlab-org/gitlab/-/issues/548794) in GitLab 18.5 [with a flag](../administration/feature_flags/_index.md) named `container_virtual_registries`. Disabled by default.
-
-{{< /history >}}
-
 Deletes a specific upstream container registry for a container virtual registry.
 
 ```plaintext
@@ -560,12 +494,6 @@ curl --request DELETE --header "PRIVATE-TOKEN: <your_access_token>" \
 If successful, returns a [`204 No Content`](rest/troubleshooting.md#status-codes) status code.
 
 ### Associate an upstream with a registry
-
-{{< history >}}
-
-- [Introduced](https://gitlab.com/gitlab-org/gitlab/-/issues/573284) in GitLab 18.6 [with a flag](../administration/feature_flags/_index.md) named `container_virtual_registries`. Disabled by default.
-
-{{< /history >}}
 
 Associates an existing upstream container registry with a container virtual registry.
 
@@ -602,12 +530,6 @@ Example response:
 
 ### Disassociate an upstream from a registry
 
-{{< history >}}
-
-- [Introduced](https://gitlab.com/gitlab-org/gitlab/-/issues/573284) in GitLab 18.6 [with a flag](../administration/feature_flags/_index.md) named `container_virtual_registries`. Disabled by default.
-
-{{< /history >}}
-
 Removes the association between an upstream container registry and a container virtual registry.
 
 ```plaintext
@@ -635,12 +557,6 @@ If successful, returns a [`204 No Content`](rest/troubleshooting.md#status-codes
 Use the following endpoints to manage cached container images and manifests for a container virtual registry.
 
 ### List upstream registry cache entries
-
-{{< history >}}
-
-- [Introduced](https://gitlab.com/gitlab-org/gitlab/-/issues/569403) in GitLab 18.5 [with a flag](../administration/feature_flags/_index.md) named `container_virtual_registries`. Disabled by default.
-
-{{< /history >}}
 
 Lists cached container images and manifests for a container upstream registry.
 
@@ -689,12 +605,6 @@ Example response:
 ```
 
 ### Delete an upstream registry cache entry
-
-{{< history >}}
-
-- [Introduced](https://gitlab.com/gitlab-org/gitlab/-/issues/569403) in GitLab 18.5 [with a flag](../administration/feature_flags/_index.md) named `container_virtual_registries`. Disabled by default.
-
-{{< /history >}}
 
 Deletes a specific cached container image or manifest for a container upstream registry.
 
