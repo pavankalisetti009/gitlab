@@ -40,7 +40,8 @@ RSpec.describe "Merge request > User sees security widget",
       )
     end
 
-    it "shows the security widget" do
+    it "shows the security widget",
+      quarantine: 'https://gitlab.com/gitlab-org/quality/test-failure-issues/-/issues/7073' do
       visit(merge_request_path)
 
       page.within(mr_widget_app_selector) do
