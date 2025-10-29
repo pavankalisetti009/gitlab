@@ -85,7 +85,7 @@ module EE
 
         if group.licensed_feature_available?(:packages_virtual_registry)
           settings.push(
-            { text: s_('VirtualRegistry|Virtual Registry'),
+            { text: s_('VirtualRegistry|Virtual registry'),
               href: group_settings_packages_and_registries_path(group, anchor: 'virtual-registries-setting') }
           )
         end

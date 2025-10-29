@@ -72725,7 +72725,7 @@ msgstr ""
 msgid "VirtualRegistry|Edit upstream %{name}"
 msgstr ""
 
-msgid "VirtualRegistry|Enable Virtual Registry"
+msgid "VirtualRegistry|Enable virtual registry"
 msgstr ""
 
 msgid "VirtualRegistry|Enter a personal access token for GitLab-hosted upstreams."
@@ -72941,9 +72941,6 @@ msgid "VirtualRegistry|Username (optional)"
 msgstr ""
 
 msgid "VirtualRegistry|View registries"
-msgstr ""
-
-msgid "VirtualRegistry|Virtual Registry"
 msgstr ""
 
 msgid "VirtualRegistry|Virtual registry"

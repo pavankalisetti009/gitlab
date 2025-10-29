@@ -1,11 +1,11 @@
 import { produce } from 'immer';
-import getGroupPackagesSettingsQuery from '~/packages_and_registries/settings/group/graphql/queries/get_group_packages_settings.query.graphql';
+import getGroupVirtualRegistriesSetting from 'ee_component/packages_and_registries/settings/group/graphql/queries/get_group_virtual_registries_setting.query.graphql';
 
-export const updateGroupPackageSettings =
+export const updateGroupVirtualRegistriesSetting =
   (fullPath) =>
   (client, { data: updatedData }) => {
     const queryAndParams = {
-      query: getGroupPackagesSettingsQuery,
+      query: getGroupVirtualRegistriesSetting,
       variables: { fullPath },
     };
 

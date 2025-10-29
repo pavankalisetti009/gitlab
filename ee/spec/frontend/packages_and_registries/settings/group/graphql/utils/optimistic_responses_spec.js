@@ -2,7 +2,8 @@ import { updateVirtualRegistriesSettingOptimisticResponse } from 'ee_component/p
 
 describe('updateVirtualRegistriesSettingOptimisticResponse', () => {
   it('returns the correct structure', () => {
-    expect(updateVirtualRegistriesSettingOptimisticResponse({ foo: 'bar' })).toMatchInlineSnapshot(`
+    expect(updateVirtualRegistriesSettingOptimisticResponse({ enabled: true }))
+      .toMatchInlineSnapshot(`
 {
   "__typename": "Mutation",
   "updateVirtualRegistriesSetting": {
@@ -10,7 +11,7 @@ describe('updateVirtualRegistriesSettingOptimisticResponse', () => {
     "errors": [],
     "virtualRegistriesSetting": {
       "__typename": "VirtualRegistriesSetting",
-      "foo": "bar",
+      "enabled": true,
     },
   },
 }

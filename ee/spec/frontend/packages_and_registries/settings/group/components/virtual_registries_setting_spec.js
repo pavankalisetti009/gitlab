@@ -6,15 +6,14 @@ import createMockApollo from 'helpers/mock_apollo_helper';
 import waitForPromises from 'helpers/wait_for_promises';
 import VirtualRegistriesSetting from 'ee_component/packages_and_registries/settings/group/components/virtual_registries_setting.vue';
 
+import getGroupVirtualRegistriesSetting from 'ee_component/packages_and_registries/settings/group/graphql/queries/get_group_virtual_registries_setting.query.graphql';
 import updateVirtualRegistriesSetting from 'ee_component/packages_and_registries/settings/group/graphql/mutations/update_virtual_registries_setting.mutation.graphql';
-import getGroupPackagesSettingsQuery from '~/packages_and_registries/settings/group/graphql/queries/get_group_packages_settings.query.graphql';
 import SettingsSection from '~/vue_shared/components/settings/settings_section.vue';
 import { updateVirtualRegistriesSettingOptimisticResponse } from 'ee_component/packages_and_registries/settings/group/graphql/utils/optimistic_responses';
 
 import {
-  groupPackageSettingsMock,
+  groupVirtualRegistriesSettingMock,
   mutationErrorMock,
-  virtualRegistriesSetting as virtualRegistriesSettingMock,
   virtualRegistriesSettingMutationMock,
 } from '../mock_data';
 
@@ -24,6 +23,7 @@ jest.mock('ee_component/packages_and_registries/settings/group/graphql/utils/opt
 describe('VirtualRegistriesSetting', () => {
   let wrapper;
   let apolloProvider;
+  let queryResolver;
   let updateSettingsMutationResolver;
 
   const defaultProvide = {
@@ -32,22 +32,17 @@ describe('VirtualRegistriesSetting', () => {
 
   Vue.use(VueApollo);
 
-  const mountComponent = ({
-    provide = defaultProvide,
-    isLoading = false,
-    virtualRegistriesSetting = virtualRegistriesSettingMock(),
-  } = {}) => {
-    const requestHandlers = [[updateVirtualRegistriesSetting, updateSettingsMutationResolver]];
+  const mountComponent = ({ provide = defaultProvide } = {}) => {
+    const requestHandlers = [
+      [getGroupVirtualRegistriesSetting, queryResolver],
+      [updateVirtualRegistriesSetting, updateSettingsMutationResolver],
+    ];
 
     apolloProvider = createMockApollo(requestHandlers);
 
     wrapper = shallowMountExtended(VirtualRegistriesSetting, {
       apolloProvider,
       provide,
-      propsData: {
-        virtualRegistriesSetting,
-        isLoading,
-      },
       stubs: {
         GlSprintf,
       },
@@ -55,6 +50,7 @@ describe('VirtualRegistriesSetting', () => {
   };
 
   beforeEach(() => {
+    queryResolver = jest.fn().mockResolvedValue(groupVirtualRegistriesSettingMock);
     updateSettingsMutationResolver = jest
       .fn()
       .mockResolvedValue(virtualRegistriesSettingMutationMock());
@@ -67,11 +63,11 @@ describe('VirtualRegistriesSetting', () => {
 
   const fillApolloCache = () => {
     apolloProvider.defaultClient.cache.writeQuery({
-      query: getGroupPackagesSettingsQuery,
+      query: getGroupVirtualRegistriesSetting,
       variables: {
         fullPath: defaultProvide.groupPath,
       },
-      ...groupPackageSettingsMock,
+      ...groupVirtualRegistriesSettingMock,
     });
   };
 
@@ -84,15 +80,16 @@ describe('VirtualRegistriesSetting', () => {
   it('has the correct header text and description', () => {
     mountComponent();
 
-    expect(findSettingsSection().props('heading')).toContain('Virtual Registry');
+    expect(findSettingsSection().props('heading')).toContain('Virtual registry');
     expect(findSettingsSection().props('description')).toContain(
       'Manage packages across multiple sources and streamline development workflows using virtual registries.',
     );
   });
 
   describe('toggle', () => {
-    beforeEach(() => {
+    beforeEach(async () => {
       mountComponent();
+      await waitForPromises();
     });
 
     it('exists', () => {
@@ -147,8 +144,9 @@ describe('VirtualRegistriesSetting', () => {
         });
       });
 
-      it('has an optimistic response', () => {
+      it('has an optimistic response', async () => {
         mountComponent();
+        await waitForPromises();
 
         fillApolloCache();
 
@@ -198,11 +196,9 @@ describe('VirtualRegistriesSetting', () => {
   });
 
   describe('when isLoading is true', () => {
-    beforeEach(() => {
-      mountComponent({ isLoading: true });
-    });
-
     it('disables virtual registry toggle', () => {
+      mountComponent({ isLoading: true });
+
       expect(findEnableVirtualRegistriesSettingToggle().props('disabled')).toBe(true);
     });
   });
