@@ -349,30 +349,6 @@ export const mockWorkItemEpicMutationResponse = {
   },
 };
 
-export const epicAncestorsResponse = () => ({
-  data: {
-    workspace: {
-      id: '1',
-      __typename: 'Group',
-      issuable: {
-        __typename: 'Epic',
-        id: 'gid://gitlab/Epic/4',
-        ancestors: {
-          nodes: [
-            {
-              id: 'gid://gitlab/Epic/2',
-              title: 'Ancestor epic',
-              url: 'http://gdk.test:3000/groups/gitlab-org/-/epics/2',
-              state: 'opened',
-              hasParent: false,
-            },
-          ],
-        },
-      },
-    },
-  },
-});
-
 export const issueNoWeightResponse = () => ({
   data: {
     workspace: {
