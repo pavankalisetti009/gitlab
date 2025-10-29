@@ -507,6 +507,10 @@ module EE
         order(Arel.sql(order_sql))
       end
 
+      scope :with_duo_features_enabled, -> do
+        joins(:project_setting).merge(::ProjectSetting.duo_features_set(true))
+      end
+
       delegate :shared_runners_seconds, to: :statistics, allow_nil: true
 
       delegate :ci_minutes_usage, to: :shared_runners_limit_namespace
