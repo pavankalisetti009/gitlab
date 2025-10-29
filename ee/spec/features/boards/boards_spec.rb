@@ -104,7 +104,8 @@ RSpec.describe 'Project issue boards', :js, feature_category: :portfolio_managem
       expect(list_weight_badge(backlog)).to have_content('5')
     end
 
-    it 'updates weight when moving to list' do
+    it 'updates weight when moving to list',
+      quarantine: 'https://gitlab.com/gitlab-org/quality/test-failure-issues/-/issues/2980' do
       from = board.lists.first
       to = list
 
