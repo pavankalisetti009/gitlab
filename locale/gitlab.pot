@@ -29637,6 +29637,9 @@ msgstr ""
 msgid "Geo|LFS Objects"
 msgstr ""
 
+msgid "Geo|Last checksum"
+msgstr ""
+
 msgid "Geo|Last event ID"
 msgstr ""
 
@@ -29968,6 +29971,9 @@ msgid "Geo|Status: %{badge}"
 msgstr ""
 
 msgid "Geo|Storage config"
+msgstr ""
+
+msgid "Geo|Storage: %{size}"
 msgstr ""
 
 msgid "Geo|Succeeded"

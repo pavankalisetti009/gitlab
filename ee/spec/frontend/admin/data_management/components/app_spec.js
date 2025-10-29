@@ -10,6 +10,8 @@ import { TEST_HOST } from 'spec/test_constants';
 import { getModels } from 'ee/api/data_management_api';
 import waitForPromises from 'helpers/wait_for_promises';
 import { createAlert } from '~/alert';
+import DataManagementItem from 'ee/admin/data_management/components/data_management_item.vue';
+import { convertObjectPropsToCamelCase } from '~/lib/utils/common_utils';
 
 jest.mock('~/lib/utils/url_utility', () => ({
   ...jest.requireActual('~/lib/utils/url_utility'),
@@ -31,6 +33,7 @@ describe('AdminDataManagementApp', () => {
 
   const findGeoListTopBar = () => wrapper.findComponent(GeoListTopBar);
   const findGeoList = () => wrapper.findComponent(GeoList);
+  const findDataManagementItem = () => wrapper.findComponent(DataManagementItem);
 
   beforeEach(() => {
     createComponent();
@@ -86,12 +89,10 @@ describe('AdminDataManagementApp', () => {
       });
 
       it('renders items on GeoList', () => {
-        expect(findGeoList().props('hasItems')).toBe(true);
-        expect(findGeoList().findAll('li')).toHaveLength(models.length);
+        const [item] = convertObjectPropsToCamelCase(models, { deep: true });
 
-        models.forEach((model) => {
-          expect(findGeoList().text()).toContain(`${model.record_identifier}`);
-        });
+        expect(findGeoList().props('hasItems')).toBe(true);
+        expect(findDataManagementItem().props()).toMatchObject({ item });
       });
 
       it('stops loading state', () => {
