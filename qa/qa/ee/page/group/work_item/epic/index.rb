@@ -35,7 +35,7 @@ module QA
               end
 
               def work_item_epics_enabled?
-                click_element('new-epic-button')
+                all_elements('new-epic-button', minimum: 1).first.click
                 wait_for_requests
                 has_element?('work-item-title-input')
               end

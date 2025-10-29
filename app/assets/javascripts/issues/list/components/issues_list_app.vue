@@ -1024,7 +1024,6 @@ export default {
       @workItemTypeChanged="updateIssuablesCache($event)"
     />
     <issuable-list
-      v-if="hasAnyIssues"
       :namespace="fullPath"
       :full-path="fullPath"
       recent-searches-storage-key="issues"
@@ -1145,7 +1144,11 @@ export default {
       </template>
 
       <template #empty-state>
-        <empty-state-with-any-issues :has-search="hasSearch" :is-open-tab="isOpenTab">
+        <empty-state-with-any-issues
+          v-if="hasAnyIssues"
+          :has-search="hasSearch"
+          :is-open-tab="isOpenTab"
+        >
           <template #new-issue-button>
             <create-work-item-modal
               v-if="glFeatures.issuesListCreateModal"
@@ -1167,6 +1170,11 @@ export default {
             />
           </template>
         </empty-state-with-any-issues>
+        <empty-state-without-any-issues
+          v-else
+          :show-new-issue-dropdown="showNewIssueDropdown"
+          :has-projects="hasAnyProjects"
+        />
       </template>
 
       <template #custom-status="{ issuable = {} }">
@@ -1177,14 +1185,6 @@ export default {
         <slot name="title-icons" v-bind="{ issuable, apiFilterParams }"></slot>
       </template>
     </issuable-list>
-
-    <empty-state-without-any-issues
-      v-else
-      :current-tab-count="currentTabCount"
-      :export-csv-path-with-query="exportCsvPathWithQuery"
-      :show-csv-buttons="showCsvButtons"
-      :show-new-issue-dropdown="showNewIssueDropdown"
-    />
 
     <issuable-by-email
       v-if="showIssuableByEmail"

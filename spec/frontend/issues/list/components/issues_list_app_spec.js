@@ -659,10 +659,8 @@ describe('CE IssuesListApp component', () => {
 
         it('shows EmptyStateWithoutAnyIssues empty state', () => {
           expect(wrapper.findComponent(EmptyStateWithoutAnyIssues).props()).toEqual({
-            currentTabCount: 0,
-            exportCsvPathWithQuery: defaultProvide.exportCsvPath,
-            showCsvButtons: true,
             showNewIssueDropdown: false,
+            hasProjects: true,
           });
         });
       });
