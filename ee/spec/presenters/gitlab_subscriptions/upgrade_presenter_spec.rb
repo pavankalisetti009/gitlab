@@ -76,6 +76,15 @@ RSpec.describe GitlabSubscriptions::UpgradePresenter, :saas, feature_category: :
             expected_path = ::Gitlab::Routing.url_helpers.group_billings_path(namespace)
             expect(attributes).to eq({ upgrade_url: expected_path })
           end
+
+          context 'when namespace is not valid to generate the billing url' do
+            # Not using factory bot to demonstrate why we need this as url gen will work for factory bot
+            let(:namespace) { Group.new }
+
+            it 'returns empty hash' do
+              expect(attributes).to eq({})
+            end
+          end
         end
 
         context 'when user cannot edit billing' do
