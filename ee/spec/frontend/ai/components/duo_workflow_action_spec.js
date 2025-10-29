@@ -2,6 +2,7 @@ import Vue, { nextTick } from 'vue';
 import { shallowMount } from '@vue/test-utils';
 import VueApollo from 'vue-apollo';
 import { GlButton } from '@gitlab/ui';
+import MockAdapter from 'axios-mock-adapter';
 import waitForPromises from 'helpers/wait_for_promises';
 import getDuoWorkflowStatusCheck from 'ee/ai/graphql/get_duo_workflow_status_check.query.graphql';
 import axios from '~/lib/utils/axios_utils';
@@ -16,6 +17,7 @@ Vue.use(VueApollo);
 
 describe('DuoWorkflowAction component', () => {
   let wrapper;
+  let mock;
 
   const projectId = 1;
   const duoWorkflowInvokePath = `/api/v4/ai/duo_workflows/workflows`;
@@ -98,12 +100,18 @@ describe('DuoWorkflowAction component', () => {
   const findButton = () => wrapper.findComponent(GlButton);
 
   beforeEach(() => {
-    jest.spyOn(axios, 'post');
+    mock = new MockAdapter(axios);
     window.gon = {
       api_version: 'v4',
     };
-    axios.post.mockResolvedValue({ data: mockCreateFlowResponse });
+    mock.onPost(duoWorkflowInvokePath).reply(() => {
+      return [200, mockCreateFlowResponse];
+    });
     mockGetHealthCheckHandler = jest.fn().mockResolvedValue(mockDuoWorkflowStatusCheckEnabled);
+  });
+
+  afterEach(() => {
+    mock.restore();
   });
 
   describe('rendering', () => {
@@ -217,7 +225,7 @@ describe('DuoWorkflowAction component', () => {
 
     describe('when button is clicked', () => {
       beforeEach(async () => {
-        axios.post.mockImplementation(() => new Promise(() => {})); // Never resolves
+        mock.onPost(duoWorkflowInvokePath).reply(() => new Promise(() => {})); // Never resolves
 
         findButton().vm.$emit('click');
         await nextTick();
@@ -241,9 +249,7 @@ describe('DuoWorkflowAction component', () => {
 
     describe('when the flow fails to start', () => {
       beforeEach(async () => {
-        const error = new Error('API error');
-
-        axios.post.mockRejectedValue(error);
+        mock.onPost(duoWorkflowInvokePath).reply(500);
         findButton().vm.$emit('click');
 
         await waitForPromises();
@@ -281,11 +287,14 @@ describe('DuoWorkflowAction component', () => {
 
       it('emits prompt-validation-error', () => {
         expect(wrapper.emitted('prompt-validation-error')).toEqual([[invalidGoal]]);
-        expect(axios.post).not.toHaveBeenCalled();
       });
 
       it('does not show loading state for validation errors', () => {
         expect(findButton().props('loading')).toBe(false);
+      });
+
+      it('does not make API call', () => {
+        expect(mock.history.post).toHaveLength(0);
       });
     });
 
@@ -301,7 +310,10 @@ describe('DuoWorkflowAction component', () => {
 
       it('does not emit prompt-validation-error when goal matches regex', () => {
         expect(wrapper.emitted('prompt-validation-error')).toBeUndefined();
-        expect(axios.post).toHaveBeenCalled();
+      });
+
+      it('makes API call', () => {
+        expect(mock.history.post).toHaveLength(1);
       });
     });
 
@@ -312,7 +324,8 @@ describe('DuoWorkflowAction component', () => {
       });
 
       it('makes API call with correct data', () => {
-        expect(axios.post).toHaveBeenCalledWith(duoWorkflowInvokePath, expectedRequestData);
+        const request = mock.history.post[0];
+        expect(JSON.parse(request.data)).toEqual(expectedRequestData);
       });
     });
 
@@ -339,7 +352,8 @@ describe('DuoWorkflowAction component', () => {
         });
 
         it('includes additional_context array in the request params', () => {
-          expect(axios.post).toHaveBeenCalledWith(duoWorkflowInvokePath, {
+          const request = mock.history.post[0];
+          expect(JSON.parse(request.data)).toEqual({
             ...expectedRequestData,
             additional_context: additionalContext,
           });
@@ -357,7 +371,8 @@ describe('DuoWorkflowAction component', () => {
         });
 
         it('includes empty additional_context array in the request params', () => {
-          expect(axios.post).toHaveBeenCalledWith(duoWorkflowInvokePath, {
+          const request = mock.history.post[0];
+          expect(JSON.parse(request.data)).toEqual({
             ...expectedRequestData,
             additional_context: [],
           });
@@ -373,7 +388,8 @@ describe('DuoWorkflowAction component', () => {
         });
 
         it('includes empty array as additional_context in the request params', () => {
-          expect(axios.post).toHaveBeenCalledWith(duoWorkflowInvokePath, {
+          const request = mock.history.post[0];
+          expect(JSON.parse(request.data)).toEqual({
             ...expectedRequestData,
             additional_context: [],
           });
@@ -391,7 +407,8 @@ describe('DuoWorkflowAction component', () => {
         });
 
         it('includes currentRef as source_branch in the request params', () => {
-          expect(axios.post).toHaveBeenCalledWith(duoWorkflowInvokePath, {
+          const request = mock.history.post[0];
+          expect(JSON.parse(request.data)).toEqual({
             ...expectedRequestData,
             source_branch: currentRef,
           });
@@ -407,7 +424,8 @@ describe('DuoWorkflowAction component', () => {
         });
 
         it('includes sourceBranch as source_branch in the request params', () => {
-          expect(axios.post).toHaveBeenCalledWith(duoWorkflowInvokePath, {
+          const request = mock.history.post[0];
+          expect(JSON.parse(request.data)).toEqual({
             ...expectedRequestData,
             source_branch: sourceBranch,
           });
@@ -423,7 +441,8 @@ describe('DuoWorkflowAction component', () => {
         });
 
         it('prioritizes sourceBranch over currentRef', () => {
-          expect(axios.post).toHaveBeenCalledWith(duoWorkflowInvokePath, {
+          const request = mock.history.post[0];
+          expect(JSON.parse(request.data)).toEqual({
             ...expectedRequestData,
             source_branch: sourceBranch,
           });
@@ -439,7 +458,8 @@ describe('DuoWorkflowAction component', () => {
         });
 
         it('does not include source_branch in the request params', () => {
-          expect(axios.post).toHaveBeenCalledWith(duoWorkflowInvokePath, expectedRequestData);
+          const request = mock.history.post[0];
+          expect(JSON.parse(request.data)).toEqual(expectedRequestData);
         });
       });
     });
@@ -481,11 +501,44 @@ describe('DuoWorkflowAction component', () => {
       });
     });
 
-    describe('when request fails', () => {
-      const error = new Error('API error');
+    describe('when request succeeds but workload fails', () => {
+      const mockFailedWorkloadResponse = {
+        id: 563,
+        project_id: 1,
+        workload: {
+          id: null,
+          message: 'Branch already exists',
+        },
+      };
 
       beforeEach(async () => {
-        axios.post.mockRejectedValue(error);
+        mock.onPost(duoWorkflowInvokePath).reply(200, mockFailedWorkloadResponse);
+        await createComponent();
+        findButton().vm.$emit('click');
+        await waitForPromises();
+      });
+
+      it('shows error alert with generic message', () => {
+        expect(createAlert).toHaveBeenCalledWith({
+          message: 'Error occurred when starting the flow.',
+          captureError: true,
+          error: expect.any(Error),
+        });
+      });
+
+      it('does not emit agent-flow-started event', () => {
+        expect(wrapper.emitted('agent-flow-started')).toBeUndefined();
+      });
+
+      it('removes loading state after error', () => {
+        expect(findButton().props('loading')).toBe(false);
+      });
+    });
+
+    describe('when request fails', () => {
+      beforeEach(async () => {
+        mock.onPost(duoWorkflowInvokePath).reply(500);
+        await createComponent();
         findButton().vm.$emit('click');
         await waitForPromises();
       });
@@ -494,7 +547,7 @@ describe('DuoWorkflowAction component', () => {
         expect(createAlert).toHaveBeenCalledWith({
           message: 'Error occurred when starting the flow.',
           captureError: true,
-          error,
+          error: expect.any(Error),
         });
       });
 

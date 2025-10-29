@@ -333,8 +333,8 @@ RSpec.describe API::Ai::DuoWorkflows::Workflows, :with_current_organization, fea
         it 'does not start a CI pipeline' do
           post api(path, user), params: params
 
-          expect(json_response.dig('workload', 'id')).to eq(nil)
-          expect(json_response.dig('workload', 'message')).to eq('Can not execute workflow in CI')
+          expect(response).to have_gitlab_http_status(:forbidden)
+          expect(json_response['message']).to eq('Can not execute workflow in CI')
         end
       end
 
@@ -397,9 +397,84 @@ RSpec.describe API::Ai::DuoWorkflows::Workflows, :with_current_organization, fea
 
         it 'does not start a pipeline to execute workflow' do
           post api(path, user), params: params
-          expect(json_response['id']).to eq(Ai::DuoWorkflows::Workflow.last.id)
-          expect(json_response.dig('workload', 'id')).to eq(nil)
-          expect(json_response.dig('workload', 'message')).to eq('Error in creating workload: full error messages')
+          expect(response).to have_gitlab_http_status(:unprocessable_entity)
+          expect(json_response['message']).to eq('Error in creating workload: full error messages')
+        end
+      end
+
+      context 'when branch creation fails during CI execution' do
+        let(:params) do
+          {
+            project_id: project.id,
+            start_workflow: true,
+            goal: 'Print hello world',
+            source_branch: 'feature-branch'
+          }
+        end
+
+        before do
+          allow_next_instance_of(Ci::Workloads::RunWorkloadService) do |service|
+            allow(service).to receive(:execute).and_return(
+              ServiceResponse.error(message: 'Error in git branch creation')
+            )
+          end
+        end
+
+        it 'returns error message about branch creation failure' do
+          post api(path, user), params: params
+
+          expect(response).to have_gitlab_http_status(:unprocessable_entity)
+          expect(json_response['message']).to eq('Error in git branch creation')
+        end
+      end
+
+      context 'when start workflow service returns :unprocessable_entity error' do
+        let(:params) do
+          {
+            project_id: project.id,
+            start_workflow: true,
+            goal: 'Print hello world'
+          }
+        end
+
+        before do
+          allow_next_instance_of(::Ai::DuoWorkflows::StartWorkflowService) do |service|
+            allow(service).to receive(:execute).and_return(
+              ServiceResponse.error(message: 'Unprocessable entity error', reason: :unprocessable_entity)
+            )
+          end
+        end
+
+        it 'returns HTTP 422 status code' do
+          post api(path, user), params: params
+
+          expect(response).to have_gitlab_http_status(:unprocessable_entity)
+          expect(json_response['message']).to eq('Unprocessable entity error')
+        end
+      end
+
+      context 'when start workflow service returns unmapped error reason' do
+        let(:params) do
+          {
+            project_id: project.id,
+            start_workflow: true,
+            goal: 'Print hello world'
+          }
+        end
+
+        before do
+          allow_next_instance_of(::Ai::DuoWorkflows::StartWorkflowService) do |service|
+            allow(service).to receive(:execute).and_return(
+              ServiceResponse.error(message: 'Unknown error occurred', reason: :unknown_error)
+            )
+          end
+        end
+
+        it 'returns HTTP 500 status code as default fallback' do
+          post api(path, user), params: params
+
+          expect(response).to have_gitlab_http_status(:internal_server_error)
+          expect(json_response['message']).to eq('Unknown error occurred')
         end
       end
 

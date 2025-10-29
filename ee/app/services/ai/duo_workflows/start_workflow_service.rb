@@ -44,8 +44,8 @@ module Ai
         )
         response = service.execute
 
-        workload = response.payload
         if response.success?
+          workload = response.payload
           @workflow.workflows_workloads.create(project_id: project.id, workload_id: workload.id)
           ServiceResponse.success(payload: { workload_id: workload.id })
         else

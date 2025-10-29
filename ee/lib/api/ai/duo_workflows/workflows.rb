@@ -369,8 +369,22 @@ module API
                     params: start_workflow_params(result[:workflow].id, container: container)
                   ).execute
 
-                  workload_id = response.payload && response.payload[:workload_id]
-                  message = response.message
+                  if response.error?
+                    status_code = case response.reason
+                                  when :unprocessable_entity
+                                    :unprocessable_entity
+                                  when :feature_unavailable, :service_account_error
+                                    :forbidden
+                                  when :workload_failure
+                                    :unprocessable_entity
+                                  else
+                                    :internal_server_error
+                                  end
+                    render_api_error!(response.message, status_code)
+                  else
+                    workload_id = response.payload && response.payload[:workload_id]
+                    message = response.message
+                  end
                 end
 
                 present result[:workflow], with: ::API::Entities::Ai::DuoWorkflows::Workflow,
