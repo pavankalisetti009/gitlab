@@ -11,6 +11,7 @@ import SecretsApp from 'ee/ci/secrets/components/secrets_app.vue';
 import getSecretManagerStatusQuery from 'ee/ci/secrets/graphql/queries/get_secret_manager_status.query.graphql';
 import {
   POLL_INTERVAL,
+  ENTITY_GROUP,
   ENTITY_PROJECT,
   SECRET_MANAGER_STATUS_ACTIVE,
   SECRET_MANAGER_STATUS_PROVISIONING,
@@ -31,7 +32,7 @@ describe('SecretsApp', () => {
 
   const findRouterView = () => wrapper.findComponent({ ref: 'router-view' });
 
-  const createComponent = async ({ stubs, router, isLoading = false } = {}) => {
+  const createComponent = async ({ stubs, router, props, isLoading = false } = {}) => {
     const handlers = [[getSecretManagerStatusQuery, mockSecretManagerStatus]];
 
     apolloProvider = createMockApollo(handlers);
@@ -40,6 +41,8 @@ describe('SecretsApp', () => {
       router,
       propsData: {
         fullPath: '/path/to/project',
+        context: ENTITY_PROJECT,
+        ...props,
       },
       stubs,
       apolloProvider,
@@ -180,7 +183,7 @@ describe('SecretsApp', () => {
     beforeEach(async () => {
       await createComponent({
         router: createRouter('/-/secrets', {
-          entity: ENTITY_PROJECT,
+          context: ENTITY_PROJECT,
           fullPath: '/path/to/project',
         }),
       });
@@ -191,6 +194,24 @@ describe('SecretsApp', () => {
       await nextTick();
 
       expect(mockToastShow).toHaveBeenCalledWith('This is a toast message.');
+    });
+  });
+
+  describe('group context', () => {
+    beforeEach(async () => {
+      await createComponent({
+        stubs: { RouterView: true },
+        props: { context: ENTITY_GROUP },
+      });
+    });
+
+    it('skips secrets manager status query', () => {
+      expect(mockSecretManagerStatus).not.toHaveBeenCalled();
+    });
+
+    it('does not show loading icon or provisioning state', () => {
+      expect(findLoadingIcon().exists()).toBe(false);
+      expect(findProvisioningText().exists()).toBe(false);
     });
   });
 });

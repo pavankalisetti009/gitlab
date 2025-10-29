@@ -288,5 +288,7 @@ constraints(::Constraints::GroupUrlConstrainer.new) do
     end
 
     draw :virtual_registries
+
+    resources :secrets, path: 'secrets(/*vueroute)', only: [:index]
   end
 end

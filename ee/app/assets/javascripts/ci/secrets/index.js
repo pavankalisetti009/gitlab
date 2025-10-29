@@ -43,7 +43,7 @@ export const initGroupSecretsApp = () => {
 
   const { groupPath, basePath } = el.dataset;
 
-  return initSecretsApp(el, SecretsApp, { entity: ENTITY_GROUP, fullPath: groupPath }, basePath);
+  return initSecretsApp(el, SecretsApp, { context: ENTITY_GROUP, fullPath: groupPath }, basePath);
 };
 
 export const initProjectSecretsApp = () => {
@@ -58,7 +58,7 @@ export const initProjectSecretsApp = () => {
   return initSecretsApp(
     el,
     SecretsApp,
-    { entity: ENTITY_PROJECT, fullPath: projectPath },
+    { context: ENTITY_PROJECT, fullPath: projectPath },
     basePath,
   );
 };

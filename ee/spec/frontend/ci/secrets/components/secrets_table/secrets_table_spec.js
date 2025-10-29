@@ -14,7 +14,7 @@ import { createAlert } from '~/alert';
 import { mountExtended } from 'helpers/vue_test_utils_helper';
 import createMockApollo from 'helpers/mock_apollo_helper';
 import waitForPromises from 'helpers/wait_for_promises';
-import { PAGE_SIZE } from 'ee/ci/secrets/constants';
+import { ENTITY_GROUP, ENTITY_PROJECT, PAGE_SIZE } from 'ee/ci/secrets/constants';
 import SecretsTable from 'ee/ci/secrets/components/secrets_table/secrets_table.vue';
 import SecretActionsCell from 'ee/ci/secrets/components/secrets_table/secret_actions_cell.vue';
 import SecretDeleteModal from 'ee/ci/secrets/components/secret_delete_modal.vue';
@@ -69,6 +69,7 @@ describe('SecretsTable component', () => {
     wrapper = mountExtended(SecretsTable, {
       propsData: {
         fullPath: `path/to/project`,
+        context: ENTITY_PROJECT,
         ...props,
       },
       apolloProvider,
@@ -447,6 +448,21 @@ describe('SecretsTable component', () => {
         captureError: true,
         error,
       });
+    });
+  });
+
+  describe('group context', () => {
+    beforeEach(async () => {
+      await createComponent({ props: { context: ENTITY_GROUP } });
+    });
+
+    it('skips project secrets query and project secrets rotation query', () => {
+      expect(mockProjectSecretsResponse).not.toHaveBeenCalled();
+      expect(mockSecretsNeedingRotationResponse).not.toHaveBeenCalled();
+    });
+
+    it('shows empty state', () => {
+      expect(findEmptyState().exists()).toBe(true);
     });
   });
 });

@@ -12,8 +12,18 @@ RSpec.describe SecretsHelper, feature_category: :secrets_management do
     it 'returns expected data' do
       expect(subject).to include({
         project_path: project.full_path,
-        project_id: project.id,
         base_path: project_secrets_path(project)
+      })
+    end
+  end
+
+  describe '#group_secrets_app_data' do
+    subject { helper.group_secrets_app_data(group) }
+
+    it 'returns expected data' do
+      expect(subject).to include({
+        group_path: group.full_path,
+        base_path: group_secrets_path(group)
       })
     end
   end

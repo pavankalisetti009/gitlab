@@ -9,7 +9,12 @@ import {
   ENVIRONMENT_QUERY_LIMIT,
   mapEnvironmentNames,
 } from '~/ci/common/private/ci_environments_dropdown';
-import { ENTITY_PROJECT, FAILED_TO_LOAD_ERROR_MESSAGE } from '../../constants';
+import {
+  ACCEPTED_CONTEXTS,
+  ENTITY_GROUP,
+  ENTITY_PROJECT,
+  FAILED_TO_LOAD_ERROR_MESSAGE,
+} from '../../constants';
 import getSecretDetailsQuery from '../../graphql/queries/get_secret_details.query.graphql';
 import SecretForm from './secret_form.vue';
 
@@ -30,9 +35,10 @@ export default {
     SecretForm,
   },
   props: {
-    entity: {
+    context: {
       type: String,
       required: true,
+      validator: (value) => ACCEPTED_CONTEXTS.includes(value),
     },
     fullPath: {
       type: String,
@@ -58,8 +64,11 @@ export default {
   },
   apollo: {
     environments: {
+      skip() {
+        return ![ENTITY_PROJECT, ENTITY_GROUP].includes(this.context);
+      },
       query() {
-        return this.entity === ENTITY_PROJECT ? getProjectEnvironments : getGroupEnvironments;
+        return this.context === ENTITY_PROJECT ? getProjectEnvironments : getGroupEnvironments;
       },
       variables() {
         return {
@@ -69,7 +78,7 @@ export default {
         };
       },
       update(data) {
-        if (this.entity === ENTITY_PROJECT) {
+        if (this.context === ENTITY_PROJECT) {
           return mapEnvironmentNames(data.project?.environments?.nodes || []);
         }
 
@@ -106,7 +115,7 @@ export default {
       return this.isEditing && this.$apollo.queries.secretData.loading;
     },
     pageDescription() {
-      if (this.entity === ENTITY_PROJECT) {
+      if (this.context === ENTITY_PROJECT) {
         return this.$options.i18n.descriptionProject;
       }
 
