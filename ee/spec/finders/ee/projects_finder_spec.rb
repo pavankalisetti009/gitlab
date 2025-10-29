@@ -200,6 +200,84 @@ RSpec.describe ProjectsFinder, feature_category: :groups_and_projects do
       end
     end
 
+    context 'when filtering by with_duo_eligible' do
+      let_it_be(:params) { { with_duo_eligible: true } }
+
+      let_it_be_with_reload(:ns_gold) { create(:group) }
+      let_it_be_with_reload(:ns_ultimate) { create(:group) }
+      let_it_be_with_reload(:ns_trial) { create(:group) }
+      let_it_be_with_reload(:ns_trial_paid) { create(:group) }
+      let_it_be_with_reload(:ns_oss) { create(:group) }
+      let_it_be_with_reload(:ns_free) { create(:group) }
+
+      let_it_be_with_reload(:p_gold) { create(:project, namespace: ns_gold) }
+      let_it_be_with_reload(:p_ultimate) { create(:project, namespace: ns_ultimate) }
+      let_it_be_with_reload(:p_trial) { create(:project, namespace: ns_trial) }
+      let_it_be_with_reload(:p_trial_paid) { create(:project, namespace: ns_trial_paid) }
+      let_it_be_with_reload(:p_oss) { create(:project, namespace: ns_oss) }
+      let_it_be_with_reload(:p_free) { create(:project, namespace: ns_free) }
+
+      before do
+        [p_gold, p_ultimate, p_trial, p_trial_paid, p_oss, p_free].each do |p|
+          p.project_setting.update!(duo_features_enabled: true)
+        end
+
+        [ns_gold, ns_ultimate, ns_trial, ns_trial_paid, ns_oss, ns_free].each do |ns|
+          ns.namespace_settings.update!(experiment_features_enabled: true)
+        end
+
+        gold_plan = create(:gold_plan)
+        ultimate_plan = create(:ultimate_plan)
+        trial_plan = create(:ultimate_trial_plan)
+        trial_paid_plan = create(:ultimate_trial_paid_customer_plan)
+        oss_plan = create(:opensource_plan)
+        free_plan = create(:free_plan)
+
+        create(:gitlab_subscription, namespace: ns_gold, hosted_plan: gold_plan)
+        create(:gitlab_subscription, namespace: ns_ultimate, hosted_plan: ultimate_plan)
+        create(:gitlab_subscription, namespace: ns_trial, hosted_plan: trial_plan)
+        create(:gitlab_subscription, namespace: ns_trial_paid, hosted_plan: trial_paid_plan)
+        create(:gitlab_subscription, namespace: ns_oss, hosted_plan: oss_plan)
+        create(:gitlab_subscription, namespace: ns_free, hosted_plan: free_plan)
+
+        [ns_gold, ns_ultimate, ns_trial, ns_trial_paid, ns_oss, ns_free].each do |ns|
+          ns.add_developer(user)
+        end
+
+        stub_feature_flags(with_duo_eligible_projects_filter: true)
+      end
+
+      it 'returns only projects under eligible plans and with duo toggles enabled' do
+        is_expected.to contain_exactly(
+          p_gold,
+          p_ultimate,
+          p_trial,
+          p_trial_paid,
+          p_oss
+        )
+      end
+
+      context 'when a project disables duo features locally' do
+        before do
+          p_ultimate.project_setting.update!(duo_features_enabled: false)
+        end
+
+        it 'excludes that project even if the namespace plan is eligible' do
+          is_expected.to contain_exactly(p_gold, p_trial, p_trial_paid, p_oss)
+        end
+      end
+
+      context 'when the feature flag is disabled' do
+        before do
+          stub_feature_flags(with_duo_eligible_projects_filter: false)
+        end
+
+        it 'does not apply the filter' do
+          is_expected.to include(p_gold, p_ultimate, p_trial, p_trial_paid, p_oss, p_free)
+        end
+      end
+    end
+
     private
 
     def create_project(plan, visibility = :public)

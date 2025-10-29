@@ -18,6 +18,12 @@ module EE
             "Requires `ids` to be sent. Applies only if the feature flag " \
             "`allow_with_code_embeddings_indexed_projects_filter` is enabled."
 
+        argument :with_duo_eligible, GraphQL::Types::Boolean,
+          required: false,
+          experiment: { milestone: '18.6' },
+          description: "Include only projects that are eligible for GitLab Duo and have Duo features enabled." \
+            "Applies only if the feature flag `with_duo_eligible_projects_filter` is enabled."
+
         before_connection_authorization do |projects, current_user|
           ::Preloaders::UserMaxAccessLevelInProjectsPreloader.new(projects, current_user).execute
           ::Preloaders::UserMemberRolesInProjectsPreloader.new(projects: projects, user: current_user).execute
@@ -29,7 +35,13 @@ module EE
       override :finder_params
       def finder_params(args)
         super(args)
-          .merge(args.slice(:include_hidden, :with_code_embeddings_indexed))
+          .merge(
+            args.slice(
+              :include_hidden,
+              :with_code_embeddings_indexed,
+              :with_duo_eligible
+            )
+          )
           .merge(filter_expired_saml_session_projects: true)
       end
 

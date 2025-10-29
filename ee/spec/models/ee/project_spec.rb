@@ -5713,4 +5713,13 @@ RSpec.describe Project, feature_category: :groups_and_projects do
   describe '#duo_remote_flows_enabled' do
     it_behaves_like 'cascading project setting', settings_attribute: :duo_remote_flows_enabled
   end
+
+  describe '#with_duo_features_enabled' do
+    let_it_be(:p_on)  { create(:project, :with_duo_features_enabled) }
+    let_it_be(:p_off) { create(:project, :with_duo_features_disabled) }
+
+    it 'filters by project_settings.duo_features_enabled = true' do
+      expect(described_class.with_duo_features_enabled).to contain_exactly(p_on)
+    end
+  end
 end
