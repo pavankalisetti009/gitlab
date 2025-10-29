@@ -6,6 +6,7 @@ RSpec.describe GitlabSubscriptions::UserAddOnAssignment, feature_category: :seat
   describe 'associations' do
     it { is_expected.to belong_to(:user).inverse_of(:assigned_add_ons) }
     it { is_expected.to belong_to(:add_on_purchase).inverse_of(:assigned_users) }
+    it { is_expected.to belong_to(:organization).inverse_of(:user_add_on_assignments) }
   end
 
   describe 'validations' do

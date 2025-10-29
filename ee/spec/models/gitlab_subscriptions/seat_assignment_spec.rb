@@ -12,6 +12,7 @@ RSpec.describe GitlabSubscriptions::SeatAssignment, feature_category: :seat_cost
   describe 'associations' do
     it { is_expected.to belong_to(:namespace).required }
     it { is_expected.to belong_to(:user).required }
+    it { is_expected.to belong_to(:organization).inverse_of(:seat_assignments) }
   end
 
   describe 'validations' do
