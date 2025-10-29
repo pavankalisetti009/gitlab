@@ -7,7 +7,7 @@ RSpec.describe GitlabSchema.types['ComparedSecurityReportFinding'],
   let(:expected_fields) do
     %i[
       uuid title description state severity found_by_pipeline_iid
-      location identifiers scanner details
+      location identifiers scanner details ai_resolution_enabled
     ]
   end
 

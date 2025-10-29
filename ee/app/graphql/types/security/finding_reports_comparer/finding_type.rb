@@ -53,6 +53,12 @@ module Types
           experiment: { milestone: '16.3' },
           description: 'Location of the vulnerability finding.'
 
+        field :ai_resolution_enabled,
+          type: GraphQL::Types::Boolean,
+          null: true,
+          experiment: { milestone: '18.6' },
+          description: 'Indicates whether the specific finding can be resolved with AI.'
+
         field :identifiers,
           type: [VulnerabilityIdentifierType],
           null: true,
