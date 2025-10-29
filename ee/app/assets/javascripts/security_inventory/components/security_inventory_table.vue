@@ -23,6 +23,7 @@ export default {
     ProjectAttributesUpdateDrawer,
   },
   mixins: [glFeatureFlagMixin()],
+  inject: ['canReadAttributes'],
   props: {
     items: {
       type: Array,
@@ -58,7 +59,7 @@ export default {
         // spliced element gets inserted here
         { key: 'actions', label: '', thClass: 'gl-w-2/20' },
       ];
-      if (this.glFeatures.securityContextLabels) {
+      if (this.glFeatures.securityContextLabels && this.canReadAttributes) {
         fields.splice(3, 0, {
           key: 'securityAttributes',
           label: s__('SecurityAttributes|Security attributes'),

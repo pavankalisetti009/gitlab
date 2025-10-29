@@ -136,6 +136,7 @@ RSpec.describe Groups::SecurityFeaturesHelper, feature_category: :user_managemen
         group_id: group.id,
         group_name: group.name,
         can_manage_attributes: 'false',
+        can_read_attributes: 'false',
         group_manage_attributes_path: group_security_configuration_path(group.root_ancestor),
         new_project_path: new_project_path(namespace_id: group.id)
       }

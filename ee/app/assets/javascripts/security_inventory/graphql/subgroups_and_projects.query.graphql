@@ -9,6 +9,7 @@ query SubgroupsAndProjects(
   $namespaceId: NamespaceID!
   $vulnerabilityCountFilters: [VulnerabilityCountFilterInput!]
   $securityAnalyzerFilters: [AnalyzerFilterInput!]
+  $canReadAttributes: Boolean!
 ) {
   group(fullPath: $fullPath) {
     id
@@ -88,7 +89,7 @@ query SubgroupsAndProjects(
           buildId
           updatedAt
         }
-        securityAttributes {
+        securityAttributes @include(if: $canReadAttributes) {
           nodes {
             id
             securityCategory {

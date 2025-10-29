@@ -66,6 +66,7 @@ describe('InventoryDashboard', () => {
   const defaultProvide = {
     groupFullPath: 'group/project',
     canManageAttributes: false,
+    canReadAttributes: false,
     groupId: '33',
     newProjectPath: '/new',
   };
@@ -396,6 +397,7 @@ describe('InventoryDashboard', () => {
         hasSearch: false,
         securityAnalyzerFilters: [],
         vulnerabilityCountFilters: [],
+        canReadAttributes: false,
       });
     });
 
@@ -429,6 +431,7 @@ describe('InventoryDashboard', () => {
         hasSearch: false,
         securityAnalyzerFilters: [],
         vulnerabilityCountFilters: [],
+        canReadAttributes: false,
       });
     });
   });
