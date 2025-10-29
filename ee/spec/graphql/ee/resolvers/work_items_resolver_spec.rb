@@ -25,17 +25,6 @@ RSpec.describe Resolvers::WorkItemsResolver do
         expect(resolve_items(verification_status_widget: { verification_status: 'missing' }))
           .to contain_exactly(work_item3)
       end
-
-      context 'when work_items_alpha flag is disabled' do
-        before do
-          stub_feature_flags(work_items_alpha: false)
-        end
-
-        it 'ignores verification_status_widget argument' do
-          expect(resolve_items(verification_status_widget: { verification_status: 'passed' }))
-            .to contain_exactly(work_item1, work_item2, work_item3)
-        end
-      end
     end
 
     context 'with health_status filter', feature_category: :requirements_management do
