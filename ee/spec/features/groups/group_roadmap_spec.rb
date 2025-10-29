@@ -40,6 +40,7 @@ RSpec.describe 'group epic roadmap', :js, feature_category: :portfolio_managemen
     stub_licensed_features(epics: true)
 
     sign_in(user)
+    page.current_window.resize_to(1200, 2400)
   end
 
   context 'when epics exist for the group' do
