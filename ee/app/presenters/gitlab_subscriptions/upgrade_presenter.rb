@@ -45,6 +45,8 @@ module GitlabSubscriptions
       attr_reader :user, :namespace
 
       def eligible_for_upgrade?
+        return false unless namespace.persisted?
+
         (!namespace.paid? || namespace.trial?) && Ability.allowed?(user, :edit_billing, namespace)
       end
     end
