@@ -293,10 +293,7 @@ module EE
           store.subscribe ::Search::ElasticDefaultBranchChangedWorker, to: ::Repositories::DefaultBranchChangedEvent,
             if: ->(_) { ::Gitlab::CurrentSettings.elasticsearch_indexing? }
           store.subscribe ::Search::Elastic::GroupArchivedEventWorker, to: ::Namespaces::Groups::GroupArchivedEvent,
-            if: ->(_) do
-              ::Gitlab::CurrentSettings.elasticsearch_indexing? &&
-                ::Feature.enabled?(:elastic_group_archived_event, ::Feature.current_request)
-            end
+            if: ->(_) { ::Gitlab::CurrentSettings.elasticsearch_indexing? }
         end
 
         def subscribe_to_members_added_event(store)
