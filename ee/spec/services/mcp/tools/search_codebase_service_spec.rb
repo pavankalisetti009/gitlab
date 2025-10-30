@@ -203,10 +203,7 @@ RSpec.describe Mcp::Tools::SearchCodebaseService, feature_category: :mcp_server 
       end
 
       let(:query_result) do
-        ::Ai::ActiveContext::Queries::Result.new(
-          success: true,
-          hits: raw_hits
-        )
+        ::Ai::ActiveContext::Queries::Result.success(raw_hits)
       end
 
       before do
@@ -262,10 +259,7 @@ RSpec.describe Mcp::Tools::SearchCodebaseService, feature_category: :mcp_server 
 
         context 'when the given project has no code embeddings' do
           let(:query_result) do
-            ::Ai::ActiveContext::Queries::Result.new(
-              success: false,
-              error_code: ::Ai::ActiveContext::Queries::Result::ERROR_NO_EMBEDDINGS
-            )
+            ::Ai::ActiveContext::Queries::Result.no_embeddings_error
           end
 
           it 'returns an error response' do
@@ -282,37 +276,10 @@ RSpec.describe Mcp::Tools::SearchCodebaseService, feature_category: :mcp_server 
 
             expect(response[:isError]).to be true
 
-            expected_error_message = "Unable to perform semantic search, project '#{project_id}' has no Code Embeddings"
-            expect(response[:content].first[:text]).to eq("Tool execution failed: #{expected_error_message}")
-            expect(response[:structuredContent][:error]).to eq(expected_error_message)
-          end
-        end
-
-        context 'with an unknown error' do
-          let(:query_result) do
-            ::Ai::ActiveContext::Queries::Result.new(
-              success: false,
-              error_code: :some_error
-            )
-          end
-
-          it 'returns an error response' do
-            allow(::Ai::ActiveContext::Queries::Code)
-              .to receive(:new)
-              .with(search_term: 'Add raise Exception for protected type usage', user: current_user)
-              .and_return(query_obj)
-
-            allow(query_obj)
-              .to receive(:filter)
-              .and_return(query_result)
-
-            response = service.execute(request: nil, params: arguments)
-
-            expect(response[:isError]).to be true
-
-            expected_error_message = "Unknown error"
-            expect(response[:content].first[:text]).to eq("Tool execution failed: #{expected_error_message}")
-            expect(response[:structuredContent][:error]).to eq(expected_error_message)
+            expected_error_detail = "Project '#{project_id}' has no embeddings"
+            expected_error_message = "Unable to perform semantic search, #{expected_error_detail}"
+            expect(response[:content].first[:text]).to eq("Tool execution failed: #{expected_error_message}.")
+            expect(response[:structuredContent][:error]).to eq(expected_error_detail)
           end
         end
       end

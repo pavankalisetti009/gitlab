@@ -114,12 +114,7 @@ module Gitlab
             end
 
             def failed_search_result_context(result, category, project_id)
-              error_message = case result.error_code
-                              when ACTIVE_CONTEXT_QUERY::Result::ERROR_NO_EMBEDDINGS
-                                "Project with ID #{project_id} has no Code Embeddings"
-                              else
-                                "Unknown error"
-                              end
+              error_message = result.error_message(target_class: "Project", target_id: project_id)
 
               "\n\nA semantic search was attempted on the #{category}, " \
                 "but there was an error:\n#{error_message}."

@@ -278,14 +278,7 @@ RSpec.describe Gitlab::Llm::Chain::Tools::CodebaseSearch::Executor, feature_cate
           context 'when the search on a project has an accepted failure' do
             before do
               allow(codebase_query).to receive(:filter).with(project_id: project_2.id, path: nil)
-                .and_return(search_failed_result)
-            end
-
-            let(:search_failed_result) do
-              Ai::ActiveContext::Queries::Result.new(
-                success: false,
-                error_code: Ai::ActiveContext::Queries::Result::ERROR_NO_EMBEDDINGS
-              )
+                .and_return(Ai::ActiveContext::Queries::Result.no_embeddings_error)
             end
 
             it 'runs successfully but indicates the error' do
@@ -298,31 +291,8 @@ RSpec.describe Gitlab::Llm::Chain::Tools::CodebaseSearch::Executor, feature_cate
               end
               expect(project_2_ac['content']).to include(
                 "A semantic search was attempted on the repository, " \
-                  "but there was an error:\nProject with ID #{project_2.id} has no Code Embeddings."
+                  "but there was an error:\nProject '#{project_2.id}' has no embeddings."
               )
-            end
-
-            context 'with an unknown error' do
-              let(:search_failed_result) do
-                Ai::ActiveContext::Queries::Result.new(
-                  success: false,
-                  error_code: :some_error
-                )
-              end
-
-              it 'indicates the error as unknown error' do
-                answer = execute_tool
-                expect(answer.status).to eq(:ok)
-
-                project_2_ac = gitlab_context.additional_context.find do |ac|
-                  ac['category'] == 'repository' &&
-                    ac['id'] == "gid://gitlab/Project/#{project_2.id}"
-                end
-                expect(project_2_ac['content']).to include(
-                  "A semantic search was attempted on the repository, " \
-                    "but there was an error:\nUnknown error."
-                )
-              end
             end
           end
 
@@ -425,9 +395,6 @@ RSpec.describe Gitlab::Llm::Chain::Tools::CodebaseSearch::Executor, feature_cate
       user: user
     )
 
-    Ai::ActiveContext::Queries::Result.new(
-      success: true,
-      hits: hits
-    )
+    Ai::ActiveContext::Queries::Result.success(hits)
   end
 end

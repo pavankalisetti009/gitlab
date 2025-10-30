@@ -124,15 +124,10 @@ module Mcp
       private
 
       def failure_response(result, project_id)
-        error_message = case result.error_code
-                        when ACTIVE_CONTEXT_QUERY::Result::ERROR_NO_EMBEDDINGS
-                          "Unable to perform semantic search, project '#{project_id}' has no Code Embeddings"
-                        else
-                          "Unknown error"
-                        end
+        error_message = result.error_message(target_class: "Project", target_id: project_id)
 
         ::Mcp::Tools::Response.error(
-          "Tool execution failed: #{error_message}",
+          "Tool execution failed: Unable to perform semantic search, #{error_message}.",
           error_message
         )
       end
