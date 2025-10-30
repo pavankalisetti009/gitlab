@@ -3,6 +3,7 @@ import models from 'test_fixtures/api/admin/data_management/snippet_repository.j
 import DataManagementItem from 'ee/admin/data_management/components/data_management_item.vue';
 import GeoListItem from 'ee/geo_shared/list/components/geo_list_item.vue';
 import { convertObjectPropsToCamelCase } from '~/lib/utils/common_utils';
+import { VERIFICATION_STATUS_LABELS, VERIFICATION_STATUS_STATES } from 'ee/geo_shared/constants';
 
 describe('DataManagementItem', () => {
   let wrapper;
@@ -37,6 +38,34 @@ describe('DataManagementItem', () => {
           defaultText: 'Unknown',
         },
       ],
+    });
+  });
+
+  describe.each`
+    checksumState  | expectedStatus                          | expectedLabel
+    ${'pending'}   | ${VERIFICATION_STATUS_STATES.PENDING}   | ${VERIFICATION_STATUS_LABELS.PENDING}
+    ${'started'}   | ${VERIFICATION_STATUS_STATES.STARTED}   | ${VERIFICATION_STATUS_LABELS.STARTED}
+    ${'succeeded'} | ${VERIFICATION_STATUS_STATES.SUCCEEDED} | ${VERIFICATION_STATUS_LABELS.SUCCEEDED}
+    ${'failed'}    | ${VERIFICATION_STATUS_STATES.FAILED}    | ${VERIFICATION_STATUS_LABELS.FAILED}
+    ${'disabled'}  | ${VERIFICATION_STATUS_STATES.DISABLED}  | ${VERIFICATION_STATUS_LABELS.DISABLED}
+    ${undefined}   | ${VERIFICATION_STATUS_STATES.UNKNOWN}   | ${VERIFICATION_STATUS_LABELS.UNKNOWN}
+  `('when checkSum state is $checksumState', ({ checksumState, expectedStatus, expectedLabel }) => {
+    it('passes correct status props to GeoListItem', () => {
+      createComponent({
+        item: {
+          ...model,
+          checksumInformation: { ...model.checksumInformation, checksumState },
+        },
+      });
+
+      expect(findGeoListItem().props('statusArray')).toEqual([
+        {
+          tooltip: `Checksum: ${expectedStatus.title}`,
+          icon: expectedStatus.icon,
+          variant: expectedStatus.variant,
+          label: expectedLabel,
+        },
+      ]);
     });
   });
 
