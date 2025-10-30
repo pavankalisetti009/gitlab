@@ -6,6 +6,7 @@ RSpec.describe Projects::Integrations::Jira::ByIdsFinder do
   include ReactiveCachingHelpers
 
   let_it_be(:project) { create(:project) }
+  let_it_be(:jira_integration) { create(:jira_integration, :jira_cloud, project: project) }
 
   let(:jira_issue_ids) { %w[10000 10001] }
   let(:finder_params) { [project, { issue_ids: jira_issue_ids }] }

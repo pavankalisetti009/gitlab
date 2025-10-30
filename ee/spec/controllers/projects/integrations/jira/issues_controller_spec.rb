@@ -7,7 +7,11 @@ RSpec.describe Projects::Integrations::Jira::IssuesController, feature_category:
 
   let_it_be(:project) { create(:project) }
   let_it_be(:user) { create(:user, developer_of: project) }
-  let_it_be(:jira) { create(:jira_integration, project: project, issues_enabled: true, project_key: 'TEST', project_keys: ['TEST']) }
+
+  let!(:jira) do
+    create(:jira_integration, :jira_cloud, project: project, issues_enabled: true,
+      project_key: 'TEST', project_keys: ['TEST'])
+  end
 
   before do
     stub_licensed_features(jira_issues_integration: true)
@@ -314,7 +318,7 @@ RSpec.describe Projects::Integrations::Jira::IssuesController, feature_category:
       before do
         stub_licensed_features(jira_issues_integration: true)
 
-        stub_request(:get, "https://jira.example.com/rest/api/2/issue/#{key}?expand=renderedFields")
+        stub_request(:get, "https://mysite.atlassian.net/rest/api/2/issue/#{key}?expand=renderedFields")
           .to_return(status: jira_response_status, body: jira_response_body, headers: {})
       end
 
@@ -403,6 +407,78 @@ RSpec.describe Projects::Integrations::Jira::IssuesController, feature_category:
 
           expect(response.body).to eq('')
           expect(response).to have_gitlab_http_status(:not_found)
+        end
+      end
+    end
+  end
+
+  context 'with Jira Server deployment' do
+    let!(:jira) do
+      create(:jira_integration, :jira_server, project: project, issues_enabled: true,
+        project_key: 'TEST', project_keys: ['TEST'])
+    end
+
+    describe 'GET #index' do
+      context 'json request' do
+        let(:jira_issues) { [] }
+
+        it 'sets Server-specific pagination headers' do
+          expect_next_instance_of(Projects::Integrations::Jira::IssuesFinder) do |finder|
+            expect(finder).to receive(:execute).and_return([])
+          end
+
+          get :index, params: { namespace_id: project.namespace, project_id: project }, format: :json
+
+          expect(response).to include_pagination_headers
+          expect(response.headers['X-Page']).to eq '1'
+          expect(response.headers['X-Per-Page']).to eq Jira::Requests::Issues::ListService::PER_PAGE.to_s
+          expect(response.headers['X-Total']).to eq '0'
+        end
+
+        context 'when pagination params' do
+          it 'properly sets Server pagination parameter values' do
+            expect_next_instance_of(Projects::Integrations::Jira::IssuesFinder, project, { 'page' => '12', 'per_page' => '20', 'state' => 'opened', 'sort' => 'created_date' }) do |finder|
+              expect(finder).to receive(:execute).and_return([])
+            end
+
+            get :index, params: { namespace_id: project.namespace, project_id: project, page: '12', per_page: '20' }, format: :json
+          end
+        end
+      end
+
+      describe 'GET #show' do
+        let(:key) { 'TEST-123' }
+        let(:jira_response_body) do
+          {
+            key: key,
+            renderedFields: { description: 'A description' },
+            fields: {
+              resolutiondate: nil,
+              created: '2022-06-30T11:34:39.236+0200',
+              labels: [],
+              updated: '2022-06-30T11:34:39.236+0200',
+              status: { name: 'Backlog' },
+              summary: 'Title',
+              reporter: {
+                accountId: '123',
+                avatarUrls: { '48x48' => 'https://secure.gravatar.com/avatar/123.png' },
+                displayName: 'John'
+              },
+              duedate: nil,
+              comment: { comments: [] }
+            }
+          }.to_json
+        end
+
+        before do
+          stub_request(:get, "https://jira.example.com/rest/api/2/issue/#{key}?expand=renderedFields")
+            .to_return(status: 200, body: jira_response_body, headers: {})
+        end
+
+        it 'works with Server URL' do
+          get :show, params: { namespace_id: project.namespace, project_id: project, id: key }
+
+          expect(response).to have_gitlab_http_status(:ok)
         end
       end
     end

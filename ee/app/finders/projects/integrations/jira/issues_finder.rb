@@ -8,11 +8,11 @@ module Projects
         IntegrationError = Class.new(Error)
         RequestError = Class.new(Error)
 
-        attr_reader :issues, :per_page, :next_page_token, :is_last
+        attr_reader :issues, :per_page, :next_page_token, :is_last, :total_count
 
         class << self
           def valid_params
-            @valid_params ||= %i[next_page_token per_page search state status author_username assignee_username project]
+            @valid_params ||= %i[page next_page_token per_page search state status author_username assignee_username project]
             # to permit array params you need to init them to an empty array
             @valid_params << { labels: [], vulnerability_ids: [], issue_ids: [] }
           end
@@ -45,22 +45,29 @@ module Projects
 
         private
 
-        attr_reader :project, :jira_integration, :next_page_token_param, :params
+        attr_reader :project, :jira_integration, :page_token, :page, :params
 
         # rubocop: disable CodeReuse/ServiceClass
         def fetch_issues(project_keys)
           jql = ::Jira::JqlBuilderService.new(project_keys, params).execute
-          response = ::Jira::Requests::Issues::ListService
-                       .new(jira_integration, { jql: jql, next_page_token: next_page_token_param, per_page: per_page })
-                       .execute
+          jira_service_class = jira_cloud? ? ::Jira::Requests::Issues::CloudListService : ::Jira::Requests::Issues::ServerListService
+          response = jira_service_class.new(
+            jira_integration,
+            { jql: jql, next_page_token: page_token, page: page, per_page: per_page }
+          ).execute
 
           raise RequestError, response.message if response.error?
 
-          @next_page_token = response.payload[:next_page_token]
+          @next_page_token = response.payload[:next_page_token] if jira_cloud?
           @is_last = response.payload[:is_last]
+          @total_count = response.payload[:total_count] unless jira_cloud?
           @issues = response.payload[:issues]
         end
         # rubocop: enable CodeReuse/ServiceClass
+
+        def jira_cloud?
+          jira_integration.data_fields.deployment_cloud?
+        end
 
         def map_sort_values(sort)
           case sort
@@ -78,7 +85,8 @@ module Projects
         end
 
         def set_pagination
-          @next_page_token_param = params[:next_page_token]
+          @page_token = params[:next_page_token]
+          @page = (params[:page].presence || 1).to_i unless jira_cloud?
           @per_page = (params[:per_page].presence || ::Jira::Requests::Issues::ListService::PER_PAGE).to_i
         end
 

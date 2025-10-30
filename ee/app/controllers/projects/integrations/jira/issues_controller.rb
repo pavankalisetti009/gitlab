@@ -52,15 +52,36 @@ module Projects
         end
 
         def issues_json
+          if jira_integration.data_fields.deployment_cloud?
+            cloud_issues_json
+          else
+            server_issues_json
+          end
+        end
+
+        def cloud_issues_json
+          # Cloud uses token-based pagination
           issues = finder.execute
 
-          # Set pagination headers for token-based pagination (after execute sets the values)
           response.headers['X-Per-Page'] = finder.per_page.to_s
-          response.headers['X-Next-Page-Token'] = finder.next_page_token if finder.next_page_token.present?
+          response.headers['X-Next-Page-Token'] = finder.next_page_token unless finder.is_last
           response.headers['X-Is-Last'] = finder.is_last.to_s
 
           ::Integrations::JiraSerializers::IssueSerializer.new
             .represent(issues, project: project)
+        end
+
+        def server_issues_json
+          # Server uses offset-based pagination with Kaminari
+          jira_issues = Kaminari.paginate_array(
+            finder.execute,
+            limit: finder.per_page,
+            total_count: finder.total_count
+          )
+
+          ::Integrations::JiraSerializers::IssueSerializer.new
+            .with_pagination(request, response)
+            .represent(jira_issues, project: project)
         end
 
         def issue_json
