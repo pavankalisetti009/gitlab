@@ -6,7 +6,7 @@ module EE
       extend ::Gitlab::Utils::Override
       include SecurityOrchestrationHelper
 
-      LinkedAsSecutiryPolicyProjectError = ServiceResponse.error(
+      LinkedAsSecurityPolicyProjectError = ServiceResponse.error(
         message: 'Project cannot be deleted because it is linked as a security policy project')
 
       private
@@ -15,7 +15,7 @@ module EE
       def preconditions_checks
         result = super
         return result if result.error?
-        return LinkedAsSecutiryPolicyProjectError if reject_security_policy_project_deletion?
+        return LinkedAsSecurityPolicyProjectError if reject_security_policy_project_deletion?
 
         ServiceResponse.success
       end
