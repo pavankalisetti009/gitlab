@@ -24,6 +24,7 @@ RSpec.describe Gitlab::Llm::AiGateway::CodeSuggestionsClient, feature_category: 
 
   let(:body) { { choices: [{ text: "puts \"Hello World!\"\nend", index: 0, finish_reason: "length" }] } }
   let(:code) { 200 }
+  let(:cloud_connector_code_completions_url) { 'https://cloud-connector.gitlab.com/v2/code/completions' }
 
   before do
     allow(user).to receive(:allowed_to_use).and_return(auth_response)
@@ -35,8 +36,6 @@ RSpec.describe Gitlab::Llm::AiGateway::CodeSuggestionsClient, feature_category: 
     allow(Gitlab::AiGateway).to receive(:headers).with(
       user: user, unit_primitive_name: unit_primitive, ai_feature_name: expected_ai_feature
     ).and_return(ai_gateway_headers)
-
-    stub_feature_flags(instance_level_model_selection: false)
   end
 
   shared_examples "error response" do |message|
@@ -55,8 +54,16 @@ RSpec.describe Gitlab::Llm::AiGateway::CodeSuggestionsClient, feature_category: 
 
   shared_context 'with tests requests' do
     before do
-      stub_request(:post, /#{Gitlab::AiGateway.url}/)
-        .to_return(status: code, body: body.to_json, headers: { "Content-Type" => "application/json" })
+      [
+        cloud_connector_code_completions_url,
+        /#{Gitlab::AiGateway.url}/
+      ].each do |url|
+        stub_request(:post, url).to_return(
+          status: code,
+          body: body.to_json,
+          headers: { "Content-Type" => "application/json" }
+        )
+      end
     end
 
     it 'returns nil if there is no error' do
@@ -65,7 +72,12 @@ RSpec.describe Gitlab::Llm::AiGateway::CodeSuggestionsClient, feature_category: 
 
     context 'when request raises an error' do
       before do
-        stub_request(:post, /#{Gitlab::AiGateway.url}/).to_raise(StandardError.new('an error'))
+        [
+          cloud_connector_code_completions_url,
+          /#{Gitlab::AiGateway.url}/
+        ].each do |url|
+          stub_request(:post, url).to_raise(StandardError.new('an error'))
+        end
       end
 
       it 'tracks an exception' do

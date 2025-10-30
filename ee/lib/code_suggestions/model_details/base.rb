@@ -59,7 +59,6 @@ module CodeSuggestions
         return true unless feature_setting.present?
         return false unless vendored?
         return true if feature_setting.is_a?(Ai::FeatureSetting)
-        return true if ::Feature.disabled?(:instance_level_model_selection, :instance)
 
         feature_setting.set_to_gitlab_default?
       end

@@ -202,10 +202,6 @@ RSpec.describe CodeSuggestions::ModelDetails::Base, feature_category: :code_sugg
   describe '#default?' do
     subject(:default?) { model_details.default? }
 
-    before do
-      stub_feature_flags(instance_level_model_selection: false)
-    end
-
     context 'when the feature setting is nil' do
       it { is_expected.to be(true) }
     end
@@ -240,28 +236,22 @@ RSpec.describe CodeSuggestions::ModelDetails::Base, feature_category: :code_sugg
 
         it { is_expected.to be(true) }
 
-        context 'when :instance_level_model_selection is enabled' do
+        context 'when the instance level namespace is default' do
           before do
-            stub_feature_flags(instance_level_model_selection: true)
+            create(:instance_model_selection_feature_setting, feature: feature_setting_name, offered_model_ref: nil)
           end
 
-          context 'when the instance level namespace is default' do
-            before do
-              create(:instance_model_selection_feature_setting, feature: feature_setting_name, offered_model_ref: nil)
-            end
+          it { is_expected.to be(true) }
+        end
 
-            it { is_expected.to be(true) }
+        context 'when the instance level namespace is not default' do
+          before do
+            create(:instance_model_selection_feature_setting,
+              feature: feature_setting_name,
+              offered_model_ref: 'claude_sonnet_3_5')
           end
 
-          context 'when the instance level namespace is not default' do
-            before do
-              create(:instance_model_selection_feature_setting,
-                feature: feature_setting_name,
-                offered_model_ref: 'claude_sonnet_3_5')
-            end
-
-            it { is_expected.to be(false) }
-          end
+          it { is_expected.to be(false) }
         end
       end
     end

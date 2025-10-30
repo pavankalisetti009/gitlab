@@ -90,8 +90,7 @@ RSpec.describe CodeSuggestions::Tasks::CodeCompletion, feature_category: :code_s
     stub_feature_flags(
       incident_fail_over_completion_provider: false,
       use_claude_code_completion: false,
-      code_completion_opt_out_fireworks: false,
-      instance_level_model_selection: false
+      code_completion_opt_out_fireworks: false
     )
   end
 
@@ -167,6 +166,7 @@ RSpec.describe CodeSuggestions::Tasks::CodeCompletion, feature_category: :code_s
       context 'on GitLab saas' do
         before do
           allow(Gitlab).to receive(:org_or_com?).and_return(true)
+          stub_saas_features(gitlab_com_subscriptions: true)
         end
 
         let_it_be(:group1) do
@@ -499,84 +499,61 @@ RSpec.describe CodeSuggestions::Tasks::CodeCompletion, feature_category: :code_s
         create(:ai_feature_setting, :code_completions, provider: :vendored)
       end
 
-      it_behaves_like 'code suggestion task' do
-        let(:expected_body) do
-          {
-            "current_file" => {
-              "file_name" => "test.py",
-              "content_above_cursor" => "sor",
-              "content_below_cursor" => "som"
-            },
-            "telemetry" => [],
-            "stream" => false,
-            "model_provider" => "gitlab",
-            "model_name" => ""
-          }
-        end
-
-        let(:expected_feature_name) { :code_suggestions }
+      let(:model_details) do
+        {
+          "model_provider" => "gitlab",
+          "model_name" => ""
+        }
       end
 
-      context 'when :instance_level_model_selection is enabled' do
-        let(:model_details) do
-          {
-            "model_provider" => "gitlab",
-            "model_name" => ""
-          }
-        end
+      let(:expected_body) do
+        {
+          "current_file" => {
+            "file_name" => "test.py",
+            "content_above_cursor" => "sor",
+            "content_below_cursor" => "som"
+          },
+          "telemetry" => [],
+          "stream" => false,
+          **model_details
+        }
+      end
 
-        let(:expected_body) do
-          {
-            "current_file" => {
-              "file_name" => "test.py",
-              "content_above_cursor" => "sor",
-              "content_below_cursor" => "som"
-            },
-            "telemetry" => [],
-            "stream" => false,
-            **model_details
-          }
-        end
+      let(:expected_feature_name) { :code_suggestions }
 
-        let(:expected_feature_name) { :code_suggestions }
+      before do
+        allow(Gitlab).to receive(:com?).and_return(false)
+      end
 
-        before do
-          stub_feature_flags(instance_level_model_selection: true)
-          allow(Gitlab).to receive(:com?).and_return(false)
-
-          ai_feature_setting.update!(self_hosted_model: nil, provider: :vendored)
-        end
-
-        context 'and instance level is default' do
-          it_behaves_like 'code suggestion task' do
-            let(:model_details) do
-              {
-                "model_name" => "codestral-2501",
-                "model_provider" => "fireworks_ai",
-                "prompt_version" => 1
-              }
-            end
-
-            let(:expected_feature_name) { :code_suggestions }
+      context 'and default model at the instance level' do
+        it_behaves_like 'code suggestion task' do
+          let(:model_details) do
+            {
+              "model_name" => "codestral-2501",
+              "model_provider" => "fireworks_ai",
+              "prompt_version" => 1
+            }
           end
+
+          let(:expected_feature_name) { :code_suggestions }
         end
+      end
 
-        context 'and vendored model is pinned' do
-          it_behaves_like 'code suggestion task' do
-            before do
-              create(:instance_model_selection_feature_setting, feature: :code_completions,
-                offered_model_ref: "claude_sonnet_3_5")
-            end
-
-            let(:model_details) do
-              {
-                "model_name" => "claude_sonnet_3_5",
-                "model_provider" => "gitlab"
-              }
-            end
-
-            let(:expected_feature_name) { :code_suggestions }
+      context 'and vendored model is pinned' do
+        it_behaves_like 'code suggestion task' do
+          before do
+            create(:instance_model_selection_feature_setting, feature: :code_completions,
+              offered_model_ref: "claude_sonnet_3_5")
           end
+
+          let(:model_details) do
+            {
+              "model_name" => "claude_sonnet_3_5",
+              "model_provider" => "gitlab"
+            }
+          end
+
+          let(:expected_feature_name) { :code_suggestions }
         end
       end
     end

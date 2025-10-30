@@ -160,56 +160,48 @@ RSpec.describe CodeSuggestions::ModelDetails::CodeCompletion, feature_category: 
       let(:expected_self_hosted_model_result) { {} }
 
       before do
-        stub_feature_flags(
-          use_claude_code_completion: false,
-          instance_level_model_selection: false
-        )
+        stub_feature_flags(use_claude_code_completion: false)
       end
 
-      context 'when instance level model selection is enabled' do
+      context 'when instance duo self-hosted config exists' do
         before do
-          stub_feature_flags(
-            instance_level_model_selection: true,
-            code_completion_opt_out_fireworks: false
-          )
+          stub_feature_flags(code_completion_opt_out_fireworks: false)
         end
 
-        context 'when instance duo self-hosted config exists' do
-          context 'and is not set to vendored' do
-            let_it_be(:self_hosted_model) { create(:ai_self_hosted_model) }
+        context 'and is not set to vendored' do
+          let_it_be(:self_hosted_model) { create(:ai_self_hosted_model) }
 
+          before do
+            create(:ai_feature_setting,
+              self_hosted_model: self_hosted_model,
+              provider: :self_hosted,
+              feature: 'code_completions')
+          end
+
+          it 'returns empty response' do
+            expect(actual_result).to eq(expected_self_hosted_model_result)
+          end
+        end
+
+        context 'and is set to vendored' do
+          context 'and instance level is not default' do
             before do
-              create(:ai_feature_setting,
-                self_hosted_model: self_hosted_model,
-                provider: :self_hosted,
-                feature: 'code_completions')
+              create(:instance_model_selection_feature_setting,
+                feature: 'code_completions',
+                offered_model_ref: 'claude_sonnet_3_5')
             end
 
-            it 'returns empty response' do
-              expect(actual_result).to eq(expected_self_hosted_model_result)
+            it 'returns the selected model' do
+              expect(actual_result).to eq({
+                model_provider: 'gitlab',
+                model_name: 'claude_sonnet_3_5'
+              })
             end
           end
 
-          context 'and is set to vendored' do
-            context 'and instance level is not default' do
-              before do
-                create(:instance_model_selection_feature_setting,
-                  feature: 'code_completions',
-                  offered_model_ref: 'claude_sonnet_3_5')
-              end
-
-              it 'returns the selected model' do
-                expect(actual_result).to eq({
-                  model_provider: 'gitlab',
-                  model_name: 'claude_sonnet_3_5'
-                })
-              end
-            end
-
-            context 'and instance level is default' do
-              it 'returns the default model' do
-                expect(actual_result).to eq(expected_fireworks_codestral_result)
-              end
+          context 'and instance level is default' do
+            it 'returns the default model' do
+              expect(actual_result).to eq(expected_fireworks_codestral_result)
             end
           end
         end

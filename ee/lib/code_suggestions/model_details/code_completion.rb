@@ -27,11 +27,7 @@ module CodeSuggestions
         # if self-hosted, the model details are provided by the client
         return {} if self_hosted?
 
-        if Feature.enabled?(:instance_level_model_selection, :instance)
-          return params_from_feature_setting(feature_setting) unless Gitlab.org_or_com? || default? # rubocop: disable Gitlab/AvoidGitlabInstanceChecks -- This is already used in this class
-        elsif vendored?
-          return params_as_if_gitlab_default_model(FEATURE_SETTING_NAME)
-        end
+        return params_from_feature_setting(feature_setting) unless Gitlab.org_or_com? || default? # rubocop: disable Gitlab/AvoidGitlabInstanceChecks -- This is already used in this class
 
         return vertex_codestral_2501_model_details if code_completion_opt_out_fireworks?
 
