@@ -48,6 +48,7 @@ RSpec.describe ::Search::Elastic::TriggerIndexingWorker, :elastic, feature_categ
         expect(task_executor_service).to receive(:execute).with(:recreate_index)
         expect(task_executor_service).to receive(:execute).with(:clear_index_status)
         expect(task_executor_service).to receive(:execute).with(:clear_reindex_status)
+        expect(task_executor_service).to receive(:execute).with(:clear_tracking_queues)
         expect(task_executor_service).to receive(:execute).with(:resume_indexing)
 
         tasks_to_schedule.each do |task|
@@ -74,6 +75,7 @@ RSpec.describe ::Search::Elastic::TriggerIndexingWorker, :elastic, feature_categ
             expect(task_executor_service).to receive(:execute).with(:recreate_index)
             expect(task_executor_service).to receive(:execute).with(:clear_index_status)
             expect(task_executor_service).to receive(:execute).with(:clear_reindex_status)
+            expect(task_executor_service).to receive(:execute).with(:clear_tracking_queues)
             expect(task_executor_service).to receive(:execute).with(:resume_indexing)
 
             tasks_to_schedule.each do |task|
@@ -156,6 +158,7 @@ RSpec.describe ::Search::Elastic::TriggerIndexingWorker, :elastic, feature_categ
           expect(task_executor_service).to receive(:execute).with(:recreate_index)
           expect(task_executor_service).to receive(:execute).with(:clear_index_status)
           expect(task_executor_service).to receive(:execute).with(:clear_reindex_status)
+          expect(task_executor_service).to receive(:execute).with(:clear_tracking_queues)
           expect(task_executor_service).to receive(:execute).with(:resume_indexing)
 
           tasks_to_schedule.each do |task|

@@ -1284,6 +1284,19 @@ RSpec.describe ::Search::RakeTaskExecutorService, :elastic_helpers, :silence_std
     end
   end
 
+  describe '#clear_tracking_queues' do
+    subject(:clear_tracking_queues) { service.execute(:clear_tracking_queues) }
+
+    it 'clears all tracking queues' do
+      expect(::Elastic::ProcessBookkeepingService).to receive(:clear_tracking!)
+      expect(::Elastic::ProcessInitialBookkeepingService).to receive(:clear_tracking!)
+      expect(::Search::Elastic::ProcessEmbeddingBookkeepingService).to receive(:clear_tracking!)
+      expect(logger).to receive(:info).with(/All indexing queues have been cleared/)
+
+      clear_tracking_queues
+    end
+  end
+
   describe '#index_and_search_validation' do
     subject(:index_and_search_validation) { service.execute(:index_and_search_validation) }
 
