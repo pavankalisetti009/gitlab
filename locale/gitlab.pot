@@ -13922,6 +13922,9 @@ msgstr ""
 msgid "CiVariables|Hidden"
 msgstr ""
 
+msgid "CiVariables|Hidden variable value"
+msgstr ""
+
 msgid "CiVariables|In all projects that do not use pipeline variables, change the %{strongStart}Minimum role to use pipeline variables%{strongEnd} setting to %{strongStart}No one allowed%{strongEnd}. Project owners can later choose a different setting if needed."
 msgstr ""
 
@@ -49135,9 +49138,6 @@ msgstr ""
 msgid "Pipeline|Failed to retrieve CI/CD variables."
 msgstr ""
 
-msgid "Pipeline|File"
-msgstr ""
-
 msgid "Pipeline|Manual"
 msgstr ""
 
@@ -49298,9 +49298,6 @@ msgid "Pipeline|Trigger author"
 msgstr ""
 
 msgid "Pipeline|Variable"
-msgstr ""
-
-msgid "Pipeline|Variable type"
 msgstr ""
 
 msgid "Pipeline|Variables"
