@@ -41,7 +41,7 @@ module Ai
       scope :with_workflow_definition, ->(definition) { where(workflow_definition: definition) }
       scope :without_workflow_definition, ->(definition) { where.not(workflow_definition: definition) }
       scope :with_environment, ->(environment) { where(environment: environment) }
-      scope :from_pipeline, -> { where.not(workflow_definition: :chat).with_environment([:web, :ambient]) }
+      scope :from_pipeline, -> { where.not(workflow_definition: :chat).with_environment(ENVIRONMENTS_FROM_PIPELINE) }
       scope :in_status_group, ->(status_group) do
         statuses_in_group = GROUPED_STATUSES.fetch(status_group.to_sym, [])
 
@@ -110,6 +110,8 @@ module Ai
         canceled: [:stopped]
       }.freeze
 
+      ENVIRONMENTS_FROM_PIPELINE = %w[web ambient].freeze
+
       class AgentPrivileges
         READ_WRITE_FILES  = 1
         READ_ONLY_GITLAB  = 2
@@ -177,6 +179,12 @@ module Ai
 
       def chat?
         workflow_definition == 'chat'
+      end
+
+      def from_pipeline?
+        return false if chat?
+
+        environment.in?(ENVIRONMENTS_FROM_PIPELINE)
       end
 
       def archived?

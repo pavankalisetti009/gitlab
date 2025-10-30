@@ -31,11 +31,11 @@ module Ai
         @subject.project.duo_remote_flows_enabled && ::Feature.enabled?(:duo_workflow_in_ci, @user)
       end
 
-      condition(:web_environment) do
-        @subject.environment == "web"
+      condition(:from_pipeline) do
+        @subject.from_pipeline?
       end
 
-      rule { true_duo_workflow & can_use_duo_workflows_in_project & web_environment }.policy do
+      rule { true_duo_workflow & can_use_duo_workflows_in_project & from_pipeline }.policy do
         enable :read_duo_workflow
       end
 
