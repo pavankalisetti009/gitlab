@@ -198,8 +198,14 @@ module EE
         @subject.feature_available?(:group_level_compliance_violations_report)
       end
 
-      condition(:service_accounts_available, scope: :subject) do
-        @subject.feature_available_non_trial?(:service_accounts)
+      condition(:service_accounts_available) do
+        if ::Feature.enabled?(:allow_service_account_creation_on_trial, @subject) &&
+            @subject.root_ancestor.trial_active? &&
+            @user&.identity_verified?
+          @subject.feature_available?(:service_accounts)
+        else
+          @subject.feature_available_non_trial?(:service_accounts)
+        end
       end
 
       condition(:user_banned_from_namespace) do
