@@ -246,6 +246,22 @@ RSpec.describe Ai::DuoWorkflows::WorkflowContextGenerationService, :aggregate_fa
   end
 
   describe '#duo_agent_platform_feature_setting' do
+    context 'when workflow definition is code_review/v1' do
+      let_it_be(:model) do
+        create(:ai_self_hosted_model, model: :claude_3, identifier: 'claude-3-7-sonnet-20250219')
+      end
+
+      let_it_be(:review_merge_request_feature_setting) do
+        create(:ai_feature_setting, :review_merge_request, self_hosted_model: model)
+      end
+
+      let(:workflow_definition) { 'code_review/v1' }
+
+      it 'returns the review merge request feature setting' do
+        expect(service.duo_agent_platform_feature_setting).to eq(review_merge_request_feature_setting)
+      end
+    end
+
     context 'when self-hosted feature setting exists' do
       let_it_be(:model) do
         create(:ai_self_hosted_model, model: :claude_3, identifier: 'claude-3-7-sonnet-20250219')
