@@ -32,6 +32,7 @@ module Mutations
 
         def resolve(namespace_path:, enable:)
           project = authorized_find!(project_path: namespace_path)
+          raise_resource_not_available_error! if project.self_or_ancestors_archived?
 
           response = ::Security::Configuration::SetSecretPushProtectionService
             .execute(current_user: current_user, project: project, enable: enable)

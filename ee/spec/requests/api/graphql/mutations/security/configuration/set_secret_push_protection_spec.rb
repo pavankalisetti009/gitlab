@@ -74,6 +74,31 @@ RSpec.describe 'Setting Project Secret Push Protection', feature_category: :secr
           .not_to change { security_setting.reload.secret_push_protection_enabled }
       end
     end
+
+    context 'when a project is archived' do
+      before do
+        project.update!(archived: true)
+      end
+
+      it_behaves_like 'a mutation that returns a top-level access error'
+
+      it 'does not enable secret push protection' do
+        expect { post_graphql_mutation(mutation, current_user: current_user) }
+          .not_to change { security_setting.reload.secret_push_protection_enabled }
+      end
+    end
+
+    context 'when projects group is archived' do
+      let_it_be(:group) { create(:group, :archived) }
+      let_it_be(:project) { create(:project, group: group) }
+
+      it_behaves_like 'a mutation that returns a top-level access error'
+
+      it 'does not enable secret push protection' do
+        expect { post_graphql_mutation(mutation, current_user: current_user) }
+          .not_to change { security_setting.reload.secret_push_protection_enabled }
+      end
+    end
   end
 
   context 'with group' do

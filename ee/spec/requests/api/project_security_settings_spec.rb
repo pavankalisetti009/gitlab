@@ -81,6 +81,29 @@ RSpec.describe API::ProjectSecuritySettings, :aggregate_failures, feature_catego
           expect(response).to have_gitlab_http_status(:ok)
           expect(json_response['secret_push_protection_enabled']).to be(true)
         end
+
+        context 'when project is archived' do
+          before do
+            project.update!(archived: true)
+          end
+
+          it 'returns 403 forbidden' do
+            put api(url, user), params: { secret_push_protection_enabled: true }
+
+            expect(response).to have_gitlab_http_status(:forbidden)
+          end
+        end
+
+        context 'when projects group is archived' do
+          let_it_be(:group) { create(:group, :archived) }
+          let_it_be(:project) { create(:project, group: group) }
+
+          it 'returns 403 forbidden' do
+            put api(url, user), params: { secret_push_protection_enabled: true }
+
+            expect(response).to have_gitlab_http_status(:forbidden)
+          end
+        end
       end
 
       it 'returns 401 Unauthorized for users with Developer role' do
