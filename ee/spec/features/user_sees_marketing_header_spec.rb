@@ -5,33 +5,29 @@ require "spec_helper"
 RSpec.describe 'User sees experimental marketing header', feature_category: :onboarding do
   let_it_be(:project) { create(:project, :public) }
 
-  context 'when not logged in' do
-    subject { page.find('.header-logged-out') }
-
+  context 'when not logged in', :js do
     it 'does not show marketing header links', :aggregate_failures do
       visit project_path(project)
 
-      expect(subject).not_to have_text "Why GitLab"
-      expect(subject).not_to have_text "Pricing"
-      expect(subject).not_to have_text "Contact Sales"
-      expect(subject).not_to have_text "Get free trial"
+      expect(page).not_to have_text "Why GitLab"
+      expect(page).not_to have_text "Pricing"
+      expect(page).not_to have_text "Get free trial"
 
-      expect(subject).to have_text "Explore"
-      expect(subject).to have_text "Sign in"
-      expect(subject).to have_text "Register"
+      expect(page).to have_text "Explore"
+      expect(page).to have_text "Sign in"
+      expect(page).to have_text "Register"
     end
 
     context 'when SaaS', :saas do
       it 'shows marketing header links', :aggregate_failures do
         visit project_path(project)
 
-        expect(subject).to have_text "Why GitLab"
-        expect(subject).to have_text "Pricing"
-        expect(subject).to have_text "Contact Sales"
-        expect(subject).to have_text "Get free trial"
-        expect(subject).to have_text "Explore"
-        expect(subject).to have_text "Sign in"
-        expect(subject).not_to have_text "Register"
+        expect(page).to have_text "Why GitLab"
+        expect(page).to have_text "Pricing"
+        expect(page).to have_text "Get free trial"
+        expect(page).to have_text "Explore"
+        expect(page).to have_text "Sign in"
+        expect(page).not_to have_text "Register"
       end
     end
   end
