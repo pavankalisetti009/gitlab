@@ -190,6 +190,9 @@ export const mockSecurityAttributes = mockSecurityAttributeCategories.flatMap(
   (category) => category.securityAttributes,
 );
 
+// Store for tracked refs (simulating cache)
+let trackedRefsStore = null;
+
 /* eslint-disable @gitlab/require-i18n-strings */
 export default {
   Group: {
@@ -308,6 +311,28 @@ export default {
           ]);
         }, 2000);
       });
+    },
+  },
+  Mutation: {
+    securityTrackedRefsUntrack(_, { input }) {
+      const { refIds } = input;
+      if (document.location.search.includes('untrackError')) {
+        return {
+          __typename: 'SecurityTrackedRefsUntrackPayload',
+          errors: ['Failed to untrack refs.'],
+          untrackedRefIds: [],
+        };
+      }
+
+      if (trackedRefsStore) {
+        trackedRefsStore = trackedRefsStore.filter((ref) => !refIds.includes(ref.id));
+      }
+
+      return {
+        __typename: 'SecurityTrackedRefsUntrackPayload',
+        errors: [],
+        untrackedRefIds: refIds,
+      };
     },
   },
 };
