@@ -87,6 +87,7 @@ module EE
       has_one :security_setting, class_name: 'ProjectSecuritySetting'
       has_one :vulnerability_statistic, class_name: 'Vulnerabilities::Statistic', foreign_key: :project_id, inverse_of: :project
       has_one :security_statistics, class_name: 'Security::ProjectStatistics'
+      has_one :security_inventory_filters, class_name: 'Security::InventoryFilter', inverse_of: :project
 
       has_one :dependency_proxy_packages_setting, class_name: '::DependencyProxy::Packages::Setting', inverse_of: :project
       has_many :zoekt_repositories, class_name: '::Search::Zoekt::Repository', inverse_of: :project

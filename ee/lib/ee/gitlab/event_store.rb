@@ -149,6 +149,9 @@ module EE
             to: ::Groups::GroupTransferedEvent
           store.subscribe ::Security::AnalyzersStatus::ProcessProjectTransferEventsWorker,
             to: ::Projects::ProjectTransferedEvent
+          store.subscribe ::Security::AnalyzersStatus::ProcessGroupArchivedEventsWorker,
+            to: ::Namespaces::Groups::GroupArchivedEvent
+
           store.subscribe ::Security::AnalyzerNamespaceStatuses::ProcessGroupDeletedEventsWorker,
             to: ::Groups::GroupDeletedEvent
 

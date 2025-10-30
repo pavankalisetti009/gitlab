@@ -44,7 +44,9 @@ FactoryBot.define do
     end
 
     trait :archived_project do
-      archived { true }
+      after(:build) do |inventory_filter|
+        inventory_filter.archived = true
+      end
     end
   end
 end
