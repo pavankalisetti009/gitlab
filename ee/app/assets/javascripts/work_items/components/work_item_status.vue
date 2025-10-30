@@ -124,7 +124,7 @@ export default {
     },
     issuesSettingsLink() {
       // null handling in case of old backend node
-      return this.issuesSettings ? `${this.issuesSettings}/#statuses` : null;
+      return this.issuesSettings ? `${this.issuesSettings}/#js-custom-status-settings` : null;
     },
   },
   apollo: {

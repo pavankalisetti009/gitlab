@@ -322,7 +322,7 @@ describe('WorkItemStatus component', () => {
       expect(findSidebarDropdownWidget().props('showFooter')).toBe(true);
       expect(findManageStatusButton().exists()).toBe(true);
       expect(findManageStatusButton().props('href')).toBe(
-        '/groups/test-project-path/-/settings/issues/#statuses',
+        '/groups/test-project-path/-/settings/issues/#js-custom-status-settings',
       );
     });
 

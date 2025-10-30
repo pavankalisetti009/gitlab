@@ -5,6 +5,7 @@ import { GlBadge } from '@gitlab/ui';
 import createMockApollo from 'helpers/mock_apollo_helper';
 import waitForPromises from 'helpers/wait_for_promises';
 import HelpPageLink from '~/vue_shared/components/help_page_link/help_page_link.vue';
+import SettingsBlock from '~/vue_shared/components/settings/settings_block.vue';
 import TimeagoTooltip from '~/vue_shared/components/time_ago_tooltip.vue';
 import CustomFieldForm from 'ee/groups/settings/work_items/custom_fields/custom_field_form.vue';
 import CustomFieldsTable from 'ee/groups/settings/work_items/custom_fields/custom_fields_list.vue';
@@ -72,6 +73,7 @@ describe('CustomFieldsTable', () => {
   const findActiveFilterButton = () => wrapper.find('[data-testid="activeFilterButton"]');
   const findArchivedFilterButton = () => wrapper.find('[data-testid="archivedFilterButton"]');
   const findTitle = () => wrapper.find('[data-testid="table-title"]');
+  const findSettingsBlock = () => wrapper.findComponent(SettingsBlock);
 
   const createComponent = ({
     fields = [selectField],
@@ -108,9 +110,18 @@ describe('CustomFieldsTable', () => {
         fullPath: 'group/path',
       },
       apolloProvider,
-      stubs: { GlIntersperse: true },
+      stubs: { GlIntersperse: true, SettingsBlock },
     });
   };
+
+  it('renders a settings block', () => {
+    createComponent();
+
+    expect(findSettingsBlock().props()).toMatchObject({
+      id: 'js-custom-fields-settings',
+      title: 'Custom fields',
+    });
+  });
 
   it('renders title and help link', () => {
     createComponent();

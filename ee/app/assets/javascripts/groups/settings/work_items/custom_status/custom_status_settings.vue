@@ -5,6 +5,7 @@ import { s__ } from '~/locale';
 import * as Sentry from '~/sentry/sentry_browser_wrapper';
 import glFeatureFlagMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
 import HelpPageLink from '~/vue_shared/components/help_page_link/help_page_link.vue';
+import SettingsBlock from '~/vue_shared/components/settings/settings_block.vue';
 import WorkItemStatusBadge from 'ee/work_items/components/shared/work_item_status_badge.vue';
 import StatusModal from './status_modal.vue';
 import CreateLifecycleModal from './create_lifecycle_modal.vue';
@@ -22,6 +23,7 @@ export default {
     CreateLifecycleModal,
     LifecycleDetail,
     GlLoadingIcon,
+    SettingsBlock,
   },
   mixins: [glFeatureFlagMixin()],
   props: {
@@ -97,132 +99,148 @@ export default {
       this.handleLifecycleUpdate();
       this.openStatusModal(newLifecycleId);
     },
+    toggleExpanded(expanded) {
+      if (!expanded && this.$route.hash === '') {
+        return;
+      }
+      this.$router.push({
+        name: 'workItemSettingsHome',
+        hash: expanded ? '#js-custom-status-settings' : '',
+      });
+    },
   },
 };
 </script>
 
 <template>
-  <div>
-    <h2 id="statuses" class="settings-title gl-heading-3 gl-mb-1 gl-mt-5">
-      {{ s__('WorkItem|Statuses') }}
-    </h2>
-    <p class="gl-mb-3 gl-text-subtle">
-      {{
-        s__(
-          'WorkItem|Statuses are used to manage workflow of planning items, helping you and your team understand how far an item has progressed.',
-        )
-      }}
-      <help-page-link
-        data-testid="settings-help-page-link"
-        href="user/work_items/status"
-        target="_blank"
+  <settings-block
+    id="js-custom-status-settings"
+    :title="s__('WorkItem|Statuses')"
+    @toggle-expand="toggleExpanded"
+  >
+    <template #description>
+      <p>
+        {{
+          s__(
+            'WorkItem|Statuses are used to manage workflow of planning items, helping you and your team understand how far an item has progressed.',
+          )
+        }}
+        <help-page-link
+          data-testid="settings-help-page-link"
+          href="user/work_items/status"
+          target="_blank"
+        >
+          {{ s__('WorkItems|How do I use statuses?') }}
+        </help-page-link>
+      </p>
+    </template>
+    <template #default>
+      <gl-loading-icon v-if="loadingInitialLifecycles" size="lg" class="gl-mt-5" />
+
+      <gl-alert
+        v-if="errorText"
+        variant="danger"
+        :dismissible="true"
+        class="gl-mb-5"
+        data-testid="alert"
+        @dismiss="dismissAlert"
       >
-        {{ s__('WorkItems|How do I use statuses?') }}
-      </help-page-link>
-    </p>
+        {{ errorText }}
+        <details>
+          {{ errorDetail }}
+        </details>
+      </gl-alert>
 
-    <gl-loading-icon v-if="loadingInitialLifecycles" size="lg" class="gl-mt-5" />
-
-    <gl-alert
-      v-if="errorText"
-      variant="danger"
-      :dismissible="true"
-      class="gl-mb-5"
-      data-testid="alert"
-      @dismiss="dismissAlert"
-    >
-      {{ errorText }}
-      <details>
-        {{ errorDetail }}
-      </details>
-    </gl-alert>
-
-    <section
-      v-if="workItemStatusMvc2Enabled"
-      data-testid="more-lifecycle-information"
-      class="gl-mb-4 gl-flex gl-flex-wrap gl-items-center gl-justify-between"
-    >
-      <div>
-        <h3 class="gl-mb-2 gl-text-base">{{ s__('WorkItem|Lifecycles') }}</h3>
-        <p class="gl-mb-0 gl-text-subtle">
-          {{
-            s__(
-              'WorkItem|Lifecycles contain statuses that are used together as an item is worked on. Each item type uses a single lifecycle.',
-            )
-          }}
-        </p>
-      </div>
-      <gl-button data-testid="create-lifecycle" @click="showCreateLifecycleModal = true">{{
-        s__('WorkItem|Create lifecycle')
-      }}</gl-button>
-    </section>
-
-    <div v-if="workItemStatusMvc2Enabled" class="gl-flex gl-flex-col gl-gap-4">
-      <lifecycle-detail
-        v-for="lifecycle in lifecycles"
-        :key="lifecycle.id"
-        :lifecycle="lifecycle"
-        :full-path="fullPath"
-        show-usage-section
-        show-not-in-use-section
-        @deleted="handleLifecycleUpdate"
+      <section
+        v-if="workItemStatusMvc2Enabled"
+        data-testid="more-lifecycle-information"
+        class="gl-mb-4 gl-flex gl-flex-wrap gl-items-center gl-justify-between"
       >
-        <template #detail-footer>
-          <gl-button @click="openStatusModal(lifecycle.id)">{{
-            s__('WorkItem|Edit statuses')
-          }}</gl-button>
-        </template>
-      </lifecycle-detail>
-    </div>
+        <div>
+          <h3 class="gl-mb-2 gl-mt-0 gl-text-base">{{ s__('WorkItem|Lifecycles') }}</h3>
+          <p class="gl-mb-0 gl-text-subtle">
+            {{
+              s__(
+                'WorkItem|Lifecycles contain statuses that are used together as an item is worked on. Each item type uses a single lifecycle.',
+              )
+            }}
+          </p>
+        </div>
+        <gl-button data-testid="create-lifecycle" @click="showCreateLifecycleModal = true">{{
+          s__('WorkItem|Create lifecycle')
+        }}</gl-button>
+      </section>
 
-    <template v-else>
-      <div class="gl-flex gl-flex-col gl-gap-4">
-        <div
+      <div v-if="workItemStatusMvc2Enabled" class="gl-flex gl-flex-col gl-gap-4">
+        <lifecycle-detail
           v-for="lifecycle in lifecycles"
           :key="lifecycle.id"
-          class="gl-border gl-rounded-base gl-px-5 gl-py-4"
-          data-testid="lifecycle-container"
+          :lifecycle="lifecycle"
+          :full-path="fullPath"
+          show-usage-section
+          show-not-in-use-section
+          @deleted="handleLifecycleUpdate"
         >
-          <div class="gl-mb-3 gl-flex gl-gap-3">
-            <span
-              v-for="workItemType in lifecycle.workItemTypes"
-              :key="workItemType.id"
-              class="gl-text-subtle"
-            >
-              <gl-icon :name="workItemType.iconName" />
-              <span>{{ workItemType.name }}</span>
-            </span>
-          </div>
-
-          <div class="gl-mx-auto gl-my-3 gl-flex gl-flex-wrap gl-gap-3">
-            <div v-for="status in lifecycle.statuses" :key="status.id" class="gl-max-w-20">
-              <work-item-status-badge :key="status.id" :item="status" />
-            </div>
-          </div>
-
-          <gl-button size="small" @click="openStatusModal(lifecycle.id)">{{
-            s__('WorkItem|Edit statuses')
-          }}</gl-button>
-        </div>
+          <template #detail-footer>
+            <gl-button data-testid="edit-statuses" @click="openStatusModal(lifecycle.id)">{{
+              s__('WorkItem|Edit statuses')
+            }}</gl-button>
+          </template>
+        </lifecycle-detail>
       </div>
+
+      <template v-else>
+        <div class="gl-flex gl-flex-col gl-gap-4">
+          <div
+            v-for="lifecycle in lifecycles"
+            :key="lifecycle.id"
+            class="gl-border gl-rounded-base gl-px-5 gl-py-4"
+            data-testid="lifecycle-container"
+          >
+            <div class="gl-mb-3 gl-flex gl-gap-3">
+              <span
+                v-for="workItemType in lifecycle.workItemTypes"
+                :key="workItemType.id"
+                class="gl-text-subtle"
+              >
+                <gl-icon :name="workItemType.iconName" />
+                <span>{{ workItemType.name }}</span>
+              </span>
+            </div>
+
+            <div class="gl-mx-auto gl-my-3 gl-flex gl-flex-wrap gl-gap-3">
+              <div v-for="status in lifecycle.statuses" :key="status.id" class="gl-max-w-20">
+                <work-item-status-badge :key="status.id" :item="status" />
+              </div>
+            </div>
+
+            <gl-button
+              data-testid="edit-statuses"
+              size="small"
+              @click="openStatusModal(lifecycle.id)"
+              >{{ s__('WorkItem|Edit statuses') }}</gl-button
+            >
+          </div>
+        </div>
+      </template>
+
+      <status-modal
+        v-if="selectedLifecycle"
+        :visible="Boolean(selectedLifecycleId)"
+        :lifecycle="selectedLifecycle"
+        :full-path="fullPath"
+        :statuses="allNamespaceStatuses"
+        @close="closeModal"
+        @lifecycle-updated="handleLifecycleUpdate"
+      />
+
+      <create-lifecycle-modal
+        v-if="workItemStatusMvc2Enabled"
+        :visible="showCreateLifecycleModal"
+        :full-path="fullPath"
+        @close="closeCreateLifecycleModal"
+        @lifecycle-created="handleLifecycleCreate"
+      />
     </template>
-
-    <status-modal
-      v-if="selectedLifecycle"
-      :visible="Boolean(selectedLifecycleId)"
-      :lifecycle="selectedLifecycle"
-      :full-path="fullPath"
-      :statuses="allNamespaceStatuses"
-      @close="closeModal"
-      @lifecycle-updated="handleLifecycleUpdate"
-    />
-
-    <create-lifecycle-modal
-      v-if="workItemStatusMvc2Enabled"
-      :visible="showCreateLifecycleModal"
-      :full-path="fullPath"
-      @close="closeCreateLifecycleModal"
-      @lifecycle-created="handleLifecycleCreate"
-    />
-  </div>
+  </settings-block>
 </template>
