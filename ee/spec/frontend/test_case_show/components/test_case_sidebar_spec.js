@@ -136,7 +136,6 @@ describe('TestCaseSidebar', () => {
       expect(projectSelectEl.props()).toMatchObject({
         projectsFetchPath,
         dropdownButtonTitle: 'Move test case',
-        dropdownHeaderTitle: 'Move test case',
         moveInProgress: false,
       });
     });
