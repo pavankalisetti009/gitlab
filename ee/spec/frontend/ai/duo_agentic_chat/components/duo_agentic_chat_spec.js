@@ -1204,6 +1204,57 @@ describe('Duo Agentic Chat', () => {
         });
       });
     });
+
+    describe('duoChatGlobalState.commands', () => {
+      beforeEach(() => {
+        createComponent();
+        duoChatGlobalState.isAgenticChatShown = true;
+      });
+
+      describe('when commands are added', () => {
+        it('starts a new chat and sends the command question', async () => {
+          const testQuestion = 'What is GitLab CI/CD?';
+
+          // Trigger the watcher by adding a command to the global state
+          duoChatGlobalState.commands = [{ question: testQuestion }];
+          await waitForPromises();
+
+          // Assert that onNewChat() side effects occurred
+          expect(actionSpies.setMessages).toHaveBeenCalledWith(expect.anything(), []);
+          expect(actionSpies.setLoading).toHaveBeenCalledWith(expect.anything(), false);
+
+          // Assert that onSendChatPrompt() side effects occurred
+          expect(actionSpies.setLoading).toHaveBeenCalledWith(expect.anything(), true);
+          expect(ApolloUtils.createWorkflow).toHaveBeenCalledWith(expect.anything(), {
+            projectId: MOCK_PROJECT_ID,
+            namespaceId: null,
+            goal: testQuestion,
+            activeThread: undefined,
+            aiCatalogItemVersionId: '',
+          });
+          expect(mockSocketManager.connect).toHaveBeenCalled();
+          expect(actionSpies.addDuoChatMessage).toHaveBeenCalledWith(
+            expect.anything(),
+            expect.objectContaining({
+              content: testQuestion,
+              role: 'user',
+              requestId: expect.stringMatching(/^456-\d+$/),
+            }),
+          );
+        });
+
+        it('does not trigger chat when commands array is empty', async () => {
+          jest.clearAllMocks();
+
+          duoChatGlobalState.commands = [];
+          await nextTick();
+
+          expect(actionSpies.setMessages).not.toHaveBeenCalled();
+          expect(ApolloUtils.createWorkflow).not.toHaveBeenCalled();
+          expect(mockSocketManager.connect).not.toHaveBeenCalled();
+        });
+      });
+    });
   });
 
   describe('Socket cleanup', () => {

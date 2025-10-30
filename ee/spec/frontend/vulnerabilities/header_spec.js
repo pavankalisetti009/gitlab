@@ -653,6 +653,8 @@ describe('Vulnerability Header', () => {
         expect(aiUtils.sendDuoChatCommand).toHaveBeenCalledWith({
           question: '/vulnerability_explain',
           resourceId: `gid://gitlab/Vulnerability/${defaultVulnerability.id}`,
+          agenticPrompt:
+            'Explain this vulnerability and provide insights about potential solutions.',
         });
       });
     });

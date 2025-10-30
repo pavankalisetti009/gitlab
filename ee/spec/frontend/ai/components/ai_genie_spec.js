@@ -195,7 +195,10 @@ describe('AiGenie', () => {
     });
 
     it('calls the `sendDuoChatCommand` code request', async () => {
-      await simulateSelectText();
+      const selectedText = 'const foo = "bar";';
+      await simulateSelectText({
+        getSelection: getSelectionMock({ toString: () => selectedText }),
+      });
       await requestExplanation();
       expect(sendDuoChatCommand).toHaveBeenCalledWith({
         question: GENIE_CHAT_EXPLAIN_MESSAGE,
@@ -203,9 +206,10 @@ describe('AiGenie', () => {
         variables: {
           currentFileContext: {
             fileName: filePath,
-            selectedText: getSelection().toString(),
+            selectedText,
           },
         },
+        agenticPrompt: `${i18n.AGENTIC_PROMPT_EXPLAIN_CODE}\n\n\`\`\`\n${selectedText}\n\`\`\``,
       });
     });
   });

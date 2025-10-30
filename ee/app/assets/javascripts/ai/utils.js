@@ -70,14 +70,23 @@ export const setAgenticMode = ({
  * Sends a command to DuoChat to execute on. This should be use for
  * a single command.
  *
- * External triggers always force classic mode and open the chat in whatever
- * UI mode is currently active (drawer or embedded).
+ * External triggers respect the current chat mode (Classic or Agentic) and open
+ * the chat in whatever UI mode is currently active (drawer or embedded).
+ * In Classic mode, the question (slash command) is executed directly.
+ * In Agentic mode, the agenticPrompt is sent as a user message to simulate
+ * what the slash command would do.
  *
- * @param {question} String - Prompt to send to the chat endpoint
+ * @param {question} String - Prompt to send to the chat endpoint (slash command for Classic mode)
  * @param {resourceId} String - Unique ID to bind the streaming
  * @param {variables} Object - Additional variables to pass to graphql chat mutation
+ * @param {agenticPrompt} String - Optional prompt to use in Agentic mode (e.g., "troubleshoot this broken pipeline")
  */
-export const sendDuoChatCommand = ({ question, resourceId, variables = {} } = {}) => {
+export const sendDuoChatCommand = ({
+  question,
+  resourceId,
+  variables = {},
+  agenticPrompt = null,
+} = {}) => {
   if (!question || !resourceId) {
     throw new Error('Both arguments `question` and `resourceId` are required');
   }
@@ -85,21 +94,28 @@ export const sendDuoChatCommand = ({ question, resourceId, variables = {} } = {}
   // Check if project studio (new design with embedded panel) is enabled
   const isEmbedded = window.gon?.features?.projectStudioEnabled === true;
 
-  // External triggers always force classic mode
-  setAgenticMode({ agenticMode: false, saveCookie: true, isEmbedded });
+  // Get the current chat mode from global state
+  const currentMode = duoChatGlobalState.chatMode;
+  const isAgenticMode = currentMode === CHAT_MODES.AGENTIC;
+
+  // Set the mode to match current user preference (no change to user's preference)
+  setAgenticMode({ agenticMode: isAgenticMode, saveCookie: false, isEmbedded });
 
   if (isEmbedded) {
     // Embedded mode: Open the AI panel to chat tab
     duoChatGlobalState.activeTab = 'chat';
   } else {
-    // Drawer mode: Open classic chat
-    duoChatGlobalState.isShown = true;
-    duoChatGlobalState.isAgenticChatShown = false;
+    // Drawer mode: Open the appropriate chat based on current mode
+    duoChatGlobalState.isShown = !isAgenticMode;
+    duoChatGlobalState.isAgenticChatShown = isAgenticMode;
   }
 
   window.requestIdleCallback(() => {
+    // In Agentic mode, use the agenticPrompt if provided; otherwise fall back to the slash command
+    const effectiveQuestion = isAgenticMode && agenticPrompt ? agenticPrompt : question;
+
     duoChatGlobalState.commands.push({
-      question,
+      question: effectiveQuestion,
       resourceId,
       variables,
     });

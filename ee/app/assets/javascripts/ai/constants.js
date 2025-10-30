@@ -8,6 +8,12 @@ export const i18n = {
   REQUEST_ERROR: s__('AI|Something went wrong. Please try again later'),
   GENIE_CHAT_FEEDBACK_LINK: s__('AI|Give feedback to improve this answer.'),
   GENIE_CHAT_FEEDBACK_THANKS: s__('AI|Thank you for your feedback.'),
+  AGENTIC_PROMPT_EXPLAIN_CODE: s__('AI|Explain this code.'),
+  AGENTIC_PROMPT_SUMMARIZE_COMMENTS: s__('AI|Summarize the comments on this issue.'),
+  AGENTIC_PROMPT_TROUBLESHOOT_PIPELINE: s__('AI|Troubleshoot this broken pipeline.'),
+  AGENTIC_PROMPT_EXPLAIN_VULNERABILITY: s__(
+    'AI|Explain this vulnerability and provide insights about potential solutions.',
+  ),
 };
 export const AI_GENIE_DEBOUNCE = 300;
 export const GENIE_CHAT_MODEL_ROLES = {

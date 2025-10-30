@@ -61,6 +61,7 @@ describe('Root cause analysis button', () => {
       expect(sendDuoChatCommand).toHaveBeenCalledWith({
         question: '/troubleshoot',
         resourceId: 'gid://gitlab/Ci::Build/123',
+        agenticPrompt: 'Troubleshoot this broken pipeline.',
       });
     });
   });
@@ -74,6 +75,7 @@ describe('Root cause analysis button', () => {
       expect(sendDuoChatCommand).toHaveBeenCalledWith({
         question: '/troubleshoot',
         resourceId: 'gid://gitlab/Ci::Build/11781',
+        agenticPrompt: 'Troubleshoot this broken pipeline.',
       });
     });
   });
