@@ -109,12 +109,44 @@ describe('Tree List', () => {
     });
   });
 
-  it('calls toggleDirectory with correct path when clickTree is emitted from FileRow', () => {
-    const toggleDirectory = jest.spyOn(wrapper.vm, 'toggleDirectory').mockImplementation(() => {});
-    const path = '/dir_1/dir_2';
-    findFileRows().at(0).vm.$emit('clickTree', path);
-    expect(toggleDirectory).toHaveBeenCalledWith(path);
+  it('fetches directory contents when tree row is clicked', async () => {
+    const subdirResponse = cloneDeep(mockResponse);
+    subdirResponse.data.project.repository.paginatedTree.nodes[0].trees.nodes = [];
+    getQueryHandlerSuccess.mockResolvedValueOnce(subdirResponse);
+
+    findFileRows().at(0).vm.$emit('clickTree');
+    await waitForPromises();
+
+    expect(getQueryHandlerSuccess).toHaveBeenLastCalledWith(
+      expect.objectContaining({ path: 'dir_1/dir_2' }),
+    );
   });
+
+  it.each`
+    toggleClose  | expectedOpened | description
+    ${true}      | ${false}       | ${'collapses'}
+    ${false}     | ${true}        | ${'stays expanded'}
+    ${undefined} | ${false}       | ${'collapses (default behavior)'}
+  `(
+    '$description when clicked with toggleClose: $toggleClose',
+    async ({ toggleClose, expectedOpened }) => {
+      await createComponent();
+      const subdirResponse = cloneDeep(mockResponse);
+      subdirResponse.data.project.repository.paginatedTree.nodes[0].trees.nodes = [];
+      getQueryHandlerSuccess.mockResolvedValueOnce(subdirResponse);
+
+      findFileRows().at(0).vm.$emit('clickTree');
+      await waitForPromises();
+
+      expect(findFileRows().at(0).props('file').opened).toBe(true);
+
+      const options = toggleClose === undefined ? undefined : { toggleClose };
+      findFileRows().at(0).vm.$emit('clickTree', options);
+      await nextTick();
+
+      expect(findFileRows().at(0).props('file').opened).toBe(expectedOpened);
+    },
+  );
 
   it('sets aria-setsize and aria-posinset relative to siblings at same level', async () => {
     await createComponent();

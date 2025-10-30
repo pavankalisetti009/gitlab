@@ -95,13 +95,13 @@ export default {
     },
     onChevronClick(event) {
       event.stopPropagation();
-      this.$emit('clickTree', this.file.path);
+      this.$emit('clickTree');
     },
     clickFile() {
       this.trackEvent('click_file_tree_browser_on_repository_page');
 
       // Manual Action if a tree is selected/opened
-      if (this.isTree) this.$emit('clickTree', this.file.path);
+      if (this.isTree) this.$emit('clickTree', { toggleClose: false });
       if (this.isTree && this.hasUrlAtCurrentRoute()) {
         this.toggleTreeOpen(this.file.path);
       }

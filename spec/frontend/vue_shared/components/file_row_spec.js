@@ -91,7 +91,7 @@ describe('File row component', () => {
     expect(wrapper.emitted('toggleTreeOpen')[0][0]).toEqual(fileName);
   });
 
-  it('emits clickTree on tree click with file path', () => {
+  it('emits clickTree on tree click with correct options', () => {
     const { trackEventSpy } = bindInternalEventDocument(wrapper.element);
 
     const fileName = 'folder';
@@ -100,7 +100,7 @@ describe('File row component', () => {
 
     findFileButton().trigger('click');
 
-    expect(wrapper.emitted('clickTree')[0][0]).toEqual(filePath);
+    expect(wrapper.emitted('clickTree')[0][0]).toEqual({ toggleClose: false });
     expect(trackEventSpy).toHaveBeenCalledWith(
       'click_file_tree_browser_on_repository_page',
       {},
@@ -284,7 +284,7 @@ describe('File row component', () => {
     it('renders chevron button for trees and emits clickTree when clicked', () => {
       findChevronButton().vm.$emit('click', { stopPropagation: jest.fn() });
 
-      expect(wrapper.emitted('clickTree')[0][0]).toBe(folderPath);
+      expect(wrapper.emitted('clickTree')).toHaveLength(1);
     });
 
     it('does not render when showTreeToggle is false', () => {
