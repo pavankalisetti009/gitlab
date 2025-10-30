@@ -7,8 +7,8 @@ describe('OneTimeCreditsCard', () => {
   let wrapper;
 
   const defaultProps = {
-    remainingCredits: 500,
-    usedCredits: 1500,
+    otcRemainingCredits: 500,
+    otcCreditsUsed: 1500,
   };
 
   const createComponent = (props) => {
@@ -33,11 +33,11 @@ describe('OneTimeCreditsCard', () => {
     });
 
     it('renders otc credits in metric prefix', () => {
-      expect(wrapper.findByTestId('otc-credits').text()).toBe('1.5k');
+      expect(wrapper.findByTestId('otc-credits-used').text()).toBe('1.5k');
     });
 
     it('renders remaining credits', () => {
-      expect(wrapper.findByTestId('remaining-credits').text()).toBe('500');
+      expect(wrapper.findByTestId('otc-remaining-credits').text()).toBe('500');
     });
   });
 });

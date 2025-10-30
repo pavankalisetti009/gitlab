@@ -70,14 +70,14 @@ export default {
     isLoading() {
       return this.$apollo.queries.subscriptionUsage.loading;
     },
+    otcCreditsUsed() {
+      return this.subscriptionUsage?.oneTimeCredits?.creditsUsed;
+    },
     otcRemainingCredits() {
       return this.subscriptionUsage?.oneTimeCredits?.totalCreditsRemaining;
     },
-    otcUsedCredits() {
-      return this.subscriptionUsage?.oneTimeCredits?.creditsUsed;
-    },
-    shouldShowOtcCard() {
-      return this.otcRemainingCredits || this.otcUsedCredits;
+    otcIsAvailable() {
+      return Boolean(this.otcCreditsUsed || this.otcRemainingCredits);
     },
   },
   LONG_DATE_FORMAT_WITH_TZ,
@@ -131,12 +131,6 @@ export default {
     </div>
     <template v-else>
       <section class="gl-flex gl-flex-col gl-gap-5 @md/panel:gl-flex-row">
-        <one-time-credits-card
-          v-if="shouldShowOtcCard"
-          :remaining-credits="otcRemainingCredits"
-          :used-credits="otcUsedCredits"
-        />
-
         <current-usage-card
           v-if="poolIsAvailable"
           :pool-total-credits="poolTotalCredits"
@@ -145,9 +139,16 @@ export default {
           :month-end-date="subscriptionUsage.endDate"
         />
 
+        <one-time-credits-card
+          v-if="otcIsAvailable && !overageCreditsUsed"
+          :otc-credits-used="otcCreditsUsed"
+          :otc-remaining-credits="otcRemainingCredits"
+        />
+
         <current-overage-usage-card
-          v-if="overageIsAllowed"
+          v-else-if="overageIsAllowed || overageCreditsUsed"
           :overage-credits-used="overageCreditsUsed"
+          :otc-credits-used="otcCreditsUsed"
           :month-start-date="subscriptionUsage.startDate"
           :month-end-date="subscriptionUsage.endDate"
         />

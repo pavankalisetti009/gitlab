@@ -16,11 +16,12 @@ import { captureException } from '~/sentry/sentry_browser_wrapper';
 import PageHeading from '~/vue_shared/components/page_heading.vue';
 import UserDate from '~/vue_shared/components/user_date.vue';
 import {
-  usageDataNoPoolNoOverage,
-  usageDataNoPoolWithOverage,
-  usageDataWithPool,
+  usageDataNoCommitmentNoOtcNoOverage,
+  usageDataNoCommitmentWithOverage,
+  usageDataWithCommitment,
   usageDataWithoutLastEventTransactionAt,
-  usageDataWithOtcCredits,
+  usageDataCommitmentWithOtc,
+  usageDataCommitmentWithOtcWithOverage,
 } from '../mock_data';
 
 jest.mock('~/lib/logger');
@@ -33,7 +34,7 @@ describe('UsageBillingApp', () => {
   let wrapper;
 
   const createComponent = ({
-    mockQueryHandler = jest.fn().mockResolvedValue(usageDataWithPool),
+    mockQueryHandler = jest.fn().mockResolvedValue(usageDataWithCommitment),
   } = {}) => {
     wrapper = shallowMountExtended(UsageBillingApp, {
       apolloProvider: createMockApollo([[getSubscriptionUsageQuery, mockQueryHandler]]),
@@ -72,15 +73,6 @@ describe('UsageBillingApp', () => {
       expect(pageHeading.findComponent(UserDate).exists()).toBe(true);
     });
 
-    it('renders current-usage-card', () => {
-      expect(wrapper.findComponent(CurrentUsageCard).props()).toMatchObject({
-        poolCreditsUsed: 50,
-        poolTotalCredits: 300,
-        monthStartDate: '2025-10-01',
-        monthEndDate: '2025-10-31',
-      });
-    });
-
     it('renders purchase-commitment-card', () => {
       const purchaseCommitmentCard = wrapper.findComponent(PurchaseCommitmentCard);
 
@@ -92,7 +84,7 @@ describe('UsageBillingApp', () => {
       expect(findUsageByUserTab().exists()).toBe(true);
     });
 
-    describe('when lastEventTransactionAt is not provided', () => {
+    describe('without lastEventTransactionAt', () => {
       beforeEach(async () => {
         createComponent({
           mockQueryHandler: jest.fn().mockResolvedValue(usageDataWithoutLastEventTransactionAt),
@@ -106,7 +98,7 @@ describe('UsageBillingApp', () => {
       });
     });
 
-    describe('without purchase-credits-path', () => {
+    describe('without purchaseCreditsPath', () => {
       beforeEach(async () => {
         const usageDataWithoutPurchaseCreditsPath = {
           data: {
@@ -126,32 +118,121 @@ describe('UsageBillingApp', () => {
         expect(wrapper.findComponent(PurchaseCommitmentCard).exists()).toBe(false);
       });
     });
+  });
+
+  describe('summary cards visibility', () => {
+    describe.each`
+      scenario                                           | currentUsageCard | oneTimeCreditsCard | currentOverageUsageCard | monthlyCommitment                        | oneTimeCredits                                    | overage
+      ${'monthly commitment'}                            | ${true}          | ${false}           | ${false}                | ${{ creditsUsed: 10, totalCredits: 24 }} | ${null}                                           | ${{ isAllowed: false, creditsUsed: 0 }}
+      ${'monthly commitment with OTC'}                   | ${true}          | ${true}            | ${false}                | ${{ creditsUsed: 10, totalCredits: 24 }} | ${{ creditsUsed: 100, totalCreditsRemaining: 0 }} | ${{ isAllowed: false, creditsUsed: 0 }}
+      ${'monthly commitment with OTC and empty overage'} | ${true}          | ${true}            | ${false}                | ${{ creditsUsed: 10, totalCredits: 24 }} | ${{ creditsUsed: 100, totalCreditsRemaining: 0 }} | ${{ isAllowed: true, creditsUsed: 0 }}
+      ${'monthly commitment with OTC and overage'}       | ${true}          | ${false}           | ${true}                 | ${{ creditsUsed: 10, totalCredits: 24 }} | ${{ creditsUsed: 100, totalCreditsRemaining: 0 }} | ${{ isAllowed: true, creditsUsed: 100 }}
+      ${'monthly commitment with overage'}               | ${true}          | ${false}           | ${true}                 | ${{ creditsUsed: 10, totalCredits: 24 }} | ${null}                                           | ${{ isAllowed: true, creditsUsed: 100 }}
+      ${'no commitment no OTC no overage'}               | ${false}         | ${false}           | ${false}                | ${null}                                  | ${null}                                           | ${{ isAllowed: false, creditsUsed: 0 }}
+      ${'OTC'}                                           | ${false}         | ${true}            | ${false}                | ${null}                                  | ${{ creditsUsed: 100, totalCreditsRemaining: 0 }} | ${{ isAllowed: false, creditsUsed: 0 }}
+      ${'OTC with empty overage'}                        | ${false}         | ${true}            | ${false}                | ${null}                                  | ${{ creditsUsed: 100, totalCreditsRemaining: 0 }} | ${{ isAllowed: true, creditsUsed: 0 }}
+      ${'OTC with overage'}                              | ${false}         | ${false}           | ${true}                 | ${null}                                  | ${null}                                           | ${{ isAllowed: true, creditsUsed: 100 }}
+      ${'overage'}                                       | ${false}         | ${false}           | ${true}                 | ${null}                                  | ${null}                                           | ${{ isAllowed: true, creditsUsed: 100 }}
+    `(
+      'scenario: $scenario',
+      ({
+        monthlyCommitment,
+        oneTimeCredits,
+        overage,
+        currentUsageCard,
+        oneTimeCreditsCard,
+        currentOverageUsageCard,
+      }) => {
+        beforeEach(async () => {
+          createComponent({
+            mockQueryHandler: jest.fn().mockResolvedValue({
+              data: {
+                subscriptionUsage: {
+                  ...usageDataNoCommitmentNoOtcNoOverage.data.subscriptionUsage,
+                  monthlyCommitment,
+                  oneTimeCredits,
+                  overage,
+                },
+              },
+            }),
+          });
+          await waitForPromises();
+        });
+
+        it(`will switch CurrentUsageCard visibility: ${currentUsageCard}`, () => {
+          expect(wrapper.findComponent(CurrentUsageCard).exists()).toBe(currentUsageCard);
+        });
+
+        it(`will switch OneTimeCreditsCard visibility: ${oneTimeCredits}`, () => {
+          expect(wrapper.findComponent(OneTimeCreditsCard).exists()).toBe(oneTimeCreditsCard);
+        });
+
+        it(`will switch CurrentOverageUsageCard visibility: ${currentOverageUsageCard}`, () => {
+          expect(wrapper.findComponent(CurrentOverageUsageCard).exists()).toBe(
+            currentOverageUsageCard,
+          );
+        });
+      },
+    );
+  });
+
+  describe('monthly commitment', () => {
+    beforeEach(async () => {
+      createComponent();
+      await waitForPromises();
+    });
+
+    it('renders current-usage-card', () => {
+      expect(wrapper.findComponent(CurrentUsageCard).props()).toMatchObject({
+        poolCreditsUsed: 50,
+        poolTotalCredits: 300,
+        monthStartDate: '2025-10-01',
+        monthEndDate: '2025-10-31',
+      });
+    });
 
     it('does not render one-time-credits-card', () => {
       expect(wrapper.findComponent(OneTimeCreditsCard).exists()).toBe(false);
     });
+  });
 
-    describe('with one-time credits data', () => {
-      beforeEach(async () => {
-        const mockQueryHandler = jest.fn().mockResolvedValue(usageDataWithOtcCredits);
+  describe('monthly commitment with one-time credits', () => {
+    beforeEach(async () => {
+      const mockQueryHandler = jest.fn().mockResolvedValue(usageDataCommitmentWithOtc);
 
-        createComponent({ mockQueryHandler });
-        await waitForPromises();
-      });
+      createComponent({ mockQueryHandler });
+      await waitForPromises();
+    });
 
-      it('renders one-time-credits-card', () => {
-        expect(wrapper.findComponent(OneTimeCreditsCard).props()).toMatchObject({
-          remainingCredits: 500,
-          usedCredits: 2500,
-        });
+    it('renders one-time-credits-card', () => {
+      expect(wrapper.findComponent(OneTimeCreditsCard).props()).toMatchObject({
+        otcRemainingCredits: 250,
+        otcCreditsUsed: 750,
       });
     });
   });
 
-  describe('no pool with overage state', () => {
+  describe('monthly commitment with one-time credits with overage', () => {
+    beforeEach(async () => {
+      const mockQueryHandler = jest.fn().mockResolvedValue(usageDataCommitmentWithOtcWithOverage);
+
+      createComponent({ mockQueryHandler });
+      await waitForPromises();
+    });
+
+    it('renders one-time-credits-card', () => {
+      expect(wrapper.findComponent(CurrentOverageUsageCard).exists()).toBe(true);
+      expect(wrapper.findComponent(CurrentOverageUsageCard).props()).toMatchObject({
+        overageCreditsUsed: 100,
+        otcCreditsUsed: 1000,
+      });
+    });
+  });
+
+  describe('no monthly commitment with overage', () => {
     beforeEach(async () => {
       createComponent({
-        mockQueryHandler: jest.fn().mockResolvedValue(usageDataNoPoolWithOverage),
+        mockQueryHandler: jest.fn().mockResolvedValue(usageDataNoCommitmentWithOverage),
       });
       await waitForPromises();
     });
@@ -168,6 +249,7 @@ describe('UsageBillingApp', () => {
       expect(currentOverageUsageCard.exists()).toBe(true);
       expect(currentOverageUsageCard.props()).toMatchObject({
         overageCreditsUsed: 50,
+        otcCreditsUsed: 0,
         monthStartDate: '2025-10-01',
         monthEndDate: '2025-10-31',
       });
@@ -180,9 +262,11 @@ describe('UsageBillingApp', () => {
     });
   });
 
-  describe('no pool no overage state', () => {
+  describe('no monthly commitment no one-time credits no overage', () => {
     beforeEach(async () => {
-      createComponent({ mockQueryHandler: jest.fn().mockResolvedValue(usageDataNoPoolNoOverage) });
+      createComponent({
+        mockQueryHandler: jest.fn().mockResolvedValue(usageDataNoCommitmentNoOtcNoOverage),
+      });
       await waitForPromises();
     });
 
