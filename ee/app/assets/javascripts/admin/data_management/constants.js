@@ -1,14 +1,53 @@
+import { GlFilteredSearchToken } from '@gitlab/ui';
 import { SORT_DIRECTION } from 'ee/geo_shared/constants';
 import { s__ } from '~/locale';
 import { helpPagePath } from '~/helpers/help_page_helper';
+import { OPERATORS_IS } from '~/vue_shared/components/filtered_search_bar/constants';
 
 export const GEO_TROUBLESHOOTING_LINK = helpPagePath(
   'administration/geo/replication/troubleshooting/_index.md',
 );
 
 export const TOKEN_TYPES = {
+  IDENTIFIERS: 'identifiers',
   MODEL: 'model_name',
+  CHECKSUM_STATE: 'checksum_state',
 };
+
+export const CHECKSUM_STATES_ARRAY = [
+  {
+    title: s__('Geo|Pending'),
+    value: 'pending',
+  },
+  {
+    title: s__('Geo|Started'),
+    value: 'started',
+  },
+  {
+    title: s__('Geo|Succeeded'),
+    value: 'succeeded',
+  },
+  {
+    title: s__('Geo|Failed'),
+    value: 'failed',
+  },
+  {
+    title: s__('Geo|Disabled'),
+    value: 'disabled',
+  },
+];
+
+export const FILTERED_SEARCH_TOKEN_OPTIONS = [
+  {
+    title: s__('Geo|Checksum status'),
+    type: TOKEN_TYPES.CHECKSUM_STATE,
+    icon: 'check-circle',
+    token: GlFilteredSearchToken,
+    operators: OPERATORS_IS,
+    unique: true,
+    options: CHECKSUM_STATES_ARRAY,
+  },
+];
 
 const SORT_OPTIONS = {
   ID: {

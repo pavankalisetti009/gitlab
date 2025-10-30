@@ -4,18 +4,24 @@ import AdminDataManagementApp from 'ee/admin/data_management/components/app.vue'
 import GeoListTopBar from 'ee/geo_shared/list/components/geo_list_top_bar.vue';
 import GeoList from 'ee/geo_shared/list/components/geo_list.vue';
 import { MOCK_MODEL_CLASS } from 'ee_jest/admin/data_management/mock_data';
-import { DEFAULT_SORT, GEO_TROUBLESHOOTING_LINK } from 'ee/admin/data_management/constants';
-import { visitUrl } from '~/lib/utils/url_utility';
+import {
+  TOKEN_TYPES,
+  DEFAULT_SORT,
+  GEO_TROUBLESHOOTING_LINK,
+} from 'ee/admin/data_management/constants';
+import { updateHistory, visitUrl } from '~/lib/utils/url_utility';
 import { TEST_HOST } from 'spec/test_constants';
 import { getModels } from 'ee/api/data_management_api';
 import waitForPromises from 'helpers/wait_for_promises';
 import { createAlert } from '~/alert';
 import DataManagementItem from 'ee/admin/data_management/components/data_management_item.vue';
 import { convertObjectPropsToCamelCase } from '~/lib/utils/common_utils';
+import setWindowLocation from 'helpers/set_window_location_helper';
 
 jest.mock('~/lib/utils/url_utility', () => ({
   ...jest.requireActual('~/lib/utils/url_utility'),
   visitUrl: jest.fn(),
+  updateHistory: jest.fn(),
 }));
 jest.mock('~/alert');
 jest.mock('ee/api/data_management_api');
@@ -62,15 +68,16 @@ describe('AdminDataManagementApp', () => {
         description:
           'If you believe this is an error, see the %{linkStart}Geo troubleshooting%{linkEnd} documentation.',
         helpLink: GEO_TROUBLESHOOTING_LINK,
+        hasFilters: false,
       },
     });
   });
 
   describe('API calls', () => {
-    it('calls getModels with correct parameters on component creation', () => {
+    it('calls getModels with correct parameters', () => {
       createComponent();
 
-      expect(getModels).toHaveBeenCalledWith(MOCK_MODEL_CLASS.name);
+      expect(getModels).toHaveBeenCalledWith(MOCK_MODEL_CLASS.name, {});
     });
 
     describe('while loading model is querying', () => {
@@ -145,6 +152,40 @@ describe('AdminDataManagementApp', () => {
     });
   });
 
+  describe('when URL has params', () => {
+    beforeEach(() => {
+      const params = new URLSearchParams([
+        [`${TOKEN_TYPES.IDENTIFIERS}[]`, '123'],
+        [`${TOKEN_TYPES.IDENTIFIERS}[]`, '456'],
+        [TOKEN_TYPES.CHECKSUM_STATE, 'failed'],
+      ]);
+
+      setWindowLocation(`?${params.toString()}`);
+
+      createComponent();
+    });
+
+    it('calls getModels with correct parameters', () => {
+      expect(getModels).toHaveBeenCalledWith(MOCK_MODEL_CLASS.name, {
+        [TOKEN_TYPES.IDENTIFIERS]: ['123', '456'],
+        [TOKEN_TYPES.CHECKSUM_STATE]: 'failed',
+      });
+    });
+
+    it('passes initial filter to GeoListTopBar', () => {
+      expect(findGeoListTopBar().props('activeFilteredSearchFilters')).toMatchObject([
+        '123 456',
+        { type: TOKEN_TYPES.CHECKSUM_STATE, value: { data: 'failed' } },
+      ]);
+    });
+
+    it('sets emptyState hasFilter field to true', () => {
+      expect(findGeoList().props()).toMatchObject({
+        emptyState: { hasFilters: true },
+      });
+    });
+  });
+
   describe('when GeoListTopBar emits `listboxChange` event', () => {
     it('redirects to page with correct params', () => {
       createComponent();
@@ -152,6 +193,43 @@ describe('AdminDataManagementApp', () => {
       findGeoListTopBar().vm.$emit('listboxChange', 'foo');
 
       expect(visitUrl).toHaveBeenCalledWith(`${TEST_HOST}/?model_name=foo`);
+    });
+  });
+
+  describe('when GeoListTopBar emits `search` event', () => {
+    beforeEach(() => {
+      createComponent();
+
+      findGeoListTopBar().vm.$emit('search', [
+        '123 456',
+        { type: TOKEN_TYPES.CHECKSUM_STATE, value: { data: 'failed' } },
+      ]);
+    });
+
+    it('calls updateHistory with correct params', () => {
+      const params = new URLSearchParams([
+        [TOKEN_TYPES.MODEL, MOCK_MODEL_CLASS.name],
+        [`${TOKEN_TYPES.IDENTIFIERS}[]`, '123'],
+        [`${TOKEN_TYPES.IDENTIFIERS}[]`, '456'],
+        [TOKEN_TYPES.CHECKSUM_STATE, 'failed'],
+      ]);
+
+      expect(updateHistory).toHaveBeenCalledWith({
+        url: `${TEST_HOST}/?${params.toString()}`,
+      });
+    });
+
+    it('calls getModels with correct params', () => {
+      expect(getModels).toHaveBeenCalledWith(MOCK_MODEL_CLASS.name, {
+        [TOKEN_TYPES.IDENTIFIERS]: ['123', '456'],
+        [TOKEN_TYPES.CHECKSUM_STATE]: 'failed',
+      });
+    });
+
+    it('shows loading state', () => {
+      createComponent();
+
+      expect(findGeoList().props('isLoading')).toBe(true);
     });
   });
 });
