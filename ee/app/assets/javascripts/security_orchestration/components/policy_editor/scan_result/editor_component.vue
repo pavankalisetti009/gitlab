@@ -513,11 +513,14 @@ export default {
       }
     },
     shouldDisableActionSelector(filter) {
-      if ((this.isWarnMode && filter !== WARN_TYPE) || (!this.isWarnMode && filter === WARN_TYPE)) {
+      const isWarnFilter = filter === WARN_TYPE;
+      const isBotFilter = filter === BOT_MESSAGE_TYPE;
+
+      if (this.isWarnMode !== isWarnFilter) {
         return true;
       }
 
-      if (filter === BOT_MESSAGE_TYPE) {
+      if (isBotFilter) {
         return this.hasBotActions;
       }
 
