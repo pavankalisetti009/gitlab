@@ -24,8 +24,6 @@ import {
   AI_CATALOG_FLOWS_DUPLICATE_ROUTE,
 } from '../router/constants';
 import {
-  AI_CATALOG_TYPE_FLOW,
-  AI_CATALOG_TYPE_THIRD_PARTY_FLOW,
   AI_CATALOG_CONSUMER_TYPE_GROUP,
   AI_CATALOG_CONSUMER_TYPE_PROJECT,
   AI_CATALOG_CONSUMER_LABELS,
@@ -35,7 +33,7 @@ import {
   TRACK_EVENT_VIEW_AI_CATALOG_ITEM_INDEX,
   TRACK_EVENT_TYPE_FLOW,
 } from '../constants';
-import { prerequisitesError } from '../utils';
+import { createAvailableFlowItemTypes, prerequisitesError } from '../utils';
 
 export default {
   name: 'AiCatalogFlows',
@@ -52,7 +50,7 @@ export default {
       query: aiCatalogFlowsQuery,
       variables() {
         return {
-          ...this.itemTypes,
+          itemTypes: this.itemTypes,
           before: null,
           after: null,
           first: PAGE_SIZE,
@@ -78,20 +76,11 @@ export default {
     };
   },
   computed: {
-    isFlowsAvailable() {
-      return this.glFeatures.aiCatalogFlows;
-    },
-    isThirdPartyFlowsAvailable() {
-      return this.glFeatures.aiCatalogThirdPartyFlows;
-    },
     itemTypes() {
-      if (this.isThirdPartyFlowsAvailable && this.isFlowsAvailable) {
-        return { itemTypes: [AI_CATALOG_TYPE_FLOW, AI_CATALOG_TYPE_THIRD_PARTY_FLOW] };
-      }
-      if (this.isThirdPartyFlowsAvailable) {
-        return { itemType: AI_CATALOG_TYPE_THIRD_PARTY_FLOW };
-      }
-      return { itemType: AI_CATALOG_TYPE_FLOW };
+      return createAvailableFlowItemTypes({
+        isFlowsEnabled: this.glFeatures.aiCatalogFlows,
+        isThirdPartyFlowsEnabled: this.glFeatures.aiCatalogThirdPartyFlows,
+      });
     },
     isLoading() {
       return this.$apollo.queries.aiCatalogFlows.loading;

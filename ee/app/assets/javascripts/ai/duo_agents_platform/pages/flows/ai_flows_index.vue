@@ -13,12 +13,8 @@ import AiCatalogListHeader from 'ee/ai/catalog/components/ai_catalog_list_header
 import aiCatalogConfiguredItemsQuery from 'ee/ai/catalog/graphql/queries/ai_catalog_configured_items.query.graphql';
 import aiCatalogProjectUserPermissionsQuery from 'ee/ai/catalog/graphql/queries/ai_catalog_project_user_permissions.query.graphql';
 import deleteAiCatalogItemConsumer from 'ee/ai/catalog/graphql/mutations/delete_ai_catalog_item_consumer.mutation.graphql';
-import {
-  AI_CATALOG_TYPE_FLOW,
-  AI_CATALOG_TYPE_THIRD_PARTY_FLOW,
-  FLOW_VISIBILITY_LEVEL_DESCRIPTIONS,
-  PAGE_SIZE,
-} from 'ee/ai/catalog/constants';
+import { FLOW_VISIBILITY_LEVEL_DESCRIPTIONS, PAGE_SIZE } from 'ee/ai/catalog/constants';
+import { createAvailableFlowItemTypes } from 'ee/ai/catalog/utils';
 import { TYPENAME_GROUP, TYPENAME_PROJECT } from '~/graphql_shared/constants';
 import {
   VISIBILITY_LEVEL_PRIVATE_STRING,
@@ -63,8 +59,8 @@ export default {
       query: aiCatalogConfiguredItemsQuery,
       variables() {
         return {
-          ...this.itemTypes,
           ...this.namespaceVariables,
+          itemTypes: this.itemTypes,
           before: null,
           after: null,
           first: PAGE_SIZE,
@@ -100,23 +96,14 @@ export default {
     };
   },
   computed: {
+    itemTypes() {
+      return createAvailableFlowItemTypes({
+        isFlowsEnabled: this.glFeatures.aiCatalogFlows,
+        isThirdPartyFlowsEnabled: this.glFeatures.aiCatalogThirdPartyFlows,
+      });
+    },
     isProjectNamespace() {
       return Boolean(this.projectId);
-    },
-    isFlowsAvailable() {
-      return this.glFeatures.aiCatalogFlows;
-    },
-    isThirdPartyFlowsAvailable() {
-      return this.glFeatures.aiCatalogThirdPartyFlows;
-    },
-    itemTypes() {
-      if (this.isThirdPartyFlowsAvailable && this.isFlowsAvailable) {
-        return { itemTypes: [AI_CATALOG_TYPE_FLOW, AI_CATALOG_TYPE_THIRD_PARTY_FLOW] };
-      }
-      if (this.isThirdPartyFlowsAvailable) {
-        return { itemType: AI_CATALOG_TYPE_THIRD_PARTY_FLOW };
-      }
-      return { itemType: AI_CATALOG_TYPE_FLOW };
     },
     namespaceVariables() {
       if (this.isProjectNamespace) {

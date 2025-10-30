@@ -38,12 +38,19 @@ describe('FlowTriggerForm', () => {
     projectId: '123',
   };
 
-  const createWrapper = async (props = {}) => {
+  const createWrapper = async (props = {}, provide = {}) => {
     const handlers = [[getCatalogConsumerItemsQuery, catalogFlowsHandler]];
 
     wrapper = shallowMountExtended(FlowTriggerForm, {
       apolloProvider: createMockApollo(handlers),
       propsData: { ...defaultProps, ...props },
+      provide: {
+        glFeatures: {
+          aiCatalogFlows: true,
+          aiCatalogThirdPartyFlows: true,
+        },
+        ...provide,
+      },
       stubs: {
         ErrorsAlert,
         UserSelect: true,
@@ -160,6 +167,21 @@ describe('FlowTriggerForm', () => {
             expect(findConfigPathInput().exists()).toBe(true);
             expect(findFlowSelect().exists()).toBe(false);
           });
+        });
+      });
+
+      describe('when both AI Catalog flow feature flags are false', () => {
+        beforeEach(async () => {
+          await createWrapper(
+            {},
+            { glFeatures: { aiCatalogFlows: false, aiCatalogThirdPartyFlows: false } },
+          );
+        });
+
+        it('defaults to manual mode', () => {
+          expect(findConfigModeRadio().exists()).toBe(false);
+          expect(findFlowSelect().exists()).toBe(false);
+          expect(findConfigPathInput().exists()).toBe(true);
         });
       });
     });
@@ -427,7 +449,10 @@ describe('FlowTriggerForm', () => {
       });
 
       it('fetches catalog flows on mount', () => {
-        expect(catalogFlowsHandler).toHaveBeenCalledWith({ projectId: 'gid://gitlab/Project/123' });
+        expect(catalogFlowsHandler).toHaveBeenCalledWith({
+          projectId: 'gid://gitlab/Project/123',
+          itemTypes: ['FLOW', 'THIRD_PARTY_FLOW'],
+        });
       });
 
       it('handles catalog flows query error', async () => {

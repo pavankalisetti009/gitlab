@@ -109,68 +109,18 @@ describe('AiCatalogFlows', () => {
   });
 
   describe('Apollo queries', () => {
-    describe('when both aiCatalogFlows and aiCatalogThirdPartyFlows are enabled', () => {
-      beforeEach(() => {
-        createComponent();
-      });
-
-      it('fetches list data with itemTypes', () => {
-        expect(mockCatalogItemsQueryHandler).toHaveBeenCalledWith({
-          itemTypes: ['FLOW', 'THIRD_PARTY_FLOW'],
-          after: null,
-          before: null,
-          first: 20,
-          last: null,
-          search: '',
-        });
-      });
+    beforeEach(() => {
+      createComponent();
     });
 
-    describe('when only aiCatalogThirdPartyFlows is enabled', () => {
-      beforeEach(() => {
-        createComponent({
-          provide: {
-            glFeatures: {
-              aiCatalogFlows: false,
-              aiCatalogThirdPartyFlows: true,
-            },
-          },
-        });
-      });
-
-      it('fetches list data with itemType THIRD_PARTY_FLOW', () => {
-        expect(mockCatalogItemsQueryHandler).toHaveBeenCalledWith({
-          itemType: 'THIRD_PARTY_FLOW',
-          after: null,
-          before: null,
-          first: 20,
-          last: null,
-          search: '',
-        });
-      });
-    });
-
-    describe('when only aiCatalogFlows is enabled', () => {
-      beforeEach(() => {
-        createComponent({
-          provide: {
-            glFeatures: {
-              aiCatalogFlows: true,
-              aiCatalogThirdPartyFlows: false,
-            },
-          },
-        });
-      });
-
-      it('fetches list data with itemType FLOW', () => {
-        expect(mockCatalogItemsQueryHandler).toHaveBeenCalledWith({
-          itemType: 'FLOW',
-          after: null,
-          before: null,
-          first: 20,
-          last: null,
-          search: '',
-        });
+    it('fetches list data with itemTypes', () => {
+      expect(mockCatalogItemsQueryHandler).toHaveBeenCalledWith({
+        itemTypes: ['FLOW', 'THIRD_PARTY_FLOW'],
+        after: null,
+        before: null,
+        first: 20,
+        last: null,
+        search: '',
       });
     });
   });

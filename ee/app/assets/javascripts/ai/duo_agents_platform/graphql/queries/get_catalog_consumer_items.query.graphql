@@ -1,5 +1,5 @@
-query getCatalogConsumerItems($projectId: ProjectID!) {
-  aiCatalogConfiguredItems(projectId: $projectId, itemTypes: [FLOW, THIRD_PARTY_FLOW]) {
+query getCatalogConsumerItems($projectId: ProjectID!, $itemTypes: [AiCatalogItemType!]) {
+  aiCatalogConfiguredItems(projectId: $projectId, itemTypes: $itemTypes) {
     nodes {
       id
       item {

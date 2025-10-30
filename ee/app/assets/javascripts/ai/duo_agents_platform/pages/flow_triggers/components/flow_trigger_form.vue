@@ -10,11 +10,13 @@ import {
   GlFormRadioGroup,
 } from '@gitlab/ui';
 import { s__ } from '~/locale';
+import glFeatureFlagsMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
 import { convertToGraphQLId } from '~/graphql_shared/utils';
 import { scrollTo } from '~/lib/utils/scroll_utils';
 import { TYPENAME_PROJECT } from '~/graphql_shared/constants';
 import UserSelect from '~/vue_shared/components/user_select/user_select.vue';
 import ErrorsAlert from '~/vue_shared/components/errors_alert.vue';
+import { createAvailableFlowItemTypes } from 'ee/ai/catalog/utils';
 import getCatalogConsumerItemsQuery from 'ee/ai/duo_agents_platform/graphql/queries/get_catalog_consumer_items.query.graphql';
 import projectServiceAccountsQuery from '../../../graphql/queries/get_project_service_accounts.query.graphql';
 import { FLOW_TRIGGERS_INDEX_ROUTE } from '../../../router/constants';
@@ -41,6 +43,7 @@ export default {
     ErrorsAlert,
     AiLegalDisclaimer,
   },
+  mixins: [glFeatureFlagsMixin()],
   props: {
     mode: {
       type: String,
@@ -92,7 +95,11 @@ export default {
       variables() {
         return {
           projectId: convertToGraphQLId(TYPENAME_PROJECT, this.projectId),
+          itemTypes: this.catalogItemTypes,
         };
+      },
+      skip() {
+        return !this.isCatalogConfigModeAvailable;
       },
       update(data) {
         return (
@@ -116,8 +123,10 @@ export default {
       catalogItems: [],
       errors: [],
       configMode:
-        // We only want the default to be FILE_PATH if there are no consumer defaults AND there is an existing config path
-        this.initialValues.aiCatalogItemConsumer.id || !this.initialValues.configPath
+        // Only use CATALOG mode if it's available AND (there's a consumer ID OR no existing config path)
+        // Otherwise, use FILE_PATH mode
+        (this.glFeatures.aiCatalogFlows || this.glFeatures.aiCatalogThirdPartyFlows) &&
+        (this.initialValues.aiCatalogItemConsumer.id || !this.initialValues.configPath)
           ? CONFIG_MODE_CATALOG
           : CONFIG_MODE_FILE_PATH,
       configPath: this.initialValues.configPath,
@@ -128,6 +137,15 @@ export default {
     };
   },
   computed: {
+    catalogItemTypes() {
+      return createAvailableFlowItemTypes({
+        isFlowsEnabled: this.glFeatures.aiCatalogFlows,
+        isThirdPartyFlowsEnabled: this.glFeatures.aiCatalogThirdPartyFlows,
+      });
+    },
+    isCatalogConfigModeAvailable() {
+      return this.catalogItemTypes.length > 0;
+    },
     isCatalogConfigMode() {
       return this.configMode === CONFIG_MODE_CATALOG;
     },
@@ -298,7 +316,11 @@ export default {
         />
       </gl-form-group>
 
-      <gl-form-group :label="s__('DuoAgentsPlatform|Configuration source')" label-for="config-mode">
+      <gl-form-group
+        v-if="isCatalogConfigModeAvailable"
+        :label="s__('DuoAgentsPlatform|Configuration source')"
+        label-for="config-mode"
+      >
         <gl-form-radio-group
           id="config-mode"
           v-model="configMode"
