@@ -103,7 +103,7 @@ RSpec.describe Analytics::AiAnalytics::AiUserMetricsService, feature_category: :
           it 'returns matched code contributors AI usage stats' do
             expect(service_response).to be_success
             expect(service_response.payload).to match({
-              user1.id => { code_suggestions_accepted_count: 2, duo_chat_interactions_count: 1 },
+              user1.id => { code_suggestions_accepted_count: 2, duo_chat_interactions_count: 2 },
               user2.id => { duo_chat_interactions_count: 1 }
             })
           end

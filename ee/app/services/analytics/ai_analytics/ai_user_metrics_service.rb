@@ -57,11 +57,11 @@ module Analytics
       end
 
       def duo_chat_interactions_data(data = {})
-        usage_data(data, DUO_CHAT_INTERACTIONS_COUNT_QUERY, :duo_chat_interactions_count)
+        usage_data(data, DUO_CHAT_INTERACTIONS_COUNT_QUERY, :duo_chat_interactions_count, duo_chat_placeholders)
       end
 
-      def usage_data(data, raw_query, field)
-        query = ClickHouse::Client::Query.new(raw_query: raw_query, placeholders: placeholders)
+      def usage_data(data, raw_query, field, query_placeholders = placeholders)
+        query = ClickHouse::Client::Query.new(raw_query: raw_query, placeholders: query_placeholders)
         ClickHouse::Client.select(query, :main).each do |row|
           data[row['user_id']] ||= {}
           data[row['user_id']][field] = row[field.to_s]
@@ -77,6 +77,11 @@ module Analytics
           user_ids: user_ids.to_json,
           namespace_path: filter_by_namespace_path_enabled? ? namespace.traversal_path : ''
         }
+      end
+
+      def duo_chat_placeholders
+        # for old Duo Chat we don't use namespace filtering for now. See https://gitlab.com/gitlab-org/gitlab/-/issues/578538
+        placeholders.merge(namespace_path: '')
       end
 
       def filter_by_namespace_path_enabled?

@@ -90,7 +90,7 @@ RSpec.describe Analytics::AiAnalytics::DuoChatUsageService, feature_category: :v
             { user_id: user1.id, namespace_path: group.traversal_path, event: 6, timestamp: to - 4.days },
             { user_id: user2.id, namespace_path: project_namespace.traversal_path, event: 6, timestamp: to - 2.days },
             { user_id: user2.id, namespace_path: project_namespace.traversal_path, event: 6, timestamp: to - 2.days },
-            # Included only when use_ai_events_namespace_path_filter is enabled
+            # Matches namespace path filter but shouldn't be included since it's duo chat
             { user_id: stranger_user.id, namespace_path: project_namespace.traversal_path, event: 6,
               timestamp: to - 2.days },
             { user_id: user2.id, namespace_path: project_namespace.traversal_path, event: 1, timestamp: to - 2.days },
@@ -157,7 +157,7 @@ RSpec.describe Analytics::AiAnalytics::DuoChatUsageService, feature_category: :v
       let(:expected_results) do
         {
           contributors_count: 3,
-          duo_chat_contributors_count: 3
+          duo_chat_contributors_count: 2
         }
       end
 
