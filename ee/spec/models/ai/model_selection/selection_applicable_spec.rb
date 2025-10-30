@@ -104,13 +104,15 @@ RSpec.describe ::Ai::ModelSelection::SelectionApplicable, feature_category: :"se
         end
       end
 
-      describe '#distinct_eligible_assignments',
-        quarantine: 'https://gitlab.com/gitlab-org/quality/test-failure-issues/-/issues/3206' do
+      describe '#distinct_eligible_assignments' do
         it 'returns the related assigments' do
           actual_assignment = included_instance.distinct_eligible_assignments
-          expected_assignment = user_assignments.take(2)
 
-          expect(actual_assignment).to match_array(expected_assignment)
+          expected_namespaces = [first_group, second_group]
+          actual_namespaces = actual_assignment.map(&:namespace)
+
+          expect(actual_assignment.size).to eq(2)
+          expect(actual_namespaces).to match_array(expected_namespaces)
         end
       end
 
