@@ -139,6 +139,10 @@ export default {
         ATTENTION_MINIMAL_HEIGHT +
         Math.ceil(this.frameworksNeedsAttention.length / ATTENTION_FRAMEWORKS_PER_UNIT);
 
+      const shouldShowFrameworksNeedsAttention =
+        this.$apollo.queries.frameworksNeedsAttention.loading ||
+        this.frameworksNeedsAttention.length;
+
       return {
         panels: [
           {
@@ -196,7 +200,7 @@ export default {
               xPos: 6,
             },
           },
-          this.frameworksNeedsAttention.length
+          shouldShowFrameworksNeedsAttention
             ? {
                 id: '4',
                 extendedDashboardPanelProps: {

@@ -262,6 +262,41 @@ describe('Compliance dashboard', () => {
       expect(needsAttentionPanel).toBeUndefined();
     });
 
+    it('includes frameworks needs attention panel during loading state', () => {
+      frameworkCoverageQueryMock.mockResolvedValue(generateFrameworkCoverageQueryMockResponse());
+      failedRequirementsQueryMock.mockResolvedValue(generateFailedRequirementsQueryMockResponse());
+      failedControlsQueryMock.mockResolvedValue(generateFailedControlsQueryMockResponse());
+      // Keep frameworksNeedsAttentionQueryMock as unresolved promise to simulate loading state
+      frameworksNeedsAttentionQueryMock.mockImplementation(() => new Promise(() => {}));
+
+      createComponent();
+
+      const needsAttentionPanel = getDashboardConfig().panels.find(
+        (panel) => panel.component === FrameworksNeedsAttention,
+      );
+      expect(needsAttentionPanel).toBeDefined();
+      expect(needsAttentionPanel.extendedDashboardPanelProps.loading).toBe(true);
+    });
+
+    it('includes frameworks needs attention panel when loading is false but frameworks exist', async () => {
+      frameworkCoverageQueryMock.mockResolvedValue(generateFrameworkCoverageQueryMockResponse());
+      failedRequirementsQueryMock.mockResolvedValue(generateFailedRequirementsQueryMockResponse());
+      failedControlsQueryMock.mockResolvedValue(generateFailedControlsQueryMockResponse());
+      frameworksNeedsAttentionQueryMock.mockResolvedValue(
+        generateFrameworksNeedsAttentionQueryMockResponse(2),
+      );
+
+      createComponent();
+      await waitForPromises();
+      await nextTick();
+
+      const needsAttentionPanel = getDashboardConfig().panels.find(
+        (panel) => panel.component === FrameworksNeedsAttention,
+      );
+      expect(needsAttentionPanel).toBeDefined();
+      expect(needsAttentionPanel.extendedDashboardPanelProps.loading).toBe(false);
+    });
+
     it.each`
       frameworksCount | expectedPanelSize
       ${1}            | ${3.5}
