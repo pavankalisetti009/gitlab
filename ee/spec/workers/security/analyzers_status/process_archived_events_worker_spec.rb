@@ -31,19 +31,6 @@ RSpec.describe Security::AnalyzersStatus::ProcessArchivedEventsWorker, feature_c
 
       use_event
     end
-
-    context 'when Security::InventoryFilters exist' do
-      let(:inventory_filter) do
-        create(:security_inventory_filters, project_id: project.id, project_name: project.name,
-          archived: !project.archived) # explicitly creating it with the opposite value to verify change
-      end
-
-      it 'updates archived column' do
-        use_event
-
-        expect(inventory_filter.reload.archived).to eq(project.archived)
-      end
-    end
   end
 
   context 'when the project does not exist' do

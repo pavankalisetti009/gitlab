@@ -22,7 +22,9 @@ module Security
       attr_reader :project
 
       def update_analyzer_statuses
-        project.analyzer_statuses.update!(archived: project.archived)
+        archived = project.self_or_ancestors_archived?
+        project.analyzer_statuses.update!(archived: archived)
+        project.security_inventory_filters&.update!(archived: archived)
       end
     end
   end
