@@ -6,7 +6,7 @@ module Ai
       module FlowHelper
         include Gitlab::Utils::StrongMemoize
 
-        MAX_STEPS = 100
+        MAX_STEPS = 20
         MAX_STEPS_ERROR = "Maximum steps for a flow (#{MAX_STEPS}) exceeded".freeze
 
         private
