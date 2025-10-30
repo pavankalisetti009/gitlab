@@ -38245,6 +38245,8 @@ CREATE INDEX idx_scan_result_policies_on_configuration_id_id_updated_at ON scan_
 
 CREATE INDEX idx_scan_result_policy_violations_on_policy_id_and_id ON scan_result_policy_violations USING btree (scan_result_policy_id, id);
 
+CREATE INDEX idx_sec_inv_filters_traversals_unarchived_proj_severities_sort ON security_inventory_filters USING btree (traversal_ids, project_id, id DESC) WHERE ((NOT archived) AND ((critical > 0) OR (high > 0)));
+
 CREATE INDEX idx_secret_detect_token_on_project_id ON secret_detection_token_statuses USING btree (project_id);
 
 CREATE UNIQUE INDEX idx_secret_rotation_infos_project_secret ON secret_rotation_infos USING btree (project_id, secret_name, secret_metadata_version);
@@ -38252,6 +38254,8 @@ CREATE UNIQUE INDEX idx_secret_rotation_infos_project_secret ON secret_rotation_
 CREATE INDEX idx_security_finding_token_on_created_at ON security_finding_token_statuses USING btree (created_at);
 
 CREATE INDEX idx_security_finding_token_on_project_id ON security_finding_token_statuses USING btree (project_id);
+
+CREATE INDEX idx_security_inventory_filters_traversal_ids_unarchived_project ON security_inventory_filters USING btree (traversal_ids, project_id) WHERE (NOT archived);
 
 CREATE INDEX idx_security_pipeline_execution_project_schedules_next_run_at ON security_pipeline_execution_project_schedules USING btree (next_run_at, id);
 
