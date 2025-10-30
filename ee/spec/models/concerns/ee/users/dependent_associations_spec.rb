@@ -8,7 +8,13 @@ RSpec.describe EE::Users::DependentAssociations, feature_category: :user_managem
     let(:associations_with_nullify) do
       {
         security_policy_dismissals: { class_name: 'Security::PolicyDismissal' },
-        approval_policy_merge_request_bypass_events: { class_name: 'Security::ApprovalPolicyMergeRequestBypassEvent' }
+        approval_policy_merge_request_bypass_events: { class_name: 'Security::ApprovalPolicyMergeRequestBypassEvent' },
+        created_custom_fields: { class_name: 'Issuables::CustomField' },
+        updated_custom_fields: { class_name: 'Issuables::CustomField' },
+        created_lifecycles: { class_name: 'WorkItems::Statuses::Custom::Lifecycle' },
+        updated_lifecycles: { class_name: 'WorkItems::Statuses::Custom::Lifecycle' },
+        created_statuses: { class_name: 'WorkItems::Statuses::Custom::Status' },
+        updated_statuses: { class_name: 'WorkItems::Statuses::Custom::Status' }
       }
     end
 
@@ -22,6 +28,7 @@ RSpec.describe EE::Users::DependentAssociations, feature_category: :user_managem
         approval_merge_request_rules_users: {},
         approval_project_rules_users: {},
         duo_workflows_workflows: { class_name: 'Ai::DuoWorkflows::Workflow' },
+        lists: {},
         merge_requests_approval_rules_approver_users: { class_name: 'MergeRequests::ApprovalRulesApproverUser' },
         targeted_message_dismissals: {},
         boards_epic_list_user_preferences: { class_name: 'Boards::EpicListUserPreference' },

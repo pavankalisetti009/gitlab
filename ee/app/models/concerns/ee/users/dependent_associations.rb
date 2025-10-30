@@ -35,6 +35,8 @@ module EE
 
         has_many :approval_project_rules_users, dependent: :destroy
 
+        has_many :lists, dependent: :destroy
+
         has_many :security_policy_dismissals,
           class_name: 'Security::PolicyDismissal',
           dependent: :nullify
@@ -60,6 +62,42 @@ module EE
         has_many :duo_workflows_workflows,
           class_name: 'Ai::DuoWorkflows::Workflow',
           dependent: :destroy
+
+        has_many :created_custom_fields,
+          class_name: 'Issuables::CustomField',
+          foreign_key: 'created_by_id',
+          dependent: :nullify,
+          inverse_of: :created_by
+
+        has_many :updated_custom_fields,
+          class_name: 'Issuables::CustomField',
+          foreign_key: 'updated_by_id',
+          dependent: :nullify,
+          inverse_of: :updated_by
+
+        has_many :created_lifecycles,
+          class_name: 'WorkItems::Statuses::Custom::Lifecycle',
+          foreign_key: 'created_by_id',
+          dependent: :nullify,
+          inverse_of: :created_by
+
+        has_many :updated_lifecycles,
+          class_name: 'WorkItems::Statuses::Custom::Lifecycle',
+          foreign_key: 'updated_by_id',
+          dependent: :nullify,
+          inverse_of: :updated_by
+
+        has_many :created_statuses,
+          class_name: 'WorkItems::Statuses::Custom::Status',
+          foreign_key: 'created_by_id',
+          dependent: :nullify,
+          inverse_of: :created_by
+
+        has_many :updated_statuses,
+          class_name: 'WorkItems::Statuses::Custom::Status',
+          foreign_key: 'updated_by_id',
+          dependent: :nullify,
+          inverse_of: :updated_by
         # rubocop:enable Cop/ActiveRecordDependent -- we need to destroy/nullify records after each user delete.
       end
     end
