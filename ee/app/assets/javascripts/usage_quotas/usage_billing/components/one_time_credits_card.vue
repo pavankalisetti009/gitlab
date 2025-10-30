@@ -11,11 +11,11 @@ export default {
     GlLink,
   },
   props: {
-    remainingCredits: {
+    otcRemainingCredits: {
       type: Number,
       required: true,
     },
-    usedCredits: {
+    otcCreditsUsed: {
       type: Number,
       required: true,
     },
@@ -34,8 +34,8 @@ export default {
     <div class="gl-mb-4 gl-text-sm gl-text-subtle">
       {{ s__('UsageBilling|Used this billing period') }}
     </div>
-    <div class="gl-heading-scale-600 gl-mb-3" data-testid="otc-credits">
-      {{ numberToMetricPrefix(usedCredits) }}
+    <div class="gl-heading-scale-600 gl-mb-3" data-testid="otc-credits-used">
+      {{ numberToMetricPrefix(otcCreditsUsed) }}
     </div>
     <div class="gl-border-t gl-mb-3 gl-pt-3 gl-text-sm gl-text-subtle">
       <gl-sprintf
@@ -52,7 +52,9 @@ export default {
     </div>
     <div class="gl-border-t gl-flex gl-flex-row gl-justify-between gl-pt-3 gl-text-subtle">
       <span>{{ s__('UsageBilling|One-Time Waiver credits remaining') }}</span>
-      <span data-testid="remaining-credits">{{ remainingCredits }}</span>
+      <span data-testid="otc-remaining-credits">{{
+        numberToMetricPrefix(otcRemainingCredits)
+      }}</span>
     </div>
   </gl-card>
 </template>

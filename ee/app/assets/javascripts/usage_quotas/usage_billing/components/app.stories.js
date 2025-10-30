@@ -2,12 +2,12 @@ import VueApollo from 'vue-apollo';
 import {
   mockUsersUsageDataWithPool,
   mockUsersUsageDataWithoutPool,
-  mockUsersUsageDataWithOverage,
-  usageDataWithPool,
-  usageDataNoPoolNoOverage,
-  usageDataNoPoolWithOverage,
-  usageDataWithPoolWithOverage,
-  usageDataWithOtcCredits,
+  usageDataCommitmentWithOtcWithOverage,
+  usageDataWithCommitment,
+  usageDataNoCommitmentNoOtcNoOverage,
+  usageDataNoCommitmentWithOverage,
+  usageDataWithCommitmentWithOverage,
+  usageDataCommitmentWithOtc,
 } from 'ee_jest/usage_quotas/usage_billing/mock_data';
 import { createMockClient } from 'helpers/mock_apollo_helper';
 import getSubscriptionUsersUsageQuery from '../graphql/get_subscription_users_usage.query.graphql';
@@ -32,15 +32,13 @@ export default meta;
 const createTemplate = (config = {}) => {
   let { getSubscriptionUsersUsageQueryHandler, getSubscriptionUsageQueryHandler } = config;
 
-  // NOTE: currently we mock both, REST and GraphQL APIs, as we transition towards GraphQL API
-  // Apollo
   let defaultClient = config.apollo?.defaultClient;
   if (!defaultClient) {
     if (!getSubscriptionUsersUsageQueryHandler) {
       getSubscriptionUsersUsageQueryHandler = () => Promise.resolve(mockUsersUsageDataWithPool);
     }
     if (!getSubscriptionUsageQueryHandler) {
-      getSubscriptionUsageQueryHandler = () => Promise.resolve(usageDataWithPool);
+      getSubscriptionUsageQueryHandler = () => Promise.resolve(usageDataWithCommitment);
     }
 
     const requestHandlers = [
@@ -57,9 +55,7 @@ const createTemplate = (config = {}) => {
   return (args, { argTypes }) => ({
     apolloProvider,
     components: {
-      // NOTE: we have to make AdminUsageDashboardApp async,
-      // to delay it's mounting, to have an opportunity to stub Axios
-      UsageBillingApp: () => Promise.resolve(UsageBillingApp),
+      UsageBillingApp,
     },
     provide: {
       userUsagePath: '/gitlab_duo/users/:id',
@@ -73,25 +69,45 @@ export const Default = {
   render: createTemplate(),
 };
 
-export const PoolWithOverage = {
+export const CommitmentWithOtcCredits = {
   render: (...args) => {
-    const getSubscriptionUsersUsageQueryHandler = () =>
-      Promise.resolve(mockUsersUsageDataWithOverage);
-    const getSubscriptionUsageQueryHandler = () => Promise.resolve(usageDataWithPoolWithOverage);
+    const getSubscriptionUsageQueryHandler = () => Promise.resolve(usageDataCommitmentWithOtc);
 
     return createTemplate({
-      getSubscriptionUsersUsageQueryHandler,
       getSubscriptionUsageQueryHandler,
     })(...args);
   },
 };
 
-export const NoPoolWithOverage = {
+export const CommitmentWithOtcWithOverage = {
+  render: (...args) => {
+    const getSubscriptionUsageQueryHandler = () =>
+      Promise.resolve(usageDataCommitmentWithOtcWithOverage);
+
+    return createTemplate({
+      getSubscriptionUsageQueryHandler,
+    })(...args);
+  },
+};
+
+export const CommitmentWithOverage = {
+  render: (...args) => {
+    const getSubscriptionUsageQueryHandler = () =>
+      Promise.resolve(usageDataWithCommitmentWithOverage);
+
+    return createTemplate({
+      getSubscriptionUsageQueryHandler,
+    })(...args);
+  },
+};
+
+export const NoCommitmentWithOverage = {
   render: (...args) => {
     const getSubscriptionUsersUsageQueryHandler = () =>
       Promise.resolve(mockUsersUsageDataWithoutPool);
 
-    const getSubscriptionUsageQueryHandler = () => Promise.resolve(usageDataNoPoolWithOverage);
+    const getSubscriptionUsageQueryHandler = () =>
+      Promise.resolve(usageDataNoCommitmentWithOverage);
 
     return createTemplate({
       getSubscriptionUsersUsageQueryHandler,
@@ -100,25 +116,13 @@ export const NoPoolWithOverage = {
   },
 };
 
-export const NoPoolNoOverage = {
+export const NoCommitmentNoOtcNoOverage = {
   render: (...args) => {
     const getSubscriptionUsersUsageQueryHandler = () =>
       Promise.resolve(mockUsersUsageDataWithoutPool);
 
-    const getSubscriptionUsageQueryHandler = () => Promise.resolve(usageDataNoPoolNoOverage);
-
-    return createTemplate({
-      getSubscriptionUsersUsageQueryHandler,
-      getSubscriptionUsageQueryHandler,
-    })(...args);
-  },
-};
-
-export const WithOtcCredits = {
-  render: (...args) => {
-    const getSubscriptionUsersUsageQueryHandler = () => Promise.resolve(usageDataWithOtcCredits);
-
-    const getSubscriptionUsageQueryHandler = () => Promise.resolve(usageDataWithOtcCredits);
+    const getSubscriptionUsageQueryHandler = () =>
+      Promise.resolve(usageDataNoCommitmentNoOtcNoOverage);
 
     return createTemplate({
       getSubscriptionUsersUsageQueryHandler,
@@ -129,10 +133,11 @@ export const WithOtcCredits = {
 
 export const LoadingState = {
   render: (...args) => {
-    // Never resolved
+    const getSubscriptionUsageQueryHandler = () => new Promise(() => {});
     const getSubscriptionUsersUsageQueryHandler = () => new Promise(() => {});
 
     return createTemplate({
+      getSubscriptionUsageQueryHandler,
       getSubscriptionUsersUsageQueryHandler,
     })(...args);
   },
@@ -150,10 +155,14 @@ export const LoadingUsersUsageState = {
 
 export const ErrorState = {
   render: (...args) => {
+    const getSubscriptionUsageQueryHandler = () =>
+      Promise.reject(new Error('Failed to fetch usage data'));
+
     const getSubscriptionUsersUsageQueryHandler = () =>
       Promise.reject(new Error('Failed to fetch usage data'));
 
     return createTemplate({
+      getSubscriptionUsageQueryHandler,
       getSubscriptionUsersUsageQueryHandler,
     })(...args);
   },

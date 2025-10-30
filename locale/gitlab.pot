@@ -70630,6 +70630,9 @@ msgstr ""
 msgid "UsageBilling|One-Time Waiver credits remaining"
 msgstr ""
 
+msgid "UsageBilling|One-Time Waiver credits used this period"
+msgstr ""
+
 msgid "UsageBilling|Purchase monthly commitment"
 msgstr ""
 

@@ -9,6 +9,7 @@ describe('CurrentOverageUsageCard', () => {
 
   const defaultProps = {
     overageCreditsUsed: 1,
+    otcCreditsUsed: 42,
     monthStartDate: '2025-09-01',
     monthEndDate: '2025-09-30',
   };
@@ -24,6 +25,8 @@ describe('CurrentOverageUsageCard', () => {
       },
     });
   };
+
+  const findOtcCreditsUsed = () => wrapper.findByTestId('otc-credits-used');
 
   describe('rendering elements', () => {
     beforeEach(() => {
@@ -43,6 +46,27 @@ describe('CurrentOverageUsageCard', () => {
 
     it('renders correct current overage value', () => {
       expect(wrapper.findByTestId('overage-credits-used').text()).toBe('1');
+    });
+
+    it('renders one-time waiver usage value', () => {
+      const otcCreditsUsed = findOtcCreditsUsed();
+
+      expect(otcCreditsUsed.exists()).toBe(true);
+      expect(otcCreditsUsed.text()).toBe('42');
+    });
+  });
+
+  describe('without OTC', () => {
+    beforeEach(() => {
+      createComponent({
+        otcCreditsUsed: null,
+      });
+    });
+
+    it('renders one-time waiver usage value', () => {
+      const otcCreditsUsed = findOtcCreditsUsed();
+
+      expect(otcCreditsUsed.exists()).toBe(false);
     });
   });
 });

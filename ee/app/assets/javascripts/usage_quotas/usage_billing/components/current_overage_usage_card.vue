@@ -17,6 +17,11 @@ export default {
       type: Number,
       required: true,
     },
+    otcCreditsUsed: {
+      type: Number,
+      required: false,
+      default: 0,
+    },
     monthStartDate: {
       type: String,
       required: true,
@@ -66,5 +71,13 @@ export default {
         </template>
       </gl-sprintf>
     </p>
+
+    <div
+      v-if="otcCreditsUsed"
+      class="gl-border-t gl-flex gl-flex-row gl-justify-between gl-pt-3 gl-text-subtle"
+    >
+      <span>{{ s__('UsageBilling|One-Time Waiver credits used this period') }}</span>
+      <span data-testid="otc-credits-used">{{ numberToMetricPrefix(otcCreditsUsed) }}</span>
+    </div>
   </gl-card>
 </template>

@@ -446,7 +446,7 @@ export const mockUsersUsageDataWithZeroAllocation = {
   },
 };
 
-export const usageDataWithPool = {
+export const usageDataWithCommitment = {
   data: {
     subscriptionUsage: {
       lastEventTransactionAt: '2025-10-14T07:41:59Z',
@@ -481,7 +481,31 @@ export const usageDataWithoutLastEventTransactionAt = {
   },
 };
 
-export const usageDataWithPoolWithOverage = {
+export const usageDataWithCommitmentWithOtc = {
+  data: {
+    subscriptionUsage: {
+      lastEventTransactionAt: '2025-10-14T07:41:59Z',
+      startDate: '2025-10-01',
+      endDate: '2025-10-31',
+      purchaseCreditsPath: '/purchase-credits-path',
+
+      monthlyCommitment: {
+        creditsUsed: 300,
+        totalCredits: 300,
+      },
+      oneTimeCredits: {
+        totalCreditsRemaining: 0,
+        creditsUsed: 200,
+      },
+      overage: {
+        isAllowed: false,
+        creditsUsed: 0,
+      },
+    },
+  },
+};
+
+export const usageDataWithCommitmentWithOverage = {
   data: {
     subscriptionUsage: {
       purchaseCreditsPath: '/purchase-credits-path',
@@ -505,7 +529,7 @@ export const usageDataWithPoolWithOverage = {
   },
 };
 
-export const usageDataNoPoolNoOverage = {
+export const usageDataNoCommitmentNoOtcNoOverage = {
   data: {
     subscriptionUsage: {
       lastEventTransactionAt: '2024-01-15T10:30:00Z',
@@ -526,7 +550,7 @@ export const usageDataNoPoolNoOverage = {
   },
 };
 
-export const usageDataNoPoolWithOverage = {
+export const usageDataNoCommitmentWithOverage = {
   data: {
     subscriptionUsage: {
       lastEventTransactionAt: '2024-01-15T10:30:00Z',
@@ -547,20 +571,14 @@ export const usageDataNoPoolWithOverage = {
   },
 };
 
-export const usageDataWithOtcCredits = {
+export const usageDataCommitmentWithOtc = {
   data: {
     subscriptionUsage: {
       lastEventTransactionAt: '2025-10-14T07:41:59Z',
       startDate: '2025-10-01',
       endDate: '2025-10-31',
       purchaseCreditsPath: '/purchase-credits-path',
-      usersUsage: {
-        // overall statistics
-        totalUsers: 50,
-        users: {
-          nodes: [],
-        },
-      },
+
       monthlyCommitment: {
         creditsUsed: 50,
         totalCredits: 300,
@@ -572,8 +590,34 @@ export const usageDataWithOtcCredits = {
       },
 
       oneTimeCredits: {
-        totalCreditsRemaining: 500,
-        creditsUsed: 2500,
+        totalCreditsRemaining: 250,
+        creditsUsed: 750,
+      },
+    },
+  },
+};
+
+export const usageDataCommitmentWithOtcWithOverage = {
+  data: {
+    subscriptionUsage: {
+      lastEventTransactionAt: '2025-10-14T07:41:59Z',
+      startDate: '2025-10-01',
+      endDate: '2025-10-31',
+      purchaseCreditsPath: '/purchase-credits-path',
+
+      monthlyCommitment: {
+        creditsUsed: 50,
+        totalCredits: 300,
+      },
+
+      overage: {
+        isAllowed: true,
+        creditsUsed: 100,
+      },
+
+      oneTimeCredits: {
+        totalCreditsRemaining: 0,
+        creditsUsed: 1000,
       },
     },
   },
