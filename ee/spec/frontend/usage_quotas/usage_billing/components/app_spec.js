@@ -15,6 +15,7 @@ import { logError } from '~/lib/logger';
 import { captureException } from '~/sentry/sentry_browser_wrapper';
 import PageHeading from '~/vue_shared/components/page_heading.vue';
 import UserDate from '~/vue_shared/components/user_date.vue';
+import HumanTimeframe from '~/vue_shared/components/datetime/human_timeframe.vue';
 import {
   usageDataNoCommitmentNoOtcNoOverage,
   usageDataNoCommitmentWithOverage,
@@ -66,11 +67,31 @@ describe('UsageBillingApp', () => {
       await waitForPromises();
     });
 
-    it('renders the page title with its description', () => {
-      const pageHeading = findPageHeading();
-      expect(pageHeading.text()).toContain('Usage Billing');
-      expect(pageHeading.text()).toContain('Last updated:');
-      expect(pageHeading.findComponent(UserDate).exists()).toBe(true);
+    describe('page header', () => {
+      it('renders the page title with its description', () => {
+        const pageHeading = findPageHeading();
+
+        expect(pageHeading.text()).toContain('Usage Billing');
+      });
+
+      it('renders the page billing period subtitle', () => {
+        const pageHeading = findPageHeading();
+
+        expect(pageHeading.text()).toContain('Billing period:');
+        expect(pageHeading.findComponent(HumanTimeframe).exists()).toBe(true);
+        expect(pageHeading.findComponent(HumanTimeframe).props()).toEqual({
+          from: '2025-10-01',
+          till: '2025-10-31',
+        });
+      });
+
+      it('renders last event transaction at', () => {
+        const pageHeading = findPageHeading();
+
+        expect(pageHeading.text()).toContain('Last event transaction at:');
+        expect(pageHeading.findComponent(UserDate).exists()).toBe(true);
+        expect(pageHeading.findComponent(UserDate).props('date')).toBe('2025-10-14T07:41:59Z');
+      });
     });
 
     it('renders purchase-commitment-card', () => {
@@ -186,7 +207,6 @@ describe('UsageBillingApp', () => {
       expect(wrapper.findComponent(CurrentUsageCard).props()).toMatchObject({
         poolCreditsUsed: 50,
         poolTotalCredits: 300,
-        monthStartDate: '2025-10-01',
         monthEndDate: '2025-10-31',
       });
     });
@@ -250,8 +270,6 @@ describe('UsageBillingApp', () => {
       expect(currentOverageUsageCard.props()).toMatchObject({
         overageCreditsUsed: 50,
         otcCreditsUsed: 0,
-        monthStartDate: '2025-10-01',
-        monthEndDate: '2025-10-31',
       });
     });
 

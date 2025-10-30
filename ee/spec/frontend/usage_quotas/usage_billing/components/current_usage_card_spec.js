@@ -1,7 +1,7 @@
 import { GlProgressBar, GlSprintf } from '@gitlab/ui';
 import CurrentUsageCard from 'ee/usage_quotas/usage_billing/components/current_usage_card.vue';
-import HumanTimeframeWithDaysRemaining from 'ee/usage_quotas/usage_billing/components/human_timeframe_with_days_remaining.vue';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
+import { useFakeDate } from 'helpers/fake_date';
 
 describe('CurrentUsageCard', () => {
   /** @type {import('helpers/vue_test_utils_helper').ExtendedWrapper} */
@@ -10,9 +10,11 @@ describe('CurrentUsageCard', () => {
   const defaultProps = {
     poolCreditsUsed: 7800,
     poolTotalCredits: 10000,
-    monthStartDate: '2025-09-01',
-    monthEndDate: '2025-09-30',
+    monthEndDate: '2025-10-31',
   };
+
+  // '2025-10-10'
+  useFakeDate(2025, 9, 10);
 
   const createComponent = (props) => {
     wrapper = shallowMountExtended(CurrentUsageCard, {
@@ -43,11 +45,12 @@ describe('CurrentUsageCard', () => {
       expect(wrapper.findByTestId('pool-total-credits').text()).toMatchInterpolatedText('/ 10k');
     });
 
-    it('renders the formatted date range', () => {
-      expect(wrapper.findComponent(HumanTimeframeWithDaysRemaining).props()).toMatchObject({
-        monthStartDate: '2025-09-01',
-        monthEndDate: '2025-09-30',
-      });
+    it('renders the subtitle with billing period info', () => {
+      const subtitle = wrapper.findByTestId('monthly-commitment-subtitle');
+
+      expect(subtitle.text()).toMatchInterpolatedText(
+        'Used this billing period, resets in 21 days',
+      );
     });
   });
 
