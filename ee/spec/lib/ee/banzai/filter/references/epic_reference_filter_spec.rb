@@ -74,7 +74,7 @@ RSpec.describe Banzai::Filter::References::EpicReferenceFilter, feature_category
       link = doc(reference).css('a').first
 
       expect(link).to have_attribute('data-original')
-      expect(link.attr('data-original')).to eq(CGI.escapeHTML(reference))
+      expect(link.attr('data-original')).to eq_html(reference)
     end
 
     it 'includes a data-reference-format attribute' do
@@ -102,13 +102,13 @@ RSpec.describe Banzai::Filter::References::EpicReferenceFilter, feature_category
     it 'ignores invalid epic IIDs' do
       text = "Check &#{non_existing_record_iid}"
 
-      expect(doc(text).to_s).to include(ERB::Util.html_escape_once(text))
+      expect(doc(text).to_s).to include_html(text)
     end
 
     it 'ignores out of range epic IDs' do
       text = "Check &1161452270761535925900804973910297"
 
-      expect(doc(text).to_s).to include(ERB::Util.html_escape_once(text))
+      expect(doc(text).to_s).to include_html(text)
     end
 
     it 'does not process links containing epic numbers followed by text' do
@@ -139,7 +139,7 @@ RSpec.describe Banzai::Filter::References::EpicReferenceFilter, feature_category
     it 'ignores invalid epic IIDs' do
       text = "Check &amp;#{non_existing_record_iid}"
 
-      expect(doc(text).to_s).to include(ERB::Util.html_escape_once(text))
+      expect(doc(text).to_s).to include(text)
     end
   end
 
@@ -203,13 +203,13 @@ RSpec.describe Banzai::Filter::References::EpicReferenceFilter, feature_category
     it 'ignores a shorthand reference from another group' do
       text = "Check &#{epic.iid}"
 
-      expect(doc(text).to_s).to include(ERB::Util.html_escape_once(text))
+      expect(doc(text).to_s).to include_html(text)
     end
 
     it 'ignores reference with incomplete group path' do
       text = "Check @#{epic.group.path}&#{epic.iid}"
 
-      expect(doc(text).to_s).to include(ERB::Util.html_escape_once(text))
+      expect(doc(text).to_s).to include_html(text)
     end
 
     it 'links to a valid reference for full reference' do
@@ -353,5 +353,10 @@ RSpec.describe Banzai::Filter::References::EpicReferenceFilter, feature_category
     let(:text) { "#{epic.to_reference(group)} #{epic.to_reference(group)} #{epic.to_reference(group)}" }
     let(:filter_result) { reference_filter(text, project: nil, group: group) }
     let(:ends_with) { "</a> #{CGI.escapeHTML(epic.to_reference(group))}</p>" }
+  end
+
+  it_behaves_like 'ReferenceFilter#references_in' do
+    let(:reference) { epic.to_reference(group) }
+    let(:filter_instance) { described_class.new(nil, { project: nil, group: group }) }
   end
 end

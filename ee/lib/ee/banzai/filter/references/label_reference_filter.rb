@@ -8,7 +8,7 @@ module EE
           extend ::Gitlab::Utils::Override
 
           override :data_attributes_for
-          def data_attributes_for(text, parent, object, link_content: false, link_reference: false)
+          def data_attributes_for(original, parent, object, link_content: false, link_reference: false)
             return super unless object.scoped_label?
 
             # Enabling HTML tooltips for scoped labels here.

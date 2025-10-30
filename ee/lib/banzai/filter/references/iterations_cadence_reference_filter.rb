@@ -46,7 +46,10 @@ module Banzai
         def parse_symbol(symbol, match_data)
           return { cadence_id: symbol.to_i, cadence_title: nil } if symbol
 
-          { cadence_id: match_data[:cadence_id]&.to_i, cadence_title: match_data[:cadence_title]&.tr('"', '') }
+          {
+            cadence_id: match_data[:cadence_id]&.to_i,
+            cadence_title: match_data[:cadence_title]&.tr('"', '')
+          }
         end
 
         # This method has the contract that if a string `ref` refers to a
@@ -57,22 +60,10 @@ module Banzai
         end
 
         def references_in(text, pattern = object_class.reference_pattern)
-          cadences = {}
-
-          unescaped_html = unescape_html_entities(text).gsub(pattern).with_index do |match, index|
-            ident = identifier($~)
-            cadence = yield match, ident, nil, nil, $~
-
-            next match if cadence == match
-
-            cadences[index] = cadence
-
-            "#{::Banzai::Filter::References::AbstractReferenceFilter::REFERENCE_PLACEHOLDER}#{index}"
+          replace_references_in_text_with_html(text.gsub(pattern)) do |match_data|
+            ident = identifier(match_data)
+            yield match_data[0], ident, nil, nil, match_data
           end
-
-          return text if cadences.empty?
-
-          escape_with_placeholders(unescaped_html, cadences)
         end
 
         def url_for_object(cadence, group)
