@@ -14,6 +14,7 @@ RSpec.describe Clusters::Agents::AutoFlow::MergeRequests::CreatedEventWorker, fe
   subject(:handle_event) { consume_event(subscriber: described_class, event: event) }
 
   before do
+    stub_feature_flags(autoflow_enabled: true)
     allow(Gitlab::Kas).to receive(:enabled?).and_return(true)
 
     allow_next_instance_of(Gitlab::Kas::Client) do |instance|
