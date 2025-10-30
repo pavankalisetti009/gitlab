@@ -15,41 +15,42 @@ module API
           tool_name = params[:name]
           session_id = request[:id] || SecureRandom.uuid
 
-          # Track start of MCP tool call
           track_start_event(tool_name, session_id, current_user)
 
-          begin
-            tool = manager.get_tool(name: tool_name)
-          rescue ::Mcp::Tools::Manager::ToolNotFoundError => e
-            track_finish_event(tool_name, session_id, current_user, success: false, error: e)
-            raise ArgumentError, e.message
-          end
-
-          tool.set_cred(current_user: current_user) if tool.is_a?(::Mcp::Tools::CustomService)
-
-          begin
-            result = tool.execute(request: request, params: params)
-
-            # Track successful completion
-            track_finish_event(tool_name, session_id, current_user, success: true)
-
-            result
-          rescue StandardError => error
-            # Track failed completion
-            track_finish_event(tool_name, session_id, current_user, success: false, error: error)
-
-            raise error
-          end
+          tool = fetch_tool(tool_name, session_id, current_user)
+          configure_tool_credentials(tool, current_user)
+          execute_tool_with_tracking(tool, request, params, tool_name, session_id, current_user)
         end
 
         private
 
         attr_reader :manager
 
+        def fetch_tool(tool_name, session_id, current_user)
+          manager.get_tool(name: tool_name)
+        rescue ::Mcp::Tools::Manager::ToolNotFoundError => e
+          track_finish_event(tool_name, session_id, current_user, success: false, error: e)
+          raise ArgumentError, e.message
+        end
+
+        def configure_tool_credentials(tool, current_user)
+          tool.set_cred(current_user: current_user) if tool.is_a?(::Mcp::Tools::CustomService)
+        end
+
+        def execute_tool_with_tracking(tool, request, params, tool_name, session_id, current_user)
+          result = tool.execute(request: request, params: params)
+          track_finish_event(tool_name, session_id, current_user, success: true)
+          result
+        rescue StandardError => error
+          track_finish_event(tool_name, session_id, current_user, success: false, error: error)
+          raise error
+        end
+
         def track_start_event(tool_name, session_id, current_user)
           track_internal_event(
             'start_mcp_tool_call',
             user: current_user,
+            namespace: current_user&.namespace,
             additional_properties: {
               session_id: session_id,
               tool_name: tool_name
@@ -72,6 +73,7 @@ module API
           track_internal_event(
             'finish_mcp_tool_call',
             user: current_user,
+            namespace: current_user&.namespace,
             additional_properties: additional_properties
           )
         end

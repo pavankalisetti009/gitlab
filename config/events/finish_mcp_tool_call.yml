@@ -5,6 +5,7 @@ action: finish_mcp_tool_call
 classification: duo
 identifiers:
 - user
+- namespace
 product_group: ai_framework
 product_categories:
 - duo_agent_platform
@@ -13,18 +14,6 @@ extra_trackers:
 additional_properties:
   session_id:
     description: Session ID that can be used to connect this event to others that happen when the request is resolved.
-  tier:
-    description: The tier of the namespace
-  namespace_id:
-    description: The ID of the namespace
-  dim_installation_id:
-    description: Installation ID for deployment context
-  dim_instance_id:
-    description: Instance ID for deployment context
-  host_name:
-    description: Host name for deployment context
-  deployment_type:
-    description: Type of deployment
   duo_add_on:
     description: Duo add-on flags from context
   tool_name:

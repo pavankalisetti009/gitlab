@@ -13,9 +13,9 @@ RSpec.shared_examples 'tracks MCP tool call events' do |tool_name:, success:, ca
     expect do
       subject
     end.to trigger_internal_events('start_mcp_tool_call')
-      .with(user: user, category: category, additional_properties: start_properties)
+      .with(user: user, namespace: user.namespace, category: category, additional_properties: start_properties)
       .and trigger_internal_events('finish_mcp_tool_call')
-      .with(user: user, category: category, additional_properties: finish_properties)
+      .with(user: user, namespace: user.namespace, category: category, additional_properties: finish_properties)
   end
 end
 
