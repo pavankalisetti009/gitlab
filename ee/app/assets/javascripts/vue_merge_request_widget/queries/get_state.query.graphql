@@ -1,12 +1,7 @@
 #import "ee/vue_merge_request_widget/queries/states/merge_train_car_index.fragment.graphql"
 #import "ee/vue_merge_request_widget/queries/states/merge_train_car_count.fragment.graphql"
 
-query getStateEE(
-  $projectPath: ID!
-  $iid: String!
-  $targetBranches: [String!]
-  $initialRequest: Boolean = true
-) {
+query getStateEE($projectPath: ID!, $iid: String!, $targetBranches: [String!]) {
   project(fullPath: $projectPath) {
     id
     archived
@@ -15,8 +10,8 @@ query getStateEE(
     mergeRequest(iid: $iid) {
       id
       autoMergeEnabled
-      commitCount @include(if: $initialRequest)
-      detailedMergeStatus @include(if: $initialRequest)
+      commitCount
+      detailedMergeStatus
       mergeError
       state
       userPermissions {
