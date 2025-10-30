@@ -225,6 +225,26 @@ RSpec.describe API::Admin::DataManagement, :aggregate_failures, :request_store, 
                 expect(response).to have_gitlab_http_status(:bad_request)
               end
             end
+
+            context 'for a model with separate verification state table' do
+              let_it_be(:node) { create(:geo_node) }
+              let_it_be(:succeeded_record) { create(:nuget_symbol, :verification_succeeded) }
+              let_it_be(:failed_record) { create(:nuget_symbol, :verification_failed) }
+
+              before do
+                stub_current_geo_node(node)
+                stub_primary_site
+              end
+
+              it 'returns matching object data' do
+                get api('/admin/data_management/packages_nuget_symbol?checksum_state=succeeded', admin,
+                  admin_mode: true)
+
+                expect(response).to have_gitlab_http_status(:ok)
+                expect(json_response.first).to include('record_identifier' => succeeded_record.id)
+                expect(json_response.size).to eq(1)
+              end
+            end
           end
         end
 

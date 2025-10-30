@@ -4,8 +4,6 @@ module Geo
   class PackagesNugetSymbolState < ApplicationRecord
     include ::Geo::VerificationStateDefinition
 
-    self.primary_key = :packages_nuget_symbol_id
-
     belongs_to :packages_nuget_symbol, inverse_of: :packages_nuget_symbol_state, class_name: 'Packages::Nuget::Symbol'
 
     validates :verification_state, :packages_nuget_symbol, presence: true

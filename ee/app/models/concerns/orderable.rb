@@ -4,6 +4,6 @@ module Orderable # rubocop:disable Gitlab/BoundedContexts -- general purpose con
   extend ActiveSupport::Concern
 
   included do
-    scope :order_by_primary_key, -> { order(primary_key) }
+    scope :order_by_primary_key, -> { order(*Array(primary_key).map { |key| arel_table[key] }) }
   end
 end
