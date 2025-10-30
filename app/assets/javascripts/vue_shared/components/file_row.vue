@@ -179,6 +179,7 @@ export default {
       :title="textForTitle"
       :data-level="level"
       class="file-row gl-flex-grow-1"
+      :data-file-row="file.fileHash"
       data-testid="file-row"
       :aria-expanded="file.type === 'tree' ? file.opened.toString() : undefined"
       :aria-label="file.name"
