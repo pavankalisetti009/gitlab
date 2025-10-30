@@ -51,7 +51,10 @@ module Banzai
             # holds the id
             { iteration_id: symbol.to_i, iteration_name: nil }
           else
-            { iteration_id: match_data[:iteration_id]&.to_i, iteration_name: match_data[:iteration_name]&.tr('"', '') }
+            {
+              iteration_id: match_data[:iteration_id]&.to_i,
+              iteration_name: match_data[:iteration_name]&.tr('"', '')
+            }
           end
         end
 
@@ -80,23 +83,10 @@ module Banzai
           # default implementation.
           return super(text, pattern) if pattern != ::Iteration.reference_pattern
 
-          iterations = {}
-
-          unescaped_html = unescape_html_entities(text).gsub(pattern).with_index do |match, index|
-            ident = identifier($~)
-            iteration = yield match, ident, $~[:project], $~[:namespace], $~
-
-            if iteration != match
-              iterations[index] = iteration
-              "#{::Banzai::Filter::References::AbstractReferenceFilter::REFERENCE_PLACEHOLDER}#{index}"
-            else
-              match
-            end
+          replace_references_in_text_with_html(text.gsub(pattern)) do |match_data|
+            ident = identifier(match_data)
+            yield match_data[0], ident, match_data[:project], match_data[:namespace], match_data
           end
-
-          return text if iterations.empty?
-
-          escape_with_placeholders(unescaped_html, iterations)
         end
 
         def find_iterations(parent, ids: nil, names: nil)

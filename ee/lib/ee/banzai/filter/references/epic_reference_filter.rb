@@ -12,13 +12,11 @@ module EE
           extend ActiveSupport::Concern
 
           def references_in(text, pattern = object_class.reference_pattern)
-            ::Gitlab::Utils::Gsub
-              .gsub_with_limit(text, pattern, limit: ::Banzai::Filter::FILTER_ITEM_LIMIT) do |match_data|
+            replace_references_in_text_with_html(::Gitlab::Utils::Gsub.gsub_with_limit(text, pattern,
+              limit: ::Banzai::Filter::FILTER_ITEM_LIMIT)) do |match_data|
               symbol = match_data[object_sym]
               if object_class.reference_valid?(symbol)
                 yield match_data[0], symbol.to_i, nil, match_data[:group], match_data
-              else
-                match_data[0]
               end
             end
           end
@@ -32,9 +30,9 @@ module EE
             super
           end
 
-          def data_attributes_for(text, group, object, link_content: false, link_reference: false)
+          def data_attributes_for(original, group, object, link_content: false, link_reference: false)
             {
-              original: text,
+              original: original,
               link: link_content,
               link_reference: link_reference,
               group: group.id,

@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe Banzai::Filter::References::IterationReferenceFilter do
+RSpec.describe Banzai::Filter::References::IterationReferenceFilter, feature_category: :markdown do
   include FilterSpecHelper
 
   let(:parent_group) { create(:group, :public) }
@@ -330,5 +330,24 @@ RSpec.describe Banzai::Filter::References::IterationReferenceFilter do
         reference_filter(markdown, { project: nil, group: group2 })
       end.not_to exceed_all_query_limit(max_count)
     end
+  end
+
+  it_behaves_like 'a reference which does not unescape its content in data-original' do
+    let(:context)         { { project: nil, group: group } }
+    let(:iteration_title) { "x&lt;script&gt;alert('xss');&lt;/script&gt;" }
+    let(:resource)        { create(:iteration, title: iteration_title, group: group) }
+    let(:reference)       { %(#{resource.class.reference_prefix}"#{iteration_title}") }
+
+    # This is probably bad.
+    let(:expected_resource_title) { "x<script>alert('xss');</script>" }
+
+    let(:expected_href)             { urls.iteration_url(resource) }
+    let(:expected_replacement_text) { resource.display_text }
+  end
+
+  it_behaves_like 'ReferenceFilter#references_in' do
+    let(:iteration) { create(:iteration, :with_title, group: group) }
+    let(:reference) { %(#{Iteration.reference_prefix}"#{iteration.name}") }
+    let(:filter_instance) { described_class.new(nil, { project: nil }) }
   end
 end

@@ -39,7 +39,7 @@ RSpec.describe Banzai::Filter::References::IterationsCadenceReferenceFilter, :ag
       link = doc(text).css('a').first
 
       expect(link).to have_attribute('data-original')
-      expect(link.attr('data-original')).to eq(reference)
+      expect(link.attr('data-original')).to eq_html(reference)
     end
   end
 
@@ -118,5 +118,22 @@ RSpec.describe Banzai::Filter::References::IterationsCadenceReferenceFilter, :ag
 
       expect { reference_filter(markdown, context) }.not_to exceed_all_query_limit(1)
     end
+  end
+
+  it_behaves_like 'a reference which does not unescape its content in data-original' do
+    let(:context)               { { project: nil, group: group } }
+    let(:cadence_title)         { "x<script>alert('xss');</script>" }
+    let(:cadence_title_escaped) { "x&lt;script&gt;alert('xss');&lt;/script&gt;" }
+    let(:resource)              { create(:iterations_cadence, title: cadence_title, group: group) }
+    let(:reference)             { %(#{resource.class.reference_prefix}"#{cadence_title_escaped}"#{resource.class.reference_postfix}) }
+
+    let(:expected_resource_title)   { cadence_title }
+    let(:expected_href)             { urls.group_iteration_cadences_url(group, resource) }
+    let(:expected_replacement_text) { "#{resource.class.reference_prefix}#{resource.id}#{resource.class.reference_postfix}" }
+  end
+
+  it_behaves_like 'ReferenceFilter#references_in' do
+    let(:reference) { cadence.to_reference }
+    let(:filter_instance) { described_class.new(nil, { project: nil }) }
   end
 end
