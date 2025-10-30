@@ -56,8 +56,6 @@ describe('UsageByUserTab', () => {
 
     describe('rendering table', () => {
       const findRows = () => findTable().find('tbody').findAll('tr');
-      const findFirstRow = () => findRows().at(0);
-      const findCell = (index) => findFirstRow().find(`td:nth-child(${index})`);
 
       beforeEach(async () => {
         createComponent({ mountFn: mountExtended });
@@ -88,17 +86,23 @@ describe('UsageByUserTab', () => {
         });
 
         describe.each`
-          username      | displayName        | includedCreditsUsed | includedCreditsUsedPercent | totalCreditsUsed
-          ${'ajohnson'} | ${'Alice Johnson'} | ${'450 / 500'}      | ${90}                      | ${'473'}
+          index | username      | displayName        | includedCreditsUsed | includedCreditsUsedPercent | totalCreditsUsed
+          ${0}  | ${'ajohnson'} | ${'Alice Johnson'} | ${'500 / 500'}      | ${100}                     | ${'620'}
+          ${1}  | ${'bsmith'}   | ${'Bob Smith'}     | ${'500 / 500'}      | ${100}                     | ${'500'}
+          ${2}  | ${'cdavis'}   | ${'Carol Davis'}   | ${'50 / 500'}       | ${10}                      | ${'50'}
         `(
-          'rendering $userName $username',
+          '$index: rendering $displayName ($username)',
           ({
+            index,
             username,
             displayName,
             includedCreditsUsed,
             includedCreditsUsedPercent,
             totalCreditsUsed,
           }) => {
+            const findRow = () => findRows().at(index);
+            const findCell = (cellIndex) => findRow().find(`td:nth-child(${cellIndex})`);
+
             describe('user cell', () => {
               it('renders user avatar with link to the user details page', () => {
                 const userAvatar = findCell(1).findComponent(UserAvatarLink);
