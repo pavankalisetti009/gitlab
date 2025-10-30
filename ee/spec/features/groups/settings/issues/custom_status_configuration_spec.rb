@@ -28,7 +28,7 @@ RSpec.describe 'Groups > Settings > Issues', :js, feature_category: :team_planni
     context 'when user is authorized' do
       before do
         sign_in(user)
-        visit group_settings_issues_path(target_group)
+        visit group_settings_issues_path(target_group, anchor: 'js-custom-status-settings')
       end
 
       it 'can add statuses' do

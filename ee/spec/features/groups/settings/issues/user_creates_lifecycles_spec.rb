@@ -13,7 +13,7 @@ RSpec.describe 'Groups > Settings > Issues - lifecycles', :js, feature_category:
   context 'for work item lifecycles' do
     it 'creates lifecycles based on previous ones, and deletes lifecycles', :aggregate_failures do
       sign_in(user)
-      visit group_settings_issues_path(group)
+      visit group_settings_issues_path(group, anchor: 'js-custom-status-settings')
 
       click_button 'Create lifecycle'
       fill_in 'Lifecycle name', with: 'Lifecycle Alpha'

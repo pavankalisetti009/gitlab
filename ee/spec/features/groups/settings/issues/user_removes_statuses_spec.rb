@@ -23,7 +23,7 @@ RSpec.describe 'Groups > Settings > Issues - removing statuses', :js, feature_ca
 
     it 'deletes non-default status and moves items to the default status' do
       sign_in(user)
-      visit group_settings_issues_path(group)
+      visit group_settings_issues_path(group, anchor: 'js-custom-status-settings')
 
       within_testid('lifecycle-detail') do
         expect(page).to have_testid('work-item-status-badge', text: 'In progress')

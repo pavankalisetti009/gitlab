@@ -157,9 +157,7 @@ export default {
         // show the correct results when the home page is shown
         this.$apollo.queries.lifecycles.refetch();
 
-        this.$router.push({
-          name: 'workItemSettingsHome',
-        });
+        this.goToIssuesSettings();
       } catch (error) {
         this.errorText =
           error.message || s__('WorkItem|Something went wrong while updating mappings.');
@@ -171,6 +169,7 @@ export default {
     goToIssuesSettings() {
       this.$router.push({
         name: 'workItemSettingsHome',
+        hash: '#js-custom-status-settings',
       });
     },
   },

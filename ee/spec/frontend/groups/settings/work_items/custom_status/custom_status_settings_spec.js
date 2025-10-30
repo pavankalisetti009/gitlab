@@ -5,6 +5,7 @@ import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import createMockApollo from 'helpers/mock_apollo_helper';
 import waitForPromises from 'helpers/wait_for_promises';
 import * as Sentry from '~/sentry/sentry_browser_wrapper';
+import SettingsBlock from '~/vue_shared/components/settings/settings_block.vue';
 import WorkItemStatusBadge from 'ee/work_items/components/shared/work_item_status_badge.vue';
 import NamespaceLifecycles from 'ee/groups/settings/work_items/custom_status/custom_status_settings.vue';
 import StatusModal from 'ee/groups/settings/work_items/custom_status/status_modal.vue';
@@ -122,7 +123,7 @@ describe('CustomStatusSettings', () => {
   const findAlert = () => wrapper.findComponent(GlAlert);
   const findLifecycleContainers = () => wrapper.findAll('[data-testid="lifecycle-container"]');
   const findStatusBadges = () => wrapper.findAllComponents(WorkItemStatusBadge);
-  const findEditButtons = () => wrapper.findAllComponents(GlButton);
+  const findEditButtons = () => wrapper.findAllByTestId('edit-statuses');
   const findHelpPageLink = () => wrapper.findByTestId('settings-help-page-link');
   const findMoreLifecycleInformation = () => wrapper.findByTestId('more-lifecycle-information');
   const findCreateLifecycleButton = () => wrapper.findByTestId('create-lifecycle');
@@ -130,6 +131,7 @@ describe('CustomStatusSettings', () => {
   const findCreateLifecycleModal = () => wrapper.findComponent(CreateLifecycleModal);
   const findLoadingIcon = () => wrapper.findComponent(GlLoadingIcon);
   const findStatusModal = () => wrapper.findComponent(StatusModal);
+  const findSettingsBlock = () => wrapper.findComponent(SettingsBlock);
 
   const createComponent = ({
     props = {},
@@ -149,10 +151,22 @@ describe('CustomStatusSettings', () => {
           workItemStatusMvc2: workItemStatusMvc2Enabled,
         },
       },
+      stubs: {
+        SettingsBlock,
+      },
     });
   };
 
   describe('Default', () => {
+    it('renders a settings block', () => {
+      createComponent();
+
+      expect(findSettingsBlock().props()).toMatchObject({
+        id: 'js-custom-status-settings',
+        title: 'Statuses',
+      });
+    });
+
     it('renders the help page link', async () => {
       createComponent();
       await waitForPromises();

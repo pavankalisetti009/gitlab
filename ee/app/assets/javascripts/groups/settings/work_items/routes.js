@@ -7,7 +7,10 @@ export const getRoutes = (fullPath) => {
       path: '/',
       name: 'workItemSettingsHome',
       component: WorkItemSettingsHome,
-      props: { fullPath },
+      props: (route) => ({
+        fullPath,
+        isStatusSectionExpanded: Boolean(route.query.isStatusSectionExpanded),
+      }),
     },
     {
       path: `/lifecycle/:workItemType`,
