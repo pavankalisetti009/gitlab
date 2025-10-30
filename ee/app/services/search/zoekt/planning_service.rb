@@ -74,7 +74,7 @@ module Search
           @errors = []
           @replica_plans = []
           @nodes = nodes
-          @used_node_ids = Set.new
+          @exhausted_node_ids = Set.new
         end
 
         def generate
@@ -106,8 +106,8 @@ module Search
             next unless stats
 
             if replica_indices.size >= max_indices_per_replica
-              accumulate_error(replica_plans.size, :index_limit_exceeded,
-                "Replica reached maximum index limit (#{max_indices_per_replica})")
+              details = "Replica reached maximum index limit (#{max_indices_per_replica})"
+              accumulate_error(replica_plans.size, :index_limit_exceeded, details)
               break
             end
 
@@ -119,13 +119,12 @@ module Search
         end
 
         def create_empty_replica
-          candidate_nodes = nodes.reject { |n| @used_node_ids.include?(n[:id]) || n[:unclaimed_storage_bytes] < 0 }
+          candidate_nodes = nodes.reject { |n| @exhausted_node_ids.include?(n[:id]) || n[:unclaimed_storage_bytes] < 0 }
           best_node = candidate_nodes.max_by { |node| node[:unclaimed_storage_bytes] }
 
           if best_node
             replica_indices = [simulate_index(best_node)]
             add_replica_plan(replica_indices)
-            @used_node_ids.add(best_node[:id])
           else
             accumulate_error(nil, :node_unavailable, "No nodes available to create an empty replica")
           end
@@ -142,13 +141,13 @@ module Search
           if best_node
             assign_project_to_index(best_node, stats, replica_indices)
           else
-            accumulate_error(replica_plans.size, :node_unavailable,
-              "No node can accommodate project #{stats.project_id} with size #{scaled_size(stats)}")
+            details = "No node can accommodate project #{stats.project_id} with size #{scaled_size(stats)}"
+            accumulate_error(replica_plans.size, :node_unavailable, details)
           end
         end
 
         def find_best_node(stats)
-          nodes.find { |n| !@used_node_ids.member?(n[:id]) && (n[:unclaimed_storage_bytes] >= scaled_size(stats)) }
+          nodes.find { |n| !@exhausted_node_ids.member?(n[:id]) && (n[:unclaimed_storage_bytes] >= scaled_size(stats)) }
         end
 
         def assign_project_to_index(node, stats, replica_indices)
@@ -166,8 +165,8 @@ module Search
             node[:indices] ||= []
             node[:indices] << index
             node[:namespace_ids] << namespace.id unless node[:namespace_ids].include?(namespace.id)
-            @used_node_ids.add(node[:id])
             assigned_node = node
+            @exhausted_node_ids.add(node[:id]) if last_index # If this is the first project of the replica then skip
           end
 
           add_project_to_index(index, stats, last_index: last_index)
@@ -197,6 +196,9 @@ module Search
           replica_indices.last[:projects][:project_namespace_id_to] = nil if replica_indices.any?
 
           replica_plans << { indices: replica_indices.map { |index| format_index(index) } }
+          # Add the node_id to Set from each index of a replica
+          # to ensure indices of different replicas of a namespace does not get the same node
+          @exhausted_node_ids.merge(replica_indices.pluck(:node_id)) # rubocop: disable CodeReuse/ActiveRecord, Database/AvoidUsingPluckWithoutLimit -- Just a plain Array
         end
 
         def format_index(index)
