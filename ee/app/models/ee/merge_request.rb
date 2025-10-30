@@ -196,7 +196,9 @@ module EE
 
         if security_policies_through_violations.any?
           security_policies_through_violations
-            .select { |policy| policy.content['approval_settings']&.compact_blank.present? }
+            # rubocop:disable Layout/LineLength -- not autoformattable
+            .select { |policy| !policy.enforcement_type_warn? && policy.content['approval_settings']&.compact_blank.present? }
+            # rubocop:enable Layout/LineLength
             .index_with { |policy| policy.content['approval_settings'].compact_blank.symbolize_keys }
         else
           # TODO: Temporary code path without policy details
