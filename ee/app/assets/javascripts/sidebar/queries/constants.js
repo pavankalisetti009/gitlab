@@ -3,7 +3,6 @@ import { issuableAttributesQueries as issuableAttributesQueriesFoss } from '~/si
 import updateStatusMutation from '~/sidebar/queries/update_status.mutation.graphql';
 import issuableWeightSubscription from 'ee/graphql_shared/subscriptions/issuable_weight.subscription.graphql';
 import { IssuableAttributeType } from '../constants';
-import epicAncestorsQuery from './epic_ancestors.query.graphql';
 import groupEpicsQuery from './group_epics.query.graphql';
 import groupIterationsQuery from './group_iterations.query.graphql';
 import issueHealthStatusQuery from './issue_health_status.query.graphql';
@@ -93,12 +92,6 @@ export const issuableAttributesQueries = {
     current: parentQueries,
     list: parentsQueries,
     subscription: workItemParentSubscription,
-  },
-};
-
-export const ancestorsQueries = {
-  [TYPE_EPIC]: {
-    query: epicAncestorsQuery,
   },
 };
 

@@ -7826,9 +7826,6 @@ msgstr ""
 msgid "An error occurred when trying to display this embedded view:"
 msgstr ""
 
-msgid "An error occurred when updating the title"
-msgstr ""
-
 msgid "An error occurred while adding approvers"
 msgstr ""
 
@@ -7881,9 +7878,6 @@ msgid "An error occurred while enabling Service Desk."
 msgstr ""
 
 msgid "An error occurred while fetching Markdown preview"
-msgstr ""
-
-msgid "An error occurred while fetching ancestors"
 msgstr ""
 
 msgid "An error occurred while fetching branches."
@@ -8347,9 +8341,6 @@ msgid "Analyze your source code for vulnerabilities."
 msgstr ""
 
 msgid "Analyzing file…"
-msgstr ""
-
-msgid "Ancestors"
 msgstr ""
 
 msgid "Anonymous"
@@ -11284,9 +11275,6 @@ msgstr ""
 msgid "Boards|An error occurred while moving the list. Please try again."
 msgstr ""
 
-msgid "Boards|An error occurred while selecting the card. Please try again."
-msgstr ""
-
 msgid "Boards|An error occurred while updating the list. Please try again."
 msgstr ""
 
@@ -13360,9 +13348,6 @@ msgid "Changes suppressed. Click to show."
 msgstr ""
 
 msgid "Changes the title to \"%{title_param}\"."
-msgstr ""
-
-msgid "Changes to the title have not been saved"
 msgstr ""
 
 msgid "Changes:"
@@ -26896,9 +26881,6 @@ msgstr ""
 msgid "Epic cannot be found."
 msgstr ""
 
-msgid "Epic details"
-msgstr ""
-
 msgid "Epic events"
 msgstr ""
 
@@ -34809,9 +34791,6 @@ msgstr ""
 msgid "Incident creation cancelled."
 msgstr ""
 
-msgid "Incident details"
-msgstr ""
-
 msgid "Incident template (optional)."
 msgstr ""
 
@@ -36234,9 +36213,6 @@ msgid "Issue created from vulnerability %{vulnerability_link}"
 msgstr ""
 
 msgid "Issue creation requests"
-msgstr ""
-
-msgid "Issue details"
 msgstr ""
 
 msgid "Issue events"
@@ -77075,9 +77051,6 @@ msgid "You don't have permission to manage this issue."
 msgstr ""
 
 msgid "You don't have permission to update the setting %{attribute}."
-msgstr ""
-
-msgid "You don't have permission to view this epic"
 msgstr ""
 
 msgid "You don't have permissions to import this project"
