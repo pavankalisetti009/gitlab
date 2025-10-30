@@ -8,7 +8,7 @@ module EE
         extend ActiveSupport::Concern
 
         prepended do
-          abilities :generate_description, :admin_work_item_lifecycle
+          abilities :generate_description, :admin_work_item_lifecycle, :admin_ai_catalog_item_consumer
         end
       end
     end
