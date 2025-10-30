@@ -658,6 +658,16 @@ RSpec.describe MergeRequest, feature_category: :code_review_workflow do
           it { is_expected.to be_empty }
         end
 
+        context 'when policy is in warn mode' do
+          let(:policy) do
+            create(:security_policy,
+              content: { enforcement_type: Security::Policy::ENFORCEMENT_TYPE_WARN,
+                         approval_settings: { require_password_to_approve: true } })
+          end
+
+          it { is_expected.to be_empty }
+        end
+
         context 'when there are multiple policies' do
           let(:other_approval_settings) { { require_password_to_approve: true } }
           let(:other_policy) do
