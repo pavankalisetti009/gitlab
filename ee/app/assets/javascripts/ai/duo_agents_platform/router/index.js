@@ -95,7 +95,7 @@ export const createRouter = (base, namespace) => {
             component: FlowTriggersEdit,
             name: FLOW_TRIGGERS_EDIT_ROUTE,
             meta: {
-              text: s__('AICatalog|Edit flow'),
+              text: s__('DuoAgentsPlatform|Edit flow trigger'),
             },
           },
           {
