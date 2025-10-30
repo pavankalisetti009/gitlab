@@ -48811,7 +48811,7 @@ ALTER TABLE ONLY system_note_metadata
     ADD CONSTRAINT fk_7836f9b848 FOREIGN KEY (namespace_id) REFERENCES namespaces(id) ON DELETE CASCADE NOT VALID;
 
 ALTER TABLE ONLY todos
-    ADD CONSTRAINT fk_78558e5d74 FOREIGN KEY (organization_id) REFERENCES organizations(id) ON DELETE CASCADE NOT VALID;
+    ADD CONSTRAINT fk_78558e5d74 FOREIGN KEY (organization_id) REFERENCES organizations(id) ON DELETE CASCADE;
 
 ALTER TABLE ONLY sbom_occurrence_refs
     ADD CONSTRAINT fk_7892e301be FOREIGN KEY (security_project_tracked_context_id) REFERENCES security_project_tracked_contexts(id) ON DELETE CASCADE;
