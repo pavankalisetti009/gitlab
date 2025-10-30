@@ -316,7 +316,14 @@ RSpec.describe Security::InventoryFilters::ProjectsFinderService, feature_catego
     end
 
     context 'with after cursor' do
-      let(:cursor) { Base64.urlsafe_encode64({ 'project_id' => project1.id, 'id' => inventory_filter1.id }.to_json) }
+      let(:cursor) do
+        Base64.urlsafe_encode64({
+          'traversal_ids' => inventory_filter1.traversal_ids,
+          'project_id' => project1.id,
+          'id' => inventory_filter1.id
+        }.to_json)
+      end
+
       let(:params) { { first: 2, after: cursor } }
 
       it 'returns projects after the cursor' do
@@ -340,7 +347,14 @@ RSpec.describe Security::InventoryFilters::ProjectsFinderService, feature_catego
     end
 
     context 'with before cursor' do
-      let(:cursor) { Base64.urlsafe_encode64({ 'project_id' => project3.id, 'id' => inventory_filter3.id }.to_json) }
+      let(:cursor) do
+        Base64.urlsafe_encode64({
+          'traversal_ids' => inventory_filter3.traversal_ids,
+          'project_id' => project3.id,
+          'id' => inventory_filter3.id
+        }.to_json)
+      end
+
       let(:params) { { last: 2, before: cursor } }
 
       it 'returns projects before the cursor' do
@@ -416,7 +430,14 @@ RSpec.describe Security::InventoryFilters::ProjectsFinderService, feature_catego
       end
 
       context 'when using last with before cursor' do
-        let(:cursor) { Base64.urlsafe_encode64({ 'project_id' => project3.id, 'id' => inventory_filter3.id }.to_json) }
+        let(:cursor) do
+          Base64.urlsafe_encode64({
+            'traversal_ids' => inventory_filter3.traversal_ids,
+            'project_id' => project3.id,
+            'id' => inventory_filter3.id
+          }.to_json)
+        end
+
         let(:params) { { last: 1, before: cursor } }
 
         it 'returns the correct values' do

@@ -212,7 +212,14 @@ RSpec.describe Resolvers::Security::NamespaceSecurityProjectsResolver, feature_c
       end
 
       context 'with after cursor for pagination' do
-        let(:cursor) { Base64.strict_encode64({ 'project_id' => project1.id, 'id' => inventory_filter1.id }.to_json) }
+        let(:cursor) do
+          Base64.strict_encode64({
+            'project_id' => project1.id,
+            'id' => inventory_filter1.id,
+            'traversal_ids' => inventory_filter1.traversal_ids
+          }.to_json)
+        end
+
         let(:params) { { first: 2, after: cursor } }
 
         it 'returns projects after the cursor' do
@@ -225,7 +232,14 @@ RSpec.describe Resolvers::Security::NamespaceSecurityProjectsResolver, feature_c
       end
 
       context 'with before cursor for pagination' do
-        let(:cursor) { Base64.strict_encode64({ 'project_id' => project3.id, 'id' => inventory_filter3.id }.to_json) }
+        let(:cursor) do
+          Base64.strict_encode64({
+            'project_id' => project3.id,
+            'id' => inventory_filter3.id,
+            'traversal_ids' => inventory_filter3.traversal_ids
+          }.to_json)
+        end
+
         let(:params) { { last: 2, before: cursor } }
 
         it 'returns projects before the cursor' do

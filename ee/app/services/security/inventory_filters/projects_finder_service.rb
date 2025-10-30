@@ -33,7 +33,7 @@ module Security
         scope = base_scope
         scope = filter_by_vulnerability_counts(scope)
         scope = filter_by_analyzers_statuses(scope)
-        scope = scope.order_by_project_id_asc
+        scope = scope.order_by_traversal_and_project
         filter_by_search(scope)
       end
 
