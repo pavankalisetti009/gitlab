@@ -35,7 +35,7 @@ describe('Solution badge component', () => {
     });
 
     it('renders the description', () => {
-      expect(findPopover().attributes('content')).toBe(
+      expect(findPopover().props('content')).toBe(
         'Create a merge request to implement this solution, or download and apply the patch manually.',
       );
     });
