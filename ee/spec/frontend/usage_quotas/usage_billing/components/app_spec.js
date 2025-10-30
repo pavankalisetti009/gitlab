@@ -1,7 +1,6 @@
 import Vue from 'vue';
 import { GlAlert } from '@gitlab/ui';
 import VueApollo from 'vue-apollo';
-import MockAdapter from 'axios-mock-adapter';
 import CurrentUsageCard from 'ee/usage_quotas/usage_billing/components/current_usage_card.vue';
 import CurrentOverageUsageCard from 'ee/usage_quotas/usage_billing/components/current_overage_usage_card.vue';
 import OneTimeCreditsCard from 'ee/usage_quotas/usage_billing/components/one_time_credits_card.vue';
@@ -13,13 +12,10 @@ import UsageByUserTab from 'ee/usage_quotas/usage_billing/components/usage_by_us
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import waitForPromises from 'helpers/wait_for_promises';
 import { logError } from '~/lib/logger';
-import axios from '~/lib/utils/axios_utils';
 import { captureException } from '~/sentry/sentry_browser_wrapper';
 import PageHeading from '~/vue_shared/components/page_heading.vue';
 import UserDate from '~/vue_shared/components/user_date.vue';
 import {
-  mockUsageDataWithoutPool,
-  mockUsageDataWithPool,
   usageDataNoPoolNoOverage,
   usageDataNoPoolWithOverage,
   usageDataWithPool,
@@ -35,19 +31,12 @@ Vue.use(VueApollo);
 describe('UsageBillingApp', () => {
   /** @type {import('helpers/vue_test_utils_helper').ExtendedWrapper} */
   let wrapper;
-  /** @type { MockAdapter} */
-  let mockAxios;
-
-  const API_ENDPOINT = '/admin/gitlab_duo/usage/data';
 
   const createComponent = ({
     mockQueryHandler = jest.fn().mockResolvedValue(usageDataWithPool),
   } = {}) => {
     wrapper = shallowMountExtended(UsageBillingApp, {
       apolloProvider: createMockApollo([[getSubscriptionUsageQuery, mockQueryHandler]]),
-      provide: {
-        fetchUsageDataApiUrl: '/admin/gitlab_duo/usage/data',
-      },
     });
   };
 
@@ -55,14 +44,6 @@ describe('UsageBillingApp', () => {
   const findSkeletonLoaders = () => wrapper.findByTestId('skeleton-loaders');
   const findUsageByUserTab = () => wrapper.findComponent(UsageByUserTab);
   const findPageHeading = () => wrapper.findComponent(PageHeading);
-
-  beforeEach(() => {
-    mockAxios = new MockAdapter(axios);
-  });
-
-  afterEach(() => {
-    mockAxios.restore();
-  });
 
   describe('loading state', () => {
     beforeEach(() => {
@@ -95,8 +76,8 @@ describe('UsageBillingApp', () => {
       expect(wrapper.findComponent(CurrentUsageCard).props()).toMatchObject({
         poolCreditsUsed: 50,
         poolTotalCredits: 300,
-        monthStartDate: '2024-01-01',
-        monthEndDate: '2024-01-31',
+        monthStartDate: '2025-10-01',
+        monthEndDate: '2025-10-31',
       });
     });
 
@@ -169,7 +150,6 @@ describe('UsageBillingApp', () => {
 
   describe('no pool with overage state', () => {
     beforeEach(async () => {
-      mockAxios.onGet(API_ENDPOINT).reply(200, mockUsageDataWithPool);
       createComponent({
         mockQueryHandler: jest.fn().mockResolvedValue(usageDataNoPoolWithOverage),
       });
@@ -188,8 +168,8 @@ describe('UsageBillingApp', () => {
       expect(currentOverageUsageCard.exists()).toBe(true);
       expect(currentOverageUsageCard.props()).toMatchObject({
         overageCreditsUsed: 50,
-        monthStartDate: '2024-01-01',
-        monthEndDate: '2024-01-31',
+        monthStartDate: '2025-10-01',
+        monthEndDate: '2025-10-31',
       });
     });
 
@@ -202,7 +182,6 @@ describe('UsageBillingApp', () => {
 
   describe('no pool no overage state', () => {
     beforeEach(async () => {
-      mockAxios.onGet(API_ENDPOINT).reply(200, mockUsageDataWithoutPool);
       createComponent({ mockQueryHandler: jest.fn().mockResolvedValue(usageDataNoPoolNoOverage) });
       await waitForPromises();
     });
@@ -227,11 +206,10 @@ describe('UsageBillingApp', () => {
   });
 
   describe('error state', () => {
-    const errorMessage = 'Network Error';
-
     beforeEach(async () => {
-      mockAxios.onGet(API_ENDPOINT).reply(500, { message: errorMessage });
-      createComponent();
+      createComponent({
+        mockQueryHandler: jest.fn().mockRejectedValue(new Error('Failed to fetch data from CDot')),
+      });
       await waitForPromises();
     });
 

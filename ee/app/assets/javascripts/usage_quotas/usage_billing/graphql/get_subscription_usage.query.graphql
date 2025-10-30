@@ -1,6 +1,10 @@
 query getSubscriptionUsage($namespacePath: ID) {
   subscriptionUsage(namespacePath: $namespacePath) {
     lastEventTransactionAt
+
+    startDate
+    endDate
+
     purchaseCreditsPath
     monthlyCommitment {
       totalCredits

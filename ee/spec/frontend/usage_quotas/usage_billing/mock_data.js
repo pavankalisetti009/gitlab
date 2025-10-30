@@ -1,70 +1,3 @@
-export const mockUsageDataWithoutPool = {
-  subscription: {
-    gitlabCreditsUsage: {
-      // boundaries
-      startDate: '2024-01-01',
-      endDate: '2024-01-31',
-
-      overageCredits: 0,
-      totalCredits: 0,
-      totalCreditsUsed: 0,
-
-      overage: {
-        isAllowed: false,
-        creditsUsed: 0,
-      },
-
-      oneTimeCredits: {
-        totalCreditsRemaining: 0,
-        creditsUsed: 0,
-      },
-
-      // pool allocation statistics (commitment)
-      monthlyCommitment: null,
-
-      // daily seat allocation usage statistics
-      seatUsage: {
-        dailyAverage: 167,
-        peakUsage: 234,
-        usageTrend: 0.12,
-        // daily summaries for the month
-        dailyUsage: [
-          ['2025-07-15', 7076],
-          ['2025-07-16', 7235],
-          ['2025-07-17', 6789],
-          ['2025-07-18', 6855],
-          ['2025-07-19', 6482],
-          ['2025-07-20', 6887],
-          ['2025-07-21', 6662],
-          ['2025-07-22', 6124],
-          ['2025-07-23', 6433],
-          ['2025-07-24', 7028],
-          ['2025-07-25', 7103],
-          ['2025-07-26', 7307],
-          ['2025-07-27', 7618],
-          ['2025-07-28', 8326],
-          ['2025-07-29', 8549],
-          ['2025-07-30', 9208],
-          ['2025-07-31', 10008],
-          ['2025-08-01', 9566],
-          ['2025-08-02', 9909],
-          ['2025-08-03', 10706],
-          ['2025-08-04', 10056],
-          ['2025-08-05', 10253],
-          ['2025-08-06', 10213],
-          ['2025-08-07', 10494],
-          ['2025-08-08', 10040],
-          ['2025-08-09', 10338],
-          ['2025-08-10', 9168],
-          ['2025-08-11', 9610],
-          ['2025-08-12', 9125],
-          ['2025-08-13', 8178],
-        ],
-      },
-    },
-  },
-};
-
 export const mockUsersUsageDataWithoutPool = {
   data: {
     subscriptionUsage: {
@@ -155,76 +88,6 @@ export const mockUsersUsageDataWithoutPool = {
           },
         },
       },
-    },
-  },
-};
-
-// Mock data for daily usage API response
-export const mockUsageDataWithPool = {
-  subscription: {
-    gitlabCreditsUsage: {
-      // boundaries
-      startDate: '2024-01-01',
-      endDate: '2024-01-31',
-
-      overageCredits: 0,
-      totalCredits: 300,
-      totalCreditsUsed: 50,
-
-      overage: {
-        isAllowed: true,
-        creditsUsed: 0,
-      },
-
-      oneTimeCredits: {
-        totalCreditsRemaining: 0,
-        creditsUsed: 0,
-      },
-
-      // pool allocation statistics (commitment)
-      monthlyCommitment: {
-        // statistics
-        dailyAverage: 167,
-        peakUsage: 234,
-        usageTrend: 0.12,
-        // daily summaries for the month
-        dailyUsage: [
-          ['2025-07-15', 7076],
-          ['2025-07-16', 7235],
-          ['2025-07-17', 6789],
-          ['2025-07-18', 6855],
-          ['2025-07-19', 6482],
-          ['2025-07-20', 6887],
-          ['2025-07-21', 6662],
-          ['2025-07-22', 6124],
-          ['2025-07-23', 6433],
-          ['2025-07-24', 7028],
-          ['2025-07-25', 7103],
-          ['2025-07-26', 7307],
-          ['2025-07-27', 7618],
-          ['2025-07-28', 8326],
-          ['2025-07-29', 8549],
-          ['2025-07-30', 9208],
-          ['2025-07-31', 10008],
-          ['2025-08-01', 9566],
-          ['2025-08-02', 9909],
-          ['2025-08-03', 10706],
-          ['2025-08-04', 10056],
-          ['2025-08-05', 10253],
-          ['2025-08-06', 10213],
-          ['2025-08-07', 10494],
-          ['2025-08-08', 10040],
-          ['2025-08-09', 10338],
-          ['2025-08-10', 9168],
-          ['2025-08-11', 9610],
-          ['2025-08-12', 9125],
-          ['2025-08-13', 8178],
-        ],
-      },
-
-      // daily seat allocation usage statistics
-      // we probably can skip seat usage data
-      seatUsage: null,
     },
   },
 };
@@ -362,69 +225,6 @@ export const mockUsersUsageDataWithPool = {
   },
 };
 
-export const mockUsageDataWithOverage = {
-  subscription: {
-    gitlabCreditsUsage: {
-      startDate: '2024-01-01',
-      endDate: '2024-01-31',
-
-      overageCredits: 50,
-      totalCredits: 300,
-      totalCreditsUsed: 350,
-
-      overage: {
-        isAllowed: true,
-        creditsUsed: 50,
-      },
-
-      oneTimeCredits: {
-        totalCreditsRemaining: 0,
-        creditsUsed: 0,
-      },
-
-      monthlyCommitment: {
-        dailyAverage: 167,
-        peakUsage: 234,
-        usageTrend: 0.12,
-        dailyUsage: [
-          ['2025-07-15', 7076],
-          ['2025-07-16', 7235],
-          ['2025-07-17', 6789],
-          ['2025-07-18', 6855],
-          ['2025-07-19', 6482],
-          ['2025-07-20', 6887],
-          ['2025-07-21', 6662],
-          ['2025-07-22', 6124],
-          ['2025-07-23', 6433],
-          ['2025-07-24', 7028],
-          ['2025-07-25', 7103],
-          ['2025-07-26', 7307],
-          ['2025-07-27', 7618],
-          ['2025-07-28', 8326],
-          ['2025-07-29', 8549],
-          ['2025-07-30', 9208],
-          ['2025-07-31', 10008],
-          ['2025-08-01', 9566],
-          ['2025-08-02', 9909],
-          ['2025-08-03', 10706],
-          ['2025-08-04', 10056],
-          ['2025-08-05', 10253],
-          ['2025-08-06', 10213],
-          ['2025-08-07', 10494],
-          ['2025-08-08', 10040],
-          ['2025-08-09', 10338],
-          ['2025-08-10', 9168],
-          ['2025-08-11', 9610],
-          ['2025-08-12', 9125],
-          ['2025-08-13', 8178],
-        ],
-      },
-
-      seatUsage: null,
-    },
-  },
-};
-
 export const mockUsersUsageDataWithOverage = {
   data: {
     subscriptionUsage: {
@@ -555,28 +355,6 @@ export const mockUsersUsageDataWithOverage = {
   },
 };
 
-// Mock data with zero allocation totals for testing edge cases
-export const mockUsageDataWithZeroAllocation = {
-  subscription: {
-    gitlabCreditsUsage: {
-      startDate: '2024-01-01',
-      endDate: '2024-01-31',
-
-      overageCredits: 0,
-      totalCredits: 100,
-      totalCreditsUsed: 100,
-
-      overage: {
-        isAllowed: false,
-        creditsUsed: 0,
-      },
-
-      monthlyCommitment: null,
-      seatUsage: null,
-    },
-  },
-};
-
 export const mockUsersUsageDataWithZeroAllocation = {
   data: {
     subscriptionUsage: {
@@ -672,6 +450,8 @@ export const usageDataWithPool = {
   data: {
     subscriptionUsage: {
       lastEventTransactionAt: '2025-10-14T07:41:59Z',
+      startDate: '2025-10-01',
+      endDate: '2025-10-31',
       purchaseCreditsPath: '/purchase-credits-path',
       monthlyCommitment: {
         creditsUsed: 50,
@@ -705,6 +485,8 @@ export const usageDataWithPoolWithOverage = {
   data: {
     subscriptionUsage: {
       purchaseCreditsPath: '/purchase-credits-path',
+      startDate: '2025-10-01',
+      endDate: '2025-10-31',
       lastEventTransactionAt: '2025-10-14T07:41:59Z',
       monthlyCommitment: {
         creditsUsed: 300,
@@ -727,6 +509,8 @@ export const usageDataNoPoolNoOverage = {
   data: {
     subscriptionUsage: {
       lastEventTransactionAt: '2024-01-15T10:30:00Z',
+      startDate: '2025-10-01',
+      endDate: '2025-10-31',
       purchaseCreditsPath: '/purchase-credits-path',
       monthlyCommitment: null,
       overage: {
@@ -746,6 +530,8 @@ export const usageDataNoPoolWithOverage = {
   data: {
     subscriptionUsage: {
       lastEventTransactionAt: '2024-01-15T10:30:00Z',
+      startDate: '2025-10-01',
+      endDate: '2025-10-31',
       purchaseCreditsPath: '/purchase-credits-path',
       monthlyCommitment: null,
       overage: {
@@ -765,6 +551,8 @@ export const usageDataWithOtcCredits = {
   data: {
     subscriptionUsage: {
       lastEventTransactionAt: '2025-10-14T07:41:59Z',
+      startDate: '2025-10-01',
+      endDate: '2025-10-31',
       purchaseCreditsPath: '/purchase-credits-path',
       usersUsage: {
         // overall statistics

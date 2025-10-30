@@ -1,12 +1,7 @@
-// eslint-disable-next-line import/no-extraneous-dependencies
-import MockAdapter from 'axios-mock-adapter';
 import VueApollo from 'vue-apollo';
 import {
-  mockUsageDataWithPool,
   mockUsersUsageDataWithPool,
-  mockUsageDataWithoutPool,
   mockUsersUsageDataWithoutPool,
-  mockUsageDataWithOverage,
   mockUsersUsageDataWithOverage,
   usageDataWithPool,
   usageDataNoPoolNoOverage,
@@ -15,7 +10,6 @@ import {
   usageDataWithOtcCredits,
 } from 'ee_jest/usage_quotas/usage_billing/mock_data';
 import { createMockClient } from 'helpers/mock_apollo_helper';
-import axios from '~/lib/utils/axios_utils';
 import getSubscriptionUsersUsageQuery from '../graphql/get_subscription_users_usage.query.graphql';
 import getSubscriptionUsageQuery from '../graphql/get_subscription_usage.query.graphql';
 import UsageBillingApp from './app.vue';
@@ -31,17 +25,12 @@ export default meta;
  *
  * @param {Object} config
  * @param {Object} [config.provide]
- * @param {Function} [config.restUsageDataHandler]
  * @param {Function} [config.getSubscriptionUsersUsageQueryHandler]
  * @param {Function} [config.getSubscriptionUsageQueryHandler]
  * @returns
  */
 const createTemplate = (config = {}) => {
-  let {
-    restUsageDataHandler,
-    getSubscriptionUsersUsageQueryHandler,
-    getSubscriptionUsageQueryHandler,
-  } = config;
+  let { getSubscriptionUsersUsageQueryHandler, getSubscriptionUsageQueryHandler } = config;
 
   // NOTE: currently we mock both, REST and GraphQL APIs, as we transition towards GraphQL API
   // Apollo
@@ -65,7 +54,6 @@ const createTemplate = (config = {}) => {
     defaultClient,
   });
 
-  let axiosMockAdapter;
   return (args, { argTypes }) => ({
     apolloProvider,
     components: {
@@ -75,18 +63,9 @@ const createTemplate = (config = {}) => {
     },
     provide: {
       userUsagePath: '/gitlab_duo/users/:id',
-      fetchUsageDataApiUrl: '/admin/gitlab_duo/usage/data',
     },
     props: Object.keys(argTypes),
     template: `<usage-billing-app />`,
-    mounted() {
-      axiosMockAdapter = new MockAdapter(axios);
-      restUsageDataHandler ??= () => Promise.resolve([200, mockUsageDataWithPool]);
-      axiosMockAdapter.onGet('/admin/gitlab_duo/usage/data').replyOnce(restUsageDataHandler);
-    },
-    destroyed() {
-      axiosMockAdapter.restore();
-    },
   });
 };
 
@@ -96,13 +75,11 @@ export const Default = {
 
 export const PoolWithOverage = {
   render: (...args) => {
-    const restUsageDataHandler = () => Promise.resolve([200, mockUsageDataWithOverage]);
     const getSubscriptionUsersUsageQueryHandler = () =>
       Promise.resolve(mockUsersUsageDataWithOverage);
     const getSubscriptionUsageQueryHandler = () => Promise.resolve(usageDataWithPoolWithOverage);
 
     return createTemplate({
-      restUsageDataHandler,
       getSubscriptionUsersUsageQueryHandler,
       getSubscriptionUsageQueryHandler,
     })(...args);
@@ -111,14 +88,12 @@ export const PoolWithOverage = {
 
 export const NoPoolWithOverage = {
   render: (...args) => {
-    const restUsageDataHandler = () => Promise.resolve([200, mockUsageDataWithoutPool]);
     const getSubscriptionUsersUsageQueryHandler = () =>
       Promise.resolve(mockUsersUsageDataWithoutPool);
 
     const getSubscriptionUsageQueryHandler = () => Promise.resolve(usageDataNoPoolWithOverage);
 
     return createTemplate({
-      restUsageDataHandler,
       getSubscriptionUsersUsageQueryHandler,
       getSubscriptionUsageQueryHandler,
     })(...args);
@@ -127,14 +102,12 @@ export const NoPoolWithOverage = {
 
 export const NoPoolNoOverage = {
   render: (...args) => {
-    const restUsageDataHandler = () => Promise.resolve([200, mockUsageDataWithoutPool]);
     const getSubscriptionUsersUsageQueryHandler = () =>
       Promise.resolve(mockUsersUsageDataWithoutPool);
 
     const getSubscriptionUsageQueryHandler = () => Promise.resolve(usageDataNoPoolNoOverage);
 
     return createTemplate({
-      restUsageDataHandler,
       getSubscriptionUsersUsageQueryHandler,
       getSubscriptionUsageQueryHandler,
     })(...args);
@@ -143,13 +116,11 @@ export const NoPoolNoOverage = {
 
 export const WithOtcCredits = {
   render: (...args) => {
-    const restUsageDataHandler = () => Promise.resolve([200, mockUsageDataWithoutPool]);
     const getSubscriptionUsersUsageQueryHandler = () => Promise.resolve(usageDataWithOtcCredits);
 
     const getSubscriptionUsageQueryHandler = () => Promise.resolve(usageDataWithOtcCredits);
 
     return createTemplate({
-      restUsageDataHandler,
       getSubscriptionUsersUsageQueryHandler,
       getSubscriptionUsageQueryHandler,
     })(...args);
@@ -159,11 +130,9 @@ export const WithOtcCredits = {
 export const LoadingState = {
   render: (...args) => {
     // Never resolved
-    const restUsageDataHandler = () => new Promise(() => {});
     const getSubscriptionUsersUsageQueryHandler = () => new Promise(() => {});
 
     return createTemplate({
-      restUsageDataHandler,
       getSubscriptionUsersUsageQueryHandler,
     })(...args);
   },
@@ -181,12 +150,10 @@ export const LoadingUsersUsageState = {
 
 export const ErrorState = {
   render: (...args) => {
-    const restUsageDataHandler = () => Promise.reject(new Error('Failed to fetch usage data'));
     const getSubscriptionUsersUsageQueryHandler = () =>
       Promise.reject(new Error('Failed to fetch usage data'));
 
     return createTemplate({
-      restUsageDataHandler,
       getSubscriptionUsersUsageQueryHandler,
     })(...args);
   },

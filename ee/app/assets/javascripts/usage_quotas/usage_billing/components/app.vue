@@ -1,8 +1,6 @@
 <script>
 import { GlAlert } from '@gitlab/ui';
-import { mockUsageDataWithPool } from 'ee_jest/usage_quotas/usage_billing/mock_data';
 import { logError } from '~/lib/logger';
-import axios from '~/lib/utils/axios_utils';
 import { captureException } from '~/sentry/sentry_browser_wrapper';
 import PageHeading from '~/vue_shared/components/page_heading.vue';
 import UserDate from '~/vue_shared/components/user_date.vue';
@@ -45,14 +43,11 @@ export default {
     },
   },
   inject: {
-    fetchUsageDataApiUrl: { default: '' },
     namespacePath: { default: '' },
   },
   data() {
     return {
-      isFetchingData: true,
       isError: false,
-      subscriptionData: null,
       subscriptionUsage: {},
     };
   },
@@ -72,11 +67,8 @@ export default {
     overageCreditsUsed() {
       return this.subscriptionUsage?.overage?.creditsUsed ?? 0;
     },
-    gitlabCreditsUsage() {
-      return this.subscriptionData.gitlabCreditsUsage;
-    },
     isLoading() {
-      return this.isFetchingData || this.$apollo.queries.subscriptionUsage.loading;
+      return this.$apollo.queries.subscriptionUsage.loading;
     },
     otcRemainingCredits() {
       return this.subscriptionUsage?.oneTimeCredits?.totalCreditsRemaining;
@@ -86,27 +78,6 @@ export default {
     },
     shouldShowOtcCard() {
       return this.otcRemainingCredits || this.otcUsedCredits;
-    },
-  },
-  async mounted() {
-    await this.fetchUsageData();
-  },
-  methods: {
-    async fetchUsageData() {
-      try {
-        this.isFetchingData = true;
-        const response = await axios.get(this.fetchUsageDataApiUrl);
-        this.subscriptionData = response?.data?.subscription;
-      } catch (error) {
-        this.isError = true;
-        logError(error);
-        captureException(error);
-
-        // TODO: this fallback will be removed once we integrate with actual BE
-        this.subscriptionData = mockUsageDataWithPool.subscription;
-      } finally {
-        this.isFetchingData = false;
-      }
     },
   },
   LONG_DATE_FORMAT_WITH_TZ,
@@ -170,15 +141,15 @@ export default {
           v-if="poolIsAvailable"
           :pool-total-credits="poolTotalCredits"
           :pool-credits-used="poolCreditsUsed"
-          :month-start-date="gitlabCreditsUsage.startDate"
-          :month-end-date="gitlabCreditsUsage.endDate"
+          :month-start-date="subscriptionUsage.startDate"
+          :month-end-date="subscriptionUsage.endDate"
         />
 
         <current-overage-usage-card
           v-if="overageIsAllowed"
           :overage-credits-used="overageCreditsUsed"
-          :month-start-date="gitlabCreditsUsage.startDate"
-          :month-end-date="gitlabCreditsUsage.endDate"
+          :month-start-date="subscriptionUsage.startDate"
+          :month-end-date="subscriptionUsage.endDate"
         />
 
         <purchase-commitment-card
