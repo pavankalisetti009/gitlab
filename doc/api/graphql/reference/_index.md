@@ -18620,6 +18620,29 @@ The edge type for [`GitlabSubscriptionUsageUser`](#gitlabsubscriptionusageuser).
 | <a id="gitlabsubscriptionusageuseredgecursor"></a>`cursor` | [`String!`](#string) | A cursor for use in pagination. |
 | <a id="gitlabsubscriptionusageuseredgenode"></a>`node` | [`GitlabSubscriptionUsageUser`](#gitlabsubscriptionusageuser) | The item at the end of the edge. |
 
+#### `GitlabSubscriptionUsageUserEventConnection`
+
+The connection type for [`GitlabSubscriptionUsageUserEvent`](#gitlabsubscriptionusageuserevent).
+
+##### Fields
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="gitlabsubscriptionusageusereventconnectionedges"></a>`edges` | [`[GitlabSubscriptionUsageUserEventEdge]`](#gitlabsubscriptionusageusereventedge) | A list of edges. |
+| <a id="gitlabsubscriptionusageusereventconnectionnodes"></a>`nodes` | [`[GitlabSubscriptionUsageUserEvent]`](#gitlabsubscriptionusageuserevent) | A list of nodes. |
+| <a id="gitlabsubscriptionusageusereventconnectionpageinfo"></a>`pageInfo` | [`PageInfo!`](#pageinfo) | Information to aid in pagination. |
+
+#### `GitlabSubscriptionUsageUserEventEdge`
+
+The edge type for [`GitlabSubscriptionUsageUserEvent`](#gitlabsubscriptionusageuserevent).
+
+##### Fields
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="gitlabsubscriptionusageusereventedgecursor"></a>`cursor` | [`String!`](#string) | A cursor for use in pagination. |
+| <a id="gitlabsubscriptionusageusereventedgenode"></a>`node` | [`GitlabSubscriptionUsageUserEvent`](#gitlabsubscriptionusageuserevent) | The item at the end of the edge. |
+
 #### `GoogleCloudArtifactRegistryArtifactConnection`
 
 The connection type for [`GoogleCloudArtifactRegistryArtifact`](#googlecloudartifactregistryartifact).
@@ -30961,24 +30984,11 @@ Describes the user with their usage data.
 | Name | Type | Description |
 | ---- | ---- | ----------- |
 | <a id="gitlabsubscriptionusageuseravatarurl"></a>`avatarUrl` | [`String`](#string) | URL of the user's avatar. |
+| <a id="gitlabsubscriptionusageuserevents"></a>`events` | [`GitlabSubscriptionUsageUserEventConnection`](#gitlabsubscriptionusageusereventconnection) | Billable events from the user. (see [Connections](#connections)) |
 | <a id="gitlabsubscriptionusageuserid"></a>`id` | [`UserID!`](#userid) | Global ID of the user. |
 | <a id="gitlabsubscriptionusageusername"></a>`name` | [`String!`](#string) | Human-readable name of the user. |
 | <a id="gitlabsubscriptionusageuserusage"></a>`usage` | [`GitlabSubscriptionUsageUserUsage`](#gitlabsubscriptionusageuserusage) | Usage of consumables for a user under the subscription. |
 | <a id="gitlabsubscriptionusageuserusername"></a>`username` | [`String!`](#string) | Username of the user. Unique within the instance of GitLab. |
-
-#### Fields with arguments
-
-##### `GitlabSubscriptionUsageUser.events`
-
-Billable events from the user.
-
-Returns [`[GitlabSubscriptionUsageUserEvent!]`](#gitlabsubscriptionusageuserevent).
-
-###### Arguments
-
-| Name | Type | Description |
-| ---- | ---- | ----------- |
-| <a id="gitlabsubscriptionusageusereventspage"></a>`page` | [`Int`](#int) | Page number to fetch the events. |
 
 ### `GitlabSubscriptionUsageUserEvent`
 

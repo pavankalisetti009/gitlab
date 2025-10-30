@@ -298,8 +298,8 @@ RSpec.describe Gitlab::SubscriptionPortal::SubscriptionUsageClient, feature_cate
 
   describe '#get_events_for_user_id' do
     let(:user_id) { 123 }
-    let(:page) { 1 }
-    let(:request) { client.get_events_for_user_id(user_id, page) }
+    let(:args) { { before: nil, after: nil } }
+    let(:request) { client.get_events_for_user_id(user_id, args) }
     let(:query) { described_class::GET_USER_EVENTS_QUERY }
     let(:user_events) do
       [
@@ -327,7 +327,17 @@ RSpec.describe Gitlab::SubscriptionPortal::SubscriptionUsageClient, feature_cate
           subscription: {
             gitlabCreditsUsage: {
               usersUsage: {
-                users: [{ events: user_events }]
+                users: [{
+                  events: {
+                    nodes: user_events,
+                    pageInfo: {
+                      hasNextPage: false,
+                      hasPreviousPage: false,
+                      startCursor: "2025-10-01T16:25:28Z",
+                      endCursor: "2025-10-01T16:30:12Z"
+                    }
+                  }
+                }]
               }
             }
           }
@@ -338,19 +348,27 @@ RSpec.describe Gitlab::SubscriptionPortal::SubscriptionUsageClient, feature_cate
     let(:expected_response) do
       {
         success: true,
-        userEvents: user_events
+        userEvents: {
+          nodes: user_events,
+          pageInfo: {
+            hasNextPage: false,
+            hasPreviousPage: false,
+            startCursor: "2025-10-01T16:25:28Z",
+            endCursor: "2025-10-01T16:30:12Z"
+          }
+        }
       }
     end
 
     include_context 'for self-managed request' do
       let(:variables) do
-        { licenseKey: license_key, startDate: start_date, endDate: end_date, userIds: [user_id], page: page }
+        { licenseKey: license_key, userIds: [user_id], **args }
       end
     end
 
     include_context 'for gitlab.com request' do
       let(:variables) do
-        { namespaceId: namespace_id, startDate: start_date, endDate: end_date, userIds: [user_id], page: page }
+        { namespaceId: namespace_id, userIds: [user_id], **args }
       end
     end
   end
