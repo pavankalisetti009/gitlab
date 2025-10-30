@@ -28874,6 +28874,9 @@ msgstr ""
 msgid "Find the activation code for a purchased or renewed subscription in the Customers Portal or purchase confirmation email."
 msgstr ""
 
+msgid "Find what you need faster"
+msgstr ""
+
 msgid "FindFile|Switch branch/tag"
 msgstr ""
 
@@ -30249,9 +30252,6 @@ msgstr ""
 msgid "Geo|secondary"
 msgstr ""
 
-msgid "Get Started"
-msgstr ""
-
 msgid "Get a support subscription"
 msgstr ""
 
@@ -30580,6 +30580,9 @@ msgid "GitLab logo"
 msgstr ""
 
 msgid "GitLab metadata URL"
+msgstr ""
+
+msgid "GitLab now has a sleek panel-based layout. Find what you need faster with centered search and all your work items conveniently positioned in the upper right."
 msgstr ""
 
 msgid "GitLab project export"
@@ -31415,9 +31418,6 @@ msgid "Go Back"
 msgstr ""
 
 msgid "Go Micro is a framework for micro service development"
-msgstr ""
-
-msgid "Go Next"
 msgstr ""
 
 msgid "Go back"
@@ -34249,9 +34249,6 @@ msgid "If you do not renew by %{strong}%{downgrades_on}%{strong_close}, you can'
 msgstr ""
 
 msgid "If you don't renew by %{strong}%{downgrades_on}%{strong_close} your instance will become read-only, and you won't be able to create issues or merge requests. You will also lose access to your paid features and support entitlement. %{learn_more_link}"
-msgstr ""
-
-msgid "If you enabled Duo, you can open the GitLab Duo panel on the right side as an on-demand assistant. There, you can ask agents contextual questions and instructions from anywhere in the GitLab experience."
 msgstr ""
 
 msgid "If you get a lot of false alarms from repository checks, you can clear all repository check information from the database."
@@ -46123,9 +46120,6 @@ msgstr ""
 msgid "Open evidence JSON in new tab"
 msgstr ""
 
-msgid "Open feedback issue"
-msgstr ""
-
 msgid "Open in Ona"
 msgstr ""
 
@@ -46153,6 +46147,9 @@ msgid "Open new window"
 msgstr ""
 
 msgid "Open raw"
+msgstr ""
+
+msgid "Open the GitLab Duo AI assistant panel from anywhere in GitLab. Ask questions, request code help, or get guidance without interrupting your workflow."
 msgstr ""
 
 msgid "Open threads must be resolved."
@@ -46535,9 +46532,6 @@ msgid "Other labels"
 msgstr ""
 
 msgid "Other merge requests block this MR"
-msgstr ""
-
-msgid "Other subtle usability-driven improvements include moving the global search box to the top center for improved accessibility. Global navigation elements, including your assigned issues, merge requests, to-do items, and the user icon, move to the top right."
 msgstr ""
 
 msgid "Other updates"
@@ -47622,9 +47616,6 @@ msgid "Pagination|Previous"
 msgstr ""
 
 msgid "Pagination|« First"
-msgstr ""
-
-msgid "Panels present information side by side, allowing you to work more contextually. When you select an issue from the Issues page, it opens in the details panel."
 msgstr ""
 
 msgid "Parameter"
@@ -49616,9 +49607,6 @@ msgid "Please select…"
 msgstr ""
 
 msgid "Please set the admin account password."
-msgstr ""
-
-msgid "Please share your feedback — our engineers are listening. This toggle is temporary, and the panel UI will soon become the default view."
 msgstr ""
 
 msgid "Please solve the captcha"
@@ -62829,6 +62817,9 @@ msgstr ""
 msgid "Share the %{strong_open}GitLab single sign-on URL%{strong_close} with members so they can sign in to your group through your identity provider"
 msgstr ""
 
+msgid "Share your feedback!"
+msgstr ""
+
 msgid "Shared groups"
 msgstr ""
 
@@ -64588,6 +64579,12 @@ msgid "StatusPage|configuration documentation"
 msgstr ""
 
 msgid "StatusPage|your status page frontend."
+msgstr ""
+
+msgid "Stay in context"
+msgstr ""
+
+msgid "Stay in your workflow with contextual panels. Select an issue to view its details right alongside your list, so you can quickly review, edit, and move on to the next task."
 msgstr ""
 
 msgid "Step"
@@ -66543,9 +66540,6 @@ msgid "The latest artifacts created by jobs in the most recent successful pipeli
 msgstr ""
 
 msgid "The latest pipeline for this merge request has failed."
-msgstr ""
-
-msgid "The left navigation menu now collapses and expands to provide flexible sidebar management."
 msgstr ""
 
 msgid "The license key is invalid."
