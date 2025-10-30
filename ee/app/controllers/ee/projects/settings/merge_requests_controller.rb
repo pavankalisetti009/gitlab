@@ -41,8 +41,6 @@ module EE
         def project_params_ee
           attrs = %i[
             approvals_before_merge
-            approver_group_ids
-            approver_ids
             merge_requests_template
             reset_approvals_on_push
             ci_cd_only
