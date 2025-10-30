@@ -59,5 +59,19 @@ RSpec.describe VirtualRegistries::Packages::Maven, feature_category: :virtual_re
 
       it { is_expected.to be(false) }
     end
+
+    context 'for admin_virtual_registry permission' do
+      subject { described_class.virtual_registry_available?(group, user, :admin_virtual_registry) }
+
+      it { is_expected.to be(false) }
+
+      context 'when permission is sufficient' do
+        before_all do
+          group.add_owner(user)
+        end
+
+        it { is_expected.to be(true) }
+      end
+    end
   end
 end

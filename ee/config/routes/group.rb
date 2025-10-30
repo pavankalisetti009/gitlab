@@ -41,6 +41,10 @@ constraints(::Constraints::GroupUrlConstrainer.new) do
       end
 
       resource :issues, only: [:show], controller: 'work_items'
+
+      namespace :packages_and_registries do
+        resources :virtual_registry_cleanup_policy, only: [:index]
+      end
     end
 
     resource :early_access_opt_in, only: %i[create show], controller: 'early_access_opt_in'
