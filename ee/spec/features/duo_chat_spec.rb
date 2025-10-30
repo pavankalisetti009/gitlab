@@ -57,7 +57,8 @@ RSpec.describe 'Duo Chat', :js, :saas, :clean_gitlab_redis_cache, feature_catego
     end
 
     with_them do
-      it 'shows the correct button state and tooltip' do
+      it 'shows the correct button state and tooltip',
+        quarantine: 'https://gitlab.com/gitlab-org/quality/test-failure-issues/-/issues/11201' do
         allow(::Gitlab::Llm::TanukiBot).to receive(:chat_disabled_reason).and_return(disabled_reason)
 
         case visit_path
