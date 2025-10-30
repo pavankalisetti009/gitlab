@@ -55269,10 +55269,10 @@ msgstr ""
 msgid "Requirement|Legacy requirement ID: %{legacyId}"
 msgstr ""
 
-msgid "Requirement|Legacy requirement IDs are being deprecated. Update your links to reference this item's new ID %{id}. %{linkStart}Learn more%{linkEnd}."
+msgid "Requirement|Legacy requirement IDs are being deprecated. Update your links to reference this item's new ID %{id}."
 msgstr ""
 
-msgid "Requirement|Requirements have become work items and the legacy requirement IDs are being deprecated. Update your links to reference this item's new ID %{id}. %{linkStart}Learn more%{linkEnd}."
+msgid "Requirement|Requirements have become work items and the legacy requirement IDs are being deprecated. Update your links to reference this item's new ID %{id}."
 msgstr ""
 
 msgid "Requires %d approval"

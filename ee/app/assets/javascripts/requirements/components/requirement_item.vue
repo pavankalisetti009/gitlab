@@ -188,11 +188,6 @@ export default {
       <span class="gl-leading-20">
         <gl-sprintf :message="$options.i18n.legacyReferencePopoverText">
           <template #id>{{ reference }}</template>
-          <template #link="{ content }">
-            <gl-link :href="$options.legacyReferenceDeprecationUrl" target="_blank">{{
-              content
-            }}</gl-link>
-          </template>
         </gl-sprintf>
       </span>
     </gl-popover>
