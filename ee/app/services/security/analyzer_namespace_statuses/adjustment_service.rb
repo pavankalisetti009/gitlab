@@ -20,7 +20,55 @@ module Security
         RETURNING namespace_id
       SQL
 
-      STATS_SQL = <<~SQL
+      # Optimized query that handles the case where all projects are archived
+      OPTIMIZED_STATS_SQL = <<~SQL
+        WITH namespace_data (namespace_id, traversal_ids, next_traversal_id) AS (
+            %{with_values}
+        ),
+        project_stats AS (
+          SELECT
+            analyzer_project_statuses.analyzer_type,
+            COALESCE(SUM((status = 1)::int), 0) AS success,
+            COALESCE(SUM((status = 2)::int), 0) AS failure,
+            namespace_data.traversal_ids,
+            namespace_data.namespace_id,
+            now() AS created_at,
+            now() AS updated_at
+          FROM namespace_data
+          LEFT JOIN analyzer_project_statuses
+            ON analyzer_project_statuses.archived = FALSE
+            AND analyzer_project_statuses.traversal_ids >= namespace_data.traversal_ids
+            AND analyzer_project_statuses.traversal_ids < namespace_data.next_traversal_id
+          GROUP BY namespace_data.traversal_ids, namespace_data.namespace_id, analyzer_project_statuses.analyzer_type
+          HAVING count(analyzer_project_statuses.analyzer_type) > 0
+        ),
+        existing_analyzer_types AS (
+          SELECT DISTINCT
+            analyzer_namespace_statuses.analyzer_type,
+            namespace_data.traversal_ids,
+            namespace_data.namespace_id,
+            now() AS created_at,
+            now() AS updated_at
+          FROM namespace_data
+          INNER JOIN analyzer_namespace_statuses
+            ON analyzer_namespace_statuses.namespace_id = namespace_data.namespace_id
+          WHERE NOT EXISTS (
+            SELECT 1 FROM project_stats
+            WHERE project_stats.namespace_id = namespace_data.namespace_id
+            AND project_stats.analyzer_type = analyzer_namespace_statuses.analyzer_type
+          )
+        )
+        SELECT analyzer_type, success, failure, traversal_ids, namespace_id, created_at, updated_at
+        FROM project_stats
+
+        UNION ALL
+
+        SELECT analyzer_type, 0 AS success, 0 AS failure, traversal_ids, namespace_id, created_at, updated_at
+        FROM existing_analyzer_types
+      SQL
+
+      # Original query (fallback when feature flag is disabled)
+      LEGACY_STATS_SQL = <<~SQL
         WITH namespace_data (namespace_id, traversal_ids, next_traversal_id) AS (
             %{with_values}
         )
@@ -154,7 +202,12 @@ module Security
       end
 
       def stats_sql(namespace_data)
-        format(STATS_SQL, with_values: namespace_data)
+        sql_template = use_optimized_query? ? OPTIMIZED_STATS_SQL : LEGACY_STATS_SQL
+        format(sql_template, with_values: namespace_data)
+      end
+
+      def use_optimized_query?
+        Feature.enabled?(:analyzer_namespace_status_query_optimization, :instance)
       end
 
       def with_namespace_data(namespace_ids_batch)
