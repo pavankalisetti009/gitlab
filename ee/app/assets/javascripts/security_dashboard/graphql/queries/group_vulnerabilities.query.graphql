@@ -28,6 +28,7 @@ query groupVulnerabilities(
   $includeSeverityOverrides: Boolean = false
   $includeLatestFlag: Boolean = false
   $reachability: ReachabilityType
+  $validityCheck: [VulnerabilityFindingTokenStatusState!]
 ) {
   group(fullPath: $fullPath) {
     id
@@ -54,6 +55,7 @@ query groupVulnerabilities(
       owaspTopTen2021: $owaspTopTen2021
       identifierName: $identifierName
       reachability: $reachability
+      validityCheck: $validityCheck
     ) {
       nodes {
         ...VulnerabilityFragment

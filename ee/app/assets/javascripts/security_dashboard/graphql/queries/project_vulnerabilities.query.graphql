@@ -29,6 +29,7 @@ query projectVulnerabilities(
   $includeSeverityOverrides: Boolean = false
   $includeLatestFlag: Boolean = false
   $reachability: ReachabilityType
+  $validityCheck: [VulnerabilityFindingTokenStatusState!]
 ) {
   project(fullPath: $fullPath) {
     id
@@ -55,6 +56,7 @@ query projectVulnerabilities(
       identifierName: $identifierName
       owaspTopTen2021: $owaspTopTen2021
       reachability: $reachability
+      validityCheck: $validityCheck
     ) {
       nodes {
         ...VulnerabilityFragment
