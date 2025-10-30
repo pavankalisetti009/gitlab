@@ -1,12 +1,5 @@
 <script>
-import {
-  GlDrawer,
-  GlButton,
-  GlFormCheckbox,
-  GlTooltipDirective,
-  GlSprintf,
-  GlLink,
-} from '@gitlab/ui';
+import { GlDrawer, GlButton, GlFormCheckbox, GlTooltipDirective, GlSprintf } from '@gitlab/ui';
 import $ from 'jquery';
 import { isEmpty } from 'lodash';
 import IssuableBody from '~/vue_shared/issuable/show/components/issuable_body.vue';
@@ -44,7 +37,6 @@ export default {
     RequirementStatusBadge,
     IssuableBody,
     GlSprintf,
-    GlLink,
   },
   directives: {
     GlTooltip: GlTooltipDirective,
@@ -318,11 +310,6 @@ export default {
           <p class="gl-text-sm gl-leading-20">
             <gl-sprintf :message="$options.i18n.legacyReferenceDeprecationText">
               <template #id>{{ reference }}</template>
-              <template #link="{ content }">
-                <gl-link :href="$options.legacyReferenceDeprecationUrl" target="_blank">{{
-                  content
-                }}</gl-link>
-              </template>
             </gl-sprintf>
           </p>
         </aside>

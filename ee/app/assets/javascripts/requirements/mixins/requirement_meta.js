@@ -1,13 +1,9 @@
 import { getTimeago } from '~/lib/utils/datetime_utility';
 import { __, sprintf } from '~/locale';
-import { helpPagePath } from '~/helpers/help_page_helper';
 
 import { filterState } from '../constants';
 
 export default {
-  legacyReferenceDeprecationUrl: helpPagePath('update/deprecations', {
-    anchor: 'the-gitlab-legacy-requirement-iid-is-deprecated-in-favor-of-work-item-iid',
-  }),
   computed: {
     reference() {
       return `#${this.requirement?.workItemIid}`;

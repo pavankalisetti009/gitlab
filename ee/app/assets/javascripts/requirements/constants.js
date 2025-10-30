@@ -44,9 +44,9 @@ export const I18N_LEGACY_REFERENCE_DEPRECATION_NOTE_TITLE = s__(
 );
 
 export const I18N_LEGACY_REFERENCE_DEPRECATION_NOTE_POPOVER = s__(
-  `Requirement|Legacy requirement IDs are being deprecated. Update your links to reference this item's new ID %{id}. %{linkStart}Learn more%{linkEnd}.`,
+  `Requirement|Legacy requirement IDs are being deprecated. Update your links to reference this item's new ID %{id}.`,
 );
 
 export const I18N_LEGACY_REFERENCE_DEPRECATION_NOTE_DETAIL = s__(
-  `Requirement|Requirements have become work items and the legacy requirement IDs are being deprecated. Update your links to reference this item's new ID %{id}. %{linkStart}Learn more%{linkEnd}.`,
+  `Requirement|Requirements have become work items and the legacy requirement IDs are being deprecated. Update your links to reference this item's new ID %{id}.`,
 );
