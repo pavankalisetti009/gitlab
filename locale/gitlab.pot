@@ -15781,13 +15781,13 @@ msgstr ""
 msgid "Collapse %{accessibleLabel}"
 msgstr ""
 
+msgid "Collapse %{name} directory"
+msgstr ""
+
 msgid "Collapse %{section} merge requests"
 msgstr ""
 
 msgid "Collapse all files"
-msgstr ""
-
-msgid "Collapse directory"
 msgstr ""
 
 msgid "Collapse eligible approvers"
@@ -27534,6 +27534,9 @@ msgstr ""
 msgid "Expand %{accessibleLabel}"
 msgstr ""
 
+msgid "Expand %{name} directory"
+msgstr ""
+
 msgid "Expand %{section} merge requests"
 msgstr ""
 
@@ -27547,9 +27550,6 @@ msgid "Expand all files"
 msgstr ""
 
 msgid "Expand all lines"
-msgstr ""
-
-msgid "Expand directory"
 msgstr ""
 
 msgid "Expand eligible approvers"

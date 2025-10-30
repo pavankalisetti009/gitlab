@@ -273,12 +273,14 @@ describe('File row component', () => {
         icon: 'chevron-right',
       });
 
-      expect(findChevronButton().attributes('aria-label')).toBe('Expand directory');
+      expect(findChevronButton().attributes('aria-label')).toBe('Expand path/to/folder directory');
 
       // Ensure correct icon and aria-label when folder is expanded
       createComponent({ file: { ...mockFile, opened: true }, level: 0, showTreeToggle: true });
       expect(findChevronButton().props('icon')).toBe('chevron-down');
-      expect(findChevronButton().attributes('aria-label')).toBe('Collapse directory');
+      expect(findChevronButton().attributes('aria-label')).toBe(
+        'Collapse path/to/folder directory',
+      );
     });
 
     it('renders chevron button for trees and emits clickTree when clicked', () => {

@@ -1,6 +1,7 @@
 <script>
 import { GlTruncate, GlIcon, GlTooltipDirective, GlButton } from '@gitlab/ui';
 import { escapeFileUrl } from '~/lib/utils/url_utility';
+import { __, sprintf } from '~/locale';
 import FileIcon from '~/vue_shared/components/file_icon.vue';
 import FileHeader from '~/vue_shared/components/file_row_header.vue';
 import { InternalEvents } from '~/tracking';
@@ -75,6 +76,12 @@ export default {
     },
     chevronIcon() {
       return this.file.opened ? 'chevron-down' : 'chevron-right';
+    },
+    chevronAriaLabel() {
+      const action = this.file.opened
+        ? __('Collapse %{name} directory')
+        : __('Expand %{name} directory');
+      return sprintf(action, { name: this.file.name });
     },
   },
   watch: {
@@ -163,7 +170,7 @@ export default {
       :icon="chevronIcon"
       data-testid="tree-toggle-button"
       class="file-row-indentation gl-mr-1 gl-shrink-0"
-      :aria-label="file.opened ? __('Collapse directory') : __('Expand directory')"
+      :aria-label="chevronAriaLabel"
       @click="onChevronClick"
     />
 
