@@ -28,6 +28,7 @@ module Mutations
 
         def resolve(namespace_path:, enable:)
           namespace = find_namespace(namespace_path)
+          raise_resource_not_available_error! if namespace.self_or_ancestors_archived?
 
           response = ::Security::Configuration::SetContainerScanningForRegistryService
             .execute(namespace: namespace, enable: enable)

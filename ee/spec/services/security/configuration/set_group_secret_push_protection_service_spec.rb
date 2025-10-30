@@ -6,9 +6,9 @@ RSpec.describe Security::Configuration::SetGroupSecretPushProtectionService, fea
   describe '#execute' do
     let_it_be(:user) { create(:user) }
 
-    let_it_be(:top_level_group) { create(:group) }
-    let_it_be(:mid_level_group) { create(:group, parent: top_level_group) }
-    let_it_be(:bottom_level_group) { create(:group, parent: mid_level_group) }
+    let_it_be_with_reload(:top_level_group) { create(:group) }
+    let_it_be_with_reload(:mid_level_group) { create(:group, parent: top_level_group) }
+    let_it_be_with_reload(:bottom_level_group) { create(:group, parent: mid_level_group) }
 
     let_it_be_with_reload(:top_level_group_project) { create(:project, namespace: top_level_group) }
     let_it_be_with_reload(:mid_level_group_project) { create(:project, namespace: mid_level_group) }
@@ -207,6 +207,44 @@ groups/projects")
           .not_to receive(:perform_async)
 
         execute_service(subject: top_level_group, enable: nil)
+      end
+    end
+
+    context 'when project or group is archived' do
+      context 'when a group is archived' do
+        before do
+          bottom_level_group.update!(archived: true)
+        end
+
+        it 'does not change the attribute for projects in archived group' do
+          expect { execute_service(subject: bottom_level_group, enable: true) }
+            .not_to change { bottom_level_group_project.reload.security_setting.secret_push_protection_enabled }
+        end
+
+        it 'does not schedule the analyzer statuses update worker' do
+          expect(Security::AnalyzersStatus::ScheduleSettingChangedUpdateWorker)
+            .not_to receive(:perform_async)
+
+          execute_service(subject: bottom_level_group, enable: true)
+        end
+      end
+
+      context 'when a parent group is archived' do
+        before do
+          mid_level_group.update!(archived: true)
+        end
+
+        it 'does not change the attribute for projects in child group' do
+          expect { execute_service(subject: mid_level_group, enable: true) }
+            .not_to change { bottom_level_group_project.reload.security_setting.secret_push_protection_enabled }
+        end
+
+        it 'does not schedule the analyzer statuses update worker' do
+          expect(Security::AnalyzersStatus::ScheduleSettingChangedUpdateWorker)
+            .not_to receive(:perform_async)
+
+          execute_service(subject: mid_level_group, enable: true)
+        end
       end
     end
   end

@@ -47,6 +47,7 @@ module API
         end
         put do
           unauthorized! unless can?(current_user, :manage_security_settings, user_project)
+          forbidden! if user_project&.self_or_ancestors_archived?
 
           enabled = if params.key?(:secret_push_protection_enabled)
                       params[:secret_push_protection_enabled]

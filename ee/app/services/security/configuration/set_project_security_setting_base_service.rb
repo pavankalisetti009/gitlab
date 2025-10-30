@@ -44,7 +44,8 @@ module Security
       end
 
       def valid_request?
-        @subject.present? && @current_user.present? && [true, false].include?(@enable)
+        @subject.present? && !@subject.self_or_ancestors_archived? && @current_user.present? &&
+          [true, false].include?(@enable)
       end
 
       def update_security_setting(project_ids)
