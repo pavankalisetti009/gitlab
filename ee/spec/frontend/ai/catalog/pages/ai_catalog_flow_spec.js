@@ -30,11 +30,12 @@ describe('AiCatalogFlow', () => {
   const mockFlowQueryHandler = jest.fn().mockResolvedValue(mockAiCatalogFlowResponse);
   const mockFlowNullQueryHandler = jest.fn().mockResolvedValue(mockAiCatalogFlowNullResponse);
 
-  const createComponent = ({ flowQueryHandler = mockFlowQueryHandler } = {}) => {
+  const createComponent = ({ flowQueryHandler = mockFlowQueryHandler, provide = {} } = {}) => {
     mockApollo = createMockApollo([[aiCatalogFlowQuery, flowQueryHandler]]);
 
     wrapper = shallowMount(AiCatalogFlow, {
       apolloProvider: mockApollo,
+      provide,
       mocks: {
         $route: {
           params: routeParams,
@@ -90,6 +91,30 @@ describe('AiCatalogFlow', () => {
     it('renders the router view', () => {
       expect(findRouterView().exists()).toBe(true);
       expect(findRouterView().props('aiCatalogFlow')).toEqual(mockFlow);
+    });
+  });
+
+  describe('when displaying soft-deleted flows', () => {
+    it('should show flow details in the Projects area', async () => {
+      createComponent();
+      await waitForPromises();
+
+      expect(mockFlowQueryHandler).toHaveBeenCalledWith({
+        id: 'gid://gitlab/Ai::Catalog::Item/1',
+        showSoftDeleted: true,
+      });
+    });
+
+    it('should not show flow details in the explore area', async () => {
+      createComponent({
+        provide: { isGlobal: true }, // "Projects" area is not global, "Explore" is
+      });
+      await waitForPromises();
+
+      expect(mockFlowQueryHandler).toHaveBeenCalledWith({
+        id: 'gid://gitlab/Ai::Catalog::Item/1',
+        showSoftDeleted: false,
+      });
     });
   });
 
