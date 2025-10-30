@@ -60,7 +60,10 @@ RSpec.describe Gitlab::Elastic::GroupSearchResults, :elastic, feature_category: 
     end
 
     let!(:note) do
-      create(:note_on_merge_request, note: 'Goodbye foo', noteable: note_merge_request, project: note_merge_request.project)
+      create(:note_on_merge_request,
+        note: 'Goodbye foo',
+        noteable: note_merge_request,
+        project: note_merge_request.project)
     end
 
     let_it_be(:unarchived_project) { create(:project, :public, group: group) }
