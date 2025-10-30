@@ -6,7 +6,7 @@ module EE
       extend ::Gitlab::Utils::Override
 
       override :execute
-      def execute(merge_request, commit = nil)
+      def execute(merge_request, commit = nil, skip_reset: false)
         super.tap do
           if current_user.project_bot?
             log_audit_event(merge_request, 'merge_request_closed_by_project_bot',
