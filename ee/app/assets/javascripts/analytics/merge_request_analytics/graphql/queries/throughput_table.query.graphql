@@ -48,6 +48,7 @@ query getThroughputTableData(
         milestone {
           id
           title
+          webPath
         }
         assignees {
           nodes {

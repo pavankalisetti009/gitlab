@@ -154,6 +154,7 @@
                   "FormatTime",
                   "FormatTimeRange",
                   "MergeRequestLink",
+                  "MilestoneLink",
                   "ChangePercentageIndicator",
                   "MetricLabel",
                   "TrendLine",

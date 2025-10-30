@@ -20,6 +20,7 @@ export default {
     FormatTime: () => import('./format_time.vue'),
     FormatTimeRange: () => import('./format_time_range.vue'),
     MergeRequestLink: () => import('./merge_request_link.vue'),
+    MilestoneLink: () => import('./milestone_link.vue'),
     ChangePercentageIndicator: () => import('./change_percentage_indicator.vue'),
     MetricLabel: () => import('./metric_label.vue'),
     TrendLine: () => import('./trend_line.vue'),

@@ -49,7 +49,7 @@ const formatNodes = (list) => {
         },
         diffStatsSummary,
         pipelinesCount,
-        milestone: milestone?.title,
+        milestone,
       };
     },
   );
