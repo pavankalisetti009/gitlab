@@ -124,7 +124,6 @@ module EE
       end
 
       condition(:instance_model_selection_available) do
-        next false unless ::Feature.enabled?(:instance_level_model_selection, :instance)
         next false if ::Ai::AmazonQ.connected?
 
         !::License.current&.offline_cloud_license?
