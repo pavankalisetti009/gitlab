@@ -81,6 +81,16 @@ RSpec.describe Notes::DestroyService, feature_category: :team_planning do
 
         service.execute(note)
       end
+
+      context 'when note is on a personal snippet' do
+        let!(:note) { create(:note_on_personal_snippet) }
+
+        it 'does not audit the event' do
+          expect(::Gitlab::Audit::Auditor).not_to receive(:audit)
+
+          service.execute(note)
+        end
+      end
     end
   end
 end
