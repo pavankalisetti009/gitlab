@@ -33,12 +33,9 @@ RSpec.describe CodeSuggestions::Tasks::CodeGeneration, feature_category: :code_s
     )
   end
 
-  before do
-    stub_feature_flags(instance_level_model_selection: false)
-  end
-
   context 'when using saas anthropic model' do
     before do
+      stub_saas_features(gitlab_com_subscriptions: true)
       allow(CodeSuggestions::Prompts::CodeGeneration::AiGatewayMessages)
         .to receive(:new).and_return(anthropic_messages_prompt)
       stub_const('CodeSuggestions::Tasks::Base::AI_GATEWAY_CONTENT_SIZE', 3)
