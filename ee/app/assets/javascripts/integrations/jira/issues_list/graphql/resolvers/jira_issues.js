@@ -25,12 +25,28 @@ const transformJiraIssueLabels = (jiraIssue) => {
   }));
 };
 
+const isJiraCloud = (responseHeaders) => responseHeaders['x-page'] === undefined;
+
+const createJiraCloudPageInfo = (headers) => ({
+  __typename: 'JiraIssuesPageInfo',
+  nextPageToken: headers['x-next-page-token'] || null,
+  isLast: headers['x-is-last'] === 'true',
+  page: null,
+  total: null,
+});
+
+const createJiraServerPageInfo = (headers) => ({
+  __typename: 'JiraIssuesPageInfo',
+  page: parseInt(headers['x-page'], 10) ?? 1,
+  total: parseInt(headers['x-total'], 10) ?? 0,
+  nextPageToken: null,
+  isLast: null,
+});
+
 const transformJiraIssuePageInfo = (responseHeaders = {}) => {
-  return {
-    __typename: 'JiraIssuesPageInfo',
-    nextPageToken: responseHeaders['x-next-page-token'] || null,
-    isLast: responseHeaders['x-is-last'] === 'true',
-  };
+  return isJiraCloud(responseHeaders)
+    ? createJiraCloudPageInfo(responseHeaders)
+    : createJiraServerPageInfo(responseHeaders);
 };
 
 export const transformJiraIssuesREST = (response) => {
@@ -59,6 +75,7 @@ export default function jiraIssuesResolver(
   _,
   {
     issuesFetchPath,
+    page,
     nextPageToken,
     sort,
     state,
@@ -75,7 +92,6 @@ export default function jiraIssuesResolver(
       params: {
         with_labels_details: true,
         per_page: DEFAULT_PAGE_SIZE,
-        next_page_token: nextPageToken,
         sort,
         state,
         project,
@@ -84,6 +100,8 @@ export default function jiraIssuesResolver(
         assignee_username: assigneeUsername,
         labels,
         search,
+        ...(page && { page }),
+        ...(nextPageToken && { next_page_token: nextPageToken }),
       },
     })
     .then((res) => {

@@ -38,19 +38,21 @@ export default {
   directives: {
     SafeHtml,
   },
-  inject: [
-    'initialState',
-    'initialSortBy',
-    'issuesFetchPath',
-    'projectFullPath',
-    'issueCreateUrl',
-    'getIssuesQuery',
-    'externalIssuesLogo',
-    'externalIssueTrackerName',
-    'searchInputPlaceholderText',
-    'recentSearchesStorageKey',
-    'createNewIssueText',
-  ],
+  inject: {
+    initialState: {},
+    initialSortBy: {},
+    deployment: { default: 'cloud' },
+    page: {},
+    issuesFetchPath: {},
+    projectFullPath: {},
+    issueCreateUrl: {},
+    getIssuesQuery: {},
+    externalIssuesLogo: {},
+    externalIssueTrackerName: {},
+    searchInputPlaceholderText: {},
+    recentSearchesStorageKey: {},
+    createNewIssueText: {},
+  },
   props: {
     initialFilterParams: {
       type: Object,
@@ -67,6 +69,8 @@ export default {
       nextPageToken: null,
       isLast: false,
       currentPageInfo: null,
+      currentPage: this.page,
+      totalIssues: 0,
       pageTokenHistory: [],
       issuesCount: {
         [STATUS_OPEN]: 0,
@@ -77,14 +81,22 @@ export default {
     };
   },
   computed: {
+    isJiraCloud() {
+      return this.deployment === 'cloud';
+    },
     issuesListLoading() {
       return this.$apollo.queries.externalIssues.loading;
     },
     showPaginationControls() {
-      return Boolean(
-        !this.issuesListLoading &&
-          this.issues.length &&
-          (this.pageTokenHistory.length > 0 || !this.isLast),
+      if (this.isJiraCloud) {
+        return (
+          !this.issuesListLoading &&
+          this.issues.length > 0 &&
+          (this.pageTokenHistory.length > 0 || !this.isLast)
+        );
+      }
+      return (
+        !this.issuesListLoading && this.issues.length > 0 && this.totalIssues > DEFAULT_PAGE_SIZE
       );
     },
     hasFiltersApplied() {
@@ -98,34 +110,46 @@ export default {
       );
     },
     urlParams() {
-      return {
+      const params = {
         project: this.filterParams.project,
         status: this.filterParams.status,
         author_username: this.filterParams.authorUsername,
         assignee_username: this.filterParams.assigneeUsername,
         'labels[]': this.filterParams.labels,
         search: this.filterParams.search,
-        ...(this.nextPageToken ? { next_page_token: this.nextPageToken } : {}),
         ...(this.sortedBy === this.initialSortBy ? {} : { sort: this.sortedBy }),
         ...(this.currentState === this.initialState ? {} : { state: this.currentState }),
       };
+
+      if (this.isJiraCloud) {
+        if (this.nextPageToken) {
+          params.next_page_token = this.nextPageToken;
+        }
+      } else if (this.currentPage !== 1) {
+        params.page = this.currentPage;
+      }
+
+      return params;
     },
-  },
-  watch: {
-    nextPageToken() {
-      this.$apollo.queries.externalIssues.refetch();
+    paginationCurrentPage() {
+      return this.isJiraCloud ? undefined : this.currentPage;
     },
-    sortedBy() {
-      this.$apollo.queries.externalIssues.refetch();
+    paginationPreviousPage() {
+      return this.isJiraCloud ? undefined : this.currentPage - 1;
     },
-    currentState() {
-      this.$apollo.queries.externalIssues.refetch();
+    paginationNextPage() {
+      return this.isJiraCloud ? undefined : this.currentPage + 1;
     },
-    filterParams: {
-      deep: true,
-      handler() {
-        this.$apollo.queries.externalIssues.refetch();
-      },
+    paginationTotalItems() {
+      return this.isJiraCloud ? undefined : this.totalIssues;
+    },
+    paginationHasNext() {
+      return this.isJiraCloud
+        ? !this.isLast
+        : this.currentPage * DEFAULT_PAGE_SIZE < this.totalIssues;
+    },
+    paginationHasPrevious() {
+      return this.isJiraCloud ? this.pageTokenHistory.length > 0 : this.currentPage > 1;
     },
   },
   apollo: {
@@ -137,7 +161,6 @@ export default {
       variables() {
         return {
           issuesFetchPath: this.issuesFetchPath,
-          nextPageToken: this.nextPageToken, // navigation attributes
           sort: this.sortedBy, // navigation attributes
           state: this.currentState, // navigation attributes
           project: this.filterParams.project, // filter attributes
@@ -146,6 +169,8 @@ export default {
           assigneeUsername: this.filterParams.assigneeUsername, // filter attributes
           labels: this.filterParams.labels, // filter attributes
           search: this.filterParams.search, // filter attributes
+          nextPageToken: this.isJiraCloud ? this.nextPageToken : undefined, // pagination attributes
+          page: !this.isJiraCloud ? this.currentPage : undefined, // pagination attributes
         };
       },
       result({ data, error }) {
@@ -162,7 +187,14 @@ export default {
 
         this.issues = nodes;
         this.currentPageInfo = pageInfo;
-        this.isLast = pageInfo.isLast;
+
+        if (this.isJiraCloud) {
+          this.isLast = pageInfo.isLast;
+        } else {
+          this.currentPage = pageInfo.page;
+          this.totalIssues = pageInfo.total;
+        }
+
         this.issuesCount[this.currentState] = nodes.length;
       },
       error(error) {
@@ -213,30 +245,47 @@ export default {
 
       return filteredSearchValue;
     },
+    resetPagination() {
+      if (this.isJiraCloud) {
+        this.nextPageToken = null;
+        this.pageTokenHistory = [];
+      } else {
+        this.currentPage = 1;
+      }
+    },
     onExternalIssuesQueryError(error, message) {
       this.errorMessage = message || error.message;
 
       Sentry.captureException(error);
     },
     onIssuableListClickTab(selectedIssueState) {
-      this.nextPageToken = null;
-      this.pageTokenHistory = [];
+      this.resetPagination();
       this.currentState = selectedIssueState;
     },
     onIssuableListNextPage() {
-      if (this.currentPageInfo?.nextPageToken) {
-        this.pageTokenHistory.push(this.nextPageToken);
-        this.nextPageToken = this.currentPageInfo.nextPageToken;
+      if (this.isJiraCloud) {
+        if (this.currentPageInfo?.nextPageToken) {
+          this.pageTokenHistory.push(this.nextPageToken);
+          this.nextPageToken = this.currentPageInfo.nextPageToken;
+        }
+      } else {
+        this.currentPage += 1;
       }
     },
     onIssuableListPreviousPage() {
-      if (this.pageTokenHistory.length > 0) {
-        this.nextPageToken = this.pageTokenHistory.pop();
+      if (this.isJiraCloud) {
+        if (this.pageTokenHistory.length > 0) {
+          this.nextPageToken = this.pageTokenHistory.pop();
+        }
+      } else {
+        this.currentPage -= 1;
       }
     },
+    onIssuableListPageChange(page) {
+      this.currentPage = page;
+    },
     onIssuableListSort(selectedSort) {
-      this.nextPageToken = null;
-      this.pageTokenHistory = [];
+      this.resetPagination();
       this.sortedBy = selectedSort;
     },
     onIssuableListFilter(filters = []) {
@@ -267,8 +316,7 @@ export default {
         filterParams.labels = labels;
       }
 
-      this.nextPageToken = null;
-      this.pageTokenHistory = [];
+      this.resetPagination();
 
       this.filterParams = {
         ...filterParams,
@@ -300,9 +348,13 @@ export default {
     :issuables="issues"
     :issuables-loading="issuesListLoading"
     :show-pagination-controls="showPaginationControls"
-    :use-keyset-pagination="true"
-    :has-next-page="!isLast"
-    :has-previous-page="pageTokenHistory.length > 0"
+    :current-page="paginationCurrentPage"
+    :previous-page="paginationPreviousPage"
+    :next-page="paginationNextPage"
+    :total-items="paginationTotalItems"
+    :use-keyset-pagination="isJiraCloud"
+    :has-next-page="paginationHasNext"
+    :has-previous-page="paginationHasPrevious"
     :default-page-size="$options.defaultPageSize"
     :url-params="urlParams"
     label-filter-param="labels"
@@ -312,6 +364,7 @@ export default {
     @previous-page="onIssuableListPreviousPage"
     @sort="onIssuableListSort"
     @filter="onIssuableListFilter"
+    @page-change="onIssuableListPageChange"
   >
     <template #nav-actions>
       <gl-button :href="issueCreateUrl" target="_blank" class="gl-my-5">

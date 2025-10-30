@@ -2,7 +2,7 @@
 - add_page_specific_style 'page_bundles/issuable_list'
 
 .js-jira-issues-list{ data: { issues_fetch_path: project_integrations_jira_issues_path(@project, format: :json),
-  page: params[:page],
+  deployment: @jira_integration.data_fields.deployment_type,
   initial_state: params[:state],
   initial_sort_by: params[:sort],
   project_full_path: @project.full_path,

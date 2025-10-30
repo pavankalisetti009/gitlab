@@ -15,39 +15,22 @@ module Jira
           super(jira_integration, params)
 
           @jql = params[:jql].to_s
-          @next_page_token = params[:next_page_token]
           @per_page = (params[:per_page] || PER_PAGE).to_i
         end
 
-        private
+        protected
 
-        attr_reader :jql, :next_page_token, :per_page
-
-        override :api_version
-        def api_version
-          3
-        end
-
-        override :url
-        def url
-          base_url = "#{base_api_url}/search/jql?jql=#{CGI.escape(jql)}&maxResults=#{per_page}&fields=#{DEFAULT_FIELDS}"
-
-          if next_page_token.present?
-            "#{base_url}&nextPageToken=#{CGI.escape(next_page_token)}"
-          else
-            base_url
-          end
-        end
+        attr_reader :jql, :per_page
 
         override :build_service_response
         def build_service_response(response)
           return ServiceResponse.success(payload: empty_payload) if response.blank? || response["issues"].blank?
 
-          ServiceResponse.success(payload: {
-            issues: map_issues(response["issues"]),
-            is_last: response["isLast"] || false,
-            next_page_token: response["nextPageToken"]
-          })
+          build_success_response(response)
+        end
+
+        def build_success_response(response)
+          raise NotImplementedError, "Subclasses must implement build_success_response"
         end
 
         def map_issues(response)
@@ -55,7 +38,7 @@ module Jira
         end
 
         def empty_payload
-          { issues: [], is_last: true, next_page_token: nil }
+          { issues: [], is_last: true }
         end
       end
     end

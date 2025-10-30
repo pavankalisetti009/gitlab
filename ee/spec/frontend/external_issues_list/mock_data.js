@@ -18,6 +18,7 @@ export const mockProvide = {
   recentSearchesStorageKey: 'jira_issues',
   createNewIssueText: 'Create new issue in Jira',
   searchInputPlaceholderText: 'Search Jira issues',
+  deployment: 'cloud',
 };
 
 export const mockJiraIssue1 = {

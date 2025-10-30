@@ -4,19 +4,20 @@ require 'spec_helper'
 
 RSpec.describe Projects::Integrations::Jira::IssuesFinder, feature_category: :integrations do
   let_it_be(:project, refind: true) { create(:project) }
-  let_it_be(:jira_integration, reload: true) { create(:jira_integration, project: project) }
+
+  let(:jira_integration) { create(:jira_integration, :jira_cloud, project: project) }
 
   let(:params) { {} }
   let(:service) { described_class.new(project, params) }
+  let(:client) { double(options: { site: 'https://jira.example.com' }) }
 
   before do
     stub_licensed_features(jira_issues_integration: true)
+    jira_integration
   end
 
   describe '#execute' do
     subject(:execute_service) { service.execute }
-
-    let(:client) { double(options: { site: 'https://jira.example.com' }) }
 
     context 'when jira service integration is not active' do
       before do
@@ -24,15 +25,16 @@ RSpec.describe Projects::Integrations::Jira::IssuesFinder, feature_category: :in
       end
 
       it 'raises error' do
-        expect { execute_service }.to raise_error(Projects::Integrations::Jira::IssuesFinder::IntegrationError, 'Jira service not configured.')
+        expect { execute_service }.to raise_error(
+          Projects::Integrations::Jira::IssuesFinder::IntegrationError,
+          'Jira service not configured.'
+        )
       end
     end
 
     context 'when jira service integration is active' do
-      let(:params) { {} }
-
       before do
-        expect_next_instance_of(Jira::Requests::Issues::ListService) do |instance|
+        expect_next_instance_of(Jira::Requests::Issues::CloudListService) do |instance|
           expect(instance).to receive(:client).at_least(:once).and_return(client)
         end
       end
@@ -43,7 +45,9 @@ RSpec.describe Projects::Integrations::Jira::IssuesFinder, feature_category: :in
         end
 
         it 'raises error', :aggregate_failures do
-          expect { execute_service }.to raise_error(Projects::Integrations::Jira::IssuesFinder::RequestError)
+          expect { execute_service }.to raise_error(
+            Projects::Integrations::Jira::IssuesFinder::RequestError
+          )
         end
       end
 
@@ -62,14 +66,19 @@ RSpec.describe Projects::Integrations::Jira::IssuesFinder, feature_category: :in
           execute_service
 
           expect(service.issues.size).to eq 2
+          expect(service.issues.map(&:key)).to eq(%w[TEST-1 TEST-2])
+        end
+
+        it 'sets Cloud pagination attributes' do
+          execute_service
+
           expect(service.next_page_token).to eq 'token123'
           expect(service.is_last).to be false
-          expect(service.issues.map(&:key)).to eq(%w[TEST-1 TEST-2])
         end
 
         context 'when sorting' do
           shared_examples 'maps sort values' do
-            it do
+            it 'passes correct sort values to JqlBuilderService' do
               expect(::Jira::JqlBuilderService).to receive(:new)
                 .with(jira_integration.project_keys_as_string, expected_sort_values)
                 .and_call_original
@@ -141,7 +150,7 @@ RSpec.describe Projects::Integrations::Jira::IssuesFinder, feature_category: :in
 
         context 'when project_keys includes project filter' do
           before do
-            expect_next_instance_of(Jira::Requests::Issues::ListService) do |instance|
+            expect_next_instance_of(Jira::Requests::Issues::CloudListService) do |instance|
               expect(instance).to receive(:client).at_least(:once).and_return(client)
             end
             expect(client).to receive(:get).and_return(
@@ -165,7 +174,7 @@ RSpec.describe Projects::Integrations::Jira::IssuesFinder, feature_category: :in
 
       context 'when project_keys are empty' do
         before do
-          expect_next_instance_of(Jira::Requests::Issues::ListService) do |instance|
+          expect_next_instance_of(Jira::Requests::Issues::CloudListService) do |instance|
             expect(instance).to receive(:client).at_least(:once).and_return(client)
           end
           expect(client).to receive(:get).and_return(
@@ -192,16 +201,17 @@ RSpec.describe Projects::Integrations::Jira::IssuesFinder, feature_category: :in
 
       context 'when jira service integration does not have project_key' do
         it 'raises error' do
-          expect { execute_service }.to raise_error(Projects::Integrations::Jira::IssuesFinder::IntegrationError, 'Jira project key is not configured.')
+          expect { execute_service }.to raise_error(
+            Projects::Integrations::Jira::IssuesFinder::IntegrationError,
+            'Jira project key is not configured.'
+          )
         end
       end
 
       context 'when jira service integration has project_key' do
-        let(:client) { double(options: { site: 'https://jira.example.com' }) }
-
         before do
           jira_integration.update!(project_key: 'TEST')
-          expect_next_instance_of(Jira::Requests::Issues::ListService) do |instance|
+          expect_next_instance_of(Jira::Requests::Issues::CloudListService) do |instance|
             expect(instance).to receive(:client).at_least(:once).and_return(client)
           end
           expect(client).to receive(:get).and_return(
@@ -228,6 +238,54 @@ RSpec.describe Projects::Integrations::Jira::IssuesFinder, feature_category: :in
         stub_licensed_features(jira_issues_integration: false)
 
         expect(execute_service).to eq []
+      end
+    end
+  end
+
+  context 'with Jira Server deployment' do
+    let(:jira_integration) { create(:jira_integration, :jira_server, project: project) }
+
+    describe '#execute' do
+      before do
+        expect_next_instance_of(Jira::Requests::Issues::ServerListService) do |instance|
+          expect(instance).to receive(:client).at_least(:once).and_return(client)
+        end
+
+        expect(client).to receive(:get).and_return(
+          {
+            "total" => 375,
+            "startAt" => 0,
+            "issues" => [{ "key" => 'TEST-1' }, { "key" => 'TEST-2' }]
+          }
+        )
+      end
+
+      it 'returns total_count for Server deployment' do
+        service.execute
+
+        expect(service.total_count).to eq 375
+      end
+
+      context 'when pagination params used' do
+        let(:params) { { page: '10', per_page: '20' } }
+
+        it 'passes Server pagination params' do
+          expect(::Jira::JqlBuilderService).to receive(:new)
+            .with(jira_integration.project_keys_as_string, include({ page: '10', per_page: '20' }))
+            .and_call_original
+
+          service.execute
+        end
+      end
+    end
+
+    context 'when feature unavailable' do
+      it 'returns nil total_count' do
+        stub_licensed_features(jira_issues_integration: false)
+
+        service.execute
+
+        expect(service.total_count).to be_nil
       end
     end
   end
