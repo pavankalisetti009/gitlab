@@ -1,6 +1,7 @@
 <script>
 import { GlFormGroup, GlFormInput, GlTooltipDirective, GlFormCheckbox } from '@gitlab/ui';
-import { GlBreakpointInstance } from '@gitlab/ui/src/utils'; // eslint-disable-line no-restricted-syntax -- Pending to migrate to PanelBreakpointInstance
+// This component is not rendered within a panel and therefore does not need to be migrated to `PanelBreakpointInstance`
+import { GlBreakpointInstance } from '@gitlab/ui/src/utils'; // eslint-disable-line no-restricted-syntax
 import { debounce } from 'lodash';
 import { mapState, mapActions } from 'vuex'; // eslint-disable-line no-restricted-imports
 import { createAlert } from '~/alert';
@@ -165,9 +166,9 @@ export default {
 </script>
 <template>
   <div>
-    <div class="row">
+    <div>
       <gl-form-group
-        class="group-name-holder gl-col-sm-12"
+        class="group-name-holder"
         :label="$options.i18n.groupNameLabel"
         :label-for="groupInputAttr('group_name')"
       >
@@ -216,9 +217,9 @@ export default {
       </gl-form-group>
     </div>
 
-    <div v-if="!importGroup" id="blank-project-name" class="row">
+    <div v-if="!importGroup" id="blank-project-name">
       <gl-form-group
-        class="project-name gl-col-sm-12"
+        class="project-name"
         :label="$options.i18n.projectNameLabel"
         label-for="blank_project_name"
       >
@@ -240,7 +241,7 @@ export default {
       </gl-form-group>
     </div>
 
-    <div v-if="!importGroup" class="row">
+    <div v-if="!importGroup">
       <project-template-selector
         :selected-template-name="selectedTemplateName"
         @select="selectTemplate"
