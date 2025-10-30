@@ -42,10 +42,10 @@ describe('Vulnerability Code Flow', () => {
 
   describe('check popovers content', () => {
     it('checks all popovers data', () => {
-      expect(findAllPopovers().at(0).attributes('content')).toContain(
+      expect(findAllPopovers().at(0).props('content')).toContain(
         "A 'source' refers to untrusted inputs like user data",
       );
-      expect(findAllPopovers().at(1).attributes('content')).toContain(
+      expect(findAllPopovers().at(1).props('content')).toContain(
         "A 'sink' is where untrusted data is used in a potentially risky way",
       );
     });
