@@ -72882,6 +72882,9 @@ msgstr ""
 msgid "VirtualRegistry|Removed upstream from virtual registry."
 msgstr ""
 
+msgid "VirtualRegistry|Save storage space by automatically deleting caches from the virtual registry and keeping the ones you want."
+msgstr ""
+
 msgid "VirtualRegistry|Select an upstream"
 msgstr ""
 
@@ -72949,6 +72952,9 @@ msgid "VirtualRegistry|Virtual registry"
 msgstr ""
 
 msgid "VirtualRegistry|Virtual registry ID copied to clipboard."
+msgstr ""
+
+msgid "VirtualRegistry|Virtual registry cache cleanup policy"
 msgstr ""
 
 msgid "VirtualRegistry|When you enable this feature, you accept the %{linkStart}GitLab Testing Agreement.%{linkEnd}"

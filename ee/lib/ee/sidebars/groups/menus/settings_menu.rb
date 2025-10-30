@@ -265,6 +265,11 @@ module EE
             context.group.licensed_feature_available?(:work_item_status) &&
               can?(context.current_user, :admin_work_item_lifecycle, context.group)
           end
+
+          override :packages_and_registries_controllers
+          def packages_and_registries_controllers
+            super + %i[virtual_registry_cleanup_policy]
+          end
         end
       end
     end

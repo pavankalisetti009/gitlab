@@ -1,0 +1,10 @@
+---
+name: ui_for_virtual_registry_cleanup_policy
+description: controls frontend visibility of virtual registries cleanup policies
+feature_issue_url: https://gitlab.com/gitlab-org/gitlab/-/issues/548566
+introduced_by_url: https://gitlab.com/gitlab-org/gitlab/-/merge_requests/209913
+rollout_issue_url: https://gitlab.com/gitlab-org/gitlab/-/issues/578060
+milestone: '18.6'
+group: group::package registry
+type: beta
+default_enabled: false

@@ -1,0 +1,6 @@
+- add_to_breadcrumbs _('Packages and registries settings'), group_settings_packages_and_registries_path(@group)
+- breadcrumb_title s_('VirtualRegistry|Virtual registry cache cleanup policy')
+- page_title s_('VirtualRegistry|Virtual registry cache cleanup policy'), _('Packages and registries settings')
+
+= render ::Layouts::PageHeadingComponent.new(s_('VirtualRegistry|Virtual registry cache cleanup policy'),
+  description: s_('VirtualRegistry|Save storage space by automatically deleting caches from the virtual registry and keeping the ones you want.'))

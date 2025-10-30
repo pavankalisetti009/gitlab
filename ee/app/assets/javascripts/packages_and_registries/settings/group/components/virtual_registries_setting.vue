@@ -96,6 +96,7 @@ export default {
         'VirtualRegistry|Manage packages across multiple sources and streamline development workflows using virtual registries.',
       )
     "
+    data-testid="virtual-registries-setting"
   >
     <gl-toggle
       v-model="enabled"
