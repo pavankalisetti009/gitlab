@@ -26,6 +26,8 @@ module EE
       end
 
       def audit_comment_deleted(note, old_note_body:)
+        return unless note.resource_parent
+
         ::Gitlab::Audit::Auditor.audit({
           name: 'comment_deleted',
           author: current_user,
