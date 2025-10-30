@@ -25,6 +25,15 @@ module Mutations
             required: true,
             description: 'Target in which the catalog item is configured.'
 
+          argument :trigger_types, [GraphQL::Types::String],
+            required: false,
+            description: 'List of event types to create flow triggers for ' \
+              '(values can be mention, assign or assign_reviewer).'
+
+          argument :parent_item_consumer_id, ::Types::GlobalIDType[::Ai::Catalog::ItemConsumer],
+            required: false,
+            description: 'Parent item consumer belonging to the top-level group.'
+
           authorize :admin_ai_catalog_item_consumer
 
           def resolve(item:, target:, **args)
@@ -52,7 +61,7 @@ module Mutations
 
           def service_args(item, args)
             args[:item] = item
-            args
+            args.except(:parent_item_consumer_id, :trigger_types)
           end
         end
       end

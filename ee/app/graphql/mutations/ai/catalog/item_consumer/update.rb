@@ -20,6 +20,15 @@ module Mutations
             required: false,
             description: 'Major version, minor version, or patch to pin the item to.'
 
+          argument :service_account_id, ::Types::GlobalIDType[::User],
+            required: false,
+            description: 'Service account to associate with the item consumer.'
+
+          argument :trigger_types, [GraphQL::Types::String],
+            required: false,
+            description: 'List of event types to create flow triggers for ' \
+              '(values can be mention, assign or assign_reviewer).'
+
           authorize :admin_ai_catalog_item_consumer
 
           def resolve(args)

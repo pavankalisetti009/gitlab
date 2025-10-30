@@ -18,6 +18,8 @@ RSpec.describe Mutations::Ai::Catalog::ItemConsumer::Create, feature_category: :
       :item_id,
       :pinned_version_prefix,
       :target,
+      :trigger_types,
+      :parent_item_consumer_id,
       :client_mutation_id
     )
   end
