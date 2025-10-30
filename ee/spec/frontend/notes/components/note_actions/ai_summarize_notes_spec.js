@@ -35,6 +35,7 @@ describe('AiSummarizeNotes component', () => {
       expect(aiUtils.sendDuoChatCommand).toHaveBeenCalledWith({
         question: '/summarize_comments',
         resourceId: resourceGlobalId,
+        agenticPrompt: 'Summarize the comments on this issue.',
       });
     });
 

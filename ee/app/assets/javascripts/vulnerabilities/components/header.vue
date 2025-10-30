@@ -5,6 +5,7 @@ import glFeatureFlagMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
 import glAbilitiesMixin from '~/vue_shared/mixins/gl_abilities_mixin';
 import toast from '~/vue_shared/plugins/global_toast';
 import { sendDuoChatCommand } from 'ee/ai/utils';
+import { i18n } from 'ee/ai/constants';
 import vulnerabilityStateMutations from 'ee/security_dashboard/graphql/mutate_vulnerability_state';
 import vulnerabilitiesSeverityOverrideMutation from 'ee/security_dashboard/graphql/mutations/vulnerabilities_severity_override.mutation.graphql';
 import StatusBadge from 'ee/vue_shared/security_reports/components/status_badge.vue';
@@ -54,6 +55,7 @@ export const CLIENT_SUBSCRIPTION_ID = uuidv4();
 
 export default {
   name: 'VulnerabilityHeader',
+  i18n,
   components: {
     GlButton,
     GlDisclosureDropdown,
@@ -282,6 +284,7 @@ export default {
       sendDuoChatCommand({
         question: '/vulnerability_explain',
         resourceId: this.vulnerabilityGraphqlId,
+        agenticPrompt: this.$options.i18n.AGENTIC_PROMPT_EXPLAIN_VULNERABILITY,
       });
     },
     resolveVulnerability() {

@@ -59,7 +59,7 @@ describe('AI Utils', () => {
       });
     });
 
-    describe('setAgenticMode integration', () => {
+    describe('mode preservation', () => {
       let originalRequestIdleCallback;
 
       beforeEach(() => {
@@ -68,6 +68,7 @@ describe('AI Utils', () => {
 
         duoChatGlobalState.isShown = false;
         duoChatGlobalState.isAgenticChatShown = false;
+        duoChatGlobalState.chatMode = CHAT_MODES.CLASSIC;
         duoChatGlobalState.commands = [];
 
         jest.clearAllMocks();
@@ -77,30 +78,75 @@ describe('AI Utils', () => {
         window.requestIdleCallback = originalRequestIdleCallback;
       });
 
-      it('sets agentic mode to false when sending a command', () => {
+      it('preserves classic mode when sending a command', () => {
+        duoChatGlobalState.chatMode = CHAT_MODES.CLASSIC;
         duoChatGlobalState.isShown = false;
-        duoChatGlobalState.isAgenticChatShown = true;
+        duoChatGlobalState.isAgenticChatShown = false;
 
         const command = { question: '/help', resourceId: '123' };
         sendDuoChatCommand(command);
 
         expect(duoChatGlobalState.isShown).toBe(true);
         expect(duoChatGlobalState.isAgenticChatShown).toBe(false);
+        expect(duoChatGlobalState.chatMode).toBe(CHAT_MODES.CLASSIC);
 
-        expect(setCookie).toHaveBeenCalledWith(DUO_AGENTIC_MODE_COOKIE, false, {
-          expires: DUO_AGENTIC_MODE_COOKIE_EXPIRATION,
+        expect(setCookie).not.toHaveBeenCalled();
+      });
+
+      it('preserves agentic mode when sending a command', () => {
+        duoChatGlobalState.chatMode = CHAT_MODES.AGENTIC;
+        duoChatGlobalState.isShown = false;
+        duoChatGlobalState.isAgenticChatShown = false;
+
+        const command = { question: '/help', resourceId: '123' };
+        sendDuoChatCommand(command);
+
+        expect(duoChatGlobalState.isShown).toBe(false);
+        expect(duoChatGlobalState.isAgenticChatShown).toBe(true);
+        expect(duoChatGlobalState.chatMode).toBe(CHAT_MODES.AGENTIC);
+
+        expect(setCookie).not.toHaveBeenCalled();
+      });
+
+      it('uses slash command in classic mode', () => {
+        duoChatGlobalState.chatMode = CHAT_MODES.CLASSIC;
+
+        const command = {
+          question: '/help',
+          resourceId: '123',
+          agenticPrompt: 'help me with this',
+        };
+        sendDuoChatCommand(command);
+
+        expect(duoChatGlobalState.commands).toContainEqual({
+          question: '/help',
+          resourceId: '123',
+          variables: {},
         });
       });
 
-      it('disables agentic mode before adding command to queue', () => {
-        duoChatGlobalState.isShown = false;
-        duoChatGlobalState.isAgenticChatShown = true;
+      it('uses agenticPrompt in agentic mode when provided', () => {
+        duoChatGlobalState.chatMode = CHAT_MODES.AGENTIC;
+
+        const command = {
+          question: '/help',
+          resourceId: '123',
+          agenticPrompt: 'help me with this',
+        };
+        sendDuoChatCommand(command);
+
+        expect(duoChatGlobalState.commands).toContainEqual({
+          question: 'help me with this',
+          resourceId: '123',
+          variables: {},
+        });
+      });
+
+      it('falls back to slash command in agentic mode when agenticPrompt is not provided', () => {
+        duoChatGlobalState.chatMode = CHAT_MODES.AGENTIC;
 
         const command = { question: '/help', resourceId: '123' };
         sendDuoChatCommand(command);
-
-        expect(duoChatGlobalState.isShown).toBe(true);
-        expect(duoChatGlobalState.isAgenticChatShown).toBe(false);
 
         expect(duoChatGlobalState.commands).toContainEqual({
           question: '/help',
@@ -112,6 +158,7 @@ describe('AI Utils', () => {
       it('does not change state when command validation fails', () => {
         duoChatGlobalState.isShown = false;
         duoChatGlobalState.isAgenticChatShown = true;
+        duoChatGlobalState.chatMode = CHAT_MODES.AGENTIC;
 
         expect(() => {
           sendDuoChatCommand({ question: null, resourceId: '123' });
@@ -119,30 +166,30 @@ describe('AI Utils', () => {
 
         expect(duoChatGlobalState.isShown).toBe(false);
         expect(duoChatGlobalState.isAgenticChatShown).toBe(true);
+        expect(duoChatGlobalState.chatMode).toBe(CHAT_MODES.AGENTIC);
         expect(setCookie).not.toHaveBeenCalled();
       });
 
-      it('disables agentic mode for different command types', () => {
+      it('preserves current mode for different command types', () => {
         const commands = [
-          { question: '/troubleshoot', resourceId: '1' },
+          { question: '/troubleshoot', resourceId: '1', agenticPrompt: 'troubleshoot this' },
           { question: '/help', resourceId: '2', variables: { foo: 'bar' } },
           { question: 'Custom question', resourceId: '3' },
         ];
 
         commands.forEach((command) => {
+          duoChatGlobalState.chatMode = CHAT_MODES.AGENTIC;
           duoChatGlobalState.isShown = false;
-          duoChatGlobalState.isAgenticChatShown = true;
+          duoChatGlobalState.isAgenticChatShown = false;
 
           sendDuoChatCommand(command);
 
-          expect(duoChatGlobalState.isShown).toBe(true);
-          expect(duoChatGlobalState.isAgenticChatShown).toBe(false);
+          expect(duoChatGlobalState.isShown).toBe(false);
+          expect(duoChatGlobalState.isAgenticChatShown).toBe(true);
+          expect(duoChatGlobalState.chatMode).toBe(CHAT_MODES.AGENTIC);
         });
 
-        expect(setCookie).toHaveBeenCalledTimes(3);
-        expect(setCookie).toHaveBeenCalledWith(DUO_AGENTIC_MODE_COOKIE, false, {
-          expires: DUO_AGENTIC_MODE_COOKIE_EXPIRATION,
-        });
+        expect(setCookie).not.toHaveBeenCalled();
       });
     });
 
@@ -175,11 +222,13 @@ describe('AI Utils', () => {
   describe('Duo chat visibility', () => {
     afterEach(() => {
       duoChatGlobalState.isShown = false;
+      duoChatGlobalState.chatMode = CHAT_MODES.CLASSIC;
     });
 
-    describe('when the chat is already shown', () => {
+    describe('when the chat is already shown in classic mode', () => {
       beforeEach(() => {
         duoChatGlobalState.isShown = true;
+        duoChatGlobalState.chatMode = CHAT_MODES.CLASSIC;
       });
 
       it('does not change the isShown value', () => {
@@ -188,10 +237,26 @@ describe('AI Utils', () => {
       });
     });
 
-    describe('when the chat is not shown', () => {
+    describe('when the chat is not shown in classic mode', () => {
+      beforeEach(() => {
+        duoChatGlobalState.chatMode = CHAT_MODES.CLASSIC;
+      });
+
       it('sets the isShown value to true', () => {
         sendDuoChatCommand({ question: 'hello', resourceId: '1' });
         expect(duoChatGlobalState.isShown).toBe(true);
+      });
+    });
+
+    describe('when in agentic mode', () => {
+      beforeEach(() => {
+        duoChatGlobalState.chatMode = CHAT_MODES.AGENTIC;
+      });
+
+      it('sets isAgenticChatShown to true', () => {
+        sendDuoChatCommand({ question: 'hello', resourceId: '1' });
+        expect(duoChatGlobalState.isShown).toBe(false);
+        expect(duoChatGlobalState.isAgenticChatShown).toBe(true);
       });
     });
   });
@@ -434,7 +499,8 @@ describe('AI Utils', () => {
         window.gon = { features: { projectStudioEnabled: false } };
       });
 
-      it('opens drawer mode chat', () => {
+      it('opens drawer mode chat in classic mode', () => {
+        duoChatGlobalState.chatMode = CHAT_MODES.CLASSIC;
         sendDuoChatCommand({ question: '/help', resourceId: '123' });
 
         expect(duoChatGlobalState.isShown).toBe(true);
@@ -442,10 +508,20 @@ describe('AI Utils', () => {
         expect(duoChatGlobalState.activeTab).toBeNull();
       });
 
-      it('forces classic mode', () => {
+      it('opens drawer mode chat in agentic mode', () => {
+        duoChatGlobalState.chatMode = CHAT_MODES.AGENTIC;
         sendDuoChatCommand({ question: '/help', resourceId: '123' });
 
-        expect(duoChatGlobalState.chatMode).toBe(CHAT_MODES.CLASSIC);
+        expect(duoChatGlobalState.isShown).toBe(false);
+        expect(duoChatGlobalState.isAgenticChatShown).toBe(true);
+        expect(duoChatGlobalState.activeTab).toBeNull();
+      });
+
+      it('preserves the current mode', () => {
+        duoChatGlobalState.chatMode = CHAT_MODES.AGENTIC;
+        sendDuoChatCommand({ question: '/help', resourceId: '123' });
+
+        expect(duoChatGlobalState.chatMode).toBe(CHAT_MODES.AGENTIC);
       });
     });
 
@@ -454,7 +530,8 @@ describe('AI Utils', () => {
         window.gon = { features: { projectStudioEnabled: true } };
       });
 
-      it('opens embedded panel to chat tab', () => {
+      it('opens embedded panel to chat tab in classic mode', () => {
+        duoChatGlobalState.chatMode = CHAT_MODES.CLASSIC;
         sendDuoChatCommand({ question: '/help', resourceId: '123' });
 
         expect(duoChatGlobalState.activeTab).toBe('chat');
@@ -463,10 +540,21 @@ describe('AI Utils', () => {
         expect(duoChatGlobalState.isAgenticChatShown).toBe(false);
       });
 
-      it('forces classic mode', () => {
+      it('opens embedded panel to chat tab in agentic mode', () => {
+        duoChatGlobalState.chatMode = CHAT_MODES.AGENTIC;
         sendDuoChatCommand({ question: '/help', resourceId: '123' });
 
-        expect(duoChatGlobalState.chatMode).toBe(CHAT_MODES.CLASSIC);
+        expect(duoChatGlobalState.activeTab).toBe('chat');
+        // Legacy drawer properties should not be touched
+        expect(duoChatGlobalState.isShown).toBe(false);
+        expect(duoChatGlobalState.isAgenticChatShown).toBe(false);
+      });
+
+      it('preserves the current mode', () => {
+        duoChatGlobalState.chatMode = CHAT_MODES.AGENTIC;
+        sendDuoChatCommand({ question: '/help', resourceId: '123' });
+
+        expect(duoChatGlobalState.chatMode).toBe(CHAT_MODES.AGENTIC);
       });
     });
   });

@@ -386,6 +386,15 @@ export default {
         }
       },
     },
+    'duoChatGlobalState.commands': {
+      handler(newVal) {
+        const [firstCommand] = newVal;
+        if (firstCommand) {
+          this.onNewChat();
+          this.onSendChatPrompt(firstCommand.question);
+        }
+      },
+    },
     workflowStatus(newStatus, oldStatus) {
       if (
         oldStatus === DUO_WORKFLOW_STATUS_TOOL_CALL_APPROVAL_REQUIRED &&

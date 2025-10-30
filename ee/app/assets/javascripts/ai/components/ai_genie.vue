@@ -113,6 +113,7 @@ export default {
             selectedText: this.selectedText,
           },
         },
+        agenticPrompt: `${this.$options.i18n.AGENTIC_PROMPT_EXPLAIN_CODE}\n\n\`\`\`\n${this.selectedText}\n\`\`\``,
       });
     },
     setHighlightedLines() {

@@ -1,11 +1,13 @@
 <script>
 import { GlButton } from '@gitlab/ui';
 import { sendDuoChatCommand } from 'ee/ai/utils';
+import { i18n } from 'ee/ai/constants';
 import { InternalEvents } from '~/tracking';
 import { TYPENAME_CI_BUILD } from '~/graphql_shared/constants';
 import { convertToGraphQLId } from '~/graphql_shared/utils';
 
 export default {
+  i18n,
   components: {
     GlButton,
   },
@@ -60,6 +62,7 @@ export default {
       sendDuoChatCommand({
         question: '/troubleshoot',
         resourceId: this.resourceId,
+        agenticPrompt: this.$options.i18n.AGENTIC_PROMPT_TROUBLESHOOT_PIPELINE,
       });
     },
   },

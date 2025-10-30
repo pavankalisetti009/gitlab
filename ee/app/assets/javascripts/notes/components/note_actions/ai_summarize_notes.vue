@@ -1,11 +1,13 @@
 <script>
 import { GlButton, GlTooltipDirective } from '@gitlab/ui';
 import { sendDuoChatCommand } from 'ee/ai/utils';
+import { i18n } from 'ee/ai/constants';
 import { BV_HIDE_TOOLTIP } from '~/lib/utils/constants';
 import { InternalEvents } from '~/tracking';
 
 export default {
   name: 'AiSummarizeNotes',
+  i18n,
   components: {
     GlButton,
   },
@@ -50,6 +52,7 @@ export default {
       sendDuoChatCommand({
         question: '/summarize_comments',
         resourceId: this.resourceGlobalId,
+        agenticPrompt: this.$options.i18n.AGENTIC_PROMPT_SUMMARIZE_COMMENTS,
       });
     },
     hideTooltips() {
