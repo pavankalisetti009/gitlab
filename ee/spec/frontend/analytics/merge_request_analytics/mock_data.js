@@ -147,6 +147,7 @@ export const throughputTableData = [
     milestone: {
       id: '1',
       title: '133.7',
+      webPath: 'fake/path',
     },
     assignees: {
       nodes: [

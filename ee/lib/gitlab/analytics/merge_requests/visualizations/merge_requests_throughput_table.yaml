@@ -23,6 +23,7 @@ options:
       component: FormatTimeRange
     - key: milestone
       label: Milestone
+      component: MilestoneLink
     - key: commitCount
       label: Commits
     - key: pipelinesCount

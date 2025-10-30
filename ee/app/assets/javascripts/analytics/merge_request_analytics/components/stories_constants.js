@@ -38,7 +38,7 @@ export const throughputTableData = {
           createdAt: '2020-08-06T16:53:50Z',
           mergedAt: '2020-08-06T16:57:53Z',
           webUrl: 'http://127.0.0.1:3001/gitlab-org/gitlab-shell/-/merge_requests/11',
-          milestone: null,
+          milestone: { title: '18.0' },
           assignees: {
             nodes: [
               {
@@ -70,7 +70,7 @@ export const throughputTableData = {
           createdAt: '2020-08-06T16:53:50Z',
           mergedAt: '2020-08-06T16:57:53Z',
           webUrl: 'http://127.0.0.1:3001/gitlab-org/gitlab-shell/-/merge_requests/11',
-          milestone: null,
+          milestone: { title: 'Milestone string title' },
           assignees: {
             nodes: [
               {
