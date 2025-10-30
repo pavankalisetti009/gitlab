@@ -26,7 +26,7 @@ module Ai
           raise_no_collection_record_error if collection_record.nil?
 
           ac_repository = find_active_context_repository(project_id)
-          return no_ready_active_context_repository_result unless ac_repository&.ready?
+          return Result.no_embeddings_error unless ac_repository&.ready?
 
           query = if path.nil?
                     repository_query(project_id, knn_count, limit)
@@ -36,9 +36,8 @@ module Ai
 
           search_hits = COLLECTION_CLASS.search(query: query, user: user)
 
-          Result.new(
-            success: true,
-            hits: prepare_hits(
+          Result.success(
+            prepare_hits(
               search_hits, exclude_fields: exclude_fields, extract_source_segments: extract_source_segments
             )
           )
@@ -75,13 +74,6 @@ module Ai
           raise(
             NoCollectionRecordError,
             "A Code collection record is required."
-          )
-        end
-
-        def no_ready_active_context_repository_result
-          Result.new(
-            success: false,
-            error_code: Result::ERROR_NO_EMBEDDINGS
           )
         end
 
