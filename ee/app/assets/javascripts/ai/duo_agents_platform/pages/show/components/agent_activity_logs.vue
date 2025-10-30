@@ -77,21 +77,18 @@ export default {
   filterOptions: [
     {
       value: 'verbose',
-      text: s__('DuoAgentsPlatform|Full'),
+      text: s__('DuoAgentsPlatform|Full view'),
     },
     {
       value: 'important',
-      text: s__('DuoAgentsPlatform|Concise'),
+      text: s__('DuoAgentsPlatform|Concise view'),
     },
   ],
 };
 </script>
 <template>
   <div class="gl-h-full">
-    <div class="gl-border-b gl-flex gl-items-center gl-justify-end gl-bg-gray-10 gl-pr-3">
-      <label class="gl-m-0 gl-mr-4 gl-p-5" for="log-level">{{
-        s__('DuoAgentsPlatform|Detail level')
-      }}</label>
+    <div class="gl-border-b gl-flex gl-items-center gl-justify-end gl-bg-gray-10 gl-py-3 gl-pr-3">
       <gl-collapsible-listbox
         id="log-level"
         v-model="selectedFilter"
