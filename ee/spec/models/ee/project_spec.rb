@@ -5353,29 +5353,7 @@ RSpec.describe Project, feature_category: :groups_and_projects do
       # Project in a shard name that doesn't actually exist
       let_it_be(:last_replicable_and_not_in_selective_sync) { create(:project, :broken_storage, group: group_2) }
 
-      let_it_be_with_refind(:secondary) { create(:geo_node, :secondary) }
-
-      before do
-        stub_current_geo_node(secondary)
-      end
-
-      describe '.replicables_for_current_secondary' do
-        include_examples 'Geo framework selective sync scenarios', :replicables_for_current_secondary
-      end
-
-      describe '.selective_sync_scope' do
-        include_examples 'Geo framework selective sync scenarios', :selective_sync_scope
-
-        it 'raises if an unrecognised selective sync type is used' do
-          secondary.update_attribute(:selective_sync_type, 'unknown')
-
-          expect { described_class.selective_sync_scope(secondary) }.to raise_error(Geo::Errors::UnknownSelectiveSyncType)
-        end
-      end
-
-      describe '.verifiables' do
-        include_examples 'Geo framework selective sync scenarios', :verifiables
-      end
+      include_examples 'Geo Framework selective sync behavior'
     end
   end
 

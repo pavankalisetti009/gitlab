@@ -29,18 +29,17 @@
 #   The replicable with the highest ID. Must NOT be included in any selective sync scope.
 #   Used to verify that selective sync properly excludes out-of-scope replicables.
 #
-# - secondary
-#   A Geo secondary node used for testing. The test configures its selective sync settings.
-#
 # Usage:
-#   include_examples 'Geo framework selective sync scenarios', :replicables_for_current_secondary
-RSpec.shared_examples 'Geo framework selective sync scenarios' do |method_name|
-  let(:method_name) { method_name }
+#   include_examples 'Geo Framework selective sync behavior'
+RSpec.shared_examples 'Geo Framework selective sync behavior' do
+  let_it_be_with_refind(:secondary) { create(:geo_node, :secondary) }
+
   let(:primary_key) { described_class.primary_key }
   let(:start_id) { described_class.minimum(primary_key) }
   let(:end_id) { described_class.maximum(primary_key) }
 
   before do
+    stub_current_geo_node(secondary)
     secondary.update!(sync_object_storage: false)
   end
 
@@ -50,12 +49,20 @@ RSpec.shared_examples 'Geo framework selective sync scenarios' do |method_name|
     end
 
     it "returns replicables that belong to the #{sync_type}" do
+      replicables = find_replicables_to_sync
+
+      expect(replicables).to match_array(expected_replicables_to_sync)
+    end
+
+    it "includes replicables inside the primary key ID range that belong to the #{sync_type}" do
       replicables = find_replicables_to_sync(start_id..end_id)
+
       expect(replicables).to match_array(expected_replicables_to_sync)
     end
 
     it 'excludes replicables outside the primary key ID range' do
       replicables = find_replicables_to_sync((start_id + 1)..end_id)
+
       expect(replicables).to match_array(expected_replicables_to_sync(exclude_first: true))
     end
 
@@ -73,45 +80,106 @@ RSpec.shared_examples 'Geo framework selective sync scenarios' do |method_name|
     end
   end
 
-  context 'with selective sync by namespace' do
-    include_examples 'selective sync scope tests', :namespaces, -> {
-      secondary.update!(selective_sync_type: 'namespaces', namespaces: [group_1])
-    }
-  end
+  shared_examples 'selective sync scopes' do |method_name|
+    let(:method_name) { method_name }
 
-  context 'with selective sync by organizations' do
-    include_examples 'selective sync scope tests', :organizations, -> {
-      secondary.update!(selective_sync_type: 'organizations', organizations: [group_1.organization])
-    }
-  end
-
-  context 'with selective sync by shard' do
-    before do
-      skip_if_blob_replicator
+    context 'with selective sync by namespace' do
+      include_examples 'selective sync scope tests', :namespaces, -> {
+        secondary.update!(selective_sync_type: 'namespaces', namespaces: [group_1])
+      }
     end
 
-    include_examples 'selective sync scope tests', :shards, -> {
-      secondary.update!(selective_sync_type: 'shards', selective_sync_shards: ['default'])
-    }
-  end
-
-  context 'with selective sync disabled' do
-    it 'returns all replicables' do
-      replicables = find_replicables_to_sync(start_id..end_id)
-
-      expect(replicables).to match_array(expected_replicables_to_sync(include_all: true))
+    context 'with selective sync by organizations' do
+      include_examples 'selective sync scope tests', :organizations, -> {
+        secondary.update!(selective_sync_type: 'organizations', organizations: [group_1.organization])
+      }
     end
 
-    context 'with object storage sync enabled' do
+    context 'with selective sync by shard' do
       before do
-        skip_unless_object_storable
-        secondary.update!(sync_object_storage: true)
+        skip_if_blob_replicator
       end
 
-      it 'returns all replicables including those stored in object storage' do
+      include_examples 'selective sync scope tests', :shards, -> {
+        secondary.update!(selective_sync_type: 'shards', selective_sync_shards: ['default'])
+      }
+    end
+
+    context 'with selective sync disabled' do
+      it 'returns all replicables' do
+        replicables = find_replicables_to_sync
+
+        expect(replicables).to match_array(expected_replicables_to_sync(include_all: true))
+      end
+
+      it "returns all replicables inside the primary key ID range" do
         replicables = find_replicables_to_sync(start_id..end_id)
 
         expect(replicables).to match_array(expected_replicables_to_sync(include_all: true))
+      end
+
+      context 'with object storage sync enabled' do
+        before do
+          skip_unless_object_storable
+          secondary.update!(sync_object_storage: true)
+        end
+
+        it 'returns all replicables including those stored in object storage' do
+          replicables = find_replicables_to_sync(start_id..end_id)
+
+          expect(replicables).to match_array(expected_replicables_to_sync(include_all: true))
+        end
+      end
+    end
+  end
+
+  describe '.replicables_for_current_secondary' do
+    include_examples 'selective sync scopes', :replicables_for_current_secondary
+  end
+
+  describe '.selective_sync_scope' do
+    include_examples 'selective sync scopes', :selective_sync_scope
+
+    it 'raises if an unrecognised selective sync type is used' do
+      secondary.update_attribute(:selective_sync_type, 'unknown')
+
+      expect { described_class.selective_sync_scope(secondary) }
+        .to raise_error(Geo::Errors::UnknownSelectiveSyncType)
+    end
+  end
+
+  describe '.verifiables' do
+    include_examples 'selective sync scopes', :verifiables
+
+    context 'with org_mover_extend_selective_sync_to_primary_checksumming feature flag' do
+      context 'when enabled' do
+        before do
+          stub_feature_flags(org_mover_extend_selective_sync_to_primary_checksumming: true)
+        end
+
+        it 'applies selective sync scope' do
+          secondary.update!(selective_sync_type: 'organizations', organizations: [group_1.organization])
+
+          verifiables = described_class.verifiables
+
+          expect(verifiables).to include(first_replicable_and_in_selective_sync)
+          expect(verifiables).not_to include(last_replicable_and_not_in_selective_sync)
+        end
+      end
+
+      context 'when disabled' do
+        before do
+          stub_feature_flags(org_mover_extend_selective_sync_to_primary_checksumming: false)
+        end
+
+        it 'does not apply selective sync scope' do
+          secondary.update!(selective_sync_type: 'organizations', organizations: [group_1.organization])
+
+          verifiables = described_class.verifiables
+
+          expect(verifiables).to include(first_replicable_and_in_selective_sync)
+          expect(verifiables).to include(last_replicable_and_not_in_selective_sync)
+        end
       end
     end
   end
@@ -138,7 +206,7 @@ RSpec.shared_examples 'Geo framework selective sync scenarios' do |method_name|
     described_class.object_storable?
   end
 
-  def find_replicables_to_sync(primary_key_in)
+  def find_replicables_to_sync(primary_key_in = nil)
     if method_name != :selective_sync_scope
       described_class.public_send(method_name, primary_key_in)
     else
