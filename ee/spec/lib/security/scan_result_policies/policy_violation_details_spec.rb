@@ -32,7 +32,7 @@ RSpec.describe Security::ScanResultPolicies::PolicyViolationDetails, feature_cat
   end
 
   let(:warn_mode_db_policy) do
-    create(:security_policy, :warn_mode, policy_index: 3, name: 'Warn mode',
+    create(:security_policy, :enforcement_type_warn, policy_index: 3, name: 'Warn mode',
       security_orchestration_policy_configuration: security_orchestration_policy_configuration)
   end
 
@@ -152,19 +152,6 @@ RSpec.describe Security::ScanResultPolicies::PolicyViolationDetails, feature_cat
           ref(:normal_policy_rule),
           false,
           ref(:normal_db_policy),
-          :enforce,
-          false
-        ],
-        [
-          ref(:policy1),
-          'Policy 1',
-          'scan_finding',
-          ref(:scan_finding_violation_data),
-          :warn,
-          true,
-          ref(:warn_mode_policy_rule),
-          true,
-          ref(:warn_mode_db_policy),
           :enforce,
           false
         ],
@@ -302,11 +289,7 @@ RSpec.describe Security::ScanResultPolicies::PolicyViolationDetails, feature_cat
         scan_result_policy_read: policy_warn_mode, approval_policy_rule: warn_mode_policy_rule)
     end
 
-    it { is_expected.to contain_exactly 'Policy', 'Other' }
-
-    it 'excludes warn mode policies' do
-      expect(fail_closed_policies).not_to include('Warn mode')
-    end
+    it { is_expected.to contain_exactly 'Policy', 'Other', 'Warn mode' }
 
     context 'when filtered by report_type' do
       subject(:fail_closed_policies) { details.fail_closed_policies(:license_scanning) }
@@ -325,7 +308,7 @@ RSpec.describe Security::ScanResultPolicies::PolicyViolationDetails, feature_cat
           scan_result_policy_read: policy2)
       end
 
-      it('is excluded') { is_expected.to contain_exactly 'Other' }
+      it('is excluded') { is_expected.to contain_exactly 'Other', 'Warn mode' }
     end
 
     context 'when security_policy_approval_warn_mode feature flag is disabled' do
@@ -359,7 +342,7 @@ RSpec.describe Security::ScanResultPolicies::PolicyViolationDetails, feature_cat
         scan_result_policy_read: policy_warn_mode, approval_policy_rule: warn_mode_policy_rule)
     end
 
-    it { is_expected.to contain_exactly 'Other' }
+    it { is_expected.to contain_exactly 'Other', 'Warn mode' }
 
     context 'when security_policy_approval_warn_mode feature flag is disabled' do
       before do
@@ -447,7 +430,7 @@ RSpec.describe Security::ScanResultPolicies::PolicyViolationDetails, feature_cat
 
     context 'when there are multiple warn mode policies' do
       let(:another_warn_mode_db_policy) do
-        create(:security_policy, :warn_mode, policy_index: 2,
+        create(:security_policy, :enforcement_type_warn, policy_index: 2,
           security_orchestration_policy_configuration: security_orchestration_policy_configuration)
       end
 
@@ -861,7 +844,7 @@ RSpec.describe Security::ScanResultPolicies::PolicyViolationDetails, feature_cat
 
     context 'when there are multiple warn mode violations' do
       let(:another_warn_mode_db_policy) do
-        create(:security_policy, :warn_mode, policy_index: 4,
+        create(:security_policy, :enforcement_type_warn, policy_index: 4,
           security_orchestration_policy_configuration: security_orchestration_policy_configuration)
       end
 
@@ -1159,7 +1142,7 @@ RSpec.describe Security::ScanResultPolicies::PolicyViolationDetails, feature_cat
     end
 
     let_it_be(:warn_mode_policy) do
-      create(:security_policy, :warn_mode, policy_index: 5, name: 'Warn mode',
+      create(:security_policy, :enforcement_type_warn, policy_index: 5, name: 'Warn mode',
         security_orchestration_policy_configuration: security_orchestration_policy_configuration)
     end
 

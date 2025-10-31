@@ -91,10 +91,6 @@ module Security
       def fail_closed_policies(report_type = nil)
         filtered_violations = violations.reject(&:warning)
 
-        if Feature.enabled?(:security_policy_approval_warn_mode, project)
-          filtered_violations = filtered_violations.reject(&:warn_mode)
-        end
-
         if report_type
           filtered_violations = filtered_violations.select { |violation| violation.report_type == report_type.to_s }
         end
@@ -104,10 +100,6 @@ module Security
 
       def fail_open_policies
         filtered_violations = violations.select(&:warning)
-
-        if Feature.enabled?(:security_policy_approval_warn_mode, project)
-          filtered_violations = filtered_violations.reject(&:warn_mode)
-        end
 
         filtered_violations.pluck(:name).compact.uniq.sort # rubocop:disable CodeReuse/ActiveRecord -- Pluck used on hashes
       end

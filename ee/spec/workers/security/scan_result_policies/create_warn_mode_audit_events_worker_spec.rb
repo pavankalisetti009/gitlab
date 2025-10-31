@@ -15,12 +15,12 @@ RSpec.describe Security::ScanResultPolicies::CreateWarnModeAuditEventsWorker, fe
   end
 
   let_it_be(:warn_mode_policy_enabled) do
-    create(:security_policy, :warn_mode, enabled: true,
+    create(:security_policy, :enforcement_type_warn, enabled: true,
       security_orchestration_policy_configuration: policy_configuration, policy_index: 1)
   end
 
   let_it_be(:warn_mode_policy_disabled) do
-    create(:security_policy, :warn_mode, enabled: false,
+    create(:security_policy, :enforcement_type_warn, enabled: false,
       security_orchestration_policy_configuration: policy_configuration, policy_index: 2)
   end
 
@@ -164,7 +164,7 @@ RSpec.describe Security::ScanResultPolicies::CreateWarnModeAuditEventsWorker, fe
     end
 
     let_it_be(:warn_mode_policy) do
-      create(:security_policy, :warn_mode,
+      create(:security_policy, :enforcement_type_warn,
         security_orchestration_policy_configuration: project_level_policy_configuration, policy_index: 1)
     end
 

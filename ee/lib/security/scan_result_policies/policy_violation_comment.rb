@@ -99,7 +99,6 @@ module Security
           (license_scanning_violations unless warn_mode_enabled?),
           error_messages,
           comparison_pipelines,
-          additional_info,
           warn_mode_approval_setting_conflicts
         ].compact.join("\n")
       end
@@ -418,18 +417,6 @@ module Security
         :exclamation: **Errors**
 
         #{errors.map { |error| "- #{error.message}" }.join("\n")}
-        MARKDOWN
-      end
-
-      def additional_info
-        return unless warn_mode_enabled? && details.warn_mode_policies.any?
-
-        <<~MARKDOWN
-        :information: **Additional information**
-
-        Review the following policies to understand requirements and identify policy owners for support:
-
-        #{details.warn_mode_policies.map { |policy| "- [#{policy.name}](#{policy.edit_path})" }.join("\n")}
         MARKDOWN
       end
 
