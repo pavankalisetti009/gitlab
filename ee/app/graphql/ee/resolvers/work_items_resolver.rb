@@ -11,7 +11,7 @@ module EE
       prepended do
         argument :verification_status_widget, ::Types::WorkItems::Widgets::VerificationStatusFilterInputType,
           required: false,
-          description: 'Input for verification status widget filter. Ignored if `work_items_alpha` is disabled.'
+          description: 'Input for verification status widget filter.'
         argument :requirement_legacy_widget, ::Types::WorkItems::Widgets::RequirementLegacyFilterInputType,
           required: false,
           deprecated: { reason: 'Use work item IID filter instead', milestone: '15.9' },
@@ -51,13 +51,6 @@ module EE
 
         validates mutually_exclusive: [:weight, :weight_wildcard_id]
         validates mutually_exclusive: [:iteration_id, :iteration_wildcard_id]
-      end
-
-      override :resolve_with_lookahead
-      def resolve_with_lookahead(**args)
-        args.delete(:verification_status_widget) unless resource_parent&.work_items_alpha_feature_flag_enabled?
-
-        super
       end
 
       private
