@@ -8,6 +8,7 @@ module VirtualRegistries
         container: ::VirtualRegistries::Container::Upstream
       }.freeze
       BATCH_SIZE = 250
+      DELETION_REGEX = %r{/deleted/.*}
 
       def initialize(policy)
         @policy = policy
@@ -42,26 +43,25 @@ module VirtualRegistries
           .requiring_cleanup(policy.keep_n_days_after_download)
           .each_batch(of: BATCH_SIZE, column: :relative_path) do |batch|
           result = mark_batch_for_destruction(batch)
+          log_audit_events(upstream, batch.model, result.map(&:last))
 
           counts[key][:deleted_entries_count] += result.size
-          counts[key][:deleted_size] += result.sum
+          counts[key][:deleted_size] += result.sum(&:first)
         end
       end
 
       def mark_batch_for_destruction(batch)
         sql = build_update_sql(batch)
-        batch.connection.query_values(sql)
+        batch.connection.select_rows(sql)
       end
 
       def build_update_sql(batch)
-        table = batch.arel_table
-        update_manager = build_update_manager(batch, table)
-        returning = Arel::Nodes::Grouping.new(table[:size])
-
-        "#{batch.connection.to_sql(update_manager)} RETURNING #{returning.to_sql}"
+        update_manager = build_update_manager(batch)
+        "#{batch.connection.to_sql(update_manager)} RETURNING size, relative_path"
       end
 
-      def build_update_manager(batch, table)
+      def build_update_manager(batch)
+        table = batch.arel_table
         Arel::UpdateManager.new(table).tap do |manager|
           manager.set([
             [table[:status], batch.model.statuses[:pending_destruction]],
@@ -70,6 +70,17 @@ module VirtualRegistries
           ])
           manager.wheres = batch.arel.constraints
         end
+      end
+
+      def log_audit_events(upstream, model, destroyed_paths)
+        return if destroyed_paths.empty?
+
+        event_name = "#{model.model_name.param_key}_deleted"
+        entries = destroyed_paths.map do |path|
+          model.new(group: policy.group, upstream: upstream, relative_path: path.sub(DELETION_REGEX, ''))
+        end
+
+        ::VirtualRegistries::CreateAuditEventsService.new(entries:, event_name:).execute
       end
     end
   end

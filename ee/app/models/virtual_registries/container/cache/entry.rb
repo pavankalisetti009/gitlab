@@ -8,6 +8,7 @@ module VirtualRegistries
         include Gitlab::SQL::Pattern
         include ShaAttribute
         include CounterAttribute
+        include ::Auditable
 
         self.primary_key = %i[upstream_id relative_path status]
 
