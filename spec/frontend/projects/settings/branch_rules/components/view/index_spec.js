@@ -33,6 +33,7 @@ import squashOptionQuery from '~/projects/settings/branch_rules/queries/squash_o
 import deleteBranchRuleMutation from '~/projects/settings/branch_rules/mutations/branch_rule_delete.mutation.graphql';
 import editBranchRuleMutation from 'ee_else_ce/projects/settings/branch_rules/mutations/edit_branch_rule.mutation.graphql';
 import editBranchRuleSquashOptionMutation from '~/projects/settings/branch_rules/mutations/edit_squash_option.mutation.graphql';
+import deleteBranchRuleSquashOptionMutation from '~/projects/settings/branch_rules/mutations/delete_squash_option.mutation.graphql';
 import {
   editBranchRuleMockResponse,
   editSquashOptionMockResponse,
@@ -78,6 +79,7 @@ describe('View branch rules', () => {
   const deleteBranchRuleSuccessHandler = jest.fn().mockResolvedValue(deleteBranchRuleMockResponse);
   const editBranchRuleSuccessHandler = jest.fn().mockResolvedValue(editBranchRuleMockResponse);
   const editSquashOptionSuccessHandler = jest.fn().mockResolvedValue(editSquashOptionMockResponse);
+  const deleteSquashOptionSuccessHandler = jest.fn().mockResolvedValue(editSquashOptionMockResponse);
   const protectableBranchesMockRequestHandler = jest
     .fn()
     .mockResolvedValue(protectableBranchesMockResponse);
@@ -94,6 +96,7 @@ describe('View branch rules', () => {
     deleteMutationHandler = deleteBranchRuleSuccessHandler,
     editMutationHandler = editBranchRuleSuccessHandler,
     editSquashOptionMutationHandler = editSquashOptionSuccessHandler,
+    deleteSquashOptionMutationHandler = deleteSquashOptionSuccessHandler
   } = {}) => {
     fakeApollo = createMockApollo([
       [branchRulesQuery, branchRulesQueryHandler],
@@ -102,6 +105,7 @@ describe('View branch rules', () => {
       [deleteBranchRuleMutation, deleteMutationHandler],
       [editBranchRuleMutation, editMutationHandler],
       [editBranchRuleSquashOptionMutation, editSquashOptionMutationHandler],
+      [deleteBranchRuleSquashOptionMutation, deleteSquashOptionMutationHandler],
     ]);
 
     wrapper = shallowMountExtended(RuleView, {
@@ -251,6 +255,44 @@ describe('View branch rules', () => {
 
       const drawer = wrapper.findComponent(SquashSettingsDrawer);
       drawer.vm.$emit('submit', 'always');
+      await waitForPromises();
+
+      expect(createAlert).toHaveBeenCalledWith({
+        message: 'Something went wrong while updating branch rule.',
+      });
+    });
+
+    it('calls delete mutation for DEFAULT option', async () => {
+      const deleteMutationSpy = jest.fn().mockResolvedValue({
+        data: { branchRuleSquashOptionDelete: { errors: [] } },
+      });
+
+      await createComponent({
+        deleteSquashOptionMutationHandler: deleteMutationSpy,
+      });
+
+      findSquashSettingSection().vm.$emit('edit');
+      await nextTick();
+
+      findSquashSettingsDrawer().vm.$emit('submit', 'DEFAULT');
+      await waitForPromises();
+
+      expect(deleteMutationSpy).toHaveBeenCalledWith({
+        input: { branchRuleId: 'gid://gitlab/Projects/BranchRule/1' },
+      });
+    });
+
+    it('shows error alert if delete mutation fails', async () => {
+      const deleteMutationSpy = jest.fn().mockResolvedValue({
+        data: { branchRuleSquashOptionDelete: { errors: ['delete error'] } },
+      });
+
+      await createComponent({ deleteSquashOptionMutationHandler: deleteMutationSpy });
+
+      findSquashSettingSection().vm.$emit('edit');
+      await nextTick();
+
+      findSquashSettingsDrawer().vm.$emit('submit', 'DEFAULT');
       await waitForPromises();
 
       expect(createAlert).toHaveBeenCalledWith({

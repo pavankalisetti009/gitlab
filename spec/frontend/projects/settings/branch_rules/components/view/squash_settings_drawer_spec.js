@@ -5,6 +5,7 @@ import { getContentWrapperHeight } from '~/lib/utils/dom_utils';
 import { DRAWER_Z_INDEX } from '~/lib/utils/constants';
 import SquashSettingsDrawer from '~/projects/settings/branch_rules/components/view/squash_settings_drawer.vue';
 import {
+  SQUASH_SETTING_DEFAULT,
   SQUASH_SETTING_DO_NOT_ALLOW,
   SQUASH_SETTING_ALLOW,
   SQUASH_SETTING_ENCOURAGE,
