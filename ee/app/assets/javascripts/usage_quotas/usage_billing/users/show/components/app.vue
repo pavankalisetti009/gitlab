@@ -8,6 +8,7 @@ import HumanTimeframe from '~/vue_shared/components/datetime/human_timeframe.vue
 import { numberToMetricPrefix } from '~/lib/utils/number_utils';
 import { PAGE_SIZE } from '../../../constants';
 import getUserSubscriptionUsageQuery from '../graphql/get_user_subscription_usage.query.graphql';
+import { fillUsageValues } from '../../../utils';
 import EventsTable from './events_table.vue';
 
 export default {
@@ -70,21 +71,7 @@ export default {
       return this.subscriptionUsage?.usersUsage?.users?.nodes?.[0];
     },
     usage() {
-      const {
-        creditsUsed = 0,
-        totalCredits = 0,
-        monthlyCommitmentCreditsUsed = 0,
-        oneTimeCreditsUsed = 0,
-        overageCreditsUsed = 0,
-      } = this.user?.usage ?? {};
-
-      return {
-        creditsUsed,
-        totalCredits,
-        monthlyCommitmentCreditsUsed,
-        oneTimeCreditsUsed,
-        overageCreditsUsed,
-      };
+      return fillUsageValues(this.user?.usage);
     },
     totalCreditsUsed() {
       return (

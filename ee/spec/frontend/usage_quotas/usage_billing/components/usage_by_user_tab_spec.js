@@ -87,7 +87,7 @@ describe('UsageByUserTab', () => {
 
         describe.each`
           index | username      | displayName        | includedCreditsUsed | includedCreditsUsedPercent | totalCreditsUsed
-          ${0}  | ${'ajohnson'} | ${'Alice Johnson'} | ${'500 / 500'}      | ${100}                     | ${'620'}
+          ${0}  | ${'ajohnson'} | ${'Alice Johnson'} | ${'500 / 500'}      | ${100}                     | ${'640'}
           ${1}  | ${'bsmith'}   | ${'Bob Smith'}     | ${'500 / 500'}      | ${100}                     | ${'500'}
           ${2}  | ${'cdavis'}   | ${'Carol Davis'}   | ${'50 / 500'}       | ${10}                      | ${'50'}
         `(
