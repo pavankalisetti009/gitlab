@@ -10,6 +10,7 @@ module VirtualRegistries
           include ::UpdateNamespaceStatistics
           include ShaAttribute
           include CounterAttribute
+          include ::Auditable
 
           self.primary_key = %i[upstream_id relative_path status]
 

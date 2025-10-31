@@ -77,9 +77,17 @@ RSpec.describe VirtualRegistries::Cleanup::ExecutePolicyService, feature_categor
           )
         end
 
-        it 'marks old entries for destruction and returns correct counts', :aggregate_failures do
+        before do
+          allow(::VirtualRegistries::CreateAuditEventsService).to receive(:new).and_call_original
+        end
+
+        it 'marks old entries for destruction and returns correct counts, and creates audit events',
+          :aggregate_failures do
           expect { execute }.to change { maven_upstream.cache_entries.pending_destruction.count }.by(2)
             .and change { container_upstream.cache_entries.pending_destruction.count }.by(1)
+
+          expect_audit_events_for([old_maven_entry1, old_maven_entry2])
+          expect_audit_events_for([old_container_entry])
 
           is_expected.to be_success.and have_attributes(
             payload: {
@@ -130,11 +138,20 @@ RSpec.describe VirtualRegistries::Cleanup::ExecutePolicyService, feature_categor
           )
         end
 
-        it 'processes entries from all upstreams', :aggregate_failures do
+        before do
+          allow(::VirtualRegistries::CreateAuditEventsService).to receive(:new).and_call_original
+        end
+
+        it 'processes entries from all upstreams and creates audit events', :aggregate_failures do
           expect { execute }.to change { maven_upstream.cache_entries.pending_destruction.count }.by(1)
             .and change { maven_upstream2.cache_entries.pending_destruction.count }.by(1)
             .and change { container_upstream.cache_entries.pending_destruction.count }.by(1)
             .and change { container_upstream2.cache_entries.pending_destruction.count }.by(1)
+
+          expect_audit_events_for([maven_entry_upstream1])
+          expect_audit_events_for([maven_entry_upstream2])
+          expect_audit_events_for([container_entry_upstream1])
+          expect_audit_events_for([container_entry_upstream2])
 
           is_expected.to be_success.and have_attributes(
             payload: {
@@ -178,6 +195,11 @@ RSpec.describe VirtualRegistries::Cleanup::ExecutePolicyService, feature_categor
 
         it { is_expected.to be_error.and have_attributes(message: /Database error/) }
       end
+    end
+
+    def expect_audit_events_for(entries)
+      expect(::VirtualRegistries::CreateAuditEventsService).to have_received(:new).once
+        .with(entries: entries, event_name: "#{entries.first.model_name.param_key}_deleted")
     end
   end
 end

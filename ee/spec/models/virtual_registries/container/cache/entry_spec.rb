@@ -5,6 +5,8 @@ require 'spec_helper'
 RSpec.describe VirtualRegistries::Container::Cache::Entry, feature_category: :virtual_registry do
   subject(:cache_entry) { build(:virtual_registries_container_cache_entry) }
 
+  it { is_expected.to include_module(::Auditable) }
+
   describe 'validations' do
     %i[group file file_sha1 relative_path size].each do |attr|
       it { is_expected.to validate_presence_of(attr) }

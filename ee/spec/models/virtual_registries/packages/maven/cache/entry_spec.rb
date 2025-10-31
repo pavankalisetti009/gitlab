@@ -7,6 +7,7 @@ RSpec.describe VirtualRegistries::Packages::Maven::Cache::Entry, type: :model, f
 
   it { is_expected.to include_module(FileStoreMounter) }
   it { is_expected.to include_module(::UpdateNamespaceStatistics) }
+  it { is_expected.to include_module(::Auditable) }
 
   it_behaves_like 'updates namespace statistics' do
     let(:statistic_source) { cache_entry }
