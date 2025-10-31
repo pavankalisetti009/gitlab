@@ -1,4 +1,4 @@
-import Vue from 'vue';
+import Vue, { nextTick } from 'vue';
 import VueApollo from 'vue-apollo';
 import { GlAvatar, GlAvatarLink } from '@gitlab/ui';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
@@ -10,12 +10,15 @@ import { getLocationHash } from '~/lib/utils/url_utility';
 import toast from '~/vue_shared/plugins/global_toast';
 import NoteHeader from '~/notes/components/note_header.vue';
 import TimelineEntryItem from '~/vue_shared/components/notes/timeline_entry_item.vue';
+import EditedAt from '~/issues/show/components/edited.vue';
 import DiscussionNote from 'ee/compliance_violations/components/discussion_note.vue';
+import EditCommentForm from 'ee/compliance_violations/components/edit_comment_form.vue';
 import destroyComplianceViolationNoteMutation from 'ee/compliance_violations/graphql/mutations/destroy_compliance_violation_note.mutation.graphql';
 
 Vue.use(VueApollo);
 
 jest.mock('~/lib/utils/url_utility', () => ({
+  ...jest.requireActual('~/lib/utils/url_utility'),
   getLocationHash: jest.fn(),
 }));
 jest.mock('~/vue_shared/plugins/global_toast');
@@ -32,8 +35,20 @@ describe('DiscussionNote', () => {
       avatarUrl: 'https://example.com/avatar.jpg',
       webUrl: 'https://example.com/johndoe',
     },
+    body: 'This is a discussion note',
     bodyHtml: '<p>This is a discussion note</p>',
     createdAt: '2023-01-01T00:00:00Z',
+    lastEditedAt: null,
+    lastEditedBy: null,
+  };
+
+  const mockNoteWithEdit = {
+    ...mockNote,
+    lastEditedAt: '2023-01-02T00:00:00Z',
+    lastEditedBy: {
+      name: 'Jane Editor',
+      webPath: '/jane-editor',
+    },
   };
 
   const mockDeleteNoteSuccess = {
@@ -77,6 +92,7 @@ describe('DiscussionNote', () => {
     props = {},
     deleteNoteMutationHandler = jest.fn().mockResolvedValue(mockDeleteNoteSuccess),
     stubs = {},
+    provide = {},
   } = {}) => {
     const apolloProvider = createMockApollo([
       [destroyComplianceViolationNoteMutation, deleteNoteMutationHandler],
@@ -85,10 +101,17 @@ describe('DiscussionNote', () => {
     wrapper = shallowMountExtended(DiscussionNote, {
       propsData: {
         note: mockNote,
+        violationId: 'gid://gitlab/ComplianceViolation/123',
         ...props,
       },
       apolloProvider,
       stubs,
+      provide: {
+        glFeatures: {
+          complianceViolationCommentsUi: true,
+        },
+        ...provide,
+      },
     });
   };
 
@@ -100,6 +123,9 @@ describe('DiscussionNote', () => {
   const findActionsDropdown = () => wrapper.findByTestId('note-actions-dropdown');
   const findCopyLinkAction = () => wrapper.findByTestId('copy-link-action');
   const findDeleteNoteAction = () => wrapper.findByTestId('delete-note-action');
+  const findEditButton = () => wrapper.findByTestId('edit-note-button');
+  const findEditedAt = () => wrapper.findComponent(EditedAt);
+  const findEditCommentForm = () => wrapper.findComponent(EditCommentForm);
 
   beforeEach(() => {
     getLocationHash.mockReturnValue('');
@@ -194,6 +220,22 @@ describe('DiscussionNote', () => {
 
       expect(deleteAction.exists()).toBe(true);
       expect(deleteAction.props('variant')).toBe('danger');
+    });
+
+    it('renders edit button', () => {
+      const editButton = findEditButton();
+
+      expect(editButton.exists()).toBe(true);
+      expect(editButton.attributes('title')).toBe('Edit comment');
+      expect(editButton.attributes('aria-label')).toBe('Edit comment');
+    });
+
+    it('does not render edit comment form initially', () => {
+      expect(findEditCommentForm().exists()).toBe(false);
+    });
+
+    it('does not render EditedAt component when note has not been edited', () => {
+      expect(findEditedAt().exists()).toBe(false);
     });
 
     it('renders with correct timeline structure', () => {
@@ -309,6 +351,95 @@ describe('DiscussionNote', () => {
     });
   });
 
+  describe('edit comment functionality', () => {
+    beforeEach(() => {
+      createComponent();
+    });
+
+    it('shows edit form when edit button is clicked', async () => {
+      expect(findNoteText().exists()).toBe(true);
+      expect(findEditCommentForm().exists()).toBe(false);
+
+      await findEditButton().vm.$emit('click');
+      await nextTick();
+
+      expect(findNoteText().exists()).toBe(false);
+      expect(findEditCommentForm().exists()).toBe(true);
+    });
+
+    it('hides note actions when in edit mode', async () => {
+      expect(findActionsDropdown().exists()).toBe(true);
+      expect(findEditButton().exists()).toBe(true);
+
+      await findEditButton().vm.$emit('click');
+      await nextTick();
+
+      expect(findActionsDropdown().exists()).toBe(false);
+      expect(findEditButton().exists()).toBe(false);
+    });
+
+    it('exits edit mode when form emits cancel', async () => {
+      await findEditButton().vm.$emit('click');
+      await nextTick();
+
+      await findEditCommentForm().vm.$emit('cancel');
+      await waitForPromises();
+
+      expect(findNoteText().exists()).toBe(true);
+      expect(findActionsDropdown().exists()).toBe(true);
+    });
+
+    it('exits edit mode when comment is updated', async () => {
+      await findEditButton().vm.$emit('click');
+      await nextTick();
+
+      await findEditCommentForm().vm.$emit('commentUpdated');
+      await waitForPromises();
+
+      expect(findNoteText().exists()).toBe(true);
+      expect(findActionsDropdown().exists()).toBe(true);
+    });
+
+    it('emits error event when edit form emits error', async () => {
+      const errorMessage = 'Failed to update form';
+      await findEditButton().vm.$emit('click');
+      await nextTick();
+
+      await findEditCommentForm().vm.$emit('error', errorMessage);
+      await waitForPromises();
+
+      expect(wrapper.emitted('error')).toEqual([[errorMessage]]);
+    });
+  });
+
+  describe('edited note display', () => {
+    it('renders EditedAt component when note has been edited', () => {
+      createComponent({
+        props: {
+          note: mockNoteWithEdit,
+        },
+      });
+
+      const editedAt = findEditedAt();
+      expect(editedAt.exists()).toBe(true);
+    });
+
+    it('does not render EditedAt component when in edit mode', async () => {
+      createComponent({
+        props: {
+          note: mockNoteWithEdit,
+        },
+      });
+
+      expect(findEditedAt().exists()).toBe(true);
+
+      await findEditButton().vm.$emit('click');
+      await nextTick();
+
+      expect(findEditedAt().exists()).toBe(false);
+    });
+  });
+
   describe('empty content handling', () => {
     it('renders when bodyHtml is empty', () => {
       createComponent({
@@ -323,6 +454,52 @@ describe('DiscussionNote', () => {
       const noteText = findNoteText();
       expect(noteText.exists()).toBe(true);
       expect(noteText.text()).toBe('');
+    });
+  });
+
+  describe('feature flag: complianceViolationCommentsUi', () => {
+    describe('when feature flag is enabled', () => {
+      beforeEach(() => {
+        createComponent({
+          provide: {
+            glFeatures: {
+              complianceViolationCommentsUi: true,
+            },
+          },
+        });
+      });
+
+      it('renders edit button', () => {
+        const editButton = findEditButton();
+
+        expect(editButton.exists()).toBe(true);
+        expect(editButton.attributes('title')).toBe('Edit comment');
+        expect(editButton.attributes('aria-label')).toBe('Edit comment');
+      });
+    });
+
+    describe('when feature flag is disabled', () => {
+      beforeEach(() => {
+        createComponent({
+          provide: {
+            glFeatures: {
+              complianceViolationCommentsUi: false,
+            },
+          },
+        });
+      });
+
+      it('does not render edit button', () => {
+        const editButton = findEditButton();
+
+        expect(editButton.exists()).toBe(false);
+      });
+
+      it('still renders other note actions', () => {
+        expect(findActionsDropdown().exists()).toBe(true);
+        expect(findCopyLinkAction().exists()).toBe(true);
+        expect(findDeleteNoteAction().exists()).toBe(true);
+      });
     });
   });
 });

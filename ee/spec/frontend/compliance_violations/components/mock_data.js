@@ -74,6 +74,8 @@ export const mockComplianceViolation = {
         body: 'Status changed to resolved',
         bodyHtml: '<p>Status changed to resolved</p>',
         createdAt: '2025-06-17T10:00:00Z',
+        lastEditedAt: null,
+        lastEditedBy: null,
         author: {
           id: 'gid://gitlab/User/1',
           avatarUrl: 'https://example.com/avatar.png',
@@ -97,6 +99,16 @@ export const mockComplianceViolation = {
         body: 'Violation reviewed',
         bodyHtml: '<p>Violation reviewed</p>',
         createdAt: '2025-06-16T15:30:00Z',
+        lastEditedAt: '2025-06-16T16:00:00Z',
+        lastEditedBy: {
+          id: 'gid://gitlab/User/2',
+          avatarUrl: 'https://example.com/avatar2.png',
+          name: 'Test User 2',
+          username: 'testuser2',
+          webUrl: 'https://example.com/testuser2',
+          webPath: '/testuser2',
+          __typename: 'UserCore',
+        },
         author: {
           id: 'gid://gitlab/User/2',
           avatarUrl: 'https://example.com/avatar2.png',
@@ -184,6 +196,8 @@ export const mockDataWithOnlyNonSystemNotes = {
             body: 'Regular comment',
             bodyHtml: '<p>Regular comment</p>',
             createdAt: '2025-06-16T12:00:00Z',
+            lastEditedAt: null,
+            lastEditedBy: null,
             author: {
               id: 'gid://gitlab/User/3',
               avatarUrl: 'https://example.com/avatar3.png',
@@ -207,6 +221,8 @@ export const mockDataWithOnlyNonSystemNotes = {
             body: 'Another regular comment',
             bodyHtml: '<p>Another regular comment</p>',
             createdAt: '2025-06-16T13:00:00Z',
+            lastEditedAt: null,
+            lastEditedBy: null,
             author: {
               id: 'gid://gitlab/User/4',
               avatarUrl: 'https://example.com/avatar4.png',

@@ -2,6 +2,7 @@
 import {
   GlAvatarLink,
   GlAvatar,
+  GlButton,
   GlDisclosureDropdown,
   GlDisclosureDropdownItem,
   GlDisclosureDropdownGroup,
@@ -10,17 +11,23 @@ import {
 import { getIdFromGraphQLId } from '~/graphql_shared/utils';
 import { getLocationHash } from '~/lib/utils/url_utility';
 import { __, s__ } from '~/locale';
+import glFeatureFlagsMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
 import toast from '~/vue_shared/plugins/global_toast';
 import SafeHtml from '~/vue_shared/directives/safe_html';
 import NoteHeader from '~/notes/components/note_header.vue';
 import TimelineEntryItem from '~/vue_shared/components/notes/timeline_entry_item.vue';
+import EditedAt from '~/issues/show/components/edited.vue';
 import destroyComplianceViolationNoteMutation from '../graphql/mutations/destroy_compliance_violation_note.mutation.graphql';
+import EditCommentForm from './edit_comment_form.vue';
 
 export default {
   name: 'DiscussionNote',
   components: {
+    EditCommentForm,
+    EditedAt,
     GlAvatar,
     GlAvatarLink,
+    GlButton,
     GlDisclosureDropdown,
     GlDisclosureDropdownItem,
     GlDisclosureDropdownGroup,
@@ -31,15 +38,21 @@ export default {
     GlTooltip: GlTooltipDirective,
     SafeHtml,
   },
+  mixins: [glFeatureFlagsMixin()],
   props: {
     note: {
       type: Object,
+      required: true,
+    },
+    violationId: {
+      type: String,
       required: true,
     },
   },
   data() {
     return {
       isDeleting: false,
+      isEditing: false,
     };
   },
   computed: {
@@ -110,6 +123,18 @@ export default {
         this.$refs.dropdown.close();
       }
     },
+    editNote() {
+      this.isEditing = true;
+    },
+    cancelEdit() {
+      this.isEditing = false;
+    },
+    handleCommentUpdated() {
+      this.isEditing = false;
+    },
+    handleEditError(errorMessage) {
+      this.$emit('error', errorMessage);
+    },
   },
   i18n: {
     moreActionsText: __('More actions'),
@@ -149,7 +174,18 @@ export default {
             :note-id="noteId"
             :note-url="noteUrl"
           />
-          <div class="note-actions gl-ml-auto">
+          <div v-if="!isEditing" class="note-actions gl-ml-auto gl-flex gl-gap-2">
+            <gl-button
+              v-if="glFeatures.complianceViolationCommentsUi"
+              v-gl-tooltip
+              icon="pencil"
+              category="tertiary"
+              size="small"
+              :title="__('Edit comment')"
+              :aria-label="__('Edit comment')"
+              data-testid="edit-note-button"
+              @click="editNote"
+            />
             <gl-disclosure-dropdown
               ref="dropdown"
               v-gl-tooltip
@@ -183,13 +219,31 @@ export default {
           </div>
         </div>
         <div class="note-body" data-testid="discussion-note-body">
-          <div class="timeline-discussion-body">
+          <div v-if="isEditing" class="timeline-discussion-body">
+            <edit-comment-form
+              :violation-id="violationId"
+              :note-id="note.id"
+              :numeric-note-id="noteId"
+              :initial-value="note.body"
+              @commentUpdated="handleCommentUpdated"
+              @cancel="cancelEdit"
+              @error="handleEditError"
+            />
+          </div>
+          <div v-else class="timeline-discussion-body">
             <div
               v-safe-html:[$options.safeHtmlConfig]="note.bodyHtml"
               class="note-text md"
               data-testid="discussion-note-text"
             ></div>
           </div>
+          <edited-at
+            v-if="note.lastEditedBy && !isEditing"
+            :updated-at="note.lastEditedAt"
+            :updated-by-name="note.lastEditedBy.name"
+            :updated-by-path="note.lastEditedBy.webPath"
+            class="gl-mt-5"
+          />
         </div>
       </div>
     </div>
