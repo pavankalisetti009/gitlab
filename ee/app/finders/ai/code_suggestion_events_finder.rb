@@ -38,6 +38,12 @@ module Ai
       @namespace = nil
     end
 
+    def execute
+      return ::Ai::UsageEvent.none if @namespace.nil? && !@users.present?
+
+      super
+    end
+
     private
 
     # In this first iteration we consider users a contributor for a
