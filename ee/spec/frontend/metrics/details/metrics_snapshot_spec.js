@@ -1,9 +1,9 @@
 import { uploadMetricsSnapshot } from 'ee/metrics/details/metrics_snapshot';
-import { domElementToBlob } from '~/lib/utils/image_utils';
+import { domElementToBlob } from '~/lib/utils/screenshot_utils';
 import { uploadImageToProject } from '~/api/projects_api';
 import { useFakeDate } from 'helpers/fake_date';
 
-jest.mock('~/lib/utils/image_utils');
+jest.mock('~/lib/utils/screenshot_utils');
 jest.mock('~/api/projects_api');
 
 describe('uploadMetricsSnapshot', () => {
