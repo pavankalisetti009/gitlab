@@ -2,7 +2,6 @@
 import { GlCard, GlLink, GlSprintf } from '@gitlab/ui';
 import { PROMO_URL } from '~/constants';
 import { numberToMetricPrefix } from '~/lib/utils/number_utils';
-import HumanTimeframeWithDaysRemaining from './human_timeframe_with_days_remaining.vue';
 
 export default {
   name: 'CurrentOverageUsageCard',
@@ -10,7 +9,6 @@ export default {
     GlCard,
     GlLink,
     GlSprintf,
-    HumanTimeframeWithDaysRemaining,
   },
   props: {
     overageCreditsUsed: {
@@ -21,14 +19,6 @@ export default {
       type: Number,
       required: false,
       default: 0,
-    },
-    monthStartDate: {
-      type: String,
-      required: true,
-    },
-    monthEndDate: {
-      type: String,
-      required: true,
     },
   },
   methods: {
@@ -43,10 +33,7 @@ export default {
       {{ s__('UsageBilling|GitLab Credits - On Demand') }}
     </h2>
     <div class="gl-mb-4 gl-text-sm gl-text-subtle">
-      <human-timeframe-with-days-remaining
-        :month-start-date="monthStartDate"
-        :month-end-date="monthEndDate"
-      />
+      {{ s__('UsageBilling|Used this billing period') }}
     </div>
 
     <div class="gl-mb-3">

@@ -1,8 +1,9 @@
 <script>
 import { GlCard, GlProgressBar, GlSprintf } from '@gitlab/ui';
 import { numberToMetricPrefix } from '~/lib/utils/number_utils';
+import { getDayDifference } from '~/lib/utils/datetime/date_calculation_utility';
+import { newDate } from '~/lib/utils/datetime_utility';
 import { USAGE_DANGER_THRESHOLD, USAGE_WARNING_THRESHOLD } from '../constants';
-import HumanTimeframeWithDaysRemaining from './human_timeframe_with_days_remaining.vue';
 
 export default {
   name: 'CurrentUsageCard',
@@ -10,7 +11,6 @@ export default {
     GlCard,
     GlProgressBar,
     GlSprintf,
-    HumanTimeframeWithDaysRemaining,
   },
   props: {
     poolCreditsUsed: {
@@ -19,10 +19,6 @@ export default {
     },
     poolTotalCredits: {
       type: Number,
-      required: true,
-    },
-    monthStartDate: {
-      type: String,
       required: true,
     },
     monthEndDate: {
@@ -49,6 +45,13 @@ export default {
 
       return 'primary';
     },
+    daysOfMonthRemaining() {
+      const today = new Date();
+      const endDate = newDate(this.monthEndDate);
+      const diffDays = getDayDifference(today, endDate);
+
+      return Math.max(0, diffDays);
+    },
   },
   methods: {
     numberToMetricPrefix,
@@ -61,11 +64,18 @@ export default {
     <h2 class="gl-heading-scale-400 gl-mb-2">
       {{ s__('UsageBilling|GitLab Credits - Monthly committed pool') }}
     </h2>
-    <div class="gl-mb-4 gl-text-sm gl-text-subtle">
-      <human-timeframe-with-days-remaining
-        :month-start-date="monthStartDate"
-        :month-end-date="monthEndDate"
-      />
+    <div class="gl-mb-4 gl-text-sm gl-text-subtle" data-testid="monthly-commitment-subtitle">
+      <gl-sprintf
+        :message="
+          n__(
+            'UsageBilling|Used this billing period, resets in %{days} day',
+            'UsageBilling|Used this billing period, resets in %{days} days',
+            daysOfMonthRemaining,
+          )
+        "
+      >
+        <template #days>{{ daysOfMonthRemaining }}</template>
+      </gl-sprintf>
     </div>
     <div class="gl-mb-3 gl-flex">
       <span class="gl-heading-scale-600 gl-mr-3 gl-font-bold" data-testid="total-credits-used">

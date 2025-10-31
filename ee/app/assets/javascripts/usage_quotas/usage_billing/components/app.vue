@@ -5,6 +5,7 @@ import { captureException } from '~/sentry/sentry_browser_wrapper';
 import PageHeading from '~/vue_shared/components/page_heading.vue';
 import UserDate from '~/vue_shared/components/user_date.vue';
 import { LONG_DATE_FORMAT_WITH_TZ } from '~/vue_shared/constants';
+import HumanTimeframe from '~/vue_shared/components/datetime/human_timeframe.vue';
 import getSubscriptionUsageQuery from '../graphql/get_subscription_usage.query.graphql';
 import PurchaseCommitmentCard from './purchase_commitment_card.vue';
 import UsageByUserTab from './usage_by_user_tab.vue';
@@ -21,8 +22,9 @@ export default {
     UsageByUserTab,
     CurrentUsageCard,
     CurrentOverageUsageCard,
-    UserDate,
     OneTimeCreditsCard,
+    UserDate,
+    HumanTimeframe,
   },
   apollo: {
     subscriptionUsage: {
@@ -79,6 +81,9 @@ export default {
     otcIsAvailable() {
       return Boolean(this.otcCreditsUsed || this.otcRemainingCredits);
     },
+    monthEndDate() {
+      return this.subscriptionUsage?.endDate;
+    },
   },
   LONG_DATE_FORMAT_WITH_TZ,
 };
@@ -89,12 +94,23 @@ export default {
       <template #heading>
         <span data-testid="usage-billing-title">{{ s__('UsageBilling|Usage Billing') }}</span>
       </template>
-      <template v-if="subscriptionUsage.lastEventTransactionAt" #description>
-        {{ s__('UsageBilling|Last updated:') }}
-        <user-date
-          :date="subscriptionUsage.lastEventTransactionAt"
-          :date-format="$options.LONG_DATE_FORMAT_WITH_TZ"
-        />
+      <template #description>
+        <div
+          v-if="subscriptionUsage.startDate && subscriptionUsage.endDate"
+          class="gl-text-default"
+        >
+          <span class="gl-font-bold">
+            {{ s__('UsageBilling|Billing period:') }}
+          </span>
+          <human-timeframe :from="subscriptionUsage.startDate" :till="subscriptionUsage.endDate" />
+        </div>
+        <div v-if="subscriptionUsage.lastEventTransactionAt">
+          {{ s__('UsageBilling|Last event transaction at:') }}
+          <user-date
+            :date="subscriptionUsage.lastEventTransactionAt"
+            :date-format="$options.LONG_DATE_FORMAT_WITH_TZ"
+          />
+        </div>
       </template>
     </page-heading>
 
@@ -135,8 +151,7 @@ export default {
           v-if="poolIsAvailable"
           :pool-total-credits="poolTotalCredits"
           :pool-credits-used="poolCreditsUsed"
-          :month-start-date="subscriptionUsage.startDate"
-          :month-end-date="subscriptionUsage.endDate"
+          :month-end-date="monthEndDate"
         />
 
         <one-time-credits-card
@@ -149,8 +164,7 @@ export default {
           v-else-if="overageIsAllowed || overageCreditsUsed"
           :overage-credits-used="overageCreditsUsed"
           :otc-credits-used="otcCreditsUsed"
-          :month-start-date="subscriptionUsage.startDate"
-          :month-end-date="subscriptionUsage.endDate"
+          :month-end-date="monthEndDate"
         />
 
         <purchase-commitment-card

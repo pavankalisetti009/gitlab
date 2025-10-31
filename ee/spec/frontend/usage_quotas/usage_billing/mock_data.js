@@ -360,6 +360,9 @@ export const mockUsersUsageDataWithZeroAllocation = {
     subscriptionUsage: {
       lastEventTransactionAt: '2025-10-14T07:41:59Z',
       purchaseCreditsPath: '/purchase-credits-path',
+      startDate: '2025-10-01',
+      endDate: '2025-10-31',
+
       usersUsage: {
         totalUsers: 5,
         totalUsersUsingAllocation: 2,
