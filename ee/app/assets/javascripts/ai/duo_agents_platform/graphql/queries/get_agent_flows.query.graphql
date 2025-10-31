@@ -6,7 +6,9 @@ query getAgentFlows(
   $before: String
   $first: Int
   $last: Int
+  $search: String
   $sort: DuoWorkflowsWorkflowSort
+  $statusGroup: DuoWorkflowStatusGroup
   $type: String
 ) {
   project(fullPath: $projectPath) {
@@ -17,7 +19,9 @@ query getAgentFlows(
       after: $after
       last: $last
       before: $before
+      search: $search
       sort: $sort
+      statusGroup: $statusGroup
       type: $type
     ) {
       pageInfo {

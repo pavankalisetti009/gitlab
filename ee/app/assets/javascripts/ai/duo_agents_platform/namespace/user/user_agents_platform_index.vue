@@ -54,21 +54,10 @@ export default {
     },
   },
   methods: {
-    handleSort(sortBy) {
-      this.currentSort = sortBy;
-
-      this.resetPagination();
-    },
-    handleFilters(filters) {
+    handleQueryVariablesUpdate({ sort, pagination, filters }) {
+      this.currentSort = sort;
+      this.paginationVariables = pagination;
       this.filterVariables = filters;
-
-      this.resetPagination();
-    },
-    handlePagination(paginationVars) {
-      this.paginationVariables = paginationVars;
-    },
-    resetPagination() {
-      this.handlePagination(DEFAULT_AGENT_PLATFORM_PAGINATION_VARIABLES);
     },
   },
 };
@@ -81,8 +70,6 @@ export default {
     :workflows="workflows"
     :workflows-page-info="workflowsPageInfo"
     class="gl-min-w-full"
-    @update-sort="handleSort"
-    @update-pagination="handlePagination"
-    @update-filters="handleFilters"
+    @query-variables-updated="handleQueryVariablesUpdate"
   />
 </template>

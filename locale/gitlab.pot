@@ -10024,6 +10024,9 @@ msgstr ""
 msgid "Avg"
 msgstr ""
 
+msgid "Awaiting input"
+msgstr ""
+
 msgid "Awaiting user signup"
 msgstr ""
 
@@ -13015,6 +13018,9 @@ msgid "Cancel your account"
 msgstr ""
 
 msgid "Cancel, keep project"
+msgstr ""
+
+msgid "Canceled"
 msgstr ""
 
 msgid "Canceled deployment to"
@@ -25053,9 +25059,6 @@ msgid "DuoAgentsPlatform|Path to configuration file"
 msgstr ""
 
 msgid "DuoAgentsPlatform|Prompt"
-msgstr ""
-
-msgid "DuoAgentsPlatform|Raw text search is not currently supported. Please use the available search tokens."
 msgstr ""
 
 msgid "DuoAgentsPlatform|Read file"

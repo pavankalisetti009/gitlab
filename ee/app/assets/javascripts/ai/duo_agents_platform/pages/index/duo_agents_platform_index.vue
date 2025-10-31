@@ -1,22 +1,24 @@
 <script>
-import { GlAlert, GlExperimentBadge, GlSkeletonLoader, GlFilteredSearchToken } from '@gitlab/ui';
+import { GlExperimentBadge, GlSkeletonLoader, GlFilteredSearchToken } from '@gitlab/ui';
 import emptyStateIllustrationPath from '@gitlab/svgs/dist/illustrations/empty-state/empty-pipeline-md.svg?url';
 import PageHeading from '~/vue_shared/components/page_heading.vue';
 import FilteredSearchBar from '~/vue_shared/components/filtered_search_bar/filtered_search_bar_root.vue';
 import {
-  OPERATORS_IS,
   FILTERED_SEARCH_TERM,
+  OPERATORS_IS,
 } from '~/vue_shared/components/filtered_search_bar/constants';
 import { __, s__ } from '~/locale';
 import AgentFlowList from '../../components/common/agent_flow_list.vue';
-import { AGENT_PLATFORM_INDEX_COMPONENT_NAME } from '../../constants';
+import {
+  AGENT_PLATFORM_INDEX_COMPONENT_NAME,
+  DEFAULT_AGENT_PLATFORM_PAGINATION_VARIABLES,
+} from '../../constants';
 
 export default {
   name: AGENT_PLATFORM_INDEX_COMPONENT_NAME,
   components: {
     AgentFlowList,
     FilteredSearchBar,
-    GlAlert,
     GlExperimentBadge,
     GlSkeletonLoader,
     PageHeading,
@@ -50,8 +52,10 @@ export default {
   },
   data() {
     return {
-      showAlert: false,
       currentFilters: [],
+      currentSort: this.initialSort,
+      paginationVariables: {},
+      filterVariables: {},
     };
   },
   computed: {
@@ -59,57 +63,67 @@ export default {
       return !this.hasInitialWorkflows;
     },
     processedFiltersForGraphQL() {
-      const processedFilters = {};
+      const FILTER_TYPE_MAP = {
+        'flow-name': 'type',
+        'flow-status-group': 'statusGroup',
+        [FILTERED_SEARCH_TERM]: 'search',
+      };
 
-      this.currentFilters.forEach((filter) => {
-        if (filter.type === 'flow-name' && filter.value?.data) {
-          processedFilters.type = filter.value.data;
-        }
-      });
-
-      return processedFilters;
+      return this.currentFilters
+        .filter((filter) => filter.value?.data && FILTER_TYPE_MAP[filter.type])
+        .reduce((acc, filter) => {
+          const mappedProperty = FILTER_TYPE_MAP[filter.type];
+          acc[mappedProperty] = filter.value.data;
+          return acc;
+        }, {});
     },
   },
   methods: {
     handleNextPage() {
-      this.$emit('update-pagination', {
+      const paginationVars = {
         before: null,
         after: this.workflowsPageInfo.endCursor,
         first: 20,
         last: null,
-      });
+      };
+      this.handlePagination(paginationVars);
     },
     handlePrevPage() {
-      this.$emit('update-pagination', {
+      const paginationVars = {
         after: null,
         before: this.workflowsPageInfo.startCursor,
         first: null,
         last: 20,
-      });
+      };
+      this.handlePagination(paginationVars);
+    },
+    handlePagination(paginationVars) {
+      this.paginationVariables = paginationVars;
+      this.emitVariables();
+    },
+    resetPagination() {
+      this.handlePagination(DEFAULT_AGENT_PLATFORM_PAGINATION_VARIABLES);
     },
     handleSort(sortBy) {
-      this.$emit('update-sort', sortBy);
+      this.currentSort = sortBy;
+      this.resetPagination();
+      this.emitVariables();
     },
     handleFilter(filters) {
-      if (this.hasUnsupportedTextSearch(filters)) {
-        this.showAlert = true;
-        this.currentFilters = []; // Clear the filters
-        this.$forceUpdate(); // Force re-render to clear the search input
-        return;
-      }
-
-      this.showAlert = false;
       this.currentFilters = filters;
       this.refetchWithFilters(this.processedFiltersForGraphQL);
     },
-    hasUnsupportedTextSearch(filters) {
-      return filters.some((filter) => filter.type === FILTERED_SEARCH_TERM && filter.value?.data);
+    refetchWithFilters(filters) {
+      this.filterVariables = filters;
+      this.resetPagination();
+      this.emitVariables();
     },
-    refetchWithFilters(processedFilters) {
-      this.$emit('update-filters', processedFilters);
-    },
-    dismissAlert() {
-      this.showAlert = false;
+    emitVariables() {
+      this.$emit('query-variables-updated', {
+        sort: this.currentSort,
+        pagination: this.paginationVariables,
+        filters: this.filterVariables,
+      });
     },
   },
   emptyStateIllustrationPath,
@@ -144,6 +158,22 @@ export default {
         { value: 'convert_to_gitlab_ci', title: s__('DuoAgentsPlatform|Convert to gitlab ci') },
       ],
     },
+    {
+      type: 'flow-status-group',
+      title: __('Status'),
+      icon: 'status',
+      token: GlFilteredSearchToken,
+      operators: OPERATORS_IS,
+      unique: true,
+      options: [
+        { value: 'ACTIVE', title: __('Active') },
+        { value: 'PAUSED', title: __('Paused') },
+        { value: 'AWAITING_INPUT', title: __('Awaiting input') },
+        { value: 'COMPLETED', title: __('Completed') },
+        { value: 'FAILED', title: __('Failed') },
+        { value: 'CANCELED', title: __('Canceled') },
+      ],
+    },
   ],
 };
 </script>
@@ -157,19 +187,6 @@ export default {
         </div>
       </template>
     </page-heading>
-    <gl-alert
-      v-if="showAlert"
-      variant="warning"
-      dismissible
-      class="gl-mx-4 gl-mt-2"
-      @dismiss="dismissAlert"
-    >
-      {{
-        s__(
-          'DuoAgentsPlatform|Raw text search is not currently supported. Please use the available search tokens.',
-        )
-      }}
-    </gl-alert>
     <filtered-search-bar
       v-if="hasInitialWorkflows"
       namespace="duo-agents-platform"
@@ -178,6 +195,7 @@ export default {
       :sort-options="$options.availableSortOptions"
       :initial-sort-by="initialSort"
       :initial-sort="initialSort"
+      recent-searches-storage-key="agent-sessions"
       sync-filter-and-sort
       terms-as-tokens
       class="gl-grow gl-border-t-0 gl-p-4"
