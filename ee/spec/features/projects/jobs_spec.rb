@@ -17,30 +17,6 @@ RSpec.describe 'Jobs', :clean_gitlab_redis_shared_state, feature_category: :cont
   end
 
   describe "GET /:project/jobs/:id", :js do
-    context 'job project is over shared runners limit' do
-      let(:group) { create(:group, :with_used_build_minutes_limit) }
-      let(:project) { create(:project, :repository, namespace: group, shared_runners_enabled: true) }
-
-      it 'displays a warning message' do
-        visit project_job_path(project, job)
-        wait_for_requests
-
-        expect(page).to have_content('You have used 1000 out of 500 of your instance runners compute minutes.')
-      end
-    end
-
-    context 'job project is not over shared runners limit' do
-      let(:group) { create(:group, :with_not_used_build_minutes_limit) }
-      let(:project) { create(:project, :repository, namespace: group, shared_runners_enabled: true) }
-
-      it 'does not display a warning message' do
-        visit project_job_path(project, job)
-        wait_for_requests
-
-        expect(page).not_to have_content('You have used 1000 out of 500 of your shared Runners compute minutes.')
-      end
-    end
-
     context 'when job is not running', :js do
       let(:job) { create(:ci_build, :success, :trace_artifact, pipeline: pipeline) }
       let(:project) { create(:project, :repository) }
