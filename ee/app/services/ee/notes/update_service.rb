@@ -23,6 +23,8 @@ module EE
       private
 
       def audit_comment_updated(note)
+        return unless note.resource_parent
+
         ::Gitlab::Audit::Auditor.audit({
           name: 'comment_updated',
           author: updated_by_user,

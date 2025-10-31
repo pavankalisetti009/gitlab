@@ -65,6 +65,18 @@ RSpec.describe Notes::UpdateService, feature_category: :team_planning do
 
           service.execute(note)
         end
+
+        context 'when note is on a personal snippet' do
+          let!(:note) { create(:note_on_personal_snippet) }
+
+          it 'does not audit the event' do
+            expect(::Gitlab::Audit::Auditor).not_to receive(:audit).with(
+              hash_including(name: 'comment_updated')
+            )
+
+            service.execute(note)
+          end
+        end
       end
 
       context 'when note is updated to commands only' do
