@@ -64,8 +64,8 @@ RSpec.describe 'Merge request > User sets approvers', :js, feature_category: :co
   end
 
   context "Group approvers" do
-    let!(:project) { create(:project, :public, :repository) }
-    let!(:group) { create(:group) }
+    let_it_be(:project) { create(:project, :public, :repository) }
+    let_it_be(:group) { create(:group) }
 
     context 'when creating an MR' do
       let(:other_user) { create(:user) }

@@ -6,15 +6,15 @@ RSpec.describe 'Incidents > User uses EE quick actions', :js, feature_category: 
   include Features::NotesHelpers
 
   describe 'incident-only commands' do
-    let!(:user) { create(:user) }
-    let!(:project) { create(:project) }
-    let!(:incident) { create(:incident, project: project) }
+    let_it_be(:user) { create(:user) }
+    let_it_be(:project) { create(:project) }
+    let_it_be(:incident, reload: true) { create(:incident, project: project) }
 
-    let!(:escalation_policy) do
+    let_it_be(:escalation_policy) do
       create(:incident_management_escalation_policy, project: project, name: 'spec policy')
     end
 
-    let!(:escalation_status) do
+    let_it_be(:escalation_status, reload: true) do
       create(:incident_management_issuable_escalation_status, issue: incident)
     end
 

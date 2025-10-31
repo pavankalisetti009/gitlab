@@ -57,7 +57,7 @@ RSpec.shared_examples 'page quick action' do
       end
 
       context 'when incident already has an alert' do
-        let!(:alert) { create(:alert_management_alert, issue: incident) }
+        let_it_be(:alert) { create(:alert_management_alert, issue: incident) }
 
         it 'starts escalation with the policy' do
           add_note('/page spec policy')
