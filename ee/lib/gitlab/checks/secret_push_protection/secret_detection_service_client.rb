@@ -78,8 +78,7 @@ module Gitlab
           exclusions.flat_map do |_type_key, exclusion_list|
             exclusion_list.map do |exclusion|
               ::Gitlab::SecretDetection::GRPC::Exclusion.new(
-                exclusion_type: ::Gitlab::Checks::SecretPushProtection::ExclusionsManager
-                                  .exclusion_type(exclusion.type),
+                exclusion_type: exclusion.exclusion_type,
                 value: exclusion.value
               )
             end
