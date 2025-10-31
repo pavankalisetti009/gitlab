@@ -5,8 +5,9 @@ require 'spec_helper'
 RSpec.describe Geo::BulkPrimaryVerificationService, :geo, feature_category: :geo_replication do
   include EE::GeoHelpers
 
-  let(:model_name) { 'upload' }
-  let(:service) { described_class.new(model_name) }
+  let(:model_name) { 'Upload' }
+  let(:params) { {} }
+  let(:service) { described_class.new(model_name, params) }
 
   before do
     stub_current_geo_node(create(:geo_node, :primary))
@@ -14,7 +15,8 @@ RSpec.describe Geo::BulkPrimaryVerificationService, :geo, feature_category: :geo
 
   describe '#async_execute' do
     it 'enqueues the worker and returns success response' do
-      expect(Geo::BulkPrimaryVerificationWorker).to receive(:perform_async).with(model_name)
+      expect(Geo::BulkPrimaryVerificationWorker).to receive(:perform_async)
+                                                      .with(model_name, params.deep_stringify_keys)
 
       result = service.async_execute
 
@@ -27,7 +29,7 @@ RSpec.describe Geo::BulkPrimaryVerificationService, :geo, feature_category: :geo
       let(:model_name) { 'invalid' }
 
       it 'returns and log an error' do
-        expect(Geo::BulkPrimaryVerificationWorker).not_to receive(:perform_async).with(model_name)
+        expect(Geo::BulkPrimaryVerificationWorker).not_to receive(:perform_async)
 
         result = service.async_execute
 
@@ -88,13 +90,113 @@ RSpec.describe Geo::BulkPrimaryVerificationService, :geo, feature_category: :geo
 
         service.execute
       end
+
+      context 'with checksum_state filters' do
+        let(:params) { { checksum_state: } }
+
+        context 'when filter is failed' do
+          let(:checksum_state) { 'verification_failed' }
+
+          it 'only updates failed records' do
+            expected_records = create_list(:upload, 2, :verification_failed)
+
+            service.execute
+
+            pending_records = Upload.verification_pending
+            expect(pending_records.size).to eq(2)
+            expect(pending_records).to match_array(expected_records)
+          end
+        end
+
+        context 'when filter is succeeded' do
+          let(:checksum_state) { 'verification_succeeded' }
+
+          it 'only updates succeeded records' do
+            expected_records = Upload.all
+
+            service.execute
+
+            pending_records = Upload.verification_pending
+            expect(pending_records.size).to eq(5)
+            expect(pending_records).to match_array(expected_records)
+          end
+        end
+
+        context 'when filter is disabled' do
+          let(:checksum_state) { 'verification_disabled' }
+
+          it 'only updates disabled records' do
+            expected_records = create_list(:upload,
+              2,
+              verification_state: Upload.verification_state_value(checksum_state))
+
+            service.execute
+
+            pending_records = Upload.verification_pending
+            expect(pending_records.size).to eq(2)
+            expect(pending_records).to match_array(expected_records)
+          end
+        end
+
+        context 'when filter is started' do
+          let(:checksum_state) { 'verification_started' }
+
+          it 'only updates started records' do
+            expected_records = create_list(:upload,
+              2,
+              verification_state: Upload.verification_state_value(checksum_state))
+
+            service.execute
+
+            pending_records = Upload.verification_pending
+            expect(pending_records.size).to eq(2)
+            expect(pending_records).to match_array(expected_records)
+          end
+        end
+      end
+
+      context 'with id filters' do
+        let(:params) { { identifiers: } }
+        let!(:identifiers) { [Upload.first.verification_state_object.id, Upload.last.verification_state_object.id] }
+
+        it 'only updates selected records' do
+          expected_records = Upload.where(id: identifiers)
+
+          service.execute
+
+          pending_records = Upload.verification_pending
+          expect(pending_records.size).to eq(2)
+          expect(pending_records).to match_array(expected_records)
+        end
+      end
+
+      context 'with id and state filters' do
+        let(:params) do
+          { identifiers: [Upload.first.verification_state_object.id, Upload.last.verification_state_object.id],
+            checksum_state: :verification_failed }
+        end
+
+        before do
+          Upload.first.verification_failed_with_message!('error', StandardError.new('some error'))
+        end
+
+        it 'only updates matching records' do
+          expected_records = [Upload.first]
+
+          service.execute
+
+          pending_records = Upload.verification_pending
+          expect(pending_records.size).to eq(1)
+          expect(pending_records).to match_array(expected_records)
+        end
+      end
     end
 
     context 'with invalid model_name' do
       let(:model_name) { 'invalid' }
 
       it 'returns and log an error' do
-        expect(Geo::BulkPrimaryVerificationWorker).not_to receive(:perform_async).with(model_name)
+        expect(Geo::BulkPrimaryVerificationWorker).not_to receive(:perform_async)
 
         result = service.execute
 
@@ -117,7 +219,8 @@ RSpec.describe Geo::BulkPrimaryVerificationService, :geo, feature_category: :geo
       end
 
       it 'reenqueues the worker for continuation' do
-        expect(Geo::BulkPrimaryVerificationWorker).to receive(:perform_in).with(10.seconds, model_name)
+        expect(Geo::BulkPrimaryVerificationWorker).to receive(:perform_in)
+                                                        .with(10.seconds, model_name, params.stringify_keys)
 
         service.execute
       end
@@ -221,7 +324,7 @@ RSpec.describe Geo::BulkPrimaryVerificationService, :geo, feature_category: :geo
     where(model_classes: Gitlab::Geo::Replicator.subclasses.map(&:model))
 
     with_them do
-      let(:model_name) { Gitlab::Geo::ModelMapper.convert_to_name(model_classes) }
+      let(:model_name) { model_classes.name }
       let(:factory) { factory_name(model_classes) }
 
       it 'updates verification states' do

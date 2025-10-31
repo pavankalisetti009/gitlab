@@ -2,10 +2,11 @@
 
 module Geo
   # Base service that batches over all records associated with a given class.
-  # Parameters are the worker which will implement the service and its parameters.
   # Subclasses need to implement `attributes_to_update`, `apply_update_scope` and `model_to_update` to define on
   # which attribute and subset of data the update applies to, and `worker` to define which worker is responsible
   # for running the background job async.
+  # The service takes as arguments a class_name, which is the name of the class which records (or related records)
+  # we want to update, and some params which is a hash used to filter through the records to update.
   class BaseBatchBulkUpdateService
     include ::Gitlab::Geo::LogHelpers
 
@@ -13,21 +14,23 @@ module Geo
     BATCH_SIZE = 1_000
     PERFORM_IN = 10.seconds
 
-    def initialize(worker_params)
-      @worker_params = worker_params
+    def initialize(class_name, params)
+      @class_name = class_name
+      @serialized_worker_params = params.deep_stringify_keys
+      @params = params.with_indifferent_access
     end
 
     def async_execute
-      return error_response("No table found from #{worker_params}", job_status: :failed) unless model_class
+      return error_response("No table found from #{class_name}", job_status: :failed) unless model_class
 
-      worker.perform_async(worker_params)
+      worker.perform_async(class_name, serialized_worker_params)
 
       ServiceResponse.success(message: 'Batch update job has been successfully enqueued.',
         payload: { status: :pending })
     end
 
     def execute
-      return error_response("No table found from #{worker_params}", job_status: :failed) unless model_class
+      return error_response("No table found from #{class_name}", job_status: :failed) unless model_class
 
       runtime_limiter = Gitlab::Metrics::RuntimeLimiter.new(TIME_LIMIT)
       status = :completed
@@ -44,7 +47,7 @@ module Geo
           message = "#{TIME_LIMIT} seconds limit reached on #{model_to_update.name} update. \
                      A new job will be re-enqueued in #{PERFORM_IN} seconds to continue processing the records."
 
-          worker.perform_in(PERFORM_IN, worker_params)
+          worker.perform_in(PERFORM_IN, class_name, serialized_worker_params)
           break
         end
         # rubocop:enable Style/Next
@@ -57,7 +60,7 @@ module Geo
 
     private
 
-    attr_reader :worker_params
+    attr_reader :params, :serialized_worker_params, :class_name
 
     def attributes_to_update
       raise NotImplementedError

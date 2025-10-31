@@ -6,11 +6,11 @@ RSpec.describe Geo::BulkPrimaryVerificationWorker, :geo, feature_category: :geo_
   include ::EE::GeoHelpers
 
   it_behaves_like 'an idempotent worker' do
-    let_it_be(:job_args) { ['project'] }
+    let_it_be(:job_args) { 'Project' }
   end
 
   describe 'concurrent execution and deduplication' do
-    let(:model_name) { 'upload' }
+    let(:model_name) { 'Upload' }
 
     before do
       stub_current_geo_node(create(:geo_node, :primary))
