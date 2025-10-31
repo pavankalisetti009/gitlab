@@ -1,6 +1,5 @@
 import { shallowMount } from '@vue/test-utils';
-import { GlAlert, GlExperimentBadge } from '@gitlab/ui';
-import { nextTick } from 'vue';
+import { GlExperimentBadge } from '@gitlab/ui';
 import PageHeading from '~/vue_shared/components/page_heading.vue';
 
 import AgentFlowList from 'ee/ai/duo_agents_platform/components/common/agent_flow_list.vue';
@@ -8,10 +7,7 @@ import AgentsPlatformIndex from 'ee/ai/duo_agents_platform/pages/index/duo_agent
 import FilteredSearchBar from '~/vue_shared/components/filtered_search_bar/filtered_search_bar_root.vue';
 
 import waitForPromises from 'helpers/wait_for_promises';
-
 import { mockAgentFlowsResponse } from '../../../mocks';
-
-jest.mock('~/alert');
 
 describe('AgentsPlatformIndex', () => {
   let wrapper;
@@ -34,7 +30,6 @@ describe('AgentsPlatformIndex', () => {
         ...provide,
       },
     });
-
     return waitForPromises();
   };
 
@@ -43,7 +38,6 @@ describe('AgentsPlatformIndex', () => {
   const findPageHeading = () => wrapper.findComponent(PageHeading);
   const findExperimentBadge = () => wrapper.findComponent(GlExperimentBadge);
   const findFilteredSearchBar = () => wrapper.findComponent(FilteredSearchBar);
-  const findAlert = () => wrapper.findComponent(GlAlert);
 
   afterEach(() => {
     jest.clearAllMocks();
@@ -115,6 +109,12 @@ describe('AgentsPlatformIndex', () => {
       await createWrapper();
     });
 
+    const expectQueryVariablesUpdatedEvent = (expectedPayload) => {
+      const emittedEvents = wrapper.emitted('query-variables-updated');
+      expect(emittedEvents).toHaveLength(2);
+      expect(emittedEvents[1]).toEqual([expectedPayload]);
+    };
+
     it('renders the filtered search bar with correct props', () => {
       expect(findFilteredSearchBar().exists()).toBe(true);
       expect(findFilteredSearchBar().props()).toMatchObject({
@@ -150,7 +150,7 @@ describe('AgentsPlatformIndex', () => {
     it('renders the filtered search bar with filter tokens', () => {
       const tokens = findFilteredSearchBar().props('tokens');
 
-      expect(tokens).toHaveLength(1);
+      expect(tokens).toHaveLength(2);
 
       expect(tokens[0]).toMatchObject({
         type: 'flow-name',
@@ -161,6 +161,21 @@ describe('AgentsPlatformIndex', () => {
       expect(tokens[0].options).toEqual([
         { value: 'software_development', title: 'Software Development' },
         { value: 'convert_to_gitlab_ci', title: 'Convert to gitlab ci' },
+      ]);
+
+      expect(tokens[1]).toMatchObject({
+        type: 'flow-status-group',
+        title: 'Status',
+        icon: 'status',
+        unique: true,
+      });
+      expect(tokens[1].options).toEqual([
+        { value: 'ACTIVE', title: 'Active' },
+        { value: 'PAUSED', title: 'Paused' },
+        { value: 'AWAITING_INPUT', title: 'Awaiting input' },
+        { value: 'COMPLETED', title: 'Completed' },
+        { value: 'FAILED', title: 'Failed' },
+        { value: 'CANCELED', title: 'Canceled' },
       ]);
     });
 
@@ -175,69 +190,70 @@ describe('AgentsPlatformIndex', () => {
     });
 
     describe('when sorting', () => {
-      it('emits update-sort event when onSort is triggered', () => {
+      it('emits query-variables-updated event when onSort is triggered', () => {
         findFilteredSearchBar().vm.$emit('onSort', 'UPDATED_DESC');
 
-        expect(wrapper.emitted('update-sort')).toEqual([['UPDATED_DESC']]);
+        expectQueryVariablesUpdatedEvent({
+          sort: 'UPDATED_DESC',
+          pagination: { before: null, after: null, first: 20, last: null },
+          filters: {},
+        });
       });
     });
 
     describe('when filtering', () => {
       describe('with valid flow-name token', () => {
-        it('emits update-filters event with processed filter parameters', () => {
+        it('emits query-variables-updated event with processed filter parameters', () => {
           const filters = [{ type: 'flow-name', value: { data: 'convert_to_gitlab_ci' } }];
 
           findFilteredSearchBar().vm.$emit('onFilter', filters);
 
-          expect(wrapper.emitted('update-filters')).toEqual([[{ type: 'convert_to_gitlab_ci' }]]);
+          expectQueryVariablesUpdatedEvent({
+            sort: 'UPDATED_DESC',
+            pagination: { before: null, after: null, first: 20, last: null },
+            filters: { type: 'convert_to_gitlab_ci' },
+          });
         });
+      });
 
-        it('hides alert when valid filters are applied', () => {
-          const filters = [{ type: 'flow-name', value: { data: 'software_development' } }];
+      describe('with valid flow-status-group token', () => {
+        it('emits query-variables-updated event with processed filter parameters', () => {
+          const filters = [{ type: 'flow-status-group', value: { data: 'PAUSED' } }];
 
           findFilteredSearchBar().vm.$emit('onFilter', filters);
 
-          expect(findAlert().exists()).toBe(false);
+          expectQueryVariablesUpdatedEvent({
+            sort: 'UPDATED_DESC',
+            pagination: { before: null, after: null, first: 20, last: null },
+            filters: { statusGroup: 'PAUSED' },
+          });
         });
       });
 
       describe('with unsupported free text search', () => {
-        it('shows alert and does not emit update-filters', async () => {
+        it('emits query-variables-updated event with processed filter parameters', () => {
           const filters = [{ type: 'filtered-search-term', value: { data: 'software dev' } }];
 
           findFilteredSearchBar().vm.$emit('onFilter', filters);
-          await nextTick();
 
-          expect(findAlert().exists()).toBe(true);
-          expect(findAlert().props('variant')).toBe('warning');
-          expect(findAlert().text()).toContain('Raw text search is not currently supported');
-          expect(wrapper.emitted('update-filters')).toBeUndefined();
+          expectQueryVariablesUpdatedEvent({
+            sort: 'UPDATED_DESC',
+            pagination: { before: null, after: null, first: 20, last: null },
+            filters: { search: 'software dev' },
+          });
         });
       });
 
       describe('when filters are cleared', () => {
-        it('emits update-filters event with empty filters', () => {
+        it('emits query-variables-updated event with empty filters', () => {
           findFilteredSearchBar().vm.$emit('onFilter', []);
 
-          expect(wrapper.emitted('update-filters')).toEqual([[{}]]);
+          expectQueryVariablesUpdatedEvent({
+            sort: 'UPDATED_DESC',
+            pagination: { before: null, after: null, first: 20, last: null },
+            filters: {},
+          });
         });
-      });
-    });
-
-    describe('alert dismissal', () => {
-      beforeEach(() => {
-        // Trigger alert by using unsupported search
-        const filters = [{ type: 'filtered-search-term', value: { data: 'test' } }];
-        findFilteredSearchBar().vm.$emit('onFilter', filters);
-      });
-
-      it('hides alert when dismissed', async () => {
-        expect(findAlert().exists()).toBe(true);
-
-        findAlert().vm.$emit('dismiss');
-        await nextTick();
-
-        expect(findAlert().exists()).toBe(false);
       });
     });
   });
@@ -248,16 +264,20 @@ describe('AgentsPlatformIndex', () => {
     });
 
     describe('when next page is requested', () => {
-      it('emits update-pagination event with correct parameters', () => {
+      it('emits query-variables-updated event with correct parameters', () => {
         findWorkflowsList().vm.$emit('next-page');
 
-        expect(wrapper.emitted('update-pagination')).toEqual([
+        expect(wrapper.emitted('query-variables-updated')).toEqual([
           [
             {
-              before: null,
-              after: 'asdf',
-              first: 20,
-              last: null,
+              sort: 'UPDATED_DESC',
+              pagination: {
+                before: null,
+                after: 'asdf',
+                first: 20,
+                last: null,
+              },
+              filters: {},
             },
           ],
         ]);
@@ -265,16 +285,20 @@ describe('AgentsPlatformIndex', () => {
     });
 
     describe('when previous page is requested', () => {
-      it('emits update-pagination event with correct parameters', () => {
+      it('emits query-variables-updated event with correct parameters', () => {
         findWorkflowsList().vm.$emit('prev-page');
 
-        expect(wrapper.emitted('update-pagination')).toEqual([
+        expect(wrapper.emitted('query-variables-updated')).toEqual([
           [
             {
-              after: null,
-              before: 'asdf',
-              first: null,
-              last: 20,
+              sort: 'UPDATED_DESC',
+              pagination: {
+                after: null,
+                before: 'asdf',
+                first: null,
+                last: 20,
+              },
+              filters: {},
             },
           ],
         ]);

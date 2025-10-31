@@ -6,7 +6,9 @@ query getUserAgentFlows(
   $first: Int
   $last: Int
   $excludeTypes: [String!]
+  $search: String
   $sort: DuoWorkflowsWorkflowSort
+  $statusGroup: DuoWorkflowStatusGroup
   $type: String
 ) {
   duoWorkflowWorkflows(
@@ -15,7 +17,9 @@ query getUserAgentFlows(
     last: $last
     before: $before
     excludeTypes: $excludeTypes
+    search: $search
     sort: $sort
+    statusGroup: $statusGroup
     type: $type
   ) {
     pageInfo {
