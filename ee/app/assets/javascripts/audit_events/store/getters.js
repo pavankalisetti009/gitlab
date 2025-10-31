@@ -13,6 +13,6 @@ export const buildExportHref = (state) => (exportUrl) => {
       startDate: state.startDate,
       endDate: state.endDate,
     }),
-    exportUrl,
+    { url: exportUrl },
   );
 };

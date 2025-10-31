@@ -25,10 +25,16 @@ export default {
   },
   computed: {
     previousLink() {
-      return setUrlParams({ before: this.pageInfo.startCursor, after: null }, window.location.href);
+      return setUrlParams(
+        { before: this.pageInfo.startCursor, after: null },
+        { url: window.location.href },
+      );
     },
     nextLink() {
-      return setUrlParams({ before: null, after: this.pageInfo.endCursor }, window.location.href);
+      return setUrlParams(
+        { before: null, after: this.pageInfo.endCursor },
+        { url: window.location.href },
+      );
     },
   },
   methods: {

@@ -45,7 +45,7 @@ export const fromSearchToUrl = (search, url = window.location.href) => {
     ...filterToQueryObject(processFilters(eeFilters)),
   };
 
-  return setUrlParams(eeFilterParams, ceUrl, false, true, true);
+  return setUrlParams(eeFilterParams, { url: ceUrl, railsArraySyntax: true, decodeParams: true });
 };
 
 export const fromSearchToVariables = (search) => {

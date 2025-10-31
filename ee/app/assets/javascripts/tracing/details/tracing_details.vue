@@ -136,13 +136,12 @@ export default {
       this.isDrawerOpen = false;
     },
     buildUrlWithQuery(queryParams, url) {
-      return setUrlParams(
-        queryParams,
-        getNormalizedURL(url),
-        true, // clearParams
-        true, // railsArraySyntax
-        true, // decodeParams
-      );
+      return setUrlParams(queryParams, {
+        url: getNormalizedURL(url),
+        clearParams: true,
+        railsArraySyntax: true,
+        decodeParams: true,
+      });
     },
   },
   SPANS_LIMIT,

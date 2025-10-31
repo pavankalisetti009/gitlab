@@ -157,7 +157,7 @@ export default {
         window.location.pathname,
         encodeURIComponent(metricId),
       );
-      const fullUrl = setUrlParams({ type: encodeURIComponent(metricType), ...query }, url);
+      const fullUrl = setUrlParams({ type: encodeURIComponent(metricType), ...query }, { url });
       visitUrl(sanitize(fullUrl), external);
     },
     onFilter(filterTokens) {

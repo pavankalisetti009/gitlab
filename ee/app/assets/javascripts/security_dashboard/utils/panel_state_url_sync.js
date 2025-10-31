@@ -64,8 +64,7 @@ export function writeToUrl({ panelId, paramName, value, defaultValue }) {
   const params = {};
 
   params[panelParamName] = isDefault ? undefined : stringValue;
-  // Passing true for last param to make sure params are decoded
-  const url = setUrlParams(params, window.location.href, false, false, true);
+  const url = setUrlParams(params, { url: window.location.href, decodeParams: true });
 
   updateHistory({ url, replace: true });
 }

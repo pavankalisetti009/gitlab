@@ -484,8 +484,7 @@ describe('GeoReplicableApp', () => {
       ]);
       expect(setUrlParams).toHaveBeenCalledWith(
         { ...MOCK_PROCESSED_FILTERS.query, ...DEFAULT_CURSOR, sort: 'id_asc' },
-        MOCK_PROCESSED_FILTERS.url.href,
-        true,
+        { url: MOCK_PROCESSED_FILTERS.url.href, clearParams: true },
       );
       expect(visitUrl).toHaveBeenCalledWith(MOCK_UPDATED_URL);
     });
@@ -511,8 +510,7 @@ describe('GeoReplicableApp', () => {
       ]);
       expect(setUrlParams).toHaveBeenCalledWith(
         { ...MOCK_PROCESSED_FILTERS.query, ...DEFAULT_CURSOR, sort: 'id_asc' },
-        MOCK_PROCESSED_FILTERS.url.href,
-        true,
+        { url: MOCK_PROCESSED_FILTERS.url.href, clearParams: true },
       );
       expect(updateHistory).toHaveBeenCalledWith({ url: MOCK_UPDATED_URL });
     });

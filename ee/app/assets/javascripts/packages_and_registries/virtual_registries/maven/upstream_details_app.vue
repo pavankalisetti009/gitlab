@@ -157,7 +157,7 @@ export default {
 
       if (Object.keys(params).length > 0) {
         updateHistory({
-          url: setUrlParams(params, window.location.href, true),
+          url: setUrlParams(params, { url: window.location.href, clearParams: true }),
         });
       }
     },

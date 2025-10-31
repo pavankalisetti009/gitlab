@@ -300,7 +300,10 @@ export default {
     },
     performFilter(filters) {
       const currentHash = getLocationHash();
-      const newUrl = setUrlParams({ search: filters.search }, window.location.href, true);
+      const newUrl = setUrlParams(
+        { search: filters.search },
+        { url: window.location.href, clearParams: true },
+      );
       const urlWithHashPreserved = newUrl.split('#')[0] + (currentHash ? `#${currentHash}` : '');
       updateHistory({
         url: urlWithHashPreserved,
