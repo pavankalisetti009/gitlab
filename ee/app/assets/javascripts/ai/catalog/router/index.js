@@ -69,7 +69,7 @@ export const createRouter = (base) => {
             component: AiCatalogAgentsNew,
             beforeEnter: requireAuth,
             meta: {
-              text: s__('AICatalog|New'),
+              text: s__('AICatalog|New agent'),
             },
           },
           {
@@ -129,7 +129,7 @@ export const createRouter = (base) => {
                   component: AiCatalogFlowsNew,
                   beforeEnter: requireAuth,
                   meta: {
-                    text: s__('AICatalog|New'),
+                    text: s__('AICatalog|New flow'),
                   },
                 },
                 {

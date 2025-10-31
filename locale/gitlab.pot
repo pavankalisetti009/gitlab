@@ -2782,9 +2782,6 @@ msgstr ""
 msgid "AICatalog|Name your flow."
 msgstr ""
 
-msgid "AICatalog|New"
-msgstr ""
-
 msgid "AICatalog|New agent"
 msgstr ""
 
@@ -25011,9 +25008,6 @@ msgid "DuoAgentsPlatform|List files"
 msgstr ""
 
 msgid "DuoAgentsPlatform|Manage automated flows within your project."
-msgstr ""
-
-msgid "DuoAgentsPlatform|New"
 msgstr ""
 
 msgid "DuoAgentsPlatform|New agent sessions will appear here."
