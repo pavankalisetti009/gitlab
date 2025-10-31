@@ -11,7 +11,7 @@ RSpec.shared_examples 'dashboard ultimate trial callout' do
     expect(page).not_to have_selector '[data-testid="start-trial-banner"]'
   end
 
-  describe '.com', :saas, :with_trial_types do
+  describe '.com', :saas, :with_trial_types, :with_namespace_eligible_trials do
     it 'shows dismissable promotion callout if default dashboard for an owner', :js do
       group = create(:group)
       group.add_owner(user)

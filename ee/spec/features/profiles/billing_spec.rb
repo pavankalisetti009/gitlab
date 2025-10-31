@@ -60,7 +60,7 @@ RSpec.describe 'Profiles > Billing', :js, feature_category: :subscription_manage
       end
 
       context "with a maintained or owned group" do
-        it 'displays help for moving groups' do
+        it 'displays help for moving groups', :with_namespace_eligible_trials do
           create(:group).add_owner user
           visit profile_billings_path
 

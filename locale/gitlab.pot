@@ -20603,6 +20603,9 @@ msgstr ""
 msgid "CurrentUser|Preferences"
 msgstr ""
 
+msgid "CurrentUser|Start an Ultimate trial"
+msgstr ""
+
 msgid "CurrentUser|Switch to GitLab Next"
 msgstr ""
 

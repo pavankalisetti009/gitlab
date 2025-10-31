@@ -170,12 +170,11 @@ RSpec.describe ::SidebarsHelper, feature_category: :navigation do
         helper.super_sidebar_context(user, group: nil, project: nil, panel: panel, panel_type: nil)
       end
 
-      it 'returns upgrade url' do
-        expect_next_instance_of(GitlabSubscriptions::UpgradePresenter) do |presenter|
-          expect(presenter).to receive(:attributes).and_return({ upgrade_url: '/path' })
-        end
+      it 'returns upgrade link' do
+        stub_saas_features(gitlab_com_subscriptions: true)
+        allow(::GitlabSubscriptions::Trials).to receive(:no_eligible_namespaces_for_user?).and_return(true)
 
-        expect(super_sidebar_context).to include(:upgrade_url)
+        expect(super_sidebar_context).to include(:upgrade_link)
       end
 
       describe 'for Duo agent platform widget' do

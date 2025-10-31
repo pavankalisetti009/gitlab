@@ -1,29 +1,25 @@
 <script>
 import { GlDisclosureDropdownGroup, GlDisclosureDropdownItem, GlIcon } from '@gitlab/ui';
-import { s__ } from '~/locale';
 import { USER_MENU_TRACKING_DEFAULTS } from '~/super_sidebar/constants';
 
 export default {
   name: 'UserMenuUpgradeSubscription',
-  i18n: {
-    upgradeSubscription: s__('CurrentUser|Upgrade subscription'),
-  },
   components: {
     GlDisclosureDropdownGroup,
     GlDisclosureDropdownItem,
     GlIcon,
   },
   props: {
-    upgradeUrl: {
+    upgradeLink: {
+      type: Object,
       required: true,
-      type: String,
     },
   },
   computed: {
     upgradeSubscriptionItem() {
       return {
-        text: this.$options.i18n.upgradeSubscription,
-        href: this.upgradeUrl,
+        text: this.upgradeLink.text,
+        href: this.upgradeLink.url,
         extraAttrs: {
           ...USER_MENU_TRACKING_DEFAULTS,
           'data-track-label': 'upgrade_subscription',

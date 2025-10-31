@@ -5,10 +5,10 @@ import UserMenuUpgradeSubscription from 'ee/super_sidebar/components/user_menu_u
 describe('UserMenuUpgradeSubscription component', () => {
   let wrapper;
 
-  const createWrapper = (upgradeUrl = null) => {
+  const createWrapper = (upgradeLink = {}) => {
     wrapper = mountExtended(UserMenuUpgradeSubscription, {
       propsData: {
-        upgradeUrl,
+        upgradeLink,
       },
     });
   };
@@ -18,7 +18,7 @@ describe('UserMenuUpgradeSubscription component', () => {
 
   describe('when upgrade subscription is available', () => {
     beforeEach(() => {
-      createWrapper('/groups/test-group/-/billings');
+      createWrapper({ url: '/groups/test-group/-/billings', text: 'Upgrade subscription' });
     });
 
     it('renders the upgrade subscription group', () => {

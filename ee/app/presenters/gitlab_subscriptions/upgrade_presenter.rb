@@ -37,7 +37,12 @@ module GitlabSubscriptions
       def attributes
         return {} unless eligible_for_upgrade?
 
-        { upgrade_url: ::Gitlab::Routing.url_helpers.group_billings_path(namespace) }
+        {
+          upgrade_link: {
+            url: ::Gitlab::Routing.url_helpers.group_billings_path(namespace),
+            text: s_('CurrentUser|Upgrade subscription')
+          }
+        }
       end
 
       private
@@ -59,16 +64,35 @@ module GitlabSubscriptions
       end
 
       def attributes
-        return {} unless has_upgradeable_groups?
+        link = upgrade_link
+        return {} if link.empty?
 
-        { upgrade_url: owned_groups_url }
+        { upgrade_link: link }
       end
 
       private
 
       attr_reader :user
 
-      def has_upgradeable_groups?
+      def upgrade_link
+        if can_upgrade_subscription?
+          {
+            url: owned_groups_url,
+            text: s_('CurrentUser|Upgrade subscription')
+          }
+        elsif can_start_trial?
+          {
+            url: ::Gitlab::Routing.url_helpers.new_trial_path(
+              glm_source: 'gitlab.com', glm_content: 'top-right-dropdown'
+            ),
+            text: s_('CurrentUser|Start an Ultimate trial')
+          }
+        else
+          {}
+        end
+      end
+
+      def can_upgrade_subscription?
         owned_groups_url.present?
       end
 
@@ -87,6 +111,12 @@ module GitlabSubscriptions
         end
       end
       strong_memoize_attr :owned_groups_url
+
+      def can_start_trial?
+        Rails.cache.fetch(['users', user.id, 'can_start_trial'], expires_in: 10.minutes) do
+          GitlabSubscriptions::Trials.no_eligible_namespaces_for_user?(user)
+        end
+      end
     end
   end
 end
