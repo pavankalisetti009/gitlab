@@ -257,19 +257,100 @@ RSpec.describe Ai::ActiveContext::Queries::Code, feature_category: :code_suggest
       end
 
       context 'when a project has no code embeddings' do
-        before do
-          project.ready_active_context_code_repository.destroy!
-          project_2.ready_active_context_code_repository.pending!
+        shared_examples 'returns no code embeddings error result' do
+          it 'returns a result with the expected error_code and error_message' do
+            expect(result.success?).to be_falsey
+            expect(result.error_code).to eq(Ai::ActiveContext::Queries::Result::ERROR_NO_EMBEDDINGS)
+
+            expect(result.error_message(target_class: Project, target_id: project_id)).to eq(
+              "Project '#{project_id}' has no embeddings - #{expected_error_detail}"
+            )
+          end
         end
 
-        it 'returns a failure response' do
-          project_1_result = codebase_query.filter(project_id: project.id)
-          expect(project_1_result.success?).to be_falsey
-          expect(project_1_result.error_code).to eq(Ai::ActiveContext::Queries::Result::ERROR_NO_EMBEDDINGS)
+        let(:result) { codebase_query.filter(project_id: project_id) }
 
-          project_2_result = codebase_query.filter(project_id: project_2.id)
-          expect(project_2_result.success?).to be_falsey
-          expect(project_2_result.error_code).to eq(Ai::ActiveContext::Queries::Result::ERROR_NO_EMBEDDINGS)
+        context 'when project has no ActiveContext repository record' do
+          before do
+            project.reload.ready_active_context_code_repository.destroy!
+
+            allow(Ai::ActiveContext::Code::AdHocIndexingWorker).to receive(:perform_async)
+          end
+
+          let(:project_id) { project.id }
+
+          it 'triggers ad-hoc indexing' do
+            expect(Ai::ActiveContext::Code::AdHocIndexingWorker).to receive(:perform_async).with(project.id)
+
+            result
+          end
+
+          it_behaves_like 'returns no code embeddings error result' do
+            let(:expected_error_detail) { described_class::MESSAGE_INITIAL_INDEXING_STARTED }
+          end
+
+          context 'when ad-hoc indexing attempt fails' do
+            before do
+              allow(Ai::ActiveContext::Code::AdHocIndexingWorker).to receive(:perform_async)
+                .and_raise(StandardError, "There is an error")
+
+              allow(::ActiveContext::Config).to receive(:logger).and_return(logger)
+            end
+
+            let(:logger) { instance_double(::Gitlab::ActiveContext::Logger, warn: nil) }
+
+            it 'logs the error' do
+              expect(logger).to receive(:warn).with({
+                "class" => "Ai::ActiveContext::Queries::Code",
+                "message" => "Failed to trigger ad-hoc indexing",
+                "exception_class" => "StandardError",
+                "exception_message" => "There is an error",
+                "project_id" => project_id
+              })
+
+              result
+            end
+
+            it_behaves_like 'returns no code embeddings error result' do
+              let(:expected_error_detail) { described_class::MESSAGE_ADHOC_INDEXING_TRIGGER_FAILED }
+            end
+          end
+        end
+
+        context 'when project has a failed ActiveContext repository record' do
+          before do
+            project_2.reload.ready_active_context_code_repository.failed!
+          end
+
+          let(:project_id) { project_2.id }
+
+          it 'does not trigger ad-hoc indexing' do
+            expect(Ai::ActiveContext::Code::AdHocIndexingWorker).not_to receive(:perform_async)
+
+            result
+          end
+
+          it_behaves_like 'returns no code embeddings error result' do
+            let(:expected_error_detail) { described_class::MESSAGE_INDEXING_FAILED }
+          end
+        end
+
+        context 'when project has a non-ready and not failed ActiveContext repository record' do
+          before do
+            project_2.reload.ready_active_context_code_repository.pending!
+          end
+
+          let(:project_id) { project_2.id }
+
+          it 'does not trigger ad-hoc indexing' do
+            expect(Ai::ActiveContext::Code::AdHocIndexingWorker).not_to receive(:perform_async)
+
+            result
+          end
+
+          it_behaves_like 'returns no code embeddings error result' do
+            let(:expected_error_detail) { described_class::MESSAGE_INITIAL_INDEXING_ONGOING }
+          end
         end
       end
     end

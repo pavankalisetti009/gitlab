@@ -277,8 +277,11 @@ RSpec.describe Gitlab::Llm::Chain::Tools::CodebaseSearch::Executor, feature_cate
 
           context 'when the search on a project has an accepted failure' do
             before do
+              error_result = Ai::ActiveContext::Queries::Result.no_embeddings_error(
+                error_detail: "initial indexing has been started"
+              )
               allow(codebase_query).to receive(:filter).with(project_id: project_2.id, path: nil)
-                .and_return(Ai::ActiveContext::Queries::Result.no_embeddings_error)
+                .and_return(error_result)
             end
 
             it 'runs successfully but indicates the error' do
@@ -290,8 +293,8 @@ RSpec.describe Gitlab::Llm::Chain::Tools::CodebaseSearch::Executor, feature_cate
                   ac['id'] == "gid://gitlab/Project/#{project_2.id}"
               end
               expect(project_2_ac['content']).to include(
-                "A semantic search was attempted on the repository, " \
-                  "but there was an error:\nProject '#{project_2.id}' has no embeddings."
+                "A semantic search was attempted on the repository, but there was an error:\n" \
+                  "Project '#{project_2.id}' has no embeddings - initial indexing has been started."
               )
             end
           end

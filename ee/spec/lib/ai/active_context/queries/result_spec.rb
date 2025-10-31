@@ -39,8 +39,16 @@ RSpec.describe Ai::ActiveContext::Queries::Result, feature_category: :code_sugge
 
       it_behaves_like 'failure result'
 
-      it 'returns the expected error message' do
+      it 'returns "Unknown error"' do
         expect(result.error_message(target_class: nil, target_id: nil)).to eq("Unknown error")
+      end
+
+      context 'when `error_detail` is provided' do
+        subject(:result) { described_class.error(error_code, error_detail: "This is an error") }
+
+        it 'returns the `error_detail` as the message' do
+          expect(result.error_message(target_class: nil, target_id: nil)).to eq("This is an error")
+        end
       end
     end
 
@@ -56,6 +64,17 @@ RSpec.describe Ai::ActiveContext::Queries::Result, feature_category: :code_sugge
         expected_error_message = "Project 'some/path' has no embeddings"
 
         expect(result_error_message).to eq(expected_error_message)
+      end
+
+      context 'when `error_detail` is provided' do
+        subject(:result) { described_class.no_embeddings_error(error_detail: "check again later") }
+
+        it 'includes the `error_detail` in the error_message' do
+          result_error_message = result.error_message(target_class: "Project", target_id: "some/path")
+          expected_error_message = "Project 'some/path' has no embeddings - check again later"
+
+          expect(result_error_message).to eq(expected_error_message)
+        end
       end
     end
 
