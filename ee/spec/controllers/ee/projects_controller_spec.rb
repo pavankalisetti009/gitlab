@@ -735,7 +735,7 @@ RSpec.describe ProjectsController, feature_category: :groups_and_projects do
       end
     end
 
-    context 'when duo_context_exclusion_settings is specified' do
+    context 'when duo_context_exclusion_settings are specified' do
       let(:request) do
         put :update, params: { namespace_id: project.namespace, id: project, project: params }
       end
@@ -756,20 +756,43 @@ RSpec.describe ProjectsController, feature_category: :groups_and_projects do
       context 'with licensed AI features' do
         before do
           stub_licensed_features(ai_features: true)
+          stub_feature_flags(use_duo_context_exclusion: true)
           project.project_setting.update!(duo_context_exclusion_settings: { exclusion_rules: [] })
         end
 
-        it 'updates duo_context_exclusion_settings' do
-          expect { request }
-            .to change { project.reload.project_setting.duo_context_exclusion_settings }
-            .from({ "exclusion_rules" => [] })
-            .to(exclusion_settings.stringify_keys)
+        context 'with experiment features enabled' do
+          before do
+            project.root_ancestor.namespace_settings.update!(experiment_features_enabled: true)
+            stub_application_setting(instance_level_ai_beta_features_enabled: false)
+          end
+
+          it 'updates duo_context_exclusion_settings' do
+            expect { request }
+              .to change { project.reload.project_setting.duo_context_exclusion_settings }
+              .from({ "exclusion_rules" => [] })
+              .to(exclusion_settings.stringify_keys)
+          end
+        end
+
+        context 'with instance-level beta features enabled' do
+          before do
+            allow(project.root_ancestor).to receive(:experiment_features_enabled).and_return(false)
+            stub_application_setting(instance_level_ai_beta_features_enabled: true)
+          end
+
+          it 'updates duo_context_exclusion_settings' do
+            expect { request }
+              .to change { project.reload.project_setting.duo_context_exclusion_settings }
+              .from({ "exclusion_rules" => [] })
+              .to(exclusion_settings.stringify_keys)
+          end
         end
 
         context 'with existing exclusion settings' do
           let(:initial_settings) { { exclusion_rules: ['*.txt'] } }
 
           before do
+            allow(project.root_ancestor).to receive(:experiment_features_enabled).and_return(true)
             project.project_setting.update!(duo_context_exclusion_settings: initial_settings)
           end
 
@@ -786,6 +809,7 @@ RSpec.describe ProjectsController, feature_category: :groups_and_projects do
           let(:exclusion_settings) { { exclusion_rules: nil } }
 
           before do
+            allow(project.root_ancestor).to receive(:experiment_features_enabled).and_return(true)
             project.project_setting.update!(duo_context_exclusion_settings: { exclusion_rules: ['*.log'] })
           end
 
