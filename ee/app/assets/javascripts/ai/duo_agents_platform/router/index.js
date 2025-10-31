@@ -87,7 +87,7 @@ export const createRouter = (base, namespace) => {
             path: 'new',
             component: FlowTriggersNew,
             meta: {
-              text: s__('DuoAgentsPlatform|New'),
+              text: s__('DuoAgentsPlatform|New flow trigger'),
             },
           },
           {
