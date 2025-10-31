@@ -5,13 +5,16 @@ module Search
     class ReindexingTask < ApplicationRecord
       include EachBatch
 
+      DELETE_FAILED_INDEX_AFTER = 30.days
+
       HUMAN_STATES = {
         "initial" => { message: "starting", color: "tip" },
         "indexing_paused" => { message: "in progress", color: "info" },
         "reindexing" => { message: "reindexing", color: "info" },
         "success" => { message: "successfully indexed", color: "success" },
         "failure" => { message: "indexing failed", color: "danger" },
-        "original_index_deleted" => { message: "original index deleted", color: "info" }
+        "original_index_deleted" => { message: "original index deleted", color: "info" },
+        "failed_index_deleted" => { message: "failed index deleted", color: "info" }
       }.freeze
 
       self.table_name = 'elastic_reindexing_tasks'
@@ -31,14 +34,23 @@ module Search
         reindexing: 2,
         success: 10, # states less than 10 are considered in_progress
         failure: 11,
-        original_index_deleted: 12
+        original_index_deleted: 12,
+        failed_index_deleted: 13
       }
 
       scope :old_indices_scheduled_for_deletion, -> do
-        where(state: %i[success failure]).where.not(delete_original_index_at: nil)
+        where(state: :success).where.not(delete_original_index_at: nil).or(where(state: :failure))
       end
-      scope :old_indices_to_be_deleted, -> do
-        old_indices_scheduled_for_deletion.where('delete_original_index_at < NOW()')
+
+      scope :successful_indices_ready_for_cleanup, -> do
+        where(state: :success)
+          .where.not(delete_original_index_at: nil)
+          .where('delete_original_index_at < NOW()')
+      end
+
+      scope :failed_indices_ready_for_cleanup, -> do
+        where(state: :failure)
+          .where(created_at: ...DELETE_FAILED_INDEX_AFTER.ago)
       end
 
       before_save :set_in_progress_flag
@@ -52,11 +64,18 @@ module Search
       end
 
       def self.drop_old_indices!
-        old_indices_to_be_deleted.find_each do |task|
+        successful_indices_ready_for_cleanup.find_each do |task|
           task.subtasks.each do |subtask|
             Gitlab::Elastic::Helper.default.delete_index(index_name: subtask.index_name_from)
           end
           task.update!(state: :original_index_deleted)
+        end
+
+        failed_indices_ready_for_cleanup.find_each do |task|
+          task.subtasks.each do |subtask|
+            Gitlab::Elastic::Helper.default.delete_index(index_name: subtask.index_name_to)
+          end
+          task.update!(state: :failed_index_deleted)
         end
       end
 
@@ -64,6 +83,12 @@ module Search
         return ::Gitlab::Elastic::Helper::INDEXED_CLASSES if targets.blank?
 
         targets.map(&:constantize)
+      end
+
+      def delete_failed_index_at
+        return unless failure?
+
+        created_at + DELETE_FAILED_INDEX_AFTER
       end
 
       private
