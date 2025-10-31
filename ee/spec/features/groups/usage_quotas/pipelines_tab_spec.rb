@@ -272,7 +272,7 @@ RSpec.describe 'Groups > Usage quotas > Pipelines tab', :js, :saas, feature_cate
     context 'when user is not allowed to add minutes' do
       it 'opens limited access modal' do
         expect(page).to have_selector('[data-testid="limited-access-modal-id"]')
-        expect(page).to have_content('Your subscription is in read-only mode')
+        expect(page).to have_content('Changes to subscriptions from GitLab partners require assistance')
       end
     end
   end
