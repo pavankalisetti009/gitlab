@@ -192,7 +192,7 @@ RSpec.describe RegistrationsController, :with_current_organization, type: :reque
             user = User.find_by_username(user_attrs[:username])
             expect(User.sticking)
               .to have_received(:find_caught_up_replica)
-              .with(:user, user.id)
+              .with(:user, user.id, hash_id: false)
 
             stick_object = request.env[::Gitlab::Database::LoadBalancing::RackMiddleware::STICK_OBJECT].first
             expect(stick_object[0]).to eq(User.sticking)

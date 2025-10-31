@@ -32,6 +32,8 @@ RSpec.describe ::Ai::DuoWorkflows::CreateOauthAccessTokenService, feature_catego
       context 'when the user does not have a valid oauth access token' do
         shared_examples 'creates a new oauth access token for the duo workflow oauth app' do
           it 'creates a new oauth access token for the duo workflow oauth app' do
+            expect(::OauthAccessToken.sticking).to receive(:stick)
+
             expect { execute }.to change { OauthAccessToken.count }.by(1)
             token = execute[:oauth_access_token]
             expect(token.resource_owner_id).to eq user.id
