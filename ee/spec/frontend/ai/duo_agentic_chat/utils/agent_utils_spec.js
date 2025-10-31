@@ -130,6 +130,7 @@ describe('agent_utils', () => {
         const result = prepareAgentSelection(agent, false);
 
         expect(result).toEqual({
+          aiCatalogItemVersionId: '',
           selectedFoundationalAgent: agent,
           agentConfig: null,
           isChatAvailable: true,
