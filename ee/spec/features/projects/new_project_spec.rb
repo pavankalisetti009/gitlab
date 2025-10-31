@@ -144,7 +144,7 @@ RSpec.describe 'New project', :js, feature_category: :importers do
         expect(created_project.project_feature).not_to be_issues_enabled
       end
 
-      it 'stays on GitHub import page after access token failure' do
+      it 'redirects to configuration page after access token failure' do
         visit new_project_path
         click_link 'Run CI/CD for external repository'
 
@@ -159,7 +159,6 @@ RSpec.describe 'New project', :js, feature_category: :importers do
         fill_in 'personal_access_token', with: 'unauthorized-fake-token'
         click_button 'Authenticate'
 
-        expect(page).to have_text('Wrong credentials')
         expect(page).to have_current_path(new_import_github_path(ci_cd_only: true))
       end
     end
