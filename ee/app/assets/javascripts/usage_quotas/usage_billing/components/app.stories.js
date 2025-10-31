@@ -2,6 +2,7 @@ import VueApollo from 'vue-apollo';
 import {
   mockUsersUsageDataWithPool,
   mockUsersUsageDataWithoutPool,
+  mockUsersUsageDataWithNullUsage,
   usageDataCommitmentWithOtcWithOverage,
   usageDataWithCommitment,
   usageDataNoCommitmentNoOtcNoOverage,
@@ -127,6 +128,20 @@ export const NoCommitmentNoOtcNoOverage = {
     return createTemplate({
       getSubscriptionUsersUsageQueryHandler,
       getSubscriptionUsageQueryHandler,
+    })(...args);
+  },
+};
+
+export const NullValuesTolerance = {
+  render: (...args) => {
+    const getSubscriptionUsageQueryHandler = () => Promise.resolve(usageDataWithCommitment);
+
+    const getSubscriptionUsersUsageQueryHandler = () =>
+      Promise.resolve(mockUsersUsageDataWithNullUsage);
+
+    return createTemplate({
+      getSubscriptionUsageQueryHandler,
+      getSubscriptionUsersUsageQueryHandler,
     })(...args);
   },
 };

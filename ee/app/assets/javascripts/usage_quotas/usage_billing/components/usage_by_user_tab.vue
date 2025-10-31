@@ -6,6 +6,7 @@ import { logError } from '~/lib/logger';
 import { captureException } from '~/sentry/sentry_browser_wrapper';
 import getSubscriptionUsersUsageQuery from '../graphql/get_subscription_users_usage.query.graphql';
 import { PAGE_SIZE } from '../constants';
+import { fillUsageValues } from '../utils';
 
 /**
  * @typedef {object} Usage
@@ -69,26 +70,10 @@ export default {
   },
   computed: {
     usersList() {
-      return this.usersUsage.users.nodes.map((user) => {
-        const {
-          creditsUsed = 0,
-          totalCredits = 0,
-          poolCreditsUsed = 0,
-          oneTimeCreditsUsed = 0,
-          overageCreditsUsed = 0,
-        } = user?.usage ?? {};
-
-        return {
-          ...user,
-          usage: {
-            creditsUsed,
-            totalCredits,
-            poolCreditsUsed,
-            oneTimeCreditsUsed,
-            overageCreditsUsed,
-          },
-        };
-      });
+      return this.usersUsage.users.nodes.map((user) => ({
+        ...user,
+        usage: fillUsageValues(user?.usage),
+      }));
     },
   },
   methods: {
@@ -96,7 +81,7 @@ export default {
     getTotalCreditsUsed(usage) {
       return (
         usage.creditsUsed +
-        usage.poolCreditsUsed +
+        usage.monthlyCommitmentCreditsUsed +
         usage.oneTimeCreditsUsed +
         usage.overageCreditsUsed
       );

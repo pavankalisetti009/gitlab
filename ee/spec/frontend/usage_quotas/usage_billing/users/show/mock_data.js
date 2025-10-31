@@ -228,3 +228,36 @@ export const mockEmptyData = {
     },
   },
 };
+
+export const mockNullData = {
+  data: {
+    subscriptionUsage: {
+      lastEventTransactionAt: '2025-10-31T12:55:21Z',
+      startDate: '2025-10-01',
+      endDate: '2025-10-31',
+      usersUsage: {
+        users: {
+          nodes: [
+            {
+              id: 'gid://gitlab/User/42',
+              username: 'alice_johnson',
+              name: 'Alice Johnson',
+              avatarUrl: 'https://www.gravatar.com/avatar/1?s=80&d=identicon',
+              usage: {
+                totalCredits: 24,
+                creditsUsed: null,
+                monthlyCommitmentCreditsUsed: null,
+                overageCreditsUsed: null,
+                __typename: 'GitlabSubscriptionUsageUserUsage',
+              },
+              __typename: 'GitlabSubscriptionUsageUser',
+            },
+          ],
+          __typename: 'GitlabSubscriptionUsageUserConnection',
+        },
+        __typename: 'GitlabSubscriptionUsageUsersUsage',
+      },
+      __typename: 'GitlabSubscriptionUsage',
+    },
+  },
+};

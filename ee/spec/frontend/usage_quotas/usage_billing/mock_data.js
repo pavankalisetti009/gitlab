@@ -446,6 +446,179 @@ export const mockUsersUsageDataWithZeroAllocation = {
   },
 };
 
+export const mockUsersUsageDataWithNullUsage = {
+  data: {
+    subscriptionUsage: {
+      usersUsage: {
+        users: {
+          nodes: [
+            {
+              id: 'gid://gitlab/User/6120463',
+              name: 'Bryan Rothwell',
+              username: 'brothwell',
+              avatarUrl:
+                'https://secure.gravatar.com/avatar/17c92ab7acbe41a4fd2e243828e5b711b3475526b188aa96c0f5039392d64ad8?s=80&d=identicon',
+              usage: {
+                creditsUsed: null,
+                totalCredits: 24,
+                monthlyCommitmentCreditsUsed: null,
+                overageCreditsUsed: null,
+                __typename: 'GitlabSubscriptionUsageUserUsage',
+              },
+              __typename: 'GitlabSubscriptionUsageUser',
+            },
+            {
+              id: 'gid://gitlab/User/5487870',
+              name: 'Jorge Cook',
+              username: 'jecook',
+              avatarUrl:
+                'https://secure.gravatar.com/avatar/4da03f30b1328ab1bf4ce9cfe88f447af5ad030bc52ef5825ab6bf06301bf39c?s=80&d=identicon',
+              usage: {
+                creditsUsed: null,
+                totalCredits: 24,
+                monthlyCommitmentCreditsUsed: null,
+                overageCreditsUsed: null,
+                __typename: 'GitlabSubscriptionUsageUserUsage',
+              },
+              __typename: 'GitlabSubscriptionUsageUser',
+            },
+            {
+              id: 'gid://gitlab/User/1943919',
+              name: 'Kos Palchyk',
+              username: 'kpalchyk',
+              avatarUrl:
+                'https://secure.gravatar.com/avatar/be1b9a030c184bc489faaa8fbb6679874660bbcec5df62bcd8dbd11cec02a4eb?s=80&d=identicon',
+              usage: {
+                creditsUsed: null,
+                totalCredits: null,
+                monthlyCommitmentCreditsUsed: null,
+                overageCreditsUsed: null,
+                __typename: 'GitlabSubscriptionUsageUserUsage',
+              },
+              __typename: 'GitlabSubscriptionUsageUser',
+            },
+            {
+              id: 'gid://gitlab/User/1862366',
+              name: 'Sharmad Nachnolkar',
+              username: 'snachnolkar',
+              avatarUrl:
+                'https://secure.gravatar.com/avatar/57e70f889048d230e2c7945babbe8bec8cbc90e20cf7b0388cd801a52f2243c6?s=80&d=identicon',
+              usage: {
+                creditsUsed: null,
+                totalCredits: 24,
+                monthlyCommitmentCreditsUsed: null,
+                overageCreditsUsed: null,
+                __typename: 'GitlabSubscriptionUsageUserUsage',
+              },
+              __typename: 'GitlabSubscriptionUsageUser',
+            },
+            {
+              id: 'gid://gitlab/User/1860447',
+              name: 'Suraj Mahendra Tripathi',
+              username: 'suraj_tripathy',
+              avatarUrl:
+                'https://secure.gravatar.com/avatar/97615be7789c22621ed96bc730c6819933fef80b1a7af3f95910c17f0e8615d3?s=80&d=identicon',
+              usage: {
+                creditsUsed: null,
+                totalCredits: 24,
+                monthlyCommitmentCreditsUsed: null,
+                overageCreditsUsed: null,
+                __typename: 'GitlabSubscriptionUsageUserUsage',
+              },
+              __typename: 'GitlabSubscriptionUsageUser',
+            },
+            {
+              id: 'gid://gitlab/User/1790300',
+              name: 'Courtney Meddaugh',
+              username: 'cmeddaugh',
+              avatarUrl:
+                'https://secure.gravatar.com/avatar/b4f1716310d4bb11d742604f8dda7ec30cebf0e7eacdbc241d42eb155c54fb03?s=80&d=identicon',
+              usage: {
+                creditsUsed: null,
+                totalCredits: 24,
+                monthlyCommitmentCreditsUsed: null,
+                overageCreditsUsed: null,
+                __typename: 'GitlabSubscriptionUsageUserUsage',
+              },
+              __typename: 'GitlabSubscriptionUsageUser',
+            },
+            {
+              id: 'gid://gitlab/User/1759714',
+              name: 'Sheldon Led',
+              username: 'sheldonled',
+              avatarUrl:
+                'https://secure.gravatar.com/avatar/d72fd8312645f293d485dfb87a50828c261e535357b6fe4bf4886332db33cd1a?s=80&d=identicon',
+              usage: {
+                creditsUsed: null,
+                totalCredits: 24,
+                monthlyCommitmentCreditsUsed: null,
+                overageCreditsUsed: null,
+                __typename: 'GitlabSubscriptionUsageUserUsage',
+              },
+              __typename: 'GitlabSubscriptionUsageUser',
+            },
+            {
+              id: 'gid://gitlab/User/1676960',
+              name: 'Vijay Hawoldar',
+              username: 'vhawoldar',
+              avatarUrl:
+                'https://secure.gravatar.com/avatar/e1fff3213210ed09a02bd837eb857a893683abb4cc5640a79929455c88a71487?s=80&d=identicon',
+              usage: {
+                creditsUsed: 0,
+                totalCredits: 24,
+                monthlyCommitmentCreditsUsed: 0,
+                overageCreditsUsed: 0,
+                __typename: 'GitlabSubscriptionUsageUserUsage',
+              },
+              __typename: 'GitlabSubscriptionUsageUser',
+            },
+            {
+              id: 'gid://gitlab/User/1675936',
+              name: 'Ammar Alakkad',
+              username: 'aalakkad',
+              avatarUrl:
+                'https://secure.gravatar.com/avatar/ef6157f79905c001112efda96ceb98fa1b0524a40ee9148bcf410793333a2614?s=80&d=identicon',
+              usage: {
+                creditsUsed: null,
+                totalCredits: 24,
+                monthlyCommitmentCreditsUsed: null,
+                overageCreditsUsed: null,
+                __typename: 'GitlabSubscriptionUsageUserUsage',
+              },
+              __typename: 'GitlabSubscriptionUsageUser',
+            },
+            {
+              id: 'gid://gitlab/User/1675825',
+              name: 'Tyler Amos',
+              username: 'tyleramos',
+              avatarUrl:
+                'https://secure.gravatar.com/avatar/6156236af081924c152da7bfc5b2ce1110628e2bb7a17ca2239038ec5a4f57bb?s=80&d=identicon',
+              usage: {
+                creditsUsed: null,
+                totalCredits: 24,
+                monthlyCommitmentCreditsUsed: null,
+                overageCreditsUsed: null,
+                __typename: 'GitlabSubscriptionUsageUserUsage',
+              },
+              __typename: 'GitlabSubscriptionUsageUser',
+            },
+          ],
+          pageInfo: {
+            hasNextPage: false,
+            hasPreviousPage: false,
+            startCursor: 'eyJpZCI6IjYxMjA0NjMifQ',
+            endCursor: 'eyJpZCI6IjE2NzU4MjUifQ',
+            __typename: 'PageInfo',
+          },
+          __typename: 'GitlabSubscriptionUsageUserConnection',
+        },
+        __typename: 'GitlabSubscriptionUsageUsersUsage',
+      },
+      __typename: 'GitlabSubscriptionUsage',
+    },
+  },
+};
+
 export const usageDataWithCommitment = {
   data: {
     subscriptionUsage: {
