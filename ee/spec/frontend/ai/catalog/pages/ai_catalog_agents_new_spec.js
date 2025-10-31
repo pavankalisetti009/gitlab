@@ -61,7 +61,9 @@ describe('AiCatalogAgentsNew', () => {
     it('renders the correct description text when aiCatalogFlows feature flag is enabled', () => {
       createComponent({ aiCatalogFlows: true });
 
-      expect(findPageHeading().text()).toContain('Use agents in flows and with GitLab Duo Chat.');
+      expect(findPageHeading().text()).toContain(
+        'Use agents with GitLab Duo Chat to complete tasks and answer complex questions.',
+      );
     });
 
     it('renders the correct description text when aiCatalogFlows feature flag is disabled', () => {

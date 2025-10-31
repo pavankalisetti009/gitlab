@@ -3,7 +3,6 @@ import { s__ } from '~/locale';
 import { createAlert } from '~/alert';
 import { getIdFromGraphQLId } from '~/graphql_shared/utils';
 import PageHeading from '~/vue_shared/components/page_heading.vue';
-import glFeatureFlagsMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
 import * as Sentry from '~/sentry/sentry_browser_wrapper';
 import createAiCatalogAgent from '../graphql/mutations/create_ai_catalog_agent.mutation.graphql';
 import { AI_CATALOG_AGENTS_SHOW_ROUTE } from '../router/constants';
@@ -16,21 +15,11 @@ export default {
     AiCatalogAgentForm,
     PageHeading,
   },
-  mixins: [glFeatureFlagsMixin()],
   data() {
     return {
       errors: [],
       isSubmitting: false,
     };
-  },
-  computed: {
-    descriptionText() {
-      return this.glFeatures.aiCatalogFlows
-        ? s__('AICatalog|Use agents in flows and with GitLab Duo Chat.')
-        : s__(
-            'AICatalog|Use agents with GitLab Duo Chat to complete tasks and answer complex questions.',
-          );
-    },
   },
   methods: {
     async handleSubmit(input) {
@@ -97,7 +86,11 @@ export default {
     <page-heading :heading="s__('AICatalog|New agent')">
       <template #description>
         <div class="gl-border-b gl-pb-3">
-          {{ descriptionText }}
+          {{
+            s__(
+              'AICatalog|Use agents with GitLab Duo Chat to complete tasks and answer complex questions.',
+            )
+          }}
         </div>
       </template>
     </page-heading>
