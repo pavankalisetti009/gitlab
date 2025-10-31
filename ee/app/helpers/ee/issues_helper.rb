@@ -58,17 +58,6 @@ module EE
       end
     end
 
-    override :group_issues_list_data
-    def group_issues_list_data(group, current_user)
-      super.tap do |data|
-        data[:can_bulk_update] = (can?(current_user, :admin_issue, group) && group.feature_available?(:group_bulk_edit)).to_s
-
-        if group.feature_available?(:epics)
-          data[:group_path] = group.full_path
-        end
-      end
-    end
-
     override :dashboard_issues_list_data
     def dashboard_issues_list_data(current_user)
       super.merge(
