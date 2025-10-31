@@ -59,11 +59,11 @@ module Gitlab
         return false if ::Feature.disabled?(:ai_model_switching, namespace)
         return false if ::Feature.disabled?(:ai_user_model_switching, user)
 
-        feature_setting = ::Ai::FeatureSettingSelectionService
+        result = ::Ai::FeatureSettingSelectionService
                             .new(user, :duo_agent_platform, namespace)
                             .execute
 
-        feature_setting.success?
+        result.success? && result.payload.present? && result.payload.user_model_selection_available?
       end
 
       def self.resource_id

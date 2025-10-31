@@ -65,4 +65,10 @@ RSpec.describe ::Ai::FeatureConfigurable, feature_category: :"self-hosted_models
       )
     end
   end
+
+  describe '#user_model_selection_available?' do
+    it 'returns true by default' do
+      expect(included_instance.user_model_selection_available?).to be true
+    end
+  end
 end

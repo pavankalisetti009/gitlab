@@ -185,5 +185,9 @@ module Ai
         model_identifier: self_hosted_model.identifier
       }
     end
+
+    def user_model_selection_available?
+      false
+    end
   end
 end

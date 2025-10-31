@@ -46,6 +46,10 @@ module Ai
 
         FeatureMetadata.new(feature_metadata)
       end
+
+      def user_model_selection_available?
+        true
+      end
     end
   end
 end

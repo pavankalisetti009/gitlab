@@ -529,4 +529,12 @@ RSpec.describe Ai::FeatureSetting, feature_category: :"self-hosted_models" do
       )
     end
   end
+
+  describe '#user_model_selection_available?' do
+    let(:feature_setting) { build(:ai_feature_setting) }
+
+    it 'returns false' do
+      expect(feature_setting.user_model_selection_available?).to be false
+    end
+  end
 end

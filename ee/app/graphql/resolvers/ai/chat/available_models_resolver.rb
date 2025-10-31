@@ -53,10 +53,15 @@ module Resolvers
                                      .new(current_user, :duo_agent_platform, namespace)
                                      .execute
 
-          return unless feature_setting_result.success? &&
-            feature_setting_result.payload.present? && feature_setting_result.payload.pinned_model?
+          return unless feature_setting_result.success?
 
-          pinned_model_identifier = feature_setting_result.payload.offered_model_ref
+          payload = feature_setting_result.payload
+
+          return unless payload.present?
+          return unless payload.user_model_selection_available?
+          return unless payload.pinned_model?
+
+          pinned_model_identifier = payload.offered_model_ref
           return if pinned_model_identifier.blank?
 
           duo_agent_platform_models.find { |model| model[:ref] == pinned_model_identifier }
