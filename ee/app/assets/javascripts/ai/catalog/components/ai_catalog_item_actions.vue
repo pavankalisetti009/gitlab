@@ -41,6 +41,11 @@ export default {
       type: Object,
       required: true,
     },
+    isFlowsAvailable: {
+      type: Boolean,
+      required: false,
+      default: false,
+    },
     deleteFn: {
       type: Function,
       required: false,
@@ -76,6 +81,7 @@ export default {
     showAddToProjectOrGroup() {
       return (
         this.showAddToProject &&
+        this.isFlowsAvailable &&
         [AI_CATALOG_TYPE_FLOW, AI_CATALOG_TYPE_THIRD_PARTY_FLOW].includes(this.item.itemType)
       );
     },

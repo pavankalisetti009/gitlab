@@ -76,9 +76,12 @@ export default {
     };
   },
   computed: {
+    isFlowsAvailable() {
+      return this.glFeatures.aiCatalogFlows;
+    },
     itemTypes() {
       return createAvailableFlowItemTypes({
-        isFlowsEnabled: this.glFeatures.aiCatalogFlows,
+        isFlowsEnabled: this.isFlowsAvailable,
         isThirdPartyFlowsEnabled: this.glFeatures.aiCatalogThirdPartyFlows,
       });
     },
@@ -96,7 +99,9 @@ export default {
 
           const items = [
             {
-              text: s__('AICatalog|Enable in project or group'),
+              text: this.isFlowsAvailable
+                ? s__('AICatalog|Enable in project or group')
+                : s__('AICatalog|Enable in project'),
               action: () => this.setAiCatalogFlowToBeAdded(item),
               icon: 'plus',
             },
@@ -296,7 +301,7 @@ export default {
     <ai-catalog-item-consumer-modal
       v-if="aiCatalogFlowToBeAdded"
       :item="aiCatalogFlowToBeAdded"
-      show-add-to-group
+      :show-add-to-group="isFlowsAvailable"
       open
       @submit="addFlowToTarget"
       @hide="setAiCatalogFlowToBeAdded(null)"

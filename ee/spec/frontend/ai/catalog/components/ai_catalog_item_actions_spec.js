@@ -16,6 +16,7 @@ describe('AiCatalogItemActions', () => {
       edit: '/items/:id/edit',
       run: '/items/:id/run',
     },
+    isFlowsAvailable: true,
     deleteFn: jest.fn(),
   };
   const routeParams = { id: '4' };
