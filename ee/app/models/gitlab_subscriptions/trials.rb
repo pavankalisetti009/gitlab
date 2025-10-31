@@ -40,6 +40,10 @@ module GitlabSubscriptions
       Namespaces::TrialEligibleFinder.new(user:).execute
     end
 
+    def self.no_eligible_namespaces_for_user?(user)
+      eligible_namespaces_for_user(user).none?
+    end
+
     def self.namespace_add_on_eligible?(namespace)
       Namespaces::TrialEligibleFinder.new(namespace:).execute.any?
     end

@@ -415,13 +415,5 @@ module Features
     def lead_failure
       ServiceResponse.error(message: '_lead_fail_', reason: :lead_failed)
     end
-
-    def stub_cdot_namespace_eligible_trials
-      allow(Gitlab::SubscriptionPortal::Client).to receive(:namespace_eligible_trials) do |params|
-        namespaces_response = params[:namespace_ids].to_h { |id| [id.to_s, GitlabSubscriptions::Trials::TRIAL_TYPES] }
-
-        { success: true, data: { namespaces: namespaces_response } }
-      end
-    end
   end
 end

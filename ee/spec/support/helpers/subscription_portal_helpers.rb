@@ -19,6 +19,14 @@ module SubscriptionPortalHelpers
     end
   end
 
+  def stub_cdot_namespace_eligible_trials
+    allow(Gitlab::SubscriptionPortal::Client).to receive(:namespace_eligible_trials) do |params|
+      namespaces_response = params[:namespace_ids].to_h { |id| [id.to_s, GitlabSubscriptions::Trials::TRIAL_TYPES] }
+
+      { success: true, data: { namespaces: namespaces_response } }
+    end
+  end
+
   def stub_billing_plans(namespace_id, plan = 'free', plans_data = nil, raise_error: nil)
     gitlab_plans_url = ::Gitlab::Routing.url_helpers.subscription_portal_gitlab_plans_url
 

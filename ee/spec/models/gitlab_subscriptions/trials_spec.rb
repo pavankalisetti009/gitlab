@@ -155,7 +155,7 @@ RSpec.describe GitlabSubscriptions::Trials, feature_category: :subscription_mana
       Rails.cache.write("namespaces:eligible_trials:#{namespace.id}", trial_types)
     end
 
-    subject(:execute) { described_class.eligible_namespaces_for_user(user) }
+    subject { described_class.eligible_namespaces_for_user(user) }
 
     it { is_expected.to eq([namespace]) }
 
@@ -163,6 +163,26 @@ RSpec.describe GitlabSubscriptions::Trials, feature_category: :subscription_mana
       let(:trial_types) { ['gitlab_duo_pro'] }
 
       it { is_expected.to be_empty }
+    end
+  end
+
+  describe '.no_eligible_namespaces_for_user?', :use_clean_rails_memory_store_caching do
+    let(:trial_types) { [GitlabSubscriptions::Trials::FREE_TRIAL_TYPE] }
+    let_it_be(:user) { create(:user) }
+    let_it_be(:namespace) { create(:group, owners: user) }
+
+    before do
+      Rails.cache.write("namespaces:eligible_trials:#{namespace.id}", trial_types)
+    end
+
+    subject { described_class.no_eligible_namespaces_for_user?(user) }
+
+    it { is_expected.to be(false) }
+
+    context 'when no eligible namespaces exist' do
+      let(:trial_types) { ['gitlab_duo_pro'] }
+
+      it { is_expected.to be(true) }
     end
   end
 

@@ -20,8 +20,12 @@ RSpec.describe GitlabSubscriptions::UpgradePresenter, :saas, feature_category: :
     end
 
     context 'when gitlab_com_subscriptions feature is available' do
+      let(:no_trial_eligible_namespaces) { false }
+
       before do
         stub_saas_features(gitlab_com_subscriptions: true)
+        allow(::GitlabSubscriptions::Trials)
+          .to receive(:no_eligible_namespaces_for_user?).and_return(no_trial_eligible_namespaces)
       end
 
       context 'without namespace provided' do
@@ -33,6 +37,18 @@ RSpec.describe GitlabSubscriptions::UpgradePresenter, :saas, feature_category: :
           it 'returns empty hash' do
             expect(attributes).to eq({})
           end
+
+          context 'when user eligible for the start trial link' do
+            let(:no_trial_eligible_namespaces) { true }
+
+            it 'returns url pointing to the start ultimate trial path' do
+              expected_path = ::Gitlab::Routing.url_helpers.new_trial_path(
+                glm_source: 'gitlab.com', glm_content: 'top-right-dropdown'
+              )
+              expect(attributes)
+                .to eq({ upgrade_link: { url: expected_path, text: s_('CurrentUser|Start an Ultimate trial') } })
+            end
+          end
         end
 
         context 'when user has exactly one free or trial group' do
@@ -42,9 +58,10 @@ RSpec.describe GitlabSubscriptions::UpgradePresenter, :saas, feature_category: :
             allow(user).to receive(:owned_free_or_trial_groups_with_limit).with(2).and_return([group])
           end
 
-          it 'returns upgrade_url pointing to the group billings path' do
+          it 'returns url pointing to the group billings path' do
             expected_path = ::Gitlab::Routing.url_helpers.group_billings_path(group)
-            expect(attributes).to eq({ upgrade_url: expected_path })
+            expect(attributes)
+              .to eq({ upgrade_link: { url: expected_path, text: s_('CurrentUser|Upgrade subscription') } })
           end
         end
 
@@ -56,9 +73,10 @@ RSpec.describe GitlabSubscriptions::UpgradePresenter, :saas, feature_category: :
             allow(user).to receive(:owned_free_or_trial_groups_with_limit).with(2).and_return([group1, group2])
           end
 
-          it 'returns upgrade_url pointing to profile billings path' do
+          it 'returns url pointing to profile billings path' do
             expected_path = ::Gitlab::Routing.url_helpers.profile_billings_path
-            expect(attributes).to eq({ upgrade_url: expected_path })
+            expect(attributes)
+              .to eq({ upgrade_link: { url: expected_path, text: s_('CurrentUser|Upgrade subscription') } })
           end
         end
       end
@@ -72,9 +90,10 @@ RSpec.describe GitlabSubscriptions::UpgradePresenter, :saas, feature_category: :
             allow(namespace).to receive_messages(paid?: false, trial?: false)
           end
 
-          it 'returns upgrade_url for the specific namespace' do
+          it 'returns url for the specific namespace' do
             expected_path = ::Gitlab::Routing.url_helpers.group_billings_path(namespace)
-            expect(attributes).to eq({ upgrade_url: expected_path })
+            expect(attributes)
+              .to eq({ upgrade_link: { url: expected_path, text: s_('CurrentUser|Upgrade subscription') } })
           end
 
           context 'when namespace is not valid to generate the billing url' do
@@ -110,23 +129,20 @@ RSpec.describe GitlabSubscriptions::UpgradePresenter, :saas, feature_category: :
         end
       end
 
-      context 'with caching behavior', :use_clean_rails_memory_store_caching do
+      context 'with owned_groups_url caching behavior', :use_clean_rails_memory_store_caching do
         let(:cache_key) { ['users', user.id, 'owned_groups_url'] }
 
         context 'when cache is empty' do
-          before do
-            allow(user).to receive(:owned_free_or_trial_groups_with_limit).with(2).and_return([])
-          end
-
           it 'fetches data and caches it' do
-            expect(Rails.cache).to receive(:fetch)
-              .with(cache_key, expires_in: 10.minutes)
-              .and_call_original
+            allow(user).to receive(:owned_free_or_trial_groups_with_limit).with(2).and_return([build(:group)])
+            expect(Rails.cache).to receive(:fetch).with(cache_key, expires_in: 10.minutes).and_call_original
 
             attributes
           end
 
           it 'stores nil in cache when no groups' do
+            allow(user).to receive(:owned_free_or_trial_groups_with_limit).with(2).and_return([])
+
             attributes
 
             cached_data = Rails.cache.read(cache_key)
@@ -145,7 +161,45 @@ RSpec.describe GitlabSubscriptions::UpgradePresenter, :saas, feature_category: :
             expect(user).not_to receive(:owned_free_or_trial_groups_with_limit)
 
             result = attributes
-            expect(result[:upgrade_url]).to eq(cached_url)
+            expect(result.dig(:upgrade_link, :url)).to eq(cached_url)
+          end
+        end
+      end
+
+      context 'with can_start_trial caching behavior', :use_clean_rails_memory_store_caching do
+        let(:cache_key) { ['users', user.id, 'can_start_trial'] }
+
+        context 'when cache is empty' do
+          before do
+            allow(user).to receive(:owned_free_or_trial_groups_with_limit).with(2).and_return([])
+          end
+
+          it 'fetches data and caches it' do
+            allow(Rails.cache).to receive(:fetch).and_call_original
+            expect(Rails.cache).to receive(:fetch).with(cache_key, expires_in: 10.minutes).and_call_original
+
+            attributes
+          end
+
+          it 'stores the value' do
+            attributes
+
+            cached_data = Rails.cache.read(cache_key)
+            expect(cached_data).to be(false)
+          end
+        end
+
+        context 'when cache exists' do
+          let(:cached_value) { true }
+
+          before do
+            Rails.cache.write(cache_key, cached_value)
+          end
+
+          it 'uses cached data without database query' do
+            expect(GitlabSubscriptions::Trials).not_to receive(:no_eligible_namespaces_for_user?)
+
+            expect(attributes.dig(:upgrade_link, :text)).to eq(s_('CurrentUser|Start an Ultimate trial'))
           end
         end
       end

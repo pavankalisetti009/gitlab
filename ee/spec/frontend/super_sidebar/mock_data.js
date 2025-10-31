@@ -1,4 +1,29 @@
 import { PROMO_URL } from '~/constants';
+import invalidUrl from '~/lib/utils/invalid_url';
+import { userMenuMockPipelineMinutes, userMenuMockStatus } from 'jest/super_sidebar/mock_data';
+
+export const userMenuMockData = {
+  name: 'Orange Fox',
+  username: 'thefox',
+  admin_mode: {
+    user_is_admin: false,
+    admin_mode_feature_enabled: false,
+    admin_mode_active: false,
+  },
+  avatar_url: invalidUrl,
+  has_link_to_profile: true,
+  link_to_profile: '/thefox',
+  status: userMenuMockStatus,
+  settings: {
+    profile_path: invalidUrl,
+    profile_preferences_path: invalidUrl,
+  },
+  pipeline_minutes: userMenuMockPipelineMinutes,
+  can_sign_out: false,
+  sign_out_link: invalidUrl,
+  gitlab_com_but_not_canary: true,
+  canary_toggle_com_url: 'https://next.gitlab.com',
+};
 
 export const createNewMenuGroups = [
   {
