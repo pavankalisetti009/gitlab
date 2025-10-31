@@ -56,7 +56,8 @@ describe('Squash Settings Drawer', () => {
     );
 
     it.each([
-      [undefined, SQUASH_SETTING_DO_NOT_ALLOW],
+      [undefined, SQUASH_SETTING_DEFAULT],
+      ['Default', SQUASH_SETTING_DEFAULT],
       ['Allow', SQUASH_SETTING_ALLOW],
       ['Encourage', SQUASH_SETTING_ENCOURAGE],
       ['Require', SQUASH_SETTING_REQUIRE],
@@ -66,6 +67,13 @@ describe('Squash Settings Drawer', () => {
       await nextTick();
       findSaveButton().vm.$emit('click');
       expect(wrapper.emitted('submit')).toContainEqual([expected]);
+    });
+
+    it('sets correct selection for Default option when isAllBranchesRule is true', async () => {
+      createComponent({ selectedOption: undefined, isAllBranchesRule: true });
+      await nextTick();
+      findSaveButton().vm.$emit('click');
+      expect(wrapper.emitted('submit')).toContainEqual([SQUASH_SETTING_DO_NOT_ALLOW]);
     });
   });
 
