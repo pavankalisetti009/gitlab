@@ -43,6 +43,12 @@ module EE
 
     override :gitlab_duo_settings_data
     def gitlab_duo_settings_data(project)
+      experiment_features_enabled = if ::Gitlab::Saas.feature_available?(:gitlab_com_subscriptions)
+                                      project.root_ancestor.experiment_features_enabled
+                                    else
+                                      ::Gitlab::CurrentSettings.instance_level_ai_beta_features_enabled?
+                                    end
+
       super.merge({
         duoFeaturesEnabled: project.project_setting.duo_features_enabled?,
         licensedAiFeaturesAvailable: project.licensed_ai_features_available?,
@@ -51,7 +57,7 @@ module EE
         duoFeaturesLocked: project.project_setting.duo_features_enabled_locked?,
         duoContextExclusionSettings: project.project_setting.duo_context_exclusion_settings || {},
         initialDuoRemoteFlowsAvailability: project.duo_remote_flows_enabled,
-        experimentFeaturesEnabled: project.root_ancestor.experiment_features_enabled || false,
+        experimentFeaturesEnabled: experiment_features_enabled,
         paidDuoTier: paid_duo_tier_for_project(project)
       })
     end
@@ -397,7 +403,7 @@ module EE
       namespace = project.root_ancestor
 
       addon_names = ::GitlabSubscriptions::AddOnPurchase
-        .by_namespace(namespace)
+        .by_namespace([namespace, nil])
         .for_duo_add_ons
         .active
         .uniq_add_on_names

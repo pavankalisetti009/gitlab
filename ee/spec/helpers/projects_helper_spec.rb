@@ -710,13 +710,60 @@ RSpec.describe ProjectsHelper, feature_category: :shared do
 
     it { is_expected.to include(expected_data) }
 
-    context 'when experiment features are enabled' do
-      before do
-        allow(project.root_ancestor).to receive(:experiment_features_enabled).and_return(true)
+    context 'when on self-hosted' do
+      context 'when instance-level beta features are enabled' do
+        before do
+          stub_application_setting(instance_level_ai_beta_features_enabled: true)
+          allow(::Gitlab::Saas).to receive(:feature_available?).with(:gitlab_com_subscriptions).and_return(false)
+        end
+
+        it 'includes experimentFeaturesEnabled as true' do
+          expect(data[:experimentFeaturesEnabled]).to be(true)
+        end
       end
 
-      it 'includes experimentFeaturesEnabled as true' do
-        expect(data[:experimentFeaturesEnabled]).to be(true)
+      context 'when instance-level beta features are disabled' do
+        before do
+          stub_application_setting(instance_level_ai_beta_features_enabled: false)
+        end
+
+        it 'includes experimentFeaturesEnabled as false' do
+          expect(data[:experimentFeaturesEnabled]).to be(false)
+        end
+      end
+    end
+
+    context 'when on GitLab.com', :saas do
+      context 'when experiment features are enabled' do
+        before do
+          allow(project.root_ancestor).to receive(:experiment_features_enabled).and_return(true)
+        end
+
+        it 'includes experimentFeaturesEnabled as true' do
+          expect(data[:experimentFeaturesEnabled]).to be(true)
+        end
+      end
+
+      context 'when instance level experiment features are enabled' do
+        before do
+          allow(project.root_ancestor).to receive(:experiment_features_enabled).and_return(false)
+          stub_application_setting(instance_level_ai_beta_features_enabled: true)
+        end
+
+        it 'includes experimentFeaturesEnabled as false when instance level is true' do
+          expect(data[:experimentFeaturesEnabled]).to be(false)
+        end
+      end
+
+      context 'when instance level and namespace level are false' do
+        before do
+          allow(project.root_ancestor).to receive(:experiment_features_enabled).and_return(false)
+          stub_application_setting(instance_level_ai_beta_features_enabled: false)
+        end
+
+        it 'includes experimentFeaturesEnabled as false' do
+          expect(data[:experimentFeaturesEnabled]).to be(false)
+        end
       end
     end
 
@@ -1081,6 +1128,27 @@ RSpec.describe ProjectsHelper, feature_category: :shared do
 
       it 'returns false' do
         expect(paid_tier).to be(false)
+      end
+    end
+
+    context 'when add-on purchase has nil namespace' do
+      before do
+        create(:gitlab_subscription_add_on_purchase, :duo_pro, :active, namespace: nil)
+      end
+
+      it 'returns true' do
+        expect(paid_tier).to be(true)
+      end
+    end
+
+    context 'when add-on purchase has both matching namespace and nil namespace' do
+      before do
+        create(:gitlab_subscription_add_on_purchase, :duo_pro, :active, namespace: group)
+        create(:gitlab_subscription_add_on_purchase, :duo_enterprise, :active, namespace: nil)
+      end
+
+      it 'returns true' do
+        expect(paid_tier).to be(true)
       end
     end
   end
