@@ -38622,9 +38622,6 @@ msgstr ""
 msgid "Learn More"
 msgstr ""
 
-msgid "Learn More."
-msgstr ""
-
 msgid "Learn about how your subscription works %{url}"
 msgstr ""
 
@@ -55467,9 +55464,6 @@ msgstr ""
 msgid "Restore project"
 msgstr ""
 
-msgid "Restoring projects"
-msgstr ""
-
 msgid "Restrict access by IP address"
 msgstr ""
 
@@ -67851,9 +67845,6 @@ msgstr[0] ""
 msgstr[1] ""
 
 msgid "This process deletes the project repository and all related resources."
-msgstr ""
-
-msgid "This project can be restored until %{date}."
 msgstr ""
 
 msgid "This project can be restored until %{date}. %{linkStart}Learn more%{linkEnd}."
