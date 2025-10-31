@@ -205,6 +205,7 @@ module EE
         mount_mutation ::Mutations::Security::Attributes::Update
         mount_mutation ::Mutations::Security::Attributes::Destroy
         mount_mutation ::Mutations::Security::Attributes::ProjectUpdate
+        mount_mutation ::Mutations::Security::Attributes::BulkUpdate
         mount_mutation ::Mutations::Security::Categories::Create
         mount_mutation ::Mutations::Security::Categories::Update
         mount_mutation ::Mutations::Security::Categories::Destroy

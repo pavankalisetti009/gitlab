@@ -3666,6 +3666,26 @@
   :idempotent: true
   :tags: []
   :queue_namespace:
+- :name: security_attributes_bulk_update
+  :worker_name: Security::Attributes::BulkUpdateWorker
+  :feature_category: :security_asset_inventories
+  :has_external_dependencies: false
+  :urgency: :low
+  :resource_boundary: :unknown
+  :weight: 1
+  :idempotent: true
+  :tags: []
+  :queue_namespace:
+- :name: security_attributes_bulk_update_scheduler
+  :worker_name: Security::Attributes::BulkUpdateSchedulerWorker
+  :feature_category: :security_asset_inventories
+  :has_external_dependencies: false
+  :urgency: :low
+  :resource_boundary: :unknown
+  :weight: 1
+  :idempotent: true
+  :tags: []
+  :queue_namespace:
 - :name: security_attributes_cleanup_batch
   :worker_name: Security::Attributes::CleanupBatchWorker
   :feature_category: :security_asset_inventories
