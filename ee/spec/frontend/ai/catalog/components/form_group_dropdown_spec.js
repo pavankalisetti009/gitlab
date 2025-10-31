@@ -2,29 +2,57 @@ import Vue from 'vue';
 import VueApollo from 'vue-apollo';
 import { shallowMount } from '@vue/test-utils';
 
-import getProjects from '~/graphql_shared/queries/get_users_projects.query.graphql';
-import FormProjectDropdown from 'ee/ai/catalog/components/form_project_dropdown.vue';
+import getGroups from '~/graphql_shared/queries/get_users_groups.query.graphql';
+import FormGroupDropdown from 'ee/ai/catalog/components/form_group_dropdown.vue';
 import SingleSelectDropdown from 'ee/ai/catalog/components/single_select_dropdown.vue';
 import createMockApollo from 'helpers/mock_apollo_helper';
 import waitForPromises from 'helpers/wait_for_promises';
-import { ACCESS_LEVEL_MAINTAINER_STRING } from '~/access_level/constants';
-import { mockProjects, mockProjectsResponse } from '../mock_data';
 
 Vue.use(VueApollo);
 
-describe('FormProjectDropdown', () => {
+// Mock data
+const mockGroups = [
+  {
+    id: 'gid://gitlab/Group/1',
+    name: 'Group 1',
+    fullName: 'Full Group 1',
+    fullPath: 'group-1',
+    avatarUrl: 'https://example.com/avatar1.png',
+  },
+  {
+    id: 'gid://gitlab/Group/2',
+    name: 'Group 2',
+    fullName: 'Full Group 2',
+    fullPath: 'group-2',
+    avatarUrl: 'https://example.com/avatar2.png',
+  },
+];
+
+const mockGroupsResponse = {
+  data: {
+    groups: {
+      nodes: mockGroups,
+      pageInfo: {
+        hasNextPage: true,
+        endCursor: 'cursor123',
+      },
+    },
+  },
+};
+
+describe('FormGroupDropdown', () => {
   let wrapper;
   let mockApollo;
 
   const defaultProps = {
-    id: 'gl-form-field-project',
+    id: 'gl-form-field-group',
   };
-  const mockProjectsQueryHandler = jest.fn().mockResolvedValue(mockProjectsResponse);
+  const mockGroupsQueryHandler = jest.fn().mockResolvedValue(mockGroupsResponse);
 
   const createComponent = ({ props = {} } = {}) => {
-    mockApollo = createMockApollo([[getProjects, mockProjectsQueryHandler]]);
+    mockApollo = createMockApollo([[getGroups, mockGroupsQueryHandler]]);
 
-    wrapper = shallowMount(FormProjectDropdown, {
+    wrapper = shallowMount(FormGroupDropdown, {
       apolloProvider: mockApollo,
       propsData: {
         ...defaultProps,
@@ -41,14 +69,15 @@ describe('FormProjectDropdown', () => {
 
   it('renders SingleSelectDropdown with correct props', () => {
     expect(findSingleSelectDropdown().props()).toMatchObject({
-      id: 'gl-form-field-project',
-      query: getProjects,
+      id: 'gl-form-field-group',
+      query: getGroups,
       queryVariables: {
-        minAccessLevel: ACCESS_LEVEL_MAINTAINER_STRING,
+        topLevelOnly: true,
+        ownedOnly: true,
         sort: 'similarity',
       },
-      dataKey: 'projects',
-      placeholderText: 'Select a project',
+      dataKey: 'groups',
+      placeholderText: 'Select a group',
       itemTextFn: expect.any(Function),
       itemLabelFn: expect.any(Function),
       itemSubLabelFn: expect.any(Function),
@@ -58,9 +87,9 @@ describe('FormProjectDropdown', () => {
   });
 
   it('passes value prop to SingleSelectDropdown', () => {
-    createComponent({ props: { value: 'gid://gitlab/Project/1' } });
+    createComponent({ props: { value: 'gid://gitlab/Group/1' } });
 
-    expect(findSingleSelectDropdown().props('value')).toBe('gid://gitlab/Project/1');
+    expect(findSingleSelectDropdown().props('value')).toBe('gid://gitlab/Group/1');
   });
 
   it('passes isValid prop to SingleSelectDropdown', () => {
@@ -79,15 +108,15 @@ describe('FormProjectDropdown', () => {
     it('emits input event when SingleSelectDropdown emits input', async () => {
       await waitForPromises();
 
-      findSingleSelectDropdown().vm.$emit('input', mockProjects[0]);
+      findSingleSelectDropdown().vm.$emit('input', mockGroups[0]);
 
-      expect(wrapper.emitted('input')).toEqual([[mockProjects[0].id]]);
+      expect(wrapper.emitted('input')).toEqual([[mockGroups[0].id]]);
     });
 
     it('emits error event when SingleSelectDropdown emits error', () => {
       findSingleSelectDropdown().vm.$emit('error');
 
-      expect(wrapper.emitted('error')).toEqual([['Failed to load projects']]);
+      expect(wrapper.emitted('error')).toEqual([['Failed to load groups.']]);
     });
   });
 });

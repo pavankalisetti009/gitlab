@@ -34,6 +34,7 @@ export const AI_CATALOG_CONSUMER_LABELS = {
   [AI_CATALOG_CONSUMER_TYPE_PROJECT]: __('project'),
 };
 
+export const MINIMUM_QUERY_LENGTH = 3;
 export const PAGE_SIZE = 20;
 
 // Matches backend validations in https://gitlab.com/gitlab-org/gitlab/blob/aa02c3080b316cf0f3b71a992bc5cc5dc8e8bb34/ee/app/models/ai/catalog/item.rb#L10
