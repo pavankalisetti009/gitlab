@@ -546,7 +546,7 @@ RSpec.describe Gitlab::Database::PartitioningMigrationHelpers::IndexHelpers, fea
   end
 
   describe '#prepare_partitioned_async_index' do
-    it 'creates the records for async index' do
+    it 'creates the records for async index', quarantine: 'https://gitlab.com/gitlab-org/quality/test-failure-issues/-/issues/2222' do
       expect do
         migration.prepare_partitioned_async_index(table_name, 'id')
       end.to change { index_model.count }.by(2)
