@@ -59,6 +59,7 @@ export default {
     </div>
 
     <gl-card>
+      <!-- TODO: Add resolver.vue (https://gitlab.com/gitlab-org/gitlab/-/issues/570014) -->
       <gl-empty-state
         :title="s__('DataExplorer|Preview not available')"
         :description="s__('DataExplorer|Start by typing a GLQL query.')"
