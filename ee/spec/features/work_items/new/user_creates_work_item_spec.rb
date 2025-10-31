@@ -31,6 +31,7 @@ RSpec.describe 'User creates work items', :js, feature_category: :team_planning 
     let_it_be(:label) { create(:group_label, title: 'Label 1', group: group) }
     let_it_be(:milestone) { create(:milestone, group: group, title: 'Milestone') }
     let(:issuable_container) { '[data-testid="issuable-container"]' }
+    let_it_be(:other_project) { create(:project, :public, developers: user, group: group) }
 
     before do
       stub_licensed_features(epics: true, epic_colors: true, issuable_health_status: true, subepics: true)
@@ -48,6 +49,11 @@ RSpec.describe 'User creates work items', :js, feature_category: :team_planning 
       work-item-color
       work-item-parent
     ]
+
+    it_behaves_like 'creates work item in a particular namespace', 'issue' do
+      let(:default_namespace) { group }
+      let(:namespace) { other_project }
+    end
 
     it 'renders metadata as set during work item creation' do
       allow(Gitlab::QueryLimiting::Transaction).to receive(:threshold).and_return(125)
