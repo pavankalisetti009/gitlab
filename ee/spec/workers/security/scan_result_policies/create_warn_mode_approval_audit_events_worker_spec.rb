@@ -1,0 +1,69 @@
+# frozen_string_literal: true
+
+require 'spec_helper'
+
+RSpec.describe Security::ScanResultPolicies::CreateWarnModeApprovalAuditEventsWorker, feature_category: :security_policy_management do
+  let_it_be(:project) { create(:project) }
+  let_it_be(:user) { project.creator }
+  let_it_be_with_reload(:merge_request) { create(:merge_request, source_project: project) }
+
+  let(:merge_request_id) { merge_request.id }
+  let(:current_user_id) { project.creator.id }
+  let(:event) do
+    MergeRequests::ApprovedEvent.new(data: { merge_request_id: merge_request_id, current_user_id: current_user_id })
+  end
+
+  subject(:handle_event) { described_class.new.handle_event(event) }
+
+  shared_examples 'calls service' do
+    specify do
+      expect_next_instance_of(
+        Security::ScanResultPolicies::CreateWarnModeApprovalAuditEventService, merge_request, user
+      ) do |service|
+        expect(service).to receive(:execute)
+      end
+
+      handle_event
+    end
+  end
+
+  shared_examples 'does not call service' do
+    specify do
+      expect(Security::ScanResultPolicies::CreateWarnModeApprovalAuditEventService).not_to receive(:new)
+
+      handle_event
+    end
+  end
+
+  context 'with valid merge request and user ID' do
+    include_examples 'calls service'
+
+    context 'when merge request is not open' do
+      before do
+        merge_request.close!
+      end
+
+      include_examples 'does not call service'
+    end
+
+    context 'with feature disabled' do
+      before do
+        stub_feature_flags(security_policy_approval_warn_mode: false)
+      end
+
+      include_examples 'does not call service'
+    end
+  end
+
+  context 'with invalid merge request ID' do
+    let(:merge_request_id) { non_existing_record_id }
+
+    include_examples 'does not call service'
+  end
+
+  context 'with invalid user ID' do
+    let(:current_user_id) { non_existing_record_id }
+
+    include_examples 'does not call service'
+  end
+end
