@@ -42,6 +42,7 @@ module EE
 
           push_frontend_ability(ability: :summarize_comments, resource: issue, user: current_user)
           push_frontend_ability(ability: :measure_comment_temperature, resource: issue, user: current_user)
+          push_frontend_feature_flag(:duo_developer_button, current_user)
         end
 
         before_action :redirect_if_test_case, only: [:show]

@@ -1,0 +1,10 @@
+---
+name: duo_developer_button
+description: Control switch between issue_to_merge_request flow and duo developer flow
+feature_issue_url: https://gitlab.com/gitlab-org/gitlab/-/issues/554148
+introduced_by_url: https://gitlab.com/gitlab-org/gitlab/-/merge_requests/211229
+rollout_issue_url: https://gitlab.com/gitlab-org/gitlab/-/issues/579076
+milestone: '18.6'
+group: group::agent foundations
+type: beta
+default_enabled: false
