@@ -49830,6 +49830,7 @@ Iteration ID wildcard values.
 | <a id="jobartifactfiletyperequirements"></a>`REQUIREMENTS` | REQUIREMENTS job artifact file type. |
 | <a id="jobartifactfiletyperequirements_v2"></a>`REQUIREMENTS_V2` | REQUIREMENTS V2 job artifact file type. |
 | <a id="jobartifactfiletypesast"></a>`SAST` | SAST job artifact file type. |
+| <a id="jobartifactfiletypescip"></a>`SCIP` | SCIP job artifact file type. |
 | <a id="jobartifactfiletypesecret_detection"></a>`SECRET_DETECTION` | SECRET DETECTION job artifact file type. |
 | <a id="jobartifactfiletypeterraform"></a>`TERRAFORM` | TERRAFORM job artifact file type. |
 | <a id="jobartifactfiletypetrace"></a>`TRACE` | TRACE job artifact file type. |
