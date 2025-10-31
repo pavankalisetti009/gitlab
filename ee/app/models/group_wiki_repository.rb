@@ -49,9 +49,8 @@ class GroupWikiRepository < ApplicationRecord
   def self.replicables_for_current_secondary(primary_key_in)
     node = ::Gitlab::Geo.current_node
 
-    replicables =
-      available_replicables
-        .primary_key_in(primary_key_in)
+    replicables = available_replicables
+    replicables = replicables.primary_key_in(primary_key_in) if primary_key_in.present?
 
     replicables
       .merge(selective_sync_scope(node, primary_key_in: primary_key_in, replicables: replicables))

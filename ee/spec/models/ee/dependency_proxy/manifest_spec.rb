@@ -49,30 +49,7 @@ RSpec.describe DependencyProxy::Manifest, feature_category: :geo_replication do
         create(:dependency_proxy_manifest, group: group_2)
       end
 
-      let_it_be_with_refind(:secondary) { create(:geo_node, :secondary) }
-
-      before do
-        stub_current_geo_node(secondary)
-      end
-
-      describe '.replicables_for_current_secondary' do
-        include_examples 'Geo framework selective sync scenarios', :replicables_for_current_secondary
-      end
-
-      describe '.selective_sync_scope' do
-        include_examples 'Geo framework selective sync scenarios', :selective_sync_scope
-
-        it 'raises if an unrecognised selective sync type is used' do
-          secondary.update_attribute(:selective_sync_type, 'unknown')
-
-          expect { described_class.selective_sync_scope(secondary) }
-            .to raise_error(Geo::Errors::UnknownSelectiveSyncType)
-        end
-      end
-
-      describe '.verifiables' do
-        include_examples 'Geo framework selective sync scenarios', :verifiables
-      end
+      include_examples 'Geo Framework selective sync behavior'
     end
   end
 end
