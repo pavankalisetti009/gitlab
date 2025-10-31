@@ -174,5 +174,9 @@ export default {
         <gl-truncate position="middle" :text="item.fullPath" with-tooltip />
       </span>
     </template>
+
+    <template #footer>
+      <slot name="footer"></slot>
+    </template>
   </gl-collapsible-listbox>
 </template>

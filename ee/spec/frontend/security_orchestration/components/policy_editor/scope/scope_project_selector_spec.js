@@ -54,6 +54,7 @@ describe('ScopeProjectSelector', () => {
         });
 
         expect(findGroupProjectsDropdown().exists()).toBe(true);
+        expect(findGroupProjectsDropdown().props('withProjectCount')).toBe(true);
         expect(findInstanceProjectsDropdown().exists()).toBe(false);
       });
 
