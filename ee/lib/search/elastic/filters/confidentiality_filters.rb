@@ -131,13 +131,7 @@ module Search
           #   Elasticsearch documents that stores traversal IDs for ancestry.
           #
           # @return [Hash] The modified `query_hash` with confidentiality filters applied.
-          #
-          # @note This method uses the `search_group_confidentiality_use_traversal_ids` feature flag
           def by_group_level_confidentiality(query_hash:, options:)
-            if ::Feature.disabled?(:search_group_confidentiality_use_traversal_ids, options[:current_user])
-              return legacy_group_level_confidentiality(query_hash:, options:)
-            end
-
             filter_context = ConfidentialityFilterContext.new(options)
 
             context.name(:filters, :confidentiality, :groups) do
@@ -148,58 +142,6 @@ module Search
 
               auth_data = prepare_group_authorization_data(options, filter_context)
               apply_confidentiality_access_filters(query_hash, filter_context, auth_data)
-            end
-          end
-
-          def legacy_group_level_confidentiality(query_hash:, options:)
-            confidential = options[:confidential]
-            user = options[:current_user]
-            filter_path = options.fetch(:filter_path, [:query, :bool, :filter])
-
-            context.name(:filters, :confidentiality, :groups) do
-              if [true, false].include?(confidential)
-                add_filter(query_hash, *filter_path) do
-                  { term: { confidential: { _name: context.name(:user_filter), value: confidential } } }
-                end
-              end
-
-              next query_hash if user&.can_read_all_resources?
-
-              filter = Search::Elastic::BoolExpr.new
-              filter.minimum_should_match = 1
-
-              # anonymous user, public groups, non-confidential
-              add_filter(filter, :should) do
-                non_confidential_filter_for_public_groups
-              end
-
-              if user && !user.external?
-                # logged in user, public groups, non-confidential
-                add_filter(filter, :should) do
-                  non_confidential_filter_for_internal_groups
-                end
-              end
-
-              if user
-                # logged in user, private groups, non-confidential
-                add_filter(filter, :should) do
-                  non_confidential_filter_for_private_groups(user, options)
-                end
-
-                # logged-in user, private projects ancestor hierarchy, non-confidential
-                add_filter(filter, :should) do
-                  non_confidential_filter_for_authorized_project_ancestors(user)
-                end
-
-                # logged in user, private groups, confidential
-                add_filter(filter, :should) do
-                  confidential_filter_for_private_groups(user, options)
-                end
-              end
-
-              add_filter(query_hash, *filter_path) do
-                filter.to_bool_query
-              end
             end
           end
 
@@ -492,93 +434,6 @@ module Search
             {
               term: { confidential: { _name: context.name(:non_confidential), value: false } }
             }
-          end
-
-          def non_confidential_filter_for_public_groups
-            {
-              bool: {
-                _name: context.name(:non_confidential, :public),
-                must: [
-                  { term: { confidential: { value: false } } },
-                  { term: { namespace_visibility_level: { value: ::Gitlab::VisibilityLevel::PUBLIC } } }
-                ]
-              }
-            }
-          end
-
-          def non_confidential_filter_for_internal_groups
-            {
-              bool: {
-                _name: context.name(:non_confidential, :internal),
-                must: [
-                  { term: { confidential: { value: false } } },
-                  { term: { namespace_visibility_level: { value: ::Gitlab::VisibilityLevel::INTERNAL } } }
-                ]
-              }
-            }
-          end
-
-          def non_confidential_filter_for_private_groups(user, options)
-            min_access_for_non_confidential = options[:min_access_level_non_confidential]
-            non_confidential_options = options.merge(min_access_level: min_access_for_non_confidential)
-            traversal_ids = traversal_ids_for_user(user, non_confidential_options)
-            return if traversal_ids.empty?
-
-            traversal_ids_prefix = options.fetch(:traversal_ids_prefix, TRAVERSAL_IDS_FIELD)
-            context.name(:non_confidential, :private) do
-              {
-                bool: {
-                  _name: context.name,
-                  must: [
-                    { term: { confidential: { value: false } } }
-                  ],
-                  should: ancestry_filter(traversal_ids, traversal_id_field: traversal_ids_prefix),
-                  minimum_should_match: 1
-                }
-              }
-            end
-          end
-
-          def non_confidential_filter_for_authorized_project_ancestors(user)
-            authorized_project_ancestry_namespace_ids = authorized_namespace_ids_for_project_group_ancestry(user)
-            return if authorized_project_ancestry_namespace_ids.empty?
-
-            context.name(:non_confidential, :private) do
-              {
-                bool: {
-                  _name: context.name,
-                  must: [
-                    { term: { confidential: { value: false } } },
-                    { terms: {
-                      _name: context.name(:project, :membership),
-                      namespace_id: authorized_project_ancestry_namespace_ids
-                    } }
-                  ]
-                }
-              }
-            end
-          end
-
-          def confidential_filter_for_private_groups(user, options)
-            min_access_for_confidential = options[:min_access_level_confidential]
-            confidential_options = options.merge(min_access_level: min_access_for_confidential)
-            traversal_ids = traversal_ids_for_user(user, confidential_options)
-
-            return if traversal_ids.empty?
-
-            traversal_ids_prefix = options.fetch(:traversal_ids_prefix, TRAVERSAL_IDS_FIELD)
-            context.name(:confidential, :private) do
-              {
-                bool: {
-                  _name: context.name,
-                  must: [
-                    { term: { confidential: { value: true } } }
-                  ],
-                  should: ancestry_filter(traversal_ids, traversal_id_field: traversal_ids_prefix),
-                  minimum_should_match: 1
-                }
-              }
-            end
           end
 
           def authorized_project_ids(current_user, scoped_project_ids)
