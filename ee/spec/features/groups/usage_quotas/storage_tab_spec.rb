@@ -119,7 +119,7 @@ RSpec.describe 'Groups > Usage quotas > Storage tab', :with_trial_types, :js, :s
     context 'when user is not allowed to add storage' do
       it 'opens limited access modal' do
         expect(page).to have_selector('[data-testid="limited-access-modal-id"]')
-        expect(page).to have_content('Your subscription is in read-only mode')
+        expect(page).to have_content('Changes to subscriptions from GitLab partners require assistance')
       end
     end
   end

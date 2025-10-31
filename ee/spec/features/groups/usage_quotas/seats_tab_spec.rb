@@ -232,7 +232,7 @@ RSpec.describe 'Groups > Usage quotas > Seats tab', :with_trial_types, :js, :saa
 
       it 'opens limited access modal' do
         expect(page).to have_selector('[data-testid="limited-access-modal-id"]')
-        expect(page).to have_content('Your subscription is in read-only mode')
+        expect(page).to have_content('Changes to subscriptions from GitLab partners require assistance')
       end
     end
   end

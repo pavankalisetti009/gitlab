@@ -64856,10 +64856,10 @@ msgstr ""
 msgid "SubscriptionGroupsNew|Your group will only be displayed in the list above if:"
 msgstr ""
 
-msgid "SubscriptionMangement|To make changes to a read-only subscription or purchase additional products, contact your GitLab Partner."
+msgid "SubscriptionManagement|Changes to subscriptions from GitLab partners require assistance"
 msgstr ""
 
-msgid "SubscriptionMangement|Your subscription is in read-only mode"
+msgid "SubscriptionManagement|This subscription is managed through a GitLab Partner. To make changes to the subscription, contact the partner."
 msgstr ""
 
 msgid "SubscriptionTableRow|*Access temporarily extended until %{temporaryExtensionEndDate}"
