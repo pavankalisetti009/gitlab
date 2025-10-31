@@ -1,4 +1,4 @@
-import { domElementToBlob } from '~/lib/utils/image_utils';
+import { domElementToBlob } from '~/lib/utils/screenshot_utils';
 import { uploadImageToProject } from '~/api/projects_api';
 import { getAbsoluteDateRange, getTimeframe } from 'ee/metrics/details/utils';
 import { slugify } from '~/lib/utils/text_utility';
