@@ -18,7 +18,7 @@ export default {
     ProjectAttributesUpdateDrawer,
   },
   mixins: [InternalEvents.mixin()],
-  inject: ['projectFullPath'],
+  inject: ['projectFullPath', 'canManageAttributes'],
   EMPTY_ATTRIBUTE_SVG,
   data() {
     return {
@@ -98,16 +98,24 @@ export default {
 
 <template>
   <div>
-    <gl-button variant="confirm" class="gl-float-right gl-mb-5 gl-ml-5" @click="openEditDrawer">
+    <gl-button
+      v-if="canManageAttributes"
+      variant="confirm"
+      class="gl-float-right gl-mb-5 gl-ml-5"
+      @click="openEditDrawer"
+    >
       {{ s__('SecurityAttributes|Edit project attributes') }}
     </gl-button>
 
     <p class="gl-my-5">
       {{
         s__(
-          'SecurityAttributes|Security attributes help classify and organize your projects. Attributes are managed at the group level. You can add or remove attributes to this project as needed.',
+          'SecurityAttributes|Security attributes help classify and organize your projects. Attributes are managed at the group level.',
         )
       }}
+      <span v-if="canManageAttributes">
+        {{ s__('SecurityAttributes|You can add or remove attributes to this project as needed.') }}
+      </span>
     </p>
 
     <gl-table
@@ -133,7 +141,7 @@ export default {
       <template #cell(name)="{ item: { name, color } }">
         <gl-label :background-color="color" :title="name" />
       </template>
-      <template #cell(actions)="{ item }">
+      <template v-if="canManageAttributes" #cell(actions)="{ item }">
         <gl-button @click="removeAttribute(item)">
           {{ s__('SecurityAttributes|Remove attribute') }}
         </gl-button>
@@ -141,6 +149,7 @@ export default {
     </gl-table>
 
     <project-attributes-update-drawer
+      v-if="canManageAttributes"
       ref="updateAttributesDrawer"
       :project-id="project.id"
       :selected-attributes="project.securityAttributes.nodes"

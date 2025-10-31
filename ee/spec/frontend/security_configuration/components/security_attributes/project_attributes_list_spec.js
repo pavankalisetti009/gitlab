@@ -38,7 +38,7 @@ describe('ProjectAttributesList', () => {
     },
   });
 
-  const createComponent = (mountFn = shallowMountExtended) => {
+  const createComponent = (mountFn = shallowMountExtended, provide) => {
     projectQueryHandler = jest.fn().mockResolvedValue({
       data: {
         project: {
@@ -58,6 +58,8 @@ describe('ProjectAttributesList', () => {
       provide: {
         projectFullPath: 'path/to/project',
         groupFullPath: 'path/to/group',
+        canManageAttributes: true,
+        ...provide,
       },
       apolloProvider,
       stubs: {
@@ -175,6 +177,22 @@ describe('ProjectAttributesList', () => {
       expect(createAlert).toHaveBeenCalledWith({
         message: 'An error has occurred while removing the security attribute.',
       });
+    });
+  });
+
+  describe('without admin permission', () => {
+    beforeEach(async () => {
+      createComponent(mountExtended, { canManageAttributes: false });
+      await waitForPromises();
+    });
+
+    it('does not show the edit button or the drawer', () => {
+      expect(wrapper.findComponent(GlButton).exists()).toBe(false);
+      expect(wrapper.findComponent(ProjectAttributesUpdateDrawer).exists()).toBe(false);
+    });
+
+    it('does not show actions', () => {
+      expect(findTableRows().at(0).findComponent(GlButton).exists()).toBe(false);
     });
   });
 });
