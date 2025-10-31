@@ -52,6 +52,9 @@ export default {
     };
   },
   computed: {
+    isFlowsAvailable() {
+      return this.glFeatures.aiCatalogFlows;
+    },
     flowName() {
       return this.aiCatalogFlow.name;
     },
@@ -166,6 +169,7 @@ export default {
           v-if="showActions"
           :item="aiCatalogFlow"
           :item-routes="$options.itemRoutes"
+          :is-flows-available="isFlowsAvailable"
           :delete-fn="deleteFlow"
           :delete-confirm-title="s__('AICatalog|Delete flow')"
           :delete-confirm-message="s__('AICatalog|Are you sure you want to delete flow %{name}?')"

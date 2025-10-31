@@ -96,9 +96,12 @@ export default {
     };
   },
   computed: {
+    isFlowsAvailable() {
+      return this.glFeatures.aiCatalogFlows;
+    },
     itemTypes() {
       return createAvailableFlowItemTypes({
-        isFlowsEnabled: this.glFeatures.aiCatalogFlows,
+        isFlowsEnabled: this.isFlowsAvailable,
         isThirdPartyFlowsEnabled: this.glFeatures.aiCatalogThirdPartyFlows,
       });
     },
@@ -209,7 +212,7 @@ export default {
       :can-admin="userPermissions.adminAiCatalogItem"
       new-button-variant="default"
     >
-      <template #nav-actions>
+      <template v-if="isFlowsAvailable" #nav-actions>
         <gl-button v-if="showAddFlow" v-gl-modal="'add-flow-to-project-modal'" variant="confirm">
           {{ s__('AICatalog|Enable flow in project') }}
         </gl-button>
