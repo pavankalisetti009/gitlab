@@ -57,6 +57,8 @@ module VirtualRegistries
             private
 
             def allowed?
+              return true if skip_permission_check
+
               can?(current_user, :read_virtual_registry, upstream)
             end
 
@@ -78,6 +80,10 @@ module VirtualRegistries
 
             def content_type
               params[:content_type]
+            end
+
+            def skip_permission_check
+              params[:skip_permission_check] || false
             end
           end
         end

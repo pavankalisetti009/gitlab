@@ -7,11 +7,12 @@ RSpec.describe VirtualRegistries::Packages::Maven::HandleFileRequestService, :ag
   let_it_be(:project) { create(:project, namespace: registry.group) }
   let_it_be(:user) { create(:user, owner_of: project) }
   let_it_be(:path) { 'com/test/package/1.2.3/package-1.2.3.pom' }
+  let_it_be(:request_path) { path }
   let_it_be(:upstream) { registry.upstreams.first }
-  let_it_be(:upstream_resource_url) { upstream.url_for(path) }
+  let_it_be(:upstream_resource_url) { upstream.url_for(request_path) }
 
   let(:etag_returned_by_upstream) { nil }
-  let(:service) { described_class.new(registry: registry, current_user: user, params: { path: path }) }
+  let(:service) { described_class.new(registry: registry, current_user: user, params: { path: request_path }) }
 
   describe '#execute' do
     subject(:execute) { service.execute }
@@ -50,11 +51,13 @@ RSpec.describe VirtualRegistries::Packages::Maven::HandleFileRequestService, :ag
           expect(action_params[:file_md5]).to be_instance_of(String)
         when :download_digest
           expect(execute.payload[:action_params]).to eq(digest: expected_digest)
+        when :workhorse_send_url
+          expect(execute.payload[:action_params]).to eq(url: upstream_digest_url)
         end
       end
 
       def event_data_from(action)
-        if action == :workhorse_upload_url
+        if action == :workhorse_upload_url || action == :workhorse_send_url
           event_label = 'from_upstream'
           metric_key = 'counts.count_total_pull_maven_package_file_through_virtual_registry_from_upstream'
         else
@@ -75,7 +78,7 @@ RSpec.describe VirtualRegistries::Packages::Maven::HandleFileRequestService, :ag
           :virtual_registries_packages_maven_cache_entry,
           :upstream_checked,
           :processing,
-          relative_path: "/#{path}",
+          relative_path: "/#{request_path}",
           upstream: upstream,
           group: registry.group
         )
@@ -106,7 +109,7 @@ RSpec.describe VirtualRegistries::Packages::Maven::HandleFileRequestService, :ag
           create(:virtual_registries_packages_maven_cache_entry,
             :upstream_checked,
             upstream: upstream,
-            relative_path: "/#{path}",
+            relative_path: "/#{request_path}",
             group: registry.group
           )
         end
@@ -146,28 +149,56 @@ RSpec.describe VirtualRegistries::Packages::Maven::HandleFileRequestService, :ag
         end
 
         context 'when accessing the sha1 digest' do
-          let(:path) { "#{super()}.sha1" }
+          let(:request_path) { "#{path}.sha1" }
+          let(:upstream_digest_url) { "#{upstream_resource_url}.sha1" }
           let(:expected_digest) { cache_entry.file_sha1 }
 
           it_behaves_like 'returning a service response success response', action: :download_digest
 
           context 'when the cache entry does not exist' do
-            let(:path) { "#{super()}_not_existing.sha1" }
+            before do
+              VirtualRegistries::Packages::Maven::Cache::Entry.delete_all
 
-            it { is_expected.to eq(described_class::ERRORS[:digest_not_found]) }
+              stub_external_registry_request(etag: etag_returned_by_upstream)
+            end
+
+            it_behaves_like 'returning a service response success response', action: :workhorse_send_url
+
+            it 'queues background job to create cache entry' do
+              expect(VirtualRegistries::Packages::Maven::CreateCacheEntryWorker).to receive(:perform_async)
+                .with(upstream.id, path)
+
+              execute
+            end
           end
         end
 
         context 'when accessing the md5 digest' do
-          let(:path) { "#{super()}.md5" }
+          let(:request_path) { "#{path}.md5" }
+          let(:upstream_digest_url) { "#{upstream_resource_url}.md5" }
           let(:expected_digest) { cache_entry.file_md5 }
 
           it_behaves_like 'returning a service response success response', action: :download_digest
 
           context 'when the cache entry does not exist' do
-            let(:path) { "#{super()}_not_existing.md5" }
+            before do
+              VirtualRegistries::Packages::Maven::Cache::Entry.delete_all
 
-            it { is_expected.to eq(described_class::ERRORS[:digest_not_found]) }
+              stub_external_registry_request(etag: etag_returned_by_upstream)
+            end
+
+            it_behaves_like 'returning a service response success response', action: :workhorse_send_url
+
+            it 'queues background job to create cache entry' do
+              expect(VirtualRegistries::Packages::Maven::CreateCacheEntryWorker).to receive(:perform_async)
+                .with(upstream.id, path)
+
+              execute
+            end
+
+            context 'in FIPS mode', :fips_mode do
+              it { is_expected.to eq(described_class::ERRORS[:fips_unsupported_md5]) }
+            end
           end
 
           context 'in FIPS mode', :fips_mode do
@@ -205,7 +236,7 @@ RSpec.describe VirtualRegistries::Packages::Maven::HandleFileRequestService, :ag
     end
 
     context 'with no path' do
-      let(:path) { nil }
+      let(:request_path) { nil }
 
       it { is_expected.to eq(described_class::ERRORS[:path_not_present]) }
     end

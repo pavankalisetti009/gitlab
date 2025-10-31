@@ -54,6 +54,40 @@ RSpec.describe API::VirtualRegistries::Packages::Maven::Endpoints, :aggregate_fa
       get api(url), headers: headers
     end
 
+    shared_examples 'returning the workhorse send_url response' do
+      it 'returns a workhorse send_url response' do
+        subject
+
+        expect(response).to have_gitlab_http_status(:ok)
+        expect(response.headers[Gitlab::Workhorse::SEND_DATA_HEADER]).to start_with('send-url:')
+        expect(response.headers['Content-Type']).to eq('application/octet-stream')
+        expect(response.headers['Content-Length'].to_i).to eq(0)
+        expect(response.body).to eq('')
+
+        send_data_type, send_data = workhorse_send_data
+
+        expected_restrict_forwarded_response_headers = {
+          'Enabled' => true,
+          'AllowList' => described_class::ALLOWED_RESPONSE_HEADERS
+        }
+        expected_resp_headers = described_class::EXTRA_RESPONSE_HEADERS.deep_transform_values do |value|
+          [value]
+        end
+
+        expect(send_data_type).to eq('send-url')
+        expect(send_data['URL']).to be_present
+        expect(send_data['Header']).to eq({})
+        expect(send_data['ResponseHeaders']).to eq(expected_resp_headers)
+        expect(send_data['AllowLocalhost']).to be_truthy
+        expect(send_data['AllowRedirects']).to be_truthy
+        expect(send_data['ResponseHeaderTimeout']).to eq('10s')
+        expect(send_data['DialTimeout']).to eq('10s')
+        expect(send_data['ErrorResponseStatus']).to eq(502)
+        expect(send_data['TimeoutResponseStatus']).to eq(504)
+        expect(send_data['RestrictForwardedResponseHeaders']).to eq(expected_restrict_forwarded_response_headers)
+      end
+    end
+
     shared_examples 'returning the workhorse send_dependency response' do
       let(:enabled_endpoint_uris) { [URI('192.168.1.1')] }
       let(:outbound_local_requests_allowlist) { ['127.0.0.1'] }
@@ -64,7 +98,7 @@ RSpec.describe API::VirtualRegistries::Packages::Maven::Endpoints, :aggregate_fa
         stub_application_setting(outbound_local_requests_whitelist: outbound_local_requests_allowlist)
       end
 
-      it 'returns a workhorse send_url response' do
+      it 'returns a workhorse upload_url response' do
         expect(::VirtualRegistries::Cache::EntryUploader).to receive(:workhorse_authorize).with(
           a_hash_including(
             use_final_store_path: true,
@@ -164,6 +198,26 @@ RSpec.describe API::VirtualRegistries::Packages::Maven::Endpoints, :aggregate_fa
             expect(response.media_type).to eq('text/plain')
             expect(response.body).to eq(cache_entry.file_sha1)
           end
+
+          context 'when cache is not found' do
+            let(:service_response) do
+              ServiceResponse.success(
+                payload: {
+                  action: :workhorse_send_url,
+                  action_params: { url: upstream.url_for(path) }
+                }
+              )
+            end
+
+            before do
+              allow(::VirtualRegistries::Packages::Maven::HandleFileRequestService)
+                .to receive(:new)
+                .with(registry: registry, current_user: user, params: { path: path })
+                .and_return(service_double)
+            end
+
+            it_behaves_like 'returning the workhorse send_url response'
+          end
         end
       end
 
@@ -173,7 +227,6 @@ RSpec.describe API::VirtualRegistries::Packages::Maven::Endpoints, :aggregate_fa
           :unauthorized                      | :unauthorized
           :no_upstreams                      | :bad_request
           :file_not_found_on_upstreams       | :not_found
-          :digest_not_found_in_cache_entries | :not_found
           :upstream_not_available            | :bad_request
           :fips_unsupported_md5              | :bad_request
         end

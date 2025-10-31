@@ -139,10 +139,16 @@ RSpec.describe VirtualRegistries::Packages::Maven::Cache::Entries::CreateOrUpdat
       it { is_expected.to eq(described_class::ERRORS[:unauthorized]) }
     end
 
-    context 'with no user' do
-      let(:user) { nil }
+    context 'with no permission user' do
+      let(:user) { create(:user) }
 
       it { is_expected.to eq(described_class::ERRORS[:unauthorized]) }
+    end
+
+    context 'with skip_permission_check eq true' do
+      let(:params) { super().merge({ skip_permission_check: true }) }
+
+      it_behaves_like 'returning a service response success response'
     end
   end
 end
