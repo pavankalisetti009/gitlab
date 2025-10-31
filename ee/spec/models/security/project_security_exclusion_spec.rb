@@ -111,6 +111,14 @@ RSpec.describe Security::ProjectSecurityExclusion, feature_category: :secret_det
     end
   end
 
+  describe '#exclusion_type' do
+    it 'returns correct GRPC enum for each type' do
+      expect(build(:project_security_exclusion, type: 'path').exclusion_type).to eq(:EXCLUSION_TYPE_PATH)
+      expect(build(:project_security_exclusion, type: 'rule').exclusion_type).to eq(:EXCLUSION_TYPE_RULE)
+      expect(build(:project_security_exclusion, type: 'raw_value').exclusion_type).to eq(:EXCLUSION_TYPE_RAW_VALUE)
+    end
+  end
+
   describe '#audit_details' do
     let_it_be(:project) { create(:project) }
     let_it_be(:exclusion) { create(:project_security_exclusion, :with_rule, project: project, description: 'foobar') }

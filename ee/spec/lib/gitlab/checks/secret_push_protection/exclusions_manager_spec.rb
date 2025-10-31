@@ -30,7 +30,8 @@ RSpec.describe Gitlab::Checks::SecretPushProtection::ExclusionsManager, feature_
 
         it 'includes them in active_exclusions[:path]' do
           exclusions = exclusions_manager.active_exclusions
-          expect(exclusions[:path].map(&:value)).to contain_exactly(path_exclusion1.value, path_exclusion2.value)
+          expect(exclusions[:path].map(&:value)).to contain_exactly(path_exclusion1.value,
+            path_exclusion2.value)
         end
       end
 
@@ -186,23 +187,6 @@ RSpec.describe Gitlab::Checks::SecretPushProtection::ExclusionsManager, feature_
 
         exclusions_manager.matches_excluded_path?('test.rb')
       end
-    end
-  end
-
-  describe '.exclusion_type' do
-    it 'maps known keys to their GRPC enum' do
-      expect(described_class.exclusion_type('path')).to eq(
-        ::Gitlab::SecretDetection::GRPC::ExclusionType::EXCLUSION_TYPE_PATH
-      )
-      expect(described_class.exclusion_type(:rule)).to eq(
-        ::Gitlab::SecretDetection::GRPC::ExclusionType::EXCLUSION_TYPE_RULE
-      )
-    end
-
-    it 'returns unknown enum for unrecognized keys' do
-      expect(described_class.exclusion_type('bogus')).to eq(
-        ::Gitlab::SecretDetection::GRPC::ExclusionType::EXCLUSION_TYPE_UNSPECIFIED
-      )
     end
   end
 end

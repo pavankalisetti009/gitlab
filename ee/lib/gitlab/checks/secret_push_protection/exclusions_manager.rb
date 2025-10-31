@@ -5,16 +5,6 @@ module Gitlab
     module SecretPushProtection
       class ExclusionsManager < ::Gitlab::Checks::SecretPushProtection::Base
         MAX_PATH_EXCLUSIONS_DEPTH = 20
-        EXCLUSION_TYPE_MAP = {
-          rule: ::Gitlab::SecretDetection::GRPC::ExclusionType::EXCLUSION_TYPE_RULE,
-          path: ::Gitlab::SecretDetection::GRPC::ExclusionType::EXCLUSION_TYPE_PATH,
-          raw_value: ::Gitlab::SecretDetection::GRPC::ExclusionType::EXCLUSION_TYPE_RAW_VALUE,
-          unknown: ::Gitlab::SecretDetection::GRPC::ExclusionType::EXCLUSION_TYPE_UNSPECIFIED
-        }.with_indifferent_access.freeze
-
-        def self.exclusion_type(exclusion_type_key)
-          EXCLUSION_TYPE_MAP.fetch(exclusion_type_key, EXCLUSION_TYPE_MAP[:unknown])
-        end
 
         def active_exclusions
           exclusions_relation = if exclusions_available?

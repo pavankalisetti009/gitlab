@@ -16,6 +16,13 @@ module Security
     enum :scanner, { secret_push_protection: 0 }
     enum :type, { path: 0, regex_pattern: 1, raw_value: 2, rule: 3 }
 
+    EXCLUSION_TYPE_MAP = {
+      'rule' => :EXCLUSION_TYPE_RULE,
+      'path' => :EXCLUSION_TYPE_PATH,
+      'raw_value' => :EXCLUSION_TYPE_RAW_VALUE,
+      'unknown' => :EXCLUSION_TYPE_UNSPECIFIED
+    }.freeze
+
     validates :scanner, :type, :value, :project, presence: true
     validates :active, inclusion: { in: [true, false] }
     validates :value, :description, length: { maximum: 255 }
@@ -31,6 +38,10 @@ module Security
 
     def audit_details
       attributes.slice('scanner', 'value', 'active', 'description').symbolize_keys
+    end
+
+    def exclusion_type
+      EXCLUSION_TYPE_MAP.fetch(type, ::Gitlab::SecretDetection::GRPC::ExclusionType::EXCLUSION_TYPE_UNSPECIFIED)
     end
 
     private
