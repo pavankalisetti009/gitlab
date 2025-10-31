@@ -14,14 +14,10 @@ module Types
           null: true,
           description: "URL of the user's avatar."
         field :events,
-          type: [EventType],
+          type: EventType.connection_type,
+          connection_extension: Gitlab::Graphql::Extensions::ExternallyPaginatedArrayExtension,
           null: true,
-          description: 'Billable events from the user.' do
-            argument :page, GraphQL::Types::Int,
-              required: false,
-              default_value: 1,
-              description: 'Page number to fetch the events.'
-          end
+          description: 'Billable events from the user.'
         field :id,
           type: GlobalIDType[::User],
           null: false,
@@ -58,9 +54,9 @@ module Types
           :declarative_policy_subject
         )
 
-        def events(page: 1)
+        def events(**args)
           BatchLoader::GraphQL.for(object.id).batch do |user_ids, loader|
-            load_users_events(user_ids, page, loader)
+            load_users_events(user_ids, args, loader)
           end
         end
 
@@ -92,15 +88,15 @@ module Types
           end
         end
 
-        def load_users_events(user_ids, page, loader)
+        def load_users_events(user_ids, args, loader)
           # We only resolve events if only one user was resolved to avoid overaloading CustomersDot API
           return unless user_ids.length == 1
 
-          result = context[:subscription_usage_client].get_events_for_user_id(user_ids.first, page)
+          result = context[:subscription_usage_client].get_events_for_user_id(user_ids.first, args)
 
           return unless result[:userEvents]
 
-          user_events = result[:userEvents].map do |event|
+          user_events = result.dig(:userEvents, :nodes).to_a.map do |event|
             UserEvent.new(
               timestamp: event[:timestamp],
               event_type: event[:eventType],
@@ -111,7 +107,16 @@ module Types
             )
           end
 
-          loader.call(user_ids.first, user_events)
+          loader.call(
+            user_ids.first,
+            Gitlab::Graphql::ExternallyPaginatedArray.new(
+              result.dig(:userEvents, :pageInfo, :startCursor),
+              result.dig(:userEvents, :pageInfo, :endCursor),
+              *user_events,
+              has_next_page: result.dig(:userEvents, :pageInfo, :hasNextPage),
+              has_previous_page: result.dig(:userEvents, :pageInfo, :hasPreviousPage)
+            )
+          )
         end
       end
     end

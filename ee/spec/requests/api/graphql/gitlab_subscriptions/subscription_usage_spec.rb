@@ -18,32 +18,40 @@ RSpec.describe 'Query.subscriptionUsage', feature_category: :consumables_cost_ma
   end
 
   let(:user_events) do
-    [
-      {
-        timestamp: "2025-10-01T16:25:28Z",
-        eventType: "ai_token_usage",
-        location: nil,
-        creditsUsed: 12.5
-      },
-      {
-        timestamp: "2025-10-01T16:30:12Z",
-        eventType: "workflow_execution",
-        location: { fullPath: project.full_path },
-        creditsUsed: 25.32
-      },
-      {
-        timestamp: "2025-10-01T16:52:28Z",
-        eventType: "ai_token_usage",
-        location: { fullPath: root_group.full_path },
-        creditsUsed: 13.33
-      },
-      {
-        timestamp: "2025-10-01T22:30:12Z",
-        eventType: "workflow_execution",
-        location: { fullPath: project.full_path },
-        creditsUsed: 1
+    {
+      nodes: [
+        {
+          timestamp: "2025-10-01T16:25:28Z",
+          eventType: "ai_token_usage",
+          location: nil,
+          creditsUsed: 12.5
+        },
+        {
+          timestamp: "2025-10-01T16:30:12Z",
+          eventType: "workflow_execution",
+          location: { fullPath: project.full_path },
+          creditsUsed: 25.32
+        },
+        {
+          timestamp: "2025-10-01T16:52:28Z",
+          eventType: "ai_token_usage",
+          location: { fullPath: root_group.full_path },
+          creditsUsed: 13.33
+        },
+        {
+          timestamp: "2025-10-01T22:30:12Z",
+          eventType: "workflow_execution",
+          location: { fullPath: project.full_path },
+          creditsUsed: 1
+        }
+      ],
+      pageInfo: {
+        hasNextPage: false,
+        hasPreviousPage: false,
+        startCursor: "2025-10-01T16:25:28Z",
+        endCursor: "2025-10-01T16:30:12Z"
       }
-    ]
+    }
   end
 
   let(:user_arguments) { {} }
@@ -74,8 +82,9 @@ RSpec.describe 'Query.subscriptionUsage', feature_category: :consumables_cost_ma
         :total_users_using_overage,
         :credits_used,
         query_graphql_field(:daily_usage, {}, [:date, :credits_used]),
-        query_graphql_field(:users, user_arguments, [
-          query_graphql_field(:nodes, {}, [
+        query_nodes(
+          :users,
+          [
             :id,
             :name,
             :username,
@@ -87,17 +96,22 @@ RSpec.describe 'Query.subscriptionUsage', feature_category: :consumables_cost_ma
               :one_time_credits_used,
               :overage_credits_used
             ]),
-            query_graphql_field(:events, {}, [
-              :timestamp,
-              :event_type,
-              query_graphql_field(:location, {}, [
-                '... on Group { fullPath }',
-                '... on Project { fullPath }'
-              ]),
-              :credits_used
-            ])
-          ])
-        ])
+            query_nodes(
+              :events,
+              [
+                :timestamp,
+                :event_type,
+                query_graphql_field(:location, {}, [
+                  '... on Group { fullPath }',
+                  '... on Project { fullPath }'
+                ]),
+                :credits_used
+              ],
+              include_pagination_info: true
+            )
+          ],
+          args: user_arguments
+        )
       ])
     ]
   end
@@ -141,36 +155,44 @@ RSpec.describe 'Query.subscriptionUsage', feature_category: :consumables_cost_ma
       }
     }
 
-    events_for_user_id = [
-      {
-        timestamp: "2025-10-01T16:25:28Z",
-        eventType: "ai_token_usage",
-        projectId: nil,
-        namespaceId: nil,
-        creditsUsed: 12.5
-      },
-      {
-        timestamp: "2025-10-01T16:30:12Z",
-        eventType: "workflow_execution",
-        projectId: project.id,
-        namespaceId: nil,
-        creditsUsed: 25.32
-      },
-      {
-        timestamp: "2025-10-01T16:52:28Z",
-        eventType: "ai_token_usage",
-        projectId: nil,
-        namespaceId: root_group.id,
-        creditsUsed: 13.33
-      },
-      {
-        timestamp: "2025-10-01T22:30:12Z",
-        eventType: "workflow_execution",
-        projectId: project.id,
-        namespaceId: root_group.id,
-        creditsUsed: 1
+    events_for_user_id = {
+      nodes: [
+        {
+          timestamp: "2025-10-01T16:25:28Z",
+          eventType: "ai_token_usage",
+          projectId: nil,
+          namespaceId: nil,
+          creditsUsed: 12.5
+        },
+        {
+          timestamp: "2025-10-01T16:30:12Z",
+          eventType: "workflow_execution",
+          projectId: project.id,
+          namespaceId: nil,
+          creditsUsed: 25.32
+        },
+        {
+          timestamp: "2025-10-01T16:52:28Z",
+          eventType: "ai_token_usage",
+          projectId: nil,
+          namespaceId: root_group.id,
+          creditsUsed: 13.33
+        },
+        {
+          timestamp: "2025-10-01T22:30:12Z",
+          eventType: "workflow_execution",
+          projectId: project.id,
+          namespaceId: root_group.id,
+          creditsUsed: 1
+        }
+      ],
+      pageInfo: {
+        hasNextPage: false,
+        hasPreviousPage: false,
+        startCursor: "2025-10-01T16:25:28Z",
+        endCursor: "2025-10-01T16:30:12Z"
       }
-    ]
+    }
 
     users_usage = User.all.map do |user|
       {
@@ -183,7 +205,7 @@ RSpec.describe 'Query.subscriptionUsage', feature_category: :consumables_cost_ma
       }
     end
 
-    get_users_usage_stats = {
+    users_usage_stats = {
       success: true,
       usersUsage: {
         totalUsersUsingCredits: 3,
@@ -229,7 +251,7 @@ RSpec.describe 'Query.subscriptionUsage', feature_category: :consumables_cost_ma
         get_overage: overage,
         get_events_for_user_id: { success: true, userEvents: events_for_user_id },
         get_usage_for_user_ids: { success: true, usersUsage: users_usage },
-        get_users_usage_stats: get_users_usage_stats
+        get_users_usage_stats: users_usage_stats
       )
     end
   end

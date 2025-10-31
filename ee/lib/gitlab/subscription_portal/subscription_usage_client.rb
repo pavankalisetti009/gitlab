@@ -88,23 +88,30 @@ module Gitlab
 
       GET_USER_EVENTS_QUERY = <<~GQL
         query subscriptionUsageUserEvents(
-          $userIds: [Int!]!,
-          $page: Int,
           $namespaceId: ID,
           $licenseKey: String,
-          $startDate: ISO8601Date,
-          $endDate: ISO8601Date
+          $userIds: [Int!]!,
+          $after: ISO8601DateTime,
+          $before: ISO8601DateTime
         ) {
           subscription(namespaceId: $namespaceId, licenseKey: $licenseKey) {
-            gitlabCreditsUsage(startDate: $startDate, endDate:$endDate) {
+            gitlabCreditsUsage {
               usersUsage {
                 users(userIds: $userIds) {
-                  events(page: $page) {
-                    timestamp
-                    eventType
-                    projectId
-                    namespaceId
-                    creditsUsed
+                  events(after: $after, before: $before) {
+                    nodes {
+                      timestamp
+                      eventType
+                      projectId
+                      namespaceId
+                      creditsUsed
+                    }
+                    pageInfo {
+                      hasNextPage
+                      hasPreviousPage
+                      startCursor
+                      endCursor
+                    }
                   }
                 }
               }
@@ -248,11 +255,15 @@ module Gitlab
       end
       strong_memoize_attr :get_overage
 
-      def get_events_for_user_id(user_id, page)
-        strong_memoize_with(:get_events_for_user_id, user_id, page) do
+      def get_events_for_user_id(user_id, args)
+        strong_memoize_with(:get_events_for_user_id, user_id, args) do
           response = execute_graphql_query(
             query: GET_USER_EVENTS_QUERY,
-            variables: default_variables.merge(startDate: start_date, endDate: end_date, userIds: [user_id], page: page)
+            variables: default_variables.merge(
+              userIds: [user_id],
+              before: args[:before],
+              after: args[:after]
+            )
           )
 
           if unsuccessful_response?(response)
