@@ -569,6 +569,7 @@ export default {
         :error="error"
         :is-loading="loading"
         :should-render-resizable="!isEmbedded"
+        :show-studio-header="isEmbedded"
         :predefined-prompts="predefinedPrompts"
         :badge-type="null"
         :tool-name="toolName"
