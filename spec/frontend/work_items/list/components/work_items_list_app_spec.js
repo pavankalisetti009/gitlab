@@ -18,10 +18,6 @@ import createMockApollo from 'helpers/mock_apollo_helper';
 import { describeSkipVue3, SkipReason } from 'helpers/vue3_conditional';
 import waitForPromises from 'helpers/wait_for_promises';
 import { createAlert, VARIANT_INFO } from '~/alert';
-import {
-  setSortPreferenceMutationResponse,
-  setSortPreferenceMutationResponseWithErrors,
-} from 'jest/issues/list/mock_data';
 import setWindowLocation from 'helpers/set_window_location_helper';
 import { getIdFromGraphQLId } from '~/graphql_shared/utils';
 import { STATUS_CLOSED, STATUS_OPEN } from '~/issues/constants';
@@ -30,10 +26,10 @@ import {
   UPDATED_DESC,
   urlSortParams,
   RELATIVE_POSITION_ASC,
-  RELATIVE_POSITION,
 } from '~/issues/list/constants';
-import setSortPreferenceMutation from '~/issues/list/queries/set_sort_preference.mutation.graphql';
-import getUserWorkItemsDisplaySettingsPreferences from '~/work_items/graphql/get_user_preferences.query.graphql';
+import getUserWorkItemsPreferences from '~/work_items/graphql/get_user_preferences.query.graphql';
+import namespaceWorkItemTypesQuery from '~/work_items/graphql/namespace_work_item_types.query.graphql';
+import updateWorkItemListUserPreference from '~/work_items/graphql/update_work_item_list_user_preferences.mutation.graphql';
 import { scrollUp } from '~/lib/utils/scroll_utils';
 import { getParameterByName, removeParams, updateHistory } from '~/lib/utils/url_utility';
 import { HTTP_STATUS_OK } from '~/lib/utils/http_status';
@@ -92,6 +88,10 @@ import {
   groupWorkItemStateCountsQueryResponse,
   combinedQueryResultExample,
   workItemsWithSubChildQueryResponse,
+  namespaceWorkItemTypesQueryResponse,
+  userPreferenceQueryResponse,
+  workItemUserPreferenceUpdateMutationResponse,
+  workItemUserPreferenceUpdateMutationResponseWithErrors,
 } from '../../mock_data';
 
 jest.mock('~/lib/utils/scroll_utils', () => ({ scrollUp: jest.fn() }));
@@ -124,12 +124,15 @@ describeSkipVue3(skipReason, () => {
   const defaultCountsQueryHandler = jest
     .fn()
     .mockResolvedValue(groupWorkItemStateCountsQueryResponse);
-  const mutationHandler = jest.fn().mockResolvedValue(setSortPreferenceMutationResponse);
+  const userPreferenceMutationHandler = jest
+    .fn()
+    .mockResolvedValue(workItemUserPreferenceUpdateMutationResponse);
   const mockPreferencesQueryHandler = jest.fn().mockResolvedValue({
     data: {
       currentUser: null,
     },
   });
+  const namespaceQueryHandler = jest.fn().mockResolvedValue(namespaceWorkItemTypesQueryResponse);
 
   const findIssuableList = () => wrapper.findComponent(IssuableList);
   const findIssueCardStatistics = () => wrapper.findComponent(IssueCardStatistics);
@@ -158,8 +161,8 @@ describeSkipVue3(skipReason, () => {
     queryHandler = defaultQueryHandler,
     slimQueryHandler = defaultSlimQueryHandler,
     countsQueryHandler = defaultCountsQueryHandler,
-    sortPreferenceMutationResponse = mutationHandler,
     mockPreferencesHandler = mockPreferencesQueryHandler,
+    userPreferenceMutationResponse = userPreferenceMutationHandler,
     workItemsToggleEnabled = true,
     workItemPlanningView = false,
     props = {},
@@ -183,8 +186,9 @@ describeSkipVue3(skipReason, () => {
         [getWorkItemsFullQuery, queryHandler],
         [getWorkItemsSlimQuery, slimQueryHandler],
         [getWorkItemStateCountsQuery, countsQueryHandler],
-        [setSortPreferenceMutation, sortPreferenceMutationResponse],
-        [getUserWorkItemsDisplaySettingsPreferences, mockPreferencesHandler],
+        [getUserWorkItemsPreferences, mockPreferencesHandler],
+        [namespaceWorkItemTypesQuery, namespaceQueryHandler],
+        [updateWorkItemListUserPreference, userPreferenceMutationResponse],
         ...additionalHandlers,
       ]),
       provide: {
@@ -208,7 +212,6 @@ describeSkipVue3(skipReason, () => {
         hasQualityManagementFeature: false,
         hasCustomFieldsFeature: false,
         hasStatusFeature: false,
-        initialSort: CREATED_DESC,
         isGroup: true,
         isSignedIn: true,
         showNewWorkItem: true,
@@ -489,7 +492,11 @@ describeSkipVue3(skipReason, () => {
     describe('when sort is manual and issue repositioning is disabled', () => {
       beforeEach(async () => {
         mountComponent({
-          provide: { initialSort: RELATIVE_POSITION, isIssueRepositioningDisabled: true },
+          mockPreferencesHandler: jest.fn().mockResolvedValue(userPreferenceQueryResponse),
+          provide: { isIssueRepositioningDisabled: true },
+        });
+        wrapper.vm.$options.apollo.displaySettings.result.call(wrapper.vm, {
+          data: userPreferenceQueryResponse.data,
         });
         await waitForPromises();
       });
@@ -1043,7 +1050,9 @@ describeSkipVue3(skipReason, () => {
         async (sortKey) => {
           // Ensure initial sort key is different so we trigger an update when emitting a sort key
           if (sortKey === CREATED_DESC) {
-            mountComponent({ provide: { initialSort: UPDATED_DESC } });
+            mountComponent({
+              mockPreferencesHandler: jest.fn().mockResolvedValue(userPreferenceQueryResponse),
+            });
           } else {
             mountComponent();
           }
@@ -1065,14 +1074,18 @@ describeSkipVue3(skipReason, () => {
 
           findIssuableList().vm.$emit('sort', UPDATED_DESC);
 
-          expect(mutationHandler).toHaveBeenCalledWith({ input: { issuesSort: UPDATED_DESC } });
+          expect(userPreferenceMutationHandler).toHaveBeenCalledWith({
+            sort: UPDATED_DESC,
+            namespace: 'full/path',
+            workItemTypeId: 'gid://gitlab/WorkItems::Type/1',
+          });
         });
 
         it('captures error when mutation response has errors', async () => {
           const mutationMock = jest
             .fn()
-            .mockResolvedValue(setSortPreferenceMutationResponseWithErrors);
-          mountComponent({ sortPreferenceMutationResponse: mutationMock });
+            .mockResolvedValue(workItemUserPreferenceUpdateMutationResponseWithErrors);
+          mountComponent({ userPreferenceMutationResponse: mutationMock });
           await waitForPromises();
 
           findIssuableList().vm.$emit('sort', UPDATED_DESC);
@@ -1089,7 +1102,7 @@ describeSkipVue3(skipReason, () => {
 
           findIssuableList().vm.$emit('sort', CREATED_DESC);
 
-          expect(mutationHandler).not.toHaveBeenCalled();
+          expect(userPreferenceMutationHandler).not.toHaveBeenCalled();
         });
       });
     });
@@ -1118,6 +1131,9 @@ describeSkipVue3(skipReason, () => {
                 },
                 workItemPreferences: {
                   displaySettings: { hiddenMetadataKeys: [] },
+                },
+                workItemPreferencesWithType: {
+                  sort: CREATED_DESC,
                 },
               },
             },
@@ -1150,6 +1166,9 @@ describeSkipVue3(skipReason, () => {
                 workItemPreferences: {
                   displaySettings: { hiddenMetadataKeys: ['labels', 'milestone'] },
                 },
+                workItemPreferencesWithType: {
+                  sort: CREATED_DESC,
+                },
               },
             },
           });
@@ -1170,6 +1189,9 @@ describeSkipVue3(skipReason, () => {
                 },
                 workItemPreferences: {
                   displaySettings: { hiddenMetadataKeys: ['dates', 'milestone'] },
+                },
+                workItemPreferencesWithType: {
+                  sort: CREATED_DESC,
                 },
               },
             },
@@ -1195,6 +1217,9 @@ describeSkipVue3(skipReason, () => {
                   },
                   workItemPreferences: {
                     displaySettings: { hiddenMetadataKeys: [] },
+                  },
+                  workItemPreferencesWithType: {
+                    sort: CREATED_DESC,
                   },
                 },
               },
@@ -1913,7 +1938,7 @@ describeSkipVue3(skipReason, () => {
   describe('when "reorder" event is emitted by IssuableList', () => {
     beforeEach(async () => {
       mountComponent({
-        provide: { initialSort: RELATIVE_POSITION_ASC },
+        mockPreferencesHandler: jest.fn().mockResolvedValue(userPreferenceQueryResponse),
       });
       await waitForPromises();
     });
@@ -1937,7 +1962,7 @@ describeSkipVue3(skipReason, () => {
             });
 
             mountComponent({
-              provide: { initialSort: RELATIVE_POSITION_ASC },
+              mockPreferencesHandler: jest.fn().mockResolvedValue(userPreferenceQueryResponse),
               additionalHandlers: [[workItemsReorderMutation, reorderMutationSpy]],
             });
             await waitForPromises();
