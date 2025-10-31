@@ -69,7 +69,7 @@ RSpec.describe 'Status filters', feature_category: :team_planning do
         post_graphql(query, current_user: current_user)
 
         expect(graphql_errors).to contain_exactly(
-          hash_including('message' => "System-defined status doesn't exist.")
+          hash_including('message' => "Status doesn't exist.")
         )
       end
     end
