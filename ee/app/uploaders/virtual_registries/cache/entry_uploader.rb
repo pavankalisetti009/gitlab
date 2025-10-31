@@ -14,6 +14,13 @@ module VirtualRegistries
 
       delegate :filename, to: :model
 
+      class << self
+        # A default store allows to initialize the Entry model with the right value
+        def default_store
+          object_store_enabled? ? ObjectStorage::Store::REMOTE : ObjectStorage::Store::LOCAL
+        end
+      end
+
       def store_dir
         dynamic_segment
       end

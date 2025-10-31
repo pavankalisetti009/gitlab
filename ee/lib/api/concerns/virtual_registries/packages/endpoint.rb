@@ -19,6 +19,14 @@ module API
             X-Checksum-Md5
             X-Checksum-Sha1
           ].freeze
+          RESPONSE_STATUSES = {
+            error: :bad_gateway,
+            timeout: :gateway_timeout
+          }.freeze
+          TIMEOUTS = {
+            open: 10,
+            read: 10
+          }.freeze
           WEB_BROWSER_ERROR_MESSAGE = 'This endpoint is not meant to be accessed by a web browser.'
           UPSTREAM_GID_HEADER = 'X-Gitlab-Virtual-Registry-Upstream-Global-Id'
           MAX_FILE_SIZE = 5.gigabytes
@@ -35,6 +43,8 @@ module API
                 case action
                 when :workhorse_upload_url
                   workhorse_upload_url(**action_params.slice(:url, :upstream))
+                when :workhorse_send_url
+                  workhorse_send_url(**action_params.slice(:url))
                 when :download_file
                   extra_response_headers = download_file_extra_response_headers(action_params: action_params)
                     .merge(EXTRA_RESPONSE_HEADERS)
@@ -70,12 +80,6 @@ module API
               end
 
               def workhorse_upload_url(url:, upstream:)
-                allow_localhost = Gitlab.dev_or_test_env? ||
-                  Gitlab::CurrentSettings.allow_local_requests_from_web_hooks_and_services?
-                # rubocop:disable Naming/InclusiveLanguage -- existing setting
-                allowed_endpoints = ObjectStoreSettings.enabled_endpoint_uris +
-                  Gitlab::CurrentSettings.outbound_local_requests_whitelist
-                # rubocop:enable Naming/InclusiveLanguage
                 send_workhorse_headers(
                   Gitlab::Workhorse.send_dependency(
                     upstream.headers,
@@ -88,6 +92,26 @@ module API
                       headers: { UPSTREAM_GID_HEADER => upstream.to_global_id.to_s },
                       authorized_upload_response: authorized_upload_response(upstream)
                     },
+                    restrict_forwarded_response_headers: {
+                      enabled: true,
+                      allow_list: ALLOWED_RESPONSE_HEADERS
+                    }
+                  )
+                )
+              end
+
+              def workhorse_send_url(url:)
+                send_workhorse_headers(
+                  Gitlab::Workhorse.send_url(
+                    url,
+                    headers: {},
+                    response_headers: EXTRA_RESPONSE_HEADERS,
+                    allow_localhost: allow_localhost,
+                    allow_redirects: true,
+                    timeouts: TIMEOUTS,
+                    response_statuses: RESPONSE_STATUSES,
+                    ssrf_filter: true,
+                    allowed_endpoints: allowed_endpoints,
                     restrict_forwarded_response_headers: {
                       enabled: true,
                       allow_list: ALLOWED_RESPONSE_HEADERS
@@ -119,6 +143,16 @@ module API
                 status :ok
                 env['api.format'] = :binary # to return data as-is
                 body ''
+              end
+
+              def allow_localhost
+                Gitlab.dev_or_test_env? || Gitlab::CurrentSettings.allow_local_requests_from_web_hooks_and_services?
+              end
+
+              def allowed_endpoints
+                # rubocop:disable Naming/InclusiveLanguage -- existing setting
+                ObjectStoreSettings.enabled_endpoint_uris + Gitlab::CurrentSettings.outbound_local_requests_whitelist
+                # rubocop:enable Naming/InclusiveLanguage
               end
             end
 

@@ -50,6 +50,8 @@ module VirtualRegistries
 
           mount_file_store_uploader ::VirtualRegistries::Cache::EntryUploader
 
+          attribute :file_store, default: -> { VirtualRegistries::Cache::EntryUploader.default_store }
+
           before_validation :set_object_storage_key, if: -> { object_storage_key.blank? && upstream }
           attr_readonly :object_storage_key
 

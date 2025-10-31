@@ -20,6 +20,26 @@ RSpec.describe ::VirtualRegistries::Cache::EntryUploader, feature_category: :vir
     it { is_expected.to include_module(::ObjectStorage::Concern) }
   end
 
+  describe '.default_store' do
+    subject(:default_store) { described_class.default_store }
+
+    context 'when object_store_enabled? is true' do
+      before do
+        allow(described_class).to receive(:object_store_enabled?).and_return(true)
+      end
+
+      it { is_expected.to eq(ObjectStorage::Store::REMOTE) }
+    end
+
+    context 'when object_store_enabled? is false' do
+      before do
+        allow(described_class).to receive(:object_store_enabled?).and_return(false)
+      end
+
+      it { is_expected.to eq(ObjectStorage::Store::LOCAL) }
+    end
+  end
+
   describe '#store_dir' do
     subject { uploader.store_dir }
 

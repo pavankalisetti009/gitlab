@@ -229,6 +229,28 @@ RSpec.describe VirtualRegistries::Packages::Maven::Cache::Entry, type: :model, f
     end
   end
 
+  describe 'file_store attribute' do
+    subject(:file_store) { described_class.new.file_store }
+
+    context 'when object storage is enabled' do
+      it 'defaults to remote store' do
+        expect(VirtualRegistries::Cache::EntryUploader).to receive(:object_store_enabled?)
+          .and_return(true)
+
+        expect(file_store).to eq(ObjectStorage::Store::REMOTE)
+      end
+    end
+
+    context 'when object storage is disabled' do
+      it 'defaults to local store' do
+        expect(VirtualRegistries::Cache::EntryUploader).to receive(:object_store_enabled?)
+          .and_return(false)
+
+        expect(file_store).to eq(ObjectStorage::Store::LOCAL)
+      end
+    end
+  end
+
   describe '#filename' do
     let(:cache_entry) { build(:virtual_registries_packages_maven_cache_entry) }
 

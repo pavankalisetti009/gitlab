@@ -12,10 +12,6 @@ module VirtualRegistries
         ERRORS = BASE_ERRORS.merge(
           unauthorized: ServiceResponse.error(message: 'Unauthorized', reason: :unauthorized),
           no_upstreams: ServiceResponse.error(message: 'No upstreams set', reason: :no_upstreams),
-          digest_not_found: ServiceResponse.error(
-            message: 'File of the requested digest not found in cache entries',
-            reason: :digest_not_found_in_cache_entries
-          ),
           fips_unsupported_md5: ServiceResponse.error(
             message: 'MD5 digest is not supported when FIPS is enabled',
             reason: :fips_unsupported_md5
@@ -36,7 +32,7 @@ module VirtualRegistries
           elsif cache_response_still_valid?
             download_cache_entry
           else
-            check_registry_upstreams
+            build_workhorse_upload_url_response
           end
 
         rescue *::Gitlab::HTTP::HTTP_ERRORS
@@ -71,15 +67,30 @@ module VirtualRegistries
         end
         strong_memoize_attr :cache_entry
 
-        def check_registry_upstreams
-          service = ::VirtualRegistries::CheckUpstreamsService.new(
-            registry: registry,
-            params: { path: path }
-          )
-          response = service.execute
-          return response unless response.success?
+        def build_workhorse_upload_url_response
+          return check_registry_upstreams_response unless upstream
 
-          workhorse_upload_url_response(upstream: response.payload[:upstream])
+          workhorse_upload_url_response(upstream: upstream)
+        end
+
+        def build_workhorse_send_url_response
+          return check_registry_upstreams_response unless upstream
+
+          workhorse_send_url_response(upstream: upstream)
+        end
+
+        def check_registry_upstreams_response
+          ::VirtualRegistries::CheckUpstreamsService.new(
+            registry: registry,
+            params: { path: base_file_path }
+          ).execute
+        end
+        strong_memoize_attr :check_registry_upstreams_response
+
+        def upstream
+          return unless check_registry_upstreams_response.success?
+
+          check_registry_upstreams_response.payload[:upstream]
         end
 
         def head_upstream(upstream:)
@@ -95,10 +106,14 @@ module VirtualRegistries
         end
 
         def download_cache_entry_digest
-          return ERRORS[:digest_not_found] unless cache_entry
-
           digest_format = File.extname(path)[1..] # file extension without the leading dot
           return ERRORS[:fips_unsupported_md5] if digest_format == 'md5' && Gitlab::FIPS.enabled?
+
+          unless cache_entry
+            response = build_workhorse_send_url_response
+            enqueue_create_cache_entry_job if response.success?
+            return response
+          end
 
           create_event(from_upstream: false)
           cache_entry.bump_downloads_count
@@ -139,12 +154,16 @@ module VirtualRegistries
           params[:path]
         end
 
-        def relative_path
+        def base_file_path
           if digest_request?
-            "/#{path.chomp(File.extname(path))}"
+            path.chomp(File.extname(path))
           else
-            "/#{path}"
+            path
           end
+        end
+
+        def relative_path
+          "/#{base_file_path}"
         end
 
         def download_cache_entry
@@ -175,6 +194,17 @@ module VirtualRegistries
           )
         end
 
+        def workhorse_send_url_response(upstream:)
+          create_event(from_upstream: true)
+
+          ServiceResponse.success(
+            payload: {
+              action: :workhorse_send_url,
+              action_params: { url: upstream.url_for(path) }
+            }
+          )
+        end
+
         def create_event(from_upstream:)
           args = {
             namespace: registry.group,
@@ -182,6 +212,12 @@ module VirtualRegistries
           }
           args[:user] = current_user if current_user.is_a?(User)
           track_internal_event('pull_maven_package_file_through_virtual_registry', **args)
+        end
+
+        def enqueue_create_cache_entry_job
+          ::VirtualRegistries::Packages::Maven::CreateCacheEntryWorker.perform_async(
+            upstream.id, base_file_path
+          )
         end
       end
     end
