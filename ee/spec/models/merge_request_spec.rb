@@ -275,7 +275,7 @@ RSpec.describe MergeRequest, feature_category: :code_review_workflow do
 
           context 'with warn mode' do
             before do
-              approval_policy_rule.update!(security_policy: create(:security_policy, :warn_mode))
+              approval_policy_rule.update!(security_policy: create(:security_policy, :enforcement_type_warn))
             end
 
             it 'returns true' do
@@ -348,7 +348,7 @@ RSpec.describe MergeRequest, feature_category: :code_review_workflow do
 
           context 'with warn mode' do
             before do
-              approval_policy_rule.update!(security_policy: create(:security_policy, :warn_mode))
+              approval_policy_rule.update!(security_policy: create(:security_policy, :enforcement_type_warn))
             end
 
             it 'returns false' do
@@ -418,7 +418,7 @@ RSpec.describe MergeRequest, feature_category: :code_review_workflow do
 
           context 'with warn mode' do
             before do
-              approval_policy_rule.update!(security_policy: create(:security_policy, :warn_mode))
+              approval_policy_rule.update!(security_policy: create(:security_policy, :enforcement_type_warn))
             end
 
             it { is_expected.to be(false) }
@@ -484,7 +484,7 @@ RSpec.describe MergeRequest, feature_category: :code_review_workflow do
 
             context 'with warn mode' do
               before_all do
-                approval_policy_rule.update!(security_policy: create(:security_policy, :warn_mode))
+                approval_policy_rule.update!(security_policy: create(:security_policy, :enforcement_type_warn))
               end
 
               it { is_expected.to be_empty }

@@ -318,23 +318,7 @@ module Security
     def enforcement_type_warn?
       enforcement_type == ENFORCEMENT_TYPE_WARN
     end
-
-    def warn_mode?
-      return enforcement_type_warn? if defined_enforcement_type.present?
-
-      actions = content&.dig('actions')
-      return false unless actions
-
-      require_approval_actions = actions.select do |action|
-        action['type'] == Security::ScanResultPolicy::REQUIRE_APPROVAL
-      end
-
-      return false unless require_approval_actions.present?
-
-      require_approval_actions.all? do |action|
-        action['approvals_required'] == 0
-      end
-    end
+    alias_method :warn_mode?, :enforcement_type_warn?
 
     def enforced_scans
       metadata.fetch('enforced_scans', [])

@@ -7,8 +7,8 @@ RSpec.describe Security::ScanResultPolicies::CreateProjectWarnModeAuditEventServ
   let_it_be(:project) { create(:project) }
 
   let_it_be(:enforced_policy_restrictive) { create_policy(1, true) }
-  let_it_be(:warn_mode_policy_restrictive) { create_policy(2, true, :warn_mode) }
-  let_it_be(:warn_mode_policy_permissive) { create_policy(3, false, :warn_mode) }
+  let_it_be(:warn_mode_policy_restrictive) { create_policy(2, true, :enforcement_type_warn) }
+  let_it_be(:warn_mode_policy_permissive) { create_policy(3, false, :enforcement_type_warn) }
 
   let_it_be(:policy_bot) { create(:user, :security_policy_bot) { |bot| project.add_guest(bot) } }
 
@@ -70,7 +70,7 @@ RSpec.describe Security::ScanResultPolicies::CreateProjectWarnModeAuditEventServ
 
   context 'when policy is out of scope' do
     let_it_be(:warn_mode_policy_out_of_scope) do
-      create_policy(4, true, :warn_mode).tap do |policy|
+      create_policy(4, true, :enforcement_type_warn).tap do |policy|
         policy.update!(scope: { projects: { excluding: [{ id: project.id }] } })
       end
     end
