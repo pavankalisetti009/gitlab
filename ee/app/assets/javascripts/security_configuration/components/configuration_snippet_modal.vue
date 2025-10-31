@@ -86,7 +86,7 @@ export default {
               {
                 [CODE_SNIPPET_SOURCE_URL_PARAM]: this.redirectParam,
               },
-              url,
+              { url },
             ),
           );
         }

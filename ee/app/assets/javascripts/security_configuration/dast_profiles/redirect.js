@@ -25,7 +25,7 @@ export const returnToPreviousPageFactory =
     const redirectPathWithId = id
       ? setUrlParams(
           { [urlParamKey]: getIdFromGraphQLId(id) },
-          relativePathToAbsolute(redirectPath, getBaseURL()),
+          { url: relativePathToAbsolute(redirectPath, getBaseURL()) },
         )
       : redirectPath;
 

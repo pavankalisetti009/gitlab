@@ -29,7 +29,10 @@ export default {
     },
     userAvatarUrl() {
       if (!this.user?.avatarUrl) return null;
-      return setUrlParams({ width: AVATAR_SIZE * 2 }, getNormalizedURL(this.user.avatarUrl));
+      return setUrlParams(
+        { width: AVATAR_SIZE * 2 },
+        { url: getNormalizedURL(this.user.avatarUrl) },
+      );
     },
   },
   AVATAR_SIZE,

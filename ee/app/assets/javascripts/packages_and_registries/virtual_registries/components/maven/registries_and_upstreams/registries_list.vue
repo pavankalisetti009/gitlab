@@ -114,7 +114,7 @@ export default {
     updateUrlAndPageParams(params, pageParams) {
       this.pageParams = pageParams;
       updateHistory({
-        url: setUrlParams(params, window.location.href, true),
+        url: setUrlParams(params, { url: window.location.href, clearParams: true }),
       });
     },
   },

@@ -217,8 +217,7 @@ export default {
       const { query, url } = processFilters(this.activeFilters);
       const urlWithParams = setUrlParams(
         { ...query, ...this.cursor, sort: getSortVariableString(this.activeSort) },
-        url.href,
-        true,
+        { url: url.href, clearParams: true },
       );
 
       if (redirect) {

@@ -56,10 +56,12 @@ export function viewTracesUrlWithMetric(tracingIndexUrl, { traceIds, timestamp }
           }
         : {}),
     }),
-    getNormalizedURL(tracingIndexUrl),
-    true, // clearParams
-    true, // railsArraySyntax
-    true, // decodeParams
+    {
+      url: getNormalizedURL(tracingIndexUrl),
+      clearParams: true,
+      railsArraySyntax: true,
+      decodeParams: true,
+    },
   );
 }
 

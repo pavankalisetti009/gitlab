@@ -385,7 +385,7 @@ export default {
       // We want to replace the history state so that back button
       // correctly reloads the page with previous URL.
       updateHistory({
-        url: setUrlParams(queryParams, href, true),
+        url: setUrlParams(queryParams, { url: href, clearParams: true }),
         title: document.title,
         replace: true,
       });
@@ -481,7 +481,10 @@ export default {
 
       // Update browser URL
       updateHistory({
-        url: setUrlParams({ state: filterBy.toLowerCase() }, window.location.href, true),
+        url: setUrlParams(
+          { state: filterBy.toLowerCase() },
+          { url: window.location.href, clearParams: true },
+        ),
         title: document.title,
         replace: true,
       });

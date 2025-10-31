@@ -114,7 +114,11 @@ export default {
       const filters = [{ type: TOKEN_TYPES.MODEL, value: model }, ...this.filters];
       const { query, url } = processFilters(filters);
 
-      const urlWithParams = setUrlParams(query, url.href, true, true);
+      const urlWithParams = setUrlParams(query, {
+        url: url.href,
+        clearParams: true,
+        railsArraySyntax: true,
+      });
 
       if (redirect) {
         visitUrl(urlWithParams);
