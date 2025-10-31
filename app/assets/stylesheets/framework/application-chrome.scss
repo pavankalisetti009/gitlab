@@ -359,11 +359,11 @@
   }
 
   .ai-panel-body {
-    max-height: calc(100vh - #{$header-height} - #{$gl-spacing-scale-3} - #{$performance-bar-height} - #{$top-bar-height} - #{-$gl-spacing-scale-7});
+    max-height: calc(100vh - #{$header-height} - #{$performance-bar-height} - #{$top-bar-height} - #{-$gl-spacing-scale-7});
   }
 
   &.with-performance-bar .ai-panel-body {
-    max-height: calc(100vh - #{$header-height} - #{$gl-spacing-scale-3} - #{$top-bar-height} - #{$gl-spacing-scale-9});
+    max-height: calc(100vh - #{$header-height} - #{$top-bar-height} - #{$gl-spacing-scale-9});
   }
 
   .ai-panel-header-actions {
