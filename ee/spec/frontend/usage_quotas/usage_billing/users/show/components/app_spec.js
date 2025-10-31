@@ -104,7 +104,7 @@ describe('UsageBillingUserDashboardApp', () => {
         const card = findTotalUsageCard();
 
         expect(card.exists()).toBe(true);
-        expect(card.text()).toContain(`1.6k`);
+        expect(card.text()).toContain(`1.8k`);
       });
     });
 

@@ -19,9 +19,7 @@ export const mockDataWithPool = {
                 creditsUsed: 1000,
                 totalCredits: 1000,
                 monthlyCommitmentCreditsUsed: 500,
-                // TODO: `oneTimeCreditsUsed` field would be integrated in https://gitlab.com/gitlab-org/gitlab/-/issues/578579
-                // We'll need to update value here for better test coverage
-                oneTimeCreditsUsed: 0,
+                oneTimeCreditsUsed: 212,
                 overageCreditsUsed: 100,
               },
 
