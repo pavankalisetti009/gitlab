@@ -10,6 +10,7 @@ module Geo
     included do
       validates :verification_failure, length: { maximum: 255 }
 
+      # NOTE: after_cursor does not work for state models with a composite primary key
       scope :after_cursor, ->(cursor) { where("#{primary_key} > ?", cursor) if cursor }
       scope :keyset_order, ->(attributes) { order(Gitlab::Pagination::Keyset::Order.build(attributes)) }
       scope :verification_state_not_pending, -> {
