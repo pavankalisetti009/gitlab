@@ -115,71 +115,17 @@ describe('AiFlowsIndex', () => {
   });
 
   describe('Apollo queries', () => {
-    describe('when both aiCatalogFlows and aiCatalogThirdPartyFlows are enabled', () => {
-      beforeEach(() => {
-        createComponent();
-      });
+    it('fetches list data with itemTypes', () => {
+      createComponent();
 
-      it('fetches list data with itemTypes', () => {
-        expect(mockConfiguredFlowsQueryHandler).toHaveBeenCalledWith({
-          itemTypes: ['FLOW', 'THIRD_PARTY_FLOW'],
-          projectId: `gid://gitlab/Project/${mockProjectId}`,
-          includeInherited: false,
-          after: null,
-          before: null,
-          first: 20,
-          last: null,
-        });
-      });
-    });
-
-    describe('when only aiCatalogThirdPartyFlows is enabled', () => {
-      beforeEach(() => {
-        createComponent({
-          provide: {
-            glFeatures: {
-              aiCatalogFlows: false,
-              aiCatalogThirdPartyFlows: true,
-            },
-          },
-        });
-      });
-
-      it('fetches list data with itemType THIRD_PARTY_FLOW', () => {
-        expect(mockConfiguredFlowsQueryHandler).toHaveBeenCalledWith({
-          itemType: 'THIRD_PARTY_FLOW',
-          projectId: `gid://gitlab/Project/${mockProjectId}`,
-          includeInherited: false,
-          after: null,
-          before: null,
-          first: 20,
-          last: null,
-        });
-      });
-    });
-
-    describe('when only aiCatalogFlows is enabled', () => {
-      beforeEach(() => {
-        createComponent({
-          provide: {
-            glFeatures: {
-              aiCatalogFlows: true,
-              aiCatalogThirdPartyFlows: false,
-            },
-          },
-        });
-      });
-
-      it('fetches list data with itemType FLOW', () => {
-        expect(mockConfiguredFlowsQueryHandler).toHaveBeenCalledWith({
-          itemType: 'FLOW',
-          projectId: `gid://gitlab/Project/${mockProjectId}`,
-          includeInherited: false,
-          after: null,
-          before: null,
-          first: 20,
-          last: null,
-        });
+      expect(mockConfiguredFlowsQueryHandler).toHaveBeenCalledWith({
+        itemTypes: ['FLOW', 'THIRD_PARTY_FLOW'],
+        projectId: `gid://gitlab/Project/${mockProjectId}`,
+        includeInherited: false,
+        after: null,
+        before: null,
+        first: 20,
+        last: null,
       });
     });
 
