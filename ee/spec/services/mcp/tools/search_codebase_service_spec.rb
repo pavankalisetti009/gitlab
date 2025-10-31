@@ -259,7 +259,9 @@ RSpec.describe Mcp::Tools::SearchCodebaseService, feature_category: :mcp_server 
 
         context 'when the given project has no code embeddings' do
           let(:query_result) do
-            ::Ai::ActiveContext::Queries::Result.no_embeddings_error
+            ::Ai::ActiveContext::Queries::Result.no_embeddings_error(
+              error_detail: "initial indexing has been started"
+            )
           end
 
           it 'returns an error response' do
@@ -276,7 +278,7 @@ RSpec.describe Mcp::Tools::SearchCodebaseService, feature_category: :mcp_server 
 
             expect(response[:isError]).to be true
 
-            expected_error_detail = "Project '#{project_id}' has no embeddings"
+            expected_error_detail = "Project '#{project_id}' has no embeddings - initial indexing has been started"
             expected_error_message = "Unable to perform semantic search, #{expected_error_detail}"
             expect(response[:content].first[:text]).to eq("Tool execution failed: #{expected_error_message}.")
             expect(response[:structuredContent][:error]).to eq(expected_error_detail)

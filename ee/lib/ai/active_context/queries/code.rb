@@ -4,9 +4,16 @@ module Ai
   module ActiveContext
     module Queries
       class Code
+        include Gitlab::Loggable
+
         KNN_COUNT = 10
         SEARCH_RESULTS_LIMIT = 10
         COLLECTION_CLASS = ::Ai::ActiveContext::Collections::Code
+
+        MESSAGE_INITIAL_INDEXING_STARTED = 'initial indexing has been started, try again in a few minutes'
+        MESSAGE_INITIAL_INDEXING_ONGOING = 'initial indexing is still ongoing, try again in a few minutes'
+        MESSAGE_ADHOC_INDEXING_TRIGGER_FAILED = 'initial indexing was attempted but could not be started'
+        MESSAGE_INDEXING_FAILED = 'indexing failed'
 
         NotAvailable = Class.new(StandardError)
 
@@ -31,7 +38,7 @@ module Ai
           check_availability
 
           ac_repository = find_active_context_repository(project_id)
-          return Result.no_embeddings_error unless ac_repository&.ready?
+          return handle_no_ready_active_context_repository(project_id, ac_repository) unless ac_repository&.ready?
 
           query = if path.nil?
                     repository_query(project_id, knn_count, limit)
@@ -51,6 +58,37 @@ module Ai
         private
 
         attr_reader :user, :search_term
+
+        def handle_no_ready_active_context_repository(project_id, ac_repository)
+          error_detail = nil
+
+          if ac_repository.nil?
+            ad_hoc_indexing = try_trigger_ad_hoc_indexing(project_id)
+            error_detail = ad_hoc_indexing ? MESSAGE_INITIAL_INDEXING_STARTED : MESSAGE_ADHOC_INDEXING_TRIGGER_FAILED
+          elsif ac_repository.failed?
+            error_detail = MESSAGE_INDEXING_FAILED
+          else
+            error_detail = MESSAGE_INITIAL_INDEXING_ONGOING
+          end
+
+          Result.no_embeddings_error(error_detail: error_detail)
+        end
+
+        def try_trigger_ad_hoc_indexing(project_id)
+          Ai::ActiveContext::Code::AdHocIndexingWorker.perform_async(project_id)
+          true
+        rescue StandardError => e
+          logger.warn(
+            build_structured_payload(
+              message: "Failed to trigger ad-hoc indexing",
+              exception_class: e.class.name,
+              exception_message: e.message,
+              project_id: project_id
+            )
+          )
+
+          false
+        end
 
         def prepare_hits(search_hits, exclude_fields: [], extract_source_segments: false)
           search_hits.map do |hit|
@@ -148,6 +186,10 @@ module Ai
 
         def collection_record
           @collection_record ||= COLLECTION_CLASS.collection_record
+        end
+
+        def logger
+          @logger ||= ::ActiveContext::Config.logger
         end
       end
     end
