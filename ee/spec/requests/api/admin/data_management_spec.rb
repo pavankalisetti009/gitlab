@@ -359,33 +359,6 @@ RSpec.describe API::Admin::DataManagement, :aggregate_failures, :request_store, 
           expect(response).to have_gitlab_http_status(:not_found)
         end
       end
-
-      context 'with all available replicable models' do
-        where(model_classes: Gitlab::Geo::Replicator.subclasses.map(&:model))
-
-        with_them do
-          let(:model_name) { Gitlab::Geo::ModelMapper.convert_to_name(model_classes) }
-          let(:factory) { factory_name(model_classes) }
-
-          it 'handles all known replicable model names' do
-            get api("/admin/data_management/#{model_name}", admin, admin_mode: true)
-
-            expect(response).to have_gitlab_http_status(:ok)
-          end
-
-          it 'orders results by primary key' do
-            create_list(factory, 5)
-
-            get api("/admin/data_management/snippet_repository", admin, admin_mode: true)
-
-            expect(response).to have_gitlab_http_status(:ok)
-
-            # Extract IDs from response and verify they're in ascending order
-            response_ids = json_response.pluck('record_identifier')
-            expect(response_ids).to eq(response_ids.sort)
-          end
-        end
-      end
     end
 
     context 'with feature flag disabled' do
@@ -427,12 +400,30 @@ RSpec.describe API::Admin::DataManagement, :aggregate_failures, :request_store, 
 
         context 'with valid model name' do
           it 'returns service result' do
-            expect(::Geo::BulkPrimaryVerificationService).to receive(:new).with('merge_request_diff').and_call_original
+            expect(::Geo::BulkPrimaryVerificationService).to receive(:new)
+                                                               .with("MergeRequestDiff", {})
+                                                               .and_call_original
 
             put api(api_path, admin, admin_mode: true)
 
             expect(response).to have_gitlab_http_status(:ok)
             expect(json_response).to include('status' => 'success')
+          end
+
+          it 'handles parameters appropriately' do
+            list = create_list(:external_merge_request_diff, 3, :verification_failed)
+
+            expected_ids = [list.first.verification_state_object.id, list.last.verification_state_object.id]
+            expected_params = { checksum_state: "verification_failed", identifiers: expected_ids }
+            expect(::Geo::BulkPrimaryVerificationService).to receive(:new)
+                                                               .with("MergeRequestDiff", expected_params)
+                                                               .and_call_original
+
+            put api("#{api_path}?identifiers[]=#{list.first.id}&identifiers[]=#{list.last.id}&checksum_state=failed",
+              admin,
+              admin_mode: true)
+
+            expect(response).to have_gitlab_http_status(:ok)
           end
 
           context 'when service returns an error' do
@@ -621,23 +612,6 @@ RSpec.describe API::Admin::DataManagement, :aggregate_failures, :request_store, 
           expect(response).to have_gitlab_http_status(:not_found)
         end
       end
-
-      context 'with all available replicable models' do
-        where(model_classes: Gitlab::Geo::Replicator.subclasses.map(&:model))
-
-        with_them do
-          let(:model_name) { Gitlab::Geo::ModelMapper.convert_to_name(model_classes) }
-          let(:expected_record) { create(factory_name(model_classes)) } # rubocop:disable Rails/SaveBang -- factory
-
-          it 'handles all known replicable model names' do
-            get api("/admin/data_management/#{model_name}/#{expected_record.id}", admin, admin_mode: true)
-
-            expect(response).to have_gitlab_http_status(:ok)
-            expect(json_response).to include('record_identifier' => expected_record.id,
-              'model_class' => expected_record.class.name)
-          end
-        end
-      end
     end
 
     context 'when not authenticated as admin' do
@@ -780,21 +754,80 @@ RSpec.describe API::Admin::DataManagement, :aggregate_failures, :request_store, 
           end
         end
       end
+    end
+  end
 
-      context 'with all available replicable models' do
-        where(model_classes: Gitlab::Geo::Replicator.subclasses.map(&:model))
+  context 'with all available replicable models' do
+    let_it_be(:node) { create(:geo_node) }
 
-        with_them do
-          let(:model_name) { Gitlab::Geo::ModelMapper.convert_to_name(model_classes) }
-          let(:expected_record) { create(factory_name(model_classes)) } # rubocop:disable Rails/SaveBang -- factory
+    where(model_classes: Gitlab::Geo::Replicator.subclasses.map(&:model))
+    with_them do
+      let(:model_name) { Gitlab::Geo::ModelMapper.convert_to_name(model_classes) }
+      let(:expected_record) { create(factory_name(model_classes)) } # rubocop:disable Rails/SaveBang -- factory
+      let(:api_path) { "/admin/data_management/#{model_name}" }
 
+      context 'for checksum endpoints' do
+        before do
+          stub_current_geo_node(node)
+          stub_primary_site
+        end
+
+        describe 'PUT /admin/data_management/:model_name/:record_identifier/checksum' do
           it 'handles all known replicable model names' do
-            put api("/admin/data_management/#{model_name}/#{expected_record.id}/checksum", admin, admin_mode: true)
+            put api("#{api_path}/#{expected_record.id}/checksum", admin, admin_mode: true)
 
             expect(response).to have_gitlab_http_status(:ok)
             expect(json_response).to include('record_identifier' => expected_record.id,
               'model_class' => expected_record.class.name)
           end
+        end
+
+        describe 'PUT /admin/data_management/:model_name/checksum' do
+          let(:list) { create_list(factory_name(model_classes), 3, :verification_failed) }
+
+          it 'handles parameters appropriately' do
+            query_params = "identifiers[]=#{list.first.id}&identifiers[]=#{list.last.id}&checksum_state=failed"
+
+            expected_ids = [list.first.verification_state_object.id, list.last.verification_state_object.id]
+            expected_params = { checksum_state: "verification_failed", identifiers: expected_ids }
+            expect(::Geo::BulkPrimaryVerificationService).to receive(:new)
+                                                               .with(list.first.class.name, expected_params)
+                                                               .and_call_original
+
+            put api("#{api_path}/checksum?#{query_params}", admin, admin_mode: true)
+
+            expect(response).to have_gitlab_http_status(:ok)
+          end
+        end
+      end
+
+      describe 'GET /data_management/:model_name' do
+        it 'handles all known replicable model names' do
+          get api(api_path, admin, admin_mode: true)
+
+          expect(response).to have_gitlab_http_status(:ok)
+        end
+
+        it 'orders results by primary key' do
+          create_list(factory_name(model_classes), 3)
+
+          get api(api_path, admin, admin_mode: true)
+
+          expect(response).to have_gitlab_http_status(:ok)
+
+          # Extract IDs from response and verify they're in ascending order
+          response_ids = json_response.pluck('record_identifier')
+          expect(response_ids).to eq(response_ids.sort)
+        end
+      end
+
+      describe 'GET /admin/data_management/:model_name/:record_identifier' do
+        it 'handles all known replicable model names' do
+          get api("#{api_path}/#{expected_record.id}", admin, admin_mode: true)
+
+          expect(response).to have_gitlab_http_status(:ok)
+          expect(json_response).to include('record_identifier' => expected_record.id,
+            'model_class' => expected_record.class.name)
         end
       end
     end

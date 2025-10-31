@@ -40,29 +40,25 @@ module API
           bad_request!(e)
         end
 
-        def find_models_from_record_identifier_array(identifier_array, relation)
-          primary_key_values = if identifier_array.all?(Integer)
-                                 identifier_array
-                               else
-                                 identifier_array.map do |identifier|
-                                   decoded_string = Base64.urlsafe_decode64(identifier)
-                                   bad_request!('Invalid composite key format') unless decoded_string.include?(' ')
-
-                                   decoded_string.split(' ')
-                                 end
-                               end
-
-          relation.primary_key_in(primary_key_values)
-        rescue ArgumentError, TypeError => e
-          bad_request!(e)
-        end
-
         def find_verifiable_model_class
           model_class = Gitlab::Geo::ModelMapper.find_from_name(params[:model_name])
           not_found!(params[:model_name]) unless model_class
           bad_request!("#{model_class} is not a verifiable model.") unless verifiable?(model_class)
 
           model_class
+        end
+
+        def decoded_identifiers(identifier_array)
+          return identifier_array if identifier_array.all?(Integer)
+
+          identifier_array.map do |identifier|
+            decoded_string = Base64.urlsafe_decode64(identifier)
+            bad_request!('Invalid composite key format') unless decoded_string.include?(' ')
+
+            decoded_string.split(' ')
+          end
+        rescue ArgumentError, TypeError => e
+          bad_request!(e)
         end
       end
 
@@ -164,7 +160,7 @@ module API
 
               relation = model_class.respond_to?(:with_state_details) ? model_class.with_state_details : model_class
               if params[:identifiers]&.compact.present?
-                relation = find_models_from_record_identifier_array(params[:identifiers], relation)
+                relation = relation.primary_key_in(decoded_identifiers(params[:identifiers]))
               end
 
               if params[:checksum_state].present?
@@ -193,12 +189,30 @@ module API
             end
             params do
               requires :model_name, type: String, values: AVAILABLE_MODEL_NAMES
+              optional :identifiers, types: [Array[Integer], Array[String]], desc: 'The record identifiers to filter by'
+              optional :checksum_state,
+                type: String,
+                desc: 'The checksum status of the records to filter by',
+                values: VERIFICATION_STATES.excluding('pending')
             end
             put 'checksum' do
               bad_request!('Endpoint only available on primary site.') unless ::Gitlab::Geo.primary?
-              find_verifiable_model_class
+              model_class = find_verifiable_model_class
 
-              service_result = ::Geo::BulkPrimaryVerificationService.new(params[:model_name]).async_execute
+              service_params = {}
+              if params[:identifiers]&.compact.present?
+                # The service accepts the IDs of the state records, so we convert the passed model IDs
+                # into the matching state record IDs
+                model_records = model_class.with_state_details.primary_key_in(decoded_identifiers(params[:identifiers]))
+                state_records_ids = model_records.map { |model_record| model_record.verification_state_object.id }
+                service_params[:identifiers] = state_records_ids
+              end
+
+              if params[:checksum_state].present?
+                service_params[:checksum_state] = "verification_#{params[:checksum_state]}"
+              end
+
+              service_result = ::Geo::BulkPrimaryVerificationService.new(model_class.name, service_params).async_execute
               result = if service_result.success?
                          { status: 'success', message: service_result.message }
                        else

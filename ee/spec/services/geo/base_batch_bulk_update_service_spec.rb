@@ -3,7 +3,7 @@
 require 'spec_helper'
 
 RSpec.describe Geo::BaseBatchBulkUpdateService, feature_category: :geo_replication do
-  let(:service) { described_class.new('upload') }
+  let(:service) { described_class.new('upload', {}) }
 
   shared_examples 'a non implemented method' do |method|
     it 'raises `NotImplementedError`' do
@@ -44,7 +44,7 @@ RSpec.describe Geo::BaseBatchBulkUpdateService, feature_category: :geo_replicati
       end
 
       it 'returns a keyset iterator' do
-        expect(described_class.new('entry').send(:records_to_update))
+        expect(described_class.new('entry', {}).send(:records_to_update))
           .to be_an_instance_of(Gitlab::Pagination::Keyset::Iterator)
       end
     end
@@ -53,7 +53,7 @@ RSpec.describe Geo::BaseBatchBulkUpdateService, feature_category: :geo_replicati
       let_it_be(:model_to_update) { Geo::UploadState }
 
       it 'returns the model' do
-        expect(described_class.new('upload').send(:records_to_update))
+        expect(described_class.new('upload', {}).send(:records_to_update))
           .to be_a_kind_of(ActiveRecord::Relation)
       end
     end
