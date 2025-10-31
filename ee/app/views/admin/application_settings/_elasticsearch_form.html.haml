@@ -298,7 +298,7 @@
                   .gl-w-40.gl-truncate.gl-h-auto
                     = subtask.index_name_from
                   .gl-flex.gl-text-sm.gl-text-subtle
-                    = _('Deletion scheduled at: %{time}') % { time: task.delete_original_index_at }
+                    = _('Deletion scheduled at: %{time}') % { time: task.success? ? task.delete_original_index_at : task.delete_failed_index_at }
 
           .gl-flex.gl-justify-end
             = render Pajamas::ButtonComponent.new(variant: :danger, href: admin_elasticsearch_cancel_index_deletion_path, method: :post) do

@@ -11,6 +11,7 @@ class ElasticClusterReindexingCronWorker
 
   sidekiq_options retry: false
 
+  deduplicate :until_executed, including_scheduled: true
   urgency :throttled
   idempotent!
 

@@ -5,6 +5,10 @@ require 'spec_helper'
 RSpec.describe ElasticClusterReindexingCronWorker, feature_category: :global_search do
   subject(:worker) { described_class.new }
 
+  it 'has the `until_executed` deduplicate strategy' do
+    expect(described_class.get_deduplicate_strategy).to eq(:until_executed)
+  end
+
   it_behaves_like 'an idempotent worker' do
     describe '#perform' do
       before do
