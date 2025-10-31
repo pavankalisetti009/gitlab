@@ -75,7 +75,7 @@ export default {
       });
     },
     projectLabelDescription() {
-      return sprintf(s__('AICatalog|Project members will be able to run this %{itemType}.'), {
+      return sprintf(s__('AICatalog|Project members will be able to use this %{itemType}.'), {
         itemType: this.itemTypeLabel,
       });
     },

@@ -1,4 +1,3 @@
-import { uniqueId } from 'lodash';
 import { __, s__ } from '~/locale';
 
 import {
@@ -93,5 +92,3 @@ export const FLOW_TYPE_APOLLO_CONFIG = {
     },
   },
 };
-
-export const FORM_ID_TEST_RUN = uniqueId('ai-catalog-agent-run-form-');
