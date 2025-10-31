@@ -708,6 +708,7 @@
     // --theme-background-color: color-mix(in srgb, var(--gl-background-color-default), var(--theme-color) 2%);
     --theme-background-color: var(--gl-background-color-default);
     --theme-border-color: hsl(from var(--theme-color) h 24 90);
+    --theme-scrim-color: hsla(from var(--theme-color) h calc(s - 25) calc(l - 10) / 15%);
 
     body {
       background:
@@ -780,6 +781,7 @@
     // --theme-background-color: color-mix(in srgb, var(--gl-background-color-default), var(--theme-color) 1%);
     --theme-background-color: var(--gl-background-color-default);
     --theme-border-color: hsl(from var(--theme-color) h 12 25);
+    --theme-scrim-color: hsla(from var(--theme-color) h calc(s - 5) calc(l - 35) / 60%);
 
     body {
       background:
@@ -832,6 +834,14 @@
 
   .super-sidebar:not(.super-sidebar-is-mobile) {
     background: transparent !important;
+  }
+
+  .super-sidebar .bottom-scrim-wrapper .bottom-scrim {
+    background: radial-gradient(farthest-side at 50% 100%, var(--theme-scrim-color) 25%, transparent);
+  }
+
+  .super-sidebar .top-scrim-wrapper .top-scrim {
+    background: radial-gradient(farthest-side at 50% 0%, var(--theme-scrim-color) 25%, transparent);
   }
 
   .bottom-scrim-visible,
