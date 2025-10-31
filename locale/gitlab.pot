@@ -18110,6 +18110,9 @@ msgstr ""
 msgid "ComplianceViolation|Something went wrong when deleting the comment. Please try again."
 msgstr ""
 
+msgid "ComplianceViolation|Something went wrong when updating the comment. Please try again."
+msgstr ""
+
 msgid "ComplianceViolation|Something went wrong while trying to unlink the issue. Please try again later."
 msgstr ""
 

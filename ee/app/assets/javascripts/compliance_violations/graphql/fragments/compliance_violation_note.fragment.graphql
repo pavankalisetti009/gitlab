@@ -5,6 +5,10 @@ fragment ComplianceViolationNote on Note {
   body
   bodyHtml
   createdAt
+  lastEditedAt
+  lastEditedBy {
+    ...User
+  }
   system
   internal
   systemNoteIconName

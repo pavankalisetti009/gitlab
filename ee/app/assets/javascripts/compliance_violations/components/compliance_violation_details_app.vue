@@ -189,17 +189,24 @@ export default {
       :project-path="projectComplianceViolation.project.webUrl"
     />
     <related-issues
-      class="gl-mt-5"
+      class="gl-my-5"
       :issues="projectComplianceViolation.issues.nodes"
       :violation-id="graphqlViolationId"
       :project-path="projectComplianceViolation.project.fullPath"
     />
-    <section v-if="hasNotes" class="issuable-discussion gl-pt-6">
+    <section v-if="hasNotes" class="issuable-discussion">
       <h2 class="gl-mb-4 gl-mt-0 gl-text-size-h1">{{ $options.i18n.activity }}</h2>
       <ul class="timeline main-notes-list notes">
         <template v-for="note in notesNodes">
           <system-note v-if="note.system" :key="note.id" :note="note" />
-          <discussion-note v-else :key="note.id" :note="note" @noteDeleted="handleNoteDeleted" />
+          <discussion-note
+            v-else
+            :key="note.id"
+            :note="note"
+            :violation-id="graphqlViolationId"
+            @noteDeleted="handleNoteDeleted"
+            @error="handleCommentError"
+          />
         </template>
       </ul>
     </section>

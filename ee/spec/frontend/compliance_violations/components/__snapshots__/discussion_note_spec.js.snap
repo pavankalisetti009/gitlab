@@ -43,8 +43,20 @@ exports[`DiscussionNote rendering renders with correct timeline structure 1`] = 
           showspinner="true"
         />
         <div
-          class="gl-ml-auto note-actions"
+          class="gl-flex gl-gap-2 gl-ml-auto note-actions"
         >
+          <gl-button-stub
+            aria-label="Edit comment"
+            buttontextclasses=""
+            category="tertiary"
+            data-testid="edit-note-button"
+            icon="pencil"
+            size="small"
+            tag="button"
+            title="Edit comment"
+            type="button"
+            variant="default"
+          />
           <gl-disclosure-dropdown-stub
             autoclose="true"
             category="tertiary"
@@ -57,7 +69,7 @@ exports[`DiscussionNote rendering renders with correct timeline structure 1`] = 
             size="medium"
             textsronly="true"
             title="More actions"
-            toggleid="dropdown-toggle-btn-10"
+            toggleid="dropdown-toggle-btn-13"
             toggletext="More actions"
             variant="default"
           >
