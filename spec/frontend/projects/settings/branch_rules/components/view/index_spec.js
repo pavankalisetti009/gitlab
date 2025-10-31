@@ -37,6 +37,7 @@ import deleteBranchRuleSquashOptionMutation from '~/projects/settings/branch_rul
 import {
   editBranchRuleMockResponse,
   editSquashOptionMockResponse,
+  deleteSquashOptionMockResponse,
   deleteBranchRuleMockResponse,
   branchProtectionsMockResponse,
   branchProtectionsNoPushAccessMockResponse,
@@ -79,7 +80,9 @@ describe('View branch rules', () => {
   const deleteBranchRuleSuccessHandler = jest.fn().mockResolvedValue(deleteBranchRuleMockResponse);
   const editBranchRuleSuccessHandler = jest.fn().mockResolvedValue(editBranchRuleMockResponse);
   const editSquashOptionSuccessHandler = jest.fn().mockResolvedValue(editSquashOptionMockResponse);
-  const deleteSquashOptionSuccessHandler = jest.fn().mockResolvedValue(editSquashOptionMockResponse);
+  const deleteSquashOptionSuccessHandler = jest
+    .fn()
+    .mockResolvedValue(deleteSquashOptionMockResponse);
   const protectableBranchesMockRequestHandler = jest
     .fn()
     .mockResolvedValue(protectableBranchesMockResponse);
@@ -96,7 +99,7 @@ describe('View branch rules', () => {
     deleteMutationHandler = deleteBranchRuleSuccessHandler,
     editMutationHandler = editBranchRuleSuccessHandler,
     editSquashOptionMutationHandler = editSquashOptionSuccessHandler,
-    deleteSquashOptionMutationHandler = deleteSquashOptionSuccessHandler
+    deleteSquashOptionMutationHandler = deleteSquashOptionSuccessHandler,
   } = {}) => {
     fakeApollo = createMockApollo([
       [branchRulesQuery, branchRulesQueryHandler],

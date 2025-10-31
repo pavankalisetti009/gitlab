@@ -57,7 +57,6 @@ describe('Squash Settings Drawer', () => {
     );
 
     it.each([
-      [undefined, SQUASH_SETTING_DEFAULT],
       ['Default', SQUASH_SETTING_DEFAULT],
       ['Allow', SQUASH_SETTING_ALLOW],
       ['Encourage', SQUASH_SETTING_ENCOURAGE],

@@ -206,6 +206,15 @@ export const editSquashOptionMockResponse = {
   },
 };
 
+export const deleteSquashOptionMockResponse = {
+  data: {
+    branchRuleSquashOptionDelete: {
+      errors: [],
+      __typename: 'BranchRuleSquashOptionDeletePayload',
+    },
+  },
+};
+
 export const branchProtectionsMockResponse = {
   data: {
     project: {

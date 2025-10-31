@@ -64197,10 +64197,16 @@ msgstr ""
 msgid "SquashSettings|Checkbox is visible and unselected by default."
 msgstr ""
 
+msgid "SquashSettings|Default"
+msgstr ""
+
 msgid "SquashSettings|Do not allow"
 msgstr ""
 
 msgid "SquashSettings|Encourage"
+msgstr ""
+
+msgid "SquashSettings|No explicit squash settings. Inherits project squash settings when available."
 msgstr ""
 
 msgid "SquashSettings|Require"

@@ -86,7 +86,9 @@ export default {
               {
                 value: SQUASH_SETTING_DEFAULT,
                 label: s__('SquashSettings|Default'),
-                description: s__('SquashSettings|Use the project-level squash setting.'),
+                description: s__(
+                  'SquashSettings|No explicit squash settings. Inherits project squash settings when available.',
+                ),
               },
             ]
           : []),
@@ -99,6 +101,10 @@ export default {
   },
   methods: {
     submit() {
+      if (this.selected === SQUASH_SETTING_DEFAULT && !this.selectedOption) {
+        this.$emit('close');
+        return;
+      }
       this.$emit('submit', this.selected);
     },
   },

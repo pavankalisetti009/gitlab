@@ -390,7 +390,9 @@ export default {
           },
         })
         .then(({ data }) => {
-          const result = Object.values(data)[0];
+          const result = isDelete
+            ? data.branchRuleSquashOptionDelete
+            : data.branchRuleSquashOptionUpdate;
           if (result?.errors.length) {
             createAlert({ message: this.$options.i18n.updateBranchRuleError });
             return;
