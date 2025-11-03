@@ -978,7 +978,9 @@ RSpec.describe Member, type: :model, feature_category: :groups_and_projects do
     end
   end
 
-  describe '.with_group_group_sharing_access', feature_category: :permissions do
+  # TODO: remove when `use_user_group_member_roles_members_page` is rolled out
+  # and is being cleaned up, https://gitlab.com/gitlab-org/gitlab/-/issues/576194
+  describe '.shared_members', feature_category: :permissions do
     let_it_be(:user) { create(:user) }
     let_it_be(:shared_group) { create(:group) }
     let_it_be(:invited_group) { create(:group) }
@@ -1012,8 +1014,8 @@ RSpec.describe Member, type: :model, feature_category: :groups_and_projects do
       end
 
       subject(:members) do
-        invited_group
-          .members.with_group_group_sharing_access(shared_group)
+        described_class
+          .shared_members(shared_group)
           .id_in(member.id).to_a
       end
 
@@ -1044,7 +1046,6 @@ RSpec.describe Member, type: :model, feature_category: :groups_and_projects do
         end
       end
 
-      # more specs for group-sharing with custom roles are in Authz::MemberRoleInSharedResource
       context 'when custom roles are enabled' do
         before do
           allow(shared_group).to receive(:can_assign_custom_roles_to_group_links?).and_return(true)
@@ -1057,6 +1058,18 @@ RSpec.describe Member, type: :model, feature_category: :groups_and_projects do
 
           it_behaves_like 'invited group members'
         end
+
+        context 'when `use_user_group_member_roles_members_page` feature flag is enabled' do
+          before do
+            stub_feature_flags(use_user_group_member_roles_members_page: true)
+          end
+
+          it 'returns minimum access level and nil member role' do
+            expect(members.size).to eq(1)
+            expect(members.first.access_level).to eq(expected_access_level)
+            expect(members.first.member_role_id).to be_nil
+          end
+        end
       end
 
       context 'when custom roles are not enabled' do
@@ -1068,6 +1081,107 @@ RSpec.describe Member, type: :model, feature_category: :groups_and_projects do
           expect(members.size).to eq(1)
           expect(members.first.access_level).to eq(expected_access_level)
           expect(members.first.member_role_id).to be_nil
+        end
+      end
+    end
+  end
+
+  describe '.shared_members_with_member_role', feature_category: :permissions do
+    let_it_be(:user) { create(:user) }
+    let_it_be(:shared_group) { create(:group) }
+    let_it_be(:invited_group) { create(:group) }
+
+    where(:user_access, :group_access, :expected_member_role) do
+      10 | 30 | ref(:user_role)
+      30 | 10 | ref(:group_role)
+      10 | 10 | ref(:user_role)
+    end
+
+    with_them do
+      let(:user_role) { create(:member_role, base_access_level: user_access, namespace: invited_group) }
+      let(:group_role) { create(:member_role, base_access_level: group_access, namespace: shared_group) }
+
+      let(:member) do
+        create(:group_member,
+          user: user,
+          source: invited_group,
+          member_role: user_role,
+          access_level: user_access
+        )
+      end
+
+      before do
+        create(:group_group_link,
+          group_access: group_access,
+          shared_group: shared_group,
+          shared_with_group: invited_group,
+          member_role: group_role
+        )
+      end
+
+      subject(:members) do
+        described_class
+          .id_in(member.id)
+          .shared_members_with_member_role(shared_group)
+          .to_a
+      end
+
+      shared_examples 'invited group members' do
+        it 'returns expected member role' do
+          expect(members.size).to eq(1)
+          expect(members.first.member_role_id).to eq expected_member_role.id
+        end
+
+        context 'when user is also a direct member of the group' do
+          let_it_be(:role) { create(:member_role, :developer, namespace: shared_group) }
+
+          let_it_be(:direct_member) do
+            create(:group_member,
+              user: user,
+              source: shared_group,
+              member_role: role,
+              access_level: Gitlab::Access::DEVELOPER
+            )
+          end
+
+          it 'returns minimum access level and expected member role' do
+            expect(members.size).to eq(1)
+            expect(members.first.member_role_id).to eq expected_member_role.id
+          end
+        end
+      end
+
+      context 'when custom roles are enabled' do
+        before do
+          allow(shared_group).to receive(:can_assign_custom_roles_to_group_links?).and_return(true)
+        end
+
+        context 'when `use_user_group_member_roles_members_page` feature flag is enabled' do
+          before do
+            stub_feature_flags(use_user_group_member_roles_members_page: true)
+          end
+
+          it_behaves_like 'invited group members'
+        end
+
+        context 'when `use_user_group_member_roles_members_page` feature flag is disabled' do
+          before do
+            stub_feature_flags(use_user_group_member_roles_members_page: false)
+          end
+
+          it 'returns an empty result' do
+            expect(members).to be_empty
+          end
+        end
+      end
+
+      context 'when custom roles are not enabled' do
+        before do
+          allow(shared_group).to receive(:can_assign_custom_roles_to_group_links?).and_return(false)
+        end
+
+        it 'returns an empty result' do
+          expect(members).to be_empty
         end
       end
     end
