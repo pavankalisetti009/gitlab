@@ -33,7 +33,7 @@ RSpec.describe SecretsManagement::ProjectSecrets::CreateService, :gitlab_secrets
         provision_project_secrets_manager(secrets_manager, user)
       end
 
-      it 'creates a project secret', :freeze_time do
+      it 'creates a project secret' do
         frozen_time = Time.current.utc.iso8601
 
         secret = result.payload[:project_secret]
@@ -74,7 +74,6 @@ RSpec.describe SecretsManagement::ProjectSecrets::CreateService, :gitlab_secrets
           "environment" => environment,
           "branch" => branch,
           "secret_rotation_info_id" => rotation_info.id.to_s,
-          "create_started_at" => frozen_time,
           "create_completed_at" => frozen_time
         )
 
@@ -216,6 +215,52 @@ RSpec.describe SecretsManagement::ProjectSecrets::CreateService, :gitlab_secrets
         end
       end
 
+      shared_examples_for 'rejecting secrets that exist' do
+        it 'fails' do
+          expect(result).to be_error
+          expect(result.message).to eq('Project secret already exists.')
+        end
+      end
+
+      context 'when the secret is created but initial metadata update fail' do
+        let(:existing_rotation_interval_days) { nil }
+
+        before do
+          allow_next_instance_of(described_class) do |svc|
+            allow(svc).to receive(:user_client).and_wrap_original do |orig|
+              client = orig.call
+
+              failed_once = false
+
+              allow(client).to receive(:update_kv_secret_metadata).and_wrap_original do |orig_ud, *args, **kwargs|
+                if !failed_once && kwargs[:metadata_cas] == 0
+                  failed_once = true
+                  raise SecretsManagement::SecretsManagerClient::ApiError, 'metadata write failed'
+                end
+
+                orig_ud.call(*args, **kwargs)
+              end
+
+              client
+            end
+          end
+
+          begin
+            described_class.new(project, user).execute(
+              name: name,
+              value: value,
+              environment: environment,
+              branch: branch,
+              rotation_interval_days: existing_rotation_interval_days
+            )
+          rescue SecretsManagement::SecretsManagerClient::ApiError => e
+            raise unless e.message == 'metadata write failed'
+          end
+        end
+
+        it_behaves_like 'rejecting secrets that exist'
+      end
+
       context 'when the secret already exists' do
         before do
           described_class.new(project, user)
@@ -226,13 +271,6 @@ RSpec.describe SecretsManagement::ProjectSecrets::CreateService, :gitlab_secrets
               branch: branch,
               rotation_interval_days: existing_rotation_interval_days
             )
-        end
-
-        shared_examples_for 'rejecting secrets that exist' do
-          it 'fails' do
-            expect(result).to be_error
-            expect(result.message).to eq('Project secret already exists.')
-          end
         end
 
         context 'and the existing secret was not configured to rotate' do

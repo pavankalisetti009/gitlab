@@ -144,7 +144,6 @@ module SecretsManagement
           secret_rotation_info_id: secret_rotation_info&.id,
           update_started_at: update_started_at,
           update_completed_at: update_completed_at,
-          create_started_at: project_secret.create_started_at,
           create_completed_at: project_secret.create_completed_at
         }.compact
       end

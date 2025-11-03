@@ -47,8 +47,6 @@ module SecretsManagement
     end
 
     def create_status
-      return STATUSES[:create_in_progress] if create_started_at.nil? && create_completed_at.nil?
-
       if create_started_at && create_completed_at.nil?
         return recent?(create_started_at) ? STATUSES[:create_in_progress] : STATUSES[:create_stale]
       end

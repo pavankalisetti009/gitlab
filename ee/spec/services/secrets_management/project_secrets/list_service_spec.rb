@@ -20,6 +20,60 @@ RSpec.describe SecretsManagement::ProjectSecrets::ListService, :gitlab_secrets_m
         provision_project_secrets_manager(secrets_manager, user)
       end
 
+      context 'when secrets only have initial metadata' do
+        before do
+          allow(SecretsManagement::ProjectSecrets::CreateService).to receive(:new).and_wrap_original do |orig, *args|
+            svc = orig.call(*args)
+
+            allow(svc).to receive(:update_metadata_for).and_wrap_original do
+              |orig_m, project_secret, rotation_info, metadata_cas:|
+              # Fail the first metadata write so no metadata doc is created at all
+              if project_secret.name == 'SECRET1' && metadata_cas == 0
+                raise SecretsManagement::SecretsManagerClient::ApiError, 'metadata write failed'
+              end
+
+              orig_m.call(project_secret, rotation_info, metadata_cas: metadata_cas)
+            end
+
+            svc
+          end
+
+          begin
+            create_project_secret(
+              user: user,
+              project: project,
+              name: 'SECRET1',
+              description: 'First secret',
+              branch: 'main',
+              environment: 'production',
+              value: 'secret-value-1'
+            )
+          rescue SecretsManagement::SecretsManagerClient::ApiError => e
+            raise unless e.message == 'metadata write failed'
+          end
+
+          create_project_secret(
+            user: user,
+            project: project,
+            name: 'SECRET2',
+            description: 'Second secret',
+            branch: 'staging',
+            environment: 'staging',
+            value: 'secret-value-2',
+            rotation_interval_days: 30
+          )
+        end
+
+        it 'returns a secret' do
+          expect(result).to be_success
+
+          secrets = result.payload[:project_secrets]
+          expect(secrets.size).to eq(2)
+          secret1 = secrets.find { |s| s.name == 'SECRET1' }
+          expect(secret1.status).to eq('CREATE_IN_PROGRESS')
+        end
+      end
+
       context 'when there are no secrets' do
         it 'returns an empty array' do
           expect(result).to be_success
@@ -66,12 +120,14 @@ RSpec.describe SecretsManagement::ProjectSecrets::ListService, :gitlab_secrets_m
           expect(secret1.environment).to eq('production')
           expect(secret1.metadata_version).to eq(2)
           expect(secret1.rotation_info).to be_nil
+          expect(secret1.status).to eq('COMPLETED')
 
           secret2 = secrets.find { |s| s.name == 'SECRET2' }
           expect(secret2.description).to eq('Second secret')
           expect(secret2.branch).to eq('staging')
           expect(secret2.environment).to eq('staging')
           expect(secret2.metadata_version).to eq(2)
+          expect(secret1.status).to eq('COMPLETED')
 
           rotation_info = secret_rotation_info_for_project_secret(project, secret2.name, secret2.metadata_version - 1)
           expect(secret2.rotation_info).to eq(rotation_info)
@@ -141,6 +197,28 @@ RSpec.describe SecretsManagement::ProjectSecrets::ListService, :gitlab_secrets_m
 
               secret2 = refreshed.payload[:project_secrets].find { |s| s.name == 'SECRET2' }
               expect(secret2.status).to eq('COMPLETED')
+            end
+          end
+
+          context 'when SECRET2 is in progress' do
+            it 'keeps SECRET2 status' do
+              cas = 2
+              client.update_kv_secret_metadata(
+                mount,
+                project.secrets_manager.ci_data_path('SECRET2'),
+                {
+                  description: 'Second secret',
+                  environment: 'staging',
+                  branch: 'staging'
+                },
+                metadata_cas: cas
+              )
+
+              refreshed = service.execute(include_rotation_info: include_rotation_info)
+              expect(refreshed).to be_success
+
+              secret2 = refreshed.payload[:project_secrets].find { |s| s.name == 'SECRET2' }
+              expect(secret2.status).to eq('CREATE_IN_PROGRESS')
             end
           end
         end

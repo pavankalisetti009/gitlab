@@ -167,8 +167,8 @@ RSpec.describe SecretsManagement::ProjectSecret, feature_category: :secrets_mana
         let(:create_started_at)   { nil }
         let(:create_completed_at) { nil }
 
-        it_behaves_like 'status is', 'CREATE_IN_PROGRESS'
-        it_behaves_like 'validates status', 'CREATE_IN_PROGRESS'
+        it_behaves_like 'status is', 'COMPLETED'
+        it_behaves_like 'validates status', 'COMPLETED'
       end
 
       context 'when started recently and not completed' do
