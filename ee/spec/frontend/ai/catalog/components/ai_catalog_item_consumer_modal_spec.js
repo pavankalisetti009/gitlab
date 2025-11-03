@@ -47,7 +47,7 @@ describe('AiCatalogItemConsumerModal', () => {
 
     it('renders the label description of the project field', () => {
       expect(findFormGroup().props('labelDescription')).toBe(
-        'Project members will be able to run this agent.',
+        'Project members will be able to use this agent.',
       );
     });
 

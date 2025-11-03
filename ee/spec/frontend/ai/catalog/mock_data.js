@@ -287,29 +287,6 @@ export const mockUpdateAiCatalogAgentErrorMutation = {
   },
 };
 
-export const mockExecuteAgentSuccessResponse = {
-  data: {
-    aiCatalogAgentExecute: {
-      errors: [],
-      workflow: {
-        id: 'gid://gitlab/Ai::DuoWorkflows::Workflow/1',
-        project: mockProjectFactory({ fullPath: 'gitlab-duo/test' }),
-      },
-      __typename: 'AiCatalogAgentExecutePayload',
-    },
-  },
-};
-
-export const mockExecuteAgentErrorResponse = {
-  data: {
-    aiCatalogAgentExecute: {
-      errors: ['Could not find agent ID'],
-      workflow: null,
-      __typename: 'AiCatalogAgentExecutePayload',
-    },
-  },
-};
-
 /* FLOWS */
 
 export const mockFlowVersion = {

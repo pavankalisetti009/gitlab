@@ -2827,7 +2827,7 @@ msgstr ""
 msgid "AICatalog|Project is required."
 msgstr ""
 
-msgid "AICatalog|Project members will be able to run this %{itemType}."
+msgid "AICatalog|Project members will be able to use this %{itemType}."
 msgstr ""
 
 msgid "AICatalog|Project-specific automation."
