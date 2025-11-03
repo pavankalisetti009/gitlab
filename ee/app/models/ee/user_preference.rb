@@ -19,6 +19,8 @@ module EE
 
       attribute :policy_advanced_editor, default: false
 
+      scope :policy_advanced_editor, -> { where(policy_advanced_editor: true) }
+
       def eligible_duo_add_on_assignments
         assignable_enum_value = ::GitlabSubscriptions::AddOn.names.values_at(
           *::GitlabSubscriptions::AddOn::SEAT_ASSIGNABLE_DUO_ADD_ONS
