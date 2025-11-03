@@ -1,6 +1,6 @@
 ---
 name: BackfillRiskScoreInVulnerabilities
-version: '20251026113334'
+version: '20251103113334'
 description: Backfills Vulnerabilities Index from PostgreSQL to backfill risk_score
 group: group::security infrastructure
 milestone: '18.6'
