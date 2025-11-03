@@ -41,7 +41,8 @@ RSpec.describe 'Trial flow for user picking company and creating a project', :js
   end
 
   context 'for the legacy_onboarding experiment' do
-    it 'registers the user and creates a group and project reaching onboarding', :sidekiq_inline do
+    it 'registers the user and creates a group and project reaching onboarding', :sidekiq_inline,
+      quarantine: 'https://gitlab.com/gitlab-org/quality/test-failure-issues/-/issues/6921' do
       stub_experiments(legacy_onboarding: :candidate)
 
       trial_registration_sign_up(glm_params)
