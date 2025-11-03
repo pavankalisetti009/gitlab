@@ -93,14 +93,7 @@ module Search
           #   Elasticsearch documents that stores traversal IDs for ancestry.
           #
           # @return [Hash] The modified `query_hash` with confidentiality filters applied.
-          #
-          # @note This method uses the `search_project_confidentiality_use_traversal_ids` feature flag
-          #   to switch between legacy and traversal ID-based filtering.
           def by_project_confidentiality(query_hash:, options:)
-            if ::Feature.disabled?(:search_project_confidentiality_use_traversal_ids, options[:current_user])
-              return legacy_project_confidentiality_filter(query_hash:, options:)
-            end
-
             filter_context = ConfidentialityFilterContext.new(options)
 
             context.name(:filters, :confidentiality, :projects) do
@@ -362,90 +355,10 @@ module Search
             }
           end
 
-          def legacy_project_confidentiality_filter(query_hash:, options:)
-            confidential = options[:confidential]
-            user = options[:current_user]
-            project_ids = options[:project_ids]
-            filter_path = options.fetch(:filter_path, [:query, :bool, :filter])
-
-            context.name(:filters, :confidentiality, :projects) do
-              if [true, false].include?(confidential)
-                add_filter(query_hash, *filter_path) do
-                  { term: { confidential: { _name: context.name(:user_filter), value: confidential } } }
-                end
-              end
-
-              # There might be an option to not add confidentiality filter for project level search
-              next query_hash if user&.can_read_all_resources?
-
-              scoped_project_ids = scoped_project_ids(user, project_ids)
-              authorized_project_ids = authorized_project_ids(user, scoped_project_ids)
-
-              non_confidential_filter = {
-                term: { confidential: { _name: context.name(:non_confidential), value: false } }
-              }
-
-              filter = if user
-                         confidential_filter = {
-                           bool: {
-                             must: [
-                               { term: { confidential: { _name: context.name(:confidential), value: true } } },
-                               {
-                                 bool: {
-                                   should: [
-                                     { term:
-                                       { author_id: {
-                                         _name: context.name(:confidential, :as_author),
-                                         value: user.id
-                                       } } },
-                                     { term:
-                                       { assignee_id: {
-                                         _name: context.name(:confidential, :as_assignee),
-                                         value: user.id
-                                       } } },
-                                     { terms: { _name: context.name(:confidential, :project, :membership, :id),
-                                                project_id: authorized_project_ids } }
-                                   ]
-                                 }
-                               }
-                             ]
-                           }
-                         }
-
-                         {
-                           bool: {
-                             should: [
-                               non_confidential_filter,
-                               confidential_filter
-                             ]
-                           }
-                         }
-                       else
-                         non_confidential_filter
-                       end
-
-              add_filter(query_hash, *filter_path) do
-                filter
-              end
-            end
-          end
-
           def build_non_confidential_filter
             {
               term: { confidential: { _name: context.name(:non_confidential), value: false } }
             }
-          end
-
-          def authorized_project_ids(current_user, scoped_project_ids)
-            return [] unless current_user
-
-            authorized_project_ids = current_user.authorized_projects(Gitlab::Access::REPORTER).pluck_primary_key.to_set
-
-            # if the current search is limited to a subset of projects, we should do
-            # confidentiality check for these projects.
-            authorized_project_ids &= scoped_project_ids.to_set unless scoped_project_ids == :any
-
-            authorized_project_ids.to_a
           end
         end
       end
