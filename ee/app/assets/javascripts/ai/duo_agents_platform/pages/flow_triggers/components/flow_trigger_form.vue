@@ -119,16 +119,16 @@ export default {
     },
   },
   data() {
+    const isCatalogAvailable =
+      this.glFeatures.aiCatalogFlows || this.glFeatures.aiCatalogThirdPartyFlows;
+    const hasConsumerId = Boolean(this.initialValues.aiCatalogItemConsumer.id);
+    const hasConfigPath = Boolean(this.initialValues.configPath);
+    const useCatalogMode = isCatalogAvailable && (hasConsumerId || !hasConfigPath);
+
     return {
       catalogItems: [],
       errors: [],
-      configMode:
-        // Only use CATALOG mode if it's available AND (there's a consumer ID OR no existing config path)
-        // Otherwise, use FILE_PATH mode
-        (this.glFeatures.aiCatalogFlows || this.glFeatures.aiCatalogThirdPartyFlows) &&
-        (this.initialValues.aiCatalogItemConsumer.id || !this.initialValues.configPath)
-          ? CONFIG_MODE_CATALOG
-          : CONFIG_MODE_FILE_PATH,
+      configMode: useCatalogMode ? CONFIG_MODE_CATALOG : CONFIG_MODE_FILE_PATH,
       configPath: this.initialValues.configPath,
       description: this.initialValues.description,
       eventTypes: this.initialValues.eventTypes,

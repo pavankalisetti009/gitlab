@@ -37,39 +37,18 @@ describe('mapSteps', () => {
 });
 
 describe('createAvailableFlowItemTypes', () => {
-  it('returns both flow types when both flags are enabled', () => {
+  it.each`
+    isFlowsEnabled | isThirdPartyFlowsEnabled | expected                                                    | description
+    ${true}        | ${true}                  | ${[AI_CATALOG_TYPE_FLOW, AI_CATALOG_TYPE_THIRD_PARTY_FLOW]} | ${'both flow types when both flags are enabled'}
+    ${true}        | ${false}                 | ${[AI_CATALOG_TYPE_FLOW]}                                   | ${'only flow type when only flows are enabled'}
+    ${false}       | ${true}                  | ${[AI_CATALOG_TYPE_THIRD_PARTY_FLOW]}                       | ${'only third party flow type when only third party flows are enabled'}
+    ${false}       | ${false}                 | ${[]}                                                       | ${'empty array when both flags are disabled'}
+  `('returns $description', ({ isFlowsEnabled, isThirdPartyFlowsEnabled, expected }) => {
     const types = createAvailableFlowItemTypes({
-      isFlowsEnabled: true,
-      isThirdPartyFlowsEnabled: true,
+      isFlowsEnabled,
+      isThirdPartyFlowsEnabled,
     });
 
-    expect(types).toStrictEqual([AI_CATALOG_TYPE_FLOW, AI_CATALOG_TYPE_THIRD_PARTY_FLOW]);
-  });
-
-  it('returns only flow type when only flows are enabled', () => {
-    const types = createAvailableFlowItemTypes({
-      isFlowsEnabled: true,
-      isThirdPartyFlowsEnabled: false,
-    });
-
-    expect(types).toStrictEqual([AI_CATALOG_TYPE_FLOW]);
-  });
-
-  it('returns only third party flow type when only third party flows are enabled', () => {
-    const types = createAvailableFlowItemTypes({
-      isFlowsEnabled: false,
-      isThirdPartyFlowsEnabled: true,
-    });
-
-    expect(types).toStrictEqual([AI_CATALOG_TYPE_THIRD_PARTY_FLOW]);
-  });
-
-  it('returns empty array when both flags are disabled', () => {
-    const types = createAvailableFlowItemTypes({
-      isFlowsEnabled: false,
-      isThirdPartyFlowsEnabled: false,
-    });
-
-    expect(types).toStrictEqual([]);
+    expect(types).toStrictEqual(expected);
   });
 });
