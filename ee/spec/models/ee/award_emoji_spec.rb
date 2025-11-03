@@ -3,10 +3,11 @@
 require 'spec_helper'
 
 RSpec.describe AwardEmoji, feature_category: :team_planning do
+  let_it_be(:user) { create(:user) }
+  let_it_be(:group) { create(:group) }
+
   describe 'validations' do
     context 'custom emoji' do
-      let_it_be(:user) { create(:user) }
-      let_it_be(:group) { create(:group) }
       let_it_be(:emoji) { create(:custom_emoji, name: 'partyparrot', namespace: group) }
 
       before do
@@ -56,6 +57,28 @@ RSpec.describe AwardEmoji, feature_category: :team_planning do
             expect(build(:award_emoji, :downvote, awardable: work_item, user: user, importing: true)).to be_valid
           end
         end
+      end
+    end
+  end
+
+  describe '#ensure_sharding_key' do
+    using RSpec::Parameterized::TableSyntax
+
+    let(:epic) { create(:epic, group: group) }
+    let(:group_id) { group.id }
+
+    where(:awardable, :namespace_id, :organization_id) do
+      ref(:epic) | ref(:group_id) | nil
+    end
+
+    with_them do
+      it 'sets the correct sharding key' do
+        award_emoji = build(:award_emoji, awardable: awardable)
+        award_emoji.valid?
+
+        expect(award_emoji).to be_valid
+        expect(award_emoji.namespace_id).to eq(namespace_id)
+        expect(award_emoji.organization_id).to eq(organization_id)
       end
     end
   end

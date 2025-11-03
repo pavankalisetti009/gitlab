@@ -12572,7 +12572,9 @@ CREATE TABLE award_emoji (
     awardable_type character varying,
     created_at timestamp without time zone,
     updated_at timestamp without time zone,
-    awardable_id bigint
+    awardable_id bigint,
+    namespace_id bigint,
+    organization_id bigint
 );
 
 CREATE SEQUENCE award_emoji_id_seq
@@ -38895,6 +38897,10 @@ CREATE INDEX index_automation_rules_namespace_id_permanently_disabled ON automat
 
 CREATE INDEX index_award_emoji_on_awardable_type_and_awardable_id ON award_emoji USING btree (awardable_type, awardable_id);
 
+CREATE INDEX index_award_emoji_on_namespace_id ON award_emoji USING btree (namespace_id);
+
+CREATE INDEX index_award_emoji_on_organization_id ON award_emoji USING btree (organization_id);
+
 CREATE UNIQUE INDEX index_aws_roles_on_role_external_id ON aws_roles USING btree (role_external_id);
 
 CREATE UNIQUE INDEX index_aws_roles_on_user_id ON aws_roles USING btree (user_id);
@@ -48518,6 +48524,9 @@ ALTER TABLE ONLY application_settings
 ALTER TABLE ONLY merge_requests_approval_rules_merge_requests
     ADD CONSTRAINT fk_5ddc4a2f7b FOREIGN KEY (approval_rule_id) REFERENCES merge_requests_approval_rules(id) ON DELETE CASCADE;
 
+ALTER TABLE ONLY award_emoji
+    ADD CONSTRAINT fk_5e03b44d0b FOREIGN KEY (organization_id) REFERENCES organizations(id) ON DELETE CASCADE NOT VALID;
+
 ALTER TABLE ONLY issue_assignees
     ADD CONSTRAINT fk_5e0c8d9154 FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE;
 
@@ -49843,6 +49852,9 @@ ALTER TABLE ONLY csv_issue_imports
 
 ALTER TABLE ONLY tag_gpg_signatures
     ADD CONSTRAINT fk_e72d8fc117 FOREIGN KEY (gpg_key_id) REFERENCES gpg_keys(id) ON DELETE SET NULL;
+
+ALTER TABLE ONLY award_emoji
+    ADD CONSTRAINT fk_e766b8f650 FOREIGN KEY (namespace_id) REFERENCES namespaces(id) ON DELETE CASCADE NOT VALID;
 
 ALTER TABLE ONLY namespaces
     ADD CONSTRAINT fk_e7a0b20a6b FOREIGN KEY (custom_project_templates_group_id) REFERENCES namespaces(id) ON DELETE SET NULL;
