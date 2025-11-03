@@ -10,7 +10,8 @@ RSpec.describe EE::PageLayoutHelper, feature_category: :shared do
 
     before do
       allow(::Gitlab::Llm::TanukiBot).to receive_messages(user_model_selection_enabled?: false,
-        agentic_mode_available?: false, root_namespace_id: 'root-123', resource_id: 'resource-456')
+        agentic_mode_available?: false, root_namespace_id: 'root-123', resource_id: 'resource-456',
+        chat_disabled_reason: nil)
       allow(::Gitlab::DuoWorkflow::Client).to receive(:metadata).and_return({ key: 'value' })
       allow(::Ai::AmazonQ).to receive(:enabled?).and_return(false)
     end
@@ -126,6 +127,40 @@ RSpec.describe EE::PageLayoutHelper, feature_category: :shared do
       expect(Gitlab::DuoWorkflow::Client).to receive(:metadata).with(user)
 
       helper.duo_chat_panel_data(user, project, group)
+    end
+
+    it 'returns chat_disabled_reason as empty string when chat is enabled' do
+      result = helper.duo_chat_panel_data(user, project, group)
+
+      expect(result[:chat_disabled_reason]).to eq('')
+    end
+
+    context 'when chat is disabled for project' do
+      before do
+        allow(::Gitlab::Llm::TanukiBot).to receive(:chat_disabled_reason)
+          .with(user: user, container: project)
+          .and_return(:project)
+      end
+
+      it 'returns chat_disabled_reason as "project"' do
+        result = helper.duo_chat_panel_data(user, project, nil)
+
+        expect(result[:chat_disabled_reason]).to eq('project')
+      end
+    end
+
+    context 'when chat is disabled for group' do
+      before do
+        allow(::Gitlab::Llm::TanukiBot).to receive(:chat_disabled_reason)
+          .with(user: user, container: group)
+          .and_return(:group)
+      end
+
+      it 'returns chat_disabled_reason as "group"' do
+        result = helper.duo_chat_panel_data(user, nil, group)
+
+        expect(result[:chat_disabled_reason]).to eq('group')
+      end
     end
 
     context 'when group context is absent' do
