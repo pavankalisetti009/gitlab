@@ -35,33 +35,30 @@ export function prepareAgentSelection(agent, reuseAgent) {
     return null;
   }
 
-  // Select foundational agent
-  if (agent?.foundational) {
-    return {
-      selectedFoundationalAgent: agent,
-      agentConfig: null,
-      isChatAvailable: true,
-      agentDeletedError: '',
-    };
-  }
-
-  // Select custom catalog agent
-  if (agent?.id) {
-    return {
-      aiCatalogItemVersionId: agent.versions?.nodes?.find(({ released }) => released)?.id || '',
-      selectedFoundationalAgent: null,
-      agentConfig: null,
-      isChatAvailable: true,
-      agentDeletedError: '',
-    };
-  }
-
-  // Reset to default agent
-  return {
+  const newParams = {
     aiCatalogItemVersionId: '',
     selectedFoundationalAgent: null,
     agentConfig: null,
     isChatAvailable: true,
     agentDeletedError: '',
   };
+
+  // Select foundational agent
+  if (agent?.foundational) {
+    return {
+      ...newParams,
+      selectedFoundationalAgent: agent,
+    };
+  }
+
+  // Select custom catalog agent
+  if (agent?.id) {
+    return {
+      ...newParams,
+      aiCatalogItemVersionId: agent.versions?.nodes?.find(({ released }) => released)?.id || '',
+    };
+  }
+
+  // Reset to default agent
+  return newParams;
 }
