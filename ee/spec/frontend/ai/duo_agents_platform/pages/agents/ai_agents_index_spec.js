@@ -22,7 +22,7 @@ import {
   mockAiCatalogItemConsumerDeleteResponse,
   mockAiCatalogItemConsumerDeleteErrorResponse,
   mockPageInfo,
-  mockUserPermissionsResponse,
+  mockProjectUserPermissionsResponse,
 } from 'ee_jest/ai/catalog/mock_data';
 
 jest.mock('~/sentry/sentry_browser_wrapper');
@@ -44,7 +44,9 @@ describe('AiAgentsIndex', () => {
     .fn()
     .mockResolvedValue(mockConfiguredAgentsResponse);
   const mockAgentQueryHandler = jest.fn().mockResolvedValue(mockAiCatalogAgentResponse);
-  const mockUserPermissionsQueryHandler = jest.fn().mockResolvedValue(mockUserPermissionsResponse);
+  const mockUserPermissionsQueryHandler = jest
+    .fn()
+    .mockResolvedValue(mockProjectUserPermissionsResponse);
   const deleteItemConsumerMutationHandler = jest
     .fn()
     .mockResolvedValue(mockAiCatalogItemConsumerDeleteResponse);

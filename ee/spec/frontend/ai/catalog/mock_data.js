@@ -13,6 +13,8 @@ const TYPENAME_AI_CATALOG_FLOW_CREATE = 'AiCatalogFlowCreatePayload';
 const TYPENAME_AI_CATALOG_FLOW_UPDATE = 'AiCatalogFlowUpdatePayload';
 const TYPENAME_AI_CATALOG_FLOW_DELETE = 'AiCatalogFlowDeletePayload';
 const TYPENAME_AI_CATALOG_THIRD_PARTY_FLOW_VERSION = 'AiCatalogThirdPartyFlowVersion';
+const TYPENAME_GROUP = 'Group';
+const TYPENAME_GROUP_PERMISSIONS = 'GroupPermissions';
 const TYPENAME_PROJECT = 'Project';
 const TYPENAME_PROJECT_PERMISSIONS = 'ProjectPermissions';
 const TYPENAME_PROJECTS_CONNECTION = 'ProjectsConnection';
@@ -586,7 +588,20 @@ export const mockAiCatalogItemConsumerDeleteErrorResponse = {
   },
 };
 
-export const mockUserPermissionsResponse = {
+export const mockGroupUserPermissionsResponse = {
+  data: {
+    group: {
+      id: 'gid://gitlab/Group/2000',
+      userPermissions: {
+        adminAiCatalogItemConsumer: true,
+        __typename: TYPENAME_GROUP_PERMISSIONS,
+      },
+      __typename: TYPENAME_GROUP,
+    },
+  },
+};
+
+export const mockProjectUserPermissionsResponse = {
   data: {
     project: {
       id: 'gid://gitlab/Project/1000000',
