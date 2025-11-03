@@ -29,6 +29,7 @@ query groupVulnerabilitiesWithPolicyViolations(
   $includeLatestFlag: Boolean = false
   $policyViolations: [PolicyViolations!]
   $reachability: ReachabilityType
+  $validityCheck: [VulnerabilityFindingTokenStatusState!]
 ) {
   group(fullPath: $fullPath) {
     id
@@ -56,6 +57,7 @@ query groupVulnerabilitiesWithPolicyViolations(
       identifierName: $identifierName
       policyViolations: $policyViolations
       reachability: $reachability
+      validityCheck: $validityCheck
     ) {
       nodes {
         ...VulnerabilityFragment

@@ -29,6 +29,7 @@ query projectVulnerabilitiesWithPolicyViolations(
   $includeSeverityOverrides: Boolean = false
   $includeLatestFlag: Boolean = false
   $reachability: ReachabilityType
+  $validityCheck: [VulnerabilityFindingTokenStatusState!]
   $policyViolations: [PolicyViolations!]
 ) {
   project(fullPath: $fullPath) {
@@ -57,6 +58,7 @@ query projectVulnerabilitiesWithPolicyViolations(
       owaspTopTen2021: $owaspTopTen2021
       policyViolations: $policyViolations
       reachability: $reachability
+      validityCheck: $validityCheck
     ) {
       nodes {
         ...VulnerabilityFragment
