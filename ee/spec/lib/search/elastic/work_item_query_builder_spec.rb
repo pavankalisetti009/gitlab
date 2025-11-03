@@ -26,28 +26,6 @@ RSpec.describe ::Search::Elastic::WorkItemQueryBuilder, :elastic_helpers, featur
 
   subject(:build) { described_class.build(query: query, options: options) }
 
-  context 'when search_project_confidentiality_use_traversal_ids is false' do
-    before do
-      stub_feature_flags(search_project_confidentiality_use_traversal_ids: false)
-    end
-
-    it 'contains all expected filters' do
-      assert_names_in_query(build, with: %w[
-        work_item:multi_match:and:search_terms
-        work_item:multi_match_phrase:search_terms
-        filters:permissions:global:project_visibility_level:public_and_internal
-        filters:not_hidden
-        filters:not_work_item_type_ids
-        filters:non_archived
-        filters:confidentiality:projects:non_confidential
-        filters:confidentiality:projects:confidential
-        filters:confidentiality:projects:confidential:as_author
-        filters:confidentiality:projects:confidential:as_assignee
-        filters:confidentiality:projects:confidential:project:membership:id
-      ])
-    end
-  end
-
   it 'contains all expected filters' do
     assert_names_in_query(build, with: %w[
       work_item:multi_match:and:search_terms
@@ -336,14 +314,6 @@ RSpec.describe ::Search::Elastic::WorkItemQueryBuilder, :elastic_helpers, featur
 
     it_behaves_like 'a query filtered by confidentiality' do
       let(:query_name_project_membership) { 'filters:confidentiality:projects:private:project:member' }
-    end
-
-    context 'when search_project_confidentiality_use_traversal_ids is false' do
-      before do
-        stub_feature_flags(search_project_confidentiality_use_traversal_ids: false)
-      end
-
-      it_behaves_like 'a query filtered by confidentiality'
     end
 
     it_behaves_like 'a query filtered by author'
