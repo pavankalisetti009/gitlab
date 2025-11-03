@@ -2,6 +2,7 @@
 
 module Security
   class Policy < ApplicationRecord
+    include Auditable
     include EachBatch
     include Security::Policies::VulnerabilityManagement
     include Gitlab::Utils::StrongMemoize

@@ -12,6 +12,7 @@ module EE
     MAX_CHECKED_PIPELINES_FOR_SECURITY_REPORT_COMPARISON = 10
 
     prepended do
+      include Auditable
       include Elastic::ApplicationVersionedSearch
       include DeprecatedApprovalsBeforeMerge
       include UsageStatistics
