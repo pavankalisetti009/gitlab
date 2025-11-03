@@ -37,10 +37,10 @@ module Ci
       Ci::BuildReportResultService.new.execute(build)
 
       build.execute_hooks
-      ChatNotificationWorker.perform_async(build.id) if build.pipeline.chat?
+      ChatNotificationWorker.perform_async(build.id) if build.pipeline&.chat?
       build.track_deployment_usage
       build.track_verify_environment_usage
-      build.remove_token!
+      build.remove_token! if build.pipeline
 
       if build.failed? && !build.auto_retry_expected?
         ::Ci::MergeRequests::AddTodoWhenBuildFailsWorker.perform_async(build.id)
