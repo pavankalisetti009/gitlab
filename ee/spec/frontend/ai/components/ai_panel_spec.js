@@ -448,6 +448,26 @@ describe('AiPanel', () => {
       });
     });
 
+    it('does not collapse the panel if + tab is toggled twice', async () => {
+      createComponent();
+
+      findNavigationRail().vm.$emit('handleTabToggle', 'new');
+      await nextTick();
+      findNavigationRail().vm.$emit('handleTabToggle', 'new');
+      await nextTick();
+
+      expect(findContentContainer().props('activeTab')).toEqual({
+        title: 'New Chat',
+        component: DuoAgenticChat,
+        props: {
+          mode: 'new',
+          isAgenticAvailable: true,
+          isEmbedded: true,
+          showStudioHeader: true,
+        },
+      });
+    });
+
     it('returns new chat tab with mode "new"', async () => {
       createComponent();
 
