@@ -123,7 +123,6 @@ describe('EE IssuesListApp component', () => {
   const mountComponent = ({
     noStatus = false,
     provide = {},
-    issuesListCreateModal = false,
     okrsMvc = false,
     issuesQueryResponse = jest.fn().mockResolvedValue(defaultQueryResponse),
     issuesCountsQueryResponse = jest.fn().mockResolvedValue(getIssuesCountsQueryResponse),
@@ -141,7 +140,6 @@ describe('EE IssuesListApp component', () => {
       ]),
       provide: {
         glFeatures: {
-          issuesListCreateModal,
           okrsMvc,
         },
         ...defaultProvide,
@@ -301,17 +299,6 @@ describe('EE IssuesListApp component', () => {
     it('does not render when group', async () => {
       wrapper = mountComponent({
         provide: { hasOkrsFeature: true, isProject: false },
-        okrsMvc: true,
-      });
-      await waitForPromises();
-
-      expect(findNewIssueDropdown().exists()).toBe(false);
-    });
-
-    it('does not render when issuesListCreateModal is enabled', async () => {
-      wrapper = mountComponent({
-        issuesListCreateModal: true,
-        provide: { hasOkrsFeature: true },
         okrsMvc: true,
       });
       await waitForPromises();
