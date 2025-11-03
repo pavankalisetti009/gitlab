@@ -42968,6 +42968,8 @@ CREATE INDEX index_user_preferences_on_duo_default_namespace_id ON user_preferen
 
 CREATE INDEX index_user_preferences_on_gitpod_enabled ON user_preferences USING btree (gitpod_enabled);
 
+CREATE INDEX index_user_preferences_on_policy_advanced_editor ON user_preferences USING btree (policy_advanced_editor) WHERE (policy_advanced_editor = true);
+
 CREATE UNIQUE INDEX index_user_preferences_on_user_id ON user_preferences USING btree (user_id);
 
 CREATE INDEX index_user_project_callouts_on_project_id ON user_project_callouts USING btree (project_id);
