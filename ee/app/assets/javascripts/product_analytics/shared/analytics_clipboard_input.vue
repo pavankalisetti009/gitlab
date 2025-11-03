@@ -30,6 +30,7 @@ export default {
   methods: {
     async copyValue() {
       try {
+        // eslint-disable-next-line no-restricted-properties
         await navigator.clipboard.writeText(this.value);
         this.tooltipText = this.$options.i18n.copied;
       } catch (error) {

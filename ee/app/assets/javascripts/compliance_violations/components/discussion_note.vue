@@ -90,6 +90,7 @@ export default {
   },
   methods: {
     copyNoteLink() {
+      // eslint-disable-next-line no-restricted-properties
       navigator.clipboard.writeText(this.fullNoteUrl);
       toast(__('Link copied to clipboard.'));
       this.$refs.dropdown.close();
