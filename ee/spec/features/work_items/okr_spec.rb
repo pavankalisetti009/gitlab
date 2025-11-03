@@ -30,6 +30,7 @@ RSpec.describe 'OKR', :js, feature_category: :portfolio_management do
     # we won't need the tests for the issues listing page, since we'll be using
     # the work items listing page.
     stub_feature_flags(work_item_planning_view: false)
+    stub_feature_flags(work_item_view_for_issues: true)
   end
 
   describe 'creating objective from issues list' do

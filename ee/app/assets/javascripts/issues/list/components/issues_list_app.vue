@@ -190,7 +190,7 @@ export default {
       return Boolean(this.filterParams?.epicId);
     },
     showNewIssueDropdown() {
-      return this.isOkrsEnabled && this.isProject && !this.glFeatures.issuesListCreateModal;
+      return this.isOkrsEnabled && this.isProject;
     },
   },
   methods: {
