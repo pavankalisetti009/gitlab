@@ -103,6 +103,9 @@ RSpec.describe API::Mcp, 'List tools request', feature_category: :mcp_server do
               },
               "assignee_ids" => {
                 "type" => "array",
+                "items" => {
+                  "type" => "integer"
+                },
                 "description" => "The array of user IDs to assign issue"
               },
               "milestone_id" => {
