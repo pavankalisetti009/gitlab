@@ -29,6 +29,11 @@ module EE
           ::CloudConnector.gitlab_realm
         end
 
+        override :deployment_type
+        def deployment_type
+          ::CloudConnector.deployment_type
+        end
+
         override :tracked_user_id
         def tracked_user_id
           return unless user.is_a? User
