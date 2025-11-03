@@ -34,11 +34,12 @@ describe('AiCatalogAgent', () => {
   const mockAgentQueryHandler = jest.fn().mockResolvedValue(mockAiCatalogAgentResponse);
   const mockAgentNullQueryHandler = jest.fn().mockResolvedValue(mockAiCatalogAgentNullResponse);
 
-  const createComponent = ({ agentQueryHandler = mockAgentQueryHandler } = {}) => {
+  const createComponent = ({ agentQueryHandler = mockAgentQueryHandler, provide = {} } = {}) => {
     mockApollo = createMockApollo([[aiCatalogAgentQuery, agentQueryHandler]]);
 
     wrapper = shallowMount(AiCatalogAgent, {
       apolloProvider: mockApollo,
+      provide,
       mocks: {
         $route: {
           params: routeParams,
@@ -95,6 +96,30 @@ describe('AiCatalogAgent', () => {
     it('renders the router view', () => {
       expect(findRouterView().exists()).toBe(true);
       expect(findRouterView().props('aiCatalogAgent')).toEqual(mockAgent);
+    });
+  });
+
+  describe('when displaying soft-deleted agents', () => {
+    it('should show agent details in the Projects area', async () => {
+      createComponent();
+      await waitForPromises();
+
+      expect(mockAgentQueryHandler).toHaveBeenCalledWith({
+        id: 'gid://gitlab/Ai::Catalog::Item/1',
+        showSoftDeleted: true,
+      });
+    });
+
+    it('should not show agent details in the explore area', async () => {
+      createComponent({
+        provide: { isGlobal: true }, // "Projects" area is not global, "Explore" is
+      });
+      await waitForPromises();
+
+      expect(mockAgentQueryHandler).toHaveBeenCalledWith({
+        id: 'gid://gitlab/Ai::Catalog::Item/1',
+        showSoftDeleted: false,
+      });
     });
   });
 

@@ -15,6 +15,11 @@ export default {
     GlEmptyState,
     GlLoadingIcon,
   },
+  inject: {
+    isGlobal: {
+      default: false,
+    },
+  },
   data() {
     return {
       aiCatalogAgent: {},
@@ -27,6 +32,7 @@ export default {
       variables() {
         return {
           id: convertToGraphQLId(TYPENAME_AI_CATALOG_ITEM, this.$route.params.id),
+          showSoftDeleted: !this.isGlobal,
         };
       },
       update(data) {

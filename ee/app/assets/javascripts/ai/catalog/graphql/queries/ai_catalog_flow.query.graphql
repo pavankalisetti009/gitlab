@@ -2,8 +2,8 @@
 #import "../fragments/ai_catalog_flow_version.fragment.graphql"
 #import "../fragments/ai_catalog_third_party_flow_version.fragment.graphql"
 
-query aiCatalogFlow($id: AiCatalogItemID!) {
-  aiCatalogItem(id: $id) {
+query aiCatalogFlow($id: AiCatalogItemID!, $showSoftDeleted: Boolean) {
+  aiCatalogItem(id: $id, showSoftDeleted: $showSoftDeleted) {
     ...BaseAiCatalogItem
     project {
       id
