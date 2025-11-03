@@ -50,8 +50,7 @@ RSpec.describe 'User creates work items', :js, feature_category: :team_planning 
       work-item-parent
     ]
 
-    it_behaves_like 'creates work item in a particular namespace', 'issue',
-      quarantine: 'https://gitlab.com/gitlab-org/quality/test-failure-issues/-/issues/12690' do
+    it_behaves_like 'creates work item in a particular namespace', 'issue' do
       let(:default_namespace) { group }
       let(:namespace) { other_project }
     end
