@@ -50,6 +50,11 @@ export default {
       type: String,
       required: true,
     },
+    searchable: {
+      type: Boolean,
+      required: false,
+      default: false,
+    },
     itemTextFn: {
       type: Function,
       required: false,
@@ -196,7 +201,7 @@ export default {
     :toggle-class="{ 'gl-shadow-inner-1-red-500': !isValid }"
     :header-text="placeholderText"
     :loading="isLoadingInitial"
-    searchable
+    :searchable="searchable"
     :searching="isLoading"
     :no-results-text="noResultsText"
     block

@@ -30,17 +30,11 @@ export default {
       default: false,
     },
   },
-  computed: {
-    query() {
-      return getGroups;
-    },
-    queryVariables() {
-      return {
-        topLevelOnly: true,
-        ownedOnly: true,
-        sort: 'similarity',
-      };
-    },
+  query: getGroups,
+  queryVariables: {
+    topLevelOnly: true,
+    ownedOnly: true,
+    sort: 'similarity',
   },
   methods: {
     itemTextFn(item) {
@@ -68,10 +62,11 @@ export default {
     :value="value"
     :is-valid="isValid"
     :disabled="disabled"
-    :query="query"
-    :query-variables="queryVariables"
+    :query="$options.query"
+    :query-variables="$options.queryVariables"
     data-key="groups"
     :placeholder-text="__('Select a group')"
+    searchable
     :item-text-fn="itemTextFn"
     :item-label-fn="itemLabelFn"
     :item-sub-label-fn="itemSubLabelFn"

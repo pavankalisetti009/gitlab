@@ -1,13 +1,15 @@
-import { GlForm, GlFormCheckbox, GlFormCheckboxGroup, GlFormInput, GlModal } from '@gitlab/ui';
+import { GlForm, GlFormCheckbox, GlFormCheckboxGroup, GlModal } from '@gitlab/ui';
 import { shallowMount } from '@vue/test-utils';
 import AiCatalogAddFlowToProjectModal from 'ee/ai/duo_agents_platform/components/catalog/ai_catalog_add_flow_to_project_modal.vue';
+import AiCatalogGroupFlowDropdown from 'ee/ai/duo_agents_platform/components/catalog/ai_catalog_group_flow_dropdown.vue';
+import { mockFlowItemConsumer } from 'ee_jest/ai/catalog/mock_data';
 
 describe('AiCatalogAddFlowToProjectModal', () => {
   let wrapper;
 
   const findModal = () => wrapper.findComponent(GlModal);
   const findForm = () => wrapper.findComponent(GlForm);
-  const findFormInput = () => wrapper.findComponent(GlFormInput);
+  const findGroupFlowDropdown = () => wrapper.findComponent(AiCatalogGroupFlowDropdown);
   const findFormCheckboxGroup = () => wrapper.findComponent(GlFormCheckboxGroup);
   const findFormCheckboxes = () => wrapper.findAllComponents(GlFormCheckbox);
 
@@ -44,9 +46,12 @@ describe('AiCatalogAddFlowToProjectModal', () => {
       });
     });
 
-    it('renders form with flow input field', () => {
+    it('renders form', () => {
       expect(findForm().exists()).toBe(true);
-      expect(findFormInput().exists()).toBe(true);
+    });
+
+    it('renders group flow dropdown', () => {
+      expect(findGroupFlowDropdown().exists()).toBe(true);
     });
 
     it('renders pre-selected trigger type checkboxes', () => {
@@ -63,17 +68,25 @@ describe('AiCatalogAddFlowToProjectModal', () => {
   });
 
   describe('form submission', () => {
+    beforeEach(() => {
+      findGroupFlowDropdown().vm.$emit('input', mockFlowItemConsumer);
+      findFormCheckboxGroup().vm.$emit('input', ['mention']);
+    });
+
     it('emits submit event when form is submitted', () => {
       const mockInput = {
-        flow: 'gid://gitlab/Ai::Catalog::Item/4',
-        triggers: ['mention'],
         preventDefault: jest.fn(),
       };
 
       findForm().vm.$emit('submit', mockInput);
 
       expect(wrapper.emitted('submit')).toHaveLength(1);
-      expect(wrapper.emitted('submit')[0][0]).toEqual(mockInput);
+      expect(wrapper.emitted('submit')[0][0]).toEqual({
+        itemId: mockFlowItemConsumer.item.id,
+        parentItemConsumerId: mockFlowItemConsumer.id,
+        triggerTypes: ['mention'],
+        ...mockInput,
+      });
     });
   });
 });

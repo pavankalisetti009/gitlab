@@ -4,8 +4,11 @@ module EE
   module Projects
     module DuoAgentsPlatformHelper
       def duo_agents_platform_data(project)
+        root_group_id = project.personal? ? nil : project.root_namespace.id
+
         {
           agents_platform_base_route: project_automate_path(project),
+          root_group_id: root_group_id,
           project_id: project.id,
           project_path: project.full_path,
           explore_ai_catalog_path: explore_ai_catalog_path,
