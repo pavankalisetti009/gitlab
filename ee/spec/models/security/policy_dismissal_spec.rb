@@ -91,6 +91,61 @@ RSpec.describe Security::PolicyDismissal, feature_category: :security_policy_man
       end
     end
 
+    describe '.for_merge_requests' do
+      subject(:policy_dismissal_for_merge_requests) { described_class.for_merge_requests(merge_requests) }
+
+      let_it_be(:merge_request) { create(:merge_request) }
+      let_it_be(:security_policy_dismissal) { create(:policy_dismissal, merge_request: merge_request) }
+      let_it_be(:other_merge_request) { create(:merge_request) }
+      let_it_be(:other_security_policy_dismissal) { create(:policy_dismissal, merge_request: other_merge_request) }
+
+      context 'when querying for a single merge_request' do
+        let(:merge_requests) { [merge_request.id] }
+
+        it 'returns dismissals for the given merge_request' do
+          expect(policy_dismissal_for_merge_requests).to contain_exactly(security_policy_dismissal)
+        end
+
+        context 'with multiple dismissals for the same merge_request' do
+          let_it_be(:second_security_policy_dismissal) { create(:policy_dismissal, merge_request: merge_request) }
+
+          it 'returns dismissals for the given merge_request' do
+            expect(policy_dismissal_for_merge_requests).to contain_exactly(security_policy_dismissal,
+              second_security_policy_dismissal)
+          end
+        end
+      end
+
+      context 'when querying for multiple merge_requests' do
+        let_it_be(:third_merge_request) { create(:merge_request) }
+        let_it_be(:third_security_policy_dismissal) { create(:policy_dismissal, merge_request: third_merge_request) }
+
+        let(:merge_requests) { [merge_request.id, other_merge_request.id] }
+
+        it 'returns dismissals for the given merge_requests' do
+          expect(policy_dismissal_for_merge_requests).to contain_exactly(security_policy_dismissal,
+            other_security_policy_dismissal)
+        end
+
+        context 'with multiple dismissals for the same merge_request' do
+          let_it_be(:second_security_policy_dismissal_merge_request) do
+            create(:policy_dismissal, merge_request: merge_request)
+          end
+
+          let_it_be(:second_security_policy_dismissal_other_merge_request) do
+            create(:policy_dismissal, merge_request: other_merge_request)
+          end
+
+          it 'returns dismissals for the given merge_requests' do
+            expect(policy_dismissal_for_merge_requests).to contain_exactly(security_policy_dismissal,
+              other_security_policy_dismissal,
+              second_security_policy_dismissal_merge_request,
+              second_security_policy_dismissal_other_merge_request)
+          end
+        end
+      end
+    end
+
     describe '.for_security_findings_uuids' do
       let_it_be(:dismissed_finding) { SecureRandom.uuid }
       let_it_be(:non_dismissed_finding) { SecureRandom.uuid }
