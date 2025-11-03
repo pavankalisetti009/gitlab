@@ -295,7 +295,7 @@ RSpec.describe Gitlab::SubscriptionPortal::SubscriptionUsageClient, feature_cate
 
   describe '#get_events_for_user_id' do
     let(:user_id) { 123 }
-    let(:args) { { before: nil, after: nil } }
+    let(:args) { { first: 20, last: nil, before: nil, after: nil } }
     let(:request) { client.get_events_for_user_id(user_id, args) }
     let(:query) { described_class::GET_USER_EVENTS_QUERY }
     let(:user_events) do

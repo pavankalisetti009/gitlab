@@ -84,14 +84,16 @@ module Gitlab
           $namespaceId: ID,
           $licenseKey: String,
           $userIds: [Int!]!,
-          $after: ISO8601DateTime,
-          $before: ISO8601DateTime
+          $first: Int,
+          $last: Int,
+          $after: String,
+          $before: String
         ) {
           subscription(namespaceId: $namespaceId, licenseKey: $licenseKey) {
             gitlabCreditsUsage {
               usersUsage {
                 users(userIds: $userIds) {
-                  events(after: $after, before: $before) {
+                  events(first: $first, last: $last, before: $before, after: $after) {
                     nodes {
                       timestamp
                       eventType
@@ -229,6 +231,8 @@ module Gitlab
             query: GET_USER_EVENTS_QUERY,
             extra_variables: {
               userIds: [user_id],
+              first: args[:first],
+              last: args[:last],
               before: args[:before],
               after: args[:after]
             }
