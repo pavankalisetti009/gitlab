@@ -22,6 +22,8 @@ module EE
       private
 
       def audit_comment_created
+        return unless note.resource_parent
+
         ::Gitlab::Audit::Auditor.audit({
           name: 'comment_created',
           author: note.author,

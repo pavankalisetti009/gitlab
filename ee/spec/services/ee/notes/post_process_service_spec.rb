@@ -77,6 +77,18 @@ RSpec.describe Notes::PostProcessService, feature_category: :team_planning do
           notes_post_process_service.execute
         end
 
+        context 'when note is on a personal snippet' do
+          let!(:note) { create(:note_on_personal_snippet) }
+
+          it 'does not audit the event' do
+            expect(::Gitlab::Audit::Auditor).not_to receive(:audit).with(
+              hash_including(name: 'comment_created')
+            )
+
+            notes_post_process_service.execute
+          end
+        end
+
         context 'when note is a system note' do
           let(:note) { create(:note, :system) }
 
