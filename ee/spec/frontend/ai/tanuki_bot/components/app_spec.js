@@ -1358,13 +1358,13 @@ describeSkipVue3(skipReason, () => {
 
     it('renders the GlToggle component in subheader', () => {
       expect(findGlToggle().exists()).toBe(true);
+      expect(findGlToggle().text()).toContain('Agentic mode');
     });
 
     it('passes correct props to GlToggle', () => {
       const toggle = findGlToggle();
 
       expect(toggle.props()).toMatchObject({
-        label: 'Agentic mode (Beta)',
         labelPosition: 'left',
         value: false,
       });

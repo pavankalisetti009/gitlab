@@ -1494,7 +1494,7 @@ describe('Duo Agentic Chat', () => {
     });
 
     it('passes correct props to GlToggle', () => {
-      expect(findGlToggle().props('label')).toBe('Agentic mode (Beta)');
+      expect(findGlToggle().text()).toContain('Agentic mode');
       expect(findGlToggle().props('labelPosition')).toBe('left');
       expect(findGlToggle().props('value')).toBe(false);
     });
