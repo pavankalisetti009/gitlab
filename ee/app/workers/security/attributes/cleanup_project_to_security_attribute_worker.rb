@@ -14,8 +14,11 @@ module Security
 
       defer_on_database_health_signal :gitlab_main, [:project_to_security_attributes]
 
-      def perform(attribute_ids = nil)
+      def perform(attribute_ids = nil, category_id = nil)
         return unless attribute_ids
+
+        @attribute_ids = attribute_ids
+        @category_id = category_id
 
         result = ::Security::Attributes::ProjectToSecurityAttributeDestroyService.new(
           attribute_ids: attribute_ids
@@ -25,11 +28,27 @@ module Security
           Gitlab::ErrorTracking.track_exception(
             StandardError.new(result.message),
             attribute_ids: attribute_ids,
+            category_id: category_id,
             worker: self.class.name
           )
         end
 
+        hard_delete_attributes
+        hard_delete_category if category_id
+
         result
+      end
+
+      private
+
+      attr_reader :attribute_ids, :category_id
+
+      def hard_delete_attributes
+        Security::Attribute.really_destroy_all!(attribute_ids)
+      end
+
+      def hard_delete_category
+        Security::Category.really_destroy_by_id!(category_id)
       end
     end
   end

@@ -2,6 +2,18 @@
 
 module Security
   module Attributes
+    # This service deletes project-to-attribute associations for soft-deleted security attributes.
+    #
+    # Responsibility:
+    # - Delete project-to-attribute associations (project_to_security_attributes table) in batches
+    #
+    # Why batched deletion?
+    # - Avoids relying on database CASCADE behavior which can be slow for large datasets
+    # - Provides better performance when there are many project associations (BATCH_SIZE = 100)
+    # - Gives explicit control over the deletion process and error handling
+    #
+    # Note: Hard deletion of attributes and categories is handled by the worker that calls this service.
+    # This keeps the service focused on a single responsibility: cleaning up associations.
     class ProjectToSecurityAttributeDestroyService < BaseService
       BATCH_SIZE = 100
       def initialize(attribute_ids:)

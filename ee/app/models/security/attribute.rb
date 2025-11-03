@@ -23,14 +23,35 @@ module Security
     validates :editable_state, presence: true
     validates :color, color: true, presence: true
 
+    scope :not_deleted, -> { where(deleted_at: nil) }
+    scope :deleted, -> { where.not(deleted_at: nil) }
+
     scope :include_category, -> { includes(:security_category) }
     scope :by_category, ->(category) { where(security_category: category) }
     scope :by_namespace, ->(namespace) { where(namespace: namespace) }
     scope :by_template_type, ->(template_type) { where(template_type: template_type) }
     scope :pluck_id, -> { limit(MAX_PLUCK).pluck(:id) }
 
+    def self.really_destroy_all!(ids)
+      return 0 if ids.blank?
+
+      unscoped.where(id: ids).delete_all
+    end
+
     def editable?
       !locked?
+    end
+
+    def destroy
+      update!(deleted_at: Time.current)
+    end
+
+    def really_destroy!
+      self.class.unscoped.where(id: id).delete_all
+    end
+
+    def deleted?
+      deleted_at.present?
     end
   end
 end

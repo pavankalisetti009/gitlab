@@ -42,17 +42,30 @@ RSpec.describe Security::Attributes::CleanupProjectToSecurityAttributeWorker, fe
       end
 
       it 'deletes all associations for the given attribute' do
+        # Soft delete attribute first
+        attribute1.update!(deleted_at: Time.current)
+
         expect { worker.perform(attribute_ids) }
           .to change { Security::ProjectToSecurityAttribute.count }.by(-5)
       end
 
+      it 'hard deletes the soft-deleted attribute after cleanup' do
+        # Soft delete attribute first
+        attribute1.update!(deleted_at: Time.current)
+
+        expect { worker.perform(attribute_ids) }
+          .to change { Security::Attribute.unscoped.count }.by(-1)
+      end
+
       it 'does not delete associations for other attributes' do
+        attribute1.update!(deleted_at: Time.current)
         worker.perform(attribute_ids)
 
         expect(Security::ProjectToSecurityAttribute.where(security_attribute: attribute2).count).to eq(3)
       end
 
       it 'returns success result' do
+        attribute1.update!(deleted_at: Time.current)
         result = worker.perform(attribute_ids)
 
         expect(result.success?).to be true
@@ -187,15 +200,70 @@ RSpec.describe Security::Attributes::CleanupProjectToSecurityAttributeWorker, fe
       end
 
       it 'deletes all associations in batches' do
+        attribute1.update!(deleted_at: Time.current)
+
         expect { worker.perform(attribute_ids) }
           .to change { Security::ProjectToSecurityAttribute.count }.by(-5)
       end
 
       it 'returns success result with correct count' do
+        attribute1.update!(deleted_at: Time.current)
         result = worker.perform(attribute_ids)
 
         expect(result.success?).to be true
         expect(result.payload[:deleted_count]).to eq(5)
+      end
+    end
+
+    context 'with category deletion' do
+      it 'hard deletes the category after cleanup when category_id is provided' do
+        # Create fresh resources for this test
+        test_cat = create(:security_category, namespace: namespace, name: "DelCat1 #{SecureRandom.hex(8)}")
+        test_attr = create(:security_attribute, security_category: test_cat, namespace: namespace,
+          name: "del_attr1_#{SecureRandom.hex(8)}")
+
+        # Soft delete them
+        test_cat.update!(deleted_at: Time.current)
+        test_attr.update!(deleted_at: Time.current)
+
+        expect { worker.perform([test_attr.id], test_cat.id) }
+          .to change { Security::Category.unscoped.count }.by(-1)
+      end
+
+      it 'does not delete the category when category_id is nil' do
+        # Create fresh resources for this test
+        test_cat = create(:security_category, namespace: namespace, name: "DelCat2 #{SecureRandom.hex(8)}")
+        test_attr = create(:security_attribute, security_category: test_cat, namespace: namespace,
+          name: "del_attr2_#{SecureRandom.hex(8)}")
+
+        # Soft delete them
+        test_cat.update!(deleted_at: Time.current)
+        test_attr.update!(deleted_at: Time.current)
+
+        expect { worker.perform([test_attr.id], nil) }
+          .not_to change { Security::Category.unscoped.count }
+      end
+
+      it 'hard deletes only specified soft-deleted attributes when category_id is provided' do
+        # Create a fresh category with two attributes
+        test_category = create(:security_category, namespace: namespace, name: "TestCat #{SecureRandom.hex(8)}")
+        attr1 = create(:security_attribute, security_category: test_category, namespace: namespace,
+          name: "attr1_#{SecureRandom.hex(8)}")
+        attr2 = create(:security_attribute, security_category: test_category, namespace: namespace,
+          name: "attr2_#{SecureRandom.hex(8)}")
+
+        # Soft delete only attr1 (simulating individual attribute deletion)
+        attr1.update!(deleted_at: Time.current)
+
+        # Worker should only delete attr1, not attr2
+        worker.perform([attr1.id], nil)
+
+        # Verify attr1 is gone
+        expect(Security::Attribute.unscoped.find_by(id: attr1.id)).to be_nil
+        # Verify attr2 still exists
+        expect(Security::Attribute.unscoped.find_by(id: attr2.id)).to be_present
+        # Verify category still exists (no category_id provided)
+        expect(Security::Category.unscoped.find_by(id: test_category.id)).to be_present
       end
     end
   end

@@ -42,6 +42,28 @@ RSpec.describe Security::Attribute, feature_category: :security_asset_inventorie
   end
 
   describe 'scopes' do
+    let(:category) { create(:security_category, namespace: parent, name: 'Category') }
+    let!(:active_attribute) do
+      create(:security_attribute, security_category: category, namespace: parent, name: 'Active')
+    end
+
+    let!(:deleted_attribute) do
+      create(:security_attribute, security_category: category, namespace: parent, name: 'Deleted',
+        deleted_at: Time.current)
+    end
+
+    describe '.not_deleted' do
+      it 'returns only attributes without deleted_at' do
+        expect(described_class.not_deleted).to contain_exactly(active_attribute)
+      end
+    end
+
+    describe '.deleted' do
+      it 'returns only attributes with deleted_at' do
+        expect(described_class.deleted).to contain_exactly(deleted_attribute)
+      end
+    end
+
     describe '.by_category' do
       let(:category1) { create(:security_category, namespace: parent, name: 'Category 1') }
       let(:category2) { create(:security_category, namespace: parent, name: 'Category 2') }
@@ -55,6 +77,94 @@ RSpec.describe Security::Attribute, feature_category: :security_asset_inventorie
         expect(result).not_to include(attribute2)
         expect(result.count).to eq(1)
       end
+    end
+  end
+
+  describe '#destroy' do
+    let(:category) { create(:security_category, namespace: parent, name: 'Category') }
+    let!(:attribute) { create(:security_attribute, security_category: category, namespace: parent, name: 'Test') }
+
+    it 'soft deletes the attribute by setting deleted_at' do
+      expect { attribute.destroy! }.not_to change { described_class.unscoped.count }
+
+      expect(attribute.reload.deleted_at).to be_present
+      expect(attribute.deleted?).to be true
+    end
+
+    it 'removes the attribute from not_deleted scope' do
+      attribute.destroy!
+
+      expect(described_class.not_deleted.where(id: attribute.id)).to be_empty
+      expect(described_class.unscoped.where(id: attribute.id)).to exist
+    end
+  end
+
+  describe '#really_destroy!' do
+    let(:category) { create(:security_category, namespace: parent, name: 'Category') }
+    let!(:attribute) do
+      create(:security_attribute, security_category: category, namespace: parent, name: 'Test',
+        deleted_at: Time.current)
+    end
+
+    it 'permanently deletes the attribute from database' do
+      expect { attribute.really_destroy! }.to change { described_class.unscoped.count }.by(-1)
+
+      expect(described_class.unscoped.where(id: attribute.id)).to be_empty
+    end
+  end
+
+  describe '.really_destroy_all!' do
+    let(:category) { create(:security_category, namespace: parent, name: 'Category') }
+
+    it 'permanently deletes multiple attributes from database' do
+      attr1 = create(:security_attribute, security_category: category, namespace: parent, name: 'Test1',
+        deleted_at: Time.current)
+      attr2 = create(:security_attribute, security_category: category, namespace: parent, name: 'Test2',
+        deleted_at: Time.current)
+      attr3 = create(:security_attribute, security_category: category, namespace: parent, name: 'Test3',
+        deleted_at: Time.current)
+
+      expect { described_class.really_destroy_all!([attr1.id, attr2.id, attr3.id]) }
+        .to change { described_class.unscoped.count }.by(-3)
+
+      expect(described_class.unscoped.where(id: [attr1.id, attr2.id, attr3.id])).to be_empty
+    end
+
+    it 'returns 0 when ids is nil' do
+      expect(described_class.really_destroy_all!(nil)).to eq(0)
+    end
+
+    it 'returns 0 when ids is empty array' do
+      expect(described_class.really_destroy_all!([])).to eq(0)
+    end
+
+    it 'only deletes specified attributes' do
+      attr1 = create(:security_attribute, security_category: category, namespace: parent, name: 'Test1',
+        deleted_at: Time.current)
+      attr2 = create(:security_attribute, security_category: category, namespace: parent, name: 'Test2',
+        deleted_at: Time.current)
+      attr3 = create(:security_attribute, security_category: category, namespace: parent, name: 'Test3',
+        deleted_at: Time.current)
+
+      expect { described_class.really_destroy_all!([attr1.id]) }
+        .to change { described_class.unscoped.count }.by(-1)
+
+      expect(described_class.unscoped.where(id: attr1.id)).to be_empty
+      expect(described_class.unscoped.where(id: [attr2.id, attr3.id])).to exist
+    end
+  end
+
+  describe '#deleted?' do
+    let(:category) { create(:security_category, namespace: parent, name: 'Category') }
+
+    it 'returns true when deleted_at is present' do
+      attribute = create(:security_attribute, security_category: category, namespace: parent, deleted_at: Time.current)
+      expect(attribute.deleted?).to be true
+    end
+
+    it 'returns false when deleted_at is nil' do
+      attribute = create(:security_attribute, security_category: category, namespace: parent)
+      expect(attribute.deleted?).to be false
     end
   end
 

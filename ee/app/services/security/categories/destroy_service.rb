@@ -15,18 +15,13 @@ module Security
         return not_editable_error unless category.editable?
 
         deleted_category_gid = category.to_global_id
-        deleted_attributes_id_to_gid = category.security_attributes.to_h do |attribute|
+        deleted_attributes_id_to_gid = category.security_attributes.not_deleted.to_h do |attribute|
           [attribute.id, attribute.to_global_id]
         end
 
         create_audit_event
-
-        Security::Category.transaction do
-          category.security_attributes.destroy_all # rubocop:disable Cop/DestroyAll -- Need destroy callbacks to trigger worker for project association cleanup
-          category.destroy
-        end
-
-        success(deleted_category_gid, deleted_attributes_id_to_gid)
+        category.destroy
+        success(deleted_category_gid, deleted_attributes_id_to_gid, category.id)
       rescue ActiveRecord::RecordNotDestroyed, ActiveRecord::StatementInvalid => e
         deletion_failed_error(e.message)
       end
@@ -44,8 +39,8 @@ module Security
         Feature.enabled?(:security_categories_and_attributes, root_namespace)
       end
 
-      def success(deleted_category_gid, deleted_attributes_id_to_gid)
-        enqueue_project_associations_cleanup(deleted_attributes_id_to_gid.keys)
+      def success(deleted_category_gid, deleted_attributes_id_to_gid, category_id)
+        enqueue_project_associations_cleanup(deleted_attributes_id_to_gid.keys, category_id)
         ServiceResponse.success(payload:
                                   {
                                     deleted_category_gid: deleted_category_gid,
@@ -53,8 +48,8 @@ module Security
                                   })
       end
 
-      def enqueue_project_associations_cleanup(attribute_ids)
-        Security::Attributes::CleanupProjectToSecurityAttributeWorker.perform_async(attribute_ids)
+      def enqueue_project_associations_cleanup(attribute_ids, category_id)
+        Security::Attributes::CleanupProjectToSecurityAttributeWorker.perform_async(attribute_ids, category_id)
       end
 
       def error_response(message)

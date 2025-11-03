@@ -25692,6 +25692,7 @@ CREATE TABLE security_attributes (
     description text,
     color text NOT NULL,
     template_type smallint,
+    deleted_at timestamp with time zone,
     CONSTRAINT check_219cd2b143 CHECK ((char_length(color) <= 7)),
     CONSTRAINT check_518516df75 CHECK ((char_length(description) <= 255)),
     CONSTRAINT check_5f6fd50ef3 CHECK ((char_length(name) <= 255))
@@ -25716,6 +25717,7 @@ CREATE TABLE security_categories (
     multiple_selection boolean DEFAULT false NOT NULL,
     name text NOT NULL,
     description text,
+    deleted_at timestamp with time zone,
     CONSTRAINT check_6a761c4c9f CHECK ((char_length(name) <= 255)),
     CONSTRAINT check_d643dfc44b CHECK ((char_length(description) <= 255))
 );
@@ -42391,9 +42393,13 @@ CREATE INDEX index_secret_rotation_infos_on_next_reminder_at ON secret_rotation_
 
 CREATE INDEX index_security_attributes_on_namespace_id ON security_attributes USING btree (namespace_id);
 
+CREATE INDEX index_security_attributes_on_namespace_id_where_not_deleted ON security_attributes USING btree (namespace_id) WHERE (deleted_at IS NULL);
+
 CREATE UNIQUE INDEX index_security_attributes_security_category_name ON security_attributes USING btree (security_category_id, name);
 
 CREATE UNIQUE INDEX index_security_categories_namespace_name ON security_categories USING btree (namespace_id, name);
+
+CREATE INDEX index_security_categories_on_namespace_id_where_not_deleted ON security_categories USING btree (namespace_id) WHERE (deleted_at IS NULL);
 
 CREATE UNIQUE INDEX index_security_inventory_filters_on_project_id ON security_inventory_filters USING btree (project_id);
 

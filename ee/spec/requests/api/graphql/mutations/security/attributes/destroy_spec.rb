@@ -48,12 +48,16 @@ RSpec.describe 'Mutation.securityAttributeDestroy', feature_category: :security_
 
       expect do
         post_graphql_mutation(mutation, current_user: current_user)
-      end.to change { Security::Attribute.count }.by(-1)
+      end.to change { Security::Attribute.not_deleted.count }.by(-1)
+                                                             .and not_change { Security::Attribute.unscoped.count }
 
       expect(response).to have_gitlab_http_status(:success)
       expect(mutation_response['errors']).to be_empty
       expect(mutation_response['deletedAttributeGid'].to_s).to eq(expected_gid)
-      expect(attribute.deleted_from_database?).to be_truthy
+
+      attribute.reload
+      expect(attribute.deleted_at).to be_present
+      expect(attribute.deleted?).to be true
     end
   end
 
