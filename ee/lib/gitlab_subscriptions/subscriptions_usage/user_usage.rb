@@ -47,7 +47,7 @@ module GitlabSubscriptions
             end
           when :instance
             username.present? ? User.by_username(username) : User.all
-          end
+          end&.without_bots
         end
       end
 
