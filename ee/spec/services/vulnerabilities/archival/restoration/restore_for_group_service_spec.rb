@@ -314,21 +314,12 @@ RSpec.describe Vulnerabilities::Archival::Restoration::RestoreForGroupService, f
       before do
         skip_if_shared_database(:sec)
 
-        delete_partitions_from(ApplicationRecord.connection)
-        delete_partitions_from(Ci::ApplicationRecord.connection)
+        ApplicationRecord.connection.execute("DROP TABLE backup_vulnerabilities")
+        Ci::ApplicationRecord.connection.execute("DROP TABLE backup_vulnerabilities")
       end
 
-      it 'uses the correct database connection while reading data from partitions directly',
-        quarantine: 'https://gitlab.com/gitlab-org/gitlab/-/issues/578811' do
+      it 'uses the correct database connection while reading data from partitions directly' do
         expect { restore }.to change { Vulnerability.count }.by(1)
-      end
-
-      def delete_partitions_from(connection)
-        Gitlab::Database::SharedModel.using_connection(connection) do
-          Gitlab::Database::PostgresPartition.for_parent_table(:backup_vulnerabilities).each do |partition|
-            connection.execute("DROP TABLE #{partition.identifier}")
-          end
-        end
       end
     end
 
