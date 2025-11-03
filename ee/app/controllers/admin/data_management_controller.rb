@@ -5,8 +5,6 @@ module Admin
     feature_category :geo_replication
     urgency :low
 
-    # TODO: Remove in https://gitlab.com/gitlab-org/gitlab/-/issues/575225
-    before_action :ensure_feature_available!
     before_action :model_found?
 
     authorize! :read_admin_data_management, only: [:index, :show]
@@ -20,11 +18,6 @@ module Admin
     end
 
     private
-
-    def ensure_feature_available!
-      render_404 unless License.feature_available?(:data_management)
-      render_404 unless Feature.enabled?(:geo_primary_verification_view, current_user)
-    end
 
     def model_found?
       render_404 unless model_class
