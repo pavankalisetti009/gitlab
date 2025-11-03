@@ -44,13 +44,6 @@ module EE
             experiment: { milestone: '17.11' }
         end
 
-        override :raise_feature_not_available_error!
-        def raise_feature_not_available_error!(type)
-          return super unless type.epic?
-
-          raise ::Gitlab::Graphql::Errors::ArgumentError, 'Epic type is not available for the given group'
-        end
-
         override :resolve
         def resolve(project_path: nil, namespace_path: nil, vulnerability: nil, **attributes)
           result = super(project_path: project_path, namespace_path: namespace_path, **attributes)
