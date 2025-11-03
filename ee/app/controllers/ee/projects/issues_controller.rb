@@ -186,6 +186,13 @@ module EE
 
         redirect_to project_quality_test_case_path(project, issue)
       end
+
+      override :work_items_redirect_params
+      def work_items_redirect_params(params)
+        return super(convert_epic_params) if has_epic_filter?
+
+        super
+      end
     end
   end
 end
