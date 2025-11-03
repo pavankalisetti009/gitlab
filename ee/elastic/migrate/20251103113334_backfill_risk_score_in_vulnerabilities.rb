@@ -11,5 +11,5 @@ class BackfillRiskScoreInVulnerabilities < Elastic::Migration
   retry_on_failure
 
   DOCUMENT_TYPE = Vulnerability
-  NEW_SCHEMA_VERSION = 25_43
+  NEW_SCHEMA_VERSION = 25_45
 end
