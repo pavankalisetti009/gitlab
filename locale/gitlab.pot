@@ -2953,6 +2953,12 @@ msgstr ""
 msgid "AICatalog|agents"
 msgstr ""
 
+msgid "AICatalog|can be set only for project consumers"
+msgstr ""
+
+msgid "AICatalog|can be set only for top-level group consumers"
+msgstr ""
+
 msgid "AICatalog|cannot be changed as it has been released"
 msgstr ""
 
@@ -2972,6 +2978,15 @@ msgid "AICatalog|flows"
 msgstr ""
 
 msgid "AICatalog|is private to another project"
+msgstr ""
+
+msgid "AICatalog|must be a service account"
+msgstr ""
+
+msgid "AICatalog|must be provisioned by the group"
+msgstr ""
+
+msgid "AICatalog|must belong to this project's top-level group"
 msgstr ""
 
 msgid "AICatalog|must have at least one node"

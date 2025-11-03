@@ -10106,6 +10106,8 @@ CREATE TABLE ai_catalog_item_consumers (
     enabled boolean DEFAULT false NOT NULL,
     locked boolean DEFAULT true NOT NULL,
     pinned_version_prefix text,
+    service_account_id bigint,
+    parent_item_consumer_id bigint,
     CONSTRAINT check_55026cf703 CHECK ((num_nonnulls(group_id, organization_id, project_id) = 1)),
     CONSTRAINT check_a788d1fdfa CHECK ((char_length(pinned_version_prefix) <= 50))
 );
@@ -38651,7 +38653,11 @@ CREATE INDEX index_ai_catalog_item_consumers_on_group_id ON ai_catalog_item_cons
 
 CREATE INDEX index_ai_catalog_item_consumers_on_organization_id ON ai_catalog_item_consumers USING btree (organization_id);
 
+CREATE INDEX index_ai_catalog_item_consumers_on_parent_item_consumer_id ON ai_catalog_item_consumers USING btree (parent_item_consumer_id);
+
 CREATE INDEX index_ai_catalog_item_consumers_on_project_id ON ai_catalog_item_consumers USING btree (project_id);
+
+CREATE INDEX index_ai_catalog_item_consumers_on_service_account_id ON ai_catalog_item_consumers USING btree (service_account_id);
 
 CREATE INDEX index_ai_catalog_item_version_dependencies_on_dependency_id ON ai_catalog_item_version_dependencies USING btree (dependency_id);
 
@@ -48247,6 +48253,9 @@ ALTER TABLE ONLY approval_group_rules_users
 ALTER TABLE ONLY bulk_import_exports
     ADD CONSTRAINT fk_39c726d3b5 FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE CASCADE;
 
+ALTER TABLE ONLY ai_catalog_item_consumers
+    ADD CONSTRAINT fk_39cdf1cefd FOREIGN KEY (parent_item_consumer_id) REFERENCES ai_catalog_item_consumers(id) ON DELETE SET NULL;
+
 ALTER TABLE ONLY ml_model_versions
     ADD CONSTRAINT fk_39f8aa0b8a FOREIGN KEY (package_id) REFERENCES packages_packages(id) ON DELETE SET NULL;
 
@@ -48717,6 +48726,9 @@ ALTER TABLE ONLY protected_branch_push_access_levels
 
 ALTER TABLE ONLY bulk_import_failures
     ADD CONSTRAINT fk_70f30b02fd FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE CASCADE;
+
+ALTER TABLE ONLY ai_catalog_item_consumers
+    ADD CONSTRAINT fk_70fabda179 FOREIGN KEY (service_account_id) REFERENCES users(id) ON DELETE SET NULL;
 
 ALTER TABLE ONLY protected_branch_push_access_levels
     ADD CONSTRAINT fk_7111b68cdb FOREIGN KEY (group_id) REFERENCES namespaces(id) ON DELETE CASCADE;

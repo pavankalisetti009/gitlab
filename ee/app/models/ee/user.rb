@@ -172,6 +172,7 @@ module EE
       has_many :user_group_member_roles, inverse_of: :user, class_name: 'Authz::UserGroupMemberRole'
       has_many :user_project_member_roles, inverse_of: :user, class_name: 'Authz::UserProjectMemberRole', dependent: :destroy # rubocop:disable Cop/ActiveRecordDependent -- required by https://gitlab.com/groups/gitlab-org/-/epics/19085
 
+      has_many :ai_catalog_item_consumers, class_name: 'Ai::Catalog::ItemConsumer', foreign_key: :service_account_id, dependent: :nullify # rubocop:disable Cop/ActiveRecordDependent -- required by https://gitlab.com/groups/gitlab-org/-/epics/19085
       has_many :ai_conversation_threads, class_name: 'Ai::Conversation::Thread', foreign_key: :user_id
       has_many :ai_conversation_messages, class_name: 'Ai::Conversation::Message', through: :ai_conversation_threads, source: :messages
 
