@@ -13249,9 +13249,6 @@ msgstr ""
 msgid "Change branches"
 msgstr ""
 
-msgid "Change confidentiality"
-msgstr ""
-
 msgid "Change display preferences"
 msgstr ""
 
@@ -36512,25 +36509,10 @@ msgstr ""
 msgid "Issues|An error occurred while importing issues."
 msgstr ""
 
-msgid "Issues|Move selected"
-msgstr ""
-
 msgid "Issues|No closed issues"
 msgstr ""
 
 msgid "Issues|No open issues"
-msgstr ""
-
-msgid "Issues|Tasks and test cases can not be moved."
-msgstr ""
-
-msgid "Issues|Tasks can not be moved."
-msgstr ""
-
-msgid "Issues|Test cases can not be moved."
-msgstr ""
-
-msgid "Issues|There was an error while moving the issues."
 msgstr ""
 
 msgid "Issues|Track bugs, plan features, and organize your work with issues"

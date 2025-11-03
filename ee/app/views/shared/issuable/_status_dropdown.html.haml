@@ -1,9 +1,0 @@
-- parent = local_assigns.fetch(:parent)
-
-- return unless parent&.feature_available?(:work_item_status)
-
-.block
-  .title
-    = _('Status')
-  .filter-item
-    .js-custom-status-widget{ data: { full_path: parent&.full_path } }

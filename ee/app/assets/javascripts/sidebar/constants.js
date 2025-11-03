@@ -59,13 +59,6 @@ export const healthStatusColorMap = {
   [HEALTH_STATUS_AT_RISK]: 'gl-text-danger',
 };
 
-export const healthStatusForRestApi = {
-  NO_STATUS: '0',
-  [HEALTH_STATUS_ON_TRACK]: 'on_track',
-  [HEALTH_STATUS_NEEDS_ATTENTION]: 'needs_attention',
-  [HEALTH_STATUS_AT_RISK]: 'at_risk',
-};
-
 export const healthStatusDropdownOptions = [
   { text: __('On track'), value: HEALTH_STATUS_ON_TRACK },
   { text: __('Needs attention'), value: HEALTH_STATUS_NEEDS_ATTENTION },
