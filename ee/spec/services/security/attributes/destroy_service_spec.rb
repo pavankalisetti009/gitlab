@@ -63,15 +63,19 @@ RSpec.describe Security::Attributes::DestroyService, feature_category: :security
         end
 
         context 'when attribute is editable' do
-          it 'deletes the attribute successfully and returns its global ID' do
+          it 'soft deletes the attribute successfully and returns its global ID' do
             expected_gid = attribute.to_global_id.to_s
 
-            expect { execute }.to change { Security::Attribute.count }.by(-1)
+            expect { execute }
+              .to not_change { Security::Attribute.unscoped.count }
+              .and change { Security::Attribute.not_deleted.count }.by(-1)
 
             expect(execute).to be_success
             expect(execute.payload[:deleted_attribute_gid].to_s).to eq(expected_gid)
 
-            expect(attribute.deleted_from_database?).to be_truthy
+            attribute.reload
+            expect(attribute.deleted_at).to be_present
+            expect(attribute.deleted?).to be true
           end
 
           it 'enqueues the project associations cleanup worker' do

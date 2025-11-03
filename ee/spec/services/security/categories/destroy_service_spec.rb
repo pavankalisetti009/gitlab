@@ -4,8 +4,8 @@ require 'spec_helper'
 
 RSpec.describe Security::Categories::DestroyService, feature_category: :security_asset_inventories do
   shared_examples 'successful category deletion' do
-    it 'deletes the category successfully and returns its global ID' do
-      attributes = test_category.security_attributes
+    it 'soft deletes the category successfully and returns its global ID' do
+      attributes = test_category.security_attributes.not_deleted
       expected_data = {
         category_gid: test_category.to_global_id,
         attributes_gid: attributes.map(&:to_global_id),
@@ -25,12 +25,15 @@ RSpec.describe Security::Categories::DestroyService, feature_category: :security
         expect(result.payload[:deleted_attributes_gid]).to match_array(expected_data[:attributes_gid])
       end
 
-      # Verify category is deleted
-      expect(Security::Category.find_by(id: test_category.id)).to be_nil
+      # Verify category is soft deleted (not in not_deleted scope but exists in database)
+      expect(Security::Category.not_deleted.find_by(id: test_category.id)).to be_nil
+      expect(Security::Category.unscoped.find_by(id: test_category.id)).to be_present
+      expect(test_category.reload.deleted_at).to be_present
 
-      # Verify attributes are actually deleted (CASCADE should handle this)
+      # Verify attributes are soft deleted (not in not_deleted scope)
       expected_data[:attribute_ids].each do |attribute_id|
-        expect(Security::Attribute.find_by(id: attribute_id)).to be_nil
+        expect(Security::Attribute.not_deleted.find_by(id: attribute_id)).to be_nil
+        expect(Security::Attribute.unscoped.find_by(id: attribute_id)).to be_present
       end
     end
   end
@@ -223,10 +226,10 @@ RSpec.describe Security::Categories::DestroyService, feature_category: :security
             namespace.add_owner(user)
           end
 
-          it 'enqueues cleanup worker with correct attribute IDs' do
+          it 'enqueues cleanup worker with correct attribute IDs and category ID' do
             expect(Security::Attributes::CleanupProjectToSecurityAttributeWorker)
               .to receive(:perform_async)
-              .with([attr_with_projects.id])
+              .with([attr_with_projects.id], cleanup_category.id)
 
             described_class.new(
               category: cleanup_category,
@@ -234,7 +237,7 @@ RSpec.describe Security::Categories::DestroyService, feature_category: :security
             ).execute
           end
 
-          it 'enqueues cleanup worker for multiple attributes' do
+          it 'enqueues cleanup worker for multiple attributes with category ID' do
             second_attr = create(:security_attribute,
               security_category: cleanup_category,
               namespace: namespace,
@@ -243,7 +246,7 @@ RSpec.describe Security::Categories::DestroyService, feature_category: :security
 
             expect(Security::Attributes::CleanupProjectToSecurityAttributeWorker)
               .to receive(:perform_async)
-              .with(match_array([attr_with_projects.id, second_attr.id]))
+              .with(match_array([attr_with_projects.id, second_attr.id]), cleanup_category.id)
 
             described_class.new(
               category: cleanup_category,

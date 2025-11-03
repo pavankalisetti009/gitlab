@@ -155,8 +155,9 @@ RSpec.describe Security::Attributes::ProjectToSecurityAttributeDestroyService, f
       let(:attribute_ids) { attribute1.id }
 
       before do
+        stub_const('Security::Attributes::ProjectToSecurityAttributeDestroyService::BATCH_SIZE', 1)
         # Create more than batch size (100) to test batching
-        150.times do
+        2.times do
           project = create(:project, namespace: namespace)
           create(:project_to_security_attribute, security_attribute: attribute1,
             project: project, traversal_ids: namespace.traversal_ids)
@@ -164,14 +165,14 @@ RSpec.describe Security::Attributes::ProjectToSecurityAttributeDestroyService, f
       end
 
       it 'deletes all associations in batches' do
-        expect { service.execute }.to change { Security::ProjectToSecurityAttribute.count }.by(-150)
+        expect { service.execute }.to change { Security::ProjectToSecurityAttribute.count }.by(-2)
       end
 
       it 'returns success response with correct count' do
         result = service.execute
 
         expect(result.success?).to be true
-        expect(result.payload[:deleted_count]).to eq(150)
+        expect(result.payload[:deleted_count]).to eq(2)
       end
     end
 

@@ -53,10 +53,17 @@ RSpec.describe 'Mutation.securityCategoryDestroy', feature_category: :security_a
       expect(mutation_response['errors']).to be_empty
       expect(mutation_response['deletedCategoryGid']).to eq(expected_category_gid)
       expect(mutation_response['deletedAttributesGid']).to match_array(expected_attribute_gids)
-      expect(test_category.deleted_from_database?).to be_truthy
+
+      test_category.reload
+      expect(test_category.deleted_at).to be_present
+      expect(test_category.deleted?).to be true
+
       expected_attribute_gids.each do |attr_gid|
         attr_id = GlobalID.parse(attr_gid).model_id
-        expect(Security::Attribute.find_by(id: attr_id)).to be_nil
+        attribute = Security::Attribute.unscoped.find_by(id: attr_id)
+        expect(attribute).to be_present
+        expect(attribute.deleted_at).to be_present
+        expect(attribute.deleted?).to be true
       end
     end
   end
