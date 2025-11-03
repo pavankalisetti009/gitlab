@@ -172,6 +172,7 @@ To show the sidebar again:
 - Filtering activity [introduced](https://gitlab.com/gitlab-org/gitlab/-/issues/389971) in GitLab 15.10.
 - [Enabled on GitLab.com and GitLab Self-Managed](https://gitlab.com/gitlab-org/gitlab/-/issues/334812) in GitLab 15.10.
 - [Changed](https://gitlab.com/gitlab-org/gitlab/-/merge_requests/169256) the minimum user role from Reporter to Planner in GitLab 17.7.
+- Feature flag `work_items_beta` [removed](https://gitlab.com/gitlab-com/gl-infra/production/-/issues/17549) in GitLab 18.6.
 
 {{< /history >}}
 

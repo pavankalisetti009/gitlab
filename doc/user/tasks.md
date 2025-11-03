@@ -777,15 +777,10 @@ system note in the task's comments, for example:
 
 ## Lock discussion
 
-{{< details >}}
-
-- Status: Beta
-
-{{< /details >}}
-
 {{< history >}}
 
 - [Introduced](https://gitlab.com/gitlab-org/gitlab/-/issues/398649) in GitLab 16.9 [with a flag](../administration/feature_flags/_index.md) named `work_items_beta`. Disabled by default.
+- Feature flag `work_items_beta` [removed](https://gitlab.com/gitlab-com/gl-infra/production/-/issues/17549) in GitLab 18.6.
 
 {{< /history >}}
 
@@ -815,28 +810,15 @@ If a task is closed with a locked discussion, then you cannot reopen it until th
 
 ## Two-column layout
 
-{{< details >}}
-
-- Status: Beta
-
-{{< /details >}}
-
 {{< history >}}
 
 - [Introduced](https://gitlab.com/gitlab-org/gitlab/-/issues/415077) in GitLab 16.2 [with a flag](../administration/feature_flags/_index.md) named `work_items_mvc_2`. Disabled by default. This feature is in [beta](../policy/development_stages_support.md).
 - [Moved](https://gitlab.com/gitlab-org/gitlab/-/issues/446064) to feature flag named `work_items_beta` in GitLab 16.10. Disabled by default.
+- [Moved](https://gitlab.com/gitlab-org/gitlab/-/merge_requests/147020) out of feature flag `work_items_beta` in GitLab 17.0.
 
 {{< /history >}}
 
-{{< alert type="flag" >}}
-
-The availability of this feature is controlled by a feature flag.
-For more information, see the history.
-This feature is available for testing, but not ready for production use.
-
-{{< /alert >}}
-
-When enabled, tasks use a two-column layout, similar to issues.
+Tasks use a two-column layout, similar to issues.
 The description and threads are on the left, and attributes, such as labels
 or assignees, on the right.
 

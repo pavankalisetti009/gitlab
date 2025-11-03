@@ -20,7 +20,7 @@ describe('IssueBoardFilter', () => {
     hasCustomFieldsFeature = false,
     statusListsAvailable = false,
     hasStatusFeature = false,
-    workItemsBeta = false,
+    workItemTasksOnBoards = false,
     customFieldsData = [
       {
         fieldType: 'MULTI_SELECT',
@@ -65,7 +65,7 @@ describe('IssueBoardFilter', () => {
         statusListsAvailable,
         hasStatusFeature,
         glFeatures: {
-          workItemsBeta,
+          workItemTasksOnBoards,
         },
       },
     });
@@ -186,10 +186,10 @@ describe('IssueBoardFilter', () => {
         ],
       };
 
-      it('includes task-only custom field filter when workItemsBeta flag is enabled', async () => {
+      it('includes task-only custom field filter when `workItemTasksOnBoards` flag is enabled', async () => {
         createComponent({
           hasCustomFieldsFeature: true,
-          workItemsBeta: true,
+          workItemTasksOnBoards: true,
           customFieldsData: [taskOnlyCustomField, issueAndTaskCustomField],
         });
 
@@ -205,10 +205,10 @@ describe('IssueBoardFilter', () => {
         ]);
       });
 
-      it('excludes task-only custom field filter when workItemsBeta flag is disabled', async () => {
+      it('excludes task-only custom field filter when `workItemTasksOnBoards` flag is disabled', async () => {
         createComponent({
           hasCustomFieldsFeature: true,
-          workItemsBeta: false,
+          workItemTasksOnBoards: false,
           customFieldsData: [taskOnlyCustomField, issueAndTaskCustomField],
         });
 
@@ -221,10 +221,10 @@ describe('IssueBoardFilter', () => {
         expect(customFieldTokens[0].title).toBe('Issue and Task field');
       });
 
-      it('includes issue-only custom fields regardless of workItemsBeta flag', async () => {
+      it('includes issue-only custom fields regardless of `workItemTasksOnBoards` flag', async () => {
         createComponent({
           hasCustomFieldsFeature: true,
-          workItemsBeta: false,
+          workItemTasksOnBoards: false,
         });
 
         await waitForPromises();
