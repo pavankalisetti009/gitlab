@@ -4,18 +4,19 @@ import { GlForm } from '@gitlab/ui';
 import { mount } from '@vue/test-utils';
 import { VARIANT_SUCCESS } from '~/alert';
 import { visitUrl } from '~/lib/utils/url_utility';
+import { saveAlertToLocalStorage } from '~/lib/utils/local_storage_alert';
 
 import createMockApollo from 'helpers/mock_apollo_helper';
 import { extendedWrapper } from 'helpers/vue_test_utils_helper';
 import waitForPromises from 'helpers/wait_for_promises';
 
 import { runnerFormData } from 'jest/ci/runner/mock_data';
-import { saveAlertToLocalStorage } from '~/ci/runner/local_storage_alert/save_alert_to_local_storage';
+
 import RunnerUpdateForm from '~/ci/runner/components/runner_update_form.vue';
 import runnerUpdateMutation from '~/ci/runner/graphql/edit/runner_update.mutation.graphql';
 import { INSTANCE_TYPE } from '~/ci/runner/constants';
 
-jest.mock('~/ci/runner/local_storage_alert/save_alert_to_local_storage');
+jest.mock('~/lib/utils/local_storage_alert');
 jest.mock('~/lib/utils/url_utility', () => ({
   ...jest.requireActual('~/lib/utils/url_utility'),
   visitUrl: jest.fn(),
@@ -65,12 +66,10 @@ describe('RunnerUpdateForm', () => {
       input: expect.objectContaining(submittedRunner),
     });
 
-    expect(saveAlertToLocalStorage).toHaveBeenCalledWith(
-      expect.objectContaining({
-        message: expect.any(String),
-        variant: VARIANT_SUCCESS,
-      }),
-    );
+    expect(saveAlertToLocalStorage).toHaveBeenCalledWith({
+      message: expect.any(String),
+      variant: VARIANT_SUCCESS,
+    });
     expect(visitUrl).toHaveBeenCalledWith(mockRunnerPath);
   };
 
