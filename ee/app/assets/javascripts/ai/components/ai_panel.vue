@@ -113,7 +113,7 @@ export default {
           return {
             title: this.sessionTitle,
             component: AgentSessionsRoot,
-            initialRoute: '/agent-sessions',
+            initialRoute: '/agent-sessions/',
           };
         default:
           return null;
@@ -157,16 +157,17 @@ export default {
       }
     },
     async handleTabToggle(tab) {
+      const previous = this.activeTab;
       let selected;
 
       if (tab === 'new') {
         selected = tab;
       } else {
-        selected = tab === this.activeTab ? undefined : tab;
+        selected = tab === previous ? undefined : tab;
       }
 
       this.setActiveTab(selected);
-      if (selected && this.currentTabComponent.initialRoute) {
+      if (selected && this.currentTabComponent.initialRoute && !previous) {
         // Navigate to the initial route if the tab has one (e.g., sessions)
         this.$router.push(this.currentTabComponent.initialRoute);
       }

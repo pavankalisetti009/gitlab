@@ -194,7 +194,7 @@ describe('AiPanel', () => {
         expect(findContentContainer().props('activeTab')).toEqual({
           title: 'Sessions',
           component: AgentSessionsRoot,
-          initialRoute: '/agent-sessions',
+          initialRoute: '/agent-sessions/',
         });
         expect(Cookies.get(aiPanelStateCookie)).toBe('sessions');
       });
@@ -244,7 +244,7 @@ describe('AiPanel', () => {
     describe('when current tab has initialRoute but route path matches', () => {
       it('does not show back button', async () => {
         createComponent({
-          routePath: '/agent-sessions',
+          routePath: '/agent-sessions/',
         });
         findNavigationRail().vm.$emit('handleTabToggle', 'sessions');
         await nextTick();
@@ -273,7 +273,7 @@ describe('AiPanel', () => {
         findNavigationRail().vm.$emit('handleTabToggle', 'sessions');
         await nextTick();
         findContentContainer().vm.$emit('go-back');
-        expect(mockRouter.push).toHaveBeenCalledWith('/agent-sessions');
+        expect(mockRouter.push).toHaveBeenCalledWith('/agent-sessions/');
       });
     });
 
@@ -367,7 +367,7 @@ describe('AiPanel', () => {
       findNavigationRail().vm.$emit('handleTabToggle', 'sessions');
       await nextTick();
 
-      expect(mockRouter.push).toHaveBeenCalledWith('/agent-sessions');
+      expect(mockRouter.push).toHaveBeenCalledWith('/agent-sessions/');
     });
 
     it('does not call router.push when chat tab is activated (no initialRoute)', async () => {
@@ -379,19 +379,18 @@ describe('AiPanel', () => {
       expect(mockRouter.push).not.toHaveBeenCalled();
     });
 
-    it('navigates to initialRoute regardless of promise resolution', async () => {
+    it('does not navigate when switching between tabs (only navigates when opening from closed state)', async () => {
       createComponent();
       findNavigationRail().vm.$emit('handleTabToggle', 'chat');
       await nextTick();
 
-      // Create a promise that won't reject synchronously
-      const pushMock = jest.fn().mockResolvedValue(undefined);
-      wrapper.vm.$router.push = pushMock;
+      mockRouter.push.mockClear();
 
       findNavigationRail().vm.$emit('handleTabToggle', 'sessions');
       await nextTick();
 
-      expect(pushMock).toHaveBeenCalledWith('/agent-sessions');
+      // Router should not be called when switching between tabs
+      expect(mockRouter.push).not.toHaveBeenCalled();
     });
   });
 
