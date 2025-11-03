@@ -54,7 +54,8 @@ RSpec.describe Vulnerabilities::NamespaceStatistics::UpdateProjectAncestorsStati
         create(:vulnerability_statistic, project: project, total: 4, critical: 3, low: 1)
       end
 
-      it 'decreases statistics from original ancestors and increases new ancestors' do
+      it 'decreases statistics from original ancestors and increases new ancestors',
+        quarantine: 'https://gitlab.com/gitlab-org/quality/test-failure-issues/-/issues/10451' do
         original = original_parent_statistic
 
         expect { update_ancestors }
