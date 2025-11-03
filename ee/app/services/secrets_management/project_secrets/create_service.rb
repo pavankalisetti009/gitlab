@@ -108,7 +108,6 @@ module SecretsManagement
         custom_metadata = build_custom_metadata(
           project_secret,
           secret_rotation_info,
-          create_started_at: project_secret.create_started_at,
           create_completed_at: project_secret.create_completed_at
         )
 
@@ -121,7 +120,6 @@ module SecretsManagement
       # in this Rails backend service, as they contain essential information for access control.
 
       def start_secret_creation!(project_secret, value, secret_rotation_info)
-        project_secret.create_started_at = Time.current.utc.iso8601
         write_secret_value!(project_secret, value, cas: 0)
         update_metadata_for(project_secret, secret_rotation_info, metadata_cas: 0)
       end
@@ -150,13 +148,12 @@ module SecretsManagement
         error_response(project_secret)
       end
 
-      def build_custom_metadata(project_secret, secret_rotation_info, create_started_at:, create_completed_at: nil)
+      def build_custom_metadata(project_secret, secret_rotation_info, create_completed_at: nil)
         {
           environment: project_secret.environment,
           branch: project_secret.branch,
           description: project_secret.description,
           secret_rotation_info_id: secret_rotation_info&.id,
-          create_started_at: create_started_at,
           create_completed_at: create_completed_at
         }.compact
       end

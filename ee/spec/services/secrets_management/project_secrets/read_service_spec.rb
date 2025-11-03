@@ -105,7 +105,6 @@ RSpec.describe SecretsManagement::ProjectSecrets::ReadService, :gitlab_secrets_m
               context 'when update started recently and completed' do
                 let(:timestamps) do
                   {
-                    create_started_at: iso(1.hour.ago),
                     create_completed_at: iso(1.hour.ago),
                     update_started_at: iso((threshold / 3).ago),
                     update_completed_at: iso(Time.current)
@@ -158,40 +157,15 @@ RSpec.describe SecretsManagement::ProjectSecrets::ReadService, :gitlab_secrets_m
             end
 
             context 'when creation timestamps are evaluated and no updates are present' do
-              context 'when no creation timestamps are present' do
+              context 'when creation started recently and not completed' do
                 let(:timestamps) { {} }
 
                 it_behaves_like 'writes metadata and expects status', 'CREATE_IN_PROGRESS'
               end
 
-              context 'when creation started recently and not completed' do
-                let(:timestamps) do
-                  { create_started_at: iso((threshold / 3).ago) }
-                end
-
-                it_behaves_like 'writes metadata and expects status', 'CREATE_IN_PROGRESS'
-              end
-
-              context 'when creation started exactly at threshold' do
-                let(:timestamps) do
-                  { create_started_at: iso(threshold.ago) }
-                end
-
-                it_behaves_like 'writes metadata and expects status', 'CREATE_STALE'
-              end
-
-              context 'when creation started long ago and not completed' do
-                let(:timestamps) do
-                  { create_started_at: iso((threshold * 2).ago) }
-                end
-
-                it_behaves_like 'writes metadata and expects status', 'CREATE_STALE'
-              end
-
               context 'when creation started and completed normally' do
                 let(:timestamps) do
                   {
-                    create_started_at: iso(6.minutes.ago),
                     create_completed_at: iso(5.minutes.ago)
                   }
                 end

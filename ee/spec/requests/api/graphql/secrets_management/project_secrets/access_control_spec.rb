@@ -252,17 +252,20 @@ RSpec.describe 'project secrets', :gitlab_secrets_manager, :freeze_time, feature
         end
 
         it 'returns stale for old create timestamps' do
-          client.update_kv_secret_metadata(
-            mount,
-            path,
-            {
-              description: 'test description 1',
-              environment: 'review/*',
-              branch: 'dev-branch-*',
-              create_started_at: iso(2.minutes.ago)
-            },
-            metadata_cas: cas
-          )
+          allow_next_instance_of(SecretsManagement::ProjectSecrets::ReadService) do |svc|
+            allow(svc).to receive(:execute).and_wrap_original do |orig, name, include_rotation_info: true|
+              resp = orig.call(name, include_rotation_info: include_rotation_info)
+
+              if resp.success? && name == secret_1.name
+                ps = resp.payload[:project_secret]
+                ps.create_started_at   = 10.minutes.ago
+                ps.create_completed_at = nil
+                ServiceResponse.success(payload: { project_secret: ps })
+              else
+                resp
+              end
+            end
+          end
 
           get_graphql(read_query, current_user: current_user)
           node = graphql_data_at(:project_secret)

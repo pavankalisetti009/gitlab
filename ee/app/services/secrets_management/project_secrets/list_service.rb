@@ -13,7 +13,8 @@ module SecretsManagement
           project.secrets_manager.ci_secrets_mount_path,
           project.secrets_manager.ci_data_path
         ) do |data|
-          custom_metadata = data.dig("metadata", "custom_metadata")
+          metadata = data["metadata"] || {}
+          custom_metadata = metadata["custom_metadata"] || {}
 
           secret = ProjectSecret.new(
             name: data["key"],
@@ -21,8 +22,8 @@ module SecretsManagement
             description: custom_metadata["description"],
             environment: custom_metadata["environment"],
             branch: custom_metadata["branch"],
-            metadata_version: data.dig("metadata", "current_metadata_version"),
-            create_started_at: custom_metadata["create_started_at"],
+            metadata_version: metadata["current_metadata_version"],
+            create_started_at: metadata["created_time"],
             create_completed_at: custom_metadata["create_completed_at"],
             update_started_at: custom_metadata["update_started_at"],
             update_completed_at: custom_metadata["update_completed_at"]

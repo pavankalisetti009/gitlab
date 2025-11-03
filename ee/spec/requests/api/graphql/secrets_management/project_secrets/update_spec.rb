@@ -130,7 +130,6 @@ RSpec.describe 'Update project secret', :gitlab_secrets_manager, :freeze_time, f
             branch: project_secret_attributes[:branch]
           }
 
-          metadata[:create_started_at] = stale_create_started_at if stale_create_started_at
           metadata[:create_completed_at] = stale_create_completed_at if stale_create_completed_at
           metadata[:update_started_at] = stale_update_started_at if stale_update_started_at
           metadata[:update_completed_at] = stale_update_completed_at if stale_update_completed_at
@@ -154,10 +153,6 @@ RSpec.describe 'Update project secret', :gitlab_secrets_manager, :freeze_time, f
       end
 
       context 'when secret is stale after creation' do
-        let(:stale_create_started_at) do
-          (Time.current - SecretsManagement::ProjectSecret::STALE_THRESHOLD - 1.hour).iso8601
-        end
-
         let(:stale_create_completed_at) { nil }
         let(:stale_update_started_at) { nil }
         let(:stale_update_completed_at) { nil }
@@ -172,11 +167,10 @@ RSpec.describe 'Update project secret', :gitlab_secrets_manager, :freeze_time, f
           }
         end
 
-        it_behaves_like 'stale secret validation', 'Secret creation did not complete and is now stale.'
+        it_behaves_like 'stale secret validation', 'Secret create in progress.'
       end
 
       context 'when secret is stale after update' do
-        let(:stale_create_started_at) { 2.days.ago.iso8601 }
         let(:stale_create_completed_at) { 2.days.ago.iso8601 }
         let(:stale_update_started_at) do
           (Time.current - SecretsManagement::ProjectSecret::STALE_THRESHOLD - 1.hour).iso8601

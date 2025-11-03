@@ -267,6 +267,29 @@ RSpec.describe SecretsManagement::ProjectSecrets::UpdateService, :gitlab_secrets
         end
       end
 
+      context 'when secrets creation is in progress', :freeze_time do
+        let(:description) { new_description }
+        let(:mount) { project.secrets_manager.ci_secrets_mount_path }
+
+        it 'fails to update' do
+          client = secrets_manager_client.with_namespace(project.secrets_manager.full_project_namespace_path)
+
+          client.update_kv_secret_metadata(
+            mount,
+            project.secrets_manager.ci_data_path(name),
+            {
+              description: 'Second secret',
+              environment: 'staging',
+              branch: 'staging'
+            },
+            metadata_cas: 2
+          )
+
+          expect(result).not_to be_success
+          expect(result.message).to eq("Secret create in progress.")
+        end
+      end
+
       context 'when metadata timing fields are written', :freeze_time do
         let(:description) { new_description }
 
