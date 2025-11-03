@@ -584,14 +584,13 @@ export default {
         @chat-hidden="onChatClose"
         @track-feedback="onTrackFeedback"
         @chat-resize="onChatResize"
-        ><template v-if="agenticAvailable" #footer-controls>
-          <div class="gl-flex gl-px-4 gl-pb-0 gl-pt-5">
-            <gl-toggle
-              v-model="duoAgenticModePreference"
-              :label="s__('DuoChat|Agentic mode (Beta)')"
-              label-position="left"
-            />
-          </div>
+      >
+        <template v-if="agenticAvailable" #agentic-switch>
+          <gl-toggle v-model="duoAgenticModePreference" label-position="left">
+            <template #label>
+              <span class="gl-font-normal gl-text-subtle">{{ s__('DuoChat|Agentic mode') }}</span>
+            </template>
+          </gl-toggle>
         </template>
       </web-duo-chat>
     </div>

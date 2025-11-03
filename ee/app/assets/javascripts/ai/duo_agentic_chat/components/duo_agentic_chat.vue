@@ -816,8 +816,9 @@ export default {
           data-testid="model-dropdown-container"
         >
           <model-select-dropdown
-            class="-gl-m-2"
+            class="-gl-my-3 -gl-ml-3"
             with-default-model-tooltip
+            button-class="!gl-border-0 gl-bg-transparent !gl-px-3 !gl-text-subtle"
             :disabled="isModelSelectionDisabled"
             :is-loading="$apollo.queries.availableModels.loading"
             :items="availableModels"
@@ -827,16 +828,12 @@ export default {
           />
         </div>
       </template>
-      <template #footer-controls>
-        <div :class="{ 'gl-flex gl-justify-between': userModelSelectionEnabled }">
-          <div class="gl-flex gl-px-4 gl-pb-0 gl-pt-4">
-            <gl-toggle
-              v-model="duoAgenticModePreference"
-              :label="s__('DuoChat|Agentic mode (Beta)')"
-              label-position="left"
-            />
-          </div>
-        </div>
+      <template #agentic-switch>
+        <gl-toggle v-model="duoAgenticModePreference" label-position="left" class="gl-h-5">
+          <template #label>
+            <span class="gl-font-normal gl-text-subtle">{{ s__('DuoChat|Agentic mode') }}</span>
+          </template>
+        </gl-toggle>
       </template>
     </web-agentic-duo-chat>
   </div>

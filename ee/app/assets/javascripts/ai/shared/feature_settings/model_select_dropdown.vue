@@ -38,6 +38,11 @@ export default {
       required: false,
       default: '',
     },
+    buttonClass: {
+      type: String,
+      required: false,
+      default: '',
+    },
     headerText: {
       type: String,
       required: false,
@@ -99,6 +104,7 @@ export default {
     <template #toggle>
       <gl-button
         data-testid="toggle-button"
+        :class="buttonClass"
         :disabled="disabled"
         :loading="isLoading"
         :text="dropdownToggleText"
