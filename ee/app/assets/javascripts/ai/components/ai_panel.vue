@@ -157,7 +157,14 @@ export default {
       }
     },
     async handleTabToggle(tab) {
-      const selected = tab === this.activeTab ? undefined : tab;
+      let selected;
+
+      if (tab === 'new') {
+        selected = tab;
+      } else {
+        selected = tab === this.activeTab ? undefined : tab;
+      }
+
       this.setActiveTab(selected);
       if (selected && this.currentTabComponent.initialRoute) {
         // Navigate to the initial route if the tab has one (e.g., sessions)
