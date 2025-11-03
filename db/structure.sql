@@ -24992,7 +24992,8 @@ CREATE TABLE push_event_payloads (
     commit_title character varying(70),
     ref_count integer,
     event_id bigint NOT NULL,
-    project_id bigint
+    project_id bigint,
+    CONSTRAINT check_37c617d07d CHECK ((project_id IS NOT NULL))
 );
 
 CREATE TABLE push_rules (
@@ -33616,9 +33617,6 @@ ALTER TABLE labels
 
 ALTER TABLE vulnerability_scanners
     ADD CONSTRAINT check_37608c9db5 CHECK ((char_length(vendor) <= 255)) NOT VALID;
-
-ALTER TABLE push_event_payloads
-    ADD CONSTRAINT check_37c617d07d CHECK ((project_id IS NOT NULL)) NOT VALID;
 
 ALTER TABLE diff_note_positions
     ADD CONSTRAINT check_4c86140f48 CHECK ((namespace_id IS NOT NULL)) NOT VALID;
