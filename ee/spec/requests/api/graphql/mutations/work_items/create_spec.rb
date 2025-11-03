@@ -434,9 +434,6 @@ RSpec.describe 'Create a work item', feature_category: :team_planning do
       let(:mutation) { graphql_mutation(:workItemCreate, input.merge(namespacePath: group.full_path), fields) }
       let(:work_item_type) { :epic }
 
-      it_behaves_like 'creates work item with iteration widget'
-      it_behaves_like 'creates work item linked to a vulnerability'
-
       context 'when using resolve discussion in merge request arguments' do
         let_it_be(:merge_request) { create(:merge_request, source_project: project) }
         let(:mutation) do
@@ -444,7 +441,7 @@ RSpec.describe 'Create a work item', feature_category: :team_planning do
             :workItemCreate,
             {
               title: 'some WI',
-              workItemTypeId: WorkItems::Type.default_by_type(:epic).to_gid.to_s,
+              workItemTypeId: WorkItems::Type.default_by_type(work_item_type).to_gid.to_s,
               namespacePath: group.full_path,
               discussions_to_resolve: { noteable_id: merge_request.to_gid.to_s }
             }
@@ -738,7 +735,11 @@ RSpec.describe 'Create a work item', feature_category: :team_planning do
 
         context 'when multiple_issue_assignees is unlicensed' do
           before do
-            stub_licensed_features(epics: true, multiple_issue_assignees: false)
+            stub_licensed_features(
+              epics: true,
+              related_epics: true,
+              multiple_issue_assignees: false
+            )
           end
 
           it 'assigns only the first assignee' do
@@ -790,7 +791,7 @@ RSpec.describe 'Create a work item', feature_category: :team_planning do
         let(:input) do
           {
             title: 'some WI',
-            workItemTypeId: WorkItems::Type.default_by_type(:issue).to_gid.to_s,
+            workItemTypeId: WorkItems::Type.default_by_type(work_item_type).to_gid.to_s,
             linkedItemsWidget: { 'workItemsIds' => items.map(&:to_gid).map(&:to_s), 'linkType' => link_type }
           }
         end
@@ -801,9 +802,13 @@ RSpec.describe 'Create a work item', feature_category: :team_planning do
         end
 
         with_them do
-          context 'when licensed feature `blocked_work_items` is available' do
+          context 'when licensed feature `blocked_work_items` is available', :aggregate_failures do
             before do
-              stub_licensed_features(epics: true, blocked_work_items: true)
+              stub_licensed_features(
+                epics: true,
+                related_epics: true,
+                blocked_work_items: true
+              )
             end
 
             it 'creates a work item with linked items using the corrcet type' do
@@ -813,7 +818,7 @@ RSpec.describe 'Create a work item', feature_category: :team_planning do
                  .and change { WorkItems::RelatedWorkItemLink.count }.by(2)
 
               expect(response).to have_gitlab_http_status(:success)
-              expect(type_response).to include({ 'name' => 'Issue' })
+              expect(type_response).to include({ 'name' => 'Epic' })
               expect(widgets_response).to include(
                 {
                   'linkedItems' => { 'nodes' => match_array([
@@ -828,7 +833,11 @@ RSpec.describe 'Create a work item', feature_category: :team_planning do
 
           context 'when licensed feature `blocked_work_items` is not available' do
             before do
-              stub_licensed_features(epics: true, blocked_work_items: false)
+              stub_licensed_features(
+                epics: true,
+                related_epics: true,
+                blocked_work_items: false
+              )
             end
 
             it 'returns an error' do
@@ -844,7 +853,7 @@ RSpec.describe 'Create a work item', feature_category: :team_planning do
         end
       end
 
-      context 'with feature flag checks' do
+      context 'on type validations' do
         let(:fields) do
           <<~FIELDS
             workItem {
@@ -861,20 +870,14 @@ RSpec.describe 'Create a work item', feature_category: :team_planning do
             { title: "task WI", workItemTypeId: WorkItems::Type.default_by_type(:task).to_gid.to_s }
           end
 
-          context 'when the create_group_level_work_items feature flag is disabled' do
-            before do
-              stub_feature_flags(create_group_level_work_items: false)
-            end
-
-            it_behaves_like 'a mutation that returns top-level errors', errors: [
-              Mutations::WorkItems::Create::DISABLED_FF_ERROR
-            ]
-          end
+          it_behaves_like 'a mutation that returns top-level errors', errors: [
+            Gitlab::Graphql::Authorize::AuthorizeResource::RESOURCE_ACCESS_ERROR
+          ]
         end
 
         context 'when type is Epic' do
           let(:input) do
-            { title: "task WI", workItemTypeId: WorkItems::Type.default_by_type(:epic).to_gid.to_s }
+            { title: "task WI", workItemTypeId: WorkItems::Type.default_by_type(work_item_type).to_gid.to_s }
           end
 
           it 'creates the work item epic' do

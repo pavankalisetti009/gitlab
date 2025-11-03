@@ -109,23 +109,7 @@ RSpec.describe WorkItems::Type, feature_category: :team_planning do
       end
 
       it 'returns supported types at group level' do
-        is_expected.to contain_exactly(*described_class.base_types.keys)
-      end
-
-      context 'when create_group_level_work_items is disabled' do
-        before do
-          stub_feature_flags(create_group_level_work_items: false)
-        end
-
-        it { is_expected.to contain_exactly('epic') }
-      end
-
-      context 'when create_group_level_work_items is enabled' do
-        before do
-          stub_feature_flags(create_group_level_work_items: true)
-        end
-
-        it { is_expected.to contain_exactly(*described_class.base_types.keys).and include('epic') }
+        is_expected.to contain_exactly('epic')
       end
     end
 
@@ -134,15 +118,7 @@ RSpec.describe WorkItems::Type, feature_category: :team_planning do
         stub_licensed_features(epics: false)
       end
 
-      it { is_expected.to contain_exactly(*described_class.base_types.keys.excluding('epic')) }
-
-      context 'when create_group_level_work_items is disabled' do
-        before do
-          stub_feature_flags(create_group_level_work_items: false)
-        end
-
-        it { is_expected.to be_empty }
-      end
+      it { is_expected.to be_empty }
     end
   end
 
