@@ -1353,7 +1353,10 @@ module Ci
       end
     end
 
-    # Returns the modified paths.
+    # Returns the modified paths, the results are subject to
+    # https://docs.gitlab.com/user/gitlab_com/#diff-display-limits
+    # See #changed_paths for a similar method that returns all
+    # changes, regardless of the diff display limits.
     #
     # The returned value is
     # * Array: List of modified paths that should be evaluated
@@ -1376,7 +1379,11 @@ module Ci
       end
     end
 
-    # Returns the changed paths from Gitaly ChangedPaths RPC
+    # Returns the changed paths from Gitaly ChangedPaths RPC.
+    # This method is similar to #modified_paths, but the results
+    # are not subject to the diff display limits. This method is
+    # thus suited well for use in e.g. `rules:changes:`, when
+    # needing to make decisions based on the complete changeset.
     #
     # The returned value is
     # * Array: List of Gitlab::Git::ChangedPath objects
