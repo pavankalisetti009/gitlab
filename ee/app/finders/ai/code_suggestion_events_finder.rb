@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 module Ai
+  # Legacy finder which uses contributors filtering
   class CodeSuggestionEventsFinder < PostgresqlUsageEventsFinder
     include Gitlab::Utils::StrongMemoize
 
@@ -31,15 +32,12 @@ module Ai
       super
 
       @events ||= Gitlab::Tracking::AiTracking.registered_events.keys.grep(/^code_suggestion/)
-
-      return if Feature.enabled?(:use_ai_events_namespace_path_filter, namespace)
-
       @users = contributors_ids
       @namespace = nil
     end
 
     def execute
-      return ::Ai::UsageEvent.none if @namespace.nil? && !@users.present?
+      return ::Ai::UsageEvent.none unless @users.present?
 
       super
     end

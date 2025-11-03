@@ -49,10 +49,13 @@ module Gitlab
         end
       end
 
-      def registered_events
+      def registered_events(feature = nil)
         return {} unless @registered_events
 
-        @registered_events.transform_values { |options| options[:id] }
+        events = @registered_events
+        events = events.select { |_name, event| event[:feature] == feature } if feature
+
+        events.transform_values { |options| options[:id] }
       end
 
       def registered_transformations(event_name)

@@ -15,10 +15,23 @@ module Resolvers
         def resolve(**args)
           params = params_with_defaults(args)
 
-          ::Ai::CodeSuggestionEventsFinder.new(current_user,
-            namespace: namespace,
-            from: params[:start_date],
-            to: params[:end_date]).execute
+          if Feature.enabled?(:use_ai_events_namespace_path_filter, object)
+            events = Gitlab::Tracking::AiTracking.registered_events(:code_suggestions).keys
+
+            ::Ai::UsageEventsFinder.new(current_user,
+              namespace: namespace,
+              from: params[:start_date],
+              to: params[:end_date],
+              events: events,
+              users: params[:user_ids]&.map(&:model_id)
+            ).execute
+          else
+            ::Ai::CodeSuggestionEventsFinder.new(current_user,
+              namespace: namespace,
+              from: params[:start_date],
+              to: params[:end_date]
+            ).execute
+          end
         end
 
         private

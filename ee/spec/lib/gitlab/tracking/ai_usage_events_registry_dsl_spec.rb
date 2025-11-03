@@ -93,6 +93,16 @@ RSpec.describe Gitlab::Tracking::AiUsageEventsRegistryDsl, feature_category: :va
             'old_event' => 4
           })
         end
+
+        it 'filters by specific feature if passed' do
+          expect(registry_module.registered_events(:non_existing_feature)).to eq({})
+          expect(registry_module.registered_events(:test_feature)).to eq({
+            'simple_event' => 1,
+            'multi_event' => 2,
+            'no_block_event' => 3,
+            'old_event' => 4
+          })
+        end
       end
 
       describe '.registered_transformations' do

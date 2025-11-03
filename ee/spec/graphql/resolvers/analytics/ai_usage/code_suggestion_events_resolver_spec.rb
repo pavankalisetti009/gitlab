@@ -7,8 +7,9 @@ RSpec.describe Resolvers::Analytics::AiUsage::CodeSuggestionEventsResolver, feat
 
   let_it_be(:group) { create(:group) }
   let_it_be(:user) { create(:user, namespace: group) }
+  let_it_be(:user2) { create(:user, namespace: group) }
   let_it_be(:project) { create(:project, namespace: group) }
-  let(:subgroup) { create(:group, parent: group) }
+  let_it_be(:another_project) { create(:project) }
 
   let_it_be(:params) do
     {
@@ -45,6 +46,21 @@ RSpec.describe Resolvers::Analytics::AiUsage::CodeSuggestionEventsResolver, feat
       timestamp: params[:end_date] + 1.day)
   end
 
+  let_it_be(:different_project_usage_event) do
+    create(:ai_usage_event, event: 'code_suggestion_shown_in_ide', user: user,
+      namespace: another_project.project_namespace,
+      timestamp: 1.day.ago)
+  end
+
+  let_it_be(:different_user_usage_event) do
+    create(:ai_usage_event, event: 'code_suggestion_shown_in_ide', user: user2, namespace: group,
+      timestamp: 1.day.ago)
+  end
+
+  let_it_be(:contribution_event) do
+    create(:event, :pushed, project: project, author: user, target: nil, created_at: 1.day.ago)
+  end
+
   subject(:resolver) { resolve(described_class, obj: group, args: params, ctx: { current_user: user }) }
 
   describe '#ready', :freeze_time do
@@ -62,7 +78,17 @@ RSpec.describe Resolvers::Analytics::AiUsage::CodeSuggestionEventsResolver, feat
     subject(:resolver) { resolve(described_class, obj: group, args: params, ctx: { current_user: user }).to_a }
 
     it 'returns all related events in given timeframe' do
-      expect(resolver.to_a).to eq([usage_event3, usage_event2, usage_event])
+      expect(resolver.to_a).to eq([different_user_usage_event, usage_event3, usage_event2, usage_event])
+    end
+
+    context "with `use_ai_events_namespace_path_filter` feature flag disabled" do
+      before do
+        stub_feature_flags(use_ai_events_namespace_path_filter: false)
+      end
+
+      it 'returns related events in given timeframe based on contributors' do
+        expect(resolver.to_a).to eq([different_project_usage_event, usage_event3, usage_event2, usage_event])
+      end
     end
   end
 end
