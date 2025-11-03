@@ -50,14 +50,14 @@ You can tell that you're using the older navigation if your user avatar is on th
 
 To turn on the new navigation style:
 
-1. On the left sidebar, select your avatar.
+1. On the left sidebar, select your avatar. If you've [turned on the new navigation](interface_redesign.md#turn-new-navigation-on-or-off), this button is in the upper-right corner.
 1. Turn on the **New UI** toggle.
 
 The page refreshes, and you can start exploring the new GitLab UI!
 
 To turn off the new navigation style:
 
-1. In the upper-right corner, select your avatar.
+1. In the upper-right corner, select your avatar. If you've [turned on the new navigation](interface_redesign.md#turn-new-navigation-on-or-off), this button is in the upper-right corner.
 1. Turn off the **New UI** toggle.
 
 ## What's new
