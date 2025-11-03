@@ -1,0 +1,8 @@
+query aiCatalogGroupUserPermissions($fullPath: ID!) {
+  group(fullPath: $fullPath) {
+    id
+    userPermissions {
+      adminAiCatalogItemConsumer
+    }
+  }
+}

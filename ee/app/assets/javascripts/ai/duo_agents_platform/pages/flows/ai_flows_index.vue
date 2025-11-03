@@ -11,6 +11,7 @@ import ResourceListsEmptyState from '~/vue_shared/components/resource_lists/empt
 import AiCatalogList from 'ee/ai/catalog/components/ai_catalog_list.vue';
 import AiCatalogListHeader from 'ee/ai/catalog/components/ai_catalog_list_header.vue';
 import aiCatalogConfiguredItemsQuery from 'ee/ai/catalog/graphql/queries/ai_catalog_configured_items.query.graphql';
+import aiCatalogGroupUserPermissionsQuery from 'ee/ai/catalog/graphql/queries/ai_catalog_group_user_permissions.query.graphql';
 import aiCatalogProjectUserPermissionsQuery from 'ee/ai/catalog/graphql/queries/ai_catalog_project_user_permissions.query.graphql';
 import deleteAiCatalogItemConsumer from 'ee/ai/catalog/graphql/mutations/delete_ai_catalog_item_consumer.mutation.graphql';
 import {
@@ -50,6 +51,9 @@ export default {
     groupId: {
       default: null,
     },
+    groupPath: {
+      default: null,
+    },
     projectId: {
       default: null,
     },
@@ -79,24 +83,36 @@ export default {
         this.pageInfo = data.aiCatalogConfiguredItems.pageInfo;
       },
     },
-    userPermissions: {
+    groupUserPermissions: {
+      query: aiCatalogGroupUserPermissionsQuery,
+      skip() {
+        return !this.groupPath;
+      },
+      variables() {
+        return {
+          fullPath: this.groupPath,
+        };
+      },
+      update: (data) => data.group?.userPermissions || {},
+    },
+    projectUserPermissions: {
       query: aiCatalogProjectUserPermissionsQuery,
       skip() {
-        return !this.projectId;
+        return !this.projectPath;
       },
       variables() {
         return {
           fullPath: this.projectPath,
         };
       },
-      fetchPolicy: fetchPolicies.CACHE_AND_NETWORK,
       update: (data) => data.project?.userPermissions || {},
     },
   },
   data() {
     return {
       aiFlows: [],
-      userPermissions: {},
+      groupUserPermissions: {},
+      projectUserPermissions: {},
       errors: [],
       pageInfo: {},
     };
@@ -129,6 +145,9 @@ export default {
       return {
         groupId: convertToGraphQLId(TYPENAME_GROUP, this.groupId),
       };
+    },
+    userPermissions() {
+      return this.isProjectNamespace ? this.projectUserPermissions : this.groupUserPermissions;
     },
     showAddFlow() {
       return this.isProjectNamespace && this.userPermissions?.adminAiCatalogItemConsumer;

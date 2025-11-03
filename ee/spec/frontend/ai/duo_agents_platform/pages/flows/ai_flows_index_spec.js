@@ -10,6 +10,7 @@ import AiCatalogListHeader from 'ee/ai/catalog/components/ai_catalog_list_header
 import ErrorsAlert from '~/vue_shared/components/errors_alert.vue';
 import ResourceListsEmptyState from '~/vue_shared/components/resource_lists/empty_state.vue';
 import aiCatalogConfiguredItemsQuery from 'ee/ai/catalog/graphql/queries/ai_catalog_configured_items.query.graphql';
+import aiCatalogGroupUserPermissionsQuery from 'ee/ai/catalog/graphql/queries/ai_catalog_group_user_permissions.query.graphql';
 import aiCatalogProjectUserPermissionsQuery from 'ee/ai/catalog/graphql/queries/ai_catalog_project_user_permissions.query.graphql';
 import deleteAiCatalogItemConsumer from 'ee/ai/catalog/graphql/mutations/delete_ai_catalog_item_consumer.mutation.graphql';
 import {
@@ -20,7 +21,8 @@ import {
   mockAiCatalogItemConsumerDeleteResponse,
   mockAiCatalogItemConsumerDeleteErrorResponse,
   mockPageInfo,
-  mockUserPermissionsResponse,
+  mockGroupUserPermissionsResponse,
+  mockProjectUserPermissionsResponse,
 } from 'ee_jest/ai/catalog/mock_data';
 
 jest.mock('~/sentry/sentry_browser_wrapper');
@@ -38,28 +40,40 @@ describe('AiFlowsIndex', () => {
     show: jest.fn(),
   };
   const mockProjectId = 1;
+  const mockProjectPath = 'test-group/test-project';
   const mockConfiguredFlowsQueryHandler = jest.fn().mockResolvedValue(mockConfiguredFlowsResponse);
-  const mockUserPermissionsQueryHandler = jest.fn().mockResolvedValue(mockUserPermissionsResponse);
+  const mockGroupUserPermissionsQueryHandler = jest
+    .fn()
+    .mockResolvedValue(mockGroupUserPermissionsResponse);
+  const mockProjectUserPermissionsQueryHandler = jest
+    .fn()
+    .mockResolvedValue(mockProjectUserPermissionsResponse);
   const deleteItemConsumerMutationHandler = jest
     .fn()
     .mockResolvedValue(mockAiCatalogItemConsumerDeleteResponse);
 
+  const defaultProvide = {
+    projectId: mockProjectId,
+    projectPath: mockProjectPath,
+    exploreAiCatalogPath: '/explore/ai-catalog',
+    glFeatures: {
+      aiCatalogFlows: true,
+      aiCatalogThirdPartyFlows: true,
+    },
+  };
+
   const createComponent = ({ provide = {}, $route = { query: {} } } = {}) => {
     mockApollo = createMockApollo([
       [aiCatalogConfiguredItemsQuery, mockConfiguredFlowsQueryHandler],
-      [aiCatalogProjectUserPermissionsQuery, mockUserPermissionsQueryHandler],
+      [aiCatalogProjectUserPermissionsQuery, mockProjectUserPermissionsQueryHandler],
+      [aiCatalogGroupUserPermissionsQuery, mockGroupUserPermissionsQueryHandler],
       [deleteAiCatalogItemConsumer, deleteItemConsumerMutationHandler],
     ]);
 
     wrapper = shallowMountExtended(AiFlowsIndex, {
       apolloProvider: mockApollo,
       provide: {
-        projectId: mockProjectId,
-        exploreAiCatalogPath: '/explore/ai-catalog',
-        glFeatures: {
-          aiCatalogFlows: true,
-          aiCatalogThirdPartyFlows: true,
-        },
+        ...defaultProvide,
         ...provide,
       },
       mocks: {
@@ -74,11 +88,11 @@ describe('AiFlowsIndex', () => {
   const findAiCatalogList = () => wrapper.findComponent(AiCatalogList);
   const findEmptyState = () => wrapper.findComponent(ResourceListsEmptyState);
 
-  beforeEach(() => {
-    createComponent();
-  });
-
   describe('component rendering', () => {
+    beforeEach(() => {
+      createComponent();
+    });
+
     it('renders AiCatalogListHeader component', () => {
       expect(wrapper.findComponent(AiCatalogListHeader).exists()).toBe(true);
     });
@@ -134,17 +148,68 @@ describe('AiFlowsIndex', () => {
   });
 
   describe('Apollo queries', () => {
-    it('fetches list data with itemTypes', () => {
-      createComponent();
+    describe('when in project namespace', () => {
+      beforeEach(() => {
+        createComponent();
+      });
 
-      expect(mockConfiguredFlowsQueryHandler).toHaveBeenCalledWith({
-        itemTypes: ['FLOW', 'THIRD_PARTY_FLOW'],
-        projectId: `gid://gitlab/Project/${mockProjectId}`,
-        includeInherited: false,
-        after: null,
-        before: null,
-        first: 20,
-        last: null,
+      it('fetches list data with projectId', () => {
+        expect(mockConfiguredFlowsQueryHandler).toHaveBeenCalledWith({
+          itemTypes: ['FLOW', 'THIRD_PARTY_FLOW'],
+          projectId: `gid://gitlab/Project/${mockProjectId}`,
+          includeInherited: false,
+          after: null,
+          before: null,
+          first: 20,
+          last: null,
+        });
+      });
+
+      it('fetches project user permissions', () => {
+        expect(mockProjectUserPermissionsQueryHandler).toHaveBeenCalledWith({
+          fullPath: mockProjectPath,
+        });
+      });
+
+      it('skips group user permissions query', () => {
+        expect(mockGroupUserPermissionsQueryHandler).not.toHaveBeenCalled();
+      });
+    });
+
+    describe('when in group namespace', () => {
+      const mockGroupId = 2;
+      const mockGroupPath = 'test-group';
+
+      beforeEach(() => {
+        createComponent({
+          provide: {
+            groupId: mockGroupId,
+            groupPath: mockGroupPath,
+            projectId: null,
+            projectPath: null,
+          },
+        });
+      });
+
+      it('fetches list data with groupId', () => {
+        expect(mockConfiguredFlowsQueryHandler).toHaveBeenCalledWith({
+          itemTypes: ['FLOW', 'THIRD_PARTY_FLOW'],
+          groupId: `gid://gitlab/Group/${mockGroupId}`,
+          after: null,
+          before: null,
+          first: 20,
+          last: null,
+        });
+      });
+
+      it('fetches group user permissions', () => {
+        expect(mockGroupUserPermissionsQueryHandler).toHaveBeenCalledWith({
+          fullPath: mockGroupPath,
+        });
+      });
+
+      it('skips project user permissions query', () => {
+        expect(mockProjectUserPermissionsQueryHandler).not.toHaveBeenCalled();
       });
     });
 
@@ -154,6 +219,10 @@ describe('AiFlowsIndex', () => {
         itemConsumer: mockBaseItemConsumer,
       };
       const deleteFlow = () => findAiCatalogList().props('deleteFn')(item);
+
+      beforeEach(() => {
+        createComponent();
+      });
 
       it('calls delete mutation', () => {
         deleteFlow();
