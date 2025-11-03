@@ -561,7 +561,7 @@ RSpec.describe API::CodeSuggestions, feature_category: :code_suggestions do
 
           it 'responds with an unauthorized request with a special error message' do
             msg = "I'm sorry, you have not selected a default GitLab Duo namespace. " \
-              "Please select a default GitLab namespace for Duo in User Preferences - Behaviour in GitLab."
+              "Please go to GitLab and in user Preferences - Behavior, select a default namespace for GitLab Duo."
             post_api
 
             expect(response).to have_gitlab_http_status(:unprocessable_entity)

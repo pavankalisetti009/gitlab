@@ -730,7 +730,7 @@ RSpec.describe Gitlab::Duo::Chat::ReactExecutor, feature_category: :duo_chat do
               expect_sli_error(true)
               expect(answer.is_final?).to be_truthy
               expect(answer.content).to eq("I'm sorry, you have not selected a default GitLab Duo namespace. " \
-                "Please select a default GitLab namespace for Duo in Preferences &gt Behaviour in GitLab.")
+                "Please go to GitLab and in user Preferences - Behavior, select a default namespace for GitLab Duo.")
               expect(answer.error_code).to eq("G3002")
             end
           end

@@ -159,7 +159,7 @@ module Gitlab
               error: error,
               context: context,
               content: _("I'm sorry, you have not selected a default GitLab Duo namespace. " \
-                "Please select a default GitLab namespace for Duo in Preferences &gt Behaviour in GitLab."),
+                "Please go to GitLab and in user Preferences - Behavior, select a default namespace for GitLab Duo."),
               source: "chat_v2",
               error_code: "G3002"
             )
