@@ -9,6 +9,7 @@ RSpec.describe Ai::Catalog::ItemConsumer, feature_category: :workflow_catalog do
     it { is_expected.to belong_to(:organization).optional }
     it { is_expected.to belong_to(:group).optional }
     it { is_expected.to belong_to(:project).optional }
+    it { is_expected.to belong_to(:service_account).optional }
   end
 
   describe 'validations' do
@@ -36,9 +37,30 @@ RSpec.describe Ai::Catalog::ItemConsumer, feature_category: :workflow_catalog do
       expect(item_consumer).to validate_uniqueness_of(:item).scoped_to(:project_id).with_message('already configured')
     end
 
+    context 'when item is an agent' do
+      subject(:item) { build(:ai_catalog_item_consumer, :for_agent) }
+
+      it { is_expected.to validate_absence_of(:service_account) }
+      it { is_expected.to validate_absence_of(:parent_item_consumer) }
+    end
+
+    context 'when item is a flow' do
+      subject(:item) { build(:ai_catalog_item_consumer, :for_flow) }
+
+      it { is_expected.not_to validate_absence_of(:service_account) }
+      it { is_expected.not_to validate_absence_of(:parent_item_consumer) }
+    end
+
+    context 'when item is a third party flow' do
+      subject(:item) { build(:ai_catalog_item_consumer, :for_third_party_flow) }
+
+      it { is_expected.not_to validate_absence_of(:service_account) }
+      it { is_expected.not_to validate_absence_of(:parent_item_consumer) }
+    end
+
     describe '#validate_item_privacy_allowed' do
-      let_it_be(:root_group) { create(:group) }
-      let_it_be(:group) { create(:group, parent: root_group) }
+      let_it_be(:top_level_group) { create(:group) }
+      let_it_be(:group) { create(:group, parent: top_level_group) }
       let_it_be(:project) { create(:project, group: group) }
 
       context 'when item consumer belongs to project' do
@@ -75,7 +97,7 @@ RSpec.describe Ai::Catalog::ItemConsumer, feature_category: :workflow_catalog do
       end
 
       context 'when item consumer belongs to group' do
-        subject(:item_consumer) { build(:ai_catalog_item_consumer, group: root_group, item: item) }
+        subject(:item_consumer) { build(:ai_catalog_item_consumer, group: top_level_group, item: item) }
 
         context 'when item is public' do
           let(:item) { create(:ai_catalog_flow, public: true, project: project) }
@@ -166,6 +188,169 @@ RSpec.describe Ai::Catalog::ItemConsumer, feature_category: :workflow_catalog do
             expect(setting.errors.full_messages)
               .to include('The item consumer must belong to only one organization, group, or project')
           end
+        end
+      end
+    end
+
+    describe '#validate_service_account' do
+      let_it_be(:top_level_group) { create(:group) }
+      let_it_be(:parent_group) { create(:group, parent: top_level_group) }
+      let_it_be(:service_account) { create(:user, :service_account) }
+      let_it_be(:project) { create(:project, namespace: parent_group, developers: service_account) }
+      let_it_be(:item) { create(:ai_catalog_flow, project: project, public: true) }
+      let_it_be(:user_detail) { create(:user_detail, user: service_account, provisioned_by_group: top_level_group) }
+
+      let_it_be(:other_group) { create(:group) }
+      let_it_be(:other_group_service_account) { create(:user, :service_account) }
+      let_it_be(:other_group_service_account_user_detail) do
+        create(:user_detail, user: other_group_service_account, provisioned_by_group: other_group)
+      end
+
+      subject(:item_consumer) do
+        build(:ai_catalog_item_consumer, group: top_level_group, item: item, service_account: service_account)
+      end
+
+      it { is_expected.to be_valid }
+
+      context "when item consumer belongs to a group which isn't a top level group" do
+        let_it_be(:group) { create(:group, parent: top_level_group, developers: service_account) }
+
+        subject(:item_consumer) do
+          build(:ai_catalog_item_consumer, group:, item:, service_account:)
+        end
+
+        it 'is invalid' do
+          is_expected.not_to be_valid
+          expect(item_consumer.errors[:service_account])
+            .to include("can be set only for top-level group consumers")
+        end
+      end
+
+      context 'when service account is not provided' do
+        subject(:item_consumer) { build(:ai_catalog_item_consumer, project: project, item: item, service_account: nil) }
+
+        it { is_expected.to be_valid }
+      end
+
+      context 'when account is not a service account' do
+        let_it_be(:regular_user) { create(:user) }
+
+        subject(:item_consumer) do
+          build(:ai_catalog_item_consumer, group: top_level_group, item: item, service_account: regular_user)
+        end
+
+        it 'is invalid' do
+          is_expected.not_to be_valid
+          expect(item_consumer.errors[:service_account]).to include('must be a service account')
+        end
+      end
+
+      context 'when service account belongs to a different top-level group' do
+        subject(:item_consumer) do
+          build(
+            :ai_catalog_item_consumer,
+            group: top_level_group,
+            item: item,
+            service_account: other_group_service_account
+          )
+        end
+
+        it 'is invalid' do
+          is_expected.not_to be_valid
+          expect(item_consumer.errors[:service_account])
+            .to include('must be provisioned by the group')
+        end
+      end
+    end
+
+    describe '#validate_parent_item_consumer' do
+      let_it_be(:top_level_group) { create(:group) }
+      let_it_be(:parent_group) { create(:group, parent: top_level_group) }
+      let_it_be(:project) { create(:project, group: parent_group) }
+      let_it_be(:item) { create(:ai_catalog_item, :flow, public: true) }
+      let_it_be(:parent_item_consumer) do
+        create(:ai_catalog_item_consumer, group: top_level_group, item: item)
+      end
+
+      let_it_be(:item_consumer_for_other_project) do
+        create(:ai_catalog_item_consumer, project: create(:project), item: item)
+      end
+
+      let_it_be(:other_top_level_group) { create(:group) }
+      let_it_be(:other_top_level_group_item_consumer) do
+        create(:ai_catalog_item_consumer, group: other_top_level_group, item: item)
+      end
+
+      let_it_be(:parent_group_item_consumer) do
+        create(:ai_catalog_item_consumer, group: parent_group, item: item)
+      end
+
+      let_it_be(:service_account) { create(:service_account) }
+
+      subject(:item_consumer) { build(:ai_catalog_item_consumer, project:, item:, parent_item_consumer:) }
+
+      it { is_expected.to be_valid }
+
+      context 'when parent item consumer belongs to a different top-level group' do
+        subject(:item_consumer) do
+          build(
+            :ai_catalog_item_consumer,
+            project: project,
+            item: item,
+            parent_item_consumer: other_top_level_group_item_consumer
+          )
+        end
+
+        it 'is invalid' do
+          is_expected.not_to be_valid
+          expect(item_consumer.errors[:parent_item_consumer])
+            .to include("must belong to this project's top-level group")
+        end
+      end
+
+      context 'when parent item consumer belongs to a group which is not a top-level group' do
+        subject(:item_consumer) do
+          build(
+            :ai_catalog_item_consumer,
+            project: project,
+            item: item,
+            parent_item_consumer: parent_group_item_consumer
+          )
+        end
+
+        it 'is invalid' do
+          is_expected.not_to be_valid
+          expect(item_consumer.errors[:parent_item_consumer])
+            .to include("must belong to this project's top-level group")
+        end
+      end
+
+      context 'when parent item consumer does not belong to a group' do
+        subject(:item_consumer) do
+          build(
+            :ai_catalog_item_consumer,
+            project: project,
+            item: item,
+            parent_item_consumer: item_consumer_for_other_project
+          )
+        end
+
+        it 'is invalid' do
+          is_expected.not_to be_valid
+          expect(item_consumer.errors[:parent_item_consumer])
+            .to include("must belong to this project's top-level group")
+        end
+      end
+
+      context 'when item consumer belongs to a group' do
+        subject(:item_consumer) do
+          build(:ai_catalog_item_consumer, group: parent_group, item: item, parent_item_consumer: parent_item_consumer)
+        end
+
+        it 'is invalid' do
+          is_expected.not_to be_valid
+          expect(item_consumer.errors[:parent_item_consumer])
+            .to include('can be set only for project consumers')
         end
       end
     end

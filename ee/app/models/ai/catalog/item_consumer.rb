@@ -12,6 +12,8 @@ module Ai
       validate :validate_exactly_one_sharding_key_present
       validate :validate_organization_match
       validate :validate_item_privacy_allowed, if: :item_changed?
+      validate :validate_service_account, if: :service_account_id?
+      validate :validate_parent_item_consumer, if: :parent_item_consumer_id?
 
       validates :item, uniqueness: { scope: :organization_id, message: 'already configured' },
         if: -> { organization.present? }
@@ -26,6 +28,11 @@ module Ai
       belongs_to :organization, class_name: 'Organizations::Organization'
       belongs_to :group
       belongs_to :project
+      belongs_to :parent_item_consumer, class_name: 'Ai::Catalog::ItemConsumer'
+      belongs_to :service_account, class_name: 'User'
+
+      validates :service_account, absence: true, unless: -> { item&.flow? || item&.third_party_flow? }
+      validates :parent_item_consumer, absence: true, unless: -> { item&.flow? || item&.third_party_flow? }
 
       scope :not_for_projects, ->(project) { where.not(project: project) }
       scope :for_item, ->(item_id) { where(ai_catalog_item_id: item_id) }
@@ -54,6 +61,30 @@ module Ai
         return if project && item.project == project
 
         errors.add(:item, s_('AICatalog|is private to another project'))
+      end
+
+      def validate_service_account
+        if group.nil? || !group.root?
+          errors.add(:service_account, s_('AICatalog|can be set only for top-level group consumers'))
+          return
+        end
+
+        errors.add(:service_account, s_('AICatalog|must be a service account')) unless service_account.service_account?
+
+        return unless service_account.provisioned_by_group_id != group_id
+
+        errors.add(:service_account, s_('AICatalog|must be provisioned by the group'))
+      end
+
+      def validate_parent_item_consumer
+        if project.nil?
+          errors.add(:parent_item_consumer, s_('AICatalog|can be set only for project consumers'))
+          return
+        end
+
+        return if parent_item_consumer.group == project.root_ancestor
+
+        errors.add(:parent_item_consumer, s_("AICatalog|must belong to this project's top-level group"))
       end
     end
   end

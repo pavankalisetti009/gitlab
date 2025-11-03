@@ -13,5 +13,9 @@ FactoryBot.define do
     trait :for_flow do
       item { association :ai_catalog_flow }
     end
+
+    trait :for_third_party_flow do
+      item { association :ai_catalog_third_party_flow }
+    end
   end
 end
