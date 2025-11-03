@@ -4046,16 +4046,6 @@
   :idempotent: false
   :tags: []
   :queue_namespace:
-- :name: security_scan_result_policies_create_warn_mode_approval_audit_events
-  :worker_name: Security::ScanResultPolicies::CreateWarnModeApprovalAuditEventsWorker
-  :feature_category: :security_policy_management
-  :has_external_dependencies: false
-  :urgency: :low
-  :resource_boundary: :unknown
-  :weight: 1
-  :idempotent: true
-  :tags: []
-  :queue_namespace:
 - :name: security_scan_result_policies_create_warn_mode_audit_events
   :worker_name: Security::ScanResultPolicies::CreateWarnModeAuditEventsWorker
   :feature_category: :security_policy_management
