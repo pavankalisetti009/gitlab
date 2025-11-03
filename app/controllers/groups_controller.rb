@@ -26,7 +26,7 @@ class GroupsController < Groups::ApplicationController
   before_action :authorize_remove_group!, only: [:destroy, :restore]
   before_action :authorize_create_group!, only: [:new]
 
-  before_action :group_projects, only: [:activity, :issues, :merge_requests]
+  before_action :group_projects, only: [:activity, :merge_requests]
   before_action :event_filter, only: [:activity]
 
   before_action :user_actions, only: [:show]
@@ -282,12 +282,6 @@ class GroupsController < Groups::ApplicationController
     return if redirect_if_epic_params
 
     return super unless html_request?
-
-    @has_issues = IssuesFinder.new(current_user, group_id: group.id, include_subgroups: true).execute
-                              .non_archived
-                              .exists?
-
-    @has_projects = group_projects.exists?
 
     set_sort_order
 
