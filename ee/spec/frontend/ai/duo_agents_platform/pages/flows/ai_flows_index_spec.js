@@ -105,9 +105,28 @@ describe('AiFlowsIndex', () => {
         await waitForPromises();
       });
 
-      it('renders empty state with correct props', () => {
+      it('renders empty state with correct props for project', () => {
         expect(findEmptyState().props()).toMatchObject({
           title: 'Use flows in your project.',
+          description: 'Flows use multiple agents to complete tasks automatically.',
+        });
+      });
+
+      it('renders empty state with correct props for group', async () => {
+        const mockGroupId = 2;
+        mockConfiguredFlowsQueryHandler.mockResolvedValueOnce(mockConfiguredItemsEmptyResponse);
+
+        createComponent({
+          provide: {
+            projectId: null,
+            groupId: mockGroupId,
+          },
+        });
+
+        await waitForPromises();
+
+        expect(findEmptyState().props()).toMatchObject({
+          title: 'Use flows in your group.',
           description: 'Flows use multiple agents to complete tasks automatically.',
         });
       });
@@ -151,9 +170,7 @@ describe('AiFlowsIndex', () => {
           await waitForPromises();
 
           expect(mockConfiguredFlowsQueryHandler).toHaveBeenCalledTimes(2);
-          expect(mockToast.show).toHaveBeenCalledWith(
-            'Flow removed successfully from this project.',
-          );
+          expect(mockToast.show).toHaveBeenCalledWith('Flow removed from this project.');
         });
       });
 

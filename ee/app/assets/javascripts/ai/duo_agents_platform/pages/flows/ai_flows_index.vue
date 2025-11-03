@@ -13,7 +13,13 @@ import AiCatalogListHeader from 'ee/ai/catalog/components/ai_catalog_list_header
 import aiCatalogConfiguredItemsQuery from 'ee/ai/catalog/graphql/queries/ai_catalog_configured_items.query.graphql';
 import aiCatalogProjectUserPermissionsQuery from 'ee/ai/catalog/graphql/queries/ai_catalog_project_user_permissions.query.graphql';
 import deleteAiCatalogItemConsumer from 'ee/ai/catalog/graphql/mutations/delete_ai_catalog_item_consumer.mutation.graphql';
-import { FLOW_VISIBILITY_LEVEL_DESCRIPTIONS, PAGE_SIZE } from 'ee/ai/catalog/constants';
+import {
+  AI_CATALOG_CONSUMER_TYPE_GROUP,
+  AI_CATALOG_CONSUMER_TYPE_PROJECT,
+  AI_CATALOG_CONSUMER_LABELS,
+  FLOW_VISIBILITY_LEVEL_DESCRIPTIONS,
+  PAGE_SIZE,
+} from 'ee/ai/catalog/constants';
 import { createAvailableFlowItemTypes } from 'ee/ai/catalog/utils';
 import { TYPENAME_GROUP, TYPENAME_PROJECT } from '~/graphql_shared/constants';
 import {
@@ -108,6 +114,11 @@ export default {
     isProjectNamespace() {
       return Boolean(this.projectId);
     },
+    namespaceTypeLabel() {
+      return this.isProjectNamespace
+        ? AI_CATALOG_CONSUMER_LABELS[AI_CATALOG_CONSUMER_TYPE_PROJECT]
+        : AI_CATALOG_CONSUMER_LABELS[AI_CATALOG_CONSUMER_TYPE_GROUP];
+    },
     namespaceVariables() {
       if (this.isProjectNamespace) {
         return {
@@ -153,6 +164,16 @@ export default {
         },
       };
     },
+    deleteConfirmTitle() {
+      return sprintf(s__('AICatalog|Remove flow from this %{namespaceType}'), {
+        namespaceType: this.namespaceTypeLabel,
+      });
+    },
+    emptyStateTitle() {
+      return sprintf(s__('AICatalog|Use flows in your %{namespaceType}.'), {
+        namespaceType: this.namespaceTypeLabel,
+      });
+    },
   },
   methods: {
     async deleteFlow(item) {
@@ -176,7 +197,11 @@ export default {
           return;
         }
 
-        this.$toast.show(s__('AICatalog|Flow removed successfully from this project.'));
+        this.$toast.show(
+          sprintf(s__('AICatalog|Flow removed from this %{namespaceType}.'), {
+            namespaceType: this.namespaceTypeLabel,
+          }),
+        );
       } catch (error) {
         this.errors = [sprintf(s__('AICatalog|Failed to remove flow. %{error}'), { error })];
         Sentry.captureException(error);
@@ -223,7 +248,7 @@ export default {
       :is-loading="isLoading"
       :items="items"
       :item-type-config="itemTypeConfig"
-      :delete-confirm-title="s__('AICatalog|Remove flow from this project')"
+      :delete-confirm-title="deleteConfirmTitle"
       :delete-confirm-message="s__('AICatalog|Are you sure you want to remove flow %{name}?')"
       :delete-fn="deleteFlow"
       :page-info="pageInfo"
@@ -232,7 +257,7 @@ export default {
     >
       <template #empty-state>
         <resource-lists-empty-state
-          :title="s__('AICatalog|Use flows in your project.')"
+          :title="emptyStateTitle"
           :description="s__('AICatalog|Flows use multiple agents to complete tasks automatically.')"
           :svg-path="$options.EMPTY_SVG_URL"
         >
