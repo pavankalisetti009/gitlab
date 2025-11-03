@@ -15,14 +15,15 @@ module Vulnerabilities
         raise Gitlab::Access::AccessDeniedError
       end
 
-      with_vulnerability_finding do |vulnerability_finding|
-        ServiceResponse.success(payload: { vulnerability: find_or_create_vulnerability(vulnerability_finding) })
+      with_findings do |vulnerability_finding, security_finding|
+        vulnerability = find_or_create_vulnerability(vulnerability_finding, security_finding)
+        ServiceResponse.success(payload: { vulnerability: })
       end
     end
 
     private
 
-    def find_or_create_vulnerability(vulnerability_finding)
+    def find_or_create_vulnerability(vulnerability_finding, security_finding)
       if vulnerability_finding.vulnerability_id.nil?
         Vulnerabilities::CreateService.new(
           @project,
@@ -31,6 +32,7 @@ module Vulnerabilities
           state: @state,
           present_on_default_branch: @present_on_default_branch,
           comment: params[:comment],
+          solution: security_finding.solution,
           dismissal_reason: params[:dismissal_reason],
           skip_permission_check: @skip_permission_check
         ).execute
@@ -97,7 +99,7 @@ module Vulnerabilities
       end
     end
 
-    def with_vulnerability_finding
+    def with_findings
       response = ::Vulnerabilities::Findings::FindOrCreateFromSecurityFindingService.new(
         project: project,
         current_user: current_user,
@@ -106,7 +108,7 @@ module Vulnerabilities
 
       return response if response && response.error?
 
-      yield response.payload[:vulnerability_finding]
+      yield(*response.payload.values_at(:vulnerability_finding, :security_finding))
     end
   end
 end

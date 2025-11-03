@@ -6,8 +6,14 @@ RSpec.describe Security::Ingestion::Tasks::IngestVulnerabilities::Update, featur
   describe '#execute' do
     let(:pipeline) { create(:ci_pipeline) }
     let(:cvss) { [{ 'vector' => 'new_vector', 'vendor' => 'GitLab' }] }
-    let(:report_finding_1) { create(:ci_reports_security_finding, name: 'changed', severity: :critical, cvss: cvss) }
-    let(:report_finding_2) { create(:ci_reports_security_finding, name: 'changed', severity: :critical, cvss: cvss) }
+    let(:report_finding_1) do
+      create(:ci_reports_security_finding, name: 'changed', solution: 'solution', severity: :critical, cvss: cvss)
+    end
+
+    let(:report_finding_2) do
+      create(:ci_reports_security_finding, name: 'changed', solution: 'solution', severity: :critical, cvss: cvss)
+    end
+
     let(:finding_map_1) { create(:finding_map, report_finding: report_finding_1) }
     let(:finding_map_2) { create(:finding_map, report_finding: report_finding_2) }
     let(:service_object) { described_class.new(pipeline, [finding_map_1, finding_map_2]) }
@@ -53,6 +59,7 @@ RSpec.describe Security::Ingestion::Tasks::IngestVulnerabilities::Update, featur
         vulnerability_2.reload
       end.to change { vulnerability_1.title }.to('changed')
          .and change { vulnerability_1.severity }.to('critical')
+         .and change { vulnerability_1[:solution] }.to('solution')
          .and change { vulnerability_1.resolved_on_default_branch }.to(false)
          .and change { vulnerability_1.cvss }.to(cvss)
          .and change { vulnerability_1.updated_at }.to(Time.zone.now)

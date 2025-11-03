@@ -28,6 +28,7 @@ module Security
             {
               id: vulnerability_id,
               title: report_finding.name.truncate(::Issuable::TITLE_LENGTH_MAX),
+              solution: report_finding.solution,
               severity: report_finding.severity,
               resolved_on_default_branch: false,
               updated_at: Time.zone.now,

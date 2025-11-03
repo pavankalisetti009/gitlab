@@ -14,9 +14,10 @@ RSpec.describe Vulnerabilities::CreateService, feature_category: :vulnerability_
   let(:finding_id) { finding.id }
   let(:expected_error_messages) { { base: ['finding is not found or is already attached to a vulnerability'] } }
   let(:finding_name) { 'New title' }
+  let(:solution) { 'solution' }
   let(:vulnerability) { project.vulnerabilities.last }
 
-  subject { described_class.new(project, user, finding_id: finding_id).execute }
+  subject { described_class.new(project, user, finding_id: finding_id, solution: solution).execute }
 
   shared_examples 'creates a vulnerability state transition record with note' do
     let(:comment) { "Dismissal comment" }
@@ -62,7 +63,9 @@ RSpec.describe Vulnerabilities::CreateService, feature_category: :vulnerability_
 
     it 'creates a vulnerability from finding and attaches it to the vulnerability' do
       expect { subject }.to change { project.vulnerabilities.count }.by(1)
-      expect(project.vulnerabilities.last).to(
+      vulnerability = project.vulnerabilities.last
+
+      expect(vulnerability).to(
         have_attributes(
           author: user,
           title: finding.name,
@@ -73,6 +76,9 @@ RSpec.describe Vulnerabilities::CreateService, feature_category: :vulnerability_
           present_on_default_branch: true,
           finding_id: finding.id
         ))
+
+      # Use attribute accessor to avoid receiving `finding.solution` delegation
+      expect(vulnerability[:solution]).to eq(solution)
     end
 
     it 'creates vulnerability read record when present_on_default_branch is true' do
