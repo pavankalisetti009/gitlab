@@ -12,11 +12,21 @@ module Resolvers
 
         argument :root_namespace_id,
           ::Types::GlobalIDType[::Group],
-          required: true,
+          required: false,
           description: 'Global ID of the namespace the user is acting on.'
 
-        def resolve(root_namespace_id:)
-          namespace = authorized_find!(id: root_namespace_id)
+        argument :project_id,
+          ::Types::GlobalIDType[::Project],
+          required: false,
+          description: 'Global ID of the project the user is acting on.'
+
+        def resolve(root_namespace_id: nil, project_id: nil)
+          if project_id
+            project = authorized_find!(id: project_id)
+            namespace = project.root_namespace
+          else
+            namespace = authorized_find!(id: root_namespace_id)
+          end
 
           result = ::Ai::ModelSelection::FetchModelDefinitionsService
                      .new(current_user, model_selection_scope: namespace)
