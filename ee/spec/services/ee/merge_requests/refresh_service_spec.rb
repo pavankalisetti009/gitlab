@@ -993,13 +993,16 @@ RSpec.describe MergeRequests::RefreshService, feature_category: :code_review_wor
     it 'calls log_hash_metadata_on_done with duration metrics' do
       expect(service).to receive(:log_hash_metadata_on_done).with(
         hash_including(
-          find_new_commits_duration_s: be >= 0,
-          close_upon_missing_source_branch_ref_duration_s: be >= 0,
-          post_merge_manually_merged_duration_s: be >= 0,
-          link_forks_lfs_objects_duration_s: be >= 0,
-          reload_merge_requests_duration_s: be >= 0,
-          remove_requested_changes_duration_s: be >= 0,
-          other_method_calls_duration_s: be >= 0
+          other_method_calls_duration_s: be >= 0,
+          outdate_suggestions_duration_s: be >= 0,
+          abort_auto_merges_duration_s: be >= 0,
+          mark_pending_todos_done_duration_s: be >= 0,
+          abort_ff_merge_requests_with_auto_merges_duration_s: be >= 0,
+          cache_merge_requests_closing_issues_duration_s: be >= 0,
+          notify_about_push_duration_s: be >= 0,
+          mark_mr_as_draft_from_commits_duration_s: be >= 0,
+          track_mr_including_ci_config_duration_s: be >= 0,
+          remove_requested_changes_duration_s: be >= 0
         )
       ).and_call_original
 
@@ -1033,13 +1036,16 @@ RSpec.describe MergeRequests::RefreshService, feature_category: :code_review_wor
       it 'logs directly to Gitlab::AppJsonLogger' do
         expect(Gitlab::AppJsonLogger).to receive(:info).with(
           hash_including(
-            find_new_commits_duration_s: be >= 0,
-            close_upon_missing_source_branch_ref_duration_s: be >= 0,
-            post_merge_manually_merged_duration_s: be >= 0,
-            link_forks_lfs_objects_duration_s: be >= 0,
-            reload_merge_requests_duration_s: be >= 0,
-            remove_requested_changes_duration_s: be >= 0,
-            other_method_calls_duration_s: be >= 0
+            other_method_calls_duration_s: be >= 0,
+            outdate_suggestions_duration_s: be >= 0,
+            abort_auto_merges_duration_s: be >= 0,
+            mark_pending_todos_done_duration_s: be >= 0,
+            abort_ff_merge_requests_with_auto_merges_duration_s: be >= 0,
+            cache_merge_requests_closing_issues_duration_s: be >= 0,
+            notify_about_push_duration_s: be >= 0,
+            mark_mr_as_draft_from_commits_duration_s: be >= 0,
+            track_mr_including_ci_config_duration_s: be >= 0,
+            remove_requested_changes_duration_s: be >= 0
           )
         ).and_call_original
 
