@@ -4,7 +4,8 @@ require 'spec_helper'
 
 RSpec.describe GitlabSubscriptions::SubscriptionsUsage::UserUsage, feature_category: :consumables_cost_management do
   let_it_be(:users) { create_list(:user, 3) }
-  let_it_be(:group) { create(:group, developers: users.first(2)) }
+  let_it_be(:bot) { create(:user, :bot) }
+  let_it_be(:group) { create(:group, developers: users.first(2).push(bot)) }
   let(:subscription_usage) { instance_double(GitlabSubscriptions::SubscriptionUsage) }
   let(:subscription_usage_client) { instance_double(Gitlab::SubscriptionPortal::SubscriptionUsageClient) }
   let(:client_response) do
@@ -198,8 +199,9 @@ RSpec.describe GitlabSubscriptions::SubscriptionsUsage::UserUsage, feature_categ
         )
       end
 
-      it 'includes namespace users in the users field' do
+      it 'includes namespace users without the bot in the users field' do
         expect(user_usage.users).to match_array(users.first(2))
+        expect(user_usage.users).not_to include(bot)
       end
 
       context 'when filtering by username' do
@@ -214,6 +216,10 @@ RSpec.describe GitlabSubscriptions::SubscriptionsUsage::UserUsage, feature_categ
 
         it 'returns nil when user is not a member of the group' do
           expect(user_usage.users(username: users.third.username)).to be_empty
+        end
+
+        it 'returns nil when user is a bot' do
+          expect(user_usage.users(username: bot.username)).to be_empty
         end
       end
 
@@ -245,8 +251,9 @@ RSpec.describe GitlabSubscriptions::SubscriptionsUsage::UserUsage, feature_categ
         allow(subscription_usage).to receive(:subscription_target).and_return(:instance)
       end
 
-      it 'includes all users in the users field' do
+      it 'includes all users except bots in the users field' do
         expect(user_usage.users).to match_array(users)
+        expect(user_usage.users).not_to include(bot)
       end
 
       context 'when filtering by username' do
@@ -257,6 +264,10 @@ RSpec.describe GitlabSubscriptions::SubscriptionsUsage::UserUsage, feature_categ
 
         it 'returns nil when the user does not exist' do
           expect(user_usage.users(username: 'non-existent')).to be_empty
+        end
+
+        it 'returns nil when user is a bot' do
+          expect(user_usage.users(username: bot.username)).to be_empty
         end
       end
     end
