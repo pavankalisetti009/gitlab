@@ -23,7 +23,7 @@ RSpec.describe 'Identity Verification', :js, feature_category: :instance_resilie
       telesign_api_key: 'private_key'
     )
 
-    login_as(user)
+    sign_in(user)
 
     visit identity_verification_path
   end

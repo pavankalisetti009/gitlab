@@ -8,7 +8,7 @@ RSpec.describe 'Milestones on EE', feature_category: :team_planning do
   let(:milestone) { create(:milestone, project: project, start_date: Date.today, due_date: 7.days.from_now) }
 
   before do
-    login_as(user)
+    sign_in(user)
   end
 
   def visit_milestone
