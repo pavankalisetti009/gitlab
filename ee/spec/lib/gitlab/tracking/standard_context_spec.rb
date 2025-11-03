@@ -28,6 +28,10 @@ RSpec.describe Gitlab::Tracking::StandardContext, feature_category: :service_pin
         expect(json_data[:realm]).to eq('saas')
       end
 
+      it 'sets the deployment_type to .com' do
+        expect(json_data[:deployment_type]).to eq('.com')
+      end
+
       context 'when user is nil' do
         let(:user) { nil }
 
@@ -80,6 +84,10 @@ RSpec.describe Gitlab::Tracking::StandardContext, feature_category: :service_pin
     context 'when on self-managed' do
       it 'sets the realm to self-managed' do
         expect(json_data[:realm]).to eq(::CloudConnector::GITLAB_REALM_SELF_MANAGED)
+      end
+
+      it 'sets the deployment_type to self-managed' do
+        expect(json_data[:deployment_type]).to eq(::CloudConnector::GITLAB_REALM_SELF_MANAGED)
       end
 
       it 'hashes user_id' do
