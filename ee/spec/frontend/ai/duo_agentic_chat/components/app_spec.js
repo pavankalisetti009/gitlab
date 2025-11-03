@@ -34,9 +34,6 @@ describe('DuoAgenticLayoutApp', () => {
         ...propsData,
       },
       provide: {
-        glFeatures: {
-          duoSideRail: false,
-        },
         ...provideOptions,
       },
       mocks: {
@@ -122,9 +119,9 @@ describe('DuoAgenticLayoutApp', () => {
     });
   });
 
-  describe('when duoSideRail feature flag is enabled', () => {
+  describe('SideRail', () => {
     beforeEach(async () => {
-      wrapper = await createWrapper({}, { glFeatures: { duoSideRail: true } });
+      wrapper = await createWrapper();
     });
 
     it('renders the SideRail component', () => {
@@ -147,17 +144,6 @@ describe('DuoAgenticLayoutApp', () => {
       };
 
       expect(findSideRail().props('buttons')).toEqual(expectedButtons);
-    });
-  });
-
-  describe('when duoSideRail feature flag is disabled', () => {
-    beforeEach(async () => {
-      wrapper = await createWrapper();
-    });
-
-    it('does not render the SideRail component', async () => {
-      await nextTick();
-      expect(findSideRail().exists()).toBe(false);
     });
   });
 
@@ -217,7 +203,7 @@ describe('DuoAgenticLayoutApp', () => {
 
   describe('navigation', () => {
     beforeEach(async () => {
-      wrapper = await createWrapper({}, { glFeatures: { duoSideRail: true } });
+      wrapper = await createWrapper();
     });
 
     it('navigates to correct route when onClick is called', async () => {

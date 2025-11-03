@@ -145,7 +145,7 @@ export default {
       :should-render-resizable="true"
       class="duo-chat duo-chat-layout !gl-left-auto gl-right-0"
     >
-      <template v-if="glFeatures.duoSideRail" #siderail>
+      <template #siderail>
         <side-rail :buttons="siderail" @click="onClick" />
       </template>
       <template #mainview>
