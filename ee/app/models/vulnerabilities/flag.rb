@@ -15,7 +15,7 @@ module Vulnerabilities
     belongs_to :workflow, class_name: '::Ai::DuoWorkflows::Workflow', optional: true
 
     validates :origin, length: { maximum: 255 }
-    validates :description, length: { maximum: 10000 }
+    validates :description, length: { maximum: 100000 }
     validates :flag_type, presence: true, uniqueness: { scope: [:vulnerability_occurrence_id, :origin] }
     validates :confidence_score, inclusion: { in: 0.0..1.0 }
 
