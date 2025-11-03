@@ -12,8 +12,28 @@ module API
         feature_category :code_suggestions
 
         before do
+          not_found! unless Feature.enabled?(:duo_code_review_on_agent_platform, current_user)
           authenticate!
           set_current_organization
+          verify_composite_identity!
+        end
+
+        helpers do
+          def verify_composite_identity!
+            service_account_user = Gitlab::Auth::Identity.invert_composite_identity(current_user)
+
+            # Ensure requests come through Duo Workflow Service via composite identity.
+            # Composite identity: service account (duo-developer) acts on behalf of human user.
+            # - current_user: the human user (e.g., root)
+            # - service_account_user: the service account (e.g., duo-developer)
+
+            # This check prevents direct API calls and spoofing attacks by ensuring:
+            # 1. Composite identity is active (service_account_user != current_user)
+            # 2. The caller is a service account, not a regular user
+            return if service_account_user != current_user && service_account_user&.service_account?
+
+            forbidden!('This endpoint can only be accessed by Duo Workflow Service')
+          end
         end
 
         namespace :ai do

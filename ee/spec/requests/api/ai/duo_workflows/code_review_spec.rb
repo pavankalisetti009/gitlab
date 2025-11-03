@@ -5,16 +5,36 @@ require 'spec_helper'
 RSpec.describe API::Ai::DuoWorkflows::CodeReview, :with_current_organization, feature_category: :code_suggestions do
   include HttpBasicAuthHelpers
 
+  let_it_be(:organization) { create(:organization) }
   let_it_be(:group) { create(:group) }
   let_it_be(:project) { create(:project, :repository, group: group) }
   let_it_be(:user) { create(:user, maintainer_of: project) }
+  let_it_be(:oauth_app) { create(:doorkeeper_application) }
+
+  let_it_be(:service_account) do
+    create(:user, :service_account, composite_identity_enforced: true, organization: organization)
+  end
+
+  let(:scopes) { ::Gitlab::Auth::AI_WORKFLOW_SCOPES + ['api'] + ["user:#{user.id}"] }
+
+  let(:token) do
+    create(:oauth_access_token,
+      organization: organization,
+      application: oauth_app,
+      resource_owner: service_account,
+      expires_in: 1.hour,
+      scopes: scopes
+    )
+  end
 
   before_all do
     group.add_developer(user)
+    project.add_developer(service_account)
   end
 
   describe 'POST /ai/duo_workflows/code_review/add_comments' do
     let_it_be(:merge_request) { create(:merge_request, source_project: project) }
+
     let(:path) { "/ai/duo_workflows/code_review/add_comments" }
     let(:review_output) do
       <<~REVIEW_OUTPUT.chomp
@@ -47,7 +67,7 @@ RSpec.describe API::Ai::DuoWorkflows::CodeReview, :with_current_organization, fe
       end
 
       it 'creates comments and returns success' do
-        post api(path, user), params: params
+        post api(path, user, oauth_access_token: token), params: params
 
         expect(response).to have_gitlab_http_status(:created)
         expect(json_response['message']).to eq('Comments added successfully')
@@ -60,7 +80,7 @@ RSpec.describe API::Ai::DuoWorkflows::CodeReview, :with_current_organization, fe
           review_output: review_output
         ).and_call_original
 
-        post api(path, user), params: params
+        post api(path, user, oauth_access_token: token), params: params
       end
     end
 
@@ -74,7 +94,7 @@ RSpec.describe API::Ai::DuoWorkflows::CodeReview, :with_current_organization, fe
       end
 
       it 'returns bad request with error message' do
-        post api(path, user), params: params
+        post api(path, user, oauth_access_token: token), params: params
 
         expect(response).to have_gitlab_http_status(:bad_request)
         expect(json_response['message']).to eq('400 Bad request - Validation failed')
@@ -86,7 +106,7 @@ RSpec.describe API::Ai::DuoWorkflows::CodeReview, :with_current_organization, fe
         let(:params) { { merge_request_iid: merge_request.iid, review_output: review_output } }
 
         it 'returns bad request' do
-          post api(path, user), params: params
+          post api(path, user, oauth_access_token: token), params: params
 
           expect(response).to have_gitlab_http_status(:bad_request)
           expect(json_response['error']).to include('project_id is missing')
@@ -97,7 +117,7 @@ RSpec.describe API::Ai::DuoWorkflows::CodeReview, :with_current_organization, fe
         let(:params) { { project_id: project.id, review_output: review_output } }
 
         it 'returns bad request' do
-          post api(path, user), params: params
+          post api(path, user, oauth_access_token: token), params: params
 
           expect(response).to have_gitlab_http_status(:bad_request)
           expect(json_response['error']).to include('merge_request_iid is missing')
@@ -108,7 +128,7 @@ RSpec.describe API::Ai::DuoWorkflows::CodeReview, :with_current_organization, fe
         let(:params) { { project_id: project.id, merge_request_iid: merge_request.iid } }
 
         it 'returns bad request' do
-          post api(path, user), params: params
+          post api(path, user, oauth_access_token: token), params: params
 
           expect(response).to have_gitlab_http_status(:bad_request)
           expect(json_response['error']).to include('review_output is missing')
@@ -126,7 +146,7 @@ RSpec.describe API::Ai::DuoWorkflows::CodeReview, :with_current_organization, fe
       end
 
       it 'returns not found' do
-        post api(path, user), params: params
+        post api(path, user, oauth_access_token: token), params: params
 
         expect(response).to have_gitlab_http_status(:not_found)
       end
@@ -142,7 +162,7 @@ RSpec.describe API::Ai::DuoWorkflows::CodeReview, :with_current_organization, fe
       end
 
       it 'returns not found' do
-        post api(path, user), params: params
+        post api(path, user, oauth_access_token: token), params: params
 
         expect(response).to have_gitlab_http_status(:not_found)
       end
@@ -157,13 +177,37 @@ RSpec.describe API::Ai::DuoWorkflows::CodeReview, :with_current_organization, fe
     end
 
     context 'when user does not have access to project' do
-      let(:unauthorized_user) { create(:user) }
+      let_it_be(:unauthorized_user) { create(:user) }
+      let_it_be(:unauthorized_service_account) do
+        create(:user, :service_account, composite_identity_enforced: true, organization: organization)
+      end
+
+      let(:unauthorized_token) do
+        create(:oauth_access_token,
+          organization: organization,
+          application: oauth_app,
+          resource_owner: unauthorized_service_account,
+          expires_in: 1.hour,
+          scopes: ::Gitlab::Auth::AI_WORKFLOW_SCOPES + ['api'] + ["user:#{unauthorized_user.id}"]
+        )
+      end
 
       it 'returns not found (project visibility)' do
-        post api(path, unauthorized_user), params: params
+        post api(path, unauthorized_user, oauth_access_token: unauthorized_token), params: params
 
         expect(response).to have_gitlab_http_status(:not_found)
         expect(json_response['message']).to eq('404 Project Not Found')
+      end
+    end
+
+    context 'when called without composite identity' do
+      it 'returns forbidden' do
+        post api(path, user), params: params
+
+        expect(response).to have_gitlab_http_status(:forbidden)
+        expect(json_response['message']).to eq(
+          '403 Forbidden - This endpoint can only be accessed by Duo Workflow Service'
+        )
       end
     end
 
@@ -183,7 +227,7 @@ RSpec.describe API::Ai::DuoWorkflows::CodeReview, :with_current_organization, fe
       end
 
       it 'accepts project path and returns success' do
-        post api(path, user), params: params
+        post api(path, user, oauth_access_token: token), params: params
 
         expect(response).to have_gitlab_http_status(:created)
         expect(json_response['message']).to eq('Comments added successfully')
