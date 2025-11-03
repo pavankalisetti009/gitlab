@@ -4,6 +4,7 @@ module EE
   module Gitlab
     module QuickActions
       module RelateActions
+        extend ::Gitlab::Utils::Override
         extend ActiveSupport::Concern
         include ::Gitlab::QuickActions::Dsl
 
@@ -51,6 +52,11 @@ module EE
 
         def work_item_type(work_item)
           work_item.work_item_type.name.downcase
+        end
+
+        override :extract_unlink_references
+        def extract_unlink_references(param)
+          super + extract_references(param, :epic).map(&:work_item)
         end
       end
     end
