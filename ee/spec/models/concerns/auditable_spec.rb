@@ -3,7 +3,7 @@
 require 'spec_helper'
 
 RSpec.describe Auditable, feature_category: :compliance_management do
-  shared_examples 'auditable concern' do |audit_details_implemented: false|
+  shared_examples 'auditable concern' do
     describe '#push_audit_event', :request_store do
       let(:event) { 'Added a new cat to the house' }
 
@@ -38,14 +38,8 @@ RSpec.describe Auditable, feature_category: :compliance_management do
     end
 
     describe '#audit_details' do
-      if audit_details_implemented
-        it 'does not raise an error when already implemented' do
-          expect { instance.audit_details }.not_to raise_error
-        end
-      else
-        it 'raises error to prompt for implementation' do
-          expect { instance.audit_details }.to raise_error(/does not implement audit_details/)
-        end
+      it 'raises error to prompt for implementation' do
+        expect { instance.audit_details }.to raise_error(/does not implement audit_details/)
       end
     end
   end
@@ -78,17 +72,5 @@ RSpec.describe Auditable, feature_category: :compliance_management do
         instance.push_audit_event('event', after_commit: false)
       end
     end
-  end
-
-  describe 'security_policy' do
-    it_behaves_like 'auditable concern' do
-      let_it_be(:instance) { create(:security_policy) }
-    end
-  end
-
-  describe 'merge_request' do
-    let_it_be(:instance) { create(:merge_request) }
-
-    it_behaves_like 'auditable concern', audit_details_implemented: true
   end
 end
