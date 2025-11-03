@@ -13,6 +13,7 @@ import AiCatalogListHeader from 'ee/ai/catalog/components/ai_catalog_list_header
 import aiCatalogConfiguredItemsQuery from 'ee/ai/catalog/graphql/queries/ai_catalog_configured_items.query.graphql';
 import aiCatalogGroupUserPermissionsQuery from 'ee/ai/catalog/graphql/queries/ai_catalog_group_user_permissions.query.graphql';
 import aiCatalogProjectUserPermissionsQuery from 'ee/ai/catalog/graphql/queries/ai_catalog_project_user_permissions.query.graphql';
+import createAiCatalogItemConsumer from 'ee/ai/catalog/graphql/mutations/create_ai_catalog_item_consumer.mutation.graphql';
 import deleteAiCatalogItemConsumer from 'ee/ai/catalog/graphql/mutations/delete_ai_catalog_item_consumer.mutation.graphql';
 import {
   AI_CATALOG_CONSUMER_TYPE_GROUP,
@@ -21,7 +22,7 @@ import {
   FLOW_VISIBILITY_LEVEL_DESCRIPTIONS,
   PAGE_SIZE,
 } from 'ee/ai/catalog/constants';
-import { createAvailableFlowItemTypes } from 'ee/ai/catalog/utils';
+import { createAvailableFlowItemTypes, prerequisitesError } from 'ee/ai/catalog/utils';
 import { TYPENAME_GROUP, TYPENAME_PROJECT } from '~/graphql_shared/constants';
 import {
   VISIBILITY_LEVEL_PRIVATE_STRING,
@@ -114,6 +115,7 @@ export default {
       groupUserPermissions: {},
       projectUserPermissions: {},
       errors: [],
+      errorTitle: null,
       pageInfo: {},
     };
   },
@@ -195,6 +197,54 @@ export default {
     },
   },
   methods: {
+    async addFlowToProject(flowAttributes) {
+      const { flowName, ...flowInput } = flowAttributes;
+      const input = {
+        ...flowInput,
+        target: {
+          projectId: convertToGraphQLId(TYPENAME_PROJECT, this.projectId),
+        },
+      };
+      const targetType = AI_CATALOG_CONSUMER_TYPE_PROJECT;
+      const targetTypeLabel = AI_CATALOG_CONSUMER_LABELS[targetType];
+
+      try {
+        const { data } = await this.$apollo.mutate({
+          mutation: createAiCatalogItemConsumer,
+          variables: {
+            input,
+          },
+          refetchQueries: [aiCatalogConfiguredItemsQuery],
+        });
+
+        if (data) {
+          const { errors } = data.aiCatalogItemConsumerCreate;
+          if (errors.length > 0) {
+            this.errorTitle = sprintf(s__('AICatalog|Could not enable flow: %{flowName}'), {
+              flowName,
+            });
+            this.errors = errors;
+            return;
+          }
+
+          const name = data.aiCatalogItemConsumerCreate.itemConsumer[targetType]?.name || '';
+
+          this.$toast.show(sprintf(s__('AICatalog|Flow enabled in %{name}.'), { name }));
+        }
+      } catch (error) {
+        this.errors = [
+          prerequisitesError(
+            s__(
+              'AICatalog|Could not enable flow in the %{target}. Check that the %{target} meets the %{linkStart}prerequisites%{linkEnd} and try again.',
+            ),
+            {
+              target: targetTypeLabel,
+            },
+          ),
+        ];
+        Sentry.captureException(error);
+      }
+    },
     async deleteFlow(item) {
       const { id } = item.itemConsumer;
 
@@ -244,8 +294,13 @@ export default {
         last: PAGE_SIZE,
       });
     },
+    dismissErrors() {
+      this.errors = [];
+      this.errorTitle = null;
+    },
   },
   EMPTY_SVG_URL,
+  addFlowModalId: 'add-flow-to-project-modal',
 };
 </script>
 
@@ -257,12 +312,12 @@ export default {
       new-button-variant="default"
     >
       <template v-if="isFlowsAvailable" #nav-actions>
-        <gl-button v-if="showAddFlow" v-gl-modal="'add-flow-to-project-modal'" variant="confirm">
+        <gl-button v-if="showAddFlow" v-gl-modal="$options.addFlowModalId" variant="confirm">
           {{ s__('AICatalog|Enable flow in project') }}
         </gl-button>
       </template>
     </ai-catalog-list-header>
-    <errors-alert class="gl-mt-5" :errors="errors" @dismiss="errors = []" />
+    <errors-alert class="gl-mt-5" :title="errorTitle" :errors="errors" @dismiss="dismissErrors" />
     <ai-catalog-list
       :is-loading="isLoading"
       :items="items"
@@ -288,6 +343,10 @@ export default {
         </resource-lists-empty-state>
       </template>
     </ai-catalog-list>
-    <ai-catalog-add-flow-to-project-modal v-if="showAddFlow" />
+    <ai-catalog-add-flow-to-project-modal
+      v-if="showAddFlow"
+      :modal-id="$options.addFlowModalId"
+      @submit="addFlowToProject"
+    />
   </div>
 </template>

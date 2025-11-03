@@ -5,6 +5,7 @@ import createMockApollo from 'helpers/mock_apollo_helper';
 import waitForPromises from 'helpers/wait_for_promises';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import AiFlowsIndex from 'ee/ai/duo_agents_platform/pages/flows/ai_flows_index.vue';
+import AiCatalogAddFlowToProjectModal from 'ee/ai/duo_agents_platform/components/catalog/ai_catalog_add_flow_to_project_modal.vue';
 import AiCatalogList from 'ee/ai/catalog/components/ai_catalog_list.vue';
 import AiCatalogListHeader from 'ee/ai/catalog/components/ai_catalog_list_header.vue';
 import ErrorsAlert from '~/vue_shared/components/errors_alert.vue';
@@ -12,12 +13,15 @@ import ResourceListsEmptyState from '~/vue_shared/components/resource_lists/empt
 import aiCatalogConfiguredItemsQuery from 'ee/ai/catalog/graphql/queries/ai_catalog_configured_items.query.graphql';
 import aiCatalogGroupUserPermissionsQuery from 'ee/ai/catalog/graphql/queries/ai_catalog_group_user_permissions.query.graphql';
 import aiCatalogProjectUserPermissionsQuery from 'ee/ai/catalog/graphql/queries/ai_catalog_project_user_permissions.query.graphql';
+import createAiCatalogItemConsumer from 'ee/ai/catalog/graphql/mutations/create_ai_catalog_item_consumer.mutation.graphql';
 import deleteAiCatalogItemConsumer from 'ee/ai/catalog/graphql/mutations/delete_ai_catalog_item_consumer.mutation.graphql';
 import {
   mockBaseFlow,
   mockBaseItemConsumer,
   mockConfiguredFlowsResponse,
   mockConfiguredItemsEmptyResponse,
+  mockAiCatalogItemConsumerCreateSuccessProjectResponse,
+  mockAiCatalogItemConsumerCreateErrorResponse,
   mockAiCatalogItemConsumerDeleteResponse,
   mockAiCatalogItemConsumerDeleteErrorResponse,
   mockPageInfo,
@@ -48,6 +52,7 @@ describe('AiFlowsIndex', () => {
   const mockProjectUserPermissionsQueryHandler = jest
     .fn()
     .mockResolvedValue(mockProjectUserPermissionsResponse);
+  const createAiCatalogItemConsumerHandler = jest.fn();
   const deleteItemConsumerMutationHandler = jest
     .fn()
     .mockResolvedValue(mockAiCatalogItemConsumerDeleteResponse);
@@ -67,6 +72,7 @@ describe('AiFlowsIndex', () => {
       [aiCatalogConfiguredItemsQuery, mockConfiguredFlowsQueryHandler],
       [aiCatalogProjectUserPermissionsQuery, mockProjectUserPermissionsQueryHandler],
       [aiCatalogGroupUserPermissionsQuery, mockGroupUserPermissionsQueryHandler],
+      [createAiCatalogItemConsumer, createAiCatalogItemConsumerHandler],
       [deleteAiCatalogItemConsumer, deleteItemConsumerMutationHandler],
     ]);
 
@@ -86,6 +92,7 @@ describe('AiFlowsIndex', () => {
 
   const findErrorsAlert = () => wrapper.findComponent(ErrorsAlert);
   const findAiCatalogList = () => wrapper.findComponent(AiCatalogList);
+  const findAddFlowToProjectModal = () => wrapper.findComponent(AiCatalogAddFlowToProjectModal);
   const findEmptyState = () => wrapper.findComponent(ResourceListsEmptyState);
 
   describe('component rendering', () => {
@@ -267,6 +274,83 @@ describe('AiFlowsIndex', () => {
           await waitForPromises();
           expect(findErrorsAlert().props('errors')).toStrictEqual([
             'Failed to remove flow. Error: Request failed',
+          ]);
+          expect(Sentry.captureException).toHaveBeenCalledWith(expect.any(Error));
+        });
+      });
+    });
+
+    describe('adding a flow to project', () => {
+      const flowAttributes = {
+        itemId: 'gid://gitlab/Ai::Catalog::Item/1',
+        flowName: 'Test Flow',
+        parentItemConsumerId: 'gid://gitlab/Ai::Catalog::ItemConsumer/1',
+        triggerTypes: ['mention'],
+      };
+      const addFlowToProject = () => findAddFlowToProjectModal().vm.$emit('submit', flowAttributes);
+
+      beforeEach(async () => {
+        createComponent();
+        await waitForPromises();
+      });
+
+      describe('when request succeeds', () => {
+        beforeEach(async () => {
+          createAiCatalogItemConsumerHandler.mockResolvedValue(
+            mockAiCatalogItemConsumerCreateSuccessProjectResponse,
+          );
+
+          addFlowToProject();
+          await waitForPromises();
+        });
+
+        it('shows a toast message', () => {
+          expect(mockToast.show).toHaveBeenCalledWith('Flow enabled in Test.');
+        });
+
+        it('calls the mutation with correct variables', () => {
+          expect(createAiCatalogItemConsumerHandler).toHaveBeenCalledWith({
+            input: {
+              itemId: flowAttributes.itemId,
+              parentItemConsumerId: flowAttributes.parentItemConsumerId,
+              triggerTypes: flowAttributes.triggerTypes,
+              target: {
+                projectId: `gid://gitlab/Project/${mockProjectId}`,
+              },
+            },
+          });
+        });
+
+        it('refetches the configured items query', () => {
+          expect(mockConfiguredFlowsQueryHandler).toHaveBeenCalledTimes(2);
+        });
+      });
+
+      describe('when request succeeds but returns errors', () => {
+        it('shows alert with error', async () => {
+          createAiCatalogItemConsumerHandler.mockResolvedValue(
+            mockAiCatalogItemConsumerCreateErrorResponse,
+          );
+
+          addFlowToProject();
+          await waitForPromises();
+
+          expect(findErrorsAlert().props()).toMatchObject({
+            title: 'Could not enable flow: Test Flow',
+            errors: ['Item already configured.'],
+          });
+        });
+      });
+
+      describe('when request fails', () => {
+        it('shows alert with error and captures exception', async () => {
+          createAiCatalogItemConsumerHandler.mockRejectedValue(new Error('Request failed'));
+
+          addFlowToProject();
+          await waitForPromises();
+
+          expect(findErrorsAlert().props('errors')).toEqual([
+            'Could not enable flow in the project. Check that the project meets the <a href="/help/user/duo_agent_platform/ai_catalog#view-the-ai-catalog" target="_blank">prerequisites</a> and try again.',
           ]);
           expect(Sentry.captureException).toHaveBeenCalledWith(expect.any(Error));
         });
