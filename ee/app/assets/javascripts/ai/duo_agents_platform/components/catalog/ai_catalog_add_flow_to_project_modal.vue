@@ -21,12 +21,18 @@ export default {
       default: [],
     },
   },
+  props: {
+    modalId: {
+      type: String,
+      required: true,
+    },
+  },
   data() {
     return {
       errors: [],
       isDirty: false,
       selectedFlowConsumer: {},
-      triggerTypes: this.flowTriggersEventTypeOptions.map((option) => option.value),
+      triggerTypes: this.flowTriggersEventTypeOptions.map((option) => String(option.value)),
     };
   },
   computed: {
@@ -82,16 +88,17 @@ export default {
       const triggerType = this.flowTriggersEventTypeOptions.find((option) => option.text === text);
       return triggerType?.value !== undefined ? String(triggerType.value) : '';
     },
-    handleSubmit(input) {
+    handleSubmit() {
       this.isDirty = true;
       if (!this.isFlowValid) {
         return;
       }
+      this.$refs.modal.hide();
       this.$emit('submit', {
         itemId: this.selectedFlowConsumer.item?.id,
+        flowName: this.selectedFlowConsumer.item?.name,
         parentItemConsumerId: this.selectedFlowConsumer.id,
         triggerTypes: this.triggerTypes,
-        ...input,
       });
     },
     onHidden() {
@@ -109,7 +116,8 @@ export default {
 
 <template>
   <gl-modal
-    modal-id="add-flow-to-project-modal"
+    ref="modal"
+    :modal-id="modalId"
     :title="s__('AICatalog|Enable flow in project')"
     :action-primary="modal.actionPrimary"
     :action-secondary="modal.actionSecondary"

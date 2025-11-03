@@ -3,9 +3,13 @@ import { shallowMount } from '@vue/test-utils';
 import AiCatalogAddFlowToProjectModal from 'ee/ai/duo_agents_platform/components/catalog/ai_catalog_add_flow_to_project_modal.vue';
 import AiCatalogGroupFlowDropdown from 'ee/ai/duo_agents_platform/components/catalog/ai_catalog_group_flow_dropdown.vue';
 import { mockFlowItemConsumer } from 'ee_jest/ai/catalog/mock_data';
+import { stubComponent } from 'helpers/stub_component';
 
 describe('AiCatalogAddFlowToProjectModal', () => {
   let wrapper;
+
+  const modalStub = { hide: jest.fn() };
+  const GlModalStub = stubComponent(GlModal, { methods: modalStub });
 
   const findModal = () => wrapper.findComponent(GlModal);
   const findForm = () => wrapper.findComponent(GlForm);
@@ -21,6 +25,9 @@ describe('AiCatalogAddFlowToProjectModal', () => {
           { text: 'Assign', value: 'assign' },
           { text: 'Assign reviewer', value: 'assign_reviewer' },
         ],
+      },
+      stubs: {
+        GlModal: GlModalStub,
       },
     });
   };
@@ -68,24 +75,28 @@ describe('AiCatalogAddFlowToProjectModal', () => {
   });
 
   describe('form submission', () => {
+    const mockInput = {
+      preventDefault: jest.fn(),
+    };
+
     beforeEach(() => {
       findGroupFlowDropdown().vm.$emit('input', mockFlowItemConsumer);
       findFormCheckboxGroup().vm.$emit('input', ['mention']);
+
+      findForm().vm.$emit('submit', mockInput);
+    });
+
+    it('hides the modal', () => {
+      expect(modalStub.hide).toHaveBeenCalled();
     });
 
     it('emits submit event when form is submitted', () => {
-      const mockInput = {
-        preventDefault: jest.fn(),
-      };
-
-      findForm().vm.$emit('submit', mockInput);
-
       expect(wrapper.emitted('submit')).toHaveLength(1);
       expect(wrapper.emitted('submit')[0][0]).toEqual({
         itemId: mockFlowItemConsumer.item.id,
+        flowName: mockFlowItemConsumer.item.name,
         parentItemConsumerId: mockFlowItemConsumer.id,
         triggerTypes: ['mention'],
-        ...mockInput,
       });
     });
   });
