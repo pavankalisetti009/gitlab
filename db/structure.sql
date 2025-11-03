@@ -24623,7 +24623,8 @@ CREATE TABLE protected_branch_push_access_levels (
     group_id bigint,
     deploy_key_id bigint,
     protected_branch_project_id bigint,
-    protected_branch_namespace_id bigint
+    protected_branch_namespace_id bigint,
+    CONSTRAINT check_2b64375289 CHECK ((num_nonnulls(protected_branch_namespace_id, protected_branch_project_id) = 1))
 );
 
 CREATE SEQUENCE protected_branch_push_access_levels_id_seq
@@ -33300,9 +33301,6 @@ ALTER TABLE epic_issues
 
 ALTER TABLE workspaces
     ADD CONSTRAINT check_2a89035b04 CHECK ((personal_access_token_id IS NOT NULL)) NOT VALID;
-
-ALTER TABLE protected_branch_push_access_levels
-    ADD CONSTRAINT check_2b64375289 CHECK ((num_nonnulls(protected_branch_namespace_id, protected_branch_project_id) = 1)) NOT VALID;
 
 ALTER TABLE security_scans
     ADD CONSTRAINT check_2d56d882f6 CHECK ((project_id IS NOT NULL)) NOT VALID;
