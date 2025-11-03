@@ -510,6 +510,11 @@ export const mockConfiguredAgentsResponse = {
   },
 };
 
+export const mockFlowItemConsumer = {
+  ...mockBaseItemConsumer,
+  item: mockBaseFlow,
+};
+
 export const mockConfiguredFlowsResponse = {
   data: {
     aiCatalogConfiguredItems: {

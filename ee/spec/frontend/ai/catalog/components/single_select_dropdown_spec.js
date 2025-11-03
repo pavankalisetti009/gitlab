@@ -62,7 +62,7 @@ describe('SingleSelectDropdown', () => {
         toggleClass: { 'gl-shadow-inner-1-red-500': false },
         headerText: 'Select an item',
         loading: true,
-        searchable: true,
+        searchable: false,
         block: true,
         fluidWidth: true,
         isCheckCentered: true,
@@ -82,6 +82,12 @@ describe('SingleSelectDropdown', () => {
       createComponent({ props: { disabled: true } });
 
       expect(findListbox().props('disabled')).toBe(true);
+    });
+
+    it('passes searchable prop to listbox', () => {
+      createComponent({ props: { searchable: true } });
+
+      expect(findListbox().props('searchable')).toBe(true);
     });
   });
 

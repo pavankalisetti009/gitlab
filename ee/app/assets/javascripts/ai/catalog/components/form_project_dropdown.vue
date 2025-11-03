@@ -31,16 +31,10 @@ export default {
       default: false,
     },
   },
-  computed: {
-    query() {
-      return getProjects;
-    },
-    queryVariables() {
-      return {
-        minAccessLevel: ACCESS_LEVEL_MAINTAINER_STRING,
-        sort: 'similarity',
-      };
-    },
+  query: getProjects,
+  queryVariables: {
+    minAccessLevel: ACCESS_LEVEL_MAINTAINER_STRING,
+    sort: 'similarity',
   },
   methods: {
     itemTextFn(item) {
@@ -68,10 +62,11 @@ export default {
     :value="value"
     :is-valid="isValid"
     :disabled="disabled"
-    :query="query"
-    :query-variables="queryVariables"
+    :query="$options.query"
+    :query-variables="$options.queryVariables"
     data-key="projects"
     :placeholder-text="__('Select a project')"
+    searchable
     :item-text-fn="itemTextFn"
     :item-label-fn="itemLabelFn"
     :item-sub-label-fn="itemSubLabelFn"

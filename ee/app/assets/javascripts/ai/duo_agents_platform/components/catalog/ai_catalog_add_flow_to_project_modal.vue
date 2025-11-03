@@ -1,14 +1,9 @@
 <script>
 import { uniqueId } from 'lodash';
-import {
-  GlForm,
-  GlFormCheckbox,
-  GlFormCheckboxGroup,
-  GlFormGroup,
-  GlFormInput,
-  GlModal,
-} from '@gitlab/ui';
+import { GlForm, GlFormCheckbox, GlFormCheckboxGroup, GlFormGroup, GlModal } from '@gitlab/ui';
 import { __, s__ } from '~/locale';
+import ErrorsAlert from '~/vue_shared/components/errors_alert.vue';
+import AiCatalogGroupFlowDropdown from './ai_catalog_group_flow_dropdown.vue';
 
 export default {
   name: 'AiCatalogAddFlowToProjectModal',
@@ -17,8 +12,9 @@ export default {
     GlFormCheckbox,
     GlFormCheckboxGroup,
     GlFormGroup,
-    GlFormInput,
     GlModal,
+    ErrorsAlert,
+    AiCatalogGroupFlowDropdown,
   },
   inject: {
     flowTriggersEventTypeOptions: {
@@ -27,12 +23,30 @@ export default {
   },
   data() {
     return {
+      errors: [],
+      isDirty: false,
+      selectedFlowConsumer: {},
       triggerTypes: this.flowTriggersEventTypeOptions.map((option) => option.value),
     };
   },
   computed: {
     formId() {
       return uniqueId('add-flow-to-project-form-');
+    },
+    modal() {
+      return {
+        actionPrimary: {
+          text: __('Enable'),
+          attributes: {
+            variant: 'confirm',
+            type: 'submit',
+            form: this.formId,
+          },
+        },
+        actionSecondary: {
+          text: __('Cancel'),
+        },
+      };
     },
     triggerTypeOptions() {
       return [
@@ -59,6 +73,9 @@ export default {
         },
       ];
     },
+    isFlowValid() {
+      return !this.isDirty || this.selectedFlowConsumer.id !== undefined;
+    },
   },
   methods: {
     findTriggerTypeValue(text) {
@@ -66,20 +83,25 @@ export default {
       return triggerType?.value !== undefined ? String(triggerType.value) : '';
     },
     handleSubmit(input) {
-      this.$emit('submit', input);
+      this.isDirty = true;
+      if (!this.isFlowValid) {
+        return;
+      }
+      this.$emit('submit', {
+        itemId: this.selectedFlowConsumer.item?.id,
+        parentItemConsumerId: this.selectedFlowConsumer.id,
+        triggerTypes: this.triggerTypes,
+        ...input,
+      });
     },
-  },
-
-  modal: {
-    actionPrimary: {
-      text: __('Enable'),
-      attributes: {
-        variant: 'confirm',
-        type: 'submit',
-      },
+    onHidden() {
+      this.isDirty = false;
     },
-    actionSecondary: {
-      text: __('Cancel'),
+    onFlowSelect(flowId) {
+      this.selectedFlowConsumer = flowId;
+    },
+    onFlowError(error) {
+      this.errors = [error];
     },
   },
 };
@@ -89,15 +111,27 @@ export default {
   <gl-modal
     modal-id="add-flow-to-project-modal"
     :title="s__('AICatalog|Enable flow in project')"
-    :action-primary="$options.modal.actionPrimary"
-    :action-secondary="$options.modal.actionSecondary"
+    :action-primary="modal.actionPrimary"
+    :action-secondary="modal.actionSecondary"
+    @primary.prevent
+    @hidden="onHidden"
   >
+    <errors-alert class="gl-mt-5" :errors="errors" @dismiss="errors = []" />
     <gl-form :id="formId" @submit.prevent="handleSubmit">
       <gl-form-group
         :label="s__('AICatalog|Flow')"
         :label-description="s__('AICatalog|Only flows enabled in your group will be shown here.')"
+        label-for="flow-dropdown"
+        :state="isFlowValid"
+        :invalid-feedback="s__('AICatalog|Flow is required.')"
       >
-        <gl-form-input />
+        <ai-catalog-group-flow-dropdown
+          id="flow-dropdown"
+          :value="selectedFlowConsumer.id"
+          :is-valid="isFlowValid"
+          @input="onFlowSelect"
+          @error="onFlowError"
+        />
       </gl-form-group>
       <gl-form-group
         :label="s__('AICatalog|Add flow triggers')"

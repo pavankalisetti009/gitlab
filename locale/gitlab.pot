@@ -2710,6 +2710,9 @@ msgstr ""
 msgid "AICatalog|Failed to delete flow. %{error}"
 msgstr ""
 
+msgid "AICatalog|Failed to load group flows"
+msgstr ""
+
 msgid "AICatalog|Failed to remove agent. %{error}"
 msgstr ""
 
@@ -2717,6 +2720,9 @@ msgid "AICatalog|Failed to remove flow. %{error}"
 msgstr ""
 
 msgid "AICatalog|Flow"
+msgstr ""
+
+msgid "AICatalog|Flow ID: %{id}"
 msgstr ""
 
 msgid "AICatalog|Flow configuration"
@@ -2732,6 +2738,9 @@ msgid "AICatalog|Flow does not exist"
 msgstr ""
 
 msgid "AICatalog|Flow enabled in %{name}."
+msgstr ""
+
+msgid "AICatalog|Flow is required."
 msgstr ""
 
 msgid "AICatalog|Flow node"
@@ -2843,6 +2852,9 @@ msgid "AICatalog|Save changes"
 msgstr ""
 
 msgid "AICatalog|Search and select tools for this agent."
+msgstr ""
+
+msgid "AICatalog|Select a flow"
 msgstr ""
 
 msgid "AICatalog|Select a project for your AI agent to be associated with."
