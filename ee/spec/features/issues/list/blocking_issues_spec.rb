@@ -15,6 +15,7 @@ RSpec.describe 'Blocking issues count', feature_category: :team_planning do
     # we won't need the tests for the issues listing page, since we'll be using
     # the work items listing page.
     stub_feature_flags(work_item_planning_view: false)
+    stub_feature_flags(work_item_view_for_issues: true)
 
     visit project_issues_path(project)
   end
@@ -31,12 +32,12 @@ RSpec.describe 'Blocking issues count', feature_category: :team_planning do
     page.within(".issues-list") do
       page.within("li.issue:nth-child(1)") do
         expect(page).to have_content('blocks two issues')
-        expect(find_by_testid('blocking-issues')).to have_content('2')
+        expect(page).to have_testid('relationship-blocks-icon', text: '2')
       end
 
       page.within("li.issue:nth-child(2)") do
         expect(page).to have_content('blocks one issue')
-        expect(find_by_testid('blocking-issues')).to have_content('1')
+        expect(page).to have_testid('relationship-blocks-icon', text: '1')
       end
     end
   end

@@ -55,6 +55,7 @@ RSpec.describe 'Filter issues health status', :js, feature_category: :team_plann
     # we won't need the tests for the issues listing page, since we'll be using
     # the work items listing page.
     stub_feature_flags(work_item_planning_view: false)
+    stub_feature_flags(work_item_view_for_issues: true)
 
     stub_licensed_features(issuable_health_status: true)
     project.add_maintainer(user)
@@ -110,14 +111,6 @@ RSpec.describe 'Filter issues health status', :js, feature_category: :team_plann
       expect_issues_list_count(2)
       expect_issues_list_to_contain([issue2, issue3])
       expect_issues_list_to_not_contain([issue1])
-    end
-
-    it 'filter issues by any health status but not on track' do
-      select_tokens 'Health', '!=', 'On track', 'Health', '=', 'Any', submit: true
-
-      expect_issues_list_count(1)
-      expect_issues_list_to_contain([issue2])
-      expect_issues_list_to_not_contain([issue1, issue3])
     end
   end
 

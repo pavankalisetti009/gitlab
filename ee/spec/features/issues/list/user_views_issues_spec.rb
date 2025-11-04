@@ -14,6 +14,7 @@ RSpec.describe 'User views issues page', :js, feature_category: :team_planning d
     # we won't need the tests for the issues listing page, since we'll be using
     # the work items listing page.
     stub_feature_flags(work_item_planning_view: false)
+    stub_feature_flags(work_item_view_for_issues: true)
 
     stub_licensed_features(blocked_issues: true, issuable_health_status: true, issue_weights: true)
     sign_in(user)
@@ -27,21 +28,21 @@ RSpec.describe 'User views issues page', :js, feature_category: :team_planning d
   describe 'issue card' do
     it 'shows health status, blocking issues, and weight information', :aggregate_failures do
       within '.issue:nth-of-type(1)' do
-        expect(page).to have_css '.badge-danger', text: 'At risk'
-        expect(page).not_to have_css '[data-testid="blocking-issues"]'
-        expect(page).not_to have_css '.issuable-weight'
+        expect(page).to have_testid('status-text', text: 'At risk')
+        expect(page).not_to have_testid('relationship-blocks-icon')
+        expect(page).not_to have_testid('weight-attribute')
       end
 
       within '.issue:nth-of-type(2)' do
-        expect(page).to have_css '.badge-warning', text: 'Needs attention'
-        expect(page).not_to have_css '[data-testid="blocking-issues"]'
-        expect(page).not_to have_css '.issuable-weight'
+        expect(page).to have_testid('status-text', text: 'Needs attention')
+        expect(page).not_to have_testid('relationship-blocks-icon')
+        expect(page).not_to have_testid('weight-attribute')
       end
 
       within '.issue:nth-of-type(3)' do
-        expect(page).to have_css '.badge-success', text: 'On track'
-        expect(page).to have_css '[data-testid="blocking-issues"]', text: 1
-        expect(page).to have_css '.issuable-weight', text: 2
+        expect(page).to have_testid('status-text', text: 'On track')
+        expect(page).to have_testid('relationship-blocks-icon', text: '1')
+        expect(page).to have_testid('weight-attribute', text: '2')
       end
     end
   end
