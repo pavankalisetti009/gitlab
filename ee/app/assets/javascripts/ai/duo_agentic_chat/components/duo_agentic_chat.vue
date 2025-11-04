@@ -813,6 +813,7 @@ export default {
           v-if="userModelSelectionEnabled"
           v-gl-tooltip
           :title="modelSelectionDisabledTooltipText"
+          class="gl-max-w-1/2"
           data-testid="model-dropdown-container"
         >
           <model-select-dropdown
