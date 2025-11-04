@@ -71,6 +71,21 @@ RSpec.describe Ai::Catalog::ItemConsumersFinder, feature_category: :workflow_cat
       let(:include_inherited) { true }
 
       it { is_expected.to match_array(project_consumers + parent_group_consumers) }
+
+      context 'when item_id is also provided' do
+        let(:params) { super().merge(item_id: parent_group_consumers[0].ai_catalog_item_id) }
+
+        it { is_expected.to contain_exactly(parent_group_consumers[0]) }
+      end
+
+      context 'when item_types is also provided' do
+        let(:flow) { create(:ai_catalog_flow) }
+        let(:flow_consumer) { create(:ai_catalog_item_consumer, project: project, item: flow) }
+        let(:parent_flow_consumer) { create(:ai_catalog_item_consumer, group: parent_group, item: flow) }
+        let(:params) { super().merge(item_types: [:flow]) }
+
+        it { is_expected.to contain_exactly(flow_consumer, parent_flow_consumer) }
+      end
     end
 
     context 'when project does not exist' do
@@ -95,6 +110,21 @@ RSpec.describe Ai::Catalog::ItemConsumersFinder, feature_category: :workflow_cat
       let(:include_inherited) { true }
 
       it { is_expected.to match_array(group_consumers + parent_group_consumers) }
+
+      context 'when item_id is also provided' do
+        let(:params) { super().merge(item_id: parent_group_consumers[0].ai_catalog_item_id) }
+
+        it { is_expected.to contain_exactly(parent_group_consumers[0]) }
+      end
+
+      context 'when item_types is also provided' do
+        let(:flow) { create(:ai_catalog_flow) }
+        let(:flow_consumer) { create(:ai_catalog_item_consumer, group: group, item: flow) }
+        let(:parent_flow_consumer) { create(:ai_catalog_item_consumer, group: parent_group, item: flow) }
+        let(:params) { super().merge(item_types: [:flow]) }
+
+        it { is_expected.to contain_exactly(flow_consumer, parent_flow_consumer) }
+      end
     end
   end
 

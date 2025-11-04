@@ -16,9 +16,9 @@ module Ai
         validate_args!
 
         consumers = by_container
+        consumers = with_parents(consumers) if container && include_inherited?
         consumers = by_item(consumers) if item_id
         consumers = with_item_type(consumers) if item_types.any?
-        consumers = with_parents(consumers) if container && include_inherited?
 
         consumers
       end

@@ -2,7 +2,6 @@
 #import "../fragments/ai_catalog_item_consumer.fragment.graphql"
 
 query aiCatalogConfiguredItems(
-  $itemType: AiCatalogItemType
   $itemTypes: [AiCatalogItemType!]
   $groupId: GroupID
   $projectId: ProjectID
@@ -13,7 +12,6 @@ query aiCatalogConfiguredItems(
   $last: Int
 ) {
   aiCatalogConfiguredItems(
-    itemType: $itemType
     itemTypes: $itemTypes
     groupId: $groupId
     projectId: $projectId

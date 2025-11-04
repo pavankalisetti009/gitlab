@@ -52,7 +52,8 @@ export default {
       query: aiCatalogConfiguredItemsQuery,
       variables() {
         return {
-          itemType: AI_CATALOG_TYPE_AGENT,
+          itemTypes: [AI_CATALOG_TYPE_AGENT],
+          includeInherited: false,
           projectId: convertToGraphQLId(TYPENAME_PROJECT, this.projectId),
           before: null,
           after: null,

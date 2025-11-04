@@ -1,5 +1,10 @@
 query getConfiguredAgents($projectId: ProjectID, $groupId: GroupID) {
-  aiCatalogConfiguredItems(projectId: $projectId, groupId: $groupId, itemType: AGENT) {
+  aiCatalogConfiguredItems(
+    projectId: $projectId
+    groupId: $groupId
+    itemTypes: [AGENT]
+    includeInherited: false
+  ) {
     nodes {
       id
       item {
