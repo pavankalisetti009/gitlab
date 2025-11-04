@@ -42,7 +42,8 @@ module EE
         zoekt_indexing_timeout: [:text, { default: ::Search::Zoekt::Settings::DEFAULT_INDEXING_TIMEOUT }],
         zoekt_maximum_files: [:integer, { default: ::Search::Zoekt::Settings::DEFAULT_MAXIMUM_FILES }],
         zoekt_rollout_retry_interval: [:text, { default: ::Search::Zoekt::Settings::DEFAULT_ROLLOUT_RETRY_INTERVAL }],
-        zoekt_lost_node_threshold: [:text, { default: ::Search::Zoekt::Settings::DEFAULT_LOST_NODE_THRESHOLD }]
+        zoekt_lost_node_threshold: [:text, { default: ::Search::Zoekt::Settings::DEFAULT_LOST_NODE_THRESHOLD }],
+        zoekt_default_number_of_replicas: [:integer, { default: ::Search::Zoekt::Settings::DEFAULT_NUM_REPLICAS }]
 
       jsonb_accessor :code_creation,
         disabled_direct_code_suggestions: [:boolean, { default: false }],

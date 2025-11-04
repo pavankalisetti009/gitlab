@@ -29804,7 +29804,8 @@ CREATE TABLE zoekt_enabled_namespaces (
     updated_at timestamp with time zone NOT NULL,
     search boolean DEFAULT true NOT NULL,
     metadata jsonb DEFAULT '{}'::jsonb NOT NULL,
-    last_rollout_failed_at timestamp with time zone
+    last_rollout_failed_at timestamp with time zone,
+    number_of_replicas_override integer
 );
 
 CREATE SEQUENCE zoekt_enabled_namespaces_id_seq

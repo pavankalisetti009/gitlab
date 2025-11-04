@@ -20,6 +20,34 @@ RSpec.describe ::Search::Zoekt::EnabledNamespace, feature_category: :global_sear
 
       expect(described_class.new(namespace: subgroup)).to be_invalid
     end
+
+    describe 'number_of_replicas_override' do
+      it 'allows nil value' do
+        enabled_namespace = build(:zoekt_enabled_namespace, number_of_replicas_override: nil)
+
+        expect(enabled_namespace).to be_valid
+      end
+
+      it 'allows positive values' do
+        enabled_namespace = build(:zoekt_enabled_namespace, number_of_replicas_override: 1)
+
+        expect(enabled_namespace).to be_valid
+      end
+
+      it 'does not allow zero' do
+        enabled_namespace = build(:zoekt_enabled_namespace, number_of_replicas_override: 0)
+
+        expect(enabled_namespace).to be_invalid
+        expect(enabled_namespace.errors[:number_of_replicas_override]).to include('must be greater than 0')
+      end
+
+      it 'does not allow negative values' do
+        enabled_namespace = build(:zoekt_enabled_namespace, number_of_replicas_override: -1)
+
+        expect(enabled_namespace).to be_invalid
+        expect(enabled_namespace.errors[:number_of_replicas_override]).to include('must be greater than 0')
+      end
+    end
   end
 
   describe 'scopes' do
@@ -253,6 +281,30 @@ RSpec.describe ::Search::Zoekt::EnabledNamespace, feature_category: :global_sear
     it 'returns with last_rollout_failed_at is nil or set to older than DEFAULT_ROLLOUT_RETRY_INTERVAL' do
       expect(described_class.with_rollout_allowed).to include(*[never_failed, old_failed])
       expect(described_class.with_rollout_allowed).not_to include(new_failed)
+    end
+  end
+
+  describe '#number_of_replicas' do
+    let_it_be(:_) { create(:application_setting) }
+
+    before do
+      stub_ee_application_setting(zoekt_default_number_of_replicas: 2)
+    end
+
+    context 'when number_of_replicas is not set for the namespace' do
+      subject(:np) { create(:zoekt_enabled_namespace, namespace: namespace) }
+
+      it 'returns the number from application settings' do
+        expect(np.number_of_replicas).to eq(2)
+      end
+    end
+
+    context 'when the number_of_replicas is set for the namespace' do
+      subject(:np) { create(:zoekt_enabled_namespace, namespace: namespace, number_of_replicas_override: 3) }
+
+      it 'returns the number of replicas set for the namespace' do
+        expect(np.number_of_replicas).to eq(3)
+      end
     end
   end
 end

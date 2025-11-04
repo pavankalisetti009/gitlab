@@ -19,6 +19,7 @@ module Search
       DEFAULT_ROLLOUT_RETRY_INTERVAL = '1d'
       DEFAULT_LOST_NODE_THRESHOLD = '12h'
       DEFAULT_MAXIMUM_FILES = 500_000
+      DEFAULT_NUM_REPLICAS = 1
       DISABLED_VALUE = '0'
       DURATION_BASE_REGEX = %r{([1-9]\d*)([mhd])}
       DURATION_INTERVAL_REGEX = %r{\A(?:0|#{DURATION_BASE_REGEX})\z}
@@ -105,6 +106,15 @@ module Search
               val: DISABLED_VALUE)
           },
           input_type: :text_field
+        },
+        zoekt_default_number_of_replicas: {
+          type: :integer,
+          admin_ui: false,
+          default: DEFAULT_NUM_REPLICAS,
+          label: -> {
+            _('Specify default number of replicas per namespace. Currently in development. See: https://gitlab.com/groups/gitlab-org/-/epics/19097')
+          },
+          input_type: :number_field
         }
       }.freeze
 
@@ -159,6 +169,10 @@ module Search
 
       def self.lost_node_threshold
         parse_duration(ApplicationSetting.current&.zoekt_lost_node_threshold, DEFAULT_LOST_NODE_THRESHOLD)
+      end
+
+      def self.default_number_of_replicas
+        ApplicationSetting.current&.zoekt_default_number_of_replicas || 1
       end
     end
   end
