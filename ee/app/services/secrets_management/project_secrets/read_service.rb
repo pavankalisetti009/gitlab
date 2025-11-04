@@ -4,6 +4,7 @@ module SecretsManagement
   module ProjectSecrets
     class ReadService < BaseService
       include Helpers::UserClientHelper
+      include ErrorResponseHelper
 
       def execute(name, include_rotation_info: true)
         return inactive_response unless project.secrets_manager&.active?
@@ -54,10 +55,6 @@ module SecretsManagement
         return if value.blank?
 
         Time.iso8601(value)
-      end
-
-      def inactive_response
-        ServiceResponse.error(message: 'Project secrets manager is not active')
       end
 
       def not_found_response

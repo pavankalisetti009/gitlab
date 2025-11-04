@@ -1,7 +1,6 @@
 # frozen_string_literal: true
 
 require 'spec_helper'
-
 RSpec.describe SecretsManagement::ProjectSecretsManagers::DeprovisionService, :gitlab_secrets_manager, feature_category: :secrets_management do
   let_it_be(:group) { create(:group) }
   let_it_be_with_reload(:project) { create(:project, group: group) }
@@ -119,6 +118,8 @@ RSpec.describe SecretsManagement::ProjectSecretsManagers::DeprovisionService, :g
       # Verify the secrets manager record is deleted
       expect(SecretsManagement::ProjectSecretsManager.find_by(id: secrets_manager.id)).to be_nil
     end
+
+    it_behaves_like 'an operation requiring an exclusive project secret operation lease', 120.seconds
 
     context 'when multiple projects share the same namespace' do
       let!(:another_project) { create(:project, namespace: project.namespace) }

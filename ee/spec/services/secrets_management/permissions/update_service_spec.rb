@@ -41,6 +41,8 @@ RSpec.describe SecretsManagement::Permissions::UpdateService, :gitlab_secrets_ma
           expect(secret_permission.permissions).to eq(permissions)
           expect(secret_permission.expired_at).to eq(expired_at)
         end
+
+        it_behaves_like 'an operation requiring an exclusive project secret operation lease'
       end
 
       describe 'expiration in the policy payload' do

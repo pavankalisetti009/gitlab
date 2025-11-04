@@ -7,8 +7,36 @@ module SecretsManagement
       include SecretsManagerClientHelpers
       include CiPolicies::SecretRefresherHelper
       include Helpers::UserClientHelper
+      include Helpers::ExclusiveLeaseHelper
+      include ErrorResponseHelper
 
       def execute(
+        name:,
+        metadata_cas: nil,
+        value: nil,
+        description: nil,
+        environment: nil,
+        branch: nil,
+        rotation_interval_days: nil
+      )
+        with_exclusive_lease_for(project) do
+          execute_secret_update(
+            name: name,
+            metadata_cas: metadata_cas,
+            value: value,
+            description: description,
+            environment: environment,
+            branch: branch,
+            rotation_interval_days: rotation_interval_days
+          )
+        end
+      end
+
+      private
+
+      delegate :secrets_manager, to: :project
+
+      def execute_secret_update(
         name:,
         metadata_cas: nil,
         value: nil,
@@ -23,7 +51,6 @@ module SecretsManagement
         return read_result unless read_result.success?
 
         project_secret = read_result.payload[:project_secret]
-
         project_secret.description = description unless description.nil?
         project_secret.environment = environment unless environment.nil?
         project_secret.branch = branch unless branch.nil?
@@ -35,10 +62,6 @@ module SecretsManagement
           build_secret_rotation_info(project_secret, metadata_cas, rotation_interval_days)
         )
       end
-
-      private
-
-      delegate :secrets_manager, to: :project
 
       def build_secret_rotation_info(project_secret, metadata_cas, rotation_interval_days)
         return unless rotation_interval_days
@@ -161,10 +184,6 @@ module SecretsManagement
         end
 
         error_response(project_secret)
-      end
-
-      def inactive_response
-        ServiceResponse.error(message: 'Project secrets manager is not active')
       end
     end
   end

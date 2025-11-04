@@ -36,6 +36,10 @@ RSpec.describe 'Create project secret', :gitlab_secrets_manager, :freeze_time, f
     provision_project_secrets_manager(secrets_manager, current_user)
   end
 
+  after do
+    cancel_exclusive_project_secret_operation_lease(project)
+  end
+
   context 'when current user is not part of the project' do
     it_behaves_like 'a mutation on an unauthorized resource'
   end
@@ -93,6 +97,8 @@ RSpec.describe 'Create project secret', :gitlab_secrets_manager, :freeze_time, f
           )
         ))
     end
+
+    it_behaves_like 'an API request requiring an exclusive project secret operation lease'
 
     context 'and service results to a failure' do
       before do

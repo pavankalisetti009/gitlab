@@ -1,7 +1,6 @@
 # frozen_string_literal: true
 
 require 'spec_helper'
-
 RSpec.describe SecretsManagement::ProjectSecretsManagers::ProvisionService, :gitlab_secrets_manager, feature_category: :secrets_management do
   let_it_be(:project) { create(:project) }
   let_it_be(:user) { create(:user) }
@@ -69,6 +68,8 @@ RSpec.describe SecretsManagement::ProjectSecretsManagers::ProvisionService, :git
       expect(jwt_role["name"]).to eq(secrets_manager.user_auth_role)
       expect(jwt_role["cel_program"]).to eq(secrets_manager.user_auth_cel_program(project.id.to_s).deep_stringify_keys)
     end
+
+    it_behaves_like 'an operation requiring an exclusive project secret operation lease', 120.seconds
 
     context 'when the secrets manager is already active' do
       before do

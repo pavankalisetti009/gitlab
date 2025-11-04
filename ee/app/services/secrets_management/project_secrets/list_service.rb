@@ -4,6 +4,7 @@ module SecretsManagement
   module ProjectSecrets
     class ListService < BaseService
       include Helpers::UserClientHelper
+      include ErrorResponseHelper
 
       def execute(include_rotation_info: true)
         return inactive_response unless project.secrets_manager&.active?
@@ -58,10 +59,6 @@ module SecretsManagement
           rotation_info_id = rotation_info_mapping[secret.name]
           secret.rotation_info = rotation_infos[rotation_info_id] if rotation_info_id
         end
-      end
-
-      def inactive_response
-        ServiceResponse.error(message: 'Project secrets manager is not active')
       end
     end
   end

@@ -251,5 +251,11 @@ module SecretsManagement
       expect(project_policies).to be_empty,
         "Expected project #{project.id} to have no legacy policies, but found: #{project_policies.join(', ')}"
     end
+
+    def cancel_exclusive_project_secret_operation_lease(project)
+      lease_key = "project_secret_operation:project_#{project.id}"
+      uuid = Gitlab::ExclusiveLease.get_uuid(lease_key)
+      Gitlab::ExclusiveLease.cancel(lease_key, uuid)
+    end
   end
 end

@@ -33,9 +33,11 @@ RSpec.describe SecretsManagement::ProjectSecrets::CreateService, :gitlab_secrets
         provision_project_secrets_manager(secrets_manager, user)
       end
 
+      it_behaves_like 'an operation requiring an exclusive project secret operation lease'
+
       it 'creates a project secret' do
         frozen_time = Time.current.utc.iso8601
-
+        expect(result).to be_success
         secret = result.payload[:project_secret]
         expect(secret).to be_present
         expect(secret.name).to eq(name)
@@ -588,14 +590,14 @@ RSpec.describe SecretsManagement::ProjectSecrets::CreateService, :gitlab_secrets
 
       it 'fails' do
         expect(result).to be_error
-        expect(result.message).to eq('Project secrets manager is not active.')
+        expect(result.message).to eq('Project secrets manager is not active')
       end
     end
 
     context 'when the project has not enabled secrets manager at all' do
       it 'fails' do
         expect(result).to be_error
-        expect(result.message).to eq('Project secrets manager is not active.')
+        expect(result.message).to eq('Project secrets manager is not active')
       end
     end
   end

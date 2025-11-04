@@ -7,12 +7,33 @@ module SecretsManagement
       include SecretsManagerClientHelpers
       include CiPolicies::SecretRefresherHelper
       include Helpers::UserClientHelper
+      include Helpers::ExclusiveLeaseHelper
+      include ErrorResponseHelper
 
       # MAX_SECRET_SIZE sets the maximum size of a secret value; see note
       # below before removing.
       MAX_SECRET_SIZE = 10000
 
       def execute(name:, value:, environment:, branch:, description: nil, rotation_interval_days: nil)
+        with_exclusive_lease_for(project) do
+          execute_secret_creation(
+            name: name,
+            value: value,
+            environment: environment,
+            branch: branch,
+            description: description,
+            rotation_interval_days: rotation_interval_days
+          )
+        end
+      end
+
+      private
+
+      delegate :secrets_manager, to: :project
+
+      def execute_secret_creation(name:, value:, environment:, branch:, description:, rotation_interval_days:)
+        return inactive_response unless secrets_manager&.active?
+
         secret_rotation_info = build_secret_rotation_info(name, rotation_interval_days) if rotation_interval_days
 
         project_secret = ProjectSecret.new(
@@ -25,10 +46,6 @@ module SecretsManagement
 
         store_secret(project_secret, value, secret_rotation_info)
       end
-
-      private
-
-      delegate :secrets_manager, to: :project
 
       def build_secret_rotation_info(name, rotation_interval_days)
         SecretRotationInfo.new(

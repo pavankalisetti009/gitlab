@@ -4,6 +4,7 @@ module SecretsManagement
   module ProjectSecretsManagers
     class DeprovisionService < BaseService
       include SecretsManagerClientHelpers
+      include Helpers::ExclusiveLeaseHelper
 
       def initialize(secrets_manager, current_user)
         super(secrets_manager.project, current_user)
@@ -12,6 +13,31 @@ module SecretsManagement
       end
 
       def execute
+        with_exclusive_lease_for(project, lease_timeout: 120.seconds.to_i) do
+          execute_deprovision
+        end
+      end
+
+      def legacy_cleanup
+        # This performs legacy pre-namespace cleanup.
+        #
+        # All OpenBao client methods used here are idempotent:
+        # - delete_jwt_role: returns nil if role doesn't exist
+        # - delete_policy: has optional: true, doesn't error if missing
+        # - disable_secrets_engine: doesn't error if mount doesn't exist
+        # This makes the entire service idempotent and safe for retries
+        delete_policies
+        delete_auth_engine
+        delete_secrets_engine
+      rescue SecretsManagement::SecretsManagerClient::ApiError => e
+        raise e unelss e.message.include? 'route entry not found'
+      end
+
+      private
+
+      attr_reader :secrets_manager
+
+      def execute_deprovision
         # Namespaces can only be disabled if the namespace is empty of child
         # namespaces. As we do not populate child namespaces entries under the
         # project namespace, we will always be able to delete it, thus cleaning
@@ -56,25 +82,6 @@ module SecretsManagement
 
         ServiceResponse.success(payload: { project_secrets_manager: secrets_manager })
       end
-
-      def legacy_cleanup
-        # This performs legacy pre-namespace cleanup.
-        #
-        # All OpenBao client methods used here are idempotent:
-        # - delete_jwt_role: returns nil if role doesn't exist
-        # - delete_policy: has optional: true, doesn't error if missing
-        # - disable_secrets_engine: doesn't error if mount doesn't exist
-        # This makes the entire service idempotent and safe for retries
-        delete_policies
-        delete_auth_engine
-        delete_secrets_engine
-      rescue SecretsManagement::SecretsManagerClient::ApiError => e
-        raise e unelss e.message.include? 'route entry not found'
-      end
-
-      private
-
-      attr_reader :secrets_manager
 
       def delete_policies
         # Delete all policies that belong to this project

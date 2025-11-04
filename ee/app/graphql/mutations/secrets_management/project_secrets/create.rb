@@ -8,6 +8,7 @@ module Mutations
 
         include ResolvesProject
         include Gitlab::InternalEventsTracking
+        include Helpers::ErrorMessagesHelpers
 
         authorize :create_project_secrets
 
@@ -67,7 +68,7 @@ module Mutations
           else
             {
               project_secret: nil,
-              errors: errors_on_object(result.payload[:project_secret])
+              errors: error_messages(result, [:project_secret])
             }
           end
         end
