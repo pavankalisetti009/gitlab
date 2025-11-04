@@ -7,9 +7,6 @@ end
 
 scope '-/users', module: :users do
   resources :targeted_message_dismissals, only: [:create]
-  resources :callouts, only: [] do
-    post :request_duo_agent_platform, on: :collection
-  end
   resources :group_callouts, only: [] do
     post :request_duo_agent_platform, on: :collection
   end

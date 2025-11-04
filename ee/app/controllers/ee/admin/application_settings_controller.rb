@@ -38,7 +38,6 @@ module EE
         feature_category :consumables_cost_management, [:namespace_storage]
         feature_category :product_analytics, [:analytics]
         feature_category :system_access, [:update_microsoft_application]
-        feature_category :activation, [:update_duo_agent_platform]
         urgency :low, [:search, :seat_link_payload]
 
         def elasticsearch_reindexing_task
@@ -96,20 +95,6 @@ module EE
           scim_token = ScimOauthAccessToken.find_for_instance
 
           @scim_token_url = scim_token.as_entity_json[:scim_api_url] if scim_token
-        end
-
-        def update_duo_agent_platform
-          duo_agent_platform_params = params.permit(
-            :duo_availability, :instance_level_ai_beta_features_enabled, :duo_core_features_enabled
-          )
-
-          response = ::Ai::Agents::UpdatePlatformService.new(current_user, duo_agent_platform_params).execute
-
-          if response.success?
-            head :ok
-          else
-            render json: { message: response.message }, status: :unprocessable_entity
-          end
         end
 
         def update_microsoft_application

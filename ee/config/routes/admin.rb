@@ -87,7 +87,6 @@ namespace :admin do
     get :advanced_search, to: redirect('admin/application_settings/search')
     get :geo, to: "geo/settings#show"
     put :update_microsoft_application
-    put :update_duo_agent_platform
 
     resource :scim_oauth, only: [:create], controller: :scim_oauth, module: 'application_settings'
 

@@ -7,10 +7,10 @@ module Ai
     include SingletonRecord
 
     ignore_column :duo_nano_features_enabled, remove_with: '18.3', remove_after: '2025-07-15'
+    ignore_column :duo_agent_platform_request_count, remove_with: '18.8', remove_after: '2025-12-13'
 
     validates :ai_gateway_url, :duo_agent_platform_service_url, length: { maximum: 2048 }, allow_nil: true
     validates :amazon_q_role_arn, length: { maximum: 2048 }, allow_nil: true
-    validates :duo_agent_platform_request_count, numericality: { greater_than_or_equal_to: 0 }
 
     validate :validate_ai_gateway_url
 
