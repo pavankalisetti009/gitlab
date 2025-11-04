@@ -84,6 +84,12 @@ RSpec.describe MergeRequestApprovalSettings::UpdateService, feature_category: :c
           expect(project_adherence_2.status).to eq("success")
           expect(project_adherence_3.status).to eq("fail")
         end
+
+        specify do
+          expect { service.execute }
+            .to publish_event(Projects::MergeRequestApprovalSettingsUpdatedEvent)
+                  .with(project_id: project.id)
+        end
       end
     end
   end

@@ -4096,6 +4096,16 @@
   :idempotent: true
   :tags: []
   :queue_namespace:
+- :name: security_scan_result_policies_recreate_project_warn_mode_audit_events
+  :worker_name: Security::ScanResultPolicies::RecreateProjectWarnModeAuditEventsWorker
+  :feature_category: :security_policy_management
+  :has_external_dependencies: false
+  :urgency: :low
+  :resource_boundary: :unknown
+  :weight: 1
+  :idempotent: true
+  :tags: []
+  :queue_namespace:
 - :name: security_scan_result_policies_sync_any_merge_request_approval_rules
   :worker_name: Security::ScanResultPolicies::SyncAnyMergeRequestApprovalRulesWorker
   :feature_category: :security_policy_management

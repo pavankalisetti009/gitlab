@@ -27,6 +27,7 @@ module MergeRequestApprovalSettings
 
         if result[:status] == :success
           run_compliance_standards_checks
+          publish_event
           ServiceResponse.success(payload: container)
         else
           ServiceResponse.error(message: container.errors.messages)
@@ -96,6 +97,12 @@ module MergeRequestApprovalSettings
 
       ::ComplianceManagement::Standards::Soc2::AtLeastOneNonAuthorApprovalWorker
         .perform_async({ 'project_id' => container.id, 'user_id' => current_user&.id })
+    end
+
+    def publish_event
+      event = Projects::MergeRequestApprovalSettingsUpdatedEvent.new(data: { project_id: @project.id })
+
+      Gitlab::EventStore.publish(event)
     end
   end
 end
