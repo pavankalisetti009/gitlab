@@ -274,8 +274,8 @@ describe('ActivityToken', () => {
 
     it.each`
       resolveVulnerabilityWithAi | expectedBadges
-      ${true}                    | ${['check-circle-dashed', 'issues', 'merge-request', 'bulb', 'tanuki-ai']}
-      ${false}                   | ${['check-circle-dashed', 'issues', 'merge-request', 'bulb']}
+      ${true}                    | ${['check-circle-dashed', 'issue-type-issue', 'merge-request', 'bulb', 'tanuki-ai']}
+      ${false}                   | ${['check-circle-dashed', 'issue-type-issue', 'merge-request', 'bulb']}
     `(
       'shows the correct badges when resolveVulnerabilityWithAi=$resolveVulnerabilityWithAi',
       ({ resolveVulnerabilityWithAi, expectedBadges }) => {
@@ -288,8 +288,8 @@ describe('ActivityToken', () => {
 
     it.each`
       accessAdvancedVulnerabilityManagement | securityPolicyApprovalWarnMode | policyViolationsEsFilter | expectedBadges
-      ${true}                               | ${true}                        | ${true}                  | ${['check-circle-dashed', 'issues', 'merge-request', 'bulb', 'flag']}
-      ${false}                              | ${false}                       | ${false}                 | ${['check-circle-dashed', 'issues', 'merge-request', 'bulb']}
+      ${true}                               | ${true}                        | ${true}                  | ${['check-circle-dashed', 'issue-type-issue', 'merge-request', 'bulb', 'flag']}
+      ${false}                              | ${false}                       | ${false}                 | ${['check-circle-dashed', 'issue-type-issue', 'merge-request', 'bulb']}
     `(
       'shows the correct badges when accessAdvancedVulnerabilityManagement=$accessAdvancedVulnerabilityManagement and securityPolicyApprovalWarnMode=$securityPolicyApprovalWarnMode and policyViolationsEsFilter=$policyViolationsEsFilter',
       ({
@@ -320,7 +320,7 @@ describe('ActivityToken', () => {
 
       expect(findAllBadges().wrappers.map((component) => component.props('icon'))).toEqual([
         'check-circle-dashed',
-        'issues',
+        'issue-type-issue',
         'merge-request',
         'bulb',
         'tanuki-ai',

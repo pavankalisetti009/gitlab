@@ -175,9 +175,9 @@ describe('duo_agents_platform utils', () => {
       ['grep_files', { icon: 'search', title: 'Search files', level: 0 }],
       ['list_files', { icon: 'search', title: 'List files', level: 0 }],
       ['gitlab_issue_search', { icon: 'search', title: 'Search issues', level: 0 }],
-      ['get_issue', { icon: 'issues', title: 'Get issue', level: 0 }],
+      ['get_issue', { icon: 'issue-type-issue', title: 'Get issue', level: 0 }],
       ['create_merge_request', { icon: 'git-merge', title: 'Create merge request', level: 1 }],
-      ['list_issue_notes', { icon: 'issues', title: 'List comments', level: 0 }],
+      ['list_issue_notes', { icon: 'issue-type-issue', title: 'List comments', level: 0 }],
       ['create_commit', { icon: 'commit', title: 'Create commit', level: 1 }],
     ])('returns correct data for %s tool', (toolName, expected) => {
       const toolMessage = { tool_info: { name: toolName } };

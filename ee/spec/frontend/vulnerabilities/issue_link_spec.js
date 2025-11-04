@@ -50,15 +50,16 @@ describe('IssueLink component', () => {
 
   describe('internal issues', () => {
     describe.each`
-      state       | icon              | shouldContainClosedText
-      ${'opened'} | ${'issues'}       | ${false}
-      ${'closed'} | ${'issue-closed'} | ${true}
+      state       | icon                  | shouldContainClosedText
+      ${'opened'} | ${'issue-type-issue'} | ${false}
+      ${'closed'} | ${'issue-close'}      | ${true}
     `('with state "$state"', ({ state, icon, shouldContainClosedText }) => {
       beforeEach(() => {
         wrapper = createWrapper({ propsData: { issue: createIssue({ state }) } });
       });
 
       it('should contain the correct issue icon', () => {
+        expect(findIcon().exists()).toBe(true);
         expect(findIcon().attributes('name')).toBe(icon);
       });
 

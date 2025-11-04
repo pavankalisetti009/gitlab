@@ -33,7 +33,7 @@ RSpec.describe EpicNoteEntity do
     let!(:note_metadata) { create(:system_note_metadata, note: note, action: 'epic_issue_added') }
 
     it 'sets system_note_icon_name for epic system notes' do
-      expect(subject[:system_note_icon_name]).to eq('issues')
+      expect(subject[:system_note_icon_name]).to eq('issue-type-issue')
     end
   end
 end

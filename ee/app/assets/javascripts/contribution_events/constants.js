@@ -86,5 +86,5 @@ export const EVENT_COMMENTED_I18N = Object.freeze({
 // eslint-disable-next-line import/export
 export const EVENT_CLOSED_ICONS = Object.freeze({
   ...CE_EVENT_CLOSED_ICONS,
-  [TARGET_TYPE_EPIC]: 'epic-closed',
+  [TARGET_TYPE_EPIC]: 'issue-close',
 });

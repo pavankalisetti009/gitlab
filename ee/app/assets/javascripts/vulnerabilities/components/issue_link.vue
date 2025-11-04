@@ -26,7 +26,7 @@ export default {
   },
   computed: {
     iconName() {
-      return this.issueIsClosed ? 'issue-closed' : 'issues';
+      return this.issueIsClosed ? 'issue-close' : 'issue-type-issue';
     },
     iconVariant() {
       return this.issueIsClosed ? 'current' : 'success';
@@ -51,6 +51,7 @@ export default {
       class="gl-mr-3 gl-inline-flex gl-min-h-6 gl-items-center"
       data-testid="jira-logo"
     ></span>
+    <gl-icon v-else-if="issueIsClosed" class="gl-mr-2" :name="iconName" :variant="iconVariant" />
     <gl-icon v-else class="gl-mr-2" :name="iconName" :variant="iconVariant" />
     <gl-sprintf v-if="issueIsClosed" :message="__('#%{issueIid} (closed)')">
       <template #issueIid>{{ issue.iid }}</template>
