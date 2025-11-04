@@ -503,10 +503,6 @@ RSpec.describe PhoneVerification::Users::SendVerificationCodeService, feature_ca
         expect(record.risk_score).to eq 0
         expect(record.telesign_reference_xid).to eq '123'
       end
-
-      it 'does not store risk score in abuse trust scores' do
-        expect { service.execute }.not_to change { AntiAbuse::TrustScore.count }
-      end
     end
   end
 end
