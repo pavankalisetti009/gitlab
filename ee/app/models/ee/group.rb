@@ -330,7 +330,8 @@ module EE
     end
 
     def project_epics_enabled?
-      feature_flag_enabled_for_self_or_ancestor?(:project_work_item_epics, type: :beta)
+      licensed_feature_available?(:epics) &&
+        feature_flag_enabled_for_self_or_ancestor?(:project_work_item_epics, type: :beta)
     end
 
     class_methods do

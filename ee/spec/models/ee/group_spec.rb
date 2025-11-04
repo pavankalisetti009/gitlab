@@ -4375,30 +4375,22 @@ RSpec.describe Group, feature_category: :groups_and_projects do
     let_it_be(:root_group) { create(:group) }
     let_it_be(:sub_group) { create(:group, parent: root_group) }
 
-    subject { sub_group.project_epics_enabled? }
-
-    context 'when FF enabled for root ancestor' do
-      before do
-        stub_feature_flags(project_work_item_epics: root_group)
-      end
-
-      it { is_expected.to eq(true) }
+    where(:license, :feature_flag_actor, :result) do
+      false | false | false
+      false | ref(:root_group) | false
+      false | ref(:sub_group) | false
+      true | false | false
+      true | ref(:root_group) | true
+      true | ref(:sub_group) | true
     end
 
-    context 'when FF enabled for sub group' do
-      before do
-        stub_feature_flags(project_work_item_epics: sub_group)
+    with_them do
+      it 'returns the right value' do
+        stub_licensed_features(epics: license)
+        stub_feature_flags(project_work_item_epics: feature_flag_actor)
+
+        expect(sub_group.project_epics_enabled?).to be(result)
       end
-
-      it { is_expected.to eq(true) }
-    end
-
-    context 'when FF is disabled for root ancestor' do
-      before do
-        stub_feature_flags(project_work_item_epics: false)
-      end
-
-      it { is_expected.to eq(false) }
     end
   end
 

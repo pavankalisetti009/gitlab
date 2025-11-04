@@ -649,7 +649,8 @@ module EE
       def project_epics_enabled?
         return group.project_epics_enabled? if group
 
-        ::Feature.enabled?(:project_work_item_epics, self, type: :beta)
+        licensed_feature_available?(:epics) &&
+          ::Feature.enabled?(:project_work_item_epics, self, type: :beta)
       end
 
       def has_linked_configurations?
