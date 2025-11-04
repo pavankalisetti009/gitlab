@@ -36,8 +36,8 @@ RSpec.describe Members::InviteService, :aggregate_failures, feature_category: :g
       end
 
       context 'with group plan observing quota limits' do
-        let(:plan_limits) { create(:plan_limits, daily_invites: daily_invites) }
-        let(:plan) { create(:plan, limits: plan_limits) }
+        let(:plan) { create(:premium_plan) }
+        let!(:plan_limits) { create(:plan_limits, plan: plan, daily_invites: daily_invites) }
         let!(:subscription) do
           create(
             :gitlab_subscription,

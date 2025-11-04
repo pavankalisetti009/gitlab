@@ -4,17 +4,17 @@ require 'spec_helper'
 
 RSpec.describe Gitlab::GroupPlansPreloader, :saas, :request_store do
   describe '#preload' do
-    let_it_be(:plan1) { create(:free_plan, name: 'plan-1') }
-    let_it_be(:plan2) { create(:free_plan, name: 'plan-2') }
+    let_it_be(:premium_plan) { create(:premium_plan) }
+    let_it_be(:ultimate_plan) { create(:ultimate_plan) }
 
     let(:preloaded_groups) { described_class.new.preload(pristine_groups) }
 
     before_all do
       group1 = create(:group, name: 'group-1')
-      create(:gitlab_subscription, namespace: group1, hosted_plan_id: plan1.id)
+      create(:gitlab_subscription, namespace: group1, hosted_plan_id: premium_plan.id)
 
       group2 = create(:group, name: 'group-2')
-      create(:gitlab_subscription, namespace: group2, hosted_plan_id: plan2.id)
+      create(:gitlab_subscription, namespace: group2, hosted_plan_id: ultimate_plan.id)
 
       create(:group, name: 'group-3', parent: group1)
     end
@@ -31,9 +31,9 @@ RSpec.describe Gitlab::GroupPlansPreloader, :saas, :request_store do
       end
 
       it 'associates the correct plans with the correct groups' do
-        expect(preloaded_groups[0].actual_plan).to eq(plan1)
-        expect(preloaded_groups[1].actual_plan).to eq(plan2)
-        expect(preloaded_groups[2].actual_plan).to eq(plan1)
+        expect(preloaded_groups[0].actual_plan).to eq(premium_plan)
+        expect(preloaded_groups[1].actual_plan).to eq(ultimate_plan)
+        expect(preloaded_groups[2].actual_plan).to eq(premium_plan)
       end
 
       it 'does not execute any queries for preloaded plans' do

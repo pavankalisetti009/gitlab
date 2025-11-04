@@ -34,6 +34,7 @@ RSpec.describe Namespaces::Storage::NamespaceLimit::Enforcement, :saas,
       before do
         plan_limit = create(
           :plan_limits,
+          :free_plan,
           enforcement_limit: enforcement_limit,
           storage_size_limit: dashboard_limit,
           dashboard_limit_enabled_at: dashboard_limit_enabled_at
