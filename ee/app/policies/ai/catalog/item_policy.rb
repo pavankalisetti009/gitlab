@@ -48,34 +48,44 @@ module Ai
       end
 
       rule { maintainer_access }.policy do
-        enable :admin_ai_catalog_item
+        enable :admin_ai_catalog_item # (Create and update)
+        enable :delete_ai_catalog_item
       end
 
-      rule { ~ai_catalog_enabled }.policy do
+      rule { admin }.policy do
+        enable :force_hard_delete_ai_catalog_item
+      end
+
+      rule { ~ai_catalog_enabled & ~admin }.policy do
         prevent :read_ai_catalog_item
         prevent :admin_ai_catalog_item
+        prevent :delete_ai_catalog_item
       end
 
-      rule { deleted_item }.policy do
+      rule { deleted_item & ~admin }.policy do
         prevent :admin_ai_catalog_item
+        prevent :delete_ai_catalog_item
       end
 
-      rule { ~public_item & ~project_ai_catalog_available }.policy do
+      rule { ~public_item & ~project_ai_catalog_available & ~admin }.policy do
         prevent :read_ai_catalog_item
       end
 
-      rule { ~project_ai_catalog_available }.policy do
+      rule { ~project_ai_catalog_available & ~admin }.policy do
         prevent :admin_ai_catalog_item
+        prevent :delete_ai_catalog_item
       end
 
-      rule { flow & ~flows_enabled }.policy do
+      rule { flow & ~flows_enabled & ~admin }.policy do
         prevent :read_ai_catalog_item
         prevent :admin_ai_catalog_item
+        prevent :delete_ai_catalog_item
       end
 
-      rule { third_party_flow & ~third_party_flows_enabled }.policy do
+      rule { third_party_flow & ~third_party_flows_enabled & ~admin }.policy do
         prevent :read_ai_catalog_item
         prevent :admin_ai_catalog_item
+        prevent :delete_ai_catalog_item
       end
     end
   end

@@ -9,9 +9,9 @@ RSpec.describe Mutations::Ai::Catalog::Agent::Delete, feature_category: :workflo
 
   it { is_expected.to have_graphql_name('AiCatalogAgentDelete') }
 
-  it { expect(described_class).to require_graphql_authorizations(:admin_ai_catalog_item) }
+  it { expect(described_class).to require_graphql_authorizations(:delete_ai_catalog_item) }
 
   it { is_expected.to have_graphql_fields(:success, :errors, :client_mutation_id) }
 
-  it { is_expected.to have_graphql_arguments(:id, :client_mutation_id) }
+  it { is_expected.to have_graphql_arguments(:id, :force_hard_delete, :client_mutation_id) }
 end

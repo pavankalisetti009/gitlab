@@ -82,5 +82,25 @@ RSpec.describe Mutations::Ai::Catalog::ThirdPartyFlow::Delete, feature_category:
     it 'destroy the third_party_flow versions' do
       expect { execute }.to change { Ai::Catalog::ItemVersion.count }.by(-1)
     end
+
+    context 'with `forceHardDelete` argument', :enable_admin_mode do
+      let(:params) { super().merge(force_hard_delete: true) }
+
+      it_behaves_like 'a mutation that returns top-level errors', errors:
+        ['You must be an instance admin to use forceHardDelete']
+
+      it 'does not delete the third_party_flow' do
+        expect { execute }.not_to change { Ai::Catalog::Item.count }
+      end
+
+      context 'when user is an admin' do
+        let(:current_user) { create(:admin) }
+
+        it 'destroys the third_party_flow and returns a success response' do
+          expect { execute }.to change { Ai::Catalog::Item.count }.by(-1)
+          expect(graphql_data_at(:ai_catalog_third_party_flow_delete, :success)).to be(true)
+        end
+      end
+    end
   end
 end
