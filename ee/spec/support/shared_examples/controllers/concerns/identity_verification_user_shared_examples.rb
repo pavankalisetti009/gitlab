@@ -21,7 +21,7 @@ RSpec.shared_examples 'it handles absence of a signed-in IdentityVerificationUse
 
     expect(User.sticking)
       .to receive(:find_caught_up_replica)
-      .with(:user, non_existing_record_id)
+      .with(:user, non_existing_record_id, hash_id: false)
 
     do_request
 

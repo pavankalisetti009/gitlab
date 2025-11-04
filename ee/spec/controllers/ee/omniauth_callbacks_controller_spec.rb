@@ -313,7 +313,7 @@ RSpec.describe OmniauthCallbacksController, :with_current_organization, type: :c
 
         expect(User.sticking)
           .to receive(:find_caught_up_replica)
-          .with(:user, anything)
+          .with(:user, anything, hash_id: false)
 
         oauth_request
 

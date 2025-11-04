@@ -16,6 +16,7 @@ module Ai
 
         ensure_oauth_application!
         token = create_oauth_access_token
+        stick_to_database_load_balancer(token)
         success(oauth_access_token: token)
       end
 
@@ -97,6 +98,14 @@ module Ai
         else
           Feature.disabled?(:duo_workflow, current_user)
         end
+      end
+
+      def stick_to_database_load_balancer(token)
+        # Newly created oauth tokens may not be synced to a replica before they are used in Duo features.
+        # If a subsequent request comes in with the new token and we query a replica database then we may
+        # not find the token and we'll get a 401. Sticking ensures that we keep
+        # using the primary until the replicas are caught up to this point.
+        ::OauthAccessToken.sticking.stick(:oauth_token, token.plaintext_token, hash_id: true)
       end
     end
   end
