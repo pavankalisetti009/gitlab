@@ -3,7 +3,7 @@
 require 'spec_helper'
 
 RSpec.describe UserPreference do
-  let_it_be(:user) { create(:user) }
+  let_it_be(:user) { create(:user, :with_namespace) }
 
   let(:user_preference) { create(:user_preference, user: user) }
 
@@ -37,6 +37,12 @@ RSpec.describe UserPreference do
     it 'belongs to default_add_on_assignment optionally' do
       is_expected.to belong_to(:default_duo_add_on_assignment)
                        .class_name('GitlabSubscriptions::UserAddOnAssignment')
+                       .optional
+    end
+
+    it 'belongs to duo_default_namespace optionally' do
+      is_expected.to belong_to(:duo_default_namespace)
+                       .class_name('Namespace')
                        .optional
     end
   end
@@ -232,6 +238,98 @@ RSpec.describe UserPreference do
     end
   end
 
+  describe '#duo_default_namespace_candidates', feature_category: :ai_abstraction_layer do
+    context 'when SaaS', :saas do
+      before do
+        stub_saas_features(gitlab_duo_saas_only: true)
+      end
+
+      context 'when user has various duo add-on configurations' do
+        def create_group(name)
+          create(:group_with_plan, plan: :ultimate_plan, name: name)
+        end
+
+        let_it_be(:duo_core_add_on) { create(:gitlab_subscription_add_on, :duo_core) }
+        let_it_be(:duo_pro_add_on) { create(:gitlab_subscription_add_on, :duo_pro) }
+        let_it_be(:duo_enterprise_add_on) { create(:gitlab_subscription_add_on, :duo_enterprise) }
+
+        let_it_be(:core_namespace) { create_group('core_namespace') }
+        let_it_be(:core_expired_namespace) { create_group('core_expired_namespace') }
+        let_it_be(:pro_namespace) { create_group('pro_namespace') }
+        let_it_be(:enterprise_namespace) { create_group('enterprise_namespace') }
+        let_it_be(:no_assignment_namespace) { create_group('no_assignment_namespace') }
+
+        let!(:duo_core_purchase) do
+          create(:gitlab_subscription_add_on_purchase, namespace: core_namespace, add_on: duo_core_add_on)
+        end
+
+        let!(:duo_pro_purchase) do
+          create(:gitlab_subscription_add_on_purchase, namespace: pro_namespace, add_on: duo_pro_add_on)
+        end
+
+        let!(:duo_enterprise_purchase) do
+          create(:gitlab_subscription_add_on_purchase, namespace: enterprise_namespace, add_on: duo_enterprise_add_on)
+        end
+
+        let!(:expired_purchase) do
+          create(:gitlab_subscription_add_on_purchase, namespace: core_expired_namespace, add_on: duo_core_add_on,
+            expires_on: 1.day.ago)
+        end
+
+        let!(:duo_pro_purchase_no_assignment) do
+          create(:gitlab_subscription_add_on_purchase, namespace: no_assignment_namespace, add_on: duo_pro_add_on)
+        end
+
+        let!(:pro_user_assignment) do
+          create(:gitlab_subscription_user_add_on_assignment, add_on_purchase: duo_pro_purchase, user: user)
+        end
+
+        let!(:enterprise_user_assignment) do
+          create(:gitlab_subscription_user_add_on_assignment, add_on_purchase: duo_enterprise_purchase, user: user)
+        end
+
+        before do
+          [
+            core_namespace, pro_namespace, enterprise_namespace, no_assignment_namespace, core_expired_namespace
+          ].each { |namespace| namespace.add_developer(user) }
+        end
+
+        it 'returns namespaces with duo core purchases and seat-assignable add-ons with assignments' do
+          result = user_preference.duo_default_namespace_candidates
+
+          # Should include:
+          # - core_namespace (duo core - no assignment needed)
+          # - pro_namespace (duo pro with assignment)
+          # - enterprise_namespace (duo enterprise with assignment)
+          # Should NOT include:
+          # - no_assignment_namespace (duo pro but no assignment)
+          # - core_expired_namespace (duo core but purchase expired)
+          expect(result).to match_array([core_namespace, pro_namespace, enterprise_namespace])
+        end
+      end
+
+      it 'is empty when user has no eligible duo add-on assignments' do
+        result = user_preference.duo_default_namespace_candidates
+
+        expect(result).to be_empty
+      end
+    end
+
+    context 'when Self-Managed' do
+      let_it_be(:top_level_group) { create(:group) }
+      let_it_be(:subgroup) { create(:group, parent: top_level_group) }
+
+      it 'returns top level authorized groups and user namespace' do
+        top_level_group.add_maintainer(user)
+        subgroup.add_maintainer(user)
+
+        result = user_preference.duo_default_namespace_candidates
+
+        expect(result).to include(top_level_group, user.namespace)
+      end
+    end
+  end
+
   describe '#get_default_duo_namespace', :saas do
     context 'when there are multiple eligible duo add-on assignments' do
       include_context 'with multiple user add-on assignments'
@@ -306,6 +404,102 @@ RSpec.describe UserPreference do
       it 'returns nil' do
         expect(user_preference.get_default_duo_namespace).to be_nil
       end
+    end
+  end
+
+  describe '#duo_default_namespace' do
+    let_it_be(:namespace) { create(:group, :private) }
+
+    it 'returns the namespace when accessible' do
+      namespace.add_developer(user)
+
+      user_preference.duo_default_namespace = namespace
+
+      expect(user_preference.duo_default_namespace).to eq(namespace)
+    end
+
+    it 'returns nil when not accessible' do
+      user_preference.duo_default_namespace_id = namespace.id
+
+      expect(user_preference.duo_default_namespace).to be_nil
+    end
+
+    it 'returns nil when duo_default_namespace is nil' do
+      user_preference.duo_default_namespace = nil
+
+      expect(user_preference.duo_default_namespace).to be_nil
+    end
+  end
+
+  describe '#duo_default_namespace_id=' do
+    let_it_be(:namespace) { create(:group, :private) }
+
+    def expect_assignment_id_and_namespace_id(assignment_id, namespace_id)
+      expect(user_preference).to have_attributes(
+        default_duo_add_on_assignment_id: assignment_id,
+        duo_default_namespace_id: namespace_id
+      )
+    end
+
+    context 'when setting namespace_id to a value' do
+      it 'sets duo_default_namespace_id' do
+        user_preference.duo_default_namespace_id = namespace.id
+
+        expect_assignment_id_and_namespace_id(nil, namespace.id)
+      end
+
+      it 'sets duo_default_namespace_id and does not update default_duo_add_on_assignment_id' do
+        user_preference.default_duo_add_on_assignment_id = 123
+
+        user_preference.duo_default_namespace_id = namespace.id
+
+        expect_assignment_id_and_namespace_id(123, namespace.id)
+      end
+    end
+
+    context 'when setting namespace_id to nil' do
+      it 'clears both duo_default_namespace_id and default_duo_add_on_assignment_id' do
+        user_preference.default_duo_add_on_assignment_id = 123
+        user_preference.duo_default_namespace_id = namespace.id
+
+        user_preference.duo_default_namespace_id = nil
+
+        expect_assignment_id_and_namespace_id(nil, nil)
+      end
+    end
+  end
+
+  describe '#validate_duo_default_namespace_id' do
+    let_it_be(:namespace) { create(:group, :private) }
+
+    def expect_valid(valid)
+      expect(user_preference.valid?).to eq(valid)
+      expect(user_preference.errors.added?(:duo_default_namespace_id, :invalid)).to be true unless valid
+    end
+
+    it 'is valid when duo_default_namespace_id is nil' do
+      user_preference.duo_default_namespace_id = nil
+
+      expect_valid(true)
+    end
+
+    it 'is valid when user has read access to the namespace' do
+      namespace.add_developer(user)
+      user_preference.duo_default_namespace_id = namespace.id
+
+      expect_valid(true)
+    end
+
+    it 'adds error when user does not have read access to the namespace' do
+      user_preference.duo_default_namespace_id = namespace.id
+
+      expect_valid(false)
+    end
+
+    it 'adds error when duo_default_namespace is set directly instead of duo_default_namespace_id' do
+      user_preference.duo_default_namespace = namespace
+
+      expect_valid(false)
     end
   end
 end
