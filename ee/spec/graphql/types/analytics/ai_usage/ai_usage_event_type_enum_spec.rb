@@ -44,7 +44,8 @@ RSpec.describe Types::Analytics::AiUsage::AiUsageEventTypeEnum, feature_category
       'AGENT_PLATFORM_SESSION_STARTED' => have_attributes(value: 'agent_platform_session_started'),
       'AGENT_PLATFORM_SESSION_FINISHED' => have_attributes(value: 'agent_platform_session_finished'),
       'AGENT_PLATFORM_SESSION_DROPPED' => have_attributes(value: 'agent_platform_session_dropped'),
-      'AGENT_PLATFORM_SESSION_STOPPED' => have_attributes(value: 'agent_platform_session_stopped')
+      'AGENT_PLATFORM_SESSION_STOPPED' => have_attributes(value: 'agent_platform_session_stopped'),
+      'AGENT_PLATFORM_SESSION_RESUMED' => have_attributes(value: 'agent_platform_session_resumed')
     )
   end
 end
