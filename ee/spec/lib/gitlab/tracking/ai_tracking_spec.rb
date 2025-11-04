@@ -214,6 +214,7 @@ RSpec.describe Gitlab::Tracking::AiTracking, feature_category: :value_stream_man
       agent_platform_session_finished
       agent_platform_session_dropped
       agent_platform_session_stopped
+      agent_platform_session_resumed
     ].each do |e|
       context "for `#{e}` event" do
         let(:event_name) { e }

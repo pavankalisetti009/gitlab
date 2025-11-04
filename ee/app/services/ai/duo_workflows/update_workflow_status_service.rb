@@ -5,11 +5,12 @@ module Ai
     class UpdateWorkflowStatusService
       include Concerns::WorkflowEventTracking
 
-      EVENT_STATUSES = {
+      TRACKABLE_EVENT_STATUSES = {
         'start' => 'agent_platform_session_started',
         'finish' => 'agent_platform_session_finished',
         'drop' => 'agent_platform_session_dropped',
-        'stop' => 'agent_platform_session_stopped'
+        'stop' => 'agent_platform_session_stopped',
+        'resume' => 'agent_platform_session_resumed'
       }.freeze
 
       def initialize(workflow:, status_event:, current_user:)
@@ -56,7 +57,7 @@ module Ai
       end
 
       def track_agent_platform_session_event
-        event_name = EVENT_STATUSES[@status_event]
+        event_name = TRACKABLE_EVENT_STATUSES[@status_event]
         return unless event_name
 
         track_workflow_event(event_name, @workflow)
