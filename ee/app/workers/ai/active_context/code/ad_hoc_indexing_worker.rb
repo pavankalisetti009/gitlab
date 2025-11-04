@@ -32,7 +32,7 @@ module Ai
         def project_eligible_for_indexing?(project)
           return false if Feature.disabled?(:active_context_code_index_project, project)
           return false unless project.project_setting.duo_features_enabled
-          return false unless enabled_namespace_for_project(project)
+          return false unless enabled_namespace_for_project(project)&.ready?
 
           true
         end

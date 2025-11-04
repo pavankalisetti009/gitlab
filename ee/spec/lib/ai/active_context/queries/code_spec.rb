@@ -274,7 +274,7 @@ RSpec.describe Ai::ActiveContext::Queries::Code, feature_category: :code_suggest
           before do
             project.reload.ready_active_context_code_repository.destroy!
 
-            allow(Ai::ActiveContext::Code::AdHocIndexingWorker).to receive(:perform_async)
+            allow(Ai::ActiveContext::Code::AdHocIndexingWorker).to receive(:perform_async).and_return(true)
           end
 
           let(:project_id) { project.id }
@@ -287,6 +287,17 @@ RSpec.describe Ai::ActiveContext::Queries::Code, feature_category: :code_suggest
 
           it_behaves_like 'returns no code embeddings error result' do
             let(:expected_error_detail) { described_class::MESSAGE_INITIAL_INDEXING_STARTED }
+          end
+
+          context 'when ad-hoc indexing attempt is not successful' do
+            before do
+              allow(Ai::ActiveContext::Code::AdHocIndexingWorker).to receive(:perform_async)
+                .and_return(false)
+            end
+
+            it_behaves_like 'returns no code embeddings error result' do
+              let(:expected_error_detail) { described_class::MESSAGE_ADHOC_INDEXING_TRIGGER_FAILED }
+            end
           end
 
           context 'when ad-hoc indexing attempt fails' do

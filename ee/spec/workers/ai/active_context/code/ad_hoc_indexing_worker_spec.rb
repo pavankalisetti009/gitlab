@@ -10,7 +10,12 @@ RSpec.describe Ai::ActiveContext::Code::AdHocIndexingWorker, feature_category: :
   end
 
   let_it_be(:enabled_namespace) do
-    create(:ai_active_context_code_enabled_namespace, namespace: project.namespace, connection_id: connection.id)
+    create(
+      :ai_active_context_code_enabled_namespace,
+      namespace: project.namespace,
+      connection_id: connection.id,
+      state: :ready
+    )
   end
 
   subject(:perform) { described_class.new.perform(project.id) }
