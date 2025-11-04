@@ -1,0 +1,12 @@
+---
+name: ai_dap_use_headless_node_executor
+description: | 
+  This feature flag allows for project and user gates controlling rollout
+  of a switch from Go to headless Node Executor for Duo Agent Platform
+feature_issue_url: https://gitlab.com/gitlab-org/gitlab/-/issues/576424
+introduced_by_url: https://gitlab.com/gitlab-org/gitlab/-/merge_requests/211546
+rollout_issue_url: https://gitlab.com/gitlab-org/gitlab/-/issues/579500
+milestone: '18.6'
+group: group::agent foundations
+type: gitlab_com_derisk
+default_enabled: false

@@ -616,6 +616,19 @@ RSpec.describe ::Ai::DuoWorkflows::StartWorkflowService, feature_category: :duo_
   context 'with setup_script configuration' do
     let(:duo_config) { instance_double(::Gitlab::DuoAgentPlatform::Config) }
     let(:setup_commands) { ['npm install', 'npm run build', 'npm test'] }
+    let(:main_commands) do
+      [
+        %(echo $DUO_WORKFLOW_DEFINITION),
+        %(echo $DUO_WORKFLOW_GOAL),
+        %(echo $DUO_WORKFLOW_SOURCE_BRANCH),
+        %(git checkout $CI_WORKLOAD_REF),
+        %(echo $DUO_WORKFLOW_FLOW_CONFIG),
+        %(echo $DUO_WORKFLOW_FLOW_CONFIG_SCHEMA_VERSION),
+        %(echo $DUO_WORKFLOW_ADDITIONAL_CONTEXT_CONTENT),
+        %(echo Starting Workflow #{workflow.id}),
+        %(npx -y @gitlab/duo-cli@^8.31.0 run --existing-session-id #{workflow.id})
+      ]
+    end
 
     before do
       allow(::Gitlab::Llm::StageCheck).to receive(:available?).with(project, :duo_workflow).and_return(true)
@@ -635,45 +648,116 @@ RSpec.describe ::Ai::DuoWorkflows::StartWorkflowService, feature_category: :duo_
       end
 
       it 'prepends setup_script commands to the main commands' do
-        expect(Ci::Workloads::RunWorkloadService).to receive(:new) do |workload_definition:, **_kwargs|
-          commands = workload_definition.commands
-
-          # Verify setup commands are prepended
-          expect(commands[0]).to eq('npm install')
-          expect(commands[1]).to eq('npm run build')
-          expect(commands[2]).to eq('npm test')
-
-          # Verify main commands follow
-          expect(commands[3]).to eq('echo $DUO_WORKFLOW_DEFINITION')
-          expect(commands[4]).to eq('echo $DUO_WORKFLOW_GOAL')
-          expect(commands[5]).to eq('git checkout $CI_WORKLOAD_REF')
-
-          # Total should be setup commands + main commands
-          expect(commands.size).to eq(11) # 3 setup + 8 main
-        end.and_call_original
+        allow(Ci::Workloads::RunWorkloadService).to receive(:new).and_call_original
 
         expect(execute).to be_success
+
+        expect(Ci::Workloads::RunWorkloadService).to have_received(:new) do |workload_definition:, **_kwargs|
+          expect(workload_definition.commands).to eq(setup_commands + main_commands)
+        end
+
+        expect(execute).to be_success
+      end
+
+      context 'without ai_dap_use_headless_node_executor feature flag' do
+        before do
+          stub_feature_flags(ai_dap_use_headless_node_executor: false)
+        end
+
+        let(:main_commands) do
+          [
+            %(echo $DUO_WORKFLOW_DEFINITION),
+            %(echo $DUO_WORKFLOW_GOAL),
+            %(echo $DUO_WORKFLOW_SOURCE_BRANCH),
+            %(git checkout $CI_WORKLOAD_REF),
+            %(echo $DUO_WORKFLOW_FLOW_CONFIG),
+            %(echo $DUO_WORKFLOW_FLOW_CONFIG_SCHEMA_VERSION),
+            %(echo $DUO_WORKFLOW_ADDITIONAL_CONTEXT_CONTENT),
+            %(echo Starting Workflow #{workflow.id}),
+            %(wget #{Gitlab::DuoWorkflow::Executor.executor_binary_url} -O /tmp/duo-workflow-executor.tar.gz),
+            %(tar xf /tmp/duo-workflow-executor.tar.gz --directory /tmp),
+            %(chmod +x /tmp/duo-workflow-executor),
+            %(/tmp/duo-workflow-executor)
+          ]
+        end
+
+        it 'prepends setup_script commands to the main commands' do
+          allow(Ci::Workloads::RunWorkloadService).to receive(:new).and_call_original
+
+          expect(execute).to be_success
+
+          expect(Ci::Workloads::RunWorkloadService).to have_received(:new) do |workload_definition:, **_kwargs|
+            expect(workload_definition.commands).to eq(setup_commands + main_commands)
+          end
+
+          expect(execute).to be_success
+        end
       end
     end
 
     context 'when setup_script is not present' do
       before do
         allow(duo_config).to receive(:setup_script).and_return(nil)
+        allow(Ci::Workloads::RunWorkloadService).to receive(:new).and_call_original
+      end
+
+      let(:main_commands) do
+        [
+          %(echo $DUO_WORKFLOW_DEFINITION),
+          %(echo $DUO_WORKFLOW_GOAL),
+          %(echo $DUO_WORKFLOW_SOURCE_BRANCH),
+          %(git checkout $CI_WORKLOAD_REF),
+          %(echo $DUO_WORKFLOW_FLOW_CONFIG),
+          %(echo $DUO_WORKFLOW_FLOW_CONFIG_SCHEMA_VERSION),
+          %(echo $DUO_WORKFLOW_ADDITIONAL_CONTEXT_CONTENT),
+          %(echo Starting Workflow #{workflow.id}),
+          %(npx -y @gitlab/duo-cli@^8.31.0 run --existing-session-id #{workflow.id})
+        ]
       end
 
       it 'uses only the main commands' do
-        expect(Ci::Workloads::RunWorkloadService).to receive(:new) do |workload_definition:, **_kwargs|
-          commands = workload_definition.commands
+        expect(execute).to be_success
 
-          # Should start with main commands
-          expect(commands[0]).to eq('echo $DUO_WORKFLOW_DEFINITION')
-          expect(commands[1]).to eq('echo $DUO_WORKFLOW_GOAL')
-
-          # Should have only main commands
-          expect(commands.size).to eq(8)
-        end.and_call_original
+        expect(Ci::Workloads::RunWorkloadService).to have_received(:new) do |workload_definition:, **_kwargs|
+          expect(workload_definition.commands).to eq(main_commands)
+        end
 
         expect(execute).to be_success
+      end
+
+      context 'without ai_dap_use_headless_node_executor feature flag' do
+        before do
+          stub_feature_flags(ai_dap_use_headless_node_executor: false)
+        end
+
+        let(:main_commands) do
+          [
+            %(echo $DUO_WORKFLOW_DEFINITION),
+            %(echo $DUO_WORKFLOW_GOAL),
+            %(echo $DUO_WORKFLOW_SOURCE_BRANCH),
+            %(git checkout $CI_WORKLOAD_REF),
+            %(echo $DUO_WORKFLOW_FLOW_CONFIG),
+            %(echo $DUO_WORKFLOW_FLOW_CONFIG_SCHEMA_VERSION),
+            %(echo $DUO_WORKFLOW_ADDITIONAL_CONTEXT_CONTENT),
+            %(echo Starting Workflow #{workflow.id}),
+            %(wget #{Gitlab::DuoWorkflow::Executor.executor_binary_url} -O /tmp/duo-workflow-executor.tar.gz),
+            %(tar xf /tmp/duo-workflow-executor.tar.gz --directory /tmp),
+            %(chmod +x /tmp/duo-workflow-executor),
+            %(/tmp/duo-workflow-executor)
+          ]
+        end
+
+        it 'prepends setup_script commands to the main commands' do
+          allow(Ci::Workloads::RunWorkloadService).to receive(:new).and_call_original
+
+          expect(execute).to be_success
+
+          expect(Ci::Workloads::RunWorkloadService).to have_received(:new) do |workload_definition:, **_kwargs|
+            expect(workload_definition.commands).to eq(main_commands)
+          end
+
+          expect(execute).to be_success
+        end
       end
     end
 

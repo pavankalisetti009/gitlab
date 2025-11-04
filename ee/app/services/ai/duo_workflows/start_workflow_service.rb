@@ -101,13 +101,14 @@ module Ai
           DUO_WORKFLOW_FLOW_CONFIG_SCHEMA_VERSION: @params[:flow_config_schema_version],
           DUO_WORKFLOW_GOAL: @params[:goal],
           DUO_WORKFLOW_SOURCE_BRANCH: @params.fetch(:source_branch, nil),
-          DUO_WORKFLOW_WORKFLOW_ID: String(@params[:workflow_id]),
+          DUO_WORKFLOW_WORKFLOW_ID: String(@workflow.id),
           GITLAB_OAUTH_TOKEN: @params[:workflow_oauth_token],
           DUO_WORKFLOW_SERVICE_SERVER: Gitlab::DuoWorkflow::Client.url_for(
             feature_setting: feature_setting,
             user: @current_user
           ),
           DUO_WORKFLOW_SERVICE_TOKEN: @params[:workflow_service_token],
+
           DUO_WORKFLOW_SERVICE_REALM: ::CloudConnector.gitlab_realm,
           DUO_WORKFLOW_GLOBAL_USER_ID: Gitlab::GlobalAnonymousId.user_id(@current_user),
           DUO_WORKFLOW_INSTANCE_ID: Gitlab::GlobalAnonymousId.instance_id,
@@ -115,9 +116,12 @@ module Ai
           DUO_WORKFLOW_DEBUG: Gitlab::DuoWorkflow::Client.debug_mode? ? 'true' : 'false',
           DUO_WORKFLOW_GIT_HTTP_BASE_URL: Gitlab.config.gitlab.url,
           DUO_WORKFLOW_GIT_HTTP_PASSWORD: @params[:workflow_oauth_token],
+          GITLAB_TOKEN: @params[:workflow_oauth_token],
           DUO_WORKFLOW_GIT_HTTP_USER: "oauth",
           DUO_WORKFLOW_GIT_USER_EMAIL: git_user_email(@workload_user),
           DUO_WORKFLOW_METADATA: @params[:workflow_metadata],
+          DUO_WORKFLOW_PROJECT_ID: project.id,
+          DUO_WORKFLOW_NAMESPACE_ID: project.root_namespace.id,
           GITLAB_BASE_URL: Gitlab.config.gitlab.url,
           AGENT_PLATFORM_GITLAB_VERSION: Gitlab.version_info.to_s,
           AGENT_PLATFORM_MODEL_METADATA: agent_platform_model_metadata_json
@@ -138,12 +142,24 @@ module Ai
           %(echo $DUO_WORKFLOW_FLOW_CONFIG),
           %(echo $DUO_WORKFLOW_FLOW_CONFIG_SCHEMA_VERSION),
           %(echo $DUO_WORKFLOW_ADDITIONAL_CONTEXT_CONTENT),
-          %(echo Starting Workflow #{String(@params[:workflow_id])}),
-          %(wget #{Gitlab::DuoWorkflow::Executor.executor_binary_url} -O /tmp/duo-workflow-executor.tar.gz),
-          %(tar xf /tmp/duo-workflow-executor.tar.gz --directory /tmp),
-          %(chmod +x /tmp/duo-workflow-executor),
-          %(/tmp/duo-workflow-executor)
-        ]
+          %(echo Starting Workflow #{@workflow.id})
+        ] + set_up_executor_commands
+      end
+
+      def set_up_executor_commands
+        if Feature.enabled?(:ai_dap_use_headless_node_executor, project) && \
+            Feature.enabled?(:ai_dap_use_headless_node_executor, @current_user)
+          [
+            %(npx -y @gitlab/duo-cli@^8.31.0 run --existing-session-id #{@workflow.id})
+          ]
+        else
+          [
+            %(wget #{Gitlab::DuoWorkflow::Executor.executor_binary_url} -O /tmp/duo-workflow-executor.tar.gz),
+            %(tar xf /tmp/duo-workflow-executor.tar.gz --directory /tmp),
+            %(chmod +x /tmp/duo-workflow-executor),
+            %(/tmp/duo-workflow-executor)
+          ]
+        end
       end
 
       def duo_workflow_service_account
