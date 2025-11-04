@@ -57,6 +57,7 @@ describe('MrWidgetPipelineDuoAction', () => {
           AGENT_PRIVILEGES.READ_WRITE_FILES,
           AGENT_PRIVILEGES.READ_ONLY_GITLAB,
           AGENT_PRIVILEGES.READ_WRITE_GITLAB,
+          AGENT_PRIVILEGES.RUN_COMMANDS,
           AGENT_PRIVILEGES.USE_GIT,
         ],
         additionalContext: [

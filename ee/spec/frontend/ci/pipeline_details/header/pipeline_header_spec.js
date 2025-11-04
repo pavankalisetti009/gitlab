@@ -2,6 +2,7 @@ import Vue from 'vue';
 import VueApollo from 'vue-apollo';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import createMockApollo from 'helpers/mock_apollo_helper';
+import { AGENT_PRIVILEGES } from '~/duo_agent_platform/constants';
 import waitForPromises from 'helpers/wait_for_promises';
 import PipelineHeader from '~/ci/pipeline_details/header/pipeline_header.vue';
 import getPipelineDetailsQuery from '~/ci/pipeline_details/header/graphql/queries/get_pipeline_header_data.query.graphql';
@@ -161,7 +162,13 @@ describe('Pipeline header', () => {
         goal: expect.stringContaining('https://gitlab.example.com'),
         size: 'medium',
         sourceBranch: 'master',
-        agentPrivileges: [1, 2, 3, 5],
+        agentPrivileges: [
+          AGENT_PRIVILEGES.READ_WRITE_FILES,
+          AGENT_PRIVILEGES.READ_ONLY_GITLAB,
+          AGENT_PRIVILEGES.READ_WRITE_GITLAB,
+          AGENT_PRIVILEGES.RUN_COMMANDS,
+          AGENT_PRIVILEGES.USE_GIT,
+        ],
       });
 
       expect(duoAction.props('additionalContext')).toEqual([

@@ -7,6 +7,7 @@ import { mountExtended } from 'helpers/vue_test_utils_helper';
 import PipelinesTable from '~/ci/common/pipelines_table.vue';
 import { PIPELINE_ID_KEY } from '~/ci/constants';
 import DuoWorkflowAction from 'ee/ai/components/duo_workflow_action.vue';
+import { AGENT_PRIVILEGES } from '~/duo_agent_platform/constants';
 
 Vue.use(VueApollo);
 
@@ -151,6 +152,14 @@ describe('EE - Pipelines Table', () => {
       },
     };
 
+    const fixPipelineAgentPrivileges = [
+      AGENT_PRIVILEGES.READ_WRITE_FILES,
+      AGENT_PRIVILEGES.READ_ONLY_GITLAB,
+      AGENT_PRIVILEGES.READ_WRITE_GITLAB,
+      AGENT_PRIVILEGES.RUN_COMMANDS,
+      AGENT_PRIVILEGES.USE_GIT,
+    ];
+
     beforeEach(() => {
       window.gon = { gitlab_url: 'https://gitlab.com' };
     });
@@ -190,7 +199,7 @@ describe('EE - Pipelines Table', () => {
             hoverMessage: 'Fix pipeline with Duo',
             workflowDefinition: 'fix_pipeline/v1',
             size: 'medium',
-            agentPrivileges: [1, 2, 3, 5],
+            agentPrivileges: fixPipelineAgentPrivileges,
             sourceBranch: 'feature-branch',
             additionalContext: [
               {
@@ -232,7 +241,7 @@ describe('EE - Pipelines Table', () => {
             hoverMessage: 'Fix pipeline with Duo',
             workflowDefinition: 'fix_pipeline/v1',
             size: 'medium',
-            agentPrivileges: [1, 2, 3, 5],
+            agentPrivileges: fixPipelineAgentPrivileges,
             sourceBranch: 'master',
             additionalContext: [
               {
