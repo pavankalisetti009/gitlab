@@ -1,7 +1,6 @@
 # frozen_string_literal: true
 
 require 'spec_helper'
-
 RSpec.describe 'Delete Secret Permission', :gitlab_secrets_manager, feature_category: :secrets_management do
   include GraphqlHelpers
 
@@ -23,7 +22,7 @@ RSpec.describe 'Delete Secret Permission', :gitlab_secrets_manager, feature_cate
   let(:mutation) { graphql_mutation(mutation_name, params) }
   let(:mutation_response) { graphql_mutation_response(mutation_name) }
 
-  subject(:delete_mutation) { post_graphql_mutation(mutation, current_user: current_user) }
+  subject(:post_mutation) { post_graphql_mutation(mutation, current_user: current_user) }
 
   before do
     provision_project_secrets_manager(secrets_manager, current_user)
@@ -57,10 +56,12 @@ RSpec.describe 'Delete Secret Permission', :gitlab_secrets_manager, feature_cate
     end
 
     it 'deletes the secret permission', :aggregate_failures do
-      delete_mutation
+      post_mutation
       expect(response).to have_gitlab_http_status(:success)
       expect(mutation_response['errors']).to be_empty
     end
+
+    it_behaves_like 'an API request requiring an exclusive project secret operation lease'
   end
 
   context 'and service results to a failure' do
@@ -79,7 +80,7 @@ RSpec.describe 'Delete Secret Permission', :gitlab_secrets_manager, feature_cate
         expect(service).to receive(:execute).and_return(result)
       end
 
-      delete_mutation
+      post_mutation
 
       expect(mutation_response['errors']).to include('some error')
     end
@@ -94,7 +95,7 @@ RSpec.describe 'Delete Secret Permission', :gitlab_secrets_manager, feature_cate
     end
 
     it 'the current user is able to delete the existing secret permission', :aggregate_failures do
-      delete_mutation
+      post_mutation
       expect(response).to have_gitlab_http_status(:success)
       expect(mutation_response['errors']).to be_empty
     end
@@ -114,7 +115,7 @@ RSpec.describe 'Delete Secret Permission', :gitlab_secrets_manager, feature_cate
     it 'returns an error' do
       stub_feature_flags(secrets_manager: false)
 
-      delete_mutation
+      post_mutation
 
       expect_graphql_errors_to_include(err_message)
     end

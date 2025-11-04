@@ -142,5 +142,7 @@ RSpec.describe 'Delete project secret', :gitlab_secrets_manager, feature_categor
         expect_graphql_errors_to_include(error_message)
       end
     end
+
+    it_behaves_like 'an API request requiring an exclusive project secret operation lease'
   end
 end

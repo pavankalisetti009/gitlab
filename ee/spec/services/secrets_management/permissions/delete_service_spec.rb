@@ -1,7 +1,6 @@
 # frozen_string_literal: true
 
 require 'spec_helper'
-
 RSpec.describe SecretsManagement::Permissions::DeleteService, :gitlab_secrets_manager, feature_category: :secrets_management do
   include SecretsManagement::GitlabSecretsManagerHelpers
 
@@ -29,6 +28,8 @@ RSpec.describe SecretsManagement::Permissions::DeleteService, :gitlab_secrets_ma
         it 'deletes a secret permission and cleans up everything' do
           expect(result).to be_success
         end
+
+        it_behaves_like 'an operation requiring an exclusive project secret operation lease'
       end
 
       context 'when principal-id format is invalid' do

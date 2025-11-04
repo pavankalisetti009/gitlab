@@ -5,8 +5,17 @@ module SecretsManagement
     class DeleteService < BaseService
       include SecretsManagerClientHelpers
       include ErrorResponseHelper
+      include Helpers::ExclusiveLeaseHelper
 
       def execute(principal:)
+        with_exclusive_lease_for(project) do
+          execute_delete_permission(principal: principal)
+        end
+      end
+
+      private
+
+      def execute_delete_permission(principal:)
         secrets_manager = project.secrets_manager
         return inactive_response unless secrets_manager&.active?
 
@@ -18,8 +27,6 @@ module SecretsManagement
 
         delete_permission(secret_permission)
       end
-
-      private
 
       def delete_permission(secret_permission)
         project_secrets_manager_client.delete_policy(secret_permission)

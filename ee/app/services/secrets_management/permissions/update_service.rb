@@ -4,10 +4,24 @@ module SecretsManagement
   module Permissions
     class UpdateService < BaseService
       include SecretsManagerClientHelpers
+      include Helpers::ExclusiveLeaseHelper
 
       INTERNAL_PERMISSIONS = %w[list scan].freeze
 
       def execute(principal_id:, principal_type:, permissions:, expired_at:)
+        with_exclusive_lease_for(project) do
+          execute_update_permission(principal_id: principal_id,
+            principal_type: principal_type,
+            permissions:  permissions,
+            expired_at: expired_at)
+        end
+      end
+
+      private
+
+      delegate :secrets_manager, to: :project
+
+      def execute_update_permission(principal_id:, principal_type:, permissions:, expired_at:)
         secret_permission = SecretsManagement::SecretPermission.new(principal_id: principal_id,
           principal_type: principal_type,
           resource_type: 'Project',
@@ -19,10 +33,6 @@ module SecretsManagement
 
         store_permission(secret_permission)
       end
-
-      private
-
-      delegate :secrets_manager, to: :project
 
       def store_permission(secret_permission)
         return error_response(secret_permission) unless secret_permission.valid?

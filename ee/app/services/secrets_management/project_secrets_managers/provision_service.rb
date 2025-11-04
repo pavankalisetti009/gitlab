@@ -4,6 +4,7 @@ module SecretsManagement
   module ProjectSecretsManagers
     class ProvisionService < BaseService
       include SecretsManagerClientHelpers
+      include Helpers::ExclusiveLeaseHelper
 
       SECRETS_ENGINE_TYPE = 'kv-v2'
       OWNER_PRINCIPAL_ID = Gitlab::Access.sym_options_with_owner[:owner]
@@ -17,6 +18,14 @@ module SecretsManagement
       end
 
       def execute
+        with_exclusive_lease_for(project, lease_timeout: 120.seconds.to_i) do
+          execute_provision
+        end
+      end
+
+      private
+
+      def execute_provision
         update_gitlab_rails_jwt_role
         enable_namespaces
         enable_secret_store
@@ -26,8 +35,6 @@ module SecretsManagement
         activate_secrets_manager
         ServiceResponse.success(payload: { project_secrets_manager: secrets_manager })
       end
-
-      private
 
       def enable_namespaces
         # This namespaces may already exist if there's another project in

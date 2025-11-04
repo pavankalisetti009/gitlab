@@ -7,6 +7,7 @@ module Mutations
         graphql_name 'SecretPermissionUpdate'
 
         include ResolvesProject
+        include Helpers::ErrorMessagesHelpers
 
         authorize :admin_project_secrets_manager
 
@@ -51,7 +52,7 @@ module Mutations
           else
             {
               secret_permission: nil,
-              errors: errors_on_object(result.payload[:secret_permission])
+              errors: error_messages(result, [:secret_permission])
             }
           end
         end

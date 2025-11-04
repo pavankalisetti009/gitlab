@@ -1,7 +1,6 @@
 # frozen_string_literal: true
 
 require 'spec_helper'
-
 RSpec.describe SecretsManagement::ProjectSecrets::DeleteService, :gitlab_secrets_manager, feature_category: :secrets_management do
   include SecretsManagement::GitlabSecretsManagerHelpers
 
@@ -60,6 +59,8 @@ RSpec.describe SecretsManagement::ProjectSecrets::DeleteService, :gitlab_secrets
 
           expect_project_secret_not_to_exist(project, name, user)
         end
+
+        it_behaves_like 'an operation requiring an exclusive project secret operation lease'
       end
 
       context 'when multiple secrets share the same policy' do

@@ -76,6 +76,8 @@ RSpec.describe 'Update Secret Permission', :gitlab_secrets_manager, feature_cate
         expect(mutation_response['secretPermission']['permissions']).to eq(permissions.to_s)
         expect(mutation_response['secretPermission']['expiredAt']).to eq(expired_at)
       end
+
+      it_behaves_like 'an API request requiring an exclusive project secret operation lease'
     end
 
     context 'and service results to a failure' do

@@ -6,8 +6,20 @@ module SecretsManagement
       include SecretsManagerClientHelpers
       include CiPolicies::SecretRefresherHelper
       include Helpers::UserClientHelper
+      include Helpers::ExclusiveLeaseHelper
+      include ErrorResponseHelper
 
       def execute(name)
+        with_exclusive_lease_for(project) do
+          execute_secret_deletion(name)
+        end
+      end
+
+      private
+
+      delegate :secrets_manager, to: :project
+
+      def execute_secret_deletion(name)
         return inactive_response unless secrets_manager&.active?
 
         read_service = ProjectSecrets::ReadService.new(project, current_user)
@@ -26,14 +38,6 @@ module SecretsManagement
         refresh_secret_ci_policies(project_secret, delete: true)
 
         ServiceResponse.success(payload: { project_secret: project_secret })
-      end
-
-      private
-
-      delegate :secrets_manager, to: :project
-
-      def inactive_response
-        ServiceResponse.error(message: 'Project secrets manager is not active')
       end
     end
   end

@@ -1,7 +1,6 @@
 # frozen_string_literal: true
 
 require 'spec_helper'
-
 RSpec.describe SecretsManagement::ProjectSecrets::UpdateService, :gitlab_secrets_manager, feature_category: :secrets_management do
   include SecretsManagement::GitlabSecretsManagerHelpers
 
@@ -153,6 +152,7 @@ RSpec.describe SecretsManagement::ProjectSecrets::UpdateService, :gitlab_secrets
         end
 
         it_behaves_like 'handling empty rotation_interval_days parameter'
+        it_behaves_like 'an operation requiring an exclusive project secret operation lease'
       end
 
       context 'when adding rotation to a secret without existing rotation' do

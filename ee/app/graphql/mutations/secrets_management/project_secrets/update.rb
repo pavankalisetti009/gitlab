@@ -6,6 +6,7 @@ module Mutations
       class Update < BaseMutation
         graphql_name 'ProjectSecretUpdate'
 
+        include Helpers::ErrorMessagesHelpers
         include Gitlab::InternalEventsTracking
         include ResolvesProject
 
@@ -74,7 +75,7 @@ module Mutations
           else
             {
               project_secret: nil,
-              errors: errors_on_object(result.payload[:project_secret])
+              errors: error_messages(result, [:project_secret])
             }
           end
         end
