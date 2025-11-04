@@ -1,5 +1,4 @@
 import { GlKeysetPagination, GlSprintf } from '@gitlab/ui';
-import { RouterLinkStub as RouterLink } from '@vue/test-utils';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import AiCatalogList from 'ee/ai/catalog/components/ai_catalog_list.vue';
 import AiCatalogListItem from 'ee/ai/catalog/components/ai_catalog_list_item.vue';
@@ -32,7 +31,6 @@ describe('AiCatalogList', () => {
       slots,
       stubs: {
         GlSprintf,
-        RouterLink,
       },
     });
   };

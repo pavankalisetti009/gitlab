@@ -80,7 +80,7 @@ describe('AiCatalogListItem', () => {
 
   const findIcon = () => wrapper.findComponent(GlIcon);
   const findTooltip = () => wrapper.findByTestId('ai-catalog-item-tooltip');
-  const findListItemLink = () => wrapper.findByTestId('ai-catalog-item-link');
+  const findListItemLink = () => wrapper.findComponent(RouterLink);
   const findDisclosureDropdown = () => wrapper.findAllComponents(GlDisclosureDropdown);
   const findDisclosureDropdownItems = () => wrapper.findAllComponents(GlDisclosureDropdownItem);
 
@@ -164,7 +164,7 @@ describe('AiCatalogListItem', () => {
       it('renders the private tooltip', () => {
         const tooltip = findTooltip();
 
-        expect(tooltip.element.getAttribute('title')).toBe(privateTooltip);
+        expect(tooltip.attributes('title')).toBe(privateTooltip);
       });
     });
 
@@ -184,7 +184,7 @@ describe('AiCatalogListItem', () => {
       it('renders the public tooltip', () => {
         const tooltip = findTooltip();
 
-        expect(tooltip.element.getAttribute('title')).toBe(publicTooltip);
+        expect(tooltip.attributes('title')).toBe(publicTooltip);
       });
     });
   });
