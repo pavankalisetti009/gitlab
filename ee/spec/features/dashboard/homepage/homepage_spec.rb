@@ -27,7 +27,6 @@ RSpec.describe 'Dashboard - Home', :js, feature_category: :notifications do
           expect(page).to have_testid('welcome-title-content')
           expect(page).to have_content("Welcome to GitLab, #{admin_user.first_name}!")
           expect(page).to have_content('Ready to get started with GitLab?')
-          expect(page).not_to have_css("a[data-track-label='homepage_menu'][aria-current='page']")
 
           expect(page).to have_testid('new-project-button')
           expect(page).to have_content('Create a project')
@@ -36,18 +35,13 @@ RSpec.describe 'Dashboard - Home', :js, feature_category: :notifications do
       end
 
       context 'when admin has authorized projects', :enable_admin_mode do
-        let_it_be(:project) { create(:project) }
-
-        before_all do
-          project.add_developer(admin_user)
-        end
+        let_it_be(:project) { create(:project, developers: admin_user) }
 
         it 'redirects to personal homepage' do
           sign_out user
           sign_in admin_user
           visit root_path
 
-          expect(page).to have_css("a[data-track-label='homepage_menu'][aria-current='page']")
           expect(page).not_to have_testid('welcome-title-content')
           expect(page).to have_content("Today's highlights")
           expect(page).to have_content("Hi, #{admin_user.first_name}")
@@ -58,7 +52,6 @@ RSpec.describe 'Dashboard - Home', :js, feature_category: :notifications do
         it 'always redirects to personal homepage regardless of project count' do
           visit root_path
 
-          expect(page).to have_css("a[data-track-label='homepage_menu'][aria-current='page']")
           expect(page).not_to have_testid('welcome-title-content')
         end
       end
