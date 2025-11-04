@@ -10,7 +10,7 @@ module EE
         def configure_menus
           super
 
-          if context.group&.work_items_consolidated_list_enabled?
+          if context.group&.work_items_consolidated_list_enabled?(context.current_user)
             insert_menu_after(
               context.is_super_sidebar ? ::Sidebars::Groups::Menus::SettingsMenu : ::Sidebars::Groups::Menus::GroupInformationMenu,
               ::Sidebars::Groups::Menus::WorkItemEpicsMenu.new(context)

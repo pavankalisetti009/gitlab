@@ -9,7 +9,7 @@ module EE
 
       override :create_epic_menu_item
       def create_epic_menu_item(group)
-        return if group&.work_items_consolidated_list_enabled?
+        return if group&.work_items_consolidated_list_enabled?(current_user)
 
         if can?(current_user, :create_epic, group)
           ::Gitlab::Nav::TopNavMenuItem.build(
