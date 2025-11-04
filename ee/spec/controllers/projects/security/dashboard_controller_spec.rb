@@ -46,12 +46,6 @@ RSpec.describe Projects::Security::DashboardController, feature_category: :vulne
         expect(response).to render_template(:index)
         expect(response.body).to have_css('div#js-project-security-dashboard[data-has-vulnerabilities="false"]')
       end
-
-      it_behaves_like 'internal event tracking' do
-        let(:event) { 'visit_security_dashboard' }
-        let(:category) { described_class.name }
-        subject(:service_action) { show_security_dashboard }
-      end
     end
 
     context 'when project has vulnerabilities' do
@@ -68,14 +62,46 @@ RSpec.describe Projects::Security::DashboardController, feature_category: :vulne
       end
     end
 
-    it_behaves_like 'tracks govern usage event', 'security_dashboard' do
-      let(:request) { show_security_dashboard }
+    context 'when upgraded dashboard is available' do
+      before do
+        allow(controller).to receive(:can?).and_call_original
+        allow(controller).to receive(:can?)
+          .with(user, :access_advanced_vulnerability_management, project).and_return(true)
+      end
+
+      it_behaves_like 'tracks govern usage event', 'security_dashboard' do
+        let(:request) { show_security_dashboard }
+      end
+
+      it_behaves_like 'internal event tracking' do
+        let(:event) { 'visit_upgraded_security_dashboard' }
+        let(:category) { described_class.name }
+        subject(:service_action) { show_security_dashboard }
+      end
+
+      it 'does not track visit_security_dashboard event' do
+        expect { show_security_dashboard }.not_to trigger_internal_events('visit_security_dashboard')
+      end
     end
 
-    it_behaves_like 'internal event tracking' do
-      let(:event) { 'visit_security_dashboard' }
-      let(:category) { described_class.name }
-      subject(:service_action) { show_security_dashboard }
+    context 'when upgraded dashboard is not available' do
+      before do
+        stub_feature_flags(group_security_dashboard_new: false)
+      end
+
+      it_behaves_like 'tracks govern usage event', 'security_dashboard' do
+        let(:request) { show_security_dashboard }
+      end
+
+      it_behaves_like 'internal event tracking' do
+        let(:event) { 'visit_security_dashboard' }
+        let(:category) { described_class.name }
+        subject(:service_action) { show_security_dashboard }
+      end
+
+      it 'does not track visit_upgraded_security_dashboard event' do
+        expect { show_security_dashboard }.not_to trigger_internal_events('visit_upgraded_security_dashboard')
+      end
     end
   end
 end

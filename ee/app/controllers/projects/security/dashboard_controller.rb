@@ -17,7 +17,17 @@ module Projects
       feature_category :vulnerability_management
       urgency :low
       track_govern_activity 'security_dashboard', :index
-      track_internal_event :index, name: 'visit_security_dashboard', category: name
+      track_internal_event :index, name: 'visit_upgraded_security_dashboard', category: name,
+        conditions: -> { upgraded_dashboard_available? }
+      track_internal_event :index, name: 'visit_security_dashboard', category: name,
+        conditions: -> { !upgraded_dashboard_available? }
+
+      private
+
+      def upgraded_dashboard_available?
+        Feature.enabled?(:project_security_dashboard_new, project) &&
+          can?(current_user, :access_advanced_vulnerability_management, project)
+      end
     end
   end
 end
