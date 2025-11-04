@@ -230,7 +230,115 @@ export default {
           }),
       };
     },
-    securityTrackedRefs() {
+    securityTrackedRefs(_, { first, after }) {
+      const PAGE_SIZE = first || 3;
+
+      // Mock data with 12 items to test pagination
+      const allTrackedRefs = [
+        {
+          __typename: 'LocalTrackedRef',
+          id: 'gid://gitlab/TrackedRef/1',
+          name: 'Main',
+          refType: 'BRANCH',
+          isDefault: true,
+          isProtected: true,
+          commit: {
+            __typename: 'LocalTrackedCommit',
+            sha: 'df210850abc123',
+            shortId: 'df21085',
+            title: 'Apply 1 suggestion(s) to 1 file(s)',
+            authoredDate: '2025-10-20T09:59:00Z',
+            webPath: '/project/-/commit/df21085',
+          },
+          vulnerabilitiesCount: 258,
+        },
+        {
+          __typename: 'LocalTrackedRef',
+          id: 'gid://gitlab/TrackedRef/2',
+          name: 'v18.1.4-33',
+          refType: 'TAG',
+          isDefault: false,
+          isProtected: true,
+          commit: {
+            __typename: 'LocalTrackedCommit',
+            sha: '693bb5e6abc456',
+            shortId: '693bb5e6',
+            title: 'Update VERSION files',
+            authoredDate: '2025-10-15T14:30:00Z',
+            webPath: '/project/-/commit/693bb5e6',
+          },
+          vulnerabilitiesCount: 5,
+        },
+        {
+          __typename: 'LocalTrackedRef',
+          id: 'gid://gitlab/TrackedRef/3',
+          name: '18-2-stable-ee',
+          refType: 'BRANCH',
+          isDefault: false,
+          isProtected: true,
+          commit: {
+            __typename: 'LocalTrackedCommit',
+            sha: '7450f5f6def789',
+            shortId: '7450f5f6',
+            title: 'Version 18.2.0-ee',
+            authoredDate: '2025-10-14T08:15:00Z',
+            webPath: '/project/-/commit/7450f5f6',
+          },
+          vulnerabilitiesCount: 45,
+        },
+        {
+          __typename: 'LocalTrackedRef',
+          id: 'gid://gitlab/TrackedRef/4',
+          name: 'v18-2-stable-ee',
+          refType: 'TAG',
+          isDefault: false,
+          isProtected: true,
+          commit: {
+            __typename: 'LocalTrackedCommit',
+            sha: '7450f5f6def789',
+            shortId: '7450f5f6',
+            title: 'Update VERSION 17.11-ee',
+            authoredDate: '2024-10-12T16:45:00Z',
+            webPath: '/project/-/commit/7450f5f6',
+          },
+          vulnerabilitiesCount: 11,
+        },
+        {
+          __typename: 'LocalTrackedRef',
+          id: 'gid://gitlab/TrackedRef/5',
+          name: 'develop',
+          refType: 'BRANCH',
+          isDefault: false,
+          isProtected: true,
+          commit: {
+            __typename: 'LocalTrackedCommit',
+            sha: 'abc1234567def',
+            shortId: 'abc1234',
+            title: 'Merge feature branch',
+            authoredDate: '2025-10-18T11:30:00Z',
+            webPath: '/project/-/commit/abc1234',
+          },
+          vulnerabilitiesCount: 32,
+        },
+        {
+          __typename: 'LocalTrackedRef',
+          id: 'gid://gitlab/TrackedRef/6',
+          name: 'release/v18.3',
+          refType: 'BRANCH',
+          isDefault: false,
+          isProtected: true,
+          commit: {
+            __typename: 'LocalTrackedCommit',
+            sha: 'fed9876543cba',
+            shortId: 'fed9876',
+            title: 'Prepare release v18.3',
+            authoredDate: '2025-10-17T14:00:00Z',
+            webPath: '/project/-/commit/fed9876',
+          },
+          vulnerabilitiesCount: 18,
+        },
+      ];
+
       return new Promise((resolve, reject) => {
         // Add delay to simulate network request and see loading state
         setTimeout(() => {
@@ -239,77 +347,42 @@ export default {
             reject(new Error('Failed to load tracked refs.'));
           }
 
-          resolve([
-            {
-              __typename: 'LocalTrackedRef',
-              id: 'gid://gitlab/TrackedRef/1',
-              name: 'Main',
-              refType: 'BRANCH',
-              isDefault: true,
-              isProtected: true,
-              commit: {
-                __typename: 'LocalTrackedCommit',
-                sha: 'df210850abc123',
-                shortId: 'df21085',
-                title: 'Apply 1 suggestion(s) to 1 file(s)',
-                authoredDate: '2025-10-20T09:59:00Z',
-                webPath: '/project/-/commit/df21085',
-              },
-              vulnerabilitiesCount: 258,
-            },
-            {
-              __typename: 'LocalTrackedRef',
-              id: 'gid://gitlab/TrackedRef/2',
-              name: 'v18.1.4-33',
-              refType: 'TAG',
-              isDefault: false,
-              isProtected: true,
-              commit: {
-                __typename: 'LocalTrackedCommit',
-                sha: '693bb5e6abc456',
-                shortId: '693bb5e6',
-                title: 'Update VERSION files',
-                authoredDate: '2025-10-15T14:30:00Z',
-                webPath: '/project/-/commit/693bb5e6',
-              },
-              vulnerabilitiesCount: 5,
-            },
-            {
-              __typename: 'LocalTrackedRef',
-              id: 'gid://gitlab/TrackedRef/3',
-              name: '18-2-stable-ee',
-              refType: 'BRANCH',
-              isDefault: false,
-              isProtected: true,
-              commit: {
-                __typename: 'LocalTrackedCommit',
-                sha: '7450f5f6def789',
-                shortId: '7450f5f6',
-                title: 'Version 18.2.0-ee',
-                authoredDate: '2025-10-14T08:15:00Z',
-                webPath: '/project/-/commit/7450f5f6',
-              },
-              vulnerabilitiesCount: 45,
-            },
-            {
-              __typename: 'LocalTrackedRef',
-              id: 'gid://gitlab/TrackedRef/4',
-              name: 'v18-2-stable-ee',
-              refType: 'TAG',
-              isDefault: false,
-              isProtected: true,
-              commit: {
-                __typename: 'LocalTrackedCommit',
-                sha: '7450f5f6def789',
-                shortId: '7450f5f6',
-                title: 'Update VERSION 17.11-ee',
-                authoredDate: '2024-10-12T16:45:00Z',
-                webPath: '/project/-/commit/7450f5f6',
-              },
-              vulnerabilitiesCount: 11,
-            },
-          ]);
-        }, 2000);
+          // Hardcoded pagination for two pages so we can mock the pagination and simulate it in the UI until the BE is ready
+          let nodes;
+          let hasNextPage;
+          let hasPreviousPage;
+          let startCursor;
+          let endCursor;
+
+          if (after === 'page1') {
+            nodes = allTrackedRefs.slice(PAGE_SIZE, PAGE_SIZE * 2);
+            hasNextPage = false;
+            hasPreviousPage = true;
+            startCursor = 'page1';
+            endCursor = 'page1';
+          } else {
+            nodes = allTrackedRefs.slice(0, PAGE_SIZE);
+            hasNextPage = true;
+            hasPreviousPage = false;
+            startCursor = null;
+            endCursor = 'page1';
+          }
+
+          const pageInfo = {
+            __typename: 'LocalPageInfo',
+            hasNextPage,
+            hasPreviousPage,
+            startCursor,
+            endCursor,
+          };
+
+          resolve({
+            __typename: 'LocalTrackedRefConnection',
+            nodes,
+            pageInfo,
+            count: allTrackedRefs.length,
+          });
+        }, 1000);
       });
     },
   },
