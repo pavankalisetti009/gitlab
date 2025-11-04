@@ -99,6 +99,9 @@ module EE
             to: ::Security::PolicyCreatedEvent
           store.subscribe ::Security::ScanResultPolicies::CreateWarnModeAuditEventsWorker,
             to: ::Security::PolicyUpdatedEvent
+          store.subscribe ::Security::ScanResultPolicies::CreateWarnModeApprovalAuditEventsWorker,
+            to: ::MergeRequests::ApprovedEvent,
+            if: ->(event) { ::Security::ScanResultPolicies::CreateWarnModeApprovalAuditEventsWorker.dispatch?(event) }
 
           store.subscribe ::Security::SyncPolicyEventWorker, to: ::Repositories::ProtectedBranchCreatedEvent
           store.subscribe ::Security::SyncPolicyEventWorker, to: ::Repositories::ProtectedBranchDestroyedEvent

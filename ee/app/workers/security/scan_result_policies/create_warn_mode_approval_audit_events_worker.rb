@@ -11,6 +11,18 @@ module Security
 
       concurrency_limit -> { 200 }
 
+      def self.dispatch?(event)
+        merge_request = MergeRequest.find_by_id(event.data[:merge_request_id])
+
+        return false unless merge_request
+
+        project = merge_request.project
+
+        return false unless project.licensed_feature_available?(:security_orchestration_policies)
+
+        Feature.enabled?(:security_policy_approval_warn_mode, project)
+      end
+
       def handle_event(event)
         merge_request_id, user_id = event.data.values_at(:merge_request_id, :current_user_id)
         merge_request = MergeRequest.find_by_id(merge_request_id) || return
