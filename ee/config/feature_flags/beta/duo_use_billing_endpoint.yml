@@ -1,0 +1,10 @@
+---
+name: duo_use_billing_endpoint
+description: Controls whether usage billing events are routed to the staging billing endpoint instead of production for testing purposes
+feature_issue_url: https://gitlab.com/gitlab-org/architecture/usage-billing/design-doc/-/issues/32
+introduced_by_url: https://gitlab.com/gitlab-org/gitlab/-/merge_requests/211434
+rollout_issue_url:
+milestone: '18.6'
+group: group::ai framework
+type: beta
+default_enabled: false
