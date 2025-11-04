@@ -38219,6 +38219,8 @@ CREATE INDEX idx_catalog_resource_cpmt_last_usages_on_cpmt_project_id ON catalog
 
 CREATE UNIQUE INDEX idx_ci_job_token_authorizations_on_accessed_and_origin_project ON ci_job_token_authorizations USING btree (accessed_project_id, origin_project_id);
 
+CREATE UNIQUE INDEX idx_ci_runner_machines_on_runner_id_type_system_xid_org_id ON ONLY ci_runner_machines USING btree (runner_id, runner_type, system_xid, organization_id);
+
 CREATE INDEX index_ci_runner_taggings_on_runner_id_and_runner_type ON ONLY ci_runner_taggings USING btree (runner_id, runner_type);
 
 CREATE INDEX idx_ci_runner_taggings_group_type_on_runner_id_and_runner_type ON ci_runner_taggings_group_type USING btree (runner_id, runner_type);
@@ -38323,6 +38325,8 @@ CREATE INDEX index_ci_runners_on_token_expires_at_desc_and_id_desc ON ONLY ci_ru
 
 CREATE INDEX idx_group_type_ci_runners_on_token_expires_at_desc_and_id_desc ON group_type_ci_runners USING btree (token_expires_at DESC, id DESC);
 
+CREATE UNIQUE INDEX idx_grp_ci_runner_machines_on_runner_id_type_system_xid_org_id ON group_type_ci_runner_machines USING btree (runner_id, runner_type, system_xid, organization_id);
+
 CREATE INDEX idx_headers_instance_external_audit_event_destination_id ON instance_audit_events_streaming_headers USING btree (instance_external_audit_event_destination_id);
 
 CREATE INDEX idx_hosted_runner_usage_on_namespace_billing_month ON ci_gitlab_hosted_runner_monthly_usages USING btree (root_namespace_id, billing_month);
@@ -38346,6 +38350,8 @@ CREATE INDEX idx_incident_management_pending_alert_escalations_on_project_id ON 
 CREATE INDEX idx_incident_management_pending_issue_esc_on_namespace_id ON ONLY incident_management_pending_issue_escalations USING btree (namespace_id);
 
 CREATE INDEX idx_incident_management_timeline_event_tag_links_on_project_id ON incident_management_timeline_event_tag_links USING btree (project_id);
+
+CREATE UNIQUE INDEX idx_inst_ci_runner_machines_on_runner_id_type_system_xid_org_id ON instance_type_ci_runner_machines USING btree (runner_id, runner_type, system_xid, organization_id);
 
 CREATE INDEX idx_installable_conan_pkgs_on_project_id_id ON packages_packages USING btree (project_id, id) WHERE ((package_type = 3) AND (status = ANY (ARRAY[0, 1])));
 
@@ -38556,6 +38562,8 @@ CREATE UNIQUE INDEX idx_pks_helm_metadata_caches_on_object_storage_key_project_i
 CREATE UNIQUE INDEX idx_pks_npm_metadata_caches_on_object_storage_key_project_id ON packages_npm_metadata_caches USING btree (object_storage_key, project_id);
 
 CREATE INDEX idx_policy_violations_on_project_id_policy_rule_id_and_id ON scan_result_policy_violations USING btree (project_id, approval_policy_rule_id, id);
+
+CREATE UNIQUE INDEX idx_proj_ci_runner_machines_on_runner_id_type_system_xid_org_id ON project_type_ci_runner_machines USING btree (runner_id, runner_type, system_xid, organization_id);
 
 CREATE UNIQUE INDEX idx_proj_comp_viol_issues_on_viol_id_issue_id ON project_compliance_violations_issues USING btree (project_compliance_violation_id, issue_id);
 
@@ -46971,6 +46979,10 @@ ALTER INDEX index_ci_runners_on_token_expires_at_and_id_desc ATTACH PARTITION id
 
 ALTER INDEX index_ci_runners_on_token_expires_at_desc_and_id_desc ATTACH PARTITION idx_group_type_ci_runners_on_token_expires_at_desc_and_id_desc;
 
+ALTER INDEX idx_ci_runner_machines_on_runner_id_type_system_xid_org_id ATTACH PARTITION idx_grp_ci_runner_machines_on_runner_id_type_system_xid_org_id;
+
+ALTER INDEX idx_ci_runner_machines_on_runner_id_type_system_xid_org_id ATTACH PARTITION idx_inst_ci_runner_machines_on_runner_id_type_system_xid_org_id;
+
 ALTER INDEX index_ci_runner_machines_on_created_at_and_id_desc ATTACH PARTITION idx_instance_type_ci_runner_machines_on_created_at_and_id_desc;
 
 ALTER INDEX index_ci_runners_on_active_and_id ATTACH PARTITION idx_instance_type_ci_runners_on_active_and_id;
@@ -46982,6 +46994,8 @@ ALTER INDEX index_ci_runners_on_contacted_at_and_id_where_inactive ATTACH PARTIT
 ALTER INDEX index_ci_runners_on_token_encrypted_and_runner_type ATTACH PARTITION idx_instance_type_ci_runners_on_token_encrypted_and_runner_type;
 
 ALTER INDEX index_ci_runners_on_token_expires_at_desc_and_id_desc ATTACH PARTITION idx_instance_type_ci_runners_on_token_expires_at_desc_id_desc;
+
+ALTER INDEX idx_ci_runner_machines_on_runner_id_type_system_xid_org_id ATTACH PARTITION idx_proj_ci_runner_machines_on_runner_id_type_system_xid_org_id;
 
 ALTER INDEX index_ci_runners_on_active_and_id ATTACH PARTITION idx_project_type_ci_runners_on_active_and_id;
 
