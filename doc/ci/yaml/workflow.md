@@ -70,7 +70,7 @@ request pipelines.
 
 ### Switch between branch pipelines and merge request pipelines
 
-To make the pipeline switch from branch pipelines to merge request pipelines after
+To make the pipeline switch from branch pipelines to [merge request pipelines](../pipelines/merge_request_pipelines.md) after
 a merge request is created, add a `workflow: rules` section to your `.gitlab-ci.yml` file.
 
 If you use both pipeline types at the same time, [duplicate pipelines](../jobs/job_rules.md#avoid-duplicate-pipelines)
