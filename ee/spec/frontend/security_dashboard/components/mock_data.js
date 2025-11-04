@@ -75,7 +75,7 @@ export const projectClusters = {
 
 export const clusterImageScanningVulnerability = {
   mergeRequest: null,
-  aiFixInProgress: false,
+  aiWorkflows: { nodes: [] },
   __typename: 'Vulnerability',
   id: 'gid://gitlab/Vulnerability/22087293',
   title: 'CVE-2021-29921',
@@ -127,7 +127,7 @@ export const containerScanningForRegistryVulnerability = {
       human: true,
     },
   },
-  aiFixInProgress: false,
+  aiWorkflows: { nodes: [] },
   identifiers: [
     {
       externalType: 'cve',
@@ -204,7 +204,7 @@ export const generateVulnerabilities = () => [
         human: true,
       },
     },
-    aiFixInProgress: false,
+    aiWorkflows: { nodes: [] },
     identifiers: [
       {
         externalType: 'cve',
@@ -280,7 +280,19 @@ export const generateVulnerabilities = () => [
     resolvedOnDefaultBranch: false,
     issueLinks: [],
     mergeRequest: null,
-    aiFixInProgress: true,
+    aiWorkflows: {
+      nodes: [
+        {
+          workflowName: 'RESOLVE_SAST_VULNERABILITY',
+          workflow: {
+            id: 'workflow-1',
+            humanStatus: 'Running',
+            status: 'RUNNING',
+            createdAt: '2024-01-15T10:30:00Z',
+          },
+        },
+      ],
+    },
     identifiers: [
       {
         externalType: 'gemnasium',
@@ -325,7 +337,7 @@ export const generateVulnerabilities = () => [
     resolvedOnDefaultBranch: false,
     issueLinks: [],
     mergeRequest: null,
-    aiFixInProgress: false,
+    aiWorkflows: { nodes: [] },
     identifiers: [],
     dismissalReason: null,
     cvss: [],
@@ -367,7 +379,7 @@ export const generateVulnerabilities = () => [
     resolvedOnDefaultBranch: true,
     issueLinks: [],
     mergeRequest: null,
-    aiFixInProgress: false,
+    aiWorkflows: { nodes: [] },
     identifiers: [],
     dismissalReason: null,
     cvss: [],
@@ -406,7 +418,7 @@ export const generateVulnerabilities = () => [
     resolvedOnDefaultBranch: true,
     issueLinks: [],
     mergeRequest: null,
-    aiFixInProgress: false,
+    aiWorkflows: { nodes: [] },
     identifiers: [],
     dismissalReason: null,
     cvss: [],
@@ -441,7 +453,7 @@ export const generateVulnerabilities = () => [
     resolvedOnDefaultBranch: false,
     issueLinks: [],
     mergeRequest: null,
-    aiFixInProgress: false,
+    aiWorkflows: { nodes: [] },
     identifiers: [],
     dismissalReason: null,
     cvss: [],
@@ -478,7 +490,7 @@ export const generateVulnerabilities = () => [
     resolvedOnDefaultBranch: false,
     issueLinks: [],
     mergeRequest: null,
-    aiFixInProgress: false,
+    aiWorkflows: { nodes: [] },
     identifiers: [],
     dismissalReason: null,
     cvss: [],
@@ -516,7 +528,7 @@ export const generateVulnerabilities = () => [
     resolvedOnDefaultBranch: false,
     issueLinks: [],
     mergeRequest: null,
-    aiFixInProgress: false,
+    aiWorkflows: { nodes: [] },
     identifiers: [
       {
         externalType: 'secret_detection',
