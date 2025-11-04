@@ -38,7 +38,7 @@ module Ai
       end
 
       def ensure_oauth_application!
-        return if oauth_application&.scopes&.include?(::Gitlab::Auth::MCP_SCOPE)
+        return if oauth_application&.scopes&.include?(::Gitlab::Auth::MCP_SCOPE.to_s)
 
         scopes = ::Gitlab::Auth::AI_WORKFLOW_SCOPES + [::Gitlab::Auth::MCP_SCOPE]
 

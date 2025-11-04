@@ -21,7 +21,7 @@ RSpec.describe ::Ai::DuoWorkflows::CreateOauthAccessTokenService, feature_catego
           :oauth_application,
           owner: nil,
           id: application_settings.duo_workflow_oauth_application_id,
-          scopes: [:ai_workflows]
+          scopes: [:ai_workflows, :mcp, :ai_features]
         )
       end
 
@@ -32,14 +32,15 @@ RSpec.describe ::Ai::DuoWorkflows::CreateOauthAccessTokenService, feature_catego
       context 'when the user does not have a valid oauth access token' do
         shared_examples 'creates a new oauth access token for the duo workflow oauth app' do
           it 'creates a new oauth access token for the duo workflow oauth app' do
+            expect(oauth_application).not_to receive(:update!)
             expect(::OauthAccessToken.sticking).to receive(:stick)
 
             expect { execute }.to change { OauthAccessToken.count }.by(1)
             token = execute[:oauth_access_token]
             expect(token.resource_owner_id).to eq user.id
             expect(token.application).to eq oauth_application
-            expect(token.scopes).to contain_exactly('mcp', 'ai_workflows')
-            expect(oauth_application.reload.scopes).to contain_exactly('mcp', 'ai_workflows')
+            expect(token.scopes).to contain_exactly('mcp', 'ai_workflows', 'ai_features')
+            expect(oauth_application.reload.scopes).to contain_exactly('mcp', 'ai_workflows', 'ai_features')
           end
         end
 
@@ -70,6 +71,24 @@ RSpec.describe ::Ai::DuoWorkflows::CreateOauthAccessTokenService, feature_catego
           stub_feature_flags(duo_agentic_chat: false)
 
           expect(execute).to be_error
+        end
+      end
+
+      context 'when the application is missing mcp scope' do
+        let_it_be(:oauth_application) do
+          create(
+            :oauth_application, owner: nil, scopes: [:ai_workflows],
+            id: application_settings.duo_workflow_oauth_application_id
+          )
+        end
+
+        it 'updates the scopes to contain it' do
+          expect { execute }.to change { OauthAccessToken.count }.by(1)
+          token = execute[:oauth_access_token]
+          expect(token.resource_owner_id).to eq user.id
+          expect(token.application).to eq oauth_application
+          expect(token.scopes).to contain_exactly('mcp', 'ai_workflows')
+          expect(oauth_application.reload.scopes).to contain_exactly('mcp', 'ai_workflows')
         end
       end
     end
