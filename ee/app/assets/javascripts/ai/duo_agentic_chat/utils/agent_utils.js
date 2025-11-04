@@ -38,7 +38,6 @@ export function prepareAgentSelection(agent, reuseAgent) {
   const newParams = {
     aiCatalogItemVersionId: '',
     selectedFoundationalAgent: null,
-    agentConfig: null,
     isChatAvailable: true,
     agentDeletedError: '',
   };
@@ -47,6 +46,7 @@ export function prepareAgentSelection(agent, reuseAgent) {
   if (agent?.foundational) {
     return {
       ...newParams,
+      agentConfig: null,
       selectedFoundationalAgent: agent,
     };
   }
@@ -60,5 +60,8 @@ export function prepareAgentSelection(agent, reuseAgent) {
   }
 
   // Reset to default agent
-  return newParams;
+  return {
+    ...newParams,
+    agentConfig: null,
+  };
 }

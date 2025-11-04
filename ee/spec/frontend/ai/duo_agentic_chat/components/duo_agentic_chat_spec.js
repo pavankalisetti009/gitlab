@@ -1824,6 +1824,75 @@ describe('Duo Agentic Chat', () => {
       expect(mockSocketManager.connect).toHaveBeenCalled();
     });
 
+    it('preserves agentConfig when selecting the same custom agent multiple times', async () => {
+      // Select custom agent first time
+      await findDuoChat().vm.$emit('new-chat', agent);
+      await waitForPromises();
+
+      // Send first message to ensure agentConfig is populated
+      findDuoChat().vm.$emit('send-chat-prompt', 'First message');
+      await waitForPromises();
+
+      expect(WorkflowSocketUtils.buildStartRequest).toHaveBeenCalledWith(
+        expect.objectContaining({
+          agentConfig: MOCK_FLOW_AGENT_CONFIG,
+        }),
+      );
+
+      // Clear mocks to verify next call
+      WorkflowSocketUtils.buildStartRequest.mockClear();
+
+      // Select the SAME custom agent again (new chat with same agent)
+      await findDuoChat().vm.$emit('new-chat', agent);
+      await waitForPromises();
+
+      // Send another message
+      findDuoChat().vm.$emit('send-chat-prompt', 'Second message');
+      await waitForPromises();
+
+      // Verify agentConfig is still present (not null)
+      expect(WorkflowSocketUtils.buildStartRequest).toHaveBeenCalledWith(
+        expect.objectContaining({
+          agentConfig: MOCK_FLOW_AGENT_CONFIG,
+        }),
+      );
+    });
+
+    it('resets agentConfig when default agent follows a custom agent chat', async () => {
+      // Select custom agent first
+      await findDuoChat().vm.$emit('new-chat', agent);
+      await waitForPromises();
+
+      // Send message with custom agent
+      findDuoChat().vm.$emit('send-chat-prompt', 'Custom agent message');
+      await waitForPromises();
+
+      expect(WorkflowSocketUtils.buildStartRequest).toHaveBeenCalledWith(
+        expect.objectContaining({
+          agentConfig: MOCK_FLOW_AGENT_CONFIG,
+        }),
+      );
+
+      // Clear mocks to verify next call
+      WorkflowSocketUtils.buildStartRequest.mockClear();
+
+      // Switch to default/foundational agent
+      await findDuoChat().vm.$emit('new-chat', MOCK_FETCHED_FOUNDATIONAL_AGENT);
+      await waitForPromises();
+
+      // Send message with foundational agent
+      findDuoChat().vm.$emit('send-chat-prompt', 'Foundational agent message');
+      await waitForPromises();
+
+      // Verify agentConfig is null and workflowDefinition is used instead
+      expect(WorkflowSocketUtils.buildStartRequest).toHaveBeenCalledWith(
+        expect.objectContaining({
+          workflowDefinition: MOCK_FETCHED_FOUNDATIONAL_AGENT.referenceWithVersion,
+          agentConfig: null,
+        }),
+      );
+    });
+
     it('sends no config when the default agent is selected (no id on selection)', async () => {
       await findDuoChat().vm.$emit('new-chat', { name: 'default duo' });
 
