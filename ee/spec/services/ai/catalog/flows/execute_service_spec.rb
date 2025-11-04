@@ -8,40 +8,11 @@ RSpec.describe Ai::Catalog::Flows::ExecuteService, :aggregate_failures, feature_
   let_it_be(:developer) { create(:user) }
   let_it_be(:project) { create(:project, :repository, developers: developer) }
   let_it_be(:flow) { create(:ai_catalog_flow, project: project) }
-  let_it_be(:agent_item_1) { create(:ai_catalog_item, :agent, project: project) }
-  let_it_be(:agent_item_2) { create(:ai_catalog_item, :agent, project: project) }
-  let_it_be(:tool_ids) { [1, 2, 5] } # 1 => "gitlab_blob_search" 2 => 'ci_linter', 5 =>  'create_epic'
   let_it_be(:user_prompt) { nil }
-
-  let_it_be(:agent_definition) do
-    {
-      'system_prompt' => 'Talk like a pirate!',
-      'user_prompt' => 'What is a leap year?',
-      'tools' => tool_ids
-    }
-  end
-
-  let_it_be(:agent1) do
-    create(:ai_catalog_agent_version, item: agent_item_1, definition: agent_definition, version: '1.1.0')
-  end
-
-  let_it_be(:agent2) do
-    create(:ai_catalog_agent_version, item: agent_item_2, definition: agent_definition, version: '1.1.1')
-  end
-
-  let_it_be(:flow_definition) do
-    {
-      'triggers' => [1],
-      'steps' => [
-        { 'agent_id' => agent_item_1.id, 'current_version_id' => agent1.id, 'pinned_version_prefix' => nil },
-        { 'agent_id' => agent_item_2.id, 'current_version_id' => agent2.id, 'pinned_version_prefix' => nil }
-      ]
-    }
-  end
 
   let_it_be_with_reload(:flow_version) do
     item_version = flow.latest_version
-    item_version.update!(definition: flow_definition, release_date: 1.hour.ago)
+    item_version.update!(release_date: 1.hour.ago)
     item_version
   end
 
@@ -55,15 +26,8 @@ RSpec.describe Ai::Catalog::Flows::ExecuteService, :aggregate_failures, feature_
     }
   end
 
-  let(:json_config) do
-    {
-      'version' => 'experimental',
-      'environment' => 'remote',
-      'components' => be_an(Array),
-      'routers' => be_an(Array),
-      'flow' => be_a(Hash),
-      'prompts' => be_an(Array)
-    }
+  let(:expected_flow_config) do
+    flow_version.definition.except('yaml_definition')
   end
 
   let(:current_user) { developer }
@@ -136,15 +100,6 @@ RSpec.describe Ai::Catalog::Flows::ExecuteService, :aggregate_failures, feature_
       it_behaves_like 'returns error response', 'Flow version must belong to the flow'
     end
 
-    context 'when flow_version has no steps' do
-      before do
-        flow_version.definition = { steps: [], triggers: [1] }
-        flow_version.save!(validate: false) # Cannot update definition of already released version
-      end
-
-      it_behaves_like 'returns error response', 'Flow version must have steps'
-    end
-
     context 'when execute_workflow is false' do
       let(:service_params) { super().merge({ execute_workflow: false }) }
 
@@ -159,7 +114,7 @@ RSpec.describe Ai::Catalog::Flows::ExecuteService, :aggregate_failures, feature_
         parsed_yaml = YAML.safe_load(result.payload[:flow_config], aliases: true)
 
         expect(result).to be_success
-        expect(parsed_yaml).to include(json_config)
+        expect(parsed_yaml).to eq(expected_flow_config)
       end
     end
 
@@ -189,13 +144,21 @@ RSpec.describe Ai::Catalog::Flows::ExecuteService, :aggregate_failures, feature_
       end
 
       it 'provides a success response containing workflow and flow details' do
-        expect(::Ai::Catalog::ExecuteWorkflowService).to receive(:new).and_call_original
+        expect(::Ai::Catalog::ExecuteWorkflowService).to receive(:new).with(
+          current_user,
+          hash_including(
+            json_config: be_a(Hash),
+            container: project,
+            goal: flow.description,
+            item_version: flow_version
+          )
+        ).and_call_original
 
         result = execute
         parsed_yaml = YAML.safe_load(result.payload[:flow_config], aliases: true)
 
         expect(result).to be_success
-        expect(parsed_yaml).to include(json_config)
+        expect(parsed_yaml).to eq(expected_flow_config)
         expect(result.payload[:workflow]).to eq(Ai::DuoWorkflows::Workflow.last)
         expect(result.payload[:workload_id]).to eq(Ci::Workloads::Workload.last.id)
       end
@@ -263,12 +226,22 @@ RSpec.describe Ai::Catalog::Flows::ExecuteService, :aggregate_failures, feature_
       context 'when user_prompt is specified' do
         let(:service_params) { super().merge({ user_prompt: "test input" }) }
 
-        it 'does not call execute_workflow_service' do
+        it 'passes user_prompt as goal to ExecuteWorkflowService' do
+          expect(::Ai::Catalog::ExecuteWorkflowService).to receive(:new).with(
+            current_user,
+            hash_including(
+              json_config: be_a(Hash),
+              container: project,
+              goal: "test input",
+              item_version: flow_version
+            )
+          ).and_call_original
+
           result = execute
           parsed_yaml = YAML.safe_load(result.payload[:flow_config], aliases: true)
 
           expect(result).to be_success
-          expect(parsed_yaml['prompts'][0]['prompt_template']['user']).to eq('test input')
+          expect(parsed_yaml).to eq(expected_flow_config)
         end
       end
     end

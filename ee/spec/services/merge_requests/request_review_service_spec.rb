@@ -98,7 +98,7 @@ RSpec.describe ::MergeRequests::RequestReviewService, feature_category: :code_re
       it 'triggers the AI flow' do
         merge_request.reviewers << service_account
 
-        expect(run_service).to receive(:execute).with({ input: "", event: :assign_reviewer })
+        expect(run_service).to receive(:execute).with({ input: merge_request.iid.to_s, event: :assign_reviewer })
         expect(::Ai::FlowTriggers::RunService).to receive(:new)
           .with(
             project: merge_request.project, current_user: current_user,

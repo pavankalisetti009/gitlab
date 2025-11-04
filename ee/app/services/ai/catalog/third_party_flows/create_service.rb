@@ -4,6 +4,8 @@ module Ai
   module Catalog
     module ThirdPartyFlows
       class CreateService < Ai::Catalog::BaseService
+        include Concerns::YamlDefinitionParser
+
         def execute
           return error_no_permissions unless allowed?
 
@@ -14,11 +16,8 @@ module Ai
             project_id: project.id
           )
 
-          begin
-            definition = YAML.safe_load(params[:definition]).merge(yaml_definition: params[:definition])
-          rescue Psych::SyntaxError
-            return error('definition does not have a valid YAML syntax')
-          end
+          definition = parsed_yaml_definition_or_error('ThirdPartyFlow')
+          return definition if definition.is_a?(ServiceResponse)
 
           version_params = {
             schema_version: Ai::Catalog::ItemVersion::THIRD_PARTY_FLOW_SCHEMA_VERSION,

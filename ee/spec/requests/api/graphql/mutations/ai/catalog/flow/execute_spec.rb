@@ -29,19 +29,9 @@ RSpec.describe Mutations::Ai::Catalog::Flow::Execute, :aggregate_failures, featu
     create(:ai_catalog_agent_version, item: agent_item_2, definition: agent_definition, version: '1.1.1')
   end
 
-  let_it_be(:flow_definition) do
-    {
-      'triggers' => [1],
-      'steps' => [
-        { 'agent_id' => agent_item_1.id, 'current_version_id' => agent1_v1.id, 'pinned_version_prefix' => nil },
-        { 'agent_id' => agent_item_2.id, 'current_version_id' => agent2_v1.id, 'pinned_version_prefix' => nil }
-      ]
-    }
-  end
-
   let_it_be_with_reload(:flow_version) do
     item_version = flow_item.latest_version
-    item_version.update!(definition: flow_definition, release_date: 1.hour.ago)
+    item_version.update!(release_date: 1.hour.ago)
     item_version
   end
 
@@ -58,14 +48,7 @@ RSpec.describe Mutations::Ai::Catalog::Flow::Execute, :aggregate_failures, featu
   end
 
   let(:json_config) do
-    {
-      'version' => 'experimental',
-      'environment' => 'remote',
-      'components' => be_an(Array),
-      'routers' => be_an(Array),
-      'flow' => be_a(Hash),
-      'prompts' => be_an(Array)
-    }
+    flow_version.definition.except('yaml_definition')
   end
 
   let(:params) do
@@ -179,8 +162,7 @@ RSpec.describe Mutations::Ai::Catalog::Flow::Execute, :aggregate_failures, featu
 
     it 'executes the latest version of the flow' do
       latest_flow_version = create(
-        :ai_catalog_flow_version, :released, version: '2.0.0', item: flow_item, definition: flow_definition
-      )
+        :ai_catalog_flow_version, :released, version: '2.0.0', item: flow_item)
       allow(::Ai::Catalog::Flows::ExecuteService).to receive(:new).and_call_original
 
       execute

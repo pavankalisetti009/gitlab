@@ -46,7 +46,7 @@ RSpec.describe Ai::Catalog::DuoWorkflowPayloadBuilder::Experimental, feature_cat
   end
 
   let_it_be(:flow_version) do
-    create(:ai_catalog_flow_version, item: flow_item, definition: flow_definition, version: '2.1.0')
+    create(:ai_catalog_agent_referenced_flow_version, item: flow_item, definition: flow_definition, version: '2.1.0')
   end
 
   subject(:builder) { described_class.new(flow_item) }
@@ -75,7 +75,7 @@ RSpec.describe Ai::Catalog::DuoWorkflowPayloadBuilder::Experimental, feature_cat
       let_it_be(:empty_steps_definition) { { 'triggers' => [1], 'steps' => [] } }
       let_it_be(:empty_steps_flow) { create(:ai_catalog_flow, project: project) }
       let_it_be(:empty_steps_version) do
-        create(:ai_catalog_flow_version, item: empty_steps_flow, definition: empty_steps_definition,
+        create(:ai_catalog_agent_referenced_flow_version, item: empty_steps_flow, definition: empty_steps_definition,
           version: '2.1.0')
       end
 
@@ -97,8 +97,12 @@ RSpec.describe Ai::Catalog::DuoWorkflowPayloadBuilder::Experimental, feature_cat
       end
 
       let_it_be(:single_agent_flow_version) do
-        create(:ai_catalog_flow_version, item: single_agent_flow, definition: single_agent_flow_definition,
-          version: '2.2.0')
+        create(
+          :ai_catalog_agent_referenced_flow_version,
+          item: single_agent_flow,
+          definition: single_agent_flow_definition,
+          version: '2.2.0'
+        )
       end
 
       let(:builder) { described_class.new(single_agent_flow, nil, params) }
@@ -170,7 +174,8 @@ RSpec.describe Ai::Catalog::DuoWorkflowPayloadBuilder::Experimental, feature_cat
               'agent_id' => agent_item_2.id, 'current_version_id' => agent2_v1.id, 'pinned_version_prefix' => nil
             }]
           }
-          create(:ai_catalog_flow_version, item: single_agent_flow, definition: definition, version: '2.3.0')
+          create(:ai_catalog_agent_referenced_flow_version, item: single_agent_flow, definition: definition,
+            version: '2.3.0')
         end
 
         context 'when no version is pinned' do

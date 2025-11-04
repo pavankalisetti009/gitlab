@@ -47,7 +47,7 @@ RSpec.describe MergeRequests::HandleAssigneesChangeService, feature_category: :c
 
         run_service = instance_double(::Ai::FlowTriggers::RunService)
 
-        expect(run_service).to receive(:execute).with({ input: '', event: :assign })
+        expect(run_service).to receive(:execute).with({ input: merge_request.iid.to_s, event: :assign })
         expect(::Ai::FlowTriggers::RunService).to receive(:new)
           .with(project: project, current_user: user, resource: merge_request, flow_trigger: flow_trigger)
           .and_return(run_service)

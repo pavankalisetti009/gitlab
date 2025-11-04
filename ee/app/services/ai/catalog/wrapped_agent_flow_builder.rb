@@ -57,7 +57,7 @@ module Ai
         ::Ai::Catalog::ItemVersion.new(
           item: flow,
           definition: build_flow_definition,
-          schema_version: ::Ai::Catalog::ItemVersion::FLOW_SCHEMA_VERSION,
+          schema_version: ::Ai::Catalog::ItemVersion::AGENT_REFERENCED_FLOW_SCHEMA_VERSION,
           version: GENERATED_FLOW_VERSION
         )
       end

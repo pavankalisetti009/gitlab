@@ -954,7 +954,7 @@ RSpec.describe MergeRequests::UpdateService, :mailer, feature_category: :code_re
 
       context 'when requesting review from this account', :sidekiq_inline do
         it 'triggers the AI flow' do
-          expect(run_service).to receive(:execute).with({ input: "", event: :assign })
+          expect(run_service).to receive(:execute).with({ input: merge_request.iid.to_s, event: :assign })
           expect(::Ai::FlowTriggers::RunService).to receive(:new)
             .with(
               project: project, current_user: current_user,
@@ -967,7 +967,7 @@ RSpec.describe MergeRequests::UpdateService, :mailer, feature_category: :code_re
 
       context 'when this account is assigned' do
         it 'triggers the AI flow' do
-          expect(run_service).to receive(:execute).with({ input: "", event: :assign_reviewer })
+          expect(run_service).to receive(:execute).with({ input: merge_request.iid.to_s, event: :assign_reviewer })
           expect(::Ai::FlowTriggers::RunService).to receive(:new)
             .with(
               project: project, current_user: current_user,

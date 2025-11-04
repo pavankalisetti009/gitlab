@@ -13,10 +13,9 @@ RSpec.describe Mutations::Ai::Catalog::Flow::Update, feature_category: :workflow
     create(:ai_catalog_flow_version, :released, version: '1.0.0', item: flow)
   end
 
-  let_it_be_with_reload(:latest_version) { create(:ai_catalog_flow_version, version: '1.1.0', item: flow) }
-  let_it_be(:agent) { create(:ai_catalog_agent, project: project) }
-  let_it_be(:agent_v1) { create(:ai_catalog_agent_version, version: '1.0.0', item: agent) }
-  let_it_be(:agent_v1_1) { create(:ai_catalog_agent_version, version: '1.1.0', item: agent) }
+  let_it_be_with_reload(:latest_version) do
+    create(:ai_catalog_flow_version, version: '1.1.0', item: flow)
+  end
 
   let(:current_user) { maintainer }
   let(:mutation) do
@@ -34,16 +33,28 @@ RSpec.describe Mutations::Ai::Catalog::Flow::Update, feature_category: :workflow
   end
 
   let(:mutation_response) { graphql_data_at(:ai_catalog_flow_update) }
+  let(:definition) do
+    <<~YAML
+      version: v1
+      environment: ambient
+      components:
+        - name: updated_agent
+          type: AgentComponent
+          prompt_id: updated_prompt
+      routers: []
+      flow:
+        entry_point: updated_agent
+    YAML
+  end
+
   let(:params) do
     {
       id: flow.to_global_id,
       name: 'New name',
       public: true,
       description: 'New description',
-      steps: [
-        { agent_id: agent.to_global_id },
-        { agent_id: agent.to_global_id, pinned_version_prefix: '1.0' }
-      ],
+      steps: nil,
+      definition: definition,
       version_bump: 'PATCH'
     }
   end
@@ -66,34 +77,6 @@ RSpec.describe Mutations::Ai::Catalog::Flow::Update, feature_category: :workflow
     let(:current_user) { create(:user).tap { |user| project.add_developer(user) } }
 
     it_behaves_like 'an authorization failure'
-  end
-
-  context 'when user does not have access to a step agent' do
-    let_it_be(:agent) { create(:ai_catalog_agent) }
-
-    it 'returns the service error message and item with original attributes' do
-      original_name = flow.name
-
-      execute
-
-      expect(graphql_dig_at(mutation_response, :item, :name)).to eq(original_name)
-      expect(graphql_dig_at(mutation_response, :errors)).to contain_exactly('You have insufficient permissions')
-    end
-  end
-
-  context 'when step agent does not exist' do
-    let(:params) do
-      super().merge(steps: [{ agent_id: global_id_of(id: non_existing_record_id, model_name: 'Ai::Catalog::Item') }])
-    end
-
-    it 'returns the service error message and item with original attributes' do
-      original_name = flow.name
-
-      execute
-
-      expect(graphql_dig_at(mutation_response, :item, :name)).to eq(original_name)
-      expect(graphql_dig_at(mutation_response, :errors)).to contain_exactly('You have insufficient permissions')
-    end
   end
 
   context 'when global_ai_catalog feature flag is disabled' do
@@ -137,21 +120,12 @@ RSpec.describe Mutations::Ai::Catalog::Flow::Update, feature_category: :workflow
         public: true
       )
       expect(latest_version.reload).to have_attributes(
-        schema_version: 1,
+        schema_version: ::Ai::Catalog::ItemVersion::FLOW_SCHEMA_VERSION,
         version: '1.0.1',
         release_date: nil,
-        definition: {
-          steps: [
-            {
-              agent_id: agent.id, current_version_id: agent.latest_version.id, pinned_version_prefix: nil
-            }.stringify_keys,
-            {
-              agent_id: agent.id, current_version_id: agent_v1.id, pinned_version_prefix: '1.0'
-            }.stringify_keys
-          ],
-          triggers: [1]
-        }.stringify_keys
+        definition: YAML.safe_load(definition).merge('yaml_definition' => definition)
       )
+
       expect(graphql_dig_at(mutation_response, :errors)).to be_empty
     end
 

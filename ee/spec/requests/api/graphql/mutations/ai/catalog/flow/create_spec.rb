@@ -8,19 +8,33 @@ RSpec.describe Mutations::Ai::Catalog::Flow::Create, feature_category: :workflow
 
   let_it_be(:maintainer) { create(:user) }
   let_it_be(:project) { create(:project, maintainers: maintainer) }
-  let_it_be(:agent) { create(:ai_catalog_agent, project: project) }
 
   let(:current_user) { maintainer }
   let(:mutation) { graphql_mutation(:ai_catalog_flow_create, params) }
   let(:name) { 'Name' }
   let(:description) { 'Description' }
+  let(:definition) do
+    <<~YAML
+      version: v1
+      environment: ambient
+      components:
+        - name: main_agent
+          type: AgentComponent
+          prompt_id: test_prompt
+      routers: []
+      flow:
+        entry_point: main_agent
+    YAML
+  end
+
   let(:params) do
     {
       project_id: project.to_global_id,
       name: name,
       description: description,
       public: true,
-      steps: [{ agent_id: agent.to_global_id }]
+      steps: nil,
+      definition: definition
     }
   end
 
@@ -94,15 +108,10 @@ RSpec.describe Mutations::Ai::Catalog::Flow::Create, feature_category: :workflow
       public: true
     )
     expect(item.latest_version).to have_attributes(
-      schema_version: 1,
+      schema_version: ::Ai::Catalog::ItemVersion::FLOW_SCHEMA_VERSION,
       version: '1.0.0',
       release_date: nil,
-      definition: {
-        steps: [{
-          agent_id: agent.id, current_version_id: agent.latest_version.id, pinned_version_prefix: nil
-        }.stringify_keys],
-        triggers: []
-      }.stringify_keys
+      definition: YAML.safe_load(definition).merge('yaml_definition' => definition)
     )
   end
 

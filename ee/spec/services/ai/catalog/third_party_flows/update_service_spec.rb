@@ -73,18 +73,7 @@ RSpec.describe Ai::Catalog::ThirdPartyFlows::UpdateService, feature_category: :w
         it_behaves_like 'an error response', 'You have insufficient permissions'
       end
 
-      context 'when YAML is not valid' do
-        let(:params) { super().merge(definition: "this: is\n - not\n yaml: true") }
-
-        it 'handles invalid yaml' do
-          response = service.execute
-
-          expect(response).to be_error
-
-          expect(response.message)
-            .to contain_exactly("ThirdPartyFlow definition does not have a valid YAML syntax")
-        end
-      end
+      it_behaves_like 'validates yaml definition syntax', 'ThirdPartyFlow'
     end
   end
 end

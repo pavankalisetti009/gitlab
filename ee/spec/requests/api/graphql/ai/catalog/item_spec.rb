@@ -33,6 +33,7 @@ RSpec.describe 'getting an AI catalog item', :with_current_organization, feature
               }
             }
           }
+          definition
         }
         ... on AiCatalogAgentVersion {
           systemPrompt
@@ -218,19 +219,12 @@ RSpec.describe 'getting an AI catalog item', :with_current_organization, feature
     let_it_be(:flow) { create(:ai_catalog_flow, project: project, public: true) }
     let(:params) { { id: flow.to_global_id } }
 
-    it 'resolves flow steps agents' do
-      create(:ai_catalog_flow_version, item: flow, definition: {
-        triggers: [],
-        steps: [
-          { agent_id: catalog_item.id, current_version_id: catalog_item.latest_version.id, pinned_version_prefix: nil }
-        ]
-      })
-
+    it 'returns yaml definition' do
       post_graphql(query, current_user: nil)
 
-      expect(graphql_data_at(:ai_catalog_item, :latest_version, :steps, :nodes)).to include(a_hash_including(
-        'agent' => { 'name' => catalog_item.name }
-      ))
+      expect(graphql_data_at(:ai_catalog_item, :latest_version, :definition)).to eq(
+        flow.latest_version.definition['yaml_definition']
+      )
     end
   end
 

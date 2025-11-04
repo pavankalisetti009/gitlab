@@ -133,7 +133,8 @@ RSpec.describe Ai::Catalog::Item, feature_category: :workflow_catalog do
         end
 
         let(:flow_version) do
-          create(:ai_catalog_flow_version, item: flow_item, definition: flow_definition, version: '1.0.0')
+          create(:ai_catalog_agent_referenced_flow_version, item: flow_item, definition: flow_definition,
+            version: '1.0.0')
         end
 
         before do

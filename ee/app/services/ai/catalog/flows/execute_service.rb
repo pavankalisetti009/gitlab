@@ -47,7 +47,6 @@ module Ai
           return error('Flow is required') unless flow && flow.flow?
           return error('Flow version is required') unless flow_version
           return error('Flow version must belong to the flow') unless flow_version.item == flow
-          return error('Flow version must have steps') unless flow_version.def_steps.present?
           return error('Trigger event type is required') if event_type.blank?
 
           ServiceResponse.success
@@ -66,16 +65,11 @@ module Ai
         end
 
         def generate_flow_config
-          payload_builder = ::Ai::Catalog::DuoWorkflowPayloadBuilder::Experimental.new(
-            flow,
-            flow_version.version,
-            { user_prompt_input: user_prompt }
-          )
-          payload_builder.build
+          flow_version.definition.except('yaml_definition')
         end
 
         def flow_goal
-          flow.description
+          user_prompt || flow.description
         end
       end
     end

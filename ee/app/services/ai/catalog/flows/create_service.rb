@@ -5,12 +5,10 @@ module Ai
     module Flows
       class CreateService < Ai::Catalog::BaseService
         include FlowHelper
+        include Concerns::YamlDefinitionParser
 
         def execute
           return error_no_permissions unless allowed?
-          return error(MAX_STEPS_ERROR) if max_steps_exceeded?
-          return error_no_permissions unless agents_allowed?
-          return error(steps_validation_errors) unless steps_valid?
 
           item_params = params.slice(:name, :description, :public)
           item_params.merge!(
@@ -18,13 +16,14 @@ module Ai
             organization_id: project.organization_id,
             project_id: project.id
           )
+
+          definition = parsed_yaml_definition_or_error
+          return definition if definition.is_a?(ServiceResponse)
+
           version_params = {
             schema_version: ::Ai::Catalog::ItemVersion::FLOW_SCHEMA_VERSION,
             version: DEFAULT_VERSION,
-            definition: {
-              triggers: [],
-              steps: steps
-            }
+            definition: definition
           }
           version_params[:release_date] = Time.zone.now if params[:release] == true
 
@@ -58,7 +57,6 @@ module Ai
           Ai::Catalog::Item.transaction do
             item.save!
             item.update!(latest_released_version: item.latest_version) if item.latest_version.released?
-            populate_dependencies(item.latest_version, delete_no_longer_used_dependencies: false)
             true
           end
         rescue ActiveRecord::RecordInvalid

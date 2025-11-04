@@ -72,7 +72,7 @@ module EE
           current_user: current_user,
           resource: issuable,
           flow_trigger: flow_trigger
-        ).execute({ input: "", event: event_type })
+        ).execute({ input: issuable.iid.to_s, event: event_type })
       end
     end
 
