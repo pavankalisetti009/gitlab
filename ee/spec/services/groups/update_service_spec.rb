@@ -967,10 +967,6 @@ RSpec.describe Groups::UpdateService, '#execute', feature_category: :groups_and_
   context 'when updating auto_duo_code_review_enabled' do
     let(:params) { { auto_duo_code_review_enabled: true } }
 
-    before do
-      group.add_owner(user)
-    end
-
     context 'when auto_duo_code_review_settings is not available' do
       before do
         allow(group).to receive(:auto_duo_code_review_settings_available?).and_return(false)
@@ -982,14 +978,27 @@ RSpec.describe Groups::UpdateService, '#execute', feature_category: :groups_and_
       end
     end
 
-    context 'when auto_duo_code_review_settings is available' do
-      before do
-        allow(group).to receive(:auto_duo_code_review_settings_available?).and_return(true)
+    context 'when updating auto_duo_code_review_enabled' do
+      let(:params) { { auto_duo_code_review_enabled: true } }
+
+      context 'when auto_duo_code_review_settings is not available' do
+        before do
+          group.add_owner(user)
+          allow(group).to receive(:auto_duo_code_review_settings_available?).and_return(false)
+        end
+
+        it 'removes the parameter' do
+          expect { update_group(group, user, params) }
+            .not_to change { group.namespace_settings.reload.auto_duo_code_review_enabled }
+        end
       end
 
-      it 'updates the setting' do
-        expect { update_group(group, user, params) }
-          .to change { group.namespace_settings.reload.auto_duo_code_review_enabled }.to(true)
+      context 'when auto_duo_code_review_settings is available' do
+        before do
+          allow_any_instance_of(Group).to receive(:auto_duo_code_review_settings_available?).and_return(true)
+        end
+
+        it_behaves_like 'when updating duo settings', :auto_duo_code_review_enabled, true
       end
     end
   end

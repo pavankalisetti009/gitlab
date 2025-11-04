@@ -47,6 +47,10 @@ module EE
           param_key: :web_based_commit_signing_enabled,
           user_policy: :admin_group
         )
+        validate_settings_param_for_admin(
+          param_key: :auto_duo_code_review_enabled,
+          user_policy: :admin_group
+        )
 
         handle_web_based_commit_signing_lock
 
