@@ -170,6 +170,13 @@ Style/SignalException:
     - '**/*/Dangerfile'
     - 'tooling/danger/**/*.rb'
 
+# See https://gitlab.com/groups/gitlab-org/-/epics/5076
+RSpec/RailsControllerTesting:
+  Enabled: true
+  Include:
+    - '{,ee/,jh/}spec/controllers/**/*'
+    - '{,ee/,jh/}spec/requests/**/*'
+
 RSpec/SpecFilePathFormat:
   Exclude:
     - 'qa/**/*'
