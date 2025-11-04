@@ -13,7 +13,7 @@ RSpec.describe VirtualRegistries::Packages::Maven, feature_category: :virtual_re
       stub_config(dependency_proxy: { enabled: true })
       stub_feature_flags(maven_virtual_registry: true)
       stub_licensed_features(packages_virtual_registry: true)
-      allow(VirtualRegistries::Setting).to receive(:cached_for_group).with(group).and_return(build_stubbed(
+      allow(VirtualRegistries::Setting).to receive(:find_for_group).with(group).and_return(build_stubbed(
         :virtual_registries_setting, group: group))
     end
 
@@ -53,7 +53,7 @@ RSpec.describe VirtualRegistries::Packages::Maven, feature_category: :virtual_re
 
     context 'when virtual registry setting is disabled' do
       before do
-        allow(VirtualRegistries::Setting).to receive(:cached_for_group).with(group).and_return(build_stubbed(
+        allow(VirtualRegistries::Setting).to receive(:find_for_group).with(group).and_return(build_stubbed(
           :virtual_registries_setting, :disabled, group: group))
       end
 

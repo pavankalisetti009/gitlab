@@ -32,7 +32,7 @@ end
 
 RSpec.shared_examples 'virtual registries setting enabled is false' do
   before do
-    allow(VirtualRegistries::Setting).to receive(:cached_for_group).with(group).and_return(build_stubbed(
+    allow(VirtualRegistries::Setting).to receive(:find_for_group).with(group).and_return(build_stubbed(
       :virtual_registries_setting, :disabled, group: group))
   end
 
