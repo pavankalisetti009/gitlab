@@ -384,7 +384,21 @@ RSpec.describe Gitlab::Llm::TanukiBot, feature_category: :duo_chat do
               end
             end
 
-            context 'when the feature setting returns payload' do
+            context 'when the feature setting returns ai_feature_setting payload' do
+              let(:payload) { build(:ai_feature_setting, feature: :duo_agent_platform) }
+              let(:service_response) { ServiceResponse.success(payload: payload) }
+
+              it { is_expected.to be_falsey }
+            end
+
+            context 'when the feature setting returns instance_model_selection_feature_setting payload' do
+              let(:payload) { build(:instance_model_selection_feature_setting, feature: :duo_agent_platform) }
+              let(:service_response) { ServiceResponse.success(payload: payload) }
+
+              it { is_expected.to be_truthy }
+            end
+
+            context 'when the feature setting returns ai_namespace_feature_setting payload' do
               let(:payload) { build(:ai_namespace_feature_setting, namespace: group, feature: :duo_agent_platform) }
               let(:service_response) { ServiceResponse.success(payload: payload) }
 

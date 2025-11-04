@@ -218,6 +218,57 @@ RSpec.describe Resolvers::Ai::Chat::AvailableModelsResolver, :saas, feature_cate
         end
       end
 
+      context "when feature setting returns ai_feature_setting payload" do
+        let_it_be(:model) { create(:ai_self_hosted_model, model: :claude_3, identifier: 'claude-3-7-sonnet-20250219') }
+
+        let_it_be(:feature_setting) do
+          create(:ai_feature_setting, feature: :duo_agent_platform, self_hosted_model: model)
+        end
+
+        before do
+          allow_next_instance_of(::Ai::FeatureSettingSelectionService) do |service|
+            allow(service).to receive(:execute).and_return(ServiceResponse.success(payload: feature_setting))
+          end
+        end
+
+        it "returns nil for pinned model when user_model_selection_available? is false" do
+          expect(resolver).to eq({
+            default_model: { name: "Claude Sonnet 4.0 - Anthropic", ref: "claude_sonnet_4_20250514" },
+            selectable_models: [
+              { name: "Claude Sonnet 4.0 - Anthropic", ref: "claude_sonnet_4_20250514" },
+              { name: "Claude Sonnet 3.7 - Anthropic", ref: "claude_sonnet_3_7_20250219" }
+            ],
+            pinned_model: nil
+          })
+        end
+      end
+
+      context "when feature setting returns ai_namespace_feature_setting payload" do
+        let_it_be(:feature_setting) do
+          create(:ai_namespace_feature_setting,
+            namespace: group,
+            feature: :duo_agent_platform,
+            offered_model_ref: "claude_sonnet_3_7_20250219")
+        end
+
+        before do
+          allow_next_instance_of(::Ai::FeatureSettingSelectionService) do |service|
+            allow(service).to receive(:execute).and_return(ServiceResponse.success(payload: feature_setting))
+          end
+        end
+
+        it "returns the pinned model when user_model_selection_available? is true" do
+          expect(resolver).to eq({
+            default_model: { name: "Claude Sonnet 4.0 - Anthropic", ref: "claude_sonnet_4_20250514" },
+            selectable_models: [
+              { name: "Claude Sonnet 4.0 - Anthropic", ref: "claude_sonnet_4_20250514" },
+              { name: "Claude Sonnet 3.7 - Anthropic", ref: "claude_sonnet_3_7_20250219" }
+            ],
+            pinned_model: { name: "Claude Sonnet 3.7 - Anthropic", ref: "claude_sonnet_3_7_20250219" }
+          })
+        end
+      end
+
       context "when duo_agent_platform feature setting is not found" do
         let(:service_result) do
           ServiceResponse.success(payload: {
