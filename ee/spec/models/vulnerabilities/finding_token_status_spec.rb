@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require 'spec_helper'
+
 RSpec.describe Vulnerabilities::FindingTokenStatus, feature_category: :secret_detection do
   describe 'factory' do
     it 'creates a valid finding token status' do
@@ -82,16 +83,86 @@ RSpec.describe Vulnerabilities::FindingTokenStatus, feature_category: :secret_de
 
   describe 'internal event tracking' do
     let_it_be(:project) { create(:project) }
-    let_it_be(:finding) { create(:vulnerabilities_finding, :with_secret_detection, project: project) }
+    let_it_be(:finding) do
+      create(:vulnerabilities_finding, :with_secret_detection, project: project)
+    end
 
-    it 'tracks event on create with correct parameters' do
-      expect { create(:finding_token_status, finding: finding) }
-        .to trigger_internal_events('secret_detection_token_verified')
-        .with(
-          project: project,
-          namespace: project.namespace,
-          additional_properties: { label: 'AWS' }
-        )
+    context 'on create' do
+      it 'tracks event with active status' do
+        expect { create(:finding_token_status, :active, finding: finding) }
+          .to trigger_internal_events('secret_detection_token_verified')
+          .with(
+            project: project,
+            namespace: project.namespace,
+            additional_properties: {
+              label: 'AWS',
+              property: 'active'
+            }
+          )
+      end
+
+      it 'tracks event with inactive status' do
+        expect { create(:finding_token_status, :inactive, finding: finding) }
+          .to trigger_internal_events('secret_detection_token_verified')
+          .with(
+            project: project,
+            namespace: project.namespace,
+            additional_properties: {
+              label: 'AWS',
+              property: 'inactive'
+            }
+          )
+      end
+    end
+
+    context 'on update' do
+      let!(:token_status) { create(:finding_token_status, :unknown, finding: finding) }
+
+      it 'tracks event when status changes from unknown to active' do
+        expect { token_status.update!(status: :active) }
+          .to trigger_internal_events('secret_detection_token_verified')
+          .with(
+            project: project,
+            namespace: project.namespace,
+            additional_properties: {
+              label: 'AWS',
+              property: 'active'
+            }
+          )
+      end
+
+      it 'tracks event when status changes from unknown to inactive' do
+        expect { token_status.update!(status: :inactive) }
+          .to trigger_internal_events('secret_detection_token_verified')
+          .with(
+            project: project,
+            namespace: project.namespace,
+            additional_properties: {
+              label: 'AWS',
+              property: 'inactive'
+            }
+          )
+      end
+
+      it 'tracks event when status changes from active to inactive' do
+        token_status.update!(status: :active)
+
+        expect { token_status.update!(status: :inactive) }
+          .to trigger_internal_events('secret_detection_token_verified')
+          .with(
+            project: project,
+            namespace: project.namespace,
+            additional_properties: {
+              label: 'AWS',
+              property: 'inactive'
+            }
+          )
+      end
+
+      it 'does not track event when status does not change' do
+        expect { token_status.update!(last_verified_at: 1.hour.ago) }
+          .not_to trigger_internal_events('secret_detection_token_verified')
+      end
     end
 
     context 'when finding has no token_type' do
@@ -99,8 +170,15 @@ RSpec.describe Vulnerabilities::FindingTokenStatus, feature_category: :secret_de
         allow(finding).to receive(:token_type).and_return(nil)
       end
 
-      it 'does not track event' do
+      it 'does not track event on create' do
         expect { create(:finding_token_status, finding: finding) }
+          .not_to trigger_internal_events('secret_detection_token_verified')
+      end
+
+      it 'does not track event on update' do
+        token_status = create(:finding_token_status, :unknown, finding: finding)
+
+        expect { token_status.update!(status: :active) }
           .not_to trigger_internal_events('secret_detection_token_verified')
       end
     end
@@ -113,11 +191,24 @@ RSpec.describe Vulnerabilities::FindingTokenStatus, feature_category: :secret_de
         end
       end
 
-      it 'tracks exception but does not raise' do
+      it 'tracks exception on create but does not raise' do
         expect(Gitlab::ErrorTracking).to receive(:track_exception)
           .with(instance_of(StandardError), hash_including(finding_id: finding.id))
 
         expect { create(:finding_token_status, finding: finding) }
+          .not_to raise_error
+      end
+
+      it 'tracks exception on update but does not raise' do
+        token_status = create(:finding_token_status, :unknown, finding: finding)
+
+        allow(token_status).to receive(:track_internal_event)
+          .and_raise(StandardError, 'Tracking error')
+
+        expect(Gitlab::ErrorTracking).to receive(:track_exception)
+          .with(instance_of(StandardError), hash_including(finding_id: finding.id))
+
+        expect { token_status.update!(status: :active) }
           .not_to raise_error
       end
     end
