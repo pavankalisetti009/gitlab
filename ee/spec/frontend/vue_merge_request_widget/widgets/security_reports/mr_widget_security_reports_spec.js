@@ -19,11 +19,13 @@ import api from '~/api';
 import Widget from '~/vue_merge_request_widget/components/widget/widget.vue';
 import axios from '~/lib/utils/axios_utils';
 import enabledScansQuery from 'ee/vue_merge_request_widget/queries/enabled_scans.query.graphql';
+import findingReportsComparerQuery from 'ee/vue_merge_request_widget/queries/finding_reports_comparer.query.graphql';
 import {
   HTTP_STATUS_BAD_REQUEST,
   HTTP_STATUS_INTERNAL_SERVER_ERROR,
   HTTP_STATUS_OK,
 } from '~/lib/utils/http_status';
+import { mockFindingReportsComparerSuccessResponse } from '../../mock_data';
 
 Vue.use(VueApollo);
 
@@ -60,6 +62,35 @@ describe('MR Widget Security Reports', () => {
     apiFuzzingComparisonPathV2: '/my/api-fuzzing/endpoint?type=api_fuzzing',
     secretDetectionComparisonPathV2: '/my/secret-detection/endpoint?type=secret_deteection',
     containerScanningComparisonPathV2: '/my/container-scanning/endpoint?type=container_scanning',
+  };
+
+  const defaultMrPropsData = {
+    targetProjectFullPath: 'gitlab-org/gitlab',
+    iid: 456,
+    pipeline: {
+      path: '/path/to/pipeline',
+      iid: 123,
+    },
+    enabledReports: {
+      sast: true,
+      dast: true,
+      dependencyScanning: true,
+      containerScanning: true,
+      coverageFuzzing: true,
+      apiFuzzing: true,
+      secretDetection: true,
+    },
+    ...reportEndpoints,
+    securityConfigurationPath,
+    sourceBranch,
+    sourceProjectFullPath,
+    sastHelp,
+    dastHelp,
+    containerScanningHelp,
+    dependencyScanningHelp,
+    coverageFuzzingHelp,
+    secretDetectionHelp,
+    apiFuzzingHelp,
   };
 
   const enabledScansQueryResult = (overrides = { full: {}, partial: {} }) => ({
@@ -116,32 +147,8 @@ describe('MR Widget Security Reports', () => {
       propsData: {
         ...propsData,
         mr: {
-          targetProjectFullPath: 'gitlab-org/gitlab',
-          pipeline: {
-            path: '/path/to/pipeline',
-            iid: 123,
-          },
-          enabledReports: {
-            sast: true,
-            dast: true,
-            dependencyScanning: true,
-            containerScanning: true,
-            coverageFuzzing: true,
-            apiFuzzing: true,
-            secretDetection: true,
-          },
+          ...defaultMrPropsData,
           ...propsData?.mr,
-          ...reportEndpoints,
-          securityConfigurationPath,
-          sourceBranch,
-          sourceProjectFullPath,
-          sastHelp,
-          dastHelp,
-          containerScanningHelp,
-          dependencyScanningHelp,
-          coverageFuzzingHelp,
-          secretDetectionHelp,
-          apiFuzzingHelp,
         },
       },
       stubs: {
@@ -852,6 +859,39 @@ describe('MR Widget Security Reports', () => {
       await nextTick();
 
       expect(mockedFindings[0].state).toBe('detected');
+    });
+  });
+
+  describe('when mrSecurityWidgetGraphql FF is enabled', () => {
+    let findingReportsComparerHandler;
+
+    it('makes GraphQL query when component loads', async () => {
+      findingReportsComparerHandler = jest
+        .fn()
+        .mockResolvedValue(mockFindingReportsComparerSuccessResponse);
+
+      createComponent({
+        provide: {
+          glFeatures: {
+            vulnerabilityPartialScans: true,
+            mrSecurityWidgetGraphql: true,
+          },
+        },
+        mountFn: mountExtended,
+        apolloProvider: createMockApollo([
+          [enabledScansQuery, jest.fn().mockResolvedValue(enabledScansQueryResult())],
+          [findingReportsComparerQuery, findingReportsComparerHandler],
+        ]),
+      });
+
+      await waitForPromises();
+
+      expect(findingReportsComparerHandler).toHaveBeenCalledWith({
+        fullPath: defaultMrPropsData.targetProjectFullPath,
+        iid: String(defaultMrPropsData.iid),
+        reportType: 'SAST',
+        scanMode: 'FULL',
+      });
     });
   });
 });

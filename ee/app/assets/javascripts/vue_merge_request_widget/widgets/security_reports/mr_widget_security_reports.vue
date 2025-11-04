@@ -11,6 +11,8 @@ import { convertToCamelCase } from '~/lib/utils/text_utility';
 import { helpPagePath } from '~/helpers/help_page_helper';
 import SmartInterval from '~/smart_interval';
 import { CRITICAL, HIGH } from 'ee/vulnerabilities/constants';
+import findingReportsComparerQuery from 'ee/vue_merge_request_widget/queries/finding_reports_comparer.query.graphql';
+import glFeatureFlagMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
 import SummaryText, { MAX_NEW_VULNERABILITIES } from './summary_text.vue';
 import SecurityTrainingPromoWidget from './security_training_promo_widget.vue';
 import ReportDetails from './mr_widget_security_report_details.vue';
@@ -28,6 +30,38 @@ const getFindingWithoutFeedback = (finding) => ({
   issue_feedback: undefined,
 });
 
+const transformToEnabledScans = (scans) => {
+  const GRAPHQL_FIELD_TO_ENUM = {
+    sast: 'SAST',
+    dast: 'DAST',
+    secretDetection: 'SECRET_DETECTION',
+    apiFuzzing: 'API_FUZZING',
+    coverageFuzzing: 'COVERAGE_FUZZING',
+    dependencyScanning: 'DEPENDENCY_SCANNING',
+    containerScanning: 'CONTAINER_SCANNING',
+    clusterImageScanning: 'CLUSTER_IMAGE_SCANNING',
+  };
+
+  const getEnabledScanTypes = (scanData, scanMode) => {
+    if (!scanData) return [];
+
+    const result = Object.entries(scanData)
+      .filter(([scanType, isEnabled]) => isEnabled === true && GRAPHQL_FIELD_TO_ENUM[scanType])
+      .map(([scanType]) => ({
+        reportType: GRAPHQL_FIELD_TO_ENUM[scanType],
+        scanMode,
+      }));
+
+    return result;
+  };
+
+  return [
+    ...getEnabledScanTypes(scans.enabledSecurityScans, 'FULL'),
+    // Partial scans will be implemented in a follow-up
+    // https://gitlab.com/gitlab-org/gitlab/-/issues/574434
+  ];
+};
+
 export default {
   name: 'WidgetSecurityReports',
   components: {
@@ -39,6 +73,7 @@ export default {
     SummaryHighlights,
     SecurityTrainingPromoWidget,
   },
+  mixins: [glFeatureFlagMixin()],
   i18n,
   props: {
     mr: {
@@ -78,6 +113,7 @@ export default {
         partial: {},
         full: this.mr.enabledReports || {},
       },
+      enabledScansGraphQL: [],
     };
   },
   computed: {
@@ -249,6 +285,8 @@ export default {
           this.$options.pollingInterval = undefined;
         }
 
+        this.enabledScansGraphQL = transformToEnabledScans(scans);
+
         return {
           full: scans.enabledSecurityScans || {},
           partial: scans.enabledPartialSecurityScans || {},
@@ -343,6 +381,12 @@ export default {
     },
 
     fetchCollapsedData() {
+      if (this.glFeatures.mrSecurityWidgetGraphql) {
+        return this.enabledScansGraphQL.map(({ reportType }) => () => {
+          return this.fetchCollapsedDataGraphQL(reportType);
+        });
+      }
+
       return this.endpoints.map(([path, reportType]) => () => {
         return this.fetchCollapsedDataREST(path, reportType);
       });
@@ -409,6 +453,23 @@ export default {
           }
 
           return { headers, status, data: report };
+        });
+    },
+
+    fetchCollapsedDataGraphQL(reportType, scanMode = 'FULL') {
+      return this.$apollo
+        .query({
+          query: findingReportsComparerQuery,
+          variables: {
+            fullPath: this.mr.targetProjectFullPath,
+            iid: String(this.mr.iid),
+            reportType,
+            scanMode,
+          },
+        })
+        .then((result) => {
+          const data = result.data?.project?.mergeRequest?.findingReportsComparer;
+          return data;
         });
     },
 
