@@ -15,9 +15,12 @@ module API
             namespace "internal" do
               namespace "agents" do
                 namespace "agentw" do
-                  desc 'Gets agentw info' do
-                    detail 'Retrieves agent info for agentw for the given workspace token'
+                  desc "Gets agentw info" do
+                    detail "Retrieves agent info for agentw for the given workspace token"
+                    tags ["workspace_tokens"]
+                    success code: 200, message: "Agentw info retrieved successfully"
                   end
+
                   get '/agent_info', feature_category: :workspaces, urgency: :low do
                     workspace_token = workspace_token_from_authorization_token
 

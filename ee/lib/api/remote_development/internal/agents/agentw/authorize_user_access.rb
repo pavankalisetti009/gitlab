@@ -17,10 +17,12 @@ module API
                 namespace "agentw" do
                   desc "authorize_user_access" do
                     detail "Returns whether the user is authorized to access the workspace."
+                    tags ["workspaces"]
+                    success code: 200, message: "User access authorization info retrieved successfully"
                   end
                   params do
-                    requires :workspace_host, type: String, desc: 'Host of the workspace being accessed'
-                    requires :user_id, type: Integer, desc: 'User ID of the user accessing the workspace'
+                    requires :workspace_host, type: String, desc: "Host of the workspace being accessed"
+                    requires :user_id, type: Integer, desc: "User ID of the user accessing the workspace"
                   end
                   get "/authorize_user_access", feature_category: :workspaces, urgency: :low do
                     response = ::RemoteDevelopment::CommonService.execute(
@@ -33,6 +35,7 @@ module API
 
                     # NOTE: There's currently no way an error can be returned other than an unexpected raised
                     #       exception, so we assume success.
+                    status 200
 
                     response.payload
                   end
