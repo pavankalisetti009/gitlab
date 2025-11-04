@@ -153,9 +153,9 @@ export const mockUsersUsageDataWithPool = {
               username: 'dwilson',
               avatarUrl: 'https://www.gravatar.com/avatar/4?s=80&d=identicon',
               usage: {
-                creditsUsed: 320,
-                totalCredits: 500,
-                monthlyCommitmentCreditsUsed: 0,
+                creditsUsed: 2000,
+                totalCredits: 2000,
+                monthlyCommitmentCreditsUsed: 100,
                 monthlyWaiverCreditsUsed: 0,
                 overageCreditsUsed: 42,
               },

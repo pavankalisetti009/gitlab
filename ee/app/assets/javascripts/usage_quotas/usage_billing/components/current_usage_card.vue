@@ -3,7 +3,6 @@ import { GlCard, GlProgressBar, GlSprintf } from '@gitlab/ui';
 import { numberToMetricPrefix } from '~/lib/utils/number_utils';
 import { getDayDifference } from '~/lib/utils/datetime/date_calculation_utility';
 import { newDate } from '~/lib/utils/datetime_utility';
-import { USAGE_DANGER_THRESHOLD, USAGE_WARNING_THRESHOLD } from '../constants';
 
 export default {
   name: 'CurrentUsageCard',
@@ -33,17 +32,6 @@ export default {
     },
     poolCreditsRemaining() {
       return this.poolTotalCredits - this.poolCreditsUsed;
-    },
-    progressBarVariant() {
-      if (this.usagePercentage >= USAGE_DANGER_THRESHOLD) {
-        return 'danger';
-      }
-
-      if (this.usagePercentage >= USAGE_WARNING_THRESHOLD) {
-        return 'warning';
-      }
-
-      return 'primary';
     },
     daysOfMonthRemaining() {
       const today = new Date();
@@ -89,11 +77,7 @@ export default {
         {{ numberToMetricPrefix(poolTotalCredits) }}
       </span>
     </div>
-    <gl-progress-bar
-      :value="usagePercentage"
-      :variant="progressBarVariant"
-      class="gl-mb-3 gl-mt-1 gl-h-3"
-    />
+    <gl-progress-bar :value="usagePercentage" variant="primary" class="gl-mb-3 gl-mt-1 gl-h-3" />
     <div class="gl-font-sm gl-flex gl-flex-col gl-gap-3">
       <div class="gl-flex gl-flex-row gl-justify-between">
         <span data-testid="percentage-utilized" class="gl-text-subtle">
