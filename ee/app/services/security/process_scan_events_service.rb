@@ -40,6 +40,9 @@ module Security
       collect_ds_analyzer_scan_static_reachability_metrics_from_pipeline
       collect_ds_analyzer_scan_java_sr_coverage_metrics_from_pipeline
       collect_ds_analyzer_scan_non_default_config_metrics_from_pipeline
+      collect_ds_analyzer_scan_ci_integration_metrics_from_pipeline
+      collect_ds_analyzer_scan_sr_failure_metrics_from_pipeline
+      collect_ds_analyzer_scan_sr_sbom_failure_metrics_from_pipeline
     ].freeze
 
     def self.execute(pipeline)

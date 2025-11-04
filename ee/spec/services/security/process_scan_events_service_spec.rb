@@ -403,6 +403,20 @@ RSpec.describe Security::ProcessScanEventsService, feature_category: :vulnerabil
           ['collect_ds_analyzer_scan_non_default_config_metrics_from_pipeline', {
             property: 'e1552d18-eb8b-4e3e-bd15-a286ad1bc0f4',
             label: 'DS_INCLUDE_DEV_DEPENDENCIES'
+          }],
+          ['collect_ds_analyzer_scan_ci_integration_metrics_from_pipeline', {
+            property: 'e1552d18-eb8b-4e3e-bd15-a286ad1bc0f4',
+            label: 'template:v2'
+          }],
+          ['collect_ds_analyzer_scan_sr_failure_metrics_from_pipeline', {
+            property: 'e1552d18-eb8b-4e3e-bd15-a286ad1bc0f4',
+            label: 'error'
+          }],
+          ['collect_ds_analyzer_scan_sr_sbom_failure_metrics_from_pipeline', {
+            property: 'e1552d18-eb8b-4e3e-bd15-a286ad1bc0f4',
+            label: 'error',
+            language: 'python',
+            input_file_path: "a/b/requirements.txt"
           }]
         ]
       end
