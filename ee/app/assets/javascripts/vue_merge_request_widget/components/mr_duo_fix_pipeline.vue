@@ -1,7 +1,7 @@
 <script>
 import DuoWorkflowAction from 'ee/ai/components/duo_workflow_action.vue';
 import { relativePathToAbsolute } from '~/lib/utils/url_utility';
-import { AGENT_PRIVILEGES } from '~/duo_agent_platform/constants';
+import { FIX_PIPELINE_AGENT_PRIVILEGES } from '~/duo_agent_platform/constants';
 import { s__ } from '~/locale';
 
 export default {
@@ -54,12 +54,7 @@ export default {
       return s__('Pipeline|Fix pipeline with Duo');
     },
   },
-  AGENT_PRIVILEGES: [
-    AGENT_PRIVILEGES.READ_WRITE_FILES,
-    AGENT_PRIVILEGES.READ_ONLY_GITLAB,
-    AGENT_PRIVILEGES.READ_WRITE_GITLAB,
-    AGENT_PRIVILEGES.USE_GIT,
-  ],
+  FIX_PIPELINE_AGENT_PRIVILEGES,
 };
 </script>
 
@@ -71,7 +66,7 @@ export default {
       :project-path="targetProjectFullPath"
       :hover-message="fixPipelineText"
       :source-branch="sourceBranch"
-      :agent-privileges="$options.AGENT_PRIVILEGES"
+      :agent-privileges="$options.FIX_PIPELINE_AGENT_PRIVILEGES"
       :additional-context="getAdditionalContext"
     >
       {{ fixPipelineText }}
