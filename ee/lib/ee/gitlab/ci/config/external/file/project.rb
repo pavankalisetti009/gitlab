@@ -17,12 +17,14 @@ module EE
               end
 
               def security_policy_management_project_access_allowed?(project)
-                return false unless policy_management_project_access_allowed?
+                context.logger.instrument(:config_file_project_validate_access_policy) do
+                  next false unless policy_management_project_access_allowed?
 
-                return false unless context.project.affected_by_security_policy_management_project?(project)
+                  next false unless context.project.affected_by_security_policy_management_project?(project)
 
-                ::Security::OrchestrationPolicyConfiguration.policy_management_project?(project) &&
-                  project.project_setting.spp_repository_pipeline_access
+                  ::Security::OrchestrationPolicyConfiguration.policy_management_project?(project) &&
+                    project.project_setting.spp_repository_pipeline_access
+                end
               end
 
               def policy_management_project_access_allowed?
