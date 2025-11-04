@@ -12,10 +12,12 @@ module Vulnerabilities
 
     before_validation :assign_project_id
 
-    enum :workflow_name, {
+    WORKFLOW_NAMES = {
       sast_fp_detection: 0,
       resolve_sast_vulnerability: 1
-    }
+    }.freeze
+
+    enum :workflow_name, WORKFLOW_NAMES
 
     private
 
