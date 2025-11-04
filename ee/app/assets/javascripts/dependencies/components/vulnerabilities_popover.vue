@@ -23,7 +23,6 @@ export default {
           placement="bottom"
           boundary="viewport"
           target="vulnerabilities-info"
-          triggers="manual"
           show-close-button
           data-testid="vulnerability-info-popover"
           @close-button-clicked="dismiss"
