@@ -9,7 +9,8 @@ obsolete: false
 marked_obsolete_by_url:
 marked_obsolete_in_milestone: 
 skippable: true
-skip_condition: This migration will run on SaaS and Dedicated GitLab instances. For
-  Self-managed instances decision is awaited and is tracked in https://gitlab.com/gitlab-org/gitlab/-/issues/525484.
+skip_condition: This migration will run on SaaS GitLab instance only. A separate migration will be added for Dedicated
+  instances will added in 18.7 to ensure that the PG backfill has completed
+  For Self-managed instances decision is awaited and is tracked in https://gitlab.com/gitlab-org/gitlab/-/issues/525484.
   For Self-managed this migration will be skipped and can be introduced later based
   on product direction.
