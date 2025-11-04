@@ -57467,6 +57467,9 @@ msgstr ""
 msgid "ScanResultPolicy|%{listType} according to the %{buttonType}"
 msgstr ""
 
+msgid "ScanResultPolicy|%{operator} %{value} chance of exploration"
+msgstr ""
+
 msgid "ScanResultPolicy|Access Token"
 msgstr ""
 
@@ -57557,6 +57560,12 @@ msgstr ""
 msgid "ScanResultPolicy|Clear all"
 msgstr ""
 
+msgid "ScanResultPolicy|Critical Risk (100%%)"
+msgstr ""
+
+msgid "ScanResultPolicy|Custom Value"
+msgstr ""
+
 msgid "ScanResultPolicy|Customized CI Variables"
 msgstr ""
 
@@ -57578,6 +57587,9 @@ msgstr ""
 msgid "ScanResultPolicy|Duplicates will be removed"
 msgstr ""
 
+msgid "ScanResultPolicy|EPSS has a"
+msgstr ""
+
 msgid "ScanResultPolicy|Edge case settings"
 msgstr ""
 
@@ -57588,6 +57600,9 @@ msgid "ScanResultPolicy|Edit denylist"
 msgstr ""
 
 msgid "ScanResultPolicy|Enable automated systems and bots to bypass policies for approved workflows."
+msgstr ""
+
+msgid "ScanResultPolicy|Epss score"
 msgstr ""
 
 msgid "ScanResultPolicy|Error while fetching"
@@ -57641,6 +57656,9 @@ msgstr ""
 msgid "ScanResultPolicy|Groups"
 msgstr ""
 
+msgid "ScanResultPolicy|High Risk (80%%)"
+msgstr ""
+
 msgid "ScanResultPolicy|If Team frequently needs to push infrastructure configuration changes that trigger policy violations but are pre-approved through your change management process, add specific users to bypass infrastructure policies."
 msgstr ""
 
@@ -57680,6 +57698,9 @@ msgstr ""
 msgid "ScanResultPolicy|KEV status"
 msgstr ""
 
+msgid "ScanResultPolicy|Known exploited"
+msgstr ""
+
 msgid "ScanResultPolicy|License is:"
 msgstr ""
 
@@ -57687,6 +57708,9 @@ msgid "ScanResultPolicy|License status"
 msgstr ""
 
 msgid "ScanResultPolicy|License type"
+msgstr ""
+
+msgid "ScanResultPolicy|Low Risk (10%%)"
 msgstr ""
 
 msgid "ScanResultPolicy|Make approval rules optional using execution policies"
@@ -57705,6 +57729,9 @@ msgid "ScanResultPolicy|Maximum of two status criteria allowed"
 msgstr ""
 
 msgid "ScanResultPolicy|Merge request approval settings"
+msgstr ""
+
+msgid "ScanResultPolicy|Moderate Risk (50%%)"
 msgstr ""
 
 msgid "ScanResultPolicy|New age"
@@ -57819,6 +57846,12 @@ msgid "ScanResultPolicy|Select licenses"
 msgstr ""
 
 msgid "ScanResultPolicy|Select list type"
+msgstr ""
+
+msgid "ScanResultPolicy|Select operator"
+msgstr ""
+
+msgid "ScanResultPolicy|Select probability"
 msgstr ""
 
 msgid "ScanResultPolicy|Select role exceptions"
@@ -57947,10 +57980,16 @@ msgstr ""
 msgid "ScanResultPolicy|denylist (%{licenseCount} %{licenses})"
 msgstr ""
 
+msgid "ScanResultPolicy|greater than or equal to"
+msgstr ""
+
 msgid "ScanResultPolicy|input source branch"
 msgstr ""
 
 msgid "ScanResultPolicy|input target branch"
+msgstr ""
+
+msgid "ScanResultPolicy|less than or equal to"
 msgstr ""
 
 msgid "ScanResultPolicy|license status"
