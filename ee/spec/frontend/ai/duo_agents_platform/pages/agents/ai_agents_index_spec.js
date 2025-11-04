@@ -118,8 +118,9 @@ describe('AiAgentsIndex', () => {
   describe('Apollo queries', () => {
     it('fetches list data', () => {
       expect(mockConfiguredAgentsQueryHandler).toHaveBeenCalledWith({
-        itemType: 'AGENT',
+        itemTypes: ['AGENT'],
         projectId: `gid://gitlab/Project/${mockProjectId}`,
+        includeInherited: false,
         after: null,
         before: null,
         first: 20,
@@ -197,8 +198,9 @@ describe('AiAgentsIndex', () => {
     it('refetches query with correct variables when paging backward', () => {
       findAiCatalogList().vm.$emit('prev-page');
       expect(mockConfiguredAgentsQueryHandler).toHaveBeenCalledWith({
-        itemType: 'AGENT',
+        itemTypes: ['AGENT'],
         projectId: `gid://gitlab/Project/${mockProjectId}`,
+        includeInherited: false,
         after: null,
         before: 'eyJpZCI6IjUxIn0',
         first: null,
@@ -209,8 +211,9 @@ describe('AiAgentsIndex', () => {
     it('refetches query with correct variables when paging forward', () => {
       findAiCatalogList().vm.$emit('next-page');
       expect(mockConfiguredAgentsQueryHandler).toHaveBeenCalledWith({
-        itemType: 'AGENT',
+        itemTypes: ['AGENT'],
         projectId: `gid://gitlab/Project/${mockProjectId}`,
+        includeInherited: false,
         after: 'eyJpZCI6IjM1In0',
         before: null,
         first: 20,
