@@ -80,6 +80,7 @@ export default {
           :key="action.id"
           :data-testid="action.id"
           :icon="action.icon"
+          :loading="action.loading"
           size="small"
           class="gl-ml-3"
           @click="$emit('actionClicked', action)"

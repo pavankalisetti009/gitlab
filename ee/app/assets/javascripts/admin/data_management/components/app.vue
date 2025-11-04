@@ -32,7 +32,7 @@ export default {
   },
   data() {
     return {
-      isLoading: false,
+      isLoading: true,
       modelItems: [],
       filters: [],
     };
@@ -147,7 +147,12 @@ export default {
       @search="handleSearch"
     />
     <geo-list :is-loading="isLoading" :has-items="hasItems" :empty-state="emptyState">
-      <data-management-item v-for="item in modelItems" :key="item.recordIdentifier" :item="item" />
+      <data-management-item
+        v-for="item in modelItems"
+        :key="item.recordIdentifier"
+        :model-name="modelClass.name"
+        :initial-item="item"
+      />
     </geo-list>
   </div>
 </template>

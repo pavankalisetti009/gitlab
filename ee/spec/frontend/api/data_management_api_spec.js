@@ -2,7 +2,7 @@ import MockAdapter from 'axios-mock-adapter';
 import models from 'test_fixtures/api/admin/data_management/snippet_repository.json';
 import axios from '~/lib/utils/axios_utils';
 import { HTTP_STATUS_OK } from '~/lib/utils/http_status';
-import { getModels } from 'ee/api/data_management_api';
+import { putModelAction, getModels } from 'ee/api/data_management_api';
 
 const mockApiVersion = 'v4';
 const mockUrlRoot = '/gitlab';
@@ -42,6 +42,22 @@ describe('DataManagementApp', () => {
       await getModels(model, params);
 
       expect(mock.history.get[0].params).toEqual(params);
+    });
+  });
+
+  describe('putModelAction', () => {
+    it('calls correct URL and returns expected response', async () => {
+      const model = 'model';
+      const recordIdentifier = 1;
+      const action = 'action';
+
+      const expectedUrl = `${mockUrlRoot}/api/${mockApiVersion}/admin/data_management/${model}/${recordIdentifier}/${action}`;
+
+      mock.onPut(expectedUrl).reply(HTTP_STATUS_OK, { data: models });
+
+      await expect(putModelAction(model, recordIdentifier, action)).resolves.toMatchObject({
+        data: { data: models },
+      });
     });
   });
 });

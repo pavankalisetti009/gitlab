@@ -1,5 +1,4 @@
 import { GlLink, GlButton } from '@gitlab/ui';
-import { nextTick } from 'vue';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import GeoListItem from 'ee/geo_shared/list/components/geo_list_item.vue';
 import GeoListItemTimeAgo from 'ee/geo_shared/list/components/geo_list_item_time_ago.vue';
@@ -82,10 +81,17 @@ describe('GeoListItem', () => {
     });
 
     it('on click, emits `actionClicked` with the correct action', async () => {
-      findActions().at(0).vm.$emit('click');
-      await nextTick();
+      await findActions().at(0).vm.$emit('click');
 
       expect(wrapper.emitted('actionClicked')).toStrictEqual([[MOCK_BULK_ACTIONS[0]]]);
+    });
+
+    it.each([true, false])('sets button loading state for loading prop %s', (loading) => {
+      const actionsArray = MOCK_BULK_ACTIONS.map((action) => ({ ...action, loading }));
+      createComponent({ props: { actionsArray } });
+
+      const loadingStates = findActions().wrappers.map((action) => action.props('loading'));
+      expect(loadingStates.every((state) => state === loading)).toBe(true);
     });
   });
 

@@ -99,7 +99,10 @@ describe('AdminDataManagementApp', () => {
         const [item] = convertObjectPropsToCamelCase(models, { deep: true });
 
         expect(findGeoList().props('hasItems')).toBe(true);
-        expect(findDataManagementItem().props()).toMatchObject({ item });
+        expect(findDataManagementItem().props()).toMatchObject({
+          initialItem: item,
+          modelName: MOCK_MODEL_CLASS.name,
+        });
       });
 
       it('stops loading state', () => {

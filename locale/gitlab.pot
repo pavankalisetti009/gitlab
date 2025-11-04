@@ -29520,6 +29520,9 @@ msgstr ""
 msgid "Geo|CI Secure Files"
 msgstr ""
 
+msgid "Geo|Checksum"
+msgstr ""
+
 msgid "Geo|Checksum status"
 msgstr ""
 
@@ -30045,6 +30048,9 @@ msgstr ""
 msgid "Geo|Succeeded"
 msgstr ""
 
+msgid "Geo|Successfully recalculated checksum for %{name}."
+msgstr ""
+
 msgid "Geo|Sync failed"
 msgstr ""
 
@@ -30115,6 +30121,9 @@ msgid "Geo|There was an error fetching the Sites's Groups"
 msgstr ""
 
 msgid "Geo|There was an error fetching this replicable's details"
+msgstr ""
+
+msgid "Geo|There was an error recalculating checksum for %{name}."
 msgstr ""
 
 msgid "Geo|There was an error saving this Geo Site"
