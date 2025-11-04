@@ -60,7 +60,7 @@ const mockLifecycles = [
       {
         id: '3',
         name: 'Closed',
-        iconName: 'issue-closed',
+        iconName: 'issue-close',
         color: 'gray',
         description: '',
         __typename: 'WorkItemStatus',

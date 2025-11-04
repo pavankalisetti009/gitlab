@@ -181,7 +181,7 @@ RSpec.describe 'group epic roadmap', :js, feature_category: :portfolio_managemen
         it 'renders progress bar issue count', :aggregate_failures do
           choose 'Use issue count'
 
-          wait_for_epics(3, "issue-closed-icon")
+          wait_for_epics(3, "issue-close-icon")
         end
 
         it 'turns off progress tracking', :aggregate_failures do
@@ -191,7 +191,7 @@ RSpec.describe 'group epic roadmap', :js, feature_category: :portfolio_managemen
 
           page.within('.roadmap-container .epics-list-section') do
             expect(page).not_to have_selector('.epic-bar-progress')
-            expect(page).not_to have_selector('[data-testid="issue-closed-icon"]')
+            expect(page).not_to have_selector('[data-testid="issue-close-icon"]')
             expect(page).not_to have_selector('[data-testid="weight-icon"]')
           end
         end

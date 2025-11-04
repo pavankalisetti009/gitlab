@@ -93,7 +93,7 @@ describe('EpicItemTimelineComponent', () => {
     it.each`
       progressTracking   | icon
       ${PROGRESS_WEIGHT} | ${'weight'}
-      ${PROGRESS_COUNT}  | ${'issue-closed'}
+      ${PROGRESS_COUNT}  | ${'issue-close'}
     `(
       'displays icon $icon when progressTracking equals $progressTracking',
       ({ progressTracking, icon }) => {

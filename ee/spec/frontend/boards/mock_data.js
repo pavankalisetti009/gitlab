@@ -862,7 +862,7 @@ export const mockTokens = ({
     isProject: false,
   },
   {
-    icon: 'issues',
+    icon: 'issue-type-issue',
     title: TOKEN_TITLE_TYPE,
     type: TOKEN_TYPE_TYPE,
     token: GlFilteredSearchToken,

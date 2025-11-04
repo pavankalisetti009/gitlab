@@ -129,7 +129,7 @@ export default {
         : __('- of - weight completed');
     },
     progressIcon() {
-      return this.progressTrackingIsCount ? 'issue-closed' : 'weight';
+      return this.progressTrackingIsCount ? 'issue-close' : 'weight';
     },
   },
   methods: {

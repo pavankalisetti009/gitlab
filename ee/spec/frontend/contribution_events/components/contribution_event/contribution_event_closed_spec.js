@@ -27,7 +27,7 @@ describe('ContributionEventClosed', () => {
       expect(wrapper.findComponent(ContributionEventBase).props()).toMatchObject({
         event,
         message: 'Closed Epic %{targetLink} in %{resourceParentLink}.',
-        iconName: 'epic-closed',
+        iconName: 'issue-close',
       });
     });
   });

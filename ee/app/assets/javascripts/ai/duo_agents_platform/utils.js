@@ -46,13 +46,17 @@ export const getToolData = (toolMessage) => {
       title: s__('DuoAgentsPlatform|Search issues'),
       level: 0,
     },
-    get_issue: { icon: 'issues', title: s__('DuoAgentsPlatform|Get issue'), level: 0 },
+    get_issue: { icon: 'issue-type-issue', title: s__('DuoAgentsPlatform|Get issue'), level: 0 },
     create_merge_request: {
       icon: 'git-merge',
       title: s__('DuoAgentsPlatform|Create merge request'),
       level: 1,
     },
-    list_issue_notes: { icon: 'issues', title: s__('DuoAgentsPlatform|List comments'), level: 0 },
+    list_issue_notes: {
+      icon: 'issue-type-issue',
+      title: s__('DuoAgentsPlatform|List comments'),
+      level: 0,
+    },
     create_commit: { icon: 'commit', title: s__('DuoAgentsPlatform|Create commit'), level: 1 },
   };
 

@@ -36,7 +36,7 @@ export default {
 
 <template>
   <div class="gl-inline-block">
-    <gl-badge ref="issueBadge" icon="issues" class="gl-px-3">
+    <gl-badge ref="issueBadge" icon="issue-type-issue" class="gl-px-3">
       {{ numberOfIssues }}
     </gl-badge>
     <gl-popover ref="popover" :target="issueBadgeEl" placement="top">
