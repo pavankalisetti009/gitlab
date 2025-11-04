@@ -262,6 +262,17 @@ RSpec.describe Gitlab::Auth::Ldap::Person, feature_category: :system_access do
         expect(subject.ssh_keys).not_to include('KerberosKey:bogus')
       end
     end
+
+    context 'when the ssh key is security key type' do
+      let(:ssh_key) { build(:ed25519_sk_key_256).public_key.key_text }
+      let(:keys) { "#{ssh_key_attribute_name}: #{ssh_key}" }
+
+      it 'includes the ssh key' do
+        ssh_key_without_suffix = ssh_key.split(' ')[0..1].join(' ')
+
+        expect(subject.ssh_keys).to include(ssh_key_without_suffix)
+      end
+    end
   end
 
   describe '#memberof' do
