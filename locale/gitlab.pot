@@ -64215,6 +64215,9 @@ msgstr ""
 msgid "Specify a regular expression for emails. New users with matching emails are not made external users."
 msgstr ""
 
+msgid "Specify default number of replicas per namespace. Currently in development. See: https://gitlab.com/groups/gitlab-org/-/epics/19097"
+msgstr ""
+
 msgid "Specify the input values to use in this pipeline. Any inputs left unselected will use their default values."
 msgstr ""
 

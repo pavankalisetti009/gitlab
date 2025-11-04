@@ -11,7 +11,8 @@ RSpec.describe Search::Zoekt::Settings, feature_category: :global_search do
         :zoekt_indexing_paused,
         :zoekt_auto_index_root_namespace,
         :zoekt_lost_node_threshold,
-        :zoekt_cpu_to_tasks_ratio
+        :zoekt_cpu_to_tasks_ratio,
+        :zoekt_default_number_of_replicas
       )
     end
 
@@ -79,7 +80,7 @@ RSpec.describe Search::Zoekt::Settings, feature_category: :global_search do
     it 'returns only input_settings settings' do
       expected_list = %i[
         zoekt_cpu_to_tasks_ratio zoekt_indexing_parallelism zoekt_rollout_batch_size zoekt_indexing_timeout
-        zoekt_maximum_files zoekt_rollout_retry_interval zoekt_lost_node_threshold
+        zoekt_maximum_files zoekt_rollout_retry_interval zoekt_lost_node_threshold zoekt_default_number_of_replicas
       ]
 
       input_settings = described_class.input_settings

@@ -19,6 +19,7 @@ module Search
         foreign_key: :zoekt_enabled_namespace_id, inverse_of: :zoekt_enabled_namespace
 
       validate :only_root_namespaces_can_be_indexed
+      validates :number_of_replicas_override, numericality: { greater_than: 0 }, allow_nil: true
 
       scope :for_root_namespace_id, ->(root_namespace_id) { where(root_namespace_id: root_namespace_id) }
       scope :preload_storage_statistics, -> { includes(namespace: :root_storage_statistics) }
@@ -77,6 +78,10 @@ module Search
                        .to_i
 
         update_column(:metadata, metadata.merge(last_used_storage_bytes: size))
+      end
+
+      def number_of_replicas
+        number_of_replicas_override || ::Search::Zoekt::Settings.default_number_of_replicas
       end
 
       private

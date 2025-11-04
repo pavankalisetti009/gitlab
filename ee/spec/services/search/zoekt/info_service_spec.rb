@@ -26,7 +26,8 @@ RSpec.describe ::Search::Zoekt::InfoService, :silence_stdout, feature_category: 
       zoekt_rollout_batch_size: 32,
       zoekt_indexing_timeout: '30m',
       zoekt_rollout_retry_interval: '1d',
-      zoekt_lost_node_threshold: '24h'
+      zoekt_lost_node_threshold: '24h',
+      zoekt_default_number_of_replicas: 1
     )
     allow(Gitlab).to receive(:version_info).and_return(version_info)
     allow(Feature).to receive_messages(
