@@ -76,7 +76,6 @@ module Ai
 
         def try_trigger_ad_hoc_indexing(project_id)
           Ai::ActiveContext::Code::AdHocIndexingWorker.perform_async(project_id)
-          true
         rescue StandardError => e
           logger.warn(
             build_structured_payload(
