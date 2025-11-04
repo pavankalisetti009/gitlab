@@ -1,0 +1,12 @@
+{
+  "name": "frontend-islands",
+  "private": true,
+  "workspaces": [
+    "apps/*",
+    "packages/configs/*"
+  ],
+  "scripts": {
+    "build": "yarn workspaces run build",
+    "build:prod": "yarn workspaces run build:prod"
+  }
+}
