@@ -7,20 +7,29 @@ RSpec.describe Ai::Catalog::Flows::CreateService, feature_category: :workflow_ca
 
   let_it_be(:maintainer) { create(:user) }
   let_it_be(:project) { create(:project, maintainers: maintainer) }
-  let_it_be(:agent) { create(:ai_catalog_agent, project: project) }
-  let_it_be(:v1_0) { create(:ai_catalog_agent_version, item: agent, version: '1.0.0') }
-  let_it_be(:v1_1) { create(:ai_catalog_agent_version, item: agent, version: '1.1.0') }
 
   let(:user) { maintainer }
+  let(:definition) do
+    <<~YAML
+      version: v1
+      environment: ambient
+      components:
+        - name: main_agent
+          type: AgentComponent
+          prompt_id: test_prompt
+      routers: []
+      flow:
+        entry_point: main_agent
+    YAML
+  end
+
   let(:params) do
     {
-      name: 'Agent',
+      name: 'Flow',
       description: 'Description',
       public: true,
       release: true,
-      steps: [
-        { agent: agent }
-      ]
+      definition: definition
     }
   end
 
@@ -67,14 +76,7 @@ RSpec.describe Ai::Catalog::Flows::CreateService, feature_category: :workflow_ca
       expect(item.latest_version).to have_attributes(
         schema_version: ::Ai::Catalog::ItemVersion::FLOW_SCHEMA_VERSION,
         version: '1.0.0',
-        definition: {
-          steps: [
-            {
-              agent_id: agent.id, current_version_id: v1_1.id, pinned_version_prefix: nil
-            }.stringify_keys
-          ],
-          triggers: []
-        }.stringify_keys
+        definition: YAML.safe_load(definition).merge('yaml_definition' => definition)
       )
       expect(item.latest_released_version).to eq(item.latest_version)
     end
@@ -111,24 +113,7 @@ RSpec.describe Ai::Catalog::Flows::CreateService, feature_category: :workflow_ca
       it_behaves_like 'an error response', ["Name can't be blank"]
     end
 
-    context 'when including a pinned_version_prefix' do
-      let(:params) { super().merge(steps: [{ agent: agent, pinned_version_prefix: '1.0' }]) }
-
-      it 'sets the correct current_version_id' do
-        response
-
-        item = Ai::Catalog::Item.last
-        expect(item.versions.first.definition['steps'].first).to match a_hash_including(
-          'agent_id' => agent.id, 'current_version_id' => v1_0.id, 'pinned_version_prefix' => '1.0'
-        )
-      end
-
-      context 'when the prefix is not valid' do
-        let(:params) { super().merge(steps: [{ agent: agent, pinned_version_prefix: '999' }]) }
-
-        it_behaves_like 'an error response', ['Step 1: Unable to resolve version with prefix 999']
-      end
-    end
+    it_behaves_like 'yaml definition create service behavior'
 
     context 'when user is a developer' do
       let(:user) { create(:user).tap { |user| project.add_developer(user) } }
@@ -144,80 +129,12 @@ RSpec.describe Ai::Catalog::Flows::CreateService, feature_category: :workflow_ca
       it_behaves_like 'an error response', 'You have insufficient permissions'
     end
 
-    context 'when user does not have access to read one of the agents' do
-      let_it_be(:agent) { create(:ai_catalog_agent, public: false) }
-
-      it_behaves_like 'an error response', 'You have insufficient permissions'
-    end
-
-    context 'when user has access to read one of the agents, but it is private to another project' do
-      let_it_be(:other_project) { create(:project, maintainers: maintainer) }
-      let_it_be(:agent) { create(:ai_catalog_agent, public: false, project: other_project) }
-
-      it_behaves_like 'an error response', 'Step 1: Agent is private to another project'
-    end
-
-    context 'when flow exceeds maximum steps' do
-      before do
-        stub_const("Ai::Catalog::Flows::FlowHelper::MAX_STEPS", 1)
-      end
-
-      let!(:params) do
-        super().merge(steps: [{ agent: agent }, { agent: agent }])
-      end
-
-      it_behaves_like 'an error response', Ai::Catalog::Flows::FlowHelper::MAX_STEPS_ERROR
-    end
-
-    context 'when ai_catalog_third_party_flows feature flag is disabled' do
+    context 'when ai_catalog_flows feature flag is disabled' do
       before do
         stub_feature_flags(ai_catalog_flows: false)
       end
 
       it_behaves_like 'an error response', 'You have insufficient permissions'
-    end
-  end
-
-  describe 'dependency tracking' do
-    let_it_be(:agent2) { create(:ai_catalog_item, :agent, project:) }
-    let_it_be(:agent3) { create(:ai_catalog_item, :agent, project:) }
-
-    let(:params) do
-      {
-        name: 'Agent',
-        description: 'Description',
-        public: true,
-        steps: [
-          { agent: agent },
-          { agent: agent2 },
-          { agent: agent2 }
-        ]
-      }
-    end
-
-    it 'creates dependencies for each agent in the steps' do
-      expect { response }.to change { Ai::Catalog::ItemVersionDependency.count }.by(2)
-      flow_version = Ai::Catalog::ItemVersion.last
-      expect(flow_version.dependencies.pluck(:dependency_id)).to contain_exactly(agent.id, agent2.id)
-    end
-
-    it 'does not call delete_no_longer_used_dependencies' do
-      expect_next_instance_of(Ai::Catalog::ItemVersion) do |instance|
-        expect(instance).not_to receive(:delete_no_longer_used_dependencies)
-      end
-
-      response
-    end
-
-    context 'when saving dependencies fails' do
-      before do
-        allow(Ai::Catalog::ItemVersionDependency).to receive(:bulk_insert!)
-          .and_raise("Dummy error")
-      end
-
-      it 'does not create the item version' do
-        expect { response }.to raise_error("Dummy error").and not_change { Ai::Catalog::Item.count }
-      end
     end
   end
 

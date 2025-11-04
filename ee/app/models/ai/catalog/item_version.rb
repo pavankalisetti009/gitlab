@@ -3,10 +3,9 @@
 module Ai
   module Catalog
     class ItemVersion < ApplicationRecord
-      include ::Ai::Catalog::Concerns::FlowVersion
-
       AGENT_SCHEMA_VERSION = 1
-      FLOW_SCHEMA_VERSION = 1
+      AGENT_REFERENCED_FLOW_SCHEMA_VERSION = 1
+      FLOW_SCHEMA_VERSION = 2
       THIRD_PARTY_FLOW_SCHEMA_VERSION = 1
       DEFINITION_ACCESSOR_PREFIX = 'def_'
 

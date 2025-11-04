@@ -10,10 +10,18 @@ module Types
 
         field :steps, FlowStepsType.connection_type,
           method: :def_steps,
-          null: false,
+          null: true,
           description: 'Steps of the flow.'
 
+        field :definition, GraphQL::Types::String,
+          null: true,
+          description: 'YAML definition of the flow.'
+
         implements ::Types::Ai::Catalog::VersionInterface
+
+        def definition
+          object.definition['yaml_definition']
+        end
       end
     end
   end

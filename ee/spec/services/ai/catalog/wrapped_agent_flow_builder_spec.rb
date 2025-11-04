@@ -84,7 +84,7 @@ RSpec.describe Ai::Catalog::WrappedAgentFlowBuilder, :aggregate_failures, featur
       flow_version = flow.versions.last
 
       expect(flow_version).to be_a(::Ai::Catalog::ItemVersion)
-      expect(flow_version.schema_version).to eq(::Ai::Catalog::ItemVersion::FLOW_SCHEMA_VERSION)
+      expect(flow_version.schema_version).to eq(::Ai::Catalog::ItemVersion::AGENT_REFERENCED_FLOW_SCHEMA_VERSION)
       expect(flow_version.version).to eq(described_class::GENERATED_FLOW_VERSION)
     end
 

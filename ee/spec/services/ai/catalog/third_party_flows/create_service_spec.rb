@@ -9,13 +9,8 @@ RSpec.describe Ai::Catalog::ThirdPartyFlows::CreateService, feature_category: :w
   let_it_be(:project) { create(:project, maintainers: maintainer) }
 
   let(:user) { maintainer }
-  let(:params) do
-    {
-      name: 'Agent',
-      description: 'Description',
-      public: true,
-      release: true,
-      definition: <<-YAML
+  let(:definition) do
+    <<~YAML
       injectGatewayToken: true
       image: example/image:latest
       commands:
@@ -23,7 +18,16 @@ RSpec.describe Ai::Catalog::ThirdPartyFlows::CreateService, feature_category: :w
       variables:
         - VAL1
         - VAL2
-      YAML
+    YAML
+  end
+
+  let(:params) do
+    {
+      name: 'Agent',
+      description: 'Description',
+      public: true,
+      release: true,
+      definition: definition
     }
   end
 
@@ -71,13 +75,7 @@ RSpec.describe Ai::Catalog::ThirdPartyFlows::CreateService, feature_category: :w
         schema_version: 1,
         version: '1.0.0',
         release_date: Time.zone.now,
-        definition: {
-          injectGatewayToken: true,
-          image: 'example/image:latest',
-          commands: ['/bin/bash'],
-          variables: %w[VAL1 VAL2],
-          yaml_definition: params[:definition]
-        }.stringify_keys
+        definition: YAML.safe_load(definition).merge('yaml_definition' => definition)
       )
     end
 
@@ -112,13 +110,7 @@ RSpec.describe Ai::Catalog::ThirdPartyFlows::CreateService, feature_category: :w
       it_behaves_like 'an error response', ["Name can't be blank"]
     end
 
-    context 'when the provided YAML is not structured correctly' do
-      before do
-        params[:definition] = '"invalid: yaml data'
-      end
-
-      it_behaves_like 'an error response', ["definition does not have a valid YAML syntax"]
-    end
+    it_behaves_like 'yaml definition create service behavior', 'ThirdPartyFlow'
 
     context 'when user is a developer' do
       let(:user) { create(:user).tap { |user| project.add_developer(user) } }

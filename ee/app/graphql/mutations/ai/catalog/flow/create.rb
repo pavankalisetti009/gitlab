@@ -35,8 +35,12 @@ module Mutations
             description: 'Whether to release the latest version of the flow.'
 
           argument :steps, [::Types::Ai::Catalog::FlowStepsInputType],
-            required: true,
+            required: false,
             description: 'Steps for the flow.'
+
+          argument :definition, GraphQL::Types::String,
+            required: false,
+            description: 'YAML definition for the flow.'
 
           argument :add_to_project_when_created, GraphQL::Types::Boolean,
             required: false,
@@ -48,12 +52,6 @@ module Mutations
             project = authorized_find!(id: args[:project_id])
 
             service_args = args.except(:project_id)
-            # We can't use `loads` because of this bug https://github.com/rmosolgo/graphql-ruby/issues/2966
-            agents = ::Ai::Catalog::Item.with_ids(service_args[:steps].pluck(:agent_id)).index_by(&:id) # rubocop:disable CodeReuse/ActiveRecord -- not an ActiveRecord model
-
-            service_args[:steps] = service_args[:steps].map do |step|
-              step.to_hash.merge(agent: agents[step[:agent_id]]).except(:agent_id)
-            end
 
             result = ::Ai::Catalog::Flows::CreateService.new(
               project: project,

@@ -178,6 +178,28 @@ RSpec.describe Ai::Catalog::ExecuteWorkflowService, :aggregate_failures, feature
         )
       end
 
+      it 'passes all necessary parameters to StartWorkflowService' do
+        workflow = nil
+        expect(::Ai::DuoWorkflows::StartWorkflowService).to receive(:new) do |args|
+          workflow = args[:workflow]
+          params = args[:params]
+
+          expect(params[:goal]).to eq(goal)
+          expect(params[:flow_config]).to eq(json_config)
+          expect(params[:flow_config_schema_version]).to eq('v1')
+          expect(params[:workflow_id]).to eq(workflow.id)
+          expect(params[:workflow_oauth_token]).to be_present
+          expect(params[:workflow_service_token]).to be_present
+          expect(params[:duo_agent_platform_feature_setting]).to be_present
+
+          start_workflow_service
+        end
+        allow(start_workflow_service).to receive(:execute)
+          .and_return(ServiceResponse.success(payload: { workload_id: 123 }))
+
+        service.execute
+      end
+
       context 'when oauth token creation fails' do
         before do
           allow_next_instance_of(::Ai::DuoWorkflows::WorkflowContextGenerationService) do |service|

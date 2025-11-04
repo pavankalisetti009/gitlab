@@ -5,7 +5,6 @@ module Ai
     class ExecuteWorkflowService
       include Gitlab::Utils::StrongMemoize
 
-      FLOW_CONFIG_VERSION = 'experimental'
       WORKFLOW_ENVIRONMENT = 'web'
       AGENT_PRIVILEGES = [
         DuoWorkflows::Workflow::AgentPrivileges::READ_WRITE_FILES,
@@ -99,7 +98,7 @@ module Ai
         {
           goal: goal,
           flow_config: json_config,
-          flow_config_schema_version: FLOW_CONFIG_VERSION,
+          flow_config_schema_version: flow_config_schema_version,
           workflow_id: workflow.id,
           workflow_oauth_token: oauth_token_result.payload[:oauth_access_token].plaintext_token,
           workflow_service_token: workflow_token_result.payload[:token],
@@ -125,6 +124,10 @@ module Ai
 
       def allowed?
         Ability.allowed?(current_user, :execute_ai_catalog_item_version, item_version)
+      end
+
+      def flow_config_schema_version
+        'v1'
       end
     end
   end

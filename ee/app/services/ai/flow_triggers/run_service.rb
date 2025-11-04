@@ -110,7 +110,7 @@ module Ai
             flow: catalog_item,
             flow_version: catalog_item.resolve_version(catalog_item_pinned_version),
             event_type: params[:event].to_s,
-            user_prompt: catalog_item_user_prompt(params[:input]),
+            user_prompt: catalog_item_user_prompt(params[:input], params[:event]),
             execute_workflow: true
           }
         ).execute
@@ -213,8 +213,12 @@ module Ai
 
       # Pass the user input and the current context as a user prompt to a catalog item
       # Ideally, it should be prompt variables for better flexibility
-      def catalog_item_user_prompt(user_input)
-        "Input: #{user_input}\nContext: #{serialized_resource}"
+      def catalog_item_user_prompt(user_input, event_type)
+        if event_type == :mention
+          "Input: #{user_input}\nContext: #{serialized_resource}"
+        else
+          user_input
+        end
       end
     end
   end

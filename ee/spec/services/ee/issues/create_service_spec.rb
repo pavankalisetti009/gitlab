@@ -637,8 +637,8 @@ RSpec.describe Issues::CreateService, feature_category: :team_planning do
       let(:params) { { title: 'New issue', assignee_ids: [service_account_1.id, service_account_2.id] } }
 
       it 'triggers all matching flow trigger services' do
-        expect(run_service_1).to receive(:execute).with({ input: "", event: :assign })
-        expect(run_service_2).to receive(:execute).with({ input: "", event: :assign })
+        expect(run_service_1).to receive(:execute).with({ input: an_instance_of(String), event: :assign })
+        expect(run_service_2).to receive(:execute).with({ input: an_instance_of(String), event: :assign })
 
         expect(::Ai::FlowTriggers::RunService).to receive(:new)
           .with(project: project, current_user: user, resource: an_instance_of(Issue), flow_trigger: flow_trigger_1)
@@ -655,7 +655,7 @@ RSpec.describe Issues::CreateService, feature_category: :team_planning do
       let(:params) { { title: 'New issue', assignee_ids: [service_account_1.id, service_account_3.id] } }
 
       it 'only triggers assign event flow triggers' do
-        expect(run_service_1).to receive(:execute).with({ input: "", event: :assign })
+        expect(run_service_1).to receive(:execute).with({ input: an_instance_of(String), event: :assign })
         expect(::Ai::FlowTriggers::RunService).to receive(:new)
           .with(project: project, current_user: user, resource: an_instance_of(Issue), flow_trigger: flow_trigger_1)
           .and_return(run_service_1)
@@ -706,8 +706,8 @@ RSpec.describe Issues::CreateService, feature_category: :team_planning do
       let(:params) { { title: 'New issue', description: "/assign @#{service_account_1.username} @#{service_account_2.username}" } }
 
       it 'triggers flow trigger services for assigned users' do
-        expect(run_service_1).to receive(:execute).with({ input: "", event: :assign })
-        expect(run_service_2).to receive(:execute).with({ input: "", event: :assign })
+        expect(run_service_1).to receive(:execute).with({ input: an_instance_of(String), event: :assign })
+        expect(run_service_2).to receive(:execute).with({ input: an_instance_of(String), event: :assign })
 
         expect(::Ai::FlowTriggers::RunService).to receive(:new)
           .with(project: project, current_user: user, resource: an_instance_of(Issue), flow_trigger: flow_trigger_1)

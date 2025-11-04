@@ -9,6 +9,7 @@ FactoryBot.define do
 
     factory :ai_catalog_agent_version, traits: [:for_agent]
     factory :ai_catalog_flow_version, traits: [:for_flow]
+    factory :ai_catalog_agent_referenced_flow_version, traits: [:for_agent_referenced_flow]
     factory :ai_catalog_third_party_flow_version, traits: [:for_third_party_flow]
 
     trait :released do
@@ -30,16 +31,46 @@ FactoryBot.define do
       end
     end
 
-    trait :for_flow do
+    trait :for_agent_referenced_flow do
+      schema_version { ::Ai::Catalog::ItemVersion::AGENT_REFERENCED_FLOW_SCHEMA_VERSION }
       item { association :ai_catalog_flow }
       definition do
-        agent = Ai::Catalog::Item.find_by(item_type: :agent) || create(:ai_catalog_agent) # rubocop:disable RSpec/FactoryBot/InlineAssociation -- Not used for an association
-
         {
-          'triggers' => [1],
-          'steps' => [
-            { 'agent_id' => agent.id, 'current_version_id' => agent.latest_version.id, 'pinned_version_prefix' => nil }
-          ]
+          'triggers' => [],
+          'steps' => []
+        }
+      end
+    end
+
+    trait :for_flow do
+      schema_version { ::Ai::Catalog::ItemVersion::FLOW_SCHEMA_VERSION }
+      item { association :ai_catalog_flow }
+      definition do
+        {
+          'version' => 'v1',
+          'environment' => 'ambient',
+          'components' => [
+            {
+              'name' => 'main_agent',
+              'type' => 'AgentComponent',
+              'prompt_id' => 'test_prompt'
+            }
+          ],
+          'routers' => [],
+          'flow' => {
+            'entry_point' => 'main_agent'
+          },
+          'yaml_definition' => <<~YAML
+            version: v1
+            environment: ambient
+            components:
+              - name: main_agent
+                type: AgentComponent
+                prompt_id: test_prompt
+            routers: []
+            flow:
+              entry_point: main_agent
+          YAML
         }
       end
     end

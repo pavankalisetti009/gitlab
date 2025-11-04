@@ -5,8 +5,6 @@ require 'spec_helper'
 RSpec.describe Ai::Catalog::ItemVersion, feature_category: :workflow_catalog do
   subject(:version) { build_stubbed(:ai_catalog_item_version) }
 
-  it_behaves_like 'Ai::Catalog::Concerns::FlowVersion'
-
   describe 'associations' do
     it { is_expected.to belong_to(:organization) }
     it { is_expected.to belong_to(:item).required }
@@ -58,29 +56,26 @@ RSpec.describe Ai::Catalog::ItemVersion, feature_category: :workflow_catalog do
           it { is_expected.not_to be_valid }
         end
 
-        describe 'steps.pinned_version_prefix' do
-          [nil, '0', '0.1', '1', '12', '12.34', '123.456.789', '1.0.0'].each do |prefix|
-            context "with step pinned_version_prefix #{prefix}" do
-              before do
-                version.definition['steps'] = [
-                  { 'agent_id' => 1, 'current_version_id' => 1, 'pinned_version_prefix' => prefix }
-                ]
-              end
-
-              it { is_expected.to be_valid }
-            end
+        context 'when definition has invalid types for required properties' do
+          before do
+            version.definition['version'] = 123
+            version.definition['environment'] = nil
+            version.definition['components'] = 'not an array'
+            version.definition['routers'] = true
+            version.definition['flow'] = 'not an object'
           end
 
-          ['1.2.3.4', '1.'].each do |prefix|
-            context "with step pinned_version_prefix #{prefix}" do
-              before do
-                version.definition['steps'] = [
-                  { 'agent_id' => 1, 'current_version_id' => 1, 'pinned_version_prefix' => prefix }
-                ]
-              end
-
-              it { is_expected.not_to be_valid }
-            end
+          it "adds validation errors for each invalid property type and value" do
+            expect(version).not_to be_valid
+            expect(version.errors['definition']).to contain_exactly(
+              "value at `/version` is not a string",
+              "value at `/version` is not: v1",
+              "value at `/environment` is not a string",
+              "value at `/environment` is not one of: [\"ambient\"]",
+              "value at `/components` is not an array",
+              "value at `/routers` is not an array",
+              "value at `/flow` is not an object"
+            )
           end
         end
       end

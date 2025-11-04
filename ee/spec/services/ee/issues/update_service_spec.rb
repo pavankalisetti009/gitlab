@@ -1096,8 +1096,8 @@ RSpec.describe Issues::UpdateService, feature_category: :team_planning do
 
       context 'when assigning multiple users with flow triggers' do
         it 'triggers all matching flow trigger services' do
-          expect(run_service_1).to receive(:execute).with({ input: '', event: :assign })
-          expect(run_service_2).to receive(:execute).with({ input: '', event: :assign })
+          expect(run_service_1).to receive(:execute).with({ input: issue.iid.to_s, event: :assign })
+          expect(run_service_2).to receive(:execute).with({ input: issue.iid.to_s, event: :assign })
 
           expect(::Ai::FlowTriggers::RunService).to receive(:new)
             .with(project: project, current_user: user, resource: issue, flow_trigger: flow_trigger_1)
@@ -1112,7 +1112,7 @@ RSpec.describe Issues::UpdateService, feature_category: :team_planning do
 
       context 'when assigning users with mixed trigger types' do
         it 'only triggers assign event flow triggers' do
-          expect(run_service_1).to receive(:execute).with({ input: '', event: :assign })
+          expect(run_service_1).to receive(:execute).with({ input: issue.iid.to_s, event: :assign })
           expect(::Ai::FlowTriggers::RunService).to receive(:new)
             .with(project: project, current_user: user, resource: issue, flow_trigger: flow_trigger_1)
             .and_return(run_service_1)

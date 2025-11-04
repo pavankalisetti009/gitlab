@@ -887,4 +887,36 @@ RSpec.describe Ai::FlowTriggers::RunService, feature_category: :duo_agent_platfo
       end
     end
   end
+
+  describe '#catalog_item_user_prompt' do
+    let(:input) { '123' }
+    let(:serialized_resource) { '{"id":123,"type":"Issue"}' }
+
+    before do
+      allow(service).to receive(:serialized_resource).and_return(serialized_resource)
+    end
+
+    context 'when event type is mention' do
+      let(:input) { '@issue_planner can you plan this issue?' }
+
+      it 'returns input with context' do
+        result = service.send(:catalog_item_user_prompt, input, :mention)
+        expect(result).to eq("Input: #{input}\nContext: #{serialized_resource}")
+      end
+    end
+
+    context 'when event type is assign' do
+      it 'returns only user input' do
+        result = service.send(:catalog_item_user_prompt, input, :assign)
+        expect(result).to eq(input)
+      end
+    end
+
+    context 'when event type is assign_reviewer' do
+      it 'returns only user input' do
+        result = service.send(:catalog_item_user_prompt, input, :assign_reviewer)
+        expect(result).to eq(input)
+      end
+    end
+  end
 end
