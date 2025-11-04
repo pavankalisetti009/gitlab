@@ -99,7 +99,7 @@ module EE
     def pinned_items(user, panel_type, group: nil)
       items = super
 
-      return items unless group&.work_items_consolidated_list_enabled?
+      return items unless group&.work_items_consolidated_list_enabled?(user)
 
       if items.include?("group_issue_list") && items.include?("group_epic_list")
         items.excluding("group_epic_list")

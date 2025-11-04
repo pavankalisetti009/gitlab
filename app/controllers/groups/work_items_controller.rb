@@ -12,7 +12,8 @@ module Groups
       push_force_frontend_feature_flag(:work_items_beta, !!group&.work_items_beta_feature_flag_enabled?)
       push_force_frontend_feature_flag(:work_items_alpha, !!group&.work_items_alpha_feature_flag_enabled?)
       push_force_frontend_feature_flag(:glql_load_on_click, !!group&.glql_load_on_click_feature_flag_enabled?)
-      push_force_frontend_feature_flag(:work_item_planning_view, !!group&.work_items_consolidated_list_enabled?)
+      push_force_frontend_feature_flag(:work_item_planning_view,
+        !!group&.work_items_consolidated_list_enabled?(current_user))
     end
 
     before_action :handle_new_work_item_path, only: [:show]
@@ -26,7 +27,7 @@ module Groups
     urgency :low, [:rss, :calendar]
 
     def index
-      not_found unless group&.work_items_consolidated_list_enabled?
+      not_found unless group&.work_items_consolidated_list_enabled?(current_user)
     end
 
     def show
