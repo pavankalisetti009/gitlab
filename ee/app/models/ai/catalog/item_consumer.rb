@@ -34,6 +34,7 @@ module Ai
       validates :service_account, absence: true, unless: -> { item&.flow? || item&.third_party_flow? }
       validates :parent_item_consumer, absence: true, unless: -> { item&.flow? || item&.third_party_flow? }
 
+      scope :by_enabled, ->(enabled) { where(enabled: enabled) }
       scope :not_for_projects, ->(project) { where.not(project: project) }
       scope :for_item, ->(item_id) { where(ai_catalog_item_id: item_id) }
       scope :with_item_type, ->(item_type) { joins(:item).where(item: { item_type: item_type }) }

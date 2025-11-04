@@ -22,6 +22,18 @@ FactoryBot.define do
       item_type { 'third_party_flow' }
     end
 
+    trait :public do
+      public { true }
+    end
+
+    trait :private do
+      public { false }
+    end
+
+    trait :soft_deleted do
+      deleted_at { Time.zone.now }
+    end
+
     versions do |item|
       version_factory = "ai_catalog_#{item.item_type}_version"
       build_list(version_factory, 1, item: nil)

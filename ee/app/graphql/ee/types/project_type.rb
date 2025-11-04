@@ -328,6 +328,16 @@ module EE
               description: 'Global ID of the catalog item to find.'
           end
 
+        field :ai_catalog_items,
+          ::Types::Ai::Catalog::ItemInterface.connection_type,
+          null: false,
+          resolver: ::Resolvers::Ai::Catalog::ProjectItemsResolver,
+          description: 'AI Catalog items of the project. ' \
+            'This field can be resolved for only one project in any single request.',
+          experiment: { milestone: '18.6' } do
+            extension(::Gitlab::Graphql::Limit::FieldCallCount, limit: 1)
+          end
+
         field :ai_metrics,
           ::Types::Analytics::AiMetrics::NamespaceMetricsType,
           null: true,
