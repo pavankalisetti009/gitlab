@@ -1,8 +1,6 @@
 import VueApollo from 'vue-apollo';
-import Vue, { nextTick } from 'vue';
+import Vue from 'vue';
 import { GlFilteredSearch } from '@gitlab/ui';
-import ErrorsAlert from '~/vue_shared/components/errors_alert.vue';
-import * as Sentry from '~/sentry/sentry_browser_wrapper';
 import { isLoggedIn } from '~/lib/utils/common_utils';
 import createMockApollo from 'helpers/mock_apollo_helper';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
@@ -11,25 +9,12 @@ import { useMockInternalEventsTracking } from 'helpers/tracking_internal_events_
 import AiCatalogAgents from 'ee/ai/catalog/pages/ai_catalog_agents.vue';
 import AiCatalogList from 'ee/ai/catalog/components/ai_catalog_list.vue';
 import AiCatalogListHeader from 'ee/ai/catalog/components/ai_catalog_list_header.vue';
-import AiCatalogItemConsumerModal from 'ee/ai/catalog/components/ai_catalog_item_consumer_modal.vue';
 import aiCatalogAgentsQuery from 'ee/ai/catalog/graphql/queries/ai_catalog_agents.query.graphql';
-import createAiCatalogItemConsumer from 'ee/ai/catalog/graphql/mutations/create_ai_catalog_item_consumer.mutation.graphql';
-import deleteAiCatalogAgentMutation from 'ee/ai/catalog/graphql/mutations/delete_ai_catalog_agent.mutation.graphql';
 import {
   TRACK_EVENT_VIEW_AI_CATALOG_ITEM_INDEX,
   TRACK_EVENT_TYPE_AGENT,
 } from 'ee/ai/catalog/constants';
-import {
-  mockProjectWithNamespace,
-  mockAgent,
-  mockAgents,
-  mockCatalogItemsResponse,
-  mockCatalogAgentDeleteResponse,
-  mockCatalogAgentDeleteErrorResponse,
-  mockAiCatalogItemConsumerCreateSuccessProjectResponse,
-  mockAiCatalogItemConsumerCreateErrorResponse,
-  mockPageInfo,
-} from '../mock_data';
+import { mockAgents, mockCatalogItemsResponse, mockPageInfo } from '../mock_data';
 
 jest.mock('~/sentry/sentry_browser_wrapper');
 jest.mock('~/lib/utils/common_utils');
@@ -49,19 +34,13 @@ describe('AiCatalogAgents', () => {
   };
 
   const mockCatalogItemsQueryHandler = jest.fn().mockResolvedValue(mockCatalogItemsResponse);
-  const createAiCatalogItemConsumerHandler = jest.fn();
-  const deleteCatalogItemMutationHandler = jest.fn();
 
   const { bindInternalEventDocument } = useMockInternalEventsTracking();
 
   const createComponent = () => {
     isLoggedIn.mockReturnValue(true);
 
-    mockApollo = createMockApollo([
-      [aiCatalogAgentsQuery, mockCatalogItemsQueryHandler],
-      [createAiCatalogItemConsumer, createAiCatalogItemConsumerHandler],
-      [deleteAiCatalogAgentMutation, deleteCatalogItemMutationHandler],
-    ]);
+    mockApollo = createMockApollo([[aiCatalogAgentsQuery, mockCatalogItemsQueryHandler]]);
 
     wrapper = shallowMountExtended(AiCatalogAgents, {
       apolloProvider: mockApollo,
@@ -72,10 +51,8 @@ describe('AiCatalogAgents', () => {
     });
   };
 
-  const findErrorsAlert = () => wrapper.findComponent(ErrorsAlert);
   const findFilteredSearch = () => wrapper.findComponent(GlFilteredSearch);
   const findAiCatalogList = () => wrapper.findComponent(AiCatalogList);
-  const findAiCatalogItemConsumerModal = () => wrapper.findComponent(AiCatalogItemConsumerModal);
 
   afterEach(() => {
     jest.clearAllMocks();
@@ -149,151 +126,6 @@ describe('AiCatalogAgents', () => {
         first: 20,
         last: null,
         search: 'foo',
-      });
-    });
-  });
-
-  describe('on adding an agent to project', () => {
-    const openModal = async () => {
-      const firstItemAction = findAiCatalogList()
-        .props('itemTypeConfig')
-        .actionItems(mockAgents[0])[0];
-      // We pass the function down to child components. Because we use shallowMount
-      // we cannot trigger the action which would call the function. So we call it
-      // using the properties.
-      firstItemAction.action();
-      await nextTick();
-    };
-
-    beforeEach(async () => {
-      mockCatalogItemsQueryHandler.mockResolvedValue(mockCatalogItemsResponse);
-      createComponent();
-      await waitForPromises();
-    });
-
-    it('opens the modal on button click', async () => {
-      expect(findAiCatalogItemConsumerModal().exists()).toBe(false);
-      await openModal();
-
-      expect(findAiCatalogItemConsumerModal().exists()).toBe(true);
-    });
-
-    describe('when the modal is open', () => {
-      beforeEach(async () => {
-        await openModal();
-      });
-
-      it('removes the component once it emits the hide event', async () => {
-        findAiCatalogItemConsumerModal().vm.$emit('hide');
-        await nextTick();
-
-        expect(findAiCatalogItemConsumerModal().exists()).toBe(false);
-      });
-
-      describe('and the form is submitted', () => {
-        const createConsumer = () =>
-          findAiCatalogItemConsumerModal().vm.$emit('submit', {
-            projectId: mockProjectWithNamespace.id,
-          });
-
-        describe('when adding to project request succeeds', () => {
-          it('shows a toast message', async () => {
-            createAiCatalogItemConsumerHandler.mockResolvedValue(
-              mockAiCatalogItemConsumerCreateSuccessProjectResponse,
-            );
-
-            createConsumer();
-            await waitForPromises();
-
-            expect(mockToast.show).toHaveBeenCalledWith('Agent enabled in Test.');
-          });
-        });
-
-        describe('when request succeeds but returns errors', () => {
-          it('shows alert with error', async () => {
-            createAiCatalogItemConsumerHandler.mockResolvedValue(
-              mockAiCatalogItemConsumerCreateErrorResponse,
-            );
-
-            createConsumer();
-            await waitForPromises();
-
-            expect(findErrorsAlert().props('errors')).toEqual([
-              `Could not enable agent: ${mockAgent.name}`,
-              'Item already configured.',
-            ]);
-          });
-        });
-
-        describe('when request fails', () => {
-          it('shows alert with error and captures exception', async () => {
-            createAiCatalogItemConsumerHandler.mockRejectedValue(new Error('Request failed'));
-
-            createConsumer();
-            await waitForPromises();
-
-            expect(findErrorsAlert().props('errors')).toEqual([
-              'Could not enable agent in the project. Check that the project meets the <a href="/help/user/duo_agent_platform/ai_catalog#view-the-ai-catalog" target="_blank">prerequisites</a> and try again.',
-            ]);
-            expect(Sentry.captureException).toHaveBeenCalledWith(expect.any(Error));
-          });
-        });
-      });
-    });
-  });
-
-  describe('on deleting an agent', () => {
-    const deleteAgent = (index = 0) => findAiCatalogList().props('deleteFn')(mockAgents[index]);
-
-    beforeEach(() => {
-      createComponent();
-    });
-
-    it('calls delete mutation', () => {
-      deleteCatalogItemMutationHandler.mockResolvedValue(mockCatalogAgentDeleteResponse);
-
-      deleteAgent();
-
-      expect(deleteCatalogItemMutationHandler).toHaveBeenCalledWith({ id: mockAgents[0].id });
-    });
-
-    describe('when request succeeds', () => {
-      it('shows a toast message and refetches the list', async () => {
-        deleteCatalogItemMutationHandler.mockResolvedValue(mockCatalogAgentDeleteResponse);
-
-        deleteAgent();
-
-        await waitForPromises();
-
-        expect(mockCatalogItemsQueryHandler).toHaveBeenCalledTimes(2);
-        expect(mockToast.show).toHaveBeenCalledWith('Agent deleted.');
-      });
-    });
-
-    describe('when request succeeds but returns errors', () => {
-      it('shows alert with error', async () => {
-        deleteCatalogItemMutationHandler.mockResolvedValue(mockCatalogAgentDeleteErrorResponse);
-
-        deleteAgent();
-
-        await waitForPromises();
-        expect(findErrorsAlert().props('errors')).toStrictEqual([
-          'Failed to delete agent. You do not have permission to delete this AI agent.',
-        ]);
-      });
-    });
-
-    describe('when request fails', () => {
-      it('shows alert with error and captures exception', async () => {
-        deleteCatalogItemMutationHandler.mockRejectedValue(new Error('Request failed'));
-
-        deleteAgent();
-
-        await waitForPromises();
-        expect(findErrorsAlert().props('errors')).toStrictEqual([
-          'Failed to delete agent. Error: Request failed',
-        ]);
-        expect(Sentry.captureException).toHaveBeenCalledWith(expect.any(Error));
       });
     });
   });

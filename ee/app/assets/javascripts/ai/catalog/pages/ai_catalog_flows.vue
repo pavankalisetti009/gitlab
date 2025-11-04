@@ -1,9 +1,7 @@
 <script>
 import { GlFilteredSearch } from '@gitlab/ui';
 import { s__, sprintf } from '~/locale';
-import { getIdFromGraphQLId } from '~/graphql_shared/utils';
 import { fetchPolicies } from '~/lib/graphql';
-import { isLoggedIn } from '~/lib/utils/common_utils';
 import {
   VISIBILITY_LEVEL_PUBLIC_STRING,
   VISIBILITY_LEVEL_PRIVATE_STRING,
@@ -18,16 +16,11 @@ import createAiCatalogItemConsumer from '../graphql/mutations/create_ai_catalog_
 import AiCatalogListHeader from '../components/ai_catalog_list_header.vue';
 import AiCatalogList from '../components/ai_catalog_list.vue';
 import AiCatalogItemConsumerModal from '../components/ai_catalog_item_consumer_modal.vue';
-import {
-  AI_CATALOG_FLOWS_SHOW_ROUTE,
-  AI_CATALOG_FLOWS_EDIT_ROUTE,
-  AI_CATALOG_FLOWS_DUPLICATE_ROUTE,
-} from '../router/constants';
+import { AI_CATALOG_FLOWS_SHOW_ROUTE } from '../router/constants';
 import {
   AI_CATALOG_CONSUMER_TYPE_GROUP,
   AI_CATALOG_CONSUMER_TYPE_PROJECT,
   AI_CATALOG_CONSUMER_LABELS,
-  FLOW_TYPE_APOLLO_CONFIG,
   FLOW_VISIBILITY_LEVEL_DESCRIPTIONS,
   PAGE_SIZE,
   TRACK_EVENT_VIEW_AI_CATALOG_ITEM_INDEX,
@@ -90,51 +83,6 @@ export default {
     },
     itemTypeConfig() {
       return {
-        actionItems: (item) => {
-          if (!isLoggedIn()) {
-            return [];
-          }
-
-          const id = getIdFromGraphQLId(item.id);
-
-          const items = [
-            {
-              text: this.isFlowsAvailable
-                ? s__('AICatalog|Enable in project or group')
-                : s__('AICatalog|Enable in project'),
-              action: () => this.setAiCatalogFlowToBeAdded(item),
-              icon: 'plus',
-            },
-            {
-              text: s__('AICatalog|Duplicate'),
-              to: {
-                name: AI_CATALOG_FLOWS_DUPLICATE_ROUTE,
-                params: { id },
-              },
-              icon: 'duplicate',
-            },
-          ];
-
-          if (!item.userPermissions?.adminAiCatalogItem) {
-            return items;
-          }
-
-          const adminItems = [
-            {
-              text: s__('AICatalog|Edit'),
-              to: {
-                name: AI_CATALOG_FLOWS_EDIT_ROUTE,
-                params: { id },
-              },
-              icon: 'pencil',
-            },
-          ];
-
-          return [...items, ...adminItems];
-        },
-        deleteActionItem: {
-          showActionItem: (item) => item.userPermissions?.adminAiCatalogItem || false,
-        },
         showRoute: AI_CATALOG_FLOWS_SHOW_ROUTE,
         visibilityTooltip: {
           [VISIBILITY_LEVEL_PUBLIC_STRING]:
@@ -161,35 +109,6 @@ export default {
   methods: {
     setAiCatalogFlowToBeAdded(flow = null) {
       this.aiCatalogFlowToBeAdded = flow;
-    },
-    async deleteFlow(item) {
-      const { id, itemType } = item;
-      const config = FLOW_TYPE_APOLLO_CONFIG[itemType].delete;
-
-      try {
-        const { data } = await this.$apollo.mutate({
-          mutation: config.mutation,
-          variables: {
-            id,
-          },
-          refetchQueries: [aiCatalogFlowsQuery],
-        });
-
-        const deleteResponse = data[config.responseKey];
-        if (!deleteResponse.success) {
-          this.errors = [
-            sprintf(s__('AICatalog|Failed to delete flow. %{error}'), {
-              error: deleteResponse.errors?.[0],
-            }),
-          ];
-          return;
-        }
-
-        this.$toast.show(s__('AICatalog|Flow deleted.'));
-      } catch (error) {
-        this.errors = [sprintf(s__('AICatalog|Failed to delete flow. %{error}'), { error })];
-        Sentry.captureException(error);
-      }
     },
     async addFlowToTarget(target) {
       const flow = this.aiCatalogFlowToBeAdded;
@@ -290,9 +209,6 @@ export default {
       :is-loading="isLoading"
       :items="aiCatalogFlows"
       :item-type-config="itemTypeConfig"
-      :delete-confirm-title="s__('AICatalog|Delete flow')"
-      :delete-confirm-message="s__('AICatalog|Are you sure you want to delete flow %{name}?')"
-      :delete-fn="deleteFlow"
       :page-info="pageInfo"
       :search="searchTerm"
       @next-page="handleNextPage"

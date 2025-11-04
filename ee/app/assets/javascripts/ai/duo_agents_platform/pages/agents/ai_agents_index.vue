@@ -103,7 +103,6 @@ export default {
     },
     itemTypeConfig() {
       return {
-        actionItems: () => [],
         deleteActionItem: {
           showActionItem: () => this.userPermissions?.adminAiCatalogItemConsumer || false,
           text: __('Remove'),

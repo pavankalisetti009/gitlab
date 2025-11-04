@@ -1,11 +1,12 @@
 import { GlKeysetPagination, GlSprintf } from '@gitlab/ui';
+import { RouterLinkStub as RouterLink } from '@vue/test-utils';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import AiCatalogList from 'ee/ai/catalog/components/ai_catalog_list.vue';
 import AiCatalogListItem from 'ee/ai/catalog/components/ai_catalog_list_item.vue';
 import ResourceListsEmptyState from '~/vue_shared/components/resource_lists/empty_state.vue';
 import ResourceListsLoadingStateList from '~/vue_shared/components/resource_lists/loading_state_list.vue';
 import ConfirmActionModal from '~/vue_shared/components/confirm_action_modal.vue';
-import { mockAgents, mockPageInfo } from '../mock_data';
+import { mockAgents, mockPageInfo, mockItemTypeConfig } from '../mock_data';
 
 describe('AiCatalogList', () => {
   let wrapper;
@@ -20,7 +21,7 @@ describe('AiCatalogList', () => {
     wrapper = shallowMountExtended(AiCatalogList, {
       propsData: {
         items: mockItems,
-        itemTypeConfig: {},
+        itemTypeConfig: mockItemTypeConfig,
         isLoading: false,
         pageInfo: mockPageInfo,
         deleteConfirmTitle: mockDeleteTitle,
@@ -31,6 +32,7 @@ describe('AiCatalogList', () => {
       slots,
       stubs: {
         GlSprintf,
+        RouterLink,
       },
     });
   };
@@ -173,6 +175,7 @@ describe('AiCatalogList', () => {
         createComponent({
           props: {
             itemTypeConfig: {
+              ...mockItemTypeConfig,
               deleteActionItem: {
                 text: 'Remove',
               },
