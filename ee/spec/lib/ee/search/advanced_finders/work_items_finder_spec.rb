@@ -213,6 +213,100 @@ RSpec.describe Search::AdvancedFinders::WorkItemsFinder, :elastic_delete_by_quer
         end
       end
     end
+
+    context 'when checking migration completion' do
+      context 'when reindex_labels_in_work_items migration has not completed' do
+        before do
+          set_elasticsearch_migration_to(:reindex_labels_in_work_items, including: false)
+        end
+
+        context 'when GLQL request is made' do
+          let(:request_params) { { 'operationName' => 'GLQL' } }
+
+          it 'returns false due to incomplete migration' do
+            expect(finder.use_elasticsearch_finder?).to be_falsey
+          end
+        end
+
+        context 'when getWorkItemsFullEE request is made' do
+          let(:request_params) { { 'operationName' => 'getWorkItemsFullEE' } }
+
+          it 'returns false due to incomplete migration' do
+            expect(finder.use_elasticsearch_finder?).to be_falsey
+          end
+        end
+
+        context 'when getWorkItemsSlimEE request is made' do
+          let(:request_params) { { 'operationName' => 'getWorkItemsSlimEE' } }
+
+          it 'returns false due to incomplete migration' do
+            expect(finder.use_elasticsearch_finder?).to be_falsey
+          end
+        end
+      end
+
+      context 'when reindex_labels_in_work_items migration has completed' do
+        before do
+          set_elasticsearch_migration_to(:reindex_labels_in_work_items, including: true)
+        end
+
+        context 'when GLQL request is made' do
+          let(:request_params) { { 'operationName' => 'GLQL' } }
+
+          it 'returns true when all conditions are met' do
+            expect(finder.use_elasticsearch_finder?).to be_truthy
+          end
+        end
+
+        context 'when getWorkItemsFullEE request is made' do
+          let(:request_params) { { 'operationName' => 'getWorkItemsFullEE' } }
+
+          it 'returns true when all conditions are met' do
+            expect(finder.use_elasticsearch_finder?).to be_truthy
+          end
+        end
+
+        context 'when getWorkItemsSlimEE request is made' do
+          let(:request_params) { { 'operationName' => 'getWorkItemsSlimEE' } }
+
+          it 'returns true when all conditions are met' do
+            expect(finder.use_elasticsearch_finder?).to be_truthy
+          end
+        end
+
+        context 'when combined with other conditions' do
+          let(:request_params) { { 'operationName' => 'GLQL' } }
+
+          context 'when elasticsearch is disabled' do
+            before do
+              allow(Gitlab::CurrentSettings).to receive(:elasticsearch_search?).and_return(false)
+            end
+
+            it 'returns false due to elasticsearch being disabled' do
+              expect(finder.use_elasticsearch_finder?).to be_falsey
+            end
+          end
+
+          context 'when elasticsearch is not enabled per group' do
+            before do
+              allow(resource_parent).to receive(:use_elasticsearch?).and_return(false)
+            end
+
+            it 'returns false due to group not using elasticsearch' do
+              expect(finder.use_elasticsearch_finder?).to be_falsey
+            end
+          end
+
+          context 'when url param is disabled' do
+            let(:url_query) { 'useES=false' }
+
+            it 'returns false due to url param' do
+              expect(finder.use_elasticsearch_finder?).to be_falsey
+            end
+          end
+        end
+      end
+    end
   end
 
   describe '#parent_param=' do

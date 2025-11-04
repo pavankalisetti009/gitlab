@@ -305,13 +305,14 @@ RSpec.describe Resolvers::WorkItemsResolver do
       end
     end
 
-    context 'when searching for work items in ES' do
+    context 'when searching for work items in ES', :elastic_helpers do
       let(:glql_ctx) do
         { request: instance_double(ActionDispatch::Request, params: request_params, referer: 'http://localhost') }
       end
 
       before do
         stub_ee_application_setting(elasticsearch_search: true, elasticsearch_indexing: true)
+        set_elasticsearch_migration_to(:reindex_labels_in_work_items, including: true)
 
         allow(Gitlab::Search::Client).to receive(:execute_search).and_yield({
           'hits' => {

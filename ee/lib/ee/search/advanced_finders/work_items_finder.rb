@@ -114,7 +114,8 @@ module EE
             url_param_enabled? &&
             use_elasticsearch? &&
             elasticsearch_enabled_for_namespace? &&
-            elasticsearch_fields_supported?
+            elasticsearch_fields_supported? &&
+            ::Elastic::DataMigrationService.migration_has_finished?(:reindex_labels_in_work_items)
         end
 
         # The logic for parent_param is copied from app/finders/issuable_finder.rb
