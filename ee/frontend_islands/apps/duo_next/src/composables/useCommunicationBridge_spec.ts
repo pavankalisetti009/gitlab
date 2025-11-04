@@ -3,23 +3,23 @@ import { ref, computed, type InjectionKey } from 'vue';
 import { useCommunicationBridge } from './useCommunicationBridge';
 
 // Test types
-type TestEvents = {
+interface TestEvents {
   'event-one': [];
   'event-two': [data: string];
   'event-three': [id: number, name: string];
-};
+}
 
-type TestProps = {
+interface TestProps {
   title: string;
   count: number;
   callback: () => void;
   data: { id: number };
-};
+}
 
-type TestServices = {
+interface TestServices {
   logger: { log: (msg: string) => void };
   api: { fetch: (url: string) => Promise<unknown> };
-};
+}
 
 describe('useCommunicationBridge', () => {
   let mockEmit: ReturnType<typeof vi.fn>;
@@ -228,10 +228,10 @@ describe('useCommunicationBridge', () => {
       });
 
       type ComponentProps = typeof componentProps.value;
-      type ComponentEvents = {
+      interface ComponentEvents {
         'message-sent': [message: string];
         'loading-changed': [isLoading: boolean];
-      };
+      }
 
       const bridgeResult = computed(() =>
         useCommunicationBridge<ComponentEvents, ComponentProps>(componentProps.value, mockEmit, [

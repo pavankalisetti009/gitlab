@@ -1,19 +1,6 @@
 {
-  "extends": "@vue/tsconfig/tsconfig.dom.json",
+  "extends": "@frontend-islands/tsconfig/tsconfig.app.json",
   "compilerOptions": {
-    "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.app.tsbuildinfo",
-    "strict": true,
-    "noUnusedLocals": true,
-    "noUnusedParameters": true,
-    "erasableSyntaxOnly": true,
-    "noFallthroughCasesInSwitch": true,
-    "noUncheckedSideEffectImports": true,
-    "moduleResolution": "bundler",
-    "allowImportingTsExtensions": false,
-    "types": [
-      "vitest/globals",
-      "@types/node"
-    ],
     "paths": {
       "@/*": [
         "./src/*"

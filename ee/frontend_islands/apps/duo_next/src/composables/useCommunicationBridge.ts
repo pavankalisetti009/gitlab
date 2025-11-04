@@ -11,9 +11,9 @@ import type { InjectionKey, ComputedRef } from 'vue';
  * @param config - Optional configuration for prop filtering and dependency injection
  */
 export function useCommunicationBridge<
-  TEvents extends Record<string, unknown[]>,
-  TProps extends Record<string, unknown>,
-  TServices extends Record<string, unknown> = Record<string, never>,
+  TEvents extends { [K in keyof TEvents]: unknown[] },
+  TProps extends object,
+  TServices extends object = object,
 >(
   props: TProps,
   emit: <K extends keyof TEvents>(event: K, ...args: TEvents[K]) => void,
