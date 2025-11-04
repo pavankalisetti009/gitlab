@@ -4891,43 +4891,24 @@ RSpec.describe Project, feature_category: :groups_and_projects do
   end
 
   describe '#project_epics_enabled?' do
-    context 'project belongs to group' do
-      let_it_be(:project) { create(:project, :in_group) }
+    let_it_be(:project_in_group) { create(:project, :in_group) }
+    let_it_be(:group) { project_in_group.group }
 
-      context 'root ancestor has project epics available' do
-        it 'returns true' do
-          allow(project.group).to receive(:project_epics_enabled?).and_return(true)
-
-          expect(project.project_epics_enabled?).to be true
-        end
-      end
-
-      context 'when feature flag project_work_item_epics is disabled' do
-        before do
-          stub_feature_flags(project_work_item_epics: false)
-        end
-
-        it 'returns false' do
-          expect(project.project_epics_enabled?).to be false
-        end
-      end
+    where(:license, :feature_flag_actor, :object, :result) do
+      false | false | ref(:project) | false
+      false | ref(:project) | ref(:project) | false
+      false | ref(:group) | ref(:project_in_group) | false
+      true | false | ref(:project) | false
+      true | ref(:project) | ref(:project) | true
+      true | ref(:group) | ref(:project_in_group) | true
     end
 
-    context 'project belongs to user' do
-      let(:project) { build_stubbed(:project) }
+    with_them do
+      it 'returns the right value' do
+        stub_licensed_features(epics: license)
+        stub_feature_flags(project_work_item_epics: feature_flag_actor)
 
-      it 'returns true' do
-        expect(project.project_epics_enabled?).to be true
-      end
-
-      context 'when feature flag project_work_item_epics is disabled' do
-        before do
-          stub_feature_flags(project_work_item_epics: false)
-        end
-
-        it 'returns false' do
-          expect(project.project_epics_enabled?).to be false
-        end
+        expect(object.project_epics_enabled?).to be(result)
       end
     end
   end
