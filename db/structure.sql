@@ -33403,11 +33403,17 @@ ALTER TABLE system_note_metadata
 ALTER TABLE related_epic_links
     ADD CONSTRAINT check_a6d9d7c276 CHECK ((issue_link_id IS NOT NULL)) NOT VALID;
 
+ALTER TABLE x509_issuers
+    ADD CONSTRAINT check_a8ba635326 CHECK ((project_id IS NOT NULL)) NOT VALID;
+
 ALTER TABLE sprints
     ADD CONSTRAINT check_ccd8a1eae0 CHECK ((start_date IS NOT NULL)) NOT VALID;
 
 ALTER TABLE group_import_states
     ADD CONSTRAINT check_cda75c7c3f CHECK ((user_id IS NOT NULL)) NOT VALID;
+
+ALTER TABLE x509_certificates
+    ADD CONSTRAINT check_cf79fb2fbb CHECK ((project_id IS NOT NULL)) NOT VALID;
 
 ALTER TABLE work_item_custom_statuses
     ADD CONSTRAINT check_custom_status_name_characters CHECK ((name !~ '^["''`]|["''`]$|[\x00-\x1F\x7F]'::text)) NOT VALID;
