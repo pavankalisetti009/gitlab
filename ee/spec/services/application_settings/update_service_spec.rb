@@ -384,14 +384,11 @@ RSpec.describe ApplicationSettings::UpdateService, feature_category: :shared do
 
       context 'when setting is available' do
         before do
+          setting.update!(auto_duo_code_review_enabled: false)
           allow(setting).to receive(:auto_duo_code_review_settings_available?).and_return(true)
         end
 
-        it 'updates the setting' do
-          expect { service.execute }
-            .to change { setting.reload.auto_duo_code_review_enabled }
-            .from(false).to(true)
-        end
+        it_behaves_like 'when updating duo settings', :auto_duo_code_review_enabled, true
       end
     end
   end
