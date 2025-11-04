@@ -8,6 +8,10 @@ export const GEO_TROUBLESHOOTING_LINK = helpPagePath(
   'administration/geo/replication/troubleshooting/_index.md',
 );
 
+export const ACTION_TYPES = {
+  CHECKSUM: 'checksum',
+};
+
 export const TOKEN_TYPES = {
   IDENTIFIERS: 'identifiers',
   MODEL: 'model_name',
