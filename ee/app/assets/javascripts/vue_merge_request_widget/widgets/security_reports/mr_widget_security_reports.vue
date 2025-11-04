@@ -20,6 +20,15 @@ import { highlightsFromReport } from './utils';
 
 const POLL_INTERVAL = 3000;
 
+// The backend returns the cached finding objects. Let's remove them as they may cause
+// bugs. Instead, fetch the non-cached data when the finding modal is opened.
+const getFindingWithoutFeedback = (finding) => ({
+  ...finding,
+  dismissal_feedback: undefined,
+  merge_request_feedback: undefined,
+  issue_feedback: undefined,
+});
+
 export default {
   name: 'WidgetSecurityReports',
   components: {
@@ -340,78 +349,73 @@ export default {
     },
 
     fetchCollapsedData() {
-      // The backend returns the cached finding objects. Let's remove them as they may cause
-      // bugs. Instead, fetch the non-cached data when the finding modal is opened.
-      const getFindingWithoutFeedback = (finding) => ({
-        ...finding,
-        dismissal_feedback: undefined,
-        merge_request_feedback: undefined,
-        issue_feedback: undefined,
-      });
-
       return this.endpoints.map(([path, reportType]) => () => {
-        const isPartial = path.indexOf('scan_mode=partial') > -1;
-
-        const props = {
-          reportType,
-          reportTypeDescription: reportTypes[reportType],
-          numberOfNewFindings: 0,
-          numberOfFixedFindings: 0,
-          added: [],
-          fixed: [],
-        };
-
-        return axios
-          .get(path)
-          .then(({ data, headers = {}, status }) => {
-            const added = data.added?.map?.(getFindingWithoutFeedback) || [];
-            const fixed = data.fixed?.map?.(getFindingWithoutFeedback) || [];
-
-            // If a single report has 25 findings, it means it potentially has more than 25 findings.
-            // Therefore, we display the UI hint in the top-level summary.
-            // If there are no reports with 25 findings, but the total sum of all reports is still 25 or more,
-            // we won't display the UI hint.
-            if (added.length === MAX_NEW_VULNERABILITIES) {
-              this.hasAtLeastOneReportWithMaxNewVulnerabilities = true;
-            }
-
-            const report = {
-              ...props,
-              ...data,
-              added,
-              fixed,
-              findings: [...added, ...fixed],
-              numberOfNewFindings: added.length,
-              numberOfFixedFindings: fixed.length,
-              testId: this.$options.testId[reportType],
-            };
-
-            const key = isPartial ? 'partial' : 'full';
-            this.reportsByScanType[key] = { ...this.reportsByScanType[key], [reportType]: report };
-
-            this.$emit('loaded', added.length);
-
-            return {
-              headers,
-              status,
-              data: report,
-            };
-          })
-          .catch(({ response: { status, headers } }) => {
-            const report = { ...props, error: true };
-
-            const key = isPartial ? 'partial' : 'full';
-            this.reportsByScanType[key] = { ...this.reportsByScanType[key], [reportType]: report };
-
-            if (status === 400) {
-              this.topLevelErrorMessage = s__(
-                'ciReport|Parsing schema failed. Check the validity of your .gitlab-ci.yml content.',
-              );
-            }
-
-            return { headers, status, data: report };
-          });
+        return this.fetchCollapsedDataREST(path, reportType);
       });
+    },
+
+    fetchCollapsedDataREST(path, reportType) {
+      const isPartial = path.indexOf('scan_mode=partial') > -1;
+
+      const props = {
+        reportType,
+        reportTypeDescription: reportTypes[reportType],
+        numberOfNewFindings: 0,
+        numberOfFixedFindings: 0,
+        added: [],
+        fixed: [],
+      };
+
+      return axios
+        .get(path)
+        .then(({ data, headers = {}, status }) => {
+          const added = data.added?.map?.(getFindingWithoutFeedback) || [];
+          const fixed = data.fixed?.map?.(getFindingWithoutFeedback) || [];
+
+          // If a single report has 25 findings, it means it potentially has more than 25 findings.
+          // Therefore, we display the UI hint in the top-level summary.
+          // If there are no reports with 25 findings, but the total sum of all reports is still 25 or more,
+          // we won't display the UI hint.
+          if (added.length === MAX_NEW_VULNERABILITIES) {
+            this.hasAtLeastOneReportWithMaxNewVulnerabilities = true;
+          }
+
+          const report = {
+            ...props,
+            ...data,
+            added,
+            fixed,
+            findings: [...added, ...fixed],
+            numberOfNewFindings: added.length,
+            numberOfFixedFindings: fixed.length,
+            testId: this.$options.testId[reportType],
+          };
+
+          const key = isPartial ? 'partial' : 'full';
+          this.reportsByScanType[key] = { ...this.reportsByScanType[key], [reportType]: report };
+
+          this.$emit('loaded', added.length);
+
+          return {
+            headers,
+            status,
+            data: report,
+          };
+        })
+        .catch(({ response: { status, headers } }) => {
+          const report = { ...props, error: true };
+
+          const key = isPartial ? 'partial' : 'full';
+          this.reportsByScanType[key] = { ...this.reportsByScanType[key], [reportType]: report };
+
+          if (status === 400) {
+            this.topLevelErrorMessage = s__(
+              'ciReport|Parsing schema failed. Check the validity of your .gitlab-ci.yml content.',
+            );
+          }
+
+          return { headers, status, data: report };
+        });
     },
 
     setModalData(finding) {
@@ -500,13 +504,13 @@ export default {
       />
     </template>
   </mr-widget>
-  <!-- 
-    We must fetch enabled scans before mounting the MR widget because the widget 
-    immediately calls `fetchCollapsedData` on mount. Since `fetchCollapsedData` 
-    needs the enabled scans result to determine which endpoints to query, we delay 
+  <!--
+    We must fetch enabled scans before mounting the MR widget because the widget
+    immediately calls `fetchCollapsedData` on mount. Since `fetchCollapsedData`
+    needs the enabled scans result to determine which endpoints to query, we delay
     mounting until the enabled scans have been fetched.
 
-    In order to display the loading state in the meantime, we mount this 
+    In order to display the loading state in the meantime, we mount this
     <mr-widget> component instead of the one above.
     -->
   <mr-widget
