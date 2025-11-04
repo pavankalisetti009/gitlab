@@ -7,6 +7,13 @@ RSpec.describe VirtualRegistries::Cleanup::ExecutePolicyService, feature_categor
   let_it_be(:policy) { create(:virtual_registries_cleanup_policy, group:) }
   let_it_be(:maven_upstream) { create(:virtual_registries_packages_maven_upstream, group:) }
   let_it_be(:container_upstream) { create(:virtual_registries_container_upstream, group:) }
+  let_it_be(:local_maven_upstream) do
+    create(:virtual_registries_packages_maven_upstream,
+      :without_credentials,
+      group: group,
+      url: group.to_global_id.to_s
+    )
+  end
 
   let(:service) { described_class.new(policy) }
 
