@@ -46,7 +46,8 @@ export default {
     },
     subscriptionType: {
       type: String,
-      required: true,
+      required: false,
+      default: undefined,
     },
   },
   computed: {
@@ -85,6 +86,7 @@ export default {
     shouldShowDetail(detail) {
       return (
         detail === 'lastSync' &&
+        this.subscriptionType !== undefined &&
         this.subscriptionType !== subscriptionTypes.OFFLINE_CLOUD &&
         this.subscriptionType !== subscriptionTypes.LEGACY_LICENSE
       );
