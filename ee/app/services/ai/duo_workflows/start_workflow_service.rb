@@ -4,6 +4,7 @@ module Ai
   module DuoWorkflows
     class StartWorkflowService
       IMAGE = 'registry.gitlab.com/gitlab-org/duo-workflow/default-docker-image/workflow-generic-image:v0.0.4'
+      DWS_STANDARD_CONTEXT_CATEGORY = "agent_platform_standard_context"
 
       def initialize(workflow:, params:)
         @workflow = workflow
@@ -34,13 +35,16 @@ module Ai
           @workload_user = duo_workflow_service_account
         end
 
+        branch_response = create_workload_branch
+        return branch_response unless branch_response.success?
+
+        @ref = branch_response.payload[:branch_name]
         service = ::Ci::Workloads::RunWorkloadService.new(
           project: project,
           current_user: @workload_user,
           source: :duo_workflow,
           workload_definition: workload_definition,
-          create_branch: true,
-          source_branch: @params.fetch(:source_branch, nil)
+          ref: @ref
         )
         response = service.execute
 
@@ -182,15 +186,49 @@ module Ai
       end
 
       def serialized_flow_additional_context
-        return "[]" unless @params[:additional_context].present?
+        context_array = @params[:additional_context] || []
 
-        ::Gitlab::Json.dump(@params[:additional_context])
+        # Standard context category is controlled by Rails codebase
+        # if user provides an envelope with colliding category
+        # it should be dropped
+        context_array = context_array.delete_if do |envelope|
+          envelope[:Category] == DWS_STANDARD_CONTEXT_CATEGORY
+        end
+
+        source_branch = @params.fetch(:source_branch, nil)
+        primary_branch =
+          if project.repository.branch_exists?(source_branch)
+            source_branch
+          else
+            project.default_branch_or_main
+          end
+
+        standard_context = {
+          "Category" => DWS_STANDARD_CONTEXT_CATEGORY,
+          "Content" => ::Gitlab::Json.dump({
+            "workload_branch" => @ref,
+            "primary_branch" => primary_branch,
+            "session_owner_id" => @current_user.id.to_s
+          })
+        }
+
+        context_array << standard_context
+        ::Gitlab::Json.dump(context_array)
       end
 
       def git_user_email(user)
         return "" unless user.respond_to?(:commit_email_or_default)
 
         user.commit_email_or_default
+      end
+
+      def create_workload_branch
+        workload_branch_service = ::Ci::Workloads::WorkloadBranchService.new(
+          current_user: @workload_user,
+          project: project,
+          source_branch: @params.fetch(:source_branch, nil)
+        )
+        workload_branch_service.execute
       end
     end
   end
