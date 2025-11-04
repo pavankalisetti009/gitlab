@@ -135,20 +135,128 @@ RSpec.describe ::Ai::DuoWorkflows::StartWorkflowService, feature_category: :duo_
       ]
     end
 
-    context 'when additional_context is provided' do
-      let(:params) do
-        super().merge(additional_context: additional_context)
-      end
+    def standard_context_content(parsed_context)
+      context = parsed_context.find { |ctx| ctx["Category"] == "agent_platform_standard_context" }
+      ::Gitlab::Json.parse(context["Content"]) if context
+    end
 
-      it 'sets DUO_WORKFLOW_ADDITIONAL_CONTEXT_CONTENT as JSON string' do
+    context 'when additional_context is provided' do
+      let(:params) { super().merge(additional_context: additional_context) }
+
+      it 'includes the original context' do
         expect(Ci::Workloads::RunWorkloadService)
           .to receive(:new).and_wrap_original do |method, **kwargs|
           workload_definition = kwargs[:workload_definition]
           variables = workload_definition.variables
+          parsed_context = ::Gitlab::Json.parse(variables[:DUO_WORKFLOW_ADDITIONAL_CONTEXT_CONTENT])
 
-          expect(variables[:DUO_WORKFLOW_ADDITIONAL_CONTEXT_CONTENT]).to eq(
-            ::Gitlab::Json.dump(additional_context)
-          )
+          expect(parsed_context).to include(hash_including("Category" => "agent_user_environment"))
+          method.call(**kwargs)
+        end
+
+        expect(execute).to be_success
+      end
+
+      it 'adds agent_platform_standard_context' do
+        expect(Ci::Workloads::RunWorkloadService)
+          .to receive(:new).and_wrap_original do |method, **kwargs|
+          workload_definition = kwargs[:workload_definition]
+          variables = workload_definition.variables
+          parsed_context = ::Gitlab::Json.parse(variables[:DUO_WORKFLOW_ADDITIONAL_CONTEXT_CONTENT])
+          standard_context = parsed_context.find { |ctx| ctx["Category"] == "agent_platform_standard_context" }
+
+          expect(standard_context).to be_present
+          method.call(**kwargs)
+        end
+
+        expect(execute).to be_success
+      end
+    end
+
+    context 'when agent_platform_standard_context already exists' do
+      let(:additional_context) do
+        [
+          {
+            Category: "agent_user_environment",
+            Content: "some content",
+            Metadata: "{}"
+          },
+          {
+            Category: "agent_platform_standard_context",
+            Content: ::Gitlab::Json.dump({ "key" => "value" })
+          }
+        ]
+      end
+
+      let(:params) { super().merge(additional_context: additional_context) }
+
+      it 'does not create a duplicate' do
+        expect(Ci::Workloads::RunWorkloadService)
+          .to receive(:new).and_wrap_original do |method, **kwargs|
+          workload_definition = kwargs[:workload_definition]
+          variables = workload_definition.variables
+          parsed_context = ::Gitlab::Json.parse(variables[:DUO_WORKFLOW_ADDITIONAL_CONTEXT_CONTENT])
+          standard_contexts = parsed_context.select { |ctx| ctx["Category"] == "agent_platform_standard_context" }
+
+          expect(standard_contexts.size).to eq(1)
+          method.call(**kwargs)
+        end
+
+        expect(execute).to be_success
+      end
+
+      it 'overrides the existing context' do
+        expect(Ci::Workloads::RunWorkloadService)
+          .to receive(:new).and_wrap_original do |method, **kwargs|
+          workload_definition = kwargs[:workload_definition]
+          variables = workload_definition.variables
+          parsed_context = ::Gitlab::Json.parse(variables[:DUO_WORKFLOW_ADDITIONAL_CONTEXT_CONTENT])
+          content = standard_context_content(parsed_context)
+
+          expect(content).not_to eq({ "key" => "value" })
+          expect(content.keys).to match_array(%w[workload_branch primary_branch session_owner_id])
+          method.call(**kwargs)
+        end
+
+        expect(execute).to be_success
+      end
+    end
+
+    context 'when source_branch exists' do
+      let(:params) { super().merge(additional_context: additional_context, source_branch: 'feature-branch') }
+
+      before do
+        project.repository.create_branch('feature-branch', project.default_branch)
+      end
+
+      it 'uses source_branch as primary_branch' do
+        expect(Ci::Workloads::RunWorkloadService)
+          .to receive(:new).and_wrap_original do |method, **kwargs|
+          workload_definition = kwargs[:workload_definition]
+          variables = workload_definition.variables
+          parsed_context = ::Gitlab::Json.parse(variables[:DUO_WORKFLOW_ADDITIONAL_CONTEXT_CONTENT])
+          content = standard_context_content(parsed_context)
+
+          expect(content["primary_branch"]).to eq('feature-branch')
+          method.call(**kwargs)
+        end
+
+        expect(execute).to be_success
+      end
+    end
+
+    context 'when source_branch does not exist' do
+      let(:params) { super().merge(additional_context: additional_context, source_branch: 'non-existent-branch') }
+
+      it 'falls back to default branch as primary_branch' do
+        expect(Ci::Workloads::RunWorkloadService)
+          .to receive(:new).and_wrap_original do |method, **kwargs|
+          workload_definition = kwargs[:workload_definition]
+          variables = workload_definition.variables
+          parsed_context = ::Gitlab::Json.parse(variables[:DUO_WORKFLOW_ADDITIONAL_CONTEXT_CONTENT])
+          content = standard_context_content(parsed_context)
+
+          expect(content["primary_branch"]).to eq(project.default_branch_or_main)
           method.call(**kwargs)
         end
 
@@ -157,13 +265,15 @@ RSpec.describe ::Ai::DuoWorkflows::StartWorkflowService, feature_category: :duo_
     end
 
     context 'when additional_context is not provided' do
-      it 'sets DUO_WORKFLOW_ADDITIONAL_CONTEXT_CONTENT as empty array' do
+      it 'only includes agent_platform_standard_context' do
         expect(Ci::Workloads::RunWorkloadService)
           .to receive(:new).and_wrap_original do |method, **kwargs|
           workload_definition = kwargs[:workload_definition]
           variables = workload_definition.variables
+          parsed_context = ::Gitlab::Json.parse(variables[:DUO_WORKFLOW_ADDITIONAL_CONTEXT_CONTENT])
 
-          expect(variables[:DUO_WORKFLOW_ADDITIONAL_CONTEXT_CONTENT]).to eq("[]")
+          expect(parsed_context.size).to eq(1)
+          expect(parsed_context.first["Category"]).to eq("agent_platform_standard_context")
           method.call(**kwargs)
         end
 
@@ -265,6 +375,13 @@ RSpec.describe ::Ai::DuoWorkflows::StartWorkflowService, feature_category: :duo_
 
       mock_workload = instance_double(Ci::Workloads::Workload, id: 123)
 
+      allow_next_instance_of(Ci::Workloads::WorkloadBranchService,
+        hash_including(current_user: service_account)
+      ) do |service|
+        allow(service).to receive(:execute).and_return(
+          ServiceResponse.success(payload: { branch_name: 'workloads/123' })
+        )
+      end
       allow_next_instance_of(Ci::Workloads::RunWorkloadService,
         hash_including(current_user: service_account)
       ) do |service|
@@ -291,11 +408,11 @@ RSpec.describe ::Ai::DuoWorkflows::StartWorkflowService, feature_category: :duo_
       project.project_setting.update!(duo_features_enabled: true, duo_remote_flows_enabled: true)
     end
 
-    it 'passes source_branch to RunWorkloadService when provided' do
+    it 'creates workload branch from source_branch and passes ref to RunWorkloadService when provided' do
       local_params = params.merge(source_branch: 'feature-branch')
       service = described_class.new(workflow: workflow, params: local_params)
 
-      expect(::Ci::Workloads::RunWorkloadService).to receive(:new).with(
+      expect(::Ci::Workloads::WorkloadBranchService).to receive(:new).with(
         hash_including(source_branch: 'feature-branch')
       ).and_call_original
 
@@ -303,7 +420,7 @@ RSpec.describe ::Ai::DuoWorkflows::StartWorkflowService, feature_category: :duo_
     end
 
     it 'passes nil when source_branch not provided' do
-      expect(::Ci::Workloads::RunWorkloadService).to receive(:new).with(
+      expect(::Ci::Workloads::WorkloadBranchService).to receive(:new).with(
         hash_including(source_branch: nil)
       ).and_call_original
 

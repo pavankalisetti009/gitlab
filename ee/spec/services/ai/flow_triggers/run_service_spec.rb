@@ -624,15 +624,24 @@ RSpec.describe Ai::FlowTriggers::RunService, feature_category: :duo_agent_platfo
 
       let_it_be(:resource) { merge_request }
 
-      it 'includes source branch in branch args' do
+      it 'creates workload branch from merge request source branch and passes ref to RunWorkloadService' do
+        workload_branch_service = instance_double(Ci::Workloads::WorkloadBranchService)
+        expect(Ci::Workloads::WorkloadBranchService).to receive(:new).with(
+          current_user: service_account,
+          project: project,
+          source_branch: 'feature-branch'
+        ).and_return(workload_branch_service)
+        expect(workload_branch_service).to receive(:execute).and_return(
+          ServiceResponse.success(payload: { branch_name: 'workloads/abc123' })
+        )
+
         expect(Ci::Workloads::RunWorkloadService).to receive(:new).with(
           project: project,
           current_user: service_account,
           source: :duo_workflow,
           workload_definition: an_instance_of(Ci::Workloads::WorkloadDefinition),
           ci_variables_included: %w[API_KEY DATABASE_URL],
-          create_branch: true,
-          source_branch: 'feature-branch'
+          ref: 'workloads/abc123'
         ).and_call_original
 
         service.execute(params)
@@ -640,14 +649,24 @@ RSpec.describe Ai::FlowTriggers::RunService, feature_category: :duo_agent_platfo
     end
 
     context 'when resource is not a MergeRequest' do
-      it 'does not include source branch in branch args' do
+      it 'creates workload branch without source branch and passes ref to RunWorkloadService' do
+        workload_branch_service = instance_double(Ci::Workloads::WorkloadBranchService)
+        expect(Ci::Workloads::WorkloadBranchService).to receive(:new).with(
+          current_user: service_account,
+          project: project,
+          source_branch: nil
+        ).and_return(workload_branch_service)
+        expect(workload_branch_service).to receive(:execute).and_return(
+          ServiceResponse.success(payload: { branch_name: 'workloads/xyz789' })
+        )
+
         expect(Ci::Workloads::RunWorkloadService).to receive(:new).with(
           project: project,
           current_user: service_account,
           source: :duo_workflow,
           workload_definition: an_instance_of(Ci::Workloads::WorkloadDefinition),
           ci_variables_included: %w[API_KEY DATABASE_URL],
-          create_branch: true
+          ref: 'workloads/xyz789'
         ).and_call_original
 
         service.execute(params)

@@ -165,9 +165,17 @@ module Ai
       end
 
       def branch_args
-        args = { create_branch: true }
-        args[:source_branch] = resource.source_branch if resource.is_a?(MergeRequest)
-        args
+        source_branch = resource.source_branch if resource.is_a?(MergeRequest)
+        workload_branch_service = ::Ci::Workloads::WorkloadBranchService.new(
+          current_user: flow_trigger_user,
+          project: project,
+          source_branch: source_branch
+        )
+        branch_response = workload_branch_service.execute
+        return branch_response unless branch_response.success?
+
+        ref = branch_response.payload[:branch_name]
+        { ref: ref }
       end
 
       def composite_identity_token
