@@ -93,8 +93,8 @@ export default {
     },
     isDescriptionValid() {
       return (
-        this.secret.description.length > 0 &&
-        this.secret.description.length <= SECRET_DESCRIPTION_MAX_LENGTH
+        this.secret.description?.length > 0 &&
+        this.secret.description?.length <= SECRET_DESCRIPTION_MAX_LENGTH
       );
     },
     isEnvironmentScopeValid() {
@@ -108,7 +108,7 @@ export default {
         return true; // value is optional when editing
       }
 
-      return this.secret.secret.length > 0;
+      return this.secret.secret?.length > 0;
     },
     isRotationValid() {
       const { rotationIntervalDays } = this.secret;
