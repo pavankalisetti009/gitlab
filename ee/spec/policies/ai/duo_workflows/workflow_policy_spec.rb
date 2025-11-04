@@ -56,6 +56,18 @@ RSpec.describe Ai::DuoWorkflows::WorkflowPolicy, feature_category: :duo_agent_pl
       it { is_expected.to be_disallowed(:update_duo_workflow) }
     end
 
+    context "when user is not workflow owner but has project access and workflow is non-chat ambient environment" do
+      before do
+        allow(::Gitlab::Llm::StageCheck).to receive(:available?).with(project, :duo_workflow).and_return(true)
+        project.project_setting.update!(duo_features_enabled: true)
+        workflow.update!(user: maintainer, environment: :ambient)
+        allow(current_user).to receive(:allowed_to_use?).and_return(true)
+      end
+
+      it { is_expected.to be_allowed(:read_duo_workflow) }
+      it { is_expected.to be_disallowed(:update_duo_workflow) }
+    end
+
     context "when user is not workflow owner" do
       before do
         allow(::Gitlab::Llm::StageCheck).to receive(:available?).with(project, :duo_workflow).and_return(true)

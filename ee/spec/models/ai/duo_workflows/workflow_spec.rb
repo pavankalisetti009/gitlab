@@ -558,4 +558,40 @@ RSpec.describe Ai::DuoWorkflows::Workflow, feature_category: :duo_agent_platform
       end
     end
   end
+
+  describe '#from_pipeline?' do
+    subject(:from_pipeline) { workflow.from_pipeline? }
+
+    let(:workflow) { build(:duo_workflows_workflow, environment: environment) }
+
+    context 'when environment is ide' do
+      let(:environment) { 'ide' }
+
+      it { is_expected.to be(false) }
+    end
+
+    context 'when environment is web' do
+      let(:environment) { 'web' }
+
+      it { is_expected.to be(true) }
+    end
+
+    context 'when environment is chat_partial' do
+      let(:environment) { 'chat_partial' }
+
+      it { is_expected.to be(false) }
+    end
+
+    context 'when environment is chat' do
+      let(:environment) { 'chat' }
+
+      it { is_expected.to be(false) }
+    end
+
+    context 'when environment is ambient' do
+      let(:environment) { 'ambient' }
+
+      it { is_expected.to be(true) }
+    end
+  end
 end
