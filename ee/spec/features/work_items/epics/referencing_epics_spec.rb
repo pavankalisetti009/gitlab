@@ -14,10 +14,13 @@ RSpec.describe 'Referencing Epics', :js, feature_category: :portfolio_management
 
   let(:full_reference) { epic.to_reference(full: true) }
 
+  before do
+    stub_feature_flags(work_item_view_for_issues: true)
+    stub_licensed_features(epics: true)
+  end
+
   describe 'reference on an issue' do
     before do
-      stub_licensed_features(epics: true)
-
       sign_in(user)
     end
 
@@ -31,7 +34,7 @@ RSpec.describe 'Referencing Epics', :js, feature_category: :portfolio_management
       it 'displays link to the reference' do
         visit project_issue_path(child_project, issue)
 
-        page.within('.issuable-details .description') do
+        within_testid('work-item-description-wrapper') do
           expect(page).to have_link(epic.to_reference, href: group_epic_path(group, epic))
           expect(page).to have_link(short_reference, href: group_epic_path(group, epic2))
         end
@@ -47,7 +50,7 @@ RSpec.describe 'Referencing Epics', :js, feature_category: :portfolio_management
           it 'displays link to the reference' do
             visit project_issue_path(project, issue)
 
-            page.within('.issuable-details .description') do
+            within_testid('work-item-description-wrapper') do
               expect(page).to have_link(full_reference, href: group_epic_path(group, epic))
             end
           end
@@ -61,7 +64,7 @@ RSpec.describe 'Referencing Epics', :js, feature_category: :portfolio_management
           it 'does not display link to the reference' do
             visit project_issue_path(project, issue)
 
-            page.within('.issuable-details .description') do
+            within_testid('work-item-description-wrapper') do
               expect(page).not_to have_link
             end
           end
@@ -78,7 +81,7 @@ RSpec.describe 'Referencing Epics', :js, feature_category: :portfolio_management
           it 'displays link to the reference' do
             visit project_issue_path(project, issue)
 
-            page.within('.issuable-details .description') do
+            within_testid('work-item-description-wrapper') do
               expect(page).to have_link(full_reference, href: group_epic_path(group, epic))
             end
           end
@@ -91,9 +94,7 @@ RSpec.describe 'Referencing Epics', :js, feature_category: :portfolio_management
     let(:issue) { create(:issue, project: project) }
 
     before do
-      stub_licensed_features(epics: true)
       group.add_developer(user)
-
       sign_in(user)
     end
 
@@ -103,23 +104,21 @@ RSpec.describe 'Referencing Epics', :js, feature_category: :portfolio_management
       before do
         visit project_issue_path(project, issue)
 
-        fill_in 'note[note]', with: note_text
+        fill_in 'Add a reply', with: note_text
         click_button 'Comment'
-
-        wait_for_requests
       end
 
       it 'creates a note with reference and cross references the epic', :sidekiq_might_not_need_inline do
-        page.within('div#notes li.note div.note-text') do
-          expect(page).to have_content(note_text)
-          expect(page.find('a')).to have_content(epic.to_reference(full: true))
+        page.within('li.note') do
+          expect(page).to have_text(note_text)
+          expect(page).to have_link(epic.to_reference(full: true))
         end
 
-        find('div#notes li.note div.note-text a').click
+        click_link(epic.to_reference(full: true))
 
         within_testid('system-note-content') do
           expect(page).to have_content('mentioned in issue')
-          expect(page.find('a')).to have_content(issue.to_reference(full: true))
+          expect(page).to have_link(issue.to_reference(full: true))
         end
       end
 
@@ -129,10 +128,8 @@ RSpec.describe 'Referencing Epics', :js, feature_category: :portfolio_management
         before do
           visit group_epic_path(group, epic)
 
-          find_by_testid('markdown-editor-form-field').native.send_keys(note_text)
+          fill_in 'Add a reply', with: note_text
           click_button 'Comment'
-
-          wait_for_requests
         end
 
         it 'creates a note with reference and cross references the issue', :sidekiq_might_not_need_inline do
@@ -142,9 +139,9 @@ RSpec.describe 'Referencing Epics', :js, feature_category: :portfolio_management
 
           visit project_issue_path(project, issue)
 
-          page.within('div#notes li.system-note .system-note-message') do
+          page.within('li.system-note') do
             expect(page).to have_content('mentioned in epic')
-            expect(page.find('a')).to have_content(epic.work_item.to_reference(full: true))
+            expect(page).to have_link(epic.work_item.to_reference(full: true))
           end
         end
       end

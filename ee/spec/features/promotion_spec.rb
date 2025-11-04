@@ -16,6 +16,10 @@ RSpec.describe 'Promotions', :js do
   let!(:issue) { create(:issue, project: project, author: user) }
   let(:otherproject) { create(:project, :repository, namespace: otherdeveloper.namespace) }
 
+  before do
+    stub_feature_flags(work_item_view_for_issues: true)
+  end
+
   describe 'for merge request improve', :js, feature_category: :code_review_workflow do
     before do
       allow(License).to receive(:current).and_return(nil)
@@ -105,49 +109,6 @@ RSpec.describe 'Promotions', :js do
   end
 
   describe 'for epics in issues sidebar', :js, feature_category: :source_code_management do
-    shared_examples 'Epics promotion' do
-      it 'appears on the page' do
-        visit project_issue_path(project, issue)
-        wait_for_requests
-
-        click_epic_link
-
-        expect(find('.promotion-issue-sidebar-message')).to have_content 'Epics let you manage your portfolio of projects more efficiently'
-      end
-
-      it 'is removed after dismissal' do
-        visit project_issue_path(project, issue)
-        wait_for_requests
-
-        click_epic_link
-        find('.js-epics-sidebar-callout .js-close-callout').click
-
-        expect(page).not_to have_selector('.promotion-issue-sidebar-message')
-      end
-
-      it 'does not appear on page after dismissal and reload' do
-        visit project_issue_path(project, issue)
-        wait_for_requests
-
-        click_epic_link
-        find('.js-epics-sidebar-callout .js-close-callout').click
-        visit project_issue_path(project, issue)
-
-        expect(page).not_to have_selector('.js-epics-sidebar-callout')
-      end
-
-      it 'closes dialog when clicking on X, but not dismiss it' do
-        visit project_issue_path(project, issue)
-        wait_for_requests
-
-        click_epic_link
-        find('.js-epics-sidebar-callout .dropdown-menu-close').click
-
-        expect(page).to have_selector('.js-epics-sidebar-callout')
-        expect(page).to have_selector('.promotion-issue-sidebar-message', visible: false)
-      end
-    end
-
     context 'when gitlab_com_subscriptions saas feature is available', :saas do
       let_it_be(:group) { create(:group_with_plan) }
 
@@ -158,7 +119,12 @@ RSpec.describe 'Promotions', :js do
         sign_in(user)
       end
 
-      it_behaves_like 'Epics promotion'
+      it 'shows promotion information in sidebar' do
+        visit project_issue_path(project, issue)
+
+        expect(page).to have_text 'Unlock epics, advanced boards, status, weight, iterations, and more to seamlessly tie your strategy to your DevSecOps workflows with GitLab.'
+        expect(page).to have_link 'Try it for free'
+      end
     end
 
     context 'when self hosted' do
@@ -170,11 +136,11 @@ RSpec.describe 'Promotions', :js do
         sign_in(user)
       end
 
-      it 'does not appear on the page' do
+      it 'shows promotion information in sidebar' do
         visit project_issue_path(project, issue)
-        wait_for_requests
 
-        expect(page).not_to have_selector('.js-epics-sidebar-callout')
+        expect(page).to have_text 'Unlock epics, advanced boards, status, weight, iterations, and more to seamlessly tie your strategy to your DevSecOps workflows with GitLab.'
+        expect(page).to have_link 'Try it for free'
       end
     end
   end
@@ -188,53 +154,11 @@ RSpec.describe 'Promotions', :js do
       sign_in(user)
     end
 
-    it 'appears on the page', :js do
-      visit project_issue_path(project, issue)
-      wait_for_requests
-
-      page.within('.js-weight-sidebar-callout') do
-        click_link 'Learn more'
-      end
-
-      expect(find('.promotion-issue-weight-sidebar-message')).to have_content 'Improve issues management with Issue weight and GitLab Enterprise Edition'
-    end
-
-    it 'is removed after dismissal' do
-      visit project_issue_path(project, issue)
-      wait_for_requests
-
-      page.within('.js-weight-sidebar-callout') do
-        click_link 'Learn more'
-        click_link 'Not now, thanks'
-      end
-
-      expect(page).not_to have_content('.js-weight-sidebar-callout')
-    end
-
-    it 'does not appear on page after dismissal and reload' do
-      visit project_issue_path(project, issue)
-      wait_for_requests
-
-      page.within('.js-weight-sidebar-callout') do
-        click_link 'Learn more'
-        click_link 'Not now, thanks'
-      end
-
+    it 'shows promotion information in sidebar' do
       visit project_issue_path(project, issue)
 
-      expect(page).not_to have_selector('.js-weight-sidebar-callout')
-    end
-
-    it 'closes dialog when clicking on X, but not dismiss it' do
-      visit project_issue_path(project, issue)
-      wait_for_requests
-
-      page.within('.js-weight-sidebar-callout') do
-        click_link 'Learn more'
-        click_link 'Learn more'
-      end
-
-      expect(page).to have_selector('.js-weight-sidebar-callout')
+      expect(page).to have_text 'Unlock epics, advanced boards, status, weight, iterations, and more to seamlessly tie your strategy to your DevSecOps workflows with GitLab.'
+      expect(page).to have_link 'Try it for free'
     end
 
     context 'when gitlab_com_subscriptions is available', :saas do
@@ -244,17 +168,11 @@ RSpec.describe 'Promotions', :js do
         stub_saas_features(gitlab_com_subscriptions: true)
       end
 
-      it 'appears on the page', :js do
+      it 'shows promotion information in sidebar' do
         visit project_issue_path(project, issue)
-        wait_for_requests
 
-        page.within('.js-weight-sidebar-callout') do
-          click_link 'Learn more'
-        end
-
-        expect(page).to have_link 'Try it for free',
-          href: new_trial_registration_path(glm_source: Gitlab.config.gitlab.host, glm_content: 'issue_weights'), class: 'promotion-trial-cta'
-        expect(find('.js-close-callout.js-close-session.tr-issue-weights-not-now-cta')).to have_content 'Not now, thanks!'
+        expect(page).to have_text 'Unlock epics, advanced boards, status, weight, iterations, and more to seamlessly tie your strategy to your DevSecOps workflows with GitLab.'
+        expect(page).to have_link 'Try it for free'
       end
     end
   end

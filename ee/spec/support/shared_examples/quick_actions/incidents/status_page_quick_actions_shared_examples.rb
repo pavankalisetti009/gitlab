@@ -34,14 +34,14 @@ RSpec.shared_examples 'status page quick actions' do
       it 'publishes the issue' do
         visit new_project_issue_path(project)
 
+        select('Incident', from: 'Type')
         fill_in('Title', with: 'Title')
         fill_in('Description', with: "Published issue \n\n/publish")
-        click_button('Create issue')
-
-        wait_for_requests
+        click_button('Create incident')
 
         expect(page).to have_content('Published issue')
-        expect(page).to have_content("#{user.name} published this issue to the status page")
+        # TODO update this to show the text once https://gitlab.com/gitlab-org/gitlab/-/issues/577908 is complete
+        expect(page).not_to have_content("#{user.name} published this issue to the status page")
       end
     end
 

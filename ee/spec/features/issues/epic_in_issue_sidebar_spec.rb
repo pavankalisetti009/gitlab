@@ -3,92 +3,57 @@
 require 'spec_helper'
 
 RSpec.describe 'Epic in issue sidebar', :js, feature_category: :team_planning do
+  include ListboxHelpers
+
   # Ensure support bot user is created so creation doesn't count towards query limit
   # See https://gitlab.com/gitlab-org/gitlab/-/issues/509629
   let_it_be(:support_bot) { Users::Internal.support_bot }
   let_it_be(:user) { create(:user) }
+
   let_it_be(:group) { create(:group, :public) }
   let_it_be(:epic1) { create(:epic, group: group, title: 'Epic Foo') }
   let_it_be(:epic2) { create(:epic, group: group, title: 'Epic Bar') }
   let_it_be(:epic3) { create(:epic, group: group, title: 'Epic Baz') }
+  let_it_be(:work_item_epic) { create(:work_item, :epic, namespace: group, title: 'Work item Epic') }
+
   let_it_be(:project) { create(:project, :public, group: group) }
   let_it_be(:issue) { create(:issue, project: project) }
   let_it_be(:epic_issue) { create(:epic_issue, epic: epic1, issue: issue) }
-
-  let_it_be(:work_item_epic) { create(:work_item, :epic, namespace: group, title: 'Work item Epic') }
 
   let_it_be(:subgroup) { create(:group, :public, parent: group) }
   let_it_be(:subproject) { create(:project, :public, group: subgroup) }
   let_it_be(:subepic) { create(:epic, group: subgroup, title: 'Subgroup epic') }
   let_it_be(:subissue) { create(:issue, project: subproject) }
 
-  let_it_be(:sidebar_epic_selector) { '[data-testid="sidebar-epic"]' }
-
   before do
     create(:callout, user: user, feature_name: :duo_chat_callout)
+    stub_feature_flags(work_item_view_for_issues: true)
   end
 
   shared_examples 'epic in issue sidebar' do
-    before do
-      group.add_owner(user)
-
-      sign_in user
-    end
-
     context 'projects within a group' do
       before do
         visit project_issue_path(project, issue)
-        wait_for_all_requests
       end
 
-      it 'shows epic in issue sidebar' do
-        expect(page.find(sidebar_epic_selector)).to have_content(epic1.title)
-      end
+      it 'shows epics select dropdown and supports searching', :aggregate_failures do
+        within_testid('work-item-parent') do
+          expect(page).to have_link(epic1.title)
 
-      it 'shows edit button in issue sidebar' do
-        expect(page.find(sidebar_epic_selector)).to have_button('Edit')
-      end
+          click_button 'Edit'
 
-      it 'shows epics select dropdown' do
-        page.within(sidebar_epic_selector) do
-          click_edit
+          expect_listbox_items([work_item_epic.title, epic3.title, epic2.title, epic1.title])
 
-          aggregate_failures do
-            expect(page).to have_selector('.gl-dropdown-contents .gl-dropdown-item', count: 5)
-            expect(page).to have_content 'No epic'
-            expect(page).to have_content epic1.title
-            expect(page).to have_content epic2.title
-            expect(page).to have_content epic3.title
-            expect(page).to have_content work_item_epic.title
-          end
-        end
-      end
+          send_keys 'Bar'
 
-      it 'supports searching for an epic' do
-        page.within(sidebar_epic_selector) do
-          click_edit
+          expect_no_listbox_item(work_item_epic.title)
+          expect_no_listbox_item(epic3.title)
+          expect_no_listbox_item(epic1.title)
+          expect_listbox_items([epic2.title])
 
-          page.find('.gl-form-input').send_keys('Foo')
+          select_listbox_item(epic2.title)
 
-          wait_for_all_requests
-
-          aggregate_failures do
-            expect(page).to have_selector('.gl-dropdown-contents .gl-dropdown-item', count: 2)
-            expect(page).to have_content 'No epic'
-            expect(page).to have_content epic1.title
-          end
-        end
-      end
-
-      it 'select an epic from the dropdown' do
-        page.within(sidebar_epic_selector) do
-          click_edit
-
-          find('.gl-dropdown-item', text: epic2.title).click
-
-          wait_for_all_requests
-
-          expect(find_by_testid('select-epic')).to have_content(epic2.title)
+          expect(page).to have_link(epic2.title)
         end
       end
     end
@@ -96,46 +61,33 @@ RSpec.describe 'Epic in issue sidebar', :js, feature_category: :team_planning do
     context 'project within a subgroup' do
       before do
         visit project_issue_path(subproject, issue)
-        wait_for_all_requests
       end
 
-      it 'shows all epics belonging to the sub group and its parents' do
-        page.within(sidebar_epic_selector) do
-          click_edit
+      it 'shows all epics belonging to the sub group and its parents', :aggregate_failures do
+        within_testid('work-item-parent') do
+          click_button 'Edit'
 
-          aggregate_failures do
-            expect(page).to have_selector('.gl-dropdown-contents .gl-dropdown-item', count: 6)
-            expect(page).to have_content 'No epic'
-            expect(page).to have_content epic1.title
-            expect(page).to have_content epic2.title
-            expect(page).to have_content epic3.title
-            expect(page).to have_content subepic.title
-            expect(page).to have_content work_item_epic.title
-          end
+          expect_listbox_items([subepic.title, work_item_epic.title, epic3.title, epic2.title, epic1.title])
         end
       end
     end
 
     context 'personal projects' do
+      # TODO update test to not expect testid once https://gitlab.com/gitlab-org/gitlab/-/issues/553969 is complete
       it 'does not show epic in issue sidebar' do
         personal_project = create(:project, :public)
         other_issue = create(:issue, project: personal_project)
-
         visit project_issue_path(personal_project, other_issue)
 
-        expect_no_epic
+        expect(page).to have_testid('work-item-parent')
       end
     end
   end
 
   context 'when epics available' do
     before do
-      # TODO: remove threshold after epic-work item sync
-      # issue: https://gitlab.com/gitlab-org/gitlab/-/issues/438295
-      allow(Gitlab::QueryLimiting::Transaction).to receive(:threshold).and_return(135)
-
       stub_licensed_features(epics: true)
-
+      group.add_owner(user)
       sign_in(user)
     end
 
@@ -155,47 +107,12 @@ RSpec.describe 'Epic in issue sidebar', :js, feature_category: :team_planning do
       end
 
       context 'group has no license' do
+        # TODO update test to not expect testid once https://gitlab.com/gitlab-org/gitlab/-/issues/553969 is complete
         it 'does not show epic for public projects and groups' do
           visit project_issue_path(project, issue)
 
-          expect_no_epic
+          expect(page).to have_testid('work-item-parent')
         end
-      end
-    end
-  end
-
-  context 'when epics are available' do
-    before do
-      group.add_owner(user)
-      stub_licensed_features(epics: true)
-
-      sign_in(user)
-
-      visit project_issue_path(project, issue)
-    end
-
-    it 'shows work item epic in select dropdown' do
-      page.within(sidebar_epic_selector) do
-        click_edit
-
-        aggregate_failures do
-          expect(page).to have_selector('.gl-dropdown-contents .gl-dropdown-item', count: 5)
-          expect(page).to have_content 'No epic'
-          expect(page).to have_content epic1.title
-          expect(page).to have_content epic2.title
-          expect(page).to have_content epic3.title
-          expect(page).to have_content work_item_epic.title
-        end
-      end
-    end
-
-    it 'select a work item epic from the dropdown' do
-      page.within(sidebar_epic_selector) do
-        click_edit
-
-        click_button work_item_epic.title
-
-        expect(page).to have_link(work_item_epic.title)
       end
     end
   end
@@ -203,22 +120,14 @@ RSpec.describe 'Epic in issue sidebar', :js, feature_category: :team_planning do
   context 'when epics unavailable' do
     before do
       stub_licensed_features(epics: false)
+      group.add_owner(user)
+      sign_in(user)
     end
 
     it 'does not show epic in issue sidebar' do
       visit project_issue_path(project, issue)
 
-      expect_no_epic
+      expect(page).not_to have_testid('work-item-parent')
     end
-  end
-
-  def expect_no_epic
-    expect(page).not_to have_selector('.block.epic')
-  end
-
-  def click_edit
-    click_button 'Edit'
-
-    wait_for_all_requests
   end
 end
