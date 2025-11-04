@@ -5,7 +5,10 @@ module EE
     extend ActiveSupport::Concern
 
     prepended do
+      extend ::Gitlab::Utils::Override
+
       belongs_to :default_duo_add_on_assignment, class_name: 'GitlabSubscriptions::UserAddOnAssignment', optional: true
+      belongs_to :duo_default_namespace, class_name: 'Namespace', optional: true
 
       validates :roadmap_epics_state, allow_nil: true, inclusion: {
         in: ::Epic.available_states.values, message: "%{value} is not a valid epic state id"
@@ -14,6 +17,34 @@ module EE
       validates :epic_notes_filter, inclusion: { in: ::UserPreference::NOTES_FILTERS.values }, presence: true
 
       validate :check_seat_for_default_duo_assigment, if: :default_duo_add_on_assignment_id_changed?
+      validate :validate_duo_default_namespace_id, if: :duo_default_namespace_id_changed?
+
+      def duo_default_namespace_candidates
+        if ::Gitlab::Saas.feature_available?(:gitlab_duo_saas_only)
+          duo_core_subquery = GitlabSubscriptions::AddOn.select(:id).where(name: :duo_core)
+          duo_assignable_subquery =
+            GitlabSubscriptions::AddOn
+              .select(:id).where(name: ::GitlabSubscriptions::AddOn::SEAT_ASSIGNABLE_DUO_ADD_ONS)
+          add_on_id_column = GitlabSubscriptions::AddOnPurchase.arel_table[:subscription_add_on_id]
+
+          namespace_ids_subquery = GitlabSubscriptions::AddOnPurchase
+            .for_duo_add_ons
+            .active.for_user(user)
+            .left_outer_joins(:assigned_users)
+            .where(
+              add_on_id_column.in(duo_core_subquery.arel).or(
+                add_on_id_column.in(duo_assignable_subquery.arel)
+                  .and(GitlabSubscriptions::UserAddOnAssignment.arel_table[:id].not_eq(nil))
+              )
+            )
+            .distinct
+            .select(:namespace_id)
+
+          ::Namespace.where(id: namespace_ids_subquery)
+        else
+          ::Namespace.where(id: user.authorized_groups.top_level).or(::Namespace.where(id: user.namespace))
+        end
+      end
 
       validates :policy_advanced_editor, allow_nil: false, inclusion: { in: [true, false] }
 
@@ -21,6 +52,8 @@ module EE
 
       scope :policy_advanced_editor, -> { where(policy_advanced_editor: true) }
 
+      # EE:SaaS - namespace with seats for SAAS purpose only
+      # See https://gitlab.com/gitlab-org/gitlab/-/issues/557584
       def eligible_duo_add_on_assignments
         assignable_enum_value = ::GitlabSubscriptions::AddOn.names.values_at(
           *::GitlabSubscriptions::AddOn::SEAT_ASSIGNABLE_DUO_ADD_ONS
@@ -61,6 +94,33 @@ module EE
         return if assignments.size != 1
 
         assignments.first.add_on_purchase.namespace
+      end
+
+      override :duo_default_namespace
+      def duo_default_namespace
+        namespace = super
+
+        if namespace
+          duo_default_namespace_candidates.where(id: namespace.id).exists? ? namespace : nil
+        else # Fallback to deprecated add-on assignment approach
+          get_default_duo_namespace
+        end
+      end
+
+      def duo_default_namespace_id=(namespace_id)
+        # Prevent fallback to assignment id in future reads
+        self.default_duo_add_on_assignment_id = nil if namespace_id.nil?
+        super
+      end
+
+      private
+
+      def validate_duo_default_namespace_id
+        return unless duo_default_namespace_id
+
+        return if duo_default_namespace_candidates.where(id: duo_default_namespace_id).exists?
+
+        errors.add(:duo_default_namespace_id)
       end
     end
   end

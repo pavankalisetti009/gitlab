@@ -66,6 +66,7 @@ module EE
         to: :user_detail, allow_nil: true
 
       delegate :enabled_zoekt?, :enabled_zoekt, :enabled_zoekt=,
+        :duo_default_namespace_id, :duo_default_namespace_id=,
         to: :user_preference
 
       delegate :policy_advanced_editor?, :policy_advanced_editor, :policy_advanced_editor=,
