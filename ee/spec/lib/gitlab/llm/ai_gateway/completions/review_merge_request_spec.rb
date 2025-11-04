@@ -1939,14 +1939,6 @@ RSpec.describe Gitlab::Llm::AiGateway::Completions::ReviewMergeRequest, feature_
         instance_double(::Ai::DuoWorkflows::CreateAndStartWorkflowService, execute: ServiceResponse.success)
       end
 
-      let(:required_privileges) do
-        [
-          ::Ai::DuoWorkflows::Workflow::AgentPrivileges::READ_WRITE_GITLAB,
-          ::Ai::DuoWorkflows::Workflow::AgentPrivileges::RUN_COMMANDS,
-          ::Ai::DuoWorkflows::Workflow::AgentPrivileges::USE_GIT
-        ]
-      end
-
       before do
         stub_feature_flags(duo_code_review_on_agent_platform: true)
 
@@ -1988,13 +1980,23 @@ RSpec.describe Gitlab::Llm::AiGateway::Completions::ReviewMergeRequest, feature_
         completion.execute
       end
 
-      context 'when workflow fails to start' do
-        let(:error_message) { 'Workflow start failed' }
-        let(:create_and_start_service) do
-          instance_double(
-            ::Ai::DuoWorkflows::CreateAndStartWorkflowService,
-            execute: ServiceResponse.error(message: error_message)
-          )
+      shared_examples 'posts error comment and cleans up' do
+        it 'posts an error comment to the merge request' do
+          completion.execute
+
+          merge_request.reload
+          error_note = merge_request.notes.non_diff_notes.find_by(system: false)
+          expect(error_note).to be_present
+          expect(error_note.note).to eq(described_class.error_msg)
+          expect(error_note.author).to eq(duo_code_review_bot)
+        end
+
+        it 'creates a todo for the error' do
+          expect_any_instance_of(TodoService) do |service|
+            expect(service).to receive(:new_review).with(merge_request, duo_code_review_bot)
+          end
+
+          completion.execute
         end
 
         it 'resets review state and destroys progress note' do
@@ -2018,10 +2020,41 @@ RSpec.describe Gitlab::Llm::AiGateway::Completions::ReviewMergeRequest, feature_
           completion.execute
         end
 
-        it 'returns the error result' do
+        it 'returns an error result' do
           result = completion.execute
           expect(result.success?).to be false
           expect(result.message).to eq(error_message)
+        end
+      end
+
+      context 'when workflow fails to start' do
+        let(:error_message) { 'Workflow start failed' }
+        let(:create_and_start_service) do
+          instance_double(
+            ::Ai::DuoWorkflows::CreateAndStartWorkflowService,
+            execute: ServiceResponse.error(message: error_message)
+          )
+        end
+
+        it_behaves_like 'posts error comment and cleans up'
+      end
+
+      context 'when workflow raises an exception' do
+        let(:error_message) { 'Unexpected error' }
+
+        before do
+          allow(create_and_start_service).to receive(:execute).and_raise(StandardError.new(error_message))
+        end
+
+        it_behaves_like 'posts error comment and cleans up'
+
+        it 'tracks the exception' do
+          expect(Gitlab::ErrorTracking).to receive(:track_exception).with(
+            instance_of(StandardError),
+            unit_primitive: 'review_merge_request'
+          )
+
+          completion.execute
         end
       end
     end

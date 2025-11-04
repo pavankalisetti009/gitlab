@@ -14,15 +14,22 @@ module Ai
         data_consistency :always
         defer_on_database_health_signal :gitlab_main
 
+        GENERIC_ERROR_MESSAGE = <<~MESSAGE.squish
+          DuoCodeReview|I have encountered some problems while I was reviewing. Please try again later.
+        MESSAGE
+
         def perform(merge_request_id)
           merge_request = MergeRequest.find_by_id(merge_request_id)
           return unless merge_request
 
+          progress_note = merge_request.duo_code_review_progress_note
+
           # Check if review is already completed - if so, nothing to do
           return if reviewer_already_reviewed?(merge_request, review_bot)
 
+          post_error_comment(merge_request) if progress_note.present?
           update_review_state_service(merge_request, review_bot).execute(merge_request, 'reviewed')
-          delete_progress_note(merge_request)
+          progress_note&.destroy
           log_timeout_reset(merge_request)
         rescue StandardError => error
           Gitlab::ErrorTracking.track_exception(
@@ -52,11 +59,6 @@ module Ai
           )
         end
 
-        def delete_progress_note(merge_request)
-          progress_note = merge_request.duo_code_review_progress_note
-          progress_note&.destroy
-        end
-
         def log_timeout_reset(merge_request)
           Gitlab::AppLogger.info(
             message: "Duo Code Review Flow timed out and was reset",
@@ -65,6 +67,17 @@ module Ai
             merge_request_id: merge_request.id,
             project_id: merge_request.project.id
           )
+        end
+
+        def post_error_comment(merge_request)
+          ::Notes::CreateService.new(
+            merge_request.project,
+            review_bot,
+            noteable: merge_request,
+            note: s_(GENERIC_ERROR_MESSAGE)
+          ).execute
+
+          TodoService.new.new_review(merge_request, review_bot)
         end
       end
     end
