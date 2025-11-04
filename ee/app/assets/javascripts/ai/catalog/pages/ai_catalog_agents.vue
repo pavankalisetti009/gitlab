@@ -2,10 +2,8 @@
 import { GlFilteredSearch } from '@gitlab/ui';
 import * as Sentry from '~/sentry/sentry_browser_wrapper';
 import { s__, sprintf } from '~/locale';
-import { getIdFromGraphQLId } from '~/graphql_shared/utils';
 import { fetchPolicies } from '~/lib/graphql';
 import { InternalEvents } from '~/tracking';
-import { isLoggedIn } from '~/lib/utils/common_utils';
 import {
   VISIBILITY_LEVEL_PUBLIC_STRING,
   VISIBILITY_LEVEL_PRIVATE_STRING,
@@ -14,15 +12,10 @@ import ErrorsAlert from '~/vue_shared/components/errors_alert.vue';
 import { FILTERED_SEARCH_TERM } from '~/vue_shared/components/filtered_search_bar/constants';
 import aiCatalogAgentsQuery from '../graphql/queries/ai_catalog_agents.query.graphql';
 import createAiCatalogItemConsumer from '../graphql/mutations/create_ai_catalog_item_consumer.mutation.graphql';
-import deleteAiCatalogAgentMutation from '../graphql/mutations/delete_ai_catalog_agent.mutation.graphql';
 import AiCatalogListHeader from '../components/ai_catalog_list_header.vue';
 import AiCatalogList from '../components/ai_catalog_list.vue';
 import AiCatalogItemConsumerModal from '../components/ai_catalog_item_consumer_modal.vue';
-import {
-  AI_CATALOG_AGENTS_SHOW_ROUTE,
-  AI_CATALOG_AGENTS_EDIT_ROUTE,
-  AI_CATALOG_AGENTS_DUPLICATE_ROUTE,
-} from '../router/constants';
+import { AI_CATALOG_AGENTS_SHOW_ROUTE } from '../router/constants';
 import {
   AGENT_VISIBILITY_LEVEL_DESCRIPTIONS,
   PAGE_SIZE,
@@ -75,49 +68,6 @@ export default {
     },
     itemTypeConfig() {
       return {
-        actionItems: (item) => {
-          if (!isLoggedIn()) {
-            return [];
-          }
-
-          const id = getIdFromGraphQLId(item.id);
-
-          const items = [
-            {
-              text: s__('AICatalog|Enable in project'),
-              action: () => this.setAiCatalogAgentToBeAdded(item),
-              icon: 'plus',
-            },
-            {
-              text: s__('AICatalog|Duplicate'),
-              to: {
-                name: AI_CATALOG_AGENTS_DUPLICATE_ROUTE,
-                params: { id },
-              },
-              icon: 'duplicate',
-            },
-          ];
-
-          if (!item.userPermissions?.adminAiCatalogItem) {
-            return items;
-          }
-
-          const adminItems = [
-            {
-              text: s__('AICatalog|Edit'),
-              to: {
-                name: AI_CATALOG_AGENTS_EDIT_ROUTE,
-                params: { id },
-              },
-              icon: 'pencil',
-            },
-          ];
-
-          return [...items, ...adminItems];
-        },
-        deleteActionItem: {
-          showActionItem: (item) => item.userPermissions?.adminAiCatalogItem || false,
-        },
         showRoute: AI_CATALOG_AGENTS_SHOW_ROUTE,
         visibilityTooltip: {
           [VISIBILITY_LEVEL_PUBLIC_STRING]:
@@ -142,33 +92,6 @@ export default {
     });
   },
   methods: {
-    async deleteAgent(item) {
-      const { id } = item;
-
-      try {
-        const { data } = await this.$apollo.mutate({
-          mutation: deleteAiCatalogAgentMutation,
-          variables: {
-            id,
-          },
-          refetchQueries: [aiCatalogAgentsQuery],
-        });
-
-        if (!data.aiCatalogAgentDelete.success) {
-          this.errors = [
-            sprintf(s__('AICatalog|Failed to delete agent. %{error}'), {
-              error: data.aiCatalogAgentDelete.errors?.[0],
-            }),
-          ];
-          return;
-        }
-
-        this.$toast.show(s__('AICatalog|Agent deleted.'));
-      } catch (error) {
-        this.errors = [sprintf(s__('AICatalog|Failed to delete agent. %{error}'), { error })];
-        Sentry.captureException(error);
-      }
-    },
     setAiCatalogAgentToBeAdded(agent) {
       this.aiCatalogAgentToBeAdded = agent;
     },
@@ -263,9 +186,6 @@ export default {
       :is-loading="isLoading"
       :items="aiCatalogAgents"
       :item-type-config="itemTypeConfig"
-      :delete-confirm-title="s__('AICatalog|Delete agent')"
-      :delete-confirm-message="s__('AICatalog|Are you sure you want to delete agent %{name}?')"
-      :delete-fn="deleteAgent"
       :page-info="pageInfo"
       :search="searchTerm"
       @next-page="handleNextPage"

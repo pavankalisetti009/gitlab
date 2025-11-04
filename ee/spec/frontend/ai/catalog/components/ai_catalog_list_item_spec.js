@@ -1,4 +1,5 @@
 import { GlDisclosureDropdown, GlDisclosureDropdownItem, GlIcon } from '@gitlab/ui';
+import { RouterLinkStub as RouterLink } from '@vue/test-utils';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import AiCatalogListItem from 'ee/ai/catalog/components/ai_catalog_list_item.vue';
 import { AI_CATALOG_AGENTS_EDIT_ROUTE } from 'ee/ai/catalog/router/constants';
@@ -7,12 +8,7 @@ import {
   VISIBILITY_LEVEL_PUBLIC_STRING,
   VISIBILITY_LEVEL_PRIVATE_STRING,
 } from '~/visibility_level/constants';
-import {
-  TIMESTAMP_TYPE_UPDATED_AT,
-  TIMESTAMP_TYPE_CREATED_AT,
-} from '~/vue_shared/components/resource_lists/constants';
 
-import ListItem from '~/vue_shared/components/resource_lists/list_item.vue';
 import { mockBaseLatestVersion } from '../mock_data';
 
 describe('AiCatalogListItem', () => {
@@ -34,8 +30,6 @@ describe('AiCatalogListItem', () => {
       adminAiCatalogItem: true,
     },
   };
-
-  const mockUrl = '/agent/1';
 
   const mockRouter = {
     resolve: jest.fn().mockReturnValue({ href: `/agent/${mockId}` }),
@@ -78,11 +72,15 @@ describe('AiCatalogListItem', () => {
         },
         $router: mockRouter,
       },
+      stubs: {
+        RouterLink,
+      },
     });
   };
 
-  const findListItem = () => wrapper.findComponent(ListItem);
   const findIcon = () => wrapper.findComponent(GlIcon);
+  const findTooltip = () => wrapper.findByTestId('ai-catalog-item-tooltip');
+  const findListItemLink = () => wrapper.findByTestId('ai-catalog-item-link');
   const findDisclosureDropdown = () => wrapper.findAllComponents(GlDisclosureDropdown);
   const findDisclosureDropdownItems = () => wrapper.findAllComponents(GlDisclosureDropdownItem);
 
@@ -91,19 +89,11 @@ describe('AiCatalogListItem', () => {
   });
 
   describe('component rendering', () => {
-    it('renders the list item container with correct properties', () => {
-      const listItem = findListItem();
-      const expectedResource = {
-        ...mockItem,
-        id: mockId,
-        avatarLabel: mockItem.name,
-        avatarUrl: null,
-        fullName: mockItem.name,
-        relativeWebUrl: mockUrl,
-      };
+    it('renders the list item with the correct link URL', () => {
+      const listItemLink = findListItemLink();
 
-      expect(listItem.exists()).toBe(true);
-      expect(listItem.props('resource')).toEqual(expectedResource);
+      expect(listItemLink.exists()).toBe(true);
+      expect(listItemLink.props('to')).toEqual({ name: '/items/:id', params: { id: 1 } });
     });
 
     it('renders the actions passed in a prop in a disclosure dropdown', () => {
@@ -151,7 +141,7 @@ describe('AiCatalogListItem', () => {
         createComponent({
           itemTypeConfig: {
             ...defaultItemTypeConfig,
-            actionItems: [],
+            actionItems: () => [],
             deleteActionItem: {
               showActionItem: () => false,
             },
@@ -169,69 +159,39 @@ describe('AiCatalogListItem', () => {
         const icon = findIcon();
 
         expect(icon.props('name')).toBe(VISIBILITY_TYPE_ICON[VISIBILITY_LEVEL_PRIVATE_STRING]);
-        expect(icon.attributes('title')).toBe(privateTooltip);
+      });
+
+      it('renders the private tooltip', () => {
+        const tooltip = findTooltip();
+
+        expect(tooltip.element.getAttribute('title')).toBe(privateTooltip);
       });
     });
 
     describe('when the item is public', () => {
       beforeEach(() => {
-        createComponent({ item: { ...mockItem, public: true } });
+        createComponent({
+          item: { ...mockItem, public: true },
+        });
       });
 
       it('renders the public icon with a tooltip', () => {
         const icon = findIcon();
 
         expect(icon.props('name')).toBe(VISIBILITY_TYPE_ICON[VISIBILITY_LEVEL_PUBLIC_STRING]);
-        expect(icon.attributes('title')).toBe(publicTooltip);
       });
-    });
 
-    describe('timestamp handling', () => {
-      it.each`
-        createdAt                 | updatedAt                 | latestVersionUpdatedAt    | expectedTimestampType        | expectedUpdatedAt
-        ${'2022-01-01T00:00:00Z'} | ${'2022-01-01T00:00:00Z'} | ${'2022-01-01T00:00:00Z'} | ${TIMESTAMP_TYPE_CREATED_AT} | ${'2022-01-01T00:00:00Z'}
-        ${'2022-01-01T00:00:00Z'} | ${'2024-01-01T00:00:00Z'} | ${'2023-01-01T00:00:00Z'} | ${TIMESTAMP_TYPE_UPDATED_AT} | ${'2024-01-01T00:00:00Z'}
-        ${'2022-01-01T00:00:00Z'} | ${'2023-01-01T00:00:00Z'} | ${'2025-01-01T00:00:00Z'} | ${TIMESTAMP_TYPE_UPDATED_AT} | ${'2025-01-01T00:00:00Z'}
-      `(
-        'passes correct timestamp type and date when createdAt=$createdAt, updatedAt=$updatedAt, latestVersionUpdatedAt=$latestVersionUpdatedAt',
-        ({
-          createdAt,
-          updatedAt,
-          latestVersionUpdatedAt,
-          expectedTimestampType,
-          expectedUpdatedAt,
-        }) => {
-          createComponent({
-            item: {
-              ...mockItem,
-              createdAt,
-              updatedAt,
-              latestVersion: { ...mockBaseLatestVersion, updatedAt: latestVersionUpdatedAt },
-            },
-          });
+      it('renders the public tooltip', () => {
+        const tooltip = findTooltip();
 
-          const listItem = findListItem();
-          expect(listItem.props('timestampType')).toBe(expectedTimestampType);
-          expect(listItem.props('resource').updatedAt).toBe(expectedUpdatedAt);
-        },
-      );
+        expect(tooltip.element.getAttribute('title')).toBe(publicTooltip);
+      });
     });
   });
 
-  describe('on list item click', () => {
-    const mockEvent = {
-      preventDefault: jest.fn(),
-    };
-
-    it('emits click event', () => {
-      const listItem = findListItem();
-
-      listItem.vm.$emit('click-avatar', mockEvent);
-
-      expect(mockRouter.push).toHaveBeenCalledWith({
-        name: defaultItemTypeConfig.showRoute,
-        params: { id: mockId },
-      });
+  describe('renders list item link', () => {
+    it('contains correct link href', () => {
+      expect(findListItemLink().props('to')).toEqual({ name: '/items/:id', params: { id: 1 } });
     });
   });
 

@@ -22,7 +22,7 @@ export default {
       type: Array,
       required: true,
     },
-    itemTypeConfig: {
+    pageInfo: {
       type: Object,
       required: true,
     },
@@ -30,21 +30,27 @@ export default {
       type: Boolean,
       required: true,
     },
+    itemTypeConfig: {
+      type: Object,
+      required: true,
+      validator(item) {
+        return item.showRoute && item.visibilityTooltip;
+      },
+    },
     deleteConfirmTitle: {
       type: String,
-      required: true,
+      required: false,
+      default: undefined,
     },
     deleteConfirmMessage: {
       type: String,
-      required: true,
+      required: false,
+      default: undefined,
     },
     deleteFn: {
       type: Function,
-      required: true,
-    },
-    pageInfo: {
-      type: Object,
-      required: true,
+      required: false,
+      default: undefined,
     },
     search: {
       type: String,
@@ -64,7 +70,7 @@ export default {
   },
   methods: {
     async deleteItem() {
-      await this.deleteFn(this.itemToDelete);
+      await this.deleteFn?.(this.itemToDelete);
 
       this.itemToDelete = null;
     },

@@ -127,6 +127,14 @@ export const mockAgentVersions = {
   __typename: 'AiCatalogItemVersionConnection',
 };
 
+export const mockItemTypeConfig = {
+  showRoute: 'show',
+  visibilityTooltip: {
+    Public: 'This item is publicly available.',
+    Private: 'This item is private.',
+  },
+};
+
 const mockAgentFactory = (overrides = {}) => ({
   id: 'gid://gitlab/Ai::Catalog::Item/1',
   name: 'Test AI Agent 1',

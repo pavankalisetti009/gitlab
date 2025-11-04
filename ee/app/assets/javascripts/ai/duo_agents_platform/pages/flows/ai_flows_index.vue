@@ -25,8 +25,8 @@ import {
 import { createAvailableFlowItemTypes, prerequisitesError } from 'ee/ai/catalog/utils';
 import { TYPENAME_GROUP, TYPENAME_PROJECT } from '~/graphql_shared/constants';
 import {
-  VISIBILITY_LEVEL_PRIVATE_STRING,
   VISIBILITY_LEVEL_PUBLIC_STRING,
+  VISIBILITY_LEVEL_PRIVATE_STRING,
 } from '~/visibility_level/constants';
 import {
   AI_CATALOG_FLOWS_SHOW_ROUTE,
@@ -171,7 +171,6 @@ export default {
     },
     itemTypeConfig() {
       return {
-        actionItems: () => [],
         deleteActionItem: {
           showActionItem: () => this.userPermissions?.adminAiCatalogItemConsumer || false,
           text: __('Remove'),

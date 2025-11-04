@@ -1,9 +1,7 @@
 import VueApollo from 'vue-apollo';
-import Vue, { nextTick } from 'vue';
+import Vue from 'vue';
 import { GlFilteredSearch } from '@gitlab/ui';
 import { isLoggedIn } from '~/lib/utils/common_utils';
-import * as Sentry from '~/sentry/sentry_browser_wrapper';
-import ErrorsAlert from '~/vue_shared/components/errors_alert.vue';
 import createMockApollo from 'helpers/mock_apollo_helper';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import waitForPromises from 'helpers/wait_for_promises';
@@ -11,25 +9,12 @@ import { useMockInternalEventsTracking } from 'helpers/tracking_internal_events_
 import AiCatalogFlows from 'ee/ai/catalog/pages/ai_catalog_flows.vue';
 import AiCatalogListHeader from 'ee/ai/catalog/components/ai_catalog_list_header.vue';
 import AiCatalogList from 'ee/ai/catalog/components/ai_catalog_list.vue';
-import AiCatalogItemConsumerModal from 'ee/ai/catalog/components/ai_catalog_item_consumer_modal.vue';
 import aiCatalogFlowsQuery from 'ee/ai/catalog/graphql/queries/ai_catalog_flows.query.graphql';
-import deleteAiCatalogFlowMutation from 'ee/ai/catalog/graphql/mutations/delete_ai_catalog_flow.mutation.graphql';
-import createAiCatalogItemConsumer from 'ee/ai/catalog/graphql/mutations/create_ai_catalog_item_consumer.mutation.graphql';
 import {
   TRACK_EVENT_VIEW_AI_CATALOG_ITEM_INDEX,
   TRACK_EVENT_TYPE_FLOW,
 } from 'ee/ai/catalog/constants';
-import {
-  mockProjectWithNamespace,
-  mockFlow,
-  mockCatalogFlowsResponse,
-  mockCatalogFlowDeleteResponse,
-  mockCatalogFlowDeleteErrorResponse,
-  mockAiCatalogItemConsumerCreateSuccessProjectResponse,
-  mockAiCatalogItemConsumerCreateErrorResponse,
-  mockFlows,
-  mockPageInfo,
-} from '../mock_data';
+import { mockCatalogFlowsResponse, mockFlows, mockPageInfo } from '../mock_data';
 
 jest.mock('~/sentry/sentry_browser_wrapper');
 jest.mock('~/lib/utils/common_utils');
@@ -48,19 +33,13 @@ describe('AiCatalogFlows', () => {
   };
 
   const mockCatalogItemsQueryHandler = jest.fn().mockResolvedValue(mockCatalogFlowsResponse);
-  const deleteCatalogItemMutationHandler = jest.fn();
-  const createAiCatalogItemConsumerHandler = jest.fn();
 
   const { bindInternalEventDocument } = useMockInternalEventsTracking();
 
   const createComponent = ({ provide = {} } = {}) => {
     isLoggedIn.mockReturnValue(true);
 
-    mockApollo = createMockApollo([
-      [aiCatalogFlowsQuery, mockCatalogItemsQueryHandler],
-      [deleteAiCatalogFlowMutation, deleteCatalogItemMutationHandler],
-      [createAiCatalogItemConsumer, createAiCatalogItemConsumerHandler],
-    ]);
+    mockApollo = createMockApollo([[aiCatalogFlowsQuery, mockCatalogItemsQueryHandler]]);
 
     wrapper = shallowMountExtended(AiCatalogFlows, {
       apolloProvider: mockApollo,
@@ -78,10 +57,8 @@ describe('AiCatalogFlows', () => {
     });
   };
 
-  const findErrorsAlert = () => wrapper.findComponent(ErrorsAlert);
   const findFilteredSearch = () => wrapper.findComponent(GlFilteredSearch);
   const findAiCatalogList = () => wrapper.findComponent(AiCatalogList);
-  const findAiCatalogItemConsumerModal = () => wrapper.findComponent(AiCatalogItemConsumerModal);
 
   describe('component rendering', () => {
     beforeEach(() => {
@@ -102,10 +79,6 @@ describe('AiCatalogFlows', () => {
       expect(catalogList.props('items')).toEqual(mockFlows);
       expect(catalogList.props('isLoading')).toBe(false);
     });
-
-    it('renders filter search', () => {
-      expect(findFilteredSearch().exists()).toBe(true);
-    });
   });
 
   describe('Apollo queries', () => {
@@ -121,62 +94,6 @@ describe('AiCatalogFlows', () => {
         first: 20,
         last: null,
         search: '',
-      });
-    });
-  });
-
-  describe('on deleting a flow', () => {
-    const deleteFlow = (index = 0) => findAiCatalogList().props('deleteFn')(mockFlows[index]);
-
-    beforeEach(() => {
-      createComponent();
-    });
-
-    it('calls delete mutation', () => {
-      deleteCatalogItemMutationHandler.mockResolvedValue(mockCatalogFlowDeleteResponse);
-
-      deleteFlow();
-
-      expect(deleteCatalogItemMutationHandler).toHaveBeenCalledWith({ id: mockFlows[0].id });
-    });
-
-    describe('when request succeeds', () => {
-      it('shows a toast message and refetches the list', async () => {
-        deleteCatalogItemMutationHandler.mockResolvedValue(mockCatalogFlowDeleteResponse);
-
-        deleteFlow();
-
-        await waitForPromises();
-
-        expect(mockCatalogItemsQueryHandler).toHaveBeenCalledTimes(2);
-        expect(mockToast.show).toHaveBeenCalledWith('Flow deleted.');
-      });
-    });
-
-    describe('when request succeeds but returns errors', () => {
-      it('shows alert with error', async () => {
-        deleteCatalogItemMutationHandler.mockResolvedValue(mockCatalogFlowDeleteErrorResponse);
-
-        deleteFlow();
-
-        await waitForPromises();
-        expect(findErrorsAlert().props('errors')).toEqual([
-          'Failed to delete flow. You do not have permission to delete this AI flow.',
-        ]);
-      });
-    });
-
-    describe('when request fails', () => {
-      it('shows alert with error and captures exception', async () => {
-        deleteCatalogItemMutationHandler.mockRejectedValue(new Error('Request failed'));
-
-        deleteFlow();
-
-        await waitForPromises();
-        expect(findErrorsAlert().props('errors')).toEqual([
-          'Failed to delete flow. Error: Request failed',
-        ]);
-        expect(Sentry.captureException).toHaveBeenCalledWith(expect.any(Error));
       });
     });
   });
@@ -233,95 +150,6 @@ describe('AiCatalogFlows', () => {
         first: 20,
         last: null,
         search: 'foo',
-      });
-    });
-  });
-
-  describe('on adding a flow to project', () => {
-    const openModal = async () => {
-      const firstItemAction = findAiCatalogList()
-        .props('itemTypeConfig')
-        .actionItems(mockFlows[0])[0];
-      // We pass the function down to child components. Because we use shallowMount
-      // we cannot trigger the action which would call the function. So we call it
-      // using the properties.
-      firstItemAction.action();
-      await nextTick();
-    };
-
-    beforeEach(async () => {
-      mockCatalogItemsQueryHandler.mockResolvedValue(mockCatalogFlowsResponse);
-      createComponent();
-      await waitForPromises();
-    });
-
-    it('opens the modal on button click', async () => {
-      expect(findAiCatalogItemConsumerModal().exists()).toBe(false);
-      await openModal();
-
-      expect(findAiCatalogItemConsumerModal().exists()).toBe(true);
-    });
-
-    describe('when the modal is open', () => {
-      beforeEach(async () => {
-        await openModal();
-      });
-
-      it('removes the component once it emits the hide event', async () => {
-        findAiCatalogItemConsumerModal().vm.$emit('hide');
-        await nextTick();
-
-        expect(findAiCatalogItemConsumerModal().exists()).toBe(false);
-      });
-
-      describe('and the form is submitted', () => {
-        const createConsumer = () =>
-          findAiCatalogItemConsumerModal().vm.$emit('submit', {
-            projectId: mockProjectWithNamespace.id,
-          });
-
-        describe('when adding to project request succeeds', () => {
-          it('shows a toast message', async () => {
-            createAiCatalogItemConsumerHandler.mockResolvedValue(
-              mockAiCatalogItemConsumerCreateSuccessProjectResponse,
-            );
-
-            createConsumer();
-            await waitForPromises();
-
-            expect(mockToast.show).toHaveBeenCalledWith('Flow enabled in Test.');
-          });
-        });
-
-        describe('when request succeeds but returns errors', () => {
-          it('shows alert with error', async () => {
-            createAiCatalogItemConsumerHandler.mockResolvedValue(
-              mockAiCatalogItemConsumerCreateErrorResponse,
-            );
-
-            createConsumer();
-            await waitForPromises();
-
-            expect(findErrorsAlert().props()).toMatchObject({
-              title: `Could not enable flow: ${mockFlow.name}`,
-              errors: ['Item already configured.'],
-            });
-          });
-        });
-
-        describe('when request fails', () => {
-          it('shows alert with error and captures exception', async () => {
-            createAiCatalogItemConsumerHandler.mockRejectedValue(new Error('Request failed'));
-
-            createConsumer();
-            await waitForPromises();
-
-            expect(findErrorsAlert().props('errors')).toEqual([
-              'Could not enable flow in the project. Check that the project meets the <a href="/help/user/duo_agent_platform/ai_catalog#view-the-ai-catalog" target="_blank">prerequisites</a> and try again.',
-            ]);
-            expect(Sentry.captureException).toHaveBeenCalledWith(expect.any(Error));
-          });
-        });
       });
     });
   });
