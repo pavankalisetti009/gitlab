@@ -74,7 +74,7 @@ export default {
           <h3 data-testid="secondary-title" class="gl-my-6 gl-text-lg">
             {{ $options.i18n.drawerDefaultDevfileTitle }}
           </h3>
-          <markdown :markdown="'```yaml\n' + defaultDevfile + '\n```'" :with-images="true" />
+          <markdown :markdown="'```yaml\n' + defaultDevfile + '\n```'" />
         </div>
       </template>
     </gl-drawer>
