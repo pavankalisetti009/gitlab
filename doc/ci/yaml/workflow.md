@@ -134,10 +134,11 @@ workflow:
   rules:
     - if: $CI_PIPELINE_SOURCE == "merge_request_event"
     - if: $CI_COMMIT_TAG
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
     - if: $CI_COMMIT_REF_PROTECTED == "true"
 ```
 
-This example assumes that your long-lived branches are [protected](../../user/project/repository/branches/protected.md).
+This example assumes that your default branch and/or other long-lived branches are [protected](../../user/project/repository/branches/protected.md).
 
 ### Skip pipelines for draft merge requests
 
