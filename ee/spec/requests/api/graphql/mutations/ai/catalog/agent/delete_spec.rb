@@ -82,5 +82,25 @@ RSpec.describe Mutations::Ai::Catalog::Agent::Delete, feature_category: :workflo
     it 'destroy the agent versions' do
       expect { execute }.to change { Ai::Catalog::ItemVersion.count }.by(-1)
     end
+
+    context 'with `forceHardDelete` argument', :enable_admin_mode do
+      let(:params) { super().merge(force_hard_delete: true) }
+
+      it_behaves_like 'a mutation that returns top-level errors', errors:
+        ['You must be an instance admin to use forceHardDelete']
+
+      it 'does not destroy the agent' do
+        expect { execute }.not_to change { Ai::Catalog::Item.count }
+      end
+
+      context 'when user is an admin' do
+        let(:current_user) { create(:admin) }
+
+        it 'destroys the agent and returns a success response' do
+          expect { execute }.to change { Ai::Catalog::Item.count }.by(-1)
+          expect(graphql_data_at(:ai_catalog_agent_delete, :success)).to be(true)
+        end
+      end
+    end
   end
 end

@@ -15,15 +15,28 @@ module Mutations
             required: true,
             description: 'Global ID of the catalog flow to delete.'
 
-          authorize :admin_ai_catalog_item
+          argument :force_hard_delete, GraphQL::Types::Boolean,
+            required: false,
+            description: 'When true, the flow will always be hard deleted and never soft deleted. ' \
+              'Can only be used by instance admins'
+
+          authorize :delete_ai_catalog_item
 
           def resolve(args)
-            flow = authorized_find!(id: args[:id])
+            id = args.delete(:id)
+
+            item = authorized_find!(id: id)
+
+            if args[:force_hard_delete] && !Ability.allowed?(current_user, :force_hard_delete_ai_catalog_item, item)
+              raise_resource_not_available_error!('You must be an instance admin to use forceHardDelete')
+            end
+
+            service_args = args.merge(item: item)
 
             result = ::Ai::Catalog::Flows::DestroyService.new(
-              project: flow.project,
+              project: service_args[:item].project,
               current_user: current_user,
-              params: { item: flow }).execute
+              params: service_args).execute
 
             {
               success: result.success?,

@@ -2561,6 +2561,7 @@ Input type: `AiCatalogAgentDeleteInput`
 | Name | Type | Description |
 | ---- | ---- | ----------- |
 | <a id="mutationaicatalogagentdeleteclientmutationid"></a>`clientMutationId` | [`String`](#string) | A unique identifier for the client performing the mutation. |
+| <a id="mutationaicatalogagentdeleteforceharddelete"></a>`forceHardDelete` | [`Boolean`](#boolean) | When true, the flow will always be hard deleted and never soft deleted. Can only be used by instance admins. |
 | <a id="mutationaicatalogagentdeleteid"></a>`id` | [`AiCatalogItemID!`](#aicatalogitemid) | Global ID of the catalog Agent to delete. |
 
 #### Fields
@@ -2674,6 +2675,7 @@ Input type: `AiCatalogFlowDeleteInput`
 | Name | Type | Description |
 | ---- | ---- | ----------- |
 | <a id="mutationaicatalogflowdeleteclientmutationid"></a>`clientMutationId` | [`String`](#string) | A unique identifier for the client performing the mutation. |
+| <a id="mutationaicatalogflowdeleteforceharddelete"></a>`forceHardDelete` | [`Boolean`](#boolean) | When true, the flow will always be hard deleted and never soft deleted. Can only be used by instance admins. |
 | <a id="mutationaicatalogflowdeleteid"></a>`id` | [`AiCatalogItemID!`](#aicatalogitemid) | Global ID of the catalog flow to delete. |
 
 #### Fields
@@ -2858,6 +2860,7 @@ Input type: `AiCatalogThirdPartyFlowDeleteInput`
 | Name | Type | Description |
 | ---- | ---- | ----------- |
 | <a id="mutationaicatalogthirdpartyflowdeleteclientmutationid"></a>`clientMutationId` | [`String`](#string) | A unique identifier for the client performing the mutation. |
+| <a id="mutationaicatalogthirdpartyflowdeleteforceharddelete"></a>`forceHardDelete` | [`Boolean`](#boolean) | When true, the Third Party Flow will always be hard deleted and never soft deleted. Can only be used by instance admins. |
 | <a id="mutationaicatalogthirdpartyflowdeleteid"></a>`id` | [`AiCatalogItemID!`](#aicatalogitemid) | Global ID of the catalog Third Party Flow to delete. |
 
 #### Fields

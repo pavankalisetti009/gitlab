@@ -3,6 +3,7 @@
 RSpec.shared_examples Ai::Catalog::Items::BaseDestroyService do
   let_it_be(:project) { create(:project) }
   let_it_be(:user) { create(:user) }
+  let_it_be(:admin) { create(:admin) }
 
   let(:params) { { item: item } }
   let(:service) { described_class.new(project: project, current_user: user, params: params) }
@@ -62,6 +63,7 @@ RSpec.shared_examples Ai::Catalog::Items::BaseDestroyService do
       expect { execute_service }
         .to trigger_internal_events('delete_ai_catalog_item')
         .with(user: user, project: project, additional_properties: { label: item.item_type })
+        .and increment_usage_metrics('counts.count_total_delete_ai_catalog_item')
     end
 
     it 'returns success response' do
@@ -88,6 +90,22 @@ RSpec.shared_examples Ai::Catalog::Items::BaseDestroyService do
       end
 
       it_behaves_like 'soft deletes the item'
+
+      context 'with `force_hard_delete` param', :enable_admin_mode do
+        let(:params) { super().merge(force_hard_delete: true) }
+
+        it_behaves_like 'returns insufficient permissions error'
+
+        context 'when the user is an admin' do
+          let(:user) { admin }
+
+          it_behaves_like 'hard deletes the item'
+
+          it 'destroys the item consumers' do
+            expect { execute_service }.to change { Ai::Catalog::ItemConsumer.count }.by(-1)
+          end
+        end
+      end
     end
   end
 
@@ -149,6 +167,22 @@ RSpec.shared_examples Ai::Catalog::Items::BaseDestroyService do
           end
 
           it_behaves_like 'soft deletes the item'
+
+          context 'with `force_hard_delete` param', :enable_admin_mode do
+            let(:params) { super().merge(force_hard_delete: true) }
+
+            it_behaves_like 'returns insufficient permissions error'
+
+            context 'when the user is an admin' do
+              let(:user) { admin }
+
+              it_behaves_like 'hard deletes the item'
+
+              it 'destroys the version dependencies' do
+                expect { execute_service }.to change { Ai::Catalog::ItemVersionDependency.count }.by(-1)
+              end
+            end
+          end
         end
       end
 
