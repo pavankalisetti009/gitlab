@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe ApproverGroup do
+RSpec.describe ApproverGroup, feature_category: :source_code_management do
   subject { create(:approver_group) }
 
   it { is_expected.to be_valid }
