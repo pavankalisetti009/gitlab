@@ -23,7 +23,7 @@ RSpec.describe 'AI Catalog', :js, feature_category: :workflow_catalog do
     end
 
     it('navigates to Edit agent form from show page, updates values and submit') do
-      agents = page.all('[data-testid="ai-catalog-item-link"]')
+      agents = page.all('[data-testid="ai-catalog-item"]')
       expect(agents.length).to be(1)
 
       click_link(agent1.name)

@@ -85,7 +85,6 @@ export default {
     <div class="gl-flex gl-min-w-0 gl-max-w-3xl gl-flex-col gl-gap-3">
       <h2 class="gl-heading-5 gl-m-0 gl-line-clamp-2 gl-text-ellipsis gl-p-0 @sm:gl-line-clamp-1">
         <router-link
-          data-testid="ai-catalog-item-link"
           class="!gl-text-default !gl-no-underline after:gl-absolute after:gl-inset-0 after:gl-content-['']"
           :to="showItemRoute"
         >
