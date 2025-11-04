@@ -25,6 +25,7 @@ module Vulnerabilities
     scope :with_vulnerability_occurrence_ids, ->(ids) { where(vulnerability_occurrence_id: ids) }
 
     after_create :track_token_verification
+    after_update :track_token_verification, if: :saved_change_to_status?
 
     private
 
@@ -36,7 +37,8 @@ module Vulnerabilities
         project: finding.project,
         namespace: finding.project&.namespace,
         additional_properties: {
-          label: finding.token_type
+          label: finding.token_type,
+          property: status
         }
       )
     rescue StandardError => e

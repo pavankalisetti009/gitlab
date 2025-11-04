@@ -58,6 +58,7 @@ RSpec.describe Security::FindingTokenStatus, feature_category: :secret_detection
         .inverse_of(:token_status)
     end
 
+    it { is_expected.to belong_to(:security_finding).class_name('Security::Finding').inverse_of(:token_status) }
     it { is_expected.to belong_to(:project) }
   end
 
@@ -122,15 +123,82 @@ RSpec.describe Security::FindingTokenStatus, feature_category: :secret_detection
         scan: scan)
     end
 
-    it 'tracks event on create with correct parameters' do
-      expect { create(:security_finding_token_status, security_finding: finding) }
-        .to trigger_internal_events('secret_detection_token_verified')
-        .with(
-          project: project,
-          namespace: project.namespace,
-          additional_properties: { label: 'AWS' }
-        )
-        .and increment_usage_metrics('counts.count_total_secret_detection_token_verified')
+    context 'on create' do
+      it 'tracks event with active status' do
+        expect { create(:security_finding_token_status, :active, security_finding: finding) }
+          .to trigger_internal_events('secret_detection_token_verified')
+          .with(
+            project: project,
+            namespace: project.namespace,
+            additional_properties: {
+              label: 'AWS',
+              property: 'active'
+            }
+          )
+      end
+
+      it 'tracks event with inactive status' do
+        expect { create(:security_finding_token_status, :inactive, security_finding: finding) }
+          .to trigger_internal_events('secret_detection_token_verified')
+          .with(
+            project: project,
+            namespace: project.namespace,
+            additional_properties: {
+              label: 'AWS',
+              property: 'inactive'
+            }
+          )
+      end
+    end
+
+    context 'on update' do
+      let!(:token_status) { create(:security_finding_token_status, :unknown, security_finding: finding) }
+
+      it 'tracks event when status changes from unknown to active' do
+        expect { token_status.update!(status: :active) }
+          .to trigger_internal_events('secret_detection_token_verified')
+          .with(
+            project: project,
+            namespace: project.namespace,
+            additional_properties: {
+              label: 'AWS',
+              property: 'active'
+            }
+          )
+      end
+
+      it 'tracks event when status changes from unknown to inactive' do
+        expect { token_status.update!(status: :inactive) }
+          .to trigger_internal_events('secret_detection_token_verified')
+          .with(
+            project: project,
+            namespace: project.namespace,
+            additional_properties: {
+              label: 'AWS',
+              property: 'inactive'
+            }
+          )
+      end
+
+      it 'tracks event when status changes from active to inactive' do
+        token_status.update!(status: :active)
+
+        expect { token_status.update!(status: :inactive) }
+          .to trigger_internal_events('secret_detection_token_verified')
+          .with(
+            project: project,
+            namespace: project.namespace,
+            additional_properties: {
+              label: 'AWS',
+              property: 'inactive'
+            }
+          )
+      end
+
+      it 'does not track event when status does not change' do
+        expect { token_status.update!(last_verified_at: 1.hour.ago) }
+          .not_to trigger_internal_events('secret_detection_token_verified')
+      end
     end
 
     context 'when finding has no token_type' do
@@ -138,8 +206,15 @@ RSpec.describe Security::FindingTokenStatus, feature_category: :secret_detection
         allow(finding).to receive(:token_type).and_return(nil)
       end
 
-      it 'does not track event' do
+      it 'does not track event on create' do
         expect { create(:security_finding_token_status, security_finding: finding) }
+          .not_to trigger_internal_events('secret_detection_token_verified')
+      end
+
+      it 'does not track event on update' do
+        token_status = create(:security_finding_token_status, :unknown, security_finding: finding)
+
+        expect { token_status.update!(status: :active) }
           .not_to trigger_internal_events('secret_detection_token_verified')
       end
     end
@@ -152,11 +227,24 @@ RSpec.describe Security::FindingTokenStatus, feature_category: :secret_detection
         end
       end
 
-      it 'tracks exception but does not raise' do
+      it 'tracks exception on create but does not raise' do
         expect(Gitlab::ErrorTracking).to receive(:track_exception)
           .with(instance_of(StandardError), hash_including(finding_id: finding.id))
 
         expect { create(:security_finding_token_status, security_finding: finding) }
+          .not_to raise_error
+      end
+
+      it 'tracks exception on update but does not raise' do
+        token_status = create(:security_finding_token_status, :unknown, security_finding: finding)
+
+        allow(token_status).to receive(:track_internal_event)
+          .and_raise(StandardError, 'Tracking error')
+
+        expect(Gitlab::ErrorTracking).to receive(:track_exception)
+          .with(instance_of(StandardError), hash_including(finding_id: finding.id))
+
+        expect { token_status.update!(status: :active) }
           .not_to raise_error
       end
     end

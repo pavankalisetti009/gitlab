@@ -25,6 +25,7 @@ module Security
     scope :stale, -> { where(created_at: ...Security::Scan.stale_after) }
 
     after_create :track_token_verification
+    after_update :track_token_verification, if: :saved_change_to_status?
 
     private
 
@@ -40,7 +41,8 @@ module Security
         project: security_finding.project,
         namespace: security_finding.project&.namespace,
         additional_properties: {
-          label: security_finding.token_type
+          label: security_finding.token_type,
+          property: status
         }
       )
     rescue StandardError => e
