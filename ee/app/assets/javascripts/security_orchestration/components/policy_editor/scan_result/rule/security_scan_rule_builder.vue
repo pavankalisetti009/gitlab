@@ -20,6 +20,7 @@ import { buildFiltersFromRule, getDefaultRule, groupVulnerabilityStatesWithDefau
 import BranchSelection from '../../branch_selection.vue';
 import SeverityFilter from './scan_filters/severity_filter.vue';
 import AgeFilter from './scan_filters/age_filter.vue';
+import EpssFilter from './scan_filters/epss_filter.vue';
 import KevFilter from './scan_filters/kev_filter.vue';
 import StatusFilters from './scan_filters/status_filters.vue';
 import AttributeFilters from './scan_filters/attribute_filters.vue';
@@ -37,7 +38,7 @@ import {
   AGE_TOOLTIP_MAXIMUM_REACHED,
   DEFAULT_VULNERABILITY_STATES,
   KNOWN_EXPLOITED,
-  EPSS,
+  EPSS_SCORE,
 } from './scan_filters/constants';
 import NumberRangeSelect from './number_range_select.vue';
 import ScanTypeSelect from './scan_type_select.vue';
@@ -56,6 +57,7 @@ export default {
   ),
   components: {
     BranchExceptionSelector,
+    EpssFilter,
     KevFilter,
     SectionLayout,
     GlSprintf,
@@ -93,6 +95,12 @@ export default {
     },
     kevFilterValue() {
       return getVulnerabilityAttribute(this.initRule, KNOWN_EXPLOITED);
+    },
+    epssOperator() {
+      return this.initRule.vulnerability_attributes?.epss_score?.operator || '';
+    },
+    epssValue() {
+      return this.initRule.vulnerability_attributes?.epss_score?.value || 0;
     },
     severityLevels: {
       get() {
@@ -178,7 +186,7 @@ export default {
     },
     vulnerabilityAttributes: {
       get() {
-        return omit(this.initRule.vulnerability_attributes, [KNOWN_EXPLOITED, EPSS]);
+        return omit(this.initRule.vulnerability_attributes, [KNOWN_EXPLOITED, EPSS_SCORE]);
       },
       set(value) {
         this.filters = {
@@ -235,7 +243,12 @@ export default {
     },
     setKevFilter(value) {
       this.$emit('changed', {
-        ...buildVulnerabilitiesPayload(this.initRule, 'known_exploited', value),
+        ...buildVulnerabilitiesPayload(this.initRule, KNOWN_EXPLOITED, value),
+      });
+    },
+    setEpssFilter(value) {
+      this.$emit('changed', {
+        ...buildVulnerabilitiesPayload(this.initRule, EPSS_SCORE, value),
       });
     },
     isFilterSelected(filter) {
@@ -427,6 +440,13 @@ export default {
     <section-layout class="gl-pr-0 gl-pt-3" :show-remove-button="false">
       <template #content>
         <kev-filter v-if="hasKevFilterEnabled" :selected="kevFilterValue" @select="setKevFilter" />
+
+        <epss-filter
+          v-if="hasKevFilterEnabled"
+          :selected-operator="epssOperator"
+          :selected-value="epssValue"
+          @select="setEpssFilter"
+        />
 
         <severity-filter
           :selected="severityLevels"

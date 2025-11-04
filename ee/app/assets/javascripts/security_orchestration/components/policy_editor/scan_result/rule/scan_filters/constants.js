@@ -1,5 +1,9 @@
-import { s__ } from '~/locale';
+import { s__, sprintf } from '~/locale';
 import { mapToListboxItems } from 'ee/security_orchestration/utils';
+import {
+  LESS_THAN_OPERATOR,
+  GREATER_THAN_OPERATOR,
+} from 'ee/security_orchestration/components/policy_editor/constants';
 
 export const SEVERITY = 'severity';
 export const STATUS = 'status';
@@ -72,6 +76,9 @@ export const ALLOWED_DENIED_OPTIONS = {
 
 export const ALLOWED_DENIED_LISTBOX_ITEMS = mapToListboxItems(ALLOWED_DENIED_OPTIONS);
 
+export const KNOWN_EXPLOITED = 'known_exploited';
+export const EPSS_SCORE = 'epss_score';
+
 export const AGE_DAY = 'day';
 export const AGE_WEEK = 'week';
 export const AGE_MONTH = 'month';
@@ -95,6 +102,12 @@ export const VULNERABILITY_ATTRIBUTES = [
   { value: FIX_AVAILABLE, text: s__('ScanResultPolicy|Fix available') },
   { value: FALSE_POSITIVE, text: s__('ScanResultPolicy|False positive') },
 ];
+
+export const ADDITIONAL_VULNERABILITY_ATTRIBUTES = [
+  { value: KNOWN_EXPLOITED, text: s__('ScanResultPolicy|Known exploited') },
+  { value: EPSS_SCORE, text: s__('ScanResultPolicy|Epss score') },
+];
+
 export const VULNERABILITY_ATTRIBUTE_OPERATORS = [
   { text: s__('ScanResultPolicy|Is'), value: 'true' },
   { text: s__('ScanResultPolicy|Is not'), value: 'false' },
@@ -132,5 +145,33 @@ export const APPROVAL_VULNERABILITY_STATES_FLAT = Object.values(
   APPROVAL_VULNERABILITY_STATES,
 ).reduce((acc, states) => ({ ...acc, ...states }), {});
 
-export const KNOWN_EXPLOITED = 'known_exploited';
-export const EPSS = 'epss';
+export const EPSS_OPERATOR_TEXT_MAP = {
+  [LESS_THAN_OPERATOR]: s__('ScanResultPolicy|less than or equal to'),
+  [GREATER_THAN_OPERATOR]: s__('ScanResultPolicy|greater than or equal to'),
+};
+
+export const EPSS_OPERATOR_ITEMS = Object.entries(EPSS_OPERATOR_TEXT_MAP).map(([key, value]) => ({
+  value: key,
+  text: value,
+}));
+
+export const LOW_RISK = sprintf(s__('ScanResultPolicy|Low Risk (10%%)'));
+export const MODERATE_RISK = sprintf(s__('ScanResultPolicy|Moderate Risk (50%%)'));
+export const HIGH_RISK = sprintf(s__('ScanResultPolicy|High Risk (80%%)'));
+export const CRITICAL_RISK = sprintf(s__('ScanResultPolicy|Critical Risk (100%%)'));
+export const CUSTOM_VALUE = s__('ScanResultPolicy|Custom Value');
+
+export const EPSS_OPERATOR_VALUE_MAP = {
+  [LOW_RISK]: LOW_RISK,
+  [MODERATE_RISK]: MODERATE_RISK,
+  [HIGH_RISK]: HIGH_RISK,
+  [CRITICAL_RISK]: CRITICAL_RISK,
+  [CUSTOM_VALUE]: CUSTOM_VALUE,
+};
+
+export const EPSS_OPERATOR_VALUE_ITEMS = Object.entries(EPSS_OPERATOR_VALUE_MAP).map(
+  ([key, value]) => ({
+    value: key,
+    text: value,
+  }),
+);

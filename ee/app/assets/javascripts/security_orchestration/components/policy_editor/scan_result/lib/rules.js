@@ -17,8 +17,10 @@ import {
   PREVIOUSLY_EXISTING,
   AGE_INTERVALS,
   VULNERABILITY_AGE_ALLOWED_KEYS,
+  ADDITIONAL_VULNERABILITY_ATTRIBUTES,
   VULNERABILITY_ATTRIBUTES,
   ALLOWED,
+  EPSS_SCORE,
 } from '../rule/scan_filters/constants';
 import { WARN_VALUE } from './enforcement';
 
@@ -114,7 +116,12 @@ export const invalidVulnerabilityAttributes = (rules) => {
     return false;
   }
 
-  const validAttributes = VULNERABILITY_ATTRIBUTES.map(({ value }) => value);
+  const { securityPoliciesKevFilter } = gon.features || {};
+
+  const validAttributes = [
+    ...VULNERABILITY_ATTRIBUTES,
+    ...(securityPoliciesKevFilter ? ADDITIONAL_VULNERABILITY_ATTRIBUTES : []),
+  ].map(({ value }) => value);
 
   return rules
     .filter((rule) => !isEmpty(rule.vulnerability_attributes))
@@ -123,9 +130,15 @@ export const invalidVulnerabilityAttributes = (rules) => {
       if (typeof attribute !== 'object') {
         return true;
       }
-      return Object.entries(attribute).some(
-        ([key, value]) => !validAttributes.includes(key) || typeof value !== 'boolean',
-      );
+      return Object.entries(attribute).some(([key, value]) => {
+        const isTypeInvalid = !validAttributes.includes(key);
+
+        if (key === EPSS_SCORE && securityPoliciesKevFilter) {
+          return isTypeInvalid || typeof value !== 'object';
+        }
+
+        return isTypeInvalid || typeof value !== 'boolean';
+      });
     });
 };
 
@@ -190,6 +203,7 @@ export const invalidBranchType = (rules) => {
 /**
  * Check if any rule has invalid values for required keys
  * @param {Array} rules
+ * @param enforcementType
  * @returns {Boolean}
  */
 export const hasInvalidRules = (rules, enforcementType) =>

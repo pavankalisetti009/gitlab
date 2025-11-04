@@ -12,6 +12,7 @@ import AttributeFilters from 'ee/security_orchestration/components/policy_editor
 import ScanTypeSelect from 'ee/security_orchestration/components/policy_editor/scan_result/rule/scan_type_select.vue';
 import ScanFilterSelector from 'ee/security_orchestration/components/policy_editor/scan_filter_selector.vue';
 import KevFilter from 'ee/security_orchestration/components/policy_editor/scan_result/rule/scan_filters/kev_filter.vue';
+import EpssFilter from 'ee/security_orchestration/components/policy_editor/scan_result/rule/scan_filters/epss_filter.vue';
 import { NAMESPACE_TYPES } from 'ee/security_orchestration/constants';
 import { SEVERITY_LEVELS } from 'ee/security_dashboard/constants';
 import {
@@ -90,6 +91,7 @@ describe('SecurityScanRuleBuilder', () => {
   const findAgeFilter = () => wrapper.findComponent(AgeFilter);
   const findBranchExceptionSelector = () => wrapper.findComponent(BranchExceptionSelector);
   const findKevFilter = () => wrapper.findComponent(KevFilter);
+  const findEpssFilter = () => wrapper.findComponent(EpssFilter);
 
   beforeEach(() => {
     jest
@@ -562,6 +564,53 @@ describe('SecurityScanRuleBuilder', () => {
       );
 
       expect(findKevFilter().props('selected')).toBe(true);
+    });
+  });
+
+  describe('epss filter', () => {
+    it('does not render epss filter with feature flag disabled', () => {
+      factory();
+      expect(findEpssFilter().exists()).toBe(false);
+    });
+
+    it('renders epss filter with feature flag enabled', () => {
+      factory({}, { glFeatures: { securityPoliciesKevFilter: true } });
+
+      expect(findEpssFilter().exists()).toBe(true);
+      expect(findEpssFilter().props('selectedOperator')).toBe('');
+      expect(findEpssFilter().props('selectedValue')).toBe(0);
+    });
+
+    it('set epss filter operator and value', () => {
+      factory({}, { glFeatures: { securityPoliciesKevFilter: true } });
+      expect(findEpssFilter().props('selectedOperator')).toBe('');
+      expect(findEpssFilter().props('selectedValue')).toBe(0);
+
+      findEpssFilter().vm.$emit('select', { operator: LESS_THAN_OPERATOR, value: 0.5 });
+
+      expect(wrapper.emitted('changed')).toEqual([
+        [
+          {
+            ...securityScanBuildRule(),
+            vulnerability_attributes: { epss_score: { operator: LESS_THAN_OPERATOR, value: 0.5 } },
+          },
+        ],
+      ]);
+    });
+
+    it('renders epss filter selected', () => {
+      factory(
+        {
+          initRule: {
+            ...securityScanBuildRule(),
+            vulnerability_attributes: { epss_score: { operator: LESS_THAN_OPERATOR, value: 0.5 } },
+          },
+        },
+        { glFeatures: { securityPoliciesKevFilter: true } },
+      );
+
+      expect(findEpssFilter().props('selectedOperator')).toBe(LESS_THAN_OPERATOR);
+      expect(findEpssFilter().props('selectedValue')).toBe(0.5);
     });
   });
 });
