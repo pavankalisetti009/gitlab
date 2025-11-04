@@ -59,6 +59,17 @@ Returns [`AbuseReport`](#abusereport).
 | ---- | ---- | ----------- |
 | <a id="queryabusereportid"></a>`id` | [`AbuseReportID!`](#abusereportid) | ID of the abuse report. |
 
+### `Query.accessTokenPermissions`
+
+{{< details >}}
+**Introduced** in GitLab 18.6.
+**Status**: Experiment.
+{{< /details >}}
+
+List of permissions for fine-grained access tokens.
+
+Returns [`[AccessTokenPermission!]!`](#accesstokenpermission).
+
 ### `Query.addOnPurchases`
 
 Retrieve all active add-on purchases. This query can be used in GitLab.com and self-managed environments.
@@ -23125,6 +23136,19 @@ Representation of a GitLab user.
 | <a id="accessleveluserusername"></a>`username` | [`String!`](#string) | Username of the user. |
 | <a id="accessleveluserwebpath"></a>`webPath` | [`String!`](#string) | Web path of the user. |
 | <a id="accessleveluserweburl"></a>`webUrl` | [`String!`](#string) | Web URL of the user. |
+
+### `AccessTokenPermission`
+
+A permission added to a fine-grained access token.
+
+#### Fields
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="accesstokenpermissionaction"></a>`action` | [`String!`](#string) | Permission action. |
+| <a id="accesstokenpermissiondescription"></a>`description` | [`String!`](#string) | Permission description. |
+| <a id="accesstokenpermissionname"></a>`name` | [`String!`](#string) | Permission name. |
+| <a id="accesstokenpermissionresource"></a>`resource` | [`String!`](#string) | Permission resource. |
 
 ### `Achievement`
 
