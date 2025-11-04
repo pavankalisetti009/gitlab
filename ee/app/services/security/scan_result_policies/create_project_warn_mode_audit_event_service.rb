@@ -34,7 +34,7 @@ module Security
       attr_reader :project, :policy
 
       def message
-        "A warn-mode security policy sets more restrictive merge request approval settings: #{humanized_overrides}"
+        "A merge request approval policy in warn mode sets more restrictive `approval_settings`: #{humanized_overrides}"
       end
 
       def author
