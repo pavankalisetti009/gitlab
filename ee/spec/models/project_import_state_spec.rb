@@ -7,6 +7,10 @@ RSpec.describe ProjectImportState, type: :model, feature_category: :importers do
 
   let_it_be(:project) { create(:project) }
 
+  before do
+    stub_feature_flags(geo_project_repository_replication_v2: false)
+  end
+
   describe 'transitions' do
     let(:import_state) { create(:import_state, :started, import_type: :github, project: project) }
 
