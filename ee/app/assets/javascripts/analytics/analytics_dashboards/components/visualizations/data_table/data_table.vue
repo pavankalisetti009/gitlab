@@ -17,6 +17,7 @@ export default {
     GlKeysetPagination,
     AssigneeAvatars: () => import('./assignee_avatars.vue'),
     DiffLineChanges: () => import('./diff_line_changes.vue'),
+    FormatPercent: () => import('./format_percent.vue'),
     FormatTime: () => import('./format_time.vue'),
     FormatTimeRange: () => import('./format_time_range.vue'),
     MergeRequestLink: () => import('./merge_request_link.vue'),
