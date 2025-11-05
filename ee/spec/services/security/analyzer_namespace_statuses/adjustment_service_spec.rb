@@ -219,7 +219,6 @@ RSpec.describe Security::AnalyzerNamespaceStatuses::AdjustmentService, feature_c
           group_project_status.update!(archived: true)
           sub_group_project_status_1.update!(archived: true)
           sub_group_project_status_2.update!(archived: true)
-          stub_feature_flags(analyzer_namespace_status_query_optimization: true)
         end
 
         context 'and there are existing analyzer_namespace_status records' do
