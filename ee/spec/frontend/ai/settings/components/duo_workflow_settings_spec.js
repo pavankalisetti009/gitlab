@@ -5,12 +5,14 @@ import DuoWorkflowSettings from 'ee/ai/settings/components/duo_workflow_settings
 import axios from '~/lib/utils/axios_utils';
 import { visitUrlWithAlerts } from '~/lib/utils/url_utility';
 import { createAlert } from '~/alert';
+import { helpPagePath } from '~/helpers/help_page_helper';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import waitForPromises from 'helpers/wait_for_promises';
 
 jest.mock('~/alert');
 jest.mock('~/lib/utils/axios_utils');
 jest.mock('~/lib/utils/url_utility');
+jest.mock('~/helpers/help_page_helper');
 
 describe('DuoWorkflowSettings', () => {
   let wrapper;
@@ -36,6 +38,7 @@ describe('DuoWorkflowSettings', () => {
   const findPageHeading = () => wrapper.findComponent(PageHeading);
   const findPageHeadingTitle = () => wrapper.findByTestId('duo-settings-page-title');
   const findPageHeadingSubtitle = () => wrapper.findByTestId('duo-settings-page-subtitle');
+  const findServiceAccountLink = () => wrapper.findByTestId('service-account-link');
 
   const createWrapper = (props = {}, provide = {}) => {
     const defaultMountOptions = {
@@ -63,6 +66,7 @@ describe('DuoWorkflowSettings', () => {
 
     axios.post = jest.fn().mockResolvedValue({ status: 200 });
     visitUrlWithAlerts.mockImplementation(() => {});
+    helpPagePath.mockReturnValue('/help/user/duo_agent_platform/security');
   });
 
   describe('component rendering', () => {
@@ -90,6 +94,19 @@ describe('DuoWorkflowSettings', () => {
       expect(findWorkflowStatusBadge().props('variant')).toBe('success');
       expect(findServiceAccount().text()).toContain(SERVICE_ACCOUNT.name);
       expect(findServiceAccount().text()).toContain(SERVICE_ACCOUNT.username);
+    });
+
+    it('renders service account help link with correct href when workflow is disabled', () => {
+      createWrapper(
+        {},
+        {
+          duoWorkflowEnabled: false,
+        },
+      );
+
+      const link = findServiceAccountLink();
+      expect(link.exists()).toBe(true);
+      expect(link.attributes('href')).toBe('/help/user/duo_agent_platform/security');
     });
 
     describe('displayPageHeading', () => {
@@ -151,7 +168,7 @@ describe('DuoWorkflowSettings', () => {
   });
 
   describe('workflow operations', () => {
-    describe('enabling GitLab Duo Agent Platform', () => {
+    describe('enabling composite identity for GitLab Duo Agent Platform', () => {
       it('shows success message with new service account when created', async () => {
         createWrapper();
 
@@ -173,7 +190,7 @@ describe('DuoWorkflowSettings', () => {
           expect.arrayContaining([
             expect.objectContaining({
               id: 'duo-workflow-successfully-enabled',
-              message: `GitLab Duo Agent Platform is now on for the instance and the service account (@${SERVICE_ACCOUNT.username}) was created. To use Agent Platform in your groups, you must turn on AI features for specific groups.`,
+              message: `Composite identity for GitLab Duo Agent Platform is now on for the instance and the service account (@${SERVICE_ACCOUNT.username}) was created. To use Agent Platform in your groups, you must turn on AI features for specific groups.`,
               variant: 'success',
             }),
           ]),
@@ -198,7 +215,7 @@ describe('DuoWorkflowSettings', () => {
             expect.objectContaining({
               id: 'duo-workflow-successfully-enabled',
               message:
-                'GitLab Duo Agent Platform is now on for the instance. To use Agent Platform in your groups, you must turn on AI features for specific groups.',
+                'Composite identity for GitLab Duo Agent Platform is now on for the instance. To use Agent Platform in your groups, you must turn on AI features for specific groups.',
               variant: 'success',
             }),
           ]),
@@ -226,7 +243,8 @@ describe('DuoWorkflowSettings', () => {
         expect.arrayContaining([
           expect.objectContaining({
             id: 'duo-workflow-successfully-disabled',
-            message: 'GitLab Duo Agent Platform has successfully been turned off.',
+            message:
+              'Composite identity for GitLab Duo Agent Platform has successfully been turned off.',
             variant: 'success',
           }),
         ]),
@@ -241,7 +259,9 @@ describe('DuoWorkflowSettings', () => {
           duoWorkflowServiceAccount: SERVICE_ACCOUNT,
         },
       );
-      expect(findDisableButton().text()).toContain('Turn off GitLab Duo Agent Platform');
+      expect(findDisableButton().text()).toContain(
+        'Turn off composite identity for GitLab Duo Agent Platform',
+      );
     });
 
     it('clicking disable button shows the confirmation modal', async () => {
@@ -301,7 +321,9 @@ describe('DuoWorkflowSettings', () => {
 
       expect(createAlert).toHaveBeenCalledWith(
         expect.objectContaining({
-          message: expect.stringContaining('Failed to enable'),
+          message: expect.stringContaining(
+            'Failed to enable composite identity for GitLab Duo Agent Platform',
+          ),
           error,
         }),
       );
@@ -328,7 +350,9 @@ describe('DuoWorkflowSettings', () => {
 
       expect(createAlert).toHaveBeenCalledWith(
         expect.objectContaining({
-          message: expect.stringContaining('Failed to disable'),
+          message: expect.stringContaining(
+            'Failed to disable composite identity for GitLab Duo Agent Platform',
+          ),
           error,
         }),
       );
