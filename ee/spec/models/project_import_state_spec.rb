@@ -338,22 +338,36 @@ RSpec.describe ProjectImportState, type: :model, feature_category: :importers do
     end
 
     context 'when the project is archived' do
+      using RSpec::Parameterized::TableSyntax
+
+      let_it_be_with_reload(:group) { create(:group, :archived) }
+      let_it_be_with_reload(:project) { create(:project, :repository, group: group) }
+
       let(:import_state) do
         create(
           :import_state,
           :finished,
           :mirror,
-          :repository,
+          project: project,
           next_execution_timestamp: Time.current - 2.minutes
         )
       end
 
-      before do
-        import_state.project.update_column(:archived, true)
+      where(:project_archived, :group_archived, :expected_result) do
+        false | false | true
+        false | true  | false
+        true  | false | false
       end
 
-      it 'returns false' do
-        expect(import_state.mirror_update_due?).to be false
+      with_them do
+        before do
+          project.update!(archived: project_archived)
+          group.update!(archived: group_archived)
+        end
+
+        subject(:mirror_update_due?) { import_state.mirror_update_due? }
+
+        it { is_expected.to be(expected_result) }
       end
     end
 
@@ -714,6 +728,34 @@ RSpec.describe ProjectImportState, type: :model, feature_category: :importers do
       import_state.mark_as_failed(error_message)
 
       expect(import_state.last_error).to eq(sanitized_message)
+    end
+  end
+
+  describe '#archived' do
+    using RSpec::Parameterized::TableSyntax
+
+    let_it_be_with_reload(:root_group) { create(:group) }
+    let_it_be_with_reload(:subgroup) { create(:group, parent: root_group) }
+    let_it_be_with_reload(:project) { create(:project, namespace: subgroup) }
+    let_it_be_with_reload(:import_state) { create(:import_state, project: project) }
+
+    where(:project_archived, :subgroup_archived, :root_group_archived, :expected_result) do
+      false | false | false | false
+      true  | false | false | true
+      false | true  | false | true
+      false | false | true  | true
+    end
+
+    with_them do
+      before do
+        project.update!(archived: project_archived)
+        subgroup.update!(archived: subgroup_archived)
+        root_group.update!(archived: root_group_archived)
+      end
+
+      it 'returns the expected archived status' do
+        expect(import_state.archived).to eq(expected_result)
+      end
     end
   end
 end
