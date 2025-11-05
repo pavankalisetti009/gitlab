@@ -53,6 +53,22 @@ export const FILTERED_SEARCH_TOKEN_OPTIONS = [
   },
 ];
 
+export const BULK_ACTIONS = [
+  {
+    id: 'geo-bulk-action-checksum',
+    action: ACTION_TYPES.CHECKSUM,
+    text: s__('Geo|Checksum all'),
+    modal: {
+      title: s__('Geo|Checksum all %{type}'),
+      description: s__(
+        'Geo|This will recalculate checksums for all %{type}. It may take some time to complete. Are you sure you want to continue?',
+      ),
+    },
+    successMessage: s__('Geo|Scheduled all %{type} for checksum recalculation.'),
+    errorMessage: s__('Geo|There was an error scheduling all %{type} for checksum recalculation.'),
+  },
+];
+
 const SORT_OPTIONS = {
   ID: {
     text: s__('Geo|Model ID'),
