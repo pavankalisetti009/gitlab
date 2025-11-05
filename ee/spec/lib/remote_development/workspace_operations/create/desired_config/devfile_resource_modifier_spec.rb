@@ -118,8 +118,8 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Create::DesiredConfig::De
     let(:deployment) { result[:desired_config_array].find { |r| r[:kind] == "Deployment" } }
     let(:pod_spec) { deployment[:spec][:template][:spec] }
 
-    it 'sets hostUsers if use_kubernetes_user_namespaces is true' do
-      expect(pod_spec[:hostUsers]).to be(true)
+    it 'unsets hostUsers if use_kubernetes_user_namespaces is true' do
+      expect(pod_spec[:hostUsers]).to be(false)
     end
 
     it 'sets runtimeClassName if default_runtime_class is present' do

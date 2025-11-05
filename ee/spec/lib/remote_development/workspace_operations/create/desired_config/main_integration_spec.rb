@@ -1258,7 +1258,7 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Create::DesiredConfig::Ma
                   runAsUser: 5001
                 },
                 serviceAccountName: "workspace-991-990-fedcba",
-                hostUsers: true,
+                hostUsers: false,
                 volumes: [
                   {
                     name: "gl-workspace-data",
