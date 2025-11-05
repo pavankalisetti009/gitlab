@@ -627,22 +627,67 @@ RSpec.describe GroupsController, :with_current_organization, feature_category: :
         group.add_developer(user)
       end
 
-      it 'rewrites the epic_id param' do
-        get :issues, params: { id: group.to_param, epic_id: epic.id }
-        expect(response).to redirect_to issues_group_path(group, params: { parent_id: epic.work_item.id })
+      shared_examples 'epic parameter redirect' do |redirect_path|
+        it 'redirects with epic_wildcard_id converted to parent_wildcard_id' do
+          get :issues, params: { id: group.to_param, epic_wildcard_id: 'ANY' }
 
-        get :issues, params: { id: group.to_param, epic_id: 'NONE' }
-        expect(response).to redirect_to issues_group_path(group, params: { parent_id: 'NONE' })
+          expected_params = { parent_wildcard_id: 'ANY' }
+          expected_params['type[]'] = 'issue' if redirect_path == :group_work_items_path
+
+          expect(response).to redirect_to send(redirect_path, group, params: expected_params)
+        end
+
+        it 'redirects with epic_id converted to parent_id' do
+          get :issues, params: { id: group.to_param, epic_id: epic.id }
+
+          expected_params = { parent_id: epic.work_item.id }
+          expected_params['type[]'] = 'issue' if redirect_path == :group_work_items_path
+
+          expect(response).to redirect_to send(redirect_path, group, params: expected_params)
+        end
+
+        it 'redirects with epic_id NONE converted to parent_id NONE' do
+          get :issues, params: { id: group.to_param, epic_id: 'NONE' }
+
+          expected_params = { parent_id: 'NONE' }
+          expected_params['type[]'] = 'issue' if redirect_path == :group_work_items_path
+
+          expect(response).to redirect_to send(redirect_path, group, params: expected_params)
+        end
+
+        it 'redirects with not epic_id converted to not parent_id' do
+          get :issues, params: { id: group.to_param, not: { epic_id: epic.id } }
+
+          expected_params = { not: { parent_id: epic.work_item.id } }
+          expected_params['type[]'] = 'issue' if redirect_path == :group_work_items_path
+
+          expect(response).to redirect_to send(redirect_path, group, params: expected_params)
+        end
+
+        it 'preserves other query parameters when redirecting with epic params' do
+          get :issues, params: { id: group.to_param, epic_wildcard_id: 'ANY', search: 'bug', sort: 'created_desc' }
+
+          expected_params = {
+            parent_wildcard_id: 'ANY',
+            search: 'bug',
+            sort: 'created_desc'
+          }
+          expected_params['type[]'] = 'issue' if redirect_path == :group_work_items_path
+
+          expect(response).to redirect_to send(redirect_path, group, params: expected_params)
+        end
       end
 
-      it 'rewrites the not epic_id param' do
-        get :issues, params: { id: group.to_param, not: { epic_id: epic.id } }
-        expect(response).to redirect_to issues_group_path(group, params: { not: { parent_id: epic.work_item.id } })
+      context 'when work_item_planning_view feature flag is disabled' do
+        before do
+          stub_feature_flags(work_item_planning_view: false)
+        end
+
+        it_behaves_like 'epic parameter redirect', :issues_group_path
       end
 
-      it 'rewrites the epic_wildcard_id param' do
-        get :issues, params: { id: group.to_param, epic_wildcard_id: 'ANY' }
-        expect(response).to redirect_to issues_group_path(group, params: { parent_wildcard_id: 'ANY' })
+      context 'when work_item_planning_view feature flag is enabled' do
+        it_behaves_like 'epic parameter redirect', :group_work_items_path
       end
     end
   end

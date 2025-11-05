@@ -49,6 +49,8 @@ class Groups::EpicsController < Groups::ApplicationController
   end
 
   def index
+    return redirect_epics_to_work_items if group&.work_items_consolidated_list_enabled?(current_user)
+
     render 'work_items_index'
   end
 
@@ -140,5 +142,10 @@ class Groups::EpicsController < Groups::ApplicationController
 
   def set_summarize_notes_feature_flag
     push_force_frontend_feature_flag(:summarize_comments, can?(current_user, :summarize_comments, epic))
+  end
+
+  def redirect_epics_to_work_items
+    params = request.query_parameters.except("type", "type[]").merge('type[]' => 'epic')
+    redirect_to group_work_items_path(group, params: params)
   end
 end

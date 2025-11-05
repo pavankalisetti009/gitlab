@@ -99,5 +99,14 @@ module EE
 
       true
     end
+
+    override :work_items_redirect_params
+    def work_items_redirect_params
+      if has_epic_filter?
+        convert_epic_params
+      else
+        super
+      end
+    end
   end
 end
