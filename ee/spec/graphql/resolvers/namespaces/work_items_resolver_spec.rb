@@ -110,8 +110,21 @@ RSpec.describe Resolvers::Namespaces::WorkItemsResolver, feature_category: :port
         let_it_be(:project) { create(:project, namespace: group) }
         let_it_be(:project_work_item) { create(:work_item, project: project) }
 
-        it 'excludes work items from projects within the group when exclude_projects is true' do
-          expect(resolve_items({ exclude_projects: true, include_descendants: true })).not_to include(project_work_item)
+        context 'when use_namespace_traversal_ids_for_work_items_finder is enabled' do
+          it 'ignores param and does not exclude projects work items' do
+            expect(resolve_items({ exclude_projects: true, include_descendants: true })).to include(project_work_item)
+          end
+        end
+
+        context 'when use_namespace_traversal_ids_for_work_items_finder is disabled' do
+          before do
+            stub_feature_flags(use_namespace_traversal_ids_for_work_items_finder: false)
+          end
+
+          it 'excludes work items from projects within the group when exclude_projects is true' do
+            expect(resolve_items({ exclude_projects: true,
+include_descendants: true })).not_to include(project_work_item)
+          end
         end
 
         it 'excludes group-level work items when exclude_group_work_items is true' do
