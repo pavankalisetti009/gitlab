@@ -61,6 +61,52 @@ Usage: rake "gitlab:secrets_management:openbao:clone[/installation/dir]")
           )
         end
       end
+
+      desc 'GitLab | Secrets Management | Retrieve recovery keys from OpenBao'
+      task :recovery_key_retrieve, [] => :gitlab_environment do
+        privileged_jwt = SecretsManagement::SecretsManagerJwt.new.encoded
+        secrets_manager_client = SecretsManagement::SecretsManagerClient.new(jwt: privileged_jwt)
+
+        result = secrets_manager_client.init_rotate_recovery
+        if result["data"].key? "keys"
+          key = result["data"]["keys"][0]
+
+          old_key = SecretsManagement::RecoveryKey.active.take
+          if old_key
+            old_key.active = false
+            old_key.save!
+            puts "Marked old key as inactive."
+          end
+
+          # Store key, and then mark it as active. This way, the key is
+          # persisted even if there's some error when trying to make it the
+          # only active key.
+          new_key = SecretsManagement::RecoveryKey.new do |nk|
+            nk.active = false
+            nk.key = key
+          end
+          new_key.save!
+
+          puts "Persisted key to the database."
+
+          new_key.active = true
+          new_key.save!
+
+          puts "Marked key as active."
+
+          new_key
+        else
+          puts "Cannot get key, key has already been retrieved."
+
+          # Avoid leaving rotation in an inconsistent state.
+          secrets_manager_client.cancel_rotate_recovery
+
+          nil
+        end
+      rescue SecretsManagement::SecretsManagerClient::ApiError => e
+        puts "Cannot get key, exception: #{e}"
+        Gitlab::ErrorTracking.track_and_raise_exception(e)
+      end
     end
   end
 end
