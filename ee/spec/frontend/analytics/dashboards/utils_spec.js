@@ -23,6 +23,7 @@ import {
   generateValueStreamDashboardStartDate,
   getRestrictedTableMetrics,
   generateTableAlerts,
+  generateNoDataTooltip,
 } from 'ee/analytics/dashboards/utils';
 import { LEAD_TIME_METRIC_TYPE, CYCLE_TIME_METRIC_TYPE } from '~/api/analytics_api';
 import {
@@ -393,6 +394,19 @@ describe('Analytics Dashboards utils', () => {
         `${errors}: Lead time, Cycle time`,
         `${warnings}: Deployment frequency, Lead time for changes`,
       ]);
+    });
+  });
+
+  describe('generateNoDataTooltip', () => {
+    it.each([null, undefined, 0, false])(
+      'returns `No data` as expected when value is %s',
+      (value) => {
+        expect(generateNoDataTooltip(value)).toBe('No data');
+      },
+    );
+
+    it('returns null if value is present', () => {
+      expect(generateNoDataTooltip(2000)).toBeNull();
     });
   });
 });
