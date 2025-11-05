@@ -343,8 +343,6 @@ mentioned_groups:
   file: app/models/concerns/user_mention_behaviour.rb
 mentioned_projects:
   file: app/models/concerns/user_mention_behaviour.rb
-root_repository?:
-  file: app/models/container_repository.rb
 knative_services_finder:
   file: app/models/environment.rb
 find_sti_class:
