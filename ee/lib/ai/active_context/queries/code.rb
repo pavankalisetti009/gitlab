@@ -5,6 +5,7 @@ module Ai
     module Queries
       class Code
         include Gitlab::Loggable
+        include Ai::ActiveContext::Concerns::CodeEligibility
 
         KNN_COUNT = 10
         SEARCH_RESULTS_LIMIT = 10
@@ -16,6 +17,7 @@ module Ai
         MESSAGE_INITIAL_INDEXING_ONGOING = 'initial indexing is still ongoing, try again in a few minutes'
         MESSAGE_ADHOC_INDEXING_TRIGGER_FAILED = 'initial indexing was attempted but could not be started'
         MESSAGE_INDEXING_FAILED = 'indexing failed'
+        MESSAGE_USE_ANOTHER_SOURCE = 'please use another tool or context source'
 
         NotAvailable = Class.new(StandardError)
 
@@ -68,8 +70,12 @@ module Ai
           error_detail = nil
 
           if ac_repository.nil?
-            ad_hoc_indexing = try_trigger_ad_hoc_indexing(project_id)
-            error_detail = ad_hoc_indexing ? MESSAGE_INITIAL_INDEXING_STARTED : MESSAGE_ADHOC_INDEXING_TRIGGER_FAILED
+            if project_eligible_for_indexing?(project_id)
+              ad_hoc_indexing = try_trigger_ad_hoc_indexing(project_id)
+              error_detail = ad_hoc_indexing ? MESSAGE_INITIAL_INDEXING_STARTED : MESSAGE_ADHOC_INDEXING_TRIGGER_FAILED
+            else
+              error_detail = MESSAGE_USE_ANOTHER_SOURCE
+            end
           elsif ac_repository.failed?
             error_detail = MESSAGE_INDEXING_FAILED
           else

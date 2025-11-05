@@ -92,18 +92,20 @@ RSpec.describe Ai::ActiveContext::Queries::Code, feature_category: :code_suggest
       let_it_be(:enabled_namespace) do
         create(
           :ai_active_context_code_enabled_namespace,
+          :ready,
+          namespace: group,
           active_context_connection: collection.connection
         )
       end
 
       let_it_be(:project) do
-        create(:project, owners: [user]).tap do |p|
+        create(:project, group: group, owners: [user]).tap do |p|
           attach_active_context_repository(project: p, collection: collection, enabled_namespace: enabled_namespace)
         end
       end
 
       let_it_be(:project_2) do
-        create(:project, developers: [user]).tap do |p|
+        create(:project, group: group, developers: [user]).tap do |p|
           attach_active_context_repository(project: p, collection: collection, enabled_namespace: enabled_namespace)
         end
       end
@@ -346,6 +348,16 @@ RSpec.describe Ai::ActiveContext::Queries::Code, feature_category: :code_suggest
 
           let(:project_id) { project.id }
 
+          it 'prioritizes cached value when checking eligibility' do
+            expect(Rails.cache).to receive(:fetch).with(
+              "active_context_code_eligible_project_#{project.id}",
+              expires_in: described_class::CODE_ELIGIBILITY_CACHE_EXPIRY,
+              force: false
+            ).and_call_original
+
+            result
+          end
+
           it 'triggers ad-hoc indexing' do
             expect(Ai::ActiveContext::Code::AdHocIndexingWorker).to receive(:perform_async).with(project.id)
 
@@ -356,10 +368,10 @@ RSpec.describe Ai::ActiveContext::Queries::Code, feature_category: :code_suggest
             let(:expected_error_detail) { described_class::MESSAGE_INITIAL_INDEXING_STARTED }
           end
 
-          context 'when ad-hoc indexing attempt is not successful' do
+          context 'when triggering the ad-hoc indexing worker returns a falsey value' do
             before do
               allow(Ai::ActiveContext::Code::AdHocIndexingWorker).to receive(:perform_async)
-                .and_return(false)
+                .and_return(nil)
             end
 
             it_behaves_like 'returns no code embeddings error result' do
@@ -391,6 +403,44 @@ RSpec.describe Ai::ActiveContext::Queries::Code, feature_category: :code_suggest
 
             it_behaves_like 'returns no code embeddings error result' do
               let(:expected_error_detail) { described_class::MESSAGE_ADHOC_INDEXING_TRIGGER_FAILED }
+            end
+          end
+
+          context 'when not eligible for code embeddings' do
+            shared_examples 'returns an error result with "use another source" message' do
+              it_behaves_like 'returns no code embeddings error result' do
+                let(:expected_error_detail) { described_class::MESSAGE_USE_ANOTHER_SOURCE }
+              end
+            end
+
+            context 'when project does not exist' do
+              let(:project_id) { 0 }
+
+              it_behaves_like 'returns an error result with "use another source" message'
+            end
+
+            context 'when `active_context_code_index_project` is disabled' do
+              before do
+                stub_feature_flags(active_context_code_index_project: false)
+              end
+
+              it_behaves_like 'returns an error result with "use another source" message'
+            end
+
+            context 'when project has duo_features_enabled setting = false' do
+              before do
+                project.project_setting.update!(duo_features_enabled: false)
+              end
+
+              it_behaves_like 'returns an error result with "use another source" message'
+            end
+
+            context 'when project has no enabled namespace' do
+              before do
+                enabled_namespace.reload.update!(state: :pending)
+              end
+
+              it_behaves_like 'returns an error result with "use another source" message'
             end
           end
         end
