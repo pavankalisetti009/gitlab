@@ -8,7 +8,7 @@ RSpec.describe 'Project show page', :with_trial_types, :js, :saas, feature_categ
   let(:path) { project_path(project) }
 
   context "with free tier badge" do
-    let(:tier_badge_selector) { '[data-testid="tier-badge"]' }
+    let(:tier_badge_selector) { '[data-testid="group-tier-badge"]' }
     let(:tier_badge_element) { page.find(tier_badge_selector) }
     let(:popover_element) { page.find('.gl-popover') }
 

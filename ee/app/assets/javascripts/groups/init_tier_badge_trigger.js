@@ -24,7 +24,7 @@ export default function initTierBadgeTrigger() {
       isProject: parseBoolean(isProject),
     },
     render(createElement) {
-      return createElement(TierBadge);
+      return createElement(TierBadge, { attrs: { 'data-testid': 'group-tier-badge' } });
     },
   });
 }

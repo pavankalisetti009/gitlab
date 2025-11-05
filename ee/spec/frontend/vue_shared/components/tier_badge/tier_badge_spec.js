@@ -3,6 +3,8 @@ import { mount } from '@vue/test-utils';
 import { nextTick } from 'vue';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import TierBadge from 'ee/vue_shared/components/tier_badge/tier_badge.vue';
+import TierBadgeUpgradePopover from 'ee/vue_shared/components/tier_badge/tier_badge_upgrade_popover.vue';
+import TierBadgePopover from 'ee/vue_shared/components/tier_badge/tier_badge_popover.vue';
 import { mockTracking } from 'helpers/tracking_helper';
 
 describe('TierBadge', () => {
@@ -56,6 +58,16 @@ describe('TierBadge', () => {
     });
   });
 
+  describe('when isUpgrade is passed in', () => {
+    it('renders the upgrade popup', async () => {
+      createComponent({ props: { isUpgrade: true } });
+
+      await nextTick();
+
+      expect(wrapper.findComponent(TierBadgeUpgradePopover).exists()).toBe(true);
+    });
+  });
+
   describe('multiple instances', () => {
     it('creates two tier badge instances and verifies popover works for both', async () => {
       const wrapper1 = mount(TierBadge, { propsData: { tier: 'Premium' }, provide: mockProvide });
@@ -66,8 +78,8 @@ describe('TierBadge', () => {
       expect(wrapper1.text()).toContain('Premium');
       expect(wrapper2.text()).toContain('Ultimate');
 
-      const popover1 = wrapper1.findComponent({ name: 'TierBadgePopover' });
-      const popover2 = wrapper2.findComponent({ name: 'TierBadgePopover' });
+      const popover1 = wrapper1.findComponent(TierBadgePopover);
+      const popover2 = wrapper2.findComponent(TierBadgePopover);
 
       expect(popover1.exists()).toBe(true);
       expect(popover2.exists()).toBe(true);
