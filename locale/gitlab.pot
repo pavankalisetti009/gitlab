@@ -11653,9 +11653,6 @@ msgstr ""
 msgid "BranchRules|No data to display"
 msgstr ""
 
-msgid "BranchRules|No default set until defined by user"
-msgstr ""
-
 msgid "BranchRules|No matching results"
 msgstr ""
 
@@ -64299,10 +64296,16 @@ msgstr ""
 msgid "SquashSettings|Checkbox is visible and unselected by default."
 msgstr ""
 
+msgid "SquashSettings|Default"
+msgstr ""
+
 msgid "SquashSettings|Do not allow"
 msgstr ""
 
 msgid "SquashSettings|Encourage"
+msgstr ""
+
+msgid "SquashSettings|No explicit squash settings. Inherits project squash settings when available."
 msgstr ""
 
 msgid "SquashSettings|Require"
