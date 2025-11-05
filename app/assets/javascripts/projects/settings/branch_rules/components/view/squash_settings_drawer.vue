@@ -10,6 +10,7 @@ import {
   SQUASH_SETTING_ALLOW,
   SQUASH_SETTING_ENCOURAGE,
   SQUASH_SETTING_REQUIRE,
+  I18N,
 } from './constants';
 
 export default {
@@ -85,10 +86,8 @@ export default {
           ? [
               {
                 value: SQUASH_SETTING_DEFAULT,
-                label: s__('SquashSettings|Default'),
-                description: s__(
-                  'SquashSettings|No explicit squash settings. Inherits project squash settings when available.',
-                ),
+                label: I18N.squashDefaultLabel,
+                description: I18N.squashDefaultDescription,
               },
             ]
           : []),

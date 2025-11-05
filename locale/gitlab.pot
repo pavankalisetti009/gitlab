@@ -11644,9 +11644,6 @@ msgstr ""
 msgid "BranchRules|No data to display"
 msgstr ""
 
-msgid "BranchRules|No default set until defined by user"
-msgstr ""
-
 msgid "BranchRules|No matching results"
 msgstr ""
 

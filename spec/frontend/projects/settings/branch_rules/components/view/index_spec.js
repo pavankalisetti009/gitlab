@@ -347,7 +347,12 @@ describe('View branch rules', () => {
       expect(content).toContain(
         'Set the default behavior of this option in merge requests. Changes to this are also applied to existing merge requests.',
       );
-      expect(content).toContain('No default set until defined by user');
+
+      // Empty state
+      expect(content).toContain('Default');
+      expect(content).toContain(
+        'No explicit squash settings. Inherits project squash settings when available.',
+      );
     });
 
     it('does not render squash settings for wildcard branch rules', async () => {

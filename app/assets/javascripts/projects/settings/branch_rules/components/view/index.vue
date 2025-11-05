@@ -638,7 +638,6 @@ export default {
         <protection
           v-if="showSquashSetting"
           :header="$options.i18n.squashSettingHeader"
-          :empty-state-copy="$options.i18n.squashSettingEmptyState"
           :is-edit-available="showEditSquashSetting"
           :icon="null"
           class="gl-mt-5"
@@ -658,6 +657,12 @@ export default {
             <div>
               <span>{{ squashOption.option }}</span>
               <p class="gl-text-subtle">{{ squashOption.helpText }}</p>
+            </div>
+          </template>
+          <template v-else #content>
+            <div>
+              <span>{{ $options.i18n.squashDefaultLabel }}</span>
+              <p class="gl-text-subtle">{{ $options.i18n.squashDefaultDescription }}</p>
             </div>
           </template>
         </protection>
