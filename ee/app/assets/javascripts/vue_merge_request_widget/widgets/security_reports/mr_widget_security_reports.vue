@@ -434,10 +434,18 @@ export default {
             reportType,
             scanMode,
           },
+          fetchPolicy: 'network-only',
         })
         .then((result) => {
           const data = result.data?.project?.mergeRequest?.findingReportsComparer;
-          return data;
+
+          if (data?.status !== 'PARSED') {
+            // Need to pass "poll-interval" header to trigger MrWidget's polling mechanism
+            return { headers: { 'poll-interval': POLL_INTERVAL }, status: 202, data: {} };
+          }
+
+          // Pass empty header (no "poll-interval") to stop MrWidget's polling mechanism
+          return { headers: {}, status: 200, data };
         });
     },
 

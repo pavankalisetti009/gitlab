@@ -25,7 +25,10 @@ import {
   HTTP_STATUS_INTERNAL_SERVER_ERROR,
   HTTP_STATUS_OK,
 } from '~/lib/utils/http_status';
-import { mockFindingReportsComparerSuccessResponse } from '../../mock_data';
+import {
+  mockFindingReportsComparerSuccessResponse,
+  mockFindingReportsComparerParsingResponse,
+} from '../../mock_data';
 
 Vue.use(VueApollo);
 
@@ -865,10 +868,8 @@ describe('MR Widget Security Reports', () => {
   describe('when mrSecurityWidgetGraphql FF is enabled', () => {
     let findingReportsComparerHandler;
 
-    it('makes GraphQL query when component loads', async () => {
-      findingReportsComparerHandler = jest
-        .fn()
-        .mockResolvedValue(mockFindingReportsComparerSuccessResponse);
+    const createGraphQLComponent = (mockResponse) => {
+      findingReportsComparerHandler = jest.fn().mockResolvedValue(mockResponse);
 
       createComponent({
         provide: {
@@ -884,13 +885,93 @@ describe('MR Widget Security Reports', () => {
         ]),
       });
 
-      await waitForPromises();
+      return waitForPromises();
+    };
+
+    const getFirstScanResult = () => {
+      const fetchFunctions = findWidget().props('fetchCollapsedData')();
+      return fetchFunctions[0]();
+    };
+
+    it('makes GraphQL query when component loads', async () => {
+      await createGraphQLComponent(mockFindingReportsComparerSuccessResponse);
 
       expect(findingReportsComparerHandler).toHaveBeenCalledWith({
         fullPath: defaultMrPropsData.targetProjectFullPath,
         iid: String(defaultMrPropsData.iid),
         reportType: 'SAST',
         scanMode: 'FULL',
+      });
+    });
+
+    describe('polling behavior', () => {
+      const expectProcessingResult = (result) => {
+        expect(result.status).toBe(202);
+        expect(result.headers).toEqual({ 'poll-interval': 3000 });
+        return result;
+      };
+
+      const expectParsedResult = (result) => {
+        expect(result.status).toBe(200);
+        expect(result.headers).toEqual({});
+        expect(result.data.status).toBe('PARSED');
+        return result;
+      };
+
+      describe('when status is PARSED', () => {
+        beforeEach(async () => {
+          await createGraphQLComponent(mockFindingReportsComparerSuccessResponse);
+        });
+
+        it('returns parsed data without polling headers', async () => {
+          const result = await getFirstScanResult();
+
+          expectParsedResult(result);
+          expect(result.headers['poll-interval']).toBeUndefined();
+        });
+      });
+
+      describe('when status is PARSING', () => {
+        beforeEach(async () => {
+          await createGraphQLComponent(mockFindingReportsComparerParsingResponse);
+        });
+
+        it('returns polling headers with 3 second interval', async () => {
+          const result = await getFirstScanResult();
+
+          expectProcessingResult(result);
+        });
+      });
+
+      describe('polling sequence', () => {
+        it('makes multiple requests when polling until PARSED', async () => {
+          const customFindingReportsHandler = jest.fn();
+          customFindingReportsHandler
+            .mockResolvedValueOnce(mockFindingReportsComparerParsingResponse) // Component setup
+            .mockResolvedValueOnce(mockFindingReportsComparerParsingResponse) // 1st poll: PARSING
+            .mockResolvedValueOnce(mockFindingReportsComparerSuccessResponse); // 2nd poll: PARSED
+
+          createComponent({
+            provide: { glFeatures: { mrSecurityWidgetGraphql: true } },
+            mountFn: mountExtended,
+            apolloProvider: createMockApollo([
+              [enabledScansQuery, jest.fn().mockResolvedValue(enabledScansQueryResult())],
+              [findingReportsComparerQuery, customFindingReportsHandler],
+            ]),
+          });
+
+          await waitForPromises();
+
+          // 1st poll - returns PARSING
+          let result = await getFirstScanResult();
+          expectProcessingResult(result);
+
+          // 2nd poll - returns PARSED
+          result = await getFirstScanResult();
+          expectParsedResult(result);
+
+          expect(customFindingReportsHandler).toHaveBeenCalledTimes(3);
+        });
       });
     });
   });

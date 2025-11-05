@@ -189,3 +189,18 @@ export const mockFindingReportsComparerSuccessResponse = {
     },
   },
 };
+
+export const mockFindingReportsComparerParsingResponse = {
+  data: {
+    project: {
+      id: 'gid://gitlab/Project/1',
+      mergeRequest: {
+        id: 'gid://gitlab/MergeRequest/1',
+        findingReportsComparer: {
+          status: 'PROCESSING',
+          report: null,
+        },
+      },
+    },
+  },
+};
