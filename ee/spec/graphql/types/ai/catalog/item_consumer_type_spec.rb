@@ -11,6 +11,7 @@ RSpec.describe Types::Ai::Catalog::ItemConsumerType, feature_category: :workflow
     expected_fields = %w[
       group
       id
+      enabled
       item
       organization
       pinned_version_prefix

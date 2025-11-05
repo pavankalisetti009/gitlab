@@ -10,6 +10,7 @@ RSpec.describe Types::Ai::Catalog::ItemInterface, feature_category: :workflow_ca
   it 'has the expected fields' do
     expected_fields = %w[
       created_at
+      configuration_for_project
       description
       id
       item_type
