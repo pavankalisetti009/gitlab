@@ -126,6 +126,18 @@ RSpec.describe ::Ai::DuoWorkflows::CreateWorkflowService, feature_category: :duo
       end
     end
 
+    context 'when project_id or namespace_id are provided in params' do
+      let(:params) { { environment: "ide", project_id: project.id, namespace_id: group.id } }
+
+      it 'ignores both ids and creates workflow using container' do
+        expect { execute }.to change { Ai::DuoWorkflows::Workflow.count }.by(1)
+
+        workflow = execute[:workflow]
+        expect(workflow.project).to eq(container)
+        expect(workflow.namespace).to be_nil
+      end
+    end
+
     context 'when ai_catalog_item_version is provided' do
       let_it_be(:ai_catalog_item) { create(:ai_catalog_item) }
       let_it_be(:ai_catalog_item_version) { create(:ai_catalog_item_version, item: ai_catalog_item) }

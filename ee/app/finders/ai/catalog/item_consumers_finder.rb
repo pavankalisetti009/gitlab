@@ -28,9 +28,12 @@ module Ai
       attr_reader :current_user, :params
 
       def validate_args!
-        required_param_present = params.values_at(:project_id, :group_id).compact.count == 1
-
-        raise ArgumentError, 'Must provide either project_id or group_id param' unless required_param_present
+        case params.values_at(:project_id, :group_id).compact.count
+        when 0
+          raise ArgumentError, 'Must provide either project_id or group_id param'
+        when 2
+          params.delete(:group_id)
+        end
       end
 
       def project_id

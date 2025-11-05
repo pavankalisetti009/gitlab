@@ -57,8 +57,6 @@ module Mutations
           null: false,
           description: 'Errors encountered during the creation process.'
 
-        validates mutually_exclusive: [:project_id, :namespace_id]
-
         def resolve(**args)
           container = if args[:project_id]
                         GitlabSchema.find_by_gid(args[:project_id]).sync

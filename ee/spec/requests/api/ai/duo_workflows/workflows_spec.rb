@@ -99,14 +99,31 @@ RSpec.describe API::Ai::DuoWorkflows::Workflows, :with_current_organization, fea
         end
       end
 
-      context 'when both project_id and namespace_id are specified' do
-        let(:container) { { project_id: project.id, namespace_id: group.id } }
+      context 'when neither project_id nor namespace_id are specified' do
+        let(:container) { {} }
 
         it 'returns error' do
           post api(path, user), params: params
 
           expect(response).to have_gitlab_http_status(:bad_request)
-          expect(response.body).to include('project_id, namespace_id are mutually exclusive')
+          expect(response.body).to include(
+            'project_id, namespace_id are missing, at least one parameter must be provided')
+        end
+      end
+
+      context 'when both project_id and namespace_id are specified' do
+        let(:container) { { project_id: project.id, namespace_id: group.id } }
+
+        it 'uses project_id and ignores namespace_id' do
+          post api(path, user), params: params
+
+          expect(response).to have_gitlab_http_status(:created)
+
+          created_workflow = Ai::DuoWorkflows::Workflow.last
+          expect(json_response['id']).to eq(created_workflow.id)
+          expect(json_response['project_id']).to eq(created_workflow.project.id)
+          expect(json_response['project_id']).to eq(project.id)
+          expect(json_response['namespace_id']).to be_nil
         end
       end
     end

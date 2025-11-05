@@ -129,10 +129,10 @@ RSpec.describe Ai::Catalog::ItemConsumersFinder, feature_category: :workflow_cat
   end
 
   context 'when both project_id and group_id are provided' do
-    let(:params) { { project_id: project.id, group_id: group.id } }
+    let(:params) { super().merge(project_id: project.id, group_id: group.id) }
 
-    it 'raises an error' do
-      expect { results }.to raise_error(ArgumentError, 'Must provide either project_id or group_id param')
+    it 'uses project_id and ignores group_id' do
+      expect(results).to match_array(project_consumers)
     end
   end
 
