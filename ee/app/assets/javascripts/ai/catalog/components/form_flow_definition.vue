@@ -1,4 +1,5 @@
 <script>
+import { GlButton, GlTooltipDirective } from '@gitlab/ui';
 import ClipboardButton from '~/vue_shared/components/clipboard_button.vue';
 import SourceEditor from '~/vue_shared/components/source_editor.vue';
 
@@ -6,7 +7,11 @@ export default {
   name: 'FormFlowConfiguration',
   components: {
     ClipboardButton,
+    GlButton,
     SourceEditor,
+  },
+  directives: {
+    GlTooltip: GlTooltipDirective,
   },
   props: {
     readOnly: {
@@ -32,6 +37,25 @@ export default {
     onInput(val) {
       this.$emit('input', val);
     },
+    clearValue(event) {
+      const editor = this.$refs.editor.getEditor();
+      if (editor) {
+        const model = editor.getModel();
+        if (model) {
+          editor.executeEdits('clear-button', [
+            {
+              range: model.getFullModelRange(),
+              text: '',
+            },
+          ]);
+          if (typeof event === 'undefined' || event.detail !== 0) {
+            // only focus when the user clicked the button with mouse or touchpad
+            // when user hit enter to click the button, the focus stays there.
+            editor.focus();
+          }
+        }
+      }
+    },
   },
   configFile: 'config.yaml',
 };
@@ -44,14 +68,28 @@ export default {
       data-testid="flow-definition-header"
     >
       <strong>{{ $options.configFile }}</strong>
-      <clipboard-button
-        :text="value"
-        :title="s__('AICatalog|Copy YAML configuration')"
-        category="secondary"
-        size="small"
-      />
+      <div class="gl-flex gl-gap-2">
+        <clipboard-button
+          :text="value"
+          :title="s__('AICatalog|Copy configuration')"
+          category="secondary"
+          size="small"
+        />
+        <gl-button
+          v-gl-tooltip
+          variant="default"
+          category="secondary"
+          size="small"
+          icon="clear-all"
+          :title="s__('AICatalog|Clear editor')"
+          :aria-label="s__('AICatalog|Clear editor')"
+          data-testid="flow-definition-clear-button"
+          @click="clearValue"
+        />
+      </div>
     </div>
     <source-editor
+      ref="editor"
       :value="value"
       file-name="*.yaml"
       :editor-options="editorOptions"

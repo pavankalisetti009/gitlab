@@ -2578,6 +2578,9 @@ msgstr ""
 msgid "AICatalog|Choose who can view and interact with this flow."
 msgstr ""
 
+msgid "AICatalog|Clear editor"
+msgstr ""
+
 msgid "AICatalog|Community contributions."
 msgstr ""
 
@@ -2590,7 +2593,7 @@ msgstr ""
 msgid "AICatalog|Connect an agent to automate complex tasks"
 msgstr ""
 
-msgid "AICatalog|Copy YAML configuration"
+msgid "AICatalog|Copy configuration"
 msgstr ""
 
 msgid "AICatalog|Copy of"
