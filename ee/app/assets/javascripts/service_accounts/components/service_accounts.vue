@@ -234,7 +234,6 @@ export default {
 
         <gl-pagination
           :value="page"
-          :disabled="busy"
           :per-page="perPage"
           :total-items="serviceAccountCount"
           align="center"
