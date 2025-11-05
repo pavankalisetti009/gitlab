@@ -157,7 +157,6 @@ describe('agent_utils', () => {
         expect(result).toEqual({
           aiCatalogItemVersionId: 'version-2',
           selectedFoundationalAgent: null,
-          agentConfig: null,
           isChatAvailable: true,
           agentDeletedError: '',
         });
