@@ -154,13 +154,16 @@ describe('AgentsPlatformIndex', () => {
 
       expect(tokens[0]).toMatchObject({
         type: 'flow-name',
-        title: 'Flow Name',
+        title: 'Flow',
         icon: 'flow-ai',
         unique: true,
       });
       expect(tokens[0].options).toEqual([
-        { value: 'software_development', title: 'Software Development' },
+        { value: 'code_review/v1', title: 'Code review' },
         { value: 'convert_to_gitlab_ci', title: 'Convert to gitlab ci' },
+        { value: 'fix_pipeline/v1', title: 'Fix pipeline' },
+        { value: 'issue_to_merge_request', title: 'Issue to merge request' },
+        { value: 'software_development', title: 'Software development' },
       ]);
 
       expect(tokens[1]).toMatchObject({
