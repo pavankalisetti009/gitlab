@@ -41,6 +41,10 @@ FactoryBot.modify do
     trait :with_duo_never_on do
       namespace_settings { association(:namespace_settings, duo_availability: 'never_on') }
     end
+
+    trait :archived do
+      namespace_settings { association(:namespace_settings, archived: true) }
+    end
   end
 end
 
