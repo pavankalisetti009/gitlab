@@ -310,18 +310,5 @@ RSpec.describe WorkItems::Lifecycles::CreateService, feature_category: :team_pla
 
       it_behaves_like 'lifecycle service returns validation error'
     end
-
-    context 'when work_item_status_mvc2 feature flag is disabled' do
-      let(:expected_error_message) do
-        'This feature is currently behind a feature flag, and it is not available.'
-      end
-
-      before do
-        stub_feature_flags(work_item_status_mvc2: false)
-      end
-
-      it_behaves_like 'lifecycle service returns validation error'
-      it_behaves_like 'lifecycle service does not create custom lifecycle'
-    end
   end
 end

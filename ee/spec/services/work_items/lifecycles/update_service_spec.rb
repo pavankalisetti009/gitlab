@@ -180,16 +180,6 @@ RSpec.describe WorkItems::Lifecycles::UpdateService, feature_category: :team_pla
               )
             )
           end
-
-          context 'when work_item_status_mvc2 feature flag is disabled' do
-            before do
-              stub_feature_flags(work_item_status_mvc2: false)
-            end
-
-            it 'does not add mapping' do
-              expect { result }.not_to change { WorkItems::Statuses::Custom::Mapping.count }
-            end
-          end
         end
 
         it_behaves_like 'lifecycle service creates custom lifecycle'
@@ -361,20 +351,6 @@ RSpec.describe WorkItems::Lifecycles::UpdateService, feature_category: :team_pla
 
             it_behaves_like 'lifecycle service does not create custom lifecycle'
             it_behaves_like 'lifecycle service returns validation error'
-
-            context 'when work_item_status_mvc2 feature flag is disabled' do
-              before do
-                stub_feature_flags(work_item_status_mvc2: false)
-              end
-
-              let(:expected_error_message) do
-                "Cannot delete status '#{system_defined_lifecycle.default_open_status.name}' " \
-                  "because it is marked as a default status"
-              end
-
-              it_behaves_like 'lifecycle service does not create custom lifecycle'
-              it_behaves_like 'lifecycle service returns validation error'
-            end
           end
 
           context 'when mapping is provided' do
@@ -428,24 +404,6 @@ RSpec.describe WorkItems::Lifecycles::UpdateService, feature_category: :team_pla
                     valid_until: nil
                   )
                 )
-              end
-
-              context 'when work_item_status_mvc2 feature flag is disabled' do
-                before do
-                  stub_feature_flags(work_item_status_mvc2: false)
-                end
-
-                let(:expected_error_message) do
-                  "Cannot delete status '#{system_defined_lifecycle.default_open_status.name}' " \
-                    "because it is marked as a default status"
-                end
-
-                it_behaves_like 'lifecycle service does not create custom lifecycle'
-                it_behaves_like 'lifecycle service returns validation error'
-
-                it 'does not add mapping' do
-                  expect { result }.not_to change { WorkItems::Statuses::Custom::Mapping.count }
-                end
               end
             end
           end
@@ -631,16 +589,6 @@ RSpec.describe WorkItems::Lifecycles::UpdateService, feature_category: :team_pla
               it 'sets valid_until for existing mapping', :freeze_time do
                 expect { result }.to change { existing_mapping.reset.valid_until }
                   .from(nil).to(Time.current)
-              end
-
-              context 'when work_item_status_mvc2 feature flag is disabled' do
-                before do
-                  stub_feature_flags(work_item_status_mvc2: false)
-                end
-
-                it 'does not touch mappings' do
-                  expect { result }.not_to change { existing_mapping.reset.valid_until }
-                end
               end
             end
 
@@ -1202,30 +1150,6 @@ RSpec.describe WorkItems::Lifecycles::UpdateService, feature_category: :team_pla
 
                   it_behaves_like 'lifecycle service returns validation error'
                 end
-
-                context 'when work_item_status_mvc2 feature flag is disabled' do
-                  before do
-                    stub_feature_flags(work_item_status_mvc2: false)
-                  end
-
-                  let(:expected_error_message) do
-                    "Cannot delete status '#{custom_status.name}' because it is in use"
-                  end
-
-                  it_behaves_like 'lifecycle service returns validation error'
-                end
-              end
-
-              context 'when work_item_status_mvc2 feature flag is disabled' do
-                before do
-                  stub_feature_flags(work_item_status_mvc2: false)
-                end
-
-                let(:expected_error_message) do
-                  "Cannot delete status '#{custom_status.name}' because it is in use"
-                end
-
-                it_behaves_like 'lifecycle service returns validation error'
               end
             end
 
@@ -1251,18 +1175,6 @@ RSpec.describe WorkItems::Lifecycles::UpdateService, feature_category: :team_pla
                 end
 
                 it_behaves_like 'lifecycle service returns validation error'
-
-                context 'when work_item_status_mvc2 feature flag is disabled' do
-                  before do
-                    stub_feature_flags(work_item_status_mvc2: false)
-                  end
-
-                  let(:expected_error_message) do
-                    "Cannot delete status '#{custom_status.name}' because it is marked as a default status"
-                  end
-
-                  it_behaves_like 'lifecycle service returns validation error'
-                end
               end
 
               context 'when mapping is provided' do
@@ -1320,18 +1232,6 @@ RSpec.describe WorkItems::Lifecycles::UpdateService, feature_category: :team_pla
                     valid_from: nil,
                     valid_until: nil
                   )
-                end
-
-                context 'when work_item_status_mvc2 feature flag is disabled' do
-                  before do
-                    stub_feature_flags(work_item_status_mvc2: false)
-                  end
-
-                  let(:expected_error_message) do
-                    "Cannot delete status '#{custom_status.name}' because it is marked as a default status"
-                  end
-
-                  it_behaves_like 'lifecycle service returns validation error'
                 end
               end
             end

@@ -378,36 +378,20 @@ describe('EE IssuesListApp component', () => {
     );
   });
 
-  describe('sort options', () => {
-    describe('when hasStatusFeature and workItemStatusMvc2 FF is true', () => {
-      beforeEach(() => {
-        gon.features = {
-          workItemStatusMvc2: true,
-        };
-      });
+  it('includes status sort options when `hasStatusFeature` is true', async () => {
+    wrapper = await mountComponent();
 
-      afterEach(() => {
-        gon.features = {
-          workItemStatusMvc2: false,
-        };
-      });
-
-      it('includes status sort options', async () => {
-        wrapper = await mountComponent();
-
-        expect(findIssuableList().props('sortOptions')).toEqual(
-          expect.arrayContaining([
-            {
-              id: 13,
-              sortDirection: {
-                ascending: 'STATUS_ASC',
-                descending: 'STATUS_DESC',
-              },
-              title: 'Status',
-            },
-          ]),
-        );
-      });
-    });
+    expect(findIssuableList().props('sortOptions')).toEqual(
+      expect.arrayContaining([
+        {
+          id: 13,
+          sortDirection: {
+            ascending: 'STATUS_ASC',
+            descending: 'STATUS_DESC',
+          },
+          title: 'Status',
+        },
+      ]),
+    );
   });
 });

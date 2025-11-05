@@ -1,7 +1,7 @@
 import Vue, { nextTick } from 'vue';
 import VueApollo from 'vue-apollo';
 import Draggable from 'vuedraggable';
-import { GlLink, GlModal, GlSprintf, GlDisclosureDropdown } from '@gitlab/ui';
+import { GlModal, GlSprintf, GlDisclosureDropdown } from '@gitlab/ui';
 import { stubComponent } from 'helpers/stub_component';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import waitForPromises from 'helpers/wait_for_promises';
@@ -12,7 +12,7 @@ import StatusForm from 'ee/groups/settings/work_items/custom_status/status_form.
 import WorkItemStateBadge from '~/work_items/components/work_item_state_badge.vue';
 import lifecycleUpdateMutation from 'ee/groups/settings/work_items/custom_status/graphql/lifecycle_update.mutation.graphql';
 import namespaceMetadataQuery from 'ee/groups/settings/work_items/custom_status/graphql/namespace_metadata.query.graphql';
-import { mockNamespaceMetadata, deleteStatusErrorResponse, mockLifecycles } from '../mock_data';
+import { mockNamespaceMetadata, mockLifecycles } from '../mock_data';
 
 Vue.use(VueApollo);
 
@@ -112,8 +112,6 @@ describe('StatusLifecycleModal', () => {
   const findModal = () => wrapper.findComponent(GlModal);
   const findStatusInfo = () => wrapper.findByTestId('status-info-alert');
   const findLifecycleInfo = () => wrapper.findAllByTestId('lifecycle-info');
-  const findConfirmationModal = () => wrapper.findByTestId('remove-status-confirmation-modal');
-  const findIssuesPathLink = () => wrapper.findComponent(GlLink);
   const findCategorySection = (category) => wrapper.findByTestId(`category-${category}`);
   const findStatusBadges = () => wrapper.findAllByTestId('status-badge');
   const findHelpPageLink = () => wrapper.findByTestId('help-page-link');
@@ -148,17 +146,6 @@ describe('StatusLifecycleModal', () => {
     }
   };
 
-  const findStatusAndDelete = async (status) => {
-    const findFirstStatus = wrapper.findByTestId(`remove-status-${status.id}`);
-
-    findFirstStatus.vm.$emit('action', status);
-    await nextTick();
-
-    expect(findConfirmationModal().exists()).toBe(true);
-    findConfirmationModal().vm.$emit('primary');
-    await waitForPromises();
-  };
-
   const emitDragEnd = async (oldIndex, newIndex) => {
     await findDraggable().vm.$emit('end', {
       oldIndex,
@@ -173,7 +160,6 @@ describe('StatusLifecycleModal', () => {
     props = {},
     lifecycle = mockLifecycle,
     updateHandler = updateLifecycleHandler,
-    workItemStatusMvc2Enabled = true,
     statuses = [
       ...mockLifecycles[0].statuses,
       ...mockLifecycles[1].statuses,
@@ -193,11 +179,6 @@ describe('StatusLifecycleModal', () => {
         fullPath: 'group/project',
         statuses,
         ...props,
-      },
-      provide: {
-        glFeatures: {
-          workItemStatusMvc2: workItemStatusMvc2Enabled,
-        },
       },
       stubs: {
         GlModal,
@@ -229,17 +210,8 @@ describe('StatusLifecycleModal', () => {
       expect(findModal().props('visible')).toBe(true);
     });
 
-    it('shows status info alert with work item types when FF `work_item_status_mvc2` is disabled', () => {
-      createComponent({ workItemStatusMvc2Enabled: false });
-
-      expect(findStatusInfo().exists()).toBe(true);
-      expect(findLifecycleInfo().exists()).toBe(false);
-      expect(findStatusInfo().text()).toContain('Issue');
-      expect(findStatusInfo().text()).toContain('Task');
-    });
-
-    it('shows lifecycle name and status info when the FF `work_item_status_mvc2` is enabled', () => {
-      createComponent({ workItemStatusMvc2Enabled: true });
+    it('shows lifecycle name and status info', () => {
+      createComponent();
 
       expect(findStatusInfo().exists()).toBe(false);
       expect(findLifecycleInfo().exists()).toBe(true);
@@ -818,48 +790,17 @@ describe('StatusLifecycleModal', () => {
     });
 
     describe('Delete action', () => {
-      describe('when work_item_status_mvc2 is disabled', () => {
-        let lifecycleUpdateHandler;
-        beforeEach(async () => {
-          lifecycleUpdateHandler = jest.fn().mockResolvedValue(deleteStatusErrorResponse);
-          createComponent({
-            updateHandler: lifecycleUpdateHandler,
-            workItemStatusMvc2Enabled: false,
-          });
-          const status = mockLifecycle.statuses[0];
-          await findStatusAndDelete(status);
-        });
+      it('shows "Remove status" modal', async () => {
+        createComponent();
+        const statusToRemove = mockLifecycle.statuses[0];
+        const findFirstStatus = wrapper.findByTestId(`remove-status-${statusToRemove.id}`);
 
-        it('should have sticky class for error message', () => {
-          expect(findErrorMessage().text()).toContain(
-            deleteStatusErrorResponse.data.lifecycleUpdate.errors[0],
-          );
-          expect(findErrorMessage().attributes('class')).toContain('gl-sticky gl-top-0');
-        });
+        findFirstStatus.vm.$emit('action', statusToRemove);
+        await nextTick();
 
-        it('should show the link for the group issues path when showing the error', () => {
-          expect(findIssuesPathLink().exists()).toBe(true);
-
-          expect(findIssuesPathLink().text()).toContain('View items using status.');
-          expect(findIssuesPathLink().attributes('href')).toContain(
-            mockNamespaceMetadata.data.namespace.linkPaths.groupIssues,
-          );
-        });
-      });
-
-      describe('when work_item_status_mvc2 is enabled', () => {
-        it('shows "Remove status" modal', async () => {
-          createComponent({ workItemStatusMvc2Enabled: true });
-          const statusToRemove = mockLifecycle.statuses[0];
-          const findFirstStatus = wrapper.findByTestId(`remove-status-${statusToRemove.id}`);
-
-          findFirstStatus.vm.$emit('action', statusToRemove);
-          await nextTick();
-
-          expect(findRemoveStatusModal().props()).toMatchObject({
-            lifecycle: mockLifecycle,
-            statusToRemove,
-          });
+        expect(findRemoveStatusModal().props()).toMatchObject({
+          lifecycle: mockLifecycle,
+          statusToRemove,
         });
       });
     });

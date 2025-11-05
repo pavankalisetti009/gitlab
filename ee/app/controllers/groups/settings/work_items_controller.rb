@@ -11,10 +11,6 @@ module Groups
       feature_category :team_planning
       urgency :low
 
-      before_action do
-        push_frontend_feature_flag(:work_item_status_mvc2, group)
-      end
-
       def show; end
 
       private

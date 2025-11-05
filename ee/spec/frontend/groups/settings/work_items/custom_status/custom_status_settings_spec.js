@@ -1,12 +1,11 @@
 import Vue, { nextTick } from 'vue';
 import VueApollo from 'vue-apollo';
-import { GlAlert, GlButton, GlIcon, GlLoadingIcon } from '@gitlab/ui';
+import { GlAlert, GlButton, GlLoadingIcon } from '@gitlab/ui';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import createMockApollo from 'helpers/mock_apollo_helper';
 import waitForPromises from 'helpers/wait_for_promises';
 import * as Sentry from '~/sentry/sentry_browser_wrapper';
 import SettingsBlock from '~/vue_shared/components/settings/settings_block.vue';
-import WorkItemStatusBadge from 'ee/work_items/components/shared/work_item_status_badge.vue';
 import NamespaceLifecycles from 'ee/groups/settings/work_items/custom_status/custom_status_settings.vue';
 import StatusModal from 'ee/groups/settings/work_items/custom_status/status_modal.vue';
 import LifecycleDetail from 'ee/groups/settings/work_items/custom_status/lifecycle_detail.vue';
@@ -43,28 +42,28 @@ const mockLifecycles = [
         id: '1',
         name: 'Open',
         iconName: 'issue-open',
-        color: 'green',
+        color: 'gray',
         description: '',
         category: 'to_do',
         __typename: 'WorkItemStatus',
       },
       {
         id: '2',
-        name: 'In Progress',
-        iconName: 'progress',
-        color: 'blue',
-        description: '',
-        __typename: 'WorkItemStatus',
-        category: 'in_progress',
-      },
-      {
-        id: '3',
         name: 'Closed',
-        iconName: 'issue-close',
-        color: 'gray',
+        iconName: 'issue-closed',
+        color: 'green',
         description: '',
         __typename: 'WorkItemStatus',
         category: 'done',
+      },
+      {
+        id: '3',
+        name: 'Duplicate',
+        iconName: 'issue-duplicate',
+        color: 'red',
+        description: '',
+        __typename: 'WorkItemStatus',
+        category: 'canceled',
       },
     ],
   },
@@ -121,8 +120,6 @@ describe('CustomStatusSettings', () => {
   });
 
   const findAlert = () => wrapper.findComponent(GlAlert);
-  const findLifecycleContainers = () => wrapper.findAll('[data-testid="lifecycle-container"]');
-  const findStatusBadges = () => wrapper.findAllComponents(WorkItemStatusBadge);
   const findEditButtons = () => wrapper.findAllByTestId('edit-statuses');
   const findHelpPageLink = () => wrapper.findByTestId('settings-help-page-link');
   const findMoreLifecycleInformation = () => wrapper.findByTestId('more-lifecycle-information');
@@ -135,7 +132,6 @@ describe('CustomStatusSettings', () => {
 
   const createComponent = ({
     props = {},
-    workItemStatusMvc2Enabled = true,
     queryHandler = jest.fn().mockResolvedValue(createQueryResponse()),
   } = {}) => {
     apolloProvider = createMockApollo([[namespaceStatusesQuery, queryHandler]]);
@@ -146,11 +142,6 @@ describe('CustomStatusSettings', () => {
         ...props,
       },
       apolloProvider,
-      provide: {
-        glFeatures: {
-          workItemStatusMvc2: workItemStatusMvc2Enabled,
-        },
-      },
       stubs: {
         SettingsBlock,
       },
@@ -177,43 +168,42 @@ describe('CustomStatusSettings', () => {
 
   describe('query success', () => {
     beforeEach(() => {
-      createComponent({ workItemStatusMvc2Enabled: false });
+      createComponent();
       return waitForPromises();
     });
 
-    it('renders correct number of lifecycle containers', () => {
-      expect(findLifecycleContainers()).toHaveLength(2);
+    it('shows lifecycle information', () => {
+      expect(findMoreLifecycleInformation().exists()).toBe(true);
+    });
+
+    it('shows create lifecycle button and modal', async () => {
+      expect(findCreateLifecycleButton().exists()).toBe(true);
+      expect(findCreateLifecycleModal().props('visible')).toBe(false);
+
+      await findCreateLifecycleButton().vm.$emit('click');
+
+      expect(findCreateLifecycleModal().props('visible')).toBe(true);
+    });
+
+    it('renders lifecycle detail components', () => {
+      expect(findLifecyclesDetails()).toHaveLength(2);
     });
 
     it('renders work item types with icons and names', () => {
-      const firstLifecycle = findLifecycleContainers().at(0);
-      const icons = firstLifecycle.findAllComponents(GlIcon);
+      const lifecycleDetails = findLifecyclesDetails();
+      const firstLifecycleDetail = lifecycleDetails.at(0);
 
-      expect(icons.at(0).props('name')).toBe('issue-type-issue');
-      expect(firstLifecycle.text()).toContain('Issue');
-      expect(icons.at(1).props('name')).toBe('issue-type-task');
-      expect(firstLifecycle.text()).toContain('Task');
-    });
+      const lifecycle = firstLifecycleDetail.props('lifecycle');
+      expect(lifecycle.workItemTypes).toHaveLength(2);
 
-    it('renders status badges with correct props', () => {
-      const statusBadges = findStatusBadges();
-
-      expect(statusBadges).toHaveLength(5); // 3 from first lifecycle + 2 from second
-
-      expect(statusBadges.at(0).props()).toMatchObject({
-        item: {
-          name: 'Open',
-          iconName: 'issue-open',
-          color: 'green',
-        },
+      expect(lifecycle.workItemTypes[0]).toMatchObject({
+        name: 'Issue',
+        iconName: 'issue-type-issue',
       });
 
-      expect(statusBadges.at(1).props()).toMatchObject({
-        item: {
-          name: 'In Progress',
-          iconName: 'progress',
-          color: 'blue',
-        },
+      expect(lifecycle.workItemTypes[1]).toMatchObject({
+        name: 'Task',
+        iconName: 'issue-type-task',
       });
     });
 
@@ -222,7 +212,7 @@ describe('CustomStatusSettings', () => {
 
       expect(editButtons).toHaveLength(2);
       expect(editButtons.at(0).text()).toBe('Edit statuses');
-      expect(editButtons.at(0).props('size')).toBe('small');
+      expect(editButtons.at(0).props('size')).toBe('medium');
     });
   });
 
@@ -232,7 +222,6 @@ describe('CustomStatusSettings', () => {
     beforeEach(() => {
       createComponent({
         queryHandler: jest.fn().mockRejectedValue(error),
-        workItemStatusMvc2Enabled: false,
       });
       return waitForPromises();
     });
@@ -256,32 +245,6 @@ describe('CustomStatusSettings', () => {
       await nextTick();
 
       expect(findAlert().exists()).toBe(false);
-    });
-  });
-
-  describe('when `workItemStatusMvc2Enabled` FF is true', () => {
-    beforeEach(() => {
-      createComponent({
-        workItemStatusMvc2Enabled: true,
-      });
-      return waitForPromises();
-    });
-
-    it('shows lifecycle information', () => {
-      expect(findMoreLifecycleInformation().exists()).toBe(true);
-    });
-
-    it('shows create lifecycle button and modal', async () => {
-      expect(findCreateLifecycleButton().exists()).toBe(true);
-      expect(findCreateLifecycleModal().props('visible')).toBe(false);
-
-      await findCreateLifecycleButton().vm.$emit('click');
-
-      expect(findCreateLifecycleModal().props('visible')).toBe(true);
-    });
-
-    it('renders lifecycle detail components', () => {
-      expect(findLifecyclesDetails()).toHaveLength(2);
     });
   });
 
@@ -316,7 +279,7 @@ describe('CustomStatusSettings', () => {
 
   describe('Edit Button and Modal Functionality', () => {
     beforeEach(() => {
-      createComponent({ workItemStatusMvc2Enabled: true });
+      createComponent();
       return waitForPromises();
     });
 
@@ -367,8 +330,8 @@ describe('CustomStatusSettings', () => {
         // Verify it contains expected status names
         const statusNames = allStatuses.map((status) => status.name);
         expect(statusNames).toContain('Open');
-        expect(statusNames).toContain('In Progress');
         expect(statusNames).toContain('Closed');
+        expect(statusNames).toContain('Duplicate');
         expect(statusNames).toContain('New');
         expect(statusNames).toContain('Resolved');
       });

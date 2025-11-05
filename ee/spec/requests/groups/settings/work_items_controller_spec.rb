@@ -19,12 +19,6 @@ RSpec.describe Groups::Settings::WorkItemsController, feature_category: :team_pl
 
       expect(response).to have_gitlab_http_status(:ok)
     end
-
-    it 'exposes feature flags' do
-      subject
-
-      expect(response.body).to have_pushed_frontend_feature_flags(workItemStatusMvc2: true)
-    end
   end
 
   shared_examples 'unauthorized access' do
