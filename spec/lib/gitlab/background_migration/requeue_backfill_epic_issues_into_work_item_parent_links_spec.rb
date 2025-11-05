@@ -2,21 +2,32 @@
 
 require 'spec_helper'
 
-RSpec.describe Gitlab::BackgroundMigration::BackfillEpicIssuesIntoWorkItemParentLinks, feature_category: :team_planning do
+RSpec.describe Gitlab::BackgroundMigration::RequeueBackfillEpicIssuesIntoWorkItemParentLinks, feature_category: :team_planning do
+  let(:organization) { table(:organizations).create!(name: 'organization', path: 'organization') }
+
   let(:author) { table(:users).create!(username: 'tester', projects_limit: 100) }
   let(:epic_issues) { table(:epic_issues) }
   let(:work_item_parent_links) { table(:work_item_parent_links) }
-  let(:group1) { table(:namespaces).create!(name: 'my test group 1', path: 'my-test-group1', type: 'Group') }
-  let(:group2) { table(:namespaces).create!(name: 'my test group 2', path: 'my-test-group2', type: 'Group') }
+
+  let(:group1) do
+    table(:namespaces).create!(
+      name: 'my test group 1', path: 'my-test-group1', type: 'Group', organization_id: organization.id
+    )
+  end
+
+  let(:group2) do
+    table(:namespaces).create!(
+      name: 'my test group 2', path: 'my-test-group2', type: 'Group', organization_id: organization.id
+    )
+  end
+
   let(:epics) { table(:epics) }
   let(:issues) { table(:issues) }
   let(:start_id) { epic_issues.minimum(:id) }
   let(:end_id) { epic_issues.maximum(:id) }
   let(:batch_column) { 'id' }
-  let(:epic_work_item_type_enum) { 7 }
-  let(:epic_work_item_type_id) { table(:work_item_types).where(base_type: epic_work_item_type_enum).first.id }
-  let(:issue_work_item_type_enum) { 0 }
-  let(:issue_work_item_type_id) { table(:work_item_types).where(base_type: issue_work_item_type_enum).first.id }
+  let(:epic_work_item_type_id) { table(:work_item_types).where(base_type: 7).first.id }
+  let(:issue_work_item_type_id) { table(:work_item_types).where(base_type: 0).first.id }
   let!(:issue_epic1) do
     issues.create!(
       title: 'Epic 1', namespace_id: group1.id, author_id: author.id, work_item_type_id: epic_work_item_type_id
