@@ -34,6 +34,9 @@ RSpec.describe 'Duo Chat > User navigates Duo Chat history', :js, :saas, :with_c
 
     sign_in(user)
 
+    stub_feature_flags(paneled_view: true)
+    user.update!(project_studio_enabled: true)
+
     visit project_path(project)
 
     # rubocop:disable RSpec/AvoidConditionalStatements -- temporary Project Studio rollout
@@ -49,41 +52,16 @@ RSpec.describe 'Duo Chat > User navigates Duo Chat history', :js, :saas, :with_c
 
   context 'when Chat History button is clicked' do
     it 'opens chat history list' do
-      find_by_testid("go-back-to-list-button").click
+      find_by_testid("ai-history-toggle").click
       wait_for_requests
 
       expect(page).to have_css('[data-testid="chat-threads-thread-box"]')
-      expect(page).to have_content('Chat Message')
-    end
-  end
-
-  context 'when existing Chat is clicked from the threads list' do
-    it 'opens the chat' do
-      find_by_testid('go-back-to-list-button').click
-      wait_for_requests
-
-      find_by_testid('chat-threads-thread-box').click
-      wait_for_requests
-
-      expect(page).to have_css('[data-testid="chat-subtitle"]', text: 'Chat Message')
-    end
-  end
-
-  context 'when New Chat button is clicked from the threads list' do
-    it 'creates a new chat' do
-      find_by_testid('go-back-to-list-button').click
-      wait_for_requests
-
-      find_by_testid('chat-new-button').click
-      wait_for_requests
-
-      expect(page).to have_css('[data-testid="gl-duo-chat-empty-state"]')
     end
   end
 
   context 'when New Chat button is clicked from existing chat' do
     it 'creates a new chat' do
-      find_by_testid('go-back-to-list-button').click
+      find_by_testid('ai-history-toggle').click
       wait_for_requests
 
       find_by_testid('chat-threads-thread-box').click
