@@ -34,13 +34,17 @@ describe('Analytics Dashboards api', () => {
 
   describe('extractGraphqlVulnerabilitiesData', () => {
     const vulnerabilityResponse = {
-      vulnerability_critical: { identifier: 'vulnerability_critical', value: 7 },
-      vulnerability_high: { identifier: 'vulnerability_high', value: 6 },
+      vulnerability_critical: { identifier: 'vulnerability_critical', value: 7, tooltip: null },
+      vulnerability_high: { identifier: 'vulnerability_high', value: 6, tooltip: null },
     };
 
     const missingVulnerabilityResponse = {
-      vulnerability_critical: { identifier: 'vulnerability_critical', value: '-' },
-      vulnerability_high: { identifier: 'vulnerability_high', value: '-' },
+      vulnerability_critical: {
+        identifier: 'vulnerability_critical',
+        value: '-',
+        tooltip: 'No data',
+      },
+      vulnerability_high: { identifier: 'vulnerability_high', value: '-', tooltip: 'No data' },
     };
 
     it('returns each vulnerability metric', () => {
@@ -96,12 +100,12 @@ describe('Analytics Dashboards api', () => {
 
   describe('extractGraphqlFlowData', () => {
     const flowMetricsResponse = {
-      cycle_time: { identifier: 'cycle_time', value: '-' },
-      deploys: { identifier: 'deploys', value: 751 },
-      issues: { identifier: 'issues', value: 10 },
-      issues_completed: { identifier: 'issues_completed', value: 109 },
-      lead_time: { identifier: 'lead_time', value: 10 },
-      median_time_to_merge: { identifier: 'median_time_to_merge', value: '0.3' },
+      cycle_time: { identifier: 'cycle_time', value: '-', tooltip: 'No data' },
+      deploys: { identifier: 'deploys', value: 751, tooltip: null },
+      issues: { identifier: 'issues', value: 10, tooltip: null },
+      issues_completed: { identifier: 'issues_completed', value: 109, tooltip: null },
+      lead_time: { identifier: 'lead_time', value: 10, tooltip: null },
+      median_time_to_merge: { identifier: 'median_time_to_merge', value: '0.3', tooltip: null },
     };
 
     it('returns each flow metric', () => {
@@ -129,7 +133,11 @@ describe('Analytics Dashboards api', () => {
 
     it('replaces null values with `-`', () => {
       expect(extractGraphqlMergeRequestsData({ merge_request_throughput: null })).toEqual({
-        merge_request_throughput: { identifier: 'merge_request_throughput', value: '-' },
+        merge_request_throughput: {
+          identifier: 'merge_request_throughput',
+          value: '-',
+          tooltip: 'No data',
+        },
       });
     });
   });

@@ -6,6 +6,7 @@ import {
 import { scaledValueForDisplay } from '~/analytics/shared/utils';
 import { secondsToMinutes } from '~/lib/utils/datetime/date_calculation_utility';
 import { calculatePipelineCountPercentage } from '~/projects/pipelines/charts/format_utils';
+import { generateNoDataTooltip } from 'ee/analytics/dashboards/utils';
 import { TABLE_METRICS } from './constants';
 import { generateMetricTableTooltip } from './ai_impact/utils';
 
@@ -43,10 +44,12 @@ export const extractGraphqlVulnerabilitiesData = (rawVulnerabilityData = []) => 
     [VULNERABILITY_METRICS.CRITICAL]: {
       identifier: VULNERABILITY_METRICS.CRITICAL,
       value: selectedCount?.critical || '-',
+      tooltip: generateNoDataTooltip(selectedCount?.critical),
     },
     [VULNERABILITY_METRICS.HIGH]: {
       identifier: VULNERABILITY_METRICS.HIGH,
       value: selectedCount?.high || '-',
+      tooltip: generateNoDataTooltip(selectedCount?.high),
     },
   };
 };
@@ -185,6 +188,7 @@ export const extractGraphqlFlowData = (data = {}) =>
             [identifier]: {
               identifier,
               value: data[identifier].value ? data[identifier].value : '-',
+              tooltip: generateNoDataTooltip(data[identifier].value),
             },
           }
         : acc,
@@ -217,6 +221,7 @@ export const extractGraphqlMergeRequestsData = (data = {}) =>
             [identifier]: {
               identifier,
               value: data[identifier] ? data[identifier] : '-',
+              tooltip: generateNoDataTooltip(data[identifier]),
             },
           }
         : acc,

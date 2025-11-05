@@ -398,3 +398,13 @@ export const generateTableAlerts = (alertGroups) =>
     const formattedMetrics = metrics.map((metric) => TABLE_METRICS[metric].label).join(', ');
     return [...acc, `${message}: ${formattedMetrics}`];
   }, []);
+
+/**
+ *  Returns a "No data" string to be used in the metric tables' tooltips
+ *  when there's no data available
+ * @param {*} value
+ * @returns {String|null} Returns 'No data' tooltip if value is falsy, null otherwise
+ */
+export const generateNoDataTooltip = (value) => {
+  return value ? null : __('No data');
+};
