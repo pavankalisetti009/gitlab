@@ -28,11 +28,11 @@ module EE
     end
 
     def stub_geo_setting(messages)
-      allow(::Gitlab.config.geo).to receive_messages(to_settings(messages))
+      stub_config(messages, ::Gitlab.config.geo)
     end
 
     def stub_smartcard_setting(messages)
-      allow(::Gitlab.config.smartcard).to receive_messages(to_settings(messages))
+      stub_config(messages, ::Gitlab.config.smartcard)
     end
   end
 end
