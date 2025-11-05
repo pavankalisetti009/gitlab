@@ -309,6 +309,17 @@ module EE
       end
     end
 
+    override :skipped_auto_merge_checks
+    def skipped_auto_merge_checks(options = {})
+      if options[:auto_merge_strategy] == ::AutoMergeService::STRATEGY_MERGE_TRAIN &&
+          ::Feature.enabled?(:allow_merge_train_retry_merge, project)
+        skip_ci_check = !on_train? && diff_head_pipeline&.merge_train_pipeline?
+        super.merge(skip_ci_check: skip_ci_check)
+      else
+        super
+      end
+    end
+
     def on_train?
       merge_train_car&.active?
     end

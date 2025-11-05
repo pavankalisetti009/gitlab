@@ -70,7 +70,7 @@ RSpec.describe 'Merge requests > User merges immediately', :js, feature_category
 
         find(':focus').send_keys :enter
 
-        expect(merge_button).to have_content('Merge')
+        expect(merge_button).to have_content('Set to auto-merge')
       end
     end
 
@@ -103,7 +103,7 @@ RSpec.describe 'Merge requests > User merges immediately', :js, feature_category
 
         find(':focus').send_keys :enter
 
-        expect(merge_button).to have_content('Merge')
+        expect(merge_button).to have_content('Set to auto-merge')
       end
     end
 

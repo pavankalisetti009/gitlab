@@ -391,7 +391,10 @@ RSpec.describe AutoMerge::MergeTrainService, feature_category: :merge_trains do
   describe '#available_for?' do
     subject { service.available_for?(merge_request) }
 
-    let(:pipeline) { instance_double(Ci::Pipeline, complete?: true, active?: false, created?: false, success?: true) }
+    let(:pipeline) do
+      instance_double(Ci::Pipeline, complete?: true, active?: false, created?: false, success?: true,
+        merge_train_pipeline?: true)
+    end
 
     before do
       allow(merge_request).to receive_messages(mergeable_state?: true, for_fork?: false)
@@ -500,7 +503,10 @@ RSpec.describe AutoMerge::MergeTrainService, feature_category: :merge_trains do
   describe '#availability_details' do
     subject(:availability_check) { service.availability_details(merge_request) }
 
-    let(:pipeline) { instance_double(Ci::Pipeline, complete?: true, active?: false, created?: false, success?: true) }
+    let(:pipeline) do
+      instance_double(Ci::Pipeline, complete?: true, active?: false, created?: false, success?: true,
+        merge_train_pipeline?: true)
+    end
 
     before do
       allow(merge_request).to receive_messages(mergeable_state?: true, for_fork?: false)
@@ -616,6 +622,16 @@ RSpec.describe AutoMerge::MergeTrainService, feature_category: :merge_trains do
         it 'is unavailable and returns the correct reason' do
           aggregate_failures do
             expect(availability_check.available?).to be false
+            expect(availability_check.unavailable_reason).to eq :incomplete_diff_head_pipeline
+          end
+        end
+
+        context 'when feature flag :allow_merge_train_retry_merge is disabled' do
+          before do
+            stub_feature_flags(allow_merge_train_retry_merge: false)
+          end
+
+          specify do
             expect(availability_check.unavailable_reason).to eq :mergeability_checks_failed
           end
         end
@@ -643,6 +659,16 @@ RSpec.describe AutoMerge::MergeTrainService, feature_category: :merge_trains do
         it 'is unavailable and returns the correct reason' do
           aggregate_failures do
             expect(availability_check.available?).to be false
+            expect(availability_check.unavailable_reason).to eq :incomplete_diff_head_pipeline
+          end
+        end
+
+        context 'when feature flag :allow_merge_train_retry_merge is disabled' do
+          before do
+            stub_feature_flags(allow_merge_train_retry_merge: false)
+          end
+
+          specify do
             expect(availability_check.unavailable_reason).to eq :mergeability_checks_failed
           end
         end

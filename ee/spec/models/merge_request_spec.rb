@@ -1976,22 +1976,90 @@ RSpec.describe MergeRequest, feature_category: :code_review_workflow do
     end
   end
 
-  describe '#skipped_mergeable_checks' do
-    subject { build_stubbed(:merge_request).skipped_mergeable_checks(options) }
+  describe '#skipped_auto_merge_checks' do
+    subject { merge_request.skipped_auto_merge_checks(options) }
 
-    let(:options) { { auto_merge_strategy: auto_merge_strategy } }
-
-    where(:auto_merge_strategy, :skip_approved_check, :skip_draft_check, :skip_blocked_check, :skip_discussions_check,
-      :skip_external_status_check, :skip_locked_paths_check) do
-      ''                                                      | false | false | false | false | false | false
-      AutoMergeService::STRATEGY_MERGE_WHEN_CHECKS_PASS       | true | true | true | true | true | true
+    let_it_be(:ee_checks) do
+      %i[skip_approved_check skip_draft_check skip_blocked_check skip_discussions_check skip_external_status_check
+        skip_locked_paths_check]
     end
 
-    with_them do
-      it do
-        is_expected.to include(skip_approved_check: skip_approved_check, skip_draft_check: skip_draft_check,
-          skip_blocked_check: skip_blocked_check, skip_discussions_check: skip_discussions_check,
-          skip_external_status_check: skip_external_status_check)
+    let(:merge_request) { build_stubbed(:merge_request) }
+    let(:options) { { auto_merge_strategy: auto_merge_strategy } }
+
+    context 'when auto_merge_strategy is blank' do
+      let(:auto_merge_strategy) { '' }
+
+      it 'does not skip any checks, including EE checks' do
+        expect(subject.keys).to include(*ee_checks)
+        expect(subject.values).to all(be_falsey)
+      end
+    end
+
+    context 'when auto_merge_strategy is STRATEGY_MERGE_WHEN_CHECKS_PASS' do
+      let(:auto_merge_strategy) { AutoMergeService::STRATEGY_MERGE_WHEN_CHECKS_PASS }
+
+      it 'skips all the checks, including the EE ones' do
+        expect(subject.keys).to include(*ee_checks)
+        expect(subject.values).to all(be_truthy)
+      end
+    end
+
+    context 'when auto_merge_strategy is STRATEGY_MERGE_TRAIN' do
+      let(:auto_merge_strategy) { AutoMergeService::STRATEGY_MERGE_TRAIN }
+
+      it 'does not skip any checks by default' do
+        expect(subject.values).to all(be_falsy)
+      end
+
+      context 'when the diff head pipeline is a merge train pipeline' do
+        before do
+          allow(merge_request).to receive(:diff_head_pipeline).and_return(instance_double(Ci::Pipeline,
+            merge_train_pipeline?: true))
+        end
+
+        context 'when the MR is on the train' do
+          before do
+            allow(merge_request).to receive(:on_train?).and_return(true)
+          end
+
+          it 'does not skip any checks' do
+            expect(subject.values).to all(be_falsy)
+          end
+        end
+
+        context 'when the MR is not on the train' do
+          before do
+            allow(merge_request).to receive(:on_train?).and_return(false)
+          end
+
+          it 'skips the CI check' do
+            expect(subject).to include(skip_ci_check: true)
+            expect(subject.except(:skip_ci_check).values).to all(be_falsy)
+          end
+        end
+      end
+
+      context 'when feature flag allow_merge_train_retry_merge is disabled' do
+        before do
+          stub_feature_flags(allow_merge_train_retry_merge: false)
+        end
+
+        it 'does not skip any checks' do
+          expect(subject.values).to all(be_falsy)
+        end
+
+        context 'when the diff head pipeline is a merge train pipeline' do
+          before do
+            allow(merge_request).to receive(:diff_head_pipeline).and_return(instance_double(Ci::Pipeline,
+              merge_train_pipeline?: true))
+            allow(merge_request).to receive(:on_train?).and_return(false)
+          end
+
+          it 'does not skip the CI check when feature flag is disabled' do
+            expect(subject.values).to all(be_falsy)
+          end
+        end
       end
     end
   end
