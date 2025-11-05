@@ -14622,6 +14622,7 @@ Input type: `WorkItemCreateInput`
 | <a id="mutationworkitemcreateclientmutationid"></a>`clientMutationId` | [`String`](#string) | A unique identifier for the client performing the mutation. |
 | <a id="mutationworkitemcreatecolorwidget"></a>`colorWidget` | [`WorkItemWidgetColorInput`](#workitemwidgetcolorinput) | Input for color widget. |
 | <a id="mutationworkitemcreateconfidential"></a>`confidential` | [`Boolean`](#boolean) | Sets the work item confidentiality. |
+| <a id="mutationworkitemcreatecreatesource"></a>`createSource` | [`String`](#string) | Source which triggered the creation of the work item. Used only for tracking purposes. |
 | <a id="mutationworkitemcreatecreatedat"></a>`createdAt` | [`Time`](#time) | Timestamp when the work item was created. Available only for admins and project owners. |
 | <a id="mutationworkitemcreatecrmcontactswidget"></a>`crmContactsWidget` | [`WorkItemWidgetCrmContactsCreateInput`](#workitemwidgetcrmcontactscreateinput) | Input for CRM contacts widget. |
 | <a id="mutationworkitemcreatecustomfieldswidget"></a>`customFieldsWidget` {{< icon name="warning-solid" >}} | [`[WorkItemWidgetCustomFieldValueInputType!]`](#workitemwidgetcustomfieldvalueinputtype) | **Deprecated**: **Status**: Experiment. Introduced in GitLab 17.10. |
