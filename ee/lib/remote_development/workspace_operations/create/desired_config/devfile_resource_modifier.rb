@@ -65,7 +65,7 @@ module RemoteDevelopment
             # when a new devfile parser is created for some other reason.
             return desired_config_array unless use_kubernetes_user_namespaces
 
-            find_pod_spec(desired_config_array)[:hostUsers] = use_kubernetes_user_namespaces
+            find_pod_spec(desired_config_array)[:hostUsers] = !use_kubernetes_user_namespaces
 
             nil
           end
