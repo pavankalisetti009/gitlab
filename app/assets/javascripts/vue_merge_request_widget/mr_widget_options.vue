@@ -345,8 +345,10 @@ export default {
     createService(store) {
       return new MRWidgetService(this.getServiceEndpoints(store));
     },
-    refetchState() {
-      this.$apollo.queries.state.refetch();
+    async refetchState(cb = () => {}) {
+      await this.$apollo.queries.state.refetch();
+
+      cb();
     },
     checkStatus: throttle(function checkStatus(cb, isRebased, refetch = true) {
       if (refetch) {
@@ -478,7 +480,7 @@ export default {
       }
     },
     bindEventHubListeners() {
-      eventHub.$on('MRWidgetUpdateRequested', this.checkStatus);
+      eventHub.$on('MRWidgetUpdateRequested', this.refetchState);
       eventHub.$on('MRWidgetRebaseSuccess', this.checkRebasedStatus);
       eventHub.$on('SetBranchRemoveFlag', this.setIsRemovingSourceBranch);
       eventHub.$on('FailedToMerge', this.setMergeError);
@@ -489,7 +491,7 @@ export default {
       eventHub.$on('FetchDeployments', this.onFetchDeployments);
     },
     unbindEventListeners() {
-      eventHub.$off('MRWidgetUpdateRequested', this.checkStatus);
+      eventHub.$off('MRWidgetUpdateRequested', this.refetchState);
       eventHub.$off('MRWidgetRebaseSuccess', this.checkRebasedStatus);
       eventHub.$off('SetBranchRemoveFlag', this.setIsRemovingSourceBranch);
       eventHub.$off('FailedToMerge', this.setMergeError);
