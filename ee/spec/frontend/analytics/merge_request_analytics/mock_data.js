@@ -1,5 +1,3 @@
-import { THROUGHPUT_CHART_STRINGS } from 'ee/analytics/merge_request_analytics/constants';
-
 export const startDate = new Date('2020-05-01');
 export const endDate = new Date('2020-08-01');
 
@@ -31,7 +29,7 @@ export const formattedThroughputChartData = [
       ['Jul 2020', 3],
       ['Aug 2020', 4],
     ],
-    name: THROUGHPUT_CHART_STRINGS.Y_AXIS_TITLE,
+    name: 'Merge Requests merged',
   },
 ];
 
