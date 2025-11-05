@@ -205,5 +205,17 @@ RSpec.describe Search::Zoekt::PlanningService, :freeze_time, feature_category: :
         end
       end
     end
+
+    context 'when there is a single node and a namespace has multiple projects' do
+      let(:num_replicas) { 1 }
+      let_it_be(:nodes) { Search::Zoekt::Node.order_by_unclaimed_space_desc.online.limit(1) }
+
+      it 'returns successful plans for each enabled namespace' do
+        result = plan
+        expect(result[:namespaces].size).to eq(2)
+        expect(result[:namespaces].pluck(:enabled_namespace_id))
+          .to contain_exactly(enabled_namespace1.id, enabled_namespace2.id)
+      end
+    end
   end
 end
