@@ -35,7 +35,8 @@ RSpec.describe 'Two merge requests on a merge train', feature_category: :merge_t
     project.update!(merge_pipelines_enabled: true, merge_trains_enabled: true)
     stub_ci_pipeline_yaml_file(YAML.dump(ci_yaml))
 
-    head_pipeline = instance_double(Ci::Pipeline, complete?: true, active?: false, created?: false)
+    head_pipeline = instance_double(Ci::Pipeline, complete?: true, active?: false, created?: false,
+      merge_train_pipeline?: false)
     allow(merge_request_1).to receive(:diff_head_pipeline) { head_pipeline }
     allow(merge_request_2).to receive(:diff_head_pipeline) { head_pipeline }
 

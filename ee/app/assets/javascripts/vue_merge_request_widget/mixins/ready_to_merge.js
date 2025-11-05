@@ -8,6 +8,7 @@ import {
   MTWCP_MERGE_STRATEGY,
 } from '~/vue_merge_request_widget/constants';
 import CEReadyToMergeMixin from '~/vue_merge_request_widget/mixins/ready_to_merge';
+import glFeatureFlagsMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
 
 export const MERGE_DISABLED_TEXT_UNAPPROVED = s__(
   'mrWidget|Merge blocked: all required approvals must be given.',
@@ -21,6 +22,7 @@ export const MERGE_DISABLED_DEPENDENCIES_TEXT = __(
 const MERGE_TRAINS_HELP = helpPagePath('ci/pipelines/merge_trains.html');
 
 export default {
+  mixins: [glFeatureFlagsMixin()],
   computed: {
     isMergeButtonDisabled() {
       const { commitMessage } = this;
@@ -35,15 +37,29 @@ export default {
       return PIPELINE_MUST_SUCCEED_CONFLICT_TEXT;
     },
     autoMergeText() {
-      if (this.preferredAutoMergeStrategy === MT_MERGE_STRATEGY) {
+      if (
+        this.preferredAutoMergeStrategy === MT_MERGE_STRATEGY &&
+        !this.glFeatures.allowMergeTrainRetryMerge
+      ) {
         return __('Merge');
       }
 
       return __('Set to auto-merge');
     },
+    showReAddToMergeTrain() {
+      const mergeTrainRefRegex = /^refs\/merge-requests\/.*\/train$/;
+      return Boolean(
+        this.glFeatures.allowMergeTrainRetryMerge &&
+          this.preferredAutoMergeStrategy === MT_MERGE_STRATEGY &&
+          this.pipeline?.ref?.match(mergeTrainRefRegex),
+      );
+    },
     autoMergeHelperText() {
       if (this.preferredAutoMergeStrategy === MTWCP_MERGE_STRATEGY) {
         return __('Add to merge train when all merge checks pass');
+      }
+      if (this.showReAddToMergeTrain) {
+        return __('Re-add to merge train');
       }
       if (this.preferredAutoMergeStrategy === MT_MERGE_STRATEGY) {
         return __('Add to merge train');
