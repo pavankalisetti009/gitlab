@@ -214,21 +214,6 @@ RSpec.describe 'Attaching a work item type to a custom lifecycle', feature_categ
         )
       end
     end
-
-    context 'when work_item_status_mvc2 feature flag is disabled' do
-      before do
-        stub_feature_flags(work_item_status_mvc2: false)
-      end
-
-      it 'returns error' do
-        post_graphql_mutation(mutation, current_user: user)
-
-        expect(response).to have_gitlab_http_status(:success)
-        expect(mutation_response['errors']).to include(
-          'This feature is currently behind a feature flag, and it is not available.'
-        )
-      end
-    end
   end
 
   context 'when invalid input is provided' do

@@ -183,12 +183,4 @@ RSpec.describe 'Querying work item allowed statuses', feature_category: :team_pl
 
     it_behaves_like 'does not return allowed statuses'
   end
-
-  context 'when work_item_status_mvc2 feature flag is disabled' do
-    before do
-      stub_feature_flags(work_item_status_mvc2: false)
-    end
-
-    it_behaves_like 'does not return allowed statuses'
-  end
 end

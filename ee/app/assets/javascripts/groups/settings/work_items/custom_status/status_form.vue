@@ -8,7 +8,6 @@ import {
   GlTooltipDirective,
   GlFormCombobox,
 } from '@gitlab/ui';
-import glFeatureFlagMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
 import { s__, __ } from '~/locale';
 import { validateHexColor, getAdaptiveStatusColor } from '~/lib/utils/color_utils';
 import { STATUS_CATEGORIES_MAP } from 'ee/work_items/constants';
@@ -26,7 +25,6 @@ export default {
   directives: {
     GlTooltip: GlTooltipDirective,
   },
-  mixins: [glFeatureFlagMixin()],
   props: {
     categoryName: {
       type: String,
@@ -55,7 +53,7 @@ export default {
       default: false,
     },
   },
-  emits: ['save', 'cancel', 'update', 'validate'],
+  emits: ['save', 'cancel', 'update', 'validate', 'updateError'],
   data() {
     return {
       showDescriptionField:
@@ -69,9 +67,6 @@ export default {
     },
     saveButtonTestId() {
       return this.isEditing ? 'update-status' : 'save-status';
-    },
-    workItemStatusMvc2Enabled() {
-      return this.glFeatures.workItemStatusMvc2;
     },
   },
   mounted() {
@@ -117,9 +112,6 @@ export default {
         this.updateFormData('color', this.colorBeforeDropdownOpen);
       }
       this.$refs.title?.$el?.focus();
-    },
-    handleFormInput(value) {
-      this.updateFormData('name', value);
     },
     async onStatusSelected(item) {
       this.$emit('update', item);
@@ -229,7 +221,6 @@ export default {
             :state="getFormState(formErrors.name)"
           >
             <gl-form-combobox
-              v-if="workItemStatusMvc2Enabled"
               ref="title"
               autofocus
               class="-gl-mt-3"
@@ -260,22 +251,6 @@ export default {
                 </div>
               </template>
             </gl-form-combobox>
-            <gl-form-input
-              v-else
-              id="status-name"
-              ref="title"
-              :placeholder="s__('WorkItemStatus|Name')"
-              :value="formData.name"
-              :maxlength="32"
-              width="sm"
-              :state="getFormState(formErrors.name)"
-              autofocus
-              autocomplete="off"
-              data-testid="status-name-input"
-              class="gl-flex-grow-1"
-              @input="handleFormInput"
-              @keyup.enter="handleSave"
-            />
           </gl-form-group>
 
           <gl-button

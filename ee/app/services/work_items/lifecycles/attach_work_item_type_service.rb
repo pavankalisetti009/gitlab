@@ -20,7 +20,6 @@ module WorkItems
       )
 
       def execute
-        return FeatureNotAvailableError unless status_mvc2_enabled?
         return InvalidLifecycleTypeError if system_defined_lifecycle?
         return InvalidLifecycleTypeError if system_defined_target_lifecycle?
         return AttachmentForbiddenError unless target_lifecycle_in_namespace?

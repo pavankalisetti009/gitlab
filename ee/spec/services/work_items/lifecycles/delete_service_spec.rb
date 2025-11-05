@@ -126,18 +126,6 @@ RSpec.describe WorkItems::Lifecycles::DeleteService, feature_category: :team_pla
 
         it_behaves_like 'lifecycle service returns validation error'
       end
-
-      context 'when work_item_status_mvc2 feature flag is disabled' do
-        let(:expected_error_message) do
-          'This feature is currently behind a feature flag, and it is not available.'
-        end
-
-        before do
-          stub_feature_flags(work_item_status_mvc2: false)
-        end
-
-        it_behaves_like 'lifecycle service returns validation error'
-      end
     end
 
     context 'when custom lifecycle does not exist' do
@@ -158,18 +146,6 @@ RSpec.describe WorkItems::Lifecycles::DeleteService, feature_category: :team_pla
 
         let(:expected_error_message) do
           "Couldn't find WorkItems::Statuses::Custom::Lifecycle with 'id'=0"
-        end
-
-        it_behaves_like 'lifecycle service returns validation error'
-      end
-
-      context 'when work_item_status_mvc2 feature flag is disabled' do
-        let(:expected_error_message) do
-          'This feature is currently behind a feature flag, and it is not available.'
-        end
-
-        before do
-          stub_feature_flags(work_item_status_mvc2: false)
         end
 
         it_behaves_like 'lifecycle service returns validation error'

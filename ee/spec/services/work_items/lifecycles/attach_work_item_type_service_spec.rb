@@ -522,15 +522,5 @@ RSpec.describe WorkItems::Lifecycles::AttachWorkItemTypeService, feature_categor
 
       it_behaves_like 'lifecycle service returns validation error'
     end
-
-    context 'when work_item_status_mvc2 feature flag is disabled' do
-      let(:expected_error_message) { "This feature is currently behind a feature flag, and it is not available." }
-
-      before do
-        stub_feature_flags(work_item_status_mvc2: false)
-      end
-
-      it_behaves_like 'lifecycle service returns validation error'
-    end
   end
 end

@@ -6,14 +6,13 @@ import {
   GlDisclosureDropdown,
   GlDisclosureDropdownItem,
   GlIcon,
-  GlIntersperse,
   GlModal,
   GlLoadingIcon,
   GlSprintf,
   GlLink,
 } from '@gitlab/ui';
 import VueDraggable from 'vuedraggable';
-import { __, createListFormat, s__, sprintf } from '~/locale';
+import { createListFormat, s__, sprintf } from '~/locale';
 import { getAdaptiveStatusColor, validateHexColor } from '~/lib/utils/color_utils';
 import {
   STATUS_CATEGORIES,
@@ -23,7 +22,6 @@ import {
 import { getDefaultStateType } from 'ee/work_items/utils';
 import { STATE_CLOSED } from '~/work_items/constants';
 import WorkItemStateBadge from '~/work_items/components/work_item_state_badge.vue';
-import glFeatureFlagMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
 import * as Sentry from '~/sentry/sentry_browser_wrapper';
 import HelpPageLink from '~/vue_shared/components/help_page_link/help_page_link.vue';
 import lifecycleUpdateMutation from './graphql/lifecycle_update.mutation.graphql';
@@ -43,7 +41,6 @@ export default {
     GlDisclosureDropdown,
     GlDisclosureDropdownItem,
     GlIcon,
-    GlIntersperse,
     GlModal,
     GlLoadingIcon,
     GlSprintf,
@@ -54,7 +51,6 @@ export default {
     HelpPageLink,
     WorkItemStateBadge,
   },
-  mixins: [glFeatureFlagMixin()],
   props: {
     visible: {
       type: Boolean,
@@ -79,9 +75,7 @@ export default {
       errorMessage: '',
       editingStatusId: null,
       addingToCategory: null,
-      removingStatusId: null,
       removingStatusName: '',
-      showRemoveConfirmation: false,
       formData: {
         name: '',
         color: '',
@@ -135,9 +129,6 @@ export default {
     isEditing() {
       return Boolean(this.editingStatusId);
     },
-    removingStatus() {
-      return this.lifecycle.statuses?.find((status) => status.id === this.removingStatusId);
-    },
     groupWorkItemsPath() {
       return this.namespaceMetadata?.linkPaths?.groupIssues;
     },
@@ -160,9 +151,6 @@ export default {
         return [...sameCategoryStatuses, ...otherStatuses];
       }
       return availableStatuses;
-    },
-    workItemStatusMvc2Enabled() {
-      return this.glFeatures.workItemStatusMvc2;
     },
     usageText() {
       const workItemTypes = this.lifecycle.workItemTypes.map((type) => NAME_TO_TEXT_MAP[type.name]);
@@ -217,13 +205,8 @@ export default {
       };
     },
     startRemovingStatus(status) {
-      if (this.workItemStatusMvc2Enabled) {
-        this.statusToRemove = status;
-        return;
-      }
-      this.removingStatusId = status.id;
+      this.statusToRemove = status;
       this.removingStatusName = status.name;
-      this.showRemoveConfirmation = true;
     },
     async startDefaultingStatus(status, defaultState) {
       if (!status?.id || !defaultState) {
@@ -263,16 +246,6 @@ export default {
       } catch (error) {
         this.errorMessage = s__('WorkItem|An error occurred while making status default.');
       }
-    },
-    confirmRemoveStatus() {
-      if (this.removingStatusId) {
-        this.removeStatus(this.removingStatusId);
-      }
-      this.cancelRemoveStatus();
-    },
-    cancelRemoveStatus() {
-      this.removingStatusId = null;
-      this.showRemoveConfirmation = false;
     },
     cancelForm() {
       this.resetForm();
@@ -485,22 +458,6 @@ export default {
         s__('WorkItem|An error occurred while saving the status.'),
       );
     },
-    async removeStatus(statusId) {
-      const currentStatuses = this.lifecycle.statuses
-        .filter((s) => s.id !== statusId)
-        .map((status) => ({
-          id: status.id,
-          name: status.name,
-          color: status.color,
-          category: this.getCategoryFromStatus(status.id),
-          description: status.description,
-        }));
-
-      await this.updateLifecycle(
-        currentStatuses,
-        s__('WorkItem|An error occurred while removing the status.'),
-      );
-    },
     getCategoryFromStatus(statusId) {
       for (const [category, statuses] of Object.entries(this.statusesByCategory)) {
         if (statuses.find((status) => status.id === statusId)) {
@@ -541,19 +498,6 @@ export default {
   CATEGORY_ORDER,
   STATUS_CATEGORIES_MAP,
   sprintf,
-  confirmRemoveStatus: {
-    text: s__('WorkItem|Remove'),
-    attributes: {
-      variant: 'danger',
-      'data-testid': 'confirm-remove-status',
-    },
-  },
-  cancelRemoveStatus: {
-    text: __('Cancel'),
-    attributes: {
-      'data-testid': 'cancel-remove-status',
-    },
-  },
 };
 </script>
 
@@ -570,36 +514,6 @@ export default {
 
       <template v-else>
         <div
-          v-if="!workItemStatusMvc2Enabled"
-          class="gl-mb-5 gl-rounded-base gl-bg-strong gl-p-3"
-          data-testid="status-info-alert"
-        >
-          <gl-sprintf
-            class="gl-flex gl-items-center gl-gap-2"
-            :message="
-              s__(
-                'WorkItem|Used on types: %{workItemTypes}. Changes affect all items in all subgroups and projects.',
-              )
-            "
-          >
-            <template #workItemTypes>
-              <gl-intersperse
-                ><span v-for="workItemType in lifecycle.workItemTypes" :key="workItemType.id">{{
-                  workItemType.name
-                }}</span></gl-intersperse
-              >
-            </template>
-          </gl-sprintf>
-          <help-page-link
-            data-testid="help-page-link"
-            href="user/work_items/status"
-            target="_blank"
-          >
-            {{ s__('WorkItems|How do I use statuses?') }}
-          </help-page-link>
-        </div>
-        <div
-          v-else
           class="gl-border gl-mb-5 gl-rounded-lg gl-border-strong gl-bg-strong gl-p-4"
           data-testid="lifecycle-info"
         >
@@ -797,33 +711,6 @@ export default {
       <template #modal-footer>
         <gl-button @click="closeModal">{{ __('Close') }}</gl-button>
       </template>
-    </gl-modal>
-    <gl-modal
-      v-if="removingStatus"
-      :visible="showRemoveConfirmation"
-      :title="s__('WorkItem|Remove status')"
-      size="sm"
-      modal-id="remove-status-confirmation-modal"
-      :action-primary="$options.confirmRemoveStatus"
-      :action-cancel="$options.cancelRemoveStatus"
-      data-testid="remove-status-confirmation-modal"
-      @primary="confirmRemoveStatus"
-      @hide="cancelRemoveStatus"
-    >
-      <p class="gl-mb-0">
-        {{
-          sprintf(
-            s__('WorkItem|Are you sure you want to remove the %{statusName} status?'),
-            {
-              statusName: removingStatus.name,
-            },
-            false,
-          )
-        }}
-      </p>
-      <p class="gl-mb-0 gl-text-subtle">
-        {{ s__('WorkItem|This action cannot be undone.') }}
-      </p>
     </gl-modal>
     <remove-status-modal
       v-if="Boolean(statusToRemove)"

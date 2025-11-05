@@ -20,7 +20,6 @@ module WorkItems
       end
 
       def execute
-        return FeatureNotAvailableError unless status_mvc2_enabled?
         return InvalidLifecycleTypeError if system_defined_lifecycle?
         return LifecycleDeleteForbiddenError if lifecycle_delete_forbidden?
         return LifecycleInUseError if lifecycle_in_use?

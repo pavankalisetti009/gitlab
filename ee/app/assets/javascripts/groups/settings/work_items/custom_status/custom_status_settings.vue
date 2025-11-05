@@ -1,12 +1,10 @@
 <script>
-import { GlAlert, GlButton, GlIcon, GlLoadingIcon } from '@gitlab/ui';
+import { GlAlert, GlButton, GlLoadingIcon } from '@gitlab/ui';
 import { uniqBy } from 'lodash';
 import { s__ } from '~/locale';
 import * as Sentry from '~/sentry/sentry_browser_wrapper';
-import glFeatureFlagMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
 import HelpPageLink from '~/vue_shared/components/help_page_link/help_page_link.vue';
 import SettingsBlock from '~/vue_shared/components/settings/settings_block.vue';
-import WorkItemStatusBadge from 'ee/work_items/components/shared/work_item_status_badge.vue';
 import StatusModal from './status_modal.vue';
 import CreateLifecycleModal from './create_lifecycle_modal.vue';
 import LifecycleDetail from './lifecycle_detail.vue';
@@ -16,16 +14,13 @@ export default {
   components: {
     GlAlert,
     GlButton,
-    GlIcon,
     StatusModal,
-    WorkItemStatusBadge,
     HelpPageLink,
     CreateLifecycleModal,
     LifecycleDetail,
     GlLoadingIcon,
     SettingsBlock,
   },
-  mixins: [glFeatureFlagMixin()],
   props: {
     fullPath: {
       type: String,
@@ -66,9 +61,6 @@ export default {
   computed: {
     selectedLifecycle() {
       return this.lifecycles.find((lifecycle) => lifecycle.id === this.selectedLifecycleId);
-    },
-    workItemStatusMvc2Enabled() {
-      return this.glFeatures.workItemStatusMvc2;
     },
     loadingInitialLifecycles() {
       return !this.initialLifecyclesLoaded && this.$apollo.queries.lifecycles.loading;
@@ -152,7 +144,6 @@ export default {
       </gl-alert>
 
       <section
-        v-if="workItemStatusMvc2Enabled"
         data-testid="more-lifecycle-information"
         class="gl-mb-4 gl-flex gl-flex-wrap gl-items-center gl-justify-between"
       >
@@ -171,7 +162,7 @@ export default {
         }}</gl-button>
       </section>
 
-      <div v-if="workItemStatusMvc2Enabled" class="gl-flex gl-flex-col gl-gap-4">
+      <div class="gl-flex gl-flex-col gl-gap-4">
         <lifecycle-detail
           v-for="lifecycle in lifecycles"
           :key="lifecycle.id"
@@ -189,41 +180,6 @@ export default {
         </lifecycle-detail>
       </div>
 
-      <template v-else>
-        <div class="gl-flex gl-flex-col gl-gap-4">
-          <div
-            v-for="lifecycle in lifecycles"
-            :key="lifecycle.id"
-            class="gl-border gl-rounded-base gl-px-5 gl-py-4"
-            data-testid="lifecycle-container"
-          >
-            <div class="gl-mb-3 gl-flex gl-gap-3">
-              <span
-                v-for="workItemType in lifecycle.workItemTypes"
-                :key="workItemType.id"
-                class="gl-text-subtle"
-              >
-                <gl-icon :name="workItemType.iconName" />
-                <span>{{ workItemType.name }}</span>
-              </span>
-            </div>
-
-            <div class="gl-mx-auto gl-my-3 gl-flex gl-flex-wrap gl-gap-3">
-              <div v-for="status in lifecycle.statuses" :key="status.id" class="gl-max-w-20">
-                <work-item-status-badge :key="status.id" :item="status" />
-              </div>
-            </div>
-
-            <gl-button
-              data-testid="edit-statuses"
-              size="small"
-              @click="openStatusModal(lifecycle.id)"
-              >{{ s__('WorkItem|Edit statuses') }}</gl-button
-            >
-          </div>
-        </div>
-      </template>
-
       <status-modal
         v-if="selectedLifecycle"
         :visible="Boolean(selectedLifecycleId)"
@@ -235,7 +191,6 @@ export default {
       />
 
       <create-lifecycle-modal
-        v-if="workItemStatusMvc2Enabled"
         :visible="showCreateLifecycleModal"
         :full-path="fullPath"
         @close="closeCreateLifecycleModal"

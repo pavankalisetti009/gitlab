@@ -11,10 +11,6 @@ module EE
         before_action :authorize_read_work_item!, only: [:description_diff, :delete_description_version]
         before_action :set_application_context!, only: [:show]
         include DescriptionDiffActions
-
-        before_action do
-          push_frontend_feature_flag(:work_item_status_mvc2, group&.root_ancestor)
-        end
       end
 
       def show

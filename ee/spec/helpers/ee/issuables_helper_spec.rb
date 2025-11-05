@@ -94,7 +94,6 @@ RSpec.describe IssuablesHelper, feature_category: :team_planning do
 
         before do
           stub_licensed_features(work_item_status: true)
-          stub_feature_flags(work_item_status_mvc2: true)
         end
 
         it 'returns the correct data' do

@@ -268,22 +268,6 @@ RSpec.describe 'Updating a custom lifecycle', feature_category: :team_planning d
             end
 
             it_behaves_like 'updates the lifecycle'
-
-            context 'when work_item_status_mvc2 feature flag is disabled' do
-              before do
-                stub_feature_flags(work_item_status_mvc2: false)
-              end
-
-              it 'returns an error' do
-                post_graphql_mutation(mutation, current_user: user)
-
-                expect(response).to have_gitlab_http_status(:success)
-                expect(mutation_response['errors']).to include(
-                  "Cannot delete status '#{existing_in_progress_status.name}' " \
-                    "because it is in use"
-                )
-              end
-            end
           end
         end
       end

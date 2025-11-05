@@ -5,10 +5,6 @@ module WorkItems
     class BaseService < ::BaseContainerService
       include Gitlab::InternalEventsTracking
 
-      FeatureNotAvailableError = ServiceResponse.error(
-        message: 'This feature is currently behind a feature flag, and it is not available.'
-      )
-
       def initialize(...)
         super
 
@@ -127,7 +123,7 @@ module WorkItems
       end
 
       def update_custom_status!(status, status_params)
-        expire_mappings_from_status(status) if lifecycle.present? && status_mvc2_enabled?
+        expire_mappings_from_status(status) if lifecycle.present?
 
         update_attributes = status_params.to_h.slice(:name, :description, :color)
 
@@ -195,12 +191,6 @@ module WorkItems
       end
 
       def handle_deferred_status_removal
-        unless status_mvc2_enabled?
-          status_ids = @statuses_to_remove.map(&:id)
-          ::WorkItems::Statuses::Custom::Status.id_in(status_ids).delete_all
-          return
-        end
-
         return unless @statuses_to_remove&.any?
 
         statuses_with_mappings, statuses_without_mappings = @statuses_to_remove.partition do |status|
@@ -397,8 +387,6 @@ module WorkItems
 
           next unless in_use
 
-          raise StandardError, "Cannot delete status '#{status.name}' because it is in use" unless status_mvc2_enabled?
-
           unless find_mapping_for_status(status)
             raise StandardError, "Cannot remove status '#{status.name}' from lifecycle " \
               "because it is in use and no mapping is provided"
@@ -416,14 +404,9 @@ module WorkItems
 
         conflicting_status = @statuses_to_remove.find { |status| conflicting_ids.include?(status.id) }
 
-        if status_mvc2_enabled?
-          return if find_mapping_for_status(conflicting_status)
+        return if find_mapping_for_status(conflicting_status)
 
-          raise StandardError, "Cannot remove default status '#{conflicting_status.name}' without providing a mapping"
-        end
-
-        raise StandardError,
-          "Cannot delete status '#{conflicting_status.name}' because it is marked as a default status"
+        raise StandardError, "Cannot remove default status '#{conflicting_status.name}' without providing a mapping"
       end
 
       def update_lifecycle_status_positions!
@@ -537,10 +520,6 @@ module WorkItems
         lifecycle.statuses.map(&:id)
       end
       strong_memoize_attr :lifecycle_status_ids
-
-      def status_mvc2_enabled?
-        group.try(:work_item_status_mvc2_feature_flag_enabled?)
-      end
     end
   end
 end

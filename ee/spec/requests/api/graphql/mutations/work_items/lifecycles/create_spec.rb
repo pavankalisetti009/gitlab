@@ -111,21 +111,6 @@ RSpec.describe 'Creating a custom lifecycle', feature_category: :team_planning d
     end
   end
 
-  context 'when work_item_status_mvc2 feature flag is disabled' do
-    before do
-      stub_feature_flags(work_item_status_mvc2: false)
-    end
-
-    it 'returns an error' do
-      post_graphql_mutation(mutation, current_user: user)
-
-      expect(response).to have_gitlab_http_status(:success)
-      expect(mutation_response['errors']).to include(
-        'This feature is currently behind a feature flag, and it is not available.'
-      )
-    end
-  end
-
   context 'when user is unauthorized' do
     it 'returns an error' do
       guest = create(:user, guest_of: group)

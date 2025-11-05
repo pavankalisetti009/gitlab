@@ -21,7 +21,6 @@ describe('StatusForm', () => {
   };
 
   const findColorDropdown = () => wrapper.findComponent(GlDisclosureDropdown);
-  const findNameInput = () => wrapper.findByTestId('status-name-input');
   const findDescriptionInput = () => wrapper.findByTestId('status-description-input');
   const findAddDescriptionButton = () => wrapper.findByTestId('add-description-button');
   const findSaveButton = () => wrapper.findByTestId('save-status');
@@ -30,7 +29,7 @@ describe('StatusForm', () => {
   const findCategoryIcon = () => wrapper.findComponent(GlIcon);
   const findAutoSuggestionsBox = () => wrapper.findComponent(GlFormCombobox);
 
-  const createComponent = (props = {}, workItemStatusMvc2Enabled = false) => {
+  const createComponent = (props = {}) => {
     // Mock gon for suggested colors
     global.gon = {
       suggested_label_colors: {
@@ -44,11 +43,6 @@ describe('StatusForm', () => {
       propsData: {
         ...defaultProps,
         ...props,
-      },
-      provide: {
-        glFeatures: {
-          workItemStatusMvc2: workItemStatusMvc2Enabled,
-        },
       },
     });
   };
@@ -65,8 +59,8 @@ describe('StatusForm', () => {
       expect(icon.attributes('style')).toContain('color: rgb(255, 0, 0)');
     });
 
-    it('displays name input with correct value', () => {
-      expect(findNameInput().attributes('value')).toBe('Test Status');
+    it('shows status name in auto-suggestions value', () => {
+      expect(findAutoSuggestionsBox().props('value')).toBe('Test Status');
     });
 
     it('displays color input with correct values', () => {
@@ -99,31 +93,16 @@ describe('StatusForm', () => {
     });
 
     describe('status name interactions', () => {
-      describe('when the FF `work_item_status_mvc2` FF is enabled', () => {
-        beforeEach(() => {
-          createComponent(defaultProps, true);
-        });
-
-        it('shows the combobox instead of form input', () => {
-          expect(findNameInput().exists()).toBe(false);
-          expect(findAutoSuggestionsBox().exists()).toBe(true);
-        });
-
-        it('passes `name` as the matching value attribute in the token list', () => {
-          expect(findAutoSuggestionsBox().props('matchValueToAttr')).toBe('name');
-        });
+      beforeEach(() => {
+        createComponent(defaultProps);
       });
 
-      describe('when the FF `work_item_status_mvc2` FF is disabled', () => {
-        it('emits update when name input changes', () => {
-          findNameInput().vm.$emit('input', 'New Name');
+      it('shows the combobox instead of form input', () => {
+        expect(findAutoSuggestionsBox().exists()).toBe(true);
+      });
 
-          expect(wrapper.emitted('update')).toHaveLength(1);
-          expect(wrapper.emitted('update')[0][0]).toEqual({
-            ...defaultProps.formData,
-            name: 'New Name',
-          });
-        });
+      it('passes `name` as the matching value attribute in the token list', () => {
+        expect(findAutoSuggestionsBox().props('matchValueToAttr')).toBe('name');
       });
     });
 
@@ -234,7 +213,16 @@ describe('StatusForm', () => {
   it('limits name input to 32 characters', () => {
     createComponent();
 
-    expect(findNameInput().attributes('maxlength')).toBe('32');
+    const validName = 'a'.repeat(32);
+    const invalidName = 'a'.repeat(33);
+
+    findAutoSuggestionsBox().vm.$emit('input', validName);
+    expect(wrapper.emitted('update')).toBeDefined();
+
+    createComponent();
+
+    findAutoSuggestionsBox().vm.$emit('input', invalidName);
+    expect(wrapper.emitted('update')).toBeUndefined();
   });
 
   describe('color validation', () => {

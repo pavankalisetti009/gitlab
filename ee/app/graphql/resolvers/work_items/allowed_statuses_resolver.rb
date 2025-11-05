@@ -11,17 +11,12 @@ module Resolvers
         description: 'Filter statuses by name.'
 
       def resolve(name: nil)
-        return [] unless work_item_status_feature_available?
+        return [] unless License.feature_available?(:work_item_status)
 
         allowed_statuses_for_the_user(name)
       end
 
       private
-
-      def work_item_status_feature_available?
-        ::Feature.enabled?(:work_item_status_mvc2, current_user) &&
-          License.feature_available?(:work_item_status)
-      end
 
       def allowed_statuses_for_the_user(name = nil)
         group_ids = current_user&.authorized_root_ancestor_ids

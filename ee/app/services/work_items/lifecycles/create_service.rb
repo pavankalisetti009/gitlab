@@ -8,8 +8,6 @@ module WorkItems
       end
 
       def execute
-        return FeatureNotAvailableError unless status_mvc2_enabled?
-
         result = create_custom_lifecycle!
 
         track_internal_events_for_statuses
