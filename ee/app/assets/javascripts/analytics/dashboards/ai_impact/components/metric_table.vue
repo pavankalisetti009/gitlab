@@ -54,6 +54,7 @@ import {
   SUPPORTED_AI_METRICS,
   HIDE_METRIC_DRILL_DOWN,
   AI_IMPACT_DATA_NOT_AVAILABLE_TOOLTIPS,
+  AI_IMPACT_TABLE_METRICS,
 } from '../constants';
 import {
   fetchMetricsForTimePeriods,
@@ -91,6 +92,11 @@ export default {
     isProject: {
       type: Boolean,
       required: true,
+    },
+    includeMetrics: {
+      type: Array,
+      required: false,
+      default: () => [],
     },
     excludeMetrics: {
       type: Array,
@@ -133,11 +139,20 @@ export default {
         },
       ].filter(({ metrics }) => !this.areAllMetricsSkipped(metrics));
     },
+    omittedMetrics() {
+      if (this.includeMetrics.length > 0) {
+        return Object.keys(AI_IMPACT_TABLE_METRICS).filter(
+          (metric) => !this.includeMetrics.includes(metric),
+        );
+      }
+
+      return this.excludeMetrics;
+    },
     restrictedMetrics() {
-      return getRestrictedTableMetrics(this.excludeMetrics, this.glAbilities);
+      return getRestrictedTableMetrics(this.omittedMetrics, this.glAbilities);
     },
     skippedMetrics() {
-      return uniq([...this.restrictedMetrics, ...this.excludeMetrics]);
+      return uniq([...this.restrictedMetrics, ...this.omittedMetrics]);
     },
   },
   async mounted() {

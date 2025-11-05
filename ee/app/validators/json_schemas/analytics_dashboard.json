@@ -231,6 +231,12 @@
       "type": "object",
       "additionalProperties": false,
       "properties": {
+        "includeMetrics": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
         "excludeMetrics": {
           "type": "array",
           "items": {

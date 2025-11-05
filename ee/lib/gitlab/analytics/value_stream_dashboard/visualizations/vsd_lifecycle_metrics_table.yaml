@@ -5,20 +5,13 @@ data:
   type: value_stream
   query:
     filters:
-      excludeMetrics:
-        - deployment_frequency
-        - lead_time_for_changes
-        - time_to_restore_service
-        - change_failure_rate
-        - vulnerability_critical
-        - vulnerability_high
-        - pipeline_count
-        - pipeline_success_rate
-        - pipeline_failed_rate
-        - pipeline_duration_median
-        - code_suggestions_usage_rate
-        - code_suggestions_acceptance_rate
-        - duo_chat_usage_rate
-        - duo_rca_usage_rate
-        - duo_used_count
+      includeMetrics:
+        - lead_time
+        - cycle_time
+        - issues
+        - issues_completed
+        - deploys
+        - median_time_to_merge
+        - merge_request_throughput
+        - contributor_count
 options: {}

@@ -154,9 +154,7 @@ describe('Metric table', () => {
       propsData: {
         namespace,
         isProject,
-        excludeMetrics: Object.keys(AI_IMPACT_TABLE_METRICS).filter(
-          (id) => !metricIds.includes(id),
-        ),
+        includeMetrics: Object.keys(AI_IMPACT_TABLE_METRICS).filter((id) => metricIds.includes(id)),
         ...props,
       },
       provide: {
@@ -486,7 +484,7 @@ describe('Metric table', () => {
     });
   });
 
-  describe('excludeMetrics set', () => {
+  describe('metrics filters', () => {
     const flowMetricsRequest = jest.fn().mockImplementation(() => Promise.resolve());
     const doraMetricsRequest = jest.fn().mockImplementation(() => Promise.resolve());
     const vulnerabilityMetricsRequest = jest.fn().mockImplementation(() => Promise.resolve());
@@ -508,49 +506,76 @@ describe('Metric table', () => {
       });
     });
 
-    describe.each([
+    const metricGroups = [
       {
         group: 'DORA metrics',
-        excludeMetrics: SUPPORTED_DORA_METRICS,
+        metrics: SUPPORTED_DORA_METRICS,
         apiRequest: doraMetricsRequest,
       },
       {
         group: 'Flow metrics',
-        excludeMetrics: SUPPORTED_FLOW_METRICS,
+        metrics: SUPPORTED_FLOW_METRICS,
         apiRequest: flowMetricsRequest,
       },
       {
         group: 'Vulnerability metrics',
-        excludeMetrics: SUPPORTED_VULNERABILITY_METRICS,
+        metrics: SUPPORTED_VULNERABILITY_METRICS,
         apiRequest: vulnerabilityMetricsRequest,
       },
       {
         group: 'MR metrics',
-        excludeMetrics: SUPPORTED_MERGE_REQUEST_METRICS,
+        metrics: SUPPORTED_MERGE_REQUEST_METRICS,
         apiRequest: mrMetricsRequest,
       },
       {
         group: 'Contribution metrics',
-        excludeMetrics: SUPPORTED_CONTRIBUTOR_METRICS,
+        metrics: SUPPORTED_CONTRIBUTOR_METRICS,
         apiRequest: contributorMetricsRequest,
       },
       {
         group: 'AI metrics',
-        excludeMetrics: SUPPORTED_AI_METRICS,
+        metrics: SUPPORTED_AI_METRICS,
         apiRequest: aiMetricsRequest,
       },
       {
         group: 'Pipeline metrics',
-        excludeMetrics: SUPPORTED_PIPELINE_ANALYTICS_METRICS,
+        metrics: SUPPORTED_PIPELINE_ANALYTICS_METRICS,
         apiRequest: pipelineMetricsRequest,
       },
-    ])('for $group', ({ excludeMetrics, apiRequest }) => {
-      describe('when all metrics excluded', () => {
-        beforeEach(() => {
-          return createWrapper([], { apolloProvider, props: { excludeMetrics } });
+    ];
+
+    describe('`includeMetrics` set', () => {
+      const [selectedMetricGroup, ...omittedMetricGroups] = metricGroups;
+      const {
+        group: selectedMetricGroupTitle,
+        metrics: selectedMetricGroupMetrics,
+        apiRequest: selectedMetricGroupRequest,
+      } = selectedMetricGroup;
+      const [includedMetric, ...omittedMetrics] = selectedMetricGroupMetrics;
+
+      beforeEach(() => {
+        return createWrapper([], {
+          apolloProvider,
+          props: { includeMetrics: [includedMetric] },
+        });
+      });
+
+      describe(`for included ${selectedMetricGroupTitle}`, () => {
+        it(`renders included \`${includedMetric}\``, () => {
+          expect(findTableRow(includedMetric).exists()).toBe(true);
         });
 
-        it.each(excludeMetrics)('does not render `%s`', (identifier) => {
+        it.each(omittedMetrics)('does not render omitted `%s`', (identifier) => {
+          expect(findTableRow(identifier).exists()).toBe(false);
+        });
+
+        it(`requests metrics`, () => {
+          expect(selectedMetricGroupRequest).toHaveBeenCalled();
+        });
+      });
+
+      describe.each(omittedMetricGroups)('for omitted $group', ({ metrics, apiRequest }) => {
+        it.each(metrics)('does not render `%s`', (identifier) => {
           expect(findTableRow(identifier).exists()).toBe(false);
         });
 
@@ -559,12 +584,75 @@ describe('Metric table', () => {
         });
       });
 
-      describe('when almost all metrics excluded', () => {
+      describe('`excludeMetrics` is also set', () => {
         beforeEach(() => {
           return createWrapper([], {
             apolloProvider,
-            props: { excludeMetrics: excludeMetrics.slice(1) },
+            props: {
+              includeMetrics: selectedMetricGroupMetrics,
+              excludeMetrics: selectedMetricGroupMetrics,
+            },
           });
+        });
+
+        it.each(selectedMetricGroupMetrics)(
+          'renders `%s`, taking priority over `excludeMetrics`',
+          (identifier) => {
+            expect(findTableRow(identifier).exists()).toBe(true);
+          },
+        );
+
+        it('requests metrics', () => {
+          expect(selectedMetricGroupRequest).toHaveBeenCalled();
+        });
+      });
+    });
+
+    describe('`excludeMetrics` set', () => {
+      describe.each(metricGroups)('for $group', ({ metrics, apiRequest }) => {
+        describe('when all metrics excluded', () => {
+          beforeEach(() => {
+            return createWrapper([], {
+              apolloProvider,
+              props: { includeMetrics: [], excludeMetrics: metrics },
+            });
+          });
+
+          it.each(metrics)('does not render `%s`', (identifier) => {
+            expect(findTableRow(identifier).exists()).toBe(false);
+          });
+
+          it('does not send a request', () => {
+            expect(apiRequest).not.toHaveBeenCalled();
+          });
+        });
+
+        describe('when almost all metrics excluded', () => {
+          beforeEach(() => {
+            return createWrapper([], {
+              apolloProvider,
+              props: { includeMetrics: [], excludeMetrics: metrics.slice(1) },
+            });
+          });
+
+          it('requests metrics', () => {
+            expect(apiRequest).toHaveBeenCalled();
+          });
+        });
+      });
+    });
+
+    describe('neither `includeMetrics` nor `excludeMetrics` are set', () => {
+      beforeEach(() => {
+        return createWrapper([], {
+          apolloProvider,
+          props: { includeMetrics: [], excludeMetrics: [] },
+        });
+      });
+
+      describe.each(metricGroups)('for $group', ({ metrics, apiRequest }) => {
+        it.each(metrics)('renders `%s`', (identifier) => {
+          expect(findTableRow(identifier).exists()).toBe(true);
         });
 
         it('requests metrics', () => {
