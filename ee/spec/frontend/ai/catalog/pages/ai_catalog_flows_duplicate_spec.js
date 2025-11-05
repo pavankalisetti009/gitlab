@@ -108,7 +108,7 @@ describe('AiCatalogFlowsDuplicate', () => {
 
       expect(createAiCatalogFlowMock).toHaveBeenCalledTimes(1);
       expect(createAiCatalogFlowMock).toHaveBeenCalledWith({
-        input: { ...input, addToProjectWhenCreated: true },
+        input,
       });
     });
 
@@ -150,7 +150,7 @@ describe('AiCatalogFlowsDuplicate', () => {
         expect(createAiCatalogFlowMock).not.toHaveBeenCalled();
         expect(createAiCatalogThirdPartyFlowMock).toHaveBeenCalledTimes(1);
         expect(createAiCatalogThirdPartyFlowMock).toHaveBeenCalledWith({
-          input: { ...input, addToProjectWhenCreated: true },
+          input,
         });
       });
     });

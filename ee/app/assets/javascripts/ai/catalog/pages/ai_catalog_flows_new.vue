@@ -31,10 +31,7 @@ export default {
         const { data } = await this.$apollo.mutate({
           mutation: config.mutation,
           variables: {
-            input: {
-              ...input,
-              addToProjectWhenCreated: true,
-            },
+            input,
           },
         });
 

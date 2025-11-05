@@ -49,10 +49,7 @@ export default {
         const { data } = await this.$apollo.mutate({
           mutation: createAiCatalogAgent,
           variables: {
-            input: {
-              ...input,
-              addToProjectWhenCreated: true,
-            },
+            input,
           },
         });
 
