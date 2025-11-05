@@ -93,6 +93,7 @@ RSpec.describe 'Work items bulk editing', :js, feature_category: :team_planning 
 
     context 'when bulk editing parent on group issue list' do
       before do
+        stub_feature_flags(work_item_planning_view: false)
         allow(Gitlab::QueryLimiting).to receive(:threshold).and_return(132)
 
         visit issues_group_path(group)
@@ -201,6 +202,7 @@ RSpec.describe 'Work items bulk editing', :js, feature_category: :team_planning 
       let_it_be(:child_epic_2) { create(:work_item, :epic, namespace: group, title: "Child epic 2") }
 
       before do
+        stub_feature_flags(work_item_planning_view: false)
         visit group_epics_path(group)
         click_bulk_edit
       end

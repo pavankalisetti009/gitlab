@@ -61,10 +61,40 @@ RSpec.describe Groups::EpicsController, feature_category: :portfolio_management 
         group.add_developer(user)
       end
 
-      it "returns index" do
-        get :index, params: { group_id: group }
+      shared_examples 'epics index redirect' do |redirect_path, should_redirect|
+        if should_redirect
+          it 'redirects to work items path with epic type filter' do
+            get :index, params: { group_id: group }
 
-        expect(response).to have_gitlab_http_status(:ok)
+            expect(response).to redirect_to send(redirect_path, group, params: { 'type[]' => 'epic' })
+          end
+
+          it 'preserves query parameters except type when redirecting' do
+            get :index, params: { group_id: group, search: 'feature', sort: 'created_desc', type: 'old_type' }
+
+            expect(response).to redirect_to send(redirect_path, group,
+              params: { search: 'feature', sort: 'created_desc', 'type[]' => 'epic' })
+          end
+        else
+          it "renders the epics index page" do
+            get :index, params: { group_id: group }
+
+            expect(response).to have_gitlab_http_status(:ok)
+            expect(response).to render_template 'work_items_index'
+          end
+        end
+      end
+
+      context 'when work_item_planning_view feature flag is enabled' do
+        it_behaves_like 'epics index redirect', :group_work_items_path, true
+      end
+
+      context 'when work_item_planning_view feature flag is disabled' do
+        before do
+          stub_feature_flags(work_item_planning_view: false)
+        end
+
+        it_behaves_like 'epics index redirect', :group_epics_path, false
       end
     end
 
