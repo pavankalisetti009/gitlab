@@ -281,14 +281,14 @@ module Features
       wait_for_requests
     end
 
-    def update_with_applied_trials
+    def update_with_applied_trials(with_duo: true)
       group = Group.last
       plan = create(:ultimate_trial_plan)
       group.gitlab_subscription.update!(
         hosted_plan: plan, trial: true, trial_starts_on: Time.current, trial_ends_on: Time.current + 60.days
       )
 
-      update_with_duo_enterprise_trial
+      update_with_duo_enterprise_trial if with_duo
     end
 
     def stub_duo_landing_page_data

@@ -1,0 +1,12 @@
+- return unless can?(current_user, :read_billing, @project.root_ancestor)
+- return unless @project.root_ancestor.trial_active?
+
+-# rubocop:disable Cop/ExperimentsTestCoverage -- covered in ee/spec/views/shared/projects/premium_message_during_trial/_base.html.haml_spec.rb
+- experiment(:premium_message_during_trial, namespace: @project.root_ancestor, only_assigned: true) do |e|
+  - e.candidate do
+    - unless current_user.dismissed_callout_for_group?(feature_name: feature_id, group: @project.root_ancestor)
+      #js-premium-message-during-trial{ data: { feature_id: feature_id,
+        group_id: @project.root_ancestor.id,
+        page: page,
+        upgrade_url: group_billings_path(@project.root_ancestor) } }
+-# rubocop:enable Cop/ExperimentsTestCoverage
