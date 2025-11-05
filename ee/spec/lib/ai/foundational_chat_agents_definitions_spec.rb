@@ -87,7 +87,7 @@ RSpec.describe Ai::FoundationalChatAgentsDefinitions, feature_category: :ai_abst
         items.each do |item|
           version = item[:version]
           # Version should be either empty string or follow semantic versioning pattern
-          expect(version).to match(/\A(|v\d+(\.\d+)*)\z/)
+          expect(version).to match(/\A(|v\d+(\.\d+)*|experimental)\z/)
         end
       end
     end

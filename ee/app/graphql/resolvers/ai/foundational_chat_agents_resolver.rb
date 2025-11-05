@@ -17,7 +17,13 @@ module Resolvers
 
       # rubocop:disable Lint/UnusedMethodArgument -- arguments will be used for feature flag managements
       def resolve(*, project_id: nil, namespace_id: nil)
-        ::Ai::FoundationalChatAgent.all.sort_by(&:id)
+        filtered_agents = []
+        filtered_agents << 'duo_planner' if Feature.disabled?(:foundational_duo_planner, current_user)
+        filtered_agents << 'security_analyst_agent' if Feature.disabled?(:foundational_security_agent, current_user)
+
+        ::Ai::FoundationalChatAgent.all
+          .select { |agent| filtered_agents.exclude?(agent.reference) }
+          .sort_by(&:id)
       end
       # rubocop:enable Lint/UnusedMethodArgument
     end
