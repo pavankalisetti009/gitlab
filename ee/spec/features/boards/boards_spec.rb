@@ -19,7 +19,7 @@ RSpec.describe 'Project issue boards', :js, feature_category: :portfolio_managem
     before do
       project.add_maintainer(user)
       group.add_reporter(user)
-      login_as(user)
+      sign_in(user)
     end
 
     it 'can edit board name' do
@@ -51,7 +51,7 @@ RSpec.describe 'Project issue boards', :js, feature_category: :portfolio_managem
       end
 
       it 'shows Epic swimlanes toggle when user is logged in' do
-        login_as(user)
+        sign_in(user)
         visit_board_page
 
         page.find("[data-testid='board-options-dropdown'] button").click
@@ -74,7 +74,7 @@ RSpec.describe 'Project issue boards', :js, feature_category: :portfolio_managem
       end
 
       it 'does not show Epic swimlanes toggle when user is logged in' do
-        login_as(user)
+        sign_in(user)
         visit_board_page
 
         expect(page).to have_css('.filtered-search-block')
@@ -94,7 +94,7 @@ RSpec.describe 'Project issue boards', :js, feature_category: :portfolio_managem
 
     before do
       project.add_developer(user)
-      login_as(user)
+      sign_in(user)
       visit_board_page
     end
 
@@ -170,7 +170,7 @@ RSpec.describe 'Project issue boards', :js, feature_category: :portfolio_managem
 
     before do
       project.add_developer(user)
-      login_as(user)
+      sign_in(user)
       visit_board_page
     end
 
@@ -193,7 +193,7 @@ RSpec.describe 'Project issue boards', :js, feature_category: :portfolio_managem
   context 'list settings' do
     before do
       project.add_developer(user)
-      login_as(user)
+      sign_in(user)
     end
 
     context 'when license is available' do
@@ -352,7 +352,7 @@ RSpec.describe 'Project issue boards', :js, feature_category: :portfolio_managem
     end
 
     before do
-      login_as(user)
+      sign_in(user)
       visit_board_page
     end
 

@@ -18,7 +18,7 @@ RSpec.describe 'Multiple Issue Boards', :js, feature_category: :portfolio_manage
 
       parent.add_maintainer(user)
 
-      login_as(user)
+      sign_in(user)
     end
 
     it 'hides the link to create a new board' do
