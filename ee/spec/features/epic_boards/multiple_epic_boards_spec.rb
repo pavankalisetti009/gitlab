@@ -26,7 +26,8 @@ RSpec.describe 'epic boards', :js, feature_category: :portfolio_management do
       end
     end
 
-    it 'shows a list of epic boards' do
+    it 'shows a list of epic boards',
+      quarantine: 'https://gitlab.com/gitlab-org/quality/test-failure-issues/-/issues/11463' do
       in_boards_switcher_dropdown do
         expect(page).to have_content(epic_board.name)
         expect(page).to have_content(epic_board2.name)
