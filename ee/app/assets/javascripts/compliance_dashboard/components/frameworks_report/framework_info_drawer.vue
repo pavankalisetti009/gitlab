@@ -202,10 +202,12 @@ export default {
       this.after = this.projects.pageInfo.endCursor;
     },
     copyFrameworkIdToClipboard() {
+      // eslint-disable-next-line no-restricted-properties
       navigator?.clipboard?.writeText(this.normalisedFrameworkId);
       this.$toast.show(this.$options.i18n.copyFrameworkIdToastText);
     },
     copyControlIdToClipboard(control) {
+      // eslint-disable-next-line no-restricted-properties
       navigator?.clipboard?.writeText(getIdFromGraphQLId(control.id));
       this.$toast.show(this.$options.i18n.copyControlIdToastText);
     },

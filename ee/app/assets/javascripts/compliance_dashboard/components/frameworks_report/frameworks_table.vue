@@ -124,6 +124,7 @@ export default {
       }
     },
     copyFrameworkId(id) {
+      // eslint-disable-next-line no-restricted-properties
       navigator?.clipboard?.writeText(getIdFromGraphQLId(id));
       this.$toast.show(this.$options.i18n.copyIdToastText);
       this.$refs[`framework-dropdown-${id}`].closeAndFocus();

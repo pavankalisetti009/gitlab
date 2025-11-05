@@ -101,6 +101,7 @@ export default {
   },
   methods: {
     copyToClipboard(text) {
+      // eslint-disable-next-line no-restricted-properties
       navigator.clipboard.writeText(text);
     },
     handleCopy(text, trackingLabel) {
