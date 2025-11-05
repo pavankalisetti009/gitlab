@@ -66,17 +66,17 @@ describe('AiCatalogFlowsNew', () => {
   });
 
   describe('Form Submit', () => {
-    const { name, description, project } = mockFlow;
+    const { name, description, project, latestVersion } = mockFlow;
     const formValues = {
       name,
       description,
       projectId: project.id,
       public: true,
       release: true,
-      steps: [],
+      definition: latestVersion.definition,
     };
 
-    const submitForm = () => findForm().vm.$emit('submit', formValues);
+    const submitForm = () => findForm().vm.$emit('submit', formValues, 'FLOW');
 
     it('sends a create request', () => {
       submitForm();
@@ -115,7 +115,8 @@ describe('AiCatalogFlowsNew', () => {
         definition: 'image:node@22',
       };
 
-      const submitThirdPartyForm = () => findForm().vm.$emit('submit', thirdPartyFlowFormValues);
+      const submitThirdPartyForm = () =>
+        findForm().vm.$emit('submit', thirdPartyFlowFormValues, 'THIRD_PARTY_FLOW');
 
       it('sends a create request for third-party flow', () => {
         submitThirdPartyForm();

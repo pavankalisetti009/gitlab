@@ -8,7 +8,6 @@ import createAiCatalogFlow from 'ee/ai/catalog/graphql/mutations/create_ai_catal
 import AiCatalogFlowsDuplicate from 'ee/ai/catalog/pages/ai_catalog_flows_duplicate.vue';
 import AiCatalogFlowForm from 'ee/ai/catalog/components/ai_catalog_flow_form.vue';
 import { AI_CATALOG_FLOWS_SHOW_ROUTE } from 'ee/ai/catalog/router/constants';
-import { mapSteps } from 'ee/ai/catalog/utils';
 import createAiCatalogThirdPartyFlow from 'ee/ai/catalog/graphql/mutations/create_ai_catalog_third_party_flow.mutation.graphql';
 import {
   mockFlow,
@@ -75,7 +74,7 @@ describe('AiCatalogFlowsDuplicate', () => {
         type: 'FLOW',
         name: `Copy of ${mockFlow.name}`,
         description: mockFlow.description,
-        steps: mapSteps(mockFlow.latestVersion.steps),
+        definition: mockFlow.latestVersion.definition,
         public: false,
         release: true,
       };
@@ -90,12 +89,12 @@ describe('AiCatalogFlowsDuplicate', () => {
       name: `${name} 2`,
       description,
       projectId: project.id,
-      steps: mapSteps(mockFlow.latestVersion.steps),
+      definition: mockFlow.definition,
       public: true,
       release: true,
     };
 
-    const submitForm = () => findForm().vm.$emit('submit', formValues);
+    const submitForm = () => findForm().vm.$emit('submit', formValues, 'FLOW');
 
     beforeEach(async () => {
       await waitForPromises();
@@ -137,7 +136,8 @@ describe('AiCatalogFlowsDuplicate', () => {
         definition: 'image:node@22',
       };
 
-      const submitThirdPartyForm = () => findForm().vm.$emit('submit', thirdPartyFlowFormValues);
+      const submitThirdPartyForm = () =>
+        findForm().vm.$emit('submit', thirdPartyFlowFormValues, 'THIRD_PARTY_FLOW');
 
       it('sends a create request for third-party flow', () => {
         submitThirdPartyForm();

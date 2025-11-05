@@ -2,9 +2,8 @@
 import { s__ } from '~/locale';
 import PageHeading from '~/vue_shared/components/page_heading.vue';
 import * as Sentry from '~/sentry/sentry_browser_wrapper';
-import { mapSteps } from '../utils';
 import { AI_CATALOG_FLOWS_SHOW_ROUTE } from '../router/constants';
-import { AI_CATALOG_TYPE_THIRD_PARTY_FLOW, FLOW_TYPE_APOLLO_CONFIG } from '../constants';
+import { FLOW_TYPE_APOLLO_CONFIG } from '../constants';
 import AiCatalogFlowForm from '../components/ai_catalog_flow_form.vue';
 
 export default {
@@ -26,9 +25,6 @@ export default {
     };
   },
   computed: {
-    isThirdPartyFlow() {
-      return this.aiCatalogFlow.itemType === AI_CATALOG_TYPE_THIRD_PARTY_FLOW;
-    },
     flowName() {
       return this.aiCatalogFlow.name;
     },
@@ -36,25 +32,21 @@ export default {
       return `${s__('AICatalog|Edit flow')}: ${this.flowName || this.$route.params.id}`;
     },
     initialValues() {
-      const configurationField = this.isThirdPartyFlow
-        ? { definition: this.aiCatalogFlow.latestVersion?.definition }
-        : { steps: mapSteps(this.aiCatalogFlow.latestVersion?.steps) };
-
       return {
         projectId: this.aiCatalogFlow.project?.id,
         type: this.aiCatalogFlow.itemType,
         name: this.flowName,
         description: this.aiCatalogFlow.description,
         public: this.aiCatalogFlow.public,
-        ...configurationField,
+        definition: this.aiCatalogFlow.latestVersion.definition,
       };
     },
   },
   methods: {
-    async handleSubmit(input) {
+    async handleSubmit(input, itemType) {
       this.isSubmitting = true;
       this.resetErrorMessages();
-      const config = FLOW_TYPE_APOLLO_CONFIG[this.aiCatalogFlow.itemType].update;
+      const config = FLOW_TYPE_APOLLO_CONFIG[itemType].update;
 
       try {
         const { data } = await this.$apollo.mutate({

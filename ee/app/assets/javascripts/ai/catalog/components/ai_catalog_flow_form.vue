@@ -21,8 +21,6 @@ import glFeatureFlagsMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
 import ErrorsAlert from '~/vue_shared/components/errors_alert.vue';
 import { AI_CATALOG_FLOWS_ROUTE, AI_CATALOG_FLOWS_SHOW_ROUTE } from '../router/constants';
 import AiCatalogFormButtons from './ai_catalog_form_buttons.vue';
-import AiCatalogStepsEditor from './ai_catalog_steps_editor.vue';
-import AiCatalogFormSidePanel from './ai_catalog_form_side_panel.vue';
 import FormFlowDefinition from './form_flow_definition.vue';
 import FormFlowType from './form_flow_type.vue';
 import FormProjectDropdown from './form_project_dropdown.vue';
@@ -34,8 +32,6 @@ export default {
   components: {
     ErrorsAlert,
     AiCatalogFormButtons,
-    AiCatalogStepsEditor,
-    AiCatalogFormSidePanel,
     FormFlowDefinition,
     FormFlowType,
     FormProjectDropdown,
@@ -80,7 +76,6 @@ export default {
           name: '',
           description: '',
           definition: '',
-          steps: [],
           release: true,
           public: false,
         };
@@ -88,9 +83,13 @@ export default {
     },
   },
   data() {
+    const isFlowType = this.initialValues.type === AI_CATALOG_TYPE_FLOW;
+    const { definition, ...initialValuesWithoutDefinition } = this.initialValues;
     return {
       formValues: {
-        ...this.initialValues,
+        ...initialValuesWithoutDefinition,
+        definitionFlow: isFlowType ? definition || '' : '',
+        definitionThirdPartyFlow: !isFlowType ? definition || '' : '',
         projectId:
           !this.isGlobal && this.projectId
             ? convertToGraphQLId(TYPENAME_PROJECT, this.projectId)
@@ -100,8 +99,6 @@ export default {
           : VISIBILITY_LEVEL_PRIVATE,
       },
       formErrors: [],
-      isAgentPanelVisible: false,
-      activeStepIndex: null,
     };
   },
   computed: {
@@ -143,16 +140,6 @@ export default {
         name: AI_CATALOG_FLOWS_ROUTE,
       };
     },
-    isPublic() {
-      return this.formValues.visibilityLevel === VISIBILITY_LEVEL_PUBLIC;
-    },
-  },
-  watch: {
-    isThirdPartyFlow(val) {
-      if (val) {
-        this.resetAgentPanel();
-      }
-    },
   },
   methods: {
     handleSubmit() {
@@ -161,25 +148,24 @@ export default {
         return;
       }
 
-      const configurationField = this.isThirdPartyFlow
-        ? { definition: this.formValues.definition?.trim() }
-        : {
-            steps: this.formValues.steps?.map((s) => ({
-              agentId: s.id,
-              pinnedVersionPrefix: s.versionName,
-            })),
-          };
+      const itemType = this.isThirdPartyFlow
+        ? AI_CATALOG_TYPE_THIRD_PARTY_FLOW
+        : AI_CATALOG_TYPE_FLOW;
+
+      const definition = this.isThirdPartyFlow
+        ? this.formValues.definitionThirdPartyFlow
+        : this.formValues.definitionFlow;
 
       const transformedValues = {
         projectId: this.isEditMode ? undefined : this.formValues.projectId,
         name: this.formValues.name.trim(),
         description: this.formValues.description.trim(),
-        public: this.isPublic,
+        public: this.formValues.visibilityLevel === VISIBILITY_LEVEL_PUBLIC,
         release: this.initialValues.release,
-        ...configurationField,
+        definition: definition.trim(),
       };
 
-      this.$emit('submit', transformedValues);
+      this.$emit('submit', transformedValues, itemType);
     },
     onError(error) {
       this.formErrors.push(error);
@@ -187,14 +173,6 @@ export default {
     dismissErrors() {
       this.formErrors = [];
       this.$emit('dismiss-errors');
-    },
-    openAgentPanel(stepIndex) {
-      this.isAgentPanelVisible = true;
-      this.activeStepIndex = stepIndex;
-    },
-    resetAgentPanel() {
-      this.isAgentPanelVisible = false;
-      this.activeStepIndex = null;
     },
     validate() {
       return Object.keys(this.$refs)
@@ -265,15 +243,20 @@ export default {
         labelDescription: s__('AICatalog|Select the type of your flow.'),
       },
     },
-    steps: {
-      id: 'flow-form-steps',
-      label: s__('AICatalog|Flow nodes'),
+    definitionFlow: {
+      id: 'flow-form-configuration-flow',
+      label: s__('AICatalog|Configuration'),
+      validations: {
+        requiredLabel: s__('AICatalog|Configuration is required.'),
+      },
       groupAttrs: {
-        labelDescription: s__('AICatalog|Nodes run sequentially.'),
+        labelDescription: s__(
+          'AICatalog|This YAML configuration file determines the prompts, tools, and capabilities of your flow. Required properties: version, environment, components, routers, flow, prompts.',
+        ),
       },
     },
-    definition: {
-      id: 'flow-form-configuration',
+    definitionThirdPartyFlow: {
+      id: 'flow-form-configuration-third-party-flow',
       label: s__('AICatalog|Configuration'),
       validations: {
         requiredLabel: s__('AICatalog|Configuration is required.'),
@@ -371,35 +354,30 @@ export default {
           </form-group>
           <form-group
             v-if="isThirdPartyFlow"
-            ref="fieldDefinition"
-            :key="$options.fields.definition.id"
-            :field="$options.fields.definition"
-            :field-value="formValues.definition"
+            ref="fieldDefinitionThirdPartyFlow"
+            :key="$options.fields.definitionThirdPartyFlow.id"
+            :field="$options.fields.definitionThirdPartyFlow"
+            :field-value="formValues.definitionThirdPartyFlow"
           >
-            <form-flow-definition v-model="formValues.definition" />
+            <form-flow-definition
+              v-model="formValues.definitionThirdPartyFlow"
+              data-testid="flow-form-definition-third-party-flow"
+            />
           </form-group>
           <form-group
             v-else
-            :key="$options.fields.steps.id"
-            :field="$options.fields.steps"
-            :field-value="formValues.steps"
+            ref="fieldDefinitionFlow"
+            :key="$options.fields.definitionFlow.id"
+            :field="$options.fields.definitionFlow"
+            :field-value="formValues.definitionFlow"
           >
-            <ai-catalog-steps-editor
-              :steps="formValues.steps"
-              class="gl-mb-4"
-              @openAgentPanel="openAgentPanel"
+            <form-flow-definition
+              v-model="formValues.definitionFlow"
+              data-testid="flow-form-definition-flow"
             />
           </form-group>
         </form-section>
       </gl-form>
-      <ai-catalog-form-side-panel
-        v-show="isAgentPanelVisible && !isThirdPartyFlow"
-        v-model="formValues.steps"
-        class="gl-shrink-0 gl-grow"
-        :active-step-index="activeStepIndex"
-        :is-flow-public="isPublic"
-        @close="resetAgentPanel"
-      />
     </div>
     <ai-catalog-form-buttons :is-disabled="isLoading" :cancel-route="cancelRoute" class="gl-mt-5">
       <gl-button

@@ -4,7 +4,7 @@ import AiCatalogItemField from 'ee/ai/catalog/components/ai_catalog_item_field.v
 import AiCatalogItemVisibilityField from 'ee/ai/catalog/components/ai_catalog_item_visibility_field.vue';
 import FormFlowDefinition from 'ee/ai/catalog/components/form_flow_definition.vue';
 import FormSection from 'ee/ai/catalog/components/form_section.vue';
-import { mockFlow, mockFlowVersion, mockThirdPartyFlow } from '../mock_data';
+import { mockFlow, mockThirdPartyFlow } from '../mock_data';
 
 describe('AiCatalogFlowDetails', () => {
   let wrapper;
@@ -38,7 +38,7 @@ describe('AiCatalogFlowDetails', () => {
     expect(findAllSections()).toHaveLength(3);
     expect(findSection(0).attributes('title')).toBe('Basic information');
     expect(findSection(1).attributes('title')).toBe('Visibility & access');
-    expect(findSection(2).attributes('title')).toBe('Steps');
+    expect(findSection(2).attributes('title')).toBe('Configuration');
   });
 
   it('renders "Basic information" details', () => {
@@ -63,10 +63,12 @@ describe('AiCatalogFlowDetails', () => {
     });
   });
 
-  it('renders "Steps" details', () => {
-    const stepsDetails = findAllFieldsForSection(2);
-    expect(stepsDetails.at(0).props('title')).toBe('Steps');
-    expect(stepsDetails.at(0).text()).toContain(mockFlowVersion.steps.nodes[0].agent.name);
+  it('renders "Configuration" details', () => {
+    const configurationField = findAllFieldsForSection(2).at(0);
+    expect(configurationField.props('title')).toBe('Configuration');
+    expect(configurationField.findComponent(FormFlowDefinition).props('value')).toBe(
+      mockFlow.latestVersion.definition,
+    );
   });
 
   describe('when the flow is third-party flow', () => {

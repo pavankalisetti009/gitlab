@@ -83,10 +83,10 @@ describe('AiCatalogFlowsEdit', () => {
       steps: [],
     };
 
-    const submitForm = () => findForm().vm.$emit('submit', formValues);
+    const submitForm = () => findForm().vm.$emit('submit', formValues, 'FLOW');
 
     it('sends an update request', async () => {
-      await findForm().vm.$emit('submit', formValues);
+      await findForm().vm.$emit('submit', formValues, 'FLOW');
       await waitForPromises();
 
       expect(mockUpdateAiCatalogThirdPartyFlowHandler).not.toHaveBeenCalled();
@@ -99,7 +99,7 @@ describe('AiCatalogFlowsEdit', () => {
     it('sets a loading state on the form while submitting', async () => {
       expect(findForm().props('isLoading')).toBe(false);
 
-      await findForm().vm.$emit('submit', {});
+      await findForm().vm.$emit('submit', {}, 'FLOW');
       expect(findForm().props('isLoading')).toBe(true);
     });
 
@@ -118,7 +118,8 @@ describe('AiCatalogFlowsEdit', () => {
         definition: 'image:node@22',
       };
 
-      const submitThirdPartyForm = () => findForm().vm.$emit('submit', thirdPartyFlowFormValues);
+      const submitThirdPartyForm = () =>
+        findForm().vm.$emit('submit', thirdPartyFlowFormValues, 'THIRD_PARTY_FLOW');
 
       it('sends a create request for third-party flow', () => {
         submitThirdPartyForm();
