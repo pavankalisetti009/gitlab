@@ -120,6 +120,15 @@ module SecretsManagement
       ].compact.join('/')
     end
 
+    def ci_auth_path
+      [
+        full_project_namespace_path,
+        'auth',
+        ci_auth_mount,
+        'login'
+      ].compact.join('/')
+    end
+
     def legacy_user_auth_mount
       [
         full_project_namespace_path,
@@ -305,6 +314,7 @@ module SecretsManagement
       "{{ if and " \
         "(eq \"branch\" .ref_type) " \
         "(ne \"\" .ref) " \
+        "(ne nil (index . \"environment\")) " \
         "(ne \"\" .environment) " \
         "(eq \"#{env_glob_hex}\" (.environment | hex)) " \
         "(eq \"#{branch_glob_hex}\" (.ref | hex)) }}" \

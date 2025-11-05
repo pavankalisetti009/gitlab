@@ -513,7 +513,7 @@ RSpec.describe Ci::BuildRunnerPresenter, feature_category: :secrets_management d
         it 'sets the correct values for inline_auth keys' do
           expect(gitlab_secrets_manager_server.fetch('inline_auth')['jwt']).to eq(jwt_token)
           expect(gitlab_secrets_manager_server.fetch('inline_auth')['role']).to eq("all_pipelines")
-          expect(gitlab_secrets_manager_server.fetch('inline_auth')['auth_mount']).to eq(project_secrets_manager.ci_auth_mount)
+          expect(gitlab_secrets_manager_server.fetch('inline_auth')['path']).to eq(project_secrets_manager.ci_auth_path)
         end
 
         it 'sets the correct value for the server URL' do
@@ -524,7 +524,7 @@ RSpec.describe Ci::BuildRunnerPresenter, feature_category: :secrets_management d
           expect(gitlab_secrets_manager_payload.fetch('path')).to eq(project_secrets_manager.ci_data_path('password'))
           expect(gitlab_secrets_manager_payload.fetch('field')).to eq('value')
           expect(gitlab_secrets_manager_payload.fetch('engine')['name']).to eq('kv-v2')
-          expect(gitlab_secrets_manager_payload.fetch('engine')['path']).to eq(project_secrets_manager.ci_secrets_mount_path)
+          expect(gitlab_secrets_manager_payload.fetch('engine')['path']).to eq(project_secrets_manager.legacy_ci_secrets_mount_path)
         end
       end
     end
