@@ -13,7 +13,9 @@ module GitlabSubscriptions
     attr_reader :mediator
 
     def build_mediator(user, namespace)
-      return SelfManagedMediator.new unless ::Gitlab::Saas.feature_available?(:gitlab_com_subscriptions)
+      unless ::Gitlab::Saas.feature_available?(:gitlab_com_subscriptions)
+        return SelfManagedMediator.new(user, ::License.current)
+      end
 
       if namespace.present?
         NamespaceMediator.new(user, namespace)
@@ -23,8 +25,29 @@ module GitlabSubscriptions
     end
 
     class SelfManagedMediator
+      def initialize(user, license)
+        @user = user
+        @license = license
+      end
+
       def attributes
-        {}
+        return {} unless eligible_for_upgrade?
+
+        {
+          upgrade_link: {
+            url: ::Gitlab::Routing.url_helpers.promo_pricing_url(query: { deployment: 'self-managed' }),
+            text: s_('CurrentUser|Upgrade subscription')
+          }
+        }
+      end
+
+      private
+
+      attr_reader :user, :license
+
+      def eligible_for_upgrade?
+        GitlabSubscriptions::Trials.self_managed_non_dedicated_active_ultimate_trial?(license) &&
+          Ability.allowed?(user, :admin_all_resources)
       end
     end
 

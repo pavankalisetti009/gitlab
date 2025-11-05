@@ -10,12 +10,43 @@ RSpec.describe GitlabSubscriptions::UpgradePresenter, :saas, feature_category: :
     subject(:attributes) { described_class.new(user, namespace: namespace).attributes }
 
     context 'when gitlab_com_subscriptions feature is not available' do
+      let(:license) { build_stubbed(:license, :ultimate_trial) }
+      let(:authorized?) { true }
+
       before do
         stub_saas_features(gitlab_com_subscriptions: false)
+        allow(::License).to receive(:current).and_return(license)
+        allow(Ability).to receive(:allowed?).with(user, :admin_all_resources).and_return(authorized?)
       end
 
-      it 'returns empty hash' do
-        expect(attributes).to eq({})
+      context 'when user is admin and has active ultimate trial license' do
+        it 'returns upgrade link to admin subscription path' do
+          expected_path = ::Gitlab::Routing.url_helpers.promo_pricing_url(query: { deployment: 'self-managed' })
+          expect(attributes)
+            .to eq({ upgrade_link: { url: expected_path, text: s_('CurrentUser|Upgrade subscription') } })
+        end
+      end
+
+      context 'when user is not admin' do
+        let(:authorized?) { false }
+
+        it { is_expected.to eq({}) }
+      end
+
+      context 'when license is not active ultimate trial' do
+        let(:license) { build_stubbed(:license, :ultimate_trial, expired: true) }
+
+        it { is_expected.to eq({}) }
+      end
+
+      context 'when on a dedicated instance', :dedicated do
+        it { is_expected.to eq({}) }
+      end
+
+      context 'when license is nil' do
+        let(:license) { nil }
+
+        it { is_expected.to eq({}) }
       end
     end
 

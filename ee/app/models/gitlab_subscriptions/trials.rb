@@ -57,8 +57,15 @@ module GitlabSubscriptions
       ).exists?
     end
 
-    def self.self_managed_ultimate_trial?(license)
+    def self.self_managed_non_dedicated_ultimate_trial?(license)
+      return false unless license
+      return false if ::Gitlab::CurrentSettings.gitlab_dedicated_instance?
+
       license.ultimate? && !!license.trial?
+    end
+
+    def self.self_managed_non_dedicated_active_ultimate_trial?(license)
+      self_managed_non_dedicated_ultimate_trial?(license) && license.active?
     end
   end
 end

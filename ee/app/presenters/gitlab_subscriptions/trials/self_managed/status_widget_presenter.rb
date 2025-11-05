@@ -32,8 +32,7 @@ module GitlabSubscriptions
 
         def eligible?
           return false unless user
-          return false unless license
-          return false unless GitlabSubscriptions::Trials.self_managed_ultimate_trial?(license)
+          return false unless GitlabSubscriptions::Trials.self_managed_non_dedicated_ultimate_trial?(license)
 
           license.active? || eligible_expired_and_not_dismissed?
         end
