@@ -301,21 +301,7 @@ export const mockFlowVersion = {
   ...mockBaseLatestVersion,
   humanVersionName: 'v1.0.0-draft',
   versionName: '1.0.0',
-  steps: {
-    nodes: [
-      {
-        pinnedVersionPrefix: '1.0.0',
-        agent: {
-          id: 'gid://gitlab/Ai::Catalog::ItemVersion/100',
-          name: 'Agent',
-          versions: mockAgentVersions,
-          __typename: 'AiCatalogAgent',
-        },
-        __typename: 'AiCatalogFlowSteps',
-      },
-    ],
-    __typename: 'AiCatalogFlowStepsConnection',
-  },
+  definition: 'version: "v1"',
   __typename: TYPENAME_AI_CATALOG_FLOW_VERSION,
 };
 

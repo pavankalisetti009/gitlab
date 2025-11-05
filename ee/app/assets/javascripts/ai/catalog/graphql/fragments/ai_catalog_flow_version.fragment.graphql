@@ -1,20 +1,6 @@
 #import "./ai_catalog_item_version.fragment.graphql"
-#import "../fragments/ai_catalog_agent_version.fragment.graphql"
 
 fragment BaseAiCatalogFlowVersion on AiCatalogFlowVersion {
   ...BaseAiCatalogItemVersion
-  steps {
-    nodes {
-      pinnedVersionPrefix
-      agent {
-        id
-        name
-        versions {
-          nodes {
-            ...BaseAiCatalogAgentVersion
-          }
-        }
-      }
-    }
-  }
+  definition
 }

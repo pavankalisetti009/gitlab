@@ -1,5 +1,4 @@
 <script>
-import { getIdFromGraphQLId } from '~/graphql_shared/utils';
 import { FLOW_VISIBILITY_LEVEL_DESCRIPTIONS } from '../constants';
 import AiCatalogItemField from './ai_catalog_item_field.vue';
 import AiCatalogItemVisibilityField from './ai_catalog_item_visibility_field.vue';
@@ -25,13 +24,6 @@ export default {
     },
     definition() {
       return this.item.latestVersion?.definition;
-    },
-    steps() {
-      return (
-        this.item.latestVersion?.steps?.nodes?.map(({ agent }) => ({
-          agent: { name: agent.name, id: getIdFromGraphQLId(agent.id) },
-        })) || []
-      );
     },
   },
   FLOW_VISIBILITY_LEVEL_DESCRIPTIONS,
@@ -62,13 +54,6 @@ export default {
       <form-section v-if="definition" :title="s__('AICatalog|Configuration')">
         <ai-catalog-item-field :title="s__('AICatalog|Configuration')">
           <form-flow-definition :value="definition" read-only class="gl-mt-3" />
-        </ai-catalog-item-field>
-      </form-section>
-      <form-section v-else :title="s__('AICatalog|Steps')">
-        <ai-catalog-item-field :title="s__('AICatalog|Steps')">
-          <div v-for="(step, index) in steps" :key="index">
-            {{ step.agent.name }} ({{ step.agent.id }})
-          </div>
         </ai-catalog-item-field>
       </form-section>
     </dl>
