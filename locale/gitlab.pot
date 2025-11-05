@@ -25924,13 +25924,13 @@ msgstr ""
 msgid "Email"
 msgstr ""
 
+msgid "Email %{name} to this project"
+msgstr ""
+
 msgid "Email %{number}"
 msgstr ""
 
 msgid "Email Notification"
-msgstr ""
-
-msgid "Email a new %{name} to this project"
 msgstr ""
 
 msgid "Email address copied"
@@ -75436,10 +75436,10 @@ msgstr ""
 msgid "WorkItem|Edit work item"
 msgstr ""
 
-msgid "WorkItem|Email a new work item to this project"
+msgid "WorkItem|Email participants"
 msgstr ""
 
-msgid "WorkItem|Email participants"
+msgid "WorkItem|Email work item to this project"
 msgstr ""
 
 msgid "WorkItem|Emoji reactions"
