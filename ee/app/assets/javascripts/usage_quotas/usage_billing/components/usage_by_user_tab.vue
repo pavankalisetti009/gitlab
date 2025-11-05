@@ -124,7 +124,7 @@ export default {
     },
     {
       key: 'includedCredits',
-      label: s__('UsageBilling|Included used'),
+      label: s__('UsageBilling|Included credits'),
     },
     {
       key: 'totalCreditsUsed',
