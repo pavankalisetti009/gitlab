@@ -536,6 +536,14 @@ export default {
         })
         .catch(this.onError);
     },
+    // `focusInput` can be called by the parent component. Ideally, we would mark this as a public
+    // method via Vue's `expose` option. However, doing so would cause several tests to fail in Vue 3
+    // because we wrote some assertions directly against the `vm`, which becomes private when `expose`
+    // is defined. So we need to _not_ use `expose` and disable vue/no-unused-properties for now.
+    // eslint-disable-next-line vue/no-unused-properties
+    focusInput() {
+      this.$refs.duoChat?.focusChatInput();
+    },
   },
 };
 </script>
@@ -575,6 +583,7 @@ export default {
         :tool-name="toolName"
         :canceled-request-ids="cancelledRequestIds"
         :class="isEmbedded ? 'gl-h-full gl-w-full' : 'duo-chat-container gl-h-full'"
+        :should-auto-focus-input="!isEmbedded"
         @thread-selected="onThreadSelected"
         @new-chat="onNewChat"
         @back-to-list="onBackToList"

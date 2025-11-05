@@ -122,6 +122,7 @@ describeSkipVue3(skipReason, () => {
     propsData = { userId: MOCK_USER_ID, resourceId: MOCK_RESOURCE_ID },
     data = {},
     glFeatures = {},
+    stubs = {},
   } = {}) => {
     const store = new Vuex.Store({
       actions: actionSpies,
@@ -150,6 +151,7 @@ describeSkipVue3(skipReason, () => {
       store,
       apolloProvider,
       propsData,
+      stubs,
       data() {
         return data;
       },
@@ -1444,6 +1446,31 @@ describeSkipVue3(skipReason, () => {
     it('renders subheader template with correct component', () => {
       const toggle = findDuoChat();
       expect(toggle.exists()).toBe(true);
+    });
+  });
+
+  describe('`focusInput` method', () => {
+    it("calls `WebAgenticDuoChat`'s `focusChatInput` method", async () => {
+      const focusChatInput = jest.fn();
+
+      createComponent({
+        stubs: {
+          WebDuoChat: {
+            template: '<div />',
+            methods: {
+              focusChatInput,
+            },
+          },
+        },
+      });
+      duoChatGlobalState.isShown = true;
+      await nextTick();
+
+      expect(focusChatInput).not.toHaveBeenCalled();
+
+      wrapper.vm.focusInput();
+
+      expect(focusChatInput).toHaveBeenCalled();
     });
   });
 });
