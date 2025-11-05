@@ -323,5 +323,47 @@ RSpec.describe Sidebars::Groups::Menus::SecurityComplianceMenu, feature_category
         it { is_expected.not_to be_nil }
       end
     end
+
+    describe 'Secrets manager' do
+      let(:item_id) { :secrets_manager }
+
+      context 'when all conditions are met' do
+        before do
+          stub_feature_flags(group_secrets_manager: true)
+          stub_licensed_features(native_secrets_management: true)
+        end
+
+        it { is_expected.not_to be_nil }
+      end
+
+      context 'when feature flag is disabled' do
+        before do
+          stub_feature_flags(group_secrets_manager: false)
+          stub_licensed_features(native_secrets_management: true)
+        end
+
+        it { is_expected.to be_nil }
+      end
+
+      context 'when native_secrets_management feature is not licensed' do
+        before do
+          stub_feature_flags(group_secrets_manager: true)
+          stub_licensed_features(native_secrets_management: false)
+        end
+
+        it { is_expected.to be_nil }
+      end
+
+      context 'when user is not Reporter+' do
+        let(:user) { guest }
+
+        before do
+          stub_feature_flags(group_secrets_manager: true)
+          stub_licensed_features(native_secrets_management: true)
+        end
+
+        it { is_expected.to be_nil }
+      end
+    end
   end
 end
