@@ -4,14 +4,16 @@ import AdminDataManagementApp from 'ee/admin/data_management/components/app.vue'
 import GeoListTopBar from 'ee/geo_shared/list/components/geo_list_top_bar.vue';
 import GeoList from 'ee/geo_shared/list/components/geo_list.vue';
 import { MOCK_MODEL_CLASS } from 'ee_jest/admin/data_management/mock_data';
+import showToast from '~/vue_shared/plugins/global_toast';
 import {
   TOKEN_TYPES,
   DEFAULT_SORT,
+  BULK_ACTIONS,
   GEO_TROUBLESHOOTING_LINK,
 } from 'ee/admin/data_management/constants';
 import { updateHistory, visitUrl } from '~/lib/utils/url_utility';
 import { TEST_HOST } from 'spec/test_constants';
-import { getModels } from 'ee/api/data_management_api';
+import { getModels, putBulkModelAction } from 'ee/api/data_management_api';
 import waitForPromises from 'helpers/wait_for_promises';
 import { createAlert } from '~/alert';
 import DataManagementItem from 'ee/admin/data_management/components/data_management_item.vue';
@@ -25,6 +27,7 @@ jest.mock('~/lib/utils/url_utility', () => ({
 }));
 jest.mock('~/alert');
 jest.mock('ee/api/data_management_api');
+jest.mock('~/vue_shared/plugins/global_toast');
 
 describe('AdminDataManagementApp', () => {
   let wrapper;
@@ -41,6 +44,8 @@ describe('AdminDataManagementApp', () => {
   const findGeoList = () => wrapper.findComponent(GeoList);
   const findDataManagementItem = () => wrapper.findComponent(DataManagementItem);
 
+  const fireBulkAction = (action) => findGeoListTopBar().vm.$emit('bulkAction', action);
+
   beforeEach(() => {
     createComponent();
   });
@@ -54,6 +59,8 @@ describe('AdminDataManagementApp', () => {
       filteredSearchOptionLabel: 'Search by ID',
       activeListboxItem: MOCK_MODEL_CLASS.name,
       activeSort: DEFAULT_SORT,
+      bulkActions: BULK_ACTIONS,
+      showActions: false,
     });
   });
 
@@ -112,6 +119,10 @@ describe('AdminDataManagementApp', () => {
       it('does not create alert', () => {
         expect(createAlert).not.toHaveBeenCalled();
       });
+
+      it('shows bulk actions', () => {
+        expect(findGeoListTopBar().props('showActions')).toBe(true);
+      });
     });
 
     describe('when loading models returns empty array', () => {
@@ -133,6 +144,10 @@ describe('AdminDataManagementApp', () => {
       it('does not create alert', () => {
         expect(createAlert).not.toHaveBeenCalled();
       });
+
+      it('does not show bulk actions', () => {
+        expect(findGeoListTopBar().props('showActions')).toBe(false);
+      });
     });
 
     describe('when loading models fails', () => {
@@ -151,6 +166,10 @@ describe('AdminDataManagementApp', () => {
 
       it('stops loading state', () => {
         expect(findGeoList().props('isLoading')).toBe(false);
+      });
+
+      it('does not show bulk actions', () => {
+        expect(findGeoListTopBar().props('showActions')).toBe(false);
       });
     });
   });
@@ -233,6 +252,72 @@ describe('AdminDataManagementApp', () => {
       createComponent();
 
       expect(findGeoList().props('isLoading')).toBe(true);
+    });
+  });
+
+  describe('when GeoListTopBar emits `buildAction` event', () => {
+    const [action] = BULK_ACTIONS;
+
+    beforeEach(async () => {
+      getModels.mockResolvedValue({ data: [] });
+      createComponent();
+
+      await waitForPromises();
+      getModels.mockClear();
+    });
+
+    it('calls putBulkModelAction', () => {
+      fireBulkAction(action);
+
+      expect(putBulkModelAction).toHaveBeenCalledWith(MOCK_MODEL_CLASS.name, action.action);
+    });
+
+    describe('when action succeeds', () => {
+      beforeEach(async () => {
+        putBulkModelAction.mockResolvedValue({ data: MOCK_MODEL_CLASS });
+        fireBulkAction(action);
+        await waitForPromises();
+      });
+
+      it('shows toast', () => {
+        expect(showToast).toHaveBeenCalledWith(
+          `Scheduled all ${MOCK_MODEL_CLASS.titlePlural.toLowerCase()} for checksum recalculation.`,
+        );
+      });
+
+      it('does not create alert', () => {
+        expect(createAlert).not.toHaveBeenCalled();
+      });
+
+      it('reloads models', () => {
+        expect(getModels).toHaveBeenCalled();
+      });
+    });
+
+    describe('when action fails', () => {
+      const error = new Error('failed to run bulk action');
+
+      beforeEach(async () => {
+        putBulkModelAction.mockRejectedValue(error);
+        fireBulkAction(action);
+        await waitForPromises();
+      });
+
+      it('does not show toast', () => {
+        expect(showToast).not.toHaveBeenCalled();
+      });
+
+      it('creates alert', () => {
+        expect(createAlert).toHaveBeenCalledWith({
+          message: `There was an error scheduling all ${MOCK_MODEL_CLASS.titlePlural.toLowerCase()} for checksum recalculation.`,
+          captureError: true,
+          error,
+        });
+      });
+
+      it('does not reload models', () => {
+        expect(getModels).not.toHaveBeenCalled();
+      });
     });
   });
 });

@@ -29550,6 +29550,12 @@ msgstr ""
 msgid "Geo|Checksum"
 msgstr ""
 
+msgid "Geo|Checksum all"
+msgstr ""
+
+msgid "Geo|Checksum all %{type}"
+msgstr ""
+
 msgid "Geo|Checksum status"
 msgstr ""
 
@@ -30000,6 +30006,9 @@ msgstr ""
 msgid "Geo|Scheduled all %{replicableType} with a failed verification status for reverification."
 msgstr ""
 
+msgid "Geo|Scheduled all %{type} for checksum recalculation."
+msgstr ""
+
 msgid "Geo|Secondary"
 msgstr ""
 
@@ -30171,10 +30180,16 @@ msgstr ""
 msgid "Geo|There was an error scheduling all %{replicableType} with a failed verification status for reverification."
 msgstr ""
 
+msgid "Geo|There was an error scheduling all %{type} for checksum recalculation."
+msgstr ""
+
 msgid "Geo|There was an error updating the Geo Settings"
 msgstr ""
 
 msgid "Geo|This GitLab instance is subscribed to the %{insufficient_license} tier. Geo is only available for users who have at least a Premium subscription."
+msgstr ""
+
+msgid "Geo|This will recalculate checksums for all %{type}. It may take some time to complete. Are you sure you want to continue?"
 msgstr ""
 
 msgid "Geo|This will schedule a future job to retry the secondary verification process for all %{type} that have a failed verification status. It may take some time to complete. Are you sure you want to continue?"

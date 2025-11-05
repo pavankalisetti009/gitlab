@@ -1,9 +1,11 @@
 <script>
 import { debounce } from 'lodash';
+import { computed } from 'vue';
 import GeoListTopBar from 'ee/geo_shared/list/components/geo_list_top_bar.vue';
 import GeoList from 'ee/geo_shared/list/components/geo_list.vue';
 import { sprintf, s__ } from '~/locale';
 import {
+  BULK_ACTIONS,
   CHECKSUM_STATES_ARRAY,
   DEFAULT_SORT,
   GEO_TROUBLESHOOTING_LINK,
@@ -12,10 +14,11 @@ import {
 import { isValidFilter, processFilters } from 'ee/admin/data_management/filters';
 import { queryToObject, setUrlParams, updateHistory, visitUrl } from '~/lib/utils/url_utility';
 import { createAlert } from '~/alert';
-import { getModels } from 'ee/api/data_management_api';
+import { getModels, putBulkModelAction } from 'ee/api/data_management_api';
 import { convertObjectPropsToCamelCase } from '~/lib/utils/common_utils';
 import DataManagementItem from 'ee/admin/data_management/components/data_management_item.vue';
 import { DEFAULT_DEBOUNCE_AND_THROTTLE_MS } from '~/lib/utils/constants';
+import showToast from '~/vue_shared/plugins/global_toast';
 
 export default {
   name: 'AdminDataManagementApp',
@@ -23,6 +26,11 @@ export default {
     GeoListTopBar,
     GeoList,
     DataManagementItem,
+  },
+  provide() {
+    return {
+      itemTitle: computed(() => this.modelTitle),
+    };
   },
   props: {
     modelClass: {
@@ -55,6 +63,9 @@ export default {
         helpLink: GEO_TROUBLESHOOTING_LINK,
         hasFilters: this.hasFilters,
       };
+    },
+    modelTitle() {
+      return this.modelClass.titlePlural.toLowerCase();
     },
   },
   created() {
@@ -93,11 +104,25 @@ export default {
         this.isLoading = false;
       }
     }, DEFAULT_DEBOUNCE_AND_THROTTLE_MS),
+    async handleBulkAction({ action, successMessage, errorMessage }) {
+      try {
+        await putBulkModelAction(this.modelClass.name, action);
+
+        showToast(sprintf(successMessage, { type: this.modelTitle }));
+        this.fetchModelList();
+      } catch (error) {
+        createAlert({
+          message: sprintf(errorMessage, { type: this.modelTitle }),
+          captureError: true,
+          error,
+        });
+      }
+    },
     handleFetchError(error) {
       createAlert({
         message: sprintf(
           s__('Geo|There was an error fetching %{model}. Please refresh the page and try again.'),
-          { model: this.modelClass.titlePlural.toLowerCase() },
+          { model: this.modelTitle },
         ),
         captureError: true,
         error,
@@ -128,7 +153,8 @@ export default {
       }
     },
   },
-  defaultSort: DEFAULT_SORT,
+  DEFAULT_SORT,
+  BULK_ACTIONS,
 };
 </script>
 
@@ -142,9 +168,12 @@ export default {
       "
       :filtered-search-option-label="__('Search by ID')"
       :active-listbox-item="modelClass.name"
-      :active-sort="$options.defaultSort"
+      :active-sort="$options.DEFAULT_SORT"
+      :bulk-actions="$options.BULK_ACTIONS"
+      :show-actions="hasItems"
       @listboxChange="handleListboxChange"
       @search="handleSearch"
+      @bulkAction="handleBulkAction"
     />
     <geo-list :is-loading="isLoading" :has-items="hasItems" :empty-state="emptyState">
       <data-management-item
