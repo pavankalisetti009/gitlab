@@ -5,5 +5,6 @@ export const initDuoAgentsPlatformProjectPage = () => {
   initDuoAgentsPlatformPage({
     namespace: AGENT_PLATFORM_PROJECT_PAGE,
     namespaceDatasetProperties: ['projectPath', 'projectId', 'rootGroupId'],
+    namespaceDatasetJsonProperties: ['flowTriggersEventTypeOptions'],
   });
 };

@@ -18,9 +18,26 @@ export const getAgentStatusIcon = (status) => {
   return AGENT_PLATFORM_STATUS_ICON[status] || AGENT_PLATFORM_STATUS_ICON.CREATED;
 };
 
-export const getNamespaceDatasetProperties = (dataset, properties) => {
-  return properties.reduce((acc, prop) => {
-    acc[prop] = dataset[prop];
+export const parseJsonProperty = (value) => {
+  if (typeof value !== 'string') return value;
+
+  try {
+    return JSON.parse(value);
+  } catch (error) {
+    return value;
+  }
+};
+
+export const getNamespaceDatasetProperties = (dataset, properties, jsonProperties = []) => {
+  const allProperties = [...properties, ...jsonProperties];
+  return allProperties.reduce((acc, prop) => {
+    const value = dataset[prop];
+
+    if (jsonProperties.includes(prop)) {
+      acc[prop] = parseJsonProperty(value);
+    } else {
+      acc[prop] = value;
+    }
     return acc;
   }, {});
 };

@@ -5,6 +5,7 @@ import {
   formatAgentDefinition,
   formatAgentFlowName,
   formatAgentStatus,
+  parseJsonProperty,
   getNamespaceDatasetProperties,
   getToolData,
   getMessageData,
@@ -122,6 +123,22 @@ describe('duo_agents_platform utils', () => {
     });
   });
 
+  describe('parseJsonProperty', () => {
+    it('parses valid JSON string', () => {
+      expect(parseJsonProperty('{"key": "value"}')).toEqual({ key: 'value' });
+      expect(parseJsonProperty('["0", "1", "2"]')).toEqual(['0', '1', '2']);
+    });
+
+    it('returns original value for invalid JSON string', () => {
+      expect(parseJsonProperty('invalid json')).toBe('invalid json');
+    });
+
+    it('returns non-string values unchanged', () => {
+      expect(parseJsonProperty(123)).toBe(123);
+      expect(parseJsonProperty(null)).toBe(null);
+    });
+  });
+
   describe('getNamespaceDatasetProperties', () => {
     it('returns object with specified properties from dataset', () => {
       const dataset = {
@@ -158,6 +175,22 @@ describe('duo_agents_platform utils', () => {
       expect(result).toEqual({
         prop1: 'value1',
         nonexistent: undefined,
+      });
+    });
+
+    it('parses JSON properties when specified', () => {
+      const dataset = {
+        normalProp: 'value1',
+        jsonProp: '["0", "1", "2"]',
+      };
+      const properties = ['normalProp'];
+      const jsonProperties = ['jsonProp'];
+
+      const result = getNamespaceDatasetProperties(dataset, properties, jsonProperties);
+
+      expect(result).toEqual({
+        normalProp: 'value1',
+        jsonProp: ['0', '1', '2'],
       });
     });
   });

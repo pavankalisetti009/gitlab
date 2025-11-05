@@ -19,6 +19,9 @@ describe('AiCatalogAddFlowToProjectModal', () => {
 
   const createComponent = () => {
     wrapper = shallowMount(AiCatalogAddFlowToProjectModal, {
+      propsData: {
+        modalId: 'add-flow-to-project-modal',
+      },
       provide: {
         flowTriggersEventTypeOptions: [
           { text: 'Mention', value: 'mention' },
