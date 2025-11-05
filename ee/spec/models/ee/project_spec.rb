@@ -1115,6 +1115,24 @@ RSpec.describe Project, feature_category: :groups_and_projects do
         end
       end
     end
+
+    context 'with archived project or group' do
+      let_it_be_with_reload(:group) { create(:group) }
+      let_it_be_with_reload(:project) { create(:project, group: group) }
+      let_it_be_with_reload(:import_state) { create(:import_state, :mirror, :finished, project: project) }
+
+      it 'returns empty with archived project' do
+        project.update!(archived: true)
+
+        expect(described_class.mirrors_to_sync(timestamp)).to be_empty
+      end
+
+      it 'returns empty with archived group' do
+        group.update!(archived: true)
+
+        expect(described_class.mirrors_to_sync(timestamp)).to be_empty
+      end
+    end
   end
 
   describe '.stuck_mirrors', :freeze_time do

@@ -10,7 +10,7 @@ module EE
       JITTER = 6.seconds
       SSL_CERTIFICATE_PROBLEM = /SSL certificate problem/
 
-      delegate :mirror?, :mirror_with_content?, :archived, :pending_delete, to: :project
+      delegate :mirror?, :mirror_with_content?, :pending_delete, to: :project
 
       before_validation :set_next_execution_to_now, on: :create
 
@@ -94,6 +94,10 @@ module EE
     def in_progress?
       # If we're importing while we do have a repository, we're simply updating the mirror.
       super && !mirror_with_content?
+    end
+
+    def archived
+      project.self_or_ancestors_archived?
     end
 
     def mirror_waiting_duration

@@ -250,7 +250,7 @@ RSpec.describe UpdateAllMirrorsWorker, feature_category: :source_code_management
       let_it_be(:unlicensed_project3) { scheduled_mirror(at: 5.weeks.ago, licensed: false) }
       let_it_be(:licensed_project2)   { scheduled_mirror(at: 4.weeks.ago, licensed: true) }
       let_it_be(:unlicensed_project4) { scheduled_mirror(at: 3.weeks.ago, licensed: false) }
-      let_it_be(:public_project)      { scheduled_mirror(at: 1.week.ago, licensed: false, public: true) }
+      let_it_be_with_reload(:public_project) { scheduled_mirror(at: 1.week.ago, licensed: false, public: true) }
 
       let(:unlicensed_projects) { [unlicensed_project1, unlicensed_project2, unlicensed_project3, unlicensed_project4] }
 
@@ -273,16 +273,17 @@ RSpec.describe UpdateAllMirrorsWorker, feature_category: :source_code_management
             schedule_mirrors!(capacity: 4)
           end
 
-          it "does not schedule a mirror of an archived project" do
+          it "does not schedule a mirror of an archived project or group" do
             licensed_project1.update_column(:archived, true)
+            public_project.group.update!(archived: true)
 
             schedule_mirrors!(capacity: 4)
 
-            expect_import_scheduled(licensed_project2, public_project)
-            expect_import_not_scheduled(licensed_project1)
+            expect_import_scheduled(licensed_project2)
+            expect_import_not_scheduled(licensed_project1, public_project)
             expect_import_not_scheduled(*unlicensed_projects)
 
-            expect_mirror_scheduling_tracked([licensed_project2, public_project])
+            expect_mirror_scheduling_tracked([licensed_project2])
           end
 
           it "does not schedule a mirror of an pending_delete project" do

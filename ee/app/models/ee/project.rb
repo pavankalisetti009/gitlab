@@ -276,7 +276,7 @@ module EE
 
       scope :mirrors_to_sync, ->(freeze_at, limit: nil, offset_at: nil) do
         mirror
-          .non_archived
+          .self_and_ancestors_non_archived
           .without_deleted
           .joins_import_state
           .where.not(import_state: { status: %i[scheduled started] })
