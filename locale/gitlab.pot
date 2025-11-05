@@ -13967,7 +13967,7 @@ msgstr ""
 msgid "CiVariables|Expanded"
 msgstr ""
 
-msgid "CiVariables|Export variable to pipelines running on protected branches and tags only."
+msgid "CiVariables|Export variable to pipelines running on protected branches and protected tags only."
 msgstr ""
 
 msgid "CiVariables|File"
