@@ -73,18 +73,21 @@ describe('AiCatalogFlowsNew', () => {
       projectId: project.id,
       public: true,
       release: true,
+      itemType: 'FLOW',
       definition: latestVersion.definition,
     };
 
-    const submitForm = () => findForm().vm.$emit('submit', formValues, 'FLOW');
+    const submitForm = () => findForm().vm.$emit('submit', formValues);
 
     it('sends a create request', () => {
       submitForm();
 
+      const { itemType, ...input } = formValues;
+
       expect(createAiCatalogThirdPartyFlowMock).not.toHaveBeenCalled();
       expect(createAiCatalogFlowMock).toHaveBeenCalledTimes(1);
       expect(createAiCatalogFlowMock).toHaveBeenCalledWith({
-        input: { ...formValues, addToProjectWhenCreated: true },
+        input: { ...input, addToProjectWhenCreated: true },
       });
     });
 
@@ -113,18 +116,20 @@ describe('AiCatalogFlowsNew', () => {
         projectId: project.id,
         public: true,
         definition: 'image:node@22',
+        itemType: 'THIRD_PARTY_FLOW',
       };
 
-      const submitThirdPartyForm = () =>
-        findForm().vm.$emit('submit', thirdPartyFlowFormValues, 'THIRD_PARTY_FLOW');
+      const submitThirdPartyForm = () => findForm().vm.$emit('submit', thirdPartyFlowFormValues);
 
       it('sends a create request for third-party flow', () => {
         submitThirdPartyForm();
 
+        const { itemType, ...input } = thirdPartyFlowFormValues;
+
         expect(createAiCatalogFlowMock).not.toHaveBeenCalled();
         expect(createAiCatalogThirdPartyFlowMock).toHaveBeenCalledTimes(1);
         expect(createAiCatalogThirdPartyFlowMock).toHaveBeenCalledWith({
-          input: { ...thirdPartyFlowFormValues, addToProjectWhenCreated: true },
+          input: { ...input, addToProjectWhenCreated: true },
         });
       });
     });

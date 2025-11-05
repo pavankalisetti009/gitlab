@@ -91,10 +91,11 @@ describe('AiCatalogFlowsDuplicate', () => {
       projectId: project.id,
       definition: mockFlow.definition,
       public: true,
+      itemType: 'FLOW',
       release: true,
     };
 
-    const submitForm = () => findForm().vm.$emit('submit', formValues, 'FLOW');
+    const submitForm = () => findForm().vm.$emit('submit', formValues);
 
     beforeEach(async () => {
       await waitForPromises();
@@ -103,9 +104,11 @@ describe('AiCatalogFlowsDuplicate', () => {
     it('sends a create request', () => {
       submitForm();
 
+      const { itemType, ...input } = formValues;
+
       expect(createAiCatalogFlowMock).toHaveBeenCalledTimes(1);
       expect(createAiCatalogFlowMock).toHaveBeenCalledWith({
-        input: { ...formValues, addToProjectWhenCreated: true },
+        input: { ...input, addToProjectWhenCreated: true },
       });
     });
 
@@ -133,19 +136,21 @@ describe('AiCatalogFlowsDuplicate', () => {
         description,
         projectId: project.id,
         public: true,
+        itemType: 'THIRD_PARTY_FLOW',
         definition: 'image:node@22',
       };
 
-      const submitThirdPartyForm = () =>
-        findForm().vm.$emit('submit', thirdPartyFlowFormValues, 'THIRD_PARTY_FLOW');
+      const submitThirdPartyForm = () => findForm().vm.$emit('submit', thirdPartyFlowFormValues);
 
       it('sends a create request for third-party flow', () => {
         submitThirdPartyForm();
 
+        const { itemType, ...input } = thirdPartyFlowFormValues;
+
         expect(createAiCatalogFlowMock).not.toHaveBeenCalled();
         expect(createAiCatalogThirdPartyFlowMock).toHaveBeenCalledTimes(1);
         expect(createAiCatalogThirdPartyFlowMock).toHaveBeenCalledWith({
-          input: { ...thirdPartyFlowFormValues, addToProjectWhenCreated: true },
+          input: { ...input, addToProjectWhenCreated: true },
         });
       });
     });

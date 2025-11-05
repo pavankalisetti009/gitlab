@@ -43,10 +43,10 @@ export default {
     },
   },
   methods: {
-    async handleSubmit(input, itemType) {
+    async handleSubmit({ itemType, ...input }) {
       this.isSubmitting = true;
       this.resetErrorMessages();
-      const config = FLOW_TYPE_APOLLO_CONFIG[itemType].update;
+      const config = FLOW_TYPE_APOLLO_CONFIG[this.aiCatalogFlow.itemType].update;
 
       try {
         const { data } = await this.$apollo.mutate({

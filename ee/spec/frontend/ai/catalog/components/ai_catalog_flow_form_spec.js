@@ -231,6 +231,7 @@ describe('AiCatalogFlowForm', () => {
       description: 'A helpful AI assistant',
       public: true,
       definition: 'version: "v1"',
+      itemType: 'FLOW',
       release: true,
     };
 
@@ -239,7 +240,7 @@ describe('AiCatalogFlowForm', () => {
 
       await submitForm();
 
-      expect(wrapper.emitted('submit')).toEqual([[expectedValues, 'FLOW']]);
+      expect(wrapper.emitted('submit')).toEqual([[expectedValues]]);
     });
 
     it('trims the form values before emitting them', async () => {
@@ -256,7 +257,7 @@ describe('AiCatalogFlowForm', () => {
 
       await submitForm();
 
-      expect(wrapper.emitted('submit')).toEqual([[expectedValues, 'FLOW']]);
+      expect(wrapper.emitted('submit')).toEqual([[expectedValues]]);
     });
 
     describe('when flow type is FLOW', () => {
@@ -287,6 +288,7 @@ describe('AiCatalogFlowForm', () => {
         definition: 'image:node@22',
         public: true,
         release: true,
+        itemType: 'THIRD_PARTY_FLOW',
       };
 
       it('emits form values on submit', async () => {
@@ -307,9 +309,7 @@ describe('AiCatalogFlowForm', () => {
 
         await submitForm();
 
-        expect(wrapper.emitted('submit')).toEqual([
-          [expectedValuesThirdPartyFlow, 'THIRD_PARTY_FLOW'],
-        ]);
+        expect(wrapper.emitted('submit')).toEqual([[expectedValuesThirdPartyFlow]]);
       });
 
       it('emits form values with definition from definitionThirdPartyFlow field', async () => {
