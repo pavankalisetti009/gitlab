@@ -1,5 +1,5 @@
 <script>
-import { GlTooltipDirective, GlIcon, GlSprintf } from '@gitlab/ui';
+import { GlTooltipDirective } from '@gitlab/ui';
 import { debounce, uniqBy, get } from 'lodash';
 import produce from 'immer';
 import { n__, __ } from '~/locale';
@@ -7,19 +7,17 @@ import getGroupProjects from 'ee/security_orchestration/graphql/queries/get_grou
 import { searchInItemsProperties } from '~/lib/utils/search_utils';
 import { DEFAULT_DEBOUNCE_AND_THROTTLE_MS } from '~/lib/utils/constants';
 import BaseItemsDropdown from './base_items_dropdown.vue';
+import ProjectsCountMessage from './projects_count_message.vue';
 
 export default {
   i18n: {
     projectDropdownHeader: __('Select projects'),
-    footerTooltipText: __('Scroll to the bottom to load more projects'),
-    footerTextTemplate: __('%{loadedProjects} of %{totalProjectsCount} %{projects} loaded'),
   },
   name: 'GroupProjectsDropdown',
   directives: { GlTooltip: GlTooltipDirective },
   components: {
     BaseItemsDropdown,
-    GlIcon,
-    GlSprintf,
+    ProjectsCountMessage,
   },
   apollo: {
     projects: {
@@ -289,29 +287,12 @@ export default {
         class="gl-border-t gl-flex gl-items-center gl-gap-3 gl-px-4 gl-py-3"
         data-testid="footer"
       >
-        <div>
-          <span>
-            <gl-sprintf :message="$options.i18n.footerTextTemplate">
-              <template #loadedProjects>
-                <strong>{{ listBoxItems.length }}</strong>
-              </template>
-              <template #totalProjectsCount>
-                <strong>{{ allProjectsCount }}</strong>
-              </template>
-              <template #projects>
-                {{ projectsText }}
-              </template>
-            </gl-sprintf>
-          </span>
-          <span
-            ><gl-icon
-              v-if="!allProjectsLoaded"
-              v-gl-tooltip
-              name="information-o"
-              variant="info"
-              :title="$options.i18n.footerTooltipText"
-          /></span>
-        </div>
+        <projects-count-message
+          :count="listBoxItems.length"
+          :info-text="projectsText"
+          :total-count="allProjectsCount"
+          :show-info-icon="!allProjectsLoaded"
+        />
       </div>
     </template>
   </base-items-dropdown>

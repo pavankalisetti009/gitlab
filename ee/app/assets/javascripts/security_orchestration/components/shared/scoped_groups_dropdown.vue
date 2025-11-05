@@ -2,13 +2,14 @@
 import { GlPopover, GlLink } from '@gitlab/ui';
 import { debounce, get, set, uniqBy } from 'lodash';
 import produce from 'immer';
-import { s__, __ } from '~/locale';
+import { n__, s__, __ } from '~/locale';
 import { helpPagePath } from '~/helpers/help_page_helper';
 import getGroups from 'ee/security_orchestration/graphql/queries/get_groups_by_ids.query.graphql';
 import getSppLinkedProjectGroups from 'ee/security_orchestration/graphql/queries/get_spp_linked_groups.graphql';
 import { DEFAULT_DEBOUNCE_AND_THROTTLE_MS } from '~/lib/utils/constants';
 import { searchInItemsProperties } from '~/lib/utils/search_utils';
 import BaseItemsDropdown from './base_items_dropdown.vue';
+import ProjectsCountMessage from './projects_count_message.vue';
 
 export default {
   ERROR_KEY: 'linked-items-query-error',
@@ -25,6 +26,7 @@ export default {
     GlPopover,
     GlLink,
     BaseItemsDropdown,
+    ProjectsCountMessage,
   },
   apollo: {
     groups: {
@@ -35,6 +37,7 @@ export default {
         if (this.designatedAsCsp) {
           return {
             search: this.searchTerm,
+            withCount: this.withProjectCount,
           };
         }
 
@@ -42,6 +45,7 @@ export default {
           fullPath: this.fullPath,
           includeParentDescendants: this.includeDescendants,
           search: this.searchTerm,
+          withCount: this.withProjectCount,
         };
       },
       update(data) {
@@ -51,7 +55,12 @@ export default {
 
         if (this.designatedAsCsp) {
           this.items = getUniqueItems();
+          this.allGroupsCount = this.countAppDspGroups(data);
         } else {
+          if (!this.allGroupsCountSaved) {
+            this.allGroupsCount = this.countAllGroups(data, groups);
+          }
+
           // Descendants only matter when we want to get all groups under parent groups
           const descendants = this.flatMapDescendantGroups(groups);
           this.items = getUniqueItems(descendants);
@@ -97,6 +106,11 @@ export default {
       required: false,
       default: () => [],
     },
+    withProjectCount: {
+      type: Boolean,
+      required: false,
+      default: false,
+    },
   },
   data() {
     return {
@@ -105,9 +119,19 @@ export default {
       searchTerm: '',
       // eslint-disable-next-line vue/no-unused-properties -- initialized for Apollo reactivity
       groups: {},
+      allGroupsCount: 0,
     };
   },
   computed: {
+    allGroupsLoaded() {
+      return this.items.length === this.allGroupsCount;
+    },
+    allGroupsCountSaved() {
+      return this.allGroupsCount > 0;
+    },
+    showFooter() {
+      return this.withProjectCount && !this.loading;
+    },
     selectedButNotLoadedGroupIds() {
       return this.selected.filter((id) => !this.itemsIds.includes(id));
     },
@@ -145,8 +169,14 @@ export default {
         searchQuery: this.searchTerm,
       });
     },
+    listBoxItemsCount() {
+      return this.listBoxItems?.length || 0;
+    },
     itemsIds() {
       return this.items.map(({ id }) => id);
+    },
+    infoText() {
+      return n__('group', 'groups', this.allGroupsCount);
     },
     existingFormattedSelectedIds() {
       return this.selected.filter((id) => this.itemsIds.includes(id));
@@ -172,6 +202,20 @@ export default {
     this.debouncedSearch.cancel();
   },
   methods: {
+    countAppDspGroups(data) {
+      return get(data, 'groups.count', 0);
+    },
+    countAllGroups(data, groups) {
+      const topLevelCount = get(data, 'project.securityPolicyProjectLinkedGroups.count', 0);
+
+      return (
+        topLevelCount +
+        this.flatMapDescendantCounts(groups).reduce((total, count) => total + count, 0)
+      );
+    },
+    flatMapDescendantCounts(groups) {
+      return groups.flatMap(({ descendantGroups }) => descendantGroups.count);
+    },
     flatMapDescendantGroups(groups) {
       return groups.flatMap(({ descendantGroups }) => descendantGroups.nodes);
     },
@@ -261,6 +305,20 @@ export default {
       @reset="selectItems([])"
       @select="selectItems"
       @select-all="selectItems"
-    />
+    >
+      <template v-if="showFooter" #footer>
+        <div
+          class="gl-border-t gl-flex gl-items-center gl-gap-3 gl-px-4 gl-py-3"
+          data-testid="footer"
+        >
+          <projects-count-message
+            :count="listBoxItemsCount"
+            :info-text="infoText"
+            :total-count="allGroupsCount"
+            :show-info-icon="!allGroupsLoaded"
+          />
+        </div>
+      </template>
+    </base-items-dropdown>
   </div>
 </template>

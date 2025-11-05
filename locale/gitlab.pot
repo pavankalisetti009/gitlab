@@ -58097,7 +58097,7 @@ msgstr ""
 msgid "Scroll to bottom"
 msgstr ""
 
-msgid "Scroll to the bottom to load more projects"
+msgid "Scroll to the bottom to load more items"
 msgstr ""
 
 msgid "Scroll to top"
@@ -79068,7 +79068,9 @@ msgid "greater than or equal to"
 msgstr ""
 
 msgid "group"
-msgstr ""
+msgid_plural "groups"
+msgstr[0] ""
+msgstr[1] ""
 
 msgid "group access token"
 msgstr ""

@@ -171,6 +171,7 @@ export default {
     <scoped-groups-dropdown
       data-testid="groups-dropdown"
       include-descendants
+      with-project-count
       :full-path="fullPath"
       :disabled="disabled"
       :selected="groupsIds"

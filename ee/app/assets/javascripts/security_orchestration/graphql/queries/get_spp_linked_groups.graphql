@@ -7,6 +7,7 @@ query getSppLinkedGroups(
   $after: String = ""
   $includeParentDescendants: Boolean = false
   $topLevelOnly: Boolean = false
+  $withCount: Boolean = false
 ) {
   project(fullPath: $fullPath) {
     id
@@ -17,6 +18,7 @@ query getSppLinkedGroups(
       first: 100
       after: $after
     ) {
+      count @include(if: $withCount)
       nodes {
         id
         name
@@ -28,6 +30,7 @@ query getSppLinkedGroups(
           search: $search
           first: 100
         ) {
+          count @include(if: $withCount)
           nodes {
             id
             name

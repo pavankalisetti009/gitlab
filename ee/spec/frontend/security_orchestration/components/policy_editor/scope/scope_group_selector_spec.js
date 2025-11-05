@@ -38,6 +38,7 @@ describe('ScopeGroupSelector', () => {
       expect(findExceptionTypeSelector().exists()).toBe(true);
       expect(findGroupsDropdown().exists()).toBe(true);
       expect(findGroupsDropdown().props('includeDescendants')).toBe(true);
+      expect(findGroupsDropdown().props('withProjectCount')).toBe(true);
     });
   });
 
