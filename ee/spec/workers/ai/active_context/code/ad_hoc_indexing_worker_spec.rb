@@ -50,6 +50,16 @@ RSpec.describe Ai::ActiveContext::Code::AdHocIndexingWorker, feature_category: :
           project.reload.project_setting.update!(duo_features_enabled: true)
         end
 
+        it 'ensures a fresh check on eligibility' do
+          expect(Rails.cache).to receive(:fetch).with(
+            "active_context_code_eligible_project_#{project.id}",
+            expires_in: described_class::CODE_ELIGIBILITY_CACHE_EXPIRY,
+            force: true
+          ).and_call_original
+
+          perform
+        end
+
         context 'when project is not eligible for indexing' do
           context 'when duo_features_enabled is false' do
             before do

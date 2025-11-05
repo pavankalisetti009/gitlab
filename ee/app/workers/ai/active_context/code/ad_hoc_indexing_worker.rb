@@ -5,7 +5,7 @@ module Ai
     module Code
       class AdHocIndexingWorker
         include ApplicationWorker
-        include Gitlab::Utils::StrongMemoize
+        include Ai::ActiveContext::Concerns::CodeEligibility
         prepend ::Geo::SkipSecondary
 
         feature_category :global_search
@@ -21,21 +21,13 @@ module Ai
           project = Project.find_by_id(project_id)
           return false unless project
           return false if Ai::ActiveContext::Code::Repository.for_project(project.id).exists?
-          return false unless project_eligible_for_indexing?(project)
+          return false unless project_eligible_for_indexing?(project, force_cache_reload: true)
 
           repository = create_repository_record(project)
           RepositoryIndexWorker.perform_async(repository.id)
         end
 
         private
-
-        def project_eligible_for_indexing?(project)
-          return false if Feature.disabled?(:active_context_code_index_project, project)
-          return false unless project.project_setting.duo_features_enabled
-          return false unless enabled_namespace_for_project(project)&.ready?
-
-          true
-        end
 
         def create_repository_record(project)
           Ai::ActiveContext::Code::Repository.create(
@@ -45,17 +37,6 @@ module Ai
             state: :pending
           )
         end
-
-        def enabled_namespace_for_project(project)
-          strong_memoize_with(:enabled_namespace_for_project, project) do
-            Ai::ActiveContext::Code::EnabledNamespace.find_enabled_namespace(active_connection, project.root_namespace)
-          end
-        end
-
-        def active_connection
-          Ai::ActiveContext::Connection.active
-        end
-        strong_memoize_attr :active_connection
       end
     end
   end
