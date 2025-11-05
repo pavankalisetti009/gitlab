@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe IpRestriction do
+RSpec.describe IpRestriction, feature_category: :system_access do
   describe 'relations' do
     it { is_expected.to belong_to(:group) }
   end
