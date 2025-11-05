@@ -151,8 +151,7 @@ module Ai
       end
 
       def set_up_executor_commands
-        if Feature.enabled?(:ai_dap_use_headless_node_executor, project) && \
-            Feature.enabled?(:ai_dap_use_headless_node_executor, @current_user)
+        if Feature.enabled?(:ai_dap_use_headless_node_executor, @current_user)
           [
             %(npx -y @gitlab/duo-cli@^8.31.0 run --existing-session-id #{@workflow.id})
           ]
