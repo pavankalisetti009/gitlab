@@ -8,8 +8,6 @@ import { updateMavenUpstream } from 'ee/api/virtual_registries_api';
 import DeleteUpstreamWithModal from '../../../components/maven/shared/delete_upstream_with_modal.vue';
 import RegistryUpstreamForm from '../../../components/maven/shared/registry_upstream_form.vue';
 import { captureException } from '../../../sentry_utils';
-import getMavenUpstreamRegistriesQuery from '../../../graphql/queries/get_maven_upstream_registries.query.graphql';
-import { convertToMavenUpstreamGraphQLId } from '../../../utils';
 
 export default {
   name: 'MavenEditUpstreamApp',
@@ -36,31 +34,8 @@ export default {
     return {
       alertMessage: '',
       loading: false,
-      registries: [],
+      upstreamDeleteModalIsShown: false,
     };
-  },
-  apollo: {
-    registries: {
-      query: getMavenUpstreamRegistriesQuery,
-      variables() {
-        return {
-          id: this.mavenUpstreamRegistryID,
-          // Maximum number of maven virtual registries per top-level group.
-          first: 20,
-        };
-      },
-      update(data) {
-        return data.mavenUpstreamRegistry?.registries?.nodes ?? [];
-      },
-      error(error) {
-        captureException({ error, component: this.$options.name });
-      },
-    },
-  },
-  computed: {
-    mavenUpstreamRegistryID() {
-      return convertToMavenUpstreamGraphQLId(this.upstream.id);
-    },
   },
   methods: {
     async updateUpstream(formData) {
@@ -108,6 +83,9 @@ export default {
     handleError(error) {
       this.alertMessage = this.parseError(error);
     },
+    showModal() {
+      this.upstreamDeleteModalIsShown = true;
+    },
   },
 };
 </script>
@@ -120,20 +98,18 @@ export default {
     </gl-alert>
     <registry-upstream-form :upstream="upstream" :loading="loading" @submit="updateUpstream">
       <template v-if="glAbilities.destroyVirtualRegistry" #actions>
-        <delete-upstream-with-modal
-          :upstream-id="upstream.id"
-          :upstream-name="upstream.name"
-          :registries="registries"
-          @success="handleSuccess"
-          @error="handleError"
-        >
-          <template #default="{ showModal }">
-            <gl-button category="secondary" variant="danger" @click="showModal">
-              {{ s__('VirtualRegistry|Delete upstream') }}
-            </gl-button>
-          </template>
-        </delete-upstream-with-modal>
+        <gl-button category="secondary" variant="danger" @click="showModal">
+          {{ s__('VirtualRegistry|Delete upstream') }}
+        </gl-button>
       </template>
     </registry-upstream-form>
+    <delete-upstream-with-modal
+      v-model="upstreamDeleteModalIsShown"
+      :upstream-id="upstream.id"
+      :upstream-name="upstream.name"
+      @success="handleSuccess"
+      @error="handleError"
+      @canceled="upstreamDeleteModalIsShown = false"
+    />
   </div>
 </template>

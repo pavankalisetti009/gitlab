@@ -1,13 +1,21 @@
 <script>
-import { GlModal, GlTruncateText } from '@gitlab/ui';
+import { GlModal, GlTruncateText, GlSkeletonLoader } from '@gitlab/ui';
 import { s__, __, n__, sprintf } from '~/locale';
 import { deleteMavenUpstream } from 'ee/api/virtual_registries_api';
+import getMavenUpstreamRegistriesQuery from '../../../graphql/queries/get_maven_upstream_registries.query.graphql';
+import { captureException } from '../../../sentry_utils';
+import { convertToMavenUpstreamGraphQLId } from '../../../utils';
 
 export default {
   name: 'DeleteMavenUpstreamWithModal',
   components: {
     GlModal,
     GlTruncateText,
+    GlSkeletonLoader,
+  },
+  model: {
+    prop: 'visible',
+    event: 'change',
   },
   props: {
     upstreamId: {
@@ -18,19 +26,46 @@ export default {
       type: String,
       required: true,
     },
-    registries: {
-      type: Array,
+    visible: {
+      type: Boolean,
       required: false,
-      default: () => [],
+      default: false,
     },
   },
-  emits: ['success', 'error'],
+  emits: ['success', 'error', 'canceled', 'change'],
+  apollo: {
+    registries: {
+      query: getMavenUpstreamRegistriesQuery,
+      variables() {
+        return {
+          id: this.mavenUpstreamRegistryID,
+          // Maximum number of maven virtual registries per top-level group.
+          first: 20,
+        };
+      },
+      skip() {
+        return !this.visible || !this.upstreamId;
+      },
+      update(data) {
+        return data.mavenUpstreamRegistry?.registries?.nodes ?? [];
+      },
+      error(error) {
+        captureException({ error, component: this.$options.name });
+      },
+    },
+  },
   data() {
     return {
-      showDeleteModal: false,
+      registries: [],
     };
   },
   computed: {
+    loading() {
+      return this.$apollo.queries.registries.loading;
+    },
+    mavenUpstreamRegistryID() {
+      return convertToMavenUpstreamGraphQLId(this.upstreamId);
+    },
     confirmationMessage() {
       return sprintf(s__('VirtualRegistry|Are you sure you want to delete %{name}?'), {
         name: this.upstreamName,
@@ -54,6 +89,16 @@ export default {
         },
       );
     },
+    modalPrimaryAction() {
+      return {
+        text: s__('VirtualRegistry|Delete upstream'),
+        attributes: {
+          disabled: this.loading,
+          variant: 'danger',
+          category: 'primary',
+        },
+      };
+    },
   },
   methods: {
     async deleteUpstream() {
@@ -67,18 +112,8 @@ export default {
         this.$emit('error', error);
       }
     },
-    showModal() {
-      this.showDeleteModal = true;
-    },
   },
   modal: {
-    primaryAction: {
-      text: s__('VirtualRegistry|Delete upstream'),
-      attributes: {
-        variant: 'danger',
-        category: 'primary',
-      },
-    },
     cancelAction: {
       text: __('Cancel'),
     },
@@ -86,34 +121,33 @@ export default {
 };
 </script>
 <template>
-  <div>
-    <slot :show-modal="showModal"></slot>
-    <gl-modal
-      v-model="showDeleteModal"
-      modal-id="delete-upstream-modal"
-      size="md"
-      :action-primary="$options.modal.primaryAction"
-      :action-cancel="$options.modal.cancelAction"
-      :title="s__('VirtualRegistry|Delete upstream?')"
-      @primary="deleteUpstream"
-      @canceled="showDeleteModal = false"
-    >
-      <template v-if="hasRegistries">
-        <p class="gl-font-bold">{{ message }}</p>
-        <gl-truncate-text class="gl-pb-3">
-          <ul class="gl-pl-6">
-            <li v-for="registry in registries" :key="registry.id">{{ registry.name }}</li>
-          </ul>
-        </gl-truncate-text>
-        <p>
-          {{
-            s__(
-              'VirtualRegistry|This action cannot be undone. Deleting this upstream might impact registries associated with it.',
-            )
-          }}
-        </p>
-      </template>
-      <p v-else>{{ confirmationMessage }}</p>
-    </gl-modal>
-  </div>
+  <gl-modal
+    :visible="visible"
+    modal-id="delete-upstream-modal"
+    size="md"
+    :action-primary="modalPrimaryAction"
+    :action-cancel="$options.modal.cancelAction"
+    :title="s__('VirtualRegistry|Delete upstream?')"
+    @primary="deleteUpstream"
+    @canceled="$emit('canceled')"
+    @change="$emit('change', $event)"
+  >
+    <gl-skeleton-loader v-if="loading" />
+    <template v-else-if="hasRegistries">
+      <p class="gl-font-bold">{{ message }}</p>
+      <gl-truncate-text class="gl-pb-3">
+        <ul class="gl-pl-6">
+          <li v-for="registry in registries" :key="registry.id">{{ registry.name }}</li>
+        </ul>
+      </gl-truncate-text>
+      <p>
+        {{
+          s__(
+            'VirtualRegistry|This action cannot be undone. Deleting this upstream might impact registries associated with it.',
+          )
+        }}
+      </p>
+    </template>
+    <p v-else>{{ confirmationMessage }}</p>
+  </gl-modal>
 </template>

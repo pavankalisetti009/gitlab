@@ -1,9 +1,18 @@
-import { GlModal, GlTruncateText } from '@gitlab/ui';
+import Vue from 'vue';
+import VueApollo from 'vue-apollo';
+import { GlModal, GlSkeletonLoader, GlTruncateText } from '@gitlab/ui';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
+import createMockApollo from 'helpers/mock_apollo_helper';
 import waitForPromises from 'helpers/wait_for_promises';
 import { deleteMavenUpstream } from 'ee/api/virtual_registries_api';
 import DeleteUpstreamWithModal from 'ee/packages_and_registries/virtual_registries/components/maven/shared/delete_upstream_with_modal.vue';
+import getMavenUpstreamRegistriesQuery from 'ee/packages_and_registries/virtual_registries/graphql/queries/get_maven_upstream_registries.query.graphql';
+import { captureException } from 'ee/packages_and_registries/virtual_registries/sentry_utils';
+import { mavenUpstreamRegistry } from '../../../mock_data';
 
+Vue.use(VueApollo);
+
+jest.mock('ee/packages_and_registries/virtual_registries/sentry_utils');
 jest.mock('ee/api/virtual_registries_api', () => ({
   deleteMavenUpstream: jest.fn(),
 }));
@@ -14,7 +23,6 @@ describe('DeleteUpstreamWithModal', () => {
   const defaultProps = {
     upstreamId: 123,
     upstreamName: 'Test upstream',
-    registries: [],
   };
 
   const mockRegistries = [
@@ -25,15 +33,31 @@ describe('DeleteUpstreamWithModal', () => {
 
   const findModal = () => wrapper.findComponent(GlModal);
   const findTruncateText = () => wrapper.findComponent(GlTruncateText);
+  const findLoader = () => wrapper.findComponent(GlSkeletonLoader);
 
-  const createComponent = (props = {}) => {
+  const mockUpstreamRegistries = {
+    data: {
+      mavenUpstreamRegistry: {
+        ...mavenUpstreamRegistry,
+        registries: {
+          nodes: mockRegistries,
+        },
+      },
+    },
+  };
+  const mavenUpstreamRegistriesHandler = jest.fn().mockResolvedValue(mockUpstreamRegistries);
+  const mockError = new Error('API error');
+  const errorHandler = jest.fn().mockRejectedValue(mockError);
+
+  const createComponent = ({
+    props,
+    handlers = [[getMavenUpstreamRegistriesQuery, mavenUpstreamRegistriesHandler]],
+  } = {}) => {
     wrapper = shallowMountExtended(DeleteUpstreamWithModal, {
+      apolloProvider: createMockApollo(handlers),
       propsData: {
         ...defaultProps,
         ...props,
-      },
-      scopedSlots: {
-        default: '<button @click="props.showModal">Delete</button>',
       },
     });
   };
@@ -71,70 +95,117 @@ describe('DeleteUpstreamWithModal', () => {
       expect(findModal().props('visible')).toBe(false);
     });
 
-    it('slot props `showModal` opens the modal', async () => {
-      await wrapper.find('button').trigger('click');
-
-      expect(findModal().props('visible')).toBe(true);
+    it('does not call the GraphQL query to fetch registry names', () => {
+      expect(mavenUpstreamRegistriesHandler).not.toHaveBeenCalled();
     });
 
-    it('closes modal when canceled event is triggered', async () => {
-      await wrapper.find('button').trigger('click');
-      expect(findModal().props('visible')).toBe(true);
-      await findModal().vm.$emit('canceled');
-
-      expect(findModal().props('visible')).toBe(false);
-    });
-  });
-
-  describe('modal content', () => {
-    describe('when upstream has no associated registries', () => {
+    describe('when visible', () => {
       beforeEach(() => {
-        createComponent();
+        createComponent({ props: { visible: true } });
       });
 
-      it('shows simple confirmation message', () => {
-        expect(wrapper.text()).toContain('Are you sure you want to delete Test upstream?');
+      it('shows modal', () => {
+        expect(findModal().props('visible')).toBe(true);
       });
 
-      it('does not show registries list', () => {
-        expect(findTruncateText().exists()).toBe(false);
+      it('renders loading component when the query is being made', () => {
+        expect(findLoader().exists()).toBe(true);
       });
 
-      it('does not show warning message', () => {
-        expect(wrapper.text()).not.toContain('This action cannot be undone');
-      });
-    });
-
-    describe('when upstream has associated registries', () => {
-      beforeEach(() => {
-        createComponent({ registries: mockRegistries });
+      it('calls the GraphQL query with right parameters', () => {
+        expect(mavenUpstreamRegistriesHandler).toHaveBeenCalledWith({
+          id: 'gid://gitlab/VirtualRegistries::Packages::Maven::Upstream/123',
+          first: 20,
+        });
       });
 
-      it('shows warning message with registry count', () => {
-        expect(wrapper.text()).toContain(
-          'You are about to delete this upstream used by 3 registries:',
-        );
+      it('emits canceled event when modal is canceled', () => {
+        findModal().vm.$emit('canceled');
+
+        expect(wrapper.emitted('canceled')).toHaveLength(1);
       });
 
-      it('shows truncated list of registries', () => {
-        const truncateText = findTruncateText();
-        expect(truncateText.exists()).toBe(true);
+      describe('when GraphQL query to get registries fails', () => {
+        it('calls captureException with the error', async () => {
+          createComponent({
+            props: { visible: true },
+            handlers: [[getMavenUpstreamRegistriesQuery, errorHandler]],
+          });
 
-        const registryItems = wrapper.findAll('li');
-        expect(registryItems).toHaveLength(3);
-        expect(registryItems.at(0).text()).toBe('Registry 1');
-        expect(registryItems.at(1).text()).toBe('Registry 2');
-        expect(registryItems.at(2).text()).toBe('Registry 3');
+          await waitForPromises();
+          expect(captureException).toHaveBeenCalledWith({
+            error: mockError,
+            component: 'DeleteMavenUpstreamWithModal',
+          });
+        });
       });
 
-      it('shows impact warning message', () => {
-        expect(wrapper.text()).toContain(
-          'This action cannot be undone. Deleting this upstream might impact registries associated with it.',
-        );
-      });
+      describe('modal content', () => {
+        describe('when upstream has no associated registries', () => {
+          const handler = jest.fn().mockResolvedValue({
+            data: {
+              mavenUpstreamRegistry: {
+                ...mavenUpstreamRegistry,
+                registries: {
+                  nodes: [],
+                },
+              },
+            },
+          });
+          beforeEach(async () => {
+            createComponent({
+              props: { visible: true },
+              handlers: [[getMavenUpstreamRegistriesQuery, handler]],
+            });
+            await waitForPromises();
+          });
 
-      it('does not show simple confirmation message', () => {
-        expect(wrapper.text()).not.toContain('Are you sure you want to delete Test upstream?');
+          it('shows simple confirmation message', () => {
+            expect(wrapper.text()).toContain('Are you sure you want to delete Test upstream?');
+          });
+
+          it('does not show registries list', () => {
+            expect(findTruncateText().exists()).toBe(false);
+          });
+
+          it('does not show warning message', () => {
+            expect(wrapper.text()).not.toContain('This action cannot be undone');
+          });
+        });
+
+        describe('when upstream has associated registries', () => {
+          beforeEach(async () => {
+            createComponent({ props: { visible: true } });
+            await waitForPromises();
+          });
+
+          it('shows warning message with registry count', () => {
+            expect(wrapper.text()).toContain(
+              'You are about to delete this upstream used by 3 registries:',
+            );
+          });
+
+          it('shows truncated list of registries', () => {
+            const truncateText = findTruncateText();
+            expect(truncateText.exists()).toBe(true);
+
+            const registryItems = wrapper.findAll('li');
+            expect(registryItems).toHaveLength(3);
+            expect(registryItems.at(0).text()).toBe('Registry 1');
+            expect(registryItems.at(1).text()).toBe('Registry 2');
+            expect(registryItems.at(2).text()).toBe('Registry 3');
+          });
+
+          it('shows impact warning message', () => {
+            expect(wrapper.text()).toContain(
+              'This action cannot be undone. Deleting this upstream might impact registries associated with it.',
+            );
+          });
+
+          it('does not show simple confirmation message', () => {
+            expect(wrapper.text()).not.toContain('Are you sure you want to delete Test upstream?');
+          });
+        });
       });
     });
   });
