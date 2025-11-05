@@ -22,7 +22,10 @@ module Gitlab
             return [] if namespace.is_a?(::Group)
 
             helpers = Gitlab::Routing.url_helpers
-            dashboard_link = helpers.project_analytics_merge_request_analytics_path(namespace.project)
+            dashboard_link = helpers.project_analytics_dashboards_path(
+              namespace.project,
+              vueroute: ::Analytics::Dashboards::Dashboard::MERGE_REQUEST_ANALYTICS_DASHBOARD_NAME
+            )
 
             [
               { "name" => title, "url" => dashboard_link,

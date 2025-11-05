@@ -58,9 +58,7 @@ module ProductAnalyticsHelpers
   end
 
   def merge_request_analytics_enabled?(user)
-    is_a?(Project) &&
-      Ability.allowed?(user, :read_project_merge_request_analytics, self) &&
-      Feature.enabled?(:consolidate_mr_analytics_in_shared_dashboards, self)
+    is_a?(Project) && Ability.allowed?(user, :read_project_merge_request_analytics, self)
   end
 
   def duo_usage_dashboard_enabled?(user)

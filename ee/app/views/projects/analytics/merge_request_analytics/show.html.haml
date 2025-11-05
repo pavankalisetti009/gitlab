@@ -1,4 +1,0 @@
-- page_title _("Merge request analytics")
-- add_page_specific_style 'page_bundles/merge_request_analytics'
-
-#js-merge-request-analytics-app{ data: { type: 'project', full_path: @project.full_path, milestone_path: project_milestones_path(@project), labels_path: project_labels_path(@project, include_ancestor_groups: true), analytics_dashboards_path: project_analytics_dashboards_path(@project), mr_analytics_dashboard_path: project_analytics_dashboards_path(@project, vueroute: Analytics::Dashboards::Dashboard::MERGE_REQUEST_ANALYTICS_DASHBOARD_NAME) } }

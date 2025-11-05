@@ -114,7 +114,7 @@ constraints(::Constraints::ProjectUrlConstrainer.new) do
         namespace :analytics do
           resources :code_reviews, only: [:index]
           resource :issues_analytics, only: [:show]
-          resource :merge_request_analytics, only: :show
+          get '/merge_request_analytics', to: redirect('%{namespace_id}/%{project_id}/-/analytics/dashboards/merge_request_analytics')
           resource :data_explorer, controller: :data_explorer, only: :show
           resources :dashboards, only: [:index], path: 'dashboards(/*vueroute)', format: false
 

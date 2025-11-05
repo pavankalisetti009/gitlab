@@ -18,7 +18,6 @@ module EE
             add_item(code_review_analytics_menu_item)
             add_item(insights_menu_item)
             add_item(issues_analytics_menu_item)
-            add_item(merge_request_analytics_menu_item)
             add_item(repository_analytics_menu_item)
             add_item(data_explorer_menu_item)
 
@@ -73,21 +72,6 @@ module EE
           def show_issues_analytics?
             context.project.licensed_feature_available?(:issues_analytics) &&
               can?(context.current_user, :read_issue_analytics, context.project)
-          end
-
-          def merge_request_analytics_menu_item
-            item_id = context.is_super_sidebar ? :merge_request_analytics : :merge_requests
-            unless can?(context.current_user, :read_project_merge_request_analytics, context.project)
-              return ::Sidebars::NilMenuItem.new(item_id: item_id)
-            end
-
-            ::Sidebars::MenuItem.new(
-              title: context.is_super_sidebar ? _('Merge request analytics') : _('Merge request'),
-              link: project_analytics_merge_request_analytics_path(context.project),
-              super_sidebar_parent: ::Sidebars::Projects::SuperSidebarMenus::AnalyzeMenu,
-              active_routes: { path: 'projects/analytics/merge_request_analytics#show' },
-              item_id: item_id
-            )
           end
 
           def dashboards_analytics_menu_item

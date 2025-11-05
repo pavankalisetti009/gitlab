@@ -112,14 +112,6 @@ RSpec.describe ProductAnalyticsHelpers, feature_category: :product_analytics do
 
       it { is_expected.to eq(outcome) }
     end
-
-    context 'when the consolidate_mr_analytics_in_shared_dashboards flag is disabled' do
-      before do
-        stub_feature_flags(consolidate_mr_analytics_in_shared_dashboards: false)
-      end
-
-      it { is_expected.to be_falsey }
-    end
   end
 
   describe '#duo_usage_dashboard_enabled?' do
@@ -160,7 +152,6 @@ RSpec.describe ProductAnalyticsHelpers, feature_category: :product_analytics do
       stub_licensed_features(product_analytics: false)
       stub_feature_flags(dora_metrics_dashboard: false)
       stub_feature_flags(product_analytics_features: false)
-      stub_feature_flags(consolidate_mr_analytics_in_shared_dashboards: false)
       stub_feature_flags(duo_usage_dashboard: false)
       expect(project.product_analytics_dashboards(user)).to be_empty
     end

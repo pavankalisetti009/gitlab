@@ -82,27 +82,6 @@ RSpec.describe Sidebars::Projects::Menus::AnalyticsMenu, feature_category: :navi
       end
     end
 
-    describe 'Merge Request' do
-      let(:item_id) { :merge_requests }
-
-      it { is_expected.not_to be_nil }
-
-      describe 'when the user does not have access' do
-        let(:user) { nil }
-
-        it { is_expected.to be_nil }
-      end
-
-      describe 'when merge requests are disabled' do
-        before do
-          project.merge_requests_enabled = false
-          project.save!
-        end
-
-        it { is_expected.to be_nil }
-      end
-    end
-
     describe 'Data explorer' do
       let(:item_id) { :data_explorer }
 
