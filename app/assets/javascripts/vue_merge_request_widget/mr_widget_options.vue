@@ -271,8 +271,12 @@ export default {
   mounted() {
     MRWidgetService.fetchInitialData()
       .then(({ data, headers }) => {
-        this.startingPollInterval =
-          Number(headers['POLL-INTERVAL']) || STATE_QUERY_POLLING_INTERVAL_DEFAULT;
+        if (window.gon?.features?.mergeWidgetStopPolling) {
+          this.startingPollInterval = -1;
+        } else {
+          this.startingPollInterval =
+            Number(headers['POLL-INTERVAL']) || STATE_QUERY_POLLING_INTERVAL_DEFAULT;
+        }
         this.initWidget(data);
       })
       .catch(() =>
