@@ -15,7 +15,7 @@ module GitlabSubscriptions
 
     override :trial_active?
     def trial_active?
-      GitlabSubscriptions::Trials.self_managed_ultimate_trial?(license)
+      GitlabSubscriptions::Trials.self_managed_non_dedicated_active_ultimate_trial?(license)
     end
 
     override :buy_now_link

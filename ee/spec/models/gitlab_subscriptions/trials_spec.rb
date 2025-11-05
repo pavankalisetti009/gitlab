@@ -186,10 +186,10 @@ RSpec.describe GitlabSubscriptions::Trials, feature_category: :subscription_mana
     end
   end
 
-  describe '.self_managed_ultimate_trial?' do
+  describe '.self_managed_non_dedicated_ultimate_trial?' do
     let(:license) { build(:license, :ultimate_trial) }
 
-    subject { described_class.self_managed_ultimate_trial?(license) }
+    subject { described_class.self_managed_non_dedicated_ultimate_trial?(license) }
 
     it { is_expected.to be(true) }
 
@@ -202,6 +202,36 @@ RSpec.describe GitlabSubscriptions::Trials, feature_category: :subscription_mana
     context 'when it is not trial' do
       let(:license) { build(:license, :ultimate) }
 
+      it { is_expected.to be(false) }
+    end
+
+    context 'when license is nil' do
+      let(:license) { nil }
+
+      it { is_expected.to be(false) }
+    end
+
+    context 'when GitLab Dedicated instance', :dedicated do
+      it { is_expected.to be(false) }
+    end
+  end
+
+  describe '.self_managed_non_dedicated_active_ultimate_trial?' do
+    let(:license) { build(:license, :ultimate_trial) }
+
+    subject { described_class.self_managed_non_dedicated_active_ultimate_trial?(license) }
+
+    context 'when license is active' do
+      it { is_expected.to be(true) }
+    end
+
+    context 'when license is not active' do
+      let(:license) { build(:license, :ultimate_trial, expired: true) }
+
+      it { is_expected.to be(false) }
+    end
+
+    context 'when GitLab Dedicated instance', :dedicated do
       it { is_expected.to be(false) }
     end
   end

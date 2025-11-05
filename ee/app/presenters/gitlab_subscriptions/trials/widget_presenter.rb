@@ -25,10 +25,7 @@ module GitlabSubscriptions
       end
 
       def authorized_self_managed?
-        return false if ::Gitlab::Saas.feature_available?(:subscriptions_trials)
-        return false if ::Gitlab::CurrentSettings.gitlab_dedicated_instance?
-
-        Ability.allowed?(user, :admin_all_resources)
+        !::Gitlab::Saas.feature_available?(:subscriptions_trials) && Ability.allowed?(user, :admin_all_resources)
       end
 
       def authorized_gitlab_com?
