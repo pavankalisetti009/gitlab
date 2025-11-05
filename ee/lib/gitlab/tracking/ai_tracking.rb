@@ -76,8 +76,8 @@ module Gitlab
           finish_mcp_tool_call: 24
         ) do |context|
           {
-            tool_name: context['tool_name'],
             session_id: context['session_id'],
+            tool_name: context['tool_name'],
             has_tool_call_success: context['has_tool_call_success'],
             failure_reason: context['failure_reason'],
             error_status: context['error_status']
