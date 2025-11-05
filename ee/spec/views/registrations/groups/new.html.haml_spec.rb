@@ -71,4 +71,22 @@ RSpec.describe 'registrations/groups/new', feature_category: :onboarding do
       expect(rendered).to have_css('#import-project-pane')
     end
   end
+
+  context 'with trial_registration_hierarchy_education_experiment experiment' do
+    it 'renders control variant (_new_with_info)' do
+      stub_experiments(trial_registration_hierarchy_education: :control)
+      render
+
+      expect(view).to render_template(partial: 'registrations/groups/_new')
+      expect(view).not_to render_template(partial: 'registrations/groups/_new_with_info')
+    end
+
+    it 'renders candidate variant (_new)' do
+      stub_experiments(trial_registration_hierarchy_education: :candidate)
+      render
+
+      expect(view).to render_template(partial: 'registrations/groups/_new_with_info')
+      expect(view).not_to render_template(partial: 'registrations/groups/_new')
+    end
+  end
 end

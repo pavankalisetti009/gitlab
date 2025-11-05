@@ -1,0 +1,9 @@
+---
+name: trial_registration_hierarchy_education
+feature_issue_url: https://gitlab.com/gitlab-org/gitlab/-/issues/579013
+introduced_by_url: https://gitlab.com/gitlab-org/gitlab/-/merge_requests/211562
+rollout_issue_url: https://gitlab.com/gitlab-org/gitlab/-/issues/579993
+milestone: '18.6'
+group: group::engagement
+type: experiment
+default_enabled: false
