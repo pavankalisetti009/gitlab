@@ -127,6 +127,7 @@ describe('BlockGroupBranchModification', () => {
 
     it('retrieves top-level groups', () => {
       expect(requestHandler).toHaveBeenCalledWith({
+        withCount: false,
         topLevelOnly: true,
         search: '',
         after: '',
@@ -200,6 +201,7 @@ describe('BlockGroupBranchModification', () => {
       createComponent({ propsData: { enabled: true, exceptions: [{ id: 1 }, { id: 2 }] } });
       await findExceptionsDropdown().vm.$emit('search', 'git');
       expect(requestHandler).toHaveBeenCalledWith({
+        withCount: false,
         search: 'git',
         topLevelOnly: true,
         after: '',
@@ -233,6 +235,7 @@ describe('BlockGroupBranchModification', () => {
 
       expect(requestHandler).toHaveBeenCalledTimes(2);
       expect(requestHandler).toHaveBeenNthCalledWith(1, {
+        withCount: false,
         after: '',
         fullPath: 'fullPath',
         includeParentDescendants: false,
@@ -240,6 +243,7 @@ describe('BlockGroupBranchModification', () => {
         topLevelOnly: true,
       });
       expect(requestHandler).toHaveBeenNthCalledWith(2, {
+        withCount: false,
         after: '',
         fullPath: 'fullPath',
         ids: [
@@ -277,6 +281,7 @@ describe('BlockGroupBranchModification', () => {
 
       expect(requestHandler).toHaveBeenCalledTimes(2);
       expect(requestHandler).toHaveBeenNthCalledWith(2, {
+        withCount: false,
         after: '',
         topLevelOnly: true,
         search: '',

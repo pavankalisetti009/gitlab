@@ -53,6 +53,7 @@ describe('BlockGroupBranchModificationSetting', () => {
     expect(requestHandler).toHaveBeenCalledWith({
       ids: exceptions.map(({ id }) => convertToGraphQLId(TYPENAME_GROUP, id)),
       after: '',
+      withCount: false,
     });
     expect(findExceptions()).toHaveLength(2);
     expect(findExceptions().at(0).text()).toBe(groups[0].fullName);

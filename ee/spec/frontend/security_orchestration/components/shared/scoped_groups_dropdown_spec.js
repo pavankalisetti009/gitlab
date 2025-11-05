@@ -3,6 +3,7 @@ import VueApollo from 'vue-apollo';
 import { GlCollapsibleListbox, GlPopover, GlLink } from '@gitlab/ui';
 import ScopedGroupsDropdown from 'ee/security_orchestration/components/shared/scoped_groups_dropdown.vue';
 import BaseItemsDropdown from 'ee/security_orchestration/components/shared/base_items_dropdown.vue';
+import ProjectsCountMessage from 'ee/security_orchestration/components/shared/projects_count_message.vue';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import getGroups from 'ee/security_orchestration/graphql/queries/get_groups_by_ids.query.graphql';
 import getSppLinkedProjectGroups from 'ee/security_orchestration/graphql/queries/get_spp_linked_groups.graphql';
@@ -44,6 +45,7 @@ describe('ScopedGroupsDropdown', () => {
     jest.fn().mockResolvedValueOnce({
       data: {
         groups: {
+          count: nodes.length,
           nodes,
           pageInfo: {},
         },
@@ -84,11 +86,13 @@ describe('ScopedGroupsDropdown', () => {
 
   const findDropdown = () => wrapper.findComponent(BaseItemsDropdown);
   const findPopover = () => wrapper.findComponent(GlPopover);
+  const findFooter = () => wrapper.findComponent(ProjectsCountMessage);
 
   describe('loading items', () => {
     it('renders loading state', () => {
       createComponent();
       expect(findDropdown().props('loading')).toBe(true);
+      expect(findFooter().exists()).toBe(false);
     });
 
     it('emits error if loading fails', async () => {
@@ -113,12 +117,16 @@ describe('ScopedGroupsDropdown', () => {
 
     describe('csp group', () => {
       beforeEach(async () => {
-        createComponent({ provide: { designatedAsCsp: true } });
+        createComponent({
+          provide: { designatedAsCsp: true },
+          propsData: { withProjectCount: true },
+        });
         await waitForPromises();
       });
 
       it('requests groups', () => {
         expect(findDropdown().props('items')).toEqual(moreGroups.map(mapItems));
+        expect(findFooter().exists()).toBe(true);
       });
 
       it('makes a query to fetch more groups', () => {
@@ -128,6 +136,7 @@ describe('ScopedGroupsDropdown', () => {
         expect(requestHandler.groupsHandler).toHaveBeenNthCalledWith(2, {
           after: undefined,
           search: '',
+          withCount: true,
         });
       });
     });
@@ -147,6 +156,7 @@ describe('ScopedGroupsDropdown', () => {
 
         expect(requestHandler.linkedGroupsHandler).toHaveBeenCalledTimes(2);
         expect(requestHandler.linkedGroupsHandler).toHaveBeenNthCalledWith(2, {
+          withCount: false,
           fullPath: 'gitlab-org',
           after: null,
           includeParentDescendants: false,
@@ -249,6 +259,7 @@ describe('ScopedGroupsDropdown', () => {
         includeParentDescendants: true,
         search: '',
         topLevelOnly: false,
+        withCount: false,
       });
     });
   });
@@ -277,6 +288,38 @@ describe('ScopedGroupsDropdown', () => {
         topLevelOnly: false,
         ids: ['3'],
         after: '',
+        withCount: false,
+      });
+    });
+  });
+
+  describe('default rendering', () => {
+    beforeEach(() => {
+      createComponent({
+        propsData: {
+          withProjectCount: true,
+        },
+      });
+    });
+
+    it('renders footer with group information', async () => {
+      await waitForPromises();
+
+      expect(findFooter().exists()).toBe(true);
+      expect(findFooter().props('count')).toBe(0);
+      expect(findFooter().props('totalCount')).toBe(0);
+      expect(findFooter().props('infoText')).toBe('groups');
+      expect(findFooter().props('showInfoIcon')).toBe(false);
+    });
+
+    it('queries projects with project count', () => {
+      expect(requestHandler.linkedGroupsHandler).toHaveBeenCalledWith({
+        withCount: true,
+        fullPath: 'gitlab-org',
+        after: '',
+        includeParentDescendants: false,
+        search: '',
+        topLevelOnly: false,
       });
     });
   });

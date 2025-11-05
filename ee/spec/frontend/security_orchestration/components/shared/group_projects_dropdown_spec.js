@@ -7,6 +7,7 @@ import waitForPromises from 'helpers/wait_for_promises';
 import getGroupProjects from 'ee/security_orchestration/graphql/queries/get_group_projects.query.graphql';
 import BaseItemsDropdown from 'ee/security_orchestration/components/shared/base_items_dropdown.vue';
 import GroupProjectsDropdown from 'ee/security_orchestration/components/shared/group_projects_dropdown.vue';
+import ProjectsCountMessage from 'ee/security_orchestration/components/shared/projects_count_message.vue';
 import { generateMockProjects } from 'ee_jest/security_orchestration/mocks/mock_data';
 
 describe('GroupProjectsDropdown', () => {
@@ -71,7 +72,7 @@ describe('GroupProjectsDropdown', () => {
   };
 
   const findDropdown = () => wrapper.findComponent(BaseItemsDropdown);
-  const findFooter = () => wrapper.findByTestId('footer');
+  const findFooter = () => wrapper.findComponent(ProjectsCountMessage);
 
   describe('selection', () => {
     beforeEach(() => {
@@ -391,9 +392,6 @@ describe('GroupProjectsDropdown', () => {
           propsData: {
             withProjectCount: true,
           },
-          stubs: {
-            GlSprintf,
-          },
           handlers: mockApolloHandlers(nodes, true, 150),
         });
       });
@@ -402,7 +400,10 @@ describe('GroupProjectsDropdown', () => {
         await waitForPromises();
 
         expect(findFooter().exists()).toBe(true);
-        expect(findFooter().text()).toContain('101 of 150');
+        expect(findFooter().props('count')).toBe(101);
+        expect(findFooter().props('totalCount')).toBe(150);
+        expect(findFooter().props('infoText')).toBe('projects');
+        expect(findFooter().props('showInfoIcon')).toBe(true);
       });
 
       it('queries projects with project count', () => {
