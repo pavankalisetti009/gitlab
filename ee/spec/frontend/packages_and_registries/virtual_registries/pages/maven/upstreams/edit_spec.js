@@ -1,7 +1,4 @@
-import Vue from 'vue';
-import VueApollo from 'vue-apollo';
 import { GlAlert, GlButton } from '@gitlab/ui';
-import createMockApollo from 'helpers/mock_apollo_helper';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import waitForPromises from 'helpers/wait_for_promises';
 import { visitUrlWithAlerts } from '~/lib/utils/url_utility';
@@ -10,10 +7,6 @@ import RegistryUpstreamForm from 'ee/packages_and_registries/virtual_registries/
 import MavenEditUpstreamApp from 'ee/packages_and_registries/virtual_registries/pages/maven/upstreams/edit.vue';
 import DeleteUpstreamWithModal from 'ee/packages_and_registries/virtual_registries/components/maven/shared/delete_upstream_with_modal.vue';
 import { captureException } from 'ee/packages_and_registries/virtual_registries/sentry_utils';
-import getMavenUpstreamRegistriesQuery from 'ee/packages_and_registries/virtual_registries/graphql/queries/get_maven_upstream_registries.query.graphql';
-import { mavenUpstreamRegistry } from '../../../mock_data';
-
-Vue.use(VueApollo);
 
 jest.mock('ee/packages_and_registries/virtual_registries/sentry_utils');
 jest.mock('~/lib/utils/url_utility', () => ({
@@ -44,33 +37,18 @@ describe('MavenEditUpstreamApp', () => {
     },
   };
 
-  const mockUpstreamRegistries = {
-    data: {
-      mavenUpstreamRegistry,
-    },
-  };
-
   const findModal = () => wrapper.findComponent(DeleteUpstreamWithModal);
   const findAlert = () => wrapper.findComponent(GlAlert);
   const findDeleteUpstreamBtn = () => wrapper.findComponent(GlButton);
   const findForm = () => wrapper.findComponent(RegistryUpstreamForm);
 
-  const mavenUpstreamRegistriesHandler = jest.fn().mockResolvedValue(mockUpstreamRegistries);
   const mockError = new Error('API error');
-  const errorHandler = jest.fn().mockRejectedValue(mockError);
 
-  const createComponent = ({
-    provide,
-    handlers = [[getMavenUpstreamRegistriesQuery, mavenUpstreamRegistriesHandler]],
-  } = {}) => {
+  const createComponent = ({ provide } = {}) => {
     wrapper = shallowMountExtended(MavenEditUpstreamApp, {
-      apolloProvider: createMockApollo(handlers),
       provide: {
         ...defaultProvide,
         ...provide,
-      },
-      stubs: {
-        DeleteUpstreamWithModal,
       },
     });
   };
@@ -96,25 +74,38 @@ describe('MavenEditUpstreamApp', () => {
       });
     });
 
-    it('calls the GraphQL query with right parameters', () => {
-      expect(mavenUpstreamRegistriesHandler).toHaveBeenCalledWith({
-        id: 'gid://gitlab/VirtualRegistries::Packages::Maven::Upstream/1',
-        first: 20,
-      });
-    });
-
-    it('sets correct props on DeleteUpstreamWithModal component', async () => {
-      await waitForPromises();
-
+    it('sets correct props on DeleteUpstreamWithModal component', () => {
       expect(findModal().props()).toStrictEqual({
         upstreamId: 1,
         upstreamName: 'Upstream',
-        registries: mavenUpstreamRegistry.registries.nodes,
+        visible: false,
       });
     });
 
     it('shows delete button', () => {
       expect(findDeleteUpstreamBtn().exists()).toBe(true);
+    });
+
+    describe('clicking on delete button', () => {
+      it('sets modal to visible', async () => {
+        await findDeleteUpstreamBtn().vm.$emit('click');
+
+        expect(findModal().props('visible')).toBe(true);
+      });
+    });
+
+    describe('without permission', () => {
+      it('does not show delete button', () => {
+        createComponent({
+          provide: {
+            glAbilities: {
+              destroyVirtualRegistry: false,
+            },
+          },
+        });
+
+        expect(findDeleteUpstreamBtn().exists()).toBe(false);
+      });
     });
   });
 
@@ -188,21 +179,12 @@ describe('MavenEditUpstreamApp', () => {
   });
 
   describe('deleting registry', () => {
-    it('does not show delete button', () => {
-      createComponent({
-        provide: {
-          glAbilities: {
-            destroyVirtualRegistry: false,
-          },
-        },
-      });
-
-      expect(findDeleteUpstreamBtn().exists()).toBe(false);
+    beforeEach(() => {
+      createComponent();
+      findDeleteUpstreamBtn().vm.$emit('click');
     });
 
     it('calls visitUrlWithAlerts when DeleteUpstreamWithModal emits success', () => {
-      createComponent();
-
       findModal().vm.$emit('success');
 
       expect(visitUrlWithAlerts).toHaveBeenCalledWith(
@@ -212,8 +194,6 @@ describe('MavenEditUpstreamApp', () => {
     });
 
     it('shows error alert when DeleteUpstreamWithModal emits error', async () => {
-      createComponent();
-
       expect(findAlert().exists()).toBe(false);
 
       await findModal().vm.$emit('error', mockError);
@@ -222,20 +202,6 @@ describe('MavenEditUpstreamApp', () => {
       expect(captureException).toHaveBeenCalledWith({
         component: 'MavenEditUpstreamApp',
         error: mockError,
-      });
-    });
-  });
-
-  describe('when GraphQL query to get registries fails', () => {
-    it('calls captureException with the error', async () => {
-      createComponent({
-        handlers: [[getMavenUpstreamRegistriesQuery, errorHandler]],
-      });
-
-      await waitForPromises();
-      expect(captureException).toHaveBeenCalledWith({
-        error: mockError,
-        component: 'MavenEditUpstreamApp',
       });
     });
   });
