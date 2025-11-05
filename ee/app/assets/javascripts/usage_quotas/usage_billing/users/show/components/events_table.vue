@@ -3,6 +3,7 @@ import { GlLink, GlTableLite } from '@gitlab/ui';
 import { s__ } from '~/locale';
 import UserDate from '~/vue_shared/components/user_date.vue';
 import { SHORT_DATE_FORMAT_WITH_TIME } from '~/vue_shared/constants';
+import { numberToMetricPrefix } from '~/lib/utils/number_utils';
 
 export default {
   name: 'EventsTable',
@@ -27,6 +28,9 @@ export default {
       ];
     },
   },
+  methods: {
+    numberToMetricPrefix,
+  },
   SHORT_DATE_FORMAT_WITH_TIME,
 };
 </script>
@@ -41,6 +45,10 @@ export default {
         <gl-link v-if="item.location" :href="item.location.webUrl">
           {{ item.location.name }}
         </gl-link>
+      </template>
+
+      <template #cell(creditsUsed)="{ item }">
+        {{ numberToMetricPrefix(item.creditsUsed || 0) }}
       </template>
     </gl-table-lite>
   </div>
