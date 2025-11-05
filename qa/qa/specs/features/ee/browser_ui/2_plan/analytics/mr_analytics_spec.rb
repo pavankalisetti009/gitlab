@@ -33,7 +33,8 @@ module QA
 
         Flow::Login.sign_in
         project.visit!
-        Page::Project::Menu.perform(&:go_to_merge_request_analytics)
+        Page::Project::Menu.perform(&:go_to_analytics_dashboards)
+        EE::Page::Project::Analyze::AnalyticsDashboards::Home.perform(&:open_mr_analytics_dashboard)
       end
 
       it(

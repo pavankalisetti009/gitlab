@@ -93,7 +93,7 @@ RSpec.describe 'Project navbar', :js, feature_category: :navigation do
         stub_licensed_features(issues_analytics: true)
 
         insert_after_sub_nav_item(
-          _('Merge request analytics'),
+          _('Code review analytics'),
           within: _('Analyze'),
           new_sub_nav_item_name: _('Issue analytics')
         )

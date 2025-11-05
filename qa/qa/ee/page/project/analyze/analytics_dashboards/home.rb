@@ -29,6 +29,10 @@ module QA
                 open_dashboard('Behavior')
               end
 
+              def open_mr_analytics_dashboard
+                open_dashboard('Merge request analytics')
+              end
+
               def open_dashboard(name)
                 click_link(name)
                 wait_for_requests

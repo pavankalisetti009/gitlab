@@ -11,18 +11,6 @@ RSpec.describe 'User sees correct active nav items in the super sidebar', :js, f
     sign_in(current_user)
   end
 
-  context 'when visiting a project\'s Merge Request analytics' do
-    before do
-      stub_licensed_features(project_merge_request_analytics: true)
-      visit project_analytics_merge_request_analytics_path(project)
-    end
-
-    it 'renders the side navigation with the correct submenu set as active' do
-      expect(page).to have_active_navigation('Analyze')
-      expect(page).to have_active_sub_navigation('Merge request')
-    end
-  end
-
   context 'when visiting a project\'s API Fuzzing configuration' do
     before do
       stub_licensed_features(security_dashboard: true)
