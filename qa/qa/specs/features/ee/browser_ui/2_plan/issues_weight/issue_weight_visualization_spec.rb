@@ -25,6 +25,7 @@ module QA
         end
 
         Page::Milestone::Show.perform do |show|
+          show.expand_sidebar_if_collapsed
           expect(show.total_issue_weight_value).to have_content(weight)
         end
 
