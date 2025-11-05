@@ -15,6 +15,7 @@ module Sidebars
           add_item(scan_policies_menu_item)
           add_item(audit_events_menu_item)
           add_item(configuration_menu_item)
+          add_item(secrets_manager_menu_item)
 
           true
         end
@@ -97,6 +98,20 @@ module Sidebars
           )
         end
 
+        def secrets_manager_menu_item
+          unless group_level_secrets_manager_available?
+            return ::Sidebars::NilMenuItem.new(item_id: :secrets_manager)
+          end
+
+          ::Sidebars::MenuItem.new(
+            title: _('Secrets manager'),
+            link: group_secrets_path(context.group),
+            super_sidebar_parent: ::Sidebars::Groups::SuperSidebarMenus::SecureMenu,
+            active_routes: { path: 'groups/secrets' },
+            item_id: :secrets_manager
+          )
+        end
+
         def dependencies_menu_item
           unless read_group_level_dependencies_available?
             return ::Sidebars::NilMenuItem.new(item_id: :dependency_list)
@@ -128,6 +143,12 @@ module Sidebars
         def group_level_compliance_dashboard_available?
           context.group.licensed_feature_available?(:group_level_compliance_dashboard) &&
             can?(context.current_user, :read_compliance_dashboard, context.group)
+        end
+
+        def group_level_secrets_manager_available?
+          ::Feature.enabled?(:group_secrets_manager, context.group) &&
+            context.group.licensed_feature_available?(:native_secrets_management) &&
+            can?(context.current_user, :reporter_access, context.group)
         end
 
         def credentials_menu_item
