@@ -70735,7 +70735,7 @@ msgstr ""
 msgid "UsageBilling|GitLab Credits - One-Time Waiver"
 msgstr ""
 
-msgid "UsageBilling|Included used"
+msgid "UsageBilling|Included credits"
 msgstr ""
 
 msgid "UsageBilling|Increase monthly commitment"

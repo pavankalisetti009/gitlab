@@ -70,7 +70,7 @@ describe('UsageByUserTab', () => {
           },
           {
             key: 'includedCredits',
-            label: 'Included used',
+            label: 'Included credits',
           },
           {
             key: 'totalCreditsUsed',
