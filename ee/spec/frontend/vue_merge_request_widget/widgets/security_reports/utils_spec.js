@@ -1,4 +1,7 @@
-import { highlightsFromReport } from 'ee/vue_merge_request_widget/widgets/security_reports/utils';
+import {
+  highlightsFromReport,
+  transformToEnabledScans,
+} from 'ee/vue_merge_request_widget/widgets/security_reports/utils';
 
 describe('MR Widget Security Reports Utils', () => {
   describe('highlightsFromReport', () => {
@@ -55,6 +58,84 @@ describe('MR Widget Security Reports Utils', () => {
         critical: 2,
         high: 1,
         other: 5,
+      });
+    });
+  });
+
+  describe('transformToEnabledScans', () => {
+    it.each`
+      scans
+      ${{ enabledSecurityScans: { sast: false, dast: false, secretDetection: false } }}
+      ${{ enabledSecurityScans: null }}
+      ${{ enabledSecurityScans: undefined }}
+      ${{}}
+    `('should return empty array when no scans enabled: $scans', ({ scans }) => {
+      expect(transformToEnabledScans(scans)).toEqual([]);
+    });
+
+    it('should ignore unknown scan types', () => {
+      const scans = {
+        enabledSecurityScans: { sast: true, unknownType: true, anotherUnknown: true },
+      };
+      expect(transformToEnabledScans(scans)).toEqual([{ reportType: 'SAST', scanMode: 'FULL' }]);
+    });
+
+    it('should ignore non-report type fields like "ready"', () => {
+      const scans = {
+        enabledSecurityScans: {
+          ready: true,
+          sast: true,
+        },
+      };
+      expect(transformToEnabledScans(scans)).toEqual([{ reportType: 'SAST', scanMode: 'FULL' }]);
+    });
+
+    it.each`
+      value
+      ${'enabled'}
+      ${1}
+      ${{}}
+      ${[]}
+    `('should ignore non-boolean value: $value', ({ value }) => {
+      const scans = { enabledSecurityScans: { sast: true, dast: value } };
+      expect(transformToEnabledScans(scans)).toEqual([{ reportType: 'SAST', scanMode: 'FULL' }]);
+    });
+
+    describe('FULL scans', () => {
+      it('should transform multiple enabled security scans', () => {
+        const scans = {
+          enabledSecurityScans: {
+            sast: true,
+            dast: true,
+            secretDetection: false,
+            dependencyScanning: true,
+          },
+        };
+
+        const result = transformToEnabledScans(scans);
+
+        expect(result).toEqual([
+          { reportType: 'SAST', scanMode: 'FULL' },
+          { reportType: 'DAST', scanMode: 'FULL' },
+          { reportType: 'DEPENDENCY_SCANNING', scanMode: 'FULL' },
+        ]);
+      });
+
+      it.each`
+        scanType                  | expectedReportType
+        ${'sast'}                 | ${'SAST'}
+        ${'dast'}                 | ${'DAST'}
+        ${'secretDetection'}      | ${'SECRET_DETECTION'}
+        ${'apiFuzzing'}           | ${'API_FUZZING'}
+        ${'coverageFuzzing'}      | ${'COVERAGE_FUZZING'}
+        ${'dependencyScanning'}   | ${'DEPENDENCY_SCANNING'}
+        ${'containerScanning'}    | ${'CONTAINER_SCANNING'}
+        ${'clusterImageScanning'} | ${'CLUSTER_IMAGE_SCANNING'}
+      `('should transform $scanType to $expectedReportType', ({ scanType, expectedReportType }) => {
+        const scans = { enabledSecurityScans: { [scanType]: true } };
+        expect(transformToEnabledScans(scans)).toEqual([
+          { reportType: expectedReportType, scanMode: 'FULL' },
+        ]);
       });
     });
   });

@@ -1,4 +1,5 @@
 import { CRITICAL, HIGH } from 'ee/vulnerabilities/constants';
+import { SECURITY_SCAN_TO_REPORT_TYPE } from '~/vue_merge_request_widget/constants';
 
 export function highlightsFromReport(report, highlights = { [HIGH]: 0, [CRITICAL]: 0, other: 0 }) {
   // The data we receive from the API is something like:
@@ -17,4 +18,47 @@ export function highlightsFromReport(report, highlights = { [HIGH]: 0, [CRITICAL
     }
     return acc;
   }, highlights);
+}
+
+const getEnabledScanTypes = (scanData, scanMode) => {
+  if (!scanData) return [];
+
+  return Object.entries(scanData)
+    .filter(
+      ([scanType, isEnabled]) => isEnabled === true && scanType in SECURITY_SCAN_TO_REPORT_TYPE,
+    )
+    .map(([scanType]) => ({
+      reportType: SECURITY_SCAN_TO_REPORT_TYPE[scanType],
+      scanMode,
+    }));
+};
+
+/**
+ * Transforms GraphQL enabled security scans into report type configuration.
+ * @param {Object} scans
+ * @param {Object} scans.enabledSecurityScans
+ * @returns {Array<{reportType: string, scanMode: string}>}
+ * @example
+ * const scans = {
+ *   enabledSecurityScans: {
+ *     sast: true,
+ *     dast: false,
+ *     secretDetection: true,
+ *     dependencyScanning: true
+ *   }
+ * };
+ * transformToEnabledScans(scans)
+ * // Returns:
+ * [
+ *   { reportType: 'SAST', scanMode: 'FULL' },
+ *   { reportType: 'SECRET_DETECTION', scanMode: 'FULL' },
+ *   { reportType: 'DEPENDENCY_SCANNING', scanMode: 'FULL' }
+ * ]
+ */
+export function transformToEnabledScans(scans) {
+  return [
+    ...getEnabledScanTypes(scans.enabledSecurityScans, 'FULL'),
+    // Partial scans will be implemented in a follow-up
+    // https://gitlab.com/gitlab-org/gitlab/-/issues/574434
+  ];
 }
