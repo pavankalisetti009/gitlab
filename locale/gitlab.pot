@@ -311,11 +311,6 @@ msgid_plural "%d findings"
 msgstr[0] ""
 msgstr[1] ""
 
-msgid "%d fork"
-msgid_plural "%d forks"
-msgstr[0] ""
-msgstr[1] ""
-
 msgid "%d group"
 msgid_plural "%d groups"
 msgstr[0] ""
@@ -388,11 +383,6 @@ msgstr[1] ""
 
 msgid "%d merge request that you don't have access to."
 msgid_plural "%d merge requests that you don't have access to."
-msgstr[0] ""
-msgstr[1] ""
-
-msgid "%d merge requests"
-msgid_plural "%d merge requests"
 msgstr[0] ""
 msgstr[1] ""
 
@@ -498,11 +488,6 @@ msgstr[1] ""
 
 msgid "%d stage"
 msgid_plural "%d stages"
-msgstr[0] ""
-msgstr[1] ""
-
-msgid "%d star"
-msgid_plural "%d stars"
 msgstr[0] ""
 msgstr[1] ""
 
@@ -782,6 +767,11 @@ msgstr[1] ""
 msgid "%{count} files touched"
 msgstr ""
 
+msgid "%{count} fork"
+msgid_plural "%{count} forks"
+msgstr[0] ""
+msgstr[1] ""
+
 msgid "%{count} group"
 msgid_plural "%{count} groups"
 msgstr[0] ""
@@ -846,6 +836,11 @@ msgstr ""
 
 msgid "%{count} selected"
 msgstr ""
+
+msgid "%{count} star"
+msgid_plural "%{count} stars"
+msgstr[0] ""
+msgstr[1] ""
 
 msgid "%{count} subgroup"
 msgid_plural "%{count} subgroups"
