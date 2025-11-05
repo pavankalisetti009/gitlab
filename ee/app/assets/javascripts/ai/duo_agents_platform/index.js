@@ -2,7 +2,11 @@ import { initSinglePageApplication } from '~/vue_shared/spa';
 import { createRouter } from './router';
 import { getNamespaceDatasetProperties } from './utils';
 
-export const initDuoAgentsPlatformPage = ({ namespaceDatasetProperties = [], namespace }) => {
+export const initDuoAgentsPlatformPage = ({
+  namespaceDatasetProperties = [],
+  namespaceDatasetJsonProperties = [],
+  namespace,
+}) => {
   if (!namespace) {
     throw new Error(`Namespace is required for the DuoAgentPlatform page to function`);
   }
@@ -15,14 +19,19 @@ export const initDuoAgentsPlatformPage = ({ namespaceDatasetProperties = [], nam
 
   const { dataset } = el;
 
-  const { agentsPlatformBaseRoute, exploreAiCatalogPath, flowTriggersEventTypeOptions } = dataset;
-  const namespaceProvideData = getNamespaceDatasetProperties(dataset, namespaceDatasetProperties);
+  const { agentsPlatformBaseRoute, exploreAiCatalogPath } = dataset;
+  const namespaceAllProperties = [...namespaceDatasetProperties, ...namespaceDatasetJsonProperties];
+  const namespaceProvideData = getNamespaceDatasetProperties(
+    dataset,
+    namespaceDatasetProperties,
+    namespaceDatasetJsonProperties,
+  );
 
-  if (namespaceDatasetProperties.length !== Object.keys(namespaceProvideData).length) {
+  if (namespaceAllProperties.length !== Object.keys(namespaceProvideData).length) {
     throw new Error(
       `One or more required properties are missing in the dataset:
-       Expected these properties: [${namespaceDatasetProperties.join(', ')}]
-       but received these: [${Object.keys(namespaceProvideData).join(', ')}],
+       Expected these properties: [${namespaceAllProperties.join(', ')}]
+       but received these: [${Object.keys(namespaceProvideData).join(', ')}].
       `,
     );
   }
@@ -34,7 +43,6 @@ export const initDuoAgentsPlatformPage = ({ namespaceDatasetProperties = [], nam
     el,
     provide: {
       exploreAiCatalogPath,
-      flowTriggersEventTypeOptions: JSON.parse(flowTriggersEventTypeOptions || '[]'),
       ...namespaceProvideData,
     },
   });
