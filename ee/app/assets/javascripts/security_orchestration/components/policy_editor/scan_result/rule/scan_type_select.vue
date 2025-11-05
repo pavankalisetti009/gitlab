@@ -8,19 +8,19 @@ export default {
   scanTypeOptions: [
     {
       value: ANY_MERGE_REQUEST,
-      text: s__('SecurityOrchestration|Any merge request'),
+      text: s__('SecurityOrchestration|any merge request'),
     },
     {
       value: SCAN_FINDING,
-      text: s__('SecurityOrchestration|Security Scan'),
+      text: s__('SecurityOrchestration|security scan'),
     },
     {
       value: LICENSE_FINDING,
-      text: s__('SecurityOrchestration|License Scan'),
+      text: s__('SecurityOrchestration|license scan'),
     },
   ],
   i18n: {
-    scanRuleTypeToggleText: s__('SecurityOrchestration|Select scan type'),
+    scanRuleTypeToggleText: s__('SecurityOrchestration|select scan type'),
   },
   name: 'ScanTypeSelect',
   components: {

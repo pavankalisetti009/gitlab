@@ -53,7 +53,7 @@ export default {
   PREVIOUSLY_EXISTING,
   ATTRIBUTE,
   scanResultRuleCopy: s__(
-    'ScanResultPolicy|When %{scanType} %{scanners} runs against the %{branches} %{branchExceptions} and find(s) %{vulnerabilitiesNumber} %{boldDescription} of the following criteria:',
+    'ScanResultPolicy|When a %{scanType} with %{scanners} runs against %{branches} %{branchExceptions} and finds %{vulnerabilitiesNumber} %{boldDescription} all the following criteria:',
   ),
   components: {
     BranchExceptionSelector,
@@ -365,7 +365,7 @@ export default {
     scanners: s__('ScanResultPolicy|scanners'),
     vulnerabilityStates: s__('ScanResultPolicy|vulnerability states'),
     vulnerabilitiesAllowed: s__('ScanResultPolicy|vulnerabilities allowed'),
-    vulnerabilityMatchDescription: s__('ScanResultPolicy|vulnerabilities that match all'),
+    vulnerabilityMatchDescription: s__('ScanResultPolicy|vulnerability type that matches'),
   },
 };
 </script>

@@ -30,7 +30,7 @@ describe('DenyAllowExceptions', () => {
     it('renders default list with no exceptions', () => {
       createComponent();
 
-      expect(findListBox().props('toggleText')).toBe('No exceptions');
+      expect(findListBox().props('toggleText')).toBe('no exceptions');
       expect(findTextArea().exists()).toBe(false);
     });
 
@@ -50,7 +50,7 @@ describe('DenyAllowExceptions', () => {
       });
 
       expect(findListBox().props('selected')).toBe(EXCEPTION_KEY);
-      expect(findListBox().props('toggleText')).toBe('Exceptions');
+      expect(findListBox().props('toggleText')).toBe('exceptions');
     });
 
     it('disables type dropdown', () => {

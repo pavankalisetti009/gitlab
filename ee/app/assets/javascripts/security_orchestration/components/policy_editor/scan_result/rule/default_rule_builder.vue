@@ -11,7 +11,7 @@ import ScanTypeSelect from './scan_type_select.vue';
 
 export default {
   emptyRuleCopy: s__(
-    'ScanResultPolicy|When %{scanners} find scanner specified conditions in an open merge request targeting the %{branches} %{branchExceptions} and match %{boldDescription} of the following criteria',
+    'ScanResultPolicy|When %{scanners} finds scanner-specific conditions in an open merge request that targets %{branches} %{branchExceptions} and matches %{boldDescription} the following criteria',
   ),
   i18n: {
     tooltipFilterDisabledTitle: s__('ScanResultPolicy|Select a scan type before adding criteria'),

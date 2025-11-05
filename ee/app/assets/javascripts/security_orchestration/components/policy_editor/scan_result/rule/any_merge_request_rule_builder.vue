@@ -28,7 +28,7 @@ export default {
   COMMIT_LISTBOX_ITEMS,
   i18n: {
     anyMergeRequestRuleCopy: s__(
-      'ScanResultPolicy|When %{scanType} that targets %{branches} %{branchExceptions} with %{commitType}',
+      'ScanResultPolicy|On %{scanType} when %{commitType} that targets %{branches} %{branchExceptions}',
     ),
   },
   name: 'AnyMergeRequestRuleBuilder',

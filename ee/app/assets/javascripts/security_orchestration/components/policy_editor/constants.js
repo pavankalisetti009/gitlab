@@ -187,14 +187,14 @@ export const GREATER_THAN_OPERATOR = 'greater_than';
 export const LESS_THAN_OPERATOR = 'less_than';
 
 export const VULNERABILITIES_ALLOWED_OPERATORS = [
-  { value: ANY_OPERATOR, text: s__('ApprovalRule|Any') },
-  { value: GREATER_THAN_OPERATOR, text: s__('ApprovalRule|More than') },
+  { value: ANY_OPERATOR, text: s__('ApprovalRule|any') },
+  { value: GREATER_THAN_OPERATOR, text: s__('ApprovalRule|more than') },
 ];
 
 export const VULNERABILITY_AGE_OPERATORS = [
-  { value: ANY_OPERATOR, text: s__('ApprovalRule|Any') },
-  { value: GREATER_THAN_OPERATOR, text: s__('ApprovalRule|Greater than') },
-  { value: LESS_THAN_OPERATOR, text: s__('ApprovalRule|Less than') },
+  { value: ANY_OPERATOR, text: s__('ApprovalRule|any') },
+  { value: GREATER_THAN_OPERATOR, text: s__('ApprovalRule|greater than') },
+  { value: LESS_THAN_OPERATOR, text: s__('ApprovalRule|less than') },
 ];
 
 export const SCAN_RESULT_BRANCH_TYPE_OPTIONS = (nameSpaceType = NAMESPACE_TYPES.GROUP) => [
@@ -287,11 +287,11 @@ export const NO_EXCEPTION_KEY = 'no_exception';
 export const EXCEPTION_TYPE_ITEMS = [
   {
     value: EXCEPTION_KEY,
-    text: s__('SecurityOrchestration|Exceptions'),
+    text: s__('SecurityOrchestration|exceptions'),
   },
   {
     value: NO_EXCEPTION_KEY,
-    text: s__('SecurityOrchestration|No exceptions'),
+    text: s__('SecurityOrchestration|no exceptions'),
   },
 ];
 

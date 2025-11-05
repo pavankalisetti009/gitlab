@@ -78,7 +78,7 @@ describe('BranchSelector', () => {
       expect(findBranchSelectorModal().exists()).toBe(true);
       expect(findModal().props('visible')).toBe(false);
 
-      expect(findDropdown().props('toggleText')).toBe('Choose exception branches');
+      expect(findDropdown().props('toggleText')).toBe('choose exception branches');
     });
 
     it('selects branches', () => {

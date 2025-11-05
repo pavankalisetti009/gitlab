@@ -192,4 +192,12 @@ describe('Rule Multi Select', () => {
       expect(findAllSelectedItem().exists()).toBe(false);
     });
   });
+
+  describe('with lowercase option', () => {
+    it('renders selected text in lowercase', () => {
+      createComponent({ lowercase: true });
+
+      expect(findDropdown().props('toggleText')).toBe('select demo items');
+    });
+  });
 });
