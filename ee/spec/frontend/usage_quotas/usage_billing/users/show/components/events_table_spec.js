@@ -15,7 +15,7 @@ describe('EventsTable', () => {
         name: 'gitlab-org/gitlab',
         webUrl: 'https://gitlab.com/gitlab-org/gitlab',
       },
-      creditsUsed: 150,
+      creditsUsed: 1500,
     },
     {
       timestamp: '2023-12-01T09:15:00Z',
@@ -103,8 +103,8 @@ describe('EventsTable', () => {
         });
       });
 
-      it('renders GU amount', () => {
-        expect(firstRowCells.at(3).text()).toBe(mockEvents[0].creditsUsed.toString());
+      it('renders credits amount', () => {
+        expect(firstRowCells.at(3).text()).toBe('1.5k');
       });
     });
   });

@@ -34,7 +34,7 @@ export const mockDataWithPool = {
                       name: 'frontend-app',
                       webUrl: 'http://localhost:3000/frontend-app',
                     },
-                    creditsUsed: 44,
+                    creditsUsed: 44000,
                   },
                   {
                     timestamp: '2025-01-21T16:41:15Z',
@@ -45,7 +45,7 @@ export const mockDataWithPool = {
                       name: 'group-app',
                       webUrl: 'http://localhost:3000/group-app',
                     },
-                    creditsUsed: 62,
+                    creditsUsed: 62000,
                   },
                   {
                     timestamp: '2025-01-21T16:40:22Z',
@@ -56,7 +56,7 @@ export const mockDataWithPool = {
                       name: 'frontend-app',
                       webUrl: 'http://localhost:3000/frontend-app',
                     },
-                    creditsUsed: 30,
+                    creditsUsed: 0,
                   },
                   {
                     timestamp: '2025-01-21T16:39:45Z',
@@ -67,7 +67,7 @@ export const mockDataWithPool = {
                       name: 'group-app',
                       webUrl: 'http://localhost:3000/group-app',
                     },
-                    creditsUsed: 45,
+                    creditsUsed: null,
                   },
                   {
                     timestamp: '2025-01-21T16:38:12Z',
