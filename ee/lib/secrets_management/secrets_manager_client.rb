@@ -12,6 +12,7 @@ module SecretsManagement
     OPENBAO_TOKEN_MAX_TTL = '15m'
     OPENBAO_EXPIRATION_LEEWAY = 150
     OPENBAO_NOT_BEFORE_LEEWAY = 150
+    OPENBAO_RECOVERY_SHARES_THRESHOLD = 1
     OPENBAO_CLOCK_SKEW_LEEWAY = 60
     OPENBAO_INLINE_AUTH_FAILED_HEADER = "X-Vault-Inline-Auth-Failed"
     OPENBAO_INLINE_AUTH_FAILED_VALUE = "true"
@@ -258,6 +259,19 @@ module SecretsManagement
       )
     end
 
+    def init_rotate_recovery
+      recovery_values = {
+        secret_shares: OPENBAO_RECOVERY_SHARES_THRESHOLD,
+        secret_threshold: OPENBAO_RECOVERY_SHARES_THRESHOLD
+      }
+
+      make_request(:post, rotate_recovery_url, recovery_values)
+    end
+
+    def cancel_rotate_recovery
+      make_request(:delete, rotate_recovery_url)
+    end
+
     def cel_login_jwt(mount_path:, role:, jwt:)
       url = "auth/#{mount_path}/cel/login"
       body = { role: role, jwt: jwt }
@@ -371,6 +385,10 @@ module SecretsManagement
 
     def configuration
       self.class.configuration
+    end
+
+    def rotate_recovery_url
+      "sys/rotate/recovery/init"
     end
   end
 end

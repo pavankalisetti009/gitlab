@@ -24,6 +24,7 @@ module SecretsManagement
 
     def payload
       claims = super
+      claims = claims.merge(user_project_claims) # super may not always call this method
       claims[:sub] = sub
       claims[:secrets_manager_scope] = secrets_manager_scope
       claims

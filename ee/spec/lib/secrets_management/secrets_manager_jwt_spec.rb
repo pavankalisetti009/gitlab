@@ -108,8 +108,20 @@ RSpec.describe SecretsManagement::SecretsManagerJwt, feature_category: :secrets_
     context 'when project is not present' do
       let(:current_project) { nil }
 
-      it 'raises an error due to the delegation to namespace' do
-        expect { payload }.to raise_error(NoMethodError)
+      it 'does not crash' do
+        expect { payload }.not_to raise_error
+      end
+    end
+
+    context 'when both user and project are not present' do
+      let(:current_user) { nil }
+      let(:current_project) { nil }
+
+      it 'includes project claims with nil user fields' do
+        expect(payload).to include(
+          user_id: described_class::SYSTEM_UID,
+          sub: described_class::SYSTEM_UID
+        )
       end
     end
   end

@@ -1006,5 +1006,36 @@ RSpec.describe SecretsManagement::SecretsManagerClient, :gitlab_secrets_manager,
         expect(result).to contain_exactly(new_data: "DBPASS")
       end
     end
+
+    describe '#init_rotate_recovery' do
+      subject(:init_rotate_recovery) { client.init_rotate_recovery }
+
+      let(:response) { init_rotate_recovery }
+      let(:mocked_response) { '{"request_id"=>"id", "data"=>{"keys"=>["key"]}}' }
+
+      before do
+        stub_request(:post, "#{described_class.configuration.host}/v1/sys/rotate/recovery/init")
+          .to_return(body: mocked_response)
+      end
+
+      it 'configures the JWT auth method' do
+        expect(response).to eq(mocked_response)
+      end
+    end
+
+    describe '#cancel_rotate_recovery' do
+      subject(:cancel_rotate_recovery) { client.cancel_rotate_recovery }
+
+      let(:response) { cancel_rotate_recovery }
+      let(:mocked_response) { '' }
+
+      before do
+        stub_request(:delete, "#{described_class.configuration.host}/v1/sys/rotate/recovery/cancel")
+      end
+
+      it 'sends DELETE and returns nil' do
+        expect(response).to be_nil
+      end
+    end
   end
 end

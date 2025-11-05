@@ -3,6 +3,7 @@
 module SecretsManagement
   class SecretsManagerJwt < Gitlab::Ci::JwtBase
     DEFAULT_TTL = 30.seconds
+    SYSTEM_UID = 'gitlab_secrets_manager'
 
     attr_reader :current_user, :project, :old_aud
 
@@ -16,20 +17,28 @@ module SecretsManagement
     def payload
       now = Time.now.to_i
 
-      {
+      payload = {
         iss: Gitlab.config.gitlab.url,
         iat: now,
         nbf: now,
         exp: now + DEFAULT_TTL.to_i,
         jti: SecureRandom.uuid,
         aud: aud,
-        sub: 'gitlab_secrets_manager',
+        sub: SYSTEM_UID,
         secrets_manager_scope: 'privileged',
         correlation_id: Labkit::Correlation::CorrelationId.current_id
-      }.merge(user_project_claims)
-      # we include the user and project claims to support
-      # detailed context in the audits for every request to Openbao
-      # to track every action to a specific user and project
+      }
+
+      # we include the user and project claims to support detailed context in the audits for every request to OpenBao to
+      # track every action to a specific user and project.
+      payload = payload.merge(user_project_claims) if project
+
+      # for some actions like recovery key generation, we do not have a user or project and these show a SYSTEM_UID
+      # user_id and a nil project_id
+      payload[:user_id] ||= SYSTEM_UID
+      payload[:project_id] ||= SYSTEM_UID
+
+      payload
     end
 
     def user_project_claims
