@@ -7,6 +7,9 @@ module Ai
     GROUP_WITH_AI_ENABLED_CACHE_PERIOD = 1.hour
     GROUP_WITH_AI_ENABLED_CACHE_KEY = 'group_with_ai_enabled'
 
+    GROUP_WITH_MCP_SERVER_ENABLED_CACHE_PERIOD = 1.hour
+    GROUP_WITH_MCP_SERVER_ENABLED_CACHE_KEY = 'group_with_mcp_server_enabled'
+
     BILLABLE_DUO_PRO_ROOT_GROUP_IDS_CACHE_KEY = 'billable_duo_pro_root_group_ids'
     BILLABLE_DUO_PRO_ROOT_GROUP_IDS_CACHE_PERIOD = 10.minutes
 
@@ -98,6 +101,15 @@ module Ai
           expires_in: GROUP_WITH_AI_ENABLED_CACHE_PERIOD
         ) do
           member_namespaces.namespace_settings_with_ai_features_enabled.with_ai_supported_plan.any?
+        end
+      end
+
+      def any_group_with_mcp_server_enabled?
+        Rails.cache.fetch(
+          ['users', id, GROUP_WITH_MCP_SERVER_ENABLED_CACHE_KEY],
+          expires_in: GROUP_WITH_MCP_SERVER_ENABLED_CACHE_PERIOD
+        ) do
+          member_namespaces.namespace_settings_with_ai_features_enabled.with_ai_supported_plan(:mcp_server).any?
         end
       end
 

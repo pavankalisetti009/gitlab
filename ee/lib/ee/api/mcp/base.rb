@@ -28,7 +28,7 @@ module EE
               # namespace-level settings check is only relevant for .com
               return true unless ::Gitlab::Saas.feature_available?(:gitlab_duo_saas_only)
 
-              current_user.any_group_with_ai_available?
+              current_user.any_group_with_mcp_server_enabled?
             end
           end
         end
