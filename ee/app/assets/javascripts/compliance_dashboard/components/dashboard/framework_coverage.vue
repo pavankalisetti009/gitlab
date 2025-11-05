@@ -35,11 +35,14 @@ export default {
     },
   },
   computed: {
+    sortedFrameworkDetails() {
+      return this.summary.details.toSorted((a, b) => b.coveredCount - a.coveredCount);
+    },
     canAdminComplianceFramework() {
       return this.glAbilities.adminComplianceFramework;
     },
     chartConfig() {
-      const yAxisTitles = this.summary.details
+      const yAxisTitles = this.sortedFrameworkDetails
         .map(({ framework }) => `{${generateFrameworkChartId(framework)}|${framework.name}}`)
         .reverse();
 
@@ -50,7 +53,7 @@ export default {
       const { textColor, blueDataColor, orangeDataColor, ticksColor } = getColors(this.colorScheme);
 
       const yAxisLabels = Object.fromEntries(
-        this.summary.details.map(({ framework }) => [
+        this.sortedFrameworkDetails.map(({ framework }) => [
           generateFrameworkChartId(framework),
           {
             backgroundColor: framework.color,
@@ -63,7 +66,7 @@ export default {
         ]),
       );
 
-      const percents = this.summary.details
+      const percents = this.sortedFrameworkDetails
         .map(({ coveredCount }) => Math.floor((coveredCount / this.summary.totalProjects) * 100))
         .reverse();
 
@@ -194,12 +197,12 @@ export default {
     },
     getTooltip(dataIndex) {
       // Data is inverted in chart representation
-      const index = this.summary.details.length - 1 - dataIndex;
+      const index = this.sortedFrameworkDetails.length - 1 - dataIndex;
 
       if (index === -1) {
         return this.getAllFrameworksTooltip();
       }
-      return this.getTooltipForFramework(this.summary.details[index]);
+      return this.getTooltipForFramework(this.sortedFrameworkDetails[index]);
     },
     getAllFrameworksTooltip() {
       const coveragePercent = Math.round(

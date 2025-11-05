@@ -9,15 +9,16 @@ describe('Framework coverage panel', () => {
   let wrapper;
   const pushMock = jest.fn();
 
-  function createComponent(details = []) {
+  function createComponent(details = [], totalProjects = 0) {
     wrapper = shallowMount(FrameworkCoverage, {
       propsData: {
         summary: {
-          totalProjects: 0,
+          totalProjects,
           coveredCount: 0,
           details,
         },
         colorScheme: GL_LIGHT,
+        isTopLevelGroup: true,
       },
       mocks: {
         $router: {
@@ -42,5 +43,26 @@ describe('Framework coverage panel', () => {
 
     wrapper.findComponent(GlChart).vm.$emit('chartItemClicked');
     expect(pushMock).toHaveBeenCalledWith({ name: ROUTE_PROJECTS });
+  });
+
+  describe('framework sorting', () => {
+    it('sorts frameworks by coveredCount in correct order', () => {
+      const totalProjects = 100;
+      const details = [
+        { id: 1, coveredCount: totalProjects * 0.05, framework: { id: 1, name: 'Framework A' } },
+        { id: 2, coveredCount: totalProjects * 0.15, framework: { id: 2, name: 'Framework B' } },
+        { id: 3, coveredCount: totalProjects * 0.1, framework: { id: 3, name: 'Framework C' } },
+      ];
+
+      createComponent(details, totalProjects);
+
+      const valuesPassedToChart = wrapper
+        .findComponent(GlChart)
+        .props('options')
+        .series[0].data.map((d) => d.value);
+
+      // Last one is 0 for "all items"
+      expect(valuesPassedToChart).toEqual([5, 10, 15, 0]);
+    });
   });
 });
