@@ -73,7 +73,10 @@ job2:
     - echo "This job also runs in merge request pipelines"
 ```
 
-Common `workflow` examples include [switching between branch and merge request pipelines](../yaml/workflow.md#switch-between-branch-pipelines-and-merge-request-pipelines) and [Git Flow with merge request pipelines](../yaml/workflow.md#git-flow-with-merge-request-pipelines).
+For common `workflow` examples, see:
+
+- [Switch between branch pipelines and merge request pipelines](../yaml/workflow.md#switch-between-branch-pipelines-and-merge-request-pipelines)
+- [Git Flow with merge request pipelines](../yaml/workflow.md#git-flow-with-merge-request-pipelines)
 
 To [use security scanning tools with merge request pipelines](../../user/application_security/detect/security_configuration.md#use-security-scanning-tools-with-merge-request-pipelines),
 use the CI/CD variable `AST_ENABLE_MR_PIPELINES` or the `latest` template edition.

@@ -138,7 +138,7 @@ workflow:
     - if: $CI_COMMIT_REF_PROTECTED == "true"
 ```
 
-This example assumes that your default branch and/or other long-lived branches are [protected](../../user/project/repository/branches/protected.md).
+This example assumes that your default branch or other long-lived branches are [protected](../../user/project/repository/branches/protected.md).
 
 ### Skip pipelines for draft merge requests
 
