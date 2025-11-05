@@ -10,6 +10,8 @@ module Ai
         SEARCH_RESULTS_LIMIT = 10
         COLLECTION_CLASS = ::Ai::ActiveContext::Collections::Code
 
+        LAST_QUERIED_UPDATE_INTERVAL = 1.hour
+
         MESSAGE_INITIAL_INDEXING_STARTED = 'initial indexing has been started, try again in a few minutes'
         MESSAGE_INITIAL_INDEXING_ONGOING = 'initial indexing is still ongoing, try again in a few minutes'
         MESSAGE_ADHOC_INDEXING_TRIGGER_FAILED = 'initial indexing was attempted but could not be started'
@@ -39,6 +41,9 @@ module Ai
 
           ac_repository = find_active_context_repository(project_id)
           return handle_no_ready_active_context_repository(project_id, ac_repository) unless ac_repository&.ready?
+
+          # Update the last queried timestamp so that we can potentially prune inactive data later
+          update_last_queried_timestamp(ac_repository)
 
           query = if path.nil?
                     repository_query(project_id, knn_count, limit)
@@ -87,6 +92,24 @@ module Ai
           )
 
           false
+        end
+
+        def update_last_queried_timestamp(ac_repository)
+          # Do not update if `last_queried_at` is nil, or it was updated within the set interval
+          return if ac_repository.last_queried_at.present? &&
+            ac_repository.last_queried_at > LAST_QUERIED_UPDATE_INTERVAL.ago
+
+          ac_repository.update_last_queried_timestamp
+        rescue ActiveRecord::ActiveRecordError => e
+          logger.warn(
+            build_structured_payload(
+              message: "Failed to update last_queried_at",
+              exception_class: e.class.name,
+              exception_message: e.message,
+              ai_active_context_code_repository_id: ac_repository.id,
+              project_id: ac_repository.project_id
+            )
+          )
         end
 
         def prepare_hits(search_hits, exclude_fields: [], extract_source_segments: false)

@@ -62,6 +62,10 @@ module Ai
           project.empty_repo?
         end
 
+        def update_last_queried_timestamp
+          touch(:last_queried_at)
+        end
+
         private
 
         def set_last_commit

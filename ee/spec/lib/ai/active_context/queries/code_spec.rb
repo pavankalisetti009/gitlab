@@ -179,6 +179,73 @@ RSpec.describe Ai::ActiveContext::Queries::Code, feature_category: :code_suggest
         expect(project_2_result.to_a).to eq(elasticsearch_docs[project_2.id].pluck('_source'))
       end
 
+      describe 'setting last_queried_at', :freeze_time do
+        before do
+          ac_repository.update!(last_queried_at: nil)
+        end
+
+        let(:ac_repository) { project.ready_active_context_code_repository }
+
+        it 'updates the last queried timestamp of the active_context repository records', :freeze_time do
+          expect { codebase_query.filter(project_id: project.id) }
+            .to change { ac_repository.reload.last_queried_at }.to(Time.current)
+            .and not_change { project_2.reload.ready_active_context_code_repository.last_queried_at }
+        end
+
+        context 'when the last_queried_at of the active context repository record is already set' do
+          context 'when last_queried_at is earlier than 1 hour ago' do
+            before do
+              ac_repository.update!(last_queried_at: Time.current - 2.hours)
+            end
+
+            it 'updates the last_queried_at', :freeze_time do
+              expect { codebase_query.filter(project_id: project.id) }
+                .to change { ac_repository.reload.last_queried_at }.to(Time.current)
+                .and not_change { project_2.reload.ready_active_context_code_repository.last_queried_at }
+            end
+          end
+
+          context 'when last_queried_at is later than 1 hour ago' do
+            before do
+              ac_repository.update!(last_queried_at: Time.current - 30.minutes)
+            end
+
+            it 'does not update the last_queried_at' do
+              expect { codebase_query.filter(project_id: project.id) }
+                .not_to change { ac_repository.reload.last_queried_at }
+            end
+          end
+        end
+
+        context 'when there is an error updating last_queried_at' do
+          before do
+            allow(ac_repository).to receive(:update_last_queried_timestamp).and_raise(
+              ActiveRecord::ActiveRecordError, "There is an error"
+            )
+
+            allow(Ai::ActiveContext::Code::Repository).to receive(:find_by)
+              .with(hash_including(project_id: project.id)).and_return(ac_repository)
+
+            allow(::ActiveContext::Config).to receive(:logger).and_return(logger)
+          end
+
+          let(:logger) { instance_double(::Gitlab::ActiveContext::Logger, warn: nil) }
+
+          it 'catches the error and logs it' do
+            expect(logger).to receive(:warn).with({
+              "class" => "Ai::ActiveContext::Queries::Code",
+              "message" => "Failed to update last_queried_at",
+              "exception_class" => "ActiveRecord::ActiveRecordError",
+              "exception_message" => "There is an error",
+              "ai_active_context_code_repository_id" => ac_repository.id,
+              "project_id" => project.id
+            })
+
+            expect { codebase_query.filter(project_id: project.id) }.not_to raise_error
+          end
+        end
+      end
+
       context 'when exclude_fields and extract_source_segments is provided' do
         it 'returns the expected results' do
           project_1_result = codebase_query.filter(
