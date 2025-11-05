@@ -70,7 +70,9 @@ module EE
         def handle_epic_link
           return { status: :success } unless child.synced_epic&.parent.present?
 
-          ::Epics::EpicLinks::DestroyService.new(child.synced_epic, current_user, synced_epic: true).execute
+          child.synced_epic.update!(parent_id: nil)
+
+          { status: :success }
         end
       end
     end
