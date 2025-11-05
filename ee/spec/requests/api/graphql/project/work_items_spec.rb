@@ -15,11 +15,11 @@ RSpec.describe 'getting a work item list for a project', feature_category: :team
 
   let(:fields) do
     <<~QUERY
-    edges {
-      node {
-        #{all_graphql_fields_for('workItems'.classify)}
+      edges {
+        node {
+          #{all_graphql_fields_for('workItems'.classify)}
+        }
       }
-    }
     QUERY
   end
 
@@ -41,17 +41,17 @@ RSpec.describe 'getting a work item list for a project', feature_category: :team
 
       let(:fields) do
         <<~QUERY
-        edges {
-          node {
-            id
-            widgets {
-              type
-              ... on WorkItemWidgetVerificationStatus {
-                verificationStatus
+          edges {
+            node {
+              id
+              widgets {
+                type
+                ... on WorkItemWidgetVerificationStatus {
+                  verificationStatus
+                }
               }
             }
           }
-        }
         QUERY
       end
 
@@ -106,17 +106,17 @@ RSpec.describe 'getting a work item list for a project', feature_category: :team
 
       let(:fields) do
         <<~QUERY
-        edges {
-          node {
-            id
-            widgets {
-              type
-              ... on WorkItemWidgetRequirementLegacy {
-                legacyIid
+          edges {
+            node {
+              id
+              widgets {
+                type
+                ... on WorkItemWidgetRequirementLegacy {
+                  legacyIid
+                }
               }
             }
           }
-        }
         QUERY
       end
 
@@ -170,21 +170,21 @@ RSpec.describe 'getting a work item list for a project', feature_category: :team
 
       let(:fields) do
         <<~QUERY
-        edges {
-          node {
-            id
-            widgets {
-              type
-              ... on WorkItemWidgetProgress {
-                progress
-                updatedAt
-                currentValue
-                startValue
-                endValue
+          edges {
+            node {
+              id
+              widgets {
+                type
+                ... on WorkItemWidgetProgress {
+                  progress
+                  updatedAt
+                  currentValue
+                  startValue
+                  endValue
+                }
               }
             }
           }
-        }
         QUERY
       end
 
@@ -303,20 +303,20 @@ RSpec.describe 'getting a work item list for a project', feature_category: :team
 
       let(:fields) do
         <<~QUERY
-        edges {
-          node {
-            widgets {
-              ... on WorkItemWidgetIteration {
-                iteration {
-                  id
-                  iterationCadence {
-                    title
+          edges {
+            node {
+              widgets {
+                ... on WorkItemWidgetIteration {
+                  iteration {
+                    id
+                    iterationCadence {
+                      title
+                    }
                   }
                 }
               }
             }
           }
-        }
         QUERY
       end
 
@@ -560,6 +560,67 @@ RSpec.describe 'getting a work item list for a project', feature_category: :team
           end
 
           it_behaves_like 'checks for N+1 queries'
+        end
+      end
+    end
+
+    context 'with linked items widget' do
+      describe 'with ai workflow token' do
+        let_it_be(:work_item1) { create(:work_item, project: project) }
+        let_it_be(:work_item2) { create(:work_item, project: project) }
+        let_it_be(:other_project) { create(:project, :repository, :public, group: group) }
+        let_it_be(:other_milestone) { create(:milestone, project: other_project) }
+        let_it_be(:related_items) { create_list(:work_item, 3, project: other_project, milestone: other_milestone) }
+        let_it_be(:ai_workflows_oauth_token) do
+          create(:oauth_access_token, user: current_user, scopes: [:ai_workflows])
+        end
+
+        let(:fields) do
+          <<~GRAPHQL
+          nodes {
+            widgets {
+              type
+              ... on WorkItemWidgetLinkedItems {
+                linkedItems {
+                  nodes {
+                    linkType
+                    workItem {
+                      id
+                      iid
+                      namespace {
+                        id
+                        fullPath
+                      }
+                      workItemType {
+                        name
+                      }
+                      title
+                      state
+                      createdAt
+                      closedAt
+                      webUrl
+                    }
+                  }
+                }
+              }
+            }
+          }
+          GRAPHQL
+        end
+
+        let(:items_data) { graphql_data['project']['workItems']['nodes'] }
+
+        before do
+          create(:work_item_link, source: work_item1, target: related_items[0], link_type: 'relates_to')
+          create(:work_item_link, source: work_item2, target: related_items[0], link_type: 'relates_to')
+        end
+
+        it 'fetches linked items' do
+          post_graphql(query, token: { oauth_access_token: ai_workflows_oauth_token })
+
+          linked_items = graphql_dig_at(items_data, 'widgets', 'linkedItems', 'nodes', 'workItem', 'iid')
+
+          expect(linked_items).to include(related_items[0].iid.to_s)
         end
       end
     end
