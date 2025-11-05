@@ -73,7 +73,7 @@ module EE
           'inline_auth' => {
             'jwt' => project_secrets_manager.ci_jwt(self),
             'role' => project_secrets_manager.ci_auth_role,
-            'auth_mount' => project_secrets_manager.ci_auth_mount
+            'path' => project_secrets_manager.ci_auth_path
           }.compact
         }
       end
@@ -82,7 +82,7 @@ module EE
         secret_name = secret['gitlab_secrets_manager']['name']
         project_secrets_manager = SecretsManagement::ProjectSecretsManager.find_by_project_id(project.id)
         {
-          'engine' => { 'name' => "kv-v2", 'path' => project_secrets_manager.ci_secrets_mount_path },
+          'engine' => { 'name' => "kv-v2", 'path' => project_secrets_manager.legacy_ci_secrets_mount_path },
           'path' => project_secrets_manager.ci_data_path(secret_name),
           'field' => "value",
           'server' => gitlab_secrets_manager_server(project_secrets_manager)

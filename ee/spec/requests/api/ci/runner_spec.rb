@@ -114,7 +114,7 @@ RSpec.describe API::Ci::Runner, feature_category: :runner_core do
                         "gitlab_secrets_manager" => {
                           "engine" => {
                             "name" => "kv-v2",
-                            "path" => project_secrets_manager.ci_secrets_mount_path
+                            "path" => project_secrets_manager.legacy_ci_secrets_mount_path
                           },
                           "path" => "explicit/my_test_secret",
                           "field" => 'value',
@@ -122,8 +122,8 @@ RSpec.describe API::Ci::Runner, feature_category: :runner_core do
                             "url" => ::SecretsManagement::ProjectSecretsManager.server_url,
                             "inline_auth" => {
                               "jwt" => 'jwt_token',
-                              "role" => project_secrets_manager.ci_auth_role,
-                              "auth_mount" => project_secrets_manager.ci_auth_mount
+                              "path" => project_secrets_manager.ci_auth_path,
+                              "role" => project_secrets_manager.ci_auth_role
                             }
                           }
                         }
