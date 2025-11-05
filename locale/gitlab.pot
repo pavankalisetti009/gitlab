@@ -6847,10 +6847,10 @@ msgstr ""
 msgid "AiPowered|Turn on GitLab Duo Agent Platform"
 msgstr ""
 
-msgid "AiPowered|Turn on Web and IDE features"
+msgid "AiPowered|Turn on experiment and beta GitLab Duo features"
 msgstr ""
 
-msgid "AiPowered|Turn on experiment and beta GitLab Duo features"
+msgid "AiPowered|Turn on features for GitLab Duo Core"
 msgstr ""
 
 msgid "AiPowered|Turn on prompt caching"
@@ -6883,7 +6883,7 @@ msgstr ""
 msgid "AiPowered|When GitLab Duo is not available, prompt caching cannot be turned on."
 msgstr ""
 
-msgid "AiPowered|When turned on, all billable users can access GitLab Duo Chat and Code Suggestions in Web and supported IDEs."
+msgid "AiPowered|When turned on, users can access features included in the GitLab Duo Core add-on. %{linkStart}Which features are included%{linkEnd}?"
 msgstr ""
 
 msgid "AiPowered|When you save, GitLab Duo will be turned off for all groups, subgroups, and projects."
@@ -30492,6 +30492,9 @@ msgstr ""
 msgid "GitLab Duo Chat with Amazon Q"
 msgstr ""
 
+msgid "GitLab Duo Core"
+msgstr ""
+
 msgid "GitLab Duo Core is on"
 msgstr ""
 
@@ -31006,9 +31009,6 @@ msgid "GithubIntegration|Static status check names (optional)"
 msgstr ""
 
 msgid "GithubIntegration|This requires mirroring your GitHub repository to this project. %{docs_link}"
-msgstr ""
-
-msgid "Gitlab Duo Core"
 msgstr ""
 
 msgid "Gitpod|Enable Ona integration"

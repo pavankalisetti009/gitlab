@@ -14,11 +14,11 @@ import PromoPageLink from '~/vue_shared/components/promo_page_link/promo_page_li
 export default {
   name: 'DuoCoreFeaturesForm',
   i18n: {
-    sectionTitle: __('Gitlab Duo Core'),
+    sectionTitle: __('GitLab Duo Core'),
     subtitle: s__(
-      'AiPowered|When turned on, all billable users can access GitLab Duo Chat and Code Suggestions in Web and supported IDEs.',
+      'AiPowered|When turned on, users can access features included in the GitLab Duo Core add-on. %{linkStart}Which features are included%{linkEnd}?',
     ),
-    checkboxLabel: s__('AiPowered|Turn on Web and IDE features'),
+    checkboxLabel: s__('AiPowered|Turn on features for GitLab Duo Core'),
     checkboxHelpTextSaaS: s__(
       'AiPowered|This setting applies to the whole top-level group. By turning this on, you accept the %{termsLinkStart}GitLab AI Functionality Terms%{termsLinkEnd} unless your organization has a separate agreement with GitLab governing AI feature usage. Check the %{requirementsLinkStart}eligibility requirements%{requirementsLinkEnd}.',
     ),
@@ -67,15 +67,19 @@ export default {
   },
   requirementsPath: `${DOCS_URL}/subscriptions/subscription-add-ons#gitlab-duo-core`,
   termsPath: `/handbook/legal/ai-functionality-terms/`,
+  duoCoreFeaturesPath: `${DOCS_URL}/user/gitlab_duo/feature_summary/`,
 };
 </script>
 <template>
   <div>
-    <gl-form-group
-      :label="$options.i18n.sectionTitle"
-      :label-description="$options.i18n.subtitle"
-      class="gl-my-4"
-    >
+    <gl-form-group :label="$options.i18n.sectionTitle" class="gl-my-4">
+      <template #label-description>
+        <gl-sprintf :message="$options.i18n.subtitle">
+          <template #link="{ content }">
+            <gl-link :href="$options.duoCoreFeaturesPath" target="_blank">{{ content }}</gl-link>
+          </template>
+        </gl-sprintf>
+      </template>
       <gl-form-checkbox
         v-model="duoCoreEnabled"
         data-testid="use-duo-core-features-checkbox"

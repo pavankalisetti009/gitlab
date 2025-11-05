@@ -6,6 +6,7 @@ import { DOCS_URL } from 'jh_else_ce/lib/utils/url_utility';
 
 const requirementsPath = `${DOCS_URL}/subscriptions/subscription-add-ons#gitlab-duo-core`;
 const mockTermsPath = `/handbook/legal/ai-functionality-terms/`;
+const duoCoreFeaturesPath = `${DOCS_URL}/user/gitlab_duo/feature_summary/`;
 
 describe('DuoCoreFeaturesForm', () => {
   let wrapper;
@@ -39,17 +40,17 @@ describe('DuoCoreFeaturesForm', () => {
   });
 
   it('renders the title', () => {
-    expect(wrapper.text()).toMatch('Gitlab Duo Core');
+    expect(wrapper.text()).toMatch('GitLab Duo Core');
   });
 
   it('renders the subtitle', () => {
     expect(wrapper.text()).toMatch(
-      'When turned on, all billable users can access GitLab Duo Chat and Code Suggestions in Web and supported IDEs.',
+      'When turned on, users can access features included in the GitLab Duo Core add-on',
     );
   });
 
   it('renders the checkbox with correct label', () => {
-    expect(findFormCheckbox().text()).toContain('Turn on Web and IDE features');
+    expect(findFormCheckbox().text()).toContain('Turn on features for GitLab Duo Core');
   });
 
   it('sets initial checkbox state based on duoCoreFeaturesEnabled prop when unselected', () => {
@@ -62,8 +63,12 @@ describe('DuoCoreFeaturesForm', () => {
   });
 
   it('renders correct links', () => {
+    const glLinks = wrapper.findAllComponents(GlLink);
+    const linkHrefs = glLinks.wrappers.map((link) => link.props('href'));
+
     expect(wrapper.findComponent(PromoPageLink).props('path')).toBe(mockTermsPath);
-    expect(wrapper.findComponent(GlLink).props('href')).toBe(requirementsPath);
+    expect(linkHrefs).toContain(duoCoreFeaturesPath);
+    expect(linkHrefs).toContain(requirementsPath);
   });
 
   it('renders the description', () => {
