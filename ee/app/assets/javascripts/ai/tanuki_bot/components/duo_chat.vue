@@ -578,6 +578,7 @@ export default {
         :is-loading="loading"
         :should-render-resizable="!isEmbedded"
         :show-studio-header="isEmbedded"
+        :show-header="!isEmbedded"
         :predefined-prompts="predefinedPrompts"
         :badge-type="null"
         :tool-name="toolName"
