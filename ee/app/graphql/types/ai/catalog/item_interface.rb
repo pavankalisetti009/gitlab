@@ -46,6 +46,13 @@ module Types
             argument :released, ::GraphQL::Types::Boolean, required: false,
               description: 'Return the latest released version.'
           end
+        field :configuration_for_project, ::Types::Ai::Catalog::ItemConsumerType,
+          null: true,
+          experiment: { milestone: '18.6' },
+          description: 'Item configuration for the given project.' do
+          argument :project_id, ::Types::GlobalIDType[::Project], required: true,
+            description: 'Global ID of the project to return the item configuration of.'
+        end
 
         orphan_types ::Types::Ai::Catalog::AgentType
         orphan_types ::Types::Ai::Catalog::FlowType
@@ -64,6 +71,14 @@ module Types
           # After batch loading, set the association in place to avoid further loading of `Item` records.
           Gitlab::Graphql::Lazy.with_value(lazy_version) do |version|
             version.tap { |v| v.item = object }
+          end
+        end
+
+        def configuration_for_project(project_id:)
+          BatchLoader::GraphQL.for(project_id.model_id.to_i).batch do |project_ids, loader|
+            ::Ai::Catalog::ItemConsumer.for_item(object).for_projects(project_ids).each do |consumer|
+              loader.call(consumer.project_id, consumer)
+            end
           end
         end
 

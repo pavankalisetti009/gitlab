@@ -357,6 +357,21 @@ RSpec.describe Ai::Catalog::ItemConsumer, feature_category: :workflow_catalog do
   end
 
   describe 'scopes' do
+    describe '.for_projects' do
+      it 'includes records that belong to the given projects' do
+        included_projects = create_list(:project, 2)
+        included_item_consumers = included_projects.map do |project|
+          create(:ai_catalog_item_consumer, project: project)
+        end
+
+        create(:ai_catalog_item_consumer, project: create(:project))
+
+        expect(described_class.for_projects(included_projects)).to match_array(
+          included_item_consumers
+        )
+      end
+    end
+
     describe '.not_for_projects' do
       it 'excludes records that belong to the given projects' do
         excluded_projects = create_list(:project, 2)

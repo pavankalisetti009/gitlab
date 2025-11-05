@@ -6,7 +6,9 @@ RSpec.describe 'getting an AI catalog item', :with_current_organization, feature
   include Ai::Catalog::TestHelpers
   include GraphqlHelpers
 
-  let_it_be(:project) { create(:project) }
+  let_it_be(:reporter_user) { create(:user) }
+  let_it_be(:developer_user) { create(:user) }
+  let_it_be(:project) { create(:project, reporters: reporter_user, developers: developer_user) }
   let_it_be_with_reload(:catalog_item) { create(:ai_catalog_item, project: project, public: true) }
 
   let(:latest_version) { catalog_item.latest_version }
@@ -147,17 +149,13 @@ RSpec.describe 'getting an AI catalog item', :with_current_organization, feature
     let_it_be(:catalog_item) { create(:ai_catalog_item, project: project) }
 
     context 'when developer' do
-      let(:current_user) do
-        create(:user).tap { |user| project.add_developer(user) }
-      end
+      let(:current_user) { developer_user }
 
       it_behaves_like 'a successful query'
     end
 
     context 'when reporter' do
-      let(:current_user) do
-        create(:user).tap { |user| project.add_reporter(user) }
-      end
+      let(:current_user) { reporter_user }
 
       it_behaves_like 'an unsuccessful query'
     end
@@ -210,6 +208,53 @@ RSpec.describe 'getting an AI catalog item', :with_current_organization, feature
 
         expect(response).to have_gitlab_http_status(:success)
         expect(latest_version_data).to match(a_graphql_entity_for(latest_version))
+      end
+    end
+  end
+
+  describe 'configurationForProject field' do
+    let_it_be(:item_consumer) { create(:ai_catalog_item_consumer, item: catalog_item, project: project) }
+
+    let_it_be(:item_consumer_for_other_project) do
+      create(:ai_catalog_item_consumer,
+        item: catalog_item,
+        project: create(:project, organization: catalog_item.organization)
+      )
+    end
+
+    let_it_be(:item_consumer_for_other_item) do
+      create(:ai_catalog_item_consumer, project: project)
+    end
+
+    let(:data) { graphql_data_at(:ai_catalog_item, :configuration_for_project) }
+
+    let(:query) do
+      <<~GRAPHQL
+        query {
+          aiCatalogItem(id: "#{params[:id]}") {
+            configurationForProject(projectId: "#{project.to_global_id}") {
+              id
+              enabled
+            }
+          }
+        }
+      GRAPHQL
+    end
+
+    context 'when the user does not have permission' do
+      let(:current_user) { reporter_user }
+
+      it_behaves_like 'an unsuccessful query'
+    end
+
+    context 'when the user has permission' do
+      let(:current_user) { developer_user }
+
+      it 'returns the item configuration' do
+        post_graphql(query, current_user: current_user)
+
+        expect(response).to have_gitlab_http_status(:success)
+        expect(data).to match(a_graphql_entity_for(item_consumer, :enabled))
       end
     end
   end

@@ -10,6 +10,9 @@ module Types
 
         connection_type_class ::Types::CountableConnectionType
 
+        field :enabled, GraphQL::Types::Boolean,
+          null: true,
+          description: 'Indicates if the configuration item is enabled.'
         field :group, ::Types::GroupType,
           null: true,
           description: 'Group in which the catalog item is configured.'

@@ -23790,6 +23790,23 @@ An AI catalog agent.
 
 #### Fields with arguments
 
+##### `AiCatalogAgent.configurationForProject`
+
+{{< details >}}
+**Introduced** in GitLab 18.6.
+**Status**: Experiment.
+{{< /details >}}
+
+Item configuration for the given project.
+
+Returns [`AiCatalogItemConsumer`](#aicatalogitemconsumer).
+
+###### Arguments
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="aicatalogagentconfigurationforprojectprojectid"></a>`projectId` | [`ProjectID!`](#projectid) | Global ID of the project to return the item configuration of. |
+
 ##### `AiCatalogAgent.latestVersion`
 
 Latest version of the item.
@@ -23857,6 +23874,23 @@ An AI catalog flow.
 
 #### Fields with arguments
 
+##### `AiCatalogFlow.configurationForProject`
+
+{{< details >}}
+**Introduced** in GitLab 18.6.
+**Status**: Experiment.
+{{< /details >}}
+
+Item configuration for the given project.
+
+Returns [`AiCatalogItemConsumer`](#aicatalogitemconsumer).
+
+###### Arguments
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="aicatalogflowconfigurationforprojectprojectid"></a>`projectId` | [`ProjectID!`](#projectid) | Global ID of the project to return the item configuration of. |
+
 ##### `AiCatalogFlow.latestVersion`
 
 Latest version of the item.
@@ -23903,6 +23937,7 @@ An AI catalog item configuration.
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
+| <a id="aicatalogitemconsumerenabled"></a>`enabled` | [`Boolean`](#boolean) | Indicates if the configuration item is enabled. |
 | <a id="aicatalogitemconsumergroup"></a>`group` | [`Group`](#group) | Group in which the catalog item is configured. |
 | <a id="aicatalogitemconsumerid"></a>`id` | [`ID!`](#id) | ID of the configuration item. |
 | <a id="aicatalogitemconsumeritem"></a>`item` | [`AiCatalogItem`](#aicatalogitem) | Configuration catalog item. |
@@ -23943,6 +23978,23 @@ An AI catalog third party flow.
 | <a id="aicatalogthirdpartyflowversions"></a>`versions` | [`AiCatalogItemVersionConnection`](#aicatalogitemversionconnection) | Versions of the item. (see [Connections](#connections)) |
 
 #### Fields with arguments
+
+##### `AiCatalogThirdPartyFlow.configurationForProject`
+
+{{< details >}}
+**Introduced** in GitLab 18.6.
+**Status**: Experiment.
+{{< /details >}}
+
+Item configuration for the given project.
+
+Returns [`AiCatalogItemConsumer`](#aicatalogitemconsumer).
+
+###### Arguments
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="aicatalogthirdpartyflowconfigurationforprojectprojectid"></a>`projectId` | [`ProjectID!`](#projectid) | Global ID of the project to return the item configuration of. |
 
 ##### `AiCatalogThirdPartyFlow.latestVersion`
 
@@ -53856,6 +53908,23 @@ Implementations:
 | <a id="aicatalogitemversions"></a>`versions` | [`AiCatalogItemVersionConnection`](#aicatalogitemversionconnection) | Versions of the item. (see [Connections](#connections)) |
 
 ##### Fields with arguments
+
+###### `AiCatalogItem.configurationForProject`
+
+{{< details >}}
+**Introduced** in GitLab 18.6.
+**Status**: Experiment.
+{{< /details >}}
+
+Item configuration for the given project.
+
+Returns [`AiCatalogItemConsumer`](#aicatalogitemconsumer).
+
+####### Arguments
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="aicatalogitemconfigurationforprojectprojectid"></a>`projectId` | [`ProjectID!`](#projectid) | Global ID of the project to return the item configuration of. |
 
 ###### `AiCatalogItem.latestVersion`
 
