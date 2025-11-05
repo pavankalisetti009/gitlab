@@ -40,7 +40,7 @@ module Resolvers
           required: false,
           description: 'Types of items to retrieve.'
 
-        validates exactly_one_of: [:group_id, :project_id]
+        validates at_least_one_of: [:group_id, :project_id]
 
         def resolve(**args)
           return none unless ::Feature.enabled?(:global_ai_catalog, current_user)

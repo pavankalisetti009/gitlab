@@ -258,13 +258,33 @@ RSpec.describe 'AiDuoWorkflowCreate', feature_category: :duo_chat do
       errors: ['forbidden to access agentic chat']
   end
 
-  context 'when both project_id and namespace_id are specified' do
+  context 'when both project_id and namespace_id are specified', :saas do
     let(:container_input) { { project_id: project.to_global_id, namespace_id: group.to_global_id } }
 
-    it 'returns error' do
+    it 'uses project_id and ignores namespace_id' do
+      expect(::Ai::DuoWorkflows::CreateWorkflowService).to receive(:new).with(
+        container: project,
+        current_user: current_user,
+        params: {
+          goal: "Automate PR reviews",
+          agent_privileges: [1, 2, 3],
+          pre_approved_agent_privileges: [1],
+          workflow_definition: workflow_type,
+          allow_agent_to_request_user: true,
+          environment: 'web',
+          ai_catalog_item_version_id: agent_version.id
+        }
+      ).and_call_original
+
       post_graphql_mutation(mutation, current_user: current_user)
 
-      expect_graphql_errors_to_include('Only one of [projectId, namespaceId] arguments is allowed at the same time.')
+      expect(response).to have_gitlab_http_status(:success)
+
+      workflow = ::Ai::DuoWorkflows::Workflow.last
+      expect(mutation_response['workflow']['id']).to eq("gid://gitlab/Ai::DuoWorkflows::Workflow/#{workflow.id}")
+      expect(mutation_response['workflow']['projectId']).to eq("gid://gitlab/Project/#{project.id}")
+      expect(mutation_response['workflow']['namespaceId']).to be_nil
+      expect(mutation_response['errors']).to be_empty
     end
   end
 end

@@ -194,7 +194,7 @@ module API
                 'Defaults to true.',
               default: true,
               documentation: { example: true }
-            exactly_one_of :project_id, :namespace_id
+            at_least_one_of :project_id, :namespace_id
           end
         end
 
