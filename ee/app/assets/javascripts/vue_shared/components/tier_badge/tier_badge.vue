@@ -3,11 +3,13 @@ import { GlBadge } from '@gitlab/ui';
 import { s__ } from '~/locale';
 import Tracking from '~/tracking';
 import TierBadgePopover from './tier_badge_popover.vue';
+import TierBadgeUpgradePopover from './tier_badge_upgrade_popover.vue';
 
 export default {
   components: {
     GlBadge,
     TierBadgePopover,
+    TierBadgeUpgradePopover,
   },
   mixins: [Tracking.mixin({ label: 'tier_badge' })],
   props: {
@@ -15,6 +17,11 @@ export default {
       type: String,
       required: false,
       default: s__('TierBadge|Free'),
+    },
+    isUpgrade: {
+      type: Boolean,
+      required: false,
+      default: false,
     },
   },
   data: () => ({ target: undefined }),
@@ -37,6 +44,9 @@ export default {
     <gl-badge ref="badge" data-testid="tier-badge" variant="tier">
       {{ tier }}
     </gl-badge>
-    <tier-badge-popover v-if="target" :target="target" triggers="hover focus manual" :tier="tier" />
+    <template v-if="target">
+      <tier-badge-upgrade-popover v-if="isUpgrade" :target="target" triggers="hover focus manual" />
+      <tier-badge-popover v-else :target="target" triggers="hover focus manual" :tier="tier" />
+    </template>
   </span>
 </template>

@@ -200,6 +200,24 @@ RSpec.describe ::SidebarsHelper, feature_category: :navigation do
           buy_pipeline_minutes_path: "/-/profile/usage_quotas"
         })
       end
+
+      describe 'tier badge attributes', :saas do
+        let(:namespace) { build(:gitlab_subscription, :free, namespace: build_stubbed(:group)).namespace }
+        let(:project) { build(:project, namespace: namespace) }
+
+        before do
+          allow(Ability).to receive(:allowed?).and_call_original
+          allow(Ability).to receive(:allowed?).with(user, :edit_billing, namespace).and_return(true)
+          stub_saas_features(gitlab_com_subscriptions: true)
+        end
+
+        it 'includes tier badge attributes from presenter' do
+          href = super_sidebar_context[:tier_badge_href]
+
+          expect(href).to include("billings")
+          expect(href).to include("sidebar-free-tier-highlight")
+        end
+      end
     end
 
     context 'when in group scope' do

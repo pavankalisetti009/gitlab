@@ -7,7 +7,7 @@ RSpec.describe 'Group show page', :with_trial_types, :js, :saas, feature_categor
   let_it_be(:group) { create(:group, :private, owners: user) }
 
   context "with free tier badge" do
-    let(:tier_badge_element) { find_by_testid('tier-badge') }
+    let(:tier_badge_element) { find_by_testid('group-tier-badge') }
     let(:popover_element) { page.find('.gl-popover') }
 
     before do
