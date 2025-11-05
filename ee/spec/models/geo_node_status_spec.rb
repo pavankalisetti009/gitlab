@@ -66,54 +66,54 @@ RSpec.describe GeoNodeStatus, :geo, feature_category: :geo_replication do
   describe '#healthy?' do
     context 'when health is blank' do
       it 'returns true' do
-        subject.status_message = ''
+        status.status_message = ''
 
-        expect(subject.healthy?).to be true
+        expect(status.healthy?).to be true
       end
     end
 
     context 'when health is present' do
       it 'returns true' do
-        subject.status_message = GeoNodeStatus::HEALTHY_STATUS
+        status.status_message = GeoNodeStatus::HEALTHY_STATUS
 
-        expect(subject.healthy?).to be true
+        expect(status.healthy?).to be true
       end
 
       it 'returns false' do
-        subject.status_message = 'something went wrong'
+        status.status_message = 'something went wrong'
 
-        expect(subject.healthy?).to be false
+        expect(status.healthy?).to be false
       end
     end
 
-    context 'takes outdated? into consideration' do
+    context 'with outdated? taken into consideration' do
       it 'return false' do
-        subject.status_message = GeoNodeStatus::HEALTHY_STATUS
-        subject.updated_at = 61.minutes.ago
+        status.status_message = GeoNodeStatus::HEALTHY_STATUS
+        status.updated_at = 61.minutes.ago
 
-        expect(subject.healthy?).to be false
+        expect(status.healthy?).to be false
       end
 
       it 'return false' do
-        subject.status_message = 'something went wrong'
-        subject.updated_at = 1.minute.ago
+        status.status_message = 'something went wrong'
+        status.updated_at = 1.minute.ago
 
-        expect(subject.healthy?).to be false
+        expect(status.healthy?).to be false
       end
     end
   end
 
   describe '#outdated?' do
     it 'return true' do
-      subject.updated_at = 61.minutes.ago
+      status.updated_at = 61.minutes.ago
 
-      expect(subject.outdated?).to be true
+      expect(status.outdated?).to be true
     end
 
     it 'return false' do
-      subject.updated_at = 1.minute.ago
+      status.updated_at = 1.minute.ago
 
-      expect(subject.outdated?).to be false
+      expect(status.outdated?).to be false
     end
   end
 
@@ -121,16 +121,16 @@ RSpec.describe GeoNodeStatus, :geo, feature_category: :geo_replication do
     it 'delegates to the HealthCheck' do
       expect(HealthCheck::Utils).to receive(:process_checks).with(['geo']).once
 
-      subject
+      status
     end
   end
 
   describe '#health' do
     it 'returns status message' do
-      subject.status_message = 'something went wrong'
-      subject.updated_at = 61.minutes.ago
+      status.status_message = 'something went wrong'
+      status.updated_at = 61.minutes.ago
 
-      expect(subject.health).to eq 'something went wrong'
+      expect(status.health).to eq 'something went wrong'
     end
   end
 
@@ -138,7 +138,7 @@ RSpec.describe GeoNodeStatus, :geo, feature_category: :geo_replication do
     it 'returns nil on a primary site' do
       stub_current_geo_node(primary)
 
-      expect(subject.projects_count).to be_nil
+      expect(status.projects_count).to be_nil
     end
 
     it 'returns nil on a secondary site' do
@@ -147,7 +147,7 @@ RSpec.describe GeoNodeStatus, :geo, feature_category: :geo_replication do
       create(:geo_project_repository_registry, :synced, project: project_1)
       create(:geo_project_repository_registry, project: project_3)
 
-      expect(subject.projects_count).to be_nil
+      expect(status.projects_count).to be_nil
     end
   end
 
@@ -155,7 +155,7 @@ RSpec.describe GeoNodeStatus, :geo, feature_category: :geo_replication do
     it 'counts the number of project repositories on a primary site' do
       stub_current_geo_node(primary)
 
-      expect(subject.repositories_count).to eq 4
+      expect(status.repositories_count).to eq 4
     end
 
     it 'counts the number of project repository registries on a secondary site' do
@@ -164,7 +164,7 @@ RSpec.describe GeoNodeStatus, :geo, feature_category: :geo_replication do
       create(:geo_project_repository_registry, :synced, project: project_1)
       create(:geo_project_repository_registry, project: project_3)
 
-      expect(subject.repositories_count).to eq 2
+      expect(status.repositories_count).to eq 2
     end
   end
 
@@ -176,22 +176,26 @@ RSpec.describe GeoNodeStatus, :geo, feature_category: :geo_replication do
       end
 
       context 'when replication is enabled' do
-        let(:geo_health_check) { instance_double(Gitlab::Geo::HealthCheck, perform_checks: '', db_replication_lag_seconds: 1000) }
+        let(:geo_health_check) do
+          instance_double(Gitlab::Geo::HealthCheck, perform_checks: '', db_replication_lag_seconds: 1000)
+        end
 
         it 'returns the set replication lag' do
-          expect(subject.db_replication_lag_seconds).to eq(1000)
+          expect(status.db_replication_lag_seconds).to eq(1000)
         end
       end
 
       context 'when replication is disabled' do
-        let(:geo_health_check) { instance_double(Gitlab::Geo::HealthCheck, perform_checks: '', db_replication_lag_seconds: nil) }
+        let(:geo_health_check) do
+          instance_double(Gitlab::Geo::HealthCheck, perform_checks: '', db_replication_lag_seconds: nil)
+        end
 
         before do
           allow(Gitlab::Geo::HealthCheck).to receive(:new).and_return(geo_health_check)
         end
 
         it 'returns nil' do
-          expect(subject.db_replication_lag_seconds).to be_nil
+          expect(status.db_replication_lag_seconds).to be_nil
         end
       end
     end
@@ -199,7 +203,7 @@ RSpec.describe GeoNodeStatus, :geo, feature_category: :geo_replication do
     it "doesn't attempt to set replication lag if primary" do
       stub_current_geo_node(primary)
 
-      expect(subject.db_replication_lag_seconds).to eq(nil)
+      expect(status.db_replication_lag_seconds).to be_nil
     end
   end
 
@@ -208,27 +212,27 @@ RSpec.describe GeoNodeStatus, :geo, feature_category: :geo_replication do
       stub_current_geo_node(primary)
       allow(primary).to receive(:replication_slots_used_count).and_return(1)
 
-      expect(subject.replication_slots_used_count).to eq(1)
+      expect(status.replication_slots_used_count).to eq(1)
     end
   end
 
   describe '#replication_slots_used_in_percentage' do
     it 'returns 0 when no replication slots are available' do
-      expect(subject.replication_slots_used_in_percentage).to eq(0)
+      expect(status.replication_slots_used_in_percentage).to eq(0)
     end
 
     it 'returns 0 when replication slot count is unknown' do
-      subject.replication_slots_count = nil
+      status.replication_slots_count = nil
 
-      expect(subject.replication_slots_used_in_percentage).to eq(0)
+      expect(status.replication_slots_used_in_percentage).to eq(0)
     end
 
     it 'returns the right percentage' do
       stub_current_geo_node(primary)
-      subject.replication_slots_count = 2
-      subject.replication_slots_used_count = 1
+      status.replication_slots_count = 2
+      status.replication_slots_used_count = 1
 
-      expect(subject.replication_slots_used_in_percentage).to be_within(0.0001).of(50)
+      expect(status.replication_slots_used_in_percentage).to be_within(0.0001).of(50)
     end
   end
 
@@ -237,51 +241,51 @@ RSpec.describe GeoNodeStatus, :geo, feature_category: :geo_replication do
       stub_current_geo_node(primary)
       allow(primary).to receive(:replication_slots_max_retained_wal_bytes).and_return(2.megabytes)
 
-      expect(subject.replication_slots_max_retained_wal_bytes).to eq(2.megabytes)
+      expect(status.replication_slots_max_retained_wal_bytes).to eq(2.megabytes)
     end
 
     it 'handles large values' do
       stub_current_geo_node(primary)
       allow(primary).to receive(:replication_slots_max_retained_wal_bytes).and_return(900.gigabytes)
 
-      expect(subject.replication_slots_max_retained_wal_bytes).to eq(900.gigabytes)
+      expect(status.replication_slots_max_retained_wal_bytes).to eq(900.gigabytes)
     end
   end
 
   describe '#last_event_id and #last_event_date' do
     it 'returns nil when no events are available' do
-      expect(subject.last_event_id).to be_nil
-      expect(subject.last_event_date).to be_nil
+      expect(status.last_event_id).to be_nil
+      expect(status.last_event_date).to be_nil
     end
 
     it 'returns the latest event' do
-      created_at = Date.today.to_time(:utc)
+      created_at = Time.zone.today
       event = create(:geo_event_log, created_at: created_at)
 
-      expect(subject.last_event_id).to eq(event.id)
-      expect(subject.last_event_date).to eq(created_at)
+      expect(status.last_event_id).to eq(event.id)
+      expect(status.last_event_date).to eq(created_at)
     end
   end
 
   describe '#cursor_last_event_id and #cursor_last_event_date' do
     it 'returns nil when no events are available' do
-      expect(subject.cursor_last_event_id).to be_nil
-      expect(subject.cursor_last_event_date).to be_nil
+      expect(status.cursor_last_event_id).to be_nil
+      expect(status.cursor_last_event_date).to be_nil
     end
 
     it 'returns the latest event ID if secondary' do
       allow(Gitlab::Geo).to receive(:secondary?).and_return(true)
       event = create(:geo_event_log_state)
 
-      expect(subject.cursor_last_event_id).to eq(event.event_id)
+      expect(status.cursor_last_event_id).to eq(event.event_id)
     end
 
     it "doesn't attempt to retrieve cursor if primary" do
       stub_current_geo_node(primary)
       create(:geo_event_log_state)
 
-      expect(subject.cursor_last_event_date).to eq(nil)
-      expect(subject.cursor_last_event_id).to eq(nil)
+      expect(status.cursor_last_event_date).to be_nil
+      expect(status.cursor_last_event_id).to be_nil
     end
   end
 
@@ -295,22 +299,22 @@ RSpec.describe GeoNodeStatus, :geo, feature_category: :geo_replication do
 
   describe '#[]' do
     it 'returns values for each attribute' do
-      expect(subject[:project_repositories_count]).to eq(0)
-      expect(subject[:projects_count]).to be_nil
+      expect(status[:project_repositories_count]).to eq(0)
+      expect(status[:projects_count]).to be_nil
     end
 
     it 'raises an error for invalid attributes' do
-      expect { subject[:testme] }.to raise_error(NoMethodError)
+      expect { status[:testme] }.to raise_error(NoMethodError)
     end
   end
 
   shared_examples 'timestamp parameters' do |timestamp_column, date_column|
     it 'returns the value it was assigned via UNIX timestamp' do
       now = Time.current.beginning_of_day.utc
-      subject.update_attribute(timestamp_column, now.to_i)
+      status.update_attribute(timestamp_column, now.to_i)
 
-      expect(subject.public_send(date_column)).to eq(now)
-      expect(subject.public_send(timestamp_column)).to eq(now.to_i)
+      expect(status.public_send(date_column)).to eq(now)
+      expect(status.public_send(timestamp_column)).to eq(now.to_i)
     end
   end
 
@@ -328,7 +332,7 @@ RSpec.describe GeoNodeStatus, :geo, feature_category: :geo_replication do
 
   describe '#storage_shards' do
     it "returns the current node's shard config" do
-      expect(subject[:storage_shards].as_json).to eq(StorageShard.all.as_json)
+      expect(status[:storage_shards].as_json).to eq(StorageShard.all.as_json)
     end
   end
 
@@ -337,7 +341,8 @@ RSpec.describe GeoNodeStatus, :geo, feature_category: :geo_replication do
       stub_primary_node
       stub_current_geo_node(secondary)
 
-      status = create(:geo_node_status, geo_node: secondary, storage_configuration_digest: 'bc11119c101846c20367fff34ce9fffa9b05aab8')
+      status = create(:geo_node_status, geo_node: secondary,
+        storage_configuration_digest: 'bc11119c101846c20367fff34ce9fffa9b05aab8')
 
       expect(status.storage_shards_match?).to be false
     end
@@ -346,7 +351,8 @@ RSpec.describe GeoNodeStatus, :geo, feature_category: :geo_replication do
       stub_secondary_node
       stub_current_geo_node(primary)
 
-      status = create(:geo_node_status, geo_node: primary, storage_configuration_digest: 'bc11119c101846c20367fff34ce9fffa9b05aab8')
+      status = create(:geo_node_status, geo_node: primary,
+        storage_configuration_digest: 'bc11119c101846c20367fff34ce9fffa9b05aab8')
 
       expect(status.storage_shards_match?).to be true
     end
@@ -354,9 +360,11 @@ RSpec.describe GeoNodeStatus, :geo, feature_category: :geo_replication do
     it 'returns false if the storage shards do not match' do
       stub_primary_node
       stub_current_geo_node(secondary)
-      create(:geo_node_status, geo_node: primary, storage_configuration_digest: 'aea7849c10b886c202676ff34ce9fdf0940567b8')
+      create(:geo_node_status, geo_node: primary,
+        storage_configuration_digest: 'aea7849c10b886c202676ff34ce9fdf0940567b8')
 
-      status = create(:geo_node_status, geo_node: secondary, storage_configuration_digest: 'bc11119c101846c20367fff34ce9fffa9b05aab8')
+      status = create(:geo_node_status, geo_node: secondary,
+        storage_configuration_digest: 'bc11119c101846c20367fff34ce9fffa9b05aab8')
 
       expect(status.storage_shards_match?).to be false
     end
@@ -367,7 +375,7 @@ RSpec.describe GeoNodeStatus, :geo, feature_category: :geo_replication do
       stub_application_setting(repository_checks_enabled: true)
     end
 
-    context 'current is a Geo primary' do
+    context 'when current is a Geo primary' do
       before do
         stub_current_geo_node(primary)
       end
@@ -380,7 +388,7 @@ RSpec.describe GeoNodeStatus, :geo, feature_category: :geo_replication do
       end
     end
 
-    context 'current is a Geo secondary' do
+    context 'when current is a Geo secondary' do
       before do
         stub_current_geo_node(secondary)
       end
@@ -399,7 +407,7 @@ RSpec.describe GeoNodeStatus, :geo, feature_category: :geo_replication do
       stub_application_setting(repository_checks_enabled: true)
     end
 
-    context 'current is a Geo primary' do
+    context 'when current is a Geo primary' do
       before do
         stub_current_geo_node(primary)
       end
@@ -412,7 +420,7 @@ RSpec.describe GeoNodeStatus, :geo, feature_category: :geo_replication do
       end
     end
 
-    context 'current is a Geo secondary' do
+    context 'when current is a Geo secondary' do
       before do
         stub_current_geo_node(secondary)
       end
@@ -426,7 +434,7 @@ RSpec.describe GeoNodeStatus, :geo, feature_category: :geo_replication do
     end
   end
 
-  context 'secondary usage data' do
+  context 'for secondary usage data' do
     shared_examples_for 'a field from secondary_usage_data' do |field|
       describe '#load_secondary_usage_data' do
         it 'loads the latest data from Geo::SecondaryUsageData' do
@@ -448,7 +456,7 @@ RSpec.describe GeoNodeStatus, :geo, feature_category: :geo_replication do
     end
   end
 
-  context 'Replicator stats' do
+  context 'for Replicator stats' do
     before do
       Project.delete_all
 
@@ -465,7 +473,7 @@ RSpec.describe GeoNodeStatus, :geo, feature_category: :geo_replication do
       let(:model_factory) { model_class_factory_name(registry_class) }
       let(:registry_factory) { registry_factory_name(registry_class) }
 
-      context 'replication' do
+      context 'for replication' do
         context 'on the primary' do
           before do
             stub_current_geo_node(primary)
@@ -485,13 +493,13 @@ RSpec.describe GeoNodeStatus, :geo, feature_category: :geo_replication do
                 end
 
                 it 'returns the number of available replicables on primary' do
-                  expect(subject.send(replicable_count_method)).to eq(2)
+                  expect(status.send(replicable_count_method)).to eq(2)
                 end
               end
 
               context 'when there are no replicables' do
                 it 'returns 0' do
-                  expect(subject.send(replicable_count_method)).to eq(0)
+                  expect(status.send(replicable_count_method)).to eq(0)
                 end
               end
             end
@@ -512,13 +520,13 @@ RSpec.describe GeoNodeStatus, :geo, feature_category: :geo_replication do
                   end
 
                   it 'returns the number of available replicables on primary' do
-                    expect(subject.send(replicable_count_method)).to eq(2)
+                    expect(status.send(replicable_count_method)).to eq(2)
                   end
                 end
 
                 context 'when there are no replicables' do
                   it 'returns 0' do
-                    expect(subject.send(replicable_count_method)).to eq(0)
+                    expect(status.send(replicable_count_method)).to eq(0)
                   end
                 end
               end
@@ -531,7 +539,7 @@ RSpec.describe GeoNodeStatus, :geo, feature_category: :geo_replication do
                 end
 
                 it 'returns nil' do
-                  expect(subject.send(replicable_count_method)).to be_nil
+                  expect(status.send(replicable_count_method)).to be_nil
                 end
               end
             end
@@ -557,30 +565,30 @@ RSpec.describe GeoNodeStatus, :geo, feature_category: :geo_replication do
               end
 
               it 'returns the right counts', :aggregate_failures do
-                expect(subject.send(registry_count_method)).to eq(3)
+                expect(status.send(registry_count_method)).to eq(3)
 
-                expect(subject.send(failed_count_method)).to eq(2)
-                expect(subject.send(synced_count_method)).to eq(1)
+                expect(status.send(failed_count_method)).to eq(2)
+                expect(status.send(synced_count_method)).to eq(1)
 
-                expect(subject.send(synced_in_percentage_method)).to be_within(0.01).of(33.33)
+                expect(status.send(synced_in_percentage_method)).to be_within(0.01).of(33.33)
               end
             end
 
             context 'when there are no registries' do
               it 'returns 0', :aggregate_failures do
-                expect(subject.send(registry_count_method)).to eq(0)
+                expect(status.send(registry_count_method)).to eq(0)
 
-                expect(subject.send(failed_count_method)).to eq(0)
-                expect(subject.send(synced_count_method)).to eq(0)
+                expect(status.send(failed_count_method)).to eq(0)
+                expect(status.send(synced_count_method)).to eq(0)
 
-                expect(subject.send(synced_in_percentage_method)).to eq(0)
+                expect(status.send(synced_in_percentage_method)).to eq(0)
               end
             end
           end
         end
       end
 
-      context 'verification' do
+      context 'for verification' do
         context 'on the primary' do
           let(:checksummed_count_method) { "#{replicable_name}_checksummed_count" }
           let(:checksum_failed_count_method) { "#{replicable_name}_checksum_failed_count" }
@@ -602,15 +610,15 @@ RSpec.describe GeoNodeStatus, :geo, feature_category: :geo_replication do
               end
 
               it 'returns the right checksum counts', :aggregate_failures do
-                expect(subject.send(checksummed_count_method)).to eq(2)
-                expect(subject.send(checksum_failed_count_method)).to eq(1)
+                expect(status.send(checksummed_count_method)).to eq(2)
+                expect(status.send(checksum_failed_count_method)).to eq(1)
               end
             end
 
             context 'when there are no replicables' do
               it 'returns 0', :aggregate_failures do
-                expect(subject.send(checksummed_count_method)).to eq(0)
-                expect(subject.send(checksum_failed_count_method)).to eq(0)
+                expect(status.send(checksummed_count_method)).to eq(0)
+                expect(status.send(checksum_failed_count_method)).to eq(0)
               end
             end
           end
@@ -621,8 +629,8 @@ RSpec.describe GeoNodeStatus, :geo, feature_category: :geo_replication do
             end
 
             it 'returns nil', :aggregate_failures do
-              expect(subject.send(checksummed_count_method)).to be_nil
-              expect(subject.send(checksum_failed_count_method)).to be_nil
+              expect(status.send(checksummed_count_method)).to be_nil
+              expect(status.send(checksum_failed_count_method)).to be_nil
             end
           end
         end
@@ -649,17 +657,17 @@ RSpec.describe GeoNodeStatus, :geo, feature_category: :geo_replication do
               end
 
               it 'returns the right counts and percentage', :aggregate_failures do
-                expect(subject.send(verified_count_method)).to eq(2)
-                expect(subject.send(verification_failed_count_method)).to eq(1)
-                expect(subject.send(verified_in_percentage_method)).to be_within(0.01).of(66.67)
+                expect(status.send(verified_count_method)).to eq(2)
+                expect(status.send(verification_failed_count_method)).to eq(1)
+                expect(status.send(verified_in_percentage_method)).to be_within(0.01).of(66.67)
               end
             end
 
             context 'when there are no replicables' do
               it 'returns 0', :aggregate_failures do
-                expect(subject.send(verified_count_method)).to eq(0)
-                expect(subject.send(verification_failed_count_method)).to eq(0)
-                expect(subject.send(verified_in_percentage_method)).to eq(0)
+                expect(status.send(verified_count_method)).to eq(0)
+                expect(status.send(verification_failed_count_method)).to eq(0)
+                expect(status.send(verified_in_percentage_method)).to eq(0)
               end
             end
           end
@@ -670,9 +678,9 @@ RSpec.describe GeoNodeStatus, :geo, feature_category: :geo_replication do
             end
 
             it 'returns nil', :aggregate_failures do
-              expect(subject.send(verified_count_method)).to be_nil
-              expect(subject.send(verification_failed_count_method)).to be_nil
-              expect(subject.send(verified_in_percentage_method)).to eq(0)
+              expect(status.send(verified_count_method)).to be_nil
+              expect(status.send(verification_failed_count_method)).to be_nil
+              expect(status.send(verified_in_percentage_method)).to eq(0)
             end
           end
         end
@@ -687,40 +695,42 @@ RSpec.describe GeoNodeStatus, :geo, feature_category: :geo_replication do
       end
 
       it 'does not call JobArtifactRegistryFinder#registry_count' do
-        expect_any_instance_of(Geo::JobArtifactRegistryFinder).not_to receive(:registry_count)
+        expect_any_instance_of(Geo::JobArtifactRegistryFinder) do |instance|
+          expect(instance).not_to receive(:registry_count)
+        end
 
-        subject
+        status
       end
     end
 
     context 'on the secondary' do
       it 'returns data from the deprecated field if it is not defined in the status field' do
-        subject.write_attribute(:projects_count, 10)
-        subject.status = {}
+        status.write_attribute(:projects_count, 10)
+        status.status = {}
 
-        expect(subject.projects_count).to eq 10
+        expect(status.projects_count).to eq 10
       end
 
       it 'sets data in the new status field' do
-        subject.projects_count = 10
+        status.projects_count = 10
 
-        expect(subject.projects_count).to eq 10
+        expect(status.projects_count).to eq 10
       end
     end
 
-    context 'status counters are converted into integers' do
+    context 'when status counters are converted into integers' do
       it 'returns integer value' do
-        subject.status = { "projects_count" => "10" }
+        status.status = { "projects_count" => "10" }
 
-        expect(subject.projects_count).to eq 10
+        expect(status.projects_count).to eq 10
       end
     end
 
-    context 'status booleans are converted into booleans' do
+    context 'when status booleans are converted into booleans' do
       it 'returns boolean value' do
-        subject.status = { "container_repositories_replication_enabled" => "true" }
+        status.status = { "container_repositories_replication_enabled" => "true" }
 
-        expect(subject.container_repositories_replication_enabled).to eq true
+        expect(status.container_repositories_replication_enabled).to be true
       end
     end
 
@@ -731,25 +741,25 @@ RSpec.describe GeoNodeStatus, :geo, feature_category: :geo_replication do
         allow(Gitlab::Geo).to receive(:verification_enabled_replicator_classes)
                                 .and_return([Geo::JobArtifactReplicator])
         allow(Geo::JobArtifactReplicator).to receive(:primary_total_count)
-                                               .and_raise(ActiveRecord::QueryCanceled.new("ERROR: canceling statement due to statement timeout"))
+            .and_raise(ActiveRecord::QueryCanceled.new("ERROR: canceling statement due to statement timeout"))
         allow(Geo::JobArtifactReplicator).to receive(:checksummed_count)
-                                               .and_return(42)
+            .and_return(42)
         allow(Gitlab::ErrorTracking).to receive(:track_exception)
       end
 
       it 'fails gracefully and continues collecting other metrics', :aggregate_failures do
-        subject # this triggers load_data_from_current_node
+        status # this triggers load_data_from_current_node
 
         # Failed counts are nil but following metrics are returned normally
-        expect(subject.job_artifacts_count).to be_nil
-        expect(subject.job_artifacts_checksummed_count).to eq(42)
+        expect(status.job_artifacts_count).to be_nil
+        expect(status.job_artifacts_checksummed_count).to eq(42)
       end
 
       it 'calls ErrorTracking for query cancellation errors' do
-        subject # this triggers load_data_from_current_node
+        status # this triggers load_data_from_current_node
 
         expect(Gitlab::ErrorTracking).to have_received(:track_exception)
-                                           .with(instance_of(ActiveRecord::QueryCanceled), extra: { metric: 'job_artifacts_count' }).once
+            .with(instance_of(ActiveRecord::QueryCanceled), extra: { metric: 'job_artifacts_count' }).once
       end
     end
 
@@ -760,25 +770,25 @@ RSpec.describe GeoNodeStatus, :geo, feature_category: :geo_replication do
         allow(Gitlab::Geo).to receive(:replication_enabled_replicator_classes)
                                 .and_return([Geo::JobArtifactReplicator])
         allow(Geo::JobArtifactReplicator).to receive(:registry_count)
-                                               .and_raise(ActiveRecord::QueryCanceled.new("ERROR: canceling statement due to statement timeout"))
+            .and_raise(ActiveRecord::QueryCanceled.new("ERROR: canceling statement due to statement timeout"))
         allow(Geo::JobArtifactReplicator).to receive(:synced_count)
-                                               .and_return(42)
+            .and_return(42)
         allow(Gitlab::ErrorTracking).to receive(:track_exception)
       end
 
       it 'fails gracefully and continues collecting other metrics', :aggregate_failures do
-        subject # this triggers load_data_from_current_node
+        status # this triggers load_data_from_current_node
 
         # Failed counts are nil but following metrics are returned normally
-        expect(subject.job_artifacts_count).to be_nil
-        expect(subject.job_artifacts_synced_count).to eq(42)
+        expect(status.job_artifacts_count).to be_nil
+        expect(status.job_artifacts_synced_count).to eq(42)
       end
 
       it 'calls ErrorTracking for query cancellation errors' do
-        subject # this triggers load_data_from_current_node
+        status # this triggers load_data_from_current_node
 
         expect(Gitlab::ErrorTracking).to have_received(:track_exception)
-                                           .with(instance_of(ActiveRecord::QueryCanceled), extra: { metric: 'job_artifacts_count' }).once
+            .with(instance_of(ActiveRecord::QueryCanceled), extra: { metric: 'job_artifacts_count' }).once
       end
     end
 
