@@ -387,8 +387,6 @@ short_merge_commit_sha:
   file: app/models/merge_request.rb
 find_assignee:
   file: app/models/merge_request.rb
-merge_request_assignees_with:
-  file: app/models/merge_request.rb
 migrate_files_to_database!:
   file: app/models/merge_request_diff.rb
 can_be_closed?:
