@@ -1856,7 +1856,6 @@ RSpec/FeatureCategory:
     - 'spec/lib/gitlab/background_migration/batching_strategies/base_strategy_spec.rb'
     - 'spec/lib/gitlab/background_migration/batching_strategies/dismissed_vulnerabilities_strategy_spec.rb'
     - 'spec/lib/gitlab/background_migration/batching_strategies/loose_index_scan_batching_strategy_spec.rb'
-    - 'spec/lib/gitlab/background_migration/destroy_invalid_members_spec.rb'
     - 'spec/lib/gitlab/background_migration/disable_legacy_open_source_license_for_inactive_public_projects_spec.rb'
     - 'spec/lib/gitlab/background_migration/disable_legacy_open_source_license_for_one_member_no_repo_projects_spec.rb'
     - 'spec/lib/gitlab/background_migration/mailers/unconfirm_mailer_spec.rb'
