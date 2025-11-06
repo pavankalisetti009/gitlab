@@ -21,6 +21,7 @@ module API
         Gitlab::AiGateway.push_feature_flag(:duo_workflow_stream_during_tool_call_generation, current_user)
         Gitlab::AiGateway.push_feature_flag(:duo_workflow_compress_checkpoint, current_user)
         Gitlab::AiGateway.push_feature_flag(:duo_use_billing_endpoint, current_user)
+        Gitlab::AiGateway.push_feature_flag(:usage_quota_left_check, current_user)
       end
     end
   end

@@ -73,6 +73,7 @@ RSpec.describe API::CodeSuggestions, feature_category: :code_suggestions do
     stub_feature_flags(incident_fail_over_completion_provider: false)
     stub_feature_flags(use_claude_code_completion: false)
     stub_feature_flags(code_completion_opt_out_fireworks: false)
+    stub_feature_flags(usage_quota_left_check: false)
   end
 
   shared_examples 'a response' do |case_name|
@@ -272,7 +273,7 @@ RSpec.describe API::CodeSuggestions, feature_category: :code_suggestions do
     end
 
     shared_examples 'code completions endpoint' do
-      let(:gitlab_enabled_feature_flgs) { [""] }
+      let(:gitlab_enabled_feature_flags) { [""] }
 
       context 'when feature is disabled' do
         include_examples 'code suggestions feature disabled'
@@ -331,7 +332,7 @@ RSpec.describe API::CodeSuggestions, feature_category: :code_suggestions do
             'x-gitlab-feature-enabled-by-namespace-ids' => [""],
             'Content-Type' => ['application/json'],
             'User-Agent' => ['Super Awesome Browser 43.144.12'],
-            "x-gitlab-enabled-feature-flags" => gitlab_enabled_feature_flgs
+            "x-gitlab-enabled-feature-flags" => gitlab_enabled_feature_flags
           )
         end
 
@@ -410,7 +411,7 @@ RSpec.describe API::CodeSuggestions, feature_category: :code_suggestions do
               'x-gitlab-feature-enabled-by-namespace-ids' => [""],
               'Content-Type' => ['application/json'],
               'User-Agent' => ['Super Awesome Browser 43.144.12'],
-              "x-gitlab-enabled-feature-flags" => gitlab_enabled_feature_flgs
+              "x-gitlab-enabled-feature-flags" => gitlab_enabled_feature_flags
             )
           end
         end
@@ -461,7 +462,7 @@ RSpec.describe API::CodeSuggestions, feature_category: :code_suggestions do
               'x-gitlab-deployment-type' => [gitlab_deployment_type],
               'X-Gitlab-Language-Server-Version' => ['4.21.0'],
               'User-Agent' => ['Super Cool Browser 14.5.2'],
-              "x-gitlab-enabled-feature-flags" => gitlab_enabled_feature_flgs
+              "x-gitlab-enabled-feature-flags" => gitlab_enabled_feature_flags
             })
           end
         end
@@ -1001,7 +1002,7 @@ RSpec.describe API::CodeSuggestions, feature_category: :code_suggestions do
           end
 
           it_behaves_like 'code completions endpoint' do
-            let(:gitlab_enabled_feature_flgs) { ["expanded_ai_logging"] }
+            let(:gitlab_enabled_feature_flags) { %w[expanded_ai_logging] }
           end
 
           it_behaves_like 'an endpoint authenticated with token', :ok
