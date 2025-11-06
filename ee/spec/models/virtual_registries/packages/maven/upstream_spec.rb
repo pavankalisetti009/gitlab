@@ -110,6 +110,41 @@ RSpec.describe VirtualRegistries::Packages::Maven::Upstream, type: :model, featu
             it { is_expected.to be_invalid.and have_attributes(errors: match_array(Array.wrap(error_messages))) }
           end
         end
+
+        context 'for normalization' do
+          where(:url_to_set, :expected_url) do
+            'http://test.maven'       | 'http://test.maven'
+            'http://test.maven/'      | 'http://test.maven'
+            'http://test.maven//'     | 'http://test.maven'
+            'http://test.maven/path'  | 'http://test.maven/path'
+            'http://test.maven/path/' | 'http://test.maven/path'
+          end
+
+          with_them do
+            before do
+              upstream.url = url_to_set
+            end
+
+            it { is_expected.to be_valid.and have_attributes(url: expected_url) }
+          end
+
+          context 'when creating upstreams with same URL but different trailing slashes' do
+            let_it_be(:group) { create(:group) }
+
+            it 'prevents duplicate upstreams with trailing slash' do
+              create(:virtual_registries_packages_maven_upstream, url: 'http://test.maven', group: group)
+
+              duplicate = build(:virtual_registries_packages_maven_upstream, url: 'http://test.maven/', group: group)
+
+              expect(duplicate).to be_invalid.and have_attributes(
+                errors: match_array(Array.wrap(
+                  'Group already has a remote upstream with the same url and credentials'
+                )),
+                url: 'http://test.maven'
+              )
+            end
+          end
+        end
       end
 
       context 'for credentials' do
